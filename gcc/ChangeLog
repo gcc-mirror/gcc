@@ -1,3 +1,58 @@
+1999-03-16 16:06 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppfiles.c (read_and_prescan): Map backslash-newline to '\r'
+	(which cannot otherwise appear in the processed buffer) and
+	move it out of tokens that it appears in the middle of.
+	Improve performance.
+	(find_position): New function.
+
+	* cpplib.c: \r (one character) indicates backslash
+	newline, not \\\n (two characters).  It cannot appear in the
+	middle of a token.  Call CPP_BUMP_LINE (pfile) whenever
+	parsing moves past \n or \r.  Increment pfile->lineno whenever
+	a \n is placed into token_buffer.  Only one mark can exist at
+	a time, and CPP_BUMP_LINE must not be used while it is
+	active.  It is automatically cleared by cpp_pop_buffer and
+	parse_goto_mark.  \r is not in is_hor_space or is_space.
+
+	(NEWLINE_FIX, NEWLINE_FIX1, adjust_position,
+	update_position, count_newlines, parse_move_mark): Removed.
+	(parse_string, copy_comment): New functions.
+	(parse_name): Returns void.
+	(parse_set_mark, parse_clear_mark, parse_goto_mark): Take only
+	one argument, a cpp_reader *.  Change for new marking scheme.
+	(skip_comment): Handle CHILL line comments too.  Second
+	argument is now first character of comment marker; all callers
+	changed.  Issue error for unterminated block comment here.
+	(cpp_skip_hspace): Recognize CHILL comments.
+	(copy_rest_of_line): Likewise.  Call skip_comment and
+	parse_string directly, don't go through cpp_get_token.  Emit
+	"/**/" for block comments if -traditional (create_definition
+	needs this).
+	(do_define): Don't play with put_out_comments.
+	(cpp_push_buffer): Initialize ->mark to -1.
+	(cpp_buf_line_and_col): Just read out the values in the buffer
+	structure.
+	(output_line_command): Use cpp_buf_line_and_col.  Fix
+	formatting.  Remove stale code.
+	(cpp_get_token): Break out string parsing code to
+	parse_string.  Use skip_comment for CHILL comments too.  Use
+	copy_comment for put_out_comments instead of dinking with
+	marks.  Remove stale code.  Don't call output_line_command
+	unless it's necessary.
+
+	* cpplib.h (parse_marker): Removed.
+	(struct cpp_buffer): line_base is now a unsigned char *; add
+	`mark' [long], remove `marks' [struct parse_marker *].
+	(parse_set_mark, parse_clear_mark, parse_goto_mark): Update
+	prototypes.
+	(CPP_BUMP_LINE, CPP_BUMP_BUFFER_LINE): New macros.
+	* cppinit.c (is_hor_space, is_space): '\r' is not considered
+	whitespace.
+	* cppexp.c (cpp_parse_expression): Use cpp_skip_hspace, not
+	SKIP_WHITE_SPACE.
+	* cpphash.c (macarg): Disable line commands while expanding.
+
 Tue Mar 16 11:30:19 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* c-lex.c (yylex) : Remove warning for integer literals being

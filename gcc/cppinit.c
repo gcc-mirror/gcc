@@ -255,15 +255,16 @@ U_CHAR is_idstart[256] =
   ['_']  = 1,
 };
 
-/* Table to tell if a character is horizontal space. */
+/* Table to tell if a character is horizontal space.
+   \r is magical, so it is not in here.  */
 U_CHAR is_hor_space[256] =
 {
-  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1, ['\r'] = 1
+  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1,
 };
 /* table to tell if a character is horizontal or vertical space.  */
 U_CHAR is_space[256] =
 {
-  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1, ['\r'] = 1, ['\n'] = 1,
+  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1, ['\n'] = 1,
 };
 /* Table to handle trigraph conversion, which occurs before all other
    processing, everywhere in the file.  (This is necessary since one
@@ -362,14 +363,12 @@ initialize_char_syntax (dollar_in_ident)
   is_hor_space['\t'] = 1;
   is_hor_space['\v'] = 1;
   is_hor_space['\f'] = 1;
-  is_hor_space['\r'] = 1;
 
   is_space[' '] = 1;
   is_space['\t'] = 1;
   is_space['\v'] = 1;
   is_space['\f'] = 1;
   is_space['\n'] = 1;
-  is_space['\r'] = 1;
 
   /* trigraph conversion */
   trigraph_table['='] = '#';  trigraph_table[')'] = ']';

@@ -36,21 +36,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    (Note that it is false while we're expanding macro *arguments*.) */
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 
-/* Move all backslash-newline pairs out of embarrassing places.
-   Exchange all such pairs following BP
-   with any potentially-embarrassing characters that follow them.
-   Potentially-embarrassing characters are / and *
-   (because a backslash-newline inside a comment delimiter
-   would cause it not to be recognized).  */
-
-#define NEWLINE_FIX \
-  do {while (PEEKC() == '\\' && PEEKN(1) == '\n') FORWARD(2); } while(0)
-
-/* Same, but assume we've already read the potential '\\' into C.  */
-#define NEWLINE_FIX1(C) do { \
-    while ((C) == '\\' && PEEKC() == '\n') { FORWARD(1); (C) = GETC(); }\
-  } while(0)
-
 /* Forward declarations.  */
 
 static char *my_strerror		PROTO ((int));
@@ -60,7 +45,10 @@ static HOST_WIDEST_INT eval_if_expression	PROTO ((cpp_reader *));
 static void conditional_skip		PROTO ((cpp_reader *, int,
 						enum node_type, U_CHAR *));
 static void skip_if_group		PROTO ((cpp_reader *));
-static int parse_name                   PARAMS ((cpp_reader *, int));
+
+static void parse_name			PARAMS ((cpp_reader *, int));
+static void parse_string		PARAMS ((cpp_reader *, int));
+static int parse_assertion		PARAMS ((cpp_reader *));
 
 /* External declarations.  */
 
@@ -245,71 +233,144 @@ null_cleanup (pbuf, pfile)
   return 0;
 }
 
-/* Assuming we have read '/'.
-   If this is the start of a comment (followed by '*' or '/'),
-   skip to the end of the comment, and return ' '.
-   Return EOF if we reached the end of file before the end of the comment.
-   If not the start of a comment, return '/'.  */
+/* Skip a comment - C, C++, or Chill style.  M is the first character
+   of the comment marker.  If this really is a comment, skip to its
+   end and return ' '.  If we hit end-of-file before end-of-comment,
+   return EOF.  If this is not a comment, return M (which will be
+   '/' or '-').  */
 
 static int
-skip_comment (pfile, linep)
+skip_comment (pfile, m)
      cpp_reader *pfile;
-     long *linep;
+     int m;
 {
-  int c = 0;
-  while (PEEKC() == '\\' && PEEKN(1) == '\n')
+  if (m == '/' && PEEKC() == '*')
     {
-      if (linep)
-	(*linep)++;
-      FORWARD(2);
-    }
-  if (PEEKC() == '*')
-    {
+      int c, prev_c = -1;
+      long line, col;
+      
       FORWARD(1);
+      cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
       for (;;)
 	{
-	  int prev_c = c;
 	  c = GETC ();
 	  if (c == EOF)
-	    return EOF;
-	  while (c == '\\' && PEEKC() == '\n')
 	    {
-	      if (linep)
-		(*linep)++;
-	      FORWARD(1), c = GETC();
+	      cpp_error_with_line (pfile, line, col, "unterminated comment");
+	      return EOF;
 	    }
-	  if (prev_c == '*' && c == '/')
+	  else if (c == '\n' || c == '\r')
+	    CPP_BUMP_LINE (pfile);
+	  else if (c == '/' && prev_c == '*')
 	    return ' ';
-	  if (c == '\n' && linep)
-	    (*linep)++;
+	  else if (c == '*' && prev_c == '/'
+		   && CPP_OPTIONS (pfile)->warn_comments)
+	    cpp_warning (pfile, "`/*' within comment");
+
+	  prev_c = c;
 	}
     }
-  else if (PEEKC() == '/' && CPP_OPTIONS (pfile)->cplusplus_comments)
+  else if ((m == '/' && PEEKC() == '/'
+	    && CPP_OPTIONS (pfile)->cplusplus_comments)
+	   || (m == '-' && PEEKC() == '-'
+	       && CPP_OPTIONS (pfile)->chill))
     {
       FORWARD(1);
       for (;;)
 	{
-	  c = GETC ();
+	  int c = GETC ();
 	  if (c == EOF)
 	    return ' '; /* Allow // to be terminated by EOF.  */
-	  while (c == '\\' && PEEKC() == '\n')
+	      if (c == '\n')
+		{
+		  /* Don't consider final '\n' to be part of comment.  */
+		  FORWARD(-1);
+		  return ' ';
+		}
+	      else if (c == '\r')
+		CPP_BUMP_LINE (pfile);
+	}
+    }
+  else
+    return m;
+}
+
+/* Identical to skip_comment except that it copies the comment into the
+   token_buffer.  This is used if put_out_comments.  */
+static int
+copy_comment (pfile, m)
+     cpp_reader *pfile;
+     int m;
+{
+  if (m == '/' && PEEKC() == '*')
+    {
+      int c, prev_c = -1;
+      long line, col;
+
+      CPP_PUTC (pfile, '/');
+      CPP_PUTC (pfile, '*');
+      FORWARD(1);
+      cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
+      for (;;)
+	{
+	  c = GETC ();
+	  if (c == EOF)
 	    {
-	      FORWARD(1);
-	      c = GETC();
-	      if (linep)
-		(*linep)++;
+	      cpp_error_with_line (pfile, line, col, "unterminated comment");
+	      /* We must pretend this was a legitimate comment, so that the
+		 output in token_buffer is not passed back tagged CPP_POP. */
+	      return ' ';
 	    }
+	  else if (c == '\r')
+	    {
+	      CPP_BUMP_LINE (pfile);
+	      continue;
+	    }
+
+	  CPP_PUTC (pfile, c);
 	  if (c == '\n')
+	    {
+	      pfile->lineno++;
+	      CPP_BUMP_LINE (pfile);
+	    }
+	  else if (c == '/' && prev_c == '*')
+	    return ' ';
+	  else if (c == '*' && prev_c == '/'
+		   && CPP_OPTIONS (pfile)->warn_comments)
+	    cpp_warning (pfile, "`/*' within comment");
+
+	  prev_c = c;
+	}
+    }
+  else if ((m == '/' && PEEKC() == '/'
+	    && CPP_OPTIONS (pfile)->cplusplus_comments)
+	   || (m == '-' && PEEKC() == '-'
+	       && CPP_OPTIONS (pfile)->chill))
+    {
+      CPP_PUTC (pfile, m);
+      CPP_PUTC (pfile, m);
+      FORWARD(1);
+      for (;;)
+	{
+	  int c = GETC ();
+	  if (c == EOF)
+	    return ' '; /* Allow line comments to be terminated by EOF. */
+	  else if (c == '\n')
 	    {
 	      /* Don't consider final '\n' to be part of comment.  */
 	      FORWARD(-1);
 	      return ' ';
 	    }
+	  else if (c == '\r')
+	    CPP_BUMP_LINE (pfile);
+
+	  CPP_PUTC (pfile, c);
 	}
     }
   else
-    return '/';
-}     
+    return m;
+}
+
 
 /* Skip whitespace \-newline and comments.  Does not macro-expand.  */
 
@@ -317,34 +378,43 @@ void
 cpp_skip_hspace (pfile)
      cpp_reader *pfile;
 {
+  int c;
   while (1)
     {
-      int c = PEEKC();
+      c = GETC();
       if (c == EOF)
-	return; /* FIXME */
-      if (is_hor_space[c])
+	return;
+      else if (is_hor_space[c])
 	{
 	  if ((c == '\f' || c == '\v') && CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "%s in preprocessing directive",
 			 c == '\f' ? "formfeed" : "vertical tab");
+	}
+      else if (c == '\r')
+	{
+	  CPP_BUFFER (pfile)->lineno++;
+	}
+      else if (c == '/' || c == '-')
+	{
+	  c = skip_comment (pfile, c);
+	  if (c == EOF)
+	    return;
+	  else if (c != ' ')
+	    {
+	      FORWARD(-1);
+	      return;
+	    }
+	}
+      else if (c == '@' && CPP_BUFFER (pfile)->has_escapes
+	       && PEEKC() == ' ')
+	{
 	  FORWARD(1);
 	}
-      else if (c == '/')
+      else
 	{
-	  FORWARD (1);
-	  c = skip_comment (pfile, NULL);
-	  if (c == '/')
-	    FORWARD(-1);
-	  if (c == EOF || c == '/')
-	    return;
+	  FORWARD(-1);
+	  return;
 	}
-      else if (c == '\\' && PEEKN(1) == '\n') {
-	FORWARD(2);
-      }
-      else if (c == '@' && CPP_BUFFER (pfile)->has_escapes
-	       && is_hor_space[PEEKN(1)])
-	FORWARD(2);
-      else return;
     }
 }
 
@@ -355,30 +425,36 @@ static void
 copy_rest_of_line (pfile)
      cpp_reader *pfile;
 {
-  struct cpp_options *opts = CPP_OPTIONS (pfile);
   for (;;)
     {
       int c = GETC();
-      int nextc;
       switch (c)
 	{
+	case '\n':
+	  FORWARD(-1);
 	case EOF:
-	  goto end_directive;
-	case '\\':
-	  if (PEEKC() == '\n')
-	    {
-	      FORWARD (1);
-	      continue;
-	    }
+	  CPP_NUL_TERMINATE (pfile);
+	  return;
+
+	case '\r':
+	  CPP_BUFFER (pfile)->lineno++;
+	  continue;
 	case '\'':
 	case '\"':
-	  goto scan_directive_token;
-	  break;
+	  parse_string (pfile, c);
+	  continue;
 	case '/':
-	  nextc = PEEKC();
-	  if (nextc == '*' || (opts->cplusplus_comments && nextc == '/'))
-	    goto scan_directive_token;
+	  if (PEEKC() == '*' && CPP_TRADITIONAL (pfile))
+	    {
+	      CPP_PUTS (pfile, "/**/", 4);
+	      skip_comment (pfile, c);
+	      continue;
+	    }
+	  /* else fall through */
+	case '-':
+	  c = skip_comment (pfile, c);
 	  break;
+
 	case '\f':
 	case '\v':
 	  if (CPP_PEDANTIC (pfile))
@@ -386,20 +462,15 @@ copy_rest_of_line (pfile)
 			 c == '\f' ? "formfeed" : "vertical tab");
 	  break;
 
-	case '\n':
-	  FORWARD(-1);
-	  goto end_directive;
-	scan_directive_token:
-	  FORWARD(-1);
-	  cpp_get_token (pfile);
-	  continue;
 	}
       CPP_PUTC (pfile, c);
     }
- end_directive: ;
-  CPP_NUL_TERMINATE (pfile);
 }
 
+/* FIXME: It is almost definitely a performance win to make this do
+   the scan itself.  >75% of calls to copy_r_o_l are from here or
+   skip_if_group, which means the common case is to copy stuff into the
+   token_buffer only to discard it.  */
 void
 skip_rest_of_line (pfile)
      cpp_reader *pfile;
@@ -415,7 +486,8 @@ skip_rest_of_line (pfile)
 static int
 handle_directive (pfile)
      cpp_reader *pfile;
-{ int c;
+{
+  int c;
   register struct directive *kt;
   int ident_length;
   U_CHAR *ident;
@@ -590,16 +662,11 @@ do_define (pfile, keyword)
   int hashcode;
   MACRODEF mdef;
   HASHNODE *hp;
-  int save_put_out_comments;
   long here;
   U_CHAR *macro, *buf, *end;
 
   here = CPP_WRITTEN (pfile);
-  
-  save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
-  CPP_OPTIONS (pfile)->put_out_comments = CPP_TRADITIONAL (pfile);
   copy_rest_of_line (pfile);
-  CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
 
   /* Copy out the line so we can pop the token buffer. */
   buf = pfile->token_buffer + here;
@@ -696,6 +763,7 @@ cpp_push_buffer (pfile, buffer, length)
   new->buf = new->cur = buffer;
   new->alimit = new->rlimit = buffer + length;
   new->prev = buf;
+  new->mark = -1;
 
   CPP_BUFFER (pfile) = new;
   return new;
@@ -781,59 +849,22 @@ cpp_expand_to_buffer (pfile, buf, length)
   CPP_NUL_TERMINATE (pfile);
 }
 
-static void
-adjust_position (buf, limit, linep, colp)
-     U_CHAR *buf;
-     U_CHAR *limit;
-     long *linep;
-     long *colp;
-{
-  while (buf < limit)
-    {
-      U_CHAR ch = *buf++;
-      if (ch == '\n')
-	(*linep)++, (*colp) = 1;
-      else
-	(*colp)++;
-    }
-}
-
-/* Move line_base forward, updating lineno and colno.  */
-
-static void
-update_position (pbuf)
-     register cpp_buffer *pbuf;
-{
-  unsigned char *old_pos = pbuf->buf + pbuf->line_base;
-  unsigned char *new_pos = pbuf->cur;
-  register struct parse_marker *mark;
-  for (mark = pbuf->marks;  mark != NULL; mark = mark->next)
-    {
-      if (pbuf->buf + mark->position < new_pos)
-	new_pos = pbuf->buf + mark->position;
-    }
-  pbuf->line_base += new_pos - old_pos;
-  adjust_position (old_pos, new_pos, &pbuf->lineno, &pbuf->colno);
-}
-
 void
 cpp_buf_line_and_col (pbuf, linep, colp)
      register cpp_buffer *pbuf;
      long *linep, *colp;
 {
-  long dummy;
-  if (colp == NULL)
-    colp = &dummy;
   if (pbuf)
     {
       *linep = pbuf->lineno;
-      *colp = pbuf->colno;
-      adjust_position (pbuf->buf + pbuf->line_base, pbuf->cur, linep, colp);
+      if (colp)
+	*colp = pbuf->cur - pbuf->line_base;
     }
   else
     {
       *linep = 0;
-      *colp = 0;
+      if (colp)
+	*colp = 0;
     }
 }
 
@@ -849,21 +880,6 @@ cpp_file_buffer (pfile)
     if (ip->fname != NULL)
       return ip;
   return NULL;
-}
-
-static long
-count_newlines (buf, limit)
-     register U_CHAR *buf;
-     register U_CHAR *limit;
-{
-  register long count = 0;
-  while (buf < limit)
-    {
-      U_CHAR ch = *buf++;
-      if (ch == '\n')
-	count++;
-    }
-  return count;
 }
 
 /*
@@ -886,73 +902,56 @@ output_line_command (pfile, conditional, file_change)
   if (ip->fname == NULL)
     return;
 
-  update_position (ip);
-
   if (CPP_OPTIONS (pfile)->no_line_commands
       || CPP_OPTIONS (pfile)->no_output)
     return;
 
-  line = CPP_BUFFER (pfile)->lineno;
-  col = CPP_BUFFER (pfile)->colno;
-  adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
+  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
 
-  if (CPP_OPTIONS (pfile)->no_line_commands)
-    return;
+  if (conditional)
+    {
+      if (line == pfile->lineno)
+	return;
 
-  if (conditional) {
-    if (line == pfile->lineno)
-      return;
-
-    /* If the inherited line number is a little too small,
-       output some newlines instead of a #line command.  */
-    if (line > pfile->lineno && line < pfile->lineno + 8) {
-      CPP_RESERVE (pfile, 20);
-      while (line > pfile->lineno) {
-	CPP_PUTC_Q (pfile, '\n');
-	pfile->lineno++;
-      }
-      return;
+      /* If the inherited line number is a little too small,
+	 output some newlines instead of a #line command.  */
+      if (line > pfile->lineno && line < pfile->lineno + 8)
+	{
+	  CPP_RESERVE (pfile, 20);
+	  while (line > pfile->lineno)
+	    {
+	      CPP_PUTC_Q (pfile, '\n');
+	      pfile->lineno++;
+	    }
+	  return;
+	}
     }
-  }
-
-#if 0
-  /* Don't output a line number of 0 if we can help it.  */
-  if (ip->lineno == 0 && ip->bufp - ip->buf < ip->length
-      && *ip->bufp == '\n') {
-    ip->lineno++;
-    ip->bufp++;
-  }
-#endif
 
   CPP_RESERVE (pfile, 4 * strlen (ip->nominal_fname) + 50);
-  {
-#ifdef OUTPUT_LINE_COMMANDS
-    static char sharp_line[] = "#line ";
-#else
-    static char sharp_line[] = "# ";
-#endif
-    CPP_PUTS_Q (pfile, sharp_line, sizeof(sharp_line)-1);
-  }
+  CPP_PUTS_Q (pfile, "# ", 2);
 
   sprintf ((char *) CPP_PWRITTEN (pfile), "%ld ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
-  if (file_change != same_file) {
-    CPP_PUTC_Q (pfile, ' ');
-    CPP_PUTC_Q (pfile, file_change == enter_file ? '1' : '2');
-  }
+  if (file_change != same_file)
+    {
+      CPP_PUTC_Q (pfile, ' ');
+      CPP_PUTC_Q (pfile, file_change == enter_file ? '1' : '2');
+    }
   /* Tell cc1 if following text comes from a system header file.  */
-  if (ip->system_header_p) {
-    CPP_PUTC_Q (pfile, ' ');
-    CPP_PUTC_Q (pfile, '3');
-  }
+  if (ip->system_header_p)
+    {
+      CPP_PUTC_Q (pfile, ' ');
+      CPP_PUTC_Q (pfile, '3');
+    }
 #ifndef NO_IMPLICIT_EXTERN_C
   /* Tell cc1plus if following text should be treated as C.  */
-  if (ip->system_header_p == 2 && CPP_OPTIONS (pfile)->cplusplus) {
-    CPP_PUTC_Q (pfile, ' ');
-    CPP_PUTC_Q (pfile, '4');
-  }
+  if (ip->system_header_p == 2 && CPP_OPTIONS (pfile)->cplusplus)
+    {
+      CPP_PUTC_Q (pfile, ' ');
+      CPP_PUTC_Q (pfile, '4');
+    }
 #endif
   CPP_PUTC_Q (pfile, '\n');
   pfile->lineno = line;
@@ -1886,6 +1885,7 @@ skip_if_group (pfile)
 	{
 	  if (CPP_OPTIONS (pfile)->output_conditionals)
 	    CPP_PUTC (pfile, c);
+	  CPP_BUMP_LINE (pfile);
 	  continue;
 	}
       else if (c == '#')
@@ -1915,7 +1915,11 @@ skip_if_group (pfile)
 	{
 	  /* \n */
 	  if (CPP_OPTIONS (pfile)->output_conditionals)
-	    CPP_PUTC (pfile, c);
+	    {
+	      CPP_PUTC (pfile, c);
+	      pfile->lineno++;
+	    }
+	  CPP_BUMP_LINE (pfile);
 	}
     }	  
 
@@ -1998,10 +2002,9 @@ do_endif (pfile, keyword)
 	{
 	  /* This #endif matched a #ifndef at the start of the file.
 	     See if it is at the end of the file.  */
-	  struct parse_marker start_mark;
 	  int c;
 
-	  parse_set_mark (&start_mark, pfile);
+	  parse_set_mark (pfile);
 
 	  for (;;)
 	    {
@@ -2010,8 +2013,7 @@ do_endif (pfile, keyword)
 	      if (c != '\n')
 		break;
 	    }
-	  parse_goto_mark (&start_mark, pfile);
-	  parse_clear_mark (&start_mark);
+	  parse_goto_mark (pfile);
 
 	  if (c == EOF)
 	    {
@@ -2057,8 +2059,6 @@ cpp_get_token (pfile)
      cpp_reader *pfile;
 {
   register int c, c2, c3;
-  long old_written;
-  long start_line, start_column;
   enum cpp_token token;
   struct cpp_options *opts = CPP_OPTIONS (pfile);
 
@@ -2099,68 +2099,27 @@ cpp_get_token (pfile)
     {
       switch (c)
 	{
-	  long newlines;
-	  struct parse_marker start_mark;
 	case '/':
 	  if (PEEKC () == '=')
 	    goto op2;
+
+	comment:
 	  if (opts->put_out_comments)
-	    parse_set_mark (&start_mark, pfile);
-	  newlines = 0;
-	  cpp_buf_line_and_col (cpp_file_buffer (pfile),
-				&start_line, &start_column);
-	  c = skip_comment (pfile, &newlines);
-	  if (opts->put_out_comments && (c == '/' || c == EOF))
-	    parse_clear_mark (&start_mark);
-	  if (c == '/')
-	    goto randomchar;
+	    c = copy_comment (pfile, c);
+	  else
+	    c = skip_comment (pfile, c);
 	  if (c == EOF)
-	    {
-	      cpp_error_with_line (pfile, start_line, start_column,
-				   "unterminated comment");
-	      goto handle_eof;
-	    }
-	  c = '/';  /* Initial letter of comment.  */
-	return_comment:
+	    goto handle_eof;
+	  else if (c != ' ')
+	    goto randomchar;
+	  
 	  /* Comments are equivalent to spaces.
 	     For -traditional, a comment is equivalent to nothing.  */
-	  if (opts->put_out_comments)
-	    {
-	      cpp_buffer *pbuf = CPP_BUFFER (pfile);
-	      U_CHAR *start = pbuf->buf + start_mark.position;
-	      int len = pbuf->cur - start;
-	      CPP_RESERVE(pfile, 1 + len);
-	      CPP_PUTC_Q (pfile, c);
-	      CPP_PUTS_Q (pfile, start, len);
-	      pfile->lineno += newlines;
-	      parse_clear_mark (&start_mark);
-	      return CPP_COMMENT;
-	    }
-	  else if (CPP_TRADITIONAL (pfile))
-	    {
-	      return CPP_COMMENT;
-	    }
+	  if (opts->traditional || opts->put_out_comments)
+	    return CPP_COMMENT;
 	  else
 	    {
-#if 0
-	      /* This may not work if cpp_get_token is called recursively,
-		 since many places look for horizontal space.  */
-	      if (newlines)
-		{
-		  /* Copy the newlines into the output buffer, in order to
-		     avoid the pain of a #line every time a multiline comment
-		     is seen.  */
-		  CPP_RESERVE(pfile, newlines);
-		  while (--newlines >= 0)
-		    {
-		      CPP_PUTC_Q (pfile, '\n');
-		      pfile->lineno++;
-		    }
-		  return CPP_VSPACE;
-		}
-#endif
-	      CPP_RESERVE(pfile, 1);
-	      CPP_PUTC_Q (pfile, ' ');
+	      CPP_PUTC (pfile, c);
 	      return CPP_HSPACE;
 	    }
 #if 0
@@ -2218,91 +2177,7 @@ cpp_get_token (pfile)
 	case '\"':
 	case '\'':
 	string:
-	  /* A single quoted string is treated like a double -- some
-	     programs (e.g., troff) are perverse this way */
-	  cpp_buf_line_and_col (cpp_file_buffer (pfile),
-				&start_line, &start_column);
-	  old_written = CPP_WRITTEN (pfile);
-	  CPP_PUTC (pfile, c);
-	  while (1)
-	    {
-	      int cc = GETC();
-	      if (cc == EOF)
-		{
-		  if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-		    {
-		      /* try harder: this string crosses a macro expansion
-			 boundary.  This can happen naturally if -traditional.
-			 Otherwise, only -D can make a macro with an unmatched
-			 quote.  */
-			cpp_pop_buffer (pfile);
-			continue;
-		    }
-		  if (!CPP_TRADITIONAL (pfile))
-		    {
-		      cpp_error_with_line (pfile, start_line, start_column,
-			      "unterminated string or character constant");
-		      if (pfile->multiline_string_line != start_line
-			  && pfile->multiline_string_line != 0)
-			cpp_error_with_line (pfile,
-					     pfile->multiline_string_line, -1,
-			       "possible real start of unterminated constant");
-		      pfile->multiline_string_line = 0;
-		    }
-		  break;
-		}
-	      CPP_PUTC (pfile, cc);
-	      switch (cc)
-		{
-		case '\n':
-		  /* Traditionally, end of line ends a string constant with
-		 no error.  So exit the loop and record the new line.  */
-		  if (CPP_TRADITIONAL (pfile))
-		    goto while2end;
-		  if (c == '\'')
-		    {
-		      cpp_error_with_line (pfile, start_line, start_column,
-					   "unterminated character constant");
-		      goto while2end;
-		    }
-		  if (CPP_PEDANTIC (pfile)
-		      && pfile->multiline_string_line == 0)
-		    {
-		      cpp_pedwarn_with_line (pfile, start_line, start_column,
-			       "string constant runs past end of line");
-		    }
-		  if (pfile->multiline_string_line == 0)
-		    pfile->multiline_string_line = start_line;
-		  break;
-		
-		case '\\':
-		  cc = GETC();
-		  if (cc == '\n')
-		    {
-		      /* Backslash newline is replaced by nothing at all.  */
-		      CPP_ADJUST_WRITTEN (pfile, -1);
-		      pfile->lineno++;
-		    }
-		  else
-		    {
-		      /* ANSI stupidly requires that in \\ the second \
-			 is *not* prevented from combining with a newline.  */
-		      NEWLINE_FIX1(cc);
-		      if (cc != EOF)
-			CPP_PUTC (pfile, cc);
-		    }
-		  break;
-
-		case '\"':
-		case '\'':
-		  if (cc == c)
-		    goto while2end;
-		  break;
-		}
-	    }
-	while2end:
-	  pfile->lineno += count_newlines (pfile->token_buffer + old_written,
-					   CPP_PWRITTEN (pfile));
+	  parse_string (pfile, c);
 	  pfile->only_seen_white = 0;
 	  return c == '\'' ? CPP_CHAR : CPP_STRING;
 
@@ -2319,7 +2194,6 @@ cpp_get_token (pfile)
 	case '&':
 	case '+':
 	case '|':
-	  NEWLINE_FIX;
 	  c2 = PEEKC ();
 	  if (c2 == c || c2 == '=')
 	    goto op2;
@@ -2330,35 +2204,14 @@ cpp_get_token (pfile)
 	case '%':
 	case '=':
 	case '^':
-	  NEWLINE_FIX;
 	  if (PEEKC () == '=')
 	    goto op2;
 	  goto randomchar;
 
 	case '-':
-	  NEWLINE_FIX;
 	  c2 = PEEKC ();
 	  if (c2 == '-' && opts->chill)
-	    {
-	      /* Chill style comment */
-	      if (opts->put_out_comments)
-		parse_set_mark (&start_mark, pfile);
-	      FORWARD(1);  /* Skip second '-'.  */
-	      for (;;)
-		{
-		  c = GETC ();
-		  if (c == EOF)
-		    break;
-		  if (c == '\n')
-		    {
-		      /* Don't consider final '\n' to be part of comment.  */
-		      FORWARD(-1);
-		      break;
-		    }
-		}
-	      c = '-';
-	      goto return_comment;
-	    }
+	    goto comment;  /* Chill style comment */
 	  if (c2 == '-' || c2 == '=' || c2 == '>')
 	    goto op2;
 	  goto randomchar;
@@ -2372,19 +2225,23 @@ cpp_get_token (pfile)
 		  if (c == '>')
 		    break;
 		  c = GETC ();
-		  NEWLINE_FIX1 (c);
 		  if (c == '\n' || c == EOF)
 		    {
 		      cpp_error (pfile,
 				 "missing '>' in `#include <FILENAME>'");
 		      break;
 		    }
+		  else if (c == '\r')
+		    {
+		      /* Backslash newline is replaced by nothing. */
+		      CPP_ADJUST_WRITTEN (pfile, -1);
+		      CPP_BUMP_LINE (pfile);
+		    }
 		}
 	      return CPP_STRING;
 	    }
 	  /* else fall through */
 	case '>':
-	  NEWLINE_FIX;
 	  c2 = PEEKC ();
 	  if (c2 == '=')
 	    goto op2;
@@ -2394,7 +2251,6 @@ cpp_get_token (pfile)
 	  CPP_RESERVE (pfile, 4);
 	  CPP_PUTC (pfile, c);
 	  CPP_PUTC (pfile, c2);
-	  NEWLINE_FIX;
 	  c3 = PEEKC ();
 	  if (c3 == '=')
 	    CPP_PUTC_Q (pfile, GETC ());
@@ -2413,7 +2269,7 @@ cpp_get_token (pfile)
 		  parse_name (pfile, GETC ());
 		  return CPP_NAME;
 		}
-	      else if (is_space [c])
+	      else if (c == ' ')
 		{
 		  CPP_RESERVE (pfile, 2);
 		  if (pfile->output_escapes)
@@ -2430,7 +2286,6 @@ cpp_get_token (pfile)
 	  goto randomchar;
 
 	case '.':
-	  NEWLINE_FIX;
 	  c2 = PEEKC ();
 	  if (ISDIGIT(c2))
 	    {
@@ -2439,7 +2294,6 @@ cpp_get_token (pfile)
 	      c = GETC ();
 	      goto number;
 	    }
-	  /* FIXME - misses the case "..\\\n." */
 	  if (c2 == '.' && PEEKN(1) == '.')
 	    {
 	      CPP_RESERVE(pfile, 4);
@@ -2456,7 +2310,6 @@ cpp_get_token (pfile)
 	op2:
 	  token = CPP_OTHER;
 	  pfile->only_seen_white = 0;
-        op2any:
 	  CPP_RESERVE(pfile, 3);
 	  CPP_PUTC_Q (pfile, c);
 	  CPP_PUTC_Q (pfile, GETC ());
@@ -2464,7 +2317,6 @@ cpp_get_token (pfile)
 	  return token;
 
 	case 'L':
-	  NEWLINE_FIX;
 	  c2 = PEEKC ();
 	  if ((c2 == '\'' || c2 == '\"') && !CPP_TRADITIONAL (pfile))
 	    {
@@ -2482,7 +2334,6 @@ cpp_get_token (pfile)
 	    {
 	      CPP_RESERVE (pfile, 2);
 	      CPP_PUTC_Q (pfile, c);
-	      NEWLINE_FIX;
 	      c = PEEKC ();
 	      if (c == EOF)
 		break;
@@ -2512,14 +2363,7 @@ cpp_get_token (pfile)
 		  if (c == EOF)
 		    goto chill_number_eof;
 		  if (!is_idchar[c])
-		    {
-		      if (c == '\\' && PEEKC() == '\n')
-			{
-			  FORWARD(2);
-			  continue;
-			}
-		      break;
-		    }
+		    break;
 		  CPP_PUTC (pfile, c);
 		}
 	      if (c == '\'')
@@ -2584,10 +2428,9 @@ cpp_get_token (pfile)
 	       decide this is not a macro call and leave things that way.  */
 	    if (hp->type == T_MACRO && hp->value.defn->nargs >= 0)
 	    {
-	      struct parse_marker macro_mark;
 	      int is_macro_call, macbuf_whitespace = 0;
 
-	      parse_set_mark (&macro_mark, pfile);
+	      parse_set_mark (pfile);
 	      for (;;)
 		{
 		  cpp_skip_hspace (pfile);
@@ -2603,14 +2446,15 @@ cpp_get_token (pfile)
                     {
                       if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
                         {
-                          if (macro_mark.position !=
+                          if (CPP_BUFFER (pfile)->mark !=
                               (CPP_BUFFER (pfile)->cur
                                - CPP_BUFFER (pfile)->buf))
                              macbuf_whitespace = 1;
 
-                          parse_clear_mark (&macro_mark);
+			  /* The mark goes away automatically when
+			     the buffer is popped. */
                           cpp_pop_buffer (pfile);
-                          parse_set_mark (&macro_mark, pfile);
+                          parse_set_mark (pfile);
                         }
                       else
                         break;
@@ -2618,11 +2462,12 @@ cpp_get_token (pfile)
 		}
 	      if (!is_macro_call)
                 {
-                  parse_goto_mark (&macro_mark, pfile);
+                  parse_goto_mark (pfile);
                   if (macbuf_whitespace)
                     CPP_PUTC (pfile, ' ');
                 }
-	      parse_clear_mark (&macro_mark);
+	      else
+		parse_clear_mark (pfile);
 	      if (!is_macro_call)
 		return CPP_NAME;
 	    }
@@ -2634,7 +2479,7 @@ cpp_get_token (pfile)
 	  }
 	  goto get_next;
 
-	case ' ':  case '\t':  case '\v':  case '\r':
+	case ' ':  case '\t':  case '\v':
 	  for (;;)
 	    {
 	      CPP_PUTC (pfile, c);
@@ -2646,18 +2491,21 @@ cpp_get_token (pfile)
 	  return CPP_HSPACE;
 
         case '\\':
-	  c2 = PEEKC ();
-	  if (c2 != '\n')
-	    goto randomchar;
-	  token = CPP_HSPACE;
-	  goto op2any;
+	  goto randomchar;
+
+	case '\r':
+	  /* Backslash newline is ignored. */
+	  CPP_BUMP_LINE (pfile);
+	  goto get_next;
 
 	case '\n':
 	  CPP_PUTC (pfile, c);
 	  if (pfile->only_seen_white == 0)
 	    pfile->only_seen_white = 1;
+	  CPP_BUMP_LINE (pfile);
 	  pfile->lineno++;
-	  output_line_command (pfile, 1, same_file);
+	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
+	    output_line_command (pfile, 1, same_file);
 	  return CPP_VSPACE;
 
 	case '(': token = CPP_LPAREN;    goto char1;
@@ -2697,19 +2545,15 @@ cpp_get_non_space_token (pfile)
 
 /* Parse an identifier starting with C.  */
 
-static int
+static void
 parse_name (pfile, c)
-     cpp_reader *pfile; int c;
+     cpp_reader *pfile;
+     int c;
 {
   for (;;)
   {
       if (! is_idchar[c])
       {
-	  if (c == '\\' && PEEKC() == '\n')
-	  {
-	      FORWARD(2);
-	      continue;
-	  }
 	  FORWARD (-1);
 	  break;
       }
@@ -2724,7 +2568,95 @@ parse_name (pfile, c)
 	break;
   }
   CPP_NUL_TERMINATE_Q (pfile);
-  return 1;
+  return;
+}
+
+/* Parse a string starting with C.  A single quoted string is treated
+   like a double -- some programs (e.g., troff) are perverse this way.
+   (However, a single quoted string is not allowed to extend over
+   multiple lines.  */
+static void
+parse_string (pfile, c)
+     cpp_reader *pfile;
+     int c;
+{
+  long start_line, start_column;
+  
+  cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
+
+  CPP_PUTC (pfile, c);
+  while (1)
+    {
+      int cc = GETC();
+      if (cc == EOF)
+	{
+	  if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+	    {
+	      /* try harder: this string crosses a macro expansion
+		 boundary.  This can happen naturally if -traditional.
+		 Otherwise, only -D can make a macro with an unmatched
+		 quote.  */
+	      cpp_pop_buffer (pfile);
+	      continue;
+	    }
+	  if (!CPP_TRADITIONAL (pfile))
+	    {
+	      cpp_error_with_line (pfile, start_line, start_column,
+				 "unterminated string or character constant");
+	      if (pfile->multiline_string_line != start_line
+		  && pfile->multiline_string_line != 0)
+		cpp_error_with_line (pfile,
+				     pfile->multiline_string_line, -1,
+			       "possible real start of unterminated constant");
+	      pfile->multiline_string_line = 0;
+	    }
+	  break;
+	}
+      CPP_PUTC (pfile, cc);
+      switch (cc)
+	{
+	case '\n':
+	  CPP_BUMP_LINE (pfile);
+	  pfile->lineno++;
+	  /* Traditionally, end of line ends a string constant with
+	     no error.  */
+	  if (CPP_TRADITIONAL (pfile))
+	    return;
+	  /* Character constants may not extend over multiple lines.  */
+	  if (c == '\'')
+	    {
+	      cpp_error_with_line (pfile, start_line, start_column,
+				   "unterminated character constant");
+	      return;
+	    }
+	  if (CPP_PEDANTIC (pfile) && pfile->multiline_string_line == 0)
+	    {
+	      cpp_pedwarn_with_line (pfile, start_line, start_column,
+				     "string constant runs past end of line");
+	    }
+	  if (pfile->multiline_string_line == 0)
+	    pfile->multiline_string_line = start_line;
+	  break;
+
+	case '\r':
+	  /* Backslash newline is replaced by nothing at all.  */
+	  CPP_ADJUST_WRITTEN (pfile, -1);
+	  CPP_BUMP_LINE (pfile);
+	  break;
+
+	case '\\':
+	  cc = GETC();
+	  if (cc != EOF)
+	    CPP_PUTC (pfile, cc);
+	  break;
+
+	case '\"':
+	case '\'':
+	  if (cc == c)
+	    return;
+	  break;
+	}
+    }
 }
 
 /* Read an assertion into the token buffer, converting to
@@ -2752,7 +2684,7 @@ parse_assertion (pfile)
   c = PEEKC();
   if (c != '(')
     {
-      if (is_hor_space[c])
+      if (is_hor_space[c] || c == '\r')
 	cpp_skip_hspace (pfile);
       c = PEEKC();
     }
@@ -2772,17 +2704,17 @@ parse_assertion (pfile)
 	      dropwhite = 1;
 	    }
 	}
-      else if (c == '\\' && PEEKC() == '\n')
-	FORWARD(1);
       else if (c == '\n' || c == EOF)
 	{
 	  if (c == '\n') FORWARD(-1);
 	  cpp_error (pfile, "un-terminated assertion answer");
 	  return 0;
 	}
+      else if (c == '\r')
+	CPP_BUMP_LINE (pfile);
       else
 	{
-	  CPP_PUTC(pfile, c);
+	  CPP_PUTC (pfile, c);
 	  dropwhite = 0;
 	}
     }
@@ -2795,9 +2727,9 @@ parse_assertion (pfile)
       return 0;
     }
   else
-    CPP_PUTC(pfile, ')');
+    CPP_PUTC (pfile, ')');
 
-  CPP_NUL_TERMINATE(pfile);
+  CPP_NUL_TERMINATE (pfile);
   return 2;
 }
 
@@ -2971,62 +2903,50 @@ cpp_read_check_assertion (pfile)
   return result;
 }
 
-/* Initialize PMARK to remember the current position of PFILE.  */
+/* Remember the current position of PFILE.  */
 
 void
-parse_set_mark (pmark, pfile)
-     struct parse_marker *pmark;
+parse_set_mark (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *pbuf = CPP_BUFFER (pfile);
-  pmark->next = pbuf->marks;
-  pbuf->marks = pmark;
-  pmark->buf = pbuf;
-  pmark->position = pbuf->cur - pbuf->buf;
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+  if (ip->mark != -1)
+      cpp_fatal (pfile,
+		 "cpp internal error: ip->mark != -1 in parse_set_mark");
+
+  ip->mark = ip->cur - ip->buf;
 }
 
-/* Cleanup PMARK - we no longer need it.  */
+/* Clear the current mark - we no longer need it.  */
 
 void
-parse_clear_mark (pmark)
-     struct parse_marker *pmark;
-{
-  struct parse_marker **pp = &pmark->buf->marks;
-  for (; ; pp = &(*pp)->next) {
-    if (*pp == NULL) abort ();
-    if (*pp == pmark) break;
-  }
-  *pp = pmark->next;
-}
-
-/* Backup the current position of PFILE to that saved in PMARK.  */
-
-void
-parse_goto_mark (pmark, pfile)
-     struct parse_marker *pmark;
+parse_clear_mark (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *pbuf = CPP_BUFFER (pfile);
-  if (pbuf != pmark->buf)
-    cpp_fatal (pfile, "internal error %s", "parse_goto_mark");
-  pbuf->cur = pbuf->buf + pmark->position;
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+  if (ip->mark == -1)
+      cpp_fatal (pfile,
+		 "cpp internal error: ip->mark == -1 in parse_clear_mark");
+
+  ip->mark = -1;
 }
 
-/* Reset PMARK to point to the current position of PFILE.  (Same
-   as parse_clear_mark (PMARK), parse_set_mark (PMARK, PFILE) but faster.  */
+/* Backup the current position of PFILE to that saved in its mark,
+   and clear the mark.  */
 
 void
-parse_move_mark (pmark, pfile)
-     struct parse_marker *pmark;
+parse_goto_mark (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *pbuf = CPP_BUFFER (pfile);
-  if (pbuf != pmark->buf)
-    cpp_fatal (pfile, "internal error %s", "parse_move_mark");
-  pmark->position = pbuf->cur - pbuf->buf;
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+  if (ip->mark == -1)
+      cpp_fatal (pfile,
+		 "cpp internal error: ip->mark == -1 in parse_goto_mark");
+
+  ip->cur = ip->buf + ip->mark;
+  ip->mark = -1;
 }
 
-
 void
 cpp_print_file_and_line (pfile)
      cpp_reader *pfile;

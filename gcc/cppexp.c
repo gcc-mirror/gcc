@@ -101,8 +101,6 @@ static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, 
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
-#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
-
 struct operation {
     short op;
     char rprio; /* Priority of op (relative to it right operand).  */
@@ -444,12 +442,12 @@ cpp_lex (pfile, skip_evaluation)
 	  cpp_buffer *ip = CPP_BUFFER (pfile);
 	  U_CHAR *tok;
 
-	  SKIP_WHITE_SPACE (ip->cur);
+	  cpp_skip_hspace (pfile);
 	  if (*ip->cur == '(')
 	    {
 	      paren++;
 	      ip->cur++;			/* Skip over the paren */
-	      SKIP_WHITE_SPACE (ip->cur);
+	      cpp_skip_hspace (pfile);
 	    }
 
 	  if (!is_idstart[*ip->cur])
@@ -460,7 +458,7 @@ cpp_lex (pfile, skip_evaluation)
 	  while (is_idchar[*ip->cur])
 	    ++ip->cur;
 	  len = ip->cur - tok;
-	  SKIP_WHITE_SPACE (ip->cur);
+	  cpp_skip_hspace (pfile);
 	  if (paren)
 	    {
 	      if (*ip->cur != ')')

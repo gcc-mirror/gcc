@@ -787,6 +787,7 @@ macarg (pfile, rest_args)
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
   pfile->no_macro_expand++;
+  CPP_OPTIONS (pfile)->no_line_commands++;
   for (;;)
     {
       token = cpp_get_token (pfile);
@@ -824,6 +825,7 @@ macarg (pfile, rest_args)
 
 done:
   CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
+  CPP_OPTIONS (pfile)->no_line_commands--;
   pfile->no_macro_expand--;
 
   return token;

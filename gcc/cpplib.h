@@ -72,19 +72,9 @@ enum cpp_token {
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
-/* A parse_marker indicates a previous position,
-   which we can backtrack to. */
-
-struct parse_marker {
-  cpp_buffer *buf;
-  struct parse_marker *next;
-  int position;
-};
-
-extern void parse_set_mark PARAMS ((struct parse_marker *, cpp_reader *));
-extern void parse_clear_mark PARAMS ((struct parse_marker *));
-extern void parse_goto_mark PARAMS((struct parse_marker *, cpp_reader *));
-extern void parse_move_mark PARAMS((struct parse_marker *, cpp_reader *));
+extern void parse_set_mark	PARAMS ((cpp_reader *));
+extern void parse_clear_mark	PARAMS ((cpp_reader *));
+extern void parse_goto_mark	PARAMS ((cpp_reader *));
 
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
@@ -95,15 +85,13 @@ extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 /* This frees resources used by PFILE. */
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
-/* If we have a huge buffer, may need to cache more recent counts */
-#define CPP_LINE_BASE(BUF) ((BUF)->buf + (BUF)->line_base)
-
 struct cpp_buffer
 {
   unsigned char *cur;	 /* current position */
   unsigned char *rlimit; /* end of valid data */
   unsigned char *buf;	 /* entire buffer */
   unsigned char *alimit; /* end of allocated buffer */
+  unsigned char *line_base; /* start of current line */
 
   struct cpp_buffer *prev;
 
@@ -120,13 +108,13 @@ struct cpp_buffer
      to record control macros. */
   struct include_hash *ihash;
 
-  long line_base;
   long lineno; /* Line number at CPP_LINE_BASE. */
   long colno; /* Column number at CPP_LINE_BASE. */
+  long mark;  /* Saved position for lengthy backtrack. */
   parse_underflow_t underflow;
   parse_cleanup_t cleanup;
   void *data;
-  struct parse_marker *marks;
+  
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
   struct if_stack *if_stack;
@@ -289,8 +277,12 @@ struct cpp_reader
 #define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
-#define CPP_OPTIONS(PFILE) ((PFILE)->opts)
+/* Advance the current line by one. */
+#define CPP_BUMP_BUFFER_LINE(PBUF) ((PBUF)->lineno++,\
+				    (PBUF)->line_base = (PBUF)->cur)
+#define CPP_BUMP_LINE(PFILE) CPP_BUMP_BUFFER_LINE(CPP_BUFFER(PFILE))
 
+#define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 /* The bottom of the buffer stack. */
