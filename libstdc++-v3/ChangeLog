@@ -1,3 +1,11 @@
+2004-12-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Add has_nothrow_constructor.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_constructor/has_nothrow_constructor.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_constructor/typedefs.cc: Likewise.
+
 2004-12-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.host (aix4*|aix5*): Add atomic_word_dir.
