@@ -32,7 +32,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch"
+  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli,parallel_branch"
   (const_string "binary"))
 
 (define_attr "pa_combine_type"
@@ -74,7 +74,7 @@
 
 ;; For conditional branches.
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -82,7 +82,7 @@
 ;; Disallow instructions which use the FPU since they will tie up the FPU
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,parallel_branch")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -90,7 +90,7 @@
 ;; For calls and millicode calls.  Allow unconditional branches in the
 ;; delay slot.
 (define_attr "in_call_delay" "false,true"
-  (cond [(and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
+  (cond [(and (eq_attr "type" "!uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
 	      (eq_attr "length" "4"))
 	   (const_string "true")
 	 (eq_attr "type" "uncond_branch")
@@ -110,7 +110,7 @@
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 ;; Return and other similar instructions.
-(define_delay (eq_attr "type" "branch,parallel_branch")
+(define_delay (eq_attr "type" "btable_branch,branch,parallel_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Floating point conditional branch delay slot description and
@@ -505,7 +505,7 @@
 ;; to assume have zero latency.
 (define_insn_reservation "Z2" 0
   (and
-    (eq_attr "type" "!load,fpload,store,fpstore,uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch,fpcc,fpalu,fpmulsgl,fpmuldbl,fpsqrtsgl,fpsqrtdbl,fpdivsgl,fpdivdbl")
+    (eq_attr "type" "!load,fpload,store,fpstore,uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch,fpcc,fpalu,fpmulsgl,fpmuldbl,fpsqrtsgl,fpsqrtdbl,fpdivsgl,fpdivdbl")
     (eq_attr "cpu" "8000"))
   "inm_8000,rnm_8000")
 
@@ -513,7 +513,7 @@
 ;; retirement unit.
 (define_insn_reservation "Z3" 0
   (and
-    (eq_attr "type" "uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
+    (eq_attr "type" "uncond_branch,btable_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
     (eq_attr "cpu" "8000"))
   "inm0_8000+inm1_8000,rnm0_8000+rnm1_8000")
 
@@ -2453,9 +2453,9 @@
 ;; Note since this pattern can be created at reload time (via movsi), all
 ;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
 (define_insn ""
-  [(set (match_operand 0 "pmode_register_operand" "=a")
+  [(set (match_operand 0 "pmode_register_operand" "=r")
 	(match_operand 1 "pic_label_operand" ""))]
-  ""
+  "TARGET_PA_20"
   "*
 {
   rtx xoperands[3];
@@ -2463,14 +2463,11 @@
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  if (TARGET_SOM || ! TARGET_GAS)
-    xoperands[2] = gen_label_rtx ();
+  xoperands[2] = gen_label_rtx ();
 
-  output_asm_insn (\"{bl|b,l} .+8,%0\", xoperands);
-  output_asm_insn (\"{depi|depwi} 0,31,2,%0\", xoperands);
-  if (TARGET_SOM || ! TARGET_GAS)
-    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			       CODE_LABEL_NUMBER (xoperands[2]));
+  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+				     CODE_LABEL_NUMBER (xoperands[2]));
+  output_asm_insn (\"mfia %0\", xoperands);
 
   /* If we're trying to load the address of a label that happens to be
      close, then we can use a shorter sequence.  */
@@ -2478,27 +2475,46 @@
       && INSN_ADDRESSES_SET_P ()
       && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
 	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
-    {
-      /* Prefixing with R% here is wrong, it extracts just 11 bits and is
-	 always non-negative.  */
-      if (TARGET_SOM || ! TARGET_GAS)
-	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
-      else
-	output_asm_insn (\"ldo %1-$PIC_pcrel$0+8(%0),%0\", xoperands);
-    }
+    output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
   else
     {
-      if (TARGET_SOM || ! TARGET_GAS)
-	{
-	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
-	}
-      else
-	{
-	  output_asm_insn (\"addil L%%%1-$PIC_pcrel$0+8,%0\", xoperands);
-	  output_asm_insn (\"ldo R%%%1-$PIC_pcrel$0+12(%0),%0\",
-	  		   xoperands);
-	}
+      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+    }
+  return \"\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])		; 8 or 12
+
+(define_insn ""
+  [(set (match_operand 0 "pmode_register_operand" "=a")
+	(match_operand 1 "pic_label_operand" ""))]
+  "!TARGET_PA_20"
+  "*
+{
+  rtx xoperands[3];
+  extern FILE *asm_out_file;
+
+  xoperands[0] = operands[0];
+  xoperands[1] = operands[1];
+  xoperands[2] = gen_label_rtx ();
+
+  output_asm_insn (\"bl .+8,%0\", xoperands);
+  output_asm_insn (\"depi 0,31,2,%0\", xoperands);
+  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+				     CODE_LABEL_NUMBER (xoperands[2]));
+
+  /* If we're trying to load the address of a label that happens to be
+     close, then we can use a shorter sequence.  */
+  if (GET_CODE (operands[1]) == LABEL_REF
+      && INSN_ADDRESSES_SET_P ()
+      && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
+    output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+  else
+    {
+      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
     }
   return \"\";
 }"
@@ -5735,9 +5751,6 @@
   ""
   "*
 {
-  if (GET_MODE (insn) == SImode)
-    return \"b %l0%#\";
-
   /* An unconditional branch which can reach its target.  */
   if (get_attr_length (insn) != 24
       && get_attr_length (insn) != 16)
@@ -5761,6 +5774,24 @@
 			 (const_int 24))]
 	  (const_int 4)))])
 
+;;; Hope this is only within a function...
+(define_insn "indirect_jump"
+  [(set (pc) (match_operand 0 "register_operand" "r"))]
+  "GET_MODE (operands[0]) == word_mode"
+  "bv%* %%r0(%0)"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+;;; This jump is used in branch tables where the insn length is fixed.
+;;; The length of this insn is adjusted if the delay slot is not filled.
+(define_insn "short_jump"
+  [(set (pc) (label_ref (match_operand 0 "" "")))
+   (const_int 0)]
+  ""
+  "b%* %l0%#"
+  [(set_attr "type" "btable_branch")
+   (set_attr "length" "4")])
+
 ;; Subroutines of "casesi".
 ;; operand 0 is index
 ;; operand 1 is the minimum bound
@@ -5782,14 +5813,13 @@
 
   if (operands[1] != const0_rtx)
     {
-      rtx reg = gen_reg_rtx (SImode);
+      rtx index = gen_reg_rtx (SImode);
 
       operands[1] = GEN_INT (-INTVAL (operands[1]));
       if (!INT_14_BITS (operands[1]))
 	operands[1] = force_reg (SImode, operands[1]);
-      emit_insn (gen_addsi3 (reg, operands[0], operands[1]));
-
-      operands[0] = reg;
+      emit_insn (gen_addsi3 (index, operands[0], operands[1]));
+      operands[0] = index;
     }
 
   /* In 64bit mode we must make sure to wipe the upper bits of the register
@@ -5797,38 +5827,118 @@
      high part of the register.  */
   if (TARGET_64BIT)
     {
-      rtx reg = gen_reg_rtx (DImode);
-      emit_insn (gen_extendsidi2 (reg, operands[0]));
-      operands[0] = gen_rtx_SUBREG (SImode, reg, 4);
+      rtx index = gen_reg_rtx (DImode);
+
+      emit_insn (gen_extendsidi2 (index, operands[0]));
+      operands[0] = gen_rtx_SUBREG (SImode, index, 4);
     }
 
   if (!INT_5_BITS (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
 
+  /* This branch prevents us finding an insn for the delay slot of the
+     following vectored branch.  It might be possible to use the delay
+     slot if an index value of -1 was used to transfer to the out-of-range
+     label.  In order to do this, we would have to output the -1 vector
+     element after the delay insn.  The casesi output code would have to
+     check if the casesi insn is in a delay branch sequence and output
+     the delay insn if one is found.  If this was done, then it might
+     then be worthwhile to split the casesi patterns to improve scheduling.
+     However, it's not clear that all this extra complexity is worth
+     the effort.  */
   emit_insn (gen_cmpsi (operands[0], operands[2]));
   emit_jump_insn (gen_bgtu (operands[4]));
+
   if (TARGET_BIG_SWITCH)
     {
-      rtx temp = gen_reg_rtx (SImode);
-      emit_move_insn (temp, gen_rtx_PLUS (SImode, operands[0], operands[0]));
-      operands[0] = temp;
+      if (TARGET_64BIT)
+	{
+          rtx tmp1 = gen_reg_rtx (DImode);
+          rtx tmp2 = gen_reg_rtx (DImode);
+
+          emit_jump_insn (gen_casesi64p (operands[0], operands[3],
+                                         tmp1, tmp2));
+	}
+      else
+	{
+	  rtx tmp1 = gen_reg_rtx (SImode);
+
+	  if (flag_pic)
+	    {
+	      rtx tmp2 = gen_reg_rtx (SImode);
+
+	      emit_jump_insn (gen_casesi32p (operands[0], operands[3],
+					     tmp1, tmp2));
+	    }
+	  else
+	    emit_jump_insn (gen_casesi32 (operands[0], operands[3], tmp1));
+	}
     }
-  emit_jump_insn (gen_casesi0 (operands[0], operands[3]));
+  else
+    emit_jump_insn (gen_casesi0 (operands[0], operands[3]));
   DONE;
 }")
 
+;;; The rtl for this pattern doesn't accurately describe what the insn
+;;; actually does, particularly when case-vector elements are exploded
+;;; in pa_reorg.  However, the initial SET in these patterns must show
+;;; the connection of the insn to the following jump table.
 (define_insn "casesi0"
-  [(set (pc) (plus:SI
-	       (mem:SI (plus:SI (pc)
-				(match_operand:SI 0 "register_operand" "r")))
-	       (label_ref (match_operand 1 "" ""))))]
+  [(set (pc) (mem:SI (plus:SI
+		       (mult:SI (match_operand:SI 0 "register_operand" "r")
+				(const_int 4))
+		       (label_ref (match_operand 1 "" "")))))]
   ""
-  "blr %0,%%r0\;nop"
+  "blr,n %0,%%r0\;nop"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-;; Need nops for the calls because execution is supposed to continue
-;; past; we don't want to nullify an instruction that we need.
+;;; 32-bit code, absolute branch table.
+(define_insn "casesi32"
+  [(set (pc) (mem:SI (plus:SI
+		       (mult:SI (match_operand:SI 0 "register_operand" "r")
+				(const_int 4))
+		       (label_ref (match_operand 1 "" "")))))
+   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+  "!TARGET_64BIT && TARGET_BIG_SWITCH"
+  "ldil L'%l1,%2\;ldo R'%l1(%2),%2\;{ldwx|ldw},s %0(%2),%2\;bv,n %%r0(%2)"
+  [(set_attr "type" "multi")
+   (set_attr "length" "16")])
+
+;;; 32-bit code, relative branch table.
+(define_insn "casesi32p"
+  [(set (pc) (mem:SI (plus:SI
+		       (mult:SI (match_operand:SI 0 "register_operand" "r")
+				(const_int 4))
+		       (label_ref (match_operand 1 "" "")))))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))
+   (clobber (match_operand:SI 3 "register_operand" "=&r"))]
+  "!TARGET_64BIT && TARGET_BIG_SWITCH"
+  "{bl .+8,%2\;depi 0,31,2,%2|mfia %2}\;ldo {16|20}(%2),%2\;\
+{ldwx|ldw},s %0(%2),%3\;{addl|add,l} %2,%3,%3\;bv,n %%r0(%3)"
+  [(set_attr "type" "multi")
+   (set (attr "length")
+     (if_then_else (ne (symbol_ref "TARGET_PA_20") (const_int 0))
+	(const_int 20)
+	(const_int 24)))])
+
+;;; 64-bit code, 32-bit relative branch table.
+(define_insn "casesi64p"
+  [(set (pc) (mem:DI (plus:DI
+		       (mult:DI (sign_extend:DI
+				  (match_operand:SI 0 "register_operand" "r"))
+				(const_int 8))
+		       (label_ref (match_operand 1 "" "")))))
+   (clobber (match_operand:DI 2 "register_operand" "=&r"))
+   (clobber (match_operand:DI 3 "register_operand" "=&r"))]
+  "TARGET_64BIT && TARGET_BIG_SWITCH"
+  "mfia %2\;ldo 24(%2),%2\;ldw,s %0(%2),%3\;extrd,s %3,63,32,%3\;\
+add,l %2,%3,%3\;bv,n %%r0(%3)"
+  [(set_attr "type" "multi")
+   (set_attr "length" "24")])
+
+
+;; Call patterns.
 ;;- jump to subroutine
 
 (define_expand "call"
@@ -7136,14 +7246,6 @@
   emit_barrier ();
   DONE;
 }")
-
-;;; Hope this is only within a function...
-(define_insn "indirect_jump"
-  [(set (pc) (match_operand 0 "register_operand" "r"))]
-  "GET_MODE (operands[0]) == word_mode"
-  "bv%* %%r0(%0)"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
 
 ;;; Operands 2 and 3 are assumed to be CONST_INTs.
 (define_expand "extzv"
