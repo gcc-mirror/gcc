@@ -1,3 +1,8 @@
+Thu May 21 12:23:17 1998  Per Bothner  <bothner@cygnus.com>
+
+	* function.c (init_function_start):  Don't call emit_line_note if
+	lineno is 0.  (Can happen when compiling Java .class files.)
+
 Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): Fix RELOAD_FOR_INPUT
