@@ -6,6 +6,7 @@
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* configure.ac: Add AM_MAINTAINER_MODE and AM_PROG_CC_C_O.
+	* Makefile.in (configure): Add @MAINT@ infront of configure.ac
 
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
