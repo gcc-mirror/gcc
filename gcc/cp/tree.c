@@ -1618,7 +1618,7 @@ walk_tree (tp, func, data)
 
   code = TREE_CODE (*tp);
 
-  /* Handle commmon cases up front.  */
+  /* Handle common cases up front.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
       || TREE_CODE_CLASS (code) == 'r'
       || TREE_CODE_CLASS (code) == 's')
@@ -1632,7 +1632,22 @@ walk_tree (tp, func, data)
       /* For statements, we also walk the chain so that we cover the
 	 entire statement tree.  */
       if (statement_code_p (code))
-	WALK_SUBTREE (TREE_CHAIN (*tp));
+	{
+	  if (code == DECL_STMT 
+	      && DECL_STMT_DECL (*tp) 
+	      && TREE_CODE_CLASS (TREE_CODE (DECL_STMT_DECL (*tp))) == 'd')
+	    {
+	      /* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
+		 into declarations that are just mentioned, rather than
+		 declared; they don't really belong to this part of the tree.
+		 And, we can see cycles: the initializer for a declaration can
+		 refer to the declaration itself.  */
+	      WALK_SUBTREE (DECL_INITIAL (DECL_STMT_DECL (*tp)));
+	      WALK_SUBTREE (DECL_SIZE (DECL_STMT_DECL (*tp)));
+	    }
+
+	  WALK_SUBTREE (TREE_CHAIN (*tp));
+	}
 
       /* We didn't find what we were looking for.  */
       return NULL_TREE;
@@ -1640,8 +1655,6 @@ walk_tree (tp, func, data)
   else if (TREE_CODE_CLASS (code) == 'd')
     {
       WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (DECL_INITIAL (*tp));
-      WALK_SUBTREE (DECL_SIZE (*tp));
 
       /* We didn't find what we were looking for.  */
       return NULL_TREE;

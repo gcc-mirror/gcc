@@ -1,5 +1,10 @@
 1999-12-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (walk_tree): Don't recurse into DECL_INITIAL or DECL_SIZE
+	unless we're declaring the variable in question.
+
+1999-12-06  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl.c (init_decl_processing): #if 0 last patch.
 	(finish_function): Likewise.
 
