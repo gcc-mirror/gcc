@@ -982,14 +982,22 @@
   [(set_attr "type" "load,pload,load")
    (set_attr "hit_stack" "yes")])
 
+;; These two patterns can happen as the result of optimization, when
+;; comparisons get simplified to a move of zero or 1 into the T reg.
+;; They don't disappear completely, because the T reg is a fixed hard reg.
 (define_insn "clrt"
   [(set (reg:SI 18) (const_int 0))]
   ""
   "clrt")
 
+(define_insn "sett"
+  [(set (reg:SI 18) (const_int 1))]
+  ""
+  "sett")
+
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,r,r,r,m,<,xl,xl,t,r")
-	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,m,xl,t,r,xl,r,>,r,i"))]
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,m,xl,t,r,xl,r,>,z,i"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)"
   "@
