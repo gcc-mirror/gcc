@@ -2910,6 +2910,12 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       vtbl = build_indirect_ref (vtbl, NULL);
       e2 = build_array_ref (vtbl, idx);
 
+      /* When using function descriptors, the address of the
+	 vtable entry is treated as a function pointer.  */
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	e2 = build1 (NOP_EXPR, TREE_TYPE (e2),
+		     build_unary_op (ADDR_EXPR, e2, /*noconvert=*/1));
+
       TREE_TYPE (e2) = TREE_TYPE (e3);
       e1 = build_conditional_expr (e1, e2, e3);
       

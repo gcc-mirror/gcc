@@ -1597,6 +1597,18 @@ In general, you should not have to define this macro.  On architectures
 in which function addresses are always even, according to
 @code{FUNCTION_BOUNDARY}, GCC will automatically define this macro to
 @code{ptrmemfunc_vbit_in_pfn}.
+
+@findex TARGET_VTABLE_USES_DESCRIPTORS
+@item TARGET_VTABLE_USES_DESCRIPTORS
+Normally, the C++ compiler uses function pointers in vtables.  This
+macro allows the target to change to use ``function descriptors'' 
+instead.  Function descriptors are found on targets for whom a
+function pointer is actually a small data structure.  Normally the
+data structure consists of the actual code address plus a data 
+pointer to which the function's data is relative.
+
+If vtables are used, the value of this macro should be the number
+of words that the function descriptor occupies.
 @end table
 
 @node Escape Sequences
@@ -6011,6 +6023,12 @@ bytes at @var{ptr}.  @var{ptr} will be a C expression of type
 If the assembler has a @code{.ascii} pseudo-op as found in the
 Berkeley Unix assembler, do not define the macro
 @code{ASM_OUTPUT_ASCII}.
+
+@findex ASM_OUTPUT_FDESC
+@item ASM_OUTPUT_FDESC (@var{stream}, @var{decl}, @var{n})
+A C statement to output word @var{n} of a function descriptor for
+@var{decl}.  This must be defined if @code{TARGET_VTABLE_USES_DESCRIPTORS}
+is defined, and is otherwise unused.
 
 @findex CONSTANT_POOL_BEFORE_FUNCTION
 @item CONSTANT_POOL_BEFORE_FUNCTION

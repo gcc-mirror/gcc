@@ -1372,9 +1372,11 @@ get_dispatch_table (type, this_class_addr)
 {
   int abstract_p = CLASS_ABSTRACT (TYPE_NAME (type));
   tree vtable = get_dispatch_vector (type);
-  int i;
+  int i, j;
   tree list = NULL_TREE;
   int nvirtuals = TREE_VEC_LENGTH (vtable);
+  int arraysize;
+
   for (i = nvirtuals;  --i >= 0; )
     {
       tree method = TREE_VEC_ELT (vtable, i);
@@ -1383,27 +1385,52 @@ get_dispatch_table (type, this_class_addr)
 	  if (! abstract_p)
 	    warning_with_decl (method,
 			       "abstract method in non-abstract class");
-	  method = null_pointer_node;
+
+	  if (TARGET_VTABLE_USES_DESCRIPTORS)
+	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
+	      list = tree_cons (NULL_TREE, null_pointer_node, list);
+	  else
+	    list = tree_cons (NULL_TREE, null_pointer_node, list);
 	}
       else
 	{
 	  if (!DECL_RTL_SET_P (method))
 	    make_decl_rtl (method, NULL);
-	  method = build1 (ADDR_EXPR, nativecode_ptr_type_node, method);
+
+	  if (TARGET_VTABLE_USES_DESCRIPTORS)
+	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
+	      {
+		tree fdesc = build (FDESC_EXPR, nativecode_ptr_type_node, 
+				    method, build_int_2 (j, 0));
+		TREE_CONSTANT (fdesc) = 1;
+	        list = tree_cons (NULL_TREE, fdesc, list);
+	      }
+	  else
+	    list = tree_cons (NULL_TREE,
+			      build1 (ADDR_EXPR, nativecode_ptr_type_node,
+				      method),
+			      list);
 	}
-      list = tree_cons (NULL_TREE /*DECL_VINDEX (method) + 2*/,
-			method, list);
     }
+
   /* Dummy entry for compatibility with G++ -fvtable-thunks.  When
      using the Boehm GC we sometimes stash a GC type descriptor
      there. We set the PURPOSE to NULL_TREE not to interfere (reset)
      the emitted byte count during the output to the assembly file. */
-  list = tree_cons (NULL_TREE, get_boehm_type_descriptor (type),
-		    list);
+  for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
+    list = tree_cons (NULL_TREE, null_pointer_node, list);
+  list = tree_cons (NULL_TREE, get_boehm_type_descriptor (type), list);
+
+  for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
+    list = tree_cons (NULL_TREE, null_pointer_node, list);
   list = tree_cons (integer_zero_node, this_class_addr, list);
-  return build (CONSTRUCTOR, build_prim_array_type (nativecode_ptr_type_node,
-						    nvirtuals + 2),
-		 NULL_TREE, list);
+
+  arraysize = nvirtuals + 2;
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
+  return build (CONSTRUCTOR,
+		build_prim_array_type (nativecode_ptr_type_node, arraysize),
+		NULL_TREE, list);
 }
 
 void
@@ -1733,13 +1760,37 @@ build_dtable_decl (type)
      TYPE. */
   if (current_class == type)
     {
-      tree dummy = NULL_TREE, aomt, n;
+      tree dummy = NULL_TREE;
+      int n;
 
       dtype = make_node (RECORD_TYPE);
+
       PUSH_FIELD (dtype, dummy, "class", class_ptr_type);
-      n = build_int_2 (TREE_VEC_LENGTH (get_dispatch_vector (type)), 0);
-      aomt = build_array_type (ptr_type_node, build_index_type (n));
-      PUSH_FIELD (dtype, dummy, "methods", aomt);
+      for (n = 1; n < TARGET_VTABLE_USES_DESCRIPTORS; ++n)
+	{
+	  tree tmp_field = build_decl (FIELD_DECL, NULL_TREE, ptr_type_node);
+	  TREE_CHAIN (dummy) = tmp_field;
+	  DECL_CONTEXT (tmp_field) = dtype;
+	  DECL_ARTIFICIAL (tmp_field) = 1;
+	  dummy = tmp_field;
+	}
+
+      PUSH_FIELD (dtype, dummy, "gc_descr", ptr_type_node);
+      for (n = 1; n < TARGET_VTABLE_USES_DESCRIPTORS; ++n)
+	{
+	  tree tmp_field = build_decl (FIELD_DECL, NULL_TREE, ptr_type_node);
+	  TREE_CHAIN (dummy) = tmp_field;
+	  DECL_CONTEXT (tmp_field) = dtype;
+	  DECL_ARTIFICIAL (tmp_field) = 1;
+	  dummy = tmp_field;
+	}
+
+      n = TREE_VEC_LENGTH (get_dispatch_vector (type));
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	n *= TARGET_VTABLE_USES_DESCRIPTORS;
+
+      PUSH_FIELD (dtype, dummy, "methods",
+		  build_prim_array_type (nativecode_ptr_type_node, n));
       layout_type (dtype);
     }
   else

@@ -1,3 +1,8 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Update for ia64 c++ abi.
+	* g++.old-deja/g++.abi/vtable2.C: Likewise.
+
 2001-09-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	Table-driven attributes.

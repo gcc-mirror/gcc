@@ -127,6 +127,15 @@ void _ZN2S32s3Ev ();
 void _ZN2S42s1Ev ();
 }
 
+// IA-64 uses function descriptors not function pointers in its vtables.
+#if defined __ia64__
+#define CMP_VPTR(A, B)	(*(void **)(A) == *(void **)(B))
+#define INC_VPTR(A)	((A) += 2)
+#else
+#define CMP_VPTR(A, B)	(*(A) == (ptrdiff_t)(B))
+#define INC_VPTR(A)	((A) += 1)
+#endif
+
 int main ()
 {
   S4 s4;
@@ -148,10 +157,12 @@ int main ()
     return 4;
   // Skip the RTTI entry.
   vtbl++;
-  if (*vtbl++ != (ptrdiff_t) &_ZN2S32s3Ev)
+  if (! CMP_VPTR (vtbl, &_ZN2S32s3Ev))
     return 5;
-  if (*vtbl++ != (ptrdiff_t) &_ZN2S42s1Ev)
+  INC_VPTR (vtbl);
+  if (! CMP_VPTR (vtbl, &_ZN2S42s1Ev))
     return 6;
+  INC_VPTR (vtbl);
   // The S1 vbase offset.
   if (*vtbl++ != 0)
     return 7;
@@ -169,8 +180,8 @@ int main ()
   // Skip the RTTI entry.
   vtbl++;
   // Skip the remaining virtual functions -- they are thunks.
-  vtbl++;
-  vtbl++;
+  INC_VPTR (vtbl);
+  INC_VPTR (vtbl);
 }
 
 #else /* !(defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100) */
