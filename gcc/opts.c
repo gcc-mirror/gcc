@@ -100,7 +100,7 @@ bool warn_shadow;
 
 /* Nonzero means warn about constructs which might not be
    strict-aliasing safe.  */
-bool warn_strict_aliasing;
+int warn_strict_aliasing;
 
 /* True to warn if a switch on an enum, that does not have a default
    case, fails to have a case for every enum value.  */
@@ -747,6 +747,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_Wstrict_aliasing:
+    case OPT_Wstrict_aliasing_:
       warn_strict_aliasing = value;
       break;
 
