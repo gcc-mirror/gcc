@@ -235,7 +235,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   if (!optimize)
     {
-      can_reach_end = calculate_can_reach_end (last_insn, 1, 0);
+      /* CAN_REACH_END is persistent for each function.  Once set it should
+	 not be cleared.  This is especially true for the case where we
+	 delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
+	 the front-end before compiling each function.  */
+      if (calculate_can_reach_end (last_insn, 1, 0))
+	can_reach_end = 1;
 
       /* Zero the "deleted" flag of all the "deleted" insns.  */
       for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -2068,7 +2073,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
     }
 #endif
 
-  can_reach_end = calculate_can_reach_end (last_insn, 0, 1);
+  /* CAN_REACH_END is persistent for each function.  Once set it should
+     not be cleared.  This is especially true for the case where we
+     delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
+     the front-end before compiling each function.  */
+  if (calculate_can_reach_end (last_insn, 0, 1))
+    can_reach_end = 1;
 
   /* Show JUMP_CHAIN no longer valid.  */
   jump_chain = 0;
