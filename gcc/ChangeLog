@@ -1,3 +1,7 @@
+2004-01-09  Paul Brook  <paul@codesourcery.com>
+
+	* simplify-rtx.c (simplify_plus_minus): Always generate canonical form.
+
 2004-01-09  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR target/13585

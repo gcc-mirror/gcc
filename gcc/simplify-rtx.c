@@ -2250,7 +2250,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
   int n_ops = 2, input_ops = 2, input_consts = 0, n_consts;
-  int first, negate, changed;
+  int first, changed;
   int i, j;
 
   memset (ops, 0, sizeof ops);
@@ -2460,18 +2460,12 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	  || (n_ops + n_consts == input_ops && n_consts <= input_consts)))
     return NULL_RTX;
 
-  /* Put a non-negated operand first.  If there aren't any, make all
-     operands positive and negate the whole thing later.  */
+  /* Put a non-negated operand first, if possible.  */
 
-  negate = 0;
   for (i = 0; i < n_ops && ops[i].neg; i++)
     continue;
   if (i == n_ops)
-    {
-      for (i = 0; i < n_ops; i++)
-	ops[i].neg = 0;
-      negate = 1;
-    }
+    ops[0].op = gen_rtx_NEG (mode, ops[0].op);
   else if (i != 0)
     {
       tem = ops[0].op;
@@ -2486,7 +2480,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
     result = gen_rtx_fmt_ee (ops[i].neg ? MINUS : PLUS,
 			     mode, result, ops[i].op);
 
-  return negate ? gen_rtx_NEG (mode, result) : result;
+  return result;
 }
 
 /* Like simplify_binary_operation except used for relational operators.
