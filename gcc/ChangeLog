@@ -1,3 +1,7 @@
+2003-06-09  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (gen_block_redirect): Use locators.
+
 2003-06-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (THUMB_PRINT_OPERAND_ADDRESS): Use %wd in format and remove
