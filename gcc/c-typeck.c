@@ -3645,7 +3645,10 @@ build_compound_expr (list)
 	list = TREE_OPERAND (list, 0);
 #endif
 
-	return TREE_VALUE (list);
+      /* Don't let (0, 0) be null pointer constant.  */
+      if (integer_zerop (TREE_VALUE (list)))
+	return non_lvalue (TREE_VALUE (list));
+      return TREE_VALUE (list);
     }
 
   if (TREE_CHAIN (list) != 0 && TREE_CHAIN (TREE_CHAIN (list)) == 0)
