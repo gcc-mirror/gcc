@@ -1,3 +1,7 @@
+Thu Oct 28 12:28:48 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* rtl.texi: Delete explicit Prev, Up and Next entries in "@node"s.
+
 Thu Oct 28 11:05:13 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.md (casesi_insn): Add a clobber of the condition code
