@@ -20,7 +20,7 @@ typedef void *__gnuc_va_list;
 #define __va_ellipsis
 #endif
 
-#ifdef __h8300__
+#ifdef __H8300__
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 #else
