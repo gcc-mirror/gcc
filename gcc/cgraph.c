@@ -139,7 +139,7 @@ static int eq_node (const void *, const void *);
 static hashval_t
 hash_node (const void *p)
 {
-  return ((hashval_t) DECL_UID (((struct cgraph_node *) p)->decl));
+  return htab_hash_pointer (((struct cgraph_node *) p)->decl);
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -147,7 +147,7 @@ hash_node (const void *p)
 static int
 eq_node (const void *p1, const void *p2)
 {
-  return (DECL_UID (((struct cgraph_node *) p1)->decl) == (unsigned int)p2);
+  return (void *)((struct cgraph_node *) p1)->decl == p2;
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
@@ -181,10 +181,8 @@ cgraph_node (tree decl)
     cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
 
   slot = (struct cgraph_node **)
-    htab_find_slot_with_hash (cgraph_hash,
-			      (void *)DECL_UID (decl),
-			      (hashval_t)DECL_UID (decl),
-			      INSERT);
+    htab_find_slot_with_hash (cgraph_hash, decl,
+			      htab_hash_pointer (decl), INSERT);
   if (*slot)
     return *slot;
 
@@ -326,10 +324,8 @@ cgraph_remove_node (struct cgraph_node *node)
   if (node->next)
     node->next->previous = node->previous;
   slot = 
-    htab_find_slot_with_hash (cgraph_hash,
-			      (void *)DECL_UID (node->decl),
-			      (hashval_t)DECL_UID (node->decl),
-			      NO_INSERT);
+    htab_find_slot_with_hash (cgraph_hash, node->decl,
+			      htab_hash_pointer (node->decl), NO_INSERT);
   if (*slot == node)
     {
       if (node->next_clone)
@@ -532,7 +528,7 @@ dump_cgraph (FILE *f)
 static hashval_t
 cgraph_varpool_hash_node (const void *p)
 {
-  return ((hashval_t) DECL_UID (((struct cgraph_varpool_node *) p)->decl));
+  return htab_hash_pointer (((struct cgraph_varpool_node *) p)->decl);
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -540,9 +536,7 @@ cgraph_varpool_hash_node (const void *p)
 static int
 eq_cgraph_varpool_node (const void *p1, const void *p2)
 {
-  return (DECL_UID (((struct cgraph_varpool_node *) p1)->decl)
-	  == (unsigned int) p2);
-
+  return (void *)((struct cgraph_varpool_node *) p1)->decl == p2;
 }
 
 /* Return cgraph_varpool node assigned to DECL.  Create new one when needed.  */
@@ -559,10 +553,8 @@ cgraph_varpool_node (tree decl)
     cgraph_varpool_hash = htab_create_ggc (10, cgraph_varpool_hash_node,
 				           eq_cgraph_varpool_node, NULL);
   slot = (struct cgraph_varpool_node **)
-    htab_find_slot_with_hash (cgraph_varpool_hash,
-			      (void *)DECL_UID (decl),
-			      (hashval_t)DECL_UID (decl),
-			      INSERT);
+    htab_find_slot_with_hash (cgraph_varpool_hash, decl,
+			      htab_hash_pointer (decl), INSERT);
   if (*slot)
     return *slot;
   node = ggc_alloc_cleared (sizeof (*node));

@@ -1,3 +1,10 @@
+2004-05-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* cgraph.c (hash_node, eq_node, cgraph_node, cgraph_remove_node)
+	(cgraph_varpool_hash_node, eq_cgraph_varpool_node)
+	(cgraph_varpool_node): Hash on the pointer to the decl, not
+	the DECL_UID.  Fixes 64-bit bootstrap failure.
+
 2004-05-20  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.md (ite_ne_zeroextractsi, ite_ne_zeroextractsi_shifted): Ensure
