@@ -1,3 +1,50 @@
+Sat Dec 12 20:13:19 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (build_class_ref):  Handle PRIMTYPE.class if
+	flag_emit_class_files.
+	* expr.c (expand_java_field_op):  Don't optimize java.lang.XXX.TYPE
+	if flag_emit_class_files.
+	* parse.y (java_complete_tree):  Pre-liminary support for
+	COMPONENT_REF - only to handle PRIMCLASS.TYPE.
+
+	* parse.y (patch_synchronized_statement):   Don't call monitorexit
+ 	unless block CAN_COMPLETE_NORMALLY.  Propagate that flag properly.
+
+	* java-tree.h (DECL_LOCAL_STATIC_VALUE):  Removed - no longer used.
+
+	* zipfile.h (opendir_in_zip):  New declaration.
+	* jcf-io.c (saw_java_source):  Moved to jcf-parse.c.
+	(opendir_in_zip):  New function, using code from open_in_zip.
+	(open_in_zip):  Call opendir_in_zip.
+	(find_class):  Remove no-longer-used do_class_file parameter,
+	but add source_ok parameter.  Change logic so if we find a .java file,
+	we don't look for .class in later classpath emtries.
+	* jcf-parse.c (load_class):  Pass saw_java_source to find_class.
+	(jcf_figure_file_type):  Only call open_in_zip if correct magic number.
+	* gjavah.c: Update call to find_class.
+	* jcf-dump.c:  Likewise.
+
+	* jcf-write.c (put_linenumber):  Handle duplicate line numbers.
+	(generate_bytecode_insns):  For EXPR_WITH_FILE_LOCATION, do
+	nothing if body is empty_stmt_node.
+	Various little fixes so SP gets correctly adjusted.
+	For NEW_ARRAY_INIT, handle IGNORE_TARGET.
+	For CALL_EXPR, test if static first.
+	(generate_classfile):  Ignore fields that are DECL_ARTIFICIAL,
+	such as the ones we create for Object and Class.
+	Set and restore current_function_decl.
+	* parse.y:  Check/set IS_AN_IMPORT_ON_DEMAND_P in read_import_dir.
+	(note_possible_classname):  New function.
+	(read_import_entry):  Removed.  Merged with read_import_dir.
+	(read_import_dir):  Don't call find_class - that only gives us
+	the first classpath entry having the needed package.
+	Use the struct buffer data structure from buffer.h.
+	(read_import_dir, find_in_imports_on_demand):  The remembered
+	class names now use '.' (not '/') as package separator.
+
+	* parse.y (java_complete_expand_methods):  Call write_classfile
+	here, and not in java_expand_classes (which only gets first class).
+
 Sat Dec 12 19:46:04 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
 
 	* parse.y (<type_declaration>):  Do maybe_generate_clinit last.
