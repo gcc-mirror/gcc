@@ -3045,6 +3045,14 @@ an ordinary C function call is being processed.  Thus, each time this
 macro is called, either @var{libname} or @var{fntype} is nonzero, but
 never both of them at once.
 
+@findex INIT_CUMULATIVE_LIBCALL_ARGS
+@item INIT_CUMULATIVE_LIBCALL_ARGS (@var{cum}, @var{mode}, @var{libname})
+Like @code{INIT_CUMULATIVE_ARGS} but only used for outgoing libcalls,
+it gets a @code{MODE} argument instead of @var{fntype}, that would be
+@code{NULL}.  @var{indirect} would always be zero, too.  If this macro
+is not defined, @code{INIT_CUMULATIVE_ARGS (cum, NULL_RTX, libname,
+0)} is used instead.
+
 @findex INIT_CUMULATIVE_INCOMING_ARGS
 @item INIT_CUMULATIVE_INCOMING_ARGS (@var{cum}, @var{fntype}, @var{libname})
 Like @code{INIT_CUMULATIVE_ARGS} but overrides it for the purposes of
