@@ -175,9 +175,11 @@ static int current_function_returns_real;
 /* This is the basic stack record.  TOP is an index into REG[] such
    that REG[TOP] is the top of stack.  If TOP is -1 the stack is empty.
 
-   If TOP is -2 the stack is not yet initialized: reg_set indicates
-   which registers are live.  Stack initialization consists of placing
-   each live reg in array `reg' and setting `top' appropriately. */
+   If TOP is -2, REG[] is not yet initialized.  Stack initialization
+   consists of placing each live reg in array `reg' and setting `top'
+   appropriately.
+
+   REG_SET indicates which registers are live.  */
 
 typedef struct stack_def
 {
@@ -943,7 +945,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
 
       if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i]))
 	  && operand_matches[i] == -1
-	  && ! find_regno_note (insn, REG_DEAD, REGNO (operands[i])))
+	  && find_regno_note (insn, REG_DEAD, REGNO (operands[i])) == NULL_RTX)
 	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, operands[i],
 				    REG_NOTES (insn));
 
@@ -1505,7 +1507,8 @@ emit_pop_insn (insn, regstack, reg, when)
 		     FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
 
   pop_insn = (*when) (pop_rtx, insn);
-  PUT_MODE (pop_insn, VOIDmode);
+  /* ??? This used to be VOIDmode, but that seems wrong. */
+  PUT_MODE (pop_insn, QImode);
 
   REG_NOTES (pop_insn) = gen_rtx (EXPR_LIST, REG_DEAD,
 				  FP_mode_reg[FIRST_STACK_REG][(int) DFmode],
@@ -1528,48 +1531,68 @@ emit_pop_insn (insn, regstack, reg, when)
    If REG is already at the top of the stack, no insn is emitted. */
 
 static void
-emit_hard_swap_insn (insn, regstack, hard_regno, when)
-     rtx insn;
-     stack regstack;
-     int hard_regno;
-     rtx (*when)();
-{
-  rtx gen_swapdf();
-  rtx swap_rtx, swap_insn;
-  int tmp, other;
-
-  if (hard_regno == FIRST_STACK_REG)
-    return;
-
-  swap_rtx = gen_swapdf (FP_mode_reg[hard_regno][(int) DFmode],
-			 FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
-  swap_insn = (*when) (swap_rtx, insn);
-  PUT_MODE (swap_insn, VOIDmode);
-
-  other = regstack->top - (hard_regno - FIRST_STACK_REG);
-
-  tmp = regstack->reg[other];
-  regstack->reg[other] = regstack->reg[regstack->top];
-  regstack->reg[regstack->top] = tmp;
-}
-
-/* Emit an insn before or after INSN to swap virtual register REG with the
-   top of stack.  See comments before emit_hard_swap_insn. */
-
-static void
-emit_swap_insn (insn, regstack, reg, when)
+emit_swap_insn (insn, regstack, reg)
      rtx insn;
      stack regstack;
      rtx reg;
-     rtx (*when)();
 {
   int hard_regno;
+  rtx gen_swapdf();
+  rtx swap_rtx, swap_insn;
+  int tmp, other_reg;		/* swap regno temps */
+  rtx i1;			/* the stack-reg insn prior to INSN */
+  rtx i1set = NULL_RTX;		/* the SET rtx within I1 */
 
   hard_regno = get_hard_regnum (regstack, reg);
+
   if (hard_regno < FIRST_STACK_REG)
     abort ();
+  if (hard_regno == FIRST_STACK_REG)
+    return;
 
-  emit_hard_swap_insn (insn, regstack, hard_regno, when);
+  other_reg = regstack->top - (hard_regno - FIRST_STACK_REG);
+
+  tmp = regstack->reg[other_reg];
+  regstack->reg[other_reg] = regstack->reg[regstack->top];
+  regstack->reg[regstack->top] = tmp;
+
+  /* Find the previous insn involving stack regs, but don't go past
+     any labels, calls or jumps.  */
+  i1 = prev_nonnote_insn (insn);
+  while (i1 && GET_CODE (i1) == INSN && GET_MODE (i1) != QImode)
+    i1 = prev_nonnote_insn (i1);
+
+  if (i1)
+    i1set = single_set (i1);
+
+  if (i1set)
+    {
+      rtx i2;			/* the stack-reg insn prior to I1 */
+      rtx i1src = *get_true_reg (&SET_SRC (i1set));
+      rtx i1dest = *get_true_reg (&SET_DEST (i1set));
+
+      /* If the previous register stack push was from the reg we are to
+	 swap with, omit the swap. */
+
+      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == FIRST_STACK_REG
+	  && GET_CODE (i1src) == REG && REGNO (i1src) == hard_regno - 1
+	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
+	return;
+
+      /* If the previous insn wrote to the reg we are to swap with,
+	 omit the swap.  */
+
+      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == hard_regno
+	  && GET_CODE (i1src) == REG && REGNO (i1src) == FIRST_STACK_REG
+	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
+	return;
+    }
+
+  swap_rtx = gen_swapdf (FP_mode_reg[hard_regno][(int) DFmode],
+			 FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
+  swap_insn = emit_insn_after (swap_rtx, i1);
+  /* ??? This used to be VOIDmode, but that seems wrong. */
+  PUT_MODE (swap_insn, QImode);
 }
 
 /* Handle a move to or from a stack register in PAT, which is in INSN.
@@ -1660,7 +1683,7 @@ move_for_stack_reg (insn, regstack, pat)
 	 only top of stack may be saved, emit an exchange first if
 	 needs be. */
 
-      emit_swap_insn (insn, regstack, *src, emit_insn_before);
+      emit_swap_insn (insn, regstack, *src);
 
       note = find_regno_note (insn, REG_DEAD, REGNO (*src));
       if (note)
@@ -1694,6 +1717,34 @@ move_for_stack_reg (insn, regstack, pat)
     abort ();
 }
 
+void
+swap_rtx_condition (pat)
+     rtx pat;
+{
+  register char *fmt;
+  register int i;
+
+  if (GET_RTX_CLASS (GET_CODE (pat)) == '<')
+    {
+      PUT_CODE (pat, swap_condition (GET_CODE (pat)));
+      return;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (pat));
+  for (i = GET_RTX_LENGTH (GET_CODE (pat)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (pat, i) - 1; j >= 0; j--)
+	    swap_rtx_condition (XVECEXP (pat, i, j));
+	}
+      else if (fmt[i] == 'e')
+	swap_rtx_condition (XEXP (pat, i));
+    }
+}
+
 /* Handle a comparison.  Special care needs to be taken to avoid
    causing comparisons that a 387 cannot do correctly, such as EQ.
 
@@ -1714,11 +1765,25 @@ compare_for_stack_reg (insn, regstack, pat)
   src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
 
-  /* The first argument must always be a stack reg. */
-  /* ??? why? */
+  /* ??? If fxch turns out to be cheaper than fstp, give priority to
+     registers that die in this insn - move those to stack top first. */
+  if (! STACK_REG_P (*src1)
+      || (STACK_REG_P (*src2)
+	  && get_hard_regnum (regstack, *src2) == FIRST_STACK_REG))
+    {
+      rtx temp, next;
 
-  if (! STACK_REG_P (*src1))
-    abort ();
+      temp = *src1;
+      *src1 = *src2;
+      *src2 = temp;
+
+      next = next_cc0_user (insn);
+      if (next == NULL_RTX)
+	abort ();
+
+      swap_rtx_condition (PATTERN (next));
+      INSN_CODE (next) = -1;
+    }
 
   /* We will fix any death note later. */
 
@@ -1727,9 +1792,9 @@ compare_for_stack_reg (insn, regstack, pat)
   if (STACK_REG_P (*src2))
     src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
   else
-    src2_note = 0;
+    src2_note = NULL_RTX;
 
-  emit_swap_insn (insn, regstack, *src1, emit_insn_before);
+  emit_swap_insn (insn, regstack, *src1);
 
   replace_reg (src1, FIRST_STACK_REG);
 
@@ -1748,8 +1813,7 @@ compare_for_stack_reg (insn, regstack, pat)
      needed, and it was just handled. */
 
   if (src2_note
-      && ! (STACK_REG_P (*src1)
-	    && STACK_REG_P (*src2)
+      && ! (STACK_REG_P (*src1) && STACK_REG_P (*src2)
 	    && REGNO (*src1) == REGNO (*src2)))
     {
       /* As a special case, two regs may die in this insn if src2 is
@@ -1790,7 +1854,7 @@ subst_stack_regs_pat (insn, regstack, pat)
      rtx pat;
 {
   rtx *dest, *src;
-  rtx *src1 = 0, *src2;
+  rtx *src1 = (rtx *) NULL_PTR, *src2;
   rtx src1_note, src2_note;
 
   if (GET_CODE (pat) != SET)
@@ -1840,7 +1904,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 	if (src1 == 0)
 	  src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
 
-	emit_swap_insn (insn, regstack, *src1, emit_insn_before);
+	emit_swap_insn (insn, regstack, *src1);
 
 	src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
 
@@ -1878,26 +1942,22 @@ subst_stack_regs_pat (insn, regstack, pat)
 	if (STACK_REG_P (*src1))
 	  src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
 	else
-	  src1_note = 0;
+	  src1_note = NULL_RTX;
 	if (STACK_REG_P (*src2))
 	  src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
 	else
-	  src2_note = 0;
+	  src2_note = NULL_RTX;
 
 	/* If either operand is not a stack register, then the dest
 	   must be top of stack. */
 
 	if (! STACK_REG_P (*src1) || ! STACK_REG_P (*src2))
-	  emit_swap_insn (insn, regstack, *dest, emit_insn_before);
+	  emit_swap_insn (insn, regstack, *dest);
 	else
 	  {
 	    /* Both operands are REG.  If neither operand is already
 	       at the top of stack, choose to make the one that is the dest
-	       the new top of stack.
-
-	       ??? A later optimization here would be to look forward
-	       in the insns and see which source reg will be needed at top
-	       of stack soonest. */
+	       the new top of stack.  */
 
 	    int src1_hard_regnum, src2_hard_regnum;
 
@@ -1908,7 +1968,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 
 	    if (src1_hard_regnum != FIRST_STACK_REG
 		&& src2_hard_regnum != FIRST_STACK_REG)
-	      emit_swap_insn (insn, regstack, *dest, emit_insn_before);
+	      emit_swap_insn (insn, regstack, *dest);
 	  }
 
 	if (STACK_REG_P (*src1))
@@ -1985,7 +2045,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 
 	    src1 = get_true_reg (&XVECEXP (SET_SRC (pat), 0, 0));
 
-	    emit_swap_insn (insn, regstack, *src1, emit_insn_before);
+	    emit_swap_insn (insn, regstack, *src1);
 
 	    src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
 
@@ -2479,8 +2539,7 @@ change_stack (insn, old, new, when)
 		abort ();
 
 	      emit_swap_insn (insn, old,
-			      FP_mode_reg[old->reg[reg]][(int) DFmode],
-			      emit_insn_before);
+			      FP_mode_reg[old->reg[reg]][(int) DFmode]);
 	    }
 
 	  /* See if any regs remain incorrect.  If so, bring an
@@ -2491,8 +2550,7 @@ change_stack (insn, old, new, when)
 	    if (new->reg[reg] != old->reg[reg])
 	      {
 		emit_swap_insn (insn, old,
-				FP_mode_reg[old->reg[reg]][(int) DFmode],
-				emit_insn_before);
+				FP_mode_reg[old->reg[reg]][(int) DFmode]);
 		break;
 	      }
 	} while (reg >= 0);
