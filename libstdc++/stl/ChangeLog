@@ -1,3 +1,8 @@
+1999-05-17  Mark Kettenis  <kettenis@gnu.org>
+
+	* stl_config.h: Only define __STL_PTHREADS with GLIBC >= 2 for
+	Linux.
+
 Mon May 17 03:33:47 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* stl_config.h (__CYGWIN__): Cygwin newlib RTL lacks drand48.
