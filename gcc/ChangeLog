@@ -5,6 +5,9 @@
 
 	* flow.c (mark_set_1): Respect not_dead when updating reg_live.
 
+	* ifcvt.c (noce_process_if_block): Don't use an insn_b from
+	test_bb if insn_a uses x.
+
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
  	* cpphash.h: Remove conditional #define of __extension__.
