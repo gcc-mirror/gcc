@@ -285,17 +285,47 @@ typedef struct reorder_block_def
 
 #define BB_FREQ_MAX 10000
 
-/* Masks for basic_block.flags.  */
-#define BB_DIRTY		1
-#define BB_NEW			2
-#define BB_REACHABLE		4
-#define BB_VISITED		8
-#define BB_IRREDUCIBLE_LOOP	16
-#define BB_SUPERBLOCK		32
-#define BB_DISABLE_SCHEDULE     64
+/* Masks for basic_block.flags.
 
+   BB_VISITED should not be used by passes, it is used internally by
+   dfs_enumerate_from.
+
+   BB_HOT_PARTITION and BB_COLD_PARTITION should be preserved throughout
+   the compilation, so they are never cleared.
+
+   All other flags may be cleared by clear_bb_flags().  It is generally
+   a bad idea to rely on any flags being up-to-date.  */
+
+/* Set if insns in BB have are modified.  Used for updating liveness info.  */
+#define BB_DIRTY		1
+
+/* Only set on blocks that have just been created by create_bb.  */
+#define BB_NEW			2
+
+/* Set by find_unreachable_blocks.  Do not rely on this being set in any
+   pass.  */
+#define BB_REACHABLE		4
+
+/* Used by dfs_enumerate_from to keep track of visited basic blocks.  */
+#define BB_VISITED		8
+
+/* Set for blocks in an irreducible loop by loop analysis.  */
+#define BB_IRREDUCIBLE_LOOP	16
+
+/* Set on blocks that may actually not be single-entry single-exit block.  */
+#define BB_SUPERBLOCK		32
+
+/* Set on basic blocks that the scheduler should not touch.  This is used
+   by SMS to prevent other schedulers from messing with the loop schedule.  */
+#define BB_DISABLE_SCHEDULE	64
+
+/* Set on blocks that should be put in a hot section.  */
 #define BB_HOT_PARTITION	128
+
+/* Set on blocks that should be put in a cold section.  */
 #define BB_COLD_PARTITION	256
+
+/* Dummy flag for convenience in the hot/cold partitioning code.  */
 #define BB_UNPARTITIONED	0
 
 /* Partitions, to be used when partitioning hot and cold basic blocks into

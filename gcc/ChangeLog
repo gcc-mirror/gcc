@@ -1,3 +1,10 @@
+2005-01-17  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h: Document BB_* flags.
+	* regrename.c (copyprop_hardreg_forward): Don't use BB_VISITED,
+	use an sbitmap instead.
+	* sched-rgn.c (compute_trg_info): Likewise.
+
 2005-01-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips64*-*-linux*): Set the default abi to n32.  Remove

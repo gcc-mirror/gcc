@@ -997,6 +997,7 @@ compute_trg_info (int trg)
   edgelst el;
   int i, j, k, update_idx;
   basic_block block;
+  sbitmap visited;
   edge_iterator ei;
   edge e;
 
@@ -1005,6 +1006,8 @@ compute_trg_info (int trg)
   sp->is_valid = 1;
   sp->is_speculative = 0;
   sp->src_prob = 100;
+
+  visited = sbitmap_alloc (last_basic_block - (INVALID_BLOCK + 1));
 
   for (i = trg + 1; i < current_nr_blocks; i++)
     {
@@ -1043,12 +1046,14 @@ compute_trg_info (int trg)
 	     overrunning the end of the bblst_table.  */
 
 	  update_idx = 0;
+	  sbitmap_zero (visited);
 	  for (j = 0; j < el.nr_members; j++)
 	    {
 	      block = el.first_member[j]->src;
 	      FOR_EACH_EDGE (e, ei, block->succs)
 		{
-		  if (!(e->dest->flags & BB_VISITED))
+		  if (!TEST_BIT (visited,
+				 e->dest->index - (INVALID_BLOCK + 1)))
 		    {
 		      for (k = 0; k < el.nr_members; k++)
 			if (e == el.first_member[k])
@@ -1057,16 +1062,14 @@ compute_trg_info (int trg)
 		      if (k >= el.nr_members)
 			{
 			  bblst_table[bblst_last++] = e->dest;
-			  e->dest->flags |= BB_VISITED;
+			  SET_BIT (visited,
+				   e->dest->index - (INVALID_BLOCK + 1));
 			  update_idx++;
 			}
 		    }
 		}
 	    }
 	  sp->update_bbs.nr_members = update_idx;
-
-	  FOR_ALL_BB (block)
-	    block->flags &= ~BB_VISITED;
 
 	  /* Make sure we didn't overrun the end of bblst_table.  */
 	  gcc_assert (bblst_last <= bblst_size);
@@ -1079,6 +1082,8 @@ compute_trg_info (int trg)
 	  sp->src_prob = 0;
 	}
     }
+
+  sbitmap_free (visited);
 }
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
