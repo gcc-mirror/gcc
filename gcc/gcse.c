@@ -549,6 +549,7 @@ static void insert_expr_in_table PARAMS ((rtx, enum machine_mode, rtx,
 static void insert_set_in_table PARAMS ((rtx, rtx));
 static unsigned int hash_expr	PARAMS ((rtx, enum machine_mode, int *, int));
 static unsigned int hash_expr_1 PARAMS ((rtx, enum machine_mode, int *));
+static unsigned int hash_string_1 PARAMS ((const char *));
 static unsigned int hash_set	PARAMS ((int, int));
 static int expr_equiv_p	        PARAMS ((rtx, rtx));
 static void record_last_reg_set_info PARAMS ((rtx, int));
