@@ -1474,6 +1474,9 @@ c_alignof (type)
   enum tree_code code = TREE_CODE (type);
   tree t;
 
+  if (processing_template_decl)
+    return build_min (ALIGNOF_EXPR, sizetype, type);
+
   if (code == FUNCTION_TYPE || code == METHOD_TYPE)
     return size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
 

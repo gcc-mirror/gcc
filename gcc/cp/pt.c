@@ -1498,6 +1498,14 @@ convert_nontype_argument (type, expr)
 	 just converting one integral constant expression to another.  */
       return digest_init (type, expr, (tree*) 0);
 
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+      /* These are g++ extensions.  */
+      if (TREE_CODE (expr_type) != TREE_CODE (type))
+	return error_mark_node;
+
+      return digest_init (type, expr, (tree*) 0);
+
     case POINTER_TYPE:
       {
 	tree type_pointed_to = TREE_TYPE (type);
@@ -2539,11 +2547,14 @@ uses_template_parms (t)
     case CONST_CAST_EXPR:
     case STATIC_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
-    case SIZEOF_EXPR:
     case ARROW_EXPR:
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
       return 1;
+
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      return uses_template_parms (TREE_OPERAND (t, 0));
 
     default:
       switch (TREE_CODE_CLASS (TREE_CODE (t)))
@@ -4004,6 +4015,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case ADDR_EXPR:
     case CONVERT_EXPR:      /* Unary + */
     case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
     case ARROW_EXPR:
     case THROW_EXPR:
     case TYPEID_EXPR:

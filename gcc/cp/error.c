@@ -812,7 +812,8 @@ dump_decl (t, v)
 	    break;
 
 	  default:
-	    my_friendly_abort (353);
+	    /* This case can occur with some illegal code.  */
+	    dump_type (TREE_TYPE (t), v);
 	  }
       }
       break;
@@ -1586,7 +1587,14 @@ dump_expr (t, nop)
       break;
 
     case SIZEOF_EXPR:
-      OB_PUTS ("sizeof (");
+    case ALIGNOF_EXPR:
+      if (TREE_CODE (t) == SIZEOF_EXPR)
+	OB_PUTS ("sizeof (");
+      else 
+	{
+	  my_friendly_assert (TREE_CODE (t) == ALIGNOF_EXPR, 0);
+	  OB_PUTS ("__alignof__ (");
+	}
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
 	dump_type (TREE_OPERAND (t, 0), 0);
       else

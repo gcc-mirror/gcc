@@ -1119,6 +1119,9 @@ grok_alignof (expr)
   tree best, t;
   int bestalign;
 
+  if (processing_template_decl)
+    return build_min (ALIGNOF_EXPR, sizetype, expr);
+
   if (TREE_CODE (expr) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
     error ("`__alignof__' applied to a bit-field");
@@ -3505,11 +3508,12 @@ build_expr_from_tree (t)
 			      build_expr_from_tree (TREE_OPERAND (t, 1)));
 
     case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
       {
 	tree r = build_expr_from_tree (TREE_OPERAND (t, 0));
 	if (TREE_CODE_CLASS (TREE_CODE (r)) != 't')
 	  r = TREE_TYPE (r);
-	return c_sizeof (r);
+	return TREE_CODE (t) == SIZEOF_EXPR ? c_sizeof (r) : c_alignof (r);
       }
 
     case MODOP_EXPR:

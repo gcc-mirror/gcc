@@ -4979,7 +4979,14 @@ instantiate_type (lhstype, rhs, complain)
     }
 
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
-    return rhs;
+    {
+      if (comptypes (lhstype, TREE_TYPE (rhs), 1))
+	return rhs;
+      if (complain)
+	cp_error ("argument of type `%T' does not match `%T'",
+		  TREE_TYPE (rhs), lhstype);
+      return error_mark_node;
+    }
 
   rhs = copy_node (rhs);
 
@@ -5424,16 +5431,6 @@ instantiate_type (lhstype, rhs, complain)
 
     case ERROR_MARK:
       return error_mark_node;
-
-    case FUNCTION_DECL:
-      if (!comptypes (lhstype, TREE_TYPE (rhs), 1))
-	{
-	  if (complain)
-	    cp_error ("%D is not of type %T", rhs, lhstype);
-	  return error_mark_node;
-	}
-      else
-	return rhs;
 
     default:
       my_friendly_abort (185);
