@@ -581,7 +581,7 @@ extern void kill_redundant_phi_nodes (void);
 
 /* In tree-into-ssa.c  */
 extern void rewrite_into_ssa (bool);
-extern void rewrite_ssa_into_ssa (bitmap);
+extern void rewrite_ssa_into_ssa (void);
 
 void compute_global_livein (bitmap, bitmap);
 tree duplicate_ssa_name (tree, tree);

@@ -99,54 +99,6 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
   return true;
 }
 
-/* Marks variables defined in basic block BB for rewriting.  */
-
-static void
-mark_defs_for_rewrite (basic_block bb)
-{
-  tree stmt, var;
-  block_stmt_iterator bsi;
-  stmt_ann_t ann;
-  def_optype defs;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  unsigned i;
-
-  for (stmt = phi_nodes (bb); stmt; stmt = TREE_CHAIN (stmt))
-    {
-      var = PHI_RESULT (stmt);
-      bitmap_set_bit (vars_to_rename, SSA_NAME_VERSION (var));
-    }
-
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-    {
-      stmt = bsi_stmt (bsi);
-      get_stmt_operands (stmt);
-      ann = stmt_ann (stmt);
-
-      defs = DEF_OPS (ann);
-      for (i = 0; i < NUM_DEFS (defs); i++)
-	{
-	  var = DEF_OP (defs, i);
-	  bitmap_set_bit (vars_to_rename, SSA_NAME_VERSION (var));
-	}
-
-      v_may_defs = V_MAY_DEF_OPS (ann);
-      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-	{
-	  var = V_MAY_DEF_RESULT (v_may_defs, i);
-	  bitmap_set_bit (vars_to_rename, SSA_NAME_VERSION (var));
-	}
-
-      v_must_defs = V_MUST_DEF_OPS (ann);
-      for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-	{
-	  var = V_MUST_DEF_OP (v_must_defs, i);
-	  bitmap_set_bit (vars_to_rename, SSA_NAME_VERSION (var));
-	}
-    }
-}
-
 /* Duplicates destinations of edges in BBS_TO_DUPLICATE.  */
 
 static void
@@ -160,18 +112,6 @@ duplicate_blocks (varray_type bbs_to_duplicate)
   /* TODO: It should be quite easy to keep the dominance information
      up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (bbs_to_duplicate); i++)
-    {
-      preheader_edge = VARRAY_GENERIC_PTR_NOGC (bbs_to_duplicate, i);
-      header = preheader_edge->dest;
-
-      /* It is sufficient to rewrite the definitions, since the uses of
-	 the operands defined outside of the duplicated basic block are
-	 still valid (every basic block that dominates the original block
-	 also dominates the duplicate).  */
-      mark_defs_for_rewrite (header);
-    }
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (bbs_to_duplicate); i++)
     {
@@ -210,8 +150,7 @@ duplicate_blocks (varray_type bbs_to_duplicate)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  rewrite_ssa_into_ssa (vars_to_rename);
-  bitmap_clear (vars_to_rename);
+  rewrite_ssa_into_ssa ();
 }
 
 /* Checks whether LOOP is a do-while style loop.  */

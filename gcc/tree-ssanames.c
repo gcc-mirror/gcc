@@ -60,7 +60,10 @@ Boston, MA 02111-1307, USA.  */
    
 /* Array of all SSA_NAMEs used in the function.  */
 varray_type ssa_names;
-                                                                                
+
+/* Bitmap of ssa names marked for rewriting.  */
+bitmap ssa_names_to_rewrite;
+
 /* Free list of SSA_NAMEs.  This list is wiped at the end of each function
    after we leave SSA form.  */
 static GTY (()) tree free_ssanames;
@@ -73,6 +76,64 @@ static GTY (()) tree free_ssanames;
 unsigned int ssa_name_nodes_reused;
 unsigned int ssa_name_nodes_created;
 #endif
+
+/* Returns true if ssa name VAR is marked for rewrite.  */
+
+bool
+marked_for_rewrite_p (tree var)
+{
+  if (ssa_names_to_rewrite
+      && bitmap_bit_p (ssa_names_to_rewrite, SSA_NAME_VERSION (var)))
+    return true;
+
+  return false;
+}
+
+/* Returns true if any ssa name is marked for rewrite.  */
+
+bool
+any_marked_for_rewrite_p (void)
+{
+  if (!ssa_names_to_rewrite)
+    return false;
+
+  return bitmap_first_set_bit (ssa_names_to_rewrite) != -1;
+}
+
+/* Mark ssa name VAR for rewriting.  */
+
+void
+mark_for_rewrite (tree var)
+{
+  if (!ssa_names_to_rewrite)
+    ssa_names_to_rewrite = BITMAP_XMALLOC ();
+
+  bitmap_set_bit (ssa_names_to_rewrite, SSA_NAME_VERSION (var));
+}
+
+/* Unmark all ssa names marked for rewrite.  */
+
+void
+unmark_all_for_rewrite (void)
+{
+  if (!ssa_names_to_rewrite)
+    return;
+
+  bitmap_clear (ssa_names_to_rewrite);
+}
+
+/* Return the bitmap of ssa names to rewrite.  Copy the bitmap,
+   so that the optimizers cannot access internals directly  */
+
+bitmap
+marked_ssa_names (void)
+{
+  bitmap ret = BITMAP_XMALLOC ();
+  if (ssa_names_to_rewrite)
+    bitmap_copy (ret, ssa_names_to_rewrite);
+
+  return ret;
+}
 
 /* Initialize management of SSA_NAMEs.  */
 
@@ -180,6 +241,12 @@ release_ssa_name (tree var)
   /* Never release the default definition for a symbol.  It's a
      special SSA name that should always exist once it's created.  */
   if (var == var_ann (SSA_NAME_VAR (var))->default_def)
+    return;
+
+  /* If the ssa name is marked for rewriting, it may have multiple definitions,
+     but we may happen to remove just one of them.  So do not remove the
+     ssa name now.  */
+  if (marked_for_rewrite_p (var))
     return;
 
   /* release_ssa_name can be called multiple times on a single SSA_NAME.
