@@ -1,6 +1,6 @@
 // InvocationTargetException.java - Wrapper exception for reflection.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -70,4 +70,6 @@ public class InvocationTargetException extends Exception
   // The wrapped exception.  The name is specified by the
   // serialization spec.
   private Throwable target;
+
+  private static final long serialVersionUID = 4085088731926701167L;
 }

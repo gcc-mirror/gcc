@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,6 +29,8 @@ public final class Long extends Number implements Comparable
 
   /* The long value of the instance. */
   private long value;
+
+  private static final long serialVersionUID = 4290774380558885855L;
 
   public Long(long val)
   {

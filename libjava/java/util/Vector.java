@@ -61,6 +61,8 @@ public class Vector implements Cloneable, Serializable
   /* The buffer in which elements of this vector are stored */
   protected Object[] elementData;
 
+  private static final long serialVersionUID = -2767605614048989439L;
+
   public Vector()
   {
     this(10, 0);

@@ -54,6 +54,8 @@ public class PropertyChangeEvent extends java.util.EventObject {
 	Object newValue;
 	Object propagationId;
 
+	private static final long serialVersionUID = 7042693688939648123L;
+
 	/** Create a new PropertyChangeEvent.  Remember that if
 	 ** you received a PropertyChangeEvent and are sending
 	 ** a new one, you should also set the propagation ID

@@ -22,11 +22,6 @@ package java.io;
 
 public class SyncFailedException extends IOException
 {
-  public SyncFailedException ()
-  {
-    super ();
-  }
-
   public SyncFailedException (String s)
   {
     super (s);

@@ -23,12 +23,16 @@ public class OptionalDataException extends ObjectStreamException
   public boolean eof;
   public int length;
 
-  public OptionalDataException()
+  // FIXME: This can probably go away once the right signatures of
+  // these package private constructors is determined.
+  private static final long serialVersionUID = -8011121865681257820L;
+
+  OptionalDataException()
   {
     super();
   }
 
-  public OptionalDataException(String msg)
+  OptionalDataException(String msg)
   {
     super(msg);
   }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -31,6 +31,8 @@ public final class Boolean extends Object implements Serializable
 
   /* The boolean value of the instance. */
   private boolean value;
+
+  private static final long serialVersionUID = -3665804199014368530L;
 
   public Boolean(boolean boolVal)
   {

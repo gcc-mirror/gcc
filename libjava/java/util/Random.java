@@ -26,15 +26,17 @@ import java.io.Serializable;
 public class Random implements Serializable
 {
   /* Used by next() to hold the state of the pseudorandom number generator */
-  protected long seed;
+  private long seed;
 
   /* Used by nextGaussian() to hold a precomputed value */
   /* to be delivered by that method the next time it is called */
-  protected double nextNextGaussian;
+  private double nextNextGaussian;
 
   /* Used by nextGaussian() to keep track of whether it is has precomputed */
   /* and stashed away the next value to be delivered by that method */
-  protected boolean haveNextNextGaussian = false;
+  private boolean haveNextNextGaussian = false;
+
+  private static final long serialVersionUID = 3905348978240129619L;
 
   public Random()
   {

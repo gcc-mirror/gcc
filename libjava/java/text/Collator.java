@@ -10,7 +10,6 @@ details.  */
 
 package java.text;
 
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -24,7 +23,7 @@ import java.util.ResourceBundle;
  * Status: Mostly complete, but parts stubbed out.  Look for FIXME.
  */
 
-public abstract class Collator implements Cloneable, Serializable
+public abstract class Collator implements Cloneable
 {
   public static final int NO_DECOMPOSITION = 0;
   public static final int CANONICAL_DECOMPOSITION = 1;

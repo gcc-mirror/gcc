@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -31,6 +31,8 @@ public final class Float extends Number
   public static final Class TYPE = float.class;
 
   private float value;
+
+  private static final long serialVersionUID = -2671257302660747028L;
 
   public Float (float value)
   {

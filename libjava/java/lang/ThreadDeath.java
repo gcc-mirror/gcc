@@ -1,6 +1,6 @@
 // ThreadDeath.java - Special exception registering Thread death.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,10 +26,5 @@ public class ThreadDeath extends Error
   public ThreadDeath ()
   {
     super ();
-  }
-
-  public ThreadDeath (String message)
-  {
-    super (message);
   }
 }

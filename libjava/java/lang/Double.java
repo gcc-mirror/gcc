@@ -32,6 +32,8 @@ public final class Double extends Number
 
   private double value;
 
+  private static final long serialVersionUID = -9172774392245257468L;
+
   public native static double parseDouble (String s) 
     throws NumberFormatException;
 

@@ -388,6 +388,24 @@ public class File implements Serializable
     FileDeleter.add (this);
   }
 
+  private void writeObject (ObjectOutputStream oos) throws IOException
+  {
+    oos.defaultWriteObject ();
+    oos.writeChar (separatorChar);
+  }
+
+  private void readObject (ObjectInputStream ois)
+    throws ClassNotFoundException, IOException
+  {
+    ois.defaultReadObject ();
+
+    // If the file was from an OS with a different dir separator,
+    // fixup the path to use the separator on this OS.
+    char oldSeparatorChar = ois.readChar ();
+    if (oldSeparatorChar != separatorChar)
+      path = path.replace (oldSeparatorChar, separatorChar);
+  }
+
   // QUERY arguments to access function.
   private final static int READ = 0;
   private final static int WRITE = 1;
@@ -404,4 +422,6 @@ public class File implements Serializable
   private final native long attr (String p, int query);
   private final native boolean access (String p, int query);
   private final native boolean stat (String p, int query);
+
+  private static final long serialVersionUID = 301077366599181567L;
 }

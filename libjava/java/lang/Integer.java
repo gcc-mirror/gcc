@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,6 +29,8 @@ public final class Integer extends Number implements Comparable
 
   /* The int value of the instance. */
   private int value;
+
+  private static final long serialVersionUID = 1360826667806852920L;
 
   public Integer(int val)
   {

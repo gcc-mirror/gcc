@@ -33,6 +33,8 @@ public class Properties extends Hashtable
 {
   protected Properties defaults;
 
+  private static final long serialVersionUID = 4112578634029874840L;
+
   public String getProperty (String propName)
     {
       return getProperty (propName, null);
