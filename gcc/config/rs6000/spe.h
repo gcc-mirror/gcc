@@ -54,7 +54,11 @@ typedef int 			__vector __ev64_opaque__;
 #define __ev_addw(a,b) __builtin_spe_evaddw((__v2si) (a), (__v2si) (b))
 #define __ev_addiw(a,b) __builtin_spe_evaddiw ((__v2si) (a), (b))
 #define __ev_subfw(a,b) __builtin_spe_evsubfw ((__v2si) (a), (__v2si) (b))
-#define __ev_subifw(a,b) __builtin_spe_evsubifw ((__v2si) (a), (b))
+#define __ev_subw(a,b) __builtin_spe_evsubfw ((__v2si) (b), (__v2si) (a))
+/* ??? The spe_evsubifw pattern accepts operands reversed, so we need to also
+   reverse them here between the intrinsic and the builtin function.  */
+#define __ev_subifw(a,b) __builtin_spe_evsubifw ((__v2si) (b), (a))
+#define __ev_subiw(a,b) __builtin_spe_evsubifw ((__v2si) (a), (b))
 #define __ev_abs(a) __builtin_spe_evabs ((__v2si) (a))
 #define __ev_neg(a) __builtin_spe_evneg ((__v2si) (a))
 #define __ev_extsb(a) __builtin_spe_evextsb ((__v2si) (a))
@@ -224,24 +228,16 @@ typedef int 			__vector __ev64_opaque__;
 #define __ev_mwhumf __ev_mwhumi
 #define __ev_mwhumfa __ev_mwhumia
 
-#define __ev_mwlssf(a, b) __builtin_spe_evmwlssf ((__v2si) (a), (__v2si) (b))
-#define __ev_mwlsmf(a, b) __builtin_spe_evmwlsmf ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumi(a, b) __builtin_spe_evmwlumi ((__v2si) (a), (__v2si) (b))
-#define __ev_mwlssfa(a, b) __builtin_spe_evmwlssfa ((__v2si) (a), (__v2si) (b))
-#define __ev_mwlsmfa(a, b) __builtin_spe_evmwlsmfa ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumia(a, b) __builtin_spe_evmwlumia ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumiaaw(a, b) __builtin_spe_evmwlumiaaw ((__v2si) (a), (__v2si) (b))
 
-#define __ev_mwlssfaaw(a, b) __builtin_spe_evmwlssfaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlssiaaw(a, b) __builtin_spe_evmwlssiaaw ((__v2si) (a), (__v2si) (b))
-#define __ev_mwlsmfaaw(a, b) __builtin_spe_evmwlsmfaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlsmiaaw(a, b) __builtin_spe_evmwlsmiaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlusiaaw(a, b) __builtin_spe_evmwlusiaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlusiaaw(a, b) __builtin_spe_evmwlusiaaw ((__v2si) (a), (__v2si) (b))
 
-#define __ev_mwlssfanw(a, b) __builtin_spe_evmwlssfanw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlssianw(a, b) __builtin_spe_evmwlssianw ((__v2si) (a), (__v2si) (b))
-#define __ev_mwlsmfanw(a, b) __builtin_spe_evmwlsmfanw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlsmianw(a, b) __builtin_spe_evmwlsmianw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlusianw(a, b) __builtin_spe_evmwlusianw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumianw(a, b) __builtin_spe_evmwlumianw ((__v2si) (a), (__v2si) (b))

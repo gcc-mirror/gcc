@@ -1,3 +1,10 @@
+2002-12-20  Jim Wilson  <wilson@redhat.com>
+
+	* config/rs6000/spe.h (__ev_subifw): Reverse arguments.
+	(__ev_subw, __ev_subiw): New.
+	(ev_mwlssf, ev_mwlsmf, ev_mwlssfa, ev_mwlsmfa, ev_mwlssfaaw,
+	ev_mwlsmfaaw, ev_mwlssfanw, ev_mwlsmfanw): Delete.
+
 2002-12-20  John David Anglin  <dave.anglin@nrc.gc.ca>
 
 	* pa-linux.h (TARGET_HAS_STUBS_AND_ELF_SECTIONS): Delete define.
