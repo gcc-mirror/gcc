@@ -1,3 +1,24 @@
+2000-08-09  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am: Move beans and applet classes to awt_java_source_files.
+	* Makefile.in: Rebuilt.
+	* java/awt/Color.java (getTransparency): New method.
+	* java/awt/Component.java: Various updates.
+	* java/awt/Container.java (removeNotify): Call super.removeNotify()
+	after dealing with children.
+	* java/awt/Toolkit.java (changeSupport): Renamed from pcsupport.
+	* java/awt/Window.java: Various new methods and updates.
+	* java/awt/color/ICC_Profile.java (getNumComponents): Cast profileID
+	to int for switch.
+	* java/awt/event/KeyEvent.java (paramString): Initialize `r'.
+	* java/awt/event/WindowEvent.java (paramString): Ditto.
+	* java/awt/geom/Dimension2D.java (clone): Wrap super call with
+	try/catch block.
+	* java/awt/geom/Point2D.java (clone): Ditto.
+	* java/awt/geom/RectangularShape.java (clone): Ditto.
+	* java/awt/image/ColorModel.java (bits, cspace, transparency, hasAlpha,
+	isAlphaPremultiplied): Make package-private, not private.	
+	
 2000-08-08  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/convert/Input_UTF8.java (read): Fixed handling of

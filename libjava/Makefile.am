@@ -487,8 +487,27 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files =	\
+gnu/java/beans/editors/ColorEditor.java	\
+gnu/java/beans/editors/FontEditor.java \
+gnu/java/beans/editors/NativeBooleanEditor.java	\
+gnu/java/beans/editors/NativeByteEditor.java \
+gnu/java/beans/editors/NativeDoubleEditor.java \
+gnu/java/beans/editors/NativeFloatEditor.java \
+gnu/java/beans/editors/NativeIntEditor.java \
+gnu/java/beans/editors/NativeLongEditor.java \
+gnu/java/beans/editors/NativeShortEditor.java \
+gnu/java/beans/editors/StringEditor.java \
+gnu/java/beans/info/ComponentBeanInfo.java \
+gnu/java/beans/BeanInfoEmbryo.java \
+gnu/java/beans/EmptyBeanInfo.java \
+gnu/java/beans/ExplicitBeanInfo.java \
+gnu/java/beans/IntrospectionIncubator.java \
 gnu/gcj/awt/BitMaskExtent.java \
 gnu/gcj/awt/Buffers.java \
+java/applet/Applet.java \
+java/applet/AppletStub.java \
+java/applet/AppletContext.java \
+java/applet/AudioClip.java \
 java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTEventMulticaster.java \
@@ -640,7 +659,47 @@ java/awt/peer/ScrollbarPeer.java \
 java/awt/peer/TextAreaPeer.java	\
 java/awt/peer/TextComponentPeer.java \
 java/awt/peer/TextFieldPeer.java \
-java/awt/peer/WindowPeer.java
+java/awt/peer/WindowPeer.java \
+java/beans/beancontext/BeanContext.java	\
+java/beans/beancontext/BeanContextChild.java \
+java/beans/beancontext/BeanContextChildComponentProxy.java \
+java/beans/beancontext/BeanContextChildSupport.java \
+java/beans/beancontext/BeanContextContainerProxy.java \
+java/beans/beancontext/BeanContextEvent.java \
+java/beans/beancontext/BeanContextMembershipEvent.java \
+java/beans/beancontext/BeanContextMembershipListener.java \
+java/beans/beancontext/BeanContextProxy.java \
+java/beans/beancontext/BeanContextServiceAvailableEvent.java \
+java/beans/beancontext/BeanContextServiceProvider.java \
+java/beans/beancontext/BeanContextServiceProviderBeanInfo.java \
+java/beans/beancontext/BeanContextServiceRevokedEvent.java \
+java/beans/beancontext/BeanContextServiceRevokedListener.java \
+java/beans/beancontext/BeanContextServices.java	\
+java/beans/beancontext/BeanContextServicesListener.java	\
+java/beans/BeanDescriptor.java \
+java/beans/BeanInfo.java \
+java/beans/Beans.java \
+java/beans/Customizer.java \
+java/beans/DesignMode.java \
+java/beans/EventSetDescriptor.java \
+java/beans/FeatureDescriptor.java \
+java/beans/IndexedPropertyDescriptor.java \
+java/beans/IntrospectionException.java \
+java/beans/Introspector.java \
+java/beans/MethodDescriptor.java \
+java/beans/ParameterDescriptor.java \
+java/beans/PropertyChangeEvent.java \
+java/beans/PropertyChangeListener.java \
+java/beans/PropertyChangeSupport.java \
+java/beans/PropertyDescriptor.java \
+java/beans/PropertyEditor.java \
+java/beans/PropertyEditorManager.java \
+java/beans/PropertyEditorSupport.java \
+java/beans/PropertyVetoException.java \
+java/beans/SimpleBeanInfo.java \
+java/beans/VetoableChangeListener.java \
+java/beans/VetoableChangeSupport.java \
+java/beans/Visibility.java
 
 ## Java files which are created by configure and thus are in the build
 ## directory.
@@ -675,21 +734,6 @@ gnu/gcj/jni/NativeThread.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
-gnu/java/beans/editors/ColorEditor.java	\
-gnu/java/beans/editors/FontEditor.java \
-gnu/java/beans/editors/NativeBooleanEditor.java	\
-gnu/java/beans/editors/NativeByteEditor.java \
-gnu/java/beans/editors/NativeDoubleEditor.java \
-gnu/java/beans/editors/NativeFloatEditor.java \
-gnu/java/beans/editors/NativeIntEditor.java \
-gnu/java/beans/editors/NativeLongEditor.java \
-gnu/java/beans/editors/NativeShortEditor.java \
-gnu/java/beans/editors/StringEditor.java \
-gnu/java/beans/info/ComponentBeanInfo.java \
-gnu/java/beans/BeanInfoEmbryo.java \
-gnu/java/beans/EmptyBeanInfo.java \
-gnu/java/beans/ExplicitBeanInfo.java \
-gnu/java/beans/IntrospectionIncubator.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
@@ -699,10 +743,6 @@ gnu/java/lang/ClassHelper.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
-java/applet/Applet.java \
-java/applet/AppletStub.java \
-java/applet/AppletContext.java \
-java/applet/AudioClip.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -1022,47 +1062,7 @@ java/sql/SQLWarning.java \
 java/sql/Statement.java	\
 java/sql/Time.java \
 java/sql/Timestamp.java	\
-java/sql/Types.java \
-java/beans/beancontext/BeanContext.java	\
-java/beans/beancontext/BeanContextChild.java \
-java/beans/beancontext/BeanContextChildComponentProxy.java \
-java/beans/beancontext/BeanContextChildSupport.java \
-java/beans/beancontext/BeanContextContainerProxy.java \
-java/beans/beancontext/BeanContextEvent.java \
-java/beans/beancontext/BeanContextMembershipEvent.java \
-java/beans/beancontext/BeanContextMembershipListener.java \
-java/beans/beancontext/BeanContextProxy.java \
-java/beans/beancontext/BeanContextServiceAvailableEvent.java \
-java/beans/beancontext/BeanContextServiceProvider.java \
-java/beans/beancontext/BeanContextServiceProviderBeanInfo.java \
-java/beans/beancontext/BeanContextServiceRevokedEvent.java \
-java/beans/beancontext/BeanContextServiceRevokedListener.java \
-java/beans/beancontext/BeanContextServices.java	\
-java/beans/beancontext/BeanContextServicesListener.java	\
-java/beans/BeanDescriptor.java \
-java/beans/BeanInfo.java \
-java/beans/Beans.java \
-java/beans/Customizer.java \
-java/beans/DesignMode.java \
-java/beans/EventSetDescriptor.java \
-java/beans/FeatureDescriptor.java \
-java/beans/IndexedPropertyDescriptor.java \
-java/beans/IntrospectionException.java \
-java/beans/Introspector.java \
-java/beans/MethodDescriptor.java \
-java/beans/ParameterDescriptor.java \
-java/beans/PropertyChangeEvent.java \
-java/beans/PropertyChangeListener.java \
-java/beans/PropertyChangeSupport.java \
-java/beans/PropertyDescriptor.java \
-java/beans/PropertyEditor.java \
-java/beans/PropertyEditorManager.java \
-java/beans/PropertyEditorSupport.java \
-java/beans/PropertyVetoException.java \
-java/beans/SimpleBeanInfo.java \
-java/beans/VetoableChangeListener.java \
-java/beans/VetoableChangeSupport.java \
-java/beans/Visibility.java
+java/sql/Types.java
 
 java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
 
