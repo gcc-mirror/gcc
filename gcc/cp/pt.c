@@ -9053,8 +9053,7 @@ regenerate_decl_from_template (decl, tmpl)
       /* Pop the class context we pushed above.  */
       popclass (1);
     }
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       /* Convince duplicate_decls to use the DECL_ARGUMENTS from the
 	 new decl.  */ 
@@ -9249,8 +9248,14 @@ instantiate_decl (d)
       goto out;
     }
 
-  regenerate_decl_from_template (d, td);
+  /* We're now committed to instantiating this template.  Mark it as
+     instantiated so that recursive calls to instantiate_decl do not
+     try to instantiate it again.  */
   DECL_TEMPLATE_INSTANTIATED (d) = 1;
+
+  /* Regenerate the declaration in case the template has been modified
+     by a subsequent redeclaration.  */
+  regenerate_decl_from_template (d, td);
 
   /* We already set the file and line above.  Reset them now in case
      they changed as a result of calling regenerate_decl_from_template.  */
