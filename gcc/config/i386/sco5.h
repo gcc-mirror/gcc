@@ -679,7 +679,7 @@ dtors_section ()							\
 #undef RETURN_POPS_ARGS
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 				\
  ((TARGET_ELF) ?							\
-  (i386_return_pops_args (FUNDECL, FUNTYPE, SIZE)) : 			\
+  (ix86_return_pops_args (FUNDECL, FUNTYPE, SIZE)) : 			\
   (((FUNDECL) && (TREE_CODE (FUNDECL) == IDENTIFIER_NODE)) ? 0		\
    : (TARGET_RTD							\
       && (TYPE_ARG_TYPES (FUNTYPE) == 0					\
