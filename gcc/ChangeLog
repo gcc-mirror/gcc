@@ -1,3 +1,14 @@
+2005-03-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (combine_simplify_rtx, simplify_if_then_else,
+	simplify_logical, if_then_else_cond, known_cond,
+	simplify_comparison): Adjust calls to reverse_comparison.
+	Don't use combine_reversed_comparison_code).
+	(combine_reversed_comparison_code): Remove.
+	(reversed_comparison): Using reversed_comparison_code, move it...
+	* jump.c (reversed_comparison): ... here.
+	* rtl.h (reversed_comparison): Add prototype.
+
 2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin): Take decomposed arguments of
@@ -271,7 +282,6 @@
 	scale_bbs_frequencies_int.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Fix profiling info.
 
->>>>>>> 2.7929
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r-protos.h: Remove the prototypes for
