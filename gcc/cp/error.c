@@ -924,6 +924,71 @@ dump_function_name (t)
     }
   else
     dump_decl (name, 0);
+
+  if (DECL_TEMPLATE_SPECIALIZATION (t) || DECL_IMPLICIT_INSTANTIATION (t))
+    {
+      tree args = DECL_TEMPLATE_INFO (t) 
+	? DECL_TI_ARGS (t) : NULL_TREE; 
+
+      OB_PUTC ('<');
+
+      /* Be careful only to print things when we have them, so as not
+	 to crash producing error messages.  */
+      if (args)
+	{
+	  if (TREE_CODE (args) == TREE_LIST)
+	    {
+	      tree arg;
+	      int need_comma = 0;
+
+	      for (arg = args; arg; arg = TREE_CHAIN (arg))
+		{
+		  tree a = TREE_VALUE (arg);
+
+		  if (need_comma)
+		    OB_PUTS (", ");
+
+		  if (a)
+		    {
+		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't')
+			dump_type (a, 0);
+		      else
+			dump_expr (a, 0);
+		    }
+		  
+		  need_comma = 1;
+		}
+	    }
+	  else if (TREE_CODE (args) == TREE_VEC)
+	    {
+	      int i;
+	      int need_comma = 0;
+
+	      if (TREE_VEC_LENGTH (args) > 0
+		  && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+		args = TREE_VEC_ELT (args, 0);
+
+	      for (i = 0; i < TREE_VEC_LENGTH (args); i++)
+		{
+		  tree a = TREE_VEC_ELT (args, i);
+
+		  if (need_comma)
+		    OB_PUTS (", ");
+
+		  if (a)
+		    {
+		      if (TREE_CODE_CLASS (TREE_CODE (a)) == 't')
+			dump_type (a, 0);
+		      else
+			dump_expr (a, 0);
+		    }
+		  
+		  need_comma = 1;
+		}
+	    }
+	}
+      OB_PUTC ('>');
+    }
 }
 
 static void

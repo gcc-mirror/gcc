@@ -157,9 +157,9 @@ static tree maybe_build_cleanup_1 PROTO((tree, tree));
 static tree lookup_name_real PROTO((tree, int, int));
 static void warn_extern_redeclared_static PROTO((tree, tree));
 static void grok_reference_init PROTO((tree, tree, tree, tree *));
-static tree grokfndecl PROTO((tree, tree, tree, int,
+static tree grokfndecl PROTO((tree, tree, tree, tree, int,
 			      enum overload_flags,
-			      tree, tree, tree, int, int, int, int));
+			      tree, tree, tree, int, int, int, int, int, int));
 static tree grokvardecl PROTO((tree, tree, RID_BIT_TYPE *, int, int));
 static tree lookup_tag PROTO((enum tree_code, tree,
 			      struct binding_level *, int));
@@ -2563,6 +2563,20 @@ duplicate_decls (newdecl, olddecl)
 	  cp_error_at ("previous declaration as `%#D'", olddecl);
 	}
     }
+  else if ((TREE_CODE (olddecl) == FUNCTION_DECL 
+	    && DECL_TEMPLATE_SPECIALIZATION (olddecl)
+	    && (!DECL_TEMPLATE_SPECIALIZATION (newdecl)
+		|| (DECL_TI_TEMPLATE (newdecl) 
+		    != DECL_TI_TEMPLATE (olddecl))))
+	   || (TREE_CODE (newdecl) == FUNCTION_DECL
+	       && DECL_TEMPLATE_SPECIALIZATION (newdecl)
+	       && (!DECL_TEMPLATE_SPECIALIZATION (olddecl)
+		   || (DECL_TI_TEMPLATE (olddecl) != DECL_TI_TEMPLATE
+		       (newdecl)))))
+    /* It's OK to have a template specialization and a non-template
+       with the same type, or to have specializations of two
+       different templates with the same type. */
+    return 0;
   else
     {
       char *errmsg = redeclaration_error_message (newdecl, olddecl);
@@ -3030,7 +3044,9 @@ pushdecl (x)
       char *file;
       int line;
 #endif
-
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	name = TREE_OPERAND (name, 0);
+      
       t = lookup_name_current_level (name);
       if (t == error_mark_node)
 	{
@@ -7173,14 +7189,16 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
    not look, and -1 if we should not call `grokclassfn' at all.  */
 
 static tree
-grokfndecl (ctype, type, declarator, virtualp, flags, quals,
-	    raises, attrlist, check, publicp, inlinep, funcdef_flag)
+grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
+	    raises, attrlist, check, friendp, publicp, inlinep, funcdef_flag,
+	    template_count)
      tree ctype, type;
      tree declarator;
+     tree orig_declarator;
      int virtualp;
      enum overload_flags flags;
      tree quals, raises, attrlist;
-     int check, publicp, inlinep, funcdef_flag;
+     int check, friendp, publicp, inlinep, funcdef_flag, template_count;
 {
   tree cname, decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
@@ -7255,6 +7273,11 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       }
 
   /* Caller will do the rest of this.  */
+  check_explicit_specialization (orig_declarator, decl,
+				 template_count, 
+				 funcdef_flag ? 2 : 
+				 (friendp ? 3 : 0));
+
   if (check < 0)
     return decl;
 
@@ -7272,6 +7295,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       DECL_CONSTRUCTOR_P (decl) = 1;
 
       grokclassfn (ctype, declarator, decl, flags, quals);
+
       if (check)
 	{
 	  tmp = check_classfn (ctype, decl);
@@ -7596,6 +7620,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   enum overload_flags flags = NO_SPECIAL;
   tree quals = NULL_TREE;
   tree raises = NULL_TREE;
+  int template_count = 0;
 
   RIDBIT_RESET_ALL (specbits);
   if (decl_context == FUNCDEF)
@@ -7709,9 +7734,27 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 	    ctype = NULL_TREE;
 	    break;
+	    
+	  case TEMPLATE_ID_EXPR:
+	      {
+		tree fns = TREE_OPERAND (decl, 0);
+
+		if (TREE_CODE (fns) == LOOKUP_EXPR)
+		  fns = TREE_OPERAND (fns, 0);
+
+		if (TREE_CODE (fns) == IDENTIFIER_NODE)
+		  dname = fns;
+		else if (really_overloaded_fn (fns))
+		  dname = DECL_NAME (get_first_fn (fns));
+		else
+		  dname = DECL_NAME (fns);
+	      }
+	  /* fall through */
 
 	  case IDENTIFIER_NODE:
-	    dname = decl;
+	    if (TREE_CODE (decl) == IDENTIFIER_NODE)
+	      dname = decl;
+
 	    next = 0;
 
 	    if (is_rid (dname))
@@ -8407,7 +8450,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      Descend through it, creating more complex types, until we reach
      the declared identifier (or NULL_TREE, in an absolute declarator).  */
 
-  while (declarator && TREE_CODE (declarator) != IDENTIFIER_NODE)
+  while (declarator && TREE_CODE (declarator) != IDENTIFIER_NODE
+	 && TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
     {
       /* Each level of DECLARATOR is either an ARRAY_REF (for ...[..]),
 	 an INDIRECT_REF (for *...),
@@ -8661,6 +8705,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (inner_decl && TREE_CODE (inner_decl) == SCOPE_REF)
 	      inner_decl = TREE_OPERAND (inner_decl, 1);
 
+	    if (inner_decl && TREE_CODE (inner_decl) == TEMPLATE_ID_EXPR) 
+	      inner_decl = dname;
+
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    quals = TREE_OPERAND (declarator, 2);
 
@@ -8670,9 +8717,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */
 	    funcdecl_p
-	      = inner_decl && (TREE_CODE (inner_decl) == IDENTIFIER_NODE
-			       || TREE_CODE (inner_decl) == BIT_NOT_EXPR);
-
+	      = inner_decl 
+	      && (TREE_CODE (inner_decl) == IDENTIFIER_NODE
+		  || TREE_CODE (inner_decl) == TEMPLATE_ID_EXPR 
+		  || TREE_CODE (inner_decl) == BIT_NOT_EXPR);
+	    
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
 		&& funcdecl_p
@@ -8961,6 +9010,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       resolve to.  The code here just needs to build
 	       up appropriate member types.  */
 	    tree sname = TREE_OPERAND (declarator, 1);
+	    tree t;
+
 	    /* Destructors can have their visibilities changed as well.  */
 	    if (TREE_CODE (sname) == BIT_NOT_EXPR)
 	      sname = TREE_OPERAND (sname, 0);
@@ -9011,6 +9062,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		continue;
 	      }
 	    ctype = TREE_OPERAND (declarator, 0);
+
+	    t = ctype;
+	    while (t != NULL_TREE) 
+	      {
+		if (CLASSTYPE_TEMPLATE_INFO (t))
+		  template_count += 1;
+		t = TYPE_MAIN_DECL (t);
+		if (DECL_LANG_SPECIFIC (t))
+		  t = DECL_CLASS_CONTEXT (t);
+		else
+		  t = NULL_TREE;
+	      }
 
 	    if (sname == NULL_TREE)
 	      goto done_scoping;
@@ -9430,10 +9493,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
 	    publicp = (! friendp || ! staticp);
-	    decl = grokfndecl (ctype, type, declarator,
+	    decl = grokfndecl (ctype, type, 
+			       TREE_CODE (declarator) != TEMPLATE_ID_EXPR
+			       ? declarator : dname,
+			       declarator,
 			       virtualp, flags, quals, raises, attrlist,
-			       friendp ? -1 : 0, publicp, inlinep,
-			       funcdef_flag);
+			       friendp ? -1 : 0, friendp, publicp, inlinep,
+			       funcdef_flag, template_count);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 #if 0
@@ -9451,9 +9517,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       members of other classes.  */
 	    /* All method decls are public, so tell grokfndecl to set
 	       TREE_PUBLIC, also.  */
-	    decl = grokfndecl (ctype, type, declarator,
+	    decl = grokfndecl (ctype, type, declarator, declarator,
 			       virtualp, flags, quals, raises, attrlist,
-			       friendp ? -1 : 0, 1, 0, funcdef_flag);
+			       friendp ? -1 : 0, friendp, 1, 0, funcdef_flag,
+			       template_count);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 	  }
@@ -9578,11 +9645,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
       {
-	tree original_name = declarator;
+	tree original_name;
 	int publicp = 0;
 
 	if (! declarator)
 	  return NULL_TREE;
+
+	if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+	  original_name = dname;
+	else
+	  original_name = declarator;
 
 	if (RIDBIT_SETP (RID_AUTO, specbits))
 	  error ("storage class `auto' invalid for function `%s'", name);
@@ -9621,7 +9693,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      && IDENTIFIER_POINTER (original_name)[1] == '_'
 		      && strncmp (IDENTIFIER_POINTER (original_name)+2, "builtin_", 8) == 0))
 	      /* Plain overloading: will not be grok'd by grokclassfn.  */
-	      declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
+	      if (name_mangling_version < 1 
+		  || TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
+		declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2)
 	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
@@ -9632,16 +9706,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   || RIDBIT_SETP (RID_EXTERN, specbits)
 		   || !RIDBIT_SETP (RID_STATIC, specbits));
 
-	decl = grokfndecl (ctype, type, original_name,
+	decl = grokfndecl (ctype, type, original_name, declarator,
 			   virtualp, flags, quals, raises, attrlist,
-			   friendp ? 2 : 1,
-			   publicp, inlinep, funcdef_flag);
+			   friendp ? 2 : 1, friendp,
+			   publicp, inlinep, funcdef_flag, 
+			   template_count);
 	if (decl == NULL_TREE)
 	  return NULL_TREE;
 
-	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c)
+	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c
+	    && (!DECL_TEMPLATE_SPECIALIZATION (decl) ||
+		name_mangling_version < 1)) 
 	  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (declarator);
-
+	
 	if (staticp == 1)
 	  {
 	    int illegal_static = 0;

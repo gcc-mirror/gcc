@@ -2375,7 +2375,7 @@ build_x_function_call (function, params, decl)
       return build_method_call (decl, function, params,
 				NULL_TREE, LOOKUP_NORMAL);
     }
-  else if (TREE_CODE (function) == TREE_LIST)
+  else if (really_overloaded_fn (function))
     {
       if (TREE_VALUE (function) == NULL_TREE)
 	{
@@ -2643,7 +2643,8 @@ build_function_call_real (function, params, require_complete, flags)
 
   if (!((TREE_CODE (fntype) == POINTER_TYPE
 	 && TREE_CODE (TREE_TYPE (fntype)) == FUNCTION_TYPE)
-	|| is_method))
+	|| is_method
+	|| TREE_CODE (function) == TEMPLATE_ID_EXPR))
     {
       cp_error ("`%E' cannot be used as a function", function);
       return error_mark_node;
@@ -4026,6 +4027,7 @@ build_x_unary_op (code, xarg)
   /* & rec, on incomplete RECORD_TYPEs is the simple opr &, not an
      error message.  */
   if (code == ADDR_EXPR
+      && TREE_CODE (xarg) != TEMPLATE_ID_EXPR
       && ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (xarg)))
 	   && TYPE_SIZE (TREE_TYPE (xarg)) == NULL_TREE)
 	  || (TREE_CODE (xarg) == OFFSET_REF)))
@@ -4420,6 +4422,27 @@ build_unary_op (code, xarg, noconvert)
 				   0);
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
+      else if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
+	{
+	  tree targs;
+	  tree fn;
+	  
+	  /* We don't require a match here; it's possible that the
+	     context (like a cast to a particular type) will resolve
+	     the particular choice of template.  */
+	  fn = determine_explicit_specialization (arg, NULL_TREE,
+						  &targs,
+						  0, 0);
+
+	  if (fn)
+	    {
+	      fn = instantiate_template (fn, targs);
+	      mark_addressable (fn);
+	      return build_unary_op (ADDR_EXPR, fn, 0);
+	    }
+
+	  return build1 (ADDR_EXPR, unknown_type_node, arg);
+	}
 
       /* Handle complex lvalues (when permitted)
 	 by reduction to simpler cases.  */
@@ -4757,6 +4780,8 @@ mark_addressable (exp)
 	    if (x == current_function_decl)
 	      DECL_EXTERNAL (x) = 0;
 	  }
+	if (DECL_TEMPLATE_INFO (x) && !DECL_TEMPLATE_SPECIALIZATION (x))
+	  mark_used (x);
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;

@@ -2079,6 +2079,53 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	obstack_free (current_obstack, baselink_vec);
     }
 
+  /* Now, figure out what any member template specializations were
+     specializing.  */
+  for (i = 0; i < TREE_VEC_LENGTH (method_vec); ++i)
+    {
+      tree fn;
+      for (fn = TREE_VEC_ELT (method_vec, i);
+	   fn != NULL_TREE;
+	   fn = DECL_CHAIN (fn))
+	if (DECL_TEMPLATE_SPECIALIZATION (fn))
+	  {
+	    tree f;
+	    tree spec_args;
+
+	    /* If there is a template, and t uses template parms, wer
+	       are dealing with a specialization of a member
+	       template in a template class, and we must grab the
+	       template, rather than the function.  */
+	    if (DECL_TI_TEMPLATE (fn) && uses_template_parms (t))
+	      f = DECL_TI_TEMPLATE (fn);
+	    else
+	      f = fn;
+
+	    /* We want the specialization arguments, which will be the
+	       innermost ones.  */
+	    if (DECL_TI_ARGS (f) 
+		&& TREE_CODE (DECL_TI_ARGS (f)) == TREE_VEC)
+	      spec_args 
+		= TREE_VEC_ELT (DECL_TI_ARGS (f), 0);
+	    else
+	      spec_args = DECL_TI_ARGS (f);
+		
+	    check_explicit_specialization 
+	      (lookup_template_function (DECL_NAME (f), spec_args),
+	       f, 0, 1);
+
+	    /* Now, the assembler name will be correct for fn, so we
+	       make its RTL.  */
+	    DECL_RTL (f) = 0;
+	    make_decl_rtl (f, NULL_PTR, 1);
+	    if (f != fn)
+	      {
+		DECL_RTL (fn) = 0;
+		make_decl_rtl (fn, NULL_PTR, 1);
+	      }
+	  }
+    }
+
   return method_vec;
 }
 
@@ -4877,6 +4924,8 @@ instantiate_type (lhstype, rhs, complain)
      tree lhstype, rhs;
      int complain;
 {
+  tree explicit_targs = NULL_TREE;
+
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
@@ -4991,6 +5040,13 @@ instantiate_type (lhstype, rhs, complain)
 	return rhs;
       }
 
+    case TEMPLATE_ID_EXPR:
+      {
+	explicit_targs = TREE_OPERAND (rhs, 1);
+	rhs = TREE_OPERAND (rhs, 0);
+      }
+    /* fall through */
+
     case TREE_LIST:
       {
 	tree elem, baselink, name;
@@ -5025,14 +5081,17 @@ instantiate_type (lhstype, rhs, complain)
 	if (globals > 0)
 	  {
 	    elem = get_first_fn (rhs);
-	    while (elem)
-	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
-		elem = DECL_CHAIN (elem);
-	      else
-		{
-		  mark_used (elem);
-		  return elem;
-		}
+	    /* If there are explicit_targs, only a template function
+	       can match.  */
+	    if (explicit_targs == NULL_TREE)
+	      while (elem)
+		if (! comptypes (lhstype, TREE_TYPE (elem), 1))
+		  elem = DECL_CHAIN (elem);
+		else
+		  {
+		    mark_used (elem);
+		    return elem;
+		  }
 
 	    /* No exact match found, look for a compatible template.  */
 	    {
@@ -5046,7 +5105,8 @@ instantiate_type (lhstype, rhs, complain)
 		    i = type_unification
 		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 
 		       &TREE_VEC_ELT (t, 0), TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		       TYPE_ARG_TYPES (lhstype), &d, 0, 1);
+		       TYPE_ARG_TYPES (lhstype), explicit_targs, &d,
+		       1, 1);
 		    if (i == 0)
 		      {
 			if (save_elem)
@@ -5068,38 +5128,47 @@ instantiate_type (lhstype, rhs, complain)
 		}
 	    }
 
-	    /* No match found, look for a compatible function.  */
-	    elem = get_first_fn (rhs);
-	    while (elem && comp_target_types (lhstype,
-					      TREE_TYPE (elem), 1) <= 0)
-	      elem = DECL_CHAIN (elem);
-	    if (elem)
+	    /* If there are explicit_targs, only a template function
+	       can match.  */
+	    if (explicit_targs == NULL_TREE) 
 	      {
-		tree save_elem = elem;
-		elem = DECL_CHAIN (elem);
+		/* No match found, look for a compatible function.  */
+		elem = get_first_fn (rhs);
 		while (elem && comp_target_types (lhstype,
-						  TREE_TYPE (elem), 0) <= 0)
+						  TREE_TYPE (elem), 1) <= 0)
 		  elem = DECL_CHAIN (elem);
 		if (elem)
 		  {
-		    if (complain)
+		    tree save_elem = elem;
+		    elem = DECL_CHAIN (elem);
+		    while (elem 
+			   && comp_target_types (lhstype,
+						 TREE_TYPE (elem), 0) <= 0)
+		      elem = DECL_CHAIN (elem);
+		    if (elem)
 		      {
-			cp_error ("cannot resolve overload to target type `%#T'",
-				  lhstype);
-			cp_error_at ("  ambiguity between `%#D'", save_elem);
-			cp_error_at ("  and `%#D', at least", elem);
+			if (complain)
+			  {
+			    cp_error 
+			      ("cannot resolve overload to target type `%#T'",
+			       lhstype);
+			    cp_error_at ("  ambiguity between `%#D'",
+					 save_elem); 
+			    cp_error_at ("  and `%#D', at least", elem);
+			  }
+			return error_mark_node;
 		      }
-		    return error_mark_node;
+		    mark_used (save_elem);
+		    return save_elem;
 		  }
-		mark_used (save_elem);
-		return save_elem;
 	      }
 	    if (complain)
 	      {
 		cp_error ("cannot resolve overload to target type `%#T'",
 			  lhstype);
-		cp_error ("  because no suitable overload of function `%D' exists",
-			  TREE_PURPOSE (rhs));
+		cp_error 
+		  ("  because no suitable overload of function `%D' exists",
+		   TREE_PURPOSE (rhs));
 	      }
 	    return error_mark_node;
 	  }

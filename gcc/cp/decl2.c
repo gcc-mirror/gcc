@@ -406,6 +406,14 @@ int flag_weak = 1;
 
 int max_tinst_depth = 17;
 
+/* The name-mangling scheme to use.  Must be 1 or greater to support
+   template functions with identical types, but different template
+   arguments.  */
+int name_mangling_version = 1;
+
+/* Nonzero means that guiding declarations are allowed.  */
+int flag_guiding_decls;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -526,6 +534,17 @@ lang_decode_option (p)
 	  flag_implicit_templates = 0;
 	  found = 1;
 	}
+      else if (!strcmp (p, "guiding-decls"))
+	{
+	  flag_guiding_decls = 1;
+	  name_mangling_version = 0;
+	  found = 1;
+	}
+      else if (!strcmp (p, "no-guiding-decls"))
+	{
+	  flag_guiding_decls = 0;
+	  found = 1;
+	}
       else if (!strncmp (p, "template-depth-", 15))
 	{
 	  char *endp = p + 15;
@@ -541,6 +560,22 @@ lang_decode_option (p)
 	    }
 	  max_tinst_depth = atoi (p + 15);
 	template_depth_lose: ;
+	}
+      else if (!strncmp (p, "name-mangling-version-", 22))
+	{
+	  char *endp = p + 22;
+	  while (*endp)
+	    {
+	      if (*endp >= '0' && *endp <= '9')
+		endp++;
+	      else
+		{
+		  error ("Invalid option `%s'", p - 2);
+		  goto mangling_version_lose;
+		}
+	    }
+	  name_mangling_version = atoi (p + 22);
+	mangling_version_lose:
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -1395,10 +1430,15 @@ check_classfn (ctype, function)
 
 		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
-			  && compparms (p1, p2, 3))
+			  && compparms (p1, p2, 3)
+			  && (DECL_TEMPLATE_SPECIALIZATION (function)
+			      == DECL_TEMPLATE_SPECIALIZATION (fndecl))
+			  && (!DECL_TEMPLATE_SPECIALIZATION (function)
+			      || (DECL_TI_TEMPLATE (function) 
+				  == DECL_TI_TEMPLATE (fndecl))))
 			return fndecl;
 
-		      if (is_member_template (fndecl)) 
+		      if (is_member_template (fndecl))
 			/* This function might be an instantiation
 			   or specialization of fndecl.  */
 			templates = 
@@ -3367,6 +3407,12 @@ build_expr_from_tree (t)
 	return do_scoped_id (TREE_OPERAND (t, 0), 0);
       else
 	return do_identifier (TREE_OPERAND (t, 0), 0);
+
+    case TEMPLATE_ID_EXPR:
+      return lookup_template_function (build_expr_from_tree
+				       (TREE_OPERAND (t, 0)),
+				       build_expr_from_tree
+				       (TREE_OPERAND (t, 1)));
 
     case INDIRECT_REF:
       return build_x_indirect_ref

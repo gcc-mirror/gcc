@@ -23,12 +23,8 @@
      + Static data member templates work.
      + Member function templates are now supported.
      + Partial specialization of class templates is now supported.
-     + The new 'template <>' specialization syntax is now accepted and
-       ignored.
-     + Explicit instantiation of template constructors and destructors is
-       now supported.  For instance:
-
-            template A<int>::A(const A&);
+     + Explicit specification of template parameters to function templates
+       is now supported.
 
   Things you may need to fix in your code:
 
@@ -43,6 +39,11 @@
 
             http://www.cygnus.com/misc/wp/dec96pub/template.html#temp.res
 
+     + Guiding declarations are no longer supported.  Function declarations, 
+       including friend declarations, do not refer to template instantiations.
+       You can restore the old behavior with -fguiding-decls until you fix
+       your code.
+
   Other features:
 
      + Default function arguments in templates will not be evaluated (or
@@ -52,13 +53,16 @@
      + The -ftemplate-depth-NN flag can be used to increase the maximum
        recursive template instantiation depth, which defaults to 17. If you
        need to use this flag, the compiler will tell you.
+     + Explicit instantiation of template constructors and destructors is
+       now supported.  For instance:
+
+            template A<int>::A(const A&);
 
   Still not supported:
 
      + Member class templates.
      + Template template parameters.
      + Template friends.
-     + Explicit qualification of function templates.
 
 * Exception handling support has been significantly improved and is on by
   default.  This can result in significant runtime overhead.  You can turn
@@ -163,3 +167,14 @@
 * On the HPPA, some classes that do not define a copy constructor
   will be passed and returned in memory again so that functions
   returning those types can be inlined.
+
+*** The g++ team thanks everyone that contributed to this release,
+    but especially:
+
+* Joe Buck <jbuck@synopsys.com>, the maintainer of the g++ FAQ.
+* Brendan Kehoe <brendan@cygnus.com>, who coordinates testing of g++.
+* Jason Merrill <jason@cygnus.com>, the g++ maintainer.
+* Mark Mitchell <mmitchell@usa.net>, who implemented member function 
+  templates and explicit qualification of function templates.
+* Mike Stump <mrs@wrs.com>, the previous g++ maintainer, who did most of
+  the exception handling work.

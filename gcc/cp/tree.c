@@ -1262,6 +1262,9 @@ is_overloaded_fn (x)
   if (TREE_CODE (x) == FUNCTION_DECL)
     return 1;
 
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+    return 1;
+
   if (TREE_CODE (x) == TREE_LIST
       && (TREE_CODE (TREE_VALUE (x)) == FUNCTION_DECL
 	  || TREE_CODE (TREE_VALUE (x)) == TEMPLATE_DECL))
@@ -1274,9 +1277,12 @@ int
 really_overloaded_fn (x)
      tree x;
 {     
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+    return 1;
+
   if (TREE_CODE (x) == TREE_LIST
       && (TREE_CODE (TREE_VALUE (x)) == FUNCTION_DECL
-	  || TREE_CODE (TREE_VALUE (x)) == TEMPLATE_DECL))
+	  || DECL_FUNCTION_TEMPLATE_P (TREE_VALUE (x))))
     return 1;
 
   return 0;
@@ -1286,7 +1292,8 @@ tree
 get_first_fn (from)
      tree from;
 {
-  if (TREE_CODE (from) == FUNCTION_DECL)
+  if (TREE_CODE (from) == FUNCTION_DECL 
+      || DECL_FUNCTION_TEMPLATE_P (from))
     return from;
 
   my_friendly_assert (TREE_CODE (from) == TREE_LIST, 9);

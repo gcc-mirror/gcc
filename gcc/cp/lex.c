@@ -2729,6 +2729,15 @@ identifier_type (decl)
     {
       if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
 	return PTYPENAME;
+      else if (looking_for_template) 
+	return PFUNCNAME;
+    }
+  if (looking_for_template && really_overloaded_fn (decl))
+    {
+      tree t;
+      for (t = TREE_VALUE (decl); t != NULL_TREE; t = DECL_CHAIN (t))
+	if (DECL_FUNCTION_TEMPLATE_P (t)) 
+	  return PFUNCNAME;
     }
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     return NSNAME;
