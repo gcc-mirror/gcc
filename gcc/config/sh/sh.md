@@ -2812,18 +2812,7 @@
   if (prepare_move_operands (operands, DFmode)) DONE;
   if (TARGET_SH4)
     {
-      if (no_new_pseudos)
-	{
-	  /* ??? FIXME: This is only a stopgap fix.  There is no guarantee
-	     that fpscr is in the right state. */
-	  emit_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
-	  DONE;
-	}
       emit_df_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
-      /* We need something to tag possible REG_LIBCALL notes on to.  */
-      if (TARGET_FPU_SINGLE && rtx_equal_function_value_matters
-	  && GET_CODE (operands[0]) == REG)
-	emit_insn (gen_mov_nop (operands[0]));
       DONE;
     }
 }")
@@ -2910,18 +2899,7 @@
     DONE;
   if (TARGET_SH3E)
     {
-      if (no_new_pseudos)
-	{
-	  /* ??? FIXME: This is only a stopgap fix.  There is no guarantee
-	     that fpscr is in the right state. */
-	  emit_insn (gen_movsf_ie (operands[0], operands[1], get_fpscr_rtx ()));
-	  DONE;
-	}
       emit_sf_insn (gen_movsf_ie (operands[0], operands[1], get_fpscr_rtx ()));
-      /* We need something to tag possible REG_LIBCALL notes on to.  */
-      if (! TARGET_FPU_SINGLE && rtx_equal_function_value_matters
-	  && GET_CODE (operands[0]) == REG)
-	emit_insn (gen_mov_nop (operands[0]));
       DONE;
     }
 }")
@@ -3415,9 +3393,7 @@
 ;; that doesn't mix with emitting a prologue.
 (define_insn "return"
   [(return)]
-  "emit_fpscr_use (),
-   remove_dead_before_cse (),
-   reload_completed"
+  "reload_completed"
   "%@	%#"
   [(set_attr "type" "return")
    (set_attr "needs_delay_slot" "yes")])

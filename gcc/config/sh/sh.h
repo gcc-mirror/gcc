@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993-1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993-1999, 2000 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -204,8 +204,6 @@ extern int target_flags;
 do {									\
   if (LEVEL)								\
     flag_omit_frame_pointer = -1;					\
-  if (LEVEL)								\
-    sh_flag_remove_dead_before_cse = 1;					\
   if (SIZE)								\
     target_flags |= SPACE_BIT;						\
 } while (0)
@@ -756,9 +754,9 @@ extern enum reg_class reg_class_from_letter[];
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-((C) == 'G' ? fp_zero_operand (VALUE)		\
- : (C) == 'H' ? fp_one_operand (VALUE)		\
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)		\
+((C) == 'G' ? (fp_zero_operand (VALUE) && fldi_ok ())	\
+ : (C) == 'H' ? (fp_one_operand (VALUE) && fldi_ok ())	\
  : (C) == 'F')
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -791,7 +789,8 @@ extern enum reg_class reg_class_from_letter[];
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)  \
   ((((CLASS) == FP_REGS || (CLASS) == FP0_REGS || (CLASS) == DF_REGS)	\
     && immediate_operand ((X), (MODE))					\
-    && ! ((fp_zero_operand (X) || fp_one_operand (X)) && (MODE) == SFmode))\
+    && ! ((fp_zero_operand (X) || fp_one_operand (X))			\
+	  && (MODE) == SFmode && fldi_ok ()))				\
    ? R0_REGS								\
    : CLASS == FPUL_REGS && immediate_operand ((X), (MODE))		\
    ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I (INTVAL (X))		\
@@ -2122,7 +2121,6 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define PRAGMA_INSERT_ATTRIBUTES(node, pattr, prefix_attr) \
   sh_pragma_insert_attributes (node, pattr, prefix_attr)
 
-extern int sh_flag_remove_dead_before_cse;
 extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;
 
@@ -2239,3 +2237,27 @@ do {									\
 
 #define SH_DYNAMIC_SHIFT_COST \
   (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)
+
+
+#define NUM_MODES_FOR_MODE_SWITCHING { FP_MODE_NONE }
+
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) TARGET_SH4
+
+#define MODE_USES_IN_EXIT_BLOCK gen_rtx_USE (VOIDmode, get_fpscr_rtx ())
+
+#define MODE_NEEDED(ENTITY, INSN)					\
+  (recog_memoized (INSN) >= 0						\
+   ? get_attr_fp_mode (INSN)						\
+   : (GET_CODE (PATTERN (INSN)) == USE				\
+      && rtx_equal_p (XEXP (PATTERN (INSN), 0), get_fpscr_rtx ()))	\
+   ? (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)		\
+   : FP_MODE_NONE)
+
+#define MODE_AT_ENTRY(ENTITY) \
+  (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
+
+#define MODE_PRIORITY_TO_MODE(ENTITY, N) \
+  ((TARGET_FPU_SINGLE != 0) ^ (N) ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
+
+#define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) \
+  fpscr_set_from_mem ((MODE), (HARD_REGS_LIVE))

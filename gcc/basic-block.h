@@ -435,6 +435,7 @@ extern struct edge_list *pre_edge_rev_lcm PARAMS ((FILE *, int, sbitmap *,
 						   sbitmap **));
 extern void compute_available		PARAMS ((sbitmap *, sbitmap *,
 						 sbitmap *, sbitmap *));
+extern void optimize_mode_switching	PARAMS ((FILE *));
 
 /* In emit-rtl.c.  */
 extern rtx emit_block_insn_after	PARAMS ((rtx, rtx, basic_block));
