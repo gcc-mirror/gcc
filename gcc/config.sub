@@ -112,7 +112,7 @@ case $basic_machine in
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
-		| powerpc)
+		| powerpc | sparc64)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -127,7 +127,7 @@ case $basic_machine in
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
-	      | sh-* | powerpc-*)
+	      | sh-* | powerpc-* | sparc64-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -545,7 +545,7 @@ case $os in
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* | -ns* | -cxux*)
+	      | -lynxos* | -bosx* | -ns* | -cxux* | -aout* | -elf*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
