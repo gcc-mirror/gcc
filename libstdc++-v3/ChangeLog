@@ -1,3 +1,9 @@
+2002-10-17  Momchil Velikov  <velco@fadata.bg>
+	    Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.in: Add *-freebsd* to cross list.
+	* configure: Rebuilt.
+
 2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (__timepunct::__timepunct): Allocate
