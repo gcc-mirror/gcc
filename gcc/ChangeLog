@@ -1,3 +1,13 @@
+2003-04-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	gtle_operator.
+	* config/h8300/h8300.c (gtle_operator): New.
+	* config/h8300/h8300.h (PREDICATE_CODES): Add an entry for
+	gtle_operator.
+	* config/h8300/h8300.md (a peephole2): Generalize to accept GT
+	and LE.
+
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
 	* libgcc-std.ver (_Unwind_GetCFA): New.
