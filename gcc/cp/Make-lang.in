@@ -122,7 +122,11 @@ c++.man: doc/g++.1
 c++.srcman: doc/g++.1
 	-cp -p $^ $(srcdir)/doc
 
+# 'make check' in gcc/ looks for check-c++, as do all toplevel C++-related
+# check targets.  However, our DejaGNU framework requires 'check-g++' as its
+# entry point.  We feed the former to the latter here.
 check-c++ : check-g++
+# List of targets that can use the generic check- rule and its // variant.
 lang_checks += check-g++
 
 #
