@@ -1391,10 +1391,10 @@ duplicate_decls (newdecl, olddecl)
 	    warning_with_decl (newdecl,
 			       "`%s' declared inline after being called");
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && TREE_INLINE (olddecl) != TREE_INLINE (newdecl)
-	      && ! (TREE_EXTERNAL (olddecl) && TREE_EXTERNAL (newdecl)))
+	      && ! TREE_INLINE (olddecl) && TREE_INLINE (newdecl)
+	      && DECL_INITIAL (olddecl) != 0)
 	    warning_with_decl (newdecl,
-			       "`%s' declarations disagree about `inline'");
+			       "`%s' declared inline after its definition");
 	  /* It is nice to warn when a function is declared
 	     global first and then static.  */
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -5754,6 +5754,7 @@ finish_function (nested)
     which then got a warning when stored in a ptr-to-function variable.  */
 
   poplevel (1, 0, 1);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Must mark the RESULT_DECL as being in this function.  */
 
