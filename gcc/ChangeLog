@@ -1,3 +1,12 @@
+2003-12-05  Roger Sayle  <roger@eyesopen.com>
+
+	* dojump.c (do_jump): If the expression being compared against
+	zero, is the subreg of a promoted variable, perform the comparison
+	in the promoted mode.
+	* simplify-rtx.c (simplify_unary_operation): Optimize sign and
+	zero-extensions of subregs of promoted variables where the
+	extension is identical to that used to promote the variable.
+
 2003-12-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/13256

@@ -1031,6 +1031,15 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      && GET_CODE (XEXP (XEXP (op, 0), 1)) == LABEL_REF)
 	    return XEXP (op, 0);
 
+	  /* Check for a sign extension of a subreg of a promoted
+	     variable, where the promotion is sign-extended, and the
+	     target mode is the same as the variable's promotion.  */
+	  if (GET_CODE (op) == SUBREG
+	      && SUBREG_PROMOTED_VAR_P (op)
+	      && ! SUBREG_PROMOTED_UNSIGNED_P (op)
+	      && GET_MODE (XEXP (op, 0)) == mode)
+	    return XEXP (op, 0);
+
 #if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
 	  if (! POINTERS_EXTEND_UNSIGNED
 	      && mode == Pmode && GET_MODE (op) == ptr_mode
@@ -1043,8 +1052,17 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 #endif
 	  break;
 
-#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
 	case ZERO_EXTEND:
+	  /* Check for a zero extension of a subreg of a promoted
+	     variable, where the promotion is zero-extended, and the
+	     target mode is the same as the variable's promotion.  */
+	  if (GET_CODE (op) == SUBREG
+	      && SUBREG_PROMOTED_VAR_P (op)
+	      && SUBREG_PROMOTED_UNSIGNED_P (op)
+	      && GET_MODE (XEXP (op, 0)) == mode)
+	    return XEXP (op, 0);
+
+#if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
 	  if (POINTERS_EXTEND_UNSIGNED > 0
 	      && mode == Pmode && GET_MODE (op) == ptr_mode
 	      && (CONSTANT_P (op)
@@ -1053,8 +1071,8 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 		      && REG_POINTER (SUBREG_REG (op))
 		      && GET_MODE (SUBREG_REG (op)) == Pmode)))
 	    return convert_memory_address (Pmode, op);
-	  break;
 #endif
+	  break;
 
 	default:
 	  break;
