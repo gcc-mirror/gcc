@@ -50,13 +50,20 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{BESJ0}:     BESJ0,     Bessel function of the first kind of order 0
 * @code{BESJ1}:     BESJ1,     Bessel function of the first kind of order 1
 * @code{BESJN}:     BESJN,     Bessel function of the first kind
-* @code{BESY0}:     BESY0,     Bessel function of the first kind of order 0
-* @code{BESY1}:     BESY1,     Bessel function of the first kind of order 1
-* @code{BESYN}:     BESYN,     Bessel function of the first kind
+* @code{BESY0}:     BESY0,     Bessel function of the second kind of order 0
+* @code{BESY1}:     BESY1,     Bessel function of the second kind of order 1
+* @code{BESYN}:     BESYN,     Bessel function of the second kind
+* @code{COS}:       COS,       Cosine function
 * @code{COSH}:      COSH,      Hyperbolic cosine function
 * @code{ERF}:       ERF,       Error function
 * @code{ERFC}:      ERFC,      Complementary error function
+* @code{EXP}:       EXP,       Cosine function
+* @code{LOG}:       LOG,       Logarithm function
+* @code{LOG10}:     LOG10,     Base 10 logarithm function 
+* @code{SQRT}:      SQRT,      Square-root function
+* @code{SIN}:       SIN,       Sine function
 * @code{SINH}:      SINH,      Hyperbolic sine function
+* @code{TAN}:       TAN,       Tangent function
 * @code{TANH}:      TANH,      Hyperbolic tangent function
 @end menu
 
@@ -1052,6 +1059,54 @@ end program test_besyn
 @end table
 
 
+@node COS
+@section @code{COS} --- Cosine function 
+@findex @code{COS} intrinsic
+@findex @code{DCOS} intrinsic
+@findex @code{ZCOS} intrinsic
+@findex @code{CDCOS} intrinsic
+@cindex cosine
+
+@table @asis
+@item @emph{Description}:
+@code{COS(X)} computes the cosine of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = COS(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind than @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_cos
+  real :: x = 0.0
+  x = cos(x)
+end program test_cos
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DCOS(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CCOS(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
+@item @code{ZCOS(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item @code{CDCOS(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@end multitable
+@end table
+
 
 @node COSH
 @section @code{COSH} --- Hyperbolic cosine function 
@@ -1107,7 +1162,7 @@ end program test_cosh
 @code{ERF(X)} computes the error function of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -1135,7 +1190,7 @@ end program test_erf
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DERF(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DERF(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -1151,7 +1206,7 @@ end program test_erf
 @code{ERFC(X)} computes the complementary error function of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -1179,9 +1234,213 @@ end program test_erfc
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
+
+
+
+@node EXP
+@section @code{EXP} --- Exponential function 
+@findex @code{EXP} intrinsic
+@findex @code{DEXP} intrinsic
+@findex @code{ZEXP} intrinsic
+@findex @code{CDEXP} intrinsic
+@cindex exponential
+
+@table @asis
+@item @emph{Description}:
+@code{EXP(X)} computes the base @math{e} exponential of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = EXP(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind than @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_exp
+  real :: x = 1.0
+  x = exp(x)
+end program test_exp
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DEXP(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
+@item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item @code{CDEXP(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+@node LOG
+@section @code{LOG} --- Logarithm function
+@findex @code{LOG} intrinsic
+@findex @code{ALOG} intrinsic
+@findex @code{DLOG} intrinsic
+@findex @code{CLOG} intrinsic
+@findex @code{ZLOG} intrinsic
+@findex @code{CDLOG} intrinsic
+@cindex logarithm
+
+@table @asis
+@item @emph{Description}:
+@code{LOG(X)} computes the logarithm of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = LOG(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The kind type parameter is the same as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_log
+  real(8) :: x = 1.0_8
+  complex :: z = (1.0, 2.0)
+  x = log(x)
+  z = log(z)
+end program test_log
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{ALOG(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
+@item @code{DLOG(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CLOG(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
+@item @code{ZLOG(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item @code{CDLOG(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node LOG10
+@section @code{LOG10} --- Base 10 logarithm function
+@findex @code{LOG10} intrinsic
+@findex @code{ALOG10} intrinsic
+@findex @code{DLOG10} intrinsic
+@cindex logarithm
+
+@table @asis
+@item @emph{Description}:
+@code{LOG10(X)} computes the base 10 logarithm of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = LOG10(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The kind type parameter is the same as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_log10
+  real(8) :: x = 10.0_8
+  x = log10(x)
+end program test_log10
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
+@item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node SIN
+@section @code{SIN} --- Sine function 
+@findex @code{SIN} intrinsic
+@findex @code{DSIN} intrinsic
+@findex @code{ZSIN} intrinsic
+@findex @code{CDSIN} intrinsic
+@cindex sine
+
+@table @asis
+@item @emph{Description}:
+@code{SIN(X)} computes the sine of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = SIN(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and king than @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_sin
+  real :: x = 0.0
+  x = sin(x)
+end program test_sin
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DSIN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CSIN(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
+@item @code{ZSIN(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item @code{CDSIN(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@end multitable
+@end table
+
 
 
 
@@ -1227,6 +1486,104 @@ end program test_sinh
 @end multitable
 @end table
 
+
+
+@node SQRT
+@section @code{SQRT} --- Square-root function
+@findex @code{SQRT} intrinsic
+@findex @code{DSQRT} intrinsic
+@findex @code{CSQRT} intrinsic
+@findex @code{ZSQRT} intrinsic
+@findex @code{CDSQRT} intrinsic
+@cindex square-root
+
+@table @asis
+@item @emph{Description}:
+@code{SQRT(X)} computes the square root of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = SQRT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)} or
+@code{COMPLEX(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The kind type parameter is the same as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_sqrt
+  real(8) :: x = 2.0_8
+  complex :: z = (1.0, 2.0)
+  x = sqrt(x)
+  z = sqrt(z)
+end program test_sqrt
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DSQRT(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
+@item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node TAN
+@section @code{TAN} --- Tangent function
+@findex @code{TAN} intrinsic
+@findex @code{DTAN} intrinsic
+@cindex tangent
+
+@table @asis
+@item @emph{Description}:
+@code{TAN(X)} computes the tangent of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = TAN(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.  The kind type parameter is
+the same as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_tan
+  real(8) :: x = 0.165_8
+  x = tan(x)
+end program test_tan
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
 
 
 @node TANH
@@ -1294,11 +1651,6 @@ end program test_tanh
 @comment gen   conjg
 @comment       dconjg
 @comment 
-@comment gen   cos
-@comment       dcos
-@comment       ccos
-@comment       zcos,cdcos
-@comment 
 @comment gen   count
 @comment 
 @comment sub   cpu_time
@@ -1334,11 +1686,6 @@ end program test_tanh
 @comment sub   etime
 @comment 
 @comment sub   exit
-@comment 
-@comment gen   exp
-@comment       dexp
-@comment       cexp
-@comment       zexp,cdexp
 @comment 
 @comment gen   exponent
 @comment 
@@ -1419,16 +1766,6 @@ end program test_tanh
 @comment gen   lle
 @comment 
 @comment gen   llt
-@comment 
-@comment gen   log
-@comment       alog
-@comment       dlog
-@comment       clog
-@comment       zlog, cdlog
-@comment 
-@comment gen   log10
-@comment       alog10
-@comment       dlog10
 @comment 
 @comment gen   logical
 @comment 
@@ -1527,21 +1864,11 @@ end program test_tanh
 @comment       isign
 @comment       dsign
 @comment 
-@comment gen   sin
-@comment       dsin
-@comment       csin
-@comment       zsin,cdsin
-@comment 
 @comment gen   size
 @comment 
 @comment gen   spacing
 @comment 
 @comment gen   spread
-@comment 
-@comment gen   sqrt
-@comment       dsqrt
-@comment       csqrt
-@comment       zsqrt,cdsqrt
 @comment 
 @comment sub   srand
 @comment 
@@ -1554,9 +1881,6 @@ end program test_tanh
 @comment sub   system
 @comment 
 @comment sub system_clock
-@comment 
-@comment gen   tan
-@comment       dtan
 @comment 
 @comment gen   tiny
 @comment 
