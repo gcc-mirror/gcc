@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
@@ -567,8 +567,8 @@ fini_section ()								\
    the initial value of DECL requires link-time relocations.  */
 
 /* Override elfos.h definition.  */
-#undef	SELECT_SECTION
-#define	SELECT_SECTION(DECL, RELOC, ALIGN) rs6000_select_section (DECL, RELOC)
+#undef	TARGET_ASM_SELECT_SECTION
+#define	TARGET_ASM_SELECT_SECTION  rs6000_elf_select_section
 
 /* A C statement to build up a unique section name, expressed as a
    STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
@@ -578,9 +578,8 @@ fini_section ()								\
    macro can now be called for uninitialized data items as well as
    initialised data and functions.  */
 
-/* Override elfos.h definition.  */
-#undef	UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL, RELOC) rs6000_unique_section (DECL, RELOC)
+/* Override default elf definition.  */
+#define TARGET_ASM_UNIQUE_SECTION  rs6000_elf_unique_section
 
 /* Return non-zero if this entry is to be written into the constant pool
    in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST

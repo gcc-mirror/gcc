@@ -234,13 +234,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define EH_FRAME_IN_DATA_SECTION
 
-/* Note that there appears to be two different ways to support const
-   sections at the moment.  You can either #define the symbol
-   READONLY_DATA_SECTION (giving it some code which switches to the
-   readonly data section) or else you can #define the symbols
-   EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
-
 #define USE_CONST_SECTION	1
 
 #define CONST_SECTION_ASM_OP	"\t.section\t.rdata,\"r\""
@@ -402,8 +395,8 @@ do {									\
    symbols must be explicitly imported from shared libraries (DLLs).  */
 #define MULTIPLE_SYMBOL_SPACES
 
-extern void i386_pe_unique_section ();
-#define UNIQUE_SECTION(DECL,RELOC) i386_pe_unique_section (DECL, RELOC)
+extern void i386_pe_unique_section PARAMS ((tree, int));
+#define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
 
 #define SUPPORTS_ONE_ONLY 1
 #endif /* 0 */

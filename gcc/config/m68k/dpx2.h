@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.  
    Bull DPX/2 200 and 300 systems (m68k, SysVr3).
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1999, 2000, 2002
+   Free Software Foundation, Inc.
    Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
 This file is part of GNU CC.
@@ -42,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Remove handling for a separate constant data section.  We put
    constant data in text_section, which is the default.  */
-#undef SELECT_SECTION
+#undef TARGET_ASM_SELECT_SECTION
 #undef SELECT_RTX_SECTION
 #undef EXTRA_SECTIONS
 #undef EXTRA_SECTION_FUNCTIONS

@@ -1,5 +1,5 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,10 +33,8 @@ extern void   m32r_finalize_pic			PARAMS ((void));
 extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
-extern void   m32r_select_section		PARAMS ((tree, int));
 extern void   m32r_encode_section_info		PARAMS ((tree, int));
 extern enum m32r_function_type m32r_compute_function_type PARAMS ((tree));
-extern void   m32r_select_section 		PARAMS ((tree, int));
 
 #ifdef HAVE_MACHINE_MODES
 extern void   m32r_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int *, int));

@@ -63,6 +63,7 @@ const struct attribute_spec avr_attribute_table[];
 static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void   avr_unique_section PARAMS ((tree, int));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -196,6 +197,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_FUNCTION_EPILOGUE avr_output_function_epilogue
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION avr_unique_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4498,8 +4501,8 @@ avr_assemble_integer (x, size, aligned_p)
 
 /* Sets section name for declaration DECL */
   
-void
-unique_section (decl, reloc)
+static void
+avr_unique_section (decl, reloc)
      tree decl;
      int reloc ATTRIBUTE_UNUSED;
 {

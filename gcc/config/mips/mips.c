@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for MIPS
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -146,6 +146,11 @@ static int mips_issue_rate			PARAMS ((void));
 static void mips_init_machine_status		PARAMS ((struct function *));
 static void mips_free_machine_status		PARAMS ((struct function *));
 static void mips_mark_machine_status		PARAMS ((struct function *));
+static void mips_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
+	ATTRIBUTE_UNUSED;
+static void mips_unique_section			PARAMS ((tree, int))
+	ATTRIBUTE_UNUSED;
+
 
 struct machine_function {
   /* Pseudo-reg holding the address of the current function when
@@ -7943,10 +7948,11 @@ mips_select_rtx_section (mode, x)
    If you need to make a change here, you probably should check
    ENCODE_SECTION_INFO to see if it needs a similar change.  */
 
-void
-mips_select_section (decl, reloc)
+static void
+mips_select_section (decl, reloc, align)
      tree decl;
      int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
 
@@ -10145,9 +10151,10 @@ mips_adjust_cost (insn, link, dep, cost)
   return cost;
 }
 
-/* Cover function for UNIQUE_SECTION.  */
+/* ??? This could be replaced with the default elf version if
+   TARGET_IS_SMALL_DATA_P is set properly.  */
 
-void
+static void
 mips_unique_section (decl, reloc)
      tree decl;
      int reloc;

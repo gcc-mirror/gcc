@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
-   Copyright (C) 1991, 1996, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 1999, 2000, 2002 Free Software Foundation, Inc.
    Based upon original work of Ron Guilmette (rfg@monkeys.com).
    Contributed by Andy Pfiffer (andyp@ssd.intel.com).
    Partially inspired by
@@ -181,7 +181,7 @@ Boston, MA 02111-1307, USA.  */
 #undef DTORS_SECTION_ASM_OP
 #undef DO_GLOBAL_CTORS_BODY
 #undef ASM_OUTPUT_DESTRUCTOR
-#undef SELECT_SECTION
+#undef TARGET_ASM_SELECT_SECTION
 #undef SELECT_RTX_SECTION
 #undef READONLY_DATA_SECTION
 

@@ -1,6 +1,6 @@
 /* netware.h -- operating system specific defines to be used when 
    targeting GCC for some generic NetWare 4 system.
-   Copyright (C) 1993, 1994, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    Written by David V. Henkel-Wallace (gumby@cygnus.com)
 
@@ -56,13 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Support const sections and the ctors and dtors sections for g++.
-   Note that there appears to be two different ways to support const
-   sections at the moment.  You can either #define the symbol
-   READONLY_DATA_SECTION (giving it some code which switches to the
-   readonly data section) or else you can #define the symbols
-   EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
+/* Support const sections and the ctors and dtors sections for g++.  */
 
 #undef	HAS_INIT_SECTION
 #undef	INIT_SECTION_ASM_OP

@@ -1713,46 +1713,6 @@ mmix_data_section_asm_op ()
   return "\t.data ! mmixal:= 8H LOC 9B";
 }
 
-/* SELECT_SECTION.
-   The meat is from elfos.h, which we will eventually consider using.  */
-
-void
-mmix_select_section (decl, reloc, align)
-     tree decl;
-     int reloc;
-     int align ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == STRING_CST)
-    {
-      if (! flag_writable_strings)
-	const_section ();
-      else
-	data_section ();
-    }
-  else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if ((flag_pic && reloc)
-	  || !TREE_READONLY (decl) || TREE_SIDE_EFFECTS (decl)
-	  || !DECL_INITIAL (decl)
-	  || (DECL_INITIAL (decl) != error_mark_node
-	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
-	data_section ();
-      else
-	const_section ();
-    }
-  else if (TREE_CODE (decl) == CONSTRUCTOR)
-    {
-      if ((flag_pic && reloc)
-	  || !TREE_READONLY (decl) || TREE_SIDE_EFFECTS (decl)
-	  || ! TREE_CONSTANT (decl))
-	data_section ();
-      else
-	const_section ();
-    }
-  else
-    const_section ();
-}
-
 /* ENCODE_SECTION_INFO.  */
 
 void
@@ -1816,49 +1776,6 @@ mmix_strip_name_encoding (name)
     ;
 
   return name;
-}
-
-/* UNIQUE_SECTION.
-   The meat is from elfos.h, which we should consider using.  */
-
-void
-mmix_unique_section (decl, reloc)
-     tree decl;
-     int reloc;
-{
-  int len;
-  int sec;
-  const char *name;
-  char *string;
-  const char *prefix;
-  static const char *const prefixes[4][2] =
-  {
-    { ".text.",   ".gnu.linkonce.t." },
-    { ".rodata.", ".gnu.linkonce.r." },
-    { ".data.",   ".gnu.linkonce.d." },
-    { ".bss.",    ".gnu.linkonce.b." }
-  };
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    sec = 0;
-  else if (DECL_INITIAL (decl) == 0
-	   || DECL_INITIAL (decl) == error_mark_node)
-    sec =  3;
-  else if (DECL_READONLY_SECTION (decl, reloc))
-    sec = 1;
-  else
-    sec = 2;
-
-  name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  /* Strip off any encoding in name.  */
-  STRIP_NAME_ENCODING (name, name);
-  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
-  len    = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
-
-  sprintf (string, "%s%s", prefix, name);
-
-  DECL_SECTION_NAME (decl) = build_string (len, string);
 }
 
 /* ASM_FILE_START.  */

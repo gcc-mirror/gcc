@@ -4738,10 +4738,8 @@ rdata_section ()							\
 #define SELECT_RTX_SECTION(MODE, RTX, ALIGN) \
   mips_select_rtx_section (MODE, RTX)
 
-#undef SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC, ALIGN) \
-  mips_select_section (DECL, RELOC)
-
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  mips_select_section
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.

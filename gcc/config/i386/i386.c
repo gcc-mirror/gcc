@@ -3822,7 +3822,7 @@ ix86_asm_file_end (file)
 			      get_identifier ("i686.get_pc_thunk"),
 			      error_mark_node);
       DECL_ONE_ONLY (decl) = 1;
-      UNIQUE_SECTION (decl, 0);
+      (*targetm.asm_out.unique_section) (decl, 0);
       named_section (decl, NULL);
     }
   else

@@ -171,36 +171,6 @@ const_section ()							\
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#define UNIQUE_SECTION(DECL,RELOC)				\
-do {								\
-  int len;							\
-  char *string;							\
-  const char *prefix,						\
-    *const name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));\
-								\
-  if (! DECL_ONE_ONLY (DECL))					\
-    {								\
-      prefix = ".";                                             \
-      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	prefix = ".text.";					\
-      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	prefix = ".rodata.";					\
-      else							\
-	prefix = ".data.";					\
-    }								\
-  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-    prefix = ".gnu.linkonce.t.";				\
-  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
-    prefix = ".gnu.linkonce.r.";				\
-  else								\
-    prefix = ".gnu.linkonce.d.";				\
-								\
-  len = strlen (name) + strlen (prefix);			\
-  string = alloca (len + 1);					\
-  sprintf (string, "%s%s", prefix, name);			\
-								\
-  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-} while (0)
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

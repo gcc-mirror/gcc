@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -68,6 +68,8 @@ extern void machopic_output_possible_stub_label PARAMS ((FILE *, const char*));
 
 extern void darwin_exception_section PARAMS ((void));
 extern void darwin_eh_frame_section PARAMS ((void));
+extern void machopic_select_section PARAMS ((tree, int,
+					     unsigned HOST_WIDE_INT));
 
 #ifdef GCC_C_PRAGMA_H
 extern void darwin_pragma_ignore PARAMS ((cpp_reader *));

@@ -20,3 +20,4 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  what you give them.   Help stamp out software-hoarding!  */
 
 bool hook_void_bool_false PARAMS ((void));
+bool hook_tree_bool_false PARAMS ((tree));

@@ -163,9 +163,15 @@ static unsigned int rs6000_elf_section_type_flags PARAMS ((tree, const char *,
 							   int));
 static void rs6000_elf_asm_out_constructor PARAMS ((rtx, int));
 static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
+static void rs6000_elf_select_section PARAMS ((tree, int,
+						 unsigned HOST_WIDE_INT));
+static void rs6000_elf_unique_section PARAMS ((tree, int));
 #endif
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
+static void rs6000_xcoff_select_section PARAMS ((tree, int,
+						 unsigned HOST_WIDE_INT));
+static void rs6000_xcoff_unique_section PARAMS ((tree, int));
 #endif
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
@@ -10954,10 +10960,11 @@ rs6000_select_rtx_section (mode, x)
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
-void
-rs6000_select_section (decl, reloc)
+static void
+rs6000_elf_select_section (decl, reloc, align)
      tree decl;
      int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
   int needs_sdata;
@@ -11003,8 +11010,8 @@ rs6000_select_section (decl, reloc)
    macro can now be called for uninitialized data items as well as
    initialised data and functions.  */
 
-void
-rs6000_unique_section (decl, reloc)
+static void
+rs6000_elf_unique_section (decl, reloc)
      tree decl;
      int reloc;
 {
@@ -11627,5 +11634,53 @@ xcoff_asm_named_section (name, flags)
      unsigned int flags ATTRIBUTE_UNUSED;
 {
   fprintf (asm_out_file, "\t.csect %s\n", name);
+}
+
+static void
+rs6000_xcoff_select_section (exp, reloc, align)
+     tree exp;
+     int reloc;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if ((TREE_CODE (exp) == STRING_CST
+       && ! flag_writable_strings)
+      || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+	  && TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp)
+	  && DECL_INITIAL (exp)
+	  && (DECL_INITIAL (exp) == error_mark_node
+	      || TREE_CONSTANT (DECL_INITIAL (exp)))
+	  && ! (reloc)))
+    {
+      if (TREE_PUBLIC (exp))
+        read_only_data_section ();
+      else
+        read_only_private_data_section ();
+    }
+  else
+    {
+      if (TREE_PUBLIC (exp))
+        data_section ();
+      else
+        private_data_section ();
+    }
+}
+
+static void
+rs6000_xcoff_unique_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  const char *name;
+  char *string;
+  size_t len;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      len = strlen (name) + 5;
+      string = alloca (len + 1);
+      sprintf (string, ".%s[PR]", name);
+      DECL_SECTION_NAME (decl) = build_string (len, string);
+    }
 }
 #endif

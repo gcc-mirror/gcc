@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS R3000 version with
    GOFAST floating point library.
-   Copyright (C) 1994, 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -219,9 +219,8 @@ do {									 \
  } while (0)
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#undef UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL,RELOC) \
-  mips_unique_section ((DECL), (RELOC))
+
+#define TARGET_ASM_UNIQUE_SECTION  mips_unique_section
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */

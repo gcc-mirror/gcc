@@ -59,6 +59,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_FUNCTION_END_PROLOGUE no_asm_to_stream
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE no_asm_to_stream
 
+#ifndef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION default_select_section
+#endif
+
+#ifndef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION default_unique_section
+#endif
+
 #if !defined(TARGET_ASM_CONSTRUCTOR) && !defined(USE_COLLECT2)
 # ifdef CTORS_SECTION_ASM_OP
 #  define TARGET_ASM_CONSTRUCTOR default_ctor_section_asm_out_constructor
@@ -131,6 +139,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_NAMED_SECTION,		\
 			TARGET_ASM_EXCEPTION_SECTION,		\
 			TARGET_ASM_EH_FRAME_SECTION,		\
+			TARGET_ASM_SELECT_SECTION,		\
+			TARGET_ASM_UNIQUE_SECTION,		\
 			TARGET_ASM_CONSTRUCTOR,			\
 			TARGET_ASM_DESTRUCTOR}
 
@@ -192,6 +202,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_void_bool_false
+#define TARGET_IN_SMALL_DATA_P hook_tree_bool_false
 
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
@@ -211,7 +222,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_SECTION_TYPE_FLAGS,			\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
-  TARGET_CANNOT_MODIFY_JUMPS_P			\
+  TARGET_CANNOT_MODIFY_JUMPS_P,			\
+  TARGET_IN_SMALL_DATA_P			\
 }
 
 #include "hooks.h"

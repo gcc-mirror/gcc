@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC
    for NeXTSTEP.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -26,3 +26,5 @@ extern void constructor_section PARAMS ((void));
 extern void destructor_section PARAMS ((void));
 extern void nextstep_exception_section PARAMS ((void));
 extern void nextstep_eh_frame_section PARAMS ((void));
+extern void nextstep_select_section PARAMS ((tree, int,
+					     unsigned HOST_WIDE_INT));

@@ -5752,21 +5752,6 @@ switches to the section to be used for read-only items.
 If these items should be placed in the text section, this macro should
 not be defined.
 
-@findex SELECT_SECTION
-@item SELECT_SECTION (@var{exp}, @var{reloc}, @var{align})
-A C statement or statements to switch to the appropriate section for
-output of @var{exp}.  You can assume that @var{exp} is either a
-@code{VAR_DECL} node or a constant of some sort.  @var{reloc}
-indicates whether the initial value of @var{exp} requires link-time
-relocations.  Bit 1 is set when variable contains local relocations
-only, while bit 2 is set for global relocations.
-Select the section by calling @code{text_section} or one
-of the alternatives for other sections.  @var{align} is the constant
-alignment in bits.
-
-Do not define this macro if you put all read-only variables and
-constants in the read-only data section (usually the text section).
-
 @findex SELECT_RTX_SECTION
 @item SELECT_RTX_SECTION (@var{mode}, @var{rtx}, @var{align})
 A C statement or statements to switch to the appropriate section for
@@ -5820,17 +5805,33 @@ enough information).
 Decode @var{sym_name} and store the real name part in @var{var}, sans
 the characters that encode section info.  Define this macro if
 @code{ENCODE_SECTION_INFO} alters the symbol's name string.
-
-@findex UNIQUE_SECTION
-@item UNIQUE_SECTION (@var{decl}, @var{reloc})
-A C statement to build up a unique section name, expressed as a
-@code{STRING_CST} node, and assign it to @samp{DECL_SECTION_NAME (@var{decl})}.
-@var{reloc} indicates whether the initial value of @var{exp} requires
-link-time relocations.  If you do not define this macro, GCC will use
-the symbol name prefixed by @samp{.} as the section name.  Note - this
-macro can now be called for uninitialized data items as well as
-initialized data and functions.
 @end table
+
+@deftypefn {Target Hook} void TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
+Switches to the appropriate section for output of @var{exp}.  You can
+assume that @var{exp} is either a @code{VAR_DECL} node or a constant of
+some sort.  @var{reloc} indicates whether the initial value of @var{exp}
+requires link-time relocations.  Bit 0 is set when variable contains
+local relocations only, while bit 1 is set for global relocations.
+Select the section by calling @code{data_section} or one of the
+alternatives for other sections.  @var{align} is the constant alignment
+in bits.
+
+The default version of this function takes care of putting read-only
+variables in @code{readonly_data_section}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_UNIQUE_SECTION (tree @var{decl}, int @var{reloc})
+Build up a unique section name, expressed as a @code{STRING_CST} node,
+and assign it to @samp{DECL_SECTION_NAME (@var{decl})}.
+As with @code{TARGET_ASM_SELECT_SECTION}, @var{reloc} indicates whether
+the initial value of @var{exp} requires link-time relocations.
+
+The default version of this function appends the symbol name to the
+ELF section name that would normally be used for the symbol.  For
+example, the function @code{foo} would be placed in @code{.text.foo}.
+Whatever the actual target object format, this is often good enough.
+@end deftypefn
 
 @node PIC
 @section Position Independent Code

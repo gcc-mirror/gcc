@@ -2758,18 +2758,6 @@ extern const char *d30v_branch_cost_string;
 /* #define READONLY_DATA_SECTION */
 
 /* A C statement or statements to switch to the appropriate section for output
-   of EXP.  You can assume that EXP is either a `VAR_DECL' node or a constant
-   of some sort.  RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  Select the section by calling `text_section' or one
-   of the alternatives for other sections.
-
-   Do not define this macro if you put all read-only variables and constants in
-   the read-only data section (usually the text section).
-
-   Defined in svr4.h.  */
-/* #define SELECT_SECTION(EXP, RELOC, ALIGN) */
-
-/* A C statement or statements to switch to the appropriate section for output
    of RTX in mode MODE.  You can assume that RTX is some kind of constant in
    RTL.  The argument MODE is redundant except in the case of a `const_int'
    rtx.  Select the section by calling `text_section' or one of the
@@ -2792,16 +2780,6 @@ extern const char *d30v_branch_cost_string;
    that encode section info.  Define this macro if `ENCODE_SECTION_INFO' alters
    the symbol's name string.  */
 /* #define STRIP_NAME_ENCODING(VAR, SYM_NAME) */
-
-/* A C statement to build up a unique section name, expressed as a
-   STRING_CST node, and assign it to `DECL_SECTION_NAME (DECL)'.
-   RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  If you do not define this macro, GNU CC
-   will use the symbol name prefixed by `.' as the section name.
-
-   Defined in svr4.h.  */
-/* #define UNIQUE_SECTION(DECL, RELOC) */
-
 
 /* Position Independent Code.  */
 

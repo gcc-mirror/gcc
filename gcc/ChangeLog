@@ -1,3 +1,136 @@
+2002-05-17  Richard Henderson  <rth@redhat.com>
+
+	* hooks.c (hook_tree_bool_false): New.
+	* hooks.h: Declare it.
+	* target-def.h (TARGET_ASM_SELECT_SECTION): New.
+	(TARGET_ASM_UNIQUE_SECTION, TARGET_IN_SMALL_DATA_P): New.
+	* target.h (select_section, unique_section): New.
+	(in_small_data_p): New.
+	* varasm.c (resolve_unique_section): Use hooks instead of macros.
+	(variable_section, output_constant_def_contents): Likewise.
+	(default_select_section, default_unique_section): New.
+	(categorize_decl_for_section, default_elf_select_section): New.
+	* output.h: Declare them.
+
+	* config/darwin.h (ALIAS_SECTION, try_section_alias): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+	(SELECT_SECTION): Move ...
+	* config/darwin.c (machopic_select_section): ... here.
+	* config/darwin-protos.h: Update.
+
+	* config/nextstep.h (TARGET_ASM_SELECT_SECTION): New.
+	(SELECT_SECTION): Move ...
+	* config/nextstep.c (nextstep_select_section): ... here.
+	* config/nextstep-protos.h: Update.
+
+	* config/elfos.h (UNIQUE_SECTION, SELECT_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+	* config/svr3.h (SELECT_SECTION): Remove.
+
+	* config/alpha/alpha.c (unicosmk_unique_section): Make static.
+	(TARGET_ASM_UNIQUE_SECTION) [UNICOS]: New.
+	(TARGET_IN_SMALL_DATA_P, alpha_in_small_data_p): New.
+	(alpha_encode_section_info): Use it.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/elf.h (DO_SELECT_SECTION): Remove.
+	(SELECT_SECTION, UNIQUE_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+	* config/alpha/unicosmk.h (UNIQUE_SECTION): Remove.
+
+	* config/arm/pe.h (UNIQUE_SECTION): Remove.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+
+	* config/avr/avr.c (TARGET_ASM_UNIQUE_SECTION): New.
+	(avr_unique_section): Rename from unique_section; make static.
+	* config/avr/avr-protos.h: Update.
+	* config/avr/avr.h (UNIQUE_SECTION): Remove.
+
+	* config/c4x/c4x.h (SELECT_SECTION): Remove.
+
+	* config/i386/cygwin.h (UNIQUE_SECTION): Remove.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/win32.h: Likewise.
+	* config/i386/djgpp.h (UNIQUE_SECTION): Remove.
+	* config/i386/i386.c (ix86_asm_file_end): Use target hook not macro.
+	* config/i386/sco5.h (SELECT_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+	* config/i386/svr3gas.h (SELECT_SECTION): Remove.
+
+	* config/i860/paragon.h: Undef TARGET_ASM_SELECT_SECTION
+	instead of SELECT_SECTION.
+	* config/m68k/dpx2.h: Likewise.
+	* config/rs6000/lynx.h: Likewise.
+
+	* config/ia64/aix.h (SELECT_SECTION, UNIQUE_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION, TARGET_ASM_UNIQUE_SECTION): New.
+	* config/ia64/ia64.c (TARGET_IN_SMALL_DATA_P): New.
+	(ia64_in_small_data_p): New.
+	(ia64_encode_section_info): Use it.  Reorganize overlarge conditional.
+	(ia64_aix_select_section, ia64_aix_unique_section): New.
+	* config/ia64/sysv4.h (DO_SELECT_SECTION): Remove.
+	(SELECT_SECTION, UNIQUE_SECTION): Remove.
+
+	* config/m32r/m32r.h (SELECT_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+	* config/m32r/m32r.c (m32r_select_section): Take align argument.
+	* config/m32r/m32r-protos.h: Update.
+
+	* config/m88k/m88k.h (TARGET_ASM_SELECT_SECTION): New.
+	(SELECT_SECTION): Move ...
+	* config/m88k/m88k.c (m88k_select_section): ... here.
+
+	* config/mcore/mcore-pe.h (SELECT_SECTION): Remove.
+	* config/mcore/mcore.h (UNIQUE_SECTION): Remove.
+	* config/mcore/mcore.c (TARGET_ASM_UNIQUE_SECTION): New.
+	(mcore_unique_section): Make static.
+	* config/mcore/mcore-protos.h: Update.
+
+	* config/mips/elf.h (UNIQUE_SECTION): Remove.
+	(TARGET_ASM_UNIQUE_SECTION): New.
+	* config/mips/elf64.h: Likewise.
+	* config/mips/iris6gld.h: Likewise.
+	* config/mips/linux.h: Likewise.
+	* config/mips/mips-protos.h: Update.
+	* config/mips/mips.c (mips_select_section): Add align argument.
+	* config/mips/mips.h (SELECT_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): New.
+
+	* config/mmix/mmix.h (SELECT_SECTION, UNIQUE_SECTION): Remove.
+	* config/mmix/mmix.c (mmix_select_section): Remove.
+	(mmix_unique_section): Remove.
+	* config/mmix/mmix-protos.h: Update.
+
+	* config/pa/pa.h (TARGET_ASM_SELECT_SECTION): New.
+	(SELECT_SECTION): Move ...
+	* config/pa/pa.c (pa_select_section): ... here.
+	* config/pa/pa64-hpux.h (UNIQUE_SECTION): Remove.
+
+	* config/rs6000/rs6000.c (rs6000_elf_select_section): Rename
+	from rs6000_select_section and make static.
+	(rs6000_elf_unique_section): Similarly.
+	(rs6000_xcoff_select_section): From xcoff.h.
+	(rs6000_xcoff_unique_section): Likewise.
+	* config/rs6000/rs6000-protos.h: Update.
+	* config/rs6000/sysv4.h (SELECT_SECTION, UNIQUE_SECTION): Remove.
+	(TARGET_ASM_SELECT_SECTION, TARGET_ASM_UNIQUE_SECTION): New.
+	* config/rs6000/xcoff.h: Likewise.
+
+	* config/sparc/aout.h (TARGET_ASM_SELECT_SECTION): New.
+	(SELECT_SECTION): Move ...
+	* config/sparc/sparc.c (sparc_aout_select_section): ... here.
+
+	* config/v850/v850.h (SELECT_SECTION): Move ...
+	* config/v850/v850.c (v850_select_section): ... here.
+	(TARGET_ASM_SELECT_SECTION): New.
+
+	* config/vax/vms.h (SELECT_SECTION): Move ...
+	* config/vax/vax.c (vms_select_section): ... here.
+	(TARGET_ASM_SELECT_SECTION): New.
+
+	* doc/tm.texi: Update SELECT_SECTION and UNIQUE_SECTION docs
+	for the target hooks.
+
 2002-05-17  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (emit_multi_reg_push): Do not set

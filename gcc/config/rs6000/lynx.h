@@ -1,5 +1,5 @@
 /* Definitions for Rs6000 running LynxOS.
-   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by David Henkel-Wallace, Cygnus Support (gumby@cygnus.com)
 
 This file is part of GNU CC.
@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #undef READONLY_DATA_SECTION
 #undef EXTRA_SECTION_FUNCTIONS
 #undef SELECT_RTX_SECTION
-#undef SELECT_SECTION
+#undef TARGET_ASM_SELECT_SECTION
 #undef USER_LABEL_PREFIX
 #undef ASM_OUTPUT_LABELREF
 #undef ASM_OUTPUT_INTERNAL_LABEL

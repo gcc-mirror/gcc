@@ -132,47 +132,10 @@ do {							\
 #define STANDARD_STARTFILE_PREFIX "/usr/lib/ia64l64/"
 #endif
 
-/* Override SELECT_SECTION and SELECT_RTX_SECTION from config/ia64/sysv4.h;  
-   these definitions ignore flag_pic as if it were always set; 
-   it is illegal to have relocations in shared segments on AIX.  */
-
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-
-#undef SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
-    {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if (XSTR (XEXP (DECL_RTL (DECL), 0), 0)[0]			\
-	  == SDATA_NAME_FLAG_CHAR)					\
-        sdata_section ();						\
-      /* ??? We need the extra ! RELOC check, because the default is to \
-	 only check RELOC if flag_pic is set, and we don't set flag_pic \
-	 (yet?).  */							\
-      else if (DECL_READONLY_SECTION (DECL, RELOC) && ! (RELOC))	\
-	const_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  /* This could be a CONSTRUCTOR containing ADDR_EXPR of a VAR_DECL,	\
-     in which case we can't put it in a shared library rodata.  */	\
-  else if (RELOC)                                                       \
-    data_section ();							\
-  else									\
-    const_section ();							\
-}
-
-/* Similarly for constant pool data.  */
+#undef	TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  ia64_aix_select_section
+#undef	TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION  ia64_aix_unique_section
 
 extern unsigned int ia64_section_threshold;
 #undef SELECT_RTX_SECTION
@@ -186,49 +149,6 @@ extern unsigned int ia64_section_threshold;
   else									\
     const_section ();							\
 }
-
-#undef UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL, RELOC)				\
-  do								\
-    {								\
-      int len;							\
-      int sec;							\
-      const char *name;						\
-      char *string;						\
-      const char *prefix;					\
-      static const char *const prefixes[/*4*/3][2] =		\
-      {								\
-	{ ".text.",   ".gnu.linkonce.t." },			\
-	{ ".rodata.", ".gnu.linkonce.r." },			\
-	{ ".data.",   ".gnu.linkonce.d." }			\
-	/* Do not generate unique sections for uninitialised 	\
-	   data since we do not have support for this in the    \
-	   linker scripts yet...				\
-        ,{ ".bss.",    ".gnu.linkonce.b." }  */			\
-      };							\
-      								\
-      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	sec = 0;						\
-  /*  else if (DECL_INITIAL (DECL) == 0				\
-	       || DECL_INITIAL (DECL) == error_mark_node)	\
-        sec =  3; */						\
-      else if (DECL_READONLY_SECTION (DECL, RELOC) && ! (RELOC))\
-	sec = 1;						\
-      else							\
-	sec = 2;						\
-      								\
-      name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-      /* Strip off any encoding in name.  */			\
-      STRIP_NAME_ENCODING (name, name);				\
-      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];		\
-      len    = strlen (name) + strlen (prefix);			\
-      string = alloca (len + 1);				\
-      								\
-      sprintf (string, "%s%s", prefix, name);			\
-      								\
-      DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-    }								\
-  while (0)
 
 /* Override ia64/sysv4.h setting with that used by AIX5.  */
 #undef WCHAR_TYPE

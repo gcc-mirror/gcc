@@ -1,6 +1,6 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991, 1994, 1995, 1999, 2000, 2001
+   Copyright (C) 1991, 1994, 1995, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
@@ -216,16 +216,9 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
-/* Support const sections and the ctors and dtors sections for g++.
-   Note that there appears to be two different ways to support const
-   sections at the moment.  You can either #define the symbol
-   READONLY_DATA_SECTION (giving it some code which switches to the
-   readonly data section) or else you can #define the symbols
-   EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
+/* Support const sections and the ctors and dtors sections for g++.  */
 
 #define USE_CONST_SECTION	1
-
 #define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
@@ -279,45 +272,6 @@ const_section ()						\
 }
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
-#define UNIQUE_SECTION(DECL, RELOC)				\
-  do								\
-    {								\
-      int len;							\
-      int sec;							\
-      const char *name;						\
-      char *string;						\
-      const char *prefix;					\
-      static const char *const prefixes[4][2] =			\
-      {								\
-	{ ".text.",   ".gnu.linkonce.t." },			\
-	{ ".rodata.", ".gnu.linkonce.r." },			\
-	{ ".data.",   ".gnu.linkonce.d." },			\
-	{ ".bss.",    ".gnu.linkonce.b." }			\
-      };							\
-      								\
-      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	sec = 0;						\
-      else if (DECL_INITIAL (DECL) == 0				\
-	       || DECL_INITIAL (DECL) == error_mark_node)	\
-        sec =  3;						\
-      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	sec = 1;						\
-      else							\
-	sec = 2;						\
-      								\
-      name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-      /* Strip off any encoding in name.  */			\
-      STRIP_NAME_ENCODING (name, name);				\
-      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];		\
-      len    = strlen (name) + strlen (prefix);			\
-      string = alloca (len + 1);				\
-      								\
-      sprintf (string, "%s%s", prefix, name);			\
-      								\
-      DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-    }								\
-  while (0)
      
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
@@ -334,79 +288,8 @@ const_section ()						\
 #define SELECT_RTX_SECTION(MODE, RTX, ALIGN)	\
   mergeable_constant_section ((MODE), (ALIGN), 0)
 
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  
- 
-   To optimize loading of shared programs, define following subsections
-   of data section by attaching:
-
-   .rel
-     Section with this string in name contains data that do have
-     relocations, so they get grouped together and dynamic linker
-     will visit fewer pages in memory.
-   .ro
-     Marks data read only otherwise.  This is useful with prelinking
-     as most of relocations won't be dynamically linked and thus
-     stay read only.
-   .local
-     Marks data containing relocations only to local objects.  These
-     relocation will get fully resolved by prelinking.
- */
-
-#undef SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC, ALIGN)			\
-{								\
-  if (TREE_CODE (DECL) == STRING_CST)				\
-    {								\
-      if (! flag_writable_strings)				\
-	mergeable_string_section ((DECL), (ALIGN), 0);		\
-      else							\
-	data_section ();					\
-    }								\
-  else if (TREE_CODE (DECL) == VAR_DECL)			\
-    {								\
-      if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
-	  || !DECL_INITIAL (DECL)				\
-	  || (DECL_INITIAL (DECL) != error_mark_node		\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-	{							\
-	  if (flag_pic && ((RELOC) & 2))			\
-	    named_section (NULL_TREE, ".data.rel", RELOC);	\
-	  else if (flag_pic && (RELOC))				\
-	    named_section (NULL_TREE, ".data.rel.local", RELOC);\
-	  else							\
-	    data_section ();					\
-	}							\
-      else if (flag_pic && ((RELOC) & 2))			\
-	named_section (NULL_TREE, ".data.rel.ro", RELOC);	\
-      else if (flag_pic && (RELOC))				\
-	named_section (NULL_TREE, ".data.rel.ro.local", RELOC);	\
-      else if (flag_merge_constants < 2)			\
-	/* C and C++ don't allow different variables to share	\
-	   the same location.  -fmerge-all-constants allows	\
-	   even that (at the expense of not conforming).  */	\
-	const_section ();					\
-      else if (TREE_CODE (DECL_INITIAL (DECL)) == STRING_CST)	\
-	mergeable_string_section (DECL_INITIAL (DECL), (ALIGN),	\
-				  0);				\
-      else							\
-	mergeable_constant_section (DECL_MODE (DECL), (ALIGN),	\
-				    0);				\
-    }								\
-  else if (TREE_CODE (DECL) == CONSTRUCTOR)			\
-    {								\
-      if ((flag_pic && RELOC)					\
-	  || TREE_SIDE_EFFECTS (DECL)				\
-	  || ! TREE_CONSTANT (DECL))				\
-	data_section ();					\
-      else							\
-	const_section ();					\
-    }								\
-  else								\
-    const_section ();						\
-}
+#undef	TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION default_elf_select_section
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

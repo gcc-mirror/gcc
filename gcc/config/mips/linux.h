@@ -88,9 +88,7 @@ do {								\
     mips_declare_object (FILE, NAME, "", ":\n", 0);		\
   } while (0)
 
-#undef UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL,RELOC) \
-  mips_unique_section ((DECL), (RELOC))
+#define TARGET_ASM_UNIQUE_SECTION  mips_unique_section
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on Cray
    T3E running Unicos/Mk.
-   Copyright (C) 2001
+   Copyright (C) 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Roman Lechtchinsky (rl@cs.tu-berlin.de)
 
@@ -379,16 +379,6 @@ ssib_section ()			\
 {				\
   in_section = in_ssib;		\
 }
-
-/* A C expression which evaluates to true if declshould be placed into a
-   unique section for some target-specific reason. On Unicos/Mk, functions
-   and public variables are always placed in unique sections.  */ 
-
-/*
-#define UNIQUE_SECTION_P(DECL) (TREE_PUBLIC (DECL)		\
-				|| TREE_CODE (DECL) == FUNCTION_DECL)
-*/
-#define UNIQUE_SECTION(DECL, RELOC) unicosmk_unique_section (DECL, RELOC)
 
 /* This outputs text to go at the start of an assembler file.  */
 

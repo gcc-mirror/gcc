@@ -1738,35 +1738,6 @@ const_section ()							\
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION c4x_asm_named_section
 
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-
-#define SELECT_SECTION(DECL, RELOC, ALIGN)				\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
-    {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if ((0 && RELOC)	/* Should be (flag_pic && RELOC).  */		\
-	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || ! DECL_INITIAL (DECL)					\
-	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && ! TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-	data_section ();						\
-      else								\
-	const_section ();						\
-    }									\
-  else									\
-    const_section ();							\
-}
-
 /* The TI assembler wants to have hex numbers this way.  */
 
 #undef HOST_WIDE_INT_PRINT_HEX

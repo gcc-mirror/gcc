@@ -1,5 +1,5 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -137,6 +137,7 @@ static tree       mcore_handle_naked_attribute PARAMS ((tree *, tree, tree, int,
 static void	  mcore_asm_named_section      PARAMS ((const char *,
 							unsigned int));
 #endif
+static void       mcore_unique_section	       PARAMS ((tree, int));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -153,6 +154,8 @@ static void	  mcore_asm_named_section      PARAMS ((const char *,
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE mcore_attribute_table
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION mcore_unique_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3511,9 +3514,10 @@ mcore_handle_naked_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
-/* Cover function for UNIQUE_SECTION.  */
+/* ??? It looks like this is PE specific?  Oh well, this is what the
+   old code did as well.  */
 
-void
+static void
 mcore_unique_section (decl, reloc)
      tree decl;
      int reloc ATTRIBUTE_UNUSED;

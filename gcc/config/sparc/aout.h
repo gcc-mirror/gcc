@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC using a.out.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -37,36 +37,7 @@ Boston, MA 02111-1307, USA.  */
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)				\
   || !strcmp (STR, "target") || !strcmp (STR, "assert"))
 
-/* This is defined differently for v9 in a cover file.  */
-#define SELECT_SECTION(T,RELOC,ALIGN)					\
-{									\
-  if (TREE_CODE (T) == VAR_DECL)					\
-    {									\
-      if (TREE_READONLY (T) && ! TREE_SIDE_EFFECTS (T)			\
-	  && DECL_INITIAL (T)						\
-	  && (DECL_INITIAL (T) == error_mark_node			\
-	      || TREE_CONSTANT (DECL_INITIAL (T)))			\
-	  && DECL_ALIGN (T) <= MAX_TEXT_ALIGN				\
-	  && ! (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
-	text_section ();						\
-      else								\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE (T) == CONSTRUCTOR)				\
-    {									\
-      if (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES))		\
-	data_section ();						\
-    }									\
-  else if (TREE_CODE_CLASS (TREE_CODE (T)) == 'c')			\
-    {									\
-      if ((TREE_CODE (T) == STRING_CST && flag_writable_strings)	\
-	  || TYPE_ALIGN (TREE_TYPE (T)) > MAX_TEXT_ALIGN		\
-	  || (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
-	data_section ();						\
-      else								\
-	text_section ();						\
-    }									\
-}
+#define TARGET_ASM_SELECT_SECTION  sparc_aout_select_section
 
 /* Output the label for a function definition.  */
 

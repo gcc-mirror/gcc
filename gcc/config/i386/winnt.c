@@ -1,6 +1,7 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -422,8 +423,6 @@ i386_pe_encode_section_info (decl, first)
 	 We leave these alone for now.  */
     }
 }
-
-/* Cover function for UNIQUE_SECTION.  */
 
 void
 i386_pe_unique_section (decl, reloc)
