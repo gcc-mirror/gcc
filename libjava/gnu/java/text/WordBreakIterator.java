@@ -1,5 +1,5 @@
 /* WordBreakIterator.java - Default word BreakIterator.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,7 +55,6 @@ public class WordBreakIterator extends BaseBreakIterator
 
   public WordBreakIterator ()
   {
-    iter = null;
   }
 
   private WordBreakIterator (WordBreakIterator other)

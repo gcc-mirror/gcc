@@ -1,5 +1,5 @@
 /* BreakIterator.java -- Breaks text into elements
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,10 @@ import java.util.ResourceBundle;
  * a time.  An instance of this class configured for the desired iteration
  * type is created by calling one of the static factory methods, not
  * by directly calling a constructor.
+ *
+ * The standard iterators created by the factory methods in this
+ * class will be valid upon creation.  That is, their methods will
+ * not cause exceptions if called before you call setText().
  *
  * @author Tom Tromey <tromey@cygnus.com>
  * @author Aaron M. Renn (arenn@urbanophile.com)

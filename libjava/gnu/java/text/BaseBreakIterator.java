@@ -1,5 +1,5 @@
 /* BaseBreakIterator.java -- Base class for default BreakIterators
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package gnu.java.text;
 
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -48,6 +49,14 @@ import java.text.CharacterIterator;
 
 public abstract class BaseBreakIterator extends BreakIterator
 {
+  public BaseBreakIterator ()
+  {
+    // It isn't documented, but break iterators are created in a
+    // working state; their methods won't throw exceptions before
+    // setText().
+    iter = new StringCharacterIterator("");
+  }
+
   public int current ()
   {
     return iter.getIndex();
