@@ -1,3 +1,12 @@
+2005-04-01  Dale Ranta  <dir@lanl.gov>
+            Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20068
+	PR libfortran/20125
+	PR libfortran/20156
+	PR libfortran/20471
+	* gfortran.dg/backspace.f: New test.
+
 2005-04-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc.dg/pr19345.c: New test.
