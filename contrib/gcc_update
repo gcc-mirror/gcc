@@ -29,7 +29,7 @@
 # contrib/gcc_update --list
 #
 #
-# (C) 1998, 1999, 2000, 2001 Free Software Foundation
+# (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -69,15 +69,17 @@ gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
+gcc/intl/plural.c: gcc/intl/plural.y
 # And then, language-specific files
 gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
+gcc/cp/cfns.h: gcc/cp/cfns.gperf
+gcc/java/keyword.h: gcc/java/keyword.gperf
 gcc/ada/treeprs.ads: gcc/ada/treeprs.adt gcc/ada/sinfo.ads gcc/ada/xtreeprs.adb
 gcc/ada/einfo.h: gcc/ada/einfo.ads gcc/ada/einfo.adb gcc/ada/xeinfo.adb
 gcc/ada/sinfo.h: gcc/ada/sinfo.ads gcc/ada/xsinfo.adb
 gcc/ada/nmake.adb: gcc/ada/sinfo.ads gcc/ada/nmake.adt gcc/ada/xnmake.adb
 gcc/ada/nmake.ads: gcc/ada/sinfo.ads gcc/ada/nmake.adt gcc/ada/xnmake.adb
 # And libraries, at last
-libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in
 libf2c/libF77/configure: libf2c/libF77/configure.in
 libf2c/libI77/configure: libf2c/libI77/configure.in
