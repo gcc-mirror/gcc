@@ -1,5 +1,9 @@
 2003-11-14  Andreas Jaeger  <aj@suse.de>
 
+	* lang.opt: Change -Wno-long-long to -Wlong-long since the latter
+	is the canonical version. 
+	* misc.c (gnat_handle_option): Likewise.
+
 	* Makefile.in (LIBGNAT_TARGET_PAIRS): Add rules for x86_64-linux.
 
 	* 5nsystem.ads: New file for x86_64-linux-gnu.

@@ -259,7 +259,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
     case OPT_Wmissing_prototypes:
     case OPT_Wstrict_prototypes:
     case OPT_Wwrite_strings:
-    case OPT_Wno_long_long:
+    case OPT_Wlong_long:
       break;
 
       /* This is handled by the front-end.  */

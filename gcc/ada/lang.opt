@@ -45,7 +45,7 @@ Wwrite-strings
 Ada
 ; Documented for C
 
-Wno-long-long
+Wlong-long
 Ada
 ; Documented for C
 
