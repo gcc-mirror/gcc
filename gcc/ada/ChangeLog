@@ -1,3 +1,7 @@
+2001-11-29  Richard Henderson  <rth@redhat.com>
+
+	* init.c: Remove obsolete dwarf2 frame.h section.
+
 2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (ada.generated-manpages): New dummy target.
