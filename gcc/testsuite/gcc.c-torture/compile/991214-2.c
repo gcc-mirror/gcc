@@ -1,3 +1,9 @@
+#if defined(STACK_SIZE) && (STACK_SIZE < 65536)
+# define HISTO_SIZE 9
+#else
+# define HISTO_SIZE 36
+#endif
+
 extern int N;
 extern int nrows;
 extern int or_num_angles;
@@ -8,7 +14,7 @@ typedef struct
   int count;
 }Histo;
 
-Histo add_histo[10][2][36][36];
+Histo add_histo[10][2][HISTO_SIZE][HISTO_SIZE];
 
 void cmd_connection_statistics( )
 {

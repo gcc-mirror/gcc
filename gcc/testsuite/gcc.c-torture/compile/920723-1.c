@@ -1,3 +1,11 @@
+#if defined(STACK_SIZE) && STACK_SIZE < 65536
+# define GITT_SIZE 75
+#endif
+
+#ifndef GITT_SIZE
+# define GITT_SIZE 150
+#endif
+
 typedef struct {
   double x, y;
 } vector_t;
@@ -6,7 +14,7 @@ f(int count,vector_t*pos,double r,double *rho)
 {
   int i, j, miny, maxy, hy;
   float help, d;
-  int gitt[150][150];
+  int gitt[GITT_SIZE][GITT_SIZE];
   int *data = (int *)malloc(count*sizeof(int));
   for (i = 0; i < count; i++)
     rho[i] = 0;
