@@ -66,6 +66,7 @@ extern void s390_load_address PARAMS ((rtx, rtx));
 extern void s390_expand_movstr PARAMS ((rtx, rtx, rtx));
 extern void s390_expand_clrstr PARAMS ((rtx, rtx));
 extern void s390_expand_cmpstr PARAMS ((rtx, rtx, rtx, rtx));
+extern rtx s390_return_addr_rtx PARAMS ((int, rtx));
 
 extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));

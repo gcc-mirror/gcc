@@ -1,5 +1,18 @@
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/fixdfdi.h (__fixunsdfdi, __fixdfdi): Add prototypes.
+	(__fixunssfdi, __fixsfdi): Likewise.
+	* config/s390/s390.c (s390_single_hi): Initialize 'value'.
+	(s390_single_qi): Likewise.
+	(s390_emit_epilogue): Initialize 'offset'.  Remove signed vs.
+	unsigned comparison warning.
+	(s390_return_addr_rtx): New function.
+	* config/s390/s390-protos.h (s390_return_addr_rtx): Declare it.
+	* config/s390/s390.h (RETURN_ADDR_RTX): Use it.
+	(HARD_REGNO_MODE_OK): Rewrite condition to silence warnings.
+
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_output_mi_vcall_thunk): New function.
 	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Define target hook.
 	(s390_output_mi_thunk): Remove.
