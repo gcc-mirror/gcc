@@ -1,6 +1,7 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -funit-at-a-time" } */
-/* { dg-final { scan-assembler "magic\[^\\n\]*eax" } } */
+/* { dg-final { scan-assembler "magic\[^\\n\]*eax" { target i?86-*-* } } } */
+/* { dg-final { scan-assembler "magic\[^\\n\]*edi" { target x86_64-*-* } } } */
 
 /* Verify that local calling convention is used.  */
 static t(int) __attribute__ ((noinline));
