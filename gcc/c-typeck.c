@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4353,9 +4353,6 @@ static struct init_node *constructor_pending_elts;
 /* The SPELLING_DEPTH of this constructor.  */
 static int constructor_depth;
 
-/* 0 if implicitly pushing constructor levels is allowed.  */
-int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages.  */
-
 /* DECL node for which an initializer is being read.
    0 means we are reading a constructor expression
    such as (struct foo) {...}.  */
@@ -5024,12 +5021,6 @@ set_designator (int array)
 	process_init_element (pop_init_level (1));
       constructor_designated = 1;
       return 0;
-    }
-
-  if (constructor_no_implicit)
-    {
-      error_init ("initialization designators may not nest");
-      return 1;
     }
 
   switch (TREE_CODE (constructor_type))
@@ -6002,7 +5993,7 @@ process_init_element (struct c_expr value)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value.value != 0 && !constructor_no_implicit
+	  else if (value.value != 0
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
@@ -6090,7 +6081,7 @@ process_init_element (struct c_expr value)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value.value != 0 && !constructor_no_implicit
+	  else if (value.value != 0
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
@@ -6130,7 +6121,7 @@ process_init_element (struct c_expr value)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
-	  else if (value.value != 0 && !constructor_no_implicit
+	  else if (value.value != 0
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != elttype
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
