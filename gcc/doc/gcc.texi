@@ -103,6 +103,12 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
+@c Change the font used for @def... commands, since the default
+@c proportional one used is bad for names starting __.
+@tex
+\global\setfont\defbf\ttbshape{10}{\magstep1}
+@end tex
+
 @ifnottex
 @dircategory Programming
 @direntry
