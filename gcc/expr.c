@@ -1777,8 +1777,7 @@ block_move_libcall_safe_for_call_parm ()
 	    arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	    for ( ; arg != void_list_node ; arg = TREE_CHAIN (arg))
 	      {
-		enum machine_mode mode
-		  = TYPE_MODE (TREE_TYPE (TREE_VALUE (arg)));
+		enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
 		rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
 		if (!tmp || !REG_P (tmp))
 		  goto fail_takes_regs;
