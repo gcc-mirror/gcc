@@ -1,3 +1,53 @@
+Sat Mar  6 11:17:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (jcf-parse.o): Depend on $(PARSE_H).
+	(parse-scan.o): Depend on toplev.h.
+
+	* class.c (make_method_value): Add prototype.  Make it static.
+  	Remove unused second argument, caller changed.
+
+	* expr.c (java_lang_expand_expr): Remove unused variable
+	`return_label'.
+
+	* java-tree.h: Don't prototype find_in_current_zip.
+	Add prototypes for verify_constant_pool, start_java_method,
+	end_java_method, give_name_to_locals, expand_byte_code,
+	open_in_zip, set_constant_value, find_constant1, find_constant2,
+	find_utf8_constant, find_string_constant, find_class_constant,
+	find_fieldref_index, find_methodref_index, write_constant_pool,
+	count_constant_pool_bytes and encode_newarray_type.
+
+	* jcf-dump.c: Remove unused variable `LONG_temp'.
+
+	* jcf-parse.c: Include parse.h.
+	(jcf_parse_source): Remove unused parameter, all callers changed.
+	(jcf_figure_file_type): Add static prototype.
+	(find_in_current_zip): Likewise.  Also remove unused parameter,
+	all callers changed.
+	(read_class): Initialize variable `saved_pos'.
+	
+	* jcf-reader.c (jcf_parse_preamble): Mark variables
+	`minor_version' and `major_version' with ATTRIBUTE_UNUSED.
+
+	* lex.c (java_is_eol): Wrap prototype and definition in !JC1_LITE.
+	(java_init_lex): Wrap variable `java_lang_imported' in !JC1_LITE.
+	(java_parse_doc_section): Initialize variable `seen_star'.
+	(java_lex): Wrap variable `number_beginning' in !JC1_LITE.
+	(java_lex_error): Mark parameters `msg' and `forward' with
+	ATTRIBUTE_UNUSED.
+	(java_get_line_col): Mark parameters `filename' and `line' with
+	ATTRIBUTE_UNUSED.
+
+	* parse-scan.y: Include toplev.h.
+	(yyerror): Mark parameter `msg' with ATTRIBUTE_UNUSED.
+
+	* parse.h: use `struct JCF', not plain `JCF'.
+	(java_parser_context_save_global, java_expand_classes
+	java_parser_context_restore_global, java_parse): Add prototypes.
+
+	* typeck.c (convert_ieee_real_to_integer): Remove unused variable
+	`node'.
+
 Wed Feb 24 16:13:59 1999  Per Bothner  <bothner@deneb.cygnus.com>
 
 	*  check-init.c (check_init):  COPYN takes word count, not bit count.

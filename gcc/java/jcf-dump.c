@@ -913,7 +913,6 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
     {
       int oldpc = PC;
       int saw_index;
-      jlong LONG_temp;
       jint INT_temp;
       switch (byte_ops[PC++])
 	{

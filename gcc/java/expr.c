@@ -1886,7 +1886,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       for (current = TREE_OPERAND (exp, 1); current; 
 	   current = TREE_CHAIN (current))
 	{
-	  extern rtx return_label;
 	  tree type;
 	  tree catch = TREE_OPERAND (current, 0);
 	  tree decl = BLOCK_EXPR_DECLS (catch);

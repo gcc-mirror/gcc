@@ -33,6 +33,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "input.h"
 #include "java-tree.h"
 #include "toplev.h"
+#include "parse.h"
 
 /* A CONSTANT_Utf8 element is converted to an IDENTIFIER_NODE at parse time. */
 #define JPOOL_UTF(JCF, INDEX) CPOOL_UTF(&(JCF)->cpool, INDEX)
@@ -81,7 +82,9 @@ static tree give_name_to_class PROTO ((JCF *jcf, int index));
 void parse_zip_file_entries PROTO (());
 void process_zip_dir PROTO (());
 static void parse_source_file PROTO ((tree));
-static void jcf_parse_source PROTO ((JCF *));
+static void jcf_parse_source PROTO ((void));
+static int jcf_figure_file_type PROTO ((JCF *));
+static int find_in_current_zip PROTO ((char *, struct JCF **));
 
 /* Handle "SourceFile" attribute. */
 
@@ -465,15 +468,14 @@ read_class (name)
   tree save_current_class = current_class;
   char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
-  long saved_pos;
+  long saved_pos = 0;
   if (current_jcf->read_state)
     saved_pos = ftell (current_jcf->read_state);
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
   /* Search in current zip first.  */
-  if (find_in_current_zip (IDENTIFIER_POINTER (name),
-			   IDENTIFIER_LENGTH (name), &jcf) == 0)
+  if (find_in_current_zip (IDENTIFIER_POINTER (name), &jcf) == 0)
     /* FIXME: until the `.java' parser is fully working, we only
        look for a .java file when one was mentioned on the
        command line.  This lets us test the .java parser fairly
@@ -496,7 +498,7 @@ read_class (name)
     current_jcf = jcf;
 
   if (current_jcf->java_source)
-    jcf_parse_source (current_jcf);
+    jcf_parse_source ();
   else {
     java_parser_context_save_global ();
     java_push_parser_context ();
@@ -560,9 +562,8 @@ load_class (class_or_name, verbose)
 
 /* Parse a source file when JCF refers to a source file.  */
 
-void
-jcf_parse_source (jcf)
-     JCF *jcf;
+static void
+jcf_parse_source ()
 {
   tree file;
 
@@ -956,7 +957,7 @@ void process_zip_dir()
    zip file.  */
 int
 DEFUN(find_in_current_zip, (name, length, jcf),
-      char *name AND int length AND JCF **jcf)
+      char *name AND JCF **jcf)
 {
   JCF *local_jcf;
   tree class_name = maybe_get_identifier (name), class, icv;
@@ -979,7 +980,7 @@ DEFUN(find_in_current_zip, (name, length, jcf),
 }
 
 /* Figure what kind of file we're dealing with */
-int
+static int
 DEFUN(jcf_figure_file_type, (jcf),
       JCF *jcf)
 {

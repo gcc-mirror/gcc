@@ -66,7 +66,7 @@ static tree
 convert_ieee_real_to_integer (type, expr)
      tree type, expr;
 {
-  tree node, assignment, expr_decl;
+  tree assignment, expr_decl;
   expr = save_expr (expr);
 
   return build (COND_EXPR, type, 

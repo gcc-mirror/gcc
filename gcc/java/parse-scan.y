@@ -41,6 +41,7 @@ definitions and other extensions.  */
 #include "system.h"
 
 #include "obstack.h"
+#include "toplev.h"
 
 extern char *input_filename;
 extern FILE *finput, *out;
@@ -1178,7 +1179,7 @@ void reset_report ()
 
 void
 yyerror (msg)
-     char *msg;
+     char *msg ATTRIBUTE_UNUSED;
 {
 }
 

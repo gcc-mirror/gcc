@@ -587,10 +587,28 @@ extern int merge_type_state PROTO ((tree));
 extern void push_type PROTO ((tree));
 extern void load_type_state PROTO ((tree));
 extern void add_interface PROTO ((tree, tree));
-extern int find_in_current_zip PROTO ((char *, int, struct JCF **));
 extern void append_gpp_mangled_classtype PROTO ((struct obstack *, char *));
 extern void emit_unicode_mangled_name PROTO ((struct obstack *, char *, int));
 extern tree force_evaluation_order PROTO ((tree));
+extern int verify_constant_pool PROTO ((struct JCF *));
+extern void start_java_method PROTO ((tree));
+extern void end_java_method PROTO ((void));
+extern void give_name_to_locals PROTO ((struct JCF *));
+extern void expand_byte_code PROTO ((struct JCF *, tree));
+extern int open_in_zip PROTO ((struct JCF *, const char *, const char *, int));
+extern void set_constant_value PROTO ((tree, tree));
+#ifdef jword
+extern int find_constant1 PROTO ((struct CPool *, int, jword));
+extern int find_constant2 PROTO ((struct CPool *, int, jword, jword));
+#endif
+extern int find_utf8_constant PROTO ((struct CPool *, tree));
+extern int find_string_constant PROTO ((struct CPool *, tree));
+extern int find_class_constant PROTO ((struct CPool *, tree));
+extern int find_fieldref_index PROTO ((struct CPool *, tree));
+extern int find_methodref_index PROTO ((struct CPool *, tree));
+extern void write_constant_pool PROTO ((struct CPool *, unsigned char *, int));
+extern int count_constant_pool_bytes PROTO ((struct CPool *));
+extern int encode_newarray_type PROTO ((tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
