@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version.
-   Copyright (C) 1991, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1995, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -70,5 +70,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Plain char is unsigned in the SGI compiler.  */
 #define DEFAULT_SIGNED_CHAR 0
-
-#include "mips/mips.h"

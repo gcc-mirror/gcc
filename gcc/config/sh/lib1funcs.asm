@@ -1,4 +1,4 @@
-/* Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -38,6 +38,16 @@ Boston, MA 02111-1307, USA.  */
 !! ashiftrt_r4_x, ___ashrsi3, ___ashlsi3, ___lshrsi3 routines
 !! recoded in assembly by Toshiyasu Morita
 !! tm@netcom.com
+
+/* SH2 optimizations for ___ashrsi3, ___ashlsi3, ___lshrsi3 and
+   ELF local label prefixes by J"orn Rennecke
+   amylaar@cygnus.com  */
+
+#ifdef __ELF__
+#define LOCAL(X) .L_##X
+#else
+#define LOCAL(X) L_##X
+#endif
 
 #ifdef L_ashiftrt
 	.global	___ashiftrt_r4_0
@@ -178,123 +188,127 @@ ___ashiftrt_r4_0:
 	.align	2
 ___ashrsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_ashrsi3_31
-	mova	L_ashrsi3_table,r0
+	and	r0,r5
+	mova	LOCAL(ashrsi3_table),r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
-L_ashrsi3_table:
-	.byte		L_ashrsi3_0-L_ashrsi3_table
-	.byte		L_ashrsi3_1-L_ashrsi3_table
-	.byte		L_ashrsi3_2-L_ashrsi3_table
-	.byte		L_ashrsi3_3-L_ashrsi3_table
-	.byte		L_ashrsi3_4-L_ashrsi3_table
-	.byte		L_ashrsi3_5-L_ashrsi3_table
-	.byte		L_ashrsi3_6-L_ashrsi3_table
-	.byte		L_ashrsi3_7-L_ashrsi3_table
-	.byte		L_ashrsi3_8-L_ashrsi3_table
-	.byte		L_ashrsi3_9-L_ashrsi3_table
-	.byte		L_ashrsi3_10-L_ashrsi3_table
-	.byte		L_ashrsi3_11-L_ashrsi3_table
-	.byte		L_ashrsi3_12-L_ashrsi3_table
-	.byte		L_ashrsi3_13-L_ashrsi3_table
-	.byte		L_ashrsi3_14-L_ashrsi3_table
-	.byte		L_ashrsi3_15-L_ashrsi3_table
-	.byte		L_ashrsi3_16-L_ashrsi3_table
-	.byte		L_ashrsi3_17-L_ashrsi3_table
-	.byte		L_ashrsi3_18-L_ashrsi3_table
-	.byte		L_ashrsi3_19-L_ashrsi3_table
-	.byte		L_ashrsi3_20-L_ashrsi3_table
-	.byte		L_ashrsi3_21-L_ashrsi3_table
-	.byte		L_ashrsi3_22-L_ashrsi3_table
-	.byte		L_ashrsi3_23-L_ashrsi3_table
-	.byte		L_ashrsi3_24-L_ashrsi3_table
-	.byte		L_ashrsi3_25-L_ashrsi3_table
-	.byte		L_ashrsi3_26-L_ashrsi3_table
-	.byte		L_ashrsi3_27-L_ashrsi3_table
-	.byte		L_ashrsi3_28-L_ashrsi3_table
-	.byte		L_ashrsi3_29-L_ashrsi3_table
-	.byte		L_ashrsi3_30-L_ashrsi3_table
-	.byte		L_ashrsi3_31-L_ashrsi3_table
+	.align	2
+LOCAL(ashrsi3_table):
+	.byte		LOCAL(ashrsi3_0)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_1)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_2)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_3)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_4)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_5)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_6)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_7)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_8)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_9)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_10)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_11)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_12)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_13)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_14)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_15)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_16)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_17)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_18)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_19)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_20)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_21)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_22)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_23)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_24)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_25)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_26)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_27)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_28)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_29)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_30)-LOCAL(ashrsi3_table)
+	.byte		LOCAL(ashrsi3_31)-LOCAL(ashrsi3_table)
 
-L_ashrsi3_31:
+LOCAL(ashrsi3_31):
 	rotcl	r0
 	rts
 	subc	r0,r0
 
-L_ashrsi3_30:
+LOCAL(ashrsi3_30):
 	shar	r0
-L_ashrsi3_29:
+LOCAL(ashrsi3_29):
 	shar	r0
-L_ashrsi3_28:
+LOCAL(ashrsi3_28):
 	shar	r0
-L_ashrsi3_27:
+LOCAL(ashrsi3_27):
 	shar	r0
-L_ashrsi3_26:
+LOCAL(ashrsi3_26):
 	shar	r0
-L_ashrsi3_25:
+LOCAL(ashrsi3_25):
 	shar	r0
-L_ashrsi3_24:
+LOCAL(ashrsi3_24):
 	shlr16	r0
 	shlr8	r0
 	rts
 	exts.b	r0,r0
 
-L_ashrsi3_23:
+LOCAL(ashrsi3_23):
 	shar	r0
-L_ashrsi3_22:
+LOCAL(ashrsi3_22):
 	shar	r0
-L_ashrsi3_21:
+LOCAL(ashrsi3_21):
 	shar	r0
-L_ashrsi3_20:
+LOCAL(ashrsi3_20):
 	shar	r0
-L_ashrsi3_19:
+LOCAL(ashrsi3_19):
 	shar	r0
-L_ashrsi3_18:
+LOCAL(ashrsi3_18):
 	shar	r0
-L_ashrsi3_17:
+LOCAL(ashrsi3_17):
 	shar	r0
-L_ashrsi3_16:
+LOCAL(ashrsi3_16):
 	shlr16	r0
 	rts
 	exts.w	r0,r0
 
-L_ashrsi3_15:
+LOCAL(ashrsi3_15):
 	shar	r0
-L_ashrsi3_14:
+LOCAL(ashrsi3_14):
 	shar	r0
-L_ashrsi3_13:
+LOCAL(ashrsi3_13):
 	shar	r0
-L_ashrsi3_12:
+LOCAL(ashrsi3_12):
 	shar	r0
-L_ashrsi3_11:
+LOCAL(ashrsi3_11):
 	shar	r0
-L_ashrsi3_10:
+LOCAL(ashrsi3_10):
 	shar	r0
-L_ashrsi3_9:
+LOCAL(ashrsi3_9):
 	shar	r0
-L_ashrsi3_8:
+LOCAL(ashrsi3_8):
 	shar	r0
-L_ashrsi3_7:
+LOCAL(ashrsi3_7):
 	shar	r0
-L_ashrsi3_6:
+LOCAL(ashrsi3_6):
 	shar	r0
-L_ashrsi3_5:
+LOCAL(ashrsi3_5):
 	shar	r0
-L_ashrsi3_4:
+LOCAL(ashrsi3_4):
 	shar	r0
-L_ashrsi3_3:
+LOCAL(ashrsi3_3):
 	shar	r0
-L_ashrsi3_2:
+LOCAL(ashrsi3_2):
 	shar	r0
-L_ashrsi3_1:
+LOCAL(ashrsi3_1):
 	rts
 	shar	r0
 
-L_ashrsi3_0:
+LOCAL(ashrsi3_0):
 	rts
 	nop
 
@@ -322,136 +336,136 @@ L_ashrsi3_0:
 	.align	2
 ___ashlsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_ashlsi3_32
-	mova	L_ashlsi3_table,r0
+	and	r0,r5
+	mova	LOCAL(ashlsi3_table),r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
-L_ashlsi3_table:
-	.byte		L_ashlsi3_0-L_ashlsi3_table
-	.byte		L_ashlsi3_1-L_ashlsi3_table
-	.byte		L_ashlsi3_2-L_ashlsi3_table
-	.byte		L_ashlsi3_3-L_ashlsi3_table
-	.byte		L_ashlsi3_4-L_ashlsi3_table
-	.byte		L_ashlsi3_5-L_ashlsi3_table
-	.byte		L_ashlsi3_6-L_ashlsi3_table
-	.byte		L_ashlsi3_7-L_ashlsi3_table
-	.byte		L_ashlsi3_8-L_ashlsi3_table
-	.byte		L_ashlsi3_9-L_ashlsi3_table
-	.byte		L_ashlsi3_10-L_ashlsi3_table
-	.byte		L_ashlsi3_11-L_ashlsi3_table
-	.byte		L_ashlsi3_12-L_ashlsi3_table
-	.byte		L_ashlsi3_13-L_ashlsi3_table
-	.byte		L_ashlsi3_14-L_ashlsi3_table
-	.byte		L_ashlsi3_15-L_ashlsi3_table
-	.byte		L_ashlsi3_16-L_ashlsi3_table
-	.byte		L_ashlsi3_17-L_ashlsi3_table
-	.byte		L_ashlsi3_18-L_ashlsi3_table
-	.byte		L_ashlsi3_19-L_ashlsi3_table
-	.byte		L_ashlsi3_20-L_ashlsi3_table
-	.byte		L_ashlsi3_21-L_ashlsi3_table
-	.byte		L_ashlsi3_22-L_ashlsi3_table
-	.byte		L_ashlsi3_23-L_ashlsi3_table
-	.byte		L_ashlsi3_24-L_ashlsi3_table
-	.byte		L_ashlsi3_25-L_ashlsi3_table
-	.byte		L_ashlsi3_26-L_ashlsi3_table
-	.byte		L_ashlsi3_27-L_ashlsi3_table
-	.byte		L_ashlsi3_28-L_ashlsi3_table
-	.byte		L_ashlsi3_29-L_ashlsi3_table
-	.byte		L_ashlsi3_30-L_ashlsi3_table
-	.byte		L_ashlsi3_31-L_ashlsi3_table
+	.align	2
+LOCAL(ashlsi3_table):
+	.byte		LOCAL(ashlsi3_0)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_1)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_2)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_3)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_4)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_5)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_6)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_7)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_8)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_9)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_10)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_11)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_12)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_13)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_14)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_15)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_16)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_17)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_18)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_19)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_20)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_21)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_22)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_23)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_24)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_25)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_26)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_27)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_28)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_29)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_30)-LOCAL(ashlsi3_table)
+	.byte		LOCAL(ashlsi3_31)-LOCAL(ashlsi3_table)
 
-L_ashlsi3_6:
+LOCAL(ashlsi3_6):
 	shll2	r0
-L_ashlsi3_4:
+LOCAL(ashlsi3_4):
 	shll2	r0
-L_ashlsi3_2:
+LOCAL(ashlsi3_2):
 	rts
 	shll2	r0
 
-L_ashlsi3_7:
+LOCAL(ashlsi3_7):
 	shll2	r0
-L_ashlsi3_5:
+LOCAL(ashlsi3_5):
 	shll2	r0
-L_ashlsi3_3:
+LOCAL(ashlsi3_3):
 	shll2	r0
-L_ashlsi3_1:
-	rts
-	shll	r0
-
-L_ashlsi3_14:
-	shll2	r0
-L_ashlsi3_12:
-	shll2	r0
-L_ashlsi3_10:
-	shll2	r0
-L_ashlsi3_8:
-	rts
-	shll8	r0
-
-L_ashlsi3_15:
-	shll2	r0
-L_ashlsi3_13:
-	shll2	r0
-L_ashlsi3_11:
-	shll2	r0
-L_ashlsi3_9:
-	shll8	r0
+LOCAL(ashlsi3_1):
 	rts
 	shll	r0
 
-L_ashlsi3_22:
+LOCAL(ashlsi3_14):
 	shll2	r0
-L_ashlsi3_20:
+LOCAL(ashlsi3_12):
 	shll2	r0
-L_ashlsi3_18:
+LOCAL(ashlsi3_10):
 	shll2	r0
-L_ashlsi3_16:
-	rts
-	shll16	r0
-
-L_ashlsi3_23:
-	shll2	r0
-L_ashlsi3_21:
-	shll2	r0
-L_ashlsi3_19:
-	shll2	r0
-L_ashlsi3_17:
-	shll16	r0
-	rts
-	shll	r0
-
-L_ashlsi3_30:
-	shll2	r0
-L_ashlsi3_28:
-	shll2	r0
-L_ashlsi3_26:
-	shll2	r0
-L_ashlsi3_24:
-	shll16	r0
+LOCAL(ashlsi3_8):
 	rts
 	shll8	r0
 
-L_ashlsi3_31:
+LOCAL(ashlsi3_15):
 	shll2	r0
-L_ashlsi3_29:
+LOCAL(ashlsi3_13):
 	shll2	r0
-L_ashlsi3_27:
+LOCAL(ashlsi3_11):
 	shll2	r0
-L_ashlsi3_25:
-	shll16	r0
+LOCAL(ashlsi3_9):
 	shll8	r0
 	rts
 	shll	r0
 
-L_ashlsi3_32:
+LOCAL(ashlsi3_22):
+	shll2	r0
+LOCAL(ashlsi3_20):
+	shll2	r0
+LOCAL(ashlsi3_18):
+	shll2	r0
+LOCAL(ashlsi3_16):
 	rts
-	mov	#0,r0
+	shll16	r0
 
-L_ashlsi3_0:
+LOCAL(ashlsi3_23):
+	shll2	r0
+LOCAL(ashlsi3_21):
+	shll2	r0
+LOCAL(ashlsi3_19):
+	shll2	r0
+LOCAL(ashlsi3_17):
+	shll16	r0
+	rts
+	shll	r0
+
+LOCAL(ashlsi3_30):
+	shll2	r0
+LOCAL(ashlsi3_28):
+	shll2	r0
+LOCAL(ashlsi3_26):
+	shll2	r0
+LOCAL(ashlsi3_24):
+	shll16	r0
+	rts
+	shll8	r0
+
+LOCAL(ashlsi3_31):
+	shll2	r0
+LOCAL(ashlsi3_29):
+	shll2	r0
+LOCAL(ashlsi3_27):
+	shll2	r0
+LOCAL(ashlsi3_25):
+	shll16	r0
+	shll8	r0
+	rts
+	shll	r0
+
+LOCAL(ashlsi3_0):
 	rts
 	nop
 
@@ -479,136 +493,136 @@ L_ashlsi3_0:
 	.align	2
 ___lshrsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_lshrsi3_32
-	mova	L_lshrsi3_table,r0
+	and	r0,r5
+	mova	LOCAL(lshrsi3_table),r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
-L_lshrsi3_table:
-	.byte		L_lshrsi3_0-L_lshrsi3_table
-	.byte		L_lshrsi3_1-L_lshrsi3_table
-	.byte		L_lshrsi3_2-L_lshrsi3_table
-	.byte		L_lshrsi3_3-L_lshrsi3_table
-	.byte		L_lshrsi3_4-L_lshrsi3_table
-	.byte		L_lshrsi3_5-L_lshrsi3_table
-	.byte		L_lshrsi3_6-L_lshrsi3_table
-	.byte		L_lshrsi3_7-L_lshrsi3_table
-	.byte		L_lshrsi3_8-L_lshrsi3_table
-	.byte		L_lshrsi3_9-L_lshrsi3_table
-	.byte		L_lshrsi3_10-L_lshrsi3_table
-	.byte		L_lshrsi3_11-L_lshrsi3_table
-	.byte		L_lshrsi3_12-L_lshrsi3_table
-	.byte		L_lshrsi3_13-L_lshrsi3_table
-	.byte		L_lshrsi3_14-L_lshrsi3_table
-	.byte		L_lshrsi3_15-L_lshrsi3_table
-	.byte		L_lshrsi3_16-L_lshrsi3_table
-	.byte		L_lshrsi3_17-L_lshrsi3_table
-	.byte		L_lshrsi3_18-L_lshrsi3_table
-	.byte		L_lshrsi3_19-L_lshrsi3_table
-	.byte		L_lshrsi3_20-L_lshrsi3_table
-	.byte		L_lshrsi3_21-L_lshrsi3_table
-	.byte		L_lshrsi3_22-L_lshrsi3_table
-	.byte		L_lshrsi3_23-L_lshrsi3_table
-	.byte		L_lshrsi3_24-L_lshrsi3_table
-	.byte		L_lshrsi3_25-L_lshrsi3_table
-	.byte		L_lshrsi3_26-L_lshrsi3_table
-	.byte		L_lshrsi3_27-L_lshrsi3_table
-	.byte		L_lshrsi3_28-L_lshrsi3_table
-	.byte		L_lshrsi3_29-L_lshrsi3_table
-	.byte		L_lshrsi3_30-L_lshrsi3_table
-	.byte		L_lshrsi3_31-L_lshrsi3_table
+	.align	2
+LOCAL(lshrsi3_table):
+	.byte		LOCAL(lshrsi3_0)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_1)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_2)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_3)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_4)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_5)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_6)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_7)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_8)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_9)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_10)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_11)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_12)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_13)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_14)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_15)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_16)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_17)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_18)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_19)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_20)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_21)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_22)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_23)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_24)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_25)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_26)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_27)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_28)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_29)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_30)-LOCAL(lshrsi3_table)
+	.byte		LOCAL(lshrsi3_31)-LOCAL(lshrsi3_table)
 
-L_lshrsi3_6:
+LOCAL(lshrsi3_6):
 	shlr2	r0
-L_lshrsi3_4:
+LOCAL(lshrsi3_4):
 	shlr2	r0
-L_lshrsi3_2:
+LOCAL(lshrsi3_2):
 	rts
 	shlr2	r0
 
-L_lshrsi3_7:
+LOCAL(lshrsi3_7):
 	shlr2	r0
-L_lshrsi3_5:
+LOCAL(lshrsi3_5):
 	shlr2	r0
-L_lshrsi3_3:
+LOCAL(lshrsi3_3):
 	shlr2	r0
-L_lshrsi3_1:
-	rts
-	shlr	r0
-
-L_lshrsi3_14:
-	shlr2	r0
-L_lshrsi3_12:
-	shlr2	r0
-L_lshrsi3_10:
-	shlr2	r0
-L_lshrsi3_8:
-	rts
-	shlr8	r0
-
-L_lshrsi3_15:
-	shlr2	r0
-L_lshrsi3_13:
-	shlr2	r0
-L_lshrsi3_11:
-	shlr2	r0
-L_lshrsi3_9:
-	shlr8	r0
+LOCAL(lshrsi3_1):
 	rts
 	shlr	r0
 
-L_lshrsi3_22:
+LOCAL(lshrsi3_14):
 	shlr2	r0
-L_lshrsi3_20:
+LOCAL(lshrsi3_12):
 	shlr2	r0
-L_lshrsi3_18:
+LOCAL(lshrsi3_10):
 	shlr2	r0
-L_lshrsi3_16:
-	rts
-	shlr16	r0
-
-L_lshrsi3_23:
-	shlr2	r0
-L_lshrsi3_21:
-	shlr2	r0
-L_lshrsi3_19:
-	shlr2	r0
-L_lshrsi3_17:
-	shlr16	r0
-	rts
-	shlr	r0
-
-L_lshrsi3_30:
-	shlr2	r0
-L_lshrsi3_28:
-	shlr2	r0
-L_lshrsi3_26:
-	shlr2	r0
-L_lshrsi3_24:
-	shlr16	r0
+LOCAL(lshrsi3_8):
 	rts
 	shlr8	r0
 
-L_lshrsi3_31:
+LOCAL(lshrsi3_15):
 	shlr2	r0
-L_lshrsi3_29:
+LOCAL(lshrsi3_13):
 	shlr2	r0
-L_lshrsi3_27:
+LOCAL(lshrsi3_11):
 	shlr2	r0
-L_lshrsi3_25:
-	shlr16	r0
+LOCAL(lshrsi3_9):
 	shlr8	r0
 	rts
 	shlr	r0
 
-L_lshrsi3_32:
+LOCAL(lshrsi3_22):
+	shlr2	r0
+LOCAL(lshrsi3_20):
+	shlr2	r0
+LOCAL(lshrsi3_18):
+	shlr2	r0
+LOCAL(lshrsi3_16):
 	rts
-	mov	#0,r0
+	shlr16	r0
 
-L_lshrsi3_0:
+LOCAL(lshrsi3_23):
+	shlr2	r0
+LOCAL(lshrsi3_21):
+	shlr2	r0
+LOCAL(lshrsi3_19):
+	shlr2	r0
+LOCAL(lshrsi3_17):
+	shlr16	r0
+	rts
+	shlr	r0
+
+LOCAL(lshrsi3_30):
+	shlr2	r0
+LOCAL(lshrsi3_28):
+	shlr2	r0
+LOCAL(lshrsi3_26):
+	shlr2	r0
+LOCAL(lshrsi3_24):
+	shlr16	r0
+	rts
+	shlr8	r0
+
+LOCAL(lshrsi3_31):
+	shlr2	r0
+LOCAL(lshrsi3_29):
+	shlr2	r0
+LOCAL(lshrsi3_27):
+	shlr2	r0
+LOCAL(lshrsi3_25):
+	shlr16	r0
+	shlr8	r0
+	rts
+	shlr	r0
+
+LOCAL(lshrsi3_0):
 	rts
 	nop
 

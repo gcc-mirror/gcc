@@ -1,5 +1,5 @@
-/* Definitions of target machine for GNU compiler.  DECstation (ultrix) version.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler; DECstation (Ultrix) version.
+   Copyright (C) 1991, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,6 +31,12 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 #endif
 
+#define SUBTARGET_CPP_SPEC "\
+%{.cc:	-D__LANGUAGE_C -D_LANGUAGE_C} \
+%{.cxx:	-D__LANGUAGE_C -D_LANGUAGE_C} \
+%{.C:	-D__LANGUAGE_C -D_LANGUAGE_C} \
+"
+
 #ifndef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 #endif
@@ -46,4 +52,10 @@ Boston, MA 02111-1307, USA.  */
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
-#include "mips/mips.h"
+/* Work around assembler forward label references generated in exception
+   handling code. */
+#define DWARF2_UNWIND_INFO 0
+
+/* INITIALIZE_TRAMPOLINE calls this library function to flush
+   program and data caches.  */
+#define CACHE_FLUSH_FUNC "cacheflush"

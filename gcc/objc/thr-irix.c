@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include <objc/thr.h>
 #include "runtime.h"
 
-/* Key structure for maintiain thread specific storage */
+/* Key structure for maintaining thread specific storage */
 static void * __objc_shared_arena_handle = NULL;
 
 /* Backend initialization functions */

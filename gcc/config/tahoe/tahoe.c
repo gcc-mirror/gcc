@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tahoe.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -51,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 rtx tahoe_reg_conversion_loc;
 
 int
-extendable_operand (op, mode)
+extensible_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
@@ -66,8 +67,6 @@ extendable_operand (op, mode)
 /* most of the print_operand_address function was taken from the vax	*/
 /* since the modes are basically the same. I had to add a special case,	*/
 /* though, for symbol references with offsets.				*/
-
-#include <stdio.h>
 
 print_operand_address (file, addr)
      FILE *file;

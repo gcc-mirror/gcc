@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 # define FILE(n)	file	n
 # define GLOBAL_SYM(s)	global	s
 # define LOCAL_LABEL(l)	L%##l
-# define SECTION(n)	section	n
+# define IDENT(s)	ident	s
 # define TEXT		text
 #else /* Assume we are using GNU as.  */
 # define COMM		.comm
@@ -35,8 +35,7 @@ Boston, MA 02111-1307, USA.  */
 # define FILE(name)	.file	name
 # define GLOBAL_SYM(s)	.globl	s
 # define LOCAL_LABEL(l)	.L.##l
-# define SECTION(n)	.section	n
-# define STRING(s)	.asciz	s
+# define IDENT(s)	.section .comment;.asciz s
 # define TEXT		.text
 #endif
 
@@ -86,24 +85,14 @@ LOCAL_LABEL(isatty):
 	trap	&0
 	nop
 
+	GLOBAL_SYM (__stop_monitor)
+__stop_monitor:
+	rts
 	EVEN
 
 	COMM	splimit%,4
 	COMM	environ,4
 
-	COMM	mcount,4
-	COMM	mcount%,4
-	COMM	monitor,4
-
-#ifdef STRING
-	SECTION (.comment)
-	STRING ("$Id: mot3300-crt0.S,v 1.1 1997/08/11 15:57:32 law Exp $\n")
-	STRING ("Contributed by manfred@lts.sel.alcatel.de (Manfred Hollstein, Germany)\n")
-#else
-	byte	'C,'o,'n,'t,'r,'i,'b,'u,'t,'e,'d,' ,'b,'y
-	byte	' ,'m,'a,'n,'f,'r,'e,'d,'@,'l,'t,'s,'.,'s
-	byte	'e,'l,'.,'a,'l,'c,'a,'t,'e,'l,'.,'d,'e,' 
-	byte	'(,'M,'a,'n,'f,'r,'e,'d,' ,'H,'o,'l,'l,'s
-	byte	't,'e,'i,'n,',,' ,'G,'e,'r,'m,'a,'n,'y,')
-	byte	10,0
-#endif
+	IDENT ("$Id: mot3300-crt0.S,v 1.2 1997/12/22 23:41:12 kenner Exp $")
+	IDENT ("Contributed by Manfred Hollstein (manfred@lts.sel.alcatel.de)")
+	IDENT ("Corrections by Philippe De Muyter (phdm@macqel.be)")

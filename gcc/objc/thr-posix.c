@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 #include <pthread.h>
 
-/* Key structure for maintiain thread specific storage */
+/* Key structure for maintaining thread specific storage */
 static pthread_key_t _objc_thread_storage;
 
 /* Backend initialization functions */
@@ -129,41 +129,49 @@ __objc_thread_get_data(void)
 int
 __objc_mutex_allocate(objc_mutex_t mutex)
 {
-  if (pthread_mutex_init((pthread_mutex_t *)(&(mutex->backend)), NULL))
-    return -1;
-  else
-    return 0;
+  mutex->backend = objc_malloc(sizeof(pthread_mutex_t));
+
+  if (pthread_mutex_init((pthread_mutex_t *)mutex->backend, NULL))
+    {
+      objc_free(mutex->backend);
+      mutex->backend = NULL;
+      return -1;
+    }
+
+  return 0;
 }
 
 /* Deallocate a mutex. */
 int
 __objc_mutex_deallocate(objc_mutex_t mutex)
 {
-  if (pthread_mutex_destroy((pthread_mutex_t *)(&(mutex->backend))))
+  if (pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
     return -1;
-  else
-    return 0;
+
+  objc_free(mutex->backend);
+  mutex->backend = NULL;
+  return 0;
 }
 
 /* Grab a lock on a mutex. */
 int
 __objc_mutex_lock(objc_mutex_t mutex)
 {
-  return pthread_mutex_lock((pthread_mutex_t *)(&(mutex->backend)));
+  return pthread_mutex_lock((pthread_mutex_t *)mutex->backend);
 }
 
 /* Try to grab a lock on a mutex. */
 int
 __objc_mutex_trylock(objc_mutex_t mutex)
 {
-  return pthread_mutex_trylock((pthread_mutex_t *)(&(mutex->backend)));
+  return pthread_mutex_trylock((pthread_mutex_t *)mutex->backend);
 }
 
 /* Unlock the mutex */
 int
 __objc_mutex_unlock(objc_mutex_t mutex)
 {
-  return pthread_mutex_unlock((pthread_mutex_t *)(&(mutex->backend)));
+  return pthread_mutex_unlock((pthread_mutex_t *)mutex->backend);
 }
 
 /* Backend condition mutex functions */
@@ -172,39 +180,50 @@ __objc_mutex_unlock(objc_mutex_t mutex)
 int
 __objc_condition_allocate(objc_condition_t condition)
 {
-  if (pthread_cond_init((pthread_cond_t *)(&(condition->backend)), NULL))
-    return -1;
-  else
-    return 0;
+  condition->backend = objc_malloc(sizeof(pthread_cond_t));
+
+  if (pthread_cond_init((pthread_cond_t *)condition->backend, NULL))
+    {
+      objc_free(condition->backend);
+      condition->backend = NULL;
+      return -1;
+    }
+
+  return 0;
 }
 
 /* Deallocate a condition. */
 int
 __objc_condition_deallocate(objc_condition_t condition)
 {
-  return pthread_cond_destroy((pthread_cond_t *)(&(condition->backend)));
+  if (pthread_cond_destroy((pthread_cond_t *)condition->backend))
+    return -1;
+
+  objc_free(condition->backend);
+  condition->backend = NULL;
+  return 0;
 }
 
 /* Wait on the condition */
 int
 __objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
 {
-  return pthread_cond_wait((pthread_cond_t *)(&(condition->backend)),
-			   (pthread_mutex_t *)(&(mutex->backend)));
+  return pthread_cond_wait((pthread_cond_t *)condition->backend,
+			   (pthread_mutex_t *)mutex->backend);
 }
 
 /* Wake up all threads waiting on this condition. */
 int
 __objc_condition_broadcast(objc_condition_t condition)
 {
-  return pthread_cond_broadcast((pthread_cond_t *)(&(condition->backend)));
+  return pthread_cond_broadcast((pthread_cond_t *)condition->backend);
 }
 
 /* Wake up one thread waiting on this condition. */
 int
 __objc_condition_signal(objc_condition_t condition)
 {
-  return pthread_cond_signal((pthread_cond_t *)(&(condition->backend)));
+  return pthread_cond_signal((pthread_cond_t *)condition->backend);
 }
 
 /* End of File */

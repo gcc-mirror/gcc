@@ -10,7 +10,7 @@ ENQUIRE=
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arm/lib1funcs.asm
-LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls
+LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_lnx
 
 MULTILIB_OPTIONS = mapcs-32
 MULTILIB_DIRNAMES = apcs-32

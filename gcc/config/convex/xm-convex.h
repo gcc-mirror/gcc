@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Convex.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,11 +41,6 @@ Boston, MA 02111-1307, USA.  */
    usually has more free space than /usr/tmp */
 
 #define P_tmpdir	"/tmp/"
-
-/* Use memcpy and memset -- either would work but these get inlined. */
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
 
 /* Convex uses Vax or IEEE floats.
    Both formats have Vax semantics. */

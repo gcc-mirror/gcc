@@ -1,6 +1,6 @@
 ! crt1.s for Solaris 2, x86
 
-!   Copyright (C) 1993 Free Software Foundation, Inc.
+!   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
 !   Written By Fred Fish, Nov 1992
 ! 
 ! This file is free software; you can redistribute it and/or modify it
@@ -149,7 +149,7 @@ _start:
 ! A dummy profiling support routine for non-profiling executables,
 ! in case we link in some objects that have been compiled for profiling.
 
-	.globl	_mcount
+	.weak	_mcount
 _mcount:
 	ret
 	.type	_mcount,@function

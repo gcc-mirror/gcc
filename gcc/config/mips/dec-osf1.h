@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  DECstation (OSF/1) version.
-   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 %{!shared: %{!non_shared: %{!call_shared: -non_shared}}}"
 
 #include "mips/ultrix.h"
+#include "mips/mips.h"
 
 /* Specify size_t and wchar_t types.  */
 #undef	SIZE_TYPE

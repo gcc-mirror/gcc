@@ -6,7 +6,7 @@
 /* Specify extra dir to search for include files.  */
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"
 
-/* LINK_SPEC is needed only for Sunos 4.  */
+/* LINK_SPEC is needed only for SunOS 4.  */
 
 #undef LINK_SPEC
 

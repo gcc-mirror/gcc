@@ -145,6 +145,7 @@ objc_get_class (const char *name)
   
   objc_error(nil, OBJC_ERR_BAD_CLASS, 
 	     "objc runtime: cannot find class %s\n", name);
+  return 0;
 }
 
 MetaClass

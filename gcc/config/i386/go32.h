@@ -2,8 +2,6 @@
 
 #include "dbxcoff.h"
 
-#define NO_STAB_H /* DJGPP has no stab.h */
-
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
@@ -88,3 +86,11 @@ dtor_section ()							\
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG) != 0) fprintf ((FILE), "\t.p2align %d\n", LOG)
+
+/* djgpp has atexit ().  */
+#undef HAVE_ATEXIT
+#define HAVE_ATEXIT
+
+/* djgpp automatically calls its own version of __main, so don't define one
+   in libgcc, nor call one in main().  */
+#define HAS_INIT_SECTION

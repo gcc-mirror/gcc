@@ -1,5 +1,6 @@
 /* Configuration for GNU C-compiler for Hitachi SH.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -31,9 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #endif
-
-/* We have the vprintf function.  */
-#define HAVE_VPRINTF 1
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */

@@ -31,23 +31,18 @@
  * SUCH DAMAGE.
  */
 
-/* 
- * Re rework of the solaris 2 version of gmon by J.W.Hawtin 12/8/1996
- * Does not work right yet.
- */
-
 /*
- * This is a modified gmon.c by J.W.Hawtin <J.W.Hawtin@lboro.ac.uk>,
+ * This is a modified gmon.c by J.W.Hawtin <oolon@ankh.org>,
  * 14/8/96 based on the original gmon.c in GCC and the hacked version
  * solaris 2 sparc version (config/sparc/gmon-sol.c) by Mark Eichin. To do
- * process profiling on solaris 2.4 X86
+ * process profiling on solaris 2.X X86
  *
  * It must be used in conjunction with sol2-gc1.asm, which is used to start
  * and stop process monitoring.
  *
  * Differences.
  *
- * On Solaris 2 _mcount is called my library functions not mcount, so support
+ * On Solaris 2 _mcount is called by library functions not mcount, so support
  * has been added for both.
  *
  * Also the prototype for profil() is different
@@ -58,7 +53,7 @@
  *
  * Notes
  *
- * This code could easily be integrated with the orginal gmon.c and perhaps
+ * This code could easily be integrated with the original gmon.c and perhaps
  * should be.
  */
 
@@ -90,7 +85,7 @@ struct phdr {
 #define HASHFRACTION 1
 #define ARCDENSITY 2
 #define MINARCS 50
-#define BASEADDRESS 0x8000000 /* On Solaris 2 X86 all excutables start here
+#define BASEADDRESS 0x8000000 /* On Solaris 2 X86 all executables start here
 				 and not at 0 */ 
 
 struct tostruct {
@@ -264,6 +259,7 @@ internal_mcount()
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
 	register long			toindex;
+	static char already_setup;
 
 	/*
 	 *	find the return address for mcount,
@@ -277,6 +273,17 @@ internal_mcount()
 	   This identifies the caller of the function just entered.  */
 	frompcindex = (void *) __builtin_return_address (1);
 
+	if(!already_setup) {
+          extern etext();
+	  already_setup = 1;
+/*	  monstartup(0, etext); */
+	  monstartup(0x08040000, etext);
+#ifdef USE_ONEXIT
+	  on_exit(_mcleanup, 0);
+#else
+	  atexit(_mcleanup);
+#endif
+	}
 	/*
 	 *	check that we are profiling
 	 *	and that we aren't recursively invoked.

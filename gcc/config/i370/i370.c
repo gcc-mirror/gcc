@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for MVS C/370 by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -20,10 +20,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "config.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -35,6 +35,11 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
+#ifdef sun
+#include <sys/types.h>
+#include <ctype.h>
+#endif
+#include <time.h>
 
 
 /* Label node, this structure is used to keep track of labels on the
@@ -285,7 +290,7 @@ mvs_add_label (id)
   label_anchor = lp;
 }
 
-/* Check to see if the label is in the list.  If 1 is returned then a load 
+/* Check to see if the label is in the list.  If 1 is returned then a load
    and branch on register must be generated.
    ID is the label number of the label being checked.  */
 
@@ -479,4 +484,101 @@ unsigned_jump_follows_p (insn)
   insn = XEXP (insn, 0);
   return GET_CODE (insn) != GE && GET_CODE (insn) != GT
     && GET_CODE (insn) != LE && GET_CODE (insn) != LT;
+}
+
+void
+i370_function_prolog (f, l)
+     FILE *f;
+     int l;
+{
+#if MACROPROLOGUE == 1
+  fprintf (f, "\tEDCPRLG USRDSAL=%d,BASEREG=%d\n",
+	   STACK_POINTER_OFFSET + l - 120 +
+	   current_function_outgoing_args_size, BASE_REGISTER);
+  fprintf (f, "PG%d\tEQU\t*\n", mvs_page_num );
+  fprintf (f, "\tLR\t11,1\n");
+  fprintf (f, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);
+  mvs_page_code = 6;
+  mvs_page_lit = 4;
+  mvs_check_page (f, 0, 0);
+  function_base_page = mvs_page_num;
+#else /* MACROPROLOGUE != 1 */
+  static int function_label_index = 1;
+  static int function_first = 0;
+  static int function_year, function_month, function_day;
+  static int function_hour, function_minute, function_second;
+  int i;
+  if (!function_first)
+    {
+      struct tm *function_time;
+      time_t lcltime;
+      time (&lcltime);
+      function_time = localtime (&lcltime);
+      function_year = function_time->tm_year + 1900;
+      function_month = function_time->tm_mon + 1;
+      function_day = function_time->tm_mday;
+      function_hour = function_time->tm_hour;
+      function_minute = function_time->tm_min;
+      function_second = function_time->tm_sec;
+      fprintf (f, "PPA2\tDS\t0F\n");
+      fprintf (f, "\tDC\tX'03',X'00',X'33',X'00'\n");
+      fprintf (f, "\tDC\tV(CEESTART),A(0)\n");
+      fprintf (f, "\tDC\tA(CEETIMES)\n");
+      fprintf (f, "CEETIMES\tDS\t0F\n");
+      fprintf (f, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",
+    		 function_year, function_month, function_day,
+    		 function_hour, function_minute, function_second);
+      fprintf (f, "\tDC\tCL2'01',CL4'0100'\n");
+    }
+  fprintf (f, "$DSD%03d\tDSECT\n", function_label_index);
+  fprintf (f, "\tDS\tD\n");
+  fprintf (f, "\tDS\tCL(%d)\n", STACK_POINTER_OFFSET + l
+			+ current_function_outgoing_args_size);
+  fprintf (f, "\tORG\t$DSD%03d\n", function_label_index);
+  fprintf (f, "\tDS\tCL(120+8)\n");
+  fprintf (f, "\tORG\n");
+  fprintf (f, "\tDS\t0D\n");
+  fprintf (f, "$DSL%03d\tEQU\t*-$DSD%03d-8\n", function_label_index,
+	   function_label_index);
+  fprintf (f, "\tDS\t0H\n");
+  assemble_name (f, mvs_function_name);
+  fprintf (f, "\tEQU\t*\n");
+  fprintf (f, "\tUSING\t*,15\n");
+  fprintf (f, "\tB\tFPL%03d\n", function_label_index);
+  fprintf (f, "\tDC\tAL1(FPL%03d+4-*)\n", function_label_index + 1);
+  fprintf (f, "\tDC\tX'CE',X'A0',AL1(16)\n");
+  fprintf (f, "\tDC\tAL4(PPA2)\n");
+  fprintf (f, "\tDC\tAL4(0)\n");
+  fprintf (f, "\tDC\tAL4($DSL%03d)\n", function_label_index);
+  fprintf (f, "FPL%03d\tEQU\t*\n", function_label_index + 1);
+  fprintf (f, "\tDC\tAL2(%d),C'%s'\n", strlen (mvs_function_name),
+	mvs_function_name);
+  fprintf (f, "FPL%03d\tDS\t0H\n", function_label_index);
+  fprintf (f, "\tSTM\t14,12,12(13)\n");
+  fprintf (f, "\tL\t2,76(,13)\n");
+  fprintf (f, "\tL\t0,16(,15)\n");
+  fprintf (f, "\tALR\t0,2\n");
+  fprintf (f, "\tCL\t0,12(,12)\n");
+  fprintf (f, "\tBNH\t*+10\n");
+  fprintf (f, "\tL\t15,116(,12)\n");
+  fprintf (f, "\tBALR\t14,15\n");
+  fprintf (f, "\tL\t15,72(,13)\n");
+  fprintf (f, "\tSTM\t15,0,72(2)\n");
+  fprintf (f, "\tMVI\t0(2),X'10'\n");
+  fprintf (f, "\tST\t2,8(,13)\n ");
+  fprintf (f, "\tST\t13,4(,2)\n ");
+  fprintf (f, "\tLR\t13,2\n");
+  fprintf (f, "\tDROP\t15\n");
+  fprintf (f, "\tBALR\t%d,0\n", BASE_REGISTER);
+  fprintf (f, "PG%d\tEQU\t*\n", mvs_page_num );
+  fprintf (f, "\tUSING\t*,%d\n", BASE_REGISTER);
+  fprintf (f, "\tLR\t11,1\n");
+  fprintf (f, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);
+  mvs_page_code = 4;
+  mvs_page_lit = 4;
+  mvs_check_page (f, 0, 0);
+  function_base_page = mvs_page_num;
+  function_first = 1;
+  function_label_index += 2;
+#endif /* MACROPROLOGUE */
 }

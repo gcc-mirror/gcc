@@ -1,5 +1,5 @@
 /* Configuration for GNU compiler for processor running Windows NT 3.x.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu)
 
 This file is part of GNU CC.
@@ -42,11 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #define NO_SYS_SIGLIST 1
-#define bcmp(a,b,c) memcmp (a,b,c)
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define index  strchr
-#define rindex strrchr
 #define kill(a,b) raise(b)
 
 #define OBJECT_SUFFIX ".obj"
@@ -66,4 +61,3 @@ Boston, MA 02111-1307, USA.  */
 #define S_IRWXU S_IRUSR | S_IWUSR | S_IXUSR
 #define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
 #define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
-

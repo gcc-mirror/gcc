@@ -1,5 +1,5 @@
 /* PowerPC asm definitions for GNU C.  */
-/* Under winnt, 1) gas suppports the following as names and 2) in particular
+/* Under winnt, 1) gas supports the following as names and 2) in particular
    defining "toc" breaks the FUNC_START macro as ".toc" becomes ".2" */
 
 #if !defined(__WINNT__)

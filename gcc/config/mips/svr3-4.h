@@ -1,4 +1,5 @@
-/* Definitions of target machine for GNU compiler.  MIPS RISC-OS System V version.
+/* Definitions of target machine for GNU compiler. 
+   MIPS RISC-OS System V version.
    Copyright (C) 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -60,5 +61,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
-
-#include "mips/mips.h"

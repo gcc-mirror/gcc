@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -111,6 +111,9 @@ objc_sizeof_type(const char* type)
     return sizeof(double);
     break;
 
+  case _C_VOID:
+    return sizeof(void);
+    break;
   case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
@@ -153,7 +156,10 @@ objc_sizeof_type(const char* type)
     }
     
   default:
-    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+    {
+      objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      return 0;
+    }
   }
 }
 
@@ -251,7 +257,10 @@ objc_alignof_type(const char* type)
     }
     
   default:
-    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+    {
+      objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      return 0;
+    }
   }
 }
 
@@ -354,7 +363,10 @@ objc_skip_typespec (const char* type)
     if (*type == _C_ARY_E)
       return ++type;
     else
-      objc_error(nil, OBJC_ERR_BAD_TYPE, "bad array type %s\n", type);
+      {
+	objc_error(nil, OBJC_ERR_BAD_TYPE, "bad array type %s\n", type);
+	return 0;
+      }
 
   case _C_STRUCT_B:
     /* skip name, and elements until closing '}'  */
@@ -376,7 +388,10 @@ objc_skip_typespec (const char* type)
     return objc_skip_typespec (++type);
     
   default:
-    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+    {
+      objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      return 0;
+    }
   }
 }
 

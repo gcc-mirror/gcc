@@ -44,5 +44,3 @@ Boston, MA 02111-1307, USA.  */
 /* Override defaults for finding the MIPS tools.  */
 #define MD_STARTFILE_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
 #define MD_EXEC_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
-
-#include "mips/mips.h"

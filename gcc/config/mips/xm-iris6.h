@@ -5,16 +5,12 @@
 extern void *alloca ();
 #endif
 
-#include "mips/xm-iris5.h"
+#include "mips/xm-mips.h"
+
+#define USG
 
 #undef HOST_BITS_PER_LONG
 #define HOST_BITS_PER_LONG	_MIPS_SZLONG
-
-/* Declare some functions needed for this machine.  We don't want to
-   include these in the sources since other machines might define them
-   differently.  */
-
-extern void *malloc (), *realloc (), *calloc ();
 
 #ifndef inhibit_libc
 #include "string.h"

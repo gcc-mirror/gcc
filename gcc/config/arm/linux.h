@@ -1,6 +1,6 @@
-/* Definitions for ARM running Linux
+/* Definitions for ARM running Linux-based GNU systems.
    Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
-   Adapted from ARM Linux by Russell King  <rmk92@ecs.soton.ac.uk>.
+   Contributed by Russell King  <rmk92@ecs.soton.ac.uk>.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #undef COMMENT_BEGIN
  
 /* We default to ARM3.  */
-#define TARGET_CPU_DEFAULT TARGET_CPU_arm3
+#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm3
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -56,8 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #define HANDLE_SYSV_PRAGMA
   
 /* Run-time Target Specification.  */
-#define TARGET_VERSION  \
-  fputs (" (ARM Linux/a.out)", stderr);
+#define TARGET_VERSION  fputs (" (ARM GNU/Linux with a.out)", stderr);
 
 /* This is used in ASM_FILE_START */
 #define ARM_OS_NAME "Linux"
