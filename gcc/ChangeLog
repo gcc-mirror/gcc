@@ -1,3 +1,16 @@
+2004-09-09  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (guess_outgoing_edge_probabilities): Declare.
+	* cfgbuild.c (compute_outgoing_frequencies): When probability is missing,
+	guess it.
+	(find_many_sub_basic_blocks): Do update profile only when it is present.
+	* predict.c (set_even_probabilities): Break out from ...
+	(combine_predictions_for_insn): ... here; deal with !can_predict_insn_p insns.
+	(combine_predictions_for_bb): Use set_even_probabilities.
+	(bb_estimate_probability_locally): Break out from ....
+	(estimate_probability): ... here.
+	(guess_outgoing_edge_probabilities): New entry point.
+
 2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c (add_sysrooted_prefix, execute, do_self_spec, do_spec_1,

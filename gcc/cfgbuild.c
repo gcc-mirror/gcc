@@ -646,17 +646,18 @@ compute_outgoing_frequencies (basic_block b)
       rtx note = find_reg_note (BB_END (b), REG_BR_PROB, NULL);
       int probability;
 
-      if (!note)
-	return;
-
-      probability = INTVAL (XEXP (note, 0));
-      e = BRANCH_EDGE (b);
-      e->probability = probability;
-      e->count = ((b->count * probability + REG_BR_PROB_BASE / 2)
-		  / REG_BR_PROB_BASE);
-      f = FALLTHRU_EDGE (b);
-      f->probability = REG_BR_PROB_BASE - probability;
-      f->count = b->count - e->count;
+      if (note)
+	{
+	  probability = INTVAL (XEXP (note, 0));
+	  e = BRANCH_EDGE (b);
+	  e->probability = probability;
+	  e->count = ((b->count * probability + REG_BR_PROB_BASE / 2)
+		      / REG_BR_PROB_BASE);
+	  f = FALLTHRU_EDGE (b);
+	  f->probability = REG_BR_PROB_BASE - probability;
+	  f->count = b->count - e->count;
+	  return;
+	}
     }
 
   if (b->succ && !b->succ->succ_next)
@@ -664,7 +665,13 @@ compute_outgoing_frequencies (basic_block b)
       e = b->succ;
       e->probability = REG_BR_PROB_BASE;
       e->count = b->count;
+      return;
     }
+  guess_outgoing_edge_probabilities (b);
+  if (b->count)
+    for (e = b->succ; e; e = e->succ_next)
+      e->count = ((b->count * e->probability + REG_BR_PROB_BASE / 2)
+		  / REG_BR_PROB_BASE);
 }
 
 /* Assume that someone emitted code with control flow instructions to the
@@ -698,25 +705,26 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
-  FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
-    {
-      edge e;
+  if (profile_status != PROFILE_ABSENT)
+    FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
+      {
+	edge e;
 
-      if (STATE (bb) == BLOCK_ORIGINAL)
-	continue;
-      if (STATE (bb) == BLOCK_NEW)
-	{
-	  bb->count = 0;
-	  bb->frequency = 0;
-	  for (e = bb->pred; e; e = e->pred_next)
-	    {
-	      bb->count += e->count;
-	      bb->frequency += EDGE_FREQUENCY (e);
-	    }
-	}
+	if (STATE (bb) == BLOCK_ORIGINAL)
+	  continue;
+	if (STATE (bb) == BLOCK_NEW)
+	  {
+	    bb->count = 0;
+	    bb->frequency = 0;
+	    for (e = bb->pred; e; e = e->pred_next)
+	      {
+		bb->count += e->count;
+		bb->frequency += EDGE_FREQUENCY (e);
+	      }
+	  }
 
-      compute_outgoing_frequencies (bb);
-    }
+	compute_outgoing_frequencies (bb);
+      }
 
   FOR_EACH_BB (bb)
     SET_STATE (bb, 0);
