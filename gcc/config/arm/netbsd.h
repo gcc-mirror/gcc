@@ -130,3 +130,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    requirements.  */
 #undef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 8
+
+/* Until they use ELF or something that handles dwarf2 unwinds
+   and initialization stuff better.  */
+#define DWARF2_UNWIND_INFO 0
+

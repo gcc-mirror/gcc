@@ -56,3 +56,8 @@
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Until they use ELF or something that handles dwarf2 unwinds
+   and initialization stuff better.  */
+#define DWARF2_UNWIND_INFO 0
+
