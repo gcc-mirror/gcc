@@ -1,3 +1,8 @@
+2000-07-15  Michael Meissner  <meissner@redhat.com>
+
+	* README.Portability: Update integer suffixes and function
+	prototype sections.
+
 2000-07-15  Neil Booth  <NeilB@earthling.net>
 
 	* README.Portability: Small update.

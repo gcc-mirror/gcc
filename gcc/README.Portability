@@ -155,6 +155,9 @@ ansidecl.h for the definitions of the above macros and more.
 #define PARAMS(paramlist)  ()         /* K+R C.  */
 #define VPARAMS(args)   (va_alist) va_dcl
 
+One aspect of using K+R style function declarations, is you cannot have
+arguments whose types are char, short, or float, since without prototypes (ie,
+K+R rules), these types are promoted to int, int, and double respectively.
 
 Calling functions through pointers to functions
 -----------------------------------------------
@@ -230,10 +233,6 @@ int is done as an unsigned comparison in K+R (since unsigned char
 promotes to unsigned) while it is signed in ISO (since all of the
 values in unsigned char fit in an int, it promotes to int).
 
-** Not having any argument whose type is a short type (char, short,
-float of any flavor) and subject to promotion. **
-
-
 Trigraphs
 ---------
 
@@ -245,7 +244,11 @@ them.
 Suffixes on Integer Constants
 -----------------------------
 
-**Using a 'u' suffix on integer constants.**
+K+R C did not accept a 'u' suffix on integer constants.  If you want to declare
+a constant to be be unsigned, you must use an explicit cast.
+
+You should never use a 'l' suffix on integer constants ('L' is fine), since it
+can easily be confused with the number '1'.
 
 
 			Common Coding Pitfalls
