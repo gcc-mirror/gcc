@@ -467,6 +467,9 @@ estimate_probability (struct loops *loops_info)
 		    - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
 		   / exits);
 	}
+      
+      /* Free basic blocks from get_loop_body. */
+      free (bbs);
     }
 
   /* Attempt to predict conditional jumps using a number of heuristics.  */
