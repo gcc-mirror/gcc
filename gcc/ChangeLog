@@ -1,3 +1,8 @@
+Wed Dec  2 11:23:07 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (find_reloads): When force const to memory, put result
+	in substed_operand not *recog_operand_loc.
+
 1998-12-02  Ulrich Drepper  <drepper@cygnus.com>
 
 	* c-lex.c: Fix indentation from last patch.
