@@ -152,7 +152,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   // this ought to be fairly straightforward, but it does not appear
   // anywhere else I can find.
 
-  private class BufferedImageBuilder implements ImageConsumer
+  private static class BufferedImageBuilder implements ImageConsumer
   {
     BufferedImage bufferedImage;
     ColorModel defaultModel;
