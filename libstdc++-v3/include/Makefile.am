@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.1.6.2 2001/08/11 18:12:17 gdr Exp $
+## $Id: Makefile.am,v 1.1.6.3 2001/08/13 22:22:26 mmitchel Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -382,7 +382,7 @@ stamp-${target_alias}:
 	fi
 	echo `date` > stamp-${target_alias}
 
-${target_builddir}/c++config.h: ${glibcpp_builddir}/config.h \
+${target_builddir}/c++config.h: ../config.h \
 				${glibcpp_srcdir}/include/bits/c++config \
 				${target_builddir}
 	@cat ${glibcpp_srcdir}/include/bits/c++config > $@ ;\

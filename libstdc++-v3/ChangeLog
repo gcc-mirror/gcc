@@ -1,3 +1,10 @@
+2001-08-17  Loren J. Rittle  <ljrittle@acm.org>
+
+        bootstrap/3963
+        * include/Makefile.am: Use relative file path in rule to allow
+        colon in $(objdir).
+        * include/Makefile.in: Rebuilt.
+
 2001-08-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.target: Set LIMITSH for powerpc-*-*.
