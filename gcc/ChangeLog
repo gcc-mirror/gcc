@@ -1,3 +1,8 @@
+2000-11-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* c-lex.c [! NO_IMPLICIT_EXTERN_C] (cb_enter_file): Check
+	in_system_header and flags[1] before dereferencing flags[2].
+
 2000-11-09  Matthew Hiller <hiller@redhat.com>
 
 	* reload1.c (reload_combine): Fixed calculation of
