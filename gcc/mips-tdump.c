@@ -1,5 +1,5 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
 

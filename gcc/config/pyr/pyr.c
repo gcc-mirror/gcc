@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

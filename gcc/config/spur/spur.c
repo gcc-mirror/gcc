@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for SPUR.  Adapted from routines for
    the Motorola 68000 family.
-   Copyright (C) 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-96, 1997 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and

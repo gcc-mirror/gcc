@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for MVS C/370 by Dave Pitts (dpitts@nyx.cs.du.edu)
 

@@ -2,7 +2,7 @@
    Ported by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
-   Copyright (C) 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 1992 Free Software Foundation, Inc
+   Copyright (C) 1987, 1992, 1997 Free Software Foundation, Inc
    This port, done by Mike Stump <mrs@cygnus.com> in 1988, and is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
