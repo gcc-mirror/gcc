@@ -240,7 +240,7 @@ extern int target_flags;
    Hence, we assume the upper 32 bits of symbolic addresses are zero, and
    avoid generating %uhi and %ulo terms.
    Pointers are still 64 bits though!  This option is for v9 only.  */
-/* ??? This option is deprecated.  Try to use -mcode-model=medium-low.  */
+/* ??? This option is deprecated.  Try to use -mmedlow.  */
 #define MASK_ENV32 0x10000
 #define TARGET_ENV32 (target_flags & MASK_ENV32)
 
@@ -327,45 +327,14 @@ extern int target_flags;
 /*  {"ptr64", MASK_PTR64}, */		\
 /*  {"ptr32", -MASK_PTR64}, */		\
     {"stack-bias", MASK_STACK_BIAS},	\
-    {"no-stack-bias", -MASK_STACK_BIAS},
+    {"no-stack-bias", -MASK_STACK_BIAS}, \
+    {"medlow", -MASK_CODE_MODEL},	\
+    {"medlow", MASK_MEDLOW},		\
+    {"medany", -MASK_CODE_MODEL},	\
+    {"medany", MASK_MEDANY},
 #else
 #define V9_SWITCHES
 #endif
-
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable. 
-   The variable, type `char *', is set to the variable part of the
-   given option if the fixed part matches.  The actual option name
-   is made by prepending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the
-   given option is `-mshort-data-512', the variable `m88k_short_data'
-   will be set to the string `"512"'.
-
-	extern char *m88k_short_data;
-	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
-
-/* For v9, two values of "code model" are currently supported.
-
-   medium-low
-	32 bit address space starting at 0
-
-   medium-anywhere
-	32 bit text segment starting at 0
-	32 bit data segment(s) starting anywhere (determined at link time)
-	MEDANY_BASE_REG points to the start
-*/
-
-extern char *sparc_code_model;
-
-#define TARGET_OPTIONS \
-{							\
-  { "code-model=",	&sparc_code_model	}	\
-}
 
 /* target machine storage layout */
 
@@ -649,7 +618,7 @@ do								\
       {								\
 	fixed_regs[2] = 0;					\
 	fixed_regs[3] = 0;					\
-	fixed_regs[4] = 0;					\
+	fixed_regs[4] = TARGET_MEDANY != 0;			\
       }								\
     if (TARGET_FLAT)						\
       {								\
