@@ -2483,7 +2483,7 @@ swap_sort (a, n)
   rtx insn = a[n-1];
   int i = n-2;
 
-  while (i >= 0 && rank_for_schedule ((const GENERIC_PTR) a + i,
+  while (i >= 0 && rank_for_schedule ((const GENERIC_PTR) (a + i),
 				      (const GENERIC_PTR) &insn) >= 0)
     {
       a[i+1] = a[i];
