@@ -447,7 +447,7 @@ write_rbrac ()
 }
 
 char *
-strdup (str)
+xstrdup (str)
      char *str;
 {
   char *copy = (char *) xmalloc (strlen (str) + 1);
@@ -577,7 +577,7 @@ check_protection (ifndef_line, endif_line)
   c = inf_scan_ident (&buf, inf_skip_spaces (c));
   if (SSTRING_LENGTH (&buf) == 0 || c == EOF)
     return 0;
-  protect_name = strdup (buf.base);
+  protect_name = xstrdup (buf.base);
 
   INF_UNGET (c);
   c = inf_read_upto (&buf, '\n');
