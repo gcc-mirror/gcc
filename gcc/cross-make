@@ -21,3 +21,6 @@ FLOAT_H = $(CROSS_FLOAT_H)
 
 # Don't install assert.h in /usr/local/include.
 assertdir = $(tooldir)/include
+
+# Don't run fixproto
+STMP_FIXPROTO =
