@@ -1346,7 +1346,10 @@ combine_movables (movables, regs)
 	/* We want later insns to match the first one.  Don't make the first
 	   one match any later ones.  So start this loop at m->next.  */
 	for (m1 = m->next; m1; m1 = m1->next)
-	  if (m != m1 && m1->match == 0
+	  /* ??? HACK!  move_movables does not verify that the replacement
+	     is valid, which can have disasterous effects with hard regs
+	     and match_dup.  Turn combination off for now.  */
+	  if (0 && m != m1 && m1->match == 0
 	      && regs->array[m1->regno].n_times_set == 1
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
