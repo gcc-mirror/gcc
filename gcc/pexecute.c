@@ -30,10 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
-#define PEXECUTE_FIRST  1
-#define PEXECUTE_LAST   2
-#define PEXECUTE_ONE    (PEXECUTE_FIRST + PEXECUTE_LAST)
-#define PEXECUTE_SEARCH 4
+#define PEXECUTE_FIRST   1
+#define PEXECUTE_LAST    2
+#define PEXECUTE_ONE     (PEXECUTE_FIRST + PEXECUTE_LAST)
+#define PEXECUTE_SEARCH  4
+#define PEXECUTE_VERBOSE 8
 #else
 #include "libiberty.h"
 #endif
@@ -346,7 +347,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   fputs ("If {Failed} == 0\n", stdout);
   /* If being verbose, output a copy of the command.  It should be
      accurate enough and escaped enough to be "clickable". */
-  if (verbose_flag)
+  if (flags & PEXECUTE_VERBOSE)
     {
       fputs ("\tEcho ", stdout);
       fputc ('\'', stdout);
