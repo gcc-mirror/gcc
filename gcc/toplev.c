@@ -267,6 +267,7 @@ int rtl_dump_and_exit = 0;
 int jump_opt_dump = 0;
 int addressof_dump = 0;
 int cse_dump = 0;
+int gcse_dump = 0;
 int loop_dump = 0;
 int cse2_dump = 0;
 int branch_prob_dump = 0;
@@ -538,6 +539,10 @@ int flag_volatile_global;
 
 int flag_syntax_only = 0;
 
+/* Nonzero means perform global cse.  */
+
+static int flag_gcse;
+
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
 
@@ -738,6 +743,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pcc-struct-return", &flag_pcc_struct_return, 1},
   {"reg-struct-return", &flag_pcc_struct_return, 0},
   {"delayed-branch", &flag_delayed_branch, 1},
+  {"gcse", &flag_gcse, 1},
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1},
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1},
   {"pretend-float", &flag_pretend_float, 1},
@@ -977,6 +983,7 @@ int varconst_time;
 int integration_time;
 int jump_time;
 int cse_time;
+int gcse_time;
 int loop_time;
 int cse2_time;
 int branch_prob_time;
@@ -2274,6 +2281,7 @@ compile_file (name)
   integration_time = 0;
   jump_time = 0;
   cse_time = 0;
+  gcse_time = 0;
   loop_time = 0;
   cse2_time = 0;
   branch_prob_time = 0;
@@ -2360,6 +2368,8 @@ compile_file (name)
   if (dbr_sched_dump)
     clean_dump_file (".dbr");
 #endif
+  if (gcse_dump)
+    clean_dump_file (".gcse");
 #ifdef STACK_REGS
   if (stack_reg_dump)
     clean_dump_file (".stack");
@@ -2840,6 +2850,7 @@ compile_file (name)
       print_time ("integration", integration_time);
       print_time ("jump", jump_time);
       print_time ("cse", cse_time);
+      print_time ("gcse", gcse_time);
       print_time ("loop", loop_time);
       print_time ("cse2", cse2_time);
       print_time ("branch-prob", branch_prob_time);
@@ -3257,6 +3268,18 @@ rest_of_compilation (decl)
   if (addressof_dump)
     dump_rtl (".addressof", decl, print_rtl, insns);
   
+  /* Perform global cse.  */
+
+  if (optimize > 0 && flag_gcse)
+    {
+      if (gcse_dump)
+	open_dump_file (".gcse", IDENTIFIER_POINTER (DECL_NAME (decl)));
+      
+      TIMEVAR (gcse_time, gcse_main (insns, rtl_dump_file));
+
+      if (gcse_dump)
+	close_dump_file (print_rtl, insns);
+    }
   /* Move constant computations out of loops.  */
 
   if (optimize > 0)
@@ -3801,6 +3824,7 @@ main (argc, argv, envp)
     {
       flag_cse_follow_jumps = 1;
       flag_cse_skip_blocks = 1;
+      flag_gcse = 1;
       flag_expensive_optimizations = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
@@ -3879,6 +3903,7 @@ main (argc, argv, envp)
 		    regmove_dump = 1;
  		    rtl_dump = 1;
  		    cse_dump = 1, cse2_dump = 1;
+		    gcse_dump = 1;
  		    sched_dump = 1;
  		    sched2_dump = 1;
 #ifdef STACK_REGS
@@ -3910,6 +3935,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'g':
 		    global_reg_dump = 1;
+		    break;
+		  case 'G':
+		    gcse_dump = 1;
 		    break;
 		  case 'j':
 		    jump_opt_dump = 1;

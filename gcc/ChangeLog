@@ -1,3 +1,27 @@
+Wed May 20 01:11:02 1998  Doug Evans (devans@cygnus.com)
+			  Jeff Law (law@cygnus.com)
+
+	* Global CSE and constant/copy propagation.
+	* Makefile.in (OBJS): Add gcse.o
+	(STAGESTUFF): Add *.gcse.
+	(gcse.o): Add dependencies.
+	(mostlyclean): Remove *.gcse and */*.gcse.
+	* gcse.c: New file.
+	* loop.c (loop_optimize): Move call to init_alias_analysis.
+	* recog.c (validate_replace_src): New function.
+	* toplev.c (gcse_dump): New global variable.
+	(flag_gcse, gcse_time): Likewise.
+	(compile_file): Initialize gcse_time and clean out the gcse dump
+	file if necessary.
+	(rest_of_compilation): Call gcse_main as requested.  Dump RTL
+	after gcse if requested.
+	(main): Enable gcse for -O2 and above.  Handle -dG.  Enable gcse
+	dumps for -da.
+	* gcc.texi: Add gcse related internal documentation.
+	* invoke.texi: Note new command line options for gcse.
+	* tm.texi: Document AVOID_CCMODE_COPIES.
+	* mips.h (AVOID_CCMODE_COPIES): Define.
+
 Tue May 19 22:31:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (deduced.h): Only run scan-types if $(SYSTEM_HEADER_DIR)

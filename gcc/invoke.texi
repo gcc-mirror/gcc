@@ -149,7 +149,7 @@ in the following sections.
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
--ffunction-sections  -finline-functions
+-ffunction-sections  -fgcse -finline-functions
 -fkeep-inline-functions  -fno-default-inline
 -fno-defer-pop  -fno-function-cse
 -fno-inline  -fno-peephole  -fomit-frame-pointer -fregmove
@@ -1986,6 +1986,8 @@ Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 Dump after flow analysis, to @file{@var{file}.flow}.
 @item g
 Dump after global register allocation, to @file{@var{file}.greg}.
+@item G      
+Dump after GCSE, to @file{@var{file}.gcse}.
 @item j
 Dump after first jump optimization, to @file{@var{file}.jump}.
 @item J
@@ -2298,6 +2300,10 @@ performed.
 
 @item -frerun-loop-opt
 Run the loop optimizer twice.
+
+@item -fgcse
+Perform a global common subexpression elimination pass.
+This pass also performs global constant and copy propagation.
 
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.

@@ -1505,6 +1505,12 @@ accessibility of the value in a narrower mode.
 You should define this macro to return nonzero in as many cases as
 possible since doing so will allow GNU CC to perform better register
 allocation.
+
+@findex AVOID_CCMODE_COPIES
+@item AVOID_CCMODE_COPIES
+Define this macro if the compiler should avoid copies to/from @code{CCmode}
+registers.  You should only define this macro if support fo copying to/from
+@code{CCmode} is incomplete.
 @end table
 
 @node Leaf Functions

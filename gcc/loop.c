@@ -400,7 +400,6 @@ loop_optimize (f, dumpfile, unroll_p)
   loop_dump_stream = dumpfile;
 
   init_recog_no_volatile ();
-  init_alias_analysis ();
 
   max_reg_before_loop = max_reg_num ();
 
@@ -476,6 +475,13 @@ loop_optimize (f, dumpfile, unroll_p)
      find_and_verify_loops, because it might reorder the insns in the
      function.  */
   reg_scan (f, max_reg_num (), 1);
+
+  /* This must occur after reg_scan so that registers created by gcse
+     will have entries in the register tables.
+
+     We could have added a call to reg_scan after gcse_main in toplev.c,
+     but moving this call to init_alias_analysis is more efficient.  */
+  init_alias_analysis ();
 
   /* See if we went too far.  */
   if (get_max_uid () > max_uid_for_loop)
