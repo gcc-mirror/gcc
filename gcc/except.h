@@ -180,7 +180,7 @@ extern tree (*lang_eh_runtime_type) PARAMS ((tree));
 
 #if ! (defined (EH_RETURN_DATA_REGNO)			\
        && (defined (IA64_UNWIND_INFO)			\
-	   || (defined (DWARF2_UNWIND_INFO)		\
+	   || (DWARF2_UNWIND_INFO			\
 	       && defined (EH_RETURN_STACKADJ_RTX)	\
 	       && (defined (EH_RETURN_HANDLER_RTX)	\
 		   || defined (HAVE_eh_return)))))

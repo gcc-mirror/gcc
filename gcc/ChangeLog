@@ -1,3 +1,8 @@
+2001-07-06  Richard Henderson  <rth@redhat.com>
+
+	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Examine the value of
+	DWARF2_UNWIND_INFO not just whether it is defined.
+
 2001-07-06  DJ Delorie  <dj@redhat.com>
 
 	* doc/gcc.texi (Makefile): Rename to be a more general purpose
