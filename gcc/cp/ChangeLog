@@ -1,3 +1,8 @@
+2003-06-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* pt.c: Convert to ISO C.
+	* semantics.c: Convert to ISO C.
+
 2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (comp_except_specs, compparms, cp_has_mutable_p,
