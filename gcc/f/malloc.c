@@ -83,6 +83,9 @@ static void malloc_verify_area_ (mallocPool pool, mallocArea_ a);
 
 /* Internal macros. */
 
+#define MALLOC_ALIGNMENT  (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+#define ROUNDED_AREA_SIZE (MALLOC_ALIGNMENT * ((sizeof(mallocArea_) + MALLOC_ALIGNMENT - 1) / MALLOC_ALIGNMENT))
+
 #if MALLOC_DEBUG
 #define malloc_kill_(ptr,s) do {memset((ptr),127,(s));free((ptr));} while(0)
 #else
@@ -101,7 +104,7 @@ malloc_kill_area_ (mallocPool pool UNUSED, mallocArea_ a)
 #if MALLOC_DEBUG
   assert (strcmp (a->name, ((char *) (a->where)) + a->size) == 0);
 #endif
-  malloc_kill_ (a->where - sizeof(mallocArea_*), a->size);
+  malloc_kill_ (a->where - ROUNDED_AREA_SIZE, a->size);
   a->next->previous = a->previous;
   a->previous->next = a->next;
 #if MALLOC_DEBUG
@@ -302,10 +305,10 @@ malloc_display_ (mallocArea_ a UNUSED)
    Search for object in list of mallocArea_s, die if not found.	 */
 
 mallocArea_
-malloc_find_inpool_ (mallocPool pool, void *ptr)
+malloc_find_inpool_ (mallocPool pool UNUSED, void *ptr)
 {
   mallocArea_ *t;
-  t = (mallocArea_ *) (ptr - sizeof(mallocArea_));
+  t = (mallocArea_ *) (ptr - ROUNDED_AREA_SIZE);
   return *t;
 }
 
@@ -387,14 +390,14 @@ malloc_new_inpool_ (mallocPool pool, mallocType_ type, const char *name, mallocS
 	  || malloc_pool_find_ (pool, malloc_pool_image ()));
 #endif
 
-  ptr = malloc_new_ (sizeof(mallocArea_*) + s + (i = (MALLOC_DEBUG ? strlen (name) + 1 : 0)));
+  ptr = malloc_new_ (ROUNDED_AREA_SIZE + s + (i = (MALLOC_DEBUG ? strlen (name) + 1 : 0)));
 #if MALLOC_DEBUG
   strcpy (((char *) (ptr)) + s, name);
 #endif
   a = malloc_new_ (offsetof (struct _malloc_area_, name) + i);
   temp = (mallocArea_ *) ptr;
   *temp = a; 
-  ptr = ptr + sizeof(mallocArea_*);
+  ptr = ptr + ROUNDED_AREA_SIZE;
   switch (type)
     {				/* A little optimization to speed up killing
 				   of non-permanent stuff. */
@@ -487,10 +490,10 @@ malloc_resize_inpool_ (mallocPool pool, mallocType_ type UNUSED,
     assert (a->size == os);
   assert (strcmp (a->name, ((char *) (ptr)) + os) == 0);
 #endif
-  ptr = malloc_resize_ (ptr - sizeof(mallocArea_*), sizeof(mallocArea_*) + ns + (MALLOC_DEBUG ? strlen (a->name) + 1: 0));
+  ptr = malloc_resize_ (ptr - ROUNDED_AREA_SIZE, ROUNDED_AREA_SIZE + ns + (MALLOC_DEBUG ? strlen (a->name) + 1: 0));
   temp = (mallocArea_ *) ptr;
   *temp = a;
-  ptr = ptr + sizeof(mallocArea_*);
+  ptr = ptr + ROUNDED_AREA_SIZE;
   a->where = ptr;
 #if MALLOC_DEBUG
   a->size = ns;

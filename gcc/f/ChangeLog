@@ -1,3 +1,13 @@
+2004-09-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR fortran/17180
+	* malloc.c (MALLOC_ALIGNMENT): New constant.
+	(ROUNDED_AREA_SIZE): Likewise.
+	(malloc_kill_area_): Use ROUNDED_AREA_SIZE.
+	(malloc_find_inpool_): Likewise.
+	(malloc_new_inpool_): Likewise.
+	(malloc_resize_inpool_): Likewise.
+
 2004-07-12  Bud Davis  <bdavis9659@comcast.net>
 
 	* bld.c (ffebld_constant_new_character1, ffebld_constant_new_complex{1,2},
