@@ -1,3 +1,9 @@
+2001-02-05  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* dwarf2out.c: Revise DWARF2 Abbreviation Glossary comments.
+	(dwarf2out_frame_debug_expr): Revise introductory comments to add
+	a high-level description.
+
 2001-02-05  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* final.c: Move the declaration of profile_label_no to ...

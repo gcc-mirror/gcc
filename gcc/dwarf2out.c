@@ -57,12 +57,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* DWARF2 Abbreviation Glossary:
    CFA = Canonical Frame Address
-	   stack address identifying a stack call frame; its value is
-	   the value of the stack pointer just before the call to the
-	   current function
-   CFI = Canonical Frame Instruction
-           information describing entries in a stack call frame, e.g.,
-	   CIE and FDE
+	   an abstract idea representing a fixed stack address
+	   identifying a stack call frame.  The CFA register and
+	   offset, whose value may change, keeps track of its value at
+	   runtime.
+   CFI = Call Frame Instruction
+	   an instruction for the DWARF2 abstract machine
    CIE = Common Information Entry
 	   information describing information common to one or more FDEs
    DIE = Debugging Information Entry
@@ -1283,10 +1283,34 @@ dw_cfa_location cfa_temp;
    cfa, cfa_store, and cfa_temp.reg.  We describe these rules so
    users need not read the source code.
 
+  The High-Level Picture
+
+  Changes in the register we use to calculate the CFA: Currently we
+  assume that if you copy the CFA register into another register, we
+  should take the other one as the new CFA register; this seems to
+  work pretty well.  If it's wrong for some target, it's simple
+  enough not to set RTX_FRAME_RELATED_P on the insn in question.
+
+  Changes in the register we use for saving registers to the stack:
+  This is usually SP, but not always.  Again, we deduce that if you
+  copy SP into another register (and SP is not the CFA register),
+  then the new register is the one we will be using for register
+  saves.  This also seems to work.
+
+  Register saves: There's not much guesswork about this one; if
+  RTX_FRAME_RELATED_P is set on an insn which modifies memory, it's a
+  register save, and the register used to calculate the destination
+  had better be the one we think we're using for this purpose.
+
+  Except: If the register being saved is the CFA register, and the
+  offset is non-zero, we are saving the CFA, so we assume we have to
+  use DW_CFA_def_cfa_expression.  If the offset is 0, we assume that
+  the intent is to save the value of SP from the previous frame.
+
   Invariants / Summaries of Rules
 
-  cfa	       current register used to calculate the DWARF2 canonical
-	       frame address register and offset
+  cfa	       current rule for calculating the CFA.  It usually
+	       consists of a register and an offset.
   cfa_store    register used by prologue code to save things to the stack
 	       cfa_store.offset is the offset from the value of
 	       cfa_store.reg to the actual CFA
@@ -1307,9 +1331,9 @@ dw_cfa_location cfa_temp;
   Rule 5:      Create a new register cfa_store used to save items to the
 	       stack.
 
-  Rules 10-13: Save a register to the stack.  Record the location in
-	       cfa_store.offset.  Define offset as the difference of
-	       the original location and cfa_store's location.
+  Rules 10-13: Save a register to the stack.  Define offset as the
+	       difference of the original location and cfa_store's
+	       location.
 
   The Rules
 
