@@ -262,6 +262,8 @@ int mips16_hard_float;
    avoid using up another bit in target_flags.  */
 const char *mips_entry_string;
 
+const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
+
 /* Whether we should entry and exit pseudo-ops in mips16 mode.  */
 int mips_entry;
 
