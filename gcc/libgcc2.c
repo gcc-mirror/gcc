@@ -1319,6 +1319,7 @@ BLOCK_PROFILER_CODE
    systems that don't provde tcov support.  At present,
    it requires atexit and stdio.  */
 
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 
 #ifdef HAVE_ATEXIT
