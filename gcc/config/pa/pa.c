@@ -653,7 +653,7 @@ read_only_operand (operand)
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
-static char *
+char *
 singlemove_string (operands)
      rtx *operands;
 {
