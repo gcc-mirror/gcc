@@ -483,16 +483,6 @@ next_statement (void)
 
       gfc_skip_comments ();
 
-      if (gfc_at_bol () && gfc_check_include ())
-	continue;
-
-      if (gfc_at_eof () && gfc_current_file->included_by != NULL)
-	{
-	  gfc_current_file = gfc_current_file->included_by;
-	  gfc_advance_line ();
-	  continue;
-	}
-
       if (gfc_at_end ())
 	{
 	  st = ST_NONE;
@@ -500,7 +490,8 @@ next_statement (void)
 	}
 
       st =
-	(gfc_current_file->form == FORM_FIXED) ? next_fixed () : next_free ();
+	(gfc_current_form == FORM_FIXED) ? next_fixed () : next_free ();
+
       if (st != ST_NONE)
 	break;
     }
@@ -1268,7 +1259,7 @@ unexpected_eof (void)
 {
   gfc_state_data *p;
 
-  gfc_error ("Unexpected end of file in '%s'", gfc_current_file->filename);
+  gfc_error ("Unexpected end of file in '%s'", gfc_source_file);
 
   /* Memory cleanup.  Move to "second to last".  */
   for (p = gfc_state_stack; p && p->previous && p->previous->previous;

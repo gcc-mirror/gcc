@@ -3338,7 +3338,6 @@ void
 gfc_dump_module (const char *name, int dump_flag)
 {
   char filename[PATH_MAX], *p;
-  gfc_file *g;
   time_t now;
 
   filename[0] = '\0';
@@ -3359,17 +3358,13 @@ gfc_dump_module (const char *name, int dump_flag)
     gfc_fatal_error ("Can't open module file '%s' for writing: %s",
 		     filename, strerror (errno));
 
-  /* Find the top level filename.  */
-  g = gfc_current_file;
-  while (g->next)
-    g = g->next;
-
   now = time (NULL);
   p = ctime (&now);
 
   *strchr (p, '\n') = '\0';
 
-  fprintf (module_fp, "GFORTRAN module created from %s on %s\n", g->filename, p);
+  fprintf (module_fp, "GFORTRAN module created from %s on %s\n", 
+	   gfc_source_file, p);
   fputs ("If you edit this, you'll get what you deserve.\n\n", module_fp);
 
   iomode = IO_OUTPUT;

@@ -77,7 +77,7 @@ gfc_match_space (void)
   locus old_loc;
   int c;
 
-  if (gfc_current_file->form == FORM_FIXED)
+  if (gfc_current_form == FORM_FIXED)
     return MATCH_YES;
 
   old_loc = *gfc_current_locus ();
@@ -337,7 +337,7 @@ gfc_match_strings (mstring * a)
 	  if (*p->mp == ' ')
 	    {
 	      /* Space matches 1+ whitespace(s).  */
-	      if ((gfc_current_file->form == FORM_FREE)
+	      if ((gfc_current_form == FORM_FREE)
 		  && gfc_is_whitespace (c))
 		continue;
 
