@@ -914,12 +914,23 @@ produce @file{a.out} format object modules.
 You may need to make a variant of the file @file{arm.h} for your particular
 configuration.
 
-@item arm-*-linuxaout
-Any of the ARM family processors running the Linux-based GNU system with
-the @file{a.out} binary format (ELF is not yet supported).  You must use
-version 2.8.1.0.7 or later of the GNU/Linux binutils, which you can download
-from @file{sunsite.unc.edu:/pub/Linux/GCC} and other mirror sites for
-Linux-based GNU systems.
+@item arm-*-elf
+This configuration is intended for embedded systems.
+
+@item arm-*-linux-gnuaout
+Any of the ARM-family processors running the Linux-based GNU system with
+the @file{a.out} binary format.  This is an obsolete configuration.
+
+@item arm-*-linux-gnu
+@itemx arm-*-linux-gnuoldld
+Any of the ARM-family processors running the Linux-based GNU system with
+the @file{ELF} binary format.  You must use version 2.9.1.0.22 or later
+of the GNU/Linux binutils, which you can download from
+@file{ftp.varesearch.com:/pub/support/hjl/binutils}.
+
+These two configurations differ only in the required version of GNU
+binutils.  For binutils 2.9.1.0.x, use @samp{arm-*-linux-gnuoldld}.  For 
+newer versions of binutils, use @samp{arm-*-linux-gnu}.
 
 @item arm-*-riscix
 The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.
