@@ -1372,8 +1372,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#*-*-solaris*,,*-*-solaris*}
 @item
-@uref{#sparc-sun-*,,sparc-sun-*}
-@item
 @uref{#sparc-sun-solaris*,,sparc-sun-solaris*}
 @item
 @uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
@@ -2928,68 +2926,29 @@ can be safely ignored; the stage 3 compiler is correct.
 @end html
 @heading @anchor{*-*-solaris*}*-*-solaris*
 
-Starting with Solaris 2, Sun does not ship a C compiler any more.  To
-bootstrap and install GCC you first have to install a pre-built
-compiler, see our @uref{binaries.html,,binaries page} for
-details.
+Sun does not ship a C compiler with Solaris.  To bootstrap and install
+GCC you first have to install a pre-built compiler, see our
+@uref{binaries.html,,binaries page} for details.
 
 Solaris' @file{/bin/sh} will often fail to configure @file{libstdc++-v3}, @file{boehm-gc} or
 @file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
-@file{/bin/ksh} in your environment and run @samp{make bootstrap} again.
+@file{/bin/ksh} in your environment and run @command{make bootstrap} again.
 Another possibility that sometimes helps is to remove
 @file{*-*-solaris*/config.cache}.
 
-Sun @command{as} 4.X is broken in that it cannot cope with long symbol names.
-A typical error message might look similar to the following:
-
-@samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041:
-error: can't compute value of an expression involving an external symbol.}
-
-This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
-been fixed in later (5.x) versions of the assembler.
-
-@html
-<p>
-<hr>
-@end html
-@heading @anchor{sparc-sun-*}sparc-sun-*
-Sometimes on a Sun 4 you may observe a crash in the program
-@command{genflags} or @command{genoutput} while building GCC@.  This is said to
-be due to a bug in @command{sh}.  You can probably get around it by running
-@command{genflags} or @command{genoutput} manually and then retrying the
-@command{make}.
-
-@html
-<p>
-<hr>
-@end html
-@heading @anchor{sparc-sun-solaris*}sparc-sun-solaris*
-On Solaris 2, executables of GCC version 2.0.2 are commonly
-available, but they have a bug that shows up when compiling current
-versions of GCC: undefined symbol errors occur during assembly if you
-use @option{-g}.
-
-The solution is to compile the current version of GCC without
-@option{-g}.  That makes a working compiler which you can use to recompile
-with @option{-g}.
-
 Solaris 2 comes with a number of optional OS packages.  Some of these
-packages are needed to use GCC fully.  If you did not install all
+packages are needed to use GCC fully, namely @code{SUNWarc},
+@code{SUNWbtool}, @code{SUNWesu}, @code{SUNWhea}, @code{SUNWlibm},
+@code{SUNWsprot}, and @code{SUNWtoo}.  If you did not install all
 optional packages when installing Solaris, you will need to verify that
 the packages that GCC needs are installed.
 
 To check whether an optional package is installed, use
-the @code{pkginfo} command.  To add an optional package, use the
-@code{pkgadd} command.  For further details, see the Solaris
+the @command{pkginfo} command.  To add an optional package, use the
+@command{pkgadd} command.  For further details, see the Solaris
 documentation.
 
-For Solaris 2.0 and 2.1, GCC needs six packages: @samp{SUNWarc},
-@samp{SUNWbtool}, @samp{SUNWesu}, @samp{SUNWhea}, @samp{SUNWlibm}, and
-@samp{SUNWtoo}.
-
-For Solaris 2.2, GCC needs an additional seventh package: @samp{SUNWsprot}.
-
-On Solaris 2, trying to use the linker and other tools in
+On some versions of Solaris, trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @code{PATH}.
@@ -3003,6 +2962,21 @@ properly if assembled with Sun @command{as}: the linker will complain about
 relocations in read-only sections, in the definition of virtual
 tables.  Also, Sun @command{as} fails to process long symbols resulting from
 mangling template-heavy C++ function names.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{sparc-sun-solaris*}sparc-sun-solaris*
+
+Sun @command{as} 4.X is broken in that it cannot cope with long symbol names.
+A typical error message might look similar to the following:
+
+@samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041:
+error: can't compute value of an expression involving an external symbol.}
+
+This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
+been fixed in later (5.x) versions of the assembler.
 
 @html
 </p>
@@ -3084,6 +3058,11 @@ To fix this problem you can either use the most recent version of
 binutils or get the latest SunOS 4 linker patch (patch ID 100170-10)
 from Sun's patch site.
 
+Sometimes on a Sun 4 you may observe a crash in the program
+@command{genflags} or @command{genoutput} while building GCC.  This is said to
+be due to a bug in @command{sh}.  You can probably get around it by running
+@command{genflags} or @command{genoutput} manually and then retrying the
+@command{make}.
 
 @html
 </p>
