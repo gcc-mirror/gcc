@@ -15,11 +15,11 @@ void test()
   int (*iptr)(int);
   int foo[5];
 
-  a = f1;
+  a = f1;		/* { dg-error "incompatible types" } */
   a = (YYSTYPE)f1;
   a = (YYSTYPE)foo;
   a = (YYSTYPE)(int *)foo;
   iptr = f1;
-  a = iptr;
+  a = iptr;		/* { dg-error "incompatible types" } */
   a = (YYSTYPE)iptr;
 }
