@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -232,6 +233,9 @@ package body Sem_Ch4 is
    --  Similarly, a function F that needs no actuals can return an access
    --  to a subprogram, and the call F (X)  interpreted as F.all (X). In
    --  this case the call may be overloaded with both interpretations.
+
+   function Try_Object_Operation (N : Node_Id) return Boolean;
+   --  Ada 2005 (AI-252): Give support to the object operation notation
 
    ------------------------
    -- Ambiguous_Operands --
@@ -2677,6 +2681,15 @@ package body Sem_Ch4 is
             Next_Entity (Comp);
          end loop;
 
+         --  Ada 2005 (AI-252)
+
+         if Ada_Version >= Ada_05
+           and then Is_Tagged_Type (Prefix_Type)
+           and then Try_Object_Operation (N)
+         then
+            return;
+         end if;
+
       elsif Is_Private_Type (Prefix_Type) then
 
          --  Allow access only to discriminants of the type. If the
@@ -4634,5 +4647,310 @@ package body Sem_Ch4 is
       end if;
 
    end Try_Indexed_Call;
+
+   --------------------------
+   -- Try_Object_Operation --
+   --------------------------
+
+   function Try_Object_Operation (N : Node_Id) return Boolean is
+      Obj        : constant Node_Id := Prefix (N);
+      Obj_Type   : Entity_Id;
+      Actual     : Node_Id;
+      Last_Node  : Node_Id;
+      --  Last_Node is used to free all the nodes generated while trying the
+      --  alternatives. NOTE: This must be removed because it is considered
+      --  too low level
+      use Atree_Private_Part;
+
+      function Try_Replacement
+        (New_Prefix : Entity_Id;
+         New_Subprg : Node_Id;
+         New_Formal : Node_Id;
+         Nam_Ent    : Entity_Id) return Boolean;
+      --  Replace the node with the Object.Operation notation by the
+      --  equivalent node with the Package.Operation (Object, ...) notation
+      --
+      --  Nam_Ent is the entity that provides the formals against which
+      --  the actuals are checked. If the actuals are compatible with
+      --  Ent_Nam, this function returns true.
+
+      function Try_Primitive_Operations
+        (New_Prefix : Entity_Id;
+         New_Subprg : Node_Id;
+         Obj        : Node_Id;
+         Obj_Type   : Entity_Id) return Boolean;
+      --  Traverse the list of primitive subprograms to look for the
+      --  subprogram.
+
+      function Try_Class_Wide_Operation
+        (New_Subprg : Node_Id;
+         Obj        : Node_Id;
+         Obj_Type   : Entity_Id) return Boolean;
+      --  Traverse all the ancestor types to look for a class-wide
+      --  subprogram
+
+      ------------------------------
+      -- Try_Primitive_Operations --
+      ------------------------------
+
+      function Try_Primitive_Operations
+        (New_Prefix : Entity_Id;
+         New_Subprg : Node_Id;
+         Obj        : Node_Id;
+         Obj_Type   : Entity_Id) return Boolean
+      is
+         Deref      : Node_Id;
+         Elmt       : Elmt_Id;
+         Prim_Op    : Entity_Id;
+
+      begin
+         --  Look for the subprogram in the list of primitive operations.
+         --  This case is simple because all the primitive operations are
+         --  implicitly inherited and thus we have a candidate as soon as
+         --  we find a primitive subprogram with the same name. The latter
+         --  analysis after the node replacement will resolve it.
+
+         Elmt := First_Elmt (Primitive_Operations (Obj_Type));
+
+         while Present (Elmt) loop
+            Prim_Op := Node (Elmt);
+
+            if Chars (Prim_Op) = Chars (New_Subprg) then
+               if Try_Replacement (New_Prefix => New_Prefix,
+                                   New_Subprg => New_Subprg,
+                                   New_Formal => Obj,
+                                   Nam_Ent    => Prim_Op)
+               then
+                  return True;
+
+               --  Try the implicit dereference in case of access type
+
+               elsif Is_Access_Type (Etype (Obj)) then
+                  Deref := Make_Explicit_Dereference (Sloc (Obj), Obj);
+                  Set_Etype (Deref, Obj_Type);
+
+                  if Try_Replacement (New_Prefix => New_Prefix,
+                                      New_Subprg => New_Subprg,
+                                      New_Formal => Deref,
+                                      Nam_Ent    => Prim_Op)
+                  then
+                     return True;
+                  end if;
+               end if;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+
+         return False;
+      end Try_Primitive_Operations;
+
+      ------------------------------
+      -- Try_Class_Wide_Operation --
+      ------------------------------
+
+      function Try_Class_Wide_Operation
+        (New_Subprg : Node_Id;
+         Obj        : Node_Id;
+         Obj_Type   : Entity_Id) return Boolean
+      is
+         Deref      : Node_Id;
+         Hom        : Entity_Id;
+         Typ        : Entity_Id;
+
+      begin
+         Typ := Obj_Type;
+
+         loop
+            --  For each parent subtype we traverse all the homonym chain
+            --  looking for a candidate class-wide subprogram
+
+            Hom := Current_Entity (New_Subprg);
+
+            while Present (Hom) loop
+               if (Ekind (Hom) = E_Procedure
+                     or else Ekind (Hom) = E_Function)
+                   and then Present (First_Entity (Hom))
+                   and then Etype (First_Entity (Hom)) = Class_Wide_Type (Typ)
+               then
+                  if Try_Replacement
+                    (New_Prefix => Scope (Hom),
+                     New_Subprg => Make_Identifier (Sloc (N), Chars (Hom)),
+                     New_Formal => Obj,
+                     Nam_Ent    => Hom)
+                  then
+                     return True;
+
+                  --  Try the implicit dereference in case of access type
+
+                  elsif Is_Access_Type (Etype (Obj)) then
+                     Deref := Make_Explicit_Dereference (Sloc (Obj), Obj);
+                     Set_Etype (Deref, Obj_Type);
+
+                     if Try_Replacement
+                       (New_Prefix => Scope (Hom),
+                        New_Subprg => Make_Identifier (Sloc (N), Chars (Hom)),
+                        New_Formal => Deref,
+                        Nam_Ent    => Hom)
+                     then
+                        return True;
+                     end if;
+                  end if;
+               end if;
+
+               Hom := Homonym (Hom);
+            end loop;
+
+            exit when Etype (Typ) = Typ;
+
+            Typ := Etype (Typ); --  Climb to the ancestor type
+         end loop;
+
+         return False;
+      end Try_Class_Wide_Operation;
+
+      ---------------------
+      -- Try_Replacement --
+      ---------------------
+
+      function Try_Replacement
+        (New_Prefix : Entity_Id;
+         New_Subprg : Node_Id;
+         New_Formal : Node_Id;
+         Nam_Ent    : Entity_Id) return Boolean
+      is
+         Loc             : constant Source_Ptr := Sloc (N);
+         Call_Node       : Node_Id;
+         New_Name        : Node_Id;
+         New_Actuals     : List_Id;
+         Node_To_Replace : Node_Id;
+         Success         : Boolean;
+
+      begin
+         --  Step 1. Build the replacement node: a subprogram call node
+         --  with the object as its first actual parameter
+
+         New_Name := Make_Selected_Component (Loc,
+                       Prefix        => New_Reference_To (New_Prefix, Loc),
+                       Selector_Name => New_Copy_Tree (New_Subprg));
+
+         New_Actuals := New_List (New_Copy_Tree (New_Formal));
+
+         if (Nkind (Parent (N)) = N_Procedure_Call_Statement
+               or else Nkind (Parent (N)) = N_Function_Call)
+             and then N /= First (Parameter_Associations (Parent (N)))
+               --  Protect against recursive call; It occurs in "..:= F (O.P)"
+         then
+            Node_To_Replace := Parent (N);
+
+            Append_List_To
+              (New_Actuals,
+               New_Copy_List (Parameter_Associations (Node_To_Replace)));
+
+            if Nkind (Node_To_Replace) = N_Procedure_Call_Statement then
+               Call_Node :=
+                 Make_Procedure_Call_Statement (Loc, New_Name, New_Actuals);
+
+            else pragma Assert (Nkind (Node_To_Replace) = N_Function_Call);
+               Call_Node :=
+                 Make_Function_Call (Loc, New_Name, New_Actuals);
+            end if;
+
+         --  Case of a function without parameters
+
+         else
+            Node_To_Replace := N;
+
+            Call_Node :=
+              Make_Function_Call (Loc, New_Name, New_Actuals);
+         end if;
+
+         --  Step 2. Analyze the candidate replacement node. If it was
+         --  successfully analyzed then replace the original node and
+         --  carry out the full analysis to verify that there is no
+         --  conflict with overloaded subprograms.
+
+         --  To properly analyze the candidate we must initialize the type
+         --  of the result node of the call to the error type; it will be
+         --  reset if the type is successfully resolved.
+
+         Set_Etype (Call_Node, Any_Type);
+
+         Analyze_One_Call
+           (N       => Call_Node,
+            Nam     => Nam_Ent,
+            Report  => False,  -- do not post errors
+            Success => Success);
+
+         if Success then
+            --  Previous analysis transformed the node with the name
+            --  and we have to reset it to properly re-analyze it.
+
+            New_Name := Make_Selected_Component (Loc,
+                          Prefix        => New_Reference_To (New_Prefix, Loc),
+                          Selector_Name => New_Copy_Tree (New_Subprg));
+            Set_Name (Call_Node, New_Name);
+
+            Set_Analyzed (Call_Node, False);
+            Set_Parent (Call_Node, Parent (Node_To_Replace));
+            Replace (Node_To_Replace, Call_Node);
+            Analyze (Node_To_Replace);
+            return True;
+
+         --  Free all the nodes used for this test and return
+         else
+            Nodes.Set_Last (Last_Node);
+            return False;
+         end if;
+      end Try_Replacement;
+
+   --  Start of processing for Try_Object_Operation
+
+   begin
+      --  Find the type of the object
+
+      Obj_Type := Etype (Obj);
+
+      if Is_Access_Type (Obj_Type) then
+         Obj_Type := Designated_Type (Obj_Type);
+      end if;
+
+      if Ekind (Obj_Type) = E_Private_Subtype then
+         Obj_Type := Base_Type (Obj_Type);
+      end if;
+
+      if Is_Class_Wide_Type (Obj_Type) then
+         Obj_Type := Etype (Class_Wide_Type (Obj_Type));
+      end if;
+
+      --  Analyze the actuals
+
+      if (Nkind (Parent (N)) = N_Procedure_Call_Statement
+            or else Nkind (Parent (N)) = N_Function_Call)
+          and then N /= First (Parameter_Associations (Parent (N)))
+            --  Protects against recursive call in case of "..:= F (O.Proc)"
+      then
+         Actual := First (Parameter_Associations (Parent (N)));
+
+         while Present (Actual) loop
+            Analyze (Actual);
+            Check_Parameterless_Call (Actual);
+            Next_Actual (Actual);
+         end loop;
+      end if;
+
+      Last_Node := Last_Node_Id;
+
+      return Try_Primitive_Operations
+               (New_Prefix => Scope (Obj_Type),
+                New_Subprg => Selector_Name (N),
+                Obj        => Obj,
+                Obj_Type   => Obj_Type)
+           or else
+             Try_Class_Wide_Operation
+               (New_Subprg => Selector_Name (N),
+                Obj        => Obj,
+                Obj_Type   => Obj_Type);
+   end Try_Object_Operation;
 
 end Sem_Ch4;

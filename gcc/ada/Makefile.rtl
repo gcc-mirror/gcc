@@ -46,6 +46,7 @@ GNATRTL_TASKING_OBJS= \
   s-intman$(objext) \
   s-osinte$(objext) \
   s-proinf$(objext) \
+  s-solita$(objext) \
   s-taenca$(objext) \
   s-taprob$(objext) \
   s-taprop$(objext) \

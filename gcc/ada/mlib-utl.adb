@@ -66,7 +66,7 @@ package body MLib.Utl is
       Line_Length : Natural := 0;
 
    begin
-      Initialize;
+      Utl.Initialize;
 
       Arguments :=
         new String_List (1 .. 1 + Ar_Options'Length + Objects'Length);
@@ -177,7 +177,7 @@ package body MLib.Utl is
 
       Driver  : String_Access;
    begin
-      Initialize;
+      Utl.Initialize;
 
       if Driver_Name = No_Name then
          Driver := Gcc_Exec;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,8 +57,7 @@ package body Exception_Traces is
 
    procedure Last_Chance_Handler
      (Except :  Exception_Occurrence);
-   pragma Import
-     (C, Last_Chance_Handler, "__gnat_last_chance_handler");
+   pragma Import (C, Last_Chance_Handler, "__gnat_last_chance_handler");
    pragma No_Return (Last_Chance_Handler);
    --  Users can replace the default version of this routine,
    --  Ada.Exceptions.Last_Chance_Handler.
@@ -75,11 +74,6 @@ package body Exception_Traces is
    --  Notify_Unhandled_Exception. Is_Unhandled is set to True only in the
    --  latter case because Notify_Handled_Exception may be called for an
    --  actually unhandled occurrence in the Front-End-SJLJ case.
-
-   procedure To_Stderr (S : String);
-   pragma Export (Ada, To_Stderr, "__gnat_to_stderr");
-   --  Little routine to output string to stderr that is also used
-   --  in the tasking run time.
 
    ---------------------------------
    -- Debugger Interface Routines --
@@ -185,8 +179,6 @@ package body Exception_Traces is
    -- Unhandled_Exception_Terminate --
    -----------------------------------
 
-   type int is new Integer;
-
    procedure Unhandled_Exception_Terminate is
       Excep : constant EOA := Save_Occurrence (Get_Current_Excep.all.all);
       --  This occurrence will be used to display a message after finalization.
@@ -197,22 +189,6 @@ package body Exception_Traces is
    begin
       Last_Chance_Handler (Excep.all);
    end Unhandled_Exception_Terminate;
-
-   ---------------
-   -- To_Stderr --
-   ---------------
-
-   procedure To_Stderr (S : String) is
-      procedure put_char_stderr (C : int);
-      pragma Import (C, put_char_stderr, "put_char_stderr");
-
-   begin
-      for J in 1 .. S'Length loop
-         if S (J) /= ASCII.CR then
-            put_char_stderr (Character'Pos (S (J)));
-         end if;
-      end loop;
-   end To_Stderr;
 
 
    ------------------------------------

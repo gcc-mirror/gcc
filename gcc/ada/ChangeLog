@@ -1,3 +1,99 @@
+2004-07-20  Olivier Hainque  <hainque@act-europe.fr>
+
+	* a-elchha.adb (Last_Chance_Handler): Remove the bogus buffer dynamic
+	allocation and potentially overflowing update with
+	Tailored_Exception_Information. Use the sec-stack free procedural
+	interface to output Exception_Information instead.
+
+	* a-except.adb (To_Stderr): New subprogram for character, and string
+	version moved from a-exextr to be visible from other separate units.
+	(Tailored_Exception_Information): Remove the procedural version,
+	previously used by the default Last_Chance_Handler and not any more.
+	Adjust various comments.
+
+	* a-exexda.adb: Generalize the exception information procedural
+	interface, to minimize the use of secondary stack and the need for
+	local buffers when the info is to be output to stderr:
+	(Address_Image): Removed.
+	(Append_Info_Character): New subprogram, checking for overflows and
+	outputing to stderr if buffer to fill is of length 0.
+	(Append_Info_String): Output to stderr if buffer to fill is of length 0.
+	(Append_Info_Address, Append_Info_Exception_Name,
+	Append_Info_Exception_Message, Append_Info_Basic_Exception_Information,
+	Append_Info_Basic_Exception_Traceback,
+	Append_Info_Exception_Information): New subprograms.
+	(Append_Info_Nat, Append_Info_NL): Use Append_Info_Character.
+	(Basic_Exception_Info_Maxlength, Basic_Exception_Tback_Maxlength,
+	Exception_Info_Maxlength, Exception_Name_Length,
+	Exception_Message_Length): New subprograms.
+	(Exception_Information): Use Append_Info_Exception_Information.
+	(Tailored_Exception_Information): Use
+	Append_Info_Basic_Exception_Information.
+	Export services for the default Last_Chance_Handler.
+
+	* a-exextr.adb (To_Stderr): Remove. Now in a-except to be usable by
+	other separate units.
+
+2004-07-20  Vincent Celier  <celier@gnat.com>
+
+	* clean.adb, mlib-utl.adb, osint.adb, makegpr.adb: Minor reformatting.
+
+2004-07-20  Ed Schonberg  <schonberg@gnat.com>
+
+	* freeze.adb (Freeze_Entity): If entity is a discriminated record type,
+	emit itype references for the designated types of component types that
+	are declared outside of the full record declaration, and that may
+	denote a partial view of that record type.
+
+2004-07-20  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15607
+	* sem_ch3.adb (Build_Discriminated_Subtype): Do not attach a subtype
+	which is the designated type in an access component declaration, to the
+	list of incomplete dependents of the parent type, to avoid elaboration
+	issues with out-of-scope subtypes.
+	(Complete_Private_Subtype): Recompute Has_Unknown_Discriminants from the
+	full view of the parent.
+
+2004-07-20  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15610
+	* sem_ch8.adb (Find_Expanded_Name): If name is overloaded, reject
+	entities that are hidden, such as references to generic actuals
+	outside an instance.
+
+2004-07-20  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch4.adb (Try_Object_Operation): New subprogram that gives
+	support to the new notation.
+	(Analyze_Selected_Component): Add call to Try_Object_Operation.
+
+2004-07-20  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* s-taprob.adb: Adding the elaboration code required for initializing
+	the tasking soft links that are common to the full and the restricted
+	run times.
+
+	* s-tarest.adb (Init_RTS): Tasking soft links that are shared with the
+	restricted run time has been moved to the package
+	System.Soft_Links.Tasking.
+
+	* s-tasini.adb (Init_RTS): Tasking soft links that are shared with the
+	restricted run time has been moved to the package
+	System.Soft_Links.Tasking.
+
+	* Makefile.rtl: Add entry for s-solita.o in run-time library list.
+
+	* s-solita.ads, s-solita.adb: New files.
+
+2004-07-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (Identifier_to_gnu, Pragma_to_gnu, Attribute_to_gnu,
+	Case_Statement_to_gnu): Split off from gnat_to_gnu.
+	(Loop_Statement_to_gnu, Subprogram_Body_to_gnu, call_to_gnu,
+	Handled_Sequence_Of_Statements_to_gnu, Exception_Handler_to_gnu_sjlj,
+	Exception_Handler_to_gnu_zcx): Likewise.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gigi.h (builtin_function): Declare.
