@@ -703,6 +703,7 @@ write_debug_string (string, comment, dosizeonly)
 /* Output a module begin header and return the header size.  Just return the
    size if DOSIZEONLY is non-zero. */
 
+static int
 write_modbeg (dosizeonly)
      int dosizeonly;
 {
