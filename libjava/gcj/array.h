@@ -17,21 +17,9 @@ extern "Java" {
 
 class __JArray : public java::lang::Object
 {
-protected:
-  // FIXME: this is a hack to work around a bug in the g++ Java
-  // support.  If we add a constructor with a jsize argument to
-  // JArray<T>, then g++ complains.
-  __JArray () : length (0)
-  {
-  }
 public:
-  const jsize length;
+  jsize length;
   friend jsize JvGetArrayLength (__JArray*);
-
-  // This probably shouldn't be public.
-  __JArray (jsize l) : length (l)
-  {
-  }
 };
 
 template<class T>

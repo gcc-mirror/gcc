@@ -67,9 +67,6 @@ details.  */
 #include <ltdl.h>
 #endif
 
-// We use placement new.
-#include <new>
-
 // We allocate a single OutOfMemoryError exception which we keep
 // around for use if we run out of memory.
 static java::lang::OutOfMemoryError *no_memory;
@@ -414,9 +411,8 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   obj = (jobjectArray) _Jv_AllocArray (size, klass);
   if (__builtin_expect (! obj, false))
     JvThrow (no_memory);
-  // Use placement new to initialize length field.
-  new (obj) __JArray (count);
-  jobject *ptr = elements(obj);
+  obj->length = count;
+  jobject *ptr = elements (obj);
   // We know the allocator returns zeroed memory.  So don't bother
   // zeroing it again.
   if (init)
@@ -450,8 +446,7 @@ _Jv_NewPrimArray (jclass eltype, jint count)
   __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count, klass);
   if (__builtin_expect (! arr, false))
     JvThrow (no_memory);
-  // Use placement new to initialize length field.
-  new (arr) __JArray (count);
+  arr->length = count;
   // Note that we assume we are given zeroed memory by the allocator.
 
   return arr;

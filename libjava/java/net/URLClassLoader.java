@@ -10,6 +10,7 @@ package java.net;
 
 import java.io.*;
 import java.util.jar.*;
+import java.util.Enumeration;
 import java.util.Vector;
 
 public class URLClassLoader extends ClassLoader 
@@ -42,6 +43,56 @@ public class URLClassLoader extends ClassLoader
     this (urls, parent, null);
   }
 
+  // A File URL may actually be a Jar URL.  Convert if possible.
+  private URL jarFileize (URL url)
+  {
+    if (! url.getProtocol ().equals ("jar"))
+      {
+	String f = url.getFile ();
+
+	// If it ends with '/' we'll take it for a directory,
+	// otherwise it's a jar file.  This is how JDK 1.2 defines
+	// it, so we will not try to be smart here.
+	if (f.charAt (f.length ()-1) != '/')
+	  {
+	    try
+	      {
+		url = new URL ("jar", "", -1, (url.toExternalForm ())+"!/", 
+			       getHandler0 ("jar"));
+	      } 
+	    catch (MalformedURLException x)
+	      {
+		/* ignore */
+	      }
+	  }
+      }
+    return url;
+  }
+
+  protected void addURL (URL url)
+  {
+    JarURLConnection conn = null;
+    
+    // Convert a Jar File URL into Jar URL if possible.
+    url = jarFileize (url);
+
+    path.addElement (url);
+
+    if (url.getProtocol ().equals ("jar"))
+      {
+	try
+	  {
+	    conn = (JarURLConnection) url.openConnection ();
+	  }
+	catch (java.io.IOException x)
+	  {
+	    /* ignore */
+	  }
+      }
+
+    info.addElement (conn);
+  }
+
   public URLClassLoader (URL[] urls, ClassLoader parent,
 			 URLStreamHandlerFactory fac)
   { 
@@ -61,31 +112,10 @@ public class URLClassLoader extends ClassLoader
 
     for (int i = 0; i < urls.length; i++)
       {
-	URL u = urls[i];
+	// Convert a Jar File URL into a Jar URL is possible. 
+	URL u = jarFileize(urls[i]);
 
-	// If it is a jar url, then we'll search it as is.  
-	if (! u.getProtocol ().equals ("jar"))
-	  {
-	    String f = u.getFile ();
-
-	    // If it ends with '/' we'll take it for a directory,
-	    // otherwise it's a jar file.  This is how JDK 1.2 defines
-	    // it, so we will not try to be smart here.
-	    if (f.charAt (f.length ()-1) != '/')
-	      {
-		try
-		  {
-		    u = new URL ("jar", "", -1, (u.toExternalForm ())+"!/", 
-				 getHandler0 ("jar"));
-		  } 
-		catch (MalformedURLException x)
-		  {
-		    /* ignore */
-		  }
-	      }
-	  }
-
-	path.insertElementAt (u, i);
+	path.addElement (u);
 
 	if (u.getProtocol ().equals ("jar"))
 	  {
@@ -98,20 +128,64 @@ public class URLClassLoader extends ClassLoader
 	      {
 		/* ignore */
 	      }
-	    info.insertElementAt (conn, i);
+	    info.addElement (conn);
 	  }
 	else
 	  {
-	    info.insertElementAt (null, i);
+	    info.addElement (null);
 	  }
       }
   }
+
+  public URL[] getURLs ()
+  {
+    URL[] urls = new URL[path.size()];
+    path.copyInto (urls);
+    return urls;
+  }
   
-  public URL getResource (String name)
+  public Enumeration findResources (String name)
+  {
+    Vector results = new Vector ();
+
+    for (int i = 0; i < path.size(); i++)
+      {
+	URL u = (URL)path.elementAt (i);
+		
+	try {
+	  JarURLConnection conn = (JarURLConnection) info.elementAt (i);
+	  
+	  if (conn != null)
+	    {
+	      if (conn.getJarFile().getJarEntry (name) != null)
+		results.addElement (new URL(u, name, getHandler0 (u.getProtocol())));
+	    }
+	  else
+	    {
+	      URL p = new URL (u, name, getHandler0 (u.getProtocol()));
+			    
+	      InputStream is = p.openStream();
+	      if (is != null)
+		{
+		  is.close();
+		  results.addElement (p);
+		}
+	    }
+		    
+	  // if we get an exception ... try the next path element
+	} catch (IOException x) {
+	  continue;
+	}
+      }
+	
+    return results.elements ();
+  }
+
+  public URL findResource (String name)
   {
     for (int i = 0; i < path.size(); i++)
       {
-	URL u    = (URL)path.elementAt (i);
+	URL u = (URL)path.elementAt (i);
 	
 	try {
 	  JarURLConnection conn = (JarURLConnection) info.elementAt (i);
@@ -131,42 +205,6 @@ public class URLClassLoader extends ClassLoader
 		  is.close();
 		  return p;
 		}
-	    }
-	
-	  // if we get an exception ... try the next path element
-	} catch (IOException x) {
-	  continue;
-	}
-      }
-
-    return null;
-  }
-
-  /** IN jdk 1.2 this method is not overridden, but we gain performance
-      by doing so.
-   */
-
-  public InputStream getResourceAsStream (String name)
-  {
-    for (int i = 0; i < path.size(); i++)
-      {
-	URL u    = (URL)path.elementAt (i);
-	
-	try {
-	  JarURLConnection conn = (JarURLConnection) info.elementAt (i);
-	  
-	  if (conn != null)
-	    {
-	      JarFile file = conn.getJarFile ();
-	      JarEntry ent = file.getJarEntry (name);
-	      if (ent != null)
-		return file.getInputStream(ent);
-	    }
-	  else
-	    {
-	      InputStream is = new URL(u, name, getHandler0 (u.getProtocol())).openStream();
-	      if (is != null)
-		return is;
 	    }
 	
 	  // if we get an exception ... try the next path element

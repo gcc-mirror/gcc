@@ -145,15 +145,23 @@ public class Thread implements Runnable
     daemon_flag = status;
   }
 
-  // TODO12:
-  // public ClassLoader getContextClassLoader()
-  // {
-  // }
+  public ClassLoader getContextClassLoader()
+  {
+    if (context_class_loader == null)
+      {
+	context_class_loader = ClassLoader.getSystemClassLoader ();
+	return context_class_loader;
+      }
 
-  // TODO12:
-  // public void setContextClassLoader(ClassLoader cl)
-  // {
-  // }
+    // FIXME: Add security manager stuff here.
+    return context_class_loader;
+  }
+
+  public void setContextClassLoader(ClassLoader cl)
+  {
+    // FIXME: Add security manager stuff here.
+    context_class_loader = cl;
+  }
 
   public final void setName (String n)
   {
@@ -227,13 +235,14 @@ public class Thread implements Runnable
     interrupt_flag = false;
     alive_flag = false;
     startable_flag = true;
-    
+
     if (current != null)
       {
 	daemon_flag = current.isDaemon();
         int gmax = group.getMaxPriority();
 	int pri = current.getPriority();
 	priority = (gmax < pri ? gmax : pri);
+	context_class_loader = current.context_class_loader;
       }
     else
       {
@@ -277,7 +286,7 @@ public class Thread implements Runnable
   public String toString ()
   {
     return "Thread[" + name + "," + priority + "," + 
-	   (group == null ? "" : group.getName()) + "]";
+      (group == null ? "" : group.getName()) + "]";
   }
 
   public static native void yield ();
@@ -291,6 +300,7 @@ public class Thread implements Runnable
   boolean interrupt_flag;
   private boolean alive_flag;
   private boolean startable_flag;
+  private ClassLoader context_class_loader;
 
   // Our native data.
   private Object data;
