@@ -32,6 +32,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 
+#ifdef DWARF_DEBUGGING_INFO
+#include "dwarfout.h"
+#endif
+
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif

@@ -1,3 +1,11 @@
+Mon Oct 19 12:13:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (lex.o): Depend on dwarfout.h.
+
+	* lang-specs.h: Add missing braces in initializer.
+
+	* lex.c: Include dwarfout.h, if DWARF_DEBUGGING_INFO is defined.
+
 Thu Oct 15 09:25:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (build_chill_card): Use &&, not &, when comparing truth
