@@ -1,3 +1,9 @@
+2005-01-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (constructor_no_implicit): Remove.
+	(set_designator, process_init_element): Don't check
+	constructor_no_implicit.
+
 2005-01-05  J"orn Rennecke <joern.rennecke@st.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
