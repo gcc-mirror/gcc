@@ -108,7 +108,8 @@ extern int mode_unit_size[];
 /* Get the number of units in the object.  */
 
 #define GET_MODE_NUNITS(MODE)  \
-  (GET_MODE_SIZE ((MODE)) / GET_MODE_UNIT_SIZE ((MODE)))
+  ((GET_MODE_UNIT_SIZE ((MODE)) == 0) ? 0 \
+   : (GET_MODE_SIZE ((MODE)) / GET_MODE_UNIT_SIZE ((MODE))))
 
 /* Get the size in bits of an object of mode MODE.  */
 
