@@ -1,3 +1,7 @@
+Fri Aug 29 11:42:04 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* varasm.c (mark_constants): Don't look inside CONST_DOUBLEs.
+
 Fri Aug 29 09:33:20 1997  Philipp Thomas  (kthomas@lxi165.gwdg.de)
 
 	* dwarfout2.c (build_abbrev_table): Use xrealloc, not xmalloc

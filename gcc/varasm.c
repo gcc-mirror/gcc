@@ -3798,6 +3798,13 @@ mark_constants (x)
 	find_pool_constant (x)->mark = 1;
       return;
     }
+  /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
+     a MEM, but does not constitute a use of that MEM.  This is particularly
+     important inside a nested function, because CONST_DOUBLE_MEM may be
+     a reference to a MEM in the parent's constant pool.  See the comment
+     in force_const_mem.  */
+  else if (GET_CODE (x) == CONST_DOUBLE)
+    return;
 
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
