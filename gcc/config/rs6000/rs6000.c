@@ -16076,13 +16076,14 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
     machopic_picsymbol_stub1_section ();
   else
     machopic_symbol_stub1_section ();
-  fprintf (file, "\t.align 2\n");
-
-  fprintf (file, "%s:\n", stub);
-  fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
   if (flag_pic == 2)
     {
+      fprintf (file, "\t.align 5\n");
+
+      fprintf (file, "%s:\n", stub);
+      fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+
       label++;
       local_label_0 = alloca (sizeof("\"L0000000000$spb\""));
       sprintf (local_label_0, "\"L%011d$spb\"", label);
@@ -16099,12 +16100,17 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\tbctr\n");
     }
   else
-   {
-     fprintf (file, "\tlis r11,ha16(%s)\n", lazy_ptr_name);
-     fprintf (file, "\tlwzu r12,lo16(%s)(r11)\n", lazy_ptr_name);
-     fprintf (file, "\tmtctr r12\n");
-     fprintf (file, "\tbctr\n");
-   }
+    {
+      fprintf (file, "\t.align 4\n");
+
+      fprintf (file, "%s:\n", stub);
+      fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+
+      fprintf (file, "\tlis r11,ha16(%s)\n", lazy_ptr_name);
+      fprintf (file, "\tlwzu r12,lo16(%s)(r11)\n", lazy_ptr_name);
+      fprintf (file, "\tmtctr r12\n");
+      fprintf (file, "\tbctr\n");
+    }
   
   machopic_lazy_symbol_ptr_section ();
   fprintf (file, "%s:\n", lazy_ptr_name);

@@ -1,3 +1,11 @@
+2004-08-03  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (machopic_output_stub):  Align Darwin stubs.
+	* c-common.c: Include opts.h.
+	(c_common_get_alias_set): Fix check for a single input file. 
+	* toplev.c: Remove current_file_decl.
+	* tree.h: Ditto.
+
 2004-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc (arm*-*-symbianelf*): New target.
