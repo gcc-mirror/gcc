@@ -1,3 +1,20 @@
+2005-03-09  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/20389
+	Merge BufferedInputStream from GNU Classpath.
+	* java/io/BufferedInputStream.java (marktarget): Field removed.
+	(CHUNKSIZE): Field removed.
+	(bufferSize): New field.
+	(BufferedInputStream): Initialize fields.
+	(close): Invalidate mark and buffer indexes.
+	(mark):  Rewritten.
+	(read()): Move mark handling code to refill.
+	(read(byte[], int, int)): Ditto.
+	(skip): Ditto and simplify EOF testing.
+	(refill): Rewritten.
+	* java/io/InputStreamReader.java (refill): Removed mark and reset
+	of internal BufferedInputStream.
+
 2005-03-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natVMClassLoader.cc (defineClass): Reference
