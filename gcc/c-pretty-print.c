@@ -1913,28 +1913,22 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
              identifier : statement
              case constant-expression : statement
              default : statement   */
-    case LABEL_STMT:
     case CASE_LABEL:
       if (pp_needs_newline (pp))
         pp_newline_and_indent (pp, -3);
       else
         pp_indentation (pp) -= 3;
-      if (code == LABEL_STMT)
-	pp_c_tree_decl_identifier (pp, LABEL_STMT_LABEL (stmt));
-      else if (code == CASE_LABEL)
+      if (CASE_LOW (stmt) == NULL_TREE)
+	pp_identifier (pp, "default");
+      else
 	{
-	  if (CASE_LOW (stmt) == NULL_TREE)
-	    pp_identifier (pp, "default");
-	  else
+	  pp_c_identifier (pp, "case");
+	  pp_c_whitespace (pp);
+	  pp_conditional_expression (pp, CASE_LOW (stmt));
+	  if (CASE_HIGH (stmt))
 	    {
-	      pp_c_identifier (pp, "case");
-	      pp_c_whitespace (pp);
-	      pp_conditional_expression (pp, CASE_LOW (stmt));
-	      if (CASE_HIGH (stmt))
-		{
-		  pp_identifier (pp, "...");
-		  pp_conditional_expression (pp, CASE_HIGH (stmt));
-		}
+	      pp_identifier (pp, "...");
+	      pp_conditional_expression (pp, CASE_HIGH (stmt));
 	    }
 	}
       pp_colon (pp);
@@ -2098,14 +2092,11 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       break;
 
     case RETURN_STMT:
-    case GOTO_STMT:
       {
-	tree e = code == RETURN_STMT
-	  ? RETURN_STMT_EXPR (stmt)
-	  : GOTO_DESTINATION (stmt);
+	tree e = RETURN_STMT_EXPR (stmt);
         if (pp_needs_newline (pp))
           pp_newline_and_indent (pp, 0);
-	pp_c_identifier (pp, code == RETURN_STMT ? "return" : "goto");
+	pp_c_identifier (pp, "return");
         pp_c_whitespace (pp);
 	if (e)
           {

@@ -1,3 +1,17 @@
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
+	* c-common.def (GOTO_STMT, LABEL_STMT): Remove.
+	* c-common.c (c_add_case_label): Use LABEL_EXPR.
+	* c-common.h (GOTO_FAKE_P, LABEL_STMT_LABEL): Remove.
+	(c_common_stmt_codes): Remove GOTO_STMT, LABEL_STMT.
+	* c-dump.c (c_dump_tree): Likewise.
+	* c-gimplify.c (c_gimplify_stmt): Likewise.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* c-parse.in (stmt): Use GOTO_EXPR.
+	(label): Use LABEL_EXPR.
+	* c-semantics.c (build_stmt): Set TREE_TYPE to void.
+	* tree-inline.c (copy_body_r): Don't build empty BLOCKs.
+
 2004-06-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cfgcleanup.c (try_simplify_condjump): Update test to make

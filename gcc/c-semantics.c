@@ -188,6 +188,7 @@ build_stmt (enum tree_code code, ...)
   va_start (p, code);
 
   ret = make_node (code);
+  TREE_TYPE (ret) = void_type_node;
   length = TREE_CODE_LENGTH (code);
   annotate_with_locus (ret, input_location);
 

@@ -2216,8 +2216,8 @@ mark_local_for_remap_r (tree* tp,
   if (TREE_CODE (t) == DECL_STMT
       && nonstatic_local_decl_p (DECL_STMT_DECL (t)))
     decl = DECL_STMT_DECL (t);
-  else if (TREE_CODE (t) == LABEL_STMT)
-    decl = LABEL_STMT_LABEL (t);
+  else if (TREE_CODE (t) == LABEL_EXPR)
+    decl = LABEL_EXPR_LABEL (t);
   else if (TREE_CODE (t) == TARGET_EXPR
 	   && nonstatic_local_decl_p (TREE_OPERAND (t, 0)))
     decl = TREE_OPERAND (t, 0);

@@ -1,5 +1,13 @@
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
+	* decl.c (finish_destructor_body): Use LABEL_EXPR.
+	* parser.c (cp_parser_statement): Update commentary.
+	* pt.c (tsubst_expr): Use LABEL_EXPR, GOTO_EXPR.
+	* semantics.c (finish_goto_stmt, finish_label_stmt): Likewise.
+	* tree.c (mark_local_for_remap_r): Likewise.
+
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
 	PR c++/16012
 	* semantics.c (begin_for_stmt, begin_for_stmt): Do put the init
 	statement in FOR_INIT_STMT for templates.

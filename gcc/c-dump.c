@@ -129,23 +129,11 @@ c_dump_tree (void *dump_info, tree t)
       dump_next_stmt (di, t);
       break;
 
-    case GOTO_STMT:
-      dump_stmt (di, t);
-      dump_child ("dest", GOTO_DESTINATION (t));
-      dump_next_stmt (di, t);
-      break;
-
     case IF_STMT:
       dump_stmt (di, t);
       dump_child ("cond", IF_COND (t));
       dump_child ("then", THEN_CLAUSE (t));
       dump_child ("else", ELSE_CLAUSE (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case LABEL_STMT:
-      dump_stmt (di, t);
-      dump_child ("labl", LABEL_STMT_LABEL (t));
       dump_next_stmt (di, t);
       break;
 

@@ -467,8 +467,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       abort ();
 #endif
 
-  /* If this is a RETURN_STMT, change it into an EXPR_STMT and a
-     GOTO_STMT with the RET_LABEL as its target.  */
+  /* If this is a RETURN_EXPR, change it into a MODIFY_EXPR and a
+     GOTO_EXPR with the RET_LABEL as its target.  */
   if (TREE_CODE (*tp) == RETURN_EXPR && id->ret_label)
     {
       tree return_stmt = *tp;
@@ -489,8 +489,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	    if (TREE_CODE (assignment) == RESULT_DECL)
 	      gimplify_stmt (&assignment);
 
-	  *tp = build (BIND_EXPR, void_type_node, NULL_TREE, NULL_TREE,
-		       make_node (BLOCK));
+	  *tp = build (BIND_EXPR, void_type_node, NULL, NULL, NULL);
 	  append_to_statement_list (assignment, &BIND_EXPR_BODY (*tp));
 	  append_to_statement_list (goto_stmt, &BIND_EXPR_BODY (*tp));
         }

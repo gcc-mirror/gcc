@@ -7979,12 +7979,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				      in_decl));
       break;
 
-    case LABEL_STMT:
+    case LABEL_EXPR:
       prep_stmt (t);
-      finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
+      finish_label_stmt (DECL_NAME (LABEL_EXPR_LABEL (t)));
       break;
 
-    case GOTO_STMT:
+    case GOTO_EXPR:
       prep_stmt (t);
       tmp = GOTO_DESTINATION (t);
       if (TREE_CODE (tmp) != LABEL_DECL)

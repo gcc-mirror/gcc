@@ -2292,7 +2292,7 @@ stmt:
 		  if (decl != 0)
 		    {
 		      TREE_USED (decl) = 1;
-		      $$ = add_stmt (build_stmt (GOTO_STMT, decl));
+		      $$ = add_stmt (build_stmt (GOTO_EXPR, decl));
 		    }
 		  else
 		    $$ = NULL_TREE;
@@ -2302,7 +2302,7 @@ stmt:
 		    pedwarn ("ISO C forbids `goto *expr;'");
 		  stmt_count++;
 		  $3 = convert (ptr_type_node, $3);
-		  $$ = add_stmt (build_stmt (GOTO_STMT, $3)); }
+		  $$ = add_stmt (build_stmt (GOTO_EXPR, $3)); }
 	| ';'
 		{ $$ = NULL_TREE; }
 @@ifobjc
@@ -2379,7 +2379,7 @@ label:	  CASE expr_no_commas ':'
 		  if (label)
 		    {
 		      decl_attributes (&label, $4, 0);
-		      $$ = add_stmt (build_stmt (LABEL_STMT, label));
+		      $$ = add_stmt (build_stmt (LABEL_EXPR, label));
 		    }
 		  else
 		    $$ = NULL_TREE;

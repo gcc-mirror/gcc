@@ -71,13 +71,6 @@ DEFTREECODE (CONTINUE_STMT, "continue_stmt", 'e', 0)
    SWITCH_COND, SWITCH_BODY and SWITCH_TYPE, respectively.  */
 DEFTREECODE (SWITCH_STMT, "switch_stmt", 'e', 3)
 
-/* Used to represent a 'goto' statement. The operand is GOTO_DESTINATION.  */
-DEFTREECODE (GOTO_STMT, "goto_stmt", 'e', 1)
-
-/* Used to represent a 'label' statement. The operand is a LABEL_DECL
-   and can be obtained through the macro LABEL_STMT_LABEL.  */
-DEFTREECODE (LABEL_STMT, "label_stmt", 'e', 1)
-
 /* Used to represent an inline assembly statement.  */
 DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 4)
 
