@@ -2757,7 +2757,7 @@ finish_file ()
 
      All of these may cause others to be needed.  For example,
      instantiating one function may cause another to be needed, and
-     generating the intiailzer for an object may cause templates to be
+     generating the initializer for an object may cause templates to be
      instantiated, etc., etc.  */
 
   timevar_push (TV_VARCONST);
