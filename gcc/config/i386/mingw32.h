@@ -21,10 +21,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-/* Most of this is the same as for Cygwin32, except for changing some
+/* Most of this is the same as for cygwin, except for changing some
    specs.  */
 
-#include "i386/cygwin32.h"
+#include "i386/cygwin.h"
 
 /* Please keep changes to CPP_PREDEFINES in sync with i386/crtdll. The
    only difference between the two should be __MSVCRT__ needed to 

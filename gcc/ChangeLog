@@ -1,3 +1,35 @@
+Thu Nov 12 19:20:57 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* i386/cygwin32.asm: Delete.
+	* i386/cygwin.asm: New file, renamed from cygwin32.asm.
+	* i386/cygwin32.h: Delete.
+	* i386/cygwin.h: New file, renamed from cygwin32.h.
+	* i386/t-cygwin32: Delete.
+	* i386/t-cygwin: New file, renamed from t-cygwin32.  Include
+	cygwin.asm instead of cygwin32.asm.  Remove "32" from comment.
+	* i386/x-cygwin32: Delete.
+	* i386/x-cygwin: New file, renamed from x-cygwin32.
+	* i386/xm-cygwin32: Delete.
+	* i386/xm-cygwin: New file, renamed from xm-cygwin32.  Use newly
+	renamed cygwin_ funcs for path translations.
+	* i386/win32.h: Define __CYGWIN__ when -mcygwin given.
+	* i386/winnt.c: Remove "32" from comment about cygwin.
+	* i386/mingw32.h: Fix references to cygwin32.h in light of above.
+	* rs6000/cygwin32.h: Delete.
+	* rs6000/cygwin.h: New file, renamed from cygwin32.h.  Add
+	-D__CYGWIN__ to CPP_PREDEFINES.
+	* rs6000/x-cygwin32: Delete.
+	* rs6000/x-cygwin: New file, renamed from x-cygwin32.
+	* rs6000/xm-cygwin32: Delete.
+	* rs6000/xm-cygwin: New file, renamed from xm-cygwin32.
+
+	* configure.in: Check for cygwin* instead of cygwin32.  Account
+	for the rename of cygwin-related config files to lose the "32"s.
+	* configure: Regenerate.
+
+	* cccp.c, collect2.c, gcc.c, getpwd.c, libgcc2.c, protoize.c,
+	toplev.c: Change all refs to __CYGWIN32__ to __CYGWIN__.
+
 Wed Nov 11 12:25:19 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in (JAVAGC): New macro.

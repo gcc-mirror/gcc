@@ -2572,7 +2572,7 @@ __clear_cache (char *beg, char *end)
 
 /* Jump to a trampoline, loading the static chain address.  */
 
-#if defined(WINNT) && ! defined(__CYGWIN32__)
+#if defined(WINNT) && ! defined(__CYGWIN__)
 
 long getpagesize()
 {
@@ -2810,7 +2810,7 @@ cacheflush (char *beg, int size, int flag)
 #endif /* sony_news */
 #endif /* L_trampoline */
 
-#ifndef __CYGWIN32__
+#ifndef __CYGWIN__
 #ifdef L__main
 
 #include "gbl-ctors.h"
@@ -2892,7 +2892,7 @@ SYMBOL__MAIN ()
 #endif /* no HAS_INIT_SECTION or INVOKE__main */
 
 #endif /* L__main */
-#endif /* __CYGWIN32__ */
+#endif /* __CYGWIN__ */
 
 #ifdef L_ctors
 

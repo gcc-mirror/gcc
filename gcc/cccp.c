@@ -84,7 +84,7 @@ static int hack_vms_include_specification ();
 #endif /* VMS */
 
 /* Windows does not natively support inodes, and neither does MSDOS.  */
-#if (defined (_WIN32) && ! defined (CYGWIN32)) || defined (__MSDOS__)
+#if (defined (_WIN32) && ! defined (__CYGWIN__)) || defined (__MSDOS__)
 #define INO_T_EQ(a, b) 0
 #endif
 
@@ -4888,10 +4888,10 @@ static int
 absolute_filename (filename)
      char *filename;
 {
-#if defined (__MSDOS__) || (defined (_WIN32) && !defined (__CYGWIN32__))
+#if defined (__MSDOS__) || (defined (_WIN32) && !defined (__CYGWIN__))
   if (ISALPHA (filename[0]) && filename[1] == ':') filename += 2;
 #endif
-#if defined (__CYGWIN32__)
+#if defined (__CYGWIN__)
   /* At present, any path that begins with a drive spec is absolute.  */
   if (ISALPHA (filename[0]) && filename[1] == ':') return 1;
 #endif

@@ -493,7 +493,7 @@ i386_pe_unique_section (decl, reloc)
 }
 
 /* The Microsoft linker requires that every function be marked as
-   DT_FCN.  When using gas on cygwin32, we must emit appropriate .type
+   DT_FCN.  When using gas on cygwin, we must emit appropriate .type
    directives.  */
 
 #include "gsyms.h"

@@ -1252,7 +1252,7 @@ get_run_time ()
 #ifdef __BEOS__
   return 0;
 #else /* not BeOS */
-#if defined (_WIN32) && !defined (__CYGWIN32__)
+#if defined (_WIN32) && !defined (__CYGWIN__)
   if (clock() < 0)
     return 0;
   else
@@ -4947,7 +4947,7 @@ main (argc, argv)
 
   compile_file (filename);
 
-#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN32__))
+#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN__))
   if (flag_print_mem)
     {
       char *lim = (char *) sbrk (0);
@@ -4963,7 +4963,7 @@ main (argc, argv)
 #endif /* not USG */
 #endif
     }
-#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN32) */
+#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN) */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);
