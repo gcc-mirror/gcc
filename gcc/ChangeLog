@@ -1,3 +1,8 @@
+2005-01-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function.c (assign_parm_setup_block): Relax condition on
+	multi-register optimization.
+
 2005-01-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.md (udivsi3_sh2a, divsi3_sh2a): Give these patterns

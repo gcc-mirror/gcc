@@ -2560,42 +2560,47 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   /* If we've a non-block object that's nevertheless passed in parts,
      reconstitute it in register operations rather than on the stack.  */
   if (GET_CODE (entry_parm) == PARALLEL
-      && data->nominal_mode != BLKmode
-      && XVECLEN (entry_parm, 0) > 1
-      && use_register_for_decl (parm))
+      && data->nominal_mode != BLKmode)
     {
-      rtx parmreg = gen_reg_rtx (data->nominal_mode);
+      rtx elt0 = XEXP (XVECEXP (entry_parm, 0, 0), 0);
 
-      push_to_sequence (all->conversion_insns);
-
-      /* For values returned in multiple registers, handle possible
-	 incompatible calls to emit_group_store.
-
-	 For example, the following would be invalid, and would have to
-	 be fixed by the conditional below:
-
-	   emit_group_store ((reg:SF), (parallel:DF))
-	   emit_group_store ((reg:SI), (parallel:DI))
-
-	 An example of this are doubles in e500 v2:
-	   (parallel:DF (expr_list (reg:SI) (const_int 0))
-	                (expr_list (reg:SI) (const_int 4))).  */
-      if (data->nominal_mode != data->passed_mode)
+      if ((XVECLEN (entry_parm, 0) > 1
+	   || hard_regno_nregs[REGNO (elt0)][GET_MODE (elt0)] > 1)
+	  && use_register_for_decl (parm))
 	{
-	  rtx t = gen_reg_rtx (GET_MODE (entry_parm));
-	  emit_group_store (t, entry_parm, NULL_TREE,
-			    GET_MODE_SIZE (GET_MODE (entry_parm)));
-	  convert_move (parmreg, t, 0);
+	  rtx parmreg = gen_reg_rtx (data->nominal_mode);
+
+	  push_to_sequence (all->conversion_insns);
+
+	  /* For values returned in multiple registers, handle possible
+	     incompatible calls to emit_group_store.
+
+	     For example, the following would be invalid, and would have to
+	     be fixed by the conditional below:
+
+	     emit_group_store ((reg:SF), (parallel:DF))
+	     emit_group_store ((reg:SI), (parallel:DI))
+
+	     An example of this are doubles in e500 v2:
+	     (parallel:DF (expr_list (reg:SI) (const_int 0))
+	     (expr_list (reg:SI) (const_int 4))).  */
+	  if (data->nominal_mode != data->passed_mode)
+	    {
+	      rtx t = gen_reg_rtx (GET_MODE (entry_parm));
+	      emit_group_store (t, entry_parm, NULL_TREE,
+				GET_MODE_SIZE (GET_MODE (entry_parm)));
+	      convert_move (parmreg, t, 0);
+	    }
+	  else
+	    emit_group_store (parmreg, entry_parm, data->nominal_type,
+			      int_size_in_bytes (data->nominal_type));
+
+	  all->conversion_insns = get_insns ();
+	  end_sequence ();
+
+	  SET_DECL_RTL (parm, parmreg);
+	  return;
 	}
-      else
-	emit_group_store (parmreg, entry_parm, data->nominal_type,
-			  int_size_in_bytes (data->nominal_type));
-
-      all->conversion_insns = get_insns ();
-      end_sequence ();
-
-      SET_DECL_RTL (parm, parmreg);
-      return;
     }
 
   size = int_size_in_bytes (data->passed_type);
