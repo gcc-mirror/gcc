@@ -3075,13 +3075,6 @@ purge_addressof_1 (loc, insn, force, store, may_postpone, ht)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
 
-      if (may_postpone)
-	{
-	  if (!postponed_insns || XEXP (postponed_insns, 0) != insn)
-	    postponed_insns = alloc_INSN_LIST (insn, postponed_insns);
-	  return true;
-	}
-
       if (GET_CODE (sub) == MEM)
 	sub = adjust_address_nv (sub, GET_MODE (x), 0);
       else if (GET_CODE (sub) == REG
@@ -3090,6 +3083,15 @@ purge_addressof_1 (loc, insn, force, store, may_postpone, ht)
       else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  int size_x, size_sub;
+
+	  if (may_postpone)
+	    {
+	      /* Postpone for now, so that we do not emit bitfield arithmetics
+		 unless there is some benefit from it.  */
+	      if (!postponed_insns || XEXP (postponed_insns, 0) != insn)
+		postponed_insns = alloc_INSN_LIST (insn, postponed_insns);
+	      return true;
+	    }
 
 	  if (!insn)
 	    {
