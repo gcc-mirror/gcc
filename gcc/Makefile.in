@@ -695,7 +695,7 @@ compilations: ${OBJS}
 # Create a list of the language-independent object files so the language
 # subdirectories needn't mention their names explicitly.
 stamp-objlist: $(OBJS) $(BC_OBJS)
-	echo " $(OBJS) $(BC_OBJS)" | sed -e 's, \([a-z]\), ../\1,g' -e 's/\.o/$(objext)/g' >stamp-objlist
+	echo " $(OBJS) $(BC_OBJS)" | sed -e 's, \([a-z0-9]\), ../\1,g' -e 's/\.o/$(objext)/g' >stamp-objlist
 
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
