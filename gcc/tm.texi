@@ -138,6 +138,16 @@ This should be defined if @code{WCHAR_TYPE} depends on target dependent flags
 which are not accessible to the preprocessor.  Otherwise, it should not
 be defined.
 
+@findex NO_BUILTIN_WINT_TYPE
+@item NO_BUILTIN_WINT_TYPE
+If this macro is defined, the preprocessor will not define the builtin macro
+@code{__WINT_TYPE__}.  The macro @code{__WINT_TYPE__} must then be
+defined by @code{CPP_SPEC} instead.
+
+This should be defined if @code{WINT_TYPE} depends on target dependent flags
+which are not accessible to the preprocessor.  Otherwise, it should not
+be defined.
+
 @findex SIGNED_CHAR_SPEC
 @item SIGNED_CHAR_SPEC
 A C string constant that tells the GCC driver program options to
@@ -1284,6 +1294,16 @@ characters.  If this is undefined, the default is
 @code{WCHAR_TYPE_SIZE}.  Otherwise, it is the constant value that is the
 largest value that @code{WCHAR_TYPE_SIZE} can have at run-time.  This is
 used in @code{cpp}.
+
+@findex WINT_TYPE
+@item WINT_TYPE
+A C expression for a string describing the name of the data type to
+use for wide characters passed to @code{printf} and returned from
+@code{getwc}.  The typedef name @code{wint_t} is defined using the
+contents of the string.  See @code{SIZE_TYPE} above for more
+information.
+
+If you don't define this macro, the default is @code{"unsigned int"}.
 
 @findex OBJC_INT_SELECTORS
 @item OBJC_INT_SELECTORS
