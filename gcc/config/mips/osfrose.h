@@ -20,6 +20,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DECSTATION
 #define OSF_OS
 
+#define HALF_PIC_DEBUG TARGET_DEBUG_B_MODE
+
 #include "halfpic.h"
 
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD"
@@ -46,12 +48,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			%{.s:%i} %{!.s:%g.s}}}"
 
 #define CPP_SPEC "\
-%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+%{.S:	-D__LANGUAGE_ASSEMBLY__ %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS__} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C__} \
+%{!.S:	-D__LANGUAGE_C__ %{!ansi:-DLANGUAGE_C}}"
 
 #define LINK_SPEC "\
 %{G*} \
@@ -63,12 +65,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mmips-as: \
  	%{v*: -v} \
 	%{pic-none: -noshrlib} %{noshrlib} \
-	%{!pic-none: -warn_nopic} \
+	%{pic-lib: %{!noshrlib: -warn_nopic}} \
 	%{nostdlib} %{glue}}"
 
-/* For now, force static libraries instead of shared, but do so that
-   does not use -noshrlib, since the old linker does not provide it.  */
-#define LIB_SPEC "%{!pic-none: %{!pic-lib: -L/usr/ccs/lib }} -lc"
+#define LIB_SPEC "-lc"
 
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
