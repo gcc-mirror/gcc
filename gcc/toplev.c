@@ -972,8 +972,6 @@ static const param_info lang_independent_params[] = {
 
 lang_independent_options f_options[] =
 {
-  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1,
-   N_("Perform DWARF2 duplicate elimination") },
   {"float-store", &flag_float_store, 1,
    N_("Do not store floats in registers") },
   {"volatile", &flag_volatile, 1,
@@ -1139,10 +1137,6 @@ lang_independent_options f_options[] =
     N_("Enables guessing of branch probabilities") },
   {"math-errno", &flag_errno_math, 1,
    N_("Set errno after built-in math functions") },
-  {"bounded-pointers", &flag_bounded_pointers, 1,
-   N_("Compile pointers as triples: value, base & end") },
-  {"bounds-check", &flag_bounds_check, 1,
-   N_("Generate code to check bounds before dereferencing pointers and arrays") },
   {"single-precision-constant", &flag_single_precision_constant, 1,
    N_("Convert floating point constant to single precision constant") },
   {"time-report", &time_report, 1,

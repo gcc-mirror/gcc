@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.17 2001/06/11 00:58:00 aoliva Exp $
+@comment $Id: install.texi,v 1.1.2.18 2001/06/11 07:28:37 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1726,10 +1726,8 @@ bootstrap}.
 @end html
 @heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
-GCC 2.95.2 does not support HP-UX 11, and it cannot generate 64-bit
-object files. Current (as of late 2000) snapshots and GCC 3.0 do support
-HP-UX 11.
-
+GCC 3.0 supports HP-UX 11.  You must use GNU binutils 2.11 or above on
+this platform.
 
 @html
 </p>

@@ -1,3 +1,8 @@
+2001-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* lang-options.h: Emit documentation for -fno-honor-std, not
+	-fhonor-std.
+
 2001-06-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* typeck.c (get_member_function_from_ptrfunc) [vbit_in_delta]:

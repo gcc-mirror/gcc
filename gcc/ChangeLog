@@ -1,3 +1,15 @@
+2001-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* toplev.c (lang_independent_f_options): Remove
+	-feliminate-dwarf2-dups, -fbounded-pointers, and -fbounds-check.
+	* doc/c-tree.texi: Update information about flag_honor_std.
+	* doc/install.texi: Note that binutils is required on HPUX 11.
+	* doc/invoke.texi (-fhonor-std): Note that -fno-honor-std is
+	now the default.
+
+	* config/mips/abi64.h (RETURN_IN_MEMORY): Fix handling of
+	variable-sized types.
+	
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/md.texi: Use TeX dashes and quotes.

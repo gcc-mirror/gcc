@@ -174,7 +174,7 @@ in the following sections.
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs  -fexternal-templates @gol
 -falt-external-templates @gol
--ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fhonor-std @gol
+-ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fno-honor-std @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
@@ -1351,13 +1351,18 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier. You can use the keyword @code{__typeof__} instead.
 @samp{-ansi} implies @samp{-fno-gnu-keywords}.
 
-@item -fhonor-std
-@opindex fhonor-std
-Treat the @code{namespace std} as a namespace, instead of ignoring
-it. For compatibility with earlier versions of g++, the compiler will,
-by default, ignore @code{namespace-declarations},
-@code{using-declarations}, @code{using-directives}, and
-@code{namespace-names}, if they involve @code{std}.
+@item -fno-honor-std
+@opindex fno-honor-std
+Ignore @code{namespace std}, instead of treating it as a real namespace.
+With this switch, the compiler will ignore
+@code{namespace-declarations}, @code{using-declarations},
+@code{using-directives}, and @code{namespace-names}, if they involve
+@code{std}.  
+
+This option is only useful if you have manually compiled the C++
+run-time library with the same switch.  Otherwise, your programs will
+not link.  The use of this option is not recommended, and the option may
+be removed from a future version of G++.
 
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
