@@ -1,3 +1,18 @@
+2003-10-19  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (fix_operator): New.
+	(divmod_operator): Tidy.
+	(alpha_emit_xfloating_cvt): Handle UNSIGNED_FIX.
+	* config/alpha/alpha.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	(PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (fix_truncdfsi_ieee): Use match_operator.
+	(fix_truncdfsi_internal, fix_truncdfdi_ieee): Likewise.
+	(fix_truncsfsi_ieee, fix_truncsfsi_internal): Likewise.
+	(fix_truncsfdi_ieee): Likewise.
+	(fix_truncdfdi2, fix_truncsfdi2): Turn into define_expand.
+	(fixuns_truncdfdi2, fixuns_truncsfdi2, fixuns_trunctfdi2): New.
+	* config/alpha/alpha-protos.h: Update.
+
 2003-10-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (INITIALIZE_TRAMPOLINE): Simplify.
