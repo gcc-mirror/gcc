@@ -256,25 +256,25 @@ INSTALL_DEST = @INSTALL_DEST@
 install: install_to_$(INSTALL_DEST) install-subdir
 
 install_to_libdir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(libdir)$(MULTISUBDIR)/$(TARGETLIB)
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
+	( cd $(DESTDIR)$(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)
 	if test -n "${target_header_dir}"; then \
 	  case "${target_header_dir}" in \
 	    /*)    thd=${target_header_dir};; \
 	    *)     thd=${includedir}${MULTISUBDIR}/${target_header_dir};; \
 	  esac; \
-	  ${mkinstalldirs} $${thd}; \
+	  ${mkinstalldirs} $(DESTDIR)$${thd}; \
 	  for h in ${INSTALLED_HEADERS}; do \
-	    ${INSTALL_DATA} $$h $${thd}; \
+	    ${INSTALL_DATA} $$h $(DESTDIR)$${thd}; \
 	  done; \
 	fi
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install_to_tooldir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(tooldir)/lib$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n
+	( cd $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
+	mv -f $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 # needed-list is used by libstdc++.  NEEDED is the list of functions
