@@ -2,6 +2,7 @@
 
 	* include/jvm.h (_Jv_BuildGCDescr): Declare unconditionally.
 	* nogc.cc (_Jv_BuildGCDescr): Define unconditionally.
+	* boehm.cc (_Jv_BuildGCDescr): Likewise.
 
 2001-12-18  Tom Tromey  <tromey@redhat.com>
 
