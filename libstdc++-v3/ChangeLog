@@ -1,3 +1,9 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libstdc++.exp: Add DYLD_LIBRARY_PATH for darwin.
+	* testsuite/libstdc++-dg/normal.exp: Add -multiply_defined suppress
+	flag.
+
 2003-11-18  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/configopts.html, docs/html/debug.html,

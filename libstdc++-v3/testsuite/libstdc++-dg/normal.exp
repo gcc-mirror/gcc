@@ -16,10 +16,16 @@
 
 # libstdc++-v3 testsuite that uses the 'dg.exp' driver.
 
+global target_triplet
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CXXFLAGS
 if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT"
+    if { [string match "powerpc-*-darwin*" $target_triplet] } {
+	set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT -multiply_defined suppress"
+    } else {
+	set DEFAULT_CXXFLAGS "-D_GLIBCXX_ASSERT"
+    }
 }
 
 # Initialization.

@@ -97,6 +97,7 @@ proc v3-init { args } {
     setenv  LD_LIBRARY64_PATH   $ld_library_path
     setenv  LD_RUN_PATH         $ld_library_path
     setenv  LD_LIBRARY_PATH_64  $ld_library_path
+    setenv  DYLD_LIBRARY_PATH   $ld_library_path
     verbose -log "Set LD_*_PATHs to ${ld_library_path}"
 
     # Do a bunch of handstands and backflips for cross compiling and
