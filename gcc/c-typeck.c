@@ -1651,7 +1651,8 @@ convert_arguments (typelist, values, name, fundecl)
 		      tree type1 = TREE_TYPE (would_have_been);
 
 		      if (TREE_CODE (type) == ENUMERAL_TYPE
-			  && type == TREE_TYPE (val))
+			  && (TYPE_MAIN_VARIANT (type)
+			      == TYPE_MAIN_VARIANT (TREE_TYPE (val))))
 			/* No warning if function asks for enum
 			   and the actual arg is that enum type.  */
 			;
