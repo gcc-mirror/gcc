@@ -7110,6 +7110,7 @@ ffecom_member_phase2_ (ffestorag mst, ffestorag st)
   TREE_STATIC (t) = TREE_STATIC (mt);
   DECL_INITIAL (t) = NULL_TREE;
   TREE_ASM_WRITTEN (t) = 1;
+  TREE_USED (t) = 1;
 
   DECL_RTL (t)
     = gen_rtx (MEM, TYPE_MODE (type),

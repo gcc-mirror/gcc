@@ -1,3 +1,7 @@
+2000-11-28  Richard Henderson  <rth@redhat.com>
+
+	* com.c (ffecom_member_phase2_): Set TREE_USED on the debugging decl.
+
 2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* RELEASE-PREP: Remove obsolete EGCS reference.
