@@ -931,7 +931,7 @@ _cpp_lex_token (pfile, result)
 	result->type = CPP_QUERY;
 	buffer->read_ahead = EOF;
 	if (c == '\\')
-	  result->type = CPP_BACKSLASH;
+	  goto random_char;
 	else if (c != '?')
 	  goto do_switch;
       }

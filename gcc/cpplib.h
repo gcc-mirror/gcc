@@ -116,7 +116,6 @@ struct htab;
   /* The remainder of the punctuation.  Order is not significant.  */	\
   OP(CPP_SEMICOLON,	";")	/* structure */	\
   OP(CPP_ELLIPSIS,	"...")			\
-  OP(CPP_BACKSLASH,	"\\")			\
   OP(CPP_PLUS_PLUS,	"++")	/* increment */	\
   OP(CPP_MINUS_MINUS,	"--")			\
   OP(CPP_DEREF,		"->")	/* accessors */	\
