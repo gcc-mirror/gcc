@@ -401,10 +401,10 @@ lex (pfile, skip_evaluation, token)
       SYNTAX_ERROR ("floating point numbers are not valid in #if");
 
     case CPP_OTHER:
-      if (ISGRAPH (token->val.aux))
-	SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.aux);
+      if (ISGRAPH (token->val.c))
+	SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.c);
       else
-	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.aux);
+	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.c);
 
     case CPP_NAME:
       if (token->val.node == pfile->spec_nodes.n_defined)

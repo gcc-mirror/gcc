@@ -386,7 +386,7 @@ stringify_arg (pfile, arg)
 	dest = cpp_spell_token (pfile, token, dest);
       total_len = dest - start;
 
-      if (token->type == CPP_OTHER && token->val.aux == '\\')
+      if (token->type == CPP_OTHER && token->val.c == '\\')
 	backslash_count++;
       else
 	backslash_count = 0;
@@ -790,7 +790,7 @@ replace_args (pfile, macro, args, list)
       {
 	/* We have an argument.  If it is not being stringified or
 	   pasted it is macro-replaced before insertion.  */
-	arg = &args[src->val.aux - 1];
+	arg = &args[src->val.arg_no - 1];
 	if (src->flags & STRINGIFY_ARG)
 	  {
 	    if (!arg->stringified)
@@ -818,7 +818,7 @@ replace_args (pfile, macro, args, list)
 	unsigned int count;
 	const cpp_token *from;
 
-	arg = &args[src->val.aux - 1];
+	arg = &args[src->val.arg_no - 1];
 	if (src->flags & STRINGIFY_ARG)
 	  from = arg->stringified, count = 1;
 	else if ((src->flags & PASTE_LEFT)
@@ -832,7 +832,7 @@ replace_args (pfile, macro, args, list)
            it is a variable argument, it is also flagged.  */
 	dest->flags &= ~PREV_WHITE;
 	dest->flags |= src->flags & PREV_WHITE;
-	if (macro->var_args && src->val.aux == macro->paramc)
+	if (macro->var_args && src->val.arg_no == macro->paramc)
 	  dest->flags |= VARARGS_FIRST;
 
 	/* The last token gets the PASTE_LEFT of the CPP_MACRO_ARG.  */
@@ -1392,7 +1392,7 @@ lex_expansion_token (pfile, macro)
   if (token->type == CPP_NAME && token->val.node->arg_index)
     {
       token->type = CPP_MACRO_ARG;
-      token->val.aux = token->val.node->arg_index;
+      token->val.arg_no = token->val.node->arg_index;
     }
   else if (CPP_WTRADITIONAL (pfile) && macro->paramc > 0
 	   && (token->type == CPP_STRING || token->type == CPP_CHAR))
@@ -1624,7 +1624,7 @@ cpp_macro_definition (pfile, node)
 	  cpp_token *token = &macro->expansion[i];
 
 	  if (token->type == CPP_MACRO_ARG)
-	    len += macro->params[token->val.aux - 1]->length;
+	    len += macro->params[token->val.arg_no - 1]->length;
 	  else
 	    len += cpp_token_len (token); /* Includes room for ' '.  */
 	  if (token->flags & STRINGIFY_ARG)
@@ -1675,8 +1675,8 @@ cpp_macro_definition (pfile, node)
 
 	  if (token->type == CPP_MACRO_ARG)
 	    {
-	      len = macro->params[token->val.aux - 1]->length;
-	      memcpy (buffer, macro->params[token->val.aux - 1]->name, len);
+	      len = macro->params[token->val.arg_no - 1]->length;
+	      memcpy (buffer, macro->params[token->val.arg_no - 1]->name, len);
 	      buffer += len;
 	    }
 	  else

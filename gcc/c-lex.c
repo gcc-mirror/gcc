@@ -1440,12 +1440,12 @@ c_lex (value)
     case CPP_OPEN_BRACE:  indent_level++;  break;
     case CPP_CLOSE_BRACE: indent_level--;  break;
 
-    /* Issue this error here, where we can get at tok.val.aux.  */
+    /* Issue this error here, where we can get at tok.val.c.  */
     case CPP_OTHER:
-      if (ISGRAPH (tok.val.aux))
-	error ("stray '%c' in program", tok.val.aux);
+      if (ISGRAPH (tok.val.c))
+	error ("stray '%c' in program", tok.val.c);
       else
-	error ("stray '\\%#o' in program", tok.val.aux);
+	error ("stray '\\%#o' in program", tok.val.c);
       goto retry;
       
     case CPP_NAME:

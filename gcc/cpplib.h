@@ -183,11 +183,11 @@ struct cpp_token
 
   union
   {
-    HOST_WIDEST_INT integer;	/* an integer */
-    struct cpp_hashnode *node;	/* an identifier */
-    struct cpp_string str;	/* a string, or number */
-    unsigned int aux;		/* argument no. for a CPP_MACRO_ARG, or
-				   character represented by CPP_OTHER.  */
+    HOST_WIDEST_INT integer;	/* An integer.  */
+    struct cpp_hashnode *node;	/* An identifier.  */
+    struct cpp_string str;	/* A string, or number.  */
+    unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
+    unsigned char c;		/* Character represented by CPP_OTHER.  */
   } val;
 };
 
