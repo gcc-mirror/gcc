@@ -6,7 +6,7 @@
 #define ASM_SPEC "%{mcoff:-C}"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{mthreads:-D_MULTITHREADED} %{mposix:-D_POSIX_SOURCE} %{msystem-v:-I/usr/include-v}"
+#define CPP_SPEC "%{mthreads:-D_MULTITHREADED} %{mposix:-D_POSIX_SOURCE} %{msystem-v:-I/usr/include_v}"
 
 /* Provide required defaults for linker switches.  */
 /* ??? The -k option may need to change to whatever option the GNU linker
@@ -14,7 +14,7 @@
 /* ??? The -V option may need to change to whatever option the GNU linker
    actually accepts.  This is to produce System-V magic numbers.  */
 #undef LINK_SPEC
-#define LINK_SPEC "%{!e*:-e __main} %{msystem-v:-V} %{mcoff:k}"
+#define LINK_SPEC "-P1000 %{msystem-v:-V} %{mcoff:-k}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{mthreads:-L/lib/thread/}%{msystem-v:-lc_v}%{!msystem-v:%{mposix:-lc_p} -lc}"
@@ -37,6 +37,13 @@
 /* We want to output DBX debugging information.  */
 
 #define DBX_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* We optionally want to be able to produce SDB debugging output so that
+   we can create debuggable SDB/coff files.  This won't be needed when
+   stabs-in-coff works.  */
+
+#define SDB_DEBUGGING_INFO
 
 /* Generate calls to memcpy, memcmp and memset.  */
 
@@ -75,3 +82,19 @@
 /* Define this so that C++ destructors will use atexit.  */
 
 #define HAVE_ATEXIT
+
+/* This is defined only so that we can find the assembler.  Everything else
+   is in /bin.  */
+
+#define MD_EXEC_PREFIX "/usr/local/lib/gcc-"
+
+/* ??? This is needed because /bin/ld does not handle -L options correctly.
+   This can be deleted if GNU ld is being used.  */
+
+#define LINK_LIBGCC_SPECIAL_1
+
+/* The Lynx linker considers __main to be a possible entry point, so we
+   must use a different name.  */
+
+#define NAME__MAIN "____main"
+#define SYMBOL__MAIN ____main
