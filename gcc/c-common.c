@@ -4302,7 +4302,17 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
 	  if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	    type = build_variant_type_copy (type);
+
+	  /* We cannot use layout_type here, because that will attempt
+	     to re-layout all variants, corrupting our original.  */
 	  TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
+	  TYPE_MIN_VALUE (type) = TYPE_MIN_VALUE (typefm);
+	  TYPE_MAX_VALUE (type) = TYPE_MAX_VALUE (typefm);
+	  TYPE_SIZE (type) = TYPE_SIZE (typefm);
+	  TYPE_SIZE_UNIT (type) = TYPE_SIZE_UNIT (typefm);
+	  if (!TYPE_USER_ALIGN (type))
+	    TYPE_ALIGN (type) = TYPE_ALIGN (typefm);
+
 	  typefm = type;
 	}
       else if (VECTOR_MODE_P (mode)
@@ -4314,8 +4324,6 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	}
 
       *node = typefm;
-
-      /* No need to layout the type here.  The caller should do this.  */
     }
 
   return NULL_TREE;
