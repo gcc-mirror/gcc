@@ -693,7 +693,7 @@ expand_call (exp, target, ignore)
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
-	    /* Assign a temporary on the stack to hold the value.  */
+	    /* Assign a temporary to hold the value.  */
 
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
@@ -702,8 +702,19 @@ expand_call (exp, target, ignore)
 	    if (struct_value_size < 0)
 	      abort ();
 
-	    structure_value_addr
-	      = XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
+	    /* If the type fits in a register, try putting it there.  */
+	    if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
+	      {
+		tree type = TREE_TYPE (exp);
+		int unsignedp = TREE_UNSIGNED (type);
+		enum machine_mode reg_mode
+		  = promote_mode (type, TYPE_MODE (type), &unsignedp, 0);
+		structure_value_addr
+		  = XEXP (gen_mem_addressof (gen_reg_rtx (reg_mode), type), 0);
+	      }
+	    else
+	      structure_value_addr
+		= XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
 	    MEM_IN_STRUCT_P (structure_value_addr)
 	      = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	    target = 0;

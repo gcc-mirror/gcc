@@ -1349,8 +1349,21 @@ put_var_into_stack (decl)
   /* Now we should have a value that resides in one or more pseudo regs.  */
 
   if (GET_CODE (reg) == REG)
-    put_reg_into_stack (function, reg, TREE_TYPE (decl),
-			promoted_mode, decl_mode, TREE_SIDE_EFFECTS (decl));
+    {
+      /* If this variable lives in the current function and we don't need
+	 to put things in the stack for the sake of setjmp, try to keep it
+	 in a register until we know we actually need the address.  */
+      if (function == 0
+#ifdef NON_SAVING_SETJMP
+	  && ! (NON_SAVING_SETJMP && current_function_calls_setjmp)
+#endif
+	  )
+	gen_mem_addressof (reg, TREE_TYPE (decl));
+      else
+	put_reg_into_stack (function, reg, TREE_TYPE (decl),
+			    promoted_mode, decl_mode,
+			    TREE_SIDE_EFFECTS (decl));
+    }
   else if (GET_CODE (reg) == CONCAT)
     {
       /* A CONCAT contains two pseudos; put them both in the stack.
@@ -1732,6 +1745,16 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
   switch (code)
     {
+    case ADDRESSOF:
+      if (XEXP (x, 0) == var)
+	{
+	  start_sequence ();
+	  *loc = force_operand (XEXP (var, 0), NULL_RTX);
+	  emit_insn_before (gen_sequence (), insn);
+	  end_sequence ();
+	}
+      return;
+
     case MEM:
       if (var == x)
 	{
@@ -2571,6 +2594,113 @@ static int out_arg_offset;
 #endif
 #endif
 
+/* Build up a (MEM (ADDRESSOF (REG))) rtx for a register REG that just had
+   its address taken.  TYPE is the type of the object stored in the
+   register, for later use if we do need to force REG into the stack.
+   REG is overwritten by the MEM like in put_reg_into_stack.  */
+
+rtx
+gen_mem_addressof (reg, type)
+     rtx reg;
+     tree type;
+{
+  rtx r = gen_rtx (ADDRESSOF, Pmode, gen_reg_rtx (GET_MODE (reg)));
+  SET_ADDRESSOF_TYPE (r, type);
+
+  XEXP (reg, 0) = r;
+  PUT_CODE (reg, MEM);
+
+  MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (r) = TYPE_VOLATILE (type);
+  MEM_IN_STRUCT_P (reg) = MEM_IN_STRUCT_P (r) = AGGREGATE_TYPE_P (type);
+
+  fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+  return reg;
+}
+
+/* Force the register pointed to by R, an ADDRESSOF rtx, into the stack.  */
+
+static void
+put_addressof_into_stack (r)
+     rtx r;
+{
+  tree type = ADDRESSOF_TYPE (r);
+  rtx reg = XEXP (r, 0);
+
+  if (GET_CODE (reg) != REG)
+    abort ();
+
+  put_reg_into_stack (0, reg, type, GET_MODE (reg), TYPE_MODE (type),
+		      TYPE_VOLATILE (type));
+}
+
+/* Helper function for purge_addressof.  See if the rtx expression at *LOC
+   in INSN needs to be changed.  */
+
+static void
+purge_addressof_1 (loc, insn)
+     rtx *loc;
+     rtx insn;
+{
+  rtx x;
+  RTX_CODE code;
+  int i, j;
+  char *fmt;
+
+  /* Re-start here to avoid recursion in common cases.  */
+ restart:
+
+  x = *loc;
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+
+  if ((code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF)
+      || (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM))
+    {
+      rtx sub = XEXP (XEXP (x, 0), 0);
+      if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
+	sub = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
+      if (! validate_change (insn, loc, sub, 0))
+	abort ();
+      goto restart;
+    }
+  else if (code == ADDRESSOF)
+    {
+      put_addressof_into_stack (x);
+      return;
+    }
+
+  /* Scan all subexpressions. */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
+    {
+      if (*fmt == 'e')
+	purge_addressof_1 (&XEXP (x, i), insn);
+      else if (*fmt == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  purge_addressof_1 (&XVECEXP (x, i, j), insn);
+    }
+}
+
+/* Eliminate all occurrences of ADDRESSOF from INSNS.  Elide any remaining
+   (MEM (ADDRESSOF)) patterns, and force any needed registers into the
+   stack.  */
+
+void
+purge_addressof (insns)
+     rtx insns;
+{
+  rtx insn;
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
+	|| GET_CODE (insn) == CALL_INSN)
+      {
+	purge_addressof_1 (&PATTERN (insn), insn);
+	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX);
+      }
+}
+
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
 
@@ -2703,6 +2833,7 @@ instantiate_decl (x, size, valid_only)
 
   addr = XEXP (x, 0);
   if (CONSTANT_P (addr)
+      || GET_CODE (addr) == ADDRESSOF
       || (GET_CODE (addr) == REG
 	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
 	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))

@@ -1662,6 +1662,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 			    force_operand (structure_value_addr, NULL_RTX));
 	  map->reg_map[REGNO (XEXP (loc, 0))] = temp;
 	  if ((CONSTANT_P (structure_value_addr)
+	       || GET_CODE (structure_value_addr) == ADDRESSOF
 	       || (GET_CODE (structure_value_addr) == PLUS
 		   && XEXP (structure_value_addr, 0) == virtual_stack_vars_rtx
 		   && GET_CODE (XEXP (structure_value_addr, 1)) == CONST_INT))
@@ -2552,6 +2553,7 @@ copy_rtx_and_substitute (orig, map)
       switch (*format_ptr++)
 	{
 	case '0':
+	  XEXP (copy, i) = XEXP (orig, i);
 	  break;
 
 	case 'e':

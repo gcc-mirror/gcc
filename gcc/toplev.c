@@ -239,6 +239,7 @@ extern int target_flags;
 int rtl_dump = 0;
 int rtl_dump_and_exit = 0;
 int jump_opt_dump = 0;
+int addressof_dump = 0;
 int cse_dump = 0;
 int loop_dump = 0;
 int cse2_dump = 0;
@@ -864,6 +865,7 @@ FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file;
 FILE *jump_opt_dump_file;
+FILE *addressof_dump_file;
 FILE *cse_dump_file;
 FILE *loop_dump_file;
 FILE *cse2_dump_file;
@@ -1028,6 +1030,8 @@ fatal_insn (message, insn)
     fflush (rtl_dump_file);
   if (jump_opt_dump_file)
     fflush (jump_opt_dump_file);
+  if (addressof_dump_file)
+    fflush (addressof_dump_file);
   if (cse_dump_file)
     fflush (cse_dump_file);
   if (loop_dump_file)
@@ -2190,6 +2194,10 @@ compile_file (name)
   if (jump_opt_dump)
     jump_opt_dump_file = open_dump_file (dump_base_name, ".jump");
 
+  /* If addressof dump desired, open the output file.  */
+  if (addressof_dump)
+    addressof_dump_file = open_dump_file (dump_base_name, ".addressof");
+
   /* If cse dump desired, open the output file.  */
   if (cse_dump)
     cse_dump_file = open_dump_file (dump_base_name, ".cse");
@@ -2677,6 +2685,9 @@ compile_file (name)
   if (jump_opt_dump)
     fclose (jump_opt_dump_file);
 
+  if (addressof_dump)
+    fclose (addressof_dump_file);
+
   if (cse_dump)
     fclose (cse_dump_file);
 
@@ -2940,6 +2951,18 @@ rest_of_compilation (decl)
 	 functions containing nested functions since the nested function
 	 data is in our non-saved obstack.  */
 
+      /* If this is a nested inline, remove ADDRESSOF now so we can
+	 finish compiling ourselves.  Otherwise, wait until EOF.
+	 We have to do this because the purge_addressof transformation
+	 changes the DECL_RTL for many variables, which confuses integrate.  */
+      if (DECL_INLINE (decl))
+	{
+	  if (decl_function_context (decl))
+	    purge_addressof (insns);
+	  else
+	    DECL_DEFER_OUTPUT (decl) = 1;
+	}
+
       if (! current_function_contains_functions
 	  && (DECL_DEFER_OUTPUT (decl)
 	      || (DECL_INLINE (decl)
@@ -3150,6 +3173,18 @@ rest_of_compilation (decl)
     }
 
   /* Dump rtl code after loop opt, if we are doing that.  */
+
+  purge_addressof (insns);
+  reg_scan (insns, max_reg_num (), 1);
+
+  if (addressof_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
+			(*decl_printable_name) (decl, 2));
+	       print_rtl (addressof_dump_file, insns);
+	       fflush (addressof_dump_file);
+	     });
 
   if (loop_dump)
     TIMEVAR (dump_time,
@@ -3745,6 +3780,7 @@ main (argc, argv, envp)
  		    flow_dump = 1;
  		    global_reg_dump = 1;
  		    jump_opt_dump = 1;
+ 		    addressof_dump = 1;
  		    jump2_opt_dump = 1;
  		    local_reg_dump = 1;
  		    loop_dump = 1;
@@ -3774,6 +3810,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'j':
 		    jump_opt_dump = 1;
+		    break;
+		  case 'D':
+		    addressof_dump = 1;
 		    break;
 		  case 'J':
 		    jump2_opt_dump = 1;

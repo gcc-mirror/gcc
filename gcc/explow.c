@@ -399,6 +399,9 @@ memory_address (mode, x)
 {
   register rtx oldx = x;
 
+  if (GET_CODE (x) == ADDRESSOF)
+    return x;
+
 #ifdef POINTERS_EXTEND_UNSIGNED
   if (GET_MODE (x) == ptr_mode)
     x = convert_memory_address (Pmode, x);

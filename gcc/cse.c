@@ -582,7 +582,8 @@ struct cse_basic_block_data {
 	   || XEXP (X, 0) == hard_frame_pointer_rtx		\
 	   || XEXP (X, 0) == arg_pointer_rtx			\
 	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
-	   || XEXP (X, 0) == virtual_incoming_args_rtx)))
+	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
+   || GET_CODE (X) == ADDRESSOF)
 
 /* Similar, but also allows reference to the stack pointer.
 
@@ -606,7 +607,8 @@ struct cse_basic_block_data {
    || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
        && (XEXP (X, 0) == stack_pointer_rtx			\
 	   || XEXP (X, 0) == virtual_stack_dynamic_rtx		\
-	   || XEXP (X, 0) == virtual_outgoing_args_rtx)))
+	   || XEXP (X, 0) == virtual_outgoing_args_rtx))	\
+   || GET_CODE (X) == ADDRESSOF)
 
 static int notreg_cost		PROTO((rtx));
 static void new_basic_block	PROTO((void));
@@ -2033,6 +2035,8 @@ canon_hash (x, mode)
 	  register unsigned tem = XINT (x, i);
 	  hash += tem;
 	}
+      else if (fmt[i] == '0')
+	/* unused */;
       else
 	abort ();
     }
@@ -2679,6 +2683,7 @@ find_best_addr (insn, loc)
 	  && (regno = REGNO (addr), regno == FRAME_POINTER_REGNUM
 	      || regno == HARD_FRAME_POINTER_REGNUM
 	      || regno == ARG_POINTER_REGNUM))
+      || GET_CODE (addr) == ADDRESSOF
       || CONSTANT_ADDRESS_P (addr))
     return;
 
@@ -5101,6 +5106,8 @@ fold_rtx (x, insn)
 	else if (GET_CODE (addr) == LO_SUM
 		 && GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
 	  base = XEXP (addr, 1);
+	else if (GET_CODE (addr) == ADDRESSOF)
+	  XEXP (x, 0) = addr;
 
 	/* If this is a constant pool reference, we can fold it into its
 	   constant to allow better value tracking.  */

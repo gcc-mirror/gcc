@@ -819,10 +819,18 @@ general_operand (op, mode)
       register rtx y = XEXP (op, 0);
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
+      if (GET_CODE (y) == ADDRESSOF)
+	return 1;
       /* Use the mem's mode, since it will be reloaded thus.  */
       mode = GET_MODE (op);
       GO_IF_LEGITIMATE_ADDRESS (mode, y, win);
     }
+
+  /* Pretend this is an operand for now; we'll run force_operand
+     on its replacement in fixup_var_refs_1.  */
+  if (code == ADDRESSOF)
+    return 1;
+
   return 0;
 
  win:
@@ -1058,6 +1066,9 @@ memory_address_p (mode, addr)
      enum machine_mode mode;
      register rtx addr;
 {
+  if (GET_CODE (addr) == ADDRESSOF)
+    return 1;
+  
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 

@@ -2834,6 +2834,15 @@ eliminate_regs (x, mem_mode, insn, storing)
     case RETURN:
       return x;
 
+    case ADDRESSOF:
+      /* This is only for the benefit of the debugging backends, which call
+	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
+	 removed after CSE.  */
+      new = eliminate_regs (XEXP (x, 0), 0, insn, 0);
+      if (GET_CODE (new) == MEM)
+	return XEXP (new, 0);
+      return x;
+
     case REG:
       regno = REGNO (x);
 
@@ -3278,6 +3287,12 @@ eliminate_regs (x, mem_mode, insn, storing)
       return x;
 
     case MEM:
+      /* This is only for the benefit of the debugging backends, which call
+	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
+	 removed after CSE.  */
+      if (GET_CODE (XEXP (x, 0)) == ADDRESSOF)
+	return eliminate_regs (XEXP (XEXP (x, 0), 0), 0, insn, 0);
+
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */

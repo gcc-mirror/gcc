@@ -2403,6 +2403,11 @@ location_or_const_value_attribute (decl)
 
   switch (GET_CODE (rtl))
     {
+    case ADDRESSOF:
+      /* The address of a variable that was optimized away; don't emit
+	 anything.  */
+      break;
+
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_STRING:

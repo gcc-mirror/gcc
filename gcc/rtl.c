@@ -283,6 +283,7 @@ copy_rtx (orig)
     case CC0:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
+    case ADDRESSOF:
       return orig;
 
     case CONST:
