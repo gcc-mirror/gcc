@@ -8357,14 +8357,23 @@ handle_impent (impent)
       ASM_DECLARE_CLASS_REFERENCE (asm_out_file, string);
       return;
     }
+  else
 #endif
+    {
+      tree decl, init;
 
-  /* (Should this be a routine in varasm.c?) */
-  readonly_data_section ();
-  assemble_global (string);
-  assemble_align (UNITS_PER_WORD);
-  assemble_label (string);
-  assemble_zeros (UNITS_PER_WORD);
+      init = build_int_2 (0, 0);
+      TREE_TYPE (init) = type_for_size (BITS_PER_WORD, 1);
+      decl = build_decl (VAR_DECL, get_identifier (string), TREE_TYPE (init));
+      TREE_PUBLIC (decl) = 1;
+      TREE_READONLY (decl) = 1;
+      TREE_USED (decl) = 1;
+      TREE_CONSTANT (decl) = 1;
+      DECL_CONTEXT (decl) = 0;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_INITIAL (decl) = init;
+      assemble_variable (decl, 1, 0, 0);
+    }
 }
 
 static void
