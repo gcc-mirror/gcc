@@ -5,17 +5,17 @@
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
@@ -52,7 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* This object of this pass is to replace a non-addressable aggregate with a
    set of independent variables.  Most of the time, all of these variables
-   will be scalars.  But a secondary objective is to break up larger 
+   will be scalars.  But a secondary objective is to break up larger
    aggregates into smaller aggregates.  In the process we may find that some
    bits of the larger aggregate can be deleted as unreferenced.
 
@@ -405,7 +405,7 @@ sra_elt_hash (const void *x)
 
   return h;
 }
-  
+
 /* Equality function for type SRA_PAIR.  */
 
 static int
@@ -533,7 +533,7 @@ is_valid_const_index (tree expr)
   return true;
 }
 
-/* Create or return the SRA_ELT structure for EXPR if the expression 
+/* Create or return the SRA_ELT structure for EXPR if the expression
    refers to a scalarizable variable.  */
 
 static struct sra_elt *
@@ -682,7 +682,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	   index reference inside a loop being overridden by several constant
 	   index references during loop setup.  It's possible that this could
 	   be avoided by using dynamic usage counts based on BB trip counts
-	   (based on loop analysis or profiling), but that hardly seems worth 
+	   (based on loop analysis or profiling), but that hardly seems worth
 	   the effort.  */
 	/* ??? Hack.  Figure out how to push this into the scan routines
 	   without duplicating too much code.  */
@@ -716,7 +716,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 
       case BIT_FIELD_REF:
 	/* A bit field reference (access to *multiple* fields simultaneously)
-	   is not currently scalarized.  Consider this an access to the 
+	   is not currently scalarized.  Consider this an access to the
 	   complete outer element, to which walk_tree will bring us next.  */
 	goto use_all;
 
@@ -828,7 +828,7 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
 	 the function multiple times, and other evil things.  */
       else if (!lhs_elt->is_scalar && is_gimple_addressable (rhs))
 	fns->ldst (lhs_elt, rhs, bsi, true);
-	
+
       /* Otherwise we're being used in some context that requires the
 	 aggregate to be seen as a whole.  Invoke USE.  */
       else
@@ -946,7 +946,7 @@ find_candidates_for_sra (void)
           any_set = true;
         }
     }
- 
+
   return any_set;
 }
 
@@ -1294,7 +1294,7 @@ decide_block_copy (struct sra_elt *elt)
 
 	  full_size = tree_low_cst (size_tree, 1);
 
-	  /* ??? What to do here.  If there are two fields, and we've only 
+	  /* ??? What to do here.  If there are two fields, and we've only
 	     instantiated one, then instantiating the other is clearly a win.
 	     If there are a large number of fields then the size of the copy
 	     is much more of a factor.  */
@@ -1377,9 +1377,9 @@ decide_instantiations (void)
 
   if (cleared_any)
     {
-      bitmap_operation (sra_candidates, sra_candidates, &done_head, 
+      bitmap_operation (sra_candidates, sra_candidates, &done_head,
 			BITMAP_AND_COMPL);
-      bitmap_operation (needs_copy_in, needs_copy_in, &done_head, 
+      bitmap_operation (needs_copy_in, needs_copy_in, &done_head,
 			BITMAP_AND_COMPL);
     }
   bitmap_clear (&done_head);
@@ -1697,7 +1697,7 @@ insert_edge_copies (tree stmt, basic_block bb)
 	      first_copy = false;
 	    }
 	  else
-	    bsi_insert_on_edge (e, lhd_unsave_expr_now (stmt));
+	    bsi_insert_on_edge (e, unsave_expr_now (stmt));
 	}
     }
 }
@@ -1816,7 +1816,7 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
   else if (lhs_elt->use_block_copy || rhs_elt->use_block_copy)
     {
       /* If either side requires a block copy, then sync the RHS back
-	 to the original structure, leave the original assignment 
+	 to the original structure, leave the original assignment
 	 statement (which will perform the block copy), then load the
 	 LHS values out of its now-updated original structure.  */
       /* ??? Could perform a modified pair-wise element copy.  That
@@ -1978,7 +1978,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 
 	  /* Replace the old statement with this new representative.  */
 	  bsi_replace (bsi, first, true);
-	  
+
 	  if (!tsi_end_p (tsi))
 	    {
 	      /* If any reference would trap, then they all would.  And more
@@ -2010,7 +2010,7 @@ scalarize_parms (void)
   size_t i;
 
   EXECUTE_IF_SET_IN_BITMAP (needs_copy_in, 0, i,
-    { 
+    {
       tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
       generate_copy_inout (elt, true, var, &list);
@@ -2107,7 +2107,7 @@ gate_sra (void)
   return flag_tree_sra != 0;
 }
 
-struct tree_opt_pass pass_sra = 
+struct tree_opt_pass pass_sra =
 {
   "sra",				/* name */
   gate_sra,				/* gate */

@@ -3203,11 +3203,6 @@ extern int first_rtl_op (enum tree_code);
 
 enum tree_node_structure_enum tree_node_structure (tree);
 
-/* Reset EXP in place so that it can be expanded again.  Does not
-   recurse into subtrees.  */
-
-extern void unsave_expr_1 (tree);
-
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
 
@@ -3362,7 +3357,6 @@ extern tree get_set_constructor_bytes (tree, unsigned char *, int);
 extern tree get_callee_fndecl (tree);
 extern void change_decl_assembler_name (tree, tree);
 extern int type_num_arguments (tree);
-extern tree lhd_unsave_expr_now (tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 
@@ -3551,6 +3545,9 @@ extern void indent_to (FILE *, int);
 
 /* In tree-inline.c:  */
 extern bool debug_find_tree (tree, tree);
+/* This is in tree-inline.c since the routine uses
+   data structures from the inliner.  */
+extern tree unsave_expr_now (tree);
 
 /* In expr.c */
 extern rtx expand_builtin_return_addr (enum built_in_function, int, rtx);

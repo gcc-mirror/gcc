@@ -70,7 +70,7 @@ may_propagate_copy (tree dest, tree orig)
   /* FIXME.  GIMPLE is allowing pointer assignments and comparisons of
      pointers that have different alias sets.  This means that these
      pointers will have different memory tags associated to them.
-     
+
      If we allow copy propagation in these cases, statements de-referencing
      the new pointer will now have a reference to a different memory tag
      with potentially incorrect SSA information.
@@ -161,7 +161,7 @@ may_propagate_copy (tree dest, tree orig)
 /* Given two SSA_NAMEs pointers ORIG and NEW such that we are copy
    propagating NEW into ORIG, consolidate aliasing information so that
    they both share the same memory tags.  */
-   
+
 static void
 merge_alias_info (tree orig, tree new)
 {
@@ -191,12 +191,12 @@ merge_alias_info (tree orig, tree new)
     orig_ann->type_mem_tag = new_ann->type_mem_tag;
   else if (new_ann->type_mem_tag != orig_ann->type_mem_tag)
     abort ();
-}   
+}
 
 
 /* Common code for propagate_value and replace_exp.
 
-   Replace use operand OP_P with VAL.  FOR_PROPAGATION indicates if the 
+   Replace use operand OP_P with VAL.  FOR_PROPAGATION indicates if the
    replacement is done to propagate a value or not.  */
 
 static void
@@ -220,7 +220,7 @@ replace_exp_1 (use_operand_p op_p, tree val,
       SET_USE (op_p, val);
     }
   else
-    SET_USE (op_p, lhd_unsave_expr_now (val));
+    SET_USE (op_p, unsave_expr_now (val));
 }
 
 
@@ -240,8 +240,8 @@ propagate_value (use_operand_p op_p, tree val)
 /* Propagate the value VAL (assumed to be a constant or another SSA_NAME)
    into the tree pointed by OP_P.
 
-   Use this version for const/copy propagation when SSA operands are not 
-   available.  It will perform the additional checks to ensure validity of 
+   Use this version for const/copy propagation when SSA operands are not
+   available.  It will perform the additional checks to ensure validity of
    the const/copy propagation, but will not update any operand information.
    Be sure to mark the stmt as modified.  */
 
@@ -262,7 +262,7 @@ propagate_tree_value (tree *op_p, tree val)
       *op_p = val;
     }
   else
-    *op_p = lhd_unsave_expr_now (val);
+    *op_p = unsave_expr_now (val);
 }
 
 
