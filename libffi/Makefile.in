@@ -88,7 +88,7 @@ SUBDIRS = include
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
 		src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S \
-		src/x86/ffi.c src/x86/sysv.S \
+		src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 		src/alpha/ffi.c src/alpha/osf.S \
 		src/m68k/ffi.c src/m68k/sysv.S \
 		src/powerpc/ffi.c src/powerpc/sysv.S \
@@ -161,6 +161,7 @@ ffitest_LDFLAGS = -shared-libgcc
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
+TARGET_SRC_X86_WIN32 = src/x86/ffi.c src/x86/win32.S
 TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
@@ -174,6 +175,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @MIPS_GCC_TRUE@libffi_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 @MIPS_SGI_TRUE@libffi_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
 @X86_TRUE@libffi_la_SOURCES = @X86_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+@X86_WIN32_TRUE@libffi_la_SOURCES = @X86_WIN32_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
 @SPARC_TRUE@libffi_la_SOURCES = @SPARC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
 @ALPHA_TRUE@libffi_la_SOURCES = @ALPHA_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
 @IA64_TRUE@libffi_la_SOURCES = @IA64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
@@ -198,6 +200,12 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libffi_la_LIBADD = 
+@SPARC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
+@MIPS_SGI_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@MIPS_SGI_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@MIPS_SGI_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
 @IA64_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
@@ -213,12 +221,6 @@ libffi_la_LIBADD =
 @X86_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @X86_TRUE@src/raw_api.lo src/java_raw_api.lo src/x86/ffi.lo \
 @X86_TRUE@src/x86/sysv.lo
-@SPARC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
-@MIPS_SGI_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@MIPS_SGI_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@MIPS_SGI_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
 @ARM_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @ARM_TRUE@src/raw_api.lo src/java_raw_api.lo src/arm/sysv.lo \
 @ARM_TRUE@src/arm/ffi.lo
@@ -226,6 +228,9 @@ libffi_la_LIBADD =
 @POWERPC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @POWERPC_TRUE@src/powerpc/ffi.lo src/powerpc/sysv.lo \
 @POWERPC_TRUE@src/powerpc/ppc_closure.lo
+@X86_WIN32_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@X86_WIN32_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@X86_WIN32_TRUE@src/x86/ffi.lo src/x86/win32.lo
 noinst_PROGRAMS =  ffitest$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
 
