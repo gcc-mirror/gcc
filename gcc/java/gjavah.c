@@ -427,7 +427,7 @@ cxx_keyword_subst (str, length)
      const unsigned char *str;
      int length;
 {
-  int last = sizeof (cxx_keywords) / sizeof (const char *);
+  int last = ARRAY_SIZE (cxx_keywords);
   int first = 0;
   int mid = (last + first) / 2;
   int old = -1;
