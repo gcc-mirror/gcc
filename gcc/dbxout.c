@@ -1510,6 +1510,7 @@ dbxout_type (type, full, show_arg_types)
 	      /* Normally, just output the return type.
 		 The argument types are encoded in the method name.  */
 	      putc ('#', asmfile);
+	      CHARS (1);
 	      dbxout_type (TREE_TYPE (type), 0, 0);
 	      putc (';', asmfile);
 	      CHARS (1);
