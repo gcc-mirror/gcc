@@ -3665,8 +3665,8 @@ split_double (rtx value, rtx *first, rtx *second)
 	}
 #endif
 
-      *first = GEN_INT ((HOST_WIDE_INT) l[0]);
-      *second = GEN_INT ((HOST_WIDE_INT) l[1]);
+      *first = GEN_INT (l[0]);
+      *second = GEN_INT (l[1]);
     }
 }
 

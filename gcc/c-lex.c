@@ -521,7 +521,7 @@ interpret_integer (const cpp_token *token, unsigned int flags)
 
   integer = cpp_interpret_integer (parse_in, token, flags);
   integer = cpp_num_sign_extend (integer, options->precision);
-  value = build_int_2_wide (integer.low, integer.high);
+  value = build_int_2 (integer.low, integer.high);
 
   /* The type of a constant with a U suffix is straightforward.  */
   if (flags & CPP_N_UNSIGNED)

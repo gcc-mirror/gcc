@@ -1398,7 +1398,7 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       && ((hi == 0 && (HOST_WIDE_INT) low >= 0)
 	  || (hi == -1 && (HOST_WIDE_INT) low < 0))
       && overflow == 0 && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
-    return size_int_type_wide (low, type);
+    return size_int_type (low, type);
   else
     {
       t = build_int_2 (low, hi);
@@ -1602,9 +1602,9 @@ size_htab_eq (const void *x, const void *y)
    bits are given by NUMBER and of the sizetype represented by KIND.  */
 
 tree
-size_int_wide (HOST_WIDE_INT number, enum size_type_kind kind)
+size_int_kind (HOST_WIDE_INT number, enum size_type_kind kind)
 {
-  return size_int_type_wide (number, sizetype_tab[(int) kind]);
+  return size_int_type (number, sizetype_tab[(int) kind]);
 }
 
 /* Likewise, but the desired type is specified explicitly.  */
@@ -1614,7 +1614,7 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
      htab_t size_htab;
 
 tree
-size_int_type_wide (HOST_WIDE_INT number, tree type)
+size_int_type (HOST_WIDE_INT number, tree type)
 {
   void **slot;
 
@@ -1751,7 +1751,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
 	      && !TREE_CONSTANT_OVERFLOW (arg1)
 	      && compare_tree_int (arg1, 10000) < 0)
-	    return size_int_type_wide (TREE_INT_CST_LOW (arg1), type);
+	    return size_int_type (TREE_INT_CST_LOW (arg1), type);
 
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */

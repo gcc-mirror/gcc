@@ -1,3 +1,24 @@
+2004-07-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* rtl.h (plus_constant): Delete.
+	(plus_constant_wide): Rename to plus_constant.
+	(plus_constant_for_output_wide): Delete vestigial prototype.
+	(GEN_INT): Remove unnecessary cast.
+	* tree.h (build_int_2, size_int_type): Delete.
+	(build_int_2_wide): Rename to build_int_2.
+	(size_int_wide): Rename to size_int_kind.
+	(size_int_type_wide): Rename to size_int_type.
+	(size_int, ssize_int, bitsize_int, sbitsize_int): Use size_int_kind.
+	Remove unnecessary cast.
+	* tree.c (build_int_2_wide): Rename build_int_2; update comment.
+	* explow.c (plus_constant_wide): Rename plus_constant; update comment.
+	* fold-const.c (size_int_wide): Rename size_int_kind. Use size_int_type.
+	(size_int_type_wide): Rename size_int_type.
+	(int_const_binop): Use size_int_type.
+	* c-lex.c (interpret_integer): Use build_int_2.
+	* final.c (split_double): Remove unnecessary casts.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Use build_int_2.
+
 2004-07-20  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (is_gimple_tmp_var): Move to tree-gimple.c.
@@ -185,7 +206,7 @@
 
 	* tree-ssa-dom.c (single_incoming_edge_ignoring_loop_edges): New.
 	(get_eq_expr_value): Use it.  Simplify slightly.
- 
+
 2004-07-19  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/mips/mips.md (mulsidi3_32bit_r4000): Fix the clobber list.
@@ -238,7 +259,7 @@
 	* config/s390/s390.c (regclass_map initializer): Register 35 added to
 	ADDR_REGS.
 	(load_multiple_operation, store_multiple_operation): Removed
-	pointless sanity check. 
+	pointless sanity check.
 	(s390_decompose_address): Added check for return_address_pointer_rtx.
 	(s390_return_addr_rtx): Use return_address_pointer_rtx for count == 0.
 	(s390_return_address_offset): New function.
@@ -269,7 +290,7 @@
 2004-07-19  Gabriel Dos Reis  <gdr@integrable-solution.net>
 
 	* doc/sourcebuild.texi: Add libcpp, now that CPP has its own
-	directory. 
+	directory.
 
 2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 

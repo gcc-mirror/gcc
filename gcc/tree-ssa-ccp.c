@@ -1551,7 +1551,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
 	  || lrem || hrem)
 	return NULL_TREE;
 
-      idx = build_int_2_wide (lquo, hquo);
+      idx = build_int_2 (lquo, hquo);
     }
 
   /* Assume the low bound is zero.  If there is a domain type, get the
