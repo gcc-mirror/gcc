@@ -96,9 +96,3 @@ const size_t cpp_GCC_INCLUDE_DIR_len = sizeof GCC_INCLUDE_DIR - 8;
 const char cpp_GCC_INCLUDE_DIR[] = "";
 const size_t cpp_GCC_INCLUDE_DIR_len = 0;
 #endif
-
-#ifdef TARGET_SYSTEM_ROOT
-const char *cpp_SYSROOT = TARGET_SYSTEM_ROOT;
-#else
-const char *cpp_SYSROOT = "";
-#endif
