@@ -39,6 +39,7 @@ intrinsics/abort.c \
 intrinsics/args.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
+intrinsics/date_and_time.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/ishftc.c \
