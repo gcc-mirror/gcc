@@ -1,5 +1,9 @@
 2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md ("cmpint_di"): Fix incorrect instruction lengths.
+
+2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.md ("movhi"): Do not emit extender pattern
 	when loading from a (MEM (ADDRESSOF ...)).
 	("movqi"): Likewise.
