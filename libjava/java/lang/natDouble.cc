@@ -25,7 +25,7 @@ details.  */
 #include <stdio.h>
 #include <string.h>
 
-#include "mprec.h"
+#include "fdlibm.h"
 
 union u
 {
