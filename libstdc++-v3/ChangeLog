@@ -1,3 +1,8 @@
+2002-10-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.am (check-abi):  Add @ to rule.
+	* Makefile.in:  Regenerated.
+
 2002-09-27  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (num_put::_M_widen_int):
