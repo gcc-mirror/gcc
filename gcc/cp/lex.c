@@ -1,6 +1,6 @@
 /* Separate lexical analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -535,7 +535,7 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
   else if (fname == 0)
     main_filename = lbasename (input_filename);
   else
-    main_filename = TREE_STRING_POINTER (fname);
+    main_filename = ggc_strdup (TREE_STRING_POINTER (fname));
 
   finfo = get_fileinfo (input_filename);
 
@@ -585,7 +585,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
     }
   else
     {
-      main_filename = TREE_STRING_POINTER (fname);
+      main_filename = ggc_strdup (TREE_STRING_POINTER (fname));
       if (cpp_included (parse_in, main_filename))
 	warning ("#pragma implementation for %s appears after file is included",
 		 main_filename);
