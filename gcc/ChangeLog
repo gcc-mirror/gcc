@@ -1,5 +1,7 @@
 Wed Jul 25 18:00:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/alpha/alpha.c (print_operand, case '/'): Don't write '/'.
+
 	* dbxout.c: Consistently use putc instead of fputc.
  	(print_wide_int): New function; call instead of direct fprintf.
 	(dbxout_type_index): Adjust calls of CHARS to be more accurate.
