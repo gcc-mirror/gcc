@@ -822,15 +822,17 @@ struct parser_ctxt {
 
 /* Make sure that innerclass T sits in an appropriate enclosing
    context.  */
-#define INNER_ENCLOSING_SCOPE_CHECK(T)					\
-  (INNER_CLASS_TYPE_P ((T)) && !ANONYMOUS_CLASS_P ((T))			\
-   && ((current_this							\
-	/* We have a this and it's not the right one */			\
-	&& (DECL_CONTEXT (TYPE_NAME ((T)))				\
-	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))	\
-	&& !inherits_from_p (TREE_TYPE (TREE_TYPE (current_this)),	\
-			     TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T)))))	\
-       /* We don't have a this. */					\
+#define INNER_ENCLOSING_SCOPE_CHECK(T)					      \
+  (INNER_CLASS_TYPE_P ((T)) && !ANONYMOUS_CLASS_P ((T))			      \
+   && ((current_this							      \
+	/* We have a this and it's not the right one */			      \
+	&& (DECL_CONTEXT (TYPE_NAME ((T)))				      \
+	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))	      \
+	&& !inherits_from_p (TREE_TYPE (TREE_TYPE (current_this)),	      \
+			     TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T))))	      \
+        && !common_enclosing_context_p (TREE_TYPE (TREE_TYPE (current_this)), \
+					(T)))				      \
+       /* We don't have a this. */					      \
        || !current_this))
 
 /* Push macro. First argument to PUSH_CPC is a DECL_TYPE, second

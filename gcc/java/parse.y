@@ -7944,7 +7944,7 @@ build_access_to_thisn (from, to, lc)
 
 /* Build an access function to the this$<n> local to TYPE. NULL_TREE
    is returned if nothing needs to be generated. Otherwise, the method
-   generated, fully walked and a method decl is returned.  
+   generated and a method decl is returned.  
 
    NOTE: These generated methods should be declared in a class file
    attribute so that they can't be referred to directly.  */
@@ -8287,6 +8287,7 @@ verify_constructor_super (mdecl)
      tree mdecl;
 {
   tree class = CLASSTYPE_SUPER (current_class);
+  int super_inner = PURE_INNER_CLASS_TYPE_P (class);
   tree sdecl;
 
   if (!class)
@@ -8299,10 +8300,11 @@ verify_constructor_super (mdecl)
       for (sdecl = TYPE_METHODS (class); sdecl; sdecl = TREE_CHAIN (sdecl))
 	if (DECL_CONSTRUCTOR_P (sdecl))
 	  {
-	    tree arg_type;
-	    for (arg_type = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (sdecl)));
-		 arg_type != end_params_node && 
-		   mdecl_arg_type != end_params_node;
+	    tree arg_type = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (sdecl)));
+	    if (super_inner)
+	      arg_type = TREE_CHAIN (arg_type);
+	    for (; (arg_type != end_params_node 
+		    && mdecl_arg_type != end_params_node);
 		 arg_type = TREE_CHAIN (arg_type), 
 		 mdecl_arg_type = TREE_CHAIN (mdecl_arg_type))
 	      if (TREE_VALUE (arg_type) != TREE_VALUE (mdecl_arg_type))
@@ -8317,9 +8319,10 @@ verify_constructor_super (mdecl)
     {
       for (sdecl = TYPE_METHODS (class); sdecl; sdecl = TREE_CHAIN (sdecl))
 	{
-	  if (DECL_CONSTRUCTOR_P (sdecl)
-	      && TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (sdecl))) 
-	         == end_params_node)
+	  tree arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (sdecl)));
+	  if (super_inner)
+	    arg = TREE_CHAIN (arg);
+	  if (DECL_CONSTRUCTOR_P (sdecl) && arg == end_params_node)
 	    return 0;
 	}
     }
@@ -9586,6 +9589,30 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	args = tree_cons (NULL_TREE, (primary ? primary : current_this), args);
       else
 	args = tree_cons (NULL_TREE, integer_zero_node, args);
+    }
+
+  /* This handles the situation where a constructor invocation needs
+     to have an enclosing context passed as a second parameter (the
+     constructor is one of an inner class. We extract it from the
+     current function.  */
+  if (is_super_init && PURE_INNER_CLASS_TYPE_P (DECL_CONTEXT (list)))
+    {
+      tree enclosing_decl = DECL_CONTEXT (TYPE_NAME (current_class));
+      tree extra_arg;
+
+      if (ANONYMOUS_CLASS_P (current_class) || !DECL_CONTEXT (enclosing_decl))
+	{
+	  extra_arg = DECL_FUNCTION_BODY (current_function_decl);
+	  extra_arg = TREE_CHAIN (BLOCK_EXPR_DECLS (extra_arg));
+	}
+      else
+	{
+	  tree dest = TREE_TYPE (DECL_CONTEXT (enclosing_decl));
+	  extra_arg = 
+	    build_access_to_thisn (TREE_TYPE (enclosing_decl), dest, 0);
+	  extra_arg = java_complete_tree (extra_arg);
+	}
+      args = tree_cons (NULL_TREE, extra_arg, args);
     }
 
   is_static_flag = METHOD_STATIC (list);
