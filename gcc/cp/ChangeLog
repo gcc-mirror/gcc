@@ -1,3 +1,15 @@
+Wed Nov 26 01:11:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_start_catch_block): Fix catching a reference
+	to pointer.
+
+Tue Nov 25 11:28:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Copy size to the saveable obstack.
+
+	* init.c (build_new): Stick a CLEANUP_POINT_EXPR inside the
+ 	TRY_CATCH_EXPR for now.
+
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL

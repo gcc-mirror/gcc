@@ -2736,12 +2736,19 @@ build_new (placement, decl, init, use_global_new)
 	  if (placement)
 	    flags |= LOOKUP_SPECULATIVELY;
 
+	  /* Copy size to the saveable obstack.  */
+	  size = copy_node (size);
+
 	  cleanup = build_op_delete_call (dcode, alloc_expr, size, flags);
 
 	  resume_momentary (yes);
 
 	  if (cleanup)
 	    {
+	      /* FIXME: this is a workaround for a crash due to overlapping
+		 exception regions.  Cleanups shouldn't really happen here.  */
+	      rval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (rval), rval);
+
 	      rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
 	      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
 	    }
