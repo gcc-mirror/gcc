@@ -1,3 +1,8 @@
+1998-09-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (output_vtable_inherit): Use %cDIGIT in the operands.
+	* class.c (build_vtable_entry_ref): Likewise.
+
 1998-09-01  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION): New macro.

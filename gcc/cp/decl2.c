@@ -2657,8 +2657,7 @@ finish_prevtable_vardecl (prev, vars)
 }
 
 /* We need to describe to the assembler the relationship between
-   a vtable and the vtable of the parent class.  It is not 
-   straightforward how to get this during multiple inheritance.  */
+   a vtable and the vtable of the parent class.  */
 
 static void
 output_vtable_inherit (vars)
@@ -2681,7 +2680,7 @@ output_vtable_inherit (vars)
   else
     my_friendly_abort (980826);
 
-  output_asm_insn (".vtable_inherit %0, %1", op);
+  output_asm_insn (".vtable_inherit %c0, %c1", op);
 }
 
 static int
