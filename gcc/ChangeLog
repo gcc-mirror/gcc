@@ -1,3 +1,11 @@
+2004-11-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR rtl-optimization/17933
+	* rtlanal.c (dead_or_set_regno_p): Break out common code to...
+	(covers_regno_p): New function.  Handle SETs of PARALLEL,
+	and defer the rest to...
+	(covers_regno_no_parallel_p): New function.
+
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_record_value_1): Skip
