@@ -50,7 +50,8 @@ extern int   cp_line_of PROTO((tree));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 
-/* This function supports only `%s', `%d', and the C++ print codes.  */
+/* This function supports only `%s', `%d', `%%', and the C++ print
+   codes.  */
 
 #ifdef __STDC__
 static void
@@ -151,6 +152,21 @@ cp_thing (errfn, atarg1, format, ap)
 	    }
 	  strcpy (buf + offset, p);
 	  offset += plen;
+	}
+      else if (*f == '%')
+	{
+	  /* A `%%' has occurred in the input string.  Since the
+	     string we produce here will be passed to vprintf we must
+	     preserve both `%' characters.  */
+
+	  len += 2;
+	  if (len > buflen)
+	    {
+	      buflen = len;
+	      buf = xrealloc (buf, len);
+	    }
+	  strcpy (buf + offset, "%%");
+	  offset += 2;
 	}
       else
 	{
