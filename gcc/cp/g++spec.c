@@ -156,7 +156,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    quote = argv[i];
 	  else if (library != 0 && ((argv[i][2] == '\0'
 		     && (char *) strchr ("cSEM", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-MM") == 0))
+		    || strcmp (argv[i], "-MM") == 0
+		    || strcmp (argv[i], "-fsyntax-only") == 0))
 	    {
 	      /* Don't specify libraries if we won't link, since that would
 		 cause a warning.  */

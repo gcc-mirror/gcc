@@ -1,3 +1,8 @@
+2001-01-16  Phil Edwards  <pme@sources.redhat.com>
+
+	* g++spec.c:  Don't add libraries needlessly if -fsyntax-only
+	  was given.
+
 2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (check_nontype_parm): Rename to ...
