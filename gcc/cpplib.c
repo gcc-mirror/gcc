@@ -7197,7 +7197,8 @@ file_size_and_mode (fd, mode_pointer, size_pointer)
 }
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
-   retrying if necessary.  Return a negative value if an error occurs,
+   retrying if necessary.  If MAX_READ_LEN is defined, read at most
+   that bytes at a time.  Return a negative value if an error occurs,
    otherwise return the actual number of bytes read,
    which must be LEN unless end-of-file was reached.  */
 
@@ -7207,9 +7208,16 @@ safe_read (desc, ptr, len)
      char *ptr;
      int len;
 {
-  int left = len;
+  int left, rcount, nchars;
+
+  left = len;
   while (left > 0) {
-    int nchars = read (desc, ptr, left);
+    rcount = left;
+#ifdef MAX_READ_LEN
+    if (rcount > MAX_READ_LEN)
+      rcount = MAX_READ_LEN;
+#endif
+    nchars = read (desc, ptr, rcount);
     if (nchars < 0)
       {
 #ifdef EINTR
