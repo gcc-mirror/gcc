@@ -290,6 +290,7 @@ const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON | m_K6;
 const int x86_cmove = m_PPRO | m_ATHLON | m_PENT4;
 const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON | m_PENT4;
+const int x86_branch_hints = m_PENT4;
 const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_use_loop = m_K6;
@@ -3796,7 +3797,7 @@ print_reg (x, code, file)
   if (ASSEMBLER_DIALECT == 0 || USER_LABEL_PREFIX[0] == 0)
     putc ('%', file);
 
-  if (code == 'w')
+  if (code == 'w' || MMX_REG_P (x))
     code = 2;
   else if (code == 'b')
     code = 1;
@@ -3808,8 +3809,6 @@ print_reg (x, code, file)
     code = 3;
   else if (code == 'h')
     code = 0;
-  else if (code == 'm' || MMX_REG_P (x))
-    code = 5;
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
@@ -3821,7 +3820,7 @@ print_reg (x, code, file)
 	abort ();
       switch (code)
 	{
-	  case 5:
+	  case 0:
 	    error ("Extended registers have no high halves\n");
 	    break;
 	  case 1:
@@ -3844,9 +3843,6 @@ print_reg (x, code, file)
     }
   switch (code)
     {
-    case 5:
-      fputs (hi_reg_name[REGNO (x)], file);
-      break;
     case 3:
       if (STACK_TOP_P (x))
 	{
@@ -3879,6 +3875,7 @@ print_reg (x, code, file)
    L,W,B,Q,S,T -- print the opcode suffix for specified size of operand.
    C -- print opcode suffix for set/cmov insn.
    c -- like C, but print reversed condition
+   F,f -- likewise, but for floating-point.
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
@@ -3891,10 +3888,11 @@ print_reg (x, code, file)
    w --  likewise, print the HImode name of the register.
    k --  likewise, print the SImode name of the register.
    q --  likewise, print the DImode name of the register.
-   h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
-   y --  print "st(0)" instead of "st" as a register.
-   m --  print "st(n)" as an mmx register.
+   h -- print the QImode name for a "high" register, either ah, bh, ch or dh.
+   y -- print "st(0)" instead of "st" as a register.
    D -- print condition for SSE cmp instruction.
+   P -- if PIC, print an @PLT suffix.
+   X -- don't print any sort of PIC '@' suffix for a symbol.
  */
 
 void
@@ -4017,7 +4015,6 @@ print_operand (file, x, code)
 	case 'q':
 	case 'h':
 	case 'y':
-	case 'm':
 	case 'X':
 	case 'P':
 	  break;
@@ -4085,7 +4082,39 @@ print_operand (file, x, code)
 	case 'f':
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 1, file);
 	  return;
+	case '+':
+	  {
+	    rtx x;
 
+	    if (!optimize || optimize_size || !TARGET_BRANCH_PREDICTION_HINTS)
+	      return;
+	    
+	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+	    if (x)
+	      {
+		int pred_val = INTVAL (XEXP (x, 0));
+
+		if (pred_val < REG_BR_PROB_BASE * 45 / 100
+		    || pred_val > REG_BR_PROB_BASE * 55 / 100)
+		  {
+		    int taken = pred_val > REG_BR_PROB_BASE / 2;
+		    int cputaken = final_forward_branch_p (current_output_insn) == 0;
+
+		    /* Emit hints only in the case default branch prediction
+		       heruistics would fail.  */
+		    if (taken != cputaken)
+		      {
+			/* We use 3e (DS) prefix for taken branches and
+			   2e (CS) prefix for not taken branches.  */
+			if (taken)
+			  fputs ("ds ; ", file);
+			else
+			  fputs ("cs ; ", file);
+		      }
+		  }
+	      }
+	    return;
+	  }
 	default:
 	  {
 	    char str[50];

@@ -1,3 +1,29 @@
+Wed Jun  6 14:51:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (floatdi?f): Avoid usinf of SSE instructions
+	if TARGET_64BIT is false.
+	(floatdi?f_i386_only): New insn.
+	(floatdi?f_i386): Disable for !TARGET_64BIT.
+
+	* (min?f, max?f splitters): Handle case where
+	operands are cross-matched.
+
+	* i386.h (HI_REGISTER_NAMES): Remove redundant definition
+	(MMX_REGISTER_NAMES): Kill.
+	(PRINT_OPERAND): Fix comment.
+	(PRINT_REG): Likewise.
+	* i386.c (print_reg): Kill support for 'm' CODE; simplify.
+	(print_operand): Update comment; kill 'm'.
+
+	* i386.c (x86_branch_hints): New global variable
+	(print_operand): Support outputting of branch prediction hints.
+	* i386.md (conditional jump patterns): Add branch prediction hints
+	to the template.
+	* i386.h (x86_branch_hints): Declare
+	(TARGET_BRANCH_PREDICTION_HINTS): New macro.
+	(PRINT_OPERAND_FUNCT_VALID_P): New.
+	* final.c (final_forward_branch_p): New function.
+
 2001-06-06  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (mark_used_reg): Clean up looping over multiple hard
