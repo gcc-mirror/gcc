@@ -1,3 +1,11 @@
+2004-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 13728
+	* c-decl.c (diagnose_mismatched_decls): Issue an error for two
+	parameters with the same name, unless one is a forward decl.
+	Do not issue a redundant-redeclaration warning for forward
+	decls of parameters.
+
 2004-03-03  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_override_options): Disable -fweb
@@ -6,9 +14,9 @@
 
 2003-03-03  Richard Henderson  <rth@redhat.com>
 
-        PR opt/13862
-        * cselib.c (cselib_record_sets): Don't record multiple sets in
-        asm insns.
+	PR opt/13862
+	* cselib.c (cselib_record_sets): Don't record multiple sets in
+	asm insns.
 
 2004-03-03  Nicolas Pitre <nico@cam.org>
 
@@ -36,9 +44,9 @@
 
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/14327
-        * stmt.c (expand_computed_goto): Do do_pending_stack_adjust before
-        emitting the label, not after.
+	PR middle-end/14327
+	* stmt.c (expand_computed_goto): Do do_pending_stack_adjust before
+	emitting the label, not after.
 
 2004-03-02  David O'Brien  <obrien@FreeBSD.org>
 
@@ -186,7 +194,7 @@
 
 	PR optimization/7871
 	* flow.c (mark_set_1): Don't add LOG_LINKS for global registers
-	from or to call insns.	
+	from or to call insns.
 
 2004-02-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -207,7 +215,7 @@
 	size for minipool references.
 
 2004-02-27  Eric Botcazou  <ebotcazou@act-europe.fr>
-            Roger Sayle  <roger@eyesopen.com>
+	    Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold): Revert 2004-02-25 change.  Use the original
 	operands to build a tree with swapped operands.
@@ -222,7 +230,7 @@
 	* config/rs6000/spe.md: Delete spe_efsctuiz.
 	Add spe_fixuns_truncsfsi2.
 	Add spe_fix_truncsfsi2.
- 
+
 2004-02-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define __xtensa__.
@@ -291,11 +299,11 @@
 
 2004-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
-        (spe_fixuns_truncsfsi2): Delete.
+	* config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
+	(spe_fixuns_truncsfsi2): Delete.
 
-        * config/rs6000/rs6000.md (fix_truncsfsi2): Delete.
-        (fixuns_truncsfsi2): Delete.
+	* config/rs6000/rs6000.md (fix_truncsfsi2): Delete.
+	(fixuns_truncsfsi2): Delete.
 
 2004-02-24  Josef Zlomek  <zlomekj@suse.cz>
 
@@ -356,7 +364,7 @@
 
 	* config/i386/i386.c: Rename pni to sse3.
 	* config/i386/i386.h: Likewise.
-        * config/i386/i386.md: Likewise.
+	* config/i386/i386.md: Likewise.
 	* config/i386/pmmintrin.h: Likewise.
 	* doc/extend.texi: Likewise.
 	* doc/invoke.texi: Likewise.
@@ -367,7 +375,7 @@
 	* config/rs6000/linux64.h (OS_MISSING_POWERPC64): Define.
 
 2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Falk Hueffner  <falk@debian.org>
+	    Falk Hueffner  <falk@debian.org>
 
 	PR c/14188
 	* builtins.c (expand_builtin_va_arg): Emit an informative message
@@ -451,11 +459,11 @@
 
 2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md (spe_fixunssfsi2): Rename to
-        spe_fixuns_truncsfsi2.
+	* config/rs6000/spe.md (spe_fixunssfsi2): Rename to
+	spe_fixuns_truncsfsi2.
 
-        * config/rs6000/rs6000.md (fixunssfsi2): Rename to
-        fixuns_truncsfsi2.
+	* config/rs6000/rs6000.md (fixunssfsi2): Rename to
+	fixuns_truncsfsi2.
 
 2004-02-19  Richard Sandiford  <rsandifo@redhat.com>
 	    Maciej W. Rozycki  <macro@ds2.pg.gda.pl>

@@ -1211,8 +1211,18 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    }
 	}
     }
-  else /* VAR_DECL */
+  else /* PARM_DECL, VAR_DECL */
     {
+      /* Redeclaration of a PARM_DECL is invalid unless this is the
+	 real position of a forward-declared parameter (GCC extension).  */
+      if (TREE_CODE (newdecl) == PARM_DECL
+	  && (!TREE_ASM_WRITTEN (olddecl) || TREE_ASM_WRITTEN (newdecl)))
+	{
+	  error ("%Jredefinition of parameter '%D'", newdecl, newdecl);
+	  locate_old_decl (olddecl, error);
+	  return false;
+	}
+
       /* These bits are only type qualifiers when applied to objects.  */
       if (TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl))
 	{
@@ -1241,10 +1251,13 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       && warn_redundant_decls
       /* Don't warn about a function declaration followed by a
 	 definition.  */
-    && !(TREE_CODE (newdecl) == FUNCTION_DECL
-	 && DECL_INITIAL (newdecl) && !DECL_INITIAL (olddecl))
-    /* Don't warn about an extern followed by a definition.  */
-    && !(DECL_EXTERNAL (olddecl) && !DECL_EXTERNAL (newdecl)))
+      && !(TREE_CODE (newdecl) == FUNCTION_DECL
+	   && DECL_INITIAL (newdecl) && !DECL_INITIAL (olddecl))
+      /* Don't warn about an extern followed by a definition.  */
+      && !(DECL_EXTERNAL (olddecl) && !DECL_EXTERNAL (newdecl))
+      /* Don't warn about forward parameter decls.  */
+      && !(TREE_CODE (newdecl) == PARM_DECL
+	   && TREE_ASM_WRITTEN (olddecl) && !TREE_ASM_WRITTEN (newdecl)))
     {
       warning ("%Jredundant redeclaration of '%D'", newdecl, newdecl);
       warned = true;
