@@ -431,7 +431,7 @@ int quiet_flag = 0;
 
 /* Print times taken by the various passes.  -ftime-report.  */
 
-int time_report = 0;
+static int time_report = 0;
 
 /* Print memory still in use at end of compilation (which may have little
    to do with peak memory consumption).  -fmem-report.  */
@@ -5326,9 +5326,6 @@ process_options ()
 	print_switch_values (stderr, 0, MAX_LINE, "", " ", "\n");
     }
 
-  if (! quiet_flag  || flag_detailed_statistics)
-    time_report = 1;
-
   if (flag_syntax_only)
     {
       write_symbols = NO_DEBUG;
@@ -5562,20 +5559,27 @@ finalize ()
 static void
 do_compile ()
 {
-  /* We cannot start timing until after options are processed since that
-     says if we run timers or not.  */
-  init_timevar ();
+  /* Initialize timing first.  The C front ends read the main file in
+     the post_options hook, and C++ does file timings.  */
+  if (time_report || !quiet_flag  || flag_detailed_statistics)
+    timevar_init ();
   timevar_start (TV_TOTAL);
 
-  /* Set up the back-end if requested.  */
-  if (!no_backend)
-    backend_init ();
+  process_options ();
 
-  /* Language-dependent initialization.  Returns true on success.  */
-  if (lang_dependent_init (filename))
-    compile_file ();
+  /* Don't do any more if an error has already occurred.  */
+  if (!errorcount)
+    {
+      /* Set up the back-end if requested.  */
+      if (!no_backend)
+	backend_init ();
 
-  finalize ();
+      /* Language-dependent initialization.  Returns true on success.  */
+      if (lang_dependent_init (filename))
+	compile_file ();
+
+      finalize ();
+    }
 
   /* Stop timing and print the times.  */
   timevar_stop (TV_TOTAL);
@@ -5603,13 +5607,7 @@ toplev_main (argc, argv)
 
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
-    {
-      process_options ();
-
-      /* Don't do any more if an error has already occurred.  */
-      if (!errorcount)
-	do_compile ();
-    }
+    do_compile ();
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

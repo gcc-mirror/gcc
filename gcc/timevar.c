@@ -113,10 +113,9 @@ static double clocks_to_msec;
 #include "flags.h"
 #include "timevar.h"
 
-/* See timevar.h for an explanation of timing variables.  */
+static bool timevar_enable;
 
-/* This macro evaluates to nonzero if timing variables are enabled.  */
-#define TIMEVAR_ENABLE (time_report)
+/* See timevar.h for an explanation of timing variables.  */
 
 /* A timing variable.  */
 
@@ -187,7 +186,7 @@ get_time (now)
   now->sys  = 0;
   now->wall = 0;
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   {
@@ -225,10 +224,9 @@ timevar_accumulate (timer, start_time, stop_time)
 /* Initialize timing variables.  */
 
 void
-init_timevar ()
+timevar_init ()
 {
-  if (!TIMEVAR_ENABLE)
-    return;
+  timevar_enable = true;
 
   /* Zero all elapsed times.  */
   memset ((void *) timevars, 0, sizeof (timevars));
@@ -262,7 +260,7 @@ timevar_push (timevar)
   struct timevar_stack_def *context;
   struct timevar_time_def now;
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   /* Mark this timing variable as used.  */
@@ -314,7 +312,7 @@ timevar_pop (timevar)
   struct timevar_time_def now;
   struct timevar_stack_def *popped = stack;
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   if (&timevars[timevar] != stack->timevar)
@@ -353,7 +351,7 @@ timevar_start (timevar)
 {
   struct timevar_def *tv = &timevars[timevar];
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   /* Mark this timing variable as used.  */
@@ -378,7 +376,7 @@ timevar_stop (timevar)
   struct timevar_def *tv = &timevars[timevar];
   struct timevar_time_def now;
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   /* TIMEVAR must have been started via timevar_start.  */
@@ -430,7 +428,7 @@ timevar_print (fp)
   struct timevar_time_def *total = &timevars[TV_TOTAL].elapsed;
   struct timevar_time_def now;
 
-  if (!TIMEVAR_ENABLE)
+  if (!timevar_enable)
     return;
 
   /* Update timing information in case we're calling this from GDB.  */

@@ -79,7 +79,7 @@ timevar_id_t;
 /* Execute the sequence: timevar_pop (TV), return (E);  */
 #define POP_TIMEVAR_AND_RETURN(TV, E)  return (timevar_pop (TV), (E))
 
-extern void init_timevar PARAMS ((void));
+extern void timevar_init PARAMS ((void));
 extern void timevar_push PARAMS ((timevar_id_t));
 extern void timevar_pop PARAMS ((timevar_id_t));
 extern void timevar_start PARAMS ((timevar_id_t));

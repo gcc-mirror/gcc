@@ -1,3 +1,14 @@
+2003-04-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* flags.h (time_report): Remove.
+	* timevar.c (timevar_enable): New.
+	(TIMEVAR_ENABLE): Remove, use timevar_enable.
+	(timevar_init): Rename from init_timevar.
+	* timevar.h (timevar_init): Rename from init_timevar.
+	* toplev.c (time_report): Make static.
+	(do_compile): Conditionally call init_timevar first.
+	(preprocess_options): Move some code to do_compile.
+
 2003-04-26  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* doc/install.texi (Binaries): Mention binaries for HC11/HC12.
