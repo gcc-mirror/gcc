@@ -1,3 +1,7 @@
+2003-09-19  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* cgraph.c: Fix typo in debugging output.
+
 2003-09-19  T. Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
             Eric Botcazou <ebotcazou@libertysurf.fr>
 
