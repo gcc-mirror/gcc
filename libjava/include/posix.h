@@ -42,7 +42,11 @@ details.  */
 
 // Prefix and suffix for shared libraries.
 #define _Jv_platform_solib_prefix "lib"
+#if defined(__APPLE__) && defined(__MACH__) && defined(__ppc__)
+#define _Jv_platform_solib_suffix ".dylib"
+#else
 #define _Jv_platform_solib_suffix ".so"
+#endif
 
 // Separator for file name components.
 #define _Jv_platform_file_separator ((jchar) '/')

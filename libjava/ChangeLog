@@ -1,3 +1,7 @@
+2003-03-22  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* include/posix.h: Add suffix for darwin dynamic libraries.
+
 2003-03-21  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/Action.java
