@@ -1,3 +1,8 @@
+Mon Mar  2 11:04:59 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* decl.c (start_function): Don't call temporary_allocation for a
+	nested function.
+
 Sun Mar  1 21:06:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_class_template): Don't mess with friends if
