@@ -6,6 +6,7 @@ configdirs=
 srctrigger=configure.in
 srcname="tests for ANSI C++ library, dejagnu style"
 package_makefile_frag=Make.pack
+package_makefile_rules_frag=Make.pack.r
 
 # per-host:
 
@@ -18,6 +19,6 @@ ALL=' '
 XCXXINCLUDES="-I${srcdir}/.. -I${srcdir}/../stl -I${TO_TOPDIR}libio -I${srcdir}/${TO_TOPDIR}libio"
 TESTS="tcomplex tstring tlist tmap tvector"
 MOSTLYCLEAN="*.o core ${TESTS} *.out"
-(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag}
+(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
