@@ -11,7 +11,7 @@
 
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* config/h8300/h8300.h (ELIMINABLE_REGS): Update a coment.
+	* config/h8300/h8300.h (ELIMINABLE_REGS): Update a comment.
 
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
