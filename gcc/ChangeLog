@@ -1,3 +1,8 @@
+2003-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Don't call
+	rs6000_maybe_dead if !fromprolog.
+
 2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8396
