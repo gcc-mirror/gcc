@@ -1105,6 +1105,13 @@ platform, it is the responsibility of the back end to perform those
 modifications.  (Of course, the back end should not modify
 @code{DECL_ASSEMBLER_NAME} itself.)
 
+Using @code{DECL_ASSEMBLER_NAME} will cause additional memory to be
+allocated (for the mangled name of the entity) so it should be used
+only when emitting assembly code.  It should not be used within the
+optimizers to determine whether or not two declarations are the same,
+even though some of the existing optimizers do use it in that way.
+These uses will be removed over time.
+
 @item DECL_EXTERNAL
 This predicate holds if the function is undefined.
 
