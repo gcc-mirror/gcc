@@ -1193,8 +1193,7 @@ ffelex_hash_ (FILE *finput)
   if ((token != NULL)
       && (ffelex_token_type (token) == FFELEX_typeNUMBER))
     {
-      int old_lineno = input_line;
-      const char *old_input_filename = input_filename;
+      location_t old_loc = input_location;
       ffewhereFile wf;
 
       /* subtract one, because it is the following line that
@@ -1281,14 +1280,14 @@ ffelex_hash_ (FILE *finput)
 	  if (ffelex_kludge_flag_)
 	    {
 	      input_line = 1;
-	      input_filename = old_input_filename;
+	      input_filename = old_loc.file;
 	      error ("use `#line ...' instead of `# ...' in first line");
 	    }
 
 	  if (num == 1)
 	    {
 	      /* Pushing to a new file.  */
-	      ffelex_file_push_ (old_lineno, input_filename);
+	      ffelex_file_push_ (old_loc.line, input_filename);
 	    }
 	  else if (num == 2)
 	    {
@@ -1325,7 +1324,7 @@ ffelex_hash_ (FILE *finput)
 	  && ffelex_kludge_flag_)
 	{
 	  input_line = 1;
-	  input_filename = old_input_filename;
+	  input_filename = old_loc.file;
 	  error ("use `#line ...' instead of `# ...' in first line");
 	}
       if (c == '\n' || c == EOF)
@@ -1470,8 +1469,7 @@ ffelex_include_ ()
   ffewhereLineNumber linecount_current = ffelex_linecount_current_;
   ffewhereLineNumber linecount_offset
     = ffewhere_line_filelinenum (current_wl);
-  int old_lineno = input_line;
-  const char *old_input_filename = input_filename;
+  location_t old_loc = input_location;
 
   if (card_length != 0)
     {
@@ -1489,7 +1487,7 @@ ffelex_include_ ()
 
   ffewhere_file_set (include_wherefile, TRUE, 0);
 
-  ffelex_file_push_ (old_lineno, ffewhere_file_name (include_wherefile));
+  ffelex_file_push_ (old_loc.line, ffewhere_file_name (include_wherefile));
 
   if (ffelex_include_free_form_)
     ffelex_file_free (include_wherefile, include_file);
@@ -1512,8 +1510,7 @@ ffelex_include_ ()
     }
   ffelex_card_image_[card_length] = '\0';
 
-  input_filename = old_input_filename;
-  input_line = old_lineno;
+  input_location = old_loc;
   ffelex_linecount_current_ = linecount_current;
   ffelex_current_wf_ = current_wf;
   ffelex_final_nontab_column_ = final_nontab_column;
