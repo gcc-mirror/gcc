@@ -1,3 +1,7 @@
+2004-04-20  Ingo Proetel  <proetel@aicas.com>
+
+	* java/awt/event/MouseEvent.java (<init>): fixed field assignment 
+
 2004-04-20  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/text/DecimalFormat.java (scanFix): Removed suffix check

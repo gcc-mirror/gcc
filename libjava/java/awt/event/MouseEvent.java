@@ -220,11 +220,11 @@ public class MouseEvent extends InputEvent
     if ((modifiers & EventModifier.OLD_MASK) != 0)
       {
         if ((modifiers & BUTTON1_MASK) != 0)
-          button = BUTTON1;
+          this.button = BUTTON1;
         else if ((modifiers & BUTTON2_MASK) != 0)
-          button = BUTTON2;
+          this.button = BUTTON2;
         else if ((modifiers & BUTTON3_MASK) != 0)
-          button = BUTTON3;
+          this.button = BUTTON3;
       }
   }
 
