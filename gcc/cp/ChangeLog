@@ -1,3 +1,31 @@
+2004-01-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (add_method): Just check processing_template_decl to
+	determine whether or not we are within a template.
+	* decl2.c (maybe_retrofit_in_chrg): Likewise.
+	* init.c (decl_constant_value): Check the type of the declaration,
+	not TREE_READONLY.
+	* name-lookup.c (maybe_push_to_top_level): Rename to ...
+	(push_to_top_level): ... this.
+	* name-lookup.h (maybe_push_to_top_level): Do not declare it.
+	* pt.c (push_template_decl_real): Reorder condition for speed.
+	(convert_template_argument): Use dependency-checking functions in
+	place of uses_template_parms.
+	(lookup_template_class): Avoid calling uses_template_parms more
+	than once.
+	(uses_template_parms): Reimplement, using dependency-checking
+	functions.
+	(instantiate_class_template): Use push_to_top_level, not
+	maybe_push_to_top_level.
+	(type_unification_real): Simplify.
+	(type_dependent_expression_p): Handle OFFSET_REFs and
+	TEMPLATE_DECLs.
+	(any_dependent_template_arguments_p): Handle multiple levels of
+	template argument.
+	* semantics.c (expand_or_defer_fn): Do not check
+	uses_template_parms for template instantiations.
+	* typeck.c (comptypes): Avoid calling cp_type_quals.
+
 2004-01-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13833

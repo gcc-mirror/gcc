@@ -229,7 +229,7 @@ maybe_retrofit_in_chrg (tree fn)
 
   /* When processing templates we can't know, in general, whether or
      not we're going to have virtual baseclasses.  */
-  if (uses_template_parms (fn))
+  if (processing_template_decl)
     return;
 
   /* We don't need an in-charge parameter for constructors that don't
