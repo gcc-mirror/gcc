@@ -29,12 +29,12 @@ mypow (double __x, double __y)
 	}
     }
   __asm __volatile__
-    ("fmul	%%st(1)		# y * log2(x)\n\t"
-     "fstl	%%st(1)\n\t"
-     "frndint			# int(y * log2(x))\n\t"
+    ("fmul	%%st(1),%%st\n\t"	/* y * log2(x) */
+     "fst	%%st(1)\n\t"
+     "frndint\n\t"			/* int(y * log2(x)) */
      "fxch\n\t"
-     "fsub	%%st(1)		# fract(y * log2(x))\n\t"
-     "f2xm1			# 2^(fract(y * log2(x))) - 1\n\t"
+     "fsub	%%st(1),%%st\n\t"	/* fract(y * log2(x)) */
+     "f2xm1\n\t"			/* 2^(fract(y * log2(x))) - 1 */
      : "=t" (__value), "=u" (__exponent) :  "0" (__x), "1" (__y));
   __value += 1.0;
   __asm __volatile__

@@ -1,3 +1,9 @@
+Fri Jun 19 14:06:36 1998  Robert Lipe  <robertl@dgii.com>
+	
+	* gcc.dg/980414-1.c: Move comments outside of ASM to improve
+	compatibility with assmblers with a different comment character.
+	Eliminate use of GAS-specific extensions. 
+
 Fri Jun 19 02:05:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/ieee/980619-1.c: New test.
