@@ -3227,7 +3227,6 @@ output_inline_function (fndecl)
 {
   rtx head;
   rtx last;
-  int save_flag_no_inline = flag_no_inline;
 
   if (output_bytecode)
     {
@@ -3329,15 +3328,11 @@ output_inline_function (fndecl)
   /* We're not deferring this any longer.  */
   DECL_DEFER_OUTPUT (fndecl) = 0;
 
-  /* Integrating function calls isn't safe anymore, so turn on
-     flag_no_inline.  */
-  flag_no_inline = 1;
+  /* We can't inline this anymore.  */
+  DECL_INLINE (fndecl) = 0;
 
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
-
-  /* Reset flag_no_inline to its original value.  */
-  flag_no_inline = save_flag_no_inline;
 
   current_function_decl = 0;
 }
