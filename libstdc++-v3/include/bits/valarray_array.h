@@ -252,6 +252,18 @@ namespace std
   __valarray_copy (const _Tp* __restrict__ __a, _Tp* __restrict__ __b,
                    size_t __n, size_t __s)
   { for (size_t __i=0; __i<__n; ++__i, ++__a, __b+=__s) *__b = *__a; }
+
+  // Copy strided array __src[<__n : __s1>] into another
+  // strided array __dst[< : __s2>].  Their sizes must match.
+  template<typename _Tp>
+  inline void
+  __valarray_copy(const _Tp* __restrict__ __src, size_t __n, size_t __s1,
+                  _Tp* __restrict__ __dst, size_t __s2)
+  {
+    for (size_t __i = 0; __i < __n; ++__i)
+      __dst[__i * __s2] = __src [ __i * __s1];
+  }
+
   
   // copy indexed __a[__i[<__n>]] in plain __b[<__n>]
   template<typename _Tp>
@@ -378,6 +390,13 @@ namespace std
   inline void
   __valarray_copy (_Array<_Tp> __a, _Array<_Tp> __b, size_t __n, size_t __s)
   { __valarray_copy (__a._M_data, __b._M_data, __n, __s); }
+
+  template<typename _Tp>
+  inline void
+  __valarray_copy(_Array<_Tp> __a, size_t __n, size_t __s1,
+                  _Array<_Tp> __b, size_t __s2)
+  { __valarray_copy(__a._M_data, __n, __s1, __b._M_data, __s2); }
+
   
   template<typename _Tp>
   inline void
