@@ -3394,7 +3394,22 @@ subst (x, from, to, in_dest, unique_copy)
 	  goto restart;
 	}
 
-      /* If only the low-order bit of X is possible nonzero, (plus x -1)
+      /* (plus (comparison A B) C) can become (neg (rev-comp A B)) if
+	 C is 1 and STORE_FLAG_VALUE is -1 or if C is -1 and STORE_FLAG_VALUE
+	 is 1.  This produces better code than the alternative immediately
+	 below.  */
+      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && reversible_comparison_p (XEXP (x, 0))
+	  && ((STORE_FLAG_VALUE == -1 && XEXP (x, 1) == const1_rtx)
+	      || (STORE_FLAG_VALUE == 1 && XEXP (x, 1) == constm1_rtx)))
+	{
+	  x = gen_binary (reverse_condition (GET_CODE (XEXP (x, 0))),
+			  mode, XEXP (XEXP (x, 0), 0), XEXP (XEXP (x, 0), 1));
+	  x = gen_unary (NEG, mode, x);
+	  goto restart;
+	}
+
+      /* If only the low-order bit of X is possibly nonzero, (plus x -1)
 	 can become (ashiftrt (ashift (xor x 1) C) C) where C is
 	 the bitsize of the mode - 1.  This allows simplification of
 	 "a = (b & 8) == 0;"  */
