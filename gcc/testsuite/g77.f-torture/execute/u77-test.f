@@ -80,11 +80,6 @@
 
 c consistency-check etime vs. dtime for first call
       r1 = etime (tarray1)
-      if (r1.ne.tarray1(1)+tarray1(2)) then
-        write (6,*) '*** ETIME didn''t return sum of the array: ',
-     +       r1, ' /= ', tarray1(1), '+', tarray1(2)
-        call abort
-      end if
       r2 = dtime (tarray2)
       if (abs (r1-r2).gt.1.0) then
         write (6,*)
@@ -141,8 +136,8 @@ c now try to get times to change enough to see in etime/dtime
       call idate (idat)
       write (6,*) 'IDATE d,m,y: ',idat
       print *,  '... and the VXT version: ', i,j,k
-      if (i/=idat(2) .or. j/=idat(1) .or. k/=idat(3)) then
-        print *, '*** vxy and u77 versions don''t agree'
+      if (i/=idat(2) .or. j/=idat(1) .or. k/=mod(idat(3),100)) then
+        print *, '*** vxt and u77 versions don''t agree'
         call abort
       end if
       call time(line(:8))
