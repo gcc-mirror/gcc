@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -35,3 +35,18 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 
 RUNTESTFLAGS =
 
+## CXX is actually a "C" compiler. These are real C++ programs.
+## Do the same thing as `testsuite_hooks --build-cxx`
+CXX_fake = @glibcpp_CXX@ 
+CXX=`echo $(CXX_fake) | sed 's/xgcc/g++/g'`
+CXXLINK = \
+	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+
+INCLUDES = \
+	-nostdinc++ \
+	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
+
+## Build support utilities.
+noinst_PROGRAMS = abi_check
+abi_check_SOURCES = abi_check.cc
