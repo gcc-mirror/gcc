@@ -1,3 +1,8 @@
+Tue Sep 21 18:40:01 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* genrecog.c (not_both_true): Handle correctly cases when called for
+	tests with different positions in the insn.
+
 Tue Sep 21 18:29:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* machmode.h (HOST_PTR_PRINTF): Move from here ...
