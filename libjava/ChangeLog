@@ -1,3 +1,8 @@
+2003-02-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/image/ColorModel.java: Re-merged with Classpath.
+	* java/awt/image/ImageFilter.java: Likewise.
+
 2003-02-17  Raif S. Naffah <raif@fl.net.au>
 
 	* java/math/BigInteger.java (euclidInv): Return array of

@@ -108,15 +108,9 @@ public class ImageFilter implements ImageConsumer, Cloneable
 	    throw new IllegalArgumentException("null argument for ImageFilter.getFilterInstance(ImageConsumer)");
 
 	consumer = ic;
-	try { 
-	    ImageFilter f = (ImageFilter)clone();
-	    consumer = null;
-	    return f;
-	} catch ( CloneNotSupportedException cnse ) {
-	    cnse.printStackTrace();
-	    consumer = null;
-	    return null;
-	}
+	ImageFilter f = (ImageFilter)clone();
+	consumer = null;
+	return f;
     }
 
     /**

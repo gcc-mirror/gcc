@@ -142,7 +142,7 @@ public abstract class ColorModel implements Transparency
         bits_sum |= bits [i];
       }
     
-    if ((bits.length < cspace.numComponents)
+    if ((bits.length < cspace.getNumComponents())
         || (bits_sum < 1))
       throw new IllegalArgumentException ();
 
