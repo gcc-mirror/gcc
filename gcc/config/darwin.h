@@ -647,13 +647,17 @@ static void alias_section (name, alias)			\
     }									\
   while (0)
 
+/* This can be called with address expressions as "rtx".
+   They must go in "const". */
 #undef	SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(mode, rtx, align)				\
   do									\
     {									\
       if (GET_MODE_SIZE (mode) == 8)					\
 	literal8_section ();						\
-      else if (GET_MODE_SIZE (mode) == 4)				\
+      else if (GET_MODE_SIZE (mode) == 4				\
+	       && (GET_CODE (rtx) == CONST_INT				\
+	           || GET_CODE (rtx) == CONST_DOUBLE))			\
 	literal4_section ();						\
       else								\
 	const_section ();						\
