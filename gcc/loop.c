@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cselib.h"
 #include "except.h"
 #include "toplev.h"
+#include "predict.h"
 
 #define LOOP_REG_LIFETIME(LOOP, REGNO) \
 ((REGNO_LAST_LUID (REGNO) - REGNO_FIRST_LUID (REGNO)))
@@ -4497,6 +4498,18 @@ strength_reduce (loop, flags)
   if (HAVE_doloop_end && (flags & LOOP_BCT) && flag_branch_on_count_reg)
     doloop_optimize (loop);
 #endif  /* HAVE_doloop_end  */
+
+  /* In case number of iterations is known, drop branch prediction note
+     in the branch.  Do that only in second loop pass, as loop unrolling
+     may change the number of iterations performed.  */
+  if ((flags & LOOP_BCT)
+      && loop_info->n_iterations / loop_info->unroll_number > 1)
+    {
+      int n = loop_info->n_iterations / loop_info->unroll_number - 1;
+      predict_insn (PREV_INSN (loop->end),
+		    PRED_LOOP_ITERATIONS,
+		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / n);
+    }
 
   if (loop_dump_stream)
     fprintf (loop_dump_stream, "\n");
