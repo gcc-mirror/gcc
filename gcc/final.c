@@ -111,6 +111,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HAVE_READONLY_DATA_SECTION 0
 #endif
 
+/* Bitflags used by final_scan_insn.  */
+#define SEEN_BB		1
+#define SEEN_NOTE	2
+#define SEEN_EMITTED	4
+
 /* Last insn processed by final_scan_insn.  */
 static rtx debug_insn;
 rtx current_output_insn;
@@ -201,10 +206,6 @@ rtx final_sequence;
 static int dialect_number;
 #endif
 
-/* Indexed by line number, nonzero if there is a note for that line.  */
-
-static char *line_note_exists;
-
 #ifdef HAVE_conditional_execution
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
@@ -234,6 +235,7 @@ static int final_addr_vec_align (rtx);
 #ifdef HAVE_ATTR_length
 static int align_fuzz (rtx, rtx, int, unsigned);
 #endif
+static rtx final_scan_insn (rtx, FILE *, int, int, int, int *);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -1500,16 +1502,15 @@ void
 final (rtx first, FILE *file, int optimize, int prescan)
 {
   rtx insn;
-  int max_line = 0;
   int max_uid = 0;
+  int seen = 0;
 
   last_ignored_compare = 0;
 
-  /* Make a map indicating which line numbers appear in this function.
-     When producing SDB debugging info, delete troublesome line number
+#ifdef SDB_DEBUGGING_INFO
+  /* When producing SDB debugging info, delete troublesome line number
      notes from inlined functions in other files as well as duplicate
      line number notes.  */
-#ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
     {
       rtx last = 0;
@@ -1518,34 +1519,22 @@ final (rtx first, FILE *file, int optimize, int prescan)
 	  {
 	    if ((RTX_INTEGRATED_P (insn)
 		 && strcmp (NOTE_SOURCE_FILE (insn), main_input_filename) != 0)
-		 || (last != 0
-		     && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
-		     && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)))
+		|| (last != 0
+		    && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
+		    && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)))
 	      {
 		delete_insn (insn);	/* Use delete_note.  */
 		continue;
 	      }
 	    last = insn;
-	    if (NOTE_LINE_NUMBER (insn) > max_line)
-	      max_line = NOTE_LINE_NUMBER (insn);
 	  }
     }
-  else
 #endif
-    {
-      for (insn = first; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > max_line)
-	  max_line = NOTE_LINE_NUMBER (insn);
-    }
-
-  line_note_exists = xcalloc (max_line + 1, sizeof (char));
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       if (INSN_UID (insn) > max_uid)       /* Find largest UID.  */
 	max_uid = INSN_UID (insn);
-      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
-	line_note_exists[NOTE_LINE_NUMBER (insn)] = 1;
 #ifdef HAVE_cc0
       /* If CC tracking across branches is enabled, record the insn which
 	 jumps to each branch only reached from one place.  */
@@ -1581,11 +1570,8 @@ final (rtx first, FILE *file, int optimize, int prescan)
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
-      insn = final_scan_insn (insn, file, optimize, prescan, 0);
+      insn = final_scan_insn (insn, file, optimize, prescan, 0, &seen);
     }
-
-  free (line_note_exists);
-  line_note_exists = NULL;
 }
 
 const char *
@@ -1644,11 +1630,18 @@ output_alternate_entry_point (FILE *file, rtx insn)
    Value returned is the next insn to be scanned.
 
    NOPEEPHOLES is the flag to disallow peephole processing (currently
-   used for within delayed branch sequence output).  */
+   used for within delayed branch sequence output).
 
-rtx
+   SEEN is used to track the end of the prologue, for emitting
+   debug information.  We force the emission of a line note after
+   both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG, or
+   at the beginning of the second basic block, whichever comes
+   first.  */
+
+static rtx
 final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
-		 int prescan, int nopeepholes ATTRIBUTE_UNUSED)
+		 int prescan, int nopeepholes ATTRIBUTE_UNUSED,
+		 int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
@@ -1687,6 +1680,15 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
 		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);
+
+	  if ((*seen & (SEEN_EMITTED | SEEN_BB)) == SEEN_BB)
+	    {
+	      *seen |= SEEN_EMITTED;
+	      last_filename = NULL;
+	    }
+	  else
+	    *seen |= SEEN_BB;
+
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -1702,6 +1704,15 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_PROLOGUE_END:
 	  (*targetm.asm_out.function_end_prologue) (file);
 	  profile_after_prologue (file);
+
+	  if ((*seen & (SEEN_EMITTED | SEEN_NOTE)) == SEEN_NOTE)
+	    {
+	      *seen |= SEEN_EMITTED;
+	      last_filename = NULL;
+	    }
+	  else
+	    *seen |= SEEN_NOTE;
+
 	  break;
 
 	case NOTE_INSN_EPILOGUE_BEG:
@@ -1711,6 +1722,15 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_FUNCTION_BEG:
 	  app_disable ();
 	  (*debug_hooks->end_prologue) (last_linenum, last_filename);
+
+	  if ((*seen & (SEEN_EMITTED | SEEN_NOTE)) == SEEN_NOTE)
+	    {
+	      *seen |= SEEN_EMITTED;
+	      last_filename = NULL;
+	    }
+	  else
+	    *seen |= SEEN_NOTE;
+
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:
@@ -2084,7 +2104,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	       thought unnecessary.  If that happens, cancel this sequence
 	       and cause that insn to be restored.  */
 
-	    next = final_scan_insn (XVECEXP (body, 0, 0), file, 0, prescan, 1);
+	    next = final_scan_insn (XVECEXP (body, 0, 0), file, 0, prescan, 1, seen);
 	    if (next != XVECEXP (body, 0, 1))
 	      {
 		final_sequence = 0;
@@ -2098,7 +2118,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		/* We loop in case any instruction in a delay slot gets
 		   split.  */
 		do
-		  insn = final_scan_insn (insn, file, 0, prescan, 1);
+		  insn = final_scan_insn (insn, file, 0, prescan, 1, seen);
 		while (insn != next);
 	      }
 #ifdef DBR_OUTPUT_SEQEND
@@ -2302,7 +2322,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
-		  final_scan_insn (note, file, optimize, prescan, nopeepholes);
+		  final_scan_insn (note, file, optimize, prescan, nopeepholes, seen);
 
 		/* In case this is prescan, put the notes
 		   in proper position for later rescan.  */
