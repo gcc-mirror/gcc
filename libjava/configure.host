@@ -53,6 +53,7 @@ case "${host}" in
 	# Use "Ecos" processes since they are a no-op.
 	PROCESS=Ecos
  	enable_java_net_default=no
+ 	enable_getenv_properties_default=no
 	;;
   i686-*|i586-*)
 	libgcj_flags="${libgcj_flags} -ffloat-store"

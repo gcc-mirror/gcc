@@ -23,6 +23,14 @@ details.  */
 #include <java-signal.h>
 #include <java-threads.h>
 
+#ifndef DISABLE_GETENV_PROPERTIES
+#include <ctype.h>
+#include <java-props.h>
+#define PROCESS_GCJ_PROPERTIES process_gcj_properties()
+#else
+#define PROCESS_GCJ_PROPERTIES
+#endif // DISABLE_GETENV_PROPERTIES
+
 #include <java/lang/Class.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/String.h>
@@ -55,6 +63,10 @@ static java::lang::OutOfMemoryError *no_memory;
 // Largest representable size_t.
 #define SIZE_T_MAX ((size_t) (~ (size_t) 0))
 
+#ifndef DISABLE_GETENV_PROPERTIES
+// Property key/value pairs.
+property_pair *_Jv_Environment_Properties;
+#endif
 
 
 #ifdef HANDLE_SEGV
@@ -621,9 +633,154 @@ main_init (void)
   sigaction (SIGPIPE, &act, NULL);
 }
 
+#ifndef DISABLE_GETENV_PROPERTIES
+
+static char *
+next_property_key (char *s, size_t *length)
+{
+  size_t l = 0;
+
+  JvAssert (s);
+
+  // Skip over whitespace
+  while (isspace (*s))
+    s++;
+
+  // If we've reached the end, return NULL.  Also return NULL if for
+  // some reason we've come across a malformed property string.
+  if (*s == 0
+      || *s == ':'
+      || *s == '=')
+    return NULL;
+
+  // Determine the length of the property key.
+  while (s[l] != 0
+	 && ! isspace (s[l])
+	 && s[l] != ':'
+	 && s[l] != '=')
+    {
+      if (s[l] == '\\'
+	  && s[l+1] != 0)
+	l++;
+      l++;
+    }
+
+  *length = l;
+
+  return s;
+}
+
+static char *
+next_property_value (char *s, size_t *length)
+{
+  size_t l = 0;
+
+  JvAssert (s);
+
+  while (isspace (*s))
+    s++;
+
+  if (*s == ':'
+      || *s == '=')
+    s++;
+
+  while (isspace (*s))
+    s++;
+
+  // If we've reached the end, return NULL.
+  if (*s == 0)
+    return NULL;
+
+  // Determine the length of the property value.
+  while (s[l] != 0
+	 && ! isspace (s[l])
+	 && s[l] != ':'
+	 && s[l] != '=')
+    {
+      if (s[l] == '\\'
+	  && s[l+1] != 0)
+	l += 2;
+      else
+	l++;
+    }
+
+  *length = l;
+
+  return s;
+}
+
+static void
+process_gcj_properties ()
+{
+  char *props = getenv("GCJ_PROPERTIES");
+  char *p = props;
+  size_t length;
+  size_t property_count = 0;
+
+  if (NULL == props)
+    return;
+
+  // Whip through props quickly in order to count the number of
+  // property values.
+  while (p && (p = next_property_key (p, &length)))
+    {
+      // Skip to the end of the key
+      p += length;
+
+      p = next_property_value (p, &length);
+      if (p)
+	p += length;
+      
+      property_count++;
+    }
+
+  // Allocate an array of property value/key pairs.
+  _Jv_Environment_Properties = 
+    (property_pair *) malloc (sizeof(property_pair) 
+			      * (property_count + 1));
+
+  // Go through the properties again, initializing _Jv_Properties
+  // along the way.
+  p = props;
+  property_count = 0;
+  while (p && (p = next_property_key (p, &length)))
+    {
+      _Jv_Environment_Properties[property_count].key = p;
+      _Jv_Environment_Properties[property_count].key_length = length;
+
+      // Skip to the end of the key
+      p += length;
+
+      p = next_property_value (p, &length);
+      
+      _Jv_Environment_Properties[property_count].value = p;
+      _Jv_Environment_Properties[property_count].value_length = length;
+
+      if (p)
+	p += length;
+
+      property_count++;
+    }
+  memset ((void *) &_Jv_Environment_Properties[property_count], 
+	  0, sizeof (property_pair));
+  {
+    size_t i = 0;
+
+    // Null terminate the strings.
+    while (_Jv_Environment_Properties[i].key)
+      {
+	_Jv_Environment_Properties[i].key[_Jv_Environment_Properties[i].key_length] = 0;
+	_Jv_Environment_Properties[i++].value[_Jv_Environment_Properties[i].value_length] = 0;
+      }
+  }
+}
+#endif // DISABLE_GETENV_PROPERTIES
+
 void
 JvRunMain (jclass klass, int argc, const char **argv)
 {
+  PROCESS_GCJ_PROPERTIES;
+
   main_init ();
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
@@ -639,6 +796,8 @@ JvRunMain (jclass klass, int argc, const char **argv)
 void
 _Jv_RunMain (const char *class_name, int argc, const char **argv)
 {
+  PROCESS_GCJ_PROPERTIES;
+
   main_init ();
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
