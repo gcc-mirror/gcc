@@ -1,3 +1,9 @@
+Tue Jan 27 17:21:09 1998  Gavin Koch  (gavin@cygnus.com)
+
+	* mips/mips.c (mips_expand_prologue,mips_expand_epilogue):
+	Change mode of registers used to add/sub from 
+	hard_frame_pointer_rtx from word_mode to Pmode.
+
 Tue Jan 27 11:02:04 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* v850.h (ASM_OUTPUT_ALIGNED_BSS): Use
@@ -174,7 +180,7 @@ Fri Jan 23 00:27:23 1998  John Carr  <jfc@mit.edu>
 	* toplev.c (get_run_time): Call sysconf(_SC_CLK_TCK), when available,
 	to get clock rate.
 
-Fri Jan 23 00:19:36 1998  Gavin Kock  (gavin@cygnus.com)
+Fri Jan 23 00:19:36 1998  Gavin Koch  (gavin@cygnus.com)
 
 	* mips.md (muldi3_internal2): Reverse test for TARGET_MIPS16.
 

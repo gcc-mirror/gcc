@@ -6502,7 +6502,7 @@ mips_expand_prologue ()
 	  if (!frame_pointer_needed)
 	    abort ();
 
-	  reg_rtx = gen_rtx (REG, word_mode, 3);
+	  reg_rtx = gen_rtx (REG, Pmode, 3);
   	  emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
   	  emit_move_insn (reg_rtx, tsize_rtx);
   	  if (TARGET_64BIT)
@@ -6722,7 +6722,7 @@ mips_expand_epilogue ()
                  add a register to $sp.  */
 	      if (orig_tsize > 32767)
 		{
-		  rtx g6_rtx = gen_rtx (REG, word_mode, GP_REG_FIRST + 6);
+		  rtx g6_rtx = gen_rtx (REG, Pmode, GP_REG_FIRST + 6);
 
 		  emit_move_insn (g6_rtx, GEN_INT (tsize));
 		  if (TARGET_LONG64)
