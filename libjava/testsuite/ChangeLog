@@ -1,3 +1,8 @@
+2000-01-11  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/klass.out: New file.
+	* libjava.lang/klass.java: New file.
+
 1999-12-31  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.mauve/mauve.exp (mauve_compute_uses): Let user select
