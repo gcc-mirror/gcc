@@ -2475,6 +2475,12 @@ hppa_expand_epilogue ()
 				   gen_rtx (POST_INC, DFmode, tmpreg)));
     }
 
+  /* Emit a blockage insn here to keep these insns from being moved to
+     an earlier spot in the epilogue, or into the main instruction stream.
+
+     This is necessary as we must not cut the stack back before all the
+     restores are finished.  */
+  emit_insn (gen_blockage ());
   /* No frame pointer, but we have a stack greater than 8k.  We restore
      %r2 very late in this case.  (All other cases are restored as early
      as possible.)  */
@@ -2499,10 +2505,6 @@ hppa_expand_epilogue ()
      pointer is initially set to fp + 64 to avoid a race condition.  */
   else if (frame_pointer_needed)
     {
-      /* Emit a blockage insn here to keep these insns from being moved
-	 to the beginning of the prologue or into the main instruction
-	 stream, doing so avoids some very obscure problems.  */
-      emit_insn (gen_blockage ());
       set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
       emit_insn (gen_pre_ldwm (frame_pointer_rtx, 
 			       stack_pointer_rtx,
