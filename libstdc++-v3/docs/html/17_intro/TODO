@@ -99,7 +99,9 @@ g++/binutils
 - relocations, work on getting these down
 
 - issues with __builtin_memcpy and std::copy from Jerry Quinn
-  http://gcc.gnu.org/ml/libstdc++/2003-02/msg00076.html
+  http://gcc.gnu.org/ml/libstdc++/2003-02/msg00056.html
+  http://gcc.gnu.org/ml/libstdc++/2003-02/msg00302.html
+  http://gcc.gnu.org/ml/gcc/2003-10/msg01305.html
 
 - fix dependency tracking for includes (.h, .tcc) during build process.
 

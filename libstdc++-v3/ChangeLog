@@ -1,3 +1,9 @@
+2003-10-27  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* docs/html/17_intro/TODO: Add links.
+	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc:
+	Uncomment.
+	
 2003-10-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12750

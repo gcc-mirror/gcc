@@ -27,8 +27,7 @@
 
 #include <istream>
 #include <streambuf>
-//#include <testsuite_hooks.h>
-#define VERIFY(x) x
+#include <testsuite_hooks.h>
 
 struct buf: std::streambuf
 {
