@@ -307,7 +307,7 @@ collect_expansion (pfile, arglist)
   last -= 2;  /* two extra chars for the leading escape */
   for (;;)
     {
-      /* We use cpp_get_token because get_directive_token would
+      /* We use cpp_get_token because _cpp_get_directive_token would
 	 discard whitespace and we can't cope with that yet.  Macro
 	 expansion is off, so we are guaranteed not to see POP or EOF.  */
 
@@ -570,7 +570,7 @@ collect_formal_parameters (pfile)
   long old_written;
 
   old_written = CPP_WRITTEN (pfile);
-  token = get_directive_token (pfile);
+  token = _cpp_get_directive_token (pfile);
   if (token != CPP_LPAREN)
     {
       cpp_ice (pfile, "first token = %d not %d in collect_formal_parameters",
@@ -584,7 +584,7 @@ collect_formal_parameters (pfile)
   for (;;)
     {
       CPP_SET_WRITTEN (pfile, old_written);
-      token = get_directive_token (pfile);
+      token = _cpp_get_directive_token (pfile);
       switch (token)
 	{
 	case CPP_NAME:
@@ -660,7 +660,7 @@ collect_formal_parameters (pfile)
 
   argv[argc].rest_arg = 1;
   
-  token = get_directive_token (pfile);
+  token = _cpp_get_directive_token (pfile);
   if (token != CPP_RPAREN)
     {
       cpp_error (pfile, "another parameter follows `...'");
@@ -826,6 +826,43 @@ static const char * const monthnames[] =
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 };
 
+/* Place into PFILE a quoted string representing the string SRC.
+   Caller must reserve enough space in pfile->token_buffer.  */
+
+void
+_cpp_quote_string (pfile, src)
+     cpp_reader *pfile;
+     const char *src;
+{
+  U_CHAR c;
+
+  CPP_PUTC_Q (pfile, '\"');
+  for (;;)
+    switch ((c = *src++))
+      {
+      default:
+        if (ISPRINT (c))
+	  CPP_PUTC_Q (pfile, c);
+	else
+	  {
+	    sprintf ((char *)CPP_PWRITTEN (pfile), "\\%03o", c);
+	    CPP_ADJUST_WRITTEN (pfile, 4);
+	  }
+	break;
+
+      case '\"':
+      case '\\':
+	CPP_PUTC_Q (pfile, '\\');
+	CPP_PUTC_Q (pfile, c);
+	break;
+      
+      case '\0':
+	CPP_PUTC_Q (pfile, '\"');
+	CPP_NUL_TERMINATE_Q (pfile);
+	return;
+      }
+}
+
 /*
  * expand things like __FILE__.  Place the expansion into the output
  * buffer *without* rescanning.
@@ -857,7 +894,7 @@ special_symbol (hp, pfile)
 	if (!buf)
 	  buf = "";
 	CPP_RESERVE (pfile, 3 + 4 * strlen (buf));
-	quote_string (pfile, buf);
+	_cpp_quote_string (pfile, buf);
 	return;
       }
 
@@ -1597,7 +1634,7 @@ _cpp_dump_definition (pfile, sym, len, defn)
      DEFINITION *defn;
 {
   if (pfile->lineno == 0)
-    output_line_command (pfile, same_file);
+    _cpp_output_line_command (pfile, same_file);
 
   CPP_RESERVE (pfile, len + sizeof "#define ");
   CPP_PUTS_Q (pfile, "#define ", sizeof "#define " -1);

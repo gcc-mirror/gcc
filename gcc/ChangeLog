@@ -1,3 +1,48 @@
+2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (LIBCPP_OBJS): Add cpplex.o.
+	(cpplex.o): New target.
+	* po/POTFILES.in: Add cpplex.c.
+
+	* cpplex.c (_cpp_grow_token_buffer, null_cleanup,
+	cpp_push_buffer, cpp_pop_buffer, cpp_scan_buffer,
+	cpp_expand_to_buffer, cpp_buf_line_and_col, cpp_file_buffer,
+	skip_block_comment, skip_line_comment, skip_comment,
+	copy_comment, _cpp_skip_hspace, _cpp_skip_rest_of_line,
+	_cpp_parse_name, skip_string, parse_string,
+	_cpp_parse_assertion, cpp_get_token, cpp_get_non_space_token,
+	_cpp_get_directive_token, find_position,
+	_cpp_read_and_prescan, _cpp_init_input_buffer): Move here.
+	(maybe_macroexpand, _cpp_lex_token): New functions.
+
+	* cpplib.c (SKIP_WHITE_SPACE, eval_if_expr, parse_set_mark,
+	parse_goto_mark): Delete.
+	(_cpp_handle_eof): New function.
+	(_cpp_handle_directive): Rename from handle_directive.
+	(_cpp_output_line_command): Rename from output_line_command.
+	(do_if, do_elif): Call _cpp_parse_expr directly.
+	* cppfiles.c (_cpp_read_include_file): Don't call
+	init_input_buffer here.
+	* cpphash.c (quote_string): Move here, rename _cpp_quote_string.
+	* cppexp.c (_cpp_parse_expr): Diddle parsing_if_directive
+	here; pop the token_buffer and skip the rest of the line here.
+	* cppinit.c (cpp_start_read): Call _cpp_init_input_buffer
+	here.
+
+	* cpphash.h (CPP_RESERVE, CPP_IS_MACRO_BUFFER, ACTIVE_MARK_P):
+	Define here.
+	(CPP_SET_BUF_MARK, CPP_GOTO_BUF_MARK, CPP_SET_MARK,
+	CPP_GOTO_MARK): New macros.
+	(_cpp_quote_string, _cpp_parse_name, _cpp_skip_rest_of_line,
+	_cpp_skip_hspace, _cpp_parse_assertion, _cpp_lex_token,
+	_cpp_read_and_prescan, _cpp_init_input_buffer,
+	_cpp_grow_token_buffer, _cpp_get_directive_token,
+	_cpp_handle_directive, _cpp_handle_eof,
+	_cpp_output_line_command): Prototype them here.
+	* cpplib.h (enum cpp_token): Add CPP_MACRO.
+	(CPP_RESERVE, get_directive_token, cpp_grow_buffer,
+	quote_string, output_line_command): Remove.
+
 2000-03-13  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* stmt.c (expand_end_case): RANGE may be signed, and when checking

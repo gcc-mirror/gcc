@@ -217,6 +217,11 @@ extern unsigned char _cpp_IStable[256];
   ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur++ : EOF)
 #define CPP_FORWARD(BUFFER, N) ((BUFFER)->cur += (N))
 
+/* Make sure PFILE->token_buffer has space for at least N more characters. */
+#define CPP_RESERVE(PFILE, N) \
+  (CPP_WRITTEN (PFILE) + (size_t)(N) > (PFILE)->token_buffer_size \
+   && (_cpp_grow_token_buffer (PFILE, N), 0))
+
 /* Append string STR (of length N) to PFILE's output buffer.
    Assume there is enough space. */
 #define CPP_PUTS_Q(PFILE, STR, N) \
@@ -242,6 +247,29 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_PEDANTIC(PFILE) \
   (CPP_OPTIONS (PFILE)->pedantic && !CPP_BUFFER (pfile)->system_header_p)
 
+/* CPP_IS_MACRO_BUFFER is true if the buffer contains macro expansion.
+   (Note that it is false while we're expanding macro *arguments*.) */
+#define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
+
+/* Remember the current position of PFILE so it may be returned to
+   after looking ahead a bit.
+
+   Note that when you set a mark, you _must_ return to that mark.  You
+   may not forget about it and continue parsing.  You may not pop a
+   buffer with an active mark.  You may not call CPP_BUMP_LINE while a
+   mark is active.  */
+#define CPP_SET_BUF_MARK(IP)   ((IP)->mark = (IP)->cur - (IP)->buf)
+#define CPP_GOTO_BUF_MARK(IP)  ((IP)->cur = (IP)->buf + (IP)->mark, \
+				(IP)->mark = -1)
+#define CPP_SET_MARK(PFILE)  CPP_SET_BUF_MARK(CPP_BUFFER(PFILE))
+#define CPP_GOTO_MARK(PFILE) CPP_GOTO_BUF_MARK(CPP_BUFFER(PFILE))
+
+/* ACTIVE_MARK_P is true if there's a live mark in the buffer.  */
+#define ACTIVE_MARK_P(PFILE) (CPP_BUFFER (PFILE)->mark != -1)
+
+/* Last arg to output_line_command.  */
+enum file_change_code {same_file, rename_file, enter_file, leave_file};
+
 /* In cpphash.c */
 extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
 						 enum node_type,
@@ -257,6 +285,7 @@ extern void _cpp_dump_definition	PARAMS ((cpp_reader *, const U_CHAR *,
 						 long, DEFINITION *));
 extern int _cpp_compare_defs		PARAMS ((cpp_reader *, DEFINITION *,
 						 DEFINITION *));
+extern void _cpp_quote_string		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_macroexpand		PARAMS ((cpp_reader *, HASHNODE *));
 extern void _cpp_init_macro_hash	PARAMS ((cpp_reader *));
 extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
@@ -271,5 +300,25 @@ extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
+
+/* In cpplex.c */
+extern void _cpp_parse_name		PARAMS ((cpp_reader *, int));
+extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
+extern void _cpp_skip_hspace		PARAMS ((cpp_reader *));
+extern int _cpp_parse_assertion		PARAMS ((cpp_reader *));
+extern enum cpp_token _cpp_lex_token	PARAMS ((cpp_reader *));
+extern long _cpp_read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
+						 int, size_t));
+extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
+extern void _cpp_grow_token_buffer	PARAMS ((cpp_reader *, long));
+extern enum cpp_token _cpp_get_directive_token
+					PARAMS ((cpp_reader *));
+
+/* In cpplib.c */
+extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
+extern void _cpp_handle_eof		PARAMS ((cpp_reader *));
+extern void _cpp_output_line_command	PARAMS ((cpp_reader *,
+						 enum file_change_code));
+
 
 #endif

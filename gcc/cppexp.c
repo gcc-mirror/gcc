@@ -352,12 +352,12 @@ parse_defined (pfile)
   op.op = INT;
 
   pfile->no_macro_expand++;
-  token = get_directive_token (pfile);
+  token = _cpp_get_directive_token (pfile);
   if (token == CPP_LPAREN)
     {
       paren++;
       CPP_SET_WRITTEN (pfile, old_written);
-      token = get_directive_token (pfile);
+      token = _cpp_get_directive_token (pfile);
     }
 
   if (token != CPP_NAME)
@@ -369,7 +369,7 @@ parse_defined (pfile)
 
   if (paren)
     {
-      if (get_directive_token (pfile) != CPP_RPAREN)
+      if (_cpp_get_directive_token (pfile) != CPP_RPAREN)
 	goto oops;
     }
   CPP_SET_WRITTEN (pfile, old_written);
@@ -419,7 +419,7 @@ lex (pfile, skip_evaluation)
   long old_written;
 
   old_written = CPP_WRITTEN (pfile);
-  token = get_directive_token (pfile);
+  token = _cpp_get_directive_token (pfile);
 
   tok_start = pfile->token_buffer + old_written;
   tok_end = CPP_PWRITTEN (pfile);
@@ -689,7 +689,10 @@ _cpp_parse_expr (pfile)
   register struct operation *top = stack;
   unsigned int lprio, rprio = 0;
   int skip_evaluation = 0;
+  long old_written = CPP_WRITTEN (pfile);
+  int result;
 
+  pfile->parsing_if_directive++;
   top->rprio = 0;
   top->flags = 0;
   for (;;)
@@ -999,9 +1002,8 @@ _cpp_parse_expr (pfile)
 	{
 	  if (top != stack)
 	    cpp_ice (pfile, "unbalanced stack in #if expression");
-	  if (stack != init_stack)
-	    free (stack);
-	  return (top->value != 0);
+	  result = (top->value != 0);
+	  goto done;
 	}
       top++;
       
@@ -1041,7 +1043,12 @@ _cpp_parse_expr (pfile)
 	}
     }
  syntax_error:
+  _cpp_skip_rest_of_line (pfile);
+  result = 0;
+ done:
+  pfile->parsing_if_directive--;
+  CPP_SET_WRITTEN (pfile, old_written);
   if (stack != init_stack)
     free (stack);
-  return 0;
+  return result;
 }

@@ -40,6 +40,7 @@ enum cpp_token
   CPP_HSPACE,
   CPP_VSPACE, /* newlines and #line directives */
   CPP_NAME,
+  CPP_MACRO,
   CPP_NUMBER,
   CPP_CHAR,
   CPP_WCHAR,
@@ -232,11 +233,6 @@ struct cpp_reader
 #define CPP_PWRITTEN(PFILE) ((PFILE)->limit)
 #define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
-
-/* Make sure PFILE->token_buffer has space for at least N more characters. */
-#define CPP_RESERVE(PFILE, N) \
-  (CPP_WRITTEN (PFILE) + (size_t)(N) > (PFILE)->token_buffer_size \
-   && (cpp_grow_buffer (PFILE, N), 0))
 
 #define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
@@ -438,7 +434,6 @@ extern const char *progname;
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
-extern enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
@@ -482,21 +477,14 @@ extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, 
 extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
 extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
 
-extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    const unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
-extern void quote_string		PARAMS ((cpp_reader *, const char *));
 extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *,
 						 const unsigned char *, int));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
-
-/* Last arg to output_line_command.  */
-enum file_change_code {same_file, rename_file, enter_file, leave_file};
-extern void output_line_command		PARAMS ((cpp_reader *,
-						 enum file_change_code));
 
 /* In cppfiles.c */
 extern int cpp_included			PARAMS ((cpp_reader *, const char *));

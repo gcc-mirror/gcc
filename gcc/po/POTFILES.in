@@ -594,6 +594,7 @@ cppfiles.c
 cpphash.c
 cpphash.h
 cppinit.c
+cpplex.c
 cpplib.c
 cpplib.h
 cppmain.c
