@@ -138,7 +138,7 @@ int_vasprintf (result, format, args)
 #ifdef TEST
   global_total_width = total_width;
 #endif
-  *result = malloc (total_width);
+  *result = (char *) malloc (total_width);
   if (*result != NULL)
     return vsprintf (*result, format, *args);
   else

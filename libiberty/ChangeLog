@@ -1,3 +1,21 @@
+2002-09-19  John David Anglin  <dave@hiuly1.hia.nrc.ca>
+
+	* cp-demangle.c (demangling_new): Cast 0 to enum.
+	(demangle_char): Cast return of strdup to char *.
+	(is_gnu_v3_mangled_ctor): Cast 0 to enum.
+	(is_gnu_v3_mangled_dtor): Likewise.
+	* cplus-dem.c (grow_vect): Cast return of xrealloc to void *.
+	(work_stuff_copy_to_from): Cast return of xmalloc to char **.
+	* fibheap.c (fibnode_new): Cast return of xcalloc to fibnode_t.
+	* md5.c (md5_process_bytes): Cast results back to const void *.
+	(md5_process_block): Add cast to const md5_uint32 *.
+	* regex.c (re_compile_fastmap): Cast enum to UCHAR_T.
+	* safe-ctype.c (L, XL, U, XU, D, P, _, C, Z, M, V, T, S): Add cast to
+	unsigned short.
+	* splay-tree.c (splay_tree_xmalloc_allocate): Cast return of xmalloc
+	to void *.
+	* vasprintf.c (int_vasprintf): Cast return of malloc to char *.
+
 2002-09-19  Nick Clifton  <nickc@redhat.com>
 
 	* README: Update email addresses for bugs and patches.

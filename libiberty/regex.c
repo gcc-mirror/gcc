@@ -4648,7 +4648,7 @@ PREFIX(re_compile_fastmap) (bufp)
 
   while (1)
     {
-      if (p == pend || *p == succeed)
+      if (p == pend || *p == (UCHAR_T) succeed)
 	{
 	  /* We have reached the (effective) end of pattern.  */
 	  if (!FAIL_STACK_EMPTY ())

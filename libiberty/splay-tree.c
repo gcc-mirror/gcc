@@ -234,7 +234,7 @@ splay_tree_xmalloc_allocate (size, data)
      int size;
      void *data ATTRIBUTE_UNUSED;
 {
-  return xmalloc (size);
+  return (void *) xmalloc (size);
 }
 
 static void

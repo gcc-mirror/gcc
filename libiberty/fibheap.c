@@ -66,7 +66,7 @@ fibnode_new ()
 {
   fibnode_t node;
 
-  node = xcalloc (1, sizeof *node);
+  node = (fibnode_t) xcalloc (1, sizeof *node);
   node->left = node;
   node->right = node;
 

@@ -229,7 +229,7 @@ md5_process_bytes (buffer, len, ctx)
 	  ctx->buflen = (left_over + add) & 63;
 	}
 
-      buffer = (const char *) buffer + add;
+      buffer = (const void *) ((const char *) buffer + add);
       len -= add;
     }
 
@@ -237,7 +237,7 @@ md5_process_bytes (buffer, len, ctx)
   if (len > 64)
     {
       md5_process_block (buffer, len & ~63, ctx);
-      buffer = (const char *) buffer + (len & ~63);
+      buffer = (const void *) ((const char *) buffer + (len & ~63));
       len &= 63;
     }
 
@@ -269,7 +269,7 @@ md5_process_block (buffer, len, ctx)
      struct md5_ctx *ctx;
 {
   md5_uint32 correct_words[16];
-  const md5_uint32 *words = buffer;
+  const md5_uint32 *words = (const md5_uint32 *) buffer;
   size_t nwords = len / sizeof (md5_uint32);
   const md5_uint32 *endp = words + nwords;
   md5_uint32 A = ctx->A;
