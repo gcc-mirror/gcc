@@ -666,7 +666,7 @@ extern int rs6000_pic_labelno;
 #define	ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
-      && (SIZE) <= g_switch_value)					\
+      && (SIZE) <= (unsigned HOST_WIDE_INT)g_switch_value)		\
     {									\
       sbss_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
