@@ -1099,8 +1099,7 @@
         (ne:DI (match_operand:SI 1 "register_operand" "")
                (const_int 0)))
    (clobber (reg:CC 100))]
-  "TARGET_ARCH64
-   && reload_completed"
+  "TARGET_ARCH64"
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (minus:SI (const_int 0) (match_dup 1))
                                            (const_int 0)))
    (set (match_dup 0) (zero_extend:DI (plus:SI (plus:SI (const_int 0)
@@ -2016,6 +2015,14 @@
   ;
 }")
 
+(define_insn "*movhi_const64_special"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(match_operand:HI 1 "const64_high_operand" ""))]
+  "TARGET_ARCH64"
+  "sethi\\t%%hi(%a1), %0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
 (define_insn "*movhi_insn"
   [(set (match_operand:HI 0 "general_operand" "=r,r,r,m")
 	(match_operand:HI 1 "input_operand"   "rI,K,m,rJ"))]
@@ -2029,23 +2036,14 @@
   [(set_attr "type" "move,move,load,store")
    (set_attr "length" "1")])
 
-;; We always work with constants here, never symbols, so no need
-;; for the funny PIC versions.
+;; We always work with constants here.
 (define_insn "*movhi_lo_sum"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
-                   (match_operand:HI 2 "immediate_operand" "in")))]
+	(ior:HI (match_operand:HI 1 "register_operand" "r")
+                (match_operand:HI 2 "immediate_operand" "in")))]
   ""
-  "or\\t%1, %%lo(%a2), %0"
+  "or\\t%1, %2, %0"
   [(set_attr "type" "ialu")
-   (set_attr "length" "1")])
-
-(define_insn "*movhi_high"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand:SI 1 "" "")))]
-  ""
-  "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
    (set_attr "length" "1")])
 
 (define_expand "movsi"
@@ -2128,6 +2126,16 @@
   "TARGET_LIVE_G0"
   "and\\t%0, 0, %0"
   [(set_attr "type" "binary")
+   (set_attr "length" "1")])
+
+;; This is needed to show CSE exactly which bits are set
+;; in a 64-bit register by sethi instructions.
+(define_insn "*movsi_const64_special"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operand:SI 1 "const64_high_operand" ""))]
+  "TARGET_ARCH64"
+  "sethi\\t%%hi(%a1), %0"
+  [(set_attr "type" "move")
    (set_attr "length" "1")])
 
 (define_insn "*movsi_insn"
@@ -2984,12 +2992,12 @@
   ;
 }")
 
-;; Be careful, fmovd does not exist when !arch64.
+;; Be careful, fmovd does not exist when !v9.
 (define_insn "*movdf_insn_sp32"
   [(set (match_operand:DF 0 "general_operand" "=e,T,U,T,e,r,r,o,e,o")
 	(match_operand:DF 1 "input_operand"    "T,e,T,U,e,r,o,r,o,e"))]
   "TARGET_FPU
-   && ! TARGET_ARCH64
+   && ! TARGET_V9
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
   "@
@@ -3022,10 +3030,35 @@
   [(set_attr "type" "load,store,*,*,*")
    (set_attr "length" "1,1,2,2,2")])
 
+;; We have available v9 double floats but not 64-bit
+;; integer registers.
+(define_insn "*movdf_insn_v9only"
+  [(set (match_operand:DF 0 "general_operand" "=e,e,m,r,U,T,r,o")
+        (match_operand:DF 1 "input_operand"    "e,m,e,r,T,U,o,r"))]
+  "TARGET_FPU
+   && TARGET_V9
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode))"
+  "@
+  fmovd\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  #
+  #
+  #"
+  [(set_attr "type" "fpmove,load,store,load,store,*,*,*")
+   (set_attr "length" "1,1,1,1,1,2,2,2")])
+
+;; We have available both v9 double floats and 64-bit
+;; integer registers.
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "general_operand" "=e,e,m,r,r,m")
         (match_operand:DF 1 "input_operand"    "e,m,e,r,m,r"))]
   "TARGET_FPU
+   && TARGET_V9
    && TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -3055,10 +3088,17 @@
 
 ;; Ok, now the splits to handle all the multi insn and
 ;; mis-aligned memory address cases.
+;; In these splits please take note that we must be
+;; careful when V9 but not ARCH64 because the integer
+;; register DFmode cases must be handled.
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "register_operand" ""))]
-  "! TARGET_ARCH64 && reload_completed"
+  "(! TARGET_V9
+    || (! TARGET_ARCH64
+        && GET_CODE (operands[0]) == REG
+        && REGNO (operands[0]) < 32))
+   && reload_completed"
   [(clobber (const_int 0))]
   "
 {
@@ -3095,7 +3135,10 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand" ""))]
-  "(! TARGET_ARCH64
+  "((! TARGET_V9
+     || (! TARGET_ARCH64
+         && GET_CODE (operands[0]) == REG
+         && REGNO (operands[0]) < 32))
     && (reload_completed
         && (((REGNO (operands[0])) % 2) != 0
              || ! mem_min_alignment (operands[1], 8))
@@ -3134,7 +3177,10 @@
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "(! TARGET_ARCH64
+  "((! TARGET_V9
+     || (! TARGET_ARCH64
+         && GET_CODE (operands[1]) == REG
+         && REGNO (operands[1]) < 32))
     && (reload_completed
         && (((REGNO (operands[1])) % 2) != 0
              || ! mem_min_alignment (operands[0], 8))
@@ -4681,7 +4727,7 @@
         (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
                  (match_operand:DI 2 "register_operand" "")))
    (clobber (reg:CC 100))]
-  "! TARGET_ARCH64"
+  "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
                    (compare:CC_NOOV (plus:SI (match_dup 3) (match_dup 1))
                                     (const_int 0)))
@@ -4857,7 +4903,7 @@
         (minus:DI (match_operand:DI 1 "register_operand" "")
                   (zero_extend:DI (match_operand:SI 2 "register_operand" ""))))
    (clobber (reg:CC 100))]
-  "! TARGET_ARCH64"
+  "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
                    (compare:CC_NOOV (minus:SI (match_dup 3) (match_dup 2))
                                     (const_int 0)))
