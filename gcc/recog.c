@@ -3051,6 +3051,7 @@ peephole2_optimize (dump_file)
 	      rtx try, before_try, x;
 	      int match_len;
 	      rtx note;
+	      bool was_call = false;
 
 	      /* Record this insn.  */
 	      if (--peep2_current < 0)
@@ -3077,6 +3078,7 @@ peephole2_optimize (dump_file)
 		      old_insn = peep2_insn_data[j].insn;
 		      if (GET_CODE (old_insn) != CALL_INSN)
 			continue;
+		      was_call = true;
 
 		      new_insn = NULL_RTX;
 		      if (GET_CODE (try) == SEQUENCE)
@@ -3140,13 +3142,13 @@ peephole2_optimize (dump_file)
 		  delete_insn_chain (insn, peep2_insn_data[i].insn);
 
 		  /* Re-insert the EH_REGION notes.  */
-		  if (note)
+		  if (note || (was_call && nonlocal_goto_handler_labels))
 		    {
 		      edge eh_edge;
 
 		      for (eh_edge = bb->succ; eh_edge
 			   ; eh_edge = eh_edge->succ_next)
-			if (eh_edge->flags & EDGE_EH)
+			if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 			  break;
 
 		      for (x = try ; x != before_try ; x = PREV_INSN (x))
@@ -3155,10 +3157,11 @@ peephole2_optimize (dump_file)
 				&& may_trap_p (PATTERN (x))
 				&& !find_reg_note (x, REG_EH_REGION, NULL)))
 			  {
-			    REG_NOTES (x)
-			      = gen_rtx_EXPR_LIST (REG_EH_REGION,
-						   XEXP (note, 0),
-						   REG_NOTES (x));
+			    if (note)
+			      REG_NOTES (x)
+			        = gen_rtx_EXPR_LIST (REG_EH_REGION,
+						     XEXP (note, 0),
+						     REG_NOTES (x));
 
 			    if (x != bb->end && eh_edge)
 			      {
@@ -3166,7 +3169,8 @@ peephole2_optimize (dump_file)
 				int flags;
 
 				nfte = split_block (bb, x);
-				flags = EDGE_EH | EDGE_ABNORMAL;
+				flags = (eh_edge->flags
+					 & (EDGE_EH | EDGE_ABNORMAL));
 				if (GET_CODE (x) == CALL_INSN)
 				  flags |= EDGE_ABNORMAL_CALL;
 				nehe = make_edge (nfte->src, eh_edge->dest,

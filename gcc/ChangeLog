@@ -1,3 +1,9 @@
+2002-05-13  Richard Henderson  <rth@redhat.com>
+
+	* cfgrtl.c (purge_dead_edges): Handle abnormal call edges created
+	by non-local gotos.
+	* recog.c (peephole2_optimize): Likewise.
+
 2002-05-13  Andris Pavenis  <pavenis@lanet.lv>
 
 	* cppfiles.c (open_file): Change mode (DJGPP only) of redirected

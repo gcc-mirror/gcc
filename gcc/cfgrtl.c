@@ -2131,19 +2131,29 @@ purge_dead_edges (bb)
 	remove_note (insn, note);
     }
 
-  /* Cleanup abnormal edges caused by throwing insns that have been
-     eliminated.  */
-  if (! can_throw_internal (bb->end))
-    for (e = bb->succ; e; e = next)
-      {
-	next = e->succ_next;
-	if (e->flags & EDGE_EH)
-	  {
-	    remove_edge (e);
-	    bb->flags |= BB_DIRTY;
-	    purged = true;
-	  }
-      }
+  /* Cleanup abnormal edges caused by exceptions or non-local gotos.  */
+  for (e = bb->succ; e; e = next)
+    {
+      next = e->succ_next;
+      if (e->flags & EDGE_EH)
+	{
+	  if (can_throw_internal (bb->end))
+	    continue;
+	}
+      else if (e->flags & EDGE_ABNORMAL_CALL)
+	{
+	  if (GET_CODE (bb->end) == CALL_INSN
+	      && (! (note = find_reg_note (insn, REG_EH_REGION, NULL))
+		  || INTVAL (XEXP (note, 0)) >= 0))
+	    continue;
+	}
+      else
+	continue;
+
+      remove_edge (e);
+      bb->flags |= BB_DIRTY;
+      purged = true;
+    }
 
   if (GET_CODE (insn) == JUMP_INSN)
     {
