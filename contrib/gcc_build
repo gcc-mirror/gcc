@@ -167,7 +167,7 @@ export_gcc() {
     changedir ${DESTINATION}
     # Go up one level.
     changedir ..
-    # Build a tarbal off the source directory.
+    # Build a tarball of the source directory.
     tar czf ${TARFILE} \
 	--exclude=${OBJDIR} \
 	--exclude=CVS \
@@ -230,14 +230,14 @@ UPDATE=0
 ########################################################################
 
 # Parse the options.
-while getopts "c:d:m:t:" ARG; do
+while getopts "c:d:m:p:t:u:" ARG; do
     case $ARG in
     c)    CONFIGURE_OPTIONS="${OPTARG}";;
     d)    DESTINATION="${OPTARG}";;
     m)    MAKE_OPTIONS="${OPTARG}";;
-    u)    CVS_USERNAME="${OPTARG}";;
     p)    CVS_PROTOCOL="${OPTARG}";;
     t)    CVS_TARGFILE="${OPTARG}";;
+    u)    CVS_USERNAME="${OPTARG}";;
     \?)   usage;;
     esac
 done

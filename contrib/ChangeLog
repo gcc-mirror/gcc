@@ -1,3 +1,7 @@
+2000-10-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Fix typos.
+
 2000-10-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gperf-2.7-19981006.pat: Remove.
