@@ -1374,7 +1374,6 @@ override_options (void)
   if (TARGET_SSE2)
     target_flags |= MASK_SSE;
 
-      target_flags |= (MASK_128BIT_LONG_DOUBLE);
   if (TARGET_64BIT)
     {
       if (TARGET_ALIGN_DOUBLE)
