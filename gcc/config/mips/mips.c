@@ -7225,6 +7225,10 @@ mips_expand_prologue ()
 				   "va_alist"))))
 	    {
 	      last_arg_is_vararg_marker = 1;
+	      if (GET_CODE (entry_parm) == REG)
+		regno = REGNO (entry_parm);
+	      else
+		regno = GP_ARG_LAST + 1;
 	      break;
 	    }
 	  else
