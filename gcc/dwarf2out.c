@@ -626,7 +626,7 @@ expand_builtin_init_dwarf_reg_sizes (address)
   rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
   rtx mem = gen_rtx_MEM (mode, addr);
 
-  i = MAX (FIRST_PSEUDO_REGISTER, DWARF_FRAME_REGISTERS);
+  i = MIN (FIRST_PSEUDO_REGISTER, DWARF_FRAME_REGISTERS);
   while (i--)
     {
       int offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);

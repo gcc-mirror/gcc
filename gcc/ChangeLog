@@ -1,3 +1,7 @@
+2000-07-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Fix typo.
+
 2000-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/fixfixes.c (emit_gnu_type): Avoid string concatenation.
