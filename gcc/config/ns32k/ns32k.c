@@ -71,7 +71,6 @@ static tree ns32k_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool
 const struct attribute_spec ns32k_attribute_table[];
 static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void ns32k_encode_section_info PARAMS ((tree, int));
 static bool ns32k_rtx_costs PARAMS ((rtx, int, int, int *));
 static int ns32k_address_cost PARAMS ((rtx));
 
@@ -91,8 +90,6 @@ static int ns32k_address_cost PARAMS ((rtx));
 #define TARGET_ASM_FUNCTION_PROLOGUE ns32k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ns32k_output_function_epilogue
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO ns32k_encode_section_info
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ns32k_rtx_costs
@@ -887,7 +884,7 @@ expand_block_move (operands)
 
       if (words)
 	{
-	  if (words < 3 || flag_unroll_loops)
+	  if (words < 3)
 	    {
 	      int offset = 0;
 
@@ -1003,7 +1000,7 @@ global_symbolic_reference_mentioned_p (op, f)
 
   if (GET_CODE (op) == SYMBOL_REF)
     {
-      if (! SYMBOL_REF_FLAG (op))
+      if (! SYMBOL_REF_LOCAL_P (op))
 	return 1;
       else
         return 0;
@@ -1312,8 +1309,7 @@ print_operand_address (file, addr)
 	  indexexp = tmp;
 	  break;
 	case SYMBOL_REF:
-	  if (flag_pic && ! CONSTANT_POOL_ADDRESS_P (tmp)
-	      && ! SYMBOL_REF_FLAG (tmp))
+	  if (flag_pic && ! SYMBOL_REF_LOCAL_P (tmp))
 	    {
 	      if (base)
 		{
@@ -1345,12 +1341,7 @@ print_operand_address (file, addr)
 		  if (GET_CODE (off) != CONST_INT)
 		    abort ();
 
-		  if (CONSTANT_POOL_ADDRESS_P (sym)
-		      || SYMBOL_REF_FLAG (sym))
-		    {
-		      SYMBOL_REF_FLAG (tmp) = 1;
-		    }
-		  else
+		  if (! SYMBOL_REF_LOCAL_P (sym))
 		    {
 		      if (base)
 			{
@@ -1600,22 +1591,4 @@ output_move_dconst (n, s)
     strcpy (r, "movd ");
   strcat (r, s);
   return r;
-}
-
-/* If using PIC, mark a SYMBOL_REF for a non-global symbol or a code
-   symbol. These symbols are referenced via pc and not via sb. */
-
-static void
-ns32k_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (flag_pic)
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      SYMBOL_REF_FLAG (XEXP (rtl, 0))
-	= (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-	   || ! TREE_PUBLIC (decl));
-    }
 }

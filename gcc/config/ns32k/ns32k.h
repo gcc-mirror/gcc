@@ -474,8 +474,9 @@ enum reg_class
 /* LONG_REGS are registers which can only hold double precision floats
  * and can only be accessable by long float instructions.
  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) ? LONG_REGS : NO_REGS)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
+   ? reg_classes_intersect_p (LONG_REGS, CLASS) : 0)
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
