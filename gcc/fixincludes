@@ -347,7 +347,8 @@ done
 
 cd ${INPUT}
 
-# Install the proper definition of size_t in header files that it comes from.
+# Install the proper definition of the three standard types in header files
+# that they come from.
 for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -356,13 +357,27 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
   fi
 
   if [ -r ${LIB}/$file ]; then
-    echo Fixing size_t in $file
-    sed -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
+    echo Fixing size_t, ptrdiff_t and wchar_t in $file
+    sed \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
 #ifndef __SIZE_TYPE__\
 #define __SIZE_TYPE__ long unsigned int\
 #endif
 ' \
-      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef __SIZE_TYPE__ size_t/' ${LIB}/$file > ${LIB}/${file}.sed
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef __SIZE_TYPE__ size_t/' \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]ptrdiff_t/i\
+#ifndef __PTRDIFF_TYPE__\
+#define __PTRDIFF_TYPE__ long int\
+#endif
+' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]ptrdiff_t/typedef __PTRDIFF_TYPE__ ptrdiff_t/' \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/i\
+#ifndef __WCHAR_TYPE__\
+#define __WCHAR_TYPE__ int\
+#endif
+' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/typedef __WCHAR_TYPE__ wchar_t/' \
+      ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
       rm ${LIB}/$file
