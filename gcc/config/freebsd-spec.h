@@ -147,3 +147,9 @@ is built with the --enable-threads configure-time option.}		\
   }"
 #endif
 #endif
+
+#if FBSD_MAJOR < 6
+#define FBSD_DYNAMIC_LINKER "/usr/libexec/ld-elf.so.1"
+#else
+#define FBSD_DYNAMIC_LINKER "/libexec/ld-elf.so.1"
+#endif

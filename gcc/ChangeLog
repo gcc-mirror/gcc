@@ -1,3 +1,17 @@
+2004-03-02  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/freebsd-spec.h (FBSD_DYNAMIC_LINKER): Add.
+	* config/alpha/freebsd.h (SUBTARGET_EXTRA_SPECS): Define
+	%(fbsd_dynamic_linker),
+	(LINK_SPEC): Use %(fbsd_dynamic_linker), and sync style with
+	config/i386/freebsd.h
+	* config/arm/freebsd.h: Ditto.
+	* config/i386/freebsd.h: Ditto.
+	* config/i386/freebsd64.h: Ditto.
+	* config/ia64/freebsd.h: Ditto.
+	* config/rs6000/sysv4.h: Ditto.
+	* config/sparc/freebsd.h: Ditto.
+
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_addr_mode): New variable.
