@@ -3963,19 +3963,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  return arg;
 	}
 
-      /* For &x[y], return x+y.  But, in a template, ARG may be an
-	 ARRAY_REF representing a non-dependent expression.  In that
-	 case, there may be an overloaded "operator []" that will be
-	 chosen at instantiation time; we must not try to optimize
-	 here.  */
-      if (TREE_CODE (arg) == ARRAY_REF && !processing_template_decl)
-	{
-	  if (!cxx_mark_addressable (TREE_OPERAND (arg, 0)))
-	    return error_mark_node;
-	  return cp_build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
-				     TREE_OPERAND (arg, 1));
-	}
-
       /* Uninstantiated types are all functions.  Taking the
 	 address of a function is a no-op, so just return the
 	 argument.  */
@@ -4099,9 +4086,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  }
 	else
 	  {
-	    /* Unfortunately we cannot just build an address
-	       expression here, because we would not handle
-	       address-constant-expressions or offsetof correctly.  */
 	    tree field = TREE_OPERAND (arg, 1);
 	    tree rval = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
 	    tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (rval)),
@@ -4109,10 +4093,9 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 				      ba_check, NULL);
 	    
 	    rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
-	    rval = build_nop (argtype, rval);
-	    addr = fold (build2 (PLUS_EXPR, argtype, rval,
-				 cp_convert (argtype,
-					     byte_position (field))));
+
+	    TREE_OPERAND (arg, 0) = build_indirect_ref (rval, NULL);
+	    addr = build_address (arg);
 	  }
 
 	if (TREE_CODE (argtype) == POINTER_TYPE

@@ -1,5 +1,13 @@
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
+	* class.c (build_base_path): Use build_address directly.
+	* typeck.c (build_unary_op): Don't lower &a.b to pointer
+	arithmetic directly.
+	* typeck2.c (store_init_value): Don't assume !TREE_CONSTANT
+	means !initializer_constant_valid_p.
+
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
 	* class.c (fixed_type_or_null): Use get_base_address before
 	assuming an ADDR_EXPR is non-null.
 
