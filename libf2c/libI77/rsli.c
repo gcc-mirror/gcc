@@ -26,7 +26,8 @@ i_getc (void)
 }
 
 static int
-i_ungetc (int ch, FILE * f)
+i_ungetc (int ch __attribute__ ((__unused__)),
+	  FILE * f __attribute__ ((__unused__)))
 {
   if (--f__recpos == f__svic->icirlen)
     return '\n';
