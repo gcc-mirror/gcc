@@ -1,3 +1,13 @@
+2002-07-12  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c [CLEAR_RATIO]: New macro defining the maximum number
+	of move instructions to use when clearing memory, c.f. MOVE_RATIO.
+	[CLEAR_BY_PIECES]: New macro, using CLEAR_RATIO, to determine
+	whether clear_by_pieces should be used to clear storage.
+	(clear_storage): Use CLEAR_BY_PIECES instead of MOVE_BY_PIECES.
+
+	* doc/tm.texi: Document these two new target macros.
+
 2002-07-12  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("zero_extendsidi2"): Use D_REG only for
