@@ -163,7 +163,7 @@ load_data (fp)
       return (char *) NULL;
     }
 
-  while ((pz_scan > pz_text) && isspace (pz_scan[-1]))
+  while ((pz_scan > pz_text) && ISSPACE (pz_scan[-1]))
     pz_scan--;
   *pz_scan = NUL;
   return realloc ((void *) pz_text, strlen (pz_text) + 1);

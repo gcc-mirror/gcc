@@ -1126,8 +1126,9 @@ ffelex_hash_ (FILE *finput)
 	      static char buffer [128];
 	      char * buff = buffer;
 
-	      /* Read the pragma name into a buffer.  */
-	      while (isspace (c = getc (finput)))
+	      /* Read the pragma name into a buffer.
+		 ISSPACE() may evaluate its argument more than once!  */
+	      while (((c = getc (finput)), ISSPACE(c)))
 		continue;
 	      
 	      do
@@ -1135,7 +1136,7 @@ ffelex_hash_ (FILE *finput)
 		  * buff ++ = c;
 		  c = getc (finput);
 		}
-	      while (c != EOF && ! isspace (c) && c != '\n'
+	      while (c != EOF && ! ISSPACE (c) && c != '\n'
 		     && buff < buffer + 128);
 
 	      pragma_ungetc (c);

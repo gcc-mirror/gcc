@@ -434,7 +434,7 @@ static void write_attr_case	PROTO((struct attr_desc *, struct attr_value *,
 static void write_unit_name	PROTO((const char *, int, const char *));
 static void write_attr_valueq	PROTO((struct attr_desc *, char *));
 static void write_attr_value	PROTO((struct attr_desc *, rtx));
-static void write_upcase	PROTO((char *));
+static void write_upcase	PROTO((const char *));
 static void write_indent	PROTO((int));
 static void write_eligible_delay PROTO((const char *));
 static void write_function_unit_info PROTO((void));
@@ -1354,8 +1354,7 @@ convert_const_symbol_ref (exp, attr)
       strcat (p, "_");
       strcat (p, XSTR (av->value, 0));
       for (; *p != '\0'; p++)
-	if (ISLOWER(*p))
-	  *p = toupper (*p);
+	*p = TOUPPER (*p);
 
       value = attr_rtx (SYMBOL_REF, string);
       RTX_UNCHANGING_P (value) = 1;
@@ -2838,8 +2837,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
       strcat (string, "_");
       strcat (string, XSTR (exp, 1));
       for (p = string; *p ; p++)
-	if (ISLOWER(*p))
-	  *p = toupper (*p);
+	*p = TOUPPER (*p);
       
       newexp = attr_rtx (EQ, value,
 			 attr_rtx (SYMBOL_REF,
@@ -5351,13 +5349,14 @@ write_attr_value (attr, value)
 
 static void
 write_upcase (str)
-     char *str;
+     const char *str;
 {
   while (*str)
-    if (ISLOWER(*str))
-      printf ("%c", toupper(*str++));
-    else
-      printf ("%c", *str++);
+  {
+    /* The argument of TOUPPER should not have side effects.  */
+    putchar (TOUPPER(*str));
+    str++;
+  }
 }
 
 static void

@@ -1072,7 +1072,7 @@ real_hex_to_f (s, mode)
 	     }
 	   /* Value of exponent.
 	      The exponent field is a decimal integer.  */
-	   while (isdigit(*p))
+	   while (ISDIGIT(*p))
 	     {
 	       k = (*p++ & 0x7f) - '0';
 	       expon = 10 * expon + k;

@@ -195,7 +195,7 @@ gen_insn (insn)
 		for (i = ((int) MAX_MACHINE_MODE) - 1; i >= 0; i--)
 		  {
 		    for (p = GET_MODE_NAME(i), q = np; *p; p++, q++)
-		      if (tolower ((unsigned char)*p) != *q)
+		      if (TOLOWER (*p) != *q)
 			break;
 
 		    if (*p == 0
@@ -249,11 +249,11 @@ gen_insn (insn)
 	    break;
 	  case 'a':
 	    for (np = GET_MODE_NAME(m1); *np; np++)
-	      printf ("%c", tolower ((unsigned char)*np));
+	      putchar (TOLOWER (*np));
 	    break;
 	  case 'b':
 	    for (np = GET_MODE_NAME(m2); *np; np++)
-	      printf ("%c", tolower ((unsigned char)*np));
+	      putchar (TOLOWER (*np));
 	    break;
 	  case 'A':
 	    printf ("%smode", GET_MODE_NAME(m1));
@@ -266,7 +266,7 @@ gen_insn (insn)
 	    break;
 	  case 'C':
 	    for (np = GET_RTX_NAME(op); *np; np++)
-	      printf ("%c", toupper ((unsigned char)*np));
+	      putchar (TOUPPER (*np));
 	    break;
 	  }
     }

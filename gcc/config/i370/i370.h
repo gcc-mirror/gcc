@@ -1138,7 +1138,7 @@ enum reg_class
     ch = '@';								\
   for (bp = temp; *bp; bp++)						\
     {									\
-      if (islower (*bp)) *bp = toupper (*bp);				\
+      *bp = TOUPPER (*bp);						\
       else if (*bp == '_') *bp = ch;					\
     }									\
   fprintf (FILE, "%s", temp);						\
@@ -1256,7 +1256,7 @@ enum reg_class
   for (j = 0, i = 0; i < LEN; j++, i++)					\
     {									\
       c = PTR[i];							\
-      if (iscntrl (c) || c == '&')					\
+      if (ISCNTRL (c) || c == '&')					\
 	{								\
 	  if (j % MVS_ASCII_TEXT_LENGTH != 0 )				\
 	    fprintf (FILE, "'\n");					\

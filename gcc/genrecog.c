@@ -1639,12 +1639,7 @@ print_code (code)
 {
   register const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
-    {
-      if (ISLOWER(*p1))
-	putchar (toupper(*p1));
-      else
-	putchar (*p1);
-    }
+    putchar (TOUPPER(*p1));
 }
 
 static int

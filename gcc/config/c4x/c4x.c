@@ -682,8 +682,8 @@ c4x_interrupt_function_p ()
     && current_function_name[2] == 'i'
     && current_function_name[3] == 'n' 
     && current_function_name[4] == 't'
-    && isdigit (current_function_name[5])
-    && isdigit (current_function_name[6]);
+    && ISDIGIT (current_function_name[5])
+    && ISDIGIT (current_function_name[6]);
 }
 
 
@@ -4193,13 +4193,13 @@ c4x_handle_pragma (p_getc, p_ungetc, pname)
 
   c = p_getc ();
   while (c == ' ' || c == '\t') c = p_getc ();
-  if (! (isalpha(c) || c == '_' || c == '$' || c == '@'))
+  if (! (ISALPHA(c) || c == '_' || c == '$' || c == '@'))
     return 0;
 
   i = 0;
   namesize = 16;
   name = xmalloc (namesize);
-  while (isalnum (c) || c == '_' || c == '$' || c == '@')
+  while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
     {
       if (i >= namesize-1)
 	{

@@ -134,7 +134,7 @@ override_options ()
     {
       if (small_memory[i].value)
 	{
-	  if (!isdigit (*small_memory[i].value))
+	  if (!ISDIGIT (*small_memory[i].value))
 	    error ("%s=%s is not numeric.",
 		   small_memory[i].name,
 		   small_memory[i].value);
@@ -3022,8 +3022,7 @@ v850_handle_pragma (p_getc, p_ungetc, name)
 	  /* Read string.  */
 	  do
 	    * buff ++ = (c = p_getc ());
-	  while (c != EOF && isascii (c)
-		 && (isalnum (c) || c == '_' || c == '.' || c == ' ')
+	  while (c != EOF && (ISALNUM (c) || c == '_' || c == '.' || c == ' ')
 		 && (buff < buffer + 126));
 	  
 	  if (c != '"')
@@ -3033,8 +3032,7 @@ v850_handle_pragma (p_getc, p_ungetc, name)
 	  break;
 
 	default:
-	  while (c != EOF && isascii (c)
-		 && (isalnum (c) || c == '_' || c == '.')
+	  while (c != EOF && (ISALNUM (c) || c == '_' || c == '.')
 		 && (buff < buffer + 126))
 	    * buff ++ = (c = p_getc ());
 	  break;
