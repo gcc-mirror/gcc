@@ -110,7 +110,7 @@ struct hashdummy
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
-static HASHNODE *make_HASHNODE	  PARAMS ((const U_CHAR *, size_t,
+static cpp_hashnode *make_HASHNODE	  PARAMS ((const U_CHAR *, size_t,
 					   enum node_type, unsigned int));
 
 static void dump_funlike_macro	  PARAMS ((cpp_reader *,
@@ -118,10 +118,10 @@ static void dump_funlike_macro	  PARAMS ((cpp_reader *,
 static int dump_hash_helper	  PARAMS ((void **, void *));
 
 static void push_macro_expansion PARAMS ((cpp_reader *, const U_CHAR *,
-					  int, HASHNODE *));
+					  int, cpp_hashnode *));
 static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
 static enum cpp_ttype macarg	 PARAMS ((cpp_reader *, int));
-static void special_symbol	 PARAMS ((cpp_reader *, HASHNODE *));
+static void special_symbol	 PARAMS ((cpp_reader *, cpp_hashnode *));
 static int compare_defs		 PARAMS ((cpp_reader *,
 					  const struct funct_defn *,
 					  const struct funct_defn *));
@@ -195,7 +195,7 @@ static void scan_arguments	PARAMS ((cpp_reader *,
 					 const struct funct_defn *,
 					 struct argdata *, const U_CHAR *));
 static void stringify		PARAMS ((cpp_reader *, struct argdata *));
-static void funlike_macroexpand	PARAMS ((cpp_reader *, HASHNODE *,
+static void funlike_macroexpand	PARAMS ((cpp_reader *, cpp_hashnode *,
 					 struct argdata *));
 
 /* Calculate hash of a string of length LEN.  */
@@ -213,16 +213,16 @@ _cpp_calc_hash (str, len)
   return r + len;
 }
 
-/* Calculate hash of a HASHNODE structure.  */
+/* Calculate hash of a cpp_hashnode structure.  */
 static unsigned int
 hash_HASHNODE (x)
      const void *x;
 {
-  const HASHNODE *h = (const HASHNODE *)x;
+  const cpp_hashnode *h = (const cpp_hashnode *)x;
   return h->hash;
 }
 
-/* Compare a HASHNODE structure (already in the table) with a
+/* Compare a cpp_hashnode structure (already in the table) with a
    hashdummy structure (not yet in the table).  This relies on the
    rule that the existing entry is the first argument, the potential
    entry the second.  It also relies on the comparison function never
@@ -233,36 +233,36 @@ eq_HASHNODE (x, y)
      const void *x;
      const void *y;
 {
-  const HASHNODE *a = (const HASHNODE *)x;
+  const cpp_hashnode *a = (const cpp_hashnode *)x;
   const struct hashdummy *b = (const struct hashdummy *)y;
 
   return (a->length == b->length
 	  && !ustrncmp (a->name, b->name, a->length));
 }
 
-/* Destroy a HASHNODE.  */
+/* Destroy a cpp_hashnode.  */
 static void
 del_HASHNODE (x)
      void *x;
 {
-  HASHNODE *h = (HASHNODE *)x;
+  cpp_hashnode *h = (cpp_hashnode *)x;
 
   _cpp_free_definition (h);
   free (h);
 }
 
-/* Allocate and initialize a HASHNODE structure.
+/* Allocate and initialize a cpp_hashnode structure.
    Caller must fill in the value field.  */
 
-static HASHNODE *
+static cpp_hashnode *
 make_HASHNODE (name, len, type, hash)
      const U_CHAR *name;
      size_t len;
      enum node_type type;
      unsigned int hash;
 {
-  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE) + len);
-  U_CHAR *p = (U_CHAR *)hp + offsetof (HASHNODE, name);
+  cpp_hashnode *hp = (cpp_hashnode *) xmalloc (sizeof (cpp_hashnode) + len);
+  U_CHAR *p = (U_CHAR *)hp + offsetof (cpp_hashnode, name);
 
   hp->type = type;
   hp->length = len;
@@ -277,21 +277,21 @@ make_HASHNODE (name, len, type, hash)
 
 /* Find the hash node for name "name", of length LEN.  */
 
-HASHNODE *
-_cpp_lookup (pfile, name, len)
+cpp_hashnode *
+cpp_lookup (pfile, name, len)
      cpp_reader *pfile;
      const U_CHAR *name;
      int len;
 {
   struct hashdummy dummy;
-  HASHNODE *new, **slot;
+  cpp_hashnode *new, **slot;
   unsigned int hash;
 
   dummy.name = name;
   dummy.length = len;
   hash = _cpp_calc_hash (name, len);
 
-  slot = (HASHNODE **)
+  slot = (cpp_hashnode **)
     htab_find_slot_with_hash (pfile->hashtab, (void *)&dummy, hash, INSERT);
   if (*slot)
     return *slot;
@@ -315,7 +315,7 @@ _cpp_init_macro_hash (pfile)
 
 void
 _cpp_free_definition (h)
-     HASHNODE *h;
+     cpp_hashnode *h;
 {
   if (h->type == T_XCONST)
     free ((PTR) h->value.cpval);
@@ -860,7 +860,7 @@ int
 _cpp_create_definition (pfile, list, hp)
      cpp_reader *pfile;
      cpp_toklist *list;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
 {
   struct funct_defn *fdefn = 0;
   struct object_defn *odefn = 0;
@@ -1102,7 +1102,7 @@ _cpp_quote_string (pfile, src)
 static void
 special_symbol (pfile, hp)
      cpp_reader *pfile;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
 {
   const U_CHAR *buf;
   cpp_buffer *ip;
@@ -1187,12 +1187,12 @@ special_symbol (pfile, hp)
       {
 	time_t tt = time (NULL);
 	struct tm *tb = localtime (&tt);
-	HASHNODE *d, *t;
+	cpp_hashnode *d, *t;
 
 	if (hp->type == T_DATE)
-	  d = hp, t = _cpp_lookup (pfile, DSC("__TIME__"));
+	  d = hp, t = cpp_lookup (pfile, DSC("__TIME__"));
 	else
-	  t = hp, d = _cpp_lookup (pfile, DSC("__DATE__"));
+	  t = hp, d = cpp_lookup (pfile, DSC("__DATE__"));
 
 	d->value.cpval = xmalloc (sizeof "'Oct 11 1347'");
 	sprintf ((char *)d->value.cpval, "\"%s %2d %4d\"",
@@ -1229,7 +1229,7 @@ special_symbol (pfile, hp)
 void
 _cpp_macroexpand (pfile, hp)
      cpp_reader *pfile;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
 {
   const struct funct_defn *defn;
   struct argdata *args;
@@ -1481,7 +1481,7 @@ stringify (pfile, arg)
 static void
 funlike_macroexpand (pfile, hp, args)
      cpp_reader *pfile;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
      struct argdata *args;
 {
   const struct funct_defn *defn = hp->value.fdefn;
@@ -1731,7 +1731,7 @@ push_macro_expansion (pfile, xbuf, len, hp)
      cpp_reader *pfile;
      const U_CHAR *xbuf;
      int len;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
 {
   cpp_buffer *mbuf;
   int advance_cur = 0;
@@ -1840,7 +1840,7 @@ compare_defs (pfile, d1, d2)
 void
 _cpp_dump_definition (pfile, hp)
      cpp_reader *pfile;
-     HASHNODE *hp;
+     cpp_hashnode *hp;
 {
   CPP_RESERVE (pfile, hp->length + sizeof "#define ");
   CPP_PUTS_Q (pfile, "#define ", sizeof "#define " - 1);
@@ -1945,7 +1945,7 @@ dump_hash_helper (h, p)
      void **h;
      void *p;
 {
-  HASHNODE *hp = (HASHNODE *)*h;
+  cpp_hashnode *hp = (cpp_hashnode *)*h;
   cpp_reader *pfile = (cpp_reader *)p;
 
   if (hp->type == T_MACRO || hp->type == T_FMACRO

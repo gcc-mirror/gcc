@@ -339,7 +339,7 @@ static int
 do_define (pfile)
      cpp_reader *pfile;
 {
-  HASHNODE *node;
+  cpp_hashnode *node;
   int len;
   const U_CHAR *sym;
   cpp_toklist *list = &pfile->directbuf;
@@ -371,7 +371,7 @@ do_define (pfile)
       goto out;
     }
 
-  node = _cpp_lookup (pfile, sym, len);
+  node = cpp_lookup (pfile, sym, len);
   /* Check for poisoned identifiers now.  All other checks
      are done in cpphash.c.  */
   if (node->type == T_POISON)
@@ -681,7 +681,7 @@ do_undef (pfile)
      cpp_reader *pfile;
 {
   int len;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   U_CHAR *name;
   long here = CPP_WRITTEN (pfile);
   enum cpp_ttype token;
@@ -708,7 +708,7 @@ do_undef (pfile)
   name = pfile->token_buffer + here;
   CPP_SET_WRITTEN (pfile, here);
 
-  hp = _cpp_lookup (pfile, name, len);
+  hp = cpp_lookup (pfile, name, len);
   if (hp->type == T_VOID)
     ; /* Not defined in the first place - do nothing.  */
   else if (hp->type == T_POISON)
@@ -941,7 +941,7 @@ do_pragma_poison (pfile)
   /* Poison these symbols so that all subsequent usage produces an
      error message.  */
   U_CHAR *p;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   long written;
   size_t len;
   enum cpp_ttype token;
@@ -968,7 +968,7 @@ do_pragma_poison (pfile)
 
       p = pfile->token_buffer + written;
       len = CPP_PWRITTEN (pfile) - p;
-      hp = _cpp_lookup (pfile, p, len);
+      hp = cpp_lookup (pfile, p, len);
       if (hp->type == T_POISON)
 	;  /* It is allowed to poison the same identifier twice.  */
       else
@@ -1528,7 +1528,7 @@ do_assert (pfile)
   long old_written;
   U_CHAR *sym;
   size_t len;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   struct predicate *pred = 0;
   enum cpp_ttype type;
 
@@ -1544,7 +1544,7 @@ do_assert (pfile)
 
   sym = pfile->token_buffer + old_written;
   len = CPP_WRITTEN (pfile) - old_written;
-  hp = _cpp_lookup (pfile, sym, len);
+  hp = cpp_lookup (pfile, sym, len);
 
   if (_cpp_get_directive_token (pfile) != CPP_OPEN_PAREN)
     ERROR ("missing token-sequence in #assert");
@@ -1606,7 +1606,7 @@ do_unassert (pfile)
   long old_written;
   U_CHAR *sym;
   size_t len;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   cpp_toklist ans;
   enum cpp_ttype type;
   int specific = 0;
@@ -1620,7 +1620,7 @@ do_unassert (pfile)
 
   sym = pfile->token_buffer + old_written;
   len = CPP_WRITTEN (pfile) - old_written;
-  hp = _cpp_lookup (pfile, sym, len);
+  hp = cpp_lookup (pfile, sym, len);
 
   type = _cpp_get_directive_token (pfile);
   if (type == CPP_OPEN_PAREN)
@@ -1784,7 +1784,7 @@ cpp_defined (pfile, id, len)
      const U_CHAR *id;
      int len;
 {
-  HASHNODE *hp = _cpp_lookup (pfile, id, len);
+  cpp_hashnode *hp = cpp_lookup (pfile, id, len);
   if (hp->type == T_POISON)
     {
       cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);

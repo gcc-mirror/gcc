@@ -394,7 +394,7 @@ parse_assertion (pfile)
      cpp_reader *pfile;
 {
   struct operation op;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   struct predicate *pred;
   cpp_toklist query;
   enum cpp_ttype type;
@@ -414,7 +414,7 @@ parse_assertion (pfile)
 
   tok = pfile->token_buffer + old_written;
   len = CPP_WRITTEN (pfile) - old_written;
-  hp = _cpp_lookup (pfile, tok, len);
+  hp = cpp_lookup (pfile, tok, len);
 
   /* Look ahead for an open paren.  */
   _cpp_skip_hspace (pfile);

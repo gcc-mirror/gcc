@@ -28,6 +28,17 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "mkdeps.h"
 
+#ifdef HAVE_MMAP_FILE
+# include <sys/mman.h>
+# ifndef MMAP_THRESHOLD
+#  define MMAP_THRESHOLD 3 /* Minimum page count to mmap the file.  */
+# endif
+
+#else  /* No MMAP_FILE */
+#  undef MMAP_THRESHOLD
+#  define MMAP_THRESHOLD 0
+#endif
+
 static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
 					   struct file_name_list *));
 static IHASH *make_IHASH	PARAMS ((const char *, const char *,
@@ -45,8 +56,10 @@ static int eq_IHASH		PARAMS ((const void *, const void *));
 static int find_include_file	PARAMS ((cpp_reader *, const char *,
 					struct file_name_list *,
 					IHASH **, int *));
-static int read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
 static inline int open_include_file PARAMS ((cpp_reader *, const char *));
+static int read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
+static ssize_t read_with_read	PARAMS ((cpp_buffer *, int, ssize_t));
+static ssize_t read_file	PARAMS ((cpp_buffer *, int, ssize_t));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -678,8 +691,7 @@ read_include_file (pfile, fd, ihash)
      IHASH *ihash;
 {
   struct stat st;
-  size_t st_size;
-  long length;
+  ssize_t length;
   cpp_buffer *fp;
 
   fp = cpp_push_buffer (pfile, NULL, 0);
@@ -690,35 +702,37 @@ read_include_file (pfile, fd, ihash)
   if (fstat (fd, &st) < 0)
     goto perror_fail;
 
-  /* If fd points to a plain file, we know how big it is, so we can
-     allocate the buffer all at once.  If fd is a pipe or terminal, we
-     can't.  Most C source files are 4k or less, so we guess that.  If
-     fd is something weird, like a directory, we don't want to read it
-     at all.
+  /* If fd points to a plain file, we might be able to mmap it; we can
+     definitely allocate the buffer all at once.  If fd is a pipe or
+     terminal, we can't do either.  If fd is something weird, like a
+     block device or a directory, we don't want to read it at all.
 
      Unfortunately, different systems use different st.st_mode values
      for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
      zero the entire struct stat except a couple fields.  Hence we don't
      even try to figure out what something is, except for plain files,
-     directories, and block devices.
-
-     In all cases, read_and_prescan will resize the buffer if it
-     turns out there's more data than we thought.  */
+     directories, and block devices.  */
 
   if (S_ISREG (st.st_mode))
     {
-      /* off_t might have a wider range than size_t - in other words,
+      ssize_t st_size;
+
+      /* off_t might have a wider range than ssize_t - in other words,
 	 the max size of a file might be bigger than the address
 	 space.  We can't handle a file that large.  (Anyone with
-         a single source file bigger than 4GB needs to rethink
+	 a single source file bigger than 2GB needs to rethink
 	 their coding style.)  */
-      st_size = (size_t) st.st_size;
-      if ((unsigned HOST_WIDEST_INT) st_size
-	  != (unsigned HOST_WIDEST_INT) st.st_size)
+      if (st.st_size > SSIZE_MAX)
 	{
-	  cpp_error (pfile, "file `%s' is too large", ihash->name);
+	  cpp_error (pfile, "%s is too large", ihash->name);
 	  goto fail;
 	}
+      st_size = st.st_size;
+      length = read_file (fp, fd, st_size);
+      if (length == -1)
+	goto perror_fail;
+      if (length < st_size)
+	cpp_warning (pfile, "%s is shorter than expected\n", ihash->name);
     }
   else if (S_ISBLK (st.st_mode))
     {
@@ -732,25 +746,28 @@ read_include_file (pfile, fd, ihash)
     }
   else
     {
-      /* We don't know how big this is.  4k is a decent first guess.  */
-      st_size = 4096;
+      /* 8 kilobytes is a sensible starting size.  It ought to be
+	 bigger than the kernel pipe buffer, and it's definitely
+	 bigger than the majority of C source files.  */
+      length = read_with_read (fp, fd, 8 * 1024);
+      if (length == -1)
+	goto perror_fail;
     }
 
-  /* Read the file, converting end-of-line characters and trigraphs
-     (if enabled). */
+  /* These must be set before prescan.  */
   fp->ihash = ihash;
   fp->nominal_fname = ihash->name;
-  length = _cpp_read_and_prescan (pfile, fp, fd, st_size);
-  if (length < 0)
-    goto fail;
+  
   if (length == 0)
     ihash->control_macro = U"";  /* never re-include */
+  else
+    /* Temporary - I hope.  */
+    length = _cpp_prescan (pfile, fp, length);
 
-  close (fd);
   fp->rlimit = fp->buf + length;
   fp->cur = fp->buf;
   if (ihash->foundhere != ABSOLUTE_PATH)
-      fp->system_header_p = ihash->foundhere->sysp;
+    fp->system_header_p = ihash->foundhere->sysp;
   fp->lineno = 1;
   fp->line_base = fp->buf;
 
@@ -761,6 +778,7 @@ read_include_file (pfile, fd, ihash)
 
   pfile->input_stack_listing_current = 0;
   pfile->only_seen_white = 2;
+  close (fd);
   return 1;
 
  perror_fail:
@@ -770,6 +788,74 @@ read_include_file (pfile, fd, ihash)
  push_fail:
   close (fd);
   return 0;
+}
+
+static ssize_t
+read_file (fp, fd, size)
+     cpp_buffer *fp;
+     int fd;
+     ssize_t size;
+{
+  static int pagesize = -1;
+
+  if (size == 0)
+    return 0;
+
+  if (pagesize == -1)
+    pagesize = getpagesize ();
+
+#if MMAP_THRESHOLD
+  if (size / pagesize >= MMAP_THRESHOLD)
+    {
+      const U_CHAR *result
+	= (const U_CHAR *) mmap (0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+      if (result != (const U_CHAR *)-1)
+	{
+	  fp->buf = result;
+	  fp->mapped = 1;
+	  return size;
+	}
+    }
+  /* If mmap fails, try read.  If there's really a problem, read will
+     fail too.  */
+#endif
+
+  return read_with_read (fp, fd, size);
+}
+
+static ssize_t
+read_with_read (fp, fd, size)
+     cpp_buffer *fp;
+     int fd;
+     ssize_t size;
+{
+  ssize_t offset, count;
+  U_CHAR *buf;
+
+  buf = (U_CHAR *) xmalloc (size);
+  offset = 0;
+  while ((count = read (fd, buf + offset, size - offset)) > 0)
+    {
+      offset += count;
+      if (offset == size)
+	buf = xrealloc (buf, (size *= 2));
+    }
+  if (count < 0)
+    {
+      free (buf);
+      return -1;
+    }
+  if (offset == 0)
+    {
+      free (buf);
+      return 0;
+    }
+
+  if (offset < size)
+    buf = xrealloc (buf, offset);
+  fp->buf = buf;
+  fp->mapped = 0;
+  return offset;
 }
 
 /* Given a path FNAME, extract the directory component and place it

@@ -26,6 +26,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
+#ifdef HAVE_MMAP_FILE
+# include <sys/mman.h>
+#endif
+
 #define PEEKBUF(BUFFER, N) \
   ((BUFFER)->rlimit - (BUFFER)->cur > (N) ? (BUFFER)->cur[N] : EOF)
 #define GETBUF(BUFFER) \
@@ -224,7 +228,7 @@ cpp_pop_buffer (pfile)
     }
   else if (buf->macro)
     {
-      HASHNODE *m = buf->macro;
+      cpp_hashnode *m = buf->macro;
   
       m->disabled = 0;
       if ((m->type == T_FMACRO && buf->mapped)
@@ -1622,9 +1626,9 @@ maybe_macroexpand (pfile, written)
 {
   U_CHAR *macro = pfile->token_buffer + written;
   size_t len = CPP_WRITTEN (pfile) - written;
-  HASHNODE *hp = _cpp_lookup (pfile, macro, len);
+  cpp_hashnode *hp = cpp_lookup (pfile, macro, len);
 
-  /* _cpp_lookup never returns null.  */
+  /* cpp_lookup never returns null.  */
   if (hp->type == T_VOID)
     return 0;
   if (hp->disabled || hp->type == T_IDENTITY)
@@ -1892,13 +1896,9 @@ find_position (start, limit, linep)
   return lbase;
 }
 
-/* The following table is used by _cpp_read_and_prescan.  If we have
+/* The following table is used by _cpp_prescan.  If we have
    designated initializers, it can be constant data; otherwise, it is
    set up at runtime by _cpp_init_input_buffer.  */
-
-#ifndef UCHAR_MAX
-#define UCHAR_MAX 255	/* assume 8-bit bytes */
-#endif
 
 #if (GCC_VERSION >= 2007)
 #define init_chartab()  /* nothing */
@@ -1937,9 +1937,10 @@ END
 #define NORMAL(c) ((chartab[c]) == 0 || (chartab[c]) > SPECCASE_QUESTION)
 #define NONTRI(c) ((c) <= SPECCASE_QUESTION)
 
-/* Read the entire contents of file DESC into buffer BUF.  LEN is how
-   much memory to allocate initially; more will be allocated if
-   necessary.  Convert end-of-line markers (\n, \r, \r\n, \n\r) to
+/* Prescan pass over a file already loaded into BUF.  This is
+   translation phases 1 and 2 (C99 5.1.1.2).
+
+   Convert end-of-line markers (\n, \r, \r\n, \n\r) to
    canonical form (\n).  If enabled, convert and/or warn about
    trigraphs.  Convert backslash-newline to a one-character escape
    (\r) and remove it from "embarrassing" places (i.e. the middle of a
@@ -1960,204 +1961,153 @@ END
    at the end of reload1.c is about 60%.  (reload1.c is 329k.)
 
    If your file has more than one kind of end-of-line marker, you
-   will get messed-up line numbering.
-   
-   So that the cases of the switch statement do not have to concern
-   themselves with the complications of reading beyond the end of the
-   buffer, the buffer is guaranteed to have at least 3 characters in
-   it (or however many are left in the file, if less) on entry to the
-   switch.  This is enough to handle trigraphs and the "\\\n\r" and
-   "\\\r\n" cases.
-   
-   The end of the buffer is marked by a '\\', which, being a special
-   character, guarantees we will exit the fast-scan loops and perform
-   a refill. */
- 
-long
-_cpp_read_and_prescan (pfile, fp, desc, len)
+   will get messed-up line numbering.  */
+
+ssize_t
+_cpp_prescan (pfile, fp, len)
      cpp_reader *pfile;
      cpp_buffer *fp;
-     int desc;
-     size_t len;
+     ssize_t len;
 {
-  U_CHAR *buf = (U_CHAR *) xmalloc (len);
-  U_CHAR *ip, *op, *line_base;
-  U_CHAR *ibase;
+  U_CHAR *buf, *op;
+  const U_CHAR *ibase, *ip, *ilimit;
+  U_CHAR *line_base;
   unsigned long line;
   unsigned int deferred_newlines;
-  size_t offset;
-  int count = 0;
 
-  offset = 0;
-  deferred_newlines = 0;
-  op = buf;
-  line_base = buf;
+  /* Allocate an extra byte in case we must add a trailing \n.  */
+  buf = (U_CHAR *) xmalloc (len + 1);
+  line_base = op = buf;
+  ip = ibase = fp->buf;
+  ilimit = ibase + len;
   line = 1;
-  ibase = pfile->input_buffer + 3;
-  ip = ibase;
-  ip[-1] = '\0';  /* Guarantee no match with \n for SPECCASE_CR */
+  deferred_newlines = 0;
 
   for (;;)
     {
-      U_CHAR *near_buff_end;
+      const U_CHAR *iq;
 
-      count = read (desc, ibase, pfile->input_buffer_len);
-      if (count < 0)
-	goto error;
-      
-      ibase[count] = '\\';  /* Marks end of buffer */
-      if (count)
+      /* Deal with \-newline, potentially in the middle of a token. */
+      if (deferred_newlines)
 	{
-	  near_buff_end = pfile->input_buffer + count;
-	  offset += count;
-	  if (offset > len)
+	  if (op != buf && ! is_space (op[-1]) && op[-1] != '\r')
 	    {
-	      size_t delta_op;
-	      size_t delta_line_base;
-	      len = offset * 2;
-	      if (offset > len)
-		/* len overflowed.
-		   This could happen if the file is larger than half the
-		   maximum address space of the machine. */
-		goto too_big;
-
-	      delta_op = op - buf;
-	      delta_line_base = line_base - buf;
-	      buf = (U_CHAR *) xrealloc (buf, len);
-	      op = buf + delta_op;
-	      line_base = buf + delta_line_base;
+	      /* Previous was not white space.  Skip to white
+		 space, if we can, before outputting the \r's */
+	      iq = ip;
+	      while (iq < ilimit
+		     && *iq != ' '
+		     && *iq != '\t'
+		     && *iq != '\n'
+		     && NORMAL(*iq))
+		iq++;
+	      memcpy (op, ip, iq - ip);
+	      op += iq - ip;
+	      ip += iq - ip;
+	      if (! NORMAL(*ip))
+		goto do_speccase;
 	    }
-	}
-      else
-	{
-	  if (ip == ibase)
-	    break;
-	  /* Allow normal processing of the (at most 2) remaining
-	     characters.  The end-of-buffer marker is still present
-	     and prevents false matches within the switch. */
-	  near_buff_end = ibase - 1;
+	  while (deferred_newlines)
+	    deferred_newlines--, *op++ = '\r';
 	}
 
-      for (;;)
+      /* Copy as much as we can without special treatment. */
+      iq = ip;
+      while (iq < ilimit && NORMAL (*iq)) iq++;
+      memcpy (op, ip, iq - ip);
+      op += iq - ip;
+      ip += iq - ip;
+
+    do_speccase:
+      if (ip >= ilimit)
+	break;
+
+      switch (chartab[*ip++])
 	{
-	  unsigned int span;
-
-	  /* Deal with \-newline, potentially in the middle of a token. */
-	  if (deferred_newlines)
+	case SPECCASE_CR:  /* \r */
+	  if (ip[-2] != '\n')
 	    {
-	      if (op != buf && ! is_space (op[-1]) && op[-1] != '\r')
-		{
-		  /* Previous was not white space.  Skip to white
-		     space, if we can, before outputting the \r's */
-		  span = 0;
-		  while (ip[span] != ' '
-			 && ip[span] != '\t'
-			 && ip[span] != '\n'
-			 && NORMAL(ip[span]))
-		    span++;
-		  memcpy (op, ip, span);
-		  op += span;
-		  ip += span;
-		  if (! NORMAL(ip[0]))
-		    goto do_speccase;
-		}
-	      while (deferred_newlines)
-		deferred_newlines--, *op++ = '\r';
+	      if (ip < ilimit && *ip == '\n')
+		ip++;
+	      *op++ = '\n';
 	    }
+	  break;
 
-	  /* Copy as much as we can without special treatment. */
-	  span = 0;
-	  while (NORMAL (ip[span])) span++;
-	  memcpy (op, ip, span);
-	  op += span;
-	  ip += span;
-
-	do_speccase:
-	  if (ip > near_buff_end) /* Do we have enough chars? */
-	    break;
-	  switch (chartab[*ip++])
+	case SPECCASE_BACKSLASH:  /* \ */
+	backslash:
+	  if (ip < ilimit)
 	    {
-	    case SPECCASE_CR:  /* \r */
-	      if (ip[-2] != '\n')
-		{
-		  if (*ip == '\n')
-		    ip++;
-		  *op++ = '\n';
-		}
-	      break;
-
-	    case SPECCASE_BACKSLASH:  /* \ */
 	      if (*ip == '\n')
 		{
 		  deferred_newlines++;
 		  ip++;
 		  if (*ip == '\r') ip++;
+		  break;
 		}
 	      else if (*ip == '\r')
 		{
 		  deferred_newlines++;
 		  ip++;
 		  if (*ip == '\n') ip++;
+		  break;
 		}
-	      else
-		*op++ = '\\';
+	    }
+
+	  *op++ = '\\';
+	  break;
+
+	case SPECCASE_QUESTION: /* ? */
+	  {
+	    unsigned int d, t;
+
+	    *op++ = '?'; /* Normal non-trigraph case */
+	    if (ip > ilimit - 2 || ip[0] != '?')
+	      break;
+		    
+	    d = ip[1];
+	    t = chartab[d];
+	    if (NONTRI (t))
 	      break;
 
-	    case SPECCASE_QUESTION: /* ? */
+	    if (CPP_OPTION (pfile, warn_trigraphs))
 	      {
-		unsigned int d, t;
-
-		*op++ = '?'; /* Normal non-trigraph case */
-		if (ip[0] != '?')
-		  break;
-		    
-		d = ip[1];
-		t = chartab[d];
-		if (NONTRI (t))
-		  break;
-
-		if (CPP_OPTION (pfile, warn_trigraphs))
-		  {
-		    unsigned long col;
-		    line_base = find_position (line_base, op, &line);
-		    col = op - line_base + 1;
-		    if (CPP_OPTION (pfile, trigraphs))
-		      cpp_warning_with_line (pfile, line, col,
-					     "trigraph ??%c converted to %c", d, t);
-		    else
-		      cpp_warning_with_line (pfile, line, col,
-					     "trigraph ??%c ignored", d);
-		  }
-
-		ip += 2;
+		unsigned long col;
+		line_base = find_position (line_base, op, &line);
+		col = op - line_base + 1;
 		if (CPP_OPTION (pfile, trigraphs))
-		  {
-		    op[-1] = t;	    /* Overwrite '?' */
-		    if (t == '\\')
-		      {
-			op--;
-			*--ip = '\\';
-			goto do_speccase; /* May need buffer refill */
-		      }
-		  }
+		  cpp_warning_with_line (pfile, line, col,
+					 "trigraph ??%c converted to %c", d, t);
 		else
+		  cpp_warning_with_line (pfile, line, col,
+					 "trigraph ??%c ignored", d);
+	      }
+
+	    ip += 2;
+	    if (CPP_OPTION (pfile, trigraphs))
+	      {
+		op[-1] = t;	    /* Overwrite '?' */
+		if (t == '\\')
 		  {
-		    *op++ = '?';
-		    *op++ = d;
+		    op--;
+		    goto backslash;
 		  }
 	      }
-	      break;
-	    }
+	    else
+	      {
+		*op++ = '?';
+		*op++ = d;
+	      }
+	  }
+	  break;
 	}
-      /* Copy previous char plus unprocessed (at most 2) chars
-	 to beginning of buffer, refill it with another
-	 read(), and continue processing */
-      memmove (ip - count - 1, ip - 1, 4 - (ip - near_buff_end));
-      ip -= count;
     }
 
-  if (offset == 0)
-    return 0;
+#ifdef HAVE_MMAP_FILE
+  if (fp->mapped)
+    munmap ((caddr_t) fp->buf, len);
+  else
+#endif
+    free ((PTR) fp->buf);
 
   if (op[-1] != '\n')
     {
@@ -2165,30 +2115,11 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
       line_base = find_position (line_base, op, &line);
       col = op - line_base + 1;
       cpp_warning_with_line (pfile, line, col, "no newline at end of file");
-      if (offset + 1 > len)
-	{
-	  len += 1;
-	  if (offset + 1 > len)
-	    goto too_big;
-	  buf = (U_CHAR *) xrealloc (buf, len);
-	  op = buf + offset;
-	}
       *op++ = '\n';
     }
 
-  fp->buf = ((len - offset < 20) ? buf : (U_CHAR *)xrealloc (buf, op - buf));
+  fp->buf = buf;
   return op - buf;
-
- too_big:
-  cpp_notice (pfile, "%s is too large (>%lu bytes)", fp->ihash->name,
-	      (unsigned long)offset);
-  free (buf);
-  return -1;
-
- error:
-  cpp_error_from_errno (pfile, fp->ihash->name);
-  free (buf);
-  return -1;
 }
 
 /* Allocate pfile->input_buffer, and initialize chartab[]

@@ -670,7 +670,7 @@ initialize_builtins (pfile)
 {
   const struct builtin *b;
   const U_CHAR *val;
-  HASHNODE *hp;
+  cpp_hashnode *hp;
   for(b = builtin_array; b < builtin_array_end; b++)
     {
       if (b->type == T_STDC && CPP_TRADITIONAL (pfile))
@@ -686,7 +686,7 @@ initialize_builtins (pfile)
       else
 	val = b->value;
 
-      hp = _cpp_lookup (pfile, b->name, b->len);
+      hp = cpp_lookup (pfile, b->name, b->len);
       hp->value.cpval = val;
       hp->type = b->type;
 
@@ -1252,6 +1252,7 @@ handle_option (pfile, argc, argv)
      char **argv;
 {
   int i = 0;
+  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 
   if (argv[i][0] != '-')
     {
@@ -1354,7 +1355,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, print_include_names) = 1;
 	  break;
 	case OPT_D:
-	  new_pending_directive (CPP_OPTION (pfile, pending), arg, cpp_define);
+	  new_pending_directive (pend, arg, cpp_define);
 	  break;
 	case OPT_pedantic_errors:
 	  CPP_OPTION (pfile, pedantic_errors) = 1;
@@ -1396,8 +1397,7 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 0;
 	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STRICT_ANSI__", cpp_define);
+	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
 	  break;
 	case OPT_lang_cplusplus:
 	  CPP_OPTION (pfile, cplusplus) = 1;
@@ -1405,21 +1405,29 @@ handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 0;
+	  new_pending_directive (pend, "__cplusplus", cpp_define);
 	  break;
-	case OPT_lang_objc:
 	case OPT_lang_objcplusplus:
-	  CPP_OPTION (pfile, cplusplus) = opt_code == OPT_lang_objcplusplus;
+	  CPP_OPTION (pfile, cplusplus) = 1;
+	  new_pending_directive (pend, "__cplusplus", cpp_define);
+	  /* fall through */
+	case OPT_lang_objc:
 	  CPP_OPTION (pfile, cplusplus_comments) = 1;
 	  CPP_OPTION (pfile, c89) = 0;
 	  CPP_OPTION (pfile, c99) = 0;
 	  CPP_OPTION (pfile, objc) = 1;
+	  new_pending_directive (pend, "__OBJC__", cpp_define);
 	  break;
 	case OPT_lang_asm:
  	  CPP_OPTION (pfile, lang_asm) = 1;
+	  CPP_OPTION (pfile, dollars_in_ident) = 0;
+	  new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
 	  break;
 	case OPT_lang_fortran:
  	  CPP_OPTION (pfile, lang_fortran) = 1;
+	  CPP_OPTION (pfile, traditional) = 1;
 	  CPP_OPTION (pfile, cplusplus_comments) = 0;
+	  new_pending_directive (pend, "_LANGUAGE_FORTRAN", cpp_define);
 	  break;
 	case OPT_lang_chill:
 	  CPP_OPTION (pfile, objc) = 0;
