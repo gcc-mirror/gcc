@@ -1,3 +1,14 @@
+2002-06-21  Matt Thomas  <matt@3am-software.com>
+
+	* config/vax/vax.c (vax_output_function_prologue): Use
+	REGISTER_PREFIX.  Fix some indentation. 
+	* config/vax/vax.h (FUNCTION_PROFILER): Use reg_names[].
+	(VAX_ISTREAM_SYNC): Define.
+	(INITIALIZE_TRAMPOLINE): Use VAX_ISTREAM_SYNC.  Move the
+	i-stream sync to the end. 
+	(REGISTER_PREFIX): Define as "".  
+	(ASM_OUTPUT_MI_THUNK): Use REGISTER_PREFIX.
+
 2002-06-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (ns32k-*-netbsd*): Remove from list of obsolete

@@ -456,7 +456,8 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-   fprintf (FILE, "\tmovab LP%d,r0\n\tjsb mcount\n", (LABELNO));
+   fprintf (FILE, "\tmovab LP%d,%s\n\tjsb mcount\n", (LABELNO), \
+	    reg_names[0]);
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -501,17 +502,19 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
+/* Allow this be overriden with the correct register prefixes.  */
+#define VAX_ISTREAM_SYNC "movpsl -(sp)\n\tpushal 1(pc)\n\trei"
+
 /* We copy the register-mask from the function's pure code
    to the start of the trampoline.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_insn (gen_rtx_ASM_INPUT (VOIDmode,				\
-				"movpsl -(sp)\n\tpushal 1(pc)\n\trei")); \
   emit_move_insn (gen_rtx_MEM (HImode, TRAMP),				\
 		  gen_rtx_MEM (HImode, FNADDR));			\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT);\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT);	\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 11)),	\
 		  plus_constant (FNADDR, 2));				\
+  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, VAX_ISTREAM_SYNC));		\
 }
 
 /* Byte offset of return address in a stack frame.  The "saved PC" field
@@ -1015,8 +1018,10 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define DATA_SECTION_ASM_OP "\t.data"
 
 /* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number (see above).  */
+   This sequence is indexed by compiler's hard-register-number (see above).
+   The register names will be prefixed by REGISTER_PREFIX, if any.  */
 
+#define REGISTER_PREFIX ""
 #define REGISTER_NAMES \
 {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", \
  "r9", "r10", "r11", "ap", "fp", "sp", "pc"}
@@ -1143,13 +1148,13 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 	addl2	$DELTA, 4(ap)	#adjust first argument
 	jmp	FUNCTION+2	#jump beyond FUNCTION's entry mask
  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-do {						\
-  fprintf (FILE, "\t.word 0x0ffc\n");		\
-  fprintf (FILE, "\taddl2 $%d,4(ap)\n", DELTA);	\
-  fprintf (FILE, "\tjmp ");			\
-  assemble_name (FILE,  XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0)); \
-  fprintf (FILE, "+2\n");			\
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+do {									\
+  fprintf (FILE, "\t.word 0x0ffc\n");					\
+  fprintf (FILE, "\taddl2 $%d,4(%sap)\n", DELTA, REGISTER_PREFIX);	\
+  fprintf (FILE, "\tjmp ");						\
+  assemble_name (FILE,  XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
+  fprintf (FILE, "+2\n");						\
 } while (0)
 
 /* Print an instruction operand X on file FILE.
