@@ -1638,6 +1638,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
       if (DECL_FUNCTION_MEMBER_P (f))
 	{
 	  tree type = currently_open_derived_class (DECL_CONTEXT (f));
+	  if (!type)
+	    type = DECL_CONTEXT (f);
 	  fn = build_baselink (TYPE_BINFO (type),
 			       TYPE_BINFO (type),
 			       fn, /*optype=*/NULL_TREE);
