@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script, like so:
-# aclocal, autoconf, autoheader, automake
+# aclocal && autoconf && autoheader && automake
 
 AC_PREREQ(2.13)
 AC_INIT(src/ios.cc)
@@ -14,8 +14,9 @@ libtool_VERSION=4:0:0
 AC_SUBST(libtool_VERSION)
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
-# AC 2.50 sets target_alias iff the user specified --target, but we use it
-# everywhere, so we set it here just to be sure.
+# AC 2.5x sets target_alias iff the user specified --target, but we use it
+# everywhere, so we set it here just to be sure.  In AC 2.13
+# AC_CANONICAL_TARGET was known as AC_CANONICAL_SYSTEM.
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
@@ -24,7 +25,7 @@ AM_INIT_AUTOMAKE($PACKAGE, $release_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Runs configure.host and configure.target, as well as finds CC, CXX
-# and assorted other critical bits. Have to run this before the
+# and assorted other critical bits.  Have to run this before the
 # GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
 
@@ -331,6 +332,31 @@ glibcpp_basedir=${glibcpp_basedir}
 CC="${CC}"
 CXX="${CXX}"
 )
+dnl  In autoconf 2.5x, AC_OUTPUT is replaced by three AC_ macros:
+dnl  AC_CONFIG_FILES(Makefile \
+dnl      include/Makefile src/Makefile \
+dnl      libmath/Makefile libio/Makefile libsupc++/Makefile \
+dnl      po/Makefile testsuite/Makefile mkcheck testsuite_flags)
+dnl  AC_CONFIG_COMMANDS([default],
+dnl  [if test -n "$CONFIG_FILES"; then
+dnl    ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+dnl    grep '^MULTISUBDIR =' Makefile >> src/Makefile
+dnl    grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+dnl  fi
+dnl  chmod +x mkcheck
+dnl  chmod +x testsuite_flags
+dnl  ],
+dnl  srcdir=${srcdir}
+dnl  host=${host}
+dnl  target=${target}
+dnl  with_multisubdir=${with_multisubdir}
+dnl  ac_configure_args="${multilib_arg} ${ac_configure_args}"
+dnl  CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+dnl  glibcpp_basedir=${glibcpp_basedir}
+dnl  CC="${CC}"
+dnl  CXX="${CXX}"
+dnl  )
+dnl  AC_OUTPUT
 
 
 # Sanity checking & User-visible messages.

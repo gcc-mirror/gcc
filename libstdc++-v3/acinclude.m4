@@ -12,55 +12,55 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
    esac], [multilib=yes])dnl
 
-# When building with srcdir == objdir, links to the source files will
-# be created in directories within the target_subdir.  We have to
-# adjust toplevel_srcdir accordingly, so that configure finds
-# install-sh and other auxiliary files that live in the top-level
-# source directory.
-if test "${srcdir}" = "."; then
-  if test -z "${with_target_subdir}"; then
-    toprel=".."
-  else
-    if test "${with_target_subdir}" != "."; then
-      toprel="${with_multisrctop}../.."
+  # When building with srcdir == objdir, links to the source files will
+  # be created in directories within the target_subdir.  We have to
+  # adjust toplevel_srcdir accordingly, so that configure finds
+  # install-sh and other auxiliary files that live in the top-level
+  # source directory.
+  if test "${srcdir}" = "."; then
+    if test -z "${with_target_subdir}"; then
+      toprel=".."
     else
-      toprel="${with_multisrctop}.."
+      if test "${with_target_subdir}" != "."; then
+        toprel="${with_multisrctop}../.."
+      else
+        toprel="${with_multisrctop}.."
+      fi
     fi
+  else
+    toprel=".."
   fi
-else
-  toprel=".."
-fi
-AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
-toplevel_srcdir=\${top_srcdir}/$toprel
-AC_SUBST(toplevel_srcdir)
+  AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
+  toplevel_srcdir=\${top_srcdir}/$toprel
+  AC_SUBST(toplevel_srcdir)
 
-# Export build and source directories.
-# These need to be absolute paths, yet at the same time need to
-# canonicalize only relative paths, because then amd will not unmount
-# drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-glibcpp_builddir=`pwd`
-case $srcdir in
-[\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
-*) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
-esac
-AC_SUBST(glibcpp_builddir)
-AC_SUBST(glibcpp_srcdir)
+  # Export build and source directories.
+  # These need to be absolute paths, yet at the same time need to
+  # canonicalize only relative paths, because then amd will not unmount
+  # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
+  glibcpp_builddir=`pwd`
+  case $srcdir in
+  [\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
+  *) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+  esac
+  AC_SUBST(glibcpp_builddir)
+  AC_SUBST(glibcpp_srcdir)
 
-dnl This is here just to satisfy automake.
-ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
+  dnl This is here just to satisfy automake.
+  ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
 
-AC_PROG_AWK
-# Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
-# be 'cp -p' if linking isn't available.
-#ac_cv_prog_LN_S='cp -p'
-AC_PROG_LN_S
+  AC_PROG_AWK
+  # Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.5x, can also
+  # be 'cp -p' if linking isn't available.
+  #ac_cv_prog_LN_S='cp -p'
+  AC_PROG_LN_S
 
-# We use these options to decide which functions to include.
-AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR
-                           configuring in a subdirectory])
-AC_ARG_WITH(cross-host,
-[  --with-cross-host=HOST  configuring with a cross compiler])
+  # We use these options to decide which functions to include.
+  AC_ARG_WITH(target-subdir,
+  [  --with-target-subdir=SUBDIR
+                          configuring in a subdirectory])
+  AC_ARG_WITH(cross-host,
+  [  --with-cross-host=HOST  configuring with a cross compiler])
 
   glibcpp_basedir=$srcdir/$toprel/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
@@ -72,96 +72,92 @@ AC_ARG_WITH(cross-host,
   ifdef([AC_PROG_CXX_G],[],[define([AC_PROG_CXX_G],defn([_AC_PROG_CXX_G]))])
   ifdef([AC_PROG_CXX_GNU],[],[define([AC_PROG_CXX_GNU],defn([_AC_PROG_CXX_GNU]))])
 
-#  AC_PROG_CC
+  # AC_PROG_CC
+  # FIXME: We temporarily define our own version of AC_PROG_CC.  This is
+  # copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We
+  # are probably using a cross compiler, which will not be able to fully
+  # link an executable.  This is addressed in later versions of autoconf.
 
-# FIXME: We temporarily define our own version of AC_PROG_CC.  This is
-# copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We
-# are probably using a cross compiler, which will not be able to fully
-# link an executable.  This should really be fixed in autoconf
-# itself.
-
-AC_DEFUN(LIB_AC_PROG_CC,
-[AC_BEFORE([$0], [AC_PROG_CPP])dnl
-dnl Fool anybody using AC_PROG_CC.
-AC_PROVIDE([AC_PROG_CC])
-AC_CHECK_PROG(CC, gcc, gcc)
-if test -z "$CC"; then
-  AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
-  test -z "$CC" && AC_MSG_ERROR([no acceptable cc found in \$PATH])
-fi
-
-AC_PROG_CC_GNU
-
-if test $ac_cv_prog_gcc = yes; then
-  GCC=yes
-dnl Check whether -g works, even if CFLAGS is set, in case the package
-dnl plays around with CFLAGS (such as to build both debugging and
-dnl normal versions of a library), tasteless as that idea is.
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS=
-  AC_PROG_CC_G
-  if test "$ac_test_CFLAGS" = set; then
-    CFLAGS="$ac_save_CFLAGS"
-  elif test $ac_cv_prog_cc_g = yes; then
-    CFLAGS="-g -O2"
-  else
-    CFLAGS="-O2"
+  AC_DEFUN(LIB_AC_PROG_CC,
+  [AC_BEFORE([$0], [AC_PROG_CPP])dnl
+  dnl Fool anybody using AC_PROG_CC.
+  AC_PROVIDE([AC_PROG_CC])
+  AC_CHECK_PROG(CC, gcc, gcc)
+  if test -z "$CC"; then
+    AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
+    test -z "$CC" && AC_MSG_ERROR([no acceptable cc found in \$PATH])
   fi
-else
-  GCC=
-  test "${CFLAGS+set}" = set || CFLAGS="-g"
-fi
-])
 
-LIB_AC_PROG_CC
+  AC_PROG_CC_GNU
 
-# Can't just call these here as g++ requires libstc++ to be built....
-#  AC_PROG_CXX
-
-# Likewise for AC_PROG_CXX.
-AC_DEFUN(LIB_AC_PROG_CXX,
-[AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
-dnl Fool anybody using AC_PROG_CXX.
-AC_PROVIDE([AC_PROG_CXX])
-# Use glibcpp_CXX so that we do not cause CXX to be cached with the
-# flags that come in CXX while configuring libstdc++.  They're different
-# from those used for all other target libraries.  If CXX is set in
-# the environment, respect that here.
-glibcpp_CXX=$CXX
-AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
-AC_SUBST(glibcpp_CXX)
-CXX=$glibcpp_CXX
-test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
-
-AC_PROG_CXX_GNU
-
-if test $ac_cv_prog_gxx = yes; then
-  GXX=yes
-dnl Check whether -g works, even if CXXFLAGS is set, in case the package
-dnl plays around with CXXFLAGS (such as to build both debugging and
-dnl normal versions of a library), tasteless as that idea is.
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS=
-  AC_PROG_CXX_G
-  if test "$ac_test_CXXFLAGS" = set; then
-    CXXFLAGS="$ac_save_CXXFLAGS"
-  elif test $ac_cv_prog_cxx_g = yes; then
-    CXXFLAGS="-g -O2"
+  if test $ac_cv_prog_gcc = yes; then
+    GCC=yes
+  dnl Check whether -g works, even if CFLAGS is set, in case the package
+  dnl plays around with CFLAGS (such as to build both debugging and
+  dnl normal versions of a library), tasteless as that idea is.
+    ac_test_CFLAGS="${CFLAGS+set}"
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS=
+    AC_PROG_CC_G
+    if test "$ac_test_CFLAGS" = set; then
+      CFLAGS="$ac_save_CFLAGS"
+    elif test $ac_cv_prog_cc_g = yes; then
+      CFLAGS="-g -O2"
+    else
+      CFLAGS="-O2"
+    fi
   else
-    CXXFLAGS="-O2"
+    GCC=
+    test "${CFLAGS+set}" = set || CFLAGS="-g"
   fi
-else
-  GXX=
-  test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
-fi
-])
+  ])
 
-LIB_AC_PROG_CXX
+  LIB_AC_PROG_CC
 
-   # For some reason, gettext needs this.
-   AC_ISC_POSIX
+  # Likewise for AC_PROG_CXX.  We can't just call it directly because g++
+  # will try to link in libstdc++.
+  AC_DEFUN(LIB_AC_PROG_CXX,
+  [AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
+  dnl Fool anybody using AC_PROG_CXX.
+  AC_PROVIDE([AC_PROG_CXX])
+  # Use glibcpp_CXX so that we do not cause CXX to be cached with the
+  # flags that come in CXX while configuring libstdc++.  They're different
+  # from those used for all other target libraries.  If CXX is set in
+  # the environment, respect that here.
+  glibcpp_CXX=$CXX
+  AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+  AC_SUBST(glibcpp_CXX)
+  CXX=$glibcpp_CXX
+  test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
+
+  AC_PROG_CXX_GNU
+
+  if test $ac_cv_prog_gxx = yes; then
+    GXX=yes
+    dnl Check whether -g works, even if CXXFLAGS is set, in case the package
+    dnl plays around with CXXFLAGS (such as to build both debugging and
+    dnl normal versions of a library), tasteless as that idea is.
+    ac_test_CXXFLAGS="${CXXFLAGS+set}"
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS=
+    AC_PROG_CXX_G
+    if test "$ac_test_CXXFLAGS" = set; then
+      CXXFLAGS="$ac_save_CXXFLAGS"
+    elif test $ac_cv_prog_cxx_g = yes; then
+      CXXFLAGS="-g -O2"
+    else
+      CXXFLAGS="-O2"
+    fi
+  else
+    GXX=
+    test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
+  fi
+  ])
+
+  LIB_AC_PROG_CXX
+
+  # For some reason, gettext needs this.
+  AC_ISC_POSIX
 
   AC_CHECK_TOOL(AS, as)
   AC_CHECK_TOOL(AR, ar)
@@ -196,7 +192,6 @@ LIB_AC_PROG_CXX
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
 
-  # 
 ])
 
 
