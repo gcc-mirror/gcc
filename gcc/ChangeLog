@@ -1,5 +1,9 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	1999-11-29  Joern Rennecke  <amylaar@redhat.co.uk>
+	* reload1.c (reloads_conflict): Reverse test comparing operand
+	numbers when testing for conflict between output/outaddr reloads.
+
 	2000-07-12  Richard Henderson  <rth@redhat.com>
 	* reload.c (push_secondary_reload): Make sure to add the new
 	reload at the end, after acquiring secondary memory.
