@@ -1,3 +1,8 @@
+Mon Sep  7 18:33:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_builtin, case BUILT_IN_LONGJMP): Fix typo in
+	last change.
+
 Wed Sep  2 15:38:01 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* libgcc2.c (__floatdisf): Use signed comparison to test
