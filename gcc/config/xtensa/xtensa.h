@@ -1679,7 +1679,10 @@ typedef struct xtensa_args {
 		 strcmp (fnsectname, ".text") ? fnsectname : "");	\
       }									\
     if ((SIZE) > 0)							\
-      function_section (FUNDECL);  					\
+      {									\
+	function_section (FUNDECL);  					\
+	fprintf (FILE, "\t.literal_position\n");			\
+      }									\
   } while (0)
 
 
