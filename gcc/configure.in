@@ -347,8 +347,6 @@ fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 AC_SUBST(OUTPUT_OPTION)
 
-gcc_AC_C_LONG_DOUBLE
-
 AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
 ac_cv_prog_cc_no_long_long,
 [save_CFLAGS="$CFLAGS"
@@ -361,6 +359,23 @@ if test $ac_cv_prog_cc_no_long_long = yes; then
   strict1_warn="-pedantic -Wno-long-long"
 fi
 AC_SUBST(strict1_warn)
+
+AC_C_INLINE
+gcc_AC_C_VOLATILE
+
+gcc_AC_C_LONG_DOUBLE
+gcc_AC_C_LONG_LONG
+
+# sizeof(char) is 1 by definition.
+gcc_AC_COMPILE_CHECK_SIZEOF(short)
+gcc_AC_COMPILE_CHECK_SIZEOF(int)
+gcc_AC_COMPILE_CHECK_SIZEOF(long)
+if test $ac_cv_c_long_long = yes; then
+  gcc_AC_COMPILE_CHECK_SIZEOF(long long)
+fi
+if test $ac_cv_c___int64 = yes; then
+  gcc_AC_COMPILE_CHECK_SIZEOF(__int64)
+fi
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
@@ -423,13 +438,10 @@ if test $gcc_cv_glibc = yes; then
   AC_DEFINE(_GNU_SOURCE, 1, [Always define this when using the GNU C Library])
 fi
 
-AC_C_INLINE
-
 # Find some useful tools
 AC_PROG_AWK
 gcc_AC_PROG_LN
 gcc_AC_PROG_LN_S
-gcc_AC_C_VOLATILE
 AC_PROG_RANLIB
 gcc_AC_PROG_INSTALL
 
@@ -445,6 +457,9 @@ AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
 AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
+
+# This test can't be done till we know if we have limits.h.
+gcc_AC_C_CHAR_BIT
 
 # See if GNAT has been installed
 AC_CHECK_PROG(have_gnat, gnatbind, yes, no)
@@ -783,8 +798,8 @@ else
 fi
 
 tm_file="${tm_file} defaults.h"
-host_xm_file="auto-host.h gansidecl.h ${host_xm_file} ${tm_file} hwint.h"
-build_xm_file="${build_auto} gansidecl.h ${build_xm_file} ${tm_file} hwint.h"
+host_xm_file="auto-host.h gansidecl.h ${host_xm_file} ${tm_file}"
+build_xm_file="${build_auto} gansidecl.h ${build_xm_file} ${tm_file}"
 xm_file="gansidecl.h ${xm_file} ${tm_file}"
 
 # Truncate the target if necessary
@@ -970,7 +985,7 @@ done
 host_xm_file_list=
 for f in $host_xm_file; do
   case $f in
-    auto-host.h | gansidecl.h | defaults.h | hwint.h )
+    auto-host.h | gansidecl.h | defaults.h )
        host_xm_file_list="${host_xm_file_list} $f" ;;
     *) host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f" ;;
   esac
@@ -979,7 +994,7 @@ done
 build_xm_file_list=
 for f in $build_xm_file; do
   case $f in
-    auto-build.h | auto-host.h | gansidecl.h | defaults.h | hwint.h )
+    auto-build.h | auto-host.h | gansidecl.h | defaults.h )
        build_xm_file_list="${build_xm_file_list} $f" ;;
     *) build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f" ;;
   esac

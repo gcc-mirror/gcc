@@ -1,6 +1,6 @@
 /* Configuration for GNU compiler
    for an DEC/Compaq Alpha
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
    Donn Terry, Softway Systems, Inc.
      derived from code by Douglas B. Rupp (drupp@cs.washington.edu)
 
@@ -21,16 +21,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef HOST_BITS_PER_LONG
-#define HOST_BITS_PER_LONG	32
-
 #define HOST_BITS_PER_WIDE_INT 64
 #ifdef __GNUC__
 #   define HOST_WIDE_INT long long
 #else
 #   define HOST_WIDE_INT __int64
 #endif
-
 
 #define HOST_BITS_PER_WIDEST_INT HOST_BITS_PER_LONGLONG
 #ifdef __GNUC__

@@ -1,3 +1,39 @@
+2001-03-13  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4 (gcc_AC_COMPILE_CHECK_SIZEOF, gcc_AC_C_CHAR_BIT,
+	gcc_AC_C_LONG_LONG): New.
+	* configure.in: Use them.  Probe the size of short, int, long,
+	and long long/__int64 if we have them.  Move all the AC_C_*
+	checks together, except gcc_AC_C_CHAR_BIT which has to go
+	after AC_CHECK_HEADERS(limits.h).
+	Take hwint.h out of host_xm_file and build_xm_file.
+
+	* hwint.h: Unconditionally define HOST_BITS_PER_CHAR,
+	HOST_BITS_PER_SHORT, HOST_BITS_PER_INT, HOST_BITS_PER_LONG,
+	and HOST_BITS_PER_LONGLONG in terms of SIZEOF_* and CHAR_BIT.
+	Move the HOST_WIDEST_INT setup logic here from system.h.
+	Provide HOST_WIDEST_INT even if HOST_BITS_PER_LONGLONG is not
+	defined.
+	* system.h: Include hwint.h after limits.h.  HOST_WIDEST_INT
+	is now handled by hwint.h.
+
+	* config/alpha/xm-alpha-interix.h, config/alpha/xm-vms.h,
+	config/c4x/xm-c4x.h, config/i370/xm-oe.h,
+	config/ia64/xm-ia64.h: Don't define any of:
+	HOST_BITS_PER_LONG, HOST_BITS_PER_CHAR, HOST_BITS_PER_SHORT,
+	HOST_BITS_PER_LONGLONG.
+
+	* config/alpha/xm-alpha.h, config/dsp16xx/xm-dsp16xx.h,
+	config/h8300/xm-h8300.h, config/mips/iris6.h,
+	config/mn10200/xm-mn10200.h, config/pa/xm-pa64hpux.h,
+	config/sparc/xm-sp64.h: Delete.
+	* config.gcc: Remove references to deleted files.
+
+	* config/arm/xm-arm.h, config/mips/xm-mips.h: Don't define
+	HOST_FLOAT_FORMAT to IEEE_FLOAT_FORMAT.
+	* config/i370/xm-linux.h: Clarify floating-point situation in
+	a comment.
+
 2001-03-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (NO_INCLUDE_PATH): New macro.
@@ -54,7 +90,7 @@ Tue Mar 13 14:38:44 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c: Update comments.
+	* cppfiles.c: Update comments.
 	(destroy_include_file_node): Rename destroy_node.
 	(find_or_create_entry): New function.
 	(open_file, _cpp_fake_include): Use it.
@@ -147,7 +183,7 @@ Mon Mar 12 15:16:36 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-11  Zack Weinberg  <zackw@stanford.edu>
 
-	* configure.in: Move check for unsigned enumerated bitfields   
+	* configure.in: Move check for unsigned enumerated bitfields
 	to macro in aclocal.m4.  Disable it for now.
 	* configure, config.in: Regenerate.
 	* system.h: Don't do anything with ONLY_INT_FIELDS.  Use the
@@ -159,7 +195,7 @@ Mon Mar 12 15:16:36 CET 2001  Jan Hubicka  <jh@suse.cz>
 	config/i370/xm-linux.h, config/i386/xm-beos.h,
 	config/i386/xm-mingw32.h, config/mips/xm-mips.h,
 	config/pa/xm-pa.h, config/pa/xm-pa64hpux.h,
-	config/rs6000/xm-beos.h, config/rs6000/xm-sysv4.h, 
+	config/rs6000/xm-beos.h, config/rs6000/xm-sysv4.h,
 	Don't define ONLY_INT_FIELDS under any circumstances.
 
 	* config/pa/xm-pa.h: Don't define __BSD_NET2__.
@@ -170,12 +206,12 @@ Mon Mar 12 15:16:36 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* config.gcc (hppa targets): Replace xm-pahpux.h and
 	xm-papro.h with implicit xm-pa.h.
 	(sparc targets): Replace xm-sysv4.h with implicit or explicit
-	xm-sparc.h. 
+	xm-sparc.h.
 
 2001-03-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
-        before reload_cse_noop_set_p.
+	* reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
+	before reload_cse_noop_set_p.
 
 2001-03-11  Zack Weinberg  <zackw@stanford.edu>
 
@@ -233,7 +269,7 @@ Sun Mar 11 17:01:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (INCLUDE_LEN_FUDGE, ENOMEM): Delete.
+	* cppfiles.c (INCLUDE_LEN_FUDGE, ENOMEM): Delete.
 	(cpp_included, find_include_file): Update.
 	(_cpp_compare_file_date): Make else unconditional.
 
@@ -243,7 +279,7 @@ Sun Mar 11 17:01:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-10  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
-	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics. 
+	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics.
 	* config/sh/lib1funcs.asm (mulsi3): Convert mulu to mulu.w.
 
 Sat Mar 10 22:42:05 2001  Alexandre Oliva  <aoliva@redhat.com>

@@ -293,14 +293,38 @@
    character sets for source code. */
 #undef MULTIBYTE_CHARS
 
-/* Always define this when using the GNU C Library */
-#undef _GNU_SOURCE
-
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 
+/* Define if your compiler supports the `long long' type. */
+#undef HAVE_LONG_LONG
+
+/* Define if your compiler supports the `__int64' type. */
+#undef HAVE___INT64
+
+/* The number of bytes in type short */
+#undef SIZEOF_SHORT
+
+/* The number of bytes in type int */
+#undef SIZEOF_INT
+
+/* The number of bytes in type long */
+#undef SIZEOF_LONG
+
+/* The number of bytes in type long long */
+#undef SIZEOF_LONG_LONG
+
+/* The number of bytes in type __int64 */
+#undef SIZEOF___INT64
+
+/* Always define this when using the GNU C Library */
+#undef _GNU_SOURCE
+
 /* Define if you can safely include both <string.h> and <strings.h>. */
 #undef STRING_WITH_STRINGS
+
+/* Define as the number of bits in a byte, if `limits.h' doesn't. */
+#undef CHAR_BIT
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

@@ -35,9 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FILE_TYPE
 #endif
 
-#undef HOST_BITS_PER_LONG
-#define HOST_BITS_PER_LONG 32
-
 #define HOST_WIDE_INT long long
 #define HOST_BITS_PER_WIDE_INT 64
 

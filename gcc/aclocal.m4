@@ -1123,3 +1123,109 @@ else
   gcc_cv_prog_$2_modern=no
 fi
 ])
+
+dnl Determine if enumerated bitfields are unsigned.   ISO C says they can 
+dnl be either signed or unsigned.
+dnl
+AC_DEFUN(gcc_AC_C_ENUM_BF_UNSIGNED,
+[AC_CACHE_CHECK(for unsigned enumerated bitfields, gcc_cv_enum_bf_unsigned,
+[AC_TRY_RUN(#include <stdlib.h>
+enum t { BLAH = 128 } ;
+struct s_t { enum t member : 8; } s ;
+int main(void)
+{            
+        s.member = BLAH;
+        if (s.member < 0) exit(1);
+        exit(0);
+
+}, gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
+if test $gcc_cv_enum_bf_unsigned = yes; then
+  AC_DEFINE(ENUM_BITFIELDS_ARE_UNSIGNED, 1,
+    [Define if enumerated bitfields are treated as unsigned values.])
+fi])
+
+dnl Host type sizes probe.
+dnl By Kaveh R. Ghazi.  One typo fixed since.
+dnl
+AC_DEFUN([gcc_AC_COMPILE_CHECK_SIZEOF],
+[changequote(<<, >>)dnl
+dnl The name to #define.
+define(<<AC_TYPE_NAME>>, translit(sizeof_$1, [a-z *], [A-Z_P]))dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$1, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(size of $1)
+AC_CACHE_VAL(AC_CV_NAME,
+[for ac_size in 4 8 1 2 16 $3 ; do # List sizes in rough order of prevalence.
+  AC_TRY_COMPILE([#include "confdefs.h"
+#include <sys/types.h>
+$2
+], [switch (0) case 0: case (sizeof ($1) == $ac_size):;], AC_CV_NAME=$ac_size)
+  if test x$AC_CV_NAME != x ; then break; fi
+done
+])
+if test x$AC_CV_NAME = x ; then
+  AC_MSG_ERROR([cannot determine a size for $1])
+fi
+AC_MSG_RESULT($AC_CV_NAME)
+AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
+undefine([AC_TYPE_NAME])dnl
+undefine([AC_CV_NAME])dnl
+])
+
+dnl Probe number of bits in a byte.
+dnl Note C89 requires CHAR_BIT >= 8.
+dnl
+AC_DEFUN(gcc_AC_C_CHAR_BIT,
+[AC_CACHE_CHECK(for CHAR_BIT, gcc_cv_decl_char_bit,
+[AC_EGREP_CPP(found,
+[#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#ifdef CHAR_BIT
+found
+#endif], gcc_cv_decl_char_bit=yes, gcc_cv_decl_char_bit=no)
+])
+if test $gcc_cv_decl_char_bit = no; then
+  AC_CACHE_CHECK(number of bits in a byte, gcc_cv_c_nbby,
+[i=8
+ gcc_cv_c_nbby=
+ while test $i -lt 65; do
+   AC_TRY_COMPILE(,
+   [switch(0) { case 0: case (char)(1 << $i) && (char)(1 << $i) != 1: ; }],
+         gcc_cv_c_nbby=$i
+         break)
+   i=`expr $i + 1`
+ done
+ test -z "$gcc_cv_c_nbby" && gcc_cv_c_nbby=failed
+])
+if test $gcc_cv_c_nbby = failed; then
+  AC_MSG_ERROR(cannot determine number of bits in a byte)
+else
+  AC_DEFINE_UNQUOTED(CHAR_BIT, $gcc_cv_c_nbby,
+  [Define as the number of bits in a byte, if \`limits.h' doesn't.])
+fi
+fi])
+
+dnl Checking for long long.
+dnl By Caolan McNamara <caolan@skynet.ie>
+dnl Added check for __int64, Zack Weinberg <zackw@stanford.edu>
+dnl
+AC_DEFUN([gcc_AC_C_LONG_LONG],
+[AC_CACHE_CHECK(for long long int, ac_cv_c_long_long,
+  [AC_TRY_COMPILE(,[long long int i;],
+         ac_cv_c_long_long=yes,
+         ac_cv_c_long_long=no)])
+  if test $ac_cv_c_long_long = yes; then
+    AC_DEFINE(HAVE_LONG_LONG, 1,
+      [Define if your compiler supports the \`long long' type.])
+  fi
+AC_CACHE_CHECK(for __int64, ac_cv_c___int64,
+  [AC_TRY_COMPILE(,[__int64 i;],
+	ac_cv_c___int64=yes,
+	ac_cv_c___int64=no)])
+  if test $ac_cv_c___int64 = yes; then
+    AC_DEFINE(HAVE___INT64, 1,
+      [Define if your compiler supports the \`__int64' type.])
+  fi
+])

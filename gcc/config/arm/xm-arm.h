@@ -22,11 +22,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* This describes the machine the compiler is hosted on.  */
-
-/* A code distinguishing the floating point format of the host
-   machine.  There are three defined values: IEEE_FLOAT_FORMAT,
-   VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
-
-#define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 #define HOST_FLOAT_WORDS_BIG_ENDIAN 1
