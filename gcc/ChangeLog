@@ -1,3 +1,8 @@
+2001-08-21  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (find_if_block): Allow join_bb as EXIT.
+	(merge_if_block): Handle fallout from same.
+
 2001-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (type_to_class): Fix typo in last change.
