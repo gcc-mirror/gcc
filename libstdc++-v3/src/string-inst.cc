@@ -48,6 +48,7 @@ namespace std
   typedef basic_string<C> S;
 
   template C S::_Rep::_S_terminal;
+  template const S::size_type S::npos;
   template S::size_type S::_Rep::_S_max_size;
   template S::size_type S::_S_empty_rep_storage[];
   template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
