@@ -1578,6 +1578,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
       else
 	DECL_NAME (method_decl) = get_identifier (p);
       DECL_CONSTRUCTOR_P (method_decl) = 1;
+      build_java_argument_signature (TREE_TYPE (method_decl));
     }
   else if (! METHOD_STATIC (method_decl) && !DECL_ARTIFICIAL (method_decl))
     {
