@@ -1357,8 +1357,13 @@ comp_target_parms (parms1, parms2, strict)
 
   if (t1 == 0 && t2 != 0)
     {
-      cp_pedwarn ("ANSI C++ prohibits conversion from `(%#T)' to `(...)'",
-		  parms2);
+      if (! flag_strict_prototype && t2 == void_list_node)
+	/* t1 might be the arglist of a function pointer in extern "C"
+	   declared to take (), which we fudged to (...).  Don't make the
+	   user pay for our mistake.  */;
+      else
+	cp_pedwarn ("ANSI C++ prohibits conversion from `%#T' to `(...)'",
+		    parms2);
       return self_promoting_args_p (t2);
     }
   if (t2 == 0)
