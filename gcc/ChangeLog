@@ -1,3 +1,12 @@
+2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/7370
+	* config/s390/s390.md ("*addsi3_inv"): New pattern.
+
+	PR target/8232
+	* config/s390/s390.md ("cmpstrsi"): Convert length operand
+	from SImode to Pmode.
+
 2002-10-15  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi: Formatting changes for conformance to HTML 4.01.
