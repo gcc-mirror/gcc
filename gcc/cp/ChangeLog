@@ -1,3 +1,9 @@
+2001-02-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (lookup_template_class): Make sure it's a primary
+	template or template_template_parm when called from the parser.
+	(instantiate_template_class): Add assertion.
+
 2001-02-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* method.c (build_mangled_name) [old abi]: Protect flush_repeats()
