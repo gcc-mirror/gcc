@@ -1,3 +1,18 @@
+2004-09-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Introduce AC_C_BIGENDIAN_CROSS for WORDS_BIGENDIAN.
+	* configure: Regenerate.
+	* include/config.h.in: Likewise.
+	* jni/gtk-peer/gtkpeer.h (SWAPU32): Introduce macro to swap pixels.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c: Moved SWAPU32
+	macro to gtkpeer.h.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_getImagePixels): Convert
+	pixels from  0xBBGGRRAA to 0xAARRGGBB only on Little Endian
+	architectures.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c (area_updated):
+	Likewise.
+
 2004-09-22  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/14446:
