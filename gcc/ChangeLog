@@ -1,3 +1,7 @@
+2002-04-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (TARGET_VERSION): Remove local version number.
+
 Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (SSE_FLOAT_MODE_P): Kill bogus TARGET_SSE_MATH check.
