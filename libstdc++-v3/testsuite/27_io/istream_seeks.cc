@@ -55,11 +55,6 @@ bool test01()
   p4 = ifs2.tellg();
 
   VERIFY( p3 == p4 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 
@@ -237,10 +232,6 @@ void test04(void)
   if01.peek();
   pos02 = if01.tellg();
   VERIFY( pos02 == pos01 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 // stringstreams
@@ -351,10 +342,50 @@ void test05(void)
   VERIFY( state01 == state02 );
   pos06 = is03.tellg(); 
   VERIFY( pos05 == pos06 ); 
+}
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
+// libstdc++/8348
+void test06(void)
+{
+  using namespace std;
+  bool test = true;
+  string num1("555");
+
+  // tellg
+  {
+    istringstream iss(num1);
+    istream::pos_type pos1 = iss.tellg();
+    int asNum = 0;
+    iss >> asNum;
+    VERIFY( test = iss.eof() );
+    VERIFY( test = !iss.fail() );
+    iss.tellg();
+    VERIFY( test = !iss.fail() );
+  }
+
+  // seekg
+  {
+    istringstream iss(num1);
+    istream::pos_type pos1 = iss.tellg();
+    int asNum = 0;
+    iss >> asNum;
+    VERIFY( test = iss.eof() );
+    VERIFY( test = !iss.fail() );
+    iss.seekg(0, ios_base::beg);
+    VERIFY( test = !iss.fail() );
+  }
+
+  // seekg
+  {
+    istringstream iss(num1);
+    istream::pos_type pos1 = iss.tellg();
+    int asNum = 0;
+    iss >> asNum;
+    VERIFY( test = iss.eof() );
+    VERIFY( test = !iss.fail() );
+    iss.seekg(pos1);
+    VERIFY( test = !iss.fail() );
+  }
 }
 
 int main()
@@ -366,6 +397,8 @@ int main()
 
   test04();
   test05();
+
+  test06();
   return 0;
 }
 
