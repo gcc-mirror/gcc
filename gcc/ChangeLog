@@ -1,9 +1,21 @@
+
+2003-03-10  Devang Patel  <dpatel@apple.com>
+	
+	PR c++/9394
+	* gcc.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
+	* gcc.h (DEFAULT_SWITCH_TAKES_ARG): Add.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Add.
+	* cppspec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
+	
 2003-03-10  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR optimization/7189
 	* toplev.c (rest_of_compilation):  Move
 	check_function_return_warnings up to just after
 	delete_unreachable_blocks.
+
 
 2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
 
