@@ -1031,9 +1031,6 @@ changequote([,])dnl
 		tmake_file=fr30/t-fr30
 		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 		;;
-# This hasn't been upgraded to GCC 2.
-#	fx80-alliant-*)			# Alliant FX/80
-#		;;
 	h8300-*-*)
 		float_format=i32
 		;;
@@ -3112,13 +3109,6 @@ changequote([,])dnl
 		tm_file=ns32k/tek6200.h
 		use_collect2=yes
 		;;
-# This has not been updated to GCC 2.
-#	ns32k-ns-genix*)
-#		xm_defines=USG
-#		xmake_file=ns32k/x-genix
-#		tm_file=ns32k/genix.h
-#		use_collect2=yes
-#		;;
 	ns32k-merlin-*)
 		tm_file=ns32k/merlin.h
 		use_collect2=yes
@@ -3150,13 +3140,6 @@ changequote([,])dnl
 	ns32k-*-openbsd*)
 		# Nothing special
 		;;
-# This has not been updated to GCC 2.
-#	pyramid-*-*)
-#		cpu_type=pyr
-#		xmake_file=pyr/x-pyr
-#		use_collect2=yes
-#		;;
-
   	pj*-linux*)
 		tm_file="svr4.h pj/linux.h ${tm_file}"
  		;;
@@ -3659,24 +3642,12 @@ changequote([,])dnl
  		fi
 		float_format=sparc
 		;;
-# This hasn't been upgraded to GCC 2.
-#	tahoe-harris-*)			# Harris tahoe, using COFF.
-#		tm_file=tahoe/harris.h
-#		;;
-#	tahoe-*-bsd*)			# tahoe running BSD
-#		;;
-
 	thumb*-*-*)
 		AC_MSG_ERROR([
 *** The Thumb targets have been depreciated.  The equivalent
 *** ARM based toolchain can now generated Thumb instructions
 *** when the -mthumb switch is given to the compiler.])
 		;;
-# This hasn't been upgraded to GCC 2.
-#	tron-*-*)
-#		cpu_type=gmicro
-#		use_collect2=yes
-#		;;
 	v850-*-rtems*)
 		cpu_type=v850
 		tm_file="v850/rtems.h"

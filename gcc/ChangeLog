@@ -1,5 +1,16 @@
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* config/ns32k/genix.h: Remove.
+	* config/ns32k/x-genix: Likewise.
+	* config/ns32k/xm-genix.h: Likewise.
+	* config/fx80: Remove all filee in directory.
+	* config/pyr: Likewise.
+	* config/tahoe: Likewise.
+	* config/gmicro: Likewise.
+	* config/spur: Likewise.
+	* configure.in: Remove configury bits for above targets.
+	* configure: Regenerated.
+	
 	* configure.in: Don't configure chill by default.
 	* configure: Regenerated.
 	
