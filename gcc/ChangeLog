@@ -1,3 +1,10 @@
+Fri Aug 14 16:50:10 1998  John Carr  <jfc@mit.edu>
+
+	* genrecog.c (add_to_sequence): Fatal error if the modes of the operands
+	of SET are incompatible.
+
+	* alpha.md: Fix max and min patterns so modes of SET operands match.
+
 Fri Aug 14 12:22:55 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* configure.in: Avoid [[ by using test and changequote.

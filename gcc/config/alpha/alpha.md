@@ -2284,7 +2284,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(if_then_else:DI
+	(if_then_else:SI
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
@@ -2482,7 +2482,7 @@
 
 (define_insn "sminqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(smin:SI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
+	(smin:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minsb8 %r1,%2,%0"
@@ -2490,7 +2490,7 @@
 
 (define_insn "uminqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(umin:SI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
+	(umin:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minub8 %r1,%2,%0"
@@ -2498,7 +2498,7 @@
 
 (define_insn "smaxqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(smax:SI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
+	(smax:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxsb8 %r1,%2,%0"
@@ -2506,7 +2506,7 @@
 
 (define_insn "umaxqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(umax:SI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
+	(umax:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxub8 %r1,%2,%0"
@@ -2514,7 +2514,7 @@
 
 (define_insn "sminhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(smin:SI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
+	(smin:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minsw4 %r1,%2,%0"
@@ -2522,7 +2522,7 @@
 
 (define_insn "uminhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(umin:SI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
+	(umin:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minuw4 %r1,%2,%0"
@@ -2530,7 +2530,7 @@
 
 (define_insn "smaxhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(smax:SI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
+	(smax:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxsw4 %r1,%2,%0"
@@ -2538,7 +2538,7 @@
 
 (define_insn "umaxhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(umax:SI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
+	(umax:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxuw4 %r1,%2,%0"
