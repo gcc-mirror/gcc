@@ -272,9 +272,9 @@ enum dump_file_index
   DFI_flow2,
   DFI_ce2,
   DFI_peephole2,
+  DFI_rnreg,
   DFI_sched2,
   DFI_bbro,
-  DFI_rnreg,
   DFI_jump2,
   DFI_mach,
   DFI_dbr,
@@ -314,9 +314,9 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "flow2",	'w', 1, 0, 0 },
   { "ce2",	'E', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
+  { "rnreg",	'n', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
-  { "rnreg",	'n', 1, 0, 0 },
   { "jump2",	'J', 1, 0, 0 },
   { "mach",	'M', 1, 0, 0 },
   { "dbr",	'd', 0, 0, 0 },
@@ -3358,7 +3358,7 @@ rest_of_compilation (decl)
       cleanup_cfg (insns);
       life_analysis (insns, rtl_dump_file, PROP_FINAL);
 
-      /* This is kind of heruistics.  We need to run combine_stack_adjustments
+      /* This is kind of a heuristic.  We need to run combine_stack_adjustments
          even for machines with possibly nonzero RETURN_POPS_ARGS
          and ACCUMULATE_OUTGOING_ARGS.  We expect that only ports having
          push instructions will have popping returns.  */
@@ -3400,6 +3400,17 @@ rest_of_compilation (decl)
     }
 #endif
 
+  if (optimize > 0 && flag_rename_registers)
+    {
+      timevar_push (TV_RENAME_REGISTERS);
+      open_dump_file (DFI_rnreg, decl);
+
+      regrename_optimize ();
+
+      close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
+      timevar_pop (TV_RENAME_REGISTERS);
+    }    
+
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
@@ -3433,17 +3444,6 @@ rest_of_compilation (decl)
 
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
       timevar_pop (TV_REORDER_BLOCKS);
-    }    
-
-  if (optimize > 0 && flag_rename_registers)
-    {
-      timevar_push (TV_RENAME_REGISTERS);
-      open_dump_file (DFI_rnreg, decl);
-
-      regrename_optimize ();
-
-      close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
-      timevar_pop (TV_RENAME_REGISTERS);
     }    
 
   /* One more attempt to remove jumps to .+1 left by dead-store elimination. 

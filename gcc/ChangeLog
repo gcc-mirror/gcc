@@ -1,3 +1,9 @@
+2000-05-11 Stan Cox <scox@cygnus.com>
+
+	* regrename.c (replace_reg_in_block): Improve REG_DEAD handling.
+	* timevar.def (TV_RENAME_REGISTERS): Move before TV_SCHED2.
+	* toplev.c (rest_of_compilation): Call regrename_optimize before sched2.
+
 2000-05-11  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c(double_slash_fix):  obsolete
