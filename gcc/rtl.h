@@ -627,6 +627,7 @@ extern rtx try_split ();
 extern rtx split_insns ();
 extern rtx simplify_unary_operation (), simplify_binary_operation ();
 extern rtx simplify_ternary_operation (), simplify_relational_operation ();
+extern rtx nonlocal_label_rtx_list ();
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
