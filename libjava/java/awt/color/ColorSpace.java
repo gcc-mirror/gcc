@@ -131,6 +131,13 @@ public abstract class ColorSpace implements Serializable
     return false;
   }
 
+  /**
+   * Transforms a color value assumed to be in this ColorSpace into a value in
+   * the default CS_sRGB color space.
+   *
+   * @exception ArrayIndexOutOfBoundsException If array length is not at least
+   * the number of components in this ColorSpace.
+   */
   public abstract float[] toRGB(float[] colorvalue);
 
   public abstract float[] fromRGB(float[] rgbvalue);

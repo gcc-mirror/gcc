@@ -46,13 +46,15 @@ import java.awt.event.ItemListener;
 import java.awt.peer.ListPeer;
 import java.awt.peer.ComponentPeer;
 import java.util.Vector;
+import javax.accessibility.Accessible;
 
 /**
   * Class that implements a listbox widget
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class List extends Component implements ItemSelectable, Serializable
+public class List extends Component
+  implements ItemSelectable, Serializable, Accessible
 {
 
 /*

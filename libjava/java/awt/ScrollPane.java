@@ -41,6 +41,8 @@ package java.awt;
 import java.awt.peer.ScrollPanePeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
+import javax.accessibility.Accessible;
 
 /**
   * This widget provides a scrollable region that allows a single 
@@ -48,7 +50,7 @@ import java.awt.peer.ComponentPeer;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class ScrollPane extends Container implements java.io.Serializable
+public class ScrollPane extends Container implements Accessible, Serializable
 {
 
 /*

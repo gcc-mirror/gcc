@@ -81,6 +81,12 @@ public class ICC_ColorSpace extends ColorSpace
    */
   private boolean needScaleInit;
 
+  /**
+   * Constructs a new ICC_ColorSpace from an ICC_Profile object.
+   *
+   * @exception IllegalArgumentException If profile is inappropriate for
+   * representing a ColorSpace.
+   */
   public ICC_ColorSpace(ICC_Profile profile)
   {
     super(CS_sRGB, profile.getNumComponents());
@@ -92,18 +98,45 @@ public class ICC_ColorSpace extends ColorSpace
     return thisProfile;
   }
 
+  /**
+   * Transforms a color value assumed to be in this ColorSpace into a value in
+   * the default CS_sRGB color space.
+   *
+   * @exception ArrayIndexOutOfBoundsException If array length is not at least
+   * the number of components in this ColorSpace.
+   */
   public float[] toRGB(float[] colorvalue)
   {
+    if (colorvalue.length < numComponents)
+      throw new IllegalArgumentException ();
+      
     // FIXME: Always assumes sRGB:
     return colorvalue;
   }
 
+  /**
+   * Transforms a color value assumed to be in the default CS_sRGB color space
+   * into this ColorSpace.
+   *
+   * @exception ArrayIndexOutOfBoundsException If array length is not at
+   * least 3.
+   */
   public float[] fromRGB(float[] rgbvalue)
   {
+    if (rgbvalue.length < 3)
+      throw new IllegalArgumentException ();
+    
     // FIXME: Always assumes sRGB:
     return rgbvalue;
   }
 
+  /**
+   * Transforms a color value assumed to be in this ColorSpace into the
+   * CS_CIEXYZ conversion color space.
+   *
+   * @exception ArrayIndexOutOfBoundsException If array length is not at
+   * least the number of components in this ColorSpace.
+   */
   public float[] toCIEXYZ(float[] colorvalue)
   {
     // FIXME: Not implemented
