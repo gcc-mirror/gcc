@@ -436,7 +436,7 @@ struct JNINativeInterface
 					    jfieldID, jdouble);
 
   jstring  (*NewString)                    (JNIEnv *, const jchar *, jsize);
-  jint     (*GetStringLength)              (JNIEnv *, jstring);
+  jsize    (*GetStringLength)              (JNIEnv *, jstring);
   const jchar * (*GetStringChars)          (JNIEnv *, jstring, jboolean *);
   void     (*ReleaseStringChars)           (JNIEnv *, jstring, const jchar *);
   jstring  (*NewStringUTF)                 (JNIEnv *, const char *);

@@ -1,3 +1,8 @@
+2001-10-27  Tom Tromey  <tromey@redhat.com>
+
+	* include/jni.h (struct JNINativeInterface) [GetStringLength]:
+	Returns jsize, not jint.
+
 2001-10-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/zip/Adler32.java: Use correct class name.  (Re-merge
