@@ -1,5 +1,9 @@
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	
+	* config/c4x/c4x.h (ASM_FORMAT_PRIVATE_NAME): Output $ in label.
 
+2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	
 	* config/c4x/c4x.h (IS_XXX_REGNO): Rewrite to avoid unsigned warnings.
 
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
