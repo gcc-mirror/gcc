@@ -5343,11 +5343,11 @@
 (define_expand "reload_inqi"
   [(parallel [(match_operand:QI 0 "register_operand" "=r")
 	      (match_operand:QI 1 "any_memory_operand" "m")
-	      (match_operand:TI 2 "register_operand" "=&r")])]
+	      (match_operand:DI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
 {
-  rtx scratch, seq;
+  rtx seq;
 
   if (GET_CODE (operands[1]) != MEM)
     abort ();
@@ -5361,16 +5361,8 @@
     {
       rtx addr;
 
-      /* It is possible that one of the registers we got for operands[2]
-	 might coincide with that of operands[0] (which is why we made
-	 it TImode).  Pick the other one to use as our scratch.  */
-      if (REGNO (operands[0]) == REGNO (operands[2]))
-	scratch = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
-      else
-	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
-
       addr = get_unaligned_address (operands[1], 0);
-      seq = gen_unaligned_loadqi (operands[0], addr, scratch,
+      seq = gen_unaligned_loadqi (operands[0], addr, operands[2],
 			  gen_rtx_REG (DImode, REGNO (operands[0])));
       alpha_set_memflags (seq, operands[1]);
     }
@@ -5381,11 +5373,11 @@
 (define_expand "reload_inhi"
   [(parallel [(match_operand:HI 0 "register_operand" "=r")
 	      (match_operand:HI 1 "any_memory_operand" "m")
-	      (match_operand:TI 2 "register_operand" "=&r")])]
+	      (match_operand:DI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
 {
-  rtx scratch, seq;
+  rtx seq;
 
   if (GET_CODE (operands[1]) != MEM)
     abort ();
@@ -5399,16 +5391,8 @@
     {
       rtx addr;
 
-      /* It is possible that one of the registers we got for operands[2]
-	 might coincide with that of operands[0] (which is why we made
-	 it TImode).  Pick the other one to use as our scratch.  */
-      if (REGNO (operands[0]) == REGNO (operands[2]))
-	scratch = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
-      else
-	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
-
       addr = get_unaligned_address (operands[1], 0);
-      seq = gen_unaligned_loadhi (operands[0], addr, scratch,
+      seq = gen_unaligned_loadhi (operands[0], addr, operands[2],
 			  gen_rtx_REG (DImode, REGNO (operands[0])));
       alpha_set_memflags (seq, operands[1]);
     }
