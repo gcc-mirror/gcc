@@ -385,7 +385,7 @@ int flag_delayed_branch;
 
 int flag_pic;
 
-/* Nonzero means place uninitilaized global data in the bss section. */
+/* Nonzero means place uninitialized global data in the bss section. */
 
 int flag_no_common;
 
