@@ -1,3 +1,10 @@
+2004-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/mt_allocator.h (__pool::_M_get_align): New.
+	(__mt_alloc::allocate): Use it.
+	* src/mt_allocator.cc (__pool::_M_reclaim_block): Use it.
+	(__pool::_M_reserve_block): Simplify block allocation.
+	
 2004-10-17  Dhruv Matani  <dhruvbird@gmx.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 		

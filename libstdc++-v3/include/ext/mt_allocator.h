@@ -169,6 +169,10 @@ namespace __gnu_cxx
     _M_get_binmap(size_t __bytes)
     { return _M_binmap[__bytes]; }
 
+    const size_t
+    _M_get_align()
+    { return _M_options._M_align; }
+
     explicit __pool_base() 
     : _M_options(_Tune()), _M_binmap(NULL), _M_init(false) { }
 
@@ -708,8 +712,7 @@ namespace __gnu_cxx
 	  __bin._M_first[__thread_id] = __block->_M_next;
 	  
 	  __pool._M_adjust_freelist(__bin, __block, __thread_id);
-	  const __pool_base::_Tune& __options = __pool._M_get_options();
-	  __c = reinterpret_cast<char*>(__block) + __options._M_align;
+	  __c = reinterpret_cast<char*>(__block) + __pool._M_get_align();
 	}
       else
 	{
