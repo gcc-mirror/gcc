@@ -1660,7 +1660,7 @@
 			   [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			    (match_operand:DI 3 "reg_or_0_operand" "rJ")]))]
   ""
-  "cmp%c1 $r3,%2,%0"
+  "cmp%c1 %r3,%2,%0"
   [(set_attr "type" "icmp")])
 
 ;; This pattern exists so conditional moves of SImode values are handled.
