@@ -1,3 +1,8 @@
+Sun Feb 22 09:45:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (scan_prog_file): Completely cover uses of variable
+	`exports' with macro COLLECT_EXPORT_LIST.
+
 1998-02-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* collect2.c (main): Still handle !do_collecting for non-AIX targets.
