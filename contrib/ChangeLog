@@ -1,3 +1,7 @@
+1998-11-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* egcs_update: Only touch files that already exist.
+
 1998-11-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary (EOF): remove double backslash
