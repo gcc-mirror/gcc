@@ -38,6 +38,7 @@ extern const char *output_addsi3 (rtx *);
 extern const char *output_andsi3 (rtx *);
 extern const char *output_iorsi3 (rtx *);
 extern const char *output_xorsi3 (rtx *);
+extern void m68k_output_pic_call (rtx dest);
 extern void output_dbcc_and_branch (rtx *);
 extern int const_uint32_operand (rtx, enum machine_mode);
 extern int const_sint32_operand (rtx, enum machine_mode);

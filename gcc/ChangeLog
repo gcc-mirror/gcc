@@ -1,4 +1,23 @@
-2003-09-11  Peter Barada <peter@baradas.org>
+2003-10-11  Bernardo Innocenti  <bernie@develer.com>
+	    Paul Dale  <pauli@snapgear.com>
+
+	* config/m68k/lb1sf68.asm: Add __PIC__ and __ID_SHARED_LIBRARY__
+	support. 
+	* config/m68k/m68k-none.h (ASM_SPEC): Pass --pcrel to assembler on
+	-fpic, -fPIC, -msep-data and -mid-shared-library.
+	* config/m68k/m68k.c (m68k_library_id_string): New global variable.
+	(override_options): Add -msep-data and -mshared-library-id support.
+	(m68k_output_function_prologue): Generate code to load A5 for
+	TARGET_ID_SHARED_LIBRARY and TARGET_SEP_DATA.
+	(m68k_output_mi_thunk): Emit indirect jump on TARGET_ID_SHARED_LIBRARY.
+	(m68k_output_pic_call): New function.
+	* gcc/config/m68k/m68k.h (TARGET_SEP_DATA): New target flag.
+	(TARGET_ID_SHARED_LIBRARY): Ditto.
+	(TARGET_SWITCHES): Add switches for -mid-shared-library and -msep-data.
+	* gcc/config/m68k/m68k.md (call): Call m68k_output_pic_call().
+	(call_value): Likewise.
+
+2003-10-11  Peter Barada <peter@baradas.org>
 	    Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (m68k_frame): Move before protos referencing it.

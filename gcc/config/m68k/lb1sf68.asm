@@ -86,6 +86,76 @@ Boston, MA 02111-1307, USA.  */
 #define a6 REG (a6)
 #define fp REG (fp)
 #define sp REG (sp)
+#define pc REG (pc)
+
+/* Provide a few macros to allow for PIC code support.
+ * With PIC, data is stored A5 relative so we've got to take a bit of special
+ * care to ensure that all loads of global data is via A5.  PIC also requires
+ * jumps and subroutine calls to be PC relative rather than absolute.  We cheat
+ * a little on this and in the PIC case, we use short offset branches and
+ * hope that the final object code is within range (which it should be).
+ */
+#ifndef __PIC__
+
+	/* Non PIC (absolute/relocatable) versions */
+
+	.macro PICCALL addr
+	jbsr	\addr
+	.endm
+
+	.macro PICJUMP addr
+	jmp	\addr
+	.endm
+
+	.macro PICLEA sym, reg
+	lea	\sym, \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	pea	\sym
+	.endm
+
+#else /* __PIC__ */
+
+	/* Common for -mid-shared-libary and -msep-data */
+
+	.macro PICCALL addr
+	bsr	\addr
+	.endm
+
+	.macro PICJUMP addr
+	bra	\addr
+	.endm
+
+# if defined(__ID_SHARED_LIBRARY__)
+
+	/* -mid-shared-library versions  */
+
+	.macro PICLEA sym, reg
+	movel	a5@(_current_shared_library_a5_offset_), \reg
+	movel	\sym@GOT(\reg), \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	movel	a5@(_current_shared_library_a5_offset_), \areg
+	movel	\sym@GOT(\areg), sp@-
+	.endm
+
+# else /* !__ID_SHARED_LIBRARY__ */
+
+	/* Versions for -msep-data */
+
+	.macro PICLEA sym, reg
+	movel	\sym@GOT(a5), \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	movel	\sym@GOT(a5), sp@-
+	.endm
+
+# endif /* !__ID_SHARED_LIBRARY__ */
+#endif /* __PIC__ */
+
 
 #ifdef L_floatex
 
@@ -213,7 +283,7 @@ TRUNCDFSF    = 7
 
 | void __clear_sticky_bits(void);
 SYM (__clear_sticky_bit):		
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 #ifndef __mcoldfire__
 	movew	IMM (0),a0@(STICK)
 #else
@@ -246,7 +316,7 @@ SYM (__clear_sticky_bit):
 FPTRAP = 15
 
 $_exception_handler:
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	d7,a0@(EBITS)	| set __exception_bits
 #ifndef __mcoldfire__
 	orw	d7,a0@(STICK)	| and __sticky_bits
@@ -282,7 +352,7 @@ $_exception_handler:
 	andl	d6,d7
 #endif
 	beq	1f		| no, exit
-	pea	SYM (_fpCCR)	| yes, push address of _fpCCR
+	PICPEA	SYM (_fpCCR),a1	| yes, push address of _fpCCR
 	trap	IMM (FPTRAP)	| and trap
 #ifndef __mcoldfire__
 1:	moveml	sp@+,d2-d7	| restore data registers
@@ -421,7 +491,7 @@ L1:	movel	sp@(8), d0	/* d0 = dividend */
 
 L2:	movel	d1, sp@-
 	movel	d0, sp@-
-	jbsr	SYM (__udivsi3)	/* divide abs(dividend) by abs(divisor) */
+	PICCALL	SYM (__udivsi3)	/* divide abs(dividend) by abs(divisor) */
 	addql	IMM (8), sp
 
 	tstb	d2
@@ -441,13 +511,13 @@ SYM (__umodsi3):
 	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
 	movel	d0, sp@-
-	jbsr	SYM (__udivsi3)
+	PICCALL	SYM (__udivsi3)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
 #ifndef __mcoldfire__
 	movel	d1, sp@-
 	movel	d0, sp@-
-	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
+	PICCALL	SYM (__mulsi3)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
 #else
 	mulsl	d1,d0
@@ -467,13 +537,13 @@ SYM (__modsi3):
 	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
 	movel	d0, sp@-
-	jbsr	SYM (__divsi3)
+	PICCALL	SYM (__divsi3)
 	addql	IMM (8), sp
 	movel	sp@(8), d1	/* d1 = divisor */
 #ifndef __mcoldfire__
 	movel	d1, sp@-
 	movel	d0, sp@-
-	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
+	PICCALL	SYM (__mulsi3)	/* d0 = (a/b)*b */
 	addql	IMM (8), sp
 #else
 	mulsl	d1,d0
@@ -540,7 +610,7 @@ Ld$den:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Ld$infty:
 Ld$overflow:
@@ -550,7 +620,7 @@ Ld$overflow:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+OVERFLOW),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Ld$underflow:
 | Return 0 and set the exception flags 
@@ -558,7 +628,7 @@ Ld$underflow:
 	movel	d0,d1
 	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Ld$inop:
 | Return a quiet NaN and set the exception flags
@@ -566,7 +636,7 @@ Ld$inop:
 	movel	d0,d1
 	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Ld$div$0:
 | Return a properly signed INFINITY and set the exception flags
@@ -575,7 +645,7 @@ Ld$div$0:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+DIVIDE_BY_ZERO),d7
 	moveq	IMM (DOUBLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 |=============================================================================
 |=============================================================================
@@ -1015,8 +1085,8 @@ Ladddf$4:
 	addl	IMM (1),d4
 #endif
 1:
-	lea	Ladddf$5,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Ladddf$5),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -1123,8 +1193,8 @@ Lsubdf$0:
 	addl	IMM (1),d4
 #endif
 1:
-	lea	Lsubdf$1,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Lsubdf$1),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -1168,7 +1238,7 @@ Ladddf$a$small:
 #endif
 	movel	a6@(16),d0
 	movel	a6@(20),d1
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| restore data registers
@@ -1190,7 +1260,7 @@ Ladddf$b$small:
 #endif
 	movel	a6@(8),d0
 	movel	a6@(12),d1
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| restore data registers
@@ -1248,7 +1318,7 @@ Ladddf$ret$1:
 
 Ladddf$ret:
 | Normal exit.
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 	orl	d7,d0		| put sign bit back
 #ifndef __mcoldfire__
@@ -1610,7 +1680,7 @@ Lmuldf$a$0:
 	bclr	IMM (31),d2	| clear sign bit
 1:	cmpl	IMM (0x7ff00000),d2 | check for non-finiteness
 	bge	Ld$inop		| in case NaN or +/-INFINITY return NaN
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7
@@ -1895,7 +1965,7 @@ Ldivdf$a$0:
 	bne	Ld$inop		|
 1:	movel	IMM (0),d0	| else return zero
 	movel	d0,d1		| 
-	lea	SYM (_fpCCR),a0	| clear exception flags
+	PICLEA	SYM (_fpCCR),a0	| clear exception flags
 	movew	IMM (0),a0@	|
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| 
@@ -2035,8 +2105,8 @@ Lround$exit:
 	orl	d7,d3		| the bits which were flushed right
 	movel	a0,d7		| get back sign bit into d7
 | Now call the rounding routine (which takes care of denormalized numbers):
-	lea	Lround$0,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Lround$0),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -2084,7 +2154,7 @@ Lround$0:
 	swap	d0		|
 	orl	d7,d0		| and sign also
 
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7
@@ -2126,7 +2196,7 @@ SYM (__negdf2):
 	movel	d0,d7		| else get sign and return INFINITY
 	andl	IMM (0x80000000),d7
 	bra	Ld$infty		
-1:	lea	SYM (_fpCCR),a0
+1:	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7
@@ -2424,7 +2494,7 @@ Lf$den:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (SINGLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Lf$infty:
 Lf$overflow:
@@ -2433,21 +2503,21 @@ Lf$overflow:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+OVERFLOW),d7
 	moveq	IMM (SINGLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Lf$underflow:
 | Return 0 and set the exception flags 
 	movel	IMM (0),d0
 	movew	IMM (INEXACT_RESULT+UNDERFLOW),d7
 	moveq	IMM (SINGLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Lf$inop:
 | Return a quiet NaN and set the exception flags
 	movel	IMM (QUIET_NaN),d0
 	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
 	moveq	IMM (SINGLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 Lf$div$0:
 | Return a properly signed INFINITY and set the exception flags
@@ -2455,7 +2525,7 @@ Lf$div$0:
 	orl	d7,d0
 	movew	IMM (INEXACT_RESULT+DIVIDE_BY_ZERO),d7
 	moveq	IMM (SINGLE_FLOAT),d6
-	jmp	$_exception_handler
+	PICJUMP	$_exception_handler
 
 |=============================================================================
 |=============================================================================
@@ -2737,8 +2807,8 @@ Laddsf$3:
 #endif
 	addl	IMM (1),d2
 1:
-	lea	Laddsf$4,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Laddsf$4),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -2802,8 +2872,8 @@ Lsubsf$0:
 | Note that we do not have to normalize, since in the subtraction bit
 | #FLT_MANT_DIG+1 is never set, and denormalized numbers are handled by
 | the rounding routines themselves.
-	lea	Lsubsf$1,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Lsubsf$1),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -2834,7 +2904,7 @@ Lsubsf$1:
 | check for finiteness or zero).
 Laddsf$a$small:
 	movel	a6@(12),d0
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| restore data registers
@@ -2848,7 +2918,7 @@ Laddsf$a$small:
 
 Laddsf$b$small:
 	movel	a6@(8),d0
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| restore data registers
@@ -2905,7 +2975,7 @@ Laddsf$a:
 Laddsf$ret:
 | Normal exit (a and b nonzero, result is not NaN nor +/-infty).
 | We have to clear the exception flags (just the exception type).
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 	orl	d7,d0		| put sign bit
 #ifndef __mcoldfire__
@@ -3141,7 +3211,7 @@ Lmulsf$a$0:
 1:	bclr	IMM (31),d1	| clear sign bit 
 	cmpl	IMM (INFINITY),d1 | and check for a large exponent
 	bge	Lf$inop		| if b is +/-INFINITY or NaN return NaN
-	lea	SYM (_fpCCR),a0	| else return zero
+	PICLEA	SYM (_fpCCR),a0	| else return zero
 	movew	IMM (0),a0@	| 
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7	| 
@@ -3341,7 +3411,7 @@ Ldivsf$a$0:
 	cmpl	IMM (INFINITY),d1	| check for NaN
 	bhi	Lf$inop			| 
 	movel	IMM (0),d0		| else return zero
-	lea	SYM (_fpCCR),a0		|
+	PICLEA	SYM (_fpCCR),a0		|
 	movew	IMM (0),a0@		|
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7		| 
@@ -3444,8 +3514,8 @@ Lround$exit:
 2:	orl	d6,d1		| this is a trick so we don't lose  '
 				| the extra bits which were flushed right
 | Now call the rounding routine (which takes care of denormalized numbers):
-	lea	Lround$0,a0	| to return from rounding routine
-	lea	SYM (_fpCCR),a1	| check the rounding mode
+	lea	pc@(Lround$0),a0 | to return from rounding routine
+	PICLEA	SYM (_fpCCR),a1	| check the rounding mode
 #ifdef __mcoldfire__
 	clrl	d6
 #endif
@@ -3493,7 +3563,7 @@ Lround$0:
 	swap	d0		|
 	orl	d7,d0		| and sign also
 
-	lea	SYM (_fpCCR),a0
+	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7
@@ -3534,7 +3604,7 @@ SYM (__negsf2):
 	movel	d0,d7		| else get sign and return INFINITY
 	andl	IMM (0x80000000),d7
 	bra	Lf$infty		
-1:	lea	SYM (_fpCCR),a0
+1:	PICLEA	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 #ifndef __mcoldfire__
 	moveml	sp@+,d2-d7
@@ -3742,7 +3812,7 @@ SYM (__eqdf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_eqdf2 */
@@ -3757,7 +3827,7 @@ SYM (__nedf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_nedf2 */
@@ -3772,7 +3842,7 @@ SYM (__gtdf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_gtdf2 */
@@ -3787,7 +3857,7 @@ SYM (__gedf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_gedf2 */
@@ -3802,7 +3872,7 @@ SYM (__ltdf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_ltdf2 */
@@ -3817,7 +3887,7 @@ SYM (__ledf2):
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2)
 	unlk	a6
 	rts
 #endif /* L_ledf2 */
@@ -3833,7 +3903,7 @@ SYM (__eqsf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_eqsf2 */
@@ -3846,7 +3916,7 @@ SYM (__nesf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_nesf2 */
@@ -3859,7 +3929,7 @@ SYM (__gtsf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_gtsf2 */
@@ -3872,7 +3942,7 @@ SYM (__gesf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_gesf2 */
@@ -3885,7 +3955,7 @@ SYM (__ltsf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_ltsf2 */
@@ -3898,7 +3968,7 @@ SYM (__lesf2):
 	link	a6,IMM (0)
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	jbsr	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2)
 	unlk	a6
 	rts
 #endif /* L_lesf2 */

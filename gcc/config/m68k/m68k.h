@@ -83,14 +83,28 @@ Boston, MA 02111-1307, USA.  */
       if (TARGET_CF_HWDIV)			\
 	builtin_define ("__mcfhwdiv__");	\
       if (flag_pic)				\
-	builtin_define ("__pic__");		\
-      if (flag_pic > 1)				\
-	builtin_define ("__PIC__");		\
+	{					\
+	  builtin_define ("__pic__");		\
+	  if (flag_pic > 1)			\
+	    builtin_define ("__PIC__");		\
+	}					\
       builtin_assert ("cpu=m68k");		\
       builtin_assert ("machine=m68k");		\
     }						\
   while (0)
 
+/* Support A5 relative data seperate from text.
+ * This option implies -fPIC, however it inhibits the generation of the
+ * A5 save/restore in functions and the loading of a5 with a got pointer.
+ */
+#define MASK_SEP_DATA	0x100000
+#define TARGET_SEP_DATA (target_flags & MASK_SEP_DATA)
+
+/* Compile using library ID based shared libraries.
+ * Set a specific ID using the -mshared-library-id=xxx option.
+ */
+#define MASK_ID_SHARED_LIBRARY	0x200000
+#define TARGET_ID_SHARED_LIBRARY	(target_flags & MASK_ID_SHARED_LIBRARY)
 
 /* Classify the groups of pseudo-ops used to assemble QI, HI and SI
    quantities.  */
@@ -305,6 +319,14 @@ extern int target_flags;
       N_("Align variables on a 32-bit boundary") },			\
     { "no-align-int", -MASK_ALIGN_INT, 					\
       N_("Align variables on a 16-bit boundary") },			\
+    { "sep-data", MASK_SEP_DATA,					\
+      N_("Enable separate data segment") },				\
+    { "no-sep-data", -MASK_SEP_DATA,					\
+      N_("Disable separate data segment") },				\
+    { "id-shared-library", MASK_ID_SHARED_LIBRARY,			\
+      N_("Enable ID based shared library") },				\
+    { "no-id-shared-library", -MASK_ID_SHARED_LIBRARY,			\
+      N_("Disable ID based shared library") },				\
     { "pcrel", MASK_PCREL,						\
       N_("Generate pc-relative code") },				\
     { "strict-align", -MASK_NO_STRICT_ALIGNMENT,			\
@@ -335,6 +357,8 @@ extern int target_flags;
     N_("Jump targets are aligned to this power of 2"), 0},		\
   { "align-functions=",	&m68k_align_funcs_string,			\
     N_("Function starts are aligned to this power of 2"), 0},		\
+  { "shared-library-id=",	&m68k_library_id_string,		\
+    N_("ID of shared library to build"), 0},				\
   SUBTARGET_OPTIONS							\
 }
 
@@ -410,6 +434,9 @@ extern int target_flags;
 
 /* Maximum power of 2 that code can be aligned to.  */
 #define MAX_CODE_ALIGN	2			/* 4 byte alignment */
+
+/* Maximum number of library ids we permit */
+#define MAX_LIBRARY_ID 255
 
 /* Align loop starts for optimal branching.  */
 #define LOOP_ALIGN(LABEL) (m68k_align_loops)
@@ -1638,6 +1665,7 @@ __transfer_from_trampoline ()					\
 extern const char *m68k_align_loops_string;
 extern const char *m68k_align_jumps_string;
 extern const char *m68k_align_funcs_string;
+extern const char *m68k_library_id_string;
 extern int m68k_align_loops;
 extern int m68k_align_jumps;
 extern int m68k_align_funcs;

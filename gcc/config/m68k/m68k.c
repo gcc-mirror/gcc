@@ -74,6 +74,8 @@ const char *m68k_align_loops_string;
 const char *m68k_align_jumps_string;
 /* Specify power of two alignment used for functions.  */
 const char *m68k_align_funcs_string;
+/* Specify the identification number of the library being built */
+const char *m68k_library_id_string;
 
 /* Specify power of two alignment used for loops.  */
 int m68k_align_loops;
@@ -167,6 +169,38 @@ override_options (void)
 	m68k_align_loops = i;
     }
 
+  /* Library identification */
+  if (m68k_library_id_string)
+    {
+      int id;
+
+      if (! TARGET_ID_SHARED_LIBRARY)
+	error ("-mshared-library-id= specified without -mid-shared-library");
+      id = atoi (m68k_library_id_string);
+      if (id < 0 || id > MAX_LIBRARY_ID)
+	error ("-mshared-library-id=%d is not between 0 and %d", id, MAX_LIBRARY_ID);
+
+      /* From now on, m68k_library_id_string will contain the library offset.  */
+      asprintf ((char **)&m68k_library_id_string, "%d", (id * -4) - 4);
+    }
+  else
+    /* If TARGET_ID_SHARED_LIBRARY is enabled, this will point to the
+       current library.  */
+    m68k_library_id_string = "_current_shared_library_a5_offset_";
+
+  /* Sanity check to ensure that msep-data and mid-sahred-library are not
+   * both specified together.  Doing so simply doesn't make sense.
+   */
+  if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
+    error ("cannot specify both -msep-data and -mid-shared-library");
+
+  /* If we're generating code for a separate A5 relative data segment,
+   * we've got to enable -fPIC as well.  This might be relaxable to
+   * -fpic but it hasn't been tested properly.
+   */
+  if (TARGET_SEP_DATA || TARGET_ID_SHARED_LIBRARY)
+    flag_pic = 2;
+
   /* Validate -malign-jumps= value, or provide default */
   m68k_align_jumps = def_align;
   if (m68k_align_jumps_string)
@@ -192,7 +226,7 @@ override_options (void)
 
   /* -fPIC uses 32-bit pc-relative displacements, which don't exist
      until the 68020.  */
-  if (! TARGET_68020 && flag_pic == 2)
+  if (!TARGET_68020 && !TARGET_COLDFIRE && (flag_pic == 2))
     error("-fPIC is not currently supported on the 68000 or 68010\n");
 
   /* ??? A historic way of turning on pic, or is this intended to
@@ -639,18 +673,30 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 				  -cfa_offset + n_regs++ * 4);
 	}
     }
-  if (flag_pic && current_function_uses_pic_offset_table)
+  if (!TARGET_SEP_DATA && flag_pic &&
+      (current_function_uses_pic_offset_table ||
+        (!current_function_is_leaf && TARGET_ID_SHARED_LIBRARY)))
     {
+      if (TARGET_ID_SHARED_LIBRARY)
+	{
+	  asm_fprintf (stream, "\tmovel %s@(%s), %s\n",
+		       reg_names[PIC_OFFSET_TABLE_REGNUM],
+		       m68k_library_id_string,
+		       reg_names[PIC_OFFSET_TABLE_REGNUM]);
+	}
+      else
+	{
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
+	  asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
+		       reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #else
-      asm_fprintf (stream, "\tmovel %I%U_GLOBAL_OFFSET_TABLE_, %s\n",
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
-      asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
-		   reg_names[PIC_OFFSET_TABLE_REGNUM],
-		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
+	  asm_fprintf (stream, "\tmovel %I%U_GLOBAL_OFFSET_TABLE_, %s\n",
+		       reg_names[PIC_OFFSET_TABLE_REGNUM]);
+	  asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
+		       reg_names[PIC_OFFSET_TABLE_REGNUM],
+		       reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #endif
+	}
     }
 }
 
@@ -1053,6 +1099,39 @@ flags_in_68881 (void)
 {
   /* We could add support for these in the future */
   return cc_status.flags & CC_IN_68881;
+}
+
+/* Output a BSR instruction suitable for PIC code.  */
+void
+m68k_output_pic_call(rtx dest)
+{
+  const char *out;
+
+  if (!(GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == SYMBOL_REF))
+    out = "jsr %0";
+      /* We output a BSR instruction if we've using -fpic or we're building for
+       * a target that supports long branches.  If we're building -fPIC on the
+       * 68000, 68010 or ColdFire we generate one of two sequences:
+       * a shorter one that uses a GOT entry or a longer one that doesn't.
+       * We'll use the -Os command-line flag to decide which to generate.
+       * Both sequences take the same time to execute on the ColdFire.
+       */
+  else if (TARGET_PCREL)
+    out = "bsr.l %o0";
+  else if ((flag_pic == 1) || TARGET_68020)
+#ifdef HPUX_ASM
+    out = "bsr.l %0";
+#elif defined(USE_GAS)
+    out = "bsr.l %0@PLTPC";
+#else
+    out = "bsr %0@PLTPC";
+#endif
+  else if (optimize_size || TARGET_ID_SHARED_LIBRARY)
+    out = "move.l %0@GOT(%%a5), %%a1\n\tjsr (%%a1)";
+  else
+    out = "lea %0-.-8,%%a1\n\tjsr 0(%%pc,%%a1)";
+
+  output_asm_insn(out, &dest);
 }
 
 /* Output a dbCC; jCC sequence.  Note we do not handle the 
@@ -3567,7 +3646,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       if (TARGET_PCREL)
 	fmt = "bra.l %o0";
-      else
+      else if ((flag_pic == 1) || TARGET_68020)
 	{
 #ifdef MOTOROLA
 #ifdef HPUX_ASM
@@ -3587,6 +3666,10 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 #endif
 #endif
 	}
+      else if (optimize_size || TARGET_ID_SHARED_LIBRARY)
+        fmt = "move.l %0@GOT(%%a5), %%a1\n\tjmp (%%a1)";
+      else
+        fmt = "lea %0-.-8,%%a1\n\tjsr 0(%%pc,%%a1)";
     }
   else
     {
