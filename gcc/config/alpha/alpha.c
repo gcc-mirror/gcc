@@ -6926,10 +6926,19 @@ alpha_does_function_need_gp (void)
   if (! TARGET_ABI_OSF)
     return 0;
 
+  /* We need the gp to load the address of __mcount.  */
   if (TARGET_PROFILING_NEEDS_GP && current_function_profile)
     return 1;
 
+  /* The code emitted by alpha_output_mi_thunk_osf uses the gp.  */
   if (current_function_is_thunk)
+    return 1;
+
+  /* The nonlocal receiver pattern assumes that the gp is valid for
+     the nested function.  Reasonable because it's almost always set
+     correctly already.  For the cases where that's wrong, make sure
+     the nested function loads its gp on entry.  */
+  if (current_function_has_nonlocal_goto)
     return 1;
 
   /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
