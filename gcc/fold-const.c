@@ -1521,7 +1521,7 @@ fold_convert (t, arg1)
 	  TREE_OVERFLOW (t)
 	    = ((force_fit_type (t,
 				(TREE_INT_CST_HIGH (arg1) < 0
-				 & (TREE_UNSIGNED (type)
+				 && (TREE_UNSIGNED (type)
 				    < TREE_UNSIGNED (TREE_TYPE (arg1)))))
 		&& ! POINTER_TYPE_P (TREE_TYPE (arg1)))
 	       || TREE_OVERFLOW (arg1));

@@ -1,3 +1,7 @@
+Sat Apr 25 17:17:15 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* fold-const.c (fold_convert): Fix typo.
+
 Sat Apr 25 17:55:54 1998  John Carr  <jfc@mit.edu>
 
 	* alias.c (alias_invariant): New variable.
