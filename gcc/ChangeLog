@@ -1,5 +1,10 @@
 2000-08-08  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c: Fix formatting.
+	* h8300.h: Likewise.
+	* h8300.md: Likewise.
+	(movsi_h8300hs): Fix formatting of the resulting assembly code.
+
 	* reload1.c: Fix formatting.
 
 2000-08-08  Rodney Brown  <RodneyBrown@mynd.com>
