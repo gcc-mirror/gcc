@@ -133,8 +133,13 @@ proc libjava_init { args } {
     regexp -- "gcj \[^ \]+ (\[^ \]+) .*" $text ignore gcc_version
     verbose "jar file is libgcj-$gcc_version.jar"
 
+    # FIXME: This finds libgcj.spec for the default multilib.
+    # If thread models differ between multilibs, this has to be moved
+    # to libjava_arguments
+    set specdir [libjava_find_spec]
+
     # The -B is so we find libgcj.spec.
-    set text [eval exec "$GCJ_UNDER_TEST -B$objdir/../ -v 2>@ stdout"]
+    set text [eval exec "$GCJ_UNDER_TEST -B$specdir -v 2>@ stdout"]
     regexp -- "Thread model: (\[^\n\]+)\n" $text ignore model
     set libjava_uses_threads [expr {! ($model == "no"
 				       || $model == "none"
@@ -175,6 +180,11 @@ proc libjava_init { args } {
 # find the appropriate libraries so we must add -L options for their
 # paths.  However we can't simply use those libraries; we still need
 # libtool for linking.
+# Don't return the the lib${name}.la files here, since this causes the
+# libraries to be linked twice: once as lib${name}.so and another time
+# via gcj's implicit -l${name}.  This is both unnecessary and causes the
+# Solaris ld to warn: attempted multiple inclusion of file.  This warning
+# is not ignored by the dejagnu framework and cannot be disabled.
 proc libjava_find_lib {dir name} {
     global base_dir
     set gp [get_multilibs]
@@ -196,6 +206,19 @@ proc libjava_find_lib {dir name} {
 	}
     }
     return ""
+}
+
+# Find libgcj.spec.  We need to use the file corresponding to the multilib
+# under test since they might differ.  Append a trailing slash since this
+# is used with -B.
+proc libjava_find_spec {} {
+    global objdir
+    set gp [get_multilibs]
+
+    if {[file exists $gp/libjava/libgcj.spec]} then {
+	return "$gp/libjava/"
+    }
+    return "$objdir/../"
 }
 
 # Remove a bunch of files.
@@ -323,6 +346,9 @@ proc libjava_arguments {{mode compile}} {
 	lappend args "additional_flags=$TOOL_OPTIONS"
     }
 
+    # Determine libgcj.spec corresponding to multilib under test.
+    set specdir [libjava_find_spec]
+
     # Search for libtool.  We need it to link.
     set found_compiler 0
     set d [absolute $objdir]
@@ -330,15 +356,15 @@ proc libjava_arguments {{mode compile}} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.
 	    lappend args \
-	      "compiler=$d/$x/libtool --silent --tag=GCJ --mode=$mode $GCJ_UNDER_TEST -B$objdir/../"
+	      "compiler=$d/$x/libtool --silent --tag=GCJ --mode=$mode $GCJ_UNDER_TEST -B$specdir"
 	    set found_compiler 1
 	    break
 	}
     }
     if {! $found_compiler} {
-	# Append -B$objdir/../ so that we find libgcj.spec before it
+	# Append -B$specdir so that we find libgcj.spec before it
 	# is installed.
-	lappend args "compiler=$GCJ_UNDER_TEST -B$objdir/../"
+	lappend args "compiler=$GCJ_UNDER_TEST -B$specdir"
     }
 
     # Avoid libtool wrapper scripts when possible.
