@@ -1,3 +1,15 @@
+2003-04-03  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (do_type_align): New fn, split out from...
+	(layout_decl): ...here.  Do all alignment calculations for 
+	FIELD_DECLs here.
+	(update_alignment_for_field): Not here.
+	(start_record_layout, debug_rli): Remove unpadded_align.
+	* tree.h (struct record_layout_info_s): Remove unpadded_align.
+	* c-decl.c (finish_enum): Don't set DECL_SIZE, DECL_ALIGN
+	or DECL_MODE on the CONST_DECLs.
+	(finish_struct): Don't mess with DECL_ALIGN.
+
 Thu Apr  3 18:57:19 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (print_operand): Do not bypass output_addr_const at flag_pic.

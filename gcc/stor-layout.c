@@ -357,6 +357,19 @@ round_down (value, divisor)
   return size_binop (MULT_EXPR, size_binop (FLOOR_DIV_EXPR, value, arg), arg);
 }
 
+/* Subroutine of layout_decl: Force alignment required for the data type.
+   But if the decl itself wants greater alignment, don't override that.  */
+
+static inline void
+do_type_align (tree type, tree decl)
+{
+  if (TYPE_ALIGN (type) > DECL_ALIGN (decl))
+    {
+      DECL_ALIGN (decl) = TYPE_ALIGN (type);
+      DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
+    }
+}
+
 /* Set the size, mode and alignment of a ..._DECL node.
    TYPE_DECL does need this for C++.
    Note that LABEL_DECL and CONST_DECL nodes do not need this,
@@ -411,66 +424,95 @@ layout_decl (decl, known_align)
       = convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
 				       bitsize_unit_node));
 
-  /* Force alignment required for the data type.
-     But if the decl itself wants greater alignment, don't override that.
-     Likewise, if the decl is packed, don't override it.  */
-  if (! (code == FIELD_DECL && DECL_BIT_FIELD (decl))
-      && (DECL_ALIGN (decl) == 0
-	  || (! (code == FIELD_DECL && DECL_PACKED (decl))
-	      && TYPE_ALIGN (type) > DECL_ALIGN (decl))))
+  if (code != FIELD_DECL)
+    /* For non-fields, update the alignment from the type.  */
+    do_type_align (type, decl);
+  else
+    /* For fields, it's a bit more complicated...  */
     {
-      DECL_ALIGN (decl) = TYPE_ALIGN (type);
-      DECL_USER_ALIGN (decl) = 0;
-    }
+      if (DECL_BIT_FIELD (decl))
+	{
+	  DECL_BIT_FIELD_TYPE (decl) = type;
 
-  /* For fields, set the bit field type and update the alignment.  */
-  if (code == FIELD_DECL)
-    {
-      DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
-      if (maximum_field_alignment != 0)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+	  /* A zero-length bit-field affects the alignment of the next
+	     field.  */
+	  if (integer_zerop (DECL_SIZE (decl))
+	      && ! DECL_PACKED (decl)
+	      && ! (*targetm.ms_bitfield_layout_p) (DECL_FIELD_CONTEXT (decl)))
+	    {
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+	      if (PCC_BITFIELD_TYPE_MATTERS)
+		do_type_align (type, decl);
+	      else
+#endif
+#ifdef EMPTY_FIELD_BOUNDARY
+		if (EMPTY_FIELD_BOUNDARY > DECL_ALIGN (decl))
+		  {
+		    DECL_ALIGN (decl) = EMPTY_FIELD_BOUNDARY;
+		    DECL_USER_ALIGN (decl) = 0;
+		  }
+#endif
+	    }
+
+	  /* See if we can use an ordinary integer mode for a bit-field.
+	     Conditions are: a fixed size that is correct for another mode
+	     and occupying a complete byte or bytes on proper boundary.  */
+	  if (TYPE_SIZE (type) != 0
+	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
+	    {
+	      enum machine_mode xmode
+		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
+
+	      if (xmode != BLKmode && known_align >= GET_MODE_ALIGNMENT (xmode))
+		{
+		  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
+					   DECL_ALIGN (decl));
+		  DECL_MODE (decl) = xmode;
+		  DECL_BIT_FIELD (decl) = 0;
+		}
+	    }
+
+	  /* Turn off DECL_BIT_FIELD if we won't need it set.  */
+	  if (TYPE_MODE (type) == BLKmode && DECL_MODE (decl) == BLKmode
+	      && known_align >= TYPE_ALIGN (type)
+	      && DECL_ALIGN (decl) >= TYPE_ALIGN (type))
+	    DECL_BIT_FIELD (decl) = 0;
+	}
+      else if (DECL_PACKED (decl) && DECL_USER_ALIGN (decl))
+	/* Don't touch DECL_ALIGN.  For other packed fields, go ahead and
+	   round up; we'll reduce it again below.  */;
+      else
+	do_type_align (type, decl);
 
       /* If the field is of variable size, we can't misalign it since we
 	 have no way to make a temporary to align the result.  But this
 	 isn't an issue if the decl is not addressable.  Likewise if it
 	 is of unknown size.  */
-      else if (DECL_PACKED (decl)
-	       && (DECL_NONADDRESSABLE_P (decl)
-		   || DECL_SIZE_UNIT (decl) == 0
-		   || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
+      if (DECL_PACKED (decl)
+	  && !DECL_USER_ALIGN (decl)
+	  && (DECL_NONADDRESSABLE_P (decl)
+	      || DECL_SIZE_UNIT (decl) == 0
+	      || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+
+      /* Should this be controlled by DECL_USER_ALIGN, too?  */
+      if (maximum_field_alignment != 0)
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+      if (! DECL_USER_ALIGN (decl))
 	{
-	  DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
-	  DECL_USER_ALIGN (decl) = 0;
+	  /* Some targets (i.e. i386, VMS) limit struct field alignment
+	     to a lower boundary than alignment of variables unless
+	     it was overridden by attribute aligned.  */
+#ifdef BIGGEST_FIELD_ALIGNMENT
+	  DECL_ALIGN (decl)
+	    = MIN (DECL_ALIGN (decl), (unsigned) BIGGEST_FIELD_ALIGNMENT);
+#endif
+#ifdef ADJUST_FIELD_ALIGN
+	  DECL_ALIGN (decl) = ADJUST_FIELD_ALIGN (decl, DECL_ALIGN (decl));
+#endif
 	}
     }
-
-  /* See if we can use an ordinary integer mode for a bit-field.
-     Conditions are: a fixed size that is correct for another mode
-     and occupying a complete byte or bytes on proper boundary.  */
-  if (code == FIELD_DECL && DECL_BIT_FIELD (decl)
-      && TYPE_SIZE (type) != 0
-      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
-    {
-      enum machine_mode xmode
-	= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
-
-      if (xmode != BLKmode && known_align >= GET_MODE_ALIGNMENT (xmode))
-	{
-	  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
-				   DECL_ALIGN (decl));
-	  DECL_MODE (decl) = xmode;
-	  DECL_BIT_FIELD (decl) = 0;
-	}
-    }
-
-  /* Turn off DECL_BIT_FIELD if we won't need it set.  */
-  if (code == FIELD_DECL && DECL_BIT_FIELD (decl)
-      && TYPE_MODE (type) == BLKmode && DECL_MODE (decl) == BLKmode
-      && known_align >= TYPE_ALIGN (type)
-      && DECL_ALIGN (decl) >= TYPE_ALIGN (type)
-      && DECL_SIZE_UNIT (decl) != 0)
-    DECL_BIT_FIELD (decl) = 0;
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
   if (DECL_SIZE (decl) != 0 && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
@@ -532,7 +574,7 @@ start_record_layout (t)
      declaration, for example) use it -- otherwise, start with a
      one-byte alignment.  */
   rli->record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (t));
-  rli->unpacked_align = rli->unpadded_align = rli->record_align;
+  rli->unpacked_align = rli->record_align;
   rli->offset_align = MAX (rli->record_align, BIGGEST_ALIGNMENT);
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
@@ -621,8 +663,8 @@ debug_rli (rli)
   print_node_brief (stderr, "\noffset", rli->offset, 0);
   print_node_brief (stderr, " bitpos", rli->bitpos, 0);
 
-  fprintf (stderr, "\naligns: rec = %u, unpack = %u, unpad = %u, off = %u\n",
-	   rli->record_align, rli->unpacked_align, rli->unpadded_align,
+  fprintf (stderr, "\naligns: rec = %u, unpack = %u, off = %u\n",
+	   rli->record_align, rli->unpacked_align,
 	   rli->offset_align);
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
@@ -679,40 +721,21 @@ update_alignment_for_field (rli, field, known_align)
   tree type = TREE_TYPE (field);
   /* True if the field was explicitly aligned by the user.  */
   bool user_align;
+  bool is_bitfield;
 
-  /* Lay out the field so we know what alignment it needs.  For a
-     packed field, use the alignment as specified, disregarding what
-     the type would want.  */
+  /* Lay out the field so we know what alignment it needs.  */
+  layout_decl (field, known_align);
   desired_align = DECL_ALIGN (field);
   user_align = DECL_USER_ALIGN (field);
-  layout_decl (field, known_align);
-  if (! DECL_PACKED (field))
-    {
-      desired_align = DECL_ALIGN (field);
-      user_align = DECL_USER_ALIGN (field);
-    }
 
-  /* Some targets (i.e. i386, VMS) limit struct field alignment
-     to a lower boundary than alignment of variables unless
-     it was overridden by attribute aligned.  */
-#ifdef BIGGEST_FIELD_ALIGNMENT
-  if (!user_align)
-    desired_align
-      = MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
-#endif
-
-#ifdef ADJUST_FIELD_ALIGN
-  if (!user_align)
-    desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
-#endif
+  is_bitfield = (type != error_mark_node
+		 && DECL_BIT_FIELD_TYPE (field)
+		 && ! integer_zerop (TYPE_SIZE (type)));
 
   /* Record must have at least as much alignment as any field.
      Otherwise, the alignment of the field within the record is
      meaningless.  */
-  if ((* targetm.ms_bitfield_layout_p) (rli->t)
-      && type != error_mark_node
-      && DECL_BIT_FIELD_TYPE (field)
-      && ! integer_zerop (TYPE_SIZE (type)))
+  if (is_bitfield && (* targetm.ms_bitfield_layout_p) (rli->t))
     {
       /* Here, the alignment of the underlying type of a bitfield can
 	 affect the alignment of a record; even a zero-sized field
@@ -732,29 +755,11 @@ update_alignment_for_field (rli, field, known_align)
 	    type_align = MIN (type_align, maximum_field_alignment);
 	  rli->record_align = MAX (rli->record_align, type_align);
 	  rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
-	  rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
 	}
-      else
-	desired_align = 1;
     }
-  else
 #ifdef PCC_BITFIELD_TYPE_MATTERS
-  if (PCC_BITFIELD_TYPE_MATTERS && type != error_mark_node
-      && ! (* targetm.ms_bitfield_layout_p) (rli->t)
-      && DECL_BIT_FIELD_TYPE (field)
-      && ! integer_zerop (TYPE_SIZE (type)))
+  else if (is_bitfield && PCC_BITFIELD_TYPE_MATTERS)
     {
-      /* A zero-length bit-field affects the alignment of the next
-	 field.  */
-      if (!DECL_PACKED (field) && !user_align
-	  && integer_zerop (DECL_SIZE (field)))
-	{
-	  desired_align = TYPE_ALIGN (type);
-#ifdef ADJUST_FIELD_ALIGN
-	  desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
-#endif
-	}
-
       /* Named bit-fields cause the entire structure to have the
 	 alignment implied by their type.  */
       if (DECL_NAME (field) != 0)
@@ -779,18 +784,16 @@ update_alignment_for_field (rli, field, known_align)
 	  rli->record_align = MAX (rli->record_align, desired_align);
 	  rli->record_align = MAX (rli->record_align, type_align);
 
-	  rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
 	  if (warn_packed)
 	    rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
 	  user_align |= TYPE_USER_ALIGN (type);
 	}
     }
-  else
 #endif
+  else
     {
       rli->record_align = MAX (rli->record_align, desired_align);
       rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
-      rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
     }
 
   TYPE_USER_ALIGN (rli->t) |= user_align;
@@ -905,7 +908,7 @@ place_field (rli, field)
 
   if (warn_packed && DECL_PACKED (field))
     {
-      if (known_align > TYPE_ALIGN (type))
+      if (known_align >= TYPE_ALIGN (type))
 	{
 	  if (TYPE_ALIGN (type) > desired_align)
 	    {

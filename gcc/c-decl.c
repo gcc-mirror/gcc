@@ -5250,23 +5250,6 @@ finish_struct (t, fieldlist, attributes)
 	      DECL_SIZE (x) = bitsize_int (width);
 	      DECL_BIT_FIELD (x) = 1;
 	      SET_DECL_C_BIT_FIELD (x);
-
-	      if (width == 0
-		  && ! (* targetm.ms_bitfield_layout_p) (t))
-		{
-		  /* field size 0 => force desired amount of alignment.  */
-#ifdef EMPTY_FIELD_BOUNDARY
-		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-		  if (PCC_BITFIELD_TYPE_MATTERS)
-		    {
-		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					    TYPE_ALIGN (TREE_TYPE (x)));
-		      DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
-		    }
-#endif
-		}
 	    }
 	}
 
@@ -5564,11 +5547,6 @@ finish_enum (enumtype, values, attributes)
 	  tree enu = TREE_PURPOSE (pair);
 
 	  TREE_TYPE (enu) = enumtype;
-	  DECL_SIZE (enu) = TYPE_SIZE (enumtype);
-	  DECL_SIZE_UNIT (enu) = TYPE_SIZE_UNIT (enumtype);
-	  DECL_ALIGN (enu) = TYPE_ALIGN (enumtype);
-	  DECL_USER_ALIGN (enu) = TYPE_USER_ALIGN (enumtype);
-	  DECL_MODE (enu) = TYPE_MODE (enumtype);
 
 	  /* The ISO C Standard mandates enumerators to have type int,
 	     even though the underlying type of an enum type is

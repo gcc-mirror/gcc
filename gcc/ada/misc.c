@@ -563,8 +563,11 @@ gnat_expand_expr (exp, target, tmode, modifier)
 
 static void
 gnat_adjust_rli (rli)
-     record_layout_info rli;
+     record_layout_info rli ATTRIBUTE_UNUSED;
 {
+#if 0
+  /* This code seems to have no actual effect; record_align should already
+     reflect the largest alignment desired by a field.  jason 2003-04-01  */
   unsigned int record_align = rli->unpadded_align;
   tree field;
 
@@ -576,6 +579,7 @@ gnat_adjust_rli (rli)
 
   if (TYPE_PACKED (rli->t))
     rli->record_align = record_align;
+#endif
 }
 
 /* Make a TRANSFORM_EXPR to later expand GNAT_NODE into code.  */
