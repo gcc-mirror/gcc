@@ -2081,6 +2081,12 @@ mark_target_live_regs (target, res)
 #endif
 		    )
 		  CLEAR_HARD_REG_BIT (current_live_regs, i);
+
+	      /* A CALL_INSN sets any global register live, since it may
+		 have been modified by the call.  */
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		if (global_regs[i])
+		  SET_HARD_REG_BIT (current_live_regs, i);
 	    }
 
 	  /* Mark anything killed in an insn to be deadened at the next
