@@ -1,3 +1,23 @@
+2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (AR, RANLIB): Add, for substitutions.
+	(all-unilib, $(LIBG2C)): Depend on object lists, not
+	convenience libraries.
+	(s-libe77): Renamed from libE77.la; build object list.
+	(install): Do not move libraries to libdir.
+	(mostlyclean, clean): Adjust.
+	* libF77/Makefile.in (RANLIB): Add.
+	(LINK): Remove.
+	(../s-libf77): Renamed from ../libF77.la; build object list.
+	(../libfrtbegin.a): Remove target first.  Don't use $<.
+	(all, clean, distclean): Adjust.
+	* libF77/configure.in: Substitute RANLIB.
+	* libF77/configure: Rebuilt.
+	* libI77/Makefile.in (LINK): Delete.
+	(../s-libi77): Renamed from ../libI77.la; build object list.
+	(all, clean, distclean): Adjust.
+	* libU77/Makefile.in: Likewise.
+
 2001-12-02  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/4885

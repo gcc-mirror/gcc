@@ -1,7 +1,7 @@
 # Makefile for GNU F77 compiler runtime.
 # Copyright 1990 - 1994 by AT&T Bell Laboratories and Bellcore (see the
 # file `Notice').
-# Portions of this file Copyright (C) 1995-1998 Free Software Foundation, Inc.
+# Portions of this file Copyright (C) 1995-1998, 2001 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -38,6 +38,7 @@ CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 AR = @AR@
 ARFLAGS = rc
+RANLIB = @RANLIB@
 @SET_MAKE@
 
 SHELL = /bin/sh
@@ -51,8 +52,6 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $
 
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
-
-LINK = @LIBTOOL@ --mode=link $(CC) -o $@
 
 MISC =	F77_aloc.lo VersionF.lo s_rnge.lo abort_.lo getarg_.lo iargc_.lo\
 	getenv_.lo signal_.lo s_stop.lo s_paus.lo system_.lo cabs.lo\
@@ -80,10 +79,13 @@ F90BIT = lbitbits.lo lbitshft.lo qbitbits.lo qbitshft.lo
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
-all: ../libF77.la ../libfrtbegin.a
+all: ../s-libf77 ../libfrtbegin.a
 
-../libF77.la: $(OBJS)
-	$(LINK) $(OBJS)
+../s-libf77: $(OBJS)
+	-rm -f $@.T $@
+	objs='$(OBJS)'; for name in $$objs; do \
+	  echo libF77/$${name} >> $@.T; done
+	mv $@.T $@
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
@@ -104,7 +106,8 @@ frtbegin.o : main.c
 	$(CC) -c $(ALL_CFLAGS) $(srcdir)/main.c -o $@
 
 ../libfrtbegin.a: frtbegin.o
-	$(AR) $(ARFLAGS) $@ $<
+	-rm -f $@
+	$(AR) $(ARFLAGS) $@ frtbegin.o
 	$(RANLIB) $@
 
 F77_aloc.lo: F77_aloc.c
@@ -241,10 +244,10 @@ mostlyclean:
 
 clean: mostlyclean
 	rm -f config.log
-	rm -f ../libF77.la
+	rm -f ../s-libf77
 
 distclean: clean
-	rm -f config.cache config.status Makefile ../libF77.la configure
+	rm -f config.cache config.status Makefile ../s-libf77 configure
 
 maintainer-clean:
 

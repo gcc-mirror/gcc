@@ -51,18 +51,19 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) \
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
 
-LINK = @LIBTOOL@ --mode=link $(CC) -o $@
-
 OBJS =	VersionI.lo backspace.lo close.lo dfe.lo dolio.lo due.lo endfile.lo err.lo \
 	fmt.lo fmtlib.lo iio.lo ilnw.lo inquire.lo lread.lo lwrite.lo open.lo \
 	rdfmt.lo rewind.lo rsfe.lo rsli.lo rsne.lo sfe.lo sue.lo typesize.lo uio.lo \
 	util.lo wref.lo wrtfmt.lo wsfe.lo wsle.lo wsne.lo xwsne.lo \
 	ftell_.lo
 
-all: ../libI77.la
+all: ../s-libi77
 
-../libI77.la: $(OBJS)
-	$(LINK) $(OBJS)
+../s-libi77: $(OBJS)
+	-rm -f $@.T $@
+	objs='$(OBJS)'; for name in $$objs; do \
+	  echo libI77/$${name} >> $@.T; done
+	mv $@.T $@
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
@@ -157,10 +158,10 @@ mostlyclean:
 	rm -rf .libs
 
 clean: mostlyclean
-	rm -f config.log ../libI77.la
+	rm -f config.log ../s-libi77
 
 distclean: clean
-	rm -f config.cache config.status Makefile ../libI77.la configure
+	rm -f config.cache config.status Makefile ../s-libi77 configure
 
 maintainer-clean:
 
