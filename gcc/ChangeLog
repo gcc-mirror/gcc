@@ -1,5 +1,8 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/elf.h (DBX_DEBUGGING_INFO): Delete.
+	* config/mips/elf64.h: Likewise.
+
 	* config/mips/elf.h (ASM_DECLARE_OBJECT_NAME): Use
 	mips_declare_object_name.
 	(ASM_FINISH_DECLARE_OBJECT): Likewise mips_finish_declare_object.
