@@ -256,8 +256,6 @@ _Jv_makeUtf8Const (char* s, int len)
   if (len < 0)
     len = strlen (s);
   Utf8Const* m = (Utf8Const*) _Jv_AllocBytes (sizeof(Utf8Const) + len + 1);
-  if (! m)
-    throw no_memory;
   memcpy (m->data, s, len);
   m->data[len] = 0;
   m->length = len;
@@ -333,33 +331,14 @@ _Jv_ThrowNullPointerException ()
 // The collector calls this when it encounters an out-of-memory condition.
 void _Jv_ThrowNoMemory()
 {
-  _Jv_Throw (no_memory);
+  throw no_memory;
 }
 
-// Allocate a new object of class KLASS.  SIZE is the size of the object
-// to allocate.  You might think this is redundant, but it isn't; some
-// classes, such as String, aren't of fixed size.
-jobject
-_Jv_AllocObject (jclass klass, jint size)
-{
-  _Jv_InitClass (klass);
-
-  jobject obj = (jobject) _Jv_AllocObj (size, klass);
-
-  // If this class has inherited finalize from Object, then don't
-  // bother registering a finalizer.  We know that finalize() is the
-  // very first method after the dummy entry.  If this turns out to be
-  // unreliable, a more robust implementation can be written.  Such an
-  // implementation would look for Object.finalize in Object's method
-  // table at startup, and then use that information to find the
-  // appropriate index in the method vector.
-  if (klass->vtable->get_finalizer()
-      != java::lang::Object::class$.vtable->get_finalizer())
-    _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
-
 #ifdef ENABLE_JVMPI
-  // Service JVMPI request.
-
+static void
+jvmpi_notify_alloc(jclass klass, jint size, jobject obj)
+{
+  // Service JVMPI allocation request.
   if (__builtin_expect (_Jv_JVMPI_Notify_OBJECT_ALLOC != 0, false))
     {
       JVMPI_Event event;
@@ -384,8 +363,51 @@ _Jv_AllocObject (jclass klass, jint size)
       (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (&event);
       _Jv_EnableGC ();
     }
+}
+#else /* !ENABLE_JVMPI */
+# define jvmpi_notify_alloc(klass,size,obj) /* do nothing */
 #endif
 
+// Allocate a new object of class KLASS.  SIZE is the size of the object
+// to allocate.  You might think this is redundant, but it isn't; some
+// classes, such as String, aren't of fixed size.
+// First a version that assumes that we have no finalizer, and that
+// the class is already initialized.
+// If we know that JVMPI is disabled, this can be replaced by a direct call
+// to the allocator for the appropriate GC.
+jobject
+_Jv_AllocObjectNoInitNoFinalizer (jclass klass, jint size)
+{
+  jobject obj = (jobject) _Jv_AllocObj (size, klass);
+  jvmpi_notify_alloc (klass, size, obj);
+  return obj;
+}
+
+// And now a version that initializes if necessary.
+jobject
+_Jv_AllocObjectNoFinalizer (jclass klass, jint size)
+{
+  _Jv_InitClass (klass);
+  jobject obj = (jobject) _Jv_AllocObj (size, klass);
+  jvmpi_notify_alloc (klass, size, obj);
+  return obj;
+}
+
+// And now the general version that registers a finalizer if necessary.
+jobject
+_Jv_AllocObject (jclass klass, jint size)
+{
+  jobject obj = _Jv_AllocObjectNoFinalizer (klass, size);
+
+  // We assume that the compiler only generates calls to this routine
+  // if there really is an interesting finalizer.
+  // Unfortunately, we still have to the dynamic test, since there may
+  // be cni calls to this routine.
+  // Nore that on IA64 get_finalizer() returns the starting address of the
+  // function, not a function pointer.  Thus this still works.
+  if (klass->vtable->get_finalizer ()
+      != java::lang::Object::class$.vtable->get_finalizer ())
+    _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
   return obj;
 }
 
