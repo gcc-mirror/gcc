@@ -1024,7 +1024,7 @@ To determine the scope of a function, you can use the
 @code{NAMESPACE_DECL}) of which the function is a member.  For a virtual
 function, this macro returns the class in which the function was
 actually defined, not the base class in which the virtual declaration
-occurred.  
+occurred.
 
 If a friend function is defined in a class scope, the
 @code{DECL_FRIEND_CONTEXT} macro can be used to determine the class in
@@ -1549,7 +1549,7 @@ is the type of exception that will be caught by this handler; it is
 equal (by pointer equality) to @code{NULL} if this handler is for all
 types.  @code{HANDLER_PARMS} is the @code{DECL_STMT} for the catch
 parameter, and @code{HANDLER_BODY} is the @code{COMPOUND_STMT} for the
-block itself. 
+block itself.
 
 @item IF_STMT
 

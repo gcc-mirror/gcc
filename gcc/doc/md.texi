@@ -1256,7 +1256,7 @@ instruction is defined:
   @dots{})
 @end smallexample
 @end ifset
-GCC can only handle one commutative pair in an asm; if you use more, 
+GCC can only handle one commutative pair in an asm; if you use more,
 the compiler may fail.
 
 @cindex @samp{#} in constraint
@@ -3429,7 +3429,7 @@ built.  It is intended to handle non-trivial actions needed along
 the abnormal return path.
 
 The address of the exception handler to which the function should return
-is passed as operand to this pattern.  It will normally need to copied by 
+is passed as operand to this pattern.  It will normally need to copied by
 the pattern to some special register or memory location.
 If the pattern needs to determine the location of the target call
 frame in order to do so, it may use @code{EH_RETURN_STACKADJ_RTX},
@@ -3871,7 +3871,7 @@ first operand.
 @item
 In combinations of @code{neg}, @code{mult}, @code{plus}, and
 @code{minus}, the @code{neg} operations (if any) will be moved inside
-the operations as far as possible.  For instance, 
+the operations as far as possible.  For instance,
 @code{(neg (mult A B))} is canonicalized as @code{(mult (neg A) B)}, but
 @code{(plus (mult (neg A) B) C)} is canonicalized as
 @code{(minus A (mult B C))}.
@@ -5482,13 +5482,13 @@ processors.
 The task of exploiting more processor parallelism is solved by an
 instruction scheduler.  For a better solution to this problem, the
 instruction scheduler has to have an adequate description of the
-processor parallelism (or @dfn{pipeline description}).  Currently GCC 
+processor parallelism (or @dfn{pipeline description}).  Currently GCC
 provides two alternative ways to describe processor parallelism,
 both described below.  The first method is outlined in the next section;
 it was once the only method provided by GCC, and thus is used in a number
 of exiting ports.  The second, and preferred method, specifies functional
 unit reservations for groups of instructions with the aid of @dfn{regular
-expressions}.  This is called the @dfn{automaton based description}.	
+expressions}.  This is called the @dfn{automaton based description}.
 
 The GCC instruction scheduler uses a @dfn{pipeline hazard recognizer} to
 figure out the possibility of the instruction issue by the processor
@@ -5657,7 +5657,7 @@ The following optional construction describes names of automata
 generated and used for the pipeline hazards recognition.  Sometimes
 the generated finite state automaton used by the pipeline hazard
 recognizer is large.  If we use more than one automaton and bind functional
-units to the automata, the total size of the automata is usually 
+units to the automata, the total size of the automata is usually
 less than the size of the single automaton.  If there is no one such
 construction, only one finite state automaton is generated.
 
@@ -5771,7 +5771,7 @@ expression according to the following syntax:
 
        allof = allof "+" repeat
              | repeat
- 
+
        repeat = element "*" number
               | element
 
@@ -6078,7 +6078,7 @@ construction
 The old instruction level parallelism description and the pipeline
 hazards recognizer based on it have the following drawbacks in
 comparison with the @acronym{DFA}-based ones:
-  
+
 @itemize @bullet
 @item
 Each functional unit is believed to be reserved at the instruction

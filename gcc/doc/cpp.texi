@@ -258,7 +258,7 @@ At present, GNU CPP does not implement conversion from arbitrary file
 encodings to the source character set.  Use of any encoding other than
 plain ASCII or UTF-8, except in comments, will cause errors.  Use of
 encodings that are not strict supersets of ASCII, such as Shift JIS,
-may cause errors even if non-ASCII characters appear only in comments. 
+may cause errors even if non-ASCII characters appear only in comments.
 We plan to fix this in the near future.
 
 All preprocessing work (the subject of the rest of this manual) is
@@ -422,7 +422,7 @@ comment.
 @end group
 @end smallexample
 
-Comments are not recognized within string literals.  
+Comments are not recognized within string literals.
 @t{@w{"/* blah */"}} is the string constant @samp{@w{/* blah */}}, not
 an empty string.
 
@@ -2067,7 +2067,7 @@ this macro directly; instead, include the appropriate headers.
 @itemx __INT_MAX__
 @itemx __LONG_MAX__
 @itemx __LONG_LONG_MAX__
-Defined to the maximum value of the @code{signed char}, @code{wchar_t}, 
+Defined to the maximum value of the @code{signed char}, @code{wchar_t},
 @code{signed short},
 @code{signed int}, @code{signed long}, and @code{signed long long} types
 respectively.  They exist to make the standard header given numerical limits
@@ -4135,7 +4135,7 @@ cpp [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
     [@option{-M}|@option{-MM}] [@option{-MG}] [@option{-MF} @var{filename}]
     [@option{-MP}] [@option{-MQ} @var{target}@dots{}]
     [@option{-MT} @var{target}@dots{}]
-    [@option{-P}] [@option{-fno-working-directory}] 
+    [@option{-P}] [@option{-fno-working-directory}]
     [@option{-x} @var{language}] [@option{-std=}@var{standard}]
     @var{infile} @var{outfile}
 
@@ -4188,7 +4188,7 @@ Note that you can also specify places to search using options such as
 @option{-M} (@pxref{Invocation}).  These take precedence over
 environment variables, which in turn take precedence over the
 configuration of GCC@.
- 
+
 @include cppenv.texi
 @c man end
 

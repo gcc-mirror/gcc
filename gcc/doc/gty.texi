@@ -48,7 +48,7 @@ These markers can be placed:
 @item
 In a structure definition, before the open brace;
 @item
-In a global variable declaration, after the keyword @code{static} or 
+In a global variable declaration, after the keyword @code{static} or
 @code{extern}; and
 @item
 In a structure field definition, before the name of the field.
@@ -311,19 +311,19 @@ things you need to do:
 @enumerate
 @item
 You need to add the file to the list of source files the type
-machinery scans.  There are three cases: 
+machinery scans.  There are three cases:
 
 @enumerate a
 @item
 For a back-end file, this is usually done
 automatically; if not, you should add it to @code{target_gtfiles} in
-the appropriate port's entries in @file{config.gcc}. 
+the appropriate port's entries in @file{config.gcc}.
 
 @item
 For files shared by all front ends, this is done by adding the
 filename to the @code{GTFILES} variable in @file{Makefile.in}.
 
-@item 
+@item
 For any other file used by a front end, this is done by adding the
 filename to the @code{gtfiles} variable defined in
 @file{config-lang.in}.  For C, the file is @file{c-config-lang.in}.
@@ -342,7 +342,7 @@ header file, this should be done automatically.  For a front-end header
 file, it needs to be included by the same file that includes
 @file{gtype-@var{lang}.h}.  For other header files, it needs to be
 included in @file{gtype-desc.c}, which is a generated file, so add it to
-@code{ifiles} in @code{open_base_file} in @file{gengtype.c}.  
+@code{ifiles} in @code{open_base_file} in @file{gengtype.c}.
 
 For source files that aren't header files, the machinery will generate a
 header file that should be included in the source file you just changed.

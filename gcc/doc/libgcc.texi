@@ -40,7 +40,7 @@ and @code{@w{unsigned int}} correspond to @code{SImode}; @code{long} and
 * Integer library routines::
 * Soft float library routines::
 * Exception handling routines::
-* Miscellaneous routines:: 
+* Miscellaneous routines::
 @end menu
 
 @node Integer library routines
