@@ -1,4 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -53,8 +53,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
-#if defined (__BSD_NET2__) || defined (____386BSD____) || defined (__FreeBSD__) || defined(__NetBSD__)
+#if defined (__BSD_NET2__) || defined (____386BSD____) || (defined (__FreeBSD__) && (__FreeBSD__ < 5)) || defined(__NetBSD__)
 #include <machine/ansi.h>
+#endif
+/* On FreeBSD 5, machine/ansi.h does not exist anymore... */
+#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
+#include <sys/_types.h>
 #endif
 
 /* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
@@ -176,6 +180,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _SIZE_T_DEFINED_
 #ifndef _SIZE_T_DEFINED
 #ifndef _BSD_SIZE_T_DEFINED_	/* Darwin */
+#ifndef _SIZE_T_DECLARED	/* FreeBSD 5 */
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
@@ -192,10 +197,15 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _SIZE_T_DEFINED_
 #define _SIZE_T_DEFINED
 #define _BSD_SIZE_T_DEFINED_	/* Darwin */
+#define _SIZE_T_DECLARED	/* FreeBSD 5 */
 #define ___int_size_t_h
 #define _GCC_SIZE_T
 #define _SIZET_
+#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
+/* __size_t is a typedef on FreeBSD 5!, must not trash it. */
+#else
 #define __size_t
+#endif
 #ifndef __SIZE_TYPE__
 #define __SIZE_TYPE__ long unsigned int
 #endif
@@ -209,6 +219,7 @@ typedef long ssize_t;
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
+#endif /* _SIZE_T_DECLARED */
 #endif /* _BSD_SIZE_T_DEFINED_ */
 #endif /* _SIZE_T_DEFINED */
 #endif /* _SIZE_T_DEFINED_ */
@@ -243,6 +254,7 @@ typedef long ssize_t;
 #ifndef _BSD_WCHAR_T_
 #ifndef _BSD_WCHAR_T_DEFINED_    /* Darwin */
 #ifndef _BSD_RUNE_T_DEFINED_	/* Darwin */
+#ifndef _WCHAR_T_DECLARED /* FreeBSD 5 */
 #ifndef _WCHAR_T_DEFINED_
 #ifndef _WCHAR_T_DEFINED
 #ifndef _WCHAR_T_H
@@ -263,6 +275,7 @@ typedef long ssize_t;
 #define ___int_wchar_t_h
 #define __INT_WCHAR_T_H
 #define _GCC_WCHAR_T
+#define _WCHAR_T_DECLARED
 
 /* On BSD/386 1.1, at least, machine/ansi.h defines _BSD_WCHAR_T_
    instead of _WCHAR_T_, and _BSD_RUNE_T_ (which, unlike the other
@@ -281,12 +294,25 @@ typedef long ssize_t;
 typedef _BSD_RUNE_T_ rune_t;
 #define _BSD_WCHAR_T_DEFINED_
 #define _BSD_RUNE_T_DEFINED_	/* Darwin */
-#if defined (__FreeBSD__)
+#if defined (__FreeBSD__) && (__FreeBSD__ < 5)
 /* Why is this file so hard to maintain properly?  In constrast to
    the comment above regarding BSD/386 1.1, on FreeBSD for as long
    as the symbol has existed, _BSD_RUNE_T_ must not stay defined or
    redundant typedefs will occur when stdlib.h is included after this file. */
 #undef _BSD_RUNE_T_
+#endif
+#endif
+#endif
+#endif
+/* FreeBSD 5 can't be handled well using "traditional" logic above
+   since it no longer defines _BSD_RUNE_T_ yet still desires to export
+   rune_t in some cases... */
+#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
+#if !defined (_ANSI_SOURCE) && !defined (_POSIX_SOURCE)
+#if __BSD_VISIBLE
+#ifndef _RUNE_T_DECLARED
+typedef __rune_t        rune_t;
+#define _RUNE_T_DECLARED
 #endif
 #endif
 #endif
@@ -304,6 +330,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#endif /* _WCHAR_T_DECLARED */
 #endif /* _BSD_RUNE_T_DEFINED_ */
 #endif
 #endif
