@@ -1,3 +1,9 @@
+Fri Jun 19 10:43:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* c-common.c (truthvalue_conversion): Protect side effects in the
+	expression when splitting a complex value.
+	* fold-const.c (fold): Likewise. 
+
 Fri Jun 19 02:31:16 1998  Klaus Kaempf (kkaempf@progis.de)
 
 	* cccp.c (hack_vms_include_specification): rewrite to handle
