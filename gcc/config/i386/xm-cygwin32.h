@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows NT.
    using a unix style C library.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -16,13 +16,10 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA. */
 
 #define NO_STAB_H
-
-#include "i386/xm-i386.h"
-
 #define HAVE_STRERROR
 #define HAVE_RUSAGE
 #define HAVE_FILE_H
