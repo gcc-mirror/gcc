@@ -202,7 +202,8 @@ static void pfatal_with_name ();
 static void perror_with_name ();
 static void print_containing_files ();
 static int lookup_import ();
-static int lookup_include ();
+static int redundant_include_p ();
+static is_system_include ();
 static int check_preconditions ();
 static void pcfinclude ();
 static void pcstring_used ();
@@ -3620,14 +3621,14 @@ do_include (buf, limit, op, keyword)
   int retried = 0;		/* Have already tried macro
 				   expanding the include line*/
   FILE_BUF trybuf;		/* It got expanded into here */
-  int system_header_p = 0;	/* 0 for "...", 1 for <...> */
+  int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int pcf = -1;
   char *pcfbuf;
   int pcfbuflimit;
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
-  if (importing && warn_import
+  if (importing && warn_import && !inhibit_warnings
       && !instack[indepth].system_header_p && !import_warning) {
     import_warning = 1;
     warning ("using `#import' is not recommended");
@@ -3703,7 +3704,7 @@ get_filename:
     fend = fbeg;
     while (fend != limit && *fend != '>') fend++;
     if (*fend == '>' && fend + 1 == limit) {
-      system_header_p = 1;
+      angle_brackets = 1;
       /* If -I-, start with the first -I dir after the -I-.  */
       if (first_bracket_include)
 	search_start = first_bracket_include;
@@ -3755,7 +3756,7 @@ get_filename:
   if (*fbeg == '/') {
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
-    if (lookup_include (fname))
+    if (redundant_include_p (fname))
       return 0;
     if (importing)
       f = lookup_import (fname);
@@ -3799,7 +3800,7 @@ get_filename:
 	f = open (fname, O_RDONLY, 0666);
       if (f == -2)
 	return 0;			/* Already included this file */
-      if (lookup_include (fname)) {
+      if (redundant_include_p (fname)) {
 	close (f);
 	return 0;
       }
@@ -3816,13 +3817,13 @@ get_filename:
     error_from_errno (fname);
 
     /* For -M, add this file to the dependencies.  */
-    if (print_deps > (system_header_p || (system_include_depth > 0))) {
+    if (print_deps > (angle_brackets || (system_include_depth > 0))) {
       /* Break the line before this.  */
       deps_output ("", 0);
 
       /* If it was requested as a system header file,
 	 then assume it belongs in the first place to look for such.  */
-      if (system_header_p) {
+      if (angle_brackets) {
 	for (searchptr = search_start; searchptr; searchptr = searchptr->next) {
 	  if (searchptr->fname) {
 	    if (searchptr->fname[0] == 0)
@@ -3869,7 +3870,7 @@ get_filename:
       ptr->fname = savestring (fname);
 
       /* For -M, add this file to the dependencies.  */
-      if (print_deps > (system_header_p || (system_include_depth > 0))) {
+      if (print_deps > (angle_brackets || (system_include_depth > 0))) {
 	deps_output ("", 0);
 	deps_output (fname, 0);
 	deps_output (" ", 0);
@@ -3880,7 +3881,7 @@ get_filename:
     if (print_include_names)
       fprintf (stderr, "%s\n", fname);
 
-    if (system_header_p)
+    if (angle_brackets)
       system_include_depth++;
 
     /* Actually process the file.  */
@@ -3925,9 +3926,9 @@ get_filename:
       pcfinclude (pcfbuf, pcfbuflimit, fname, op);
     }
     else
-      finclude (f, fname, op, system_header_p, searchptr);
+      finclude (f, fname, op, is_system_include (fname), searchptr);
 
-    if (system_header_p)
+    if (angle_brackets)
       system_include_depth--;
   }
   return 0;
@@ -3938,7 +3939,7 @@ get_filename:
    to make a repeated include do nothing.  */
 
 static int
-lookup_include (name)
+redundant_include_p (name)
      char *name;
 {
   struct file_name_list *l = all_include_files;
@@ -3950,6 +3951,32 @@ lookup_include (name)
   return 0;
 }
 
+/* Return nonzero if the given FILENAME is an absolute pathname which
+   designates a file within one of the known "system" include file
+   directories.  We assume here that if the given FILENAME looks like
+   it is the name of a file which resides either directly in a "system"
+   include file directory, or within any subdirectory thereof, then the
+   given file must be a "system" include file.  This function tells us
+   if we should suppress pedantic errors/warnings for the given FILENAME.  */
+
+static int
+is_system_include (filename)
+    register char *filename;
+{
+  struct file_name_list *searchptr;
+
+  for (searchptr = first_bracket_include; searchptr;
+       searchptr = searchptr->next)
+    if (searchptr->fname) {
+      register char *sys_dir = searchptr->fname;
+      register unsigned length = strlen (sys_dir);
+
+      if (! strncmp (sys_dir, filename, length) && filename[length] == '/')
+	return 1;
+    }
+  return 0;
+}
+
 /* Process the contents of include file FNAME, already open on descriptor F,
    with output to OP.
    SYSTEM_HEADER_P is 1 if this file was specified using <...>.
