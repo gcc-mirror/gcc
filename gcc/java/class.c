@@ -486,6 +486,30 @@ enclosing_context_p (type1, type2)
   return 0;
 }
 
+/* Return 1 iff there exists a common enclosing context between TYPE1
+   and TYPE2.  */
+
+int common_enclosing_context_p (type1, type2)
+     tree type1, type2;
+{
+  if (!PURE_INNER_CLASS_TYPE_P (type1) && !PURE_INNER_CLASS_TYPE_P (type2))
+    return 0;
+  
+  for (type1 = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1))); type1; 
+       type1 = (PURE_INNER_CLASS_TYPE_P (type1) ?
+		TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1))) : NULL_TREE))
+    {
+      tree current;
+      for (current = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type2))); current;
+	   current = (PURE_INNER_CLASS_TYPE_P (current) ?
+		      TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current))) : 
+		      NULL_TREE))
+	if (type1 == current)
+	  return 1;
+    }
+  return 0;
+}
+
 static void
 add_interface_do (basetype_vec, interface_class, i)
      tree basetype_vec, interface_class;

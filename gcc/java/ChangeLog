@@ -200,6 +200,18 @@ Wed Apr 26 14:29:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_incomplete_type): Handle JDEP_ANONYMOUS.
 
+2000-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (common_enclosing_context_p): New function.
+	* java-tree.h (common_enclosing_context_p): Added prototype.
+	* parse.h (INNER_ENCLOSING_SCOPE_CHECK): Relaxed test to allow
+	classes sharing an outer context with the current instance.
+	* parse.y (build_access_to_thisn): Fixed leading comment.
+	(verify_constructor_super): New local `supper_inner'. Skip
+	enclosing context argument in the case of inner class constructors.
+	(patch_method_invocation): Insert proper context as second
+	parameter to pure inner class constructor super invocations.
+
 Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (end_class_declaration): Reset the interface number

@@ -696,6 +696,7 @@ extern void set_super_info PARAMS ((int, tree, tree, int));
 extern int get_access_flags_from_decl PARAMS ((tree));
 extern int interface_of_p PARAMS ((tree, tree));
 extern int inherits_from_p PARAMS ((tree, tree));
+extern int common_enclosing_context_p PARAMS ((tree, tree));
 extern int enclosing_context_p PARAMS ((tree, tree));
 extern void complete_start_java_method PARAMS ((tree));
 extern tree build_result_decl PARAMS ((tree));
