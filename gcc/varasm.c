@@ -621,7 +621,8 @@ assemble_zeros (size)
     }
   else
 #endif
-    ASM_OUTPUT_SKIP (asm_out_file, size);
+    if (size > 0)
+      ASM_OUTPUT_SKIP (asm_out_file, size);
 }
 
 /* Assemble a string constant with the specified C string as contents.  */
