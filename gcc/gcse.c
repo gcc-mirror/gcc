@@ -159,6 +159,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "function.h"
 #include "expr.h" 
+#include "except.h"
 #include "ggc.h"
 #include "params.h"
 
