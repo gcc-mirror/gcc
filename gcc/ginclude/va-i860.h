@@ -92,7 +92,7 @@ enum {
 #define __NUM_PARM_FREGS	8
 #define __NUM_PARM_IREGS	12
 
-#define __savereg(__va) ((__va_saved_regs *) (__va.__reg_base))
+#define __savereg(__va) ((__va_saved_regs *) ((__va).__reg_base))
 
 /* This macro works both for SVR4 and pre-SVR4 environments.  */
 
@@ -128,19 +128,19 @@ __extension__								\
 	{								\
 	  case sizeof (float):						\
 	  case sizeof (double):						\
-	    if (__va.__freg_used < __NUM_PARM_FREGS - 1)		\
+	    if ((__va).__freg_used < __NUM_PARM_FREGS - 1)		\
 	      {								\
-	        if ((__va.__freg_used & 1) != 0)			\
-	          __va.__freg_used++;	/* skip odd */			\
-	        __rv = &__savereg(__va)->__float_regs.__freg[__va.__freg_used];\
-		__va.__freg_used += 2;					\
+	        if (((__va).__freg_used & 1) != 0)			\
+	          (__va).__freg_used++;	/* skip odd */			\
+	        __rv = &__savereg((__va))->__float_regs.__freg[(__va).__freg_used];\
+		(__va).__freg_used += 2;				\
 	      }								\
 	    else							\
 	      {								\
-	        if ((((unsigned) __va.__mem_ptr) & (sizeof(double)-1)) != 0) \
-	          __va.__mem_ptr++;	/* skip odd */			\
-	        __rv = __va.__mem_ptr;					\
-	        __va.__mem_ptr += 2;					\
+	        if ((((unsigned) (__va).__mem_ptr) & (sizeof(double)-1)) != 0) \
+	          (__va).__mem_ptr++;	/* skip odd */			\
+	        __rv = (__va).__mem_ptr;				\
+	        (__va).__mem_ptr += 2;					\
 	      }								\
 	    if (sizeof (__type) == sizeof (float))			\
 	      {								\
@@ -162,15 +162,15 @@ __extension__								\
     case __offset_type_class:						\
       if (sizeof (__type) <= 4)						\
 	{								\
-          __rv = (__va.__ireg_used < __NUM_PARM_IREGS			\
-	          ? (&__savereg(__va)->__ireg[__va.__ireg_used++])	\
-	          : __va.__mem_ptr++);					\
+          __rv = ((__va).__ireg_used < __NUM_PARM_IREGS			\
+	          ? (&__savereg((__va))->__ireg[(__va).__ireg_used++])	\
+	          : (__va).__mem_ptr++);				\
 	  break;							\
 	}								\
-      else if (__va.__ireg_used + sizeof (__type) / 4 <= __NUM_PARM_IREGS) \
+      else if ((__va).__ireg_used + sizeof (__type) / 4 <= __NUM_PARM_IREGS) \
 	{								\
-	  __rv = &__savereg(__va)->__ireg[__va.__ireg_used];		\
-	  __va.__ireg_used += sizeof (__type) / 4;			\
+	  __rv = &__savereg((__va))->__ireg[(__va).__ireg_used];	\
+	  (__va).__ireg_used += sizeof (__type) / 4;			\
           break;							\
 	}								\
       /* Fall through to fetch from memory.  */				\
@@ -179,11 +179,11 @@ __extension__								\
       __align = (__alignof__ (__type) < sizeof (long)			\
 		 ? sizeof (long)					\
 		 : __alignof__ (__type));				\
-      __va.__mem_ptr							\
+      (__va).__mem_ptr							\
 	= (long *)							\
-	  ((((unsigned) __va.__mem_ptr) + (__align-1)) & ~(__align-1));	\
-      __rv = __va.__mem_ptr;						\
-      __va.__mem_ptr							\
+	  ((((unsigned) (__va).__mem_ptr) + (__align-1)) & ~(__align-1)); \
+      __rv = (__va).__mem_ptr;						\
+      (__va).__mem_ptr							\
 	+= ((sizeof (__type) + sizeof (long) - 1) / sizeof (long));	\
       break;								\
     case __complex_type_class:						\
