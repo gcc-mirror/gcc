@@ -1,3 +1,7 @@
+2004-07-05  Phil Edwards  <phil@codesourcery.com>
+
+	* Make-lang.in (check-c++, lang_checks):  Add some comments.
+
 2004-07-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp-mudflap.c: Delete file.
