@@ -1,3 +1,7 @@
+2003-01-29  Fariborz Jahanian  <fjahanian@apple.com>
+
+        * pt.c (last_pending_template) Declare GTY().
+
 2003-01-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8591
