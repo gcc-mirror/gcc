@@ -1,3 +1,8 @@
+2004-06-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/15598
+	* config/ia64/ia64.c (bundling): Add missed TYPE_A.
+
 2004-06-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR rtl-optimization/15717
