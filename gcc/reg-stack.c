@@ -1770,6 +1770,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 	      case UNSPEC_SINCOS_COS:
 	      case UNSPEC_TAN_ONE:
+	      case UNSPEC_XTRACT_FRACT:
 		/* These insns operate on the top two stack slots,
 		   first part of one input, double output insn.  */
 
@@ -1798,6 +1799,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 	      case UNSPEC_SINCOS_SIN:
 	      case UNSPEC_TAN_TAN:
+	      case UNSPEC_XTRACT_EXP:
 		/* These insns operate on the top two stack slots,
 		   second part of one input, double output insn.  */
 

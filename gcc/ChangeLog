@@ -1,3 +1,26 @@
+2004-04-14  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_logb and OTI_ilogb.
+	(logb_optab, ilogb_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize logb_optab and ilogb_optab.
+	* genopinit.c (optabs): Implement logb_optab and ilogb_optab
+	using logb?f2 and ilogb?i2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_LOGB{,F,L}
+	using logb_optab, and BUILT_IN_ILOGB{,F,L} using ilogb_optab.
+	(expand_builtin): Expand BUILT_IN_LOGB{,F,L} and BUILT_IN_ILOGB{,F,L}
+	using expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_XTRACT_FRACT
+	and UNSPEC_XTRACT_EXP.
+
+	* config/i386/i386.md (*fxtractdf3, *fxtractsf3, *fxtractxf3): New
+	patterns to implement fxtract x87 instruction.
+	(logbdf2, logbsf2, logbxf2, ilogbsi2): New expanders to implement
+	logb, logbf, logbl, ilogb, ilogbf and ilogbl built-ins as inline x87
+	intrinsics.
+	(UNSPEC_XTRACT_FRACT, UNSPEC_XTRACT_EXP): New unspecs to represent
+	x87's fxtract insn.
+
 2004-04-14  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/t-elf: Enable multilibs by default.
