@@ -12903,6 +12903,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   current_function_assigns_this = 0;
   current_function_just_assigned_this = 0;
   current_function_parms_stored = 0;
+  last_dtor_insn = NULL_RTX;
+  last_parm_cleanup_insn = NULL_RTX;
   original_result_rtx = NULL_RTX;
   base_init_expr = NULL_TREE;
   current_base_init_list = NULL_TREE;
@@ -14483,12 +14485,10 @@ push_cp_function_context (f)
 {
   struct language_function *p 
     = ((struct language_function *) 
-       xmalloc (sizeof (struct language_function)));
+       xcalloc (1, sizeof (struct language_function)));
   f->language = p;
   if (f->next)
-    *p = *f->next->language;
-  else
-    bzero (p, sizeof (struct language_function));
+    p->binding_level = f->next->language->binding_level;
 
   /* For now, we always assume we're expanding all the way to RTL
      unless we're explicitly doing otherwise.  */
