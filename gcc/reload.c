@@ -4419,30 +4419,6 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn,
 	x = find_reloads_subreg_address (x, 1, opnum, type, ind_levels,
 					 insn);
     }
-  else if (code == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM
-	   && (GET_MODE_SIZE (GET_MODE (x))
-	       > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	   && mode_dependent_address_p (XEXP (SUBREG_REG (x), 0)))
-    {
-      /* A paradoxical subreg will simply have the mode of the access
-	 changed, so we need to reload such a memory operand to stabilize
-	 the meaning of the memory access.  */
-      enum machine_mode subreg_mode = GET_MODE (SUBREG_REG (x));
-
-      /* SUBREG_REG (x) is a MEM, so we cant take the offset, instead we 
-         calculate the register number as : 
-	 SUBREG_BYTE (x) / GET_MODE_SIZE (subreg_mode) */
-      if (is_set_dest)
-	push_reload (NULL_RTX, SUBREG_REG (x), (rtx*)0, &SUBREG_REG (x),
-		     find_valid_class (subreg_mode, 
-		     		SUBREG_BYTE (x) / GET_MODE_SIZE (subreg_mode)),
-		     VOIDmode, subreg_mode, 0, 0, opnum, type);
-      else
-	push_reload (SUBREG_REG (x), NULL_RTX, &SUBREG_REG (x), (rtx*)0,
-		     find_valid_class (subreg_mode,
-		     		SUBREG_BYTE (x) / GET_MODE_SIZE (subreg_mode)),
-		     subreg_mode, VOIDmode, 0, 0, opnum, type);
-    }
 
   for (copied = 0, i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
