@@ -1,3 +1,8 @@
+Wed Dec  2 10:11:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (delete_block): Call set_last_insn after we have reset
+	NEXT_INSN (kept_tail).
+
 Wed Dec  2 00:47:31 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.md (trap_if): Use "$0" for the value zero.
