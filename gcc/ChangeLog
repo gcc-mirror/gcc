@@ -1,3 +1,9 @@
+2000-09-14  Alexandre Oliva  <aoliva@redhat.com>, Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* reload.c (find_reloads_address_1): Generate reloads for auto_inc
+	pseudos that refer to the original pseudos, not only to their
+	equivalent memory locations.
+
 Thu Sep 14 12:10:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_EXPR): Copy memory attributes
