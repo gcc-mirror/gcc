@@ -121,8 +121,8 @@ RANLIB_TEST_FOR_TARGET = [ -f $(TARGET_TOOLPREFIX)ranlib ]
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
-# Uncomment following line for fixproto support.  (May become the default!)
-# STMP_FIXPROTO = stmp-fixproto
+# Control whether to run fixproto.
+STMP_FIXPROTO = stmp-fixproto
 
 # There may be a premade insn-attrtab.c for this machine.
 # (You could rebuild it with genattrtab as usual, but it takes a long time.)
