@@ -1,3 +1,10 @@
+Tue Aug 11 23:02:31 1998  John Carr  <jfc@mit.edu>
+
+	* sparc.c: Change return <exp> to <exp>; return; in functions
+ 	returning void.
+	* sparc.md: Add empty semicolon statement after final label in
+	move expanders.
+
 Tue Aug 11 22:42:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (define_insn addx_extend): Rename to
