@@ -2199,6 +2199,9 @@ struct machine_function GTY(())
 
   /* The number of varargs registers to save.  */
   int n_varargs;
+
+  /* The number of the next unwind state to copy.  */
+  int state_num;
 };
 
 

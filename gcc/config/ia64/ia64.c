@@ -7726,7 +7726,8 @@ process_epilogue (void)
 
   if (!last_block)
     {
-      fprintf (asm_out_file, "\t.label_state 1\n");
+      fprintf (asm_out_file, "\t.label_state %d\n",
+	       ++cfun->machine->state_num);
       need_copy_state = true;
     }
 
@@ -7974,7 +7975,8 @@ process_for_unwind_directive (FILE *asm_out_file, rtx insn)
 	  if (need_copy_state)
 	    {
 	      fprintf (asm_out_file, "\t.body\n");
-	      fprintf (asm_out_file, "\t.copy_state 1\n");
+	      fprintf (asm_out_file, "\t.copy_state %d\n",
+		       cfun->machine->state_num);
 	      need_copy_state = false;
 	    }
 	}
