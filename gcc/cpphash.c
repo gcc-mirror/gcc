@@ -89,8 +89,7 @@ struct argdata
 };
 
 
-/* Return hash function on name.  must be compatible with the one
-   computed a step at a time, elsewhere  */
+/* Calculate hash function on a string.  */
 
 static unsigned int
 hashf (s, len)
@@ -169,7 +168,6 @@ void
 delete_macro (hp)
      HASHNODE *hp;
 {
-
   if (hp->prev != NULL)
     hp->prev->next = hp->next;
   if (hp->next != NULL)
@@ -1575,15 +1573,15 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
    to be read back in again. */
 
 void
-dump_definition (pfile, macro)
+dump_definition (pfile, sym, len, defn)
      cpp_reader *pfile;
-     MACRODEF macro;
+     const U_CHAR *sym;
+     long len;
+     DEFINITION *defn;
 {
-  DEFINITION *defn = macro.defn;
-
-  CPP_RESERVE (pfile, macro.symlen + sizeof "#define ");
+  CPP_RESERVE (pfile, len + sizeof "#define ");
   CPP_PUTS_Q (pfile, "#define ", sizeof "#define " -1);
-  CPP_PUTS_Q (pfile, macro.symnam, macro.symlen);
+  CPP_PUTS_Q (pfile, sym, len);
 
   if (defn->nargs == -1)
     {

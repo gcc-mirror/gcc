@@ -669,15 +669,9 @@ do_define (pfile, keyword)
   HASHNODE *hp;
   long here;
   U_CHAR *macro, *buf, *end;
-  enum node_type new_type;
 
   here = CPP_WRITTEN (pfile);
   copy_rest_of_line (pfile);
-
-  if (keyword == NULL || keyword->type == T_DEFINE)
-    new_type = T_MACRO;
-  else
-    new_type = T_POISON;
 
   /* Copy out the line so we can pop the token buffer. */
   buf = pfile->token_buffer + here;
@@ -694,18 +688,19 @@ do_define (pfile, keyword)
 
   if ((hp = cpp_lookup (pfile, mdef.symnam, mdef.symlen)) != NULL)
     {
-      int ok = 0;
-      /* Redefining a poisoned identifier is even worse than `not ok'.  */
-      if (hp->type == T_POISON)
-	ok = -1;
+      int ok;
+
       /* Redefining a macro is ok if the definitions are the same.  */
-      else if (hp->type == T_MACRO)
+      if (hp->type == T_MACRO)
 	ok = ! compare_defs (pfile, mdef.defn, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
+      /* Otherwise it's not ok.  */
+      else
+	ok = 0;
       /* Print the warning or error if it's not ok.  */
-      if (ok <= 0)
+      if (! ok)
 	{
 	  if (hp->type == T_POISON)
 	    cpp_error (pfile, "redefining poisoned `%.*s'", 
@@ -720,19 +715,19 @@ do_define (pfile, keyword)
       if (hp->type != T_POISON)
 	{
 	  /* Replace the old definition.  */
-	  hp->type = new_type;
+	  hp->type = T_MACRO;
 	  free_definition (hp->value.defn);
 	  hp->value.defn = mdef.defn;
 	}
     }
   else
-    cpp_install (pfile, mdef.symnam, mdef.symlen, new_type, (char *)mdef.defn);
+    cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO, (char *)mdef.defn);
 
   if (keyword != NULL && keyword->type == T_DEFINE)
     {
       if (CPP_OPTIONS (pfile)->debug_output
 	  || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
-	dump_definition (pfile, mdef);
+	dump_definition (pfile, mdef.symnam, mdef.symlen, mdef.defn);
       else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
 	pass_thru_directive (mdef.symnam, mdef.symlen, pfile, keyword);
     }
@@ -1444,7 +1439,7 @@ do_undef (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword;
 {
-  int sym_length;
+  int len;
   HASHNODE *hp;
   U_CHAR *buf, *name, *limit;
   int c;
@@ -1465,8 +1460,9 @@ do_undef (pfile, keyword)
   limit = CPP_PWRITTEN(pfile);
 
   /* Copy out the token so we can pop the token buffer. */
-  name = (U_CHAR *) alloca (limit - buf + 1);
-  bcopy(buf, name, limit - buf);
+  len = limit - buf;
+  name = (U_CHAR *) alloca (len + 1);
+  memcpy (name, buf, len);
   name[limit - buf] = '\0';
 
   token = get_directive_token (pfile);
@@ -1478,14 +1474,12 @@ do_undef (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, here);
 
-  sym_length = check_macro_name (pfile, buf);
-
-  while ((hp = cpp_lookup (pfile, name, sym_length)) != NULL)
+  while ((hp = cpp_lookup (pfile, name, len)) != NULL)
     {
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	pass_thru_directive (name, sym_length, pfile, keyword);
+	pass_thru_directive (name, len, pfile, keyword);
       if (hp->type == T_POISON)
 	cpp_error (pfile, "cannot undefine poisoned `%s'", hp->name);
       else 
@@ -1529,14 +1523,14 @@ do_error (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  long here = CPP_WRITTEN (pfile);
-  U_CHAR *text;
-  copy_rest_of_line (pfile);
-  text = pfile->token_buffer + here;
-  SKIP_WHITE_SPACE(text);
+  U_CHAR *text, *limit;
 
-  cpp_error (pfile, "#error %s", text);
-  CPP_SET_WRITTEN (pfile, here);
+  cpp_skip_hspace (pfile);
+  text = CPP_BUFFER (pfile)->cur;
+  skip_rest_of_line (pfile);
+  limit = CPP_BUFFER (pfile)->cur;
+
+  cpp_error (pfile, "#error %.*s", (int)(limit - text), text);
   return 0;
 }
 
@@ -1550,169 +1544,233 @@ do_warning (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  U_CHAR *text;
-  long here = CPP_WRITTEN(pfile);
-  copy_rest_of_line (pfile);
-  text = pfile->token_buffer + here;
-  SKIP_WHITE_SPACE(text);
+  U_CHAR *text, *limit;
+
+  cpp_skip_hspace (pfile);
+  text = CPP_BUFFER (pfile)->cur;
+  skip_rest_of_line (pfile);
+  limit = CPP_BUFFER (pfile)->cur;
 
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#warning'");
 
-  /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
-     if -pedantic-errors is given, #warning should cause an error.  */
-  cpp_pedwarn (pfile, "#warning %s", text);
-  CPP_SET_WRITTEN (pfile, here);
+  cpp_warning (pfile, "#warning %.*s", (int)(limit - text), text);
   return 0;
 }
 
-/* Report program identification.
-   This is not precisely what cccp does with #ident, however I believe
-   it matches `closely enough' (behavior is identical as long as there
-   are no macros on the #ident line, which is pathological in my opinion).  */
+/* Report program identification.  */
 
 static int
 do_ident (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
+  long old_written = CPP_WRITTEN (pfile);
+
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
   CPP_PUTS (pfile, "#ident ", 7);
-  cpp_skip_hspace (pfile);
-  copy_rest_of_line (pfile);
+
+  /* Next token should be a string constant.  */
+  if (get_directive_token (pfile) == CPP_STRING)
+    /* And then a newline.  */
+    if (get_directive_token (pfile) == CPP_VSPACE)
+      /* Good - ship it.  */
+      return 0;
+
+  cpp_error (pfile, "invalid #ident");
+  skip_rest_of_line (pfile);
+  CPP_SET_WRITTEN (pfile, old_written);  /* discard directive */
 
   return 0;
 }
 
-/* Just check for some recognized pragmas that need validation here,
-   and leave the text in the token buffer to be output. */
+/* Pragmata handling.  We handle some of these, and pass the rest on
+   to the front end.  C99 defines three pragmas and says that no macro
+   expansion is to be performed on them; whether or not macro
+   expansion happens for other pragmas is implementation defined.
+   This implementation never macro-expands the text after #pragma.
+
+   We currently do not support the _Pragma operator.  Support for that
+   has to be coordinated with the front end.  Proposed implementation:
+   both #pragma blah blah and _Pragma("blah blah") become
+   __builtin_pragma(blah blah) and we teach the parser about that.  */
+
+/* Sub-handlers for the pragmas needing treatment here.
+   They return 1 if the token buffer is to be popped, 0 if not. */
+static int do_pragma_once		PARAMS ((cpp_reader *));
+static int do_pragma_implementation	PARAMS ((cpp_reader *));
+static int do_pragma_poison		PARAMS ((cpp_reader *));
+static int do_pragma_default		PARAMS ((cpp_reader *));
 
 static int
 do_pragma (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  long here;
+  long here, key;
   U_CHAR *buf;
+  int pop;
 
-  CPP_PUTS (pfile, "#pragma ", 8);
-  cpp_skip_hspace (pfile);
-  
   here = CPP_WRITTEN (pfile);
-  copy_rest_of_line (pfile);
-  buf = pfile->token_buffer + here;
-  
-  if (!strncmp (buf, "once", 4))
-    {
-      cpp_buffer *ip = NULL;
+  CPP_PUTS (pfile, "#pragma ", 8);
 
-      /* Allow #pragma once in system headers, since that's not the user's
-	 fault.  */
-      if (!CPP_BUFFER (pfile)->system_header_p)
-	cpp_warning (pfile, "`#pragma once' is obsolete");
-      
-      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
-        {
-	  if (ip == CPP_NULL_BUFFER (pfile))
-	    return 0;
-	  if (ip->fname != NULL)
-	    break;
-	}
+  key = CPP_WRITTEN (pfile);
+  pfile->no_macro_expand++;
+  if (get_directive_token (pfile) != CPP_NAME)
+    goto skip;
 
-      if (CPP_PREV_BUFFER (ip) == CPP_NULL_BUFFER (pfile))
-	cpp_warning (pfile, "`#pragma once' outside include file");
-      else
-	ip->ihash->control_macro = "";  /* never repeat */
-    }
-  else if (!strncmp (buf, "implementation", 14))
-    {
-      /* Be quiet about `#pragma implementation' for a file only if it hasn't
-	 been included yet.  */
-      struct include_hash *ptr;
-      U_CHAR *p = buf + 14, *fname, *fcopy;
-      SKIP_WHITE_SPACE (p);
-      if (*p == '\n' || *p != '\"')
-        return 0;
+  buf = pfile->token_buffer + key;
+  CPP_PUTC (pfile, ' ');
 
-      fname = p + 1;
-      p = (U_CHAR *) index (fname, '\"');
+#define tokis(x) !strncmp(buf, x, sizeof(x) - 1)
+  if (tokis ("once"))
+    pop = do_pragma_once (pfile);
+  else if (tokis ("implementation"))
+    pop = do_pragma_implementation (pfile);
+  else if (tokis ("poison"))
+    pop = do_pragma_poison (pfile);
+  else
+    pop = do_pragma_default (pfile);
+#undef tokis
 
-      fcopy = (U_CHAR *) alloca (p - fname + 1);
-      bcopy (fname, fcopy, p - fname);
-      fcopy[p-fname] = '\0';
+  if (get_directive_token (pfile) != CPP_VSPACE)
+    goto skip;
 
-      ptr = include_hash (pfile, fcopy, 0);
-      if (ptr)
-        cpp_warning (pfile,
-	  "`#pragma implementation' for `%s' appears after file is included",
-		     fcopy);
-    }
-  else if (!strncmp (buf, "poison", 6))
-    {
-      /* Poison these symbols so that all subsequent usage produces an
-	 error message.  */
-      U_CHAR *p = buf + 6;
-      size_t plen;
-      U_CHAR *syms;
-      int writeit;
+  if (pop)
+    CPP_SET_WRITTEN (pfile, here);
+  pfile->no_macro_expand--;
+  return 0;
 
-      SKIP_WHITE_SPACE (p);
-      plen = strlen(p) + 1;
-
-      syms = (U_CHAR *) alloca (plen);
-      memcpy (syms, p, plen);
-
-      /* As a rule, don't include #pragma poison commands in output,  
-         unless the user asks for them.  */
-      writeit = (CPP_OPTIONS (pfile)->debug_output
-		 || CPP_OPTIONS (pfile)->dump_macros == dump_definitions
-		 || CPP_OPTIONS (pfile)->dump_macros == dump_names);
-
-      if (writeit)
-	CPP_SET_WRITTEN (pfile, here);
-      else
-	CPP_SET_WRITTEN (pfile, here-8);
-
-      if (writeit)
-	{
-	  CPP_RESERVE (pfile, plen + 7);
-	  CPP_PUTS_Q (pfile, "poison", 7);
-	}
-
-      while (*syms != '\0')
-	{
-	  U_CHAR *end = syms;
-	  
-	  while (is_idchar(*end))
-	    end++;
-
-	  if (!is_hspace(*end) && *end != '\0')
-	    {
-	      cpp_error (pfile, "invalid #pragma poison directive");
-	      return 1;
-	    }
-
-	  if (cpp_push_buffer (pfile, syms, end - syms) != NULL)
-	    {
-	      do_define (pfile, keyword);
-	      cpp_pop_buffer (pfile);
-	    }
-	  if (writeit)
-	    {
-	      CPP_PUTC_Q (pfile, ' ');
-	      CPP_PUTS_Q (pfile, syms, end - syms);
-	    }
-	  syms = end;
-	  SKIP_WHITE_SPACE (syms);
-	}
-    }
-
+ skip:
+  cpp_error (pfile, "malformed #pragma directive");
+  skip_rest_of_line (pfile);
+  CPP_SET_WRITTEN (pfile, here);
+  pfile->no_macro_expand--;
   return 0;
 }
 
+static int
+do_pragma_default (pfile)
+     cpp_reader *pfile;
+{
+  while (get_directive_token (pfile) != CPP_VSPACE)
+    CPP_PUTC (pfile, ' ');
+  return 0;
+}
+
+static int
+do_pragma_once (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+
+  if (ip->fname == NULL)
+    {
+      cpp_ice (pfile, "ip->fname == NULL in do_pragma_once");
+      return 1;
+    }
+  
+  /* Allow #pragma once in system headers, since that's not the user's
+     fault.  */
+  if (!ip->system_header_p)
+    cpp_warning (pfile, "`#pragma once' is obsolete");
+      
+  if (CPP_PREV_BUFFER (ip) == CPP_NULL_BUFFER (pfile))
+    cpp_warning (pfile, "`#pragma once' outside include file");
+  else
+    ip->ihash->control_macro = "";  /* never repeat */
+
+  return 1;
+}
+
+static int
+do_pragma_implementation (pfile)
+     cpp_reader *pfile;
+{
+  /* Be quiet about `#pragma implementation' for a file only if it hasn't
+     been included yet.  */
+  struct include_hash *ptr;
+  enum cpp_token token;
+  long written = CPP_WRITTEN (pfile);
+  U_CHAR *name;
+  U_CHAR *copy;
+
+  token = get_directive_token (pfile);
+  if (token == CPP_VSPACE)
+    return 0;
+  else if (token != CPP_STRING)
+    {
+      cpp_error (pfile, "malformed #pragma implementation");
+      return 1;
+    }
+
+  name = pfile->token_buffer + written + 1;
+  copy = xstrdup (name);
+  copy[strlen(copy)] = '\0';  /* trim trailing quote */
+  
+  ptr = include_hash (pfile, copy, 0);
+  if (ptr)
+    cpp_warning (pfile,
+	 "`#pragma implementation' for `%s' appears after file is included",
+		 copy);
+  free (copy);
+  return 0;
+}
+
+static int
+do_pragma_poison (pfile)
+     cpp_reader *pfile;
+{
+  /* Poison these symbols so that all subsequent usage produces an
+     error message.  */
+  U_CHAR *p;
+  HASHNODE *hp;
+  long written;
+  size_t len;
+  enum cpp_token token;
+  int writeit;
+  /* As a rule, don't include #pragma poison commands in output,  
+     unless the user asks for them.  */
+  writeit = (CPP_OPTIONS (pfile)->debug_output
+	     || CPP_OPTIONS (pfile)->dump_macros == dump_definitions
+	     || CPP_OPTIONS (pfile)->dump_macros == dump_names);
+
+  for (;;)
+    {
+      written = CPP_WRITTEN (pfile);
+      token = get_directive_token (pfile);
+      if (token == CPP_VSPACE)
+	break;
+      if (token != CPP_NAME)
+	{
+	  cpp_error (pfile, "invalid #pragma poison directive");
+	  skip_rest_of_line (pfile);
+	  return 1;
+	}
+
+      p = pfile->token_buffer + written;
+      len = strlen (p);
+      if ((hp = cpp_lookup (pfile, p, len)))
+	{
+	  if (hp->type != T_POISON)
+	    {
+	      cpp_warning (pfile, "poisoning existing macro `%s'", p);
+	      free_definition (hp->value.defn);
+	      hp->value.defn = 0;
+	      hp->type = T_POISON;
+	    }
+	}
+      else
+	cpp_install (pfile, p, len, T_POISON, 0);
+      if (writeit)
+	CPP_PUTC (pfile, ' ');
+    }
+  return !writeit;
+}
+ 
 #ifdef SCCS_DIRECTIVE
 /* Just ignore #sccs, on systems where we define it at all.  */
 
@@ -1727,7 +1785,6 @@ do_sccs (pfile, keyword)
   return 0;
 }
 #endif
-
 
 /* We've found an `#if' directive.  If the only thing before it in
    this file is white space, and if it is of the form
@@ -1933,17 +1990,14 @@ do_xifdef (pfile, keyword)
     }
   else if (token == CPP_NAME)
     {
-      HASHNODE *hp = cpp_lookup (pfile, ident, ident_length);
-      skip = (hp == NULL) ^ (keyword->type == T_IFNDEF);
+      skip = cpp_defined (pfile, ident, ident_length);
+      if (keyword->type == T_IFDEF)
+	skip = !skip;
+
       if (start_of_file && !skip)
 	{
 	  control_macro = (U_CHAR *) xmalloc (ident_length + 1);
 	  bcopy (ident, control_macro, ident_length + 1);
-	}
-      if (hp != NULL && hp->type == T_POISON)
-	{
-	  cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
-	  skip = !skip;
 	}
     }
   else

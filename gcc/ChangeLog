@@ -1,3 +1,31 @@
+2000-02-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c: Fix formatting, update commentary.
+	(dump_definition): Take three separate arguments instead of a
+	MACRODEF structure argument.
+	* cpphash.h: Update prototype of dump_definition.
+	* cppinit.c (cpp_finish): Update call of dump_definition.
+
+	* cpplib.c (do_define): Always create new hash entry with
+	T_MACRO type.  Remove redundant check for redefinition of
+	poisoned identifier.  Update call of dump_definition.
+	(do_undef): Don't call check_macro_name.  Rename sym_length to
+	len.
+	(do_error, do_warning): Don't use copy_rest_of_line or
+	SKIP_WHITE_SPACE.
+	(do_warning): Don't use pedwarn for the actual warning,
+	only the notice about its not being in the standard.  (Fixes
+	bug with #warning in system headers.)
+	(do_ident): Stricter argument checking - accept only a single
+	string after #ident.  Also, macro-expand the line.
+	(do_xifdef): Use cpp_defined.  De-obfuscate.
+
+	(do_pragma): Split out specific pragma handling to separate
+	functions.  Use get_directive_token.  Update commentary.  Do
+	not pass on #pragma once or #pragma poison to the front end.
+	(do_pragma_once, do_pragma_implementation, do_pragma_poison,
+	do_pragma_default): New.
+
 Feb 11 12:30:53 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize_1): The first operand in a relational
