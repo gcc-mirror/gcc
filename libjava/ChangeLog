@@ -1,5 +1,13 @@
 2004-07-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Use target_noncanonical rather than
+	target_alias for forward-compatibility with autoconf 2.59.
+	* configure: Regenerate.
+	* Makefile.am, gcj/Makefile.am, include/Makefile.am,
+	testsuite/Makefile.am: Substitute target_noncanonical.
+	* Makefile.in, gcj/Makefile.in, include/Makefile.in,
+	testsuite/Makefile.in: Regenerate.
+
 	* configure.in: Move as much as possible below AC_CANONICAL_SYSTEM.
 	Introduce _GCC_TOPLEV_NONCANONICAL_TARGET.
 	* acinclude.m4: Include acx.m4.

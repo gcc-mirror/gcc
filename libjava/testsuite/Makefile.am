@@ -2,6 +2,9 @@
 
 AUTOMAKE_OPTIONS = foreign dejagnu
 
+# autoconf2.13's target_alias
+target_noncanonical = @target_noncanonical@
+
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
             echo $(top_builddir)/../expect/expect ; \
