@@ -4392,7 +4392,7 @@ init_decl_processing ()
   builtin_function ("__builtin_classify_type", default_function_type,
 		    BUILT_IN_CLASSIFY_TYPE, NULL_PTR);
   builtin_function ("__builtin_next_arg",
-		    build_function_type (ptr_type_node, endlink),
+		    build_function_type (ptr_type_node, NULL_TREE),
 		    BUILT_IN_NEXT_ARG, NULL_PTR);
   builtin_function ("__builtin_args_info",
 		    build_function_type (integer_type_node,
