@@ -1,3 +1,27 @@
+2004-06-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (all.normal): Rename to all.
+	(all): Replace with a rule to pick the default
+	target from configure.
+	(all-gcc, configure-gcc): Use conditionals to
+	do nothing when toplevel bootstrap is going on.
+	(GCC directory bootstrap) [gcc-bootstrap]: Disable.
+	(Toplevel bootstrap) [gcc-no-bootstrap]: Disable.
+	* configure.in: Support --enable-bootstrap.
+
+	* Makefile.def: Remove new- prefix from toplevel
+	bootstrap targets.
+	* Makefile.tpl: Likewise.
+
+	* Makefile.def: Add bootstrap_stage 4.  Add bootstrap2
+	target.
+
+	* Makefile.tpl (Toplevel bootstrap): Pass $(BASE_FLAGS_TO_PASS)
+	$(RECURSE_FLAGS) to recursive invocation of make.
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2004-05-30  Andreas Jaeger  <aj@suse.de>
 	    Jim Wilson <wilson@specifixinc.com>
 

@@ -470,8 +470,7 @@ PICFLAG_FOR_TARGET =
 
 # The first rule in the file had better be this one.  Don't put any above it.
 # This lives here to allow makefile fragments to contain dependencies.
-all: all.normal
-.PHONY: all
+@default_target@:
 
 #### host and target specific makefile fragments come in here.
 @target_makefile_frag@
@@ -576,9 +575,9 @@ configure-target: [+
     maybe-configure-target-[+module+][+
   ENDFOR target_modules +]
 
-# The target built for a native build.
-.PHONY: all.normal
-all.normal: @all_build_modules@ all-host all-target
+# The target built for a native non-bootstrap build.
+.PHONY: all
+all: @all_build_modules@ all-host all-target
 
 .PHONY: all-host
 all-host: maybe-all-gcc [+
@@ -1171,8 +1170,9 @@ maybe-configure-gcc:
 @if gcc
 maybe-configure-gcc: configure-gcc
 configure-gcc:
+@endif gcc
+@if gcc-no-bootstrap
 	@test ! -f gcc/Makefile || exit 0; \
-	[ -f stage_last ] && exit 0; \
 	[ -d gcc ] || mkdir gcc; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1193,7 +1193,7 @@ configure-gcc:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  || exit 1
-@endif gcc
+@endif gcc-no-bootstrap
 
 # Don't 'make all' in gcc if it's already been made by 'bootstrap'; that
 # causes trouble.  This wart will be fixed eventually by moving
@@ -1203,19 +1203,17 @@ maybe-all-gcc:
 @if gcc
 maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
+@endif gcc
+@if gcc-no-bootstrap
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
 	$(GCC_HOST_EXPORTS) \
-	if [ -f stage_last ] ; then \
-	  true ; \
-	elif [ -f gcc/stage_last ] ; then \
-	  $(SET_LIB_PATH) \
+	if [ -f gcc/stage_last ] ; then \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
 	else \
-	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	fi
-@endif gcc
 
 # Building GCC uses some tools for rebuilding "source" files
 # like texinfo, bison/byacc, etc.  So we must depend on those.
@@ -1294,7 +1292,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	  LANGUAGES="c c++" all
+		LANGUAGES="c c++" all
+@endif gcc-no-bootstrap
 
 .PHONY: check-gcc maybe-check-gcc
 maybe-check-gcc:
@@ -1395,6 +1394,7 @@ maybe-[+make_target+]-gcc: [+make_target+]-gcc
 
 [+ ENDFOR recursive_targets +]
 
+@if gcc-bootstrap
 # ---------------------
 # GCC bootstrap support
 # ---------------------
@@ -1440,7 +1440,7 @@ objext = .o
 # Real targets act phony if they depend on phony targets; this hack
 # prevents gratuitous rebuilding of stage 1.
 prebootstrap:
-	$(MAKE) all-bootstrap
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-bootstrap
 	$(STAMP) prebootstrap
 
 # Flags to pass to stage2 and later makes.
@@ -1459,16 +1459,16 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 # * We build only C (and possibly Ada).
 
 [+ FOR bootstrap-stage +]
-.PHONY: new-stage[+id+]-start new-stage[+id+]-end
+.PHONY: stage[+id+]-start stage[+id+]-end
 
-new-stage[+id+]-start:
-	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+stage[+id+]-start:
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage[+id+] > stage_last ; \
 	[ -d stage[+id+]-gcc ] || mkdir stage[+id+]-gcc; \
 	set stage[+id+]-gcc gcc ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
 	set stage[+prev+]-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
 
-new-stage[+id+]-end:
+stage[+id+]-end:
 	rm -f stage_last ; \
 	set gcc stage[+id+]-gcc ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
 	set prev-gcc stage[+prev+]-gcc ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
@@ -1476,22 +1476,23 @@ new-stage[+id+]-end:
 # Bubble a bugfix through all the stages up to stage [+id+].  They
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
-.PHONY: new-stage[+id+]-bubble
-new-stage[+id+]-bubble: [+ IF prev +]new-stage[+prev+]-bubble[+ ENDIF +]
+.PHONY: stage[+id+]-bubble
+stage[+id+]-bubble: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
 	@if [ -f all-stage[+id+]-gcc ] ; then \
 	  echo Remaking stage [+id+] ; \
 	  rm -f all-stage[+id+]-gcc ; \
-	  $(MAKE) all-stage[+id+]-gcc [+ IF next +] && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
+	    all-stage[+id+]-gcc [+ IF next +] && \
 	  if [ -f configure-stage[+next+]-gcc ] ; then \
 	    $(STAMP) configure-stage[+next+]-gcc ; \
 	  fi [+ ENDIF next +]; \
 	else \
-	  $(MAKE) all-stage[+id+]-gcc ; \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage[+id+]-gcc ; \
 	fi
 
 configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	  ELSE +] prebootstrap [+ ENDIF prev +]
-	$(MAKE) new-stage[+id+]-start
+	$(MAKE) stage[+id+]-start
 	@if [ -f stage[+id+]-gcc/Makefile ] ; then \
 	  $(STAMP) configure-stage[+id+]-gcc ; \
 	  exit 0; \
@@ -1521,7 +1522,7 @@ configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	  $(STAMP) ../configure-stage[+id+]-gcc
 
 all-stage[+id+]-gcc: configure-stage[+id+]-gcc
-	$(MAKE) new-stage[+id+]-start
+	$(MAKE) stage[+id+]-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
@@ -1534,7 +1535,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 
 [+ IF compare-target +]
 [+compare-target+]: all-stage[+id+]-gcc
-	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
@@ -1559,23 +1560,23 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 [+ IF bootstrap-target +]
 .PHONY: [+bootstrap-target+]
 [+bootstrap-target+]:
-	$(MAKE) new-stage[+id+]-bubble [+
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage[+id+]-bubble [+
 	  IF compare-target +] [+compare-target+] [+
 	  ENDIF compare-target +] \
-	  new-stage[+id+]-start all new-stage[+id+]-end 
+	  stage[+id+]-start all stage[+id+]-end 
 [+ ENDIF bootstrap-target +]
 
-.PHONY: new-restage[+id+] distclean-stage[+id+]
+.PHONY: restage[+id+] distclean-stage[+id+]
 
 distclean-stage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
-	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage[+id+]-gcc all-stage[+id+]-gcc stage[+id+]-gcc [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
-new-restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
+restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
 	rm -rf all-stage[+id+]-gcc [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
-	$(MAKE) [+
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) [+
 	  IF compare-target +][+compare-target+] [+
 	  ELSE +] all-stage[+id+]-gcc [+ ENDIF compare-target +]
 
@@ -1585,6 +1586,7 @@ new-restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
 [+ ENDIF cleanstrap-target +]
 
 [+ ENDFOR bootstrap-stage +]
+@endif gcc-bootstrap
 
 # --------------------------------------
 # Dependencies between different modules
