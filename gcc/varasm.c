@@ -1142,11 +1142,22 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)));
   else
     {
+      /* C++ can have const variables that get initialized from constructors,
+	 and thus can not be in a readonly section.  We prevent this by
+	 verifying that the initial value is constant for objects put in a
+	 readonly section.
+
+	 error_mark_node is used by the C front end to indicate that the
+	 initializer has not been seen yet.  In this case, we assume that
+	 the initializer must be constant.  */
 #ifdef SELECT_SECTION
       SELECT_SECTION (decl, reloc);
 #else
       if (TREE_READONLY (decl)
 	  && ! TREE_THIS_VOLATILE (decl)
+	  && DECL_INITIAL (decl)
+	  && (DECL_INITIAL (decl) == error_mark_node
+	      || TREE_CONSTANT (DECL_INITIAL (decl)))
 	  && ! (flag_pic && reloc))
 	readonly_data_section ();
       else
@@ -1194,6 +1205,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #else
       if (TREE_READONLY (decl)
 	  && ! TREE_THIS_VOLATILE (decl)
+	  && DECL_INITIAL (decl)
+	  && (DECL_INITIAL (decl) == error_mark_node
+	      || TREE_CONSTANT (DECL_INITIAL (decl)))
 	  && ! (flag_pic && reloc))
 	readonly_data_section ();
       else
@@ -1289,6 +1303,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #else
 	  if (TREE_READONLY (decl)
 	      && ! TREE_THIS_VOLATILE (decl)
+	      && DECL_INITIAL (decl)
+	      && (DECL_INITIAL (decl) == error_mark_node
+		  || TREE_CONSTANT (DECL_INITIAL (decl)))
 	      && ! (flag_pic && reloc))
 	    readonly_data_section ();
 	  else
