@@ -1,3 +1,10 @@
+2003-10-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-pch.c (struct c_pch_validity): Add pch_init field.
+	(pch_init): Set it.
+	(c_common_valid_pch): Check it.
+	(get_ident): Bump the PCH version number.
+
 2003-10-22  David Taylor <dtaylor@emc.com>
 
 	PR debug/12500

@@ -48,6 +48,7 @@ struct c_pch_validity
   unsigned char target_machine_length;
   unsigned char version_length;
   unsigned char debug_info_type;
+  void (*pch_init) (void);
 };
 
 struct c_pch_header 
@@ -113,6 +114,7 @@ pch_init (void)
   v.version_length = strlen (version_string);
   
   v.debug_info_type = write_symbols;
+  v.pch_init = &pch_init;
   if (fwrite (get_ident(), IDENT_LENGTH, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
       || fwrite (host_machine, v.host_machine_length, 1, f) != 1
@@ -282,6 +284,18 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 		   "%s: created with -g%s, but used with -g%s", name,
 		   debug_type_names[v.debug_info_type],
 		   debug_type_names[write_symbols]);
+      return 2;
+    }
+
+  /* If the text segment was not loaded at the same address as it was
+     when the PCH file was created, function pointers loaded from the
+     PCH will not be valid.  We could in theory remap all the function
+     pointers, but no support for that exists at present.  */
+  if (v.pch_init != &pch_init)
+    {
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, DL_WARNING, 
+		   "%s: had text segment at different address", name);
       return 2;
     }
 
