@@ -1,5 +1,16 @@
 2000-07-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	Merged implementation of java.applet from classpath:
+	* java/applet/Applet.java: New file.
+	* java/applet/AppletContext.java: New file.
+	* java/applet/AppletStub.java: New file.
+	* java/applet/AudioClip.java: New file.
+
+	* Makefile.am: Added new java.applet classes.
+	* Makefile.in: Rebuilt.
+
+2000-07-12  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	AWT Stuff:
 	* java/util/ResourceBundle.java (getLocale): stub.
 	* Makefile.am: Added new AWT classes.

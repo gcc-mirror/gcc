@@ -660,6 +660,10 @@ gnu/java/lang/ClassHelper.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+java/applet/Applet.java \
+java/applet/AppletStub.java \
+java/applet/AppletContext.java \
+java/applet/AudioClip.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
