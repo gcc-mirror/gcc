@@ -1,3 +1,15 @@
+2002-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (reshape_init): Fix typo.
+
+	* cp-tree.h (operator_name_info_t): Add arity.
+	* lex.c (init_operators): Initialize it.
+	* mangle.c (write_conversion_operator_name): New function.
+	(write_unqualified_name): Use it.
+	(write_template_args): Accept template arguments as a TREE_LIST.
+	(write_expression): Adjust handling of qualified names to match
+	specification.
+
 2002-10-15  Jason Merrill  <jason@redhat.com>
 
 	* call.c (call_builtin_trap): New fn.

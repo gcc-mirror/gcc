@@ -1,7 +1,15 @@
+2002-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/array6.C: New test.
+	
+	* g++.dg/abi/mangle13.C: Likewise.
+	* g++.dg/abi/mangle14.C: Likewise.
+	* g++.dg/abi/mangle15.C: Likewise.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/empty8.C: New test.
-
+	
 2002-10-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/init/ctor1.C: New test.

@@ -166,6 +166,7 @@ static void write_nested_name PARAMS ((tree));
 static void write_prefix PARAMS ((tree));
 static void write_template_prefix PARAMS ((tree));
 static void write_unqualified_name PARAMS ((tree));
+static void write_conversion_operator_name (tree);
 static void write_source_name PARAMS ((tree));
 static int hwint_to_ascii PARAMS ((unsigned HOST_WIDE_INT, unsigned int, char *, unsigned));
 static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
@@ -1016,8 +1017,7 @@ write_unqualified_name (decl)
 	}
       else
 	type = TREE_TYPE (DECL_NAME (decl));
-      write_string ("cv");
-      write_type (type);
+      write_conversion_operator_name (type);
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl))
     {
@@ -1031,6 +1031,15 @@ write_unqualified_name (decl)
     }
   else
     write_source_name (DECL_NAME (decl));
+}
+
+/* Write the unqualified-name for a conversion operator to TYPE.  */
+
+static void
+write_conversion_operator_name (tree type)
+{
+  write_string ("cv");
+  write_type (type);
 }
 
 /* Non-termial <source-name>.  IDENTIFIER is an IDENTIFIER_NODE.  
@@ -1780,24 +1789,37 @@ static void
 write_template_args (args)
      tree args;
 {
-  int i;
-  int length = TREE_VEC_LENGTH (args);
-
   MANGLE_TRACE_TREE ("template-args", args);
 
-  my_friendly_assert (length > 0, 20000422);
+  write_char ('I');
 
-  if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+  if (TREE_CODE (args) == TREE_VEC)
     {
-      /* We have nested template args.  We want the innermost template
-	 argument list.  */
-      args = TREE_VEC_ELT (args, length - 1);
-      length = TREE_VEC_LENGTH (args);
+      int i;
+      int length = TREE_VEC_LENGTH (args);
+      my_friendly_assert (length > 0, 20000422);
+
+      if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+	{
+	  /* We have nested template args.  We want the innermost template
+	     argument list.  */
+	  args = TREE_VEC_ELT (args, length - 1);
+	  length = TREE_VEC_LENGTH (args);
+	}
+      for (i = 0; i < length; ++i)
+	write_template_arg (TREE_VEC_ELT (args, i));
+    }
+  else 
+    {
+      my_friendly_assert (TREE_CODE (args) == TREE_LIST, 20021014);
+
+      while (args)
+	{
+	  write_template_arg (TREE_VALUE (args));
+	  args = TREE_CHAIN (args);
+	}
     }
 
-  write_char ('I');
-  for (i = 0; i < length; ++i)
-    write_template_arg (TREE_VEC_ELT (args, i));
   write_char ('E');
 }
 
@@ -1807,7 +1829,9 @@ write_template_args (args)
 
    <expr-primary> ::= <template-param>
 		  ::= L <type> <value number> E  # literal
-		  ::= L <mangled-name> E         # external name  */
+		  ::= L <mangled-name> E         # external name  
+                  ::= sr <type> <unqualified-name>
+                  ::= sr <type> <unqualified-name> <template-args> */
 
 static void
 write_expression (expr)
@@ -1859,6 +1883,75 @@ write_expression (expr)
       write_string ("st");
       write_type (TREE_OPERAND (expr, 0));
     }
+  else if (abi_version_at_least (2) && TREE_CODE (expr) == SCOPE_REF)
+    {
+      tree scope = TREE_OPERAND (expr, 0);
+      tree member = TREE_OPERAND (expr, 1);
+
+      /* If the MEMBER is a real declaration, then the qualifying
+	 scope was not dependent.  Ideally, we would not have a
+	 SCOPE_REF in those cases, but sometimes we do.  If the second
+	 argument is a DECL, then the name must not have been
+	 dependent.  */
+      if (DECL_P (member))
+	write_expression (member);
+      else
+	{
+	  tree template_args;
+
+	  write_string ("sr");
+	  write_type (scope);
+	  /* If MEMBER is a template-id, separate the template
+	     from the arguments.  */
+	  if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
+	    {
+	      template_args = TREE_OPERAND (member, 1);
+	      member = TREE_OPERAND (member, 0);
+	      if (TREE_CODE (member) == LOOKUP_EXPR)
+		member = TREE_OPERAND (member, 0);
+	    }
+	  else
+	    template_args = NULL_TREE;
+	  /* Write out the name of the MEMBER.  */
+	  if (IDENTIFIER_TYPENAME_P (member))
+	    write_conversion_operator_name (TREE_TYPE (member));
+	  else if (IDENTIFIER_OPNAME_P (member))
+	    {
+	      int i;
+	      const char *mangled_name = NULL;
+
+	      /* Unfortunately, there is no easy way to go from the
+		 name of the operator back to the corresponding tree
+		 code.  */
+	      for (i = 0; i < LAST_CPLUS_TREE_CODE; ++i)
+		if (operator_name_info[i].identifier == member)
+		  {
+		    /* The ABI says that we prefer binary operator
+		       names to unary operator names.  */
+		    if (operator_name_info[i].arity == 2)
+		      {
+			mangled_name = operator_name_info[i].mangled_name;
+			break;
+		      }
+		    else if (!mangled_name)
+		      mangled_name = operator_name_info[i].mangled_name;
+		  }
+		else if (assignment_operator_name_info[i].identifier
+			 == member)
+		  {
+		    mangled_name 
+		      = assignment_operator_name_info[i].mangled_name;
+		    break;
+		  }
+	      write_string (mangled_name);
+	    }
+	  else
+	    write_source_name (member);
+	  /* Write out the template arguments.  */
+	  if (template_args)
+	    write_template_args (template_args);
+	}
+    }
   else
     {
       int i;
@@ -1880,7 +1973,7 @@ write_expression (expr)
 
 	  code = TREE_CODE (expr);
 	}
-      
+
       /* If it wasn't any of those, recursively expand the expression.  */
       write_string (operator_name_info[(int) code].mangled_name);
 
@@ -1904,7 +1997,12 @@ write_expression (expr)
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == IDENTIFIER_NODE)
 	    write_source_name (TREE_OPERAND (expr, 1));
 	  else
-	    write_encoding (TREE_OPERAND (expr, 1));
+	    {
+	      /* G++ 3.2 incorrectly put out both the "sr" code and
+		 the nested name of the qualified name.  */
+	      G.need_abi_warning = 1;
+	      write_encoding (TREE_OPERAND (expr, 1));
+	    }
 	  break;
 
 	default:
