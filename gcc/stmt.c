@@ -168,6 +168,7 @@ struct case_node
   tree			low;	/* Lowest index value for this label */
   tree			high;	/* Highest index value for this label */
   tree			code_label; /* Label to jump to when node matches */
+  int			balance;
 };
 
 typedef struct case_node case_node;
@@ -285,10 +286,9 @@ struct nesting
 	     A label is needed for skipping over this block. It is only
 	     used when generating bytecodes. */
 	  rtx skip_label;
-	  /* A list of case labels, kept in ascending order by value
-	     as the list is built.
-	     During expand_end_case, this list may be rearranged into a
-	     nearly balanced binary tree.  */
+	  /* A list of case labels; it is first built as an AVL tree.
+	     During expand_end_case, this is converted to a list, and may be
+	     rearranged into a nearly balanced binary tree.  */
 	  struct case_node *case_list;
 	  /* Label to jump to if no case matches.  */
 	  tree default_label;
@@ -462,6 +462,8 @@ static int node_has_high_bound		PROTO((case_node_ptr, tree));
 static int node_is_bounded		PROTO((case_node_ptr, tree));
 static void emit_jump_if_reachable	PROTO((rtx));
 static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
+static int add_case_node		PROTO((tree, tree, tree, tree *));
+static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
 
 extern rtx bc_allocate_local ();
 extern rtx bc_allocate_variable_array ();
@@ -4096,36 +4098,7 @@ pushcase (value, converter, label, duplicate)
       case_stack->data.case_stmt.default_label = label;
     }
   else
-    {
-      /* Find the elt in the chain before which to insert the new value,
-	 to keep the chain sorted in increasing order.
-	 But report an error if this element is a duplicate.  */
-      for (l = &case_stack->data.case_stmt.case_list;
-	   /* Keep going past elements distinctly less than VALUE.  */
-	   *l != 0 && tree_int_cst_lt ((*l)->high, value);
-	   l = &(*l)->right)
-	;
-      if (*l)
-	{
-	  /* Element we will insert before must be distinctly greater;
-	     overlap means error.  */
-	  if (! tree_int_cst_lt (value, (*l)->low))
-	    {
-	      *duplicate = (*l)->code_label;
-	      return 2;
-	    }
-	}
-
-      /* Add this label to the chain, and succeed.
-	 Copy VALUE so it is on temporary rather than momentary
-	 obstack and will thus survive till the end of the case statement.  */
-      n = (struct case_node *) oballoc (sizeof (struct case_node));
-      n->left = 0;
-      n->right = *l;
-      n->high = n->low = copy_node (value);
-      n->code_label = label;
-      *l = n;
-    }
+    return add_case_node (value, value, label, duplicate);
 
   expand_label (label);
   return 0;
@@ -4205,48 +4178,236 @@ pushcase_range (value1, value2, converter, label, duplicate)
   if (tree_int_cst_lt (value2, value1))
     return 4;
 
-  /* If the bounds are equal, turn this into the one-value case.  */
-  if (tree_int_cst_equal (value1, value2))
-    return pushcase (value1, converter, label, duplicate);
+  return add_case_node (value1, value2, label, duplicate);
+}
 
-  /* Find the elt in the chain before which to insert the new value,
-     to keep the chain sorted in increasing order.
-     But report an error if this element is a duplicate.  */
-  for (l = &case_stack->data.case_stmt.case_list;
-       /* Keep going past elements distinctly less than this range.  */
-       *l != 0 && tree_int_cst_lt ((*l)->high, value1);
-       l = &(*l)->right)
-    ;
-  if (*l)
+/* Do the actual insertion of a case label for pushcase and pushcase_range
+   into case_stack->data.case_stmt.case_list.  Use an AVL tree to avoid
+   slowdown for large switch statements.  */
+
+static int
+add_case_node (low, high, label, duplicate)
+     tree low, high;
+     tree label;
+     tree *duplicate;
+{
+  struct case_node *p, **q, *r;
+
+  q = &case_stack->data.case_stmt.case_list;
+  p = *q;
+
+  while (r = *q)
     {
-      /* Element we will insert before must be distinctly greater;
-	 overlap means error.  */
-      if (! tree_int_cst_lt (value2, (*l)->low))
+      p = r;
+
+      /* Keep going past elements distinctly greater than HIGH.  */
+      if (tree_int_cst_lt (high, p->low))
+	q = &p->left;
+
+      /* or distinctly less than LOW.  */
+      else if (tree_int_cst_lt (p->high, low))
+	q = &p->right;
+
+      else
 	{
-	  *duplicate = (*l)->code_label;
+	  /* We have an overlap; this is an error.  */
+	  *duplicate = p->code_label;
 	  return 2;
 	}
     }
 
   /* Add this label to the chain, and succeed.
-     Copy VALUE1, VALUE2 so they are on temporary rather than momentary
+     Copy LOW, HIGH so they are on temporary rather than momentary
      obstack and will thus survive till the end of the case statement.  */
 
-  n = (struct case_node *) oballoc (sizeof (struct case_node));
-  n->left = 0;
-  n->right = *l;
-  n->low = copy_node (value1);
-  n->high = copy_node (value2);
-  n->code_label = label;
-  *l = n;
+  r = (struct case_node *) oballoc (sizeof (struct case_node));
+  r->low = copy_node (low);
 
+  /* If the bounds are equal, turn this into the one-value case.  */
+
+  if (tree_int_cst_equal (low, high))
+    r->high = r->low;
+  else
+    {
+      r->high = copy_node (high);
+      case_stack->data.case_stmt.num_ranges++;
+    }
+
+  r->code_label = label;
   expand_label (label);
 
-  case_stack->data.case_stmt.num_ranges++;
+  *q = r;
+  r->parent = p;
+  r->left = 0;
+  r->right = 0;
+  r->balance = 0;
+
+  while (p)
+    {
+      struct case_node *s;
+
+      if (r == p->left)
+	{
+	  int b;
+
+	  if (! (b = p->balance))
+	    /* Growth propagation from left side.  */
+	    p->balance = -1;
+	  else if (b < 0)
+	    {
+	      if (r->balance < 0)
+		{
+		  /* R-Rotation */
+		  if (p->left = s = r->right)
+		    s->parent = p;
+
+		  r->right = p;
+		  p->balance = 0;
+		  r->balance = 0;
+		  s = p->parent;
+		  p->parent = r;
+
+		  if (r->parent = s)
+		    {
+		      if (s->left == p)
+			s->left = r;
+		      else
+			s->right = r;
+		    }
+		  else
+		    case_stack->data.case_stmt.case_list = r;
+		}
+	      else
+		/* r->balance == +1 */
+		{
+		  int b2;
+		  struct case_node *t = r->right;
+
+		  if (p->left = s = t->right)
+		    s->parent = p;
+
+		  t->right = p;
+		  if (r->right = s = t->left)
+		    s->parent = r;
+
+		  t->left = r;
+		  b = t->balance;
+		  b2 = b < 0;
+		  p->balance = b2;
+		  b2 = -b2 - b;
+		  r->balance = b2;
+		  t->balance = 0;
+		  s = p->parent;
+		  p->parent = t;
+		  r->parent = t;
+
+		  if (t->parent = s)
+		    {
+		      if (s->left == p)
+			s->left = t;
+		      else
+			s->right = t;
+		    }
+		  else
+		    case_stack->data.case_stmt.case_list = t;
+		}
+	      break;
+	    }
+
+	  else
+	    {
+	      /* p->balance == +1; growth of left side balances the node.  */
+	      p->balance = 0;
+	      break;
+	    }
+	}
+      else
+	/* r == p->right */
+	{
+	  int b;
+
+	  if (! (b = p->balance))
+	    /* Growth propagation from right side.  */
+	    p->balance++;
+	  else if (b > 0)
+	    {
+	      if (r->balance > 0)
+		{
+		  /* L-Rotation */
+
+		  if (p->right = s = r->left)
+		    s->parent = p;
+
+		  r->left = p;
+		  p->balance = 0;
+		  r->balance = 0;
+		  s = p->parent;
+		  p->parent = r;
+		  if (r->parent = s)
+		    {
+		      if (s->left == p)
+			s->left = r;
+		      else
+			s->right = r;
+		    }
+
+		  else
+		    case_stack->data.case_stmt.case_list = r;
+		}
+
+	      else
+		/* r->balance == -1 */
+		{
+		  /* RL-Rotation */
+		  int b2;
+		  struct case_node *t = r->left;
+
+		  if (p->right = s = t->left)
+		    s->parent = p;
+
+		  t->left = p;
+
+		  if (r->left = s = t->right)
+		    s->parent = r;
+
+		  t->right = r;
+		  b = t->balance;
+		  b2 = b < 0;
+		  r->balance = b2;
+		  b2 = -b2 - b;
+		  p->balance = b2;
+		  t->balance = 0;
+		  s = p->parent;
+		  p->parent = t;
+		  r->parent = t;
+
+		  if (t->parent = s)
+		    {
+		      if (s->left == p)
+			s->left = t;
+		      else
+			s->right = t;
+		    }
+
+		  else
+		    case_stack->data.case_stmt.case_list = t;
+		}
+	      break;
+	    }
+	  else
+	    {
+	      /* p->balance == -1; growth of right side balances the node.  */
+	      p->balance = 0;
+	      break;
+	    }
+	}
+
+      r = p;
+      p = p->parent;
+    }
 
   return 0;
 }
-
 
 /* Accumulate one case or default label; VALUE is the value of the
    case, or nil for a default label.  If not currently inside a case,
@@ -4747,6 +4908,10 @@ expand_end_case (orig_index)
 
       before_case = get_last_insn ();
 
+      if (thiscase->data.case_stmt.case_list)
+	thiscase->data.case_stmt.case_list
+	  = case_tree2list(thiscase->data.case_stmt.case_list, 0);
+
       /* Simplify the case-list before we count it.  */
       group_case_nodes (thiscase->data.case_stmt.case_list);
 
@@ -5066,6 +5231,28 @@ expand_end_case (orig_index)
   free_temp_slots ();
 }
 
+/* Convert the tree NODE into a list linked by the right field, with the left
+   field zeroed.  RIGHT is used for recursion; it is a list to be placed
+   rightmost in the resulting list.  */
+
+static struct case_node *
+case_tree2list (node, right)
+     struct case_node *node, *right;
+{
+  struct case_node *left;
+
+  if (node->right)
+    right = case_tree2list (node->right, right);
+
+  node->right = right;
+  if (left = node->left)
+    {
+      node->left = 0;
+      return case_tree2list (left, node);
+    }
+
+  return node;
+}
 
 /* Terminate a case statement.  EXPR is the original index
    expression.  */
