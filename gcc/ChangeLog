@@ -1,3 +1,7 @@
+2004-03-07  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (emit_to_new_bb_before):  Break fallthru edges.
+
 2004-03-07  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("*lshrsi3_const"): Disable for 68HC12.
