@@ -370,8 +370,8 @@ internal_proto(get_args);
 
 /* error.c */
 
-extern char *itoa (int64_t);
-internal_proto(itoa);
+extern char *gfc_itoa (int64_t);
+internal_proto(gfc_itoa);
 
 extern char *xtoa (uint64_t);
 internal_proto(xtoa);

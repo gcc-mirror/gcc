@@ -551,7 +551,7 @@ check_buffered (int n)
     return 0;
 
   strcpy (name, "GFORTRAN_UNBUFFERED_");
-  strcat (name, itoa (n));
+  strcat (name, gfc_itoa (n));
 
   v.name = name;
   v.value = 2;
