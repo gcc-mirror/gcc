@@ -3811,6 +3811,112 @@ delete_jump (insn)
     delete_computation (insn);
 }
 
+/* Recursively delete prior insns that compute the value (used only by INSN
+   which the caller is deleting) stored in the register mentioned by NOTE
+   which is a REG_DEAD note associated with INSN.  */
+
+static void
+delete_prior_computation (note, insn)
+     rtx note;
+     rtx insn;
+{
+  rtx our_prev;
+  rtx reg = XEXP (note, 0);
+
+  for (our_prev = prev_nonnote_insn (insn);
+       our_prev && GET_CODE (our_prev) == INSN;
+       our_prev = prev_nonnote_insn (our_prev))
+    {
+      rtx pat = PATTERN (our_prev);
+
+      /* If we reach a SEQUENCE, it is too complex to try to
+	 do anything with it, so give up.  */
+      if (GET_CODE (pat) == SEQUENCE)
+	break;
+
+      if (GET_CODE (pat) == USE
+	  && GET_CODE (XEXP (pat, 0)) == INSN)
+	/* reorg creates USEs that look like this.  We leave them
+	   alone because reorg needs them for its own purposes.  */
+	break;
+
+      if (reg_set_p (reg, pat))
+	{
+	  if (side_effects_p (pat))
+	    break;
+
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      /* If we find a SET of something else, we can't
+		 delete the insn.  */
+
+	      int i;
+
+	      for (i = 0; i < XVECLEN (pat, 0); i++)
+		{
+		  rtx part = XVECEXP (pat, 0, i);
+
+		  if (GET_CODE (part) == SET
+		      && SET_DEST (part) != reg)
+		    break;
+		}
+
+	      if (i == XVECLEN (pat, 0))
+		delete_computation (our_prev);
+	    }
+	  else if (GET_CODE (pat) == SET
+		   && GET_CODE (SET_DEST (pat)) == REG)
+	    {
+	      int dest_regno = REGNO (SET_DEST (pat));
+	      int dest_endregno
+		    = dest_regno + (dest_regno < FIRST_PSEUDO_REGISTER 
+		      ? HARD_REGNO_NREGS (dest_regno,
+				GET_MODE (SET_DEST (pat))) : 1);
+	      int regno = REGNO (reg);
+	      int endregno = regno + (regno < FIRST_PSEUDO_REGISTER 
+			     ? HARD_REGNO_NREGS (regno, GET_MODE (reg)) : 1);
+
+	      if (dest_regno >= regno
+		  && dest_endregno <= endregno)
+		delete_computation (our_prev);
+
+	      /* We may have a multi-word hard register and some, but not
+		 all, of the words of the register are needed in subsequent
+		 insns.  Write REG_UNUSED notes for those parts that were not
+		 needed.  */
+	      else if (dest_regno <= regno
+		       && dest_endregno >= endregno
+		       && ! find_regno_note (our_prev, REG_UNUSED, REGNO(reg)))
+		{
+		  int i;
+
+		  REG_NOTES (our_prev)
+		    = gen_rtx_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (our_prev));
+
+		  for (i = dest_regno; i < dest_endregno; i++)
+		    if (! find_regno_note (our_prev, REG_UNUSED, i))
+		      break;
+
+		  if (i == dest_endregno)
+		    delete_computation (our_prev);
+		}
+	    }
+
+	  break;
+	}
+
+      /* If PAT references the register that dies here, it is an
+	 additional use.  Hence any prior SET isn't dead.  However, this
+	 insn becomes the new place for the REG_DEAD note.  */
+      if (reg_overlap_mentioned_p (reg, pat))
+	{
+	  XEXP (note, 1) = REG_NOTES (our_prev);
+	  REG_NOTES (our_prev) = note;
+	  break;
+	}
+    }
+}
+
 /* Delete INSN and recursively delete insns that compute values used only
    by INSN.  This uses the REG_DEAD notes computed during flow analysis.
    If we are running before flow.c, we need do nothing since flow.c will
@@ -3829,6 +3935,7 @@ delete_computation (insn)
      rtx insn;
 {
   rtx note, next;
+  rtx set;
 
 #ifdef HAVE_cc0
   if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
@@ -3844,7 +3951,7 @@ delete_computation (insn)
 	  && sets_cc0_p (PATTERN (prev)))
 	{
 	  if (sets_cc0_p (PATTERN (prev)) > 0
-	      && !FIND_REG_INC_NOTE (prev, NULL_RTX))
+	      && ! side_effects_p (PATTERN (prev)))
 	    delete_computation (prev);
 	  else
 	    /* Otherwise, show that cc0 won't be used.  */
@@ -3865,10 +3972,10 @@ delete_computation (insn)
     }
 #endif
 
+  set = single_set (insn);
+
   for (note = REG_NOTES (insn); note; note = next)
     {
-      rtx our_prev;
-
       next = XEXP (note, 1);
 
       if (REG_NOTE_KIND (note) != REG_DEAD
@@ -3876,63 +3983,20 @@ delete_computation (insn)
 	  || GET_CODE (XEXP (note, 0)) != REG)
 	continue;
 
-      for (our_prev = prev_nonnote_insn (insn);
-	   our_prev && GET_CODE (our_prev) == INSN;
-	   our_prev = prev_nonnote_insn (our_prev))
-	{
-	  /* If we reach a SEQUENCE, it is too complex to try to
-	     do anything with it, so give up.  */
-	  if (GET_CODE (PATTERN (our_prev)) == SEQUENCE)
-	    break;
+      if (set && reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
+	set = NULL_RTX;
 
-	  if (GET_CODE (PATTERN (our_prev)) == USE
-	      && GET_CODE (XEXP (PATTERN (our_prev), 0)) == INSN)
-	    /* reorg creates USEs that look like this.  We leave them
-	       alone because reorg needs them for its own purposes.  */
-	    break;
+      delete_prior_computation (note, insn);
+    }
 
-	  if (reg_set_p (XEXP (note, 0), PATTERN (our_prev)))
-	    {
-	      if (FIND_REG_INC_NOTE (our_prev, NULL_RTX))
-		break;
-
-	      if (GET_CODE (PATTERN (our_prev)) == PARALLEL)
-		{
-		  /* If we find a SET of something else, we can't
-		     delete the insn.  */
-
-		  int i;
-
-		  for (i = 0; i < XVECLEN (PATTERN (our_prev), 0); i++)
-		    {
-		      rtx part = XVECEXP (PATTERN (our_prev), 0, i);
-
-		      if (GET_CODE (part) == SET
-			  && SET_DEST (part) != XEXP (note, 0))
-			break;
-		    }
-
-		  if (i == XVECLEN (PATTERN (our_prev), 0))
-		    delete_computation (our_prev);
-		}
-	      else if (GET_CODE (PATTERN (our_prev)) == SET
-		       && SET_DEST (PATTERN (our_prev)) == XEXP (note, 0))
-		delete_computation (our_prev);
-
-	      break;
-	    }
-
-	  /* If OUR_PREV references the register that dies here, it is an
-	     additional use.  Hence any prior SET isn't dead.  However, this
-	     insn becomes the new place for the REG_DEAD note.  */
-	  if (reg_overlap_mentioned_p (XEXP (note, 0),
-				       PATTERN (our_prev)))
-	    {
-	      XEXP (note, 1) = REG_NOTES (our_prev);
-	      REG_NOTES (our_prev) = note;
-	      break;
-	    }
-	}
+  /* The REG_DEAD note may have been omitted for a register
+     which is both set and used by the insn.  */
+  if (set
+      && GET_CODE (SET_DEST (set)) == REG
+      && reg_mentioned_p (SET_DEST (set), SET_SRC (set)))
+    {
+      note = gen_rtx_EXPR_LIST (REG_DEAD, SET_DEST (set), NULL_RTX);
+      delete_prior_computation (note, insn);
     }
 
   delete_insn (insn);
