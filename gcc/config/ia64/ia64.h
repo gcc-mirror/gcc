@@ -1,5 +1,6 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -343,12 +344,6 @@ do									\
       (MODE) = SImode;							\
   }									\
 while (0)
-
-/* ??? ABI doesn't allow us to define this.  */
-/* #define PROMOTE_FUNCTION_ARGS */
-
-/* ??? ABI doesn't allow us to define this.  */
-/* #define PROMOTE_FUNCTION_RETURN */
 
 #define PARM_BOUNDARY 64
 
@@ -1267,13 +1262,6 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack */
 
-/* Define this macro if an argument declared in a prototype as an integral type
-   smaller than `int' should actually be passed as an `int'.  In addition to
-   avoiding errors in certain cases of mismatch, it also makes for better code
-   on certain machines.  */
-/* ??? Investigate.  */
-/* #define PROMOTE_PROTOTYPES */
-
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
    `current_function_outgoing_args_size'.  */
@@ -1434,21 +1422,10 @@ do {									\
 
 /* How Large Values are Returned */
 
-/* A nonzero value says to return the function value in memory, just as large
-   structures are always returned.  */
-
-#define RETURN_IN_MEMORY(TYPE) \
-  ia64_return_in_memory (TYPE)
-
 /* If you define this macro to be 0, then the conventions used for structure
    and union return values are decided by the `RETURN_IN_MEMORY' macro.  */
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* If the structure value address is passed in a register, then
-   `STRUCT_VALUE_REGNUM' should be the number of that register.  */
-
-#define STRUCT_VALUE_REGNUM GR_REG (8)
 
 
 /* Caller-Saves Register Allocation */
@@ -1523,21 +1500,6 @@ do {									\
   fputs ("\tmov out2 = b0\n", FILE);					\
   fputs ("\tbr.call.sptk.many b0 = _mcount;;\n", FILE);			\
 } while (0)
-
-/* Implementing the Varargs Macros.  */
-
-/* Define this macro to store the anonymous register arguments into the stack
-   so that all the arguments appear to have been passed consecutively on the
-   stack.  */
-
-#define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
-    ia64_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE, SECOND_TIME)
-
-/* Define this macro if the location where a function argument is passed
-   depends on whether or not it is a named argument.  */
-
-#define STRICT_ARGUMENT_NAMING  1
-
 
 /* Trampolines for Nested Functions.  */
 

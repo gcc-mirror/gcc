@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-64.
-   Copyright (C) 1999, 2000, 2002, 2003
+   Copyright (C) 1999, 2000, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -114,15 +114,12 @@ extern rtx ia64_va_arg (tree, tree);
 extern rtx ia64_function_value (tree, tree);
 #endif /* RTX_CODE */
 
-extern void ia64_setup_incoming_varargs (CUMULATIVE_ARGS, int, tree,
-					 int *, int);
 extern int ia64_function_arg_partial_nregs (CUMULATIVE_ARGS *,
 					    enum machine_mode, tree, int);
 extern void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, int);
 extern int ia64_function_arg_pass_by_reference (CUMULATIVE_ARGS *,
 						enum machine_mode, tree, int);
-extern int ia64_return_in_memory (tree);
 extern void ia64_asm_output_external (FILE *, tree, const char *);
 #endif /* TREE_CODE */
 

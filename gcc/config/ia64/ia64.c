@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -182,7 +183,10 @@ static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
 static enum machine_mode hfa_element_mode (tree, int);
+static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					 tree, int *, int);
 static bool ia64_function_ok_for_sibcall (tree, tree);
+static bool ia64_return_in_memory (tree, tree);
 static bool ia64_rtx_costs (rtx, int, int, int *);
 static void fix_range (const char *);
 static struct machine_function * ia64_init_machine_status (void);
@@ -260,6 +264,7 @@ static void ia64_vms_init_libfuncs (void)
 
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
+static rtx ia64_struct_value_rtx (tree, int);
 
 
 /* Table of valid machine attributes.  */
@@ -365,6 +370,34 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO ia64_encode_section_info
+
+/* ??? ABI doesn't allow us to define this.  */
+#if 0
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#endif
+
+/* ??? ABI doesn't allow us to define this.  */
+#if 0
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#endif
+
+/* ??? Investigate.  */
+#if 0
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#endif
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX ia64_struct_value_rtx
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY ia64_return_in_memory
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS ia64_setup_incoming_varargs
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3375,17 +3408,19 @@ ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
 
    We generate the actual spill instructions during prologue generation.  */
 
-void
-ia64_setup_incoming_varargs (CUMULATIVE_ARGS cum, int int_mode, tree type,
-			     int * pretend_size,
+static void
+ia64_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     tree type, int * pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
-  /* Skip the current argument.  */
-  ia64_function_arg_advance (&cum, int_mode, type, 1);
+  CUMULATIVE_ARGS next_cum = *cum;
 
-  if (cum.words < MAX_ARGUMENT_SLOTS)
+  /* Skip the current argument.  */
+  ia64_function_arg_advance (&next_cum, mode, type, 1);
+
+  if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
-      int n = MAX_ARGUMENT_SLOTS - cum.words;
+      int n = MAX_ARGUMENT_SLOTS - next_cum.words;
       *pretend_size = n * UNITS_PER_WORD;
       cfun->machine->n_varargs = n;
     }
@@ -3846,8 +3881,8 @@ ia64_va_arg (tree valist, tree type)
 /* Return 1 if function return value returned in memory.  Return 0 if it is
    in a register.  */
 
-int
-ia64_return_in_memory (tree valtype)
+static bool
+ia64_return_in_memory (tree valtype, tree fntype ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
@@ -3859,7 +3894,7 @@ ia64_return_in_memory (tree valtype)
     {
       byte_size = int_size_in_bytes (valtype);
       if (byte_size < 0)
-	return 1;
+	return true;
     }
 
   /* Hfa's with up to 8 elements are returned in the FP argument registers.  */
@@ -3870,14 +3905,14 @@ ia64_return_in_memory (tree valtype)
       int hfa_size = GET_MODE_SIZE (hfa_mode);
 
       if (byte_size / hfa_size > MAX_ARGUMENT_SLOTS)
-	return 1;
+	return true;
       else
-	return 0;
+	return false;
     }
   else if (byte_size > UNITS_PER_WORD * MAX_INT_RETURN_SLOTS)
-    return 1;
+    return true;
   else
-    return 0;
+    return false;
 }
 
 /* Return rtx for register that holds the function return value.  */
@@ -8801,6 +8836,15 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   reload_completed = 0;
   epilogue_completed = 0;
   no_new_pseudos = 0;
+}
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
+static rtx
+ia64_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		       int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, GR_REG (8));
 }
 
 #include "gt-ia64.h"
