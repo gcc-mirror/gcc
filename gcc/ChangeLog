@@ -1,3 +1,9 @@
+Mon Feb 19 10:11:53 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config.gcc (hppa*64*-*-hpux11*): Add MASK_GAS to
+	target_cpu_default.  Remove dead assignment to
+	target_cpu_default.
+
 Mon Feb 19 16:46:56 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (contains_reg_of_mode): Make global.
