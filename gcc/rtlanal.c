@@ -805,6 +805,8 @@ reg_set_last (x, insn)
 
      If we find a set of X, ensure that its SET_SRC remains unchanged.  */
 
+  /* We compare with <= here, because reg_set_last_last_regno
+     is actually the number of the first reg *not* in X.  */
   for (;
        insn && GET_CODE (insn) != CODE_LABEL
        && ! (GET_CODE (insn) == CALL_INSN
