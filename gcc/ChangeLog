@@ -1,3 +1,8 @@
+2002-10-12  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* tree.c (tree_size): Revise expressions using TREE_CODE_LENGTH and
+	TREE_VEC_LENGTH to ensure values are promoted before doing subtraction.
+
 2002-10-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/compat.texi: Add info about C++ libraries.

@@ -286,7 +286,7 @@ tree_size (node)
     case '1':  /* a unary arithmetic expression */
     case '2':  /* a binary arithmetic expression */
       return (sizeof (struct tree_exp)
-	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
+	      + TREE_CODE_LENGTH (code) * sizeof (char *) - sizeof (char *));
 
     case 'c':  /* a constant */
       /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
@@ -304,12 +304,12 @@ tree_size (node)
 
     case 'x':  /* something random, like an identifier.  */
       {
-	  size_t length;
-	  length = (sizeof (struct tree_common)
-		    + TREE_CODE_LENGTH (code) * sizeof (char *));
-	  if (code == TREE_VEC)
-	    length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
-	  return length;
+	size_t length;
+	length = (sizeof (struct tree_common)
+		  + TREE_CODE_LENGTH (code) * sizeof (char *));
+	if (code == TREE_VEC)
+	 length += TREE_VEC_LENGTH (node) * sizeof (char *) - sizeof (char *);
+	return length;
       }
 
     default:
