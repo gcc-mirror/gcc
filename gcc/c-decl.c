@@ -65,8 +65,7 @@ enum decl_context
 
 tree pending_invalid_xref;
 /* File and line to appear in the eventual error message.  */
-const char *pending_invalid_xref_file;
-int pending_invalid_xref_line;
+location_t pending_invalid_xref_location;
 
 /* While defining an enum type, this is 1 plus the last enumerator
    constant value.  Note that will do not have to save this or `enum_overflow'
@@ -2019,8 +2018,7 @@ lookup_label (id)
 
   /* Say where one reference is to the label,
      for the sake of the error if it is not defined.  */
-  DECL_SOURCE_LINE (decl) = input_line;
-  DECL_SOURCE_FILE (decl) = input_filename;
+  DECL_SOURCE_LOCATION (decl) = input_location;
 
   IDENTIFIER_LABEL_VALUE (id) = decl;
 
@@ -2183,8 +2181,7 @@ lookup_tag (code, name, thislevel_only)
     {
       /* Definition isn't the kind we were looking for.  */
       pending_invalid_xref = name;
-      pending_invalid_xref_file = input_filename;
-      pending_invalid_xref_line = input_line;
+      pending_invalid_xref_location = input_location;
 
       /* If in the same binding level as a declaration as a tag
 	 of a different type, this must not be allowed to
@@ -2205,8 +2202,8 @@ void
 pending_xref_error ()
 {
   if (pending_invalid_xref != 0)
-    error_with_file_and_line (pending_invalid_xref_file,
-			      pending_invalid_xref_line,
+    error_with_file_and_line (pending_invalid_xref_location.file,
+			      pending_invalid_xref_location.line,
 			      "`%s' defined as wrong kind of tag",
 			      IDENTIFIER_POINTER (pending_invalid_xref));
   pending_invalid_xref = 0;
@@ -6337,9 +6334,8 @@ c_expand_body_1 (fndecl, nested_p)
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
-  input_filename = DECL_SOURCE_FILE (fndecl);
+  input_location = DECL_SOURCE_LOCATION (fndecl);
   init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
-  input_line = DECL_SOURCE_LINE (fndecl);
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;

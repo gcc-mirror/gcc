@@ -2130,9 +2130,9 @@ check_global_declarations (vec, len)
     }
 }
 
-/* Save the current INPUT_FILENAME and LINENO on the top entry in the
+/* Save the current INPUT_LOCATION on the top entry in the
    INPUT_FILE_STACK.  Push a new entry for FILE and LINE, and set the
-   INPUT_FILENAME and LINENO accordingly.  */
+   INPUT_LOCATION accordingly.  */
 
 void
 push_srcloc (file, line)
@@ -2154,8 +2154,8 @@ push_srcloc (file, line)
 }
 
 /* Pop the top entry off the stack of presently open source files.
-   Restore the INPUT_FILENAME and LINENO from the new topmost entry on
-   the stack.  */
+   Restore the INPUT_LOCATION from the new topmost entry on the
+   stack.  */
 
 void
 pop_srcloc ()

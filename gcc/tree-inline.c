@@ -900,11 +900,9 @@ static tree
 find_alloca_call (exp)
      tree exp;
 {
-  int line = input_line;
-  const char *file = input_filename;
+  location_t saved_loc = input_location;
   tree ret = walk_tree (&exp, find_alloca_call_1, NULL, NULL);
-  input_line = line;
-  input_filename = file;
+  input_location = saved_loc;
   return ret;
 }
 
@@ -931,11 +929,9 @@ static tree
 find_builtin_longjmp_call (exp)
      tree exp;
 {
-  int line = input_line;
-  const char *file = input_filename;
+  location_t saved_loc = input_location;
   tree ret = walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
-  input_line = line;
-  input_filename = file;
+  input_location = saved_loc;
   return ret;
 }
 
