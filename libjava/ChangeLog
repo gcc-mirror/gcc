@@ -1,5 +1,9 @@
 2004-09-24  Tom Tromey  <tromey@redhat.com>
 
+	PR java/15656:
+	* testsuite/libjava.compile/pr15656.xfail: New file.
+	* testsuite/libjava.compile/pr15656.java: new file.
+
 	PR java/16789:
 	* testsuite/libjava.lang/pr16789.out: New file.
 	* testsuite/libjava.lang/pr16789.java: New file.
