@@ -1,5 +1,9 @@
 2004-02-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* g++.dg/eh/simd-2.C: Adjust line numbers for SPARC.
+
+2004-02-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/execute/va-arg-25.x: XFAIL only on SPARC 64-bit.
 
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
