@@ -129,14 +129,9 @@ parse_number (pfile, tok)
     {
       c = *p;
 
-      if (ISDIGIT (c))
-	digit = c - '0';
-      /* We believe that in all live character sets, a-f are
-	 consecutive, and so are A-F.  */
-      else if (base == 16 && c >= 'a' && c <= 'f')
-	digit = c - 'a' + 10;
-      else if (base == 16 && c >= 'A' && c <= 'F')
-	digit = c - 'A' + 10;
+      if (ISDIGIT (c)
+	  || (base == 16 && ISXDIGIT (c)))
+	digit = hex_value (c);
       else
 	break;
 
