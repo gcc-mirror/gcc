@@ -158,7 +158,9 @@ class _Jv_InterpClass : public java::lang::Class
   friend class _Jv_InterpMethod;
   friend void  _Jv_PrepareClass(jclass);
   friend void  _Jv_InitField (jobject, jclass, int);
-  friend void* _Jv_MarkObj (void *, void *, void *, void *);
+#ifdef JV_MARKOBJ_DECL
+  friend JV_MARKOBJ_DECL;
+#endif
 
   friend _Jv_MethodBase ** _Jv_GetFirstMethod (_Jv_InterpClass *klass);
 };
