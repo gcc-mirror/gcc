@@ -764,6 +764,7 @@ extern rtx emit_line_note_after		PROTO((char *, int, rtx));
 extern rtx emit_insn			PROTO((rtx));
 extern rtx emit_insns			PROTO((rtx));
 extern rtx emit_insns_before		PROTO((rtx, rtx));
+extern rtx emit_insns_after		PROTO((rtx, rtx));
 extern rtx emit_jump_insn		PROTO((rtx));
 extern rtx emit_call_insn		PROTO((rtx));
 extern rtx emit_label			PROTO((rtx));
