@@ -233,7 +233,7 @@ public class FileOutputStream extends OutputStream
   public void write (byte[] buf)
     throws IOException
   {
-    fd.write (buf, 0, buf.length);
+    write (buf, 0, buf.length);
   }
 
   /**

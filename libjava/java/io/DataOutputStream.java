@@ -101,13 +101,13 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * This method writes the specified byte (passed as an <code>int</code>)
    * to the underlying output stream.
    *
-   * @param b The byte to write, passed as an <code>int</code>.
+   * @param value The <code>byte</code> to write, passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs.
    */
-  public synchronized void write (int b) throws IOException
+  public synchronized void write (int value) throws IOException
   {
-    out.write(b);
+    out.write (value);
     ++written;
   }
 
@@ -130,116 +130,185 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
   }
 
   /**
-   * This method writes a Java <code>boolean</code> to the underlying output 
-   * stream. For a value of <code>true</code>, 1 is written to the stream.
-   * For a value of <code>false</code>, 0 is written.
+   * This method writes a Java boolean value to an output stream.  If
+   * <code>value</code> is <code>true</code>, a byte with the value of
+   * 1 will be written, otherwise a byte with the value of 0 will be
+   * written.
    *
-   * @param b The <code>boolean</code> value to write to the stream
+   * The value written can be read using the <code>readBoolean</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>boolean</code> value to write to the stream
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readBoolean
    */
-  public final void writeBoolean (boolean v) throws IOException
+  public final void writeBoolean (boolean value) throws IOException
   {
-    write (v ? 1 : 0);
+    write (value ? 1 : 0);
   }
 
   /**
-   * This method writes a Java <code>byte</code> value to the underlying
-   * output stream.
+   * This method writes a Java byte value to an output stream.  The
+   * byte to be written will be in the lowest 8 bits of the
+   * <code>int</code> value passed.
    *
-   * @param b The <code>byte</code> to write to the stream, passed as 
+   * The value written can be read using the <code>readByte</code> or
+   * <code>readUnsignedByte</code> methods in <code>DataInput</code>.
+   *
+   * @param value The <code>byte</code> to write to the stream, passed as 
    * the low eight bits of an <code>int</code>.
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readByte
+   * @see DataInput#readUnsignedByte
    */
-  public final void writeByte (int v) throws IOException
+  public final void writeByte (int value) throws IOException
   {
-    write (v & 0xff);
+    write (value & 0xff);
   }
 
   /**
-   * This method writes a Java <code>short</code> to the stream, high byte
-   * first.  This method requires two bytes to encode the value.
+   * This method writes a Java short value to an output stream.  The
+   * char to be written will be in the lowest 16 bits of the <code>int</code>
+   * value passed.  These bytes will be written "big endian".  That is,
+   * with the high byte written first in the following manner:
+   * <p>
+   * <code>byte0 = (byte)((value & 0xFF00) >> 8);<br>
+   * byte1 = (byte)(value & 0x00FF);</code>
+   * <p>
    *
-   * @param s The <code>short</code> value to write to the stream,
+   * The value written can be read using the <code>readShort</code> and
+   * <code>readUnsignedShort</code> methods in <code>DataInput</code>.
+   *
+   * @param value The <code>short</code> value to write to the stream,
    * passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readShort
+   * @see DataInput#readUnsignedShort
    */
-  public final void writeShort (int v) throws IOException
+  public final void writeShort (int value) throws IOException
   {
-    write ((byte) (0xff & (v >> 8)));
-    write ((byte) (0xff & v));
+    write ((byte) (0xff & (value >> 8)));
+    write ((byte) (0xff & value));
   }
 
   /**
-   * This method writes a single <code>char</code> value to the stream,
-   * high byte first.
+   * This method writes a Java char value to an output stream.  The
+   * char to be written will be in the lowest 16 bits of the <code>int</code>
+   * value passed.  These bytes will be written "big endian".  That is,
+   * with the high byte written first in the following manner:
+   * <p>
+   * <code>byte0 = (byte)((value & 0xFF00) >> 8);<br>
+   * byte1 = (byte)(value & 0x00FF);</code>
+   * <p>
    *
-   * @param c The <code>char</code> value to write, 
+   * The value written can be read using the <code>readChar</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>char</code> value to write, 
    * passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readChar
    */
-  public final void writeChar (int v) throws IOException
+  public final void writeChar (int value) throws IOException
   {
-    write ((byte) (0xff & (v >> 8)));
-    write ((byte) (0xff & v));
+    write ((byte) (0xff & (value >> 8)));
+    write ((byte) (0xff & value));
   }
 
   /**
-   * This method writes a Java <code>int</code> to the stream, high bytes
-   * first.  This method requires four bytes to encode the value.
+   * This method writes a Java int value to an output stream.  The 4 bytes
+   * of the passed value will be written "big endian".  That is, with
+   * the high byte written first in the following manner:
+   * <p>
+   * <code>byte0 = (byte)((value & 0xFF000000) >> 24);<br>
+   * byte1 = (byte)((value & 0x00FF0000) >> 16);<br>
+   * byte2 = (byte)((value & 0x0000FF00) >> 8);<br>
+   * byte3 = (byte)(value & 0x000000FF);</code>
+   * <p>
    *
-   * @param i The <code>int</code> value to write to the stream.
+   * The value written can be read using the <code>readInt</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>int</code> value to write to the stream
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readInt
    */
-  public final void writeInt (int v) throws IOException
+  public final void writeInt (int value) throws IOException
   {
-    write ((byte) (0xff & (v >> 24)));
-    write ((byte) (0xff & (v >> 16)));
-    write ((byte) (0xff & (v >>  8)));
-    write ((byte) (0xff & v));
+    write ((byte) (0xff & (value >> 24)));
+    write ((byte) (0xff & (value >> 16)));
+    write ((byte) (0xff & (value >>  8)));
+    write ((byte) (0xff & value));
   }
 
   /**
-   * This method writes a Java <code>long</code> to the stream, high bytes
-   * first.  This method requires eight bytes to encode the value.
+   * This method writes a Java long value to an output stream.  The 8 bytes
+   * of the passed value will be written "big endian".  That is, with
+   * the high byte written first in the following manner:
+   * <p>
+   * <code>byte0 = (byte)((value & 0xFF00000000000000L) >> 56);<br>
+   * byte1 = (byte)((value & 0x00FF000000000000L) >> 48);<br>
+   * byte2 = (byte)((value & 0x0000FF0000000000L) >> 40);<br>
+   * byte3 = (byte)((value & 0x000000FF00000000L) >> 32);<br>
+   * byte4 = (byte)((value & 0x00000000FF000000L) >> 24);<br>
+   * byte5 = (byte)((value & 0x0000000000FF0000L) >> 16);<br>
+   * byte6 = (byte)((value & 0x000000000000FF00L) >> 8);<br>
+   * byte7 = (byte)(value & 0x00000000000000FFL);</code>
+   * <p>
    *
-   * @param l The <code>long</code> value to write to the stream.
+   * The value written can be read using the <code>readLong</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>long</code> value to write to the stream
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readLong
    */
-  public final void writeLong (long v) throws IOException
+  public final void writeLong (long value) throws IOException
   {
-    write ((byte) (0xff & (v >> 56)));
-    write ((byte) (0xff & (v >> 48)));
-    write ((byte) (0xff & (v >> 40)));
-    write ((byte) (0xff & (v >> 32)));
-    write ((byte) (0xff & (v >> 24)));
-    write ((byte) (0xff & (v >> 16)));
-    write ((byte) (0xff & (v >>  8)));
-    write ((byte) (0xff & v));
+    write ((byte) (0xff & (value >> 56)));
+    write ((byte) (0xff & (value>> 48)));
+    write ((byte) (0xff & (value>> 40)));
+    write ((byte) (0xff & (value>> 32)));
+    write ((byte) (0xff & (value>> 24)));
+    write ((byte) (0xff & (value>> 16)));
+    write ((byte) (0xff & (value>>  8)));
+    write ((byte) (0xff & value));
   }
 
   /**
    * This method writes a Java <code>float</code> value to the stream.  This
-   * value is written by first calling the method 
+   * value is written by first calling the method
    * <code>Float.floatToIntBits</code>
    * to retrieve an <code>int</code> representing the floating point number,
    * then writing this <code>int</code> value to the stream exactly the same
    * as the <code>writeInt()</code> method does.
    *
-   * @param f The floating point number to write to the stream.
+   * The value written can be read using the <code>readFloat</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>float</code> value to write to the stream
    *
    * @exception IOException If an error occurs
    *
    * @see writeInt
+   * @see DataInput#readFloat
+   * @see Float#floatToIntBits
    */
-  public final void writeFloat (float v) throws IOException
+  public final void writeFloat (float value) throws IOException
   {
-    writeInt (Float.floatToIntBits(v));
+    writeInt (Float.floatToIntBits (value));
   }
 
   /**
@@ -250,49 +319,57 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * then writing this <code>long</code> value to the stream exactly the same
    * as the <code>writeLong()</code> method does.
    *
-   * @param d The double precision floating point number to write to 
-   * the stream.
+   * The value written can be read using the <code>readDouble</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>double</code> value to write to the stream
    *
    * @exception IOException If an error occurs
    *
    * @see writeLong
+   * @see DataInput#readDouble
+   * @see Double#doubleToLongBits
    */
-  public final void writeDouble (double v) throws IOException
+  public final void writeDouble (double value) throws IOException
   {
-    writeLong (Double.doubleToLongBits(v));
+    writeLong (Double.doubleToLongBits (value));
   }
 
   /**
    * This method writes all the bytes in a <code>String</code> out to the
    * stream.  One byte is written for each character in the
    * <code>String</code>.
-   * The high eight bits of each character are discarded.
+   * The high eight bits of each character are discarded, thus this
+   * method is inappropriate for completely representing Unicode characters.
    *
-   * @param s The <code>String</code> to write to the stream
+   * @param value The <code>String</code> to write to the stream
    *
    * @exception IOException If an error occurs
    */
-  public final void writeBytes (String s) throws IOException
+  public final void writeBytes (String value) throws IOException
   {
-    int len = s.length();
+    int len = value.length();
     for (int i = 0; i < len; ++i)
-      writeByte (s.charAt(i));
+      writeByte (value.charAt(i));
   }
 
   /**
-   * This method writes all the characters in a <code>String</code> to the
-   * stream.  There will be two bytes for each character value.  The high
-   * byte of the character will be written first.
+   * This method writes all the characters of a <code>String</code> to an
+   * output stream as an array of <code>char</code>'s. Each character
+   * is written using the method specified in the <code>writeChar</code>
+   * method.
    *
-   * @param s The <code>String</code> to write to the stream.
+   * @param value The <code>String</code> to write to the stream
    *
    * @exception IOException If an error occurs
+   *
+   * @see writeChar
    */
-  public final void writeChars (String s) throws IOException
+  public final void writeChars (String value) throws IOException
   {
-    int len = s.length();
+    int len = value.length();
     for (int i = 0; i < len; ++i)
-      writeChar (s.charAt(i));
+      writeChar (value.charAt(i));
   }
 
   /**
@@ -318,9 +395,14 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    * character value are stored in bits 0-5 of byte three, with the high bits
    * of that byte set to "10".
    *
-   * @param s The <code>String</code> to write to the output in UTF format
+   * The value written can be read using the <code>readUTF</code>
+   * method in <code>DataInput</code>.
+   *
+   * @param value The <code>String</code> to write to the output in UTF format
    *
    * @exception IOException If an error occurs
+   *
+   * @see DataInput#readUTF
    */
   public final void writeUTF (String s) throws IOException
   {

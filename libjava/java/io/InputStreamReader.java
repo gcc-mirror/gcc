@@ -37,17 +37,54 @@ exception statement from your version. */
 
 
 package java.io;
+
 import gnu.gcj.convert.*;
 
 /**
+ * This class reads characters from a byte input stream.   The characters
+ * read are converted from bytes in the underlying stream by a 
+ * decoding layer.  The decoding layer transforms bytes to chars according
+ * to an encoding standard.  There are many available encodings to choose 
+ * from.  The desired encoding can either be specified by name, or if no
+ * encoding is selected, the system default encoding will be used.  The
+ * system default encoding name is determined from the system property
+ * <code>file.encoding</code>.  The only encodings that are guaranteed to 
+ * be availalbe are "8859_1" (the Latin-1 character set) and "UTF8".
+ * Unforunately, Java does not provide a mechanism for listing the
+ * ecodings that are supported in a given implementation.
+ * <p>
+ * Here is a list of standard encoding names that may be available:
+ * <p>
+ * <ul>
+ * <li>8859_1 (ISO-8859-1/Latin-1)
+ * <li>8859_2 (ISO-8859-2/Latin-2)
+ * <li>8859_3 (ISO-8859-3/Latin-3)
+ * <li>8859_4 (ISO-8859-4/Latin-4)
+ * <li>8859_5 (ISO-8859-5/Latin-5)
+ * <li>8859_6 (ISO-8859-6/Latin-6)
+ * <li>8859_7 (ISO-8859-7/Latin-7)
+ * <li>8859_8 (ISO-8859-8/Latin-8)
+ * <li>8859_9 (ISO-8859-9/Latin-9)
+ * <li>ASCII (7-bit ASCII)
+ * <li>UTF8 (UCS Transformation Format-8)
+ * <li>More later
+ * </ul>
+ * <p>
+ * It is recommended that applications do not use 
+ * <code>InputStreamReader</code>'s
+ * directly.  Rather, for efficiency purposes, an object of this class
+ * should be wrapped by a <code>BufferedReader</code>.
+ * <p>
+ * Due to a deficiency the Java class library design, there is no standard
+ * way for an application to install its own byte-character encoding.
+ *
+ * @see BufferedReader
+ * @see InputStream
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner <bothner@cygnus.com>
  * @date April 22, 1998.  
  */
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct, but only supports 8859_1.
- */
-
 public class InputStreamReader extends Reader
 {
   BufferedInputStream in;
@@ -61,11 +98,29 @@ public class InputStreamReader extends Reader
 
   BytesToUnicode converter;
 
+  /**
+   * This method initializes a new instance of <code>InputStreamReader</code>
+   * to read from the specified stream using the default encoding.
+   *
+   * @param in The <code>InputStream</code> to read from 
+   */
   public InputStreamReader(InputStream in)
   {
     this(in, BytesToUnicode.getDefaultDecoder());
   }
 
+  /**
+   * This method initializes a new instance of <code>InputStreamReader</code>
+   * to read from the specified stream using a caller supplied character
+   * encoding scheme.  Note that due to a deficiency in the Java language
+   * design, there is no way to determine which encodings are supported.
+   * 
+   * @param in The <code>InputStream</code> to read from
+   * @param encoding_name The name of the encoding scheme to use
+   *
+   * @exception UnsupportedEncodingException If the encoding scheme 
+   * requested is not available.
+   */
   public InputStreamReader(InputStream in, String encoding_name)
     throws UnsupportedEncodingException
   {

@@ -1,3 +1,43 @@
+2003-05-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/DataOutputStream.java
+	(write): Renamed argument to "value", merged documentation from
+	classpath.
+	(writeBoolean): Likewise.
+	(writeByte): Likewise.
+	(writeShort): Likewise.
+	(writeChar): Likewise.
+	(writeInt): Likewise.
+	(writeLong): Likewise.
+	(writeFloat): Likewise.
+	(writeDouble): Likewise.
+	(writeBytes): Likewise.
+	(writeChars): Likewise.
+	(writeUTF): Likewise.
+	* java/io/File.java
+	(performDelete): Added documentation.
+	(performList): Likewise.
+	(performMkdir): Likewise.
+	(performSetReadOnly): Likewise.
+	(performRenameTo): Likewise.
+	(performSetLastModified): Likewise.
+	(delete): Made it sychronized.
+	(renameTo): Made it sychronized.
+	(equals): Reformatted.
+	(isHidden): Likewise.
+	(listFiles): Likewise.
+	(setReadOnly): Likewise.
+	(listRoots): Likewise.
+	(setLastModified): Likewise.
+	(checkRead): Likewise.
+	(checkWrite): Likewise.
+	* java/io/FileInputStream.java
+	(skip): Made it sychronized, merged from classpath.
+	* java/io/FileOutputStream.java
+	(write): Merged from classpath.
+	* java/io/InputStreamReader.java:
+	(InputStreamReader): Merged documentation from classpath.
+
 2003-05-05  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetworkInterface.java
