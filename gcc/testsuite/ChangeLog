@@ -1,3 +1,7 @@
+2004-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20041218-1.c: New test.
+
 2004-12-17  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/pr18501.c: New test.
