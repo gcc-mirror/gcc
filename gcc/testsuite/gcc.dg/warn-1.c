@@ -12,5 +12,5 @@ void bar (void)
 {
   void *vp;
 
-  foo (vp);	/* { dg-warning "passing arg 1 of" } */
+  foo (vp);	/* { dg-warning "passing argument 1 of" } */
 }
