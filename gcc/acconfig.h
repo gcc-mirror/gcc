@@ -12,4 +12,10 @@
 
 /* Whether free must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_FREE
+
+/* Whether index must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_INDEX
+
+/* Whether rindex must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_RINDEX
 @TOP@
