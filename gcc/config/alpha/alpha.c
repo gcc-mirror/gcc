@@ -3020,15 +3020,16 @@ alpha_handle_trap_shadows (insns)
 	    }
 	}
 
-      if (exception_nesting > 0 || alpha_tp >= ALPHA_TP_FUNC)
-	if (GET_CODE (i) == INSN
-	    && GET_CODE (PATTERN (i)) != USE
-	    && get_attr_trap (i) == TRAP_YES)
-	  {
-	    if (optimize && !trap_pending)
-	      summarize_insn (PATTERN (i), &shadow, 0);
-	    trap_pending = 1;
-	  }
+      if ((exception_nesting > 0 || alpha_tp >= ALPHA_TP_FUNC)
+	  && GET_CODE (i) == INSN
+	  && GET_CODE (PATTERN (i)) != USE
+	  && GET_CODE (PATTERN (i)) != CLOBBER
+	  && get_attr_trap (i) == TRAP_YES)
+	{
+	  if (optimize && !trap_pending)
+	    summarize_insn (PATTERN (i), &shadow, 0);
+	  trap_pending = 1;
+	}
     }
 }
 
