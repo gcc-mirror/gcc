@@ -1,3 +1,9 @@
+2003-01-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* cfns.gperf: ANSIfy function declarations.
+	* cfns.h: Regenerate.
+	* cp-tree.h: ANSIfy function declarations.
+
 2003-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (reparse_absdcl_as_expr): Remove.
@@ -35,6 +41,11 @@
 	conditionals and comma-expressions as objects.
 
 2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+        * cfns.gperf: ANSIfy function declarations.
+        * cfns.h: Regenerate.
+        * cp-tree.h: ANSIfy function declarations.
+        * parser.c: ANSIfy function declarations & definitions.
 
 	* decl.c (bad_specifiers): Fix parameter order error I introduced.
 
