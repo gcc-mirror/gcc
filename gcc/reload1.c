@@ -7630,7 +7630,7 @@ reload_cse_invalidate_regno (regno, mode, clobber)
 	{
 	  if (XEXP (x, 0) != 0)
 	    {
-	      PUT_MODE (invalidate_regno_rtx, GET_MODE (XEXP (x, 0)));
+	      PUT_MODE (invalidate_regno_rtx, GET_MODE (x));
 	      REGNO (invalidate_regno_rtx) = i;
 	      if (refers_to_regno_p (regno, endregno, invalidate_regno_rtx,
 				     NULL_PTR))
