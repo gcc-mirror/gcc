@@ -1,5 +1,8 @@
 1998-08-12  Mark Mitchell  <mark@markmitchell.com>
 
+	* pt.c (print_template_context): Don't abort when instantiating a
+	synthesized method.
+
 	* decl.c (grokdeclarator): Issue errors on namespace qualified
 	declarators in parameter lists or in class scope.
 
