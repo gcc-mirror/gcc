@@ -1,5 +1,12 @@
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* Makefile.in (install): Install _G_config.h depending on new flag
+	--enable-version-specific-runtime-libs.
+	* config/linux.mt (gxx_include_dir): Remove definition here as we use
+	gcc's default anyway.
+
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
 	* config.shared (FLAGS_TO_PASS): Add gcc_version.
 
 1998-06-19  Manfred Hollstein  <manfred@s-direktnet.de>
