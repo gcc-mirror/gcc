@@ -1190,7 +1190,7 @@ VAX operand formatting codes:
    C	reverse branch condition
    B	the low 8 bits of the complement of a constant operand
    H	the low 16 bits of the complement of a constant operand
-   M	(1 << const) - 1
+   M	a mask for the N highest bits of a word
    N	the complement of a constant integer operand
    P	constant operand plus 1
    R	32 - constant operand
