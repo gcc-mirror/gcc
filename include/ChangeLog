@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 1999-04-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_compare_pointers): Declare.

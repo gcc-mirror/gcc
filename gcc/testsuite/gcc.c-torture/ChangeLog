@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 Wed Apr  7 23:08:59 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* execute/920501-7.c (main): Delete __I960__ ifndef.

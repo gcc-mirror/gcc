@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 Wed Nov 25 01:00:07 1998  Marc Espie <espie@quatramaran.ens.fr>
 
 	* Makefile.in (just-check): Ignore errors.

@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (AC_EXEEXT): Remove call.

@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 Thu Oct  3 15:31:09 1996  Jason Molenda  (crash@godzilla.cygnus.co.jp)
 
 	* Makefile.in (clean): Move config.log to distclean.

@@ -1,3 +1,7 @@
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
 Tue Jun 22 23:39:29 1999  Tom Tromey  <tromey@cygnus.com>
 
 	* configure.in (target_libs): Added target-zlib.
