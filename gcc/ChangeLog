@@ -1,3 +1,7 @@
+2002-11-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (6 new peephole2 patterns): New.
+
 2002-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc (x86_64-*-linux*) [tmake_file]: Remove i386/t-crtstuff.
