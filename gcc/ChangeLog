@@ -1,3 +1,13 @@
+2001-01-06  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (debug_biv, debug_giv): New.
+	(loop_biv_dump): Break out from ...
+	(record_biv): ... here.
+	(loop_giv_dump): Break out from ...
+	(record_giv): ... here.
+	(loop_bivs_check): Use print_simple_rtl.
+	* unroll.c (loop_iterations): Use print_simple_rtl.
+
 2000-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (return, return_internal): Modify patterns to prevent regrename
