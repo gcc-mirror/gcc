@@ -94,10 +94,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
-#if ENABLE_NEW_GXX_ABI
-  added++;
-#endif
-
   argc = *in_argc;
   argv = *in_argv;
   added_libraries = *in_added_libraries;
@@ -210,13 +206,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   
   /* Copy the 0th argument, i.e., the name of the program itself.  */
   arglist[i++] = argv[j++];
-
-#if ENABLE_NEW_GXX_ABI
-  /* If we should use the new ABI by default, add the appropriate flag
-     to cc1plus here.  We put this first so that it can be overridden
-     by other command-line options.  */
-  arglist[j++] = "-fnew-abi";
-#endif
 
   /* NOTE: We start at 1 now, not 0.  */
   while (i < argc)

@@ -1,3 +1,15 @@
+2001-01-19  Ute Pelkmann  <scope.muc@t-online.de>
+
+	* decl2.c (arg_assoc_class): Fix double iteration logic.
+
+2001-01-19  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_delete): Always call convert_force to strip cv-quals.
+
+	* decl2.c (flag_new_abi): Depend on ENABLE_NEW_GXX_ABI.
+	* lang-specs.h: Default ABI depends on ENABLE_NEW_GXX_ABI.
+	* g++spec.c: Don't look at ENABLE_NEW_GXX_ABI.
+
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c (get_vbase_1): Count only virtual bases.

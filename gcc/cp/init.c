@@ -3228,10 +3228,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
 
-      if (TREE_CONSTANT (addr))
-	addr = convert_pointer_to (type, addr);
-      else
-	addr = convert_force (build_pointer_type (type), addr, 0);
+      addr = convert_force (build_pointer_type (type), addr, 0);
 
       ref = build_indirect_ref (addr, NULL_PTR);
     }
@@ -3240,7 +3237,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
-      if (auto_delete == sfk_base_destructor)
+      if (auto_delete != sfk_deleting_destructor)
 	return void_zero_node;
 
       return build_op_delete_call
