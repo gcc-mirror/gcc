@@ -1370,6 +1370,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
       && DECL_COMMON (decl)
 #endif
+      && DECL_SECTION_NAME (decl) == 0
       && ! dont_output_data)
     {
       int size = TREE_INT_CST_LOW (size_tree);
