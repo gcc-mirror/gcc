@@ -380,6 +380,11 @@ extern int flag_keep_inline_functions;
 
 extern int flag_no_inline;
 
+/* Nonzero means that we don't want inlining by virtue of -fno-inline,
+   not just because the tree inliner turned us off.  */
+
+extern int flag_really_no_inline;
+
 /* Nonzero if we are only using compiler to check syntax errors.  */
 
 extern int flag_syntax_only;
