@@ -1,5 +1,9 @@
 Tue Sep 23 01:15:50 1997  David S. Miller  <davem@tanya.rutgers.edu>
 
+	* expmed.c (expand_divmod): If compute_mode is not the same as
+	mode, handle the case where convert_modes() causes op1 to no
+	longer be a CONST_INT.
+
 	* reorg.c (dbr_schedule): At end of this pass, add REG_BR_PRED
 	note holding get_jump_flags() calculation to all JUMP_INSNs.
 	* rtl.h (enum reg_note): New note types REG_BR_PRED and REG_SAVE_AREA.
