@@ -1892,14 +1892,27 @@ move\\t%0,%z4\\n\\
     }
 }")
 
-(define_insn "movsi_internal"
+;; The difference between these two is whether or not ints are allowed
+;; in FP registers (off by default, use -mdebugh to enable).
+
+(define_insn "movsi_internal1"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*fz,*f,*f,*f,*R,*m,*x,*d")
 	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*fz,*d,*f,*R,*m,*f,*f,*d,*x"))]
-  ""
+  "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1,4,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1")])
+
+(define_insn "movsi_internal2"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*d,*x")
+	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,*x,*d"))]
+  "!TARGET_DEBUG_H_MODE"
+  "* return mips_move_1word (operands, insn, TRUE);"
+  [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1,4,1,2,1,2,1,2,1,1,1,1")])
+
 
 ;; 16-bit Integer moves
 
@@ -1908,14 +1921,33 @@ move\\t%0,%z4\\n\\
 ;; the compiler, have memoized the insn number already.
 ;; Unsigned loads are used because BYTE_LOADS_ZERO_EXTEND is defined
 
-(define_insn "movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f,*x,*d")
-	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+(define_expand "movhi"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "")
+	(match_operand:HI 1 "general_operand" ""))]
   ""
+  "")
+
+;; The difference between these two is whether or not ints are allowed
+;; in FP registers (off by default, use -mdebugh to enable).
+
+(define_insn "movhi_internal1"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*fz,*x,*d")
+	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+  "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"HI")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,1")])
+
+(define_insn "movhi_internal2"
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*z,*x,*d")
+	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*z,*d,*d,*x"))]
+  "!TARGET_DEBUG_H_MODE"
+  "* return mips_move_1word (operands, insn, TRUE);"
+  [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,hilo,hilo")
+   (set_attr "mode"	"HI")
+   (set_attr "length"	"1,1,1,2,1,2,1,1,1,1")])
+
 
 ;; 8-bit Integer moves
 
@@ -1924,14 +1956,32 @@ move\\t%0,%z4\\n\\
 ;; the compiler, have memoized the insn number already.
 ;; Unsigned loads are used because BYTE_LOADS_ZERO_EXTEND is defined
 
-(define_insn "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f,*x,*d")
-	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+(define_expand "movqi"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "")
+	(match_operand:QI 1 "general_operand" ""))]
   ""
+  "")
+
+;; The difference between these two is whether or not ints are allowed
+;; in FP registers (off by default, use -mdebugh to enable).
+
+(define_insn "movqi_internal1"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*fz,*f,*x,*d")
+	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
+  "TARGET_DEBUG_H_MODE"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
    (set_attr "mode"	"QI")
    (set_attr "length"	"1,1,1,2,1,2,1,1,1,1,1")])
+
+(define_insn "movqi_internal2"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*z,*x,*d")
+	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*z,*d,*d,*x"))]
+  "!TARGET_DEBUG_H_MODE"
+  "* return mips_move_1word (operands, insn, TRUE);"
+  [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,hilo,hilo")
+   (set_attr "mode"	"QI")
+   (set_attr "length"	"1,1,1,2,1,2,1,1,1,1")])
 
 
 ;; 32-bit floating point moves
@@ -2117,7 +2167,7 @@ move\\t%0,%z4\\n\\
 
 
 (define_insn "ashldi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=&d")
 	(ashift:DI (match_operand:DI 1 "register_operand" "d")
 		   (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
@@ -2317,7 +2367,7 @@ move\\t%0,%z4\\n\\
 
 
 (define_insn "ashrdi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=&d")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "d")
 		     (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
@@ -3843,17 +3893,61 @@ move\\t%0,%z4\\n\\
 ;; Function return, only allow after optimization, so that we can
 ;; eliminate jumps to jumps if no stack space is used.
 
-(define_insn "return"
-  [(return)]
-  "null_epilogue ()"
-  "*
-{
-  operands[0] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
-  return \"%*j\\t%0\";
-}"
+;; (define_expand "return"
+;;   [(set (pc) (reg:SI 31))]
+;;   "simple_epilogue_p ()"
+;;   "")
+
+(define_expand "return"
+  [(parallel [(return)
+	      (use (reg:SI 31))])]
+  "simple_epilogue_p ()"
+  "")
+
+(define_insn "return_internal"
+  [(parallel [(return)
+              (use (match_operand:SI 0 "register_operand" "d"))])]
+  ""
+  "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
+
+
+;;
+;;  ....................
+;;
+;;	Function prologue/epilogue
+;;
+;;  ....................
+;;
+
+(define_expand "prologue"
+  [(const_int 1)]
+  ""
+  "
+{
+  if (mips_isa >= 0)		/* avoid unused code warnings */
+    {
+      mips_expand_prologue ();
+      DONE;
+    }
+}")
+
+;; At present, don't expand the epilogue, reorg.c will clobber the
+;; return register in compiling gen_lowpart (emit-rtl.c).
+;; 
+;; (define_expand "epilogue"
+;;   [(const_int 2)]
+;;   ""
+;;   "
+;; {
+;;   if (mips_isa >= 0)            /* avoid unused code warnings */
+;;     {
+;;       mips_expand_epilogue ();
+;;       DONE;
+;;     }
+;; }")
 
 
 ;;
