@@ -1,3 +1,13 @@
+2001-11-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* configure.target: Add os_include_dir for mingw32* target.
+	* docs/html/17_intro/porting.texi: Mention mingw32 as target benefiting
+	from _GLIBCPP_AVOID_FSEEK.
+	* config/os/mingw32/bits/ctype_base.h: New file.
+	* config/os/mingw32/bits/ctype_inline.h: New file.
+	* config/os/mingw32/bits/ctype_noninline.h: New file.
+	* config/os/mingw32/bits/os_defines.h: New file.
+
 2001-11-07  Nathan Myers  <ncm@cantrip.org>
 
 	* docs/html/faq/index.html (5.8):  New entry on ABIs.
