@@ -10716,6 +10716,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   current_function_returns_value = 0;
   current_function_returns_null = 0;
   warn_about_return_type = 0;
+  named_labels = 0;
+  shadowed_labels = 0;
   current_function_assigns_this = 0;
   current_function_just_assigned_this = 0;
   current_function_parms_stored = 0;

@@ -54,6 +54,7 @@ extern int errno;
 
 extern int end_of_file;
 extern int current_class_depth;
+extern int flag_new_for_scope;
 
 void yyerror ();
 
@@ -3225,8 +3226,7 @@ simple_stmt:
 		  clear_momentary ();
 		  finish_stmt (); }
 	| FOR
-		{ extern int flag_new_for_scope;
-		  emit_line_note (input_filename, lineno);
+		{ emit_line_note (input_filename, lineno);
 		  if (flag_new_for_scope)
 		    {
 		      /* Conditionalize .pushlevel */
