@@ -249,6 +249,9 @@ extern int errno;
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
+#ifndef WSTOPSIG
+#define WSTOPSIG WEXITSTATUS
+#endif
 
 
 
