@@ -909,7 +909,7 @@
 		 (match_operand:DI 2 "register_operand" "d")))
    (clobber (match_scratch:DI 3 "=h"))]
   "TARGET_64BIT && mips_cpu != PROCESSOR_R4000"
-  "dmul\\t%1,%2"
+  "dmult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")
    (set_attr "length"	"1")])
