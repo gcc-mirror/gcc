@@ -1,3 +1,7 @@
+2002-02-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/abi/mangle6.C: New test.
+
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020309-2.c: New test.
