@@ -2874,24 +2874,8 @@ do {									\
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-do {									\
-  int reg = 0;								\
-									\
-  if (TARGET_ARCH64							\
-      && aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))))		\
-    reg = 1;								\
-  if ((DELTA) >= 4096 || (DELTA) < -4096)				\
-    fprintf (FILE, "\tset\t%d, %%g1\n\tadd\t%%o%d, %%g1, %%o%d\n",	\
-	     (int)(DELTA), reg, reg);					\
-  else									\
-    fprintf (FILE, "\tadd\t%%o%d, %d, %%o%d\n", reg, (int)(DELTA), reg);\
-  fprintf (FILE, "\tor\t%%o7, %%g0, %%g1\n");				\
-  fprintf (FILE, "\tcall\t");						\
-  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-  fprintf (FILE, ", 0\n");						\
-  fprintf (FILE, "\t or\t%%g1, %%g0, %%o7\n");				\
-} while (0)
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+  sparc_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '(' || (CHAR) == '_')
