@@ -1,5 +1,5 @@
 /* Concatenate variable number of strings.
-   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 2001 Free Software Foundation, Inc.
    Written by Fred Fish @ Cygnus Support
 
 This file is part of the libiberty library.
@@ -62,14 +62,13 @@ NOTES
 #include <varargs.h>
 #endif
 
-#ifdef __STDC__
-#include <stddef.h>
-extern size_t strlen (const char *s);
-#else
-extern int strlen ();
-#endif
-
-#define NULLP (char *)0
+# if HAVE_STRING_H
+#  include <string.h>
+# else
+#  if HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
 
 /* VARARGS */
 #ifdef ANSI_PROTOTYPES
@@ -81,7 +80,7 @@ concat (va_alist)
      va_dcl
 #endif
 {
-  register int length;
+  register size_t length;
   register char *newstr;
   register char *end;
   register const char *arg;
@@ -90,8 +89,7 @@ concat (va_alist)
   const char *first;
 #endif
 
-  /* First compute the size of the result and get sufficient memory. */
-
+  /* First compute the size of the result and get sufficient memory.  */
 #ifdef ANSI_PROTOTYPES
   va_start (args, first);
 #else
@@ -99,53 +97,37 @@ concat (va_alist)
   first = va_arg (args, const char *);
 #endif
 
-  if (first == NULLP)
-    length = 0;
-  else
-    {
-      length = strlen (first);
-      while ((arg = va_arg (args, const char *)) != NULLP)
-	{
-	  length += strlen (arg);
-	}
-    }
-  newstr = (char *) xmalloc (length + 1);
+  length = 0;
+  for (arg = first; arg ; arg = va_arg (args, const char *))
+    length += strlen (arg);
+
   va_end (args);
 
+  newstr = (char *) xmalloc (length + 1);
+
   /* Now copy the individual pieces to the result string. */
-
-  if (newstr != NULLP)
-    {
 #ifdef ANSI_PROTOTYPES
-      va_start (args, first);
+  va_start (args, first);
 #else
-      va_start (args);
-      first = va_arg (args, const char *);
+  va_start (args);
+  first = va_arg (args, const char *);
 #endif
-      end = newstr;
-      if (first != NULLP)
-	{
-	  arg = first;
-	  while (*arg)
-	    {
-	      *end++ = *arg++;
-	    }
-	  while ((arg = va_arg (args, const char *)) != NULLP)
-	    {
-	      while (*arg)
-		{
-		  *end++ = *arg++;
-		}
-	    }
-	}
-      *end = '\000';
-      va_end (args);
-    }
 
-  return (newstr);
+  end = newstr;
+  for (arg = first; arg ; arg = va_arg (args, const char *))
+    {
+      length = strlen (arg);
+      memcpy (end, arg, length);
+      end += length;
+    }
+  *end = '\000';
+  va_end (args);
+
+  return newstr;
 }
 
 #ifdef MAIN
+#define NULLP (char *)0
 
 /* Simple little test driver. */
 

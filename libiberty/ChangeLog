@@ -1,3 +1,8 @@
+2001-06-10  Richard Henderson  <rth@redhat.com>
+
+	* concat.c: Include string.h.  Fix int vs size_t usage.
+	Simplify the iteration loops.  Use memcpy.
+
 2001-05-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* partition.c: Fix misspelling of `implementation'.
