@@ -1,3 +1,11 @@
+2005-01-13  Graydon Hoare  <graydon@redhat.com>
+
+	* include/jni.h (_Jv_JNIEnv::bottom_locals): New field.
+	* include/jvm.h (_Jv_FreeJNIEnv): Declare.
+	* java/lang/natThread.cc (finalize_native): Call _Jv_FreeJNIEnv.
+	* jni.cc: Reuse bottom frame between calls, avoid clearing
+	frame when no local references are made.
+
 2005-01-13  Michael Koch  <konqueror@gmx.de>
 
 	PR libgcj/17784

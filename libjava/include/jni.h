@@ -693,6 +693,10 @@ private:
   /* The chain of local frames.  */
   struct _Jv_JNI_LocalFrame *locals;
 
+  /* The bottom-most element of the chain, initialized with the env and
+     reused between non-nesting JNI calls.  */
+  struct _Jv_JNI_LocalFrame *bottom_locals;
+
 public:
   jint GetVersion ()
   { return p->GetVersion (this); }

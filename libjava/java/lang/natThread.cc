@@ -84,6 +84,7 @@ finalize_native (jobject ptr)
 #ifdef _Jv_HaveMutexDestroy
   _Jv_MutexDestroy (&nt->join_mutex);
 #endif
+  _Jv_FreeJNIEnv(nt->jni_env);
 }
 
 jint
