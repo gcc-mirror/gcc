@@ -894,6 +894,7 @@ inline bool operator!=(const __malloc_alloc_template<__inst>&,
 }
 #endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
+#ifndef __USE_MALLOC
 template <bool __threads, int __inst>
 inline bool operator==(const __default_alloc_template<__threads, __inst>&,
                        const __default_alloc_template<__threads, __inst>&)
@@ -901,14 +902,15 @@ inline bool operator==(const __default_alloc_template<__threads, __inst>&,
   return true;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
+# ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 template <bool __threads, int __inst>
 inline bool operator!=(const __default_alloc_template<__threads, __inst>&,
                        const __default_alloc_template<__threads, __inst>&)
 {
   return false;
 }
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
+# endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
+#endif
 
 template <class _Alloc>
 inline bool operator==(const debug_alloc<_Alloc>&,
@@ -983,6 +985,7 @@ struct _Alloc_traits<_Tp, __malloc_alloc_template<__inst> >
   typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
 };
 
+#ifndef __USE_MALLOC
 template <class _Tp, bool __threads, int __inst>
 struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
 {
@@ -992,6 +995,7 @@ struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
   typedef __allocator<_Tp, __default_alloc_template<__threads, __inst> >
           allocator_type;
 };
+#endif
 
 template <class _Tp, class _Alloc>
 struct _Alloc_traits<_Tp, debug_alloc<_Alloc> >
@@ -1013,6 +1017,7 @@ struct _Alloc_traits<_Tp,
   typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
 };
 
+#ifndef __USE_MALLOC
 template <class _Tp, class _Tp1, bool __thr, int __inst>
 struct _Alloc_traits<_Tp,
                       __allocator<_Tp1,
@@ -1024,6 +1029,7 @@ struct _Alloc_traits<_Tp,
   typedef __allocator<_Tp, __default_alloc_template<__thr,__inst> >
           allocator_type;
 };
+#endif
 
 template <class _Tp, class _Tp1, class _Alloc>
 struct _Alloc_traits<_Tp, __allocator<_Tp1, debug_alloc<_Alloc> > >
