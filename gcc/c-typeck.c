@@ -1347,6 +1347,9 @@ build_component_ref (tree datum, tree component)
   tree field = NULL;
   tree ref;
 
+  if (!objc_is_public (datum, component))
+    return error_mark_node;
+
   /* If DATUM is a COMPOUND_EXPR, move our reference inside it.
      Ensure that the arguments are not lvalues; otherwise,
      if the component is an array, it would wrongly decay to a pointer in
@@ -7114,3 +7117,30 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
   }
 }
 
+/* Build the result of __builtin_offsetof.  TYPE is the first argument to
+   offsetof, i.e. a type.  LIST is a tree_list that encodes component and
+   array references; PURPOSE is set for the former and VALUE is set for
+   the later.  */
+
+tree
+build_offsetof (tree type, tree list)
+{
+  tree t;
+
+  /* Build "*(type *)0".  */
+  t = convert (build_pointer_type (type), null_pointer_node);
+  t = build_indirect_ref (t, "");
+
+  /* Build COMPONENT and ARRAY_REF expressions as needed.  */
+  for (list = nreverse (list); list ; list = TREE_CHAIN (list))
+    if (TREE_PURPOSE (list))
+      t = build_component_ref (t, TREE_PURPOSE (list));
+    else
+      t = build_array_ref (t, TREE_VALUE (list));
+
+  /* Finalize the offsetof expression.  For now all we need to do is take
+     the address of the expression we created, and cast that to an integer
+     type; this mirrors the traditional macro implementation of offsetof.  */
+  t = build_unary_op (ADDR_EXPR, t, 0);
+  return convert (size_type_node, t);
+}

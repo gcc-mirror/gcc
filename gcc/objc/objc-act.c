@@ -6475,7 +6475,7 @@ is_private (tree decl)
 /* We have an instance variable reference;, check to see if it is public.  */
 
 int
-is_public (tree expr, tree identifier)
+objc_is_public (tree expr, tree identifier)
 {
   tree basetype = TREE_TYPE (expr);
   enum tree_code code = TREE_CODE (basetype);

@@ -1,3 +1,7 @@
+2004-06-01  Richard Hederson  <rth@redhat.com>
+
+	* g++.dg/template/dependent-expr4.C: Use __builtin_offsetof.
+
 2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14932
