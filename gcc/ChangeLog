@@ -1,3 +1,9 @@
+Thu Apr 23 19:09:33 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* profile.c (tablejump_entry_p): New function.
+	(branch_prob): Add code to recognize MIPS tablejump entry branch.
+	Use tablejump_entry_p in MIPS and HPPA tablejump checking code.
+
 Thu Apr 23 15:01:13 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (find_barrier): Return as soon as a barrier is
