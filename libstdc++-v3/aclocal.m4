@@ -192,8 +192,9 @@ dnl here.
 dnl
 dnl Define WFMT_FLAGS='-fdiagnostics-show-location=once' if possible
 dnl 
-dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
-dnl code or the new system_header pragma will die.  
+dnl Define WERROR='-Werror' if requested and possible; g++'s that lack the
+dnl new inlining code or the new system_header pragma will die on -Werror.
+dnl Leave it out by default and use maint-mode to use it.
 dnl
 dnl Define SECTION_FLAGS='-ffunction-sections -fdata-sections' if
 dnl compiler supports it.  
@@ -206,23 +207,13 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
   AC_LANG_CPLUSPLUS
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  WERROR='-Werror'
 
-  # Check for pragma system_header.
-  AC_MSG_CHECKING([for g++ that supports pragma system_header])
-  CXXFLAGS='-Wunknown-pragmas -Werror'
-  AC_TRY_COMPILE([#pragma GCC system_header], [int foo;
-  ], [ac_newpragma=yes], [ac_newpragma=no])
-  if test "$ac_test_CXXFLAGS" = set; then
-    CXXFLAGS="$ac_save_CXXFLAGS"
+  # Check for maintainer-mode bits.
+  if test x"$USE_MAINTAINER_MODE" = xno; then
+    WERROR=''
   else
-    # this is the suspicious part
-    CXXFLAGS=''
+    WERROR='-Werror'
   fi
-  if test "$ac_newpragma" = "no"; then
-    WERROR="$WERROR -Wno-unknown-pragmas"
-  fi
-  AC_MSG_RESULT($ac_newpragma)
 
   # Check for more sophisticated diagnostic control.
   AC_MSG_CHECKING([for g++ that supports -fdiagnostics-show-location=once])
@@ -1075,7 +1066,7 @@ dnl GLIBCPP_ENABLE_DEBUG
 dnl --enable-debug sets '-ggdb -O0'.
 dnl --disable-debug sets '-g' and whatever optimization options the
 dnl     compiler can handle.
-dnl  +  Perhaps --enable-maintainer-mode should automatically turn this on?
+dnl  +  --enable-maintainer-mode automatically defaults this to on.
 dnl  +  Perhaps -D/-U of NDEBUG, DEBUG, DEBUG_ASSERT, ...?
 dnl  +  Usage:  GLIBCPP_ENABLE_DEBUG[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
@@ -1610,6 +1601,7 @@ AC_DEFUN([AM_PROG_LIBTOOL])
 AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
+
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.
 # But this isn't really a big deal.

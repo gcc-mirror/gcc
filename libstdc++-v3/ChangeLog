@@ -1,3 +1,18 @@
+2000-09-07  Phil Edwards  <pme@sources.redhat.com>
+
+	Add bits for --enable-maintainer-mode:
+	- turns on enable_debug
+          (doing "--enable-maint --disable-debug" will DTRT)
+	- turns on -Werror, now off by default
+	* acinclude.m4: Add bits.
+	* aclocal.m4: Regenerate.
+	* configure.in: Add defaults for GLIBCPP_ENABLE_DEBUG.
+	* configure: Regenerate.	
+	
+2000-09-07  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* bits/std_cwctype.h: Remove yesterday's hacks.
+
 2000-09-07  Brad Garcia  <bgarcia@laurelnetworks.com>
 
 	* bits/stl_tree.h: Make operators !=, == type safe for map, set.
