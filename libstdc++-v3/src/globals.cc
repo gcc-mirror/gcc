@@ -48,6 +48,15 @@ namespace __gnu_cxx
 {
   using namespace std;
 
+  typedef char fake_facet_name[sizeof(char*)]
+  __attribute__ ((aligned(__alignof__(char*))));
+  fake_facet_name facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
+
+  typedef char fake_locale_Impl[sizeof(locale::_Impl)]
+  __attribute__ ((aligned(__alignof__(locale::_Impl))));
+  fake_locale_Impl c_locale_impl;
+
+
   // NB: The asm directives renames these non-exported, namespace
   // __gnu_cxx symbols into the mistakenly exported, namespace std
   // symbols in GLIBCPP_3.2.
@@ -61,18 +70,19 @@ namespace __gnu_cxx
   fake_locale c_locale;
   _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx8c_localeE, _ZSt8c_locale, GLIBCPP_3.2)
 
-  typedef char fake_locale_Impl[sizeof(locale::_Impl)]
-  __attribute__ ((aligned(__alignof__(locale::_Impl))));
-  fake_locale_Impl c_locale_impl;
-  _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx13c_locale_implE, _ZSt13c_locale_impl, GLIBCPP_3.2)
+  // GLIBCXX_ABI > 5 will not need this symbol at all.
+  // It's here just as a placeholder, as the size of this exported
+  // object changed. The new symbol is not exported.
+  const int o = sizeof(locale::_Impl) - sizeof(char*[_GLIBCPP_NUM_CATEGORIES]);
+  typedef char fake_locale_Impl_compat[o]
+  __attribute__ ((aligned(__alignof__(o))));
+  fake_locale_Impl_compat  c_locale_impl_compat;
+  _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx20c_locale_impl_compatE, _ZSt13c_locale_impl, GLIBCPP_3.2)
+
   typedef char fake_facet_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));
   fake_facet_vec facet_vec[_GLIBCPP_NUM_FACETS];
   _GLIBCPP_ASM_SYMVER(_ZN9__gnu_cxx9facet_vecE, _ZSt9facet_vec, GLIBCPP_3.2)
-
-  typedef char fake_facet_name[sizeof(char*)]
-  __attribute__ ((aligned(__alignof__(char*))));
-  fake_facet_name facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
 
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));

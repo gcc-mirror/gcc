@@ -1,12 +1,5 @@
 
-===========================
-
-See http://gcc.gnu.org/ml/libstdc++/2002-07/msg00054.html for why this
-document exists, why it's incomplete, and what needs to be done still.
-
-===========================
-
-2002-09-06 Benjamin Kosnik
+2002-10-14 Benjamin Kosnik
 
 Description of the libstdc++ ABI.
 
@@ -244,7 +237,7 @@ II. Library ABI changes
 The following will cause the library major version number to
 increase, say from "libstdc++.so.3.0.4" to "libstdc++.so.4.0.0".
 
-- any g++ compiler ABI changes
+- (anything) changing in the gcc/g++ compiler ABI
 
 - (anything) changing size of an exported symbol
 
@@ -256,7 +249,14 @@ increase, say from "libstdc++.so.3.0.4" to "libstdc++.so.4.0.0".
 
 - (anything) deleting an exported symbol
 
-Note: adding an exported symbol, if it's in a new linker map name, is ok.
+- (anything) changing the size, alignment, or layout of types
+  specified in the C++ standard. These may not necessarily be
+  instantiated or otherwise exported in the library binary, and
+  include all the required locale facets, as well as things like
+  std::basic_streambuf, et al.
+
+Note: adding an exported symbol, if it's in a new and dependent
+interface name, is ok.
 
 The following will cause the library revision version number to
 increase, say from "libstdc++.so.5.0.0" to "libstdc++.so.5.0.1".
@@ -331,17 +331,20 @@ addition, all exported names are demangled, and the exported objects
 are checked to make sure they are the same size as the same object in
 the baseline.
 
-In the future, more tests should be added. In particular, vtable
-information, offsets of data members in class objects, and other
-layout information should be checked.
+This dataset is insufficient, yet a start. Also needed is a
+comprehensive check for all user-visible types part of the standard
+library for sizeof() and alignof() changes. 
 
-It should be possible to use sizeof, alignof, and offset to compute
+Verifying compatible layouts of objects is not even attempted.  It
+should be possible to use sizeof, alignof, and offsetof to compute
 offsets for each structure and type in the standard library, saving to
-another datafile. Then, compute this for new binaries, and look for
-differences.
+another datafile. Then, compute this in a similar way for new
+binaries, and look for differences.
 
 Another approach might be to use the -fdump-class-hierarchy flag to
-get information.
+get information. However, currently this approach gives insufficient
+data for use in library testing, as class data members, their offsets,
+and other detailed data is not displayed with this flag.
 (See g++/7470 on how this was used to find bugs.)
 
 Perhaps there are other C++ ABI checkers. If so, please notify

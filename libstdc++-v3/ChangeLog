@@ -1,5 +1,12 @@
 2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* src/globals.cc (__gnu_cxx::c_locale_impl_compat): Add, alias to
+	c_locale_impl.
+	* testsuite/abi_check.cc (line_to_symbol_info): Collect size info.
+	* docs/html/abi.txt: Update.
+	
+2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/22_locale/static_members.cc (test02): Less provincial.
 
 2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
