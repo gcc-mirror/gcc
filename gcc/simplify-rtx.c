@@ -829,9 +829,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  gcc_unreachable ();
 	}
 
-      val = trunc_int_for_mode (val, mode);
-
-      return GEN_INT (val);
+      return gen_int_mode (val, mode);
     }
 
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
@@ -2491,8 +2489,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  gcc_unreachable ();
 	}
 
-      val = trunc_int_for_mode (val, mode);
-      return GEN_INT (val);
+      return gen_int_mode (val, mode);
     }
 
   return NULL_RTX;

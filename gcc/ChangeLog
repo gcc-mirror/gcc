@@ -21,6 +21,14 @@
 	* tree-ssa-pre.c (remove_dead_inserted_code): Likewise.
 	* tree-ssa.c (kill_redundant_phi_nodes): Likewise.
 
+	* combine.c (simplify_and_const_int): Use gen_int_mode instead
+	of GEN_INT (trunc_int_for_mode (...)).
+	* loop-iv.c (iv_number_of_iterations): Likewise.
+	* postreload.c (reload_cse_move2add): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Likewise.
+	* stor-layout.c (get_mode_bounds): Likewise.
+
 2005-03-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.

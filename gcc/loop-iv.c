@@ -2369,8 +2369,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
       tmp = simplify_gen_binary (UDIV, mode, tmp1, GEN_INT (d));
       inv = inverse (s, size);
-      inv = trunc_int_for_mode (inv, mode);
-      tmp = simplify_gen_binary (MULT, mode, tmp, GEN_INT (inv));
+      tmp = simplify_gen_binary (MULT, mode, tmp, gen_int_mode (inv, mode));
       desc->niter_expr = simplify_gen_binary (AND, mode, tmp, bound);
     }
   else

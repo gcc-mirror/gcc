@@ -1244,10 +1244,8 @@ reload_cse_move2add (rtx first)
 
 	      if (GET_CODE (src) == CONST_INT && reg_base_reg[regno] < 0)
 		{
-		  rtx new_src =
-		    GEN_INT (trunc_int_for_mode (INTVAL (src)
-						 - reg_offset[regno],
-						 GET_MODE (reg)));
+		  rtx new_src = gen_int_mode (INTVAL (src) - reg_offset[regno],
+					      GET_MODE (reg));
 		  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
 		     use (set (reg) (reg)) instead.
 		     We don't delete this insn, nor do we convert it into a
@@ -1284,9 +1282,8 @@ reload_cse_move2add (rtx first)
 			    {
 			      rtx narrow_reg = gen_rtx_REG (narrow_mode,
 							    REGNO (reg));
-			      rtx narrow_src =
-				GEN_INT (trunc_int_for_mode (INTVAL (src),
-							     narrow_mode));
+			      rtx narrow_src = gen_int_mode (INTVAL (src),
+							     narrow_mode);
 			      rtx new_set =
 				gen_rtx_SET (VOIDmode,
 					     gen_rtx_STRICT_LOW_PART (VOIDmode,
@@ -1335,10 +1332,10 @@ reload_cse_move2add (rtx first)
 		      HOST_WIDE_INT base_offset = reg_offset[REGNO (src)];
 		      HOST_WIDE_INT regno_offset = reg_offset[regno];
 		      rtx new_src =
-			GEN_INT (trunc_int_for_mode (added_offset
-						     + base_offset
-						     - regno_offset,
-						     GET_MODE (reg)));
+			gen_int_mode (added_offset
+				      + base_offset
+				      - regno_offset,
+				      GET_MODE (reg));
 		      int success = 0;
 
 		      if (new_src == const0_rtx)
