@@ -3900,7 +3900,7 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
   
   if (issue_conversion_warnings)
     expr = dubious_conversion_warnings
-             (totype, expr, "argument", fn, argnum);
+             (totype, expr, "converting", fn, argnum);
   switch (TREE_CODE (convs))
     {
     case USER_CONV:
