@@ -1,3 +1,10 @@
+2003-03-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_optimize_prolog): Do not save/restore
+	registers used for global asm variables.
+	(s390_frame_info, s390_arg_frame_offset): Likewise.
+	(s390_emit_prologue, s390_emit_epilogue): Likewise.
+
 2003-03-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Update Janis Johnson.
