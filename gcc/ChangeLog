@@ -1,3 +1,10 @@
+2000-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h (PROTO, VPROTO, PVPROTO): Delete macros.
+	
+	* sbitmap.h (sbitmap_first_set_bit, sbitmap_last_set_bit):
+	PROTO -> PARAMS.
+
 2000-01-30  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* i386/386bsd.h, i386/beos-pe.h, i386/bsd386.h, i386/crtdll.h,
