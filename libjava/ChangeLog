@@ -1,3 +1,12 @@
+2003-12-30  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
+	(requestProperties): New field.
+	(addRequestProperty): New method.
+	(getRequestProperty): New method.
+	(setRequestProperty): New method.
+	(getRequestProperties): New method.
+
 2003-12-28  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java

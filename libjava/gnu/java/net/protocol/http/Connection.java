@@ -49,6 +49,7 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import gnu.java.net.HeaderFieldHelper;
@@ -103,6 +104,11 @@ public final class Connection extends HttpURLConnection
    * The InputStream for this connection.
    */
   private DataInputStream inputStream;
+
+  /**
+   * This object holds the request properties.
+   */
+  private HashMap requestProperties = new HashMap();
 
   /**
    * This is the object that holds the header field information
@@ -366,6 +372,41 @@ public final class Connection extends HttpURLConnection
     else
       throw new ProtocolException ("Unsupported or unknown request method " +
                                    method);
+  }
+
+  public void addRequestProperty(String key, String value)
+  {
+    if (connected)
+      throw new IllegalStateException("Already connected");
+    
+    String old = (String) requestProperties.put(key, value);
+
+    if (old != null)
+      requestProperties.put(key, old + "," + value);
+  }
+
+  public String getRequestProperty(String key)
+  {
+    if (connected)
+      throw new IllegalStateException("Already connected");
+    
+    return (String) requestProperties.get(key);
+  }
+
+  public void setRequestProperty(String key, String value)
+  {
+    if (connected)
+      throw new IllegalStateException("Already connected");
+    
+    requestProperties.put(key, value);
+  }
+
+  public Map getRequestProperties()
+  {
+    if (connected)
+      throw new IllegalStateException("Already connected");
+    
+    return requestProperties;
   }
 
   public String getHeaderField(String name)
