@@ -1,3 +1,10 @@
+2002-01-13  Christopher Faylor  <cgf@redhat.com>
+
+	* cppfiles.c (TEST_THRESHOLD): New macro.
+	(SHOULD_MMAP): Ditto.
+	(read_include_file): Use SHOULD_MMAP macro to decide when mmap should
+	be used.
+
 Mon Jan 14 20:23:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c (final_reg_note_copy): Properly handle
