@@ -4210,15 +4210,15 @@ rtx_equal_for_thread_p (x, y, yinsn)
   /* For commutative operations, the RTX match if the operand match in any
      order.  Also handle the simple binary and unary cases without a loop.  */
   if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
-    return ((rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0))
-	     && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1)))
-	    || (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 1))
-		&& rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 0))));
+    return ((rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0), yinsn)
+	     && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1), yinsn))
+	    || (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 1), yinsn)
+		&& rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 0), yinsn)));
   else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
-    return (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0))
-	    && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1)));
+    return (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0), yinsn)
+	    && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1), yinsn));
   else if (GET_RTX_CLASS (code) == '1')
-    return rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0));
+    return rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0), yinsn);
 
   /* Handle special-cases first.  */
   switch (code)
