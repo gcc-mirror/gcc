@@ -441,16 +441,18 @@ extern int leaf_function;
      1.1 fp regs, and the high 1.1 fp regs, to which the operands of
      fmpyadd and fmpysub are restricted. */
 
-enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, HI_SNAKE_FP_REGS,
- SNAKE_FP_REGS, FP_OR_SNAKE_FP_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
+enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
+  HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
+  SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
-  { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "HI_SNAKE_FP_REGS",\
-    "SNAKE_FP_REGS", "FP_OR_SNAKE_FP_REGS", "SHIFT_REGS", "ALL_REGS"}
+  { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS",\
+    "HI_SNAKE_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",\
+    "SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -462,9 +464,10 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, HI_SNAKE_FP_REGS,
   {0x2, 0, 0, 0},		/* R1_REGS */		\
   {-2, 0, 0, 0},		/* GENERAL_REGS */	\
   {0, 0xffff, 0, 0},		/* FP_REGS */		\
+  {-2, 0xffff, 0, 0},		/* GENERAL_OR_FP_REGS */\
   {0, 0, 0xffff0000, 0xffff},	/* HI_SNAKE_FP_REGS */	\
   {0, 0xffff0000, ~0, 0xffff},	/* SNAKE_FP_REGS */	\
-  {0, ~0, ~0, 0xffff},		/* FP_OR_SNAKE_FP_REGS */\
+  {-2, 0xffff0000, ~0, 0xffff},	/* GENERAL_OR_SNAKE_FP_REGS */\
   {0, 0, 0, 0x10000},		/* SHIFT_REGS */	\
   {-2, ~0, ~0, 0x1ffff}}	/* ALL_REGS */
 
@@ -774,23 +777,31 @@ extern enum cmp_type hppa_branch_type;
 	     fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);	\
 	     fputs (",PRIV_LEV=3", FILE);				\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
-		  parm = TREE_CHAIN (parm), i++)			\
+		  parm = TREE_CHAIN (parm))				\
 	       {							\
 		 if (TYPE_MODE (DECL_ARG_TYPE (parm)) == SFmode)	\
-		   fprintf (FILE, ",ARGW%d=FR", i);			\
+		   fprintf (FILE, ",ARGW%d=FR", i++);			\
 		 else if (TYPE_MODE (DECL_ARG_TYPE (parm)) == DFmode)	\
 		   {							\
-		     if (i == 0 || i == 2)				\
-		       {						\
-			 ASM_DOUBLE_ARG_DESCRIPTORS (FILE, i++, i);	\
-		       }						\
-		     else if (i == 1)					\
-		       {						\
-			 ASM_DOUBLE_ARG_DESCRIPTORS (FILE, ++i, ++i);	\
-		       }						\
+		      if (i == 1) i++;				        \
+		      ASM_DOUBLE_ARG_DESCRIPTORS (FILE, i++, i++);	\
 		   }							\
 		 else							\
-		   fprintf (FILE, ",ARGW%d=GR", i);			\
+		   {							\
+		     int arg_size =					\
+		       FUNCTION_ARG_SIZE (TYPE_MODE (DECL_ARG_TYPE (parm)),\
+					  DECL_ARG_TYPE (parm));	\
+		     if (arg_size == 2 && i <= 2)			\
+		       {						\
+			 if (i == 1) i++;				\
+			 fprintf (FILE, ",ARGW%d=GR", i++);		\
+			 fprintf (FILE, ",ARGW%d=GR", i++);		\
+		       }						\
+		     else if (arg_size == 1)				\
+		       fprintf (FILE, ",ARGW%d=GR", i++);		\
+		     else						\
+		       i += arg_size;					\
+		   }							\
 	       }							\
 	     /* anonymous args */					\
 	     if (TYPE_ARG_TYPES (tree_type) != 0			\
@@ -840,13 +851,9 @@ extern int apparent_fsize;
    profiling code in function_prologue. This just stores LABELNO for
    that. */
 
-#ifdef hp800			/* Don't have the proper libraries yet */
-#define FUNCTION_PROFILER(FILE, LABELNO) {}
-#else
 #define PROFILE_BEFORE_PROLOGUE
 #define FUNCTION_PROFILER(FILE, LABELNO) \
 { extern int hp_profile_labelno; hp_profile_labelno = (LABELNO);}
-#endif
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
