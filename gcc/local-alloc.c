@@ -65,6 +65,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "output.h"
 
+/* Pseudos allocated here cannot be reallocated by global.c if the hard
+   register is used as a spill register.  So we don't allocate such pseudos
+   here if their preferred class is likely to be used by spills.
+
+   On most machines, the appropriate test is if the class has one
+   register, so we default to that.  */
+
+#ifndef CLASS_LIKELY_SPILLED_P
+#define CLASS_LIKELY_SPILLED_P(CLASS) (reg_class_size[(int) (CLASS)] == 1)
+#endif
+
 /* Next quantity number available for allocation.  */
 
 static int next_qty;
@@ -329,11 +340,11 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
 	break;
       }
 
-  /* If CLASS has only one register, don't allocate the SCRATCH here since
+  /* If CLASS has only a few registers, don't allocate the SCRATCH here since
      it will prevent that register from being used as a spill register.
      reload will do the allocation.  */
 
-  if (class == NO_REGS || reg_class_size[(int) class] == 1)
+  if (class == NO_REGS || CLASS_LIKELY_SPILLED_P (class))
     return;
 
 #else /* REGISTER_CONSTRAINTS */
@@ -411,7 +422,7 @@ local_alloc ()
   /* Determine which pseudo-registers can be allocated by local-alloc.
      In general, these are the registers used only in a single block and
      which only die once.  However, if a register's preferred class has only
-     one entry, don't allocate this register here unless it is preferred
+     a few entries, don't allocate this register here unless it is preferred
      or nothing since retry_global_alloc won't be able to move it to
      GENERAL_REGS if a reload register of this class is needed.
 
@@ -422,7 +433,7 @@ local_alloc ()
     {
       if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1
 	  && (reg_alternate_class (i) == NO_REGS
-	      || reg_class_size[(int) reg_preferred_class (i)] > 1))
+	      || ! CLASS_LIKELY_SPILLED_P (reg_preferred_class (i))))
 	reg_qty[i] = -2;
       else
 	reg_qty[i] = -1;
