@@ -1,3 +1,9 @@
+2002-01-10  Richard Henderson  <rth@redhat.com>
+
+	* cfgrtl.c (delete_insn): Assert insn hasn't been deleted yet.
+	* reload1.c (delete_output_reload): Zap spill_reg_store.  Take
+	care not to delete instructions twice.
+
 2002-01-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* toplev.c: Don't declare environ (it's not used anywhere).
@@ -154,7 +160,7 @@ Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 Thu Jan 10 17:19:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_forward_edges): Properly initialize nthreaded_edges;
-        update edge probabilities to match.
+	update edge probabilities to match.
 
 2002-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -187,7 +193,7 @@ Thu Jan 10 11:19:18 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-01-20  Graham Stott  <grahams@redhat.com>
 
 	* dwarf2out.c (indirect_string_alloc, output_indirect_string):
-        Move prototype into DWARF2_DEBUGGING_INFO conditional block.
+	Move prototype into DWARF2_DEBUGGING_INFO conditional block.
 
 2002-01-10  Richard Henderson  <rth@redhat.com>
 
@@ -287,8 +293,8 @@ Thu Jan 10 11:19:18 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-09  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
-        * real.c (c4xtoe, toc4x): Do some special conversion on long doubles
-        for the c4x target. Also improve layout.
+	* real.c (c4xtoe, toc4x): Do some special conversion on long doubles
+	for the c4x target. Also improve layout.
 
 2002-01-09  Richard Henderson  <rth@redhat.com>
 
