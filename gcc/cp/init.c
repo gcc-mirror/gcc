@@ -1808,7 +1808,10 @@ resolve_offset_ref (exp)
   tree basetype, addr;
 
   if (TREE_CODE (exp) == TREE_LIST)
-    return build_unary_op (ADDR_EXPR, exp, 0);
+    {
+      cp_pedwarn ("assuming & on overloaded member function");
+      return build_unary_op (ADDR_EXPR, exp, 0);
+    }
 
   if (TREE_CODE (exp) == OFFSET_REF)
     {

@@ -656,7 +656,11 @@ ocp_convert (type, expr, convtype, flags)
   if (TREE_READONLY_DECL_P (e))
     e = decl_constant_value (e);
 
-  if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP))
+  if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP)
+      /* Some internal structures (vtable_entry_type, sigtbl_ptr_type)
+	 don't go through finish_struct, so they don't have the synthesized
+	 constructors.  So don't force a temporary.  */
+      && TYPE_HAS_CONSTRUCTOR (type))
     /* We need a new temporary; don't take this shortcut.  */;
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
     /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */

@@ -3062,8 +3062,6 @@ build_x_binary_op (code, arg1, arg2)
      enum tree_code code;
      tree arg1, arg2;
 {
-  tree rval;
-
   if (processing_template_decl)
     return build_min_nt (code, arg1, arg2);
 
@@ -4565,7 +4563,8 @@ build_unary_op (code, xarg, noconvert)
 
       /* Allow the address of a constructor if all the elements
 	 are constant.  */
-      if (TREE_CODE (arg) == CONSTRUCTOR && TREE_CONSTANT (arg))
+      if (TREE_CODE (arg) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (arg)
+	  && TREE_CONSTANT (arg))
 	;
       /* Anything not already handled and not a true memory reference
 	 is an error.  */
