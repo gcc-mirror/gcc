@@ -445,7 +445,7 @@ extern int vms_valid_decl_attribute_p ();
 #define ASM_OUTPUT_SECTION_NAME(FILE,DECL,NAME,RELOC)		\
   do								\
     {								\
-      char *flags;					 	\
+      const char *flags;				 	\
       int ovr = 0;						\
       if (DECL && DECL_MACHINE_ATTRIBUTES (DECL)		\
 	  && lookup_attribute					\

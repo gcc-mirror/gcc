@@ -2098,12 +2098,12 @@ literal_section ()						\
 #define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
   do {									      \
     FILE *_hide_asm_out_file = (MYFILE);				      \
-    unsigned char *_hide_p = (unsigned char *) (MYSTRING);		      \
+    const unsigned char *_hide_p = (const unsigned char *) (MYSTRING);	      \
     int _hide_thissize = (MYLENGTH);					      \
     int _size_so_far = 0;						      \
     {									      \
       FILE *asm_out_file = _hide_asm_out_file;				      \
-      unsigned char *p = _hide_p;					      \
+      const unsigned char *p = _hide_p;					      \
       int thissize = _hide_thissize;					      \
       int i;								      \
       fprintf (asm_out_file, "\t.ascii \"");				      \
@@ -2222,7 +2222,7 @@ literal_section ()						\
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
-  char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
+  const char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
   int reg;								\
 									\
   /* Mark end of prologue.  */						\

@@ -114,6 +114,8 @@ static void alpha_init_machine_status
   PROTO((struct function *p));
 static void alpha_mark_machine_status
   PROTO((struct function *p));
+static int alpha_ra_ever_killed PROTO((void));
+static rtx set_frame_related_p PROTO((void));
 
 
 /* Get the number of args of a function in one of two ways.  */
@@ -3721,7 +3723,7 @@ alpha_expand_prologue ()
 void
 alpha_start_function (file, fnname, decl)
      FILE *file;
-     char *fnname;
+     const char *fnname;
      tree decl ATTRIBUTE_UNUSED;
 {
   unsigned long imask = 0;
@@ -4112,7 +4114,7 @@ alpha_expand_epilogue ()
 void
 alpha_end_function (file, fnname, decl)
      FILE *file;
-     char *fnname;
+     const char *fnname;
      tree decl ATTRIBUTE_UNUSED;
 {
   /* End the function.  */
@@ -5104,7 +5106,7 @@ alpha_reorg (insns)
 
 /* Check a floating-point value for validity for a particular machine mode.  */
 
-static char * const float_strings[] =
+static const char * const float_strings[] =
 {
   /* These are for FLOAT_VAX.  */
    "1.70141173319264430e+38", /* 2^127 (2^24 - 1) / 2^24 */
@@ -5236,7 +5238,7 @@ static struct alpha_links *alpha_links_base = 0;
 
 void
 alpha_need_linkage (name, is_local)
-    char *name;
+    const char *name;
     int is_local;
 {
   rtx x;
@@ -5316,7 +5318,7 @@ alpha_write_linkage (stream)
 
 void
 alpha_need_linkage (name, is_local)
-     char *name ATTRIBUTE_UNUSED;
+     const char *name ATTRIBUTE_UNUSED;
      int is_local ATTRIBUTE_UNUSED;
 {
 }

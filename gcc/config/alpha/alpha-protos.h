@@ -18,6 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+extern void literal_section PROTO ((void));
 extern void override_options PROTO ((void));
 extern int zap_mask PROTO ((HOST_WIDE_INT));
 extern int direct_return PROTO ((void));
@@ -103,7 +104,7 @@ extern rtx alpha_arg_info_reg_val PROTO ((CUMULATIVE_ARGS));
 extern void alpha_write_linkage PROTO ((FILE *));
 #endif /* OPEN_VMS */
 
-extern void alpha_need_linkage PROTO ((char *, int));
+extern void alpha_need_linkage PROTO ((const char *, int));
 
 #ifdef TREE_CODE
 extern tree alpha_build_va_list PROTO ((void));
@@ -112,6 +113,6 @@ extern void alpha_va_start PROTO ((int, tree, rtx));
 extern rtx alpha_va_arg PROTO ((tree, tree));
 #endif
 extern int vms_valid_decl_attribute_p PROTO ((tree, tree, tree, tree));
-extern void alpha_start_function PROTO ((FILE *, char *, tree));
-extern void alpha_end_function PROTO ((FILE *, char *, tree));
+extern void alpha_start_function PROTO ((FILE *, const char *, tree));
+extern void alpha_end_function PROTO ((FILE *, const char *, tree));
 #endif /* TREE CODE */
