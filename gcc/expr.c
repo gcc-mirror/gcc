@@ -4206,7 +4206,8 @@ store_constructor_field (target, bitsize, bitpos,
 			    plus_constant (XEXP (target, 0),
 					   bitpos / BITS_PER_UNIT));
 
-      MEM_ALIAS_SET (target) = alias_set;
+      if (GET_CODE (target) == MEM)
+	MEM_ALIAS_SET (target) = alias_set;
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
     }
   else

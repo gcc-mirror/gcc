@@ -6556,7 +6556,7 @@ rs6000_hash_constant (k)
   int fidx;
   
   if (GET_CODE (k) == LABEL_REF)
-    return result * 1231 + XINT (XEXP (k, 0), 3);
+    return result * 1231 + X0INT (XEXP (k, 0), 3);
 
   if (GET_CODE (k) == CONST_DOUBLE)
     fidx = 2;

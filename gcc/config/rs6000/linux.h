@@ -54,6 +54,14 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
 
+/* Override rs6000.h definition.  */
+#undef ASM_APP_ON
+#define ASM_APP_ON "#APP\n"
+
+/* Override rs6000.h definition.  */
+#undef ASM_APP_OFF
+#define ASM_APP_OFF "#NO_APP\n"
+
 #undef DEFAULT_VTABLE_THUNKS
 #ifndef USE_GNULIBC_1
 #define DEFAULT_VTABLE_THUNKS 1
