@@ -1,3 +1,7 @@
+2000-01-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcc.dg/20000108-1.c: New test.
+
 2000-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.ns/koenig8.C: New test.
