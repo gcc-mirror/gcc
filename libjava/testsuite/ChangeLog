@@ -1,3 +1,7 @@
+2002-07-22  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/zeroexp.java: New file.
+
 2002-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* libjava.compile/compile.exp: Sort sources.
