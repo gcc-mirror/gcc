@@ -1,3 +1,17 @@
+Thu Dec 11 20:43:33 1997  Teemu Torma  <tot@trema.com>
+	
+	* decl.c (ptr_ptr_type_node): Define.
+	(init_decl_processing): Initialize it.
+	* cp-tree.h: Declare it.
+	* exception.cc (__cp_exception_info): Use __get_eh_info.
+	(__cp_push_exception): Ditto.
+	(__cp_pop_exception): Ditto.
+
+	From Scott Snyder <snyder@d0sgif.fnal.gov>:
+        * except.c (expand_builtin_throw): Use get_saved_pc_ref instead of
+	saved_pc.
+	(init_exception_processing): Removed saved_pc initialization.
+
 Wed Dec 10 11:04:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Defer all templates but inline functions.

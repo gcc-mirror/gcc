@@ -241,6 +241,10 @@ tree void_zero_node;
 tree ptr_type_node;
 tree const_ptr_type_node;
 
+/* Node for type `void **'. */
+
+tree ptr_ptr_type_node;
+
 /* Nodes for types `char *' and `const char *'.  */
 
 tree string_type_node, const_string_type_node;
@@ -5065,6 +5069,7 @@ init_decl_processing ()
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_type_variant (void_type_node, 1, 0));
+  ptr_ptr_type_node = build_pointer_type (ptr_type_node);
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, ptr_type_node);
 #endif

@@ -91,9 +91,9 @@ struct cp_eh_info
   long handlers;
 };
 
-/* Language-specific EH info pointer, defined in libgcc2.  */
+/* Language-specific EH info pointer, defined in libgcc2. */
 
-extern cp_eh_info *__eh_info;  // actually void*
+extern "C" cp_eh_info **__get_eh_info (); 	// actually void **
 
 /* Is P the type_info node for a pointer of some kind?  */
 
@@ -105,7 +105,7 @@ extern bool __is_pointer (void *);
 extern "C" cp_eh_info *
 __cp_exception_info (void)
 {
-  return __eh_info;
+  return *__get_eh_info ();
 }
 
 /* Compiler hook to push a new exception onto the stack.
@@ -120,8 +120,11 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
   p->cleanup = cleanup;
   p->handlers = 0;
   p->caught = false;
-  p->next = __eh_info;
-  __eh_info = p;
+
+  cp_eh_info **q = __get_eh_info ();
+
+  p->next = *q;
+  *q = p;
 }
 
 /* Compiler hook to pop an exception that has been finalized.  Used by
@@ -131,7 +134,7 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
 extern "C" void
 __cp_pop_exception (cp_eh_info *p)
 {
-  cp_eh_info **q = &__eh_info;
+  cp_eh_info **q = __get_eh_info ();
 
   --p->handlers;
 

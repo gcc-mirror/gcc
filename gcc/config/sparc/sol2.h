@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\
+%{pthreads:-D_REENTRANT -D_PTHREADS} \
+%{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 "
 
@@ -131,7 +133,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} %{!shared:%{!symbolic:-lc}}"
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
+   %{!shared:\
+     %{!symbolic:\
+       %{pthreads:-lpthread} \
+       %{!pthreads:%{threads:-lthread}} \
+       -lc}}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"

@@ -186,9 +186,6 @@ static tree Unwind;
    ========================================================================= */
 
 #ifndef DWARF2_UNWIND_INFO
-/* Holds the pc for doing "throw" */
-static tree saved_pc;
-
 extern int throw_used;
 #endif
 
@@ -257,15 +254,6 @@ init_exception_processing ()
 			NOT_BUILT_IN, NULL_PTR);
 
   pop_lang_context ();
-
-#ifndef DWARF2_UNWIND_INFO
-  d = build_decl (VAR_DECL, get_identifier ("__eh_pc"), ptr_type_node);
-  TREE_PUBLIC (d) = 1;
-  DECL_EXTERNAL (d) = 1;
-  DECL_ARTIFICIAL (d) = 1;
-  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
-  saved_pc = d;
-#endif
 
   /* If we use setjmp/longjmp EH, arrange for all cleanup actions to
      be protected with __terminate.  */
@@ -812,8 +800,10 @@ expand_builtin_throw ()
 
   /* search for an exception handler for the saved_pc */
   handler = do_function_call (FirstExceptionMatch,
-			      expr_tree_cons (NULL_TREE, saved_pc,
-					 NULL_TREE),
+			      expr_tree_cons (NULL_TREE,
+					      make_tree (ptr_ptr_type_node,
+							 get_saved_pc_ref ()),
+					      NULL_TREE),
 			      ptr_type_node);
 
   /* did we find one? */
@@ -892,7 +882,7 @@ expand_builtin_throw ()
     }
   else
 #endif
-    emit_move_insn (eh_saved_pc_rtx, next_pc);
+    emit_move_insn (get_saved_pc_ref (), next_pc);
 
   after_unwind = gen_label_rtx ();
   do_unwind (gen_rtx (LABEL_REF, Pmode, after_unwind));

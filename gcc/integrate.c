@@ -1805,6 +1805,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	       inline_target.  */
 	    break;
 
+	  /* If the inline fn needs eh context, make sure that
+	     the current fn has one. */
+	  if (GET_CODE (pattern) == USE
+	      && find_reg_note (insn, REG_EH_CONTEXT, 0) != 0)
+	    use_eh_context ();
+
 	  /* Ignore setting a function value that we don't want to use.  */
 	  if (map->inline_target == 0
 	      && set != 0

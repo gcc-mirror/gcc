@@ -325,7 +325,7 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 		REG_CC_SETTER = 11, REG_CC_USER = 12, REG_LABEL = 13,
 		REG_DEP_ANTI = 14, REG_DEP_OUTPUT = 15, REG_BR_PROB = 16,
 		REG_EXEC_COUNT = 17, REG_NOALIAS = 18, REG_SAVE_AREA = 19,
-		REG_BR_PRED = 20 };
+		REG_BR_PRED = 20, REG_EH_CONTEXT = 21 };
 /* The base value for branch probability notes.  */
 #define REG_BR_PROB_BASE  10000
 

@@ -39,6 +39,13 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2.h"
 #include <stddef.h>
 #include "frame.h"
+#include "libgcc-thr.h"
+
+#ifdef __GTHREAD_MUTEX_INIT
+static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
+#else
+static __gthread_mutex_t object_mutex;
+#endif
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
@@ -296,6 +303,8 @@ find_fde (void *pc)
   struct object *ob;
   size_t lo, hi;
 
+  __gthread_mutex_lock (&object_mutex);
+
   for (ob = objects; ob; ob = ob->next)
     {
       if (ob->pc_begin == 0)
@@ -303,6 +312,8 @@ find_fde (void *pc)
       if (pc >= ob->pc_begin && pc < ob->pc_end)
 	break;
     }
+
+  __gthread_mutex_unlock (&object_mutex);
 
   if (ob == 0)
     return 0;
@@ -509,8 +520,12 @@ __register_frame (void *begin, struct object *ob)
   ob->fde_array = 0;
   ob->count = 0;
 
+  __gthread_mutex_lock (&object_mutex);
+
   ob->next = objects;
   objects = ob;
+
+  __gthread_mutex_unlock (&object_mutex);
 }
 
 /* Similar, but BEGIN is actually a pointer to a table of unwind entries
@@ -526,8 +541,12 @@ __register_frame_table (void *begin, struct object *ob)
   ob->pc_begin = ob->pc_end = 0;
   ob->count = 0;
 
+  __gthread_mutex_lock (&object_mutex);
+
   ob->next = objects;
   objects = ob;
+
+  __gthread_mutex_unlock (&object_mutex);
 }
 
 /* Called from crtend.o to deregister the unwind info for an object.  */
@@ -535,8 +554,11 @@ __register_frame_table (void *begin, struct object *ob)
 void
 __deregister_frame (void *begin)
 {
-  struct object **p = &objects;
+  struct object **p;
 
+  __gthread_mutex_lock (&object_mutex);
+
+  p = &objects;
   while (*p)
     {
       if ((*p)->fde_begin == begin)
@@ -548,10 +570,13 @@ __deregister_frame (void *begin)
 	  if (ob->pc_begin)
 	    free (ob->fde_array);
 
+	  __gthread_mutex_unlock (&object_mutex);
 	  return;
 	}
       p = &((*p)->next);
     }
+
+  __gthread_mutex_unlock (&object_mutex);
   abort ();
 }
 

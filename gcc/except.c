@@ -431,17 +431,10 @@ rtx exception_handler_labels;
 
 int throw_used;
 
-/* The dynamic handler chain.  Nonzero if the function has already
-   fetched a pointer to the dynamic handler chain for exception
-   handling.  */
+/* The EH context.  Nonzero if the function has already
+   fetched a pointer to the EH context  for exception handling.  */
 
-rtx current_function_dhc;
-
-/* The dynamic cleanup chain.  Nonzero if the function has already
-   fetched a pointer to the dynamic cleanup chain for exception
-   handling.  */
-
-rtx current_function_dcc;
+rtx current_function_ehc;
 
 /* A stack used for keeping track of the currently active exception
    handling region.  As each exception region is started, an entry
@@ -495,13 +488,6 @@ struct label_node *outer_context_label_stack = NULL;
 /* A random data area for the front end's own use.  */
 
 struct label_node *false_label_stack = NULL;
-
-#ifndef DWARF2_UNWIND_INFO
-/* The rtx and the tree for the saved PC value.  */
-
-rtx eh_saved_pc_rtx;
-tree eh_saved_pc;
-#endif
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 static void expand_rethrow	PROTO((rtx));
@@ -721,37 +707,20 @@ add_partial_entry (handler)
   pop_obstacks ();
 }
 
-/* Get a reference to the dynamic handler chain.  It points to the
-   pointer to the next element in the dynamic handler chain.  It ends
-   when there are no more elements in the dynamic handler chain, when
-   the value is &top_elt from libgcc2.c.  Immediately after the
-   pointer, is an area suitable for setjmp/longjmp when
-   DONT_USE_BUILTIN_SETJMP is defined, and an area suitable for
-   __builtin_setjmp/__builtin_longjmp when DONT_USE_BUILTIN_SETJMP
-   isn't defined.
+/* Emit code to get EH context to current function. */
 
-   This routine is here to facilitate the porting of this code to
-   systems with threads.  One can either replace the routine we emit a
-   call for here in libgcc2.c, or one can modify this routine to work
-   with their thread system.
-
-   Ideally, we really only want one per real function, not one
-   per inlined function.  */
-
-rtx
-get_dynamic_handler_chain ()
+static rtx
+call_get_eh_context (before)
+     rtx before;
 {
   static tree fn;
   tree expr;
-  rtx insns;
-
-  if (current_function_dhc)
-    return current_function_dhc;
+  rtx ehc, reg, insns;
 
   if (fn == NULL_TREE)
     {
       tree fntype;
-      fn = get_identifier ("__get_dynamic_handler_chain");
+      fn = get_identifier ("__get_eh_context");
       push_obstacks_nochange ();
       end_temporary_allocation ();
       fntype = build_pointer_type (build_pointer_type
@@ -771,15 +740,105 @@ get_dynamic_handler_chain ()
   expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		expr, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (expr) = 1;
-  expr = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
 
   start_sequence ();
-  current_function_dhc = expand_expr (expr, NULL_RTX, VOIDmode, 0);
+  ehc = expand_expr (expr, NULL_RTX, VOIDmode, 0);
+  reg = copy_to_reg (ehc);
+
   insns = get_insns ();
   end_sequence ();
-  emit_insns_before (insns, get_first_nonparm_insn ());
 
-  return current_function_dhc;
+  if (before != 0)
+    emit_insns_before (insns, before);
+  else
+    emit_insns (insns);
+
+  return reg;
+}
+
+/* Get a reference to the EH context.
+   We will only generate a register for the current function EH context here,
+   and emit a USE insn to mark that this is a EH context register.
+
+   Later, emit_eh_context will emit needed call to __get_eh_context
+   in libgcc2, and copy the value to the register we have generated. */
+
+rtx
+use_eh_context ()
+{
+  if (current_function_ehc == 0)
+    {
+      rtx insn;
+
+      current_function_ehc = gen_reg_rtx (Pmode);
+      
+      insn = gen_rtx (USE,
+		      GET_MODE (current_function_ehc),
+		      copy_rtx (current_function_ehc));
+      insn = emit_insn_before (insn, get_first_nonparm_insn ());
+
+      REG_NOTES (insn)
+	= gen_rtx (EXPR_LIST, 
+		   REG_EH_CONTEXT, copy_rtx (current_function_ehc),
+		   REG_NOTES (insn));
+    }
+  return current_function_ehc;
+}
+     
+/* Get reference to EH context only once per fn. */
+
+rtx
+get_eh_context_once ()
+{
+  rtx ehc;
+
+  if (current_function_ehc == 0)
+    use_eh_context ();
+  
+  ehc = gen_reg_rtx (Pmode);
+  emit_move_insn (ehc, current_function_ehc);
+
+  return ehc;
+}
+
+/* Get reference to EH context by calling __get_eh_context. */
+
+rtx
+get_eh_context ()
+{
+  rtx ehc;
+
+  /* If we already have an EH context in the current function,
+     use it. */
+  if (current_function_ehc)
+    ehc = get_eh_context_once ();
+  else
+    ehc = call_get_eh_context (0);
+
+  return ehc;
+}
+
+/* Get a reference to the dynamic handler chain.  It points to the
+   pointer to the next element in the dynamic handler chain.  It ends
+   when there are no more elements in the dynamic handler chain, when
+   the value is &top_elt from libgcc2.c.  Immediately after the
+   pointer, is an area suitable for setjmp/longjmp when
+   DONT_USE_BUILTIN_SETJMP is defined, and an area suitable for
+   __builtin_setjmp/__builtin_longjmp when DONT_USE_BUILTIN_SETJMP
+   isn't defined. */
+
+rtx
+get_dynamic_handler_chain ()
+{
+  rtx ehc, dhc, result;
+
+  ehc = get_eh_context_once ();
+  dhc = ehc;
+
+  result = copy_to_reg (dhc);
+
+  /* We don't want a copy of the dcc, but rather, the single dcc.  */
+  return gen_rtx (MEM, Pmode, result);
 }
 
 /* Get a reference to the dynamic cleanup chain.  It points to the
@@ -791,15 +850,31 @@ get_dynamic_handler_chain ()
 rtx
 get_dynamic_cleanup_chain ()
 {
-  rtx dhc, dcc;
+  rtx dhc, dcc, result;
 
   dhc = get_dynamic_handler_chain ();
   dcc = plus_constant (dhc, GET_MODE_SIZE (Pmode));
 
-  current_function_dcc = copy_to_reg (dcc);
+  result = copy_to_reg (dcc);
 
   /* We don't want a copy of the dcc, but rather, the single dcc.  */
-  return gen_rtx (MEM, Pmode, current_function_dcc);
+  return gen_rtx (MEM, Pmode, result);
+}
+
+/* Get a reference to the saved_pc variable. */
+
+rtx
+get_saved_pc_ref ()
+{
+  rtx ehc, ehpc, result;
+
+  /* Saved PC is the second word into the returned structure. */
+  ehc = get_eh_context ();
+  ehpc = plus_constant (ehc, GET_MODE_SIZE (Pmode));
+  result = copy_to_reg (ehpc);
+
+  /* We don't want a copy of the ehpc, but rather, the single ehpc.  */
+  return gen_rtx (MEM, Pmode, result);
 }
 
 /* Generate code to evaluate X and jump to LABEL if the value is nonzero.
@@ -1220,8 +1295,7 @@ expand_internal_throw ()
       rtx label = gen_label_rtx ();
       emit_label (label);
       label = gen_rtx (LABEL_REF, Pmode, label);
-      assemble_external (eh_saved_pc);
-      emit_move_insn (eh_saved_pc_rtx, label);
+      emit_move_insn (get_saved_pc_ref (), label);
     }
 #endif
   emit_throw ();
@@ -1698,8 +1772,6 @@ end_eh_unwinder ()
   return;
 #else /* DWARF2_UNWIND_INFO */
 
-  assemble_external (eh_saved_pc);
-
   expr = make_node (RTL_EXPR);
   TREE_TYPE (expr) = void_type_node;
   RTL_EXPR_RTL (expr) = const0_rtx;
@@ -1717,7 +1789,7 @@ end_eh_unwinder ()
   return_val_rtx = eh_outer_context (return_val_rtx);
   return_val_rtx = expand_binop (Pmode, sub_optab, return_val_rtx, GEN_INT (1),
 				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
-  emit_move_insn (eh_saved_pc_rtx, return_val_rtx);
+  emit_move_insn (get_saved_pc_ref (), return_val_rtx);
   
   /* Either set things up so we do a return directly to __throw, or
      we return here instead.  */
@@ -1826,6 +1898,46 @@ emit_unwinder ()
     }
     
   emit_insns_after (insns, insn);
+}
+
+/* Emit code to get EH context.
+   
+   We have to scan thru the code to find possible EH context registers.
+   Inlined functions may use it too, and thus we'll have to be able
+   to change them too.
+
+   This is done only if using exceptions_via_longjmp. */
+
+void
+emit_eh_context ()
+{
+  rtx insn;
+  rtx ehc = 0;
+
+  if (! doing_eh (0))
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == INSN
+	&& GET_CODE (PATTERN (insn)) == USE)
+      {
+	rtx reg = find_reg_note (insn, REG_EH_CONTEXT, 0);
+	if (reg)
+	  {
+	    rtx insns;
+	    
+	    /* If this is the first use insn, emit the call here. */
+	    if (ehc == 0)
+	      ehc = call_get_eh_context (insn);
+
+	    start_sequence ();
+	    emit_move_insn (XEXP (reg, 0), ehc);
+	    insns = get_insns ();
+	    end_sequence ();
+
+	    emit_insns_before (insns, insn);
+	  }
+      }
 }
 
 /* Scan the current insns and build a list of handler labels. The
@@ -1977,14 +2089,6 @@ init_eh ()
   /* Generate rtl to reference the variable in which the PC of the
      current context is saved.  */
   tree type = build_pointer_type (make_node (VOID_TYPE));
-
-#ifndef DWARF2_UNWIND_INFO
-  eh_saved_pc = build_decl (VAR_DECL, get_identifier ("__eh_pc"), type);
-  DECL_EXTERNAL (eh_saved_pc) = 1;
-  TREE_PUBLIC (eh_saved_pc) = 1;
-  make_decl_rtl (eh_saved_pc, NULL_PTR, 1);
-  eh_saved_pc_rtx = DECL_RTL (eh_saved_pc);
-#endif
 }
 
 /* Initialize the per-function EH information.  */
@@ -1998,8 +2102,7 @@ init_eh_for_function ()
   false_label_stack = 0;
   caught_return_label_stack = 0;
   protect_list = NULL_TREE;
-  current_function_dhc = NULL_RTX;
-  current_function_dcc = NULL_RTX;
+  current_function_ehc = NULL_RTX;
 }
 
 /* Save some of the per-function EH info into the save area denoted by
@@ -2020,8 +2123,7 @@ save_eh_status (p)
   p->false_label_stack = false_label_stack;
   p->caught_return_label_stack = caught_return_label_stack;
   p->protect_list = protect_list;
-  p->dhc = current_function_dhc;
-  p->dcc = current_function_dcc;
+  p->ehc = current_function_ehc;
 
   init_eh ();
 }
@@ -2043,8 +2145,7 @@ restore_eh_status (p)
   catch_clauses	= p->catch_clauses;
   ehqueue = p->ehqueue;
   ehstack = p->ehstack;
-  current_function_dhc = p->dhc;
-  current_function_dcc = p->dcc;
+  current_function_ehc = p->ehc;
 }
 
 /* This section is for the exception handling specific optimization

@@ -1,3 +1,84 @@
+Thu Dec 11 20:42:18 1997  Teemu Torma  <tot@trema.com>
+
+	Thread-safe EH support for pthreads, DCE threads and Solaris threads.
+	
+	* integrate.c (expand_inline_function): If the inline fn uses eh
+	context, make sure that the current fn has one.
+	* toplev.c (rest_of_compilation): Call emit_eh_context.
+	* except.c (use_eh_context): New fn.
+	(get_eh_context_once): New fn.
+	(call_get_eh_context): New fn.
+	(emit_eh_context): New fn.
+	(get_eh_context): Call either get_eh_context_once or
+	call_get_eh_context, depending on what we have.
+	(get_dynamic_handler_chain): Call get_eh_context_once.
+	* except.h: Prototypes for fns above.
+	* optabs.c (get_eh_context_libfunc): Removed.
+	(init_optabs): Don't initialize it.
+	* expr.h (get_eh_context_libfunc): Removed.
+	* rtl.h, rtl.c: New reg_note REG_EH_CONTEXT.
+	* config/pa/pa.h (CPP_SPEC): Support for -threads.
+	* config/pa/pa-hpux10.h (LIB_SPEC): Ditto.
+	* config/pa/t-pa (MULTILIB_OPTIONS, MULTILIB_DIRNAMES):
+	New multilib for -threads.
+	* config/sparc/t-sol2: Added multilibs for -threads and
+	made -pthreads alias to it.
+	* config/sparc/sol2.h (CPP_SPEC, LIB_SPEC):
+	Added -threads and -pthreads options.
+	* libgcc-thr.h: New file.
+	* libgcc2.c: (__get_cpp_eh_context): Removed.
+	(struct cpp_eh_context): Removed.
+	(struct eh_context): Replaced cpp_eh_context with generic language
+	specific pointer. 
+	(__get_eh_info): New function.
+	(__throw): Check eh_context::info.
+	(__sjthrow): Ditto.
+	* libgcc2.c: Include libgcc-thr.h.
+	(new_eh_context, __get_eh_context,
+	eh_pthread_initialize, eh_context_initialize, eh_context_static,
+	eh_context_specific, eh_context_free): New functions.
+	(get_eh_context, eh_context_key): New variables.
+	(__sjthrow, __sjpopnthrow, __eh_pcnthrow, __throw): Use
+	get_eh_context to get the context.
+	(longjmp): Move the declaration inside
+	#ifdef DONT_USE_BUILTIN_SETJMP.
+	* frame.c: Include libgcc-thr.h.
+	(object_mutex): Mutex to protect the object list.
+	(find_fde, __register_frame, __register_frame_table,
+	__deregister_frame): Hold the lock while accessing objects.
+	* except.h (get_eh_context): Declare.
+	* except.c (current_function_ehc): Define.
+	(current_function_dhc, current_function_dcc): Removed.
+	(get_eh_context): New function.
+	(get_dynamic_handler_chain): Use get_eh_context.
+	(get_saved_pc_ref): Ditto.
+	(get_dynamic_cleanup_chain): Removed references to
+	current_function_dcc.
+	(save_eh_status, restore_eh_status): Save and restore
+	current_function_ehc instead.
+	* optabs.c (get_eh_context_libfunc): New variable.
+	(init_optabs): Initialize it.
+	* expr.h: Declare get_eh_context_libfunc.
+	* function.h (struct function): Replaced dhc and dcc with ehc.
+	* except.c (get_saved_pc_ref): New functions.
+	(eh_saved_pc_rtx, eh_saved_pc): Deleted.
+	(expand_internal_throw_indirect): Use get_saved_pc_ref() instead
+	of eh_saved_pc.
+	(end_eh_unwinder): Likewise.
+	(init_eh): Remove initialization of eh_saved_pc.
+	* optabs.c (get_saved_pc_libfunc): New variable.
+	(init_optabs): Initialize it.
+	* expr.h: Declare get_saved_pc_libfunc.
+	* except.h (eh_saved_pc_rtx): Deleted.
+	(get_saved_pc_ref): Declared.
+
+	From Scott Snyder <snyder@d0sgif.fnal.gov>:
+	* libgcc2.c (__get_saved_pc): New.
+	(__eh_type, __eh_pc): Deleted.
+	(__eh_pcnthrow): Use __get_saved_pc() instead of __eh_pc.
+	(__get_dynamic_handler_chain): Move __dynamic_handler_chain inside
+	this fcn.
+
 Thu Dec 11 17:23:48 1997  John F. Carr  <jfc@mit.edu>
 
 	* sparc/sol2.h: Use 64 bit multiply and divide functions in
