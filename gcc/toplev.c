@@ -3747,6 +3747,9 @@ rest_of_compilation (decl)
   /* Find all the EH handlers.  */
   find_exception_handler_labels ();
 
+  if (jump_opt_dump)
+    open_dump_file (".01.jump", decl_printable_name (decl, 2));
+
   /* Always do one jump optimization pass to ensure that JUMP_LABEL fields
      are initialized and to compute whether control can drop off the end
      of the function.  */
@@ -3764,7 +3767,7 @@ rest_of_compilation (decl)
 
   /* Dump rtl code after jump, if we are doing that.  */
   if (jump_opt_dump)
-    dump_rtl (".01.jump", decl, print_rtl, insns);
+    close_dump_file (print_rtl, insns);
 
   if (ggc_p)
     ggc_collect ();
