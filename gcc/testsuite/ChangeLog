@@ -1,3 +1,9 @@
+Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.special/930510-1.c: Make C9X safe.
+	* gcc.misc-tests/gcov-1.c Similarly.
+	* gcc.misc-tests/gcov-2.c Similarly.
+
 1998-12-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* gcc.dg/ultrasp1.c: New test.
