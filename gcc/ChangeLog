@@ -1,3 +1,7 @@
+2001-07-11  Kazu Hirata  <kazu@hxi.com>
+
+	* recog.c (validate_change): Fix a comment typo.
+
 2001-07-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (c-lex.o): Wrap long lines.  Depend on debug.h.
