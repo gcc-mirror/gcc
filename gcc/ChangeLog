@@ -1,3 +1,8 @@
+Thu Oct 14 13:54:25 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (main): Only warn about options for other languages.
+	* collect2.c (main): Pass -w to sub-gcc.
+
 Thu Oct 14 16:27:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (propagate_block): Add call-clobbered registers to
@@ -7,10 +12,6 @@ Thu Oct 14 16:27:50 1999  Richard Henderson  <rth@cygnus.com>
 	zapping mem_set_list.
 	(invalidate_mems_from_autoinc): Use free_EXPR_LIST_node.
 	(mark_set_1, mark_used_regs): Likewise.
-
-Thu Oct 14 13:54:25 1999  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* toplev.c (main): Don't complain about options for other languages.
 
 Thu Oct 14 10:51:49 1999  Richard Henderson  <rth@cygnus.com>
 

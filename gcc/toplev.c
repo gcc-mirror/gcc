@@ -5380,7 +5380,7 @@ main (argc, argv)
 
       /* Give the language a chance to decode the option for itself.  */
       lang_processed = lang_decode_option (argc - i, argv + i);
- 
+
       /* Now see if the option also has a language independent meaning.
 	 Some options are both language specific and language independent,
 	 eg --help.  It is possible that there might be options that should
@@ -5394,8 +5394,10 @@ main (argc, argv)
 	i += (lang_processed > indep_processed
 	      ? lang_processed : indep_processed);
       else
-	/* This option applies to some other language; ignore it.  */
-	i++;
+	{
+	  warning ("ignoring option `%s'", argv[i]);
+	  i++;
+	}
     }
 
   /* Checker uses the frame pointer.  */
@@ -5520,7 +5522,7 @@ main (argc, argv)
   if (sorrycount)
     return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
-    }
+}
 
 /* Decode -m switches.  */
 /* Decode the switch -mNAME.  */
