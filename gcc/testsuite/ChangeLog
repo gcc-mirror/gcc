@@ -1,3 +1,7 @@
+2004-02-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/ext/typeof8.C: New test.
+
 2004-02-14  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* gcc.c-torture/compile/20040214-1.c: New test.
