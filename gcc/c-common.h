@@ -1271,7 +1271,7 @@ extern void c_cpp_builtins (cpp_reader *);
 
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */
-extern int pending_lang_change;
+extern GTY(()) int pending_lang_change;
 
 /* Information recorded about each file examined during compilation.  */
 
