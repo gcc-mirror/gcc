@@ -1,3 +1,9 @@
+2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/19375
+	* semantics.c (finish_id_expression): Disable access checking for
+	already lookuped FIELD_DECL.
+
 2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl.c (delete_block): Remove.
