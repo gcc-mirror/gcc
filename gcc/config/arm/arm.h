@@ -1433,8 +1433,6 @@ enum reg_class
    This is added to the cfun structure.  */
 typedef struct machine_function
 {
-  /* Records __builtin_return address.  */
-  struct rtx_def *ra_rtx;
   /* Additionsl stack adjustment in __builtin_eh_throw.  */
   struct rtx_def *eh_epilogue_sp_ofs;
   /* Records if LR has to be saved for far jumps.  */

@@ -2870,8 +2870,6 @@ typedef struct machine_function
 {
   /* Additionsl stack adjustment in __builtin_eh_throw.  */
   struct rtx_def * eh_epilogue_sp_ofs;
-  /* Records __builtin_return address.  */
-  struct rtx_def * ra_rtx;
 } machine_function;
 
 

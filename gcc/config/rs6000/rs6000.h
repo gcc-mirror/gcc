@@ -1394,8 +1394,6 @@ typedef struct machine_function
 {
   /* Whether a System V.4 varargs area was created.  */
   int sysv_varargs_p;
-  /* Set if a return address rtx for loading from LR was created.  */
-  struct rtx_def *ra_rtx;
   /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
   int ra_needs_full_frame;
 } machine_function;
