@@ -2230,7 +2230,7 @@
 
 ;; FIXME: Allow r=CONST0.
 (define_insn "*movdf_e500_double"
-  [(set (match_operand:DF 0 "rs6k_nonimmediate_operand" "=r,r,m")
+  [(set (match_operand:DF 0 "rs6000_nonimmediate_operand" "=r,r,m")
 	(match_operand:DF 1 "input_operand" "r,m,r"))]
   "TARGET_HARD_FLOAT && TARGET_E500_DOUBLE
     && (gpc_reg_operand (operands[0], DFmode)

@@ -2592,7 +2592,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"current_file_function_operand", {SYMBOL_REF}},			   \
   {"input_operand", {SUBREG, MEM, REG, CONST_INT,			   \
 		     CONST_DOUBLE, SYMBOL_REF}},			   \
-  {"rs6k_nonimmediate_operand", {SUBREG, MEM, REG}},		   	   \
+  {"rs6000_nonimmediate_operand", {SUBREG, MEM, REG}},		   	   \
   {"load_multiple_operation", {PARALLEL}},				   \
   {"store_multiple_operation", {PARALLEL}},				   \
   {"lmw_operation", {PARALLEL}},					   \

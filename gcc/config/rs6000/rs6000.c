@@ -3060,7 +3060,7 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
 /* Just like nonimmediate_operand, but return 0 for invalid SUBREG's
    on the e500.  */
 int
-rs6k_nonimmediate_operand (rtx op, enum machine_mode mode)
+rs6000_nonimmediate_operand (rtx op, enum machine_mode mode)
 {
   if (TARGET_E500_DOUBLE
       && GET_CODE (op) == SUBREG
