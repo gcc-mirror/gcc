@@ -30,7 +30,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
+  "move,unary,binary,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
   (const_string "binary"))
 
 ;; Length (in # of insns).
@@ -59,8 +59,9 @@
 
 ;; Attributes for instruction and branch scheduling
 
+;; For conditional branches.
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -68,13 +69,32 @@
 ;; Disallow instructions which use the FPU since they will tie up the FPU
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
 
+;; For calls and millicode calls.  Allow unconditional branches in the 
+;; delay slot.
+(define_attr "in_call_delay" "false,true"
+  (cond [(and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli")
+	      (eq_attr "length" "4"))
+	   (const_string "true")
+	 (eq_attr "type" "uncond_branch")
+	   (if_then_else (ne (symbol_ref "TARGET_JUMP_IN_DELAY")
+			     (const_int 0))
+			 (const_string "true")
+			 (const_string "false"))]
+	(const_string "false")))
+	
+
+
 ;; Unconditional branch, call, and millicode call delay slot description.
-(define_delay (eq_attr "type" "branch,call,milli")
+(define_delay (eq_attr "type" "uncond_branch,branch,call,milli")
+  [(eq_attr "in_call_delay" "true") (nil) (nil)])
+
+;; Unconditional branch, return and other similar instructions.
+(define_delay (eq_attr "type" "uncond_branch,branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Floating point conditional branch delay slot description and
@@ -1925,7 +1945,7 @@
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
   ""
-  "* return output_mul_insn (0);"
+  "* return output_mul_insn (0, insn);"
   [(set_attr "type" "milli")])
 
 ;;; Division and mod.
@@ -1971,7 +1991,7 @@
    (clobber (reg:SI 31))]
  ""
  "*
- return output_div_insn (operands, 0);"
+ return output_div_insn (operands, 0, insn);"
  [(set_attr "type" "milli")])
 
 (define_expand "udivsi3"
@@ -2016,7 +2036,7 @@
    (clobber (reg:SI 31))]
  ""
  "*
- return output_div_insn (operands, 1);"
+ return output_div_insn (operands, 1, insn);"
  [(set_attr "type" "milli")])
 
 (define_expand "modsi3"
@@ -2057,7 +2077,7 @@
    (clobber (reg:SI 31))]
   ""
   "*
-  return output_mod_insn (0);"
+  return output_mod_insn (0, insn);"
   [(set_attr "type" "milli")])
 
 (define_expand "umodsi3"
@@ -2098,7 +2118,7 @@
    (clobber (reg:SI 31))]
   ""
   "*
-  return output_mod_insn (1);"
+  return output_mod_insn (1, insn);"
   [(set_attr "type" "milli")])
 
 ;;- and instructions
@@ -2655,7 +2675,17 @@
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
   "bl%* %l0,0"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "uncond_branch")
+   (set (attr "length")
+    (cond [(eq (symbol_ref "jump_in_call_delay (insn)") (const_int 0))
+	   (const_int 4)
+;; If the jump is in the delay slot of a call, then its length depends 
+;; on whether or not we can add the proper offset to %r2 with an ldo
+;; instruction.
+	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+		    (const_int 8188))
+           (const_int 4)]
+	  (const_int 8)))])
 
 ;; Subroutines of "casesi".
 ;; operand 0 is index
@@ -2766,7 +2796,7 @@
  "*
 {
   output_arg_descriptor (insn);
-  return \"bl %0,2%#\";
+  return output_call (insn, operands[0], gen_rtx (REG, SImode, 2));
 }"
  [(set_attr "type" "call")
   (set_attr "length" "4")])
@@ -2777,7 +2807,7 @@
   (clobber (reg:SI 2))
   (use (const_int 1))]
  ""
- "copy %0,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
+ "copy %r0,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2"
  [(set_attr "type" "dyncall")
   (set_attr "length" "12")])
 
@@ -2829,7 +2859,7 @@
   "*
 {
   output_arg_descriptor (insn);
-  return \"bl %1,2%#\";
+  return output_call (insn, operands[1], gen_rtx (REG, SImode, 2));
 }"
  [(set_attr "type" "call")
   (set_attr "length" "4")])
@@ -2842,7 +2872,7 @@
    (use (const_int 1))]
   ;;- Don't use operand 1 for most machines.
   ""
-  "copy %1,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
+  "copy %r1,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2"
  [(set_attr "type" "dyncall")
   (set_attr "length" "12")])
 
