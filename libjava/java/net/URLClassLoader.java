@@ -1,5 +1,6 @@
 /* URLClassLoader.java --  ClassLoader that loads classes from one or more URLs
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -958,7 +959,7 @@ public class URLClassLoader extends SecureClassLoader
 	resource = loader.getResource(resourceName);
       }
     if (resource == null)
-      throw new ClassNotFoundException(className + " not found in " + urls);
+      throw new ClassNotFoundException(className + " not found in " + this);
 
     // Try to read the class data, create the CodeSource, Package and
     // construct the class (and watch out for those nasty IOExceptions)
@@ -1039,8 +1040,42 @@ public class URLClassLoader extends SecureClassLoader
       }
     catch (IOException ioe)
       {
-        throw new ClassNotFoundException(className, ioe);
+	ClassNotFoundException cnfe;
+	cnfe = new ClassNotFoundException(className + " not found in " + this);
+	cnfe.initCause(ioe);
+	throw cnfe;
       }
+  }
+  
+  // Cached String representation of this URLClassLoader
+  private String thisString;
+  
+  /**
+   * Returns a String representation of this URLClassLoader giving the
+   * actual Class name, the URLs that are searched and the parent
+   * ClassLoader.
+   */
+  public String toString()
+  {
+    if (thisString == null)
+      {
+	StringBuffer sb = new StringBuffer();
+	sb.append(this.getClass().getName());
+	sb.append("{urls=[" );
+	URL[] thisURLs = getURLs();
+	for (int i = 0; i < thisURLs.length; i++)
+	  {
+	    sb.append(thisURLs[i]);
+	    if (i < thisURLs.length - 1)
+	      sb.append(',');
+	  }
+	sb.append(']');
+	sb.append(", parent=");
+	sb.append(getParent());
+	sb.append('}');
+	thisString = sb.toString();
+      }
+    return thisString;
   }
 
   /**

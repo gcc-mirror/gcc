@@ -1,3 +1,21 @@
+2005-02-12  Mark Wielaard  <mark@klomp.org>
+
+	Fixes bug libgcj/8170
+	* java/lang/ClassLoader.java (loadClass): Don't rewrap
+	ClassNotFoundException.
+	* gnu/java/lang/MainThread.java (run): Chain NoClassDefFoundError.
+	* gnu/gcj/runtime/NameFinder.java (remove_interpreter): Removed.
+	(remove_internal): New field superceding remove_interpreter.
+	(sanitizeStack): Remove all no-package classes starting with "_Jv_".
+	Remove no-class methods starting with "_Jv_". And Replace null
+	class or method names with the empty string. Stop at either the
+	MainThread or a real Thread run() method.
+	(newElement): Made static.
+	* java/net/URLClassLoader.java (findClass): Throw
+	ClassNotFoundExceptions including urls, plus parent using toString().
+	(thisString): New field.
+	(toString): New method.
+
 2005-02-10  Tom Tromey  <tromey@redhat.com>
 
 	* external/sax/Makefile.in: Rebuilt.
