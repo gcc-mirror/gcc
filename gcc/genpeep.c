@@ -463,7 +463,8 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");
-  printf ("#include \"real.h\"\n\n");
+  printf ("#include \"real.h\"\n");
+  printf ("#include \"except.h\"\n\n");
 
   printf ("extern rtx peep_operand[];\n\n");
   printf ("#define operands peep_operand\n\n");
