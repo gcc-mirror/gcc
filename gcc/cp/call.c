@@ -4277,7 +4277,10 @@ convert_for_arg_passing (type, val)
 {
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
-    val = build1 (ADDR_EXPR, build_reference_type (type), val);
+    {
+      val = build1 (ADDR_EXPR, build_reference_type (type), val);
+      ADDR_IS_INVISIREF (val) = 1;
+    }
   else if (PROMOTE_PROTOTYPES
 	   && INTEGRAL_TYPE_P (type)
 	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
@@ -4295,7 +4298,11 @@ cp_convert_parm_for_inlining (parm, value, fn)
   /* When inlining, we don't need to mess with invisible references, so
      undo the ADDR_EXPR.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (parm)))
-    value = build_indirect_ref (value, NULL);
+    {
+      value = TREE_OPERAND (value, 0);
+      if (TREE_CODE (value) != TARGET_EXPR)
+	abort ();
+    }
   return value;
 }
 

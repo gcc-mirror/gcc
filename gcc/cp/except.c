@@ -599,12 +599,31 @@ stabilize_throw_expr (exp, initp)
       init_expr = void_zero_node;
       for (; args; args = TREE_CHAIN (args))
 	{
+	  tree arg = TREE_VALUE (args);
 	  tree arg_init_expr;
-	  tree newarg = stabilize_expr (TREE_VALUE (args), &arg_init_expr);
+	  if (TREE_CODE (arg) == ADDR_EXPR
+	      && ADDR_IS_INVISIREF (arg))
+	    {
+	      /* A sub-TARGET_EXPR.  Recurse; we can't wrap the actual call
+		 without introducing an extra copy.  */
+	      tree sub = TREE_OPERAND (arg, 0);
+	      if (TREE_CODE (sub) != TARGET_EXPR)
+		abort ();
+	      sub = stabilize_throw_expr (sub, &arg_init_expr);
+	      TREE_OPERAND (arg, 0) = sub;
+	      if (TREE_SIDE_EFFECTS (arg_init_expr))
+		init_expr = build (COMPOUND_EXPR, void_type_node, init_expr,
+				   arg_init_expr);
+	    }
+	  else
+	    {
+	      arg = stabilize_expr (arg, &arg_init_expr);
 
-	  if (arg_init_expr != void_zero_node)
-	    init_expr = build (COMPOUND_EXPR, void_type_node, arg_init_expr, init_expr);
-	  *p = tree_cons (NULL_TREE, newarg, NULL_TREE);
+	      if (TREE_SIDE_EFFECTS (arg_init_expr))
+		init_expr = build (COMPOUND_EXPR, void_type_node, init_expr,
+				   arg_init_expr);
+	    }
+	  *p = tree_cons (NULL_TREE, arg, NULL_TREE);
 	  p = &TREE_CHAIN (*p);
 	}
       TREE_OPERAND (aggr_init, 1) = newargs;

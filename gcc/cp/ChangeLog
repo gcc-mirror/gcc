@@ -1,3 +1,10 @@
+2002-10-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8186
+	* cp-tree.h (ADDR_IS_INVISIREF): New macro.
+	* call.c (convert_for_arg_passing): Set it.
+	* except.c (stabilize_throw_expr): Recurse for such an arg.
+
 2002-10-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Remove init_priority.
