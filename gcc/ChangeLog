@@ -1,3 +1,11 @@
+2000-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const64): Don't abort when
+	op0 is a SUBREG.
+	(function_arg_slotno): Accept TImode/CTImode.
+	* config/sparc/sparc.h (MIN_UNITS_PER_WORD): If IN_LIBGCC2 define
+	to UNITS_PER_WORD.
+
 2000-09-26  Michael Hayes  <mhayes@cygnus.com>
 
 	* flow.c (flow_loop_pre_header_scan): Punt if loop enters
