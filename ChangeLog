@@ -1,3 +1,8 @@
+2003-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* MAINTAINERS: Move myself from GNATS-only-accounts to
+	write-after-approval.
+
 2003-01-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Add missing \.
