@@ -19,17 +19,17 @@ template <typename T> struct B1 : T
   typedef typename T::myT __restrict__ p;// { dg-warning "ignoring `__restrict'" "" { xfail *-*-* } }
 
   // The following are DR 295 dependent
-  typedef typename T::myT volatile *myvolatile; // { dg-error "qualifiers" ""  }
-  typename T::myT volatile *a;    // { dg-error "qualifiers" "" }
-  myvolatile b;			 // { dg-error "qualifiers" "" }
+  typedef typename T::myT volatile *myvolatile;
+  typename T::myT volatile *a;
+  myvolatile b;
 };
 template <typename T> struct B2 : T
 {
   // The following are DR 295 dependent
-  typedef typename T::myT const *myconst; // { dg-error "qualifiers" "" }
-  typename T::myT const *a; // { dg-error "qualifiers" "" }
-  myconst b; // { dg-error "qualifiers" "" }
+  typedef typename T::myT const *myconst;
+  typename T::myT const *a;
+  myconst b;
 };
 
 B1<AS> b1;	// { dg-error "instantiated" "" }
-B2<AS> b2;      // { dg-error "instantiated" "" }	
+B2<AS> b2;

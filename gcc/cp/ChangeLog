@@ -1,3 +1,14 @@
+2004-06-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3518
+	* pt.c (check_cv_quals_for_unify): Ignore bogus CV quals at outer
+	level.
+	
+	PR c++/14007
+	* pt.c (check_cv_quals_for_unify): Correct logic for disallowed
+	cv-qualifier unification.
+	* tree.c (cp_build_qualified_type_real): Renable DR295 logic.
+
 2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/15967
