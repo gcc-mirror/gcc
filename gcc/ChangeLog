@@ -1,3 +1,12 @@
+2000-04-26  <NeilB@earthling.net>
+
+	* cpplex.c (spell_other, spell_char): Remove.
+	(SPELL_CHAR): New.
+	(token_spelling, trigraph_map): Use unsigned chars.
+	(_cpp_lex_line): Tidy up the switch statement.
+	* cpplib.h: Implement spell_char with spell_string.
+	(C): New.
+
 2000-04-26  <RodneyBrown@pmsc.com>
 	
 	* pa/pa32-regs.h (HARD_REGNO_MODE_OK): Warning removal.
