@@ -1,3 +1,18 @@
+2004-10-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* simplify.c (range_check): Remove blank line at beginning of function.
+	(gfc_simplify_dint): Same at end of function.
+	(gfc_simplify_exponent, gfc_simplify_fraction): Simplify calculations.
+	(gfc_simplify_bound): Fix indentation.
+	(gfc_simplify_log10): Simplify calculation.
+	(gfc_simplify_min, gfc_simplify_max): Remove blank line at beginning
+	of function.
+	(gfc_simplify_nearest): Same at end of function.
+	(gfc_simplify_nint, gfc_simplify_idnint): Same at beginning of
+	function.
+	(gfc_simplify_rrspacing, gfc_simplify_set_exponent,
+	gfc_simplify_spacing): Simplify calulations.
+
 2004-10-03  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* trans-intrinsic.c: Fix comments on spacing and rrspacing
