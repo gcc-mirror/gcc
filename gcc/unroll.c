@@ -3205,9 +3205,14 @@ final_giv_value (v, loop_start, loop_end)
 	 determine whether giv's are replaceable so that we can use the
 	 biv value here if it is not eliminable.  */
 
+      /* We are emitting code after the end of the loop, so we must make
+	 sure that bl->initial_value is still valid then.  It will still
+	 be valid if it is invariant.  */
+
       increment = biv_total_increment (bl, loop_start, loop_end);
 
-      if (increment && invariant_p (increment))
+      if (increment && invariant_p (increment)
+	  && invariant_p (bl->initial_value))
 	{
 	  /* Can calculate the loop exit value of its biv as
 	     (loop_n_iterations * increment) + initial_value */
