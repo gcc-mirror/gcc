@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-04-13
+@set last-update-news 2002-07-25
 
 @include root.texi
 
@@ -153,10 +153,18 @@ is available at
 
 The following information was last updated on @value{last-update-news}:
 
+@heading In @code{GCC} 3.3 versus @code{GCC} 3.2:
+@itemize @bullet
+@item
+Richard Henderson (@email{rth@@redhat.com}) analysed and improved the handling
+of (no-)aliasing information for dummy arguments and improved the optimization
+of induction variables in unrolled loops.
+@end itemize
+
 @heading In @code{GCC} 3.2 versus @code{GCC} 3.1:
 @itemize @bullet
 @item
-Nothing yet.
+Nothing.
 @end itemize
 
 @heading In @code{GCC} 3.1 (formerly known as g77-0.5.27) versus @code{GCC} 3.0:
