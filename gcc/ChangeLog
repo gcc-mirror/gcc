@@ -1,3 +1,10 @@
+2001-09-05  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_mov, alpha_expand_mov_nobwx):
+	New functions split out of md file expanders.
+	* config/alpha/alpha-protos.h: Declare them.
+	* config/alpha/alpha.md (movqi, movhi, movsi, movdi): Use them.
+
 2001-09-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (funlike_invocation_p): No need to restore context.

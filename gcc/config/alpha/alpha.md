@@ -4809,19 +4809,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(match_operand:SI 1 "general_operand" ""))]
   ""
 {
-  if (GET_CODE (operands[0]) == MEM
-      && ! reg_or_0_operand (operands[1], SImode))
-    operands[1] = force_reg (SImode, operands[1]);
-
-  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], SImode))
-    ;
-  else if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      operands[1]
-	= alpha_emit_set_const (operands[0], SImode, INTVAL (operands[1]), 3);
-      if (rtx_equal_p (operands[0], operands[1]))
-	DONE;
-    }
+  if (alpha_expand_mov (SImode, operands))
+    DONE;
 })
 
 ;; Split a load of a large constant into the appropriate two-insn
@@ -4901,68 +4890,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(match_operand:DI 1 "general_operand" ""))]
   ""
 {
-  rtx tem;
-
-  if (GET_CODE (operands[0]) == MEM
-      && ! reg_or_0_operand (operands[1], DImode))
-    operands[1] = force_reg (DImode, operands[1]);
-
-  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], DImode))
-    ;
-  else if (GET_CODE (operands[1]) == CONST_INT
-	   && (tem = alpha_emit_set_const (operands[0], DImode,
-					   INTVAL (operands[1]), 3)) != 0)
-    {
-      if (rtx_equal_p (tem, operands[0]))
-	DONE;
-      else
-	operands[1] = tem;
-    }
-  else if (CONSTANT_P (operands[1]))
-    {
-      if (TARGET_BUILD_CONSTANTS)
-	{
-	  HOST_WIDE_INT i0, i1;
-
-	  if (GET_CODE (operands[1]) == CONST_INT)
-	    {
-	      i0 = INTVAL (operands[1]);
-	      i1 = -(i0 < 0);
-	    }
-	  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	    {
-#if HOST_BITS_PER_WIDE_INT >= 64
-	      i0 = CONST_DOUBLE_LOW (operands[1]);
-	      i1 = -(i0 < 0);
-#else
-	      i0 = CONST_DOUBLE_LOW (operands[1]);
-	      i1 = CONST_DOUBLE_HIGH (operands[1]);
-#endif
-	    }
-	  else
-	    abort();
-
-          tem = alpha_emit_set_long_const (operands[0], i0, i1);
-          if (rtx_equal_p (tem, operands[0]))
-	    DONE;
-          else
-	    operands[1] = tem;
-	}
-      else
-	{
-	  operands[1] = force_const_mem (DImode, operands[1]);
-	  if (reload_in_progress)
-	    {
-	      emit_move_insn (operands[0], XEXP (operands[1], 0));
-	      operands[1] = copy_rtx (operands[1]);
-	      XEXP (operands[1], 0) = operands[0];
-	    }
-	  else
-	    operands[1] = validize_mem (operands[1]);
-	}
-    }
-  else
-    abort ();
+  if (alpha_expand_mov (DImode, operands))
+    DONE;
 })
 
 ;; Split a load of a large constant into the appropriate two-insn
@@ -5123,116 +5052,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(match_operand:QI 1 "general_operand" ""))]
   ""
 {
-  if (TARGET_BWX)
-    {
-      if (GET_CODE (operands[0]) == MEM
-	  && ! reg_or_0_operand (operands[1], QImode))
-	operands[1] = force_reg (QImode, operands[1]);
-
-      if (GET_CODE (operands[1]) == CONST_INT
-	       && ! input_operand (operands[1], QImode))
-	{
-	  operands[1] = alpha_emit_set_const (operands[0], QImode,
-					      INTVAL (operands[1]), 3);
-
-	  if (rtx_equal_p (operands[0], operands[1]))
-	    DONE;
-	}
-
-      goto def;
-    }
-
-  /* If the output is not a register, the input must be.  */
-  if (GET_CODE (operands[0]) == MEM)
-    operands[1] = force_reg (QImode, operands[1]);
-
-  /* Handle four memory cases, unaligned and aligned for either the input
-     or the output.  The only case where we can be called during reload is
-     for aligned loads; all other cases require temporaries.  */
-
-  if (GET_CODE (operands[1]) == MEM
-      || (GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == MEM)
-      || (reload_in_progress && GET_CODE (operands[1]) == REG
-	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-      || (reload_in_progress && GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == REG
-	  && REGNO (SUBREG_REG (operands[1])) >= FIRST_PSEUDO_REGISTER))
-    {
-      if (aligned_memory_operand (operands[1], QImode))
-	{
-	  if (reload_in_progress)
-	    {
-	      emit_insn (gen_reload_inqi_help
-		         (operands[0], operands[1],
-			  gen_rtx_REG (SImode, REGNO (operands[0]))));
-	    }
-	  else
-	    {
-	      rtx aligned_mem, bitnum;
-	      rtx scratch = gen_reg_rtx (SImode);
-
-	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-
-	      emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
-					     scratch));
-	    }
-	}
-      else
-	{
-	  /* Don't pass these as parameters since that makes the generated
-	     code depend on parameter evaluation order which will cause
-	     bootstrap failures.  */
-
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx seq
-	    = gen_unaligned_loadqi (operands[0],
-				    get_unaligned_address (operands[1], 0),
-				    temp1, temp2);
-
-	  alpha_set_memflags (seq, operands[1]);
-	  emit_insn (seq);
-	}
-
-      DONE;
-    }
-
-  else if (GET_CODE (operands[0]) == MEM
-	   || (GET_CODE (operands[0]) == SUBREG
-	       && GET_CODE (SUBREG_REG (operands[0])) == MEM)
-	   || (reload_in_progress && GET_CODE (operands[0]) == REG
-	       && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-	   || (reload_in_progress && GET_CODE (operands[0]) == SUBREG
-	       && GET_CODE (SUBREG_REG (operands[0])) == REG
-	       && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
-    {
-      if (aligned_memory_operand (operands[0], QImode))
-	{
-	  rtx aligned_mem, bitnum;
-	  rtx temp1 = gen_reg_rtx (SImode);
-	  rtx temp2 = gen_reg_rtx (SImode);
-
-	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
-
-	  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
-					temp1, temp2));
-	}
-      else
-	{
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx temp3 = gen_reg_rtx (DImode);
-	  rtx seq
-	    = gen_unaligned_storeqi (get_unaligned_address (operands[0], 0),
-				     operands[1], temp1, temp2, temp3);
-
-	  alpha_set_memflags (seq, operands[0]);
-	  emit_insn (seq);
-	}
-      DONE;
-    }
- def:;
+  if (TARGET_BWX
+      ? alpha_expand_mov (QImode, operands)
+      : alpha_expand_mov_nobwx (QImode, operands))
+    DONE;
 })
 
 (define_expand "movhi"
@@ -5240,117 +5063,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(match_operand:HI 1 "general_operand" ""))]
   ""
 {
-  if (TARGET_BWX)
-    {
-      if (GET_CODE (operands[0]) == MEM
-	  && ! reg_or_0_operand (operands[1], HImode))
-	operands[1] = force_reg (HImode, operands[1]);
-
-      if (GET_CODE (operands[1]) == CONST_INT
-	       && ! input_operand (operands[1], HImode))
-	{
-	  operands[1] = alpha_emit_set_const (operands[0], HImode,
-					      INTVAL (operands[1]), 3);
-
-	  if (rtx_equal_p (operands[0], operands[1]))
-	    DONE;
-	}
-
-      goto def;
-    }
-
-  /* If the output is not a register, the input must be.  */
-  if (GET_CODE (operands[0]) == MEM)
-    operands[1] = force_reg (HImode, operands[1]);
-
-  /* Handle four memory cases, unaligned and aligned for either the input
-     or the output.  The only case where we can be called during reload is
-     for aligned loads; all other cases require temporaries.  */
-
-  if (GET_CODE (operands[1]) == MEM
-      || (GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == MEM)
-      || (reload_in_progress && GET_CODE (operands[1]) == REG
-	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-      || (reload_in_progress && GET_CODE (operands[1]) == SUBREG
-	  && GET_CODE (SUBREG_REG (operands[1])) == REG
-	  && REGNO (SUBREG_REG (operands[1])) >= FIRST_PSEUDO_REGISTER))
-    {
-      if (aligned_memory_operand (operands[1], HImode))
-	{
-	  if (reload_in_progress)
-	    {
-	      emit_insn (gen_reload_inhi_help
-		         (operands[0], operands[1],
-			  gen_rtx_REG (SImode, REGNO (operands[0]))));
-	    }
-	  else
-	    {
-	      rtx aligned_mem, bitnum;
-	      rtx scratch = gen_reg_rtx (SImode);
-
-	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-
-	      emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
-					     scratch));
-	    }
-	}
-      else
-	{
-	  /* Don't pass these as parameters since that makes the generated
-	     code depend on parameter evaluation order which will cause
-	     bootstrap failures.  */
-
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx seq
-	    = gen_unaligned_loadhi (operands[0],
-				    get_unaligned_address (operands[1], 0),
-				    temp1, temp2);
-
-	  alpha_set_memflags (seq, operands[1]);
-	  emit_insn (seq);
-	}
-
-      DONE;
-    }
-
-  else if (GET_CODE (operands[0]) == MEM
-	   || (GET_CODE (operands[0]) == SUBREG
-	       && GET_CODE (SUBREG_REG (operands[0])) == MEM)
-	   || (reload_in_progress && GET_CODE (operands[0]) == REG
-	       && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-	   || (reload_in_progress && GET_CODE (operands[0]) == SUBREG
-	       && GET_CODE (SUBREG_REG (operands[0])) == REG
-	       && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
-    {
-      if (aligned_memory_operand (operands[0], HImode))
-	{
-	  rtx aligned_mem, bitnum;
-	  rtx temp1 = gen_reg_rtx (SImode);
-	  rtx temp2 = gen_reg_rtx (SImode);
-
-	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
-
-	  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
-					temp1, temp2));
-	}
-      else
-	{
-	  rtx temp1 = gen_reg_rtx (DImode);
-	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx temp3 = gen_reg_rtx (DImode);
-	  rtx seq
-	    = gen_unaligned_storehi (get_unaligned_address (operands[0], 0),
-				     operands[1], temp1, temp2, temp3);
-
-	  alpha_set_memflags (seq, operands[0]);
-	  emit_insn (seq);
-	}
-
-      DONE;
-    }
- def:;
+  if (TARGET_BWX
+      ? alpha_expand_mov (HImode, operands)
+      : alpha_expand_mov_nobwx (HImode, operands))
+    DONE;
 })
 
 ;; Here are the versions for reload.  Note that in the unaligned cases
