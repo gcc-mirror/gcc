@@ -394,7 +394,7 @@ template <class _Tp, class _Alloc = allocator<_Tp> >
 class deque : protected _Deque_base<_Tp, _Alloc> {
 
   // concept requirements
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
 
   typedef _Deque_base<_Tp, _Alloc> _Base;
 public:                         // Basic types

@@ -11,6 +11,7 @@
 #define _GLIBCPP_BOOST_CONCEPT_CHECK 1
 
 #pragma GCC system_header
+#include <bits/std_cstddef.h>                // for ptrdiff_t, used next
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 #include <utility>                           // for pair<>
 
@@ -20,8 +21,11 @@ namespace __gnu_cxx
 
 #define _IsUnused __attribute__ ((__unused__))
 
+// When the C-C code is in use, we would like this function to do as little
+// as possible at runtime, use as few resources as possible, and hopefully
+// be elided out of existence... hmmm.
 template <class _Concept>
-void __function_requires()
+inline void __function_requires()
 {
   void (_Concept::*__x)() _IsUnused = &_Concept::__constraints;
 }

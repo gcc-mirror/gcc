@@ -48,6 +48,7 @@ GLIBCPP_ENABLE_CHEADERS([c_std])
 GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
+GLIBCPP_ENABLE_CONCEPT_CHECKS
 
 
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then

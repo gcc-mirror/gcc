@@ -1355,7 +1355,7 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 
   AC_ARG_ENABLE(c99,
   changequote(<<, >>)dnl
-  <<--enable-c99      turns on 'ISO/IEC 9899:1999 support' [default=>>GLIBCPP_ENABLE_C99_DEFAULT],
+  <<--enable-c99            turns on 'ISO/IEC 9899:1999 support' [default=>>GLIBCPP_ENABLE_C99_DEFAULT],
   changequote([, ])dnl
   [case "$enableval" in
    yes) enable_c99=yes ;;
@@ -1921,4 +1921,33 @@ AC_DEFUN(AC_LC_MESSAGES, [
     fi
   ])
 ])
+
+
+dnl
+dnl Check for whether the Boost-derived checks should be turned on.
+dnl
+dnl GLIBCPP_ENABLE_CONCEPT_CHECKS
+dnl --enable-concept-checks turns them on.
+dnl --disable-concept-checks leaves them off.
+dnl  +  Usage:  GLIBCPP_ENABLE_CONCEPT_CHECKS[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       defaults to `no'.
+AC_DEFUN(GLIBCPP_ENABLE_CONCEPT_CHECKS, [dnl
+define([GLIBCPP_ENABLE_CONCEPT_CHECKS_DEFAULT], ifelse($1, yes, yes, no))dnl
+AC_ARG_ENABLE(concept-checks,
+changequote(<<, >>)dnl
+<<  --enable-concept-checks use Boost-derived template checks [default=>>GLIBCPP_ENABLE_CONCEPT_CHECKS_DEFAULT],
+changequote([, ])dnl
+[case "$enableval" in
+ yes) enable_concept_checks=yes ;;
+ no)  enable_concept_checks=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable concept checks]) ;;
+ esac],
+enable_concept_checks=GLIBCPP_ENABLE_CONCEPT_CHECKS_DEFAULT)dnl
+dnl Option parsed, now set things appropriately
+if test x"$enable_concept_checks" = xyes; then
+  AC_DEFINE(_GLIBCPP_CONCEPT_CHECKS)
+fi
+])
+
 

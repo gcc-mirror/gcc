@@ -1,3 +1,40 @@
+2001-11-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Fix spacing.
+	(GLIBCPP_ENABLE_CONCEPT_CHECKS):  New macro.
+	* configure.in:  Call here.
+	* acconfig.h:  Add _GLIBCPP_CONCEPT_CHECKS.
+	* include/bits/boost_concept_check.h:  Fix headers.
+	(__function_requires):  Make inline.
+	* include/bits/c++config (_GLIBCPP_CONCEPT_CHECKS):  Remove.
+	* aclocal.m4:  Regenerate.
+	* config.h.in:  Regenerate.
+	* configure:  Regenerate.
+
+	Move trailing ';' inside macro, PR libstdc++/3666.
+	* include/bits/concept_check.h:  Add semicolon.
+	* include/bits/stl_algo.h:  Remove semicolon.
+	* include/bits/stl_algobase.h:  Likewise.
+	* include/bits/stl_deque.h:  Likewise.
+	* include/bits/stl_heap.h:  Likewise.
+	* include/bits/stl_iterator_base_funcs.h:  Likewise.
+	* include/bits/stl_list.h:  Likewise.
+	* include/bits/stl_map.h:  Likewise.
+	* include/bits/stl_multimap.h:  Likewise.
+	* include/bits/stl_multiset.h:  Likewise.
+	* include/bits/stl_numeric.h:  Likewise.
+	* include/bits/stl_queue.h:  Likewise.
+	* include/bits/stl_set.h:  Likewise.
+	* include/bits/stl_stack.h:  Likewise.
+	* include/bits/stl_vector.h:  Likewise.
+	* include/ext/hash_map:  Likewise.
+	* include/ext/hash_set:  Likewise.
+	* include/ext/slist:  Likewise.
+
+	* src/concept-inst.cc:  New file with explicit instantiations.
+	* src/Makefile.am (sources):  Add here, with special build rules.
+	* src/Makefile.in:  Regenerate.
+
 2001-11-01  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_complex.h (_Norm_helper): New class template.

@@ -34,6 +34,9 @@
 // Define if using setrlimit to limit memory usage during 'make check'.
 #undef _GLIBCPP_MEM_LIMITS
 
+// Define to use concept checking code from the boost libraries.
+#undef _GLIBCPP_CONCEPT_CHECKS
+
 // Define if you have the atan2f function.
 #undef _GLIBCPP_HAVE_ATAN2F 
 
