@@ -226,15 +226,6 @@ mems_in_disjoint_alias_sets_p (mem1, mem2)
     abort ();
 #endif
 
-  /* The code used in varargs macros are often not conforming ANSI C,
-     which can trick the compiler into making incorrect aliasing
-     assumptions in these functions.  So, we don't use alias sets in
-     such a function.  FIXME: This should be moved into the front-end;
-     it is a language-dependent notion, and there's no reason not to
-     still use these checks to handle globals.  */
-  if (current_function_stdarg || current_function_varargs)
-    return 0;
-
   /* If have no alias set information for one of the MEMs, we have to assume
      it can alias anything.  */
   if (MEM_ALIAS_SET (mem1) == 0 || MEM_ALIAS_SET (mem2) == 0)

@@ -1,3 +1,8 @@
+2000-11-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* alias.c (mems_in_disjoint_alias_sets_p): Do use alias sets in
+	stdarg and varargs functions.
+
 2000-11-19  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* gcc.c (process_command): Define 'j' variable when
