@@ -2771,15 +2771,15 @@ extern void rewrite_address ();
 #endif
 
 /* Variables in i386.c */
-extern char *ix86_cpu_string;			/* for -mcpu=<xxx> */
-extern char *ix86_arch_string;			/* for -march=<xxx> */
-extern char *i386_reg_alloc_order;		/* register allocation order */
-extern char *i386_regparm_string;		/* # registers to use to pass args */
-extern char *i386_align_loops_string;		/* power of two alignment for loops */
-extern char *i386_align_jumps_string;		/* power of two alignment for non-loop jumps */
-extern char *i386_align_funcs_string;		/* power of two alignment for functions */
-extern char *i386_preferred_stack_boundary_string;/* power of two alignment for stack boundary */
-extern char *i386_branch_cost_string;		/* values 1-5: see jump.c */
+extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
+extern const char *ix86_arch_string;		/* for -march=<xxx> */
+extern const char *i386_reg_alloc_order;	/* register allocation order */
+extern const char *i386_regparm_string;		/* # registers to use to pass args */
+extern const char *i386_align_loops_string;	/* power of two alignment for loops */
+extern const char *i386_align_jumps_string;	/* power of two alignment for non-loop jumps */
+extern const char *i386_align_funcs_string;	/* power of two alignment for functions */
+extern const char *i386_preferred_stack_boundary_string;/* power of two alignment for stack boundary */
+extern const char *i386_branch_cost_string;	/* values 1-5: see jump.c */
 extern int i386_regparm;			/* i386_regparm_string as a number */
 extern int i386_align_loops;			/* power of two alignment for loops */
 extern int i386_align_jumps;			/* power of two alignment for non-loop jumps */
