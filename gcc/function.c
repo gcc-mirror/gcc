@@ -3727,11 +3727,7 @@ assign_parms (fndecl, second_time)
       /* Set NAMED_ARG if this arg should be treated as a named arg.  For
 	 most machines, if this is a varargs/stdarg function, then we treat
 	 the last named arg as if it were anonymous too.  */
-#ifdef STRICT_ARGUMENT_NAMING
-      int named_arg = 1;
-#else
-      int named_arg = ! last_named;
-#endif
+      int named_arg = STRICT_ARGUMENT_NAMING ? 1 : ! last_named;
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors
