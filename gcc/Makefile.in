@@ -688,9 +688,9 @@ stamp-objlist: Makefile $(OBJS) $(BC_OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o choose-temp.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o choose-temp.o \
-	  $(EXTRA_GCC_OBJS) $(LIBS)
+xgcc: gcc.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o \
+	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc
@@ -1177,6 +1177,7 @@ dumpvers: dumpvers.c
 version.o: version.c
 obstack.o: obstack.c
 choose-temp.o: choose-temp.c
+pexecute.o: pexecute.c
 
 convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
 
@@ -1687,14 +1688,18 @@ cppalloc.o: cppalloc.c $(CONFIG_H)
 
 proto: config.status protoize unprotoize SYSCALLS.c.X
 
-protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
+protoize: protoize.o getopt.o getopt1.o getpwd.o version.o \
+    pexecute.o choose-temp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	  protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS)
+	  protoize.o getopt.o getopt1.o getpwd.o version.o \
+	  pexecute.o choose-temp.o $(LIBS)
 protoize.o: stamp-proto ; @true
 
-unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
+unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o \
+    pexecute.o choose-temp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS)
+	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
+	  pexecute.o choose-temp.o $(LIBS)
 unprotoize.o:	stamp-proto ; @true
 
 stamp-proto: protoize.c getopt.h $(CONFIG_H)
