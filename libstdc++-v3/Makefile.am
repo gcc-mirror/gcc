@@ -48,7 +48,7 @@ WARN_CXXFLAGS = \
 # or configure.in to see how they are set.
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
-	@CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
+	@EXTRA_CXX_FLAGS@ \
 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
 
 

@@ -506,8 +506,8 @@ namespace std
     use_facet< const ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCPP_USE_WCHAR_T
 
-  // Include host-specific ctype specializations.
-  #include <bits/ctype_specializations.h>
+  // Include host-specific ctype inlines.
+  #include <bits/ctype_inline.h>
 
   // 22.2.1.2  Template class ctype_byname
   template<typename _CharT>

@@ -23,6 +23,8 @@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
+noinst_LTLIBRARIES = libio.la
+
 # Root level of the include sources.
 glibcpp_includedir = $(top_srcdir)/include
 
@@ -36,37 +38,10 @@ else
 LIBIO_INCLUDES = 
 endif
 
-CONFIG_INCLUDES = \
-	-I$(top_srcdir)/@cpu_include_dir@ \
-	-I$(top_srcdir)/@ctype_include_dir@
-
 INCLUDES = \
 	-nostdinc++ \
 	-I$(top_builddir) -I$(glibcpp_includedir) \
-	$(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
-
-noinst_LTLIBRARIES = libio.la
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set.
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-AC_CFLAGS = \
-	$(WERROR) @CPU_FLAGS@ @DEBUG_FLAGS@ 
-
-# Need to manually set this option because AC_CXXFLAGS has to be at
-# the end of the compile line so that -O2 can be overridden as the
-# occasion call for it. (ie, --enable-debug)
-AM_CFLAGS = \
-	-D_GNU_SOURCE $(AC_CFLAGS) 
-
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(CFLAGS) \
-	$(AM_CFLAGS) 
-
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) \$(CPPFLAGS)  $(CFLAGS) $(AM_CFLAGS)
-
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(CFLAGS) $(AM_CFLAGS) $(LDFLAGS) -o $@
-
+	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 libio_headers = \
         libio.h libioP.h iolibio.h
@@ -74,7 +49,6 @@ libio_headers = \
 if GLIBCPP_NEED_LIBIO
 LIBIO_SRCS = \
 	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c
-#	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c c_codecvt.c
 else
 LIBIO_SRCS =
 endif
@@ -93,14 +67,9 @@ else
 LIBIO_XTRASRCS =
 endif
 
-
 EXTRA_DIST = iostreamP.h
 
 libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS) $(LIBIO_XTRASRCS)
 
 
-
-
-
-
-
+AM_CFLAGS = -D_GNU_SOURCE @DEBUG_FLAGS@ 
