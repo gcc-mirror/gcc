@@ -162,6 +162,11 @@ dtor_section ()							\
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG) != 0) fprintf ((FILE), "\t.p2align %d\n", LOG)
 
+/* This is how to output a global symbol in the BSS section.  */
+#undef ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
 /* djgpp has atexit ().  */
 #undef HAVE_ATEXIT
 #define HAVE_ATEXIT
