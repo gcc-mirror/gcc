@@ -128,6 +128,7 @@ struct work_stuff
   int static_type;	/* A static member function */
   int const_type;	/* A const member function */
   int volatile_type;    /* A volatile member function */
+  int dllimported;	/* Symbol imported from a PE DLL */
   char **tmpl_argvec;   /* Template function arguments. */
   int ntmpl_args;       /* The number of template function arguments. */
   int forgetting_types; /* Nonzero if we are not remembering the types
@@ -672,6 +673,7 @@ internal_cplus_demangle (work, mangled)
   work->constructor = work->destructor = 0;
   work->static_type = work->const_type = 0;
   work->volatile_type = 0;
+  work->dllimported = 0;
 
   if ((mangled != NULL) && (*mangled != '\0'))
     {
@@ -705,6 +707,11 @@ internal_cplus_demangle (work, mangled)
         {
           string_prepend (&decl, "global destructors keyed to ");
           work->destructor = 0;
+        }
+      else if (work->dllimported == 1)
+        {
+          string_prepend (&decl, "import stub for ");
+          work->dllimported = 0;
         }
       demangled = mop_up (work, &decl, success);
     }
@@ -1757,7 +1764,17 @@ demangle_prefix (work, mangled, declp)
   const char *scan;
   int i;
 
-  if (strlen(*mangled) >= 11 && strncmp(*mangled, "_GLOBAL_", 8) == 0)
+  if (strlen(*mangled) > 6
+      && (strncmp(*mangled, "_imp__", 6) == 0 
+          || strncmp(*mangled, "__imp_", 6) == 0))
+    {
+      /* it's a symbol imported from a PE dynamic library. Check for both
+         new style prefix _imp__ and legacy __imp_ used by older versions
+	 of dlltool. */
+      (*mangled) += 6;
+      work->dllimported = 1;
+    }
+  else if (strlen(*mangled) >= 11 && strncmp(*mangled, "_GLOBAL_", 8) == 0)
     {
       char *marker = strchr (cplus_markers, (*mangled)[8]);
       if (marker != NULL && *marker == (*mangled)[10])
