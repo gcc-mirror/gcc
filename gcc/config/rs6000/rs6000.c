@@ -6899,16 +6899,16 @@ altivec_expand_ld_builtin (tree exp, rtx target, bool *expandedp)
   switch (fcode)
     {
     case ALTIVEC_BUILTIN_LD_INTERNAL_16qi:
-      icode = CODE_FOR_altivec_lvx_16qi;
+      icode = CODE_FOR_altivec_lvx_v16qi;
       break;
     case ALTIVEC_BUILTIN_LD_INTERNAL_8hi:
-      icode = CODE_FOR_altivec_lvx_8hi;
+      icode = CODE_FOR_altivec_lvx_v8hi;
       break;
     case ALTIVEC_BUILTIN_LD_INTERNAL_4si:
-      icode = CODE_FOR_altivec_lvx_4si;
+      icode = CODE_FOR_altivec_lvx_v4si;
       break;
     case ALTIVEC_BUILTIN_LD_INTERNAL_4sf:
-      icode = CODE_FOR_altivec_lvx_4sf;
+      icode = CODE_FOR_altivec_lvx_v4sf;
       break;
     default:
       *expandedp = false;
@@ -6953,16 +6953,16 @@ altivec_expand_st_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   switch (fcode)
     {
     case ALTIVEC_BUILTIN_ST_INTERNAL_16qi:
-      icode = CODE_FOR_altivec_stvx_16qi;
+      icode = CODE_FOR_altivec_stvx_v16qi;
       break;
     case ALTIVEC_BUILTIN_ST_INTERNAL_8hi:
-      icode = CODE_FOR_altivec_stvx_8hi;
+      icode = CODE_FOR_altivec_stvx_v8hi;
       break;
     case ALTIVEC_BUILTIN_ST_INTERNAL_4si:
-      icode = CODE_FOR_altivec_stvx_4si;
+      icode = CODE_FOR_altivec_stvx_v4si;
       break;
     case ALTIVEC_BUILTIN_ST_INTERNAL_4sf:
-      icode = CODE_FOR_altivec_stvx_4sf;
+      icode = CODE_FOR_altivec_stvx_v4sf;
       break;
     default:
       *expandedp = false;

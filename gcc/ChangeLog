@@ -1,3 +1,22 @@
+2004-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/altivec.md (VI, VF, V): New mode macros.
+	(altivec_lvx_4si, altivec_lvx_8hi, altivec_lvx_16qi,
+	altivec_lvx_4sf): Rename and replace with ...
+	(altivec_lvx_<mode>): ... mode macro version.
+	(altivec_stvx_4si, altivec_stvx_8hi, altivec_stvx_16qi,
+	altivec_stvx_4sf): Rename and replace with ... 
+	(altivec_stvx_<mode>): ... mode macro version.
+	(movv4si, movv8hi, movv16qi, movv4sf}): Replace with ...
+	(mov<mode>): ... mode macro version.
+	(*movv4si_internal, *movv8hi_internal1, *movv16qi_internal1,
+	*movv4sf_internal1): Replace with ...
+	(*mov<mode>_internal): ... mode macro version.
+	(get_vrsave_internal, *set_vrsave_internal, *save_world,
+	*restore_world): Unquote output statements.
+	* config/rs6000/rs6000.c (altivec_expand_ld_builtin,
+	altivec_expand_st_builtin): Adjust insn names.
+
 2004-11-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_complex_function_value): Revert
