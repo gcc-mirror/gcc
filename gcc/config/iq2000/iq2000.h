@@ -589,9 +589,6 @@ typedef struct iq2000_args {
 
 #define STRICT_ARGUMENT_NAMING  1
 
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = ptr_type_node
-
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   iq2000_va_start (valist, nextarg)
 

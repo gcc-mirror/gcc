@@ -350,6 +350,7 @@ static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *,
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
 				    int *, int);
+static tree rs6000_build_builtin_va_list (void);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -553,6 +554,9 @@ static const char alt_reg_names[][8] =
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4338,8 +4342,8 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* Create the va_list data type.  */
 
-tree
-rs6000_build_va_list (void)
+static tree
+rs6000_build_builtin_va_list (void)
 {
   tree f_gpr, f_fpr, f_res, f_ovf, f_sav, record, type_decl;
 

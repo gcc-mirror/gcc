@@ -1828,10 +1828,6 @@ typedef struct ix86_args {
   ix86_setup_incoming_varargs (&(CUM), (MODE), (TYPE), &(PRETEND_SIZE), \
 			       (NO_RTL))
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  ((VALIST) = ix86_build_va_list ())
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG) \
   ix86_va_start (VALIST, NEXTARG)

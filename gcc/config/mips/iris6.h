@@ -423,12 +423,6 @@ while (0)
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-/* Define the `__builtin_va_list' type for the ABI.  On IRIX 6, this
-   type is `char *'.  */
-#undef BUILD_VA_LIST_TYPE
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = build_pointer_type (char_type_node)
-
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME mips_declare_object_name
 

@@ -103,10 +103,6 @@ extern rtx sh_va_arg (tree, tree);
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern tree sh_build_va_list (void);
-#endif /* TREE_CODE */
-
 extern const char *output_jump_label_table (void);
 extern int sh_handle_pragma (int (*)(void), void (*)(int), const char *);
 extern struct rtx_def *get_fpscr_rtx (void);

@@ -96,7 +96,6 @@ extern int a7_overlap_mentioned_p (rtx);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree);
 extern struct rtx_def *function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, int);
-extern tree xtensa_build_va_list (void);
 #endif /* TREE_CODE */
 
 extern int xtensa_mask_immediate (int);

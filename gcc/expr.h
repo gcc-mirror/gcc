@@ -331,6 +331,7 @@ extern rtx gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Functions from builtins.c:  */
 extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern tree std_build_builtin_va_list (void);
 extern void std_expand_builtin_va_start (tree, rtx);
 extern rtx std_expand_builtin_va_arg (tree, tree);
 extern rtx expand_builtin_va_arg (tree, tree);

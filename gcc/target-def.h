@@ -316,6 +316,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #define TARGET_MACHINE_DEPENDENT_REORG 0
 
+#define TARGET_BUILD_BUILTIN_VA_LIST std_build_builtin_va_list
+
 #define TARGET_GET_PCH_VALIDITY default_get_pch_validity
 #define TARGET_PCH_VALID_P default_pch_valid_p
 
@@ -377,6 +379,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_ADDRESS_COST,				\
   TARGET_DWARF_REGISTER_SPAN,                   \
   TARGET_MACHINE_DEPENDENT_REORG,		\
+  TARGET_BUILD_BUILTIN_VA_LIST,			\
   TARGET_GET_PCH_VALIDITY,			\
   TARGET_PCH_VALID_P,				\
   TARGET_HAVE_NAMED_SECTIONS,			\

@@ -246,6 +246,7 @@ static rtx sh_builtin_saveregs (void);
 static void sh_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static bool sh_strict_argument_naming (CUMULATIVE_ARGS *);
 static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
+static tree sh_build_builtin_va_list (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -344,6 +345,9 @@ static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 #define TARGET_STRICT_ARGUMENT_NAMING sh_strict_argument_naming
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED sh_pretend_outgoing_varargs_named
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5911,8 +5915,8 @@ sh_builtin_saveregs (void)
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 
-tree
-sh_build_va_list (void)
+static tree
+sh_build_builtin_va_list (void)
 {
   tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
   tree record;

@@ -82,7 +82,6 @@ extern void i960_function_name_declare PARAMS ((FILE *, const char *, tree));
 extern void i960_function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern int i960_round_align PARAMS ((int, tree));
 extern void i960_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int));
-extern tree i960_build_va_list PARAMS ((void));
 extern int i960_final_reg_parm_stack_space PARAMS ((int, tree));
 extern int i960_reg_parm_stack_space PARAMS ((tree));
 #endif /* TREE_CODE */

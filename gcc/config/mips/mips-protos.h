@@ -84,7 +84,6 @@ extern bool mips_pad_arg_upward (enum machine_mode, tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
 extern int mips_setup_incoming_varargs (const CUMULATIVE_ARGS *,
 					enum machine_mode, tree, int);
-extern tree mips_build_va_list (void);
 extern void mips_va_start (tree, rtx);
 extern struct rtx_def *mips_va_arg (tree, tree);
 

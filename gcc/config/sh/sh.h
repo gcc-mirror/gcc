@@ -2033,10 +2033,6 @@ struct sh_args {
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.  */
 
-/* Define the `__builtin_va_list' type for the ABI.  */
-#define BUILD_VA_LIST_TYPE(VALIST) \
-  (VALIST) = sh_build_va_list ()
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   sh_va_start (valist, nextarg)

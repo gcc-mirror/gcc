@@ -52,6 +52,7 @@ static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
 static bool i960_rtx_costs PARAMS ((rtx, int, int, int *));
 static int i960_address_cost PARAMS ((rtx));
+static tree i960_build_builtin_va_list (void);
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -113,6 +114,9 @@ static int ret_label = 0;
 #define TARGET_RTX_COSTS i960_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST i960_address_cost
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST i960_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2600,8 +2604,8 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 
-tree
-i960_build_va_list ()
+static tree
+i960_build_builtin_va_list ()
 {
   return build_array_type (unsigned_type_node,
 			   build_index_type (size_one_node));
