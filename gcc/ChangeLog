@@ -3,6 +3,15 @@
 	* configure.in (slibdir): Accept an --with-slibdir option.
 	Use "test" not "[" in configure.  Default to $(libdir).
 
+	* config/t-linux (SHLIB_INSTALL): Double quote slibdir;
+	fix typo in rm -f.
+	* config/t-aix43 (SHLIB_INSTALL): Likewise.
+	* config/alpha/t-osf4 (SHLIB_INSTALL): Likewise.
+	(SHLIB_LINK): Create links for the soname.
+	* config/mips/t-iris6: Likewise.
+	* config/sparc/t-slibgcc: Likewise.
+	* config/sparc/t-slibgcc-sld: Likewise.
+
 2001-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (constant_call_address_operand): Accept
