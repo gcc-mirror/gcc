@@ -1,3 +1,8 @@
+Mon Jun 21 23:32:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Thu Jun 17 15:07 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+	* fixincludes: ISCNTL patch
+
 Mon Jun 21 22:15:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* rs6000.c (find_addr_reg): Handle LO_SUM addresses.
