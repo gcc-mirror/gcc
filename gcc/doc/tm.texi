@@ -849,7 +849,7 @@ function pointers below.
 @findex init_machine_status
 @item   init_machine_status
 This is a @code{void (*)(struct function *)} function pointer.  If this
-pointer is non-NULL it will be called once per function, before function
+pointer is non-@code{NULL} it will be called once per function, before function
 compilation starts, in order to allow the target to perform any target
 specific initialisation of the @code{struct function} structure.  It is
 intended that this would be used to initialise the @code{machine} of
@@ -858,14 +858,14 @@ that structure.
 @findex free_machine_status
 @item   free_machine_status
 This is a @code{void (*)(struct function *)} function pointer.  If this
-pointer is non-NULL it will be called once per function, after the
+pointer is non-@code{NULL} it will be called once per function, after the
 function has been compiled, in order to allow any memory allocated
 during the @code{init_machine_status} function call to be freed.
 
 @findex mark_machine_status
 @item   mark_machine_status
 This is a @code{void (*)(struct function *)} function pointer.  If this
-pointer is non-NULL it will be called once per function in order to mark
+pointer is non-@code{NULL} it will be called once per function in order to mark
 any data items in the @code{struct machine_function} structure which
 need garbage collection.
 
@@ -6575,7 +6575,7 @@ buffer in which to store the name; its length is as long as
 
 The argument @var{is_inst} specifies whether the method is an instance
 method or a class method; @var{class_name} is the name of the class;
-@var{cat_name} is the name of the category (or NULL if the method is not
+@var{cat_name} is the name of the category (or @code{NULL} if the method is not
 in a category); and @var{sel_name} is the name of the selector.
 
 On systems where the assembler can handle quoted names, you can use this

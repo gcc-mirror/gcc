@@ -500,7 +500,7 @@ arguments.
 
 Note that in C (but not in C++) a function declared like @code{void f()}
 is an unprototyped function taking a variable number of arguments; the
-@code{TYPE_ARG_TYPES} of such a function will be NULL@.
+@code{TYPE_ARG_TYPES} of such a function will be @code{NULL}.
 
 @item METHOD_TYPE
 Used to represent the type of a non-static member function.  Like a
@@ -1308,7 +1308,7 @@ This predicate holds if the function an overloaded
 @findex WHILE_COND
 
 A function that has a definition in the current translation unit will
-have a non-NULL @code{DECL_INITIAL}.  However, back ends should not make
+have a non-@code{NULL} @code{DECL_INITIAL}.  However, back ends should not make
 use of the particular value given by @code{DECL_INITIAL}.
 
 The @code{DECL_SAVED_TREE} macro will give the complete body of the
@@ -1423,8 +1423,8 @@ fields.
 @item CASE_LABEL
 
 Use to represent a @code{case} label, range of @code{case} labels, or a
-@code{default} label.  If @code{CASE_LOW} is NULL_TREE, then this is a a
-@code{default} label.  Otherwise, if @code{CASE_HIGH} is NULL_TREE, then
+@code{default} label.  If @code{CASE_LOW} is @code{NULL_TREE}, then this is a a
+@code{default} label.  Otherwise, if @code{CASE_HIGH} is @code{NULL_TREE}, then
 this is an ordinary @code{case} label.  In this case, @code{CASE_LOW} is
 an expression giving the value of the label.  Both @code{CASE_LOW} and
 @code{CASE_HIGH} are @code{INTEGER_CST} nodes.  These values will have
