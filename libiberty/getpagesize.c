@@ -61,7 +61,7 @@ BUGS
 #endif /* GNU_OUR_PAGESIZE */
 
 int
-getpagesize ()
+getpagesize (void)
 {
   return (GNU_OUR_PAGESIZE);
 }
@@ -76,7 +76,7 @@ getpagesize ()
 #endif
 extern unsigned long lib$getsyi(const unsigned short *,...);
 
-int getpagesize ()
+int getpagesize (void)
 {
   long pagsiz = 0L;
   unsigned short itmcod = SYI$_PAGE_SIZE;

@@ -1,5 +1,62 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert libiberty to use ISO C prototype style 4/n.
+	* hashtab.c (higher_prime_index, hash_pointer, eq_pointer, 
+	htab_size, htab_elements, htab_mod_1, htab_mod, htab_mod_m2, 
+	htab_create_alloc, htab_set_functions_ex, htab_create, 
+	htab_try_create, htab_delete, htab_empty, 
+	find_empty_slot_for_expand, htab_expand, htab_find_with_hash, 
+	htab_find, htab_find_slot_with_hash, htab_find_slot, 
+	htab_remove_elt, htab_remove_elt_with_hash, htab_clear_slot, 
+	htab_traverse_noresize, htab_traverse, htab_collisions, 
+	htab_hash_string, iterative_hash): Use ISO C prototype.
+	* hex.c (hex_init): Likewise.
+	* index.c (index): Likewise.
+	* insque.c (insque, remque): Likewise. 
+	* lbasename.c (lbasename): Likewise.
+	* lrealpath.c (lrealpath): Likewise.
+	* make-relative-prefix.c (save_string, split_directories, 
+	free_split_directories, make_relative_prefix): Likewise.
+	* make-temp-file.c (try, choose_tmpdir, make_temp_file): Likewise. 
+	* md5.c (md5_init_ctx, md5_read_ctx, md5_finish_ctx, md5_stream, 
+	md5_buffer, md5_process_bytes, md5_process_block): Likewise.
+	* memchr.c (memchr): Likewise.
+	* memcpy.c (memcpy): Likewise.
+	* memmove.c (memmove): Likewise.
+	* gettimeofday.c (gettimeofday): Likewise.
+	* getruntime.c (get_run_time): Likewise.
+	* getpwd.c (getpwd, getpwd): Likewise.
+	* getpagesize.c (getpagesize): Likewise.
+	* getopt1.c (getopt_long, getopt_long_only, main): Likewise.
+	* getopt.c (my_index, exchange, _getopt_initialize, 
+	_getopt_internal, getopt, main): Likewise.
+	* getcwd.c (getcwd): Likewise.
+	* fnmatch.c (fnmatch): Likewise.
+	* floatformat.c (floatformat_always_valid, 
+	floatformat_i387_ext_is_valid, get_field, floatformat_to_double, 
+	put_field, floatformat_from_double, floatformat_is_valid, 
+	ieee_test, main): Likewise.
+	* fibheap.c (fibheap_new, fibnode_new, fibheap_compare, 
+	fibheap_comp_data, fibheap_insert, fibheap_min, fibheap_min_key, 
+	fibheap_union, fibheap_extract_min, fibheap_replace_key_data, 
+	fibheap_replace_key, fibheap_replace_data, fibheap_delete_node, 
+	fibheap_delete, fibheap_empty, fibheap_extr_min_node, 
+	fibheap_ins_root, fibheap_rem_root, fibheap_consolidate, 
+	fibheap_link, fibheap_cut, fibheap_cascading_cut, 
+	fibnode_insert_after, fibnode_remove): Likewise.
+	* ffs.c (ffs): Likewise.
+	* fdmatch.c (fdmatch): Likewise.
+	* dyn-string.c (dyn_string_init, dyn_string_new, 
+	dyn_string_delete, dyn_string_release, dyn_string_resize, 
+	dyn_string_clear, dyn_string_copy, dyn_string_copy_cstr, 
+	dyn_string_prepend, dyn_string_prepend_cstr, dyn_string_insert, 
+	dyn_string_insert_cstr, dyn_string_insert_char, 
+	dyn_string_append, dyn_string_append_cstr, 
+	dyn_string_append_char, dyn_string_substring, dyn_string_eq):
+	Likewise. 
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert libiberty to use ISO C prototype style 3/n.
 	* cplus-dem.c (set_cplus_marker_for_demangling, consume_count, 
 	consume_count_with_underscores, code_for_qualifier, 

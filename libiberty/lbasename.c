@@ -43,8 +43,7 @@ and a path ending in @code{/} returns the empty string after it.
 #include "filenames.h"
 
 const char *
-lbasename (name)
-     const char *name;
+lbasename (const char *name)
 {
   const char *base;
 

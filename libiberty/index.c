@@ -12,12 +12,10 @@ deprecated in new programs in favor of @code{strchr}.
 
 */
 
-extern char * strchr();
+extern char * strchr(const char *, int);
 
 char *
-index (s, c)
-  char *s;
-  int c;
+index (char *s, int c)
 {
   return strchr (s, c);
 }

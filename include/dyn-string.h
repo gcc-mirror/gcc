@@ -40,24 +40,21 @@ typedef struct dyn_string
   (strcmp ((DS1)->s, (DS2)->s))
 
 
-extern int dyn_string_init              PARAMS ((struct dyn_string *, int));
-extern dyn_string_t dyn_string_new      PARAMS ((int));
-extern void dyn_string_delete           PARAMS ((dyn_string_t));
-extern char *dyn_string_release         PARAMS ((dyn_string_t));
-extern dyn_string_t dyn_string_resize   PARAMS ((dyn_string_t, int));
-extern void dyn_string_clear            PARAMS ((dyn_string_t));
-extern int dyn_string_copy              PARAMS ((dyn_string_t, dyn_string_t));
-extern int dyn_string_copy_cstr         PARAMS ((dyn_string_t, const char *));
-extern int dyn_string_prepend           PARAMS ((dyn_string_t, dyn_string_t));
-extern int dyn_string_prepend_cstr      PARAMS ((dyn_string_t, const char *));
-extern int dyn_string_insert            PARAMS ((dyn_string_t, int,
-						 dyn_string_t));
-extern int dyn_string_insert_cstr       PARAMS ((dyn_string_t, int,
-						 const char *));
-extern int dyn_string_insert_char       PARAMS ((dyn_string_t, int, int));
-extern int dyn_string_append            PARAMS ((dyn_string_t, dyn_string_t));
-extern int dyn_string_append_cstr       PARAMS ((dyn_string_t, const char *));
-extern int dyn_string_append_char       PARAMS ((dyn_string_t, int));
-extern int dyn_string_substring         PARAMS ((dyn_string_t, 
-						 dyn_string_t, int, int));
-extern int dyn_string_eq                PARAMS ((dyn_string_t, dyn_string_t));
+extern int dyn_string_init (struct dyn_string *, int);
+extern dyn_string_t dyn_string_new (int);
+extern void dyn_string_delete (dyn_string_t);
+extern char *dyn_string_release (dyn_string_t);
+extern dyn_string_t dyn_string_resize (dyn_string_t, int);
+extern void dyn_string_clear (dyn_string_t);
+extern int dyn_string_copy (dyn_string_t, dyn_string_t);
+extern int dyn_string_copy_cstr (dyn_string_t, const char *);
+extern int dyn_string_prepend (dyn_string_t, dyn_string_t);
+extern int dyn_string_prepend_cstr (dyn_string_t, const char *);
+extern int dyn_string_insert (dyn_string_t, int, dyn_string_t);
+extern int dyn_string_insert_cstr (dyn_string_t, int, const char *);
+extern int dyn_string_insert_char (dyn_string_t, int, int);
+extern int dyn_string_append (dyn_string_t, dyn_string_t);
+extern int dyn_string_append_cstr (dyn_string_t, const char *);
+extern int dyn_string_append_char (dyn_string_t, int);
+extern int dyn_string_substring (dyn_string_t,  dyn_string_t, int, int);
+extern int dyn_string_eq (dyn_string_t, dyn_string_t);

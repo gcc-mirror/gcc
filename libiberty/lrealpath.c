@@ -73,8 +73,7 @@ extern char *canonicalize_file_name (const char *);
 #endif
 
 char *
-lrealpath (filename)
-     const char *filename;
+lrealpath (const char *filename)
 {
   /* Method 1: The system has a compile time upper bound on a filename
      path.  Use that and realpath() to canonicalize the name.  This is

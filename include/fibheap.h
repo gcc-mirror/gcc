@@ -68,19 +68,19 @@ typedef struct fibnode
 #endif
 } *fibnode_t;
 
-extern fibheap_t fibheap_new PARAMS ((void));
-extern fibnode_t fibheap_insert PARAMS ((fibheap_t, fibheapkey_t, void *));
-extern int fibheap_empty PARAMS ((fibheap_t));
-extern fibheapkey_t fibheap_min_key PARAMS ((fibheap_t));
-extern fibheapkey_t fibheap_replace_key PARAMS ((fibheap_t, fibnode_t,
-						 fibheapkey_t));
-extern void *fibheap_replace_key_data PARAMS ((fibheap_t, fibnode_t,
-					       fibheapkey_t, void *));
-extern void *fibheap_extract_min PARAMS ((fibheap_t));
-extern void *fibheap_min PARAMS ((fibheap_t));
-extern void *fibheap_replace_data PARAMS ((fibheap_t, fibnode_t, void *));
-extern void *fibheap_delete_node PARAMS ((fibheap_t, fibnode_t));
-extern void fibheap_delete PARAMS ((fibheap_t));
-extern fibheap_t fibheap_union PARAMS ((fibheap_t, fibheap_t));
+extern fibheap_t fibheap_new (void);
+extern fibnode_t fibheap_insert (fibheap_t, fibheapkey_t, void *);
+extern int fibheap_empty (fibheap_t);
+extern fibheapkey_t fibheap_min_key (fibheap_t);
+extern fibheapkey_t fibheap_replace_key (fibheap_t, fibnode_t,
+                                         fibheapkey_t);
+extern void *fibheap_replace_key_data (fibheap_t, fibnode_t,
+                                       fibheapkey_t, void *);
+extern void *fibheap_extract_min (fibheap_t);
+extern void *fibheap_min (fibheap_t);
+extern void *fibheap_replace_data (fibheap_t, fibnode_t, void *);
+extern void *fibheap_delete_node (fibheap_t, fibnode_t);
+extern void fibheap_delete (fibheap_t);
+extern fibheap_t fibheap_union (fibheap_t, fibheap_t);
 
 #endif /* _FIBHEAP_H_ */

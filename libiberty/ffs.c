@@ -11,8 +11,7 @@ value 1).  If @var{valu} is zero, zero is returned.
 */
 
 int
-ffs (valu)
-  register int valu;
+ffs (register int valu)
 {
   register int bit;
 

@@ -67,7 +67,7 @@ extern char *getwd ();
    yield 0 and set errno.  */
 
 char *
-getpwd ()
+getpwd (void)
 {
   static char *pwd;
   static int failure_errno;
@@ -114,7 +114,7 @@ getpwd ()
 #endif
 
 char *
-getpwd ()
+getpwd (void)
 {
   static char *pwd = 0;
 
