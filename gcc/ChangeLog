@@ -1,3 +1,8 @@
+2005-01-28  Jeff Law  <law@redhat.com>
+
+	* fold-const.c (fold, case CEIL_MOD_EXPR): Optimize 0 % X.
+	(case FLOOR_MOD_EXPR, ROUND_MOD_EXPR, TRUNC_MOD_EXPR): Similarly.
+
 2005-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (cse_reg_info_free_list, cse_reg_info_used_list,
