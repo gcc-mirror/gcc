@@ -8713,7 +8713,7 @@ reload_cse_regs_1 (first)
 
 	  if (count > 0)
 	    apply_change_group ();
-	  else if (asm_noperands (PATTERN (insn)) < 0)
+	  else
 	    reload_cse_simplify_operands (insn);
 	    
 	  reload_cse_record_set (body, body);
@@ -8770,7 +8770,7 @@ reload_cse_regs_1 (first)
 
 	  if (count > 0)
 	    apply_change_group ();
-	  else if (asm_noperands (PATTERN (insn)) < 0)
+	  else
 	    reload_cse_simplify_operands (insn);
 
 	  /* Look through the PARALLEL and record the values being

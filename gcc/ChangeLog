@@ -1,3 +1,12 @@
+Wed Feb  3 21:07:38 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* reload1.c (reload_cse_regs_1): Undo Jan 16 patch.
+	* reload.c (find_reusable_reload): New function, broken out of
+	push_reload.  Add code to verify that none of the involved
+	outputs are subject to earlyclobbers.
+	(push_reload): Break out new function find_reusable_reload.
+	Delete "register" keyword for IN, OUT args.
+
 Wed Feb  3 15:51:04 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.c (true_reg_or_0_operand) : New function.
