@@ -563,7 +563,8 @@ single_pred_p (basic_block bb)
   return EDGE_COUNT (bb->preds) == 1;
 }
 
-/* Returns the single successor edge of basic block BB.  */
+/* Returns the single successor edge of basic block BB.  Aborts if
+   BB does not have exactly one successor.  */
 
 static inline edge
 single_succ_edge (basic_block bb)
@@ -572,7 +573,8 @@ single_succ_edge (basic_block bb)
   return EDGE_SUCC (bb, 0);
 }
 
-/* Returns the single predecessor edge of basic block BB.  */
+/* Returns the single predecessor edge of basic block BB.  Aborts
+   if BB does not have exactly one predecessor.  */
 
 static inline edge
 single_pred_edge (basic_block bb)
@@ -581,7 +583,8 @@ single_pred_edge (basic_block bb)
   return EDGE_PRED (bb, 0);
 }
 
-/* Returns the single successor block of basic block BB.  */
+/* Returns the single successor block of basic block BB.  Aborts
+   if BB does not have exactly one successor.  */
 
 static inline basic_block
 single_succ (basic_block bb)
@@ -589,7 +592,8 @@ single_succ (basic_block bb)
   return single_succ_edge (bb)->dest;
 }
 
-/* Returns the single predecessor block of basic block BB.  */
+/* Returns the single predecessor block of basic block BB.  Aborts
+   if BB does not have exactly one predecessor.*/
 
 static inline basic_block
 single_pred (basic_block bb)

@@ -1,6 +1,11 @@
 2005-03-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* basic-block.h (single_succ_p, single_pred_p, single_succ_edge,
+	single_pred_edge, single_succ, single_pred): Improve comments.
+
+2005-03-11  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* basic-block.h (single_succ_p, single_pred_p, single_succ_edge,
 	single_pred_edge, single_succ, single_pred): New inline functions.
 	* bb-reorder.c (rotate_loop, find_traces_1_round,
 	add_labels_and_missing_jumps, fix_up_fall_thru_edges,
