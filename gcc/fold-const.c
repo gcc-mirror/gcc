@@ -3167,9 +3167,11 @@ fold (expr)
      one of the operands is a comparison and the other is either a comparison
      or a BIT_AND_EXPR with the constant 1.  In that case, the code below
      would make the expression more complex.  Change it to a
-     TRUTH_{AND,OR}_EXPR.  */
+     TRUTH_{AND,OR}_EXPR.  Likewise, convert a similar NE_EXPR to 
+     TRUTH_XOR_EXPR and an EQ_EXPR to the inversion of a TRUTH_XOR_EXPR.  */
 
-  if ((code == BIT_AND_EXPR || code == BIT_IOR_EXPR)
+  if ((code == BIT_AND_EXPR || code == BIT_IOR_EXPR
+       || code == EQ_EXPR || code == NE_EXPR)
       && ((TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 	   && (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
 	       || (TREE_CODE (arg1) == BIT_AND_EXPR
@@ -3178,8 +3180,17 @@ fold (expr)
 	      && (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 		  || (TREE_CODE (arg0) == BIT_AND_EXPR
 		      && integer_onep (TREE_OPERAND (arg0, 1)))))))
-    return fold (build (code == BIT_AND_EXPR ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
-			type, arg0, arg1));
+    {
+      t = fold (build (code == BIT_AND_EXPR ? TRUTH_AND_EXPR
+		       : code == BIT_IOR_EXPR ? TRUTH_OR_EXPR
+		       : TRUTH_XOR_EXPR,
+		       type, arg0, arg1));
+
+      if (code == EQ_EXPR)
+	t = invert_truthvalue (t);
+
+      return t;
+    }
 
   if (TREE_CODE_CLASS (code) == '1')
     {
