@@ -13111,7 +13111,14 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
   rtx insn;
   rtx stack_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx tmp_reg = gen_rtx_REG (Pmode, 0);
-  rtx todec = GEN_INT (-size);
+  rtx todec = gen_int_mode (-size, Pmode);
+
+  if (INTVAL (todec) != -size)
+    {
+      warning("stack frame too large");
+      emit_insn (gen_trap ());
+      return;
+    }
 
   if (current_function_limit_stack)
     {

@@ -1,5 +1,10 @@
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/18096
+	* gcc.dg/pr18096-1.c: New test case.
+
+2004-10-30  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/pr17581-1.c: Add missing prototype for abort.
 
 2004-10-30  Joseph S. Myers  <joseph@codesourcery.com>
