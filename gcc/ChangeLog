@@ -1,3 +1,9 @@
+2003-12-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	Backport from mainline (fixes unreported regression):
+	* cpptrad.c (_cpp_scan_out_logical_line): Improve test for
+	  whether directive begins at the beginning of a line.
+
 2003-12-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/13354

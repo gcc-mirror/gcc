@@ -438,6 +438,7 @@ scan_out_logical_line (pfile, macro)
   unsigned int c, paren_depth = 0, quote;
   enum ls lex_state = ls_none;
   bool header_ok;
+  const uchar *start_of_input_line;
 
   fmacro.buff = NULL;
 
@@ -448,6 +449,9 @@ scan_out_logical_line (pfile, macro)
   RLIMIT (pfile->context) = pfile->buffer->rlimit;
   pfile->out.cur = pfile->out.base;
   pfile->out.first_line = pfile->line;
+  /* start_of_input_line is needed to make sure that directives really,
+     really start at the first character of the line. */
+  start_of_input_line = pfile->buffer->cur;
  new_context:
   context = pfile->context;
   cur = CUR (context);
@@ -682,7 +686,7 @@ scan_out_logical_line (pfile, macro)
 	  break;
 
 	case '#':
-	  if (out - 1 == pfile->out.base
+	  if (cur - 1 == start_of_input_line
 	      /* A '#' from a macro doesn't start a directive.  */
 	      && !pfile->context->prev
 	      && !pfile->state.in_directive)
