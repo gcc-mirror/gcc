@@ -39,7 +39,7 @@ typedef enum formals_style_enum formals_style;
 
 static const char *data_type;
 
-static char *affix_data_type		PARAMS ((const char *));
+static char *affix_data_type		PARAMS ((const char *)) ATTRIBUTE_MALLOC;
 static const char *gen_formal_list_for_type PARAMS ((tree, formals_style));
 static int   deserves_ellipsis		PARAMS ((tree));
 static const char *gen_formal_list_for_func_def PARAMS ((tree, formals_style));
@@ -96,7 +96,8 @@ affix_data_type (param)
   *p = '\0';
   qualifiers_then_data_type = concat (type_or_decl, data_type, NULL);
   *p = saved;
-  return concat (qualifiers_then_data_type, " ", p, NULL);
+  return reconcat (qualifiers_then_data_type,
+		   qualifiers_then_data_type, " ", p, NULL);
 }
 
 /* Given a tree node which represents some "function type", generate the

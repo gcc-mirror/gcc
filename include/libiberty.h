@@ -91,6 +91,15 @@ extern const char *lbasename PARAMS ((const char *));
 
 extern char *concat PARAMS ((const char *, ...)) ATTRIBUTE_MALLOC;
 
+/* Concatenate an arbitrary number of strings.  You must pass NULL as
+   the last argument of this function, to terminate the list of
+   strings.  Allocates memory using xmalloc.  The first argument is
+   not one of the strings to be concatenated, but if not NULL is a
+   pointer to be freed after the new string is created, similar to the
+   way xrealloc works.  */
+
+extern char *reconcat PARAMS ((char *, const char *, ...)) ATTRIBUTE_MALLOC;
+
 /* Determine the length of concatenating an arbitrary number of
    strings.  You must pass NULL as the last argument of this function,
    to terminate the list of strings.  */

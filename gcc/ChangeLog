@@ -1,3 +1,8 @@
+2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c (affix_data_type): Use ATTRIBUTE_MALLOC.  Avoid
+	leak by passing malloc'ed pointer to reconcat, not concat.
+
 2001-09-24  DJ Delorie  <dj@redhat.com>
 
 	* varasm.c (array_size_for_constructor): Handle STRING_CSTs also.
