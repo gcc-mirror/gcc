@@ -1127,6 +1127,8 @@ extern tree java_signed_type (tree);
 extern tree java_signed_or_unsigned_type (int, tree);
 extern tree java_truthvalue_conversion (tree);
 extern void add_assume_compiled (const char *, int);
+extern void add_enable_assert (const char *, int);
+extern bool enable_assertions (tree);
 extern tree lookup_class (tree);
 extern tree lookup_java_constructor (tree, tree);
 extern tree lookup_java_method (tree, tree, tree);

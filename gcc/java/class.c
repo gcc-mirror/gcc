@@ -70,30 +70,32 @@ struct obstack temporary_obstack;
    it can assume certain classes have been compiled down to native
    code or not.  The compiler options -fassume-compiled= and
    -fno-assume-compiled= are used to create a tree of
-   assume_compiled_node objects.  This tree is queried to determine if
+   class_flag_node objects.  This tree is queried to determine if
    a class is assume to be compiled or not.  Each node in the tree
    represents either a package or a specific class.  */
 
-typedef struct assume_compiled_node_struct
+typedef struct class_flag_node_struct
 {
   /* The class or package name.  */
   const char *ident;
 
   /* Nonzero if this represents an exclusion.  */
-  int excludep;
+  int value;
 
   /* Pointers to other nodes in the tree.  */
-  struct assume_compiled_node_struct *parent;
-  struct assume_compiled_node_struct *sibling;
-  struct assume_compiled_node_struct *child;
-} assume_compiled_node;
+  struct class_flag_node_struct *parent;
+  struct class_flag_node_struct *sibling;
+  struct class_flag_node_struct *child;
+} class_flag_node;
 
-static assume_compiled_node *find_assume_compiled_node (assume_compiled_node *,
-							const char *);
+static class_flag_node *find_class_flag_node (class_flag_node *, const char *);
+static void add_class_flag (class_flag_node **, const char *, int);
 
 /* This is the root of the include/exclude tree.  */
 
-static assume_compiled_node *assume_compiled_tree;
+static class_flag_node *assume_compiled_tree;
+
+static class_flag_node *enable_assert_tree;
 
 static GTY(()) tree class_roots[5];
 #define registered_class class_roots[0]
@@ -103,11 +105,11 @@ static GTY(()) tree class_roots[5];
 #define class_dtable_decl class_roots[4]
 
 /* Return the node that most closely represents the class whose name
-   is IDENT.  Start the search from NODE.  Return NULL if an
-   appropriate node does not exist.  */
+   is IDENT.  Start the search from NODE (followed by its siblings).
+   Return NULL if an appropriate node does not exist.  */
 
-static assume_compiled_node *
-find_assume_compiled_node (assume_compiled_node *node, const char *ident)
+static class_flag_node *
+find_class_flag_node (class_flag_node *node, const char *ident)
 {
   while (node)
     {
@@ -120,14 +122,13 @@ find_assume_compiled_node (assume_compiled_node *node, const char *ident)
 
       if (node_ident_length == 0
 	  || (strncmp (ident, node->ident, node_ident_length) == 0
-	      && (strlen (ident) == node_ident_length
+	      && (ident[node_ident_length] == '\0'
 		  || ident[node_ident_length] == '.')))
 	{
 	  /* We've found a match, however, there might be a more
              specific match.  */
 
-	  assume_compiled_node *found = find_assume_compiled_node (node->child,
-								   ident);
+	  class_flag_node *found = find_class_flag_node (node->child, ident);
 	  if (found)
 	    return found;
 	  else
@@ -142,54 +143,77 @@ find_assume_compiled_node (assume_compiled_node *node, const char *ident)
   return NULL;
 }
 
-/* Add a new IDENT to the include/exclude tree.  It's an exclusion
-   if EXCLUDEP is nonzero.  */
-
 void
-add_assume_compiled (const char *ident, int excludep)
+add_class_flag (class_flag_node **rootp, const char *ident, int value)
 {
-  int len;
-  assume_compiled_node *parent;
-  assume_compiled_node *node = xmalloc (sizeof (assume_compiled_node));
-
-  node->ident = xstrdup (ident);
-  node->excludep = excludep;
-  node->child = NULL;
+  class_flag_node *root = *rootp;
+  class_flag_node *parent, *node;
 
   /* Create the root of the tree if it doesn't exist yet.  */
 
-  if (NULL == assume_compiled_tree)
+  if (NULL == root)
     {
-      assume_compiled_tree = xmalloc (sizeof (assume_compiled_node));
-      assume_compiled_tree->ident = "";
-      assume_compiled_tree->excludep = 0;
-      assume_compiled_tree->sibling = NULL;
-      assume_compiled_tree->child = NULL;
-      assume_compiled_tree->parent = NULL;
+      root = xmalloc (sizeof (class_flag_node));
+      root->ident = "";
+      root->value = 0;
+      root->sibling = NULL;
+      root->child = NULL;
+      root->parent = NULL;
+      *rootp = root;
     }
 
   /* Calling the function with the empty string means we're setting
-     excludep for the root of the hierarchy.  */
+     value for the root of the hierarchy.  */
 
   if (0 == ident[0])
     {
-      assume_compiled_tree->excludep = excludep;
+      root->value = value;
       return;
     }
 
   /* Find the parent node for this new node.  PARENT will either be a
      class or a package name.  Adjust PARENT accordingly.  */
 
-  parent = find_assume_compiled_node (assume_compiled_tree, ident);
-  len = strlen (parent->ident);
-  if (parent->ident[len] && parent->ident[len] != '.')
-    parent = parent->parent;
+  parent = find_class_flag_node (root, ident);
+  if (strcmp (ident, parent->ident) == 0)
+    parent->value = value;
+  else
+    {
+      /* Insert new node into the tree.  */
+      node = xmalloc (sizeof (class_flag_node));
 
-  /* Insert NODE into the tree.  */
+      node->ident = xstrdup (ident);
+      node->value = value;
+      node->child = NULL;
 
-  node->parent = parent;
-  node->sibling = parent->child;
-  parent->child = node;
+      node->parent = parent;
+      node->sibling = parent->child;
+      parent->child = node;
+    }
+}
+
+/* Add a new IDENT to the include/exclude tree.  It's an exclusion
+   if EXCLUDEP is nonzero.  */
+
+void
+add_assume_compiled (const char *ident, int excludep)
+{
+  add_class_flag (&assume_compiled_tree, ident, excludep);
+}
+
+/* The default value returned by enable_asserstions. */
+
+#define DEFAULT_ENABLE_ASSERT (flag_emit_class_files || optimize == 0)
+
+/* Enter IDENT (a class or package name) into the enable-assertions table.
+   VALUE is true to enable and false to disable. */
+
+void
+add_enable_assert (const char *ident, int value)
+{
+  if (enable_assert_tree == NULL)
+    add_class_flag (&enable_assert_tree, "", DEFAULT_ENABLE_ASSERT);
+  add_class_flag (&enable_assert_tree, ident, value);
 }
 
 /* Returns nonzero if IDENT is the name of a class that the compiler
@@ -198,18 +222,37 @@ add_assume_compiled (const char *ident, int excludep)
 static int
 assume_compiled (const char *ident)
 {
-  assume_compiled_node *i;
+  class_flag_node *i;
   int result;
   
   if (NULL == assume_compiled_tree)
     return 1;
 
-  i = find_assume_compiled_node (assume_compiled_tree,
-				 ident);
+  i = find_class_flag_node (assume_compiled_tree, ident);
 
-  result = ! i->excludep;
+  result = ! i->value;
   
   return (result);
+}
+
+/* Return true if we should generate code to check assertions within KLASS. */
+
+bool
+enable_assertions (tree klass)
+{
+  /* Check if command-line specifies whether we should check asserrtions. */
+
+  if (klass != NULL_TREE && DECL_NAME (klass) && enable_assert_tree != NULL)
+    {
+      const char *ident = IDENTIFIER_POINTER (DECL_NAME (klass));
+      class_flag_node *node
+	= find_class_flag_node (enable_assert_tree, ident);
+      return node->value;
+    }
+
+  /* The default is to enable assertions if generating class files,
+     or not optimizing. */
+  return DEFAULT_ENABLE_ASSERT;
 }
 
 /* Return an IDENTIFIER_NODE the same as (OLD_NAME, OLD_LENGTH).

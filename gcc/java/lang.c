@@ -354,6 +354,22 @@ java_handle_option (size_t scode, const char *arg, int value)
       flag_assert = value;
       break;
 
+    case OPT_fenable_assertions_:
+      add_enable_assert (arg, value);
+      break;
+
+    case OPT_fenable_assertions:
+      add_enable_assert ("", value);
+      break;
+
+    case OPT_fdisable_assertions_:
+      add_enable_assert (arg, !value);
+      break;
+
+    case OPT_fdisable_assertions:
+      add_enable_assert ("", !value);
+      break;
+
     case OPT_fassume_compiled_:
       add_assume_compiled (arg, !value);
       break;
