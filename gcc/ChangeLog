@@ -1,3 +1,11 @@
+2002-09-13 Dhananjay Deshpande  <dhananjayd@kpit.com>
+
+	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Add support
+	for H8/300, H8/S aa:8 mode.
+	(TINY_CONSTANT_ADDRESS_P): Add support for H8/S aa:16 mode.
+	* config/h8300/h8300.c (h8300_adjust_insn_length): Adjust length
+	for H8/300 aa:8 mode.
+
 2002-09-13  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.md ("trap", "conditional_trap", "*trap"): New
