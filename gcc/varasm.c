@@ -72,14 +72,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  On most machines,
-   we discard the * if any and that's all.  */
-#ifndef STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
-#endif
-
 /* File in which assembler code is being written.  */
 
 extern FILE *asm_out_file;
