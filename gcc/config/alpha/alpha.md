@@ -4382,7 +4382,7 @@
   "
 {
   if (GET_CODE (operands[0]) == CONST_INT
-	   && INTVAL (operands[0]) < 32768)
+      && INTVAL (operands[0]) < 32768)
     {
       if (INTVAL (operands[0]) >= 4096)
 	{
@@ -4427,6 +4427,9 @@
       emit_insn (gen_adddi3 (tmp, tmp, GEN_INT(-8192)));
       emit_insn (gen_cmpdi (tmp, want));
       emit_jump_insn (gen_bgtu (loop_label));
+      if (obey_regdecls)
+	gen_rtx (USE, VOIDmode, tmp);
+
       memref = gen_rtx (MEM, DImode, want);
       MEM_VOLATILE_P (memref) = 1;
       emit_move_insn (memref, const0_rtx);
