@@ -7112,7 +7112,7 @@ fold (expr)
 
 	  STRIP_NOPS (arg2);
 
-	  /* If we have A op 0 ? A : -A, this is A, -A, abs (A), or abs (-A),
+	  /* If we have A op 0 ? A : -A, this is A, -A, abs (A), or -abs (A),
 	     depending on the comparison operation.  */
 	  if ((FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 1)))
 	       ? real_zerop (TREE_OPERAND (arg0, 1))

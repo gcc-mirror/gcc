@@ -1,3 +1,7 @@
+2002-02-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* fold-const.c (fold): Fix typo in comments.
+
 2002-02-21  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (langhooks.o): Update dependencies.
