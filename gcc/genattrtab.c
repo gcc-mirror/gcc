@@ -1067,7 +1067,6 @@ convert_set_attr_alternative (exp, num_alt, insn_code, insn_index)
      int num_alt;
      int insn_code, insn_index;
 {
-  rtx newexp;
   rtx condexp;
   int i;
 
@@ -2121,7 +2120,7 @@ simplify_cond (exp, insn_code, insn_index)
   int len = XVECLEN (exp, 0);
   rtx *tests = (rtx *) alloca (len * sizeof (rtx));
   int allsame = 1;
-  char *spacer, *first_spacer;
+  char *first_spacer;
 
   /* This lets us free all storage allocated below, if appropriate.  */
   first_spacer = (char *) obstack_finish (rtl_obstack);
@@ -2373,7 +2372,6 @@ make_alternative_compare (mask)
 {
   rtx newexp;
   int i;
-  char *alternative;
 
   /* Find the bit.  */
   for (i = 0; (mask & (1 << i)) == 0; i++)
@@ -2996,7 +2994,7 @@ optimize_attrs ()
 {
   struct attr_desc *attr;
   struct attr_value *av;
-  struct insn_ent *ie, *nextie;
+  struct insn_ent *ie;
   rtx newexp;
   int something_changed = 1;
   int i;
@@ -3084,6 +3082,7 @@ optimize_attrs ()
     }
 }
 
+#if 0
 static rtx
 simplify_by_alternatives (exp, insn_code, insn_index)
      rtx exp;
@@ -3115,6 +3114,7 @@ simplify_by_alternatives (exp, insn_code, insn_index)
   current_alternative_string = 0;
   return simplify_cond (newexp, insn_code, insn_index);
 }
+#endif
 
 /* An expression where all the unknown terms are EQ_ATTR tests can be
    rearranged into a COND provided we can enumerate all possible
@@ -3509,6 +3509,8 @@ simplify_with_current_value (exp, space, ndim)
       if (GET_CODE (x) == EQ_ATTR)
 	MEM_VOLATILE_P (x) = 1;
     }
+
+  return exp;
 }
 
 /* Reduce the expression EXP based on the MEM_VOLATILE_P settings of
@@ -5091,8 +5093,10 @@ static rtx
 copy_rtx_unchanging (orig)
      register rtx orig;
 {
+#if 0
   register rtx copy;
   register RTX_CODE code;
+#endif
 
   if (RTX_UNCHANGING_P (orig) || MEM_IN_STRUCT_P (orig))
     return orig;
@@ -5149,7 +5153,6 @@ main (argc, argv)
   FILE *infile;
   register int c;
   struct attr_desc *attr;
-  struct attr_value *av;
   struct insn_def *id;
   rtx tem;
   int i;
