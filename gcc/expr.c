@@ -8531,6 +8531,58 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  return force_operand (dest_rtx, NULL_RTX);
 	}
 
+    case BUILT_IN_MEMSET:
+      /* If not optimizing, call the library function.  */
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
+	break;
+
+      if (arglist == 0
+	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || TREE_CHAIN (arglist) == 0
+	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	      != INTEGER_TYPE)
+	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
+	  || (INTEGER_CST
+	      != (TREE_CODE (TREE_TYPE
+			     (TREE_VALUE
+			      (TREE_CHAIN (TREE_CHAIN (arglist))))))))
+	break;
+      else
+	{
+	  tree dest = TREE_VALUE (arglist);
+	  tree val = TREE_VALUE (TREE_CHAIN (arglist));
+	  tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+	  tree type;
+
+	  int dest_align
+	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+	  rtx dest_rtx, dest_mem;
+
+	  /* If DEST is not a pointer type, don't do this 
+	     operation in-line.  */
+	  if (dest_align == 0)
+	    break;
+
+	  /* If VAL is not 0, don't do this operation in-line. */
+	  if (expand_expr (val, NULL_RTX, VOIDmode, 0) != const0_rtx)
+	    break;
+
+	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
+	  dest_mem = gen_rtx (MEM, BLKmode,
+			      memory_address (BLKmode, dest_rtx));
+	  /* There could be a void* cast on top of the object.  */
+	  while (TREE_CODE (dest) == NOP_EXPR)
+	    dest = TREE_OPERAND (dest, 0);
+	  type = TREE_TYPE (TREE_TYPE (dest));
+	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
+
+	  clear_storage (dest_mem, expand_expr (len, NULL_RTX, VOIDmode, 0),
+                           dest_align);
+
+	  return force_operand (dest_rtx, NULL_RTX);
+	}
+
 /* These comparison functions need an instruction that returns an actual
    index.  An ordinary compare that just sets the condition codes
    is not enough.  */
