@@ -148,6 +148,8 @@ toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
 @GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
+@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -240,7 +242,7 @@ libstdc___la_LIBADD = \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 
-libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
+libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info @libtool_VERSION@ ${version_arg} \
@@ -543,7 +545,6 @@ mostlyclean distclean maintainer-clean
 
 @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
 @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
-@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
 
 codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
 	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true

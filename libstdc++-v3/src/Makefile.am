@@ -38,11 +38,12 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 # Symbol versioning for shared libraries.
 if GLIBCPP_BUILD_VERSIONED_SHLIB
 version_arg = -Wl,--version-script=libstdc++-symbol.ver
+version_dep = libstdc++-symbol.ver
 libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
 	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
 else
 version_arg =
-libstdc++-symbol.ver:
+version_dep =
 endif
 
 # Compile flags that should be constant throughout the build, both for
@@ -156,7 +157,7 @@ libstdc___la_LIBADD = \
 	$(top_builddir)/libmath/libmath.la @libio_la@ \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
-libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
+libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info @libtool_VERSION@ ${version_arg} \
