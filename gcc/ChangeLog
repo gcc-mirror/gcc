@@ -1,4 +1,9 @@
-Sun Sep  7 00:22:22 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-07  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* Makefile.in: Define $REMAKE to be $MAKE with LANGUAGES & BOOT_CFLAGS
+	and use it throughout.
+	
+2003-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix my previous patch.
 
@@ -9,7 +14,7 @@ Sun Sep  7 00:22:22 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	functions.
 	(cgraph_varpool_finalize_decl): Notice global symbol when needed.
 
-Sat Sep  6 23:49:13 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/12070
 	* calls.c (emit_library_call_value_1): Fix saving of BLKmode arguments.
