@@ -8309,8 +8309,11 @@ reshape_init (tree type, tree *initp)
 		 empty class shall have the form of an empty
 		 initializer-list {}.  */
 	      if (!brace_enclosed_p)
-		error ("initializer for `%T' must be brace-enclosed",
-		       type);
+                {
+                  error ("initializer for `%T' must be brace-enclosed",
+                         type);
+                  return error_mark_node;
+                }
 	    }
 	  else
 	    {
@@ -8335,6 +8338,8 @@ reshape_init (tree type, tree *initp)
 		    break;
 
 		  field_init = reshape_init (TREE_TYPE (field), initp);
+                  if (field_init == error_mark_node)
+                    return error_mark_node;
 		  TREE_CHAIN (field_init) = CONSTRUCTOR_ELTS (new_init);
 		  CONSTRUCTOR_ELTS (new_init) = field_init;
 		  /* [dcl.init.aggr] 
@@ -8365,6 +8370,8 @@ reshape_init (tree type, tree *initp)
 	      tree element_init;
 
 	      element_init = reshape_init (TREE_TYPE (type), initp);
+              if (element_init == error_mark_node)
+                return error_mark_node;
 	      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
 	      CONSTRUCTOR_ELTS (new_init) = element_init;
 	      if (TREE_PURPOSE (element_init))
