@@ -3283,6 +3283,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   the address into a base register.  */
 			this_alternative[i] = (int) MODE_BASE_REG_CLASS (VOIDmode);
 			badop = 0;
+
+			/* Address constraints are reloaded in Pmode, no matter
+			   what mode is given in the machine description.  */
+			operand_mode[i] = Pmode;
 			break;
 		      }
 

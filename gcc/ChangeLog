@@ -1,3 +1,11 @@
+2002-11-20  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* recog.c (constrain_operands): Prefer exact match over reloadable
+	EXTRA_MEMORY_CONSTRAINT or EXTRA_ADDRESS_CONSTRAINT.
+
+	* reload.c (find_reloads): Always reload EXTRA_ADDRESS_CONSTRAINT
+	operands in Pmode.
+
 2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8518
