@@ -4,7 +4,9 @@ Tue Sep 30 23:48:57 1997  Jeffrey A Law  (law@cygnus.com)
 
 Tue Sep 30 23:09:40 1997  Thomas Koenig <ig25@mvmap66.ciw.uni-karlsruhe.de>
 
-	* haifa-sched.c: (get_block_head_tail) Remove unneeded initialization.
+	* cccp.c (expand_to_temp_buffer): Initialize all members of obuf.
+
+	* haifa-sched.c (get_block_head_tail): Remove unneeded initialization.
 
 Tue Sep 30 23:06:43 1997  Richard Henderson  <rth@cygnus.com>
 
