@@ -1226,7 +1226,15 @@ find_barrier (from)
 	  rtx src = SET_SRC (PATTERN (from));
 
 	  if (hi_const (src))
-	    found_hi = 1;
+	    {
+	      found_hi = 1;
+	      /* We put the short constants before the long constants, so
+		 we must count the length of short constants in the range
+		 for the long constants.  */
+	      /* ??? This isn't optimal, but is easy to do.  */
+	      if (found_si)
+		count_si += 2;
+	    }
 	  else
 	    found_si = 1;
 	  inc = (GET_MODE_SIZE (GET_MODE (src)) > 4) ? 4 : 2;
