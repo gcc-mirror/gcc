@@ -57,24 +57,6 @@ Boston, MA 02111-1307, USA.  */
 #include "sched-int.h"
 #include "tree-gimple.h"
 
-/* Enumeration for all of the relational tests, so that we can build
-   arrays indexed by the test type, and not worry about the order
-   of EQ, NE, etc.  */
-
-enum internal_test {
-  ITEST_EQ,
-  ITEST_NE,
-  ITEST_GT,
-  ITEST_GE,
-  ITEST_LT,
-  ITEST_LE,
-  ITEST_GTU,
-  ITEST_GEU,
-  ITEST_LTU,
-  ITEST_LEU,
-  ITEST_MAX
-};
-
 /* True if X is an unspec wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
   (GET_CODE (X) == UNSPEC					\
@@ -193,7 +175,6 @@ static void mips_legitimize_const_move (enum machine_mode, rtx, rtx);
 static int m16_check_op (rtx, int, int, int);
 static bool mips_rtx_costs (rtx, int, int, int *);
 static int mips_address_cost (rtx);
-static enum internal_test map_test_to_internal_test (enum rtx_code);
 static void get_float_compare_codes (enum rtx_code, enum rtx_code *,
 				     enum rtx_code *);
 static void mips_load_call_address (rtx, rtx, int);
@@ -1341,6 +1322,24 @@ int
 arith_operand (rtx op, enum machine_mode mode)
 {
   return const_arith_operand (op, mode) || register_operand (op, mode);
+}
+
+/* Return true if OP can be used as the second argument to an LE operation.  */
+
+int
+sle_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return GET_CODE (op) == CONST_INT && SMALL_OPERAND (INTVAL (op) + 1);
+}
+
+/* Likewise LEU.  */
+
+int
+sleu_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) + 1 != 0
+	  && SMALL_OPERAND (INTVAL (op) + 1));
 }
 
 /* Return truth value of whether OP is an integer which fits in 16 bits.  */
@@ -2691,248 +2690,117 @@ mips_gp_save_slot (void)
   return loc;
 }
 
-/* Make normal rtx_code into something we can index from an array */
+/* Emit an instruction of the form (set TARGET (CODE OP0 OP1)).  */
 
-static enum internal_test
-map_test_to_internal_test (enum rtx_code test_code)
+static void
+mips_emit_binary (enum rtx_code code, rtx target, rtx op0, rtx op1)
 {
-  enum internal_test test = ITEST_MAX;
-
-  switch (test_code)
-    {
-    case EQ:  test = ITEST_EQ;  break;
-    case NE:  test = ITEST_NE;  break;
-    case GT:  test = ITEST_GT;  break;
-    case GE:  test = ITEST_GE;  break;
-    case LT:  test = ITEST_LT;  break;
-    case LE:  test = ITEST_LE;  break;
-    case GTU: test = ITEST_GTU; break;
-    case GEU: test = ITEST_GEU; break;
-    case LTU: test = ITEST_LTU; break;
-    case LEU: test = ITEST_LEU; break;
-    default:			break;
-    }
-
-  return test;
+  emit_insn (gen_rtx_SET (VOIDmode, target,
+			  gen_rtx_fmt_ee (code, GET_MODE (target), op0, op1)));
 }
 
-
-/* Generate the code to compare two integer values.  The return value is:
-   (reg:SI xx)		The pseudo register the comparison is in
-   0		       	No register, generate a simple branch.
+/* Return true if CMP1 is a suitable second operand for relational
+   operator CODE.  See also the *sCC patterns in mips.md.  */
 
-   ??? This is called with result nonzero by the Scond patterns in
-   mips.md.  These patterns are called with a target in the mode of
-   the Scond instruction pattern.  Since this must be a constant, we
-   must use SImode.  This means that if RESULT is nonzero, it will
-   always be an SImode register, even if TARGET_64BIT is true.  We
-   cope with this by calling convert_move rather than emit_move_insn.
-   This will sometimes lead to an unnecessary extension of the result;
-   for example:
-
-   long long
-   foo (long long i)
-   {
-     return i < 5;
-   }
-
-   TEST_CODE is the rtx code for the comparison.
-   CMP0 and CMP1 are the two operands to compare.
-   RESULT is the register in which the result should be stored (null for
-     branches).
-   For branches, P_INVERT points to an integer that is nonzero on return
-     if the branch should be inverted.  */
-
-rtx
-gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
-		    rtx cmp1, int *p_invert)
+static bool
+mips_relational_operand_ok_p (enum rtx_code code, rtx cmp1)
 {
-  struct cmp_info
-  {
-    enum rtx_code test_code;	/* code to use in instruction (LT vs. LTU) */
-    int const_low;		/* low bound of constant we can accept */
-    int const_high;		/* high bound of constant we can accept */
-    int const_add;		/* constant to add (convert LE -> LT) */
-    int reverse_regs;		/* reverse registers in test */
-    int invert_const;		/* != 0 if invert value if cmp1 is constant */
-    int invert_reg;		/* != 0 if invert value if cmp1 is register */
-    int unsignedp;		/* != 0 for unsigned comparisons.  */
-  };
-
-  static const struct cmp_info info[ (int)ITEST_MAX ] = {
-
-    { XOR,	 0,  65535,  0,	 0,  0,	 0, 0 },	/* EQ  */
-    { XOR,	 0,  65535,  0,	 0,  1,	 1, 0 },	/* NE  */
-    { LT,   -32769,  32766,  1,	 1,  1,	 0, 0 },	/* GT  */
-    { LT,   -32768,  32767,  0,	 0,  1,	 1, 0 },	/* GE  */
-    { LT,   -32768,  32767,  0,	 0,  0,	 0, 0 },	/* LT  */
-    { LT,   -32769,  32766,  1,	 1,  0,	 1, 0 },	/* LE  */
-    { LTU,  -32769,  32766,  1,	 1,  1,	 0, 1 },	/* GTU */
-    { LTU,  -32768,  32767,  0,	 0,  1,	 1, 1 },	/* GEU */
-    { LTU,  -32768,  32767,  0,	 0,  0,	 0, 1 },	/* LTU */
-    { LTU,  -32769,  32766,  1,	 1,  0,	 1, 1 },	/* LEU */
-  };
-
-  enum internal_test test;
-  enum machine_mode mode;
-  const struct cmp_info *p_info;
-  int branch_p;
-  int eqne_p;
-  int invert;
-  rtx reg;
-  rtx reg2;
-
-  test = map_test_to_internal_test (test_code);
-  if (test == ITEST_MAX)
-    abort ();
-
-  p_info = &info[(int) test];
-  eqne_p = (p_info->test_code == XOR);
-
-  mode = GET_MODE (cmp0);
-  if (mode == VOIDmode)
-    mode = GET_MODE (cmp1);
-
-  /* Eliminate simple branches.  */
-  branch_p = (result == 0);
-  if (branch_p)
+  switch (code)
     {
-      if (GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
-	{
-	  /* Comparisons against zero are simple branches.  */
-	  if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0
-	      && (! TARGET_MIPS16 || eqne_p))
-	    return 0;
+    case GT:
+    case GTU:
+      return reg_or_0_operand (cmp1, VOIDmode);
 
-	  /* Test for beq/bne.  */
-	  if (eqne_p && ! TARGET_MIPS16)
-	    return 0;
-	}
+    case GE:
+    case GEU:
+      return !TARGET_MIPS16 && cmp1 == const1_rtx;
 
-      /* Allocate a pseudo to calculate the value in.  */
-      result = gen_reg_rtx (mode);
+    case LT:
+    case LTU:
+      return arith_operand (cmp1, VOIDmode);
+
+    case LE:
+      return sle_operand (cmp1, VOIDmode);
+
+    case LEU:
+      return sleu_operand (cmp1, VOIDmode);
+
+    default:
+      abort ();
     }
+}
 
-  /* Make sure we can handle any constants given to us.  */
-  if (GET_CODE (cmp0) == CONST_INT)
-    cmp0 = force_reg (mode, cmp0);
+/* Compare CMP0 and CMP1 using relational operator CODE and store the
+   result in TARGET.  CMP0 and TARGET are register_operands that have
+   the same integer mode.  If INVERT_PTR is nonnull, it's OK to set
+   TARGET to the inverse of the result and flip *INVERT_PTR instead.  */
 
-  if (GET_CODE (cmp1) == CONST_INT)
-    {
-      HOST_WIDE_INT value = INTVAL (cmp1);
-
-      if (value < p_info->const_low
-	  || value > p_info->const_high
-	  /* ??? Why?  And why wasn't the similar code below modified too?  */
-	  || (TARGET_64BIT
-	      && HOST_BITS_PER_WIDE_INT < 64
-	      && p_info->const_add != 0
-	      && ((p_info->unsignedp
-		   ? ((unsigned HOST_WIDE_INT) (value + p_info->const_add)
-		      > (unsigned HOST_WIDE_INT) INTVAL (cmp1))
-		   : (value + p_info->const_add) > INTVAL (cmp1))
-		  != (p_info->const_add > 0))))
-	cmp1 = force_reg (mode, cmp1);
-    }
-
-  /* See if we need to invert the result.  */
-  invert = (GET_CODE (cmp1) == CONST_INT
-	    ? p_info->invert_const : p_info->invert_reg);
-
-  if (p_invert != (int *)0)
-    {
-      *p_invert = invert;
-      invert = 0;
-    }
-
-  /* Comparison to constants, may involve adding 1 to change a LT into LE.
-     Comparison between two registers, may involve switching operands.  */
-  if (GET_CODE (cmp1) == CONST_INT)
-    {
-      if (p_info->const_add != 0)
-	{
-	  HOST_WIDE_INT new = INTVAL (cmp1) + p_info->const_add;
-
-	  /* If modification of cmp1 caused overflow,
-	     we would get the wrong answer if we follow the usual path;
-	     thus, x > 0xffffffffU would turn into x > 0U.  */
-	  if ((p_info->unsignedp
-	       ? (unsigned HOST_WIDE_INT) new >
-	       (unsigned HOST_WIDE_INT) INTVAL (cmp1)
-	       : new > INTVAL (cmp1))
-	      != (p_info->const_add > 0))
-	    {
-	      /* This test is always true, but if INVERT is true then
-		 the result of the test needs to be inverted so 0 should
-		 be returned instead.  */
-	      emit_move_insn (result, invert ? const0_rtx : const_true_rtx);
-	      return result;
-	    }
-	  else
-	    cmp1 = GEN_INT (new);
-	}
-    }
-
-  else if (p_info->reverse_regs)
-    {
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-    }
-
-  if (test == ITEST_NE && GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
-    reg = cmp0;
+static void
+mips_emit_int_relational (enum rtx_code code, bool *invert_ptr,
+			  rtx target, rtx cmp0, rtx cmp1)
+{
+  /* First see if there is a MIPS instruction that can do this operation
+     with CMP1 in its current form.  If not, try doing the same for the
+     inverse operation.  If that also fails, force CMP1 into a register
+     and try again.  */
+  if (mips_relational_operand_ok_p (code, cmp1))
+    mips_emit_binary (code, target, cmp0, cmp1);
   else
     {
-      reg = (invert || eqne_p) ? gen_reg_rtx (mode) : result;
-      convert_move (reg, gen_rtx_fmt_ee (p_info->test_code,
-					 mode, cmp0, cmp1), 0);
-    }
-
-  if (test == ITEST_NE)
-    {
-      if (! TARGET_MIPS16)
+      enum rtx_code inv_code = reverse_condition (code);
+      if (!mips_relational_operand_ok_p (inv_code, cmp1))
 	{
-	  convert_move (result, gen_rtx_GTU (mode, reg, const0_rtx), 0);
-	  if (p_invert != NULL)
-	    *p_invert = 0;
-	  invert = 0;
+	  cmp1 = force_reg (GET_MODE (cmp0), cmp1);
+	  mips_emit_int_relational (code, invert_ptr, target, cmp0, cmp1);
+	}
+      else if (invert_ptr == 0)
+	{
+	  rtx inv_target = gen_reg_rtx (GET_MODE (target));
+	  mips_emit_binary (inv_code, inv_target, cmp0, cmp1);
+	  mips_emit_binary (XOR, target, inv_target, const1_rtx);
 	}
       else
 	{
-	  reg2 = invert ? gen_reg_rtx (mode) : result;
-	  convert_move (reg2, gen_rtx_LTU (mode, reg, const1_rtx), 0);
-	  reg = reg2;
+	  *invert_ptr = !*invert_ptr;
+	  mips_emit_binary (inv_code, target, cmp0, cmp1);
 	}
     }
+}
 
-  else if (test == ITEST_EQ)
+/* Return a register that is zero iff CMP0 and CMP1 are equal.
+   The register will have the same mode as CMP0.  */
+
+static rtx
+mips_zero_if_equal (rtx cmp0, rtx cmp1)
+{
+  if (cmp1 == const0_rtx)
+    return cmp0;
+
+  return expand_binop (GET_MODE (cmp0), xor_optab,
+		       cmp0, cmp1, 0, 0, OPTAB_DIRECT);
+}
+
+/* Try comparing cmp_operands[0] and cmp_operands[1] using rtl code CODE.
+   Store the result in TARGET and return true if successful.
+
+   On 64-bit targets, TARGET may be wider than cmp_operands[0].  */
+
+bool
+mips_emit_scc (enum rtx_code code, rtx target)
+{
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
+    return false;
+
+  target = gen_lowpart (GET_MODE (cmp_operands[0]), target);
+  if (code == EQ || code == NE)
     {
-      reg2 = invert ? gen_reg_rtx (mode) : result;
-      convert_move (reg2, gen_rtx_LTU (mode, reg, const1_rtx), 0);
-      reg = reg2;
+      rtx zie = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+      mips_emit_binary (code, target, zie, const0_rtx);
     }
-
-  if (invert)
-    {
-      rtx one;
-
-      if (! TARGET_MIPS16)
-	one = const1_rtx;
-      else
-	{
-	  /* The value is in $24.  Copy it to another register, so
-             that reload doesn't think it needs to store the $24 and
-             the input to the XOR in the same location.  */
-	  reg2 = gen_reg_rtx (mode);
-	  emit_move_insn (reg2, reg);
-	  reg = reg2;
-	  one = force_reg (mode, const1_rtx);
-	}
-      convert_move (result, gen_rtx_XOR (mode, reg, one), 0);
-    }
-
-  return result;
+  else
+    mips_emit_int_relational (code, 0, target,
+			      cmp_operands[0], cmp_operands[1]);
+  return true;
 }
 
 /* Work out how to check a floating-point condition.  We need a
@@ -2970,74 +2838,67 @@ get_float_compare_codes (enum rtx_code in_code, enum rtx_code *cmp_code,
 void
 gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 {
-  rtx cmp0 = cmp_operands[0];
-  rtx cmp1 = cmp_operands[1];
+  rtx cmp0, cmp1, target;
   enum machine_mode mode;
   enum rtx_code cmp_code;
-  rtx reg;
-  int invert;
-  rtx label1, label2;
 
-  switch (GET_MODE (cmp0))
+  switch (GET_MODE (cmp_operands[0]))
     {
     case SImode:
     case DImode:
-      mode = GET_MODE (cmp0);
-      invert = 0;
-      reg = gen_int_relational (test_code, NULL_RTX, cmp0, cmp1, &invert);
-
-      if (reg)
+      mode = GET_MODE (cmp_operands[0]);
+      if (!TARGET_MIPS16 && cmp_operands[1] == const0_rtx)
 	{
-	  cmp0 = reg;
-	  cmp1 = const0_rtx;
-	  test_code = NE;
+	  cmp0 = cmp_operands[0];
+	  cmp1 = cmp_operands[1];
 	}
-      else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	/* We don't want to build a comparison against a nonzero
-	   constant.  */
-	cmp1 = force_reg (mode, cmp1);
-
+      else if (test_code == EQ || test_code == NE)
+	{
+	  if (TARGET_MIPS16)
+	    {
+	      cmp0 = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+	      cmp1 = const0_rtx;
+	    }
+	  else
+	    {
+	      cmp0 = cmp_operands[0];
+	      cmp1 = force_reg (mode, cmp_operands[1]);
+	    }
+	}
+      else
+	{
+	  bool invert = false;
+	  cmp0 = gen_reg_rtx (mode);
+	  cmp1 = const0_rtx;
+	  mips_emit_int_relational (test_code, &invert, cmp0,
+				    cmp_operands[0], cmp_operands[1]);
+	  test_code = (invert ? EQ : NE);
+	}
       break;
 
     case SFmode:
     case DFmode:
-      if (! ISA_HAS_8CC)
-	reg = gen_rtx_REG (CCmode, FPSW_REGNUM);
+      mode = CCmode;
+      if (!ISA_HAS_8CC)
+	cmp0 = gen_rtx_REG (mode, FPSW_REGNUM);
       else
-	reg = gen_reg_rtx (CCmode);
+	cmp0 = gen_reg_rtx (mode);
+      cmp1 = const0_rtx;
 
       get_float_compare_codes (test_code, &cmp_code, &test_code);
-      emit_insn (gen_rtx_SET (VOIDmode, reg,
-			      gen_rtx_fmt_ee (cmp_code, CCmode, cmp0, cmp1)));
-
-      mode = CCmode;
-      cmp0 = reg;
-      cmp1 = const0_rtx;
-      invert = 0;
+      mips_emit_binary (cmp_code, cmp0, cmp_operands[0], cmp_operands[1]);
       break;
 
     default:
-      fatal_insn ("bad test",
-		  gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
+      abort ();
     }
 
   /* Generate the branch.  */
-
-  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[0]);
-  label2 = pc_rtx;
-
-  if (invert)
-    {
-      label2 = label1;
-      label1 = pc_rtx;
-    }
-
-  emit_jump_insn
-    (gen_rtx_SET (VOIDmode, pc_rtx,
-		  gen_rtx_IF_THEN_ELSE (VOIDmode,
-					gen_rtx_fmt_ee (test_code, mode,
-							cmp0, cmp1),
-					label1, label2)));
+  target = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				 gen_rtx_fmt_ee (test_code, mode, cmp0, cmp1),
+				 gen_rtx_LABEL_REF (VOIDmode, operands[0]),
+				 pc_rtx);
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, target));
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array

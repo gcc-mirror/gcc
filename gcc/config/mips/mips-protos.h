@@ -123,7 +123,7 @@ extern void mips_split_64bit_move (rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
 extern rtx mips_gp_save_slot (void);
 #ifdef RTX_CODE
-extern rtx gen_int_relational (enum rtx_code, rtx, rtx, rtx, int *);
+extern bool mips_emit_scc (enum rtx_code, rtx);
 extern void gen_conditional_branch (rtx *, enum rtx_code);
 #endif
 extern void gen_conditional_move (rtx *);
