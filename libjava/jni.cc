@@ -1415,16 +1415,21 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv, void *args)
   if (_Jv_ThreadCurrent () != NULL)
     return 0;
 
-  // FIXME: NULL return?
   JNIEnv *env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
+  if (env == NULL)
+    return JNI_ERR;
   env->p = &_Jv_JNIFunctions;
   env->ex = NULL;
   env->klass = NULL;
-  // FIXME: NULL return?
   env->locals
     = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
 						  + (FRAME_SIZE
 						     * sizeof (jobject)));
+  if (env->locals == NULL)
+    {
+      _Jv_Free (env);
+      return JNI_ERR;
+    }
   *penv = reinterpret_cast<void *> (env);
 
   java::lang::Thread *t = new gnu::gcj::jni::NativeThread (group, name);

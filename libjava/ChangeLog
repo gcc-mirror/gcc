@@ -1,3 +1,8 @@
+2000-02-15  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (_Jv_JNI_AttachCurrentThread): Return error if malloc
+	fails.
+
 2000-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* NEWS: Updated.
