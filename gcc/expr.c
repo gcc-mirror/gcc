@@ -2185,7 +2185,7 @@ clear_storage (object, size, align)
 	}
     }
   else
-    emit_move_insn (object, const0_rtx);
+    emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
 
   return retval;
 }
