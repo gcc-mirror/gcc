@@ -10,7 +10,7 @@
 # maps source file names onto list of objects required for link.
 proc mauve_compute_uses {aName} {
   upvar $aName uses
-  global env
+  global env runtests
 
   set fd [open classes r]
   set line [read $fd]
@@ -21,6 +21,11 @@ proc mauve_compute_uses {aName} {
       continue
     }
     set item [join [split $item .] /].java
+
+    # User might have specified "mauve.exp=something.java".
+    if {! [runtest_file_p $runtests $item]} {
+      continue
+    }
 
     # Look for Uses line in source file.
     set fd [open $env(MAUVEDIR)/$item r]

@@ -1,3 +1,8 @@
+1999-12-31  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.mauve/mauve.exp (mauve_compute_uses): Let user select
+	specific tests to run.
+
 1999-10-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/invokeinterface: New directory.
