@@ -24,8 +24,10 @@ case "$host" in
     *-*-linux* )
     gc_cflags=-fexceptions
     ;;
-    *-*-hpux* )
-    gc_cflags=+ESdbgasm
+    hppa*-*-hpux* )
+    if test $GCC != "yes" ; then
+        gc_cflags=+ESdbgasm
+    fi
     ;;
 esac
 
