@@ -242,6 +242,27 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
                             size_binop (PLUS_EXPR,
                                         DECL_FIELD_OFFSET (field),
                                         DECL_SIZE_UNIT (field)));
+  /* If this field is assigned to a label, we create another two variables.
+     One will hold the address of taget label or format label. The other will
+     hold the length of format label string.  */
+  if (h->sym->attr.assign)
+    {
+      tree len;
+      tree addr;
+
+      gfc_allocate_lang_decl (field);
+      GFC_DECL_ASSIGN (field) = 1;
+      len = gfc_create_var_np (gfc_charlen_type_node,h->sym->name);
+      addr = gfc_create_var_np (pvoid_type_node, h->sym->name);
+      TREE_STATIC (len) = 1;
+      TREE_STATIC (addr) = 1;
+      DECL_INITIAL (len) = build_int_cst (NULL_TREE, -2);
+      gfc_set_decl_location (len, &h->sym->declared_at);
+      gfc_set_decl_location (addr, &h->sym->declared_at);
+      GFC_DECL_STRING_LEN (field) = pushdecl_top_level (len);
+      GFC_DECL_ASSIGN_ADDR (field) = pushdecl_top_level (addr);
+    }
+
   h->field = field;
 }
 
@@ -434,7 +455,7 @@ create_common (gfc_common_head *com, segment_info * head)
   for (s = head; s; s = next_s)
     {
       s->sym->backend_decl = build3 (COMPONENT_REF, TREE_TYPE (s->field),
-				     decl, s->field, NULL_TREE);
+				decl, s->field, NULL_TREE);
 
       next_s = s->next;
       gfc_free (s);

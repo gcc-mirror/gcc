@@ -1,3 +1,10 @@
+2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/18827
+	* gfortran.dg/assign_2.f90: New test.
+	* gfortran.dg/assign_3.f90: New test.
+	* gfortran.dg/assign.f90: New test.
+
 2005-03-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++.dg/other/cv_func.C, g++.dg/other/offsetof3.C,
