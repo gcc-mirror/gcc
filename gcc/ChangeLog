@@ -1,5 +1,8 @@
 2002-09-21  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/rs6000.md (builtin_setjmp_receiver): Add
+	#if TARGET_MACHO.
+
 	* config/rs6000/rs6000.md (floatdisf2_internal2): Combine
 	insns.  Supply missing clobber of scratch reg.
 
