@@ -1056,7 +1056,7 @@ for machine in $build $host $target; do
 			thread_file='win32'
 		fi
 		;;
-	i[[3456]]86-dg-dgux)
+	i[[3456]]86-dg-dgux*)
 		xm_file=i386/xm-dgux.h
 		out_file=i386/dgux.c
 		tm_file=i386/dgux.h
