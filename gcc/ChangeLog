@@ -1,3 +1,7 @@
+Wed Apr 21 12:09:38 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* cccp.c (simplify_filename): Always preserve leading double slash.
+
 Wed Apr 21 18:15:55 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md: Add new peepholes to remove redundant loads.

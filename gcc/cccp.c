@@ -4832,18 +4832,7 @@ simplify_filename (filename)
           else
             {
 	      /* On some hosts // differs from /; Posix allows this.  */
-              static int slashslash_vs_slash;
-              if (slashslash_vs_slash == 0)
-                {
-                  struct stat s1, s2;
-                  slashslash_vs_slash = ((stat ("/", &s1) == 0
-					  && stat ("//", &s2) == 0
-                                          && INO_T_EQ (s1.st_ino, s2.st_ino)
-                                          && s1.st_dev == s2.st_dev)
-                                         ? 1 : -1);
-                }
-             if (slashslash_vs_slash < 0)
-               *to++ = DIR_SEPARATOR;
+	      *to++ = DIR_SEPARATOR;
             }
         }
     }
