@@ -63,12 +63,16 @@ Boston, MA 02111-1307, USA.  */
 	      ? (LINE) - sdb_begin_function_line : 1));		\
   } else if (write_symbols == DBX_DEBUG) {			\
     static int sym_lineno = 1;					\
-    fprintf (FILE, ".stabn 68,0,%d,.LM%d-",			\
-	     LINE, sym_lineno);					\
+    char buffer[256];						\
+    ASM_GENERATE_INTERNAL_LABEL (buffer, "LM", sym_lineno);	\
+    fprintf (FILE, ".stabn 68,0,%d,", LINE);			\
+    assemble_name (FILE, buffer);				\
+    putc ('-', FILE);						\
     assemble_name (FILE,					\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
-    fprintf (FILE, "\n.LM%d:\n", sym_lineno);			\
-    sym_lineno += 1;						\
+    putc ('\n', FILE);						\
+    ASM_OUTPUT_INTERNAL_LABEL (FILE, "LM", sym_lineno);		\
+    sym_lineno++;						\
   } }
 
 /* When generating stabs debugging, use N_BINCL entries.  */
