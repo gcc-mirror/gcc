@@ -1118,12 +1118,14 @@ stmp-multilib-sub:
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
 # constructors.
-$(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+$(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
 	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
-$(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+$(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -o $(T)crtend$(objext)
@@ -1132,7 +1134,8 @@ $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 # compiled using PIC for use in shared libraries.
 crtbeginS.o crtendS.o: stamp-crtS ; @true
 
-stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+stamp-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
 	  -g0 -c $(srcdir)/crtstuff.c 
