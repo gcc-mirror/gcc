@@ -1,3 +1,8 @@
+2004-08-10  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java-gimplify.c (java_gimplify_new_array_init): Use create_tmp_var.
+	Don't create BLOCK here or call java_gimplify_block.
+
 2004-08-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* java-tree.h (flag_deprecated): Removed.
