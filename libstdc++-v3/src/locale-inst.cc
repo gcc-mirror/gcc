@@ -461,28 +461,28 @@ namespace std
 
   template
     int
-    __convert_from_v(char*, const char*, double, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, double, const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const char*, long double, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long double, const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const char*, long, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long, const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const char*, unsigned long, 
+    __convert_from_v(char*, const int, const char*, unsigned long, 
 		     const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const char*, long long, const __c_locale&, int);
+    __convert_from_v(char*, const int, const char*, long long, const __c_locale&, int);
 
   template
     int
-    __convert_from_v(char*, const char*, unsigned long long, 
+    __convert_from_v(char*, const int, const char*, unsigned long long, 
 		     const __c_locale&, int);
 
   template 

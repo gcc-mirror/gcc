@@ -1,3 +1,17 @@
+2002-03-19  Paolo Carlini  <pcarlini@unitus.it>
+            Ulrich Drepper  <drepper@redhat.com>
+
+	* src/locale-inst.cc (__convert_from_v): Add an additional
+	__size parameter in the declarations.
+	* include/bits/locale_facets.tcc
+	(__convert_from_v): When available (that is,
+	_GLIBCPP_USE_C99 defined) use snprintf instead of sprintf.
+	(num_put::_M_convert_float): Depending on _GLIBCPP_USE_C99
+	being defined or not, call and use __convert_from_v in the
+	appropriate way.
+	(num_put::_M_convert_int): Same here.
+	(money_put::do_put(long double)): Same here.
+
 2002-03-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html (#3.6):  Rewrap and close <a href> tags.

@@ -592,16 +592,15 @@ namespace std
       return __beg;
     }
 
-
-  // The following code uses sprintf() to convert floating point
-  // values for insertion into a stream.  An optimization would be to
-  // replace sprintf() with code that works directly on a wide buffer
-  // and then use __pad to do the padding. It would be good
-  // to replace sprintf() anyway to avoid accidental buffer overruns
-  // and to gain back the efficiency that C++ provides by knowing up
-  // front the type of the values to insert. This implementation
-  // follows the C++ standard fairly directly as outlined in 22.2.2.2
-  // [lib.locale.num.put]
+  // The following code uses snprintf (or sprintf(), when _GLIBCPP_USE_C99
+  // is not defined) to convert floating point values for insertion into a
+  // stream.  An optimization would be to replace them with code that works
+  // directly on a wide buffer and then use __pad to do the padding.
+  // It would be good to replace them anyway to gain back the efficiency
+  // that C++ provides by knowing up front the type of the values to insert.
+  // Also, sprintf is dangerous since may lead to accidental buffer overruns.
+  // This implementation follows the C++ standard fairly directly as
+  // outlined in 22.2.2.2 [lib.locale.num.put]
   template<typename _CharT, typename _OutIter>
     template<typename _ValueT>
       _OutIter
@@ -613,13 +612,38 @@ namespace std
 	// we get the full available precision.
 	const int __max_digits = numeric_limits<_ValueT>::digits10 + 1;
 	streamsize __prec = __io.precision();
-	// Protect against sprintf() buffer overflows.
+
 	if (__prec > static_cast<streamsize>(__max_digits))
 	  __prec = static_cast<streamsize>(__max_digits);
 
 	// Long enough for the max format spec.
 	char __fbuf[16];
 
+	// [22.2.2.2.2] Stage 1, numeric conversion to character.
+	int __len;
+#ifdef _GLIBCPP_USE_C99
+	// First try a buffer perhaps big enough (for sure sufficient for
+	// non-ios_base::fixed outputs)
+	int __cs_size = __max_digits * 3;
+	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+
+	const bool __fp = _S_format_float(__io, __fbuf, __mod, __prec);
+	if (__fp)
+	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale, __prec);
+	else
+	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+
+	// If the buffer was not large enough, try again with the correct size.
+	if (__len >= __cs_size)
+	  {
+	    __cs_size = __len + 1; 
+	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+	    if (__fp)
+	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale, __prec);
+	    else
+	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	  }
+#else
 	// Consider the possibility of long ios_base::fixed outputs
 	const bool __fixed = __io.flags() & ios_base::fixed;
 	const int __max_exp = numeric_limits<_ValueT>::max_exponent10;
@@ -632,12 +656,11 @@ namespace std
 	                              : __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
-	int __len;
-	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	if (_S_format_float(__io, __fbuf, __mod, __prec))
-	  __len = __convert_from_v(__cs, __fbuf, __v, _S_c_locale, __prec);
+	  __len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale, __prec);
 	else
-	  __len = __convert_from_v(__cs, __fbuf, __v, _S_c_locale);
+	  __len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale);
+#endif
 	return _M_widen_float(__s, __io, __fill, __cs, __len);
       }
 
@@ -649,13 +672,28 @@ namespace std
 		     char __modl, _ValueT __v) const
       {
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
-	// Leave room for "+/-," "0x," and commas. This size is
-	// arbitrary, but should work.
-	char __cs[64];
+
 	// Long enough for the max format spec.
 	char __fbuf[16];
 	_S_format_int(__io, __fbuf, __mod, __modl);
-	int __len = __convert_from_v(__cs, __fbuf, __v, _S_c_locale);
+#ifdef _GLIBCPP_USE_C99
+	// First try a buffer perhaps big enough.
+	int __cs_size = 64;
+	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+	int __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	// If the buffer was not large enough, try again with the correct size.
+	if (__len >= __cs_size)
+	  {
+	    __cs_size = __len + 1;
+	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+	    __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	  }
+#else
+	// Leave room for "+/-," "0x," and commas. This size is
+	// arbitrary, but should be largely sufficient.
+	char __cs[128];
+	int __len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale);
+#endif
 	return _M_widen_int(__s, __io, __fill, __cs, __len);
       }
 
@@ -1111,12 +1149,26 @@ namespace std
     { 
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+#ifdef _GLIBCPP_USE_C99
+      // First try a buffer perhaps big enough.
+      int __cs_size = 64;
+      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+      int __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
+      // If the buffer was not large enough, try again with the correct size.
+      if (__len >= __cs_size)
+	{
+	  __cs_size = __len + 1;
+	  __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+	  __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
+	}
+#else
       // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
       // decimal digit, '\0'. 
-      const int __n = numeric_limits<long double>::max_exponent10 + 5;
-      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __n));
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
-      int __len = __convert_from_v(__cs, "%.01Lf", __units, _S_c_locale);
+      const int __cs_size = numeric_limits<long double>::max_exponent10 + 5;
+      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+      int __len = __convert_from_v(__cs, 0, "%.01Lf", __units, _S_c_locale);
+#endif
+      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __cs_size));
       __ctype.widen(__cs, __cs + __len, __ws);
       string_type __digits(__ws);
       return this->do_put(__s, __intl, __io, __fill, __digits); 
@@ -1894,20 +1946,39 @@ namespace std
 		   const __c_locale& __cloc, int __base = 10);
 
   // Convert numeric value of type _Tv to string and return length of string.
+  // If snprintf is available use it, otherwise fall back to the unsafe sprintf
+  // which, in general, can be dangerous and should be avoided.
+#ifdef _GLIBCPP_USE_C99
   template<typename _Tv>
     int
-    __convert_from_v(char* __out, const char* __fmt, _Tv __v, 
+    __convert_from_v(char* __out, const int __size, const char* __fmt,
+		     _Tv __v, const __c_locale&, int __prec = -1)
+    {
+      int __ret;
+      const char* __old = setlocale(LC_ALL, "C");
+      if (__prec >= 0)
+        __ret = snprintf(__out, __size, __fmt, __prec, __v);
+      else
+        __ret = snprintf(__out, __size, __fmt, __v);
+      setlocale(LC_ALL, __old);
+      return __ret;
+    }
+#else
+  template<typename _Tv>
+    int
+    __convert_from_v(char* __out, const int, const char* __fmt, _Tv __v,
 		     const __c_locale&, int __prec = -1)
     {
       int __ret;
       const char* __old = setlocale(LC_ALL, "C");
       if (__prec >= 0)
-	__ret = sprintf(__out, __fmt, __prec, __v);
+        __ret = sprintf(__out, __fmt, __prec, __v);
       else
-	__ret = sprintf(__out, __fmt, __v);
+        __ret = sprintf(__out, __fmt, __v);
       setlocale(LC_ALL, __old);
       return __ret;
     }
+#endif
 
   // Construct correctly padded string, as per 22.2.2.2.2
   // Assumes 
