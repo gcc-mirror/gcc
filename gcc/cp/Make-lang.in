@@ -87,7 +87,7 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parser.o cp/ptree.o cp/rtti.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o \
- cp/optimize.o cp/mangle.o cp/cp-lang.o
+ cp/optimize.o cp/mangle.o cp/cp-lang.o cp/name-lookup.o
 
 # Use loose warnings for this front end.
 cp-warn = $(WERROR)
@@ -221,7 +221,8 @@ c++.stage4: stage4-start
 
 #
 # .o: .h dependencies.
-CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
+CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h c-common.h \
+	cp/cp-tree.def c-common.def \
 	function.h varray.h $(SYSTEM_H) coretypes.h $(CONFIG_H) $(TARGET_H) \
 	$(GGC_H) \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
@@ -274,3 +275,5 @@ cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h integrate.h insn-config
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h
 
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h output.h
+
+cp/name-lookup.o: cp/name-lookup.c $(CXX_TREE_H)
