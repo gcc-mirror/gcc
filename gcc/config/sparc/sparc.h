@@ -54,7 +54,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #define PTRDIFF_TYPE "int"
-#define SIZE_TYPE "int"
+/* In 2.4 it should work to delete this.
+   #define SIZE_TYPE "int"  */
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
 
