@@ -3025,7 +3025,7 @@ Aggregates with this attribute are invalid, even if they are of the same
 size as a corresponding scalar.  For example, the declaration:
 
 @smallexample
-struct S { int a; };
+struct S @{ int a; @};
 struct S  __attribute__ ((vector_size (16))) foo;
 @end smallexample
 

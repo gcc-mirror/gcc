@@ -1,5 +1,7 @@
 2001-12-07  Richard Henderson  <rth@redhat.com>
 
+	* doc/extend.texi: Fix typo last change.
+
 	* c-decl.c (c_language): Remove duplicate.
 
 2001-12-07  Dale Johannesen  <dalej@apple.com>
