@@ -2326,10 +2326,8 @@ rtx_renumbered_equal_p (x, y)
     case CC0:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-      return 0;
-
     case CONST_INT:
-      return INTVAL (x) == INTVAL (y);
+      return 0;
 
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */
