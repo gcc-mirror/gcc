@@ -3702,12 +3702,22 @@ sparc_nonflat_function_epilogue (file, size, leaf_function)
   if (current_function_epilogue_delay_list == 0)
     {
       /* If code does not drop into the epilogue, we need
-	 do nothing except output pending case vectors.  */
-      rtx insn = get_last_insn ();                               
-      if (GET_CODE (insn) == NOTE)                               
-      insn = prev_nonnote_insn (insn);                           
-      if (insn && GET_CODE (insn) == BARRIER)                    
-      goto output_vectors;                                                    
+	 do nothing except output pending case vectors.
+
+	 We have to still output a dummy nop for the sake of
+	 sane backtraces.  Otherwise, if the last two instructions
+	 of a function were call foo; dslot; this can make the return
+	 PC of foo (ie. address of call instruction plus 8) point to
+	 the first instruction in the next function.  */
+      rtx insn;
+
+      fputs("\tnop\n", file);
+
+      insn = get_last_insn ();
+      if (GET_CODE (insn) == NOTE)
+	      insn = prev_nonnote_insn (insn);
+      if (insn && GET_CODE (insn) == BARRIER)
+	      goto output_vectors;
     }
 
   if (num_gfregs)
