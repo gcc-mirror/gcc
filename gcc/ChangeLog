@@ -1,3 +1,7 @@
+Fri Feb 13 10:21:41 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+        * combine.c (can_combine_p): Handle USEs in PARALLELs.
+
 Fri Feb 13 01:34:14 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/linux.h (LIB_SPEC): Add -lc for -shared if
