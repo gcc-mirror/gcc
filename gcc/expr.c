@@ -166,8 +166,11 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 tree, enum machine_mode, int, tree,
 					 int));
 static rtx var_rtx		PARAMS ((tree));
-static HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
-static HOST_WIDE_INT highest_pow2_factor_for_type PARAMS ((tree, tree));
+
+static unsigned HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
+static unsigned HOST_WIDE_INT highest_pow2_factor_for_type PARAMS ((tree,
+								    tree));
+
 static int is_aligning_offset	PARAMS ((tree, tree));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
@@ -6335,11 +6338,11 @@ check_max_integer_computation_mode (exp)
 /* Return the highest power of two that EXP is known to be a multiple of.
    This is used in updating alignment of MEMs in array references.  */
 
-static HOST_WIDE_INT
+static unsigned HOST_WIDE_INT
 highest_pow2_factor (exp)
      tree exp;
 {
-  HOST_WIDE_INT c0, c1;
+  unsigned HOST_WIDE_INT c0, c1;
 
   switch (TREE_CODE (exp))
     {
@@ -6405,12 +6408,12 @@ highest_pow2_factor (exp)
 /* Similar, except that it is known that the expression must be a multiple
    of the alignment of TYPE.  */
 
-static HOST_WIDE_INT
+static unsigned HOST_WIDE_INT
 highest_pow2_factor_for_type (type, exp)
      tree type;
      tree exp;
 {
-  HOST_WIDE_INT type_align, factor;
+  unsigned HOST_WIDE_INT type_align, factor;
 
   factor = highest_pow2_factor (exp);
   type_align = TYPE_ALIGN (type) / BITS_PER_UNIT;
