@@ -724,11 +724,11 @@ cgraph_varpool_assemble_pending_decls (void)
 
   while (cgraph_varpool_nodes_queue)
     {
-      tree decl = cgraph_varpool_nodes_queue->decl;
       struct cgraph_varpool_node *node = cgraph_varpool_nodes_queue;
+      tree decl = node->decl;
 
       cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->next_needed;
-      if (!TREE_ASM_WRITTEN (decl))
+      if (!TREE_ASM_WRITTEN (decl) && !node->alias)
 	{
 	  assemble_variable (decl, 0, 1, 0);
 	  changed = true;
