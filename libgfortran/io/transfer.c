@@ -608,14 +608,18 @@ formatted_transfer (bt type, void *p, int len)
 
 	  break;
 
-        case FMT_T:
-           pos = f->u.n ;
-           pos= current_unit->recl - current_unit->bytes_left - pos;
-                         /* fall through */
-
         case FMT_TL:
-           consume_data_flag = 0 ;
-           pos = f->u.n ;
+        case FMT_T:
+           if (f->format==FMT_TL)
+             {
+                pos = f->u.n ;
+                pos= current_unit->recl - current_unit->bytes_left - pos;
+             }
+           else // FMT==T
+             {
+                consume_data_flag = 0 ;
+                pos = f->u.n - 1; 
+             }
 
            if (pos < 0 || pos >= current_unit->recl )
            {
@@ -898,8 +902,12 @@ data_transfer_init (int read_flag)
   if (current_unit == NULL)
     return;
 
-  if (is_internal_unit() && g.mode==WRITING)
-    empty_internal_buffer (current_unit->s);
+  if (is_internal_unit())
+    {
+      current_unit->recl = file_length(current_unit->s);
+      if (g.mode==WRITING)
+        empty_internal_buffer (current_unit->s);
+    }
 
   /* Check the action */
 

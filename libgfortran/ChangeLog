@@ -1,3 +1,11 @@
+2004-06-09  Bud Davis  <bdavis9659@comcaste.net>
+
+	PR gfortran/14897
+	* io/transfer.c (formatted_transfer): position is unique
+         for T and TL edit descriptors.
+ 	(data_transfer_init): set record length to size of internal
+         file.
+
 2004-06-09  Bud Davis  <bdavis9659@comcast.net>
 
 	PR gfortran/15755

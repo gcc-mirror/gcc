@@ -1,4 +1,9 @@
 2004-06-09  Bud Davis  <bdavis9659@comcast.net>
+
+	PR gfortran/14897
+	* gfortran.fortran-torture/execute/t_edit.f90
+
+2004-06-09  Bud Davis  <bdavis9659@comcast.net>
                                                                                     
         PR gfortran/15755
 	* gfortran.fortran-torture/execute/backspace.c : New test.
