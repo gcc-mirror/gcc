@@ -1401,12 +1401,12 @@ if test "${shared}" = "yes" ; then
   esac
 fi
 
-# Record target_configdirs and the configure arguments for target and
-# build configuration in Makefile.
-target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
-targargs=`echo "${arguments}" | \
+# Base args.  Strip norecursion, cache-file, srcdir, host, build, target.
+# These are the ones we might not want to pass down to subconfigures.
+baseargs=`echo "${arguments}" | \
 	sed -e 's/--no[^ 	]*//' \
 	    -e 's/--cache[a-z-]*=[^ 	]*//' \
+	    -e 's/--sr[a-z-]*=[^ 	]*//' \
 	    -e 's/--ho[a-z-]*=[^ 	]*//' \
 	    -e 's/--bu[a-z-]*=[^ 	]*//' \
 	    -e 's/--ta[a-z-]*=[^ 	]*//'`
@@ -1414,7 +1414,12 @@ targargs=`echo "${arguments}" | \
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
 # desired.
-buildargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} ${targargs}"
+buildargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} ${baseargs}"
+
+# Record target_configdirs and the configure arguments for target and
+# build configuration in Makefile.
+target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
+targargs=${baseargs}
 
 # Passing a --with-cross-host argument lets the target libraries know
 # whether they are being built with a cross-compiler or being built
