@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
+#include "reload.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -1756,6 +1757,133 @@ rs6000_legitimize_address (x, oldx, mode)
   else
     return NULL_RTX;
 }
+
+/* The convention appears to be to define this wherever it is used.
+   With legitimize_reload_address now defined here, REG_MODE_OK_FOR_BASE_P
+   is now used here.  */
+#ifndef REG_MODE_OK_FOR_BASE_P
+#define REG_MODE_OK_FOR_BASE_P(REGNO, MODE) REG_OK_FOR_BASE_P (REGNO)
+#endif
+
+/* Our implementation of LEGITIMIZE_RELOAD_ADDRESS.  Returns a value to
+   replace the input X, or the original X if no replacement is called for.
+   The output parameter *WIN is 1 if the calling macro should goto WIN,
+   0 if it should not.
+
+   For RS/6000, we wish to handle large displacements off a base
+   register by splitting the addend across an addiu/addis and the mem insn.
+   This cuts number of extra insns needed from 3 to 1.
+
+   On Darwin, we use this to generate code for floating point constants.
+   A movsf_low is generated so we wind up with 2 instructions rather than 3.
+   The Darwin code is inside #if TARGET_MACHO because only then is
+   machopic_function_base_name() defined.  */
+rtx
+rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
+    rtx x;
+    enum machine_mode mode;
+    int opnum;
+    int type;
+    int ind_levels ATTRIBUTE_UNUSED;
+    int *win;
+{
+  /* We must recognize output that we have already generated ourselves.  */ 
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+                   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+                   opnum, (enum reload_type)type);
+      *win = 1;
+      return x;
+    }
+#if TARGET_MACHO
+  if (DEFAULT_ABI == ABI_DARWIN && flag_pic
+      && GET_CODE (x) == LO_SUM
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && XEXP (XEXP (x, 0), 0) == pic_offset_table_rtx
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == HIGH
+      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 1), 0)) == CONST
+      && XEXP (XEXP (XEXP (x, 0), 1), 0) == XEXP (x, 1)
+      && GET_CODE (XEXP (XEXP (x, 1), 0)) == MINUS
+      && GET_CODE (XEXP (XEXP (XEXP (x, 1), 0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (XEXP (x, 1), 0), 1)) == SYMBOL_REF)
+    {
+      /* Result of previous invocation of this function on Darwin
+	 floating point constant. */
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+		opnum, (enum reload_type)type);
+      *win = 1;
+      return x;
+    }
+#endif
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
+      && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
+      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;
+      HOST_WIDE_INT high
+        = (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;
+
+      /* Check for 32-bit overflow.  */
+      if (high + low != val)
+        {
+	  *win = 0;
+	  return x;
+	}
+
+      /* Reload the high part into a base reg; leave the low part
+         in the mem directly.  */
+
+      x = gen_rtx_PLUS (GET_MODE (x),
+                        gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0),
+                                      GEN_INT (high)),
+                        GEN_INT (low));
+
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+                   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+                   opnum, (enum reload_type)type);
+      *win = 1;
+      return x;
+    }
+#if TARGET_MACHO
+  if (GET_CODE (x) == SYMBOL_REF
+      && DEFAULT_ABI == ABI_DARWIN
+      && flag_pic)
+    {
+      /* Darwin load of floating point constant.  */
+      rtx offset = gen_rtx (CONST, Pmode,
+		    gen_rtx (MINUS, Pmode, x,
+		    gen_rtx (SYMBOL_REF, Pmode,
+			machopic_function_base_name ())));
+      x = gen_rtx (LO_SUM, GET_MODE (x),
+	    gen_rtx (PLUS, Pmode, pic_offset_table_rtx,
+		gen_rtx (HIGH, Pmode, offset)), offset);
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+		opnum, (enum reload_type)type);
+      *win = 1;
+      return x;
+    }
+#endif
+  if (TARGET_TOC
+	   && CONSTANT_POOL_EXPR_P (x)
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
+    {
+      (x) = create_TOC_reference (x);
+      *win = 1;
+      return x;
+    }
+  *win = 0;
+  return x;
+}    
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
