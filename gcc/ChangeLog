@@ -3,6 +3,8 @@
 	* cfghooks.c, cfgrtl.c, modulo-sched.c, config/i386/winnt.c:
 	Fix comment typos.
 
+	* doc/install.texi: Fix a typo.
+
 2005-04-03  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/20648

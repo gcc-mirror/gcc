@@ -1100,7 +1100,7 @@ controlled by the Makefiles.
 @item --enable-checking
 @itemx --enable-checking=@var{list}
 When you specify this option, the compiler is built to perform internal
-constency checks of the requested complexity.  This does not change the
+consistency checks of the requested complexity.  This does not change the
 generated code, but adds error checking within the compiler.  This will
 slow down the compiler and may only work properly if you are building
 the compiler with GCC@.  This is @samp{yes} by default when building
