@@ -6734,7 +6734,8 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	/* Check the access.  */
-	if (current_function_check_memory_usage && GET_CODE (op0) == MEM)
+	if (cfun != 0 && current_function_check_memory_usage
+	    && GET_CODE (op0) == MEM)
           {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);
