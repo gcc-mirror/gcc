@@ -124,6 +124,10 @@ extern void debug_ggc_balance (void);
 #endif
 static void tally_leaves (struct ggc_mem *, int, size_t *, size_t *);
 
+struct alloc_zone *rtl_zone = NULL;
+struct alloc_zone *tree_zone = NULL;
+struct alloc_zone *garbage_zone = NULL;
+
 /* Insert V into the search tree.  */
 
 static inline void
@@ -157,6 +161,22 @@ tree_lookup (struct ggc_mem *v)
     }
 
   return 0;
+}
+
+/* Typed allocation function.  Does nothing special in this collector.  */
+
+void *
+ggc_alloc_typed (enum gt_types_enum type ATTRIBUTE_UNUSED, size_t size)
+{
+  return ggc_alloc (size);
+}
+
+/* Zone allocation function.  Does nothing special in this collector.  */
+
+void *
+ggc_alloc_zone (size_t size, struct alloc_zone *zone ATTRIBUTE_UNUSED)
+{
+  return ggc_alloc (size);
 }
 
 /* Alloc SIZE bytes of GC'able memory.  If ZERO, clear the memory.  */
@@ -511,7 +531,8 @@ init_ggc_pch (void)
 void
 ggc_pch_count_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 		      void *x ATTRIBUTE_UNUSED,
-		      size_t size ATTRIBUTE_UNUSED)
+		      size_t size ATTRIBUTE_UNUSED,
+		      bool is_string ATTRIBUTE_UNUSED)
 {
 }
 
@@ -531,7 +552,8 @@ ggc_pch_this_base (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 char *
 ggc_pch_alloc_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 		      void *x ATTRIBUTE_UNUSED,
-		      size_t size ATTRIBUTE_UNUSED)
+		      size_t size ATTRIBUTE_UNUSED,
+		      bool is_string ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
@@ -546,7 +568,8 @@ void
 ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 		      FILE *f ATTRIBUTE_UNUSED, void *x ATTRIBUTE_UNUSED,
 		      void *newx ATTRIBUTE_UNUSED,
-		      size_t size ATTRIBUTE_UNUSED)
+		      size_t size ATTRIBUTE_UNUSED,
+		      bool is_string ATTRIBUTE_UNUSED)
 {
 }
 

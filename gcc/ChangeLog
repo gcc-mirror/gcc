@@ -1,3 +1,10 @@
+2004-02-25  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc-simple.c (rtl_zone, tree_zone, garbage_zone, ggc_alloc_typed,
+	ggc_alloc_zone): New.
+	(ggc_pch_count_object, gcc_pch_alloc_object, ggc_pch_write_object):
+	Add bool is_string parameter.
+
 2004-02-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcse.c (delete_null_pointer_checks_1): Set stop_insn to end, not
