@@ -1,3 +1,9 @@
+2003-05-01  Tom Tromey  <tromey@redhat.com>
+
+	PR java/10459:
+	* libjava.compile/pr10459_2.java: New file.
+	* libjava.compile/pr10459.java: New file.
+
 2003-04-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/10582:
