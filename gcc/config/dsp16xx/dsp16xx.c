@@ -1531,8 +1531,6 @@ override_options ()
     }
 }
 
-enum rtx_code save_next_cc_user_code;
-
 enum rtx_code
 next_cc_user_code (insn)
 rtx insn;
@@ -1549,6 +1547,22 @@ rtx insn;
     return GET_CODE (SET_SRC (PATTERN (insn)));
   else
     abort ();
+}
+
+int
+next_cc_user_unsigned (insn)
+     rtx insn;
+{
+  switch (next_cc_user_code (insn))
+    {
+    case GTU:
+    case GEU:
+    case LTU:
+    case LEU:
+      return 1;
+    default:
+      return 0;
+    }
 }
 
 void
@@ -1624,12 +1638,13 @@ int letter;
         output_address( XEXP(op,0) );
     else if( code == CONST_INT )
     { 
+	HOST_WIDE_INT val = INTVAL (op);
         if( letter == 'H' )
-            fprintf( file, "0x%x", (INTVAL(op) & 0xffff) );
+            fprintf( file, HOST_WIDE_INT_PRINT_HEX, val & 0xffff);
 	else if (letter == 'h')
-            fprintf( file, "%d", INTVAL (op) );
+            fprintf( file, HOST_WIDE_INT_PRINT_DEC, val);
         else if( letter == 'U' )
-            fprintf( file, "0x%x", ((INTVAL(op) & 0xffff0000) >> 16) & 0xffff );
+            fprintf( file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
         else
            output_addr_const( file, op );
     }

@@ -3131,7 +3131,9 @@ do {									\
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\
 				  GT, LEU, LTU, GEU, GTU}},	\
   {"scc_comparison_operator", {EQ, NE, LE, LT, GE,		\
-			       GT, LEU, LTU, GEU, GTU}},
+			       GT, LEU, LTU, GEU, GTU}},	\
+  {"trap_comparison_operator", {EQ, NE, LE, LT, GE,		\
+				GT, LEU, LTU, GEU, GTU}},
 
 
 /* uncomment for disabling the corresponding default options */
@@ -3205,6 +3207,7 @@ extern int load_multiple_operation ();
 extern int store_multiple_operation ();
 extern int branch_comparison_operator ();
 extern int scc_comparison_operator ();
+extern int trap_comparison_operator ();
 extern int includes_lshift_p ();
 extern int includes_rshift_p ();
 extern int registers_ok_for_quad_peep ();
@@ -3242,7 +3245,6 @@ extern struct rtx_def *rs6000_longcall_ref ();
 extern int function_arg_padding ();
 extern void toc_section ();
 extern void private_data_section ();
-extern int trap_comparison_operator ();
 
 /* See nonlocal_goto_receiver for when this must be set.  */
 
