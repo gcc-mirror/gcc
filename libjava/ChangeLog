@@ -1,3 +1,10 @@
+2004-10-20  Andreas Schwab  <schwab@suse.de>
+
+	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Cast pointers
+	to uaddr, not int.
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass):
+	Likewise.
+
 2004-10-20  Michael Koch  <konqueror@gmx.de>
 
 	* javax/print/attribute/standard/ColorSupported.java,

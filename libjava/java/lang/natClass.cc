@@ -1816,11 +1816,11 @@ _Jv_LayoutVTableMethods (jclass klass)
 
   // If superclass looks like a constant pool entry,
   // resolve it now.
-  if ((uaddr)superclass < (uaddr)klass->constants.size)
+  if ((uaddr) superclass < (uaddr) klass->constants.size)
     {
       if (klass->state < JV_STATE_LINKED)
 	{
-	  _Jv_Utf8Const *name = klass->constants.data[(int)superclass].utf8;
+	  _Jv_Utf8Const *name = klass->constants.data[(uaddr) superclass].utf8;
 	  superclass = _Jv_FindClass (name, klass->loader);
 	  if (! superclass)
 	    {
@@ -1828,7 +1828,7 @@ _Jv_LayoutVTableMethods (jclass klass)
 	    }
 	}
       else
-	superclass = klass->constants.data[(int)superclass].clazz;
+	superclass = klass->constants.data[(uaddr) superclass].clazz;
     }
 
   if (superclass != NULL && superclass->vtable_method_count == -1)
