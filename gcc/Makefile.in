@@ -66,13 +66,12 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
-CC = cc
+CC = @CC@
 BISON = bison
 BISONFLAGS =
 LEX = flex
 LEXFLAGS =
 AR = ar
-OLDAR_FLAGS = qc
 AR_FLAGS = rc
 DLLTOOL = dlltool
 SHELL = /bin/sh
@@ -110,6 +109,7 @@ CCLIBFLAGS = -O
 
 # Version of ar to use when compiling libgcc1.a.
 OLDAR = ar
+OLDAR_FLAGS = qc
 
 # Target to use when installing include directory.  Either
 # install-headers-tar or install-headers-cpio.
