@@ -1,5 +1,10 @@
 2002-03-07  Adam Megacz  <adam@xwt.org>
 
+	* java/lang/natSystem.cc (currentTimeMillis): Now uses updated
+       _Jv_platform_gettimeofday signature.
+	
+2002-03-07  Adam Megacz  <adam@xwt.org>
+
        * win32.cc (_Jv_platform_gettimeofday): Now takes no args,
        returns jlong. Added implementation
        * posix.cc (_Jv_platform_gettimeofday): Now takes no args,
