@@ -1,5 +1,8 @@
 2003-12-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR target/11322
+	* config/sh/netbsd-elf.h (NO_PROFILE_COUNTERS): Define.
+
 	PR target/12467
 	* config/rs6000/altivec.md (altivec_vmsummbm): Fix typo.
 
