@@ -1012,7 +1012,7 @@ dbxout_type (type, full, show_arg_types)
       /* This used to say `r1' and we used to take care
 	 to make sure that `int' was type number 1.  */
       fprintf (asmfile, "r%d;%d;0;", TYPE_SYMTAB_ADDRESS (integer_type_node),
-	       TREE_INT_CST_LOW (size_in_bytes (type)));
+	       int_size_in_bytes (type));
       CHARS (16);
       break;
 
@@ -1042,14 +1042,14 @@ dbxout_type (type, full, show_arg_types)
 	{
 	  fprintf (asmfile, "r%d;%d;0;",
 		   TYPE_SYMTAB_ADDRESS (type),
-		   TREE_INT_CST_LOW (size_in_bytes (TREE_TYPE (type))));
+		   int_size_in_bytes (TREE_TYPE (type)));
 	  CHARS (15);		/* The number is probably incorrect here.  */
 	}
       else
 	{
 	  /* Output a complex integer type as a structure,
 	     pending some other way to do it.  */
-	  fprintf (asmfile, "s%d", TREE_INT_CST_LOW (size_in_bytes (type)));
+	  fprintf (asmfile, "s%d", int_size_in_bytes (type));
 
 	  fprintf (asmfile, "real:");
 	  CHARS (10);
@@ -1135,11 +1135,10 @@ dbxout_type (type, full, show_arg_types)
 	    typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
 	    break;
 	  }
-	tem = size_in_bytes (type);
 
 	/* Identify record or union, and print its size.  */
 	fprintf (asmfile, (TREE_CODE (type) == RECORD_TYPE) ? "s%d" : "u%d",
-		 TREE_INT_CST_LOW (tem));
+		 int_size_in_bytes (type));
 
 	if (use_gnu_debug_info_extensions)
 	  {
