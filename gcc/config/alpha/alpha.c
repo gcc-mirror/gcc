@@ -585,6 +585,22 @@ some_operand (op, mode)
   return 0;
 }
 
+/* Likewise, but don't accept constants.  */
+
+int
+some_ni_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (GET_CODE (op) == REG || GET_CODE (op) == MEM);
+}
+
 /* Return 1 if OP is a valid operand for the source of a move insn.  */
 
 int

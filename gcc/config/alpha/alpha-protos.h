@@ -50,6 +50,7 @@ extern int reg_or_fp0_operand PROTO ((rtx, enum machine_mode));
 extern int hard_fp_register_operand PROTO ((rtx, enum machine_mode));
 extern int reg_or_cint_operand PROTO ((rtx, enum machine_mode));
 extern int some_operand PROTO ((rtx, enum machine_mode));
+extern int some_ni_operand PROTO ((rtx, enum machine_mode));
 extern int input_operand PROTO ((rtx, enum machine_mode));
 extern int current_file_function_operand PROTO ((rtx, enum machine_mode));
 extern int call_operand PROTO ((rtx, enum machine_mode));

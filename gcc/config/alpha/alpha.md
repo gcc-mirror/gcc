@@ -669,7 +669,7 @@
 ;; recognize them while reloading.
 
 (define_insn ""
-  [(set (match_operand:DI 0 "some_operand" "=r,&r")
+  [(set (match_operand:DI 0 "some_ni_operand" "=r,&r")
 	(plus:DI (plus:DI (match_operand:DI 1 "some_operand" "%r,r")
 			  (match_operand:DI 2 "some_operand" "%r,r"))
 		 (match_operand:DI 3 "some_operand" "IOKL,r")))]
@@ -687,7 +687,7 @@
   "")
 					   
 (define_insn ""
-  [(set (match_operand:SI 0 "some_operand" "=r,&r")
+  [(set (match_operand:SI 0 "some_ni_operand" "=r,&r")
 	(plus:SI (plus:SI (mult:SI (match_operand:SI 1 "some_operand" "rJ,rJ")
 				   (match_operand:SI 2 "const48_operand" "I,I"))
 			  (match_operand:SI 3 "some_operand" "%r,r"))
@@ -708,7 +708,7 @@
   "")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "some_operand" "=r,&r")
+  [(set (match_operand:DI 0 "some_ni_operand" "=r,&r")
 	(sign_extend:DI
 	 (plus:SI (plus:SI
 		   (mult:SI (match_operand:SI 1 "some_operand" "rJ,rJ")
@@ -733,7 +733,7 @@
   "operands[5] = gen_lowpart (SImode, operands[0]);")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "some_operand" "=r,&r")
+  [(set (match_operand:DI 0 "some_ni_operand" "=r,&r")
 	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "some_operand" "rJ,rJ")
 				   (match_operand:DI 2 "const48_operand" "I,I"))
 			  (match_operand:DI 3 "some_operand" "%r,r"))
