@@ -6369,18 +6369,10 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (target) == SYMBOL_REF)
     return \"%*jal\\t%0\";
-
   else if (GET_CODE (target) == CONST_INT)
-    {
-      operands[0] = target;
-      return \"%[li\\t%@,%0\\n\\t%*jal\\t%2,%@%]\";
-    }
-
+    return \"%[li\\t%@,%0\\n\\t%*jal\\t%2,%@%]\";
   else
-    {
-      operands[0] = target;
-      return \"%*jal\\t%2,%0\";
-    }
+    return \"%*jal\\t%2,%0\";
 }"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -6396,22 +6388,18 @@ move\\t%0,%z4\\n\\
   register rtx target = operands[0];
 
   if (GET_CODE (target) == SYMBOL_REF)
-    return \"jal\\t%0\";
-
-  else if (GET_CODE (target) == CONST_INT)
     {
-      operands[0] = target;
-      return \"li\\t%^,%0\\n\\tjal\\t%2,%^\";
-    }
-
-  else
-    {
-      operands[0] = target;
-      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
-	return \"move\\t%^,%0\\n\\tjal\\t%2,%^\";
+      if (GET_MODE (target) == SImode)
+	return \"la\\t%^,%0\\n\\tjal\\t%2,%^\";
       else
-	return \"jal\\t%2,%0\";
+	return \"dla\\t%^,%0\\n\\tjal\\t%2,%^\";
     }
+  else if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%0\\n\\tjal\\t%2,%^\";
+  else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+    return \"move\\t%^,%0\\n\\tjal\\t%2,%^\";
+  else
+    return \"jal\\t%2,%0\";
 }"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -6519,7 +6507,7 @@ move\\t%0,%z4\\n\\
 	}
 
       emit_call_insn (gen_call_value_internal0 (operands[0], operands[1], operands[2],
-					        gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
+					        gen_rtx (REG, SImode, GP_REG_FIRST + 31)));
 
       DONE;
     }
@@ -6545,18 +6533,10 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (target) == SYMBOL_REF)
     return \"%*jal\\t%1\";
-
   else if (GET_CODE (target) == CONST_INT)
-    {
-      operands[1] = target;
-      return \"%[li\\t%@,%1\\n\\t%*jal\\t%3,%@%]\";
-    }
-
+    return \"%[li\\t%@,%1\\n\\t%*jal\\t%3,%@%]\";
   else
-    {
-      operands[1] = target;
-      return \"%*jal\\t%3,%1\";
-    }
+    return \"%*jal\\t%3,%1\";
 }"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -6573,22 +6553,18 @@ move\\t%0,%z4\\n\\
   register rtx target = operands[1];
 
   if (GET_CODE (target) == SYMBOL_REF)
-    return \"jal\\t%1\";
-
-  else if (GET_CODE (target) == CONST_INT)
     {
-      operands[1] = target;
-      return \"li\\t%^,%1\\n\\tjal\\t%3,%^\";
-    }
-
-  else
-    {
-      operands[1] = target;
-      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
-	return \"move\\t%^,%1\\n\\tjal\\t%3,%^\";
+      if (GET_MODE (target) == SImode)
+	return \"la\\t%^,%1\\n\\tjal\\t%3,%^\";
       else
-	return \"jal\\t%3,%1\";
+	return \"dla\\t%^,%1\\n\\tjal\\t%3,%^\";
     }
+  else if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%1\\n\\tjal\\t%3,%^\";
+  else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+    return \"move\\t%^,%1\\n\\tjal\\t%3,%^\";
+  else
+    return \"jal\\t%3,%1\";
 }"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -6678,22 +6654,18 @@ move\\t%0,%z4\\n\\
   register rtx target = operands[1];
 
   if (GET_CODE (target) == SYMBOL_REF)
-    return \"jal\\t%1\";
-
-  else if (GET_CODE (target) == CONST_INT)
     {
-      operands[1] = target;
-      return \"li\\t%^,%1\\n\\tjal\\t%4,%^\";
-    }
-
-  else
-    {
-      operands[1] = target;
-      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
-	return \"move\\t%^,%1\\n\\tjal\\t%4,%^\";
+      if (GET_MODE (target) == SImode)
+	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
       else
-	return \"jal\\t%4,%1\";
+	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
     }
+  else if (GET_CODE (target) == CONST_INT)
+    return \"li\\t%^,%1\\n\\tjal\\t%4,%^\";
+  else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+    return \"move\\t%^,%1\\n\\tjal\\t%4,%^\";
+  else
+    return \"jal\\t%4,%1\";
 }"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
