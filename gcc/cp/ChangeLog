@@ -1,3 +1,20 @@
+1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Stop sharing binfos for indirect virtual bases.
+	* tree.c (propagate_binfo_offsets): Unshare vbases, too.
+	(layout_basetypes): Likewise.
+	(unshare_base_binfos): Copy vbases, too.
+	* cp-tree.h (BINFO_VIA_PUBLIC, BINFO_BASEINIT_MARKED,
+	BINFO_VBASE_INIT_MARKED): Remove obsolete macros.
+	(BINFO_PUSHDECLS_MARKED, SET_BINFO_PUSHDECLS_MARKED,
+	CLEAR_BINFO_PUSHDECLS_MARKED): New macros.
+	* search.c (lookup_field, lookup_fnfields, lookup_member): Remove
+	reference to BINFO_VIA_PUBLIC.
+	(marked_pushdecls_p, unmarked_pushdecls_p): New fns.
+	(push_class_decls): Use them.
+	(dfs_pushdecls): Use SET_BINFO_PUSHDECLS_MARKED.
+	(dfs_compress_decls): Use CLEAR_BINFO_PUSHDECLS_MARKED.
+
 1998-08-27  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (build_enumerator): Set DECL_CONTEXT for the

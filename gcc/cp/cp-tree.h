@@ -42,17 +42,18 @@ Boston, MA 02111-1307, USA.  */
       TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
       C_DECLARED_LABEL_FLAG.
    2: IDENTIFIER_OPNAME_P.
+      BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
       TYPE_VIRTUAL_P.
       PARM_DECL_EXPR (in SAVE_EXPR).
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
+      BINFO_PUSHDECLS_MARKED.
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
-   5: BINFO_VIA_PUBLIC.
-      BINFO_VBASE_INIT_MARKED.
+   5: Not used.
    6: Not used.
 
    Usage of TYPE_LANG_FLAG_?:
@@ -965,10 +966,6 @@ struct lang_type
 
 /* Additional macros for inheritance information.  */
 
-/* When following an binfo-specific chain, this is the cumulative
-   via-public flag.  */
-#define BINFO_VIA_PUBLIC(NODE) TREE_LANG_FLAG_5 (NODE)
-
 #ifdef MI_MATRIX
 /* When building a matrix to determine by a single lookup
    whether one class is derived from another or not,
@@ -984,12 +981,6 @@ struct lang_type
    expressions to be lvalues.  Grr!  */
 #define SET_BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_0(NODE)=1))
 #define CLEAR_BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_0(NODE)=0))
-
-/* Nonzero means marked in building initialization list.  */
-#define BINFO_BASEINIT_MARKED(NODE) CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
-/* Modifier macros */
-#define SET_BINFO_BASEINIT_MARKED(NODE) SET_CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
-#define CLEAR_BINFO_BASEINIT_MARKED(NODE) CLEAR_CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
 
 /* Nonzero means marked in search through virtual inheritance hierarchy.  */
 #define BINFO_VBASE_MARKED(NODE) CLASSTYPE_MARKED2 (BINFO_TYPE (NODE))
@@ -1015,11 +1006,10 @@ struct lang_type
 #define SET_BINFO_NEW_VTABLE_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED4(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_4(NODE)=1))
 #define CLEAR_BINFO_NEW_VTABLE_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED4(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_4(NODE)=0))
 
-/* Nonzero means this class has initialized its virtual baseclasses.  */
-#define BINFO_VBASE_INIT_MARKED(NODE) \
-  (TREE_VIA_VIRTUAL(NODE)?CLASSTYPE_MARKED5(BINFO_TYPE(NODE)):TREE_LANG_FLAG_5(NODE))
-#define SET_BINFO_VBASE_INIT_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?SET_CLASSTYPE_MARKED5(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_5(NODE)=1))
-#define CLEAR_BINFO_VBASE_INIT_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLEAR_CLASSTYPE_MARKED5(BINFO_TYPE(NODE)):(TREE_LANG_FLAG_5(NODE)=0))
+/* Nonzero means this class has done dfs_pushdecls.  */
+#define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
+#define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
+#define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Accessor macros for the vfield slots in structures.  */
 
