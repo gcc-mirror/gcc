@@ -1343,7 +1343,7 @@ dump_expr (tree t, int flags)
 	if (fn && TREE_CODE (fn) == FUNCTION_DECL)
 	  {
 	    if (DECL_CONSTRUCTOR_P (fn))
-	      pp_cxx_tree_identifier (cxx_pp, TYPE_IDENTIFIER (TREE_TYPE (t)));
+	      dump_type (DECL_CONTEXT (fn), flags);
 	    else
 	      dump_decl (fn, 0);
 	  }

@@ -1,3 +1,17 @@
+2004-10-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17687
+	* g++.dg/parse/error19.C: New test.
+
+	PR c++/17670
+	* g++.dg/init/new11.C: New test.
+
+	PR c++/17821
+	* g++.dg/parse/error20.C: New test.
+
+	PR c++/17826
+	* g++.dg/template/crash24.C: New test.
+	
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17301

@@ -1606,31 +1606,14 @@ build_builtin_delete_call (tree addr)
   return build_call (global_delete_fndecl, build_tree_list (NULL_TREE, addr));
 }
 
-/* Generate a C++ "new" expression. DECL is either a TREE_LIST
-   (which needs to go through some sort of groktypename) or it
-   is the name of the class we are newing. INIT is an initialization value.
-   It is either an EXPRLIST, an EXPR_NO_COMMAS, or something in braces.
-   If INIT is void_type_node, it means do *not* call a constructor
-   for this instance.
-
-   For types with constructors, the data returned is initialized
-   by the appropriate constructor.
-
-   Whether the type has a constructor or not, if it has a pointer
-   to a virtual function table, then that pointer is set up
-   here.
-
-   Unless I am mistaken, a call to new () will return initialized
-   data regardless of whether the constructor itself is private or
-   not.  NOPE; new fails if the constructor is private (jcm).
-
-   Note that build_new does nothing to assure that any special
-   alignment requirements of the type are met.  Rather, it leaves
-   it up to malloc to do the right thing.  Otherwise, folding to
-   the right alignment cal cause problems if the user tries to later
-   free the memory returned by `new'.
-
-   PLACEMENT is the `placement' list for user-defined operator new ().  */
+/* Generate a representation for a C++ "new" expression.  PLACEMENT is
+   a TREE_LIST of placement-new arguments (or NULL_TREE if none).  If
+   NELTS is NULL, TYPE is the type of the storage to be allocated.  If
+   NELTS is not NULL, then this is an array-new allocation; TYPE is
+   the type of the elements in the array and NELTS is the number of
+   elements in the array.  INIT, if non-NULL, is the initializer for
+   the new object.  If USE_GLOBAL_NEW is true, then the user
+   explicitly wrote "::new" rather than just "new".  */
 
 tree
 build_new (tree placement, tree type, tree nelts, tree init, 

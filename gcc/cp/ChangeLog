@@ -1,5 +1,22 @@
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17867
+	* error.c (dump_expr): Correct handling of AGGR_INIT_EXPRs using a
+	constructor.
+
+	PR c++/17670
+	* init.c (build_new): Correct comments.
+	* parser.c (cp_parser_new_expression): Use NULL_TREE for nelts in
+	the non-array case.
+
+	PR c++/17821
+	* parser.c (cp_parser_postfix_dot_deref_expression): If the
+	pseduo-destructor-name production does not work, fall back to the
+	ordinary production.
+
+	PR c++/17826
+	* tree.c (cp_tree_equal): Handle a BASELINK.
+
 	PR c++/17524
 	* cp-tree.h (check_var_type): New function.
 	* decl.c (check_var_type): New function, split out from ...
