@@ -1,5 +1,8 @@
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13157
+	* g++.dg/template/koenig3.C: New test.
+
 	PR c++/13529
 	* g++.dg/parse/offsetof3.C: New test.
 

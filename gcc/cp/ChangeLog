@@ -1,3 +1,15 @@
+2004-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13157
+	* name-lookup.c (lookup_using_namespace): Remove spacesp
+	parameter.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_qualified_name): Adjust accordingly.
+	(lookup_name_real): Likewise.
+	(lookup_arg_dependent): Do not eliminate the namespace of the
+	functions found by unqualified name lookup unless that is the
+	current namespace.
+
 2004-01-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* semantics.c (push_deferring_access_checks): Fix format.
