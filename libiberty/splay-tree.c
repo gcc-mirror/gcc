@@ -482,7 +482,7 @@ splay_tree_predecessor (sp, key)
 }
 
 /* Return the immediate successor KEY, or NULL if there is no
-   predecessor.  KEY need not be present in the tree.  */
+   successor.  KEY need not be present in the tree.  */
 
 splay_tree_node
 splay_tree_successor (sp, key)
@@ -492,7 +492,7 @@ splay_tree_successor (sp, key)
   int comparison;
   splay_tree_node node;
 
-  /* If the tree is empty, there is certainly no predecessor.  */
+  /* If the tree is empty, there is certainly no successor.  */
   if (!sp->root)
     return NULL;
 
