@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -114,6 +114,13 @@ extern int only_leaf_regs_used	PROTO((void));
 /* Scan IN_RTX and its subexpressions, and renumber all regs into those
    available in leaf functions.  */
 extern void leaf_renumber_regs_insn PROTO((rtx));
+
+/* Functions in flow.c */
+extern void allocate_for_life_analysis	PROTO((void));
+extern int regno_uninitialized		PROTO((int));
+extern int regno_clobbered_at_setjmp	PROTO((int));
+extern void dump_flow_info		STDIO_PROTO((FILE *));
+extern void flow_analysis		STDIO_PROTO((rtx, int, FILE *));
 #endif
 
 /* Functions in varasm.c.  */
