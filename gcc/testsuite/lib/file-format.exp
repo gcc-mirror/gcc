@@ -24,10 +24,14 @@
 
 proc gcc_target_object_format { } { 
     global gcc_target_object_format_saved
+    global target_triplet
     global tool
 
     if [info exists gcc_target_object_format_saved] {
         verbose "gcc_target_object_format returning saved $gcc_target_object_format_saved" 2
+    } elseif { [string match "*-*-darwin*" $target_triplet] } {
+	# Darwin doesn't necessarily have objdump, so hand-code it.
+	set gcc_target_object_format_saved mach-o
     } else {
         set objdump_name [find_binutils_prog objdump]
         set open_file [open objfmtst.c w]

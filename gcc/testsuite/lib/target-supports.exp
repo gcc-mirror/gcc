@@ -57,6 +57,7 @@ proc check_weak_available { } {
         elf      { return 1 }
         ecoff    { return 1 }
         a.out    { return 1 }
+	mach-o	 { return 1 }
         unknown  { return -1 }
         default  { return 0 }
     }
