@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #include "convert.h"
 #include "params.h"
 
+/* 'true' after aliases have been computed (see compute_may_aliases).  */
+bool aliases_computed_p;
 
 /* Structure to map a variable to its alias set and keep track of the
    virtual operands that will be needed to represent it.  */
@@ -93,6 +95,9 @@ struct alias_info
 
   /* Number of function calls found in the program.  */
   size_t num_calls_found;
+
+  /* Number of const/pure function calls found in the program.  */
+  size_t num_pure_const_calls_found;
 
   /* Array of counters to keep track of how many times each pointer has
      been dereferenced in the program.  This is used by the alias grouping
@@ -145,7 +150,7 @@ static void compute_points_to_and_addr_escape (struct alias_info *);
 static void compute_flow_sensitive_aliasing (struct alias_info *);
 static void setup_pointers_and_addressables (struct alias_info *);
 static bool collect_points_to_info_r (tree, tree, void *);
-static bool is_escape_site (tree, size_t *);
+static bool is_escape_site (tree, struct alias_info *);
 static void add_pointed_to_var (struct alias_info *, tree, tree);
 static void create_global_var (void);
 static void collect_points_to_info_for (struct alias_info *, tree);
@@ -465,70 +470,12 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
 }
 
 
-/* Count the number of calls in the function and conditionally
-   create GLOBAL_VAR.   This is performed before translation
-   into SSA (and thus before alias analysis) to avoid compile time
-   and memory utilization explosions in functions with many
-   of calls and call clobbered variables.  */
-
-static void
-count_calls_and_maybe_create_global_var (void)
-{
-  struct alias_info ai;
-  basic_block bb;
-  bool temp;
-
-  memset (&ai, 0, sizeof (struct alias_info));
-
-  /* First count the number of calls in the IL.  */
-  FOR_EACH_BB (bb)
-    {
-      block_stmt_iterator si;
-
-      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
-        {
-          tree stmt = bsi_stmt (si);
-
-	  if (get_call_expr_in (stmt) != NULL_TREE)
-	    ai.num_calls_found++;
-	}
-    }
-
-  /* If there are no call clobbered variables, then maybe_create_global_var
-     will always create a GLOBAL_VAR.  At this point we do not want that
-     behavior.  So we turn on one bit in CALL_CLOBBERED_VARs, call
-     maybe_create_global_var, then reset the bit to its original state.  */
-  temp = bitmap_bit_p (call_clobbered_vars, 0);
-  bitmap_set_bit (call_clobbered_vars, 0);
-  maybe_create_global_var (&ai);
-  if (!temp)
-    bitmap_clear_bit (call_clobbered_vars, 0);
-}
-
-struct tree_opt_pass pass_maybe_create_global_var = 
-{
-  "maybe_create_global_var",		/* name */
-  NULL,					/* gate */
-  count_calls_and_maybe_create_global_var, /* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_MAY_ALIAS,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
-};
-
 /* Initialize the data structures used for alias analysis.  */
 
 static struct alias_info *
 init_alias_info (void)
 {
   struct alias_info *ai;
-  static bool aliases_computed_p = false;
 
   ai = xcalloc (1, sizeof (struct alias_info));
   ai->ssa_names_visited = sbitmap_alloc (num_ssa_names);
@@ -695,7 +642,7 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	{
 	  bitmap addr_taken;
 	  tree stmt = bsi_stmt (si);
-	  bool stmt_escapes_p = is_escape_site (stmt, &ai->num_calls_found);
+	  bool stmt_escapes_p = is_escape_site (stmt, ai);
 	  bitmap_iterator bi;
 
 	  /* Mark all the variables whose address are taken by the
@@ -1586,22 +1533,56 @@ maybe_create_global_var (struct alias_info *ai)
 	  n_clobbered++;
 	}
 
-      if (ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD)
+      /* If the number of virtual operands that would be needed to
+	 model all the call-clobbered variables is larger than
+	 GLOBAL_VAR_THRESHOLD, create .GLOBAL_VAR.
+
+	 Also create .GLOBAL_VAR if there are no call-clobbered
+	 variables and the program contains a mixture of pure/const
+	 and regular function calls.  This is to avoid the problem
+	 described in PR 20115:
+
+	      int X;
+	      int func_pure (void) { return X; }
+	      int func_non_pure (int a) { X += a; }
+	      int foo ()
+	      {
+	 	int a = func_pure ();
+		func_non_pure (a);
+		a = func_pure ();
+		return a;
+	      }
+
+	 Since foo() has no call-clobbered variables, there is
+	 no relationship between the calls to func_pure and
+	 func_non_pure.  Since func_pure has no side-effects, value
+	 numbering optimizations elide the second call to func_pure.
+	 So, if we have some pure/const and some regular calls in the
+	 program we create .GLOBAL_VAR to avoid missing these
+	 relations.  */
+      if (ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD
+	  || (n_clobbered == 0
+	      && ai->num_calls_found > 0
+	      && ai->num_pure_const_calls_found > 0
+	      && ai->num_calls_found > ai->num_pure_const_calls_found))
 	create_global_var ();
     }
 
-  /* If the function has calls to clobbering functions and .GLOBAL_VAR has
-     been created, make it an alias for all call-clobbered variables.  */
-  if (global_var)
-    EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
-      {
-	tree var = referenced_var (i);
-	if (var != global_var)
-	  {
-	     add_may_alias (var, global_var);
-	     bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	  }
-      }
+  /* Mark all call-clobbered symbols for renaming.  Since the initial
+     rewrite into SSA ignored all call sites, we may need to rename
+     .GLOBAL_VAR and the call-clobbered variables.  */
+  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
+    {
+      tree var = referenced_var (i);
+
+      /* If the function has calls to clobbering functions and
+	 .GLOBAL_VAR has been created, make it an alias for all
+	 call-clobbered variables.  */
+      if (global_var && var != global_var)
+	add_may_alias (var, global_var);
+      
+      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
+    }
 }
 
 
@@ -1762,8 +1743,8 @@ set_pt_malloc (tree ptr)
 
 
 /* Given two different pointers DEST and ORIG.  Merge the points-to
-   information in ORIG into DEST.  AI is as in
-   collect_points_to_info.  */
+   information in ORIG into DEST.  AI contains all the alias
+   information collected up to this point.  */
 
 static void
 merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
@@ -1908,7 +1889,7 @@ add_pointed_to_expr (struct alias_info *ai, tree ptr, tree expr)
 
 /* If VALUE is of the form &DECL, add DECL to the set of variables
    pointed-to by PTR.  Otherwise, add VALUE as a pointed-to expression by
-   PTR.  AI is as in collect_points_to_info.  */
+   PTR.  AI points to the collected alias information.  */
 
 static void
 add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
@@ -2040,16 +2021,18 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	3- STMT is an assignment to a non-local variable, or
 	4- STMT is a return statement.
 
-   If NUM_CALLS_P is not NULL, the counter is incremented if STMT contains
-   a function call.  */
+   AI points to the alias information collected so far.  */
 
 static bool
-is_escape_site (tree stmt, size_t *num_calls_p)
+is_escape_site (tree stmt, struct alias_info *ai)
 {
-  if (get_call_expr_in (stmt) != NULL_TREE)
+  tree call = get_call_expr_in (stmt);
+  if (call != NULL_TREE)
     {
-      if (num_calls_p)
-	(*num_calls_p)++;
+      ai->num_calls_found++;
+
+      if (!TREE_SIDE_EFFECTS (call))
+	ai->num_pure_const_calls_found++;
 
       return true;
     }

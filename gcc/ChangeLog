@@ -1,3 +1,32 @@
+2005-02-22  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20100
+	PR tree-optimization/20115
+	* tree-optimize.c (init_tree_optimization_passes): Remove
+	pass_maybe_create_global_var.
+	* tree-pass.h (pass_maybe_create_global_var): Remove.
+	* tree-ssa-alias.c (aliases_computed_p): Declare.
+	(struct alias_info): Add field NUM_PURE_CONST_CALLS_FOUND.
+	(count_calls_and_maybe_create_global_var): Remove.
+	(pass_maybe_create_global_var): Remove.
+	(init_alias_info): Do not declare aliases_computed_p.
+	(maybe_create_global_var): If the function contains no
+	call-clobbered variables and a mix of pure/const and regular
+	function calls, create .GLOBAL_VAR.
+	Mark all call-clobbered variables for renaming.
+	(merge_pointed_to_info): Update comment.
+	(add_pointed_to_var): Likewise.
+	(is_escape_site): Likewise.
+	Accept struct alias_info * instead of size_t *.
+	Update all users.
+	Update AI->NUM_CALLS_FOUND and AI->NUM_PURE_CONST_CALLS_FOUND
+	as necessary.
+	* tree-ssa-operands.c (get_call_expr_operands): If
+	ALIASES_COMPUTED_P is false, do not add call-clobbering
+	operands.
+	* tree-ssa.c (init_tree_ssa): Set ALIASES_COMPUTED_P to false.
+	(delete_tree_ssa): Likewise.
+
 2005-02-22  James E Wilson  <wilson@specifixinc.com>
 
 	* toplev.c (backend_init): Don't call init_adjust_machine_modes here.

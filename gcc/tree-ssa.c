@@ -723,6 +723,7 @@ init_tree_ssa (void)
   init_ssanames ();
   init_phinodes ();
   global_var = NULL_TREE;
+  aliases_computed_p = false;
 }
 
 
@@ -767,6 +768,7 @@ delete_tree_ssa (void)
   BITMAP_FREE (addressable_vars);
   addressable_vars = NULL;
   modified_noreturn_calls = NULL;
+  aliases_computed_p = false;
 }
 
 
