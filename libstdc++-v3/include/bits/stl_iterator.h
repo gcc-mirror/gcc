@@ -320,7 +320,7 @@ namespace std
     }
   
   // This iterator adapter is 'normal' in the sense that it does not
-  // change the semantics of any of the operators of its itererator
+  // change the semantics of any of the operators of its iterator
   // parameter.  Its primary purpose is to convert an iterator that is
   // not a class, e.g. a pointer, into an iterator that is a class.
   // The _Container parameter exists solely so that different containers
