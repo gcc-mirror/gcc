@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-01-05
+@set last-update-news 2003-01-26
 
 @ifset DOC-NEWS
 @include root.texi
@@ -189,9 +189,6 @@ gave wrong results)
 Incorrect output with 0-based array of characters
 @item 8587
 Double complex zero ** double precision number -> NaN instead of zero
-@item 9038
--ffixed-line-length-none -x f77-cpp-input gives: Warning: unknown
-register name line-length-none
 @end table
 @item
 Richard Henderson (@email{rth@@redhat.com}) analyzed and improved the handling

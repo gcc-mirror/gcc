@@ -1,3 +1,9 @@
+2003-01-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* lang-specs.h: Revoke change to (incorrectly) prohibit
+	passing -f options to cc1 when preprocessing.
+	* news.texi: Document this.
+
 Tue Jan 21 08:42:12 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Make-lang.in (f/sta.o-warn): Add -Wno-error.
