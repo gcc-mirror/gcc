@@ -27,7 +27,7 @@ toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-## For now, only on native systems.
+## For now, only on native systems.  FIXME.
 if NATIVE
 bin_PROGRAMS = jv-convert gij
 endif

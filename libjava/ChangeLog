@@ -1,3 +1,9 @@
+1999-10-06  Tom Tromey  <tromey@cygnus.com>
+
+	* configure.in (GCJ): Define as "target-gcj", not "target/gcj"
+	when building Canadian cross.
+	(NATIVE): Don't define when cross-compiling.
+
 1999-10-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/net/natPlainSocketImpl.cc: Don't include headers if
