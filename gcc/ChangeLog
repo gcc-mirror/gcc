@@ -1,5 +1,10 @@
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/6809
+	* print-rtl.c (print_mem_expr): Don't crash on unnamed fields.
+
+2002-06-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR optimization/6842
 	* combine.c (combine_simplify_rtx) [SUBREG]: Don't ICE if VOIDmode
 	operand subreg cannot be simplified.
