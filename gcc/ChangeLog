@@ -1,3 +1,7 @@
+2002-01-10  Kazu Hirata  <kazu@hxi.com>
+
+	* doc/extend.texi (deprecated): Fix a typo.
+
 Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (update_br_prob_note): Declare.
