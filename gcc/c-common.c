@@ -2103,8 +2103,11 @@ truthvalue_conversion (expr)
 					    TREE_OPERAND (expr, 1))), 1);
 
     case BIT_AND_EXPR:
-      if (integer_onep (TREE_OPERAND (expr, 1)))
-	return expr;
+      if (integer_onep (TREE_OPERAND (expr, 1))
+	  && TREE_TYPE (expr) != boolean_type_node)
+	/* Using convert here would cause infinite recursion.  */
+	return build1 (NOP_EXPR, boolean_type_node, expr);
+      break;
 
     case MODIFY_EXPR:
       if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
