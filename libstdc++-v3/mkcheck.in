@@ -52,7 +52,7 @@ esac
 # Compute the flags necessary to run the testsuite.
 saved_ifs=$IFS
 IFS=':'
-set `./tests_flags ${query} $*` || exit 1
+set `../tests_flags ${query} $*` || exit 1
 BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; CXX=$4; CXXFLAGS=$5; INCLUDES=$6; LIBS=$7;
 IFS=$saved_ifs
 
@@ -74,12 +74,10 @@ ST_FLAG="-static"
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
-TEST_DIR="`pwd`/testsuite"
-if [ ! -d "$TEST_DIR" ]; then
-    echo "making directory $TEST_DIR"
-    mkdir $TEST_DIR
-    mkdir $TEST_DIR/.libs    # help libtool keep quiet
-    chmod u+w $TEST_DIR
+TEST_DIR='.'
+# help libtool keep quiet
+if [ ! -d ${TEST_DIR}/.libs ]; then
+    mkdir $TEST_DIR/.libs    
 fi
 
 # the name of the file that will collect and hold all this useful data:

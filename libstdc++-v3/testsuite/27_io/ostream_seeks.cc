@@ -32,7 +32,7 @@ bool test01()
   typedef ios::pos_type pos_type;
 
   bool test = true;
-  const char str_lit01[] = "testsuite/ostream_seeks-1.txt";
+  const char str_lit01[] = "ostream_seeks-1.txt";
 
   // out
   // test default ctors leave things in the same positions...
@@ -72,8 +72,8 @@ void test04(void)
   bool test = true;
   std::istream::pos_type pos01, pos02, pos03, pos04, pos05, pos06;
   std::ios_base::iostate state01, state02;
-  const char str_lit01[] = "testsuite/istream_unformatted-1.txt";
-  const char str_lit02[] = "testsuite/istream_unformatted-2.txt";
+  const char str_lit01[] = "istream_unformatted-1.txt";
+  const char str_lit02[] = "istream_unformatted-2.txt";
   std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
   std::ifstream if02(str_lit01, std::ios_base::in);
   std::ifstream if03(str_lit02, std::ios_base::out | std::ios_base::trunc); 
@@ -178,7 +178,7 @@ void test05(void)
   bool test = true;
   std::istream::pos_type pos01, pos02, pos03, pos04, pos05, pos06;
   std::ios_base::iostate state01, state02;
-  const char str_lit01[] = "testsuite/istream_unformatted-1.tst";
+  const char str_lit01[] = "istream_unformatted-1.tst";
   std::ifstream if01(str_lit01);
   std::ifstream if02(str_lit01);
   std::ifstream if03(str_lit01);

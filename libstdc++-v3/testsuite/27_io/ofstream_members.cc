@@ -17,13 +17,15 @@
 // USA.
 
 // 27.8.1.10 ofstream member functions
+// @require@ %-*.tst
+// @diff@ %-*.tst %-*.txt
 
 #include <ostream>
 #include <fstream>
 #include <debug_assert.h>
 
-const char name_01[] = "testsuite/ofstream_members-1.tst";
-const char name_02[] = "testsuite/ofstream_members-1.txt";
+const char name_01[] = "ofstream_members-1.tst";
+const char name_02[] = "ofstream_members-1.txt";
 
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00136.html
 bool test00()

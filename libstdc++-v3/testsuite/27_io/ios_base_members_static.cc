@@ -21,6 +21,8 @@
 // USA.
 
 // 27.4.2.4 ios_base static members
+// @require@ %-*.tst
+// @diff@ %-*.tst %-*.txt
 
 #include <cstdio>
 #include <sstream>
@@ -58,7 +60,7 @@ test02()
 {
   std::ios_base::sync_with_stdio();
  
-  std::freopen("testsuite/ios_base_members_static-1.txt", "w", stdout);
+  std::freopen("ios_base_members_static-1.txt", "w", stdout);
  
   for (int i = 0; i < 2; i++)
     {
