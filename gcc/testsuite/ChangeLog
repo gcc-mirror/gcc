@@ -1,5 +1,11 @@
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.brendan/misc12.C: Removed.
+	* g++.old-deja/g++.pt/memtemp77.C: Constify.
+	* g++.old-deja/g++.ext/pretty4.C: New test.
+
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/string2.C: New test.
 
 2000-03-06  Nathan Sidwell  <nathan@codesourcery.com>
