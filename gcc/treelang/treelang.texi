@@ -107,8 +107,8 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifset INTERNALS
 @ifset USING
 This file documents the use and the internals of the GNU Treelang
-(@code{treelang}) compiler. At the moment this manual is not
-incorporated into the main GCC manual as it is too incomplete. It
+(@code{treelang}) compiler.  At the moment this manual is not
+incorporated into the main GCC manual as it is incomplete.  It
 corresponds to the @value{which-treelang} version of @code{treelang}.
 @end ifset
 @end ifset
@@ -127,12 +127,6 @@ Boston, MA 02111-1307 USA
 
 @insertcopying
 @end ifnottex
-
-treelang was Contributed by Tim Josling (@email{@value{email-josling}}).
-Inspired by and based on the 'toy' language, written by Richard Kenner.
-
-This document was written by Tim Josling, based on the GNU C++
-documentation.
 
 @setchapternewpage odd
 @c @finalout
@@ -174,23 +168,21 @@ Boston, MA 02111-1307, USA@*
 
 @ifset INTERNALS
 @ifset USING
-This manual documents how to run, install and maintain @code{treelang},
-as well as its new features and incompatibilities,
-and how to report bugs.
-It corresponds to the @value{which-treelang} version of @code{treelang}.
+This manual documents how to run, install and maintain @code{treelang}.
+It also documents the features and incompatibilities in the @value{which-treelang}
+version of @code{treelang}.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
-This manual documents how to run and install @code{treelang},
-as well as its new features and incompatibilities, and how to report
-bugs.
-It corresponds to the @value{which-treelang} version of @code{treelang}.
+This manual documents how to run and install @code{treelang}.
+It also documents the features and incompatibilities in the @value{which-treelang}
+version of @code{treelang}.
 @end ifclear
 @ifclear USING
-This manual documents how to maintain @code{treelang}, as well as its
-new features and incompatibilities, and how to report bugs.  It
-corresponds to the @value{which-treelang} version of @code{treelang}.
+This manual documents how to maintain @code{treelang}.
+It also documents the features and incompatibilities in the @value{which-treelang}
+version of @code{treelang}.
 @end ifclear
 
 @end ifnottex
@@ -429,9 +421,9 @@ used to separate parameters in a function prototype or in a function call
 @item ;
 used to end a statement
 @item +
-addition
+addition, or unary plus for signed literals
 @item - 
-subtraction
+subtraction, or unary minus for signed literals
 @item = 
 assignment
 @item ==
@@ -443,7 +435,7 @@ begin 'else' portion of IF statement
 @item static
 indicate variable is permanent, or function has file scope only
 @item automatic
-indicate that variable is allocated for the life of the function
+indicate that variable is allocated for the life of the current scope
 @item external_reference
 indicate that variable or function is defined in another file
 @item external_definition
@@ -514,9 +506,9 @@ This defines the scope, duration and visibility of a function or variable
 @enumerate 1
 
 @item 
-automatic: This means a variable is allocated at start of function and
-released when the function returns. This can only be used for variables
-within functions. It cannot be used for functions.
+automatic: This means a variable is allocated at start of the current scope and
+released when the current scope is exited.  This can only be used for variables
+within functions.  It cannot be used for functions.
 
 @item 
 static: This means a variable is allocated at start of program and
@@ -562,7 +554,7 @@ parameter_list OR parameter [, parameter]...
 @item
 parameter: variable_declaration ,
 
-The variable declarations must not have initialisations.
+The variable declarations must not have initializations.
 
 @item 
 initial: = value
@@ -570,28 +562,30 @@ initial: = value
 @item
 value: integer_constant
 
+Values without a unary plus or minus are considered to be unsigned.
 @smallexample
-eg 1 +2 -3
+e.g.@: 1 +2 -3
 @end smallexample
 
 @item
-function_declaration: name @{variable_declarations statements @}
+function_declaration: name @{ variable_declarations statements @}
 
 A function consists of the function name then the declarations (if any)
 and statements (if any) within one pair of braces.
 
 The details of the function arguments come from the function
-prototype. The function prototype must precede the function declaration
+prototype.  The function prototype must precede the function declaration
 in the file.
 
 @item
 statement: if_statement OR expression_statement OR return_statement
 
 @item
-if_statement: if (expression) @{ statements @} else @{ statements @}
+if_statement: if ( expression ) @{ variable_declarations statements @}
+else @{ variable_declarations statements @}
 
 The first lot of statements is executed if the expression is
-nonzero. Otherwise the second lot of statements is executed. Either
+nonzero.  Otherwise the second lot of statements is executed.  Either
 list of statements may be empty, but both sets of braces and the else must be present. 
 
 @smallexample
@@ -608,7 +602,7 @@ a=b;
 @item
 expression_statement: expression;
 
-The expression is executed and any side effects, such 
+The expression is executed, including any side effects.
 
 @item
 return_statement: return expression_opt;
@@ -716,8 +710,9 @@ the programmer's intention.)
 @cindex warnings
 @cindex questionable instructions
 @item
-There are no warnings in treelang. A program is either correct or in
-error.
+There are few warnings in treelang.  A program is either correct or in
+error.  The only exception to this is an expression in a return statement for
+functions that return nothing.
 @end itemize
 
 @cindex components of treelang
@@ -919,8 +914,8 @@ and everybody else, so you should be able to freely mix treelang and C
 (and C++) code, with one proviso.
 
 C promotes small integer types to 'int' when used as function parameters and 
-return values. The treelang compiler does not do this, so if you want to interface
-to C, you need to specify the promoted value, not the nominal value. 
+return values in non-prototyped functions.  Since treelang has no
+non-prototyped functions, the treelang compiler does not do this.
 
 @ifset INTERNALS
 @node treelang internals, Open Questions, Other Languages, Top

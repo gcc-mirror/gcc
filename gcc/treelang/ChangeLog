@@ -1,3 +1,11 @@
+2005-02-25  James A. Morrrison  <phython@gcc.gnu.org>
+
+	* treelang.texi: Remove extra contribution notice.
+	Split up some run-on sentences.  Document function parameters
+	as optional.  Indicate automatic variables can now be at any scope.
+	Mention literals are only signed if they are preceded by a unary
+	plus or minus.  Clarify interoperability with C.
+
 2005-02-25  James A. Morrison  <phython@gcc.gnu.org>
 
 	* treelang.texi: Fix whitespacing.
