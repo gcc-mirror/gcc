@@ -192,7 +192,7 @@ decl_attributes (decl, attributes)
 	else if (TREE_CODE (decl) != VAR_DECL
 		 && TREE_CODE (decl) != FIELD_DECL)
 	  error_with_decl (decl,
-			   "alignment specified for `%s', not a variable");
+			   "alignment specified for `%s'");
 	else
 	  DECL_ALIGN (decl) = align;
       }
