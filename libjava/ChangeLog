@@ -1,3 +1,8 @@
+2004-04-30  Roger Sayle  <roger@eyesopen.com>
+
+	* testsuite/libjava.lang/MathBuiltin.java: Add tests for acos, asin,
+	ceil and floor.
+
 2004-04-25  Ranjit Mathew  <rmathew@hotmail.com>
 	
 	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Explicitly

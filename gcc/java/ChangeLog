@@ -1,3 +1,8 @@
+2004-04-30  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (java_builtins): Add acos, asin, ceil and floor.
+	(initialize_builtins): Likewise, define acos, asin, ceil and floor.
+
 2004-04-22  Roger Sayle  <roger@eyesopen.com>
 
 	* resource.c (write_resource_constructor): Guard call to possibly
