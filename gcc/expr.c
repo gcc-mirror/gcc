@@ -10257,6 +10257,7 @@ do_store_flag (exp, target, mode, only_cheap)
 		       );
 
       if (! get_subtarget (subtarget)
+	  || GET_MODE (subtarget) != operand_mode
 	  || ! safe_from_p (subtarget, inner, 1))
 	subtarget = 0;
 
@@ -10307,6 +10308,7 @@ do_store_flag (exp, target, mode, only_cheap)
       
   preexpand_calls (exp);
   if (! get_subtarget (target)
+      || GET_MODE (subtarget) != operand_mode
       || ! safe_from_p (subtarget, arg1, 1))
     subtarget = 0;
 
