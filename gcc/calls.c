@@ -2353,7 +2353,7 @@ expand_call (tree exp, rtx target, int ignore)
   if (currently_expanding_call++ != 0
       || !flag_optimize_sibling_calls
       || !rtx_equal_function_value_matters
-      || any_pending_cleanups (1)
+      || any_pending_cleanups ()
       || args_size.var)
     try_tail_call = try_tail_recursion = 0;
 
@@ -2445,7 +2445,7 @@ expand_call (tree exp, rtx target, int ignore)
         addr = fix_unsafe_tree (addr);
       /* Expanding one of those dangerous arguments could have added
 	 cleanups, but otherwise give it a whirl.  */
-      if (any_pending_cleanups (1))
+      if (any_pending_cleanups ())
 	try_tail_call = try_tail_recursion = 0;
     }
 
@@ -2477,7 +2477,7 @@ expand_call (tree exp, rtx target, int ignore)
       expand_start_target_temps ();
       if (optimize_tail_recursion (actparms, get_last_insn ()))
 	{
-	  if (any_pending_cleanups (1))
+	  if (any_pending_cleanups ())
 	    try_tail_call = try_tail_recursion = 0;
 	  else
 	    tail_recursion_insns = get_insns ();
@@ -3083,7 +3083,7 @@ expand_call (tree exp, rtx target, int ignore)
 
       /* If there are cleanups to be called, don't use a hard reg as target.
 	 We need to double check this and see if it matters anymore.  */
-      if (any_pending_cleanups (1))
+      if (any_pending_cleanups ())
 	{
 	  if (target && REG_P (target)
 	      && REGNO (target) < FIRST_PSEUDO_REGISTER)

@@ -1,3 +1,10 @@
+2003-06-30  Jeff Law  <law@redhat.com>
+
+	* stmt.c (any_pending_cleanups): Lose argument THIS_CONTOUR, it
+	was always passed in the value '1'.  Simplify body appropriately.
+	* tree.h (any_pending_cleanups): Corresponding changes.
+	* calls.c: (expand_call): Corresponding changes.
+
 2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (distribute_notes): Don't bother REG_WAS_0.

@@ -4378,19 +4378,18 @@ last_cleanup_this_contour ()
 }
 
 /* Return 1 if there are any pending cleanups at this point.
-   If THIS_CONTOUR is nonzero, check the current contour as well.
-   Otherwise, look only at the contours that enclose this one.  */
+   Check the current contour as well as contours that enclose
+   the current contour.  */
 
 int
-any_pending_cleanups (this_contour)
-     int this_contour;
+any_pending_cleanups ()
 {
   struct nesting *block;
 
   if (cfun == NULL || cfun->stmt == NULL || block_stack == 0)
     return 0;
 
-  if (this_contour && block_stack->data.block.cleanups != NULL)
+  if (block_stack->data.block.cleanups != NULL)
     return 1;
   if (block_stack->data.block.cleanups == 0
       && block_stack->data.block.outer_cleanups == 0)
