@@ -9,11 +9,14 @@ __asm, ASM_KEYWORD, NORID
 __asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
+__complex, TYPESPEC, RID_COMPLEX
+__complex__, TYPESPEC, RID_COMPLEX
 __const, TYPE_QUAL, RID_CONST
 __const__, TYPE_QUAL, RID_CONST
 __extension__, EXTENSION, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
+__iterator, SCSPEC, RID_ITERATOR
 __iterator__, SCSPEC, RID_ITERATOR
 __label__, LABEL, NORID
 __signed, TYPESPEC, RID_SIGNED
@@ -41,7 +44,6 @@ goto, GOTO, NORID
 if, IF, NORID
 inline, SCSPEC, RID_INLINE
 int, TYPESPEC, RID_INT
-iterator, SCSPEC, RID_ITERATOR
 long, TYPESPEC, RID_LONG
 register, SCSPEC, RID_REGISTER
 return, RETURN, NORID
