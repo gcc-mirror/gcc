@@ -815,8 +815,7 @@ static const format_char_info gcc_diag_char_table[] =
   /* These will require a "tree" at runtime.  */
   { "J", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    ""   },
 
-  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "<>'", 0, STD_C89, NOARGUMENTS, "",      ""   },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
@@ -839,8 +838,7 @@ static const format_char_info gcc_cdiag_char_table[] =
   /* These will require a "tree" at runtime.  */
   { "DEFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", ""   },
 
-  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "<>'", 0, STD_C89, NOARGUMENTS, "",      ""   },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
@@ -866,8 +864,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   /* These accept either an `int' or an `enum tree_code' (which is handled as an `int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
 
-  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
-  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "<>'", 0, STD_C89, NOARGUMENTS, "",      ""   },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
@@ -1707,7 +1704,7 @@ check_format_info_main (int *status, format_check_results *res,
       if (*format_chars == 0)
 	{
 	  if (format_chars - orig_format_chars != format_length)
-	    status_warning (status, "embedded %`\\0%' in format");
+	    status_warning (status, "embedded %<\\0%> in format");
 	  if (info->first_arg_num != 0 && params != 0
 	      && has_operand_number <= 0)
 	    {
@@ -1722,7 +1719,7 @@ check_format_info_main (int *status, format_check_results *res,
 	continue;
       if (*format_chars == 0)
 	{
-	  status_warning (status, "spurious trailing %`%%%' in format");
+	  status_warning (status, "spurious trailing %<%%%> in format");
 	  continue;
 	}
       if (*format_chars == '%')
@@ -2068,7 +2065,7 @@ check_format_info_main (int *status, format_check_results *res,
       if (pedantic)
 	{
 	  if (ADJ_STD (fci->std) > C_STD_VER)
-	    status_warning (status, "%s does not support the %`%%%c%' %s format",
+	    status_warning (status, "%s does not support the %<%%%c%> %s format",
 			    C_STD_NAME (fci->std), format_char, fki->name);
 	}
 
@@ -2084,7 +2081,7 @@ check_format_info_main (int *status, format_check_results *res,
 	      continue;
 	    if (strchr (fci->flag_chars, flag_chars[i]) == 0)
 	      {
-		status_warning (status, "%s used with %`%%%c%' %s format",
+		status_warning (status, "%s used with %<%%%c%> %s format",
 				_(s->name), format_char, fki->name);
 		d++;
 		continue;
@@ -2102,7 +2099,7 @@ check_format_info_main (int *status, format_check_results *res,
 					     ? t->long_name
 					     : s->long_name);
 		    if (ADJ_STD (t->std) > C_STD_VER)
-		      status_warning (status, "%s does not support %s with the %`%%%c%' %s format",
+		      status_warning (status, "%s does not support %s with the %<%%%c%> %s format",
 				      C_STD_NAME (t->std), _(long_name),
 				      format_char, fki->name);
 		  }
@@ -2135,7 +2132,7 @@ check_format_info_main (int *status, format_check_results *res,
 	  if (bad_flag_pairs[i].ignored)
 	    {
 	      if (bad_flag_pairs[i].predicate != 0)
-		status_warning (status, "%s ignored with %s and %`%%%c%' %s format",
+		status_warning (status, "%s ignored with %s and %<%%%c%> %s format",
 				_(s->name), _(t->name), format_char,
 				fki->name);
 	      else
@@ -2145,7 +2142,7 @@ check_format_info_main (int *status, format_check_results *res,
 	  else
 	    {
 	      if (bad_flag_pairs[i].predicate != 0)
-		status_warning (status, "use of %s and %s together with %`%%%c%' %s format",
+		status_warning (status, "use of %s and %s together with %<%%%c%> %s format",
 				_(s->name), _(t->name), format_char,
 				fki->name);
 	      else
@@ -2168,10 +2165,10 @@ check_format_info_main (int *status, format_check_results *res,
 	  else if (strchr (fci->flags2, '2') != 0)
 	    y2k_level = 2;
 	  if (y2k_level == 3)
-	    status_warning (status, "%`%%%c%' yields only last 2 digits of year in some locales",
+	    status_warning (status, "%<%%%c%> yields only last 2 digits of year in some locales",
 			    format_char);
 	  else if (y2k_level == 2)
-	    status_warning (status, "%`%%%c%' yields only last 2 digits of year", format_char);
+	    status_warning (status, "%<%%%c%> yields only last 2 digits of year", format_char);
 	}
 
       if (strchr (fci->flags2, '[') != 0)
@@ -2187,7 +2184,7 @@ check_format_info_main (int *status, format_check_results *res,
 	    ++format_chars;
 	  if (*format_chars != ']')
 	    /* The end of the format string was reached.  */
-	    status_warning (status, "no closing %`]%' for %`%%[%' format");
+	    status_warning (status, "no closing %<]%> for %<%%[%> format");
 	}
 
       wanted_type = 0;
@@ -2221,7 +2218,7 @@ check_format_info_main (int *status, format_check_results *res,
 		   && ADJ_STD (wanted_type_std) > ADJ_STD (fci->std))
 	    {
 	      if (ADJ_STD (wanted_type_std) > C_STD_VER)
-		status_warning (status, "%s does not support the %`%%%s%c%' %s format",
+		status_warning (status, "%s does not support the %<%%%s%c%> %s format",
 				C_STD_NAME (wanted_type_std), length_chars,
 				format_char, fki->name);
 	    }
