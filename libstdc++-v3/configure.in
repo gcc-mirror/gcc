@@ -455,9 +455,7 @@ AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
 dnl from GLIBCPP_CHECK_WCHAR_T_SUPPORT:
 AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
 dnl from GLIBCPP_CONFIGURE_TESTSUITE:
-# Don't do ABI checking unless native.
-AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK,
-               ${GLIBCPP_IS_CROSS_COMPILING} && test "$enable_abi_check" = yes )
+AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK, test "$enable_abi_check" = yes)
  
 AC_CACHE_SAVE
 

@@ -1,3 +1,23 @@
+2003-06-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/i686-pc-linux-gnu: To..
+	* config/abi/i486-linux-gnu: ...this.
+	* config/abi/alphaev67-unknown-linux-gnu: To..
+	* config/abi/alpha-linux-gnu: ...this.
+	* config/abi/ia64-unknown-linux-gnu: To...
+	* config/abi/ia64-linux-gnu: ...this.
+	* config/abi/x86_64-unknown-linux-gnu: To...
+	* config/abi/x86_64-linux-gnu: ...this.
+	* config/abi/i386-unknown-freebsd4: To...
+	* config/abi/i386-freebsd4: ...this.
+	* configure.host: abi_baseline_triplet to abi_baseline_pair.
+	Simplify cpu bits so that abi_baseline_pair can use the same
+	cpu configuration.
+	* acinclude.m4: Same.
+	* aclocal.m4: Regenerate.
+	* configure.in: Can't get enable_abi_check to yes unless native.
+	* configure: Regenerate.
+
 2003-06-13  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/seekoff/char/1.cc: Split and
@@ -42,7 +62,7 @@
         This is necessary here because _M_mutate is sometimes called with
         all-zero arguments; in all other uses of _M_is_shared, the test comes
         out right anyhow.
-
+	
 2003-06-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/allocator-inst.cc: Explicitly instantiate.
