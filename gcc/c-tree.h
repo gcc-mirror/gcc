@@ -124,6 +124,9 @@ struct lang_type
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
+/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
+#define DECL_C_BIT_FIELD(NODE) DECL_LANG_FLAG_4 (NODE)
+
 /* Nonzero if the type T promotes to itself.
    ANSI C states explicitly the list of types that promote;
    in particular, short promotes to int even if they have the same width.  */
