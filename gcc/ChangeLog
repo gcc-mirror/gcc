@@ -1,3 +1,11 @@
+2002-07-29  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/elf.h, config/xtensa/linux.h
+	(TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES): Remove.
+	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define.
+	(CPP_SPEC): Remove.
+
 2002-07-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* gensupport.c: Include hashtab.h.
