@@ -3641,17 +3641,17 @@ extern tree get_vtt_name                        PARAMS ((tree));
 extern tree get_primary_binfo                   PARAMS ((tree));
 
 /* in cvt.c */
-extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
-extern tree convert_from_reference		PARAMS ((tree));
-extern tree convert_lvalue			PARAMS ((tree, tree));
-extern tree ocp_convert				PARAMS ((tree, tree, int, int));
-extern tree cp_convert				PARAMS ((tree, tree));
-extern tree convert_to_void			PARAMS ((tree, const char */*implicit context*/));
-extern tree convert_force			PARAMS ((tree, tree, int));
-extern tree build_type_conversion		PARAMS ((tree, tree, int));
-extern tree build_expr_type_conversion		PARAMS ((int, tree, int));
-extern tree type_promotes_to			PARAMS ((tree));
-extern tree perform_qualification_conversions   PARAMS ((tree, tree));
+extern tree convert_to_reference (tree, tree, int, int, tree);
+extern tree convert_from_reference (tree);
+extern tree convert_lvalue (tree, tree);
+extern tree ocp_convert (tree, tree, int, int);
+extern tree cp_convert (tree, tree);
+extern tree convert_to_void (tree, const char */*implicit context*/);
+extern tree convert_force (tree, tree, int);
+extern tree build_type_conversion (tree, tree, int);
+extern tree build_expr_type_conversion (int, tree, bool);
+extern tree type_promotes_to (tree);
+extern tree perform_qualification_conversions (tree, tree);
 extern void clone_function_decl                 PARAMS ((tree, int));
 extern void adjust_clone_args			PARAMS ((tree));
 

@@ -4863,7 +4863,7 @@ cp_parser_direct_new_declarator (parser)
 	      expression 
 		= build_expr_type_conversion (WANT_INT | WANT_ENUM,
 					      expression,
-					      /*complain=*/1);
+					      /*complain=*/true);
 	      if (!expression)
 		{
 		  error ("expression in new-declarator must have integral or enumeration type");

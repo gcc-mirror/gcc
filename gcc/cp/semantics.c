@@ -553,7 +553,7 @@ finish_switch_cond (cond, switch_stmt)
       tree index;
 
       /* Convert the condition to an integer or enumeration type.  */
-      cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, 1);
+      cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
       if (cond == NULL_TREE)
 	{
 	  error ("switch quantity not an integer");

@@ -448,15 +448,15 @@ grok_array_decl (array_expr, index_exp)
   if (TREE_CODE (type) == ARRAY_TYPE)
     p1 = array_expr;
   else
-    p1 = build_expr_type_conversion (WANT_POINTER, array_expr, 0);
+    p1 = build_expr_type_conversion (WANT_POINTER, array_expr, false);
 
   if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
     p2 = index_exp;
   else
-    p2 = build_expr_type_conversion (WANT_POINTER, index_exp, 0);
+    p2 = build_expr_type_conversion (WANT_POINTER, index_exp, false);
 
-  i1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, array_expr, 0);
-  i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, 0);
+  i1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, array_expr, false);
+  i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, false);
 
   if ((p1 && i2) && (i1 && p2))
     error ("ambiguous conversion for array subscript");
@@ -511,7 +511,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     exp = resolve_offset_ref (exp);
   exp = convert_from_reference (exp);
   t = stabilize_reference (exp);
-  t = build_expr_type_conversion (WANT_POINTER, t, 1);
+  t = build_expr_type_conversion (WANT_POINTER, t, true);
 
   if (t == NULL_TREE || t == error_mark_node)
     {
