@@ -32,7 +32,6 @@
 #include <cstdlib>
 #include <string>
 #include <pthread.h>
-
 #include <typeinfo>
 #include <sstream>
 #include <ext/mt_allocator.h>
@@ -44,17 +43,14 @@
 
 using namespace std;
 using __gnu_cxx::malloc_allocator;
+using __gnu_cxx::new_allocator;
 using __gnu_cxx::__mt_alloc;
 using __gnu_cxx::bitmap_allocator;
 using __gnu_cxx::__pool_alloc;
 
 typedef int test_type;
 
-using namespace __gnu_cxx;
-using namespace std;
-
-bool less_int (int x1, int x2) { return x1<x2; }
-
+bool less_int(int x1, int x2) { return x1<x2; }
 
 #if defined USE_FUNCTION_COMPARE
 #define COMPARE_T typeof(&less_int)
@@ -65,73 +61,75 @@ bool less_int (int x1, int x2) { return x1<x2; }
 #endif
 
 template <typename Alloc>
-void *find_proc (void *_vptr)
-{
-  map<int, string, COMPARE_T, Alloc> *_mptr = 
-    reinterpret_cast<map<int, string, COMPARE_T, Alloc>*>(_vptr);
+  void*
+  find_proc(void *_vptr)
+  {
+    map<int, string, COMPARE_T, Alloc> *_mptr = 
+      reinterpret_cast<map<int, string, COMPARE_T, Alloc>*>(_vptr);
 
-  for (int i = 0; i < 700000; ++i)
-    {
-      int Finder = rand() % 2000000;
-      _mptr->find (Finder);
-    }
-  return _vptr;
-}
+    for (int i = 0; i < 700000; ++i)
+      {
+	int Finder = rand() % 2000000;
+	_mptr->find(Finder);
+      }
+    return _vptr;
+  }
 
-
-template <typename Alloc>
-int do_test ()
-{
-  COMPARE_T _comp = COMPARE_F;
-  map<int, string, COMPARE_T, Alloc> imap (_comp);
-  int x = 2;
-  pthread_t thr[3];
-  const int Iter = 1000000;
-
-  while (x--)
-    {
-      for (int i = 0; i < 300000; ++i)
-	imap.insert (make_pair (rand()%1000000, "_test_data"));
-
-      for (int i = 0; i < 100000; ++i)
-	imap.insert (make_pair (rand()%2000000, "_test_data"));
-
-      pthread_create (&thr[0], NULL, find_proc<Alloc>, (void*)&imap);
-      pthread_create (&thr[1], NULL, find_proc<Alloc>, (void*)&imap);
-      pthread_create (&thr[2], NULL, find_proc<Alloc>, (void*)&imap);
-
-      pthread_join (thr[0], 0);
-      pthread_join (thr[1], 0);
-      pthread_join (thr[2], 0);
-
-      imap.clear ();
-    }
-  return Iter;
-}
 
 template <typename Alloc>
-void exec_tests ()
-{
-  using namespace __gnu_test;
-  int status;
-  COMPARE_T _comp = COMPARE_F;
-  map<int, string, COMPARE_T, Alloc> obj (_comp);
+  int
+  do_test()
+  {
+    COMPARE_T _comp = COMPARE_F;
+    map<int, string, COMPARE_T, Alloc> imap(_comp);
+    int x = 2;
+    pthread_t thr[3];
+    const int Iter = 1000000;
 
-  time_counter time;
-  resource_counter resource;
-  clear_counters(time, resource);
-  start_counters(time, resource);
-  int test_iterations = do_test<Alloc>();
-  stop_counters(time, resource);
+    while (x--)
+      {
+	for (int i = 0; i < 300000; ++i)
+	  imap.insert(make_pair(rand()%1000000, "_test_data"));
+
+	for (int i = 0; i < 100000; ++i)
+	  imap.insert(make_pair(rand()%2000000, "_test_data"));
+
+	pthread_create(&thr[0], NULL, find_proc<Alloc>, (void*)&imap);
+	pthread_create(&thr[1], NULL, find_proc<Alloc>, (void*)&imap);
+	pthread_create(&thr[2], NULL, find_proc<Alloc>, (void*)&imap);
+
+	pthread_join(thr[0], 0);
+	pthread_join(thr[1], 0);
+	pthread_join(thr[2], 0);
+
+	imap.clear();
+      }
+    return Iter;
+  }
+
+template <typename Alloc>
+  void
+  exec_tests()
+  {
+    using namespace __gnu_test;
+    int status;
+    COMPARE_T _comp = COMPARE_F;
+    map<int, string, COMPARE_T, Alloc> obj(_comp);
+
+    time_counter time;
+    resource_counter resource;
+    clear_counters(time, resource);
+    start_counters(time, resource);
+    int test_iterations = do_test<Alloc>();
+    stop_counters(time, resource);
  
-  std::ostringstream comment;
-  comment << "iterations: " << test_iterations <<endl;
-  comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
-					     0, 0, &status);
-  report_header(__FILE__, comment.str());
-  report_performance(__FILE__, string(), time, resource);
-}
-
+    std::ostringstream comment;
+    comment << "iterations: " << test_iterations << '\t';
+    comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
+					       0, 0, &status);
+    report_header(__FILE__, comment.str());
+    report_performance(__FILE__, string(), time, resource);
+  }
 
 int main()
 {
