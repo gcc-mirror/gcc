@@ -45,11 +45,11 @@ extern const char *const lang_names[];
 #define CL_COMMON		(1 << 29) /* Language-independent.  */
 #define CL_UNDOCUMENTED		(1 << 30) /* Do not output with --help.  */
 
-/* Input file names. */
+/* Input file names.  */
 
 extern const char **in_fnames;
 
-/* The count of input filenames. */
+/* The count of input filenames.  */
 
 extern unsigned num_in_fnames;
 

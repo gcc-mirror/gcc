@@ -413,7 +413,7 @@ int warn_main;
 int warn_sequence_point;
 
 /* Nonzero means warn about uninitialized variable when it is initialized with itself.
-   For example: int i = i;, GCC will not warn about this when warn_init_self is nonzero. */
+   For example: int i = i;, GCC will not warn about this when warn_init_self is nonzero.  */
 
 int warn_init_self;
 
@@ -5739,7 +5739,7 @@ c_estimate_num_insns (tree decl)
 static tree
 c_decl_uninit_1 (tree *t, int *walk_sub_trees, void *x)
 {
-  /* If x = EXP(&x)EXP, then do not warn about the use of x. */
+  /* If x = EXP(&x)EXP, then do not warn about the use of x.  */
   if (TREE_CODE (*t) == ADDR_EXPR && TREE_OPERAND (*t, 0) == x)
     {
       *walk_sub_trees = 0;
@@ -5755,11 +5755,11 @@ c_decl_uninit_1 (tree *t, int *walk_sub_trees, void *x)
 bool
 c_decl_uninit (tree t)
 {
-  /* int x = x; is GCC extension to turn off this warning, only if warn_init_self is zero. */
+  /* int x = x; is GCC extension to turn off this warning, only if warn_init_self is zero.  */
   if (DECL_INITIAL (t) == t)
     return warn_init_self ? true : false;
 
-  /* Walk the trees looking for the variable itself. */
+  /* Walk the trees looking for the variable itself.  */
   if (walk_tree_without_duplicates (&DECL_INITIAL (t), c_decl_uninit_1, t))
     return true;
   return false;

@@ -537,7 +537,7 @@ extern const char *cpp_read_main_file (cpp_reader *, const char *);
 extern void cpp_init_builtins (cpp_reader *, int);
 
 /* This is called after options have been parsed, and partially
-   processed. */
+   processed.  */
 extern void cpp_post_options (cpp_reader *);
 
 /* Set up translation to the target character set.  */

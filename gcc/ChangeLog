@@ -1,3 +1,17 @@
+2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c: Fix comment formatting.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* cppinit.c: Likewise.
+	* cpplib.h: Likewise.
+	* emit-rtl.c: Likewise.
+	* input.h: Likewise.
+	* line-map.h: Likewise.
+	* opts.c: Likewise.
+	* opts.h: Likewise.
+	* simplify-rtx.c: Likewise.
+
 2003-08-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* unwind-c.c: Add libgcc-style exception.

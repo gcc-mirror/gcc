@@ -130,7 +130,7 @@ avoid_constant_pool_reference (rtx x)
 
   addr = XEXP (x, 0);
 
-  /* Call target hook to avoid the effects of -fpic etc...  */
+  /* Call target hook to avoid the effects of -fpic etc....  */
   addr = (*targetm.delegitimize_address) (addr);
 
   if (GET_CODE (addr) == LO_SUM)
@@ -1041,7 +1041,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  neg_double (l2, h2, &lv, &hv);
 	  l2 = lv, h2 = hv;
 
-	  /* .. fall through ...  */
+	  /* Fall through....  */
 
 	case PLUS:
 	  add_double (l1, h1, l2, h2, &lv, &hv);
@@ -1542,7 +1542,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && (arg1 = exact_log2 (INTVAL (trueop1))) > 0)
 	    return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (arg1));
 
-	  /* ... fall through ...  */
+	  /* Fall through....  */
 
 	case DIV:
 	  if (trueop1 == CONST1_RTX (mode))
@@ -1594,7 +1594,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return simplify_gen_binary (AND, mode, op0,
 					GEN_INT (INTVAL (op1) - 1));
 
-	  /* ... fall through ...  */
+	  /* Fall through....  */
 
 	case MOD:
 	  if ((trueop0 == const0_rtx || trueop1 == const1_rtx)
@@ -1611,7 +1611,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && ! side_effects_p (op1))
 	    return op0;
 
-	  /* ... fall through ...  */
+	  /* Fall through....  */
 
 	case ASHIFT:
 	case LSHIFTRT:
@@ -3163,7 +3163,7 @@ simplify_rtx (rtx x)
       if (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
 	return simplify_gen_binary (code, mode, XEXP (x, 1), XEXP (x, 0));
 
-      /* ... fall through ... */
+      /* Fall through.... */
 
     case '2':
       return simplify_binary_operation (code, mode, XEXP (x, 0), XEXP (x, 1));
