@@ -1,3 +1,13 @@
+Sun Feb 15 23:28:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (flag_schedule_reverse_before_reload): Delete variable.
+	(flag_schedule_reverse_after_reload): Likewise.
+	(f_options): Remove reverse scheduling support.
+	* flags.h (flag_schedule_reverse_before_reload): Delete declaration.
+	(flag_schedule_reverse_after_reload): Likewise.
+	* haifa-sched.c (rank_for_schedule): Remove support for reverse
+	scheduling.
+	
 Sun Feb 15 21:33:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c: Get system includes, prototypes and macros via "system.h"

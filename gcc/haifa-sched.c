@@ -4133,12 +4133,6 @@ rank_for_schedule (x, y)
   int val, priority_val, spec_val, prob_val, weight_val;
 
 
-  /* schedule reverse is a stress test of the scheduler correctness,
-     controlled by -fsched-reverse option.  */
-  if ((reload_completed && flag_schedule_reverse_after_reload) ||
-      (!reload_completed && flag_schedule_reverse_before_reload))
-    return INSN_LUID (tmp2) - INSN_LUID (tmp);
-
   /* prefer insn with higher priority */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
   if (priority_val)
