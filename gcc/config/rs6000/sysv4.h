@@ -121,6 +121,14 @@ do {									\
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 
+/* Define this to set the endianness to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#ifndef _LITTLE_ENDIAN
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
+#else
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
+#endif
+
 /* Size of the outgoing register save area */
 #undef	RS6000_REG_SAVE
 #define RS6000_REG_SAVE (TARGET_AIX_CALLS ? (TARGET_64BIT ? 64 : 32) : 0)
@@ -312,6 +320,14 @@ extern int rs6000_pic_labelno;
 %{mrelocatable} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
+/* Output .file and comments listing what options there are */
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)						\
+do {									\
+  ASM_OUTPUT_OPTIONS (FILE);						\
+  output_file_directive ((FILE), main_input_filename);			\
+} while (0)
+
 /* This is the end of what might become sysv4.h.  */
 
 /* Allow stabs and dwarf, prefer dwarf.  */
@@ -403,7 +419,7 @@ do {									\
 /* Length in units of the trampoline for entering a nested function.  */
 
 #undef	TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE    (TARGET_64BIT ? 52 : 44)
+#define TRAMPOLINE_SIZE    (TARGET_64BIT ? 48 : 40)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
