@@ -1507,7 +1507,6 @@ extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
 
 /* In cfglayout.c  */
-extern tree choose_inner_scope (tree, tree);
 extern int insn_line (rtx);
 extern const char * insn_file (rtx);
 extern int locator_line (int);

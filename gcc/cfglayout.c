@@ -347,7 +347,7 @@ set_block_levels (tree block, int level)
 }
 
 /* Return sope resulting from combination of S1 and S2.  */
-tree
+static tree
 choose_inner_scope (tree s1, tree s2)
 {
    if (!s1)
