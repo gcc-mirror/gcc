@@ -1,3 +1,14 @@
+Thu Mar 26 23:00:11 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	reload inheritance improvement:
+	* reload1.c (reg_reloaded_contents, reg_reloaded_insn):
+	Change meaning: index is now hard reg number.
+	(reg_reloaded_valid, reg_reloaded_dead): New variables.
+	(reload_spill_index): Content is now a hard reg number.
+	(reload_as_needed): Change to fit new variable meaning.
+	(forget_old_reloads_1, allocate_reload_reg): Likewise.
+	(choose_reload_regs, emit_reload_insns): Likewise.
+
 Thu Mar 26 18:34:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regclass.c (record_reg_classes): '?' increases cost by two.
