@@ -130,13 +130,15 @@
 	{
 	  _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
 	  if (_M_in_desc == __err)
-	    __throw_runtime_error("creating iconv input descriptor failed.");
+	    __throw_runtime_error("__enc_traits::_M_init "
+				  "creating iconv input descriptor failed");
 	}
       if (!_M_out_desc)
 	{
 	  _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
 	  if (_M_out_desc == __err)
-	    __throw_runtime_error("creating iconv output descriptor failed.");
+	    __throw_runtime_error("__enc_traits::_M_init "
+				  "creating iconv output descriptor failed");
 	}
     }
 

@@ -198,11 +198,8 @@ namespace __gnu_cxx_test
       }
     catch (std::runtime_error& ex)
       {
-	// Thrown by generic implemenation.
-	if (std::strstr(ex.what(), "unhandled name in generic implementation"))
-	  exit(0);
-	// Thrown by gnu implemenation.
-	else if (std::strstr(ex.what(), "unknown name"))
+	// Thrown by generic and gnu implemenation if named locale fails.
+	if (std::strstr(ex.what(), "name not valid"))
 	  exit(0);
 	else
 	  throw;

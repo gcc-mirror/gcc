@@ -279,7 +279,7 @@ namespace std
 	  }
       }
     else
-      __throw_runtime_error("attempt to create locale from NULL name");
+      __throw_runtime_error("locale::locale NULL not valid");
   }
 
   locale::locale(const locale& __base, const char* __s, category __cat)
@@ -434,7 +434,8 @@ namespace std
 	    __ret = all;
 	    break;
 	  default:
-	    __throw_runtime_error("bad locale category");
+	    __throw_runtime_error("locale::_S_normalize_category "
+				  "category not found");
 	  }
       }
     return __ret;

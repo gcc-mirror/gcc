@@ -279,7 +279,8 @@ namespace std
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
-		  __throw_ios_failure("ios_base::_M_grow_words failure");
+		  __throw_ios_failure("ios_base::_M_grow_words "
+				      "allocation failed");
 		return _M_word_zero;
 	      }
 	    for (int i = 0; i < _M_word_size; i++) 
@@ -294,7 +295,7 @@ namespace std
 	  {
 	    _M_streambuf_state |= badbit;
 	    if (_M_streambuf_state & _M_exception)
-	      __throw_ios_failure("ios_base::_M_grow_words failure");
+	      __throw_ios_failure("ios_base::_M_grow_words ix not valid");
 	    return _M_word_zero;
 	  }
       }

@@ -1121,7 +1121,7 @@ rope<_CharT,_Alloc>::_S_balance(_RopeRep* __r)
       }
 
     if (__result->_M_depth > _RopeRep::_S_max_rope_depth)
-      __throw_length_error("rope too long");
+      __throw_length_error("rope::_S_balance");
     return(__result);
 }
 
