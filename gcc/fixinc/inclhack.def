@@ -2519,14 +2519,6 @@ fix = {
 
 /*
  * Fix these files to use the same types that we think they should.
- * Each type must be present in two places:  the select clause
- * and a "type_map" entry below.  The types mapped to are found from
- * the "tm.h" header, which is a generated file that refers to
- * a header in the gcc/config/ tree.  Keep these in sync!!
- *
- * Also, "wchar" is first and known to need guarding against __cplusplus.
- * Keep *that* in mind, too, when hacking the gnu_type_fix routine
- * in fixfixes.c.
  */
 fix = {
     hackname  = gnu_types;
@@ -2544,10 +2536,6 @@ fix = {
                 "typedef uint_t size_t; /* uint_t */\n"
                 "typedef ushort_t wchar_t; /* ushort_t */";
 };
-
-type_map = wchar;
-type_map = ptrdiff;
-type_map = size;
 
 
 /*

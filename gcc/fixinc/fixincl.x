@@ -5795,17 +5795,3 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      X11_SPRINTF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aX11_SprintfTests,   apzX11_SprintfPatch }
 };
-
-#define GNU_TYPE_CT 3
-int gnu_type_map_ct = GNU_TYPE_CT;
-
-/*
- *  The following table depends upon XXX_TYPE being #define-d to the
- *  correct string via defines in a header file pointed to by the
- *  generated file "tm.h".
- */
-t_gnu_type_map gnu_type_map[ GNU_TYPE_CT ] = {
-  { 5, "wchar", "WCHAR", WCHAR_TYPE },
-  { 7, "ptrdiff", "PTRDIFF", PTRDIFF_TYPE },
-  { 4, "size", "SIZE", SIZE_TYPE }
-};
