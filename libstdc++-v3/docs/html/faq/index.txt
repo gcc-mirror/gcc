@@ -501,7 +501,8 @@ New in 3.0.97:
    same namespace as other comparison functions (e.g., 'using' them and
    the <iterator> header), then you will suddenly be faced with huge
    numbers of ambiguity errors. This was discussed on the -v3 list;
-   Nathan Myers [79]sums things up here.
+   Nathan Myers [79]sums things up here. The collisions with
+   vector/string iterator types have been fixed for 3.1.
 
   The g++-3 headers are not ours
 
@@ -615,9 +616,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        already underway for post-3.0 releases, starting with memory
        expansion in container classes and buffer usage in synchronized
        stream objects.
-    3. An ABI for libstdc++ will eventually be developed, so that
-       multiple binary-incompatible copies of the library can be replaced
-       with a single backwards-compatible library, like libgcc_s.so is.
+    3. An ABI for libstdc++ is being developed, so that multiple
+       binary-incompatible copies of the library can be replaced with a
+       single backwards-compatible library, like libgcc_s.so is.
     4. The current libstdc++ contains extensions to the Library which
        must be explicitly requested by client code (for example, the hash
        tables from SGI). Other extensions may be added to libstdc++-v3 if
@@ -825,7 +826,7 @@ References
   50. ../faq/index.html#4_4_interface
   51. ../17_intro/DESIGN
   52. http://gcc.gnu.org/
-  53. http://gcc.gnu.org/gcc-2.95/buildstat.html
+  53. http://gcc.gnu.org/gcc-3.0/buildstat.html
   54. http://gcc.gnu.org/libstdc++/
   55. http://gcc.gnu.org/libstdc++/download.html
   56. http://gcc.gnu.org/libstdc++/

@@ -480,7 +480,8 @@ namespace std
    *
    *  @ingroup Containers
    *
-   *  Meets the requirements of a <a href="tables.html#65">container</a>.
+   *  (Note that %bitset does @e not meet the formal requirements of a
+   *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)
    *
    *  The template argument, @a _Nb, may be any nonzero number of type
    *  size_t.
@@ -973,6 +974,7 @@ namespace std
 
     /**
      *  @brief  Finds the index of the first "on" bit.
+     *  @return  The index of the first bit set, or size() if not found.
      *  @ingroup SGIextensions
      *  @sa  _Find_next
     */
@@ -982,6 +984,7 @@ namespace std
 
     /**
      *  @brief  Finds the index of the next "on" bit after prev.
+     *  @return  The index of the next bit set, or size() if not found.
      *  @param  prev  Where to start searching.
      *  @ingroup SGIextensions
      *  @sa  _Find_first
