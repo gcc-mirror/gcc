@@ -1,3 +1,7 @@
+2001-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (finish_enum): Revert part of 2000-01-05 change.
+
 2001-02-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/rs6000/aix43.h (CPLUSCPLUS_CPP_SPEC): Define it.
