@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.13.2 10/13/92 09:26:24";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.13.5 10/19/92 15:27:15";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -211,12 +211,16 @@ output_load_const_dimode (operands)
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally.  */
+   normally.
+
+   SCRATCH if non zero can be used as a scratch register for the move
+   operation.  It is provided by a SECONDARY_RELOAD_* macro if needed.  */
 
 int
-emit_move_sequence (operands, mode)
+emit_move_sequence (operands, mode, scratch)
      rtx *operands;
      enum machine_mode mode;
+     rtx scratch;
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
@@ -258,10 +262,10 @@ emit_move_sequence (operands, mode)
 	    && GET_CODE (operand1) != CONST_DOUBLE)
 	  {
 	    rtx temp = ((reload_in_progress || reload_completed)
-			? operand0 : gen_reg_rtx (Pmode));
+			? operand0 : 0);
 	    operands[1] = legitimize_address (flag_pic
 					      && symbolic_address_p (operand1),
-					      operand1, temp);
+					      operand1, temp, scratch);
 	    if (mode != SImode)
 	      operands[1] = gen_rtx (SUBREG, mode, operands[1], 0);
 	  }
@@ -271,47 +275,61 @@ emit_move_sequence (operands, mode)
   return 0;
 }
 
-/* Return a legitimate reference for ORIG (either an address or a MEM) using
-   the register REG.  If PIC and the address is already position-independent,
-   use ORIG.  */
+/* Return a legitimate reference for ORIG (either an address or a MEM)
+   using the register REG.  If PIC and the address is already
+   position-independent, use ORIG.  Newly generated position-independent
+   addresses go into a reg.  This is REG if non zero, otherwise we
+   allocate register(s) as necessary.  If this is called during reload,
+   and we need a second temp register, then we use SCRATCH, which is
+   provided via the SECONDARY_INPUT_RELOAD_CLASS mechanism.  */
 
 struct rtx_def *
-legitimize_address (pic, orig, reg)
+legitimize_address (pic, orig, reg, scratch)
      int pic;
      rtx orig;
      rtx reg;
+     rtx scratch;
 {
   rtx addr = (GET_CODE (orig) == MEM ? XEXP (orig, 0) : orig);
   rtx new = orig;
-  rtx temp;
+  rtx temp, insn;
 
   if (pic)
     {
-      if (GET_CODE (addr) == SYMBOL_REF
-	  || GET_CODE (addr) == LABEL_REF)
+      if (GET_CODE (addr) == SYMBOL_REF || GET_CODE (addr) == LABEL_REF)
 	{
-	  if (reg == 0) abort ();
+	  if (reg == 0)
+	    {
+	      if (reload_in_progress || reload_completed)
+		abort ();
+	      else
+		reg = gen_reg_rtx (Pmode);
+	    }
 
 	  if (flag_pic == 2)
 	    {
+	      /* If not during reload, allocate another temp reg here for
+		 loading in the address, so that these instructions can be
+		 optimized properly.  */
+	      temp = ((reload_in_progress || reload_completed)
+		      ? reg : gen_reg_rtx (Pmode));
+
 	      emit_insn (gen_rtx (SET, VOIDmode,
-				  reg, gen_rtx (HIGH, SImode, addr)));
+				  temp, gen_rtx (HIGH, SImode, addr)));
 	      emit_insn (gen_rtx (SET, VOIDmode,
-				  reg, gen_rtx (LO_SUM, SImode, reg, addr)));
-	      addr = reg;
+				  temp, gen_rtx (LO_SUM, SImode, temp, addr)));
+	      addr = temp;
 	    }
 	  new = gen_rtx (MEM, Pmode,
 			 gen_rtx (PLUS, SImode,
 				  pic_offset_table_rtx, addr));
 	  current_function_uses_pic_offset_table = 1;
 	  RTX_UNCHANGING_P (new) = 1;
-	  {
-	    rtx insn = emit_move_insn (reg, new);
-	    /* Put a REG_EQUAL note on this insn, so that it can be optimized
-	       by loop.  */
-	    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
-					REG_NOTES (insn));
-	  }
+	  insn = emit_move_insn (reg, new);
+	  /* Put a REG_EQUAL note on this insn, so that it can be optimized
+	     by loop.  */
+	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
+				      REG_NOTES (insn));
 	  new = reg;
 	}
       else if (GET_CODE (addr) == CONST)
@@ -323,23 +341,52 @@ legitimize_address (pic, orig, reg)
 	    return orig;
 
 	  if (reg == 0)
-	    abort ();
+	    {
+	      if (reload_in_progress || reload_completed)
+		abort ();
+	      else
+		reg = gen_reg_rtx (Pmode);
+	    }
 
 	  if (GET_CODE (XEXP (addr, 0)) != PLUS) abort ();
 
-	  base = legitimize_address (1, XEXP (XEXP (addr, 0), 0), reg);
+	  base = legitimize_address (1, XEXP (XEXP (addr, 0), 0), reg, 0);
 	  addr = legitimize_address (1, XEXP (XEXP (addr, 0), 1),
-				     base == reg ? 0 : reg);
+				     base == reg ? 0 : reg, 0);
 
 	  if (GET_CODE (addr) == CONST_INT)
-	    new = plus_constant_for_output (base, INTVAL (addr));
-	  else
-	    new = gen_rtx (PLUS, SImode, base, addr);
+	    {
+	      if (SMALL_INT (addr))
+		return plus_constant_for_output (base, INTVAL (addr));
+	      else if (! reload_in_progress && ! reload_completed)
+		addr = force_reg (Pmode, addr);
+	      /* We can't create any new registers during reload, so use the
+		 SCRATCH reg provided by the reload_insi pattern.  */
+	      else if (scratch)
+		{
+		  emit_move_insn (scratch, addr);
+		  addr = scratch;
+		}
+	      else
+		/* If we reach here, then the SECONDARY_INPUT_RELOAD_CLASS
+		   macro needs to be adjusted so that a scratch reg is provided
+		   for this address.  */
+		abort ();
+	    }
+	  new = gen_rtx (PLUS, SImode, base, addr);
 	  /* Should we set special REG_NOTEs here?  */
 	}
     }
   else if (! SHORT_ADDRESS_P (addr, temp))
     {
+      if (reg == 0)
+	{
+	  if (reload_in_progress || reload_completed)
+	    abort ();
+	  else
+	    reg = gen_reg_rtx (Pmode);
+	}
+
       emit_insn (gen_rtx (SET, VOIDmode,
 			  reg, gen_rtx (HIGH, SImode, addr)));
       new = gen_rtx (LO_SUM, SImode, reg, addr);
@@ -2210,6 +2257,8 @@ output_function_profiler (file, labelno, name, savep)
   char dbi[256];
   char *temp = (savep ? reg_names[2] : reg_names[10]);
 
+  /* Remember to update FUNCTION_PROFILER_LENGTH.  */
+
   if (savep)
     {
       fprintf (file, "\tsubu\t %s,%s,64\n", reg_names[31], reg_names[31]);
@@ -2269,6 +2318,8 @@ output_function_block_profiler (file, labelno)
   char block[256];
   char label[256];
 
+  /* Remember to update FUNCTION_BLOCK_PROFILER_LENGTH.  */
+
   ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 0);
   ASM_GENERATE_INTERNAL_LABEL (label, "LPY", labelno);
 
@@ -2307,6 +2358,8 @@ output_block_profiler (file, blockno)
      int blockno;
 {
   char block[256];
+
+  /* Remember to update BLOCK_PROFILER_LENGTH.  */
 
   ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 2);
 
