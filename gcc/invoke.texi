@@ -727,8 +727,11 @@ from declaring certain functions or defining certain macros that the
 ANSI standard doesn't call for; this is to avoid interfering with any
 programs that might use these names for other things.
 
-The functions @code{alloca}, @code{abort}, @code{exit}, and
-@code{_exit} are not builtin functions when @samp{-ansi} is used.
+Functions which would normally be builtin but do not have semantics
+defined by ISO C (such as @code{alloca} and @code{ffs}) are not builtin
+functions with @samp{-ansi} is used.  @xref{Other Builtins,,Other
+built-in functions provided by GNU CC}, for details of the functions
+affected.
 
 @item -std=
 Determine the language standard.  A value for this option must be provided;
@@ -785,38 +788,11 @@ use the @samp{-fno-gnu-keywords} flag instead, which has the same effect.
 
 @item -fno-builtin
 @cindex builtin functions
-@findex abort
-@findex abs
-@findex alloca
-@findex cos
-@findex cosf
-@findex cosl
-@findex exit
-@findex _exit
-@findex fabs
-@findex fabsf
-@findex fabsl
-@findex ffs
-@findex labs
-@findex memcmp
-@findex memcpy
-@findex memset
-@findex sin
-@findex sinf
-@findex sinl
-@findex sqrt
-@findex sqrtf
-@findex sqrtl
-@findex strcmp
-@findex strcpy
-@findex strlen
-Don't recognize builtin functions that do not begin with @samp{__builtin_}
-as prefix.  Currently, the functions affected include @code{abort},
-@code{abs}, @code{alloca}, @code{cos}, @code{cosf}, @code{cosl},
-@code{exit}, @code{_exit}, @code{fabs}, @code{fabsf}, @code{fabsl},
-@code{ffs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{memset},
-@code{sin}, @code{sinf}, @code{sinl}, @code{sqrt}, @code{sqrtf},
-@code{sqrtl}, @code{strcmp}, @code{strcpy}, and @code{strlen}.
+Don't recognize builtin functions that do not begin with
+@samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
+functions provided by GNU CC}, for details of the functions affected,
+including those which are not builtin functions when @samp{-ansi} is
+used because they do not have an ISO standard meaning.
 
 GCC normally generates special code to handle certain builtin functions
 more efficiently; for instance, calls to @code{alloca} may become single
@@ -825,10 +801,6 @@ may become inline copy loops.  The resulting code is often both smaller
 and faster, but since the function calls no longer appear as such, you
 cannot set a breakpoint on those calls, nor can you change the behavior
 of the functions by linking with a different library.
-
-The @samp{-ansi} option prevents @code{alloca}, @code{ffs} and @code{_exit}
-from being builtin functions, since these functions do not have an ANSI
-standard meaning.
 
 @item -fhosted
 @cindex hosted environment
