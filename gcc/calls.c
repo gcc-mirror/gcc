@@ -90,6 +90,10 @@ struct arg_data
      PARALLEL if the arg is to be copied into multiple non-contiguous
      registers.  */
   rtx reg;
+  /* Register to pass this argument in when generating tail call sequence.
+     This is not the same register as for normal calls on machines with
+     register windows.  */
+  rtx tail_call_reg;
   /* If REG was promoted from the actual mode of the argument expression,
      indicates whether the promotion is sign- or zero-extended.  */
   int unsignedp;
@@ -201,7 +205,7 @@ static void compute_argument_addresses		PARAMS ((struct arg_data *,
 							 rtx, int));
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
-							 int, rtx *));
+							 int, rtx *, int));
 static int libfunc_nothrow			PARAMS ((rtx));
 static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx, int,
 							 enum machine_mode,
@@ -1232,17 +1236,17 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       args[i].unsignedp = unsignedp;
       args[i].mode = mode;
 
+      args[i].reg = FUNCTION_ARG (*args_so_far, mode, type,
+				  argpos < n_named_args);
 #ifdef FUNCTION_INCOMING_ARG
       /* If this is a sibling call and the machine has register windows, the
 	 register window has to be unwinded before calling the routine, so
 	 arguments have to go into the incoming registers.  */
-      if (*ecf_flags & ECF_SIBCALL)
-	args[i].reg = FUNCTION_INCOMING_ARG (*args_so_far, mode, type,
+      args[i].tail_call_reg = FUNCTION_INCOMING_ARG (*args_so_far, mode, type,
 					     argpos < n_named_args);
-      else
+#else
+      args[i].tail_call_reg = args[i].reg;
 #endif
-	args[i].reg = FUNCTION_ARG (*args_so_far, mode, type,
-				    argpos < n_named_args);
 
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (args[i].reg)
@@ -1673,10 +1677,11 @@ rtx_for_function_call (fndecl, exp)
    insns in the CALL_INSN_FUNCTION_USAGE field.  */
 
 static void
-load_register_parameters (args, num_actuals, call_fusage)
+load_register_parameters (args, num_actuals, call_fusage, flags)
      struct arg_data *args;
      int num_actuals;
      rtx *call_fusage;
+     int flags;
 {
   int i, j;
 
@@ -1686,7 +1691,8 @@ load_register_parameters (args, num_actuals, call_fusage)
   for (i = 0; i < num_actuals; i++)
 #endif
     {
-      rtx reg = args[i].reg;
+      rtx reg = ((flags & ECF_SIBCALL)
+		 ? args[i].tail_call_reg : args[i].reg);
       int partial = args[i].partial;
       int nregs;
 
@@ -1946,7 +1952,8 @@ expand_call (exp, target, ignore)
   tree fndecl = 0;
   char *name = 0;
   rtx insn;
-  int try_tail_call;
+  int try_tail_call = 1;
+  int try_tail_recursion = 1;
   int pass;
 
   /* Register in which non-BLKmode value will be returned,
@@ -1980,6 +1987,7 @@ expand_call (exp, target, ignore)
 
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
+  struct args_size adjusted_args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
   int unadjusted_args_size;
   /* Data on reg parms scanned so far.  */
@@ -2162,7 +2170,135 @@ expand_call (exp, target, ignore)
 	return temp;
     }
 
-  currently_expanding_call++;
+  if (fndecl && DECL_NAME (fndecl))
+    name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+
+  /* Figure out the amount to which the stack should be aligned.  */
+#ifdef PREFERRED_STACK_BOUNDARY
+  preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#else
+  preferred_stack_boundary = STACK_BOUNDARY;
+#endif
+
+  /* Operand 0 is a pointer-to-function; get the type of the function.  */
+  funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
+  if (! POINTER_TYPE_P (funtype))
+    abort ();
+  funtype = TREE_TYPE (funtype);
+
+  /* See if this is a call to a function that can return more than once
+     or a call to longjmp or malloc.  */
+  flags |= special_function_p (fndecl, flags);
+
+  if (flags & ECF_MAY_BE_ALLOCA)
+    current_function_calls_alloca = 1;
+
+  /* If struct_value_rtx is 0, it means pass the address
+     as if it were an extra parameter.  */
+  if (structure_value_addr && struct_value_rtx == 0)
+    {
+      /* If structure_value_addr is a REG other than
+	 virtual_outgoing_args_rtx, we can use always use it.  If it
+	 is not a REG, we must always copy it into a register.
+	 If it is virtual_outgoing_args_rtx, we must copy it to another
+	 register in some cases.  */
+      rtx temp = (GET_CODE (structure_value_addr) != REG
+		  || (ACCUMULATE_OUTGOING_ARGS
+		      && stack_arg_under_construction
+		      && structure_value_addr == virtual_outgoing_args_rtx)
+		  ? copy_addr_to_reg (structure_value_addr)
+		  : structure_value_addr);
+
+      actparms
+	= tree_cons (error_mark_node,
+		     make_tree (build_pointer_type (TREE_TYPE (funtype)),
+				temp),
+		     actparms);
+      structure_value_addr_parm = 1;
+    }
+
+  /* Count the arguments and set NUM_ACTUALS.  */
+  for (p = actparms, num_actuals = 0; p; p = TREE_CHAIN (p))
+    num_actuals++;
+
+  /* Compute number of named args.
+     Normally, don't include the last named arg if anonymous args follow.
+     We do include the last named arg if STRICT_ARGUMENT_NAMING is nonzero.
+     (If no anonymous args follow, the result of list_length is actually
+     one too large.  This is harmless.)
+
+     If PRETEND_OUTGOING_VARARGS_NAMED is set and STRICT_ARGUMENT_NAMING is
+     zero, this machine will be able to place unnamed args that were
+     passed in registers into the stack.  So treat all args as named.
+     This allows the insns emitting for a specific argument list to be
+     independent of the function declaration.
+
+     If PRETEND_OUTGOING_VARARGS_NAMED is not set, we do not have any
+     reliable way to pass unnamed args in registers, so we must force
+     them into memory.  */
+
+  if ((STRICT_ARGUMENT_NAMING
+       || ! PRETEND_OUTGOING_VARARGS_NAMED)
+      && TYPE_ARG_TYPES (funtype) != 0)
+    n_named_args
+      = (list_length (TYPE_ARG_TYPES (funtype))
+	 /* Don't include the last named arg.  */
+	 - (STRICT_ARGUMENT_NAMING ? 0 : 1)
+	 /* Count the struct value address, if it is passed as a parm.  */
+	 + structure_value_addr_parm);
+  else
+    /* If we know nothing, treat all args as named.  */
+    n_named_args = num_actuals;
+
+  /* Start updating where the next arg would go.
+
+     On some machines (such as the PA) indirect calls have a different
+     calling convention than normal calls.  The last argument in
+     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
+     or not.  */
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, (fndecl == 0));
+
+
+  /* Make a vector to hold all the information about each arg.  */
+  args = (struct arg_data *) alloca (num_actuals
+				     * sizeof (struct arg_data));
+  bzero ((char *) args, num_actuals * sizeof (struct arg_data));
+
+  /* Build up entries inthe ARGS array, compute the size of the arguments
+     into ARGS_SIZE, etc.  */
+  initialize_argument_information (num_actuals, args, &args_size,
+				   n_named_args, actparms, fndecl,
+				   &args_so_far, reg_parm_stack_space,
+				   &old_stack_level, &old_pending_adj,
+				   &must_preallocate, &flags);
+
+  if (args_size.var)
+    {
+      /* If this function requires a variable-sized argument list, don't
+	 try to make a cse'able block for this call.  We may be able to
+	 do this eventually, but it is too complicated to keep track of
+	 what insns go in the cse'able block and which don't.   */
+
+      flags &= ~(ECF_CONST | ECF_PURE);
+      must_preallocate = 1;
+    }
+
+  /* Now make final decision about preallocating stack space.  */
+  must_preallocate = finalize_must_preallocate (must_preallocate,
+						num_actuals, args,
+						&args_size);
+
+  /* If the structure value address will reference the stack pointer, we
+     must stabilize it.  We don't need to do this if we know that we are
+     not going to adjust the stack pointer in processing this call.  */
+
+  if (structure_value_addr
+      && (reg_mentioned_p (virtual_stack_dynamic_rtx, structure_value_addr)
+	  || reg_mentioned_p (virtual_outgoing_args_rtx,
+			      structure_value_addr))
+      && (args_size.var
+	  || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)))
+    structure_value_addr = copy_to_reg (structure_value_addr);
 
   /* Tail calls can make things harder to debug, and we're traditionally
      pushed these optimizations into -O2.  Don't try if we're already
@@ -2176,15 +2312,58 @@ expand_call (exp, target, ignore)
      This is most often true of sjlj-exceptions, which we couldn't
      tail-call to anyway.  */
 
-  try_tail_call = 0;
-  if (flag_optimize_sibling_calls
-      && currently_expanding_call == 1
-      && rtx_equal_function_value_matters
-      && stmt_loop_nest_empty ()
-      && ! any_pending_cleanups (1))
-    {
-      tree new_actparms = NULL_TREE;
+  if (currently_expanding_call++ != 0
+      || !flag_optimize_sibling_calls
+      || !rtx_equal_function_value_matters
+      || !stmt_loop_nest_empty ()
+      || any_pending_cleanups (1)
+      || args_size.var)
+    try_tail_call = try_tail_recursion = 0;
 
+  /* Tail recursion fails, when we are not dealing with recursive calls.  */
+  if (!try_tail_recursion
+      || TREE_CODE (TREE_OPERAND (exp, 0)) != ADDR_EXPR
+      || TREE_OPERAND (TREE_OPERAND (exp, 0), 0) != current_function_decl)
+    try_tail_recursion = 0;
+
+  /*  Rest of purposes for tail call optimizations to fail.  */
+  if (
+#ifdef HAVE_sibcall_epilogue
+      !HAVE_sibcall_epilogue
+#else
+      1
+#endif
+      || !try_tail_call
+      /* Doing sibling call optimization needs some work, since
+	 structure_value_addr can be allocated on the stack.
+	 It does not seem worth the effort since few optimizable
+	 sibling calls will return a structure.  */
+      || structure_value_addr != NULL_RTX
+      /* If the register holding the address is a callee saved
+	 register, then we lose.  We have no way to prevent that,
+	 so we only allow calls to named functions.  */
+      /* ??? This could be done by having the insn constraints
+	 use a register class that is all call-clobbered.  Any
+	 reload insns generated to fix things up would appear
+	 before the sibcall_epilogue.  */
+      || fndecl == NULL_TREE
+      || (flags & (ECF_RETURNS_TWICE | ECF_LONGJMP))
+      || !FUNCTION_OK_FOR_SIBCALL (fndecl)
+      /* If this function requires more stack slots than the current
+	 function, we cannot change it into a sibling call.  */
+      || args_size.constant > current_function_args_size
+      /* If the callee pops its own arguments, then it must pop exactly
+	 the same number of arguments as the current function.  */
+      || RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
+	 != RETURN_POPS_ARGS (current_function_decl,
+			      TREE_TYPE (current_function_decl),
+			      current_function_args_size))
+  try_tail_call = 0;
+
+  if (try_tail_call || try_tail_recursion)
+    {
+      int end, inc;
+      actparms = NULL_TREE;
       /* Ok, we're going to give the tail call the old college try.
 	 This means we're going to evaluate the function arguments
 	 up to three times.  There are two degrees of badness we can
@@ -2194,49 +2373,64 @@ expand_call (exp, target, ignore)
 	 Generate a new argument list.  Pass safe arguments through
 	 unchanged.  For the easy badness wrap them in UNSAVE_EXPRs.  
 	 For hard badness, evaluate them now and put their resulting
-	 rtx in a temporary VAR_DECL.  */
+	 rtx in a temporary VAR_DECL.
 
-      for (p = actparms; p; p = TREE_CHAIN (p))
-	switch (unsafe_for_reeval (TREE_VALUE (p)))
+	 initialize_argument_information has ordered the array for the
+	 order to be pushed, and we must remember this when reconstructing
+	 the original argument orde.  */
+
+      if (PUSH_ARGS_REVERSED)
+	{
+	  inc = 1;
+	  i = 0;
+	  end = num_actuals;
+	}
+      else
 	  {
+	  inc = -1;
+	  i = num_actuals - 1;
+	  end = -1;
+	}
+
+      for (; i != end; i += inc)
+	{
+	  switch (unsafe_for_reeval (args[i].tree_value))
+	    {
 	  case 0: /* Safe.  */
-	    new_actparms = tree_cons (TREE_PURPOSE (p), TREE_VALUE (p),
-				      new_actparms);
 	    break;
 
 	  case 1: /* Mildly unsafe.  */
-	    new_actparms = tree_cons (TREE_PURPOSE (p),
-				      unsave_expr (TREE_VALUE (p)),
-				      new_actparms);
+	      args[i].tree_value = unsave_expr (args[i].tree_value);
 	    break;
 
 	  case 2: /* Wildly unsafe.  */
 	    {
 	      tree var = build_decl (VAR_DECL, NULL_TREE,
-				     TREE_TYPE (TREE_VALUE (p)));
-	      DECL_RTL (var) = expand_expr (TREE_VALUE (p), NULL_RTX,
+				       TREE_TYPE (args[i].tree_value));
+		DECL_RTL (var) = expand_expr (args[i].tree_value, NULL_RTX,
 					    VOIDmode, EXPAND_NORMAL);
-	      new_actparms = tree_cons (TREE_PURPOSE (p), var, new_actparms);
+		args[i].tree_value = var;
 	    }
 	    break;
 
 	  default:
 	    abort ();
 	  }
-
-      /* We built the new argument chain backwards.  */
-      actparms = nreverse (new_actparms);
-
+	  /* We need to build actparms for optimize_tail_recursion.  We can
+	     safely trash away TREE_PURPOSE, since it is unused by this
+	     function.  */
+	  if (try_tail_recursion)
+	    actparms = tree_cons (NULL_TREE, args[i].tree_value, actparms);
+	}
       /* Expanding one of those dangerous arguments could have added
 	 cleanups, but otherwise give it a whirl.  */
-      try_tail_call = ! any_pending_cleanups (1);
+      if (any_pending_cleanups (1))
+	try_tail_call = try_tail_recursion = 0;
     }
 
   /* Generate a tail recursion sequence when calling ourselves.  */
 
-  if (try_tail_call
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-      && TREE_OPERAND (TREE_OPERAND (exp, 0), 0) == current_function_decl)
+  if (try_tail_recursion)
     {
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
@@ -2251,9 +2445,6 @@ expand_call (exp, target, ignore)
 	 complete.  */
       start_sequence ();
 
-      /* Emit the pending stack adjustments before we expand any arguments.  */
-      do_pending_stack_adjust ();
-
       if (optimize_tail_recursion (actparms, get_last_insn ()))
         tail_recursion_insns = get_insns ();
       end_sequence ();
@@ -2264,18 +2455,18 @@ expand_call (exp, target, ignore)
       stack_pointer_delta = save_stack_pointer_delta;
     }
 
-  function_call_count++;
+  if (profile_arc_flag && (flags & ECF_FORK_OR_EXEC))
+    {
+      /* A fork duplicates the profile information, and an exec discards
+	 it.  We can't rely on fork/exec to be paired.  So write out the
+	 profile information we have gathered so far, and clear it.  */
+      /* ??? When Linux's __clone is called with CLONE_VM set, profiling
+	 is subject to race conditions, just as with multithreaded
+	 programs.  */
 
-  if (fndecl && DECL_NAME (fndecl))
-    name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
-
-  /* Figure out the amount to which the stack should be aligned.  */
-#ifdef PREFERRED_STACK_BOUNDARY
-  preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-#else
-  preferred_stack_boundary = STACK_BOUNDARY;
-#endif
-  preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_fork_func"), 0,
+			 VOIDmode, 0);
+    }
 
   /* Ensure current function's preferred stack boundary is at least
      what we need.  We don't have to increase alignment for recursive
@@ -2284,18 +2475,9 @@ expand_call (exp, target, ignore)
       && fndecl != current_function_decl)
     cfun->preferred_stack_boundary = preferred_stack_boundary;
 
-  /* See if this is a call to a function that can return more than once
-     or a call to longjmp or malloc.  */
-  flags |= special_function_p (fndecl, flags);
+  preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
-  if (flags & ECF_MAY_BE_ALLOCA)
-    current_function_calls_alloca = 1;
-
-  /* Operand 0 is a pointer-to-function; get the type of the function.  */
-  funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
-  if (! POINTER_TYPE_P (funtype))
-    abort ();
-  funtype = TREE_TYPE (funtype);
+  function_call_count++;
 
   /* We want to make two insn chains; one for a sibling call, the other
      for a normal call.  We will select one of the two chains after
@@ -2314,27 +2496,7 @@ expand_call (exp, target, ignore)
 
       if (pass == 0)
 	{
-	  /* Various reasons we can not use a sibling call.  */
-	  if (! try_tail_call 
-#ifdef HAVE_sibcall_epilogue
-	      || ! HAVE_sibcall_epilogue
-#else
-	      || 1
-#endif
-	      /* The structure value address is used and modified in the
-		 loop below.  It does not seem worth the effort to save and
-		 restore it as a state variable since few optimizable
-		 sibling calls will return a structure.  */
-	      || structure_value_addr != NULL_RTX
-	      /* If the register holding the address is a callee saved
-		 register, then we lose.  We have no way to prevent that,
-		 so we only allow calls to named functions.  */
-	      /* ??? This could be done by having the insn constraints
-		 use a register class that is all call-clobbered.  Any
-		 reload insns generated to fix things up would appear
-		 before the sibcall_epilogue.  */
-	      || fndecl == NULL_TREE
-	      || ! FUNCTION_OK_FOR_SIBCALL (fndecl))
+	  if (! try_tail_call)
 	    continue;
 
 	  /* Emit any queued insns now; otherwise they would end up in
@@ -2385,152 +2547,15 @@ expand_call (exp, target, ignore)
 	  || pass == 0)
 	do_pending_stack_adjust ();
 
-      if (profile_arc_flag && (flags & ECF_FORK_OR_EXEC))
-	{
-	  /* A fork duplicates the profile information, and an exec discards
-	     it.  We can't rely on fork/exec to be paired.  So write out the
-	     profile information we have gathered so far, and clear it.  */
-	  /* ??? When Linux's __clone is called with CLONE_VM set, profiling
-	     is subject to race conditions, just as with multithreaded
-	     programs.  */
-
-	  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_fork_func"), 0,
-			     VOIDmode, 0);
-	}
-
       /* Push the temporary stack slot level so that we can free any
 	 temporaries we make.  */
       push_temp_slots ();
 
-      /* Start updating where the next arg would go.
-
-	 On some machines (such as the PA) indirect calls have a different
-	 calling convention than normal calls.  The last argument in
-	 INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
-	 or not.  */
-      INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, (fndecl == 0));
-
-      /* If struct_value_rtx is 0, it means pass the address
-	 as if it were an extra parameter.  */
-      if (structure_value_addr && struct_value_rtx == 0)
-	{
-	  /* If structure_value_addr is a REG other than
-	     virtual_outgoing_args_rtx, we can use always use it.  If it
-	     is not a REG, we must always copy it into a register.
-	     If it is virtual_outgoing_args_rtx, we must copy it to another
-	     register in some cases.  */
-	  rtx temp = (GET_CODE (structure_value_addr) != REG
-		      || (ACCUMULATE_OUTGOING_ARGS
-			  && stack_arg_under_construction
-			  && structure_value_addr == virtual_outgoing_args_rtx)
-		      ? copy_addr_to_reg (structure_value_addr)
-		      : structure_value_addr);
-
-	  actparms
-	    = tree_cons (error_mark_node,
-			 make_tree (build_pointer_type (TREE_TYPE (funtype)),
-				    temp),
-			 actparms);
-	  structure_value_addr_parm = 1;
-	}
-
-      /* Count the arguments and set NUM_ACTUALS.  */
-      for (p = actparms, i = 0; p; p = TREE_CHAIN (p)) i++;
-      num_actuals = i;
-
-      /* Compute number of named args.
-	 Normally, don't include the last named arg if anonymous args follow.
-	 We do include the last named arg if STRICT_ARGUMENT_NAMING is nonzero.
-	 (If no anonymous args follow, the result of list_length is actually
-	 one too large.  This is harmless.)
-
-	 If PRETEND_OUTGOING_VARARGS_NAMED is set and STRICT_ARGUMENT_NAMING is
-	 zero, this machine will be able to place unnamed args that were
-	 passed in registers into the stack.  So treat all args as named.
-	 This allows the insns emitting for a specific argument list to be
-	 independent of the function declaration.
-
-	 If PRETEND_OUTGOING_VARARGS_NAMED is not set, we do not have any
-	 reliable way to pass unnamed args in registers, so we must force
-	 them into memory.  */
-
-      if ((STRICT_ARGUMENT_NAMING
-	   || ! PRETEND_OUTGOING_VARARGS_NAMED)
-	  && TYPE_ARG_TYPES (funtype) != 0)
-	n_named_args
-	  = (list_length (TYPE_ARG_TYPES (funtype))
-	     /* Don't include the last named arg.  */
-	     - (STRICT_ARGUMENT_NAMING ? 0 : 1)
-	     /* Count the struct value address, if it is passed as a parm.  */
-	     + structure_value_addr_parm);
-      else
-	/* If we know nothing, treat all args as named.  */
-	n_named_args = num_actuals;
-
-      /* Make a vector to hold all the information about each arg.  */
-      args = (struct arg_data *) alloca (num_actuals
-					 * sizeof (struct arg_data));
-      bzero ((char *) args, num_actuals * sizeof (struct arg_data));
-
-      /* Build up entries inthe ARGS array, compute the size of the arguments
-	 into ARGS_SIZE, etc.  */
-      initialize_argument_information (num_actuals, args, &args_size,
-				       n_named_args, actparms, fndecl,
-				       &args_so_far, reg_parm_stack_space,
-				       &old_stack_level, &old_pending_adj,
-				       &must_preallocate, &flags);
 
 #ifdef FINAL_REG_PARM_STACK_SPACE
       reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
 							 args_size.var);
 #endif
-      
-      if (args_size.var)
-	{
-	  /* If this function requires a variable-sized argument list, don't
-	     try to make a cse'able block for this call.  We may be able to
-	     do this eventually, but it is too complicated to keep track of
-	     what insns go in the cse'able block and which don't. 
-
-	     Also do not make a sibling call.  */
-
-	  flags &= ~(ECF_CONST | ECF_PURE);
-	  must_preallocate = 1;
-	  sibcall_failure = 1;
-	}
-
-      if (args_size.constant > current_function_args_size)
-	{
-	  /* If this function requires more stack slots than the current
-	     function, we cannot change it into a sibling call.  */
-	  sibcall_failure = 1;
-	}
-
-      /* If the callee pops its own arguments, then it must pop exactly
-	 the same number of arguments as the current function.  */
-      if (RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
-	  != RETURN_POPS_ARGS (current_function_decl,
-			       TREE_TYPE (current_function_decl),
-			       current_function_args_size))
-	sibcall_failure = 1;
-
-      /* Now make final decision about preallocating stack space.  */
-      must_preallocate = finalize_must_preallocate (must_preallocate,
-						    num_actuals, args,
-						    &args_size);
-
-      /* If the structure value address will reference the stack pointer, we
-	 must stabilize it.  We don't need to do this if we know that we are
-	 not going to adjust the stack pointer in processing this call.  */
-
-      if (structure_value_addr
-	  && (reg_mentioned_p (virtual_stack_dynamic_rtx, structure_value_addr)
-	      || reg_mentioned_p (virtual_outgoing_args_rtx,
-				  structure_value_addr))
-	  && (args_size.var
-	      || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)))
-	structure_value_addr = copy_to_reg (structure_value_addr);
-
       /* Precompute any arguments as needed.  */
       if (pass)
 	precompute_arguments (flags, num_actuals, args);
@@ -2540,13 +2565,14 @@ expand_call (exp, target, ignore)
       if (flags & (ECF_CONST | ECF_PURE | ECF_MALLOC))
 	start_sequence ();
 
+      adjusted_args_size = args_size;
       /* Compute the actual size of the argument block required.  The variable
 	 and constant sizes must be combined, the size may have to be rounded,
 	 and there may be a minimum required size.  When generating a sibcall
 	 pattern, do not round up, since we'll be re-using whatever space our
 	 caller provided.  */
       unadjusted_args_size
-	= compute_argument_block_size (reg_parm_stack_space, &args_size,
+	= compute_argument_block_size (reg_parm_stack_space, &adjusted_args_size,
 				       (pass == 0 ? 0
 					: preferred_stack_boundary));
 
@@ -2559,7 +2585,7 @@ expand_call (exp, target, ignore)
 
       /* If we have no actual push instructions, or shouldn't use them,
 	 make space for all args right now.  */
-      else if (args_size.var != 0)
+      else if (adjusted_args_size.var != 0)
 	{
 	  if (old_stack_level == 0)
 	    {
@@ -2572,7 +2598,7 @@ expand_call (exp, target, ignore)
 	      old_stack_arg_under_construction = stack_arg_under_construction;
 	      stack_arg_under_construction = 0;
 	    }
-	  argblock = push_block (ARGS_SIZE_RTX (args_size), 0, 0);
+	  argblock = push_block (ARGS_SIZE_RTX (adjusted_args_size), 0, 0);
 	}
       else
 	{
@@ -2581,7 +2607,7 @@ expand_call (exp, target, ignore)
 	     in the area reserved for register arguments, which may be part of
 	     the stack frame.  */
 
-	  int needed = args_size.constant;
+	  int needed = adjusted_args_size.constant;
 
 	  /* Store the maximum argument space used.  It will be pushed by
 	     the prologue (if ACCUMULATE_OUTGOING_ARGS, or stack overflow
@@ -2651,7 +2677,7 @@ expand_call (exp, target, ignore)
 		      needed
 			= (combine_pending_stack_adjustment_and_call 
 			   (unadjusted_args_size,
-			    &args_size,
+			    &adjusted_args_size,
 			    preferred_unit_stack_boundary));
 
 		      /* combine_pending_stack_adjustment_and_call computes
@@ -2699,9 +2725,9 @@ expand_call (exp, target, ignore)
 		    {
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
 		      rtx push_size = GEN_INT (reg_parm_stack_space
-					       + args_size.constant);
+					       + adjusted_args_size.constant);
 #else
-		      rtx push_size = GEN_INT (args_size.constant);
+		      rtx push_size = GEN_INT (adjusted_args_size.constant);
 #endif
 		      if (old_stack_level == 0)
 			{
@@ -2743,7 +2769,7 @@ expand_call (exp, target, ignore)
       /* If we push args individually in reverse order, perform stack alignment
 	 before the first push (the last arg).  */
       if (PUSH_ARGS_REVERSED && argblock == 0
-	  && args_size.constant != unadjusted_args_size)
+	  && adjusted_args_size.constant != unadjusted_args_size)
 	{
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
@@ -2754,12 +2780,12 @@ expand_call (exp, target, ignore)
 	      pending_stack_adjust
 		= (combine_pending_stack_adjustment_and_call 
 		   (unadjusted_args_size,
-		    &args_size,
+		    &adjusted_args_size,
 		    preferred_unit_stack_boundary));
 	      do_pending_stack_adjust ();
 	    }
 	  else if (argblock == 0)
-	    anti_adjust_stack (GEN_INT (args_size.constant
+	    anti_adjust_stack (GEN_INT (adjusted_args_size.constant
 					- unadjusted_args_size));
 	}
       /* Now that the stack is properly aligned, pops can't safely
@@ -2807,7 +2833,7 @@ expand_call (exp, target, ignore)
       for (i = 0; i < num_actuals; i++)
 	if (args[i].reg == 0 || args[i].pass_on_stack)
 	  store_one_arg (&args[i], argblock, flags,
-			 args_size.var != 0, reg_parm_stack_space);
+			 adjusted_args_size.var != 0, reg_parm_stack_space);
 
       /* If we have a parm that is passed in registers but not in memory
 	 and whose alignment does not permit a direct copy into registers,
@@ -2822,13 +2848,13 @@ expand_call (exp, target, ignore)
 	for (i = 0; i < num_actuals; i++)
 	  if (args[i].partial != 0 && ! args[i].pass_on_stack)
 	    store_one_arg (&args[i], argblock, flags,
-			   args_size.var != 0, reg_parm_stack_space);
+			   adjusted_args_size.var != 0, reg_parm_stack_space);
 
 #ifdef PREFERRED_STACK_BOUNDARY
       /* If we pushed args in forward order, perform stack alignment
 	 after pushing the last arg.  */
       if (!PUSH_ARGS_REVERSED && argblock == 0)
-	anti_adjust_stack (GEN_INT (args_size.constant
+	anti_adjust_stack (GEN_INT (adjusted_args_size.constant
 				    - unadjusted_args_size));
 #endif
 
@@ -2867,7 +2893,7 @@ expand_call (exp, target, ignore)
       funexp = prepare_call_address (funexp, fndecl, &call_fusage,
 				     reg_parm_seen);
 
-      load_register_parameters (args, num_actuals, &call_fusage);
+      load_register_parameters (args, num_actuals, &call_fusage, flags);
      
       /* Perform postincrements before actually calling the function.  */
       emit_queue ();
@@ -2898,7 +2924,7 @@ expand_call (exp, target, ignore)
 
       /* Generate the actual call instruction.  */
       emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
-		   args_size.constant, struct_value_size,
+		   adjusted_args_size.constant, struct_value_size,
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags);
 
@@ -2997,14 +3023,13 @@ expand_call (exp, target, ignore)
 	    {
 	      emit_note_after (NOTE_INSN_SETJMP, last);
 	      current_function_calls_setjmp = 1;
-	      sibcall_failure = 1;
 	    }
 	  else
 	    emit_barrier_after (last);
 	}
 
       if (flags & ECF_LONGJMP)
-	current_function_calls_longjmp = 1, sibcall_failure = 1;
+	current_function_calls_longjmp = 1;
 
       /* If this function is returning into a memory location marked as
 	 readonly, it means it is initializing that location.  But we normally
@@ -3193,6 +3218,14 @@ expand_call (exp, target, ignore)
 
 	  pending_stack_adjust = save_pending_stack_adjust;
 	  stack_pointer_delta = save_stack_pointer_delta;
+
+	  /* Prepare arg structure for next iteration.  */
+	  for (i = 0 ; i < num_actuals ; i++)
+	    {
+	      args[i].value = 0;
+	      args[i].aligned_regs = 0;
+	      args[i].stack = 0;
+	    }
 	}
       else
 	normal_call_insns = insns;
