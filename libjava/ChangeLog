@@ -1,5 +1,10 @@
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/regexp/CharIndexedInputStream.java:
+	Reordered imports to match classpath.
+
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/EmbeddedWindow.java:
 	Load native library for setWindowPeer method.
 

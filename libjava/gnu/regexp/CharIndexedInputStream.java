@@ -36,9 +36,9 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package gnu.regexp;
-import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 // TODO: move(x) shouldn't rely on calling next() x times
 
