@@ -1,5 +1,14 @@
 2002-05-15  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/6518
+	* include/bits/ostream.tcc (ostream::operator<<(const char*)): Fix
+	for null case.
+	(ostream::operator<<(const _CharT*)): Same.
+	(ostream<char>::operator<<(const char*)): Same.
+	* testsuite/27_io/ostream_inserter_char.cc (test07): Add test.
+	
+2002-05-15  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/6594
 	* src/strstream.cc (strstreambuf): Fix leak.
 
