@@ -1,5 +1,7 @@
 Sun Mar 29 00:42:21 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (arith_double_operand): Fix parens.
+
 	* haifa-sched.c (print_pattern): Correct arg to sprintf.
 
 	* Makefile.in (libgcc1.null): Make return type for __foo void.
