@@ -258,6 +258,15 @@ struct tree_common
    fields from the base class as public.  */
 #define TREE_VIA_PUBLIC(NODE) ((NODE)->common.public_flag)
 
+/* Ditto, for `private' declarations.  */
+#define TREE_VIA_PRIVATE(NODE) ((NODE)->common.private_flag)
+
+/* Nonzero for TREE_LIST node means that the path to the
+   base class is via a `protected' declaration, which preserves
+   protected fields from the base class as protected.
+   OVERLOADED.  */
+#define TREE_VIA_PROTECTED(NODE) ((NODE)->common.static_flag)
+
 /* In any expression, nonzero means it has side effects or reevaluation
    of the whole expression could produce a different value.
    This is set if any subexpression is a function call, a side effect
