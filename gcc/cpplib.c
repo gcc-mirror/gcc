@@ -214,9 +214,9 @@ cpp_grow_buffer (pfile, n)
 void
 cpp_define (pfile, str)
      cpp_reader *pfile;
-     U_CHAR *str;
+     const char *str;
 {
-  U_CHAR *buf, *p;
+  char *buf, *p;
   size_t count;
 
   p = strchr (str, '=');
@@ -227,7 +227,7 @@ cpp_define (pfile, str)
   if (p)
     {
       count = strlen (str) + 2;
-      buf = (U_CHAR *) alloca (count);
+      buf = alloca (count);
       memcpy (buf, str, count - 2);
       buf[p - str] = ' ';
       buf[count - 2] = '\n';
@@ -236,7 +236,7 @@ cpp_define (pfile, str)
   else
     {
       count = strlen (str) + 4;
-      buf = (U_CHAR *) alloca (count);
+      buf = alloca (count);
       memcpy (buf, str, count - 4);
       strcpy (&buf[count-4], " 1\n");
     }
@@ -252,7 +252,7 @@ cpp_define (pfile, str)
 void
 cpp_assert (pfile, str)
      cpp_reader *pfile;
-     U_CHAR *str;
+     const char *str;
 {
   if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
     {
@@ -409,8 +409,8 @@ copy_comment (pfile, m)
      cpp_reader *pfile;
      int m;
 {
-  U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
-  U_CHAR *limit;
+  const U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
+  const U_CHAR *limit;
 
   if (skip_comment (pfile, m) == m)
     return m;
@@ -749,7 +749,7 @@ do_define (pfile, keyword)
 cpp_buffer *
 cpp_push_buffer (pfile, buffer, length)
      cpp_reader *pfile;
-     U_CHAR *buffer;
+     const U_CHAR *buffer;
      long length;
 {
   cpp_buffer *buf = CPP_BUFFER (pfile);
@@ -1258,7 +1258,7 @@ do_include (pfile, keyword)
   /* Actually process the file */
 
   if (importing)
-    ihash->control_macro = "";
+    ihash->control_macro = (const U_CHAR *) "";
   
   if (cpp_push_buffer (pfile, NULL, 0) == NULL)
     {
@@ -1491,11 +1491,11 @@ do_undef (pfile, keyword)
 void
 cpp_undef (pfile, macro)
      cpp_reader *pfile;
-     U_CHAR *macro;
+     const char *macro;
 {
   /* Copy the string so we can append a newline.  */
   size_t len = strlen (macro);
-  U_CHAR *buf = alloca (len + 2);
+  char *buf = alloca (len + 2);
   memcpy (buf, macro, len);
   buf[len]     = '\n';
   buf[len + 1] = '\0';
@@ -1517,7 +1517,7 @@ do_error (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  U_CHAR *text, *limit;
+  const U_CHAR *text, *limit;
 
   cpp_skip_hspace (pfile);
   text = CPP_BUFFER (pfile)->cur;
@@ -1538,7 +1538,7 @@ do_warning (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  U_CHAR *text, *limit;
+  const U_CHAR *text, *limit;
 
   cpp_skip_hspace (pfile);
   text = CPP_BUFFER (pfile)->cur;
@@ -1626,7 +1626,7 @@ do_pragma (pfile, keyword)
   buf = pfile->token_buffer + key;
   CPP_PUTC (pfile, ' ');
 
-#define tokis(x) !strncmp(buf, x, sizeof(x) - 1)
+#define tokis(x) !strncmp((char *) buf, x, sizeof(x) - 1)
   if (tokis ("once"))
     pop = do_pragma_once (pfile);
   else if (tokis ("implementation"))
@@ -1677,7 +1677,7 @@ do_pragma_once (pfile)
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "`#pragma once' outside include file");
   else
-    ip->ihash->control_macro = "";  /* never repeat */
+    ip->ihash->control_macro = (const U_CHAR *) "";  /* never repeat */
 
   return 1;
 }
@@ -1703,7 +1703,7 @@ do_pragma_implementation (pfile)
     }
 
   name = pfile->token_buffer + written + 1;
-  copy = xstrdup (name);
+  copy = (U_CHAR *) xstrdup (name);
   copy[strlen(copy)] = '\0';  /* trim trailing quote */
 
   if (cpp_included (pfile, copy))
@@ -1844,7 +1844,7 @@ detect_if_not_defined (pfile)
       if ((!need_rparen || get_directive_token (pfile) == CPP_RPAREN)
 	  /* ...and make sure there's nothing else on the line.  */
 	  && get_directive_token (pfile) == CPP_VSPACE)
-	control_macro = xstrdup (ident);
+	control_macro = (U_CHAR *) xstrdup (ident);
 
     restore:
       CPP_SET_WRITTEN (pfile, base_offset);
@@ -1980,7 +1980,7 @@ do_ifdef (pfile, keyword)
       if (start_of_file && !skip)
 	{
 	  control_macro = (U_CHAR *) xmalloc (ident_length + 1);
-	  bcopy (ident, control_macro, ident_length + 1);
+	  memcpy (control_macro, ident, ident_length + 1);
 	}
     }
   else
@@ -2114,7 +2114,7 @@ skip_if_group (pfile)
 {
   int c;
   IF_STACK *save_if_stack = pfile->if_stack; /* don't pop past here */
-  U_CHAR *beg_of_line;
+  const U_CHAR *beg_of_line;
   long old_written;
 
   old_written = CPP_WRITTEN (pfile);
@@ -2674,7 +2674,7 @@ cpp_get_token (pfile)
 
 	      while (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
 		{
-		  U_CHAR *point = CPP_BUFFER (pfile)->cur;
+		  const U_CHAR *point = CPP_BUFFER (pfile)->cur;
 		  for (;;)
 		    {
 		      cpp_skip_hspace (pfile);
@@ -2929,8 +2929,8 @@ parse_string (pfile, c)
      cpp_reader *pfile;
      int c;
 {
-  U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
-  U_CHAR *limit;
+  const U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
+  const U_CHAR *limit;
 
   skip_string (pfile, c);
 
@@ -3050,7 +3050,7 @@ do_assert (pfile, keyword)
     }
 
   thislen = strlen (sym);
-  baselen = (U_CHAR *) index (sym, '(') - sym;
+  baselen = (U_CHAR *) strchr (sym, '(') - sym;
   this = _cpp_lookup (pfile, sym, thislen);
   if (this)
     {
@@ -3124,7 +3124,7 @@ do_unassert (pfile, keyword)
     }
   else
     {
-      baselen = (U_CHAR *) index (sym, '(') - sym;
+      baselen = (U_CHAR *) strchr (sym, '(') - sym;
       base = _cpp_lookup (pfile, sym, baselen);
       if (! base) goto error;
       this = _cpp_lookup (pfile, sym, thislen);
@@ -3153,7 +3153,7 @@ do_unassert (pfile, keyword)
 void
 cpp_unassert (pfile, str)
      cpp_reader *pfile;
-     unsigned char *str;
+     const char *str;
 {
   if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
     {

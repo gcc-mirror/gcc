@@ -1,3 +1,24 @@
+2000-03-11  Neil Booth  <NeilB@earthling.net>
+
+	* cppfiles.c (file_cleanup, _cpp_find_include_file,
+	remap_filename, _cpp_read_include_file, actual_directory,
+	hack_vms_include_specification): Replace bcopy(), index() etc
+	calls.  Add casts to some allocations.  Make some variables
+ 	pointers to const [unsigned] char.
+	* cpphash.c (_cpp_install, macro_cleanup, collect_expansion,
+	collect_formal_parameters): Similarly.
+	* cppinit.c (struct pending_option, append_include_chain,
+	cpp_options_init, cpp_reader_init, initialize_standard_includes,
+	cpp_start_read, new_pending_define, handle_option): Similarly.
+	* cpplib.c (cpp_define, copy_comment, do_define, do_include,
+	do_undef, do_error, do_warning, do_pragma, do_pragma_once,
+	do_pragma_implementation, detect_if_not_defined,
+	do_ifdef, skip_if_group, cpp_get_token, parse_string,
+	do_assert, do_unassert): Similarly.
+	* cpplib.h (cpp_buffer, cpp_options): Update types.  Update
+	function prototypes.
+	* mkdeps.c (deps_add_target, deps_add_dep): cast allocations.	
+
 2000-03-10  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_strlen): Revert last change.
