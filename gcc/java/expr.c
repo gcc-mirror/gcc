@@ -1901,15 +1901,16 @@ build_invokeinterface (tree dtable, tree method)
      abstract nor static.  */
 	    
   if (class_ident == NULL_TREE)
-    {
-      class_ident = get_identifier ("class");
-    }
+    class_ident = get_identifier ("class");
 
-  dtable = build_java_indirect_ref (dtable_type, dtable, flag_check_references);
+  dtable = build_java_indirect_ref (dtable_type, dtable,
+				    flag_check_references);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
 		  lookup_field (&dtable_type, class_ident));
 
   interface = DECL_CONTEXT (method);
+  if (! CLASS_INTERFACE (TYPE_NAME (interface)))
+    abort ();
   layout_class_methods (interface);
   
   if (flag_indirect_dispatch)
