@@ -25,7 +25,7 @@
 #ifdef __m88k__
 #include "va-m88k.h"
 #else
-#ifdef __hppa__
+#if defined(__hppa__) || defined(hp800)
 #include "va-pa.h"
 #else
 #ifdef __i960__
