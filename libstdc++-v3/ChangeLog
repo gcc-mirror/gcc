@@ -1,3 +1,10 @@
+2000-07-17  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4:  Import CHECK_GNU_MAKE from autoconf macro archive.
+	* configure.in:  Use it.  Also print reminders one time.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* bits/valarray_array.h (__valarray_get_storage): New function.
