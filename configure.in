@@ -1371,33 +1371,6 @@ case "${host}" in
   ;;
 esac
 
-# If we're building libgcj and we're using the Solaris 2.8 linker,
-# then we check for a known problem.
-if test "x${libgcj}" = x && test "${with_gnu_ld}" != yes \
-   && test "${is_cross_compiler}" = no; then
-
-   case "${host}" in
-    sparc-*-solaris2.8)
-       if test "$libdir" = '${exec_prefix}/lib';then
-	  if test "$exec_prefix" = '$(prefix)'; then
-	     tlibdir="$prefix/lib"
-	  else
-	     tlibdir="$exec_prefix/lib"
-	  fi
-       else
-	  tlibdir="$libdir"
-       fi
-       if test -f $tlibdir/libgcj.la; then
-	  echo "*** You've already installed libgcj in $tlibdir." 1>&2
-	  echo "    This causes problems when rebuilding libgcj with the Solaris 2.8 linker." 1>&2
-	  echo "    Either disable the libgcj build, or remove the" 1>&2
-	  echo "    already-installed libgcj files." 1>&2
-	  exit 1
-       fi
-       ;;
-   esac
-fi
-
 # If --enable-shared was set, we must set LD_LIBRARY_PATH so that the
 # binutils tools will find libbfd.so.
 if test "${shared}" = "yes" ; then

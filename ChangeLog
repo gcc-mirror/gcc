@@ -1,3 +1,7 @@
+2002-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Revert 2002-04-18's patch; fixed in libjava.
+
 2002-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* configure.in (FLAGS_FOR_TARGET): Do not add
