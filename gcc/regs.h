@@ -86,6 +86,24 @@ extern varray_type reg_n_info;
 
 #define REG_FREQ(N) (VARRAY_REG (reg_n_info, N)->freq)
 
+/* The weights for each insn varries from 0 to REG_FREQ_BASE. 
+   This constant does not need to be high, as in infrequently executed
+   regions we want to count instructions equivalently to optimize for
+   size instead of speed.  */
+#define REG_FREQ_MAX 1000
+
+/* Compute register frequency from the BB frequency.  When optimizing for size,
+   or profile driven feedback is available and the function is never executed,
+   frequency is always equivalent.  Otherwise rescale the basic block
+   frequency.  */
+#define REG_FREQ_FROM_BB(bb) (optimize_size				      \
+			      || (flag_branch_probabilities		      \
+				  && !ENTRY_BLOCK_PTR->count)		      \
+			      ? REG_FREQ_MAX				      \
+			      : ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
+			      ? ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
+			      : 1)
+
 /* Indexed by n, gives number of times (REG n) is set.
    ??? both regscan and flow allocate space for this.  We should settle
    on just copy.  */

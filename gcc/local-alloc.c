@@ -1698,13 +1698,14 @@ block_alloc (b)
 
 /* Note that the quotient will never be bigger than
    the value of floor_log2 times the maximum number of
-   times a register can occur in one insn (surely less than 100).
-   Multiplying this by 10000 can't overflow.
+   times a register can occur in one insn (surely less than 100)
+   weighted by frequency (max REG_FREQ_MAX).
+   Multiplying this by 10000/REG_FREQ_MAX can't overflow.
    QTY_CMP_PRI is also used by qty_sugg_compare.  */
 
 #define QTY_CMP_PRI(q)		\
   ((int) (((double) (floor_log2 (qty[q].n_refs) * qty[q].freq * qty[q].size) \
-	  / (qty[q].death - qty[q].birth)) * 10000))
+	  / (qty[q].death - qty[q].birth)) * (10000 / REG_FREQ_MAX)))
 
 static int
 qty_compare (q1, q2)

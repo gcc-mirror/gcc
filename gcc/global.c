@@ -611,16 +611,17 @@ allocno_compare (v1p, v2p)
   int v1 = *(const int *)v1p, v2 = *(const int *)v2p;
   /* Note that the quotient will never be bigger than
      the value of floor_log2 times the maximum number of
-     times a register can occur in one insn (surely less than 100).
-     Multiplying this by 10000 can't overflow.  */
+     times a register can occur in one insn (surely less than 100)
+     weighted by the frequency (maximally REG_FREQ_MAX).
+     Multiplying this by 10000/REG_FREQ_MAX can't overflow.  */
   register int pri1
     = (((double) (floor_log2 (allocno[v1].n_refs) * allocno[v1].freq)
 	/ allocno[v1].live_length)
-       * 10000 * allocno[v1].size);
+       * (10000 / REG_FREQ_MAX) * allocno[v1].size);
   register int pri2
     = (((double) (floor_log2 (allocno[v2].n_refs) * allocno[v2].freq)
 	/ allocno[v2].live_length)
-       * 10000 * allocno[v2].size);
+       * (10000 / REG_FREQ_MAX) * allocno[v2].size);
   if (pri2 - pri1)
     return pri2 - pri1;
 

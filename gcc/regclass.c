@@ -1233,7 +1233,7 @@ regclass (f, nregs, dump)
 
       if (!optimize)
 	{
-	  frequency = 1;
+	  frequency = REG_FREQ_MAX;
 	  for (insn = f; insn; insn = NEXT_INSN (insn))
 	    insn = scan_one_insn (insn, pass);
 	}
@@ -1246,10 +1246,7 @@ regclass (f, nregs, dump)
 	       times more than insns outside a loop.  This is much more
 	       aggressive than the assumptions made elsewhere and is being
 	       tried as an experiment.  */
-	    if (optimize_size)
-	      frequency = 1;
-	    else
-	      frequency = bb->frequency ? bb->frequency : 1;
+	    frequency = REG_FREQ_FROM_BB (bb);
 	    for (insn = bb->head; ; insn = NEXT_INSN (insn))
 	      {
 		insn = scan_one_insn (insn, pass);
