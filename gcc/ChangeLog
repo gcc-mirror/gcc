@@ -1,3 +1,11 @@
+Thu Jan  7 00:29:25 199  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* combine.c (num_sign_bit_copies): In NEG, MULT, DIV and MOD cases,
+	when a test can't be performed due to limited width of
+	HOST_BITS_PER_WIDE_INT, use the more conservative approximation.
+	Fix UDIV case for cases where the first operand has the highest bit
+	set.
+
 Thu Jan  7 00:01:38 1999  Lutz Vieweg <lkv@mania.robin.de>
 
 	* pa.h (reg_class): Add FPUPPER_REGS.
