@@ -1,3 +1,9 @@
+2002-02-10  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (pushhi1_h8300): Correct the mode
+	used.
+	(pushhi1): Likewise.
+
 2002-02-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (reg_before_reload_operand): Don't accept a SUBREG operand.
