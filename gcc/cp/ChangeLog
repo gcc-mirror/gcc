@@ -1,3 +1,8 @@
+2004-07-10  Mike Stump  <mrs@apple.com>
+
+	* decl2.c (import_export_class): Never export/import vtables
+	with inline key functions.
+
 2004-07-09  Steven Bosscher  <stevenb@suse.de>
 
 	* typeck.c (c_expand_asm_operands): Remove.
