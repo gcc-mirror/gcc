@@ -6,7 +6,7 @@ Sun Feb 15 21:07:48 1998  Jeffrey A Law  (law@cygnus.com)
 
 Sun Feb 15 20:55:23 1998  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
-	* i386.c (notice_update_cc): Remove bogus pentium GCC code.
+	* i386.c (notice_update_cc): Use reg_overlap_mentioned_p.
 
 Sat Feb 14 15:54:28 1998  H.J. Lu  (hjl@gnu.org)
 
