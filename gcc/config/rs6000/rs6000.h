@@ -1245,22 +1245,26 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 /* Add any extra modes needed to represent the condition code.
 
    For the RS/6000, we need separate modes when unsigned (logical) comparisons
-   are being done and we need a separate mode for floating-point.  */
+   are being done and we need a separate mode for floating-point.  We also
+   use a mode for the case when we are comparing the results of two
+   comparisons.  */
 
-#define EXTRA_CC_MODES CCUNSmode, CCFPmode
+#define EXTRA_CC_MODES CCUNSmode, CCFPmode, CCEQmode
 
 /* Define the names for the modes specified above.  */
-#define EXTRA_CC_NAMES "CCUNS", "CCFP"
+#define EXTRA_CC_NAMES "CCUNS", "CCFP", "CCEQ"
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
-   should be used.  CC_NOOVmode should be used when the first operand is a
-   PLUS, MINUS, or NEG.  CCmode should be used when no special processing is
-   needed.  */
+   should be used.  CCUNSmode should be used for unsigned comparisons.
+   CCEQmode should be used when we are doing an inequality comparison on
+   the result of a comparison. CCmode should be used in all other cases.  */
+
 #define SELECT_CC_MODE(OP,X) \
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CCFPmode	\
-   : ((OP) == GTU || (OP) == LTU || (OP) == GEU || (OP) == LEU	\
-      ? CCUNSmode : CCmode))
+   : (OP) == GTU || (OP) == LTU || (OP) == GEU || (OP) == LEU ? CCUNSmode \
+   : (((OP) == EQ || (OP) == NE) && GET_RTX_CLASS (GET_CODE (X)) == '<'   \
+      ? CCEQmode : CCmode))
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here

@@ -516,6 +516,9 @@ scc_comparison_operator (op, mode)
       && (cc_mode != CCUNSmode))
     return 0;
 
+  if (cc_mode == CCEQmode && code != EQ && code != NE)
+    return 0;
+
   return 1;
 }
 
@@ -606,6 +609,12 @@ ccr_bit (op, scc_p)
   cc_mode = GET_MODE (XEXP (op, 0));
   cc_regnum = REGNO (XEXP (op, 0));
   base_bit = 4 * (cc_regnum - 68);
+
+  /* In CCEQmode cases we have made sure that the result is always in the
+     third bit of the CR field.  */
+
+  if (cc_mode == CCEQmode)
+    return base_bit + 3;
 
   switch (code)
     {
@@ -816,6 +825,14 @@ print_operand (file, x, code)
       else
 	fprintf (file, "%d", 32 - 4 * (REGNO (x) - 68));
       return;
+
+    case 'E':
+      /* X is a CR register.  Print the number of the third bit of the CR */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%E value");
+
+      fprintf(file, "%d", 4 * (REGNO (x) - 68) + 3);
+      break;
 
     case 'R':
       /* X is a CR register.  Print the mask for `mtcrf'.  */
