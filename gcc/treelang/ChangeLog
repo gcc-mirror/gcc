@@ -1,3 +1,8 @@
+2002-05-11  Tim Josling  <tej@melbpc.org.au>
+
+	* treetree.c: (cpp_define) Add.
+        (cpp_get_callbacks) Add.
+	
 2002-05-07  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c: (cpp_get_options) Add.

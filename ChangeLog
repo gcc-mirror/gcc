@@ -11,6 +11,10 @@
 
 	* config-ml.in: Allow for PWDCMD to determine ML_POPDIR.
 
+2002-05-07  Tim Josling  <tej@melbpc.org.au>
+
+	* MAINTAINERS: Add self.
+
 2002-05-06  Loren J. Rittle <ljrittle@acm.org>
 
 	* ltmain.sh: Detect and handle object name conflicts

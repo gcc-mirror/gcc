@@ -1135,6 +1135,22 @@ cpp_options
   abort ();
 }
 
+/* Should not be called for treelang.   */
+
+void 
+cpp_define (cpp_reader * cr ATTRIBUTE_UNUSED, const char * c ATTRIBUTE_UNUSED)
+{
+  abort ();  
+}
+
+/* Should not be called for treelang.   */
+
+cpp_callbacks *
+cpp_get_callbacks (cpp_reader * cr ATTRIBUTE_UNUSED)
+{
+  abort ();
+}
+
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *) 0).
    Initialize the global binding level.
