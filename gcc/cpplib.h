@@ -69,7 +69,7 @@ enum cpp_token {
 };
 
 #ifndef PARAMS
-#ifdef __STDC
+#ifdef __STDC__
 #define PARAMS(P) P
 #else
 #define PARAMS(P) ()
@@ -94,7 +94,7 @@ extern void parse_goto_mark PARAMS((struct parse_marker *, cpp_reader *));
 extern void parse_move_mark PARAMS((struct parse_marker *, cpp_reader *));
 
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern enum cpp_token cpp_get_token PARAMS ((struct parse_marker *));
+extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
 extern void cpp_skip_hspace PARAMS((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 
