@@ -1157,8 +1157,7 @@ extern int sparc_mode_class[];
 #define RETURN_IN_MEMORY(TYPE)				\
 (TARGET_ARCH32						\
  ? (TYPE_MODE (TYPE) == BLKmode				\
-    || TYPE_MODE (TYPE) == TFmode			\
-    || TYPE_MODE (TYPE) == TCmode)			\
+    || TYPE_MODE (TYPE) == TFmode)			\
  : (TYPE_MODE (TYPE) == BLKmode				\
     && (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 32))
 
@@ -1671,13 +1670,13 @@ extern char leaf_reg_remap[];
 #define BASE_RETURN_VALUE_REG(MODE)					\
   (TARGET_ARCH64							\
    ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32 : 8)			\
-   : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 8))
+   : (TARGET_FPU && FLOAT_MODE_P (MODE) && (MODE) != TFmode ? 32 : 8))
 
 #define BASE_OUTGOING_VALUE_REG(MODE)				\
   (TARGET_ARCH64						\
    ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32			\
       : TARGET_FLAT ? 8 : 24)					\
-   : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32	\
+   : (TARGET_FPU && FLOAT_MODE_P (MODE) && (MODE) != TFmode ? 32\
       : (TARGET_FLAT ? 8 : 24)))
 
 #define BASE_PASSING_ARG_REG(MODE)				\
