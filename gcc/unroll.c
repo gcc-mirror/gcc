@@ -3480,22 +3480,43 @@ loop_iterations (loop_start, loop_end, loop_info)
   loop_info->unroll_number = 1;
   loop_info->vtop = 0;
 
-  /* First find the iteration variable.  If the last insn is a conditional
-     branch, and the insn before tests a register value, make that the
-     iteration variable.  */
-  
   /* We used to use prev_nonnote_insn here, but that fails because it might
      accidentally get the branch for a contained loop if the branch for this
      loop was deleted.  We can only trust branches immediately before the
      loop_end.  */
   last_loop_insn = PREV_INSN (loop_end);
 
+  /* ??? We should probably try harder to find the jump insn
+     at the end of the loop.  The following code assumes that 
+     the last loop insn is a jump to the top of the loop.  */
+  if (GET_CODE (last_loop_insn) != JUMP_INSN)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: No final conditional branch found.\n");
+      return 0;
+    }
+
+  /* If there is a more than a single jump to the top of the loop
+     we cannot (easily) determine the iteration count.  */
+  if (LABEL_NUSES (JUMP_LABEL (last_loop_insn)) > 1)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: Loop has multiple back edges.\n");
+      return 0;
+    }
+
+  /* Find the iteration variable.  If the last insn is a conditional
+     branch, and the insn before tests a register value, make that the
+     iteration variable.  */
+  
   comparison = get_condition_for_loop (last_loop_insn);
   if (comparison == 0)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop iterations: No final conditional branch found.\n");
+		 "Loop iterations: No final comparison found.\n");
       return 0;
     }
 
