@@ -108,6 +108,10 @@ extern int target_flags;
 #define MASK_68060	1024
 #define TARGET_68060 (target_flags & MASK_68060)
 
+/* Compile for mcf5200 */
+#define MASK_5200	2048
+#define TARGET_5200 (target_flags & MASK_5200)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -139,6 +143,8 @@ extern int target_flags;
     { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD|MASK_68040_ONLY)},	\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68060)},				\
+    { "5200", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD|MASK_68881)}, \
+    { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
     { "68302", 0},							\
@@ -1285,7 +1291,7 @@ __transfer_from_trampoline ()					\
 
 #define LEGITIMATE_INDEX_P(X)   \
    (LEGITIMATE_INDEX_REG_P (X)				\
-    || (TARGET_68020 && GET_CODE (X) == MULT		\
+    || ((TARGET_68020 || TARGET_5200) && GET_CODE (X) == MULT \
 	&& LEGITIMATE_INDEX_REG_P (XEXP (X, 0))		\
 	&& GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& (INTVAL (XEXP (X, 1)) == 2			\
