@@ -63,7 +63,7 @@ static void mark_vtable_entries (tree);
 static void grok_function_init (tree, tree);
 static bool maybe_emit_vtables (tree);
 static void add_using_namespace (tree, tree, bool);
-static tree ambiguous_decl (tree, tree, tree,int);
+static cxx_binding *ambiguous_decl (tree, cxx_binding *, cxx_binding *, int);
 static tree build_anon_union_vars (tree);
 static bool acceptable_java_type (tree);
 static void output_vtable_inherit (tree);
@@ -3497,11 +3497,11 @@ merge_functions (tree s1, tree s2)
    XXX In what way should I treat extern declarations?
    XXX I don't want to repeat the entire duplicate_decls here */
 
-static tree
-ambiguous_decl (tree name, tree old, tree new, int flags)
+static cxx_binding *
+ambiguous_decl (tree name, cxx_binding *old, cxx_binding *new, int flags)
 {
   tree val, type;
-  my_friendly_assert (old != NULL_TREE, 393);
+  my_friendly_assert (old != NULL, 393);
   /* Copy the value.  */
   val = BINDING_VALUE (new);
   if (val)
@@ -3536,12 +3536,8 @@ ambiguous_decl (tree name, tree old, tree new, int flags)
     BINDING_VALUE (old) = val;
   else if (val && val != BINDING_VALUE (old))
     {
-      if (is_overloaded_fn (BINDING_VALUE (old)) 
-	  && is_overloaded_fn (val))
-	{
-	  BINDING_VALUE (old) = merge_functions (BINDING_VALUE (old),
-						 val);
-	}
+      if (is_overloaded_fn (BINDING_VALUE (old)) && is_overloaded_fn (val))
+        BINDING_VALUE (old) = merge_functions (BINDING_VALUE (old), val);
       else
 	{
 	  /* Some declarations are functions, some are not.  */
@@ -3587,23 +3583,23 @@ ambiguous_decl (tree name, tree old, tree new, int flags)
    Returns false on errors.  */
 
 bool
-lookup_using_namespace (tree name, tree val, tree usings, tree scope,
+lookup_using_namespace (tree name, cxx_binding *val, tree usings, tree scope,
                         int flags, tree *spacesp)
 {
   tree iter;
-  tree val1;
   timevar_push (TV_NAME_LOOKUP);
   /* Iterate over all used namespaces in current, searching for using
      directives of scope.  */
   for (iter = usings; iter; iter = TREE_CHAIN (iter))
     if (TREE_VALUE (iter) == scope)
       {
-	if (spacesp)
-	  *spacesp = tree_cons (TREE_PURPOSE (iter), NULL_TREE,
-				*spacesp);
-	val1 = binding_for_name (name, TREE_PURPOSE (iter));
-	/* Resolve ambiguities.  */
-	val = ambiguous_decl (name, val, val1, flags);
+        cxx_binding *val1 =
+          cxx_scope_find_binding_for_name (TREE_PURPOSE (iter), name);
+        if (spacesp)
+          *spacesp = tree_cons (TREE_PURPOSE (iter), NULL_TREE, *spacesp);
+        /* Resolve ambiguities.  */
+        if (val1)
+          val = ambiguous_decl (name, val, val1, flags);
       }
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
                           BINDING_VALUE (val) != error_mark_node);
@@ -3611,11 +3607,11 @@ lookup_using_namespace (tree name, tree val, tree usings, tree scope,
 
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
-   Returns the name/type pair found into the CPLUS_BINDING RESULT,
+   Returns the name/type pair found into the cxx_binding *RESULT,
    or false on error.  */
 
 bool
-qualified_lookup_using_namespace (tree name, tree scope, tree result,
+qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
                                   int flags)
 {
   /* Maintain a list of namespaces visited...  */
@@ -3626,11 +3622,12 @@ qualified_lookup_using_namespace (tree name, tree scope, tree result,
   timevar_push (TV_NAME_LOOKUP);
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
-  while (scope && (result != error_mark_node))
+  while (scope && result->value != error_mark_node)
     {
+      cxx_binding *binding = cxx_scope_find_binding_for_name (scope, name);
       seen = tree_cons (scope, NULL_TREE, seen);
-      result = ambiguous_decl (name, result,
-                               binding_for_name (name, scope), flags);
+      if (binding)
+        result = ambiguous_decl (name, result, binding, flags);
       if (!BINDING_VALUE (result) && !BINDING_TYPE (result))
 	/* Consider using directives.  */
 	for (usings = DECL_NAMESPACE_USING (scope); usings;
@@ -3647,7 +3644,7 @@ qualified_lookup_using_namespace (tree name, tree scope, tree result,
       else
 	scope = NULL_TREE; /* If there never was a todo list.  */
     }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result != error_mark_node);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result->value != error_mark_node);
 }
 
 /* [namespace.memdef]/2 */
@@ -4203,22 +4200,22 @@ static void
 do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
                          tree *newval, tree *newtype)
 {
-  tree decls;
+  cxx_binding decls;
 
   *newval = *newtype = NULL_TREE;
-  decls = make_node (CPLUS_BINDING);
-  if (!qualified_lookup_using_namespace (name, scope, decls, 0))
+  cxx_binding_clear (&decls);
+  if (!qualified_lookup_using_namespace (name, scope, &decls, 0))
     /* Lookup error */
     return;
 
-  if (!BINDING_VALUE (decls) && !BINDING_TYPE (decls))
+  if (!decls.value && !decls.type)
     {
       error ("`%D' not declared", name);
       return;
     }
 
   /* Check for using functions.  */
-  if (BINDING_VALUE (decls) && is_overloaded_fn (BINDING_VALUE (decls)))
+  if (decls.value && is_overloaded_fn (decls.value))
     {
       tree tmp, tmp1;
 
@@ -4230,7 +4227,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	}
 
       *newval = oldval;
-      for (tmp = BINDING_VALUE (decls); tmp; tmp = OVL_NEXT (tmp))
+      for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
 	{
 	  tree new_fn = OVL_CURRENT (tmp);
 
@@ -4290,12 +4287,12 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
     }
   else 
     {
-      *newval = BINDING_VALUE (decls);
+      *newval = decls.value;
       if (oldval && !decls_match (*newval, oldval))
 	error ("`%D' is already declared in this scope", name);
     }
 
-  *newtype = BINDING_TYPE (decls);
+  *newtype = decls.type;
   if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
     {
       error ("using declaration `%D' introduced ambiguous type `%T'",
@@ -4309,8 +4306,9 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 void
 do_toplevel_using_decl (tree decl)
 {
-  tree scope, name, binding;
+  tree scope, name;
   tree oldval, oldtype, newval, newtype;
+  cxx_binding *binding;
 
   decl = validate_nonmember_using_decl (decl, &scope, &name);
   if (decl == NULL_TREE)
