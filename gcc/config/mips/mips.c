@@ -2909,8 +2909,14 @@ override_options ()
 #ifdef _IOLBF
   /* If -mstats and -quiet, make stderr line buffered.  */
   if (quiet_flag && TARGET_STATS)
-    setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
+    {
+#ifdef MIPS_BSD43
+      setlinebuf (stderr);
+#else
+      setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
 #endif
+#endif
+    }
 
   /* Set up the classification arrays now.  */
   mips_rtx_classify[(int)PLUS]  = CLASS_ADD_OP;
