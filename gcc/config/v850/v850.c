@@ -365,9 +365,16 @@ print_operand (file, x, code)
 
   switch (code)
     {
+    case 'c':
+      /* We use 'c' operands with symbols for .vtinherit */
+      if (GET_CODE (x) == SYMBOL_REF)
+        {
+          output_addr_const(file, x);
+          break;
+        }
+      /* fall through */
     case 'b':
     case 'B':
-    case 'c':
     case 'C':
       switch ((code == 'B' || code == 'C')
 	      ? reverse_condition (GET_CODE (x)) : GET_CODE (x))
