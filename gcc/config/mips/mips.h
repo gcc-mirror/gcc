@@ -862,6 +862,7 @@ while (0)
 
 /* ASM_SPEC is the set of arguments to pass to the assembler.  */
 
+#undef ASM_SPEC
 #define ASM_SPEC "\
 %{!membedded-pic:%{G*}} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
@@ -991,6 +992,7 @@ while (0)
 
 /* For C++ we need to ensure that _LANGUAGE_C_PLUS_PLUS is defined independent
    of the source file extension.  */
+#undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "\
 -D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
 %(cpp) \
@@ -3818,12 +3820,16 @@ while (0)
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
+#ifndef ASM_APP_ON
 #define ASM_APP_ON " #APP\n"
+#endif
 
 /* Output to assembler file text saying following lines
    no longer contain unusual constructs.  */
 
+#ifndef ASM_APP_OFF
 #define ASM_APP_OFF " #NO_APP\n"
+#endif
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).
@@ -4115,9 +4121,10 @@ while (0)
 #define LABEL_AFTER_LOC(STREAM)
 #endif
 
-#undef ASM_OUTPUT_SOURCE_LINE
+#ifndef ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
   mips_output_lineno (STREAM, LINE)
+#endif
 
 /* The MIPS implementation uses some labels for its own purpose.  The
    following lists what labels are created, and are all formed by the
@@ -4406,8 +4413,8 @@ do {									\
 /* Handle certain cpp directives used in header files on sysV.  */
 #define SCCS_DIRECTIVE
 
+#ifndef ASM_OUTPUT_IDENT
 /* Output #ident as a in the read-only data section.  */
-#undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, STRING)					\
 {									\
   const char *p = STRING;						\
@@ -4415,6 +4422,7 @@ do {									\
   rdata_section ();							\
   assemble_string (p, size);						\
 }
+#endif
 
 /* Default to -G 8 */
 #ifndef MIPS_DEFAULT_GVALUE

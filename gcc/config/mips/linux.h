@@ -18,6 +18,128 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "gofast.h"
+
+/* US Software GOFAST library support.  */
+#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
+
+#include "mips/mips.h"
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
+
+/* If defined, a C expression whose value is a string containing the
+   assembler operation to identify the following data as
+   uninitialized global data.  If not defined, and neither
+   `ASM_OUTPUT_BSS' nor `ASM_OUTPUT_ALIGNED_BSS' are defined,
+   uninitialized global data will be output in the data section if
+   `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
+   used.  */
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
+
+#define SBSS_SECTION_ASM_OP	"\t.section .sbss"
+
+/* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
+   separate, explicit argument.  If you define this macro, it is used
+   in place of `ASM_OUTPUT_BSS', and gives you more flexibility in
+   handling the required alignment of the variable.  The alignment is
+   specified as the number of bits.
+
+   Try to use function `asm_output_aligned_bss' defined in file
+   `varasm.c' when defining this macro. */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
+do {								\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);				\
+  if (SIZE > 0 && SIZE <= mips_section_threshold)		\
+    sbss_section ();						\
+  else								\
+    bss_section ();						\
+  ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
+  last_assemble_variable_decl = DECL;				\
+  ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);			\
+  ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);			\
+} while (0)
+
+/* These macros generate the special .type and .size directives which
+   are used to set the corresponding fields of the linker symbol table
+   entries in an ELF object file under SVR4.  These macros also output
+   the starting labels for the relevant functions/objects.  */
+
+/* Write the extra assembler code needed to declare an object properly.  */
+
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
+  do {								\
+    fprintf (FILE, "%s", TYPE_ASM_OP);				\
+    assemble_name (FILE, NAME);					\
+    putc (',', FILE);						\
+    fprintf (FILE, TYPE_OPERAND_FMT, "object");			\
+    putc ('\n', FILE);						\
+    size_directive_output = 0;					\
+    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
+      {								\
+	size_directive_output = 1;				\
+	fprintf (FILE, "%s", SIZE_ASM_OP);			\
+	assemble_name (FILE, NAME);				\
+	fprintf (FILE, ",%d\n",					\
+		 int_size_in_bytes (TREE_TYPE (DECL)));		\
+      }								\
+    mips_declare_object (FILE, NAME, "", ":\n", 0);		\
+  } while (0)
+
+#undef UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL,RELOC) \
+  mips_unique_section ((DECL), (RELOC))
+
+/* A list of other sections which the compiler might be "in" at any
+   given time.  */
+#undef EXTRA_SECTIONS
+#define EXTRA_SECTIONS in_sdata, in_sbss, in_rdata, in_ctors, in_dtors
+ 
+#undef EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS                                         \
+  SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(ctors_section, in_ctors, CTORS_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(dtors_section, in_dtors, DTORS_SECTION_ASM_OP)
+
+#define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)			\
+void FN ()							\
+{								\
+  if (in_section != ENUM)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", OP);			\
+      in_section = ENUM;					\
+    }								\
+}
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global constructors.  */
+#undef ASM_OUTPUT_CONSTRUCTOR
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)			  \
+  do {								  \
+    ctors_section ();						  \
+    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word"); \
+    assemble_name (FILE, NAME);					  \
+    fprintf (FILE, "\n");					  \
+  } while (0)
+
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  */
+#undef ASM_OUTPUT_DESTRUCTOR
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)			  \
+  do {								  \
+    dtors_section ();						  \
+    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word"); \
+    assemble_name (FILE, NAME);					  \
+    fprintf (FILE, "\n");					  \
+  } while (0)
+
 #undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == 0
 #define TARGET_VERSION fprintf (stderr, " (MIPSel GNU/Linux with ELF)");
@@ -34,17 +156,6 @@ Boston, MA 02111-1307, USA.  */
 /* If we don't set MASK_ABICALLS, we can't default to PIC. */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)
-
-
-/* Handle #pragma weak and #pragma pack.  */
-#undef HANDLE_SYSV_PRAGMA
-#define HANDLE_SYSV_PRAGMA 1
-
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
-/* Generate calls to memcpy, etc., not bcopy, etc.  */
-#define TARGET_MEM_FUNCTIONS
 
 /* Specify predefined symbols in preprocessor.  */
 #undef CPP_PREDEFINES
@@ -112,39 +223,11 @@ Boston, MA 02111-1307, USA.  */
 -D_GNU_SOURCE %(cpp) \
 "
 
-/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
-   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'. */
-
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-
-/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
-   the GNU/Linux magical crtend.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main', followed by a normal
-   GNU/Linux "finalizer" file, `crtn.o'.  */
-
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
-
 /* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects
    in the small data section if the user explicitly asks for it.  */
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
-
-#undef LIB_SPEC
-/* Taken from sparc/linux.h.  */
-#define LIB_SPEC \
-  "%{shared: -lc} \
-   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
-     %{profile:-lc_p} %{!profile: -lc}}"
 
 /* Borrowed from sparc/linux.h */
 #undef LINK_SPEC
@@ -165,44 +248,19 @@ Boston, MA 02111-1307, USA.  */
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
-/* We don't need those nonsenses.  */
-#undef INVOKE__main
-#undef CTOR_LIST_BEGIN
-#undef CTOR_LIST_END
-#undef DTOR_LIST_BEGIN
-#undef DTOR_LIST_END
-
 /* The MIPS assembler has different syntax for .set. We set it to
    .dummy to trap any errors.  */
 #undef SET_ASM_OP
 #define SET_ASM_OP "\t.dummy\t"
 
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
-do									\
-  {									\
-    static int sym_lineno = 1;						\
-    fprintf (FILE, "%sLM%d:\n\t%s 68,0,%d,%sLM%d",			\
-	     LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP,		\
-	     LINE, LOCAL_LABEL_PREFIX, sym_lineno);			\
-    putc ('-', FILE);							\
-    assemble_name (FILE,						\
-		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
-    putc ('\n', FILE);							\
-    sym_lineno++;							\
-  }									\
-while (0)
-
-/* This is how we tell the assembler that two symbols have the
-   same value.  */
 #undef ASM_OUTPUT_DEF
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
-  do {									\
-	fprintf ((FILE), "\t");						\
+ do {									\
+	fputc ( '\t', FILE);						\
 	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "=");						\
+	fputs ( " = ", FILE);						\
 	assemble_name (FILE, LABEL2);					\
-	fprintf (FILE, "\n");						\
+	fputc ( '\n', FILE);						\
  } while (0)
 
 #undef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
@@ -248,8 +306,3 @@ while (0)
 /* Tell function_prologue in mips.c that we have already output the .ent/.end
    pseudo-ops.  */
 #define FUNCTION_NAME_ALREADY_DECLARED
-
-/* Output #ident as a .ident.  */
-#undef ASM_OUTPUT_IDENT
-#define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
