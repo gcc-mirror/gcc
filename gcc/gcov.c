@@ -906,7 +906,7 @@ read_graph_file (void)
     }
   gcov_close ();
 
-  /* We built everything backwards, so nreverse them all */
+  /* We built everything backwards, so nreverse them all.  */
 
   /* Reverse sources. Not strictly necessary, but we'll then process
      them in the 'expected' order.  */

@@ -971,7 +971,7 @@ mark_reg_pointer (rtx reg, int align)
 	REGNO_POINTER_ALIGN (REGNO (reg)) = align;
     }
   else if (align && align < REGNO_POINTER_ALIGN (REGNO (reg)))
-    /* We can no-longer be sure just how aligned this pointer is */
+    /* We can no-longer be sure just how aligned this pointer is.  */
     REGNO_POINTER_ALIGN (REGNO (reg)) = align;
 }
 
@@ -2551,7 +2551,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
     }
   RTX_FLAG (x, used) = 1;
 
-  /* Now scan the subexpressions recursively. */
+  /* Now scan the subexpressions recursively.  */
 
   format_ptr = GET_RTX_FORMAT (code);
 
@@ -2867,11 +2867,12 @@ repeat:
 	      int j;
 	      int len = XVECLEN (x, i);
               
-              /* Copy the vector iff I copied the rtx and the length is nonzero. */
+              /* Copy the vector iff I copied the rtx and the length
+		 is nonzero.  */
 	      if (copied && len > 0)
 		XVEC (x, i) = gen_rtvec_v (len, XVEC (x, i)->elem);
               
-              /* Call recsusively on all inside the vector. */
+              /* Call recsusively on all inside the vector.  */
 	      for (j = 0; j < len; j++)
                 {
 		  if (last_ptr)

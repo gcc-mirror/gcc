@@ -213,7 +213,7 @@ extern struct alloc_zone *tree_zone;
 extern void *ggc_alloc (size_t);
 /* Allocate an object into the specified allocation zone.  */
 extern void *ggc_alloc_zone (size_t, struct alloc_zone *);
-/* Allocate an object of the specified type and size. */
+/* Allocate an object of the specified type and size.  */
 extern void *ggc_alloc_typed (enum gt_types_enum, size_t);
 /* Like ggc_alloc, but allocates cleared memory.  */
 extern void *ggc_alloc_cleared (size_t);

@@ -2956,7 +2956,7 @@ subscript_data_attribute (tree type)
 		  FMT_CODE (1, TREE_CODE (lower) == INTEGER_CST,
 			    upper && TREE_CODE (upper) == INTEGER_CST));
 
-	  /* Output the index type for this dimension.	*/
+	  /* Output the index type for this dimension.  */
 	  ASM_OUTPUT_DWARF_FUND_TYPE (asm_out_file,
 				      fundamental_type_code (domain));
 
@@ -2985,7 +2985,7 @@ subscript_data_attribute (tree type)
 
 	  ASM_OUTPUT_DWARF_FUND_TYPE (asm_out_file, FT_integer);
 
-	  /* Output the (assumed) lower bound (constant) value.	 */
+	  /* Output the (assumed) lower bound (constant) value.  */
 
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
 
@@ -4282,7 +4282,7 @@ output_die (void (*die_specific_output_function) (void *), void *param)
 
   ASM_OUTPUT_LABEL (asm_out_file, begin_label);
 
-  /* Write the DIE-length word.	 */
+  /* Write the DIE-length word.  */
 
   ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, end_label, begin_label);
 
@@ -4291,7 +4291,7 @@ output_die (void (*die_specific_output_function) (void *), void *param)
   next_unused_dienum++;
   die_specific_output_function (param);
 
-  /* Write a label which will act as the name for the end of this DIE.	*/
+  /* Write a label which will act as the name for the end of this DIE.  */
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
@@ -4310,7 +4310,7 @@ end_sibling_chain (void)
 
   ASM_OUTPUT_LABEL (asm_out_file, begin_label);
 
-  /* Write the DIE-length word.	 */
+  /* Write the DIE-length word.  */
 
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 4);
 

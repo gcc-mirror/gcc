@@ -1432,10 +1432,10 @@ main (int argc, char **argv)
 
   fork_execute ("gcc",  c_argv);
 #ifdef COLLECT_EXPORT_LIST
-  /* On AIX we must call tlink because of possible templates resolution */
+  /* On AIX we must call tlink because of possible templates resolution.  */
   do_tlink (ld2_argv, object_lst);
 #else
-  /* Otherwise, simply call ld because tlink is already done */
+  /* Otherwise, simply call ld because tlink is already done.  */
   fork_execute ("ld", ld2_argv);
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for

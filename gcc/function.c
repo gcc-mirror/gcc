@@ -4844,7 +4844,7 @@ assign_parms (tree fndecl)
 				     size_stored / UNITS_PER_WORD);
 	    }
 	  /* If parm is already bound to register pair, don't change 
-	     this binding. */
+	     this binding.  */
 	  if (! DECL_RTL_SET_P (parm))
 	    SET_DECL_RTL (parm, stack_parm);
 	}

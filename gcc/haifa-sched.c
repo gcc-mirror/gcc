@@ -1871,7 +1871,7 @@ ok_for_early_queue_removal (rtx insn)
 
 
 /* Remove insns from the queue, before they become "ready" with respect
-   to FU latency considerations.   */
+   to FU latency considerations.  */
 
 static int 
 early_queue_to_ready (state_t state, struct ready_list *ready)

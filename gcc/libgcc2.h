@@ -69,15 +69,15 @@ typedef unsigned int UQItype	__attribute__ ((mode (QI)));
 typedef		 int HItype	__attribute__ ((mode (HI)));
 typedef unsigned int UHItype	__attribute__ ((mode (HI)));
 #if MIN_UNITS_PER_WORD > 1
-/* These typedefs are usually forbidden on dsp's with UNITS_PER_WORD 1 */
+/* These typedefs are usually forbidden on dsp's with UNITS_PER_WORD 1.  */
 typedef 	 int SItype	__attribute__ ((mode (SI)));
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
 #if LONG_LONG_TYPE_SIZE > 32
-/* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2 */
+/* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2.  */
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
 #if MIN_UNITS_PER_WORD > 4
-/* These typedefs are usually forbidden on archs with UNITS_PER_WORD 4 */
+/* These typedefs are usually forbidden on archs with UNITS_PER_WORD 4.  */
 typedef		 int TItype	__attribute__ ((mode (TI)));
 typedef unsigned int UTItype	__attribute__ ((mode (TI)));
 #endif

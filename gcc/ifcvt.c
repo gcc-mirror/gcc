@@ -452,7 +452,7 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
      conditional execution register from a comparison, it can do so here.  */
   IFCVT_MODIFY_TESTS (ce_info, true_expr, false_expr);
 
-  /* See if the conversion failed */
+  /* See if the conversion failed.  */
   if (!true_expr || !false_expr)
     goto fail;
 #endif
@@ -521,7 +521,7 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 #ifdef IFCVT_MODIFY_MULTIPLE_TESTS
 	  IFCVT_MODIFY_MULTIPLE_TESTS (ce_info, bb, t, f);
 
-	  /* See if the conversion failed */
+	  /* See if the conversion failed.  */
 	  if (!t || !f)
 	    goto fail;
 #endif
@@ -563,7 +563,7 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
     }
 
 #ifdef IFCVT_MODIFY_FINAL
-  /* Do any machine dependent final modifications */
+  /* Do any machine dependent final modifications.  */
   IFCVT_MODIFY_FINAL (ce_info);
 #endif
 

@@ -126,7 +126,7 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
   unw_set_reg (&context->cursor, index, val);
 #ifdef UNW_TARGET_IA64
   if (index >= UNW_IA64_GR && index <= UNW_IA64_GR + 127)
-    /* Clear the NaT bit. */
+    /* Clear the NaT bit.  */
     unw_set_reg (&context->cursor, UNW_IA64_NAT + (index - UNW_IA64_GR), 0);
 #endif
 }

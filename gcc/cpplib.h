@@ -219,7 +219,7 @@ struct cpp_options
   /* Nonzero means use extra default include directories for C++.  */
   unsigned char cplusplus;
 
-  /* Nonzero means handle cplusplus style comments */
+  /* Nonzero means handle cplusplus style comments.  */
   unsigned char cplusplus_comments;
 
   /* Nonzero means define __OBJC__, treat @ as a special token, and

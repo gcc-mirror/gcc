@@ -1,5 +1,40 @@
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* alias.c: Fix comment formatting.
+	* alloc-pool.c: Likewise.
+	* bitmap.c: Likewise.
+	* bitmap.h: Likewise.
+	* bt-load.c: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* caller-save.c: Likewise.
+	* cfghooks.h: Likewise.
+	* cgraph.c: Likewise.
+	* collect2.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpplib.h: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* final.c: Likewise.
+	* function.c: Likewise.
+	* gcov.c: Likewise.
+	* gcse.c: Likewise.
+	* genemit.c: Likewise.
+	* ggc.h: Likewise.
+	* haifa-sched.c: Likewise.
+	* ifcvt.c: Likewise.
+	* libgcc2.h: Likewise.
+	* loop.c: Likewise.
+	* predict.h: Likewise.
+	* unwind-libunwind.c: Likewise.
+	* varasm.c: Likewise.
+
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mn10300/mn10300.c (mn10300_encode_section_info): Fix
 	a warning.
 

@@ -862,7 +862,7 @@ cpp_included (cpp_reader *pfile, const char *fname)
   return entry != NULL;
 }
 
-/* Calculate the hash value of a file hash entry P. */
+/* Calculate the hash value of a file hash entry P.  */
 
 static hashval_t
 file_hash_hash (const void *p)

@@ -389,7 +389,7 @@ gen_insn (rtx insn, int lineno)
   printf (")\n");
   printf ("{\n");
 
-  /* Output code to construct and return the rtl for the instruction body */
+  /* Output code to construct and return the rtl for the instruction body.  */
 
   if (XVECLEN (insn, 1) == 1)
     {

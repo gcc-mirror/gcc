@@ -112,7 +112,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   pool->elt_size = size;
   pool->elts_per_block = num;
 
-  /* List header size should be a multiple of 8 */
+  /* List header size should be a multiple of 8.  */
   header_size = align_eight (sizeof (struct alloc_pool_list_def));
 
   pool->block_size = (size * num) + header_size;

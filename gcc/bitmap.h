@@ -305,7 +305,7 @@ do {									\
 									\
   for (; ptr1_ != 0 ; ptr1_ = ptr1_->next)				\
     {									\
-      /* Advance BITMAP2 to the equivalent link */			\
+      /* Advance BITMAP2 to the equivalent link.  */			\
       while (ptr2_ != 0 && ptr2_->indx < ptr1_->indx)			\
 	ptr2_ = ptr2_->next;						\
 									\

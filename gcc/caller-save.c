@@ -699,7 +699,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
       n_regs_saved--;
     }
 
-  /* Tell our callers how many extra registers we saved/restored */
+  /* Tell our callers how many extra registers we saved/restored.  */
   return numregs - 1;
 }
 
@@ -771,7 +771,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
       n_regs_saved++;
     }
 
-  /* Tell our callers how many extra registers we saved/restored */
+  /* Tell our callers how many extra registers we saved/restored.  */
   return numregs - 1;
 }
 

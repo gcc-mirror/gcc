@@ -155,7 +155,7 @@ static void note_btr_set (rtx, rtx, void *);
    migrating branch target load instructions.  */
 static struct obstack migrate_btrl_obstack;
 
-/* Basic block dominator information used when migrating PT instructions */
+/* Basic block dominator information used when migrating PT instructions.  */
 static dominance_info dom;
 
 /* Array indexed by basic block number, giving the set of registers

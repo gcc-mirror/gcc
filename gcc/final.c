@@ -1907,7 +1907,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	/* An INSN, JUMP_INSN or CALL_INSN.
 	   First check for special kinds that recog doesn't recognize.  */
 
-	if (GET_CODE (body) == USE /* These are just declarations */
+	if (GET_CODE (body) == USE /* These are just declarations.  */
 	    || GET_CODE (body) == CLOBBER)
 	  break;
 
