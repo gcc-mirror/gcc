@@ -2103,8 +2103,6 @@ extern GTY(()) tree integer_types[itk_none];
    statistical reports, not code generation.  */
 extern double approx_sqrt		PARAMS ((double));
 
-extern char *permalloc			PARAMS ((int));
-extern char *expralloc			PARAMS ((int));
 extern tree decl_assembler_name		PARAMS ((tree));
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
@@ -2730,7 +2728,6 @@ extern tree builtin_function		PARAMS ((const char *, tree, int,
 					       const char *, tree));
 
 /* In tree.c */
-extern char *perm_calloc			PARAMS ((int, long));
 extern void clean_symbol_name			PARAMS ((char *));
 extern tree get_file_function_name_long 	PARAMS ((const char *));
 extern tree get_set_constructor_bits		PARAMS ((tree, char *, int));
@@ -2891,7 +2888,7 @@ extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
 extern int real_minus_onep		PARAMS ((tree));
 extern void gcc_obstack_init		PARAMS ((struct obstack *));
-extern void init_obstacks		PARAMS ((void));
+extern void init_ttree			PARAMS ((void));
 extern void build_common_tree_nodes	PARAMS ((int));
 extern void build_common_tree_nodes_2	PARAMS ((int));
 

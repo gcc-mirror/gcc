@@ -60,7 +60,6 @@ static tree build_method_symbols_entry PARAMS ((tree));
 static GTY(()) rtx registerClass_libfunc;
 static GTY(()) rtx registerResource_libfunc;
 
-extern struct obstack permanent_obstack;
 struct obstack temporary_obstack;
 
 /* The compiler generates different code depending on whether or not

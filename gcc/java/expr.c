@@ -86,7 +86,6 @@ static int emit_init_test_initialization PARAMS ((void **entry,
 static int get_offset_table_index PARAMS ((tree));
 
 static GTY(()) tree operand_type[59];
-extern struct obstack permanent_obstack;
 
 static GTY(()) tree methods_ident;
 static GTY(()) tree ncode_ident;

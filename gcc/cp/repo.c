@@ -50,7 +50,6 @@ static FILE *repo_file;
 static char *old_args, *old_dir, *old_main;
 
 static struct obstack temporary_obstack;
-extern struct obstack permanent_obstack;
 
 #define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
 #define IDENTIFIER_REPO_CHOSEN(NODE) (TREE_LANG_FLAG_4 (NODE))
@@ -292,8 +291,9 @@ open_repo_file (filename)
   if (! p)
     p = s + strlen (s);
 
-  obstack_grow (&permanent_obstack, s, p - s);
-  repo_name = obstack_copy0 (&permanent_obstack, ".rpo", 4);
+  repo_name = xmalloc (p - s + 5);
+  memcpy (repo_name, s, p - s);
+  memcpy (repo_name + (p - s), ".rpo", 5);
 
   repo_file = fopen (repo_name, "r");
 }
@@ -332,16 +332,13 @@ init_repo (filename)
       switch (buf[0])
 	{
 	case 'A':
-	  old_args = obstack_copy0 (&permanent_obstack, buf + 2,
-				    strlen (buf + 2));
+	  old_args = ggc_strdup (buf + 2);
 	  break;
 	case 'D':
-	  old_dir = obstack_copy0 (&permanent_obstack, buf + 2,
-				   strlen (buf + 2));
+	  old_dir = ggc_strdup (buf + 2);
 	  break;
 	case 'M':
-	  old_main = obstack_copy0 (&permanent_obstack, buf + 2,
-				    strlen (buf + 2));
+	  old_main = ggc_strdup (buf + 2);
 	  break;
 	case 'C':
 	case 'O':

@@ -1,3 +1,12 @@
+2002-08-04  Geoffrey Keating  <geoffk@redhat.com>
+
+	* cvt.c (ocp_convert): Delete obsolete code.
+	* parse.y (permanent_obstack): Delete declaration.
+	* pt.c (permanent_obstack): Delete declaration.
+	* repo.c (permanent_obstack): Delete declaration.
+	(open_repo_file): Use xmalloc instead of permanent_obstack.
+	(init_repo): Use xstrdup instead of permanent_obstack.
+
 2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (VF_DERIVED_VALUE): Remove.

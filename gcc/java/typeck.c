@@ -44,7 +44,6 @@ static tree lookup_do PARAMS ((tree, tree, tree, tree, tree (*)(tree)));
 static tree build_null_signature PARAMS ((tree));
 
 tree * type_map;
-extern struct obstack permanent_obstack;
 
 /* Set the type of the local variable with index SLOT to TYPE. */
 

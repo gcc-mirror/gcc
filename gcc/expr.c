@@ -25,7 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "rtl.h"
 #include "tree.h"
-#include "obstack.h"
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -117,8 +116,6 @@ struct store_by_pieces
   PTR constfundata;
   int reverse;
 };
-
-extern struct obstack permanent_obstack;
 
 static rtx enqueue_insn		PARAMS ((rtx, rtx));
 static unsigned HOST_WIDE_INT move_by_pieces_ninsns

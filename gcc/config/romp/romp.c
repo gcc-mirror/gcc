@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
+#include "ggc.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
@@ -1345,7 +1346,6 @@ rtx
 get_symref (name)
      register const char *name;
 {
-  extern struct obstack permanent_obstack;
   register const char *sp = name;
   unsigned int hash = 0;
   struct symref_hashent *p, **last_p;
@@ -1367,10 +1367,8 @@ get_symref (name)
     {
       /* Ensure SYMBOL_REF will stay around.  */
       p = *last_p = (struct symref_hashent *)
-			permalloc (sizeof (struct symref_hashent));
-      p->symref = gen_rtx_SYMBOL_REF (Pmode,
-				      obstack_copy0 (&permanent_obstack,
-						     name, strlen (name)));
+			xmalloc (sizeof (struct symref_hashent));
+      p->symref = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       p->next = 0;
     }
 

@@ -6168,8 +6168,6 @@ output_millicode_call (insn, call_dest)
   return "";
 }
 
-extern struct obstack permanent_obstack;
-
 /* INSN is either a function call.  It may have an unconditional jump
    in its delay slot.
 
@@ -6298,9 +6296,7 @@ output_call (insn, call_dest, sibcall)
 
 	      i = n_deferred_plabels++;
 	      deferred_plabels[i].internal_label = gen_label_rtx ();
-	      deferred_plabels[i].name = obstack_alloc (&permanent_obstack,
-							strlen (name) + 1);
-	      strcpy (deferred_plabels[i].name, name);
+	      deferred_plabels[i].name = ggc_strdup (name);
 
 	      /* Gross.  We have just implicitly taken the address of this
 		 function, mark it as such.  */

@@ -748,7 +748,7 @@ frv_encode_section_info (decl)
       if (is_small)
 	{
 	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-	  char * str = permalloc (2 + strlen (XSTR (sym_ref, 0)));
+	  char * str = xmalloc (2 + strlen (XSTR (sym_ref, 0)));
 
 	  str[0] = SDATA_FLAG_CHAR;
 	  strcpy (&str[1], XSTR (sym_ref, 0));

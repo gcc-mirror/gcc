@@ -4497,7 +4497,7 @@ c4x_global_label (name)
 	return;
       p = p->next;
     }
-  p = (struct name_list *) permalloc (sizeof *p);
+  p = (struct name_list *) xmalloc (sizeof *p);
   p->next = global_head;
   p->name = name;
   global_head = p;
@@ -4546,7 +4546,7 @@ c4x_external_ref (name)
 	return;
       p = p->next;
     }
-  p = (struct name_list *) permalloc (sizeof *p);
+  p = (struct name_list *) xmalloc (sizeof *p);
   p->next = extern_head;
   p->name = name;
   extern_head = p;

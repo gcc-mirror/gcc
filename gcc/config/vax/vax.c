@@ -810,7 +810,7 @@ vms_check_external (decl, name, pending)
       }
 
   /* Not previously seen; create a new list entry.  */
-  p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
+  p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
   p->name = name;
 
   if (pending)

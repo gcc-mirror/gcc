@@ -31,7 +31,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* Extern global variable declarations */
 extern int java_error_count;
 extern struct obstack temporary_obstack;
-extern struct obstack permanent_obstack;
 extern int quiet_flag;
 
 #ifndef JC1_LITE

@@ -231,7 +231,6 @@ static struct head exports;		/* list of exported symbols */
 static struct head frame_tables;	/* list of frame unwind info tables */
 
 struct obstack temporary_obstack;
-struct obstack permanent_obstack;
 char * temporary_firstobj;
 
 /* Holds the return value of pexecute.  */
@@ -916,7 +915,6 @@ main (argc, argv)
 #endif
 
   obstack_begin (&temporary_obstack, 0);
-  obstack_begin (&permanent_obstack, 0);
   temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
 
   current_demangling_style = auto_demangling;
@@ -1076,18 +1074,18 @@ main (argc, argv)
     {
       const char *q = extract_string (&p);
       if (*q == '-' && (q[1] == 'm' || q[1] == 'f'))
-	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	*c_ptr++ = xstrdup (q);
       if (strcmp (q, "-EL") == 0 || strcmp (q, "-EB") == 0)
-	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	*c_ptr++ = xstrdup (q);
       if (strcmp (q, "-shared") == 0)
 	shared_obj = 1;
       if (*q == '-' && q[1] == 'B')
 	{
-	  *c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	  *c_ptr++ = xstrdup (q);
 	  if (q[2] == 0)
 	    {
 	      q = extract_string (&p);
-	      *c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	      *c_ptr++ = xstrdup (q);
 	    }
 	}
     }
