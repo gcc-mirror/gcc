@@ -588,11 +588,11 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    before returning. */
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) {			\
+  fprintf(FILE,"\tlr\tr15,r14 ; set stack ptr to frame ptr\n");	\
+  fprintf(FILE,"\tpopm\tr14,r14 ; restore previous frame ptr\n");	\
   if (SIZE > 0)							\
     fprintf(FILE,"\t%s\tr14,%d ; free up local-var space\n",	\
 			 (SIZE <= 16 ? "aisp" : "aim"),SIZE);	\
-  fprintf(FILE,"\tlr\tr15,r14 ; set stack to return addr\n");	\
-  fprintf(FILE,"\tpopm\tr14,r14 ; restore prev. frame ptr\n");	\
   fprintf(FILE,"\turs\tr15\n"); }
 
 /* If the memory address ADDR is relative to the frame pointer,
@@ -789,7 +789,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
-#define DEFAULT_SIGNED_CHAR 0
+#define DEFAULT_SIGNED_CHAR 1
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
@@ -932,30 +932,30 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define EXTRA_SECTIONS  in_readonly_data
 
 #define EXTRA_SECTION_FUNCTIONS		\
-    void const_section()				\
-    {							\
-	fprintf(asm_out_file,"\tkonst\n");		\
-	current_section = Konst;			\
-    }							\
-    check_section(sect)			\
-        enum section sect;				\
-    {							\
-        if (current_section != sect) {			\
+    void const_section()					\
+    {								\
+	fprintf(asm_out_file,"\tkonst\n");			\
+	current_section = Konst;				\
+    }								\
+    check_section(sect)						\
+	 enum section sect;					\
+    {								\
+        if (current_section != sect) {				\
 	    fprintf(asm_out_file,"\t%s\n",sectname[(int)sect]); \
-	    current_section = sect;			\
-	}						\
-	switch (sect) {					\
-	  case Init:					\
-	  case Normal:					\
-	    in_section = in_text;			\
-	    break;					\
-	  case Static:					\
-	    in_section = in_data;			\
-	    break;					\
-	  case Konst:					\
-	    in_section = in_readonly_data;		\
-	    break;					\
-	}						\
+	    current_section = sect;				\
+	}							\
+	switch (sect) {						\
+	  case Init:						\
+	  case Normal:						\
+	    in_section = in_text;				\
+	    break;						\
+	  case Static:						\
+	    in_section = in_data;				\
+	    break;						\
+	  case Konst:						\
+	    in_section = in_readonly_data;			\
+	    break;						\
+	}							\
     }
 
 		
@@ -968,8 +968,11 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Output before program text section */
 #define TEXT_SECTION_ASM_OP "\n\tnormal   ; text_section\n"
 
-/* Output before writable data.  */
-#define DATA_SECTION_ASM_OP "\n\tstatic   ; data_section\n"
+/* Output before writable data.
+   1750 Note: This is actually read-only data. The copying from read-only
+   to writable memory is done elsewhere (in ASM_FILE_END.)
+ */
+#define DATA_SECTION_ASM_OP "\n\tkonst    ; data_section\n"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -1069,6 +1072,24 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
 	  sprintf (LABEL, "%s%d", PREFIX, NUM)
 
+/* Output at the end of a jump table.
+   1750: To be uncommented when we can put jump tables in Konst.  
+   #define ASM_OUTPUT_CASE_END(FILE,NUM,INSN)      \
+	fprintf (FILE, "\tnormal\t; case_end\n")
+ */
+
+/* Currently, it is not possible to put jump tables in section Konst.
+   This is because there is a one-to-one relation between sections Konst
+   and Static (i.e., all Konst data are copied to Static, and the order
+   of data is the same between the two sections.) However, jump tables are
+   not copied to Static, which destroys the equivalence between Konst and
+   Static. When a more intelligent Konst-to-Static copying mechanism is
+   implemented (i.e. one that excludes the copying of jumptables), then
+   ASM_OUTPUT_CASE_END shall be defined, and JUMP_LABELS_IN_TEXT_SECTION
+   shall be undefined.   */
+
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
 /* This is how to output an assembler line defining a 1750A `float'
    constant.  */
 
@@ -1107,18 +1128,34 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = LEN;				\
 	}								\
-	for (i = 0; i < LEN; i++)					\
-	  if (PTR[i] >= 32 && PTR[i] < 127)				\
-	    fprintf(FILE,"\tdata\t%d\t; '%c'\n",PTR[i],PTR[i]);		\
+	for (i = 0; i < LEN; i++) {					\
+	  if ((i % 15) == 0) {						\
+	    if (i != 0)							\
+	      fprintf(FILE,"\n");					\
+	    fprintf(FILE,"\tdata\t");					\
+	  }								\
 	  else								\
-	    fprintf(FILE,"\tdata\t%d\t; (ascii)\n",PTR[i]);		\
+	    fprintf(FILE,",");						\
+	  if (PTR[i] >= 32 && PTR[i] < 127)				\
+	    fprintf(FILE,"'%c'",PTR[i]);				\
+	  else								\
+	    fprintf(FILE,"%d",PTR[i]);					\
+	}								\
+	fprintf(FILE,"\n");						\
   } while (0)
 
-/* This is how to output an assembler line defining an `int' constant.  */
+/* This is how to output an assembler line defining a `char', `short', or
+  `int' constant.
+   1750 NOTE: The reason why this macro also outputs `short' and `int'
+   constants is that for the 1750, BITS_PER_UNIT is 16 (as opposed to the
+   usual 8.) This behavior is different from the usual, where
+   ASM_OUTPUT_CHAR only outputs character constants. The name
+   of this macro should perhaps be `ASM_OUTPUT_QUARTER_INT' or so.
+ */
 
-#define ASM_OUTPUT_INT(FILE,VALUE)  do {	  \
+#define ASM_OUTPUT_CHAR(FILE,VALUE)  do {	  \
 	if (! label_pending) 						\
-	   fprintf(FILE,";in ASM_OUTPUT_INT without label_pending\n");	\
+	   fprintf(FILE,";in ASM_OUTPUT_CHAR without label_pending\n");	\
 	else {								\
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = 1;				\
@@ -1126,30 +1163,25 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	fprintf(FILE, "\tdata\t"); output_addr_const(FILE,VALUE);	\
 	fprintf(FILE, "\n"); } while (0)
 
-/* This is how to output an assembler line defining a `long int' constant. */
+/* This is how to output an assembler line defining a `long int' constant.
+   1750 NOTE: The reason why this macro outputs `long' instead of `short'
+   constants is that for the 1750, BITS_PER_UNIT is 16 (as opposed to the
+   usual 8.) The name of this macro should perhaps be `ASM_OUTPUT_HALF_INT'.
+ */
 
-#define ASM_OUTPUT_LONG_INT(FILE,VALUE) do {	  \
+#define ASM_OUTPUT_SHORT(FILE,VALUE) do {	  \
 	if (! label_pending)						\
-	   fprintf(FILE,";in ASM_OUTPUT_LONG_INT without label_pending\n");\
+	   fprintf(FILE,";in ASM_OUTPUT_SHORT without label_pending\n");\
 	else {								\
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = 2;				\
 	}								\
-	fprintf(FILE, "\tdatal\t"); output_addr_const(FILE,VALUE);	\
-	fprintf(FILE, "\n"); } while (0)
-
-/* Likewise for `short' and `char' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  ASM_OUTPUT_INT(FILE,VALUE)
-
-/* For 1750, we treat char same as word. Tektronix 1750
-   Assembler does a better (packing) job with strings.  */
-#define ASM_OUTPUT_CHAR(FILE,VALUE)   ASM_OUTPUT_INT(FILE,VALUE)
+	fprintf(FILE, "\tdatal\t%d\n",INTVAL(VALUE));			\
+  } while (0)
 
 /* This is how to output an assembler line for a numeric constant byte.  */
-/* 1750: For the time being, treating this same as word. Tektronix 1750
-   Assembler does a better (packing) job with strings.  */
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  ASM_OUTPUT_INT(FILE,VALUE)
+
+#define ASM_OUTPUT_BYTE(FILE,VALUE)  ASM_OUTPUT_CHAR(FILE,VALUE)
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -1187,7 +1219,8 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  do {	\
-	fprintf (FILE, "\tcommon  %s,%d\n", NAME, SIZE);	\
+	check_section(Static);					  \
+	fprintf (FILE, "\tcommon  %s,%d\n", NAME, SIZE);	  \
      } while (0)
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)  do {		\
