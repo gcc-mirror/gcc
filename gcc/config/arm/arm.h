@@ -900,7 +900,7 @@ extern const char * structure_size_string;
          scratch registers.  */					\
       for (regno = FIRST_IWMMXT_GR_REGNUM;			\
 	   regno <= LAST_IWMMXT_GR_REGNUM; ++ regno)		\
-	fixed_regs[regno] = call_used_regs[regno] = 0;		\
+	fixed_regs[regno] = 0;					\
       /* The XScale ABI has wR0 - wR9 as scratch registers,     \
 	 the rest as call-preserved registers.  */		\
       for (regno = FIRST_IWMMXT_REGNUM;				\

@@ -1,3 +1,8 @@
+2005-03-15  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Don't clear
+	call_used_regs for wCG registers.
+
 2005-03-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_secondary_output_reload_class): Adapt check
