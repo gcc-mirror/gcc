@@ -1,3 +1,13 @@
+1999-12-29  "Martin v. Loewis" <martin@loewis.home.cs.tu-berlin.de>
+
+	Restore i386 binary compatibility in Dwarf EH info.
+	* config/i386/i386.h (DWARF_FRAME_REGISTERS): Define as 17, the old
+	value of FIRST_PSEUDO_REGISTER.
+	* frame.h (DWARF_FRAME_REGISTERS): Default to FIRST_PSEUDO_REGISTER.
+	(struct frame_state): Use DWARF_FRAME_REGISTERS.
+	* dwarfout.c (output_reg_number): Ditto.
+	* dwarf2out.c (reg_number, expand_builtin_init_dwarf_reg_sizes): Ditto.
+	(DWARF_FRAME_RETURN_COLUMN): Default to DWARF_FRAME_REGISTERS.
 
 1999-12-29  Bruce Korb  <autogen@linuxbox.com>
 

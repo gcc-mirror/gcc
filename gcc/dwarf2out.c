@@ -515,7 +515,7 @@ static void dwarf2out_frame_debug_expr	PROTO((rtx, char *));
 #ifdef PC_REGNUM
 #define DWARF_FRAME_RETURN_COLUMN 	DWARF_FRAME_REGNUM (PC_REGNUM)
 #else
-#define DWARF_FRAME_RETURN_COLUMN 	FIRST_PSEUDO_REGISTER
+#define DWARF_FRAME_RETURN_COLUMN 	DWARF_FRAME_REGISTERS
 #endif
 #endif
 
@@ -566,7 +566,7 @@ reg_number (rtl)
 {
   register unsigned regno = REGNO (rtl);
 
-  if (regno >= FIRST_PSEUDO_REGISTER)
+  if (regno >= DWARF_FRAME_REGISTERS)
     {
       warning ("internal regno botch: regno = %d\n", regno);
       regno = 0;
@@ -587,7 +587,7 @@ expand_builtin_init_dwarf_reg_sizes (address)
   rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
   rtx mem = gen_rtx_MEM (mode, addr);
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
     {
       int offset = i * GET_MODE_SIZE (mode);
       int size = GET_MODE_SIZE (reg_raw_mode[i]);
