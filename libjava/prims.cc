@@ -954,6 +954,14 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   _Jv_InitGC ();
   _Jv_InitializeSyncMutex ();
 
+#ifdef HANDLE_SEGV
+  INIT_SEGV;
+#endif
+
+#ifdef HANDLE_FPE
+  INIT_FPE;
+#endif
+
   /* Initialize Utf8 constants declared in jvm.h. */
   void_signature = _Jv_makeUtf8Const ("()V", 3);
   clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
@@ -980,15 +988,11 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   // initialization of ClassLoader before we start the initialization
   // of VMClassLoader.
   _Jv_InitClass (&java::lang::ClassLoader::class$);
+
   // Once the bootstrap loader is in place, change it into a kind of
   // system loader, by having it read the class path.
   gnu::gcj::runtime::VMClassLoader::initialize();
 
-  INIT_SEGV;
-#ifdef HANDLE_FPE
-  INIT_FPE;
-#endif
-  
   no_memory = new java::lang::OutOfMemoryError;
 
   java::lang::VMThrowable::trace_enabled = 1;

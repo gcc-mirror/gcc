@@ -1,5 +1,11 @@
 2004-06-18  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* prims.cc (_Jv_CreateJavaVM): Install SEGV and FPE handlers,
+	if desired, before the default class loader is initialised.
+	Call INIT_SEGV only if HANDLE_SEGV is defined.
+
+2004-06-18  Ranjit Mathew  <rmathew@hotmail.com>
+
 	* gnu/gcj/runtime/VMClassLoader.java (init): Add extensions
 	directory only if it actually exists.
 
