@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -447,6 +447,10 @@ make_decl_rtl (decl, asmspec, top_level)
 {
   register char *name = 0;
   int reg_number;
+
+#ifdef MODIFY_ASSEMBLER_NAME
+  DECL_ASSEMBLER_NAME (decl) = MODIFY_ASSEMBLER_NAME (decl);
+#endif
 
   if (output_bytecode)
     {
