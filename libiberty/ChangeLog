@@ -1,4 +1,4 @@
-2003-08-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2003-09-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR bootstrap/12100
 	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY): Define.
