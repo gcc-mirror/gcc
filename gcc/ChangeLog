@@ -1,3 +1,14 @@
+Mon Feb  3 21:19:11 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_store_builtin):  Always force op1 to register.
+	(mov*_internal): Fix predicates; require one of operands to not be
+	memory.
+	(SSE?MMX move expanders):  Fix predicates; force one of operands to
+	register.
+	(SSE/MMX push patterns): Reorganize; fix x86-64 code generation.
+	(movups/movupd/movdqu patterns): Force one of operands to not be
+	memory.
+
 2002-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	* hooks.c (hook_rtx_rtx_identity): Generic hook function that
