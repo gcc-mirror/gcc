@@ -1269,15 +1269,15 @@ extern enum reg_class regno_reg_class[];
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP "\t.section text,code,align=4"
+#define TEXT_SECTION_ASM_OP ".section text,code,align=4"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP "\t.section data,data,align=4"
+#define DATA_SECTION_ASM_OP ".section data,data,align=4"
 
 /* Output before uninitialized data. */
 
-#define BSS_SECTION_ASM_OP "\t.section bss,data,align=4"
+#define BSS_SECTION_ASM_OP ".section bss,data,align=4"
 
 #define EXTRA_SECTIONS in_bss
 

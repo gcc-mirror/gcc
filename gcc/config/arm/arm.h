@@ -974,8 +974,8 @@ do \
 #define ASM_APP_OFF  ""
 
 /* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  "\n\t.text\n"
-#define DATA_SECTION_ASM_OP  "\n\t.data\n"
+#define TEXT_SECTION_ASM_OP  ".text"
+#define DATA_SECTION_ASM_OP  ".data"
 
 /* The assembler's names for the registers.  RFP need not always be used as
    the Real framepointer; it can also be used as a normal general register.
