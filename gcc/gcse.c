@@ -1114,7 +1114,7 @@ record_one_set (regno, insn)
      rtx insn;
 {
   /* allocate a new reg_set element and link it onto the list */
-  struct reg_set *new_reg_info, *reg_info_ptr1, *reg_info_ptr2;
+  struct reg_set *new_reg_info;
 
   /* If the table isn't big enough, enlarge it.  */
   if (regno >= reg_set_table_size)
@@ -4569,7 +4569,7 @@ static int
 pre_delete ()
 {
   unsigned int i;
-  int bb, changed;
+  int changed;
   struct expr *expr;
   struct occr *occr;
 

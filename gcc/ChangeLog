@@ -1,3 +1,15 @@
+2000-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2out.c: Indent #error directive.
+
+	* gbl-ctors.h: Fix typo in comment.
+	(__do_global_ctors): Prototype.
+
+	* gcse.c (record_one_set, pre_delete): Remove unused variables.
+	
+	* rs6000.c (rs6000_maybe_dead): Delete unused prototype.
+	(print_operand): Initialize variable `t'.
+
 2000-07-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/arm/arm.md ("call_value"): removed constraints.
