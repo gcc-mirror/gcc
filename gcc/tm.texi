@@ -1307,7 +1307,6 @@ For returning values in registers, see @ref{Scalar Return}.
 * Values in Registers::		What kinds of values each reg can hold.
 * Leaf Functions::		Renumbering registers for leaf functions.
 * Stack Registers::		Handling a register stack such as 80387.
-* Obsolete Register Macros::	Macros formerly used for the 80387.
 @end menu
 
 @node Register Basics
@@ -1687,43 +1686,6 @@ of the stack.
 @item LAST_STACK_REG
 The number of the last stack-like register.  This one is the bottom of
 the stack.
-@end table
-
-@node Obsolete Register Macros
-@subsection Obsolete Macros for Controlling Register Usage
-
-These features do not work very well.  They exist because they used to
-be required to generate correct code for the 80387 coprocessor of the
-80386.  They are no longer used by that machine description and may be
-removed in a later version of the compiler.  Don't use them!
-
-@table @code
-@findex OVERLAPPING_REGNO_P
-@item OVERLAPPING_REGNO_P (@var{regno})
-If defined, this is a C expression whose value is nonzero if hard
-register number @var{regno} is an overlapping register.  This means a
-hard register which overlaps a hard register with a different number.
-(Such overlap is undesirable, but occasionally it allows a machine to
-be supported which otherwise could not be.)  This macro must return
-nonzero for @emph{all} the registers which overlap each other.  GCC
-can use an overlapping register only in certain limited ways.  It can
-be used for allocation within a basic block, and may be spilled for
-reloading; that is all.
-
-If this macro is not defined, it means that none of the hard registers
-overlap each other.  This is the usual situation.
-
-@findex INSN_CLOBBERS_REGNO_P
-@item INSN_CLOBBERS_REGNO_P (@var{insn}, @var{regno})
-If defined, this is a C expression whose value should be nonzero if
-the insn @var{insn} has the effect of mysteriously clobbering the
-contents of hard register number @var{regno}.  By ``mysterious'' we
-mean that the insn's RTL expression doesn't describe such an effect.
-
-If this macro is not defined, it means that no insn clobbers registers
-mysteriously.  This is the usual situation; all else being equal,
-it is best for the RTL expression to show all the activity.
-
 @end table
 
 @node Register Classes

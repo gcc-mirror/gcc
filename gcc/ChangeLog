@@ -1,3 +1,17 @@
+1999-11-30  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cse.c (FIXED_REGNO_P): Delete tests for OVERLAPPING_REGNO_P.
+	* global.c (global_alloc): Delete [OVERLAPPING_REGNO_P] code.
+	* reload.c (find_dummy_reload): Likewise.
+	(find_equiv_reg): Likewise; also for INSN_CLOBBERS_REGNO_P.
+	* reload1.c (reload_as_needed): Likewise.
+	* stupid.c (stupid_find_reg): Likewise.
+	* tm.texi (Obsolete Register Macros): Delete section.
+	* gmicro.h: Remove all traces of the two macros.
+	* i386.h: Likewise.
+	* m88k.h: Likewise.
+	* mips.h: Likewise.
+
 1999-11-30  Brendan Kehoe  <brendan@cygnus.com>
 
 	* sparc.h (MASK_FASTER_STRUCTS, TARGET_FASTER_STRUCTS): Define.

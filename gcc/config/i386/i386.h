@@ -909,11 +909,6 @@ enum reg_class
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
 
-/* 1 if register REGNO can magically overlap other regs.
-   Note that nonzero values work only in very special circumstances. */
-
-/* #define OVERLAPPING_REGNO_P(REGNO) FP_REGNO_P (REGNO) */
-
 /* The class value for index registers, and the one for base regs.  */
 
 #define INDEX_REG_CLASS INDEX_REGS

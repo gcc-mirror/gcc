@@ -2022,20 +2022,6 @@ extern enum reg_class mips_char_to_class[];
 
 #define CLASS_CANNOT_CHANGE_SIZE					\
   (TARGET_FLOAT64 && ! TARGET_64BIT ? FP_REGS : NO_REGS)
-
-/* If defined, this is a C expression whose value should be
-   nonzero if the insn INSN has the effect of mysteriously
-   clobbering the contents of hard register number REGNO.  By
-   "mysterious" we mean that the insn's RTL expression doesn't
-   describe such an effect.
-
-   If this macro is not defined, it means that no insn clobbers
-   registers mysteriously.  This is the usual situation; all else
-   being equal, it is best for the RTL expression to show all the
-   activity.  */
-
-/* #define INSN_CLOBBERS_REGNO_P(INSN, REGNO) */
-
 
 /* Stack layout; function entry, exit and calling.  */
 
