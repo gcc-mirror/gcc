@@ -113,7 +113,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 #define CPP_PREDEFINES \
-  "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -Dgnu_linux -Dlinux -Asystem=unix -Asystem=posix -Acpu=m68k -Amachine=m68k"
+  "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix -Acpu=m68k -Amachine=m68k"
 
 #undef CPP_SPEC
 #ifdef USE_GNULIBC_1
