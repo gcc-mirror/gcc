@@ -1,3 +1,7 @@
+2002-12-26  Andreas Schwab  <schwab@suse.de>
+
+	* config.gcc (powerpc*-*-*, rs6000-*-*): Fix assignment syntax. 
+
 2002-12-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Convert to
