@@ -2573,7 +2573,8 @@ allocated for arguments even when their values are passed in
 registers.
 
 The value of this macro is the size, in bytes, of the area reserved for
-arguments passed in registers for the function represented by @var{fndecl}.
+arguments passed in registers for the function represented by @var{fndecl},
+which can be zero if GNU CC is calling a library function.
 
 This space can be allocated by the caller, or be a part of the
 machine-dependent stack frame: @code{OUTGOING_REG_PARM_STACK_SPACE} says
