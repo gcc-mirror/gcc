@@ -753,6 +753,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 						    * sizeof (unsigned));
 	  map->const_equiv_map_size = maxregnum;
 	  global_const_equiv_map = map->const_equiv_map;
+	  global_const_equiv_map_size = maxregnum;
 
 	  init_reg_map (map, maxregnum);
 
@@ -1013,6 +1014,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   map->const_equiv_map_size = new_maxregnum;
   global_const_equiv_map = map->const_equiv_map;
+  global_const_equiv_map_size = new_maxregnum;
 
   /* Search the list of bivs and givs to find ones which need to be remapped
      when split, and set their reg_map entry appropriately.  */
