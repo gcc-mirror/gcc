@@ -291,6 +291,26 @@ the value of @code{LIB_SPEC}.
 
 If this macro is not defined, the GCC driver provides a default that
 passes the string @option{-lgcc} to the linker.
+
+By default, if @code{ENABLE_SHARED_LIBGCC} is defined, the
+@code{LIBGCC_SPEC} is not directly used by the driver program but is
+instead modified to refer to different versions of @file{libgcc.a}
+depending on the values of the command line flags @option{-static},
+@option{-shared}, @option{-static-libgcc}, and @option{-shared-libgcc}.
+@end defmac
+
+@defmac USE_LD_AS_NEEDED
+A macro that controls the modifications to @code{LIBGCC_SPEC}.
+If nonzero, a spec will be
+generated that uses --as-needed and the shared libgcc in place of the
+static exception handler library, when linking without any of
+@code{-static}, @code{-static-libgcc}, or @code{-shared-libgcc}.
+@end defmac
+
+@defmac LINK_EH_SPEC
+If defined, this C string constant is added to @code{LINK_SPEC}.
+When @code{USE_LD_AS_NEEDED} is zero or undefined, it also affects
+the modifications to @code{LIBGCC_SPEC}.
 @end defmac
 
 @defmac STARTFILE_SPEC
