@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 93-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    Enhanced by, and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -4565,6 +4565,12 @@ update_flow_info (notes, first, last, orig_insn)
 	    XEXP (note, 0) = first;
 	  break;
 
+	case REG_EXEC_COUNT:
+	  /* Move a REG_EXEC_COUNT note to the first insn created.  */
+	  XEXP (note, 1) = REG_NOTES (first);
+	  REG_NOTES (first) = note;
+	  break;
+
 	case REG_RETVAL:
 	  /* Move a REG_RETVAL note to the last insn created, and update
 	     the corresponding REG_LIBCALL note.  */
@@ -4578,6 +4584,7 @@ update_flow_info (notes, first, last, orig_insn)
 	  break;
 
 	case REG_NONNEG:
+	case REG_BR_PROB:
 	  /* This should be moved to whichever instruction is a JUMP_INSN.  */
 
 	  for (insn = last; ; insn = PREV_INSN (insn))
