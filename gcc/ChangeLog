@@ -1,3 +1,20 @@
+2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_gp_save_slot): Remove.
+	(mips_restore_gp): Declare.
+	* config/mips/mips.c (mips_add_offset): Add a scratch register
+	argument.  Reimplement in rtl only, reusing MIPS16 logic from
+	mips_output_mi_thunk.
+	(mips_legitimize_address, mips_legitimize_const_move): Adjust calls
+	to mips_add_offset.
+	(mips_gp_save_slot): Delete.
+	(mips_restore_gp): New function.
+	(mips_set_return_address, mips_output_mi_thunk): Use mips_add_offset.
+	* config/mips/mips.md (exception_receiver): Turn into a
+	define_insn_and_split.  Use mips_restore_gp to do the split.
+	(call_internal, call_value_internal, call_value_multiple_internal): Use
+	mips_restore_gp to restore $gp.
+
 2004-07-31  Andrew Pinski  <apinski@apple.com>
 
 	PR other/16842

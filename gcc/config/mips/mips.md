@@ -6860,17 +6860,19 @@ dsrl\t%3,%3,1\n\
   DONE;
 })
 
-(define_insn "exception_receiver"
+(define_insn_and_split "exception_receiver"
   [(set (reg:SI 28)
 	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
   "TARGET_ABICALLS && TARGET_OLDABI"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
 {
-  operands[0] = pic_offset_table_rtx;
-  operands[1] = mips_gp_save_slot ();
-  return mips_output_move (operands[0], operands[1]);
+  mips_restore_gp ();
+  DONE;
 }
   [(set_attr "type"   "load")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 ;;
 ;;  ....................
@@ -7041,7 +7043,7 @@ dsrl\t%3,%3,1\n\
 {
   emit_call_insn (gen_call_split (operands[0], operands[1]));
   if (!find_reg_note (operands[2], REG_NORETURN, 0))
-    emit_move_insn (pic_offset_table_rtx, mips_gp_save_slot ());
+    mips_restore_gp ();
   DONE;
 }
   [(set_attr "jal" "indirect,direct")
@@ -7082,7 +7084,7 @@ dsrl\t%3,%3,1\n\
   emit_call_insn (gen_call_value_split (operands[0], operands[1],
 					operands[2]));
   if (!find_reg_note (operands[3], REG_NORETURN, 0))
-    emit_move_insn (pic_offset_table_rtx, mips_gp_save_slot ());
+    mips_restore_gp ();
   DONE;
 }
   [(set_attr "jal" "indirect,direct")
@@ -7115,7 +7117,7 @@ dsrl\t%3,%3,1\n\
   emit_call_insn (gen_call_value_multiple_split (operands[0], operands[1],
 						 operands[2], operands[3]));
   if (!find_reg_note (operands[4], REG_NORETURN, 0))
-    emit_move_insn (pic_offset_table_rtx, mips_gp_save_slot ());
+    mips_restore_gp ();
   DONE;
 }
   [(set_attr "jal" "indirect,direct")
