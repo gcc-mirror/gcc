@@ -2006,7 +2006,7 @@ add_long_const (file, c, in_reg, out_reg, temp_reg)
   HOST_WIDE_INT extra = 0;
 
   /* We don't have code to write out constants larger than 32 bits.  */
-#if HOST_BITS_PER_LONG_INT == 64
+#if HOST_BITS_PER_WIDE_INT == 64
   if ((unsigned HOST_WIDE_INT) c >> 32 != 0)
     abort ();
 #endif
