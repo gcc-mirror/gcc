@@ -1,3 +1,24 @@
+2001-08-09  Zack Weinberg  <zackw@stanford.edu>
+
+	 * Makefile.in (HOST_CFLAGS): Take out -DGENERATOR_FILE.
+	 (CONFIG_H, TCONFIG_H, TM_P_H): Update.
+	 (GEN, STAGESTUFF): Add new files.
+	 (insn-constants.h, s-constants, tm-preds.h, s-preds,
+	 genconstants, genpreds, genconstants.o, genpreds.o): New rules.
+	 (hashtab.o, safe-ctype.o): Add -DGENERATOR_FILE.
+	 * mkconfig.sh: Include tm-preds.h in tm_p.h; insn-constants.h
+	 as well as insn-codes.h and insn-flags.h in config.h; and no
+	 extra headers in tconfig.h and hconfig.h.
+
+	 * gencodes.c: Eliminate code to generate predicate declarations
+	 or #defines for md-file constants.
+	 * genconstants.c, genpreds.c: New files.
+
+	 * i386.md: Re-order guard expressions such that TARGET_64BIT
+	 comes first, when this permits better optimization.  Add
+	 TARGET_64BIT to more x86-64 patterns.  Add comment explaining
+	 why this is desirable.
+
 2001-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/fde-glibc.c: Require glibc 2.2.4+ headers.
@@ -19,8 +40,8 @@ Thu Aug  9 11:30:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-08-09  Graham Stott  <grahams@redhat.com>
 
-	* predict.c (estimate_probability): Replace magic numbers with 
-	appropriate enumeration. 	
+	* predict.c (estimate_probability): Replace magic numbers with
+	appropriate enumeration.
 
 2001-08-09  Graham Stott  <grahams@redhat.com>
 
@@ -30,8 +51,8 @@ Thu Aug  9 11:30:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-08-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/mips/mips.c	(mips_legitimate_address_p): Check for
-        CONST_INT in last patch.	
+	* config/mips/mips.c	(mips_legitimate_address_p): Check for
+	CONST_INT in last patch.
 
 2001-08-08  Anthony Green  <green@redhat.com>
 
@@ -74,10 +95,10 @@ Thu Aug  9 11:30:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-08-08  Jan van Male <jan.vanmale@fenk.wau.nl>
 
-        * emit-rtl.c (adjust_address, adjust_address_nv): Cast offset to
+	* emit-rtl.c (adjust_address, adjust_address_nv): Cast offset to
 	unsigned HOST_WIDE_INT to avoid warning.
-        * final.c (final): Cast INSN_UID to unsigned to avoid warning.
-        * flow.c (set_block_for_new_insns): Likewise.
+	* final.c (final): Cast INSN_UID to unsigned to avoid warning.
+	* flow.c (set_block_for_new_insns): Likewise.
 
 Wed Aug  8 21:08:14 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
@@ -270,8 +291,8 @@ Tue Aug  7 22:18:06 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-07  Daniel Jacobowitz  <drow@mvista.com>
 
-        * config.gcc: Quote target_cpu_default2 correctly for
-        powerpc*-*-* targets.
+	* config.gcc: Quote target_cpu_default2 correctly for
+	powerpc*-*-* targets.
 
 2001-08-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
