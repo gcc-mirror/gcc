@@ -1685,9 +1685,9 @@ emit_block_move (x, y, size, align)
       emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
 			 XEXP (x, 0), Pmode,
-			 convert_to_mode (TYPE_MODE (sizetype), size,
-					  TREE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+			 convert_to_mode (TYPE_MODE (integer_type_node), size,
+					  TREE_UNSIGNED (integer_type_node)),
+			 TYPE_MODE (integer_type_node));
 #endif
     }
 }
@@ -1841,7 +1841,8 @@ clear_storage (object, size)
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memset_libfunc, 0,
 			 VOIDmode, 3,
-			 XEXP (object, 0), Pmode, const0_rtx, ptr_mode,
+			 XEXP (object, 0), Pmode,
+			 const0_rtx, TYPE_MODE (integer_type_node),
 			 convert_to_mode (TYPE_MODE (sizetype),
 					  size, TREE_UNSIGNED (sizetype)),
 			 TYPE_MODE (sizetype));
@@ -1849,9 +1850,10 @@ clear_storage (object, size)
       emit_library_call (bzero_libfunc, 0,
 			 VOIDmode, 2,
 			 XEXP (object, 0), Pmode,	
-			 convert_to_mode (TYPE_MODE (sizetype),
-					  size, TREE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+			 convert_to_mode (TYPE_MODE (integer_type_node),
+					  size,
+					  TREE_UNSIGNED (integer_type_node)),
+			 TYPE_MODE (integer_type_node));
 #endif
     }
   else
@@ -2321,9 +2323,10 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 #else
 	  emit_library_call (bcopy_libfunc, 0,
 			     VOIDmode, 3, XEXP (xinner, 0), Pmode, temp, Pmode,
-			     convert_to_mode (TYPE_MODE (sizetype),
-					      size, TREE_UNSIGNED (sizetype)),
-			     TYPE_MODE (sizetype));
+			     convert_to_mode (TYPE_MODE (integer_type_node),
+					      size,
+					      TREE_UNSIGNED (integer_type_node)),
+			     TYPE_MODE (integer_type_node));
 #endif
 	  OK_DEFER_POP;
 	}
@@ -2642,9 +2645,9 @@ expand_assignment (to, from, want_value, suggest_reg)
       emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
 			 XEXP (to_rtx, 0), Pmode,
-			 convert_to_mode (TYPE_MODE (sizetype),
-					  size, TREE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+			 convert_to_mode (TYPE_MODE (integer_type_node),
+					  size, TREE_UNSIGNED (integer_type_node)),
+			 TYPE_MODE (integer_type_node));
 #endif
 
       preserve_temp_slots (to_rtx);
@@ -2921,11 +2924,20 @@ store_expr (exp, target, want_value)
 	      if (size != const0_rtx)
 		{
 #ifdef TARGET_MEM_FUNCTIONS
-		  emit_library_call (memset_libfunc, 0, VOIDmode, 3, addr,
-				     Pmode, const0_rtx, Pmode, size, ptr_mode);
+		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
+				     addr, Pmode,
+				     const0_rtx, TYPE_MODE (integer_type_node),
+				     convert_to_mode (TYPE_MODE (sizetype),
+						      size,
+						      TREE_UNSIGNED (sizetype)),
+				     TYPE_MODE (sizetype));
 #else
 		  emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
-				     addr, Pmode, size, ptr_mode);
+				     addr, Pmode,
+				     convert_to_mode (TYPE_MODE (integer_type_node),
+						      size,
+						      TREE_UNSIGNED (integer_type_node)),
+				     TYPE_MODE (integer_type_node));
 #endif
 		}
 
@@ -3308,9 +3320,9 @@ store_constructor (exp, target)
 				 VOIDmode, 3,
 				 plus_constant (XEXP (targetx, 0), startb),
 				 Pmode,
-				 constm1_rtx, Pmode,
+				 constm1_rtx, TYPE_MODE (integer_type_node),
 				 GEN_INT ((endb - startb) / BITS_PER_UNIT),
-				 Pmode);
+				 TYPE_MODE (sizetype));
 	    }
 	  else
 #endif
