@@ -1,3 +1,10 @@
+2005-02-22  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/security/PolicyFile.java,
+	gnu/java/security/pkcs/PKCS7SignedData.java,
+	gnu/java/security/pkcs/SignerInfo.java:
+	Fixed copyright header.
+
 2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/beans/PropertyDescriptor.java
