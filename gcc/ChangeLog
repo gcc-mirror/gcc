@@ -1,3 +1,12 @@
+2003-06-26  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_mathfn): Always stabilize the argument
+	list against re-evaluation.  If expand_unop fails, call expand_call
+	with the stabilized argument list rather than return NULL_RTX.
+	(expand_builtin_mathfn2): Likewise, always stabilize the argument
+	list, and call expand_call ourselves if expand_binop fails.
+
 2003-06-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11210
