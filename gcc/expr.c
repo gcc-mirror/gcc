@@ -9105,7 +9105,9 @@ static char *
 bc_strdup (s)
     char *s;
 {
-  return strcpy (xmalloc ((strlen (s) + 1) * sizeof *s), s);
+  char *new = (char *) xmalloc ((strlen (s) + 1) * sizeof *s);
+  strcpy (new, s);
+  return new;
 }
 
 
