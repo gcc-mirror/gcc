@@ -5,6 +5,9 @@ Thu Nov 19 19:05:49 1998  Per Bothner  <bothner@cygnus.com>
 
 Thu Nov 19 19:34:13 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.h (LEGITIMATE_CONSTANT_P): Reject CONST_DOUBLEs that are not
+	standard 387 constants.
+
 	* i386.md (jump): Explicitly set "memory" attribute.
 	(indirect_jump, prologue_set_stack_ptr): Likewise.
 	(prologue_get_pc_and_set_got, pop): Likewise.
