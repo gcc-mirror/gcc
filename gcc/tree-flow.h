@@ -40,7 +40,7 @@ typedef struct basic_block_def *basic_block;
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, CST_ANN, EXPR_ANN, STMT_ANN };
+enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN };
 
 struct tree_ann_common_d GTY(())
 {
@@ -263,44 +263,24 @@ struct stmt_ann_d GTY(())
   unsigned int uid;
 };
 
-
-struct cst_ann_d GTY (())
-{
-  struct tree_ann_common_d common;
-  
-};
-
-struct expr_ann_d GTY(())
-{
-  struct tree_ann_common_d common;
-  
-};
-
-
-union tree_ann_d GTY((desc ("ann_type ((tree_ann)&%h)")))
+union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
 {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) decl;
-  struct expr_ann_d GTY((tag ("EXPR_ANN"))) expr;
-  struct cst_ann_d GTY((tag ("CST_ANN"))) cst;
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
-typedef union tree_ann_d *tree_ann;
+typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
-typedef struct expr_ann_d *expr_ann_t;
-typedef struct cst_ann_d *cst_ann_t;
 
-static inline cst_ann_t cst_ann (tree);
-static inline cst_ann_t get_cst_ann (tree);
-static inline expr_ann_t expr_ann (tree);
-static inline expr_ann_t get_expr_ann (tree);
+static inline tree_ann_t tree_ann (tree);
+static inline tree_ann_t get_tree_ann (tree);
 static inline var_ann_t var_ann (tree);
 static inline var_ann_t get_var_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
 static inline stmt_ann_t get_stmt_ann (tree);
-static inline enum tree_ann_type ann_type (tree_ann);
+static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline basic_block bb_for_stmt (tree);
 extern void set_bb_for_stmt (tree, basic_block);
 static inline void modify_stmt (tree);
@@ -495,9 +475,8 @@ extern void dump_generic_bb (FILE *, basic_block, int, int);
 
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
-extern cst_ann_t create_cst_ann (tree);
-extern expr_ann_t create_expr_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
+extern tree_ann_t create_tree_ann (tree);
 extern tree create_phi_node (tree, basic_block);
 extern void add_phi_arg (tree *, tree, edge);
 extern void remove_phi_arg (tree, basic_block);
@@ -567,9 +546,6 @@ extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *);
 
 /* In tree-into-ssa.c  */
 extern void rewrite_into_ssa (void);
-
-/* In tree-ssa-pre.c  */
-extern void tree_perform_ssapre (tree, enum tree_dump_index);
 
 /* In tree-ssa-ccp.c  */
 bool fold_stmt (tree *);

@@ -429,7 +429,7 @@ create_var_ann (tree t)
 
   ann->common.type = VAR_ANN;
 
-  t->common.ann = (tree_ann) ann;
+  t->common.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -457,54 +457,31 @@ create_stmt_ann (tree t)
   /* Since we just created the annotation, mark the statement modified.  */
   ann->modified = true;
 
-  t->common.ann = (tree_ann) ann;
+  t->common.ann = (tree_ann_t) ann;
 
   return ann;
 }
 
 
-/* Create a new annotation for a constant T.  */
+/* Create a new annotation for a tree T.  */
 
-cst_ann_t
-create_cst_ann (tree t)
+tree_ann_t
+create_tree_ann (tree t)
 {
-  cst_ann_t ann;
+  tree_ann_t ann;
 
 #if defined ENABLE_CHECKING
   if (t == NULL_TREE
       || (t->common.ann
-	  && t->common.ann->common.type != CST_ANN))
+	  && t->common.ann->common.type != TREE_ANN_COMMON))
     abort ();
 #endif
 
   ann = ggc_alloc (sizeof (*ann));
   memset ((void *) ann, 0, sizeof (*ann));
 
-  ann->common.type = CST_ANN;
-  t->common.ann = (tree_ann) ann;
-
-  return ann;
-}
-
-/* Create a new annotation for an expression T.  */
-
-expr_ann_t
-create_expr_ann (tree t)
-{
-  expr_ann_t ann;
-
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || (t->common.ann
-	  && t->common.ann->common.type != EXPR_ANN))
-    abort ();
-#endif
-
-  ann = ggc_alloc (sizeof (*ann));
-  memset ((void *) ann, 0, sizeof (*ann));
-
-  ann->common.type = EXPR_ANN;
-  t->common.ann = (tree_ann) ann;
+  ann->common.type = TREE_ANN_COMMON;
+  t->common.ann = ann;
 
   return ann;
 }
