@@ -58,7 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "debug.h"
 #include "target.h"
-#include "varray.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -449,8 +448,6 @@ static int generating_instance_variables = 0;
 
 static int print_struct_values = 0;
 
-static varray_type deferred_fns;
-
 /* Some platforms pass small structures through registers versus through
    an invisible pointer.  Determine at what size structure is the 
    transition point between the two possibilities. */
@@ -565,36 +562,13 @@ objc_init (filename)
 
   objc_act_parse_init ();
 
-  VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-  ggc_add_tree_varray_root (&deferred_fns, 1);
-
   return filename;
-}
-
-/* Register a function tree, so that its optimization and conversion
-   to RTL is only done at the end of the compilation.  */
-
-int
-defer_fn (fn)
-     tree fn;
-{
-  VARRAY_PUSH_TREE (deferred_fns, fn);
-
-  return 1;
 }
 
 void
 finish_file ()
 {
-  size_t i;
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-    /* Don't output the same function twice.  We may run into such
-       situations when an extern inline function is later given a
-       non-extern-inline definition.  */
-    if (! TREE_ASM_WRITTEN (VARRAY_TREE (deferred_fns, i)))
-      c_expand_deferred_function (VARRAY_TREE (deferred_fns, i));
-  VARRAY_FREE (deferred_fns);
+  c_objc_common_finish_file ();
 
   finish_objc ();		/* Objective-C finalization */
 

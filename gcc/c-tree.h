@@ -153,8 +153,6 @@ extern tree maybe_building_objc_message_expr    PARAMS ((void));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
 
-/* in c-lang.c and objc/objc-act.c */
-extern int defer_fn				PARAMS ((tree));
 
 /* in c-parse.in */
 extern void c_parse_init			PARAMS ((void));
@@ -175,6 +173,8 @@ extern int c_disregard_inline_limits		PARAMS ((tree));
 extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
 extern const char *c_objc_common_init		PARAMS ((const char *));
 extern int c_missing_noreturn_ok_p		PARAMS ((tree));
+extern void c_objc_common_finish_file		PARAMS ((void));
+extern int defer_fn				PARAMS ((tree));
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type (TYPE,				  \
@@ -371,5 +371,8 @@ extern int mesg_implicit_function_declaration;
 
 /* In c-decl.c */
 extern void finish_incomplete_decl PARAMS ((tree));
+
+extern tree static_ctors;
+extern tree static_dtors;
 
 #endif /* ! GCC_C_TREE_H */

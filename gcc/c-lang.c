@@ -23,14 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "tree.h"
-#include "function.h"
-#include "toplev.h"
-#include "flags.h"
-#include "ggc.h"
-#include "rtl.h"
-#include "expr.h"
 #include "c-tree.h"
-#include "varray.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -78,8 +71,6 @@ static void c_post_options PARAMS ((void));
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-static varray_type deferred_fns;
-
 /* Post-switch processing.  */
 static void
 c_post_options ()
@@ -97,12 +88,7 @@ static const char *
 c_init (filename)
      const char *filename;
 {
-  filename = c_objc_common_init (filename);
-
-  VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-  ggc_add_tree_varray_root (&deferred_fns, 1);
-
-  return filename;
+  return c_objc_common_init (filename);
 }
 
 /* Used by c-lex.c, but only for objc.  */
@@ -157,119 +143,8 @@ lookup_objc_ivar (id)
   return 0;
 }
 
-extern tree static_ctors;
-extern tree static_dtors;
-
-static tree start_cdtor		PARAMS ((int));
-static void finish_cdtor	PARAMS ((tree));
-
-static tree
-start_cdtor (method_type)
-     int method_type;
-{
-  tree fnname = get_file_function_name (method_type);
-  tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
-  tree body;
-
-  start_function (void_list_node_1,
-		  build_nt (CALL_EXPR, fnname,
-			    tree_cons (NULL_TREE, NULL_TREE, void_list_node_1),
-			    NULL_TREE),
-		  NULL_TREE);
-  store_parm_decls ();
-
-  current_function_cannot_inline
-    = "static constructors and destructors cannot be inlined";
-
-  body = c_begin_compound_stmt ();
-
-  pushlevel (0);
-  clear_last_expr ();
-  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-
-  return body;
-}
-
-static void
-finish_cdtor (body)
-     tree body;
-{
-  tree scope;
-  tree block;
-
-  scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  block = poplevel (0, 0, 0);
-  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
-  SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
-
-  RECHAIN_STMTS (body, COMPOUND_BODY (body));
-
-  finish_function (0);
-}
-
-/* Register a function tree, so that its optimization and conversion
-   to RTL is only done at the end of the compilation.  */
-
-int
-defer_fn (fn)
-     tree fn;
-{
-  VARRAY_PUSH_TREE (deferred_fns, fn);
-
-  return 1;
-}
-
-/* Called at end of parsing, but before end-of-file processing.  */
-
 void
 finish_file ()
 {
-  unsigned int i;
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-    {
-      tree decl = VARRAY_TREE (deferred_fns, i);
-
-      if (! TREE_ASM_WRITTEN (decl))
-	{
-	  /* For static inline functions, delay the decision whether to
-	     emit them or not until wrapup_global_declarations.  */
-	  if (! TREE_PUBLIC (decl))
-	    DECL_DEFER_OUTPUT (decl) = 1;
-	  c_expand_deferred_function (decl);
-	}
-    }
-  VARRAY_FREE (deferred_fns);
-
-  if (static_ctors)
-    {
-      tree body = start_cdtor ('I');
-
-      for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
-	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
-						 NULL_TREE));
-
-      finish_cdtor (body);
-    }
-  if (static_dtors)
-    {
-      tree body = start_cdtor ('D');
-
-      for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
-	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
-						 NULL_TREE));
-
-      finish_cdtor (body);
-    }
-
-  {
-    int flags;
-    FILE *stream = dump_begin (TDI_all, &flags);
-
-    if (stream)
-      {
-	dump_node (getdecls (), flags & ~TDF_SLIM, stream);
-	dump_end (TDI_all, stream);
-      }
-  }
+  c_objc_common_finish_file ();
 }
