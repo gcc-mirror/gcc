@@ -196,13 +196,6 @@ Boston, MA 02111-1307, USA.  */
   do									\
     {									\
       if (!flag_inhibit_size_directive)					\
-	{								\
-	  char label[256];						\
-	  static int labelno;						\
-	  labelno++;							\
-	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
-	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	  ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME, label);		\
-	}								\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
     }									\
   while (0)

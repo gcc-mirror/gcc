@@ -6421,12 +6421,18 @@ If you define @code{SIZE_ASM_OP}, a default definition of this macro is
 provided.
 
 @findex ASM_OUTPUT_MEASURED_SIZE
-@item ASM_OUTPUT_MEASURED_SIZE (@var{stream}, @var{beg}, @var{end})
+@item ASM_OUTPUT_MEASURED_SIZE (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} a directive telling the assembler to calculate the size of
-the symbol @var{beg} by subtracting its address from that of the symbol
-@var{end}.  If you define @code{SIZE_ASM_OP}, a default definition of
-this macro is provided.
+the symbol @var{name} by subtracting its address from the current
+address.  
+
+If you define @code{SIZE_ASM_OP}, a default definition of this macro is
+provided.  The default assumes that the assembler recognizes a special
+@samp{.} symbol as referring to the current address, and can calculate
+the difference between this and another symbol.  If your assembler does
+not recognize @samp{.} or cannot do calculations with it, you will need
+to redefine @code{ASM_OUTPUT_MEASURED_SIZE} to use some other technique.
 
 @findex TYPE_ASM_OP
 @item TYPE_ASM_OP

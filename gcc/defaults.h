@@ -200,15 +200,13 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
     }							\
   while (0)
 
-#define ASM_OUTPUT_MEASURED_SIZE(STREAM, BEG, END)	\
+#define ASM_OUTPUT_MEASURED_SIZE(STREAM, NAME)		\
   do							\
     {							\
       fputs (SIZE_ASM_OP, STREAM);			\
-      assemble_name (STREAM, BEG);			\
-      fputs (", ", STREAM);				\
-      assemble_name (STREAM, END);			\
-      putc ('-', STREAM);				\
-      assemble_name (STREAM, BEG);			\
+      assemble_name (STREAM, NAME);			\
+      fputs (", .-", STREAM);				\
+      assemble_name (STREAM, NAME);			\
       putc ('\n', STREAM);				\
     }							\
   while (0)
