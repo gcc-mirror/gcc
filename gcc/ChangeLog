@@ -1,3 +1,9 @@
+2004-11-17  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-ssa-propagate.c (cfg_blocks_add) Assert we're not trying
+	to insert the exit or entry block.
+	(ssa_prop_init): Use add_control_edge to seed the algorithm.
+
 2004-11-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* mkmap-flat.awk, mkmap-symver.awk: If the last version
