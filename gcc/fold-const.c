@@ -399,34 +399,16 @@ lrotate_double (l1, h1, count, prec, lv, hv)
      int prec;
      HOST_WIDE_INT *lv, *hv;
 {
-  HOST_WIDE_INT arg1[4];
-  register int i;
-  register int carry;
+  HOST_WIDE_INT s1l, s1h, s2l, s2h;
 
+  count %= prec;
   if (count < 0)
-    {
-      rrotate_double (l1, h1, - count, prec, lv, hv);
-      return;
-    }
+    count += prec;
 
-  encode (arg1, l1, h1);
-
-  if (count > prec)
-    count = prec;
-
-  carry = arg1[4 - 1] >> 16 - 1;
-  while (count > 0)
-    {
-      for (i = 0; i < 4; i++)
-	{
-	  carry += arg1[i] << 1;
-	  arg1[i] = LOWPART (carry);
-	  carry = HIGHPART (carry);
-	}
-      count--;
-    }
-
-  decode (arg1, lv, hv);
+  lshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
+  rshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
+  *lv = s1l | s2l;
+  *hv = s1h | s2h;
 }
 
 /* Rotate the doubleword integer in L1, H1 left by COUNT places
@@ -439,28 +421,16 @@ rrotate_double (l1, h1, count, prec, lv, hv)
      int prec;
      HOST_WIDE_INT *lv, *hv;
 {
-  HOST_WIDE_INT arg1[4];
-  register int i;
-  register int carry;
+  HOST_WIDE_INT s1l, s1h, s2l, s2h;
 
-  encode (arg1, l1, h1);
+  count %= prec;
+  if (count < 0)
+    count += prec;
 
-  if (count > prec)
-    count = prec;
-
-  carry = arg1[0] & 1;
-  while (count > 0)
-    {
-      for (i = 4 - 1; i >= 0; i--)
-	{
-	  carry *= BASE;
-	  carry += arg1[i];
-	  arg1[i] = LOWPART (carry >> 1);
-	}
-      count--;
-    }
-
-  decode (arg1, lv, hv);
+  rshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
+  lshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
+  *lv = s1l | s2l;
+  *hv = s1h | s2h;
 }
 
 /* Divide doubleword integer LNUM, HNUM by doubleword integer LDEN, HDEN
@@ -4158,8 +4128,51 @@ fold (expr)
 	return non_lvalue (convert (type, arg0));
       /* Since negative shift count is not well-defined,
 	 don't try to compute it in the compiler.  */
-      if (tree_int_cst_sgn (arg1) < 0)
+      if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_sgn (arg1) < 0)
 	return t;
+      /* Rewrite an LROTATE_EXPR by a constant into an
+	 RROTATE_EXPR by a new constant.  */
+      if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
+	{
+	  TREE_SET_CODE (t, RROTATE_EXPR);
+	  code = RROTATE_EXPR;
+	  TREE_OPERAND (t, 1) = arg1
+	    = const_binop
+	      (MINUS_EXPR,
+	       convert (TREE_TYPE (arg1),
+			build_int_2 (GET_MODE_BITSIZE (TYPE_MODE (type)), 0)),
+	       arg1, 0);
+	  if (tree_int_cst_sgn (arg1) < 0)
+	    return t;
+	}
+
+      /* If we have a rotate of a bit operation with the rotate count and
+	 the second operand of the bit operation both constant,
+	 permute the two operations.  */
+      if (code == RROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST
+	  && (TREE_CODE (arg0) == BIT_AND_EXPR
+	      || TREE_CODE (arg0) == BIT_ANDTC_EXPR
+	      || TREE_CODE (arg0) == BIT_IOR_EXPR
+	      || TREE_CODE (arg0) == BIT_XOR_EXPR)
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	return fold (build (TREE_CODE (arg0), type,
+			    fold (build (code, type,
+					 TREE_OPERAND (arg0, 0), arg1)),
+			    fold (build (code, type,
+					 TREE_OPERAND (arg0, 1), arg1))));
+
+      /* Two consecutive rotates adding up to the width of the mode can
+	 be ignored.  */
+      if (code == RROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (arg0) == RROTATE_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (arg1) == 0
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
+	  && ((TREE_INT_CST_LOW (arg1)
+	       + TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)))
+	      == GET_MODE_BITSIZE (TYPE_MODE (type))))
+	return TREE_OPERAND (arg0, 0);
+
       goto binary;
 
     case MIN_EXPR:
