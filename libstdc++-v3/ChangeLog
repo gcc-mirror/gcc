@@ -1,3 +1,7 @@
+2005-03-02  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/tr1/memory: Add missing "inline" to __throw_bad_weak_ptr.
+
 2005-03-02  Douglas Gregor  <doug.gregor@gmail.com>
 
         * include/tr1/functional (_Has_result_type): Cleanup.
