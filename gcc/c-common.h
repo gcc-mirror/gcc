@@ -54,21 +54,6 @@ enum c_tree_index
     CTI_MAX
 };
 
-extern tree c_global_trees[CTI_MAX];
-
-typedef enum c_language_kind
-{
-  clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
-		       etc. */
-  clk_cplusplus,   /* ANSI/ISO C++ */
-  clk_objective_c  /* Objective C */
-} 
-c_language_kind;
-
-/* The variant of the C language being processed.  Each C language
-   front-end defines this variable.  */
-extern c_language_kind c_language;
-
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]
@@ -98,6 +83,67 @@ extern c_language_kind c_language;
 #define g77_longint_type_node		c_global_trees[CTI_G77_LONGINT_TYPE]
 #define g77_ulongint_type_node		c_global_trees[CTI_G77_ULONGINT_TYPE]
 
+extern tree c_global_trees[CTI_MAX];
+
+typedef enum c_language_kind
+{
+  clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
+		       etc. */
+  clk_cplusplus,   /* ANSI/ISO C++ */
+  clk_objective_c  /* Objective C */
+} 
+c_language_kind;
+
+/* The variant of the C language being processed.  Each C language
+   front-end defines this variable.  */
+
+extern c_language_kind c_language;
+
+/* Nonzero means give string constants the type `const char *', rather
+   than `char *'.  */
+
+extern int flag_const_strings;
+
+/* Warn about *printf or *scanf format/argument anomalies. */
+
+extern int warn_format;
+
+/* Nonzero means do some things the same way PCC does.  */
+
+extern int flag_traditional;
+
+/* Nonzero means use the ISO C99 dialect of C.  */
+
+extern int flag_isoc99;
+
+/* Nonzero means warn about suggesting putting in ()'s.  */
+
+extern int warn_parentheses;
+
+/* Warn if a type conversion is done that might have confusing results.  */
+
+extern int warn_conversion;
+
+/* C types are partitioned into three subsets: object, function, and
+   incomplete types.  */
+#define C_TYPE_OBJECT_P(type) \
+  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type))
+
+#define C_TYPE_INCOMPLETE_P(type) \
+  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type) == 0)
+
+#define C_TYPE_FUNCTION_P(type) \
+  (TREE_CODE (type) == FUNCTION_TYPE)
+
+/* For convenience we define a single macro to identify the class of
+   object or incomplete types.  */
+#define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
+  (!C_TYPE_FUNCTION_P (type))
+
+/* Record in each node resulting from a binary operator
+   what operator was specified for it.  */
+#define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
+
 /* Pointer to function to generate the VAR_DECL for __FUNCTION__ etc.
    ID is the identifier to use, NAME is the string.
    TYPE_DEP indicates whether it depends on type of the function or not
@@ -125,6 +171,7 @@ extern void constant_expression_warning		PARAMS ((tree));
 extern tree convert_and_check			PARAMS ((tree, tree));
 extern void overflow_warning			PARAMS ((tree));
 extern void unsigned_conversion_warning		PARAMS ((tree, tree));
+
 /* Read the rest of the current #-directive line.  */
 #if USE_CPPLIB
 extern char *get_directive_line			PARAMS ((void));
@@ -164,7 +211,7 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
 
-
+
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
 
@@ -306,3 +353,20 @@ enum c_tree_code {
 #undef DEFTREECODE
 
 extern void add_c_tree_codes		        PARAMS ((void));
+
+
+/* These functions must be defined by each front-end which implements
+   a variant of the C language.  They are used in c-common.c.  */
+
+extern tree build_unary_op                      PARAMS ((enum tree_code,
+							 tree, int));
+extern tree build_binary_op                     PARAMS ((enum tree_code,
+							 tree, tree, int));
+extern int lvalue_p				PARAMS ((tree));
+extern tree default_conversion                  PARAMS ((tree));
+
+/* Given two integer or real types, return the type for their sum.
+   Given two compatible ANSI C types, returns the merged type.  */
+
+extern tree common_type                         PARAMS ((tree, tree));
+

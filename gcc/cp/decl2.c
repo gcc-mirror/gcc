@@ -1266,7 +1266,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (doing_vec == 2)
     {
-      maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node);
+      maxindex = cp_build_binary_op (MINUS_EXPR, size, integer_one_node);
       pedwarn ("anachronistic use of array size in vector delete");
     }
 
@@ -3248,14 +3248,14 @@ start_static_initialization_or_destruction (decl, initp)
   /* Conditionalize this initialization on being in the right priority
      and being initializing/finalizing appropriately.  */
   sentry_if_stmt = begin_if_stmt ();
-  cond = build_binary_op (EQ_EXPR,
-			  priority_decl,
-			  build_int_2 (priority, 0));
+  cond = cp_build_binary_op (EQ_EXPR,
+			     priority_decl,
+			     build_int_2 (priority, 0));
   init_cond = initp ? integer_one_node : integer_zero_node;
-  init_cond = build_binary_op (EQ_EXPR,
-			       initialize_p_decl,
-			       init_cond);
-  cond = build_binary_op (TRUTH_ANDIF_EXPR, cond, init_cond);
+  init_cond = cp_build_binary_op (EQ_EXPR,
+				  initialize_p_decl,
+				  init_cond);
+  cond = cp_build_binary_op (TRUTH_ANDIF_EXPR, cond, init_cond);
 
   /* We need a sentry if this is an object with external linkage that
      might be initialized in more than one place.  (For example, a
@@ -3275,19 +3275,21 @@ start_static_initialization_or_destruction (decl, initp)
 	 only if the SENTRY is one, i.e., if we are the last to
 	 destroy the variable.  */
       if (initp)
-	sentry_cond = build_binary_op (EQ_EXPR,
-				       build_unary_op (PREINCREMENT_EXPR,
-						       sentry,
-						       /*noconvert=*/1),
-				       integer_one_node);
+	sentry_cond 
+	  = cp_build_binary_op (EQ_EXPR,
+				build_unary_op (PREINCREMENT_EXPR,
+						sentry,
+						/*noconvert=*/1),
+				integer_one_node);
       else
-	sentry_cond = build_binary_op (EQ_EXPR,
-				       build_unary_op (PREDECREMENT_EXPR,
-						       sentry,
-						       /*noconvert=*/1),
-				       integer_zero_node);
+	sentry_cond 
+	  = cp_build_binary_op (EQ_EXPR,
+				build_unary_op (PREDECREMENT_EXPR,
+						sentry,
+						/*noconvert=*/1),
+				integer_zero_node);
 
-      cond = build_binary_op (TRUTH_ANDIF_EXPR, cond, sentry_cond);
+      cond = cp_build_binary_op (TRUTH_ANDIF_EXPR, cond, sentry_cond);
     }
 
   finish_if_stmt_cond (cond, sentry_if_stmt);

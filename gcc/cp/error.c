@@ -725,7 +725,7 @@ dump_type_suffix (t, flags)
 	    dump_expr (TREE_OPERAND (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0),
 	               flags & ~TS_EXPR_PARENS);
 	  else
-	    dump_expr (fold (build_binary_op
+	    dump_expr (fold (cp_build_binary_op
 			     (PLUS_EXPR, TYPE_MAX_VALUE (TYPE_DOMAIN (t)),
 			      integer_one_node)),
 	               flags & ~TS_EXPR_PARENS);

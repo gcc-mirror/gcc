@@ -8607,8 +8607,8 @@ expand_static_init (decl, init)
 
       /* Begin the conditional initialization.  */
       if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (build_binary_op (EQ_EXPR, temp,
-					    integer_zero_node),
+      finish_if_stmt_cond (cp_build_binary_op (EQ_EXPR, temp,
+					       integer_zero_node),
 			   if_stmt);
       then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
@@ -9421,10 +9421,10 @@ compute_array_index_type (name, size)
   /* Compute the index of the largest element in the array.  It is
      one less than the number of elements in the array.  */
   itype
-    = fold (build_binary_op (MINUS_EXPR,
-			     cp_convert (ssizetype, size),
-			     cp_convert (ssizetype,
-					 integer_one_node)));
+    = fold (cp_build_binary_op (MINUS_EXPR,
+				cp_convert (ssizetype, size),
+				cp_convert (ssizetype,
+					    integer_one_node)));
 
   /* Check for variable-sized arrays.  We allow such things as an
      extension, even though they are not allowed in ANSI/ISO C++.  */
@@ -13377,9 +13377,9 @@ build_enumerator (name, value, enumtype)
 	      /* The next value is the previous value ... */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
 	      /* ... plus one.  */
-	      value = build_binary_op (PLUS_EXPR,
-				       prev_value,
-				       integer_one_node);
+	      value = cp_build_binary_op (PLUS_EXPR,
+					  prev_value,
+					  integer_one_node);
 
 	      if (tree_int_cst_lt (value, prev_value))
 		cp_error ("overflow in enumeration values at `%D'", name);

@@ -2664,8 +2664,8 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 
 	  /* This is a upcast, so we have to add the offset for the
 	     virtual base.  */
-	  old_delta = build_binary_op (PLUS_EXPR, old_delta,
-				       TREE_VALUE (delta));
+	  old_delta = cp_build_binary_op (PLUS_EXPR, old_delta,
+					  TREE_VALUE (delta));
 	  if (vc)
 	    {
 	      /* If this is set, we need to subtract out the delta
@@ -2689,7 +2689,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
    
 	      /* This is a downcast, so we have to subtract the offset
 		 for the virtual base.  */
-	      old_delta = build_binary_op (MINUS_EXPR, old_delta, vc_delta);
+	      old_delta = cp_build_binary_op (MINUS_EXPR, old_delta, vc_delta);
 	    }
 
 	  TREE_READONLY (new_delta) = 0;
@@ -2758,8 +2758,8 @@ fixup_all_virtual_upcast_offsets (decl_ptr)
   if (!in_charge_node)
     /* There's no need for any fixups in this case.  */
     return;
-  in_charge_node = build_binary_op (EQ_EXPR, 
-				    in_charge_node, integer_zero_node);
+  in_charge_node = cp_build_binary_op (EQ_EXPR, 
+				       in_charge_node, integer_zero_node);
   if_stmt = begin_if_stmt ();
   finish_if_stmt_cond (in_charge_node, if_stmt);
   
