@@ -692,6 +692,22 @@ if test -n "${USE_INT32_FLAGS}" ; then
     echo "#define ${macro_prefix}USE_INT32_FLAGS 1"
 fi
 
+# A little test program to check if __printf_fp is available.
+cat >dummy.c <<EOF
+int main()
+{
+    return __printf_fp ();
+}
+EOF
+
+if ${CC} dummy.c >/dev/null 2>&1 ; then
+  echo "#define ${macro_prefix}HAVE_PRINTF_FP 1"
+  echo "#define ${macro_prefix}HAVE_LONG_DOUBLE_IO 1"
+else
+  echo "#define ${macro_prefix}HAVE_PRINTF_FP 0"
+  echo "#define ${macro_prefix}HAVE_LONG_DOUBLE_IO 0"
+fi
+
 # Uncomment the following line if you don't have working templates.
 # echo "#define ${macro_prefix}NO_TEMPLATES"
 
