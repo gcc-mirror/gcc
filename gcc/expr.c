@@ -8672,6 +8672,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
 
       {
+	tree dummy_id = get_identifier ("__dummy");
+	tree dummy_type = build_function_type (void_type_node, NULL_TREE);
+	tree dummy_decl = build_decl (FUNCTION_DECL, dummy_id, dummy_type); 
 	rtx buf_addr
 	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist), NULL_RTX,
 					   VOIDmode, 0));
@@ -8689,19 +8692,23 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx stack = gen_rtx (MEM, sa_mode,
 			     plus_constant (buf_addr,
 					    2 * GET_MODE_SIZE (Pmode)));
-	rtx value = gen_rtx (SYMBOL_REF, Pmode, "__dummy");
+
+	DECL_EXTERNAL (dummy_decl) = 1;
+	TREE_PUBLIC (dummy_decl) = 1;
+	make_decl_rtl (dummy_decl, NULL_PTR, 1);
 
 	/* Expand the second expression just for side-effects.  */
 	expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
 		     const0_rtx, VOIDmode, 0);
 
-	assemble_external_libcall (value);
+	assemble_external (dummy_decl);
 
 	/* Pick up FP, label, and SP from the block and jump.  This code is
 	   from expand_goto in stmt.c; see there for detailed comments.  */
 #if HAVE_nonlocal_goto
 	if (HAVE_nonlocal_goto)
-	  emit_insn (gen_nonlocal_goto (fp, lab, stack, value));
+	  emit_insn (gen_nonlocal_goto (fp, lab, stack,
+					XEXP (DECL_RTL (dummy_decl), 0)));
       else
 #endif
 	{
@@ -8711,7 +8718,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  /* Put in the static chain register the address of the dummy
 	     function.  */
-	  emit_move_insn (static_chain_rtx, value);
+	  emit_move_insn (static_chain_rtx, XEXP (DECL_RTL (dummy_decl), 0));
 	  emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
