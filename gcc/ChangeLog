@@ -1,3 +1,8 @@
+Mon Dec 29 15:58:18 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* libgcc2.c (inhibit_libc): Don't define inhibit_libc when cross
+	compiling if it was already defined.
+
 Sun Dec 28 00:32:16 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (find_basic_blocks): Don't create a new basic block
