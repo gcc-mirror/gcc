@@ -4021,7 +4021,7 @@ tSCC zSunos_Matherr_DeclSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zSunos_Matherr_DeclBypass0[] =
-       "matherr.*struct exception";
+       "matherr.*(struct exception|__MATH_EXCEPTION)";
 
 #define    SUNOS_MATHERR_DECL_TEST_CT  2
 static tTestDesc aSunos_Matherr_DeclTests[] = {

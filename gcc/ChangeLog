@@ -1,3 +1,9 @@
+Sat Nov 11 21:14:02 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* fixinc/inclhack.def (sunos_matherr_decl): Bypass matherr
+	declarations that use `__MATH_EXCEPTION' in their prototypes, too.
+	* fixinc/fixincl.x: Regenerated.
+	
 2000-11-11  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def (avoid_bool_type): avoid commenting out #endif
