@@ -1,3 +1,12 @@
+2000-12-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* linux.h (DEFAULT_VTABLE_THUNKS): Switch back to version 1.
+	* alpha/linux-elf.h (DEFAULT_VTABLE_THUNKS): Likewise.
+	* arm/linux-elf (DEFAULT_VTABLE_THUNKS): Likewise.
+	* i386/freebsd-elf.h (DEFAULT_VTABLE_THUNKS): Likewise.
+	* rs6000/linux.h (DEFAULT_VTABLE_THUNKS): Likewise.
+	* sparc/linux.h (DEFAULT_VTABLE_THUNKS): Likewise.
+
 2000-12-05  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.
