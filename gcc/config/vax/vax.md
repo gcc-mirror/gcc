@@ -1495,6 +1495,7 @@
   if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
       || (INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16)
+      || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
       || (GET_CODE (operands[1]) == MEM
 	  && mode_dependent_address_p (XEXP (operands[1], 0))))
@@ -1514,6 +1515,7 @@
 {
   if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
+      || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
       || (GET_CODE (operands[1]) == MEM
 	  && mode_dependent_address_p (XEXP (operands[1], 0))))
