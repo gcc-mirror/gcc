@@ -48,12 +48,24 @@ _mm_empty (void)
   __builtin_ia32_emms ();
 }
 
+static __inline void
+_m_empty (void)
+{
+  _mm_empty ();
+}
+
 /* Convert I to a __m64 object.  The integer is zero-extended to 64-bits.  */
 static __inline __m64 
 _mm_cvtsi32_si64 (int __i)
 {
   long long __tmp = (unsigned int)__i;
   return (__m64) __tmp;
+}
+
+static __inline __m64 
+_m_from_int (int __i)
+{
+  return _mm_cvtsi32_si64 (__i);
 }
 
 #ifdef __x86_64__
@@ -80,6 +92,12 @@ _mm_cvtsi64_si32 (__m64 __i)
   return __tmp;
 }
 
+static __inline int
+_m_to_int (__m64 __i)
+{
+  return _mm_cvtsi64_si32 (__i);
+}
+
 #ifdef __x86_64__
 /* Convert the lower 32 bits of the __m64 object into an integer.  */
 static __inline long long
@@ -98,6 +116,12 @@ _mm_packs_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_packsswb ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_packsswb (__m64 __m1, __m64 __m2)
+{
+  return _mm_packs_pi16 (__m1, __m2);
+}
+
 /* Pack the two 32-bit values from M1 in to the lower two 16-bit values of
    the result, and the two 32-bit values from M2 into the upper two 16-bit
    values of the result, all with signed saturation.  */
@@ -105,6 +129,12 @@ static __inline __m64
 _mm_packs_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_packssdw ((__v2si)__m1, (__v2si)__m2);
+}
+
+static __inline __m64
+_m_packssdw (__m64 __m1, __m64 __m2)
+{
+  return _mm_packs_pi32 (__m1, __m2);
 }
 
 /* Pack the four 16-bit values from M1 into the lower four 8-bit values of
@@ -116,12 +146,24 @@ _mm_packs_pu16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_packuswb ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_packuswb (__m64 __m1, __m64 __m2)
+{
+  return _mm_packs_pu16 (__m1, __m2);
+}
+
 /* Interleave the four 8-bit values from the high half of M1 with the four
    8-bit values from the high half of M2.  */
 static __inline __m64
 _mm_unpackhi_pi8 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_punpckhbw ((__v8qi)__m1, (__v8qi)__m2);
+}
+
+static __inline __m64
+_m_punpckhbw (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpackhi_pi8 (__m1, __m2);
 }
 
 /* Interleave the two 16-bit values from the high half of M1 with the two
@@ -132,12 +174,24 @@ _mm_unpackhi_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_punpckhwd ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_punpckhwd (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpackhi_pi16 (__m1, __m2);
+}
+
 /* Interleave the 32-bit value from the high half of M1 with the 32-bit
    value from the high half of M2.  */
 static __inline __m64
 _mm_unpackhi_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_punpckhdq ((__v2si)__m1, (__v2si)__m2);
+}
+
+static __inline __m64
+_m_punpckhdq (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpackhi_pi32 (__m1, __m2);
 }
 
 /* Interleave the four 8-bit values from the low half of M1 with the four
@@ -148,12 +202,24 @@ _mm_unpacklo_pi8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_punpcklbw ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_punpcklbw (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpacklo_pi8 (__m1, __m2);
+}
+
 /* Interleave the two 16-bit values from the low half of M1 with the two
    16-bit values from the low half of M2.  */
 static __inline __m64
 _mm_unpacklo_pi16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_punpcklwd ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_punpcklwd (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpacklo_pi16 (__m1, __m2);
 }
 
 /* Interleave the 32-bit value from the low half of M1 with the 32-bit
@@ -164,11 +230,23 @@ _mm_unpacklo_pi32 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_punpckldq ((__v2si)__m1, (__v2si)__m2);
 }
 
+static __inline __m64
+_m_punpckldq (__m64 __m1, __m64 __m2)
+{
+  return _mm_unpacklo_pi32 (__m1, __m2);
+}
+
 /* Add the 8-bit values in M1 to the 8-bit values in M2.  */
 static __inline __m64
 _mm_add_pi8 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddb ((__v8qi)__m1, (__v8qi)__m2);
+}
+
+static __inline __m64
+_m_paddb (__m64 __m1, __m64 __m2)
+{
+  return _mm_add_pi8 (__m1, __m2);
 }
 
 /* Add the 16-bit values in M1 to the 16-bit values in M2.  */
@@ -178,11 +256,23 @@ _mm_add_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_paddw ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_paddw (__m64 __m1, __m64 __m2)
+{
+  return _mm_add_pi16 (__m1, __m2);
+}
+
 /* Add the 32-bit values in M1 to the 32-bit values in M2.  */
 static __inline __m64
 _mm_add_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddd ((__v2si)__m1, (__v2si)__m2);
+}
+
+static __inline __m64
+_m_paddd (__m64 __m1, __m64 __m2)
+{
+  return _mm_add_pi32 (__m1, __m2);
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
@@ -200,12 +290,24 @@ _mm_adds_pi8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_paddsb ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_paddsb (__m64 __m1, __m64 __m2)
+{
+  return _mm_adds_pi8 (__m1, __m2);
+}
+
 /* Add the 16-bit values in M1 to the 16-bit values in M2 using signed
    saturated arithmetic.  */
 static __inline __m64
 _mm_adds_pi16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddsw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_paddsw (__m64 __m1, __m64 __m2)
+{
+  return _mm_adds_pi16 (__m1, __m2);
 }
 
 /* Add the 8-bit values in M1 to the 8-bit values in M2 using unsigned
@@ -216,12 +318,24 @@ _mm_adds_pu8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_paddusb ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_paddusb (__m64 __m1, __m64 __m2)
+{
+  return _mm_adds_pu8 (__m1, __m2);
+}
+
 /* Add the 16-bit values in M1 to the 16-bit values in M2 using unsigned
    saturated arithmetic.  */
 static __inline __m64
 _mm_adds_pu16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddusw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_paddusw (__m64 __m1, __m64 __m2)
+{
+  return _mm_adds_pu16 (__m1, __m2);
 }
 
 /* Subtract the 8-bit values in M2 from the 8-bit values in M1.  */
@@ -231,6 +345,12 @@ _mm_sub_pi8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_psubb ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_psubb (__m64 __m1, __m64 __m2)
+{
+  return _mm_sub_pi8 (__m1, __m2);
+}
+
 /* Subtract the 16-bit values in M2 from the 16-bit values in M1.  */
 static __inline __m64
 _mm_sub_pi16 (__m64 __m1, __m64 __m2)
@@ -238,11 +358,23 @@ _mm_sub_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_psubw ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_psubw (__m64 __m1, __m64 __m2)
+{
+  return _mm_sub_pi16 (__m1, __m2);
+}
+
 /* Subtract the 32-bit values in M2 from the 32-bit values in M1.  */
 static __inline __m64
 _mm_sub_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubd ((__v2si)__m1, (__v2si)__m2);
+}
+
+static __inline __m64
+_m_psubd (__m64 __m1, __m64 __m2)
+{
+  return _mm_sub_pi32 (__m1, __m2);
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
@@ -260,12 +392,24 @@ _mm_subs_pi8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_psubsb ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_psubsb (__m64 __m1, __m64 __m2)
+{
+  return _mm_subs_pi8 (__m1, __m2);
+}
+
 /* Subtract the 16-bit values in M2 from the 16-bit values in M1 using
    signed saturating arithmetic.  */
 static __inline __m64
 _mm_subs_pi16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubsw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_psubsw (__m64 __m1, __m64 __m2)
+{
+  return _mm_subs_pi16 (__m1, __m2);
 }
 
 /* Subtract the 8-bit values in M2 from the 8-bit values in M1 using
@@ -276,12 +420,24 @@ _mm_subs_pu8 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_psubusb ((__v8qi)__m1, (__v8qi)__m2);
 }
 
+static __inline __m64
+_m_psubusb (__m64 __m1, __m64 __m2)
+{
+  return _mm_subs_pu8 (__m1, __m2);
+}
+
 /* Subtract the 16-bit values in M2 from the 16-bit values in M1 using
    unsigned saturating arithmetic.  */
 static __inline __m64
 _mm_subs_pu16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubusw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_psubusw (__m64 __m1, __m64 __m2)
+{
+  return _mm_subs_pu16 (__m1, __m2);
 }
 
 /* Multiply four 16-bit values in M1 by four 16-bit values in M2 producing
@@ -293,12 +449,24 @@ _mm_madd_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_pmaddwd ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_pmaddwd (__m64 __m1, __m64 __m2)
+{
+  return _mm_madd_pi16 (__m1, __m2);
+}
+
 /* Multiply four signed 16-bit values in M1 by four signed 16-bit values in
    M2 and produce the high 16 bits of the 32-bit results.  */
 static __inline __m64
 _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_pmulhw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_pmulhw (__m64 __m1, __m64 __m2)
+{
+  return _mm_mulhi_pi16 (__m1, __m2);
 }
 
 /* Multiply four 16-bit values in M1 by four 16-bit values in M2 and produce
@@ -309,6 +477,12 @@ _mm_mullo_pi16 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_pmullw ((__v4hi)__m1, (__v4hi)__m2);
 }
 
+static __inline __m64
+_m_pmullw (__m64 __m1, __m64 __m2)
+{
+  return _mm_mullo_pi16 (__m1, __m2);
+}
+
 /* Shift four 16-bit values in M left by COUNT.  */
 static __inline __m64
 _mm_sll_pi16 (__m64 __m, __m64 __count)
@@ -317,9 +491,21 @@ _mm_sll_pi16 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psllw (__m64 __m, __m64 __count)
+{
+  return _mm_sll_pi16 (__m, __count);
+}
+
+static __inline __m64
 _mm_slli_pi16 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psllw ((__v4hi)__m, __count);
+}
+
+static __inline __m64
+_m_psllwi (__m64 __m, int __count)
+{
+  return _mm_slli_pi16 (__m, __count);
 }
 
 /* Shift two 32-bit values in M left by COUNT.  */
@@ -330,9 +516,21 @@ _mm_sll_pi32 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_pslld (__m64 __m, __m64 __count)
+{
+  return _mm_sll_pi32 (__m, __count);
+}
+
+static __inline __m64
 _mm_slli_pi32 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_pslld ((__v2si)__m, __count);
+}
+
+static __inline __m64
+_m_pslldi (__m64 __m, int __count)
+{
+  return _mm_slli_pi32 (__m, __count);
 }
 
 /* Shift the 64-bit value in M left by COUNT.  */
@@ -343,9 +541,21 @@ _mm_sll_si64 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psllq (__m64 __m, __m64 __count)
+{
+  return _mm_sll_si64 (__m, __count);
+}
+
+static __inline __m64
 _mm_slli_si64 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psllq ((long long)__m, (long long)__count);
+}
+
+static __inline __m64
+_m_psllqi (__m64 __m, int __count)
+{
+  return _mm_slli_si64 (__m, __count);
 }
 
 /* Shift four 16-bit values in M right by COUNT; shift in the sign bit.  */
@@ -356,9 +566,21 @@ _mm_sra_pi16 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psraw (__m64 __m, __m64 __count)
+{
+  return _mm_sra_pi16 (__m, __count);
+}
+
+static __inline __m64
 _mm_srai_pi16 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psraw ((__v4hi)__m, __count);
+}
+
+static __inline __m64
+_m_psrawi (__m64 __m, int __count)
+{
+  return _mm_srai_pi16 (__m, __count);
 }
 
 /* Shift two 32-bit values in M right by COUNT; shift in the sign bit.  */
@@ -369,9 +591,21 @@ _mm_sra_pi32 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psrad (__m64 __m, __m64 __count)
+{
+  return _mm_sra_pi32 (__m, __count);
+}
+
+static __inline __m64
 _mm_srai_pi32 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psrad ((__v2si)__m, __count);
+}
+
+static __inline __m64
+_m_psradi (__m64 __m, int __count)
+{
+  return _mm_srai_pi32 (__m, __count);
 }
 
 /* Shift four 16-bit values in M right by COUNT; shift in zeros.  */
@@ -382,9 +616,21 @@ _mm_srl_pi16 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psrlw (__m64 __m, __m64 __count)
+{
+  return _mm_srl_pi16 (__m, __count);
+}
+
+static __inline __m64
 _mm_srli_pi16 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psrlw ((__v4hi)__m, __count);
+}
+
+static __inline __m64
+_m_psrlwi (__m64 __m, int __count)
+{
+  return _mm_srli_pi16 (__m, __count);
 }
 
 /* Shift two 32-bit values in M right by COUNT; shift in zeros.  */
@@ -395,9 +641,21 @@ _mm_srl_pi32 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psrld (__m64 __m, __m64 __count)
+{
+  return _mm_srl_pi32 (__m, __count);
+}
+
+static __inline __m64
 _mm_srli_pi32 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psrld ((__v2si)__m, __count);
+}
+
+static __inline __m64
+_m_psrldi (__m64 __m, int __count)
+{
+  return _mm_srli_pi32 (__m, __count);
 }
 
 /* Shift the 64-bit value in M left by COUNT; shift in zeros.  */
@@ -408,9 +666,21 @@ _mm_srl_si64 (__m64 __m, __m64 __count)
 }
 
 static __inline __m64
+_m_psrlq (__m64 __m, __m64 __count)
+{
+  return _mm_srl_si64 (__m, __count);
+}
+
+static __inline __m64
 _mm_srli_si64 (__m64 __m, int __count)
 {
   return (__m64) __builtin_ia32_psrlq ((long long)__m, (long long)__count);
+}
+
+static __inline __m64
+_m_psrlqi (__m64 __m, int __count)
+{
+  return _mm_srli_si64 (__m, __count);
 }
 
 /* Bit-wise AND the 64-bit values in M1 and M2.  */
@@ -418,6 +688,12 @@ static __inline __m64
 _mm_and_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_pand ((long long)__m1, (long long)__m2);
+}
+
+static __inline __m64
+_m_pand (__m64 __m1, __m64 __m2)
+{
+  return _mm_and_si64 (__m1, __m2);
 }
 
 /* Bit-wise complement the 64-bit value in M1 and bit-wise AND it with the
@@ -428,6 +704,12 @@ _mm_andnot_si64 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_pandn ((long long)__m1, (long long)__m2);
 }
 
+static __inline __m64
+_m_pandn (__m64 __m1, __m64 __m2)
+{
+  return _mm_andnot_si64 (__m1, __m2);
+}
+
 /* Bit-wise inclusive OR the 64-bit values in M1 and M2.  */
 static __inline __m64
 _mm_or_si64 (__m64 __m1, __m64 __m2)
@@ -435,11 +717,23 @@ _mm_or_si64 (__m64 __m1, __m64 __m2)
   return (__m64)__builtin_ia32_por ((long long)__m1, (long long)__m2);
 }
 
+static __inline __m64
+_m_por (__m64 __m1, __m64 __m2)
+{
+  return _mm_or_si64 (__m1, __m2);
+}
+
 /* Bit-wise exclusive OR the 64-bit values in M1 and M2.  */
 static __inline __m64
 _mm_xor_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64)__builtin_ia32_pxor ((long long)__m1, (long long)__m2);
+}
+
+static __inline __m64
+_m_pxor (__m64 __m1, __m64 __m2)
+{
+  return _mm_xor_si64 (__m1, __m2);
 }
 
 /* Compare eight 8-bit values.  The result of the comparison is 0xFF if the
@@ -451,9 +745,21 @@ _mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
 }
 
 static __inline __m64
+_m_pcmpeqb (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpeq_pi8 (__m1, __m2);
+}
+
+static __inline __m64
 _mm_cmpgt_pi8 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_pcmpgtb ((__v8qi)__m1, (__v8qi)__m2);
+}
+
+static __inline __m64
+_m_pcmpgtb (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpgt_pi8 (__m1, __m2);
 }
 
 /* Compare four 16-bit values.  The result of the comparison is 0xFFFF if
@@ -465,9 +771,21 @@ _mm_cmpeq_pi16 (__m64 __m1, __m64 __m2)
 }
 
 static __inline __m64
+_m_pcmpeqw (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpeq_pi16 (__m1, __m2);
+}
+
+static __inline __m64
 _mm_cmpgt_pi16 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_pcmpgtw ((__v4hi)__m1, (__v4hi)__m2);
+}
+
+static __inline __m64
+_m_pcmpgtw (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpgt_pi16 (__m1, __m2);
 }
 
 /* Compare two 32-bit values.  The result of the comparison is 0xFFFFFFFF if
@@ -479,9 +797,21 @@ _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
 }
 
 static __inline __m64
+_m_pcmpeqd (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpeq_pi32 (__m1, __m2);
+}
+
+static __inline __m64
 _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_pcmpgtd ((__v2si)__m1, (__v2si)__m2);
+}
+
+static __inline __m64
+_m_pcmpgtd (__m64 __m1, __m64 __m2)
+{
+  return _mm_cmpgt_pi32 (__m1, __m2);
 }
 
 /* Creates a 64-bit zero.  */
@@ -582,63 +912,6 @@ _mm_set1_pi8 (char __b)
   unsigned int __i = __w << 16 | __w;
   return _mm_set1_pi32 (__i);
 }
-
-/* Alternate intrinsic name definitions.  */
-#define	_m_empty	_mm_empty
-#define	_m_from_int	_mm_cvtsi32_si64
-#define	_m_to_int	_mm_cvtsi64_si32
-#define	_m_packsswb	_mm_packs_pi16
-#define	_m_packssdw	_mm_packs_pi32
-#define	_m_packuswb	_mm_packs_pu16
-#define	_m_punpckhbw	_mm_unpackhi_pi8
-#define	_m_punpckhwd	_mm_unpackhi_pi16
-#define	_m_punpckhdq	_mm_unpackhi_pi32
-#define	_m_punpcklbw	_mm_unpacklo_pi8
-#define	_m_punpcklwd	_mm_unpacklo_pi16
-#define	_m_punpckldq	_mm_unpacklo_pi32
-#define	_m_paddb	_mm_add_pi8
-#define	_m_paddw	_mm_add_pi16
-#define	_m_paddd	_mm_add_pi32
-#define	_m_paddsb	_mm_adds_pi8
-#define	_m_paddsw	_mm_adds_pi16
-#define	_m_paddusb	_mm_adds_pu8
-#define	_m_paddusw	_mm_adds_pu16
-#define	_m_psubb	_mm_sub_pi8
-#define	_m_psubw	_mm_sub_pi16
-#define	_m_psubd	_mm_sub_pi32
-#define	_m_psubsb	_mm_subs_pi8
-#define	_m_psubsw	_mm_subs_pi16
-#define	_m_psubusb	_mm_subs_pu8
-#define	_m_psubusw	_mm_subs_pu16
-#define	_m_pmaddwd	_mm_madd_pi16
-#define	_m_pmulhw	_mm_mulhi_pi16
-#define	_m_pmullw	_mm_mullo_pi16
-#define	_m_psllw	_mm_sll_pi16
-#define	_m_psllwi	_mm_slli_pi16
-#define	_m_pslld	_mm_sll_pi32
-#define	_m_pslldi	_mm_slli_pi32
-#define	_m_psllq	_mm_sll_si64
-#define	_m_psllqi	_mm_slli_si64
-#define	_m_psraw	_mm_sra_pi16
-#define	_m_psrawi	_mm_srai_pi16
-#define	_m_psrad	_mm_sra_pi32
-#define	_m_psradi	_mm_srai_pi32
-#define	_m_psrlw	_mm_srl_pi16
-#define	_m_psrlwi	_mm_srli_pi16
-#define	_m_psrld	_mm_srl_pi32
-#define	_m_psrldi	_mm_srli_pi32
-#define	_m_psrlq	_mm_srl_si64
-#define	_m_psrlqi	_mm_srli_si64
-#define	_m_pand		_mm_and_si64
-#define	_m_pandn	_mm_andnot_si64
-#define	_m_por		_mm_or_si64
-#define	_m_pxor		_mm_xor_si64
-#define	_m_pcmpeqb	_mm_cmpeq_pi8
-#define	_m_pcmpeqw	_mm_cmpeq_pi16
-#define	_m_pcmpeqd	_mm_cmpeq_pi32
-#define	_m_pcmpgtb	_mm_cmpgt_pi8
-#define	_m_pcmpgtw	_mm_cmpgt_pi16
-#define	_m_pcmpgtd	_mm_cmpgt_pi32
 
 #endif /* __MMX__ */
 #endif /* _MMINTRIN_H_INCLUDED */
