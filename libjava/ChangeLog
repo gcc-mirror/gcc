@@ -2,7 +2,7 @@
 
 	* acinclude.m4 (AC_EXEEXT): Work around in case it expands to
 	nothing, as in autoconf 2.50.
-	* configure: Rebuilt.
+	* aclocal.m4, configure: Rebuilt.
 
 2001-06-08  Tom Tromey  <tromey@redhat.com>
 
