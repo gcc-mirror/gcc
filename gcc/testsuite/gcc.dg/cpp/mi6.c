@@ -14,16 +14,26 @@
    increment VAR, since none of the initial set should have been
    flagged as optimizable.  */
 
-#define EMPTY
+#define EMPTYL
+#define EMPTYR
 #define NOT !
-#define DEFINED defined (macro)
-#define IND ! defined (macro)
+#define DEFINED defined (guard)
+#define NOT_DEFINED ! defined (guard)
 
 #include "mi6a.h"
 #include "mi6b.h"
 #include "mi6c.h"
 #include "mi6d.h"
 #include "mi6e.h"
+
+/* Define the macro guard, and redefine the macros to something that
+   forces compilation of the conditional blocks.  */
+#define guard
+#define EMPTYL 1 ||
+#define EMPTYR || 1
+#define NOT
+#define DEFINED 0
+#define NOT_DEFINED 1
 
 #define VAR five
 
