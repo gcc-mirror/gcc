@@ -49,7 +49,6 @@
 	* java/math/BigDecimal.java (BigDecimal(double)): Rewrote.
 	(BigDecimal(String)): Likewise.
 
->>>>>>> 1.1022
 2001-11-19  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_iinc]:
