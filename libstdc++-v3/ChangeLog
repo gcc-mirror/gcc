@@ -1,3 +1,12 @@
+2003-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/codecvt_members.cc (do_out): If
+	we can upper bound the total number of external chars
+	to something smaller than __to_end - __to, avoid the
+	temporary buffer, the memcopy and simplify the loop.
+	* config/locale/generic/codecvt_members.cc (do_out):
+	Likewise.
+
 2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libstdc++.exp: Add DYLD_LIBRARY_PATH for darwin.

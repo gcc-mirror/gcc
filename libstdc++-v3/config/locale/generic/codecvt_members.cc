@@ -49,32 +49,51 @@ namespace std
     result __ret = ok;
     // The conversion must be done using a temporary destination buffer
     // since it is not possible to pass the size of the buffer to wcrtomb
-    extern_type __buf[MB_LEN_MAX];
-    // A temporary state must be used since the result of the last
-    // conversion may be thrown away.
     state_type __tmp_state(__state);
-    
+
     // The conversion must be done by calling wcrtomb in a loop rather
     // than using wcsrtombs because wcsrtombs assumes that the input is
     // zero-terminated.
-    while (__from < __from_end && __to < __to_end)
-      {
-	size_t __conv = wcrtomb(__buf, *__from, &__tmp_state);
-	if (__conv == static_cast<size_t>(-1))
-	  {
-	    __ret = error;
-	    break;
-	  }
-	else if (__conv > static_cast<size_t>(__to_end - __to))
-	  {
-	    __ret = partial;
-	    break;
-	  }
 
-	memcpy(__to, __buf, __conv);
-	__state = __tmp_state;
-	__to += __conv;
-	__from++;
+    // Either we can upper bound the total number of external characters to
+    // something smaller than __to_end - __to or the conversion must be done
+    // using a temporary destination buffer since it is not possible to
+    // pass the size of the buffer to wcrtomb
+    if (MB_CUR_MAX * (__from_end - __from) - (__to_end - __to) <= 0)
+      while (__from < __from_end)
+	{
+	  const size_t __conv = wcrtomb(__to, *__from, &__tmp_state);
+	  if (__conv == static_cast<size_t>(-1))
+	    {
+	      __ret = error;
+	      break;
+	    }
+	  __state = __tmp_state;
+	  __to += __conv;
+	  __from++;
+	}
+    else
+      {
+	extern_type __buf[MB_LEN_MAX];
+	while (__from < __from_end && __to < __to_end)
+	  {
+	    const size_t __conv = wcrtomb(__buf, *__from, &__tmp_state);
+	    if (__conv == static_cast<size_t>(-1))
+	      {
+		__ret = error;
+		break;
+	      }
+	    else if (__conv > static_cast<size_t>(__to_end - __to))
+	      {
+		__ret = partial;
+		break;
+	      }
+	    
+	    memcpy(__to, __buf, __conv);
+	    __state = __tmp_state;
+	    __to += __conv;
+	    __from++;
+	  }
       }
 
     if (__ret == ok && __from < __from_end)
