@@ -1,3 +1,7 @@
+2004-03-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure: Regenerate for config/accross.m4 correction.
+
 2004-03-07  Andreas Jaeger  <aj@suse.de>
 
 	* testsuite/test-demangle.c: Include <string.h> and <stdlib.h> for
