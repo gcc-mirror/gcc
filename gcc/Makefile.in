@@ -2316,7 +2316,7 @@ fixhdr.ready: fix-header
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	@echo "Various warnings and error messages from fixproto are normal"
-	-if [ -f include/fixed ] ; then true; \
+	if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
 	  FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
@@ -2324,6 +2324,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	    export mkinstalldirs; \
 	  if [ -d $(SYSTEM_HEADER_DIR) ] ; then \
 	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
+	    if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
 	  else true; fi; \
 	  touch include/fixed; \
 	fi
