@@ -2673,6 +2673,15 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 
   if (controller)
     {
+      /* The CONTROLLER is a BIND_EXPR.  Such things are always
+	 allocated on at least the saveable obstack.  Since we may
+	 need to copy this expression to the permanent obstack, we
+	 must make sure that the operand is on the same obstack as the
+	 BIND_EXPR.  Otherwise, copy_to_permanent will not copy the
+	 operand, since it will assume that anything under a permanent
+	 node is permanent.  */
+      if (TREE_PERMANENT (controller))
+	body = copy_to_permanent (body);
       TREE_OPERAND (controller, 1) = body;
       return controller;
     }

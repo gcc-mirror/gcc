@@ -842,59 +842,68 @@ register_specialization (spec, tmpl, args)
   for (s = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
        s != NULL_TREE;
        s = TREE_CHAIN (s))
-    if (comp_template_args (TREE_PURPOSE (s), args))
-      {
-	tree fn = TREE_VALUE (s);
+    {
+      tree fn = TREE_VALUE (s);
 
-	if (DECL_TEMPLATE_SPECIALIZATION (spec))
-	  {
-	    if (DECL_TEMPLATE_INSTANTIATION (fn))
-	      {
-		if (TREE_USED (fn) 
-		    || DECL_EXPLICIT_INSTANTIATION (fn))
-		  {
-		    cp_error ("specialization of %D after instantiation",
-			      fn);
-		    return spec;
-		  }
-		else
-		  {
-		    /* This situation should occur only if the first
-		       specialization is an implicit instantiation,
-		       the second is an explicit specialization, and
-		       the implicit instantiation has not yet been
-		       used.  That situation can occur if we have
-		       implicitly instantiated a member function and
-		       then specialized it later.
+      /* We can sometimes try to re-register a specialization that we've
+	 already got.  In particular, regenerate_decl_from_template
+	 calls duplicate_decls which will update the specialization
+	 list.  But, we'll still get called again here anyhow.  It's
+	 more convenient to simply allow this than to try to prevent it.  */
+      if (fn == spec)
+	return spec;
+      else if (comp_template_args (TREE_PURPOSE (s), args))
+	{
+	  if (DECL_TEMPLATE_SPECIALIZATION (spec))
+	    {
+	      if (DECL_TEMPLATE_INSTANTIATION (fn))
+		{
+		  if (TREE_USED (fn) 
+		      || DECL_EXPLICIT_INSTANTIATION (fn))
+		    {
+		      cp_error ("specialization of %D after instantiation",
+				fn);
+		      return spec;
+		    }
+		  else
+		    {
+		      /* This situation should occur only if the first
+			 specialization is an implicit instantiation,
+			 the second is an explicit specialization, and
+			 the implicit instantiation has not yet been
+			 used.  That situation can occur if we have
+			 implicitly instantiated a member function and
+			 then specialized it later.
 
-		       We can also wind up here if a friend
-		       declaration that looked like an instantiation
-		       turns out to be a specialization:
+			 We can also wind up here if a friend
+			 declaration that looked like an instantiation
+			 turns out to be a specialization:
 
-		         template <class T> void foo(T);
-			 class S { friend void foo<>(int) };
-			 template <> void foo(int);  
+			   template <class T> void foo(T);
+			   class S { friend void foo<>(int) };
+			   template <> void foo(int);  
 
-		       We transform the existing DECL in place so that
-		       any pointers to it become pointers to the
-		       updated declaration.  
+			 We transform the existing DECL in place so that
+			 any pointers to it become pointers to the
+			 updated declaration.  
 
-		       If there was a definition for the template, but
-		       not for the specialization, we want this to
-		       look as if there is no definition, and vice
-		       versa.  */
-		    DECL_INITIAL (fn) = NULL_TREE;
-		    duplicate_decls (spec, fn);
+			 If there was a definition for the template, but
+			 not for the specialization, we want this to
+			 look as if there is no definition, and vice
+			 versa.  */
+		      DECL_INITIAL (fn) = NULL_TREE;
+		      duplicate_decls (spec, fn);
 
-		    return fn;
-		  }
-	      }
-	    else if (DECL_TEMPLATE_SPECIALIZATION (fn))
-	      {
-		duplicate_decls (spec, fn);
-		return fn;
-	      }
-	  }
+		      return fn;
+		    }
+		}
+	      else if (DECL_TEMPLATE_SPECIALIZATION (fn))
+		{
+		  duplicate_decls (spec, fn);
+		  return fn;
+		}
+	    }
+	}
       }
 
   DECL_TEMPLATE_SPECIALIZATIONS (tmpl)

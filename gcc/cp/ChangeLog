@@ -1,3 +1,13 @@
+1999-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_stmt_expr): Fix typo in comment.
+	* tree.c (search_tree): Handle EXIT_EXPR, LOOP_EXPR.
+	(mapcar): Likewise.
+	* init.c (build_vec_delete_1): Make the children of a permanent
+	BIND_EXPR permanent.
+	* pt.c (register_specialization): Don't register a specialization
+	more than once.
+	
 1999-08-18  Andrew Haley  <aph@cygnus.com>
 
 	* method.c (process_overload_item): Call build_mangled_C9x_name ()
