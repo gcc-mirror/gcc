@@ -34,17 +34,15 @@ extern char *getwd ();
    BSD systems) now provides getcwd as called for by POSIX.  Allow for
    the few exceptions to the general rule here.  */
 
-#if !(defined (POSIX) || defined (USG) || defined (VMS)) || defined (HAVE_GETWD)
+#if !defined(HAVE_GETCWD) && defined(HAVE_GETWD)
 #define getcwd(buf,len) getwd(buf)
+#endif
+
 #ifdef MAXPATHLEN
 #define GUESSPATHLEN (MAXPATHLEN + 1)
 #else
 #define GUESSPATHLEN 100
 #endif
-#else /* (defined (USG) || defined (VMS)) */
-/* We actually use this as a starting point, not a limit.  */
-#define GUESSPATHLEN 100
-#endif /* (defined (USG) || defined (VMS)) */
 
 #if !(defined (VMS) || (defined(_WIN32) && !defined(__CYGWIN__)))
 
