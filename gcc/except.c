@@ -1101,11 +1101,30 @@ static void
 remove_fixup_regions ()
 {
   int i;
+  rtx insn, note;
+  struct eh_region *fixup;
 
+  /* Walk the insn chain and adjust the REG_EH_REGION numbers
+     for instructions referencing fixup regions.  This is only
+     strictly necessary for fixup regions with no parent, but
+     doesn't hurt to do it for all regions.  */
+  for (insn = get_insns(); insn ; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& (note = find_reg_note (insn, REG_EH_REGION, NULL))
+	&& INTVAL (XEXP (note, 0)) > 0
+	&& (fixup = cfun->eh->region_array[INTVAL (XEXP (note, 0))])
+	&& fixup->type == ERT_FIXUP)
+      {
+	if (fixup->u.fixup.real_region)
+	  XEXP (note, 1) = GEN_INT (fixup->u.fixup.real_region->region_number);
+	else
+	  remove_note (insn, note);
+      }
+
+  /* Remove the fixup regions from the tree.  */
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
-      struct eh_region *fixup = cfun->eh->region_array[i];
-
+      fixup = cfun->eh->region_array[i];
       if (! fixup)
 	continue;
 
