@@ -647,7 +647,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  TREE_TYPE (e) = TREE_TYPE (TARGET_EXPR_SLOT (e)) = type;
 	  return e;
 	}
-      else if (CLASS_TYPE_P (type))
+      else if (TREE_ADDRESSABLE (type))
+	/* We shouldn't be treating objects of ADDRESSABLE type as rvalues.  */
 	abort ();
       else
 	return fold (build1 (NOP_EXPR, type, e));

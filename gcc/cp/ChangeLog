@@ -1,5 +1,8 @@
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
+	* cvt.c (ocp_convert): Only abort if we try to convert an object
+	of TREE_ADDRESSABLE type.
+
 	* class.c (build_vtable): Set DECL_ALIGN here.
 	(get_vtable_decl): Not here.
 	(layout_vtable_decl): Or here.
