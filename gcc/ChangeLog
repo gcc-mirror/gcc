@@ -1,5 +1,10 @@
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (addsi_h8300): Remove the last
+	alternative.
+
+2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (get_shift_alg): Remove redundant code.
 
 2003-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
