@@ -1,5 +1,5 @@
 /* ClassLoader.java -- responsible for loading classes into the VM
-   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -122,13 +122,13 @@ public abstract class ClassLoader
    * is not private in order to allow native code (and trusted subclasses)
    * access to this field.
    */
-  final Map loadedClasses = new HashMap();
+  final HashMap loadedClasses = new HashMap();
 
   /**
    * All packages defined by this classloader. It is not private in order to
    * allow native code (and trusted subclasses) access to this field.
    */
-  final Map definedPackages = new HashMap();
+  final HashMap definedPackages = new HashMap();
 
   /**
    * The classloader that is consulted before this classloader.

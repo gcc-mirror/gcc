@@ -1,3 +1,8 @@
+2004-09-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (loadedClasses): Declare as HashMap.
+	(definedPackages): Likewise.
+
 2004-09-24  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectInputStream.java:
