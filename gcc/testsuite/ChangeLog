@@ -1,3 +1,18 @@
+2004-03-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.other/linkage1.C: Expect errors about
+	global variables of a type with no linkage.
+	* g++.old-deja/g++.other/qual1.C: Name class for 'action'.
+	* g++.old-deja/g++.mike/misc13.C: Name enum for 'want'.
+	* g++.old-deja/g++.bugs/900210_01.C: Name enum for 'ep'.
+	* g++.old-deja/g++.bugs/900210_02.C: Likewise.
+	* g++.old-deja/g++.bugs/900210_03.C: Likewise.
+	* g++.old-deja/g++.brendan/bit-fields2.C: Name structure for 's'.
+	* g++.old-deja/g++.brendan/init10.C: Name structure for 'a'.
+	* g++.dg/warn/deprecated.C: Name enum Color.
+	* g++.dg/overload/VLA.C: Name structure for 'b'.
+	* g++.dg/lookup/anon2.C: Expect diagnostic about type linkage.
+
 2004-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20040304-1.c: New test.

@@ -6,7 +6,7 @@
 
 typedef const char *(func_type)();
 
-class
+class C
 {
 public:
   func_type *Function;

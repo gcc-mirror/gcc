@@ -1,3 +1,8 @@
+2004-03-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (grokfndecl): Update old incorrect comment.
+	(grokvardecl): Diagnose C++ variables of type with no linkage.
+
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14369

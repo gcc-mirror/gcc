@@ -6,7 +6,7 @@
 
 // { dg-do compile }
 
-struct {
+struct S {
   int (*p)[];
 } B;
 

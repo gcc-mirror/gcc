@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 // GROUPS passed bit-fields
-	struct {
+	struct S {
 	    char c;
 	    int i:8;
 	} s;

@@ -16,7 +16,7 @@ char c;
 float f;
 double d;
 long double ld;
-enum {enum_value_0} e;
+enum E {enum_value_0} e;
 
 signed int si;
 signed long sl;
@@ -31,8 +31,8 @@ unsigned char uc;
 void* vp;
 char* cp;
 int* ip;
-enum {enum_value_1} * ep;
-struct { int member; } * sp;
+enum E2 {enum_value_1} * ep;
+struct S { int member; } * sp;
 void (*fp) (void);
 
 void global_function ()
