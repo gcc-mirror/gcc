@@ -342,7 +342,6 @@ finish_inline (fndecl, head)
   FIRST_PARM_INSN (head) = get_insns ();
   DECL_SAVED_INSNS (fndecl) = head;
   DECL_FRAME_SIZE (fndecl) = get_frame_size ();
-  DECL_INLINE (fndecl) = 1;
 }
 
 /* Adjust the BLOCK_END_NOTE pointers in a given copied DECL tree so that
