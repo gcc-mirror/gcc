@@ -1,5 +1,9 @@
 2002-04-23  David O'Brien  <obrien@FreeBSD.org>
 
+	* config/freebsd.h(OBJECT_FORMAT_ELF): Define.
+
+2002-04-23  David O'Brien  <obrien@FreeBSD.org>
+
 	* cp/g++spec.c: Use profiled libstdc++ and libm with -p/-pg.
 	* config/freebsd.h (MATH_LIBRARY_PROFILE): Use the _p verions of
 	these libraries.
