@@ -1636,3 +1636,100 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
     }
   return (beg1 != end1) || (beg2 != end2);
 }
+
+/* Dump the definition of macro MACRO on stdout.  The format is suitable
+   to be read back in again. */
+
+void
+dump_definition (pfile, macro)
+     cpp_reader *pfile;
+     MACRODEF macro;
+{
+  DEFINITION *defn = macro.defn;
+
+  CPP_RESERVE (pfile, macro.symlen + sizeof "#define ");
+  CPP_PUTS_Q (pfile, "#define ", sizeof "#define " -1);
+  CPP_PUTS_Q (pfile, macro.symnam, macro.symlen);
+
+  if (defn->nargs == -1)
+    {
+      CPP_PUTC_Q (pfile, ' ');
+
+      /* The first and last two characters of a macro expansion are
+	 always "\r "; this needs to be trimmed out.
+	 So we need length-4 chars of space, plus one for the NUL.  */
+      CPP_RESERVE (pfile, defn->length - 4 + 1);
+      CPP_PUTS_Q (pfile, defn->expansion + 2, defn->length - 4);
+      CPP_NUL_TERMINATE_Q (pfile);
+    }
+  else
+    {
+      struct reflist *r;
+      unsigned char *argnames = xstrdup (defn->args.argnames);
+      unsigned char **argv = alloca (defn->nargs * sizeof(char *));
+      int *argl = alloca (defn->nargs * sizeof(int));
+      unsigned char *x;
+      int i;
+
+      /* First extract the argument list. */
+      x = argnames;
+      i = defn->nargs;
+      while (i--)
+	{
+	  argv[i] = x;
+	  while (*x != ',' && *x != '\0') x++;
+	  argl[i] = x - argv[i];
+	  if (*x == ',')
+	    {
+	      *x = '\0';
+	      x += 2;  /* skip the space after the comma */
+	    }
+	}
+      
+      /* Now print out the argument list. */
+      CPP_PUTC_Q (pfile, '(');
+      for (i = 0; i < defn->nargs; i++)
+	{
+	  CPP_RESERVE (pfile, argl[i] + 2);
+	  CPP_PUTS_Q (pfile, argv[i], argl[i]);
+	  if (i < defn->nargs-1)
+	    CPP_PUTS_Q (pfile, ", ", 2);
+	}
+
+      if (defn->rest_args)
+	CPP_PUTS (pfile, "...) ", 5);
+      else
+	CPP_PUTS (pfile, ") ", 2);
+
+      /* Now the definition. */
+      x = defn->expansion;
+      for (r = defn->pattern; r; r = r->next)
+      {
+	i = r->nchars;
+	if (*x == '\r') x += 2, i -= 2;
+	/* i chars for macro text, plus the length of the macro
+	   argument name, plus one for a stringify marker, plus two for
+	   each concatenation marker. */
+	CPP_RESERVE (pfile,
+		     i + argl[r->argno] + r->stringify
+		     + (r->raw_before + r->raw_after) * 2);
+
+	if (i > 0) CPP_PUTS_Q (pfile, x, i);
+	if (r->raw_before)
+	  CPP_PUTS_Q (pfile, "##", 2);
+	if (r->stringify)
+	  CPP_PUTC_Q (pfile, '#');
+	CPP_PUTS_Q (pfile, argv[r->argno], argl[r->argno]);
+	if (r->raw_after && !(r->next && r->next->nchars == 0
+			      && r->next->raw_before))
+	  CPP_PUTS_Q (pfile, "##", 2);
+
+	x += i;
+      }
+
+      i = defn->length - (x - defn->expansion) - 2;
+      if (*x == '\r') x += 2, i -= 2;
+      if (i > 0) CPP_PUTS (pfile, x, i);
+      CPP_NUL_TERMINATE (pfile);
+    }
+}
