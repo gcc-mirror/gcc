@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,8 +26,6 @@ details.  */
 #include <gcj/array.h>
 
 #include "fdlibm.h"
-
-extern "C" float fabsf (float);
 
 jdouble java::lang::Math::cos(jdouble x)
 {
@@ -89,43 +87,9 @@ jdouble java::lang::Math::IEEEremainder(jdouble y, jdouble x)
   return (jdouble)::__ieee754_remainder((double)y, (double)x);
 }  
 
-jdouble java::lang::Math::abs(jdouble x)
-{
-  return (jdouble)::fabs((double)x);
-}  
-
-jfloat java::lang::Math::abs(jfloat x)
-{
-  return (jfloat)::fabsf((float)x);
-}  
-
 jdouble java::lang::Math::rint(jdouble x)
 {
   return (jdouble)::rint((double)x);
-}  
-
-jint java::lang::Math::round(jfloat x)
-{
-  if (x != x)
-    return 0;
-  if (x <= (jfloat)java::lang::Integer::MIN_VALUE)
-    return java::lang::Integer::MIN_VALUE;
-  if (x >= (jfloat)java::lang::Integer::MAX_VALUE)
-    return java::lang::Integer::MAX_VALUE;
-
-  return (jint)::rintf((float)x);
-}  
-
-jlong java::lang::Math::round(jdouble x)
-{
-  if (x != x)
-    return 0;
-  if (x <= (jdouble)java::lang::Long::MIN_VALUE)
-    return java::lang::Long::MIN_VALUE;
-  if (x >= (jdouble)java::lang::Long::MAX_VALUE)
-    return java::lang::Long::MAX_VALUE;
-
-  return (jlong)::rint((double)x);
 }  
 
 jdouble java::lang::Math::floor(jdouble x)
@@ -158,48 +122,6 @@ isNaN (jint bits)
   return e == 0x7f800000 && f != 0;
 }
 
-jfloat
-java::lang::Math::min(jfloat a, jfloat b)
-{
-  jint abits = floatToIntBits (a);
-  jint bbits = floatToIntBits (b);
-  
-  if (isNaN (abits) || isNaN (bbits))
-    return java::lang::Float::NaN;
-  
-  if (abits >= 0) // a is +ve
-    return bbits < 0 ? b  // a is +ve, b is -ve.
-      // a and b are both +ve, so compare magnitudes: the number with
-      // the smallest magnitude is the smallest
-      : (abits < bbits ? a : b);
-  else // a is -ve
-    return bbits >= 0 ? a  // a is -ve, b is +ve.
-      // a and b are both -ve, so compare magnitudes: the number with
-      // the biggest magnitude is the smallest
-      : (abits > bbits ? a : b);
-}
-
-jfloat 
-java::lang::Math::max(jfloat a, jfloat b)
-{
-  jint abits = floatToIntBits (a);
-  jint bbits = floatToIntBits (b);
-  
-  if (isNaN (abits) || isNaN (bbits))
-    return java::lang::Float::NaN;
-  
-  if (abits >= 0) // a is +ve
-    return bbits < 0 ? a  // a is +ve, b is -ve.
-      // a and b are both +ve, so compare magnitudes: the number with
-      // the smallest magnitude is the smallest
-      : (abits > bbits ? a : b);
-  else // a is -ve
-    return bbits >= 0 ? b  // a is -ve, b is +ve.
-      // a and b are both -ve, so compare magnitudes: the number with
-      // the biggest magnitude is the smallest
-      : (abits < bbits ? a : b);
-}
-
 static inline jlong
 doubleToLongBits (jdouble value)
 {
@@ -218,48 +140,5 @@ isNaN (jlong bits)
   jlong f = bits & 0x000fffffffffffffLL;
   
   return e == 0x7ff0000000000000LL && f != 0LL;
-}
-
-
-jdouble
-java::lang::Math::min(jdouble a, jdouble b)
-{
-  jlong abits = doubleToLongBits (a);
-  jlong bbits = doubleToLongBits (b);
-  
-  if (isNaN (abits) || isNaN (bbits))
-    return java::lang::Double::NaN;
-
-  if (abits >= 0LL) // a is +ve
-    return bbits < 0LL ? b  // a is +ve, b is -ve.
-      // a and b are both +ve, so compare magnitudes: the number with
-      // the smallest magnitude is the smallest
-      : (abits < bbits ? a : b);
-  else // a is -ve
-    return bbits >= 0LL ? a  // a is -ve, b is +ve.
-      // a and b are both -ve, so compare magnitudes: the number with
-      // the biggest magnitude is the smallest
-      : (abits > bbits ? a : b);
-}
-
-jdouble
-java::lang::Math::max(jdouble a, jdouble b)
-{
-  jlong abits = doubleToLongBits (a);
-  jlong bbits = doubleToLongBits (b);
-  
-  if (isNaN (abits) || isNaN (bbits))
-    return java::lang::Double::NaN;
-
-  if (abits >= 0LL) // a is +ve
-    return bbits < 0LL ? a  // a is +ve, b is -ve.
-      // a and b are both +ve, so compare magnitudes: the number with
-      // the smallest magnitude is the smallest
-      : (abits > bbits ? a : b);
-  else // a is -ve
-    return bbits >= 0LL ? b  // a is -ve, b is +ve.
-      // a and b are both -ve, so compare magnitudes: the number with
-      // the biggest magnitude is the smallest
-      : (abits < bbits ? a : b);
 }
 
