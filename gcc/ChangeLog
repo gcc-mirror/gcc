@@ -4,6 +4,13 @@ Wed Nov 10 21:24:19 1999  Jason Eckhardt  <jle@cygnus.com>
 
 Wed Nov 10 15:56:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (compute_flow_dominators): Initially put all blocks on
+	the worklist.
+	* lcm.c (compute_antinout_edge, compute_available): Similarly.
+	* gcse.c (compute_cprop_avinout): Remove.
+	(compute_cprop_data): Use compute_available.
+	(delete_null_pointer_checks_1): Use compute_available.
+
 	* basic-block.h (compute_available): Returns a void now.
 	* gcse.c (one_classic_gcse_pass): Do not expect compute_available
 	to return a value anymore.

@@ -581,7 +581,6 @@ static void compute_transp	    PROTO ((rtx, int, sbitmap *, int));
 static void compute_transpout	    PROTO ((void));
 static void compute_local_properties  PROTO ((sbitmap *, sbitmap *,
 					      sbitmap *, int));
-static void compute_cprop_avinout     PROTO ((void));
 static void compute_cprop_data	PROTO ((void));
 static void find_used_regs	    PROTO ((rtx));
 static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
@@ -3591,40 +3590,6 @@ compute_transp (x, indx, bmap, set_p)
     }
 }
 
-/* Compute the available expressions at the start and end of each
-   basic block for cprop.  This particular dataflow equation is
-   used often enough that we might want to generalize it and make
-   as a subroutine for other global optimizations that need available
-   in/out information.  */
-static void
-compute_cprop_avinout ()
-{
-  int bb, changed, passes;
-
-  sbitmap_zero (cprop_avin[0]);
-  sbitmap_vector_ones (cprop_avout, n_basic_blocks);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 0; bb < n_basic_blocks; bb++)
-	{
-	  if (bb != 0)
-	    sbitmap_intersection_of_preds (cprop_avin[bb], cprop_avout, bb);
-	  changed |= sbitmap_union_of_diff (cprop_avout[bb],
-					    cprop_pavloc[bb],
-					    cprop_avin[bb],
-					    cprop_absaltered[bb]);
-	}
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "cprop avail expr computation: %d passes\n", passes);
-}
-
 /* Top level routine to do the dataflow analysis needed by copy/const
    propagation.  */
 
@@ -3632,7 +3597,8 @@ static void
 compute_cprop_data ()
 {
   compute_local_properties (cprop_absaltered, cprop_pavloc, NULL, 1);
-  compute_cprop_avinout ();
+  compute_available (cprop_pavloc, cprop_absaltered,
+		     cprop_avout, cprop_avin);
 }
 
 /* Copy/constant propagation.  */
@@ -5030,7 +4996,7 @@ delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin,
      sbitmap *nonnull_avout;
      struct null_pointer_info *npi;
 {
-  int changed, bb;
+  int bb;
   int current_block;
   sbitmap *nonnull_local = npi->nonnull_local;
   sbitmap *nonnull_killed = npi->nonnull_killed;
@@ -5103,25 +5069,8 @@ delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin,
 
   /* Now compute global properties based on the local properties.   This
      is a classic global availablity algorithm.  */
-  sbitmap_zero (nonnull_avin[0]);
-  sbitmap_vector_ones (nonnull_avout, n_basic_blocks);
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-
-      for (bb = 0; bb < n_basic_blocks; bb++)
-	{
-	  if (bb != 0)
-	    sbitmap_intersect_of_predecessors (nonnull_avin[bb],
-					       nonnull_avout, bb, s_preds);
-
-	  changed |= sbitmap_union_of_diff (nonnull_avout[bb],
-					    nonnull_local[bb],
-					    nonnull_avin[bb],
-					    nonnull_killed[bb]);
-	}
-    }
+  compute_available (nonnull_local, nonnull_killed,
+		     nonnull_avout, nonnull_avin);
 
   /* Now look at each bb and see if it ends with a compare of a value
      against zero.  */
