@@ -1868,6 +1868,10 @@ dbxout_symbol (decl, local)
 #endif
 
       dbxout_symbol_location (decl, type, 0, DECL_RTL (decl));
+      break;
+      
+    default:
+      break;
     }
 }
 
