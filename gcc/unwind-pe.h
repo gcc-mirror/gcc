@@ -42,6 +42,11 @@
 #define DW_EH_PE_funcrel        0x40
 
 #define DW_EH_PE_indirect	0x80
+
+
+/* Given an encoding, return the number of bytes the format occupies.
+   This is only defined for fixed-size encodings, and so does not 
+   include leb128.  */
 
 static unsigned int
 size_of_encoded_value (unsigned char encoding)
@@ -62,6 +67,11 @@ size_of_encoded_value (unsigned char encoding)
     }
   abort ();
 }
+
+/* Given an encoding and an _Unwind_Context, return the base to which
+   the encoding is relative.  This base may then be passed to 
+   read_encoded_value_with_base for use when the _Unwind_Context is
+   not available.  */
 
 static _Unwind_Ptr
 base_of_encoded_value (unsigned char encoding, _Unwind_Context *context)
@@ -84,6 +94,10 @@ base_of_encoded_value (unsigned char encoding, _Unwind_Context *context)
     }
   abort ();
 }
+
+/* Load an encoded value from memory at P.  The value is returned in VAL;
+   The function returns P incremented past the value.  BASE is as given
+   by base_of_encoded_value for this encoding in the appropriate context.  */
 
 static const unsigned char *
 read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
@@ -186,6 +200,9 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
   return p;
 }
 
+/* Like read_encoded_value_with_base, but get the base from the context
+   rather than providing it directly.  */
+
 static inline const unsigned char *
 read_encoded_value (_Unwind_Context *context, unsigned char encoding,
 		    const unsigned char *p, _Unwind_Ptr *val)
@@ -195,11 +212,16 @@ read_encoded_value (_Unwind_Context *context, unsigned char encoding,
 		p, val);
 }
 
+/* Read an unsigned leb128 value from P, store the value in VAL, return
+   P incremented past the value.  */
+
 static inline const unsigned char *
 read_uleb128 (const unsigned char *p, _Unwind_Ptr *val)
 {
   return read_encoded_value_with_base (DW_EH_PE_uleb128, 0, p, val);
 }
+
+/* Similar, but read a signed leb128 value.  */
 
 static inline const unsigned char *
 read_sleb128 (const unsigned char *p, _Unwind_Ptr *val)
