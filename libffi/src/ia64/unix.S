@@ -290,8 +290,13 @@ ffi_closure_unix:
 	.body
 
 	/* Retrieve closure pointer and real gp.  */
+#ifdef _ILP32
+	addp4	out0 = 0, gp
+	addp4	gp = 16, gp
+#else
 	mov	out0 = gp
 	add	gp = 16, gp
+#endif
 	;;
 	ld8	gp = [gp]
 
@@ -368,31 +373,7 @@ ffi_closure_unix:
 	add	sp = FRAME_SIZE, sp
 	br.ret.sptk.many b0
 	;;
-.Lld_int8:
-	.body
-	.copy_state 1
-	ld1	r8 = [r16]
-	.restore sp
-	add	sp = FRAME_SIZE, sp
-	br.ret.sptk.many b0
-	;;
-.Lld_int16:
-	.body
-	.copy_state 1
-	ld2	r8 = [r16]
-	.restore sp
-	add	sp = FRAME_SIZE, sp
-	br.ret.sptk.many b0
-	;;
-.Lld_int32:
-	.body
-	.copy_state 1
-	ld4	r8 = [r16]
-	.restore sp
-	add	sp = FRAME_SIZE, sp
-	br.ret.sptk.many b0
-	;;
-.Lld_int64:
+.Lld_int:
 	.body
 	.copy_state 1
 	ld8	r8 = [r16]
@@ -554,20 +535,20 @@ ffi_closure_unix:
 
 .Lld_table:
 	data8	@pcrel(.Lld_void)		// FFI_TYPE_VOID
-	data8	@pcrel(.Lld_int32)		// FFI_TYPE_INT
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_INT
 	data8	@pcrel(.Lld_float)		// FFI_TYPE_FLOAT
 	data8	@pcrel(.Lld_double)		// FFI_TYPE_DOUBLE
 	data8	@pcrel(.Lld_ldouble)		// FFI_TYPE_LONGDOUBLE
-	data8	@pcrel(.Lld_int8)		// FFI_TYPE_UINT8
-	data8	@pcrel(.Lld_int8)		// FFI_TYPE_SINT8
-	data8	@pcrel(.Lld_int16)		// FFI_TYPE_UINT16
-	data8	@pcrel(.Lld_int16)		// FFI_TYPE_SINT16
-	data8	@pcrel(.Lld_int32)		// FFI_TYPE_UINT32
-	data8	@pcrel(.Lld_int32)		// FFI_TYPE_SINT32
-	data8	@pcrel(.Lld_int64)		// FFI_TYPE_UINT64
-	data8	@pcrel(.Lld_int64)		// FFI_TYPE_SINT64
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_UINT8
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_SINT8
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_UINT16
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_SINT16
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_UINT32
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_SINT32
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_UINT64
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_SINT64
 	data8	@pcrel(.Lld_void)		// FFI_TYPE_STRUCT
-	data8	@pcrel(.Lld_int64)		// FFI_TYPE_POINTER
+	data8	@pcrel(.Lld_int)		// FFI_TYPE_POINTER
 	data8 	@pcrel(.Lld_small_struct)	// FFI_IA64_TYPE_SMALL_STRUCT
 	data8	@pcrel(.Lld_hfa_float)		// FFI_IA64_TYPE_HFA_FLOAT
 	data8	@pcrel(.Lld_hfa_double)		// FFI_IA64_TYPE_HFA_DOUBLE
