@@ -99,13 +99,15 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", 5},				\
+  { { "68020", -01400},				\
+    { "c68020", -01400},			\
+    { "68020", 5},				\
     { "c68020", 5},				\
     { "68881", 2},				\
     { "bitfield", 4},				\
-    { "68000", -5},				\
-    { "c68000", -5},				\
-    { "soft-float", -0102},			\
+    { "68000", -01405},				\
+    { "c68000", -01405},			\
+    { "soft-float", -01102},			\
     { "nobitfield", -4},			\
     { "rtd", 8},				\
     { "nortd", -8},				\
@@ -115,10 +117,10 @@ extern int target_flags;
     { "nofpa", -0100},				\
     { "sky", 0200},				\
     { "nosky", -0200},				\
-    { "68020-40", 0407},				\
+    { "68020-40", 0407},			\
     { "68030", -01400},				\
     { "68030", 5},				\
-    { "68040", 01007},			\
+    { "68040", 01007},				\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
 
