@@ -4631,7 +4631,7 @@ output_cbranch (op, label, reversed, insn)
       /* If the branch distance was too far, we may have to use an
 	 unconditional branch to go the distance.  */
       if (need_longbranch)
-	s += sprintf (s, ",%c$+8 ; b %s", '%', label);
+	s += sprintf (s, ",%c$+8\n\tb %s", '%', label);
       else
 	s += sprintf (s, ",%s", label);
     }
