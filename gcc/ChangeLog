@@ -1,3 +1,10 @@
+2003-02-11  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_movstr): Fail if esi or edi
+	appropriated as globals.
+	(ix86_expand_clrstr): Similarly.
+	* config/i386/i386.md (cmpstrsi): Similarly.
+
 2003-02-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Add a case of 255.
