@@ -4549,6 +4549,26 @@ assign_parms (fndecl)
 	  && nominal_mode != BLKmode && nominal_mode != passed_mode)
 	stack_parm = 0;
 
+      /* When an argument is passed in multiple locations, we can't
+	 make use of this information, but we can save some copying if
+	 the whole argument is passed in a single register.  */
+      if (GET_CODE (entry_parm) == PARALLEL
+	  && nominal_mode != BLKmode && passed_mode != BLKmode)
+	{
+	  int i, len = XVECLEN (entry_parm, 0);
+
+	  for (i = 0; i < len; i++)
+	    if (XEXP (XVECEXP (entry_parm, 0, i), 0) != NULL_RTX
+		&& GET_CODE (XEXP (XVECEXP (entry_parm, 0, i), 0)) == REG
+		&& (GET_MODE (XEXP (XVECEXP (entry_parm, 0, i), 0))
+		    == passed_mode)
+		&& XINT (XEXP (XVECEXP (entry_parm, 0, i), 1), 0) == 0)
+	      {
+		entry_parm = XEXP (XVECEXP (entry_parm, 0, i), 0);
+		break;
+	      }
+	}
+
       /* ENTRY_PARM is an RTX for the parameter as it arrives,
 	 in the mode in which it arrives.
 	 STACK_PARM is an RTX for a stack slot where the parameter can live
