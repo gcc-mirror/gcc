@@ -1,3 +1,7 @@
+Wed Sep 15 21:20:38 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-typeck.c (qualify_type): Merge qualifiers from both types.
+
 1999-09-15  Brad Lucier  <lucier@math.purdue.edu>
 
 	* toplev.c: Allow -f[no-]math-errno to set (clear) flag_errno_math
