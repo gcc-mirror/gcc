@@ -1,3 +1,8 @@
+2001-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* mips.md (reload_outputdi): Require that operand0 be a
+	general_operand.
+
 2001-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* invoke.texi (-Wshadow): Clarify.
