@@ -1,5 +1,9 @@
 2002-06-20  Chris Demetriou  <cgd@broadcom.com>
 
+	* config.gcc (mipsisa64-*-elf*, mipsisa64el-*-elf*): New targets.
+
+2002-06-20  Chris Demetriou  <cgd@broadcom.com>
+
 	* config/mips/mips.h (ISA_HAS_FP4): Fix comment to reflect use.
 
 2002-06-20  Stan Shebs  <shebs@apple.com>

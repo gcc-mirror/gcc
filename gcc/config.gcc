@@ -1856,6 +1856,12 @@ mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_SOFT_FLOAT"
 	;;
+mipsisa64-*-elf* | mipsisa64el-*-elf*)
+	tm_file="mips/isa3264.h mips/abi64.h"
+	tmake_file=mips/t-isa3264
+	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
+	tm_defines="MIPS_ISA_DEFAULT=64"
+	;;
 mips-*-elf* | mipsel-*-elf*)
 	tm_file="mips/elf.h"
 	tmake_file=mips/t-elf
