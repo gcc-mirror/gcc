@@ -450,9 +450,7 @@ f77.install-common:
 	    chmod a+x $(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	    if $(F77_INSTALL_FLAG) ; then \
 	      rm -f $(bindir)/$(F77_CROSS_NAME)$(exeext); \
-	      ln $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext) \
-		> /dev/null 2>&1 \
-		|| cp $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext) ; \
+	      $(LN) $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext); \
 	    fi ; \
 	  else \
 	    rm -f $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
@@ -460,9 +458,7 @@ f77.install-common:
 	    chmod a+x $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	    if $(F77_INSTALL_FLAG) ; then \
 	      rm -f $(bindir)/$(F77_INSTALL_NAME)$(exeext); \
-	      ln $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext) \
-		> /dev/null 2>&1 \
-		|| cp $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext) ; \
+	      $(LN) $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext); \
 	    fi ; \
 	  fi ; \
 	else true; fi
@@ -485,9 +481,7 @@ f77.install-man: $(srcdir)/f/g77.1
 	    chmod a-x $(mandir)/$(G77_CROSS_NAME)$(manext); \
 	    if $(F77_INSTALL_FLAG) ; then \
 	      rm -f $(mandir)/$(F77_CROSS_NAME)$(manext); \
-	      ln $(mandir)/$(G77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext) \
-		> /dev/null 2>&1 \
-		|| cp $(mandir)/$(F77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext) ; \
+	      $(LN) $(mandir)/$(G77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext); \
 	    fi ;\
 	  else \
 	    rm -f $(mandir)/$(G77_INSTALL_NAME)$(manext); \
@@ -495,9 +489,7 @@ f77.install-man: $(srcdir)/f/g77.1
 	    chmod a-x $(mandir)/$(G77_INSTALL_NAME)$(manext); \
 	    if $(F77_INSTALL_FLAG) ; then \
 	      rm -f $(mandir)/$(F77_INSTALL_NAME)$(manext); \
-	      ln $(mandir)/$(G77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext) \
-		> /dev/null 2>&1 \
-		|| cp $(mandir)/$(F77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext) ; \
+	      $(LN) $(mandir)/$(G77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext); \
 	    fi ;\
 	  fi; \
 	else true; fi
@@ -606,5 +598,5 @@ f77.distdir: f77.rebuilt
 	mkdir tmp/f
 	cd f; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/f >/dev/null 2>&1 || cp $$file ../tmp/f; \
+	  ($LN) $$file ../tmp/f
 	done

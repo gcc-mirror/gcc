@@ -1,3 +1,7 @@
+Wed Sep 10 16:39:47 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Make-lang.in (LN, LN_S): New macros, use where appropriate.
+
 Tue Sep  9 13:20:40 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* g77.c (pexecute, doit): Add checks for __CYGWIN32__.

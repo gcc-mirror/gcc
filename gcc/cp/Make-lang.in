@@ -74,7 +74,7 @@ C++ c++: cc1plus
 
 g++.c: $(srcdir)/gcc.c
 	-rm -f $@
-	ln -s $(srcdir)/gcc.c $@ || cp $(srcdir)/gcc.c $@
+	$(LN_S) $(srcdir)/gcc.c $@
 
 g++spec.o: $(srcdir)/cp/g++spec.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
@@ -101,8 +101,7 @@ g++-cross$(exeext): g++$(exeext)
 
 cxxmain.o: cplus-dem.c demangle.h
 	rm -f cxxmain.c
-	ln -s $(srcdir)/cplus-dem.c cxxmain.c > /dev/null 2>&1 \
-	 || cp $(srcdir)/cplus-dem.c cxxmain.c
+	$(LN_S) $(srcdir)/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DVERSION=\"$(version)\" cxxmain.c
 	rm -f cxxmain.c
@@ -199,17 +198,13 @@ c++.install-common:
 	    $(INSTALL_PROGRAM) g++-cross$(exeext) $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
 	    rm -f $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
-	    ln $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext) \
-	      > /dev/null 2>&1 \
-	      || cp $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext) ; \
+	    $(LN) $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
 	  else \
 	    rm -f $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) g++$(exeext) $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
-	    ln $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) \
-	      > /dev/null 2>&1 \
-	      || cp $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) ; \
+	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	  fi ; \
 	fi
 
@@ -273,5 +268,5 @@ c++.distdir:
 	cd cp ; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) parse.c hash.h
 	cd cp; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/cp >/dev/null 2>&1 || cp $$file ../tmp/cp; \
+	  $(LN) $$file ../tmp/cp; \
 	done

@@ -1,7 +1,3 @@
-Thu Sep 11 11:09:43 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* loop.c (strength_reduce): Fix typo.
-
 Wed Sep 10 21:37:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
@@ -13,6 +9,17 @@ Wed Sep 10 21:37:30 1997  Jeffrey A Law  (law@cygnus.com)
 Wed Sep 10 17:05:46 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* config/alpha/elf.h (CPP_PREDEFINES): Remove -D__PIC__ -D__pic__.
+
+Wed Sep 10 16:37:28 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* Makefile.in (LN, LN_S): New macros, use where appropriate.
+	* aclocal.m4 (GCC_PROG_LN_S, GCC_PROG_LN): New tests.
+	* configure.in: Use GCC_PROG_LN_S and GCC_PROG_LN.
+	* configure: Regenerated.
+
+Thu Sep 11 11:09:43 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (strength_reduce): Fix typo.
 
 Wed Sep 10 16:01:15 1997  Jim Wilson  <wilson@cygnus.com>
 
