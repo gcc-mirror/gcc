@@ -339,15 +339,15 @@ extern int errno;
   return self;
 }
 
+#ifndef __alpha__ /* TypedStream not supported on alpha yet.  */
 + (int)streamVersion: (TypedStream*)aStream
 {
-#ifndef __alpha__
   if (aStream->mode == OBJC_READONLY)
     return objc_get_stream_class_version (aStream, self);
   else
-#endif
     return class_get_version (self);
 }
+#endif
 
 // These are used to write or read the instance variables 
 // declared in this particular part of the object.  Subclasses
@@ -355,17 +355,21 @@ extern int errno;
 // before doing their own archiving.  These methods are private, in
 // the sense that they should only be called from subclasses.
 
+#ifndef __alpha__
 - read: (TypedStream*)aStream
 {
   // [super read: aStream];  
   return self;
 }
+#endif
 
+#ifndef __alpha__
 - write: (TypedStream*)aStream
 {
   // [super write: aStream];
   return self;
 }
+#endif
 
 - awake
 {
