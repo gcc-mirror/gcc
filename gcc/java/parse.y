@@ -12873,7 +12873,7 @@ patch_assignment (node, wfl_op1)
     }
 
   /* Copy the rhs if it's a reference.  */
-  if (! flag_check_references && optimize > 0)
+  if (! flag_check_references && ! flag_emit_class_files && optimize > 0)
     {
       switch (TREE_CODE (new_rhs))
 	{

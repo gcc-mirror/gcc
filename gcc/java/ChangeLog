@@ -1,3 +1,8 @@
+2003-01-29  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (patch_assignment): Only transform the rhs of an
+	assignment when compiling to native.
+
 2003-01-28  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_lex): Don't include UEOF as part of token.
