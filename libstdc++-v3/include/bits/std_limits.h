@@ -175,7 +175,7 @@
 #define __glibcpp_f32_min 1.17549435e-38F
 #define __glibcpp_f32_max 3.40282347e+38F
 #define __glibcpp_f32_digits 24
-#define __glibcpp_f32_digits10 7
+#define __glibcpp_f32_digits10 6
 #define __glibcpp_f32_radix 2
 #define __glibcpp_f32_epsilon 1.19209290e-07F
 #define __glibcpp_f32_round_error 1.0F
@@ -197,7 +197,7 @@
 #define __glibcpp_f80_min 3.36210314311209350626e-4932L
 #define __glibcpp_f80_max 1.18973149535723176502e+4932L
 #define __glibcpp_f80_digits 64
-#define __glibcpp_f80_digits10 19
+#define __glibcpp_f80_digits10 18
 #define __glibcpp_f80_radix 2
 #define __glibcpp_f80_epsilon 1.08420217248550443401e-19L
 #define __glibcpp_f80_round_error 1.0L
@@ -205,10 +205,21 @@
 #define __glibcpp_f80_min_exponent10 -4931
 #define __glibcpp_f80_max_exponent 16384
 #define __glibcpp_f80_max_exponent10 4932
+#define __glibcpp_f96_min 1.68105157155604675313e-4932L
+#define __glibcpp_f96_max 1.18973149535723176502e+4932L
+#define __glibcpp_f96_digits 64
+#define __glibcpp_f96_digits10 18
+#define __glibcpp_f96_radix 2
+#define __glibcpp_f96_epsilon 1.08420217248550443401e-19L
+#define __glibcpp_f96_round_error 1.0L
+#define __glibcpp_f96_min_exponent -16382
+#define __glibcpp_f96_min_exponent10 -4931
+#define __glibcpp_f96_max_exponent 16384
+#define __glibcpp_f96_max_exponent10 4932
 #define __glibcpp_f128_min 3.362103143112093506262677817321752603E-4932L
 #define __glibcpp_f128_max 1.189731495357231765085759326628007016E+4932L
 #define __glibcpp_f128_digits 113
-#define __glibcpp_f128_digits10 34
+#define __glibcpp_f128_digits10 33
 #define __glibcpp_f128_radix 2
 #define __glibcpp_f128_epsilon 1.925929944387235853055977942584927319E-34L
 #define __glibcpp_f128_round_error 1.0L
@@ -766,6 +777,18 @@
 #define __glibcpp_long_double_min_exponent10 __glibcpp_f80_min_exponent10
 #define __glibcpp_long_double_max_exponent __glibcpp_f80_max_exponent
 #define __glibcpp_long_double_max_exponent10 __glibcpp_f80_max_exponent10
+#elif __glibcpp_long_double_bits == 96
+#define __glibcpp_long_double_min __glibcpp_f96_min
+#define __glibcpp_long_double_max __glibcpp_f96_max
+#define __glibcpp_long_double_digits __glibcpp_f96_digits
+#define __glibcpp_long_double_digits10 __glibcpp_f96_digits10
+#define __glibcpp_long_double_radix __glibcpp_f96_radix
+#define __glibcpp_long_double_epsilon __glibcpp_f96_epsilon
+#define __glibcpp_long_double_round_error __glibcpp_f96_round_error
+#define __glibcpp_long_double_min_exponent __glibcpp_f96_min_exponent
+#define __glibcpp_long_double_min_exponent10 __glibcpp_f96_min_exponent10
+#define __glibcpp_long_double_max_exponent __glibcpp_f96_max_exponent
+#define __glibcpp_long_double_max_exponent10 __glibcpp_f96_max_exponent10
 #elif __glibcpp_long_double_bits == 128
 #define __glibcpp_long_double_min __glibcpp_f128_min
 #define __glibcpp_long_double_max __glibcpp_f128_max
