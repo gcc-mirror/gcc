@@ -1728,7 +1728,7 @@ sched_analyze_2 (x, insn)
 	  remove_dependence (insn, prev);
 
 	for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
-	  add_dependence (insn, XEXP (link, 0), GET_MODE (link));
+	  add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
 
 	return;
       }
@@ -1930,7 +1930,7 @@ sched_analyze_insn (x, insn)
 	     group.  */
 
 	  for (link = LOG_LINKS (dep_insn); link; link = XEXP (link, 1))
-	    add_dependence (insn, XEXP (link, 0), GET_MODE (link));
+	    add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
 
 	  prev_dep_insn = dep_insn;
 	  dep_insn = PREV_INSN (dep_insn);
