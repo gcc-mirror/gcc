@@ -1,5 +1,10 @@
 2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/7983
+	* g++.dg/parse/typedef4.C: New test.
+
+2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/8442, c++/8806
 	* g++.dg/template/elab1.C: New test.
 	* g++.dg/template/type2.C: Likewise.
