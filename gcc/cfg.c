@@ -88,7 +88,7 @@ varray_type basic_block_info;
 basic_block ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR;
 
 /* Memory alloc pool for bb member rbi.  */
-alloc_pool rbi_pool;
+static alloc_pool rbi_pool;
 
 void debug_flow_info (void);
 static void free_edge (edge);
