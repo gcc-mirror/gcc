@@ -1,3 +1,9 @@
+2004-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* fixinc/inclhack.def (stdio_va_list): Also fix com_err.h, cps.h,
+	curses.h, krb5.h, lc_core.h, pfmt.h, wchar.h and curses_colr/curses.h.
+	* fixinc/fixincl.x: Rebuilt.
+
 2004-08-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_symbolic_constant_p)

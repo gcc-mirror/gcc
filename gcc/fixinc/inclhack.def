@@ -2653,6 +2653,14 @@ fix = {
     files    = stdio.h;
     files    = internal/stdio_core.h;
     files    = internal/wchar_core.h;
+    files    = com_err.h;
+    files    = cps.h;
+    files    = curses.h;
+    files    = krb5.h;
+    files    = lc_core.h;
+    files    = pfmt.h;
+    files    = wchar.h;
+    files    = curses_colr/curses.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
 
     /*
