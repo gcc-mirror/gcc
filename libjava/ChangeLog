@@ -1,5 +1,14 @@
 2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
 
+	* java/text/SimpleDateFormat.java:
+	(formatWithAttribute): New method. It implements
+	the formatting process with attributes.
+	(format): Use formatWithAttribute.
+	(formatToCharacterIterator): New method. Use
+	formatWithAttribute.
+
+2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
+
 	* java/text/MessageFormat.java:
 	(class Field): New class.
 	(formatToCharacterIterator): New method.
