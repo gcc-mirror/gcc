@@ -1,5 +1,5 @@
 /* Implement the vsnprintf function.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.  This library is free
@@ -42,11 +42,7 @@ system version of this function is used.
 #include "config.h"
 #include "ansidecl.h"
 
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -58,11 +54,7 @@ system version of this function is used.
 
 /* This implementation relies on a working vasprintf.  */
 int
-vsnprintf (s, n, format, ap)
-     char * s;
-     size_t n;
-     const char *format;
-     va_list ap;
+vsnprintf (char *s, size_t n, const char *format, va_list ap)
 {
   char *buf = 0;
   int result = vasprintf (&buf, format, ap);
@@ -97,7 +89,7 @@ vsnprintf (s, n, format, ap)
 #define VERIFY(P) do { if (!(P)) abort(); } while (0)
 
 static int ATTRIBUTE_PRINTF_3
-checkit VPARAMS ((char *s, size_t n, const char *format, ...))
+checkit (char *s, size_t n, const char *format, ...)
 {
   int result;
   VA_OPEN (ap, format);
@@ -109,9 +101,9 @@ checkit VPARAMS ((char *s, size_t n, const char *format, ...))
   return result;
 }
 
-extern int main PARAMS ((void));
+extern int main (void);
 int
-main ()
+main (void)
 {
   char buf[128];
   int status;

@@ -41,18 +41,14 @@ extern PTR memset ();
 #undef sys_nsig
 
 #ifndef NULL
-#  ifdef ANSI_PROTOTYPES
-#    define NULL (void *) 0
-#  else
-#    define NULL 0
-#  endif
+#  define NULL (void *) 0
 #endif
 
 #ifndef MAX
 #  define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif
 
-static void init_signal_tables PARAMS ((void));
+static void init_signal_tables (void);
 
 /* Translation table for signal values.
 
@@ -288,7 +284,7 @@ BUGS
 */
 
 static void
-init_signal_tables ()
+init_signal_tables (void)
 {
   const struct signal_info *eip;
   int nbytes;
@@ -369,7 +365,7 @@ symbolic name or message.
 */
 
 int
-signo_max ()
+signo_max (void)
 {
   int maxsize;
 
@@ -409,8 +405,7 @@ call to @code{strsignal}.
 #ifndef HAVE_STRSIGNAL
 
 const char *
-strsignal (signo)
-  int signo;
+strsignal (int signo)
 {
   const char *msg;
   static char buf[32];
@@ -469,8 +464,7 @@ valid until the next call to @code{strsigno}.
 */
 
 const char *
-strsigno (signo)
-  int signo;
+strsigno (int signo)
 {
   const char *name;
   static char buf[32];
@@ -513,8 +507,7 @@ translation is found, returns 0.
 */
 
 int
-strtosigno (name)
-     const char *name;
+strtosigno (const char *name)
 {
   int signo = 0;
 
@@ -556,9 +549,7 @@ followed by a newline.
 #ifndef HAVE_PSIGNAL
 
 void
-psignal (signo, message)
-  unsigned signo;
-  char *message;
+psignal (unsigned signo, char *message)
 {
   if (signal_names == NULL)
     {
@@ -585,7 +576,7 @@ psignal (signo, message)
 #include <stdio.h>
 
 int
-main ()
+main (void)
 {
   int signo;
   int maxsigno;

@@ -1,3 +1,38 @@
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert libiberty to use ISO C prototype style 6/n.
+	* strerror.c (init_error_tables, errno_max, strerror, strerrno, 
+	strtoerrno, main): Use ISO C prototype style.
+	* strncasecmp.c (strncasecmp): Likewise.
+	* strncmp.c (strncmp): Likewise.
+	* strndup.c (strndup): Likewise.
+	* strrchr.c (strrchr): Likewise.
+	* strsignal.c (init_signal_tables, signo_max, strsignal, 
+	strsigno, strtosigno, psignal, main): Likewise.
+	* strstr.c (strstr): Likewise.
+	* strtod.c (strtod, atof): Likewise.
+	* strtol.c (strtol): Likewise.
+	* strtoul.c (strtoul): Likewise.
+	* ternary.c (ternary_insert, ternary_cleanup, ternary_search, 
+	ternary_recursivesearch): Likewise.
+	* tmpnam.c (tmpnam): Likewise.
+	* unlink-if-ordinary.c (unlink_if_ordinary): Likewise.
+	* vasprintf.c (int_vasprintf, vasprintf, checkit, main): Likewise.
+	* vfork.c (vfork): Likewise.
+	* vfprintf.c (vfprintf): Likewise.
+	* vprintf.c (vprintf): Likewise.
+	* vsnprintf.c (vsnprintf, checkit, main): Likewise.
+	* vsprintf.c (vsprintf): Likewise.
+	* waitpid.c (waitpid): Likewise.
+	* xatexit.c (xatexit, xatexit_cleanup): Likewise.
+	* xexit.c (xexit): Likewise.
+	* xmalloc.c (xmalloc_set_program_name, xmalloc_failed, xmalloc, 
+	xcalloc, xrealloc): Likewise.
+	* xmemdup.c (xmemdup): Likewise.
+	* xstrdup.c (xstrdup): Likewise.
+	* xstrerror.c (xstrerror): Likewise.
+	* xstrndup.c (xstrndup): Likewise.
+
 2005-03-27  Andreas Jaeger  <aj@suse.de>
 
 	* configure.ac (ac_c_preproc_warn_flag): Remove -Wtraditional

@@ -27,31 +27,27 @@ failure.  If you use @code{xatexit} to register functions, you must use
 
 #include <stdio.h>
 
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
 #if VMS
 #include <stdlib.h>
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, this must be declared.  */
-PTR malloc PARAMS ((size_t));
+PTR malloc (size_t);
 #endif
 
-static void xatexit_cleanup PARAMS ((void));
+static void xatexit_cleanup (void);
 
 /* Pointer to function run by xexit.  */
-extern void (*_xexit_cleanup) PARAMS ((void));
+extern void (*_xexit_cleanup) (void);
 
 #define	XATEXIT_SIZE 32
 
 struct xatexit {
 	struct	xatexit *next;		/* next in list */
 	int	ind;			/* next index in this table */
-	void	(*fns[XATEXIT_SIZE]) PARAMS ((void));	/* the table itself */
+	void	(*fns[XATEXIT_SIZE]) (void);	/* the table itself */
 };
 
 /* Allocate one struct statically to guarantee that we can register
@@ -65,8 +61,7 @@ static struct xatexit *xatexit_head = &xatexit_first;
    Return 0 if successful, -1 if not.  */
 
 int
-xatexit (fn)
-     void (*fn) PARAMS ((void));
+xatexit (void (*fn) (void))
 {
   register struct xatexit *p;
 
@@ -90,7 +85,7 @@ xatexit (fn)
 /* Call any cleanup functions.  */
 
 static void
-xatexit_cleanup ()
+xatexit_cleanup (void)
 {
   register struct xatexit *p;
   register int n;

@@ -68,22 +68,17 @@ function will be called to print an error message and terminate execution.
 
 #include <stdio.h>
 
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#define ptrdiff_t long
-#endif
 
 #if VMS
 #include <stdlib.h>
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, these must be declared.  */
-PTR malloc PARAMS ((size_t));
-PTR realloc PARAMS ((PTR, size_t));
-PTR calloc PARAMS ((size_t, size_t));
-PTR sbrk PARAMS ((ptrdiff_t));
+PTR malloc (size_t);
+PTR realloc (PTR, size_t);
+PTR calloc (size_t, size_t);
+PTR sbrk (ptrdiff_t);
 #endif
 
 /* The program name if set.  */
@@ -96,8 +91,7 @@ static char *first_break = NULL;
 #endif /* HAVE_SBRK */
 
 void
-xmalloc_set_program_name (s)
-     const char *s;
+xmalloc_set_program_name (const char *s)
 {
   name = s;
 #ifdef HAVE_SBRK
@@ -108,8 +102,7 @@ xmalloc_set_program_name (s)
 }
 
 void
-xmalloc_failed (size)
-     size_t size;
+xmalloc_failed (size_t size)
 {
 #ifdef HAVE_SBRK
   extern char **environ;
@@ -133,8 +126,7 @@ xmalloc_failed (size)
 }  
 
 PTR
-xmalloc (size)
-    size_t size;
+xmalloc (size_t size)
 {
   PTR newmem;
 
@@ -148,8 +140,7 @@ xmalloc (size)
 }
 
 PTR
-xcalloc (nelem, elsize)
-  size_t nelem, elsize;
+xcalloc (size_t nelem, size_t elsize)
 {
   PTR newmem;
 
@@ -164,9 +155,7 @@ xcalloc (nelem, elsize)
 }
 
 PTR
-xrealloc (oldmem, size)
-    PTR oldmem;
-    size_t size;
+xrealloc (PTR oldmem, size_t size)
 {
   PTR newmem;
 

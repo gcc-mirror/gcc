@@ -40,16 +40,14 @@ the location referenced by @var{endptr}.
 #include "ansidecl.h"
 #include "safe-ctype.h"
 
-extern double atof ();
+extern double atof (const char *);
 
 /* Disclaimer: this is currently just used by CHILL in GDB and therefore
    has not been tested well.  It may have been tested for nothing except
    that it compiles.  */
 
 double
-strtod (str, ptr)
-     char *str;
-     char **ptr;
+strtod (char *str, char **ptr)
 {
   char *p;
 

@@ -45,9 +45,7 @@ always NUL terminated.
 #include "libiberty.h"
 
 char *
-xstrndup (s, n)
-     const char *s;
-     size_t n;
+xstrndup (const char *s, size_t n)
 {
   char *result;
   size_t len = strlen (s);

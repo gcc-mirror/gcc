@@ -13,10 +13,10 @@ Emulates @code{vfork} by calling @code{fork} and returning its value.
 
 #include "ansidecl.h"
 
-extern int fork PARAMS ((void));
+extern int fork (void);
 
 int
-vfork ()
+vfork (void)
 {
   return (fork ());
 }

@@ -34,11 +34,7 @@
    insertions. */
 
 PTR
-ternary_insert (root, s, data, replace)
-     ternary_tree *root;
-     const char *s;
-     PTR data;
-     int replace;
+ternary_insert (ternary_tree *root, const char *s, PTR data, int replace)
 {
   int diff;
   ternary_tree curr, *pcurr;
@@ -98,8 +94,7 @@ ternary_insert (root, s, data, replace)
 
 /* Free the ternary search tree rooted at p. */
 void
-ternary_cleanup (p)
-     ternary_tree p;
+ternary_cleanup (ternary_tree p)
 {
   if (p)
     {
@@ -113,9 +108,7 @@ ternary_cleanup (p)
 
 /* Non-recursive find of a string in the ternary tree */
 PTR
-ternary_search (p, s)
-     const ternary_node *p;
-     const char *s;
+ternary_search (const ternary_node *p, const char *s)
 {
   const ternary_node *curr;
   int diff, spchar;
@@ -147,9 +140,7 @@ ternary_search (p, s)
 /* For those who care, the recursive version of the search. Useful if
    you want a starting point for pmsearch or nearsearch. */
 static PTR
-ternary_recursivesearch (p, s)
-     const ternary_node *p;
-     const char *s;
+ternary_recursivesearch (const ternary_node *p, const char *s)
 {
   if (!p)
     return 0;

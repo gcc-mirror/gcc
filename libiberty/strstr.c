@@ -21,8 +21,7 @@ length, the function returns @var{string}.
    been validated to comply with it.  -fnf */
 
 char *
-strstr (s1, s2)
-  char *s1, *s2;
+strstr (char *s1, char *s2)
 {
   register char *p = s1;
   extern char *strchr ();

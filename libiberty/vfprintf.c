@@ -4,19 +4,12 @@
  */
 
 #include "ansidecl.h"
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include <stdio.h>
 #undef vfprintf
 
 int
-vfprintf (stream, format, ap)
-  FILE * stream;
-  const char * format;
-  va_list ap;
+vfprintf (FILE *stream, const char *format, va_list ap)
 {
   return _doprnt (format, ap, stream);
 }
