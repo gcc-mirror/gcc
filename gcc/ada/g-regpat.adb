@@ -2549,7 +2549,7 @@ package body GNAT.Regpat is
                         end if;
 
                         Scan := Get_Next (Program, Scan);
-                        exit when Scan = 0 or Program (Scan) /= BRANCH;
+                        exit when Scan = 0 or else Program (Scan) /= BRANCH;
                      end loop;
 
                      exit State_Machine;
