@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -721,7 +721,7 @@ static bool
 contains_abnormal_ssa_name_p (tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
-  char class = TREE_CODE_CLASS (code);
+  enum tree_code_class class = TREE_CODE_CLASS (code);
     
   if (code == SSA_NAME)
     return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
@@ -737,13 +737,13 @@ contains_abnormal_ssa_name_p (tree expr)
 
   switch (class)
     {
-    case '2':
-    case '<':
+    case tcc_binary:
+    case tcc_comparison:
       if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
 	return true;
 
       /* Fallthru.  */
-    case '1':
+    case tcc_unary:
       if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0)))
 	return true;
 
@@ -1347,21 +1347,20 @@ find_interesting_uses_stmt (struct ivopts_data *data, tree stmt)
 
       switch (TREE_CODE_CLASS (TREE_CODE (rhs)))
 	{
-	case '<':
+	case tcc_comparison:
 	  find_interesting_uses_cond (data, stmt, &TREE_OPERAND (stmt, 1));
 	  return;
 
-	case 'r':
+	case tcc_reference:
 	  find_interesting_uses_address (data, stmt, &TREE_OPERAND (stmt, 1));
-	  if (TREE_CODE_CLASS (TREE_CODE (lhs)) == 'r')
+	  if (REFERENCE_CLASS_P (lhs))
 	    find_interesting_uses_address (data, stmt, &TREE_OPERAND (stmt, 0));
 	  return;
 
 	default: ;
 	}
 
-      /* Handle memory = gimple_val.  */
-      if (TREE_CODE_CLASS (TREE_CODE (lhs)) == 'r'
+      if (REFERENCE_CLASS_P (lhs)
 	  && is_gimple_val (rhs))
 	{
 	  find_interesting_uses_address (data, stmt, &TREE_OPERAND (stmt, 0));

@@ -1,3 +1,12 @@
+2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-tree.def: Use tree_code_class enumeration constants
+	instead of code letters.
+	* call.c, class.c, cp-gimplify.c, cp-lang.c, cxx-pretty-print.c
+	* mangle.c, pt.c, semantics.c, tree.c, typeck.c:
+	Update for new tree-class enumeration constants.
+
 2004-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16002
@@ -16,7 +25,7 @@
 
 2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
 
-	* error.c (dump_decl): Make sure there is lang_specific info before 
+	* error.c (dump_decl): Make sure there is lang_specific info before
 	checking for DTOR and CTOR decls.
 
 2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
@@ -106,9 +115,9 @@
 2004-09-11  Richard Henderson  <rth@redhat.com>
 
 	PR c++/17404
-        * pt.c (cur_stmt_expr): Move from tsubst_expr.
-        (tsubst_expr) <case STMT_EXPR>: Move ...
-        (tsubst_copy_and_build): ... here.
+	* pt.c (cur_stmt_expr): Move from tsubst_expr.
+	(tsubst_expr) <case STMT_EXPR>: Move ...
+	(tsubst_copy_and_build): ... here.
 
 2004-09-10  Zack Weinberg  <zack@codesourcery.com>
 

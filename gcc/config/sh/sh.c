@@ -7065,7 +7065,7 @@ sh_insert_attributes (tree node, tree *attributes)
     return;
 
   /* We are only interested in fields.  */
-  if (TREE_CODE_CLASS (TREE_CODE (node)) != 'd')
+  if (!DECL_P (node))
     return;
 
   /* Add a 'handle_interrupt' attribute.  */

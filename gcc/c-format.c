@@ -2094,7 +2094,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 		  && i == 0
 		  && (TYPE_READONLY (cur_type)
 		      || (cur_param != 0
-			  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
+			  && (CONSTANT_CLASS_P (cur_param)
 			      || (DECL_P (cur_param)
 				  && TREE_READONLY (cur_param))))))
 		warning ("writing into constant object (arg %d)", arg_num);

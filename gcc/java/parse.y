@@ -1687,7 +1687,7 @@ do_statement:
 for_statement:
 	for_begin SC_TK expression SC_TK for_update CP_TK statement
 		{
-		  if (TREE_CODE_CLASS (TREE_CODE ($3)) == 'c')
+		  if (CONSTANT_CLASS_P ($3))
 		    $3 = build_wfl_node ($3);
 		  $$ = finish_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7);
 		}
@@ -3126,7 +3126,7 @@ find_expr_with_wfl (tree node)
 {
   while (node)
     {
-      char code;
+      enum tree_code_class code;
       tree to_return;
 
       switch (TREE_CODE (node))
@@ -3152,7 +3152,8 @@ find_expr_with_wfl (tree node)
 
 	default:
 	  code = TREE_CODE_CLASS (TREE_CODE (node));
-	  if (((code == '1') || (code == '2') || (code == 'e'))
+	  if (((code == tcc_unary) || (code == tcc_binary)
+	       || (code == tcc_expression))
 	      && EXPR_WFL_LINECOL (node))
 	    return node;
 	  return NULL_TREE;
@@ -14895,8 +14896,7 @@ finish_for_loop (int location, tree condition, tree update, tree body)
 	{
 	  /* Try to detect constraint violations.  These would be
 	     programming errors somewhere.  */
-	  if (! IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (up2)))
-	      || TREE_CODE (up2) == LOOP_EXPR)
+	  if (! EXPR_P (up2) || TREE_CODE (up2) == LOOP_EXPR)
 	    abort ();
 	  SUPPRESS_UNREACHABLE_ERROR (up2) = 1;
 	}

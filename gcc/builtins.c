@@ -248,7 +248,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	  else if (DECL_P (exp))
 	    align = DECL_ALIGN (exp);
 #ifdef CONSTANT_ALIGNMENT
-	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
+	  else if (CONSTANT_CLASS_P (exp))
 	    align = CONSTANT_ALIGNMENT (exp, align);
 #endif
 	  return MIN (align, max_align);
@@ -6205,7 +6205,7 @@ fold_builtin_constant_p (tree arglist)
   STRIP_NOPS (arglist);
 
   /* If we know this is a constant, emit the constant of one.  */
-  if (TREE_CODE_CLASS (TREE_CODE (arglist)) == 'c'
+  if (CONSTANT_CLASS_P (arglist)
       || (TREE_CODE (arglist) == CONSTRUCTOR
 	  && TREE_CONSTANT (arglist))
       || (TREE_CODE (arglist) == ADDR_EXPR
@@ -8513,7 +8513,7 @@ fold_builtin (tree exp, bool ignore)
   if (exp)
     {
       /* ??? Don't clobber shared nodes such as integer_zero_node.  */
-      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
+      if (CONSTANT_CLASS_P (exp))
 	exp = build1 (NOP_EXPR, TREE_TYPE (exp), exp);
       TREE_NO_WARNING (exp) = 1;
     }

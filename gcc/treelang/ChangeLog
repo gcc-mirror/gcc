@@ -1,3 +1,8 @@
+2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* treetree.c: Update for new tree-class enumeration constants.
+
 2004-09-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (treelang-warn): Set to $(STRICT_WARN).

@@ -1318,7 +1318,7 @@ dbxout_type (tree type, int full)
 	   || TREE_CODE (type) == QUAL_UNION_TYPE
 	   || TREE_CODE (type) == ENUMERAL_TYPE)
 	  && TYPE_STUB_DECL (type)
-	  && TREE_CODE_CLASS (TREE_CODE (TYPE_STUB_DECL (type))) == 'd'
+	  && DECL_P (TYPE_STUB_DECL (type))
 	  && ! DECL_IGNORED_P (TYPE_STUB_DECL (type)))
 	debug_queue_symbol (TYPE_STUB_DECL (type));
       else if (TYPE_NAME (type)
@@ -2179,19 +2179,19 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
            || TREE_CODE (t) == ENUMERAL_TYPE)
           && TYPE_STUB_DECL (t)
           && TYPE_STUB_DECL (t) != decl
-          && TREE_CODE_CLASS (TREE_CODE (TYPE_STUB_DECL (t))) == 'd'
+          && DECL_P (TYPE_STUB_DECL (t))
           && ! DECL_IGNORED_P (TYPE_STUB_DECL (t)))
         {
           debug_queue_symbol (TYPE_STUB_DECL (t));
           if (TYPE_NAME (t)
               && TYPE_NAME (t) != TYPE_STUB_DECL (t)
               && TYPE_NAME (t) != decl
-              && TREE_CODE_CLASS (TREE_CODE (TYPE_NAME (t))) == 'd')
+              && DECL_P (TYPE_NAME (t)))
             debug_queue_symbol (TYPE_NAME (t));
         }
       else if (TYPE_NAME (t)
 	       && TYPE_NAME (t) != decl
-	       && TREE_CODE_CLASS (TREE_CODE (TYPE_NAME (t))) == 'd')
+	       && DECL_P (TYPE_NAME (t)))
         debug_queue_symbol (TYPE_NAME (t));
     }
 

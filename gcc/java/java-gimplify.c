@@ -141,7 +141,8 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 	 Parameter lists, maybe?  Or perhaps that's unnecessary because
 	 the front end already generates SAVE_EXPRs.  */
 
-      if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+      if (TREE_CODE_CLASS (code) == tcc_binary
+	  || TREE_CODE_CLASS (code) == tcc_comparison)
 	{
 	  enum gimplify_status stat 
 	    = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,

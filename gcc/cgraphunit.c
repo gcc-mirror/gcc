@@ -671,7 +671,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
     default:
       /* Save some cycles by not walking types and declaration as we
 	 won't find anything useful there anyway.  */
-      if (DECL_P (*tp) || TYPE_P (*tp))
+      if (IS_TYPE_OR_DECL_P (*tp))
 	{
 	  *walk_subtrees = 0;
 	  break;
@@ -740,7 +740,7 @@ verify_cgraph_node_1 (tree *tp, int *walk_subtrees, void *data)
 
   /* Save some cycles by not walking types and declaration as we
      won't find anything useful there anyway.  */
-  if (DECL_P (*tp) || TYPE_P (*tp))
+  if (IS_TYPE_OR_DECL_P (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
@@ -2225,18 +2225,18 @@ scan_for_static_refs (tree *tp,
 	check_lhs_var (fn, TREE_OPERAND (t, 0));
 	/* Next check the operands on the rhs to see if they are ok. */
 	switch (TREE_CODE_CLASS (TREE_CODE (rhs))) {
-	case '2':
+	case tcc_binary:
 	  check_rhs_var (fn, TREE_OPERAND (rhs, 0));
 	  check_rhs_var (fn, TREE_OPERAND (rhs, 1));
 	  break;
-	case '1':
-	case 'r':
+	case tcc_unary:
+	case tcc_reference:
 	  check_rhs_var (fn, TREE_OPERAND (rhs, 0));
 	  break;
-	case 'd':
+	case tcc_declaration:
 	  check_rhs_var (fn, rhs);
 	  break;
-	case 'e':
+	case tcc_expression:
 	  switch (TREE_CODE (rhs)) {
 	  case ADDR_EXPR:
 	    check_rhs_var (fn, rhs);

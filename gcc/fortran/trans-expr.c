@@ -107,7 +107,7 @@ gfc_make_safe_expr (gfc_se * se)
 {
   tree var;
 
-  if (TREE_CODE_CLASS (TREE_CODE (se->expr)) == 'c')
+  if (CONSTANT_CLASS_P (se->expr))
     return;
 
   /* We need a temporary for this result.  */

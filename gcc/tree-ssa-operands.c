@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -967,7 +967,7 @@ static void
 get_expr_operands (tree stmt, tree *expr_p, int flags)
 {
   enum tree_code code;
-  char class;
+  enum tree_code_class class;
   tree expr = *expr_p;
 
   if (expr == NULL || expr == error_mark_node)
@@ -1170,11 +1170,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       return;
 
     default:
-      if (class == '1')
+      if (class == tcc_unary)
 	goto do_unary;
-      if (class == '2' || class == '<')
+      if (class == tcc_binary || class == tcc_comparison)
 	goto do_binary;
-      if (class == 'c' || class == 't')
+      if (class == tcc_constant || class == tcc_type)
 	return;
     }
 

@@ -290,17 +290,18 @@ contains_null_expr (tree exp)
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
-    case '1':
+    case tcc_unary:
       return contains_null_expr (TREE_OPERAND (exp, 0));
 
-    case '<':  case '2':
+    case tcc_comparison:
+    case tcc_binary:
       tem = contains_null_expr (TREE_OPERAND (exp, 0));
       if (tem)
 	return tem;
 
       return contains_null_expr (TREE_OPERAND (exp, 1));
 
-    case 'e':
+    case tcc_expression:
       switch (TREE_CODE (exp))
 	{
 	case SAVE_EXPR:

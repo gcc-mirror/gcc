@@ -1048,7 +1048,7 @@ tree_predict_by_opcode (basic_block bb)
     if (then_edge->flags & EDGE_TRUE_VALUE)
        break;
   cond = TREE_OPERAND (stmt, 0);
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) != '<')
+  if (!COMPARISON_CLASS_P (cond))
     return;
   op0 = TREE_OPERAND (cond, 0);
   type = TREE_TYPE (op0);

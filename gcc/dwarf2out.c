@@ -10918,7 +10918,7 @@ gen_formal_parameter_die (tree node, dw_die_ref context_die)
 
   switch (TREE_CODE_CLASS (TREE_CODE (node)))
     {
-    case 'd':
+    case tcc_declaration:
       origin = decl_ultimate_origin (node);
       if (origin != NULL)
 	add_abstract_origin_attribute (parm_die, origin);
@@ -10939,7 +10939,7 @@ gen_formal_parameter_die (tree node, dw_die_ref context_die)
 
       break;
 
-    case 't':
+    case tcc_type:
       /* We were called with some kind of a ..._TYPE node.  */
       add_type_attribute (parm_die, node, 0, 0, context_die);
       break;
@@ -12417,7 +12417,8 @@ force_type_die (tree type)
 static dw_die_ref
 setup_namespace_context (tree thing, dw_die_ref context_die)
 {
-  tree context = DECL_P (thing) ? DECL_CONTEXT (thing) : TYPE_CONTEXT (thing);
+  tree context = (DECL_P (thing)
+		  ? DECL_CONTEXT (thing) : TYPE_CONTEXT (thing));
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
     /* Force out the namespace.  */
     context_die = force_decl_die (context);

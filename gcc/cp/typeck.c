@@ -4956,7 +4956,7 @@ build_c_cast (tree type, tree expr)
 	{
 	  TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
 
-	  if (TREE_CODE_CLASS (TREE_CODE (ovalue)) == 'c')
+	  if (CONSTANT_CLASS_P (ovalue))
 	    TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
 	}
     }

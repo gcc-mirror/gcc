@@ -2004,7 +2004,7 @@ find_taken_edge (basic_block bb, tree val)
      SSA_NAME, we can always determine its truth value (except when
      doing floating point comparisons that may involve NaNs).  */
   if (val
-      && TREE_CODE_CLASS (TREE_CODE (val)) == '<'
+      && COMPARISON_CLASS_P (val)
       && TREE_OPERAND (val, 0) == TREE_OPERAND (val, 1)
       && TREE_CODE (TREE_OPERAND (val, 0)) == SSA_NAME
       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (val, 0))) != REAL_TYPE
@@ -3085,8 +3085,8 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
      We check for constants explicitly since they are not considered
      gimple invariants if they overflowed.  */
 #define CHECK_OP(N, MSG) \
-  do { if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, N))) != 'c'	\
-         && !is_gimple_val (TREE_OPERAND (t, N)))			\
+  do { if (!CONSTANT_CLASS_P (TREE_OPERAND (t, N))		\
+         && !is_gimple_val (TREE_OPERAND (t, N)))		\
        { error (MSG); return TREE_OPERAND (t, N); }} while (0)
 
   switch (TREE_CODE (t))
@@ -3187,8 +3187,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  t = TREE_OPERAND (t, 0);
 	}
 
-      if (TREE_CODE_CLASS (TREE_CODE (t)) != 'c'
-	  && !is_gimple_lvalue (t))
+      if (!CONSTANT_CLASS_P (t) && !is_gimple_lvalue (t))
 	{
 	  error ("Invalid reference prefix.");
 	  return t;
@@ -3298,10 +3297,10 @@ verify_stmt (tree stmt, bool last_in_block)
 static bool
 tree_node_can_be_shared (tree t)
 {
-  if (TYPE_P (t) || DECL_P (t)
+  if (IS_TYPE_OR_DECL_P (t)
       /* We check for constants explicitly since they are not considered
 	 gimple invariants if they overflowed.  */
-      || TREE_CODE_CLASS (TREE_CODE (t)) == 'c'
+      || CONSTANT_CLASS_P (t)
       || is_gimple_min_invariant (t)
       || TREE_CODE (t) == SSA_NAME)
     return true;
@@ -3309,7 +3308,7 @@ tree_node_can_be_shared (tree t)
   while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	  /* We check for constants explicitly since they are not considered
 	     gimple invariants if they overflowed.  */
-	  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 1))) == 'c'
+	  && (CONSTANT_CLASS_P (TREE_OPERAND (t, 1))
 	      || is_gimple_min_invariant (TREE_OPERAND (t, 1))))
 	 || (TREE_CODE (t) == COMPONENT_REF
 	     || TREE_CODE (t) == REALPART_EXPR

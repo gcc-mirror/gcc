@@ -4891,7 +4891,7 @@ uses_template_parms (tree t)
 	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
 	   || TREE_CODE (t) == OVERLOAD
 	   || TREE_CODE (t) == BASELINK
-	   || TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
+	   || CONSTANT_CLASS_P (t))
     dependent_p = (type_dependent_expression_p (t)
 		   || value_dependent_expression_p (t));
   else
@@ -10109,7 +10109,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       return 1;
 
     default:
-      gcc_assert (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))));
+      gcc_assert (EXPR_P (parm));
       
       /* We must be looking at an expression.  This can happen with
 	 something like: 
@@ -11586,9 +11586,9 @@ dependent_type_p_r (tree type)
 
      A type is dependent if it is:
 
-     -- a template parameter. Template template parameters are
-	types for us (since TYPE_P holds true for them) so we
-	handle them here.  */
+     -- a template parameter. Template template parameters are types
+	for us (since TYPE_P holds true for them) so we handle
+	them here.  */
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM 
       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
     return true;
@@ -11819,20 +11819,20 @@ value_dependent_expression_p (tree expression)
 	    || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
   /* A constant expression is value-dependent if any subexpression is
      value-dependent.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expression))))
+  if (EXPR_P (expression))
     {
       switch (TREE_CODE_CLASS (TREE_CODE (expression)))
 	{
-	case '1':
+	case tcc_unary:
 	  return (value_dependent_expression_p 
 		  (TREE_OPERAND (expression, 0)));
-	case '<':
-	case '2':
+	case tcc_comparison:
+	case tcc_binary:
 	  return ((value_dependent_expression_p 
 		   (TREE_OPERAND (expression, 0)))
 		  || (value_dependent_expression_p 
 		      (TREE_OPERAND (expression, 1))));
-	case 'e':
+	case tcc_expression:
 	  {
 	    int i;
 	    for (i = 0; i < first_rtl_op (TREE_CODE (expression)); ++i)
@@ -11846,6 +11846,13 @@ value_dependent_expression_p (tree expression)
 		return true;
 	    return false;
 	  }
+	case tcc_reference:
+	case tcc_statement:
+	  /* These cannot be value dependent.  */
+	  return false;
+
+	default:
+	  gcc_unreachable ();
 	}
     }
 

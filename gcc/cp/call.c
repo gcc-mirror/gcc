@@ -5867,7 +5867,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
   /* If we have two pseudo-candidates for conversions to the same type,
      or two candidates for the same function, arbitrarily pick one.  */
   if (cand1->fn == cand2->fn
-      && (TYPE_P (cand1->fn) || DECL_P (cand1->fn)))
+      && (IS_TYPE_OR_DECL_P (cand1->fn)))
     return 1;
 
   /* a viable function F1

@@ -1553,7 +1553,7 @@ find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
   if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
     add_referenced_tmp_var (t);
 
-  if (DECL_P (t) || TYPE_P (t))
+  if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
 
   return NULL;
@@ -1903,7 +1903,7 @@ mark_notrap (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       TREE_THIS_NOTRAP (t) = 1;
       *walk_subtrees = 0;
     }
-  else if (DECL_P (t) || TYPE_P (t))
+  else if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
 
   return NULL;

@@ -9342,8 +9342,7 @@ pa_select_section (tree exp, int reloc,
       else
 	readonly_data_section ();
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
-	   && !reloc)
+  else if (CONSTANT_CLASS_P (exp) && !reloc)
     readonly_data_section ();
   else if (TARGET_SOM
 	   && TREE_CODE (exp) == VAR_DECL

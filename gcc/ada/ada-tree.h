@@ -273,7 +273,7 @@ struct lang_type GTY(()) {tree t; };
 /* Define fields and macros for statements.
 
    Start by defining which tree codes are used for statements.  */
-#define IS_STMT(NODE)		(TREE_CODE_CLASS (TREE_CODE (NODE)) == 's')
+#define IS_STMT(NODE)		(STATEMENT_CLASS_P (NODE))
 #define IS_ADA_STMT(NODE)	(IS_STMT (NODE)				\
 				 && TREE_CODE (NODE) >= STMT_STMT)
 

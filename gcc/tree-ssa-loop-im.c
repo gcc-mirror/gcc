@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -256,7 +256,7 @@ outermost_invariant_loop (tree def, struct loop *loop)
 static struct loop *
 outermost_invariant_loop_expr (tree expr, struct loop *loop)
 {
-  char class = TREE_CODE_CLASS (TREE_CODE (expr));
+  enum tree_code_class class = TREE_CODE_CLASS (TREE_CODE (expr));
   unsigned i, nops;
   struct loop *max_loop = superloop_at_depth (loop, 1), *aloop;
 
@@ -265,10 +265,10 @@ outermost_invariant_loop_expr (tree expr, struct loop *loop)
       || is_gimple_min_invariant (expr))
     return outermost_invariant_loop (expr, loop);
 
-  if (class != '1'
-      && class != '2'
-      && class != 'e'
-      && class != '<')
+  if (class != tcc_unary
+      && class != tcc_binary
+      && class != tcc_expression
+      && class != tcc_comparison)
     return NULL;
 
   nops = first_rtl_op (TREE_CODE (expr));
@@ -714,7 +714,7 @@ may_move_till (tree ref, tree *index, void *data)
 static void
 force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
 {
-  char class = TREE_CODE_CLASS (TREE_CODE (expr));
+  enum tree_code_class class = TREE_CODE_CLASS (TREE_CODE (expr));
   unsigned i, nops;
 
   if (TREE_CODE (expr) == SSA_NAME)
@@ -727,10 +727,10 @@ force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
       return;
     }
 
-  if (class != '1'
-      && class != '2'
-      && class != 'e'
-      && class != '<')
+  if (class != tcc_unary
+      && class != tcc_binary
+      && class != tcc_expression
+      && class != tcc_comparison)
     return;
 
   nops = first_rtl_op (TREE_CODE (expr));

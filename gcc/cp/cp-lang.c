@@ -57,11 +57,11 @@ const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-const char tree_code_type[] = {
+const enum tree_code_class tree_code_type[] = {
 #include "tree.def"
-  'x',
+  tcc_exceptional,
 #include "c-common.def"
-  'x',
+  tcc_exceptional,
 #include "cp-tree.def"
 };
 #undef DEFTREECODE

@@ -761,7 +761,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       just use that declaration or reference as this entity unless
 	       the latter has to be materialized.  */
 	    else if ((DECL_P (gnu_expr)
-		      || TREE_CODE_CLASS (TREE_CODE (gnu_expr)) == 'r')
+		      || (REFERENCE_CLASS_P (gnu_expr) == tcc_reference))
 		     && !Materialize_Entity (gnat_entity)
 		     && (!global_bindings_p ()
 			 || (staticp (gnu_expr)
@@ -4553,7 +4553,7 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
      rely here on the fact that an expression cannot contain both the
      discriminant and some other variable.  */
 
-  expr_variable = (TREE_CODE_CLASS (TREE_CODE (gnu_expr)) != 'c'
+  expr_variable = (!CONSTANT_CLASS_P (gnu_expr)
 		   && !(TREE_CODE (gnu_inner_expr) == VAR_DECL
 			&& TREE_READONLY (gnu_inner_expr))
 		   && !CONTAINS_PLACEHOLDER_P (gnu_expr));
@@ -5565,8 +5565,7 @@ annotate_value (tree gnu_size)
     return No_Uint;
 
   /* See if we've already saved the value for this node.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (gnu_size)))
-      && TREE_COMPLEXITY (gnu_size))
+  if (EXPR_P (gnu_size) && TREE_COMPLEXITY (gnu_size))
     return (Node_Ref_Or_Val) TREE_COMPLEXITY (gnu_size);
 
   /* If we do not return inside this switch, TCODE will be set to the

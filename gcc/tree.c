@@ -50,6 +50,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-flow.h"
 #include "params.h"
 
+/* Each tree code class has an associated string representation.
+   These must correspond to the tree_code_class entries.  */
+
+const char* tree_code_class_strings[] =
+  {
+    "exceptional",
+    "constant",
+    "type",
+    "declaration",
+    "reference",
+    "comparison",
+    "unary",
+    "binary",
+    "statement",
+    "expression",
+  };
+
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p (struct obstack *h, void *obj);
 
@@ -155,22 +172,22 @@ tree_code_size (enum tree_code code)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'd':  /* A decl node */
+    case tcc_declaration:  /* A decl node */
       return sizeof (struct tree_decl);
 
-    case 't':  /* a type node */
+    case tcc_type:  /* a type node */
       return sizeof (struct tree_type);
 
-    case 'r':  /* a reference */
-    case 'e':  /* an expression */
-    case 's':  /* an expression with side effects */
-    case '<':  /* a comparison expression */
-    case '1':  /* a unary arithmetic expression */
-    case '2':  /* a binary arithmetic expression */
+    case tcc_reference:   /* a reference */
+    case tcc_expression:  /* an expression */
+    case tcc_statement:   /* an expression with side effects */
+    case tcc_comparison:  /* a comparison expression */
+    case tcc_unary:       /* a unary arithmetic expression */
+    case tcc_binary:      /* a binary arithmetic expression */
       return (sizeof (struct tree_exp)
 	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
 
-    case 'c':  /* a constant */
+    case tcc_constant:  /* a constant */
       switch (code)
 	{
 	case INTEGER_CST:	return sizeof (struct tree_int_cst);
@@ -182,7 +199,7 @@ tree_code_size (enum tree_code code)
 	  return lang_hooks.tree_size (code);
 	}
 
-    case 'x':  /* something random, like an identifier.  */
+    case tcc_exceptional:  /* something random, like an identifier.  */
       switch (code)
 	{
 	case IDENTIFIER_NODE:	return lang_hooks.identifier_size;
@@ -240,41 +257,41 @@ tree
 make_node_stat (enum tree_code code MEM_STAT_DECL)
 {
   tree t;
-  int type = TREE_CODE_CLASS (code);
+  enum tree_code_class type = TREE_CODE_CLASS (code);
   size_t length = tree_code_size (code);
 #ifdef GATHER_STATISTICS
   tree_node_kind kind;
 
   switch (type)
     {
-    case 'd':  /* A decl node */
+    case tcc_declaration:  /* A decl node */
       kind = d_kind;
       break;
 
-    case 't':  /* a type node */
+    case tcc_type:  /* a type node */
       kind = t_kind;
       break;
 
-    case 's':  /* an expression with side effects */
+    case tcc_statement:  /* an expression with side effects */
       kind = s_kind;
       break;
 
-    case 'r':  /* a reference */
+    case tcc_reference:  /* a reference */
       kind = r_kind;
       break;
 
-    case 'e':  /* an expression */
-    case '<':  /* a comparison expression */
-    case '1':  /* a unary arithmetic expression */
-    case '2':  /* a binary arithmetic expression */
+    case tcc_expression:  /* an expression */
+    case tcc_comparison:  /* a comparison expression */
+    case tcc_unary:  /* a unary arithmetic expression */
+    case tcc_binary:  /* a binary arithmetic expression */
       kind = e_kind;
       break;
 
-    case 'c':  /* a constant */
+    case tcc_constant:  /* a constant */
       kind = c_kind;
       break;
 
-    case 'x':  /* something random, like an identifier.  */
+    case tcc_exceptional:  /* something random, like an identifier.  */
       if (code == IDENTIFIER_NODE)
 	kind = id_kind;
       else if (code == TREE_VEC)
@@ -290,9 +307,6 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       else
 	kind = x_kind;
       break;
-
-    default:
-      gcc_unreachable ();
     }
 
   tree_node_counts[(int) kind]++;
@@ -307,11 +321,11 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
   switch (type)
     {
-    case 's':
+    case tcc_statement:
       TREE_SIDE_EFFECTS (t) = 1;
       break;
 
-    case 'd':
+    case tcc_declaration:
       if (code != FUNCTION_DECL)
 	DECL_ALIGN (t) = 1;
       DECL_USER_ALIGN (t) = 0;
@@ -323,7 +337,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       DECL_POINTER_ALIAS_SET (t) = -1;
       break;
 
-    case 't':
+    case tcc_type:
       TYPE_UID (t) = next_type_uid++;
       TYPE_ALIGN (t) = char_type_node ? TYPE_ALIGN (char_type_node) : 0;
       TYPE_USER_ALIGN (t) = 0;
@@ -337,12 +351,12 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       TYPE_ALIAS_SET (t) = -1;
       break;
 
-    case 'c':
+    case tcc_constant:
       TREE_CONSTANT (t) = 1;
       TREE_INVARIANT (t) = 1;
       break;
 
-    case 'e':
+    case tcc_expression:
       switch (code)
 	{
 	case INIT_EXPR:
@@ -360,6 +374,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	default:
 	  break;
 	}
+      break;
+
+    default:
+      /* Other classes need no special treatment.  */
       break;
     }
 
@@ -387,9 +405,9 @@ copy_node_stat (tree node MEM_STAT_DECL)
   TREE_VISITED (t) = 0;
   t->common.ann = 0;
 
-  if (TREE_CODE_CLASS (code) == 'd')
+  if (TREE_CODE_CLASS (code) == tcc_declaration)
     DECL_UID (t) = next_decl_uid++;
-  else if (TREE_CODE_CLASS (code) == 't')
+  else if (TREE_CODE_CLASS (code) == tcc_type)
     {
       TYPE_UID (t) = next_type_uid++;
       /* The following is so that the debug code for
@@ -1566,9 +1584,9 @@ skip_simple_arithmetic (tree expr)
   inner = expr;
   while (1)
     {
-      if (TREE_CODE_CLASS (TREE_CODE (inner)) == '1')
+      if (UNARY_CLASS_P (inner))
 	inner = TREE_OPERAND (inner, 0);
-      else if (TREE_CODE_CLASS (TREE_CODE (inner)) == '2')
+      else if (BINARY_CLASS_P (inner))
 	{
 	  if (TREE_INVARIANT (TREE_OPERAND (inner, 1)))
 	    inner = TREE_OPERAND (inner, 0);
@@ -1606,22 +1624,29 @@ tree_node_structure (tree t)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'd':	return TS_DECL;
-    case 't':	return TS_TYPE;
-    case 'r': case '<': case '1': case '2': case 'e': case 's':
+    case tcc_declaration:
+      return TS_DECL;
+    case tcc_type:
+      return TS_TYPE;
+    case tcc_reference:
+    case tcc_comparison:
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_expression:
+    case tcc_statement:
       return TS_EXP;
-    default:  /* 'c' and 'x' */
+    default:  /* tcc_constant and tcc_exceptional */
       break;
     }
   switch (code)
     {
-      /* 'c' cases.  */
+      /* tcc_constant cases.  */
     case INTEGER_CST:		return TS_INT_CST;
     case REAL_CST:		return TS_REAL_CST;
     case COMPLEX_CST:		return TS_COMPLEX;
     case VECTOR_CST:		return TS_VECTOR;
     case STRING_CST:		return TS_STRING;
-      /* 'x' cases.  */
+      /* tcc_exceptional cases.  */
     case ERROR_MARK:		return TS_COMMON;
     case IDENTIFIER_NODE:	return TS_IDENTIFIER;
     case TREE_LIST:		return TS_LIST;
@@ -1656,22 +1681,23 @@ contains_placeholder_p (tree exp)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'r':
+    case tcc_reference:
       /* Don't look at any PLACEHOLDER_EXPRs that might be in index or bit
 	 position computations since they will be converted into a
 	 WITH_RECORD_EXPR involving the reference, which will assume
 	 here will be valid.  */
       return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
 
-    case 'x':
+    case tcc_exceptional:
       if (code == TREE_LIST)
 	return (CONTAINS_PLACEHOLDER_P (TREE_VALUE (exp))
 		|| CONTAINS_PLACEHOLDER_P (TREE_CHAIN (exp)));
       break;
 
-    case '1':
-    case '2':  case '<':
-    case 'e':
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+    case tcc_expression:
       switch (code)
 	{
 	case COMPOUND_EXPR:
@@ -1823,7 +1849,7 @@ substitute_in_expr (tree exp, tree f, tree r)
      /* If this expression is getting a value from a PLACEHOLDER_EXPR
 	and it is the right field, replace it with R.  */
      for (inner = TREE_OPERAND (exp, 0);
-	  TREE_CODE_CLASS (TREE_CODE (inner)) == 'r';
+	  REFERENCE_CLASS_P (inner);
 	  inner = TREE_OPERAND (inner, 0))
        ;
      if (TREE_CODE (inner) == PLACEHOLDER_EXPR
@@ -1844,16 +1870,16 @@ substitute_in_expr (tree exp, tree f, tree r)
   else
     switch (TREE_CODE_CLASS (code))
       {
-      case 'c':
-      case 'd':
+      case tcc_constant:
+      case tcc_declaration:
 	return exp;
 
-      case 'x':
-      case '1':
-      case '2':
-      case '<':
-      case 'e':
-      case 'r':
+      case tcc_exceptional:
+      case tcc_unary:
+      case tcc_binary:
+      case tcc_comparison:
+      case tcc_expression:
+      case tcc_reference:
 	switch (first_rtl_op (code))
 	  {
 	  case 0:
@@ -1922,10 +1948,10 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
 		   || TREE_CODE (elt) == COND_EXPR)
 		  ? TREE_OPERAND (elt, 1)
-		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		  : (REFERENCE_CLASS_P (elt)
+		     || UNARY_CLASS_P (elt)
+		     || BINARY_CLASS_P (elt)
+		     || EXPRESSION_CLASS_P (elt))
 		  ? TREE_OPERAND (elt, 0) : 0))
 	if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
 	  return elt;
@@ -1934,10 +1960,10 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
 		   || TREE_CODE (elt) == COND_EXPR)
 		  ? TREE_OPERAND (elt, 1)
-		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		  : (REFERENCE_CLASS_P (elt)
+		     || UNARY_CLASS_P (elt)
+		     || BINARY_CLASS_P (elt)
+		     || EXPRESSION_CLASS_P (elt))
 		  ? TREE_OPERAND (elt, 0) : 0))
 	if (POINTER_TYPE_P (TREE_TYPE (elt))
 	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
@@ -1963,17 +1989,17 @@ substitute_placeholder_in_expr (tree exp, tree obj)
   else
     switch (TREE_CODE_CLASS (code))
       {
-      case 'c':
-      case 'd':
+      case tcc_constant:
+      case tcc_declaration:
 	return exp;
 
-      case 'x':
-      case '1':
-      case '2':
-      case '<':
-      case 'e':
-      case 'r':
-      case 's':
+      case tcc_exceptional:
+      case tcc_unary:
+      case tcc_binary:
+      case tcc_comparison:
+      case tcc_expression:
+      case tcc_reference:
+      case tcc_statement:
 	switch (first_rtl_op (code))
 	  {
 	  case 0:
@@ -2145,13 +2171,13 @@ stabilize_reference_1 (tree e)
 
   switch (TREE_CODE_CLASS (code))
     {
-    case 'x':
-    case 't':
-    case 'd':
-    case '<':
-    case 's':
-    case 'e':
-    case 'r':
+    case tcc_exceptional:
+    case tcc_type:
+    case tcc_declaration:
+    case tcc_comparison:
+    case tcc_statement:
+    case tcc_expression:
+    case tcc_reference:
       /* If the expression has side-effects, then encase it in a SAVE_EXPR
 	 so that it will only be evaluated once.  */
       /* The reference (r) and comparison (<) classes could be handled as
@@ -2160,12 +2186,12 @@ stabilize_reference_1 (tree e)
 	return save_expr (e);
       return e;
 
-    case 'c':
+    case tcc_constant:
       /* Constants need no processing.  In fact, we should never reach
 	 here.  */
       return e;
 
-    case '2':
+    case tcc_binary:
       /* Division is slow and tends to be compiled with jumps,
 	 especially the division by powers of 2 that is often
 	 found inside of an array reference.  So do it just once.  */
@@ -2179,7 +2205,7 @@ stabilize_reference_1 (tree e)
 			 stabilize_reference_1 (TREE_OPERAND (e, 1)));
       break;
 
-    case '1':
+    case tcc_unary:
       /* Recursively stabilize each operand.  */
       result = build_nt (code, stabilize_reference_1 (TREE_OPERAND (e, 0)));
       break;
@@ -2271,7 +2297,7 @@ do { tree _node = (NODE); \
       else
 	ti = tc = false;
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (node)) == 'c')
+  else if (CONSTANT_CLASS_P (node))
     ;
   else
     {
@@ -2319,10 +2345,10 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 #ifdef GATHER_STATISTICS
   switch (TREE_CODE_CLASS (code))
     {
-    case 's':  /* an expression with side effects */
+    case tcc_statement:  /* an expression with side effects */
       kind = s_kind;
       break;
-    case 'r':  /* a reference */
+    case tcc_reference:  /* a reference */
       kind = r_kind;
       break;
     default:
@@ -2357,7 +2383,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       TREE_READONLY (t) = TREE_READONLY (node);
     }
 
-  if (TREE_CODE_CLASS (code) == 's')
+  if (TREE_CODE_CLASS (code) == tcc_statement)
     TREE_SIDE_EFFECTS (t) = 1;
   else switch (code)
     {
@@ -2386,12 +2412,15 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       break;
 
     default:
-      if (TREE_CODE_CLASS (code) == '1' && node && !TYPE_P (node)
+      if (TREE_CODE_CLASS (code) == tcc_unary
+	  && node && !TYPE_P (node)
 	  && TREE_CONSTANT (node))
 	TREE_CONSTANT (t) = 1;
-      if (TREE_CODE_CLASS (code) == '1' && node && TREE_INVARIANT (node))
+      if (TREE_CODE_CLASS (code) == tcc_unary
+	  && node && TREE_INVARIANT (node))
 	TREE_INVARIANT (t) = 1;
-      if (TREE_CODE_CLASS (code) == 'r' && node && TREE_THIS_VOLATILE (node))
+      if (TREE_CODE_CLASS (code) == tcc_reference
+	  && node && TREE_THIS_VOLATILE (node))
 	TREE_THIS_VOLATILE (t) = 1;
       break;
     }
@@ -2435,8 +2464,8 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 
   /* Expressions without side effects may be constant if their
      arguments are as well.  */
-  constant = (TREE_CODE_CLASS (code) == '<'
-	      || TREE_CODE_CLASS (code) == '2');
+  constant = (TREE_CODE_CLASS (code) == tcc_comparison
+	      || TREE_CODE_CLASS (code) == tcc_binary);
   read_only = 1;
   side_effects = TREE_SIDE_EFFECTS (t);
   invariant = constant;
@@ -2449,7 +2478,8 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   TREE_INVARIANT (t) = invariant;
   TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
-    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
+    = (TREE_CODE_CLASS (code) == tcc_reference
+       && arg0 && TREE_THIS_VOLATILE (arg0));
 
   return t;
 }
@@ -2497,7 +2527,8 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 
   TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
-    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
+    = (TREE_CODE_CLASS (code) == tcc_reference
+       && arg0 && TREE_THIS_VOLATILE (arg0));
 
   return t;
 }
@@ -2526,7 +2557,8 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 
   TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t)
-    = TREE_CODE_CLASS (code) == 'r' && arg0 && TREE_THIS_VOLATILE (arg0);
+    = (TREE_CODE_CLASS (code) == tcc_reference
+       && arg0 && TREE_THIS_VOLATILE (arg0));
 
   return t;
 }
@@ -3829,12 +3861,12 @@ simple_cst_equal (tree t1, tree t2)
 
   switch (TREE_CODE_CLASS (code1))
     {
-    case '1':
-    case '2':
-    case '<':
-    case 'e':
-    case 'r':
-    case 's':
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+    case tcc_expression:
+    case tcc_reference:
+    case tcc_statement:
       cmp = 1;
       for (i = 0; i < TREE_CODE_LENGTH (code1); i++)
 	{
@@ -3976,7 +4008,7 @@ iterative_hash_expr (tree t, hashval_t val)
     default:
       class = TREE_CODE_CLASS (code);
 
-      if (class == 'd')
+      if (class == tcc_declaration)
 	{
 	  /* Decls we can just compare by pointer.  */
 	  val = iterative_hash_pointer (t, val);
@@ -4774,7 +4806,8 @@ find_var_from_fn (tree *tp, int *walk_subtrees, void *data)
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
 
-  else if (DECL_P (*tp) && lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
+  else if (DECL_P (*tp)
+	   && lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
     return *tp;
 
   return NULL_TREE;
@@ -5312,12 +5345,13 @@ tree_not_check_failed (const tree node, const char *file,
    code, given in CL.  */
 
 void
-tree_class_check_failed (const tree node, int cl, const char *file,
-			 int line, const char *function)
+tree_class_check_failed (const tree node, const enum tree_code_class cl,
+			 const char *file, int line, const char *function)
 {
   internal_error
-    ("tree check: expected class %qc, have %qc (%s) in %s, at %s:%d",
-     cl, TREE_CODE_CLASS (TREE_CODE (node)),
+    ("tree check: expected class %qs, have %qs (%s) in %s, at %s:%d",
+     TREE_CODE_CLASS_STRING (cl),
+     TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
 

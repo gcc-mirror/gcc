@@ -42,56 +42,56 @@ Boston, MA 02111-1307, USA.  */
    2. An expression of the form `x.*p'.  In this case, operand 0 will
       be an expression corresponding to `x' and operand 1 will be an
       expression with pointer-to-member type.  */
-DEFTREECODE (OFFSET_REF, "offset_ref", 'r', 2)
+DEFTREECODE (OFFSET_REF, "offset_ref", tcc_reference, 2)
 
 /* A pointer-to-member constant.  For a pointer-to-member constant
    `X::Y' The PTRMEM_CST_CLASS is the RECORD_TYPE for `X' and the
    PTRMEM_CST_MEMBER is the _DECL for `Y'.  */
-DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 0)
+DEFTREECODE (PTRMEM_CST, "ptrmem_cst", tcc_constant, 0)
 
 /* For NEW_EXPR, operand 0 is the placement list.
    Operand 1 is the new-declarator.
    Operand 2 is the number of elements in the array.
    Operand 3 is the initializer.  */
-DEFTREECODE (NEW_EXPR, "nw_expr", 'e', 4)
-DEFTREECODE (VEC_NEW_EXPR, "vec_nw_expr", 'e', 3)
+DEFTREECODE (NEW_EXPR, "nw_expr", tcc_expression, 4)
+DEFTREECODE (VEC_NEW_EXPR, "vec_nw_expr", tcc_expression, 3)
 
 /* For DELETE_EXPR, operand 0 is the store to be destroyed.
    Operand 1 is the value to pass to the destroying function
    saying whether the store should be deallocated as well.  */
-DEFTREECODE (DELETE_EXPR, "dl_expr", 'e', 2)
-DEFTREECODE (VEC_DELETE_EXPR, "vec_dl_expr", 'e', 2)
+DEFTREECODE (DELETE_EXPR, "dl_expr", tcc_expression, 2)
+DEFTREECODE (VEC_DELETE_EXPR, "vec_dl_expr", tcc_expression, 2)
 
 /* Value is reference to particular overloaded class method.
    Operand 0 is the class, operand 1 is the field
    The COMPLEXITY field holds the class level (usually 0).  */
-DEFTREECODE (SCOPE_REF, "scope_ref", 'r', 2)
+DEFTREECODE (SCOPE_REF, "scope_ref", tcc_reference, 2)
 
 /* When composing an object with a member, this is the result.
    Operand 0 is the object.  Operand 1 is the member (usually
    a dereferenced pointer to member).  */
-DEFTREECODE (MEMBER_REF, "member_ref", 'r', 2)
+DEFTREECODE (MEMBER_REF, "member_ref", tcc_reference, 2)
 
 /* Type conversion operator in C++.  TREE_TYPE is type that this
    operator converts to.  Operand is expression to be converted.  */
-DEFTREECODE (TYPE_EXPR, "type_expr", 'e', 1)
+DEFTREECODE (TYPE_EXPR, "type_expr", tcc_expression, 1)
 
 /* For AGGR_INIT_EXPR, operand 0 is function which performs initialization,
    operand 1 is argument list to initialization function,
    and operand 2 is the slot which was allocated for this expression.  */
-DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", 'e', 3)
+DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", tcc_expression, 3)
 
 /* A throw expression.  operand 0 is the expression, if there was one,
    else it is NULL_TREE.  */
-DEFTREECODE (THROW_EXPR, "throw_expr", 'e', 1)
+DEFTREECODE (THROW_EXPR, "throw_expr", tcc_expression, 1)
 
 /* An empty class object.  The TREE_TYPE gives the class type.  We use
    these to avoid actually creating instances of the empty classes.  */
-DEFTREECODE (EMPTY_CLASS_EXPR, "empty_class_expr", 'e', 0)
+DEFTREECODE (EMPTY_CLASS_EXPR, "empty_class_expr", tcc_expression, 0)
 
 /* A DECL which is really just a placeholder for an expression.  Used to
    implement non-class scope anonymous unions.  */
-DEFTREECODE (ALIAS_DECL, "alias_decl", 'd', 0)
+DEFTREECODE (ALIAS_DECL, "alias_decl", tcc_declaration, 0)
 
 /* A reference to a member function or member functions from a base
    class.  BASELINK_FUNCTIONS gives the FUNCTION_DECL,
@@ -105,7 +105,7 @@ DEFTREECODE (ALIAS_DECL, "alias_decl", 'd', 0)
    the type of the expression.  This type is either a FUNCTION_TYPE,
    METHOD_TYPE, or `unknown_type_node' indicating that the function is
    overloaded.  */
-DEFTREECODE (BASELINK, "baselink", 'x', 0)
+DEFTREECODE (BASELINK, "baselink", tcc_exceptional, 0)
 
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
@@ -122,7 +122,7 @@ DEFTREECODE (BASELINK, "baselink", 'x', 0)
         DECL_TEMPLATE_RESULT    decl for object to be created
                                 (e.g., FUNCTION_DECL with tmpl parms used)
  */
-DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
+DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
 
 /* Index into a template parameter list.  The TEMPLATE_PARM_IDX gives
    the index (from 0) of the parameter, while the TEMPLATE_PARM_LEVEL
@@ -157,11 +157,11 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
    The LEVEL is the level of the parameter when we are worrying about
    the types of things; the ORIG_LEVEL is the level when we are
    worrying about instantiating things.  */
-DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 0)
+DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", tcc_exceptional, 0)
 
 /* Index into a template parameter list.  This parameter must be a type.
    The type.value field will be a TEMPLATE_PARM_INDEX.  */
-DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
+DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", tcc_type, 0)
 
 /* Index into a template parameter list for template template parameters.
    This parameter must be a type.  The TYPE_FIELDS value will be a 
@@ -170,13 +170,14 @@ DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
    It is used without template arguments like TT in C<TT>, 
    TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO is NULL_TREE
    and TYPE_NAME is a TEMPLATE_DECL.  */
-DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", 't', 0)
+DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
 
 /* Like TEMPLATE_TEMPLATE_PARM it is used with bound template arguments 
    like TT<int>.
    In this case, TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO contains the
    template name and its bound arguments.  TYPE_NAME is a TYPE_DECL.  */
-DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm", 't', 0)
+DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
+	     tcc_type, 0)
 
 /* A type designated by `typename T::t'.  TYPE_CONTEXT is `T',
    TYPE_NAME is an IDENTIFIER_NODE for `t'.  If the type was named via
@@ -184,51 +185,51 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm", 't', 
    If TREE_TYPE is present, this type was generated by the implicit
    typename extension, and the TREE_TYPE is a _TYPE from a baseclass
    of `T'.  */
-DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
+DEFTREECODE (TYPENAME_TYPE, "typename_type", tcc_type, 0)
 
 /* For template template argument of the form `T::template C'.
    TYPE_CONTEXT is `T', the template parameter dependent object.
    TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
-DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", 't', 0)
+DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 
 /* A type designated by `__typeof (expr)'.  TYPEOF_TYPE_EXPR is the
    expression in question.  */
-DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
+DEFTREECODE (TYPEOF_TYPE, "typeof_type", tcc_type, 0)
 
 /* A using declaration.  DECL_INITIAL contains the specified scope.  
    This is not an alias, but is later expanded into multiple aliases.
    The decl will have a NULL_TYPE iff the scope is a dependent scope,
    otherwise it will have a void type.  */
-DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
+DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */     
-DEFTREECODE (USING_STMT, "using_directive", 'e', 1)
+DEFTREECODE (USING_STMT, "using_directive", tcc_expression, 1)
 
 /* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
-DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 0)
+DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
 
 /* A template-id, like foo<int>.  The first operand is the template.
    The second is NULL if there are no explicit arguments, or a
    TREE_VEC of arguments.  The template will be a FUNCTION_DECL,
    TEMPLATE_DECL, or an OVERLOAD.  If the template-id refers to a
    member template, the template may be an IDENTIFIER_NODE.  */
-DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
+DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 
    the original name, and the parameter is the FUNCTION_DECL.  */
-DEFTREECODE (OVERLOAD, "overload", 'x', 0)
+DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
-DEFTREECODE (MODOP_EXPR, "modop_expr", 'e', 3)
-DEFTREECODE (CAST_EXPR, "cast_expr", '1', 1)
-DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", '1', 1)
-DEFTREECODE (CONST_CAST_EXPR, "const_cast_expr", '1', 1)
-DEFTREECODE (STATIC_CAST_EXPR, "static_cast_expr", '1', 1)
-DEFTREECODE (DYNAMIC_CAST_EXPR, "dynamic_cast_expr", '1', 1)
-DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", 'e', 2)
-DEFTREECODE (TYPEID_EXPR, "typeid_expr", 'e', 1)
-DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
+DEFTREECODE (MODOP_EXPR, "modop_expr", tcc_expression, 3)
+DEFTREECODE (CAST_EXPR, "cast_expr", tcc_unary, 1)
+DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", tcc_unary, 1)
+DEFTREECODE (CONST_CAST_EXPR, "const_cast_expr", tcc_unary, 1)
+DEFTREECODE (STATIC_CAST_EXPR, "static_cast_expr", tcc_unary, 1)
+DEFTREECODE (DYNAMIC_CAST_EXPR, "dynamic_cast_expr", tcc_unary, 1)
+DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", tcc_expression, 2)
+DEFTREECODE (TYPEID_EXPR, "typeid_expr", tcc_expression, 1)
+DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", tcc_expression, 3)
 
 /* A placeholder for an expression that is not type-dependent, but
    does occur in a template.  When an expression that is not
@@ -239,38 +240,38 @@ DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
    that situation, we create a NON_DEPENDENT_EXPR to take the place of
    the original expression.  The expression is the only operand -- it
    is only needed for diagnostics.  */
-DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", 'e', 1)
+DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", tcc_expression, 1)
 
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
-DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 1)
+DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", tcc_expression, 1)
 
-DEFTREECODE (TRY_BLOCK, "try_block", 'e', 2)
+DEFTREECODE (TRY_BLOCK, "try_block", tcc_expression, 2)
 
-DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", 'e', 2)
+DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", tcc_expression, 2)
 
 /* A HANDLER wraps a catch handler for the HANDLER_TYPE.  If this is
    CATCH_ALL_TYPE, then the handler catches all types.  The declaration of
    the catch variable is in HANDLER_PARMS, and the body block in
    HANDLER_BODY.  */
-DEFTREECODE (HANDLER, "handler", 'e', 2)
+DEFTREECODE (HANDLER, "handler", tcc_expression, 2)
 
 /* A MUST_NOT_THROW_EXPR wraps an expression that may not
    throw, and must call terminate if it does.  */
-DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", 'e', 1)
+DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", tcc_expression, 1)
 
 /* A CLEANUP_STMT marks the point at which a declaration is fully
    constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL
    when CLEANUP_BODY completes.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 3)
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", tcc_expression, 3)
 
 /* Represents an 'if' statement. The operands are IF_COND,
    THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
 /* ??? It is currently still necessary to distinguish between IF_STMT 
    and COND_EXPR for the benefit of templates.  */
-DEFTREECODE (IF_STMT, "if_stmt", 'e', 3)
+DEFTREECODE (IF_STMT, "if_stmt", tcc_expression, 3)
 
-DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
+DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
 /* Template instantiation level node.
 
@@ -280,10 +281,10 @@ DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
    A stack of template instantiation nodes is kept through the TREE_CHAIN
    fields of these nodes.  */
 
-DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", 'x', 0)
+DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", tcc_exceptional, 0)
 
 /* Represents an 'offsetof' expression during template expansion.  */
-DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", 'e', 1)
+DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 1)
 
 /*
 Local variables:

@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -279,7 +279,7 @@ process_assignment (tree ass, tree stmt, block_stmt_iterator call, tree *m,
       return true;
     }
 
-  if (TREE_CODE_CLASS (code) != '2')
+  if (TREE_CODE_CLASS (code) != tcc_binary)
     return false;
 
   /* Accumulator optimizations will reverse the order of operations.

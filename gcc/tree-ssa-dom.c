@@ -616,7 +616,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       else
 	cond = SWITCH_COND (stmt);
 
-      if (TREE_CODE_CLASS (TREE_CODE (cond)) == '<')
+      if (COMPARISON_CLASS_P (cond))
 	{
 	  tree dummy_cond, op0, op1;
 	  enum tree_code cond_code;
@@ -776,8 +776,7 @@ initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
      For the former case, we have no annotation and we want to hash the
      conditional expression.  In the latter case we have an annotation and
      we want to record the expression the statement evaluates.  */
-  if (TREE_CODE_CLASS (TREE_CODE (expr)) == '<'
-      || TREE_CODE (expr) == TRUTH_NOT_EXPR)
+  if (COMPARISON_CLASS_P (expr) || TREE_CODE (expr) == TRUTH_NOT_EXPR)
     {
       element->ann = NULL;
       element->rhs = expr;
@@ -932,7 +931,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
     }
   else if ((last = last_stmt (bb))
 	   && TREE_CODE (last) == COND_EXPR
-	   && (TREE_CODE_CLASS (TREE_CODE (COND_EXPR_COND (last))) == '<'
+	   && (COMPARISON_CLASS_P (COND_EXPR_COND (last))
 	       || TREE_CODE (COND_EXPR_COND (last)) == SSA_NAME)
 	   && bb->succ
 	   && (bb->succ->flags & EDGE_ABNORMAL) == 0
@@ -949,7 +948,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       cond = COND_EXPR_COND (last);
       cond_code = TREE_CODE (cond);
 
-      if (TREE_CODE_CLASS (cond_code) == '<')
+      if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
 	inverted = invert_truthvalue (cond);
 
       /* If the THEN arm is the end of a dominator tree or has PHI nodes,
@@ -965,7 +964,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	  VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
 
 	  /* Record any equivalences created by following this edge.  */
-	  if (TREE_CODE_CLASS (cond_code) == '<')
+	  if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
 	    {
 	      record_cond (cond, boolean_true_node);
 	      record_dominating_conditions (cond);
@@ -989,7 +988,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	  || phi_nodes (false_edge->dest))
 	{
 	  /* Record any equivalences created by following this edge.  */
-	  if (TREE_CODE_CLASS (cond_code) == '<')
+	  if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
 	    {
 	      record_cond (cond, boolean_false_node);
 	      record_cond (inverted, boolean_true_node);
@@ -1699,10 +1698,9 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 		  /* If the result is a suitable looking gimple expression,
 		     then use it instead of the original for STMT.  */
 		  if (TREE_CODE (t) == SSA_NAME
-		      || (TREE_CODE_CLASS (TREE_CODE (t)) == '1'
+		      || (UNARY_CLASS_P (t)
 			  && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
-		      || ((TREE_CODE_CLASS (TREE_CODE (t)) == '2'
-			   || TREE_CODE_CLASS (TREE_CODE (t)) == '<')
+		      || ((BINARY_CLASS_P (t) || COMPARISON_CLASS_P (t))
 			  && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
 			  && is_gimple_val (TREE_OPERAND (t, 1))))
 		    result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
@@ -1920,7 +1918,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 {
   tree cond = COND_EXPR_COND (stmt);
 
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == '<')
+  if (COMPARISON_CLASS_P (cond))
     {
       tree op0 = TREE_OPERAND (cond, 0);
       tree op1 = TREE_OPERAND (cond, 1);
@@ -3023,7 +3021,7 @@ record_range (tree cond, basic_block bb, varray_type *vrp_variables_p)
 {
   /* We explicitly ignore NE_EXPRs.  They rarely allow for meaningful
      range optimizations and significantly complicate the implementation.  */
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == '<'
+  if (COMPARISON_CLASS_P (cond)
       && TREE_CODE (cond) != NE_EXPR
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (cond, 1))) == INTEGER_TYPE)
     {
@@ -3091,7 +3089,7 @@ get_eq_expr_value (tree if_stmt,
 
   /* If we have a comparison expression, then record its result into
      the available expression table.  */
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == '<')
+  if (COMPARISON_CLASS_P (cond))
     {
       tree op0 = TREE_OPERAND (cond, 0);
       tree op1 = TREE_OPERAND (cond, 1);

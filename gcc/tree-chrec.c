@@ -932,7 +932,7 @@ chrec_convert (tree type,
 
 	/* Don't propagate overflows.  */
 	TREE_OVERFLOW (res) = 0;
-	if (TREE_CODE_CLASS (TREE_CODE (res)) == 'c')
+	if (CONSTANT_CLASS_P (res))
 	  TREE_CONSTANT_OVERFLOW (res) = 0;
 	return res;
       }

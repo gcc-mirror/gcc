@@ -127,7 +127,7 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
 {
   tree var;
 
-  if (TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
+  if (CONSTANT_CLASS_P (expr))
     return expr;
 
   var = gfc_create_var (TREE_TYPE (expr), NULL);

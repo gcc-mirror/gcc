@@ -6272,11 +6272,11 @@ get_enclosing_class (tree type)
     {
       switch (TREE_CODE_CLASS (TREE_CODE (node)))
 	{
-	case 'd':
+	case tcc_declaration:
 	  node = DECL_CONTEXT (node);
 	  break;
 
-	case 't':
+	case tcc_type:
 	  if (node != type)
 	    return node;
 	  node = TYPE_CONTEXT (node);

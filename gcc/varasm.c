@@ -2466,7 +2466,7 @@ copy_constant (tree exp)
     case ADDR_EXPR:
       /* For ADDR_EXPR, we do not want to copy the decl whose address
 	 is requested.  We do want to copy constants though.  */
-      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == 'c')
+      if (CONSTANT_CLASS_P (TREE_OPERAND (exp, 0)))
 	return build1 (TREE_CODE (exp), TREE_TYPE (exp),
 		       copy_constant (TREE_OPERAND (exp, 0)));
       else
@@ -3378,8 +3378,7 @@ output_addressed_constants (tree exp)
 	   tem = TREE_OPERAND (tem, 0))
 	;
 
-      if (TREE_CODE_CLASS (TREE_CODE (tem)) == 'c'
-	  || TREE_CODE (tem) == CONSTRUCTOR)
+      if (CONSTANT_CLASS_P (tem) || TREE_CODE (tem) == CONSTRUCTOR)
 	output_constant_def (tem, 0);
       break;
 

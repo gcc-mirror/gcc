@@ -205,9 +205,10 @@ struct lang_hooks
      identifier nodes long enough for the language-specific slots.  */
   size_t identifier_size;
 
-  /* Determines the size of any language-specific 'x' or 'c' nodes.
-     Since it is called from make_node, the only information available
-     is the tree code.  Expected to abort on unrecognized codes.  */
+  /* Determines the size of any language-specific tcc_constant or
+     tcc_exceptional nodes.  Since it is called from make_node, the
+     only information available is the tree code.  Expected to abort
+     on unrecognized codes.  */
   size_t (*tree_size) (enum tree_code);
 
   /* The first callback made to the front end, for simple
@@ -338,12 +339,12 @@ struct lang_hooks
      this hook.  It should output to stderr.  */
   void (*print_statistics) (void);
 
-  /* Called by print_tree when there is a tree of class 'x' that it
-     doesn't know how to display.  */
+  /* Called by print_tree when there is a tree of class tcc_exceptional
+     that it doesn't know how to display.  */
   lang_print_tree_hook print_xnode;
 
-  /* Called to print language-dependent parts of a class 'd', class
-     't', and IDENTIFIER_NODE nodes.  */
+  /* Called to print language-dependent parts of tcc_decl, tcc_type,
+     and IDENTIFIER_NODE nodes.  */
   lang_print_tree_hook print_decl;
   lang_print_tree_hook print_type;
   lang_print_tree_hook print_identifier;

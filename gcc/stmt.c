@@ -1471,16 +1471,14 @@ warn_if_unused_value (tree exp, location_t locus)
 
     default:
       /* Referencing a volatile value is a side effect, so don't warn.  */
-      if ((DECL_P (exp)
-	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
+      if ((DECL_P (exp) || REFERENCE_CLASS_P (exp))
 	  && TREE_THIS_VOLATILE (exp))
 	return 0;
 
       /* If this is an expression which has no operands, there is no value
 	 to be unused.  There are no such language-independent codes,
 	 but front ends may define such.  */
-      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'e'
-	  && TREE_CODE_LENGTH (TREE_CODE (exp)) == 0)
+      if (EXPRESSION_CLASS_P (exp) && TREE_CODE_LENGTH (TREE_CODE (exp)) == 0)
 	return 0;
 
     maybe_warn:

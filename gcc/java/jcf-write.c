@@ -2036,8 +2036,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	/* If the rhs is a binary expression and the left operand is
 	   `==' to the lhs then we have an OP= expression.  In this
 	   case we must do some special processing.  */
-	if (TREE_CODE_CLASS (TREE_CODE (rhs)) == '2'
-	    && lhs == TREE_OPERAND (rhs, 0))
+	if (BINARY_CLASS_P (rhs) && lhs == TREE_OPERAND (rhs, 0))
 	  {
 	    if (TREE_CODE (lhs) == COMPONENT_REF)
 	      {

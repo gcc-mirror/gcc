@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
                                                                                 
 This file is part of GCC.
                                                                                 
@@ -184,9 +184,7 @@ make_ssa_name (tree var, tree stmt)
   gcc_assert (DECL_P (var)
 	      || TREE_CODE (var) == INDIRECT_REF);
 
-  gcc_assert (!stmt
-	      || IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (stmt)))
-	      || TREE_CODE (stmt) == PHI_NODE);
+  gcc_assert (!stmt || EXPR_P (stmt) || TREE_CODE (stmt) == PHI_NODE);
 
   /* If our free list has an element, then use it.  Also reuse the
      SSA version number of the element on the free list which helps
