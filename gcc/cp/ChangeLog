@@ -1,3 +1,12 @@
+1999-05-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (permanent_p): New function.
+	* init.c (build_new_1): Use mapcar, not copy_node, to copy a
+	possibly complex tree node.
+	* tree.c (mapcar): Adjust comments, and follow coding standards in
+	conditional.
+	(permanent_p): New function.
+
 1999-05-13  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (push_lang_context):  Turn off DECL_IGNORED_P for
