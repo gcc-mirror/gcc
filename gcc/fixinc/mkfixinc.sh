@@ -58,11 +58,6 @@ case $machine in
 		fixincludes=fixinc.ptx
 		;;
 
-	i[34567]86-dg-dgux* | \
-	m88k-dg-dgux*)
-		fixincludes=fixinc.dgux
-		;;
-
 	i[34567]86-*-sco3.2v5* | \
 	i[34567]86-*-sco3.2v4*)
 		fixincludes=fixinc.sco
