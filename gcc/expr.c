@@ -3788,7 +3788,7 @@ expand_assignment (tree to, tree from)
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
-				 &unsignedp, &volatilep);
+				 &unsignedp, &volatilep, true);
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
@@ -5244,13 +5244,27 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 
    If the field describes a variable-sized object, *PMODE is set to
    VOIDmode and *PBITSIZE is set to -1.  An access cannot be made in
-   this case, but the address of the object can be found.  */
+   this case, but the address of the object can be found.
+
+   If KEEP_ALIGNING is true and the target is STRICT_ALIGNMENT, we don't
+   look through nodes that serve as markers of a greater alignment than
+   the one that can be deduced from the expression.  These nodes make it
+   possible for front-ends to prevent temporaries from being created by
+   the middle-end on alignment considerations.  For that purpose, the
+   normal operating mode at high-level is to always pass FALSE so that
+   the ultimate containing object is really returned; moreover, the
+   associated predicate handled_component_p will always return TRUE
+   on these nodes, thus indicating that they are essentially handled
+   by get_inner_reference.  TRUE should only be passed when the caller
+   is scanning the expression in order to build another representation
+   and specifically knows how to handle these nodes; as such, this is
+   the normal operating mode in the RTL expanders.  */
 
 tree
 get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 		     HOST_WIDE_INT *pbitpos, tree *poffset,
 		     enum machine_mode *pmode, int *punsignedp,
-		     int *pvolatilep)
+		     int *pvolatilep, bool keep_aligning)
 {
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
@@ -5352,14 +5366,10 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 				   bitsize_int (*pbitsize));
 	  break;
 
-	/* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
-	   conversions that don't change the mode, and all view conversions
-	   except those that need to "step up" the alignment.  */
-
 	case VIEW_CONVERT_EXPR:
-	  if ((TYPE_ALIGN (TREE_TYPE (exp))
+	  if (keep_aligning && STRICT_ALIGNMENT
+	      && (TYPE_ALIGN (TREE_TYPE (exp))
 	       > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	      && STRICT_ALIGNMENT
 	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
 		  < BIGGEST_ALIGNMENT)
 	      && (TYPE_ALIGN_OK (TREE_TYPE (exp))
@@ -6082,8 +6092,13 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 	  return result;
 	}
 
+      /* Pass FALSE as the last argument to get_inner_reference although
+	 we are expanding to RTL.  The rationale is that we know how to
+	 handle "aligning nodes" here: we can just bypass them because
+	 they won't change the final object whose address will be returned
+	 (they actually exist only for that purpose).  */
       inner = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-				   &mode1, &unsignedp, &volatilep);
+				   &mode1, &unsignedp, &volatilep, false);
       break;
     }
 
@@ -6908,7 +6923,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree offset;
 	int volatilep = 0;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-					&mode1, &unsignedp, &volatilep);
+					&mode1, &unsignedp, &volatilep, true);
 	rtx orig_op0;
 
 	/* If we got back the original object, something is wrong.  Perhaps

@@ -8965,7 +8965,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	int volatilep;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep);
+				   &unsignedp, &volatilep, false);
 
 	if (obj == loc)
 	  return 0;

@@ -3102,7 +3102,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
      do anything if the inner expression is a PLACEHOLDER_EXPR since we
      then will no longer be able to replace it.  */
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
-				&lunsignedp, &lvolatilep);
+				&lunsignedp, &lvolatilep, false);
   if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
       || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR)
     return 0;
@@ -3112,7 +3112,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
      /* If this is not a constant, we can only do something if bit positions,
 	sizes, and signedness are the same.  */
      rinner = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset, &rmode,
-				   &runsignedp, &rvolatilep);
+				   &runsignedp, &rvolatilep, false);
 
      if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
 	 || lunsignedp != runsignedp || offset != 0
@@ -3288,7 +3288,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
     }
 
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
-			       punsignedp, pvolatilep);
+			       punsignedp, pvolatilep, false);
   if ((inner == exp && and_mask == 0)
       || *pbitsize < 0 || offset != 0
       || TREE_CODE (inner) == PLACEHOLDER_EXPR)
@@ -11018,7 +11018,8 @@ split_address_to_core_and_offset (tree exp,
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
-				  poffset, &mode, &unsignedp, &volatilep);
+				  poffset, &mode, &unsignedp, &volatilep,
+				  false);
 
       if (TREE_CODE (core) == INDIRECT_REF)
 	core = TREE_OPERAND (core, 0);
