@@ -1765,7 +1765,7 @@ tree
 array_type_nelts_top (type)
      tree type;
 {
-  return fold (build (PLUS_EXPR, integer_type_node,
+  return fold (build (PLUS_EXPR, sizetype,
 		      array_type_nelts (type),
 		      integer_one_node));
 }
@@ -1783,7 +1783,7 @@ array_type_nelts_total (type)
   while (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree n = array_type_nelts_top (type);
-      sz = fold (build (MULT_EXPR, integer_type_node, sz, n));
+      sz = fold (build (MULT_EXPR, sizetype, sz, n));
       type = TREE_TYPE (type);
     }
   return sz;

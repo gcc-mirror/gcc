@@ -768,6 +768,7 @@ compute_access (basetype_path, field)
   tree types;
   tree context;
   int protected_ok, via_protected;
+  extern int flag_access_control;
 #if 1
   /* Replaces static decl above.  */
   tree previous_scope;
@@ -775,6 +776,9 @@ compute_access (basetype_path, field)
   int static_mem =
     ((TREE_CODE (field) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (field))
      || (TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field)));
+
+  if (! flag_access_control)
+    return access_public;
 
   /* The field lives in the current class.  */
   if (BINFO_TYPE (basetype_path) == current_class_type)
