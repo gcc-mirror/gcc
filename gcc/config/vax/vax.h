@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dvax -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(vax) -Amachine(vax)"
+#define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(vax) -Amachine(vax)"
 
 /* If using g-format floating point, alter math.h.  */
 
