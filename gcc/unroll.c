@@ -2193,9 +2193,17 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
     {
       for (insn = copy_notes_from; insn != loop_end; insn = NEXT_INSN (insn))
 	{
+	  /* VTOP notes are valid only before the loop exit test.
+	     If placed anywhere else, loop may generate bad code.
+	     There is no need to test for NOTE_INSN_LOOP_CONT notes
+	     here, since COPY_NOTES_FROM will be at most one or two (for cc0)
+	     instructions before the last insn in the loop, and if the
+	     end test is that short, there will be a VTOP note between
+	     the CONT note and the test.  */
 	  if (GET_CODE (insn) == NOTE
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP)
 	    emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
 	}
     }
