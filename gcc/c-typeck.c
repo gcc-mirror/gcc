@@ -4646,7 +4646,7 @@ error_init (msgid)
 {
   char *ofwhat;
 
-  error ("%s", msgid);
+  error ("%s", _(msgid));
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     error ("(near initialization for `%s')", ofwhat);
@@ -4662,7 +4662,7 @@ pedwarn_init (msgid)
 {
   char *ofwhat;
 
-  pedwarn ("%s", msgid);
+  pedwarn ("%s", _(msgid));
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     pedwarn ("(near initialization for `%s')", ofwhat);
@@ -4678,7 +4678,7 @@ warning_init (msgid)
 {
   char *ofwhat;
 
-  warning ("%s", msgid);
+  warning ("%s", _(msgid));
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     warning ("(near initialization for `%s')", ofwhat);
