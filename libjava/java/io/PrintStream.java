@@ -84,32 +84,76 @@ public class PrintStream extends FilterOutputStream
   // True if error occurred.
   private boolean error;
   // True if auto-flush.
+  /**
+   * This is <code>true</code> if auto-flush is enabled, 
+   * <code>false</code> otherwise
+   */
   private boolean auto_flush;
 
+  /**
+   * This method intializes a new <code>PrintStream</code> object to write
+   * to the specified output sink.  Note that this class is deprecated in
+   * favor of <code>PrintWriter</code>.
+   *
+   * @param out The <code>OutputStream</code> to write to.
+   *
+   * @deprecated
+   */
   public PrintStream (OutputStream out)
   {
     this(out, false);
   }
 
+  /**
+   * This method intializes a new <code>PrintStream</code> object to write
+   * to the specified output sink.  This constructor also allows "auto-flush"
+   * functionality to be specified where the stream will be flushed after
+   * every line is terminated or newline character is written.
+   * <p>
+   * Note that this class is deprecated in favor of <code>PrintWriter</code>.
+   *
+   * @param out The <code>OutputStream</code> to write to.
+   * @param auto_flush <code>true</code> to flush the stream after every 
+   * line, <code>false</code> otherwise
+   *
+   * @deprecated
+   */
   public PrintStream (OutputStream out, boolean auto_flush)
   {
     super(out);
+
     converter = UnicodeToBytes.getDefaultEncoder();
     error = false;
     this.auto_flush = auto_flush;
   }
 
+  /**
+   * This method checks to see if an error has occurred on this stream.  Note
+   * that once an error has occurred, this method will continue to report
+   * <code>true</code> forever for this stream.  Before checking for an
+   * error condition, this method flushes the stream.
+   *
+   * @return <code>true</code> if an error has occurred, 
+   * <code>false</code> otherwise
+   */
   public boolean checkError ()
   {
     flush();
     return error;
   }
 
+  /**
+   * This method can be called by subclasses to indicate that an error
+   * has occurred and should be reported by <code>checkError</code>.
+   */
   protected void setError ()
   {
     error = true;
   }
 
+  /**
+   * This method closes this stream and all underlying streams.
+   */
   public void close ()
   {
     try
@@ -127,6 +171,10 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
+  /**
+   * This method flushes any buffered bytes to the underlying stream and
+   * then flushes that stream as well.
+   */
   public void flush ()
   {
     try
@@ -210,103 +258,245 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
+  /**
+   * This methods prints a boolean value to the stream.  <code>true</code>
+   * values are printed as "true" and <code>false</code> values are printed
+   * as "false".
+   *
+   * @param b The <code>boolean</code> value to print
+   */
   public void print (boolean bool)
   {
     print(String.valueOf(bool), false);
   }
 
+  /**
+   * This method prints an integer to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param inum The <code>int</code> value to be printed
+   */
   public void print (int inum)
   {
     print(String.valueOf(inum), false);
   }
 
+  /**
+   * This method prints a long to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param lnum The <code>long</code> value to be printed
+   */
   public void print (long lnum)
   {
     print(String.valueOf(lnum), false);
   }
 
+  /**
+   * This method prints a float to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param fnum The <code>float</code> value to be printed
+   */
   public void print (float fnum)
   {
     print(String.valueOf(fnum), false);
   }
 
+  /**
+   * This method prints a double to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param dnum The <code>double</code> value to be printed
+   */
   public void print (double dnum)
   {
     print(String.valueOf(dnum), false);
   }
 
+  /**
+   * This method prints an <code>Object</code> to the stream.  The actual
+   * value printed is determined by calling the <code>String.valueOf()</code>
+   * method.
+   *
+   * @param obj The <code>Object</code> to print.
+   */
   public void print (Object obj)
   {
     print(obj == null ? "null" : obj.toString(), false);
   }
 
+  /**
+   * This method prints a <code>String</code> to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * @param str The <code>String</code> to print.
+   */
   public void print (String str)
   {
     print(str == null ? "null" : str, false);
   }
 
+  /**
+   * This method prints a char to the stream.  The actual value printed is
+   * determined by the character encoding in use.
+   *
+   * @param ch The <code>char</code> value to be printed
+   */
   public synchronized void print (char ch)
   {
     work[0] = ch;
     print(work, 0, 1, false);
   }
 
+  /**
+   * This method prints an array of characters to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * @param s The array of characters to print.
+   */
   public void print (char[] charArray)
   {
     print(charArray, 0, charArray.length, false);
   }
 
+  /**
+   * This method prints a line separator sequence to the stream.  The value
+   * printed is determined by the system property <xmp>line.separator</xmp>
+   * and is not necessarily the Unix '\n' newline character.
+   */
   public void println ()
   {
     print(line_separator, 0, line_separator.length, false);
   }
 
+  /**
+   * This methods prints a boolean value to the stream.  <code>true</code>
+   * values are printed as "true" and <code>false</code> values are printed
+   * as "false".
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param b The <code>boolean</code> value to print
+   */
   public void println (boolean bool)
   {
     print(String.valueOf(bool), true);
   }
 
+  /**
+   * This method prints an integer to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param inum The <code>int</code> value to be printed
+   */
   public void println (int inum)
   {
     print(String.valueOf(inum), true);
   }
 
+  /**
+   * This method prints a long to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param lnum The <code>long</code> value to be printed
+   */
   public void println (long lnum)
   {
     print(String.valueOf(lnum), true);
   }
 
+  /**
+   * This method prints a float to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param fnum The <code>float</code> value to be printed
+   */
   public void println (float fnum)
   {
     print(String.valueOf(fnum), true);
   }
 
+  /**
+   * This method prints a double to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param dnum The <code>double</code> value to be printed
+   */
   public void println (double dnum)
   {
     print(String.valueOf(dnum), true);
   }
 
+  /**
+   * This method prints an <code>Object</code> to the stream.  The actual
+   * value printed is determined by calling the <code>String.valueOf()</code>
+   * method.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param obj The <code>Object</code> to print.
+   */
   public void println (Object obj)
   {
     print(obj == null ? "null" : obj.toString(), true);
   }
 
+  /**
+   * This method prints a <code>String</code> to the stream.  The actual
+   * value printed depends on the system default encoding.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param str The <code>String</code> to print.
+   */
   public void println (String str)
   {
     print (str == null ? "null" : str, true);
   }
 
+  /**
+   * This method prints a char to the stream.  The actual value printed is
+   * determined by the character encoding in use.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param ch The <code>char</code> value to be printed
+   */
   public synchronized void println (char ch)
   {
     work[0] = ch;
     print(work, 0, 1, true);
   }
 
+  /**
+   * This method prints an array of characters to the stream.  The actual
+   * value printed depends on the system default encoding.
+   * <p>
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param s The array of characters to print.
+   */
   public void println (char[] charArray)
   {
     print(charArray, 0, charArray.length, true);
   }
 
+  /**
+   * This method writes a byte of data to the stream.  If auto-flush is
+   * enabled, printing a newline character will cause the stream to be
+   * flushed after the character is written.
+   * 
+   * @param b The byte to be written
+   */
   public void write (int oneByte)
   {
     try
@@ -325,11 +515,20 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
-  public void write (byte[] buffer, int offset, int count)
+  /**
+   * This method writes <code>len</code> bytes from the specified array
+   * starting at index <code>offset</code> into the array.
+   *
+   * @param buffer The array of bytes to write
+   * @param offset The index into the array to start writing from
+   * @param len The number of bytes to write
+   */
+  public void write (byte[] buffer, int offset, int len)
   {
     try
       {
-	out.write(buffer, offset, count);
+	out.write (buffer, offset, len);
+        
 	if (auto_flush)
 	  flush();
       }
@@ -343,4 +542,5 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
-}
+} // class PrintStream
+

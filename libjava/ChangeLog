@@ -1,5 +1,80 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/File.java
+	(separator): Merged documentation from classpath.
+	(separatorChar): Merged documentation from classpath.
+	(pathSeparator): Merged documentation from classpath.
+	(pathSeparatorChar): Merged documentation from classpath.
+	(path): Merged documentation from classpath.
+	(canRead): Merged documentation from classpath.
+	(canWrite): Merged documentation from classpath.
+	(createNewFile): Merged documentation from classpath.
+	(delete): Merged documentation from classpath.
+	(equals): Merged documentation from classpath.
+	(exists): Merged documentation from classpath.
+	(File): Renamed p to name to match classpath, merged documentation
+	from classpath.
+	(getAbsolutePath): Merged documentation from classpath.
+	(getCanonicalPath): Merged documentation from classpath.
+	(getCanonicalFile): Merged documentation from classpath.
+	(getName): Merged documentation from classpath.
+	(getParent): Merged documentation from classpath.
+	(getParentFile): Merged documentation from classpath.
+	(getPath): Merged documentation from classpath.
+	(hashCode): Merged documentation from classpath.
+	(isAbsolute): Merged documentation from classpath.
+	(isDirectory): Merged documentation from classpath.
+	(isFile): Merged documentation from classpath.
+	(isHidden): Merged documentation from classpath.
+	(lastModified): Merged documentation from classpath.
+	(length): Merged documentation from classpath.
+	(list): Merged documentation from classpath.
+	(listFiles): Merged documentation from classpath.
+	(toString): Merged documentation from classpath.
+	(toURL): Merged documentation from classpath.
+	(mkdir): Merged documentation from classpath.
+	(mkdirs): Merged documentation from classpath.
+	(createTempFile): Merged documentation from classpath.
+	(setReadOnly): Merged documentation from classpath.
+	(listRoots): Merged documentation from classpath.
+	(compareTo): Merged documentation from classpath.
+	(renameTo): Merged documentation from classpath.
+	(setLastModified): Merged documentation from classpath.
+	* java/io/PrintStream.java
+	(auto_flush): Merged documentation from classpath.
+	(PrintStream): Merged documentation from classpath.
+	(checkError): Merged documentation from classpath.
+	(setError): Merged documentation from classpath.
+	(close): Merged documentation from classpath.
+	(flush): Merged documentation from classpath.
+	(print): Merged documentation from classpath.
+	(println):  Merged documentation from classpath.
+	(write): Renamed count to len to match classpath,
+	merged documentation from classpath.
+	* java/io/RandomAccessFile.java
+	(readShort): Merged documentation from classpath.
+	(readUnsignedByte): Merged documentation from classpath.
+	(readUnsignedShort): Merged documentation from classpath.
+	(readUTF): Merged documentation from classpath.
+	(seek): Reformatted, merged documentation from classpath.
+	(skipBytes): Renamed some variables to match classpath, reformatted,
+	merged documentation from classpath.
+	(write): Merged documentation from classpath.
+	(writeBoolean): Merged documentation from classpath.
+	(writeByte): Merged documentation from classpath.
+	(writeShort): Merged documentation from classpath.
+	(writeChar): Merged documentation from classpath.
+	(writeInt): Merged documentation from classpath.
+	(writeLong): Merged documentation from classpath.
+	(writeFloat): Merged documentation from classpath.
+	(writeDouble): Merged documentation from classpath.
+	(writeBytes): Merged documentation from classpath.
+	(writeChars): Merged documentation from classpath.
+	(writeUTF): Reformatted.
+	(getChannel): Reformatted.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/font/TextAttribute.java
 	(readResolve): Throws java.io.InvalidObjectException.
 
