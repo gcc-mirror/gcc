@@ -3232,12 +3232,23 @@ build_expr_wfl (node, file, line, col)
      char *file;
      int line, col;
 {
+  static char *last_file = 0;
+  static tree  last_filenode = NULL_TREE;
   register tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
+
   EXPR_WFL_NODE (wfl) = node;
-  EXPR_WFL_FILENAME_NODE (wfl) = get_identifier (file);
   EXPR_WFL_SET_LINECOL (wfl, line, col);
-  TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
-  TREE_TYPE (wfl) = TREE_TYPE (node);
+  if (file != last_file)
+    {
+      last_file = file;
+      last_filenode = file ? get_identifier (file) : NULL_TREE;
+    }
+  EXPR_WFL_FILENAME_NODE (wfl) = last_filenode;
+  if (node)
+    {
+      TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
+      TREE_TYPE (wfl) = TREE_TYPE (node);
+    }
   return wfl;
 }
 
