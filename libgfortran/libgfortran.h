@@ -32,11 +32,16 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "config.h"
+#include "c99_protos.h"
 
 #if HAVE_COMPLEX_H
 # include <complex.h>
 #else
 #define complex __complex__
+#endif
+
+#if HAVE_IEEEFP_H
+#include <ieeefp.h>
 #endif
 
 #if HAVE_STDINT_H

@@ -1,0 +1,126 @@
+/* Declarations of various C99 functions 
+   Copyright (C) 2004 Free Software Foundation, Inc.
+
+This file is part of the GNU Fortran 95 runtime library (libgfortran).
+
+Libgfortran is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+Libgfortran is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with libgfortran; see the file COPYING.LIB.  If not,
+write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+
+#ifndef C99_PROTOS_H
+#define C99_PROTOS_H
+
+#ifndef HAVE_ACOSF
+extern float acosf(float);
+#endif
+
+#ifndef HAVE_ASINF
+extern float asinf(float);
+#endif
+
+#ifndef HAVE_ATAN2F
+extern float atan2f(float, float);
+#endif
+
+#ifndef HAVE_ATANF
+extern float atanf(float);
+#endif
+
+#ifndef HAVE_CEILF
+extern float ceilf(float);
+#endif
+
+#ifndef HAVE_COPYSIGNF
+extern float copysignf(float, float);
+#endif
+
+#ifndef HAVE_COSF
+extern float cosf(float);
+#endif
+
+#ifndef HAVE_COSHF
+extern float coshf(float);
+#endif
+
+#ifndef HAVE_EXPF
+extern float expf(float);
+#endif
+
+#ifndef HAVE_FABSF
+extern float fabsf(float);
+#endif
+
+#ifndef HAVE_FLOORF
+extern float floorf(float);
+#endif
+
+#ifndef HAVE_FREXPF
+extern float frexpf(float, int *);
+#endif
+
+#ifndef HAVE_HYPOTF
+extern float hypotf(float, float);
+#endif
+
+#ifndef HAVE_LOGF
+extern float logf(float);
+#endif
+
+#ifndef HAVE_LOG10F
+extern float log10f(float);
+#endif
+
+#ifndef HAVE_SCALBNF
+extern float scalbnf(float, int);
+#endif
+
+#ifndef HAVE_SINF
+extern float sinf(float);
+#endif
+
+#ifndef HAVE_SINHF
+extern float sinhf(float);
+#endif
+
+#ifndef HAVE_SQRTF
+extern float sqrtf(float);
+#endif
+
+#ifndef HAVE_TANF
+extern float tanf(float);
+#endif
+
+#ifndef HAVE_TANHF
+extern float tanhf(float);
+#endif
+
+#ifndef HAVE_NEXTAFTERF
+extern float nextafterf(float, float);
+#endif
+
+#ifndef HAVE_POWF
+extern float powf(float, float);
+#endif
+
+#ifndef HAVE_ROUND
+extern double round(double);
+#endif
+
+#ifndef HAVE_ROUNDF
+extern float roundf(float);
+#endif
+
+#endif  /* C99_PROTOS_H  */
+

@@ -97,6 +97,14 @@ expf(float x)
 }
 #endif
 
+#ifndef HAVE_FABSF
+float
+fabsf(float x)
+{
+  return (float) fabs(x);
+}
+#endif
+
 #ifndef HAVE_FLOORF
 float
 floorf(float x)
