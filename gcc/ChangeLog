@@ -1,3 +1,8 @@
+2002-05-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* regrename.c: Fix formatting.
+	* tree.c: Likewise.
+
 Fri May  3 13:34:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (attribute memory): Handle compares properly.
