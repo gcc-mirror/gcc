@@ -485,7 +485,7 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 AC_OUTPUT(Makefile \
 include/Makefile src/Makefile \
 libmath/Makefile libsupc++/Makefile \
-po/Makefile testsuite/Makefile scripts/check scripts/testsuite_flags,
+po/Makefile testsuite/Makefile scripts/check_survey scripts/testsuite_flags,
 [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
  if test -n "$CONFIG_FILES"; then
    if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
@@ -508,7 +508,7 @@ po/Makefile testsuite/Makefile scripts/check scripts/testsuite_flags,
      esac
    fi
  fi
- chmod +x scripts/check
+ chmod +x scripts/check_survey
  chmod +x scripts/testsuite_flags],
 srcdir=${srcdir}
 host=${host}
@@ -527,7 +527,8 @@ dnl  In autoconf 2.5x, AC_OUTPUT is replaced by three AC_ macros:
 dnl  AC_CONFIG_FILES(Makefile \
 dnl      include/Makefile src/Makefile \
 dnl      libmath/Makefile libsupc++/Makefile \
-dnl     po/Makefile testsuite/Makefile scripts/mkcheck scripts/testsuite_flags)
+dnl      po/Makefile testsuite/Makefile \
+dnl      scripts/check_survey scripts/testsuite_flags)
 dnl  AC_CONFIG_COMMANDS([default],
 dnl  [if test -n "$CONFIG_FILES"; then
 dnl    # Ony modify Makefiles that are just being created.
@@ -547,7 +548,7 @@ dnl        grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
 dnl        ;;
 dnl    esac
 dnl  fi
-dnl  chmod +x scripts/mkcheck
+dnl  chmod +x scripts/check_survey
 dnl  chmod +x scripts/testsuite_flags
 dnl  ],
 dnl  srcdir=${srcdir}
