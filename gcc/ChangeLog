@@ -1,3 +1,118 @@
+2001-08-27  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
+
+        * rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
+	PRESENCE_SET, ABSENCE_SET, DEFINE_BYPASS, DEFINE_AUTOMATON,
+	AUTOMATA_OPTION, DEFINE_RESERVATION, DEFINE_INSN_RESERVATION): New
+	RTL constructions.
+	
+	* genattr.c (main): New variable num_insn_reservations.  Increase
+	it if there is DEFINE_INSN_RESERVATION.  Output automaton based
+	pipeline hazard recognizer interface.
+
+	* genattrtab.h: New file.
+	
+	* genattrtab.c: Include genattrtab.h.
+	(attr_printf, check_attr_test, make_internal_attr,
+	make_numeric_value): Move protypes into genattrtab.h.  Define them
+	as external.
+	(num_dfa_decls): New global variable.
+	(main): Process DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT,
+	DEFINE_BYPASS, EXCLUSION_SET, PRESENCE_SET, ABSENCE_SET,
+	DEFINE_AUTOMATON, AUTOMATA_OPTION, DEFINE_RESERVATION,
+	DEFINE_INSN_RESERVATION.  Call expand_automata and write_automata.
+
+	* genautomata.c: New file.
+
+	* rtl.h (LINK_COST_ZERO, LINK_COST_FREE): Remove them.
+	
+        * sched-int.h: (curr_state): Add the external definition for
+	automaton pipeline interface.
+	(haifa_insn_data): Add comments for members blockage and units.
+	
+	* target-def.h (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_INIT_DFA_BUBBLES, TARGET_SCHED_DFA_BUBBLE): New
+	macros.
+	(TARGET_SCHED): Use the new macros.
+
+	* target.h (use_dfa_pipeline_interface, init_dfa_pre_cycle_insn,
+	dfa_pre_cycle_insn, init_dfa_post_cycle_insn, dfa_post_cycle_insn,
+	first_cycle_multipass_dfa_lookahead, init_dfa_bubbles,
+	dfa_bubble): New members in gcc_target.sched.
+	
+        * haifa-sched.c (insert_schedule_bubbles_p): New variable.
+	(MAX_INSN_QUEUE_INDEX): New macro for automaton interface.
+	(insn_queue): Redefine it as pointer to array.
+	(NEXT_Q, NEXT_Q_AFTER): Use MAX_INSN_QUEUE_INDEX instead of
+	INSN_QUEUE_SIZE.
+	(max_insn_queue_index_macro_value): New variable.
+	(curr_state, dfa_state_size, ready_try): New varaibles for
+	automaton interface.
+	(ready_element, ready_remove, max_issue): New function prototypes
+	for automaton interface.
+	(choose_ready): New function prototype.
+	(insn_unit, blockage_range): Add comments.
+	(unit_last_insn, unit_tick, unit_n_insns): Define them for case
+	FUNCTION_UNITS_SIZE == 0.
+	(insn_issue_delay, actual_hazard_this_instance, schedule_unit,
+	actual_hazard, potential_hazard): Add comments.
+	(insn_cost): Use cost -1 as undefined value.  Remove
+	LINK_COST_ZERO and LINK_COST_FREE.  Add new code for automaton
+	pipeline interface.
+	(ready_element, ready_remove): New functions for automaton
+	interface.
+	(schedule_insn): Add new code for automaton pipeline interface.
+	(queue_to_ready): Add new code for automaton pipeline interface.
+	Use MAX_INSN_QUEUE_INDEX instead of INSN_QUEUE_SIZE.
+	(debug_ready_list): Print newline when the queue is empty.
+	(max_issue): New function for automaton pipeline interface.
+	(choose_ready): New function.
+	(schedule_block): Add new code for automaton pipeline interface.
+	Print ready list before scheduling each insn.
+	(sched_init): Add new code for automaton pipeline interface.
+	Initiate insn cost by -1.
+	(sched_finish): Free the current automaton state and finalize
+	automaton pipeline interface.
+	
+	* sched-rgn.c: Include target.h.
+	(init_ready_list, new_ready, debug_dependencies): Add new code for
+	automaton pipeline interface.
+
+	* sched-vis.c: Include target.h.
+	(get_visual_tbl_length): Add code for automaton interface.
+	(target_units, print_block_visualization):  Add comments.
+	
+        * Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
+	USE_HOST_GETRUNTIME, USE_HOST_HASHTAB, HOST_VARRAY): New variables.
+	(sched-rgn.o, sched-vis.o): Add new dependency file target.h.
+	(getruntime.o, genautomata.o): New entries.
+	(genattrtab.o): Add new dependency file genattrtab.h.
+	(genattrtab): Add new dependencies.  Link it with `libm.a'.
+	(getruntime.o, hashtab.o): New entries for canadian cross.
+
+	* doc/md.texi: Description of automaton based model.
+	
+	* doc/tm.texi (TARGET_SCHED_ISSUE_RATE, TARGET_SCHED_ADJUST_COST):
+	Add comments.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_INIT_DFA_BUBBLES, TARGET_SCHED_DFA_BUBBLE): The new
+	hook descriptions.
+	(TRADITIONAL_PIPELINE_INTERFACE, DFA_PIPELINE_INTERFACE,
+	MAX_DFA_ISSUE_RATE): New macro descriptions.
+	
+	* doc/contrib.texi: Add dfa based scheduler contribution.
+
+	* doc/gcc.texi: Add more information about genattrtab.
+
 2001-08-27  Diego Novillo  <dnovillo@redhat.com>
 
 	* flow.c (flow_loop_dump): Do not display insn UIDs if this is not

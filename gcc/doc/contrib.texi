@@ -313,9 +313,10 @@ Andrew MacLeod for his ongoing work in building a real EH system,
 various code generation improvements, work on the global optimizer, etc.
 
 @item
-Vladimir Makarov for hacking some ugly i960 problems, PowerPC
-hacking improvements to compile-time performance and overall knowledge
-and direction in the area of instruction scheduling.
+Vladimir Makarov for hacking some ugly i960 problems, PowerPC hacking
+improvements to compile-time performance, overall knowledge and
+direction in the area of instruction scheduling, and design and
+implementation of the automaton based instruction scheduler.
 
 @item
 Bob Manson for his behind the scenes work on dejagnu.

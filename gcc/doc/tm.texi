@@ -5446,11 +5446,19 @@ hooks for this purpose.  It is usually enough to define just a few of
 them: try the first ones in this list first.
 
 @deftypefn {Target Hook} int TARGET_SCHED_ISSUE_RATE (void)
-This hook returns the maximum number of instructions that can ever issue
-at the same time on the target machine.  The default is one.  This value
-must be constant over the entire compilation.  If you need it to vary
-depending on what the instructions are, you must use
+This hook returns the maximum number of instructions that can ever
+issue at the same time on the target machine.  The default is one.
+Although the insn scheduler can define itself the possibility of issue
+an insn on the same cycle, the value can serve as an additional
+constraint to issue insns on the same simulated processor cycle (see
+hooks @samp{TARGET_SCHED_REORDER} and @samp{TARGET_SCHED_REORDER2}).
+This value must be constant over the entire compilation.  If you need
+it to vary depending on what the instructions are, you must use
 @samp{TARGET_SCHED_VARIABLE_ISSUE}.
+
+You could use the value of macro @samp{MAX_DFA_ISSUE_RATE} to return
+the value of the hook @samp{TARGET_SCHED_ISSUE_RATE} for the automaton
+based pipeline interface.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
@@ -5466,12 +5474,17 @@ instruction that was scheduled.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx @var{insn}, rtx @var{link}, rtx @var{dep_insn}, int @var{cost})
-This function corrects the value of @var{cost} based on the relationship
-between @var{insn} and @var{dep_insn} through the dependence @var{link}.
-It should return the new value.  The default is to make no adjustment to
-@var{cost}.  This can be used for example to specify to the scheduler
+This function corrects the value of @var{cost} based on the
+relationship between @var{insn} and @var{dep_insn} through the
+dependence @var{link}.  It should return the new value.  The default
+is to make no adjustment to @var{cost}.  This can be used for example
+to specify to the scheduler using the traditional pipeline description
 that an output- or anti-dependence does not incur the same cost as a
-data-dependence.
+data-dependence.  If the scheduler using the automaton based pipeline
+description, the cost of anti-dependence is zero and the cost of
+output-dependence is maximum of one and the difference of latency
+times of the first and the second insns.  If these values are not
+acceptable, you could use the hook to modify them too.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
@@ -5536,6 +5549,140 @@ over a basic block.  It should insert an insn into the chain after
 RTL dumps and assembly output.  Define this hook only if you need this
 level of detail about what the scheduler is doing.
 @end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE (void)
+This hook is called many times during insn scheduling.  If the hook
+returns nonzero, the automaton based pipeline description is used for
+insn scheduling.  Otherwise the traditional pipeline description is
+used.  The default is usage of the traditional pipeline description.
+
+You should also remember that to simplify the insn scheduler sources
+an empty traditional pipeline description interface is generated even
+if there is no a traditional pipeline description in the @file{.md}
+file.  The same is true for the automaton based pipeline description.
+That means that you should be accurate in defining the hook.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_PRE_CYCLE_INSN (void)
+The hook returns an RTL insn.  The automaton state used in the
+pipeline hazard recognizer is changed as if the insn were scheduled
+when the new simulated processor cycle starts.  Usage of the hook may
+simplify the automaton pipeline description for some @acronym{VLIW}
+processors.  If the hook is defined, it is used only for the automaton
+based pipeline description.  The default is not to change the state
+when the new simulated processor cycle starts.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN (void)
+The hook can be used to initialize data used by the previous hook.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_POST_CYCLE_INSN (void)
+The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used
+to changed the state as if the insn were scheduled when the new
+simulated processor cycle finishes.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN (void)
+The hook is analogous to @samp{TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN} but
+used to initialize data used by the previous hook.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD (void)
+This hook controls better choosing an insn from the ready insn queue
+for the @acronym{DFA}-based insn scheduler.  Usually the scheduler
+chooses the first insn from the queue.  If the hook returns a positive
+value, an additional scheduler code tries all permutations of
+@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD ()}
+subsequent ready insns to choose an insn whose issue will result in
+maximal number of issued insns on the same cycle.  For the
+@acronym{VLIW} processor, the code could actually solve the problem of
+packing simple insns into the @acronym{VLIW} insn.  Of course, if the
+rules of @acronym{VLIW} packing are described in the automaton.
+
+This code also could be used for superscalar @acronym{RISC}
+processors.  Let us consider a superscalar @acronym{RISC} processor
+with 3 pipelines.  Some insns can be executed in pipelines @var{A} or
+@var{B}, some insns can be executed only in pipelines @var{B} or
+@var{C}, and one insn can be executed in pipeline @var{B}.  The
+processor may issue the 1st insn into @var{A} and the 2nd one into
+@var{B}.  In this case, the 3rd insn will wait for freeing @var{B}
+until the next cycle.  If the scheduler issues the 3rd insn the first,
+the processor could issue all 3 insns per cycle.
+
+Actually this code demonstrates advantages of the automaton based
+pipeline hazard recognizer.  We try quickly and easy many insn
+schedules to choose the best one.
+
+The default is no multipass scheduling.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_INIT_DFA_BUBBLES (void)
+The @acronym{DFA}-based scheduler could take the insertion of nop
+operations for better insn scheduling into account.  It can be done
+only if the multi-pass insn scheduling works (see hook
+@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD}).
+
+Let us consider a @acronym{VLIW} processor insn with 3 slots.  Each
+insn can be placed only in one of the three slots.  We have 3 ready
+insns @var{A}, @var{B}, and @var{C}.  @var{A} and @var{C} can be
+placed only in the 1st slot, @var{B} can be placed only in the 3rd
+slot.  We described the automaton which does not permit empty slot
+gaps between insns (usually such description is simpler).  Without
+this code the scheduler would place each insn in 3 separate
+@acronym{VLIW} insns.  If the scheduler places a nop insn into the 2nd
+slot, it could place the 3 insns into 2 @acronym{VLIW} insns.  What is
+the nop insn is returned by hook @samp{TARGET_SCHED_DFA_BUBBLE}.  Hook
+@samp{TARGET_SCHED_INIT_DFA_BUBBLES} can be used to initialize or
+create the nop insns.
+
+You should remember that the scheduler does not insert the nop insns.
+It is not wise because of the following optimizations.  The scheduler
+only considers such possibility to improve the result schedule.  The
+nop insns should be inserted lately, e.g. on the final phase.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SCHED_DFA_BUBBLE (int @var{index})
+This hook @samp{FIRST_CYCLE_MULTIPASS_SCHEDULING} is used to insert
+nop operations for better insn scheduling when @acronym{DFA}-based
+scheduler makes multipass insn scheduling (see also description of
+hook @samp{TARGET_SCHED_INIT_DFA_BUBBLES}).  This hook
+returns a nop insn with given @var{index}.  The indexes start with
+zero.  The hook should return @code{NULL} if there are no more nop
+insns with indexes greater than given index.
+@end deftypefn
+
+Macros in the following table are generated by the program
+@file{genattr} and can be useful for writing the hooks.
+
+@table @code
+@findex TRADITIONAL_PIPELINE_INTERFACE
+@item TRADITIONAL_PIPELINE_INTERFACE
+The macro definition is generated if there is a traditional pipeline
+description in @file{.md} file. You should also remember that to
+simplify the insn scheduler sources an empty traditional pipeline
+description interface is generated even if there is no a traditional
+pipeline description in the @file{.md} file.  The macro can be used to
+distinguish the two types of the traditional interface.
+
+@findex DFA_PIPELINE_INTERFACE
+@item DFA_PIPELINE_INTERFACE
+The macro definition is generated if there is an automaton pipeline
+description in @file{.md} file.  You should also remember that to
+simplify the insn scheduler sources an empty automaton pipeline
+description interface is generated even if there is no an automaton
+pipeline description in the @file{.md} file.  The macro can be used to
+distinguish the two types of the automaton interface.
+
+@findex MAX_DFA_ISSUE_RATE
+@item MAX_DFA_ISSUE_RATE
+The macro definition is generated in the automaton based pipeline
+description interface.  Its value is calculated from the automaton
+based pipeline description and is equal to maximal number of all insns
+described in constructions @samp{define_insn_reservation} which can be
+issued on the same processor cycle.
+
+@end table
 
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
