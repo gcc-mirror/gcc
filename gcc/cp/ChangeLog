@@ -1,5 +1,9 @@
 2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* error.c (cp_tree_printer, case 'P'): Append break.
+
+2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (frob_opname): Declare.
 	* parse.y (saved_scopes): New static variable.
 	(cp_parse_init): Adjust.
