@@ -743,7 +743,7 @@ output_move_double (operands)
 	  if (!reg_overlap_mentioned_p (high_reg, addr))
 	    {
 	      /* No overlap between high target register and address
-		 register.  (We do this in an non-obious way to
+		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == POST_INC)
 		return "ldws,ma 8(0,%1),%0\n\tldw -4(0,%1),%R0";
@@ -770,7 +770,7 @@ output_move_double (operands)
 	  if (!reg_overlap_mentioned_p (high_reg, addr))
 	    {
 	      /* No overlap between high target register and address
-		 register.  (We do this in an non-obious way to
+		 register.  (We do this in a non-obvious way to
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == PRE_INC)
 		return "ldws,mb 8(0,%1),%0\n\tldw 4(0,%1),%R0";
