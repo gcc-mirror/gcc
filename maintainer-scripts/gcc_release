@@ -178,7 +178,7 @@ EOF
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
   changedir "${WORKING_DIRECTORY}"
-  for x in bugs gnats faq; do
+  for x in bugs faq; do
     (${CVS} export -r HEAD wwwdocs/htdocs/${x}.html && \
      cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/${x}.html \
         ${SOURCE_DIRECTORY}) || \
@@ -192,7 +192,7 @@ EOF
     (${ENV} TERM=vt100 lynx -dump $file \
        | sed -e "s#file://localhost`/bin/pwd`\(.*\)#http://gcc.gnu.org\1#g" \
        > $newfile) || \
-     error "Could not regenerate documentation"
+     error "Could not generate text-only version of ${file}"
   done
 
   # For a prerelease or real release, we need to generate additional

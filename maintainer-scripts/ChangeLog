@@ -1,3 +1,8 @@
+2003-06-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release (build_sources): Do not include gnats.html any longer.
+	Make an error message more descriptive.
+	
 2003-06-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Factor the updating of links and READMEs on the
