@@ -4356,12 +4356,13 @@ arg_assoc_class (struct arg_lookup *k, tree type)
   context = decl_namespace (TYPE_MAIN_DECL (type));
   if (arg_assoc_namespace (k, context))
     return true;
-  
-  /* Process baseclasses.  */
-  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
-    if (arg_assoc_class
-	(k, BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type), i))))
-      return true;
+
+  if (TYPE_BINFO (type))
+    /* Process baseclasses.  */
+    for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
+      if (arg_assoc_class
+	  (k, BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type), i))))
+	return true;
   
   /* Process friends.  */
   for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list; 
