@@ -1811,17 +1811,23 @@ rs6000_emit_move (dest, source, mode)
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (operands[1]) == MEM
       && mode == DImode
-      && ! TARGET_POWERPC64
       && (SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[0]))
 	  || SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[1]))))
     {
-      rtx reg1, reg2;
-      reg1 = gen_reg_rtx(SImode);
-      reg2 = gen_reg_rtx(SImode);
-      rs6000_emit_move (reg1, simplify_subreg (SImode, operands[1], DImode, 0), SImode);
-      rs6000_emit_move (reg2, simplify_subreg (SImode, operands[1], DImode, 4), SImode);
-      rs6000_emit_move (simplify_subreg (SImode, operands[0], DImode, 0), reg1, SImode);
-      rs6000_emit_move (simplify_subreg (SImode, operands[0], DImode, 4), reg2, SImode);
+      if (!TARGET_POWERPC64)
+	{
+	  emit_move_insn (simplify_subreg (SImode, operands[0], DImode, 0),
+			  simplify_subreg (SImode, operands[1], DImode, 0));
+	  emit_move_insn (simplify_subreg (SImode, operands[0], DImode, 4),
+			  simplify_subreg (SImode, operands[1], DImode, 4));
+	}
+      else
+	{
+	  emit_move_insn (gen_lowpart (SImode, operands[0]),
+			  gen_lowpart (SImode, operands[1]));
+	  emit_move_insn (gen_highpart (SImode, operands[0]),
+			  gen_highpart (SImode, operands[1]));
+	}
       return;
     }
   
