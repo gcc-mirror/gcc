@@ -1,3 +1,11 @@
+2001-01-09  Michael Hayes  <mhayes@redhat.com>
+
+	* flow.c (flow_loop_scan): Break out of ...
+	(flow_loops_find) ... here.
+	* basic-block.h (flow_loop_scan): New.
+	(LOOP_ENTRY_EDGES, LOOP_EXIT_EDGES): Add.
+	(LOOP_EDGES, LOOP_EXITS_DOMS, LOOP_ALL): Redefine.
+
 2001-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cppinit.c (cpp_cleanup): NULLify macro_buffer and zero
