@@ -1,3 +1,12 @@
+2001-01-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* cp/lang-options.h:  Bring comment in line with reality.
+	* f/lang-options.h:  Likewise.
+	* java/lang-options.h:  Likewise.
+	* objc/lang-options.h:  Likewise.
+	* ch/lang-options.h:  Likewise.
+	* f/g77.texi:  And update the manual.
+
 2001-01-05  Marek Michalkiewicz  <marekm@linux.org.pl>
 	    Denis Chertykov  <denisc@overta.ru>
 

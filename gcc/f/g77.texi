@@ -13889,7 +13889,7 @@ when compiling most any kind of program.
 which is used during the build of @code{gcc} to
 build a list of all options that are accepted by
 at least one language's compiler.
-This list goes into the @code{lang_options} array
+This list goes into the @code{documented_lang_options} array
 in @file{gcc/toplev.c}, which uses this array to
 determine whether a particular option should be
 offered to the linked-in front end for processing
