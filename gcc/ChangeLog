@@ -1,5 +1,10 @@
 Sat Feb 26 09:39:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* toplev.c (documented_lang_options): Correct spelling error.
+	(decode_d_option, decode_f_option, main): Likewise.
+
+	* toplev.c (print_time): Avoid SIGFPE when all_time is zero.
+
 	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Use .set at
 	to tell assembler it is permitted to expand large constants.
 
