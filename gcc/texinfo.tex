@@ -35,7 +35,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.174 $
+\deftexinfoversion$Revision: 1.1 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -592,6 +592,9 @@ where each line of input produces a line of output.}
 
 \let\c=\comment
 
+% @paragraphindent  is defined for the Info formatting commands only.
+\let\paragraphindent=\comment
+
 % Prevent errors for section commands.
 % Used in @ignore and in failing conditionals.
 \def\ignoresections{%
@@ -1028,7 +1031,7 @@ where each line of input produces a line of output.}
 \setfont\deftt\ttshape{10}{\magstep1}
 \def\df{\let\tentt=\deftt \let\tenbf = \defbf \bf}
 
-% Fonts for indices and small examples.
+% Fonts for indices and small examples (9pt).
 % We actually use the slanted font rather than the italic,
 % because texinfo normally uses the slanted fonts for that.
 % Do not make many font distinctions in general in the index, since they
@@ -1045,7 +1048,7 @@ where each line of input produces a line of output.}
 \font\indi=cmmi9
 \font\indsy=cmsy9
 
-% Fonts for headings
+% Chapter (and unnumbered) fonts (17.28pt).
 \setfont\chaprm\rmbshape{12}{\magstep2}
 \setfont\chapit\itbshape{10}{\magstep3}
 \setfont\chapsl\slbshape{10}{\magstep3}
@@ -1057,6 +1060,7 @@ where each line of input produces a line of output.}
 \font\chapi=cmmi12 scaled \magstep2
 \font\chapsy=cmsy10 scaled \magstep3
 
+% Section fonts (14.4pt).
 \setfont\secrm\rmbshape{12}{\magstep1}
 \setfont\secit\itbshape{10}{\magstep2}
 \setfont\secsl\slbshape{10}{\magstep2}
@@ -1082,6 +1086,7 @@ where each line of input produces a line of output.}
 
 %\let\ssecbf=\ssecrm
 
+% Subsection fonts (13.15pt).
 \setfont\ssecrm\rmbshape{12}{\magstephalf}
 \setfont\ssecit\itbshape{10}{1315}
 \setfont\ssecsl\slbshape{10}{1315}
@@ -1127,22 +1132,23 @@ where each line of input produces a line of output.}
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
   \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy \let\tenttsl=\chapttsl
-  \resetmathfonts}
+  \resetmathfonts \setleading{19pt}}
 \def\secfonts{%
   \let\tenrm=\secrm \let\tenit=\secit \let\tensl=\secsl
   \let\tenbf=\secbf \let\tentt=\sectt \let\smallcaps=\secsc
   \let\tensf=\secsf \let\teni=\seci \let\tensy=\secsy \let\tenttsl=\secttsl
-  \resetmathfonts}
+  \resetmathfonts \setleading{16pt}}
 \def\subsecfonts{%
   \let\tenrm=\ssecrm \let\tenit=\ssecit \let\tensl=\ssecsl
   \let\tenbf=\ssecbf \let\tentt=\ssectt \let\smallcaps=\ssecsc
   \let\tensf=\ssecsf \let\teni=\sseci \let\tensy=\ssecsy \let\tenttsl=\ssecttsl
-  \resetmathfonts}
+  \resetmathfonts \setleading{15pt}}
+\let\subsubsecfonts = \subsecfonts % Maybe make sssec fonts scaled magstephalf?
 \def\indexfonts{%
   \let\tenrm=\indrm \let\tenit=\indit \let\tensl=\indsl
   \let\tenbf=\indbf \let\tentt=\indtt \let\smallcaps=\indsc
   \let\tensf=\indsf \let\teni=\indi \let\tensy=\indsy \let\tenttsl=\indttsl
-  \resetmathfonts}
+  \resetmathfonts \setleading{10pt}}
 
 % Set up the default fonts, so we can use them for creating boxes.
 %
@@ -2932,15 +2938,18 @@ width0pt\relax} \fi
 \global\let\unnumbchapmacro=\unnchfplain
 \global\let\centerchapmacro=\centerchfplain}
 
+% #1 is the text, #2 the chapter number.
 \def\chfplain #1#2{%
   \pchapsepmacro
   {%
-    \chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                     \parindent=0pt\raggedright
-                     \rm #2\enspace #1}%
+    \chapfonts \rm
+    \setbox0 = \hbox{#2\enspace}%
+    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
+          \hangindent = \wd0
+          \unhbox0 #1}%
   }%
-  \bigskip
-  \penalty5000
+  \nobreak\bigskip % no page break after a chapter title
+  \nobreak
 }
 
 \def\unnchfplain #1{%
@@ -2981,51 +2990,44 @@ width0pt\relax} \fi
 \global\let\unnumbchapmacro=\unnchfopen
 \global\let\centerchapmacro=\centerchfopen}
 
-% Parameter controlling skip before section headings.
 
-\newskip \subsecheadingskip  \subsecheadingskip = 17pt plus 8pt minus 4pt
-\def\subsecheadingbreak{\dobreak \subsecheadingskip {-500}}
-
+% Section titles.
 \newskip \secheadingskip  \secheadingskip = 21pt plus 8pt minus 4pt
 \def\secheadingbreak{\dobreak \secheadingskip {-1000}}
+\def\secheading#1#2#3{\sectionheading{sec}{#2.#3}{#1}}
+\def\plainsecheading#1{\sectionheading{sec}{}{#1}}
 
-% @paragraphindent  is defined for the Info formatting commands only.
-\let\paragraphindent=\comment
+% Subsection titles.
+\newskip \subsecheadingskip  \subsecheadingskip = 17pt plus 8pt minus 4pt
+\def\subsecheadingbreak{\dobreak \subsecheadingskip {-500}}
+\def\subsecheading#1#2#3#4{\sectionheading{subsec}{#2.#3.#4}{#1}}
 
-% Section fonts are the base font at magstep2, which produces
-% a size a bit more than 14 points in the default situation.
-
-\def\secheading #1#2#3{\secheadingi {#2.#3\enspace #1}}
-\def\plainsecheading #1{\secheadingi {#1}}
-\def\secheadingi #1{{\advance \secheadingskip by \parskip %
-\secheadingbreak}%
-{\secfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                 \parindent=0pt\raggedright
-                 \rm #1\hfill}}%
-\ifdim \parskip<10pt \kern 10pt\kern -\parskip\fi \penalty 10000 }
+% Subsubsection titles.
+\let\subsubsecheadingskip = \subsecheadingskip
+\let\subsubsecheadingbreak = \subsecheadingbreak
+\def\subsubsecheading#1#2#3#4#5{\sectionheading{subsubsec}{#2.#3.#4.#5}{#1}}
 
 
-% Subsection fonts are the base font at magstep1,
-% which produces a size of 12 points.
-
-\def\subsecheading #1#2#3#4{\subsecheadingi {#2.#3.#4\enspace #1}}
-\def\subsecheadingi #1{{\advance \subsecheadingskip by \parskip %
-\subsecheadingbreak}%
-{\subsecfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                     \parindent=0pt\raggedright
-                     \rm #1\hfill}}%
-\ifdim \parskip<10pt \kern 10pt\kern -\parskip\fi \penalty 10000 }
-
-\def\subsubsecfonts{\subsecfonts} % Maybe this should change:
-				  % Perhaps make sssec fonts scaled
-				  % magstep half
-\def\subsubsecheading #1#2#3#4#5{\subsubsecheadingi {#2.#3.#4.#5\enspace #1}}
-\def\subsubsecheadingi #1{{\advance \subsecheadingskip by \parskip %
-\subsecheadingbreak}%
-{\subsubsecfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                       \parindent=0pt\raggedright
-                       \rm #1\hfill}}%
-\ifdim \parskip<10pt \kern 10pt\kern -\parskip\fi \penalty 10000}
+% Print any size section title.
+% 
+% #1 is the section type (sec/subsec/subsubsec), #2 is the section
+% number (maybe empty), #3 the text.
+\def\sectionheading#1#2#3{%
+  {%
+    \expandafter\advance\csname #1headingskip\endcsname by \parskip
+    \csname #1headingbreak\endcsname
+  }%
+  {%
+    \csname #1fonts\endcsname \rm
+    \def\secnum{#2}%
+    % Only insert the separating space if we have a section number.
+    \setbox0 = \hbox{#2\ifx\secnum\empty\else \enspace \fi}%
+    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
+          \hangindent = \wd0 % zero if no section number
+          \unhbox0 #3}%
+  }%
+  \ifdim\parskip<10pt \nobreak\kern10pt\nobreak\kern-\parskip\fi \nobreak
+}
 
 
 \message{toc printing,}
