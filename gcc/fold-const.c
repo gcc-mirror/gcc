@@ -1339,7 +1339,14 @@ const_binop (code, arg1, arg2, notrunc)
 
       d1 = TREE_REAL_CST (arg1);
       d2 = TREE_REAL_CST (arg2);
-      if (setjmp (float_error))
+
+      /* If either operand is a NaN, just return it.  Otherwise, set up
+	 for floating-point trap; we return an overflow.  */
+      if (REAL_VALUE_ISNAN (d1))
+	return arg1;
+      else if (REAL_VALUE_ISNAN (d2))
+	return arg2;
+      else if (setjmp (float_error))
 	{
 	  t = copy_node (arg1);
 	  overflow = 1;
@@ -1577,11 +1584,9 @@ fold_convert (t, arg1)
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  REAL_VALUE_TYPE l, x, u;
-
-	  l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
-	  x = TREE_REAL_CST (arg1);
-	  u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
+	  REAL_VALUE_TYPE x = TREE_REAL_CST (arg1);
+	  REAL_VALUE_TYPE l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
+	  REAL_VALUE_TYPE u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
 
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
@@ -1593,29 +1598,31 @@ fold_convert (t, arg1)
 	  l--;
 	  u++;
 #endif
-	  if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
+	  /* If X is a NaN, use zero instead and show we have an overflow.
+	     Otherwise, range check.  */
+	  if (REAL_VALUE_ISNAN (x))
+	    overflow = 1, x = dconst0;
+	  else if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
 	    overflow = 1;
 
 #ifndef REAL_ARITHMETIC
 	  {
-	    REAL_VALUE_TYPE d;
 	    HOST_WIDE_INT low, high;
 	    HOST_WIDE_INT half_word
 	      = (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2);
 
-	    d = TREE_REAL_CST (arg1);
-	    if (d < 0)
-	      d = -d;
+	    if (x < 0)
+	      x = -x;
 
-	    high = (HOST_WIDE_INT) (d / half_word / half_word);
-	    d -= (REAL_VALUE_TYPE) high * half_word * half_word;
-	    if (d >= (REAL_VALUE_TYPE) half_word * half_word / 2)
+	    high = (HOST_WIDE_INT) (x / half_word / half_word);
+	    x -= (REAL_VALUE_TYPE) high * half_word * half_word;
+	    if (x >= (REAL_VALUE_TYPE) half_word * half_word / 2)
 	      {
-		low = d - (REAL_VALUE_TYPE) half_word * half_word / 2;
+		low = x - (REAL_VALUE_TYPE) half_word * half_word / 2;
 		low |= (HOST_WIDE_INT) -1 << (HOST_BITS_PER_WIDE_INT - 1);
 	      }
 	    else
-	      low = (HOST_WIDE_INT) d;
+	      low = (HOST_WIDE_INT) x;
 	    if (TREE_REAL_CST (arg1) < 0)
 	      neg_double (low, high, &low, &high);
 	    t = build_int_2 (low, high);
@@ -1623,7 +1630,7 @@ fold_convert (t, arg1)
 #else
 	  {
 	    HOST_WIDE_INT low, high;
-	    REAL_VALUE_TO_INT (&low, &high, (TREE_REAL_CST (arg1)));
+	    REAL_VALUE_TO_INT (&low, &high, x);
 	    t = build_int_2 (low, high);
 	  }
 #endif
@@ -1644,7 +1651,9 @@ fold_convert (t, arg1)
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  if (setjmp (float_error))
+	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
+	    return arg1;
+	  else if (setjmp (float_error))
 	    {
 	      overflow = 1;
 	      t = copy_node (arg1);
