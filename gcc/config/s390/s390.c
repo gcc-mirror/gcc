@@ -1555,6 +1555,7 @@ tls_symbolic_operand (register rtx op)
 int
 load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
+  enum machine_mode elt_mode;
   int count = XVECLEN (op, 0);
   unsigned int dest_regno;
   rtx src_addr;
@@ -1570,6 +1571,7 @@ load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
   dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
   src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
+  elt_mode = GET_MODE (SET_DEST (XVECEXP (op, 0, 0)));
 
   /* Check, is base, or base + displacement.  */
 
@@ -1594,15 +1596,15 @@ load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != Pmode
+	  || GET_MODE (SET_DEST (elt)) != elt_mode
 	  || REGNO (SET_DEST (elt)) != dest_regno + i
 	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != Pmode
+	  || GET_MODE (SET_SRC (elt)) != elt_mode
 	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
 	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
 	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
 	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1))
-	     != off + i * UNITS_PER_WORD)
+	     != off + i * GET_MODE_SIZE (elt_mode))
 	return 0;
     }
 
@@ -1617,6 +1619,7 @@ load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
+  enum machine_mode elt_mode;
   int count = XVECLEN (op, 0);
   unsigned int src_regno;
   rtx dest_addr;
@@ -1631,6 +1634,7 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
   src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
   dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
+  elt_mode = GET_MODE (SET_SRC (XVECEXP (op, 0, 0)));
 
   /* Check, is base, or base + displacement.  */
 
@@ -1655,15 +1659,15 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != Pmode
+	  || GET_MODE (SET_SRC (elt)) != elt_mode
 	  || REGNO (SET_SRC (elt)) != src_regno + i
 	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != Pmode
+	  || GET_MODE (SET_DEST (elt)) != elt_mode
 	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
 	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
 	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
 	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1))
-	     != off + i * UNITS_PER_WORD)
+	     != off + i * GET_MODE_SIZE (elt_mode))
 	return 0;
     }
   return 1;
