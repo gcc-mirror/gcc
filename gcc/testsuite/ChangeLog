@@ -1,3 +1,8 @@
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16162
+	* g++.dg/template/decl2.C: New test.
+	
 2004-09-13  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17090
