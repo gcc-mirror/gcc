@@ -1455,7 +1455,8 @@ int extract_jar(int fd, char **files, int file_num){
     }
 
     if(f_fd != -1 && handle){
-      f_fd = creat((const char *)filename, 00644);
+      f_fd = open((const char *)filename,
+                  O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
 
       if(f_fd < 0){
         fprintf(stderr, "Error extracting JAR archive!\n");
