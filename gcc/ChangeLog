@@ -1,3 +1,11 @@
+Sun May  3 23:57:25 1998  Robert Lipe   <robertl@dgii.com>
+
+	Make UnixWare 7 bootstrap support work with final shipping product.
+	* configure.in: (i[34567]86-*-sysv5): append, not overwrite, xm_file.  
+	Pick up xm-siglist and xm-alloca.
+	(xm_defines): Add USG so dbxout will build.
+	* configure: Regenerate.
+
 Sun May  3 13:51:34 PDT 1998  Richard Henerson  <rth@cygnus.com>
 
 	Support for official Sparc V9 ABI:
