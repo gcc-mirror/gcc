@@ -1,5 +1,61 @@
 2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/8420
+	* c-tree.h (struct c_declspecs): New.
+	(struct c_declarator, struct c_type_name, struct c_parm): Update
+	element types.
+	(build_array_declarator, grokfield, shadow_tag, shadow_tag_warned,
+	start_function, start_decl, build_c_parm,
+	make_pointer_declarator): Update prototypes.
+	(build_null_declspecs, declspecs_add_qual, declspecs_add_type,
+	declspecs_add_scspec, declspecs_add_attrs): New.
+	(split_specs_attrs): Remove.
+	* c-parse.in (%union): Add dsptype.
+	(declspecs_nosc_nots_nosa_noea, declspecs_nosc_nots_nosa_ea,
+	declspecs_nosc_nots_sa_noea, declspecs_nosc_nots_sa_ea,
+	declspecs_nosc_ts_nosa_noea, declspecs_nosc_ts_nosa_ea,
+	declspecs_nosc_ts_sa_noea, declspecs_nosc_ts_sa_ea,
+	declspecs_sc_nots_nosa_noea, declspecs_sc_nots_nosa_ea,
+	declspecs_sc_nots_sa_noea, declspecs_sc_nots_sa_ea,
+	declspecs_sc_ts_nosa_noea, declspecs_sc_ts_nosa_ea,
+	declspecs_sc_ts_sa_noea, declspecs_sc_ts_sa_ea, declspecs_ts,
+	declspecs_nots, declspecs_ts_nosa, declspecs_nots_nosa,
+	declspecs_nosc_ts, declspecs_nosc_nots, declspecs_nosc, declspecs,
+	maybe_type_quals_attrs): Change to dsptype.
+	(struct c_declspec_stack): New.
+	(current_declspecs, declspec_stack): Change type.
+	(PUSH_DECLSPEC_STACK, POP_DECLSPEC_STACK): Update to new
+	structures.
+	(extdefs): Likewise.
+	(setspecs): Likewise.
+	(fndef): Use current_declspecs for empty declspecs list.
+	(declspecs_nosc_nots_nosa_noea, declspecs_nosc_nots_nosa_ea,
+	declspecs_nosc_nots_sa_noea, declspecs_nosc_nots_sa_ea,
+	declspecs_nosc_ts_nosa_noea, declspecs_nosc_ts_nosa_ea,
+	declspecs_nosc_ts_sa_noea, declspecs_nosc_ts_sa_ea,
+	declspecs_sc_nots_nosa_noea, declspecs_sc_nots_nosa_ea,
+	declspecs_sc_nots_sa_noea, declspecs_sc_nots_sa_ea,
+	declspecs_sc_ts_nosa_noea, declspecs_sc_ts_nosa_ea,
+	declspecs_sc_ts_sa_noea, declspecs_sc_ts_sa_ea): Update to new
+	structures and helper functions.  Update comments.
+	(typespec_nonattr): Correct comment.
+	(maybe_type_quals_attrs, typename): Update to new structures.
+	* c-decl.c (grokdeclarator, build_array_declarator, grokfield,
+	shadow_tag, shadow_tag_warned, start_function, start_decl,
+	build_c_parm, make_pointer_declarator,
+	set_array_declarator_inner, groktypename): Update to new
+	structures.
+	(build_null_declspecs, declspecs_add_qual, declspecs_add_type,
+	declspecs_add_scspec, declspecs_add_attrs): New.
+	(split_specs_attrs): Remove.
+	(shadow_tag_warned): Make warning for useless type names a
+	pedwarn.  Give hard error for long, short, signed, unsigned or
+	_Complex used with struct, union or enum in empty declaration.
+	Make found_tag a bool.
+	(grokdeclarator): Remove checks now done at parse time.
+
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-tree.h (enum c_declarator_kind, struct c_arg_info, struct
 	c_declarator, struct c_type_name, struct c_parm): New.
 	(build_array_declarator, set_array_declarator_inner,
