@@ -3707,6 +3707,10 @@ rest_of_compilation (decl)
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
     goto exit_rest_of_compilation;
 
+  /* Try to identify useless null pointer tests and delete them.  */
+  if (optimize > 1)
+    TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
+
   /* Dump rtl code after jump, if we are doing that.  */
   if (jump_opt_dump)
     dump_rtl (".jump", decl, print_rtl, insns);
@@ -3741,6 +3745,10 @@ rest_of_compilation (decl)
 	TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
 					   !JUMP_NOOP_MOVES,
 					   !JUMP_AFTER_REGSCAN));
+ 
+      /* Try to identify useless null pointer tests and delete them.  */
+      if (optimize > 1)
+	TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
 
       /* Dump rtl code after cse, if we are doing that.  */
 

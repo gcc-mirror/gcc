@@ -20,6 +20,11 @@ Mon Sep 20 14:43:37 1999  Nick Clifton  <nickc@cygnus.com>
 
 Mon Sep 20 05:41:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (invalid_nonnull_info): New function.
+	(delete_null_pointer_checks): Likewise.
+	* rtl.h (delete_null_pointer_checks): Declare.
+	* toplev.c (rest_of_compilation): Call delete_null_pointer_checks.
+
 	* flow.c (merge_blocks_move_predecessor_nojumps): New function.
 	(merge-blocks_move_successor_nojumps): Likewise.
 	(merge_blocks): Allow merging of some blocks, even if it requires
