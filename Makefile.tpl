@@ -1334,6 +1334,8 @@ all-binutils: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-flex
 # binutils might be on PATH, and they might need the shared opcodes
 # library.
 install-binutils: maybe-install-opcodes
+# libopcodes depends on libbfd
+install-opcodes: maybe-install-bfd
 all-gas: maybe-all-libiberty maybe-all-opcodes maybe-all-bfd maybe-all-intl
 all-gprof: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-intl
 all-ld: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-intl
