@@ -79,7 +79,7 @@ struct lang_identifier
    Predefined declarations have level -1; the global scope is level 0.
  */
 #define DECL_NESTING_LEVEL(DECL) \
-   ((DECL)->decl.vindex ? TREE_INT_CST_LOW((DECL)->decl.vindex) : -1)
+   ((DECL)->decl.vindex ? TREE_INT_CST_HIGH((DECL)->decl.vindex) : -1)
 
 /* Nesting of things that can have an ON-unit attached. */
 extern int action_nesting_level;

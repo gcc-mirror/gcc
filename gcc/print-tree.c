@@ -112,7 +112,7 @@ print_node_brief (file, prefix, node, indent)
 	{
 	  fprintf (file, "-");
 	  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
-		 -TREE_INT_CST_LOW (node));
+		   -TREE_INT_CST_LOW (node));
 	}
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,

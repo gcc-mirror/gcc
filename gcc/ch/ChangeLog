@@ -1,3 +1,12 @@
+Mon Mar  6 17:52:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* actions.c (chill_convert_for_assignment): INDEX is unsigned
+	HOST_WIDE_INT.
+	* ch-tree.h (DECL_NESTING_LEVEL): Use TREE_INT_CST_HIGH since unsigned.
+	* except.c (chill_handle_on_labels): ALTERNATIVE is unsigned.
+	Use compare_tree_int.
+	(expand_goto_except_cleanup): Likewise.
+
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (current_function_decl): Move to toplev.c.

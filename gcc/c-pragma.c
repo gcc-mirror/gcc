@@ -163,25 +163,25 @@ pop_alignment (id)
    it needs to be preserved.
 
    If STRING is non-NULL, then the return value will be ignored, and there
-   will be futher calls to handle_pragma_token() in order to handle the rest of
+   will be futher calls to handle_pragma_token in order to handle the rest of
    the line containing the #pragma directive.  If STRING is NULL, the entire
-   line has now been presented to handle_pragma_token() and the return value
+   line has now been presented to handle_pragma_token and the return value
    should be zero if the pragma flawed in some way, or if the pragma was not
    recognised, and non-zero if it was successfully handled.  */
 
 int
 handle_pragma_token (string, token)
-     const char * string;
+     const char *string;
      tree token;
 {
   static enum pragma_state state = ps_start;
   static enum pragma_state type;
 #ifdef HANDLE_PRAGMA_WEAK
-  static char * name;
-  static char * value;
+  static char *name;
+  static char *value;
 #endif
 #if defined(HANDLE_PRAGMA_PACK) || defined(HANDLE_PRAGMA_PACK_PUSH_POP)
-  static int align;
+  static unsigned int align;
 #endif
   static tree id;
 
@@ -353,15 +353,15 @@ handle_pragma_token (string, token)
       break;
 
     handle_align:
-      align = TREE_INT_CST_LOW (token);
-      switch (align)
+      switch (tree_log2 (token))
 	{
+	case 0:
 	case 1:
 	case 2:
+	case 3:
 	case 4:
-	case 8:
-	case 16:
 	  state = ps_align;
+	  align = 1 << tree_log2 (token);
 	  break;
 
 	default:

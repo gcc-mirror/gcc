@@ -3108,7 +3108,7 @@ dfs_modify_vtables (binfo, data)
 	  tree overrider;
 	  tree vindex;
 	  tree delta;
-	  HOST_WIDE_INT i;
+	  unsigned HOST_WIDE_INT i;
 
 	  /* Find the function which originally caused this vtable
 	     entry to be present.  */
@@ -3627,7 +3627,6 @@ check_bitfield_decl (field)
   if (DECL_INITIAL (field))
     {
       tree w = DECL_INITIAL (field);
-      register int width = 0;
 
       /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
       STRIP_NOPS (w);
@@ -3644,19 +3643,19 @@ check_bitfield_decl (field)
 		       field);
 	  DECL_INITIAL (field) = NULL_TREE;
 	}
-      else if (width = TREE_INT_CST_LOW (w),
-	       width < 0)
+      else if (tree_int_cst_sgn (w) < 0)
 	{
 	  DECL_INITIAL (field) = NULL;
 	  cp_error_at ("negative width in bit-field `%D'", field);
 	}
-      else if (width == 0 && DECL_NAME (field) != 0)
+      else if (integer_zerop (w) && DECL_NAME (field) != 0)
 	{
 	  DECL_INITIAL (field) = NULL;
 	  cp_error_at ("zero width for bit-field `%D'", field);
 	}
-      else if (width
-	       > TYPE_PRECISION (long_long_unsigned_type_node))
+      else if (0 < compare_tree_int (w,
+				     TYPE_PRECISION
+				     (long_long_unsigned_type_node)))
 	{
 	  /* The backend will dump if you try to use something too
 	     big; avoid that.  */
@@ -3665,25 +3664,28 @@ check_bitfield_decl (field)
 		 TYPE_PRECISION (long_long_unsigned_type_node));
 	  cp_error_at ("  in declaration of `%D'", field);
 	}
-      else if (width > TYPE_PRECISION (type)
+      else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
 	       && TREE_CODE (type) != ENUMERAL_TYPE
 	       && TREE_CODE (type) != BOOLEAN_TYPE)
 	cp_warning_at ("width of `%D' exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       && ((min_precision (TYPE_MIN_VALUE (type),
-				   TREE_UNSIGNED (type)) > width)
-		   || (min_precision (TYPE_MAX_VALUE (type),
-				      TREE_UNSIGNED (type)) > width)))
+	       && (0 > compare_tree_int (w,
+					 min_precision (TYPE_MIN_VALUE (type),
+							TREE_UNSIGNED (type)))
+		   ||  0 > compare_tree_int (w,
+					     min_precision
+					     (TYPE_MAX_VALUE (type),
+					      TREE_UNSIGNED (type)))))
 	cp_warning_at ("`%D' is too small to hold all values of `%#T'",
 		       field, type);
 
       if (DECL_INITIAL (field))
 	{
 	  DECL_INITIAL (field) = NULL_TREE;
-	  DECL_SIZE (field) = bitsize_int (width);
+	  DECL_SIZE (field) = bitsize_int (TREE_INT_CST_LOW (w));
 	  DECL_BIT_FIELD (field) = 1;
 
-	  if (width == 0)
+	  if (integer_zerop (w))
 	    {
 #ifdef EMPTY_FIELD_BOUNDARY
 	      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
@@ -4164,10 +4166,11 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
 	 here.  */
       *base_align = MAX (*base_align, DECL_ALIGN (decl));
       DECL_SIZE (decl)
-	= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
+	= size_int (MAX ((HOST_WIDE_INT) TREE_INT_CST_LOW (DECL_SIZE (decl)),
 			 (int) (*base_align)));
       DECL_SIZE_UNIT (decl)
-	= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl)),
+	= size_int (MAX (((HOST_WIDE_INT) TREE_INT_CST_LOW
+			  (DECL_SIZE_UNIT (decl))),
 			 (int) *base_align / BITS_PER_UNIT));
     }
 

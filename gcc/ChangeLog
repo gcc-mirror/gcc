@@ -1,3 +1,68 @@
+Mon Mar  6 15:22:29 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (INT_CST_LT, INT_CST_LT_UNSIGNED): Remove unneeded casts.
+	(struct tree_int_cst): int_cst_low is now unsigned HOST_WIDE_INT.
+	(attribute_hash_list, type_hash_canon): hashcode is now unsigned.
+	(type_hash_lookup, type_hash_add, type_hash_list): Likewise.
+	(min_precision): Result is unsignd.
+	(add_double, neg_double, mul_double): Low word is unsigned.
+	(lshift_double, rshift_double, lrotate_double): Likewise.
+	(rrotate_double, div_and_round_double): Likewise.
+	(tree_floor_log2, compare_tree_int): New functions.
+	(preserve_rtl_expr_temps): New declaration.
+	* c-common.c (declare_hidden_char_array): Use compare_tree_int.
+	(decl_attributes): Use tree_log2 to find alignment.
+	Check for TREE_INT_CST_HIGH for format args.
+	(min_precision): Now unsigned.
+	Use tree_floor_log2.
+	(truthvalue_conversion): Delete long-disabled code.
+	* c-decl.c (finish_struct): Clean up tests on field width.
+	(finish_function): Use compare_tree_int.
+	* c-pragma.c (handle_pragma_token): Use tree_log2 for alignment.
+	* c-typeck.c (comptypes): Use tree_int_cst_equal.
+	(default_conversion, digest_init): Use compare_tree_int.
+	(build_binary_op): Use integer_all_onesp and compare_tree_int.
+	Fix type errors in forming masks.
+	* calls.c (initialize_argument_information): Use compare_tree_int.
+	* dbxout.c (dbxout_type): Cast TREE_INT_CST_LOW to HOST_WIDE_INT.
+	* except.c (expand_eh_region_start_tree): Use compare_tree_int.
+	* expr.c (is_zeros_p, case INTEGER_CST): Use integer_zerop.
+	(store_field): Use compare_tree_int.
+	(expand_expr, case CONSTRUCTOR): Use TYPE_SIZE_UNIT.
+	(expand_expr, case ARRAY_REF): Use compare_tree_int.
+	(do_jump, case BIT_AND_EXPR): Use tree_floor_log2.
+	(do_store_flag): Use compare_tree_int.
+	* fold-const.c (encode, decode): Low part is always unsigned.
+	(force_fit_type, add_double, neg_double, mul_double): Likewise.
+	(lshift_double, rshift_double, lrotate_double): Likewise.
+	(rrotate_double, div_and_round_double, int_const_binop): Likewise.
+	(fold_convert): Use compare_tree_int.
+	(operand_equal_p, case INTEGER_CST): Use tree_int_cst_equal.
+	(invert_truthvalue, case INTEGER_CST): Likewise.
+	(fold): Use compare_tree_int; add casts for unsigned TREE_INT_CST_LOW.
+	* mkdeps.c (deps_dummy_targets): Make I unsigned.
+	* rtl.h (add_double, neg_double, mul_double): Low words are unsigned.
+	(lshift_double, rshift_double, lrotate_double, rrotate_double):
+	Likewise.
+	* stmt.c (expand_decl): Use compare_tree_int and mode_for_size_tree.
+	(expand_end_case): Use compare_tree_int.
+	(estimate_case_costs): Cast TREE_INT_CST_LOW to HOST_WIDE_INT.
+	* stor-layout.c (mode_for_size_tree): Use compare_tree_int.
+	(layout_decl): Likewise.
+	(layout_record, layout_union): Make sizes unsigned.
+	(layout_type, case VOID_TYPE): TYPE_SIZE must be bitsizetype.
+	(layout_type, case QUAL_UNION_TYPE): Use compare_tree_int.
+	* tree.c (struct type_hash): hashcode is unsigned.
+	(build_type_attribute_variant, type_hash_list): Likewise.
+	(type_hash_lookup, type_hash_add, type_hash_canon): Likewise.
+	(attribute_hash_list, build_array_type, build_method_type): Likewise.
+	(build_complex_type): Likewise.
+	(real_value_from_int_cst): Remove unneeded casts.
+	(integer_all_onesp): Add casts.
+	(tree_floor_log2, compare_tree_int): New functions.
+	(build_index_type): Use tree_int_cst_sgn.
+	* varasm.c (assemble_variable): Use compare_tree_int.
+
 2000-03-06  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cpphash.c (collect_expansion): Also catch ## at start of macro.

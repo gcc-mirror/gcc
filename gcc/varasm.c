@@ -1424,7 +1424,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   if (! dont_output_data)
     {
-      int size;
+      unsigned int size;
 
       if (TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST)
 	goto finish;
@@ -1432,8 +1432,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       size_tree = DECL_SIZE_UNIT (decl);
       size = TREE_INT_CST_LOW (size_tree);
 
-      if (TREE_INT_CST_HIGH (size_tree) != 0
-	  || size != TREE_INT_CST_LOW (size_tree))
+      if (compare_tree_int (size_tree, size) != 0)
 	{
 	  error_with_decl (decl, "size of variable `%s' is too large");
 	  goto finish;

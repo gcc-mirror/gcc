@@ -567,7 +567,7 @@ chill_convert_for_assignment (type, expr, place)
     {
       tree domain_min = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
       tree new_list = NULL_TREE;
-      long index;
+      unsigned HOST_WIDE_INT index;
       tree element;
 
       for (element = TREE_OPERAND (result, 1);
@@ -587,7 +587,7 @@ chill_convert_for_assignment (type, expr, place)
 				 new_list);
 		  break;
 		case RANGE_EXPR:
-		  for (index  = TREE_INT_CST_LOW (TREE_OPERAND (purpose, 0));
+		  for (index = TREE_INT_CST_LOW (TREE_OPERAND (purpose, 0));
 		       index <= TREE_INT_CST_LOW (TREE_OPERAND (purpose, 1));
 		       index++)
 		    new_list = tree_cons (NULL_TREE,

@@ -258,7 +258,7 @@ int (*lang_get_alias_set) PARAMS ((tree));
 struct type_hash
 {
   struct type_hash *next;	/* Next structure in the bucket.  */
-  int hashcode;			/* Hash code of this type.  */
+  unsigned int hashcode;	/* Hash code of this type.  */
   tree type;			/* The type recorded here.  */
 };
 
@@ -1446,7 +1446,7 @@ real_value_from_int_cst (type, i)
       e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
       d *= e;
-      e = (double) (unsigned HOST_WIDE_INT) (~ TREE_INT_CST_LOW (i));
+      e = (double) (~ TREE_INT_CST_LOW (i));
       d += e;
       d = (- d - 1.0);
     }
@@ -1458,7 +1458,7 @@ real_value_from_int_cst (type, i)
       e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
       d *= e;
-      e = (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (i);
+      e = (double) TREE_INT_CST_LOW (i);
       d += e;
     }
 #endif /* not REAL_ARITHMETIC */
@@ -1671,14 +1671,16 @@ integer_all_onesp (expr)
 
   uns = TREE_UNSIGNED (TREE_TYPE (expr));
   if (!uns)
-    return TREE_INT_CST_LOW (expr) == -1 && TREE_INT_CST_HIGH (expr) == -1;
+    return (TREE_INT_CST_LOW (expr) == ~ (unsigned HOST_WIDE_INT) 0
+	    && TREE_INT_CST_HIGH (expr) == -1);
 
   /* Note that using TYPE_PRECISION here is wrong.  We care about the
      actual bits, not the (arbitrary) range of the type.  */
   prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)));
   if (prec >= HOST_BITS_PER_WIDE_INT)
     {
-      int high_value, shift_amount;
+      HOST_WIDE_INT high_value;
+      int shift_amount;
 
       shift_amount = prec - HOST_BITS_PER_WIDE_INT;
 
@@ -1692,11 +1694,11 @@ integer_all_onesp (expr)
       else
 	high_value = ((HOST_WIDE_INT) 1 << shift_amount) - 1;
 
-      return TREE_INT_CST_LOW (expr) == -1
-	&& TREE_INT_CST_HIGH (expr) == high_value;
+      return (TREE_INT_CST_LOW (expr) == ~ (unsigned HOST_WIDE_INT) 0
+	      && TREE_INT_CST_HIGH (expr) == high_value);
     }
   else
-    return TREE_INT_CST_LOW (expr) == ((HOST_WIDE_INT) 1 << prec) - 1;
+    return TREE_INT_CST_LOW (expr) == ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
 }
 
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
@@ -1782,6 +1784,46 @@ tree_log2 (expr)
 
   return (high != 0 ? HOST_BITS_PER_WIDE_INT + exact_log2 (high)
 	  :  exact_log2 (low));
+}
+
+/* Similar, but return the largest integer Y such that 2 ** Y is less
+   than or equal to EXPR.  */
+
+int
+tree_floor_log2 (expr)
+     tree expr;
+{
+  int prec;
+  HOST_WIDE_INT high, low;
+
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return tree_log2 (TREE_REALPART (expr));
+
+  prec = (POINTER_TYPE_P (TREE_TYPE (expr))
+	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
+
+  high = TREE_INT_CST_HIGH (expr);
+  low = TREE_INT_CST_LOW (expr);
+
+  /* First clear all bits that are beyond the type's precision in case
+     we've been sign extended.  Ignore if type's precision hasn't been set
+     since what we are doing is setting it.  */
+
+  if (prec == 2 * HOST_BITS_PER_WIDE_INT || prec == 0)
+    ;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+  else
+    {
+      high = 0;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	low &= ~((HOST_WIDE_INT) (-1) << prec);
+    }
+
+  return (high != 0 ? HOST_BITS_PER_WIDE_INT + floor_log2 (high)
+	  : floor_log2 (low));
 }
 
 /* Return 1 if EXPR is the real constant zero.  */
@@ -3422,7 +3464,7 @@ build_type_attribute_variant (ttype, attribute)
 {
   if ( ! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      register int hashcode;
+      unsigned int hashcode;
       tree ntype;
 
       push_obstacks (TYPE_OBSTACK (ttype), TYPE_OBSTACK (ttype));
@@ -3437,9 +3479,9 @@ build_type_attribute_variant (ttype, attribute)
       TYPE_NEXT_VARIANT (ntype) = 0;
       set_type_quals (ntype, TYPE_UNQUALIFIED);
 
-      hashcode = TYPE_HASH (TREE_CODE (ntype))
-		 + TYPE_HASH (TREE_TYPE (ntype))
-		 + attribute_hash_list (attribute);
+      hashcode = (TYPE_HASH (TREE_CODE (ntype))
+		  + TYPE_HASH (TREE_TYPE (ntype))
+		  + attribute_hash_list (attribute));
 
       switch (TREE_CODE (ntype))
         {
@@ -3799,11 +3841,11 @@ build_type_copy (type)
    with types in the TREE_VALUE slots), by adding the hash codes
    of the individual types.  */
 
-int
+unsigned int
 type_hash_list (list)
      tree list;
 {
-  register int hashcode;
+  unsigned int hashcode;
   register tree tail;
 
   for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
@@ -3817,7 +3859,7 @@ type_hash_list (list)
 
 tree
 type_hash_lookup (hashcode, type)
-     int hashcode;
+     unsigned int hashcode;
      tree type;
 {
   register struct type_hash *h;
@@ -3857,7 +3899,7 @@ type_hash_lookup (hashcode, type)
 
 void
 type_hash_add (hashcode, type)
-     int hashcode;
+     unsigned int hashcode;
      tree type;
 {
   register struct type_hash *h;
@@ -3885,7 +3927,7 @@ int debug_no_type_hash = 0;
 
 tree
 type_hash_canon (hashcode, type)
-     int hashcode;
+     unsigned int hashcode;
      tree type;
 {
   tree t1;
@@ -3932,11 +3974,11 @@ mark_type_hash (arg)
    with names in the TREE_PURPOSE slots and args in the TREE_VALUE slots),
    by adding the hash codes of the individual attributes.  */
 
-int
+unsigned int
 attribute_hash_list (list)
      tree list;
 {
-  register int hashcode;
+  unsigned int hashcode;
   register tree tail;
 
   for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
@@ -4255,6 +4297,27 @@ simple_cst_equal (t1, t2)
       return -1;
     }
 }
+
+/* Compare the value of T, an INTEGER_CST, with U, an unsigned integer value.
+   Return -1, 0, or 1 if the value of T is less than, equal to, or greater
+   than U, respectively.  */
+
+int
+compare_tree_int (t, u)
+     tree t;
+     unsigned int u;
+{
+  if (tree_int_cst_sgn (t) < 0)
+    return -1;
+  else if (TREE_INT_CST_HIGH (t) != 0)
+    return 1;
+  else if (TREE_INT_CST_LOW (t) == u)
+    return 0;
+  else if (TREE_INT_CST_LOW (t) < u)
+    return -1;
+  else
+    return 1;
+}
 
 /* Constructors for pointer, array and function types.
    (RECORD_TYPE, UNION_TYPE and ENUMERAL_TYPE nodes are
@@ -4348,14 +4411,16 @@ build_index_type (maxval)
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
   if (TREE_CODE (maxval) == INTEGER_CST)
     {
-      int maxint = (int) TREE_INT_CST_LOW (maxval);
+      int maxint = TREE_INT_CST_LOW (maxval);
+
       /* If the domain should be empty, make sure the maxval
 	 remains -1 and is not spoiled by truncation.  */
-      if (INT_CST_LT (maxval, integer_zero_node))
+      if (tree_int_cst_sgn (maxval) < 0)
 	{
 	  TYPE_MAX_VALUE (itype) = build_int_2 (-1, -1);
 	  TREE_TYPE (TYPE_MAX_VALUE (itype)) = sizetype;
 	}
+
       return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else
@@ -4396,9 +4461,10 @@ build_range_type (type, lowval, highval)
       if (highval && TREE_CODE (highval) == INTEGER_CST)
 	highint = TREE_INT_CST_LOW (highval);
       else
-	highint = (~(unsigned HOST_WIDE_INT)0) >> 1;
+	highint = (~(unsigned HOST_WIDE_INT) 0) >> 1;
 
       maxint = (int) (highint - lowint);
+
       return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else
@@ -4454,7 +4520,7 @@ build_array_type (elt_type, index_type)
      tree elt_type, index_type;
 {
   register tree t;
-  int hashcode;
+  unsigned int hashcode;
 
   if (TREE_CODE (elt_type) == FUNCTION_TYPE)
     {
@@ -4511,7 +4577,7 @@ build_function_type (value_type, arg_types)
      tree value_type, arg_types;
 {
   register tree t;
-  int hashcode;
+  unsigned int hashcode;
 
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
@@ -4543,7 +4609,7 @@ build_method_type (basetype, type)
      tree basetype, type;
 {
   register tree t;
-  int hashcode;
+  unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
   t = make_node (METHOD_TYPE);
@@ -4580,7 +4646,7 @@ build_offset_type (basetype, type)
      tree basetype, type;
 {
   register tree t;
-  int hashcode;
+  unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -4605,7 +4671,7 @@ build_complex_type (component_type)
      tree component_type;
 {
   register tree t;
-  int hashcode;
+  unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
   t = make_node (COMPLEX_TYPE);
@@ -4740,7 +4806,9 @@ get_unwidened (op, for_type)
       /* Don't crash if field not laid out yet.  */
       && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
     {
-      unsigned innerprec = TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
+      unsigned int innerprec
+	= TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
+
       type = type_for_size (innerprec, TREE_UNSIGNED (TREE_OPERAND (op, 1)));
 
       /* We can get this structure field in the narrowest type it fits in.
@@ -4822,7 +4890,9 @@ get_narrower (op, unsignedp_ptr)
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (TREE_TYPE (op)) != REAL_TYPE)
     {
-      unsigned innerprec = TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
+      unsigned int innerprec
+	= TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
+
       tree type = type_for_size (innerprec, TREE_UNSIGNED (op));
 
       /* We can get this structure field in a narrower type that fits it,
@@ -5221,6 +5291,7 @@ get_set_constructor_bits (init, buffer, bit_size)
 	    = TREE_INT_CST_LOW (TREE_PURPOSE (vals)) - domain_min;
 	  HOST_WIDE_INT hi_index
 	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
+
 	  if (lo_index < 0 || lo_index >= bit_size
 	    || hi_index < 0 || hi_index >= bit_size)
 	    abort ();
@@ -5428,6 +5499,7 @@ void
 build_common_tree_nodes_2 (short_double)
      int short_double;
 {
+  /* Define these next since types below may used them.  */
   integer_zero_node = build_int_2 (0, 0);
   TREE_TYPE (integer_zero_node) = integer_type_node;
   integer_one_node = build_int_2 (1, 0);
@@ -5439,7 +5511,7 @@ build_common_tree_nodes_2 (short_double)
   TREE_TYPE (size_one_node) = sizetype;
 
   void_type_node = make_node (VOID_TYPE);
-  layout_type (void_type_node);	/* Uses size_zero_node */
+  layout_type (void_type_node);
 
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */

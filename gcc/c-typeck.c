@@ -514,15 +514,10 @@ comptypes (type1, type2)
 	    || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST)
 	  break;
 
-	if (! ((TREE_INT_CST_LOW (TYPE_MIN_VALUE (d1))
-		  == TREE_INT_CST_LOW (TYPE_MIN_VALUE (d2)))
-		 && (TREE_INT_CST_HIGH (TYPE_MIN_VALUE (d1))
-		     == TREE_INT_CST_HIGH (TYPE_MIN_VALUE (d2)))
-		 && (TREE_INT_CST_LOW (TYPE_MAX_VALUE (d1))
-		     == TREE_INT_CST_LOW (TYPE_MAX_VALUE (d2)))
-		 && (TREE_INT_CST_HIGH (TYPE_MAX_VALUE (d1))
-		     == TREE_INT_CST_HIGH (TYPE_MAX_VALUE (d2)))))
-	   val = 0;
+	if (! tree_int_cst_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2))
+	    || ! tree_int_cst_equal (TYPE_MAX_VALUE (d1), TYPE_MAX_VALUE (d2)))
+	  val = 0;
+
         break;
       }
 
@@ -884,8 +879,9 @@ default_conversion (exp)
     }
 
   /* Strip NON_LVALUE_EXPRs and no-op conversions, since we aren't using as
-     an lvalue.  */
-  /* Do not use STRIP_NOPS here!  It will remove conversions from pointer
+     an lvalue. 
+
+     Do not use STRIP_NOPS here!  It will remove conversions from pointer
      to integer and cause infinite recursion.  */
   while (TREE_CODE (exp) == NON_LVALUE_EXPR
 	 || (TREE_CODE (exp) == NOP_EXPR
@@ -902,26 +898,19 @@ default_conversion (exp)
 			      || (TYPE_PRECISION (type)
 				  >= TYPE_PRECISION (integer_type_node)))
 			     && TREE_UNSIGNED (type)));
+
       return convert (type, exp);
     }
 
   if (TREE_CODE (exp) == COMPONENT_REF
-      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1)))
-    {
-      tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
-      HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
-
+      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
       /* If it's thinner than an int, promote it like a
 	 C_PROMOTING_INTEGER_TYPE_P, otherwise leave it alone.  */
-
-      if (low < TYPE_PRECISION (integer_type_node))
-	{
-	  if (flag_traditional && TREE_UNSIGNED (type))
-	    return convert (unsigned_type_node, exp);
-	  else
-	    return convert (integer_type_node, exp);
-	}
-    }
+      && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
+			       TYPE_PRECISION (integer_type_node)))
+    return convert (flag_traditional && TREE_UNSIGNED (type)
+		    ? unsigned_type_node : integer_type_node,
+		    exp);
 
   if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
@@ -931,11 +920,14 @@ default_conversion (exp)
 	  && (flag_traditional
 	      || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
 	return convert (unsigned_type_node, exp);
+
       return convert (integer_type_node, exp);
     }
+
   if (flag_traditional && !flag_allow_single_precision
       && TYPE_MAIN_VARIANT (type) == float_type_node)
     return convert (double_type_node, exp);
+
   if (code == VOID_TYPE)
     {
       error ("void value not ignored as it ought to be");
@@ -1914,17 +1906,14 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
 	  else
-	    {
-	      /* Although it would be tempting to shorten always here, that
-		 loses on some targets, since the modulo instruction is
-		 undefined if the quotient can't be represented in the
-		 computation mode.  We shorten only if unsigned or if
-		 dividing by something we know != -1.  */
-	      shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
-			 || (TREE_CODE (op1) == INTEGER_CST
-			     && (TREE_INT_CST_LOW (op1) != -1
-				 || TREE_INT_CST_HIGH (op1) != -1)));
-	    }
+	    /* Although it would be tempting to shorten always here, that
+	       loses on some targets, since the modulo instruction is
+	       undefined if the quotient can't be represented in the
+	       computation mode.  We shorten only if unsigned or if
+	       dividing by something we know != -1.  */
+	    shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
+		       || (TREE_CODE (op1) == INTEGER_CST
+			   && ! integer_all_onesp (op1)));
 	  common = 1;
 	}
       break;
@@ -1970,8 +1959,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     only if unsigned or if dividing by something we know != -1.  */
 	  shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
 		     || (TREE_CODE (op1) == INTEGER_CST
-			 && (TREE_INT_CST_LOW (op1) != -1
-			     || TREE_INT_CST_HIGH (op1) != -1)));
+			 && ! integer_all_onesp (op1)));
 	  common = 1;
 	}
       break;
@@ -2009,14 +1997,14 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		warning ("right shift count is negative");
 	      else
 		{
-		  if (TREE_INT_CST_LOW (op1) | TREE_INT_CST_HIGH (op1))
+		  if (! integer_zerop (op1))
 		    short_shift = 1;
-		  if (TREE_INT_CST_HIGH (op1) != 0
-		      || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			  >= TYPE_PRECISION (type0)))
+
+		  if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		    warning ("right shift count >= width of type");
 		}
 	    }
+
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
 	  result_type = type0;
@@ -2039,11 +2027,11 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    {
 	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("left shift count is negative");
-	      else if (TREE_INT_CST_HIGH (op1) != 0
-		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			   >= TYPE_PRECISION (type0)))
+
+	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		warning ("left shift count >= width of type");
 	    }
+
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
 	  result_type = type0;
@@ -2067,11 +2055,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    {
 	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("shift count is negative");
-	      else if (TREE_INT_CST_HIGH (op1) != 0
-		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			   >= TYPE_PRECISION (type0)))
+	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		warning ("shift count >= width of type");
 	    }
+
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
 	  result_type = type0;
@@ -2343,8 +2330,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
-	      && TREE_INT_CST_HIGH (op1) == 0
-	      && TYPE_PRECISION (TREE_TYPE (arg0)) > TREE_INT_CST_LOW (op1)
+	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
 	      /* If arg is sign-extended and then unsigned-shifted,
 		 we can simulate this with a signed shift in arg's type
 		 only if the extended result is at least twice as wide
@@ -2354,7 +2340,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		 it never happens because available widths are 2**N.  */
 	      && (!TREE_UNSIGNED (final_type)
 		  || unsigned_arg
-		  || 2 * TYPE_PRECISION (TREE_TYPE (arg0)) <= TYPE_PRECISION (result_type)))
+		  || (2 * TYPE_PRECISION (TREE_TYPE (arg0))
+		      <= TYPE_PRECISION (result_type))))
 	    {
 	      /* Do an unsigned shift if the operand was zero-extended.  */
 	      result_type
@@ -2469,7 +2456,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		      || TREE_CODE (primop1) == INTEGER_CST)
 		    {
 		      tree primop;
-		      long constant, mask;
+		      HOST_WIDE_INT constant, mask;
 		      int unsignedp, bits;
 
 		      if (TREE_CODE (primop0) == INTEGER_CST)
@@ -2487,9 +2474,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
 		      bits = TYPE_PRECISION (TREE_TYPE (primop));
 		      if (bits < TYPE_PRECISION (result_type)
-			  && bits < HOST_BITS_PER_LONG && unsignedp)
+			  && bits < HOST_BITS_PER_WIDE_INT && unsignedp)
 			{
-			  mask = (~0L) << bits;
+			  mask = (~ (HOST_WIDE_INT) 0) << bits;
 			  if ((mask & constant) != mask)
 			    warning ("comparison of promoted ~unsigned with constant");
 			}
@@ -4566,19 +4553,19 @@ digest_init (type, init, require_constant, constructor_constant)
 
 	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != 0
-	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-	    {
-	      register int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
-	      size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	      /* Subtract 1 (or sizeof (wchar_t))
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (size < TREE_STRING_LENGTH (inside_init)
-		  - (TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node)
-		     ? TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT
-		     : 1))
-		pedwarn_init ("initializer-string for array of chars is too long");
-	    }
+	      && 0 > compare_tree_int (TYPE_SIZE_UNIT (type),
+				       TREE_STRING_LENGTH (inside_init)
+				       - ((TYPE_PRECISION (typ1)
+					   != TYPE_PRECISION (char_type_node))
+					  ? (TYPE_PRECISION (wchar_type_node)
+					     / BITS_PER_UNIT)
+					  : 1)))
+	    pedwarn_init ("initializer-string for array of chars is too long");
+
 	  return inside_init;
 	}
     }

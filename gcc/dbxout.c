@@ -1508,7 +1508,7 @@ dbxout_type (type, full, show_arg_types)
 	    fprintf (asmfile, HOST_WIDE_INT_PRINT_UNSIGNED,
 		     TREE_INT_CST_LOW (TREE_VALUE (tem)));
 	  else if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == -1
-		   && TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
+		   && (HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
 	    fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
 		     TREE_INT_CST_LOW (TREE_VALUE (tem)));
 	  else

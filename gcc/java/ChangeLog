@@ -1,3 +1,11 @@
+Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (emit_init_test_initialization): Mark KEY as unused.
+	* expr.c (build_newarray): Cast TREE_INT_CST_LOW to HOST_WIDE_INT.
+	(build_anewarray): Likewise.
+	* parse.y (patch_newarray): Likewise.
+	* parse.c: Regenerated.
+
 2000-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* decl.c (init_decl_processing): Added new class fields `depth',

@@ -282,16 +282,17 @@ declare_hidden_char_array (name, value)
      const char *name, *value;
 {
   tree decl, type, init;
-  int vlen;
+  unsigned int vlen;
 
   /* If the default size of char arrays isn't big enough for the name,
      or if we want to give warnings for large objects, make a bigger one.  */
   vlen = strlen (value) + 1;
   type = char_array_type_node;
-  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < vlen
+  if (compare_tree_int (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), vlen) < 0
       || warn_larger_than)
     type = build_array_type (char_type_node,
 			     build_index_type (build_int_2 (vlen, 0)));
+
   decl = build_decl (VAR_DECL, get_identifier (name), type);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
@@ -775,7 +776,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    tree align_expr
 	      = (args ? TREE_VALUE (args)
 		 : size_int (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-	    int align;
+	    int i;
 
 	    /* Strip any NOPs of any kind.  */
 	    while (TREE_CODE (align_expr) == NOP_EXPR
@@ -789,18 +790,18 @@ decl_attributes (node, attributes, prefix_attributes)
 		continue;
 	      }
 
-	    align = TREE_INT_CST_LOW (align_expr) * BITS_PER_UNIT;
-
-	    if (exact_log2 (align) == -1)
+	    if ((i = tree_log2 (align_expr)) == -1)
 	      error ("requested alignment is not a power of 2");
+	    else if (i > HOST_BITS_PER_INT - 2)
+	      error ("requested alignment is too large");
 	    else if (is_type)
-	      TYPE_ALIGN (type) = align;
+	      TYPE_ALIGN (type) = (1 << i) * BITS_PER_UNIT;
 	    else if (TREE_CODE (decl) != VAR_DECL
 		     && TREE_CODE (decl) != FIELD_DECL)
 	      error_with_decl (decl,
 			       "alignment may not be specified for `%s'");
 	    else
-	      DECL_ALIGN (decl) = align;
+	      DECL_ALIGN (decl) = (1 << i) * BITS_PER_UNIT;
 	  }
 	  break;
 
@@ -810,11 +811,10 @@ decl_attributes (node, attributes, prefix_attributes)
 	    tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
 	    tree first_arg_num_expr
 	      = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
-	    int format_num;
-	    int first_arg_num;
+	    unsigned HOST_WIDE_INT format_num, first_arg_num;
 	    enum format_type format_type;
 	    tree argument;
-	    int arg_num;
+	    unsigned int arg_num;
 
 	    if (TREE_CODE (decl) != FUNCTION_DECL)
 	      {
@@ -859,9 +859,11 @@ decl_attributes (node, attributes, prefix_attributes)
 	      first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
 
 	    if (TREE_CODE (format_num_expr) != INTEGER_CST
-		|| TREE_CODE (first_arg_num_expr) != INTEGER_CST)
+		|| TREE_INT_CST_HIGH (format_num_expr) != 0
+		|| TREE_CODE (first_arg_num_expr) != INTEGER_CST
+		|| TREE_INT_CST_HIGH (first_arg_num_expr) != 0)
 	      {
-		error ("format string has non-constant operand number");
+		error ("format string has invalid operand number");
 		continue;
 	      }
 
@@ -879,12 +881,10 @@ decl_attributes (node, attributes, prefix_attributes)
 	    argument = TYPE_ARG_TYPES (type);
 	    if (argument)
 	      {
-		for (arg_num = 1; ; ++arg_num)
-		  {
-		    if (argument == 0 || arg_num == format_num)
-		      break;
-		    argument = TREE_CHAIN (argument);
-		  }
+		for (arg_num = 1; argument != 0 && arg_num != format_num;
+		     ++arg_num, argument = TREE_CHAIN (argument))
+		  ;
+
 		if (! argument
 		    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
@@ -893,17 +893,19 @@ decl_attributes (node, attributes, prefix_attributes)
 		    error ("format string arg not a string type");
 		    continue;
 		  }
-		if (first_arg_num != 0)
+
+		else if (first_arg_num != 0)
 		  {
 		    /* Verify that first_arg_num points to the last arg,
 		       the ...  */
 		    while (argument)
 		      arg_num++, argument = TREE_CHAIN (argument);
-		  if (arg_num != first_arg_num)
-		    {
-		      error ("args to be formatted is not ...");
-		      continue;
-		    }
+
+		    if (arg_num != first_arg_num)
+		      {
+			error ("args to be formatted is not '...'");
+			continue;
+		      }
 		  }
 	      }
 
@@ -916,7 +918,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	case A_FORMAT_ARG:
 	  {
 	    tree format_num_expr = TREE_VALUE (args);
-	    int format_num, arg_num;
+	    unsigned HOST_WIDE_INT format_num;
+	    unsigned int arg_num;
 	    tree argument;
 
 	    if (TREE_CODE (decl) != FUNCTION_DECL)
@@ -933,9 +936,10 @@ decl_attributes (node, attributes, prefix_attributes)
 		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
 	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
 
-	    if (TREE_CODE (format_num_expr) != INTEGER_CST)
+	    if (TREE_CODE (format_num_expr) != INTEGER_CST
+		|| TREE_INT_CST_HIGH (format_num_expr) != 0)
 	      {
-		error ("format string has non-constant operand number");
+		error ("format string has invalid operand number");
 		continue;
 	      }
 
@@ -947,12 +951,10 @@ decl_attributes (node, attributes, prefix_attributes)
 	    argument = TYPE_ARG_TYPES (type);
 	    if (argument)
 	      {
-		for (arg_num = 1; ; ++arg_num)
-		  {
-		    if (argument == 0 || arg_num == format_num)
-		      break;
-		    argument = TREE_CHAIN (argument);
-		  }
+		for (arg_num = 1; argument != 0 && arg_num != format_num;
+		     ++arg_num, argument = TREE_CHAIN (argument))
+		  ;
+
 		if (! argument
 		    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
@@ -2407,7 +2409,7 @@ signed_or_unsigned_type (unsignedp, type)
 /* Return the minimum number of bits needed to represent VALUE in a
    signed or unsigned type, UNSIGNEDP says which.  */
 
-int
+unsigned int
 min_precision (value, unsignedp)
      tree value;
      int unsignedp;
@@ -2427,10 +2429,8 @@ min_precision (value, unsignedp)
 
   if (integer_zerop (value))
     log = 0;
-  else if (TREE_INT_CST_HIGH (value) != 0)
-    log = HOST_BITS_PER_WIDE_INT + floor_log2 (TREE_INT_CST_HIGH (value));
   else
-    log = floor_log2 (TREE_INT_CST_LOW (value));
+    log = tree_floor_log2 (value);
 
   return log + 1 + ! unsignedp;
 }
@@ -2888,24 +2888,7 @@ truthvalue_conversion (expr)
 
   switch (TREE_CODE (expr))
     {
-      /* It is simpler and generates better code to have only TRUTH_*_EXPR
-	 or comparison expressions as truth values at this level.  */
-#if 0
-    case COMPONENT_REF:
-      /* A one-bit unsigned bit-field is already acceptable.  */
-      if (1 == TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (expr, 1)))
-	  && TREE_UNSIGNED (TREE_OPERAND (expr, 1)))
-	return expr;
-      break;
-#endif
-
     case EQ_EXPR:
-      /* It is simpler and generates better code to have only TRUTH_*_EXPR
-	 or comparison expressions as truth values at this level.  */
-#if 0
-      if (integer_zerop (TREE_OPERAND (expr, 1)))
-	return build_unary_op (TRUTH_NOT_EXPR, TREE_OPERAND (expr, 0), 0);
-#endif
     case NE_EXPR: case LE_EXPR: case GE_EXPR: case LT_EXPR: case GT_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:

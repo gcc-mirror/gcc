@@ -13431,9 +13431,11 @@ patch_newarray (node)
   for (cdim = dims; cdim; cdim = TREE_CHAIN (cdim))
     {
       type = array_type;
-      array_type = build_java_array_type (type,
-					  TREE_CODE (cdim) == INTEGER_CST ?
-					  TREE_INT_CST_LOW (cdim) : -1);
+      array_type
+	= build_java_array_type (type,
+				 TREE_CODE (cdim) == INTEGER_CST
+				 ? (HOST_WIDE_INT) TREE_INT_CST_LOW (cdim)
+				 : -1);
       array_type = promote_type (array_type);
     }
   dims = nreverse (dims);

@@ -1,6 +1,5 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
-
    Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1634,7 +1633,7 @@ build_result_decl (fndecl)
 static boolean
 emit_init_test_initialization (entry, key)
   struct hash_entry *entry;
-  hash_table_key key;
+  hash_table_key key ATTRIBUTE_UNUSED;
 {
   struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
   expand_decl (ite->init_test_decl);

@@ -600,7 +600,7 @@ build_overload_int (value, flags)
   /* If the high-order word is not merely a sign-extension of the
      low-order word, we must use a special output routine that can
      deal with this.  */
-  if (TREE_INT_CST_HIGH (value)
+  if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (value)
       != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
     {
       multiple_words_p = 1;
@@ -608,8 +608,8 @@ build_overload_int (value, flags)
       multiple_digits_p = 1;
     }
   else 
-    multiple_digits_p = (TREE_INT_CST_LOW (value) > 9
-			 || TREE_INT_CST_LOW (value) < -9);
+    multiple_digits_p = ((HOST_WIDE_INT) TREE_INT_CST_LOW (value) > 9
+			 || (HOST_WIDE_INT) TREE_INT_CST_LOW (value) < -9);
 
   /* If necessary, add a leading underscore.  */
   if (multiple_digits_p && (flags & mf_use_underscores_around_value))

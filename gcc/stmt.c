@@ -3801,9 +3801,8 @@ expand_decl (decl)
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
 	   && ! (flag_stack_check && ! STACK_CHECK_BUILTIN
-		 && (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (decl)) != 0
-		     || (TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl))
-			 > STACK_CHECK_MAX_VAR_SIZE))))
+		 && 0 < compare_tree_int (DECL_SIZE_UNIT (decl),
+					  STACK_CHECK_MAX_VAR_SIZE)))
     {
       /* Variable of fixed size that goes on the stack.  */
       rtx oldaddr = 0;
@@ -4212,8 +4211,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
          change the element's mode to the appropriate one for its size.  */
       if (mode == BLKmode && DECL_MODE (decl) != BLKmode)
 	DECL_MODE (decl_elt) = mode
-	  = mode_for_size (TREE_INT_CST_LOW (DECL_SIZE (decl_elt)),
-			   MODE_INT, 1);
+	  = mode_for_size_tree (DECL_SIZE (decl_elt), MODE_INT, 1);
 
       /* (SUBREG (MEM ...)) at RTL generation time is invalid, so we
          instead create a new MEM rtx with the proper mode.  */
@@ -4962,8 +4960,8 @@ all_cases_count (type, spareness)
 	{
 	  if (TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST
 	      || TREE_CODE (TREE_VALUE (t)) != INTEGER_CST
-	      || TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) + count
-	      != TREE_INT_CST_LOW (TREE_VALUE (t)))
+	      || (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) + count
+		  != TREE_INT_CST_LOW (TREE_VALUE (t))))
 	    *spareness = 1;
 	  count++;
 	}
@@ -5402,10 +5400,8 @@ expand_end_case (orig_index)
 #endif /* HAVE_casesi */
 #endif /* CASE_VALUES_THRESHOLD */
 
-      else if (TREE_INT_CST_HIGH (range) != 0
-	       || count < (unsigned int) CASE_VALUES_THRESHOLD
-	       || ((unsigned HOST_WIDE_INT) (TREE_INT_CST_LOW (range))
-		   > 10 * count)
+      else if (count < CASE_VALUES_THRESHOLD
+	       || compare_tree_int (range, 10 * count) > 0
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 	       || flag_pic
 #endif
@@ -5768,7 +5764,8 @@ estimate_case_costs (node)
       if ((INT_CST_LT (n->low, min_ascii)) || INT_CST_LT (max_ascii, n->high))
 	return 0;
 
-      for (i = TREE_INT_CST_LOW (n->low); i <= TREE_INT_CST_LOW (n->high); i++)
+      for (i = (HOST_WIDE_INT) TREE_INT_CST_LOW (n->low);
+	   i <= (HOST_WIDE_INT) TREE_INT_CST_LOW (n->high); i++)
 	if (cost_table[i] < 0)
 	  return 0;
     }

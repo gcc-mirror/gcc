@@ -102,10 +102,12 @@ munge (filename)
 /* Given a pathname, calculate the non-directory part.  This always
    knows how to handle Unix-style pathnames, and understands VMS and
    DOS paths on those systems.  */
+
 /* Find the base name of a (partial) pathname FNAME.
    Returns a pointer into the string passed in.
    Accepts Unix (/-separated) paths on all systems,
    DOS and VMS paths on those systems.  */
+
 static const char *
 base_name (fname)
      const char *fname;
@@ -149,8 +151,10 @@ deps_free (d)
      struct deps *d;
 {
   unsigned int i;
+
   for (i = 0; i < d->ntargets; i++)
     free ((PTR) d->targetv[i]);
+
   for (i = 0; i < d->ndeps; i++)
     free ((PTR) d->depv[i]);
 
@@ -172,6 +176,7 @@ deps_add_target (d, t)
       d->targetv = xrealloc (d->targetv,
 			     d->targets_size * sizeof (const char *));
     }
+
   d->targetv[d->ntargets++] = t;
 }
 
@@ -267,7 +272,7 @@ deps_dummy_targets (d, fp)
      const struct deps *d;
      FILE *fp;
 {
-  int i;
+  unsigned int i;
 
   for (i = 1; i < d->ndeps; i++)
     {
