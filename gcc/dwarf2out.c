@@ -465,7 +465,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
    .debug_frame.  But we know it won't work for .debug_info.  */
 
 #ifdef DWARF2_DEBUGGING_INFO
-#error DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP.
+ #error DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP.
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR
