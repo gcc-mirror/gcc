@@ -1341,16 +1341,26 @@ maybe-[+make_target+]-gcc: [+make_target+]-gcc
 # GCC bootstrap support
 # ---------------------
 
-# We name the directories for the various stages "stage1-gcc",
-# "stage2-gcc","stage3-gcc", etc.  
-# Unfortunately, the 'compare' process will fail (on debugging information)
-# if any directory names are different!
-# So in the building rule for each stage, we relocate them before and after.
-# The current one is 'gcc', while the previous one is 'prev-gcc'.  (The
-# current one must be 'gcc' for now because the scripts in that directory
-# assume it.)
-# At the end of the bootstrap, 'stage3-gcc' must be moved to 'gcc' so that
-# libraries can find it.  Ick!
+# We track the current stage (the one in 'gcc') in the stage_last file.
+# We name the build directories for the various stages "stage1-gcc",
+# "stage2-gcc","stage3-gcc", etc.
+
+# Since the 'compare' process will fail (on debugging information) if any
+# directory names are different, we need to link the gcc directory for
+# the previous stage to a constant name ('gcc-prev'), and to make the name of
+# the build directories constant as well. For the latter, we use naked names
+# like 'gcc', because the scripts in that directory assume it.  We use
+# mv on platforms where symlinks to directories do not work or are not
+# reliable.
+
+# At the end of the bootstrap, a symlink to 'stage3-gcc' named 'gcc' must
+# be kept, so that libraries can find it.  Ick!
+
+# It would be best to preinstall gcc into a staging area (and in the
+# future, gather there all prebootstrap packages).  This would allow
+# assemblers and linkers can be bootstrapped as well as the compiler
+# (both in a combined tree, or separately).  This however requires some
+# change to the gcc driver, again in order to avoid comparison failures.
 
 # Bugs: This is almost certainly not parallel-make safe.
 
@@ -1366,6 +1376,21 @@ STAMP = echo timestamp >
 STAGE1_CFLAGS=@stage1_cflags@
 STAGE1_LANGUAGES=@stage1_languages@
 
+# We only want to compare .o files, so set this!
+objext = .o
+
+# Real targets act phony if they depend on phony targets; this hack
+# prevents gratuitous rebuilding of stage 1.
+prebootstrap:
+	$(MAKE) all-bootstrap
+	$(STAMP) prebootstrap
+
+# Flags to pass to stage2 and later makes.
+BOOT_CFLAGS= -g -O2
+POSTSTAGE1_FLAGS_TO_PASS = \
+	CFLAGS="$(BOOT_CFLAGS)" \
+	ADAC="\$$(CC)"
+
 # For stage 1:
 # * We force-disable intermodule optimizations, even if
 #   --enable-intermodule was passed, since the installed compiler probably
@@ -1374,27 +1399,56 @@ STAGE1_LANGUAGES=@stage1_languages@
 # * Likewise, we force-disable coverage flags, since the installed compiler
 #   probably has never heard of them.
 # * We build only C (and possibly Ada).
-configure-stage1-gcc:
-	echo configure-stage1-gcc > stage_last ; \
-	if [ -f stage1-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage1-gcc ; \
+
+[+ FOR bootstrap-stage +]
+.PHONY: new-stage[+id+]-start new-stage[+id+]-end
+
+new-stage[+id+]-start:
+	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+	echo stage[+id+] > stage_last ; \
+	[ -d stage[+id+]-gcc ] || mkdir stage[+id+]-gcc; \
+	set stage[+id+]-gcc gcc ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
+	set stage[+prev+]-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+
+new-stage[+id+]-end:
+	rm -f stage_last ; \
+	set gcc stage[+id+]-gcc ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
+	set prev-gcc stage[+prev+]-gcc ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
+
+# Bubble a bugfix through all the stages up to stage [+id+].  They
+# are remade, but not reconfigured.  The next stage (if any) will not
+# be reconfigured as well.
+.PHONY: new-stage[+id+]-bubble
+new-stage[+id+]-bubble: [+ IF prev +]new-stage[+prev+]-bubble[+ ENDIF +]
+	@if [ -f all-stage[+id+]-gcc ] ; then \
+	  echo Remaking stage [+id+] ; \
+	  rm -f all-stage[+id+]-gcc ; \
+	  $(MAKE) all-stage[+id+]-gcc [+ IF next +] && \
+	  if [ -f configure-stage[+next+]-gcc ] ; then \
+	    $(STAMP) configure-stage[+next+]-gcc ; \
+	  fi [+ ENDIF next +]; \
+	else \
+	  $(MAKE) all-stage[+id+]-gcc ; \
+	fi
+
+configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
+	  ELSE +] prebootstrap [+ ENDIF prev +]
+	$(MAKE) new-stage[+id+]-start
+	@if [ -f stage[+id+]-gcc/Makefile ] ; then \
+	  $(STAMP) configure-stage[+id+]-gcc ; \
 	  exit 0; \
 	else \
 	  true ; \
 	fi ; \
-	[ -d stage1-gcc ] || mkdir stage1-gcc; \
-	mv stage1-gcc gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
 	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
 	LD="$(LD)"; export LD; \
 	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
@@ -1403,7 +1457,13 @@ configure-stage1-gcc:
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	echo Configuring stage 1 in gcc; \
+	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
+	GMPINC="$(HOST_GMPINC)"; export GMPINC [+ IF prev +] ; \
+	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
+	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD [+ ELSE +] ; \
+	CC="$(CC)"; export CC; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD [+ ENDIF prev +] ; \
+	echo Configuring stage [+id+] in gcc ; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
 	  \.) \
@@ -1418,188 +1478,31 @@ configure-stage1-gcc:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule --disable-coverage \
-	  --enable-languages="$(STAGE1_LANGUAGES)"; \
-	cd .. ; \
-	mv gcc stage1-gcc ; \
-	$(STAMP) configure-stage1-gcc
+	  [+extra_configure_flags+] && \
+	  $(STAMP) ../configure-stage[+id+]-gcc
 
-# Real targets act phony if they depend on phony targets; this hack
-# prevents gratuitous rebuilding of stage 1.
-prebootstrap:
-	$(MAKE) all-bootstrap
-	$(STAMP) prebootstrap
-
-all-stage1-gcc: configure-stage1-gcc prebootstrap
-	echo all-stage1-gcc > stage_last ; \
-	r=`${PWD_COMMAND}`; export r; \
+all-stage[+id+]-gcc: configure-stage[+id+]-gcc
+	$(MAKE) new-stage[+id+]-start
+	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	mv stage1-gcc gcc ; \
 	cd gcc && \
-	$(MAKE) $(GCC_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE1_CFLAGS)" && $(STAMP) ../all-stage1-gcc ; \
-	result=$$? ; \
-	cd .. ; \
-	mv gcc stage1-gcc ; \
-	exit $$result
-
-# TODO: Deal with STAGE_PREFIX (which is only for ada, incidentally)
-# Possibly pass --enable-werror-always (depending on --enable-werror);
-# that's what @stage2_werror_flag@ is for
-configure-stage2-gcc: all-stage1-gcc
-	echo configure-stage2-gcc > stage_last ; \
-	if [ -f stage2-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage2-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
-	[ -d stage2-gcc ] || mkdir stage2-gcc; \
-	mv stage2-gcc gcc ; \
-	mv stage1-gcc prev-gcc ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	AR="$(AR)"; export AR; \
-	AS="$(AS)"; export AS; \
-	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	LD="$(LD)"; export LD; \
-	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
-	NM="$(NM)"; export NM; \
-	RANLIB="$(RANLIB)"; export RANLIB; \
-	WINDRES="$(WINDRES)"; export WINDRES; \
-	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
-	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
-	echo Configuring stage 2 in gcc; \
-	cd gcc || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} @stage2_werror_flag@ ; \
-	cd .. ; \
-	mv gcc stage2-gcc ; \
-	mv prev-gcc stage1-gcc ; \
-	$(STAMP) configure-stage2-gcc
-
-# Flags to pass to stage2 and later makes.
-BOOT_CFLAGS= -g -O2
-POSTSTAGE1_FLAGS_TO_PASS = \
-	CFLAGS="$(BOOT_CFLAGS)" \
-	ADAC="\$$(CC)"
-
-all-stage2-gcc: all-stage1-gcc configure-stage2-gcc
-	echo all-stage2-gcc > stage_last ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	mv stage2-gcc gcc ; \
-	mv stage1-gcc prev-gcc ; \
-	cd gcc && \
-	$(MAKE) $(GCC_FLAGS_TO_PASS) \
+	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
 		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		STAGE_PREFIX=$$r/prev-gcc/ \
-		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage2-gcc ; \
-	result=$$? ; \
-	cd .. ; \
-	mv prev-gcc stage1-gcc ; \
-	mv gcc stage2-gcc ; \
-	exit $$result
+		STAGE_PREFIX=$$r/stage[+prev+]-gcc/ [+ ENDIF prev +] \
+		[+extra_make_flags+] && $(STAMP) ../all-stage[+id+]-gcc
 
-configure-stage3-gcc: all-stage2-gcc
-	echo configure-stage3-gcc > stage_last ; \
-	if [ -f stage3-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage3-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
-	[ -d stage3-gcc ] || mkdir stage3-gcc; \
-	mv stage3-gcc gcc ; \
-	mv stage2-gcc prev-gcc ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	AR="$(AR)"; export AR; \
-	AS="$(AS)"; export AS; \
-	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	LD="$(LD)"; export LD; \
-	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
-	NM="$(NM)"; export NM; \
-	RANLIB="$(RANLIB)"; export RANLIB; \
-	WINDRES="$(WINDRES)"; export WINDRES; \
-	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
-	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
-	echo Configuring stage 3 in gcc; \
-	cd gcc || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} @stage2_werror_flag@ ; \
-	cd .. ; \
-	mv gcc stage3-gcc ; \
-	mv prev-gcc stage2-gcc ; \
-	$(STAMP) configure-stage3-gcc
-
-all-stage3-gcc: all-stage2-gcc configure-stage3-gcc
-	echo all-stage3-gcc > stage_last ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	mv stage2-gcc prev-gcc ; \
-	mv stage3-gcc gcc ; \
-	cd gcc && \
-	$(MAKE) $(GCC_FLAGS_TO_PASS) \
-		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		STAGE_PREFIX=$$r/prev-gcc/ \
-		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage3-gcc \
-	result=$$? ; \
-	cd .. ; \
-	mv prev-gcc stage2-gcc ; \
-	mv gcc stage3-gcc ; \
-	exit $$result
-
-# We only want to compare .o files, so set this!
-objext = .o
-
-compare: all-stage3-gcc
-	r=`${PWD_COMMAND}`; export r; \
+[+ IF compare-target +]
+[+compare-target+]: all-stage[+id+]-gcc
+	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
-	cd stage3-gcc; \
+	cd stage[+id+]-gcc; \
 	files=`find . -name "*$(objext)" -print` ; \
 	cd .. ; \
 	for file in $${files} ; do \
-	  f1=$$r/stage2-gcc/$$file; f2=$$r/stage3-gcc/$$file; \
+	  f1=$$r/stage[+prev+]-gcc/$$file; f2=$$r/stage[+id+]-gcc/$$file; \
 	  @do_compare@ > /dev/null 2>&1; \
 	  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
 	done ; \
@@ -1610,40 +1513,38 @@ compare: all-stage3-gcc
 	else \
 	  true; \
 	fi ; \
-        $(STAMP) compare
+	$(STAMP) [+compare-target+]
+[+ ENDIF compare-target +]
 
-.PHONY: new-bootstrap
-# This target exists so that everything can be made in one pass.
-# 'all-gcc' has to avoid stomping on the bootstrap-generated gcc for
-# this to work.
-new-bootstrap: compare
-	mv stage3-gcc gcc ; \
-	$(MAKE) all ; \
-	mv gcc stage3-gcc
+[+ IF bootstrap-target +]
+.PHONY: [+bootstrap-target+]
+[+bootstrap-target+]:
+	$(MAKE) new-stage[+id+]-bubble [+
+	  IF compare-target +] [+compare-target+] [+
+	  ENDIF compare-target +] \
+	  new-stage[+id+]-start all new-stage[+id+]-end 
+[+ ENDIF bootstrap-target +]
 
-new-cleanstrap:
-	rm -rf configure-stage1-gcc all-stage1-gcc stage1-gcc \
-	  configure-stage2-gcc all-stage2-gcc stage2-gcc \
-	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
-	  compare
-	$(MAKE) new-bootstrap
+.PHONY: new-restage[+id+] distclean-stage[+id+]
 
-new-restage1:
-	rm -rf all-stage1-gcc \
-	  configure-stage2-gcc all-stage2-gcc stage2-gcc \
-	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
-	  compare
-	$(MAKE) all-stage1-gcc
+distclean-stage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
+	[ -f stage_last ] && $(MAKE) new-`cat stage_last`-end || :
+	rm -rf configure-stage[+id+]-gcc all-stage[+id+]-gcc stage[+id+]-gcc [+
+	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
-new-restage2: all-stage1-gcc
-	rm -rf all-stage2-gcc \
-	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
-	  compare
-	$(MAKE) all-stage2-gcc
+new-restage[+id+]: [+ IF next +] distclean-stage[+next+] [+ ENDIF next +]
+	rm -rf all-stage[+id+]-gcc [+
+	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
+	$(MAKE) [+
+	  IF compare-target +][+compare-target+] [+
+	  ELSE +] all-stage[+id+]-gcc [+ ENDIF compare-target +]
 
-new-restage3: all-stage2-gcc
-	rm -rf all-stage3-gcc compare
-	$(MAKE) compare
+[+ IF cleanstrap-target +]
+.PHONY: [+cleanstrap-target+]
+[+cleanstrap-target+]: distclean-stage1 [+bootstrap-target+]
+[+ ENDIF cleanstrap-target +]
+
+[+ ENDFOR bootstrap-stage +]
 
 # --------------------------------------
 # Dependencies between different modules
