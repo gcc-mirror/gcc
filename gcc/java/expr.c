@@ -823,7 +823,7 @@ build_java_arraystore_check (array, object)
     abort ();
 
   if (!flag_store_check)
-  return build1 (NOP_EXPR, array_type_p, array);
+    return build1 (NOP_EXPR, array_type_p, array);
 
   /* No check is needed if the element type is final or is itself an array.  
      Also check that element_type matches object_type, since in the bytecode 
@@ -831,7 +831,7 @@ build_java_arraystore_check (array, object)
      rather than its declared type. */
   if (element_type == object_type
       && (TYPE_ARRAY_P (TREE_TYPE (element_type))
-	 || CLASS_FINAL (element_type)))
+	  || CLASS_FINAL (element_type)))
     return build1 (NOP_EXPR, array_type_p, array);
   
   /* Avoid the check if OBJECT was just loaded from the same array. */
@@ -849,7 +849,7 @@ build_java_arraystore_check (array, object)
 	target = TREE_OPERAND (target, 0);
       
       if (source == target)
-      return build1 (NOP_EXPR, array_type_p, array);
+        return build1 (NOP_EXPR, array_type_p, array);
     }
 
   /* Build an invocation of _Jv_CheckArrayStore */
