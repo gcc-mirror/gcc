@@ -202,42 +202,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
  ? 6 - (CUM).num_args : 0)
 
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
-
-   CUM is as for INIT_CUMULATIVE_ARGS.
-
-   MODE and TYPE are the mode and type of the current parameter.
-
-   PRETEND_SIZE is a variable that should be set to the amount of stack
-   that must be pushed by the prolog to pretend that our caller pushed
-   it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed. 
-
-   For VMS, we allocate space for all 6 arg registers plus a count.
-
-   However, if NO registers need to be saved, don't allocate any space.
-   This is not only because we won't need the space, but because AP includes
-   the current_pretend_args_size and we don't want to mess up any
-   ap-relative addresses already made.  */
-
-#undef SETUP_INCOMING_VARARGS
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM).num_args < 6)				\
-    {							\
-      if (! (NO_RTL))					\
-	{						\
-	  emit_move_insn (gen_rtx_REG (DImode, 1),	\
-			  virtual_incoming_args_rtx);	\
-	  emit_insn (gen_arg_home ());			\
-	}						\
-						        \
-      PRETEND_SIZE = 7 * UNITS_PER_WORD;		\
-    }							\
-}
-
 /* ABI has stack checking, but it's broken.  */
 #undef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0

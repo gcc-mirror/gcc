@@ -5983,9 +5983,10 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 
 /* Return true if TYPE must be returned in memory, instead of in registers.  */
 
-bool
-return_in_memory (tree type, enum machine_mode mode)
+static bool
+alpha_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 {
+  enum machine_mode mode = VOIDmode;
   int size;
 
   if (type)
@@ -6043,7 +6044,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   enum mode_class class;
 
 #ifdef ENABLE_CHECKING
-  if (return_in_memory (valtype, mode))
+  if (alpha_return_in_memory (valtype, func))
     abort ();
 #endif
 
@@ -6118,27 +6119,59 @@ alpha_build_va_list (void)
 }
 
 /* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
+   variable number of arguments.  */
 
-   On the Alpha, we allocate space for all 12 arg registers, but only
-   push those that are remaining.  However, if NO registers need to be
-   saved, don't allocate any space.  This is not only because we won't
-   need the space, but because AP includes the current_pretend_args_size
-   and we don't want to mess up any ap-relative addresses already made.
-
-   If we are not to use the floating-point registers, save the integer
-   registers where we would put the floating-point registers.  This is
-   not the most efficient way to implement varargs with just one register
-   class, but it isn't worth doing anything more efficient in this rare
-   case.  */
-
-#if TARGET_ABI_OSF
-void
-alpha_setup_incoming_varargs(CUMULATIVE_ARGS cum,
-			     enum machine_mode mode ATTRIBUTE_UNUSED,
-			     tree type ATTRIBUTE_UNUSED,
-			     int *pretend_size, int no_rtl)
+static void
+alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
+			      enum machine_mode mode ATTRIBUTE_UNUSED,
+			      tree type ATTRIBUTE_UNUSED,
+			      int *pretend_size, int no_rtl)
 {
+#if TARGET_ABI_UNICOSMK
+  /* On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
+     arguments on the stack. Unfortunately, it doesn't always store the first
+     one (i.e. the one that arrives in $16 or $f16). This is not a problem
+     with stdargs as we always have at least one named argument there.  */
+  int num_reg_words = pcum->num_reg_words;
+  if (num_reg_words < 6)
+    {
+      if (!no_rtl)
+	{
+	  emit_insn (gen_umk_mismatch_args (GEN_INT (num_reg_words + 1)));
+	  emit_insn (gen_arg_home_umk ());
+	}
+      *pretend_size = 0;
+    }
+#elif TARGET_ABI_OPEN_VMS
+  /* For VMS, we allocate space for all 6 arg registers plus a count.
+
+     However, if NO registers need to be saved, don't allocate any space.
+     This is not only because we won't need the space, but because AP
+     includes the current_pretend_args_size and we don't want to mess up
+     any ap-relative addresses already made.  */
+  if (pcum->num_args < 6)
+    {
+      if (!no_rtl)
+	{
+	  emit_move_insn (gen_rtx_REG (DImode, 1), virtual_incoming_args_rtx);
+	  emit_insn (gen_arg_home ());
+	}
+      *pretend_size = 7 * UNITS_PER_WORD;
+    }
+#else
+  /* On OSF/1 and friends, we allocate space for all 12 arg registers, but
+     only push those that are remaining.  However, if NO registers need to
+     be saved, don't allocate any space.  This is not only because we won't
+     need the space, but because AP includes the current_pretend_args_size
+     and we don't want to mess up any ap-relative addresses already made.
+
+     If we are not to use the floating-point registers, save the integer
+     registers where we would put the floating-point registers.  This is
+     not the most efficient way to implement varargs with just one register
+     class, but it isn't worth doing anything more efficient in this rare
+     case.  */
+  CUMULATIVE_ARGS cum = *pcum;
+
   if (cum >= 6)
     return;
 
@@ -6161,8 +6194,8 @@ alpha_setup_incoming_varargs(CUMULATIVE_ARGS cum,
 			   6 - cum);
      }
   *pretend_size = 12 * UNITS_PER_WORD;
-}
 #endif
+}
 
 void
 alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
@@ -10145,6 +10178,23 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG alpha_reorg
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY alpha_return_in_memory
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS alpha_setup_incoming_varargs
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+#undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+#define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
