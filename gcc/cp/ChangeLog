@@ -1,3 +1,7 @@
+1998-10-31  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (build_dynamic_cast_1): Fix cut-and-paste error.
+
 1998-10-30  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl2.c (delete_sanity): Pass integer_zero_node, not
