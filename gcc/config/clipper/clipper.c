@@ -366,57 +366,81 @@ rev_cond_name (op)
 
 
 /* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdargs or varargs
-   is used and fill in an initial va_list.  A pointer to this constructor
-   is returned.  */
+   We fill in an initial va_list.  A pointer to this constructor
+   is returned. */
+
 
 struct rtx_def *
 clipper_builtin_saveregs (arglist)
      tree arglist;
 {
   extern int current_function_varargs;
-  rtx block, addr, argsize;
-  /* Allocate the va_list constructor */
-  block = assign_stack_local (BLKmode, 8 * UNITS_PER_WORD, 2 * BITS_PER_WORD);
+  rtx block, addr, argsize, scratch, r0_addr,r1_addr,f0_addr,f1_addr;
+
+  /* Allocate the va_list constructor + save area for r0,r1,f0,f1 */
+
+  block = assign_stack_local (BLKmode,
+			      (6 + 6) * UNITS_PER_WORD, 2 * BITS_PER_WORD);
+
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
   addr = copy_to_reg (XEXP (block, 0));
 
+  f0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 24));
+  f1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 32));
+  r0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 40));
+  r1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 44));
+
+
   /* Store float regs  */
 
-  emit_move_insn (gen_rtx (MEM, DFmode, addr),
-		  gen_rtx (REG, DFmode, 16));
-
-  emit_move_insn (gen_rtx (MEM, DFmode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 8))),
-		  gen_rtx (REG, DFmode, 17));
+  emit_move_insn (gen_rtx (MEM, DFmode, f0_addr), gen_rtx (REG, DFmode, 16));
+  emit_move_insn (gen_rtx (MEM, DFmode, f1_addr), gen_rtx (REG, DFmode, 17));
 
   /* Store int regs  */
 
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 16))),
-		  gen_rtx (REG, SImode, 0));
-
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 20))),
-		  gen_rtx (REG, SImode, 1));
-
+  emit_move_insn (gen_rtx (MEM, SImode, r0_addr), gen_rtx (REG, SImode, 0));
+  emit_move_insn (gen_rtx (MEM, SImode, r1_addr), gen_rtx (REG, SImode, 1));
 
   /* Store the arg pointer in the __va_stk member.  */
 
+  emit_move_insn (gen_rtx (MEM, SImode, addr),
+		  copy_to_reg (virtual_incoming_args_rtx));
+		  
+
+  /* now move addresses of the saved regs into the pointer array */
+
+  scratch = gen_reg_rtx (Pmode);
+
+  emit_move_insn (scratch, r0_addr);
   emit_move_insn (gen_rtx (MEM, SImode,
 			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 24))),
-		  copy_to_reg (virtual_incoming_args_rtx));
-
+				    gen_rtx (CONST_INT, Pmode, 4))),
+		  scratch);
+		  
+  emit_move_insn (scratch, f0_addr);
+  emit_move_insn (gen_rtx (MEM, SImode,
+			   gen_rtx (PLUS, Pmode, addr,
+				    gen_rtx (CONST_INT, Pmode, 8))),
+		  scratch);
+		  
+  emit_move_insn (scratch, r1_addr);
+  emit_move_insn (gen_rtx (MEM, SImode,
+			   gen_rtx (PLUS, Pmode, addr,
+				    gen_rtx (CONST_INT, Pmode, 12))),
+		  scratch);
+		  
+  emit_move_insn (scratch, f1_addr);
+  emit_move_insn (gen_rtx (MEM, SImode,
+			   gen_rtx (PLUS, Pmode, addr,
+				    gen_rtx (CONST_INT, Pmode, 16))),
+		  scratch);
 
   /* Return the address of the va_list constructor, but don't put it in a
      register.  This fails when not optimizing and produces worse code when
      optimizing.  */
+
   return XEXP (block, 0);
 }
 
