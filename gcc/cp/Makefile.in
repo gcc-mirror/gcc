@@ -196,12 +196,12 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
-	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
+	@echo expect 1 shift/reduce confict and 39 reduce/reduce conflicts.
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
 #$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
 #stamp-parse: $(srcdir)/parse.y
-#	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
+#	@echo expect 1 shift/reduce confict and 39 reduce/reduce conflicts.
 #	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
 #	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
 #	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)

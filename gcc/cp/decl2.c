@@ -144,10 +144,8 @@ int warn_implicit = 1;
 int warn_ctor_dtor_privacy = 1;
 
 /* True if we want to implement vtbvales using "thunks".
-   The default is off now, but will be on later.
+   The default is off now, but will be on later. */
 
-   Also causes output of vtables to be controlled by whether
-   we seen the class's first non-inline virtual function. */
 int flag_vtable_thunks;
 
 /* Nonzero means give string constants the type `const char *'
@@ -2466,23 +2464,61 @@ mark_vtable_entries (decl)
    it's public in this file or in another one.  */
 
 void
-import_export_vtable (decl, type)
-  tree decl, type;
+import_export_vtable (decl, type, final)
+     tree decl, type;
+     int final;
 {
-  if (write_virtuals >= 2
-      || CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    {
-      if (CLASSTYPE_INTERFACE_KNOWN (type))
-	{
-	  TREE_PUBLIC (decl) = 1;
-	  DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
-	}
-    }
-  else if (write_virtuals != 0)
+  if (DECL_INTERFACE_KNOWN (decl))
+    return;
+
+  /* +e0 or +e1 */
+  if (write_virtuals < 2 && write_virtuals != 0)
     {
       TREE_PUBLIC (decl) = 1;
       if (write_virtuals < 0)
 	DECL_EXTERNAL (decl) = 1;
+      DECL_INTERFACE_KNOWN (decl) = 1;
+    }
+  else if (CLASSTYPE_INTERFACE_KNOWN (type))
+    {
+      TREE_PUBLIC (decl) = 1;
+      DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
+      DECL_INTERFACE_KNOWN (decl) = 1;
+    }
+  else
+    {
+      /* We can only do this optimization if we have real non-inline
+	 virtual functions in our class, or if we come from a template.  */
+
+      int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
+
+      if (! found && ! final)
+	{
+	  /* This check only works before the method definitions are seen,
+	     since DECL_INLINE may get bashed.  */
+	  tree method;
+	  for (method = CLASSTYPE_METHODS (type); method != NULL_TREE;
+	       method = DECL_NEXT_METHOD (method))
+	    if (DECL_VINDEX (method) != NULL_TREE && ! DECL_INLINE (method)
+		&& ! DECL_ABSTRACT_VIRTUAL_P (method))
+	      {
+		found = 1;
+		break;
+	      }
+	}
+
+      if (final || ! found)
+	{
+	  TREE_PUBLIC (decl) = 0;
+	  DECL_EXTERNAL (decl) = 0;
+	  DECL_INTERFACE_KNOWN (decl) = 1;
+	}
+      else
+	{
+	  TREE_PUBLIC (decl) = 1;
+	  DECL_EXTERNAL (decl) = 1;
+	  DECL_INTERFACE_KNOWN (decl) = 0;
+	}
     }
 }
 
@@ -2506,9 +2542,8 @@ finish_prevtable_vardecl (prev, vars)
 {
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
-  import_export_vtable (vars, ctype);
 
-  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype))
+  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype))
     {
       tree method;
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
@@ -2520,12 +2555,12 @@ finish_prevtable_vardecl (prev, vars)
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
 	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
-	      TREE_PUBLIC (vars) = 1;
-	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
 	      break;
 	    }
 	}
     }
+
+  import_export_vtable (vars, ctype, 1);
 
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
@@ -2549,9 +2584,8 @@ finish_vtable_vardecl (prev, vars)
 {
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
-  import_export_vtable (vars, ctype);
 
-  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype))
+  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype))
     {
       tree method;
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
@@ -2563,14 +2597,14 @@ finish_vtable_vardecl (prev, vars)
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
 	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
-	      TREE_PUBLIC (vars) = 1;
-	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
 	      if (flag_rtti)
 		cp_warning ("compiler error: rtti entry for `%T' decided too late", ctype);
 	      break;
 	    }
 	}
     }
+
+  import_export_vtable (vars, ctype, 1);
 
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
@@ -2612,7 +2646,7 @@ finish_vtable_vardecl (prev, vars)
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
     }
-  else if (TREE_USED (vars) && flag_vtable_thunks)
+  else if (TREE_USED (vars))
     assemble_external (vars);
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
@@ -3230,8 +3264,11 @@ tree
 reparse_decl_as_expr (type, decl)
      tree type, decl;
 {
-  decl = build_tree_list (NULL_TREE, reparse_decl_as_expr1 (decl));
-  return build_functional_cast (type, decl);
+  decl = reparse_decl_as_expr1 (decl);
+  if (type)
+    return build_functional_cast (type, build_tree_list (NULL_TREE, decl));
+  else
+    return decl;
 }
 
 /* This is something of the form `int (*a)' that has turned out to be a
