@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -186,6 +186,11 @@
             out of them, Bad Things happen.
       </OL>
    </P>
+   <P>Note also that <TT>atexit()</TT> is only required to store 32
+      functions, and the compiler/library might already be using some of
+      those slots.  If you think you may run out, we recommend using
+      the xatexit/xexit combination from libiberty, which has no such limit.
+   </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
@@ -260,7 +265,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:55 pme Exp $
 </EM></P>
 
 

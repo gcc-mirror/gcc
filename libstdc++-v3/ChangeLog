@@ -1,3 +1,24 @@
+2001-05-30  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/user.cfg.in:  Minor addition.
+	* docs/html/documentation.html:  Reorganize.  Put most-looked-at
+	stuff first.
+	* docs/html/install.html:  Update for 3.0.  HTML fixups.
+	* docs/html/17_intro/howto.html:  Likewise.
+	* docs/html/18_support/howto.html:  Likewise.
+	* docs/html/19_diagnostics/howto.html:  Likewise.
+	* docs/html/20_util/howto.html:  Likewise.
+	* docs/html/23_containers/howto.html:  Likewise.
+	* docs/html/24_iterators/howto.html:  Likewise.  More notes.
+	* docs/html/25_algorithms/howto.html:  Likewise.
+	* docs/html/26_numerics/howto.html:  Likewise.  More notes.
+	* docs/html/27_io/howto.html:  Likewise.
+	* docs/html/ext/howto.html:  Likewise.
+	* docs/html/faq/index.html:  Likewise.
+	* docs/html/faq/index.txt:  Regenerate.
+	* docs/html/27_io/iostreams_hierarchy.pdf:  Remove in favor of
+	Doxygen-created documentation.
+
 2001-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
         * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use

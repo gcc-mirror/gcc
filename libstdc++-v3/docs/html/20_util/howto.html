@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 20</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2001/01/23 17:02:27 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -96,7 +96,7 @@
       <PRE>
     struct My_Type
     {
-	My_Type (My_Type const&amp;);
+        My_Type (My_Type const&amp;);
     };
       </PRE>
       Note the const keyword; the object being copied shouldn't change.
@@ -120,23 +120,10 @@
     
     void f()
     {
-	std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
+        std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
       </PRE>
-      Should you try this, you will see an error along the lines of the
-      following (look through the ugly line-wrapping):
-      <PRE>
-/installdir/include/g++-v3/bits/concept_checks.h: In
- static member function `static _Type
- <B>_STL_ERROR::__const_parameter_required_for_copy_constructor</B>(_Type, const
- _Type&amp;) [with _Type = std::auto_ptr&lt;int&gt;]':
-/installdir/include/g++-v3/bits/concept_checks.h:383: passing
- `const std::auto_ptr&lt;int&gt;' as `this' argument of
- `std::auto_ptr&lt;_Tp&gt;::operator std::auto_ptr_ref&lt;_Tp1&gt;()
- [with _Tp1 = int, _Tp = int]' discards qualifiers
-      </PRE>
-      See the highlighted error?  It starts with a message in all caps
-      to get your attention.
+      Should you try this with the checks enabled, you will see an error.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -213,7 +200,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.2 2001/01/23 17:02:27 pme Exp $
+<BR> $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $
 </EM></P>
 
 

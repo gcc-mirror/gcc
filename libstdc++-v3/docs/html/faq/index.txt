@@ -20,13 +20,12 @@
          8. [11]What if I have more questions?
     2. [12]Installation
          1. [13]How do I install libstdc++-v3?
-         2. [14]Is this a drop-in replacement for the libstdc++ that's
-            shipped with g++?
+         2. [14][removed]
          3. [15]What is this CVS thing that you keep mentioning?
          4. [16]How do I know if it works?
     3. [17]Platform-Specific Issues
          1. [18]Can libstdc++-v3 be used with <my favorite compiler>?
-         2. [19]Building under Cygwin hangs/explodes!?
+         2. [19][removed]
          3. [20]Building under DEC OSF kills the assembler
     4. [21]Known Bugs and Non-Bugs
          1. [22]What works already?
@@ -46,7 +45,7 @@
          2. [34]What's next after libstdc++-v3?
          3. [35]What about the STL from SGI?
          4. [36]Extensions and Backward Compatibility
-         5. [37]Compiling with "-fnew-abi"
+         5. [37][removed]
          6. [38]Is libstdc++-v3 thread-safe?
          7. [39]How do I get a copy of the ISO C++ Standard?
      _________________________________________________________________
@@ -184,39 +183,39 @@
 
    Complete instructions are not given here (this is a FAQ, not an
    installation document), but the tools required are few:
-     * A release of libstdc++.
-     * A recent release of GCC (version 2.95 works). Note that building
-       GCC is much easier and more automated than building the GCC 2.[78]
-       series was.
-     * If you plan on hacking around with the makefiles, you will need
-       the tools [53]autoconfand [54]automake.
+     * A 3.x release of GCC. Note that building GCC is much easier and
+       more automated than building the GCC 2.[78] series was. If you are
+       using GCC 2.95, you can still build earlier snapshots of
+       libstdc++.
      * GNU Make is the only make that supports these makefiles.
+     * The GNU Autotools are needed if you are messing with the configury
+       or makefiles.
 
-   The file [55]documentation.html provides a good overview of the steps
+   The file [53]documentation.html provides a good overview of the steps
    necessary to build, install, and use the library. Instructions for
    configuring the library with new flags such as --enable-threads are
-   there also.
+   there also, as well as patches and instructions for working with GCC
+   2.95.
 
-   The top-level install.html and [56]RELEASE-NOTES files contain the
+   The top-level install.html and [54]RELEASE-NOTES files contain the
    exact build and installation instructions. You may wish to browse
    those files over CVSweb ahead of time to get a feel for what's
    required. RELEASE-NOTES is located in the ".../docs/17_intro/"
    directory of the distribution.
      _________________________________________________________________
 
-2.2 Is this a drop-in replacement for the libstdc++ that's shipped with g++?
+2.2 [removed]
 
-   Yes, as of 2.90.8, it is intended as such. And as of 2.91,
-   libstdc++-v3 is the library that's shipped with g++, so much of this
-   answer has become moot.
+   This question has become moot and has been removed. The stub is here
+   to preserve numbering (and hence links/bookmarks).
      _________________________________________________________________
 
 2.3 What is this CVS thing that you keep mentioning?
 
    The Concurrent Versions System is one of several revision control
    packages. It was selected for GNU projects because it's free (speech),
-   free (beer), and very high quality. The [57]CVS entry in the GNU
-   software catalogue has a better description as well as a [58]link to
+   free (beer), and very high quality. The [55]CVS entry in the GNU
+   software catalogue has a better description as well as a [56]link to
    the makers of CVS.
 
    The "anonymous client checkout" feature of CVS is similar to anonymous
@@ -229,20 +228,12 @@
 2.4 How do I know if it works?
 
    libstdc++-v3 comes with its own testsuite. You do not need to actually
-   install the library ("gmake install") to run the testsuite. Note that
-   2.91 does not use DejaGNU yet.
+   install the library ("gmake install") to run the testsuite.
 
    To run the testsuite on the library after building it, use "gmake
    check" while in your build directory. To run the testsuite on the
    library after building and installing it, use "gmake check-install"
    instead.
-
-   The testsuite subdirectory in your build directory will then contain
-   three files of the form YYYYMMDD-mkcheck*.txt. One of them
-   (-mkcheck.txt itself) contains the results of the tests; this can be
-   mailed to the list. The other files (-mkchecklog.txt and
-   -mkcheckfiles.txt) contain messages from the compiler while building
-   the test programs, and a list of the tests to be run, respectively.
 
    If you find bugs in the testsuite programs themselves, or if you think
    of a new test program that should be added to the suite, please write
@@ -269,26 +260,10 @@
    and optimized for GCC/g++, however.
      _________________________________________________________________
 
-3.2 Building under Cygwin hangs/explodes!?
+3.2 [removed]
 
-   Sometimes, yes. You're probably in the middle of generating the
-   numeric_limits specializations when it hangs, right? Thought so...
-
-   The <limits> header and its associated library code are
-   platform-specific. These files get generated from scratch during
-   installation, and it is this generator that is hanging. More
-   specifically, the only sure way to determine what the
-   numeric_limits<T>::traps boolean should be is to actually divide by
-   zero and see if it is trapped or not.
-
-   Under NT, this will occasionally just hang. On those occasions when
-   the test does not hang, the zero-division is in fact trapped. That
-   doesn't prevent hanging elsewhere.
-
-   You have two options. You can get a newer cygwin1.dll (see the Cygwin
-   paragraph in the [59]installation instructions). Or you can get a
-   prebuilt set of bits/std_limits.h and src/limitsMEMBERS.cc files from
-   Mumit Khan's [60]Cygwin-related website.
+   This question has become moot and has been removed. The stub is here
+   to preserve numbering (and hence links/bookmarks).
      _________________________________________________________________
 
 3.3 Building DEC OSF kills the assembler
@@ -299,7 +274,7 @@
    install GNU as and arrange for the GCC build to use it (or merge the
    sources and build it during the bootstrap).
 
-   Anyone who [61]knows the DEC assembler well enough to provide the
+   Anyone who [57]knows the DEC assembler well enough to provide the
    equivalent of these two pseudos would win praise and accolades from
    many.
      _________________________________________________________________
@@ -352,16 +327,16 @@ New:
 
 4.3 Bugs in the C++ language/lib specification
 
-   Yes, unfortunately, there are some. In a [62]message to the list,
+   Yes, unfortunately, there are some. In a [58]message to the list,
    Nathan Myers announced that he has started a list of problems in the
    ISO C++ Standard itself, especially with regard to the chapters that
-   concern the library. The list itself is [63]posted on his website.
+   concern the library. The list itself is [59]posted on his website.
    Developers who are having problems interpreting the Standard may wish
    to consult his notes.
 
    For those people who are not part of the ISO Library Group (i.e.,
    nearly all of us needing to read this page in the first place :-), a
-   public list of the library defects is occasionally published [64]here.
+   public list of the library defects is occasionally published [60]here.
      _________________________________________________________________
 
 4.4 Things in libstdc++ that look like bugs
@@ -370,26 +345,26 @@ New:
    language specification (4.3), but aren't really bugs in libstdc++,
    either. Really! Please do not report these as bugs.
 
-   The biggest of these is the quadzillions of warnings about the library
-   headers emitted when -Weffc++ is used. Making libstdc++
+   -Weffc++ The biggest of these is the quadzillions of warnings about
+   the library headers emitted when -Weffc++ is used. Making libstdc++
    "-Weffc++-clean" is not a goal of the project, for a few reasons.
    Mainly, that option tries to enforce object-oriented programming,
    while the Standard Library isn't necessarily trying to be OO. There
    are multiple solutions under discussion.
 
-   Another is the rel_ops namespace and the template comparison operator
-   functions contained therein. If they become visible in the same
-   namespace as other comparison functions (e.g., 'using' them and the
-   <iterator> header), then you will suddenly be faced with huge numbers
-   of ambiguity errors. This was discussed on the -v3 list; Nathan Myers
-   [65]sums things up here.
+   rel_ops Another is the rel_ops namespace and the template comparison
+   operator functions contained therein. If they become visible in the
+   same namespace as other comparison functions (e.g., 'using' them and
+   the <iterator> header), then you will suddenly be faced with huge
+   numbers of ambiguity errors. This was discussed on the -v3 list;
+   Nathan Myers [61]sums things up here.
 
   The g++-3 headers are not ours
 
    If you have found an extremely broken header file which is causing
    problems for you, look carefully before submitting a "high" priority
    bug report (which you probably shouldn't do anyhow; see the last
-   paragraph of the page describing [66]the GCC bug database).
+   paragraph of the page describing [62]the GCC bug database).
 
    If the headers are in ${prefix}/include/g++-3, then you are using the
    old libstdc++-v2 library, which is nonstandard and unmaintained. Do
@@ -397,11 +372,11 @@ New:
 
    Currently our header files are installed in ${prefix}/include/g++-v3
    (see the 'v'?). This may change with the next release of GCC, as it
-   may be too confusing, but [67]the question has not yet been decided.
+   may be too confusing, but [63]the question has not yet been decided.
 
-   If you're on a GNU/Linux system and have just upgraded to glibc 2.2,
-   but are still using gcc 2.95.2, then you should have read the glibc
-   FAQ, specifically 2.34:
+   glibc If you're on a GNU/Linux system and have just upgraded to glibc
+   2.2, but are still using gcc 2.95.2, then you should have read the
+   glibc FAQ, specifically 2.34:
 2.34.   When compiling C++ programs, I get a compilation error in streambuf.h.
 
 {BH} You are using g++ 2.95.2? After upgrading to glibc 2.2, you need to
@@ -410,35 +385,36 @@ type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 
-   Note that 2.95.x shipped with the [68]old v2 library which is no
-   longer maintained.
+   Note that 2.95.x shipped with the [64]old v2 library which is no
+   longer maintained. Also note that gcc 2.95.3 fixes this problem, but
+   requires a separate patch for libstdc++-v3.
 
-   If you see compilation errors containing messages about fooConcept and
-   a constraints member function, then most likely you have violated one
-   of the requirements for types used during instantiation of template
-   containers. For example, EqualityComparableConcept appears if your
-   types must be comparable with == and you have not provided this
-   capability (a typo, or wrong visibility, or you just plain forgot,
-   etc).
+   concept checks If you see compilation errors containing messages about
+   fooConcept and a constraints member function, then most likely you
+   have violated one of the requirements for types used during
+   instantiation of template containers and functions. For example,
+   EqualityComparableConcept appears if your types must be comparable
+   with == and you have not provided this capability (a typo, or wrong
+   visibility, or you just plain forgot, etc).
 
-   More information, including how to optionally disable the checks, is
-   available [69]here.
+   More information, including how to optionally enable/disable the
+   checks, is available [65]here.
      _________________________________________________________________
 
 4.5 Aw, that's easy to fix!
 
    If you have found a bug in the library and you think you have a
    working fix, then send it in! The main GCC site has a page on
-   [70]submitting patches that covers the procedure, but for libstdc++
+   [66]submitting patches that covers the procedure, but for libstdc++
    you should also send the patch to our mailing list in addition to the
-   GCC patches mailing list. The libstdc++ [71]contributors' page also
+   GCC patches mailing list. The libstdc++ [67]contributors' page also
    talks about how to submit patches.
 
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test for the presence of the bug that your patch fixes. Bugs have a
    way of being reintroduced; if an old bug creeps back in, it will be
-   caught immediately by the [72]testsuite -- but only if such a test
+   caught immediately by the [68]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
 
@@ -476,16 +452,15 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    Bugfixes and rewrites (to improve or fix thread safety, for instance)
    will of course be a continuing task.
 
-   [73]This question about the next libstdc++ prompted some brief but
-   interesting [74]speculation.
+   [69]This question about the next libstdc++ prompted some brief but
+   interesting [70]speculation.
      _________________________________________________________________
 
 5.3 What about the STL from SGI?
 
-   The [75]STL from SGI is merged into libstdc++-v3 with changes as
-   necessary. Currently release 3.3 is being used. Changes in the STL
-   usually produce some weird bugs and lots of changes in the rest of the
-   libstdc++ source as we scramble to keep up. :-)
+   The [71]STL from SGI is merged into libstdc++-v3 with changes as
+   necessary. Currently release 3.3 is being used as an initial codebase,
+   plus changes, fixes, and extensions.
 
    In particular, string is not from SGI and makes no use of their "rope"
    class (which is included as an optional extension), nor is valarray
@@ -503,17 +478,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        #include <ext/hash_map>
 
 
-   Extensions to the library have [76]their own page.
+   Extensions to the library have [72]their own page.
      _________________________________________________________________
 
-5.5 Compiling with "-fnew-abi"
+5.5 [removed]
 
-   Towards the end of July 1999, this subject was brought up again on the
-   mailing list under a different name. The related [77]thread (by the
-   name HOWTO-honor-std) is very instructive. More info is at the end of
-   RELEASE-NOTES.
-
-   This functionality is now automated and turned on by default.
+   This question has become moot and has been removed. The stub is here
+   to preserve numbering (and hence links/bookmarks).
      _________________________________________________________________
 
 5.6 Is libstdc++-v3 thread-safe?
@@ -523,8 +494,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    This is assuming that your idea of "multithreaded" is the same as
    ours... The general question of multithreading and libstdc++-v3 is
-   addressed in the chapter-specific advice for [78]Library Introduction.
-   Threadsafe containers are covered in more detail in [79]the Received
+   addressed in the chapter-specific advice for [73]Library Introduction.
+   Threadsafe containers are covered in more detail in [74]the Received
    Wisdom section on containers.
      _________________________________________________________________
 
@@ -536,17 +507,17 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    their two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right [80]here. (And if you've already registered with them, clicking
-   this link will take you to directly to the place where you can [81]buy
+   right [75]here. (And if you've already registered with them, clicking
+   this link will take you to directly to the place where you can [76]buy
    the standard on-line.
 
-   Who is your country's member body? Visit the [82]ISO homepage and find
+   Who is your country's member body? Visit the [77]ISO homepage and find
    out!
      _________________________________________________________________
 
-   Comments and suggestions are welcome, and may be sent to [83]the
+   Comments and suggestions are welcome, and may be sent to [78]the
    mailing list.
-   $Id: index.html,v 1.7 2001/04/06 18:48:20 pme Exp $ 
+   $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $ 
 
 References
 
@@ -602,34 +573,29 @@ References
   50. mailto:libstdc++@gcc.gnu.org
   51. mailto:pme@sources.redhat.com
   52. mailto:gdr@gcc.gnu.org
-  53. http://sources.redhat.com/autoconf/
-  54. http://sources.redhat.com/automake/
-  55. ../documentation.html
-  56. ../17_intro/RELEASE-NOTES
-  57. http://www.gnu.org/software/cvs/cvs.html
-  58. http://www.cyclic.com/
-  59. ../install.html
-  60. http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html
-  61. http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html
-  62. http://gcc.gnu.org/ml/libstdc++/1998/msg00006.html
-  63. http://www.cantrip.org/draft-bugs.txt
-  64. http://anubis.dkuug.dk/jtc1/sc22/wg21/
-  65. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
-  66. http://gcc.gnu.org/gnatswrite.html
-  67. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
-  68. ../faq/index.html#4_4_interface
-  69. ../19_diagnostics/howto.html#3
-  70. http://gcc.gnu.org/contribute.html
-  71. ../17_intro/contribute.html
-  72. ../faq/index.html#2_4
-  73. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
-  74. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
-  75. http://www.sgi.com/Technology/STL/
-  76. ../ext/howto.html
-  77. http://gcc.gnu.org/ml/libstdc++/1999-q3/msg00066.html
-  78. http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#3
-  79. http://gcc.gnu.org/onlinedocs/libstdc++/23_containers/howto.html
-  80. http://www.ansi.org/
-  81. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
-  82. http://www.iso.ch/
-  83. mailto:libstdc++@gcc.gnu.org
+  53. ../documentation.html
+  54. ../17_intro/RELEASE-NOTES
+  55. http://www.gnu.org/software/cvs/cvs.html
+  56. http://www.cvshome.org/
+  57. http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html
+  58. http://gcc.gnu.org/ml/libstdc++/1998/msg00006.html
+  59. http://www.cantrip.org/draft-bugs.txt
+  60. http://anubis.dkuug.dk/jtc1/sc22/wg21/
+  61. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
+  62. http://gcc.gnu.org/gnatswrite.html
+  63. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
+  64. ../faq/index.html#4_4_interface
+  65. ../19_diagnostics/howto.html#3
+  66. http://gcc.gnu.org/contribute.html
+  67. ../17_intro/contribute.html
+  68. ../faq/index.html#2_4
+  69. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
+  70. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
+  71. http://www.sgi.com/Technology/STL/
+  72. ../ext/howto.html
+  73. http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/howto.html#3
+  74. http://gcc.gnu.org/onlinedocs/libstdc++/23_containers/howto.html
+  75. http://www.ansi.org/
+  76. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+  77. http://www.iso.ch/
+  78. mailto:libstdc++@gcc.gnu.org

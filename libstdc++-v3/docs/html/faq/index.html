@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.7 2001/04/06 18:48:20 pme Exp $ -->
+<!-- $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -41,8 +41,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
    <LI><A HREF="#2_0">Installation</A>
       <OL>
          <LI><A HREF="#2_1">How do I install libstdc++-v3?</A>
-         <LI><A HREF="#2_2">Is this a drop-in replacement for the
-                            libstdc++ that's shipped with g++?</A>
+         <LI><A HREF="#2_2">[removed]</A>
          <LI><A HREF="#2_3">What is this CVS thing that you keep 
                             mentioning?</A>
          <LI><A HREF="#2_4">How do I know if it works?</A>
@@ -52,7 +51,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
       <OL>
          <LI><A HREF="#3_1">Can libstdc++-v3 be used with &lt;my
                             favorite compiler&gt;?</A>
-         <LI><A HREF="#3_2">Building under Cygwin hangs/explodes!?</A>
+         <LI><A HREF="#3_2">[removed]</A>
          <LI><A HREF="#3_3">Building under DEC OSF kills the assembler</A>
       </OL>
 
@@ -82,7 +81,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
          <LI><A HREF="#5_2">What's next after libstdc++-v3?</A>
          <LI><A HREF="#5_3">What about the STL from SGI?</A>
          <LI><A HREF="#5_4">Extensions and Backward Compatibility</A>
-         <LI><A HREF="#5_5">Compiling with &quot;-fnew-abi&quot;</A>
+         <LI><A HREF="#5_5">[removed]</A>
          <LI><A HREF="#5_6">Is libstdc++-v3 thread-safe?</A>
          <LI><A HREF="#5_7">How do I get a copy of the ISO C++ Standard?</A>
       </OL>
@@ -146,10 +145,10 @@ HREF="http://gcc.gnu.org/gcc-2.95/buildstat.html">portability</A>
          Drepper are the lead maintainers of the CVS archive.
       </P>
       <P>Development and discussion is held on the libstdc++ mailing
-         list. Subscribing to the list, or searching the list
+         list.  Subscribing to the list, or searching the list
          archives, is open to everyone.  You can read instructions for
-         doing so on the <A HREF="http://gcc.gnu.org/libstdc++/">homepage</A>.  If you
-         have questions, ideas, code, or are just curious, sign up!
+         doing so on the <A HREF="http://gcc.gnu.org/libstdc++/">homepage</A>.
+         If you have questions, ideas, code, or are just curious, sign up!
       </P>
 
 <HR>
@@ -174,8 +173,8 @@ HREF="ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.92.tar.gz">
          HREF="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a 
          Usenet article</A>.</P>
 which is no longer available, thanks deja...-->
-      <P>Nathan Myers gave the best of all possible answers, responding
-         to a Usenet article asking this question:  Sooner, if you help.
+      <P>Nathan Myers gave the best of all possible answers, responding to a
+         Usenet article asking this question:  <EM>Sooner, if you help.</EM>
       </P>
 
 
@@ -254,20 +253,19 @@ which is no longer available, thanks deja...-->
          an installation document), but the tools required are few:
       </P>
          <UL>
-            <LI> A release of libstdc++.
-            <LI> A recent release of GCC (version 2.95 works). Note
-                 that building GCC is much easier and more automated
-                 than building the GCC 2.[78] series was. 
-            <LI> If you plan on hacking around with the makefiles, you
-                 will need the tools <A 
-HREF="http://sources.redhat.com/autoconf/">autoconf</A>and <A 
-HREF="http://sources.redhat.com/automake/">automake</A>. 
+            <LI> A 3.x release of GCC.  Note that building GCC is much
+                 easier and more automated than building the GCC 2.[78]
+                 series was.  If you are using GCC 2.95, you can still
+                 build earlier snapshots of libstdc++.
             <LI> GNU Make is the only make that supports these makefiles. 
+            <LI> The GNU Autotools are needed if you are messing with
+                 the configury or makefiles.
          </UL>
       <P>The file <A HREF="../documentation.html">documentation.html</A>
          provides a good overview of the steps necessary to build, install,
          and use the library.  Instructions for configuring the library
-         with new flags such as --enable-threads are there also.
+         with new flags such as --enable-threads are there also, as well as
+         patches and instructions for working with GCC 2.95.
       </P>
       <P>The top-level install.html and
          <A HREF="../17_intro/RELEASE-NOTES">RELEASE-NOTES</A> files contain
@@ -278,11 +276,9 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
       </P> 
 
 <HR>
-   <H2><A NAME="2_2">2.2 Is this a drop-in replacement for the
-                         libstdc++ that's shipped with g++?</A></H2>
-      <P>Yes, as of 2.90.8, it is intended as such.  And as of 2.91,
-         libstdc++-v3 <EM>is</EM> the library that's shipped with
-         g++, so much of this answer has become moot.
+   <H2><A NAME="2_2">2.2 [removed]</A></H2>
+      <P>This question has become moot and has been removed.  The stub
+         is here to preserve numbering (and hence links/bookmarks).
       </P>
 
 <HR>
@@ -294,7 +290,7 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
          HREF="http://www.gnu.org/software/cvs/cvs.html">CVS entry in
          the GNU software catalogue</A> has a better description as 
          well as a
-         <A HREF="http://www.cyclic.com/">link to the makers of CVS</A>. 
+         <A HREF="http://www.cvshome.org/">link to the makers of CVS</A>. 
       </P>
       <P>The &quot;anonymous client checkout&quot; feature of CVS is
          similar to anonymous FTP in that it allows anyone to retrieve
@@ -309,21 +305,12 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
    <H2><A NAME="2_4">2.4 How do I know if it works?</A></H2>
       <P>libstdc++-v3 comes with its own testsuite.  You do not need
          to actually install the library (&quot;<TT>gmake
-         install</TT>&quot;) to run the testsuite.  Note that 2.91 does
-         not use DejaGNU yet.
+         install</TT>&quot;) to run the testsuite.
       </P>
       <P>To run the testsuite on the library after building it, use
          &quot;gmake check&quot; while in your build directory.  To run
          the testsuite on the library after building and installing it,
          use &quot;gmake check-install&quot; instead.
-      </P>
-      <P>The testsuite subdirectory in your build directory will then
-         contain three files of the form YYYYMMDD-mkcheck*.txt.  One of
-         them (-mkcheck.txt itself) contains the results of the tests;
-         this can be mailed to the list.  The other files (-mkchecklog.txt
-         and -mkcheckfiles.txt) contain messages from the compiler while
-         building the test programs, and a list of the tests to be run,
-         respectively.
       </P>
       <P>If you find bugs in the testsuite programs themselves, or if
          you think of a new test program that should be added to the
@@ -353,29 +340,9 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
       </P> 
 
 <HR>
-   <H2><A NAME="3_2">3.2 Building under Cygwin hangs/explodes!?</A></H2>
-      <P>Sometimes, yes.  You're probably in the middle of generating
-         the <TT>numeric_limits</TT> specializations when it hangs,
-         right?  Thought so...
-      </P> 
-      <P>The <TT>&lt;limits&gt;</TT> header and its associated library
-         code are platform-specific.  These files get generated from
-         scratch during installation, and it is this generator that is
-         hanging.  More specifically, the only sure way to determine
-         what the <TT>numeric_limits&lt;T&gt;::traps</TT> boolean
-         should be is to actually divide by zero and see if it is
-         trapped or not.
-      </P>
-      <P>Under NT, this will occasionally just hang.  On those
-         occasions when the test does not hang, the zero-division is
-         in fact trapped.  That doesn't prevent hanging elsewhere.
-      </P>
-      <P>You have two options.  You can get a newer cygwin1.dll (see the
-         Cygwin paragraph in the
-         <A HREF="../install.html">installation instructions</A>).
-         Or you can get a prebuilt set of bits/std_limits.h and
-         src/limitsMEMBERS.cc files from Mumit Khan's
-         <A HREF="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html">Cygwin-related website</A>.
+   <H2><A NAME="3_2">3.2 [removed]</A></H2>
+      <P>This question has become moot and has been removed.  The stub
+         is here to preserve numbering (and hence links/bookmarks).
       </P>
 
 <HR>
@@ -403,7 +370,7 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
 
    <H2><A NAME="4_1">4.1 What works already?</A></H2>
       <P>This is a verbatim clip from the &quot;Status&quot; section
-         of the RELEASE-NOTES for the latest snapshot.
+          of the RELEASE-NOTES for the latest snapshot.
       </P> 
 
 <!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
@@ -473,7 +440,8 @@ to the list</A>, Nathan Myers announced that he has started a list of
          libstdc++, either.  Really!  Please do not report these as bugs.
       </P>
       <A NAME="4_4_Weff">
-        <P>The biggest of these is the quadzillions of warnings about the
+        <P><STRONG>-Weffc++</STRONG>
+           The biggest of these is the quadzillions of warnings about the
            library headers emitted when <TT>-Weffc++</TT> is used.  Making
            libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
            for a few reasons.  Mainly, that option tries to enforce
@@ -483,14 +451,15 @@ to the list</A>, Nathan Myers announced that he has started a list of
         </P>
       </A>
       <A NAME="4_4_rel_ops">
-        <P>Another is the <TT>rel_ops</TT> namespace and the template
+        <P><STRONG>rel_ops</STRONG>
+           Another is the <TT>rel_ops</TT> namespace and the template
            comparison operator functions contained therein.  If they become
-             visible in the same namespace as other comparison functions
-             (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
-             then you will suddenly be faced with huge numbers of ambiguity
-             errors.  This was discussed on the -v3 list; Nathan Myers
-             <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
-             things up here</A>.
+           visible in the same namespace as other comparison functions
+           (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
+           then you will suddenly be faced with huge numbers of ambiguity
+           errors.  This was discussed on the -v3 list; Nathan Myers
+           <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+           things up here</A>.
         </P>
       </A>
       <A NAME="4_4_interface"><H3>The g++-3 headers are
@@ -514,7 +483,8 @@ to the list</A>, Nathan Myers announced that he has started a list of
         </P>
       </A>
       <A NAME="4_4_glibc">
-        <P>If you're on a GNU/Linux system and have just upgraded to
+        <P><STRONG>glibc</STRONG>
+           If you're on a GNU/Linux system and have just upgraded to
            glibc 2.2, but are still using gcc 2.95.2, then you should have
            read the glibc FAQ, specifically 2.34:
    <PRE>
@@ -527,22 +497,24 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    </PRE>
            Note that 2.95.x shipped with the
            <A HREF="#4_4_interface">old v2 library</A> which is no longer
-           maintained.
+           maintained.  Also note that gcc 2.95.3 fixes this problem, but
+           requires a separate patch for libstdc++-v3.
         </P>
       </A>
       <A NAME="4_4_checks">
-        <P>If you see compilation errors containing messages about
+        <P><STRONG>concept checks</STRONG>
+           If you see compilation errors containing messages about
            <TT> <EM>foo</EM>Concept </TT>and a<TT> constraints </TT>
-           member function, then most
-           likely you have violated one of the requirements for types used
-           during instantiation of template containers.  For example,
-           EqualityComparableConcept appears
-           if your types must be comparable with == and you have not
+           member function, then most likely you have violated one of the
+           requirements for types used during instantiation of template
+           containers and functions.  For example, EqualityComparableConcept
+           appears if your types must be comparable with == and you have not
            provided this capability (a typo, or wrong visibility, or you
            just plain forgot, etc).
         </P>
-        <P>More information, including how to optionally disable the checks,
-           is available <A HREF="../19_diagnostics/howto.html#3">here</A>.
+        <P>More information, including how to optionally enable/disable the
+           checks, is available
+           <A HREF="../19_diagnostics/howto.html#3">here</A>.
         </P>
       </A>
 
@@ -614,9 +586,8 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
    <H2><A NAME="5_3">5.3 What about the STL from SGI?</A></H2>
       <P>The <A HREF="http://www.sgi.com/Technology/STL/">STL from SGI</A>
          is merged into libstdc++-v3 with changes as necessary.  
-         Currently release 3.3 is being used.  Changes in the STL
-         usually produce some weird bugs and lots of changes in the
-         rest of the libstdc++ source as we scramble to keep up. :-)
+         Currently release 3.3 is being used as an initial codebase, plus
+         changes, fixes, and extensions.
       </P>
       <P>In particular, <TT>string</TT> is not from SGI and makes no
          use of their &quot;rope&quot; class (which is included as an
@@ -642,14 +613,9 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
       </P>
 
 <HR>
-   <H2><A NAME="5_5">5.5 Compiling with &quot;-fnew-abi&quot;</A></H2>
-      <P>Towards the end of July 1999, this subject was brought up again
-         on the mailing list under a different name.  The related
-         <A HREF="http://gcc.gnu.org/ml/libstdc++/1999-q3/msg00066.html">thread</A>
-         (by the name HOWTO-honor-std) is very instructive.  More info
-         is at the end of RELEASE-NOTES.
-      </P>
-      <P>This functionality is now automated and turned on by default.
+   <H2><A NAME="5_5">5.5 [removed]</A></H2>
+      <P>This question has become moot and has been removed.  The stub
+         is here to preserve numbering (and hence links/bookmarks).
       </P>
 
 <HR>
@@ -672,16 +638,15 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 
 <HR>
    <H2><A NAME="5_7">5.7 How do I get a copy of the ISO C++ Standard?</A></H2>
-      <P>Copies of the full ISO 14882 standard are available on line
-         via the ISO mirror site for committee members.  Non-members,
-         or those who have not paid for the privilege of sitting on
-         the committee and sustained their two-meeting commitment for
-         voting rights, may get a copy of the standard from their
-         respective national standards organization.  In the USA,
-         this national standards organization is ANSI and their
-         website is right <A HREF="http://www.ansi.org">here</A>.
-         (And if you've already registered with them, clicking this
-         link will take you to directly to the place where you can
+      <P>Copies of the full ISO 14882 standard are available on line via the
+         ISO mirror site for committee members.  Non-members, or those who
+         have not paid for the privilege of sitting on the committee and
+         sustained their two-meeting commitment for voting rights, may get a
+         copy of the standard from their respective national standards
+         organization.  In the USA, this national standards organization is
+         ANSI and their website is right <A HREF="http://www.ansi.org">here</A>.
+         (And if you've already registered with them, clicking this link will
+         take you to directly to the place where you can
 <A HREF="http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998">buy
          the standard on-line</A>.
       </P>
@@ -695,9 +660,10 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: index.html,v 1.7 2001/04/06 18:48:20 pme Exp $
+<BR> $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $
 </EM></P>
 
 
 </BODY>
 </HTML>
+
