@@ -1,3 +1,8 @@
+2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* params.def, params.h, predict.c, tree-ssa-loop-im.c: Update
+	copyright.
+
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
 	* rtl.def (CONST_VECTOR): Use RTX_CONST_OBJ.
