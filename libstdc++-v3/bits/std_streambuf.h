@@ -505,9 +505,6 @@ namespace std {
 #endif
     };
 
-  typedef basic_streambuf<char>        	streambuf;
-  typedef basic_streambuf<wchar_t> 	wstreambuf;
-
 } // namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

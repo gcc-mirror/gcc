@@ -183,9 +183,6 @@ namespace std {
       }
     };
 
-  typedef basic_stringbuf<char> stringbuf;
-  typedef basic_stringbuf<wchar_t> wstringbuf;
-  
 
   // 27.7.2  Template class basic_istringstream
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -237,8 +234,6 @@ namespace std {
 
     };
 
-  typedef basic_istringstream<char> istringstream;
-  typedef basic_istringstream<wchar_t> wistringstream;
 
   // 27.7.3  Template class basic_ostringstream
   template <typename _CharT, typename _Traits, typename _Alloc>
@@ -290,8 +285,6 @@ namespace std {
 
     };
   
-  typedef basic_ostringstream<char> ostringstream;
-  typedef basic_ostringstream<wchar_t> wostringstream;
   
   // 27.7.4  Template class basic_stringstream
   template <typename _CharT, typename _Traits, typename _Alloc>
@@ -344,9 +337,6 @@ namespace std {
       { rdbuf()->str(__s); }
     };
 
-  typedef basic_stringstream<char> stringstream;
-  typedef basic_stringstream<wchar_t> wstringstream;
-  
 } // namespace std
 
 
