@@ -1,3 +1,8 @@
+1998-11-16  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.eh/throw2.C: New test.  CV-qualifiers are not
+ 	properly discarded.
+
 1998-11-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README: New file, general information about the testsuite and 
