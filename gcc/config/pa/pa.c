@@ -2989,70 +2989,75 @@ hppa_expand_prologue()
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp-20 or sp - 16
      depending on which ABI is in use.  */
-  if ((regs_ever_live[2] || profile_flag) && TARGET_64BIT)
-    store_reg (2, -16, STACK_POINTER_REGNUM);
-
-  if ((regs_ever_live[2] || profile_flag) && ! TARGET_64BIT)
-    store_reg (2, -20, STACK_POINTER_REGNUM);
+  if (regs_ever_live[2] || profile_flag)
+    store_reg (2, TARGET_64BIT ? -16 : -20, STACK_POINTER_REGNUM);
 
   /* Allocate the local frame and set up the frame pointer if needed.  */
-  if (actual_fsize)
-  {
-    if (frame_pointer_needed)
-      {
-	/* Copy the old frame pointer temporarily into %r1.  Set up the
-	   new stack pointer, then store away the saved old frame pointer
-	   into the stack at sp+actual_fsize and at the same time update
-	   the stack pointer by actual_fsize bytes.  Two versions, first
-	   handles small (<8k) frames.  The second handles large (>8k)
-	   frames.  */
-	emit_move_insn (tmpreg, frame_pointer_rtx);
-	emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
-	if (VAL_14_BITS_P (actual_fsize))
-	  emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, size_rtx));
-	else
-	  {
-	    /* It is incorrect to store the saved frame pointer at *sp,
-	       then increment sp (writes beyond the current stack boundary).
+  if (actual_fsize != 0)
+    {
+      if (frame_pointer_needed)
+	{
+	  /* Copy the old frame pointer temporarily into %r1.  Set up the
+	     new stack pointer, then store away the saved old frame pointer
+	     into the stack at sp+actual_fsize and at the same time update
+	     the stack pointer by actual_fsize bytes.  Two versions, first
+	     handles small (<8k) frames.  The second handles large (>=8k)
+	     frames.  */
+	  emit_move_insn (tmpreg, frame_pointer_rtx);
+	  emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+	  if (VAL_14_BITS_P (actual_fsize))
+	    emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, size_rtx));
+	  else
+	    {
+	      /* It is incorrect to store the saved frame pointer at *sp,
+		 then increment sp (writes beyond the current stack boundary).
 
-	       So instead use stwm to store at *sp and post-increment the
-	       stack pointer as an atomic operation.  Then increment sp to
-	       finish allocating the new frame.  */
-	    emit_insn (gen_post_store (stack_pointer_rtx, tmpreg,
-		       GEN_INT (64)));
+		 So instead use stwm to store at *sp and post-increment the
+		 stack pointer as an atomic operation.  Then increment sp to
+		 finish allocating the new frame.  */
+	      int adjust1 = 8192 - 64;
+	      int adjust2 = actual_fsize - adjust1;
+	      rtx delta = GEN_INT (adjust1);
+	      emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, delta));
+	      set_reg_plus_d (STACK_POINTER_REGNUM,
+			      STACK_POINTER_REGNUM,
+			      adjust2);
+	    }
+	  /* Prevent register spills from being scheduled before the
+	     stack pointer is raised.  Necessary as we will be storing
+	     registers using the frame pointer as a base register, and
+	     we happen to set fp before raising sp.  */ 
+	  emit_insn (gen_blockage ());
+	}
+      /* no frame pointer needed.  */
+      else
+	{
+	  /* In some cases we can perform the first callee register save
+	     and allocating the stack frame at the same time.   If so, just
+	     make a note of it and defer allocating the frame until saving
+	     the callee registers.  */
+	  if (VAL_14_BITS_P (actual_fsize)
+	      && local_fsize == 0
+	      && ! profile_flag
+	      && ! flag_pic)
+	    merge_sp_adjust_with_store = 1;
+	  /* Can not optimize.  Adjust the stack frame by actual_fsize
+	     bytes.  */
+	  else
 	    set_reg_plus_d (STACK_POINTER_REGNUM,
 			    STACK_POINTER_REGNUM,
-			    actual_fsize - 64);
-	  }
-      }
-    /* no frame pointer needed.  */
-    else
-      {
-	/* In some cases we can perform the first callee register save
-	   and allocating the stack frame at the same time.   If so, just
-	   make a note of it and defer allocating the frame until saving
-	   the callee registers.  */
-	if (VAL_14_BITS_P (-actual_fsize)
-	    && local_fsize == 0
-	    && ! profile_flag
-	    && ! flag_pic)
-	  merge_sp_adjust_with_store = 1;
-	/* Can not optimize.  Adjust the stack frame by actual_fsize bytes.  */
-	else if (actual_fsize != 0)
-	  set_reg_plus_d (STACK_POINTER_REGNUM,
-			  STACK_POINTER_REGNUM,
-			  actual_fsize);
-      }
-  }
+			    actual_fsize);
+	}
 
-  /* The hppa calling conventions say that %r19, the pic offset
-     register, is saved at sp - 32 (in this function's frame)  when
-     generating PIC code.  FIXME:  What is the correct thing to do
-     for functions which make no calls and allocate no frame?  Do
-     we need to allocate a frame, or can we just omit the save?   For
-     now we'll just omit the save.  */
-  if (actual_fsize != 0 && flag_pic && !TARGET_64BIT)
-    store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
+      /* The hppa calling conventions say that %r19, the pic offset
+	 register, is saved at sp - 32 (in this function's frame)
+	 when generating PIC code.  FIXME:  What is the correct thing
+	 to do for functions which make no calls and allocate no
+	 frame?  Do we need to allocate a frame, or can we just omit
+	 the save?   For now we'll just omit the save.  */
+      if (flag_pic && !TARGET_64BIT)
+	store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
+    }
 
   /* Profiling code.
 
@@ -3226,8 +3231,9 @@ void
 hppa_expand_epilogue ()
 {
   rtx tmpreg;
-  int offset,i;
-  int merge_sp_adjust_with_load  = 0;
+  int offset, i;
+  int merge_sp_adjust_with_load = 0;
+  int ret_off = 0;
 
   /* We will use this often.  */
   tmpreg = gen_rtx_REG (word_mode, 1);
@@ -3235,23 +3241,24 @@ hppa_expand_epilogue ()
   /* Try to restore RP early to avoid load/use interlocks when
      RP gets used in the return (bv) instruction.  This appears to still
      be necessary even when we schedule the prologue and epilogue. */
-  if (frame_pointer_needed
-      && !TARGET_64BIT
-      && (regs_ever_live [2] || profile_flag))
-    load_reg (2, -20, FRAME_POINTER_REGNUM);
-  else if (TARGET_64BIT && frame_pointer_needed
-	   && (regs_ever_live[2] || profile_flag))
-    load_reg (2, -16, FRAME_POINTER_REGNUM);
-  else if (TARGET_64BIT
-	   && ! frame_pointer_needed
-	   && (regs_ever_live[2] || profile_flag)
-	   && VAL_14_BITS_P (actual_fsize + 20))
-    load_reg (2, - (actual_fsize + 16), STACK_POINTER_REGNUM);
-  /* No frame pointer, and stack is smaller than 8k.  */
-  else if (! frame_pointer_needed
-	   && VAL_14_BITS_P (actual_fsize + 20)
-	   && (regs_ever_live[2] || profile_flag))
-    load_reg (2, - (actual_fsize + 20), STACK_POINTER_REGNUM);
+  if (regs_ever_live [2] || profile_flag)
+    {
+      ret_off = TARGET_64BIT ? -16 : -20;
+      if (frame_pointer_needed)
+	{
+	  load_reg (2, ret_off, FRAME_POINTER_REGNUM);
+	  ret_off = 0;
+	}
+      else
+	{
+	  /* No frame pointer, and stack is smaller than 8k.  */
+	  if (VAL_14_BITS_P (ret_off - actual_fsize))
+	    {
+	      load_reg (2, ret_off - actual_fsize, STACK_POINTER_REGNUM);
+	      ret_off = 0;
+	    }
+	}
+    }
 
   /* General register restores.  */
   if (frame_pointer_needed)
@@ -3272,9 +3279,9 @@ hppa_expand_epilogue ()
 	      /* Only for the first load.
 	         merge_sp_adjust_with_load holds the register load
 	         with which we will merge the sp adjustment.  */
-	      if (VAL_14_BITS_P (actual_fsize + 20)
+	      if (merge_sp_adjust_with_load == 0
 		  && local_fsize == 0
-		  && ! merge_sp_adjust_with_load)
+		  && VAL_14_BITS_P (-actual_fsize))
 	        merge_sp_adjust_with_load = i;
 	      else
 	        load_reg (i, offset, STACK_POINTER_REGNUM);
@@ -3314,47 +3321,10 @@ hppa_expand_epilogue ()
      This is necessary as we must not cut the stack back before all the
      restores are finished.  */
   emit_insn (gen_blockage ());
-  /* No frame pointer, but we have a stack greater than 8k.  We restore
-     %r2 very late in this case.  (All other cases are restored as early
-     as possible.)  */
-  if (! frame_pointer_needed
-      && ! VAL_14_BITS_P (actual_fsize + 20)
-      && ! TARGET_64BIT
-      && (regs_ever_live[2] || profile_flag))
-    {
-      set_reg_plus_d (STACK_POINTER_REGNUM,
-		      STACK_POINTER_REGNUM,
-		      - actual_fsize);
-
-      /* This used to try and be clever by not depending on the value in
-	 %r30 and instead use the value held in %r1 (so that the 2nd insn
-	 which sets %r30 could be put in the delay slot of the return insn).
-	
-	 That won't work since if the stack is exactly 8k set_reg_plus_d
-	 doesn't set %r1, just %r30.  */
-      load_reg (2, - 20, STACK_POINTER_REGNUM);
-    }
-  else if (! frame_pointer_needed
-	   && ! VAL_14_BITS_P (actual_fsize + 20)
-	   && TARGET_64BIT
-	   && (regs_ever_live[2] || profile_flag))
-    {
-      set_reg_plus_d (STACK_POINTER_REGNUM,
-		      STACK_POINTER_REGNUM,
-		      - actual_fsize);
-
-      /* This used to try and be clever by not depending on the value in
-	 %r30 and instead use the value held in %r1 (so that the 2nd insn
-	 which sets %r30 could be put in the delay slot of the return insn).
-	
-	 That won't work since if the stack is exactly 8k set_reg_plus_d
-	 doesn't set %r1, just %r30.  */
-      load_reg (2, - 16, STACK_POINTER_REGNUM);
-    }
 
   /* Reset stack pointer (and possibly frame pointer).  The stack 
      pointer is initially set to fp + 64 to avoid a race condition.  */
-  else if (frame_pointer_needed)
+  if (frame_pointer_needed)
     {
       set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
       emit_insn (gen_pre_load (frame_pointer_rtx, 
@@ -3362,14 +3332,25 @@ hppa_expand_epilogue ()
 			       GEN_INT (-64)));
     }
   /* If we were deferring a callee register restore, do it now.  */
-  else if (! frame_pointer_needed  && merge_sp_adjust_with_load)
-    emit_insn (gen_pre_load (gen_rtx_REG (word_mode, merge_sp_adjust_with_load),
-			     stack_pointer_rtx,
-			     GEN_INT (- actual_fsize)));
+  else if (merge_sp_adjust_with_load)
+    {
+      rtx delta = GEN_INT (-actual_fsize);
+      emit_insn (gen_pre_load (gen_rtx_REG (word_mode,
+					    merge_sp_adjust_with_load),
+			       stack_pointer_rtx,
+			       delta));
+    }
   else if (actual_fsize != 0)
-    set_reg_plus_d (STACK_POINTER_REGNUM,
-		    STACK_POINTER_REGNUM,
-		    - actual_fsize);
+    {
+      set_reg_plus_d (STACK_POINTER_REGNUM,
+		      STACK_POINTER_REGNUM,
+		      - actual_fsize);
+    }
+
+  /* If we haven't restored %r2 yet (no frame pointer, and a stack
+     frame greater than 8k), do so now.  */
+  if (ret_off != 0)
+    load_reg (2, ret_off, STACK_POINTER_REGNUM);
 }
 
 /* Set up a callee saved register for the pic offset table register.  */
