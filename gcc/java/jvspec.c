@@ -172,6 +172,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
    */
   int need_thread = 1;
 
+  /* By default, we throw in the gc library (if one is required).  */
+  int need_gc = 1;
+
   /* The total number of arguments with the new stuff.  */
   int argc;
 
@@ -235,8 +238,13 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	    saw_libjava = 1;
 	  else if (strcmp (argv[i], "-lc") == 0)
 	    args[i] |= WITHLIBC;
+#ifdef GC_NAME
 	  else if (strcmp (argv[i], GC_NAME) == 0)
-	    args[i] |= GCLIB;
+	    {
+	      args[i] |= GCLIB;
+	      need_gc = 0;
+	    }
+#endif
 #ifdef THREAD_NAME
 	  else if (strcmp (argv[i], THREAD_NAME) == 0)
 	    {
@@ -333,7 +341,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
   num_args = argc + added;
   if (will_link)
-    num_args += need_math + need_thread;
+    num_args += need_math + need_thread + need_gc;
   if (saw_C)
     {
       num_args += 3;
@@ -376,7 +384,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     {
       lang_specific_extra_outfiles++;
     }
-  arglist = (char **) xmalloc ((num_args + 4) * sizeof (char *));
+  arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *));
 
   for (i = 0, j = 0; i < argc; i++, j++)
     {
