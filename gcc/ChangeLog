@@ -1,3 +1,8 @@
+2002-07-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (stack_include_file): Correct test of whether
+	a dependency should be output.
+
 2002-07-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (is_ctor_dtor): Add other possible JOINER values.

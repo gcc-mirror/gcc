@@ -319,7 +319,7 @@ stack_include_file (pfile, inc)
 	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
   /* For -M, add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, print_deps) > sysp && !inc->include_count)
+  if (CPP_OPTION (pfile, print_deps) > !!sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
   /* Not in cache?  */
