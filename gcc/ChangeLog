@@ -1,3 +1,8 @@
+Wed Aug 19 17:52:27 1998  Nick Clifton  (nickc@cygnus.com)
+
+        * config/arm/thumb.md (extendqisi2_insn): Cope with REG +
+        OFFSET addressing.
+
 Wed Aug 19 14:13:31 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
