@@ -271,7 +271,7 @@ dump_type_real (t, v, canonical_name)
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
-      if (!CLASSTYPE_TEMPLATE_INFO (t))
+      if (!TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
 	{
 	  /* For parameters inside template signature. */
 	  if (TYPE_IDENTIFIER (t))
@@ -282,7 +282,7 @@ dump_type_real (t, v, canonical_name)
       else
 	{
 	  int i;
-	  tree args = CLASSTYPE_TI_ARGS (t);
+	  tree args = TYPE_TI_ARGS (t);
 	  OB_PUTID (TYPE_IDENTIFIER (t));
 	  OB_PUTC ('<');
 	  for (i = 0; i < TREE_VEC_LENGTH (args); i++)

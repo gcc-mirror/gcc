@@ -1656,7 +1656,6 @@ process_template_parm (list, next)
 	  decl = build_decl (TYPE_DECL, parm, t);
 	}
         
-      CLASSTYPE_GOT_SEMICOLON (t) = 1;
       TYPE_NAME (t) = decl;
       TYPE_STUB_DECL (t) = decl;
       parm = decl;
@@ -2885,7 +2884,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
     = ((TREE_CODE (arg) == TEMPLATE_DECL
 	&& TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
        || (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
-	   && !CLASSTYPE_TEMPLATE_INFO (arg))
+	   && !TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (arg))
        || (TREE_CODE (arg) == RECORD_TYPE
 	   && CLASSTYPE_TEMPLATE_INFO (arg)
 	   && TREE_CODE (TYPE_NAME (arg)) == TYPE_DECL
@@ -3464,7 +3463,6 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       tree template2 = TYPE_STUB_DECL (parm);
       tree arglist2;
 
-      CLASSTYPE_GOT_SEMICOLON (parm) = 1;
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
       arglist2 = coerce_template_parms (parmlist, arglist, template, 1, 1);
@@ -3472,7 +3470,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	return error_mark_node;
 
       arglist2 = copy_to_permanent (arglist2);
-      CLASSTYPE_TEMPLATE_INFO (parm)
+      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm)
 	= perm_tree_cons (template2, arglist2, NULL_TREE);
       TYPE_SIZE (parm) = 0;
       return parm;
@@ -3490,6 +3488,10 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       parmlist = DECL_TEMPLATE_PARMS (template);
       parm_depth = TMPL_PARMS_DEPTH (parmlist);
       arg_depth = TMPL_ARGS_DEPTH (arglist);
+
+      /* We build up the coerced arguments and such on the
+	 momentary_obstack.  */
+      push_momentary ();
 
       if (arg_depth == 1 && parm_depth > 1)
 	{
@@ -3626,8 +3628,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       
       if (found)
 	{
-	  if (can_free (&permanent_obstack, arglist))
-	    obstack_free (&permanent_obstack, arglist);
+	  pop_momentary ();
 	  return found;
 	}
 
@@ -3753,6 +3754,9 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
       /* We're done with the permanent obstack, now.  */
       pop_obstacks ();
+      /* We're also done with the momentary allocation we started
+	 above.  */
+      pop_momentary ();
 
       /* Reset the name of the type, now that CLASSTYPE_TEMPLATE_INFO
 	 is set up.  */
@@ -3928,8 +3932,8 @@ for_each_template_parm (t, fn, data)
       /* template parm nodes */
     case TEMPLATE_TEMPLATE_PARM:
       /* Record template parameters such as `T' inside `TT<T>'.  */
-      if (CLASSTYPE_TEMPLATE_INFO (t)
-	  && for_each_template_parm (CLASSTYPE_TI_ARGS (t), fn, data))
+      if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t)
+	  && for_each_template_parm (TYPE_TI_ARGS (t), fn, data))
 	return 1;
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_PARM_INDEX:
@@ -4454,6 +4458,12 @@ instantiate_class_template (type)
   if (TYPE_BEING_DEFINED (type) || TYPE_SIZE (type))
     return type;
 
+  /* We want to allocate temporary vectors of template arguments and
+     template argument expressions on the momentary obstack, not on
+     the expression obstack.  Otherwise, all the space allocated in
+     argument coercion and such is simply lost.  */
+  push_momentary ();
+
   template = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
   args = CLASSTYPE_TI_ARGS (type);
   my_friendly_assert (TREE_CODE (template) == TEMPLATE_DECL, 279);
@@ -4473,7 +4483,8 @@ instantiate_class_template (type)
 	    }
 	}
       TYPE_BEING_DEFINED (type) = 1;
-      return error_mark_node;
+      type = error_mark_node;
+      goto end;
     }
   else if (t)
     pattern = TREE_TYPE (t);
@@ -4481,7 +4492,7 @@ instantiate_class_template (type)
     pattern = TREE_TYPE (template);
 
   if (TYPE_SIZE (pattern) == NULL_TREE)
-    return type;
+    goto end;
 
   if (t)
     {
@@ -4520,13 +4531,13 @@ instantiate_class_template (type)
 	 type as complete so that, for example, declaring one of its
 	 members to be a friend will not be rejected.  */
       TYPE_SIZE (type) = integer_zero_node;
-      return type;
+      goto end;
     }
 
   TYPE_BEING_DEFINED (type) = 1;
 
   if (! push_tinst_level (type))
-    return type;
+    goto end;
 
   maybe_push_to_top_level (uses_template_parms (type));
   pushclass (type, 0);
@@ -4598,7 +4609,7 @@ instantiate_class_template (type)
       TYPE_METHODS (type) = TYPE_METHODS (pattern);
       CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
       TYPE_SIZE (type) = integer_zero_node;
-      goto end;
+      goto done_with_instantiation;
     }
 
   {
@@ -4830,12 +4841,15 @@ instantiate_class_template (type)
   TYPE_BEING_DEFINED (type) = 0;
   repo_template_used (type);
 
- end:
+ done_with_instantiation:
   TYPE_BEING_DEFINED (type) = 0;
   popclass (0);
 
   pop_from_top_level ();
   pop_tinst_level ();
+
+ end:
+  pop_momentary ();
 
   return type;
 }
@@ -4921,7 +4935,7 @@ tsubst_template_arg_vector (t, args)
   if (!need_new)
     return t;
   
-  t = make_tree_vec (len);
+  t = make_temp_vec (len);
   for (i = 0; i < len; i++)
     TREE_VEC_ELT (t, i) = elts[i];
   
@@ -5026,10 +5040,12 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
 	     and supposing that we are instantiating f<int, double>,
 	     then our ARGS will be {int, double}, but, when looking up
 	     S we only want {double}.  */
-	  argvec = tsubst (TYPE_TI_ARGS (t), args, in_decl);
+	  push_momentary ();
+	  argvec = tsubst_template_arg_vector (TYPE_TI_ARGS (t), args);
 
   	  r = lookup_template_class (t, argvec, in_decl, context,
 				     entering_scope);
+	  pop_momentary ();
 
 	  return cp_build_qualified_type (r, TYPE_QUALS (t));
 	}
@@ -5083,7 +5099,10 @@ tsubst_decl (t, args, type, in_decl)
 	    tree tmpl_args = DECL_CLASS_TEMPLATE_P (t) 
 	      ? CLASSTYPE_TI_ARGS (TREE_TYPE (t))
 	      : DECL_TI_ARGS (DECL_RESULT (t));
-	    tree full_args = tsubst (tmpl_args, args, in_decl);
+	    tree full_args;
+	    
+	    push_momentary ();
+	    full_args = tsubst_template_arg_vector (tmpl_args, args);
 
 	    /* tsubst_template_arg_vector doesn't copy the vector if
 	       nothing changed.  But, *something* should have
@@ -5091,6 +5110,7 @@ tsubst_decl (t, args, type, in_decl)
 	    my_friendly_assert (full_args != tmpl_args, 0);
 
 	    spec = retrieve_specialization (t, full_args);
+	    pop_momentary ();
 	    if (spec != NULL_TREE)
 	      {
 		r = spec;
@@ -5234,20 +5254,33 @@ tsubst_decl (t, args, type, in_decl)
 	  {
 	    tree spec;
 
+	    /* Allocate template arguments on the momentary obstack,
+	       in case we don't need to keep them.  */
+	    push_momentary ();
+
 	    /* Calculate the most general template of which R is a
 	       specialization, and the complete set of arguments used to
 	       specialize R.  */
 	    gen_tmpl = most_general_template (DECL_TI_TEMPLATE (t));
-	    argvec = tsubst (DECL_TI_ARGS (DECL_TEMPLATE_RESULT (gen_tmpl)),
-			     args, in_decl); 
+	    argvec 
+	      = tsubst_template_arg_vector (DECL_TI_ARGS 
+					    (DECL_TEMPLATE_RESULT (gen_tmpl)),
+					    args); 
 
 	    /* Check to see if we already have this specialization.  */
 	    spec = retrieve_specialization (gen_tmpl, argvec);
+
 	    if (spec)
 	      {
 		r = spec;
+		pop_momentary ();
 		break;
 	      }
+
+	    /* We're going to need to keep the ARGVEC, so we copy it
+	       here.  */
+	    argvec = copy_to_permanent (argvec);
+	    pop_momentary ();
 
 	    /* Here, we deal with the peculiar case:
 
@@ -5375,6 +5408,9 @@ tsubst_decl (t, args, type, in_decl)
 	   case mentioned above where GEN_TMPL is NULL.  */
 	if (gen_tmpl)
 	  {
+	    /* The ARGVEC was built on the momentary obstack.  Make it
+	       permanent now.  */
+	    argvec = copy_to_permanent (argvec);
 	    DECL_TEMPLATE_INFO (r) 
 	      = perm_tree_cons (gen_tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
@@ -5631,6 +5667,7 @@ tsubst (t, args, in_decl)
 
       {
 	tree max = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
+
 	max = tsubst_expr (max, args, in_decl);
 	if (processing_template_decl)
 	  {
@@ -5650,6 +5687,8 @@ tsubst (t, args, in_decl)
 	  }
 
 	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node, 1));
+	if (!TREE_PERMANENT (max) && !allocation_temporary_p ())
+	  max = copy_to_permanent (max);
 	return build_index_type (max);
       }
 
@@ -5696,11 +5735,11 @@ tsubst (t, args, in_decl)
 		  }
 		else if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 		  {
-		    if (CLASSTYPE_TEMPLATE_INFO (t))
+		    if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
 		      {
 			/* We are processing a type constructed from
 			   a template template parameter */
-			tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
+			tree argvec = tsubst (TYPE_TI_ARGS (t),
 					      args, in_decl);
 
 			/* We can get a TEMPLATE_TEMPLATE_PARM here when 
@@ -5751,10 +5790,10 @@ tsubst (t, args, in_decl)
 	    TYPE_REFERENCE_TO (r) = NULL_TREE;
 
 	    if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
-		&& CLASSTYPE_TEMPLATE_INFO (t))
+		&& TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
 	      {
-		tree argvec = tsubst (CLASSTYPE_TI_ARGS (t), args, in_decl);
-		CLASSTYPE_TEMPLATE_INFO (r)
+		tree argvec = tsubst (TYPE_TI_ARGS (t), args, in_decl);
+		TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
 		  = perm_tree_cons (TYPE_NAME (t), argvec, NULL_TREE);
 	      }
 	    break;
@@ -7348,7 +7387,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 
       if (TREE_CODE (parm) == TEMPLATE_TEMPLATE_PARM)
 	{
-	  if (CLASSTYPE_TEMPLATE_INFO (parm))
+	  if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm))
 	    {
 	      /* We arrive here when PARM does not involve template 
 		 specialization.  */
@@ -7358,8 +7397,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 		return 1;
 
 	      {
-		tree parmtmpl = CLASSTYPE_TI_TEMPLATE (parm);
-		tree parmvec = CLASSTYPE_TI_ARGS (parm);
+		tree parmtmpl = TYPE_TI_TEMPLATE (parm);
+		tree parmvec = TYPE_TI_ARGS (parm);
 		tree argvec = CLASSTYPE_TI_ARGS (arg);
 		tree argtmplvec
 		  = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
@@ -8170,7 +8209,7 @@ do_type_instantiation (t, storage)
   if (TREE_CODE (t) == TYPE_DECL)
     t = TREE_TYPE (t);
 
-  if (! IS_AGGR_TYPE (t) || ! CLASSTYPE_TEMPLATE_INFO (t))
+  if (! CLASS_TYPE_P (t) || ! CLASSTYPE_TEMPLATE_INFO (t))
     {
       cp_error ("explicit instantiation of non-template type `%T'", t);
       return;

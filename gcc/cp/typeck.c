@@ -154,7 +154,7 @@ complete_type (type)
       TYPE_NEEDS_DESTRUCTOR (type)
 	= TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (t));
     }
-  else if (IS_AGGR_TYPE (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+  else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     instantiate_class_template (TYPE_MAIN_VARIANT (type));
 
   return type;
@@ -773,7 +773,8 @@ comptypes (type1, type2, strict)
       if (! comp_template_parms (DECL_TEMPLATE_PARMS (TYPE_NAME (t1)),
 				 DECL_TEMPLATE_PARMS (TYPE_NAME (t2))))
 	return 0;
-      if (! CLASSTYPE_TEMPLATE_INFO (t1) && ! CLASSTYPE_TEMPLATE_INFO (t2))
+      if (!TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t1) 
+	  && ! TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t2))
 	return 1;
       /* Don't check inheritance.  */
       strict = COMPARE_STRICT;
@@ -781,11 +782,11 @@ comptypes (type1, type2, strict)
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (CLASSTYPE_TEMPLATE_INFO (t1) && CLASSTYPE_TEMPLATE_INFO (t2)
-	  && (CLASSTYPE_TI_TEMPLATE (t1) == CLASSTYPE_TI_TEMPLATE (t2)
+      if (TYPE_TEMPLATE_INFO (t1) && TYPE_TEMPLATE_INFO (t2)
+	  && (TYPE_TI_TEMPLATE (t1) == TYPE_TI_TEMPLATE (t2)
 	      || TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM))
-	val = comp_template_args (CLASSTYPE_TI_ARGS (t1),
-				  CLASSTYPE_TI_ARGS (t2));
+	val = comp_template_args (TYPE_TI_ARGS (t1),
+				  TYPE_TI_ARGS (t2));
     look_hard:
       if ((strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
 	{

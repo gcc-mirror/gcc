@@ -2129,7 +2129,7 @@ note_got_semicolon (type)
 {
   if (TREE_CODE_CLASS (TREE_CODE (type)) != 't')
     my_friendly_abort (60);
-  if (IS_AGGR_TYPE (type))
+  if (CLASS_TYPE_P (type))
     CLASSTYPE_GOT_SEMICOLON (type) = 1;
 }
 
@@ -4666,38 +4666,48 @@ make_lang_type (code)
 {
   extern struct obstack *current_obstack, *saveable_obstack;
   register tree t = make_node (code);
-  struct obstack *obstack = current_obstack;
-  register int i = sizeof (struct lang_type) / sizeof (int);
-  register int *pi;
 
   /* Set up some flags that give proper default behavior.  */
-  IS_AGGR_TYPE (t) = 1;
+  if (IS_AGGR_TYPE_CODE (code))
+    {
+      struct obstack *obstack = current_obstack;
+      register int i = sizeof (struct lang_type) / sizeof (int);
+      register int *pi;
+      
+      SET_IS_AGGR_TYPE (t, 1);
 
-  if (! TREE_PERMANENT (t))
-    obstack = saveable_obstack;
-  else
-    my_friendly_assert (obstack == &permanent_obstack, 236);
+      if (! TREE_PERMANENT (t))
+	obstack = saveable_obstack;
+      else
+	my_friendly_assert (obstack == &permanent_obstack, 236);
 
-  pi = (int *) obstack_alloc (obstack, sizeof (struct lang_type));
-  while (i > 0)
-    pi[--i] = 0;
+      pi = (int *) obstack_alloc (obstack, sizeof (struct lang_type));
+      while (i > 0)
+	pi[--i] = 0;
 
-  TYPE_LANG_SPECIFIC (t) = (struct lang_type *) pi;
-  CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
-  SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
-  CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-  TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
-  CLASSTYPE_BINFO_AS_LIST (t) = build_tree_list (NULL_TREE, TYPE_BINFO (t));
+      TYPE_LANG_SPECIFIC (t) = (struct lang_type *) pi;
+      CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
+      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
+      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+      TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
+      CLASSTYPE_BINFO_AS_LIST (t) 
+	= build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
-  /* Make sure this is laid out, for ease of use later.
-     In the presence of parse errors, the normal was of assuring
-     this might not ever get executed, so we lay it out *immediately*.  */
-  build_pointer_type (t);
+      /* Make sure this is laid out, for ease of use later.  In the
+	 presence of parse errors, the normal was of assuring this
+	 might not ever get executed, so we lay it out *immediately*.  */
+      build_pointer_type (t);
 
 #ifdef GATHER_STATISTICS
-  tree_node_counts[(int)lang_type] += 1;
-  tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
+      tree_node_counts[(int)lang_type] += 1;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
 #endif
+    }
+  else
+    /* We use TYPE_ALIAS_SET for the CLASSTYPE_MARKED bits.  But,
+       TYPE_ALIAS_SET is initialized to -1 by default, so we must
+       clear it here.  */
+    TYPE_ALIAS_SET (t) = 0;
 
   return t;
 }

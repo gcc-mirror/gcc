@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
+#include "../hash.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -178,6 +179,8 @@ static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 static void lang_print_error_function PROTO((char *));
 static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
 static void check_for_uninitialized_const_var PROTO((tree));
+static unsigned long typename_hash PROTO((hash_table_key));
+static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -4778,6 +4781,47 @@ lookup_namespace_name (namespace, name)
   return error_mark_node;
 }
 
+/* Hash a TYPENAME_TYPE.  K is really of type `tree'.  */
+
+static unsigned long
+typename_hash (k)
+     hash_table_key k;
+{
+  unsigned long hash;
+  tree t;
+
+  t = (tree) k;
+  hash = (((unsigned long) TYPE_CONTEXT (t))
+	  ^ ((unsigned long) DECL_NAME (TYPE_NAME (t))));
+
+  return hash;
+}
+
+/* Compare two TYPENAME_TYPEs.  K1 and K2 are really of type `tree'.  */
+
+static boolean
+typename_compare (k1, k2)
+     hash_table_key k1;
+     hash_table_key k2;
+{
+  tree t1;
+  tree t2;
+  tree d1;
+  tree d2;
+
+  t1 = (tree) k1;
+  t2 = (tree) k2;
+  d1 = TYPE_NAME (t1);
+  d2 = TYPE_NAME (t2);
+  
+  return (DECL_NAME (d1) == DECL_NAME (d2)
+	  && same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2))
+	  && ((TREE_TYPE (t1) != NULL_TREE) 
+	      == (TREE_TYPE (t2) != NULL_TREE))
+	  && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	  && TYPENAME_TYPE_FULLNAME (t1) == TYPENAME_TYPE_FULLNAME (t2));
+}
+
 /* Build a TYPENAME_TYPE.  If the type is `typename T::t', CONTEXT is
    the type of `T', NAME is the IDENTIFIER_NODE for `t'.  If BASE_TYPE
    is non-NULL, this type is being created by the implicit typename
@@ -4795,16 +4839,22 @@ build_typename_type (context, name, fullname, base_type)
 {
   tree t;
   tree d;
+  struct hash_entry* e;
 
-  if (processing_template_decl)
-    push_obstacks (&permanent_obstack, &permanent_obstack);
+  static struct hash_table ht;
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+
+  if (!ht.table
+      && !hash_table_init (&ht, &hash_newfunc, &typename_hash, 
+			   &typename_compare))
+    fatal ("virtual memory exhausted");
 
   /* Build the TYPENAME_TYPE.  */
   t = make_lang_type (TYPENAME_TYPE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TYPENAME_TYPE_FULLNAME (t) = fullname;
   TREE_TYPE (t) = base_type;
-  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   /* Build the corresponding TYPE_DECL.  */
   d = build_decl (TYPE_DECL, name, t);
@@ -4812,8 +4862,20 @@ build_typename_type (context, name, fullname, base_type)
   TYPE_STUB_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = FROB_CONTEXT (context);
 
-  if (processing_template_decl)
-    pop_obstacks ();
+  /* See if we already have this type.  */
+  e = hash_lookup (&ht, t, /*create=*/false, /*copy=*/0);
+  if (e)
+    {
+      /* This will free not only TREE_TYPE, but the lang-specific data
+	 and the TYPE_DECL as well.  */
+      obstack_free (&permanent_obstack, t);
+      t = (tree) e->key;
+    }
+  else
+    /* Insert the type into the table.  */
+    hash_lookup (&ht, t, /*create=*/true, /*copy=*/0);
+
+  pop_obstacks ();
 
   return t;
 }
@@ -8399,7 +8461,7 @@ build_ptrmemfunc_type (type)
   push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 
   u = make_lang_type (UNION_TYPE);
-  IS_AGGR_TYPE (u) = 0;
+  SET_IS_AGGR_TYPE (u, 0);
   fields[0] = build_lang_field_decl (FIELD_DECL, pfn_identifier, type);
   fields[1] = build_lang_field_decl (FIELD_DECL, delta2_identifier,
 				     delta_type_node);
@@ -8411,7 +8473,7 @@ build_ptrmemfunc_type (type)
   /* Let the front-end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
   /* ... and not really an aggregate.  */
-  IS_AGGR_TYPE (t) = 0;
+  SET_IS_AGGR_TYPE (t, 0);
 
   fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
 				     delta_type_node);
@@ -10074,7 +10136,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    ctype = TREE_OPERAND (declarator, 0);
 
 	    t = ctype;
-	    while (t != NULL_TREE) 
+	    while (t != NULL_TREE && CLASS_TYPE_P (t)) 
 	      {
 		if (CLASSTYPE_TEMPLATE_INFO (t) &&
 		    !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
@@ -12001,9 +12063,12 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	     individual inheritance contains flags which say what
 	     the `accessibility' of that particular inheritance is.)  */
   
-	  base_binfo = make_binfo (integer_zero_node, basetype,
-				   TYPE_BINFO_VTABLE (basetype),
-				   TYPE_BINFO_VIRTUALS (basetype));
+	  base_binfo 
+	    = make_binfo (integer_zero_node, basetype,
+			  CLASS_TYPE_P (basetype)
+			  ? TYPE_BINFO_VTABLE (basetype) : NULL_TREE,
+			  CLASS_TYPE_P (basetype)
+			  ? TYPE_BINFO_VIRTUALS (basetype) : NULL_TREE);
  
 	  TREE_VEC_ELT (binfos, i) = base_binfo;
 	  TREE_VIA_PUBLIC (base_binfo) = via_public;
@@ -12025,8 +12090,12 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	      TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
 	    }
 
-	  TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
-	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	  if (CLASS_TYPE_P (basetype))
+	    {
+	      TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
+	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	    }
+
 	  i += 1;
 	}
     }
@@ -12038,8 +12107,14 @@ xref_basetypes (code_type_node, name, ref, binfo)
   if (i > 1)
     TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
   else if (i == 1)
-    TYPE_USES_MULTIPLE_INHERITANCE (ref)
-      = TYPE_USES_MULTIPLE_INHERITANCE (BINFO_TYPE (TREE_VEC_ELT (binfos, 0)));
+    {
+      tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, 0));
+      
+      if (CLASS_TYPE_P (basetype))
+	TYPE_USES_MULTIPLE_INHERITANCE (ref)
+	  = TYPE_USES_MULTIPLE_INHERITANCE (basetype);
+    }
+
   if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
     TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
 
@@ -12466,8 +12541,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       fntype = TREE_TYPE (decl1);
 
       restype = TREE_TYPE (fntype);
-      if (IS_AGGR_TYPE (restype) && ! TYPE_PTRMEMFUNC_P (restype)
-	  && ! CLASSTYPE_GOT_SEMICOLON (restype))
+      if (CLASS_TYPE_P (restype) && !CLASSTYPE_GOT_SEMICOLON (restype))
 	{
 	  cp_error ("semicolon missing after declaration of `%#T'", restype);
 	  shadow_tag (build_expr_list (NULL_TREE, restype));
@@ -12678,13 +12752,24 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
 	  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
 	    {
-	      int i = suspend_momentary ();
+	      int i;
 
-	      /* Fool build_indirect_ref.  */
+	      if (! hack_decl_function_context (decl1))
+		temporary_allocation ();
+	      i = suspend_momentary ();
+
+	      /* Normally, build_indirect_ref returns
+		 current_class_ref whenever current_class_ptr is
+		 dereferenced.  This time, however, we want it to
+		 *create* current_class_ref, so we temporarily clear
+		 current_class_ptr to fool it.  */
 	      current_class_ptr = NULL_TREE;
 	      current_class_ref = build_indirect_ref (t, NULL_PTR);
 	      current_class_ptr = t;
+
 	      resume_momentary (i);
+	      if (! hack_decl_function_context (decl1))
+		end_temporary_allocation ();
 	    }
 	  else
 	    /* We're having a signature pointer here.  */
@@ -12693,9 +12778,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	}
     }
   else
-    {
-      current_class_ptr = current_class_ref = NULL_TREE;
-    }
+    current_class_ptr = current_class_ref = NULL_TREE;
 
   pushlevel (0);
   current_binding_level->parm_flag = 1;

@@ -916,7 +916,7 @@ build_overload_identifier (name)
      tree name;
 {
   if (TREE_CODE (name) == TYPE_DECL
-      && IS_AGGR_TYPE (TREE_TYPE (name))
+      && CLASS_TYPE_P (TREE_TYPE (name))
       && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name))
       && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name)))
 	  || (TREE_CODE (DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE 
@@ -1435,14 +1435,14 @@ process_overload_item (parmtype, extra_Gcode)
     case TEMPLATE_TEMPLATE_PARM:
       /* Find and output the original template parameter 
          declaration. */
-      if (CLASSTYPE_TEMPLATE_INFO (parmtype))
+      if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parmtype))
         {
 	  build_mangled_template_parm_index ("tzX",
 					     TEMPLATE_TYPE_PARM_INDEX 
 					     (parmtype));
           build_template_parm_names
-            (DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (parmtype)),
-	     CLASSTYPE_TI_ARGS (parmtype));
+            (DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (parmtype)),
+	     TYPE_TI_ARGS (parmtype));
         }
       else
         {
