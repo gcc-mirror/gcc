@@ -1,6 +1,6 @@
 // std::collate implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +41,7 @@ namespace std
   // be put there instead of here.
   template<>
     int 
-    collate<char>::_M_compare_helper(const char* __one, 
-				     const char* __two) const
+    collate<char>::_M_compare(const char* __one, const char* __two) const
     { 
       int __cmp = strcoll(__one, __two);
       return (__cmp >> (8 * sizeof (int) - 2)) | (__cmp != 0);
@@ -50,15 +49,15 @@ namespace std
   
   template<>
     size_t
-    collate<char>::_M_transform_helper(char* __to, const char* __from, 
-				       size_t __n) const
+    collate<char>::_M_transform(char* __to, const char* __from, 
+				size_t __n) const
     { return strxfrm(__to, __from, __n); }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     int 
-    collate<wchar_t>::_M_compare_helper(const wchar_t* __one, 
-					const wchar_t* __two) const
+    collate<wchar_t>::_M_compare(const wchar_t* __one, 
+				 const wchar_t* __two) const
     {
       int __cmp = wcscoll(__one, __two);
       return (__cmp >> (8 * sizeof (int) - 2)) | (__cmp != 0);
@@ -66,8 +65,8 @@ namespace std
   
   template<>
     size_t
-    collate<wchar_t>::_M_transform_helper(wchar_t* __to, const wchar_t* __from,
-					  size_t __n) const
+    collate<wchar_t>::_M_transform(wchar_t* __to, const wchar_t* __from,
+				   size_t __n) const
     { return wcsxfrm(__to, __from, __n); }
 #endif
 }

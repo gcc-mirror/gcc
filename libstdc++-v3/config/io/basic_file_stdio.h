@@ -55,7 +55,7 @@ namespace std
     class __basic_file<char>
     {
       // Underlying data source/sink.
-      __c_file_type* 	_M_cfile;
+      __c_file* 	_M_cfile;
       // True iff we opened _M_cfile, and thus must close it ourselves.
       bool 		_M_cfile_created;
 
@@ -70,7 +70,7 @@ namespace std
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
       __basic_file*
-      sys_open(__c_file_type* __file, ios_base::openmode __mode);
+      sys_open(__c_file* __file, ios_base::openmode __mode);
 
       char
       sys_getc();
@@ -82,7 +82,7 @@ namespace std
       close(); 
 
       bool 
-      is_open();
+      is_open() const;
 
       int 
       fd();

@@ -396,7 +396,8 @@ void test04()
 void test05()
 {
   using namespace std;
- 
+  bool test = true;
+
   double d = 0.0;
 
   wistringstream iss;

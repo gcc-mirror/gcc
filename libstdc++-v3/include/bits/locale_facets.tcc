@@ -70,21 +70,20 @@ namespace std
     const _Facet&
     use_facet(const locale& __loc)
     {
-      size_t __i = _Facet::id._M_index;
-      locale::_Impl::__vec_facet& __facet = __loc._M_impl->_M_facets;
-      const locale::facet* __fp = __facet[__i]; 
-      if (__fp == 0 || __i >= __facet.size())
+      size_t __i = _Facet::id._M_id();
+      locale::facet** __facets = __loc._M_impl->_M_facets;
+      if (!(__i < __loc._M_impl->_M_facets_size && __facets[__i]))
         __throw_bad_cast();
-      return static_cast<const _Facet&>(*__fp);
+      return static_cast<const _Facet&>(*__facets[__i]);
     }
 
   template<typename _Facet>
     bool
     has_facet(const locale& __loc) throw()
     {
-      size_t __i = _Facet::id._M_index;
-      locale::_Impl::__vec_facet& __facet = __loc._M_impl->_M_facets;
-      return (__i < __facet.size() && __facet[__i] != 0);
+      size_t __i = _Facet::id._M_id();
+      locale::facet** __facets = __loc._M_impl->_M_facets;
+      return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
 
 
@@ -395,19 +394,21 @@ namespace std
       // Parse bool values as alphanumeric
       else
         {
+	  typedef basic_string<_CharT> __string_type;
           locale __loc = __io.getloc();
 	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc); 
-          const char_type* __true = __np.truename().c_str();
-          const char_type* __false = __np.falsename().c_str();
-
-          const size_t __truen =  __np.truename().size() - 1;
-          const size_t __falsen =  __np.falsename().size() - 1;
+	  const __string_type __true = __np.truename();
+	  const __string_type __false = __np.falsename();
+          const char_type* __trues = __true.c_str();
+          const char_type* __falses = __false.c_str();
+          const size_t __truen =  __true.size() - 1;
+          const size_t __falsen =  __false.size() - 1;
 
           for (size_t __n = 0; __beg != __end; ++__n)
             {
               char_type __c = *__beg++;
-              bool __testf = __n <= __falsen ? __c == __false[__n] : false;
-              bool __testt = __n <= __truen ? __c == __true[__n] : false;
+              bool __testf = __n <= __falsen ? __c == __falses[__n] : false;
+              bool __testt = __n <= __truen ? __c == __trues[__n] : false;
               if (!(__testf || __testt))
                 {
                   __err |= ios_base::failbit;
@@ -628,7 +629,8 @@ namespace std
 
 	const bool __fp = _S_format_float(__io, __fbuf, __mod, __prec);
 	if (__fp)
-	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale, __prec);
+	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
+				   _S_c_locale, __prec);
 	else
 	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
 
@@ -638,9 +640,11 @@ namespace std
 	    __cs_size = __len + 1; 
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 	    if (__fp)
-	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale, __prec);
+	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
+				       _S_c_locale, __prec);
 	    else
-	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
+				       _S_c_locale);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs
@@ -679,13 +683,15 @@ namespace std
 	// First try a buffer perhaps big enough.
 	int __cs_size = 64;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	int __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	int __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
+				     _S_c_locale);
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1;
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	    __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	    __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
+				     _S_c_locale);
 	  }
 #else
 	// Leave room for "+/-," "0x," and commas. This size is
@@ -791,7 +797,8 @@ namespace std
 		*(__ws2 + 1) = *(__ws + 1);
 	      }
 	  _CharT* __p;
-	  __p = __add_grouping(__ws2 + __off, __np.thousands_sep(), __grouping.c_str(),
+	  __p = __add_grouping(__ws2 + __off, __np.thousands_sep(), 
+			       __grouping.c_str(),
 			       __grouping.c_str() + __grouping.size(),
 			       __ws + __off, __ws + __len);
 	  __len = __p - __ws2;
@@ -842,21 +849,15 @@ namespace std
         }
       else
         {
+	  typedef basic_string<_CharT> __string_type;
           locale __loc = __io.getloc();
 	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc); 
-          const char_type* __ws;
-          int __len;
+	  __string_type __name;
           if (__v)
-            {
-              __ws = __np.truename().c_str();
-              __len = __np.truename().size();
-            }
+	    __name = __np.truename();
           else
-            {
-              __ws = __np.falsename().c_str();
-              __len = __np.falsename().size();
-            }
-	  __s = _M_insert(__s, __io, __fill, __ws, __len); 
+	    __name = __np.falsename();
+	  __s = _M_insert(__s, __io, __fill, __name.c_str(), __name.size()); 
 	}
       return __s;
     }
@@ -999,15 +1000,16 @@ namespace std
 	  switch (__which)
 		{
 		case money_base::symbol:
-		  if (__io.flags() & ios_base::showbase
-		      || __i < 2
-		      || (__i == 2 && static_cast<part>(__p.field[3]) != money_base::none)
-		      || __sign.size() > 1)
+		  if (__io.flags() & ios_base::showbase 
+		      || __i < 2 || __sign.size() > 1
+		      || ((static_cast<part>(__p.field[3]) != money_base::none)
+			  && __i == 2)) 
 		    {
-		      // According to 22.2.6.1.2.2, symbol is required if
-		      // (__io.flags() & ios_base::showbase), otherwise is optional
-		      // and consumed only if other characters are needed to complete
-		      // the format.
+		      // According to 22.2.6.1.2.2, symbol is required
+		      // if (__io.flags() & ios_base::showbase),
+		      // otherwise is optional and consumed only if
+		      // other characters are needed to complete the
+		      // format.
 		      const string_type __symbol = __intl ? __mpt.curr_symbol()
 						    	 : __mpf.curr_symbol();
 		      size_type __len = __symbol.size();
@@ -1018,7 +1020,8 @@ namespace std
 			  __c = *(++__beg);
 			  ++__j;
 			}
-		      // When (__io.flags() & ios_base::showbase) symbol is required.
+		      // When (__io.flags() & ios_base::showbase)
+		      // symbol is required.
 		      if (__j != __len && (__io.flags() & ios_base::showbase))
 			__testvalid = false;
 		    }
@@ -1152,13 +1155,15 @@ namespace std
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
+      int __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
+				   _S_c_locale);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
+	  __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
+				   _S_c_locale);
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
@@ -1871,7 +1876,7 @@ namespace std
 	  __fmt[3] = char_type();
 	}
 
-      __tp._M_put_helper(__res, __maxlen, __fmt, __tm);
+      __tp._M_put(__res, __maxlen, __fmt, __tm);
 
       // Write resulting, fully-formatted string to output iterator.
       size_t __len = char_traits<char_type>::length(__res);
@@ -1884,13 +1889,13 @@ namespace std
   // Generic version does nothing.
   template<typename _CharT>
     int
-    collate<_CharT>::_M_compare_helper(const _CharT*, const _CharT*) const
+    collate<_CharT>::_M_compare(const _CharT*, const _CharT*) const
     { return 0; }
 
   // Generic version does nothing.
   template<typename _CharT>
     size_t
-    collate<_CharT>::_M_transform_helper(_CharT*, const _CharT*, size_t) const
+    collate<_CharT>::_M_transform(_CharT*, const _CharT*, size_t) const
     { return 0; }
 
   template<typename _CharT>
@@ -1901,7 +1906,7 @@ namespace std
     { 
       const string_type __one(__lo1, __hi1);
       const string_type __two(__lo2, __hi2);
-      return _M_compare_helper(__one.c_str(), __two.c_str());
+      return _M_compare(__one.c_str(), __two.c_str());
     }
 
  template<typename _CharT>
@@ -1913,13 +1918,13 @@ namespace std
       // First try a buffer perhaps big enough.
       _CharT* __c =
 	static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
-      size_t __res = _M_transform_helper(__c, __lo, __len);
+      size_t __res = _M_transform(__c, __lo, __len);
       // If the buffer was not large enough, try again with the correct size.
       if (__res >= __len)
 	{
 	  __c =
 	    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__res + 1)));
-	  _M_transform_helper(__c, __lo, __res + 1);
+	  _M_transform(__c, __lo, __res + 1);
 	}
       return string_type(__c);
     }
@@ -2138,8 +2143,6 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
-  extern template class vector<locale::facet*>;
-
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;

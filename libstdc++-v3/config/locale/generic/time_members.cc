@@ -39,10 +39,17 @@
 namespace std
 {
   template<>
+    __timepunct<char>::~__timepunct()
+    {
+      if (_M_c_locale_timepunct != _S_c_locale)
+	_S_destroy_c_locale(_M_c_locale_timepunct); 
+    }
+
+  template<>
     void
     __timepunct<char>::
-    _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
-		  const tm* __tm) const
+    _M_put(char* __s, size_t __maxlen, const char* __format, 
+	   const tm* __tm) const
     {
       const char* __old = setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm);
@@ -113,10 +120,17 @@ namespace std
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
+    __timepunct<wchar_t>::~__timepunct()
+    {
+      if (_M_c_locale_timepunct != _S_c_locale)
+	_S_destroy_c_locale(_M_c_locale_timepunct); 
+    }
+
+  template<>
     void
     __timepunct<wchar_t>::
-    _M_put_helper(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
-		  const tm* __tm) const
+    _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
+	   const tm* __tm) const
     {
       const char* __old = setlocale(LC_ALL, _M_name_timepunct);
       wcsftime(__s, __maxlen, __format, __tm);

@@ -422,32 +422,34 @@ public:
 
   template<class _InputIterator>
     void
-	assign(_InputIterator __first, _InputIterator __last)
-	{
+    assign(_InputIterator __first, _InputIterator __last)
+    {
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       _M_assign_dispatch(__first, __last, _Integral());
     }
 
   template<class _Integer>
     void
-	_M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-    { _M_fill_assign((size_type) __n, (_Tp) __val); }
+     _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
+     { _M_fill_assign((size_type) __n, (_Tp) __val); }
 
   template<class _InputIter>
     void
-	_M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
     {
-	  typedef typename iterator_traits<_InputIter>::iterator_category _IterCategory;
-	  _M_assign_aux(__first, __last, _IterCategory());
-	}
+      typedef typename iterator_traits<_InputIter>::iterator_category _IterCategory;
+      _M_assign_aux(__first, __last, _IterCategory());
+    }
 
   template <class _InputIterator>
-  void _M_assign_aux(_InputIterator __first, _InputIterator __last,
-                     input_iterator_tag);
+    void 
+    _M_assign_aux(_InputIterator __first, _InputIterator __last,
+		  input_iterator_tag);
 
   template <class _ForwardIterator>
-  void _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-                     forward_iterator_tag);
+    void 
+    _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
+		  forward_iterator_tag);
 
   /**
    *  Returns a read/write reference to the data at the first element of the

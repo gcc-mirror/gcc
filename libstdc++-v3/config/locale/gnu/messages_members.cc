@@ -37,7 +37,7 @@
 
 namespace std
 {
-  // Specializations
+  // Specializations.
   template<>
     string
     messages<char>::do_get(catalog, int, int, const string& __dfault) const

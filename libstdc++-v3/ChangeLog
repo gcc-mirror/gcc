@@ -1,3 +1,90 @@
+2002-04-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/4164
+	Valgrind fixes.
+	* config/io/basic_file_stdio.cc (__basic_file::~__basic_file):
+	Call close.
+	(__basic_file::close): Call fflush. Correct return if fclose ok. 
+	(__basic_file::is_open): Make const.
+	Change __c_file_type to __c_file.
+	* config/io/basic_file_stdio.h: Change __c_file_type to __c_file.
+	(__basic_file::is_open): Make const.	
+	* config/io/c_io_stdio.h: Change __c_file_type to __c_file.
+	* include/std/std_fstream.h (filebuf::_M_allocate_file): Remove.
+	(filebuf::_M_unbuf): Add.
+	(filebuf::_M_file): Change to non-pointer.
+	(filebuf::_M_allocate_pback_buffer): Remove.
+	* include/bits/fstream.tcc (filebuf::_M_allocate_file): Remove.
+	(filebuf::_M_allocate_internal_buffer): Use _M_unbuf.
+	Change initialization list for _M_file change.
+	(filebuf::_M_allocate_pback_buffer): Remove.
+	Change _M_file usage to reflect non-pointer data member.
+	
+	* config/locale/generic/c_locale.cc
+	(locale::facet::_S_create_c_locale): Add parameter.
+	* config/locale/generic/collate_members.cc: Change
+	_M_compare_helper to _M_compare.
+	Change _M_transform_helper to _M_transform.
+	* config/locale/generic/monetary_members.cc: Changeup data types.
+	Add dtors.
+	* config/locale/generic/numeric_members.cc: Add dtors.
+	* config/locale/generic/time_members.cc: Add dtors.
+	* config/locale/gnu/c_locale.cc: Add parameter.
+	* config/locale/gnu/collate_members.cc:Change
+	_M_compare_helper to _M_compare.
+	Change _M_transform_helper to _M_transform.
+	* config/locale/gnu/ctype_members.cc: Better error checking.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Better error checking.
+	* config/locale/gnu/messages_members.cc: Tweak comment.
+	* config/locale/gnu/monetary_members.cc: Change data types.
+	Add dtors.
+	* config/locale/gnu/numeric_members.cc: Add dtors, better error
+	checking.
+	* config/locale/gnu/time_members.cc: Same.
+	* config/locale/ieee_1003.1-2001/c_locale.cc
+	(locale::facet::_S_create_c_locale): Add parameter.
+	* config/locale/ieee_1003.1-2001/c_locale.h: Correct typedef.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Remove
+	bogus ctor.
+	
+	* include/bits/locale_facets.h (moneypunct): Use string literals.
+	Don't define dtor.
+	(numpunct): Same.
+	(__timepunct): Same.
+	(locale::_Impl::_M_facets): Change from vector to array.
+	(locale::_Impl::_M_names): Change from array of strings to array
+	of string literals.
+	(locale::facet::_S_create_c_locale): Add parameter.
+	(locale::locale::_S_num_facets): Move to...
+	(locale::_Impl::_M_facets_size): Here.
+	* include/bits/locale_facets.tcc: Fixups for _M_facets, _M_name
+	changes.
+	* include/bits/localefwd.h: (locale::id::_M_id): Add member function.
+	(locale::_Impl::_Impl(facet**, size_t, bool)): Add.
+	(locale::_Impl::_Impl(string, size_t)): Change to
+	(locale::_Impl::_Impl(const char*, size_t)): This.
+	
+	* include/bits/streambuf.tcc (streambuf::_S_pback_size): Define.
+	* include/std/std_streambuf.h (streambuf::_M_pback_size): Change to
+	(streambuf::_S_pback_size): This.
+
+	* src/globals.cc: Add pre-allocations for "C" facets.
+	* src/locale-inst.cc: Remove vector instantiations.
+	* src/locale.cc: Remove vector include. Fixups for _M_names,
+	_M_facets changes.
+	* src/localename.cc: Same.
+
+	* include/bits/stl_vector.h: Fix odd formatting.
+	
+	* include/bits/basic_string.tcc: Tweak comment.
+
+	* libsupc++/new: Make sure parameters are uglified.
+	* libsupc++/typeinfo: Same.
+		
+	* testsuite/22_locale/num_get_members_char.cc: Fixup.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Same.
+	* testsuite/27_io/filebuf_members.cc: Same.
+
 2002-04-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc/libstdc++-v3/config/os/hpux/bits/os_defines.h
