@@ -1204,7 +1204,6 @@ remove_useless_stmts_cond (tree *stmt_p, struct rus_data *data)
   else_has_label = data->has_label;
   data->has_label = save_has_label | then_has_label | else_has_label;
 
-  fold_stmt (stmt_p);
   then_clause = COND_EXPR_THEN (*stmt_p);
   else_clause = COND_EXPR_ELSE (*stmt_p);
   cond = COND_EXPR_COND (*stmt_p);
@@ -1552,13 +1551,11 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
       break;
 
     case RETURN_EXPR:
-      fold_stmt (tp);
       data->last_goto = NULL;
       data->may_branch = true;
       break;
 
     case CALL_EXPR:
-      fold_stmt (tp);
       data->last_goto = NULL;
       notice_special_calls (t);
       update_call_expr_flags (t);
@@ -1568,7 +1565,6 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
 
     case MODIFY_EXPR:
       data->last_goto = NULL;
-      fold_stmt (tp);
       op = get_call_expr_in (t);
       if (op)
 	{
@@ -1603,10 +1599,6 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
 	      tsi_next (&i);
 	  }
       }
-      break;
-    case SWITCH_EXPR:
-      fold_stmt (tp);
-      data->last_goto = NULL;
       break;
 
     default:
