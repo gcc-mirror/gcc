@@ -1,3 +1,7 @@
+Fri Oct 30 00:54:25 1998  Peter Jakubek <pjak@snafu.de>
+
+	* m68k.h (INDIRECTABLE_1_ADDRESS_P): Fix thinko.
+
 Fri Oct 30 00:42:34 1998  Mark Elbrecht <snowball3@usa.net>
 
 	* configure.in (msdosdjgpp): Set exeext and target_alias.
