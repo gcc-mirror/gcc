@@ -176,6 +176,13 @@ struct loop
      loops nested inside it.  */
   int exit_count;
 
+  /* The probable number of times the loop is executed at runtime.
+     This is an INTEGER_CST or an expression containing symbolic
+     names.  Don't access this field directly:
+     number_of_iterations_in_loop computes and caches the computed
+     information in this field.  */
+  tree nb_iterations;
+
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
 };
@@ -226,6 +233,10 @@ struct loops
   /* State of loops.  */
   int state;
 };
+
+/* The loop tree currently optimized.  */
+
+extern struct loops *current_loops;
 
 /* Flags for loop discovery.  */
 

@@ -1,3 +1,15 @@
+2004-07-12  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* cfgloop.h (struct loop): Add nb_iterations field.
+	(current_loops): Declare.  
+	* tree-chrec.c (chrec_not_analyzed_yet,
+	chrec_dont_know, chrec_known, count_ev_in_wider_type,
+	chrec_contains_symbols_defined_in_loop): Remove the temporary
+	hooks. 
+	* tree-flow-inline.h (loop_containing_stmt): New function.
+	* tree-scalar-evolution.c: Add implementation.
+	* tree-scalar-evolution.h: Add declarations.
+
 2004-07-12 Vladimir Makarov <vmakarov@redhat.com>
 
 	PR rtl-optimization/15921

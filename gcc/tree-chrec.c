@@ -37,47 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-pass.h"
 
 
-/* This part will be removed once the merging is finished.  */
-
-
-
-/* The following trees are unique elements.  Thus the comparison of
-   another element to these elements should be done on the pointer to
-   these trees, and not on their value.  */
-
-/* The SSA_NAMEs that are not yet analyzed are qualified with NULL_TREE.  */
-tree chrec_not_analyzed_yet;
-
-/* Reserved to the cases where the analyzer has detected an
-   undecidable property at compile time.  */
-tree chrec_dont_know;
-
-/* When the analyzer has detected that a property will never
-   happen, then it qualifies it with chrec_known.  */
-tree chrec_known;
-
-/* Empty hook.  Will be replaced by the main function from
-   tree-scalar-evolution.c.  */
-
-tree
-count_ev_in_wider_type (tree foo ATTRIBUTE_UNUSED, 
-			tree bar ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
-/* Empty hook.  Will be replaced by the main function from
-   tree-scalar-evolution.c.  */
-
-bool 
-chrec_contains_symbols_defined_in_loop (tree chrec ATTRIBUTE_UNUSED, 
-					unsigned loop_nb ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
-
-
 
 /* Extended folder for chrecs.  */
 
