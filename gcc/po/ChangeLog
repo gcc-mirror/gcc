@@ -1,5 +1,10 @@
 2000-04-05  Geoff Keating  <geoffk@cygnus.com>
 
+	* POTFILES.in: Remove config/rs6000/eabi-ctors.c, which was
+	previously commented out anyway.
+
+2000-04-05  Geoff Keating  <geoffk@cygnus.com>
+
 	* POTFILES.in: Update for config/rs6000 changes.  Comment out
 	rs6000 files which are not built into GCC.
 

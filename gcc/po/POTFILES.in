@@ -451,7 +451,6 @@ config/rs6000/aix3newas.h
 config/rs6000/aix41.h
 config/rs6000/aix43.h
 config/rs6000/beos.h
-#config/rs6000/eabi-ctors.c
 config/rs6000/eabi.h
 config/rs6000/eabiaix.h
 config/rs6000/eabisim.h
