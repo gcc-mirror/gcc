@@ -56,7 +56,7 @@ import java.io.IOException;
  *
  * @author           Jon Zeppieri
  * @author	     Bryce McKinlay
- * @modified         $Id: TreeMap.java,v 1.8 2000/10/26 10:19:01 bryce Exp $
+ * @modified         $Id: TreeMap.java,v 1.1 2001/02/14 04:44:21 bryce Exp $
  */
 public class TreeMap extends AbstractMap
   implements SortedMap, Cloneable, Serializable
@@ -1194,10 +1194,10 @@ public class TreeMap extends AbstractMap
 
     public Object next()
     {
-      if (knownMod != TreeMap.this.modCount)
-	throw new ConcurrentModificationException();
       if (next == nil)
 	throw new NoSuchElementException();
+      if (knownMod != TreeMap.this.modCount)
+	throw new ConcurrentModificationException();
       Node n = next;
 
       // Check limit in case we are iterating through a submap.
@@ -1217,11 +1217,10 @@ public class TreeMap extends AbstractMap
 
     public void remove()
     {
-      if (knownMod != TreeMap.this.modCount)
-	throw new ConcurrentModificationException();
-
       if (last == null)
 	throw new IllegalStateException();
+      if (knownMod != TreeMap.this.modCount)
+	throw new ConcurrentModificationException();
 /*
       Object key = null;
       if (next != nil)
@@ -1408,19 +1407,17 @@ public class TreeMap extends AbstractMap
     public Object firstKey()
     {
       Node node = lowestGreaterThan(minKey);
-      // Do a range check in case SubMap is empty.
-      if (keyInRange(node.key))
-        return node.key;
-      return null;
+      if (node == nil || !keyInRange(node.key))
+        throw new NoSuchElementException ("empty");
+      return node.key;
     }
 
     public Object lastKey()
     {
       Node node = highestLessThan(maxKey);
-      // Do a range check in case SubMap is empty.
-      if (keyInRange(node.key))
-        return node.key;
-      return null;
+      if (node == nil || !keyInRange(node.key))
+        throw new NoSuchElementException ("empty");
+      return node.key;
     }
 
     public SortedMap subMap(Object fromKey, Object toKey)
