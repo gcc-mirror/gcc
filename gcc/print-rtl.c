@@ -526,9 +526,14 @@ print_rtx (in_rtx)
 
     case CODE_LABEL:
       fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
-      if (LABEL_ALTERNATE_NAME (in_rtx))
-	fprintf (outfile, " [alternate name: %s]",
-		 LABEL_ALTERNATE_NAME (in_rtx));
+      switch (LABEL_KIND (in_rtx))
+	{
+	  case LABEL_NORMAL: break;
+	  case LABEL_STATIC_ENTRY: fputs (" [entry]", outfile); break;
+	  case LABEL_GLOBAL_ENTRY: fputs (" [global entry]", outfile); break;
+	  case LABEL_WEAK_ENTRY: fputs (" [weak entry]", outfile); break;
+	  default: abort();
+	}
       break;
 
     case CALL_PLACEHOLDER:

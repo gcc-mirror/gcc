@@ -2830,13 +2830,32 @@ Besides as a @code{code_label}, a label can also be represented as a
 
 @findex LABEL_NUSES
 The field @code{LABEL_NUSES} is only defined once the jump optimization
-phase is completed and contains the number of times this label is
+phase is completed.  It contains the number of times this label is
 referenced in the current function.
 
-@findex LABEL_ALTERNATE_NAME
-The field @code{LABEL_ALTERNATE_NAME} is used to associate a name with
-a @code{code_label}.  If this field is defined, the alternate name will
-be emitted instead of an internally generated label name.
+@findex LABEL_KIND
+@findex SET_LABEL_KIND
+@findex LABEL_ALT_ENTRY_P
+@cindex alternate entry points
+The field @code{LABEL_KIND} differentiates four different types of
+labels: @code{LABEL_NORMAL}, @code{LABEL_STATIC_ENTRY},
+@code{LABEL_GLOBAL_ENTRY}, and @code{LABEL_WEAK_ENTRY}.  The only labels
+that do not have type @code{LABEL_NORMAL} are @dfn{alternate entry
+points} to the current function.  These may be static (visible only in
+the containing translation unit), global (exposed to all translation
+units), or weak (global, but can be overriden by another symbol with the
+same name).
+
+Much of the compiler treats all four kinds of label identically.  Some
+of it needs to know whether or not a label is an alternate entry point;
+for this purpose, the macro @code{LABEL_ALT_ENTRY_P} is provided.  It is
+equivalent to testing whether @samp{LABEL_KIND (label) == LABEL_NORMAL}.
+The only place that cares about the distinction between static, global,
+and weak alternate entry points, besides the front-end code that creates
+them, is the function @code{output_alternate_entry_point}, in
+@file{final.c}.
+
+To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 
 @findex barrier
 @item barrier
