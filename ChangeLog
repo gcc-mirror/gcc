@@ -1,3 +1,8 @@
+Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.in: cleanup, add mh-*pic handling for arm, special
+	case powerpc*-*-aix*
+
 1999-03-02  Nick Clifton  <nickc@cygnus.com>
 
 	* config.sub: Rename CYGNUS LOCAL to EGCS LOCAL

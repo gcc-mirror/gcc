@@ -283,25 +283,31 @@ esac
 
 if [ x${shared} = xyes ]; then
   case "${host}" in
-    hppa*)
+    alpha*-*-linux*)
+      host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
+      ;;
+    arm*-*-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-armpic"
+      ;;
+    hppa*-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-papic"
       ;;
     i[3456]86-*-cygwin32*)
       # We don't want -fPIC on cygwin32.
       ;;
-    i[3456]86-*)
+    i[3456]86-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-x86pic"
       ;;
-    sparc64-*)
+    sparc64-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-sparcpic"
       ;;
-    powerpc*-*)
+    powerpc*-*-aix*)
+      # We don't want -fPIC on AIX.
+      ;;
+    powerpc*-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-ppcpic"
       ;;
-    alpha*-*-linux*)
-      host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
-      ;;
-    *)
+    *-*-*)
       if test -f ${srcdir}/config/mh-${host_cpu}pic; then
         host_makefile_frag="${host_makefile_frag} config/mh-${host_cpu}pic"
       fi
