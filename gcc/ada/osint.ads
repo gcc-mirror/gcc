@@ -217,6 +217,14 @@ package Osint is
    -- Search Dir Routines --
    -------------------------
 
+   function Include_Dir_Default_Prefix return String;
+   --  Return the directory of the run-time library sources, as modified
+   --  by update_path.
+
+   function Object_Dir_Default_Prefix return String;
+   --  Return the directory of the run-time library ALI and object files, as
+   --  modified by update_path.
+
    procedure Add_Default_Search_Dirs;
    --  This routine adds the default search dirs indicated by the
    --  environment variables and sdefault package.

@@ -294,6 +294,7 @@ package body Sem_Ch9 is
             while Present (E1) loop
 
                if Ekind (E1) = E_Procedure
+                 and then Chars (E1) = Chars (Entry_Nam)
                  and then Type_Conformant (E1, Entry_Nam)
                then
                   Error_Msg_N ("entry name is not visible", N);

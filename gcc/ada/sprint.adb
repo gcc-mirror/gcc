@@ -928,7 +928,11 @@ package body Sprint is
             Set_Debug_Sloc;
             Sprint_Bar_List (Choices (Node));
             Write_Str (" => ");
-            Sprint_Node (Expression (Node));
+            if Box_Present (Node) then
+               Write_Str_With_Col_Check ("<>");
+            else
+               Sprint_Node (Expression (Node));
+            end if;
 
          when N_Component_Clause =>
             Write_Indent;

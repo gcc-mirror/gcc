@@ -3008,6 +3008,7 @@ package Sinfo is
       --  Choices (List1)
       --  Loop_Actions (List2-Sem)
       --  Expression (Node3)
+      --  Box_Present (Flag15)
 
       --  Note: this structure is used for both record component associations
       --  and array component associations, since the two cases aren't always

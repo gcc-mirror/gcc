@@ -35,10 +35,10 @@ with Ada.Text_IO; use Ada.Text_IO;
 with MLib.Fil;
 with MLib.Utl;
 with Namet;  use Namet;
+with Osint;  use Osint;
 with Opt;
 with Output; use Output;
 with Prj.Com;
-with Sdefault;
 
 package body MLib.Tgt is
 
@@ -175,9 +175,9 @@ package body MLib.Tgt is
                   Last : Natural;
 
                begin
-                  Open (File, In_File,
-                        Sdefault.Include_Dir_Default_Name.all &
-                        "/s-osinte.ads");
+                  Open
+                    (File, In_File,
+                     Include_Dir_Default_Prefix & "/s-osinte.ads");
 
                   while not End_Of_File (File) loop
                      Get_Line (File, Line, Last);

@@ -70,6 +70,10 @@ package body Exp_Aggr is
    --  statement of variant part will usually be small and probably in near
    --  sorted order.
 
+   function Has_Default_Init_Comps (N : Node_Id) return Boolean;
+   --  N is an aggregate (record or array). Checks the presence of
+   --  default initialization (<>) in any component.
+
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
@@ -97,12 +101,13 @@ package body Exp_Aggr is
    --  assignments component per component.
 
    function Build_Record_Aggr_Code
-     (N      : Node_Id;
-      Typ    : Entity_Id;
-      Target : Node_Id;
-      Flist  : Node_Id   := Empty;
-      Obj    : Entity_Id := Empty)
-      return   List_Id;
+     (N                             : Node_Id;
+      Typ                           : Entity_Id;
+      Target                        : Node_Id;
+      Flist                         : Node_Id   := Empty;
+      Obj                           : Entity_Id := Empty;
+      Is_Limited_Ancestor_Expansion : Boolean   := False)
+      return List_Id;
    --  N is an N_Aggregate or a N_Extension_Aggregate. Typ is the type
    --  of the aggregate. Target is an expression containing the
    --  location on which the component by component assignments will
@@ -113,6 +118,8 @@ package body Exp_Aggr is
    --  object declaration and dynamic allocation cases, it contains
    --  an entity that allows to know if the value being created needs to be
    --  attached to the final list in case of pragma finalize_Storage_Only.
+   --  Is_Limited_Ancestor_Expansion indicates that the function has been
+   --  called recursively to expand the limited ancestor to avoid copying it.
 
    function Has_Mutable_Components (Typ : Entity_Id) return Boolean;
    --  Return true if one of the component is of a discriminated type with
@@ -1269,12 +1276,13 @@ package body Exp_Aggr is
    ----------------------------
 
    function Build_Record_Aggr_Code
-     (N      : Node_Id;
-      Typ    : Entity_Id;
-      Target : Node_Id;
-      Flist  : Node_Id   := Empty;
-      Obj    : Entity_Id := Empty)
-      return   List_Id
+     (N                             : Node_Id;
+      Typ                           : Entity_Id;
+      Target                        : Node_Id;
+      Flist                         : Node_Id   := Empty;
+      Obj                           : Entity_Id := Empty;
+      Is_Limited_Ancestor_Expansion : Boolean   := False)
+      return List_Id
    is
       Loc     : constant Source_Ptr := Sloc (N);
       L       : constant List_Id    := New_List;
@@ -1540,20 +1548,50 @@ package body Exp_Aggr is
              Selector_Name => Make_Identifier (Loc, Name_uController));
          Set_Assignment_OK (Ref);
 
-         if Init_Pr then
-            Append_List_To (L,
-              Build_Initialization_Call (Loc,
-                Id_Ref       => Ref,
-                Typ          => RTE (RE_Record_Controller),
-                In_Init_Proc => Within_Init_Proc));
-         end if;
+         --  Give support to default initialization of limited types and
+         --  components
 
-         Append_To (L,
-           Make_Procedure_Call_Statement (Loc,
-             Name =>
-               New_Reference_To (Find_Prim_Op (RTE (RE_Record_Controller),
-                 Name_Initialize), Loc),
-             Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+         if (Nkind (Target) = N_Identifier
+             and then Is_Limited_Type (Etype (Target)))
+           or else (Nkind (Target) = N_Selected_Component
+                    and then Is_Limited_Type (Etype (Selector_Name (Target))))
+           or else (Nkind (Target) = N_Unchecked_Type_Conversion
+                    and then Is_Limited_Type (Etype (Target)))
+         then
+
+            if Init_Pr then
+               Append_List_To (L,
+                 Build_Initialization_Call (Loc,
+                   Id_Ref       => Ref,
+                   Typ          => RTE (RE_Limited_Record_Controller),
+                   In_Init_Proc => Within_Init_Proc));
+            end if;
+
+            Append_To (L,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To
+                         (Find_Prim_Op (RTE (RE_Limited_Record_Controller),
+                    Name_Initialize), Loc),
+                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+
+         else
+            if Init_Pr then
+               Append_List_To (L,
+                 Build_Initialization_Call (Loc,
+                   Id_Ref       => Ref,
+                   Typ          => RTE (RE_Record_Controller),
+                   In_Init_Proc => Within_Init_Proc));
+            end if;
+
+            Append_To (L,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To (Find_Prim_Op (RTE (RE_Record_Controller),
+                    Name_Initialize), Loc),
+                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+
+         end if;
 
          Append_To (L,
            Make_Attach_Call (
@@ -1647,6 +1685,21 @@ package body Exp_Aggr is
                then
                   Check_Ancestor_Discriminants (Entity (A));
                end if;
+
+            --  If the ancestor part is a limited type, a recursive call
+            --  expands the ancestor.
+
+            elsif Is_Limited_Type (Etype (A)) then
+               Ancestor_Is_Expression := True;
+
+               Append_List_To (Start_L,
+                  Build_Record_Aggr_Code (
+                    N                             => Expression (A),
+                    Typ                           => Etype (Expression (A)),
+                    Target                        => Target,
+                    Flist                         => Flist,
+                    Obj                           => Obj,
+                    Is_Limited_Ancestor_Expansion => True));
 
             --  If the ancestor part is an expression "E", we generate
             --     T(tmp) := E;
@@ -1766,6 +1819,22 @@ package body Exp_Aggr is
       Comp := First (Component_Associations (N));
       while Present (Comp) loop
          Selector  := Entity (First (Choices (Comp)));
+
+         --  Default initialization of a limited component
+
+         if Box_Present (Comp)
+            and then Is_Limited_Type (Etype (Selector))
+         then
+            Append_List_To (L,
+              Build_Initialization_Call (Loc,
+                Id_Ref => Make_Selected_Component (Loc,
+                            Prefix => New_Copy_Tree (Target),
+                            Selector_Name => New_Occurrence_Of (Selector,
+                                                                Loc)),
+                Typ    => Etype (Selector)));
+
+            goto Next_Comp;
+         end if;
 
          --  ???
 
@@ -1900,6 +1969,8 @@ package body Exp_Aggr is
             end;
          end if;
 
+         <<Next_Comp>>
+
          Next (Comp);
       end loop;
 
@@ -1997,7 +2068,9 @@ package body Exp_Aggr is
       --  In the Has_Controlled component case, all the intermediate
       --  controllers must be initialized
 
-      if Has_Controlled_Component (Typ) then
+      if Has_Controlled_Component (Typ)
+        and not Is_Limited_Ancestor_Expansion
+      then
          declare
             Inner_Typ : Entity_Id;
             Outer_Typ : Entity_Id;
@@ -4082,6 +4155,9 @@ package body Exp_Aggr is
       then
          Convert_To_Assignments (N, Typ);
 
+      elsif Has_Default_Init_Comps (N) then
+         Convert_To_Assignments (N, Typ);
+
       elsif Has_Delayed_Nested_Aggregate_Or_Tagged_Comps then
          Convert_To_Assignments (N, Typ);
 
@@ -4401,6 +4477,31 @@ package body Exp_Aggr is
          end if;
       end if;
    end Expand_Record_Aggregate;
+
+   ----------------------------
+   -- Has_Default_Init_Comps --
+   ----------------------------
+
+   function Has_Default_Init_Comps (N : Node_Id) return Boolean is
+      Comps  : constant List_Id := Component_Associations (N);
+      C      : Node_Id;
+   begin
+      pragma Assert (Nkind (N) = N_Aggregate
+                     or else Nkind (N) = N_Extension_Aggregate);
+      if No (Comps) then
+         return False;
+      end if;
+
+      C := First (Comps);
+      while Present (C) loop
+         if Box_Present (C) then
+            return True;
+         end if;
+
+         Next (C);
+      end loop;
+      return False;
+   end Has_Default_Init_Comps;
 
    --------------------------
    -- Is_Delayed_Aggregate --

@@ -25,7 +25,7 @@
 ------------------------------------------------------------------------------
 
 --  This package is part of the GNAT driver. It contains a procedure
---  VMS_Conversion to convert the command line in VMS form to the wquivalent
+--  VMS_Conversion to convert the command line in VMS form to the equivalent
 --  command line with switches for the GNAT tools that the GNAT driver will
 --  invoke.
 --
@@ -97,9 +97,9 @@ package VMS_Conv is
 
    type Command_Type is
      (Bind, Chop, Clean, Compile, Elim, Find, Krunch, Library, Link, List,
-      Make, Name, Preprocess, Pretty, Shared, Standard, Stub, Xref, Undefined);
+      Make, Name, Preprocess, Pretty, Shared, Stub, Xref, Undefined);
 
-   type Alternate_Command is (Comp, Ls, Kr, Pp, Prep, Psta);
+   type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
    --  Alternate command libel for non VMS system
 
    Corresponding_To : constant array (Alternate_Command) of Command_Type :=
@@ -107,8 +107,7 @@ package VMS_Conv is
       Ls    => List,
       Kr    => Krunch,
       Prep  => Preprocess,
-      Pp    => Pretty,
-      Psta  => Standard);
+      Pp    => Pretty);
    --  Mapping of alternate commands to commands
 
    subtype Real_Command_Type is Command_Type range Bind .. Xref;

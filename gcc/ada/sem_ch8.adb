@@ -4063,10 +4063,9 @@ package body Sem_Ch8 is
                if Is_Access_Type (P_Type)
                  and then Ekind (Designated_Type (P_Type)) = E_Incomplete_Type
                then
-                  Error_Msg_Node_2 := Selector_Name (N);
-                  Error_Msg_NE (
-                    "\incomplete type& has no visible component&", P,
-                      Designated_Type (P_Type));
+                  Error_Msg_N
+                    ("\dereference must not be of an incomplete type " &
+                       "('R'M 3.10.1)", P);
                end if;
 
             else
