@@ -21,3 +21,11 @@ Boston, MA 02111-1307, USA.  */
 /* Turn off various SOM crap we don't want.  */
 #undef TARGET_ELF32
 #define TARGET_ELF32 1
+
+/* Sibcalls are ok when ld is used in single subspace mode.  The
+   multiple subspace mode is not compatible with sibcalls to external
+   functions because the linker generated stubs store the return
+   pointer into the frame.  This target does not need multiple
+   subspace stubs, so we allow sibcalls to all functions.  */
+#undef FUNCTION_OK_FOR_SIBCALL
+#define FUNCTION_OK_FOR_SIBCALL(DECL) 1

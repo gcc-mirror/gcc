@@ -1,3 +1,8 @@
+2002-10-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (FUNCTION_OK_FOR_SIBCALL): Delete macro.
+	* pa32-linux.h (FUNCTION_OK_FOR_SIBCALL): Define.
+
 2002-10-02  Richard Henderson  <rth@redhat.com>
 
 	PR opt/7124
