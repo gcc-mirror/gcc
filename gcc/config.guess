@@ -16,6 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+# Written by Per Bothner <bothner@cygnus.com>.
+# The master version of this file is at the FSF in /home/gd/gnu/lib.
 #
 # This script attempts to guess a canonical system name similar to
 # config.sub.  If it succeeds, it prints the system name on stdout, and
@@ -237,7 +239,7 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-freebsd${UNAME_RELEASE}
+	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/(.*//'`
 	exit 0 ;;
     *:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
@@ -285,9 +287,12 @@ EOF
 	exit 0 ;;
     M680[234]0:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:* | 3[34]??,3[34]??:*:4.0:*)
+    3[34]??:*:4.0:*)
 	uname -p 2>/dev/null | grep 86 >/dev/null \
 	  && echo i486-ncr-sysv4 && exit 0 ;;
+    33[56]0,3???:*:4.0:*)
+	uname -p 2>/dev/null | grep 86 >/dev/null \
+	  && echo i486-ncr-sysv4.3 && exit 0 ;;
     m680[234]0:LynxOS:2.2*:*)
 	echo m68k-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
@@ -346,7 +351,7 @@ main ()
 #endif
   int version;
   version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
-  printf ("%s-next-neststep%s\n", __ARCHITECTURE__,  version==2 ? "2" : "3");
+  printf ("%s-next-nextstep%s\n", __ARCHITECTURE__,  version==2 ? "2" : "3");
   exit (0);
 #endif
 
