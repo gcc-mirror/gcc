@@ -149,7 +149,6 @@ static bool is_escape_site (tree, size_t *);
 static void add_pointed_to_var (struct alias_info *, tree, tree);
 static void create_global_var (void);
 static void collect_points_to_info_for (struct alias_info *, tree);
-static bool ptr_is_dereferenced_by (tree, tree, bool *);
 static void maybe_create_global_var (struct alias_info *ai);
 static void group_aliases (struct alias_info *);
 static void set_pt_anything (tree ptr);
@@ -359,6 +358,113 @@ struct tree_opt_pass pass_may_alias =
   0					/* letter */
 };
 
+
+/* Data structure used to count the number of dereferences to PTR
+   inside an expression.  */
+struct count_ptr_d
+{
+  tree ptr;
+  unsigned count;
+};
+
+
+/* Helper for count_uses_and_derefs.  Called by walk_tree to look for
+   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
+
+static tree
+count_ptr_derefs (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  struct count_ptr_d *count_p = (struct count_ptr_d *) data;
+
+  if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
+    count_p->count++;
+
+  return NULL_TREE;
+}
+
+
+/* Count the number of direct and indirect uses for pointer PTR in
+   statement STMT.  The two counts are stored in *NUM_USES_P and
+   *NUM_DEREFS_P respectively.  *IS_STORE_P is set to 'true' if at
+   least one of those dereferences is a store operation.  */
+
+static void
+count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
+		       unsigned *num_derefs_p, bool *is_store)
+{
+  ssa_op_iter i;
+  tree use;
+
+  *num_uses_p = 0;
+  *num_derefs_p = 0;
+  *is_store = false;
+
+  /* Find out the total number of uses of PTR in STMT.  */
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
+    if (use == ptr)
+      (*num_uses_p)++;
+
+  /* Now count the number of indirect references to PTR.  This is
+     truly awful, but we don't have much choice.  There are no parent
+     pointers inside INDIRECT_REFs, so an expression like
+     '*x_1 = foo (x_1, *x_1)' needs to be traversed piece by piece to
+     find all the indirect and direct uses of x_1 inside.  The only
+     shortcut we can take is the fact that GIMPLE only allows
+     INDIRECT_REFs inside the expressions below.  */
+  if (TREE_CODE (stmt) == MODIFY_EXPR
+      || (TREE_CODE (stmt) == RETURN_EXPR
+	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+      || TREE_CODE (stmt) == ASM_EXPR
+      || TREE_CODE (stmt) == CALL_EXPR)
+    {
+      tree lhs, rhs;
+
+      if (TREE_CODE (stmt) == MODIFY_EXPR)
+	{
+	  lhs = TREE_OPERAND (stmt, 0);
+	  rhs = TREE_OPERAND (stmt, 1);
+	}
+      else if (TREE_CODE (stmt) == RETURN_EXPR)
+	{
+	  tree e = TREE_OPERAND (stmt, 0);
+	  lhs = TREE_OPERAND (e, 0);
+	  rhs = TREE_OPERAND (e, 1);
+	}
+      else if (TREE_CODE (stmt) == ASM_EXPR)
+	{
+	  lhs = ASM_OUTPUTS (stmt);
+	  rhs = ASM_INPUTS (stmt);
+	}
+      else
+	{
+	  lhs = NULL_TREE;
+	  rhs = stmt;
+	}
+
+      if (lhs && EXPR_P (lhs))
+	{
+	  struct count_ptr_d count;
+	  count.ptr = ptr;
+	  count.count = 0;
+	  walk_tree (&lhs, count_ptr_derefs, &count, NULL);
+	  *is_store = true;
+	  *num_derefs_p = count.count;
+	}
+
+      if (rhs && EXPR_P (rhs))
+	{
+	  struct count_ptr_d count;
+	  count.ptr = ptr;
+	  count.count = 0;
+	  walk_tree (&rhs, count_ptr_derefs, &count, NULL);
+	  *num_derefs_p += count.count;
+	}
+    }
+
+  gcc_assert (*num_uses_p >= *num_derefs_p);
+}
+
+
 /* Count the number of calls in the function and conditionally
    create GLOBAL_VAR.   This is performed before translation
    into SSA (and thus before alias analysis) to avoid compile time
@@ -495,6 +601,7 @@ init_alias_info (void)
 		 tag will need to be created in create_name_tags.  */
 	      pi->pt_anything = 0;
 	      pi->pt_malloc = 0;
+	      pi->pt_null = 0;
 	      pi->value_escapes_p = 0;
 	      pi->is_dereferenced = 0;
 	      if (pi->pt_vars)
@@ -561,81 +668,6 @@ collect_points_to_info_for (struct alias_info *ai, tree ptr)
 }
 
 
-/* Helper for ptr_is_dereferenced_by.  Called by walk_tree to look for
-   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
-
-static tree
-find_ptr_dereference (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
-{
-  tree ptr = (tree) data;
-
-  if (INDIRECT_REF_P (*tp)
-      && TREE_OPERAND (*tp, 0) == ptr)
-    return *tp;
-
-  return NULL_TREE;
-}
-
-
-/* Return true if STMT contains (ALIGN/MISALIGNED_)INDIRECT_REF <PTR>.  
-   *IS_STORE is set to 'true' if the dereference is on the LHS of an 
-   assignment.  */
-
-static bool
-ptr_is_dereferenced_by (tree ptr, tree stmt, bool *is_store)
-{
-  *is_store = false;
-
-  if (TREE_CODE (stmt) == MODIFY_EXPR
-      || (TREE_CODE (stmt) == RETURN_EXPR
-	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR))
-    {
-      tree e, lhs, rhs;
-
-      e = (TREE_CODE (stmt) == RETURN_EXPR) ? TREE_OPERAND (stmt, 0) : stmt;
-      lhs = TREE_OPERAND (e, 0);
-      rhs = TREE_OPERAND (e, 1);
-
-      if (EXPR_P (lhs)
-	  && walk_tree (&lhs, find_ptr_dereference, ptr, NULL))
-	{
-	  *is_store = true;
-	  return true;
-	}
-      else if (EXPR_P (rhs)
-	       && walk_tree (&rhs, find_ptr_dereference, ptr, NULL))
-	{
-	  return true;
-	}
-    }
-  else if (TREE_CODE (stmt) == ASM_EXPR)
-    {
-      if (walk_tree (&ASM_OUTPUTS (stmt), find_ptr_dereference, ptr, NULL)
-	  || walk_tree (&ASM_CLOBBERS (stmt), find_ptr_dereference, ptr, NULL))
-	{
-	  *is_store = true;
-	  return true;
-	}
-      else if (walk_tree (&ASM_INPUTS (stmt), find_ptr_dereference, ptr, NULL))
-	{
-	  return true;
-	}
-    }
-  else
-    {
-      /* CALL_EXPRs may also contain pointer dereferences for types
-	 that are not GIMPLE register types.  If the CALL_EXPR is on
-	 the RHS of an assignment, it will be handled by the
-	 MODIFY_EXPR handler above.  */
-      tree call = get_call_expr_in (stmt);
-      if (call && walk_tree (&call, find_ptr_dereference, ptr, NULL))
-	return true;
-    }
-
-  return false;
-}
-
-
 /* Traverse use-def links for all the pointers in the program to collect
    address escape and points-to information.
    
@@ -689,6 +721,7 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	      var_ann_t v_ann = var_ann (SSA_NAME_VAR (op));
 	      struct ptr_info_def *pi;
 	      bool is_store;
+	      unsigned num_uses, num_derefs;
 
 	      /* If the operand's variable may be aliased, keep track
 		 of how many times we've referenced it.  This is used
@@ -706,7 +739,10 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	      collect_points_to_info_for (ai, op);
 
 	      pi = SSA_NAME_PTR_INFO (op);
-	      if (ptr_is_dereferenced_by (op, stmt, &is_store))
+	      count_uses_and_derefs (op, stmt, &num_uses, &num_derefs,
+				     &is_store);
+
+	      if (num_derefs > 0)
 		{
 		  /* Mark OP as dereferenced.  In a subsequent pass,
 		     dereferenced pointers that point to a set of
@@ -728,12 +764,13 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 		  else
 		    bitmap_set_bit (ai->dereferenced_ptrs_load, v_ann->uid);
 		}
-	      else if (stmt_escapes_p)
+
+	      if (stmt_escapes_p && num_derefs < num_uses)
 		{
-		  /* Note that even if STMT is an escape point, pointer OP
-		     will not escape if it is being dereferenced.  That's
-		     why we only check for escape points if OP is not
-		     dereferenced by STMT.  */
+		  /* If STMT is an escape point and STMT contains at
+		     least one direct use of OP, then the value of OP
+		     escapes and so the pointed-to variables need to
+		     be marked call-clobbered.  */
 		  pi->value_escapes_p = 1;
 
 		  /* If the statement makes a function call, assume
@@ -1742,6 +1779,8 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 
   if (orig_pi)
     {
+      gcc_assert (orig_pi != dest_pi);
+
       /* Notice that we never merge PT_MALLOC.  This attribute is only
 	 true if the pointer is the result of a malloc() call.
 	 Otherwise, we can end up in this situation:
@@ -1761,12 +1800,11 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 	 create_name_tags is not smart enough to determine that the
 	 two come from the same malloc call.  Copy propagation before
 	 aliasing should cure this.  */
-      gcc_assert (orig_pi != dest_pi);
-      
       dest_pi->pt_malloc = 0;
-
       if (orig_pi->pt_malloc || orig_pi->pt_anything)
 	set_pt_anything (dest);
+
+      dest_pi->pt_null |= orig_pi->pt_null;
 
       if (!dest_pi->pt_anything
 	  && orig_pi->pt_vars
@@ -1852,6 +1890,11 @@ add_pointed_to_expr (struct alias_info *ai, tree ptr, tree expr)
 	  && !(POINTER_TYPE_P (TREE_TYPE (op1))
 	       && TREE_CODE (op1) != INTEGER_CST))
 	set_pt_anything (ptr);
+    }
+  else if (integer_zerop (expr))
+    {
+      /* EXPR is the NULL pointer.  Mark PTR as pointing to NULL.  */
+      SSA_NAME_PTR_INFO (ptr)->pt_null = 1;
     }
   else
     {
@@ -2356,6 +2399,9 @@ dump_points_to_info_for (FILE *file, tree ptr)
       if (pi->pt_malloc)
 	fprintf (file, ", points-to malloc");
 
+      if (pi->pt_null)
+	fprintf (file, ", points-to NULL");
+
       if (pi->pt_vars)
 	{
 	  unsigned ix;
@@ -2511,4 +2557,3 @@ may_be_aliased (tree var)
 
   return true;
 }
-
