@@ -56,7 +56,7 @@ import java.io.IOException;
  *
  * @author           Jon Zeppieri
  * @author	     Bryce McKinlay
- * @modified         $Id: TreeMap.java,v 1.1 2001/02/14 04:44:21 bryce Exp $
+ * @modified         $Id: TreeMap.java,v 1.2 2001/02/14 05:32:31 bryce Exp $
  */
 public class TreeMap extends AbstractMap
   implements SortedMap, Cloneable, Serializable
@@ -178,8 +178,14 @@ public class TreeMap extends AbstractMap
 
   public Object clone()
   {
-    TreeMap copy = new TreeMap();
-    copy.comparator = comparator;
+    TreeMap copy = null;
+    try
+      {
+        copy = (TreeMap) super.clone();
+      }
+    catch (CloneNotSupportedException x)
+      {
+      }
     copy.fabricateTree(size);
 
     Node node = firstNode();
@@ -991,6 +997,9 @@ public class TreeMap extends AbstractMap
 		parent.right = node;
 		parent = nextparent;
 	      }
+
+	    // We use the "right" link to maintain a chain of nodes in 
+	    // each row until the parent->child links are established.
 	    if (last != null)
 	      last.right = node;
 	    last = node;
