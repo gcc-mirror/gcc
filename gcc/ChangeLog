@@ -1,3 +1,20 @@
+2002-08-12  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* diagnostic.h (output_formatted_scalar): Rename from
+	output_formatted_integer. 
+	* diagnostic.def: Add DK_DEBUG.
+	* diagnostic.c (output_decimal): Adjust.
+	(output_long_decimal): Likewise.
+	(output_unsigned_decimal): Likewise.
+	(output_octal): Likewise.
+	(output_long_octal): Likewise.
+	(output_hexadecimal): Likewise.
+	(output_long_hexadecimal): Likewise.
+	* c-pretty-print.c (pp_c_type_specifier): New function.
+	(pp_c_specifier_qualifier_list): Likewise.
+	(pp_c_abstract_declarator): Likewise.
+	(pp_c_char): Replace pp_format_integer with pp_format_scalar.
+
 2002-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/trouble.texi (Disappointments): Add static constructor and

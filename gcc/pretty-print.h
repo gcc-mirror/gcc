@@ -84,10 +84,11 @@ struct pretty_print_info
      pp_character (PPI, C);      \
      pp_whitespace (PPI);        \
    } while (0)
-#define pp_format_integer(PPI, F, I) \
-   output_formatted_integer (pp_buffer (PPI), F, I)
+#define pp_format_scalar(PPI, F, S) \
+   output_formatted_scalar (pp_buffer (PPI), F, S)
 #define pp_wide_integer(PPI, I) \
-   pp_format_integer (PPI, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
+   pp_format_scalar (PPI, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
+#define pp_pointer(PPI, P) pp_format_scalar (PPI, "%p", p)
 
 #define pp_identifier(PPI, ID)  output_add_string (pp_buffer (PPI), ID)
 #define pp_tree_identifier(PPI, T) pp_identifier(PPI, IDENTIFIER_POINTER (T))

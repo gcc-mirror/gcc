@@ -301,7 +301,7 @@ output_decimal (buffer, i)
      output_buffer *buffer;
      int i;
 {
-  output_formatted_integer (buffer, "%d", i);
+  output_formatted_scalar (buffer, "%d", i);
 }
 
 static void
@@ -309,7 +309,7 @@ output_long_decimal (buffer, i)
      output_buffer *buffer;
      long int i;
 {
-  output_formatted_integer (buffer, "%ld", i);
+  output_formatted_scalar (buffer, "%ld", i);
 }
 
 static void
@@ -317,7 +317,7 @@ output_unsigned_decimal (buffer, i)
      output_buffer *buffer;
      unsigned int i;
 {
-  output_formatted_integer (buffer, "%u", i);
+  output_formatted_scalar (buffer, "%u", i);
 }
 
 static void
@@ -325,7 +325,7 @@ output_long_unsigned_decimal (buffer, i)
      output_buffer *buffer;
      long unsigned int i;
 {
-  output_formatted_integer (buffer, "%lu", i);
+  output_formatted_scalar (buffer, "%lu", i);
 }
 
 static void
@@ -333,7 +333,7 @@ output_octal (buffer, i)
      output_buffer *buffer;
      unsigned int i;
 {
-  output_formatted_integer (buffer, "%o", i);
+  output_formatted_scalar (buffer, "%o", i);
 }
 
 static void
@@ -341,7 +341,7 @@ output_long_octal (buffer, i)
      output_buffer *buffer;
      unsigned long int i;
 {
-  output_formatted_integer (buffer, "%lo", i);
+  output_formatted_scalar (buffer, "%lo", i);
 }
 
 static void
@@ -349,7 +349,7 @@ output_hexadecimal (buffer, i)
      output_buffer *buffer;
      unsigned int i;
 {
-  output_formatted_integer (buffer, "%x", i);
+  output_formatted_scalar (buffer, "%x", i);
 }
 
 static void
@@ -357,7 +357,7 @@ output_long_hexadecimal (buffer, i)
      output_buffer *buffer;
      unsigned long int i;
 {
-  output_formatted_integer (buffer, "%lx", i);
+  output_formatted_scalar (buffer, "%lx", i);
 }
 
 /* Append to BUFFER a string specified by its STARTING character
