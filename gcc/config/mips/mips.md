@@ -293,16 +293,27 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
 
-(define_insn "addsi3"
+(define_expand "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(plus:SI (match_operand:SI 1 "arith_operand" "%d")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
 		 (match_operand:SI 2 "arith_operand" "dI")))]
   ""
+  "
+{
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == -32768)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "addsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
+		 (match_operand:SI 2 "arith_operand" "dI")))]
+  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -32768"
   "*
 {
   return (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
-    ? \"subu\\t%0,%1,%n2\"
-    : \"addu\\t%0,%1,%2\";
+    ? \"subu\\t%0,%z1,%n2\"
+    : \"addu\\t%0,%z1,%2\";
 }"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -485,11 +496,22 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
 
-(define_insn "subsi3"
+(define_expand "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
 		  (match_operand:SI 2 "arith_operand" "dI")))]
   ""
+  "
+{
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == -32768)
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
+(define_insn "subsi3_internal"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
+		  (match_operand:SI 2 "arith_operand" "dI")))]
+  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -32768"
   "*
 {
   return (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
