@@ -308,6 +308,6 @@
       complex expect, got
 
       if (aimag(expect) .ne. aimag(got)) call abort
-      if (real(expect) .ne. real(expect)) call abort
+      if (real(expect) .ne. real(got)) call abort
 
       end
