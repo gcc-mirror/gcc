@@ -1,5 +1,10 @@
 2000-12-18  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Mon Aug 30 01:02:09 1999  Jeffrey A Law  (law@cygnus.com)
+	* emit-rtl.c (copy_rtx_if_shared): A MEM which references
+	virtual_stack_vars_rtx or virtual_incoming_args_rtx can not
+	be shared.
+
 	2000-03-24  Geoff Keating  <geoffk@cygnus.com>
 	* flow.c (propagate_block): When we delete an ADDR_VEC,
 	also delete the BARRIER following it if there is one.

@@ -1847,25 +1847,17 @@ copy_rtx_if_shared (orig)
       return x;
 
     case MEM:
-      /* A MEM is allowed to be shared if its address is constant
-	 or is a constant plus one of the special registers.  */
-      if (CONSTANT_ADDRESS_P (XEXP (x, 0))
-	  || XEXP (x, 0) == virtual_stack_vars_rtx
-	  || XEXP (x, 0) == virtual_incoming_args_rtx)
+      /* A MEM is allowed to be shared if its address is constant.
+
+	 We used to allow sharing of MEMs which referenced 
+	 virtual_stack_vars_rtx or virtual_incoming_args_rtx, but
+	 that can lose.  instantiate_virtual_regs will not unshare
+	 the MEMs, and combine may change the structure of the address
+	 because it looks safe and profitable in one context, but
+	 in some other context it creates unrecognizable RTL.  */
+      if (CONSTANT_ADDRESS_P (XEXP (x, 0)))
 	return x;
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS
-	  && (XEXP (XEXP (x, 0), 0) == virtual_stack_vars_rtx
-	      || XEXP (XEXP (x, 0), 0) == virtual_incoming_args_rtx)
-	  && CONSTANT_ADDRESS_P (XEXP (XEXP (x, 0), 1)))
-	{
-	  /* This MEM can appear in more than one place,
-	     but its address better not be shared with anything else.  */
-	  if (! x->used)
-	    XEXP (x, 0) = copy_rtx_if_shared (XEXP (x, 0));
-	  x->used = 1;
-	  return x;
-	}
       break;
 
     default:
