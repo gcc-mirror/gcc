@@ -1,3 +1,12 @@
+Thu Jan  7 00:12:24 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (addqi3): If the destination operand is
+	a hard register other than an extended precision register,
+	emit addqi3_noclobber.
+	(*addqi3_noclobber_reload): New pattern added so that reload
+	will recognise a store of a pseudo, equivalent to the sum
+	of the frame pointer and a constant, as an add insn.
+
 Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net.
 
 	* configure.in (pc-msdosdjgpp): Set x_make to x-go32.

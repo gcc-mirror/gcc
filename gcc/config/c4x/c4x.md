@@ -1537,7 +1537,9 @@
               (clobber (reg:CC_NOOV 21))])]
   ""
   "legitimize_operands (PLUS, operands, QImode);
-   if (reload_in_progress)
+   if (reload_in_progress
+       || (! IS_PSEUDO_REGNO (operands[0]) 
+           && ! IS_EXT_REG (REGNO (operands[0]))))
    {
       emit_insn (gen_addqi3_noclobber (operands[0], operands[1], operands[2]));
       DONE;
@@ -1623,6 +1625,35 @@
         (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
                  (match_operand:QI 2 "src_operand" "JR,rS<>,g")))]
   "valid_operands (PLUS, operands, QImode)"
+  "@
+   addi3\\t%2,%1,%0
+   addi3\\t%2,%1,%0
+   addi\\t%2,%0"
+  [(set_attr "type" "binary,binary,binary")])
+; Default to int16 data attr.
+
+
+; This pattern is required during reload when eliminate_regs_in_insn
+; effectively converts a move insn into an add insn when the src
+; operand is the frame pointer plus a constant.  Without this
+; pattern, gen_addqi3 can be called with a register for operand0
+; that can clobber CC.
+; For example, we may have (set (mem (reg ar0)) (reg 99))
+; with (set (reg 99) (plus (reg ar3) (const_int 8)))
+; Now since ar3, the frame pointer, is unchanging within the function,
+; (plus (reg ar3) (const_int 8)) is considered a constant.
+; eliminate_regs_in_insn substitutes this constant to give
+; (set (mem (reg ar0)) (plus (reg ar3) (const_int 8))).
+; This is an invalid C4x insn but if we don't provide a pattern
+; for it, it will be considered to be a move insn for reloading.
+; The nasty bit is that a GENERAL_REGS class register, say r0,
+; may be allocated to reload the PLUS and thus gen_reload will
+; emit an add insn that may clobber CC.
+(define_insn "*addqi3_noclobber_reload"
+  [(set (match_operand:QI 0 "general_operand" "=c,?c,c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0")
+                 (match_operand:QI 2 "src_operand" "JR,rS<>,g")))]
+  "reload_in_progress"
   "@
    addi3\\t%2,%1,%0
    addi3\\t%2,%1,%0
