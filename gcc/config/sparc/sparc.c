@@ -4910,9 +4910,9 @@ struct function_arg_record_value_parms
 static void function_arg_record_value_3
  (HOST_WIDE_INT, struct function_arg_record_value_parms *);
 static void function_arg_record_value_2
- (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *);
+ (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *, bool);
 static void function_arg_record_value_1
- (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *);
+ (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *, bool);
 static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
@@ -4920,27 +4920,27 @@ static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
 
 static void
 function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
-			     struct function_arg_record_value_parms *parms)
+			     struct function_arg_record_value_parms *parms,
+			     bool packed_p)
 {
   tree field;
 
-  /* The ABI obviously doesn't specify how packed structures are
-     passed.  These are defined to be passed in int regs if possible,
-     otherwise memory.  */
-  int packed_p = 0;
-
   /* We need to compute how many registers are needed so we can
      allocate the PARALLEL but before we can do that we need to know
-     whether there are any packed fields.  If there are, int regs are
-     used regardless of whether there are fp values present.  */
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    {
-      if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field))
-	{
-	  packed_p = 1;
-	  break;
-	}
-    }
+     whether there are any packed fields.  The ABI obviously doesn't
+     specify how structures are passed in this case, so they are
+     defined to be passed in int regs if possible, otherwise memory,
+     regardless of whether there are fp values present.  */
+
+  if (! packed_p)
+    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      {
+	if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field))
+	  {
+	    packed_p = true;
+	    break;
+	  }
+      }
 
   /* Compute how many registers we need.  */
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -4956,7 +4956,10 @@ function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
 	  /* ??? FIXME: else assume zero offset.  */
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    function_arg_record_value_1 (TREE_TYPE (field), bitpos, parms);
+	    function_arg_record_value_1 (TREE_TYPE (field),
+	    				 bitpos,
+					 parms,
+					 packed_p);
 	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
 			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
@@ -5062,19 +5065,20 @@ function_arg_record_value_3 (HOST_WIDE_INT bitpos,
 
 static void
 function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
-			     struct function_arg_record_value_parms *parms)
+			     struct function_arg_record_value_parms *parms,
+			     bool packed_p)
 {
   tree field;
-  int packed_p = 0;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    {
-      if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field))
-	{
-	  packed_p = 1;
-	  break;
-	}
-    }
+  if (! packed_p)
+    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      {
+	if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field))
+	  {
+	    packed_p = true;
+	    break;
+	  }
+      }
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
@@ -5089,7 +5093,10 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 	  /* ??? FIXME: else assume zero offset.  */
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    function_arg_record_value_2 (TREE_TYPE (field), bitpos, parms);
+	    function_arg_record_value_2 (TREE_TYPE (field),
+	    				 bitpos,
+					 parms,
+					 packed_p);
 	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
 			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
@@ -5170,7 +5177,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
   /* Compute how many registers we need.  */
   parms.nregs = 0;
   parms.intoffset = 0;
-  function_arg_record_value_1 (type, 0, &parms);
+  function_arg_record_value_1 (type, 0, &parms, false);
 
   if (parms.intoffset != -1)
     {
@@ -5232,7 +5239,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
   /* Fill in the entries.  */
   parms.nregs = 0;
   parms.intoffset = 0;
-  function_arg_record_value_2 (type, 0, &parms);
+  function_arg_record_value_2 (type, 0, &parms, false);
   function_arg_record_value_3 (typesize * BITS_PER_UNIT, &parms);
 
   if (parms.nregs != nregs)
