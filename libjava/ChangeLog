@@ -1,3 +1,9 @@
+2003-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host (*-linux*): Don't set slow_pthread_self if primary
+	installed libpthread is either linuxthreads with floating stacks or
+	NPTL.
+
 2003-04-14  Tom Tromey  <tromey@redhat.com>
 
 	* resolve.cc (_Jv_PrepareClass): Round up class size to multiple
