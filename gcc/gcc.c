@@ -4381,6 +4381,7 @@ do_spec_path (struct prefix_list *pl, const char *option,
   static size_t bufsize = 0;
   static char *buffer;
   int idx;
+  bool multilib_p = false;
 
   /* Used on systems which record the specified -L dirs
      and use them to search for dynamic linking.  */
@@ -4403,6 +4404,7 @@ do_spec_path (struct prefix_list *pl, const char *option,
       strcat (buffer, machine_suffix);
       if (is_directory (buffer, dir_for_machine_suffix, 1))
 	{
+	  multilib_p = true;
 	  do_spec_1 (option, separate_options, NULL);
 	  if (separate_options)
 	    do_spec_1 (" ", 0, NULL);
@@ -4416,6 +4418,7 @@ do_spec_path (struct prefix_list *pl, const char *option,
     {
       if (is_directory (pl->prefix, dir_for_no_suffix, 1))
 	{
+	  multilib_p = true;
 	  do_spec_1 (option, separate_options, NULL);
 	  if (separate_options)
 	    do_spec_1 (" ", 0, NULL);
@@ -4426,7 +4429,7 @@ do_spec_path (struct prefix_list *pl, const char *option,
 	}
     }
 
-  if (only_subdir)
+  if (only_subdir || multilib_p)
     return;
 
   if (machine_suffix)
@@ -6188,10 +6191,6 @@ main (int argc, const char **argv)
      startfile_prefix_spec exclusively.  */
   else if (*cross_compile == '0' || target_system_root)
     {
-      if (*md_exec_prefix)
-	add_sysrooted_prefix (&startfile_prefixes, md_exec_prefix, "GCC",
-			      PREFIX_PRIORITY_LAST, 0, 1);
-
       if (*md_startfile_prefix)
 	add_sysrooted_prefix (&startfile_prefixes, md_startfile_prefix,
 			      "GCC", PREFIX_PRIORITY_LAST, 0, 1);

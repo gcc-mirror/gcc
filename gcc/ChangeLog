@@ -1,3 +1,11 @@
+2005-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c (do_spec_1): Do not add a -L path for a directory in
+	the prefix list if we have already added a multilib directory
+	based on that path.
+	(main): Do not add MD_EXEC_PREFIX to the list of directories to
+	search with -L.
+
 2005-03-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (indirect_symref_ok, reload_obstack): Make them
