@@ -54,7 +54,8 @@ static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
-static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void s390_output_mi_vcall_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, 
+						HOST_WIDE_INT, tree));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -81,8 +82,8 @@ static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
 
-#undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
+#undef TARGET_ASM_OUTPUT_MI_VCALL_THUNK
+#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK s390_output_mi_vcall_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5587,77 +5588,200 @@ s390_encode_section_info (decl, first)
     }
 }
 
+/* Output thunk to FILE that implements a C++ virtual function call (with
+   multiple inheritance) to FUNCTION.  The thunk adjusts the this pointer 
+   by DELTA, and unless VCALL_OFFSET is zero, applies an additional adjustment
+   stored at VCALL_OFFSET in the vtable whose address is located at offset 0
+   relative to the resulting this pointer.  */
+
 static void
-s390_output_mi_thunk (file, thunk, delta, function)
+s390_output_mi_vcall_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset;
      tree function;
 {
-  if (TARGET_64BIT)                                                           
-    {                                                                         
-      if (flag_pic)                                                           
-        {                                                                     
-          fprintf (file, "\tlarl  1,0f\n");                                   
-          fprintf (file, "\tagf   %d,0(1)\n",                                 
-                   aggregate_value_p (TREE_TYPE                               
-                                      (TREE_TYPE (function))) ? 3 :2 );       
-          fprintf (file, "\tlarl  1,");                                       
-          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
-          fprintf (file, "@GOTENT\n");                                        
-          fprintf (file, "\tlg    1,0(1)\n");                                 
-          fprintf (file, "\tbr    1\n");                                      
-          fprintf (file, "0:\t.long  ");	                              
-          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
-          fprintf (file, "\n");			                              
-        }                                                                     
-      else                                                                    
-        {                                                                     
-          fprintf (file, "\tlarl  1,0f\n");                                   
-          fprintf (file, "\tagf   %d,0(1)\n",                                 
-          aggregate_value_p (TREE_TYPE                                        
-                             (TREE_TYPE (function))) ? 3 :2 );                
-          fprintf (file, "\tjg  ");                                           
-          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
-          fprintf (file, "\n");                                               
-          fprintf (file, "0:\t.long  ");		                      
-          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
-          fprintf (file, "\n");			                              
-        }                                                                     
-    }                                                                         
-  else                                                                        
-    {                                                                         
-      if (flag_pic)                                                           
-        {                                                                     
-          fprintf (file, "\tbras  1,0f\n");                                   
-          fprintf (file, "\t.long _GLOBAL_OFFSET_TABLE_-.\n");                
-          fprintf (file, "\t.long  ");                                        
-          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
-          fprintf (file, "@GOT\n");                                           
-          fprintf (file, "\t.long  ");		                              
-          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
-          fprintf (file, "\n");			                              
-          fprintf (file, "0:\tal  %d,8(1)\n",                                 
-                   aggregate_value_p (TREE_TYPE                               
-                                      (TREE_TYPE (function))) ? 3 : 2 );      
-          fprintf (file, "\tl     0,4(1)\n");                                 
-          fprintf (file, "\tal    1,0(1)\n");                                 
-          fprintf (file, "\talr   1,0\n");                                    
-          fprintf (file, "\tl     1,0(1)\n");                                 
-          fprintf (file, "\tbr    1\n");                                      
-        } else {                                                              
-          fprintf (file, "\tbras  1,0f\n");                                   
-          fprintf (file, "\t.long  ");                                        
-          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
-          fprintf (file, "-.\n");                                             
-          fprintf (file, "\t.long  ");		                              
-          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
-          fprintf (file, "\n");			                              
-          fprintf (file, "0:\tal  %d,4(1)\n",                                 
-                   aggregate_value_p (TREE_TYPE                               
-                                      (TREE_TYPE (function))) ? 3 : 2 );      
-          fprintf (file, "\tal    1,0(1)\n");                                 
-          fprintf (file, "\tbr    1\n");                                      
-       }                                                                      
-    }                                                                         
+  rtx op[9];
+
+  /* Operand 0 is the target function.  */
+  op[0] = XEXP (DECL_RTL (function), 0);
+  if (flag_pic && !SYMBOL_REF_FLAG (op[0]))
+    {
+      op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]), 113);
+      op[0] = gen_rtx_CONST (Pmode, op[0]);
+    }
+
+  /* Operand 1 is the 'this' pointer.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+    op[1] = gen_rtx_REG (Pmode, 3);
+  else
+    op[1] = gen_rtx_REG (Pmode, 2);
+
+  /* Operand 2 is the delta.  */
+  op[2] = GEN_INT (delta);
+
+  /* Operand 3 is the vcall_offset.  */
+  op[3] = GEN_INT (vcall_offset);
+
+  /* Operand 4 is the temporary register.  */
+  op[4] = gen_rtx_REG (Pmode, 1);
+
+  /* Operands 5 to 8 can be used as labels.  */
+  op[5] = NULL_RTX;
+  op[6] = NULL_RTX;
+  op[7] = NULL_RTX;
+  op[8] = NULL_RTX;
+
+  /* Generate code.  */
+  if (TARGET_64BIT)
+    {
+      /* Setup literal pool pointer if required.  */
+      if (!CONST_OK_FOR_LETTER_P (delta, 'K')
+	  || !CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	{
+	  op[5] = gen_label_rtx ();
+	  output_asm_insn ("larl\t%4,%5", op);
+	}
+
+      /* Add DELTA to this pointer.  */
+      if (delta)
+	{
+	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
+	    output_asm_insn ("la\t%1,%2(%1)", op);
+	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
+	    output_asm_insn ("aghi\t%1,%2", op);
+	  else
+	    {
+	      op[6] = gen_label_rtx ();
+	      output_asm_insn ("agf\t%1,%6-%5(%4)", op);
+	    }
+	}
+
+      /* Perform vcall adjustment.  */
+      if (vcall_offset)
+	{
+	  if (CONST_OK_FOR_LETTER_P (vcall_offset, 'J'))
+	    {
+	      output_asm_insn ("lg\t%4,0(%1)", op);
+	      output_asm_insn ("ag\t%1,%3(%4)", op);
+	    }
+	  else if (CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	    {
+	      output_asm_insn ("lghi\t%4,%3", op);
+	      output_asm_insn ("ag\t%4,0(%1)", op);
+	      output_asm_insn ("ag\t%1,0(%4)", op);
+	    }
+	  else
+	    {
+	      op[7] = gen_label_rtx ();
+	      output_asm_insn ("llgf\t%4,%7-%5(%4)", op);
+	      output_asm_insn ("ag\t%4,0(%1)", op);
+	      output_asm_insn ("ag\t%1,0(%4)", op);
+	    }
+	}
+        
+      /* Jump to target.  */
+      output_asm_insn ("jg\t%0", op);
+
+      /* Output literal pool if required.  */
+      if (op[5])
+	{
+	  output_asm_insn (".align\t4", op);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	}
+      if (op[6])
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+	  output_asm_insn (".long\t%2", op);
+	}
+      if (op[7])
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[7]));
+	  output_asm_insn (".long\t%3", op);
+	}
+    }
+  else
+    {
+      /* Setup base pointer if required.  */
+      if (!vcall_offset
+	  || !CONST_OK_FOR_LETTER_P (delta, 'K')
+	  || !CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	{
+	  op[5] = gen_label_rtx ();
+	  output_asm_insn ("basr\t%4,0", op);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	}
+
+      /* Add DELTA to this pointer.  */
+      if (delta)
+	{
+	  if (CONST_OK_FOR_LETTER_P (delta, 'J'))
+	    output_asm_insn ("la\t%1,%2(%1)", op);
+	  else if (CONST_OK_FOR_LETTER_P (delta, 'K'))
+	    output_asm_insn ("ahi\t%1,%2", op);
+	  else
+	    {
+	      op[6] = gen_label_rtx ();
+	      output_asm_insn ("a\t%1,%6-%5(%4)", op);
+	    }
+	}
+
+      /* Perform vcall adjustment.  */
+      if (vcall_offset)
+        {
+	  if (CONST_OK_FOR_LETTER_P (vcall_offset, 'J'))
+	    {
+	      output_asm_insn ("lg\t%4,0(%1)", op);
+	      output_asm_insn ("a\t%1,%3(%4)", op);
+	    }
+	  else if (CONST_OK_FOR_LETTER_P (vcall_offset, 'K'))
+	    {
+	      output_asm_insn ("lhi\t%4,%3", op);
+	      output_asm_insn ("a\t%4,0(%1)", op);
+	      output_asm_insn ("a\t%1,0(%4)", op);
+	    }
+	  else
+	    {
+	      op[7] = gen_label_rtx ();
+	      output_asm_insn ("l\t%4,%7-%5(%4)", op);
+	      output_asm_insn ("a\t%4,0(%1)", op);
+	      output_asm_insn ("a\t%1,0(%4)", op);
+	    }
+
+	  /* We had to clobber the base pointer register.
+	     Re-setup the base pointer (with a different base).  */
+	  op[5] = gen_label_rtx ();
+	  output_asm_insn ("basr\t%4,0", op);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[5]));
+	}
+
+      /* Jump to target.  */
+      op[8] = gen_label_rtx ();
+      if (!flag_pic)
+	output_asm_insn ("l\t%4,%8-%5(%4)", op);
+      else
+	output_asm_insn ("a\t%4,%8-%5(%4)", op);
+      output_asm_insn ("br\t%4", op);
+
+      /* Output literal pool.  */
+      output_asm_insn (".align\t4", op);
+      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[8]));
+      if (!flag_pic)
+	output_asm_insn (".long\t%0", op);
+      else
+	output_asm_insn (".long\t%0-%5", op);
+
+      if (op[6])
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[6]));
+	  output_asm_insn (".long\t%2", op);
+	}
+      if (op[7])
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (op[7]));
+	  output_asm_insn (".long\t%3", op);
+	}
+    }
 }
+
