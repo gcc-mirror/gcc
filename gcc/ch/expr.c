@@ -211,8 +211,7 @@ chill_expand_case_expr (expr)
 		chill_handle_case_label (TREE_VALUE (label), selector);
 	      labels = TREE_CHAIN (labels);
 	      if (labels != NULL_TREE)
-		error ("The number of CASE selectors does not match the number "
-                       "of CASE label lists");
+		error ("The number of CASE selectors does not match the number of CASE label lists");
 		
 	    }
         }

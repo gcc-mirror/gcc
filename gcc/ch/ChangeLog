@@ -1,3 +1,10 @@
+1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* typeck.c (apply_chill_array_layout, apply_chill_field_layout):
+	Avoid the use of ANSI string concatenation.
+
+	* expr.c (chill_expand_case_expr): Likewise.
+
 1999-11-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (build_chill_function_call): Don't call a variadic
