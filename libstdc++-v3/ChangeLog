@@ -1,3 +1,12 @@
+2003-03-08  Paolo Carlini <pcarlini@unitus.it>
+            Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9424
+	* include/bits/streambuf.tcc (__copy_streambufs): Use
+	sgetn-sputn only when sputn cannot fail, otherwise fall back
+	to safe snextc-sputc.
+	* testsuite/27_io/streambuf_members.cc (test11, test12): Add.
+
 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/locale_facets.tcc (num_put::do_put(bool)): Use
