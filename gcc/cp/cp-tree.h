@@ -1530,6 +1530,21 @@ struct lang_decl GTY(())
     {
       struct full_lang_decl
       {
+	/* In an overloaded operator, this is the value of
+	   DECL_OVERLOADED_OPERATOR_P.  */
+	ENUM_BITFIELD (tree_code) operator_code : 8;
+
+	unsigned u3sel : 1;
+	unsigned pending_inline_p : 1;
+	unsigned spare : 3;
+	
+	/* In a FUNCTION_DECL for which THUNK_P holds this is the
+	   THUNK_FIXED_OFFSET.  The largest object that can be
+	   thunked is thus 262144, which is what is required [limits].
+	   We have to store a signed value as for regular thunks this
+	   is <= 0, and for covariant thunks it is >= 0.  */
+	signed fixed_offset : 19;
+
 	/* For a non-thunk function decl, this is a tree list of
   	   friendly classes. For a thunk function decl, it is the
   	   thunked to function decl.  */
@@ -1545,17 +1560,6 @@ struct lang_decl GTY(())
 
 	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
 	tree cloned_function;
-
-	/* In a FUNCTION_DECL for which THUNK_P holds, this is
-	   THUNK_FIXED_OFFSET.  */
-	HOST_WIDE_INT fixed_offset;
-
-	/* In an overloaded operator, this is the value of
-	   DECL_OVERLOADED_OPERATOR_P.  */
-	enum tree_code operator_code;
-
-	unsigned u3sel : 1;
-	unsigned pending_inline_p : 1;
 
 	union lang_decl_u3
 	{
