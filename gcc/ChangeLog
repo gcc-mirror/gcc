@@ -1,3 +1,7 @@
+Fri Aug 14 01:19:08 1998  Robert Lipe  <robertl@dgii.com>
+
+	* install.texi: Various SCO OpenServer tweaks.
+
 Thu Aug 13 20:14:40 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reload1.c (eliminate_regs_in_insn): Handle another case when
