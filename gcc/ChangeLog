@@ -1,3 +1,11 @@
+2003-01-03  Dale Johannesen  <dalej@apple.com>
+
+	* config/darwin.h:  (EXTRA_SECTIONS):  Add machopic_symbol_stub1,
+	  machopic_picsymbol_stub1.
+	  (EXTRA_SECTION_FUNCTIONS):  Ditto.
+	* rs6000/rs6000.c:  Update copyright.
+	  (machopic_output_stub):  Use them.  Remove an insn from stub code.
+
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
 	* fold-const.c (fold) [COND_EXPR]: Avoid NOP_EXPRs better.

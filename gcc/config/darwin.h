@@ -510,7 +510,9 @@ FUNCTION ()								\
   in_machopic_nl_symbol_ptr,				\
   in_machopic_lazy_symbol_ptr,				\
   in_machopic_symbol_stub,				\
+  in_machopic_symbol_stub1,				\
   in_machopic_picsymbol_stub,				\
+  in_machopic_picsymbol_stub1,				\
   in_darwin_exception, in_darwin_eh_frame,		\
   num_sections
 
@@ -614,9 +616,15 @@ SECTION_FUNCTION (machopic_nl_symbol_ptr_section,	\
 SECTION_FUNCTION (machopic_symbol_stub_section,		\
 		in_machopic_symbol_stub,		\
 		".symbol_stub", 0)      		\
+SECTION_FUNCTION (machopic_symbol_stub1_section,	\
+		in_machopic_symbol_stub1,		\
+		".section __TEXT,__symbol_stub1,symbol_stubs,pure_instructions,16", 0)\
 SECTION_FUNCTION (machopic_picsymbol_stub_section,	\
 		in_machopic_picsymbol_stub,		\
 		".picsymbol_stub", 0)      		\
+SECTION_FUNCTION (machopic_picsymbol_stub1_section,	\
+		in_machopic_picsymbol_stub1,		\
+		".section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32", 0)\
 SECTION_FUNCTION (darwin_exception_section,		\
 		in_darwin_exception,			\
 		".section __DATA,__gcc_except_tab", 0)	\
