@@ -4144,15 +4144,11 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
   emit_move_insn (tem, g1_ori);
   emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
-		      gen_rtvec (1, plus_constant (tramp, 0)),
-		      3));
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
-		      gen_rtvec (1, plus_constant (tramp, 8)),
-		      3));
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
-		      gen_rtvec (1, plus_constant (tramp, 16)),
-		      3));
+  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode, tramp))));
+  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
+					       plus_constant (tramp, 8)))));
+  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
+					       plus_constant (tramp, 16)))));
 }
 
 /* Subroutines to support a flat (single) register window calling
