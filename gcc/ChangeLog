@@ -1,3 +1,8 @@
+2002-11-19  Andreas Jaeger  <aj@suse.de>
+
+	* loop.c (record_giv): Initialize not_replaceable.
+	(check_final_value): Likewise.
+
 2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_init_once): Replace 1 with
@@ -91,7 +96,7 @@ Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/netbsd-elf.h (STARTFILE_SPEC): Add if-exists(crti%O%s).
 	(ENDFILE_SPEC): Add if-exists(crtn%O%s).
 	* config/alpha/netbsd.h (ENDFILE_SPEC): Likewise.
-    
+
 	* doc/invoke.texi: Document spec functions.
 
 	* cppspec.c (lang_specific_spec_functions): New.
@@ -240,7 +245,7 @@ Sat Nov 16 02:06:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (optimization_options): Set 
+	* config/s390/s390.c (optimization_options): Set
 	flag_asynchronous_unwind_tables to 1 by default.
 
 2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
