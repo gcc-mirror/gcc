@@ -6272,12 +6272,18 @@ finish_function (void)
 	  if (flag_isoc99)
 	    {
 	      tree stmt = c_finish_return (integer_zero_node);
+#ifdef USE_MAPPED_LOCATION
+	      /* Hack.  We don't want the middle-end to warn that this return
+		 is unreachable, so we mark its location as special.  Using
+		 UNKNOWN_LOCATION has the problem that it gets clobbered in
+		 annotate_one_with_locus.  A cleaner solution might be to
+		 ensure ! should_carry_locus_p (stmt), but that needs a flag.
+	      */
+	      SET_EXPR_LOCATION (stmt, BUILTINS_LOCATION);
+#else
 	      /* Hack.  We don't want the middle-end to warn that this
 		 return is unreachable, so put the statement on the
 		 special line 0.  */
-#ifdef USE_MAPPED_LOCATION
-	      SET_EXPR_LOCATION (stmt, UNKNOWN_LOCATION);
-#else
 	      annotate_with_file_line (stmt, input_filename, 0);
 #endif
 	    }
