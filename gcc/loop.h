@@ -314,6 +314,9 @@ struct loop_info
   int has_multiple_exit_targets;
   /* Nonzero if there is an indirect jump in the current function.  */
   int has_indirect_jump;
+  /* Whether loop unrolling has emitted copies of the loop body so
+     that the main loop needs no exit tests.  */
+  int preconditioned;
   /* Register or constant initial loop value.  */
   rtx initial_value;
   /* Register or constant value used for comparison test.  */

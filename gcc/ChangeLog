@@ -1,3 +1,18 @@
+2002-09-17  Alan Modra  <amodra@bigpond.net.au>
+
+	Merge from mainline.
+	2002-07-20  Alan Modra  <amodra@bigpond.net.au>
+	PR optimization/7130
+	* loop.h (struct loop_info): Add "preconditioned".
+	* unroll.c (unroll_loop): Set it.
+	* doloop.c (doloop_modify_runtime): Correct count for unrolled loops.
+
+	2002-06-24  Alan Modra  <amodra@bigpond.net.au>
+	PR optimization/6984
+	* doloop.c (doloop_valid_p): Correct comment.
+	(doloop_modify_runtime <abs_inc != 1>): Simplify.
+	(doloop_modify_runtime <do-while>): Don't emit code when NE.
+
 2002-09-16  Jeff Law <law@redhat.com>
 
         * libgcc2.c: Do not include machmode.h.
