@@ -85,6 +85,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "function.h"
 #include "target.h"
+#include "langhooks.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -2147,7 +2148,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 	     we rely on the fact that error_mark_node initializers always
 	     end up in bss for C++ and never end up in bss for C.  */
 	  if (DECL_INITIAL (decl) == 0
-	      || (!strcmp (lang_identify (), "cplusplus")
+	      || (!strcmp (lang_hooks.name, "GNU C++")
 		  && DECL_INITIAL (decl) == error_mark_node))
 	    current_sym_code = N_LCSYM;
 	  else if (DECL_IN_TEXT_SECTION (decl))

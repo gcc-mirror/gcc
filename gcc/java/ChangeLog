@@ -1,3 +1,11 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* jcf-parse.c (init_lex): Remove.
+	* lang.c (language_string, lang_identify): Remove.
+	(struct lang_hooks): Constify.
+	(LANG_HOOKS_NAME): Override.
+	(init_parse): Update.
+
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 
 	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_CROSS_NAME): Handle 

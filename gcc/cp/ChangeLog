@@ -1,3 +1,11 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_NAME): Override.
+	(struct lang_hooks): Constify.
+	* lex.c (cxx_init_options): Update.
+	(lang_identify): Remove.
+	* parse.y (language_string): Remove.	
+
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 
 	* Make-lang.in (CXX_INSTALL_NAME, GXX_CROSS_NAME,

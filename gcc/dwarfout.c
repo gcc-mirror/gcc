@@ -577,6 +577,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tm_p.h"
 #include "debug.h"
+#include "langhooks.h"
 
 /* NOTE: In the comments in this file, many references are made to
    so called "Debugging Information Entries".  For the sake of brevity,
@@ -3462,7 +3463,7 @@ static inline void
 prototyped_attribute (func_type)
      tree func_type;
 {
-  if ((strcmp (language_string, "GNU C") == 0)
+  if ((strcmp (lang_hooks.name, "GNU C") == 0)
       && (TYPE_ARG_TYPES (func_type) != NULL))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_prototyped);
@@ -4206,6 +4207,7 @@ output_compile_unit_die (arg)
      void *arg;
 {
   const char *main_input_filename = arg;
+  const char *language_string = lang_hooks.name;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_compile_unit);
   sibling_attribute ();

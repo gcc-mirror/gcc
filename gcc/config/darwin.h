@@ -175,7 +175,7 @@ do { text_section ();							\
 #define ASM_FILE_END(FILE)					\
   do {								\
     machopic_finish (asm_out_file);                             \
-    if (strcmp (language_string, "GNU C++") == 0)		\
+    if (strcmp (lang_hooks.name, "GNU C++") == 0)		\
       {								\
 	constructor_section ();					\
 	destructor_section ();					\

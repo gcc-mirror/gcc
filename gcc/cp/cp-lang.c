@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 
 static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 
+#undef LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME "GNU C++"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT cxx_init
 #undef LANG_HOOKS_FINISH
@@ -66,7 +68,7 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P anon_aggr_type_p
 
 /* Each front end provides its own hooks, for toplev.c.  */
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Special routine to get the alias set for C++.  */
 

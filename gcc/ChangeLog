@@ -1,3 +1,40 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lang.c (LANG_HOOKS_NAME): New.
+	(lang_hooks): Constify.
+	(c_init_options): Update.
+	(lang_identify): Remove.
+	* c-parse.in (language_string): Remove.
+	* dbxout.c: Include langhooks.h.
+	(dbxout_symbol_location): Update.
+	* dwarf2out.c: Include langhooks.h.
+	(gen_compile_unit_die): Update.
+	* dwarfout.c: Include langhooks.h.
+	(prototyped_attribute, output_compile_unit_die): Update.
+	* langhooks-def.h (LANG_HOOKS_NAME, LANG_HOOKS_IDENTIFIER_SIZE): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New members.  Constify.
+	* stringpool.c: Don't include toplev.h.
+	(set_identifier_size): Remove.
+	* toplev.c (toplev_main): Initialize identifier size.
+	(print_version): Update.
+	* tree.h (language_string, init_lex, lang_identify,
+	set_identifier_size): Remove.
+	* Makefile.in: Update dependencies.
+	* config/darwin.c: Include langhooks.h.
+	(func_name_maybe_scoped): Update.
+	* config/darwin.h (ASM_END_FILE): Update.
+	* config/nextstep.h (ASM_END_FILE): Update.
+	* config/nextstep21.h (ASM_END_FILE): Update.
+	* config/i386/sun386.h (ASM_END_FILE): Update.
+	* config/rs6000/rs6000.c (ASM_END_FILE): Include langhooks.h.
+	(rs6000_output_function_epilogue): Update.
+objc:
+	* objc-act.c (LANG_HOOKS_NAME): Override.
+	(struct lang_hooks): Constify.
+	(objc_init_options): Update.
+	(lang_identify): Remove.
+
 Fri Nov  9 00:25:18 EST 2001  John Wehle  (john@feith.com)
 
 	* fold-const.c (lshift_double): Honor PREC.

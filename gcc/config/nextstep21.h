@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_FILE_END
 #define ASM_FILE_END(FILE)					\
   do {								\
-      if (strcmp (language_string, "GNU C++") == 0)		\
+      if (strcmp (lang_hooks.name, "GNU C++") == 0)		\
       {								\
 	ASM_OUTPUT_ALIGN (FILE, 1);				\
       }								\

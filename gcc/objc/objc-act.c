@@ -451,6 +451,8 @@ static int generating_instance_variables = 0;
 
 static int print_struct_values = 0;
 
+#undef LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME "GNU Objective-C"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
 #undef LANG_HOOKS_INIT_OPTIONS
@@ -461,7 +463,7 @@ static int print_struct_values = 0;
 #define LANG_HOOKS_POST_OPTIONS objc_post_options
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Post-switch processing.  */
 static void
@@ -536,9 +538,6 @@ generate_struct_by_value_array ()
 static void
 objc_init_options ()
 {
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-
   parse_in = cpp_create_reader (ident_hash, CLK_OBJC);
   c_language = clk_objective_c;
 }
@@ -599,12 +598,6 @@ finish_file ()
 
   if (gen_declaration_file)
     fclose (gen_declaration_file);
-}
-
-const char *
-lang_identify ()
-{
-  return "objc";
 }
 
 static int

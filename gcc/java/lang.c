@@ -99,8 +99,6 @@ static const char *const java_tree_code_name[] = {
 
 int compiling_from_source;
 
-const char * const language_string = "GNU Java";
-
 char * resource_name;
 
 int flag_emit_class_files = 0;
@@ -197,6 +195,8 @@ static int dependency_tracking = 0;
 #define DEPEND_TARGET_SET 4
 #define DEPEND_FILE_ALREADY_SET 8
 
+#undef LANG_HOOKS_NAME
+#define LANG_HOOKS_NAME "GNU Java"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT java_init
 #undef LANG_HOOKS_INIT_OPTIONS
@@ -205,7 +205,7 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_DECODE_OPTION java_decode_option
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Process an option that can accept a `no-' form.
    Return 1 if option found, 0 otherwise.  */
@@ -474,8 +474,6 @@ init_parse (filename)
 	}
     }
 
-  init_lex ();
-
   return filename;
 }
 
@@ -742,12 +740,6 @@ java_init_options ()
   flag_bounds_check = 1;
   flag_exceptions = 1;
   flag_non_call_exceptions = 1;
-}
-
-const char *
-lang_identify ()
-{
-  return "Java";
 }
 
 /* Hooks for print_node.  */

@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "function.h"
 #include "ggc.h"
+#include "langhooks.h"
 
 #include "darwin-protos.h"
 
@@ -565,7 +566,7 @@ func_name_maybe_scoped (fname)
 {
 
   if (is_cplusplus < 0)
-    is_cplusplus = (strcmp (lang_identify (), "cplusplus") == 0);
+    is_cplusplus = (strcmp (lang_hooks.name, "GNU C++") == 0);
 
   if (is_cplusplus)
     {

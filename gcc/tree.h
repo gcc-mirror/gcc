@@ -2650,8 +2650,6 @@ extern void (*incomplete_decl_finalize_hook)	PARAMS ((tree));
 extern const char *init_parse			PARAMS ((const char *));
 extern void finish_parse			PARAMS ((void));
 
-extern const char * const language_string;
-
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */
 extern tree builtin_function			PARAMS ((const char *, tree, int,
@@ -2777,13 +2775,8 @@ extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
 
-/* Function of no arguments for initializing lexical scanning.  */
-extern void init_lex				PARAMS ((void));
 /* Function of no arguments for initializing the symbol table.  */
 extern void init_decl_processing		PARAMS ((void));
-
-/* Function to identify which front-end produced the output file.  */
-extern const char *lang_identify			PARAMS ((void));
 
 /* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */
 extern void copy_lang_decl			PARAMS ((tree));
@@ -2833,7 +2826,6 @@ struct obstack;
 
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
-extern void set_identifier_size		PARAMS ((int));
 extern int int_fits_type_p		PARAMS ((tree, tree));
 extern int tree_log2			PARAMS ((tree));
 extern int tree_floor_log2		PARAMS ((tree));

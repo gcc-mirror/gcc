@@ -32,7 +32,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "hashtable.h"
-#include "toplev.h"
 
 /* The "" allocated string.  */
 const char empty_string[] = "";
@@ -141,19 +140,6 @@ maybe_get_identifier (text)
     return HT_IDENT_TO_GCC_IDENT (ht_node);
 
   return NULL_TREE;
-}
-
-/* Record the size of an identifier node for the language in use.
-   SIZE is the total size in bytes.
-   This is called by the language-specific files.  This must be
-   called before allocating any identifiers.  */
-
-void
-set_identifier_size (size)
-     int size;
-{
-  tree_code_length[(int) IDENTIFIER_NODE]
-    = (size - sizeof (struct tree_common)) / sizeof (tree);
 }
 
 /* Report some basic statistics about the string pool.  */

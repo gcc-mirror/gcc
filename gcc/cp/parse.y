@@ -45,10 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-/* Since parsers are distinct for each language, put the language string
-   definition here.  (fnf) */
-const char * const language_string = "GNU C++";
-
 extern struct obstack permanent_obstack;
 
 /* Like YYERROR but do call yyerror.  */

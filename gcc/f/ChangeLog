@@ -1,3 +1,10 @@
+Fri Nov  9 07:14:47 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (language_string, lang_identify): Remove.
+	(struct lang_hooks): Constify.
+	(LANG_HOOKS_NAME): Override.
+	(init_parse): Update.
+
 2001-11-08  Andreas Franck  <afranck@gmx.de>
 
 	* Make-lang.in (G77_INSTALL_NAME, G77_CROSS_NAME): Handle 
