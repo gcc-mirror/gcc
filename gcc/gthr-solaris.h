@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Solaris threads as found in Solaris 2.[456].
    Actually these are Unix International (UI) threads, but I don't
-   know if anyone else implements these. */
+   know if anyone else implements these.  */
 
 #define __GTHREADS 1
 
@@ -79,7 +79,7 @@ typedef mutex_t __gthread_mutex_t;
 #endif
 
 /* This will not actually work in Solaris 2.5, since libc contains
-   dummy symbols of all thr_* routines. */
+   dummy symbols of all thr_* routines.  */
 
 static void *__gthread_active_ptr = (void *) &thr_create;
 
@@ -109,7 +109,7 @@ static void *thread_local_storage = NULL;
 
 /* Backend initialization functions */
 
-/* Initialize the threads subsystem. */
+/* Initialize the threads subsystem.  */
 static inline int
 __gthread_objc_init_thread_system(void)
 {
@@ -121,7 +121,7 @@ __gthread_objc_init_thread_system(void)
   return -1;
 }
 
-/* Close the threads subsystem. */
+/* Close the threads subsystem.  */
 static inline int
 __gthread_objc_close_thread_system(void)
 {
@@ -133,7 +133,7 @@ __gthread_objc_close_thread_system(void)
 
 /* Backend thread functions */
 
-/* Create a new thread of execution. */
+/* Create a new thread of execution.  */
 static inline objc_thread_t
 __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 {
@@ -153,7 +153,7 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
   return thread_id;
 }
 
-/* Set the current thread's priority. */
+/* Set the current thread's priority.  */
 static inline int
 __gthread_objc_thread_set_priority(int priority)
 {
@@ -183,7 +183,7 @@ __gthread_objc_thread_set_priority(int priority)
     return -1;
 }
 
-/* Return the current thread's priority. */
+/* Return the current thread's priority.  */
 static inline int
 __gthread_objc_thread_get_priority(void)
 {
@@ -201,11 +201,11 @@ __gthread_objc_thread_get_priority(void)
       return OBJC_THREAD_LOW_PRIORITY;
     }
 
-  /* Couldn't get priority. */
+  /* Couldn't get priority.  */
   return -1;
 }
 
-/* Yield our process time to another thread. */
+/* Yield our process time to another thread.  */
 static inline void
 __gthread_objc_thread_yield(void)
 {
@@ -213,7 +213,7 @@ __gthread_objc_thread_yield(void)
     thr_yield();
 }
 
-/* Terminate the current thread. */
+/* Terminate the current thread.  */
 static inline int
 __gthread_objc_thread_exit(void)
 {
@@ -225,7 +225,7 @@ __gthread_objc_thread_exit(void)
   return -1;
 }
 
-/* Returns an integer value which uniquely describes a thread. */
+/* Returns an integer value which uniquely describes a thread.  */
 static inline objc_thread_t
 __gthread_objc_thread_id(void)
 {
@@ -235,7 +235,7 @@ __gthread_objc_thread_id(void)
     return (objc_thread_t)1;
 }
 
-/* Sets the thread's local storage pointer. */
+/* Sets the thread's local storage pointer.  */
 static inline int
 __gthread_objc_thread_set_data(void *value)
 {
@@ -253,7 +253,7 @@ __gthread_objc_thread_set_data(void *value)
     }
 }
 
-/* Returns the thread's local storage pointer. */
+/* Returns the thread's local storage pointer.  */
 static inline void *
 __gthread_objc_thread_get_data(void)
 {
@@ -272,7 +272,7 @@ __gthread_objc_thread_get_data(void)
 
 /* Backend mutex functions */
 
-/* Allocate a mutex. */
+/* Allocate a mutex.  */
 static inline int
 __gthread_objc_mutex_allocate(objc_mutex_t mutex)
 {
@@ -283,7 +283,7 @@ __gthread_objc_mutex_allocate(objc_mutex_t mutex)
   return 0;
 }
 
-/* Deallocate a mutex. */
+/* Deallocate a mutex.  */
 static inline int
 __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 {
@@ -293,7 +293,7 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
   return 0;
 }
 
-/* Grab a lock on a mutex. */
+/* Grab a lock on a mutex.  */
 static inline int
 __gthread_objc_mutex_lock(objc_mutex_t mutex)
 {
@@ -304,7 +304,7 @@ __gthread_objc_mutex_lock(objc_mutex_t mutex)
   return 0;
 }
 
-/* Try to grab a lock on a mutex. */
+/* Try to grab a lock on a mutex.  */
 static inline int
 __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 {
@@ -328,7 +328,7 @@ __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 
 /* Backend condition mutex functions */
 
-/* Allocate a condition. */
+/* Allocate a condition.  */
 static inline int
 __gthread_objc_condition_allocate(objc_condition_t condition)
 {
@@ -339,7 +339,7 @@ __gthread_objc_condition_allocate(objc_condition_t condition)
     return 0;
 }
 
-/* Deallocate a condition. */
+/* Deallocate a condition.  */
 static inline int
 __gthread_objc_condition_deallocate(objc_condition_t condition)
 {
@@ -360,7 +360,7 @@ __gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
     return 0;
 }
 
-/* Wake up all threads waiting on this condition. */
+/* Wake up all threads waiting on this condition.  */
 static inline int
 __gthread_objc_condition_broadcast(objc_condition_t condition)
 {
@@ -370,7 +370,7 @@ __gthread_objc_condition_broadcast(objc_condition_t condition)
     return 0;
 }
 
-/* Wake up one thread waiting on this condition. */
+/* Wake up one thread waiting on this condition.  */
 static inline int
 __gthread_objc_condition_signal(objc_condition_t condition)
 {
@@ -410,7 +410,7 @@ static inline int
 __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 {
   /* Solaris 2.5 contains thr_* routines no-op in libc, so test if we actually
-     got a reasonable key value, and if not, fail. */
+     got a reasonable key value, and if not, fail.  */
   *key = -1;
   if (thr_keycreate (key, dtor) != 0 || *key == -1)
     return -1;
@@ -421,14 +421,14 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 static inline int
 __gthread_key_dtor (__gthread_key_t key, void *ptr)
 {
-  /* Nothing needed. */
+  /* Nothing needed.  */
   return 0;
 }
 
 static inline int
 __gthread_key_delete (__gthread_key_t key)
 {
-  /* Not possible. */
+  /* Not possible.  */
   return -1;
 }
 

@@ -1,3 +1,12 @@
+2001-10-12  Kazu Hirata  <kazu@hxi.com>
+
+	* gthr-dce.h: Fix comment formatting.
+	* gthr-posix.h: Likewise.
+	* gthr-single.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-vxworks.h: Likewise.
+	* gthr-win32.h: Likewise.
+
 2001-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* final.c (output_asm_insn): Make sure assembly dialects are
