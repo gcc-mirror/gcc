@@ -55,7 +55,8 @@ namespace std {
 
   locale::_Impl* 		locale::_S_global; 
   locale::_Impl* 		locale::_S_classic;
-  const int 			locale::_S_num_categories;
+  const int 			locale::_S_categories_num;
+  const int 			locale::_S_facets_num;
 
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
@@ -552,6 +553,11 @@ namespace std {
   }
 
 
+  locale::locale(_Impl* __ip) throw()
+  : _M_impl(__ip)
+  { __ip->_M_add_reference(); }
+
+
   locale::locale(const char* __name)
   {
     if (__name)
@@ -560,7 +566,7 @@ namespace std {
 	  (_M_impl = _S_classic)->_M_add_reference();
 	// Might throw:
 	else
-	  _M_impl = new _Impl(*_S_classic, __name, all, 1);
+	  _M_impl = new _Impl(_S_facets_num, 1, true, __name);
       }
     else
       throw runtime_error("attempt to create named locale from NULL name");
@@ -580,17 +586,6 @@ namespace std {
       throw runtime_error("attempt to create locale from NULL named locale");
   }
 
-  bool
-  locale::operator==(const locale& __rhs) const throw()
-  {
-    return((this->name() != "*" && this->name() == __rhs.name())
-	   || _M_impl == __rhs._M_impl);
-  }
-
-  locale::locale(_Impl* __ip) throw()
-  : _M_impl(__ip)
-  { __ip->_M_add_reference(); }
-
   locale::locale(const locale& __other, const locale& __one, category __cat)
   {
     __cat = _S_normalize_category(__cat);    // might throw
@@ -608,6 +603,13 @@ namespace std {
     //    _M_impl->_M_cached_name_ok = false;
     if (!__other._M_impl->_M_has_name)
       _M_impl->_M_has_name = false;
+  }
+
+  bool
+  locale::operator==(const locale& __rhs) const throw()
+  {
+    return((this->name() != "*" && this->name() == __rhs.name())
+	   || _M_impl == __rhs._M_impl);
   }
 
   const locale&
@@ -647,7 +649,7 @@ namespace std {
 	try {
 	  // 26 Standard facets, 2 references.
 	  // One reference for _M_classic, one for _M_global
-	  _S_classic = new _Impl(26, 2, true, "C");
+	  _S_classic = new _Impl(_S_facets_num, 2, true, "C");
 	  _S_global = _S_classic; 
 
 	  _S_classic->_M_facet_init(new std::collate<char>);
