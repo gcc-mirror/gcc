@@ -2619,10 +2619,9 @@ all_lang_makefiles=
 all_headers=
 all_lib2funcs=
 
-rm -f Make-host Make-target Make-lang Make-hooks
+rm -f Make-host Make-target Make-hooks
 touch Make-host
 touch Make-target
-touch Make-lang
 touch Make-hooks
 host_overrides="Make-host"
 target_overrides="Make-target"
@@ -2773,9 +2772,6 @@ do
 				all_diff_excludes="$all_diff_excludes $diff_excludes"
 				all_headers="$all_headers $headers"
 				all_lib2funcs="$all_lib2funcs $lib2funcs"
-
-				cat ${mainsrcdir}/$s/Make-lang.in >> Make-lang
-				cat ${mainsrcdir}/$s/Make-lang.in >> Makefile.ll
 			fi
 		done
 
@@ -2891,6 +2887,9 @@ do
 done   # end of current-dir SUBDIRS loop
 
 srcdir=$savesrcdir
+
+# Process the language fragments
+. $srcdir/configure.frag $srcdir "$subdirs"
 
 # Substitute configuration variables
 AC_SUBST(subdirs)
