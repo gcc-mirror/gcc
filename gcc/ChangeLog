@@ -1,3 +1,7 @@
+2003-07-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* longlong.h (PowerPC umul_ppmm): Do not test __vxworks__.
+
 2003-07-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (EH_RETURN_HANDLER_RTX): Compute offset
