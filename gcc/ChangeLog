@@ -1,3 +1,11 @@
+Wed Feb 25 23:40:54 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.c (struct machine_function): Add new fields for PIC stuff.
+	(save_386_machine_status): Fix argument to xmalloc.  Save pic_label_rtx
+	and pic_label_name.
+	(restore_386_machine_status): Corresponding changes.
+	(clear_386_stack_locals): Also clear pic_label_rtx and pic_label_name.
+
 Wed Feb 25 01:31:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-parse.y (undeclared variable error): Tweak error message

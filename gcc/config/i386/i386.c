@@ -4185,6 +4185,8 @@ static rtx i386_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
 struct machine_function
 {
   rtx i386_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+  rtx pic_label_rtx;
+  char pic_label_name[256];
 };
 
 /* Functions to save and restore i386_stack_locals.
@@ -4195,9 +4197,12 @@ void
 save_386_machine_status (p)
      struct function *p;
 {
-  p->machine = (struct machine_function *) xmalloc (sizeof i386_stack_locals);
+  p->machine
+    = (struct machine_function *) xmalloc (sizeof (struct machine_function));
   bcopy ((char *) i386_stack_locals, (char *) p->machine->i386_stack_locals,
 	 sizeof i386_stack_locals);
+  p->machine->pic_label_rtx = pic_label_rtx;
+  bcopy (pic_label_name, p->machine->pic_label_name, 256);
 }
 
 void
@@ -4206,7 +4211,10 @@ restore_386_machine_status (p)
 {
   bcopy ((char *) p->machine->i386_stack_locals, (char *) i386_stack_locals,
 	 sizeof i386_stack_locals);
+  pic_label_rtx = p->machine->pic_label_rtx;
+  bcopy (p->machine->pic_label_name, pic_label_name, 256);
   free (p->machine);
+  p->machine = NULL;
 }
 
 /* Clear stack slot assignments remembered from previous functions.
@@ -4224,6 +4232,8 @@ clear_386_stack_locals ()
     for (n = 0; n < MAX_386_STACK_LOCALS; n++)
       i386_stack_locals[(int) mode][n] = NULL_RTX;
 
+  pic_label_rtx = NULL_RTX;
+  bzero (pic_label_name, 256);
   /* Arrange to save and restore i386_stack_locals around nested functions.  */
   save_machine_status = save_386_machine_status;
   restore_machine_status = restore_386_machine_status;
