@@ -1,3 +1,7 @@
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* dyn-string.c: Add libgcc exception to copyright notice.
+
 2002-03-18  Stuart Griffith  <Stuart_Griffith@credence.com>
 
 	* strtod.c (strtod): Increment 8 chars, not 7, when `infinity'
