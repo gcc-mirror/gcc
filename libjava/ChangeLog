@@ -1,3 +1,8 @@
+2003-06-18  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* java/lang/natVMSecurityManager.cc (getClassContext):
+	Use maxlen instead of len for loop bound.
+
 2003-06-18  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SelectorImpl.java
