@@ -132,7 +132,7 @@ struct tree_opt_pass pass_referenced_vars =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  0,					/* tv_id */
+  TV_FIND_REFERENCED_VARS,		/* tv_id */
   PROP_gimple_leh | PROP_cfg,		/* properties_required */
   PROP_referenced_vars,			/* properties_provided */
   0,					/* properties_destroyed */
