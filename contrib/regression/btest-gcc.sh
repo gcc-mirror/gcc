@@ -99,7 +99,7 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 TESTLOGS="gcc/testsuite/gcc.sum
 gcc/testsuite/g++.sum
 gcc/testsuite/objc.sum
-$H_TARGET/libstdc++-v3/testsuite/libstdc++-v3.sum"
+$H_TARGET/libstdc++-v3/testsuite/libstdc++.sum"
 
 # Build.
 echo build > $RESULT
