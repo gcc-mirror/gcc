@@ -1,3 +1,7 @@
+Fri Apr  2 11:26:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (shorten_compare): Fix typo in last change.
+
 Mon Mar 22 20:13:19 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_builtin, case BUILT_IN_CONSTANT_P): If MODE is
