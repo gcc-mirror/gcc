@@ -1,3 +1,11 @@
+2003-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/11504
+	* acinclude.m4 (GLIBCXX_EXPORT_FLAGS): Add -Wcast-qual to
+	WARN_FLAGS, remove -Wno-format.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2003-09-18  Petur Runolfsson  <peturr02@ru.is>
 
 	* config/io/basic_file_stdio.cc (sys_getc, sys_ungetc): Delete.
