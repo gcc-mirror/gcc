@@ -2493,18 +2493,9 @@ build_new (placement, decl, init, use_global_new)
     }
 
   /* Allocate the object.  */
-  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
-      && (TYPE_GETS_NEW (true_type) & (1 << has_array)))
-    rval = build_opfncall (code, LOOKUP_NORMAL,
-			   build_pointer_type (true_type), size, placement);
-  else if (placement)
-    {
-      rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
-			     ptr_type_node, size, placement);
-      rval = cp_convert (build_pointer_type (true_type), rval);
-    }
-  else if (! has_array && flag_this_is_variable > 0
-	   && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
+  
+  if (! has_array && ! placement && flag_this_is_variable > 0
+      && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
     {
       if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
 	rval = NULL_TREE;
@@ -2516,10 +2507,10 @@ build_new (placement, decl, init, use_global_new)
     }
   else
     {
-      rval = build_builtin_call (build_pointer_type (true_type),
-				 has_array ? BIVN : BIN,
-				 build_expr_list (NULL_TREE, size));
-      TREE_CALLS_NEW (rval) = 1;
+      rval = build_op_new_call
+	(code, true_type, expr_tree_cons (NULL_TREE, size, placement),
+	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
+      rval = cp_convert (build_pointer_type (true_type), rval);
     }
 
   if (flag_exceptions && rval)
@@ -2719,27 +2710,27 @@ build_new (placement, decl, init, use_global_new)
 	 an exception and the new-expression does not contain a
 	 new-placement, then the deallocation function is called to free
 	 the memory in which the object was being constructed.  */
-      /* FIXME: handle placement delete.  */
-      if (flag_exceptions && ! placement)
+      if (flag_exceptions && alloc_expr)
 	{
-	  tree cleanup = alloc_expr;
+	  enum tree_code dcode = has_array? VEC_DELETE_EXPR : DELETE_EXPR;
+	  tree cleanup, args = NULL_TREE;
+	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
 	  /* All cleanups must last longer than normal.  */
 	  int yes = suspend_momentary ();
 
-	  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
-	      && (TYPE_GETS_DELETE (true_type) & (1 << has_array)))
-	    cleanup = build_opfncall (has_array? VEC_DELETE_EXPR : DELETE_EXPR,
-				      LOOKUP_NORMAL, cleanup, size, NULL_TREE);
-	  else
-	    cleanup = build_builtin_call
-	      (void_type_node, has_array ? BIVD : BID,
-	       build_expr_list (NULL_TREE, cleanup));
+	  if (placement)
+	    flags |= LOOKUP_SPECULATIVELY;
+
+	  cleanup = build_op_delete_call (dcode, alloc_expr, size, flags);
 
 	  resume_momentary (yes);
-					 
-	  rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
-	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+
+	  if (cleanup)
+	    {
+	      rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
+	      rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+	    }
 	}
     }
   else if (TYPE_READONLY (true_type))
@@ -3196,16 +3187,10 @@ build_x_delete (type, addr, which_delete, virtual_size)
 {
   int use_global_delete = which_delete & 1;
   int use_vec_delete = !!(which_delete & 2);
-  tree rval;
   enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
+  int flags = LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL);
 
-  if (! use_global_delete && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-      && (TYPE_GETS_DELETE (TREE_TYPE (type)) & (1 << use_vec_delete)))
-    rval = build_opfncall (code, LOOKUP_NORMAL, addr, virtual_size, NULL_TREE);
-  else
-    rval = build_builtin_call (void_type_node, use_vec_delete ? BIVD : BID,
-			       build_expr_list (NULL_TREE, addr));
-  return rval;
+  return build_op_delete_call (code, addr, virtual_size, flags);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
@@ -3302,18 +3287,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (auto_delete == integer_zero_node)
 	return void_zero_node;
 
-      /* Pass the size of the object down to the operator delete() in
-	 addition to the ADDR.  */
-      if (TYPE_GETS_REG_DELETE (type) && !use_global_delete)
-	{
-	  tree virtual_size = c_sizeof_nowarn (type);
-	  return build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
-				 virtual_size, NULL_TREE);
-	}
-
-      /* Call the builtin operator delete.  */
-      return build_builtin_call (void_type_node, BID,
-				 build_expr_list (NULL_TREE, addr));
+      return build_op_delete_call
+	(DELETE_EXPR, addr, c_sizeof_nowarn (type),
+	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL));
     }
 
   /* Below, we will reverse the order in which these calls are made.
