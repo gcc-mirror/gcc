@@ -1,3 +1,7 @@
+2003-12-29  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/locale_facets.h (ctype.narrow,widen): Add cast.
+
 2003-12-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* acinclude.m4 (GLIBCXX_CHECK_LFS): Add -fno-exceptions
