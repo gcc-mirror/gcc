@@ -1,5 +1,7 @@
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* tradcpp.c (main): Rename 'perror' label to 'sys_error'.
+
 	* cppexp.c, cpphash.c, cpphash.h, cppinit.c, cpplex.c,
 	cpplib.c, cpplib.h: Eradicate all traces of code dependent on
 	traditional, lang_chill, or lang_fortran.
