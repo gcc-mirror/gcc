@@ -78,11 +78,4 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_OBJFMT_CPP_BUILTINS()
 
-/* ??? The so-called ASM_OUTPUT_SECTION_NAME cleanup from August 3rd 2001
-   broke sh-coff, and was still neither reversed not fixed eight month after
-   this has been pointed out.  */
-/* Tell the braindead logic in defaults.h / libgcc2.c not to
-   refer to __EH_FRAME_BEGIN__, since we don't use crtstuff.c */
-#define HAS_INIT_SECTION
-/* And tell function.c that we don't actually have an init section.  */
-#define INVOKE__MAIN
+#define DWARF2_UNWIND_INFO 0

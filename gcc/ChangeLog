@@ -1,4 +1,7 @@
-Thu Jun 13 22:29:40 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Thu Jun 13 22:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/coff.h (HAS_INIT_SECTION, INVOKE__MAIN): Don't define.
+	(DWARF2_UNWIND_INFO): Define to 0.
 
 	* config/sh/sh.c (calc_live_regs): Don't use initial_value
 	optimization for PR_MEDIA_REG.
