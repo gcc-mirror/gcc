@@ -84,7 +84,8 @@ static void build_vtable PROTO((tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
 static void fixup_vtable_deltas1 PROTO((tree, tree));
 static void fixup_vtable_deltas PROTO((tree, int, tree));
-static void finish_vtbls PROTO((tree, int, tree));
+static tree dfs_finish_vtbls PROTO((tree, void *));
+static void finish_vtbls PROTO((tree));
 static void modify_vtable_entry PROTO((tree, tree, tree));
 static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
 static void add_virtual_function PROTO((tree *, tree *, int *, tree, tree));
@@ -2228,43 +2229,44 @@ build_vtbl_initializer (binfo)
   return build_nt (CONSTRUCTOR, NULL_TREE, inits);
 }
 
-/* finish up all new vtables.  */
+/* Called from finish_vtbls via dfs_walk.  */
+
+static tree
+dfs_finish_vtbls (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  if (!BINFO_PRIMARY_MARKED_P (binfo)
+      && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo))
+      && BINFO_NEW_VTABLE_MARKED (binfo))
+    {
+      tree decl;
+      tree context;
+      
+      decl = BINFO_VTABLE (binfo);
+      context = DECL_CONTEXT (decl);
+      DECL_CONTEXT (decl) = 0;
+      DECL_INITIAL (decl) = build_vtbl_initializer (binfo);
+      cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
+      DECL_CONTEXT (decl) = context;
+    }
+
+  CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Create all the necessary vtables for T and its base classes.  */
 
 static void
-finish_vtbls (binfo, do_self, t)
-     tree binfo;
-     int do_self;
+finish_vtbls (t)
      tree t;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    {
-      if (BINFO_NEW_VTABLE_MARKED (binfo))
-	{
-	  tree decl, context;
-
-	  decl = BINFO_VTABLE (binfo);
-	  context = DECL_CONTEXT (decl);
-	  DECL_CONTEXT (decl) = 0;
-	  DECL_INITIAL (decl) = build_vtbl_initializer (binfo);
-	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
-	  DECL_CONTEXT (decl) = context;
-	}
-      CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
-    }
-
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	base_binfo = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), t);
-      finish_vtbls (base_binfo, is_not_base_vtable, t);
-    }
+  dfs_walk (TYPE_BINFO (t), dfs_finish_vtbls, 
+	    dfs_unmarked_real_bases_queue_p, t);
+  dfs_walk (TYPE_BINFO (t), dfs_unmark, 
+	    dfs_marked_real_bases_queue_p, t);
 }
 
 /* True if we should override the given BASE_FNDECL with the given
@@ -4793,7 +4795,7 @@ finish_struct_1 (t)
 
   /* Make the rtl for any new vtables we have created, and unmark
      the base types we marked.  */
-  finish_vtbls (TYPE_BINFO (t), 1, t);
+  finish_vtbls (t);
   hack_incomplete_structures (t);
 
   if (warn_overloaded_virtual)
@@ -6009,4 +6011,24 @@ note_name_declared_in_class (name, decl)
 		   IDENTIFIER_POINTER (DECL_NAME (decl)),
 		   (tree) n->value);
     }
+}
+
+/* Dump the offsets of all the bases rooted at BINFO to stderr.
+   INDENT should be zero when called from the top level; it is
+   incremented recursively.  */
+
+void
+dump_class_hierarchy (binfo, indent)
+     tree binfo;
+     int indent;
+{
+  int i;
+
+  fprintf (stderr, "%*s0x%x (%s) %d\n", indent, "",
+	   (unsigned int) binfo,
+	   type_as_string (binfo, TS_PLAIN),
+	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)));
+
+  for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
+    dump_class_hierarchy (BINFO_BASETYPE (binfo, i), indent + 2);
 }

@@ -1,5 +1,9 @@
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
+	* class.c (dfs_finish_vtbls): New function.
+	(finish_vtbls): Use it.
+	(dump_class_hierarchy): New function.
+	
 	* cp-tree.h (BINFO_PRIMARY_MARKED_P): Change definition.
 	(BINFO_VBASE_PRIMARY_P): New macro.
 	(BINFO_VIRTUALS): Add to documentation.
