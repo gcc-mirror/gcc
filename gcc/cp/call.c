@@ -2394,13 +2394,12 @@ build_object_call (obj, args)
     {
       tree fns = TREE_VALUE (convs);
       tree totype = TREE_TYPE (TREE_TYPE (OVL_CURRENT (fns)));
-      tree fn;
 
       if (TREE_CODE (totype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
-	for (; fns; fns = OVL_NEXT (fn))
+	for (; fns; fns = OVL_NEXT (fns))
 	  {
-	    fn = OVL_CURRENT (fn);
+	    tree fn = OVL_CURRENT (fns);
 	    if (TREE_CODE (fn) == TEMPLATE_DECL) 
 	      {
 		templates = scratch_tree_cons (NULL_TREE, fn, templates);
