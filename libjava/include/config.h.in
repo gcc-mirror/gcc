@@ -135,6 +135,9 @@
 /* Define if using setjmp/longjmp exceptions.  */
 #undef SJLJ_EXCEPTIONS
 
+/* Define if getuid() and friends are missing.  */
+#undef NO_GETUID
+
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
 
@@ -146,6 +149,9 @@
 
 /* Define if you have the ftime function.  */
 #undef HAVE_FTIME
+
+/* Define if you have the getcwd function.  */
+#undef HAVE_GETCWD
 
 /* Define if you have the gethostbyaddr_r function.  */
 #undef HAVE_GETHOSTBYADDR_R
