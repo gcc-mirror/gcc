@@ -1,3 +1,12 @@
+2004-07-09  Richard Henderson  <rth@redhat.com>
+
+	* config/v850/v850-protos.h (v850_va_arg): Remove.
+	* config/v850/v850.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(v850_gimplify_va_arg_expr): Rewrite from v850_va_arg.
+	* config/v850/v850.h (EXPAND_BUILTIN_VA_ARG): Remove.
+	(FUNCTION_ARG_PASS_BY_REFERENCE): Handle variable size types.
+	(FUNCTION_ARG_CALLEE_COPIES): Use FUNCTION_ARG_PASS_BY_REFERENCE.
+
 2004-07-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/12133

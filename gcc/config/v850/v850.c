@@ -67,6 +67,7 @@ static void v850_encode_section_info (tree, rtx, int);
 static bool v850_return_in_memory    (tree, tree);
 static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
+static tree v850_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -131,6 +132,9 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR v850_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3306,43 +3310,13 @@ construct_prepare_instruction (rtx op)
 
 /* Implement `va_arg'.  */
 
-rtx
-v850_va_arg (tree valist, tree type)
+static tree
+v850_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  HOST_WIDE_INT size, rsize;
-  tree addr, incr;
-  rtx addr_rtx;
-  int indirect;
-
-  /* Round up sizeof(type) to a word.  */
-  size = int_size_in_bytes (type);
-  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
-  indirect = 0;
-
-  if (size > 8)
-    {
-      size = rsize = UNITS_PER_WORD;
-      indirect = 1;
-    }
-
-  addr = save_expr (valist);
-  incr = fold (build (PLUS_EXPR, ptr_type_node, addr,
-		      build_int_2 (rsize, 0)));
-
-  incr = build (MODIFY_EXPR, ptr_type_node, valist, incr);
-  TREE_SIDE_EFFECTS (incr) = 1;
-  expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  addr_rtx = expand_expr (addr, NULL, Pmode, EXPAND_NORMAL);
-
-  if (indirect)
-    {
-      addr_rtx = force_reg (Pmode, addr_rtx);
-      addr_rtx = gen_rtx_MEM (Pmode, addr_rtx);
-      set_mem_alias_set (addr_rtx, get_varargs_alias_set ());
-    }
-
-  return addr_rtx;
+  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, 0))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
+  else
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return an RTX indicating where the return address to the

@@ -70,7 +70,6 @@ extern int    pattern_is_ok_for_epilogue    (rtx, Mmode);
 extern int    register_is_ok_for_epilogue   (rtx, Mmode);
 #ifdef TREE_CODE
 extern rtx    function_arg                  (CUMULATIVE_ARGS *, Mmode, tree, int);
-extern rtx    v850_va_arg                   (tree, tree);
 #endif
 #endif
 #endif /* TREE_CODE */
