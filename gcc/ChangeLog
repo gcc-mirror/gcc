@@ -1,3 +1,11 @@
+2003-12-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR optimization/13430, PR optimization/12322
+	* bb-reorder.c (copy_bb_p): Do not allow block with many successors to
+	be copied.
+	(find_traces_1_round): Surround check for fake edges by
+	#ifdef ENABLE_CHECKING #endif.
+
 2003-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/7956
