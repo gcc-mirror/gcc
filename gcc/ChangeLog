@@ -1,5 +1,12 @@
 2005-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md ("doloop_si64"): Reload input value directly
+	into the register being decremented.
+	("doloop_si31", "doloop_di"): Likewise.
+	("*doloop_si_long"): Adapt pattern.
+
+2005-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.h (HARD_REGNO_NREGS): Fix computation for
 	access registers.
 	(CLASS_MAX_NREGS): Likewise.
