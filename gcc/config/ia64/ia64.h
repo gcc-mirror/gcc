@@ -633,6 +633,45 @@ while (0)
      1, 1,  1,   1,  1, 0, 1				\
 }
 
+/* Like `CALL_USED_REGISTERS' but used to overcome a historical 
+   problem which makes CALL_USED_REGISTERS *always* include
+   all the FIXED_REGISTERS. Until this problem has been 
+   resolved this macro can be used to overcome this situation.
+   In particular, block_propagate() requires this list 
+   be acurate, or we can remove registers which should be live.  
+   This macro is used in regs_invalidated_by_call ()*/
+
+#define CALL_REALLY_USED_REGISTERS \
+{ /* General registers.  */				\
+  1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  /* Floating-point registers.  */			\
+  1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  /* Predicate registers.  */				\
+  1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
+  /* Branch registers.  */				\
+  1, 0, 0, 0, 0, 0, 1, 1,				\
+  /*FP RA CCV UNAT PFS LC EC */				\
+     0, 0,  1,   1,  1, 0, 0				\
+}
+
+
 /* Define this macro if the target machine has register windows.  This C
    expression returns the register number as seen by the called function
    corresponding to the register number OUT as seen by the calling function.
