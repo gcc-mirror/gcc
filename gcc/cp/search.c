@@ -1367,8 +1367,7 @@ lookup_fnfields_1 (tree type, tree name)
 	    lazily_declare_fn (sfk_copy_constructor, type);
 	}
       else if (name == ansi_assopname(NOP_EXPR)
-	       && !TYPE_HAS_ASSIGN_REF (type)
-	       && !TYPE_FOR_JAVA (type))
+	       && CLASSTYPE_LAZY_ASSIGNMENT_OP (type))
 	lazily_declare_fn (sfk_assignment_operator, type);
     }
 
