@@ -3017,7 +3017,8 @@ build_function_call_real (function, params, require_complete, flags)
 
   if (TREE_CODE (function) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL
-      && DECL_BUILT_IN (TREE_OPERAND (function, 0)))
+      && DECL_BUILT_IN (TREE_OPERAND (function, 0))
+      && DECL_BUILT_IN_CLASS (TREE_OPERAND (function, 0)) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (TREE_OPERAND (function, 0)))
       {
       case BUILT_IN_ABS:
