@@ -1,3 +1,11 @@
+2003-11-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12593
+	* include/bits/istream.tcc (operator>>(basic_string<>&),
+	getline(basic_string<>&)): Implement resolution of DR 91 [WP];
+	fix some minor issues with the exit conditions.
+	* docs/html/ext/howto.html: Add an entry for DR 91.
+
 2003-11-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/monetary_members.cc
