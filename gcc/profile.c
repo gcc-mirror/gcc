@@ -670,22 +670,25 @@ branch_prob ()
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "%d ignored edges\n", ignored_edges);
 
-  /* Write the .bbg data from which gcov can reconstruct the basic block
-     graph.  First output the number of basic blocks, and then for every
-     edge output the source and target basic block numbers.
-     NOTE: The format of this file must be compatible with gcov.  */
+  /* Write the data from which gcov can reconstruct the basic block
+     graph.  */
 
+  /* Basic block flags */
   if (coverage_begin_output ())
     {
-      long offset;
+      gcov_position_t offset;
       
-      /* Basic block flags */
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
       for (i = 0; i != (unsigned) (n_basic_blocks + 2); i++)
 	gcov_write_unsigned (0);
       gcov_write_length (offset);
-      
-      /* Arcs */
+    }
+
+  /* Arcs */
+  if (coverage_begin_output ())
+    {
+      gcov_position_t offset;
+
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
 	{
 	  edge e;
@@ -716,12 +719,11 @@ branch_prob ()
 	}
     }
   
-  /* Output line number information about each basic block for GCOV
-     utility.  */
+  /* Line numbers. */
   if (coverage_begin_output ())
     {
       char const *prev_file_name = NULL;
-      long offset;
+      gcov_position_t offset;
       
       FOR_EACH_BB (bb)
 	{

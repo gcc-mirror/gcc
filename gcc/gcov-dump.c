@@ -241,7 +241,8 @@ dump_file (filename)
       if ((error = gcov_is_error ()))
 	{
 	  printf (error < 0 ? "%s:counter overflow at %lu\n" :
-		  "%s:read error at %lu\n", filename, gcov_position ());
+		  "%s:read error at %lu\n", filename,
+		  (long unsigned) gcov_position ());
 	  break;
 	}
     }
