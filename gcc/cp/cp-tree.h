@@ -4262,8 +4262,7 @@ extern tree condition_conversion		(tree);
 extern tree target_type				(tree);
 extern tree require_complete_type		(tree);
 extern tree complete_type			(tree);
-extern tree complete_type_or_diagnostic         (tree, tree, int);
-#define complete_type_or_else(T,V) (complete_type_or_diagnostic ((T), (V), 0))
+extern tree complete_type_or_else		(tree, tree);
 extern int type_unknown_p			(tree);
 extern tree original_type			(tree);
 extern bool comp_except_specs			(tree, tree, bool);
