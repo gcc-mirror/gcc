@@ -44,6 +44,13 @@ double test_##FN(double x, TYPE y) { return __builtin_##FN(x, y); } \
 float test_##FN##f(float x, TYPE y) { return __builtin_##FN##f(x, y); } \
 long double test_##FN##l(long double x, TYPE y) { return __builtin_##FN##l(x, y); } 
 
+/* Test FP functions taking two arguments, the second argument is a
+   FP pointer.  */
+#define FPTEST2FPP2(FN) \
+double test_##FN(double x, double *y) { return __builtin_##FN(x, y); } \
+float test_##FN##f(float x, float *y) { return __builtin_##FN##f(x, y); } \
+long double test_##FN##l(long double x, long double *y) { return __builtin_##FN##l(x, y); } 
+
 /* Test FP functions taking one FP argument and a supplied return
    type.  */
 #define FPTEST1RET(FN, TYPE) \
@@ -62,6 +69,20 @@ long double test_##FN##l(long double x, long double y) { return __builtin_##FN##
 double test_##FN(double x, double y, double z) { return __builtin_##FN(x, y, z); } \
 float test_##FN##f(float x, float y, float z) { return __builtin_##FN##f(x, y, z); } \
 long double test_##FN##l(long double x, long double y, long double z) { return __builtin_##FN##l(x, y, z); } 
+
+/* Test FP functions taking three arguments, two FP and the third is
+   of a supplied type.  */
+#define FPTEST3ARG3(FN, TYPE) \
+double test_##FN(double x, double y, TYPE z) { return __builtin_##FN(x, y, z); } \
+float test_##FN##f(float x, float y, TYPE z) { return __builtin_##FN##f(x, y, z); } \
+long double test_##FN##l(long double x, long double y, TYPE z) { return __builtin_##FN##l(x, y, z); } 
+
+/* Test FP functions taking three FP arguments.  The second and third
+   are FP pointers.  The return type is void.  */
+#define FPTEST3FPP23VOID(FN) \
+double test_##FN(double x, double *y, double *z) { __builtin_##FN(x, y, z); return *y * *z; } \
+float test_##FN##f(float x, float *y, float *z) { __builtin_##FN##f(x, y, z); return *y * *z; } \
+long double test_##FN##l(long double x, long double *y, long double *z) { __builtin_##FN##l(x, y, z); return *y * *z; } 
 
 /* Keep this list sorted alphabetically by function name.  */
 FPTEST1     (acos)
@@ -90,6 +111,7 @@ FPTEST3     (fma)
 FPTEST2     (fmax)
 FPTEST2     (fmin)
 FPTEST2     (fmod)
+FPTEST2ARG2 (frexp, int *)
 FPTEST1     (gamma)
 FPTEST0     (huge_val)
 FPTEST2     (hypot)
@@ -109,6 +131,7 @@ FPTEST1     (log2)
 FPTEST1     (logb)
 FPTEST1RET  (lrint, long)
 FPTEST1RET  (lround, long)
+FPTEST2FPP2 (modf)
 FPTEST1ARG  (nan, char *)
 FPTEST1ARG  (nans, char *)
 FPTEST1     (nearbyint)
@@ -117,6 +140,7 @@ FPTEST2     (nexttoward)
 FPTEST2     (pow)
 FPTEST1     (pow10)
 FPTEST2     (remainder)
+FPTEST3ARG3 (remquo, int *)
 FPTEST1     (rint)
 FPTEST1     (round)
 FPTEST2     (scalb)
@@ -124,6 +148,7 @@ FPTEST2ARG2 (scalbln, int)
 FPTEST2ARG2 (scalbn, int)
 FPTEST1     (significand)
 FPTEST1     (sin)
+FPTEST3FPP23VOID (sincos)
 FPTEST1     (sinh)
 FPTEST1     (sqrt)
 FPTEST1     (tan)

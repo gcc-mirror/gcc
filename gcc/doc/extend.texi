@@ -4831,6 +4831,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex fprintf_unlocked
 @findex fputs
 @findex fputs_unlocked
+@findex frexp
+@findex frexpf
+@findex frexpl
 @findex fscanf
 @findex gamma
 @findex gammaf
@@ -4893,6 +4896,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex memcpy
 @findex mempcpy
 @findex memset
+@findex modf
+@findex modff
+@findex modfl
 @findex nearbyint
 @findex nearbyintf
 @findex nearbyintl
@@ -4915,6 +4921,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex remainder
 @findex remainderf
 @findex remainderl
+@findex remquo
+@findex remquof
+@findex remquol
 @findex rindex
 @findex rint
 @findex rintf
@@ -4935,6 +4944,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex significandf
 @findex significandl
 @findex sin
+@findex sincos
+@findex sincosf
+@findex sincosl
 @findex sinf
 @findex sinh
 @findex sinhf
@@ -5023,9 +5035,9 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
 @code{rindex}, @code{scalbf}, @code{scalbl}, @code{scalb},
 @code{significandf}, @code{significandl}, @code{significand},
-@code{stpcpy}, @code{strdup}, @code{strfmon}, @code{y0f}, @code{y0l},
-@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
-@code{yn}
+@code{sincosf}, @code{sincosl}, @code{sincos}, @code{stpcpy},
+@code{strdup}, @code{strfmon}, @code{y0f}, @code{y0l}, @code{y0},
+@code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and @code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
@@ -5053,13 +5065,13 @@ The ISO C99 functions
 @code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
 @code{nextafterf}, @code{nextafterl}, @code{nextafter},
 @code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
-@code{remainderf}, @code{remainderl}, @code{remainder}, @code{rintf},
-@code{rintl}, @code{rint}, @code{roundf}, @code{roundl}, @code{round},
-@code{scalblnf}, @code{scalblnl}, @code{scalbln}, @code{scalbnf},
-@code{scalbnl}, @code{scalbn}, @code{snprintf}, @code{tgammaf},
-@code{tgammal}, @code{tgamma}, @code{truncf}, @code{truncl},
-@code{trunc}, @code{vfscanf}, @code{vscanf}, @code{vsnprintf} and
-@code{vsscanf},
+@code{remainderf}, @code{remainderl}, @code{remainder}, @code{remquof},
+@code{remquol}, @code{remquo}, @code{rintf}, @code{rintl}, @code{rint},
+@code{roundf}, @code{roundl}, @code{round}, @code{scalblnf},
+@code{scalblnl}, @code{scalbln}, @code{scalbnf}, @code{scalbnl},
+@code{scalbn}, @code{snprintf}, @code{tgammaf}, @code{tgammal},
+@code{tgamma}, @code{truncf}, @code{truncl}, @code{trunc},
+@code{vfscanf}, @code{vscanf}, @code{vsnprintf} and @code{vsscanf},
 are handled as built-in functions
 except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
@@ -5068,10 +5080,11 @@ There are also built-in versions of the ISO C99 functions
 @code{atan2l}, @code{atanf}, @code{atanl}, @code{ceilf}, @code{ceill},
 @code{cosf}, @code{coshf}, @code{coshl}, @code{cosl}, @code{expf},
 @code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
-@code{fmodf}, @code{fmodl}, @code{ldexpf}, @code{ldexpl}, @code{log10f},
-@code{log10l}, @code{logf}, @code{logl}, @code{powf}, @code{powl},
-@code{sinf}, @code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf},
-@code{sqrtl}, @code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
+@code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
+@code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
+@code{modfl}, @code{modf}, @code{powf}, @code{powl}, @code{sinf},
+@code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
+@code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
 that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
@@ -5080,15 +5093,16 @@ The ISO C90 functions
 @code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
 @code{atan}, @code{calloc}, @code{ceil}, @code{cosh}, @code{cos},
 @code{exit}, @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
-@code{fprintf}, @code{fputs}, @code{fscanf}, @code{labs}, @code{ldexp},
-@code{log10}, @code{log}, @code{malloc}, @code{memcmp}, @code{memcpy},
-@code{memset}, @code{pow}, @code{printf}, @code{putchar}, @code{puts},
-@code{scanf}, @code{sinh}, @code{sin}, @code{snprintf}, @code{sprintf},
-@code{sqrt}, @code{sscanf}, @code{strcat}, @code{strchr}, @code{strcmp},
-@code{strcpy}, @code{strcspn}, @code{strlen}, @code{strncat},
-@code{strncmp}, @code{strncpy}, @code{strpbrk}, @code{strrchr},
-@code{strspn}, @code{strstr}, @code{tanh}, @code{tan}, @code{vfprintf},
-@code{vprintf} and @code{vsprintf},
+@code{fprintf}, @code{fputs}, @code{frexp}, @code{fscanf}, @code{labs},
+@code{ldexp}, @code{log10}, @code{log}, @code{malloc}, @code{memcmp},
+@code{memcpy}, @code{memset}, @code{modf}, @code{pow}, @code{printf},
+@code{putchar}, @code{puts}, @code{scanf}, @code{sinh}, @code{sin},
+@code{snprintf}, @code{sprintf}, @code{sqrt}, @code{sscanf},
+@code{strcat}, @code{strchr}, @code{strcmp}, @code{strcpy},
+@code{strcspn}, @code{strlen}, @code{strncat}, @code{strncmp},
+@code{strncpy}, @code{strpbrk}, @code{strrchr}, @code{strspn},
+@code{strstr}, @code{tanh}, @code{tan}, @code{vfprintf}, @code{vprintf}
+and @code{vsprintf}
 are all recognized as built-in functions unless
 @option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}}
 is specified for an individual function).  All of these functions have
