@@ -904,8 +904,10 @@ set_nonzero_bits_and_sign_copies (x, set, data)
 			      << GET_MODE_BITSIZE (GET_MODE (x))));
 #endif
 
-	  reg_nonzero_bits[REGNO (x)]
-	    |= nonzero_bits (src, nonzero_bits_mode);
+	  /* Don't call nonzero_bits if it cannot change anything.  */
+	  if (reg_nonzero_bits[REGNO (x)] != ~(unsigned HOST_WIDE_INT) 0)
+	    reg_nonzero_bits[REGNO (x)]
+	      |= nonzero_bits (src, nonzero_bits_mode);
 	  num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
 	  if (reg_sign_bit_copies[REGNO (x)] == 0
 	      || reg_sign_bit_copies[REGNO (x)] > num)
@@ -8044,7 +8046,9 @@ nonzero_bits (x, mode)
 	 for this register.  */
 
       if (reg_last_set_value[REGNO (x)] != 0
-	  && reg_last_set_mode[REGNO (x)] == mode
+	  && (reg_last_set_mode[REGNO (x)] == mode
+	      || (GET_MODE_CLASS (reg_last_set_mode[REGNO (x)]) == MODE_INT
+		  && GET_MODE_CLASS (mode) == MODE_INT))
 	  && (reg_last_set_label[REGNO (x)] == label_tick
 	      || (REGNO (x) >= FIRST_PSEUDO_REGISTER
 		  && REG_N_SETS (REGNO (x)) == 1
@@ -8186,8 +8190,14 @@ nonzero_bits (x, mode)
 
     case XOR:   case IOR:
     case UMIN:  case UMAX:  case SMIN:  case SMAX:
-      nonzero &= (nonzero_bits (XEXP (x, 0), mode)
-		  | nonzero_bits (XEXP (x, 1), mode));
+      {
+	unsigned HOST_WIDE_INT nonzero0 = nonzero_bits (XEXP (x, 0), mode);
+
+	/* Don't call nonzero_bits for the second time if it cannot change
+	   anything.  */
+	if ((nonzero & nonzero0) != nonzero)
+	  nonzero &= (nonzero0 | nonzero_bits (XEXP (x, 1), mode));
+      }
       break;
 
     case PLUS:  case MINUS:
@@ -11213,9 +11223,13 @@ record_value_for_reg (reg, insn, value)
 
   if (value)
     {
+      enum machine_mode mode = GET_MODE (reg);
       subst_low_cuid = INSN_CUID (insn);
-      reg_last_set_mode[regno] = GET_MODE (reg);
-      reg_last_set_nonzero_bits[regno] = nonzero_bits (value, GET_MODE (reg));
+      reg_last_set_mode[regno] = mode;
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	mode = nonzero_bits_mode;
+      reg_last_set_nonzero_bits[regno] = nonzero_bits (value, mode);
       reg_last_set_sign_bit_copies[regno]
 	= num_sign_bit_copies (value, GET_MODE (reg));
     }

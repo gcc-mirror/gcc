@@ -1,3 +1,13 @@
+2002-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (set_nonzero_bits_and_sign_copies): Don't call
+	nonzero_bits if not needed.
+	(nonzero_bits) [XOR]: Likewise.
+	(nonzero_bits) [REG]: Use reg_last_set_nonzero_bits even if
+	reg_last_set_mode and mode are both MODE_INT, but not equal.
+	(record_value_for_reg): Compute reg_last_set_nonzero_bits
+	in nonzero_bits_mode for MODE_INT modes.
+
 2002-03-28  Richard Henderson  <rth@redhat.com>
 
 	PR target/5715
