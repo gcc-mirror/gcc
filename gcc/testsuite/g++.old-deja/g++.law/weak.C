@@ -7,14 +7,14 @@
 // with the copy of __IO_putc in the libstdc++ library built by egcs.
 #include <iostream.h>
 #include <streambuf.h>
+#include <stdio.h>
 
-istream x;
-extern "C" int putc(), fgets();
+istream x (0);
 
 main () {
   x.get();
-  putc();
-  fgets(); 
-  x.gets(0, 0);
+  putc(0, 0);
+  fgets(0, 0, 0); 
+  x.get((char*) 0, 0);
 }
 

@@ -1,5 +1,8 @@
 2000-11-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.old-deja/g++.law/weak.C: Fix uses of iostreams to be
+	standards-conformant.
+
 	* g++.old-deja/g++.mike/net5.C: Put `abort' in `std' namespace.
 
 	* g++.old-deja/g++.mike/p755.C: Tweak handling of exit.
