@@ -955,7 +955,7 @@
 
   operands[3] = gen_reg_rtx(SImode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
-  if (TARGET_HARD_SH4)
+  if (TARGET_HARD_SH4 && TARGET_SH3E)
     {
       emit_move_insn (operands[3],
 		      gen_rtx_SYMBOL_REF (SImode, \"__udivsi3_i4\"));
@@ -1041,7 +1041,7 @@
 
   operands[3] = gen_reg_rtx(SImode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
-  if (TARGET_HARD_SH4)
+  if (TARGET_HARD_SH4 && TARGET_SH3E)
     {
       emit_move_insn (operands[3],
 		      gen_rtx_SYMBOL_REF (SImode, \"__sdivsi3_i4\"));
@@ -1525,23 +1525,32 @@
 ;;
 ;; shift left
 
-(define_insn "ashlsi3_d"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		   (match_operand:SI 2 "arith_reg_operand" "r")))]
-  "TARGET_SH3"
-  "shld	%2,%0"
-  [(set_attr "type" "dyn_shift")])
+;; This pattern is used by init_expmed for computing the costs of shift
+;; insns.
 
-(define_insn "ashlsi3_k"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
-	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0")
-		   (match_operand:SI 2 "const_int_operand" "M,K")))]
-  "CONST_OK_FOR_K (INTVAL (operands[2]))"
+(define_insn_and_split "ashlsi3_std"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r,r,r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0,0,0")
+		   (match_operand:SI 2 "nonmemory_operand" "r,M,K,?ri")))
+   (clobber (match_scratch:SI 3 "=X,X,X,&r"))]
+  "TARGET_SH3
+   || (GET_CODE (operands[2]) == CONST_INT
+       && CONST_OK_FOR_K (INTVAL (operands[2])))"
   "@
-	add	%0,%0
-	shll%O2	%0"
-  [(set_attr "type" "arith")])
+   shld	%2,%0
+   add	%0,%0
+   shll%O2	%0
+   #"
+  "TARGET_SH3
+   && GET_CODE (operands[2]) == CONST_INT
+   && ! CONST_OK_FOR_K (INTVAL (operands[2]))"
+  [(set (match_dup 3) (match_dup 2))
+   (parallel
+    [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 3)))
+     (clobber (match_dup 4))])]
+  "operands[4] = gen_rtx_SCRATCH (SImode);"
+  [(set_attr "length" "*,*,*,4")
+   (set_attr "type" "dyn_shift,arith,arith,arith")])
 
 (define_insn "ashlhi3_k"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
@@ -1594,9 +1603,9 @@
   if (GET_CODE (operands[2]) == CONST_INT
       && sh_dynamicalize_shift_p (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+  if (TARGET_SH3)
     {
-      emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
+      emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
       DONE;
     }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
