@@ -31,6 +31,9 @@
 #ifdef __i960__
 #include "va-i960.h"
 #else
+#ifdef __alpha__
+#include "va-alpha.h"
+#else
 
 #ifdef __NeXT__
 
@@ -98,6 +101,7 @@ typedef char * __va___list;
  (AP += __va_rounded_size (TYPE),					\
   *((TYPE *) (AP - __va_rounded_size (TYPE))))
 
+#endif /* not alpha */
 #endif /* not i960 */
 #endif /* not hppa */
 #endif /* not m88k */
