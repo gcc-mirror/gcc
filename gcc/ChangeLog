@@ -1,3 +1,8 @@
+1998-01-22  scott snyder  <snyder@d0sgif.fnal.gov>
+
+	* mips.c (function_prologue): Use HARD_FRAME_POINTER_REGNUM in
+	.frame directive instead of FRAME_POINTER_REGNUM.
+
 Fri Jan 23 00:08:55 1998  Robin Kirkham	<rjk@mlb.dmt.csiro.au>
 
 	* m68k.h (TARGET_SWITCHES): -mcpu32 now clears MASK_68881.

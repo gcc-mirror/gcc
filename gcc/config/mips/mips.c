@@ -6079,7 +6079,7 @@ function_prologue (file, size)
   if (!flag_inhibit_size_directive)
     {
       fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
-	      reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
+	      reg_names[ (frame_pointer_needed) ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
 	      tsize,
 	      reg_names[31 + GP_REG_FIRST],
 	      current_frame_info.var_size,
