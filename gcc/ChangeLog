@@ -1,3 +1,8 @@
+2002-10-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* cse.c (insn_live_p): Pass insn pattern, not full insn
+	to may_trap_p.
+
 2002-10-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppmacro.c (paste_tokens): Only allow / to paste with =.
