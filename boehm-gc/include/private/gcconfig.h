@@ -386,6 +386,11 @@
  *		to the nearest plausible page boundary, and use that instead
  *		of STACKBOTTOM.
  *
+ * Gustavo Rodriguez-Rivera points out that on most (all?) Unix machines,
+ * the value of environ is a pointer that can serve as STACKBOTTOM.
+ * I expect that HEURISTIC2 can be replaced by this approach, which
+ * interferes far less with debugging. 
+ *
  * If no expression for STACKBOTTOM can be found, and neither of the above
  * heuristics are usable, the collector can still be used with all of the above
  * undefined, provided one of the following is done:
@@ -553,6 +558,7 @@
 				/* This was 2, but that didn't sound right. */
 #     define OS_TYPE "LINUX"
 #     define HEURISTIC1
+#     define DYNAMIC_LOADING
 #     undef STACK_GRAN
 #     define STACK_GRAN 0x10000000
 	/* Stack usually starts at 0x80000000 */
@@ -990,7 +996,11 @@
 	/* this.)							*/
 #       define STACKBOTTOM ((ptr_t) 0x7b033000)  /* from /etc/conf/h/param.h */
 #   else
-#       define HEURISTIC2
+	/* Gustavo Rodriguez-Rivera suggested changing HEURISTIC2	*/
+	/* to this.  We'll probably do this on other platforms, too.	*/
+	/* For now I'll use it where I can test it.			*/
+	extern char ** environ;
+#       define STACKBOTTOM ((ptr_t)environ)
 #   endif
 #   define STACK_GROWS_UP
 #   define DYNAMIC_LOADING
@@ -1076,7 +1086,6 @@
 		/* Requires Linux 2.3.47 or later.	*/
 	extern int _end;
 #	define DATAEND (&_end)
-	/* PREFETCH appears to have a large performance impact.	*/
 #	define PREFETCH(x) \
 	  __asm__ ("	lfetch	[%0]": : "r"((void *)(x)))
 #	define PREFETCH_FOR_WRITE(x) \

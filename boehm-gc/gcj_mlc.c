@@ -282,4 +282,8 @@ DCL_LOCK_STATE;
     return((GC_PTR) op);
 }
 
+#else
+
+char GC_no_gcj_support;
+
 #endif  /* GC_GCJ_SUPPORT */
