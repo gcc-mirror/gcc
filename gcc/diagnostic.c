@@ -133,15 +133,18 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
 #undef DEFINE_DIAGNOSTIC_KIND
     "must-not-happen"
   };
+  const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   expanded_location s = expand_location (diagnostic->location);
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
 
-  return s.file
-    ? build_message_string ("%s:%d: %s",
-                            s.file, s.line,
-                            _(diagnostic_kind_text[diagnostic->kind]))
-    : build_message_string ("%s: %s", progname,
-                            _(diagnostic_kind_text[diagnostic->kind]));
+  return
+    (s.file == NULL
+     ? build_message_string ("%s: %s", progname, text)
+#ifdef USE_MAPPED_LOCATION
+     : s.column != 0
+     ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
+#endif
+     : build_message_string ("%s:%d: %s", s.file, s.line, text));
 }
 
 /* Count a diagnostic.  Return true if the message should be printed.  */
