@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -277,6 +277,42 @@ package System.OS_Interface is
 
    PTHREAD_EXPLICIT_SCHED : constant := 1;
 
+   -----------
+   -- Stack --
+   -----------
+
+   Stack_Base_Available : constant Boolean := False;
+   --  Indicates wether the stack base is available on this target.
+
+   function Get_Stack_Base (thread : pthread_t) return Address;
+   pragma Inline (Get_Stack_Base);
+   --  returns the stack base of the specified thread.
+   --  Only call this function when Stack_Base_Available is True.
+
+   function Get_Page_Size return size_t;
+   function Get_Page_Size return Address;
+   pragma Import (C, Get_Page_Size, "getpagesize");
+   --  returns the size of a page, or 0 if this is not relevant on this
+   --  target
+
+   PROT_NONE  : constant := 0;
+   PROT_READ  : constant := 1;
+   PROT_WRITE : constant := 2;
+   PROT_EXEC  : constant := 4;
+   PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
+
+   PROT_ON    : constant := PROT_READ;
+   PROT_OFF   : constant := PROT_ALL;
+
+   function mprotect (addr : Address; len : size_t; prot : int) return int;
+   pragma Import (C, mprotect);
+
+   procedure Hide_Yellow_Zone;
+   --  Every thread except the initial one features an overflow warning area
+   --  just above the overflow guard area on the stack. They are called
+   --  the Yellow Zone and the Red Zone respectively. This procedure hides
+   --  the former so that the latter could be exposed to stack probing.
+
    ---------------------------------------
    -- Nonstandard Thread Initialization --
    ---------------------------------------
@@ -489,6 +525,34 @@ private
    type unsigned_long_array is array (Natural range <>) of unsigned_long;
 
    type pthread_t is new System.Address;
+
+   type pthread_teb_t is record
+      reserved1     : System.Address;
+      reserved2     : System.Address;
+      size          : unsigned_short;
+      version       : unsigned_char;
+      reserved3     : unsigned_char;
+      external      : unsigned_char;
+      reserved4     : char_array (0 .. 1);
+      creator       : unsigned_char;
+      sequence      : unsigned_long;
+      reserved5     : unsigned_long_array (0 .. 1);
+      per_kt_area   : System.Address;
+      stack_base    : System.Address;
+      stack_reserve : System.Address;
+      stack_yellow  : System.Address;
+      stack_guard   : System.Address;
+      stack_size    : unsigned_long;
+      tsd_values    : System.Address;
+      tsd_count     : unsigned_long;
+      reserved6     : unsigned;
+      reserved7     : unsigned;
+      thread_flags  : unsigned;
+      thd_errno     : int;
+      stack_hiwater : System.Address;
+      home_rad      : unsigned_long;
+   end record;
+   pragma Convention (C, pthread_teb_t);
 
    type pthread_cond_t is record
       state     : unsigned;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the DEC Unix version of this package.
+--  This is the DEC Unix version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -44,6 +44,16 @@ with Interfaces.C; use Interfaces.C;
 with System.Machine_Code; use System.Machine_Code;
 
 package body System.OS_Interface is
+
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
+
+   function Get_Stack_Base (thread : pthread_t) return Address is
+      pragma Unreferenced (thread);
+   begin
+      return Null_Address;
+   end Get_Stack_Base;
 
    ------------------
    -- pthread_init --
@@ -67,6 +77,31 @@ package body System.OS_Interface is
            Clobber => "$0");
       return Self;
    end pthread_self;
+
+   ----------------------
+   -- Hide_Yellow_Zone --
+   ----------------------
+
+   procedure Hide_Yellow_Zone is
+      type Teb_Ptr is access all pthread_teb_t;
+      Teb : Teb_Ptr;
+      Res : Interfaces.C.int;
+      pragma Unreferenced (Res);
+
+   begin
+      --  Get the Thread Environment Block address
+
+      Asm ("call_pal 0x9e" & ASCII.LF & ASCII.HT &
+           "bis $31, $0, %0",
+           Outputs => Teb_Ptr'Asm_Output ("=r", Teb),
+           Clobber => "$0");
+
+      --  Stick a guard page right above the Yellow Zone if it exists
+
+      if Teb.all.stack_yellow /= Teb.all.stack_guard then
+         Res := mprotect (Teb.all.stack_yellow, Get_Page_Size, PROT_ON);
+      end if;
+   end Hide_Yellow_Zone;
 
    -----------------
    -- To_Duration --
