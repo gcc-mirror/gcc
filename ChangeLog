@@ -1,5 +1,11 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* configure: Provide the original toplevel configure arguments
+	(including $0) to subprocesses in the environment rather than
+	through gcc/configargs.h.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* MAINTAINERS: Remove references to cccp. Change C9X reference to
 	C99.  Alphabetise "Write After Approval" list.
 

@@ -4202,6 +4202,19 @@ fi
 changequote(,)dnl
 gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+
+# Compile in configure arguments.
+if [ -e configargs.h ]; then
+	# Being re-configured.
+	gcc_config_arguments=`grep configuration_arguments configargs.h | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+	gcc_config_arguments="$gcc_config_arguments : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS"
+else
+	gcc_config_arguments="$TOPLEVEL_CONFIGURE_ARGUMENTS"
+fi
+cat > configargs.h <<EOF
+/* Generated automatically. */
+static const char configuration_arguments[] = "$gcc_config_arguments";
+EOF
 changequote([,])dnl
 
 # Internationalization
@@ -5175,6 +5188,7 @@ AC_SUBST(extra_parts)
 AC_SUBST(extra_passes)
 AC_SUBST(extra_programs)
 AC_SUBST(float_h_file)
+AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_full)
@@ -5290,6 +5304,7 @@ host_xmake_file='${host_xmake_file}'
 dep_tmake_file='${dep_tmake_file}'
 tmake_file='${tmake_file}'
 thread_file='${thread_file}'
+gcc_config_arguments='${gcc_config_arguments}'
 gcc_version='${gcc_version}'
 gcc_version_full='${gcc_version_full}'
 gcc_version_trigger='${gcc_version_trigger}'

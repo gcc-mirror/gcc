@@ -322,6 +322,7 @@ SEND-PR: support             I need help with gcc.
 host: @host@
 build: @build@
 target: @target@
+configured with: @gcc_config_arguments@
 >Description:
 	$DESCRIPTION_C
 >How-To-Repeat:
