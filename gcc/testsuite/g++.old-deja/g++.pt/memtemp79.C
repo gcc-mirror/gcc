@@ -2,5 +2,5 @@
 
 struct foo {
 	template<typename T> static void bar( foo* );
-	template<typename T> void bar() const; // gets bogus error - quals XFAIL *-*-*
+	template<typename T> void bar() const; // gets bogus error - quals
 };
