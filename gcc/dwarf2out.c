@@ -1918,7 +1918,7 @@ output_call_frame_info (for_eh)
   dw_fde_ref fde;
   dw_cfi_ref cfi;
   char l1[20], l2[20], section_start_label[20];
-  int any_lsda_needed = 0;
+  bool any_lsda_needed = false;
   char augmentation[6];
   int augmentation_size;
   int fde_encoding = DW_EH_PE_absptr;
@@ -1929,17 +1929,19 @@ output_call_frame_info (for_eh)
   if (fde_table_in_use == 0)
     return;
 
-  /* If we don't have any functions we'll want to unwind out of, don't emit any
-     EH unwind information.  */
+  /* If we don't have any functions we'll want to unwind out of, don't
+     emit any EH unwind information.  Note that if exceptions aren't
+     enabled, we won't have collected nothrow information, and if we
+     asked for asynchronous tables, we always want this info.  */
   if (for_eh)
     {
-      int any_eh_needed = flag_asynchronous_unwind_tables;
+      bool any_eh_needed = !flag_exceptions || flag_asynchronous_unwind_tables;
 
       for (i = 0; i < fde_table_in_use; i++)
 	if (fde_table[i].uses_eh_lsda)
-	  any_eh_needed = any_lsda_needed = 1;
+	  any_eh_needed = any_lsda_needed = true;
 	else if (! fde_table[i].nothrow)
-	  any_eh_needed = 1;
+	  any_eh_needed = true;
 
       if (! any_eh_needed)
 	return;
@@ -2077,7 +2079,7 @@ output_call_frame_info (for_eh)
       fde = &fde_table[i];
 
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
-      if (!flag_asynchronous_unwind_tables && for_eh
+      if (for_eh && !flag_asynchronous_unwind_tables && flag_exceptions
 	  && (fde->nothrow || fde->all_throwers_are_sibcalls)
 	  && !fde->uses_eh_lsda)
 	continue;
