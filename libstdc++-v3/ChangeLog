@@ -1,3 +1,9 @@
+2004-12-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/18837
+	* testsuite/testsuite_performance.h: Fix mallinfo macros for
+	hpux.
+
 2004-12-04  Richard Henderson  <rth@redhat.com>
 
 	* testsuite/26_numerics/complex/pow.cc: Use -mieee on alpha.
