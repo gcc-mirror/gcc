@@ -1,3 +1,8 @@
+2002-01-27  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* doc/invoke.texi (-fdump-translation-unit): Revert this
+	patch: 2001-10-21  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
 2002-01-27  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (define_constants): New.
