@@ -324,10 +324,35 @@ prepare_eh_table_type (tree type)
   else if (is_compiled_class (type))
     exp = build_class_ref (type);
   else
-    exp = fold (build 
-		(PLUS_EXPR, ptr_type_node,
-		 build_utf8_ref (DECL_NAME (TYPE_NAME (type))),
-		 size_one_node));
+    {
+      tree ctype = make_node (RECORD_TYPE);
+      tree field = NULL_TREE;
+      tree cinit, decl;
+      tree utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
+      char buf[64];
+      sprintf (buf, "%s_ref", 
+	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0))));
+      PUSH_FIELD (ctype, field, "dummy", ptr_type_node);
+      PUSH_FIELD (ctype, field, "utf8",  utf8const_ptr_type);
+      FINISH_RECORD (ctype);
+      START_RECORD_CONSTRUCTOR (cinit, ctype);
+      PUSH_FIELD_VALUE (cinit, "dummy", integer_minus_one_node);
+      PUSH_FIELD_VALUE (cinit, "utf8", utf8_ref);
+      FINISH_RECORD_CONSTRUCTOR (cinit);
+      TREE_CONSTANT (cinit) = 1;
+      decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_type);
+      TREE_STATIC (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      TREE_READONLY (decl) = 1;
+      TREE_THIS_VOLATILE (decl) = 0;
+      DECL_INITIAL (decl) = cinit;
+      layout_decl (decl, 0);
+      pushdecl (decl);
+      rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
+      make_decl_rtl (decl, (char*) 0);
+      exp = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
+    }
   return exp;
 }
 

@@ -102,13 +102,13 @@ $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 gt-java-class.h gt-java-constants.h gt-java-decl.h : s-gtype ; @true
 gt-java-expr.h gt-java-jcf-parse.h gt-java-jcf-write.h : s-gtype ; @true
 gt-java-lang.h gt-java-mangle.h gt-java-parse.h : s-gtype ; @true
-gt-java-builtins.h gtype-java.h : s-gtype ; @true
+gt-java-builtins.h gtype-java.h gt-java-resource.h : s-gtype ; @true
 
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
   java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
-  java/mangle_name.o java/builtins.o \
+  java/mangle_name.o java/builtins.o java/resource.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
 
@@ -324,6 +324,9 @@ java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(GGC_H)
 java/parse-scan.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
   $(JAVA_LEX_C) java/parse.h java/lex.h
+java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
+  $(TARGET_H) function.h gt-java-resource.h
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) real.h
 java/verify.o: java/verify.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \

@@ -1299,6 +1299,13 @@ struct rtx_def * java_expand_expr (tree, rtx, enum machine_mode, int);
 extern void java_inlining_merge_static_initializers (tree, void *);
 extern void java_inlining_map_static_initializers (tree, void *);
 
+extern void compile_resource_data PARAMS ((char *name, const char *buffer,
+					   int length));
+extern void write_resource_constructor PARAMS ((void));
+extern void compile_resource_file PARAMS ((char *name, const char *filename));
+extern void init_resource_processing PARAMS ((void));
+
+
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
