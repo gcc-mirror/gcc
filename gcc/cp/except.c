@@ -173,8 +173,9 @@ init_exception_processing ()
   
   if (flag_honor_std)
     push_namespace (get_identifier ("std"));
-  terminate_node = auto_function (get_identifier ("terminate"), vtype);
+  terminate_node = build_cp_library_fn_ptr ("terminate", vtype);
   TREE_THIS_VOLATILE (terminate_node) = 1;
+  TREE_NOTHROW (terminate_node) = 1;
   if (flag_honor_std)
     pop_namespace ();
 
@@ -253,16 +254,8 @@ call_eh_info ()
       t = build_pointer_type (t);
 
       /* And now the function.  */
-      fn = build_lang_decl (FUNCTION_DECL, fn,
-			    build_function_type (t, void_list_node));
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_library_fn (fn, build_function_type (t, void_list_node));
     }
-  mark_used (fn);
   return build_function_call (fn, NULL_TREE);
 }
 
@@ -424,18 +417,12 @@ do_pop_exception ()
     {
       /* Declare void __cp_pop_exception (void *),
 	 as defined in exception.cc. */
-      fn = build_lang_decl
-	(FUNCTION_DECL, fn,
-	 build_function_type (void_type_node, tree_cons
-			      (NULL_TREE, ptr_type_node, void_list_node)));
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_void_library_fn
+	(fn, tree_cons (NULL_TREE, ptr_type_node, void_list_node));
+      /* This can throw if the destructor for the exception throws.  */
+      TREE_NOTHROW (fn) = 0;
     }
 
-  mark_used (fn);
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
   cleanup = lookup_name (get_identifier ("__exception_info"), 0);
   cleanup = build_function_call (fn, tree_cons
@@ -732,21 +719,13 @@ expand_end_eh_spec (raises, try_block)
       tmp = tree_cons
 	(NULL_TREE, integer_type_node, tree_cons
 	 (NULL_TREE, TREE_TYPE (decl), void_list_node));
-      tmp = build_function_type	(void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_THIS_VOLATILE (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+
+      fn = push_throw_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
   tmp = tree_cons (NULL_TREE, build_int_2 (count, 0), 
 		   tree_cons (NULL_TREE, decl, NULL_TREE));
-  tmp = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), tmp);
+  tmp = build_call (fn, tmp);
   finish_expr_stmt (tmp);
 
   finish_handler (blocks, handler);
@@ -799,19 +778,10 @@ alloc_eh_object (type)
   else
     {
       /* Declare __eh_alloc (size_t), as defined in exception.cc.  */
-      tree tmp;
-      tmp = tree_cons (NULL_TREE, sizetype, void_list_node);
-      fn = build_lang_decl (FUNCTION_DECL, fn,
-			    build_function_type (ptr_type_node, tmp));
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      tree tmp = tree_cons (NULL_TREE, sizetype, void_list_node);
+      fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
     }
 
-  mark_used (fn);
   exp = build_function_call (fn, tree_cons
 			     (NULL_TREE, size_in_bytes (type), NULL_TREE));
   exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
@@ -852,16 +822,11 @@ expand_throw (exp)
 	{
 	  /* Declare _Jv_Throw (void *), as defined in Java's
 	     exception.cc.  */
-	  tree tmp;
-	  tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-	  fn = build_lang_decl (FUNCTION_DECL, fn,
-				build_function_type (ptr_type_node, tmp));
-	  DECL_EXTERNAL (fn) = 1;
-	  TREE_PUBLIC (fn) = 1;
-	  DECL_ARTIFICIAL (fn) = 1;
+	  tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
+	  tmp = build_function_type (ptr_type_node, tmp);
+	  fn = push_library_fn (fn, tmp);
 	  TREE_THIS_VOLATILE (fn) = 1;
-	  pushdecl_top_level (fn);
-	  make_function_rtl (fn);
+	  TREE_NOTHROW (fn) = 0;
 	}
 
       exp = build_function_call (fn, args);
@@ -974,17 +939,9 @@ expand_throw (exp)
 	    (NULL_TREE, ptr_type_node, tree_cons
 	     (NULL_TREE, ptr_type_node, tree_cons
 	      (NULL_TREE, cleanup_type, void_list_node)));
-	  fn = build_lang_decl (FUNCTION_DECL, fn,
-				build_function_type (void_type_node, tmp));
-	  DECL_EXTERNAL (fn) = 1;
-	  TREE_PUBLIC (fn) = 1;
-	  DECL_ARTIFICIAL (fn) = 1;
-	  TREE_NOTHROW (fn) = 1;
-	  pushdecl_top_level (fn);
-	  make_function_rtl (fn);
+	  fn = push_void_library_fn (fn, tmp);
 	}
 
-      mark_used (fn);
       e = tree_cons (NULL_TREE, exp, tree_cons
 		     (NULL_TREE, throw_type, tree_cons
 		      (NULL_TREE, cleanup, NULL_TREE)));
@@ -1000,21 +957,10 @@ expand_throw (exp)
       if (IDENTIFIER_GLOBAL_VALUE (fn))
 	fn = IDENTIFIER_GLOBAL_VALUE (fn);
       else
-	{
-	  /* Declare void __uncatch_exception (void)
-	     as defined in exception.cc. */
-	  fn = build_lang_decl (FUNCTION_DECL, fn,
-				build_function_type (void_type_node,
-						     void_list_node));
-	  DECL_EXTERNAL (fn) = 1;
-	  TREE_PUBLIC (fn) = 1;
-	  DECL_ARTIFICIAL (fn) = 1;
-	  TREE_NOTHROW (fn) = 1;
-	  pushdecl_top_level (fn);
-	  make_function_rtl (fn);
-	}
+	/* Declare void __uncatch_exception (void)
+	   as defined in exception.cc. */
+	fn = push_void_library_fn (fn, void_list_node);
 
-      mark_used (fn);
       exp = build_function_call (fn, NULL_TREE);
     }
 

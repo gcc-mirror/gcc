@@ -577,8 +577,6 @@ enum cp_tree_index
     CPTI_TERMINATE,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
-    CPTI_BAD_CAST,
-    CPTI_BAD_TYPEID,
     CPTI_DCAST,
 
     CPTI_MAX
@@ -685,12 +683,6 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* A pointer to `__dso_handle'.  */
 #define dso_handle_node                 cp_global_trees[CPTI_DSO_HANDLE]
-
-/* The declaration of __throw_bad_cast.  */
-#define throw_bad_cast_node             cp_global_trees[CPTI_BAD_CAST]
-
-/* The declaration of __throw_bad_typeid.  */
-#define throw_bad_typeid_node           cp_global_trees[CPTI_BAD_TYPEID]
 
 /* The declaration of the dynamic_cast runtime.  */
 #define dynamic_cast_node               cp_global_trees[CPTI_DCAST]
@@ -3605,7 +3597,7 @@ extern tree build_vfield_ref			PARAMS ((tree, tree));
 extern tree resolve_scope_to_name		PARAMS ((tree, tree));
 extern tree build_scoped_method_call		PARAMS ((tree, tree, tree, tree));
 extern tree build_addr_func			PARAMS ((tree));
-extern tree build_call				PARAMS ((tree, tree, tree));
+extern tree build_call				PARAMS ((tree, tree));
 extern tree build_method_call			PARAMS ((tree, tree, tree, tree, int));
 extern int null_ptr_cst_p			PARAMS ((tree));
 extern tree type_decays_to			PARAMS ((tree));
@@ -3753,12 +3745,16 @@ extern tree namespace_ancestor			PARAMS ((tree, tree));
 extern tree unqualified_namespace_lookup	PARAMS ((tree, int, tree *));
 extern int  lookup_using_namespace              PARAMS ((tree, tree, tree, tree, int, tree *));
 extern int  qualified_lookup_using_namespace    PARAMS ((tree, tree, tree, int));
-extern tree auto_function			PARAMS ((tree, tree));
+extern tree build_library_fn			PARAMS ((tree, tree));
+extern tree build_cp_library_fn			PARAMS ((tree, tree));
+extern tree build_library_fn_ptr		PARAMS ((const char *, tree));
+extern tree build_cp_library_fn_ptr		PARAMS ((const char *, tree));
+extern tree push_library_fn			PARAMS ((tree, tree));
+extern tree push_cp_library_fn			PARAMS ((tree, tree));
+extern tree push_void_library_fn		PARAMS ((tree, tree));
+extern tree push_throw_library_fn		PARAMS ((tree, tree));
 extern void init_decl_processing		PARAMS ((void));
 extern int init_type_desc			PARAMS ((void));
-extern tree define_function			PARAMS ((const char *, tree,
-						       void (*) (tree),
-						       const char *));
 extern tree check_tag_decl			PARAMS ((tree));
 extern void shadow_tag				PARAMS ((tree));
 extern tree groktypename			PARAMS ((tree));

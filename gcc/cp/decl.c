@@ -113,7 +113,6 @@ static void declare_namespace_level PARAMS ((void));
 static void signal_catch PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void storedecls PARAMS ((tree));
 static void require_complete_types_for_parms PARAMS ((tree));
-static void push_overloaded_decl_1 PARAMS ((tree));
 static int ambi_op_p PARAMS ((tree));
 static int unary_op_p PARAMS ((tree));
 static tree store_bindings PARAMS ((tree, tree));
@@ -133,6 +132,7 @@ static void set_identifier_type_value_with_scope
 	PARAMS ((tree, tree, struct binding_level *));
 static void record_builtin_type PARAMS ((enum rid, const char *, tree));
 static void record_unknown_type PARAMS ((tree, const char *));
+static tree build_library_fn_1			PARAMS ((tree, tree));
 static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
 static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
 				  int));
@@ -5937,26 +5937,6 @@ record_unknown_type (type, name)
   TYPE_MODE (type) = TYPE_MODE (void_type_node);
 }
 
-/* Push overloaded decl, in global scope, with one argument so it
-   can be used as a callback from define_function.  */
-
-static void
-push_overloaded_decl_1 (x)
-     tree x;
-{
-  pushdecl (x);
-}
-
-inline tree
-auto_function (name, type)
-     tree name, type;
-{
-  return define_function
-    (IDENTIFIER_POINTER (name), type, push_overloaded_decl_1,
-     IDENTIFIER_POINTER (build_decl_overload (name, TYPE_ARG_TYPES (type),
-					      0)));
-}
-
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *)0).
    Initialize the global binding level.
@@ -6320,15 +6300,15 @@ init_decl_processing ()
     newtype = build_exception_variant
       (ptr_ftype_sizetype, add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1));
     deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
-    auto_function (ansi_opname[(int) NEW_EXPR], newtype);
-    auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype);
-    global_delete_fndecl = auto_function (ansi_opname[(int) DELETE_EXPR],
-					  deltype);
-    auto_function (ansi_opname[(int) VEC_DELETE_EXPR], deltype);
+    push_cp_library_fn (ansi_opname[(int) NEW_EXPR], newtype);
+    push_cp_library_fn (ansi_opname[(int) VEC_NEW_EXPR], newtype);
+    global_delete_fndecl = push_cp_library_fn (ansi_opname[(int) DELETE_EXPR],
+					       deltype);
+    push_cp_library_fn (ansi_opname[(int) VEC_DELETE_EXPR], deltype);
   }
 
   abort_fndecl
-    = define_function ("__pure_virtual", void_ftype, 0, 0);
+    = build_library_fn_ptr ("__pure_virtual", void_ftype);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();
@@ -6461,46 +6441,16 @@ lang_print_error_function (file)
   maybe_print_template_context ();
 }
 
-/* Make a definition for a builtin function named NAME and whose data type
+/* Entry point for the benefit of c_common_nodes_and_builtins.
+
+   Make a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.
 
-   If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
+   CLASS and CODE tell later passes how to compile calls to this function.
+   See tree.h for possible values.
+
+   If LIBNAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
-
-tree
-define_function (name, type, pfn, library_name)
-     const char *name;
-     tree type;
-     void (*pfn) PARAMS ((tree));
-     const char *library_name;
-{
-  tree decl = build_lang_decl (FUNCTION_DECL, get_identifier (name), type);
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
-
-  /* If no exception specifier was given, assume it doesn't throw.  */
-  if (TYPE_RAISES_EXCEPTIONS (type) == NULL_TREE)
-    TREE_NOTHROW (decl) = 1;
-
-  my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
-  DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-
-  /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
-     we cannot change DECL_ASSEMBLER_NAME until we have installed this
-     function in the namespace.  */
-  if (pfn) (*pfn) (decl);
-  if (library_name)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
-  make_function_rtl (decl);
-  return decl;
-}
-
-
-/* Wrapper around define_function, for the benefit of
-   c_common_nodes_and_builtins.
-   FUNCTION_CODE tells later passes how to compile calls to this function.
-   See tree.h for its possible values.  */
 
 tree
 builtin_function (name, type, code, class, libname)
@@ -6510,11 +6460,135 @@ builtin_function (name, type, code, class, libname)
      enum built_in_class class;
      const char *libname;
 {
-  tree decl = define_function (name, type, (void (*) PARAMS ((tree)))pushdecl,
-			       libname);
+  tree decl = build_library_fn_1 (get_identifier (name), type);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = code;
+
+  my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
+
+  /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
+     we cannot change DECL_ASSEMBLER_NAME until we have installed this
+     function in the namespace.  */
+  pushdecl (decl);
+  if (libname)
+    DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
+  make_function_rtl (decl);
   return decl;
+}
+
+/* Generate a FUNCTION_DECL with the typical flags for a runtime library
+   function.  Not called directly.  */
+
+static tree
+build_library_fn_1 (name, type)
+     tree name;
+     tree type;
+{
+  tree fn = build_lang_decl (FUNCTION_DECL, name, type);
+  DECL_EXTERNAL (fn) = 1;
+  TREE_PUBLIC (fn) = 1;
+  DECL_ARTIFICIAL (fn) = 1;
+  TREE_NOTHROW (fn) = 1;
+  return fn;
+}
+
+/* Returns the _DECL for a library function with C linkage.
+   We assume that such functions never throw; if this is incorrect,
+   callers should unset TREE_NOTHROW.  */
+
+tree
+build_library_fn (name, type)
+     tree name;
+     tree type;
+{
+  tree fn = build_library_fn_1 (name, type);
+  make_function_rtl (fn);
+  return fn;
+}
+
+/* Returns the _DECL for a library function with C++ linkage.  */
+
+tree
+build_cp_library_fn (name, type)
+     tree name;
+     tree type;
+{
+  tree fn = build_library_fn_1 (name, type);
+  TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
+  set_mangled_name_for_decl (fn);
+  make_function_rtl (fn);
+  return fn;
+}
+
+/* Like build_library_fn, but takes a C string instead of an
+   IDENTIFIER_NODE.  */
+
+tree
+build_library_fn_ptr (name, type)
+     const char *name;
+     tree type;
+{
+  return build_library_fn (get_identifier (name), type);
+}
+
+/* Like build_cp_library_fn, but takes a C string instead of an
+   IDENTIFIER_NODE.  */
+
+tree
+build_cp_library_fn_ptr (name, type)
+     const char *name;
+     tree type;
+{
+  return build_cp_library_fn (get_identifier (name), type);
+}
+
+/* Like build_library_fn, but also pushes the function so that we will
+   be able to find it via IDENTIFIER_GLOBAL_VALUE.  */
+
+tree
+push_library_fn (name, type)
+     tree name, type;
+{
+  tree fn = build_library_fn (name, type);
+  pushdecl_top_level (fn);
+  return fn;
+}
+
+/* Like build_cp_library_fn, but also pushes the function so that it
+   will be found by normal lookup.  */
+
+tree
+push_cp_library_fn (name, type)
+     tree name;
+     tree type;
+{
+  tree fn = build_cp_library_fn (name, type);
+  pushdecl (fn);
+  return fn;
+}
+
+/* Like push_library_fn, but takes a TREE_LIST of parm types rather than
+   a FUNCTION_TYPE.  */
+
+tree
+push_void_library_fn (name, parmtypes)
+     tree name, parmtypes;
+{
+  tree type = build_function_type (void_type_node, parmtypes);
+  return push_library_fn (name, type);
+}
+
+/* Like push_void_library_fn, but also note that this function throws
+   and does not return.  Used for __throw_foo and the like.  */
+
+tree
+push_throw_library_fn (name, parmtypes)
+     tree name, parmtypes;
+{
+  tree fn = push_void_library_fn (name, parmtypes);
+  TREE_THIS_VOLATILE (fn) = 1;
+  TREE_NOTHROW (fn) = 0;
+  return fn;
 }
 
 /* When we call finish_struct for an anonymous union, we create
@@ -7984,7 +8058,7 @@ get_atexit_node ()
 
   /* Now, build the function declaration.  */
   push_lang_context (lang_name_c);
-  atexit_fndecl = define_function (name, fn_type, /*pfn=*/0, NULL_PTR);
+  atexit_fndecl = build_library_fn_ptr (name, fn_type);
   mark_used (atexit_fndecl);
   pop_lang_context ();
   atexit_node = default_conversion (atexit_fndecl);

@@ -1868,8 +1868,7 @@ build_builtin_delete_call (addr)
      tree addr;
 {
   mark_used (global_delete_fndecl);
-  return build_call (global_delete_fndecl, 
-		     void_type_node, build_tree_list (NULL_TREE, addr));
+  return build_call (global_delete_fndecl, build_tree_list (NULL_TREE, addr));
 }
 
 /* Generate a C++ "new" expression. DECL is either a TREE_LIST
