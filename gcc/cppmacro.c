@@ -285,7 +285,7 @@ stringify_arg (pfile, arg)
       if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < len)
 	{
 	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, len);
+	  _cpp_extend_buff (pfile, &pfile->u_buff, len);
 	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	}
 
@@ -465,8 +465,8 @@ collect_args (pfile, node)
 	  /* Require space for 2 new tokens (including a CPP_EOF).  */
 	  if ((unsigned char *) &arg->first[ntokens + 2] > buff->limit)
 	    {
-	      buff = _cpp_extend_buff (pfile, buff,
-				       1000 * sizeof (cpp_token *));
+	      buff = _cpp_append_extend_buff (pfile, buff,
+					      1000 * sizeof (cpp_token *));
 	      arg->first = (const cpp_token **) buff->cur;
 	    }
 
@@ -1129,8 +1129,6 @@ save_parameter (pfile, macro, node)
      cpp_macro *macro;
      cpp_hashnode *node;
 {
-  cpp_hashnode **dest;
-
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
   if (node->arg_index)
     {
@@ -1138,22 +1136,16 @@ save_parameter (pfile, macro, node)
       return 1;
     }
 
-  dest = &macro->params[macro->paramc];
+  if (BUFF_ROOM (pfile->a_buff)
+      < (macro->paramc + 1) * sizeof (cpp_hashnode *))
+    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_hashnode *));
 
-  /* Check we have room for the parameters.  */
-  if ((unsigned char *) (dest + 1) >= POOL_LIMIT (&pfile->macro_pool))
-    {
-      _cpp_next_chunk (&pfile->macro_pool, sizeof (cpp_hashnode *),
-		       (unsigned char **) &macro->params);
-      dest = &macro->params[macro->paramc];
-    }
-
-  *dest = node;
-  node->arg_index = ++macro->paramc;
+  ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[macro->paramc++] = node;
+  node->arg_index = macro->paramc;
   return 0;
 }
 
-/* Check the syntax of the paramters in a MACRO definition.  */
+/* Check the syntax of the parameters in a MACRO definition.  */
 static int
 parse_params (pfile, macro)
      cpp_reader *pfile;
@@ -1161,7 +1153,6 @@ parse_params (pfile, macro)
 {
   unsigned int prev_ident = 0;
 
-  macro->params = (cpp_hashnode **) POOL_FRONT (&pfile->macro_pool);
   for (;;)
     {
       const cpp_token *token = _cpp_lex_token (pfile);
@@ -1187,7 +1178,7 @@ parse_params (pfile, macro)
 
 	case CPP_CLOSE_PAREN:
 	  if (prev_ident || macro->paramc == 0)
-	    break;
+	    return 1;
 
 	  /* Fall through to pick up the error.  */
 	case CPP_COMMA:
@@ -1215,18 +1206,13 @@ parse_params (pfile, macro)
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  token = _cpp_lex_token (pfile);
 	  if (token->type == CPP_CLOSE_PAREN)
-	    break;
+	    return 1;
 	  /* Fall through.  */
 
 	case CPP_EOF:
 	  cpp_error (pfile, "missing ')' in macro parameter list");
 	  return 0;
 	}
-
-      /* Success.  Commit the parameter array.  */
-      POOL_COMMIT (&pfile->macro_pool,
-		   macro->paramc * sizeof (cpp_hashnode *));
-      return 1;
     }
 }
 
@@ -1236,18 +1222,10 @@ alloc_expansion_token (pfile, macro)
      cpp_reader *pfile;
      cpp_macro *macro;
 {
-  cpp_token *token = &macro->expansion[macro->count];
+  if (BUFF_ROOM (pfile->a_buff) < (macro->count + 1) * sizeof (cpp_token))
+    _cpp_extend_buff (pfile, &pfile->a_buff, sizeof (cpp_token));
 
-  /* Check we have room for the token.  */
-  if ((unsigned char *) (token + 1) >= POOL_LIMIT (&pfile->macro_pool))
-    {
-      _cpp_next_chunk (&pfile->macro_pool, sizeof (cpp_token),
-		       (unsigned char **) &macro->expansion);
-      token = &macro->expansion[macro->count];
-    }
-
-  macro->count++;
-  return token;
+  return &((cpp_token *) BUFF_FRONT (pfile->a_buff))[macro->count++];
 }
 
 static cpp_token *
@@ -1284,8 +1262,7 @@ _cpp_create_definition (pfile, node)
   const cpp_token *ctoken;
   unsigned int i, ok = 1;
 
-  macro = (cpp_macro *) _cpp_pool_alloc (&pfile->macro_pool,
-					 sizeof (cpp_macro));
+  macro = (cpp_macro *) _cpp_aligned_alloc (pfile, sizeof (cpp_macro));
   macro->line = pfile->directive_line;
   macro->params = 0;
   macro->paramc = 0;
@@ -1299,8 +1276,13 @@ _cpp_create_definition (pfile, node)
 
   if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
     {
-      if (!(ok = parse_params (pfile, macro)))
+      ok = parse_params (pfile, macro);
+      macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
+      if (!ok)
 	goto cleanup2;
+
+      /* Success.  Commit the parameter array.  */
+      BUFF_FRONT (pfile->a_buff) = (U_CHAR *) &macro->params[macro->paramc];
       macro->fun_like = 1;
     }
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
@@ -1308,7 +1290,6 @@ _cpp_create_definition (pfile, node)
 
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   saved_cur_token = pfile->cur_token;
-  macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
 
   if (macro->fun_like)
     token = lex_expansion_token (pfile, macro);
@@ -1366,8 +1347,17 @@ _cpp_create_definition (pfile, node)
       token = lex_expansion_token (pfile, macro);
     }
 
+  macro->expansion = (cpp_token *) BUFF_FRONT (pfile->a_buff);
+
   /* Don't count the CPP_EOF.  */
   macro->count--;
+
+  /* Clear whitespace on first token for macro equivalence purposes.  */
+  if (macro->count)
+    macro->expansion[0].flags &= ~PREV_WHITE;
+
+  /* Commit the memory.  */
+  BUFF_FRONT (pfile->a_buff) = (U_CHAR *) &macro->expansion[macro->count];
 
   /* Implement the macro-defined-to-itself optimisation.  */
   macro->disabled = (macro->count == 1 && !macro->fun_like
@@ -1376,9 +1366,6 @@ _cpp_create_definition (pfile, node)
 
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->map->sysp != 0;
-
-  /* Commit the memory.  */
-  POOL_COMMIT (&pfile->macro_pool, macro->count * sizeof (cpp_token));
 
   if (node->type != NT_VOID)
     {

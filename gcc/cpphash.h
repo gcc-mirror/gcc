@@ -42,35 +42,6 @@ struct directive;		/* Deliberately incomplete.  */
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
 
-/* Memory pools.  */
-#define POOL_ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
-#define POOL_FRONT(p) ((p)->cur->front)
-#define POOL_LIMIT(p) ((p)->cur->limit)
-#define POOL_BASE(p)  ((p)->cur->base)
-#define POOL_SIZE(p)  ((p)->cur->limit - (p)->cur->base)
-#define POOL_ROOM(p)  ((p)->cur->limit - (p)->cur->front)
-#define POOL_USED(p)  ((p)->cur->front - (p)->cur->base)
-#define POOL_COMMIT(p, len) do {\
-  ((p)->cur->front += POOL_ALIGN (len, (p)->align));\
-  if ((p)->cur->front > (p)->cur->limit) abort ();} while (0)
-
-typedef struct cpp_chunk cpp_chunk;
-struct cpp_chunk
-{
-  cpp_chunk *next;
-  unsigned char *front;
-  unsigned char *limit;
-  unsigned char *base;
-};
-
-typedef struct cpp_pool cpp_pool;
-struct cpp_pool
-{
-  struct cpp_chunk *cur, *first;
-  unsigned char *pos;		/* Current position.  */
-  unsigned int align;
-};
-
 /* A generic memory buffer.  */
 
 typedef struct _cpp_buff _cpp_buff;
@@ -82,11 +53,13 @@ struct _cpp_buff
 
 extern _cpp_buff *_cpp_get_buff PARAMS ((cpp_reader *, size_t));
 extern void _cpp_release_buff PARAMS ((cpp_reader *, _cpp_buff *));
-extern _cpp_buff *_cpp_extend_buff PARAMS ((cpp_reader *, _cpp_buff *,
-					    size_t));
+extern void _cpp_extend_buff PARAMS ((cpp_reader *, _cpp_buff **, size_t));
+extern _cpp_buff *_cpp_append_extend_buff PARAMS ((cpp_reader *, _cpp_buff *,
+						   size_t));
 extern void _cpp_free_buff PARAMS ((_cpp_buff *));
+extern unsigned char *_cpp_aligned_alloc PARAMS ((cpp_reader *, size_t));
 extern unsigned char *_cpp_unaligned_alloc PARAMS ((cpp_reader *, size_t));
-#define BUFF_ROOM(BUFF) ((BUFF)->limit - (BUFF)->cur)
+#define BUFF_ROOM(BUFF) (size_t) ((BUFF)->limit - (BUFF)->cur)
 #define BUFF_FRONT(BUFF) ((BUFF)->cur)
 #define BUFF_LIMIT(BUFF) ((BUFF)->limit)
 
@@ -270,10 +243,8 @@ struct cpp_reader
   /* The line of the '#' of the current directive.  */
   unsigned int directive_line;
 
-  /* Memory pools.  */
-  cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
-
   /* Memory buffers.  */
+  _cpp_buff *a_buff;		/* Aligned permanent storage.  */
   _cpp_buff *u_buff;		/* Unaligned permanent storage.  */
   _cpp_buff *free_buffs;	/* Free buffer chain.  */
 
@@ -434,13 +405,6 @@ extern cpp_token *_cpp_lex_direct	PARAMS ((cpp_reader *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
-extern void _cpp_init_pool		PARAMS ((cpp_pool *, unsigned int,
-						  unsigned int, unsigned int));
-extern void _cpp_free_pool		PARAMS ((cpp_pool *));
-extern unsigned char *_cpp_pool_reserve PARAMS ((cpp_pool *, unsigned int));
-extern unsigned char *_cpp_pool_alloc	PARAMS ((cpp_pool *, unsigned int));
-extern unsigned char *_cpp_next_chunk	PARAMS ((cpp_pool *, unsigned int,
-						 unsigned char **));
 
 /* In cppinit.c.  */
 extern bool _cpp_push_next_buffer	PARAMS ((cpp_reader *));

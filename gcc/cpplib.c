@@ -512,7 +512,7 @@ glue_header_name (pfile)
       if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < len)
 	{
 	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, len);
+	  _cpp_extend_buff (pfile, &pfile->u_buff, len);
 	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	}
 
@@ -893,7 +893,7 @@ cpp_register_pragma (pfile, space, name, handler)
 
  found:
   new = (struct pragma_entry *)
-    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
+    _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
   new->name = name;
   new->len = strlen (name);
   new->isnspace = 0;
@@ -922,7 +922,7 @@ cpp_register_pragma_space (pfile, space)
     }
 
   new = (struct pragma_entry *)
-    _cpp_pool_alloc (&pfile->macro_pool, sizeof (struct pragma_entry));
+    _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
   new->name = space;
   new->len = len;
   new->isnspace = 1;
@@ -1406,12 +1406,7 @@ parse_answer (pfile, answerp, type)
 {
   const cpp_token *paren;
   struct answer *answer;
-
-  if (POOL_FRONT (&pfile->macro_pool) + sizeof (struct answer) >
-      POOL_LIMIT (&pfile->macro_pool))
-    _cpp_next_chunk (&pfile->macro_pool, sizeof (struct answer), 0);
-  answer = (struct answer *) POOL_FRONT (&pfile->macro_pool);
-  answer->count = 0;
+  unsigned int acount;
 
   /* In a conditional, it is legal to not have an open paren.  We
      should save the following token in this case.  */
@@ -1436,18 +1431,12 @@ parse_answer (pfile, answerp, type)
       return 1;
     }
 
-  for (;;)
+  for (acount = 0;; acount++)
     {
-      cpp_token *token = &answer->first[answer->count];
-      /* Check we have room for the token.  */
-      if ((unsigned char *) (token + 1) >= POOL_LIMIT (&pfile->macro_pool))
-	{
-	  _cpp_next_chunk (&pfile->macro_pool, sizeof (cpp_token),
-			   (unsigned char **) &answer);
-	  token = &answer->first[answer->count];
-	}
+      size_t room_needed;
+      const cpp_token *token = cpp_get_token (pfile);
+      cpp_token *dest;
 
-      *token = *cpp_get_token (pfile);
       if (token->type == CPP_CLOSE_PAREN)
 	break;
 
@@ -1456,21 +1445,32 @@ parse_answer (pfile, answerp, type)
 	  cpp_error (pfile, "missing ')' to complete answer");
 	  return 1;
 	}
-      answer->count++;
+
+      /* struct answer includes the space for one token.  */
+      room_needed = (sizeof (struct answer) + acount * sizeof (cpp_token));
+
+      if (BUFF_ROOM (pfile->a_buff) < room_needed)
+	_cpp_extend_buff (pfile, &pfile->a_buff, sizeof (struct answer));
+
+      dest = &((struct answer *) BUFF_FRONT (pfile->a_buff))->first[acount];
+      *dest = *token;
+
+      /* Drop whitespace at start, for answer equivalence purposes.  */
+      if (acount == 0)
+	dest->flags &= ~PREV_WHITE;
     }
 
-  if (answer->count == 0)
+  if (acount == 0)
     {
       cpp_error (pfile, "predicate's answer is empty");
       return 1;
     }
 
-  /* Drop whitespace at start.  */
-  answer->first->flags &= ~PREV_WHITE;
+  answer = (struct answer *) BUFF_FRONT (pfile->a_buff);
+  answer->count = acount;
+  answer->next = NULL;
   *answerp = answer;
 
-  if (type == T_ASSERT || type == T_UNASSERT)
-    check_eol (pfile);
   return 0;
 }
 
@@ -1580,11 +1580,13 @@ do_assert (pfile)
 	    }
 	  new_answer->next = node->value.answers;
 	}
+
       node->type = NT_ASSERTION;
       node->value.answers = new_answer;
-      POOL_COMMIT (&pfile->macro_pool, (sizeof (struct answer)
-					+ (new_answer->count - 1)
-					* sizeof (cpp_token)));
+      BUFF_FRONT (pfile->a_buff) += (sizeof (struct answer)
+				     + (new_answer->count - 1)
+				     * sizeof (cpp_token));
+      check_eol (pfile);
     }
 }
 
@@ -1611,6 +1613,8 @@ do_unassert (pfile)
 	  /* Did we free the last answer?  */
 	  if (node->value.answers == 0)
 	    node->type = NT_VOID;
+
+	  check_eol (pfile);
 	}
       else
 	_cpp_free_definition (node);

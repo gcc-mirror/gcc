@@ -527,11 +527,9 @@ cpp_create_reader (table, lang)
   pfile->base_context.macro = 0;
   pfile->base_context.prev = pfile->base_context.next = 0;
 
-  /* Unaligned storage.  */
+  /* Aligned and unaligned storage.  */
+  pfile->a_buff = _cpp_get_buff (pfile, 0);
   pfile->u_buff = _cpp_get_buff (pfile, 0);
-
-  /* Macro pool initially 8K.  Aligned, permanent pool.  */
-  _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
 
   /* Initialise the buffer obstack.  */
   gcc_obstack_init (&pfile->buffer_ob);
@@ -585,7 +583,7 @@ cpp_destroy (pfile)
   _cpp_destroy_hashtable (pfile);
   _cpp_cleanup_includes (pfile);
 
-  _cpp_free_pool (&pfile->macro_pool);
+  _cpp_free_buff (pfile->a_buff);
   _cpp_free_buff (pfile->u_buff);
   _cpp_free_buff (pfile->free_buffs);
 

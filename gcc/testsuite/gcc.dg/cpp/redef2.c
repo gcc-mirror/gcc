@@ -14,6 +14,9 @@
 #define va(a...) a
 #define va(...) __VA_ARGS__
 
+#define foo(x) x
+#define foo(x)x		/* { dg-bogus "redefined" "redefined foo" } */
+
 /* { dg-warning "redefined" "redef mac"     { target *-*-* } 7  }
    { dg-warning "redefined" "redef mac"     { target *-*-* } 8  }
    { dg-warning "redefined" "redef mac"     { target *-*-* } 9  }
