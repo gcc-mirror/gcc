@@ -1,3 +1,9 @@
+2003-07-08  James E Wilson  <wilson@tuliptree.org>
+
+	PR target/10021
+	* emit-rtl.c (set_mem_attribute_minus_bitpos): When handle ARRAY_REF,
+	loop over new variable t2 instead of t.
+
 2003-07-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (HAVE_AS_DWARF2_DEBUG_LINE): Don't define
