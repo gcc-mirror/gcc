@@ -4683,6 +4683,10 @@ static HARD_REG_SET reload_reg_used_at_all;
    in the group.  */
 static HARD_REG_SET reload_reg_used_for_inherit;
 
+/* Records which hard regs are allocated to a pseudo during any point of the
+   current insn.  */
+static HARD_REG_SET reg_used_by_pseudo;
+
 /* Mark reg REGNO as in use for a reload of the sort spec'd by OPNUM and
    TYPE. MODE is used to indicate how many consecutive regs are
    actually used.  */
@@ -5812,6 +5816,10 @@ choose_reload_regs (chain, avoid_return_reg)
   CLEAR_HARD_REG_SET (reload_reg_used_in_insn);
   CLEAR_HARD_REG_SET (reload_reg_used_in_other_addr);
 
+  CLEAR_HARD_REG_SET (reg_used_by_pseudo);
+  compute_use_by_pseudos (&reg_used_by_pseudo, chain->live_before);
+  compute_use_by_pseudos (&reg_used_by_pseudo, chain->live_after);
+  
   for (i = 0; i < reload_n_operands; i++)
     {
       CLEAR_HARD_REG_SET (reload_reg_used_in_output[i]);
@@ -6161,7 +6169,7 @@ choose_reload_regs (chain, avoid_return_reg)
 
 			  if (i1 != n_earlyclobbers
 			      /* Don't use it if we'd clobber a pseudo reg.  */
-			      || (spill_reg_order[i] < 0
+			      || (! TEST_HARD_REG_BIT (reg_used_by_pseudo, i)
 				  && reload_out[r]
 				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
 			      /* Don't really use the inherited spill reg
@@ -6174,7 +6182,7 @@ choose_reload_regs (chain, avoid_return_reg)
 			      /* If find_reloads chose reload_out as reload
 				 register, stay with it - that leaves the
 				 inherited register for subsequent reloads.  */
-			      || (reload_out[r] && reload_reg_rtx
+			      || (reload_out[r] && reload_reg_rtx[r]
 				  && rtx_equal_p (reload_out[r],
 						  reload_reg_rtx[r])))
 			    {

@@ -1,5 +1,11 @@
 Sat Oct 17 02:26:03 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
 
+	* reload1.c (reg_used_by_pseudo): New static variable.
+	(choose_reload_regs): Initialize it.
+	Use it instead of testing spill_reg_order to determine whether a
+	pseudo is live in a hard register across the current insn.
+	Fix a typo in a reference to reload_reg_rtx.
+
 	* flow.c (propagate_block): Replace code that computes and uses
 	regs_sometimes_live with simpler code that just walks the set of
 	currently live registers.
