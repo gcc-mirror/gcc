@@ -759,13 +759,13 @@ if test "x${with_newlib}" = "xyes"; then
    AC_DEFINE(NO_GETUID, 1, [Define if getuid() and friends are missing.])
    PLATFORMNET=NoNet
 else
-   AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep opendir)
-   AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r getcwd)
-   AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath utime chmod)
-   AC_CHECK_FUNCS(nl_langinfo setlocale)
+   AC_CHECK_FUNCS([strerror ioctl select fstat open fsync sleep opendir \
+                   gmtime_r localtime_r readdir_r getpwuid_r getcwd \
+		   access stat mkdir rename rmdir unlink realpath utime chmod \
+		   nl_langinfo setlocale \
+		   inet_pton uname inet_ntoa \
+		   fork execvp pipe sigaction ftruncate])
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
-   AC_CHECK_FUNCS(inet_pton uname inet_ntoa)
-   AC_CHECK_FUNCS(fork execvp pipe sigaction ftruncate)
    AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
    AC_CHECK_FUNC(backtrace, [
      case "$host" in
@@ -1207,10 +1207,13 @@ TL_AC_GXX_INCLUDE_DIR
 # We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.
 # On that system, sys/ioctl.h will not include sys/filio.h unless
 # BSD_COMP is defined; just including sys/filio.h is simpler.
-AC_CHECK_HEADERS(unistd.h bstring.h sys/time.h sys/types.h fcntl.h sys/ioctl.h sys/filio.h sys/stat.h sys/select.h sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h pwd.h sys/config.h stdint.h langinfo.h locale.h)
 # We avoid AC_HEADER_DIRENT since we really only care about dirent.h
 # for now.  If you change this, you also must update natFile.cc.
-AC_CHECK_HEADERS(dirent.h)
+AC_CHECK_HEADERS([unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
+		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
+		  sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h \
+		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
+		  dirent.h])
 AC_CHECK_HEADERS(inttypes.h, [
     AC_DEFINE(HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
     AC_DEFINE(JV_HAVE_INTTYPES_H, 1, [Define if <inttypes.h> is available])
