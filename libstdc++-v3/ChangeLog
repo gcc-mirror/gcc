@@ -1,3 +1,12 @@
+2000-05-08  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* bits/fstream.tcc (filebuf::_M_init_filebuf): Don't set
+	_M_buf_size based on macro, instead use _M_buf_size_opt.
+	* bits/std_streambuf.h (basic_streambuf): Add _M_buf_size_opt.
+	(basic_streambuf()): Set _M_buf_size_opt.
+	* testsuite/27_io/filebuf.cc (filebuf): Use _M_buf_size_opt
+	instead of _M_buf_size.
+
 2000-05-03  Phil Edwards  <pme@sourceware.cygnus.com>
             Felix Natter <fnatter@gmx.net>
 
