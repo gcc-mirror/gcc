@@ -599,6 +599,15 @@ enum cp_tree_index
 
 extern tree cp_global_trees[CPTI_MAX];
 
+#define java_byte_type_node		cp_global_trees[CPTI_JAVA_BYTE_TYPE]
+#define java_short_type_node		cp_global_trees[CPTI_JAVA_SHORT_TYPE]
+#define java_int_type_node		cp_global_trees[CPTI_JAVA_INT_TYPE]
+#define java_long_type_node		cp_global_trees[CPTI_JAVA_LONG_TYPE]
+#define java_float_type_node		cp_global_trees[CPTI_JAVA_FLOAT_TYPE]
+#define java_double_type_node		cp_global_trees[CPTI_JAVA_DOUBLE_TYPE]
+#define java_char_type_node		cp_global_trees[CPTI_JAVA_CHAR_TYPE]
+#define java_boolean_type_node		cp_global_trees[CPTI_JAVA_BOOLEAN_TYPE]
+
 #define void_zero_node			cp_global_trees[CPTI_VOID_ZERO]
 #define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
 #define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
@@ -727,26 +736,6 @@ extern tree cp_global_trees[CPTI_MAX];
 /* The type of the vtt parameter passed to subobject constructors and
    destructors.  */
 #define vtt_parm_type                   cp_global_trees[CPTI_VTT_PARM_TYPE]
-
-/* The various kinds of fundamental Java types.  */
-
-typedef enum java_fundamental_type_kind
-{
-  jtk_first, /* Must be first. */
-  jtk_byte = jtk_first, 
-  jtk_short,
-  jtk_int,
-  jtk_long,
-  jtk_float,
-  jtk_double,
-  jtk_char,
-  jtk_boolean,
-  jtk_last /* Must be last */
-} java_fundamental_type_kind;
-
-/* The fundamental Java types.  */
-
-extern tree java_fundamental_types[jtk_last];
 
 /* Global state.  */
 
