@@ -1,3 +1,8 @@
+Sat Jan 10 22:04:15 1998  Stan Cox  <scox@equinox.cygnus.com>
+
+	* i386.md: (movsicc_1, movhicc_1):  For alternate 3 set the opcode
+	suffix from operand 3.
+
 Sat Jan 10 21:50:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 			  Jeffrey A Law  (law@cygnus.com)
 
