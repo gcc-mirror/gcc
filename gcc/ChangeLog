@@ -1,3 +1,8 @@
+2003-04-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (add_vect): Check undefined value for range type
+	too.
+
 2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in:  More general test for cmp --ignore-initial.
