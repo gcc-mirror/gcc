@@ -1,5 +1,14 @@
 2002-05-29  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/biarch64.h (TARGET_64BIT_DEFAULT): Define with value.
+	(TARGET_BI_ARCH): Likewise.
+	* config/i386/i386.h: Test TARGET_64BIT_DEFAULT by value.
+	(TARGET_SWITCHES): Combine target defaults here not in TARGET_DEFAULT.
+	(TARGET_64BIT_DEFAULT): Default to 0.
+	(TARGET_DEFAULT): Default to MASK_OMIT_LEAF_FRAME_POINTER.
+
+2002-05-29  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (USE_HIDDEN_LINKONCE): New.
 	(get_pc_thunk_name): New.
 	(output_set_got): Use it.

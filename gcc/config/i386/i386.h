@@ -192,7 +192,7 @@ extern int target_flags;
 #ifdef TARGET_BI_ARCH
 #define TARGET_64BIT (target_flags & MASK_64BIT)
 #else
-#ifdef TARGET_64BIT_DEFAULT
+#if TARGET_64BIT_DEFAULT
 #define TARGET_64BIT 1
 #else
 #define TARGET_64BIT 0
@@ -384,13 +384,14 @@ extern int x86_prefetch_sse;
   { "no-red-zone",		MASK_NO_RED_ZONE,			      \
     N_("Do not use red-zone in the x86-64 code") },			      \
   SUBTARGET_SWITCHES							      \
-  { "", TARGET_DEFAULT, 0 }}
+  { "", TARGET_DEFAULT | TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_DEFAULT, 0 }}
 
-#ifdef TARGET_64BIT_DEFAULT
-#define TARGET_DEFAULT (MASK_64BIT | TARGET_SUBTARGET_DEFAULT)
-#else
-#define TARGET_DEFAULT TARGET_SUBTARGET_DEFAULT
+#ifndef TARGET_64BIT_DEFAULT
+#define TARGET_64BIT_DEFAULT 0
 #endif
+
+#define TARGET_DEFAULT MASK_OMIT_LEAF_FRAME_POINTER
+
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -590,13 +591,13 @@ extern int x86_prefetch_sse;
 
 #ifndef CPP_CPU_SPEC
 #ifdef TARGET_BI_ARCH
-#ifdef TARGET_64BIT_DEFAULT
+#if TARGET_64BIT_DEFAULT
 #define CPP_CPU_SPEC "%{m32:%(cpp_cpu32)}%{!m32:%(cpp_cpu64)} %(cpp_cpucommon)"
 #else
 #define CPP_CPU_SPEC "%{m64:%(cpp_cpu64)}%{!m64:%(cpp_cpu32)} %(cpp_cpucommon)"
 #endif
 #else
-#ifdef TARGET_64BIT_DEFAULT
+#if TARGET_64BIT_DEFAULT
 #define CPP_CPU_SPEC "%(cpp_cpu64) %(cpp_cpucommon)"
 #else
 #define CPP_CPU_SPEC "%(cpp_cpu32) %(cpp_cpucommon)"
@@ -657,7 +658,7 @@ extern int x86_prefetch_sse;
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_LONG_TYPE_SIZE 64
 
-#if defined (TARGET_BI_ARCH) || defined (TARGET_64BIT_DEFAULT)
+#if defined (TARGET_BI_ARCH) || TARGET_64BIT_DEFAULT
 #define MAX_BITS_PER_WORD 64
 #define MAX_LONG_TYPE_SIZE 64
 #else

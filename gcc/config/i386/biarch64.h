@@ -21,5 +21,5 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define TARGET_64BIT_DEFAULT
-#define TARGET_BI_ARCH
+#define TARGET_64BIT_DEFAULT MASK_64BIT
+#define TARGET_BI_ARCH 1
