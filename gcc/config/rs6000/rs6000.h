@@ -1559,7 +1559,7 @@ typedef struct rs6000_stack {
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
-typedef struct machine_function
+typedef struct machine_function GTY(())
 {
   /* Whether a System V.4 varargs area was created.  */
   int sysv_varargs_p;
@@ -2400,7 +2400,8 @@ do {									     \
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def *rs6000_compare_op0, *rs6000_compare_op1;
+extern GTY(()) rtx rs6000_compare_op0;
+extern GTY(()) rtx rs6000_compare_op1;
 extern int rs6000_compare_fp_p;
 
 /* Control the assembler format that we output.  */

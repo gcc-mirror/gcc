@@ -82,9 +82,7 @@ static Ccstar    output_multi_immediate		PARAMS ((rtx *, Ccstar, Ccstar, int, Hi
 static void      print_multi_reg		PARAMS ((FILE *, Ccstar, int, int));
 static Mmode     select_dominance_cc_mode	PARAMS ((rtx, rtx, Hint));
 static Ccstar    shift_op			PARAMS ((rtx, Hint *));
-static void      arm_init_machine_status	PARAMS ((struct function *));
-static void      arm_mark_machine_status        PARAMS ((struct function *));
-static void      arm_free_machine_status        PARAMS ((struct function *));
+static struct machine_function * arm_init_machine_status PARAMS ((void));
 static int       number_of_first_bit_set        PARAMS ((int));
 static void      replace_symbols_in_block       PARAMS ((tree, rtx, rtx));
 static void      thumb_exit                     PARAMS ((FILE *, int, rtx));
@@ -772,10 +770,6 @@ arm_override_options ()
 static void
 arm_add_gc_roots ()
 {
-  ggc_add_rtx_root (&arm_compare_op0, 1);
-  ggc_add_rtx_root (&arm_compare_op1, 1);
-  ggc_add_rtx_root (&arm_target_insn, 1); /* Not sure this is really a root.  */
-
   gcc_obstack_init(&minipool_obstack);
   minipool_startobj = (char *) obstack_alloc (&minipool_obstack, 0);
 }
@@ -10091,37 +10085,16 @@ thumb_unexpanded_epilogue ()
 
 /* Functions to save and restore machine-specific function data.  */
 
-static void
-arm_mark_machine_status (p)
-     struct function * p;
+static struct machine_function *
+arm_init_machine_status ()
 {
-  machine_function *machine = p->machine;
+  struct machine_function *machine;
+  machine = (machine_function *) ggc_alloc_cleared (sizeof (machine_function));
 
-  if (machine)
-    ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
-}
-
-static void
-arm_init_machine_status (p)
-     struct function * p;
-{
-  p->machine =
-    (machine_function *) xcalloc (1, sizeof (machine_function));
-
-#if ARM_FT_UNKNOWWN != 0  
-  ((machine_function *) p->machine)->func_type = ARM_FT_UNKNOWN;
+#if ARM_FT_UNKNOWN != 0  
+  machine->func_type = ARM_FT_UNKNOWN;
 #endif
-}
-
-static void
-arm_free_machine_status (p)
-     struct function * p;
-{
-  if (p->machine)
-    {
-      free (p->machine);
-      p->machine = NULL;
-    }
+  return machine;
 }
 
 /* Return an RTX indicating where the return address to the
@@ -10152,8 +10125,6 @@ arm_init_expanders ()
 {
   /* Arrange to initialize and mark the machine per-function status.  */
   init_machine_status = arm_init_machine_status;
-  mark_machine_status = arm_mark_machine_status;
-  free_machine_status = arm_free_machine_status;
 }
 
 /* Generate the rest of a function's prologue.  */
@@ -10851,10 +10822,11 @@ arm_strip_name_encoding (const char * name)
   return name;
 }
 
+rtx aof_pic_label;
+
 #ifdef AOF_ASSEMBLER
 /* Special functions only needed when producing AOF syntax assembler.  */
 
-rtx aof_pic_label = NULL_RTX;
 struct pic_chain
 {
   struct pic_chain * next;
@@ -10872,10 +10844,6 @@ aof_pic_entry (x)
 
   if (aof_pic_label == NULL_RTX)
     {
-      /* We mark this here and not in arm_add_gc_roots() to avoid
-	 polluting even more code with ifdefs, and because it never
-	 contains anything useful until we assign to it here.  */
-      ggc_add_rtx_root (&aof_pic_label, 1);
       aof_pic_label = gen_rtx_SYMBOL_REF (Pmode, "x$adcons");
     }
 

@@ -710,7 +710,7 @@ unshare_base_binfos (binfo)
    While all these live in the same table, they are completely independent,
    and the hash code is computed differently for each of these.  */
 
-static htab_t list_hash_table;
+static GTY ((param_is (union tree_node))) htab_t list_hash_table;
 
 struct list_proxy 
 {
@@ -1720,25 +1720,15 @@ cp_tree_equal (t1, t2)
   return -1;
 }
 
-/* Build a wrapper around some pointer PTR so we can use it as a tree.  */
+/* Build a wrapper around a 'struct z_candidate' so we can use it as a
+   tree.  */
 
 tree
-build_ptr_wrapper (ptr)
-     void *ptr;
+build_zc_wrapper (ptr)
+     struct z_candidate *ptr;
 {
   tree t = make_node (WRAPPER);
-  WRAPPER_PTR (t) = ptr;
-  return t;
-}
-
-/* Build a wrapper around some integer I so we can use it as a tree.  */
-
-tree
-build_int_wrapper (i)
-     int i;
-{
-  tree t = make_node (WRAPPER);
-  WRAPPER_INT (t) = i;
+  WRAPPER_ZC (t) = ptr;
   return t;
 }
 
@@ -2326,10 +2316,7 @@ void
 init_tree ()
 {
   lang_statement_code_p = cp_statement_code_p;
-  list_hash_table = htab_create (31, list_hash, list_hash_eq, NULL);
-  ggc_add_root (&list_hash_table, 1, 
-		sizeof (list_hash_table),
-		mark_tree_hashtable);
+  list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
 }
 
 /* Called via walk_tree.  If *TP points to a DECL_STMT for a local
@@ -2557,3 +2544,20 @@ stabilize_expr (exp, initp)
   *initp = init_expr;
   return exp;
 }
+
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+/* Complain that some language-specific thing hanging off a tree
+   node has been accessed improperly.  */
+
+void
+lang_check_failed (file, line, function)
+     const char *file;
+     int line;
+     const char *function;
+{
+  internal_error ("lang_* check: failed in %s, at %s:%d",
+		  function, trim_filename (file), line);
+}
+#endif /* ENABLE_TREE_CHECKING */
+
+#include "gt-cp-tree.h"

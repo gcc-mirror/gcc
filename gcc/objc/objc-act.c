@@ -294,9 +294,6 @@ static void generate_classref_translation_entry	PARAMS ((tree));
 static void handle_class_ref			PARAMS ((tree));
 static void generate_struct_by_value_array	PARAMS ((void))
      ATTRIBUTE_NORETURN;
-static void objc_act_parse_init			PARAMS ((void));
-static void ggc_mark_imp_list			PARAMS ((void *));
-static void ggc_mark_hash_table			PARAMS ((void *));
 
 /*** Private Interface (data) ***/
 
@@ -515,8 +512,6 @@ objc_init (filename)
 
   if (print_struct_values)
     generate_struct_by_value_array ();
-
-  objc_act_parse_init ();
 
   return filename;
 }
@@ -1234,8 +1229,6 @@ build_objc_string_object (strings)
 	VARRAY_PUSH_TREE (vstrings, strings);
 
       string = combine_strings (vstrings);
-
-      VARRAY_FREE (vstrings);
     }
   else
     string = strings;
@@ -5279,8 +5272,8 @@ hash_func (sel_name)
 static void
 hash_init ()
 {
-  nst_method_hash_list = (hash *) xcalloc (SIZEHASHTABLE, sizeof (hash));
-  cls_method_hash_list = (hash *) xcalloc (SIZEHASHTABLE, sizeof (hash));
+  nst_method_hash_list = (hash *) ggc_calloc (SIZEHASHTABLE, sizeof (hash));
+  cls_method_hash_list = (hash *) ggc_calloc (SIZEHASHTABLE, sizeof (hash));
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek
@@ -5293,18 +5286,10 @@ hash_enter (hashlist, method)
      hash *hashlist;
      tree method;
 {
-  static hash 	hash_alloc_list = 0;
-  static int	hash_alloc_index = 0;
   hash obj;
   int slot = hash_func (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
 
-  if (! hash_alloc_list || hash_alloc_index >= HASH_ALLOC_LIST_SIZE)
-    {
-      hash_alloc_index = 0;
-      hash_alloc_list = (hash) xmalloc (sizeof (struct hashed_entry)
-					* HASH_ALLOC_LIST_SIZE);
-    }
-  obj = &hash_alloc_list[hash_alloc_index++];
+  obj = (hash) ggc_alloc (sizeof (struct hashed_entry));
   obj->list = 0;
   obj->next = hashlist[slot];
   obj->key = method;
@@ -5336,17 +5321,9 @@ hash_add_attr (entry, value)
      hash entry;
      tree value;
 {
-  static attr 	attr_alloc_list = 0;
-  static int	attr_alloc_index = 0;
   attr obj;
 
-  if (! attr_alloc_list || attr_alloc_index >= ATTR_ALLOC_LIST_SIZE)
-    {
-      attr_alloc_index = 0;
-      attr_alloc_list = (attr) xmalloc (sizeof (struct hashed_attribute)
-					* ATTR_ALLOC_LIST_SIZE);
-    }
-  obj = &attr_alloc_list[attr_alloc_index++];
+  obj = (attr) ggc_alloc (sizeof (struct hashed_attribute));
   obj->next = entry->list;
   obj->value = value;
 
@@ -6147,7 +6124,7 @@ continue_class (class)
       if (!objc_class_template)
 	build_class_template ();
 
-      imp_entry = (struct imp_entry *) xmalloc (sizeof (struct imp_entry));
+      imp_entry = (struct imp_entry *) ggc_alloc (sizeof (struct imp_entry));
 
       imp_entry->next = imp_list;
       imp_entry->imp_context = class;
@@ -8319,51 +8296,6 @@ handle_impent (impent)
     }
 }
 
-static void
-ggc_mark_imp_list (arg)
-     void *arg;
-{
-  struct imp_entry *impent;
-
-  for (impent = *(struct imp_entry **)arg; impent; impent = impent->next)
-    {
-      ggc_mark_tree (impent->imp_context);
-      ggc_mark_tree (impent->imp_template);
-      ggc_mark_tree (impent->class_decl);
-      ggc_mark_tree (impent->meta_decl);
-    }
-}
-
-static void
-ggc_mark_hash_table (arg)
-     void *arg;
-{
-  hash *hash_table = *(hash **)arg;
-  hash hst;
-  attr list;
-  int i;
-
-  if (hash_table == NULL)
-    return;
-  for (i = 0; i < SIZEHASHTABLE; i++)
-    for (hst = hash_table [i]; hst; hst = hst->next)
-      {
-	ggc_mark_tree (hst->key);
-	for (list = hst->list; list; list = list->next)
-	  ggc_mark_tree (list->value);
-      }
-}
-
-/* Add GC roots for variables local to this file.  */
-static void
-objc_act_parse_init ()
-{
-  ggc_add_tree_root (objc_global_trees, OCTI_MAX);
-  ggc_add_root (&imp_list, 1, sizeof imp_list, ggc_mark_imp_list);
-  ggc_add_root (&nst_method_hash_list, 1, sizeof nst_method_hash_list, ggc_mark_hash_table);
-  ggc_add_root (&cls_method_hash_list, 1, sizeof cls_method_hash_list, ggc_mark_hash_table);
-}
-
 /* Look up ID as an instance variable.  */
 tree
 lookup_objc_ivar (id)
@@ -8384,3 +8316,5 @@ lookup_objc_ivar (id)
   else
     return 0;
 }
+
+#include "gtype-objc.h"

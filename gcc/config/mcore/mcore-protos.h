@@ -49,8 +49,8 @@ extern rtx          mcore_function_value         	PARAMS ((tree, tree));
 
 #ifdef RTX_CODE
 
-extern rtx arch_compare_op0;
-extern rtx arch_compare_op1;
+extern GTY(()) rtx arch_compare_op0;
+extern GTY(()) rtx arch_compare_op1;
 
 extern const char * mcore_output_bclri         		PARAMS ((rtx, int));
 extern const char * mcore_output_bseti         		PARAMS ((rtx, int));

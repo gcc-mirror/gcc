@@ -33,7 +33,7 @@ typedef bitmap_head regset_head;
 typedef bitmap regset;
 
 /* Initialize a new regset.  */
-#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD)
+#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, 1)
 
 /* Clear a register set by freeing up the linked list.  */
 #define CLEAR_REG_SET(HEAD) bitmap_clear (HEAD)
@@ -99,7 +99,7 @@ do {									\
 #define OBSTACK_ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
 
 /* Initialize a register set.  Returns the new register set.  */
-#define INITIALIZE_REG_SET(HEAD) bitmap_initialize (&HEAD)
+#define INITIALIZE_REG_SET(HEAD) bitmap_initialize (&HEAD, 1)
 
 /* Do any cleanup needed on a regset when it is no longer used.  */
 #define FREE_REG_SET(REGSET) BITMAP_FREE(REGSET)

@@ -67,7 +67,7 @@ name_needs_quotes (name)
 /* This module assumes that (const (symbol_ref "foo")) is a legal pic
    reference, which will not be changed.  */
 
-static tree machopic_defined_list;
+static GTY(()) tree machopic_defined_list;
 
 enum machopic_addr_class
 machopic_classify_ident (ident)
@@ -257,7 +257,7 @@ machopic_function_base_name ()
   return function_base;
 }
 
-static tree machopic_non_lazy_pointers = NULL;
+static GTY(()) tree machopic_non_lazy_pointers;
 
 /* Return a non-lazy pointer name corresponding to the given name,
    either by finding it in our list of pointer names, or by generating
@@ -321,17 +321,7 @@ machopic_non_lazy_ptr_name (name)
   }
 }
 
-static tree machopic_stubs = 0;
-
-/* Make sure the GC knows about our homemade lists.  */
-
-void
-machopic_add_gc_roots ()
-{
-  ggc_add_tree_root (&machopic_defined_list, 1);
-  ggc_add_tree_root (&machopic_non_lazy_pointers, 1);
-  ggc_add_tree_root (&machopic_stubs, 1);
-}
+static GTY(()) tree machopic_stubs;
 
 /* Return the name of the stub corresponding to the given name,
    generating a new stub name if necessary.  */
@@ -1297,3 +1287,6 @@ machopic_asm_out_destructor (symbol, priority)
   if (!flag_pic)
     fprintf (asm_out_file, ".reference .destructors_used\n");
 }
+
+#include "gt-darwin.h"
+

@@ -514,7 +514,7 @@ nonbinary_modular_operation (op_code, type, lhs, rhs)
       /* Copy the node so we ensure it can be modified to make it modular.  */
       op_type = copy_node (gnat_type_for_size (precision, unsignedp));
       modulus = convert (op_type, modulus);
-      TYPE_MODULUS (op_type) = modulus;
+      SET_TYPE_MODULUS (op_type, modulus);
       TYPE_MODULAR_P (op_type) = 1;
       lhs = convert (op_type, lhs);
       rhs = convert (op_type, rhs);
@@ -530,7 +530,7 @@ nonbinary_modular_operation (op_code, type, lhs, rhs)
     {
       tree div_type = copy_node (gnat_type_for_size (needed_precision, 1));
       modulus = convert (div_type, modulus);
-      TYPE_MODULUS (div_type) = modulus;
+      SET_TYPE_MODULUS (div_type, modulus);
       TYPE_MODULAR_P (div_type) = 1;
       result = convert (op_type,
 			fold (build (TRUNC_MOD_EXPR, div_type,

@@ -272,19 +272,19 @@ extern int valid_parallel_operands_5 PARAMS ((rtx *, enum machine_mode));
 
 extern int valid_parallel_operands_6 PARAMS ((rtx *, enum machine_mode));
 
-extern rtx smulhi3_libfunc;
-extern rtx umulhi3_libfunc;
-extern rtx fix_truncqfhi2_libfunc;
-extern rtx fixuns_truncqfhi2_libfunc;
-extern rtx fix_trunchfhi2_libfunc;
-extern rtx fixuns_trunchfhi2_libfunc;
-extern rtx floathiqf2_libfunc;
-extern rtx floatunshiqf2_libfunc;
-extern rtx floathihf2_libfunc;
-extern rtx floatunshihf2_libfunc;
+extern GTY(()) rtx smulhi3_libfunc;
+extern GTY(()) rtx umulhi3_libfunc;
+extern GTY(()) rtx fix_truncqfhi2_libfunc;
+extern GTY(()) rtx fixuns_truncqfhi2_libfunc;
+extern GTY(()) rtx fix_trunchfhi2_libfunc;
+extern GTY(()) rtx fixuns_trunchfhi2_libfunc;
+extern GTY(()) rtx floathiqf2_libfunc;
+extern GTY(()) rtx floatunshiqf2_libfunc;
+extern GTY(()) rtx floathihf2_libfunc;
+extern GTY(()) rtx floatunshihf2_libfunc;
 
-extern struct rtx_def *c4x_compare_op0;	/* Operand 0 for comparisons.  */
-extern struct rtx_def *c4x_compare_op1;	/* Operand 1 for comparisons.  */
+extern GTY(()) rtx c4x_compare_op0;	/* Operand 0 for comparisons.  */
+extern GTY(()) rtx c4x_compare_op1;	/* Operand 1 for comparisons.  */
 
 #endif /* RTX_CODE */
 
@@ -303,7 +303,12 @@ extern void c4x_pr_FUNC_NEVER_RETURNS	PARAMS ((cpp_reader *));
 extern void c4x_pr_INTERRUPT		PARAMS ((cpp_reader *));
 extern void c4x_pr_ignored		PARAMS ((cpp_reader *));
 extern void c4x_init_pragma		PARAMS ((int (*) (tree *)));
-extern tree code_tree, data_tree, pure_tree, noreturn_tree, interrupt_tree;
 #endif
+
+extern GTY(()) tree code_tree;
+extern GTY(()) tree data_tree;
+extern GTY(()) tree pure_tree;
+extern GTY(()) tree noreturn_tree;
+extern GTY(()) tree interrupt_tree;
 
 #endif /* ! GCC_C4X_PROTOS_H */

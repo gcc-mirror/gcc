@@ -33,7 +33,7 @@
 /* Auxiliary structure used inside the varray structure, used for
    function integration data.  */
 
-struct const_equiv_data {
+struct const_equiv_data GTY(()) {
   /* Map pseudo reg number in calling function to equivalent constant.  We
      cannot in general substitute constants into parameter pseudo registers,
      since some machine descriptions (many RISCs) won't always handle
@@ -54,107 +54,153 @@ struct const_equiv_data {
   unsigned age;
 };
 
+/* Enum indicating what the varray contains.  
+   If this is changed, `element_size' in varray.c needs to be updated.  */
+
+enum varray_data_enum {
+  VARRAY_DATA_C,
+  VARRAY_DATA_UC,
+  VARRAY_DATA_S,
+  VARRAY_DATA_US,
+  VARRAY_DATA_I,
+  VARRAY_DATA_U,
+  VARRAY_DATA_L,
+  VARRAY_DATA_UL,
+  VARRAY_DATA_HINT,
+  VARRAY_DATA_UHINT,
+  VARRAY_DATA_GENERIC,
+  VARRAY_DATA_CPTR,
+  VARRAY_DATA_RTX,
+  VARRAY_DATA_RTVEC,
+  VARRAY_DATA_TREE,
+  VARRAY_DATA_BITMAP,
+  VARRAY_DATA_REG,
+  VARRAY_DATA_CONST_EQUIV,
+  VARRAY_DATA_BB,
+  VARRAY_DATA_TE,
+  NUM_VARRAY_DATA
+};
+
 /* Union of various array types that are used.  */
-typedef union varray_data_tag {
-  char			 c[1];
-  unsigned char		 uc[1];
-  short			 s[1];
-  unsigned short	 us[1];
-  int			 i[1];
-  unsigned int		 u[1];
-  long			 l[1];
-  unsigned long		 ul[1];
-  HOST_WIDE_INT		 hint[1];
-  unsigned HOST_WIDE_INT uhint[1];
-  PTR			 generic[1];
-  char			 *cptr[1];
-  struct rtx_def	 *rtx[1];
-  struct rtvec_def	 *rtvec[1];
-  union tree_node	 *tree[1];
-  struct bitmap_head_def *bitmap[1];
-  struct sched_info_tag	 *sched[1];
-  struct reg_info_def	 *reg[1];
-  struct const_equiv_data const_equiv[1];
-  struct basic_block_def *bb[1];
-  struct elt_list       *te[1];
+typedef union varray_data_tag GTY (()) {
+  char			  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_C")))		c[1];
+  unsigned char		  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_UC")))	uc[1];
+  short			  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_S")))		s[1];
+  unsigned short	  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_US")))	us[1];
+  int			  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_I")))		i[1];
+  unsigned int		  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_U")))		u[1];
+  long			  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_L")))		l[1];
+  unsigned long		  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_UL")))	ul[1];
+  HOST_WIDE_INT		  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_HINT")))	hint[1];
+  unsigned HOST_WIDE_INT  GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_UHINT")))	uhint[1];
+  PTR			  GTY ((length ("%0.num_elements"), use_param (""),
+				tag ("VARRAY_DATA_GENERIC")))	generic[1];
+  char			 *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_CPTR")))	cptr[1];
+  struct rtx_def	 *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_RTX")))	rtx[1];
+  struct rtvec_def	 *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_RTVEC")))	rtvec[1];
+  union tree_node	 *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_TREE")))	tree[1];
+  struct bitmap_head_def *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_BITMAP")))	bitmap[1];
+  struct reg_info_def	 *GTY ((length ("%0.num_elements"), skip (""),
+				tag ("VARRAY_DATA_REG")))	reg[1];
+  struct const_equiv_data GTY ((length ("%0.num_elements"),
+			tag ("VARRAY_DATA_CONST_EQUIV"))) 	const_equiv[1];
+  struct basic_block_def *GTY ((length ("%0.num_elements"), skip (""),
+				tag ("VARRAY_DATA_BB")))	bb[1];
+  struct elt_list	 *GTY ((length ("%0.num_elements"),
+				tag ("VARRAY_DATA_TE")))	te[1];
 } varray_data;
 
 /* Virtual array of pointers header.  */
-typedef struct varray_head_tag {
-  size_t	num_elements;	/* maximum element number allocated */
-  size_t        elements_used;  /* the number of elements used, if
+struct varray_head_tag GTY(()) {
+  size_t	num_elements;	/* Maximum element number allocated.  */
+  size_t        elements_used;  /* The number of elements used, if
 				   using VARRAY_PUSH/VARRAY_POP.  */
-  size_t	element_size;	/* size of each data element */
+  enum varray_data_enum type;	/* The kind of elements in the varray.  */
   const char   *name;		/* name of the varray for reporting errors */
-  varray_data	data;		/* data elements follow, must be last */
-} *varray_type;
+  varray_data	GTY ((desc ("%0.type"))) data;	/* The data elements follow, 
+						   must be last.  */
+};
+typedef struct varray_head_tag *varray_type;
 
 /* Allocate a virtual array with NUM elements, each of which is SIZE bytes
    long, named NAME.  Array elements are zeroed.  */
-extern varray_type varray_init	PARAMS ((size_t, size_t, const char *));
+extern varray_type varray_init	PARAMS ((size_t, enum varray_data_enum, 
+					 const char *));
 
 #define VARRAY_CHAR_INIT(va, num, name) \
-  va = varray_init (num, sizeof (char), name)
+  va = varray_init (num, VARRAY_DATA_C, name)
 
 #define VARRAY_UCHAR_INIT(va, num, name) \
-  va = varray_init (num, sizeof (unsigned char), name)
+  va = varray_init (num, VARRAY_DATA_UC, name)
 
 #define VARRAY_SHORT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (short), name)
+  va = varray_init (num, VARRAY_DATA_S, name)
 
 #define VARRAY_USHORT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (unsigned short), name)
+  va = varray_init (num, VARRAY_DATA_US, name)
 
 #define VARRAY_INT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (int), name)
+  va = varray_init (num, VARRAY_DATA_I, name)
 
 #define VARRAY_UINT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (unsigned int), name)
+  va = varray_init (num, VARRAY_DATA_U, name)
 
 #define VARRAY_LONG_INIT(va, num, name) \
-  va = varray_init (num, sizeof (long), name)
+  va = varray_init (num, VARRAY_DATA_L, name)
 
 #define VARRAY_ULONG_INIT(va, num, name) \
-  va = varray_init (num, sizeof (unsigned long), name)
+  va = varray_init (num, VARRAY_DATA_UL, name)
 
 #define VARRAY_WIDE_INT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (HOST_WIDE_INT), name)
+  va = varray_init (num, VARRAY_DATA_HINT, name)
 
 #define VARRAY_UWIDE_INT_INIT(va, num, name) \
-  va = varray_init (num, sizeof (unsigned HOST_WIDE_INT), name)
+  va = varray_init (num, VARRAY_DATA_UHINT, name)
 
 #define VARRAY_GENERIC_PTR_INIT(va, num, name) \
-  va = varray_init (num, sizeof (PTR), name)
+  va = varray_init (num, VARRAY_DATA_GENERIC, name)
 
 #define VARRAY_CHAR_PTR_INIT(va, num, name) \
-  va = varray_init (num, sizeof (char *), name)
+  va = varray_init (num, VARRAY_DATA_CPTR, name)
 
 #define VARRAY_RTX_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct rtx_def *), name)
+  va = varray_init (num, VARRAY_DATA_RTX, name)
 
 #define VARRAY_RTVEC_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct rtvec_def), name)
+  va = varray_init (num, VARRAY_DATA_RTVEC, name)
 
 #define VARRAY_TREE_INIT(va, num, name) \
-  va = varray_init (num, sizeof (union tree_node *), name)
+  va = varray_init (num, VARRAY_DATA_TREE, name)
 
 #define VARRAY_BITMAP_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct bitmap_head_def *), name)
-
-#define VARRAY_SCHED_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct sched_info_tag *), name)
+  va = varray_init (num, VARRAY_DATA_BITMAP, name)
 
 #define VARRAY_REG_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct reg_info_def *), name)
+  va = varray_init (num, VARRAY_DATA_REG, name)
 
 #define VARRAY_CONST_EQUIV_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct const_equiv_data), name)
+  va = varray_init (num, VARRAY_DATA_CONST_EQUIV, name)
 
 #define VARRAY_BB_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct basic_block_def *), name)
+  va = varray_init (num, VARRAY_DATA_BB, name)
 
 #define VARRAY_ELT_LIST_INIT(va, num, name) \
-  va = varray_init (num, sizeof (struct elt_list *), name)
+  va = varray_init (num, VARRAY_DATA_TE, name)
 
 /* Free up memory allocated by the virtual array, but do not free any of the
    elements involved.  */
@@ -170,6 +216,10 @@ extern varray_type varray_grow	PARAMS ((varray_type, size_t));
 
 #define VARRAY_ACTIVE_SIZE(VA)	((VA)->elements_used)
 #define VARRAY_POP_ALL(VA)	((VA)->elements_used = 0)
+
+#define VARRAY_CLEAR(VA) varray_clear(VA)
+
+extern void varray_clear	PARAMS ((varray_type));
 
 /* Check for VARRAY_xxx macros being in bound.  */
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
@@ -221,7 +271,6 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 #define VARRAY_RTVEC(VA, N)		VARRAY_CHECK (VA, N, rtvec)
 #define VARRAY_TREE(VA, N)		VARRAY_CHECK (VA, N, tree)
 #define VARRAY_BITMAP(VA, N)		VARRAY_CHECK (VA, N, bitmap)
-#define VARRAY_SCHED(VA, N)		VARRAY_CHECK (VA, N, sched)
 #define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, reg)
 #define VARRAY_CONST_EQUIV(VA, N)	VARRAY_CHECK (VA, N, const_equiv)
 #define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, bb)
@@ -244,7 +293,6 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 #define VARRAY_PUSH_RTVEC(VA, X)	VARRAY_PUSH (VA, rtvec, X)
 #define VARRAY_PUSH_TREE(VA, X)		VARRAY_PUSH (VA, tree, X)
 #define VARRAY_PUSH_BITMAP(VA, X)	VARRAY_PUSH (VA, bitmap, X)
-#define VARRAY_PUSH_SCHED(VA, X)	VARRAY_PUSH (VA, sched, X)
 #define VARRAY_PUSH_REG(VA, X)		VARRAY_PUSH (VA, reg, X)
 #define VARRAY_PUSH_CONST_EQUIV(VA, X)	VARRAY_PUSH (VA, const_equiv, X)
 #define VARRAY_PUSH_BB(VA, X)		VARRAY_PUSH (VA, bb, X)
@@ -266,7 +314,6 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 #define VARRAY_TOP_RTVEC(VA)	        VARRAY_TOP (VA, rtvec)
 #define VARRAY_TOP_TREE(VA)		VARRAY_TOP (VA, tree)
 #define VARRAY_TOP_BITMAP(VA)	        VARRAY_TOP (VA, bitmap)
-#define VARRAY_TOP_SCHED(VA)	        VARRAY_TOP (VA, sched)
 #define VARRAY_TOP_REG(VA)		VARRAY_TOP (VA, reg)
 #define VARRAY_TOP_CONST_EQUIV(VA)	VARRAY_TOP (VA, const_equiv)
 #define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, bb)

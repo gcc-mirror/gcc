@@ -74,7 +74,7 @@ extern struct obstack permanent_obstack;
    before static field references.  */
 extern int always_initialize_class_p;
 
-static tree parse_roots[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+static GTY(()) tree parse_roots[3];
 
 /* The FIELD_DECL for the current field.  */
 #define current_field parse_roots[0]
@@ -1270,9 +1270,9 @@ void
 init_jcf_parse ()
 {
   /* Register roots with the garbage collector.  */
-  ggc_add_tree_root (parse_roots, ARRAY_SIZE (parse_roots));
-
   ggc_add_root (&current_jcf, 1, sizeof (JCF), (void (*)(void *))ggc_mark_jcf);
 
   init_src_parse ();
 }
+
+#include "gt-java-jcf-parse.h"

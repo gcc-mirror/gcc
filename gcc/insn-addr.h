@@ -23,14 +23,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "varray.h"
 
-extern varray_type insn_addresses_;
+extern GTY(()) varray_type insn_addresses_;
 extern int insn_current_address;
 
 #define INSN_ADDRESSES_DEFN() varray_type insn_addresses_
 #define INSN_ADDRESSES(id) VARRAY_INT (insn_addresses_, (id))
 #define INSN_ADDRESSES_ALLOC(size) \
   VARRAY_INT_INIT (insn_addresses_, (size), "insn_addresses")
-#define INSN_ADDRESSES_FREE() VARRAY_FREE (insn_addresses_)
+#define INSN_ADDRESSES_FREE() (insn_addresses_ = 0)
 #define INSN_ADDRESSES_SET_P() (insn_addresses_ != 0)
 #define INSN_ADDRESSES_SIZE() VARRAY_SIZE (insn_addresses_)
 #define INSN_ADDRESSES_NEW(insn, addr) do \

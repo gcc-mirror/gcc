@@ -86,7 +86,7 @@ tree gnu_block_stack;
    variables.  TREE_VALUE is the VAR_DECL that stores the address of
    the raised exception.  Nonzero means we are in an exception
    handler.  Not used in the zero-cost case.  */
-static tree gnu_except_ptr_stack;
+static GTY(()) tree gnu_except_ptr_stack;
 
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
@@ -96,7 +96,7 @@ Node_Id error_gnat_node;
 
 /* Variable that stores a list of labels to be used as a goto target instead of
    a return in some functions.  See processing for N_Subprogram_Body.  */
-static tree gnu_return_label_stack;
+static GTY(()) tree gnu_return_label_stack;
 
 static tree tree_transform		PARAMS((Node_Id));
 static void elaborate_all_entities	PARAMS((Node_Id));
@@ -188,9 +188,6 @@ gigi (gnat_root, max_gnat_node, number_name, nodes_ptr, next_node_ptr,
   save_gnu_tree (Base_Type (standard_integer),
 		 TYPE_NAME (integer_type_node), 0);
 
-  ggc_add_tree_root (&gnu_block_stack, 1);
-  ggc_add_tree_root (&gnu_except_ptr_stack, 1);
-  ggc_add_tree_root (&gnu_return_label_stack, 1);
   gnu_except_ptr_stack = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
 
   dconstp5 = REAL_VALUE_ATOF ("0.5", DFmode);
@@ -2318,7 +2315,7 @@ tree_transform (gnat_node)
 	  {
 	    tree gnu_loop_id = make_node (GNAT_LOOP_ID);
 
-	    TREE_LOOP_ID (gnu_loop_id) = (rtx) loop_id;
+	    TREE_LOOP_ID (gnu_loop_id) = loop_id;
 	    save_gnu_tree (Entity (Identifier (gnat_node)), gnu_loop_id, 1);
 	  }
 
@@ -2407,8 +2404,7 @@ tree_transform (gnat_node)
 
 	if (Present (Name (gnat_node)))
 	  loop_id
-	    = (struct nesting *)
-	      TREE_LOOP_ID (get_gnu_tree (Entity (Name (gnat_node))));
+	    = TREE_LOOP_ID (get_gnu_tree (Entity (Name (gnat_node))));
 
 	if (Present (Condition (gnat_node)))
 	  gnu_cond = invert_truthvalue (gnat_truthvalue_conversion
@@ -5589,3 +5585,5 @@ init_code_table ()
   gnu_codes[N_Op_Shift_Right] = RSHIFT_EXPR;
   gnu_codes[N_Op_Shift_Right_Arithmetic] = RSHIFT_EXPR;
 }
+
+#include "gt-ada-trans.h"

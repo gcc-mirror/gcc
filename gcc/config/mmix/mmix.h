@@ -82,13 +82,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Declarations for helper variables that are not tied to a particular
    target macro.  */
-extern struct rtx_def *mmix_compare_op0;
-extern struct rtx_def *mmix_compare_op1;
+extern GTY(()) rtx mmix_compare_op0;
+extern GTY(()) rtx mmix_compare_op1;
 
 /* Per-function machine data.  This is normally an opaque type just
    defined and used in the tm.c file, but we need to see the definition in
    mmix.md too.  */
-struct machine_function
+struct machine_function GTY(())
  {
    int has_landing_pad;
    int highest_saved_stack_register;

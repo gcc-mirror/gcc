@@ -1,0 +1,257 @@
+@c Copyright (C) 2002
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Type Information
+@chapter Memory Management and Type Information
+@cindex GGC
+@findex GTY
+
+GCC uses some fairly sophisticated memory management techniques, which
+involve determining information about GCC's data structures from GCC's
+source code and using this information to perform garbage collection.
+
+A full C parser would be too overcomplicated for this task, so a limited
+subset of C is interpreted and special markers are used to determine
+what parts of the source to look at.  The parser can also detect
+simple typedefs of the form @code{typedef struct ID1 *ID2;} and
+@code{typedef int ID3;}, and these don't need to be specially marked.
+
+The two forms that do need to be marked are:
+@verbatim
+struct ID1 GTY(([options]))
+{
+  [fields]
+};
+
+typedef struct ID2 GTY(([options]))
+{
+  [fields]
+} ID3;
+@end verbatim
+
+@menu
+* GTY Options::		What goes inside a @code{GTY(())}.
+* GGC Roots::		Making global variables GGC roots.
+* Files::		How the generated files work.
+@end menu
+
+@node GTY Options
+@section The Inside of a @code{GTY(())}
+
+Sometimes the C code is not enough to fully describe the type structure.
+Extra information can be provided by using more @code{GTY} markers.
+These markers can be placed:
+@itemize @bullet
+@item
+In a structure definition, before the open brace;
+@item
+In a global variable declaration, after the keyword @code{static} or 
+@code{extern}; and
+@item
+In a structure field definition, before the name of the field.
+@end itemize
+
+The format of a marker is
+@verbatim
+GTY (([name] ([param]), [name] ([param]) ...))
+@end verbatim
+The parameter is either a string or a type name.
+
+When the parameter is a string, often it is a fragment of C code.  Three
+special escapes may be available:
+
+@cindex % in GTY option
+@table @code
+@item %h
+This expands to an expression that evaluates to the current structure.
+@item %1
+This expands to an expression that evaluates to the structure that
+immediately contains the current structure.
+@item %0
+This expands to an expression that evaluates to the outermost structure
+that contains the current structure.
+@end table
+
+The available options are:
+
+@table @code
+@findex length
+@item length
+
+There are two places the type machinery will need to be explicitly told
+the length of an array.  The first case is when a structure ends in a
+variable-length array, like this:
+@verbatim
+struct rtvec_def GTY(()) {
+  int num_elem;		/* number of elements */
+  rtx GTY ((length ("%h.num_elem"))) elem[1];
+};
+@end verbatim
+In this case, the @code{length} option is used to override the specified
+array length (which should usually be @code{1}).  The parameter of the
+option is a fragment of C code that calculates the length.
+
+The second case is when a structure or a global variable contains a
+pointer to an array, like this:
+@verbatim
+  tree * GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
+@end verbatim
+In this case, @code{regno_decl} has been allocated by writing something like
+@verbatim
+  x->regno_decl = ggc_alloc (x->regno_pointer_align_length * sizeof (tree));
+@end verbatim
+and the @code{length} provides the length of the field.
+
+This second use of @code{length} also works on global variables, like:
+@verbatim
+static GTY((length ("reg_base_value_size"))) rtx *reg_base_value;
+@end verbatim
+
+@findex skip
+@item skip
+
+If @code{skip} is applied to a field, the type machinery will ignore it.
+This is somewhat dangerous; the only safe use is in a union when one
+field really isn't ever used.
+
+@findex desc
+@findex tag
+@findex always
+@item desc
+@itemx tag
+@itemx always
+
+The type machinery needs to be told which field of a @code{union} is
+currently active.  This is done by giving each field a constant @code{tag}
+value, and then specifying a discriminator using @code{desc}.  For example,
+@verbatim
+struct tree_binding GTY(())
+{
+  struct tree_common common;
+  union tree_binding_u {
+    tree GTY ((tag ("0"))) scope;
+    struct cp_binding_level * GTY ((tag ("1"))) level;
+  } GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) scope;
+  tree value;
+};
+@end verbatim
+
+In the @code{desc} option, the ``current structure'' is the union that
+it discriminates.  Use @code{%1} to mean the structure containing it.
+(There are no escapes available to the @code{tag} option, since it's
+supposed to be a constant.)
+
+You can use @code{always} to mean that this field is always used.
+
+@findex param_is
+@findex use_param
+@item param_is
+@itemx use_param
+
+Sometimes it's convenient to define some data structure to work on
+generic pointers (that is, @code{PTR}), and then use it with specific types.
+@code{param_is} specifies the real type pointed to, and @code{use_param}
+says where in the generic data structure that type should be put.
+
+For instance, to have a @code{htab_t} that points to trees, one should write
+@verbatim
+  htab_t GTY ((param_is (union tree_node))) ict;
+@end verbatim
+
+@findex deletable
+@item deletable
+
+@code{deletable}, when applied to a global variable, indicates that when
+garbage collection runs, there's no need to mark anything pointed to
+by this variable, it can just be set to @code{NULL} instead.  This is used
+to keep a list of free structures around for re-use.
+
+@findex if_marked
+@item if_marked
+
+Suppose you want some kinds of object to be unique, and so you put them
+in a hash table.  If garbage collection marks the hash table, these
+objects will never be freed, even if the last other reference to them
+goes away.  GGC has special handling to deal with this: if you use the
+@code{if_marked} option on a global hash table, GGC will call the
+routine whose name is the parameter to the option on each hash table
+entry.  If the routine returns nonzero, the hash table entry will
+be marked as usual.  If the routine returns zero, the hash table entry
+will be deleted.
+
+The routine @code{ggc_marked_p} can be used to determine if an element
+has been marked already; in fact, the usual case is to use
+@code{if_marked ("ggc_marked_p")}.
+
+@findex maybe_undef
+@item maybe_undef
+
+When applied to a field, @code{maybe_undef} indicates that it's OK if
+the structure that this fields points to is never defined, so long as
+this field is always @code{NULL}.  This is used to avoid requiring
+backends to define certain optional structures.  It doesn't work with
+language frontends.
+
+@findex special
+@item special
+
+The @code{special} option is used for those bizarre cases that are just
+too hard to deal with otherwise.  Don't use it for new code.
+
+@end table
+
+@node GGC Roots
+@section Marking Roots for the Garbage Collector
+@cindex roots, marking
+@cindex marking roots
+
+In addition to keeping track of types, the type machinery also locates
+the global variables that the garbage collector starts at.  There are
+two syntaxes it accepts to indicate a root:
+
+@enumerate
+@item
+@verb{|extern GTY (([options])) [type] ID;|}
+@item
+@verb{|static GTY (([options])) [type] ID;|}
+@end enumerate
+
+@node Files
+@section Source Files Containing Type Information
+@cindex generated files
+@cindex files, generated
+
+Whenever you add @code{GTY} markers to a new source file, there are three
+things you need to do:
+
+@enumerate
+@item
+You need to add the file to the list of source files the type machinery
+scans.  For a back-end file, this is done automatically.  For a
+front-end file, this is done by adding the filename to the
+@code{gtfiles} variable defined in @file{config-lang.in}.  For other
+files, this is done by adding the filename to the @code{GTFILES} variable
+in @file{Makefile.in}.
+
+@item
+You need to include the file that the type machinery will generate in
+the source file you just changed.  The file will be called
+@file{gt-@var{path}.h} where @var{path} is the pathname from the
+@file{gcc} directory with slashes replaced by @verb{|-|}.  Don't forget
+to mention this file as a dependency in the @file{Makefile}!
+
+@item
+Finally, you need to add a @file{Makefile} rule that will ensure this file
+can be built.  This is done by making it a dependency of @code{s-gtype},
+like this:
+@verbatim
+gt-path.h : s-gtype ; @true
+@end verbatim
+@end enumerate
+
+For language frontends, there is another file that needs to be included
+somewhere.  It will be called @file{gtype-@var{lang}.h}, where
+@var{lang} is the name of the subdirectory the language is contained in.
+It will need @file{Makefile} rules just like the other generated files.

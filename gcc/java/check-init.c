@@ -607,8 +607,10 @@ check_init (exp, before)
 		  if (fndecl && METHOD_STATIC (fndecl)
 		      && (DECL_INITIAL (decl) == boolean_true_node
 			  || (index >= 0 && ASSIGNED_P (tmp, index))))
-		    hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
-				 DECL_FUNCTION_INIT_TEST_CLASS(decl), TRUE, NULL);  
+		    *(htab_find_slot 
+		      (DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
+		       DECL_FUNCTION_INIT_TEST_CLASS (decl), INSERT)) =
+		      DECL_FUNCTION_INIT_TEST_CLASS (decl);
 		}
 	      DECL_BIT_INDEX (decl) = -1;
 	    }
@@ -998,28 +1000,4 @@ check_for_initialization (body, mdecl)
     }
 
   start_current_locals = num_current_locals = 0;
-}
-
-/* Call for every element in DECL_FUNCTION_INITIALIZED_CLASS_TABLE of
-   a method to consider whether the type indirectly described by ENTRY
-   is definitly initialized and thus remembered as such. */
-
-bool
-attach_initialized_static_class (entry, ptr)
-     struct hash_entry *entry;
-     PTR ptr;
-{
-  struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
-  tree fndecl = DECL_CONTEXT (ite->init_test_decl);
-  int index = DECL_BIT_INDEX (ite->init_test_decl);
-
-  /* If the initializer flag has been definitly assigned (not taking
-     into account its first mandatory assignment which has been
-     already added but escaped analysis.) */
-  if (fndecl && METHOD_STATIC (fndecl)
-      && (DECL_INITIAL (ite->init_test_decl) == boolean_true_node
-	  || (index >= 0 && ASSIGNED_P (((word *) ptr), index))))
-    hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
-		 entry->key, TRUE, NULL);
-  return true;
 }

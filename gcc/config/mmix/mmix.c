@@ -98,6 +98,7 @@ static void mmix_output_condition PARAMS ((FILE *, rtx, int));
 static HOST_WIDEST_INT mmix_intval PARAMS ((rtx));
 static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
 static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
+static struct machine_function * mmix_init_machine_status PARAMS ((void));
 static void mmix_init_machine_status PARAMS ((struct function *));
 static void mmix_encode_section_info PARAMS ((tree, int));
 static const char *mmix_strip_name_encoding PARAMS ((const char *));
@@ -155,11 +156,6 @@ mmix_override_options ()
       warning ("-f%s not supported: ignored", (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
-
-  /* All other targets add GC roots from their override_options function,
-     so play along.  */
-  ggc_add_rtx_root (&mmix_compare_op0, 1);
-  ggc_add_rtx_root (&mmix_compare_op1, 1);
 }
 
 /* INIT_EXPANDERS.  */
@@ -172,11 +168,10 @@ mmix_init_expanders ()
 
 /* Set the per-function data.  */
 
-static void
-mmix_init_machine_status (f)
-     struct function *f;
+static struct machine_function *
+mmix_init_machine_status ()
 {
-  f->machine = xcalloc (1, sizeof (struct machine_function));
+  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 /* DATA_ALIGNMENT.

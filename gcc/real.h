@@ -89,7 +89,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define REAL_WIDTH \
   (REAL_VALUE_TYPE_SIZE/HOST_BITS_PER_WIDE_INT \
    + (REAL_VALUE_TYPE_SIZE%HOST_BITS_PER_WIDE_INT ? 1 : 0)) /* round up */
-struct realvaluetype {
+struct realvaluetype GTY(()) {
   HOST_WIDE_INT r[REAL_WIDTH];
 };
 /* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it needs

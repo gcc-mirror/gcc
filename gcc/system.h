@@ -579,11 +579,19 @@ typedef char _Bool;
    compiling gcc, so that the autoconf declaration tests for malloc
    etc don't spuriously fail.  */
 #ifdef IN_GCC
-#undef malloc
-#undef realloc
 #undef calloc
 #undef strdup
- #pragma GCC poison malloc realloc calloc strdup
+ #pragma GCC poison calloc strdup
+
+#if defined(FLEX_SCANNER) || defined (YYBISON)
+/* Flex and bison use malloc and realloc.  Yuk.  */
+#define malloc xmalloc
+#define realloc xrealloc
+#else
+#undef malloc
+#undef realloc
+ #pragma GCC poison malloc realloc
+#endif
 
 /* Old target macros that have moved to the target hooks structure.  */
  #pragma GCC poison ASM_OPEN_PAREN ASM_CLOSE_PAREN			\
@@ -598,7 +606,7 @@ typedef char _Bool;
 	WCHAR_UNSIGNED UNIQUE_SECTION SELECT_SECTION SELECT_RTX_SECTION	\
 	ENCODE_SECTION_INFO STRIP_NAME_ENCODING
 
-/* And other obsolete target macros, or macros that used to be in target
+/* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have
    been used.  */
  #pragma GCC poison INT_ASM_OP ASM_OUTPUT_EH_REGION_BEG			   \
@@ -613,6 +621,10 @@ typedef char _Bool;
 	BLOCK_PROFILER BLOCK_PROFILER_CODE FUNCTION_BLOCK_PROFILER	   \
 	FUNCTION_BLOCK_PROFILER_EXIT MACHINE_STATE_SAVE			   \
 	MACHINE_STATE_RESTORE
+
+/* Hooks that are no longer used.  */
+ #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
+	LANG_HOOKS_MARK_TREE
 
 #endif /* IN_GCC */
 

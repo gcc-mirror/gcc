@@ -41,7 +41,7 @@ static void expand_deferred_fns PARAMS ((void));
 static tree start_cdtor	PARAMS ((int));
 static void finish_cdtor PARAMS ((tree));
 
-static varray_type deferred_fns;
+static GTY(()) varray_type deferred_fns;
 
 int
 c_missing_noreturn_ok_p (decl)
@@ -253,7 +253,6 @@ c_objc_common_init (filename)
     }
 
   VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-  ggc_add_tree_varray_root (&deferred_fns, 1);
 
   return filename;
 }
@@ -291,7 +290,7 @@ expand_deferred_fns ()
 	}
     }
 
-  VARRAY_FREE (deferred_fns);
+  deferred_fns = 0;
 }
 
 static tree
@@ -413,3 +412,5 @@ c_tree_printer (buffer)
       return 0;
     }
 }
+
+#include "gt-c-objc-common.h"

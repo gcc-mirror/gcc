@@ -72,7 +72,6 @@ static tree m68hc11_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bo
 const struct attribute_spec m68hc11_attribute_table[];
 
 void create_regs_rtx PARAMS ((void));
-static void m68hc11_add_gc_roots PARAMS ((void));
 
 static void asm_print_register PARAMS ((FILE *, int));
 static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -94,7 +93,7 @@ rtx da_reg;
 rtx stack_push_word;
 rtx stack_pop_word;
 static int regs_inited = 0;
-static rtx z_reg;
+rtx z_reg;
 
 /* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
 int current_function_interrupt;
@@ -229,8 +228,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 int
 m68hc11_override_options ()
 {
-  m68hc11_add_gc_roots ();
-
   memset (m68hc11_reg_valid_for_index, 0,
 	  sizeof (m68hc11_reg_valid_for_index));
   memset (m68hc11_reg_valid_for_base, 0, sizeof (m68hc11_reg_valid_for_base));
@@ -4005,7 +4002,7 @@ struct replace_info
   int z_loaded_with_sp;
 };
 
-static rtx z_reg_qi;
+rtx z_reg_qi;
 
 static int m68hc11_check_z_replacement PARAMS ((rtx, struct replace_info *));
 static void m68hc11_find_z_replacement PARAMS ((rtx, struct replace_info *));
@@ -5413,20 +5410,6 @@ m68hc11_asm_file_start (out, main_file)
   output_file_directive (out, main_file);
 }
 
-
-static void
-m68hc11_add_gc_roots ()
-{
-  ggc_add_rtx_root (&m68hc11_soft_tmp_reg, 1);
-  ggc_add_rtx_root (&ix_reg, 1);
-  ggc_add_rtx_root (&iy_reg, 1);
-  ggc_add_rtx_root (&d_reg, 1);
-  ggc_add_rtx_root (&da_reg, 1);
-  ggc_add_rtx_root (&z_reg, 1);
-  ggc_add_rtx_root (&z_reg_qi, 1);
-  ggc_add_rtx_root (&stack_push_word, 1);
-  ggc_add_rtx_root (&stack_pop_word, 1);
-}
 
 static void
 m68hc11_asm_out_constructor (symbol, priority)

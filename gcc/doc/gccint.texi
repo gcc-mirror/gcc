@@ -169,6 +169,7 @@ Additional tutorial information is linked to from
 * Fragments::       Writing the @file{t-@var{target}} and @file{x-@var{host}} files.
 * Collect2::        How @code{collect2} works; how it finds @code{ld}.
 * Header Dirs::     Understanding the standard header file directories.
+* Type Information:: GCC's memory management; generating type information.
 
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
@@ -196,6 +197,7 @@ Additional tutorial information is linked to from
 @include fragments.texi
 @include collect2.texi
 @include headerdirs.texi
+@include gty.texi
 
 @include funding.texi
 @include gnu.texi

@@ -56,10 +56,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "predict.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-struct obstack stmt_obstack;
-
 /* Assume that case vectors are not pc-relative.  */
 #ifndef CASE_VECTOR_PC_RELATIVE
 #define CASE_VECTOR_PC_RELATIVE 0
@@ -89,7 +85,7 @@ struct obstack stmt_obstack;
    and nodes on the right having higher values.  We then output the tree
    in order.  */
 
-struct case_node
+struct case_node GTY(())
 {
   struct case_node	*left;	/* Left son in binary tree */
   struct case_node	*right;	/* Right son in binary tree; also node chain */
@@ -139,16 +135,22 @@ static int cost_table_initialized;
    The construct is visible if the `exit_label' field is non-null.
    In that case, the value should be a CODE_LABEL rtx.  */
 
-struct nesting
+struct nesting GTY(())
 {
   struct nesting *all;
   struct nesting *next;
   int depth;
   rtx exit_label;
-  union
+  enum nesting_desc {
+    COND_NESTING,
+    LOOP_NESTING,
+    BLOCK_NESTING,
+    CASE_NESTING
+  } desc;
+  union nesting_u
     {
       /* For conds (if-then and if-then-else statements).  */
-      struct
+      struct nesting_cond
 	{
 	  /* Label for the end of the if construct.
 	     There is none if EXITFLAG was not set
@@ -157,9 +159,9 @@ struct nesting
 	  /* Label for the end of this alternative.
 	     This may be the end of the if or the next else/elseif.  */
 	  rtx next_label;
-	} cond;
+	} GTY ((tag ("COND_NESTING"))) cond;
       /* For loops.  */
-      struct
+      struct nesting_loop
 	{
 	  /* Label at the top of the loop; place to loop back to.  */
 	  rtx start_label;
@@ -171,9 +173,9 @@ struct nesting
 	  /* Label for `continue' statement to jump to;
 	     this is in front of the stepper of the loop.  */
 	  rtx continue_label;
-	} loop;
+	} GTY ((tag ("LOOP_NESTING"))) loop;
       /* For variable binding contours.  */
-      struct
+      struct nesting_block
 	{
 	  /* Sequence number of this binding contour within the function,
 	     in order of entry.  */
@@ -223,14 +225,10 @@ struct nesting
 	     the start of the last unconditional cleanup, and before any
 	     conditional branch points.  */
 	  rtx last_unconditional_cleanup;
-	  /* When in a conditional context, this is the specific
-	     cleanup list associated with last_unconditional_cleanup,
-	     where we place the conditionalized cleanups.  */
-	  tree *cleanup_ptr;
-	} block;
+	} GTY ((tag ("BLOCK_NESTING"))) block;
       /* For switch (C) or case (Pascal) statements,
 	 and also for dummies (see `expand_start_case_dummy').  */
-      struct
+      struct nesting_case
 	{
 	  /* The insn after which the case dispatch should finally
 	     be emitted.  Zero for a dummy.  */
@@ -251,14 +249,14 @@ struct nesting
 	     We set this to -1 when we see the first case label in this
 	     case statement.  */
 	  int line_number_status;
-	} case_stmt;
-    } data;
+	} GTY ((tag ("CASE_NESTING"))) case_stmt;
+    } GTY ((desc ("%1.desc"))) data;
 };
 
 /* Allocate and return a new `struct nesting'.  */
 
 #define ALLOC_NESTING() \
- (struct nesting *) obstack_alloc (&stmt_obstack, sizeof (struct nesting))
+ (struct nesting *) ggc_alloc (sizeof (struct nesting))
 
 /* Pop the nesting stack element by element until we pop off
    the element which is at the top of STACK.
@@ -280,8 +278,7 @@ do { struct nesting *target = STACK;			\
 	  if (case_stack == this)			\
 	    case_stack = case_stack->next;		\
 	  nesting_depth = nesting_stack->depth - 1;	\
-	  nesting_stack = this->all;			\
-	  obstack_free (&stmt_obstack, this); }		\
+	  nesting_stack = this->all; }			\
      while (this != target); } while (0)
 
 /* In some cases it is impossible to generate code for a forward goto
@@ -292,7 +289,7 @@ do { struct nesting *target = STACK;			\
    we check each fixup.
    If the target label has now been defined, we can insert the proper code.  */
 
-struct goto_fixup
+struct goto_fixup GTY(())
 {
   /* Points to following fixup.  */
   struct goto_fixup *next;
@@ -326,36 +323,36 @@ struct goto_fixup
 /* Within any binding contour that must restore a stack level,
    all labels are recorded with a chain of these structures.  */
 
-struct label_chain
+struct label_chain GTY(())
 {
   /* Points to following fixup.  */
   struct label_chain *next;
   tree label;
 };
 
-struct stmt_status
+struct stmt_status GTY(())
 {
   /* Chain of all pending binding contours.  */
-  struct nesting *x_block_stack;
+  struct nesting * x_block_stack;
 
   /* If any new stacks are added here, add them to POPSTACKS too.  */
 
   /* Chain of all pending binding contours that restore stack levels
      or have cleanups.  */
-  struct nesting *x_stack_block_stack;
+  struct nesting * x_stack_block_stack;
 
   /* Chain of all pending conditional statements.  */
-  struct nesting *x_cond_stack;
+  struct nesting * x_cond_stack;
 
   /* Chain of all pending loops.  */
-  struct nesting *x_loop_stack;
+  struct nesting * x_loop_stack;
 
   /* Chain of all pending case or switch statements.  */
-  struct nesting *x_case_stack;
+  struct nesting * x_case_stack;
 
   /* Separate chain including all of the above,
      chained through the `all' field.  */
-  struct nesting *x_nesting_stack;
+  struct nesting * x_nesting_stack;
 
   /* Number of entries on nesting_stack now.  */
   int x_nesting_depth;
@@ -431,13 +428,6 @@ static int node_is_bounded		PARAMS ((case_node_ptr, tree));
 static void emit_jump_if_reachable	PARAMS ((rtx));
 static void emit_case_nodes		PARAMS ((rtx, case_node_ptr, rtx, tree));
 static struct case_node *case_tree2list	PARAMS ((case_node *, case_node *));
-static void mark_cond_nesting           PARAMS ((struct nesting *));
-static void mark_loop_nesting           PARAMS ((struct nesting *));
-static void mark_block_nesting          PARAMS ((struct nesting *));
-static void mark_case_nesting           PARAMS ((struct nesting *));
-static void mark_case_node		PARAMS ((struct case_node *));
-static void mark_goto_fixup             PARAMS ((struct goto_fixup *));
-static void free_case_nodes             PARAMS ((case_node_ptr));
 
 void
 using_eh_for_cleanups ()
@@ -445,176 +435,10 @@ using_eh_for_cleanups ()
   using_eh_for_cleanups_p = 1;
 }
 
-/* Mark N (known to be a cond-nesting) for GC.  */
-
-static void
-mark_cond_nesting (n)
-     struct nesting *n;
-{
-  while (n)
-    {
-      ggc_mark_rtx (n->exit_label);
-      ggc_mark_rtx (n->data.cond.endif_label);
-      ggc_mark_rtx (n->data.cond.next_label);
-
-      n = n->next;
-    }
-}
-
-/* Mark N (known to be a loop-nesting) for GC.  */
-
-static void
-mark_loop_nesting (n)
-     struct nesting *n;
-{
-
-  while (n)
-    {
-      ggc_mark_rtx (n->exit_label);
-      ggc_mark_rtx (n->data.loop.start_label);
-      ggc_mark_rtx (n->data.loop.end_label);
-      ggc_mark_rtx (n->data.loop.alt_end_label);
-      ggc_mark_rtx (n->data.loop.continue_label);
-
-      n = n->next;
-    }
-}
-
-/* Mark N (known to be a block-nesting) for GC.  */
-
-static void
-mark_block_nesting (n)
-     struct nesting *n;
-{
-  while (n)
-    {
-      struct label_chain *l;
-
-      ggc_mark_rtx (n->exit_label);
-      ggc_mark_rtx (n->data.block.stack_level);
-      ggc_mark_rtx (n->data.block.first_insn);
-      ggc_mark_tree (n->data.block.cleanups);
-      ggc_mark_tree (n->data.block.outer_cleanups);
-
-      for (l = n->data.block.label_chain; l != NULL; l = l->next)
-	{
-	  ggc_mark (l);
-	  ggc_mark_tree (l->label);
-	}
-
-      ggc_mark_rtx (n->data.block.last_unconditional_cleanup);
-
-      /* ??? cleanup_ptr never points outside the stack, does it?  */
-
-      n = n->next;
-    }
-}
-
-/* Mark N (known to be a case-nesting) for GC.  */
-
-static void
-mark_case_nesting (n)
-     struct nesting *n;
-{
-  while (n)
-    {
-      ggc_mark_rtx (n->exit_label);
-      ggc_mark_rtx (n->data.case_stmt.start);
-
-      ggc_mark_tree (n->data.case_stmt.default_label);
-      ggc_mark_tree (n->data.case_stmt.index_expr);
-      ggc_mark_tree (n->data.case_stmt.nominal_type);
-
-      mark_case_node (n->data.case_stmt.case_list);
-      n = n->next;
-    }
-}
-
-/* Mark C for GC.  */
-
-static void
-mark_case_node (c)
-     struct case_node *c;
-{
-  if (c != 0)
-    {
-      ggc_mark_tree (c->low);
-      ggc_mark_tree (c->high);
-      ggc_mark_tree (c->code_label);
-
-      mark_case_node (c->right);
-      mark_case_node (c->left);
-    }
-}
-
-/* Mark G for GC.  */
-
-static void
-mark_goto_fixup (g)
-     struct goto_fixup *g;
-{
-  while (g)
-    {
-      ggc_mark (g);
-      ggc_mark_rtx (g->before_jump);
-      ggc_mark_tree (g->target);
-      ggc_mark_tree (g->context);
-      ggc_mark_rtx (g->target_rtl);
-      ggc_mark_rtx (g->stack_level);
-      ggc_mark_tree (g->cleanup_list_list);
-
-      g = g->next;
-    }
-}
-
-/* Clear out all parts of the state in F that can safely be discarded
-   after the function has been compiled, to let garbage collection
-   reclaim the memory.  */
-
-void
-free_stmt_status (f)
-     struct function *f;
-{
-  /* We're about to free the function obstack.  If we hold pointers to
-     things allocated there, then we'll try to mark them when we do
-     GC.  So, we clear them out here explicitly.  */
-  if (f->stmt)
-    free (f->stmt);
-  f->stmt = NULL;
-}
-
-/* Mark P for GC.  */
-
-void
-mark_stmt_status (p)
-     struct stmt_status *p;
-{
-  if (p == 0)
-    return;
-
-  mark_block_nesting (p->x_block_stack);
-  mark_cond_nesting (p->x_cond_stack);
-  mark_loop_nesting (p->x_loop_stack);
-  mark_case_nesting (p->x_case_stack);
-
-  ggc_mark_tree (p->x_last_expr_type);
-  /* last_epxr_value is only valid if last_expr_type is nonzero.  */
-  if (p->x_last_expr_type)
-    ggc_mark_rtx (p->x_last_expr_value);
-
-  mark_goto_fixup (p->x_goto_fixup_chain);
-}
-
-void
-init_stmt ()
-{
-  gcc_obstack_init (&stmt_obstack);
-}
-
 void
 init_stmt_for_function ()
 {
-  cfun->stmt = (struct stmt_status *) xmalloc (sizeof (struct stmt_status));
+  cfun->stmt = ((struct stmt_status *)ggc_alloc (sizeof (struct stmt_status)));
 
   /* We are not currently within any block, conditional, loop or case.  */
   block_stack = 0;
@@ -632,8 +456,7 @@ init_stmt_for_function ()
 
   /* We are not processing a ({...}) grouping.  */
   expr_stmts_for_value = 0;
-  last_expr_type = 0;
-  last_expr_value = NULL_RTX;
+  clear_last_expr ();
 }
 
 /* Return nonzero if anything is pushed on the loop, condition, or case
@@ -1296,7 +1119,7 @@ expand_asm (body)
 
   emit_insn (gen_rtx_ASM_INPUT (VOIDmode,
 				TREE_STRING_POINTER (body)));
-  last_expr_type = 0;
+  clear_last_expr ();
 }
 
 /* Parse the output constraint pointed to by *CONSTRAINT_P.  It is the
@@ -1648,7 +1471,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	error ("unknown register name `%s' in `asm'", regname);
     }
 
-  last_expr_type = 0;
+  clear_last_expr ();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
@@ -2404,7 +2227,8 @@ warn_if_unused_value (exp)
 void
 clear_last_expr ()
 {
-  last_expr_type = 0;
+  last_expr_type = NULL_TREE;
+  last_expr_value = NULL_RTX;
 }
 
 /* Begin a statement-expression, i.e., a series of statements which
@@ -2430,7 +2254,6 @@ expand_start_stmt_expr (has_scope)
     start_sequence ();
   NO_DEFER_POP;
   expr_stmts_for_value++;
-  last_expr_value = NULL_RTX;
   return t;
 }
 
@@ -2476,7 +2299,7 @@ expand_end_stmt_expr (t)
   /* Propagate volatility of the actual RTL expr.  */
   TREE_THIS_VOLATILE (t) = volatile_refs_p (last_expr_value);
 
-  last_expr_type = 0;
+  clear_last_expr ();
   expr_stmts_for_value--;
 
   return t;
@@ -2497,6 +2320,7 @@ expand_start_cond (cond, exitflag)
 
   /* Make an entry on cond_stack for the cond we are entering.  */
 
+  thiscond->desc = COND_NESTING;
   thiscond->next = cond_stack;
   thiscond->all = nesting_stack;
   thiscond->depth = ++nesting_depth;
@@ -2567,7 +2391,7 @@ expand_end_cond ()
     emit_label (thiscond->data.cond.endif_label);
 
   POPSTACK (cond_stack);
-  last_expr_type = 0;
+  clear_last_expr ();
 }
 
 /* Generate RTL for the start of a loop.  EXIT_FLAG is nonzero if this
@@ -2585,6 +2409,7 @@ expand_start_loop (exit_flag)
 
   /* Make an entry on loop_stack for the loop we are entering.  */
 
+  thisloop->desc = LOOP_NESTING;
   thisloop->next = loop_stack;
   thisloop->all = nesting_stack;
   thisloop->depth = ++nesting_depth;
@@ -2626,6 +2451,7 @@ expand_start_null_loop ()
 
   /* Make an entry on loop_stack for the loop we are entering.  */
 
+  thisloop->desc = LOOP_NESTING;
   thisloop->next = loop_stack;
   thisloop->all = nesting_stack;
   thisloop->depth = ++nesting_depth;
@@ -2801,7 +2627,7 @@ expand_end_loop ()
 
   POPSTACK (loop_stack);
 
-  last_expr_type = 0;
+  clear_last_expr ();
 }
 
 /* Finish a null loop, aka do { } while (0).  */
@@ -2814,7 +2640,7 @@ expand_end_null_loop ()
 
   POPSTACK (loop_stack);
 
-  last_expr_type = 0;
+  clear_last_expr ();
 }
 
 /* Generate a jump to the current loop's continue-point.
@@ -2831,7 +2657,7 @@ expand_continue_loop (whichloop)
 
   note = emit_note (NULL, NOTE_INSN_PREDICTION);
   NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_CONTINUE, IS_TAKEN);
-  last_expr_type = 0;
+  clear_last_expr ();
   if (whichloop == 0)
     whichloop = loop_stack;
   if (whichloop == 0)
@@ -2848,7 +2674,7 @@ int
 expand_exit_loop (whichloop)
      struct nesting *whichloop;
 {
-  last_expr_type = 0;
+  clear_last_expr ();
   if (whichloop == 0)
     whichloop = loop_stack;
   if (whichloop == 0)
@@ -2868,7 +2694,7 @@ expand_exit_loop_if_false (whichloop, cond)
 {
   rtx label = gen_label_rtx ();
   rtx last_insn;
-  last_expr_type = 0;
+  clear_last_expr ();
 
   if (whichloop == 0)
     whichloop = loop_stack;
@@ -2955,7 +2781,7 @@ int
 expand_exit_something ()
 {
   struct nesting *n;
-  last_expr_type = 0;
+  clear_last_expr ();
   for (n = nesting_stack; n; n = n->all)
     if (n->exit_label != 0)
       {
@@ -3073,7 +2899,7 @@ expand_null_return_1 (last_insn)
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
-  last_expr_type = 0;
+  clear_last_expr ();
 
   if (end_label == 0)
      end_label = return_label = gen_label_rtx ();
@@ -3459,6 +3285,7 @@ expand_start_bindings_and_block (flags, block)
 
   /* Make an entry on block_stack for the block we are entering.  */
 
+  thisblock->desc = BLOCK_NESTING;
   thisblock->next = block_stack;
   thisblock->all = nesting_stack;
   thisblock->depth = ++nesting_depth;
@@ -3477,7 +3304,6 @@ expand_start_bindings_and_block (flags, block)
      instructions inserted after the last unconditional cleanup are
      never the last instruction.  */
   emit_note (NULL, NOTE_INSN_DELETED);
-  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 
   if (block_stack
       && !(block_stack->data.block.cleanups == NULL_TREE
@@ -4183,7 +4009,7 @@ expand_decl_cleanup (decl, cleanup)
 			   cleanup, integer_zero_node);
 	  cleanup = fold (cleanup);
 
-	  cleanups = thisblock->data.block.cleanup_ptr;
+	  cleanups = &thisblock->data.block.cleanups;
 	}
 
       cleanup = unsave_expr (cleanup);
@@ -4224,7 +4050,6 @@ expand_decl_cleanup (decl, cleanup)
 	     instructions inserted after the last unconditional cleanup are
 	     never the last instruction.  */
 	  emit_note (NULL, NOTE_INSN_DELETED);
-	  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 	}
     }
   return 1;
@@ -4488,6 +4313,7 @@ expand_start_case (exit_flag, expr, type, printname)
 
   /* Make an entry on case_stack for the case we are entering.  */
 
+  thiscase->desc = CASE_NESTING;
   thiscase->next = case_stack;
   thiscase->all = nesting_stack;
   thiscase->depth = ++nesting_depth;
@@ -4525,6 +4351,7 @@ expand_start_case_dummy ()
 
   /* Make an entry on case_stack for the dummy.  */
 
+  thiscase->desc = CASE_NESTING;
   thiscase->next = case_stack;
   thiscase->all = nesting_stack;
   thiscase->depth = ++nesting_depth;
@@ -4776,7 +4603,7 @@ add_case_node (low, high, label, duplicate)
 
   /* Add this label to the chain, and succeed.  */
 
-  r = (struct case_node *) xmalloc (sizeof (struct case_node));
+  r = (struct case_node *) ggc_alloc (sizeof (struct case_node));
   r->low = low;
 
   /* If the bounds are equal, turn this into the one-value case.  */
@@ -5289,20 +5116,6 @@ check_for_full_enumeration_handling (type)
     }
 }
 
-/* Free CN, and its children.  */
-
-static void
-free_case_nodes (cn)
-     case_node_ptr cn;
-{
-  if (cn)
-    {
-      free_case_nodes (cn->left);
-      free_case_nodes (cn->right);
-      free (cn);
-    }
-}
-
 
 
 /* Terminate a case (Pascal) or switch (C) statement
@@ -5616,7 +5429,6 @@ expand_end_case_type (orig_index, orig_type)
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);
 
-  free_case_nodes (case_stack->data.case_stmt.case_list);
   POPSTACK (case_stack);
 
   free_temp_slots ();
@@ -6409,3 +6221,5 @@ emit_case_nodes (index, node, default_label, index_type)
 	}
     }
 }
+
+#include "gt-stmt.h"

@@ -100,7 +100,6 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_UNSAVE_EXPR_NOW	lhd_unsave_expr_now
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP	lhd_return_null_tree
-#define LANG_HOOKS_MARK_TREE		lhd_do_nothing_t
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME lhd_set_decl_assembler_name
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
@@ -112,10 +111,9 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
 
 #define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
-#define LANG_HOOKS_FUNCTION_FREE	lhd_do_nothing_f
+#define LANG_HOOKS_FUNCTION_FINAL	lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_ENTER_NESTED lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_LEAVE_NESTED lhd_do_nothing_f
-#define LANG_HOOKS_FUNCTION_MARK	lhd_do_nothing_f
 
 /* Attribute hooks.  */
 #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
@@ -159,12 +157,11 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
   LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
 } \
 
-#define LANG_HOOKS_FUNCTION_INITIALIZER { \
-  LANG_HOOKS_FUNCTION_INIT, \
-  LANG_HOOKS_FUNCTION_FREE, \
-  LANG_HOOKS_FUNCTION_ENTER_NESTED, \
-  LANG_HOOKS_FUNCTION_LEAVE_NESTED, \
-  LANG_HOOKS_FUNCTION_MARK \
+#define LANG_HOOKS_FUNCTION_INITIALIZER {	\
+  LANG_HOOKS_FUNCTION_INIT,			\
+  LANG_HOOKS_FUNCTION_FINAL,			\
+  LANG_HOOKS_FUNCTION_ENTER_NESTED,		\
+  LANG_HOOKS_FUNCTION_LEAVE_NESTED		\
 }
 
 /* Tree dump hooks.  */
@@ -241,7 +238,6 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_UNSAVE_EXPR_NOW, \
   LANG_HOOKS_MAYBE_BUILD_CLEANUP, \
-  LANG_HOOKS_MARK_TREE, \
   LANG_HOOKS_SET_DECL_ASSEMBLER_NAME, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_PRINT_STATISTICS, \

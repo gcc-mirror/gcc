@@ -83,21 +83,21 @@ typedef tree builtin_creator_function PARAMS ((tree, tree));
 
 /* Hold a char*, before initialization, or a tree, after
    initialization.  */
-union string_or_tree
+union string_or_tree GTY(())
 {
-  const char *s;
-  tree t;
+  const char * GTY ((tag ("0"))) s;
+  tree GTY ((tag ("1"))) t;
 };
 
 /* Used to hold a single builtin record.  */
-struct builtin_record
+struct builtin_record GTY(())
 {
-  union string_or_tree class_name;
-  union string_or_tree method_name;
-  builtin_creator_function *creator;
+  union string_or_tree GTY ((desc ("1"))) class_name;
+  union string_or_tree GTY ((desc ("1"))) method_name;
+  builtin_creator_function * GTY((skip (""))) creator;
 };
 
-static struct builtin_record java_builtins[] =
+static GTY(()) struct builtin_record java_builtins[] =
 {
   { { "java.lang.Math" }, { "min" }, min_builtin },
   { { "java.lang.Math" }, { "max" }, max_builtin },
@@ -273,8 +273,6 @@ initialize_builtins ()
 
       java_builtins[i].class_name.t = klass_id;
       java_builtins[i].method_name.t = m;
-      ggc_add_tree_root (&java_builtins[i].class_name.t, 1);
-      ggc_add_tree_root (&java_builtins[i].method_name.t, 1);
     }
 
   void_list_node = end_params_node;
@@ -348,3 +346,5 @@ check_for_builtin (method, call)
     }
   return call;
 }
+
+#include "gt-java-builtins.h"

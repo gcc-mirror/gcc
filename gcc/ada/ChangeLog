@@ -1,3 +1,58 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	Merge from pch-branch:
+
+	* config-lang.in (gtfiles): Add ada-tree.h.
+	* ada-tree.h (SET_TYPE_CI_CO_LIST): New.
+	(SET_TYPE_MODULUS): New.
+	(SET_TYPE_INDEX): New.
+	(SET_TYPE_DIGITS_VALUE): New.
+	(SET_TYPE_RM_SIZE): New.
+	(SET_TYPE_UNCONSTRAINED_ARRAY): New.
+	(SET_TYPE_ADA_SIZE): New.
+	(SET_TYPE_ACTUAL_BOUNDS): New.
+	(SET_DECL_CONST_CORRESPONDING_VAR): New.
+	(SET_DECL_ORIGINAL_FIELD): New.
+	(TREE_LOOP_ID): Correct typo.
+	* decl.c: Use new macros.
+	* utils.c: Include debug.h, use new macros.
+	* utils2.c: Use new macros.	
+
+	* ada-tree.h: Update all macros for new tree description.
+	(struct tree_loop_id): New.
+	(union lang_tree_node): New.
+	(struct lang_decl): New.
+	(struct lang_type): New.
+	* misc.c (gnat_mark_tree): Delete.
+	(LANG_HOOKS_MARK_TREE): Delete.
+	* trans.c (tree_transform): No longer any need to cast
+	for TREE_LOOP_ID.
+
+	* utils.c (struct language_function): New dummy structure.
+
+	* Makefile.in (decl.o): gt-ada-<filename.h> is in objdir, not srcdir.
+	(misc.o): Likewise.
+	(utils.o): Likewise; also gtype-ada.h.
+	* Make-lang.in (gnat1): Add dependency on s-gtype.
+	(gnatbind): Add dependency on $(CONFIG_H).
+	* utils.c: Correct last #include.
+	(stuct e_stack): Remove unnecessary 'static'.
+	(mark_e_stack): Remove unused prototype.
+
+	* scn-nlit.adb: Remove whitespace after version number to
+	keep lines under 80 chars.
+	* snames.adb: Likewise.
+	* treepr.ads: Likewise.
+	
+	* Makefile.in (decl.o): Include gt-ada-<filename>.h.
+	(misc.o): Likewise.
+	(utils.o): Include gt-ada-<filename>.h and gtype-ada.h.
+	* config-lang.in (gtfiles): New.
+	* decl.c: Use gengtype for roots.
+	* gigi.h: Use gengtype for roots.
+	* trans.c: Use gengtype for roots.
+	* utils.c: Use gengtype for roots, marking.  Include gtype-ada.h.
+
 2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* misc.c (gnat_init): Adjust setting of internal_error_function.

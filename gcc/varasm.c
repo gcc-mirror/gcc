@@ -39,7 +39,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "real.h"
 #include "toplev.h"
-#include "obstack.h"
 #include "hashtab.h"
 #include "c-pragma.h"
 #include "c-tree.h"
@@ -66,17 +65,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 const char *first_global_object_name;
 const char *weak_global_object_name;
 
-extern struct obstack permanent_obstack;
-#define obstack_chunk_alloc xmalloc
-
 struct addr_const;
-struct constant_descriptor;
+struct constant_descriptor_rtx;
 struct rtx_const;
 struct pool_constant;
 
 #define MAX_RTX_HASH_TABLE 61
 
-struct varasm_status
+struct varasm_status GTY(())
 {
   /* Hash facility for making memory-constants
      from constant rtl-expressions.  It is used on RISC machines
@@ -86,11 +82,14 @@ struct varasm_status
      This pool of constants is reinitialized for each function
      so each function gets its own constants-pool that comes right before
      it.  */
-  struct constant_descriptor **x_const_rtx_hash_table;
-  struct pool_constant **x_const_rtx_sym_hash_table;
+  struct constant_descriptor_rtx ** GTY ((length ("MAX_RTX_HASH_TABLE"))) 
+    x_const_rtx_hash_table;
+  struct pool_constant ** GTY ((length ("MAX_RTX_HASH_TABLE")))
+    x_const_rtx_sym_hash_table;
 
   /* Pointers to first and last constant in pool.  */
-  struct pool_constant *x_first_pool, *x_last_pool;
+  struct pool_constant *x_first_pool;
+  struct pool_constant *x_last_pool;
 
   /* Current offset in constant pool (does not include any machine-specific
      header).  */
@@ -138,20 +137,16 @@ static const char *strip_reg_name	PARAMS ((const char *));
 static int contains_pointers_p		PARAMS ((tree));
 static void decode_addr_const		PARAMS ((tree, struct addr_const *));
 static int const_hash			PARAMS ((tree));
-static int compare_constant		PARAMS ((tree,
-					       struct constant_descriptor *));
-static const unsigned char *compare_constant_1  PARAMS ((tree, const unsigned char *));
-static struct constant_descriptor *record_constant PARAMS ((tree));
-static void record_constant_1		PARAMS ((tree));
+static int compare_constant		PARAMS ((tree, tree));
 static tree copy_constant		PARAMS ((tree));
 static void output_constant_def_contents  PARAMS ((tree, int, int));
 static void decode_rtx_const		PARAMS ((enum machine_mode, rtx,
 					       struct rtx_const *));
 static int const_hash_rtx		PARAMS ((enum machine_mode, rtx));
-static int compare_constant_rtx		PARAMS ((enum machine_mode, rtx,
-					       struct constant_descriptor *));
-static struct constant_descriptor *record_constant_rtx PARAMS ((enum machine_mode,
-							      rtx));
+static int compare_constant_rtx	
+  PARAMS ((enum machine_mode, rtx, struct constant_descriptor_rtx *));
+static struct constant_descriptor_rtx * record_constant_rtx 
+  PARAMS ((enum machine_mode, rtx));
 static struct pool_constant *find_pool_constant PARAMS ((struct function *, rtx));
 static void mark_constant_pool		PARAMS ((void));
 static void mark_constants		PARAMS ((rtx));
@@ -175,13 +170,8 @@ static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
 						 int, int));
 #endif
 #endif /* BSS_SECTION_ASM_OP */
-static void mark_pool_constant          PARAMS ((struct pool_constant *));
-static void mark_const_hash_entry	PARAMS ((void *));
-static int mark_const_str_htab_1	PARAMS ((void **, void *));
-static void mark_const_str_htab		PARAMS ((void *));
 static hashval_t const_str_htab_hash	PARAMS ((const void *x));
 static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
-static void const_str_htab_del		PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
@@ -2104,7 +2094,7 @@ assemble_real (d, mode, align)
    Store them both in the structure *VALUE.
    Abort if EXP does not reduce.  */
 
-struct addr_const
+struct addr_const GTY(())
 {
   rtx base;
   HOST_WIDE_INT offset;
@@ -2175,51 +2165,48 @@ decode_addr_const (exp, value)
 }
 
 /* We do RTX_UNSPEC + XINT (blah), so nothing can go after RTX_UNSPEC.  */
-enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_INT, RTX_VECTOR, RTX_UNSPEC };
-struct rtx_const
+enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_VECTOR, RTX_INT, RTX_UNSPEC };
+struct rtx_const GTY(())
 {
   ENUM_BITFIELD(kind) kind : 16;
   ENUM_BITFIELD(machine_mode) mode : 16;
-  union {
+  union rtx_const_un {
     REAL_VALUE_TYPE du;
-    struct addr_const addr;
-    struct {HOST_WIDE_INT high, low;} di;
+    struct addr_const GTY ((tag ("1"))) addr;
+    struct rtx_const_u_di { 
+      HOST_WIDE_INT high;
+      HOST_WIDE_INT low; 
+    } GTY ((tag ("0"))) di;
 
     /* The max vector size we have is 8 wide.  This should be enough.  */
     HOST_WIDE_INT veclo[16];
     HOST_WIDE_INT vechi[16];
-  } un;
+  } GTY ((desc ("%1.kind >= RTX_INT"), descbits ("1"))) un;
 };
 
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded
-   in `const_hash_table' with a `struct constant_descriptor'
-   that contains a polish representation of the value of
-   the constant.
+   in `const_hash_table'.  */
 
-   We cannot store the trees in the hash table
-   because the trees may be temporary.  */
-
-struct constant_descriptor
+struct constant_descriptor_tree GTY(())
 {
-  struct constant_descriptor *next;
+  /* More constant_descriptors with the same hash code.  */
+  struct constant_descriptor_tree *next;
+
+  /* The label of the constant.  */
   const char *label;
+
+  /* A MEM for the constant.  */
   rtx rtl;
-  /* Make sure the data is reasonably aligned.  */
-  union
-  {
-    unsigned char contents[1];
-#ifdef HAVE_LONG_DOUBLE
-    long double d;
-#else
-    double d;
-#endif
-  } u;
+
+  /* The value of the constant.  */
+  tree value;
 };
 
 #define HASHBITS 30
 #define MAX_HASH_TABLE 1009
-static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
+static GTY(()) struct constant_descriptor_tree *
+  const_hash_table[MAX_HASH_TABLE];
 
 /* We maintain a hash table of STRING_CST values.  Unless we are asked to force
    out a string constant, we defer output of the constants until we know
@@ -2228,50 +2215,14 @@ static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
 
 #define STRHASH(x) ((hashval_t) ((long) (x) >> 3))
 
-struct deferred_string
+struct deferred_string GTY(())
 {
   const char *label;
   tree exp;
   int labelno;
 };
 
-static htab_t const_str_htab;
-
-/* Mark a const_hash_table descriptor for GC.  */
-
-static void
-mark_const_hash_entry (ptr)
-     void *ptr;
-{
-  struct constant_descriptor *desc = * (struct constant_descriptor **) ptr;
-
-  while (desc)
-    {
-      ggc_mark_rtx (desc->rtl);
-      desc = desc->next;
-    }
-}
-
-/* Mark the hash-table element X (which is really a pointer to an
-   struct deferred_string *).  */
-
-static int
-mark_const_str_htab_1 (x, data)
-     void **x;
-     void *data ATTRIBUTE_UNUSED;
-{
-  ggc_mark_tree (((struct deferred_string *) *x)->exp);
-  return 1;
-}
-
-/* Mark a const_str_htab for GC.  */
-
-static void
-mark_const_str_htab (htab)
-     void *htab;
-{
-  htab_traverse (*((htab_t *) htab), mark_const_str_htab_1, NULL);
-}
+static GTY ((param_is (struct deferred_string))) htab_t const_str_htab;
 
 /* Returns a hash code for X (which is a really a
    struct deferred_string *).  */
@@ -2293,15 +2244,6 @@ const_str_htab_eq (x, y)
      const void *y;
 {
   return (((const struct deferred_string *) x)->label == (const char *) y);
-}
-
-/* Delete the hash table entry dfsp.  */
-
-static void
-const_str_htab_del (dfsp)
-     void *dfsp;
-{
-  free (dfsp);
 }
 
 /* Compute a hash code for a constant expression.  */
@@ -2422,457 +2364,158 @@ const_hash (exp)
   hi %= MAX_HASH_TABLE;
   return hi;
 }
-
-/* Compare a constant expression EXP with a constant-descriptor DESC.
-   Return 1 if DESC describes a constant with the same value as EXP.  */
+
+/* Compare t1 and t2, and return 1 only if they are known to result in
+   the same bit pattern on output.  */
 
 static int
-compare_constant (exp, desc)
-     tree exp;
-     struct constant_descriptor *desc;
+compare_constant (t1, t2)
+     tree t1;
+     tree t2;
 {
-  return 0 != compare_constant_1 (exp, desc->u.contents);
-}
+  enum tree_code typecode;
 
-/* Compare constant expression EXP with a substring P of a constant descriptor.
-   If they match, return a pointer to the end of the substring matched.
-   If they do not match, return 0.
-
-   Since descriptors are written in polish prefix notation,
-   this function can be used recursively to test one operand of EXP
-   against a subdescriptor, and if it succeeds it returns the
-   address of the subdescriptor for the next operand.  */
-
-static const unsigned char *
-compare_constant_1 (exp, p)
-     tree exp;
-     const unsigned char *p;
-{
-  const unsigned char *strp;
-  int len;
-  enum tree_code code = TREE_CODE (exp);
-
-  if (code != (enum tree_code) *p++)
+  if (t1 == NULL_TREE)
+    return t2 == NULL_TREE;
+  if (t2 == NULL_TREE)
     return 0;
 
-  /* Either set STRP, P and LEN to pointers and length to compare and exit the
-     switch, or return the result of the comparison.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return 0;
 
-  switch (code)
+  switch (TREE_CODE (t1))
     {
     case INTEGER_CST:
       /* Integer constants are the same only if the same width of type.  */
-      if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
 	return 0;
-
-      strp = (unsigned char *) &TREE_INT_CST (exp);
-      len = sizeof TREE_INT_CST (exp);
-      break;
+      return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
       /* Real constants are the same only if the same width of type.  */
-      if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
 	return 0;
 
-      strp = (unsigned char *) &TREE_REAL_CST (exp);
-      len = sizeof TREE_REAL_CST (exp);
-      break;
+      return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
 
     case STRING_CST:
       if (flag_writable_strings)
 	return 0;
 
-      if ((enum machine_mode) *p++ != TYPE_MODE (TREE_TYPE (exp)))
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
 	return 0;
 
-      strp = (const unsigned char *) TREE_STRING_POINTER (exp);
-      len = TREE_STRING_LENGTH (exp);
-      if (memcmp ((char *) &TREE_STRING_LENGTH (exp), p,
-		  sizeof TREE_STRING_LENGTH (exp)))
-	return 0;
-
-      p += sizeof TREE_STRING_LENGTH (exp);
-      break;
+      return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
+	      && ! memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+			 TREE_STRING_LENGTH (t1)));
 
     case COMPLEX_CST:
-      p = compare_constant_1 (TREE_REALPART (exp), p);
-      if (p == 0)
-	return 0;
-
-      return compare_constant_1 (TREE_IMAGPART (exp), p);
+      return (compare_constant (TREE_REALPART (t1), TREE_REALPART (t2))
+	      && compare_constant (TREE_IMAGPART (t1), TREE_IMAGPART (t2)));
 
     case CONSTRUCTOR:
-      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-	{
-	  int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
-	  unsigned char *tmp = (unsigned char *) alloca (len);
+      typecode = TREE_CODE (TREE_TYPE (t1));
+      if (typecode != TREE_CODE (TREE_TYPE (t2)))
+	return 0;
 
-	  get_set_constructor_bytes (exp, tmp, len);
-	  strp = (unsigned char *) tmp;
-	  if (memcmp ((char *) &xlen, p, sizeof xlen))
+      if (typecode == SET_TYPE)
+	{
+	  int len = int_size_in_bytes (TREE_TYPE (t2));
+	  unsigned char *tmp1, *tmp2;
+
+	  if (int_size_in_bytes (TREE_TYPE (t1)) != len)
 	    return 0;
 
-	  p += sizeof xlen;
-	  break;
+	  tmp1 = (unsigned char *) alloca (len);
+	  tmp2 = (unsigned char *) alloca (len);
+
+	  if (get_set_constructor_bytes (t1, tmp1, len) != NULL_TREE)
+	    return 0;
+	  if (get_set_constructor_bytes (t2, tmp2, len) != NULL_TREE)
+	    return 0;
+	  
+	  return memcmp (tmp1, tmp2, len) != 0;
 	}
       else
 	{
-	  tree link;
-	  int length = list_length (CONSTRUCTOR_ELTS (exp));
-	  tree type;
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-	  int have_purpose = 0;
+	  tree l1, l2;
 
-	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	    if (TREE_PURPOSE (link))
-	      have_purpose = 1;
-
-	  if (memcmp ((char *) &length, p, sizeof length))
-	    return 0;
-
-	  p += sizeof length;
-
-	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays.
-	     Then insist that either both or none have any TREE_PURPOSE
-	     values.  */
-	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	    type = TREE_TYPE (exp);
+	  if (typecode == ARRAY_TYPE)
+	    {
+	      HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
+	      /* For arrays, check that the sizes all match.  */
+	      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+		  || size_1 == -1
+		  || size_1 != int_size_in_bytes (TREE_TYPE (t2)))
+		return 0;
+	    }
 	  else
-	    type = 0;
-
-	  if (memcmp ((char *) &type, p, sizeof type))
-	    return 0;
-
-	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	    {
-	      if (memcmp ((char *) &mode, p, sizeof mode))
+	      /* For record and union constructors, require exact type
+                 equality.  */
+	      if (TREE_TYPE (t1) != TREE_TYPE (t2))
 		return 0;
-
-	      p += sizeof mode;
 	    }
 
-	  p += sizeof type;
-
-	  if (memcmp ((char *) &have_purpose, p, sizeof have_purpose))
-	    return 0;
-
-	  p += sizeof have_purpose;
-
-	  /* For arrays, insist that the size in bytes match.  */
-	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	  for (l1 = CONSTRUCTOR_ELTS (t1), l2 = CONSTRUCTOR_ELTS (t2);
+	       l1 && l2;
+	       l1 = TREE_CHAIN (l1), l2 = TREE_CHAIN (l2))
 	    {
-	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-
-	      if (memcmp ((char *) &size, p, sizeof size))
+	      /* Check that each value is the same... */
+	      if (! compare_constant (TREE_VALUE (l1), TREE_VALUE (l2)))
 		return 0;
-
-	      p += sizeof size;
-	    }
-
-	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	    {
-	      if (TREE_VALUE (link))
+	      /* ... and that they apply to the same fields!  */
+	      if (typecode == ARRAY_TYPE)
 		{
-		  if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
+		  if (! compare_constant (TREE_PURPOSE (l1),
+					  TREE_PURPOSE (l2)))
 		    return 0;
 		}
 	      else
 		{
-		  tree zero = 0;
-
-		  if (memcmp ((char *) &zero, p, sizeof zero))
+		  if (TREE_PURPOSE (l1) != TREE_PURPOSE (l2))
 		    return 0;
-
-		  p += sizeof zero;
-		}
-
-	      if (TREE_PURPOSE (link)
-		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
-		{
-		  if (memcmp ((char *) &TREE_PURPOSE (link), p,
-			      sizeof TREE_PURPOSE (link)))
-		    return 0;
-
-		  p += sizeof TREE_PURPOSE (link);
-		}
-	      else if (TREE_PURPOSE (link))
-		{
-		  if ((p = compare_constant_1 (TREE_PURPOSE (link), p)) == 0)
-		    return 0;
-		}
-	      else if (have_purpose)
-		{
-		  int zero = 0;
-
-		  if (memcmp ((char *) &zero, p, sizeof zero))
-		    return 0;
-
-		  p += sizeof zero;
 		}
 	    }
-
-	  return p;
+	  
+	  return l1 == NULL_TREE && l2 == NULL_TREE;
 	}
 
     case ADDR_EXPR:
       {
-	struct addr_const value;
+	struct addr_const value1, value2;
 
-	decode_addr_const (exp, &value);
-	strp = (unsigned char *) &value.offset;
-	len = sizeof value.offset;
-	/* Compare the offset.  */
-	while (--len >= 0)
-	  if (*p++ != *strp++)
-	    return 0;
-
-	/* Compare symbol name.  */
-	strp = (const unsigned char *) XSTR (value.base, 0);
-	len = strlen ((const char *) strp) + 1;
+	decode_addr_const (t1, &value1);
+	decode_addr_const (t2, &value2);
+	return (value1.offset == value2.offset
+		&& strcmp (XSTR (value1.base, 0), XSTR (value2.base, 0)) == 0);
       }
-      break;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
     case RANGE_EXPR:
-      p = compare_constant_1 (TREE_OPERAND (exp, 0), p);
-      if (p == 0)
-	return 0;
-
-      return compare_constant_1 (TREE_OPERAND (exp, 1), p);
+      return (compare_constant (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0))
+	      && compare_constant(TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1)));
 
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
-      return compare_constant_1 (TREE_OPERAND (exp, 0), p);
+      return compare_constant (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
 
     default:
       {
-	tree new = (*lang_hooks.expand_constant) (exp);
-
-	if (new != exp)
-	  return compare_constant_1 (new, p);
+	tree nt1, nt2;
+	nt1 = (*lang_hooks.expand_constant) (t1);
+	nt2 = (*lang_hooks.expand_constant) (t2);
+	if (nt1 != t1 || nt2 != t2)
+	  return compare_constant (nt1, nt2);
 	else
 	  return 0;
       }
     }
 
-  /* Compare constant contents.  */
-  while (--len >= 0)
-    if (*p++ != *strp++)
-      return 0;
-
-  return p;
-}
-
-/* Construct a constant descriptor for the expression EXP.
-   It is up to the caller to enter the descriptor in the hash table.  */
-
-static struct constant_descriptor *
-record_constant (exp)
-     tree exp;
-{
-  struct constant_descriptor *next = 0;
-  char *label = 0;
-  rtx rtl = 0;
-  int pad;
-
-  /* Make a struct constant_descriptor.  The first three pointers will
-     be filled in later.  Here we just leave space for them.  */
-
-  obstack_grow (&permanent_obstack, (char *) &next, sizeof next);
-  obstack_grow (&permanent_obstack, (char *) &label, sizeof label);
-  obstack_grow (&permanent_obstack, (char *) &rtl, sizeof rtl);
-
-  /* Align the descriptor for the data payload.  */
-  pad = (offsetof (struct constant_descriptor, u)
-	 - offsetof(struct constant_descriptor, rtl)
-	 - sizeof(next->rtl));
-  if (pad > 0)
-    obstack_blank (&permanent_obstack, pad);
-
-  record_constant_1 (exp);
-  return (struct constant_descriptor *) obstack_finish (&permanent_obstack);
-}
-
-/* Add a description of constant expression EXP
-   to the object growing in `permanent_obstack'.
-   No need to return its address; the caller will get that
-   from the obstack when the object is complete.  */
-
-static void
-record_constant_1 (exp)
-     tree exp;
-{
-  const unsigned char *strp;
-  int len;
-  enum tree_code code = TREE_CODE (exp);
-
-  obstack_1grow (&permanent_obstack, (unsigned int) code);
-
-  switch (code)
-    {
-    case INTEGER_CST:
-      obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
-      strp = (unsigned char *) &TREE_INT_CST (exp);
-      len = sizeof TREE_INT_CST (exp);
-      break;
-
-    case REAL_CST:
-      obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
-      strp = (unsigned char *) &TREE_REAL_CST (exp);
-      len = sizeof TREE_REAL_CST (exp);
-      break;
-
-    case STRING_CST:
-      if (flag_writable_strings)
-	return;
-
-      obstack_1grow (&permanent_obstack, TYPE_MODE (TREE_TYPE (exp)));
-      strp = (const unsigned char *) TREE_STRING_POINTER (exp);
-      len = TREE_STRING_LENGTH (exp);
-      obstack_grow (&permanent_obstack, (char *) &TREE_STRING_LENGTH (exp),
-		    sizeof TREE_STRING_LENGTH (exp));
-      break;
-
-    case COMPLEX_CST:
-      record_constant_1 (TREE_REALPART (exp));
-      record_constant_1 (TREE_IMAGPART (exp));
-      return;
-
-    case CONSTRUCTOR:
-      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-	{
-	  int nbytes = int_size_in_bytes (TREE_TYPE (exp));
-	  obstack_grow (&permanent_obstack, &nbytes, sizeof (nbytes));
-	  obstack_blank (&permanent_obstack, nbytes);
-	  get_set_constructor_bytes
-	    (exp, (unsigned char *) permanent_obstack.next_free - nbytes,
-	     nbytes);
-	  return;
-	}
-      else
-	{
-	  tree link;
-	  int length = list_length (CONSTRUCTOR_ELTS (exp));
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-	  tree type;
-	  int have_purpose = 0;
-
-	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	    if (TREE_PURPOSE (link))
-	      have_purpose = 1;
-
-	  obstack_grow (&permanent_obstack, (char *) &length, sizeof length);
-
-	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays
-	     of the same mode.  Then insist that either both or none
-	     have any TREE_PURPOSE values.  */
-	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	    type = TREE_TYPE (exp);
-	  else
-	    type = 0;
-
-	  obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
-	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-	    obstack_grow (&permanent_obstack, &mode, sizeof mode);
-
-	  obstack_grow (&permanent_obstack, (char *) &have_purpose,
-			sizeof have_purpose);
-
-	  /* For arrays, insist that the size in bytes match.  */
-	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-	    {
-	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	      obstack_grow (&permanent_obstack, (char *) &size, sizeof size);
-	    }
-
-	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	    {
-	      if (TREE_VALUE (link))
-		record_constant_1 (TREE_VALUE (link));
-	      else
-		{
-		  tree zero = 0;
-
-		  obstack_grow (&permanent_obstack,
-				(char *) &zero, sizeof zero);
-		}
-
-	      if (TREE_PURPOSE (link)
-		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
-		obstack_grow (&permanent_obstack,
-			      (char *) &TREE_PURPOSE (link),
-			      sizeof TREE_PURPOSE (link));
-	      else if (TREE_PURPOSE (link))
-		record_constant_1 (TREE_PURPOSE (link));
-	      else if (have_purpose)
-		{
-		  int zero = 0;
-
-		  obstack_grow (&permanent_obstack,
-				(char *) &zero, sizeof zero);
-		}
-	    }
-	}
-      return;
-
-    case ADDR_EXPR:
-      {
-	struct addr_const value;
-
-	decode_addr_const (exp, &value);
-	/* Record the offset.  */
-	obstack_grow (&permanent_obstack,
-		      (char *) &value.offset, sizeof value.offset);
-
-	switch (GET_CODE (value.base))
-	  {
-	  case SYMBOL_REF:
-	    /* Record the symbol name.  */
-	    obstack_grow (&permanent_obstack, XSTR (value.base, 0),
-			  strlen (XSTR (value.base, 0)) + 1);
-	    break;
-	  case LABEL_REF:
-	    /* Record the address of the CODE_LABEL.  It may not have
-	       been emitted yet, so it's UID may be zero.  But pointer
-	       identity is good enough.  */
-	    obstack_grow (&permanent_obstack, &XEXP (value.base, 0),
-			  sizeof (rtx));
-	    break;
-	  default:
-	    abort ();
-	  }
-      }
-      return;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case RANGE_EXPR:
-      record_constant_1 (TREE_OPERAND (exp, 0));
-      record_constant_1 (TREE_OPERAND (exp, 1));
-      return;
-
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
-      record_constant_1 (TREE_OPERAND (exp, 0));
-      return;
-
-    default:
-      {
-	tree new = (*lang_hooks.expand_constant) (exp);
-
-	if (new != exp)
-	  record_constant_1 (new);
-	return;
-      }
-    }
-
-  /* Record constant contents.  */
-  obstack_grow (&permanent_obstack, strp, len);
+  /* Should not get here.  */
+  abort ();
 }
 
 /* Record a list of constant expressions that were passed to
@@ -2944,9 +2587,8 @@ output_after_function_constants ()
   after_function_constants = 0;
 }
 
-/* Make a copy of the whole tree structure for a constant.
-   This handles the same types of nodes that compare_constant
-   and record_constant handle.  */
+/* Make a copy of the whole tree structure for a constant.  This
+   handles the same types of nodes that compare_constant handles.  */
 
 static tree
 copy_constant (exp)
@@ -3002,7 +2644,14 @@ copy_constant (exp)
       }
 
     default:
-      abort ();
+      {
+	tree t;
+	t = (*lang_hooks.expand_constant) (exp);
+	if (t != exp)
+	  return copy_constant (t);
+	else
+	  abort ();
+      }
     }
 }
 
@@ -3026,7 +2675,7 @@ output_constant_def (exp, defer)
      int defer;
 {
   int hash;
-  struct constant_descriptor *desc;
+  struct constant_descriptor_tree *desc;
   struct deferred_string **defstr;
   char label[256];
   int reloc;
@@ -3035,7 +2684,7 @@ output_constant_def (exp, defer)
   int labelno = -1;
   rtx rtl;
 
-  /* We can't just use the saved RTL if this is a defererred string constant
+  /* We can't just use the saved RTL if this is a deferred string constant
      and we are not to defer anymore.  */
   if (TREE_CODE (exp) != INTEGER_CST && TREE_CST_RTL (exp)
       && (defer || !STRING_POOL_ADDRESS_P (XEXP (TREE_CST_RTL (exp), 0))))
@@ -3053,7 +2702,7 @@ output_constant_def (exp, defer)
   hash = const_hash (exp) % MAX_HASH_TABLE;
 
   for (desc = const_hash_table[hash]; desc; desc = desc->next)
-    if (compare_constant (exp, desc))
+    if (compare_constant (exp, desc->value))
       break;
 
   if (desc == 0)
@@ -3067,9 +2716,10 @@ output_constant_def (exp, defer)
       labelno = const_labelno++;
       ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
 
-      desc = record_constant (exp);
+      desc = ggc_alloc (sizeof (*desc));
       desc->next = const_hash_table[hash];
       desc->label = ggc_strdup (label);
+      desc->value = copy_constant (exp);
       const_hash_table[hash] = desc;
 
       /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
@@ -3139,7 +2789,7 @@ output_constant_def (exp, defer)
 	    = (struct deferred_constant *)
 	      xmalloc (sizeof (struct deferred_constant));
 
-	  p->exp = copy_constant (exp);
+	  p->exp = desc->value;
 	  p->reloc = reloc;
 	  p->labelno = labelno;
 	  if (after_function)
@@ -3172,9 +2822,9 @@ output_constant_def (exp, defer)
 		  struct deferred_string *p;
 
 		  p = (struct deferred_string *)
-		      xmalloc (sizeof (struct deferred_string));
+		      ggc_alloc (sizeof (struct deferred_string));
 
-		  p->exp = copy_constant (exp);
+		  p->exp = desc->value;
 		  p->label = desc->label;
 		  p->labelno = labelno;
 		  *defstr = p;
@@ -3227,15 +2877,36 @@ output_constant_def_contents (exp, reloc, labelno)
 
 }
 
+/* Used in the hash tables to avoid outputting the same constant
+   twice.  Unlike 'struct constant_descriptor_tree', RTX constants
+   are output once per function, not once per file; there seems
+   to be no reason for the difference.  */
+
+struct constant_descriptor_rtx GTY(())
+{
+  /* More constant_descriptors with the same hash code.  */
+  struct constant_descriptor_rtx *next;
+
+  /* The label of the constant.  */
+  const char *label;
+
+  /* A MEM for the constant.  */
+  rtx rtl;
+
+  /* The value of the constant.  */
+  struct rtx_const value;
+};
+
 /* Structure to represent sufficient information about a constant so that
    it can be output when the constant pool is output, so that function
    integration can be done, and to simplify handling on machines that reference
    constant pool as base+displacement.  */
 
-struct pool_constant
+struct pool_constant GTY(())
 {
-  struct constant_descriptor *desc;
-  struct pool_constant *next, *next_sym;
+  struct constant_descriptor_rtx *desc;
+  struct pool_constant *next;
+  struct pool_constant *next_sym;
   rtx constant;
   enum machine_mode mode;
   int labelno;
@@ -3257,79 +2928,19 @@ init_varasm_status (f)
      struct function *f;
 {
   struct varasm_status *p;
-  p = (struct varasm_status *) xmalloc (sizeof (struct varasm_status));
+  p = (struct varasm_status *) ggc_alloc (sizeof (struct varasm_status));
   f->varasm = p;
   p->x_const_rtx_hash_table
-    = ((struct constant_descriptor **)
-       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct constant_descriptor *)));
+    = ((struct constant_descriptor_rtx **)
+       ggc_alloc_cleared (MAX_RTX_HASH_TABLE
+			  * sizeof (struct constant_descriptor_rtx *)));
   p->x_const_rtx_sym_hash_table
     = ((struct pool_constant **)
-       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct pool_constant *)));
+       ggc_alloc_cleared (MAX_RTX_HASH_TABLE
+			  * sizeof (struct pool_constant *)));
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
-}
-
-/* Mark PC for GC.  */
-
-static void
-mark_pool_constant (pc)
-     struct pool_constant *pc;
-{
-  while (pc)
-    {
-      ggc_mark (pc);
-      ggc_mark_rtx (pc->constant);
-      ggc_mark_rtx (pc->desc->rtl);
-      pc = pc->next;
-    }
-}
-
-/* Mark P for GC.  */
-
-void
-mark_varasm_status (p)
-     struct varasm_status *p;
-{
-  if (p == NULL)
-    return;
-
-  mark_pool_constant (p->x_first_pool);
-}
-
-/* Clear out all parts of the state in F that can safely be discarded
-   after the function has been compiled, to let garbage collection
-   reclaim the memory.  */
-
-void
-free_varasm_status (f)
-     struct function *f;
-{
-  struct varasm_status *p;
-  int i;
-
-  p = f->varasm;
-
-  /* Clear out the hash tables.  */
-  for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
-    {
-      struct constant_descriptor *cd;
-
-      cd = p->x_const_rtx_hash_table[i];
-      while (cd)
-	{
-	  struct constant_descriptor *next = cd->next;
-
-	  free (cd);
-	  cd = next;
-	}
-    }
-
-  free (p->x_const_rtx_hash_table);
-  free (p->x_const_rtx_sym_hash_table);
-  free (p);
-
-  f->varasm = NULL;
 }
 
 
@@ -3447,11 +3058,13 @@ decode_rtx_const (mode, x, value)
   if (value->kind > RTX_DOUBLE && value->un.addr.base != 0)
     switch (GET_CODE (value->un.addr.base))
       {
+#if 0
       case SYMBOL_REF:
 	/* Use the string's address, not the SYMBOL_REF's address,
 	   for the sake of addresses of library routines.  */
 	value->un.addr.base = (rtx) XSTR (value->un.addr.base, 0);
 	break;
+#endif
 
       case LABEL_REF:
 	/* For a LABEL_REF, compare labels.  */
@@ -3512,39 +3125,28 @@ static int
 compare_constant_rtx (mode, x, desc)
      enum machine_mode mode;
      rtx x;
-     struct constant_descriptor *desc;
+     struct constant_descriptor_rtx *desc;
 {
-  int *p = (int *) desc->u.contents;
-  int *strp;
-  int len;
   struct rtx_const value;
 
   decode_rtx_const (mode, x, &value);
-  strp = (int *) &value;
-  len = sizeof value / sizeof (int);
 
   /* Compare constant contents.  */
-  while (--len >= 0)
-    if (*p++ != *strp++)
-      return 0;
-
-  return 1;
+  return memcmp (&value, &desc->value, sizeof (struct rtx_const)) == 0;
 }
 
 /* Construct a constant descriptor for the rtl-expression X.
    It is up to the caller to enter the descriptor in the hash table.  */
 
-static struct constant_descriptor *
+static struct constant_descriptor_rtx *
 record_constant_rtx (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  struct constant_descriptor *ptr;
+  struct constant_descriptor_rtx *ptr;
 
-  ptr = ((struct constant_descriptor *)
-	 xcalloc (1, (offsetof (struct constant_descriptor, u)
-		      + sizeof (struct rtx_const))));
-  decode_rtx_const (mode, x, (struct rtx_const *) ptr->u.contents);
+  ptr = (struct constant_descriptor_rtx *) ggc_alloc (sizeof (*ptr));
+  decode_rtx_const (mode, x, &ptr->value);
 
   return ptr;
 }
@@ -3557,7 +3159,7 @@ mem_for_const_double (x)
      rtx x;
 {
   enum machine_mode mode = GET_MODE (x);
-  struct constant_descriptor *desc;
+  struct constant_descriptor_rtx *desc;
 
   for (desc = const_rtx_hash_table[const_hash_rtx (mode, x)]; desc;
        desc = desc->next)
@@ -3576,7 +3178,7 @@ force_const_mem (mode, x)
      rtx x;
 {
   int hash;
-  struct constant_descriptor *desc;
+  struct constant_descriptor_rtx *desc;
   char label[256];
   rtx def;
   struct pool_constant *pool;
@@ -4789,7 +4391,7 @@ output_constructor (exp, size, align)
 
 /* This TREE_LIST contains any weak symbol declarations waiting
    to be emitted.  */
-static tree weak_decls;
+static GTY(()) tree weak_decls;
 
 /* Mark DECL as weak.  */
 
@@ -5075,16 +4677,10 @@ make_decl_one_only (decl)
 void
 init_varasm_once ()
 {
-  const_str_htab = htab_create (128, const_str_htab_hash, const_str_htab_eq,
-				const_str_htab_del);
+  const_str_htab = htab_create_ggc (128, const_str_htab_hash, 
+				    const_str_htab_eq, NULL);
   in_named_htab = htab_create (31, in_named_entry_hash,
 			       in_named_entry_eq, NULL);
-
-  ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof const_hash_table[0],
-		mark_const_hash_entry);
-  ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
-		mark_const_str_htab);
-  ggc_add_tree_root (&weak_decls, 1);
 
   const_alias_set = new_alias_set ();
 }
@@ -5631,3 +5227,5 @@ default_binds_local_p (exp)
 
   return local_p;
 }
+
+#include "gt-varasm.h"

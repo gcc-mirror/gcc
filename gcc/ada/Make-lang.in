@@ -205,10 +205,6 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
 		$(SYSLIBS)
 	$(RM) stamp-gnatlib2 stamp-tools
 
-gnatbind$(exeext): ada/b_gnatb.o $(GNATBIND_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) \
-	      $(LIBIBERTY) $(LIBS)
-
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink 
 gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
@@ -272,6 +268,9 @@ gnatlib_and_tools: gnatlib gnattools
 # use cross-gcc
 gnat-cross: force
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) gnat-cross
+
+gt-ada-decl.h gt-ada-trans.h gt-ada-utils.h gtype-ada.h : s-gtype ; @true
+
 
 # Build hooks:
 
@@ -1002,7 +1001,8 @@ ada/cuintp.o : ada/cuintp.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) ada/ada.h \
 ada/decl.o : ada/decl.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h \
    $(srcdir)/toplev.h $(srcdir)/convert.h ada/ada.h ada/types.h ada/atree.h \
    ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h \
-   ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
+   ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
+   gt-ada-decl.h
 
 ada/misc.o : ada/misc.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/expr.h \
    insn-codes.h insn-flags.h insn-config.h $(srcdir)/recog.h \
@@ -1020,12 +1020,13 @@ ada/targtyps.o : ada/targtyps.c $(CONFIG_H) ada/ada.h ada/types.h ada/atree.h \
 ada/trans.o : ada/trans.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/flags.h \
    ada/ada.h $(srcdir)/except.h ada/types.h ada/atree.h ada/nlists.h \
    ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h \
-   ada/stringt.h ada/urealp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
+   ada/stringt.h ada/urealp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-trans.h
 
 ada/utils.o : ada/utils.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h \
    $(srcdir)/expr.h $(srcdir)/convert.h $(srcdir)/defaults.h ada/ada.h \
    ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h \
-   ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
+   ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
+   gt-ada-utils.h gtype-ada.h
 
 ada/utils2.o : ada/utils2.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h ada/ada.h \
    ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h \

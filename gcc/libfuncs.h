@@ -148,7 +148,7 @@ enum libfunc_index
 
 /* SYMBOL_REF rtx's for the library functions that are called
    implicitly and not via optabs.  */
-extern rtx libfunc_table[LTI_MAX];
+extern GTY(()) rtx libfunc_table[LTI_MAX];
 
 /* Accessor macros for libfunc_table.  */
 #define extendsfdf2_libfunc	(libfunc_table[LTI_extendsfdf2])

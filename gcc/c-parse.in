@@ -266,17 +266,17 @@ static const char *if_stmt_file;
 static int if_stmt_line;
 
 /* List of types and structure classes of the current declaration.  */
-static tree current_declspecs = NULL_TREE;
-static tree prefix_attributes = NULL_TREE;
+static GTY(()) tree current_declspecs;
+static GTY(()) tree prefix_attributes;
 
 /* List of all the attributes applying to the identifier currently being
    declared; includes prefix_attributes and possibly some more attributes
    just after a comma.  */
-static tree all_prefix_attributes = NULL_TREE;
+static GTY(()) tree all_prefix_attributes;
 
 /* Stack of saved values of current_declspecs, prefix_attributes and
    all_prefix_attributes.  */
-static tree declspec_stack;
+static GTY(()) tree declspec_stack;
 
 /* PUSH_DECLSPEC_STACK is called from setspecs; POP_DECLSPEC_STACK
    should be called from the productions making use of setspecs.  */
@@ -341,16 +341,11 @@ static inline int _yylex  PARAMS ((void));
 static int  yylex	  PARAMS ((void));
 static void init_reswords PARAMS ((void));
 
-/* Add GC roots for variables local to this file.  */
+  /* Initialisation routine for this file.  */
 void
 c_parse_init ()
 {
   init_reswords ();
-
-  ggc_add_tree_root (&declspec_stack, 1);
-  ggc_add_tree_root (&current_declspecs, 1);
-  ggc_add_tree_root (&prefix_attributes, 1);
-  ggc_add_tree_root (&all_prefix_attributes, 1);
 }
 
 %}
@@ -3730,8 +3725,6 @@ end ifc
 	     || (next_type == CPP_NAME && yylexname () == STRING));
 
       yylval.ttype = combine_strings (strings);
-
-      VARRAY_FREE (strings);
     }
   else
     yylval.ttype = orig;
@@ -3943,3 +3936,5 @@ free_parser_stacks ()
       free (malloced_yyvs);
     }
 }
+
+#include "gt-c-parse.h"

@@ -35,7 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
-#include "obstack.h"
 #include "hashtab.h"
 #include "cselib.h"
 
@@ -79,7 +78,7 @@ static void cselib_record_sets		PARAMS ((rtx));
      the locations of the entries with the rtx we are looking up.  */
 
 /* A table that enables us to look up elts by their value.  */
-static htab_t hash_table;
+static GTY((param_is (cselib_val))) htab_t hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
@@ -101,7 +100,8 @@ static int n_useless_values;
 /* This table maps from register number to values.  It does not contain
    pointers to cselib_val structures, but rather elt_lists.  The purpose is
    to be able to refer to the same register in different modes.  */
-static varray_type reg_values;
+static GTY(()) varray_type reg_values;
+static GTY((deletable (""))) varray_type reg_values_old;
 #define REG_VALUES(I) VARRAY_ELT_LIST (reg_values, (I))
 
 /* The largest number of hard regs used by any entry added to the
@@ -110,22 +110,17 @@ static unsigned int max_value_regs;
 
 /* Here the set of indices I with REG_VALUES(I) != 0 is saved.  This is used
    in clear_table() for fast emptying.  */
-static varray_type used_regs;
+static GTY(()) varray_type used_regs;
+static GTY((deletable (""))) varray_type used_regs_old;
 
 /* We pass this to cselib_invalidate_mem to invalidate all of
    memory for a non-const call instruction.  */
-static rtx callmem;
-
-/* Memory for our structures is allocated from this obstack.  */
-static struct obstack cselib_obstack;
-
-/* Used to quickly free all memory.  */
-static char *cselib_startobj;
+static GTY(()) rtx callmem;
 
 /* Caches for unused structures.  */
-static cselib_val *empty_vals;
-static struct elt_list *empty_elt_lists;
-static struct elt_loc_list *empty_elt_loc_lists;
+static GTY((deletable (""))) cselib_val *empty_vals;
+static GTY((deletable (""))) struct elt_list *empty_elt_lists;
+static GTY((deletable (""))) struct elt_loc_list *empty_elt_loc_lists;
 
 /* Set by discard_useless_locs if it deleted the last location of any
    value.  */
@@ -145,8 +140,7 @@ new_elt_list (next, elt)
   if (el)
     empty_elt_lists = el->next;
   else
-    el = (struct elt_list *) obstack_alloc (&cselib_obstack,
-					    sizeof (struct elt_list));
+    el = (struct elt_list *) ggc_alloc (sizeof (struct elt_list));
   el->next = next;
   el->elt = elt;
   return el;
@@ -165,8 +159,7 @@ new_elt_loc_list (next, loc)
   if (el)
     empty_elt_loc_lists = el->next;
   else
-    el = (struct elt_loc_list *) obstack_alloc (&cselib_obstack,
-						sizeof (struct elt_loc_list));
+    el = (struct elt_loc_list *) ggc_alloc (sizeof (struct elt_loc_list));
   el->next = next;
   el->loc = loc;
   el->setting_insn = cselib_current_insn;
@@ -236,11 +229,7 @@ clear_table (clear_all)
   VARRAY_POP_ALL (used_regs);
 
   htab_empty (hash_table);
-  obstack_free (&cselib_obstack, cselib_startobj);
 
-  empty_vals = 0;
-  empty_elt_lists = 0;
-  empty_elt_loc_lists = 0;
   n_useless_values = 0;
 
   next_unknown_value = 0;
@@ -704,7 +693,7 @@ new_cselib_val (value, mode)
   if (e)
     empty_vals = e->u.next_free;
   else
-    e = (cselib_val *) obstack_alloc (&cselib_obstack, sizeof (cselib_val));
+    e = (cselib_val *) ggc_alloc (sizeof (cselib_val));
 
   if (value == 0)
     abort ();
@@ -1399,20 +1388,25 @@ cselib_update_varray_sizes ()
 void
 cselib_init ()
 {
-  /* These are only created once.  */
+  /* This is only created once.  */
   if (! callmem)
-    {
-      gcc_obstack_init (&cselib_obstack);
-      cselib_startobj = obstack_alloc (&cselib_obstack, 0);
-
-      callmem = gen_rtx_MEM (BLKmode, const0_rtx);
-      ggc_add_rtx_root (&callmem, 1);
-    }
+    callmem = gen_rtx_MEM (BLKmode, const0_rtx);
 
   cselib_nregs = max_reg_num ();
-  VARRAY_ELT_LIST_INIT (reg_values, cselib_nregs, "reg_values");
-  VARRAY_UINT_INIT (used_regs, cselib_nregs, "used_regs");
-  hash_table = htab_create (31, get_value_hash, entry_and_rtx_equal_p, NULL);
+  if (reg_values_old != NULL && VARRAY_SIZE (reg_values_old) >= cselib_nregs)
+    {
+      reg_values = reg_values_old;
+      used_regs = used_regs_old;
+      VARRAY_CLEAR (reg_values);
+      VARRAY_CLEAR (used_regs);
+    }
+  else
+    {
+      VARRAY_ELT_LIST_INIT (reg_values, cselib_nregs, "reg_values");
+      VARRAY_UINT_INIT (used_regs, cselib_nregs, "used_regs");
+    }
+  hash_table = htab_create_ggc (31, get_value_hash, entry_and_rtx_equal_p, 
+				NULL);
   clear_table (1);
 }
 
@@ -1421,8 +1415,13 @@ cselib_init ()
 void
 cselib_finish ()
 {
-  clear_table (0);
-  VARRAY_FREE (reg_values);
-  VARRAY_FREE (used_regs);
-  htab_delete (hash_table);
+  reg_values_old = reg_values;
+  reg_values = 0;
+  used_regs_old = used_regs;
+  used_regs = 0;
+  hash_table = 0;
+  n_useless_values = 0;
+  next_unknown_value = 0;
 }
+
+#include "gt-cselib.h"

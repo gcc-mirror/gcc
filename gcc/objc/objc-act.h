@@ -133,28 +133,26 @@ enum objc_tree_code {
 typedef struct hashed_entry	*hash;
 typedef struct hashed_attribute	*attr;
 
-struct hashed_attribute
+struct hashed_attribute GTY(())
 {
   attr next;
   tree value;
 };
-struct hashed_entry
+struct hashed_entry GTY(())
 {
   attr list;
   hash next;
   tree key;
 };
 
-extern hash *nst_method_hash_list;
-extern hash *cls_method_hash_list;
+extern GTY ((length ("SIZEHASHTABLE"))) hash *nst_method_hash_list;
+extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_method_hash_list;
 
-#define HASH_ALLOC_LIST_SIZE	170
-#define ATTR_ALLOC_LIST_SIZE	170
 #define SIZEHASHTABLE 		257
 
 /* Objective-C/Objective-C++ @implementation list.  */
 
-struct imp_entry
+struct imp_entry GTY(())
 {
   struct imp_entry *next;
   tree imp_context;
@@ -163,7 +161,7 @@ struct imp_entry
   tree meta_decl;		/* _OBJC_METACLASS_<my_name>; */
 };
 
-extern struct imp_entry *imp_list;
+extern GTY(()) struct imp_entry *imp_list;
 extern int imp_count;	/* `@implementation' */
 extern int cat_count;	/* `@category' */
 
@@ -248,7 +246,7 @@ enum objc_tree_index
     OCTI_MAX
 };
 
-extern tree objc_global_trees[OCTI_MAX];
+extern GTY(()) tree objc_global_trees[OCTI_MAX];
 
 /* List of classes with list of their static instances.  */
 #define objc_static_instances	objc_global_trees[OCTI_STATIC_NST]

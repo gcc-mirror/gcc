@@ -134,6 +134,22 @@ default_eh_frame_section ()
 #endif
 }
 
+/* Array of RTXes referenced by the debugging information, which therefore
+   must be kept around forever.  */
+static GTY(()) varray_type used_rtx_varray;
+
+/* A pointer to the base of a list of incomplete types which might be
+   completed at some later time.  incomplete_types_list needs to be a VARRAY
+   because we want to tell the garbage collector about it.  */
+static GTY(()) varray_type incomplete_types;
+
+/* A pointer to the base of a table of references to declaration
+   scopes.  This table is a display which tracks the nesting
+   of declaration scopes at the current scope and containing
+   scopes.  This table is used to find the proper place to
+   define type declaration DIE's.  */
+static GTY(()) varray_type decl_scope_table;
+
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 /* How to start an assembler comment.  */
@@ -3352,13 +3368,6 @@ static unsigned decl_die_table_in_use;
    decl_die_table.  */
 #define DECL_DIE_TABLE_INCREMENT 256
 
-/* A pointer to the base of a table of references to declaration
-   scopes.  This table is a display which tracks the nesting
-   of declaration scopes at the current scope and containing
-   scopes.  This table is used to find the proper place to
-   define type declaration DIE's.  */
-varray_type decl_scope_table;
-
 /* A pointer to the base of a list of references to DIE's that
    are uniquely identified by their tag, presence/absence of
    children DIE's, and list of attribute/value pairs.  */
@@ -3441,20 +3450,11 @@ static unsigned ranges_table_in_use;
 /* Whether we have location lists that need outputting */
 static unsigned have_location_lists;
 
-/* A pointer to the base of a list of incomplete types which might be
-   completed at some later time.  incomplete_types_list needs to be a VARRAY
-   because we want to tell the garbage collector about it.  */
-varray_type incomplete_types;
-
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
 #endif
-
-/* Array of RTXes referenced by the debugging information, which therefore
-   must be kept around forever.  This is a GC root.  */
-static varray_type used_rtx_varray;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -5123,7 +5123,7 @@ static inline dw_die_ref
 lookup_type_die (type)
      tree type;
 {
-  return (dw_die_ref) TYPE_SYMTAB_POINTER (type);
+  return TYPE_SYMTAB_DIE (type);
 }
 
 /* Equate a DIE to a given type specifier.  */
@@ -5133,7 +5133,7 @@ equate_type_number_to_die (type, type_die)
      tree type;
      dw_die_ref type_die;
 {
-  TYPE_SYMTAB_POINTER (type) = (char *) type_die;
+  TYPE_SYMTAB_DIE (type) = type_die;
 }
 
 /* Return the DIE associated with a given declaration.  */
@@ -12034,7 +12034,6 @@ dwarf2out_init (main_input_filename)
 
   /* Allocate the initial hunk of the decl_scope_table.  */
   VARRAY_TREE_INIT (decl_scope_table, 256, "decl_scope_table");
-  ggc_add_tree_varray_root (&decl_scope_table, 1);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
   abbrev_die_table
@@ -12061,10 +12060,8 @@ dwarf2out_init (main_input_filename)
   comp_unit_die = gen_compile_unit_die (main_input_filename);
 
   VARRAY_TREE_INIT (incomplete_types, 64, "incomplete_types");
-  ggc_add_tree_varray_root (&incomplete_types, 1);
 
   VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
-  ggc_add_rtx_varray_root (&used_rtx_varray, 1);
 
   ggc_add_root (&limbo_die_list, 1, 1, mark_limbo_die_list);
 
@@ -12322,4 +12319,11 @@ dwarf2out_finish (input_filename)
   if (debug_str_hash)
     ht_forall (debug_str_hash, output_indirect_string, NULL);
 }
-#endif /* DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO */
+#else
+
+/* This should never be used, but its address is needed for comparisons.  */
+const struct gcc_debug_hooks dwarf2_debug_hooks;
+
+#endif /* DWARF2_DEBUGGING_INFO */
+
+#include "gt-dwarf2out.h"

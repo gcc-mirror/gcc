@@ -21,7 +21,8 @@ Boston, MA 02111-1307, USA.  */
 /* Variables defined in ia64.c.  */
 
 #ifdef RTX_CODE
-extern rtx ia64_compare_op0, ia64_compare_op1;
+extern GTY(()) rtx ia64_compare_op0;
+extern GTY(()) rtx ia64_compare_op1;
 #endif
 
 /* Functions defined in ia64.c */

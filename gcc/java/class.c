@@ -55,13 +55,10 @@ static tree get_dispatch_table PARAMS ((tree, tree));
 static void add_interface_do PARAMS ((tree, tree, int));
 static tree maybe_layout_super_class PARAMS ((tree, tree));
 static int assume_compiled PARAMS ((const char *));
-static struct hash_entry *init_test_hash_newfunc PARAMS ((struct hash_entry *,
-							  struct hash_table *,
-							  hash_table_key));
 static tree build_method_symbols_entry PARAMS ((tree));
 
-static rtx registerClass_libfunc;
-static rtx registerResource_libfunc;
+static GTY(()) rtx registerClass_libfunc;
+static GTY(()) rtx registerResource_libfunc;
 
 extern struct obstack permanent_obstack;
 struct obstack temporary_obstack;
@@ -95,8 +92,7 @@ static assume_compiled_node *find_assume_compiled_node
 
 static assume_compiled_node *assume_compiled_tree;
 
-static tree class_roots[5]
-= { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+static GTY(()) tree class_roots[5];
 #define registered_class class_roots[0]
 #define fields_ident class_roots[1]  /* get_identifier ("fields") */
 #define info_ident class_roots[2]  /* get_identifier ("info") */
@@ -625,43 +621,6 @@ build_java_method_type (fntype, this_class, access_flags)
   return build_method_type (CLASS_TO_HANDLE_TYPE (this_class), fntype);
 }
 
-static struct hash_entry *
-init_test_hash_newfunc (entry, table, string)
-     struct hash_entry *entry;
-     struct hash_table *table;
-     hash_table_key string ATTRIBUTE_UNUSED;
-{
-  struct init_test_hash_entry *ret = (struct init_test_hash_entry *) entry;
-  if (ret == NULL)
-    {
-      ret = ((struct init_test_hash_entry *)
-	     hash_allocate (table, sizeof (struct init_test_hash_entry)));
-      if (ret == NULL)
-	return NULL;
-    }
-  ret->init_test_decl = 0;
-  return (struct hash_entry *) ret;
-}
-
-/* Hash table helpers. Also reused in find_applicable_accessible_methods_list 
-   (parse.y). The hash of a tree node is its pointer value, comparison
-   is direct. */
-
-unsigned long
-java_hash_hash_tree_node (k)
-     hash_table_key k;
-{
-  return (long) k;
-}
-
-bool
-java_hash_compare_tree_node (k1, k2)
-     hash_table_key k1;
-     hash_table_key k2;
-{
-  return ((tree) k1 == (tree) k2);
-}
-
 tree
 add_method_1 (handle_class, access_flags, name, function_type)
      tree handle_class;
@@ -679,17 +638,17 @@ add_method_1 (handle_class, access_flags, name, function_type)
 
   DECL_LANG_SPECIFIC (fndecl)
     = (struct lang_decl *) ggc_alloc_cleared (sizeof (struct lang_decl));
+  DECL_LANG_SPECIFIC (fndecl)->desc = LANG_DECL_FUNC;
 
   /* Initialize the static initializer test table.  */
-  hash_table_init (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
-		   init_test_hash_newfunc, java_hash_hash_tree_node, 
-		   java_hash_compare_tree_node);
+  
+  DECL_FUNCTION_INIT_TEST_TABLE (fndecl) = 
+    java_treetreehash_create (10, 1);
 
   /* Initialize the initialized (static) class table. */
   if (access_flags & ACC_STATIC)
-    hash_table_init (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl),
-		     init_test_hash_newfunc, java_hash_hash_tree_node,
-		     java_hash_compare_tree_node);
+    DECL_FUNCTION_INITIALIZED_CLASS_TABLE (fndecl) =
+      htab_create_ggc (50, htab_hash_pointer, htab_eq_pointer, NULL);
 
   /* Initialize the static method invocation compound list */
   DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl) = NULL_TREE;
@@ -2327,12 +2286,85 @@ emit_offset_symbol_table ()
 void
 init_class_processing ()
 {
-  registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
+  registerClass_libfunc = gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterClass");
   registerResource_libfunc = 
-    gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterResource");
-  ggc_add_tree_root (class_roots, ARRAY_SIZE (class_roots));
+    gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterResource");
   fields_ident = get_identifier ("fields");
   info_ident = get_identifier ("info");
-  ggc_add_rtx_root (&registerClass_libfunc, 1);
   gcc_obstack_init (&temporary_obstack);
 }
+
+static hashval_t java_treetreehash_hash PARAMS ((const void *));
+static int java_treetreehash_compare PARAMS ((const void *, const void *));
+
+/* A hash table mapping trees to trees.  Used generally.  */
+
+#define JAVA_TREEHASHHASH_H(t) ((hashval_t) (t))
+
+static hashval_t
+java_treetreehash_hash (k_p)
+     const void *k_p;
+{
+  struct treetreehash_entry *k = (struct treetreehash_entry *) k_p;
+  return JAVA_TREEHASHHASH_H (k->key);
+}
+
+static int
+java_treetreehash_compare (k1_p, k2_p)
+     const void * k1_p;
+     const void * k2_p;
+{
+  struct treetreehash_entry * k1 = (struct treetreehash_entry *) k1_p;
+  tree k2 = (tree) k2_p;
+  return (k1->key == k2);
+}
+
+tree 
+java_treetreehash_find (ht, t)
+     htab_t ht;
+     tree t;
+{
+  struct treetreehash_entry *e;
+  hashval_t hv = JAVA_TREEHASHHASH_H (t);
+  e = (struct treetreehash_entry *) htab_find_with_hash (ht, t, hv);
+  if (e == NULL)
+    return NULL;
+  else
+    return e->value;
+}
+
+tree *
+java_treetreehash_new (ht, t)
+     htab_t ht;
+     tree t;
+{
+  PTR *e;
+  struct treetreehash_entry *tthe;
+  hashval_t hv = JAVA_TREEHASHHASH_H (t);
+
+  e = htab_find_slot_with_hash (ht, t, hv, INSERT);
+  if (*e == NULL)
+    {
+      tthe = (*ht->alloc_f) (1, sizeof (*tthe));
+      tthe->key = t;
+      *e = (PTR) tthe;
+    }
+  else
+    tthe = (struct treetreehash_entry *) *e;
+  return &tthe->value;
+}
+
+htab_t
+java_treetreehash_create (size, gc)
+     size_t size;
+     int gc;
+{
+  if (gc)
+    return htab_create_ggc (size, java_treetreehash_hash,
+			    java_treetreehash_compare, NULL);
+  else
+    return htab_create_alloc (size, java_treetreehash_hash,
+			      java_treetreehash_compare, free, xcalloc, free);
+}
+
+#include "gt-java-class.h"

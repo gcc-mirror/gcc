@@ -50,6 +50,7 @@ typedef struct rtvec_def *rtvec;
 union tree_node;
 typedef union tree_node *tree;
 #endif
+#define GTY(x)
 EOF
         ;;
 esac

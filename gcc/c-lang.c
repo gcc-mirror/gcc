@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "c-tree.h"
 #include "c-common.h"
+#include "ggc.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -49,8 +50,6 @@ static void c_init_options PARAMS ((void));
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
-#undef LANG_HOOKS_MARK_TREE
-#define LANG_HOOKS_MARK_TREE c_mark_tree
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR c_expand_expr
 #undef LANG_HOOKS_MARK_ADDRESSABLE
@@ -75,8 +74,6 @@ static void c_init_options PARAMS ((void));
 #define LANG_HOOKS_FUNCTION_ENTER_NESTED c_push_function_context
 #undef LANG_HOOKS_FUNCTION_LEAVE_NESTED
 #define LANG_HOOKS_FUNCTION_LEAVE_NESTED c_pop_function_context
-#undef LANG_HOOKS_FUNCTION_MARK
-#define LANG_HOOKS_FUNCTION_MARK c_mark_function_context
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL c_dup_lang_specific_decl
 
@@ -224,3 +221,5 @@ finish_file ()
 {
   c_objc_common_finish_file ();
 }
+
+#include "gtype-c.h"

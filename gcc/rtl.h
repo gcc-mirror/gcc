@@ -89,7 +89,7 @@ typedef struct
    so MEMs that the same attributes share a data structure.  This means
    they cannot be modified in place.  If any element is nonzero, it means
    the value of the corresponding attribute is unknown.  */
-typedef struct
+typedef struct mem_attrs GTY(())
 {
   HOST_WIDE_INT alias;		/* Memory alias set.  */
   tree expr;			/* expr corresponding to MEM.  */
@@ -212,9 +212,9 @@ struct rtx_def
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-struct rtvec_def {
+struct rtvec_def GTY(()) {
   int num_elem;		/* number of elements */
-  rtx elem[1];
+  rtx GTY ((length ("%h.num_elem"))) elem[1];
 };
 
 #define NULL_RTVEC (rtvec) 0
@@ -1677,7 +1677,9 @@ extern bool keep_with_call_p		PARAMS ((rtx));
 /* flow.c */
 
 extern rtx find_use_as_address		PARAMS ((rtx, rtx, HOST_WIDE_INT));
-void init_EXPR_INSN_LIST_cache		PARAMS ((void));
+
+/* lists.c */
+
 void free_EXPR_LIST_list 		PARAMS ((rtx *));
 void free_INSN_LIST_list 		PARAMS ((rtx *));
 void free_EXPR_LIST_node 		PARAMS ((rtx));
@@ -1711,15 +1713,15 @@ extern void split_all_insns		PARAMS ((int));
 extern void split_all_insns_noflow	PARAMS ((void));
 
 #define MAX_SAVED_CONST_INT 64
-extern rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+extern GTY(()) rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
 #define const0_rtx	(const_int_rtx[MAX_SAVED_CONST_INT])
 #define const1_rtx	(const_int_rtx[MAX_SAVED_CONST_INT+1])
 #define const2_rtx	(const_int_rtx[MAX_SAVED_CONST_INT+2])
 #define constm1_rtx	(const_int_rtx[MAX_SAVED_CONST_INT-1])
-extern rtx const_true_rtx;
+extern GTY(()) rtx const_true_rtx;
 
-extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
+extern GTY(()) rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
 
 /* Returns a constant 0 rtx in mode MODE.  Integer modes are treated the
    same as VOIDmode.  */
@@ -1776,7 +1778,7 @@ enum global_rtl_index
 };
 
 /* Pointers to standard pieces of rtx are stored here.  */
-extern rtx global_rtl[GR_MAX];
+extern GTY(()) rtx global_rtl[GR_MAX];
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
@@ -1790,12 +1792,12 @@ extern rtx global_rtl[GR_MAX];
 #define hard_frame_pointer_rtx	(global_rtl[GR_HARD_FRAME_POINTER])
 #define arg_pointer_rtx		(global_rtl[GR_ARG_POINTER])
 
-extern rtx pic_offset_table_rtx;
-extern rtx struct_value_rtx;
-extern rtx struct_value_incoming_rtx;
-extern rtx static_chain_rtx;
-extern rtx static_chain_incoming_rtx;
-extern rtx return_address_pointer_rtx;
+extern GTY(()) rtx pic_offset_table_rtx;
+extern GTY(()) rtx struct_value_rtx;
+extern GTY(()) rtx struct_value_incoming_rtx;
+extern GTY(()) rtx static_chain_rtx;
+extern GTY(()) rtx static_chain_incoming_rtx;
+extern GTY(()) rtx return_address_pointer_rtx;
 
 /* Include the RTL generation functions.  */
 
@@ -2278,7 +2280,7 @@ extern int stack_regs_mentioned		PARAMS ((rtx insn));
 #endif
 
 /* In toplev.c */
-extern rtx stack_limit_rtx;
+extern GTY(()) rtx stack_limit_rtx;
 
 /* In regrename.c */
 extern void regrename_optimize		PARAMS ((void));

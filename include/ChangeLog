@@ -1,3 +1,18 @@
+2002-05-22  Geoffrey Keating  <geoffk@redhat.com>
+
+	* hashtab.h (struct htab): Update for change to length specifier.
+
+2002-05-10  Geoffrey Keating  <geoffk@redhat.com>
+
+	* hashtab.h (GTY): Define if undefined.
+	(htab_alloc): New typedef.
+	(htab_free): New typedef.
+	(struct htab): Support gengtype; allow user-specified memory
+	allocation.
+	(htab_create_alloc): New.
+	(htab_create): Replace with #define.
+	(htab_try_create): Delete.
+
 2002-04-16  David S. Miller  <davem@redhat.com>
 
 	* xregex2.h (__restrict_arr): Define to __restrict on GCC

@@ -2166,6 +2166,7 @@ write_substitution (seq_id)
 static inline void
 start_mangling ()
 {
+  VARRAY_TREE_INIT (G.substitutions, 1, "mangling substitutions");
   obstack_free (&G.name_obstack, obstack_base (&G.name_obstack));
 }
 
@@ -2175,7 +2176,7 @@ static inline const char *
 finish_mangling ()
 {
   /* Clear all the substitutions.  */
-  VARRAY_POP_ALL (G.substitutions);
+  G.substitutions = 0;
 
   /* Null-terminate the string.  */
   write_char ('\0');
@@ -2189,7 +2190,6 @@ void
 init_mangle ()
 {
   gcc_obstack_init (&G.name_obstack);
-  VARRAY_TREE_INIT (G.substitutions, 1, "mangling substitutions");
 
   /* Cache these identifiers for quick comparison when checking for
      standard substitutions.  */

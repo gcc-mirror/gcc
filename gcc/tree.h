@@ -118,7 +118,7 @@ extern tree built_in_decls[(int) END_BUILTINS];
    See the accessor macros, defined below, for documentation of the
    fields.  */
 
-struct tree_common
+struct tree_common GTY(())
 {
   tree chain;
   tree type;
@@ -701,8 +701,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)		\
 	== (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
        && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
-
-struct tree_int_cst
+ 
+struct tree_int_cst GTY(())
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language
@@ -710,7 +710,7 @@ struct tree_int_cst
   /* A sub-struct is necessary here because the function `const_hash'
      wants to scan both words as a unit and taking the address of the
      sub-struct yields the properly inclusive bounded pointer.  */
-  struct {
+  struct tree_int_cst_lowhi {
     unsigned HOST_WIDE_INT low;
     HOST_WIDE_INT high;
   } int_cst;
@@ -730,18 +730,18 @@ struct realvaluetype;
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
 
-struct tree_real_cst
+struct tree_real_cst GTY(())
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language (rtl) info */
-  struct realvaluetype *real_cst_ptr;
+  struct realvaluetype * real_cst_ptr;
 };
 
 /* In a STRING_CST */
 #define TREE_STRING_LENGTH(NODE) (STRING_CST_CHECK (NODE)->string.length)
 #define TREE_STRING_POINTER(NODE) (STRING_CST_CHECK (NODE)->string.pointer)
 
-struct tree_string
+struct tree_string GTY(())
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language (rtl) info */
@@ -753,7 +753,7 @@ struct tree_string
 #define TREE_REALPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.real)
 #define TREE_IMAGPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.imag)
 
-struct tree_complex
+struct tree_complex GTY(())
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language (rtl) info */
@@ -764,7 +764,7 @@ struct tree_complex
 /* In a VECTOR_CST node.  */
 #define TREE_VECTOR_CST_ELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.elements)
 
-struct tree_vector
+struct tree_vector GTY(())
 {
   struct tree_common common;
   rtx rtl;
@@ -787,7 +787,7 @@ struct tree_vector
   ((tree) ((char *) (NODE) - sizeof (struct tree_common)))
 #define GCC_IDENT_TO_HT_IDENT(NODE) (&((struct tree_identifier *) (NODE))->id)
 
-struct tree_identifier
+struct tree_identifier GTY(())
 {
   struct tree_common common;
   struct ht_identifier id;
@@ -797,7 +797,7 @@ struct tree_identifier
 #define TREE_PURPOSE(NODE) (TREE_LIST_CHECK (NODE)->list.purpose)
 #define TREE_VALUE(NODE) (TREE_LIST_CHECK (NODE)->list.value)
 
-struct tree_list
+struct tree_list GTY(())
 {
   struct tree_common common;
   tree purpose;
@@ -810,11 +810,11 @@ struct tree_list
 #define TREE_VEC_END(NODE) \
   ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.length]))
 
-struct tree_vec
+struct tree_vec GTY(())
 {
   struct tree_common common;
   int length;
-  tree a[1];
+  tree GTY ((length ("TREE_VEC_LENGTH ((tree)&%h)"))) a[1];
 };
 
 /* Define fields and accessors for some nodes that represent expressions.  */
@@ -880,11 +880,13 @@ struct tree_vec
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND (TARGET_EXPR_CHECK (NODE), 1)
 #define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND (TARGET_EXPR_CHECK (NODE), 2)
 
-struct tree_exp
+struct tree_exp GTY(())
 {
   struct tree_common common;
   int complexity;
-  tree operands[1];
+  tree GTY ((special ("tree_exp"), 
+	     length ("TREE_CODE_LENGTH (TREE_CODE ((tree) &%h))"))) 
+    operands[1];
 };
 
 /* In a BLOCK node.  */
@@ -932,7 +934,7 @@ struct tree_exp
 #define BLOCK_FRAGMENT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.fragment_origin)
 #define BLOCK_FRAGMENT_CHAIN(NODE) (BLOCK_CHECK (NODE)->block.fragment_chain)
 
-struct tree_block
+struct tree_block GTY(())
 {
   struct tree_common common;
 
@@ -972,6 +974,7 @@ struct tree_block
 #define TYPE_PRECISION(NODE) (TYPE_CHECK (NODE)->type.precision)
 #define TYPE_SYMTAB_ADDRESS(NODE) (TYPE_CHECK (NODE)->type.symtab.address)
 #define TYPE_SYMTAB_POINTER(NODE) (TYPE_CHECK (NODE)->type.symtab.pointer)
+#define TYPE_SYMTAB_DIE(NODE) (TYPE_CHECK (NODE)->type.symtab.die)
 #define TYPE_NAME(NODE) (TYPE_CHECK (NODE)->type.name)
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type.main_variant)
@@ -1209,7 +1212,9 @@ struct tree_block
 #define MAX_POINTER_DEPTH 2
 #define VA_LIST_POINTER_DEPTH 3
 
-struct tree_type
+struct die_struct;
+
+struct tree_type GTY(())
 {
   struct tree_common common;
   tree values;
@@ -1241,7 +1246,12 @@ struct tree_type
   unsigned int align;
   tree pointer_to;
   tree reference_to;
-  union {int address; char *pointer; } symtab;
+  union tree_type_symtab {
+    int address; 
+    char * GTY ((tag ("1"))) pointer; 
+    struct die_struct * GTY ((tag ("2"), skip (""))) die;
+  } GTY ((desc ("debug_hooks == &sdb_debug_hooks ? 1 : debug_hooks == &dwarf2_debug_hooks ? 2 : 0"), 
+	  descbits ("2"))) symtab;
   tree name;
   tree minval;
   tree maxval;
@@ -1757,7 +1767,7 @@ struct tree_type
 
 struct function;
 
-struct tree_decl
+struct tree_decl GTY(())
 {
   struct tree_common common;
   const char *filename;
@@ -1808,7 +1818,7 @@ struct tree_decl
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
 
-  union {
+  union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
        DECL_FUNCTION_CODE.  */
     enum built_in_function f;
@@ -1817,8 +1827,11 @@ struct tree_decl
     HOST_WIDE_INT i;
     /* DECL_ALIGN and DECL_OFFSET_ALIGN.  (These are not used for
        FUNCTION_DECLs).  */
-    struct {unsigned int align : 24; unsigned int off_align : 8;} a;
-  } u1;
+    struct tree_decl_u1_a {
+      unsigned int align : 24; 
+      unsigned int off_align : 8;
+    } a;
+  } GTY ((skip (""))) u1;
 
   tree size_unit;
   tree name;
@@ -1838,12 +1851,12 @@ struct tree_decl
      In PARM_DECL, holds an RTL for the stack slot
      of register where the data was actually passed.
      Used by Chill and Java in LABEL_DECL and by C++ and Java in VAR_DECL.  */
-  union {
-    struct function *f;
-    rtx r;
-    tree t;
+  union tree_decl_u2 {
+    struct function * GTY ((tag ("FUNCTION_DECL"))) f;
+    rtx GTY ((tag ("PARM_DECL"))) r;
+    tree GTY ((tag ("FIELD_DECL"))) t;
     int i;
-  } u2;
+  } GTY ((desc ("TREE_CODE((tree) &(%0))"))) u2;
 
   /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
   tree saved_tree;
@@ -1858,25 +1871,43 @@ struct tree_decl
   struct lang_decl *lang_specific;
 };
 
+enum tree_node_structure_enum {
+  TS_COMMON,
+  TS_INT_CST,
+  TS_REAL_CST,
+  TS_VECTOR,
+  TS_STRING,
+  TS_COMPLEX,
+  TS_IDENTIFIER,
+  TS_DECL,
+  TS_TYPE,
+  TS_LIST,
+  TS_VEC,
+  TS_EXP,
+  TS_BLOCK,
+  LAST_TS_ENUM
+};
+
 /* Define the overall contents of a tree node.
    It may be any of the structures declared above
    for various types of node.  */
 
-union tree_node
+union tree_node GTY ((ptr_alias (union lang_tree_node),
+		      desc ("tree_node_structure (&%h)")))
 {
-  struct tree_common common;
-  struct tree_int_cst int_cst;
-  struct tree_real_cst real_cst;
-  struct tree_vector vector;
-  struct tree_string string;
-  struct tree_complex complex;
-  struct tree_identifier identifier;
-  struct tree_decl decl;
-  struct tree_type type;
-  struct tree_list list;
-  struct tree_vec vec;
-  struct tree_exp exp;
-  struct tree_block block;
+  struct tree_common GTY ((tag ("TS_COMMON"))) common;
+  struct tree_int_cst GTY ((tag ("TS_INT_CST"))) int_cst;
+  struct tree_real_cst GTY ((tag ("TS_REAL_CST"))) real_cst;
+  struct tree_vector GTY ((tag ("TS_VECTOR"))) vector;
+  struct tree_string GTY ((tag ("TS_STRING"))) string;
+  struct tree_complex GTY ((tag ("TS_COMPLEX"))) complex;
+  struct tree_identifier GTY ((tag ("TS_IDENTIFIER"))) identifier;
+  struct tree_decl GTY ((tag ("TS_DECL"))) decl;
+  struct tree_type GTY ((tag ("TS_TYPE"))) type;
+  struct tree_list GTY ((tag ("TS_LIST"))) list;
+  struct tree_vec GTY ((tag ("TS_VEC"))) vec;
+  struct tree_exp GTY ((tag ("TS_EXP"))) exp;
+  struct tree_block GTY ((tag ("TS_BLOCK"))) block;
  };
 
 /* Standard named or nameless data types of the C compiler.  */
@@ -1952,7 +1983,7 @@ enum tree_index
   TI_MAX
 };
 
-extern tree global_trees[TI_MAX];
+extern GTY(()) tree global_trees[TI_MAX];
 
 #define error_mark_node			global_trees[TI_ERROR_MARK]
 
@@ -2050,7 +2081,7 @@ typedef enum integer_type_kind integer_type_kind;
 
 /* The standard C integer types.  Use integer_type_kind to index into
    this array.  */
-extern tree integer_types[itk_none];
+extern GTY(()) tree integer_types[itk_none];
 
 #define char_type_node			integer_types[itk_char]
 #define signed_char_type_node		integer_types[itk_signed_char]
@@ -2438,7 +2469,7 @@ enum size_type_kind
   UBITSIZETYPE,	        /* Unsifgned representation of sizes in bits.  */
   TYPE_KIND_LAST};
 
-extern tree sizetype_tab[(int) TYPE_KIND_LAST];
+extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
 
 #define sizetype sizetype_tab[(int) SIZETYPE]
 #define bitsizetype sizetype_tab[(int) BITSIZETYPE]
@@ -2549,6 +2580,10 @@ extern tree save_expr			PARAMS ((tree));
    of operands if all are trees.  */
 
 extern int first_rtl_op			PARAMS ((enum tree_code));
+
+/* Return which tree structure is used by T.  */
+
+enum tree_node_structure_enum tree_node_structure PARAMS ((tree));
 
 /* unsave_expr (EXP) returns an expression equivalent to EXP but it
    can be used multiple times and will evaluate EXP in its entirety
@@ -2677,10 +2712,10 @@ extern int immediate_size_expand;
 
 /* Points to the FUNCTION_DECL of the function whose body we are reading.  */
 
-extern tree current_function_decl;
+extern GTY(()) tree current_function_decl;
 
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
-extern tree current_function_func_begin_label;
+extern GTY(()) tree current_function_func_begin_label;
 
 /* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
 
@@ -2857,7 +2892,6 @@ extern void gcc_obstack_init		PARAMS ((struct obstack *));
 extern void init_obstacks		PARAMS ((void));
 extern void build_common_tree_nodes	PARAMS ((int));
 extern void build_common_tree_nodes_2	PARAMS ((int));
-extern void mark_tree_hashtable         PARAMS ((void *));
 
 /* In function.c */
 extern void setjmp_protect_args		PARAMS ((void));
@@ -2890,7 +2924,6 @@ extern void push_function_context	PARAMS ((void));
 extern void pop_function_context	PARAMS ((void));
 extern void push_function_context_to	PARAMS ((tree));
 extern void pop_function_context_from	PARAMS ((tree));
-extern void ggc_mark_struct_function	PARAMS ((struct function *));
 
 /* In print-rtl.c */
 #ifdef BUFSIZ
@@ -2969,7 +3002,6 @@ extern bool parse_output_constraint     PARAMS ((const char **,
 extern void expand_asm_operands		PARAMS ((tree, tree, tree, tree, int,
 						 const char *, int));
 extern int any_pending_cleanups		PARAMS ((int));
-extern void init_stmt			PARAMS ((void));
 extern void init_stmt_for_function	PARAMS ((void));
 extern int drop_through_at_end_p	PARAMS ((void));
 extern void expand_start_target_temps	PARAMS ((void));

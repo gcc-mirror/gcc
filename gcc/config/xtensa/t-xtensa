@@ -27,3 +27,6 @@ LIB1ASMFUNCS = _mulsi3 _nsau _divsi3 _modsi3 _udivsi3 _umodsi3
 TARGET_LIBGCC2_CFLAGS += -mlongcalls
 
 LIB2FUNCS_EXTRA += $(srcdir)/config/xtensa/lib2funcs.S
+
+$(out_object_file): gt-xtensa.h
+gt-xtensa.h : s-gtype ; @true

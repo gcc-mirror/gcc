@@ -158,7 +158,7 @@ mark_ident (pfile, h, v)
      hashnode h;
      const PTR v ATTRIBUTE_UNUSED;
 {
-  ggc_mark_nonnull_tree (HT_IDENT_TO_GCC_IDENT (h));
+  ggc_mark_tree (HT_IDENT_TO_GCC_IDENT (h));
   return 1;
 }
 

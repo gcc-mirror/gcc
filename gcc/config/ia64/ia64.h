@@ -2440,16 +2440,16 @@ extern int ia64_final_schedule;
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 15 : INVALID_REGNUM)
 
 /* This function contains machine specific function data.  */
-struct machine_function
+struct machine_function GTY(())
 {
   /* The new stack pointer when unwinding from EH.  */
-  struct rtx_def* ia64_eh_epilogue_sp;
+  rtx ia64_eh_epilogue_sp;
 
   /* The new bsp value when unwinding from EH.  */
-  struct rtx_def* ia64_eh_epilogue_bsp;
+  rtx ia64_eh_epilogue_bsp;
 
   /* The GP value save register.  */
-  struct rtx_def* ia64_gp_save;
+  rtx ia64_gp_save;
 
   /* The number of varargs registers to save.  */
   int n_varargs;

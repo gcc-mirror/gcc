@@ -33,6 +33,7 @@
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
+#include "debug.h"
 #include "convert.h"
 
 #include "ada.h"
@@ -69,18 +70,22 @@ tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 /* Associates a GNAT tree node to a GCC tree node. It is used in
    `save_gnu_tree', `get_gnu_tree' and `present_gnu_tree'. See documentation
    of `save_gnu_tree' for more info.  */
-static tree *associate_gnat_to_gnu;
+static GTY((length ("max_gnat_nodes"))) tree *associate_gnat_to_gnu;
 
 /* This listhead is used to record any global objects that need elaboration.
    TREE_PURPOSE is the variable to be elaborated and TREE_VALUE is the
    initial value to assign.  */
 
-static tree pending_elaborations;
+static GTY(()) tree pending_elaborations;
 
 /* This stack allows us to momentarily switch to generating elaboration
    lists for an inner context.  */
 
-static struct e_stack {struct e_stack *next; tree elab_list; } *elist_stack;
+struct e_stack GTY(()) {
+  struct e_stack *next; 
+  tree elab_list; 
+};
+static GTY(()) struct e_stack *elist_stack;
 
 /* This variable keeps a table for types for each precision so that we only 
    allocate each of them once. Signed and unsigned types are kept separate.
@@ -88,10 +93,10 @@ static struct e_stack {struct e_stack *next; tree elab_list; } *elist_stack;
    Note that these types are only used when fold-const requests something
    special.  Perhaps we should NOT share these types; we'll see how it
    goes later.  */
-static tree signed_and_unsigned_types[2 * MAX_BITS_PER_WORD + 1][2];
+static GTY(()) tree signed_and_unsigned_types[2 * MAX_BITS_PER_WORD + 1][2];
 
 /* Likewise for float types, but record these by mode.  */
-static tree float_types[NUM_MACHINE_MODES];
+static GTY(()) tree float_types[NUM_MACHINE_MODES];
 
 /* For each binding contour we allocate a binding_level structure which records
    the entities defined or declared in that contour. Contours include:
@@ -102,7 +107,7 @@ static tree float_types[NUM_MACHINE_MODES];
 
    Binding contours are used to create GCC tree BLOCK nodes.  */
 
-struct binding_level
+struct binding_level GTY(())
 {
   /* A chain of ..._DECL nodes for all variables, constants, functions,
      parameters and type declarations.  These ..._DECL nodes are chained
@@ -121,10 +126,10 @@ struct binding_level
 };
 
 /* The binding level currently in effect.  */
-static struct binding_level *current_binding_level = NULL;
+static GTY(()) struct binding_level *current_binding_level;
 
 /* A chain of binding_level structures awaiting reuse.  */
-static struct binding_level *free_binding_level = NULL;
+static GTY((deletable (""))) struct binding_level *free_binding_level;
 
 /* The outermost binding level. This binding level is created when the
    compiler is started and it will exist through the entire compilation.  */
@@ -132,6 +137,11 @@ static struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
 static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL};
+
+struct language_function GTY(())
+{
+  int unused;
+};
 
 static tree merge_sizes			PARAMS ((tree, tree, tree, int, int));
 static tree compute_related_constant	PARAMS ((tree, tree));
@@ -142,8 +152,6 @@ static tree convert_to_fat_pointer	PARAMS ((tree, tree));
 static tree convert_to_thin_pointer	PARAMS ((tree, tree));
 static tree make_descriptor_field	PARAMS ((const char *,tree, tree,
 						 tree));
-static void mark_binding_level		PARAMS ((PTR));
-static void mark_e_stack	  	PARAMS ((PTR));
 
 /* Initialize the association of GNAT nodes to GCC trees.  */
 
@@ -152,22 +160,12 @@ init_gnat_to_gnu ()
 {
   Node_Id gnat_node;
 
-  associate_gnat_to_gnu = (tree *) xmalloc (max_gnat_nodes * sizeof (tree));
-  ggc_add_tree_root (associate_gnat_to_gnu, max_gnat_nodes);
+  associate_gnat_to_gnu = (tree *) ggc_alloc (max_gnat_nodes * sizeof (tree));
 
   for (gnat_node = 0; gnat_node < max_gnat_nodes; gnat_node++)
     associate_gnat_to_gnu[gnat_node] = NULL_TREE;
 
   pending_elaborations = build_tree_list (NULL_TREE, NULL_TREE);
-  ggc_add_tree_root (&pending_elaborations, 1);
-  ggc_add_root ((PTR) &elist_stack, 1, sizeof (struct e_stack), mark_e_stack);
-  ggc_add_tree_root (&signed_and_unsigned_types[0][0],
-		     (sizeof signed_and_unsigned_types
-		      / sizeof signed_and_unsigned_types[0][0]));
-  ggc_add_tree_root (float_types, ARRAY_SIZE (float_types));
-
-  ggc_add_root (&current_binding_level, 1, sizeof current_binding_level,
-		mark_binding_level);
 }
 
 /* GNAT_ENTITY is a GNAT tree node for an entity.   GNU_DECL is the GCC tree
@@ -260,7 +258,7 @@ pushlevel (ignore)
     }
   else
     newlevel
-      = (struct binding_level *) xmalloc (sizeof (struct binding_level));
+      = (struct binding_level *) ggc_alloc (sizeof (struct binding_level));
 
   *newlevel = clear_binding_level;
 
@@ -680,9 +678,6 @@ init_gigi_decls (long_long_float_type, exception_type)
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
   main_identifier_node = get_identifier ("main");
-
-  ggc_add_tree_root (gnat_std_decls, ARRAY_SIZE (gnat_std_decls));
-  ggc_add_tree_root (gnat_raise_decls, ARRAY_SIZE (gnat_raise_decls));
 }
 
 /* This function is called indirectly from toplev.c to handle incomplete 
@@ -849,7 +844,7 @@ finish_record_type (record_type, fieldlist, has_rep, defer_debug)
   /* Now set any of the values we've just computed that apply.  */
   if (! TYPE_IS_FAT_POINTER_P (record_type)
       && ! TYPE_CONTAINS_TEMPLATE_P (record_type))
-    TYPE_ADA_SIZE (record_type) = ada_size;
+    SET_TYPE_ADA_SIZE (record_type, ada_size);
 
 #ifdef ROUND_TYPE_SIZE
   size = ROUND_TYPE_SIZE (record_type, size, TYPE_ALIGN (record_type));
@@ -1159,7 +1154,7 @@ create_subprog_type (return_type, param_decl_list, cico_list,
       || TYPE_RETURNS_BY_REF_P (type) != returns_by_ref)
     type = copy_type (type);
 
-  TYPE_CI_CO_LIST (type) = cico_list;
+  SET_TYPE_CI_CO_LIST (type, cico_list);
   TYPE_RETURNS_UNCONSTRAINED_P (type) = returns_unconstrained;
   TYPE_RETURNS_STACK_DEPRESSED (type) = returns_with_dsp;
   TYPE_RETURNS_BY_REF_P (type) = returns_by_ref;
@@ -1207,7 +1202,7 @@ create_index_type (min, max, index)
   else if (TYPE_INDEX_TYPE (type) != 0)
     type = copy_type (type);
 
-  TYPE_INDEX_TYPE (type) = index;
+  SET_TYPE_INDEX_TYPE (type, index);
   return type;
 }
 
@@ -1598,37 +1593,6 @@ get_pending_elaborations ()
   return result;
 }
 
-/* Mark the binding level stack.  */
-
-static void
-mark_binding_level (arg)
-     PTR arg;
-{
-  struct binding_level *level = *(struct binding_level **) arg;
-
-  for (; level != 0; level = level->level_chain)
-    {
-      ggc_mark_tree (level->names);
-      ggc_mark_tree (level->blocks);
-      ggc_mark_tree (level->this_block);
-    }
-}
-
-/* Mark the pending elaboration list.  */
-
-static void
-mark_e_stack (data)
-     PTR data;
-{
-  struct e_stack *p = *((struct e_stack **) data);
-
-  if (p != 0)
-    {
-      ggc_mark_tree (p->elab_list);
-      mark_e_stack (&p->next);
-    }
-}
-
 /* Return nonzero if there are pending elaborations.  */
 
 int
@@ -1643,7 +1607,7 @@ pending_elaborations_p ()
 void
 push_pending_elaborations ()
 {
-  struct e_stack *p = (struct e_stack *) xmalloc (sizeof (struct e_stack));
+  struct e_stack *p = (struct e_stack *) ggc_alloc (sizeof (struct e_stack));
 
   p->next = elist_stack;
   p->elab_list = pending_elaborations;
@@ -1660,7 +1624,6 @@ pop_pending_elaborations ()
 
   pending_elaborations = p->elab_list;
   elist_stack = p->next;
-  free (p);
 }
 
 /* Return the current position in pending_elaborations so we can insert
@@ -2666,7 +2629,7 @@ update_pointer_to (old_type, new_type)
 				  TREE_CHAIN (TYPE_FIELDS (ptr)), new_ref));
 
       for (var = TYPE_MAIN_VARIANT (ptr); var; var = TYPE_NEXT_VARIANT (var))
-	TYPE_UNCONSTRAINED_ARRAY (var) = new_type;
+	SET_TYPE_UNCONSTRAINED_ARRAY (var, new_type);
 
       TYPE_POINTER_TO (new_type) = TYPE_REFERENCE_TO (new_type)
 	= TREE_TYPE (new_type) = ptr;
@@ -3366,3 +3329,6 @@ unchecked_convert (type, expr)
 
   return expr;
 }
+
+#include "gt-ada-utils.h"
+#include "gtype-ada.h"

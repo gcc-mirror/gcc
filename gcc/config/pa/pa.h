@@ -865,7 +865,8 @@ struct hppa_args {int words, nargs_prototype, indirect; };
       || ((MODE) && GET_MODE_SIZE (MODE) > 8)))
 
 
-extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
+extern GTY(()) rtx hppa_compare_op0;
+extern GTY(()) rtx hppa_compare_op1;
 extern enum cmp_type hppa_branch_type;
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \

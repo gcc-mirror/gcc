@@ -20,17 +20,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* Describe a value.  */
-typedef struct cselib_val_struct
+typedef struct cselib_val_struct GTY(())
 {
   /* The hash value.  */
   unsigned int value;
-  union
+  union cselib_val_u
   {
     /* A VALUE rtx that points back to this structure.  */
-    rtx val_rtx;
+    rtx GTY ((tag ("1"))) val_rtx;
     /* Used to keep a list of free cselib_val structures.  */
-    struct cselib_val_struct *next_free;
-  } u;
+    struct cselib_val_struct * GTY ((skip (""))) next_free;
+  } GTY ((desc ("1"))) u;
 
   /* All rtl expressions that hold this value at the current time during a
      scan.  */
@@ -41,7 +41,7 @@ typedef struct cselib_val_struct
 } cselib_val;
 
 /* A list of rtl expressions that hold the same value.  */
-struct elt_loc_list
+struct elt_loc_list GTY(())
 {
   /* Next element in the list.  */
   struct elt_loc_list *next;
@@ -52,7 +52,7 @@ struct elt_loc_list
 };
 
 /* A list of cselib_val structures.  */
-struct elt_list
+struct elt_list GTY(())
 {
   struct elt_list *next;
   cselib_val *elt;

@@ -1,3 +1,11 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* hashtab.c (htab_create): Delete.
+	(htab_try_create): Delete.
+	(htab_create_alloc): New.
+	(htab_delete): Support user-specified memory allocation.
+	(htab_expand): Likewise.
+
 2002-05-22  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* configure.in: Fix typo in the code checking for sys_errlist.

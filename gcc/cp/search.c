@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "rtl.h"
 #include "output.h"
+#include "ggc.h"
 #include "toplev.h"
 
 #define obstack_chunk_alloc xmalloc
@@ -1672,9 +1673,6 @@ bfs_walk (binfo, fn, qfn, data)
 	    }
 	}
     }
-
-  /* Clean up.  */
-  VARRAY_FREE (bfs_bases);
 
   return rval;
 }

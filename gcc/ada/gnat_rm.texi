@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.6 $
+@c                            $Revision: 1.3.8.1 $
 @c                                                                            o
 @c              Copyright (C) 1995-2002 Free Software Foundation              o
 @c                                                                            o

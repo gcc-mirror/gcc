@@ -1,3 +1,42 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Make-lang.in (f/com.o): Depend on debug.h.
+	* com.c: Include debug.h.
+	(LANG_HOOKS_MARK_TREE): Delete.
+	(struct lang_identifier): Use gengtype.
+	(union lang_tree_node): New.
+	(struct lang_decl): New dummy definition.
+	(struct lang_type): New dummy definition.
+	(ffe_mark_tree): Delete.
+
+	* com.c (struct language_function): New dummy structure.
+
+	* Make-lang.in: Add rules to generate gt-f-ste.h gtype-f.h; allow
+	for filename changes.
+	(com.o): Allow for filename changes; add gtype-f.h as dependency.
+	(ste.o): Add gt-f-ste.h as dependency.
+	* config-lang.in (gtfiles): Add com.h, ste.c.
+	* com.c: Replace uses of ggc_add_* with GTY markers.  Include
+	gtype-f.h.
+	(mark_binding_level): Delete.
+	* com.h: Replace uses of ggc_add_* with GTY markers.
+	* ste.c: Replace uses of ggc_add_* with GTY markers.  Include
+	gt-f-ste.h.
+
+	* Make-lang.in (f/gt-com.h): Build using gengtype.
+	(com.o): Depend on f/gt-com.h.
+	* com.c: Rename struct binding_level to f_binding_level.
+	(struct f_binding_level): Use gengtype.
+	(struct tree_ggc_tracker): Use gengtype.
+	(mark_tracker_head): Use gt_ggc_m_tree_ggc_tracker.
+	(make_binding_level): Use GGC.
+	(mark_binding_level): Use gt_ggc_m_f_binding_level.
+	(ffecom_init_decl_processing): Change free_binding_level
+	to a deletable root.
+	* config-lang.in (gtfiles): Define.
+	* where.c: Strings need no longer be allocated in GCable memory;
+	remove my change of 30 Dec 1999.
+
 2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
 
 	* lang-specs.h: Use cpp_debug_options.

@@ -535,7 +535,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
 /* New overloading code.  */
 
-struct z_candidate {
+struct z_candidate GTY(()) {
   tree fn;
   tree convs;
   tree second_conv;
@@ -572,8 +572,7 @@ struct z_candidate {
    should be created to hold the result of the conversion.  */
 #define NEED_TEMPORARY_P(NODE) TREE_LANG_FLAG_4 (NODE)
 
-#define USER_CONV_CAND(NODE) \
-  ((struct z_candidate *)WRAPPER_PTR (TREE_OPERAND (NODE, 1)))
+#define USER_CONV_CAND(NODE) WRAPPER_ZC (TREE_OPERAND (NODE, 1))
 #define USER_CONV_FN(NODE) (USER_CONV_CAND (NODE)->fn)
 
 int
@@ -1022,7 +1021,7 @@ convert_class_to_reference (t, s, expr)
   conv = build1 (IDENTITY_CONV, s, expr);
   conv = build_conv (USER_CONV, TREE_TYPE (TREE_TYPE (cand->fn)),
 		     conv);
-  TREE_OPERAND (conv, 1) = build_ptr_wrapper (cand);
+  TREE_OPERAND (conv, 1) = build_zc_wrapper (cand);
   ICS_USER_FLAG (conv) = 1;
   if (cand->viable == -1)
     ICS_BAD_FLAG (conv) = 1;
@@ -2559,7 +2558,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
-     expr, build_ptr_wrapper (cand));
+     expr, build_zc_wrapper (cand));
   
   ICS_USER_FLAG (cand->second_conv) = ICS_USER_FLAG (*p) = 1;
   if (cand->viable == -1)
@@ -3826,7 +3825,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
     case USER_CONV:
       {
 	struct z_candidate *cand
-	  = WRAPPER_PTR (TREE_OPERAND (convs, 1));
+	  = WRAPPER_ZC (TREE_OPERAND (convs, 1));
 	tree convfn = cand->fn;
 	tree args;
 
@@ -4160,7 +4159,7 @@ build_over_call (cand, args, flags)
   /* Give any warnings we noticed during overload resolution.  */
   if (cand->warnings)
     for (val = cand->warnings; val; val = TREE_CHAIN (val))
-      joust (cand, WRAPPER_PTR (TREE_VALUE (val)), 1);
+      joust (cand, WRAPPER_ZC (TREE_VALUE (val)), 1);
 
   if (DECL_FUNCTION_MEMBER_P (fn))
     enforce_access (cand->basetype_path, fn);
@@ -4405,7 +4404,7 @@ build_over_call (cand, args, flags)
   return convert_from_reference (fn);
 }
 
-static tree java_iface_lookup_fn;
+static GTY(()) tree java_iface_lookup_fn;
 
 /* Make an expression which yields the address of the Java interface
    method FN.  This is achieved by generating a call to libjava's
@@ -4430,7 +4429,6 @@ build_java_interface_fn_ref (fn, instance)
 	= builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			    build_function_type (ptr_type_node, t),
 			    0, NOT_BUILT_IN, NULL);
-      ggc_add_tree_root (&java_iface_lookup_fn, 1);
     }
 
   /* Look up the pointer to the runtime java.lang.Class object for `instance'. 
@@ -5207,7 +5205,7 @@ add_warning (winner, loser)
      struct z_candidate *winner, *loser;
 {
   winner->warnings = tree_cons (NULL_TREE,
-				build_ptr_wrapper (loser),
+				build_zc_wrapper (loser),
 				winner->warnings);
 }
 
@@ -5635,3 +5633,5 @@ initialize_reference (type, expr)
 
   return convert_like (conv, expr);
 }
+
+#include "gt-cp-call.h"

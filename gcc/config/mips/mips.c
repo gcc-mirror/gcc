@@ -124,7 +124,6 @@ static rtx mips_find_symbol			PARAMS ((rtx));
 static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
 static int symbolic_expression_p                PARAMS ((rtx));
-static void mips_add_gc_roots                   PARAMS ((void));
 static bool mips_assemble_integer	  PARAMS ((rtx, unsigned int, int));
 static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -143,9 +142,7 @@ static int iris6_section_align_1		PARAMS ((void **, void *));
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
 static int mips_issue_rate			PARAMS ((void));
 
-static void mips_init_machine_status		PARAMS ((struct function *));
-static void mips_free_machine_status		PARAMS ((struct function *));
-static void mips_mark_machine_status		PARAMS ((struct function *));
+static struct machine_function * mips_init_machine_status PARAMS ((void));
 static void mips_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
 	ATTRIBUTE_UNUSED;
 static void mips_unique_section			PARAMS ((tree, int))
@@ -154,7 +151,7 @@ static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static void mips_encode_section_info		PARAMS ((tree, int));
 
-struct machine_function {
+struct machine_function GTY(()) {
   /* Pseudo-reg holding the address of the current function when
      generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS,
      used by mips_finalize_pic if it was created.  */
@@ -5435,44 +5432,16 @@ override_options ()
 	align_functions = 8;
     }
 
-  /* Register global variables with the garbage collector.  */
-  mips_add_gc_roots ();
-
-  /* Functions to allocate, mark and deallocate machine-dependent
-     function status.  */
+  /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
-  free_machine_status = &mips_free_machine_status;
-  mark_machine_status = &mips_mark_machine_status;
 }
 
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
-static void
-mips_init_machine_status (fn)
-     struct function *fn;
+static struct machine_function *
+mips_init_machine_status ()
 {
-  fn->machine = ((struct machine_function *)
-		 xcalloc (1, sizeof (struct machine_function)));
-}
-
-/* Release the chunk of memory for per-function machine-dependent data.  */
-static void
-mips_free_machine_status (fn)
-     struct function *fn;
-{
-  free (fn->machine);
-  fn->machine = NULL;
-}
-
-/* Mark per-function machine-dependent data.  */
-static void
-mips_mark_machine_status (fn)
-     struct function *fn;
-{
-  if (fn->machine)
-    {
-      ggc_mark_rtx (fn->machine->embedded_pic_fnaddr_rtx);
-      ggc_mark_rtx (fn->machine->mips16_gp_pseudo_rtx);
-    }
+  return ((struct machine_function *)
+	  ggc_alloc_cleared (sizeof (struct machine_function)));
 }
 
 /* On the mips16, we want to allocate $24 (T_REG) before other
@@ -10128,19 +10097,6 @@ mips_output_conditional_branch (insn,
   return 0;
 }
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-mips_add_gc_roots ()
-{
-  ggc_add_rtx_root (&mips_load_reg, 1);
-  ggc_add_rtx_root (&mips_load_reg2, 1);
-  ggc_add_rtx_root (&mips_load_reg3, 1);
-  ggc_add_rtx_root (&mips_load_reg4, 1);
-  ggc_add_rtx_root (branch_cmp, ARRAY_SIZE (branch_cmp));
-}
-
 static enum processor_type
 mips_parse_cpu (cpu_string)
      const char *cpu_string;
@@ -10547,3 +10503,5 @@ iris6_asm_file_end (stream)
   mips_asm_file_end (stream);
 }
 #endif /* TARGET_IRIX6 */
+
+#include "gt-mips.h"
