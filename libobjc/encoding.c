@@ -79,7 +79,10 @@ Boston, MA 02111-1307, USA.  */
 /* Some ports (eg ARM) allow the structure size boundary to be
    selected at compile-time.  We override the normal definition with
    one that has a constant value for this compilation.  */
-#undef STRUCTURE_SIZE_BOUNDARY
+#ifndef BITS_PER_UNIT
+#define BITS_PER_UNIT 8
+#endif
+#undef  STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY (BITS_PER_UNIT * sizeof (struct{char a;}))
 
 /* Some ROUND_TYPE_ALIGN macros use TARGET_foo, and consequently
