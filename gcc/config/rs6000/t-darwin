@@ -1,2 +1,4 @@
 # Library code must include trampoline support.
 LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-tramp.asm
+# Multilib options
+MULTILIB_MATCHES        = ${MULTILIB_MATCHES_FLOAT}

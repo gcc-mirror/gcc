@@ -1,3 +1,12 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/config.gcc (powerpc-*-darwin*): Add libgcc build
+	specification file.
+	* config/t-slibgcc-darwin: New file, libgcc build specification.
+	* config/t-darwin: Add libgcc2 flag -fPIC.
+	* config/rs6000/t-darwin: Multilib matches float.
+	* libgcc-darwin.ver: New file, contains libgcc symbols.
+
 2003-11-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/ns32k/ns32k.h: Remove obsolete comment.
