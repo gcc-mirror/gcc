@@ -67,12 +67,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    cpplib uses UTF-8 or UTF-EBCDIC for the source character set,
    depending on whether the host is based on ASCII or EBCDIC (see
    respectively Unicode section 2.3/ISO10646 Amendment 2, and Unicode
-   Technical Report #16).  It relies on the system library's iconv()
-   primitive to do charset conversion (specified in SUSv2).  If this
-   primitive is not present, the source and execution character sets
-   must be identical and are limited to the basic ASCII or EBCDIC
-   range, and wide characters are implemented by padding narrow
-   characters to the size of wchar_t.  */
+   Technical Report #16).  With limited exceptions, it relies on the
+   system library's iconv() primitive to do charset conversion
+   (specified in SUSv2).  */
 
 #if !HAVE_ICONV
 /* Make certain that the uses of iconv(), iconv_open(), iconv_close()
@@ -80,7 +77,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    constant conditions, do not cause link errors.  */
 #define iconv_open(x, y) (errno = EINVAL, (iconv_t)-1)
 #define iconv(a,b,c,d,e) (errno = EINVAL, (size_t)-1)
-#define iconv_close(x)   0
+#define iconv_close(x)   (void)0
 #define ICONV_CONST
 #endif
 
@@ -90,6 +87,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define SOURCE_CHARSET "UTF-EBCDIC"
 #else
 #error "Unrecognized basic host character set"
+#endif
+
+#ifndef EILSEQ
+#define EILSEQ EINVAL
 #endif
 
 /* This structure is used for a resizable string buffer throughout.  */
@@ -545,7 +546,7 @@ convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
 
 /* And this one uses the system iconv primitive.  It's a little
    different, since iconv's interface is a little different.  */
-
+#if HAVE_ICONV
 static bool
 convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
 		     struct strbuf *to)
@@ -580,6 +581,9 @@ convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
       outbuf = (char *)to->text + to->asize - outbytesleft;
     }
 }
+#else
+#define convert_using_iconv 0 /* prevent undefined symbol error below */
+#endif
 
 /* Arrange for the above custom conversion logic to be used automatically
    when conversion between a suitable pair of character sets is requested.  */
@@ -637,19 +641,30 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
       }
 
   /* No custom converter - try iconv.  */
-  ret.func = convert_using_iconv;
-  ret.cd = iconv_open (to, from);
-
-  if (ret.cd == (iconv_t) -1)
+  if (HAVE_ICONV)
     {
-      if (errno == EINVAL)
-	cpp_error (pfile, DL_ERROR, /* XXX should be DL_SORRY */
-		   "conversion from %s to %s not supported by iconv",
-		   from, to);
-      else
-	cpp_errno (pfile, DL_ERROR, "iconv_open");
+      ret.func = convert_using_iconv;
+      ret.cd = iconv_open (to, from);
 
+      if (ret.cd == (iconv_t) -1)
+	{
+	  if (errno == EINVAL)
+	    cpp_error (pfile, DL_ERROR, /* XXX should be DL_SORRY */
+		       "conversion from %s to %s not supported by iconv",
+		       from, to);
+	  else
+	    cpp_errno (pfile, DL_ERROR, "iconv_open");
+
+	  ret.func = convert_no_conversion;
+	}
+    }
+  else
+    {
+      cpp_error (pfile, DL_ERROR, /* XXX should be DL_SORRY */
+		 "no iconv implementation, cannot convert from %s to %s",
+		 from, to);
       ret.func = convert_no_conversion;
+      ret.cd = (iconv_t) -1;
     }
   return ret;
 }
@@ -677,26 +692,13 @@ cpp_init_iconv (cpp_reader *pfile)
        so don't do any conversion at all.  */
    default_wcset = SOURCE_CHARSET;
 
-  if (!HAVE_ICONV)
-    {
-      if (ncset && strcmp (ncset, SOURCE_CHARSET))
-	cpp_error (pfile, DL_ERROR,  /* XXX should be DL_SORRY */
-		   "no iconv implementation, cannot convert to %s", ncset);
+  if (!ncset)
+    ncset = SOURCE_CHARSET;
+  if (!wcset)
+    wcset = default_wcset;
 
-      if (wcset && strcmp (wcset, default_wcset))
-	cpp_error (pfile, DL_ERROR,  /* XXX should be DL_SORRY */
-		   "no iconv implementation, cannot convert to %s", wcset);
-    }
-  else
-    {
-      if (!ncset)
-	ncset = SOURCE_CHARSET;
-      if (!wcset)
-	wcset = default_wcset;
-
-      pfile->narrow_cset_desc = init_iconv_desc (pfile, ncset, SOURCE_CHARSET);
-      pfile->wide_cset_desc = init_iconv_desc (pfile, wcset, SOURCE_CHARSET);
-    }
+  pfile->narrow_cset_desc = init_iconv_desc (pfile, ncset, SOURCE_CHARSET);
+  pfile->wide_cset_desc = init_iconv_desc (pfile, wcset, SOURCE_CHARSET);
 }
 
 void

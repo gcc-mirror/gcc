@@ -1,3 +1,12 @@
+2003-07-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppcharset.c: Fix comment.
+	(iconv_close [!HAVE_ICONV]): #define to (void)0 to prevent warning.
+	(EILSEQ): #define to EINVAL if not already defined.
+	(convert_using_iconv): #if out when !HAVE_ICONV.
+	(init_iconv_desc): Handle !HAVE_ICONV here...
+	(cpp_init_iconv): ...not here.
+
 2003-07-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* common.opt: More --help messages.
