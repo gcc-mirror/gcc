@@ -1,3 +1,8 @@
+2001-12-31  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_deque.h:  Doxygenate with initial/example hooks.
+	Clean up spacing and indentation.
+
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/ext/slist:  Move into __gnu_cxx,
