@@ -1,3 +1,16 @@
+2004-05-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/Format.java: Cleaned up imports.
+	* java/text/DecimalFormat.java: Cleaned up imports.
+	* java/security/SecureRandom.java: Cleaned up imports.
+	(SecureRandom): Removed unused variable.
+	* java/security/UnresolvedPermission.java: Cleaned up imports.
+	* java/util/Date.java (parse): Removed unused variable.
+	* java/util/ResourceBundle.java: Cleaned up imports.
+	(getBundle): Removed unused variable.
+	(tryBundle): Likewise.
+	* java/util/regex/Pattern.java (Pattern): Removed unused constructor.
+
 2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/text/SimpleDateFormat.java:

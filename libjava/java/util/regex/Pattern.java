@@ -67,12 +67,6 @@ public class Pattern implements Serializable
 
   private final RE re;
 
-  private Pattern (String regex)
-    throws PatternSyntaxException
-  {
-    this (regex, 0);
-  }
-
   private Pattern (String regex, int flags)
     throws PatternSyntaxException
   {

@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package java.security;
 
-import java.io.Serializable;
 // All uses of Certificate in this file refer to the one in the listed
 // package, not this one.
 import java.security.cert.Certificate;

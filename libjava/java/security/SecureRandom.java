@@ -37,11 +37,10 @@ exception statement from your version. */
 
 package java.security;
 
-import java.io.Serializable;
-import java.util.Random;
-import java.util.Enumeration;
-
 import gnu.java.security.Engine;
+
+import java.util.Enumeration;
+import java.util.Random;
 
 /**
  * An interface to a cryptographically secure pseudo-random number
@@ -94,7 +93,7 @@ public class SecureRandom extends Random
     String key;
 
     String classname = null;
-    int i, flag = 0;
+    int i;
     Enumeration e;
     for (i = 0; i < p.length; i++)
       {
