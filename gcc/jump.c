@@ -248,35 +248,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   if (noop_moves)
     delete_noop_moves (f);
 
-  /* If we haven't yet gotten to reload and we have just run regscan,
-     delete any insn that sets a register that isn't used elsewhere.
-     This helps some of the optimizations below by having less insns
-     being jumped around.  */
-
-  if (optimize && ! reload_completed && after_regscan)
-    for (insn = f; insn; insn = next)
-      {
-	rtx set = single_set (insn);
-
-	next = NEXT_INSN (insn);
-
-	if (set && GET_CODE (SET_DEST (set)) == REG
-	    && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	    && REGNO_FIRST_UID (REGNO (SET_DEST (set))) == INSN_UID (insn)
-	    /* We use regno_last_note_uid so as not to delete the setting
-	       of a reg that's used in notes.  A subsequent optimization
-	       might arrange to use that reg for real.  */
-	    && REGNO_LAST_NOTE_UID (REGNO (SET_DEST (set))) == INSN_UID (insn)
-	    && ! side_effects_p (SET_SRC (set))
-	    && ! find_reg_note (insn, REG_RETVAL, 0)
-	    /* An ADDRESSOF expression can turn into a use of the internal arg
-	       pointer, so do not delete the initialization of the internal
-	       arg pointer yet.  If it is truly dead, flow will delete the
-	       initializing insn.  */
-	    && SET_DEST (set) != current_function_internal_arg_pointer)
-	  delete_insn (insn);
-      }
-
   /* Now iterate optimizing jumps until nothing changes over one pass.  */
   changed = 1;
   old_max_reg = max_reg_num ();
