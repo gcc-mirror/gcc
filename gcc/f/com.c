@@ -4573,8 +4573,10 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	expr_tree
 	  = ffecom_3 (COND_EXPR, tree_type,
 		      ffecom_truth_value
-		      (ffecom_2 (NE_EXPR, integer_type_node,
-				 arg2_tree,
+		      (ffecom_2 (LT_EXPR, integer_type_node,
+				 ffecom_1 (ABS_EXPR,
+					   integer_type_node,
+					   arg2_tree),
 				 TYPE_SIZE (uns_type))),
 		      expr_tree,
 		      convert (tree_type, integer_zero_node));
