@@ -1,6 +1,6 @@
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,7 @@ void test04()
 
   // 01 wstring
   res = x;
-  iter_type ret1 = mp.put(res.begin(), false, oss, ' ', str);
+  iter_type ret1 = mp.put(res.begin(), false, oss, L' ', str);
   wstring sanity1(res.begin(), ret1);
   VERIFY( err == goodbit );
   VERIFY( res == L"1943xxxxxxxxxxxxx" );
@@ -58,7 +58,7 @@ void test04()
 
   // 02 long double
   res = x;
-  iter_type ret2 = mp.put(res.begin(), false, oss, ' ', ld);
+  iter_type ret2 = mp.put(res.begin(), false, oss, L' ', ld);
   wstring sanity2(res.begin(), ret2);
   VERIFY( err == goodbit );
   VERIFY( res == L"1943xxxxxxxxxxxxx" );
