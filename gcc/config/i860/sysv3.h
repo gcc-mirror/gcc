@@ -1,7 +1,6 @@
 /* Target definitions for GNU compiler for Intel 80860 running System V.3
-   Copyright (C) 1991 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com).
+   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
 
@@ -19,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "i860/i860.h"
-#include "svr3.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i860, System V Release 3)")
