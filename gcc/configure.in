@@ -2836,6 +2836,7 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=rs6000/aix31.h
 		xmake_file=rs6000/x-aix31
+		float_format=none
 		use_collect2=yes
 		;;
 changequote(,)dnl
@@ -2848,6 +2849,7 @@ changequote([,])dnl
 		else
 			tmake_file=rs6000/t-newas
 		fi
+		float_format=none
 		use_collect2=yes
 		;;
 changequote(,)dnl
@@ -2866,6 +2868,7 @@ changequote([,])dnl
 			tmake_file=rs6000/t-newas
 		fi
 		xmake_file=rs6000/x-aix41
+		float_format=none
 		use_collect2=yes
 		;;
 changequote(,)dnl
@@ -2879,6 +2882,7 @@ changequote([,])dnl
 			tmake_file=rs6000/t-aix43
 		fi
 		xmake_file=rs6000/x-aix43
+		float_format=none
 		use_collect2=yes
 		;;
 changequote(,)dnl
@@ -2892,12 +2896,15 @@ changequote([,])dnl
 			tmake_file=rs6000/t-aix43
 		fi
 		xmake_file=rs6000/x-aix43
+		float_format=none
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix*)
+		float_format=none
 		use_collect2=yes
 		;;
 	rs6000-bull-bosx)
+		float_format=none
 		use_collect2=yes
 		;;
 	rs6000-*-mach*)
