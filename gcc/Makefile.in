@@ -1545,7 +1545,7 @@ print-rtl.o : print-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H) real.h $(TM_P_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
    $(RTL_H) hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H) real.h flags.h \
-   $(BASIC_BLOCK_H)
+   $(BASIC_BLOCK_H) $(REGS_H)
 
 errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -1702,7 +1702,7 @@ cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) fla
 cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TIMEVAR_H) $(BASIC_BLOCK_H) hard-reg-set.h output.h flags.h \
    $(RECOG_H) toplev.h $(GGC_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H) \
-   $(PARAMS_H)
+   $(PARAMS_H) $(REGS_H)
 cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h flags.h
 cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
@@ -1748,7 +1748,7 @@ ra-colorize.o : ra-colorize.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_
     $(TM_P_H) function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h
 ra-debug.o : ra-debug.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h \
-   ra.h $(TM_P_H)
+   ra.h $(TM_P_H) $(REGS_H)
 ra-rewrite.o : ra-rewrite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TM_P_H) function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h $(EXPR_H) \
    output.h except.h ra.h reload.h insn-config.h

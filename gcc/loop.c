@@ -163,7 +163,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define LOOP_REGNO_NREGS(REGNO, SET_DEST) \
 ((REGNO) < FIRST_PSEUDO_REGISTER \
- ? (int) HARD_REGNO_NREGS ((REGNO), GET_MODE (SET_DEST)) : 1)
+ ? (int) hard_regno_nregs[(REGNO)][GET_MODE (SET_DEST)] : 1)
 
 
 /* Vector mapping INSN_UIDs to luids.

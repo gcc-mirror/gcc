@@ -1799,7 +1799,7 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
 
   ureg = REGNO (usedreg);
   if (ureg < FIRST_PSEUDO_REGISTER)
-    usize = HARD_REGNO_NREGS (ureg, GET_MODE (usedreg));
+    usize = hard_regno_nregs[ureg][GET_MODE (usedreg)];
   else
     usize = ((GET_MODE_SIZE (GET_MODE (usedreg))
 	      + (REGMODE_NATURAL_SIZE (GET_MODE (usedreg)) - 1))
@@ -1832,7 +1832,7 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
 
   sreg = REGNO (setreg);
   if (sreg < FIRST_PSEUDO_REGISTER)
-    ssize = HARD_REGNO_NREGS (sreg, GET_MODE (setreg));
+    ssize = hard_regno_nregs[sreg][GET_MODE (setreg)];
   else
     ssize = ((GET_MODE_SIZE (GET_MODE (setreg))
 	      + (REGMODE_NATURAL_SIZE (GET_MODE (setreg)) - 1))
@@ -2217,7 +2217,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 	      || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	{
 	  int j;
-	  int size1 = HARD_REGNO_NREGS (regno, mode);
+	  int size1 = hard_regno_nregs[regno][mode];
 	  for (j = 1; j < size1 && ! TEST_HARD_REG_BIT (used, regno + j); j++);
 	  if (j == size1)
 	    {
@@ -2275,7 +2275,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 static void
 mark_life (int regno, enum machine_mode mode, int life)
 {
-  int j = HARD_REGNO_NREGS (regno, mode);
+  int j = hard_regno_nregs[regno][mode];
   if (life)
     while (--j >= 0)
       SET_HARD_REG_BIT (regs_live, regno + j);
@@ -2292,7 +2292,7 @@ static void
 post_mark_life (int regno, enum machine_mode mode, int life, int birth,
 		int death)
 {
-  int j = HARD_REGNO_NREGS (regno, mode);
+  int j = hard_regno_nregs[regno][mode];
   HARD_REG_SET this_reg;
 
   CLEAR_HARD_REG_SET (this_reg);

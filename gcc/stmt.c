@@ -58,6 +58,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "predict.h"
 #include "optabs.h"
 #include "target.h"
+#include "regs.h"
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -1413,7 +1414,7 @@ decl_conflicts_with_clobbers_p (tree decl, const HARD_REG_SET clobbered_regs)
 
       for (regno = REGNO (reg);
 	   regno < (REGNO (reg)
-		    + HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)));
+		    + hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]);
 	   regno++)
 	if (TEST_HARD_REG_BIT (clobbered_regs, regno))
 	  {

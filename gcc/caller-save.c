@@ -300,7 +300,7 @@ setup_save_areas (void)
       {
 	unsigned int regno = reg_renumber[i];
 	unsigned int endregno
-	  = regno + HARD_REGNO_NREGS (regno, GET_MODE (regno_reg_rtx[i]));
+	  = regno + hard_regno_nregs[regno][GET_MODE (regno_reg_rtx[i])];
 
 	for (r = regno; r < endregno; r++)
 	  if (call_used_regs[r])
@@ -436,7 +436,7 @@ save_call_clobbered_regs (void)
 		     {
 		       enum machine_mode mode;
 
-		       nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (regno));
+		       nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
 		       mode = HARD_REGNO_CALLER_SAVE_MODE
 			        (r, nregs, PSEUDO_REGNO_MODE (regno));
 		       if (GET_MODE_BITSIZE (mode)
@@ -515,7 +515,7 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
   else
     return;
 
-  endregno = regno + HARD_REGNO_NREGS (regno, mode);
+  endregno = regno + hard_regno_nregs[regno][mode];
 
   for (i = regno; i < endregno; i++)
     SET_HARD_REG_BIT (this_insn_sets, i);
@@ -548,7 +548,7 @@ add_stored_regs (rtx reg, rtx setter, void *data)
     return;
 
   regno = REGNO (reg) + offset;
-  endregno = regno + HARD_REGNO_NREGS (regno, mode);
+  endregno = regno + hard_regno_nregs[regno][mode];
 
   for (i = regno; i < endregno; i++)
     SET_REGNO_REG_SET ((regset) data, i);
@@ -595,7 +595,7 @@ mark_referenced_regs (rtx x)
 
       if (hardregno >= 0)
 	{
-	  int nregs = HARD_REGNO_NREGS (hardregno, GET_MODE (x));
+	  int nregs = hard_regno_nregs[hardregno][GET_MODE (x)];
 	  while (nregs-- > 0)
 	    SET_HARD_REG_BIT (referenced_regs, hardregno + nregs);
 	}
@@ -683,7 +683,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == (unsigned int) HARD_REGNO_NREGS (regno, save_mode [regno]))
+      && numregs == (unsigned int) hard_regno_nregs[regno][save_mode [regno]])
     mem = adjust_address (mem, save_mode[regno], 0);
   pat = gen_rtx_SET (VOIDmode,
 		     gen_rtx_REG (GET_MODE (mem),
@@ -755,7 +755,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == (unsigned int) HARD_REGNO_NREGS (regno, save_mode [regno]))
+      && numregs == (unsigned int) hard_regno_nregs[regno][save_mode [regno]])
     mem = adjust_address (mem, save_mode[regno], 0);
   pat = gen_rtx_SET (VOIDmode, mem,
 		     gen_rtx_REG (GET_MODE (mem),
@@ -828,7 +828,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 		regno = reg_renumber[regno];
 	      if (regno < 0)
 		continue;
-	      for (i = HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1;
+	      for (i = hard_regno_nregs[regno][GET_MODE (reg)] - 1;
 		   i >= 0; i--)
 		SET_REGNO_REG_SET (&new->live_throughout, regno + i);
 	    }

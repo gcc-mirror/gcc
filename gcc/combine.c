@@ -11368,7 +11368,7 @@ update_table_tick (rtx x)
       unsigned int regno = REGNO (x);
       unsigned int endregno
 	= regno + (regno < FIRST_PSEUDO_REGISTER
-		   ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+		   ? hard_regno_nregs[regno][GET_MODE (x)] : 1);
       unsigned int r;
 
       for (r = regno; r < endregno; r++)
@@ -11433,7 +11433,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
   unsigned int regno = REGNO (reg);
   unsigned int endregno
     = regno + (regno < FIRST_PSEUDO_REGISTER
-	       ? HARD_REGNO_NREGS (regno, GET_MODE (reg)) : 1);
+	       ? hard_regno_nregs[regno][GET_MODE (reg)] : 1);
   unsigned int i;
 
   /* If VALUE contains REG and we have a previous value for REG, substitute
@@ -11590,7 +11590,7 @@ record_dead_and_set_regs (rtx insn)
 	  unsigned int regno = REGNO (XEXP (link, 0));
 	  unsigned int endregno
 	    = regno + (regno < FIRST_PSEUDO_REGISTER
-		       ? HARD_REGNO_NREGS (regno, GET_MODE (XEXP (link, 0)))
+		       ? hard_regno_nregs[regno][GET_MODE (XEXP (link, 0))]
 		       : 1);
 
 	  for (i = regno; i < endregno; i++)
@@ -11726,7 +11726,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
       unsigned int regno = REGNO (x);
       unsigned int endregno
 	= regno + (regno < FIRST_PSEUDO_REGISTER
-		   ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+		   ? hard_regno_nregs[regno][GET_MODE (x)] : 1);
       unsigned int j;
 
       for (j = regno; j < endregno; j++)
@@ -11888,7 +11888,7 @@ use_crosses_set_p (rtx x, int from_cuid)
     {
       unsigned int regno = REGNO (x);
       unsigned endreg = regno + (regno < FIRST_PSEUDO_REGISTER
-				 ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+				 ? hard_regno_nregs[regno][GET_MODE (x)] : 1);
 
 #ifdef PUSH_ROUNDING
       /* Don't allow uses of the stack pointer to be moved,
@@ -11945,7 +11945,7 @@ reg_dead_at_p_1 (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
   endregno = regno + (regno < FIRST_PSEUDO_REGISTER
-		      ? HARD_REGNO_NREGS (regno, GET_MODE (dest)) : 1);
+		      ? hard_regno_nregs[regno][GET_MODE (dest)] : 1);
 
   if (reg_dead_endregno > regno && reg_dead_regno < endregno)
     reg_dead_flag = (GET_CODE (x) == CLOBBER) ? 1 : -1;
@@ -11968,8 +11968,8 @@ reg_dead_at_p (rtx reg, rtx insn)
   /* Set variables for reg_dead_at_p_1.  */
   reg_dead_regno = REGNO (reg);
   reg_dead_endregno = reg_dead_regno + (reg_dead_regno < FIRST_PSEUDO_REGISTER
-					? HARD_REGNO_NREGS (reg_dead_regno,
-							    GET_MODE (reg))
+					? hard_regno_nregs[reg_dead_regno]
+							  [GET_MODE (reg)]
 					: 1);
 
   reg_dead_flag = 0;
@@ -12070,7 +12070,7 @@ mark_used_regs_combine (rtx x)
 	      || regno == FRAME_POINTER_REGNUM)
 	    return;
 
-	  endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	  endregno = regno + hard_regno_nregs[regno][GET_MODE (x)];
 	  for (r = regno; r < endregno; r++)
 	    SET_HARD_REG_BIT (newpat_used_regs, r);
 	}
@@ -12199,10 +12199,10 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
 	    {
 	      unsigned int deadregno = REGNO (XEXP (note, 0));
 	      unsigned int deadend
-		= (deadregno + HARD_REGNO_NREGS (deadregno,
-						 GET_MODE (XEXP (note, 0))));
+		= (deadregno + hard_regno_nregs[deadregno]
+					       [GET_MODE (XEXP (note, 0))]);
 	      unsigned int ourend
-		= regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+		= regno + hard_regno_nregs[regno][GET_MODE (x)];
 	      unsigned int i;
 
 	      for (i = deadregno; i < deadend; i++)
@@ -12223,15 +12223,15 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
 			&& (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
 			    < GET_MODE_SIZE (GET_MODE (x)))))
 		   && regno < FIRST_PSEUDO_REGISTER
-		   && HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
+		   && hard_regno_nregs[regno][GET_MODE (x)] > 1)
 	    {
 	      unsigned int ourend
-		= regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+		= regno + hard_regno_nregs[regno][GET_MODE (x)];
 	      unsigned int i, offset;
 	      rtx oldnotes = 0;
 
 	      if (note)
-		offset = HARD_REGNO_NREGS (regno, GET_MODE (XEXP (note, 0)));
+		offset = hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))];
 	      else
 		offset = 1;
 
@@ -12344,8 +12344,8 @@ reg_bitfield_target_p (rtx x, rtx body)
       if (tregno >= FIRST_PSEUDO_REGISTER || regno >= FIRST_PSEUDO_REGISTER)
 	return target == x;
 
-      endtregno = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (target));
-      endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+      endtregno = tregno + hard_regno_nregs[tregno][GET_MODE (target)];
+      endregno = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
       return endregno > tregno && regno < endtregno;
     }
@@ -12821,11 +12821,11 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		 the previous insn that used this register.  */
 
 	      if (place && regno < FIRST_PSEUDO_REGISTER
-		  && HARD_REGNO_NREGS (regno, GET_MODE (XEXP (note, 0))) > 1)
+		  && hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))] > 1)
 		{
 		  unsigned int endregno
-		    = regno + HARD_REGNO_NREGS (regno,
-						GET_MODE (XEXP (note, 0)));
+		    = regno + hard_regno_nregs[regno]
+					      [GET_MODE (XEXP (note, 0))];
 		  int all_used = 1;
 		  unsigned int i;
 
@@ -12841,7 +12841,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			 not already dead or set.  */
 
 		      for (i = regno; i < endregno;
-			   i += HARD_REGNO_NREGS (i, reg_raw_mode[i]))
+			   i += hard_regno_nregs[i][reg_raw_mode[i]])
 			{
 			  rtx piece = regno_reg_rtx[i];
 			  basic_block bb = this_basic_block;

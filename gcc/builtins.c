@@ -941,7 +941,7 @@ apply_args_size (void)
 		 mode != VOIDmode;
 		 mode = GET_MODE_WIDER_MODE (mode))
 	      if (HARD_REGNO_MODE_OK (regno, mode)
-		  && HARD_REGNO_NREGS (regno, mode) == 1)
+		  && hard_regno_nregs[regno][mode] == 1)
 		best_mode = mode;
 
 	    if (best_mode == VOIDmode)

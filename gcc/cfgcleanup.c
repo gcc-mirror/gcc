@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "tm_p.h"
 #include "target.h"
+#include "regs.h"
 
 /* cleanup_cfg maintains following flags for each basic block.  */
 
@@ -220,7 +221,7 @@ mark_effect (rtx exp, regset nonequal)
 	  CLEAR_REGNO_REG_SET (nonequal, regno);
 	  if (regno < FIRST_PSEUDO_REGISTER)
 	    {
-	      int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	      int n = hard_regno_nregs[regno][GET_MODE (dest)];
 	      while (--n > 0)
 		CLEAR_REGNO_REG_SET (nonequal, regno + n);
 	    }
@@ -239,7 +240,7 @@ mark_effect (rtx exp, regset nonequal)
       SET_REGNO_REG_SET (nonequal, regno);
       if (regno < FIRST_PSEUDO_REGISTER)
 	{
-	  int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	  int n = hard_regno_nregs[regno][GET_MODE (dest)];
 	  while (--n > 0)
 	    SET_REGNO_REG_SET (nonequal, regno + n);
 	}
@@ -265,7 +266,7 @@ mentions_nonequal_regs (rtx *x, void *data)
 	return 1;
       if (regno < FIRST_PSEUDO_REGISTER)
 	{
-	  int n = HARD_REGNO_NREGS (regno, GET_MODE (*x));
+	  int n = hard_regno_nregs[regno][GET_MODE (*x)];
 	  while (--n > 0)
 	    if (REGNO_REG_SET_P (nonequal, regno + n))
 	      return 1;

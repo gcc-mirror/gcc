@@ -900,7 +900,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
 
       if (i < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int n = HARD_REGNO_NREGS (i, mode);
+	  unsigned int n = hard_regno_nregs[i][mode];
 
 	  if (n > max_value_regs)
 	    max_value_regs = n;
@@ -980,7 +980,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
       else
 	i = regno - max_value_regs;
 
-      endregno = regno + HARD_REGNO_NREGS (regno, mode);
+      endregno = regno + hard_regno_nregs[regno][mode];
     }
   else
     {
@@ -1001,7 +1001,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	  unsigned int this_last = i;
 
 	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
-	    this_last += HARD_REGNO_NREGS (i, GET_MODE (v->u.val_rtx)) - 1;
+	    this_last += hard_regno_nregs[i][GET_MODE (v->u.val_rtx)] - 1;
 
 	  if (this_last < regno || v == NULL)
 	    {
@@ -1177,7 +1177,7 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
     {
       if (dreg < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int n = HARD_REGNO_NREGS (dreg, GET_MODE (dest));
+	  unsigned int n = hard_regno_nregs[dreg][GET_MODE (dest)];
 
 	  if (n > max_value_regs)
 	    max_value_regs = n;

@@ -104,7 +104,7 @@ note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
   if (GET_CODE (x) != REG)
     return;
   regno = REGNO (x);
-  nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
+  nregs = hard_regno_nregs[regno][GET_MODE (x)];
 
   /* There must not be pseudos at this point.  */
   if (regno + nregs > FIRST_PSEUDO_REGISTER)
@@ -126,7 +126,7 @@ clear_dead_regs (HARD_REG_SET *pset, enum machine_mode kind, rtx notes)
       {
 	rtx reg = XEXP (note, 0);
 	unsigned int regno = REGNO (reg);
-	int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+	int nregs = hard_regno_nregs[regno][GET_MODE (reg)];
 
 	/* There must not be pseudos at this point.  */
 	if (regno + nregs > FIRST_PSEUDO_REGISTER)
@@ -218,11 +218,11 @@ regrename_optimize (void)
 	{
 	  int i;
 
-	  for (i = HARD_REGNO_NREGS (FRAME_POINTER_REGNUM, Pmode); i--;)
+	  for (i = hard_regno_nregs[FRAME_POINTER_REGNUM][Pmode]; i--;)
 	    SET_HARD_REG_BIT (unavailable, FRAME_POINTER_REGNUM + i);
 
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	  for (i = HARD_REGNO_NREGS (HARD_FRAME_POINTER_REGNUM, Pmode); i--;)
+	  for (i = hard_regno_nregs[HARD_FRAME_POINTER_REGNUM][Pmode]; i--;)
 	    SET_HARD_REG_BIT (unavailable, HARD_FRAME_POINTER_REGNUM + i);
 #endif
 	}
@@ -287,7 +287,7 @@ regrename_optimize (void)
 	     have a closer look at each register still in there.  */
 	  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
 	    {
-	      int nregs = HARD_REGNO_NREGS (new_reg, GET_MODE (*this->loc));
+	      int nregs = hard_regno_nregs[new_reg][GET_MODE (*this->loc)];
 
 	      for (i = nregs - 1; i >= 0; --i)
 	        if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
@@ -391,7 +391,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class class,
   rtx x = *loc;
   enum machine_mode mode = GET_MODE (x);
   int this_regno = REGNO (x);
-  int this_nregs = HARD_REGNO_NREGS (this_regno, mode);
+  int this_nregs = hard_regno_nregs[this_regno][mode];
 
   if (action == mark_write)
     {
@@ -431,7 +431,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class class,
       else
 	{
 	  int regno = REGNO (*this->loc);
-	  int nregs = HARD_REGNO_NREGS (regno, GET_MODE (*this->loc));
+	  int nregs = hard_regno_nregs[regno][GET_MODE (*this->loc)];
 	  int exact_match = (regno == this_regno && nregs == this_nregs);
 
 	  if (regno + nregs <= this_regno
@@ -973,7 +973,7 @@ dump_def_use_chain (struct du_chain *chains)
     {
       struct du_chain *this = chains;
       int r = REGNO (*this->loc);
-      int nregs = HARD_REGNO_NREGS (r, GET_MODE (*this->loc));
+      int nregs = hard_regno_nregs[r][GET_MODE (*this->loc)];
       fprintf (rtl_dump_file, "Register %s (%d):", reg_names[r], nregs);
       while (this)
 	{
@@ -1084,7 +1084,7 @@ kill_value (rtx x, struct value_data *vd)
   if (REG_P (x))
     {
       unsigned int regno = REGNO (x);
-      unsigned int n = HARD_REGNO_NREGS (regno, GET_MODE (x));
+      unsigned int n = hard_regno_nregs[regno][GET_MODE (x)];
       unsigned int i, j;
 
       /* Kill the value we're told to kill.  */
@@ -1100,7 +1100,7 @@ kill_value (rtx x, struct value_data *vd)
 	{
 	  if (vd->e[j].mode == VOIDmode)
 	    continue;
-	  n = HARD_REGNO_NREGS (j, vd->e[j].mode);
+	  n = hard_regno_nregs[j][vd->e[j].mode];
 	  if (j + n > regno)
 	    for (i = 0; i < n; ++i)
 	      kill_value_regno (j + i, vd);
@@ -1118,7 +1118,7 @@ set_value_regno (unsigned int regno, enum machine_mode mode,
 
   vd->e[regno].mode = mode;
 
-  nregs = HARD_REGNO_NREGS (regno, mode);
+  nregs = hard_regno_nregs[regno][mode];
   if (nregs > vd->max_value_regs)
     vd->max_value_regs = nregs;
 }
@@ -1210,8 +1210,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
     return;
 
   /* If SRC and DEST overlap, don't record anything.  */
-  dn = HARD_REGNO_NREGS (dr, GET_MODE (dest));
-  sn = HARD_REGNO_NREGS (sr, GET_MODE (dest));
+  dn = hard_regno_nregs[dr][GET_MODE (dest)];
+  sn = hard_regno_nregs[sr][GET_MODE (dest)];
   if ((dr > sr && dr < sr + sn)
       || (sr > dr && sr < dr + dn))
     return;
@@ -1237,7 +1237,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
 
      We can't properly represent the latter case in our tables, so don't
      record anything then.  */
-  else if (sn < (unsigned int) HARD_REGNO_NREGS (sr, vd->e[sr].mode)
+  else if (sn < (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode]
 	   && (GET_MODE_SIZE (vd->e[sr].mode) > UNITS_PER_WORD
 	       ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
     return;
@@ -1245,7 +1245,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   /* If SRC had been assigned a mode narrower than the copy, we can't
      link DEST into the chain, because not all of the pieces of the
      copy came from oldest_regno.  */
-  else if (sn > (unsigned int) HARD_REGNO_NREGS (sr, vd->e[sr].mode))
+  else if (sn > (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode])
     return;
 
   /* Link DR at the end of the value chain used by SR.  */
@@ -1291,8 +1291,8 @@ maybe_mode_change (enum machine_mode orig_mode, enum machine_mode copy_mode,
     return gen_rtx_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))
     {
-      int copy_nregs = HARD_REGNO_NREGS (copy_regno, copy_mode);
-      int use_nregs = HARD_REGNO_NREGS (copy_regno, new_mode);
+      int copy_nregs = hard_regno_nregs[copy_regno][copy_mode];
+      int use_nregs = hard_regno_nregs[copy_regno][new_mode];
       int copy_offset
 	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
       int offset
@@ -1330,8 +1330,8 @@ find_oldest_value_reg (enum reg_class class, rtx reg, struct value_data *vd)
      Replacing r9 with r11 is invalid.  */
   if (mode != vd->e[regno].mode)
     {
-      if (HARD_REGNO_NREGS (regno, mode)
-	  > HARD_REGNO_NREGS (regno, vd->e[regno].mode))
+      if (hard_regno_nregs[regno][mode]
+	  > hard_regno_nregs[regno][vd->e[regno].mode])
 	return NULL_RTX;
     }
 
@@ -1341,7 +1341,7 @@ find_oldest_value_reg (enum reg_class class, rtx reg, struct value_data *vd)
       rtx new;
       unsigned int last;
 
-      for (last = i; last < i + HARD_REGNO_NREGS (i, mode); last++)
+      for (last = i; last < i + hard_regno_nregs[i][mode]; last++)
 	if (!TEST_HARD_REG_BIT (reg_class_contents[class], last))
 	  return NULL_RTX;
 
@@ -1600,8 +1600,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     set it in, make sure that the replacement is valid.  */
 	  if (mode != vd->e[regno].mode)
 	    {
-	      if (HARD_REGNO_NREGS (regno, mode)
-		  > HARD_REGNO_NREGS (regno, vd->e[regno].mode))
+	      if (hard_regno_nregs[regno][mode]
+		  > hard_regno_nregs[regno][vd->e[regno].mode])
 		goto no_move_special_case;
 	    }
 

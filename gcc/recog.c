@@ -2666,7 +2666,7 @@ reg_fits_class_p (rtx operand, enum reg_class class, int offset,
     {
       int sr;
       regno += offset;
-      for (sr = HARD_REGNO_NREGS (regno, mode) - 1;
+      for (sr = hard_regno_nregs[regno][mode] - 1;
 	   sr > 0; sr--)
 	if (! TEST_HARD_REG_BIT (reg_class_contents[(int) class],
 				 regno + sr))
@@ -2910,7 +2910,7 @@ peep2_reg_dead_p (int ofs, rtx reg)
     abort ();
 
   regno = REGNO (reg);
-  n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+  n = hard_regno_nregs[regno][GET_MODE (reg)];
   while (--n >= 0)
     if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno + n))
       return 0;
@@ -2998,7 +2998,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	continue;
 
       success = 1;
-      for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
+      for (j = hard_regno_nregs[regno][mode] - 1; j >= 0; j--)
 	{
 	  if (TEST_HARD_REG_BIT (*reg_set, regno + j)
 	      || TEST_HARD_REG_BIT (live, regno + j))
@@ -3009,7 +3009,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	}
       if (success)
 	{
-	  for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
+	  for (j = hard_regno_nregs[regno][mode] - 1; j >= 0; j--)
 	    SET_HARD_REG_BIT (*reg_set, regno + j);
 
 	  /* Start the next search with the next register.  */

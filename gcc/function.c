@@ -4260,7 +4260,7 @@ aggregate_value_p (tree exp, tree fntype)
     return 0;
 
   regno = REGNO (reg);
-  nregs = HARD_REGNO_NREGS (regno, TYPE_MODE (type));
+  nregs = hard_regno_nregs[regno][TYPE_MODE (type)];
   for (i = 0; i < nregs; i++)
     if (! call_used_regs[regno + i])
       return 1;
@@ -7489,8 +7489,8 @@ keep_stack_depressed (rtx insns)
 		    && !REGNO_REG_SET_P (EXIT_BLOCK_PTR->global_live_at_start,
 					 regno)
 		    && !refers_to_regno_p (regno,
-					   regno + HARD_REGNO_NREGS (regno,
-								     Pmode),
+					   regno + hard_regno_nregs[regno]
+								   [Pmode],
 					   info.equiv_reg_src, NULL)
 		    && info.const_equiv[regno] == 0)
 		  break;

@@ -246,7 +246,7 @@ mark_flags_life_zones (rtx flags)
   flags_nregs = 1;
 #else
   flags_regno = REGNO (flags);
-  flags_nregs = HARD_REGNO_NREGS (flags_regno, GET_MODE (flags));
+  flags_nregs = hard_regno_nregs[flags_regno][GET_MODE (flags)];
 #endif
   flags_set_1_rtx = flags;
 
