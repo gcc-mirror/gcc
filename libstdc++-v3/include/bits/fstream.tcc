@@ -284,9 +284,13 @@ namespace std
 	  // But the seek may fail (f.i., at the beginning of
 	  // a file, see libstdc++/9439) and in that case
 	  // we return traits_type::eof().
-	  else if (this->seekoff(-1, ios_base::cur) < 0
-		   || traits_type::eq_int_type(__tmp = this->underflow(),
-					       traits_type::eof()))
+	  else if (this->seekoff(-1, ios_base::cur) >= 0)
+	    {
+	      __tmp = this->underflow();
+	      if (traits_type::eq_int_type(__tmp, __ret))
+		return __ret;
+	    }
+	  else
 	    return __ret;
 
 	  // Try to put back __i into input sequence in one of three ways.
