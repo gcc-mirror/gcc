@@ -1,3 +1,7 @@
+2004-01-12  James E Wilson  <wilson@specifixinc.com>
+
+	* unwind-libunwind.c: Delete.
+
 2004-01-12  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 13656
