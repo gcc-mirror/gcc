@@ -1,3 +1,8 @@
+2001-10-13  Tom Rix  <trix@redhat.com>
+
+	* gcc.c-torture/execute/990826-0.x: AIX XFAIL -msoft-float.
+	* gcc.c-torture/execute/980709-1.x: AIX XFAIL -msoft-float.
+
 2001-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/gcc.dg/20011009-1.c: New test.
