@@ -1,3 +1,7 @@
+2003-03-03  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (HAVE_AS_LTOFFX_LDXMOV_RELOCS): Default to 0.
+
 2003-03-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_multipass_dfa_lookahead): Delete.
