@@ -1,3 +1,12 @@
+2000-12-29  DJ Delorie  <dj@redhat.com>
+
+	* fnmatch.c: Make the note about the origins of this file more
+	accurate, at least until we can sync with glibc.
+	* getopt.c: Ditto.
+	* getopt1.c: Ditto.
+	* md5.c: Ditto.
+	* obstack.c: Ditto.
+
 2000-12-26  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* bsearch.c: New file.
