@@ -689,6 +689,8 @@ EOF
                && UNAME_MACHINE=i586
        (/bin/uname -X|egrep '^Machine.*PentII' >/dev/null) \
                && UNAME_MACHINE=i686
+       (/bin/uname -X|egrep '^Machine.*Pent II' >/dev/null) \
+               && UNAME_MACHINE=i686
        (/bin/uname -X|egrep '^Machine.*Pentium Pro' >/dev/null) \
                && UNAME_MACHINE=i686
        echo ${UNAME_MACHINE}-${UNAME_SYSTEM}${UNAME_VERSION}-sysv${UNAME_RELEASE}
@@ -703,6 +705,8 @@ EOF
 		(/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
 			&& UNAME_MACHINE=i586
 		(/bin/uname -X|egrep '^Machine.*PentII' >/dev/null) \
+			&& UNAME_MACHINE=i686
+		(/bin/uname -X|egrep '^Machine.*Pent II' >/dev/null) \
 			&& UNAME_MACHINE=i686
                 (/bin/uname -X|egrep '^Machine.*Pentium Pro' >/dev/null) \
                         && UNAME_MACHINE=i686
