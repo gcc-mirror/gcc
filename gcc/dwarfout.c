@@ -2666,6 +2666,7 @@ byte_size_attribute (tree_node)
       case RECORD_TYPE:
       case UNION_TYPE:
       case QUAL_UNION_TYPE:
+      case ARRAY_TYPE:
 	size = int_size_in_bytes (tree_node);
 	break;
 
@@ -2677,17 +2678,6 @@ byte_size_attribute (tree_node)
 	size = simple_type_size_in_bits (field_type (tree_node))
 	       / BITS_PER_UNIT;
 	break;
-
-      /* This goes with the hack for case ARRAY_TYPE in output_type() since
-	 the Chill front end represents strings using ARRAY_TYPE.  */
-      case ARRAY_TYPE:
-	{
-	  /* The lower bound is zero, so the length is the upper bound + 1.  */
-	  register tree upper;
-	  upper = TYPE_MAX_VALUE (TYPE_DOMAIN (tree_node));
-	  size = upper ? (unsigned) TREE_INT_CST_LOW (upper) + 1 : -1;
-	  break;
-	}
 
       default:
 	abort ();
