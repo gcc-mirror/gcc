@@ -296,7 +296,7 @@ extern int target_flags;
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
-  1}
+  0}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -1391,6 +1391,10 @@ while (0)
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
+
+/* Define this if shift instructions ignore all but the low-order
+   few bits. */
+#define SHIFT_COUNT_TRUNCATED
 
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */
