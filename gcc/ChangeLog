@@ -1,3 +1,7 @@
+2003-04-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/md.texi (cmpstr): Document additional restrictions.
+
 2003-04-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* flags.h (time_report): Remove.

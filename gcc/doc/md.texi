@@ -2788,9 +2788,12 @@ The use for multiple @code{clrstr@var{m}} is as for @code{movstr@var{m}}.
 Block compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
 of @samp{movstr@var{m}}.  The two memory blocks specified are compared
-byte by byte in lexicographic order.  The effect of the instruction is
-to store a value in operand 0 whose sign indicates the result of the
-comparison.
+byte by byte in lexicographic order starting at the beginning of each
+string.  The instruction is not allowed to prefetch more than one byte
+at a time since either string may end in the first byte and reading past
+that may access an invalid page or segment and cause a fault.  The
+effect of the instruction is to store a value in operand 0 whose sign
+indicates the result of the comparison.
 
 @cindex @code{strlen@var{m}} instruction pattern
 @item @samp{strlen@var{m}}

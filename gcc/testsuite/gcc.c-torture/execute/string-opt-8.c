@@ -65,8 +65,9 @@ int main ()
   s2 = s1; s3 = s1+4;
   if (strncmp (++s2, ++s3+2, 1) >= 0 || s2 != s1+1 || s3 != s1+5)
     abort();
-#if defined(__i386__) || defined (__pj__) || defined (__i370__)
-  /* These tests work on platforms which support cmpstrsi.  */
+#if !defined(__OPTIMIZE__) || defined(__i386__) || defined (__i370__) || defined (__s390__)
+  /* These tests work on platforms which support cmpstrsi.  We test it
+     at -O0 on all platforms to ensure the strncmp logic is correct.  */
   s2 = s1;
   if (strncmp (++s2, "ello", 3) != 0 || s2 != s1+1)
     abort();
