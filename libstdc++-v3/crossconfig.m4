@@ -2,6 +2,7 @@ dnl
 dnl This file contains details for non-natives builds.
 dnl
 
+AC_DEFUN([GLIBCXX_CROSSCONFIG],[
 # Base decisions on target environment.
 case "${host}" in
   arm*-*-symbianelf*)
@@ -477,4 +478,4 @@ case "${host}" in
     AC_MSG_ERROR([No support for this host/target combination.])
    ;;
 esac
-
+])

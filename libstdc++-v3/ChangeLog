@@ -1,3 +1,13 @@
+2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Define.
+	* crossconfig.m4: Wrap file into new GLIBCXX_CROSSCONFIG macro.
+	* configure.ac: Use it.
+	* acinclude.m4: Delete explicit m4_includes and sincludes.
+	* aclocal.m4, configure, Makefile.in, po/Makefile.in, 
+	src/Makefile.in, include/Makefile.in, libmath/Makefile.in, 
+	testsuite/Makefile.in: Regenerate.
+
 2005-04-05  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/memory, include/tr1/boost_shared_ptr.h: Use mutex
@@ -23,7 +33,7 @@
 
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* acconfig.h: Delete macros already ACDEFINED.
+	* acconfig.h: Delete macros already AC_DEFINED.
 	* config.h.in: Regenerate.
 
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>

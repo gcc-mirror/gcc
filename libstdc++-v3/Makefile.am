@@ -30,6 +30,8 @@ endif
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 SUBDIRS = include libsupc++ $(hosted_source)
 
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+
 # These rules are messy, but are hella worth it.
 doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \

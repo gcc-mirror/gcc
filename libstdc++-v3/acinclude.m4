@@ -131,10 +131,6 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
 ])
 
 
-m4_include([linkage.m4])
-m4_include([../config/no-executables.m4])
-
-
 dnl
 dnl Tests for newer compiler features, or features that are present in newer
 dnl compiler versions but not older compiler versions still in use, should
@@ -1819,15 +1815,5 @@ AC_DEFUN([AC_LC_MESSAGES], [
   ])
 ])
 
-
-sinclude([../libtool.m4])
-dnl The lines below arrange for aclocal not to bring an installed
-dnl libtool.m4 into aclocal.m4, while still arranging for automake to
-dnl add a definition of LIBTOOL to Makefile.in.
-ifelse(,,,[AC_SUBST(LIBTOOL)
-AC_DEFUN([AM_PROG_LIBTOOL])
-AC_DEFUN([AC_LIBTOOL_DLOPEN])
-AC_DEFUN([AC_PROG_LD])
-])
 
 dnl vim:et:ts=2:sw=2
