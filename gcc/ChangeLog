@@ -1,3 +1,7 @@
+2002-02-08  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_BSS): New.
+
 2002-02-08  Andreas Jaeger  <aj@suse.de>
 
 	* config.gcc (x86_64-*-linux): Add t-linux64 makefile fragment.
