@@ -423,6 +423,14 @@ extern char	       *mktemp ();
 #endif
 #endif
 
+#ifndef MULTILIB_DEFAULTS
+#if TARGET_ENDIAN_DEFAULT == 0
+#define MULTILIB_DEFAULTS { "EL", "mips1" }
+#else
+#define MULTILIB_DEFAULTS { "EB", "mips1" }
+#endif
+#endif
+
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 /* Default to -mips4.  */
 #define TARGET_DEFAULT MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT
 #define MIPS_ISA_DEFAULT 4
+#define MULTILIB_DEFAULTS { "EB", "mips4" }
 
 #include "mips/iris5gas.h"
 #include "mips/abi64.h"
