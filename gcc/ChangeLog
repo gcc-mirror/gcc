@@ -50,7 +50,8 @@
 
 	* system.h: Poison CONST_SECTION_ASM_OP.
 
-	* crtstuff.c (__do_global_dtors_aux): Remove usage of CRT_GET_RFIB_TEXT
+	* crtstuff.c (__do_global_dtors_aux): Remove usage of
+	CRT_GET_RFIB_TEXT.
 	(frame_dummy): Likewise.
 	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Likewise.
 	* system.h: Poison CRT_GET_RFIB_TEXT.
