@@ -2146,7 +2146,7 @@ gfc_match_common (void)
 	  if (t->use_assoc)
 	    {
 	      gfc_error ("COMMON block '%s' at %C has already "
-			 "been USE-associated");
+			 "been USE-associated", name);
 	      goto cleanup;
 	    }
 	}
