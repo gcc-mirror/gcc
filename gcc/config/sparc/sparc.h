@@ -2843,34 +2843,51 @@ extern struct rtx_def *legitimize_pic_address ();
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.  */
+/* This is how to output an assembler line defining a `float' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  {									\
-    long t[2];								\
-    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);				\
-    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n",			\
-	     ASM_LONG, t[0], ASM_LONG, t[1]);				\
+#define ASM_OUTPUT_FLOAT(FILE,VALUE) \
+  {								\
+    long t;							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t,		\
+	     ASM_COMMENT_START, str);				\
+  }								\
+
+/* This is how to output an assembler line defining a `double' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
+
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE) \
+  {								\
+    long t[2];							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t[0],	\
+	     ASM_COMMENT_START, str);				\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
   }
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  {									\
-    long t;								\
-    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);				\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
-  }									\
 
 /* This is how to output an assembler line defining a `long double'
    constant.  */
 
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-  {									\
-    long t[4];								\
-    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);			\
-    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n", \
-      ASM_LONG, t[0], ASM_LONG, t[1], ASM_LONG, t[2], ASM_LONG, t[3]);	\
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE) \
+  {								\
+    long t[4];							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);		\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t[0],	\
+	     ASM_COMMENT_START, str);				\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[2]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[3]);		\
   }
 
 /* This is how to output an assembler line defining an `int' constant.  */
