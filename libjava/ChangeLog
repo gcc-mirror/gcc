@@ -1,5 +1,11 @@
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/AccessControlContext.java,
+	java/security/SecureClassLoader.java:
+	Fixed javadocs.
+
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/ObjectInputStream.java (readFields): Use long datatype
 	when shifting byte values more then 24 bits left.
 
