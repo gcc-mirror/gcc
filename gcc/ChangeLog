@@ -1,3 +1,8 @@
+2000-01-25  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/mips/mips.md (zero_extendsidi2_internal): Disable for
+	mips16.
+
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
 	* sparc-protos.h (select_cc_mode): Declare.

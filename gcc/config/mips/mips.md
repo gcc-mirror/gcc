@@ -3632,7 +3632,7 @@ move\\t%0,%z4\\n\\
 (define_insn "zero_extendsidi2_internal"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(zero_extend:DI (match_operand:SI 1 "memory_operand" "R,m")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !TARGET_MIPS16"
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"load")
    (set_attr "mode"	"DI")
