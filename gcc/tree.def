@@ -461,7 +461,7 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
    call expand_start_target_temps/expand_end_target_temps, as needed.
 
    This differs from TRY_CATCH_EXPR in that operand 2 is always
-   evaluated when an exception isn't throw when cleanups are run.  */
+   evaluated when an exception isn't thrown when cleanups are run.  */
 DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
 
 /* Specify a cleanup point.
