@@ -7460,14 +7460,17 @@ gcc/Makefile: config.status
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  || exit 1
 
-# Don't remake gcc if it's already been made by 'bootstrap'; that causes
-# nothing but trouble.  This wart will be fixed eventually by moving
+# Don't 'make all' in gcc if it's already been made by 'bootstrap'; that
+# causes trouble.  This wart will be fixed eventually by moving
 # the bootstrap behavior to this file.
 .PHONY: all-gcc maybe-all-gcc
 maybe-all-gcc:
 all-gcc: configure-gcc
-	@if [ -f gcc/xgcc ] ; then \
-	  exit 0 ; \
+	@if [ -f gcc/stage_last ] ; then \
+	  r=`${PWD}`; export r; \
+	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  $(SET_LIB_PATH) \
+	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
 	else \
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
