@@ -1,5 +1,11 @@
 2002-04-12  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5373.
+	* semantics.c (finish_expr_stmt): Remember the type of the
+	expression before any conversions are performed.
+
+2002-04-12  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/5189.
 	* call.c (add_template_candidate_real): Do not treat member
 	templates as copy constructors.
