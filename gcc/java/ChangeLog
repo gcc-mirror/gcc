@@ -1,3 +1,15 @@
+2000-07-27  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (patch_method_invocation): Don't reverse the argument
+	list when dealing with anonymous class constructors. Fixed typo in
+	comment.
+
+2000-07-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (build_alias_initializer_parameter_list): Reverse
+	crafted list when building aliases for anonymous class
+	constructors.
+
 2000-07-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (jdep_resolve_class): Don't bother checking potential
