@@ -1,5 +1,5 @@
 /* JPopupMenu.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,14 +37,21 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import javax.accessibility.*;
-import javax.swing.event.*;
-import javax.swing.plaf.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.PopupMenuUI;
 
 /**
  * JPopupMenu
