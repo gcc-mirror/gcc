@@ -1,3 +1,9 @@
+2002-04-16  Richard Henderson  <rth@redhat.com>
+
+	PR 6202
+	* config/mips/mips.md (can_delay): Split out of existing define_delays.
+	(HILO_delay): Set can_delay false.
+
 2002-04-16  Dale Johannesen <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Compute

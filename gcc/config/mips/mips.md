@@ -135,6 +135,18 @@
 		(const_string "yes")
 		(const_string "no")))
 
+;; Can the instruction be put into a delay slot?
+(define_attr "can_delay" "no,yes"
+  (if_then_else (and (eq_attr "dslot" "no")
+		     ; ADJUST_INSN_LENGTH divides length by 2 on mips16,
+		     ; so cope with it here.
+		     (ior (and (eq (symbol_ref "mips16") (const_int 0))
+			           (eq_attr "length" "4"))
+			  (and (ne (symbol_ref "mips16") (const_int 0))
+			       (eq_attr "length" "2"))))
+		(const_string "yes")
+		(const_string "no")))
+
 ;; Attribute defining whether or not we can use the branch-likely instructions
 
 (define_attr "branch_likely" "no,yes"
@@ -162,30 +174,19 @@
 
 (define_delay (and (eq_attr "type" "branch")
 		   (eq (symbol_ref "mips16") (const_int 0)))
-  [(and (eq_attr "dslot" "no") (eq_attr "length" "4"))
+  [(eq_attr "can_delay" "yes")
    (nil)
    (and (eq_attr "branch_likely" "yes")
 	(and (eq_attr "dslot" "no")
 	     (eq_attr "length" "4")))])
 
 (define_delay (eq_attr "type" "jump")
-  [(and (eq_attr "dslot" "no")
-	;; ADJUST_INSN_LENGTH divides length by 2 on mips16, so cope
-	;; with it here.  It doesn't matter for branches above,
-	;; because mips16 branches don't have delay slots anyway.
-	(ior (and (eq (symbol_ref "mips16") (const_int 0))
-		  (eq_attr "length" "4"))
-	     (and (ne (symbol_ref "mips16") (const_int 0))
-		  (eq_attr "length" "2"))))
+  [(eq_attr "can_delay" "yes")
    (nil)
    (nil)])
 
 (define_delay (and (eq_attr "type" "call") (eq_attr "abicalls" "no"))
-  [(and (eq_attr "dslot" "no")
-	(ior (and (eq (symbol_ref "mips16") (const_int 0))
-		  (eq_attr "length" "4"))
-	     (and (ne (symbol_ref "mips16") (const_int 0))
-		  (eq_attr "length" "2"))))
+  [(eq_attr "can_delay" "yes")
    (nil)
    (nil)])
 
@@ -5823,7 +5824,8 @@ move\\t%0,%z4\\n\\
   ""
   ""
   [(set_attr "type" "nop")
-   (set_attr "mode" "none")])
+   (set_attr "mode" "none")
+   (set_attr "can_delay" "no")])
 
 ;; This insn handles moving CCmode values.  It's really just a
 ;; slightly simplified copy of movsi_internal2, with additional cases
