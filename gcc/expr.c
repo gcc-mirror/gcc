@@ -2709,6 +2709,7 @@ store_expr (exp, target, want_value)
       emit_queue ();
       target = protect_from_queue (target, 1);
 
+      do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
       store_expr (TREE_OPERAND (exp, 1), target, 0);
@@ -5823,6 +5824,7 @@ expand_expr (exp, target, tmode, modifier)
 		= invert_truthvalue (TREE_OPERAND (exp, 0));
 	  }
 	    
+	do_pending_stack_adjust ();
 	NO_DEFER_POP;
 	op0 = gen_label_rtx ();
 
