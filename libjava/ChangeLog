@@ -1,3 +1,11 @@
+1999-08-06  Mojo Jojo <mojojojo@pacbell.net>
+
+	* java/util/Locale.java, CHINESE, ENGLISH, FRENCH, GERMAN,
+	ITALIAN, JAPANESE, KOREAN, CANADA_FRENCH, GERMANY, ITALY, KOREA,
+	SIMPLIFIED_CHINESE, TRADITIONAL_CHINESE, PRC, TAIWAN, CHINA): New
+	locales.
+	(toString): Print correctly when `country' is empty.
+
 1999-08-04  Per Bothner <per@bothner.com>
 
 	* configure.in:  Also do AC_SUBST for DIVIDESPEC.
