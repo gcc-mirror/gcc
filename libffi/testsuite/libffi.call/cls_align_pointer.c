@@ -19,10 +19,10 @@ cls_struct_align cls_struct_align_fn(struct cls_struct_align a1,
   struct cls_struct_align result;
 
   result.a = a1.a + a2.a;
-  result.b = (void *)((int)a1.b + (int)a2.b);
+  result.b = (void *)((size_t)a1.b + (size_t)a2.b);
   result.c = a1.c + a2.c;
 
-  printf("%d %d %d %d %d %d: %d %d %d\n", a1.a, (int)a1.b, a1.c, a2.a, (int)a2.b, a2.c, result.a, (int)result.b, result.c);
+  printf("%d %d %d %d %d %d: %d %d %d\n", a1.a, (size_t)a1.b, a1.c, a2.a, (size_t)a2.b, a2.c, result.a, (size_t)result.b, result.c);
 
   return  result;
 }
@@ -84,14 +84,14 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_align_fn), &res_dbl, args_dbl);
   /* { dg-output "12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %d %d\n", res_dbl.a, (int)res_dbl.b, res_dbl.c);
+  printf("res: %d %d %d\n", res_dbl.a, (size_t)res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_align_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_align(*)(cls_struct_align, cls_struct_align))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n12 4951 127 1 9320 13: 13 14271 140" } */
-  printf("res: %d %d %d\n", res_dbl.a, (int)res_dbl.b, res_dbl.c);
+  printf("res: %d %d %d\n", res_dbl.a, (size_t)res_dbl.b, res_dbl.c);
   /* { dg-output "\nres: 13 14271 140" } */
 
   exit(0);

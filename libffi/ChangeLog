@@ -1,3 +1,8 @@
+2003-12-10  Richard Henderson  <rth@redhat.com>
+
+	* testsuite/libffi.call/cls_align_pointer.c: Cast pointers to
+	size_t instead of int.
+
 2003-12-04  Hosaka Yuji  <hos@tamanegi.org>
 
 	* testsuite/libffi.call/many_win32.c: Include <float.h>.
