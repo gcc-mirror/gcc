@@ -1,3 +1,8 @@
+2003-12-27  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/uclinux.h (LIB_SPEC): Add elf2flt magic required for
+	correct linking of executables using id-based shared libraries.
+
 2003-12-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/i386-interix.h: Remove uses of "register"
