@@ -7137,7 +7137,7 @@ ix86_prepare_fp_compare_args (code, pop0, pop1)
   /* Try to rearrange the comparison to make it cheaper.  */
   if (ix86_fp_comparison_cost (code)
       > ix86_fp_comparison_cost (swap_condition (code))
-      && (GET_CODE (op0) == REG || !reload_completed))
+      && (GET_CODE (op1) == REG || !no_new_pseudos))
     {
       rtx tmp;
       tmp = op0, op0 = op1, op1 = tmp;

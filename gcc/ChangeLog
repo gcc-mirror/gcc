@@ -1,3 +1,13 @@
+Wed Feb 13 23:34:30 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (mul patterns): Allow memory operand to be first;
+	add expanders where needed; fix constraints.
+	(min?f_nonieee, max?f_nonieee, SSE TImode patterns):
+	Allow memory operand to be the first.
+
+	* i386.c (ix86_prepare_fp_compare_args): Fix condition for swapping
+	operands.
+
 2002-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/5681:
