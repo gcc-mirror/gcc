@@ -38,10 +38,6 @@ Boston, MA 02111-1307, USA.  */
 /* Needed for use_return_insn.  */
 #include "flags.h"
 
-#if HAVE_STDLIB_H
-#include <stdlib.h>                                                
-#endif
-
 #ifdef SUPPORT_SUN_FPA
 
 /* Index into this array by (register number >> 3) to find the
