@@ -39,9 +39,9 @@ using namespace abi;
 namespace __gnu_cxx
 {
 
-/** This is a replacement for the standard terminate_handler which prints
-    more information about the terminating exception (if any) on stderr.  */
-void verbose_terminate_handler ()
+/* A replacement for the standard terminate_handler which prints
+   more information about the terminating exception (if any) on stderr.  */
+void __verbose_terminate_handler ()
 {
   // Make sure there was an exception; terminate is also called for an
   // attempt to rethrow when there is no suitable exception.

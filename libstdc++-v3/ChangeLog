@@ -1,3 +1,8 @@
+2001-11-23  Jason Merrill  <jason@redhat.com>
+
+	* src/vterminate.cc (__verbose_terminate_handler): Add leading
+	underscores.
+
 2001-11-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog, docs/doxygen/maint.cfg.in, docs/doxygen/user.cfg.in,
