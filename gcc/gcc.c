@@ -620,7 +620,7 @@ proper position among the other output files.  */
 #ifndef LIBGCC_SPEC
 #if defined(REAL_LIBGCC_SPEC)
 #define LIBGCC_SPEC REAL_LIBGCC_SPEC
-#elif defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
+#elif defined(LINK_LIBGCC_SPECIAL_1)
 /* Have gcc do the search for libgcc.a.  */
 #define LIBGCC_SPEC "libgcc.a%s"
 #else
@@ -706,13 +706,8 @@ proper position among the other output files.  */
 #endif
 
 #ifndef LINK_LIBGCC_SPEC
-# ifdef LINK_LIBGCC_SPECIAL
-/* Don't generate -L options for startfile prefix list.  */
-#  define LINK_LIBGCC_SPEC ""
-# else
-/* Do generate them.  */
-#  define LINK_LIBGCC_SPEC "%D"
-# endif
+/* Generate -L options for startfile prefix list.  */
+# define LINK_LIBGCC_SPEC "%D"
 #endif
 
 #ifndef STARTFILE_PREFIX_SPEC
