@@ -1,3 +1,7 @@
+2001-05-22  David Edelsohn  <dje@watson.ibm.com>
+
+	* rs6000.md (movsfcc,movdfcc): Remove NE case.
+
 2001-05-17  Bernd Schmidt  <bernds@redhat.com>
 
 	* function.c: Small formatting change to prevent compilation errors
