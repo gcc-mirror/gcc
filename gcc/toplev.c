@@ -2520,6 +2520,7 @@ compile_file (name)
 	   and definitions which have not yet been forced out.  */
 
 	if (write_symbols == DWARF_DEBUG
+	    && DECL_RTL (decl) != 0
 	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
 	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
 #endif
@@ -2750,6 +2751,10 @@ rest_of_type_compilation (type, toplev)
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
     TIMEVAR (symout_time, sdbout_symbol (TYPE_STUB_DECL (type), !toplev));
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  if (write_symbols == DWARF_DEBUG)
+    TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
 #endif
 }
 
@@ -3968,15 +3973,6 @@ main (argc, argv, envp)
       if (warn_uninitialized == 1)
 	warning ("-Wuninitialized is not supported without -O");
     }
-
-#if defined(DWARF_DEBUGGING_INFO)
-  if (write_symbols == DWARF_DEBUG
-      && strcmp (language_string, "GNU C++") == 0)
-    {
-      warning ("-g option not supported for C++ on systems using the DWARF debugging format");
-      write_symbols = NO_DEBUG;
-    }
-#endif /* defined(DWARF_DEBUGGING_INFO) */
 
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
