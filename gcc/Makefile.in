@@ -235,6 +235,9 @@ LIBCONVERT =
 # Control whether header files are installed.
 INSTALL_HEADERS=install-headers
 
+# Options for tar when copying trees.  So HPUX can override it.
+TAROUTOPTS = xpBf
+
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
 # This value is overridden directly by configure.
 FIXINCLUDES=fixincludes
@@ -466,8 +469,9 @@ native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_C
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
 C++ c++: cc1plus
-OBJC objc: cc1obj objc-runtime
-OBJECTIVE-C objective-c: cc1obj objc-runtime
+# The next two ought to depend on objc-runtime, but that doesn't work yet.
+OBJC objc: cc1obj
+OBJECTIVE-C objective-c: cc1obj
 PROTO: proto
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
@@ -1659,7 +1663,7 @@ install-include-dir: install-dir
 
 # Install the include directory using tar.
 install-headers-tar: stmp-headers install-include-dir
-	cd include; tar cf - . | (cd $(libsubdir)/include; tar xpBf - )
+	cd include; tar cf - . | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers install-include-dir
