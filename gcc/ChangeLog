@@ -1,3 +1,8 @@
+2004-11-19  Ben Elliston  <bje@au.ibm.com>
+
+	* predict.h (predict_insn): Remove extern declaration.
+	* predict.c (predict_insn): Make static.
+
 2004-11-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg): Don't return BLKmode regs.

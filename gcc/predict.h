@@ -40,7 +40,6 @@ enum prediction
 #define IS_TAKEN 1		/* Predict edges to the block as taken.  */
 
 extern void predict_insn_def (rtx, enum br_predictor, enum prediction);
-extern void predict_insn (rtx, enum br_predictor, int);
 extern int counts_to_freqs (void);
 
 #endif  /* GCC_PREDICT_H */

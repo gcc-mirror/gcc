@@ -177,7 +177,7 @@ tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
   return false;
 }
 
-void
+static void
 predict_insn (rtx insn, enum br_predictor predictor, int probability)
 {
   if (!any_condjump_p (insn))
