@@ -63,40 +63,116 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
+/* Architecture type.  */
 
-/* Flag to disable putting fp constants in the TOC; can be turned on when
-   the TOC overflows.  */
+extern int target_flags;
 
-#define TARGET_NO_FP_IN_TOC  (target_flags & 1)
+/* Use POWER architecture instructions and MQ register.  */
+#define MASK_POWER		0x01
 
-/* Flag to output only one TOC entry per module.  Normally linking fails if
+/* Use PowerPC architecture instructions.  */
+#define MASK_POWERPC		0x02
+
+/* Use PowerPC-64 architecture instructions.  */
+#define MASK_POWERPC64		0x04
+
+/* Use revised mnemonic names defined for PowerPC architecture.  */
+#define MASK_NEW_MNEMONICS	0x08
+
+/* Disable placing fp constants in the TOC; can be turned on when the
+   TOC overflows.  */
+#define MASK_NO_FP_IN_TOC	0x10
+
+/* Output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
    this option, linking fails only if there are more than 16K modules, or
    if there are more than 16K unique variables/constant in a single module.
 
    This is at the cost of having 2 extra loads and one extra store per
    function, and one less allocatable register.  */
+#define MASK_MINIMAL_TOC	0x20
 
-#define TARGET_MINIMAL_TOC (target_flags & 2)
+#define TARGET_POWER			(target_flags & MASK_POWER)
+#define TARGET_POWERPC			(target_flags & MASK_POWERPC)
+#define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
+#define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
+#define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
+#define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
 
-extern int target_flags;
+/* Run-time compilation parameters selecting different hardware subsets.
 
-/* Macro to define tables used to set the flags.
+   Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES		\
-  {{"normal-toc", - (1|2)},	\
-   {"no-fp-in-toc", 1},	\
-   {"minimal-toc", 2},		\
-   { "", TARGET_DEFAULT}}
+#define TARGET_SWITCHES						\
+ {{"power",		MASK_POWER},				\
+  {"no-power",		- MASK_POWER},				\
+  {"powerpc",		MASK_POWERPC},				\
+  {"no-powerpc",	- (MASK_POWERPC | MASK_POWERPC64)},	\
+  {"powerpc64",		MASK_POWERPC | MASK_POWERPC64},		\
+  {"no-powerpc64",	-MASK_POWERPC64},			\
+  {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
+  {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
+  {"normal-toc",	- (MASK_NO_FP_IN_TOC | MASK_MINIMAL_TOC)}, \
+  {"fp-in-toc",		- MASK_NO_FP_IN_TOC},			\
+  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC},			\
+  {"minimal-toc",	MASK_MINIMAL_TOC},			\
+  {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
+  {"",			TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT MASK_POWER
 
-/* On the RS/6000, we turn on various flags if optimization is selected.  */
+/* Processor type.  */
+enum processor_type
+ {PROCESSOR_RIOS,
+  PROCESSOR_RIOS2,
+  PROCESSOR_PPC601,
+  PROCESSOR_PPC603,
+  PROCESSOR_PPC604,
+  PROCESSOR_PPC620};
+
+extern enum processor_type rs6000_cpu;
+
+/* Recast the processor type to the cpu attribute.  */
+#define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
+
+/* Define the default processor.  This is overridden by other tm.h files.  */
+#define PROCESSOR_DEFAULT PROCESSOR_RIOS
+
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an
+   initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   fixed part of the option name, and the address of a variable.
+   The variable, type `char *', is set to the variable part of the
+   given option if the fixed part matches.  The actual option name
+   is made by appending `-m' to the specified name.
+
+   Here is an example which defines `-mshort-data-NUMBER'.  If the
+   given option is `-mshort-data-512', the variable `m88k_short_data'
+   will be set to the string `"512"'.
+
+	extern char *m88k_short_data;
+	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
+
+#define TARGET_OPTIONS		\
+{ {"cpu=", &rs6000_cpu_string}}
+
+extern char *rs6000_cpu_string;
+
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   On the RS/6000 this is used to define the target cpu type.  */
+
+#define OVERRIDE_OPTIONS rs6000_override_options ()
 
 #define OPTIMIZATION_OPTIONS(LEVEL)	\
 {					\
@@ -105,13 +181,6 @@ extern int target_flags;
       flag_force_mem = 1;		\
       flag_omit_frame_pointer = 1;	\
     }					\
-}
-
-/* Define this to modify the options specified by the user.  */
-
-#define OVERRIDE_OPTIONS		\
-{					\
-   profile_block_flag = 0;		\
 }
 
 /* target machine storage layout */
