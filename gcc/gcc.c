@@ -2660,7 +2660,7 @@ process_command (argc, argv)
 			  char *string = xmalloc (len + 1);
 			  strncpy (string, value, len-7);
 			  strcat (string, "include");
-			  add_prefix (&include_prefix, string, 1, 0, 0);
+			  add_prefix (&include_prefixes, string, 1, 0, 0);
 			}
 		    }
 		}
