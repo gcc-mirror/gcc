@@ -2702,8 +2702,8 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
 	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 	      rtx reg = gen_rtx_REG (word_mode, REGNO (data->entry_parm));
 
-	      x = expand_binop (word_mode, ashl_optab, reg,
-				GEN_INT (by), 0, 1, OPTAB_WIDEN);
+	      x = expand_shift (LSHIFT_EXPR, word_mode, reg,
+				build_int_2 (by, 0), NULL_RTX, 1);
 	      tem = change_address (mem, word_mode, 0);
 	      emit_move_insn (tem, x);
 	    }

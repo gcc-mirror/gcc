@@ -1923,8 +1923,8 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 				     mode, mode, ssize);
 
       if (shift)
-	expand_binop (mode, ashl_optab, tmps[i], GEN_INT (shift),
-		      tmps[i], 0, OPTAB_WIDEN);
+	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
+				build_int_2 (shift, 0), tmps[i], 0);
     }
 
   emit_queue ();
@@ -2037,8 +2037,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	      )
 	    {
 	      int shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
-	      expand_binop (mode, ashr_optab, tmps[i], GEN_INT (shift),
-			    tmps[i], 0, OPTAB_WIDEN);
+	      tmps[i] = expand_shift (RSHIFT_EXPR, mode, tmps[i],
+				      build_int_2 (shift, 0), tmps[i], 0);
 	    }
 	  bytelen = ssize - bytepos;
 	}

@@ -2376,9 +2376,9 @@ shift_return_value (rtx val)
       shift = (GET_MODE_BITSIZE (GET_MODE (target))
 	       - BITS_PER_UNIT * int_size_in_bytes (type));
       if (shift > 0)
-	val = expand_binop (GET_MODE (target), ashl_optab,
+	val = expand_shift (LSHIFT_EXPR, GET_MODE (target),
 			    gen_lowpart (GET_MODE (target), val),
-			    GEN_INT (shift), target, 1, OPTAB_WIDEN);
+			    build_int_2 (shift, 0), target, 1);
     }
   return val;
 }
