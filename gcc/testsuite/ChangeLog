@@ -1,6 +1,7 @@
 2001-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20010117-1.c: New test.
+	* gcc.c-torture/compile/20010117-2.c: New test.
 
 2001-01-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
