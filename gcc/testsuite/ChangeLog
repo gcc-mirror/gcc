@@ -1,3 +1,10 @@
+2003-07-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/inline-3.c: New file.
+	* gcc.dg/pch/inline-3.hs: New file.
+	* gcc.dg/pch/inline-4.c: New file.
+	* gcc.dg/pch/inline-4.hs: New file.
+
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11509
