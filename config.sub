@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-10-16'
+timestamp='2003-11-03'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -968,6 +968,10 @@ case $basic_machine in
 	tower | tower-32)
 		basic_machine=m68k-ncr
 		;;
+	tpf)
+		basic_machine=s390x-ibm
+		os=-tpf
+		;;
 	udi29k)
 		basic_machine=a29k-amd
 		os=-udi
@@ -1233,6 +1237,9 @@ case $os in
 	-sinix*)
 		os=-sysv4
 		;;
+        -tpf*)
+		os=-tpf
+		;;
 	-triton*)
 		os=-sysv3
 		;;
@@ -1486,6 +1493,9 @@ case $basic_machine in
 				;;
 			-ptx*)
 				vendor=sequent
+				;;
+			-tpf*)
+				vendor=ibm
 				;;
 			-vxsim* | -vxworks* | -windiss*)
 				vendor=wrs
