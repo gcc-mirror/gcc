@@ -1360,7 +1360,7 @@ do_java_lex (YYSTYPE *java_lval)
       string = obstack_finish (&temporary_obstack);
 #ifndef JC1_LITE
       if (!no_error || (c != '"'))
-	java_lval->node = error_mark_node; /* FIXME: Requires futher
+	java_lval->node = error_mark_node; /* FIXME: Requires further
                                               testing.  */
       else
 	java_lval->node = build_string (strlen (string), string);

@@ -107,7 +107,7 @@ int always_initialize_class_p;
 
    If a variable is on the quick stack, it means the value of variable
    when the quick stack was last flushed.  Conceptually, flush_quick_stack
-   saves all the the quick_stack elements in parellel.  However, that is
+   saves all the the quick_stack elements in parallel.  However, that is
    complicated, so it actually saves them (i.e. copies each stack value
    to is home virtual register) from low indexes.  This allows a quick_stack
    element at index i (counting from the bottom of stack the) to references
@@ -456,7 +456,7 @@ pop_value (tree type)
 }
 
 
-/* Pop and discrad the top COUNT stack slots. */
+/* Pop and discard the top COUNT stack slots. */
 
 static void
 java_stack_pop (int count)
