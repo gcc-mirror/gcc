@@ -1,3 +1,8 @@
+2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* include/private/gcconfig.h: Don't check for __XSCALE__.  Instead 
+	check for __arm__ or __thumb__.
+
 2002-09-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* include/private/gcconfig: Add machine type S390.  Add s390x support.
