@@ -101,12 +101,14 @@ gen_attr (attr)
      rtx attr;
 {
   char *p;
+  int is_const = GET_CODE (XEXP (attr, 2)) == CONST;  
 
   printf ("#define HAVE_ATTR_%s\n", XSTR (attr, 0));
 
   /* If numeric attribute, don't need to write an enum.  */
   if (*XSTR (attr, 1) == '\0')
-    printf ("extern int get_attr_%s ();\n", XSTR (attr, 0));
+    printf ("extern int get_attr_%s PROTO((%s));\n", XSTR (attr, 0),
+	    (is_const ? "void" : "rtx"));
   else
     {
       printf ("enum attr_%s {", XSTR (attr, 0));
@@ -128,15 +130,14 @@ gen_attr (attr)
 	}
 
       printf ("};\n");
-      printf ("extern enum attr_%s get_attr_%s ();\n\n",
-	      XSTR (attr, 0), XSTR (attr, 0));
+      printf ("extern enum attr_%s get_attr_%s PROTO((%s));\n\n",
+	      XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
     }
 
   /* If `length' attribute, write additional function definitions and define
      variables used by `insn_current_length'.  */
   if (! strcmp (XSTR (attr, 0), "length"))
     {
-      printf ("extern void init_lengths ();\n");
       printf ("extern void shorten_branches PROTO((rtx));\n");
       printf ("extern int insn_default_length PROTO((rtx));\n");
       printf ("extern int insn_variable_length_p PROTO((rtx));\n");
