@@ -1,9 +1,17 @@
-2004-07-06 Jan Beulich <jbeulich@novell.com>
+2004-07-07  Jan Beulich  <jbeulich@novell.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (assemble_variable): Use assemble_zeros for
+	zero-initialized variables.
+	(categorize_decl_for_section): Honor flag_zero_initialized_in_bss
+	for SECCAT_BSS and SECCAT_TBSS.
+
+2004-07-07  Jan Beulich  <jbeulich@novell.com>
 
 	* varasm.c (asm_output_bss): Don't declare unless BSS_SECTION_ASM_OP.
-                                                                                
-        * expmed.c (emit_store_flag): Also special-case double-word
-        (in-)equality comparison against -1.
+
+	* expmed.c (emit_store_flag): Also special-case double-word
+	(in-)equality comparison against -1.
 
 	* config/i386/i386.c (ix86_gimplify_va_arg): Don't need temporary for
 	passing arguments the containers for which are registers.
