@@ -2745,7 +2745,7 @@ cse_rtx_varies_p (x)
 	return 0;
     }
 
-  return rtx_varies_p (x);
+  return rtx_varies_p (x, 0);
 }
 
 /* Canonicalize an expression:

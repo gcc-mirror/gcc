@@ -101,7 +101,7 @@ static int insert_subset_children       PARAMS ((splay_tree_node, void*));
 static tree find_base_decl            PARAMS ((tree));
 static alias_set_entry get_alias_set_entry PARAMS ((HOST_WIDE_INT));
 static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
-						      int (*) (rtx)));
+						      int (*) (rtx, int)));
 static int aliases_everything_p         PARAMS ((rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
@@ -1602,19 +1602,19 @@ static rtx
 fixed_scalar_and_varying_struct_p (mem1, mem2, mem1_addr, mem2_addr, varies_p)
      rtx mem1, mem2;
      rtx mem1_addr, mem2_addr;
-     int (*varies_p) PARAMS ((rtx));
+     int (*varies_p) PARAMS ((rtx, int));
 {  
   if (! flag_strict_aliasing)
     return NULL_RTX;
 
   if (MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2) 
-      && !varies_p (mem1_addr) && varies_p (mem2_addr))
+      && !varies_p (mem1_addr, 1) && varies_p (mem2_addr, 1))
     /* MEM1 is a scalar at a fixed address; MEM2 is a struct at a
        varying address.  */
     return mem1;
 
   if (MEM_IN_STRUCT_P (mem1) && MEM_SCALAR_P (mem2) 
-      && varies_p (mem1_addr) && !varies_p (mem2_addr))
+      && varies_p (mem1_addr, 1) && !varies_p (mem2_addr, 1))
     /* MEM2 is a scalar at a fixed address; MEM1 is a struct at a
        varying address.  */
     return mem2;
@@ -1644,7 +1644,7 @@ true_dependence (mem, mem_mode, x, varies)
      rtx mem;
      enum machine_mode mem_mode;
      rtx x;
-     int (*varies) PARAMS ((rtx));
+     int (*varies) PARAMS ((rtx, int));
 {
   register rtx x_addr, mem_addr;
   rtx base;

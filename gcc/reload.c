@@ -4431,7 +4431,7 @@ make_memloc (ad, regno)
 
   /* If TEM might contain a pseudo, we must copy it to avoid
      modifying it when we do the substitution for the reload.  */
-  if (rtx_varies_p (tem))
+  if (rtx_varies_p (tem, 0))
     tem = copy_rtx (tem);
 
   tem = gen_rtx_MEM (GET_MODE (ad), tem);

@@ -995,7 +995,7 @@ extern const char *a29k_function_name;
    && ! (needs_regstack_p () && uses_local_reg_p (PATTERN (INSN)))	\
    && (GET_CODE (PATTERN (INSN)) != SET					\
        || GET_CODE (SET_SRC (PATTERN (INSN))) != MEM			\
-       || ! rtx_varies_p (XEXP (SET_SRC (PATTERN (INSN)), 0))))
+       || ! rtx_varies_p (XEXP (SET_SRC (PATTERN (INSN)), 0), 0)))
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.

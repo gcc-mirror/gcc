@@ -1,3 +1,16 @@
+2001-01-01  Bernd Schmidt  <bernds@redhat.com>
+
+	* alias.c (fixed_scalar_and_varying_struct): Adjust prototype of
+	arg VARIES_P.  Call it with extra arg.
+	(true_dependence): Likewise.
+	* rtl.h (rtx_addr_can_trap_p): Declare.
+	(rtx_varies_p, rtx_addr_varies_p, true_dependence): Update
+	prototypes.
+	* rtlanal.c (rtx_addr_can_trap_p): No longer static.
+	(rtx_varies_p): Accept extra arg FOR_ALIAS; only disallow
+	pic offset table register if it's zero.  All callers changed.
+	(rtx_addr_varies_p): Accept extra arg FOR_ALIAS; all callers changed.
+
 Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (convert_memory_address, case SYMBOL_REF): Copy

@@ -1352,9 +1352,10 @@ extern void set_unique_reg_note         PARAMS ((rtx, enum reg_note, rtx));
 		       : NULL_RTX)
 #define single_set_1(I) single_set_2 (I, PATTERN (I))
 
+extern int rtx_addr_can_trap_p		PARAMS ((rtx));
 extern int rtx_unstable_p		PARAMS ((rtx));
-extern int rtx_varies_p			PARAMS ((rtx));
-extern int rtx_addr_varies_p		PARAMS ((rtx));
+extern int rtx_varies_p			PARAMS ((rtx, int));
+extern int rtx_addr_varies_p		PARAMS ((rtx, int));
 extern HOST_WIDE_INT get_integer_term	PARAMS ((rtx));
 extern rtx get_related_value		PARAMS ((rtx));
 extern int reg_mentioned_p		PARAMS ((rtx, rtx));
@@ -1986,7 +1987,7 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 /* In alias.c */
 extern rtx canon_rtx                    PARAMS ((rtx));
 extern int true_dependence		PARAMS ((rtx, enum machine_mode, rtx,
-						int (*)(rtx)));
+						int (*)(rtx, int)));
 extern int read_dependence		PARAMS ((rtx, rtx));
 extern int anti_dependence		PARAMS ((rtx, rtx));
 extern int output_dependence		PARAMS ((rtx, rtx));
