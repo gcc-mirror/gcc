@@ -1,3 +1,7 @@
+2000-12-07  Mike Stump  <mrs@kankakee.wrs.com>
+
+	* Makefile.in (distclean): When cleaning, remove testsuite.
+
 2000-12-05  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_v3): Check that it's a v3 mangled
