@@ -2637,8 +2637,7 @@ build_type_variant (type, constp, volatilep)
      tree type;
      int constp, volatilep;
 {
-  register tree t, m = TYPE_MAIN_VARIANT (type);
-  register struct obstack *ambient_obstack = current_obstack;
+  register tree t;
 
   /* Treat any nonzero argument as 1.  */
   constp = !!constp;
@@ -2654,24 +2653,15 @@ build_type_variant (type, constp, volatilep)
      (existing) type.  */
 
   if (!flag_gen_aux_info)
-    for (t = m; t; t = TYPE_NEXT_VARIANT (t))
+    for (t = TYPE_MAIN_VARIANT(type); t; t = TYPE_NEXT_VARIANT (t))
       if (constp == TYPE_READONLY (t) && volatilep == TYPE_VOLATILE (t))
         return t;
 
   /* We need a new one.  */
 
-  current_obstack = TYPE_OBSTACK (type);
-  t = copy_node (type);
-  current_obstack = ambient_obstack;
-
+  t = build_type_copy (type);
   TYPE_READONLY (t) = constp;
   TYPE_VOLATILE (t) = volatilep;
-  TYPE_POINTER_TO (t) = 0;
-  TYPE_REFERENCE_TO (t) = 0;
-
-  /* Add this type to the chain of variants of TYPE.  */
-  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
-  TYPE_NEXT_VARIANT (m) = t;
 
   return t;
 }
