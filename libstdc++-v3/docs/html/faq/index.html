@@ -76,6 +76,7 @@
          <li><a href="#3_7">Threading is broken on i386</a></li>
          <li><a href="#3_8">Recent GNU/Linux glibc required?</a></li>
          <li><a href="#3_9">Can't use wchar_t/wstring on FreeBSD</a></li>
+         <li><a href="#3_10">MIPS atomic operations</a></li>
       </ol>
    </li>
 
@@ -541,6 +542,17 @@ which is no longer available, thanks deja...-->
          <a href="http://gcc.gnu.org/ml/libstdc++/2003-02/subjects.html#00286">
          this short thread</a> (&quot;_GLIBCPP_USE_WCHAR_T undefined in
          FreeBSD's c++config.h?&quot;).
+      </p>
+
+<hr />
+   <h2><a name="3_10">3.10 MIPS atomic operations</a></h2>
+      <p>The atomic locking routines for MIPS targets requires MIPS II
+         and later.  A patch went in just after the 3.3.0 release to
+         make mips* use the generic implementation instead.  You can also
+         configure for mipsel-elf as a workaround.
+      </p>
+      <p>mips*-*-linux* continues to use the MIPS II routines, and more
+         work in this area is expected.
       </p>
 
 <hr />
