@@ -2097,8 +2097,8 @@ get_mode_bounds (enum machine_mode mode, int sign,
       max_val = ((unsigned HOST_WIDE_INT) 1 << (size - 1) << 1) - 1;
     }
 
-  *mmin = GEN_INT (trunc_int_for_mode (min_val, target_mode));
-  *mmax = GEN_INT (trunc_int_for_mode (max_val, target_mode));
+  *mmin = gen_int_mode (min_val, target_mode);
+  *mmax = gen_int_mode (max_val, target_mode);
 }
 
 #include "gt-stor-layout.h"

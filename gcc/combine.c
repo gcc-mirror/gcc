@@ -8095,7 +8095,7 @@ simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
   /* If VAROP is a CONST_INT, then we need to apply the mask in CONSTOP
      to VAROP and return the new constant.  */
   if (GET_CODE (varop) == CONST_INT)
-    return GEN_INT (trunc_int_for_mode (INTVAL (varop) & constop, mode));
+    return gen_int_mode (INTVAL (varop) & constop, mode);
 
   /* See what bits may be nonzero in VAROP.  Unlike the general case of
      a call to nonzero_bits, here we don't care about bits outside
