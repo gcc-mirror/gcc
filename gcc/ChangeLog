@@ -1,3 +1,11 @@
+2005-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
+	(powerpc64-*-linux*): Use it.  Rearrange tm_file assignment.
+	(powerpc-*-linux*): Build a biarch compiler when --enable-targets
+	is given with "powerpc64*" or "all", or when --with-cpu chooses
+	a 64-bit cpu.
+
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/install.texi: Update binutils requirement for powerpc*-linux.
@@ -5,13 +13,13 @@
 2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR target/15491
-        * vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
+	* vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
 	(vax_rtx_costs): Return false when passed unsupported rtx's.  Handle
 	FLOAT_EXTEND, FLOAT_TRUNCATE and TRUNCATE.  Fix costs for POST_INC,
 	PRE_DEC, NEG and NOT.
 
 2005-03-23  Uros Bizjak  <uros@kss-loka.si>
-	
+
 	* simplify-rtx.c (simplify_unary_operation) <NOT>: Add missing break
 	in code that deals with logicals on floats.
 
@@ -93,7 +101,7 @@
 
 2005-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
+	* doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
 
 2005-03-08  James E Wilson  <wilson@specifixinc.com>
 
@@ -174,7 +182,7 @@
 
 	* doc/install.texi (Specific): Update link for Darwin-specific
 	tool binary site.
-	
+
 2005-02-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
@@ -220,8 +228,8 @@
 
 	PR preprocessor/19077
 	* cppmacro.c (cpp_macro_definition): Move handling of whitespace
-        to PREV_WHITE conditional. Remove overloading of len
-        variable.
+	to PREV_WHITE conditional. Remove overloading of len
+	variable.
 
 2005-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -234,10 +242,10 @@
 
 2005-02-11  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
-        PR middle-end/19697
+	PR middle-end/19697
 	2005-01-30  Roger Sayle  <roger@eyesopen.com>
-        * config/pa/pa.md (anddi3, iordi3): On HPPA64, disallow an integer
-        constant as the second operand and a register as the third.
+	* config/pa/pa.md (anddi3, iordi3): On HPPA64, disallow an integer
+	constant as the second operand and a register as the third.
 
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
@@ -340,9 +348,9 @@
 	the fact that the PC will be off by 4.
 
 2005-01-24  Richard Henderson  <rth@redhat.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * regrename.c (note_sets): Handle subregs.
+	* regrename.c (note_sets): Handle subregs.
 
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
@@ -386,7 +394,7 @@
 	PR debug/16261
 	Backport from mainline:
 	2004-01-27  Devang Patel  <dpatel@apple.com>
-        
+
 	* dwarf2out.c: (remove_child_TAG): New function.
 	(gen_subprogram_die): Do not remove all children dies while reusing
 	declaration die for definition.  Instead, selectively remove only
@@ -421,7 +429,7 @@
 2005-01-15  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/rtems.h (MIPS_DEFAULT_GVALUE): Set to 0.
-	* config/mips/t-rtems (MULTILIBS_DIRNAMES,MULTILIB_OPTIONS): 
+	* config/mips/t-rtems (MULTILIBS_DIRNAMES,MULTILIB_OPTIONS):
 	Remove little endian multilib variants.
 	Add mips32 multilib variant.
 
@@ -480,16 +488,16 @@
 
 2005-01-06  Richard Sandiford  <rsandifo@redhat.com>
 
-        PR rtl-opt/13299
-        * loop.c (get_monotonic_increment, biased_biv_fits_mode_p,
-        biv_fits_mode_p, extension_within_bounds_p): New functions.
-        (check_ext_dependent_givs): Use them.
+	PR rtl-opt/13299
+	* loop.c (get_monotonic_increment, biased_biv_fits_mode_p,
+	biv_fits_mode_p, extension_within_bounds_p): New functions.
+	(check_ext_dependent_givs): Use them.
 
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
-        PR rtl-opt/10692
-        * reload1.c (do_input_reload): Restrict the optimization deleteing
-        a previous output reload to RELOAD_FOR_INPUT.
+	PR rtl-opt/10692
+	* reload1.c (do_input_reload): Restrict the optimization deleteing
+	a previous output reload to RELOAD_FOR_INPUT.
 
 2005-01-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -521,12 +529,12 @@
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	rtl-optimization/12863
-        * config/vax/vax.h (CASE_DROPS_THROUGH): Don't define.
-        * config/vax/vax.md (casesi): Emit a test-and-branch to make sure
-        that the case is in range, to make sure the casesi insn is always
-        in range and never falls through.
-        (casesi1): Add comment to explain why casesi never falls through.
-        Remove the unnamed special case casesi pattern.
+	* config/vax/vax.h (CASE_DROPS_THROUGH): Don't define.
+	* config/vax/vax.md (casesi): Emit a test-and-branch to make sure
+	that the case is in range, to make sure the casesi insn is always
+	in range and never falls through.
+	(casesi1): Add comment to explain why casesi never falls through.
+	Remove the unnamed special case casesi pattern.
 
 2004-12-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -574,7 +582,7 @@
 
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
-        PR c/18282
+	PR c/18282
 	* c-decl.c (finish_enum): Retain precision acquired from an attribute.
 
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
@@ -602,7 +610,7 @@
 	in MMX registers.
 	* config/i386/i386.h (VALID_SSE2_REG_MODE): Don't include
 	VALID_MMX_REG_MODE.
-	* config/i386/i386.md (movv4sf_internal, movv4si_internal, 
+	* config/i386/i386.md (movv4sf_internal, movv4si_internal,
 	movv2di_internal, movv2si_internal, movv4hi_internal,
 	movv2sf_internal, movv2df_internal, movv8hi_internal,
 	movv16qi_internal, movti_internal): Add leading '*' to name.
@@ -929,7 +937,7 @@
 	* c-ppoutput.c (pp_file_change): Remove now-redundant check of
 	flag_no_output.
 
-	PR preprocessor/17610 
+	PR preprocessor/17610
 	* directives.c (do_include_common): Error out if an empty filename
 	is given for #include (or #include_next or #import).
 	PR preprocessor/17610
