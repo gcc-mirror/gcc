@@ -2039,7 +2039,7 @@ function cannot throw an exception.  For example, most functions in
 the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.  The @code{nothrow} attribute is not
-implemented in GCC versions earlier than 3.2.
+implemented in GCC versions earlier than 3.3.
 
 @item pure
 @cindex @code{pure} function attribute
