@@ -752,6 +752,21 @@ int flag_no_ident = 0;
 /* This will perform a peephole pass before sched2. */
 int flag_peephole2 = 0;
 
+/* -fbounded-pointers causes gcc to compile pointers as composite
+   objects occupying three words: the pointer value, the base address
+   of the referent object, and the address immediately beyond the end
+   of the referent object.  The base and extent allow us to perform
+   runtime bounds checking.  -fbounded-pointers implies -fcheck-bounds.  */
+int flag_bounded_pointers = 0;
+
+/* -fcheck-bounds causes gcc to generate array bounds checks.
+   For C, C++: defaults to value of flag_bounded_pointers.
+   For ObjC: defaults to off.
+   For Java: defaults to on.
+   For Fortran: defaults to off.
+   For CHILL: defaults to off.  */
+int flag_bounds_check = 0;
+
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  
    For each variable, there is an _log variant which is the power
@@ -985,7 +1000,11 @@ lang_independent_options f_options[] =
   { "peephole2", &flag_peephole2, 1,
     "Enables an rtl peephole pass run before sched2" },
   {"math-errno", &flag_errno_math, 1,
-   "Set errno after built-in math functions"}
+   "Set errno after built-in math functions"},
+  {"bounded-pointers", &flag_bounded_pointers, 1,
+   "Compile pointers as triples: value, base & end" },
+  {"bounds-check", &flag_bounds_check, 1,
+   "Generate code to check bounds before dereferencing pointers and arrays" }
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))

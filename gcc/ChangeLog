@@ -1,3 +1,11 @@
+Fri Oct 15 15:17:29 1999  Greg McGary  <gkm@gnu.org>
+
+	* flags.h (flag_bounds_check, flag_bounded_pointers): New extern decls.
+	* toplev.c (flag_bounds_check, flag_bounded_pointers): New flags.
+	(f_options): Add "bounded-pointers" and "bounds-check" entries.
+	* c-lang.c (lang_init_options): Set flag_bounds_check as "unspecified".
+	(lang_init): Set default for flag_bounds_check if still "unspecified".
+
 Sat Oct 16 13:42:29 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (HF mode patterns):  Add missing modes.

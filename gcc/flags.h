@@ -476,6 +476,21 @@ extern int flag_instrument_function_entry_exit;
 
 /* Perform a peephole pass before sched2. */
 extern int flag_peephole2;
+
+/* -fbounded-pointers causes gcc to compile pointers as composite
+   objects occupying three words: the pointer value, the base address
+   of the referent object, and the address immediately beyond the end
+   of the referent object.  The base and extent allow us to perform
+   runtime bounds checking.  -fbounded-pointers implies -fcheck-bounds.  */
+extern int flag_bounded_pointers;
+
+/* -fcheck-bounds causes gcc to generate array bounds checks.
+   For C, C++: defaults to value of flag_bounded_pointers.
+   For ObjC: defaults to off.
+   For Java: defaults to on.
+   For Fortran: defaults to off.
+   For CHILL: defaults to off.  */
+extern int flag_bounds_check;
 
 /* Other basic status info about current function.  */
 

@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for C front end.
-   Copyright (C) 1991, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "toplev.h"
 #include "output.h"
+#include "flags.h"
 #include "ggc.h"
 
 #if USE_CPPLIB
@@ -56,11 +57,17 @@ lang_init_options ()
   parse_in.opts = &parse_options;
   cpp_options_init (&parse_options);
 #endif
+  /* Mark as "unspecified".  */
+  flag_bounds_check = -1;
 }
 
 void
 lang_init ()
 {
+  /* If still "unspecified", make it match -fbounded-pointers.  */
+  if (flag_bounds_check < 0)
+    flag_bounds_check = flag_bounded_pointers;
+
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
