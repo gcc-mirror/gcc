@@ -65,7 +65,6 @@
 	* decl.c (start_function): Suppress normal linkage heuristics
 	for #pragma interface under MULTIPLE_SYMBOL_SPACES.
 
->>>>>>> 1.947
 1999-03-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Make-lang.in: ($(INTL_TARGETS)): depend on cp/parse.c
