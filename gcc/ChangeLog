@@ -1,3 +1,9 @@
+2003-06-20  Aldy Hernandez  <aldyh@redhat.com>
+	
+	PR/11092
+	* config/rs6000/rs6000.h (LEGITIMATE_CONSTANT_P): Adjust for
+	vectors.
+
 2003-06-20  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* opts.sh: Tweak awk script for portability.
