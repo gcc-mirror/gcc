@@ -796,6 +796,7 @@ package body Sem_Ch6 is
 
       procedure Check_Following_Pragma is
          Prag : Node_Id;
+
       begin
          if Front_End_Inlining
            and then Is_List_Member (N)
@@ -816,6 +817,8 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Following_Pragma;
+
+   --  Start of processing for Analyze_Subprogram_Body
 
    begin
       if Debug_Flag_C then

@@ -104,7 +104,7 @@ package Exp_Dbug is
       --    __nn  (two underscores)
 
       --  where nn is a serial number (2 for the second overloaded function,
-      --  2 for the third, etc.). A suffix of __1 is always omitted (i.e. no
+      --  3 for the third, etc.). A suffix of __1 is always omitted (i.e. no
       --  suffix implies the first instance).
 
       --  These names are prefixed by the normal full qualification. So

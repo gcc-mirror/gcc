@@ -3257,7 +3257,8 @@ package body Sem_Prag is
          Val   : Uint;
 
          procedure Set_Warning (R : All_Restrictions);
-         --  If this is a Restriction_Warnings pragma, set warning flag
+         --  If this is a Restriction_Warnings pragma, set warning flag,
+         --  otherwise flag gets cleared.
 
          -----------------
          -- Set_Warning --
@@ -3265,9 +3266,8 @@ package body Sem_Prag is
 
          procedure Set_Warning (R : All_Restrictions) is
          begin
-            if Prag_Id = Pragma_Restriction_Warnings then
-               Restriction_Warnings (R) := True;
-            end if;
+            Restriction_Warnings (R) :=
+              Prag_Id = Pragma_Restriction_Warnings;
          end Set_Warning;
 
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings

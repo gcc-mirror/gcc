@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,61 +41,7 @@ with System.Machine_Code; use System.Machine_Code;
 
 package body Ada.Numerics.Aux is
 
-   NL           : constant String := ASCII.LF & ASCII.HT;
-
-   type FPU_Stack_Pointer is range 0 .. 7;
-   for FPU_Stack_Pointer'Size use 3;
-
-   type FPU_Status_Word is record
-      B   : Boolean; -- FPU Busy (for 8087 compatibility only)
-      ES  : Boolean; -- Error Summary Status
-      SF  : Boolean; -- Stack Fault
-
-      Top : FPU_Stack_Pointer;
-
-      --  Condition Code Flags
-
-      --  C2 is set by FPREM and FPREM1 to indicate incomplete reduction.
-      --  In case of successfull recorction, C0, C3 and C1 are set to the
-      --  three least significant bits of the result (resp. Q2, Q1 and Q0).
-
-      --  C2 is used by FPTAN, FSIN, FCOS, and FSINCOS to indicate that
-      --  that source operand is beyond the allowable range of
-      --  -2.0**63 .. 2.0**63.
-
-      C3  : Boolean;
-      C2  : Boolean;
-      C1  : Boolean;
-      C0  : Boolean;
-
-      --  Exception Flags
-
-      PE  : Boolean; -- Precision
-      UE  : Boolean; -- Underflow
-      OE  : Boolean; -- Overflow
-      ZE  : Boolean; -- Zero Divide
-      DE  : Boolean; -- Denormalized Operand
-      IE  : Boolean; -- Invalid Operation
-   end record;
-
-   for FPU_Status_Word use record
-      B   at 0 range 15 .. 15;
-      C3  at 0 range 14 .. 14;
-      Top at 0 range 11 .. 13;
-      C2  at 0 range 10 .. 10;
-      C1  at 0 range  9 ..  9;
-      C0  at 0 range  8 ..  8;
-      ES  at 0 range  7 ..  7;
-      SF  at 0 range  6 ..  6;
-      PE  at 0 range  5 ..  5;
-      UE  at 0 range  4 ..  4;
-      OE  at 0 range  3 ..  3;
-      ZE  at 0 range  2 ..  2;
-      DE  at 0 range  1 ..  1;
-      IE  at 0 range  0 ..  0;
-   end record;
-
-   for FPU_Status_Word'Size use 16;
+   NL : constant String := ASCII.LF & ASCII.HT;
 
    -----------------------
    -- Local subprograms --
@@ -109,12 +55,9 @@ package body Ada.Numerics.Aux is
    --  to calculate the exponentiation. This is used by Pow for values
    --  for values of Y in the open interval (-0.25, 0.25)
 
-   function Reduce (X : Double) return Double;
-   --  Implement partial reduction of X by Pi in the x86.
-
-   --  Note that for the Sin, Cos and Tan functions completely accurate
-   --  reduction of the argument is done for arguments in the range of
-   --  -2.0**63 .. 2.0**63, using a 66-bit approximation of Pi.
+   procedure Reduce (X : in out Double; Q : out Natural);
+   --  Implements reduction of X by Pi/2. Q is the quadrant of the final
+   --  result in the range 0 .. 3. The absolute value of X is at most Pi.
 
    pragma Inline (Is_Nan);
    pragma Inline (Reduce);
@@ -123,9 +66,8 @@ package body Ada.Numerics.Aux is
    --  Basic Elementary Functions --
    ---------------------------------
 
-   --  This section implements a few elementary functions that are
-   --  used to build the more complex ones. This ordering enables
-   --  better inlining.
+   --  This section implements a few elementary functions that are used to
+   --  build the more complex ones. This ordering enables better inlining.
 
    ----------
    -- Atan --
@@ -206,20 +148,45 @@ package body Ada.Numerics.Aux is
    -- Reduce --
    ------------
 
-   function Reduce (X : Double) return Double is
-      Result : Double;
+   procedure Reduce (X : in out Double; Q : out Natural) is
+      Half_Pi     : constant := Pi / 2.0;
+      Two_Over_Pi : constant := 2.0 / Pi;
+
+      HM : constant := Integer'Min (Double'Machine_Mantissa / 2, Natural'Size);
+      M  : constant Double := 0.5 + 2.0**(1 - HM); -- Splitting constant
+      P1 : constant Double := Double'Leading_Part (Half_Pi, HM);
+      P2 : constant Double := Double'Leading_Part (Half_Pi - P1, HM);
+      P3 : constant Double := Double'Leading_Part (Half_Pi - P1 - P2, HM);
+      P4 : constant Double := Double'Leading_Part (Half_Pi - P1 - P2 - P3, HM);
+      P5 : constant Double := Double'Leading_Part (Half_Pi - P1 - P2 - P3
+                                                                 - P4, HM);
+      P6 : constant Double := Double'Model (Half_Pi - P1 - P2 - P3 - P4 - P5);
+      K  : Double := X * Two_Over_Pi;
    begin
-      Asm
-        (Template =>
-         --  Partial argument reduction
-         "fldpi                " & NL
-       & "fadd    %%st(0), %%st" & NL
-       & "fxch    %%st(1)      " & NL
-       & "fprem1               " & NL
-       & "fstp    %%st(1)      ",
-         Outputs  => Double'Asm_Output ("=t", Result),
-         Inputs   => Double'Asm_Input  ("0", X));
-      return Result;
+      --  For X < 2.0**32, all products below are computed exactly.
+      --  Due to cancellation effects all subtractions are exact as well.
+      --  As no double extended floating-point number has more than 75
+      --  zeros after the binary point, the result will be the correctly
+      --  rounded result of X - K * (Pi / 2.0).
+
+      while abs K >= 2.0**HM loop
+         K := K * M - (K * M - K);
+         X := (((((X - K * P1) - K * P2) - K * P3)
+                     - K * P4) - K * P5) - K * P6;
+         K := X * Two_Over_Pi;
+      end loop;
+
+      if K /= K then
+
+         --  K is not a number, because X was not finite
+
+         raise Constraint_Error;
+      end if;
+
+      K := Double'Rounding (K);
+      Q := Integer (K) mod 4;
+      X := (((((X - K * P1) - K * P2) - K * P3)
+                  - K * P4) - K * P5) - K * P6;
    end Reduce;
 
    ----------
@@ -241,9 +208,9 @@ package body Ada.Numerics.Aux is
       return Result;
    end Sqrt;
 
-   ---------------------------------
-   --  Other Elementary Functions --
-   ---------------------------------
+   --------------------------------
+   -- Other Elementary Functions --
+   --------------------------------
 
    --  These are built using the previously implemented basic functions
 
@@ -253,6 +220,7 @@ package body Ada.Numerics.Aux is
 
    function Acos (X : Double) return Double is
       Result  : Double;
+
    begin
       Result := 2.0 * Atan (Sqrt ((1.0 - X) / (1.0 + X)));
 
@@ -271,8 +239,8 @@ package body Ada.Numerics.Aux is
 
    function Asin (X : Double) return Double is
       Result  : Double;
-   begin
 
+   begin
       Result := Atan (X / Sqrt ((1.0 - X) * (1.0 + X)));
 
       --  The result value is NaN iff input was invalid
@@ -289,29 +257,38 @@ package body Ada.Numerics.Aux is
    ---------
 
    function Cos (X : Double) return Double is
-      Reduced_X : Double := X;
+      Reduced_X : Double := abs X;
       Result    : Double;
-      Status    : FPU_Status_Word;
+      Quadrant  : Natural range 0 .. 3;
 
    begin
+      if Reduced_X > Pi / 4.0 then
+         Reduce (Reduced_X, Quadrant);
 
-      loop
-         Asm
-           (Template =>
-            "fcos                 " & NL
-          & "xorl    %%eax, %%eax " & NL
-          & "fnstsw  %%ax         ",
-            Outputs  => (Double'Asm_Output         ("=t", Result),
-                        FPU_Status_Word'Asm_Output ("=a", Status)),
-            Inputs   => Double'Asm_Input           ("0", Reduced_X));
+         case Quadrant is
+            when 0 =>
+               Asm (Template  => "fcos",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+            when 1 =>
+               Asm (Template  => "fsin",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", -Reduced_X));
+            when 2 =>
+               Asm (Template  => "fcos ; fchs",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+            when 3 =>
+               Asm (Template  => "fsin",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+         end case;
 
-         exit when not Status.C2;
-
-         --  Original argument was not in range and the result
-         --  is the unmodified argument.
-
-         Reduced_X := Reduce (Result);
-      end loop;
+      else
+         Asm (Template  => "fcos",
+              Outputs  => Double'Asm_Output ("=t", Result),
+              Inputs   => Double'Asm_Input  ("0", Reduced_X));
+      end if;
 
       return Result;
    end Cos;
@@ -322,7 +299,6 @@ package body Ada.Numerics.Aux is
 
    function Logarithmic_Pow (X, Y : Double) return Double is
       Result  : Double;
-
    begin
       Asm (Template => ""             --  X                  : Y
        & "fyl2x                " & NL --  Y * Log2 (X)
@@ -339,7 +315,6 @@ package body Ada.Numerics.Aux is
          Inputs   =>
            (Double'Asm_Input  ("0", X),
             Double'Asm_Input  ("u", Y)));
-
       return Result;
    end Logarithmic_Pow;
 
@@ -351,8 +326,7 @@ package body Ada.Numerics.Aux is
       type Mantissa_Type is mod 2**Double'Machine_Mantissa;
       --  Modular type that can hold all bits of the mantissa of Double
 
-      --  For negative exponents, a division is done
-      --  at the end of the processing.
+      --  For negative exponents, do divide at the end of the processing
 
       Negative_Y : constant Boolean := Y < 0.0;
       Abs_Y      : constant Double := abs Y;
@@ -370,8 +344,7 @@ package body Ada.Numerics.Aux is
       Factor : Double := 1.0;
 
    begin
-      --  Select algorithm for calculating Pow:
-      --  integer cases fall through
+      --  Select algorithm for calculating Pow (integer cases fall through)
 
       if Exp_High >= 2.0**Double'Machine_Mantissa then
 
@@ -395,7 +368,6 @@ package body Ada.Numerics.Aux is
 
       elsif Exp_High /= Abs_Y then
          Exp_Low := Abs_Y - Exp_High;
-
          Factor := 1.0;
 
          if Exp_Low /= 0.0 then
@@ -473,27 +445,36 @@ package body Ada.Numerics.Aux is
    function Sin (X : Double) return Double is
       Reduced_X : Double := X;
       Result    : Double;
-      Status    : FPU_Status_Word;
+      Quadrant  : Natural range 0 .. 3;
 
    begin
+      if abs X > Pi / 4.0 then
+         Reduce (Reduced_X, Quadrant);
 
-      loop
-         Asm
-           (Template =>
-            "fsin                 " & NL
-          & "xorl    %%eax, %%eax " & NL
-          & "fnstsw  %%ax         ",
-            Outputs  => (Double'Asm_Output          ("=t", Result),
-                         FPU_Status_Word'Asm_Output ("=a", Status)),
-            Inputs   => Double'Asm_Input            ("0", Reduced_X));
+         case Quadrant is
+            when 0 =>
+               Asm (Template  => "fsin",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+            when 1 =>
+               Asm (Template  => "fcos",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+            when 2 =>
+               Asm (Template  => "fsin",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", -Reduced_X));
+            when 3 =>
+               Asm (Template  => "fcos ; fchs",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+         end case;
 
-         exit when not Status.C2;
-
-         --  Original argument was not in range and the result
-         --  is the unmodified argument.
-
-         Reduced_X := Reduce (Result);
-      end loop;
+      else
+         Asm (Template  => "fsin",
+            Outputs  => Double'Asm_Output ("=t", Result),
+            Inputs   => Double'Asm_Input  ("0", Reduced_X));
+      end if;
 
       return Result;
    end Sin;
@@ -505,30 +486,34 @@ package body Ada.Numerics.Aux is
    function Tan (X : Double) return Double is
       Reduced_X : Double := X;
       Result    : Double;
-      Status    : FPU_Status_Word;
+      Quadrant  : Natural range 0 .. 3;
 
    begin
+      if abs X > Pi / 4.0 then
+         Reduce (Reduced_X, Quadrant);
 
-      loop
-         Asm
-           (Template =>
-            "fptan                " & NL
-          & "xorl    %%eax, %%eax " & NL
-          & "fnstsw  %%ax         " & NL
-          & "ffree   %%st(0)      " & NL
-          & "fincstp              ",
+         if Quadrant mod 2 = 0 then
+            Asm (Template  => "fptan" & NL
+                            & "ffree   %%st(0)"  & NL
+                            & "fincstp",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+         else
+            Asm (Template  => "fsincos" & NL
+                            & "fdivp   %%st(1)" & NL
+                            & "fchs",
+                  Outputs  => Double'Asm_Output ("=t", Result),
+                  Inputs   => Double'Asm_Input  ("0", Reduced_X));
+         end if;
 
-            Outputs  => (Double'Asm_Output         ("=t", Result),
-                        FPU_Status_Word'Asm_Output ("=a", Status)),
-            Inputs   => Double'Asm_Input           ("0", Reduced_X));
-
-         exit when not Status.C2;
-
-         --  Original argument was not in range and the result
-         --  is the unmodified argument.
-
-         Reduced_X := Reduce (Result);
-      end loop;
+      else
+         Asm (Template  =>
+               "fptan                 " & NL
+             & "ffree   %%st(0)      " & NL
+             & "fincstp              ",
+               Outputs  => Double'Asm_Output ("=t", Result),
+               Inputs   => Double'Asm_Input  ("0", Reduced_X));
+      end if;
 
       return Result;
    end Tan;
@@ -543,11 +528,9 @@ package body Ada.Numerics.Aux is
 
       if abs X < 25.0 then
          return (Exp (X) - Exp (-X)) / 2.0;
-
       else
          return Exp (X) / 2.0;
       end if;
-
    end Sinh;
 
    ----------
@@ -560,11 +543,9 @@ package body Ada.Numerics.Aux is
 
       if abs X < 22.0 then
          return (Exp (X) + Exp (-X)) / 2.0;
-
       else
          return Exp (X) / 2.0;
       end if;
-
    end Cosh;
 
    ----------
@@ -574,7 +555,7 @@ package body Ada.Numerics.Aux is
    function Tanh (X : Double) return Double is
    begin
       --  Return the Hyperbolic Tangent of x
-      --
+
       --                                    x    -x
       --                                   e  - e        Sinh (X)
       --       Tanh (X) is defined to be -----------   = --------
@@ -586,7 +567,6 @@ package body Ada.Numerics.Aux is
       end if;
 
       return 1.0 / (1.0 + Exp (-2.0 * X)) - 1.0 / (1.0 + Exp (2.0 * X));
-
    end Tanh;
 
 end Ada.Numerics.Aux;

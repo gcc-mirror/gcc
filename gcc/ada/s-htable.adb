@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,9 +182,9 @@ package body System.HTable is
 
    end Static_HTable;
 
-   --------------------
-   --  Simple_HTable --
-   --------------------
+   -------------------
+   -- Simple_HTable --
+   -------------------
 
    package body Simple_HTable is
 
@@ -221,7 +221,6 @@ package body System.HTable is
 
       function  Get (K : Key) return Element is
          Tmp : constant Elmt_Ptr := Tab.Get (K);
-
       begin
          if Tmp = null then
             return No_Element;
@@ -236,7 +235,6 @@ package body System.HTable is
 
       function Get_First return Element is
          Tmp : constant Elmt_Ptr := Tab.Get_First;
-
       begin
          if Tmp = null then
             return No_Element;
@@ -260,7 +258,6 @@ package body System.HTable is
 
       function Get_Next return Element is
          Tmp : constant Elmt_Ptr := Tab.Get_Next;
-
       begin
          if Tmp = null then
             return No_Element;
@@ -318,7 +315,6 @@ package body System.HTable is
 
       procedure Set (K : Key; E : Element) is
          Tmp : constant Elmt_Ptr := Tab.Get (K);
-
       begin
          if Tmp = null then
             Tab.Set (new Element_Wrapper'(K, E, null));
@@ -348,15 +344,16 @@ package body System.HTable is
       function Rotate_Left (Value : Uns; Amount : Natural) return Uns;
       pragma Import (Intrinsic, Rotate_Left);
 
-      Tmp : Uns := 0;
+      Hash_Value : Uns;
 
    begin
+      Hash_Value := 0;
       for J in Key'Range loop
-         Tmp := Rotate_Left (Tmp, 1) + Character'Pos (Key (J));
+         Hash_Value := Rotate_Left (Hash_Value, 3) + Character'Pos (Key (J));
       end loop;
 
       return Header_Num'First +
-               Header_Num'Base (Tmp mod Header_Num'Range_Length);
+               Header_Num'Base (Hash_Value mod Header_Num'Range_Length);
    end Hash;
 
 end System.HTable;

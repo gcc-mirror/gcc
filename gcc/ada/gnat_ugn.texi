@@ -3646,6 +3646,7 @@ describe the switches in more detail in functionally grouped sections.
 * Exception Handling Control::
 * Units to Sources Mapping Files::
 * Integrated Preprocessing::
+* Code Generation Control::
 @ifset vms
 * Return Codes::
 @end ifset
@@ -6533,6 +6534,35 @@ symbol with the same name either in a definition file or specified with a
 This switch is similar to switch @option{^-D^/ASSOCIATE^} of @code{gnatprep}.
 
 @end table
+
+@node Code Generation Control
+@subsection Code Generation Control
+
+@noindent
+
+The GCC technology provides a wide range of target dependent
+@option{-m} switches for controlling
+details of code generation with respect to different versions of
+architectures. This includes variations in instruction sets (e.g.
+different members of the power pc family), and different requirements
+for optimal arrangement of instructions (e.g. different members of
+the x86 family). The list of available @option{-m} switches may be
+found in the GCC documentation.
+
+Use of the these @option{-m} switches may in some cases result in improved
+code performance.
+
+The GNAT Pro technology is tested and qualified without any
+@option{-m} switches,
+so generally the most reliable approach is to avoid the use of these
+switches. However, we generally expect most of these switches to work
+successfully with GNAT Pro, and many customers have reported successful
+use of these options.
+
+Our general advice is to avoid the use of @option{-m} switches unless
+special needs lead to requirements in this area. In particular,
+there is no point in using @option{-m} switches to improve performance
+unless you actually see a performance improvement.
 
 @ifset vms
 @node Return Codes

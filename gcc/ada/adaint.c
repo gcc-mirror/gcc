@@ -806,7 +806,7 @@ __gnat_readdir (DIR *dirp, char *buffer)
     return NULL;
 
 #else
-  struct dirent *dirent = readdir (dirp);
+  struct dirent *dirent = (struct dirent *) readdir (dirp);
 
   if (dirent != NULL)
     {
