@@ -1,3 +1,20 @@
+2004-05-10  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (function_arg_boundary): Align for ABI_V4
+	when size is 8 bytes.
+	(function_arg_advance): Account for stack space used by AltiVec
+	args when -mabi=altivec.  Simplify alignment calculations.  For 
+	ABI_V4, pass AltiVec vectors by reference when -mabi=no-altivec.
+	(function_arg): Similarly.
+	(function_arg_pass_by_reference): True for ABI_V4 AltiVec when
+	not AltiVec ABI.
+	(rs6000_va_arg): Correct fp arg test.  Adjust for AltiVec change.
+	Correct alignment, and align before testing reg count.  Remove
+	TREE_THIS_VOLATILE from reg.  Don't emit unused labels.
+	(rs6000_complex_function_value): Check TARGET_HARD_FLOAT and
+	TARGET_FPRS here..
+	(rs6000_function_value): .. not here before call.
+
 2004-05-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md ("tstsflt_gpr"): Fix typo in unspec.
@@ -15,8 +32,8 @@
 	anything to current_file_decl.
 	(pushdecl_top_level): Likewise.
 	(store_parm_decls_newstyle): Adjust check for nested function.
-	(c_write_global_declarations): Update for renamed variable
-.
+	(c_write_global_declarations): Update for renamed variable.
+
 2004-05-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-protos.h
