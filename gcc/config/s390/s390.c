@@ -5958,8 +5958,11 @@ s390_frame_info (int base_used, int return_addr_used)
 	}
       else
 	{
+	  /* On 31 bit we have to care about alignment of the
+	     floating point regs to provide fastest access.  */
 	  cfun_frame_layout.f0_offset 
-	    = (cfun_frame_layout.gprs_offset
+	    = ((cfun_frame_layout.gprs_offset 
+		& ~(STACK_BOUNDARY / BITS_PER_UNIT - 1))
 	       - 8 * (cfun_fpr_bit_p (0) + cfun_fpr_bit_p (1)));
 	  
 	  cfun_frame_layout.f4_offset 
@@ -5996,7 +5999,9 @@ s390_frame_info (int base_used, int return_addr_used)
     {
       cfun_frame_layout.frame_size += (cfun_frame_layout.save_backchain_p
 				       * UNITS_PER_WORD);
-      
+
+      /* No alignment trouble here because f8-f15 are only saved under 
+	 64 bit.  */
       cfun_frame_layout.f8_offset = (MIN (MIN (cfun_frame_layout.f0_offset,
 					       cfun_frame_layout.f4_offset),
 					  cfun_frame_layout.gprs_offset)
@@ -6009,6 +6014,9 @@ s390_frame_info (int base_used, int return_addr_used)
 	  cfun_frame_layout.frame_size += 8;
       
       cfun_frame_layout.frame_size += cfun_gprs_save_area_size;
+      
+      /* If under 31 bit an odd number of gprs has to be saved we have to adjust
+	 the frame size to sustain 8 byte alignment of stack frames.  */
       cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
 				       STACK_BOUNDARY / BITS_PER_UNIT - 1)
 				      & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
@@ -7150,6 +7158,10 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 1;
       reg = gpr;
       n_reg = 1;
+
+      /* TARGET_KERNEL_BACKCHAIN on 31 bit: It is assumed here that no padding
+	 will be added by s390_frame_info because for va_args always an even
+	 number of gprs has to be saved r15-r2 = 14 regs.  */
       sav_ofs = (TARGET_KERNEL_BACKCHAIN
 		 ? (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
       sav_scale = UNITS_PER_WORD;
@@ -7185,6 +7197,10 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 0;
       reg = gpr;
       n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+      /* TARGET_KERNEL_BACKCHAIN on 31 bit: It is assumed here that no padding
+	will be added by s390_frame_info because for va_args always an even
+	number of gprs has to be saved r15-r2 = 14 regs.  */
       sav_ofs = TARGET_KERNEL_BACKCHAIN ? 
 	(TARGET_64BIT ? 4 : 2) * 8 : 2*UNITS_PER_WORD;
 
