@@ -5366,7 +5366,7 @@ tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
    NOP_EXPR conversions may be removed freely (as long as we
-   are careful not to change the C type of the overall expression)
+   are careful not to change the type of the overall expression).
    We cannot simplify through a CONVERT_EXPR, FIX_EXPR or FLOAT_EXPR,
    but we can constant-fold them if they have constant operands.  */
 
@@ -7173,9 +7173,9 @@ fold (tree expr)
 	  && integer_zerop (arg1))
 	{
 	  if (code == EQ_EXPR)
-	    return integer_zero_node;
+	    return fold_convert (type, integer_zero_node);
 	  else
-	    return integer_one_node;
+	    return fold_convert (type, integer_one_node);
 	}
 
       /* If this is an equality comparison of the address of two non-weak,
@@ -7196,11 +7196,11 @@ fold (tree expr)
 	  && ! DECL_EXTERNAL (TREE_OPERAND (arg1, 0)))
 	{
 	  if (code == EQ_EXPR)
-	    return (operand_equal_p (arg0, arg1, 0)
-		    ? integer_one_node : integer_zero_node);
+	    return fold_convert (type, (operand_equal_p (arg0, arg1, 0)
+		    ? integer_one_node : integer_zero_node));
 	  else
-	    return (operand_equal_p (arg0, arg1, 0)
-		    ? integer_zero_node : integer_one_node);
+	    return fold_convert (type, (operand_equal_p (arg0, arg1, 0)
+		    ? integer_zero_node : integer_one_node));
 	}
 
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))

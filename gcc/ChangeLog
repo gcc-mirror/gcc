@@ -1,3 +1,7 @@
+2004-04-01  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* fold-const.c (folda): Preserve types of comparisons.
+
 2004-04-01  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (backend_init): Move init_optimization_passes call ...
