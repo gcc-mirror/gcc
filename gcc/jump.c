@@ -2744,6 +2744,9 @@ mark_jump_label (x, insn, cross_jump)
 	register rtx next;
 	if (GET_CODE (label) != CODE_LABEL)
 	  abort ();
+	/* Ignore references to labels of containing functions.  */
+	if (LABEL_REF_NONLOCAL_P (x))
+	  break;
 	/* If there are other labels following this one,
 	   replace it with the last of the consecutive labels.  */
 	for (next = NEXT_INSN (label); next; next = NEXT_INSN (next))
@@ -3490,6 +3493,9 @@ rtx_renumbered_equal_p (x, y)
       return XINT (x, 0) == XINT (y, 0);
 
     case LABEL_REF:
+      /* We can't assume nonlocal labels have their following insns yet.  */
+      if (LABEL_REF_NONLOCAL_P (x) || LABEL_REF_NONLOCAL_P (y))
+	return XEXP (x, 0) == XEXP (y, 0);
       /* Two label-refs are equivalent if they point at labels
 	 in the same position in the instruction stream.  */
       return (next_real_insn (XEXP (x, 0))
