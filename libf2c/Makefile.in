@@ -117,36 +117,24 @@ all: all-unilib
 # meant to be invoked via multi-do for multilibs.
 
 # Its dependencies can be satisfied in parallel.  The [fiu]77 targets
-# update stamp files (see the subdir makefiles) which the $(LIBG2C)
-# target checks in the sub make to decide whether to run ar/ranlib.
-# (Probably only one stamp file is really needed.)  The stamp files
-# s-lib[fiu]77 are intentionally not targets, since we're only meant
-# to come in at the level of this target.  The [fiu]77 targets always
-# invoke sub makes to check dependencies in the subdirs, else we'd
+# always invoke sub makes to check dependencies in the subdirs, else we'd
 # have to maintain them at this level; we live with the overhead of
 # some recursive makes which may do nothing.
 
-all-unilib: i77 f77 u77 s-libe77
+all-unilib: i77 f77 u77 libE77.la
 	$(MAKE) $(FLAGS_TO_PASS) $(LIBG2C)
 
 i77 f77 u77: g2c.h
 
 # This target should normally only get invoked via `all-unilib' --
 # after all's well in the subdirs -- actually to assemble the library.
-# The stamp file dependencies are just to check whether libg2c.a is
-# up-to-date (to avoid running ar regardless) -- the files should
-# always have been created by a successful `all-unilib'.
 
-$(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
+$(LIBG2C): libF77.la libI77.la libU77.la libE77.la
 	rm -f $@ ;\
 	set -e; \
-	rm -f objlist ;\
-	touch objlist ;\
-	for i in $(F2CEXT); do objs="$$objs libE77/L$$i.lo"; done ;\
-	echo -n $$objs > objlist 
 	$(LIBTOOL) --mode=link $(CC) -o $@ \
 	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
-	  -rpath $(prefix)/lib `cat objlist` libF77.la libI77.la libU77.la -lc -lm
+	  -rpath $(prefix)/lib libE77.la libF77.la libI77.la libU77.la -lc -lm
 
 i77:
 	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all
@@ -157,7 +145,8 @@ f77:
 u77:
 	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
 
-s-libe77: f2cext.c
+libE77.la: f2cext.c
+	rm -f $@
 	if [ -d libE77 ]; then rm -f libE77/*.o libE77/*.lo; else mkdir libE77; fi
 	for name in $(F2CEXT); \
 	do \
@@ -167,7 +156,7 @@ s-libe77: f2cext.c
 	    -o libE77/L$${name}.o ; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
-	echo timestamp >s-libe77
+	$(LIBTOOL) --mode=link $(CC) -o libE77.la libE77/*.lo
 
 f2cext.c: g2c.h
 
@@ -230,7 +219,7 @@ mostlyclean:
 	rm -f $(LIBG2C) objlist
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
 	$(MULTICLEAN) multi-clean DO=$@
-	rm -fr libE77 s-libe77
+	rm -fr libE77 libE77.la
 
 clean: mostlyclean
 	rm -f config.log
@@ -239,7 +228,7 @@ clean: mostlyclean
 	rm -rf .libs
 
 distclean: clean
-	rm -f g2c.h s-libe77
+	rm -f g2c.h libE77.la
 	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
 	$(MULTICLEAN) multi-clean DO=distclean
 	rm -f config.cache config.status Makefile
