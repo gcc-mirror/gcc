@@ -1,3 +1,9 @@
+Mon Jun 21 05:56:01 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (*-*-uwin*): UWIN has sys_{errlist,nerr} even if
+	the test fails.
+	* configure: Regenerate.
+
 1999-06-10  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (setenv.o): Add config.h dep for setenv.o to fix
