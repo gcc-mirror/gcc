@@ -1,3 +1,15 @@
+2003-12-01  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR other/13221
+	* testsuite/libffi.call/cls_multi_sshort.c: New test case.
+	* testsuite/libffi.call/cls_multi_sshortchar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_schar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_ushortchar.c: Likewise.
+	* testsuite/libffi.call/cls_multi_ushort.c: Likewise.
+
+	* testsuite/libffi.special/unwindtest.cc: Cosmetics.
+
 2003-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* testsuite/libffi.call/ffitest.h: Include <fcntl.h>.
