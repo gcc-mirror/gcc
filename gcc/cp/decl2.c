@@ -417,7 +417,7 @@ c_language_kind c_language = clk_cplusplus;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct { const char *string; int *variable; int on_value;}
+static struct { const char *const string; int *variable; int on_value;}
 lang_f_options[] =
 {
   /* C/C++ options.  */
