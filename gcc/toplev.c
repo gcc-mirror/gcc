@@ -4813,12 +4813,6 @@ process_options ()
 	warning ("-Wuninitialized is not supported without -O");
     }
 
-  /* We do not currently support sibling-call optimization in the
-     presence of exceptions.  See PR2975 for a test-case that will
-     fail if we try to combine both of these features.  */
-  if (flag_exceptions)
-    flag_optimize_sibling_calls = 0;
-
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
