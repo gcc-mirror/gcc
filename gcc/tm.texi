@@ -1362,7 +1362,7 @@ Zero or more C statements that may conditionally modify four variables
 (these three are of type @code{char []}) and @code{reg_class_contents}
 (of type @code{HARD_REG_SET}).
 Before the macro is called @code{fixed_regs}, @code{call_used_regs}
-and @code(reg_class_contents) have been initialized from 
+and @code{reg_class_contents} have been initialized from 
 @code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS} and
 @code{REG_CLASS_CONTENTS}, respectively,
 @code{global_regs} has been cleared, and any @samp{-ffixed-@var{reg}},
