@@ -1,5 +1,5 @@
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
-v// Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>
+// Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>
 
 // make sure __FUNCTION__ and __PRETTY_FUNCTION__ work in member functions
 
