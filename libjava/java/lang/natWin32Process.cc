@@ -136,7 +136,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   int cmdLineLen = 0;
 
   for (int i = 0; i < progarray->length; ++i)
-    cmdLineLen += (_Jv_GetStringUTFLength (elts[i]) + 3);
+    cmdLineLen += (_Jv_GetStringUTFLength (elts[i]) + 1);
 
   char *cmdLine = (char *) _Jv_Malloc (cmdLineLen + 1);
   char *cmdLineCurPos = cmdLine;
@@ -145,11 +145,9 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
     {
       if (i > 0)
         *cmdLineCurPos++ = ' ';
-      *cmdLineCurPos++ = '\"';
       jsize s = _Jv_GetStringUTFLength (elts[i]);
       _Jv_GetStringUTFRegion (elts[i], 0, s, cmdLineCurPos);
       cmdLineCurPos += s;
-      *cmdLineCurPos++ = '\"';
     }
   *cmdLineCurPos = '\0';
 

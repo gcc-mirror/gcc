@@ -67,6 +67,14 @@ final class ConcreteProcess extends Process
                           File dir)
     throws IOException
   {
+    for (int i = 0; i < progarray.length; i++)
+      {
+        String s = progarray[i];
+
+        if ( (s.indexOf (' ') >= 0) || (s.indexOf ('\t') >= 0))
+          progarray[i] = "\"" + s + "\"";
+      }
+
     startProcess (progarray, envp, dir);
   }
 
