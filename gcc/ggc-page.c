@@ -2109,7 +2109,7 @@ ggc_pch_read (FILE *f, void *addr)
   /* We've just read in a PCH file.  So, every object that used to be
      allocated is now free.  */
   clear_marks ();
-#ifdef GGC_POISON
+#ifdef ENABLE_GC_CHECKING
   poison_pages ();
 #endif
 

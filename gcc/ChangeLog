@@ -1,3 +1,8 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* ggc-page.c (ggc_pch_read): Wrap call to poison_pages in 
+	ENABLE_GC_CHECKING not in GGC_POISON.
+
 2003-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/9863
