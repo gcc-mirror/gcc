@@ -8596,7 +8596,7 @@ reload_cse_simplify_operands (insn)
 
   /* Figure out which alternative currently matches.  */
   if (! constrain_operands (insn_code_number, 1))
-    abort ();
+    fatal_insn_not_found (insn);
 
   alternative_reject = (int *) alloca (n_alternatives * sizeof (int));
   alternative_nregs = (int *) alloca (n_alternatives * sizeof (int));

@@ -1,3 +1,8 @@
+Tue Jun 30 08:22:05 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* reload1.c (reload_cse_simplify_operands): Call
+	fatal_insn_not_found, not abort.
+
 Tue Jun 30 02:34:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* choose-temp.c (make_temp_file): Accept new argument for the
