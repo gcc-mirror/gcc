@@ -1335,6 +1335,51 @@ stormy16_function_value (valtype, func)
   return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
 }
 
+/* A C compound statement that outputs the assembler code for a thunk function,
+   used to implement C++ virtual function calls with multiple inheritance.  The
+   thunk acts as a wrapper around a virtual function, adjusting the implicit
+   object parameter before handing control off to the real function.
+
+   First, emit code to add the integer DELTA to the location that contains the
+   incoming first argument.  Assume that this argument contains a pointer, and
+   is the one used to pass the `this' pointer in C++.  This is the incoming
+   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
+   addition must preserve the values of all other incoming arguments.
+
+   After the addition, emit code to jump to FUNCTION, which is a
+   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
+   the return address.  Hence returning from FUNCTION will return to whoever
+   called the current `thunk'.
+
+   The effect must be as if @var{function} had been called directly
+   with the adjusted first argument.  This macro is responsible for
+   emitting all of the code for a thunk function;
+   TARGET_ASM_FUNCTION_PROLOGUE and TARGET_ASM_FUNCTION_EPILOGUE are
+   not invoked.
+
+   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
+   extracted from it.)  It might possibly be useful on some targets, but
+   probably not.  */
+
+void
+stormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
+     FILE *file;
+     tree thunk_fndecl ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  int regnum = FIRST_ARGUMENT_REGISTER;
+  
+  /* There might be a hidden first argument for a returned structure.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+    regnum += 1;
+  
+  fprintf (file, "\tadd %s,#0x%x\n", reg_names[regnum], (delta) & 0xFFFF);
+  fputs ("\tjmpf ", file);
+  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+  putc ('\n', file);
+}
+
 /* Mark functions with SYMBOL_REF_FLAG.  */
 
 void

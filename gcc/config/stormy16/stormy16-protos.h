@@ -46,6 +46,7 @@ extern void    stormy16_expand_builtin_va_start PARAMS ((int, tree, rtx));
 extern rtx     stormy16_expand_builtin_va_arg PARAMS ((tree, tree));
 extern void    stormy16_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx     stormy16_function_value PARAMS ((tree, tree));
+extern void    stormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
 #endif
 
 #ifdef RTX_CODE
