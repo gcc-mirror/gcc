@@ -1479,7 +1479,7 @@ do {									\
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE) \
-  ia64_file_start (FILE)
+  emit_safe_across_calls (FILE)
 
 /* A C compound statement that outputs the assembler code for a thunk function,
    used to implement C++ virtual function calls with multiple inheritance.  */

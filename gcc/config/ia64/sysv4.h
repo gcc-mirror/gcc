@@ -178,7 +178,7 @@ do {									\
 #define ASM_FILE_START(STREAM) \
 do {									\
   output_file_directive (STREAM, main_input_filename);			\
-  ia64_file_start(STREAM);						\
+  emit_safe_across_calls (STREAM);					\
 } while (0)
 
 /* Case label alignment is handled by ADDR_VEC_ALIGN now.  */
