@@ -1426,59 +1426,6 @@ gimplify_conversion (tree *expr_p)
   return GS_OK;
 }
 
-/* Subroutine of gimplify_compound_lval.
-   Converts an ARRAY_REF to the equivalent *(&array + offset) form.  */
-
-static enum gimplify_status
-gimplify_array_ref_to_plus (tree *expr_p, tree *pre_p, tree *post_p)
-{
-  tree array = TREE_OPERAND (*expr_p, 0);
-  tree arrtype = TREE_TYPE (array);
-  tree elttype = TREE_TYPE (arrtype);
-  tree size = array_ref_element_size (*expr_p);
-  tree ptrtype = build_pointer_type (elttype);
-  enum tree_code add_code = PLUS_EXPR;
-  tree idx = TREE_OPERAND (*expr_p, 1);
-  tree minidx = unshare_expr (array_ref_low_bound (*expr_p));
-  tree offset, addr, result;
-  enum gimplify_status ret;
-
-  /* If the array domain does not start at zero, apply the offset.  */
-  if (!integer_zerop (minidx))
-    {
-      idx = convert (TREE_TYPE (minidx), idx);
-      idx = fold (build (MINUS_EXPR, TREE_TYPE (minidx), idx, minidx));
-    }
-  
-  /* If the index is negative -- a technically invalid situation now
-     that we've biased the index back to zero -- then casting it to
-     unsigned has ill effects.  In particular, -1*4U/4U != -1.
-     Represent this as a subtraction of a positive rather than addition
-     of a negative.  This will prevent any conversion back to ARRAY_REF
-     from getting the wrong results from the division.  */
-  if (TREE_CODE (idx) == INTEGER_CST && tree_int_cst_sgn (idx) < 0)
-    {
-      idx = fold (build1 (NEGATE_EXPR, TREE_TYPE (idx), idx));
-      add_code = MINUS_EXPR;
-    }
-
-  /* Pointer arithmetic must be done in sizetype.  */
-  idx = fold_convert (sizetype, idx);
-
-  /* Convert the index to a byte offset.  */
-  offset = size_binop (MULT_EXPR, size, idx);
-
-  ret = gimplify_expr (&array, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
-  if (ret == GS_ERROR)
-    return ret;
-
-  addr = build_fold_addr_expr_with_type (array, ptrtype);
-  result = fold (build (add_code, ptrtype, addr, offset));
-  *expr_p = build1 (INDIRECT_REF, elttype, result);
-
-  return GS_OK;
-}
-
 /* Gimplify the COMPONENT_REF, ARRAY_REF, REALPART_EXPR or IMAGPART_EXPR
    node pointed by EXPR_P.
 
@@ -3122,15 +3069,6 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	 builtins like __builtin_va_end).  */
       *expr_p = TREE_OPERAND (op0, 0);
       ret = GS_OK;
-      break;
-
-    case ARRAY_REF:
-      /* Fold &a[6] to (&a + 6).  */
-      ret = gimplify_array_ref_to_plus (&TREE_OPERAND (expr, 0),
-					pre_p, post_p);
-
-      /* This added an INDIRECT_REF.  Fold it away.  */
-      *expr_p = TREE_OPERAND (TREE_OPERAND (expr, 0), 0);
       break;
 
     case VIEW_CONVERT_EXPR:

@@ -6784,7 +6784,8 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
     case ALTIVEC_BUILTIN_COMPILETIME_ERROR:
       arg0 = TREE_VALUE (arglist);
-      while (TREE_CODE (arg0) == NOP_EXPR || TREE_CODE (arg0) == ADDR_EXPR)
+      while (TREE_CODE (arg0) == NOP_EXPR || TREE_CODE (arg0) == ADDR_EXPR
+             || TREE_CODE (arg0) == ARRAY_REF)
 	arg0 = TREE_OPERAND (arg0, 0);
       error ("invalid parameter combination for `%s' AltiVec intrinsic",
 	     TREE_STRING_POINTER (arg0));
