@@ -98,4 +98,7 @@ enum pragma_state
 extern int handle_pragma_token PROTO((const char *, tree));
 
 #endif /* HANDLE_GENERIC_PRAGMAS */
+
+extern void init_pragma PROTO((void));
+
 #endif /* _C_PRAGMA_H */
