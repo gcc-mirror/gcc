@@ -1,5 +1,8 @@
 2005-03-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Define LOCALEDIR
+	when testing an installed compiler.
+	
 	* testsuite/lib/libstdc++.exp (v3-build_support): Pass -w when
 	compiling support objects.
 
