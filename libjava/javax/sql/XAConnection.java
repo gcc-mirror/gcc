@@ -46,8 +46,5 @@ import javax.transaction.xa.XAResource;
  */
 public interface XAConnection extends PooledConnection 
 {
-  /**
-   * @since 1.4
-   */
-  public XAResource getXAResource() throws SQLException;
+  XAResource getXAResource() throws SQLException;
 }

@@ -49,20 +49,20 @@ public interface PooledConnection
   /**
    * @since 1.4
    */
-  public Connection getConnection() throws SQLException;
+  Connection getConnection() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void close() throws SQLException;
+  void close() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void addConnectionEventListener(ConnectionEventListener listener);
+  void addConnectionEventListener(ConnectionEventListener listener);
 
   /**
    * @since 1.4
    */
-  public void removeConnectionEventListener(ConnectionEventListener listener);
+  void removeConnectionEventListener(ConnectionEventListener listener);
 }

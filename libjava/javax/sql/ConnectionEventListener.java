@@ -48,10 +48,10 @@ public interface ConnectionEventListener extends EventListener
   /**
    * @since 1.4
    */
-  public void connectionClosed(ConnectionEvent event);
+  void connectionClosed(ConnectionEvent event);
 
   /**
    * @since 1.4
    */
-  public void connectionErrorOccurred(ConnectionEvent event);
+  void connectionErrorOccurred(ConnectionEvent event);
 }

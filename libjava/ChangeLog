@@ -1,5 +1,21 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* javax/sql/ConnectionEventListener.java,
+	javax/sql/ConnectionPoolDataSource.java,
+	javax/sql/DataSource.java,
+	javax/sql/PooledConnection.java,
+	javax/sql/RowSet.java,
+	javax/sql/RowSetInternal.java,
+	javax/sql/RowSetListener.java,
+	javax/sql/RowSetMetaData.java,
+	javax/sql/RowSetReader.java,
+	javax/sql/RowSetWriter.java,
+	javax/sql/XAConnection.java,
+	javax/sql/XADataSource.java:
+	Removing redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* javax/naming/Context.java,
 	javax/naming/Name.java,
 	javax/naming/NameParser.java,

@@ -50,25 +50,25 @@ public interface RowSetInternal
   /**
    * @since 1.4
    */
-  public Object[] getParams() throws SQLException;
+  Object[] getParams() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Connection getConnection() throws SQLException;
+  Connection getConnection() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setMetaData(RowSetMetaData md) throws SQLException;
+  void setMetaData(RowSetMetaData md) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getOriginal() throws SQLException;
+  ResultSet getOriginal() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ResultSet getOriginalRow() throws SQLException;
+  ResultSet getOriginalRow() throws SQLException;
 }

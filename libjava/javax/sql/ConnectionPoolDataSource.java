@@ -49,31 +49,31 @@ public interface ConnectionPoolDataSource
   /**
    * @since 1.4
    */
-  public PooledConnection getPooledConnection() throws SQLException;
+  PooledConnection getPooledConnection() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PooledConnection getPooledConnection(String user, String password)
+  PooledConnection getPooledConnection(String user, String password)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PrintWriter getLogWriter() throws SQLException;
+  PrintWriter getLogWriter() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setLogWriter(PrintWriter out) throws SQLException;
+  void setLogWriter(PrintWriter out) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setLoginTimeout(int seconds) throws SQLException;
+  void setLoginTimeout(int seconds) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getLoginTimeout() throws SQLException;
+  int getLoginTimeout() throws SQLException;
 }

@@ -45,18 +45,9 @@ import java.util.EventListener;
  */
 public interface RowSetListener extends EventListener 
 {
-  /**
-   * @since 1.4
-   */
-  public void rowSetChanged(RowSetEvent event);
+  void rowSetChanged(RowSetEvent event);
 
-  /**
-   * @since 1.4
-   */
-  public void rowChanged(RowSetEvent event);
+  void rowChanged(RowSetEvent event);
 
-  /**
-   * @since 1.4
-   */
-  public void cursorMoved(RowSetEvent event);
+  void cursorMoved(RowSetEvent event);
 }
