@@ -1,3 +1,13 @@
+2000-06-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+ 	* eh-common.h (EH_ALLOC_SIZE, EH_ALLOC_ALIGN): New #defines.
+	(eh_context): Add alloc_mask and alloc_buffer emergency fallback
+	space.
+	* libgcc2.c (__eh_alloc): Moved from cp/exception.cc. Fallback on
+	emergency eh_context buffer, if malloc fails.
+	(__eh_free): Moved from cp/exception.cc. Release to emergency
+	eh_context buffer, if appropriate.
+
 2000-06-06  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* expr.c (store_expr): Fix typo.

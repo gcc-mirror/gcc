@@ -39,6 +39,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    The routine get_dynamic_handler_chain() also has a dependancy on
    the location of 'dynamic_handler_chain'. If its location is changed, 
    that routine must be modified as well. */
+#ifndef EH_ALLOC_SIZE
+/* 192 bytes means the entire eh_context plus malloc overhead fits in 256
+   bytes (assuming 8 byte pointers). 192 bytes gives an eh_info and object
+   size limit of 96 bytes. This should be sufficient for throwing bad_alloc. */
+#define EH_ALLOC_SIZE 192
+#endif
+#ifndef EH_ALLOC_ALIGN
+/* We can't use BIGGEST_ALIGNMENT, because on some systems, that expands to
+   a check on a compile time switch like
+   'target_flags & MASK_ALIGN_DOUBLE ? 64 : 32'. There's no macro for
+   'largest alignment for any code this compiler can build for', which is
+   really what is needed. */
+#define EH_ALLOC_ALIGN 16
+#endif
 
 struct eh_context
 {
@@ -48,6 +62,10 @@ struct eh_context
   void *info;
   /* This is used to remember where we threw for re-throws */
   void *table_index;  /* address of exception table entry to rethrow from */
+  /* emergency fallback space, if malloc fails during handling */
+  char alloc_buffer[EH_ALLOC_SIZE]
+      __attribute__((__aligned__(EH_ALLOC_ALIGN)));
+  unsigned alloc_mask;
 };
 
 #ifndef EH_TABLE_LOOKUP
