@@ -1,3 +1,9 @@
+2003-06-13  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* gcc_update (files_and_dependencies): Add
+	gcc/testsuite/gcc.dg/cpp/_Pragma3.c depends on
+	gcc/testsuite/gcc.dg/cpp/mi1c.h.
+
 2003-05-23  Nathanael Nerode <neroden@gcc.gnu.org>
 
 	* paranoia.cc: Fix spelling error.
