@@ -1,3 +1,10 @@
+2004-12-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	Backport from mainline
+	* aclocal.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Blacklist ultrix*.
+	* configure: Rebuilt.
+
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
 	2004-09-24  Richard Henderson  <rth@redhat.com>
