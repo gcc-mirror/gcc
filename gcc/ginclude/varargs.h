@@ -146,7 +146,7 @@ typedef void *__gnuc_va_list;
 #undef _VA_LIST
 #endif
 
-#if defined(__svr4__) || defined(_SCO_DS)
+#if defined(__svr4__) || (defined(_SCO_DS) && !defined(__VA_LIST))
 /* SVR4.2 uses _VA_LIST for an internal alias for va_list,
    so we must avoid testing it and setting it here.
    SVR4 uses _VA_LIST as a flag in stdarg.h, but we should
@@ -159,6 +159,9 @@ typedef void *__gnuc_va_list;
 #endif
 #endif /* __i860__ */
 typedef __gnuc_va_list va_list;
+#ifdef _SCO_DS
+#define __VA_LIST
+#endif
 #endif /* _VA_LIST_ */
 
 #else /* not __svr4__  || _SCO_DS */
