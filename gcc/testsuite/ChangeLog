@@ -1,5 +1,9 @@
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/old-style-asm-1.c: New test.
+
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/execute/20030109-1.c: New test.
 
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>

@@ -1,5 +1,18 @@
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR inline-asm/8832
+	* tree.h (expand_asm): New prototype.
+	* stmt.c (expand_asm): Set the MEM_VOLATILE_P flag if instructed
+	to do so.
+	* c-semantics (genrtl_asm_stmt): Pass the RID_VOLATILE qualifier
+	down to expand_asm.
+	* c-typeck.c (simple_asm_stmt): Set the RID_VOLATILE qualifier.
+	* rtlanal.c (volatile_insn_p) [ASM_INPUT]: Test the MEM_VOLATILE_P flag.
+	(volatile_refs_p) [ASM_INPUT]: Likewise.
+	(side_effects_p) [ASM_INPUT]: Likewise.
+
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR c/8032
 	* c-typeck.c (process_init_element) [RECORD_TYPE]: For
 	an empty element, do not advance the pointer to unfilled
