@@ -7980,6 +7980,14 @@ reload_cse_regno_equal_p (regno, val, mode)
 	&& (GET_CODE (val) != CONST_INT
 	    || mode == GET_MODE (x)
 	    || (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
+		/* On a big endian machine if the value spans more than
+		   one register then this register holds the high part of
+		   it and we can't use it.
+
+		   ??? We should also compare with the high part of the
+		   value.  */
+		&& !(WORDS_BIG_ENDIAN
+		     && HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
 		&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 					  GET_MODE_BITSIZE (GET_MODE (x))))))
       return 1;
