@@ -26,7 +26,7 @@ set LANG=%LANG% c++.&
 echo lang.mostlyclean: %LANG% | sed "s/&/mostlyclean/g" >> Makefile
 echo lang.clean: %LANG% | sed "s/&/clean/g" >> Makefile
 echo lang.distclean: %LANG% | sed "s/&/distclean/g" >> Makefile
-echo lang.maintrainer-clean: %LANG% | sed "s/&/maintainer-clean/g" >> Makefile
+echo lang.maintainer-clean: %LANG% | sed "s/&/maintainer-clean/g" >> Makefile
 echo /* options.h */ > options.h
 if exist cp\lang-options.h echo #include "cp/lang-options.h" >> options.h
 if exist ada\lang-options.h echo #include "ada/lang-options.h" >> options.h
