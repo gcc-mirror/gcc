@@ -657,10 +657,14 @@
 (define_expand "ashlsi3"
   [(parallel[(set (match_operand:SI 0 "arith_reg_operand" "")
 		  (ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
-			     (match_operand:SI 2 "shiftby_operand" "")))
+			     (match_operand:SI 2 "nonmemory_operand" "")))
 	     (clobber (reg:SI 18))])]
   ""
-  "if (! shiftby_operand (operands[2], SImode)) FAIL;")
+  "
+{
+  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
+    FAIL;
+}")
 
 ;
 ; arithmetic shift right
@@ -776,10 +780,14 @@
 (define_expand "lshrsi3"
   [(parallel[(set (match_operand:SI 0 "arith_reg_operand" "")
 		  (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-			       (match_operand:SI 2 "shiftby_operand" "")))
+			       (match_operand:SI 2 "nonmemory_operand" "")))
 	     (clobber (reg:SI 18))])]
   ""
-  "if (! shiftby_operand (operands[2], SImode)) FAIL;")
+  "
+{
+  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
+    FAIL;
+}")
 
 (define_insn "ashldi3_k"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
