@@ -309,7 +309,6 @@ find_basic_blocks (f, nregs, file)
   register rtx insn;
   register int i;
   rtx nonlocal_label_list = nonlocal_label_rtx_list ();
-  int in_libcall_block = 0;
 
   /* Avoid leaking memory if this is called multiple times per compiled
      function.  */
@@ -326,11 +325,6 @@ find_basic_blocks (f, nregs, file)
 
     for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
       {
-	/* Track when we are inside in LIBCALL block.  */
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	    && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	  in_libcall_block = 1;
-
 	code = GET_CODE (insn);
 
 	/* A basic block starts at label, or after something that can jump.  */
@@ -354,17 +348,23 @@ find_basic_blocks (f, nregs, file)
 		emit_insn_after (nop, prev_call);
 	      }
 	  }
-	/* We change the code of the CALL_INSN, so that it won't start a
-	   new block.  */
-	if (code == CALL_INSN && in_libcall_block)
-	  code = INSN;
 
-	/* Record whether this call created an edge.  */
 	if (code == CALL_INSN)
-	  {
-	    prev_call = insn;
-	    call_had_abnormal_edge = (nonlocal_label_list != 0 || eh_region);
-	  }
+          {
+            rtx note = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
+
+            /* We change the code of the CALL_INSN, so that it won't start a
+               new block.  */
+            if (note && XINT (XEXP (note, 0), 0) == 0)
+              code = INSN;
+            else
+              {
+                prev_call = insn;
+                call_had_abnormal_edge = (nonlocal_label_list != 0
+                                          || eh_region);
+              }
+          }
+
 	else if (code != NOTE && code != BARRIER)
 	  prev_call = 0;
 
@@ -374,10 +374,6 @@ find_basic_blocks (f, nregs, file)
 	  ++eh_region;
 	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
 	  --eh_region;
-
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	    && find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	  in_libcall_block = 0;
       }
   }
 
@@ -447,7 +443,6 @@ find_basic_blocks_1 (f, nonlocal_labels)
   rtx note, eh_note;
   enum rtx_code prev_code, code;
   int depth;
-  int in_libcall_block = 0;
   int call_had_abnormal_edge = 0;
 
   active_eh_region = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
@@ -475,12 +470,6 @@ find_basic_blocks_1 (f, nonlocal_labels)
   for (eh_note = NULL_RTX, insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
        insn; insn = NEXT_INSN (insn))
     {
-
-      /* Track when we are inside in LIBCALL block.  */
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	in_libcall_block = 1;
-
       code = GET_CODE (insn);
       if (code == NOTE)
 	{
@@ -550,16 +539,19 @@ find_basic_blocks_1 (f, nonlocal_labels)
 	 for every insn, since most insns can throw.  */
       else if (eh_note
 	       && (asynchronous_exceptions
-		   || (GET_CODE (insn) == CALL_INSN
-		       && ! in_libcall_block)))
+		   || (GET_CODE (insn) == CALL_INSN)))
 	active_eh_region[INSN_UID (insn)] =
                                         NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
       BLOCK_NUM (insn) = i;
 
       /* We change the code of the CALL_INSN, so that it won't start a
-	 new block.  */
-      if (code == CALL_INSN && in_libcall_block)
-	code = INSN;
+	 new block if it doesn't throw.  */
+      if (code == CALL_INSN)
+        {
+          rtx rnote = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
+          if (rnote && XINT (XEXP (rnote, 0), 0) == 0)
+            code = INSN;
+        }
 
       /* Record whether this call created an edge.  */
       if (code == CALL_INSN)
@@ -568,9 +560,6 @@ find_basic_blocks_1 (f, nonlocal_labels)
       if (code != NOTE)
 	prev_code = code;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	  && find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	in_libcall_block = 0;
     }
 
   if (i + 1 != n_basic_blocks)
@@ -839,9 +828,15 @@ make_edges (i)
 		   || (GET_CODE (insn) == CALL_INSN
 		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
 	    {
-	      if (active_eh_region[INSN_UID (insn)]) 
+              int region = active_eh_region[INSN_UID (insn)];
+              note = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
+
+              /* Override region if we see a REG_EH_REGION note. */
+              if (note)
+                region = XINT (XEXP (note, 0), 0);
+
+	      if (region)
 		{
-		  int region;
 		  handler_info *ptr;
 		  region = active_eh_region[INSN_UID (insn)];
 		  for ( ; region; region = nested_eh_region[region])

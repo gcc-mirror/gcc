@@ -1,3 +1,13 @@
+Tue Jan 19 12:30:37 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* optabs.c (emit_libcall_block): Add a REG_EH_REGION reg note to all
+	calls within a libcall block to indicate no throws are possible.
+	* flow.c (find_basic_blocks, find_basic_blocks_1): Don't look for 
+	libcall blocks. Don't add edges to exception handlers if we see 
+	a REG_EH_REGION note with a value of 0.
+	(make_edges): Override active_eh_region vector if the call has a note
+	indicating the call does not throw.
+
 1999-01-19  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* config/rs6000/sysv4.h (CC1_SPEC): Fix correct numbers of {}.
