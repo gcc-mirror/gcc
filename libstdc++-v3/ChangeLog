@@ -1,3 +1,8 @@
+2002-05-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html:  Update list in #4.1.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2002-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/17_intro/RELEASE-NOTES (New): Update.
