@@ -701,6 +701,7 @@ push_replacement_text (cpp_reader *pfile, cpp_hashnode *node)
       cpp_macro *macro = node->value.macro;
       macro->used = 1;
       text = macro->exp.text;
+      macro->traditional = 1;
       len = macro->count;
     }
 
@@ -934,6 +935,7 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       memcpy (exp, pfile->out.base, len);
       exp[len] = '\n';
       macro->exp.text = exp;
+      macro->traditional = 1;
       macro->count = len;
     }
   else
@@ -949,6 +951,7 @@ save_replacement_text (cpp_reader *pfile, cpp_macro *macro,
       exp = BUFF_FRONT (pfile->a_buff);
       block = (struct block *) (exp + macro->count);
       macro->exp.text = exp;
+      macro->traditional = 1;
 
       /* Write out the block information.  */
       block->text_len = len;

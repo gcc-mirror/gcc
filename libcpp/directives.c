@@ -26,14 +26,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "mkdeps.h"
 #include "obstack.h"
 
-/* Chained list of answers to an assertion.  */
-struct answer
-{
-  struct answer *next;
-  unsigned int count;
-  cpp_token first[1];
-};
-
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
 struct if_stack
@@ -1727,6 +1719,8 @@ do_assert (cpp_reader *pfile)
   node = parse_assertion (pfile, &new_answer, T_ASSERT);
   if (node)
     {
+      size_t answer_size;
+
       /* Place the new answer in the answer list.  First check there
          is not a duplicate.  */
       new_answer->next = 0;
@@ -1741,11 +1735,20 @@ do_assert (cpp_reader *pfile)
 	  new_answer->next = node->value.answers;
 	}
 
+      answer_size = sizeof (struct answer) + ((new_answer->count - 1)
+					      * sizeof (cpp_token));
+      /* Commit or allocate storage for the object.  */
+      if (pfile->hash_table->alloc_subobject)
+	{
+	  struct answer *temp_answer = new_answer;
+	  new_answer = pfile->hash_table->alloc_subobject (answer_size);
+	  memcpy (new_answer, temp_answer, answer_size);
+	}
+      else
+	BUFF_FRONT (pfile->a_buff) += answer_size;
+
       node->type = NT_ASSERTION;
       node->value.answers = new_answer;
-      BUFF_FRONT (pfile->a_buff) += (sizeof (struct answer)
-				     + (new_answer->count - 1)
-				     * sizeof (cpp_token));
       check_eol (pfile);
     }
 }

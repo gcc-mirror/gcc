@@ -712,10 +712,11 @@ C_COMMON_H = c-common.h $(SPLAY_TREE_H) $(CPPLIB_H)
 C_TREE_H = c-tree.h $(C_COMMON_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
-CPPLIB_H = $(srcdir)/../libcpp/include/cpplib.h \
-	$(srcdir)/../libcpp/include/line-map.h
+CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
+	$(srcdir)/../libcpp/include/cpplib.h
 MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h
+CPP_ID_DATA_H = $(CPPLIB_H) $(srcdir)/../libcpp/include/cpp-id-data.h
 TREE_DUMP_H = tree-dump.h $(SPLAY_TREE_H)
 TREE_GIMPLE_H = tree-gimple.h tree-iterator.h
 TREE_FLOW_H = tree-flow.h tree-flow-inline.h tree-ssa-operands.h \
@@ -1522,10 +1523,11 @@ dumpvers: dumpvers.c
 
 version.o: version.c version.h
 
-gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h \
-	$(HASHTAB_H) $(TREE_H) $(RTL_H) function.h insn-config.h $(EXPR_H) $(OPTABS_H) \
-	libfuncs.h debug.h $(GGC_H) bitmap.h $(BASIC_BLOCK_H) hard-reg-set.h \
-	cselib.h insn-addr.h $(TREE_FLOW_H)
+gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	varray.h $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
+	function.h insn-config.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
+	cselib.h insn-addr.h $(OPTABS_H) libfuncs.h debug.h $(GGC_H) \
+	cgraph.h tree-alias-type.h $(TREE_FLOW_H) reload.h $(CPP_ID_DATA_H)
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(HASHTAB_H) toplev.h $(PARAMS_H) hosthooks.h
@@ -2289,7 +2291,7 @@ s-preds: genpreds$(build_exeext)
 	$(STAMP) s-preds
 
 GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
-  $(srcdir)/../libcpp/include/cpplib.h $(host_xm_file_list) \
+  $(CPP_ID_DATA_H) $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/coverage.c $(srcdir)/function.h $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(SYMTAB_H) \

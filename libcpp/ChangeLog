@@ -1,3 +1,27 @@
+2004-06-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* traditional.c (push_replacement_text): Set macro->traditional.
+	(save_replacement_text): Likewise.
+	* pch.c (cpp_write_pch_state): Don't write list of defined macros.
+	(struct save_macro_item): Delete.
+	(struct save_macro_data): Use a character array not the previous
+	structured format.
+	(save_macros): Save macro as text not as internal structures.
+	(cpp_prepare_state): Update for changes to save_macro_data.
+	(cpp_read_state): Don't read macros defined in PCH.  Restore
+	-D macros as text.  
+	* macro.c (create_iso_definition): Honour alloc_subobject.
+	Clear traditional flag.
+	(_cpp_create_definition): Honour alloc_subobject.
+	* lex.c (cpp_token_val_index): New.
+	* internal.h: Include cpp-id-data.h.
+	(uchar): Move definition to cpp-id-data.h.
+	(U): Likewise.
+	(cpp_macro): Likewise.
+	* directives.c (struct answer): Move to cpp-id-data.h.
+	(do_assert): Honour alloc_subobject.
+	
+
 2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.am (all-local): New.
