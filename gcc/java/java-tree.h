@@ -518,6 +518,7 @@ extern tree build_java_array_type PROTO ((tree, HOST_WIDE_INT));
 extern int is_compiled_class PROTO ((tree));
 extern tree mangled_classname PROTO ((const char*, tree));
 extern tree lookup_label PROTO ((int));
+extern tree pop_type_0 PROTO ((tree));
 extern tree pop_type PROTO ((tree));
 extern void pop_argument_types PROTO ((tree));
 extern tree decode_newarray_type PROTO ((int));
