@@ -105,8 +105,9 @@ LTV_AGE=0
 INCLUDES = -I.. -I. -I$(top_srcdir)/intl -I$(top_srcdir) \
 	   -I$(top_srcdir)/config -I$(top_srcdir)/../include
 
+# GCC LOCAL: Removed libintl.h from all-yes.
 all: all-@USE_INCLUDED_LIBINTL@
-all-yes: libintl.$la libintl.h charset.alias ref-add.sed ref-del.sed
+all-yes: libintl.$la charset.alias ref-add.sed ref-del.sed
 all-no: all-no-@BUILD_INCLUDED_LIBINTL@
 all-no-yes: libgnuintl.$la
 all-no-no:
@@ -124,8 +125,9 @@ libintl.la libgnuintl.la: $(OBJECTS)
 	  -rpath $(libdir) \
 	  -no-undefined
 
-libintl.h: libgnuintl.h
-	cp $(srcdir)/libgnuintl.h libintl.h
+#GCC LOCAL: Do not install this file.
+#libintl.h: libgnuintl.h
+#	cp $(srcdir)/libgnuintl.h libintl.h
 
 charset.alias: config.charset
 	$(SHELL) $(srcdir)/config.charset '@host@' > t-$@

@@ -313,7 +313,7 @@ infodir = @infodir@
 # Where cpp should go besides $prefix/bin if necessary
 cpp_install_dir = @cpp_install_dir@
 # where the locale files go
-datadir = $(prefix)/@DATADIRNAME@
+datadir = @datadir@
 localedir = $(datadir)/locale
 # Extension (if any) to put in installed man-page filename.
 manext = .1
@@ -1962,8 +1962,7 @@ $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H)
 
 #
 # Remake internationalization support.
-
-intl.o: intl.c intl.h Makefile
+intl.o: intl.c $(CONFIG_H) system.h intl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c
