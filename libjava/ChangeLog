@@ -1,3 +1,10 @@
+2004-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (lib_org_w3c_dom_la_LIBADD,
+	lib_org_w3c_dom_la_LDFLAGS): New.
+	(lib_org_xml_sax_la_LIBADD, lib_org_xml_sax_la_LDFLAGS): New.
+	* Makefile.in: Rebuilt.
+
 2004-01-19  Matthias Klose  <doko@debian.org>
 
 	* libtool-version: Increased `current' to 5.

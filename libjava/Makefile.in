@@ -397,6 +397,10 @@ org/w3c/dom/traversal/NodeFilter.java \
 org/w3c/dom/traversal/NodeIterator.java \
 org/w3c/dom/traversal/TreeWalker.java
 
+lib_org_w3c_dom_la_LIBADD = -L$(here)/.libs libgcj.la
+lib_org_w3c_dom_la_LDFLAGS = -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
 
 lib_org_xml_sax_la_SOURCES = org/xml/sax/ext/DeclHandler.java \
 org/xml/sax/ext/LexicalHandler.java \
@@ -428,6 +432,10 @@ org/xml/sax/SAXNotSupportedException.java \
 org/xml/sax/SAXParseException.java \
 org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java
+
+lib_org_xml_sax_la_LIBADD = -L$(here)/.libs libgcj.la
+lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
 lib_gnu_awt_xlib_la_SOURCES = $(x_nat_source_files)
@@ -2681,8 +2689,7 @@ java/nio/natDirectByteBufferImpl.lo \
 java/nio/channels/natFileChannelImpl.lo java/text/natCollator.lo \
 java/util/natResourceBundle.lo java/util/natTimeZone.lo \
 java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
-lib_org_xml_sax_la_LDFLAGS = 
-lib_org_xml_sax_la_LIBADD = 
+lib_org_xml_sax_la_DEPENDENCIES =  libgcj.la
 lib_org_xml_sax_la_OBJECTS =  org/xml/sax/ext/DeclHandler.lo \
 org/xml/sax/ext/LexicalHandler.lo \
 org/xml/sax/helpers/AttributeListImpl.lo \
@@ -2704,8 +2711,7 @@ org/xml/sax/SAXException.lo org/xml/sax/SAXNotRecognizedException.lo \
 org/xml/sax/SAXNotSupportedException.lo \
 org/xml/sax/SAXParseException.lo org/xml/sax/XMLFilter.lo \
 org/xml/sax/XMLReader.lo
-lib_org_w3c_dom_la_LDFLAGS = 
-lib_org_w3c_dom_la_LIBADD = 
+lib_org_w3c_dom_la_DEPENDENCIES =  libgcj.la
 lib_org_w3c_dom_la_OBJECTS =  org/w3c/dom/Attr.lo \
 org/w3c/dom/CDATASection.lo org/w3c/dom/CharacterData.lo \
 org/w3c/dom/Comment.lo org/w3c/dom/DOMException.lo \

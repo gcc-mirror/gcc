@@ -307,6 +307,11 @@ org/w3c/dom/traversal/DocumentTraversal.java \
 org/w3c/dom/traversal/NodeFilter.java \
 org/w3c/dom/traversal/NodeIterator.java \
 org/w3c/dom/traversal/TreeWalker.java
+## See jv_convert_LDADD.
+lib_org_w3c_dom_la_LIBADD = -L$(here)/.libs libgcj.la
+lib_org_w3c_dom_la_LDFLAGS = -rpath $(toolexeclibdir) \
+## The mysterious backslash is consumed by make.
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 lib_org_xml_sax_la_SOURCES = org/xml/sax/ext/DeclHandler.java \
 org/xml/sax/ext/LexicalHandler.java \
@@ -338,6 +343,11 @@ org/xml/sax/SAXNotSupportedException.java \
 org/xml/sax/SAXParseException.java \
 org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java
+## See jv_convert_LDADD.
+lib_org_xml_sax_la_LIBADD = -L$(here)/.libs libgcj.la
+lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
+## The mysterious backslash is consumed by make.
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 lib_gnu_awt_xlib_la_SOURCES = $(x_nat_source_files)
 EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(x_java_source_files)
