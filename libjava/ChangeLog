@@ -1,3 +1,9 @@
+2004-09-24  Tom Tromey  <tromey@redhat.com>
+
+	PR java/16789:
+	* testsuite/libjava.lang/pr16789.out: New file.
+	* testsuite/libjava.lang/pr16789.java: New file.
+
 2004-09-24  Andrew Haley  <aph@redhat.com>
 
 	PR java/16927
