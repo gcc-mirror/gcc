@@ -2006,7 +2006,7 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
    the result into DESC.  Very similar to determine_number_of_iterations
    (basically its rtl version), complicated by things like subregs.  */
 
-void
+static void
 iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 struct niter_desc *desc)
 {

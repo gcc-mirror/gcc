@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* loop-iv.c (iv_number_of_iterations): Make it static.
+	* cfgloop.h: Remove the corresponding prototype.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* function.c (combine_temp_slots, assign_parms,
 	expand_pending_sizes): Make them static.
 	* tree.h: Remove the corresponding prototypes.
