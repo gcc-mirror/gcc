@@ -1,5 +1,16 @@
 2003-09-30  Nicolas Pitre <nico@cam.org>
 
+	* arm/lib1funcs.asm (ARM_DIV_MOD_BODY) split into ARM_DIV_BODY
+	and ARM_MOD_BODY.
+	(ARM_MOD_BODY): rewritten. added clz insns for __ARM_ARCH__ >= 5.
+	(ARM_DIV_BODY): added clz insns for __ARM_ARCH__ >= 5,
+	added better divisor alignment in the other case.
+	(ARM_DIV2_ORDER): added, finds the order of a single bit divisor.
+	(__divsi3, __udivsi3, __modsi3, __umodsi3): rewritten using the
+	macros above, add fast exits for divisor >= dividend, etc.
+
+2003-09-30  Nicolas Pitre <nico@cam.org>
+
 	* arm/ieee754-df.S: split compilation of fixunsdfsi from
 	L_fixdfsi target.
 	* arm/t-arm-elf: add _fixunsdfsi target due to the above.
