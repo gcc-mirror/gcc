@@ -66,9 +66,7 @@ static void h8300_insert_attributes PARAMS ((tree, tree *));
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
-static void h8300_encode_label PARAMS ((tree));
 static void h8300_encode_section_info PARAMS ((tree, int));
-static const char *h8300_strip_name_encoding PARAMS ((const char *));
 static int const_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static int h8300_and_costs PARAMS ((rtx));
 static int h8300_shift_costs PARAMS ((rtx));
@@ -99,6 +97,11 @@ const char * const *h8_reg_names;
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
 
 const char *h8_push_op, *h8_pop_op, *h8_mov_op;
+
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_FLAG_EIGHTBIT_DATA	(SYMBOL_FLAG_MACH_DEP << 1)
+#define SYMBOL_FLAG_TINY_DATA		(SYMBOL_FLAG_MACH_DEP << 2)
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -111,8 +114,6 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 #define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING h8300_strip_name_encoding
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
@@ -913,10 +914,9 @@ small_call_insn_operand (op, mode)
       if (register_operand (inside, Pmode))
 	return 1;
 
-      /* A call through the function vector is a small
-	 call too.  */
+      /* A call through the function vector is a small call too.  */
       if (GET_CODE (inside) == SYMBOL_REF
-	  && SYMBOL_REF_FLAG (inside))
+	  && (SYMBOL_REF_FLAGS (inside) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
 	return 1;
     }
   /* Otherwise it's a large call.  */
@@ -4168,50 +4168,31 @@ h8300_handle_tiny_data_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
-static void
-h8300_encode_label (decl)
-     tree decl;
-{
-  const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  const int len = strlen (str);
-  char *newstr = alloca (len + 2);
-
-  newstr[0] = '&';
-  strcpy (&newstr[1], str);
-
-  XSTR (XEXP (DECL_RTL (decl), 0), 0) =
-    ggc_alloc_string (newstr, len + 1);
-}
-
-/* If we are referencing a function that is supposed to be called
-   through the function vector, the SYMBOL_REF_FLAG in the rtl
-   so the call patterns can generate the correct code.  */
+/* Mark function vectors, and various small data objects.  */
 
 static void
 h8300_encode_section_info (decl, first)
      tree decl;
      int first;
 {
+  int extra_flags = 0;
+
+  default_encode_section_info (decl, first);
+
   if (TREE_CODE (decl) == FUNCTION_DECL
       && h8300_funcvec_function_p (decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    extra_flags = SYMBOL_FLAG_FUNCVEC_FUNCTION;
   else if (TREE_CODE (decl) == VAR_DECL
 	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
       if (h8300_eightbit_data_p (decl))
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+	extra_flags = SYMBOL_FLAG_EIGHTBIT_DATA;
       else if (first && h8300_tiny_data_p (decl))
-	h8300_encode_label (decl);
+	extra_flags = SYMBOL_FLAG_TINY_DATA;
     }
-}
 
-/* Undo the effects of the above.  */
-
-static const char *
-h8300_strip_name_encoding (str)
-     const char *str;
-{
-  return str + (*str == '*' || *str == '@' || *str == '&');
+  if (extra_flags)
+    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= extra_flags;
 }
 
 const char *
@@ -4460,8 +4441,8 @@ h8300_eightbit_constant_address_p (x)
   unsigned HOST_WIDE_INT addr;
 
   /* We accept symbols declared with eightbit_data.  */
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
-    return 1;
+  if (GET_CODE (x) == SYMBOL_REF)
+    return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_EIGHTBIT_DATA) != 0;
 
   if (GET_CODE (x) != CONST_INT)
     return 0;
@@ -4494,8 +4475,8 @@ h8300_tiny_constant_address_p (x)
   unsigned HOST_WIDE_INT addr;
 
   /* We accept symbols declared with tiny_data.  */
-  if (GET_CODE (x) == SYMBOL_REF && TINY_DATA_NAME_P (XSTR (x, 0)))
-    return 1;
+  if (GET_CODE (x) == SYMBOL_REF)
+    return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_TINY_DATA) != 0;
 
   if (GET_CODE (x) != CONST_INT)
     return 0;
