@@ -10,6 +10,14 @@ Mon Jan 11 20:23:34 1999  Richard Henderson  <rth@cygnus.com>
 	(pic_tablejump_32, pic_tablejump_64): Kill.
 	(tablejump): Expose pic arithmetic to the compiler.
 
+Thu Jan  7 00:33:33 1999  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+
+	* combine.c (num_sign_bit_copies): In NEG, MULT, DIV and MOD cases,
+	when a test can't be performed due to limited width of
+	HOST_BITS_PER_WIDE_INT, use the more conservative approximation.
+	Fix UDIV case for cases where the first operand has the highest bit
+	set.
+
 Wed Jan  6 23:37:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.h (ASM_OUTPUT_LABELREF): Define.
