@@ -1601,6 +1601,150 @@ bit_operator (x, mode)
 	  || code == IOR);
 }
 
+const char *
+output_logical_op (mode, code, operands)
+     enum machine_mode mode;
+     int code;
+     rtx *operands;
+{
+  /* Pretend that every byte is affected if both operands are registers.  */
+  unsigned HOST_WIDE_INT intval =
+    (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      ? INTVAL (operands[2]) : 0x55555555);
+  /* The determinant of the algorithm.  If we perform an AND, 0
+     affects a bit.  Otherwise, 1 affects a bit.  */
+  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  /* The name of an insn.  */
+  const char *opname;
+  char insn_buf[100];
+
+  switch (code)
+    {
+    case AND:
+      opname = "and";
+      break;
+    case IOR:
+      opname = "or";
+      break;
+    case XOR:
+      opname = "xor";
+      break;
+    default:
+      abort ();
+    }
+
+  switch (mode)
+    {
+    case HImode:
+      /* First, see if we can finish with one insn.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x00ff) != 0)
+	  && ((det & 0xff00) != 0))
+	{
+	  sprintf (insn_buf, "%s.w\t%%T2,%%T0", opname);
+	  output_asm_insn (insn_buf, operands);
+	}
+      else
+	{
+	  /* Take care of the lower byte.  */
+	  if ((det & 0x00ff) != 0)
+	    {
+	      sprintf (insn_buf, "%s\t%%s2,%%s0", opname);
+	      output_asm_insn (insn_buf, operands);
+	    }
+	  /* Take care of the upper byte.  */
+	  if ((det & 0xff00) != 0)
+	    {
+	      sprintf (insn_buf, "%s\t%%t2,%%t0", opname);
+	      output_asm_insn (insn_buf, operands);
+	    }
+	}
+      break;
+    case SImode:
+      /* First, see if we can finish with one insn.
+
+	 If code is either AND or XOR, we exclude two special cases,
+	 0xffffff00 and 0xffff00ff, because insns like sub.w or neg.w
+	 can do a better job.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x0000ffff) != 0)
+	  && ((det & 0xffff0000) != 0)
+	  && (code == IOR || det != 0xffffff00)
+	  && (code == IOR || det != 0xffff00ff))
+	{
+	  sprintf (insn_buf, "%s.l\t%%S2,%%S0", opname);
+	  output_asm_insn (insn_buf, operands);
+	}
+      else
+	{
+	  /* Take care of the lower and upper words individually.  For
+	     each word, we try different methods in the order of
+
+	     1) the special insn (in case of AND or XOR),
+	     2) the word-wise insn, and
+	     3) The byte-wise insn.  */
+	  if ((TARGET_H8300H || TARGET_H8300S)
+	      && ((det & 0x0000ffff) == 0x0000ffff)
+	      && code != IOR)
+	    output_asm_insn ((code == AND)
+			     ? "sub.w\t%f0,%f0" : "neg.w\t%f0",
+			     operands);
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && ((det & 0x000000ff) != 0)
+		   && ((det & 0x0000ff00) != 0))
+	    {
+	      sprintf (insn_buf, "%s.w\t%%f2,%%f0", opname);
+	      output_asm_insn (insn_buf, operands);
+	    }
+	  else
+	    {
+	      if ((det & 0x000000ff) != 0)
+		{
+		  sprintf (insn_buf, "%s\t%%w2,%%w0", opname);
+		  output_asm_insn (insn_buf, operands);
+		}
+	      if ((det & 0x0000ff00) != 0)
+		{
+		  sprintf (insn_buf, "%s\t%%x2,%%x0", opname);
+		  output_asm_insn (insn_buf, operands);
+		}
+	    }
+
+	  if ((TARGET_H8300H || TARGET_H8300S)
+	      && ((det & 0xffff0000) == 0xffff0000)
+	      && code != IOR)
+	    output_asm_insn ((code == AND)
+			     ? "sub.w\t%e0,%e0" : "neg.w\t%e0",
+			     operands);
+	  else if (TARGET_H8300H || TARGET_H8300S)
+	    {
+	      if ((det & 0xffff0000) != 0)
+		{
+		  sprintf (insn_buf, "%s.w\t%%e2,%%e0", opname);
+		  output_asm_insn (insn_buf, operands);
+		}
+	    }
+	  else
+	    {
+	      if ((det & 0x00ff0000) != 0)
+		{
+		  sprintf (insn_buf, "%s\t%%y2,%%y0", opname);
+		  output_asm_insn (insn_buf, operands);
+		}
+	      if ((det & 0xff000000) != 0)
+		{
+		  sprintf (insn_buf, "%s\t%%z2,%%z0", opname);
+		  output_asm_insn (insn_buf, operands);
+		}
+	    }
+	}
+      break;
+    default:
+      abort ();
+    }
+  return "";
+}
+
 /* Shifts.
 
    We devote a fair bit of code to getting efficient shifts since we can only

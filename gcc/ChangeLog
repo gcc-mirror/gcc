@@ -1,3 +1,15 @@
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	emit_logical_op.
+	* config/h8300/h8300.c (emit_logical_op): New.
+	* config/h8300/h8300.md (andhi3): Use emit_logical_op.
+	(andsi3): Likewise.
+	(iorhi3): Likewise.
+	(iorsi3): Likewise.
+	(xorhi3): Likewise.
+	(xorsi3): Likewise.
+
 2001-08-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (move_operand): Cast GET_MODE_SIZE results to HOST_WIDE_INT for
