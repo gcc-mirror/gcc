@@ -1,3 +1,8 @@
+2004-01-04  Richard Henderson  <rth@redhat.com>
+
+	* call.c (build_over_call): Don't create a save_expr of an
+	aggregate, but rather its address.
+
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13529
