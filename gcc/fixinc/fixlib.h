@@ -3,7 +3,7 @@
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GNU C will search.
 
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -88,7 +88,7 @@ typedef int t_success;
 
 #define IGNORE_ARG(a)   ((void)(a))
 
-typedef enum
+typedef enum t_bool
 {
   BOOL_FALSE, BOOL_TRUE
 } t_bool;

@@ -1,3 +1,10 @@
+2001-03-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* fixinc/fixlib.h (t_bool): Add identifier `t_bool' in typedef.
+	* fixinc/server.c (read_pipe_timeout): Use enum t_bool instead of
+	t_bool in declaration because pcc can't combine volatile with typedef
+	types.
+
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* longlong.h (umul_ppmm): Don't use a multiline string.
