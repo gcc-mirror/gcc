@@ -1,3 +1,8 @@
+2004-09-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.c (machopic_validate_stub_or_non_lazy_ptr): Mark
+	the thing referenced as used, not the stub itself.
+
 2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (enum c_storage_class): New.
