@@ -6094,12 +6094,26 @@ check_dbra_loop (loop_end, insn_count, loop_start)
   rtx comparison;
   rtx before_comparison;
   rtx p;
+  rtx jump;
+  rtx first_compare;
+  int compare_and_branch;
 
   /* If last insn is a conditional branch, and the insn before tests a
      register value, try to optimize it.  Otherwise, we can't do anything.  */
 
-  comparison = get_condition_for_loop (PREV_INSN (loop_end));
+  jump = PREV_INSN (loop_end);
+  comparison = get_condition_for_loop (jump);
   if (comparison == 0)
+    return 0;
+
+  /* Try to compute whether the compare/branch at the loop end is one or
+     two instructions.  */
+  get_condition (jump, &first_compare);
+  if (first_compare == jump)
+    compare_and_branch = 1;
+  else if (first_compare == prev_nonnote_insn (jump))
+    compare_and_branch = 2;
+  else
     return 0;
 
   /* Check all of the bivs to see if the compare uses one of them.
@@ -6112,7 +6126,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
       if (bl->biv_count == 1
 	  && bl->biv->dest_reg == XEXP (comparison, 0)
 	  && ! reg_used_between_p (regno_reg_rtx[bl->regno], bl->biv->insn,
-				   PREV_INSN (PREV_INSN (loop_end))))
+				   first_compare))
 	break;
     }
 
@@ -6253,7 +6267,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	  && reversible_mem_store
 	  && (no_use_except_counting
 	      || ((bl->giv_count + bl->biv_count + num_mem_sets
-		   + num_movables + 2 == insn_count)
+		   + num_movables + compare_and_branch == insn_count)
 		  && (bl == loop_iv_list && bl->next == 0))))
 	{
 	  rtx tem;
@@ -6345,8 +6359,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	      /* Emit an insn after the end of the loop to set the biv's
 		 proper exit value if it is used anywhere outside the loop.  */
-	      if ((REGNO_LAST_UID (bl->regno)
-		   != INSN_UID (PREV_INSN (PREV_INSN (loop_end))))
+	      if ((REGNO_LAST_UID (bl->regno) != INSN_UID (first_compare))
 		  || ! bl->init_insn
 		  || REGNO_FIRST_UID (bl->regno) != INSN_UID (bl->init_insn))
 		emit_insn_after (gen_move_insn (reg, final_value),
@@ -6354,7 +6367,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	      /* Delete compare/branch at end of loop.  */
 	      delete_insn (PREV_INSN (loop_end));
-	      delete_insn (PREV_INSN (loop_end));
+	      if (compare_and_branch == 2)
+		delete_insn (first_compare);
 
 	      /* Add new compare/branch insn at end of loop.  */
 	      start_sequence ();

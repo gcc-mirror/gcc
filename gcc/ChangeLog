@@ -1,3 +1,11 @@
+Mon Apr 27 18:36:28 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (check_dbra_loop): New locals jump, first_compare, and
+	compare_and_branch.  Call get_condition to set first_compare.
+	Set compare_and_branch to number of compare/branch instructions.
+	Replace PREV_INSN (PREV_INSN (loop_end)) with first_compare.
+	Replace '2' with compare_and_branch.
+
 Mon Apr 27 15:53:30 EDT 1998 Andrew MacLeod <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_qualified): Replace missing else.
