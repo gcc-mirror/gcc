@@ -1466,7 +1466,10 @@ merge_equiv_classes (class1, class2)
 	  remove_from_table (elt, hash);
 
 	  if (insert_regs (exp, class1, 0))
-	    hash = HASH (exp, mode);
+	    {
+	      rehash_using_reg (exp);
+	      hash = HASH (exp, mode);
+	    }
 	  new = insert (exp, class1, hash, mode);
 	  new->in_memory = hash_arg_in_memory;
 	  new->in_struct = hash_arg_in_struct;
@@ -1955,17 +1958,6 @@ canon_hash (x, mode)
       if (fmt[i] == 'e')
 	{
 	  rtx tem = XEXP (x, i);
-	  rtx tem1;
-
-	  /* If the operand is a REG that is equivalent to a constant, hash
-	     as if we were hashing the constant, since we will be comparing
-	     that way.  */
-	  if (tem != 0 && GET_CODE (tem) == REG
-	      && REGNO_QTY_VALID_P (REGNO (tem))
-	      && qty_mode[reg_qty[REGNO (tem)]] == GET_MODE (tem)
-	      && (tem1 = qty_const[reg_qty[REGNO (tem)]]) != 0
-	      && CONSTANT_P (tem1))
-	    tem = tem1;
 
 	  /* If we are about to do the last recursive call
 	     needed at this level, change it into iteration.
@@ -7030,7 +7022,10 @@ cse_insn (insn, in_libcall_block)
 	  classp = 0;
 	}
       if (insert_regs (src_eqv, classp, 0))
-	src_eqv_hash = HASH (src_eqv, eqvmode);
+	{
+	  rehash_using_reg (src_eqv);
+	  src_eqv_hash = HASH (src_eqv, eqvmode);
+	}
       elt = insert (src_eqv, classp, src_eqv_hash, eqvmode);
       elt->in_memory = src_eqv_in_memory;
       elt->in_struct = src_eqv_in_struct;
@@ -7077,7 +7072,10 @@ cse_insn (insn, in_libcall_block)
 		   any of the src_elt's, because they would have failed to
 		   match if not still valid.  */
 		if (insert_regs (src, classp, 0))
-		  sets[i].src_hash = HASH (src, mode);
+		  {
+		    rehash_using_reg (src);
+		    sets[i].src_hash = HASH (src, mode);
+		  }
 		elt = insert (src, classp, sets[i].src_hash, mode);
 		elt->in_memory = sets[i].src_in_memory;
 		elt->in_struct = sets[i].src_in_struct;
@@ -7202,9 +7200,12 @@ cse_insn (insn, in_libcall_block)
 	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
 	  /* Registers must also be inserted into chains for quantities.  */
 	  if (insert_regs (dest, sets[i].src_elt, 1))
-	    /* If `insert_regs' changes something, the hash code must be
-	       recalculated.  */
-	    sets[i].dest_hash = HASH (dest, GET_MODE (dest));
+	    {
+	      /* If `insert_regs' changes something, the hash code must be
+		 recalculated.  */
+	      rehash_using_reg (dest);
+	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
+	    }
 
 	elt = insert (dest, sets[i].src_elt,
 		      sets[i].dest_hash, GET_MODE (dest));
@@ -7268,7 +7269,10 @@ cse_insn (insn, in_libcall_block)
 		if (src_elt == 0)
 		  {
 		    if (insert_regs (new_src, classp, 0))
-		      src_hash = HASH (new_src, new_mode);
+		      {
+			rehash_using_reg (new_src);
+			src_hash = HASH (new_src, new_mode);
+		      }
 		    src_elt = insert (new_src, classp, src_hash, new_mode);
 		    src_elt->in_memory = elt->in_memory;
 		    src_elt->in_struct = elt->in_struct;
