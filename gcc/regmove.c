@@ -193,12 +193,7 @@ discover_flags_reg ()
 	return pc_rtx;
       found = (GET_CODE (tmp) == REG && REGNO (tmp) < FIRST_PSEUDO_REGISTER);
 
-#ifdef HAVE_cc0
-      /* If we're cc0, and we found a potential flags reg, bail.  */
-      return (found ? pc_rtx : cc0_rtx);
-#else
       return (found ? tmp : NULL_RTX);
-#endif
     }
 
   return pc_rtx;
@@ -228,6 +223,14 @@ mark_flags_life_zones (flags)
   int flags_nregs;
   int block;
 
+#ifdef HAVE_cc0
+  /* If we found a flags register on a cc0 host, bail.  */
+  if (flags == NULL_RTX)
+    flags = cc0_rtx;
+  else if (flags != cc0_rtx)
+    flags = pc_rtx;
+#endif
+    
   /* Simple cases first: if no flags, clear all modes.  If confusing,
      mark the entire function as being in a flags shadow.  */
   if (flags == NULL_RTX || flags == pc_rtx)
