@@ -1,3 +1,8 @@
+Tue Oct 28 23:55:27 1997  Doug Evans  (devans@cygnus.com)
+
+	* function.c (assign_parms): Correct mode of stack_parm if
+	entry_parm underwent a mode conversion.
+
 1997-10-28  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* global.c (global_alloc): Use xmalloc instead of alloca for
