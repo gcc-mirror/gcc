@@ -1,3 +1,8 @@
+2001-12-17  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.c (expand_block_move): Fix limits on max size 
+ 	of bytes.
+
 2001-12-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* target.h (asm_out.byte_op, asm_out.aligned_op, asm_out.unaligned_op,
