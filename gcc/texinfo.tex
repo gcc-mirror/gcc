@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.186 1996/11/05 19:51:16 karl Exp karl $
+%% $Id: texinfo.tex,v 2.187 1996/11/05 19:52:23 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.186 $
+\deftexinfoversion$Revision: 2.188 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4163,7 +4163,7 @@ width0pt\relax} \fi
 
 % Use \turnoffactive so that punctuation chars such as underscore
 % work in node names.
-\def\dosetq #1#2{{\let\folio=0 \turnoffactive \auxhat%
+\def\dosetq #1#2{{\let\folio=0 \turnoffactive 
 \edef\next{\write\auxfile{\internalsetq {#1}{#2}}}%
 \next}}
 
@@ -4232,84 +4232,101 @@ width0pt\relax} \fi
   #2% Output the suffix in any case.
 }
 
-% Read the last existing aux file, if any.  No error if none exists.
-
 % This is the macro invoked by entries in the aux file.
-\def\xrdef #1#2{
-{\catcode`\'=\other\expandafter \gdef \csname X#1\endcsname {#2}}}
+\def\xrdef #1#2{{%
+  \catcode`\'=\other
+  \expandafter\gdef\csname X#1\endcsname{#2}%
+}}
 
-\def\readauxfile{%
-\begingroup
-\catcode `\^^@=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\^^C=\other
-\catcode `\^^D=\other
-\catcode `\^^E=\other
-\catcode `\^^F=\other
-\catcode `\^^G=\other
-\catcode `\^^H=\other
-\catcode `\=\other
-\catcode `\^^L=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode `\=\other
-\catcode 26=\other
-\catcode `\^^[=\other
-\catcode `\^^\=\other
-\catcode `\^^]=\other
-\catcode `\^^^=\other
-\catcode `\^^_=\other
-\catcode `\@=\other
-\catcode `\^=\other
-\catcode `\~=\other
-\catcode `\[=\other
-\catcode `\]=\other
-\catcode`\"=\other
-\catcode`\_=\other
-\catcode`\|=\other
-\catcode`\<=\other
-\catcode`\>=\other
-\catcode `\$=\other
-\catcode `\#=\other
-\catcode `\&=\other
-% `\+ does not work, so use 43.
-\catcode 43=\other
-% Make the characters 128-255 be printing characters
-{%
-  \count 1=128
-  \def\loop{%
-    \catcode\count 1=\other
-    \advance\count 1 by 1
-    \ifnum \count 1<256 \loop \fi
+% Read the last existing aux file, if any.  No error if none exists.
+\def\readauxfile{\begingroup
+  \catcode`\^^@=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\^^C=\other
+  \catcode`\^^D=\other
+  \catcode`\^^E=\other
+  \catcode`\^^F=\other
+  \catcode`\^^G=\other
+  \catcode`\^^H=\other
+  \catcode`\=\other
+  \catcode`\^^L=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode`\=\other
+  \catcode26=\other
+  \catcode`\^^[=\other
+  \catcode`\^^\=\other
+  \catcode`\^^]=\other
+  \catcode`\^^^=\other
+  \catcode`\^^_=\other
+  \catcode`\@=\other
+  \catcode`\^=\other
+  % It was suggested to define this as 7, which would allow ^^e4 etc.
+  % in xref tags, i.e., node names.  But since ^^e4 notation isn't
+  % supported in the main text, it doesn't seem desirable.  Furthermore,
+  % that is not enough: for node names that actually contain a ^
+  % character, we would end up writing a line like this: 'xrdef {'hat
+  % b-title}{'hat b} and \xrdef does a \csname...\endcsname on the first
+  % argument, and \hat is not an expandable control sequence.  It could
+  % all be worked out, but why?  Either we support ^^ or we don't.
+  % 
+  % The other change necessary for this was to define \auxhat:
+  % \def\auxhat{\def^{'hat }}% extra space so ok if followed by letter
+  % and then to call \auxhat in \setq.
+  % 
+  \catcode`\~=\other
+  \catcode`\[=\other
+  \catcode`\]=\other
+  \catcode`\"=\other
+  \catcode`\_=\other
+  \catcode`\|=\other
+  \catcode`\<=\other
+  \catcode`\>=\other
+  \catcode`\$=\other
+  \catcode`\#=\other
+  \catcode`\&=\other
+  % `\+ does not work, so use 43.
+  \catcode43=\other
+  % Make the characters 128-255 be printing characters
+  {%
+    \count 1=128
+    \def\loop{%
+      \catcode\count 1=\other
+      \advance\count 1 by 1
+      \ifnum \count 1<256 \loop \fi
+    }%
   }%
-}%
-% the aux file uses ' as the escape.
-% Turn off \ as an escape so we do not lose on
-% entries which were dumped with control sequences in their names.
-% For example, 'xrdef {$\leq $-fun}{page ...} made by @defun ^^
-% Reference to such entries still does not work the way one would wish,
-% but at least they do not bomb out when the aux file is read in.
-\catcode `\{=1 \catcode `\}=2
-\catcode `\%=\other
-\catcode `\'=0
-\catcode`\^=7 % to make ^^e4 etc usable in xref tags 
-\catcode `\\=\other
-\openin 1 \jobname.aux
-\ifeof 1 \else \closein 1 \input \jobname.aux \global\havexrefstrue
-\global\warnedobstrue
-\fi
-% Open the new aux file.  Tex will close it automatically at exit.
-\openout \auxfile=\jobname.aux
+  % The aux file uses ' as the escape (for now).
+  % Turn off \ as an escape so we do not lose on
+  % entries which were dumped with control sequences in their names.
+  % For example, 'xrdef {$\leq $-fun}{page ...} made by @defun ^^
+  % Reference to such entries still does not work the way one would wish,
+  % but at least they do not bomb out when the aux file is read in.
+  \catcode`\{=1
+  \catcode`\}=2
+  \catcode`\%=\other
+  \catcode`\'=0
+  \catcode`\\=\other
+  %
+  \openin 1 \jobname.aux
+  \ifeof 1 \else
+    \closein 1
+    \input \jobname.aux
+    \global\havexrefstrue
+    \global\warnedobstrue
+  \fi
+  % Open the new aux file.  TeX will close it automatically at exit.
+  \openout\auxfile=\jobname.aux
 \endgroup}
 
 
@@ -4605,7 +4622,6 @@ width0pt\relax} \fi
 \def~{{\tt \char '176}}
 \chardef\hat=`\^
 \catcode`\^=\active
-\def\auxhat{\def^{'hat}}
 \def^{{\tt \hat}}
 
 \catcode`\_=\active
