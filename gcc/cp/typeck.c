@@ -698,13 +698,8 @@ common_type (t1, t2)
 	tt1 = TYPE_MAIN_VARIANT (tt1);
 	tt2 = TYPE_MAIN_VARIANT (tt2);
 
-	if (same_type_p (tt1, tt2))
+	if (tt1 == tt2)
 	  target = tt1;
-	else if (b1)
-	  {
-	    compiler_error ("common_type called with uncommon member types");
-	    target = tt1;
-	  }
 	else if (tt1 == void_type_node || tt2 == void_type_node)
 	  target = void_type_node;
 	else if (tt1 == unknown_type_node)

@@ -2666,6 +2666,10 @@ redeclare_class_template (type, parms)
 	/* Update the previous template parameters (which are the ones
 	   that will really count) with the new default value.  */
 	TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i)) = parm_default;
+      else if (tmpl_default != NULL_TREE)
+	/* Update the new parameters, too; they'll be used as the
+	   parameters for any members.  */
+	TREE_PURPOSE (TREE_VEC_ELT (parms, i)) = tmpl_default;
     }
 }
 
