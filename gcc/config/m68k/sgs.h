@@ -215,7 +215,9 @@ do { union { float f; long l;} tem;			\
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)			\
-	asm_fprintf ((FILE),"%I0x%x%08x", u.i[0], u.i[1]);
+  do {  union real_extract u;					\
+	u.d = (VALUE);						\
+	asm_fprintf ((FILE),"%I0x%x%08x", u.i[0], u.i[1]); } while (0)
 
 /* How to output a block of SIZE zero bytes.  Note that the `space' pseudo,
    when used in the text segment, causes SGS assemblers to output nop insns
