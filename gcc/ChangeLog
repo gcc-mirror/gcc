@@ -1,3 +1,31 @@
+Fri Aug 28 19:00:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (arith_operand, const64_operand,
+	const64_high_operand, arith_double_4096_operand): Mark mode as
+	unused.
+	(create_simple_focus_bits): Remove unused arg highest_bit_set, all
+	callers changed.
+	(sparc_emit_set_const64): Remove unused variable i.
+	(sparc_splitdi_legitimate): Likewise for addr_part.
+	(ultra_code_from_mask): Likewise for mask.
+	(ultra_cmove_results_ready_p): Fixup entry modulo calc.
+	(ultra_flush_pipeline): Likewise.
+	(ultra_fpmode_conflict_exists): Likewise, remove unused variable
+	this_type, and allow loads and stores of differing FP modes as
+	they do not create a conflict.
+	(ultra_find_type): Initialize fpmode to SFmode, fix
+	parenthesization thinkos in large conditional.
+	(ultrasparc_sched_init): Mark dump and sched_verbose as unused.
+	Init free_slot_mask after ultra_cur_hist is reset, not before.
+	(ultrasparc_rescan_pipeline_state): Remove unused variable ucode.
+	(ultrasparc_sched_reorder): Don't bzero current pipeline state,
+	use ultra_flush_pipeline instead, then re-init group pointer.
+	Fix statement with no effect.  If no progress made in, and no
+	instructions scheduled at all, advance to new pipeline cycle else
+	we get into an endless loop.
+	(ultrasparc_adjust_cost): Remove previous arg.
+	* config/sparc/sparc.h (ADJUST_COST): Update to reflect that.
+	
 Fri Aug 28 13:52:35 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sparc.md (DImode, DFmode, TFmode splits): Delete self_reference

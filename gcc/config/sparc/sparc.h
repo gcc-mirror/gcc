@@ -2732,8 +2732,7 @@ extern struct rtx_def *legitimize_pic_address ();
   if (sparc_cpu == PROCESSOR_SUPERSPARC)			\
     (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST);	\
   else if (sparc_cpu == PROCESSOR_ULTRASPARC)			\
-    (COST) = ultrasparc_adjust_cost (INSN, LINK, DEP,		\
-				     last_scheduled_insn, COST);\
+    (COST) = ultrasparc_adjust_cost (INSN, LINK, DEP, COST);	\
   else
 
 extern void ultrasparc_sched_reorder ();
