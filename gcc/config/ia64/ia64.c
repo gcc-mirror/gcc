@@ -4764,8 +4764,12 @@ ia64_encode_section_info (decl)
   /* ??? Actually, we can put globals in sdata, as long as we don't use gprel
      to access them.  The linker may then be able to do linker relaxation to
      optimize references to them.  Currently sdata implies use of gprel.  */
+  /* We need the DECL_EXTERNAL check for C++.  static class data members get
+     both TREE_STATIC and DECL_EXTERNAL set, to indicate that they are
+     statically allocated, but the space is allocated somewhere else.  Such
+     decls can not be own data.  */
   if (! TARGET_NO_SDATA
-      && TREE_STATIC (decl)
+      && TREE_STATIC (decl) && ! DECL_EXTERNAL (decl)
       && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
       && ! (TREE_PUBLIC (decl)
 	    && (flag_pic
