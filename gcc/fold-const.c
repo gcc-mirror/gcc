@@ -2748,9 +2748,13 @@ fold (expr)
 	return convert (TREE_TYPE (t), TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
       if (TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR
-	  && TREE_CONSTANT (TREE_OPERAND (TREE_OPERAND (t, 0), 1)))
+	  && TREE_CONSTANT (TREE_OPERAND (TREE_OPERAND (t, 0), 1))
+	  /* Detect assigning a bitfield.  */
+	  && !(TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == COMPONENT_REF
+	       && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 1))))
 	{
-	  /* Don't leave an assignment inside a conversion.  */
+	  /* Don't leave an assignment inside a conversion
+	     unless assiging a bitfield.  */
 	  tree prev = TREE_OPERAND (t, 0);
 	  TREE_OPERAND (t, 0) = TREE_OPERAND (prev, 1);
 	  /* First do the assignment, then return converted constant.  */
