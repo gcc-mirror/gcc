@@ -1165,6 +1165,9 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
       = fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;	\
+  if (TARGET_TOC && TARGET_MINIMAL_TOC)					\
+    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]				\
+      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;		\
   if (TARGET_ALTIVEC)                                                   \
     global_regs[VSCR_REGNO] = 1;                                        \
   if (TARGET_SPE)							\

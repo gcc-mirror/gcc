@@ -1,3 +1,12 @@
+2004-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/16195
+	* config/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Make r30
+	fixed if TARGET_TOC && TARGET_MINIMAL_TOC.
+	* config/rs6000/rs6000.c (first_reg_to_save): Pretend
+	call_used_regs[30] is 0 if TARGET_TOC && TARGET_MINIMAL_TOC.
+	(rs6000_emit_prologue, rs6000_emit_epilogue): Likewise.
+
 2004-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (grokdeclarator): Allow for function definition where
