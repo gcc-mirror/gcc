@@ -4682,7 +4682,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 
       else if (regno < FIRST_PSEUDO_REGISTER
 	       && REGNO_MODE_OK_FOR_BASE_P (regno, mode)
-	       && ! regno_clobbered_p (regno, this_insn))
+	       && ! regno_clobbered_p (regno, this_insn, GET_MODE (ad), 0))
 	return 0;
 
       /* If we do not have one of the cases above, we must do the reload.  */
@@ -5514,7 +5514,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	   in this insn, reload it into some other register to be safe.
 	   The CLOBBER is supposed to make the register unavailable
 	   from before this insn to after it.  */
-	if (regno_clobbered_p (regno, this_insn))
+	if (regno_clobbered_p (regno, this_insn, GET_MODE (x), 0))
 	  {
 	    push_reload (x, NULL_RTX, loc, NULL_PTR,
 			 (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
@@ -6627,13 +6627,23 @@ find_inc_amount (x, inced)
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
 
 int
-regno_clobbered_p (regno, insn)
+regno_clobbered_p (regno, insn, mode, sets)
      int regno;
      rtx insn;
+     enum machine_mode mode;
+     int sets;
 {
-  if (GET_CODE (PATTERN (insn)) == CLOBBER
+  int nregs = HARD_REGNO_NREGS (regno, mode);
+  int endregno = regno + nregs;
+
+  if ((GET_CODE (PATTERN (insn)) == CLOBBER
+       || (sets && GET_CODE (PATTERN (insn)) == SET))
       && GET_CODE (XEXP (PATTERN (insn), 0)) == REG)
-    return REGNO (XEXP (PATTERN (insn), 0)) == regno;
+    {
+      int test = REGNO (XEXP (PATTERN (insn), 0));
+
+      return test >= regno && test < endregno;
+    }
 
   if (GET_CODE (PATTERN (insn)) == PARALLEL)
     {
@@ -6642,9 +6652,15 @@ regno_clobbered_p (regno, insn)
       for (; i >= 0; i--)
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
-	  if (GET_CODE (elt) == CLOBBER && GET_CODE (XEXP (elt, 0)) == REG
-	      && REGNO (XEXP (elt, 0)) == regno)
-	    return 1;
+	  if ((GET_CODE (elt) == CLOBBER
+	       || (sets && GET_CODE (PATTERN (insn)) == SET))
+	      && GET_CODE (XEXP (elt, 0)) == REG)
+	    {
+	      int test = REGNO (XEXP (elt, 0));
+	      
+	      if (test >= regno && test < endregno)
+		return 1;
+	    }
 	}
     }
 
