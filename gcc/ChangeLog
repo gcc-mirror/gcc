@@ -1,3 +1,8 @@
+2001-11-09  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/mips.c (mips_output_function_prologues): Cast
+	`tsize' to long for output.
+
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lang.c (LANG_HOOKS_NAME): New.
