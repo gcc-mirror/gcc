@@ -1,3 +1,7 @@
+2002-03-24  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/weak-1.c: Use -fno-common.
+
 2002-03-25  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g77.dg/f77-edit-apostrophe-out.f: New test

@@ -1395,16 +1395,9 @@ asm_emit_uninitialised (decl, name, size, rounded)
 	destination = asm_dest_common;
     }
 
-  switch (destination)
-    {
-    case asm_dest_common:
-      if (! DECL_WEAK (decl))
-	break;
-    case asm_dest_bss:
-      globalize_decl (decl);
-    default:
-      break;
-    }
+  if (destination == asm_dest_bss)
+    globalize_decl (decl);
+  resolve_unique_section (decl, 0);
 
   if (flag_shared_data)
     {
@@ -1429,8 +1422,6 @@ asm_emit_uninitialised (decl, name, size, rounded)
 	  break;
 	}
     }
-
-  resolve_unique_section (decl, 0);
 
   switch (destination)
     {
