@@ -1,3 +1,7 @@
+Thu Jul  9 00:38:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/980709-1.c: New test.
+
 Tue Jul  7 13:41:27 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/bcp-1.c: New test.
