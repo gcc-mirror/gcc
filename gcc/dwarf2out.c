@@ -2468,7 +2468,12 @@ void
 dwarf2out_frame_finish (void)
 {
   /* Output call frame information.  */
-  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG
+      || write_symbols == VMS_AND_DWARF2_DEBUG
+#ifdef DWARF2_FRAME_INFO
+      || DWARF2_FRAME_INFO
+#endif
+      )
     output_call_frame_info (0);
 
 #ifndef TARGET_UNWIND_INFO
