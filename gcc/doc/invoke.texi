@@ -4595,6 +4595,10 @@ compilation for profile feedback and one for compilation without.  The value
 for compilation with profile feedback needs to be more conservative (higher) in
 order to make tracer effective.
 
+@item max-cse-path-length
+
+Maximum number of basic blocks on path that cse considers.
+
 @item ggc-min-expand
 
 GCC uses a garbage collector to manage its own memory allocation.  This
