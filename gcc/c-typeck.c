@@ -5347,6 +5347,9 @@ push_init_level (implicit)
 
 	  assemble_zeros (next - here);
 	}
+      /* Indicate that we have now filled the structure up to the current
+	 field.  */
+      constructor_unfilled_fields = constructor_fields;
     }
 
   p = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
