@@ -1,3 +1,9 @@
+2004-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/17186
+	* function.c (expand_function_end): Have fall-off-the-end
+	return path jump around return register setup.
+
 2004-09-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/14925:
@@ -115,9 +121,9 @@
 
 2004-09-01  Richard Henderson  <rth@redhat.com>
 
-        * config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
-        (TRAMPOLINE_TEMPLATE): Merge code from __trampoline inline.
-                                                                                
+	* config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
+	(TRAMPOLINE_TEMPLATE): Merge code from __trampoline inline.
+	                                                                        
 2004-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcc-std.ver (GCC_3.4.2): Export also __trampoline_setup.
@@ -147,8 +153,8 @@
 
 2004-08-26  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.h (HARD_REGNO_MODE_OK): Allow complex float
-        modes.
+	* config/alpha/alpha.h (HARD_REGNO_MODE_OK): Allow complex float
+	modes.
 
 2004-08-26  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
@@ -187,7 +193,7 @@
 	one and two.
 
 2004-08-24  Richard Henderson  <rth@redhat.com>
-                                                                                
+	                                                                        
 	PR target/16298
 	* config/i386/i386.c (legitimate_constant_p): Rework to not accept
 	random codes within CONST.
@@ -243,9 +249,9 @@
 	* c-common.c (vector_size_helper): Remove; call
 	reconstruct_complex_type() instead.
 	* hooks.c (hook_constcharptr_tree_null): New hook.
-        * hooks.h (hook_constcharptr_tree_null): New prototype.
-        * target-def.h (TARGET_MANGLE_FUNDAMENTAL_TYPE): New target hook.
-        * target.h (mangle_fundamental_type): New target hook.
+	* hooks.h (hook_constcharptr_tree_null): New prototype.
+	* target-def.h (TARGET_MANGLE_FUNDAMENTAL_TYPE): New target hook.
+	* target.h (mangle_fundamental_type): New target hook.
 	* tree.c (reconstruct_complex_type): New function
 	(formerly vector_size_helper() in c-common.c).
 	(make_vector): Make externally visible.
@@ -299,16 +305,16 @@
 	(rs6000_common_init_builtins): Rename v4si_ftype_char, v8hi_ftype_char,
 	v16qi_ftype_char, v4sf_ftype_v4si_char, v4si_ftype_v4sf_char,
 	v4si_ftype_v4si_char, v8hi_ftype_v8hi_char, v16qi_ftype_v16qi_char,
-        v16qi_ftype_v16qi_v16qi_char, v8hi_ftype_v8hi_v8hi_char,
-        v4si_ftype_v4si_v4si_char and v4sf_ftype_v4sf_v4sf_char to
-        end in ..._int; change them to accept an int instead of a char
-        as the last parameter.
+	v16qi_ftype_v16qi_v16qi_char, v8hi_ftype_v8hi_v8hi_char,
+	v4si_ftype_v4si_v4si_char and v4sf_ftype_v4sf_v4sf_char to
+	end in ..._int; change them to accept an int instead of a char
+	as the last parameter.
 	(altivec_expand_dst_builtin): Treat expansion as completed even if
 	literal argument is invalid (so that other expansions are not tried
 	in vain).
 	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Point target hook at
 	rs6000_mangle_fundamental_type.
-        (rs6000_mangle_fundamental_type): New function.
+	(rs6000_mangle_fundamental_type): New function.
 	* config/rs6000/rs6000.h (TARGET_OPTIONS): Describe
 	'-m[no-]-warn-altivec-long' (which '-W[no-]altivec-long-deprecated'
 	maps to).
