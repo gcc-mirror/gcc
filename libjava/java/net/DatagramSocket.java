@@ -554,7 +554,7 @@ public class DatagramSocket
    * @exception IllegalBlockingModeException If this socket has an associated
    * channel, and the channel is in non-blocking mode.
    * @exception SecurityException If a security manager exists and its
-   * checkAccept ethod doesn't allow the receive.
+   * checkAccept method doesn't allow the receive.
    */
   public synchronized void receive(DatagramPacket p) throws IOException
   {
