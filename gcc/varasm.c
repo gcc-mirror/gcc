@@ -3535,7 +3535,7 @@ output_constant (exp, size)
 	  unsigned char *buffer = (unsigned char *) alloca (size);
 	  if (get_set_constructor_bytes (exp, buffer, size))
 	    abort ();
-	  assemble_string (buffer, size);
+	  assemble_string ((char *) buffer, size);
 	}
       else
 	error ("unknown set constructor type");
