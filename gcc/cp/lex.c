@@ -349,6 +349,7 @@ get_time_identifier (name)
 
 static char cplus_tree_code_type[] = {
   'x',
+#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -361,6 +362,7 @@ static char cplus_tree_code_type[] = {
 
 static int cplus_tree_code_length[] = {
   0,
+#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -371,6 +373,7 @@ static int cplus_tree_code_length[] = {
 
 static const char *cplus_tree_code_name[] = {
   "@@dummy",
+#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE

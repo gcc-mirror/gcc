@@ -185,9 +185,6 @@ DEFTREECODE (OVERLOAD, "overload", 'x', 1)
    tree structure.  */
 DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
 
-/* A node to remember a source position.  */
-DEFTREECODE (SRCLOC, "srcloc", 'x', 2)
-
 /* Used to represent deferred name lookup for dependent names while
    parsing a template declaration.  The first argument is an
    IDENTIFIER_NODE for the name in question.  The TREE_TYPE is
@@ -205,27 +202,10 @@ DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", '1', 1)
 DEFTREECODE (CONST_CAST_EXPR, "const_cast_expr", '1', 1)
 DEFTREECODE (STATIC_CAST_EXPR, "static_cast_expr", '1', 1)
 DEFTREECODE (DYNAMIC_CAST_EXPR, "dynamic_cast_expr", '1', 1)
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", '1', 1)
-DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", '1', 1)
-DEFTREECODE (ARROW_EXPR, "arrow_expr", 'e', 1)
 DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", 'e', 2)
 DEFTREECODE (TYPEID_EXPR, "typeid_expr", 'e', 1)
 DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
 
-DEFTREECODE (EXPR_STMT, "expr_stmt", 'e', 1)
-DEFTREECODE (COMPOUND_STMT, "compound_stmt", 'e', 1)
-DEFTREECODE (DECL_STMT, "decl_stmt", 'e', 1)
-DEFTREECODE (IF_STMT, "if_stmt", 'e', 3)
-DEFTREECODE (FOR_STMT, "for_stmt", 'e', 4)
-DEFTREECODE (WHILE_STMT, "while_stmt", 'e', 2)
-DEFTREECODE (DO_STMT, "do_stmt", 'e', 2)
-DEFTREECODE (RETURN_STMT, "return_stmt", 'e', 1)
-DEFTREECODE (BREAK_STMT, "break_stmt", 'e', 0)
-DEFTREECODE (CONTINUE_STMT, "continue_stmt", 'e', 0)
-DEFTREECODE (SWITCH_STMT, "switch_stmt", 'e', 2)
-DEFTREECODE (GOTO_STMT, "goto_stmt", 'e', 1)
-DEFTREECODE (LABEL_STMT, "label_stmt", 'e', 1)
-DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
 /* A SUBOBJECT statement marks the point at which a sub-object is
    fully constructed.  After this point, the SUBOBJECT_CLEANUP must be
    run if an exception is thrown before the end of the enclosing
@@ -244,22 +224,10 @@ DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 2)
    the START_CATCH_TYPE.  If this is CATCH_ALL_TYPE, then the handler
    catches all types.  */
 DEFTREECODE (START_CATCH_STMT, "start_catch_stmt", 'e', 0)
-/* A SCOPE_STMT marks the beginning or end of a scope.  If
-   SCOPE_BEGIN_P holds, then this is the start of a scope.  If
-   SCOPE_END_P holds, then this is the end of a scope.  If
-   SCOPE_NULLIFIED_P holds then there turned out to be no variables in
-   this scope.  The SCOPE_STMT_BLOCK is the BLOCK containing the
-   variables declared in this scope.  */
-DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 1)
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 2)
-DEFTREECODE (CASE_LABEL, "case_label", 'e', 2)
 DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
 DEFTREECODE (TRY_BLOCK, "try_block", 'e', 2)
 DEFTREECODE (HANDLER, "handler", 'e', 2)
-
-/* A STMT_EXPR represents a statement-expression.  The
-   STMT_EXPR_STMT is the statement given by the expression.  */
-DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
