@@ -1,3 +1,13 @@
+2004-08-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/cpu/arm/cxxabi_tweaks.h: Define __cxa_vec_ctor_return and
+	_GLIBCXX_CXA_VEC_CTOR_RETURN.
+	* config/cpu/generic/cxxabi_tweaks.h: Ditto.
+	* libsupc++/cxxabi.h (__cxa_vec_ctor, __cxa_vec_cctor): Use
+	__cxa_vec_ctor_return.
+	* libsupc++/vec.cc (__cxa_vec_ctor, __cxa_vec_cctor): Ditto.
+	Use _GLIBCXX_CXA_VEC_CTOR_RETURN.
+
 2004-08-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in, aclocal.m4, configure, include/Makefile.in,

@@ -1,3 +1,7 @@
+2004-08-12  Paul Brook  <paul@codesourcery.com>
+
+	* g++.dg/abi/arm_cxa_vec_1.C: New test.
+
 2004-08-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/ext/altivec-2.C: Check for hardware support before

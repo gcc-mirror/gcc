@@ -155,7 +155,7 @@ namespace __cxxabiv1
   }
   
   // Construct array.
-  extern "C" void
+  extern "C" __cxa_vec_ctor_return_type
   __cxa_vec_ctor(void *array_address,
 		 std::size_t element_count,
 		 std::size_t element_size,
@@ -179,10 +179,11 @@ namespace __cxxabiv1
 	}
 	__throw_exception_again;
       }
+    _GLIBCXX_CXA_VEC_CTOR_RETURN (array_address);
   }
   
   // Construct an array by copying.
-  extern "C" void
+  extern "C" __cxa_vec_ctor_return_type
   __cxa_vec_cctor(void *dest_array,
 		  void *src_array,
 		  std::size_t element_count,
@@ -209,6 +210,7 @@ namespace __cxxabiv1
 	}
 	__throw_exception_again;
       }
+    _GLIBCXX_CXA_VEC_CTOR_RETURN (dest_array);
   }
   
   // Destruct array.
