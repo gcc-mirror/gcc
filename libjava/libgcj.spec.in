@@ -3,7 +3,7 @@
 # It is used to specify the standard libraries we need in order
 # to link with libgcj.
 #
-%rename libgcc libgccorig
-*libgcc: -lgcj -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgccorig)
+%rename lib liborig
+*lib: -lgcj -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
 *jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @CHECKREFSPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@ -fkeep-inline-functions
