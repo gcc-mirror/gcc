@@ -158,6 +158,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The size of an object on a page of the indicated ORDER.  */
 #define OBJECT_SIZE(ORDER) object_size_table[ORDER]
 
+/* For speed, we avoid doing a general integer divide to locate the
+   offset in the allocation bitmap, by precalculating numbers M, S
+   such that (O * M) >> S == O / Z (modulo 2^32), for any offset O
+   within the page which is evenly divisible by the object size Z.  */
+#define DIV_MULT(ORDER) inverse_table[ORDER].mult
+#define DIV_SHIFT(ORDER) inverse_table[ORDER].shift
+#define OFFSET_TO_BIT(OFFSET, ORDER) \
+  (((OFFSET) * DIV_MULT (ORDER)) >> DIV_SHIFT (ORDER))
+
 /* The number of extra orders, not corresponding to power-of-two sized
    objects.  */
 
@@ -208,6 +217,17 @@ static unsigned objects_per_page_table[NUM_ORDERS];
 /* The Ith entry is the size of an object on a page of order I.  */
 
 static size_t object_size_table[NUM_ORDERS];
+
+/* The Ith entry is a pair of numbers (mult, shift) such that
+   ((k * mult) >> shift) mod 2^32 == (k / OBJECT_SIZE(I)) mod 2^32,
+   for all k evenly divisible by OBJECT_SIZE(I).  */
+
+static struct
+{
+  unsigned int mult;
+  unsigned int shift;
+}
+inverse_table[NUM_ORDERS];
 
 /* A page_entry records the status of an allocation page.  This
    structure is dynamically sized to fit the bitmap in_use_p.  */
@@ -377,6 +397,7 @@ static void release_pages PARAMS ((void));
 static void clear_marks PARAMS ((void));
 static void sweep_pages PARAMS ((void));
 static void ggc_recalculate_in_use_p PARAMS ((page_entry *));
+static void compute_inverse PARAMS ((unsigned));
 
 #ifdef GGC_POISON
 static void poison_pages PARAMS ((void));
@@ -988,7 +1009,7 @@ ggc_set_mark (p)
 
   /* Calculate the index of the object on the page; this is its bit
      position in the in_use_p bitmap.  */
-  bit = (((const char *) p) - entry->page) / OBJECT_SIZE (entry->order);
+  bit = OFFSET_TO_BIT (((const char *) p) - entry->page, entry->order);
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
 
@@ -1028,7 +1049,7 @@ ggc_marked_p (p)
 
   /* Calculate the index of the object on the page; this is its bit
      position in the in_use_p bitmap.  */
-  bit = (((const char *) p) - entry->page) / OBJECT_SIZE (entry->order);
+  bit = OFFSET_TO_BIT (((const char *) p) - entry->page, entry->order);
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
 
@@ -1045,8 +1066,37 @@ ggc_get_size (p)
   return OBJECT_SIZE (pe->order);
 }
 
-/* Initialize the ggc-mmap allocator.  */
+/* Subroutine of init_ggc which computes the pair of numbers used to
+   perform division by OBJECT_SIZE (order) and fills in inverse_table[].
 
+   This algorithm is taken from Granlund and Montgomery's paper
+   "Division by Invariant Integers using Multiplication"
+   (Proc. SIGPLAN PLDI, 1994), section 9 (Exact division by
+   constants).  */
+
+static void
+compute_inverse (order)
+     unsigned order;
+{
+  unsigned size, inv, e;
+
+  size = OBJECT_SIZE (order);
+  e = 0;
+  while (size % 2 == 0)
+    {
+      e++;
+      size >>= 1;
+    }
+
+  inv = size;
+  while (inv * size != 1)
+    inv = inv * (2 - inv*size);
+
+  DIV_MULT (order) = inv;
+  DIV_SHIFT (order) = e;
+}
+
+/* Initialize the ggc-mmap allocator.  */
 void
 init_ggc ()
 {
@@ -1109,12 +1159,13 @@ init_ggc ()
       object_size_table[order] = s;
     }
 
-  /* Initialize the objects-per-page table.  */
+  /* Initialize the objects-per-page and inverse tables.  */
   for (order = 0; order < NUM_ORDERS; ++order)
     {
       objects_per_page_table[order] = G.pagesize / OBJECT_SIZE (order);
       if (objects_per_page_table[order] == 0)
 	objects_per_page_table[order] = 1;
+      compute_inverse (order);
     }
 
   /* Reset the size_lookup array to put appropriately sized objects in
