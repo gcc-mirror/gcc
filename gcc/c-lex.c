@@ -132,6 +132,7 @@ static int handle_sysv_pragma		PROTO((int));
 #endif /* HANDLE_SYSV_PRAGMA */
 static int whitespace_cr		PROTO((int));
 static int skip_white_space		PROTO((int));
+static int skip_white_space_on_line	PROTO((void));
 static char *extend_token_buffer	PROTO((char *));
 static int readescape			PROTO((int *));
 int check_newline ();
