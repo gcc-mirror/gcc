@@ -1,5 +1,8 @@
 2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/19608
+	* g++.dg/parse/local-class1.C: New.
+
 	PR c++/19895
 	* g++.dg/parse/ptrmem3.C: New.
 
