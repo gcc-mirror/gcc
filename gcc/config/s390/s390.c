@@ -624,10 +624,10 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
 	{
 	  case EQ: new_code = EQ;  break;
 	  case NE: new_code = NE;  break;
-	  case LT: new_code = LTU; break;
-	  case GT: new_code = GTU; break;
-	  case LE: new_code = LEU; break;
-	  case GE: new_code = GEU; break;
+	  case LT: new_code = GTU; break;
+	  case GT: new_code = LTU; break;
+	  case LE: new_code = GEU; break;
+	  case GE: new_code = LEU; break;
 	  default: break;
 	}
 
@@ -2291,13 +2291,13 @@ s390_preferred_reload_class (rtx op, enum reg_class class)
    is not a legitimate operand of the LOAD ADDRESS instruction.  */
 
 enum reg_class
-s390_secondary_input_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
+s390_secondary_input_reload_class (enum reg_class class,
 				   enum machine_mode mode, rtx in)
 {
   if (s390_plus_operand (in, mode))
     return ADDR_REGS;
 
-  if (GET_MODE_CLASS (mode) == MODE_CC)
+  if (reg_classes_intersect_p (CC_REGS, class))
     return GENERAL_REGS;
 
   return NO_REGS;
@@ -2321,7 +2321,7 @@ s390_secondary_output_reload_class (enum reg_class class,
       && !s_operand (out, VOIDmode))
     return ADDR_REGS;
 
-  if (GET_MODE_CLASS (mode) == MODE_CC)
+  if (reg_classes_intersect_p (CC_REGS, class))
     return GENERAL_REGS;
 
   return NO_REGS;
@@ -3593,14 +3593,18 @@ void
 s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 {
   rtx ccreg = gen_rtx_REG (CCUmode, CC_REGNUM);
-  rtx result = gen_rtx_UNSPEC (SImode, gen_rtvec (1, ccreg), UNSPEC_CMPINT);
+  rtx tmp;
+
+  /* As the result of CMPINT is inverted compared to what we need,
+     we have to swap the operands.  */
+  tmp = op0; op0 = op1; op1 = tmp;
 
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
         {
           emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (INTVAL (len) - 1)));
-          emit_move_insn (target, result);
+          emit_insn (gen_cmpint (target, ccreg));
         }
       else
         emit_move_insn (target, const0_rtx);
@@ -3608,7 +3612,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   else if (TARGET_MVCLE)
     {
       emit_insn (gen_cmpmem_long (op0, op1, convert_to_mode (Pmode, len, 1)));
-      emit_move_insn (target, result);
+      emit_insn (gen_cmpint (target, ccreg));
     }
   else
     {
@@ -3675,7 +3679,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
 
-      emit_move_insn (target, result);
+      emit_insn (gen_cmpint (target, ccreg));
     }
 }
 
