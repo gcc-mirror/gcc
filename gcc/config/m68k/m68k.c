@@ -694,6 +694,143 @@ output_dbcc_and_branch (operands)
 }
 
 char *
+output_scc_di(op, operand1, operand2, dest)
+     rtx op;
+     rtx operand1;
+     rtx operand2;
+     rtx dest;
+{
+  rtx loperands[7];
+
+  loperands[0] = operand1;
+  if (GET_CODE (operand1) == REG)
+    loperands[1] = gen_rtx (REG, SImode, REGNO (operand1) + 1);
+  else
+    loperands[1] = adj_offsettable_operand (operand1, 4);
+  if (operand2 != const0_rtx)
+    {
+      loperands[2] = operand2;
+      if (GET_CODE (operand2) == REG)
+	loperands[3] = gen_rtx (REG, SImode, REGNO (operand2) + 1);
+      else
+	loperands[3] = adj_offsettable_operand (operand2, 4);
+    }
+  loperands[4] = gen_label_rtx();
+  if (operand2 != const0_rtx)
+#ifdef MOTOROLA
+    output_asm_insn ("cmp%.l %0,%2\n\tjbne %l4\n\tcmp%.l %1,%3", loperands);
+#else
+    output_asm_insn ("cmp%.l %0,%2\n\tjne %l4\n\tcmp%.l %1,%3", loperands);
+#endif
+  else
+#ifdef MOTOROLA
+    output_asm_insn ("tst%.l %0\n\tjbne %l4\n\ttst%.l %1", loperands);
+#else
+    output_asm_insn ("tst%.l %0\n\tjne %l4\n\ttst%.l %1", loperands);
+#endif
+  loperands[5] = dest;
+  
+  switch (GET_CODE (op))
+    {
+      case EQ:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("seq %5", loperands);
+        break;
+
+      case NE:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("sne %5", loperands);
+        break;
+
+      case GT:
+        loperands[6] = gen_label_rtx();
+#ifdef MOTOROLA
+        output_asm_insn ("shi %5\n\tjbra %l6", loperands);
+#else
+        output_asm_insn ("shi %5\n\tjra %l6", loperands);
+#endif
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("sgt %5", loperands);
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[6]));
+        break;
+
+      case GTU:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("shi %5", loperands);
+        break;
+
+      case LT:
+        loperands[6] = gen_label_rtx();
+#ifdef MOTOROLA
+        output_asm_insn ("scs %5\n\tjbra %l6", loperands);
+#else
+        output_asm_insn ("scs %5\n\tjra %l6", loperands);
+#endif
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("slt %5", loperands);
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[6]));
+        break;
+
+      case LTU:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("scs %5", loperands);
+        break;
+
+      case GE:
+        loperands[6] = gen_label_rtx();
+#ifdef MOTOROLA
+        output_asm_insn ("scc %5\n\tjbra %l6", loperands);
+#else
+        output_asm_insn ("scc %5\n\tjra %l6", loperands);
+#endif
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("sge %5", loperands);
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[6]));
+        break;
+
+      case GEU:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("scc %5", loperands);
+        break;
+
+      case LE:
+        loperands[6] = gen_label_rtx();
+#ifdef MOTOROLA
+        output_asm_insn ("sls %5\n\tjbra %l6", loperands);
+#else
+        output_asm_insn ("sls %5\n\tjra %l6", loperands);
+#endif
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("sle %5", loperands);
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[6]));
+        break;
+
+      case LEU:
+        ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				    CODE_LABEL_NUMBER (loperands[4]));
+        output_asm_insn ("sls %5", loperands);
+        break;
+
+      default:
+	abort ();
+    }
+  return "";
+}
+
+char *
 output_btst (operands, countop, dataop, insn, signpos)
      rtx *operands;
      rtx countop, dataop;
@@ -774,20 +911,12 @@ extend_operator(x, mode)
      rtx x;
      enum machine_mode mode;
 {
-    if (GET_MODE(x) != SImode)
+    if (mode != VOIDmode && GET_MODE(x) != mode)
 	return 0;
     switch (GET_CODE(x))
 	{
 	case SIGN_EXTEND :
 	case ZERO_EXTEND :
-	    break;
-	default :
-	    return 0;
-	}
-    switch (GET_MODE(XEXP(x, 0)))
-	{
-	case HImode :
-	case QImode :
 	    return 1;
 	default :
 	    return 0;
