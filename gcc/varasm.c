@@ -3519,13 +3519,13 @@ output_constant (exp, size)
       if (TREE_CODE (exp) == INTEGER_CST)
 	assemble_integer (expand_expr (exp, NULL_RTX,
 				       VOIDmode, EXPAND_INITIALIZER),
-			  byte_size, 1);
+			  size, 1);
       else if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
-	  unsigned char *buffer = (unsigned char *) alloca (byte_size);
-	  if (get_set_constructor_bytes (constructor, buffer, byte_size))
+	  unsigned char *buffer = (unsigned char *) alloca (size);
+	  if (get_set_constructor_bytes (exp, buffer, size))
 	    abort ();
-	  assemble_string (buffer, byte_size);
+	  assemble_string (buffer, size);
 	}
       else
 	error ("unknown set constructor type");
