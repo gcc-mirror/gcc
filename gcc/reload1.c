@@ -577,6 +577,63 @@ compute_use_by_pseudos (to, from)
 	 }
      });
 }
+
+/* Replace all pseudos found in LOC with their corresponding
+   equivalences.  */
+
+static void
+replace_pseudos_in_call_usage (loc, mem_mode, usage)
+     rtx *loc;
+     enum machine_mode mem_mode;
+     rtx usage;
+{
+  rtx x = *loc;
+  enum rtx_code code;
+  const char *fmt;
+  int i, j;
+
+  if (! x)
+    return;
+  
+  code = GET_CODE (x);
+  if (code == REG)
+    {
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+	return;
+
+      x = eliminate_regs (x, mem_mode, usage);
+      if (x != *loc)
+	{
+	  *loc = x;
+	  replace_pseudos_in_call_usage (loc, mem_mode, usage);
+	  return;
+	}
+
+      if (reg_renumber [REGNO (x)] < 0)
+	*loc = regno_reg_rtx[REGNO (x)];
+      else if (reg_equiv_mem[REGNO (x)])
+	*loc = reg_equiv_mem[REGNO (x)];
+      else
+	abort ();
+
+      return;
+    }
+  else if (code == MEM)
+    {
+      replace_pseudos_in_call_usage (& XEXP (x, 0), GET_MODE (x), usage);
+      return;
+    }
+  
+  /* Process each of our operands recursively.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
+    if (*fmt == 'e')
+      replace_pseudos_in_call_usage (&XEXP (x, i), mem_mode, usage);
+    else if (*fmt == 'E')
+      for (j = 0; j < XVECLEN (x, i); j++)
+	replace_pseudos_in_call_usage (& XVECEXP (x, i, j), mem_mode, usage);
+}
+
 
 /* Global variables used by reload and its subroutines.  */
 
@@ -1113,6 +1170,11 @@ reload (first, global)
     if (INSN_P (insn))
       {
 	rtx *pnote;
+
+	if (GET_CODE (insn) == CALL_INSN)
+	  replace_pseudos_in_call_usage (& CALL_INSN_FUNCTION_USAGE (insn),
+					 VOIDmode,
+					 CALL_INSN_FUNCTION_USAGE (insn));
 
 	if ((GET_CODE (PATTERN (insn)) == USE
 	     && find_reg_note (insn, REG_EQUAL, NULL_RTX))

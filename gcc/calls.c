@@ -3676,16 +3676,44 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
 	{
-	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
-	     be viewed as just an efficiency improvement.  */
-	  rtx slot = assign_temp (type_for_mode (mode, 0), 0, 1, 1);
+	  rtx slot;
+	  int must_copy = 1
+#ifdef FUNCTION_ARG_CALLEE_COPIES	  
+	    && ! FUNCTION_ARG_CALLEE_COPIES (args_so_far, mode,
+					     NULL_TREE, 1)
+#endif
+	    ;
+
+	  if (GET_MODE (val) == MEM && ! must_copy)
+	    slot = val;
+	  else if (must_copy)
+	    {
+	      slot = assign_temp (type_for_mode (mode, 0), 0, 1, 1);
+	      emit_move_insn (slot, val);
+	    }
+	  else
+	    {
+	      tree type = type_for_mode (mode, 0);
+
+	      slot = gen_rtx_MEM (Pmode,
+				  expand_expr (build1 (ADDR_EXPR,
+						       build_pointer_type
+						       (type),
+						       make_tree (type, val)),
+					       NULL_RTX, VOIDmode, 0));
+	    }
 
 	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_USE (VOIDmode, slot),
 					   call_fusage);
-	  emit_move_insn (slot, val);
-	  val = force_operand (XEXP (slot, 0), NULL_RTX);
+	  if (must_copy)
+	    call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
+					     gen_rtx_CLOBBER (VOIDmode,
+							      slot),
+					     call_fusage);
+
 	  mode = Pmode;
+	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
 #endif
 

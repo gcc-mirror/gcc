@@ -1,5 +1,15 @@
 2001-01-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	* calls.c (emit_library_call_value_1): Add USEs and CLOBBERs
+	to function usage for arguments passed by reference.  Optimize
+	callee-copied arguments.
+	* regmove.c (find_related_toplev): Find uses in function usage.
+	(replace_in_call_usage): New function.
+	(fixup_match_1): Call it.
+	* cse.c (cse_insn): Canonicalize registers in function usage.
+	* reload1.c (replace_pseudos_in_call_usage): New function.
+	(reload): Call it.
+
 	* Makefile.in: Reverted yesterday's wrong patch.  Installed the
 	right version.
 
