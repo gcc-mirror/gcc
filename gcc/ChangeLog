@@ -1,5 +1,10 @@
 2004-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_clrmem): Revert the last
+	change.
+
+2004-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_expand_clrmem): Properly call
 	gen_strset for 64bit target.
 
