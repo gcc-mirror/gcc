@@ -1,3 +1,8 @@
+1998-09-03  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+        * decl.c (pushdecl_class_level): Add warning here.
+        (pushdecl): Tweak.
+
 1998-09-02  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cvt.c (convert_pointer_to_real): Tidy.
