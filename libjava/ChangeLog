@@ -1,5 +1,10 @@
 2003-01-31  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (_Jv_JNI_NewObjectArray): Check that initializer can be
+	cast to element type.
+	(_Jv_JNI_SetObjectArrayElement): Check array bounds.
+	(_Jv_JNI_GetObjectArrayElement): Likewise.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (cond_x_ltlibrary): Renamed library to
 	lib-gnu-awt-xlib.la.
