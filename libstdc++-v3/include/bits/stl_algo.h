@@ -1263,13 +1263,13 @@ namespace std
     _ForwardIterator
     unique(_ForwardIterator __first, _ForwardIterator __last)
     {
-	  // concept requirements
-	  __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
-	  __glibcxx_function_requires(_EqualityComparableConcept<
-		    typename iterator_traits<_ForwardIterator>::value_type>)
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_EqualityComparableConcept<
+	    typename iterator_traits<_ForwardIterator>::value_type>)
 
-	  __first = std::adjacent_find(__first, __last);
-	  return std::unique_copy(__first, __last, __first);
+      __first = std::adjacent_find(__first, __last);
+      return std::unique_copy(__first, __last, __first);
     }
 
   /**
@@ -1349,10 +1349,10 @@ namespace std
     inline void
     reverse(_BidirectionalIterator __first, _BidirectionalIterator __last)
     {
-	  // concept requirements
-	  __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
-		    _BidirectionalIterator>)
-	  std::__reverse(__first, __last, std::__iterator_category(__first));
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
+		_BidirectionalIterator>)
+      std::__reverse(__first, __last, std::__iterator_category(__first));
     }
 
   /**
