@@ -1,3 +1,23 @@
+2003-01-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	h8300_current_function_interrupt_function_p.
+	* config/h8300/h8300.c (interrupt_handler): Remove.
+	(os_task): Likewise.
+	(monitor): Likewise.
+	(pragma_interrupt): New.
+	(WORD_REG_USED): Use
+	h8300_current_function_interrupt_function_p.
+	(dosize): Likewise.
+	(h8300_output_function_prologue): Likewise.
+	Do not set interrupt_handler, os_task, monitor.
+	(h8300_output_function_prologue): Use
+	h8300_current_function_interrupt_function_p.
+	Do not set interrupt_handler, os_task, monitor.
+	(h8300_current_function_interrupt_function_p): New.
+	(h8300_pr_interrupt): Set pragma_interrupt.
+	(h8300_insert_attributes): Reset pragma_interrupt.
+
 2003-01-03  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Fix markup for reference to
