@@ -61,8 +61,12 @@
    We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 #include <sys/_inttypes.h>
-#define strtoll __strtoll
-#define strtoull __strtoull
+namespace std {
+  extern "C" long long strtoll (const char *, char **, int)
+    __asm  ("__strtoll");
+  extern "C" long long strtoull (const char *, char **, int)
+    __asm  ("__strtoull");
+}
 extern intmax_t __strtoll (const char *, char**, int);
 extern uintmax_t __strtoull (const char *, char**, int);
 #define _GLIBCPP_USE_LONG_LONG 1
