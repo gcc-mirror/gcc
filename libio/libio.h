@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 92, 93, 94, 95, 97 Free Software Foundation, Inc.
+/* Copyright (C) 1991, 92, 93, 94, 95, 97, 98 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
    Written by Per Bothner <bothner@cygnus.com>.
 
@@ -60,8 +60,10 @@
 # else
 #  ifdef __STDC__
 #   define __P(p) p
+#   define __PMT(p) p
 #  else
 #   define __P(p) ()
+#   define __PMT(p) ()
 #  endif
 # endif
 #endif /*!__P*/
@@ -267,10 +269,10 @@ extern struct _IO_FILE_plus _IO_stdin_, _IO_stdout_, _IO_stderr_;
 /* Define the user-visible type, with user-friendly member names.  */
 typedef struct
 {
-  _IO_ssize_t (*read) __P ((struct _IO_FILE *, void *, _IO_ssize_t));
-  _IO_ssize_t (*write) __P ((struct _IO_FILE *, const void *, _IO_ssize_t));
-  _IO_fpos_t (*seek) __P ((struct _IO_FILE *, _IO_off_t, int));
-  int (*close) __P ((struct _IO_FILE *));
+  _IO_ssize_t (*read) __PMT ((struct _IO_FILE *, void *, _IO_ssize_t));
+  _IO_ssize_t (*write) __PMT ((struct _IO_FILE *, const void *, _IO_ssize_t));
+  _IO_fpos_t (*seek) __PMT ((struct _IO_FILE *, _IO_off_t, int));
+  int (*close) __PMT ((struct _IO_FILE *));
 } _IO_cookie_io_functions_t;
 
 /* Special file type for fopencookie function.  */
@@ -340,7 +342,7 @@ extern _IO_ssize_t _IO_padn __P ((_IO_FILE *, int, _IO_ssize_t));
 extern _IO_size_t _IO_sgetn __P ((_IO_FILE *, void *, _IO_size_t));
 
 #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
-extern _IO_fpos64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));      
+extern _IO_fpos64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
 extern _IO_fpos64_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos64_t, int));
 #else
 extern _IO_fpos_t _IO_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
