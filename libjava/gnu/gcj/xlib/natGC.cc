@@ -95,27 +95,25 @@ void gnu::gcj::xlib::GC::drawString(jstring text, jint x, jint y)
   ::Drawable drawableXID = target->getXID();
   ::GC gc = (::GC) structure;
   
-  /*
-    FIXME: do something along the lines of the following instead:
+  jint length = text->length();
+  jchar* txt = JvGetStringChars(text);
 
-    jint length = text->length();
-    jchar* txt = JvGetStringChars(text);
-
-    XChar2b xwchars[length];
+  XChar2b xwchars[length];
     
-    // FIXME: Add convertion and caching
+  // FIXME: Convert to the character set used in the font, which may
+  // or may not be unicode. For now, treat everything as 16-bit and
+  // use character codes directly, which should be OK for unicode or
+  // 8-bit ascii fonts.
 
-    for (int i=0; i<length; i++)
-      {
-	XChar2b* xc = &(xwchars[i]);
-	jchar jc = txt[i];
-	xc->byte1 = jc & 0xff;
-	xc->byte2 = jc >> 8;
-      }
+  for (int i=0; i<length; i++)
+    {
+      XChar2b* xc = &(xwchars[i]);
+      jchar jc = txt[i];
+      xc->byte1 = (jc >> 8) & 0xff;
+      xc->byte2 = jc & 0xff;
+    }
+  XDrawString16(dpy, drawableXID, gc, x, y, xwchars, length);
 
-     XDrawString16(dpy, drawableXID, gc, x, y, xwchars, length);
-    */
-  
   // FIXME, temporary code:
   int len = JvGetStringUTFLength(text);
   char ctxt[len+1];
