@@ -163,7 +163,7 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 2))
 		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "addx2\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -174,7 +174,7 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 4))
 		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "addx4\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -185,7 +185,7 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			  (const_int 8))
 		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "addx8\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -257,7 +257,7 @@
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 2))
 		  (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "subx2\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -268,7 +268,7 @@
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 4))
 		  (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "subx4\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -279,7 +279,7 @@
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 			   (const_int 8))
 		  (match_operand:SI 2 "register_operand" "r")))]
-  ""
+  "TARGET_ADDX"
   "subx8\\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -518,7 +518,7 @@
 (define_insn "abssi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(abs:SI (match_operand:SI 1 "register_operand" "r")))]
-  ""
+  "TARGET_ABS"
   "abs\\t%0, %1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
