@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-DWIN32 -D_WIN32\
-  -DWINNT -D__STDC__=0 -DALMOST_STDC\
+  -DWINNT -D__STDC__=0 -DALMOST_STDC -D_M_ALPHA\
   -D_ALPHA_ -D__alpha -D__alpha__ -D_LONGLONG -Asystem(winnt) -Acpu(alpha)\
   -Amachine(alpha)"
 
@@ -65,8 +65,8 @@ Boston, MA 02111-1307, USA.  */
 }
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
-  USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
- %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
- %{mcrtmt:LIBCMT.LIB KERNEL32.LIB} %{!mcrtmt:LIBC.LIB KERNEL32.LIB} \
+#define LIB_SPEC "%{mwindows:-subsystem windows -e _WinMainCRTStartup \
+  USER32.LIB%s GDI32.LIB%s COMDLG32.LIB%s WINSPOOL.LIB%s} \
+ %{!mwindows:-subsystem console -e _mainCRTStartup} \
+ %{mcrtmt:LIBCMT.LIB%s KERNEL32.LIB%s} %{!mcrtmt:LIBC.LIB%s KERNEL32.LIB%s} \
  %{v}"
