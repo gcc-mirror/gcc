@@ -1,6 +1,12 @@
 2004-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18683
+	* config/rs6000/rs6000.c (current_file_function_operand): Only check
+	current_function_decl's DECL_RTL if it has already been set.
+
+2004-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18683
 	* function.c (pop_function_context_from): Don't reset reg_renumber.
 
 2004-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
