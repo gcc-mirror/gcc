@@ -46,22 +46,13 @@ import gnu.classpath.Configuration;
  */
 public final class ByteOrder
 {
-  public static final ByteOrder BIG_ENDIAN     = new ByteOrder();
+  public static final ByteOrder BIG_ENDIAN = new ByteOrder();
   public static final ByteOrder LITTLE_ENDIAN  = new ByteOrder();
 
-  static
-  {
-    // load the shared library needed for native methods.
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary ("javanio");
-      }
-  }
-  
   /**
    * Returns the native byte order of the platform currently running.
    */
-  public static ByteOrder nativeOrder ()
+  public static ByteOrder nativeOrder()
   {
     return (System.getProperty ("gnu.cpu.endian").equals("big")
             ? BIG_ENDIAN : LITTLE_ENDIAN);
@@ -76,7 +67,7 @@ public final class ByteOrder
   }
 
   // This class can only be instantiated here.
-  private ByteOrder ()
+  private ByteOrder()
   {
   }
 }

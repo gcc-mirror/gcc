@@ -1,5 +1,13 @@
 2004-07-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteOrder.java
+	(static): Removed. Not needed.
+	Thanks to Patrick Reali for noticing.
+	* java/nio/charset/CharsetDecoder.java
+	(decode): Fix for classpath bug #9177: Reset state before flipping.
+
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/Security.java: Fixed javadocs all over.
 
 2004-07-17  Michael Koch  <konqueror@gmx.de>
