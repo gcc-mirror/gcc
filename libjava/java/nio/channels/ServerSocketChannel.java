@@ -60,7 +60,18 @@ public abstract class ServerSocketChannel
   }
   
   /**
-   *  Accepts a connection made to this channel's socket.
+   * Accepts a connection made to this channel's socket.
+   *
+   * @exception IOException If an error occurs
+   * @exception AsynchronousCloseException If another thread closes this
+   * channel while the accept operation is in progress.
+   * @exception ClosedByInterruptException If another thread interrupts the
+   * current thread while the accept operation is in progress, thereby closing
+   * the channel and setting the current thread's interrupt status.
+   * @exception ClosedChannelException If the channel is closed.
+   * @exception NotYetBoundException If the channel's socket is not yet bound.
+   * @exception SecurityException If a security manager has been installed and
+   * it does not permit access to the remote endpoint of the new connection.
    */
   public abstract SocketChannel accept ();
   
@@ -70,7 +81,9 @@ public abstract class ServerSocketChannel
   public abstract ServerSocket socket ();
     
   /**
-   * Opens a server socker channel.
+   * Opens a server socket channel.
+   *
+   * @exception IOException If an error occurs
    */
   public static ServerSocketChannel open () throws IOException
   {

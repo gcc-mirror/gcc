@@ -10,6 +10,8 @@ details.  */
 
 package java.io;
 
+import java.nio.channels.FileChannel;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date September 24, 1998 
@@ -93,4 +95,9 @@ public class FileOutputStream extends OutputStream
 
   // Instance variables.
   private FileDescriptor fd;
+
+  public FileChannel getChannel ()
+  {
+    return null;
+  }
 }

@@ -151,6 +151,7 @@ public class ServerSocket
     throws IOException
   {
     this();
+
     if (impl == null)
       throw new IOException("Cannot initialize Socket implementation");
 
@@ -181,19 +182,7 @@ public class ServerSocket
   public void bind (SocketAddress endpoint)
     throws IOException
   {
-    if (impl == null)
-      throw new IOException ("Cannot initialize Socket implementation");
-
-    if (! (endpoint instanceof InetSocketAddress))
-      throw new IllegalArgumentException ("Address type not supported");
-
-    InetSocketAddress tmp = (InetSocketAddress) endpoint;
-    
-    SecurityManager s = System.getSecurityManager ();
-    if (s != null)
-      s.checkListen (tmp.getPort ());
-
-    impl.bind (tmp.getAddress (), tmp.getPort ());
+    bind (endpoint, 50);
   }
  
   /**
