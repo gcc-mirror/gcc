@@ -40,6 +40,10 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/times.h>
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 /* This is a fallback; if wrong, it will likely make obviously wrong
    results. */
 
@@ -47,8 +51,16 @@ Boston, MA 02111-1307, USA.  */
 #define CLOCKS_PER_SEC 1
 #endif
 
-#if defined (HAVE_TIMES) && ! defined (HZ)
-#define HZ CLOCKS_PER_SEC
+#ifdef _SC_CLK_TCK
+#define GNU_HZ  sysconf(_SC_CLK_TCK)
+#else
+#ifdef HZ
+#define GNU_HZ  HZ
+#else
+#ifdef CLOCKS_PER_SEC
+#define GNU_HZ  CLOCKS_PER_SEC
+#endif
+#endif
 #endif
 
 long
@@ -65,7 +77,7 @@ get_run_time ()
   struct tms tms;
 
   times (&tms);
-  return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+  return (tms.tms_utime + tms.tms_stime) * (1000000 / GNU_HZ);
 #else /* ! HAVE_TIMES */
   /* Fall back on clock and hope it's correctly implemented. */
   const long clocks_per_sec = CLOCKS_PER_SEC;

@@ -181,6 +181,17 @@ Sun Apr 11 23:20:59 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(xcalloc): UWIN has sbrk.
 	(xrealloc): Fix guard macro.
 
+1999-04-11  Richard Henderson  <rth@cygnus.com>
+
+	* alloca-conf.h (alloca) [C_ALLOCA]: Don't use Gcc builtin
+	or <alloca.h>.
+	* clock.c (GNU_HZ): New definition.
+	(clock): Use it.
+	* getruntime.c: Likewise.
+
+	* config.table: Use mh-beos.
+	* config/mh-beos: New file.
+
 1999-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c (demangle_template_value_parm): Handle

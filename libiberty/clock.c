@@ -36,8 +36,20 @@ the executable file might be covered by the GNU General Public License. */
 #include <sys/times.h>
 #endif
 
-#if defined (HAVE_TIMES) && ! defined (HZ) && defined (CLOCKS_PER_SEC)
-#define HZ CLOCKS_PER_SEC
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef _SC_CLK_TCK
+#define GNU_HZ  sysconf(_SC_CLK_TCK)
+#else
+#ifdef HZ
+#define GNU_HZ  HZ
+#else
+#ifdef CLOCKS_PER_SEC
+#define GNU_HZ  CLOCKS_PER_SEC
+#endif
+#endif
 #endif
 
 /* FIXME: should be able to declare as clock_t. */
@@ -56,7 +68,7 @@ clock ()
   struct tms tms;
 
   times (&tms);
-  return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+  return (tms.tms_utime + tms.tms_stime) * (1000000 / GNU_HZ);
 #else
 #ifdef VMS
   struct

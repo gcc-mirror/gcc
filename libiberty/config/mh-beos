@@ -1,0 +1,7 @@
+# Host makefile fragment for BeOS
+
+# This is a temporary hack until the wimpy default 64k stack
+# limit in BeOS is either increased or made user settable somehow.
+# This probably won't happen until after the DR9 release.
+
+EXTRA_OFILES = alloca.o
