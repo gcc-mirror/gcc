@@ -521,26 +521,27 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
    converted to integer types.  */
 
 tree
-common_type (t1, t2)
-     tree t1, t2;
+common_type (orig_t1, orig_t2)
+     tree orig_t1, orig_t2;
 {
   register enum tree_code code1;
   register enum tree_code code2;
   tree attributes;
+  tree t1, t2;
 
   /* Save time if the two types are the same.  */
+  if (orig_t1 == orig_t2)
+    return orig_t1;
+  t1 = original_type (orig_t1);
+  t2 = original_type (orig_t2);
   if (t1 == t2)
-    return t1;
-  t1 = original_type (t1);
-  t2 = original_type (t2);
-  if (t1 == t2)
-    return t1;
+    return orig_t1;
 
   /* If one type is nonsense, use the other.  */
   if (t1 == error_mark_node)
-    return t2;
+    return orig_t2;
   if (t2 == error_mark_node)
-    return t1;
+    return orig_t1;
 
   if ((ARITHMETIC_TYPE_P (t1) || TREE_CODE (t1) == ENUMERAL_TYPE)
       && (ARITHMETIC_TYPE_P (t2) || TREE_CODE (t2) == ENUMERAL_TYPE))

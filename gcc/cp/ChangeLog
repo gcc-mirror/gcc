@@ -1,3 +1,8 @@
+2000-07-27  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (common_type): If we're just returning one of our
+	arguments, don't strip typedef types.
+
 2000-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_cleanup_fn): Mark the function as `inline'.
