@@ -98,15 +98,6 @@ java::lang::Thread::currentThread (void)
   return _Jv_ThreadCurrent ();
 }
 
-void
-java::lang::Thread::destroy (void)
-{
-  // NOTE: This is marked as unimplemented in the JDK 1.2
-  // documentation.
-  throw new UnsupportedOperationException
-    (JvNewStringLatin1 ("Thread.destroy unimplemented"));
-}
-
 jboolean
 java::lang::Thread::holdsLock (jobject obj)
 {

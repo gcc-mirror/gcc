@@ -104,20 +104,24 @@ public class Thread implements Runnable
    */
   ThreadGroup group;
 
+  /** The object to run(), null if this is the target. */
+  private Runnable runnable;
+
   /** The thread name, non-null. */
   String name;
 
-  /** The object to run(), null if this is the target. */
-  private Runnable runnable;
+  /** Whether the thread is a daemon. */
+  private boolean daemon;
 
   /** The thread priority, 1 to 10. */
   private int priority;
 
-  private boolean daemon_flag;
   boolean interrupt_flag;
   private boolean alive_flag;
   private boolean startable_flag;
-  private ClassLoader context_class_loader;
+
+  /** The context classloader for this Thread. */
+  private ClassLoader contextClassLoader;
 
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
@@ -207,6 +211,54 @@ public class Thread implements Runnable
   }
 
   /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(group, target,</code>
+   * <i>gname</i><code>)</code>, where <i>gname</i> is
+   * a newly generated name. Automatically generated names are of the
+   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
+   *
+   * @param group the group to put the Thread into
+   * @param target the Runnable object to execute
+   * @throws SecurityException if this thread cannot access <code>group</code>
+   * @throws IllegalThreadStateException if group is destroyed
+   * @see #Thread(ThreadGroup, Runnable, String)
+   */
+  public Thread(ThreadGroup group, Runnable target)
+  {
+    this(group, target, gen_name());
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(group, null, name)</code>
+   *
+   * @param group the group to put the Thread into
+   * @param name the name for the Thread
+   * @throws NullPointerException if name is null
+   * @throws SecurityException if this thread cannot access <code>group</code>
+   * @throws IllegalThreadStateException if group is destroyed
+   * @see #Thread(ThreadGroup, Runnable, String)
+   */
+  public Thread(ThreadGroup group, String name)
+  {
+    this(group, null, name);
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(null, target, name)</code>.
+   *
+   * @param target the Runnable object to execute
+   * @param name the name for the Thread
+   * @throws NullPointerException if name is null
+   * @see #Thread(ThreadGroup, Runnable, String)
+   */
+  public Thread(Runnable target, String name)
+  {
+    this(null, target, name);
+  }
+
+  /**
    * Allocate a new Thread object, with the specified ThreadGroup and name, and
    * using the specified Runnable object's <code>run()</code> method to
    * execute.  If the Runnable object is null, <code>this</code> (which is
@@ -266,55 +318,6 @@ public class Thread implements Runnable
     this(currentThread(), group, target, name);
   }
 
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(group, target,</code>
-   * <i>gname</i><code>)</code>, where <i>gname</i> is
-   * a newly generated name. Automatically generated names are of the
-   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
-   *
-   * @param      group    the thread group.
-   * @param      target   the object whose <code>run</code> method is called.
-   * @exception  SecurityException  if the current thread cannot create a
-   *             thread in the specified thread group.
-   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *             java.lang.Runnable, java.lang.String)
-   */
-  public Thread(ThreadGroup group, Runnable target)
-  {
-    this(group, target, gen_name());
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(group, null, name)</code>
-   *
-   * @param      group   the thread group.
-   * @param      name    the name of the new thread.
-   * @exception  SecurityException  if the current thread cannot create a
-   *               thread in the specified thread group.
-   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread(ThreadGroup group, String name)
-  {
-    this(group, null, name);
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(null, target, name)</code>.
-   *
-   * @param   target   the object whose <code>run</code> method is called.
-   * @param   name     the name of the new thread.
-   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread(Runnable target, String name)
-  {
-    this(null, target, name);
-  }
-
   private Thread (Thread current, ThreadGroup g, Runnable r, String n)
   {
     // The Class Libraries book says ``threadName cannot be null''.  I
@@ -343,16 +346,16 @@ public class Thread implements Runnable
       {
 	group.checkAccess();
 
-	daemon_flag = current.isDaemon();
+	daemon = current.isDaemon();
         int gmax = group.getMaxPriority();
 	int pri = current.getPriority();
 	priority = (gmax < pri ? gmax : pri);
-	context_class_loader = current.context_class_loader;
+	contextClassLoader = current.contextClassLoader;
 	InheritableThreadLocal.newChildThread(this);
       }
     else
       {
-	daemon_flag = false;
+	daemon = false;
 	priority = NORM_PRIORITY;
       }
 
@@ -373,7 +376,7 @@ public class Thread implements Runnable
    */
   public static int activeCount()
   {
-    return currentThread().getThreadGroup().activeCount();
+    return currentThread().group.activeCount();
   }
 
   /**
@@ -411,7 +414,10 @@ public class Thread implements Runnable
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
    */
-  public native void destroy();
+  public void destroy()
+  {
+    throw new NoSuchMethodError();
+  }
   
   /**
    * Print a stack trace of the current thread to stderr using the same
@@ -475,11 +481,12 @@ public class Thread implements Runnable
   }
 
   /**
-   * Return true if this Thread holds the object's lock, false otherwise.
+   * Checks whether the current thread holds the monitor on a given object.
+   * This allows you to do <code>assert Thread.holdsLock(obj)</code>.
    *
    * @param obj the object to test lock ownership on.
    * @return true if the current thread is currently synchronized on obj
-   * @throws NullPointerException if obj is null.
+   * @throws NullPointerException if obj is null
    * @since 1.4
    */
   public static native boolean holdsLock(Object obj);
@@ -551,7 +558,7 @@ public class Thread implements Runnable
    */
   public final boolean isDaemon()
   {
-    return daemon_flag;
+    return daemon;
   }
 
   /**
@@ -653,12 +660,12 @@ public class Thread implements Runnable
    * @see #isDaemon()
    * @see #checkAccess()
    */
-  public final void setDaemon(boolean status)
+  public final void setDaemon(boolean daemon)
   {
-    checkAccess();
     if (!startable_flag)
       throw new IllegalThreadStateException();
-    daemon_flag = status;
+    checkAccess();
+    this.daemon = daemon;
   }
 
   /**
@@ -677,8 +684,8 @@ public class Thread implements Runnable
    */
   public synchronized ClassLoader getContextClassLoader()
   {
-    if (context_class_loader == null)
-      context_class_loader = ClassLoader.getSystemClassLoader();
+    if (contextClassLoader == null)
+      contextClassLoader = ClassLoader.getSystemClassLoader();
 
     SecurityManager sm = System.getSecurityManager();
     // FIXME: we can't currently find the caller's class loader.
@@ -687,18 +694,18 @@ public class Thread implements Runnable
       {
 	// See if the caller's class loader is the same as or an
 	// ancestor of this thread's class loader.
-	while (callers != null && callers != context_class_loader)
+	while (callers != null && callers != contextClassLoader)
 	  {
 	    // FIXME: should use some internal version of getParent
 	    // that avoids security checks.
 	    callers = callers.getParent();
 	  }
 
-	if (callers != context_class_loader)
+	if (callers != contextClassLoader)
 	  sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
 
-    return context_class_loader;
+    return contextClassLoader;
   }
 
   /**
@@ -718,7 +725,7 @@ public class Thread implements Runnable
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setContextClassLoader"));
-    context_class_loader = classloader;
+    this.contextClassLoader = classloader;
   }
 
   /**
