@@ -1,3 +1,7 @@
+2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/i386/svr3dbx.h: GNU CC -> GCC; Intel 385 -> Intel 386.
+
 2003-06-13  Florian Weimer  <fw@deneb.enyo.de>
 
 	* doc/invoke.texi (SPARC Options): Document ``-mimpure-text''.
