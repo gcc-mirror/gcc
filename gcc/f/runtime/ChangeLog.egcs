@@ -1,4 +1,4 @@
-Tue Nov 18 09:49:04 1997  Mumit Khan   (kahn@xraylity.wisc.edu)
+Tue Nov 18 09:49:04 1997  Mumit Khan   (khan@xraylith.wisc.edu)
 
 	* libI77/close.c (f_exit): Reset f__init so that f_clos does not
 	(incorrectly) think there is an I/O recursion when program is
