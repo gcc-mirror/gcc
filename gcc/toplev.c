@@ -3019,7 +3019,8 @@ rest_of_compilation (decl)
 #endif
   life_analysis (insns, rtl_dump_file, PROP_FINAL);
   if (optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
+    cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
+		 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
   timevar_pop (TV_FLOW);
 
   no_new_pseudos = 1;

@@ -89,6 +89,7 @@ static edge thread_jump			PARAMS ((int, edge, basic_block));
 static bool mark_effect			PARAMS ((rtx, bitmap));
 static void notice_new_block		PARAMS ((basic_block));
 static void update_forwarder_flag	PARAMS ((basic_block));
+static int mentions_nonequal_regs	PARAMS ((rtx *, void *));
 
 /* Set flags for newly created block.  */
 
@@ -235,6 +236,32 @@ mark_effect (exp, nonequal)
 	return false;
     }
 }
+
+/* Return nonzero if X is an register set in regset DATA.
+   Called via for_each_rtx.  */
+static int
+mentions_nonequal_regs (x, data)
+     rtx *x;
+     void *data;
+{
+  regset nonequal = (regset) data;
+  if (REG_P (*x))
+    {
+      int regno;
+
+      regno = REGNO (*x);
+      if (REGNO_REG_SET_P (nonequal, regno))
+	return 1;
+      if (regno < FIRST_PSEUDO_REGISTER)
+	{
+	  int n = HARD_REGNO_NREGS (regno, GET_MODE (*x));
+	  while (--n > 0)
+	    if (REGNO_REG_SET_P (nonequal, regno + n))
+	      return 1;
+	}
+    }
+  return 0;
+}
 /* Attempt to prove that the basic block B will have no side effects and
    allways continues in the same edge if reached via E.  Return the edge
    if exist, NULL otherwise.  */
@@ -336,6 +363,11 @@ thread_jump (mode, e, b)
   /* Later we should clear nonequal of dead registers.  So far we don't
      have life information in cfg_cleanup.  */
   if (failed)
+    goto failed_exit;
+
+  /* cond2 must not mention any register that is not equal to the
+     former block.  */
+  if (for_each_rtx (&cond2, mentions_nonequal_regs, nonequal))
     goto failed_exit;
 
   /* In case liveness information is available, we need to prove equivalence
