@@ -45,6 +45,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
 	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/gcc-version.m4 \
+	$(top_srcdir)/../config/gxx-include-dir.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lcmessage.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
@@ -258,6 +259,7 @@ exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
 gcc_version_full = @gcc_version_full@
 gcc_version_trigger = @gcc_version_trigger@
+gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
 host_alias = @host_alias@
@@ -270,6 +272,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
+libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -294,7 +297,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign
-gcjdir = $(includedir)/gcj
+gcjdir = $(gxx_include_dir)/gcj
 gcj_HEADERS = array.h cni.h field.h javaprims.h method.h
 toolgcjdir = @tool_include_dir@/gcj
 toolgcj_HEADERS = libgcj-config.h
