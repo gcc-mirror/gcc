@@ -1,3 +1,9 @@
+2004-06-03  Andrew Pinski  <pinskia@physics.uc.edu>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR c++/14639
+	* method.c (use_think): Do not mark thunk as referenced.
+
 2004-06-03  Matt Austern  <austern@apple.com>
 
 	PR c++/15428
