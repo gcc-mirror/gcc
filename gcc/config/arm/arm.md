@@ -240,29 +240,29 @@
 		 (match_operand:DI 2 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%0, %1, %2\;adc\\t%R0, %R1, %R2"
+  "adds\\t%Q0, %Q1, %Q2\;adc\\t%R0, %R1, %R2"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
 (define_insn "*adddi_sesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (sign_extend:DI
-		  (match_operand:SI 1 "s_register_operand" "r,r"))
-		 (match_operand:DI 2 "s_register_operand" "r,0")))
+		  (match_operand:SI 2 "s_register_operand" "r,r"))
+		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%0, %2, %1\;adc\\t%R0, %R2, %1, asr #31"
+  "adds\\t%Q0, %Q1, %2\;adc\\t%R0, %R1, %2, asr #31"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
 (define_insn "*adddi_zesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (zero_extend:DI
-		  (match_operand:SI 1 "s_register_operand" "r,r"))
-		 (match_operand:DI 2 "s_register_operand" "r,0")))
+		  (match_operand:SI 2 "s_register_operand" "r,r"))
+		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%0, %2, %1\;adc\\t%R0, %R2, #0"
+  "adds\\t%Q0, %Q1, %2\;adc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -466,7 +466,7 @@
 		  (match_operand:DI 2 "s_register_operand" "r,0,0")))
    (clobber (reg:CC 24))]
   ""
-  "subs\\t%0, %1, %2\;sbc\\t%R0, %R1, %R2"
+  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -477,7 +477,7 @@
 		   (match_operand:SI 2 "s_register_operand" "r,r"))))
    (clobber (reg:CC 24))]
   ""
-  "subs\\t%0, %1, %2\;sbc\\t%R0, %R1, #0"
+  "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -488,7 +488,7 @@
 		   (match_operand:SI 2 "s_register_operand" "r,r"))))
    (clobber (reg:CC 24))]
   ""
-  "subs\\t%0, %1, %2\;sbc\\t%R0, %R1, %2, asr #31"
+  "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, %2, asr #31"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -499,7 +499,7 @@
 		  (match_operand:DI 1 "s_register_operand" "?r,0")))
    (clobber (reg:CC 24))]
   ""
-  "rsbs\\t%0, %1, %2\;rsc\\t%R0, %R1, #0"
+  "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -510,7 +510,7 @@
 		  (match_operand:DI 1 "s_register_operand" "?r,0")))
    (clobber (reg:CC 24))]
   ""
-  "rsbs\\t%0, %1, %2\;rsc\\t%R0, %R1, %2, asr #31"
+  "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, %2, asr #31"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -522,7 +522,7 @@
 		   (match_operand:SI 2 "s_register_operand" "r"))))
    (clobber (reg:CC 24))]
   ""
-  "subs\\t%0, %1, %2\;rsc\\t%R0, %1, %1"
+  "subs\\t%Q0, %1, %2\;rsc\\t%R0, %1, %1"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -734,7 +734,7 @@
                (sign_extend:DI
                (match_operand:SI 2 "s_register_operand" "r"))))]
   "arm_fast_multiply"
-  "smull%?\\t%0, %R0, %1, %2"
+  "smull%?\\t%Q0, %R0, %1, %2"
 [(set_attr "type" "mult")])
 
 (define_insn "umulsidi3"
@@ -744,7 +744,7 @@
                (zero_extend:DI
                 (match_operand:SI 2 "s_register_operand" "r"))))]
   "arm_fast_multiply"
-  "umull%?\\t%0, %R0, %1, %2"
+  "umull%?\\t%Q0, %R0, %1, %2"
 [(set_attr "type" "mult")])
 
 (define_insn "mulsf3"
@@ -920,7 +920,7 @@
 	(and:DI (match_operand:DI 1 "s_register_operand" "%0,0")
 		(match_operand:DI 2 "s_register_operand" "r,0")))]
   ""
-  "and%?\\t%0, %1, %2\;and%?\\t%R0, %R1, %R2"
+  "and%?\\t%Q0, %Q1, %Q2\;and%?\\t%R0, %R1, %R2"
 [(set_attr "length" "8")])
 
 (define_insn "*anddi_zesidi_di"
@@ -929,7 +929,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "and%?\\t%0, %1, %2\;mov%?\\t%R0, #0"
+  "and%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, #0"
 [(set_attr "length" "8")])
 
 (define_insn "*anddi_sesdi_di"
@@ -938,7 +938,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "and%?\\t%0, %1, %2\;and%?\\t%R0, %R1, %2, asr #31"
+  "and%?\\t%Q0, %Q1, %2\;and%?\\t%R0, %R1, %2, asr #31"
 [(set_attr "length" "8")])
 
 (define_expand "andsi3"
@@ -1065,7 +1065,7 @@
 	(and:DI (not:DI (match_operand:DI 2 "s_register_operand" "r,0"))
 		(match_operand:DI 1 "s_register_operand" "0,r")))]
   ""
-  "bic%?\\t%0, %1, %2\;bic%?\\t%R0, %R1, %R2"
+  "bic%?\\t%Q0, %Q1, %Q2\;bic%?\\t%R0, %R1, %R2"
 [(set_attr "length" "8")])
   
 (define_insn "*anddi_notzesidi_di"
@@ -1075,8 +1075,8 @@
 		(match_operand:DI 1 "s_register_operand" "0,?r")))]
   ""
   "@
-   bic%?\\t%0, %1, %2
-   bic%?\\t%0, %1, %2\;mov%?\\t%R0, %R1"
+   bic%?\\t%Q0, %Q1, %2
+   bic%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
 [(set_attr "length" "4,8")])
   
 (define_insn "*anddi_notsesidi_di"
@@ -1085,7 +1085,7 @@
 			 (match_operand:SI 2 "s_register_operand" "r,r")))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "bic%?\\t%0, %1, %2\;bic%?\\t%R0, %R1, %2, asr #31"
+  "bic%?\\t%Q0, %Q1, %2\;bic%?\\t%R0, %R1, %2, asr #31"
 [(set_attr "length" "8")])
   
 (define_insn "*andsi_notsi_si"
@@ -1123,7 +1123,7 @@
 	(ior:DI (match_operand:DI 1 "s_register_operand" "%0")
 		(match_operand:DI 2 "s_register_operand" "r")))]
   ""
-  "orr%?\\t%0, %1, %2\;orr%?\\t%R0, %R1, %R2"
+  "orr%?\\t%Q0, %Q1, %Q2\;orr%?\\t%R0, %R1, %R2"
 [(set_attr "length" "8")])
 
 (define_insn "*iordi_zesidi_di"
@@ -1133,8 +1133,8 @@
 		(match_operand:DI 1 "s_register_operand" "0,?r")))]
   ""
   "@
-   orr%?\\t%0, %1, %2
-   orr%?\\t%0, %1, %2\;mov%?\\t%R0, %R1"
+   orr%?\\t%Q0, %Q1, %2
+   orr%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
 [(set_attr "length" "4,8")])
 
 (define_insn "*iordi_sesidi_di"
@@ -1143,7 +1143,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "orr%?\\t%0, %1, %2\;orr%?\\t%R0, %R1, %2, asr #31"
+  "orr%?\\t%Q0, %Q1, %2\;orr%?\\t%R0, %R1, %2, asr #31"
 [(set_attr "length" "8")])
 
 (define_expand "iorsi3"
@@ -1210,7 +1210,7 @@
 	(xor:DI (match_operand:DI 1 "s_register_operand" "%0,0")
 		(match_operand:DI 2 "s_register_operand" "r,0")))]
   ""
-  "eor%?\\t%0, %1, %2\;eor%?\\t%R0, %R1, %R2"
+  "eor%?\\t%Q0, %Q1, %Q2\;eor%?\\t%R0, %R1, %R2"
 [(set_attr "length" "8")])
 
 (define_insn "*xordi_zesidi_di"
@@ -1220,8 +1220,8 @@
 		(match_operand:DI 1 "s_register_operand" "0,?r")))]
   ""
   "@
-   eor%?\\t%0, %1, %2
-   eor%?\\t%0, %1, %2\;mov%?\\t%R0, %R1"
+   eor%?\\t%Q0, %Q1, %2
+   eor%?\\t%Q0, %Q1, %2\;mov%?\\t%R0, %R1"
 [(set_attr "length" "4,8")])
 
 (define_insn "*xordi_sesidi_di"
@@ -1230,7 +1230,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "eor%?\\t%0, %1, %2\;eor%?\\t%R0, %R1, %2, asr #31"
+  "eor%?\\t%Q0, %Q1, %2\;eor%?\\t%R0, %R1, %2, asr #31"
 [(set_attr "length" "8")])
 
 (define_insn "xorsi3"
@@ -1525,7 +1525,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(neg:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "rsbs\\t%0, %1, #0\;rsc\\t%R0, %R1, #0"
+  "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -1711,7 +1711,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(not:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
   ""
-  "mvn%?\\t%0, %1\;mvn%?\\t%R0, %R1"
+  "mvn%?\\t%Q0, %Q1\;mvn%?\\t%R0, %R1"
 [(set_attr "length" "8")])
 
 (define_insn "one_cmplsi2"
@@ -1816,8 +1816,8 @@
         (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r")))]
   ""
   "*
-  if (REGNO (operands[1]) != REGNO (operands[0]))
-    output_asm_insn (\"mov%?\\t%0, %1\", operands);
+  if (REGNO (operands[1]) != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0))
+    output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
   return \"mov%?\\t%R0, #0\";
 "
 [(set_attr "length" "8")])
@@ -1827,8 +1827,8 @@
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
-   and%?\\t%0, %1, #255\;mov%?\\t%R0, #0
-   ldr%?b\\t%0, %1\;mov%?\\t%R0, #0"
+   and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
+   ldr%?b\\t%Q0, %1\;mov%?\\t%R0, #0"
 [(set_attr "length" "8")
  (set_attr "type" "*,load")])
 
@@ -1837,9 +1837,9 @@
         (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r")))]
   ""
   "*
-  if (REGNO (operands[1]) != REGNO (operands[0]))
-    output_asm_insn (\"mov%?\\t%0, %1\", operands);
-  return \"mov%?\\t%R0, %0, asr #31\";
+  if (REGNO (operands[1]) != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0))
+    output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
+  return \"mov%?\\t%R0, %Q0, asr #31\";
 "
 [(set_attr "length" "8")])
 
@@ -2647,8 +2647,8 @@
 
   switch (which_alternative)
     {
-    case 0: return \"ldm%?ia\\t%m1, {%0, %R0}\\t%@ double\";
-    case 1: return \"stm%?ia\\t%m0, {%1, %R1}\\t%@ double\";
+    case 0: return \"ldm%?ia\\t%m1, %M0\\t%@ double\";
+    case 1: return \"stm%?ia\\t%m0, %M1\\t%@ double\";
     case 2: case 3: case 4: return output_move_double (operands);
     case 5: return \"mvf%?d\\t%0, %1\";
     case 6: return \"mnf%?d\\t%0, #%N1\";
