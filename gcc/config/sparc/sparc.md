@@ -1801,7 +1801,7 @@
    ldub %1,%0
    stb %r1,%0"
   [(set_attr "type" "move,move,load,store")
-   (set_attr "length" "*,1,*,1")])
+   (set_attr "length" "1")])
 
 (define_insn "*lo_sum_qi"
   [(set (match_operand:QI 0 "register_operand" "=r")
@@ -1842,7 +1842,7 @@
    lduh %1,%0
    sth %r1,%0"
   [(set_attr "type" "move,move,load,store")
-   (set_attr "length" "*,1,*,1")])
+   (set_attr "length" "1")])
 
 (define_insn "*lo_sum_hi"
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1892,9 +1892,9 @@
    ld %1,%0
    ld %1,%0
    st %r1,%0
-   st %r1,%0"
-  [(set_attr "type" "move,fp,move,load,load,store,store")
-   (set_attr "length" "*,*,1,*,*,*,*")])
+   st %1,%0"
+  [(set_attr "type" "move,fp,move,load,fpload,store,fpstore")
+   (set_attr "length" "1")])
 
 (define_insn "*store_si"
   [(set (mem:SI (match_operand:SI 0 "symbolic_operand" ""))
@@ -2082,8 +2082,8 @@
    mov %1,%0
    ld %1,%0
    ld %1,%0
-   st %r1,%0
-   st %r1,%0"
+   st %1,%0
+   st %1,%0"
   [(set_attr "type" "fp,move,fpload,load,fpstore,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
@@ -2099,7 +2099,7 @@
   "@
    mov %1,%0
    ld %1,%0
-   st %r1,%0"
+   st %1,%0"
   [(set_attr "type" "move,load,store")])
 
 (define_insn "*store_sf"
