@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler,
-   for Sun SPARC-V9 on a hypothetical elf format machine.
+/* Definitions of target machine for GNU compiler, for SPARC64, ELF.
    Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
@@ -42,12 +41,13 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_HARD_QUAD \
-   + MASK_STACK_BIAS + MASK_MEDANY + MASK_EPILOGUE + MASK_FPU)
+   + MASK_STACK_BIAS + MASK_MEDANY + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
 
 /* __svr4__ is used by the C library */
+/* ??? __arch64__ is subject to change.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--D__sparc__ -D__sparc_v9__ -D__svr4__ \
+-D__sparc__ -D__sparc_v9__ -D__arch64__ -D__svr4__ \
 -Acpu(sparc64) -Amachine(sparc64) \
 "
 
