@@ -1,3 +1,7 @@
+2001-01-15  DJ Delorie  <dj@redhat.com>
+
+	* gcc.texi (Makefile): Add documentation for Makefile targets.
+
 2001-01-15  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (arm_finalize_pic): New arg "prologue".
