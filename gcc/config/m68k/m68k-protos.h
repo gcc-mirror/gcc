@@ -54,7 +54,9 @@ extern int standard_sun_fpa_constant_p PARAMS ((rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void notice_update_cc PARAMS ((rtx, rtx));
-//extern void finalize_pic PARAMS ((rtx, enum machine_mode));
+#if 0
+extern void finalize_pic PARAMS ((rtx, enum machine_mode));
+#endif
 extern int general_src_operand PARAMS ((rtx, enum machine_mode));
 extern int nonimmediate_src_operand PARAMS ((rtx, enum machine_mode));
 extern int memory_src_operand PARAMS ((rtx, enum machine_mode));
