@@ -1,15 +1,38 @@
+2002-07-16  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
+
+	* doc/invoke.texi (NS32K Options): Document -mieee-compare option
+
+	* config/ns32k/ns32k.md (addsi3, *frame_addr, *stack_addr): merge
+	into addsi3 using register class "x" and "y".
+
+	* config/ns32k/ns32k.md (*madddf, *maddsf, *msubdf, *msubsf):
+	"earlyclobber" constraint modifier for some alternative.
+	
+	* config/ns32k/ns32k.md (tstdf, tstsf, cmpdf, cmpsf, blt, ble)
+	(*ble, *blt): Flag to indicate bCOND and sCOND should check for
+	unordered.
+	config/ns32k/ns32k.h (CC_UNORD): define corresponding mask.
+
+	* config/ns32k/ns32k.h (TARGET_IEEE_COMPARE, MASK_IEEE_COMPARE)
+	(TARGET_SWITCHES): Add -mieee-compare option.
+	(OVERRIDE_OPTIONS): 32332 is a subset of
+	32532. Don't use IEEE_COMPARE -funsafe-math-optimizations.
+	(TARGET_SWITCHES): Fix description of bitfield option.
+	* config/ns32k/netbsd.h (TARGET_DEFAULT): Add
+	-mieee-compare option. Remove 32332 flag.
+
 2002-07-16  Steve Ellcey  <sje@cup.hp.com>
-	* gcc/explow.c (convert_memory_address): Remove special handling
+
+	* explow.c (convert_memory_address): Remove special handling
 	when POINTERS_EXTEND_UNSIGNED < 0.
-	* gcc/config/ia64.md (movsi_symbolic): New instruction for ILP32
-	mode.
+	* config/ia64.md (movsi_symbolic): New instruction for ILP32 mode.
 	(movedi_symbolic): Fix typo.
 	(load_fptr): Remove mode restriction so it works for SI and DI.
 	(load_fptr_internal1): Ditto.
 	(load_gprel): Ditto.
 	(load_symptr_internal1): Ditto.
 	(call_pic): Ditto.
-	* gcc/config/ia64.c (call_operand): Modify mode check.
+	* config/ia64.c (call_operand): Modify mode check.
 	(ia64_expand_load_address): Handle DI and SI addresses and symbols.
 	(ia64_expand_move): Ditto.
 	(ia64_assemble_integer): Handle SImode function pointers.
