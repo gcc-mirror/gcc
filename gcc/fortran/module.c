@@ -1280,7 +1280,7 @@ mio_name (int t, const mstring * m)
   return t;
 }
 
-/* Specialisation of mio_name.  */
+/* Specialization of mio_name.  */
 
 #define DECL_MIO_NAME(TYPE) \
  static inline TYPE \
@@ -1424,7 +1424,7 @@ static const mstring attr_bits[] =
     minit (NULL, -1)
 };
 
-/* Specialisation of mio_name.  */
+/* Specialization of mio_name.  */
 DECL_MIO_NAME(ab_attribute)
 DECL_MIO_NAME(ar_type)
 DECL_MIO_NAME(array_type)

@@ -2435,7 +2435,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 	case EXEC_ASSIGN:
           /* A scalar or array assignment.  */
 	  need_temp = gfc_check_dependency (c->expr, c->expr2, varexpr, nvar);
-          /* Teporaries due to array assignment data dependencies introduce
+          /* Temporaries due to array assignment data dependencies introduce
              no end of problems.  */
 	  if (need_temp)
             gfc_trans_assign_need_temp (c->expr, c->expr2, NULL,
