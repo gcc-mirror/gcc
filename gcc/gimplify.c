@@ -2093,10 +2093,13 @@ gimple_boolify (tree expr)
     TARGET is the tree for T1 above.
 
     PRE_P points to the list where side effects that must happen before
-	*EXPR_P should be stored.  */
+	*EXPR_P should be stored.
+
+   POST_P points to the list where side effects that must happen after
+     *EXPR_P should be stored.  */
 
 static enum gimplify_status
-gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
+gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target)
 {
   tree expr = *expr_p;
   tree tmp, tmp2, type;
@@ -2112,7 +2115,7 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
     {
       if (target)
 	{
-	  ret = gimplify_expr (&target, pre_p, NULL,
+	  ret = gimplify_expr (&target, pre_p, post_p,
 			       is_gimple_min_lval, fb_lvalue);
 	  if (ret != GS_ERROR)
 	    ret = GS_OK;
@@ -2873,7 +2876,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
 	  {
 	    *expr_p = *from_p;
-	    return gimplify_cond_expr (expr_p, pre_p, *to_p);
+	    return gimplify_cond_expr (expr_p, pre_p, post_p, *to_p);
 	  }
 	else
 	  ret = GS_UNHANDLED;
@@ -3691,7 +3694,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case COND_EXPR:
-	  ret = gimplify_cond_expr (expr_p, pre_p, NULL_TREE);
+	  ret = gimplify_cond_expr (expr_p, pre_p, post_p, NULL_TREE);
 	  break;
 
 	case CALL_EXPR:
