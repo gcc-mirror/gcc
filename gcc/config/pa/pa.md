@@ -2532,6 +2532,79 @@
 				   (const_int 5)))))])
 
 
+;; The next four peepholes take advantage of the new 5 operand 
+;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
+;; fmpyadd performs a multiply and add/sub of independent operands
+;; at the same time.  Because the operands must be independent
+;; combine will not try to combine such insns...  Thus we have
+;; to use a peephole.
+(define_peephole
+  [(set (match_operand 0 "register_operand" "=fx")
+	(mult (match_operand 1 "register_operand" "fx")
+	      (match_operand 2 "register_operand" "fx")))
+   (set (match_operand 3 "register_operand" "+fx")
+	(plus (match_operand 4 "register_operand" "fx")
+	      (match_operand 5 "register_operand" "fx")))]
+  "TARGET_SNAKE && fmpyaddoperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+  else
+    return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+}")
+
+
+(define_peephole 
+  [(set (match_operand 3 "register_operand" "+fx")
+	(plus (match_operand 4 "register_operand" "fx")
+	      (match_operand 5 "register_operand" "fx")))
+   (set (match_operand 0 "register_operand" "=fx")
+	(mult (match_operand 1 "register_operand" "fx")
+	      (match_operand 2 "register_operand" "fx")))]
+  "TARGET_SNAKE && fmpyaddoperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+  else
+    return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+}")
+
+;; Note fsub subtracts the second operand from the first while fmpysub
+;; does the opposite for the subtraction operands!
+(define_peephole
+  [(set (match_operand 0 "register_operand" "=fx")
+	(mult (match_operand 1 "register_operand" "fx")
+	      (match_operand 2 "register_operand" "fx")))
+   (set (match_operand 3 "register_operand" "+fx")
+	(minus (match_operand 4 "register_operand" "fx")
+	       (match_operand 5 "register_operand" "fx")))]
+  "TARGET_SNAKE && fmpysuboperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    return \"fmpysub,dbl %1,%2,%0,%5,%3\";
+  else
+    return \"fmpysub,sgl %1,%2,%0,%5,%3\";
+}")
+
+(define_peephole
+  [(set (match_operand 3 "register_operand" "+fx")
+	(minus (match_operand 4 "register_operand" "fx")
+	       (match_operand 5 "register_operand" "fx")))
+   (set (match_operand 0 "register_operand" "=fx")
+	(mult (match_operand 1 "register_operand" "fx")
+	      (match_operand 2 "register_operand" "fx")))]
+  "TARGET_SNAKE && fmpysuboperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    return \"fmpysub,dbl %1,%2,%0,%5,%3\";
+  else
+    return \"fmpysub,sgl %1,%2,%0,%5,%3\";
+}")
+
 
 ;;- Local variables:
 ;;- mode:emacs-lisp
