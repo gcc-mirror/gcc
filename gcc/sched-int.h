@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,7 +123,7 @@ struct sched_info
 {
   /* Add all insns that are initially ready to the ready list.  Called once
      before scheduling a set of insns.  */
-  void (*init_ready_list) PARAMS ((struct ready_list *));
+  void (*init_ready_list) (struct ready_list *);
   /* Called after taking an insn from the ready list.  Returns nonzero if
      this insn can be scheduled, nonzero if we should silently discard it.  */
   int (*can_schedule_ready_p) PARAMS ((rtx));
@@ -337,56 +337,55 @@ enum INSN_TRAP_CLASS
 #endif
 
 /* Functions in sched-vis.c.  */
-extern void init_target_units PARAMS ((void));
-extern void insn_print_units PARAMS ((rtx));
-extern void init_block_visualization PARAMS ((void));
-extern void print_block_visualization PARAMS ((const char *));
-extern void visualize_scheduled_insns PARAMS ((int));
-extern void visualize_no_unit PARAMS ((rtx));
-extern void visualize_stall_cycles PARAMS ((int));
-extern void visualize_alloc PARAMS ((void));
-extern void visualize_free PARAMS ((void));
+extern void init_target_units (void);
+extern void insn_print_units (rtx);
+extern void init_block_visualization (void);
+extern void print_block_visualization (const char *);
+extern void visualize_scheduled_insns (int);
+extern void visualize_no_unit (rtx);
+extern void visualize_stall_cycles (int);
+extern void visualize_alloc (void);
+extern void visualize_free (void);
 
 /* Functions in sched-deps.c.  */
-extern int add_dependence PARAMS ((rtx, rtx, enum reg_note));
-extern void add_insn_mem_dependence PARAMS ((struct deps *, rtx *, rtx *, rtx,
-					     rtx));
-extern void sched_analyze PARAMS ((struct deps *, rtx, rtx));
-extern void init_deps PARAMS ((struct deps *));
-extern void free_deps PARAMS ((struct deps *));
-extern void init_deps_global PARAMS ((void));
-extern void finish_deps_global PARAMS ((void));
-extern void add_forward_dependence PARAMS ((rtx, rtx, enum reg_note));
-extern void compute_forward_dependences PARAMS ((rtx, rtx));
-extern rtx find_insn_list PARAMS ((rtx, rtx));
-extern void init_dependency_caches PARAMS ((int));
-extern void free_dependency_caches PARAMS ((void));
+extern int add_dependence (rtx, rtx, enum reg_note);
+extern void add_insn_mem_dependence (struct deps *, rtx *, rtx *, rtx, rtx);
+extern void sched_analyze (struct deps *, rtx, rtx);
+extern void init_deps (struct deps *);
+extern void free_deps (struct deps *);
+extern void init_deps_global (void);
+extern void finish_deps_global (void);
+extern void add_forward_dependence (rtx, rtx, enum reg_note);
+extern void compute_forward_dependences (rtx, rtx);
+extern rtx find_insn_list (rtx, rtx);
+extern void init_dependency_caches (int);
+extern void free_dependency_caches (void);
 
 /* Functions in haifa-sched.c.  */
-extern int haifa_classify_insn PARAMS ((rtx));
-extern void get_block_head_tail PARAMS ((int, rtx *, rtx *));
-extern int no_real_insns_p PARAMS ((rtx, rtx));
+extern int haifa_classify_insn (rtx);
+extern void get_block_head_tail (int, rtx *, rtx *);
+extern int no_real_insns_p (rtx, rtx);
 
-extern void rm_line_notes PARAMS ((rtx, rtx));
-extern void save_line_notes PARAMS ((int, rtx, rtx));
-extern void restore_line_notes PARAMS ((rtx, rtx));
-extern void rm_redundant_line_notes PARAMS ((void));
-extern void rm_other_notes PARAMS ((rtx, rtx));
+extern void rm_line_notes (rtx, rtx);
+extern void save_line_notes (int, rtx, rtx);
+extern void restore_line_notes (rtx, rtx);
+extern void rm_redundant_line_notes (void);
+extern void rm_other_notes (rtx, rtx);
 
-extern int insn_issue_delay PARAMS ((rtx));
-extern int set_priorities PARAMS ((rtx, rtx));
+extern int insn_issue_delay (rtx);
+extern int set_priorities (rtx, rtx);
 
-extern rtx sched_emit_insn PARAMS ((rtx));
-extern void schedule_block PARAMS ((int, int));
-extern void sched_init PARAMS ((FILE *));
-extern void sched_finish PARAMS ((void));
+extern rtx sched_emit_insn (rtx);
+extern void schedule_block (int, int);
+extern void sched_init (FILE *);
+extern void sched_finish (void);
 
-extern void ready_add PARAMS ((struct ready_list *, rtx));
+extern void ready_add (struct ready_list *, rtx);
 
 /* The following are exported for the benefit of debugging functions.  It
    would be nicer to keep them private to haifa-sched.c.  */
-extern int insn_unit PARAMS ((rtx));
-extern int insn_cost PARAMS ((rtx, rtx, rtx));
-extern rtx get_unit_last_insn PARAMS ((int));
-extern int actual_hazard_this_instance PARAMS ((int, int, rtx, int, int));
-extern void print_insn PARAMS ((char *, rtx, int));
+extern int insn_unit (rtx);
+extern int insn_cost (rtx, rtx, rtx);
+extern rtx get_unit_last_insn (int);
+extern int actual_hazard_this_instance (int, int, rtx, int, int);
+extern void print_insn (char *, rtx, int);

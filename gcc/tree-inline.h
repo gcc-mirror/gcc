@@ -1,5 +1,5 @@
 /* Tree inlining hooks and declarations.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -24,13 +24,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Function prototypes.  */
 
-void optimize_inline_calls PARAMS ((tree));
-int tree_inlinable_function_p PARAMS ((tree, int));
-tree walk_tree PARAMS ((tree*, walk_tree_fn, void*, void*));
-tree walk_tree_without_duplicates PARAMS ((tree*, walk_tree_fn, void*));
-tree copy_tree_r PARAMS ((tree*, int*, void*));
-void clone_body PARAMS ((tree, tree, void*));
-void remap_save_expr PARAMS ((tree*, void*, tree, int*));
+void optimize_inline_calls (tree);
+int tree_inlinable_function_p (tree, int);
+tree walk_tree (tree*, walk_tree_fn, void*, void*);
+tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
+tree copy_tree_r (tree*, int*, void*);
+void clone_body (tree, tree, void*);
+void remap_save_expr (tree*, void*, tree, int*);
 
 /* 0 if we should not perform inlining.
    1 if we should expand functions calls inline at the tree level.

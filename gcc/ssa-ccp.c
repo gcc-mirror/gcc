@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Original framework by Daniel Berlin <dan@cgsoftware.com>
    Fleshed out and major cleanups by Jeff Law <law@redhat.com>
 
@@ -124,24 +124,22 @@ static sbitmap ssa_edges;
 #define SSA_NAME(x) REGNO (SET_DEST (x))
 #define EIE(x,y) EDGE_INDEX (edges, x, y)
 
-static void visit_phi_node             PARAMS ((rtx, basic_block));
-static void visit_expression           PARAMS ((rtx, basic_block));
-static void defs_to_undefined          PARAMS ((rtx));
-static void defs_to_varying            PARAMS ((rtx));
-static void examine_flow_edges         PARAMS ((void));
-static int mark_references             PARAMS ((rtx *, void *));
-static void follow_def_use_chains      PARAMS ((void));
-static void optimize_unexecutable_edges PARAMS ((struct edge_list *, sbitmap));
-static void ssa_ccp_substitute_constants PARAMS ((void));
-static void ssa_ccp_df_delete_unreachable_insns PARAMS ((void));
-static void ssa_fast_dce PARAMS ((struct df *));
+static void visit_phi_node (rtx, basic_block);
+static void visit_expression (rtx, basic_block);
+static void defs_to_undefined (rtx);
+static void defs_to_varying (rtx);
+static void examine_flow_edges (void);
+static int mark_references (rtx *, void *);
+static void follow_def_use_chains (void);
+static void optimize_unexecutable_edges (struct edge_list *, sbitmap);
+static void ssa_ccp_substitute_constants (void);
+static void ssa_ccp_df_delete_unreachable_insns (void);
+static void ssa_fast_dce (struct df *);
 
 /* Loop through the PHI_NODE's parameters for BLOCK and compare their
    lattice values to determine PHI_NODE's lattice value.  */
 static void
-visit_phi_node (phi_node, block)
-     rtx phi_node;
-     basic_block block;
+visit_phi_node (rtx phi_node, basic_block block)
 {
   unsigned int i;
   rtx phi_node_expr = NULL;
@@ -210,8 +208,7 @@ visit_phi_node (phi_node, block)
 
 /* Sets all defs in an insn to UNDEFINED.  */
 static void
-defs_to_undefined (insn)
-     rtx insn;
+defs_to_undefined (rtx insn)
 {
   struct df_link *currdef;
   for (currdef = DF_INSN_DEFS (df_analyzer, insn); currdef;
@@ -225,8 +222,7 @@ defs_to_undefined (insn)
 
 /* Sets all defs in an insn to VARYING.  */
 static void
-defs_to_varying (insn)
-     rtx insn;
+defs_to_varying (rtx insn)
 {
   struct df_link *currdef;
   for (currdef = DF_INSN_DEFS (df_analyzer, insn); currdef;
@@ -241,9 +237,7 @@ defs_to_varying (insn)
 /* Go through the expression, call the appropriate evaluation routines
    to attempt cprop */
 static void
-visit_expression (insn, block)
-     rtx insn;
-     basic_block block;
+visit_expression (rtx insn, basic_block block)
 {
   rtx src, dest, set;
 
@@ -625,7 +619,7 @@ visit_expression (insn, block)
 /* Iterate over the FLOW_EDGES work list.  Simulate the target block
    for each edge.  */
 static void
-examine_flow_edges ()
+examine_flow_edges (void)
 {
   while (flow_edges != NULL)
     {
@@ -693,7 +687,7 @@ examine_flow_edges ()
    simulate the uses of the definition.  */
 
 static void
-follow_def_use_chains ()
+follow_def_use_chains (void)
 {
   /* Iterate over all the entries on the SSA_EDGES worklist.  */
   while (sbitmap_first_set_bit (ssa_edges) >= 0)
@@ -736,9 +730,8 @@ follow_def_use_chains ()
    the edge from the CFG.  Note we do not delete unreachable blocks
    yet as the DF analyzer can not deal with that yet.  */
 static void
-optimize_unexecutable_edges (edges, executable_edges)
-     struct edge_list *edges;
-     sbitmap executable_edges;
+optimize_unexecutable_edges (struct edge_list *edges,
+			     sbitmap executable_edges)
 {
   int i;
   basic_block bb;
@@ -849,7 +842,7 @@ optimize_unexecutable_edges (edges, executable_edges)
    replace uses with the known constant value.  */
 
 static void
-ssa_ccp_substitute_constants ()
+ssa_ccp_substitute_constants (void)
 {
   unsigned int i;
 
@@ -928,7 +921,7 @@ ssa_ccp_substitute_constants ()
    updates for the DF analyzer.  */
 
 static void
-ssa_ccp_df_delete_unreachable_insns ()
+ssa_ccp_df_delete_unreachable_insns (void)
 {
   basic_block b;
 
@@ -975,7 +968,7 @@ ssa_ccp_df_delete_unreachable_insns ()
    operate on so that it can be called for sub-graphs.  */
 
 void
-ssa_const_prop ()
+ssa_const_prop (void)
 {
   unsigned int i;
   edge curredge;
@@ -1088,9 +1081,7 @@ ssa_const_prop ()
 }
 
 static int
-mark_references (current_rtx, data)
-     rtx *current_rtx;
-     void *data;
+mark_references (rtx *current_rtx, void *data)
 {
   rtx x = *current_rtx;
   sbitmap worklist = (sbitmap) data;
@@ -1141,8 +1132,7 @@ mark_references (current_rtx, data)
 }
 
 static void
-ssa_fast_dce (df)
-     struct df *df;
+ssa_fast_dce (struct df *df)
 {
   sbitmap worklist = sbitmap_alloc (VARRAY_SIZE (ssa_definition));
   sbitmap_ones (worklist);

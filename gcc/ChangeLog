@@ -67,6 +67,36 @@
 	* rtl.c: Likewise.
 	* rtl.h: Likewise.
 	* rtlanal.c: Likewise.
+	* sbitmap.c: Likewise.
+	* sbitmap.h: Likewise.
+	* scan-decls.c: Likewise.
+	* scan.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-ebb.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+	* sched-vis.c: Likewise.
+	* sibcall.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* sreal.c: Likewise.
+	* sreal.h: Likewise.
+	* ssa-ccp.c: Likewise.
+	* ssa-dce.c: Likewise.
+	* ssa.c: Likewise.
+	* ssa.h: Likewise.
+	* stack.h: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* stringpool.c: Likewise.
+	* target.h: Likewise.
+	* timevar.c: Likewise.
+	* timevar.h: Likewise.
+	* tlink.c: Likewise.
+	* tracer.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-inline.h: Likewise.
+	* tree.c: Likewise.
+	* tree.h: Likewise.
 
 2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
 

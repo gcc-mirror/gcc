@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Value of sreal is
 	x = sig * 2 ^ exp
-   where 
+   where
 	sig = significant
 	  (for < 64-bit machines sig = sig_lo + sig_hi * 2 ^ SREAL_PART_BITS)
 	exp = exponent
@@ -35,13 +35,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Only a half of significant bits is used (in normalized sreals) so that we do
    not have problems with overflow, for example when c->sig = a->sig * b->sig.
    So the precision for 64-bit and 32-bit machines is 32-bit.
-			
+
    Invariant: The numbers are normalized before and after each call of sreal_*.
 
    Normalized sreals:
    All numbers (except zero) meet following conditions:
 	 SREAL_MIN_SIG <= sig && sig <= SREAL_MAX_SIG
-	-SREAL_MAX_EXP <= exp && exp <= SREAL_MAX_EXP 
+	-SREAL_MAX_EXP <= exp && exp <= SREAL_MAX_EXP
 
    If the number would be too large, it is set to upper bounds of these
    conditions.
@@ -56,16 +56,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "sreal.h"
 
-static inline void copy		PARAMS ((sreal *, sreal *));
-static inline void shift_right	PARAMS ((sreal *, int));
-static void normalize		PARAMS ((sreal *));
+static inline void copy (sreal *, sreal *);
+static inline void shift_right (sreal *, int);
+static void normalize (sreal *);
 
 /* Print the content of struct sreal.  */
 
 void
-dump_sreal (file, x)
-     FILE *file;
-     sreal *x;
+dump_sreal (FILE *file, sreal *x)
 {
 #if SREAL_PART_BITS < 32
   fprintf (file, "((" HOST_WIDE_INT_PRINT_UNSIGNED " * 2^16 + "
@@ -79,9 +77,7 @@ dump_sreal (file, x)
 /* Copy the sreal number.  */
 
 static inline void
-copy (r, a)
-     sreal *r;
-     sreal *a;
+copy (sreal *r, sreal *a)
 {
 #if SREAL_PART_BITS < 32
   r->sig_lo = a->sig_lo;
@@ -96,9 +92,7 @@ copy (r, a)
    When the most significant bit shifted out is 1, add 1 to X (rounding).  */
 
 static inline void
-shift_right (x, s)
-     sreal *x;
-     int s;
+shift_right (sreal *x, int s)
 {
 #ifdef ENABLE_CHECKING
   if (s <= 0 || s > SREAL_BITS)
@@ -143,13 +137,12 @@ shift_right (x, s)
 /* Normalize *X.  */
 
 static void
-normalize (x)
-     sreal *x;
+normalize (sreal *x)
 {
 #if SREAL_PART_BITS < 32
   int shift;
   HOST_WIDE_INT mask;
-  
+
   if (x->sig_lo == 0 && x->sig_hi == 0)
     {
       x->exp = -SREAL_MAX_EXP;
@@ -280,10 +273,7 @@ normalize (x)
 /* Set *R to SIG * 2 ^ EXP.  Return R.  */
 
 sreal *
-sreal_init (r, sig, exp)
-     sreal *r;
-     unsigned HOST_WIDE_INT sig;
-     signed int exp;
+sreal_init (sreal *r, unsigned HOST_WIDE_INT sig, signed int exp)
 {
 #if SREAL_PART_BITS < 32
   r->sig_lo = 0;
@@ -300,8 +290,7 @@ sreal_init (r, sig, exp)
 /* Return integer value of *R.  */
 
 HOST_WIDE_INT
-sreal_to_int (r)
-     sreal *r;
+sreal_to_int (sreal *r)
 {
 #if SREAL_PART_BITS < 32
   if (r->exp <= -SREAL_BITS)
@@ -325,9 +314,7 @@ sreal_to_int (r)
 /* Compare *A and *B. Return -1 if *A < *B, 1 if *A > *B and 0 if *A == *B.  */
 
 int
-sreal_compare (a, b)
-     sreal *a;
-     sreal *b;
+sreal_compare (sreal *a, sreal *b)
 {
   if (a->exp > b->exp)
     return 1;
@@ -354,10 +341,7 @@ sreal_compare (a, b)
 /* *R = *A + *B.  Return R.  */
 
 sreal *
-sreal_add (r, a, b)
-  sreal *r;
-  sreal *a;
-  sreal *b;
+sreal_add (sreal *r, sreal *a, sreal *b)
 {
   int dexp;
   sreal tmp;
@@ -411,10 +395,7 @@ sreal_add (r, a, b)
 /* *R = *A - *B.  Return R.  */
 
 sreal *
-sreal_sub (r, a, b)
-  sreal *r;
-  sreal *a;
-  sreal *b;
+sreal_sub (sreal *r, sreal *a, sreal *b)
 {
   int dexp;
   sreal tmp;
@@ -467,10 +448,7 @@ sreal_sub (r, a, b)
 /* *R = *A * *B.  Return R.  */
 
 sreal *
-sreal_mul (r, a, b)
-     sreal *r;
-     sreal *a;
-     sreal *b;
+sreal_mul (sreal *r, sreal *a, sreal *b)
 {
 #if SREAL_PART_BITS < 32
   if (a->sig_hi < SREAL_MIN_SIG || b->sig_hi < SREAL_MIN_SIG)
@@ -526,10 +504,7 @@ sreal_mul (r, a, b)
 /* *R = *A / *B.  Return R.  */
 
 sreal *
-sreal_div (r, a, b)
-     sreal *r;
-     sreal *a;
-     sreal *b;
+sreal_div (sreal *r, sreal *a, sreal *b)
 {
 #if SREAL_PART_BITS < 32
   unsigned HOST_WIDE_INT tmp, tmp1, tmp2;

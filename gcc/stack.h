@@ -1,5 +1,5 @@
 /* stack.h - structed access to object stacks
-   Copyright (C) 1988, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
    on top of obstacks for GNU C++.  */
 
 /* Stack of data placed on obstacks.  */
-   
+
 struct stack_level
 {
   /* Pointer back to previous such level.  */
@@ -38,5 +38,5 @@ struct stack_level
   int limit;
 };
 
-struct stack_level *push_stack_level PARAMS ((struct obstack *, char *, int));
-struct stack_level *pop_stack_level PARAMS ((struct stack_level *));
+struct stack_level *push_stack_level (struct obstack *, char *, int);
+struct stack_level *pop_stack_level (struct stack_level *);

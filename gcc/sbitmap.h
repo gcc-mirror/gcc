@@ -19,7 +19,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #ifndef GCC_SBITMAP_H
-#define GCC_SBITMAP_H 
+#define GCC_SBITMAP_H
 
 /* It's not clear yet whether using bitmap.[ch] will be a win.
    It should be straightforward to convert so for now we keep things simple
@@ -118,63 +118,56 @@ do {									\
 
 struct int_list;
 
-extern void dump_sbitmap		PARAMS ((FILE *, sbitmap));
-extern void dump_sbitmap_file		PARAMS ((FILE *, sbitmap));
-extern void dump_sbitmap_vector 	PARAMS ((FILE *, const char *,
-						 const char *, sbitmap *,
-						 int));
-extern sbitmap sbitmap_alloc		PARAMS ((unsigned int));
-extern sbitmap *sbitmap_vector_alloc	PARAMS ((unsigned int, unsigned int));
-extern sbitmap sbitmap_resize		PARAMS ((sbitmap, unsigned int, int));
-extern void sbitmap_copy 		PARAMS ((sbitmap, sbitmap));
-extern int sbitmap_equal                PARAMS ((sbitmap, sbitmap));
-extern void sbitmap_zero		PARAMS ((sbitmap));
-extern void sbitmap_ones		PARAMS ((sbitmap));
-extern void sbitmap_vector_zero		PARAMS ((sbitmap *, unsigned int));
-extern void sbitmap_vector_ones		PARAMS ((sbitmap *, unsigned int));
+extern void dump_sbitmap (FILE *, sbitmap);
+extern void dump_sbitmap_file (FILE *, sbitmap);
+extern void dump_sbitmap_vector (FILE *, const char *, const char *, sbitmap *,
+				 int);
+extern sbitmap sbitmap_alloc (unsigned int);
+extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
+extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
+extern void sbitmap_copy (sbitmap, sbitmap);
+extern int sbitmap_equal (sbitmap, sbitmap);
+extern void sbitmap_zero (sbitmap);
+extern void sbitmap_ones (sbitmap);
+extern void sbitmap_vector_zero (sbitmap *, unsigned int);
+extern void sbitmap_vector_ones (sbitmap *, unsigned int);
 
-extern void sbitmap_union_of_diff	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern bool sbitmap_union_of_diff_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern void sbitmap_difference		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_not			PARAMS ((sbitmap, sbitmap));
-extern void sbitmap_a_or_b_and_c	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern bool sbitmap_a_or_b_and_c_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern void sbitmap_a_and_b_or_c	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern bool sbitmap_a_and_b_or_c_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
-						 sbitmap));
-extern void sbitmap_a_and_b		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern bool sbitmap_a_and_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_a_or_b		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern bool sbitmap_a_or_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_a_xor_b		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern bool sbitmap_a_xor_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern bool sbitmap_a_subset_b_p	PARAMS ((sbitmap, sbitmap));
+extern void sbitmap_union_of_diff (sbitmap, sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_union_of_diff_cg (sbitmap, sbitmap, sbitmap, sbitmap);
+extern void sbitmap_difference (sbitmap, sbitmap, sbitmap);
+extern void sbitmap_not (sbitmap, sbitmap);
+extern void sbitmap_a_or_b_and_c (sbitmap, sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_or_b_and_c_cg (sbitmap, sbitmap, sbitmap, sbitmap);
+extern void sbitmap_a_and_b_or_c (sbitmap, sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_and_b_or_c_cg (sbitmap, sbitmap, sbitmap, sbitmap);
+extern void sbitmap_a_and_b (sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_and_b_cg (sbitmap, sbitmap, sbitmap);
+extern void sbitmap_a_or_b (sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_or_b_cg (sbitmap, sbitmap, sbitmap);
+extern void sbitmap_a_xor_b (sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_xor_b_cg (sbitmap, sbitmap, sbitmap);
+extern bool sbitmap_a_subset_b_p (sbitmap, sbitmap);
 
-extern int sbitmap_first_set_bit	PARAMS ((sbitmap));
-extern int sbitmap_last_set_bit		PARAMS ((sbitmap));
+extern int sbitmap_first_set_bit (sbitmap);
+extern int sbitmap_last_set_bit (sbitmap);
 
-extern void sbitmap_intersect_of_predsucc PARAMS ((sbitmap, sbitmap *,
-						  int, struct int_list **));
+extern void sbitmap_intersect_of_predsucc (sbitmap, sbitmap *, int,
+					   struct int_list **);
 #define sbitmap_intersect_of_predecessors  sbitmap_intersect_of_predsucc
 #define sbitmap_intersect_of_successors    sbitmap_intersect_of_predsucc
 
-extern void sbitmap_union_of_predsucc	PARAMS ((sbitmap, sbitmap *, int,
-						 struct int_list **));
+extern void sbitmap_union_of_predsucc (sbitmap, sbitmap *, int,
+				       struct int_list **);
 #define sbitmap_union_of_predecessors  sbitmap_union_of_predsucc
 #define sbitmap_union_of_successors    sbitmap_union_of_predsucc
 
-/* Intersection and Union of preds/succs using the new flow graph 
+/* Intersection and Union of preds/succs using the new flow graph
    structure instead of the pred/succ arrays.  */
 
-extern void sbitmap_intersection_of_succs  PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_intersection_of_preds  PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_union_of_succs	   PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_union_of_preds	   PARAMS ((sbitmap, sbitmap *, int));
+extern void sbitmap_intersection_of_succs (sbitmap, sbitmap *, int);
+extern void sbitmap_intersection_of_preds (sbitmap, sbitmap *, int);
+extern void sbitmap_union_of_succs (sbitmap, sbitmap *, int);
+extern void sbitmap_union_of_preds (sbitmap, sbitmap *, int);
 
-extern void debug_sbitmap		   PARAMS ((sbitmap));
+extern void debug_sbitmap (sbitmap);
 #endif /* ! GCC_SBITMAP_H */

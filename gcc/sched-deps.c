@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -92,24 +92,23 @@ static sbitmap *output_dependency_cache;
 static sbitmap *forward_dependency_cache;
 #endif
 
-static int deps_may_trap_p PARAMS ((rtx));
-static void add_dependence_list PARAMS ((rtx, rtx, enum reg_note));
-static void add_dependence_list_and_free PARAMS ((rtx, rtx *, enum reg_note));
-static void set_sched_group_p PARAMS ((rtx));
+static int deps_may_trap_p (rtx);
+static void add_dependence_list (rtx, rtx, enum reg_note);
+static void add_dependence_list_and_free (rtx, rtx *, enum reg_note);
+static void set_sched_group_p (rtx);
 
-static void flush_pending_lists PARAMS ((struct deps *, rtx, int, int));
-static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
-static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
-static void sched_analyze_insn PARAMS ((struct deps *, rtx, rtx, rtx));
+static void flush_pending_lists (struct deps *, rtx, int, int);
+static void sched_analyze_1 (struct deps *, rtx, rtx);
+static void sched_analyze_2 (struct deps *, rtx, rtx);
+static void sched_analyze_insn (struct deps *, rtx, rtx, rtx);
 
-static rtx get_condition PARAMS ((rtx));
-static int conditions_mutex_p PARAMS ((rtx, rtx));
+static rtx get_condition (rtx);
+static int conditions_mutex_p (rtx, rtx);
 
 /* Return nonzero if a load of the memory reference MEM can cause a trap.  */
 
 static int
-deps_may_trap_p (mem)
-     rtx mem;
+deps_may_trap_p (rtx mem)
 {
   rtx addr = XEXP (mem, 0);
 
@@ -124,9 +123,7 @@ deps_may_trap_p (mem)
    if LIST does not contain INSN.  */
 
 rtx
-find_insn_list (insn, list)
-     rtx insn;
-     rtx list;
+find_insn_list (rtx insn, rtx list)
 {
   while (list)
     {
@@ -140,8 +137,7 @@ find_insn_list (insn, list)
 /* Find the condition under which INSN is executed.  */
 
 static rtx
-get_condition (insn)
-     rtx insn;
+get_condition (rtx insn)
 {
   rtx pat = PATTERN (insn);
   rtx cond;
@@ -172,8 +168,7 @@ get_condition (insn)
 /* Return nonzero if conditions COND1 and COND2 can never be both true.  */
 
 static int
-conditions_mutex_p (cond1, cond2)
-     rtx cond1, cond2;
+conditions_mutex_p (rtx cond1, rtx cond2)
 {
   if (GET_RTX_CLASS (GET_CODE (cond1)) == '<'
       && GET_RTX_CLASS (GET_CODE (cond2)) == '<'
@@ -190,10 +185,7 @@ conditions_mutex_p (cond1, cond2)
    nonzero if a new entry has been added to insn's LOG_LINK.  */
 
 int
-add_dependence (insn, elem, dep_type)
-     rtx insn;
-     rtx elem;
-     enum reg_note dep_type;
+add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
 {
   rtx link;
   int present_p;
@@ -289,7 +281,7 @@ add_dependence (insn, elem, dep_type)
 		abort ();
 	    }
 #endif
-	  
+
 	  /* If this is a more restrictive type of dependence than the existing
 	     one, then change the existing dependence to this type.  */
 	  if ((int) dep_type < (int) REG_NOTE_KIND (link))
@@ -340,9 +332,7 @@ add_dependence (insn, elem, dep_type)
 /* A convenience wrapper to operate on an entire list.  */
 
 static void
-add_dependence_list (insn, list, dep_type)
-     rtx insn, list;
-     enum reg_note dep_type;
+add_dependence_list (rtx insn, rtx list, enum reg_note dep_type)
 {
   for (; list; list = XEXP (list, 1))
     add_dependence (insn, XEXP (list, 0), dep_type);
@@ -351,10 +341,7 @@ add_dependence_list (insn, list, dep_type)
 /* Similar, but free *LISTP at the same time.  */
 
 static void
-add_dependence_list_and_free (insn, listp, dep_type)
-     rtx insn;
-     rtx *listp;
-     enum reg_note dep_type;
+add_dependence_list_and_free (rtx insn, rtx *listp, enum reg_note dep_type)
 {
   rtx list, next;
   for (list = *listp, *listp = NULL; list ; list = next)
@@ -369,8 +356,7 @@ add_dependence_list_and_free (insn, listp, dep_type)
    goes along with that.  */
 
 static void
-set_sched_group_p (insn)
-     rtx insn;
+set_sched_group_p (rtx insn)
 {
   rtx prev;
 
@@ -396,9 +382,8 @@ set_sched_group_p (insn)
    so that we can do memory aliasing on it.  */
 
 void
-add_insn_mem_dependence (deps, insn_list, mem_list, insn, mem)
-     struct deps *deps;
-     rtx *insn_list, *mem_list, insn, mem;
+add_insn_mem_dependence (struct deps *deps, rtx *insn_list, rtx *mem_list,
+			 rtx insn, rtx mem)
 {
   rtx link;
 
@@ -421,10 +406,8 @@ add_insn_mem_dependence (deps, insn_list, mem_list, insn, mem)
    dependencies for a read operation, similarly with FOR_WRITE.  */
 
 static void
-flush_pending_lists (deps, insn, for_read, for_write)
-     struct deps *deps;
-     rtx insn;
-     int for_read, for_write;
+flush_pending_lists (struct deps *deps, rtx insn, int for_read,
+		     int for_write)
 {
   if (for_write)
     {
@@ -449,10 +432,7 @@ flush_pending_lists (deps, insn, for_read, for_write)
    destination of X, and reads of everything mentioned.  */
 
 static void
-sched_analyze_1 (deps, x, insn)
-     struct deps *deps;
-     rtx x;
-     rtx insn;
+sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 {
   int regno;
   rtx dest = XEXP (x, 0);
@@ -485,13 +465,13 @@ sched_analyze_1 (deps, x, insn)
 	 || GET_CODE (dest) == SIGN_EXTRACT
 	 || read_modify_subreg_p (dest))
         {
-	  /* These both read and modify the result.  We must handle 
+	  /* These both read and modify the result.  We must handle
              them as writes to get proper dependencies for following
              instructions.  We must handle them as reads to get proper
              dependencies from this to previous instructions.
              Thus we need to call sched_analyze_2.  */
 
-	  sched_analyze_2 (deps, XEXP (dest, 0), insn);  
+	  sched_analyze_2 (deps, XEXP (dest, 0), insn);
 	}
       if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
 	{
@@ -616,10 +596,7 @@ sched_analyze_1 (deps, x, insn)
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
 
 static void
-sched_analyze_2 (deps, x, insn)
-     struct deps *deps;
-     rtx x;
-     rtx insn;
+sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 {
   int i;
   int j;
@@ -816,10 +793,7 @@ sched_analyze_2 (deps, x, insn)
 /* Analyze an INSN with pattern X to find all dependencies.  */
 
 static void
-sched_analyze_insn (deps, x, insn, loop_notes)
-     struct deps *deps;
-     rtx x, insn;
-     rtx loop_notes;
+sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -1161,9 +1135,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
    for every dependency.  */
 
 void
-sched_analyze (deps, head, tail)
-     struct deps *deps;
-     rtx head, tail;
+sched_analyze (struct deps *deps, rtx head, rtx tail)
 {
   rtx insn;
   rtx loop_notes = 0;
@@ -1296,7 +1268,7 @@ sched_analyze (deps, head, tail)
 
       /* Now that we have completed handling INSN, check and see if it is
 	 a CLOBBER beginning a libcall block.   If it is, record the
-	 end of the libcall sequence. 
+	 end of the libcall sequence.
 
 	 We want to schedule libcall blocks as a unit before reload.  While
 	 this restricts scheduling, it preserves the meaning of a libcall
@@ -1307,7 +1279,7 @@ sched_analyze (deps, head, tail)
 	 a libcall block.  */
       if (!reload_completed
 	  /* Note we may have nested libcall sequences.  We only care about
-	     the outermost libcall sequence.  */ 
+	     the outermost libcall sequence.  */
 	  && deps->libcall_block_tail_insn == 0
 	  /* The sequence must start with a clobber of a register.  */
 	  && GET_CODE (insn) == INSN
@@ -1348,10 +1320,7 @@ sched_analyze (deps, head, tail)
    given DEP_TYPE.  The forward dependence should be not exist before.  */
 
 void
-add_forward_dependence (from, to, dep_type)
-     rtx from;
-     rtx to;
-     enum reg_note dep_type;
+add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
 {
   rtx new_link;
 
@@ -1359,7 +1328,7 @@ add_forward_dependence (from, to, dep_type)
   /* If add_dependence is working properly there should never
      be notes, deleted insns or duplicates in the backward
      links.  Thus we need not check for them here.
-     
+
      However, if we have enabled checking we might as well go
      ahead and verify that add_dependence worked properly.  */
   if (GET_CODE (from) == NOTE
@@ -1374,11 +1343,11 @@ add_forward_dependence (from, to, dep_type)
     SET_BIT (forward_dependency_cache[INSN_LUID (from)],
 	     INSN_LUID (to));
 #endif
-  
+
   new_link = alloc_INSN_LIST (to, INSN_DEPEND (from));
-  
+
   PUT_REG_NOTE_KIND (new_link, dep_type);
-  
+
   INSN_DEPEND (from) = new_link;
   INSN_DEP_COUNT (to) += 1;
 }
@@ -1388,8 +1357,7 @@ add_forward_dependence (from, to, dep_type)
    INSN_DEPEND.  */
 
 void
-compute_forward_dependences (head, tail)
-     rtx head, tail;
+compute_forward_dependences (rtx head, rtx tail)
 {
   rtx insn, link;
   rtx next_tail;
@@ -1409,8 +1377,7 @@ compute_forward_dependences (head, tail)
    n_bbs is the number of region blocks.  */
 
 void
-init_deps (deps)
-     struct deps *deps;
+init_deps (struct deps *deps)
 {
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
@@ -1435,8 +1402,7 @@ init_deps (deps)
 /* Free insn lists found in DEPS.  */
 
 void
-free_deps (deps)
-     struct deps *deps;
+free_deps (struct deps *deps)
 {
   int i;
 
@@ -1469,8 +1435,7 @@ free_deps (deps)
    it is used in the estimate of profitability.  */
 
 void
-init_dependency_caches (luid)
-     int luid;
+init_dependency_caches (int luid)
 {
   /* ?!? We could save some memory by computing a per-region luid mapping
      which could reduce both the number of vectors in the cache and the size
@@ -1496,7 +1461,7 @@ init_dependency_caches (luid)
 /* Free the caches allocated in init_dependency_caches.  */
 
 void
-free_dependency_caches ()
+free_dependency_caches (void)
 {
   if (true_dependency_cache)
     {
@@ -1517,7 +1482,7 @@ free_dependency_caches ()
    code.  */
 
 void
-init_deps_global ()
+init_deps_global (void)
 {
   reg_pending_sets = INITIALIZE_REG_SET (reg_pending_sets_head);
   reg_pending_clobbers = INITIALIZE_REG_SET (reg_pending_clobbers_head);
@@ -1528,7 +1493,7 @@ init_deps_global ()
 /* Free everything used by the dependency analysis code.  */
 
 void
-finish_deps_global ()
+finish_deps_global (void)
 {
   FREE_REG_SET (reg_pending_sets);
   FREE_REG_SET (reg_pending_clobbers);

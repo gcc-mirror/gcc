@@ -79,15 +79,15 @@ timevar_id_t;
 /* Execute the sequence: timevar_pop (TV), return (E);  */
 #define POP_TIMEVAR_AND_RETURN(TV, E)  return (timevar_pop (TV), (E))
 
-extern void timevar_init PARAMS ((void));
-extern void timevar_push PARAMS ((timevar_id_t));
-extern void timevar_pop PARAMS ((timevar_id_t));
-extern void timevar_start PARAMS ((timevar_id_t));
-extern void timevar_stop PARAMS ((timevar_id_t));
-extern void timevar_get PARAMS ((timevar_id_t, struct timevar_time_def *));
-extern void timevar_print PARAMS ((FILE *));
+extern void timevar_init (void);
+extern void timevar_push (timevar_id_t);
+extern void timevar_pop (timevar_id_t);
+extern void timevar_start (timevar_id_t);
+extern void timevar_stop (timevar_id_t);
+extern void timevar_get (timevar_id_t, struct timevar_time_def *);
+extern void timevar_print (FILE *);
 
 /* Provided for backward compatibility.  */
-extern void print_time PARAMS ((const char *, long));
+extern void print_time (const char *, long);
 
 #endif /* ! GCC_TIMEVAR_H */

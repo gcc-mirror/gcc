@@ -1,5 +1,5 @@
 /* Static Single Assignment (SSA) definitions for GCC
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Written by Jeffrey D. Oldham <oldham@codesourcery.com>.
 
 This file is part of GCC.
@@ -21,23 +21,21 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* Main SSA routines.  */
-extern void convert_to_ssa		PARAMS ((void));
-extern void convert_from_ssa		PARAMS ((void));
-typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
-extern int for_each_successor_phi       PARAMS ((basic_block bb,
-						 successor_phi_fn,
-						 void *));
-void compute_dominance_frontiers	PARAMS ((sbitmap *frontiers,
-						 dominance_info idom));
-extern int remove_phi_alternative	PARAMS ((rtx, basic_block));
+extern void convert_to_ssa (void);
+extern void convert_from_ssa (void);
+typedef int (*successor_phi_fn) (rtx, int, int, void *);
+extern int for_each_successor_phi (basic_block bb, successor_phi_fn,
+				   void *);
+void compute_dominance_frontiers (sbitmap *frontiers, dominance_info idom);
+extern int remove_phi_alternative (rtx, basic_block);
 
 
 /* Optimizations.  */
 /* In ssa-dce.c */
-extern void ssa_eliminate_dead_code	PARAMS ((void));
+extern void ssa_eliminate_dead_code (void);
 
 /* In ssa-ccp.c */
-extern void ssa_const_prop		PARAMS ((void));
+extern void ssa_const_prop (void);
 
 
 /* SSA definitions and uses.  */
