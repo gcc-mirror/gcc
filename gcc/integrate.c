@@ -3003,6 +3003,10 @@ output_inline_function (fndecl)
       return;
     }
 
+  /* Things we allocate from here on are part of this function, not
+     permanent.  */
+  temporary_allocation ();
+
   head = DECL_SAVED_INSNS (fndecl);
   current_function_decl = fndecl;
 
