@@ -1,5 +1,9 @@
 Fri Mar 13 07:10:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* sparc.c (sparc_type_code): Avoid infinite loop when have
+	pointer to array of same pointer.
+	(sparc_type_code, case REAL_TYPE): Process subtypes here too.
+
 	* mips/bsd-4.h, mips/iris3.h, mips/news{4,5}.h: Don't include mips.h.
 	* mips/news5.h, mips/osfrose.h, mips/svr{3,4}-4.h: Likewise.
 	* mips/ultrix.h: Likewise.
