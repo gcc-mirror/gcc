@@ -1,3 +1,7 @@
+2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-typeck.c (output_init_element): Check for type == error_mark_node.
+
 2003-04-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*zero_extendqisi2_h8300hs): Always

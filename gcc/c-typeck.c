@@ -6227,6 +6227,11 @@ output_init_element (value, type, field, pending)
      tree value, type, field;
      int pending;
 {
+  if (type == error_mark_node)
+    {
+      constructor_erroneous = 1;
+      return;
+    }
   if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
       || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  && !(TREE_CODE (value) == STRING_CST
