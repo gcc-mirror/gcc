@@ -1,3 +1,7 @@
+2004-01-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* recog.c: Fix a typo in copyright.
+
 2004-01-23  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/rs6000.md (call): Fix misappiled patch.
