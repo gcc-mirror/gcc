@@ -2368,7 +2368,7 @@ prepare_arg_info (gfc_se * se, gfc_expr * expr,
    gfc_add_modify_expr(&se->pre, arg, tmp);
    rcs->arg = arg;
 
-   /* Caculate the numbers of bits of exponent, fraction and word  */
+   /* Calculate the numbers of bits of exponent, fraction and word  */
    n = gfc_validate_kind (a1->ts.type, a1->ts.kind, false);
    tmp = build_int_cst (NULL_TREE, gfc_real_kinds[n].digits - 1);
    rcs->fdigits = convert (masktype, tmp);
@@ -2796,7 +2796,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_conversion (se, expr);
       break;
 
-      /* Integer conversions are handled seperately to make sure we get the
+      /* Integer conversions are handled separately to make sure we get the
          correct rounding mode.  */
     case GFC_ISYM_INT:
       gfc_conv_intrinsic_int (se, expr, FIX_TRUNC_EXPR);

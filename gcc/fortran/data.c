@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330,Boston, MA
    during resolveing DATA statement. Refer to check_data_variable and
    traverse_data_list in resolve.c.
                                                                                
-   The complexity exists in the handleing of array section, implied do
+   The complexity exists in the handling of array section, implied do
    and array of struct appeared in DATA statement.
                                                                                
    We call gfc_conv_structure, gfc_con_array_array_initializer,

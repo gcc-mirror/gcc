@@ -1409,7 +1409,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  if (c->pointer)
 	    {
 	      /* Pointers to arrays aren't actually pointer types.  The
-	         descriptors are seperate, but the data is common.  */
+	         descriptors are separate, but the data is common.  */
 	      field_type = gfc_build_array_type (field_type, c->as);
 	    }
 	  else

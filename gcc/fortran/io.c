@@ -1098,7 +1098,7 @@ gfc_resolve_open (gfc_open * open)
 }
 
 
-/* Match an OPEN statmement.  */
+/* Match an OPEN statement.  */
 
 match
 gfc_match_open (void)
@@ -1178,7 +1178,7 @@ gfc_free_close (gfc_close * close)
 }
 
 
-/* Match elements of a CLOSE statment.  */
+/* Match elements of a CLOSE statement.  */
 
 static match
 match_close_element (gfc_close * close)
@@ -1425,7 +1425,7 @@ gfc_match_rewind (void)
 }
 
 
-/******************** Data Transfer Statments *********************/
+/******************** Data Transfer Statements *********************/
 
 typedef enum
 { M_READ, M_WRITE, M_PRINT, M_INQUIRE }

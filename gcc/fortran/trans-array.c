@@ -516,7 +516,7 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 
 
 /* Generate code to allocate and initialize the descriptor for a temporary
-   array.  This is used for both temporaries needed by the scaparizer, and
+   array.  This is used for both temporaries needed by the scalarizer, and
    functions returning arrays.  Adjusts the loop variables to be zero-based,
    and calculates the loop bounds for callee allocated arrays.
    Also fills in the descriptor, data and offset fields of info if known.
@@ -1305,7 +1305,7 @@ gfc_init_loopinfo (gfc_loopinfo * loop)
 }
 
 
-/* Copies the loop variable info to a gfc_se sructure. Does not copy the SS
+/* Copies the loop variable info to a gfc_se structure. Does not copy the SS
    chain.  */
 
 void
@@ -1534,7 +1534,7 @@ gfc_conv_vector_array_index (gfc_se * se, tree index, gfc_ss * ss)
 
 
 /* Return the offset for an index.  Performs bound checking for elemental
-   dimensions.  Single element references are processed seperately.  */
+   dimensions.  Single element references are processed separately.  */
 
 static tree
 gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
@@ -1653,7 +1653,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
   tree fault;
   gfc_se indexse;
 
-  /* Handle scalarized references seperately.  */
+  /* Handle scalarized references separately.  */
   if (ar->type != AR_ELEMENT)
     {
       gfc_conv_scalarized_array_ref (se, ar);
@@ -1811,7 +1811,7 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	  info->offset = gfc_evaluate_now (info->offset, pblock);
 	}
 
-      /* Remeber this offset for the second loop.  */
+      /* Remember this offset for the second loop.  */
       if (dim == loop->temp_dim - 1)
         info->saved_offset = info->offset;
     }
@@ -3590,7 +3590,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       /* A transformational function return value will be a temporary
 	 array descriptor.  We still need to go through the scalarizer
 	 to create the descriptor.  Elemental functions ar handled as
-	 arbitary expressions, i.e. copy to a temporary.  */
+	 arbitrary expressions, i.e. copy to a temporary.  */
       secss = ss;
       /* Look for the SS for this function.  */
       while (secss != gfc_ss_terminator
@@ -3761,7 +3761,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
          {parm, parmtype, dim} refer to the new one.
          {desc, type, n, secss, loop} refer to the original, which maybe
          a descriptorless array.
-         The bounds of the scaralization are the bounds of the section.
+         The bounds of the scalarization are the bounds of the section.
          We don't have to worry about numeric overflows when calculating
          the offsets because all elements are within the array data.  */
 
@@ -4357,7 +4357,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   if (sym->attr.elemental)
     return gfc_walk_elemental_function_args (ss, expr, GFC_SS_REFERENCE);
 
-  /* Scalar functions are OK as these are evaluated outside the scalarisation
+  /* Scalar functions are OK as these are evaluated outside the scalarization
      loop.  Pass back and let the caller deal with it.  */
   return ss;
 }
