@@ -2496,26 +2496,32 @@ xtensa_va_arg (valist, type)
 
   /* Check if the argument is in registers:
 
-     if ((AP).__va_ndx <= __MAX_ARGS_IN_REGISTERS * 4)
+     if ((AP).__va_ndx <= __MAX_ARGS_IN_REGISTERS * 4
+         && !MUST_PASS_IN_STACK (type))
         __array = (AP).__va_reg;
   */
 
-  lab_false = gen_label_rtx ();
-  lab_over = gen_label_rtx ();
   array = gen_reg_rtx (Pmode);
 
-  emit_cmp_and_jump_insns (expand_expr (ndx, NULL_RTX, SImode, EXPAND_NORMAL),
-			   GEN_INT (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD),
-			   GT, const1_rtx, SImode, 0, lab_false);
+  if (!MUST_PASS_IN_STACK (VOIDmode, type))
+    {
+      lab_false = gen_label_rtx ();
+      lab_over = gen_label_rtx ();
 
-  r = expand_expr (reg, array, Pmode, EXPAND_NORMAL);
-  if (r != array)
-    emit_move_insn (array, r);
+      emit_cmp_and_jump_insns (expand_expr (ndx, NULL_RTX, SImode,
+					    EXPAND_NORMAL),
+			       GEN_INT (MAX_ARGS_IN_REGISTERS
+					* UNITS_PER_WORD),
+			       GT, const1_rtx, SImode, 0, lab_false);
 
-  emit_jump_insn (gen_jump (lab_over));
-  emit_barrier ();
-  emit_label (lab_false);
+      r = expand_expr (reg, array, Pmode, EXPAND_NORMAL);
+      if (r != array)
+	emit_move_insn (array, r);
 
+      emit_jump_insn (gen_jump (lab_over));
+      emit_barrier ();
+      emit_label (lab_false);
+    }
 
   /* ...otherwise, the argument is on the stack (never split between
      registers and the stack -- change __va_ndx if necessary):
@@ -2545,7 +2551,8 @@ xtensa_va_arg (valist, type)
   if (r != array)
     emit_move_insn (array, r);
 
-  emit_label (lab_over);
+  if (!MUST_PASS_IN_STACK (VOIDmode, type))
+    emit_label (lab_over);
 
 
   /* Given the base array pointer (__array) and index to the subsequent
