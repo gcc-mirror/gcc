@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
    arm-*-*: little endian
    armel-*-*: little endian
    armeb-*-*: big endian
+   If a non-embedded environment (ie: "real" OS) is specified, `arm'
+   should default to that used by the OS.
 */
 
 extern void output_func_prologue ();
