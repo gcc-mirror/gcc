@@ -3037,26 +3037,34 @@ c_apply_type_quals_to_decl (type_quals, decl)
       TREE_SIDE_EFFECTS (decl) = 1;
       TREE_THIS_VOLATILE (decl) = 1;
     }
-  if ((type_quals & TYPE_QUAL_RESTRICT) && flag_strict_aliasing)
+  if (type_quals & TYPE_QUAL_RESTRICT)
     {
-      /* No two restricted pointers can point at the same thing.
-	 However, a restricted pointer can point at the same thing as
-	 an unrestricted pointer, if that unrestricted pointer is
-	 based on the restricted pointer.  So, we make the alias set
-	 for the restricted pointer a subset of the alias set for the
-	 type pointed to by the type of the decl.  */
-
-      int pointed_to_alias_set 
-	= get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
-
-      if (!pointed_to_alias_set)
-	/* It's not legal to make a subset of alias set zero.  */
-	    ;
-      else
+      if (!TREE_TYPE (decl)
+	  || !POINTER_TYPE_P (TREE_TYPE (decl))
+	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (TREE_TYPE (decl))))
+	error ("invalid use of `restrict'");
+      else if (flag_strict_aliasing)
 	{
-	  DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
-	  record_alias_subset  (pointed_to_alias_set,
-				DECL_POINTER_ALIAS_SET (decl));
+	  /* No two restricted pointers can point at the same thing.
+	     However, a restricted pointer can point at the same thing
+	     as an unrestricted pointer, if that unrestricted pointer
+	     is based on the restricted pointer.  So, we make the
+	     alias set for the restricted pointer a subset of the
+	     alias set for the type pointed to by the type of the
+	     decl.  */
+
+	  int pointed_to_alias_set 
+	    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
+	  
+	  if (!pointed_to_alias_set)
+	    /* It's not legal to make a subset of alias set zero.  */
+	    ;
+	  else
+	    {
+	      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
+	      record_alias_subset  (pointed_to_alias_set,
+				    DECL_POINTER_ALIAS_SET (decl));
+	    }
 	}
     }
 }
