@@ -56,7 +56,7 @@ int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
 /* These are some macros to abstract register modes.  */
 #define CONST_OK_FOR_ADD(size) \
-  (TARGET_SHMEDIA ? CONST_OK_FOR_P (size) : CONST_OK_FOR_I (size))
+  (TARGET_SHMEDIA ? CONST_OK_FOR_I10 (size) : CONST_OK_FOR_I08 (size))
 #define GEN_MOV (*(TARGET_SHMEDIA64 ? gen_movdi : gen_movsi))
 #define GEN_ADD3 (*(TARGET_SHMEDIA64 ? gen_adddi3 : gen_addsi3))
 #define GEN_SUB3 (*(TARGET_SHMEDIA64 ? gen_subdi3 : gen_subsi3))
@@ -1489,8 +1489,8 @@ andcosts (x)
   if (TARGET_SHMEDIA)
     {
       if ((GET_CODE (XEXP (x, 1)) == CONST_INT
-	   && CONST_OK_FOR_J (INTVAL (XEXP (x, 1))))
-	  || EXTRA_CONSTRAINT_S (XEXP (x, 1)))
+	   && CONST_OK_FOR_I16 (INTVAL (XEXP (x, 1))))
+	  || EXTRA_CONSTRAINT_C16 (XEXP (x, 1)))
 	return 1;
       else
 	return 2;
@@ -1499,13 +1499,13 @@ andcosts (x)
   /* These constants are single cycle extu.[bw] instructions.  */
   if (i == 0xff || i == 0xffff)
     return 1;
-  /* Constants that can be used in an and immediate instruction is a single
+  /* Constants that can be used in an and immediate instruction in a single
      cycle, but this requires r0, so make it a little more expensive.  */
-  if (CONST_OK_FOR_L (i))
+  if (CONST_OK_FOR_K08 (i))
     return 2;
   /* Constants that can be loaded with a mov immediate and an and.
      This case is probably unnecessary.  */
-  if (CONST_OK_FOR_I (i))
+  if (CONST_OK_FOR_I08 (i))
     return 2;
   /* Any other constants requires a 2 cycle pc-relative load plus an and.
      This case is probably unnecessary.  */
@@ -1537,11 +1537,11 @@ addsubcosts (x)
 	return TARGET_SHMEDIA64 ? 5 : 3;
 
       case CONST_INT:
-	if (CONST_OK_FOR_J (INTVAL (XEXP (x, 1))))
+	if (CONST_OK_FOR_I16 (INTVAL (XEXP (x, 1))))
           return 2;
-	else if (CONST_OK_FOR_J (INTVAL (XEXP (x, 1)) >> 16))
+	else if (CONST_OK_FOR_I16 (INTVAL (XEXP (x, 1)) >> 16))
 	  return 3;
-	else if (CONST_OK_FOR_J ((INTVAL (XEXP (x, 1)) >> 16) >> 16))
+	else if (CONST_OK_FOR_I16 ((INTVAL (XEXP (x, 1)) >> 16) >> 16))
 	  return 4;
 
 	/* Fall through.  */
@@ -1601,22 +1601,22 @@ sh_rtx_costs (x, code, outer_code, total)
 	    *total = 0;
 	  else if ((outer_code == IOR || outer_code == XOR
 	            || outer_code == PLUS)
-		   && CONST_OK_FOR_P (INTVAL (x)))
+		   && CONST_OK_FOR_I10 (INTVAL (x)))
 	    *total = 0;
-	  else if (CONST_OK_FOR_J (INTVAL (x)))
+	  else if (CONST_OK_FOR_I16 (INTVAL (x)))
             *total = COSTS_N_INSNS (outer_code != SET);
-	  else if (CONST_OK_FOR_J (INTVAL (x) >> 16))
+	  else if (CONST_OK_FOR_I16 (INTVAL (x) >> 16))
 	    *total = COSTS_N_INSNS (2);
-	  else if (CONST_OK_FOR_J ((INTVAL (x) >> 16) >> 16))
+	  else if (CONST_OK_FOR_I16 ((INTVAL (x) >> 16) >> 16))
 	    *total = COSTS_N_INSNS (3);
           else
 	    *total = COSTS_N_INSNS (4);
 	  return true;
         }
-      if (CONST_OK_FOR_I (INTVAL (x)))
+      if (CONST_OK_FOR_I08 (INTVAL (x)))
         *total = 0;
       else if ((outer_code == AND || outer_code == IOR || outer_code == XOR)
-	       && CONST_OK_FOR_L (INTVAL (x)))
+	       && CONST_OK_FOR_K08 (INTVAL (x)))
         *total = 1;
       else
         *total = 8;
@@ -2034,7 +2034,7 @@ shl_and_kind (left_rtx, mask_rtx, attrp)
     {
       if (i > right)
 	break;
-      if (! CONST_OK_FOR_L (mask >> i))
+      if (! CONST_OK_FOR_K08 (mask >> i))
 	continue;
       cost = (i != 0) + 2 + ext_shift_insns[left + i];
       if (cost < best_cost)
@@ -2051,14 +2051,14 @@ shl_and_kind (left_rtx, mask_rtx, attrp)
     {
       if (i > right)
 	break;
-      cost = (i != 0) + (CONST_OK_FOR_I (mask >> i) ? 2 : 3)
+      cost = (i != 0) + (CONST_OK_FOR_I08 (mask >> i) ? 2 : 3)
 	+ (can_ext ? ext_shift_insns : shift_insns)[left + i];
       if (cost < best_cost)
 	{
 	  best = 4 - can_ext;
 	  best_cost = cost;
 	  best_right = i;
-	  best_len = cost - 1 - ! CONST_OK_FOR_I (mask >> i);
+	  best_len = cost - 1 - ! CONST_OK_FOR_I08 (mask >> i);
 	}
     }
 
@@ -2836,8 +2836,8 @@ hi_const (src)
 /* Nonzero if the insn is a move instruction which needs to be fixed.  */
 
 /* ??? For a DImode/DFmode moves, we don't need to fix it if each half of the
-   CONST_DOUBLE input value is CONST_OK_FOR_I.  For a SFmode move, we don't
-   need to fix it if the input value is CONST_OK_FOR_I.  */
+   CONST_DOUBLE input value is CONST_OK_FOR_I08.  For a SFmode move, we don't
+   need to fix it if the input value is CONST_OK_FOR_I08.  */
 
 static int
 broken_move (insn)
@@ -2874,7 +2874,7 @@ broken_move (insn)
 		&& GET_CODE (SET_DEST (pat)) == REG
 		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
 	  && (GET_CODE (SET_SRC (pat)) != CONST_INT
-	      || ! CONST_OK_FOR_I (INTVAL (SET_SRC (pat)))))
+	      || ! CONST_OK_FOR_I08 (INTVAL (SET_SRC (pat)))))
 	return 1;
     }
 
@@ -6383,17 +6383,17 @@ arith_operand (op, mode)
   if (TARGET_SHMEDIA)
     {
       /* FIXME: We should be checking whether the CONST_INT fits in a
-	 CONST_OK_FOR_J here, but this causes reload_cse to crash when
+	 CONST_OK_FOR_I16 here, but this causes reload_cse to crash when
 	 attempting to transform a sequence of two 64-bit sets of the
 	 same register from literal constants into a set and an add,
 	 when the difference is too wide for an add.  */
       if (GET_CODE (op) == CONST_INT
-	  || EXTRA_CONSTRAINT_S (op))
+	  || EXTRA_CONSTRAINT_C16 (op))
 	return 1;
       else
 	return 0;
     }
-  else if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_I (INTVAL (op)))
+  else if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (op)))
     return 1;
 
   return 0;
@@ -6409,7 +6409,7 @@ arith_reg_or_0_operand (op, mode)
   if (arith_reg_operand (op, mode))
     return 1;
 
-  if (EXTRA_CONSTRAINT_U (op))
+  if (EXTRA_CONSTRAINT_Z (op))
     return 1;
 
   return 0;
@@ -6424,7 +6424,7 @@ shmedia_6bit_operand (op, mode)
      enum machine_mode mode;
 {
   return (arith_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && CONST_OK_FOR_O (INTVAL (op))));
+	  || (GET_CODE (op) == CONST_INT && CONST_OK_FOR_I06 (INTVAL (op))));
 }
 
 /* Returns 1 if OP is a valid source operand for a logical operation.  */
@@ -6439,12 +6439,12 @@ logical_operand (op, mode)
 
   if (TARGET_SHMEDIA)
     {
-      if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_P (INTVAL (op)))
+      if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_I10 (INTVAL (op)))
 	return 1;
       else
 	return 0;
     }
-  else if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_L (INTVAL (op)))
+  else if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_K08 (INTVAL (op)))
     return 1;
 
   return 0;
@@ -6462,8 +6462,7 @@ and_operand (op, mode)
   if (TARGET_SHMEDIA
       && mode == DImode
       && GET_CODE (op) == CONST_INT
-      && (INTVAL (op) == (unsigned) 0xffffffff
-	  || INTVAL (op) == (HOST_WIDE_INT) -1 << 32))
+      && CONST_OK_FOR_J16 (INTVAL (op)))
 	return 1;
 
   return 0;
@@ -6738,7 +6737,7 @@ target_operand (op, mode)
     return 0;
 
   if ((GET_MODE (op) == DImode || GET_MODE (op) == VOIDmode)
-      && EXTRA_CONSTRAINT_T (op))
+      && EXTRA_CONSTRAINT_Csy (op))
     return ! reload_completed;
 
   return target_reg_operand (op, mode);
@@ -8327,8 +8326,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   int structure_value_byref = 0;
   rtx this, this_value, sibcall, insns, funexp;
   tree funtype = TREE_TYPE (function);
-  int simple_add
-    = (TARGET_SHMEDIA ? CONST_OK_FOR_J (delta) : CONST_OK_FOR_I (delta));
+  int simple_add = CONST_OK_FOR_ADD (delta);
   int did_load = 0;
   rtx scratch0, scratch1, scratch2;
 
@@ -8411,9 +8409,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	  emit_move_insn (scratch1, GEN_INT (vcall_offset));
 	  offset_addr = gen_rtx_PLUS (Pmode, scratch0, scratch1);
 	}
-      else if (TARGET_SHMEDIA
-	       ? CONST_OK_FOR_J (vcall_offset)
-	       : CONST_OK_FOR_I (vcall_offset))
+      else if (CONST_OK_FOR_ADD (vcall_offset))
 	{
 	  emit_insn (gen_add2_insn (scratch0, GEN_INT (vcall_offset)));
 	  offset_addr = scratch0;

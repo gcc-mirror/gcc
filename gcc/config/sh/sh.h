@@ -1293,46 +1293,119 @@ extern int regno_reg_class[FIRST_PSEUDO_REGISTER];
    description.  */
 extern enum reg_class reg_class_from_letter[];
 
-#define REG_CLASS_FROM_LETTER(C) \
-   ( ISLOWER (C) ? reg_class_from_letter[(C)-'a'] : NO_REGS )
+/* We might use 'Rxx' constraints in the future for exotic reg classes.*/
+#define REG_CLASS_FROM_CONSTRAINT(C, STR) \
+  (ISLOWER (C) ? reg_class_from_letter[(C)-'a'] : NO_REGS )
 
+/* Overview of uppercase letter constraints:
+   A: Addresses (constraint len == 3)
+    Ac4: sh4 cache operations
+    Ac5: sh5 cache operations
+   Bxx: miscellaneous constraints
+    Bsc: SCRATCH - for the scratch register in movsi_ie in the
+	 fldi0 / fldi0 cases
+   C: Constants other than only CONST_INT (constraint len == 3)
+    C16: 16 bit constant, literal or symbolic
+    Csy: label or symbol
+    Cpg: non-explicit constants that can be directly loaded into a general
+	 purpose register in PIC code.  like 's' except we don't allow
+	 PIC_DIRECT_ADDR_P
+   IJKLMNOP: CONT_INT constants
+    Ixx: signed xx bit
+    J16: 0xffffffff00000000 | 0x00000000ffffffff
+    Kxx: unsigned xx bit
+    M: 1
+    N: 0
+    P27: 1 | 2 | 8 | 16
+   Q: pc relative load operand
+   Rxx: reserved for exotic register classes.
+   S: extra memory (storage) constraints (constraint len == 3)
+    Sua: unaligned memory operations
+   W: vector
+   Z: zero in any mode
+
+   unused CONST_INT constraint letters: LO
+   unused EXTRA_CONSTRAINT letters: D T U Y */
+
+#if 1 /* check that the transistion went well.  */
+#define CONSTRAINT_LEN(C,STR) \
+  (((C) == 'L' || (C) == 'O' || (C) == 'D' || (C) == 'T' || (C) == 'U' \
+    || (C) == 'Y' \
+    || ((C) == 'I' && (((STR)[1] != '0' && (STR)[1] != '1') || ! isdigit ((STR)[2]))) \
+    || ((C) == 'B' && ((STR)[1] != 's' || (STR)[2] != 'c')) \
+    || ((C) == 'J' && ((STR)[1] != '1' || (STR)[2] != '6')) \
+    || ((C) == 'K' && ((STR)[1] != '0' || (STR)[2] != '8')) \
+    || ((C) == 'P' && ((STR)[1] != '2' || (STR)[2] != '7'))) \
+   ? -1 \
+   : ((C) == 'A' || (C) == 'B' || (C) == 'C' \
+      || (C) == 'I' || (C) == 'J' || (C) == 'K' || (C) == 'P' \
+      || (C) == 'R' || (C) == 'S') \
+   ? 3 \
+   : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
+#else
+#define CONSTRAINT_LEN(C,STR) \
+  (((C) == 'A' || (C) == 'B' || (C) == 'C' \
+    || (C) == 'I' || (C) == 'J' || (C) == 'K' || (C) == 'P' \
+    || (C) == 'R' || (C) == 'S') \
+   ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
+#endif
+
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
    This macro defines what the ranges are.
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
-	I: arithmetic operand -127..128, as used in add, sub, etc
-	J: arithmetic operand -32768..32767, as used in SHmedia movi and shori
-	K: shift operand 1,2,8 or 16
-	L: logical operand 0..255, as used in and, or, etc.
+	I08: arithmetic operand -127..128, as used in add, sub, etc
+	I16: arithmetic operand -32768..32767, as used in SHmedia movi and shori
+	P27: shift operand 1,2,8 or 16
+	K08: logical operand 0..255, as used in and, or, etc.
 	M: constant 1
 	N: constant 0
-	O: arithmetic operand -32..31, as used in SHmedia beqi, bnei and xori
-	P: arithmetic operand -512..511, as used in SHmedia andi, ori
+	I06: arithmetic operand -32..31, as used in SHmedia beqi, bnei and xori
+	I10: arithmetic operand -512..511, as used in SHmedia andi, ori
 */
 
-#define CONST_OK_FOR_I(VALUE) (((HOST_WIDE_INT)(VALUE))>= -128 \
-			       && ((HOST_WIDE_INT)(VALUE)) <= 127)
-#define CONST_OK_FOR_J(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32768 \
-			       && ((HOST_WIDE_INT)(VALUE)) <= 32767)
-#define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
-#define CONST_OK_FOR_L(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
-			       && ((HOST_WIDE_INT)(VALUE)) <= 255)
+#define CONST_OK_FOR_I06(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 31)
+#define CONST_OK_FOR_I08(VALUE) (((HOST_WIDE_INT)(VALUE))>= -128 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 127)
+#define CONST_OK_FOR_I10(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -512 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 511)
+#define CONST_OK_FOR_I16(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32768 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 32767)
+#define CONST_OK_FOR_I(VALUE, STR) \
+  ((STR)[1] == '0' && (STR)[2] == 6 ? CONST_OK_FOR_I06 (VALUE) \
+   : (STR)[1] == '0' && (STR)[2] == '8' ? CONST_OK_FOR_I08 (VALUE) \
+   : (STR)[1] == '1' && (STR)[2] == '0' ? CONST_OK_FOR_I10 (VALUE) \
+   : (STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_I16 (VALUE) \
+   : 0)
+
+#define CONST_OK_FOR_J16(VALUE) \
+  ((unsigned) (VALUE) == (unsigned) 0xffffffff \
+   || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
+#define CONST_OK_FOR_J(VALUE, STR) \
+  ((STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_J16 (VALUE) \
+   : 0)
+
+#define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
+#define CONST_OK_FOR_K(VALUE, STR) \
+  ((STR)[1] == '0' && (STR)[2] == '8' ? CONST_OK_FOR_K08 (VALUE) \
+   : 0)
+#define CONST_OK_FOR_P27(VALUE) \
+  ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
+#define CONST_OK_FOR_P(VALUE, STR) \
+  ((STR)[1] == '2' && (STR)[2] == '7' ? CONST_OK_FOR_P27 (VALUE) \
+   : 0)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
 #define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
-#define CONST_OK_FOR_O(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32 \
-			       && ((HOST_WIDE_INT)(VALUE)) <= 31)
-#define CONST_OK_FOR_P(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -512 \
-			       && ((HOST_WIDE_INT)(VALUE)) <= 511)
-#define CONST_OK_FOR_LETTER_P(VALUE, C)		\
-     ((C) == 'I' ? CONST_OK_FOR_I (VALUE)	\
-    : (C) == 'J' ? CONST_OK_FOR_J (VALUE)	\
-    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)	\
-    : (C) == 'L' ? CONST_OK_FOR_L (VALUE)	\
-    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)	\
-    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)	\
-    : (C) == 'O' ? CONST_OK_FOR_O (VALUE)	\
-    : (C) == 'P' ? CONST_OK_FOR_P (VALUE)	\
+#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)	\
+     ((C) == 'I' ? CONST_OK_FOR_I ((VALUE), (STR))	\
+    : (C) == 'J' ? CONST_OK_FOR_J ((VALUE), (STR))	\
+    : (C) == 'K' ? CONST_OK_FOR_K ((VALUE), (STR))	\
+    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)		\
+    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)		\
+    : (C) == 'P' ? CONST_OK_FOR_P ((VALUE), (STR))	\
     : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1403,7 +1476,7 @@ extern enum reg_class reg_class_from_letter[];
 	  || GET_CODE (X) == PLUS))					\
    ? GENERAL_REGS							\
    : CLASS == FPUL_REGS && immediate_operand ((X), (MODE))		\
-   ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I (INTVAL (X))		\
+   ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (X))	\
       ? GENERAL_REGS							\
       : R0_REGS)							\
    : (CLASS == FPSCR_REGS						\
@@ -2300,8 +2373,19 @@ while (0)
 	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) == LABEL_REF \
 	   && GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 1)) == CONST_INT)))
 
-/* The `S' constraint is a 16-bit constant, literal or symbolic.  */
-#define EXTRA_CONSTRAINT_S(OP) \
+/* Extra address constraints.  */
+#define EXTRA_CONSTRAINT_A(OP, STR) 0
+
+/* Constraint for selecting FLDI0 or FLDI1 instruction. If the clobber
+   operand is not SCRATCH (i.e. REG) then R0 is probably being
+   used, hence mova is being used, hence do not select this pattern */
+#define EXTRA_CONSTRAINT_Bsc(OP)    (GET_CODE(OP) == SCRATCH)
+#define EXTRA_CONSTRAINT_B(OP, STR) \
+  ((STR)[1] == 's' && (STR)[2] == 'c' ? EXTRA_CONSTRAINT_Bsc (OP) \
+   : 0)
+
+/* The `C16' constraint is a 16-bit constant, literal or symbolic.  */
+#define EXTRA_CONSTRAINT_C16(OP) \
   (GET_CODE (OP) == CONST \
    && GET_CODE (XEXP ((OP), 0)) == SIGN_EXTEND \
    && GET_MODE (XEXP ((OP), 0)) == DImode \
@@ -2350,6 +2434,14 @@ while (0)
   (GET_CODE (OP) == CONST && GET_CODE (XEXP ((OP), 0)) == UNSPEC \
    && XINT (XEXP ((OP), 0), 1) == UNSPEC_PIC)
 
+#define PIC_OFFSET_P(OP) \
+  (PIC_ADDR_P (OP) \
+   && GET_CODE (XVECEXP (XEXP ((OP), 0), 0, 0)) == MINUS \
+   && reg_mentioned_p (pc_rtx, XEXP (XVECEXP (XEXP ((OP), 0), 0, 0), 1)))
+
+#define PIC_DIRECT_ADDR_P(OP) \
+  (PIC_ADDR_P (OP) && GET_CODE (XVECEXP (XEXP ((OP), 0), 0, 0)) != MINUS)
+
 #define NON_PIC_REFERENCE_P(OP) \
   (GET_CODE (OP) == LABEL_REF || GET_CODE (OP) == SYMBOL_REF \
    || DATALABEL_REF_P (OP) \
@@ -2363,14 +2455,17 @@ while (0)
    || GOTOFF_P (OP) || PIC_ADDR_P (OP))
 
 #define MOVI_SHORI_BASE_OPERAND_P(OP) \
-  (flag_pic ? PIC_REFERENCE_P (OP) : NON_PIC_REFERENCE_P (OP))
+  (flag_pic \
+   ? (GOT_ENTRY_P (OP) || GOTPLT_ENTRY_P (OP)  || GOTOFF_P (OP) \
+      || PIC_OFFSET_P (OP)) \
+   : NON_PIC_REFERENCE_P (OP))
 
-/* The `T' constraint is a label or a symbol.  */
-#define EXTRA_CONSTRAINT_T(OP) \
+/* The `Csy' constraint is a label or a symbol.  */
+#define EXTRA_CONSTRAINT_Csy(OP) \
   (NON_PIC_REFERENCE_P (OP))
 
 /* A zero in any shape or form.  */
-#define EXTRA_CONSTRAINT_U(OP) \
+#define EXTRA_CONSTRAINT_Z(OP) \
   ((OP) == CONST0_RTX (GET_MODE (OP)))
 
 /* Any vector constant we can handle.  */
@@ -2381,18 +2476,38 @@ while (0)
 	   ? sh_const_vec ((OP), VOIDmode) \
 	   : sh_1el_vec ((OP), VOIDmode))))
 
-#define EXTRA_CONSTRAINT_Z(OP) \
-  (GET_CODE (OP) == CONST_INT \
-   && (INTVAL (OP) == (unsigned) 0xffffffff \
-       || INTVAL (OP) == (HOST_WIDE_INT) -1 << 32))
+/* A non-explicit constant that can be loaded directly into a general purpose
+   register.  This is like 's' except we don't allow PIC_DIRECT_ADDR_P.  */
+#define EXTRA_CONSTRAINT_Cpg(OP) \
+  (CONSTANT_P (OP) \
+   && GET_CODE (OP) != CONST_INT \
+   && GET_CODE (OP) != CONST_DOUBLE \
+   && (!flag_pic \
+       || (LEGITIMATE_PIC_OPERAND_P (OP) \
+        && (! PIC_ADDR_P (OP) || PIC_OFFSET_P (OP)) \
+        && GET_CODE (OP) != LABEL_REF)))
+#define EXTRA_CONSTRAINT_C(OP, STR) \
+  ((STR)[1] == '1' && (STR)[2] == '6' ? EXTRA_CONSTRAINT_C16 (OP) \
+   : (STR)[1] == 's' && (STR)[2] == 'y' ? EXTRA_CONSTRAINT_Csy (OP) \
+   : (STR)[1] == 'p' && (STR)[2] == 'g' ? EXTRA_CONSTRAINT_Cpg (OP) \
+   : 0)
 
-#define EXTRA_CONSTRAINT(OP, C)		\
+#define EXTRA_MEMORY_CONSTRAINT(C,STR) ((C) == 'S')
+#define EXTRA_CONSTRAINT_Sr0(OP) \
+  (memory_operand((OP), GET_MODE (OP)) \
+   && ! refers_to_regno_p (R0_REG, R0_REG + 1, OP, (rtx *)0))
+#define EXTRA_CONSTRAINT_S(OP, STR) \
+  ((STR)[1] == 'r' && (STR)[2] == '0' ? EXTRA_CONSTRAINT_Sr0 (OP) \
+   : 0)
+
+#define EXTRA_CONSTRAINT_STR(OP, C, STR)		\
   ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)	\
-   : (C) == 'S' ? EXTRA_CONSTRAINT_S (OP) \
-   : (C) == 'T' ? EXTRA_CONSTRAINT_T (OP) \
-   : (C) == 'U' ? EXTRA_CONSTRAINT_U (OP) \
+   : (C) == 'A' ? EXTRA_CONSTRAINT_A ((OP), (STR)) \
+   : (C) == 'B' ? EXTRA_CONSTRAINT_B ((OP), (STR)) \
+   : (C) == 'C' ? EXTRA_CONSTRAINT_C ((OP), (STR)) \
+   : (C) == 'S' ? EXTRA_CONSTRAINT_S ((OP), (STR)) \
    : (C) == 'W' ? EXTRA_CONSTRAINT_W (OP) \
-   : (C) == 'Z' ? EXTRA_CONSTRAINT_Z (OP) \
+   : (C) == 'U' ? EXTRA_CONSTRAINT_Z (OP) \
    : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
