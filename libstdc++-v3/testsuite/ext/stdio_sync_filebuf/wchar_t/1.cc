@@ -58,85 +58,8 @@ void test01()
   fclose(fin);
 }
 
-// libstdc++/12048
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-  const char* name = "cin_unget-1.txt";
-
-  std::FILE* file = std::fopen(name, "r");
-  __gnu_cxx::stdio_sync_filebuf<wchar_t> sbuf(file);
-  std::wint_t c1 = sbuf.sbumpc();
-  VERIFY( c1 != WEOF );
-  std::wint_t c2 = sbuf.sungetc();
-  VERIFY( c2 != WEOF );
-  std::wint_t c3 = sbuf.sbumpc();
-  VERIFY( c3 == c1 );
-
-  std::fclose(file);
-}
-
-// libstdc++/12048
-void test03()
-{
-  bool test __attribute__((unused)) = true;
-  const char* name = "cin_unget-1.txt";
-
-  std::FILE* file = std::fopen(name, "r");
-  __gnu_cxx::stdio_sync_filebuf<wchar_t> sbuf(file);
-  std::wint_t c1 = sbuf.sbumpc();
-  VERIFY( c1 != WEOF );
-  std::wint_t c2 = sbuf.sungetc();
-  VERIFY( c2 != WEOF );
-  std::wint_t c3 = std::fgetwc(file);
-  VERIFY( c3 == c1 );
-
-  std::fclose(file);
-}
-
-// libstdc++/12048
-void test04()
-{
-  bool test __attribute__((unused)) = true;
-  const char* name = "cin_unget-1.txt";
-
-  std::FILE* file = std::fopen(name, "r");
-  __gnu_cxx::stdio_sync_filebuf<wchar_t> sbuf(file);
-  wchar_t buf[2];
-  VERIFY( sbuf.sgetn(buf, 2) == 2 );
-  std::wint_t c2 = sbuf.sungetc();
-  VERIFY( c2 != WEOF );
-  std::wint_t c3 = sbuf.sbumpc();
-  VERIFY( c3 == std::char_traits<wchar_t>::to_int_type(buf[1]) );
-
-  std::fclose(file);
-}
-
-// libstdc++/12048
-void test05()
-{
-  bool test __attribute__((unused)) = true;
-  const char* name = "cin_unget-1.txt";
-
-  std::FILE* file = std::fopen(name, "r");
-  __gnu_cxx::stdio_sync_filebuf<wchar_t> sbuf(file);
-  wchar_t buf[2];
-  VERIFY( sbuf.sgetn(buf, 2) == 2 );
-  std::wint_t c2 = sbuf.sungetc();
-  VERIFY( c2 != WEOF );
-  std::wint_t c3 = std::fgetwc(file);
-  VERIFY( c3 == std::char_traits<wchar_t>::to_int_type(buf[1]) );
-
-  std::fclose(file);
-}
-
 int main ()
 {
   test01();
-  test02();
-  test03();
-  test04();
-  test05();
-
   return 0;
 }

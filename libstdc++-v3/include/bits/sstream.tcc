@@ -79,8 +79,7 @@ namespace std
       if (__builtin_expect(!__testout, false))
 	return traits_type::eof();
 
-      const bool __testeof = traits_type::eq_int_type(__c,
-						      traits_type::eof());
+      const bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
@@ -106,8 +105,7 @@ namespace std
 	  __tmp.assign(_M_string.data(), this->epptr() - this->pbase());
 	  _M_string.swap(__tmp);
 	  _M_sync(const_cast<char_type*>(_M_string.data()),
-		  this->gptr() - this->eback(), 
-		  this->pptr() - this->pbase());
+		  this->gptr() - this->eback(), this->pptr() - this->pbase());
 	}
       return this->sputc(traits_type::to_char_type(__c));
     }
@@ -123,7 +121,6 @@ namespace std
 	{
 	  // Update egptr() to match the actual string end.
 	  _M_update_egptr();
-
 	  if (this->gptr() < this->egptr())
 	    __ret = traits_type::to_int_type(*this->gptr());
 	}
@@ -181,8 +178,7 @@ namespace std
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekpos(pos_type __sp, ios_base::openmode __mode)
     {
-      pos_type __ret =  pos_type(off_type(-1)); 
-      
+      pos_type __ret =  pos_type(off_type(-1));       
       if (_M_string.capacity())
 	{
 	  off_type __pos (__sp);

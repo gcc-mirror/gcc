@@ -161,7 +161,6 @@ namespace std
     {
       streamsize __ret = -1;
       const bool __testin = this->_M_mode & ios_base::in;
-
       if (__testin && this->is_open())
 	{
 	  // For a stateful encoding (-1) the pending sequence might be just
@@ -170,7 +169,6 @@ namespace std
 	  if (__check_facet(_M_codecvt).encoding() >= 0)
 	    __ret += _M_file.showmanyc() / _M_codecvt->max_length();
 	}
-
       return __ret;
     }
   
@@ -182,7 +180,6 @@ namespace std
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
       const bool __testout = this->_M_mode & ios_base::out;
-
       if (__testin && !_M_writing)
 	{
 	  // Check for pback madness, and if so swich back to the
@@ -323,14 +320,12 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
-
       if (__testin && !_M_writing)
 	{
 	  // Remember whether the pback buffer is active, otherwise below
 	  // we may try to store in it a second char (libstdc++/9761).
 	  const bool __testpb = this->_M_pback_init;	   
 	  const bool __testeof = traits_type::eq_int_type(__i, __ret);
-	  
 	  int_type __tmp;
 	  if (this->eback() < this->gptr())
 	    {
@@ -378,7 +373,6 @@ namespace std
       int_type __ret = traits_type::eof();
       const bool __testeof = traits_type::eq_int_type(__c, __ret);
       const bool __testout = this->_M_mode & ios_base::out;
-      
       if (__testout && !_M_reading)
 	{
 	  if (this->pbase() < this->pptr())
@@ -391,7 +385,7 @@ namespace std
 		}
 	      
 	      // Convert pending sequence to external representation,
-	      // output.
+	      // and output.
 	      if (_M_convert_to_external(this->pbase(),
 					 this->pptr() - this->pbase())
 		  && (!__testeof || (__testeof && !_M_file.sync())))
@@ -436,7 +430,6 @@ namespace std
       // Sizes of external and pending output.
       streamsize __elen = 0;
       streamsize __plen = 0;
-
       if (__check_facet(_M_codecvt).always_noconv())
 	{
 	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
@@ -499,11 +492,10 @@ namespace std
      basic_filebuf<_CharT, _Traits>::
      xsputn(const _CharT* __s, streamsize __n)
      { 
-       streamsize __ret = 0;
-      
        // Optimization in the always_noconv() case, to be generalized in the
        // future: when __n is sufficiently large we write directly instead of
        // using the buffer.
+       streamsize __ret = 0;
        const bool __testout = this->_M_mode & ios_base::out;
        if (__testout && !_M_reading
 	   && __check_facet(_M_codecvt).always_noconv())
@@ -538,8 +530,7 @@ namespace std
 	    __ret = __streambuf_type::xsputn(__s, __n);
 	}
        else
-	 __ret = __streambuf_type::xsputn(__s, __n);
-      
+	 __ret = __streambuf_type::xsputn(__s, __n);      
        return __ret;
     }
 
@@ -575,14 +566,13 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode)
     {
-      pos_type __ret =  pos_type(off_type(-1)); 
-
       int __width = 0;
       if (_M_codecvt)
 	__width = _M_codecvt->encoding();
       if (__width < 0)
 	__width = 0;
 
+      pos_type __ret =  pos_type(off_type(-1)); 
       const bool __testfail = __off != 0 && __width <= 0;
       if (this->is_open() && !__testfail) 
 	{
@@ -630,12 +620,10 @@ namespace std
     seekpos(pos_type __pos, ios_base::openmode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-
       if (this->is_open()) 
 	{
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_destroy_pback();
-
 	  __ret = _M_seek(off_type(__pos), ios_base::beg, __pos.state());
 	}
       return __ret;
@@ -650,8 +638,7 @@ namespace std
       if (_M_terminate_output())
 	{	  
 	  // Returns pos_type(off_type(-1)) in case of failure.
-	  __ret = pos_type(_M_file.seekoff(__off, __way));
-	  
+	  __ret = pos_type(_M_file.seekoff(__off, __way));	  
 	  _M_reading = false;
 	  _M_writing = false;
 	  _M_ext_next = _M_ext_end = _M_ext_buf;
@@ -667,9 +654,8 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_terminate_output()
     {
-      bool __testvalid = true;
-
       // Part one: update the output sequence.
+      bool __testvalid = true;
       if (this->pbase() < this->pptr())
 	{
 	  const int_type __tmp = this->overflow();
@@ -685,7 +671,6 @@ namespace std
 	  // get the length of the unshift sequence from codecvt,
 	  // without calling unshift.
 	  const size_t __blen = 128;
-
 	  char __buf[__blen];
 	  codecvt_base::result __r;
 	  streamsize __ilen = 0;
@@ -700,8 +685,7 @@ namespace std
 	      else if (__r == codecvt_base::ok ||
 		       __r == codecvt_base::partial)
 		{
-		  __ilen = __next - __buf;
-		  
+		  __ilen = __next - __buf;		  
 		  if (__ilen > 0)
 		    {
 		      const streamsize __elen = _M_file.xsputn(__buf, __ilen);
@@ -731,18 +715,16 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     sync()
     {
-      int __ret = 0;
-
       // Make sure that the internal buffer resyncs its idea of
       // the file position with the external file.
       // NB: _M_file.sync() will be called within.
+      int __ret = 0;
       if (this->pbase() < this->pptr())
 	{
 	  const int_type __tmp = this->overflow();
 	  if (traits_type::eq_int_type(__tmp, traits_type::eof()))
 	    __ret = -1;
-	}
-      
+	}      
       return __ret;
     }
 
@@ -752,7 +734,6 @@ namespace std
     imbue(const locale& __loc)
     {
       bool __testfail = false;
-
       if (this->is_open())
 	{
 	  const pos_type __ret = this->seekoff(0, ios_base::cur,
