@@ -28,6 +28,10 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* contrib.texi, cpp.texi, extend.texi, invoke.texi: Update
+	references to C9X.  Change references to -fstd and -flang-isoc9x
+	to refer to -std.
+
 	* c-common.c (scan_char_table): Allow "z" length modifiers on
 	diouxXn formats.
 	(check_format_info): Use TYPE_DOMAIN on the type matched against

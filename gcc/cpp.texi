@@ -3303,25 +3303,28 @@ added in the future.
 may be one of:
 @table @code
 @item iso9899:1990
-The ISO C standard from 1990.
-
-@item iso9899:199409
 @itemx c89
-The 1990 C standard, as amended in 1994.  @samp{c89} is the customary
-shorthand for this version of the standard.
+The ISO C standard from 1990.  @samp{c89} is the customary shorthand for
+this version of the standard.
 
 The @samp{-ansi} option is equivalent to @samp{-std=c89}.
 
-@item iso9899:199x
+@item iso9899:199409
+The 1990 C standard, as amended in 1994.
+
+@item iso9899:1999
+@itemx c99
+@itemx iso9899:199x
 @itemx c9x
-The revised ISO C standard, which is expected to be promulgated some
-time in 1999.  It has not been approved yet, hence the @samp{x}.
+The revised ISO C standard, published in December 1999.  Before
+publication, this was known as C9X.
 
 @item gnu89
 The 1990 C standard plus GNU extensions.  This is the default.
 
-@item gnu9x
-The 199x C standard plus GNU extensions.
+@item gnu99
+@itemx gnu9x
+The 1999 C standard plus GNU extensions.
 @end table
 
 @item -Wp,-lint

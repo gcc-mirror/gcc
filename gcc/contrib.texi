@@ -86,7 +86,7 @@ that print a copy of their source.
 
 @item
 Ulrich Drepper for his work on the C++ runtime libraries, glibc, 
- testing of GCC using glibc, ISO C9X support, CFG dumping support, etc.
+ testing of GCC using glibc, ISO C99 support, CFG dumping support, etc.
 
 @item
 Richard Earnshaw for his ongoing work with the ARM.
@@ -321,7 +321,7 @@ David Mosberger-Tang for various Alpha improvements.
 @item
 Stephen Moshier contributed the floating point emulator that assists in
 cross-compilation and permits support for floating point numbers wider
-than 64 bits and for ISO C9X support.
+than 64 bits and for ISO C99 support.
 
 @item
 Bill Moyer for his behind the scenes work on various issues.
