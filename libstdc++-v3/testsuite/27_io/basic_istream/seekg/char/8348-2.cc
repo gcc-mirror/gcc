@@ -20,12 +20,9 @@
 
 // 27.6.1.3 unformatted input functions
 // NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <sstream>
-#include <fstream>
 #include <testsuite_hooks.h>
 
 // libstdc++/8348

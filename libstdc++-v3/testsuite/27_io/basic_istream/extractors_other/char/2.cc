@@ -23,7 +23,6 @@
 // @diff@ %-*.tst %-*.txt
 
 #include <istream>
-#include <sstream>
 #include <fstream>
 #include <testsuite_hooks.h>
 

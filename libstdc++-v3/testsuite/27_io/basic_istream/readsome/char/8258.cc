@@ -19,13 +19,9 @@
 // USA.
 
 // 27.6.1.3 unformatted input functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
-#include <cstring> // for strncmp,...
 #include <istream>
-#include <sstream>
-#include <fstream>
+#include <streambuf>
 #include <testsuite_hooks.h>
 
 // libstdc++/8258

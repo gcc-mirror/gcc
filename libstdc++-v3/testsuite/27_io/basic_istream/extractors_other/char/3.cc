@@ -19,12 +19,9 @@
 // USA.
 
 // 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <istream>
 #include <sstream>
-#include <fstream>
 #include <testsuite_hooks.h>
 
 void test03() 
