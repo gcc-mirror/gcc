@@ -5565,12 +5565,10 @@ tsubst_aggr_type (tree t,
 
 	  /* First, determine the context for the type we are looking
 	     up.  */
-	  if (TYPE_CONTEXT (t) != NULL_TREE)
-	    context = tsubst_aggr_type (TYPE_CONTEXT (t), args,
-					complain,
+	  context = TYPE_CONTEXT (t);
+	  if (context)
+	    context = tsubst_aggr_type (context, args, complain,
 					in_decl, /*entering_scope=*/1);
-	  else
-	    context = NULL_TREE;
 
 	  /* Then, figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:

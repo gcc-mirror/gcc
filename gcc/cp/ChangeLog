@@ -1,3 +1,8 @@
+2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (make_typename_type): Use my_friendly_assert.
+	* pt.c (tsubst_aggr_type): Rearrange context substitution.
+
 Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* method.c (use_thunk): Expand body directly.
