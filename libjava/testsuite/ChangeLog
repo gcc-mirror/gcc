@@ -1,3 +1,8 @@
+2000-08-31  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/abstr.xfail: New file.
+	* libjava.compile/abstr.java: New file.
+
 2000-08-09  Tom Tromey  <tromey@cygnus.com>
 
 	From PR gcj/310:
