@@ -397,7 +397,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	/* OK */;
       else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
 	{
-	  if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
 	    tmp = basetype;
 	  else
 	    tmp = get_type_value (tmp);
@@ -648,21 +648,21 @@ build_method_call (instance, name, parms, basetype_path, flags)
     {
       tree tmp;
 
-      flags |= LOOKUP_DESTRUCTOR;
-      name = TREE_OPERAND (name, 0);
+      tmp = name = TREE_OPERAND (name, 0);
+
       if (parms)
 	error ("destructors take no parameters");
       basetype = TREE_TYPE (instance);
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	basetype = TREE_TYPE (basetype);
 
-      if (TREE_CODE (name) == TYPE_DECL)
-	tmp = TREE_TYPE (name);
-      else if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
-	tmp = name;
-      else if (TREE_CODE (name) == IDENTIFIER_NODE)
+      if (TREE_CODE (tmp) == TYPE_DECL)
+	tmp = TREE_TYPE (tmp);
+      else if (TREE_CODE_CLASS (TREE_CODE (tmp)) == 't')
+	/* OK */;
+      else if (TREE_CODE (tmp) == IDENTIFIER_NODE)
 	{
-	  if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+	  if (IS_AGGR_TYPE (basetype) && tmp == constructor_name (basetype))
 	    tmp = basetype;
 	  else
 	    tmp = get_type_value (tmp);
