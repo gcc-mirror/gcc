@@ -45,9 +45,16 @@ test01(void)
   VERIFY( test );
 }
 
+// libstdc++/6124
+void test02()
+{
+  std::bitset<1> bs;
+  bs.count();
+}
+
 int main()
 {
   test01();
-
+  test02();
   return 0;
 }
