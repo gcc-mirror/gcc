@@ -63,4 +63,4 @@ fprintf (STREAM, "~~%s:\n", NAME); 			\
 } while (0)
 
 #undef TARGET_UNIX_ASM_DEFAULT
-#define TARGET_UNIX_ASM_DEFAULT 2048
+#define TARGET_UNIX_ASM_DEFAULT MASK_UNIX_ASM
