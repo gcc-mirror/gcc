@@ -1,3 +1,17 @@
+2002-01-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/codecvt_specializations_ieee_1003.1-200x.h:
+	Initialize all data members in copy ctor. Make ctors explicit.
+	(__enc_traits::__enc_traits()): Default ctor does nothing.
+	(__enc_traits::_M_init): Guard against multiple iconv_opens.
+	* include/std/std_sstream.h (basic_stringbuf): Make data members
+	protected.
+	* include/std/std_fstream.h (basic_filebuf): Same.
+	* include/std/std_streambuf.h: Tweak.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/fstream.tcc: Same.	
+
 2002-01-31  Loren Rittle <ljrittle@acm.org>
 
 	* testsuite/22_locale/codecvt_members_char_char.cc: Do not

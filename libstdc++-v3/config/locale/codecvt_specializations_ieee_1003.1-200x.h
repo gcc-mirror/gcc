@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,23 +35,18 @@
 
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
 
-  // XXX 
-  // __enc_traits may need to move up the locale header hierarchy,
-  // depending on if ctype ends up using it.
-
-  // Extensions to use icov for dealing with character encodings,
-  // including conversions and comparisons between various character
-  // sets.  This object encapsulates data that may need to be shared between
-  // char_traits, codecvt and ctype.
+  // XXX
+  // Define this here to codecvt.cc can have _S_max_size definition.
+#define _GLIBCPP_USE___ENC_TRAITS 1
 
 #if _GLIBCPP_USE_SHADOW_HEADERS
   using _C_legacy::CODESET;
 #endif
 
-  // XXX
-  // Define this here to codecvt.cc can have _S_max_size definition.
-#define _GLIBCPP_USE___ENC_TRAITS 1
-
+  // Extension to use icov for dealing with character encodings,
+  // including conversions and comparisons between various character
+  // sets.  This object encapsulates data that may need to be shared between
+  // char_traits, codecvt and ctype.
   class __enc_traits
   {
   public:
@@ -81,7 +76,14 @@
     int			_M_int_bom;
 
   public:
-    __enc_traits(const locale& __loc = locale())
+    explicit __enc_traits() 
+    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0) 
+    {
+      memset(_M_int_enc, 0, _S_max_size);
+      memset(_M_ext_enc, 0, _S_max_size);
+    }
+
+    explicit __enc_traits(const locale& __loc)
     : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
     {
       // __intc_end = whatever we are using internally, which is
@@ -98,8 +100,8 @@
       locale::facet::_S_destroy_c_locale(__cloc);
     }
 
-    __enc_traits(const char* __int, const char* __ext, int __ibom = 0, 
-		 int __ebom = 0)
+    explicit __enc_traits(const char* __int, const char* __ext, 
+			  int __ibom = 0, int __ebom = 0)
     : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
     {
       strncpy(_M_int_enc, __int, _S_max_size);
@@ -111,10 +113,22 @@
     // typedef STATE_T state_type
     // requires: state_type shall meet the requirements of
     // CopyConstructible types (20.1.3)
-    __enc_traits(const __enc_traits& __obj)
+    __enc_traits(const __enc_traits& __obj): _M_in_desc(0), _M_out_desc(0)
     {
       strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
       strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
+      _M_ext_bom = __obj._M_ext_bom;
+      _M_int_bom = __obj._M_int_bom;
+    }
+
+    // Need assignment operator as well.
+    __enc_traits&
+    operator=(const __enc_traits& __obj)
+    {
+      strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
+      strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
+      _M_in_desc = 0;
+      _M_out_desc = 0;
       _M_ext_bom = __obj._M_ext_bom;
       _M_int_bom = __obj._M_int_bom;
     }
@@ -131,19 +145,25 @@
     void
     _M_init()
     {
-      __desc_type __err = reinterpret_cast<iconv_t>(-1);
-      _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
-      if (_M_in_desc == __err)
-	__throw_runtime_error("creating iconv input descriptor failed.");
-      _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
-      if (_M_out_desc == __err)
-	__throw_runtime_error("creating iconv output descriptor failed.");
+      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      if (!_M_in_desc)
+	{
+	  _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
+	  if (_M_in_desc == __err)
+	    __throw_runtime_error("creating iconv input descriptor failed.");
+	}
+      if (!_M_out_desc)
+	{
+	  _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
+	  if (_M_out_desc == __err)
+	    __throw_runtime_error("creating iconv output descriptor failed.");
+	}
     }
 
     bool
     _M_good()
     { 
-      __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
       bool __test = _M_in_desc && _M_in_desc != __err; 
       __test &=  _M_out_desc && _M_out_desc != __err;
       return __test;
@@ -157,14 +177,6 @@
     _M_get_out_descriptor()
     { return &_M_out_desc; }
 
-   const char* 
-    _M_get_internal_enc()
-    { return _M_int_enc; }
-
-    const char* 
-    _M_get_external_enc()
-    { return _M_ext_enc; }
-
     int 
     _M_get_external_bom()
     { return _M_ext_bom; }
@@ -172,6 +184,14 @@
     int 
     _M_get_internal_bom()
     { return _M_int_bom; }
+
+    const char* 
+    _M_get_internal_enc()
+    { return _M_int_enc; }
+
+    const char* 
+    _M_get_external_enc()
+    { return _M_ext_enc; }
   };
 
   // Partial specialization
@@ -250,9 +270,7 @@
     __iconv_adaptor(size_t(*iconv_func)(iconv_t, _T, size_t*, char**, size_t*),
                     iconv_t cd, char** inbuf, size_t* inbytesleft,
                     char** outbuf, size_t* outbytesleft)
-    {
-      return iconv_func(cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft);
-    }
+    { return iconv_func(cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft); }
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result

@@ -66,7 +66,7 @@ namespace std
       typedef basic_string<char_type, _Traits, _Alloc> 	__string_type;
       typedef typename __string_type::size_type		__size_type;
 
-    private:
+    protected:
       // Data Members:
       __string_type 		_M_string;
       
@@ -360,8 +360,6 @@ namespace std
     };
 } // namespace std
 
-
-
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
 #ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
@@ -369,4 +367,4 @@ namespace std
 #endif
 #endif
 
-#endif	// _CPP_SSTREAM
+#endif

@@ -143,9 +143,7 @@ namespace std
     int
     basic_filebuf<_CharT, _Traits>::
     fd()
-    {
-      return _M_file->fd();
-    }
+    { return _M_file->fd(); }
 
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 
@@ -604,14 +602,6 @@ namespace std
       // XXX The part in the above comment is not done.
       _M_last_overflowed = false;	
     }
-  
 } // namespace std
 
-#endif // _CPP_BITS_FSTREAM_TCC
-
-
-
-
-
-
-
+#endif 

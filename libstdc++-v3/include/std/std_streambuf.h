@@ -83,7 +83,6 @@ namespace std
 			  __streambuf_type* __sbin,__streambuf_type* __sbout);
       
     protected:
-
       // Pointer to the beginning of internally-allocated
       // space. Filebuf manually allocates/deallocates this, whereas
       // stringstreams attempt to use the built-in intelligence of the
@@ -527,7 +526,6 @@ namespace std
       operator=(const __streambuf_type&);
 #endif
     };
-
 } // namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
@@ -537,5 +535,4 @@ namespace std
 #endif
 #endif
 
-#endif	/* _CPP_STREAMBUF */
-
+#endif	
