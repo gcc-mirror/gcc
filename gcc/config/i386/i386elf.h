@@ -127,12 +127,13 @@ do { long value[3];							\
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
     {									\
-      register unsigned char *_ascii_bytes = (unsigned char *) (STR);	\
-      register unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      register const unsigned char *_ascii_bytes =			\
+        (const unsigned char *) (STR);					\
+      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
       register unsigned bytes_in_chunk = 0;				\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register unsigned char *p;					\
+	  register const unsigned char *p;				\
 	  if (bytes_in_chunk >= 64)					\
 	    {								\
 	      fputc ('\n', (FILE));					\

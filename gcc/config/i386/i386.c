@@ -1594,7 +1594,7 @@ static char *global_offset_table_name;
 void
 asm_output_function_prefix (file, name)
      FILE *file;
-     char *name ATTRIBUTE_UNUSED;
+     const char *name ATTRIBUTE_UNUSED;
 {
   rtx xops[2];
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table

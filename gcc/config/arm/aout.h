@@ -252,7 +252,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf (STREAM, "\t.byte\t%d\n", VALUE)
 
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
-  output_ascii_pseudo_op (STREAM, (unsigned char *)(PTR), LEN)
+  output_ascii_pseudo_op (STREAM, (const unsigned char *)(PTR), LEN)
 
 /* Output a gap.  In fact we fill it with nulls.  */
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\

@@ -2252,7 +2252,9 @@ canon_hash (x, mode)
 	  hash += canon_hash (XVECEXP (x, i, j), 0);
       else if (fmt[i] == 's')
 	{
-	  register unsigned char *p = (unsigned char *) XSTR (x, i);
+	  register const unsigned char *p =
+	    (const unsigned char *) XSTR (x, i);
+
 	  if (p)
 	    while (*p)
 	      hash += *p++;

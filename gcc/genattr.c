@@ -91,7 +91,7 @@ static void
 gen_attr (attr)
      rtx attr;
 {
-  char *p;
+  const char *p;
   int is_const = GET_CODE (XEXP (attr, 2)) == CONST;  
 
   printf ("#define HAVE_ATTR_%s\n", XSTR (attr, 0));
@@ -306,7 +306,7 @@ from the machine description file `md'.  */\n\n");
 
       else if (GET_CODE (desc) == DEFINE_FUNCTION_UNIT)
 	{
-	  char *name = XSTR (desc, 0);
+	  const char *name = XSTR (desc, 0);
 	  int multiplicity = XINT (desc, 1);
 	  int simultaneity = XINT (desc, 2);
 	  int ready_cost = MAX (XINT (desc, 4), 1);

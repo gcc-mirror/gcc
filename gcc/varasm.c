@@ -178,17 +178,18 @@ static void output_constructor		PARAMS ((tree, int));
 static void remove_from_pending_weak_list	PARAMS ((char *));
 #endif
 #ifdef ASM_OUTPUT_BSS
-static void asm_output_bss		PARAMS ((FILE *, tree, char *, int, int));
+static void asm_output_bss		PARAMS ((FILE *, tree, const char *, int, int));
 #endif
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_ALIGNED_BSS
-static void asm_output_aligned_bss	PARAMS ((FILE *, tree, char *, int, int));
+static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
+						 int, int));
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_pool_constant          PARAMS ((struct pool_constant *));
 static void mark_pool_sym_hash_table	PARAMS ((struct pool_sym **));
 static void mark_const_hash_entry	PARAMS ((void *));
-static void asm_emit_uninitialised	PARAMS ((tree, char *, int, int));
+static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -377,7 +378,7 @@ static void
 asm_output_bss (file, decl, name, size, rounded)
      FILE *file;
      tree decl ATTRIBUTE_UNUSED;
-     char *name;
+     const char *name;
      int size ATTRIBUTE_UNUSED, rounded;
 {
   ASM_GLOBALIZE_LABEL (file, name);
@@ -405,7 +406,7 @@ static void
 asm_output_aligned_bss (file, decl, name, size, align)
      FILE *file;
      tree decl;
-     char *name;
+     const char *name;
      int size, align;
 {
   ASM_GLOBALIZE_LABEL (file, name);
@@ -997,7 +998,7 @@ assemble_gc_entry (name)
 void
 assemble_start_function (decl, fnname)
      tree decl;
-     char *fnname;
+     const char *fnname;
 {
   int align;
 
@@ -1239,7 +1240,7 @@ assemble_string (p, size)
 static void
 asm_emit_uninitialised (decl, name, size, rounded)
      tree decl;
-     char * name;
+     const char * name;
      int size ATTRIBUTE_UNUSED;
      int rounded ATTRIBUTE_UNUSED;
 {
@@ -1328,7 +1329,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      int at_end ATTRIBUTE_UNUSED;
      int dont_output_data;
 {
-  register char *name;
+  register const char *name;
   unsigned int align;
   tree size_tree = NULL_TREE;
   int reloc = 0;
@@ -2375,7 +2376,7 @@ static int
 const_hash (exp)
      tree exp;
 {
-  register char *p;
+  register const char *p;
   register int len, hi, i;
   register enum tree_code code = TREE_CODE (exp);
 
@@ -2406,9 +2407,12 @@ const_hash (exp)
     case CONSTRUCTOR:
       if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
 	{
+	  char *tmp;
+
 	  len = int_size_in_bytes (TREE_TYPE (exp));
-	  p = (char *) alloca (len);
-	  get_set_constructor_bytes (exp, (unsigned char *) p, len);
+	  tmp = (char *) alloca (len);
+	  get_set_constructor_bytes (exp, (unsigned char *) tmp, len);
+	  p = tmp;
 	  break;
 	}
       else
@@ -2509,7 +2513,7 @@ compare_constant_1 (exp, p)
      tree exp;
      char *p;
 {
-  register char *strp;
+  register const char *strp;
   register int len;
   register enum tree_code code = TREE_CODE (exp);
 
@@ -2566,9 +2570,10 @@ compare_constant_1 (exp, p)
       if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
 	{
 	  int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
+	  unsigned char *tmp = (unsigned char *) alloca (len);
 
-	  strp = (char *) alloca (len);
-	  get_set_constructor_bytes (exp, (unsigned char *) strp, len);
+	  get_set_constructor_bytes (exp, (unsigned char *) tmp, len);
+	  strp = tmp;
 	  if (bcmp ((char *) &xlen, p, sizeof xlen))
 	    return 0;
 
@@ -3683,7 +3688,7 @@ find_pool_constant (f, addr)
      rtx addr;
 {
   struct pool_sym *sym;
-  char *label = XSTR (addr, 0);
+  const char *label = XSTR (addr, 0);
 
   for (sym = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; sym; sym = sym->next)
     if (sym->label == label)
@@ -3873,7 +3878,7 @@ mark_constant_pool ()
   for (pool = first_pool; pool; pool = pool->next)
     {
       struct pool_sym *sym;
-      char *label;
+      const char *label;
 
       /* skip unmarked entries; no insn refers to them. */
       if (!pool->mark)
@@ -4702,7 +4707,7 @@ void
 assemble_alias (decl, target)
      tree decl, target ATTRIBUTE_UNUSED;
 {
-  char *name;
+  const char *name;
 
   make_decl_rtl (decl, (char *) 0, 1);
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);

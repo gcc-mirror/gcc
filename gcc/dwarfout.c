@@ -383,7 +383,7 @@ static char *type_tag			PARAMS ((tree));
 static inline void dienum_push		PARAMS ((void));
 static inline void dienum_pop		PARAMS ((void));
 static inline tree member_declared_type PARAMS ((tree));
-static char *function_start_label	PARAMS ((tree));
+static const char *function_start_label	PARAMS ((tree));
 static void output_array_type_die	PARAMS ((void *));
 static void output_set_type_die		PARAMS ((void *));
 #if 0
@@ -3205,12 +3205,12 @@ member_declared_type (member)
    This may be different from the DECL_NAME name used
    in the source file.  */
 
-static char *
+static const char *
 function_start_label (decl)
     register tree decl;
 {
   rtx x;
-  char *fnname;
+  const char *fnname;
 
   x = DECL_RTL (decl);
   if (GET_CODE (x) != MEM)

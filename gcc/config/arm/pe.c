@@ -237,7 +237,7 @@ arm_dllimport_p (decl)
 
 int
 arm_dllexport_name_p (symbol)
-     char * symbol;
+     const char * symbol;
 {
   return symbol[0] == ARM_PE_FLAG_CHAR && symbol[1] == 'e' && symbol[2] == '.';
 }
@@ -246,7 +246,7 @@ arm_dllexport_name_p (symbol)
 
 int
 arm_dllimport_name_p (symbol)
-     char * symbol;
+     const char * symbol;
 {
   return symbol[0] == ARM_PE_FLAG_CHAR && symbol[1] == 'i' && symbol[2] == '.';
 }
@@ -258,7 +258,7 @@ void
 arm_mark_dllexport (decl)
      tree decl;
 {
-  char * oldname;
+  const char * oldname;
   char * newname;
   rtx rtlname;
   tree idp;
@@ -296,7 +296,7 @@ void
 arm_mark_dllimport (decl)
      tree decl;
 {
-  char * oldname;
+  const char * oldname;
   char * newname;
   tree idp;
   rtx rtlname, newrtl;
@@ -395,7 +395,7 @@ arm_pe_encode_section_info (decl)
 	   && GET_CODE (XEXP (XEXP (DECL_RTL (decl), 0), 0)) == SYMBOL_REF
 	   && arm_dllimport_name_p (XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0)))
     {
-      char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
+      const char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
       tree idp = get_identifier (oldname + 9);
       rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
 

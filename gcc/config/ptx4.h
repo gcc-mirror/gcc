@@ -680,7 +680,7 @@ dtors_section ()							\
 
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
-     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
@@ -764,7 +764,8 @@ do {									 \
 #define ASM_OUTPUT_LIMITED_STRING(FILE, STR)				\
   do									\
     {									\
-      register unsigned char *_limited_str = (unsigned char *) (STR);	\
+      register const unsigned char *_limited_str =			\
+        (const unsigned char *) (STR);					\
       register unsigned ch;						\
       fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);			\
       for (; ch = *_limited_str; _limited_str++)			\
@@ -799,12 +800,13 @@ do {									 \
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
     {									\
-      register unsigned char *_ascii_bytes = (unsigned char *) (STR);	\
-      register unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      register const unsigned char *_ascii_bytes =			\
+        (const unsigned char *) (STR);					\
+      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
       register unsigned bytes_in_chunk = 0;				\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register unsigned char *p;					\
+	  register const unsigned char *p;				\
 	  if (bytes_in_chunk >= 60)					\
 	    {								\
 	      fprintf ((FILE), "\"\n");					\

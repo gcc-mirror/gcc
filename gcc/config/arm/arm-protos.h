@@ -30,7 +30,7 @@ extern int    arm_regno_class 			PARAMS ((int));
 extern int    arm_volatile_func			PARAMS ((void));
 extern int    const_ok_for_arm			PARAMS ((HOST_WIDE_INT));
 extern void   output_arm_prologue		PARAMS ((FILE *, int));
-extern void   output_ascii_pseudo_op		PARAMS ((FILE *, unsigned char *, int));
+extern void   output_ascii_pseudo_op		PARAMS ((FILE *, const unsigned char *, int));
 extern void   output_func_epilogue		PARAMS ((int));
 extern void   output_func_prologue		PARAMS ((FILE *, int));
 extern int    use_return_insn			PARAMS ((int));
@@ -44,8 +44,8 @@ extern void   aof_dump_pic_table		PARAMS ((FILE *));
 extern char * aof_text_section			PARAMS ((void));
 #endif /* AOF_ASSEMBLER */
 /* Defined in pe.c */
-extern int    arm_dllexport_name_p 		PARAMS ((char *));
-extern int    arm_dllimport_name_p 		PARAMS ((char *));
+extern int    arm_dllexport_name_p 		PARAMS ((const char *));
+extern int    arm_dllimport_name_p 		PARAMS ((const char *));
 
 #define Mmode enum machine_mode
 

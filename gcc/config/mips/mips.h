@@ -4527,7 +4527,7 @@ do {									\
 /* Output #ident as a in the read-only data section.  */
 #define ASM_OUTPUT_IDENT(FILE, STRING)					\
 {									\
-  char *p = STRING;							\
+  const char *p = STRING;						\
   int size = strlen (p) + 1;						\
   rdata_section ();							\
   assemble_string (p, size);						\

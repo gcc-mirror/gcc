@@ -122,8 +122,8 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)			\
   do								\
     {								\
-      register unsigned char *str = (unsigned char *) (STR);	\
-      register unsigned char *limit = str + (LENGTH);		\
+      register const unsigned char *str = (const unsigned char *) (STR); \
+      register const unsigned char *limit = str + (LENGTH);	\
       register unsigned bytes_in_chunk = 0;			\
       for (; str < limit; str++)				\
         {							\

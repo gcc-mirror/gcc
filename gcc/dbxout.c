@@ -2627,7 +2627,7 @@ dbxout_block (block, depth, args)
   int ignored;
 
 #if DBX_BLOCKS_FUNCTION_RELATIVE
-  char *begin_label; 
+  const char *begin_label; 
   if (current_function_func_begin_label != NULL_TREE)
     begin_label = IDENTIFIER_POINTER (current_function_func_begin_label);
   else

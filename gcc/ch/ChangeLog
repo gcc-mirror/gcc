@@ -1,3 +1,7 @@
+2000-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* grant.c (globalize_decl): Constify a char*.
+
 Mon Mar  6 17:52:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* actions.c (chill_convert_for_assignment): INDEX is unsigned

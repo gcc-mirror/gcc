@@ -115,7 +115,7 @@ type_from_format (c)
       return "HOST_WIDE_INT ";
 
     case 's':
-      return "char *";
+      return "const char *";
 
     case 'e':  case 'u':
       return "rtx ";

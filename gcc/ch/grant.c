@@ -2546,7 +2546,7 @@ globalize_decl (decl)
     {
       extern	FILE	*asm_out_file;
       extern	char	*first_global_object_name;
-      char		*name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      const char	*name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 	
       if (!first_global_object_name)
 	first_global_object_name = name + (name[0] == '*');

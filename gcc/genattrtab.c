@@ -216,7 +216,7 @@ struct function_unit_op
 
 struct function_unit
 {
-  char *name;			/* Function unit name.  */
+  const char *name;		/* Function unit name.  */
   struct function_unit *next;	/* Next function unit.  */
   int num;			/* Ordinal of this unit type.  */
   int multiplicity;		/* Number of units of this type.  */
@@ -316,7 +316,7 @@ static int *insn_alternatives;
    This is the hashed, unique string for the numeral
    whose value is chosen alternative.  */
 
-static char *current_alternative_string;
+static const char *current_alternative_string;
 
 /* Used to simplify expressions.  */
 
@@ -432,7 +432,7 @@ static void write_attr_set	PARAMS ((struct attr_desc *, int, rtx,
 static void write_attr_case	PARAMS ((struct attr_desc *, struct attr_value *,
 				       int, const char *, const char *, int, rtx));
 static void write_unit_name	PARAMS ((const char *, int, const char *));
-static void write_attr_valueq	PARAMS ((struct attr_desc *, char *));
+static void write_attr_valueq	PARAMS ((struct attr_desc *, const char *));
 static void write_attr_value	PARAMS ((struct attr_desc *, rtx));
 static void write_upcase	PARAMS ((const char *));
 static void write_indent	PARAMS ((int));
@@ -443,16 +443,16 @@ static void write_complex_function PARAMS ((struct function_unit *, const char *
 static int write_expr_attr_cache PARAMS ((rtx, struct attr_desc *));
 static void write_toplevel_expr	PARAMS ((rtx));
 static void write_const_num_delay_slots PARAMS ((void));
-static int n_comma_elts		PARAMS ((char *));
-static char *next_comma_elt	PARAMS ((char **));
+static int n_comma_elts		PARAMS ((const char *));
+static char *next_comma_elt	PARAMS ((const char **));
 static struct attr_desc *find_attr PARAMS ((const char *, int));
 static void make_internal_attr	PARAMS ((const char *, rtx, int));
 static struct attr_value *find_most_used  PARAMS ((struct attr_desc *));
 static rtx find_single_value	PARAMS ((struct attr_desc *));
 static rtx make_numeric_value	PARAMS ((int));
 static void extend_range	PARAMS ((struct range *, int, int));
-static rtx attr_eq		PARAMS ((char *, char *));
-static char *attr_numeral	PARAMS ((int));
+static rtx attr_eq		PARAMS ((const char *, const char *));
+static const char *attr_numeral	PARAMS ((int));
 static int attr_equal_p		PARAMS ((rtx, rtx));
 static rtx attr_copy_rtx	PARAMS ((rtx));
 
@@ -765,13 +765,13 @@ attr_printf VPARAMS ((register int len, const char *fmt, ...))
 
 static rtx
 attr_eq (name, value)
-     char *name, *value;
+     const char *name, *value;
 {
   return attr_rtx (EQ_ATTR, attr_string (name, strlen (name)),
 		   attr_string (value, strlen (value)));
 }
 
-static char *
+static const char *
 attr_numeral (n)
      int n;
 {
@@ -932,7 +932,7 @@ check_attr_test (exp, is_const)
 {
   struct attr_desc *attr;
   struct attr_value *av;
-  char *name_ptr, *p;
+  const char *name_ptr, *p;
   rtx orexp, newexp;
 
   switch (GET_CODE (exp))
@@ -1079,7 +1079,7 @@ check_attr_value (exp, attr)
      struct attr_desc *attr;
 {
   struct attr_value *av;
-  char *p;
+  const char *p;
   int i;
 
   switch (GET_CODE (exp))
@@ -1217,7 +1217,7 @@ convert_set_attr_alternative (exp, num_alt, insn_index)
 
   for (i = 0; i < num_alt - 1; i++)
     {
-      char *p;
+      const char *p;
       p = attr_numeral (i);
 
       XVECEXP (condexp, 0, 2 * i) = attr_eq (alternative_name, p);
@@ -1245,7 +1245,7 @@ convert_set_attr (exp, num_alt, insn_index)
      int insn_index;
 {
   rtx newexp;
-  char *name_ptr;
+  const char *name_ptr;
   char *p;
   int n;
 
@@ -2761,7 +2761,7 @@ compute_alternative_mask (exp, code)
      rtx exp;
      enum rtx_code code;
 {
-  char *string;
+  const char *string;
   if (GET_CODE (exp) == code)
     return compute_alternative_mask (XEXP (exp, 0), code)
 	   | compute_alternative_mask (XEXP (exp, 1), code);
@@ -3608,7 +3608,7 @@ simplify_by_exploding (exp)
     {
       /* Pull the first attribute value from the list and record that
 	 attribute as another dimension in the attribute space.  */
-      char *name = XSTR (XEXP (list, 0), 0);
+      const char *name = XSTR (XEXP (list, 0), 0);
       rtx *prev;
 
       if ((space[ndim].attr = find_attr (name, 0)) == 0
@@ -4140,7 +4140,7 @@ gen_attr (exp)
 {
   struct attr_desc *attr;
   struct attr_value *av;
-  char *name_ptr;
+  const char *name_ptr;
   char *p;
 
   /* Make a new attribute structure.  Check for duplicate by looking at
@@ -4374,7 +4374,7 @@ gen_unit (def)
 {
   struct function_unit *unit;
   struct function_unit_op *op;
-  char *name = XSTR (def, 0);
+  const char *name = XSTR (def, 0);
   int multiplicity = XINT (def, 1);
   int simultaneity = XINT (def, 2);
   rtx condexp = XEXP (def, 3);
@@ -5253,7 +5253,7 @@ write_unit_name (prefix, num, suffix)
 static void
 write_attr_valueq (attr, s)
      struct attr_desc *attr;
-     char *s;
+     const char *s;
 {
   if (attr->is_numeric)
     {
@@ -5673,7 +5673,7 @@ write_complex_function (unit, name, connection)
 
 static int
 n_comma_elts (s)
-     char *s;
+     const char *s;
 {
   int n;
 
@@ -5693,10 +5693,10 @@ n_comma_elts (s)
 
 static char *
 next_comma_elt (pstr)
-     char **pstr;
+     const char **pstr;
 {
   char *out_str;
-  char *p;
+  const char *p;
 
   if (**pstr == '\0')
     return NULL;

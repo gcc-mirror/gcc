@@ -3009,7 +3009,7 @@ emit_note_after (subtype, after)
 
 rtx
 emit_line_note_after (file, line, after)
-     char *file;
+     const char *file;
      int line;
      rtx after;
 {
@@ -3208,7 +3208,7 @@ emit_barrier ()
 
 rtx
 emit_line_note (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   set_file_and_line_for_stmt (file, line);
@@ -3228,7 +3228,7 @@ emit_line_note (file, line)
 
 rtx
 emit_note (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   register rtx note;
@@ -3260,7 +3260,7 @@ emit_note (file, line)
 
 rtx
 emit_line_note_force (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   last_linenum = -1;

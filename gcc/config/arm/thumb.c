@@ -1289,7 +1289,7 @@ thumb_function_prologue (f, frame_size)
 
   if (is_called_in_ARM_mode (current_function_decl))
     {
-      char * name;
+      const char * name;
       
       if (GET_CODE (DECL_RTL (current_function_decl)) != MEM)
 	abort();

@@ -175,8 +175,8 @@ extern int arm_structure_size_boundary;
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE,DECL1,DECL2)		\
   do						   		\
     {								\
-      char * LABEL1 = XSTR (XEXP (DECL_RTL (decl), 0), 0);	\
-      char * LABEL2 = IDENTIFIER_POINTER (DECL2);		\
+      const char * LABEL1 = XSTR (XEXP (DECL_RTL (decl), 0), 0);\
+      const char * LABEL2 = IDENTIFIER_POINTER (DECL2);		\
 								\
       if (TREE_CODE (DECL1) == FUNCTION_DECL)			\
 	{							\
@@ -427,7 +427,7 @@ dtors_section ()						\
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)\
   do								\
     {								\
-      char * name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);	\
+      const char * name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);	\
       if (!flag_inhibit_size_directive && DECL_SIZE (DECL)	\
           && ! AT_END && TOP_LEVEL				\
 	  && DECL_INITIAL (DECL) == error_mark_node		\

@@ -1,3 +1,172 @@
+2000-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (rtunion_def): Constify member `rtstr'.
+	(emit_line_note_after, emit_line_note, emit_line_note_force,
+	emit_note, decode_asm_operands): Constify.
+	
+	* cse.c (canon_hash): Likewise.
+
+	* dbxout.c (dbxout_block): Likewise.
+
+	* diagnostic.c (file_and_line_for_asm, v_error_for_asm,
+	v_warning_for_asm): Likewise.
+
+	* dwarfout.c (function_start_label): Likewise.
+
+	* emit-rtl.c (emit_line_note_after, emit_line_note, emit_note,
+	emit_line_note_force): Likewise.
+
+	* final.c (last_filename, asm_insn_count, final_scan_insn,
+	output_source_line): Likewise.
+
+	* function.h (struct emit_status): Likewise.
+
+	* gcse.c (hash_expr_1): Likewise.
+
+	* genattr.c (gen_attr, main): Likewise.
+
+	* genattrtab.c (struct function_unit, current_alternative_string,
+	write_attr_valueq, n_comma_elts, next_comma_elt, attr_eq,
+	attr_numeral, check_attr_test, check_attr_value,
+	convert_set_attr_alternative, convert_set_attr,
+	compute_alternative_mask, simplify_by_exploding, gen_attr,
+	gen_unit): Likewise.
+
+	* genflags.c (gen_insn): Likewise.
+
+	* gengenrtl.c (type_from_format): Likewise.
+
+	* genopinit.c (gen_insn): Likewise.
+
+	* genoutput.c (n_occurrences, process_template, process_template):
+	Likewise.
+
+	* ggc-page.c (ggc_set_mark, ggc_mark_if_gcable, ggc_get_size):
+	Likewise.
+
+	* ggc-simple.c (ggc_set_mark, ggc_mark_if_gcable, ggc_get_size):
+	Likewise.
+
+	* ggc.h (ggc_mark_string, ggc_mark, ggc_mark_if_gcable,
+	ggc_set_mark, ggc_get_size): Likewise.
+
+	* objc/objc-act.c (build_module_descriptor, finish_objc): Likewise.
+
+	* optabs.c (init_one_libfunc): Likewise.
+
+	* output.h (assemble_start_function): Likewise.
+
+	* recog.c (decode_asm_operands): Likewise.
+
+	* toplev.c (rest_of_compilation): Likewise.
+
+	* tree.h (emit_line_note_after, emit_line_note,
+	emit_line_note_force): Likewise.
+
+	* varasm.c (asm_output_bss, asm_output_aligned_bss,
+	asm_emit_uninitialised, assemble_start_function,
+	assemble_variable, const_hash, compare_constant_1,
+	find_pool_constant, mark_constant_pool, assemble_alias): Likewise.
+
+	* xcoffout.h (DBX_FINISH_SYMBOL): Likewise.
+
+	* alpha/alpha.md (call_vms, call_value_vms): Likewise.
+
+	* arm/aof.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* arm/aout.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* arm/arm-protos.h (output_ascii_pseudo_op, arm_dllexport_name_p,
+	arm_dllimport_name_p): Likewise.
+
+	* arm/arm.c (arm_encode_call_attribute, output_ascii_pseudo_op):
+	Likewise.
+
+	* arm/arm.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
+	* arm/elf.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* arm/pe.c (arm_dllexport_name_p, arm_dllimport_name_p,
+	arm_mark_dllexport, arm_mark_dllimport,
+	arm_pe_encode_section_info): Likewise.
+
+	* arm/telf.h (ASM_OUTPUT_DEF_FROM_DECLS,
+	ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* arm/thumb.c (thumb_function_prologue): Likewise.
+
+	* arm/thumb.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* avr/avr.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* clipper/clix.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* fx80/fx80.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* i386/cygwin.h (ASM_OUTPUT_SECTION_NAME): Likewise.
+
+	* i386/freebsd.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* i386/i386-interix.h (ASM_OUTPUT_LIMITED_STRING,
+	ASM_OUTPUT_ASCII, ASM_OUTPUT_SECTION_NAME): Likewise.
+
+	* i386/i386-protos.h (asm_output_function_prefix): Likewise.
+
+	* i386/i386.c (asm_output_function_prefix): Likewise.
+
+	* i386/i386elf.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* i386/osfrose.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* i386/ptx4-i.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* i386/sco5.h (ASM_FINISH_DECLARE_OBJECT,
+	ASM_OUTPUT_LIMITED_STRING, ASM_OUTPUT_ASCII,
+	ASM_OUTPUT_SECTION_NAME): Likewise.
+
+	* i386/sysv4.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* i860/paragon.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* i860/sysv3.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* m32r/m32r.c (m32r_encode_section_info): Likewise.
+
+	* mcore-elf.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* mcore/mcore.c (mcore_encode_section_info): Likewise.
+
+	* mips/elf.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* mips/elf64.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* mips/iris6.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* mips/mips.h (ASM_OUTPUT_IDENT): Likewise.
+
+	* mips/mips.md (movdi, movsi): Likewise.
+
+	* mips/netbsd.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* netbsd.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* openbsd.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* ptx4.h (ASM_FINISH_DECLARE_OBJECT, ASM_OUTPUT_LIMITED_STRING,
+	ASM_OUTPUT_ASCII): Likewise.
+
+	* rs6000/rs6000.c (rs6000_allocate_stack_space, output_epilog,
+	output_mi_thunk, output_toc): Likewise.
+
+	* rs6000/rs6000.md (movsi): Likewise.
+
+	* rs6000/sysv4.h (ASM_OUTPUT_INT, ASM_OUTPUT_SECTION_NAME): Likewise.
+
+	* tahoe/harris.h (ASM_OUTPUT_ASCII): Likewise.
+
+	* v850/v850.c (print_operand, print_operand_address,
+	v850_encode_data_area): Likewise.
+
 2000-03-07  Clinton Popetz  <cpopetz@cygnus.com>
 	
 	* config/mips/mips.md (zero_extendsidi2): Always force operand

@@ -103,7 +103,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static int n_occurrences PARAMS ((int, char *));
+static int n_occurrences PARAMS ((int, const char *));
 static void strip_whitespace PARAMS ((char *));
 
 /* insns in the machine description are assigned sequential code numbers
@@ -185,13 +185,12 @@ static void scan_operands PARAMS ((struct data *, rtx, int, int));
 static int compare_operands PARAMS ((struct operand_data *,
 				   struct operand_data *));
 static void place_operands PARAMS ((struct data *));
-static void process_template PARAMS ((struct data *, char *));
+static void process_template PARAMS ((struct data *, const char *));
 static void validate_insn_alternatives PARAMS ((struct data *));
 static void gen_insn PARAMS ((rtx));
 static void gen_peephole PARAMS ((rtx));
 static void gen_expand PARAMS ((rtx));
 static void gen_split PARAMS ((rtx));
-static int n_occurrences PARAMS ((int, char *));
 
 const char *
 get_insn_name (index)
@@ -637,9 +636,9 @@ place_operands (d)
 static void
 process_template (d, template)
     struct data *d;
-    char *template;
+    const char *template;
 {
-  register char *cp;
+  register const char *cp;
   register int i;
 
   /* Templates starting with * contain straight code to be run.  */
@@ -969,7 +968,7 @@ main (argc, argv)
 static int
 n_occurrences (c, s)
      int c;
-     char *s;
+     const char *s;
 {
   int n = 0;
   while (*s)

@@ -272,7 +272,7 @@ do {							\
 #define ASM_OUTPUT_ASCII(STREAM,PTR,LEN)		\
 {							\
   int i;						\
-  char *ptr = (PTR);					\
+  const char *ptr = (PTR);				\
   fprintf ((STREAM), "\tDCB");				\
   for (i = 0; i < (LEN); i++)				\
     fprintf ((STREAM), " &%02x%s", 			\

@@ -3766,7 +3766,8 @@
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
       extern char *savealloc ();
-      char *linksym, *symbol = XSTR (operands[0], 0);
+      const char *symbol = XSTR (operands[0], 0);
+      char *linksym;
       rtx linkage;
 
       if (*symbol == '*')
@@ -3874,7 +3875,8 @@
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
       extern char *savealloc ();
-      char *linksym, *symbol = XSTR (operands[1], 0);
+      const char *symbol = XSTR (operands[1], 0);
+      char *linksym;
       rtx linkage;
 
       if (*symbol == '*')

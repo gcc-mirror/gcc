@@ -1,3 +1,9 @@
+2000-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl2.c (finish_objects): Constify a char*.
+
+	* method.c (emit_thunk): Likewise.
+
 2000-03-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (dubious_conversion_warnings): Look through
