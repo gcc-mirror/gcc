@@ -431,6 +431,7 @@ case ${target} in
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
+  tmake_file="t-slibgcc-elf-ver t-linux"
   ;;
 *-*-gnu*)
   # On the Hurd, the setup is just about the same on
@@ -543,7 +544,7 @@ alpha*-*-unicosmk*)
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-slibgcc-elf-ver t-linux alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
+	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	;;
 alpha*-*-gnu*)
 	target_cpu_default="MASK_GAS"
@@ -647,7 +648,7 @@ arm*-*-netbsd*)
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h linux.h arm/elf.h  arm/linux-gas.h arm/linux-elf.h arm/aout.h arm/arm.h"
-	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
+	tmake_file="${tmake_file} arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	;;
@@ -708,6 +709,7 @@ cris-*-elf | cris-*-none)
 	;;
 cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
+	# We need to avoid using t-linux, so override default tmake_file
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	;;
 fr30-*-elf)
@@ -724,7 +726,7 @@ frv-*-elf)
 frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
 	         linux.h frv/linux.h frv/frv-abi.h"
-	tmake_file="t-slibgcc-elf-ver t-linux frv/t-frv frv/t-linux"
+	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
 	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 t-rtems"
@@ -743,7 +745,7 @@ hppa*64*-*-linux* | parisc*64*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_PA_20 | MASK_BIG_SWITCH)"
 	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h svr4.h linux.h \
 		 pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h pa/pa64-linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux64"
+	tmake_file="${tmake_file} pa/t-linux64"
 	gas=yes gnu_ld=yes
 	need_64bit_hwint=yes
 	;;
@@ -751,7 +753,7 @@ hppa*-*-linux* | parisc*-*-linux*)
 	target_cpu_default="(MASK_PA_11 | MASK_NO_SPACE_REGS | MASK_BIG_SWITCH)"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
+	tmake_file="${tmake_file} pa/t-linux"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number
 	if test x$sjlj != x1; then
@@ -921,12 +923,12 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# with ELF format using glibc 2
 			# aka GNU/Linux C library 6
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
+	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-linux*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
-	tmake_file="t-slibgcc-elf-ver t-linux i386/t-linux64"
+	tmake_file="${tmake_file} i386/t-linux64"
 	;;
 i[34567]86-*-kfreebsd*-gnu) # must be before i[34567]86-*-gnu*
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h kfreebsdgnu.h i386/kfreebsdgnu.h"
@@ -1106,7 +1108,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h ia64/sysv4.h ia64/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux ia64/t-ia64 ia64/t-glibc"
+	tmake_file="${tmake_file} ia64/t-ia64 ia64/t-glibc"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	if test x"$use_libunwind_exceptions" = xyes; then
@@ -1153,6 +1155,7 @@ m32rle-*-elf*)
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} m32r/linux.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	# We override the tmake_file for linux -- why?
 	tmake_file="m32r/t-linux"
 	gnu_ld=yes
 	use_fixproto=yes
@@ -1163,6 +1166,7 @@ m32r-*-linux*)
 m32rle-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h m32r/little.h ${tm_file} m32r/linux.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	# We override the tmake_file for linux -- why?
 	tmake_file="m32r/t-linux"
 	gnu_ld=yes
 	use_fixproto=yes
@@ -1235,7 +1239,6 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# aka the GNU/Linux C library 6.
 	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
 	tm_defines="MOTOROLA USE_GAS"
-	tmake_file="t-slibgcc-elf-ver t-linux"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number
 	if test x$sjlj != x1; then
@@ -1332,7 +1335,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
-	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux64"
+	tmake_file="${tmake_file} mips/t-linux64"
 
 	# This default ABI is a partial lie: t-linux64 overrides the
 	# DRIVER_SELF_SPEC that sets the default abi, in the spec file
@@ -1353,7 +1356,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 		tm_defines="MIPS_ISA_DEFAULT=32"
                 ;;
         esac
-	tmake_file="t-slibgcc-elf-ver t-linux"
 	;;
 mips*-*-openbsd*)
 	tm_defines="OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
@@ -1490,7 +1492,7 @@ powerpc64-*-linux*)
 	x|xpowerpc64|xdefault64) tm_file="${tm_file} rs6000/default64.h";;
 	esac
 	tm_file="${tm_file} rs6000/linux64.h"
-	tmake_file="rs6000/t-fprules t-slibgcc-elf-ver t-linux rs6000/t-ppccomm rs6000/t-linux64"
+	tmake_file="rs6000/t-fprules ${tmake_file} rs6000/t-ppccomm rs6000/t-linux64"
 	;;
 powerpc64-*-gnu*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux64.h rs6000/gnu.h"
@@ -1556,15 +1558,15 @@ powerpc-*-rtems*)
 	;;
 powerpc-*-linux*altivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-linux*spe*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxspe.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h"
@@ -1656,7 +1658,7 @@ rs6000-*-lynxos*)
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux s390/t-crtstuff"
+	tmake_file="${tmake_file} s390/t-crtstuff"
 	;;
 s390x-*-linux*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
@@ -1664,7 +1666,7 @@ s390x-*-linux*)
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
-	tmake_file="t-slibgcc-elf-ver t-linux s390/t-crtstuff s390/t-linux64"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux64"
 	;;
 s390x-ibm-tpf*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h s390/tpf.h"
@@ -1714,7 +1716,7 @@ sh-*-rtems*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h sh/rtems.h rtems.h"
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
+	tmake_file="sh/t-sh sh/t-elf ${tmake_file}"
 	case ${target} in
 	sh*be-*-* | sh*eb-*-*) ;;
 	*)
@@ -1812,7 +1814,7 @@ sparc-*-elf*)
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-crtfm"
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h sparc/rtemself.h rtems.h"
@@ -1936,7 +1938,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	need_64bit_hwint=yes
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
-	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64 sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-linux64 sparc/t-crtfm"
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	;;
 sparc64-*-netbsd*)
@@ -2071,11 +2073,11 @@ xtensa-*-elf*)
 	;;
 xtensa-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux xtensa/t-xtensa xtensa/t-linux"
+	tmake_file="${tmake_file} xtensa/t-xtensa xtensa/t-linux"
 	;;
 am33_2.0-*-linux*)
 	tm_file="mn10300/mn10300.h dbxelf.h elfos.h linux.h mn10300/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux mn10300/t-linux"
+	tmake_file="${tmake_file} mn10300/t-linux"
 	gas=yes gnu_ld=yes
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no
