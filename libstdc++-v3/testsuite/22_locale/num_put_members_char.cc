@@ -205,7 +205,7 @@ void test01()
 				   numpunct_de.decimal_point(), 
 				   result1.size()) );
   // Should contain an 'x'.
-  VERIFY( !char_traits<char>::find(result1.c_str(), 'x', result1.size()) );
+  VERIFY( result1.find('x') == 1 );
 
 #ifdef _GLIBCPP_USE_LONG_LONG
   long long ll1 = 9223372036854775807;
@@ -287,7 +287,8 @@ void test02()
   oss.setf(ios_base::fixed, ios_base::floatfield);
   iter_type ret5 = tp.put(res.begin(), oss, ' ', cv);
   string sanity5(res.begin(), ret5);
-  VERIFY( !char_traits<char>::find(sanity5.c_str(), 'x', sanity5.size()) );
+  VERIFY( sanity5.size() );
+  VERIFY( sanity5[1] == 'x' );
 }
 
 int main()
