@@ -3706,6 +3706,7 @@ rm -f symtest.tem
 if $symbolic_link $srcdir/gcc.c symtest.tem 2>/dev/null
 then
 	cc_set_by_configure="\$(CC)"
+	quoted_cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
 	rm -f symtest.tem
@@ -3716,6 +3717,7 @@ else
 		symbolic_link="cp"
 	fi
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
+	quoted_cc_set_by_configure="\\\`case '\\\$(CC)' in stage*) echo '\\\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\\\$(CC)';; esac\\\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 fi
 rm -f symtest.tem
@@ -4225,6 +4227,7 @@ AC_SUBST(build_exeext)
 AC_SUBST(build_install_headers_dir)
 AC_SUBST(build_xm_file_list)
 AC_SUBST(cc_set_by_configure)
+AC_SUBST(quoted_cc_set_by_configure)
 AC_SUBST(cpp_install_dir)
 AC_SUBST(cpp_main)
 AC_SUBST(dep_host_xmake_file)
