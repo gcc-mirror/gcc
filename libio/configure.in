@@ -147,7 +147,7 @@ LIBDIR=yes
 TO_TOPDIR=../
 ALL='$(_G_CONFIG_H) libio.a libiostream.a iostream.list'
 case "${target}" in
-  *-*-cygwin32*)
+  *-*-cygwin*)
     XCINCLUDES='-I. -I$(srcdir) -I$(srcdir)/../winsup/include'
     XCXXINCLUDES='-I. -I$(srcdir) -I$(srcdir)/../winsup/include'
     ;;
