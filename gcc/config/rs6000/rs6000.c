@@ -914,6 +914,15 @@ easy_fp_constant (op, mode)
     abort ();
 }
 
+/* Return 1 if the operand is 0.0.  */
+int
+zero_fp_constant (op, mode)
+     register rtx op;
+     register enum machine_mode mode;
+{
+  return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
+}
+
 /* Return 1 if the operand is in volatile memory.  Note that during the
    RTL generation phase, memory_operand does not return TRUE for
    volatile memory references.  So this function allows us to
@@ -3440,6 +3449,15 @@ boolean_or_operator (op, mode)
   enum rtx_code code = GET_CODE (op);
   return (code == IOR || code == XOR);
 }
+
+int
+min_max_operator (op, mode)
+    rtx op;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (op);
+  return (code == SMIN || code == SMAX || code == UMIN || code == UMAX);
+}
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the
    mask required to convert the result of a rotate insn into a shift
@@ -4676,12 +4694,18 @@ output_cbranch (op, label, reversed, insn)
     {
       /* Not all of these are actually distinct opcodes, but
 	 we distinguish them for clarity of the resulting assembler.  */
-    case NE: ccode = "ne"; break;
-    case EQ: ccode = "eq"; break;
-    case GE: case GEU: ccode = "ge"; break;
-    case GT: case GTU: ccode = "gt"; break;
-    case LE: case LEU: ccode = "le"; break;
-    case LT: case LTU: ccode = "lt"; break;
+    case NE: case LTGT:
+      ccode = "ne"; break;
+    case EQ: case UNEQ:
+      ccode = "eq"; break;
+    case GE: case GEU: 
+      ccode = "ge"; break;
+    case GT: case GTU: case UNGT: 
+      ccode = "gt"; break;
+    case LE: case LEU: 
+      ccode = "le"; break;
+    case LT: case LTU: case UNLT: 
+      ccode = "lt"; break;
     case UNORDERED: ccode = "un"; break;
     case ORDERED: ccode = "nu"; break;
     case UNGE: ccode = "nl"; break;
@@ -4730,6 +4754,181 @@ output_cbranch (op, label, reversed, insn)
     }
 
   return string;
+}
+
+/* Emit a conditional move: move TRUE_COND to DEST if OP of the
+   operands of the last comparison is nonzero/true, FALSE_COND if it
+   is zero/false.  Return 0 if the hardware has no such operation.  */
+int
+rs6000_emit_cmove (dest, op, true_cond, false_cond)
+     rtx dest;
+     rtx op;
+     rtx true_cond;
+     rtx false_cond;
+{
+  enum rtx_code code = GET_CODE (op);
+  rtx op0 = rs6000_compare_op0;
+  rtx op1 = rs6000_compare_op1;
+  REAL_VALUE_TYPE c1;
+  enum machine_mode mode = GET_MODE (op0);
+  rtx temp;
+
+  /* First, work out if the hardware can do this at all, or
+     if it's too slow...  */
+  /* If the comparison is an integer one, since we only have fsel
+     it'll be cheaper to use a branch.  */
+  if (! rs6000_compare_fp_p)
+    return 0;
+
+  /* Eliminate half of the comparisons by switching operands, this
+     makes the remaining code simpler.  */
+  if (code == UNLT || code == UNGT || code == UNORDERED || code == NE
+      || code == LTGT || code == LT)
+    {
+      code = reverse_condition_maybe_unordered (code);
+      temp = true_cond;
+      true_cond = false_cond;
+      false_cond = temp;
+    }
+
+  /* UNEQ and LTGT take four instructions for a comparison with zero,
+     it'll probably be faster to use a branch here too.  */
+  if (code == UNEQ)
+    return 0;
+  
+  if (GET_CODE (op1) == CONST_DOUBLE)
+    REAL_VALUE_FROM_CONST_DOUBLE (c1, op1);
+    
+  /* We're going to try to implement comparions by performing
+     a subtract, then comparing against zero.  Unfortunately,
+     Inf - Inf is NaN which is not zero, and so if we don't
+     know that the the operand is finite and the comparison
+     would treat EQ different to UNORDERED, we can't do it.  */
+  if (! flag_unsafe_math_optimizations
+      && code != GT && code != UNGE
+      && (GET_CODE (op1) != CONST_DOUBLE || target_isinf (c1))
+      /* Constructs of the form (a OP b ? a : b) are safe.  */
+      && ((! rtx_equal_p (op0, false_cond) && ! rtx_equal_p (op1, false_cond))
+	  || (! rtx_equal_p (op0, true_cond) 
+	      && ! rtx_equal_p (op1, true_cond))))
+    return 0;
+  /* At this point we know we can use fsel.  */
+
+  /* Reduce the comparison to a comparison against zero.  */
+  temp = gen_reg_rtx (mode);
+  emit_insn (gen_rtx_SET (VOIDmode, temp,
+			  gen_rtx_MINUS (mode, op0, op1)));
+  op0 = temp;
+  op1 = CONST0_RTX (mode);
+
+  /* If we don't care about NaNs we can reduce some of the comparisons
+     down to faster ones.  */
+  if (flag_unsafe_math_optimizations)
+    switch (code)
+      {
+      case GT:
+	code = LE;
+	temp = true_cond;
+	true_cond = false_cond;
+	false_cond = temp;
+	break;
+      case UNGE:
+	code = GE;
+	break;
+      case UNEQ:
+	code = EQ;
+	break;
+      default:
+	break;
+      }
+
+  /* Now, reduce everything down to a GE.  */
+  switch (code)
+    {
+    case GE:
+      break;
+
+    case LE:
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      op0 = temp;
+      break;
+
+    case ORDERED:
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_ABS (mode, op0)));
+      op0 = temp;
+      break;
+
+    case EQ:
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, 
+			      gen_rtx_NEG (mode,
+					   gen_rtx_ABS (mode, op0))));
+      op0 = temp;
+      break;
+
+    case UNGE:
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp,
+			      gen_rtx_IF_THEN_ELSE (mode, 
+						    gen_rtx_GE (VOIDmode,
+								op0, op1),
+						    true_cond, false_cond)));
+      false_cond = temp;
+      true_cond = false_cond;
+
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      op0 = temp;
+      break;
+
+    case GT:
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp,
+			      gen_rtx_IF_THEN_ELSE (mode, 
+						    gen_rtx_GE (VOIDmode,
+								op0, op1),
+						    true_cond, false_cond)));
+      true_cond = temp;
+      false_cond = true_cond;
+
+      temp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      op0 = temp;
+      break;
+
+    default:
+      abort ();
+    }
+
+  emit_insn (gen_rtx_SET (VOIDmode, dest,
+			  gen_rtx_IF_THEN_ELSE (mode, 
+						gen_rtx_GE (VOIDmode,
+							    op0, op1),
+						true_cond, false_cond)));
+  return 1;
+}
+
+void
+rs6000_emit_minmax (dest, code, op0, op1)
+     rtx dest;
+     enum rtx_code code;
+     rtx op0;
+     rtx op1;
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx target;
+  if (code == SMAX || code == UMAX)
+    target = emit_conditional_move (dest, GE, op0, op1, mode, 
+				    op0, op1, mode, 0);
+  else
+    target = emit_conditional_move (dest, GE, op0, op1, mode, 
+				    op1, op0, mode, 0);
+  if (target == NULL_RTX)
+    abort ();
+  if (target != dest)
+    emit_move_insn (dest, target);
 }
 
 /* This page contains routines that are used to determine what the function

@@ -1,3 +1,34 @@
+2001-05-21  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (maxsf3): Use rs6000_emit_minmax.
+	(maxsf3+1): Delete.
+	(minsf3): Use rs6000_emit_minmax.
+	(minsf3+1): Generalize to handle both SMIN and SMAX.  Use
+	rs6000_emit_minmax.
+	(movsfcc): Use rs6000_emit_cmove.
+	(fselsfsf4): Don't compare a CONST_INT with a floating-point value.
+	Don't generate emit_fselsfsf4.
+	(fseldfsf4): Likewise.
+	(maxdf3): Use rs6000_emit_minmax.
+	(maxdf3+1): Delete.
+	(mindf3): Use rs6000_emit_minmax.
+	(mindf3+1): Generalize to handle both SMIN and SMAX.  Use
+	rs6000_emit_minmax.
+	(movdfcc): Use rs6000_emit_cmove.
+	(fseldfdf4): Don't compare a CONST_INT with a floating-point value.
+	Don't generate emit_fselsfsf4.
+	(fselsfdf4): Likewise.
+	* config/rs6000/rs6000.c (zero_fp_constant): New predicate.
+	(min_max_operator): New predicate.
+	(rs6000_emit_cmove): New function.
+	(rs6000_emit_minmax): New function.
+	* config/rs6000/rs6000-protos.h: Prototype new functions.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add zero_fp_constant
+	and min_max_operator.
+
+	* config/rs6000/rs6000.c (output_cbranch): Handle all
+	conditional types in the switch statement.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (finish_decl): Don't set DECL_C_HARD_REGISTER for
