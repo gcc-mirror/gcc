@@ -1,3 +1,12 @@
+Thu Jan 21 19:44:55 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* configure.in ({rs6000|powerpc}-ibm-aix4.[12]*): If
+	--with-gnu-ld, use x-aix41-gld instead of x-aix41 to suppress
+	adding -Wl,-bbigtoc to BOOT_LDFLAGS.
+	* configure: Regenerate.
+
+	* config/rs6000/x-aix41-gld: New file, don't set BOOT_LDFLAGS.
+
 Thu Jan 21 15:48:03 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cppexp.c (cpp_lex): Allocate token_buffer dynamically.

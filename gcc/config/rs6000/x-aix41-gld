@@ -1,0 +1,12 @@
+# configuration for IBM RS/6000 running AIX 4.1+
+
+# Show we need to use the C version of ALLOCA
+ALLOCA=alloca.o
+
+# We need -lld for collect2 (actually this only matters
+# for a native compiler, but this is as good a place as any
+# to define the symbol).
+CLIB=-lld
+
+# f771 and cc1plus overflow the AIX TOC, however gld doesn't support -bbigtoc
+# BOOT_LDFLAGS=-Wl,-bbigtoc
