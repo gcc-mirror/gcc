@@ -278,19 +278,32 @@
    #include &lt;algorithm&gt;
    #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
 
-   std::string  s ("Some Kind Of Initial Input Goes Here");
+   struct ToLower
+   {
+     char operator() (char c) const  { return std::tolower(c); }
+   };
 
-   // Change everything into upper case
-   std::transform (s.begin(), s.end(), s.begin(), toupper);
+   struct ToUpper
+   {
+     char operator() (char c) const  { return std::toupper(c); }
+   };
 
-   // Change everything into lower case
-   std::transform (s.begin(), s.end(), s.begin(), tolower);
+   int main()
+   {
+     std::string  s ("Some Kind Of Initial Input Goes Here");
 
-   // Change everything back into upper case, but store the
-   // result in a different string
-   std::string  capital_s;
-   capital_s.reserve(s.size());
-   std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </pre>
+     // Change everything into upper case
+     std::transform (s.begin(), s.end(), s.begin(), ToUpper());
+
+     // Change everything into lower case
+     std::transform (s.begin(), s.end(), s.begin(), ToLower());
+
+     // Change everything back into upper case, but store the
+     // result in a different string
+     std::string  capital_s;
+     capital_s.resize(s.size());
+     std::transform (s.begin(), s.end(), capital_s.begin(), ToUpper());
+   } </pre>
    <p><span class="larger"><strong>Note</strong></span> that these calls all
       involve the global C locale through the use of the C functions
       <code>toupper/tolower</code>.  This is absolutely guaranteed to work --
@@ -301,19 +314,28 @@
       So, if all your input forevermore consists of only those 96
       characters (hahahahahaha), then you're done.
    </p>
-   <p>At minimum, you can write short wrappers like
+   <p><span class="larger"><strong>Note</strong></span> that the
+      <code>ToUpper</code> and <code>ToLower</code> function objects
+      are needed because <code>toupper</code> and <code>tolower</code>
+      are overloaded names (declared in <code>&lt;cctype&gt;</code> and
+      <code>&lt;locale&gt;</code>) so the template-arguments for
+      <code>transform&lt;&gt;</code> cannot be deduced, as explained in
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
+      message</a>.  <!-- section 14.8.2.4 clause 16 in ISO 14882:1998
+      if you're into that sort of thing -->
+      At minimum, you can write short wrappers like
    </p>
    <pre>
    char toLower (char c)
    {
-      return tolower(static_cast&lt;unsigned char&gt;(c));
+      return std::tolower(c);
    } </pre>
    <p>The correct method is to use a facet for a particular locale
       and call its conversion functions.  These are discussed more in
       Chapter 22; the specific part is
-      <a href="../22_locale/howto.html#5">here</a>, which shows the
-      final version of this code.  (Thanks to James Kanze for assistance
-      and suggestions on all of this.)
+      <a href="../22_locale/howto.html#7">Correct Transformations</a>,
+      which shows the final version of this code.  (Thanks to James Kanze
+      for assistance and suggestions on all of this.)
    </p>
    <p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
