@@ -1,3 +1,8 @@
+2004-09-13  Andrew Pinski  <apinski@apple.com>
+
+	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Change variable size's
+	name to _new_size.
+
 2004-09-13  Richard Henderson  <rth@redhat.com>
  
 	PR inline-asm/6806

@@ -242,11 +242,11 @@ do {									\
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
   do {									\
-    unsigned HOST_WIDE_INT size = SIZE;					\
+    unsigned HOST_WIDE_INT _new_size = SIZE;				\
     fputs (".comm ", (FILE));						\
     RS6000_OUTPUT_BASENAME ((FILE), (NAME));				\
-    if (size == 0) size = 1;						\
-    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);	\
+    if (_new_size == 0) _new_size = 1;					\
+    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", _new_size);	\
   } while (0)
 
 /* Override the standard rs6000 definition.  */
