@@ -1,3 +1,7 @@
+2000-08-04  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gthr-dce.h (__gthread_objc_condition_allocate): Fix typo.
+
 2000-08-04  Donn Terry (donnte@microsoft.com)
 
 	* prefix.c (translate_name): Don't strip trailing DIR_SEPARATOR.
