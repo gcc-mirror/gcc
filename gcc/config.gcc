@@ -520,6 +520,10 @@ case $machine in
 	cxx_target_objs="darwin-c.o"
 	extra_parts="crt2.o"
 	extra_objs="darwin.o"
+	case x${enable_threads} in
+	     x | xyes | xposix) thread_file='posix'
+	     ;;
+	esac
 	;;	
 *-*-vxworks*)
 	tmake_file=t-vxworks
