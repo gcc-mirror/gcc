@@ -65,6 +65,11 @@ char *opcode_name[] =
 #endif
 
 
+/* Commonly used modes.  */
+
+enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT */
+enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD */
+
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
 
@@ -3099,6 +3104,23 @@ init_emit_once (line_numbers)
   no_line_numbers = ! line_numbers;
 
   sequence_stack = NULL;
+
+  /* Compute the word and byte modes.  */
+
+  byte_mode = VOIDmode;
+  word_mode = VOIDmode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
+	  && byte_mode == VOIDmode)
+	byte_mode = mode;
+
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
+	  && word_mode == VOIDmode)
+	word_mode = mode;
+    }
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 
