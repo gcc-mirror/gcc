@@ -523,17 +523,17 @@ do_build_copy_constructor (tree fndecl)
       tree member_init_list = NULL_TREE;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
+      tree binfo;
 
       /* Initialize all the base-classes with the parameter converted
 	 to their type so that we get their copy constructor and not
 	 another constructor that takes current_class_type.  We must
 	 deal with the binfo's directly as a direct base might be
 	 inaccessible due to ambiguity.  */
-      for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
-	   t = TREE_CHAIN (t))
+      for (i = 0; (binfo = VEC_iterate
+		   (tree, CLASSTYPE_VBASECLASSES (current_class_type), i));
+	   i++)
 	{
-	  tree binfo = TREE_VALUE (t);
-	  
 	  member_init_list 
 	    = tree_cons (binfo,
 			 build_tree_list (NULL_TREE,

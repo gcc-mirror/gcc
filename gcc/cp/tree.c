@@ -571,8 +571,8 @@ canonical_type_variant (tree t)
    derived TYPE. PREV is the previous binfo, whose TREE_CHAIN we make
    point to this binfo. We return the last BINFO created.
 
-   The CLASSTYPE_VBASECLASSES list of T is constructed in reverse
-   order (pre-order, depth-first, right-to-left). You must nreverse it.
+   The CLASSTYPE_VBASECLASSES vector of T is constructed in the correct
+   order.
 
    The BINFO_INHERITANCE of a virtual base class points to the binfo
    og the most derived type.
@@ -613,12 +613,7 @@ copy_base_binfos (tree binfo, tree t, tree prev)
 	  BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
 	}
       else if (TREE_VIA_VIRTUAL (base_binfo))
-	{
-	  new_binfo = purpose_member (BINFO_TYPE (base_binfo),
-				      CLASSTYPE_VBASECLASSES (t));
-	  if (new_binfo)
-	    new_binfo = TREE_VALUE (new_binfo);
-	}
+	new_binfo = binfo_for_vbase (BINFO_TYPE (base_binfo), t);
       
       if (!new_binfo)
 	{
@@ -628,9 +623,7 @@ copy_base_binfos (tree binfo, tree t, tree prev)
 	  prev = copy_base_binfos (new_binfo, t, prev);
 	  if (TREE_VIA_VIRTUAL (base_binfo))
 	    {
-	      CLASSTYPE_VBASECLASSES (t)
-		= tree_cons (BINFO_TYPE (new_binfo), new_binfo,
-			     CLASSTYPE_VBASECLASSES (t));
+	      VEC_quick_push (tree, CLASSTYPE_VBASECLASSES (t), new_binfo);
 	      TREE_VIA_VIRTUAL (new_binfo) = 1;
 	      BINFO_INHERITANCE_CHAIN (new_binfo) = TYPE_BINFO (t);
 	    }

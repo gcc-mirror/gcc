@@ -1921,7 +1921,8 @@ dfs_get_pure_virtuals (tree binfo, void *data)
 void
 get_pure_virtuals (tree type)
 {
-  tree vbases;
+  unsigned ix;
+  tree binfo;
 
   /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
      is going to be overridden.  */
@@ -1938,14 +1939,12 @@ get_pure_virtuals (tree type)
   /* Put the pure virtuals in dfs order.  */
   CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
 
-  for (vbases = CLASSTYPE_VBASECLASSES (type); 
-       vbases; 
-       vbases = TREE_CHAIN (vbases))
+  for (ix = 0; (binfo = VEC_iterate
+		(tree, CLASSTYPE_VBASECLASSES (type), ix)); ix++)
     {
       tree virtuals;
-
-      for (virtuals = BINFO_VIRTUALS (TREE_VALUE (vbases));
-	   virtuals;
+      
+      for (virtuals = BINFO_VIRTUALS (binfo); virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	{
 	  tree base_fndecl = BV_FN (virtuals);
@@ -2532,10 +2531,8 @@ copied_binfo (tree binfo, tree here)
       for (t = here; BINFO_INHERITANCE_CHAIN (t);
 	   t = BINFO_INHERITANCE_CHAIN (t))
 	continue;
-      
-      result = purpose_member (BINFO_TYPE (binfo),
-			       CLASSTYPE_VBASECLASSES (BINFO_TYPE (t)));
-      result = TREE_VALUE (result);
+
+      result = binfo_for_vbase (BINFO_TYPE (binfo), BINFO_TYPE (t));
     }
   else if (BINFO_INHERITANCE_CHAIN (binfo))
     {
@@ -2566,6 +2563,19 @@ copied_binfo (tree binfo, tree here)
   return result;
 }
 
+tree
+binfo_for_vbase (tree base, tree t)
+{
+  unsigned ix;
+  tree binfo;
+  
+  for (ix = 0; (binfo = VEC_iterate
+		(tree, CLASSTYPE_VBASECLASSES (t), ix)); ix++)
+    if (BINFO_TYPE (binfo) == base)
+      return binfo;
+  return NULL;
+}
+
 /* BINFO is some base binfo of HERE, within some other
    hierarchy. Return the equivalent binfo, but in the hierarchy
    dominated by HERE.  This is the inverse of copied_binfo.  If BINFO
@@ -2579,12 +2589,9 @@ original_binfo (tree binfo, tree here)
   if (BINFO_TYPE (binfo) == BINFO_TYPE (here))
     result = here;
   else if (TREE_VIA_VIRTUAL (binfo))
-    {
-      result = purpose_member (BINFO_TYPE (binfo),
-			       CLASSTYPE_VBASECLASSES (BINFO_TYPE (here)));
-      if (result)
-	result = TREE_VALUE (result);
-    }
+    result = (CLASSTYPE_VBASECLASSES (BINFO_TYPE (here))
+	      ? binfo_for_vbase (BINFO_TYPE (binfo), BINFO_TYPE (here))
+	      : NULL_TREE);
   else if (BINFO_INHERITANCE_CHAIN (binfo))
     {
       tree base_binfos;
