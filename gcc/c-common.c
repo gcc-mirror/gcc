@@ -3645,13 +3645,13 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
 
-      /* In C mode, don't conflict with system prototype variations.  */
-      temp = builtin_function ("bzero",
-			       cplus_mode ? bzero_ftype : void_ftype_any,
+      /* The system prototypes for these functions have many
+	 variations, so don't specify parameters to avoid conflicts.
+	 The expand_* functions check the argument types anyway.  */
+      temp = builtin_function ("bzero", void_ftype_any,
 			       BUILT_IN_BZERO, BUILT_IN_NORMAL, NULL_PTR);
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("bcmp",
-			       cplus_mode ? bcmp_ftype : int_ftype_any,
+      temp = builtin_function ("bcmp", int_ftype_any,
 			       BUILT_IN_BCMP, BUILT_IN_NORMAL, NULL_PTR);
       DECL_BUILT_IN_NONANSI (temp) = 1;
     }
