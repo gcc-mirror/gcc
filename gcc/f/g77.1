@@ -1,30 +1,30 @@
-.\" Copyright (c) 1995, 1996 Free Software Foundation              -*-Text-*-
+.\" Copyright (c) 1995-1997 Free Software Foundation              -*-Text-*-
 .\" See section COPYING for conditions for redistribution
 .\" FIXME: no info here on predefines.  Should there be?  extra for F77...
-.TH G77 1 "1997-06-20" "GNU Tools" "GNU Tools"
+.TH G77 1 "1997-09-09" "GNU Tools" "GNU Tools"
 .de BP
 .sp
 .ti \-.2i
 \(**
 ..
 .SH NAME
-g77 \- GNU project F77 Compiler (v0.5.18)
+g77 \- GNU project Fortran Compiler (v0.5.21)
 .SH SYNOPSIS
 .RB g77 " [" \c
 .IR option " | " "filename " ].\|.\|.
 .SH WARNING
 The information in this man page is an extract from the full
-documentation of the GNU Fortran compiler (version 0.5.18),
-and is limited to the meaning of the options.
+documentation of the GNU Fortran compiler (version 0.5.21),
+and is limited to the meaning of some of the options.
 .PP
 This man page is not up to date, since no volunteers want to
 maintain it.  If you find a discrepancy between the man page and the
 software, please check the Info file, which is the authoritative
 documentation.
-.PP
-The version of GNU Fortran documented by the Info file is 0.5.21,
-which includes substantial improvements and changes since 0.5.18,
-the version documented in this man page.
+.\" .PP
+.\" The version of GNU Fortran documented by the Info file is 0.5.21,
+.\" which includes substantial improvements and changes since 0.5.21,
+.\" the version documented in this man page.
 .PP
 If we find that the things in this man page that are out of date cause
 significant confusion or complaints, we will stop distributing the man
@@ -37,7 +37,7 @@ For complete and current documentation, refer to the Info file `\|\c
 .B g77\c
 \&\|' or the manual
 .I
-Using and Porting GNU Fortran (for version 0.5.18)\c
+Using and Porting GNU Fortran (for version 0.5.21)\c
 \&.  Both are made from the Texinfo source file
 .BR g77.texi .
 .PP
@@ -69,27 +69,40 @@ of
 The C and F77 compilers are integrated;
 .B g77
 is a program to call
-.B gcc with options to recognize F77.
+.B gcc
+with options to recognize programs written in Fortran (ANSI FORTRAN 77,
+also called F77).
 .B gcc
 processes input files
 through one or more of four stages: preprocessing, compilation,
 assembly, and linking.  This man page contains full descriptions for
 .I only
-F77 specific aspects of the compiler, though it also contains
+F77-specific aspects of the compiler, though it also contains
 summaries of some general-purpose options.  For a fuller explanation
 of the compiler, see
 .BR gcc ( 1 ).
 
-For complete documentation on GNU Fortran, type
-.BR info g77
+For complete documentation on GNU Fortran, type `\|\c
+.B info g77\c
+\&\|'.
 
 F77 source files use the suffix `\|\c
 .B .f\c
+\&\|' or `\|\c
+.B .for\c
 \&\|'; F77 files to be preprocessed by
 .BR cpp ( 1 )
 use the suffix `\|\c
 .B .F\c
-\&\|'.
+\&\|' or `\|\c
+.B .fpp\c
+\&\|'; Ratfor source files use the suffix `\|\c
+.B .r\c
+\&\|' (though
+.B ratfor
+itself is not supplied as part of
+.B g77\c
+\&).
 .SH OPTIONS
 There are many command-line options, including options to control
 details of optimization, warnings, and code generation, which are
@@ -242,10 +255,8 @@ to disable actual invocation of
 .RB ` true '
 is the name of a UNIX command that simply returns success status).
 The command
-.RB ` "gcc -v" '
-is the appropriate one to determine the g77 and GCC version numbers;
-it will produce an irrelevant error message from
-.RB ` ld '.
+.RB ` "g77 -v" '
+is the appropriate one to determine the g77 and GCC version numbers.
 .TP
 .B \-Wall
 Issue warnings for conditions which pertain to usage that we recommend
@@ -264,6 +275,8 @@ file.for  Fortran source file
 file.F    preprocessed Fortran source file
 .br
 file.fpp  preprocessed Fortran source file
+.br
+file.r    Ratfor source file (ratfor not included)
 .br
 file.s    assembly language file
 .br
@@ -292,12 +305,14 @@ files
 .br
 \fILIBDIR\fR/include	standard gcc directory for
 .B #include
-files
+.br
+			files.
+.sp
 .I LIBDIR
 is usually
 .B /usr/local/lib/\c
 .IR machine / version .
-.br
+.sp
 .I TMPDIR
 comes from the environment variable
 .B TMPDIR
@@ -309,16 +324,16 @@ if available, else
 .SH "SEE ALSO"
 gcc(1), cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
 .br
-.RB "`\|" g77 "\|', `\|" gcc "\|', `\|" cpp \|',
-.RB `\| as \|', `\| ld \|',
+.RB "`\|" g77 "\|', `\|" gcc "\|', `\|" cpp "\|',"
+.RB "`\|" as "\|', `\|" ld "\|',"
 and
-.RB `\| gdb \|'
+.RB "`\|" gdb "\|'"
 entries in
 .B info\c
 \&.
 .br
 .I
-Using and Porting GNU Fortran (for version 0.5.18)\c
+Using and Porting GNU Fortran (for version 0.5.21)\c
 , James Craig Burley;
 .I
 Using and Porting GNU CC (for version 2.0)\c
@@ -337,12 +352,12 @@ gld: the GNU linker\c
 , Steve Chamberlain and Roland Pesch.
 
 .SH BUGS
-For instructions on how to report bugs, see the file
-.B DOC
-in the g77 distribution.
+For instructions on how to report bugs, type `\|\c
+.B info g77 -n Bugs\c
+\&\|'.
 
 .SH COPYING
-Copyright (c) 1991, 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+Copyright (c) 1991-1997 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice

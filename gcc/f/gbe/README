@@ -1,20 +1,20 @@
-970811
+970909
 
 This directory contains .diff files for various GNU CC distributions
 supported by this version of GNU Fortran.
 
 The name of a file includes which gcc version to which it applies.
-For example, 2.7.2.2.diff is the patch file for gcc version 2.7.2.2.
+For example, 2.7.2.3.diff is the patch file for gcc version 2.7.2.3.
 
-To apply a .diff file to, say, gcc 2.7.2.2, one might use the following
+To apply a .diff file to, say, gcc 2.7.2.3, one might use the following
 command (where the current directory contains the gcc source distribution
 after merging into it the g77 source distribution, which would be
-named gcc-2.7.2.2 in this example):
+named gcc-2.7.2.3 in this example):
 
-    patch -p1 -d gcc-2.7.2.2 < gcc-2.7.2.2/f/gbe/2.7.2.2.diff
+    patch -p1 -d gcc-2.7.2.3 < gcc-2.7.2.3/f/gbe/2.7.2.3.diff
 
 
-This version of g77 is best combined with gcc versions 2.7.2.2.
+This version of g77 is best combined with gcc versions 2.7.2.3.
 
 However, note that applying any of these patches does _not_ update
 the gcc.info* files that constitute the Info documentation for gcc.
@@ -30,7 +30,7 @@ writing), build, and install it, then try the above command (as
 makeinfo is part of texinfo).
 
 This distribution of g77 is not supported for versions of gcc prior
-to 2.7.2.2.
+to 2.7.2.3.
 
 If you are using a version of gcc more recent than the most
 recent .diff file's version, try the most recent .diff ONLY

@@ -73,7 +73,7 @@ f_exit(void)
 #endif
 {	int i;
 	static cllist xx;
-	if (f__init & 1)
+	if (! (f__init & 1))
 		return;		/* Not initialized, so no open units. */
 	if (!xx.cerr) {
 		xx.cerr=1;
