@@ -2227,6 +2227,137 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Fix definitions of macros used by va-i960.h in VxWorks header file.
+file=arch/i960/archI960.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e 's/__vsiz/__vxvsiz/' -e 's/__vali/__vxvali/' \
+      -e s'/__vpad/__vxvpad/' -e 's/__alignof__/__vxalignof__/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# Make VxWorks header which is almost gcc ready fully gcc ready.
+file=types/vxTypesBase.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e 's/#ifdef __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__/#if 1/' \
+      -e '/[ 	]size_t/i\
+#ifndef _GCC_SIZE_T\
+#define _GCC_SIZE_T
+' \
+      -e '/[ 	]size_t/a\
+#endif
+' \
+      -e '/[ 	]ptrdiff_t/i\
+#ifndef _GCC_PTRDIFF_T\
+#define _GCC_PTRDIFF_T
+' \
+      -e '/[ 	]ptrdiff_t/a\
+#endif
+' \
+      -e '/[ 	]wchar_t/i\
+#ifndef _GCC_WCHAR_T\
+#define _GCC_WCHAR_T
+' \
+      -e '/[ 	]wchar_t/a\
+#endif
+' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# Fix VxWorks <sys/stat.h> to not require including <vxWorks.h>.
+file=sys/stat.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if egrep '#include' ${LIB}/$file >/dev/null 2>&1; then
+    :
+  else
+    if egrep 'ULONG' ${LIB}/$file >/dev/null 2>&1 \
+       && [ -r types/vxTypesOld.h ]; then
+      echo Fixing $file
+      sed -e '/#define[ 	][ 	]*__INCstath/a\
+#include <types/vxTypesOld.h>
+' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+      rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    fi
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# Fix VxWorks <time.h> to not require including <vxTypes.h>.
+file=time.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if egrep 'uint_t[ 	][ 	]*_clocks_per_sec' ${LIB}/$file >/dev/null 2>&1; then
+    echo Fixing $file
+    sed -e 's/uint_t/unsigned int/' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+    
+
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
 # unnecessary, since the main loop processes symbolic links.
