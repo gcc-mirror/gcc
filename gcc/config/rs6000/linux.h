@@ -69,6 +69,11 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
+/* For backward compatibility, we must continue to use the AIX
+   structure return convention.  */
+#undef DRAFT_V4_STRUCT_RET
+#define DRAFT_V4_STRUCT_RET 1
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 

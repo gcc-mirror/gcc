@@ -68,6 +68,13 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mtune=",		1,	0 },
 };
 
+/* Size of long double */
+const char *rs6000_long_double_size_string;
+int rs6000_long_double_type_size;
+
+/* Whether -mabi=altivec has appeared */
+int rs6000_altivec_abi;
+
 /* Set to non-zero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
 
@@ -150,7 +157,7 @@ static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
 
-static void rs6000_init_builtins PARAMS ((tree));
+static void rs6000_init_builtins PARAMS ((void));
 static void altivec_init_builtins PARAMS ((void));
 static rtx rs6000_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static rtx altivec_expand_builtin PARAMS ((tree, rtx));
@@ -475,6 +482,19 @@ rs6000_override_options (default_cpu)
 	error ("Unknown -mdebug-%s switch", rs6000_debug_name);
     }
 
+  /* Set size of long double */
+  rs6000_long_double_type_size = 64;
+  if (rs6000_long_double_size_string)
+    {
+      char *tail;
+      int size = strtol (rs6000_long_double_size_string, &tail, 10);
+      if (*tail != '\0' || (size != 64 && size != 128))
+	error ("Unknown switch -mlong-double-%s",
+	       rs6000_long_double_size_string);
+      else
+	rs6000_long_double_type_size = size;
+    }
+
   /* Handle -mabi= options.  */
   rs6000_parse_abi_options ();
 
@@ -488,6 +508,17 @@ rs6000_override_options (default_cpu)
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
+
+  /* Set TARGET_AIX_STRUCT_RET last, after the ABI is determined.
+     If -maix-struct-return or -msvr4-struct-return was explicitly
+     used, don't override with the ABI default.  */
+  if (!(target_flags & MASK_AIX_STRUCT_RET_SET))
+    {
+      if (DEFAULT_ABI == ABI_V4 && !DRAFT_V4_STRUCT_RET)
+	target_flags = (target_flags & ~MASK_AIX_STRUCT_RET);
+      else
+	target_flags |= MASK_AIX_STRUCT_RET;
+    }
 
   /* Register global variables with the garbage collector.  */
   rs6000_add_gc_roots ();
@@ -510,7 +541,7 @@ rs6000_parse_abi_options ()
   if (rs6000_abi_string == 0)
     return;
   else if (! strcmp (rs6000_abi_string, "altivec"))
-    target_flags |= MASK_ALTIVEC_ABI;
+    rs6000_altivec_abi = 1;
   else
     error ("Unknown ABI specified: '%s'", rs6000_abi_string);
 }
@@ -3322,8 +3353,7 @@ rs6000_expand_builtin (exp, target, subtarget, mode, ignore)
 }
 
 static void
-rs6000_init_builtins (list_node)
-     tree list_node ATTRIBUTE_UNUSED;
+rs6000_init_builtins ()
 {
   if (TARGET_ALTIVEC)
     altivec_init_builtins ();
