@@ -1,5 +1,5 @@
 /* The arrays are too large for the xstormy16 - won't fit in 16 bits. */
-/* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" } { "" } } */
+/* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
 /* { dg-do assemble { xfail xstormy16-*-* m6811-*-* m6812-*-* } } */
 
 unsigned char	TIFFFax2DMode[20][256];

@@ -1,3 +1,10 @@
+2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20020604-1.c: XFAIL on H8 if -mn is
+	given.
+	* gcc.c-torture/compile/961203-1.c: Likewise.
+	* gcc.c-torture/compile/980506-1.c: Likewise.
+
 2003-12-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* lib/gcc-dg.exp (dg-prune-output): New annotation.
