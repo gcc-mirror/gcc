@@ -1,3 +1,8 @@
+Sun Jun 11 17:20:00 MET 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* MAINTAINERS: Add self as Fortran maintainer,
+	remove Craig Burley.
+
 Thu Jun 6 01:20:00 MET 2000  Philipp Thomas  <pthomas@suse.de>
 
 	* config.guess: Updated to latest version.
