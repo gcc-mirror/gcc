@@ -1,3 +1,21 @@
+2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_function_value): Declare.
+	* config/s390/s390.c (TARGET_RETURN_IN_MEMORY): Define.
+	(s390_return_in_memory): New function.
+	(s390_function_value): New function.
+	(s390_function_arg_float): Return false for all arguments larger
+	than 8 bytes.
+	(s390_function_arg_pass_by_reference): Likewise.  Return true for
+	all vector arguments.
+	(s390_function_arg_integer): New function.
+	(s390_function_arg_advance): Call it.  Add sanity checks.
+	(s390_function_arg): Likewise.
+	* config/s390/s390.h (FUNCTION_VALUE): Call s390_function_value.
+	(LIBCALL_VALUE): Likewise.
+	(RET_REG): Remove.
+	(RETURN_IN_MEMORY): Remove.
+
 2003-11-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_initial_elimination_offset): Change

@@ -707,33 +707,14 @@ CUMULATIVE_ARGS;
 
 /* Scalar return values.  */
 
-/* We return scalars in general purpose register 2 for integral values,
-   and floating point register 0 for fp values.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)				\
-  gen_rtx_REG ((INTEGRAL_TYPE_P (VALTYPE)			\
-		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-	       || POINTER_TYPE_P (VALTYPE)			\
-	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 16 : 2)
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  s390_function_value ((VALTYPE), VOIDmode)
 
-/* Define how to find the value returned by a library function assuming
-   the value has mode MODE.  */
-#define RET_REG(MODE) ((GET_MODE_CLASS (MODE) == MODE_INT       \
-                       || TARGET_SOFT_FLOAT ) ? 2 : 16)
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, RET_REG (MODE))
+#define LIBCALL_VALUE(MODE) \
+  s390_function_value (NULL, (MODE))
 
 /* Only gpr 2 and fpr 0 are ever used as return registers.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 2 || (N) == 16)
-
-
-/* Aggregate return values.  */
-
-/* The definition of this macro implies that there are cases where
-   a scalar value cannot be returned in registers.  */
-#define RETURN_IN_MEMORY(type)       				\
-  (TYPE_MODE (type) == BLKmode || 				\
-   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_INT  ||	\
-   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT)
 
 /* Structure value address is passed as invisible first argument (gpr 2).  */
 #define STRUCT_VALUE 0
