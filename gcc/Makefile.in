@@ -3319,7 +3319,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # script does that.
 .po.gmo:
 	-test -d po || mkdir po
-	$(GMSGFMT) --statistics $< -o $@
+	$(GMSGFMT) --statistics -o $@ $<
 
 # The new .po has to be gone over by hand, so we deposit it into
 # build/po with a different extension.
