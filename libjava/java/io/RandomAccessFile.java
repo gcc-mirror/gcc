@@ -87,7 +87,8 @@ public class RandomAccessFile implements DataOutput, DataInput
    * is not allowed
    * @exception IOException If any other error occurs
    */
-  public RandomAccessFile (File file, String mode) throws FileNotFoundException
+  public RandomAccessFile (File file, String mode)
+    throws FileNotFoundException
   {
     this (file.getPath(), mode);
   }
@@ -102,7 +103,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * opening the file to determine whether or not this file is allowed to
    * be read or written.
    *
-   * @param name The name of the file to read and/or write
+   * @param fileName The name of the file to read and/or write
    * @param mode "r" for read only or "rw" for read-write access to the file
    *
    * @exception IllegalArgumentException If <code>mode</code> has an 
@@ -114,6 +115,11 @@ public class RandomAccessFile implements DataOutput, DataInput
   public RandomAccessFile (String fileName, String mode)
     throws FileNotFoundException
   {
+    // Check the mode
+    if (!mode.equals("r") && !mode.equals("rw") && !mode.equals("rws") &&
+        !mode.equals("rwd"))
+      throw new IllegalArgumentException("Bad mode value: " + mode);
+  
     int fdmode;
     if (mode.compareTo ("r") == 0)
       fdmode = FileDescriptor.READ;
@@ -122,12 +128,14 @@ public class RandomAccessFile implements DataOutput, DataInput
     else
       throw new IllegalArgumentException ("invalid mode: " + mode);
 
+    // The obligatory SecurityManager stuff
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       {
-	s.checkRead(fileName);
-	if ((fdmode & FileDescriptor.WRITE) != 0)
-	  s.checkWrite(fileName);
+        s.checkRead(fileName);
+
+        if ((fdmode & FileDescriptor.WRITE) != 0)
+          s.checkWrite(fileName);
       }
 
     fd = new FileDescriptor (fileName, fdmode);
@@ -159,6 +167,7 @@ public class RandomAccessFile implements DataOutput, DataInput
   {
     if (! fd.valid())
       throw new IOException ();
+
     return fd;
   }
 
@@ -231,12 +240,12 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public int read (byte[] buffer) throws IOException
   {
-    return in.read(buffer);
+    return in.read (buffer);
   }
 
   /**
-   * This methods reads up to <code>len</code> bytes from the file into the s
-   * pecified array starting at position <code>offset</code> into the array.
+   * This methods reads up to <code>len</code> bytes from the file into the
+   * specified array starting at position <code>offset</code> into the array.
    *
    * @param buf The array to read the bytes into
    * @param offset The index into the array to start storing bytes
@@ -246,9 +255,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    *
    * @exception IOException If an error occurs
    */
-  public int read (byte[] buffer, int offset, int count) throws IOException
+  public int read (byte[] buffer, int offset, int len) throws IOException
   {
-    return in.read(buffer, offset, count);
+    return in.read (buffer, offset, len);
   }
 
   /**
@@ -270,7 +279,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final boolean readBoolean () throws IOException
   {
-    return in.readBoolean();
+    return in.readBoolean ();
   }
 
   /**
@@ -290,7 +299,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final byte readByte () throws IOException
   {
-    return in.readByte();
+    return in.readByte ();
   }
 
   /**
@@ -347,7 +356,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final double readDouble () throws IOException
   {
-    return in.readDouble();
+    return in.readDouble ();
   }
 
   /**
@@ -412,7 +421,7 @@ public class RandomAccessFile implements DataOutput, DataInput
   public final void readFully (byte[] buffer, int offset, int count)
     throws IOException
   {
-    in.readFully(buffer, offset, count);
+    in.readFully (buffer, offset, count);
   }
 
   /**
@@ -477,7 +486,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final String readLine () throws IOException
   {
-    return in.readLine();
+    return in.readLine ();
   }
 
   /**

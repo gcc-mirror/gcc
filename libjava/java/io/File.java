@@ -38,22 +38,49 @@ exception statement from your version. */
 
 package java.io;
 
-import java.util.*;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import gnu.gcj.runtime.FileDeleter;
-
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date September 24, 1998 
- */
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Complete to version 1.3.
  */
 
+/**
+ * This class represents a file or directory on a local disk.  It provides
+ * facilities for dealing with a variety of systems that use various
+ * types of path separators ("/" versus "\", for example).  It also
+ * contains method useful for creating and deleting files and directories.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Tom Tromey <tromey@cygnus.com>
+ */
 public class File implements Serializable, Comparable
 {
+  private static final long serialVersionUID = 301077366599181567L;
+	
+  // QUERY arguments to access function.
+  private final static int READ = 0;
+  private final static int WRITE = 1;
+  private final static int EXISTS = 2;
+
+  // QUERY arguments to stat function.
+  private final static int DIRECTORY = 0;
+  private final static int ISFILE = 1;
+  private final static int ISHIDDEN = 2;
+
+  // QUERY arguments to attr function.
+  private final static int MODIFIED = 0;
+  private final static int LENGTH = 1;
+  
+  private final native long attr (int query);
+  // On OSF1 V5.0, `stat' is a macro.  It is easiest to use the name
+  // `_stat' instead.  We do the same thing for `_access' just in
+  // case.
+  private final native boolean _access (int query);
+  private final native boolean _stat (int query);
+
   public boolean canRead ()
   {
     checkRead();
@@ -612,26 +639,4 @@ public class File implements Serializable, Comparable
       path = path.replace (oldSeparatorChar, separatorChar);
   }
 
-  // QUERY arguments to access function.
-  private final static int READ = 0;
-  private final static int WRITE = 1;
-  private final static int EXISTS = 2;
-
-  // QUERY arguments to stat function.
-  private final static int DIRECTORY = 0;
-  private final static int ISFILE = 1;
-  private final static int ISHIDDEN = 2;
-
-  // QUERY arguments to attr function.
-  private final static int MODIFIED = 0;
-  private final static int LENGTH = 1;
-  
-  private final native long attr (int query);
-  // On OSF1 V5.0, `stat' is a macro.  It is easiest to use the name
-  // `_stat' instead.  We do the same thing for `_access' just in
-  // case.
-  private final native boolean _access (int query);
-  private final native boolean _stat (int query);
-
-  private static final long serialVersionUID = 301077366599181567L;
 }
