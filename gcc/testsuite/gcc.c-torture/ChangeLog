@@ -1,3 +1,7 @@
+Mon Apr  3 16:53:52 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* execute/20000403-1.c: New test.
+
 2000-04-03  Geoff Keating  <geoffk@cygnus.com>
 
 	* execute/20000402-1.c: New test.
