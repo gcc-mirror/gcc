@@ -392,7 +392,9 @@ initialize_inlined_parameters (id, args, fn)
       /* If the parameter is never assigned to, we may not need to
 	 create a new variable here at all.  Instead, we may be able
 	 to just use the argument value.  */
-      if (TREE_READONLY (p) && !TREE_SIDE_EFFECTS (value))
+      if (TREE_READONLY (p) 
+	  && !TREE_ADDRESSABLE (p)
+	  && !TREE_SIDE_EFFECTS (value))
 	{
 	  /* Simplify the value, if possible.  */
 	  value = fold (decl_constant_value (value));
