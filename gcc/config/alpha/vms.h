@@ -416,24 +416,27 @@ do {									\
 
 #define ASM_OUTPUT_SECTION(FILE,SECTION)			\
    (strcmp (SECTION, ".text") == 0)				\
-     ? text_section ()					\
+     ? text_section ()						\
      : named_section (NULL_TREE, SECTION, 0),			\
        ASM_OUTPUT_ALIGN (FILE, 0)				\
 
 #define ASM_OUTPUT_SECTION_NAME(FILE,DECL,NAME,RELOC)		\
   do								\
     {								\
-      char *flags;						\
+      char *flags;					 	\
+      int ovr = 0;						\
       if (DECL && DECL_MACHINE_ATTRIBUTES (DECL)		\
 	  && lookup_attribute					\
 	      ("overlaid", DECL_MACHINE_ATTRIBUTES (DECL)))	\
-	flags = ",OVR";						\
-      else if (strncmp (NAME,".debug", 6) == 0)		\
+	flags = ",OVR", ovr = 1;				\
+      else if (strncmp (NAME,".debug", 6) == 0)			\
 	flags = ",NOWRT";					\
       else							\
 	flags = "";						\
       fputc ('\n', (FILE));					\
-      fprintf (FILE, ".section\t%s%s\n", NAME, flags);	\
+      fprintf (FILE, ".section\t%s%s\n", NAME, flags);		\
+      if (ovr)							\
+        (NAME) = "";						\
     } while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
