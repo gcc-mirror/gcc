@@ -1,3 +1,18 @@
+2004-01-19  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12352
+	PR libstdc++/12438
+	* include/bits/locale_classes.h (locale::locale(const locale&,
+	_Facet*)): Don't leak memory on exception.
+	* include/bits/locale_facets.tcc (locale::combine(const locale&)):
+	Likewise.
+	* src/locale.cc (locale::locale(const char*)): Likewise.
+	* src/localename.cc (locale::_Impl::~_Impl(),
+	locale::_Impl::_Impl(const _Impl&, size_t),
+	locale::_Impl::_Impl(const char*, size_t)): Likewise.
+	(locale::_Impl::_M_replace_categories(const _Impl*, category):
+	Tweak.
+
 2004-01-12  Marc Espie <espie@openbsd.org>
 
 	* src/Makefile.am (version.dep): backport from HEAD.

@@ -194,19 +194,19 @@ namespace std
 	      }
 	    else
 	      {
-		char* __res;
+		string __res;
 		// LANG may set a default different from "C".
 		char* __env = getenv("LANG");
 		if (!__env || strcmp(__env, "") == 0 || strcmp(__env, "C") == 0
 		    || strcmp(__env, "POSIX") == 0)
-		  __res = strdup("C");
+		  __res = "C";
 		else 
-		  __res = strdup(__env);
+		  __res = __env;
 		
 		// Scan the categories looking for the first one
 		// different from LANG.
 		size_t __i = 0;
-		if (strcmp(__res, "C") == 0)
+		if (__res == "C")
 		  for (; __i < _S_categories_size
 			 + _S_extra_categories_size; ++__i)
 		    {
@@ -222,7 +222,7 @@ namespace std
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
-			  && strcmp(__env, __res) != 0) 
+			  && __res != __env) 
 			break;
 		    }
 	
@@ -273,11 +273,10 @@ namespace std
 		  }
 		// ... otherwise either an additional instance of
 		// the "C" locale or LANG.
-		else if (strcmp(__res, "C") == 0)
+		else if (__res == "C")
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
-		  _M_impl = new _Impl(__res, 1);
-		free(__res);
+		  _M_impl = new _Impl(__res.c_str(), 1);
 	      }
 	  }
       }
