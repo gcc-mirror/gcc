@@ -1,4 +1,10 @@
+1998-06-01  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* warn_summary: Update to Kaveh's latest version allowing to
+	specify the last stage built.
+
 1998-05-29  Bruce Korb <korbb@datadesign.com>
+
 	* fixinc/mkfixinc.sh
 	Changes to make it easier to invoke on platforms that
 	normally do not invoke fixincludes.
@@ -8,6 +14,7 @@
 	months.
 
 1998-05-28  Bruce Korb <korbb@datadesign.com>
+
 	* fixinc/*: Updated most everything for a first real
 	try at getting "fast_fixincludes" working.
 
