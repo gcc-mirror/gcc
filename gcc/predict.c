@@ -573,7 +573,7 @@ expected_value_to_br_prob ()
 	 as canonicalize_condition will render this to us as
 		(lt r70, r71)
 	 Could use cselib to try and reduce this further.  */
-      cond = XEXP (SET_SRC (PATTERN (insn)), 0);
+      cond = XEXP (SET_SRC (pc_set (insn)), 0);
       cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg);
       if (! cond
 	  || XEXP (cond, 0) != ev_reg
