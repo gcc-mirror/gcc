@@ -2076,6 +2076,7 @@ dwarf2out_frame_finish ()
 typedef struct dw_val_struct *dw_val_ref;
 typedef struct die_struct *dw_die_ref;
 typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
+typedef struct dw_loc_list_struct *dw_loc_list_ref;
 
 /* Each DIE may have a series of attribute/value pairs.  Values
    can take on several forms.  The forms that are used in this
@@ -2085,6 +2086,7 @@ typedef enum
 {
   dw_val_class_addr,
   dw_val_class_loc,
+  dw_val_class_loc_list,
   dw_val_class_const,
   dw_val_class_unsigned_const,
   dw_val_class_long_long,
@@ -2126,6 +2128,7 @@ typedef struct dw_val_struct
   union
     {
       rtx val_addr;
+      dw_loc_list_ref  val_loc_list;
       dw_loc_descr_ref val_loc;
       long int val_int;
       long unsigned val_unsigned;
@@ -2157,6 +2160,19 @@ typedef struct dw_loc_descr_struct
 }
 dw_loc_descr_node;
 
+/* Location lists are ranges + location descriptions for that range,
+   so you can track variables that are in different places over
+   their entire life. */
+typedef struct dw_loc_list_struct
+{
+  dw_loc_list_ref dw_loc_next;
+  const char *begin; /* Label for begin address of range */
+  const char *end;  /* Label for end address of range */
+  char *ll_symbol; /* Label for beginning of location list. Only on head of list */
+  const char *section; /* Section this loclist is relative to */
+  dw_loc_descr_ref expr;
+} dw_loc_list_node;
+
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
 static dw_loc_descr_ref new_loc_descr	PARAMS ((enum dwarf_location_atom,
 						 unsigned long,
@@ -2168,6 +2184,14 @@ static unsigned long size_of_locs	PARAMS ((dw_loc_descr_ref));
 static void output_loc_operands		PARAMS ((dw_loc_descr_ref));
 static void output_loc_sequence		PARAMS ((dw_loc_descr_ref));
 
+static dw_loc_list_ref new_loc_list     PARAMS ((dw_loc_descr_ref, 
+						 const char *, const char *,
+						 const char *, unsigned));
+static void add_loc_descr_to_loc_list   PARAMS ((dw_loc_list_ref *,
+						 dw_loc_descr_ref,
+						 const char *, const char *, const char *));
+static void output_loc_list		PARAMS ((dw_loc_list_ref));
+static char *gen_internal_sym 		PARAMS ((const char *));
 /* Convert a DWARF stack opcode into its string name.  */
 
 static const char *
@@ -2495,6 +2519,29 @@ new_loc_descr (op, oprnd1, oprnd2)
   return descr;
 }
 
+/* Return a new location list, given the begin and end range, and the
+   expression. gensym tells us whether to generate a new internal
+   symbol for this location list node, which is done for the head of
+   the list only. */ 
+static inline dw_loc_list_ref
+new_loc_list (expr, begin, end, section, gensym)
+     register dw_loc_descr_ref expr;
+     register const char *begin;
+     register const char *end;
+     register const char *section;
+     register unsigned gensym;
+{
+  register dw_loc_list_ref retlist
+    = (dw_loc_list_ref) xcalloc (1, sizeof (dw_loc_list_node));
+  retlist->begin = begin;
+  retlist->end = end;
+  retlist->expr = expr;
+  retlist->section = section;
+  if (gensym) 
+    retlist->ll_symbol = gen_internal_sym ("LLST");
+  return retlist;
+}
+
 /* Add a location description term to a location description expression.  */
 
 static inline void
@@ -2509,6 +2556,24 @@ add_loc_descr (list_head, descr)
     ;
 
   *d = descr;
+}
+
+/* Add a location description expression to a location list */
+static inline void
+add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
+     register dw_loc_list_ref *list_head;
+     register dw_loc_descr_ref descr;
+     register const char *begin;
+     register const char *end;
+     register const char *section;
+{
+  register dw_loc_list_ref *d;
+  
+  /* Find the end of the chain. */
+  for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
+    ;
+  /* Add a new location list node to the list */
+  *d = new_loc_list (descr, begin, end, section, 0);
 }
 
 /* Return the size of a location descriptor.  */
@@ -3249,6 +3314,9 @@ static unsigned arange_table_in_use;
    arange_table.  */
 #define ARANGE_TABLE_INCREMENT 64
 
+/* Whether we have location lists that need outputting */
+static unsigned have_location_lists;
+
 /* A pointer to the base of a list of incomplete types which might be
    completed at some later time.  */
 
@@ -3319,6 +3387,9 @@ static void add_AT_fde_ref		PARAMS ((dw_die_ref,
 static void add_AT_loc			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 dw_loc_descr_ref));
+static void add_AT_loc_list		PARAMS ((dw_die_ref,
+						 enum dwarf_attribute,
+						 dw_loc_list_ref));
 static void add_AT_addr			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 rtx));
@@ -3366,11 +3437,11 @@ static void compute_section_prefix	PARAMS ((dw_die_ref));
 static int is_type_die			PARAMS ((dw_die_ref));
 static int is_comdat_die 		PARAMS ((dw_die_ref));
 static int is_symbol_die 		PARAMS ((dw_die_ref));
-static char *gen_internal_sym 		PARAMS ((void));
 static void assign_symbol_names		PARAMS ((dw_die_ref));
 static void break_out_includes		PARAMS ((dw_die_ref));
 static void add_sibling_attributes	PARAMS ((dw_die_ref));
 static void build_abbrev_table		PARAMS ((dw_die_ref));
+static void output_location_lists   	PARAMS ((dw_die_ref));
 static unsigned long size_of_string	PARAMS ((const char *));
 static int constant_size		PARAMS ((long unsigned));
 static unsigned long size_of_die	PARAMS ((dw_die_ref));
@@ -3535,6 +3606,9 @@ static int file_info_cmp		PARAMS ((const void *, const void *));
 #ifndef ABBREV_SECTION_LABEL
 #define ABBREV_SECTION_LABEL     "Ldebug_abbrev"
 #endif
+#ifndef LOC_SECTION_LABEL
+#define LOC_SECTION_LABEL	 "Ldebug_loc"
+#endif
 
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
@@ -3547,7 +3621,7 @@ static char text_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char abbrev_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_info_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
-
+static char loc_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
 #endif
@@ -4381,6 +4455,34 @@ AT_loc (a)
   abort ();
 }
 
+static inline void
+add_AT_loc_list (die, attr_kind, loc_list)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+     register dw_loc_list_ref loc_list;
+{
+  register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
+
+  attr->dw_attr_next = NULL;
+  attr->dw_attr = attr_kind;
+  attr->dw_attr_val.val_class = dw_val_class_loc_list;
+  attr->dw_attr_val.v.val_loc_list = loc_list;
+  add_dwarf_attr (die, attr);
+  have_location_lists = 1;
+}
+
+static inline dw_loc_list_ref AT_loc_list PARAMS ((dw_attr_ref));
+
+static inline dw_loc_list_ref
+AT_loc_list (a)
+     register dw_attr_ref a;
+{
+  if (a && AT_class (a) == dw_val_class_loc_list)
+    return a->dw_attr_val.v.val_loc_list;
+
+  abort ();
+}
+
 /* Add an address constant attribute value to a DIE.  */
 
 static inline void
@@ -4858,6 +4960,9 @@ print_die (die, outfile)
 	case dw_val_class_loc:
 	  fprintf (outfile, "location descriptor");
 	  break;
+	case dw_val_class_loc_list:
+	  fprintf (outfile, "location list -> label:%s", AT_loc_list (a)->ll_symbol);
+	  break;
 	case dw_val_class_const:
 	  fprintf (outfile, "%ld", AT_int (a));
 	  break;
@@ -5252,18 +5357,19 @@ is_symbol_die (c)
 {
   if (is_type_die (c))
     return 1;
-  if (get_AT (c, DW_AT_declaration)
+  if (get_AT (c, DW_AT_declaration) 
       && ! get_AT (c, DW_AT_specification))
     return 1;
   return 0;
 }
 
 static char *
-gen_internal_sym ()
+gen_internal_sym (prefix)
+	const char *prefix;
 {
   char buf[256];
   static int label_num;
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LDIE", label_num++);
+  ASM_GENERATE_INTERNAL_LABEL (buf, prefix, label_num++);
   return xstrdup (buf);
 }
 
@@ -5285,7 +5391,7 @@ assign_symbol_names (die)
 	  die->die_symbol = xstrdup (p);
 	}
       else
-	die->die_symbol = gen_internal_sym ();
+	die->die_symbol = gen_internal_sym ("LDIE");
     }
 
   for (c = die->die_child; c != NULL; c = c->die_sib)
@@ -5370,6 +5476,24 @@ add_sibling_attributes (die)
     add_sibling_attributes (c);
 }
 
+/* Output all location lists for the DIE and it's children */
+static void
+output_location_lists (die)
+     register dw_die_ref die;
+{
+  dw_die_ref c;
+  dw_attr_ref d_attr;
+  for (d_attr = die->die_attr; d_attr; d_attr = d_attr->dw_attr_next)
+    {
+      if (AT_class (d_attr) == dw_val_class_loc_list)
+	{
+	  output_loc_list (AT_loc_list (d_attr));
+	}
+    }
+  for (c = die->die_child; c != NULL; c = c->die_sib)
+    output_location_lists (c);
+
+}
 /* The format of each DIE (and its attribute value pairs)
    is encoded in an abbreviation table.  This routine builds the
    abbreviation table and assigns a unique abbreviation id for
@@ -5508,6 +5632,9 @@ size_of_die (die)
 	    size += lsize;
 	  }
 	  break;
+	case dw_val_class_loc_list:
+	  size += DWARF_OFFSET_SIZE;
+	  break;
 	case dw_val_class_const:
 	  size += size_of_sleb128 (AT_int (a));
 	  break;
@@ -5643,6 +5770,8 @@ value_format (a)
     {
     case dw_val_class_addr:
       return DW_FORM_addr;
+    case dw_val_class_loc_list:
+	return DW_FORM_data4; /* FIXME: Could be DW_FORM_data8, with a > 32 bit size .debug_loc section */
     case dw_val_class_loc:
       switch (constant_size (size_of_locs (AT_loc (a))))
 	{
@@ -5761,6 +5890,38 @@ output_die_symbol (die)
   ASM_OUTPUT_LABEL (asm_out_file, sym);
 }
 
+/* Output the location list given to us */
+static void
+output_loc_list (list_head)
+     register dw_loc_list_ref list_head;
+{
+  register dw_loc_list_ref curr;
+  ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
+  if (strcmp (curr->section, ".text") == 0)
+    {
+      if (DWARF2_ADDR_SIZE == 4)
+        dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffff, "Location list base address specifier fake entry");
+      else if (DWARF2_ADDR_SIZE == 8)
+	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffffffffffffLL, "Location list base address specifier fake entry");
+      else
+        abort();
+      dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section, "Location list base address specifier base");
+    }
+  for (curr = list_head; curr != NULL; curr=curr->dw_loc_next)
+    {
+      int size;
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section, "Location list begin address (%s)", list_head->ll_symbol);
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->end, curr->section, "Location list end address (%s)", list_head->ll_symbol);
+      size = size_of_locs (curr->expr);
+      
+      /* Output the block length for this list of location operations.  */
+      dw2_asm_output_data (constant_size (size), size, "%s", "Location expression size");
+      
+      output_loc_sequence (curr->expr);
+    }
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Location list terminator begin (%s)", list_head->ll_symbol);
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "Location list terminator end (%s)", list_head->ll_symbol);
+}
 /* Output the DIE and its attributes.  Called recursively to generate
    the definitions of each child DIE.  */
 
@@ -5851,7 +6012,14 @@ output_die (die)
 	case dw_val_class_flag:
 	  dw2_asm_output_data (1, AT_flag (a), "%s", name);
 	  break;
-
+        case dw_val_class_loc_list:
+	  {
+	    char *sym = AT_loc_list (a)->ll_symbol;
+	    if (sym == 0)
+	      abort();
+	    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label, name);
+	  }
+	  break;
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
@@ -11173,7 +11341,9 @@ dwarf2out_init (asm_out_file, main_input_filename)
 			       DEBUG_INFO_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
-
+  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, LOC_SECTION_LABEL, 0);
+  ASM_OUTPUT_SECTION (asm_out_file, LOC_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
   ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
   if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
@@ -11305,5 +11475,14 @@ dwarf2out_finish ()
       ASM_OUTPUT_SECTION (asm_out_file, ARANGES_SECTION);
       output_aranges ();
     }
+  /* Output location list section if necessary */
+  if (have_location_lists)
+    {
+      /* Output the location lists info. */
+      ASM_OUTPUT_SECTION (asm_out_file, LOC_SECTION);
+      output_location_lists (die);
+      have_location_lists = 0;
+    }
+  
 }
 #endif /* DWARF2_DEBUGGING_INFO */
