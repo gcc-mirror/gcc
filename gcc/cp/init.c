@@ -1621,9 +1621,10 @@ build_offset_ref (type, name)
   if (type == std_node)
     return do_scoped_id (name, 0);
 
-  if (processing_template_decl || uses_template_parms (type)
-      || TREE_CODE (name) == TEMPLATE_ID_EXPR)
-    return build_min (SCOPE_REF, unknown_type_node, type, name);
+  if (processing_template_decl || uses_template_parms (type))
+    return build_min_nt (SCOPE_REF, type, name);
+  else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    return build (SCOPE_REF, unknown_type_node, type, name);
 
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == NAMESPACE_DECL)

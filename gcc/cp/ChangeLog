@@ -1,3 +1,8 @@
+1998-06-08  Mark Mitchell  <mark@markmitchell.com>
+
+	* init.c (build_offset_ref): Correct previous change to use build,
+	not build_min.
+
 1998-06-07  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (instantiate_type): Handle pointer-to-members where the
