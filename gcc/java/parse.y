@@ -11776,8 +11776,12 @@ java_complete_lhs (node)
 	  TREE_OPERAND (node, 1) = java_complete_tree (TREE_OPERAND (node, 1));
 	  if (TREE_OPERAND (node, 1) == error_mark_node)
 	    return error_mark_node;
+	  /* Even though we might allow the case where the first
+	     operand doesn't return normally, we still should compute
+	     CAN_COMPLETE_NORMALLY correctly.  */
 	  CAN_COMPLETE_NORMALLY (node)
-	    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1));
+	    = (CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))
+	       && CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1)));
 	}
       TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 1));
       break;

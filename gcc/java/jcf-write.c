@@ -1483,7 +1483,11 @@ generate_bytecode_insns (exp, target, state)
       break;
     case COMPOUND_EXPR:	
       generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
-      generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
+      /* Normally the first operand to a COMPOUND_EXPR must complete
+	 normally.  However, in the special case of a do-while
+	 statement this is not necessarily the case.  */
+      if (CAN_COMPLETE_NORMALLY (TREE_OPERAND (exp, 0)))
+	generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
       break;
     case EXPR_WITH_FILE_LOCATION:
       {
@@ -1880,7 +1884,8 @@ generate_bytecode_insns (exp, target, state)
 	  {
 	    struct jcf_block *head_label = get_jcf_label_here (state);
 	    generate_bytecode_insns (body, IGNORE_TARGET, state);
-	    emit_goto (head_label, state);
+	    if (CAN_COMPLETE_NORMALLY (body))
+	      emit_goto (head_label, state);
 	  }
       }
       break;
