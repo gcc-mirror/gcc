@@ -38,7 +38,7 @@
 #define PARMS(ARGS) ARGS
 #endif
 
-#include "ctype.h"
+#include <ctype.h>
 #include "adadecode.h"
 
 static void add_verbose (const char *, char *);
