@@ -1,5 +1,9 @@
 2003-03-13  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/arm.c (print_multi_reg): Do not generate a type 2
+        LDM instructions with writeback enabled.
+        (output_return_instruction): Likewise.
+
 	* config/arm/pe.h (FIXED_REGISTERS): Remove definition.
 	(CALL_USED_REGISTERS): Remove definition.
 	(SUBTARGET_CONDITIONAL_REGISTER_USAGE): Define.

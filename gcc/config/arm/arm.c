@@ -7204,7 +7204,17 @@ print_multi_reg (stream, instr, reg, mask)
 	not_first = TRUE;
       }
 
-  fprintf (stream, "}%s\n", TARGET_APCS_32 ? "" : "^");
+  fprintf (stream, "}");
+
+  /* Add a ^ character for the 26-bit ABI, but only if we were loading
+     the PC or not updating the stack pointer.  Otherwise we generate
+     an UNPREDICTABLE instruction.  */
+  if (! TARGET_APCS_32
+      && (((mask & (1 << PC_REGNUM)) != 0)
+	  || strchr (instr, '!') == NULL))
+    fprintf (stream, "^");
+  
+  fprintf (stream, "\n");
 }
 
 /* Output a 'call' insn.  */
@@ -8210,20 +8220,26 @@ output_return_instruction (operand, really_return, reverse)
 	  
 	  if (live_regs_mask & (1 << LR_REGNUM))
 	    {
-	      int l = strlen (return_reg);
-
-	      if (! first)
-		{
-		  memcpy (p, ", ", 2);
-		  p += 2;
-		}
-
-	      memcpy (p, "%|", 2);
-	      memcpy (p + 2, return_reg, l);
-	      strcpy (p + 2 + l, ((TARGET_APCS_32 
-				   && !IS_INTERRUPT (func_type)) 
-				  || !really_return) 
-		      ? "}" : "}^");
+	      sprintf (p, "%s%%|%s}", first ? "" : ", ", return_reg);
+	      /* Decide if we need to add the ^ symbol to the end of the
+		 register list.	 This causes the saved condition codes
+		 register to be copied into the current condition codes
+		 register.  We do the copy if we are conforming to the 32-bit
+		 ABI and this is an interrupt function, or if we are
+		 conforming to the 26-bit ABI.  There is a special case for
+		 the 26-bit ABI however, which is if we are writing back the
+		 stack pointer but not loading the PC.  In this case adding
+		 the ^ symbol would create a type 2 LDM instruction, where
+		 writeback is UNPREDICTABLE.  We are safe in leaving the ^
+		 character off in this case however, since the actual return
+		 instruction will be a MOVS which will restore the CPSR.  */
+	      if ((TARGET_APCS_32 && IS_INTERRUPT (func_type))
+		  || (really_return
+		      && ! frame_pointer_needed
+		      && ((live_regs_mask & (1 << SP_REGNUM)) == 0)
+		      && ((live_regs_mask & (1 << PC_REGNUM)) == 0))
+		  )
+		strcat (p, "^");
 	    }
 	  else
 	    strcpy (p, "}");
