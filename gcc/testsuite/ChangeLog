@@ -1,3 +1,7 @@
+2003-03-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/20020307-2.x: New file, XFAIL mips-irix6.
+
 2003-03-29  Arpad Beszedes <beszedes@cc.u-szeged.hu>
 
 	PR middle-end/9967
