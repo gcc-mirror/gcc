@@ -1,3 +1,14 @@
+Tue Feb 22 01:38:57 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (FUNCTION_ARG_PASS_BY_REFERENCE): Handle pass-by-reference
+	for arguments with a mode, but no type.
+	(FUNCTION_ARG_CALLEE_COPIES): Similarly.
+	* t-pa (LIB2FUNCS_EXTRA): Add quadlib.asm.
+	* pa/long_double.h: New file.
+	* configure.in (hpux10, hpux11 configurations): hpux10 and hpux11
+	both have 128bit wide long doubles.
+	* configure: Rebuilt.
+
 2000-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* defaults.h (ASM_OUTPUT_ASCII): Constify a char*.

@@ -1,10 +1,14 @@
 LIBGCC1=libgcc1.null
 CROSS_LIBGCC1=libgcc1.null
 ADA_CFLAGS=-mdisable-indexing
-LIB2FUNCS_EXTRA=lib2funcs.asm
+LIB2FUNCS_EXTRA=lib2funcs.asm quadlib.asm
 
 lib2funcs.asm: $(srcdir)/config/pa/lib2funcs.asm
 	rm -f lib2funcs.asm
 	cp $(srcdir)/config/pa/lib2funcs.asm .
+
+quadlib.asm: $(srcdir)/config/pa/quadlib.asm
+	rm -f quadlib.asm
+	cp $(srcdir)/config/pa/quadlib.asm .
 
 TARGET_LIBGCC2_CFLAGS = -fPIC

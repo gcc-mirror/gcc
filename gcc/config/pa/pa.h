@@ -1054,10 +1054,12 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 /* Arguments larger than eight bytes are passed by invisible reference */
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  ((TYPE) && int_size_in_bytes (TYPE) > 8)
+  (((TYPE) && int_size_in_bytes (TYPE) > 8)				\
+   || (MODE) && GET_MODE_SIZE (MODE) > 8)
  
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
-  ((TYPE) && int_size_in_bytes (TYPE) > 8)
+  (((TYPE) && int_size_in_bytes (TYPE) > 8)		   \
+   || (MODE) && GET_MODE_SIZE (MODE) > 8)
 
 
 extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
