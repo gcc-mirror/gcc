@@ -1,5 +1,10 @@
 2002-08-19  Ziemowit Laski  <zlaski@apple.com>
 
+	* objc/objc-act.c (building_objc_message_expr): Rename to
+	current_objc_message_selector.
+
+2002-08-19  Ziemowit Laski  <zlaski@apple.com>
+
 	* objc/objc-act.c (build_ivar_chain): Remove.
 	(objc_copy_list): Likewise.
 	(get_class_ivars): Inline call to removed build_ivar_chain
