@@ -302,6 +302,13 @@ extern int rs6000_pic_labelno;
 #define	DBX_DEBUGGING_INFO
 #define	DWARF_DEBUGGING_INFO
 
+/* This macro gets just the user-specified name
+   out of the string in a SYMBOL_REF.  Discard
+   a leading * */
+#undef  STRIP_NAME_ENCODING
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
+  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
+
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */
 
@@ -310,10 +317,11 @@ extern int rs6000_pic_labelno;
 do									\
   {									\
     static int sym_lineno = 1;						\
+    char *_p;								\
     fprintf (file, "\t.stabn 68,0,%d,.LM%d-",				\
 	     line, sym_lineno);						\
-    assemble_name (file,						\
-		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
+    STRIP_NAME_ENCODING (_p, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
+    assemble_name (file, _p);						\
     fprintf (file, "\n.LM%d:\n", sym_lineno);				\
     sym_lineno += 1;							\
   }									\
