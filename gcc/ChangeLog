@@ -1,3 +1,10 @@
+2004-09-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (STAGE1_CHECKING): New variable.
+	(stage1_build): Use it.
+	* tree-ssa.c (verify_ssa): Preserve state of dominance
+	information.
+
 2004-09-14  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.c (output_fp_compare): Add generation

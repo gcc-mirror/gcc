@@ -134,6 +134,7 @@ BOOT_LANGUAGES = c @all_boot_languages@
 # or BOOT_CFLAGS
 # STAGE1_CFLAGS is set by configure on some targets or passed from toplevel
 # and sets the CFLAGS passed to stage1 of a bootstrap compilation.
+# STAGE1_CHECKING enables checking for the stage1 compiler
 # BOOT_CFLAGS is the value of CFLAGS to pass to the stage2, stage3 and stage4
 # bootstrap compilations.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
@@ -142,6 +143,7 @@ XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
+STAGE1_CHECKING = -DENABLE_CHECKING -DENABLE_ASSERT_CHECKING
 BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
@@ -3633,11 +3635,12 @@ STAGEFEEDBACK_FLAGS_TO_PASS = \
 # only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
 # MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
 # overrideable (for a bootstrap build stage1 also builds gcc.info).
+# The stage1 compiler is always built with checking enabled.
 stage1_build:
 	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
-		CFLAGS="$(STAGE1_CFLAGS)" MAKEINFO="$(MAKEINFO)" \
-		MAKEINFOFLAGS="$(MAKEINFOFLAGS)" COVERAGE_FLAGS= \
-		OBJS-onestep="$(OBJS)"
+		CFLAGS="$(STAGE1_CFLAGS) $(STAGE1_CHECKING)" \
+		MAKEINFO="$(MAKEINFO)" MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
+		COVERAGE_FLAGS= OBJS-onestep="$(OBJS)"
 	$(STAMP) stage1_build
 	echo stage1_build > stage_last
 
