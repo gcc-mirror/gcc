@@ -84,6 +84,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 extern void cpp_fatal ();
 
+#if !__STDC__ && !defined(const)
+#define const /* nothing */
+#endif
+
 sstring buf;
 
 int verbose = 0;
@@ -602,9 +606,9 @@ read_scan_file (in_fname, argc, argv)
   scan_in.data = &scan_options;
   cpp_options_init (&scan_options);
   i = cpp_handle_options (&scan_in, argc, argv);
-  if (i < argc && scan_in.errors < CPP_FATAL_LIMIT)
+  if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))
     cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);
-  if (scan_in.errors >= CPP_FATAL_LIMIT)
+  if (CPP_FATAL_ERRORS (&scan_in))
     exit (FATAL_EXIT_CODE);
 
   if (! cpp_start_read (&scan_in, in_fname))
