@@ -44,6 +44,10 @@ Boston, MA 02111-1307, USA.  */
 
 static int a29k_regstack_size;
 
+/* True if the current procedure has a call instruction.  */
+
+static int a29k_makes_calls;
+
 /* This points to the last insn of the insn prologue.  It is set when
    an insn without a filled delay slot is found near the start of the
    function.  */
@@ -1189,29 +1193,24 @@ print_operand (file, x, code)
 
 /* This page contains routines to output function prolog and epilog code. */
 
-/* Output function prolog code to file FILE.  Memory stack size is SIZE.
+/* Compute the size of the register stack, and determine if there are any
+   call instructions.  */
 
-   Also sets register names for incoming arguments and frame pointer.  */
-
-void
-output_prolog (file, size)
-     FILE *file;
-     int size;
+static void
+compute_regstack_size ()
 {
-  int makes_calls = 0;
-  int arg_count = 0;
-  rtx insn;
   int i;
-  unsigned int tag_word;
+  rtx insn;
 
   /* See if we make any calls.  We need to set lr1 if so.  */
+  a29k_makes_calls = 0;
   for (insn = get_insns (); insn; insn = next_insn (insn))
     if (GET_CODE (insn) == CALL_INSN
 	|| (GET_CODE (insn) == INSN
 	    && GET_CODE (PATTERN (insn)) == SEQUENCE
 	    && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN))
       {
-	makes_calls = 1;
+	a29k_makes_calls = 1;
 	break;
       }
 
@@ -1223,21 +1222,24 @@ output_prolog (file, size)
   a29k_regstack_size = i - (R_LR (0) - 1);
 
   /* If calling routines, ensure we count lr0 & lr1.  */
-  if (makes_calls && a29k_regstack_size < 2)
+  if (a29k_makes_calls && a29k_regstack_size < 2)
     a29k_regstack_size = 2;
 
   /* Count frame pointer and align to 8 byte boundary (even number of
      registers).  */
   a29k_regstack_size += frame_pointer_needed;
   if (a29k_regstack_size & 1) a29k_regstack_size++;
+}
 
-  /* See how many incoming arguments we have in registers.  */
-  for (i = R_AR (0); i < R_AR (16); i++)
-    if (! fixed_regs[i])
-      arg_count++;
+/*  Sets register names for incoming arguments and frame pointer.
+    This can't be computed until after register allocation.  */
 
-  /* The argument count includes the caller's lr0 and lr1.  */
-  arg_count += 2;
+void
+a29k_compute_reg_names ()
+{
+  int i;
+
+  compute_regstack_size ();
 
   /* Set the names and numbers of the frame pointer and incoming argument
      registers.  */
@@ -1263,6 +1265,27 @@ output_prolog (file, size)
 	a29k_debug_reg_map[i] = a29k_debug_reg_map[R_KR (i)];
 	a29k_debug_reg_map[R_KR (i)] = tem;
       }
+}
+
+/* Output function prolog code to file FILE.  Memory stack size is SIZE.  */
+
+void
+output_prolog (file, size)
+     FILE *file;
+     int size;
+{
+  int i;
+  int arg_count = 0;
+  rtx insn;
+  unsigned int tag_word;
+
+  /* See how many incoming arguments we have in registers.  */
+  for (i = R_AR (0); i < R_AR (16); i++)
+    if (! fixed_regs[i])
+      arg_count++;
+
+  /* The argument count includes the caller's lr0 and lr1.  */
+  arg_count += 2;
 
   /* Compute memory stack size.  Add in number of bytes that the we should
      push and pretend the caller did and the size of outgoing arguments.
@@ -1326,7 +1349,7 @@ output_prolog (file, size)
      slot (this condition is equivalent to seeing if we have an insn that
      needs delay slots before an insn that has a filled delay slot).  */
   a29k_last_prologue_insn = 0;
-  if (makes_calls)
+  if (a29k_makes_calls)
     {
       i = (a29k_regstack_size + arg_count) * 4;
       if (i >= 256)
