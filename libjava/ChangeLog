@@ -1,3 +1,11 @@
+2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/reflect/Method.java (getExceptionTypes): Call getType() to
+	initialize if exception_types is null.
+	* java/lang/reflect/Constructor.java: Likewise.
+	* java/lang/reflect/natConstructor.cc (getType): Initialize 
+	exception_types to an empty Object array.
+
 2001-03-21  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
