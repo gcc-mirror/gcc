@@ -2717,14 +2717,14 @@ expand_return (retval)
       tree expr;
 
       do_jump (TREE_OPERAND (retval_rhs, 0), label, NULL_RTX);
-      expr = build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
+      expr = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (current_function_decl)),
 		    DECL_RESULT (current_function_decl),
 		    TREE_OPERAND (retval_rhs, 1));
       TREE_SIDE_EFFECTS (expr) = 1;
       expand_return (expr);
       emit_label (label);
 
-      expr = build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
+      expr = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (current_function_decl)),
 		    DECL_RESULT (current_function_decl),
 		    TREE_OPERAND (retval_rhs, 2));
       TREE_SIDE_EFFECTS (expr) = 1;
@@ -2913,6 +2913,7 @@ expand_return (retval)
       result_reg = gen_reg_rtx (result_reg_mode);
 
       /* Now that the value is in pseudos, copy it to the result reg(s).  */
+      expand_cleanups_to (NULL_TREE);
       emit_queue ();
       free_temp_slots ();
       for (i = 0; i < n_regs; i++)
@@ -2930,7 +2931,10 @@ expand_return (retval)
       && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
     {
       /* Calculate the return value into a pseudo reg.  */
-      val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
+      val = gen_reg_rtx (DECL_MODE (DECL_RESULT (current_function_decl)));
+      val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
+      val = force_not_mem (val);
+      expand_cleanups_to (NULL_TREE);
       emit_queue ();
       /* All temporaries have now been used.  */
       free_temp_slots ();
@@ -2942,6 +2946,7 @@ expand_return (retval)
       /* No cleanups or no hard reg used;
 	 calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, 0);
+      expand_cleanups_to (NULL_TREE);
       emit_queue ();
       free_temp_slots ();
       expand_value_return (DECL_RTL (DECL_RESULT (current_function_decl)));
