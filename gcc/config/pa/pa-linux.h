@@ -71,9 +71,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LIB_SPEC
 #define LIB_SPEC \
-  "%{shared: -lgcc -lc} \
-   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
-	%{shared-libgcc: -lgcc} %{profile:-lc_p} %{!profile: -lc}}"
+  "%{pthread:-lpthread} \
+   %{shared:-lgcc -lc} \
+   %{!shared:%{mieee-fp:-lieee} %{shared-libgcc:-lgcc} %{profile:-lc_p}%{!profile:-lc}}"
 
 #undef ASM_SPEC
 #define ASM_SPEC \
