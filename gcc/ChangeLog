@@ -1,5 +1,20 @@
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("*pushdi_internal"): New insn and split
+	to separate push from moves.
+	("*pushdf_internal"): Likewise.
+	("*pushsf_internal"): Likewise.
+	("*pushsi_internal"): Likewise.
+	("movdi_internal"): Use define_insn_and_split; non push operand.
+	("movdf_internal"): Likewise.
+	("movsf_internal"): Likewise.
+	("movsi_internal"): Likewise.
+	("*movhi_68hc12", "*addhi3_68hc12"): Fix and tune constraints
+	("*addhi3", "*subhi3", "*andhi3_mem", "*iorhi3_mem"): Likewise.
+	("*ashlsi3_const1", "*lshrsi3_const1"): Likewise.
+
+2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("tstqi_z_used"): Use define_insn_and_split.
 	("cmphi_z_used", "cmpqi_z_used"): Likewise.
 	("movstrictsi", "movstricthi", "movstrictqi"): Likewise.
