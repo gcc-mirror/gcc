@@ -31,10 +31,6 @@ Wed Sep 10 14:05:08 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 	(check-gcc, check-g++): Depend on testsuite/site.exp.
 	Don't stop for failure.
 
-Wed Sep 10 10:51:21 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* expr.c (emit_block_move): Always return a value.
-
 Wed Sep 10 01:38:30 1997  Doug Evans  <dje@cygnus.com>
 
 	Add port done awhile ago for the ARC cpu.

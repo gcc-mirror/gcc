@@ -1638,7 +1638,7 @@ emit_block_move (x, y, size, align)
 	      if (pat)
 		{
 		  emit_insn (pat);
-		  return 0;
+		  return;
 		}
 	      else
 		delete_insns_since (last);
