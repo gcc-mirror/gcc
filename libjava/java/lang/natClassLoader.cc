@@ -189,12 +189,6 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 
-jclass
-java::lang::ClassLoader::findLoadedClass (jstring name)
-{
-  return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), this);
-}
-
 /** This function does class-preparation for compiled classes.  
     NOTE: It contains replicated functionality from
     _Jv_ResolvePoolEntry, and this is intentional, since that function
