@@ -51,6 +51,8 @@ namespace std
   {
   public:
     bad_alloc() throw() { }
+    // This declaration is not useless:
+    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_alloc() throw();
   };
 
