@@ -53,4 +53,3 @@ Boston, MA 02111-1307, USA.  */
 extern int on_exit PARAMS ((void *, void *));
 #define ON_EXIT(FUNC) on_exit ((FUNC), 0)
 #define NEED_ATEXIT
-#define HAVE_ON_EXIT

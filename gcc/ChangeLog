@@ -1,5 +1,8 @@
 Fri Sep 17 11:14:17 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* libgcc2.c (L_exit): Check for ON_EXIT, not HAVE_ON_EXIT.
+	* sparc/sunos4.h (HAVE_ON_EXIT): Remove.
+
 	* tlink.c (scan_linker_output): Look for keywords before accepting
 	a mangled name in quotes.
 
