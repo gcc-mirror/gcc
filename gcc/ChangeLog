@@ -1,6 +1,9 @@
 Tue Jun 19 07:53:52 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-dce.c: Renamed from dce.c.
+	* Makefile.in (OBJS): Replace dce.o with ssa-dce.o
+	(dependencies): Replace dce.c with ssa-dce.c and dce.o with
+	ssa-dce.o.
 
 2001-06-19  Eric Christopher <echristo@redhat.com>
 
