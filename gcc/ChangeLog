@@ -1,3 +1,8 @@
+Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* i386.md (prologue_allocate_stack): Add '=' constraint letter on
+	output operand.
+
 Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rs6000.md (fix_truncdfsi2_internal+1): Emit a clobber
