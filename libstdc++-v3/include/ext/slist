@@ -55,8 +55,14 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/concept_check.h>
 
-namespace std
+namespace __gnu_cxx
 { 
+using std::size_t;
+using std::ptrdiff_t;
+using std::_Alloc_traits;
+using std::_Construct;
+using std::_Destroy;
+using std::allocator;
 
 struct _Slist_node_base
 {
@@ -145,9 +151,9 @@ struct _Slist_node : public _Slist_node_base
 
 struct _Slist_iterator_base
 {
-  typedef size_t               size_type;
-  typedef ptrdiff_t            difference_type;
-  typedef forward_iterator_tag iterator_category;
+  typedef size_t                    size_type;
+  typedef ptrdiff_t                 difference_type;
+  typedef std::forward_iterator_tag iterator_category;
 
   _Slist_node_base* _M_node;
 
@@ -297,7 +303,7 @@ class slist : private _Slist_base<_Tp,_Alloc>
 private:
   typedef _Slist_base<_Tp,_Alloc> _Base;
 public:
-  typedef _Tp                value_type;
+  typedef _Tp               value_type;
   typedef value_type*       pointer;
   typedef const value_type* const_pointer;
   typedef value_type&       reference;
@@ -707,8 +713,8 @@ template <class _Tp, class _Alloc>
 inline bool
 operator<(const slist<_Tp,_Alloc>& _SL1, const slist<_Tp,_Alloc>& _SL2)
 {
-  return lexicographical_compare(_SL1.begin(), _SL1.end(), 
-                                 _SL2.begin(), _SL2.end());
+  return std::lexicographical_compare(_SL1.begin(), _SL1.end(), 
+				      _SL2.begin(), _SL2.end());
 }
 
 template <class _Tp, class _Alloc>
@@ -897,13 +903,17 @@ void slist<_Tp,_Alloc>::sort(_StrictWeakOrdering __comp)
   }
 }
 
+} // namespace __gnu_cxx
+
+namespace std
+{
 // Specialization of insert_iterator so that insertions will be constant
 // time rather than linear time.
 
 template <class _Tp, class _Alloc>
-class insert_iterator<slist<_Tp, _Alloc> > {
+class insert_iterator<__gnu_cxx::slist<_Tp, _Alloc> > {
 protected:
-  typedef slist<_Tp, _Alloc> _Container;
+  typedef __gnu_cxx::slist<_Tp, _Alloc> _Container;
   _Container* container;
   typename _Container::iterator iter;
 public:
@@ -932,7 +942,7 @@ public:
   insert_iterator<_Container>& operator++(int) { return *this; }
 };
 
-} // namespace std 
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_SLIST_H */
 

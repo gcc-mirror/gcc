@@ -1,5 +1,10 @@
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/ext/slist:  Move into __gnu_cxx,
+        tweak, add using declarations.
+
+2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/ext/hash_map:  Move into __gnu_cxx,
 	tweak, add using declarations.
 	* include/ext/hash_set:  Ditto.
