@@ -1,6 +1,16 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
-	* gcc.c-torture/compile/20040824-1.c: New test.
+	* config/mips/mips-protos.h (mips_emit_prefetch): Delete.
+	(mips_prefetch_cookie): New function.
+	* config/mips/mips.c (print_operand_address): Fix handling of
+	ADDRESS_CONST_INT.
+	(mips_emit_prefetch): Delete.
+	(mips_prefetch_cookie): New function.
+	* config/mips/mips.md (prefetch): Turn into a define_insn.  Use a
+	mode of QImode for the address_operand.  Use mips_prefetch_cookie
+	to calculate the first "pref" operand.
+	(prefetch_[sd]i, prefetch_[sd]i_address): Delete.
+	(prefetch_indexed_[sd]i): Redefine using :P.  Use mips_prefetch_cookie.
 
 2004-08-24  Richard Earnshaw  <rearnsha@arm.com>
 
