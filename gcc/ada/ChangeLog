@@ -1,3 +1,7 @@
+2004-04-01  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* utils2.c: Update copyright notice.
+
 2004-04-01  Robert Dewar  <dewar@gnat.com>
 
 	* checks.adb: Minor reformatting throughout
