@@ -1,5 +1,16 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (*seq_[sd]i): Renamed from seq_[sd]i_zero.
+	(*sne_[sd]i): Likewise sne_[sd]i_zero.
+	(*sgt_[sd]i): ...and sgt_[sd]i.
+	(*slt_[sd]i): ...and slt_[sd]i.
+	(*sgtu_[sd]i): ...and sgtu_[sd]i.
+	(*sltu_[sd]i): ...and sltu_[sd]i.
+	(*sleu_[sd]i): ...and sleu_[sd]i_const.
+	Name previously unnamed mips16 patterns.  Formatting fixes.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (cmp_operands): Renamed from branch_cmp.
 	(branch_type): Delete.
 	(gen_conditional_branch, gen_conditional_move)
