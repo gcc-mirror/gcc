@@ -3839,6 +3839,7 @@ display_help ()
 
   printf (_("  -O[number]              Set optimisation level to [number]\n"));
   printf (_("  -Os                     Optimise for space rather than speed\n"));
+  printf (_("  --param <name>=<value>  Set constant controlling optimization\n"));
   printf (_("  -pedantic               Issue warnings needed by strict compliance to ISO C\n"));
   printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
   printf (_("  -w                      Suppress warnings\n"));
@@ -4390,7 +4391,7 @@ independent_decode_option (argc, argv)
 	  return 1;
 	}
 
-      /* Get the '<name>=<value' parameter.  */
+      /* Get the '<name>=<value>' parameter.  */
       arg = argv[1];
       /* Look for the `='.  */
       equal = strchr (arg, '=');
