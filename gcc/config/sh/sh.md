@@ -1208,14 +1208,11 @@
   "shar	%0"
   [(set_attr "type" "arith")])
 
-(define_insn "ashrhi3_k"
-  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
-	(ashiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		     (match_operand:HI 2 "const_int_operand" "M")))
-   (clobber (reg:SI 18))]
-  "INTVAL (operands[2]) == 1"
-  "shar	%0"
-  [(set_attr "type" "arith")])
+;; We can't do HImode right shifts correctly unless we start out with an
+;; explicit zero / sign extension; doing that would result in worse overall
+;; code, so just let the machine independent code widen the mode.
+;; That's why we don't have ashrhi3_k / lshrhi3_k / lshrhi3_m / lshrhi3 .
+
 
 ;; ??? This should be a define expand.
 
@@ -1328,24 +1325,6 @@
   "shlr%O2	%0"
   [(set_attr "type" "arith")])
 
-(define_insn "lshrhi3_m"
-  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
-	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		     (match_operand:HI 2 "const_int_operand" "M")))
-   (clobber (reg:SI 18))]
-  "CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "lshrhi3_k"
-  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
-	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		     (match_operand:HI 2 "const_int_operand" "K")))]
-  "CONST_OK_FOR_K (INTVAL (operands[2]))
-   && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr%O2	%0"
-  [(set_attr "type" "arith")])
-
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -1396,35 +1375,6 @@
     }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
     FAIL;
-}")
-
-(define_insn "lshrhi3"
-  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
-	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		     (match_operand:HI 2 "const_int_operand" "n")))
-   (clobber (reg:SI 18))]
-  ""
-  "#"
-;; ??? length attribute is sometimes six instead of four.
-  [(set (attr "length")
-	(cond [(eq (symbol_ref "shift_insns_rtx (insn)") (const_int 1))
-	       (const_string "2")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
-	       (const_string "4")]
-	      (const_string "6")))
-   (set_attr "type" "arith")])
-
-(define_split
-  [(set (match_operand:HI 0 "arith_reg_operand" "")
-	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "")
-		     (match_operand:HI 2 "const_int_operand" "n")))
-   (clobber (reg:SI 18))]
-  ""
-  [(use (reg:SI 0))]
-  "
-{
-  gen_shifty_hi_op (LSHIFTRT, operands);
-  DONE;
 }")
 
 ;; ??? This should be a define expand.
