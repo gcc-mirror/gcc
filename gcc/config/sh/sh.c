@@ -1537,38 +1537,20 @@ int
 multcosts (RTX)
      rtx RTX;
 {
-  /* If mult by a power of 2 then work out how we'd shift to make it */
-  int insn_cost = 0;
-
-  if (GET_CODE (XEXP (RTX, 1)) == CONST_INT)
-    {
-      int i = exact_log2 (INTVAL (XEXP (RTX, 1)));
-      if (i >= 0)
-	insn_cost = howshift (i);
-      else
-	insn_cost = 100000;
-    }
   if (TARGET_SH2)
     {
       /* We have a mul insn, so we can never take more than the mul and the
-	 read of the mac reg, but count more because of the latency and extra reg
-	 usage */
+	 read of the mac reg, but count more because of the latency and extra
+	 reg usage */
       if (TARGET_SMALLCODE)
 	return 2;
-      if (insn_cost > 5)
-	return 5;
-      return insn_cost;
+      return 3;
     }
 
-  /* If we we're aiming at small code, then just count the number of
+  /* If we're aiming at small code, then just count the number of
      insns in a multiply call sequence */
-
   if (TARGET_SMALLCODE)
-    {
-      if (insn_cost > 6)
-	return 6;
-      return insn_cost;
-    }
+    return 6;
 
   /* Otherwise count all the insns in the routine we'd be calling too */
   return 20;
