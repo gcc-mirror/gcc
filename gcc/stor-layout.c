@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,6 +47,11 @@ int maximum_field_alignment;
 #define GET_MODE_ALIGNMENT(MODE)   \
   MIN (BIGGEST_ALIGNMENT, 	   \
        MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
+
+static enum machine_mode smallest_mode_for_size  PROTO((unsigned int,
+							enum mode_class));
+static tree layout_record	PROTO((tree));
+static void layout_union	PROTO((tree));
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
@@ -79,7 +84,13 @@ variable_size (size)
 {
   size = save_expr (size);
 
-  if (global_bindings_p ())
+  /* If the language-processor is to take responsibility for variable-sized
+     items (e.g., languages which have elaboration procedures like Ada),
+     just return SIZE unchanged.  */
+  if (global_bindings_p () < 0)
+    return size;
+
+  else if (global_bindings_p ())
     {
       if (TREE_CONSTANT (size))
 	error ("type size can't be explicitly evaluated");
@@ -120,13 +131,33 @@ mode_for_size (size, class, limit)
   if (limit && size > MAX_FIXED_MODE_SIZE)
     return BLKmode;
 
-  /* Get the last mode which has this size, in the specified class.  */
+  /* Get the first mode which has this size, in the specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if (GET_MODE_BITSIZE (mode) == size)
       return mode;
 
   return BLKmode;
+}
+
+/* Similar, but never return BLKmode; return the narrowest mode that
+   contains at least the requested number of bits.  */
+
+static enum machine_mode
+smallest_mode_for_size (size, class)
+     unsigned int size;
+     enum mode_class class;
+{
+  register enum machine_mode mode;
+
+  /* Get the first mode which has at least this size, in the
+     specified class.  */
+  for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_BITSIZE (mode) >= size)
+      return mode;
+
+  abort ();
 }
 
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR.  */
@@ -179,8 +210,9 @@ layout_decl (decl, known_align)
   /* Usually the size and mode come from the data type without change.  */
 
   DECL_MODE (decl) = TYPE_MODE (type);
-  DECL_SIZE (decl) = TYPE_SIZE (type);
   TREE_UNSIGNED (decl) = TREE_UNSIGNED (type);
+  if (DECL_SIZE (decl) == 0)
+    DECL_SIZE (decl) = TYPE_SIZE (type);
 
   if (code == FIELD_DECL && DECL_BIT_FIELD (decl))
     {
@@ -669,11 +701,8 @@ layout_type (type)
       if (TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) >= 0)
 	TREE_UNSIGNED (type) = 1;
 
-      /* We pass 0 for the last arg of mode_for_size because otherwise
-	 on the Apollo using long long causes a crash.
-	 It seems better to use integer modes than to try to support
-	 integer types with BLKmode.  */
-      TYPE_MODE (type) = mode_for_size (TYPE_PRECISION (type), MODE_INT, 0);
+      TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
+						 MODE_INT);
       TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       break;
 
