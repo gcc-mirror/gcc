@@ -144,7 +144,6 @@ static int protected_accessible_p PARAMS ((tree, tree, tree));
 static int friend_accessible_p PARAMS ((tree, tree, tree));
 static void setup_class_bindings PARAMS ((tree, int));
 static int template_self_reference_p PARAMS ((tree, tree));
-static void fixup_all_virtual_upcast_offsets PARAMS ((tree, tree));
 static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
 static tree dfs_find_vbase_instance PARAMS ((tree, void *));
 static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
@@ -2770,14 +2769,14 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
 /* Fixup all the virtual upcast offsets for TYPE.  DECL_PTR is the
    address of the sub-object being initialized.  */
 
-static void
-fixup_all_virtual_upcast_offsets (type, decl_ptr)
-     tree type;
+void
+fixup_all_virtual_upcast_offsets (decl_ptr)
      tree decl_ptr;
 {
   tree if_stmt;
   tree in_charge_node;
   tree vbases;
+  tree type;
 
   /* Only tweak the vtables if we're in charge.  */
   in_charge_node = current_in_charge_parm;
@@ -2791,6 +2790,7 @@ fixup_all_virtual_upcast_offsets (type, decl_ptr)
   
   /* Iterate through the virtual bases, fixing up the upcast offset
      for each one.  */
+  type = TREE_TYPE (TREE_TYPE (decl_ptr));
   for (vbases = CLASSTYPE_VBASECLASSES (type);
        vbases;
        vbases = TREE_CHAIN (vbases))
@@ -2818,22 +2818,6 @@ fixup_all_virtual_upcast_offsets (type, decl_ptr)
   /* Close out the if-statement.  */
   finish_then_clause (if_stmt);
   finish_if_stmt ();
-}
-
-/* Generate the code needed to initialize all the virtual function
-   table slots of all the virtual baseclasses.  ADDR points to the
-   address of the complete object we are initializing.  */
-
-void
-expand_indirect_vtbls_init (addr)
-     tree addr;
-{
-  tree type;
-
-  type = TREE_TYPE (TREE_TYPE (addr));
-
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-    fixup_all_virtual_upcast_offsets (type, addr);
 }
 
 /* get virtual base class types.

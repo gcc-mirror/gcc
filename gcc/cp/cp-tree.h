@@ -530,6 +530,7 @@ enum cp_tree_index
     CPTI_DELTA_TYPE,
     CPTI_VTABLE_INDEX_TYPE,
     CPTI_CLEANUP_TYPE,
+    CPTI_VTT_PARM_TYPE,
 
     CPTI_TI_DESC_TYPE,
     CPTI_BLTN_DESC_TYPE,
@@ -578,6 +579,7 @@ enum cp_tree_index
     CPTI_DELTA2_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
+    CPTI_VTT_PARM_IDENTIFIER,
     CPTI_INDEX_IDENTIFIER,
     CPTI_NELTS_IDENTIFIER,
     CPTI_THIS_IDENTIFIER,
@@ -690,6 +692,11 @@ extern tree cp_global_trees[CPTI_MAX];
 #define delta2_identifier               cp_global_trees[CPTI_DELTA2_IDENTIFIER]
 #define delta_identifier                cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier            cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
+
+/* The name of the parameter that contains a pointer to the VTT to use
+   for this subobject constructor or destructor.  */
+#define vtt_parm_identifier             cp_global_trees[CPTI_VTT_PARM_IDENTIFIER]
+
 #define index_identifier                cp_global_trees[CPTI_INDEX_IDENTIFIER]
 #define nelts_identifier                cp_global_trees[CPTI_NELTS_IDENTIFIER]
 #define this_identifier                 cp_global_trees[CPTI_THIS_IDENTIFIER]
@@ -730,6 +737,10 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* The type of a destructor.  */
 #define cleanup_type                    cp_global_trees[CPTI_CLEANUP_TYPE]
+
+/* The type of the vtt parameter passed to subobject constructors and
+   destructors.  */
+#define vtt_parm_type                   cp_global_trees[CPTI_VTT_PARM_TYPE]
 
 /* Global state.  */
 
@@ -1755,6 +1766,14 @@ struct lang_type
    is primary *somewhere* in the hierarchy.  */
 #define BINFO_VBASE_PRIMARY_P(NODE) TREE_LANG_FLAG_6 (NODE)
 
+/* The index in the VTT where this subobject's sub-VTT can be found.
+   NULL_TREE if there is no sub-VTT.  */
+#define BINFO_SUBVTT_INDEX(NODE) TREE_VEC_ELT ((NODE), 8)
+
+/* The index in the VTT where the vptr for this subobject can be
+   found.  NULL_TREE if there is no secondary vptr in the VTT.  */
+#define BINFO_VPTR_INDEX(NODE) TREE_VEC_ELT ((NODE), 9)
+
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
@@ -1884,6 +1903,9 @@ struct lang_decl
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
 
+  /* In a FUNCTION_DECL, this is VTT_PARM.  */
+  tree vtt_parm;
+
   union
   {
     tree sorted_fields;
@@ -1971,6 +1993,25 @@ struct lang_decl
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->cloned_function)
+
+/* In a maybe-in-charge constructor or destructor, this is the VTT
+   parameter.  It's not actually on the DECL_ARGUMENTS list.  */
+#define DECL_VTT_PARM(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->vtt_parm)
+
+/* If there's a DECL_VTT_PARM, this is a magic variable that indicates
+   whether or not the VTT parm should be used.  In a subobject
+   constructor, `true' is substituted for this value; in a complete
+   object constructor, `false' is substituted instead.  */
+#define DECL_USE_VTT_PARM(NODE) \
+  (TREE_CHAIN (DECL_VTT_PARM (NODE)))
+
+/* Non-zero if NODE is a FUNCTION_DECL for which a VTT parameter is
+   required.  */
+#define DECL_NEEDS_VTT_PARM_P(NODE)			\
+  (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (NODE))	\
+   && (DECL_BASE_CONSTRUCTOR_P (NODE)			\
+       || DECL_BASE_DESTRUCTOR_P (NODE)))
 
 /* Non-zero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) \
@@ -3820,6 +3861,7 @@ extern void maybe_note_name_used_in_class       PARAMS ((tree, tree));
 extern void note_name_declared_in_class         PARAMS ((tree, tree));
 extern tree get_vtbl_decl_for_binfo             PARAMS ((tree));
 extern tree in_charge_arg_for_name              PARAMS ((tree));
+extern tree get_vtt_name                        PARAMS ((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
@@ -4054,6 +4096,7 @@ extern void mark_used				PARAMS ((tree));
 extern tree handle_class_head			PARAMS ((tree, tree, tree));
 extern tree lookup_arg_dependent                PARAMS ((tree, tree, tree));
 extern void finish_static_data_member_decl      PARAMS ((tree, tree, tree, int));
+extern tree build_artificial_parm               PARAMS ((tree, tree));
 
 /* in parse.y */
 extern void cp_parse_init			PARAMS ((void));
@@ -4303,7 +4346,6 @@ extern tree lookup_nested_tag			PARAMS ((tree, tree));
 extern tree get_matching_virtual		PARAMS ((tree, tree, int));
 extern void get_pure_virtuals		        PARAMS ((tree));
 extern tree init_vbase_pointers			PARAMS ((tree, tree));
-extern void expand_indirect_vtbls_init		PARAMS ((tree));
 extern void get_vbase_types			PARAMS ((tree));
 extern void maybe_suppress_debug_info		PARAMS ((tree));
 extern void note_debug_info_needed		PARAMS ((tree));
@@ -4340,6 +4382,7 @@ extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
 extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
+extern void fixup_all_virtual_upcast_offsets    PARAMS ((tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PARAMS ((tree));

@@ -902,6 +902,10 @@ maybe_clone_body (fn)
       DECL_SOURCE_LINE (clone) = DECL_SOURCE_LINE (fn);
       DECL_INLINE (clone) = DECL_INLINE (fn);
       DECL_THIS_INLINE (clone) = DECL_THIS_INLINE (fn);
+      DECL_COMDAT (clone) = DECL_COMDAT (fn);
+      DECL_WEAK (clone) = DECL_WEAK (fn);
+      DECL_ONE_ONLY (clone) = DECL_ONE_ONLY (fn);
+      DECL_SECTION_NAME (clone) = DECL_SECTION_NAME (fn);
 
       /* Start processing the function.  */
       push_to_top_level ();
@@ -934,7 +938,31 @@ maybe_clone_body (fn)
 	      in_charge = in_charge_arg_for_name (DECL_NAME (clone));
 	      splay_tree_insert (id.decl_map,
 				 (splay_tree_key) parm,
-				 (splay_tree_key) in_charge);
+				 (splay_tree_value) in_charge);
+
+	      /* For a subobject constructor or destructor, the next
+		 argument is the VTT parameter.  Remap the VTT_PARM
+		 from the CLONE to this parameter.  */
+	      if (DECL_NEEDS_VTT_PARM_P (clone))
+		{
+		  splay_tree_insert (id.decl_map,
+				     (splay_tree_key) DECL_VTT_PARM (fn),
+				     (splay_tree_value) clone_parm);
+		  splay_tree_insert (id.decl_map,
+				     (splay_tree_key) DECL_USE_VTT_PARM (fn),
+				     (splay_tree_value) boolean_true_node);
+		  clone_parm = TREE_CHAIN (clone_parm);
+		}
+	      /* Otherwise, map the VTT parameter to `NULL'.  */
+	      else if (DECL_VTT_PARM (fn))
+		{
+		  splay_tree_insert (id.decl_map,
+				     (splay_tree_key) DECL_VTT_PARM (fn),
+				     (splay_tree_value) null_pointer_node);
+		  splay_tree_insert (id.decl_map,
+				     (splay_tree_key) DECL_USE_VTT_PARM (fn),
+				     (splay_tree_value) boolean_false_node);
+		}
 	    }
 	  /* Map other parameters to their equivalents in the cloned
 	     function.  */

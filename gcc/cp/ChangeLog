@@ -1,3 +1,53 @@
+2000-05-25  Mark Mitchell  <mark@codesourcery.com>
+
+	Finish implementation of VTTs.
+	* cp-tree.h (cp_tree_index): Add CPTI_VTT_PARM_TYPE and
+	CPTI_VTT_PARM_IDENTIFIER.
+	(vtt_parm_identifier): New macro.
+	(vtt_parm_type): Likewise.
+	(BINFO_SUBVTT_INDEX): Likewise.
+	(BINFO_VPTR_INDEX): Likewise.
+	(struct lang_decl): Add vtt_parm.
+	(DECL_VTT_PARM): New macro.
+	(DECL_USE_VTT_PARM): Likewise.
+	(DECL_NEEDS_VTT_PARM_P): Likewise.
+	(get_vtt_name): Declare.
+	(build_artifical_parm): Likewise.
+	(fixup_all_virtual_upcast_offsets): Likewise.
+	(expand_indirect_vtbls_init): Remove.
+	* call.c (build_new_method_call): Pass the vtt to subobject
+	constructors and destructors.
+	* class.c (get_vtt_name): Give it external linkage.
+	(build_clone): Handle the magic VTT parameters for clones.
+	(clone_function_decl): Fix typo in comment.
+	(build_vtt): Keep track of the indices in the VTTs where various
+	entities are stored.
+	(build_vtt_inits): Likewise.
+	(dfs_build_vtt_inits): Likewise.
+	(build_ctor_vtbl_group): Tweak type of construction vtables.
+	(dfs_accumulate_vtbl_inits): Build vtables for all bases, even
+	primary bases, when building construction vtables.
+	* decl.c (duplicate_decls): Handle DECL_VTT_PARM.
+	(initialize_predefined_identifiers): Add vtt_parm_identifier.
+	(init_decl_processing): Initialize vtt_parm_type.
+	(grokfndecl): Use DECL_OVERLOADED_OPERATOR_P.
+	(lang_mark_tree): Make vtt_parm.
+	* decl2.c (build_artificial_parm): New function.
+	(maybe_retrofit_in_chrg): Use it.  Add VTT parameters.
+	(grokclassfn): Use build_artificial_parm.
+	* init.c (initialize_vtbl_ptrs): Call
+	fixup_all_virtual_upcast_offsets directly.
+	(perform_member_init): Use the complete subobject destructor for
+	member cleanups.
+	(build_vtbl_address): New function.
+	(expand_virtual_init): Handle VTTs.
+	* optimize (maybe_clone_body): Likewise.
+	* search.c (fixup_all_virtual_upcast_offsets): Give it external
+	linkage.
+	(expand_indirect_vtbls_init): Remove.
+	* semantics.c (setup_vtbl_ptr): Fix typos in comment.
+	* tree.c (make_binfo): Make them bigger.
+	
 2000-05-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* inc/cxxabi.h (__pbase_type_info): Define, based on

@@ -53,6 +53,7 @@ static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
 static tree build_dtor_call PARAMS ((tree, special_function_kind, int));
 static tree build_field_list PARAMS ((tree, tree, int *));
+static tree build_vtbl_address PARAMS ((tree));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
@@ -172,7 +173,14 @@ initialize_vtbl_ptrs (addr)
 		 NULL, dfs_unmarked_real_bases_queue_p, list);
   dfs_walk (TYPE_BINFO (type), dfs_unmark,
 	    dfs_marked_real_bases_queue_p, type);
-  expand_indirect_vtbls_init (addr);
+
+  /* If we're not using thunks, we may need to adjust the deltas in
+     the vtable to handle virtual base classes correctly.  When we are
+     using thunks, we either use construction vtables (which are
+     preloaded with the right answers) or nothing (in which case
+     vitual function calls sometimes don't work right.)  */
+  if (TYPE_USES_VIRTUAL_BASECLASSES (type) && !flag_vtable_thunks)
+    fixup_all_virtual_upcast_offsets (addr);
 }
 
 /* Subroutine of emit_base_init.  */
@@ -276,7 +284,7 @@ perform_member_init (member, init, explicit)
 
       expr = build_component_ref (current_class_ref, member, NULL_TREE,
 				  explicit);
-      expr = build_delete (type, expr, sfk_base_destructor,
+      expr = build_delete (type, expr, sfk_complete_destructor,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
@@ -726,6 +734,32 @@ emit_base_init ()
     }
 }
 
+/* Returns the address of the vtable (i.e., the value that should be
+   assigned to the vptr) for BINFO.  */
+
+static tree
+build_vtbl_address (binfo)
+     tree binfo;
+{
+  tree vtbl;
+
+  /* Figure out what vtable BINFO's vtable is based on, and mark it as
+     used.  */
+  vtbl = get_vtbl_decl_for_binfo (binfo);
+  assemble_external (vtbl);
+  TREE_USED (vtbl) = 1;
+
+  /* Now compute the address to use when initializing the vptr.  */
+  vtbl = BINFO_VTABLE (binfo);
+  if (TREE_CODE (vtbl) == VAR_DECL)
+    {
+      vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
+      TREE_CONSTANT (vtbl) = 1;
+    }
+
+  return vtbl;
+}
+
 /* This code sets up the virtual function tables appropriate for
    the pointer DECL.  It is a one-ply initialization.
 
@@ -739,23 +773,40 @@ expand_virtual_init (binfo, decl)
   tree type = BINFO_TYPE (binfo);
   tree vtbl, vtbl_ptr;
   tree vtype, vtype_binfo;
-  tree b;
+  tree vtt_index;
 
   /* Compute the location of the vtable.  */
   vtype = DECL_CONTEXT (TYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
-  b = binfo_value (DECL_FIELD_CONTEXT (TYPE_VFIELD (type)), binfo);
+  
+  /* Compute the initializer for vptr.  */
+  vtbl = build_vtbl_address (binfo);
 
-  /* Figure out what vtable BINFO's vtable is based on, and mark it as
-     used.  */
-  vtbl = get_vtbl_decl_for_binfo (b);
-  assemble_external (vtbl);
-  TREE_USED (vtbl) = 1;
+  /* Under the new ABI, we may get this vptr from a VTT, if this is a
+     subobject constructor or subobject destructor.  */
+  vtt_index = BINFO_VPTR_INDEX (binfo);
+  if (vtt_index)
+    {
+      tree vtbl2;
+      tree vtt_parm;
 
-  /* Now compute the address to use when initializing the vptr.  */
-  vtbl = BINFO_VTABLE (b);
-  if (TREE_CODE (vtbl) == VAR_DECL)
-    vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
+      /* Compute the value to use, when there's a VTT.  */
+      vtt_parm = DECL_VTT_PARM (current_function_decl);
+      vtbl2 = build (PLUS_EXPR, 
+		     TREE_TYPE (vtt_parm), 
+		     vtt_parm,
+		     vtt_index);
+      vtbl2 = build1 (INDIRECT_REF, TREE_TYPE (vtbl), vtbl2);
+
+      /* The actual initializer is the VTT value only in the subobject
+	 constructor.  In maybe_clone_body we'll substitute NULL for
+	 the vtt_parm in the case of the non-subobject constructor.  */
+      vtbl = build (COND_EXPR, 
+		    TREE_TYPE (vtbl), 
+		    DECL_USE_VTT_PARM (current_function_decl),
+		    vtbl2, 
+		    vtbl);
+    }
 
   /* Compute the location of the vtpr.  */
   decl = convert_pointer_to_real (vtype_binfo, decl);
