@@ -1,3 +1,8 @@
+2000-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* loop.c (scan_loop): Ensure update_end label does not
+	go away until reg_scan_update is run.
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-common.h: Prototype min_precision and c_build_qualified_type here...
