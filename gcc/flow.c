@@ -8137,6 +8137,70 @@ flow_loops_level_compute (loops)
 }
 
 
+/* Scan a single natural loop specified by LOOP collecting information
+   about it specified by FLAGS.  */
+
+int
+flow_loop_scan (loops, loop, flags)
+     struct loops *loops;
+     struct loop *loop;
+     int flags;
+{
+  /* Determine prerequisites.  */
+  if ((flags & LOOP_EXITS_DOMS) && ! loop->exit_edges)
+    flags |= LOOP_EXIT_EDGES;
+
+  if (flags & LOOP_ENTRY_EDGES)
+    {
+      /* Find edges which enter the loop header.
+	 Note that the entry edges should only
+	 enter the header of a natural loop.  */
+      loop->num_entries
+	= flow_loop_entry_edges_find (loop->header,
+				      loop->nodes,
+				      &loop->entry_edges);
+    }
+
+  if (flags & LOOP_EXIT_EDGES)
+    {
+      /* Find edges which exit the loop.  */
+      loop->num_exits
+	= flow_loop_exit_edges_find (loop->nodes,
+				     &loop->exit_edges);
+    }
+
+  if (flags & LOOP_EXITS_DOMS)
+    {
+      int j;
+
+      /* Determine which loop nodes dominate all the exits
+	 of the loop.  */
+      loop->exits_doms = sbitmap_alloc (n_basic_blocks);
+      sbitmap_copy (loop->exits_doms, loop->nodes);
+      for (j = 0; j < loop->num_exits; j++)
+	sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
+			 loops->cfg.dom[loop->exit_edges[j]->src->index]);
+      
+      /* The header of a natural loop must dominate
+	 all exits.  */
+      if (! TEST_BIT (loop->exits_doms, loop->header->index))
+	abort ();
+    }
+  
+  if (flags & LOOP_PRE_HEADER)
+    {
+      /* Look to see if the loop has a pre-header node.  */
+      loop->pre_header
+	= flow_loop_pre_header_find (loop->header, loops->cfg.dom);
+
+      /* Find the blocks within the extended basic block of
+	 the loop pre-header.  */
+      flow_loop_pre_header_scan (loop);
+    }
+  return 1;
+}
+
+
 /* Find all the natural loops in the function and save in LOOPS structure
    and recalculate loop_depth information in basic block structures.
    FLAGS controls which loop information is collected.
@@ -8213,6 +8277,11 @@ flow_loops_find (loops, flags)
       rc_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
       flow_depth_first_order_compute (dfs_order, rc_order);
 
+      /* Save CFG derived information to avoid recomputing it.  */
+      loops->cfg.dom = dom;
+      loops->cfg.dfs_order = dfs_order;
+      loops->cfg.rc_order = rc_order;
+
       /* Allocate loop structures.  */
       loops->array
 	= (struct loop *) xcalloc (num_loops, sizeof (struct loop));
@@ -8264,7 +8333,6 @@ flow_loops_find (loops, flags)
       for (i = 0; i < num_loops; i++)
 	{
 	  struct loop *loop = &loops->array[i];
-	  int j;
 
 	  /* Keep track of blocks that are loop headers so
 	     that we can tell which loops should be merged.  */
@@ -8286,43 +8354,7 @@ flow_loops_find (loops, flags)
 	  loop->last
 	    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));
 
-	  if (flags & LOOP_EDGES)
-	    {
-	      /* Find edges which enter the loop header.
-		 Note that the entry edges should only
-		 enter the header of a natural loop.  */
-	      loop->num_entries
-		= flow_loop_entry_edges_find (loop->header,
-					      loop->nodes,
-					      &loop->entry_edges);
-
-	      /* Find edges which exit the loop.  */
-	      loop->num_exits
-		= flow_loop_exit_edges_find (loop->nodes,
-					     &loop->exit_edges);
-
-	      /* Determine which loop nodes dominate all the exits
-		 of the loop.  */
-	      loop->exits_doms = sbitmap_alloc (n_basic_blocks);
-	      sbitmap_copy (loop->exits_doms, loop->nodes);
-	      for (j = 0; j < loop->num_exits; j++)
-		sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
-				 dom[loop->exit_edges[j]->src->index]);
-
-	      /* The header of a natural loop must dominate
-		 all exits.  */
-	      if (! TEST_BIT (loop->exits_doms, loop->header->index))
-		abort ();
-	    }
-
-	  if (flags & LOOP_PRE_HEADER)
-	    {
-	      /* Look to see if the loop has a pre-header node.  */
-	      loop->pre_header
-		= flow_loop_pre_header_find (loop->header, dom);
-
-	      flow_loop_pre_header_scan (loop);
-	    }
+	  flow_loop_scan (loops, loop, flags);
 	}
 
       /* Natural loops with shared headers may either be disjoint or
@@ -8337,11 +8369,6 @@ flow_loops_find (loops, flags)
     }
 
   loops->num = num_loops;
-
-  /* Save CFG derived information to avoid recomputing it.  */
-  loops->cfg.dom = dom;
-  loops->cfg.dfs_order = dfs_order;
-  loops->cfg.rc_order = rc_order;
 
   /* Build the loop hierarchy tree.  */
   flow_loops_tree_build (loops);

@@ -428,6 +428,7 @@ extern void flow_loops_dump PARAMS ((const struct loops *, FILE *,
 extern void flow_loop_dump PARAMS ((const struct loop *, FILE *,
 				    void (*)(const struct loop *,
 					     FILE *, int), int));
+extern int flow_loop_scan PARAMS ((struct loops *, struct loop *, int));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list 
@@ -485,9 +486,11 @@ enum update_life_extent
 
 #define LOOP_TREE		1 	/* Build loop hierarchy tree.  */
 #define LOOP_PRE_HEADER		2	/* Analyse loop pre-header.  */
-#define LOOP_EDGES		4 	/* Find entry and exit edges.  */
-#define LOOP_EXITS_DOMS		8 	/* Find nodes that dom. all exits.  */
-#define LOOP_ALL	       15 	/* All of the above  */
+#define LOOP_ENTRY_EDGES	4 	/* Find entry edges.  */
+#define LOOP_EXIT_EDGES		8 	/* Find exit edges.  */
+#define LOOP_EDGES		(LOOP_ENTRY_EDGES | LOOP_EXIT_EDGES)
+#define LOOP_EXITS_DOMS	       16 	/* Find nodes that dom. all exits.  */
+#define LOOP_ALL	       31 	/* All of the above  */
 
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
