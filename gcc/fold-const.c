@@ -3934,11 +3934,13 @@ fold_truthop (code, truth_type, lhs, rhs)
 
       /* Make a mask that corresponds to both fields being compared.
 	 Do this for both items being compared.  If the masks agree,
+	 and the bits being compared are in the same position, then
 	 we can do this by masking both and comparing the masked
 	 results.  */
       ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask, 0);
       lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask, 0);
-      if (operand_equal_p (ll_mask, lr_mask, 0) && lnbitsize == rnbitsize)
+      if (operand_equal_p (ll_mask, lr_mask, 0)
+	  && lnbitsize == rnbitsize && xll_bitpos == xlr_bitpos)
 	{
 	  lhs = make_bit_field_ref (ll_inner, type, lnbitsize, lnbitpos,
 				    ll_unsignedp || rl_unsignedp);
