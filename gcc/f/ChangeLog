@@ -1,3 +1,19 @@
+Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
+
+	Support FORMAT(I<1+2>) (constant variable-FORMAT
+	expressions):
+	* bad.def (FFEBAD_FORMAT_VARIABLE): New diagnostic.
+	* std.c (ffestd_R1001rtexpr_): New function.
+	(ffestd_R1001dump_, ffestd_R1001dump_1005_1_,
+	ffestd_R1001dump_1005_2_, ffestd_R1001dump_1005_3_,
+	ffestd_R1001dump_1005_4_, ffestd_R1001dump_1005_5_,
+	ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+	ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_):
+	Use new function instead of ffestd_R1001error_.
+
+	* stb.c (ffestb_R10014_, ffestb_R10016_, ffestb_R10018_,
+	ffestb_R100110_): Restructure `for' loop for style.
+
 Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* ste.c (ffeste_begin_iterdo_): Fix loop setup so iteration

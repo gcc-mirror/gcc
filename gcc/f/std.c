@@ -546,6 +546,7 @@ static void ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f,
 static void ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f,
 				      char *string);
 static void ffestd_R1001error_ (ffesttFormatList f);
+static void ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr);
 
 /* Internal macros. */
 
@@ -4360,7 +4361,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
 	  if (next->u.R1003D.R1004.present)
 	    {
 	      if (next->u.R1003D.R1004.rtexpr)
-		ffestd_R1001error_ (next);
+		ffestd_R1001rtexpr_ (s, next, next->u.R1003D.R1004.u.expr);
 	      else
 		ffests_printf_1U (s, "%lu",
 				  next->u.R1003D.R1004.u.unsigned_val);
@@ -4393,7 +4394,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1004.present)
     {
       if (f->u.R1005.R1004.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
@@ -4403,7 +4404,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1006.present)
     {
       if (f->u.R1005.R1006.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
     }
@@ -4426,7 +4427,7 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1004.present)
     {
       if (f->u.R1005.R1004.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
@@ -4434,7 +4435,7 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 }
@@ -4455,7 +4456,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1004.present)
     {
       if (f->u.R1005.R1004.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
@@ -4463,7 +4464,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
@@ -4471,7 +4472,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
     {
       ffests_putc (s, '.');
       if (f->u.R1005.R1007_or_R1008.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
       else
 	ffests_printf_1U (s, "%lu",
 			  f->u.R1005.R1007_or_R1008.u.unsigned_val);
@@ -4495,7 +4496,7 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1004.present)
     {
       if (f->u.R1005.R1004.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
@@ -4503,13 +4504,13 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 }
@@ -4530,7 +4531,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1005.R1004.present)
     {
       if (f->u.R1005.R1004.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
     }
@@ -4538,13 +4539,13 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 
@@ -4552,7 +4553,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
     {
       ffests_putc (s, 'E');
       if (f->u.R1005.R1009.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1009.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1009.u.unsigned_val);
     }
@@ -4586,7 +4587,7 @@ ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, char *string)
   if (f->u.R1010.val.present)
     {
       if (f->u.R1010.val.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
     }
@@ -4607,7 +4608,7 @@ ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, char *string)
   assert (f->u.R1010.val.present);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
 
@@ -4627,7 +4628,7 @@ ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, char *string)
   assert (f->u.R1010.val.present);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1D (s, "%ld", f->u.R1010.val.u.signed_val);
 
@@ -4649,7 +4650,7 @@ ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
 }
@@ -4667,6 +4668,52 @@ ffestd_R1001error_ (ffesttFormatList f)
   ffebad_start (FFEBAD_FORMAT_UNSUPPORTED);
   ffebad_here (0, ffelex_token_where_line (f->t), ffelex_token_where_column (f->t));
   ffebad_finish ();
+}
+
+static void
+ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr)
+{
+  if ((expr == NULL)
+      || (ffebld_op (expr) != FFEBLD_opCONTER)
+      || (ffeinfo_basictype (ffebld_info (expr)) != FFEINFO_basictypeINTEGER)
+      || (ffeinfo_kindtype (ffebld_info (expr)) == FFEINFO_kindtypeINTEGER4))
+    {
+      ffebad_start (FFEBAD_FORMAT_VARIABLE);
+      ffebad_here (0, ffelex_token_where_line (f->t), ffelex_token_where_column (f->t));
+      ffebad_finish ();
+    }
+  else
+    {
+      int val;
+
+      switch (ffeinfo_kindtype (ffebld_info (expr)))
+	{
+#if FFETARGET_okINTEGER1
+	case FFEINFO_kindtypeINTEGER1:
+	  val = ffebld_constant_integer1 (ffebld_conter (expr));
+	  break;
+#endif
+
+#if FFETARGET_okINTEGER2
+	case FFEINFO_kindtypeINTEGER2:
+	  val = ffebld_constant_integer2 (ffebld_conter (expr));
+	  break;
+#endif
+
+#if FFETARGET_okINTEGER3
+	case FFEINFO_kindtypeINTEGER3:
+	  val = ffebld_constant_integer3 (ffebld_conter (expr));
+	  break;
+#endif
+
+	default:
+	  assert ("bad INTEGER constant kind type" == NULL);
+	  /* Fall through. */
+	case FFEINFO_kindtypeANY:
+	  return;
+	}
+      ffests_printf_1D (s, "%ld", val);
+    }
 }
 
 /* ffestd_R1102 -- PROGRAM statement
