@@ -118,6 +118,8 @@
          <li><a href="#5_6">Is libstdc++-v3 thread-safe?</a> </li>
          <li><a href="#5_7">How do I get a copy of the ISO C++ Standard?</a> </li>
          <li><a href="#5_8">What's an ABI and why is it so messy?</a> </li>
+         <li><a href="#5_9">How do I make std::vector&lt;T&gt;::capacity() 
+                            == std::vector&lt;T&gt;::size?</a> </li>
       </ol>
    </li>
 
@@ -1059,6 +1061,23 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          the decisions, must happen before you can reasonably document a
          candidate C++ ABI that encompasses the standard library.
       </p>
+
+<hr />
+   <h2><a name="5_9">5.9 How do I make std::vector&lt;T&gt;::capacity()
+                     == std::vector&lt;T&gt;::size()?</a> </h2>
+   <!-- referenced by 21_strings/howto.html#6 -->
+   <p>The standard idiom for deallocating a <code>std::vector&lt;T&gt;</code>'s
+      unused memory is to create a temporary copy of the vector and swap their
+      contents, e.g. for <code>std::vector&lt;T&gt; v</code>
+   </p>
+   <pre>
+     std::vector&lt;T&gt;(v).swap(v);
+   </pre>
+   <p>The copy will take O(n) time and the swap is constant time.
+   </p>
+   <p>See <a href='../21_strings/howto.html#6'>Shrink-to-fit strings</a> for
+      a similar solution for strings.
+   </p>
 
 <!-- ####################################################### -->
 

@@ -38,6 +38,7 @@
    <li><a href="#3">Breaking a C++ string into tokens</a></li>
    <li><a href="#4">Simple transformations</a></li>
    <li><a href="#5">Making strings of arbitrary character types</a></li>
+   <li><a href="#6">Shrink-to-fit strings</a></li>
 </ul>
 
 <hr />
@@ -443,6 +444,25 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
+<hr />
+<h2><a name="6">Shrink-to-fit strings</a></h2>
+   <!-- referenced by faq/index.html#5_9, update link if numbering changes -->
+   <p>From GCC 3.4 calling <code>s.reserve(res)</code> on a
+      <code>string s</code> with <code>res &lt; s.capacity()</code> will
+      reduce the string's capacity to <code>std::max(s.size(), res)</code>.
+   </p>
+   <p>This behaviour is suggested, but not required by the standard. Prior
+      to GCC 3.4 the following alternative can be used instead
+   </p>
+   <pre>
+      std::string(str.data(), str.size()).swap(str);
+   </pre>
+   <p>This is similar to the idiom for reducing a <code>vector</code>'s
+      memory usage (see <a href='../faq/index.html#5_9'>FAQ 5.9</a>) but
+      the regular copy constructor cannot be used because libstdc++'s
+      <code>string</code> is Copy-On-Write.
+   </p>
+      
 
 <!-- ####################################################### -->
 
