@@ -2166,7 +2166,7 @@ dfs_skip_nonprimary_vbases_unmarkedp (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 {
   if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
-    /* This is a non-primary virtual base.  SKip it.  */
+    /* This is a non-primary virtual base.  Skip it.  */
     return NULL_TREE;
 
   return unmarkedp (binfo, NULL);
@@ -2181,7 +2181,7 @@ dfs_skip_nonprimary_vbases_markedp (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 {
   if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
-    /* This is a non-primary virtual base.  SKip it.  */
+    /* This is a non-primary virtual base.  Skip it.  */
     return NULL_TREE;
 
   return markedp (binfo, NULL);
