@@ -1,3 +1,15 @@
+2001-08-14  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_compute_initial_elimination_offset): New
+	function.
+	(arm_expand_prologue): Handled nested functions which take a
+	variable argument list.
+	* config/arm/arm.h (ARM_INITIAL_ELIMINATION_OFFSET): Replace
+	macro with an invocation of
+	arm_compute_initial_elimination_offset.
+	* config/arm/arm-protos.h: Prototype
+	arm_compute_initial_elimination_offset. 
+
 2001-08-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific, avr): Fix markup.

@@ -7875,6 +7875,170 @@ emit_sfm (base_reg, count)
   return par;
 }
 
+/* Compute the distance from register FROM to register TO.
+   These can be the arg pointer (26), the soft frame pointer (25),
+   the stack pointer (13) or the hard frame pointer (11).
+   Typical stack layout looks like this:
+
+       old stack pointer -> |    |
+                             ----
+                            |    | \
+                            |    |   saved arguments for
+                            |    |   vararg functions
+			    |    | /
+                              --
+   hard FP & arg pointer -> |    | \
+                            |    |   stack
+                            |    |   frame
+                            |    | /
+                              --
+                            |    | \
+                            |    |   call saved
+                            |    |   registers
+      soft frame pointer -> |    | /
+                              --
+                            |    | \
+                            |    |   local
+                            |    |   variables
+                            |    | /
+                              --
+                            |    | \
+                            |    |   outgoing
+                            |    |   arguments
+   current stack pointer -> |    | /
+                              --
+
+  For a given funciton some or all of these stack compomnents
+  may not be needed, giving rise to the possibility of
+  eliminating some of the registers.
+
+  The values returned by this function must reflect the behaviour
+  of arm_expand_prologue() and arm_compute_save_reg_mask().
+
+  The sign of the number returned reflects the direction of stack
+  growth, so the values are positive for all eliminations except
+  from the soft frame pointer to the hard frame pointer.  */
+			    
+unsigned int
+arm_compute_initial_elimination_offset (from, to)
+     unsigned int from;
+     unsigned int to;
+{
+  unsigned int local_vars    = (get_frame_size () + 3) & ~3;
+  unsigned int outgoing_args = current_function_outgoing_args_size;
+  unsigned int stack_frame;
+  unsigned int call_saved_registers;
+  unsigned long func_type;
+  
+  func_type = arm_current_func_type ();
+
+  /* Volatile functions never return, so there is
+     no need to save call saved registers.  */
+  call_saved_registers = 0;
+  if (! IS_VOLATILE (func_type))
+    {
+      unsigned int reg;
+
+      for (reg = 0; reg <= 10; reg ++)
+	if (regs_ever_live[reg] && ! call_used_regs[reg])
+	  call_saved_registers += 4;
+
+      if (! TARGET_APCS_FRAME
+	  && ! frame_pointer_needed
+	  && regs_ever_live[HARD_FRAME_POINTER_REGNUM]
+	  && ! call_used_regs[HARD_FRAME_POINTER_REGNUM])
+	call_saved_registers += 4;
+
+      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+	call_saved_registers += 4;
+
+      if (regs_ever_live[LR_REGNUM]
+	  /* If a stack frame is going to be created, the LR will
+	     be saved as part of that, so we do not need to allow
+	     for it here.  */
+	  && ! frame_pointer_needed)
+	call_saved_registers += 4;
+    }
+
+  /* The stack frame contains 4 registers - the old frame pointer,
+     the old stack pointer, the return address and PC of the start
+     of the function.  */
+  stack_frame = frame_pointer_needed ? 16 : 0;
+
+  /* FIXME: we should allow for saved floating point registers.  */
+
+  /* OK, now we have enough information to compute the distances.
+     There must be an entry in these switch tables for each pair
+     of registers in ELIMINABLE_REGS, even if some of the entries
+     seem to be redundant or useless.  */
+  switch (from)
+    {
+    case ARG_POINTER_REGNUM:
+      switch (to)
+	{
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	  return 0;
+
+	case FRAME_POINTER_REGNUM:
+	  /* This is the reverse of the soft frame pointer
+	     to hard frame pointer elimination below.  */
+	  if (call_saved_registers == 0 && stack_frame == 0)
+	    return 0;
+	  return (call_saved_registers + stack_frame - 4);
+
+	case ARM_HARD_FRAME_POINTER_REGNUM:
+	  /* If there is no stack frame then the hard
+	     frame pointer and the arg pointer coincide.  */
+	  if (stack_frame == 0 && call_saved_registers != 0)
+	    return 0;
+	  /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
+	  return (frame_pointer_needed
+		  && current_function_needs_context
+		  && ! current_function_anonymous_args) ? 4 : 0;
+
+	case STACK_POINTER_REGNUM:
+	  /* If nothing has been pushed on the stack at all
+	     then this will return -4.  This *is* correct!  */
+	  return call_saved_registers + stack_frame + local_vars + outgoing_args - 4;
+
+	default:
+	  abort ();
+	}
+      break;
+
+    case FRAME_POINTER_REGNUM:
+      switch (to)
+	{
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	  return 0;
+
+	case ARM_HARD_FRAME_POINTER_REGNUM:
+	  /* The hard frame pointer points to the top entry in the
+	     stack frame.  The soft frame pointer to the bottom entry
+	     in the stack frame.  If there is no stack frame at all,
+	     then they are identical.  */
+	  if (call_saved_registers == 0 && stack_frame == 0)
+	    return 0;
+	  return - (call_saved_registers + stack_frame - 4);
+
+	case STACK_POINTER_REGNUM:
+	  return local_vars + outgoing_args;
+
+	default:
+	  abort ();
+	}
+      break;
+
+    default:
+      /* You cannot eliminate from the stack pointer.
+	 In theory you could eliminate from the hard frame
+	 pointer to the stack pointer, but this will never
+	 happen, since if a stack frame is not needed the
+	 hard frame pointer will never be used.  */
+      abort ();
+    }
+}
+
 /* Generate the prologue instructions for entry into an ARM function.  */
 
 void
@@ -7887,6 +8051,8 @@ arm_expand_prologue ()
   unsigned long live_regs_mask;
   unsigned long func_type;
   int fp_offset = 0;
+  int saved_pretend_args = 0;
+  unsigned int args_to_push;
 
   func_type = arm_current_func_type ();
 
@@ -7894,6 +8060,9 @@ arm_expand_prologue ()
   if (IS_NAKED (func_type))
     return;
 
+  /* Make a copy of c_f_p_a_s as we may need to modify it locally.  */
+  args_to_push = current_function_pretend_args_size;
+  
   /* Compute which register we will have to save onto the stack.  */
   live_regs_mask = arm_compute_save_reg_mask ();
 
@@ -7920,8 +8089,8 @@ arm_expand_prologue ()
 	       1. The last argument register.
 	       2. A slot on the stack above the frame.  (This only
 	          works if the function is not a varargs function).
-		  
-	     If neither of these places is available, we abort (for now).
+	       3. Register r3, after pushing the argument registers
+	          onto the stack.
 
 	     Note - we only need to tell the dwarf2 backend about the SP
 	     adjustment in the second variant; the static chain register
@@ -7934,7 +8103,7 @@ arm_expand_prologue ()
 	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
 	      insn = emit_insn (insn);
 	    }
-	  else if (current_function_pretend_args_size == 0)
+	  else if (args_to_push == 0)
 	    {
 	      rtx dwarf;
 	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
@@ -7953,13 +8122,27 @@ arm_expand_prologue ()
 						    dwarf, REG_NOTES (insn));
 	    }
 	  else
-	    /* FIXME - the way to handle this situation is to allow
-	       the pretend args to be dumped onto the stack, then
-	       reuse r3 to save IP.  This would involve moving the
-	       copying of SP into IP until after the pretend args
-	       have been dumped, but this is not too hard.  */
-	    /* [See e.g. gcc.c-torture/execute/nest-stdar-1.c.]  */
-	    error ("Unable to find a temporary location for static chain register");
+	    {
+	      /* Store the args on the stack.  */
+	      if (current_function_anonymous_args)
+		insn = emit_multi_reg_push
+		  ((0xf0 >> (args_to_push / 4)) & 0xf);
+	      else
+		insn = emit_insn
+		  (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, 
+			       GEN_INT (- args_to_push)));
+
+	      RTX_FRAME_RELATED_P (insn) = 1;
+
+	      saved_pretend_args = 1;
+	      fp_offset = args_to_push;
+	      args_to_push = 0;
+
+	      /* Now reuse r3 to preserve IP.  */
+	      insn = gen_rtx_REG (SImode, 3);
+	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
+	      (void) emit_insn (insn);
+	    }
 	}
 
       if (fp_offset)
@@ -7974,16 +8157,16 @@ arm_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (current_function_pretend_args_size)
+  if (args_to_push)
     {
       /* Push the argument registers, or reserve space for them.  */
       if (current_function_anonymous_args)
 	insn = emit_multi_reg_push
-	  ((0xf0 >> (current_function_pretend_args_size / 4)) & 0xf);
+	  ((0xf0 >> (args_to_push / 4)) & 0xf);
       else
 	insn = emit_insn
 	  (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, 
-		       GEN_INT (-current_function_pretend_args_size)));
+		       GEN_INT (- args_to_push)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -8045,25 +8228,26 @@ arm_expand_prologue ()
   if (frame_pointer_needed)
     {
       /* Create the new frame pointer.  */
-      insn = GEN_INT (-(4 + current_function_pretend_args_size + fp_offset));
+      insn = GEN_INT (-(4 + args_to_push + fp_offset));
       insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx, ip_rtx, insn));
       RTX_FRAME_RELATED_P (insn) = 1;
       
       if (IS_NESTED (func_type))
 	{
 	  /* Recover the static chain register.  */
-	  if (regs_ever_live [3] == 0)
+	  if (regs_ever_live [3] == 0
+	      || saved_pretend_args)
 	    {
 	      insn = gen_rtx_REG (SImode, 3);
 	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
-	      insn = emit_insn (insn);
+	      (void) emit_insn (insn);
 	    }
 	  else /* if (current_function_pretend_args_size == 0) */
 	    {
 	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx, GEN_INT (4));
 	      insn = gen_rtx_MEM (SImode, insn);
 	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
-	      insn = emit_insn (insn);
+	      (void) emit_insn (insn);
 	    }
 	}
     }
