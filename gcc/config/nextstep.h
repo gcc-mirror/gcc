@@ -30,8 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     { GCC_INCLUDE_DIR, 0},				\
     { LOCAL_INCLUDE_DIR, 0},				\
     { "/NextDeveloper/Headers", 0},			\
-    { "/NextDeveloper/Headers/ansi", 0},		\
-    { "/NextDeveloper/Headers/bsd", 0},			\
     { "/LocalDeveloper/Headers", 0},			\
     { "/LocalDeveloper/Headers/ansi", 0},		\
     { "/LocalDeveloper/Headers/bsd", 0},		\
