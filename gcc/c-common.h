@@ -167,32 +167,79 @@ extern tree simple_type_promotes_to		PARAMS ((tree));
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
+
+/* IF_STMT accessors. These give access to the condtion of the if
+   statement, the then block of the if statement, and the else block
+   of the if stsatement if it exists. */
 #define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
 #define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
 #define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
+
+/* WHILE_STMT accessors. These give access to the condtion of the
+   while statement and the body of the while statement, respectively. */
 #define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
 #define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
+
+/* DO_STMT accessors. These give access to the condition of the do
+   statement and the body of the do statement, respectively. */
 #define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
 #define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
+
+/* RETURN_STMT accessor. This gives the expression associated with a
+   return statement. */
 #define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
+
+/* EXPR_STMT accessor. This gives the expression associated with an
+   expression statement. */
 #define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
+
+/* FOR_STMT accessors. These give access to the init statement,
+   condition, update expression, and body of the for statement,
+   respectively. */
 #define FOR_INIT_STMT(NODE)     TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
 #define FOR_COND(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
 #define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
+
+/* SWITCH_STMT accessors. These give access to the condition and body
+   of the switch statement, respectively. */
 #define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
+
+/* CASE_LABEL accessors. These give access to the high and low values
+   of a case label, respectively. */
 #define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
 #define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
+
+/* GOTO_STMT accessor. This gives access to the label associated with
+   a goto statement. */
 #define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
+
+/* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
+   statements assocated with a compound statement. The result is the
+   first statement in the list. Succeeding nodes can be acccessed by
+   calling TREE_CHAIN on a node in the list. */
 #define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
+
+/* ASM_STMT accessors. ASM_STRING returns a STRING_CST for the
+   instruction (e.g., "mov x, y"). ASM_OUTPUTS, ASM_INPUTS, and
+   ASM_CLOBBERS represent the outputs, inputs, and clobbers for the
+   statement. */
 #define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
 #define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
 #define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
 #define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 3)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
+
+/* DECL_STMT accessor. This gives access to the DECL associated with
+   the given declaration statement. */ 
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
+
+/* STMT_EXPR accessor. */
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
+
+/* LABEL_STMT accessor. This gives access to the label associated with
+   the given label statement. */
 #define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
 /* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */

@@ -1,3 +1,143 @@
+2000-06-19  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
+
+	* cp-tree.h (genrtl_try_block): Declare function.
+	(genrtl_handler): Likewise.
+	(genrtl_catch_block): Likewise.
+	(genrtl_ctor_stmt): Likewise.
+	(genrtl_subobject): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(genrtl_do_poplevel): Likewise.
+	(genrtl_do_pushlevel): Likewise.
+	(genrtl_clear_out_block): Likewise.
+	(genrtl_goto_stmt): Likewise.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(genrtl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+	(genrtl_named_return_value): Likewise.
+	(genrtl_begin_stmt_expr): Likewise.
+	(genrtl_finish_stmt_expr): Likewise.
+	(finish_for_stmt): Removed first argument.
+	(finish_switch_stmt): Likewise.
+
+	* semantics.c (genrtl_try_block): Define function.
+	(genrtl_handler): Likewise.
+	(genrtl_catch_block): Likewise.
+	(genrtl_ctor_stmt): Likewise.
+	(genrtl_subobject): Likewise.
+	(genrtl_decl_cleanup): Likewise.
+	(genrtl_do_poplevel): Likewise.
+	(genrtl_do_pushlevel): Likewise.
+	(genrtl_clear_out_block): Likewise.
+	(genrtl_goto_stmt): Likewise.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Likewise.
+	(genrtl_if_stmt): Likewise.
+	(genrtl_while_stmt): Likewise.
+	(genrtl_do_stmt): Likewise.
+	(genrtl_return_stmt): Likewise.
+	(genrtl_for_stmt): Likewise.
+	(genrtl_break_stmt): Likewise.
+	(genrtl_continue_stmt): Likewise.
+	(genrtl_scope_stmt): Likewise.
+	(genrtl_switch_stmt): Likewise.
+	(genrtl_case_label): Likewise.
+	(genrtl_begin_compound_stmt): Likewise.
+	(genrtl_finish_compound_stmt): Likewise.
+	(genrtl_compound_stmt): Likewise.
+	(genrtl_asm_stmt): Likewise.
+	(genrtl_named_return_value): Likewise.
+	(genrtl_begin_stmt_expr): Likewise.
+	(genrtl_finish_stmt_expr): Likewise.
+	(finish_for_stmt): Removed first argument and generate rtl 
+	specific code.
+	(finish_switch_stmt): Likewise.
+	(do_poplevel): Removed generate rtl specific code.
+	(do_pushlevel): Likewise.
+	(add_tree): Likewise.
+	(finish_goto_stmt): Likewise.
+	(finish_expr_stmt): Likewise.
+	(begin_if_stmt): Likewise.
+	(finish_if_stmt_cond): Likewise.
+	(finish_then_clause): Likewise.
+	(begin_else_clause): Likewise.
+	(finish_else_clause): Likewise.
+	(finish_if_stmt): Likewise.
+	(clear_out_block): Likewise.
+	(begin_while_stmt): Likewise.
+	(finish_while_stmt_cond): Likewise.
+	(finish_while_stmt): Likewise.
+	(begin_do_stmt): Likewise.
+	(finish_do_body): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_return_stmt): Likewise.
+	(begin_for_stmt): Likewise.
+	(finish_for_init_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(finish_for_expr): Likewise.
+	(finish_break_stmt): Likewise.
+	(finish_continue_stmt): Likewise.
+	(begin_switch_stmt): Likewise.
+	(finish_switch_cond): Likewise.
+	(finish_case_label): Likewise.
+	(begin_try_block): Likewise.
+	(begin_function_try_block): Likewise.
+	(finish_try_block): Likewise.
+	(finish_cleanup_try_block): Likewise.
+	(finish_cleanup): Likewise.
+	(finish_function_try_block): Likewise.
+	(finish_handler_sequence): Likewise.
+	(finish_function_handler_sequence): Likewise.
+	(begin_handler): Likewise.
+	(finish_handler_parms): Likewise.
+	(begin_catch_block): Likewise.
+	(finish_handler): Likewise.
+	(begin_compound_stmt): Likewise.
+	(finish_compound_stmt): Likewise.
+	(finish_asm_stmt): Likewise.
+	(finish_label_stmt): Likewise.
+	(finish_label_decl): Likewise.
+	(finish_subobject): Likewise.
+	(finish_decl_cleanup): Likewise.
+	(finish_named_return_value): Likewise.
+	(begin_stmt_expr): Likewise.
+	(finish_stmt_expr): Likewise.
+	
+	* decl.c (initialize_local_var): Changed call to finish_expr_stmt
+	to call genrtl_expr_stmt when appropriate.
+
+	* init.c (begin_init_stmts): Changed calls to begin_stmt_expr and
+	begin_compound_expr to call genrtl_begin_stmt_expr and
+	genrtl_begin_compound_expr when appropriate.
+	(finish_init_stmts): Changed calls to finish_compound_expr and
+	finish_stmt_expr to call genrtl_finish_compound_expr and
+	genrtl_finish_stmt_expr when appropriate.
+	(expand_default_init): Changed call to finish_expr_stmt to call
+	genrtl_expr_stmt when appropriate.
+	(build_vec_init): Likewise.
+
+	* parse.y (simple_stmt): Removed first argument from call to 
+	finish_for_stmt. Removed first argument from call to 
+	finish_switch_stmt.
+
+	* parse.c: Regenerated.
+
+	* pt.c (tsubst_expr): Removed first argument from call to 
+	finish_for_stmt. Removed first argument from call to 
+	finish_switch_stmt.
+	
 2000-06-16  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* cp-tree.h (enum cplus_tree_code): Changed __DUMMY to

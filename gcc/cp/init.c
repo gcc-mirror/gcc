@@ -97,8 +97,15 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
      tree *stmt_expr_p;
      tree *compound_stmt_p;
 {
-  *stmt_expr_p = begin_stmt_expr ();
-  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+  if (building_stmt_tree ())
+    *stmt_expr_p = begin_stmt_expr ();
+  else
+    *stmt_expr_p = genrtl_begin_stmt_expr ();
+  
+  if (building_stmt_tree ())
+    *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+  else
+    *compound_stmt_p = genrtl_begin_compound_stmt (/*has_no_scope=*/1);
 }
 
 /* Finish out the statement-expression begun by the previous call to
@@ -108,10 +115,18 @@ tree
 finish_init_stmts (stmt_expr, compound_stmt)
      tree stmt_expr;
      tree compound_stmt;
-{
-  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
-  stmt_expr = finish_stmt_expr (stmt_expr);
 
+{  
+  if (building_stmt_tree ())
+    finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  else
+    genrtl_finish_compound_stmt (/*has_no_scope=*/1);
+  
+  if (building_stmt_tree ())
+    stmt_expr = finish_stmt_expr (stmt_expr);
+  else
+    stmt_expr = genrtl_finish_stmt_expr (stmt_expr);
+  
   /* To avoid spurious warnings about unused values, we set 
      TREE_USED.  */
   if (stmt_expr)
@@ -1297,7 +1312,12 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 
   rval = build_method_call (exp, ctor_name, parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
-    finish_expr_stmt (rval);
+    {
+      if (building_stmt_tree ())
+	finish_expr_stmt (rval);
+      else
+	genrtl_expr_stmt (rval);
+    }
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -2988,7 +3008,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
 	 full-expression.  */
       if (!building_stmt_tree ())
 	{
-	  finish_expr_stmt (elt_init);
+	  genrtl_expr_stmt (elt_init);
 	  expand_end_target_temps ();
 	}
       else

@@ -1,3 +1,38 @@
+2000-06-19  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* c-common.h (IF_COND): Added documentation.
+	(THEN_CLAUSE): Likewise.
+	(ELSE_CLAUSE): Likewise.
+	(WHILE_COND): Likewise.
+	(WHILE_BODY): Likewise.
+	(DO_COND): Likewise.
+	(DO_BODY): Likewise.
+	(RETURN_EXPR): Likewise.
+	(EXPR_STMT_EXPR): Likewise.
+	(FOR_INIT_STMT): Likewise.
+	(FOR_COND): Likewise.
+	(FOR_EXPR): Likewise.
+	(FOR_BODY): Likewise.
+	(SWITCH_COND): Likewise.
+	(SWITCH_BODY): Likewise.
+	(CASE_LOW): Likewise.
+	(CASE_HIGH): Likewise.
+	(GOTO_DESTINATION): Likewise.
+	(COMPOUND_BODY): Likewise.
+	(ASM_CV_QUAL): Likewise.
+	(ASM_STRING): Likewise.
+	(ASM_OUTPUTS): Likewise.
+	(ASM_INPUTS): Likewise.
+	(ASM_CLOBBERS): Likewise.
+	(DECL_STMT_DECL): Likewise.
+	(STMT_EXPR_STMT): Likewise.
+	(LABEL_STMT_LABEL): Likewise.
+
+	* c-common.def: Added documenetion for SRCLOC, EXPR_STMT, 
+	COMPOUND_STMT, DECL_STMT, IF_STMT, FOR_STMT, WHILE_STMT, DO_STMT, 
+	RETURN_STMT, BREAK_STMT, CONTINUE_STMT, SWITCH_STMT, GOTO_STMT, 
+	LABEL_STMT, ASM_STMT, SCOPE_STMT, CASE_LABEL, STMT_EXPR.
+
 2000-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (--enable-checking): Update --help doc to reflect

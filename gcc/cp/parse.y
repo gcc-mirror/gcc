@@ -3294,13 +3294,13 @@ simple_stmt:
 	  xexpr ')'
                 { finish_for_expr ($9, $<ttype>2); }
 	  already_scoped_stmt
-                { finish_for_stmt ($9, $<ttype>2); }
+                { finish_for_stmt ($<ttype>2); }
 	| SWITCH 
                 { $<ttype>$ = begin_switch_stmt (); }
 	    '(' condition ')'
                 { finish_switch_cond ($4, $<ttype>2); }
 	  implicitly_scoped_stmt
-                { finish_switch_stmt ($4, $<ttype>2); }
+                { finish_switch_stmt ($<ttype>2); }
 	| CASE expr_no_commas ':'
                 { finish_case_label ($2, NULL_TREE); }
 	  stmt

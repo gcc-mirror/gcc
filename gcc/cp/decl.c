@@ -7980,7 +7980,10 @@ initialize_local_var (decl, init, flags)
 			  DECL_SOURCE_LINE (decl));
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
 	  stmts_are_full_exprs_p = 1;
-	  finish_expr_stmt (build_aggr_init (decl, init, flags));
+	  if (building_stmt_tree ())
+	    finish_expr_stmt (build_aggr_init (decl, init, flags));
+	  else
+	    genrtl_expr_stmt (build_aggr_init (decl, init, flags));
 	  stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 	}
 
