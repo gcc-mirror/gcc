@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002, 2003,
 @c 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -1372,7 +1372,8 @@ struct empty @{
 @end example
 
 The structure will have size zero.  In C++, empty structures are part
-of the language, and the language standard says they have size 1.
+of the language.  G++ treats empty structures as if they had a single
+member of type @code{char}.
 
 @node Variable Length
 @section Arrays of Variable Length
