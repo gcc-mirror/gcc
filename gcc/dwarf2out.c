@@ -9520,6 +9520,10 @@ dwarf2out_decl (decl)
       break;
 
     case TYPE_DECL:
+      /* Don't emit stubs for types unless they are needed by other DIEs.  */
+      if (TYPE_DECL_SUPPRESS_DEBUG (decl))
+	return;
+
       /* Don't bother trying to generate any DIEs to represent any of the
          normal built-in types for the language we are compiling.  */
       if (DECL_SOURCE_LINE (decl) == 0)
