@@ -1,3 +1,9 @@
+2004-02-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/io/basic_file_stdio.cc (__gnu_internal::xwritev):
+	Rewrite, avoiding recursion.
+	(__gnu_internal::xwrite): Minor tweaks.
+
 2004-02-17  Stefan Olsson  <stefan@xapa.se>
 
 	* include/ext/mt_allocator.h: Removed the last
