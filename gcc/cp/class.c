@@ -2170,9 +2170,14 @@ finish_vtbls (binfo, do_self, t)
 	  decl = BINFO_VTABLE (binfo);
 	  context = DECL_CONTEXT (decl);
 	  DECL_CONTEXT (decl) = 0;
-	  if (DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
-	    DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
-					    BINFO_VIRTUALS (binfo));
+
+	  /* We make a copy here in case we need to replace pure
+	     virtual functions with __pure_virtual.  We don't want to
+	     mess up BINFO_VIRTUALS when we do this.  */
+	  DECL_INITIAL (decl) = copy_list (BINFO_VIRTUALS (binfo));
+	  DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
+					  DECL_INITIAL (decl));
+
 	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
 	  DECL_CONTEXT (decl) = context;
 	}
@@ -4197,24 +4202,6 @@ finish_struct (t, attributes, warn_anon)
 
   if (processing_template_decl)
     {
-      tree d = getdecls ();
-      for (; d; d = TREE_CHAIN (d))
-	{
-	  /* If this is the decl for the class or one of the template
-             parms, we've seen all the injected decls.  */
-	  if ((TREE_CODE (d) == TYPE_DECL
-	       && (TREE_TYPE (d) == t
-		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TYPE_PARM
-		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TEMPLATE_PARM))
-	      || TREE_CODE (d) == CONST_DECL)
-	    break;
-	  /* Don't inject cache decls.  */
-	  else if (IDENTIFIER_TEMPLATE (DECL_NAME (d)))
-	    continue;
-	  DECL_TEMPLATE_INJECT (CLASSTYPE_TI_TEMPLATE (t))
-	    = tree_cons (NULL_TREE, d,
-			 DECL_TEMPLATE_INJECT (CLASSTYPE_TI_TEMPLATE (t)));
-	}
       finish_struct_methods (t);
       TYPE_SIZE (t) = integer_zero_node;
     }      

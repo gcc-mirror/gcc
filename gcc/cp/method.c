@@ -999,8 +999,8 @@ build_overload_identifier (name)
       && CLASS_TYPE_P (TREE_TYPE (name))
       && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name))
       && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name)))
-	  || (TREE_CODE (DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE 
-				       (TREE_TYPE (name))))
+	  || (TREE_CODE (CP_DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE 
+					  (TREE_TYPE (name))))
 	      == FUNCTION_DECL)))
     {
       /* NAME is the TYPE_DECL for a template specialization.  */

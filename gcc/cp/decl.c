@@ -2783,25 +2783,7 @@ maybe_process_template_type_declaration (type, globalize, b)
 			  || TREE_CODE (type) == ENUMERAL_TYPE, 0);
 			  
 			  
-      if (/* If !GLOBALIZE then we are looking at a definition.
-	     It may not be a primary template.  (For example, in:
-		  
-	       template <class T>
-	       struct S1 { class S2 {}; }
-		  
-	     we have to push_template_decl for S2.)  */
-	  (processing_template_decl && !globalize)
-	  /* If we are declaring a friend template class, we will
-	     have GLOBALIZE set, since something like:
-
-	       template <class T>
-	       struct S1 {
-		 template <class U>
-		 friend class S2; 
-	       };
-
-	     declares S2 to be at global scope.  */
-	  || PROCESSING_REAL_TEMPLATE_DECL_P ())
+      if (processing_template_decl)
 	{
 	  /* This may change after the call to
 	     push_template_decl_real, but we want the original value.  */
