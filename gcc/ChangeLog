@@ -1,3 +1,13 @@
+2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expmed.c (choose_mult_variant): Pass MULT_COST as argument instead
+	of using register multiplication cost.
+	(expand_mult): Adapt choose_mult_variant call.
+	(expand_mult_highpart): Call choose_mult_variant with WIDER_MODE
+	of MODE; pass appropriate cost bound.  Adjust result when
+	performing signed multiplication by a negative constant.
+	Don't use intermediate modes larger than word_mode.
+
 2004-03-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): Remove handling of PLACEHOLDER_EXPR.
