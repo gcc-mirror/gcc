@@ -1067,6 +1067,9 @@ shorten_branches (first)
   if (insn_addresses)
     free (insn_addresses);
   insn_addresses = (int *) xmalloc (max_uid * sizeof (int));
+  /* Syntax errors can lead to labels being outside of the main insn stream.
+     Initialize insn_addresses, so that we get reproducible results.  */
+  bzero ((char *)insn_addresses, max_uid * sizeof *insn_addresses);
   if (uid_align)
     free (uid_align);
   uid_align = (rtx *) xmalloc (max_uid * sizeof *uid_align);
