@@ -1,3 +1,8 @@
+Tue Sep 14 00:35:02 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* libiberty.h (basename):  OpenBSD has a correct prototype.
+	(xrealloc):  Remove outdated comment.
+
 1999-09-07  Jeff Garzik  <jgarzik@pobox.com>
 
 	* libiberty.h (xmemdup): Add prototype for new function.
