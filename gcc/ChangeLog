@@ -1,3 +1,9 @@
+Thu May  4 14:37:23 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* predict.c (estimate_probability): If no prediction was found, then
+	predict the successor that is the next physical block (if such a
+	successor exists).
+
 2000-05-04  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/t-alpha (LIB2FUNCS_EXTRA): Use qrrnd.asm in place.

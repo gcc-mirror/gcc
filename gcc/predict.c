@@ -202,6 +202,19 @@ estimate_probability (loops_info)
 	  break;
 	}
 
+      /* If one of the blocks already directly follows the current
+	 block, then predict it as the taken path.  This reduces
+	 random block movement.  */
+      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
+        if (e->dest->index == i + 1)
+          {
+            if (e->flags & EDGE_FALLTHRU)
+              prob = 0;
+            else
+              prob = REG_BR_PROB_BASE;
+            goto emitnote;
+          }
+
       /* If we havn't chosen something by now, predict 50-50.  */
       prob = REG_BR_PROB_BASE / 2;
 
