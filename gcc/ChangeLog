@@ -17,6 +17,9 @@
 	fold_builtin_signbit): Use TYPE (TYPE (fndecl)) instead of
 	TREE_TYPE (exp).
 
+	* builtins.c (expand_builtin_mathfn_3): Remove local variable
+	before_call.
+
 2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251

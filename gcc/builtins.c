@@ -1990,7 +1990,7 @@ static rtx
 expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, insns, before_call;
+  rtx op0, insns;
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode mode;
@@ -2104,8 +2104,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	 with the stabilized argument list.  */
       end_sequence ();
     }
-
-  before_call = get_last_insn ();
 
   target = expand_call (exp, target, target == const0_rtx);
 
