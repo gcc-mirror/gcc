@@ -1,3 +1,7 @@
+Sat Oct  2 11:06:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* md.texi (define_peephole2): New section.
+
 Sat Oct  2 10:57:56 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (mov?i patterns): Fix handling of TARGET_USE_MOV0
