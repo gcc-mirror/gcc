@@ -1,3 +1,8 @@
+2004-09-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11459
+	* gcc.dg/pr11459-1.c: New test.
+
 2004-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/tree-ssa/loop-2.c: Avoid matching new-line in regexp.
