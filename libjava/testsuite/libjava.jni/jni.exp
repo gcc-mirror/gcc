@@ -167,7 +167,7 @@ proc gcj_jni_run {} {
 
   # For now we only test JNI on native builds.
   if {$build_triplet == $host_triplet} {
-    catch "glob -nocomplain ${srcdir}/${subdir}/*.java" srcfiles
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.java] } srcfiles
 
     foreach x $srcfiles {
       gcj_jni_test_one $x
