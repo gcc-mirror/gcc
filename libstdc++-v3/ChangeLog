@@ -1,3 +1,10 @@
+2003-06-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/allocator-inst.cc: Explicitly instantiate.
+	* include/ext/pool_allocator.h: Inhibit implicit instantiations.
+	Tweaks.
+	* config/linker-map.gnu: Add __pool_alloc bits. Tweaks.
+	
 2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Simplify.

@@ -129,7 +129,7 @@ namespace __gnu_cxx
       // Allocates a chunk for nobjs of size size.  nobjs may be reduced
       // if it is inconvenient to allocate the requested number.
       static char*
-      _S_chunk_alloc(size_t __size, int& __nobjs);
+      _S_chunk_alloc(size_t __n, int& __nobjs);
 
       // It would be nice to use _STL_auto_lock here.  But we need a
       // test whether threads are in use.
@@ -143,69 +143,12 @@ namespace __gnu_cxx
     public:
       // __n must be > 0
       static void*
-      allocate(size_t __n)
-      {
-	void* __ret = 0;
-
-	// If there is a race through here, assume answer from getenv
-	// will resolve in same direction.  Inspired by techniques
-	// to efficiently support threading found in basic_string.h.
-	if (_S_force_new == 0)
-	  {
-	    if (getenv("GLIBCPP_FORCE_NEW"))
-	      __atomic_add(&_S_force_new, 1);
-	    else
-	      __atomic_add(&_S_force_new, -1);
-	  }
-
-	if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	  __ret = __new_alloc::allocate(__n);
-	else
-	  {
-	    _Obj* volatile* __my_free_list = _S_free_list
-	      + _S_freelist_index(__n);
-	    // Acquire the lock here with a constructor call.  This
-	    // ensures that it is released in exit or during stack
-	    // unwinding.
-	    _Lock __lock_instance;
-	    _Obj* __restrict__ __result = *__my_free_list;
-	    if (__builtin_expect(__result == 0, 0))
-	      __ret = _S_refill(_S_round_up(__n));
-	    else
-	      {
-		*__my_free_list = __result -> _M_free_list_link;
-		__ret = __result;
-	      }	    
-	    if (__builtin_expect(__ret == 0, 0))
-	      __throw_bad_alloc();
-	  }
-	return __ret;
-      }
+      allocate(size_t __n);
 
       // __p may not be 0
       static void
-      deallocate(void* __p, size_t __n)
-      {
-	if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	  __new_alloc::deallocate(__p, __n);
-	else
-	  {
-	    _Obj* volatile*  __my_free_list = _S_free_list
-	      + _S_freelist_index(__n);
-	    _Obj* __q = (_Obj*)__p;
-
-	    // Acquire the lock here with a constructor call.  This
-	    // ensures that it is released in exit or during stack
-	    // unwinding.
-	    _Lock __lock_instance;
-	    __q -> _M_free_list_link = *__my_free_list;
-	    *__my_free_list = __q;
-	  }
-      }
+      deallocate(void* __p, size_t __n);
     };
-
-  template<bool __threads, int __inst> _Atomic_word
-  __pool_alloc<__threads, __inst>::_S_force_new = 0;
 
   template<bool __threads, int __inst>
     inline bool
@@ -220,16 +163,15 @@ namespace __gnu_cxx
     { return false; }
 
 
-  // We allocate memory in large chunks in order to avoid fragmenting the
-  // heap too much.  We assume that __size is properly aligned.  We hold
+  // Allocate memory in large chunks in order to avoid fragmenting the
+  // heap too much.  Assume that __n is properly aligned.  We hold
   // the allocation lock.
   template<bool __threads, int __inst>
     char*
-    __pool_alloc<__threads, __inst>::
-    _S_chunk_alloc(size_t __size, int& __nobjs)
+    __pool_alloc<__threads, __inst>::_S_chunk_alloc(size_t __n, int& __nobjs)
     {
       char* __result;
-      size_t __total_bytes = __size * __nobjs;
+      size_t __total_bytes = __n * __nobjs;
       size_t __bytes_left = _S_end_free - _S_start_free;
 
       if (__bytes_left >= __total_bytes)
@@ -238,10 +180,10 @@ namespace __gnu_cxx
           _S_start_free += __total_bytes;
           return __result ;
         }
-      else if (__bytes_left >= __size)
+      else if (__bytes_left >= __n)
         {
-          __nobjs = (int)(__bytes_left/__size);
-          __total_bytes = __size * __nobjs;
+          __nobjs = (int)(__bytes_left/__n);
+          __total_bytes = __n * __nobjs;
           __result = _S_start_free;
           _S_start_free += __total_bytes;
           return __result;
@@ -253,32 +195,32 @@ namespace __gnu_cxx
           // Try to make use of the left-over piece.
           if (__bytes_left > 0)
             {
-              _Obj* volatile* __my_free_list =
+              _Obj* volatile* __free_list =
                 _S_free_list + _S_freelist_index(__bytes_left);
 
-              ((_Obj*)(void*)_S_start_free) -> _M_free_list_link = *__my_free_list;
-              *__my_free_list = (_Obj*)(void*)_S_start_free;
+              ((_Obj*)(void*)_S_start_free)->_M_free_list_link = *__free_list;
+              *__free_list = (_Obj*)(void*)_S_start_free;
             }
           _S_start_free = (char*) __new_alloc::allocate(__bytes_to_get);
           if (_S_start_free == 0)
             {
               size_t __i;
-              _Obj* volatile* __my_free_list;
+              _Obj* volatile* __free_list;
               _Obj* __p;
               // Try to make do with what we have.  That can't hurt.  We
               // do not try smaller requests, since that tends to result
               // in disaster on multi-process machines.
-              __i = __size;
+              __i = __n;
               for (; __i <= (size_t) _S_max_bytes; __i += (size_t) _S_align)
                 {
-                  __my_free_list = _S_free_list + _S_freelist_index(__i);
-                  __p = *__my_free_list;
+                  __free_list = _S_free_list + _S_freelist_index(__i);
+                  __p = *__free_list;
                   if (__p != 0)
                     {
-                      *__my_free_list = __p -> _M_free_list_link;
+                      *__free_list = __p -> _M_free_list_link;
                       _S_start_free = (char*)__p;
                       _S_end_free = _S_start_free + __i;
-                      return _S_chunk_alloc(__size, __nobjs);
+                      return _S_chunk_alloc(__n, __nobjs);
                       // Any leftover piece will eventually make it to the
                       // right free list.
                     }
@@ -290,10 +232,9 @@ namespace __gnu_cxx
             }
           _S_heap_size += __bytes_to_get;
           _S_end_free = _S_start_free + __bytes_to_get;
-          return _S_chunk_alloc(__size, __nobjs);
+          return _S_chunk_alloc(__n, __nobjs);
         }
     }
-
 
   // Returns an object of size __n, and optionally adds to "size
   // __n"'s free list.  We assume that __n is properly aligned.  We
@@ -304,7 +245,7 @@ namespace __gnu_cxx
     {
       int __nobjs = 20;
       char* __chunk = _S_chunk_alloc(__n, __nobjs);
-      _Obj* volatile* __my_free_list;
+      _Obj* volatile* __free_list;
       _Obj* __result;
       _Obj* __current_obj;
       _Obj* __next_obj;
@@ -312,11 +253,11 @@ namespace __gnu_cxx
 
       if (1 == __nobjs)
         return __chunk;
-      __my_free_list = _S_free_list + _S_freelist_index(__n);
+      __free_list = _S_free_list + _S_freelist_index(__n);
 
       // Build free list in chunk.
       __result = (_Obj*)(void*)__chunk;
-      *__my_free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
+      *__free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
       for (__i = 1; ; __i++)
         {
 	  __current_obj = __next_obj;
@@ -332,10 +273,69 @@ namespace __gnu_cxx
       return __result;
     }
 
+  template<bool __threads, int __inst>
+    void*
+    __pool_alloc<__threads, __inst>::allocate(size_t __n)
+    {
+      void* __ret = 0;
+
+      // If there is a race through here, assume answer from getenv
+      // will resolve in same direction.  Inspired by techniques
+      // to efficiently support threading found in basic_string.h.
+      if (_S_force_new == 0)
+	{
+	  if (getenv("GLIBCPP_FORCE_NEW"))
+	    __atomic_add(&_S_force_new, 1);
+	  else
+	    __atomic_add(&_S_force_new, -1);
+	}
+      
+      if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
+	__ret = __new_alloc::allocate(__n);
+      else
+	{
+	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);
+	  // Acquire the lock here with a constructor call.  This
+	  // ensures that it is released in exit or during stack
+	  // unwinding.
+	  _Lock __lock_instance;
+	  _Obj* __restrict__ __result = *__free_list;
+	  if (__builtin_expect(__result == 0, 0))
+	    __ret = _S_refill(_S_round_up(__n));
+	  else
+	    {
+	      *__free_list = __result -> _M_free_list_link;
+	      __ret = __result;
+	    }	    
+	  if (__builtin_expect(__ret == 0, 0))
+	    __throw_bad_alloc();
+	}
+      return __ret;
+    }
+  
+  template<bool __threads, int __inst>
+    void
+    __pool_alloc<__threads, __inst>::deallocate(void* __p, size_t __n)
+    {
+      if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
+	__new_alloc::deallocate(__p, __n);
+      else
+	{
+	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);
+	  _Obj* __q = (_Obj*)__p;
+	  
+	  // Acquire the lock here with a constructor call.  This
+	  // ensures that it is released in exit or during stack
+	  // unwinding.
+	  _Lock __lock_instance;
+	  __q -> _M_free_list_link = *__free_list;
+	  *__free_list = __q;
+	}
+    }
 
   template<bool __threads, int __inst>
-    _STL_mutex_lock
-    __pool_alloc<__threads, __inst>::_S_lock __STL_MUTEX_INITIALIZER;
+    typename __pool_alloc<__threads, __inst>::_Obj* volatile
+    __pool_alloc<__threads, __inst>::_S_free_list[_S_freelists];
 
   template<bool __threads, int __inst>
     char* __pool_alloc<__threads, __inst>::_S_start_free = 0;
@@ -347,8 +347,18 @@ namespace __gnu_cxx
     size_t __pool_alloc<__threads, __inst>::_S_heap_size = 0;
 
   template<bool __threads, int __inst>
-    typename __pool_alloc<__threads, __inst>::_Obj* volatile
-    __pool_alloc<__threads, __inst>::_S_free_list[_S_freelists];
+    _STL_mutex_lock
+    __pool_alloc<__threads, __inst>::_S_lock __STL_MUTEX_INITIALIZER;
+
+  template<bool __threads, int __inst> _Atomic_word
+  __pool_alloc<__threads, __inst>::_S_force_new = 0;
+
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.
+  // NB: This syntax is a GNU extension.
+#if _GLIBCPP_EXTERN_TEMPLATE
+  extern template class __pool_alloc<true, 0>;
+#endif
 } // namespace __gnu_cxx
 
 namespace std
