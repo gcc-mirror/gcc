@@ -1,3 +1,14 @@
+2004-01-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-typeck.c (finish_init): Free spelling_base before 
+	setting it again.
+	
+	* cfgloop.c (flow_loops_find): Always free the sbitmap
+	headers.
+
+	* predict.c (estimate_probability): Free bbs after being
+	done with it.
+
 2004-01-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mn10300/mn10300.h (PREDICATE_CODES): Add

@@ -4450,6 +4450,8 @@ finish_init (void)
     abort ();
 
   /* Pop back to the data of the outer initializer (if any).  */
+  free (spelling_base);
+  
   constructor_decl = p->decl;
   constructor_asmspec = p->asmspec;
   require_constant_value = p->require_constant_value;
