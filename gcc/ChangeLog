@@ -1,3 +1,9 @@
+2004-12-24  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/19142
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Allow
+	DFmode for 32-bit again.
+
 2004-12-23  Roger Sayle  <roger@eyesopen.com>
 
 	* reload.c (regno_clobbered_p): Add a gcc_assert that regno
