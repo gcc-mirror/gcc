@@ -1459,7 +1459,8 @@ while (0)
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return TARGET_SNAKE ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20);	\
+    return TARGET_SNAKE && ! TARGET_DISABLE_FPREGS	\
+      ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20); 	\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -1693,8 +1694,7 @@ bss_section ()								\
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 { fprintf (FILE, "\t.word ");			\
   if (TARGET_SHARED_LIBS			\
-      && function_label_operand (VALUE, VOIDmode)\
-      && in_section != in_text)			\
+      && function_label_operand (VALUE, VOIDmode))\
     fprintf (FILE, "P%%");			\
   output_addr_const (FILE, (VALUE));		\
   fprintf (FILE, "\n");}
