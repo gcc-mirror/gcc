@@ -825,11 +825,18 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     AC_MSG_RESULT($has_weof)
   
     dnl Tests for wide character functions used in char_traits<wchar_t>.
-    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
-    wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
+    ac_wfuncs=yes
+    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset,, \
+    ac_wfuncs=no)
   
-    dnl Do quick checks for things injected into std:: by the c_std headers.
-    AC_CHECK_FUNCS(fgetwc, fgetws)
+    dnl Checks for names injected into std:: by the c_std headers.
+    AC_CHECK_FUNCS(btowc wctob fgetwc fgetwc fgetws fputwc fputws fwide \
+    fwprintf fwscanf swprintf swscanf vfwprintf vfwscanf vswprintf vswscanf \
+    vwprintf vwscanf wprintf wscanf getwc getwchar mbsinit mbrlen mbrtowc \
+    mbsrtowcs wcsrtombs putwc putwchar ungetwc wcrtomb wcstod wcstof wcstol \
+    wcstoul wcscpy wcsncpy wcscat wcsncat wcscmp wcscoll wcsncmp wcsxfrm \
+    wcscspn wcsspn wcstok wcsftime wcschr wcspbrk wcsrchr wcsstr,, \
+    ac_wfuncs=no)
 
     AC_MSG_CHECKING([for ISO C99 wchar_t support])
     if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
@@ -868,7 +875,7 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     dnl above support is present.
     AC_MSG_CHECKING([for enabled wchar_t specializations])
     if test x"$ac_isoC99_wchar_t" = xyes \
-       && test x"$ac_XPG2_wchar_t" = xyes; then
+    && test x"$ac_XPG2_wchar_t" = xyes; then
       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
       AC_MSG_RESULT("yes")
     else
@@ -1339,8 +1346,9 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
   AC_MSG_RESULT($ac_c99_stdlib)
 
   # Check for the existence of <wchar.h> functions used if C99 is enabled.
+  # XXX the wchar.h checks should be rolled into the general C99 bits.
   ac_c99_wchar=yes;
-  AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])
+  AC_MSG_CHECKING([for additional ISO C99 support in <wchar.h>])
   AC_TRY_COMPILE([#include <wchar.h>], 
 	         [wcstold(L"10.0", NULL);],, [ac_c99_wchar=no])
   AC_TRY_COMPILE([#include <wchar.h>], 
@@ -1351,8 +1359,8 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 
   AC_MSG_CHECKING([for enabled ISO C99 support])
   if test x"$ac_c99_math" = x"no" || test x"$ac_c99_stdio" = x"no" \
-	|| test x"$ac_c99_stdlib" = x"no" \
-	|| test x"$ac_c99_wchar" = x"no"; then
+      || test x"$ac_c99_stdlib" = x"no" \
+      || test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no; 
   fi; 
   AC_MSG_RESULT($enable_c99)
