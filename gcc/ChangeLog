@@ -1,3 +1,13 @@
+2004-03-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Set MEM_POINTER
+	flag.
+	* explow.c (force_not_mem): Set REG_POINTER flag according to
+	MEM_POINTER one.
+	* rtl.h (MEM_POINTER): New macro.
+	(struct rtx_def): Use integrated for MEM_SCALAR_P and frame_related
+	for MEM_POINTER.
+
 2004-03-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/13889
