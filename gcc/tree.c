@@ -1890,8 +1890,13 @@ substitute_in_expr (exp, f, r)
 	  else if (code == CONSTRUCTOR)
 	    abort ();
 
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	  op0 = TREE_OPERAND (exp, 0);
+	  op1 = TREE_OPERAND (exp, 1);
+	  if (contains_placeholder_p (op0))
+	    op0 = substitute_in_expr (op0, f, r);
+	  if (contains_placeholder_p (op1))
+	    op1 = substitute_in_expr (op1, f, r);
+
 	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
 	    return exp;
 
@@ -1917,9 +1922,17 @@ substitute_in_expr (exp, f, r)
 	  else if (code != COND_EXPR)
 	    abort ();
 
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
-	  op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
+	  op0 = TREE_OPERAND (exp, 0);
+	  op1 = TREE_OPERAND (exp, 1);
+	  op2 = TREE_OPERAND (exp, 2);
+
+	  if (contains_placeholder_p (op0))
+	    op0 = substitute_in_expr (op0, f, r);
+	  if (contains_placeholder_p (op1))
+	    op1 = substitute_in_expr (op1, f, r);
+	  if (contains_placeholder_p (op2))
+	    op2 = substitute_in_expr (op2, f, r);
+
 	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
 	      && op2 == TREE_OPERAND (exp, 2))
 	    return exp;
