@@ -1115,8 +1115,9 @@ extern int fixuplabelno;
 %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 
-#define	ENDFILE_LINUX_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
-%{mnewlib: ecrtn.o%s} %{!mnewlib: crtn.o%s}"
+#define	ENDFILE_LINUX_SPEC "\
+%{shared|pie:crtendS.o%s;:crtend.o%s} \
+%{mnewlib:ecrtn.o%s;:crtn.o%s}"
 
 #define LINK_START_LINUX_SPEC ""
 
