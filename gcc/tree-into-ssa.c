@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -775,11 +775,8 @@ ssa_rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
 
 	  if (abnormal_phi)
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = 1;
+	  ssa_register_new_def (result, new_name);
 	}
-      else
-	new_name = result;
-
-      ssa_register_new_def (result, new_name);
     }
 }
 
@@ -1654,7 +1651,6 @@ rewrite_ssa_into_ssa (void)
   struct mark_def_sites_global_data mark_def_sites_global_data;
   unsigned i;
   sbitmap snames_to_rename;
-  tree name;
   bitmap to_rename;
   bitmap_iterator bi;
   
@@ -1699,6 +1695,7 @@ rewrite_ssa_into_ssa (void)
   EXECUTE_IF_SET_IN_BITMAP (to_rename, 0, i, bi)
     {
       SET_BIT (snames_to_rename, i);
+      set_current_def (ssa_name (i), NULL_TREE);
     }
 
   mark_def_sites_global_data.kills = sbitmap_alloc (num_ssa_names);
@@ -1721,10 +1718,6 @@ rewrite_ssa_into_ssa (void)
 
   /* We no longer need this bitmap, clear and free it.  */
   sbitmap_free (mark_def_sites_global_data.kills);
-
-  for (i = 1; i < num_ssa_names; i++)
-    if (ssa_name (i))
-      set_current_def (ssa_name (i), NULL_TREE);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, to_rename);
@@ -1785,15 +1778,16 @@ rewrite_ssa_into_ssa (void)
 
   htab_delete (def_blocks);
 
+#ifdef ENABLE_CHECKING
   for (i = 1; i < num_ssa_names; i++)
     {
-      name = ssa_name (i);
-      if (!name || !SSA_NAME_AUX (name))
+      tree name = ssa_name (i);
+      if (!name)
 	continue;
 
-      free (SSA_NAME_AUX (name));
-      SSA_NAME_AUX (name) = NULL;
+      gcc_assert (SSA_NAME_AUX (name) == NULL);
     }
+#endif
 
   BITMAP_XFREE (to_rename);
   
