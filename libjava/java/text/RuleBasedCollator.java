@@ -167,208 +167,17 @@ public class RuleBasedCollator extends Collator
   // the prefix string.
   private Hashtable prefixes;
   
-  public Object clone ()
-  {
-    RuleBasedCollator c = (RuleBasedCollator) super.clone ();
-    c.map = (Hashtable) map.clone ();
-    c.prefixes = (Hashtable) map.clone ();
-    return c;
-  }
-
-  // A helper for CollationElementIterator.next().
-  int ceiNext (CollationElementIterator cei)
-  {
-    if (cei.lookahead_set)
-      {
-	cei.lookahead_set = false;
-	return cei.lookahead;
-      }
-
-    int save = cei.index;
-    int max = cei.text.length();
-    String s = null;
-
-    // It is possible to have a case where `abc' has a mapping, but
-    // neither `ab' nor `abd' do.  In this case we must treat `abd' as
-    // nothing special.
-    boolean found = false;
-
-    int i;
-    for (i = save + 1; i <= max; ++i)
-      {
-	s = cei.text.substring(save, i);
-	if (prefixes.get(s) == null)
-	  break;
-	found = true;
-      }
-    // Assume s != null.
-
-    Object obj = map.get(s);
-    // The special case.
-    while (found && obj == null && s.length() > 1)
-      {
-	--i;
-	s = cei.text.substring(save, i);
-	obj = map.get(s);
-      }
-
-    // Update state.
-    cei.index = i;
-
-    if (obj == null)
-      {
-	// This idea, and the values, come from JDK.
-	// assert (s.length() == 1)
-	cei.lookahead_set = true;
-	cei.lookahead = s.charAt(0) << 8;
-	return 0x7fff << 16;
-      }
-
-    return ((Integer) obj).intValue();
-  }
-
-  // A helper for compareTo() that returns the next character that has
-  // a nonzero ordering at the indicated strength.  This is also used
-  // in CollationKey.
-  static final int next (CollationElementIterator iter, int strength)
-  {
-    while (true)
-      {
-	int os = iter.next();
-	if (os == CollationElementIterator.NULLORDER)
-	  return os;
-	int c = 0;
-	switch (strength)
-	  {
-	  case PRIMARY:
-	    c = os & ~0xffff;
-	    break;
-	  case SECONDARY:
-	    c = os & ~0x00ff;
-	    break;
-	  case TERTIARY:
-	  case IDENTICAL:
-	    c = os;
-	    break;
-	  }
-	if (c != 0)
-	  return c;
-      }
-  }
-
-  public int compare (String source, String target)
-  {
-    CollationElementIterator cs, ct;
-
-    cs = new CollationElementIterator (source, this);
-    ct = new CollationElementIterator (target, this);
-
-    while (true)
-      {
-	int os = next (cs, strength);
-	int ot = next (ct, strength);
-
-	if (os == CollationElementIterator.NULLORDER
-	    && ot == CollationElementIterator.NULLORDER)
-	  break;
-	else if (os == CollationElementIterator.NULLORDER)
-	  {
-	    // Source string is shorter, so return "less than".
-	    return -1;
-	  }
-	else if (ot == CollationElementIterator.NULLORDER)
-	  {
-	    // Target string is shorter, so return "greater than".
-	    return 1;
-	  }
-
-	if (os != ot)
-	  return os - ot;
-      }
-
-    return 0;
-  }
-
-  public boolean equals (Object obj)
-  {
-    if (! (obj instanceof RuleBasedCollator) || ! super.equals(obj))
-      return false;
-    RuleBasedCollator rbc = (RuleBasedCollator) obj;
-    // FIXME: this is probably wrong.  Instead we should compare maps
-    // directly.
-    return (frenchAccents == rbc.frenchAccents
-	    && rules.equals(rbc.rules));
-  }
-
-  public CollationElementIterator getCollationElementIterator (String source)
-  {
-    StringBuffer expand = new StringBuffer (source.length());
-    int max = source.length();
-    for (int i = 0; i < max; ++i)
-      decomposeCharacter (source.charAt(i), expand);
-    return new CollationElementIterator (expand.toString(), this);
-  }
-
-  public CollationElementIterator getCollationElementIterator (CharacterIterator source)
-  {
-    StringBuffer expand = new StringBuffer ();
-    for (char c = source.first ();
-	 c != CharacterIterator.DONE;
-	 c = source.next ())
-      decomposeCharacter (c, expand);
-
-    return new CollationElementIterator (expand.toString(), this);
-  }
-
-  public CollationKey getCollationKey (String source)
-  {
-    return new CollationKey (getCollationElementIterator (source), source,
-			     strength);
-  }
-
-  public String getRules ()
-  {
-    return rules;
-  }
-
-  public int hashCode ()
-  {
-    return (frenchAccents ? 1231 : 1237
-	    ^ rules.hashCode()
-	    ^ map.hashCode()
-	    ^ prefixes.hashCode());
-  }
-
-  private final boolean is_special (char c)
-  {
-    // Rules from JCL book.
-    return ((c >= 0x0009 && c <= 0x000d)
-	    || (c >= 0x0020 && c <= 0x002f)
-	    || (c >= 0x003a && c <= 0x0040)
-	    || (c >= 0x005b && c <= 0x0060)
-	    || (c >= 0x007b && c <= 0x007e));
-  }
-
-  private final int text_argument (String rules, int index,
-				   StringBuffer result)
-  {
-    result.setLength(0);
-    int len = rules.length();
-    while (index < len)
-      {
-	char c = rules.charAt(index);
-	if (c == '\'' && index + 2 < len
-	    && rules.charAt(index + 2) == '\''
-	    && is_special (rules.charAt(index + 1)))
-	  index += 2;
-	else if (is_special (c) || Character.isWhitespace(c))
-	  return index;
-	result.append(c);
-	++index;
-      }
-    return index;
-  }
-
+  /**
+   * This method initializes a new instance of <code>RuleBasedCollator</code>
+   * with the specified collation rules.  Note that an application normally
+   * obtains an instance of <code>RuleBasedCollator</code> by calling the
+   * <code>getInstance</code> method of <code>Collator</code>.  That method
+   * automatically loads the proper set of rules for the desired locale.
+   *
+   * @param rules The collation rule string.
+   *
+   * @exception ParseException If the rule string contains syntax errors.
+   */
   public RuleBasedCollator (String rules) throws ParseException
   {
     this.rules = rules;
@@ -484,4 +293,273 @@ public class RuleBasedCollator extends Collator
 	  prefixes.put(r.key.substring(0, i), Boolean.TRUE);
       }
   }
+
+  /**
+   * This method creates a copy of this object.
+   *
+   * @return A copy of this object.
+   */
+  public Object clone()
+  {
+    RuleBasedCollator c = (RuleBasedCollator) super.clone ();
+    c.map = (Hashtable) map.clone ();
+    c.prefixes = (Hashtable) map.clone ();
+    return c;
+  }
+
+  // A helper for CollationElementIterator.next().
+  int ceiNext (CollationElementIterator cei)
+  {
+    if (cei.lookahead_set)
+      {
+	cei.lookahead_set = false;
+	return cei.lookahead;
+      }
+
+    int save = cei.index;
+    int max = cei.text.length();
+    String s = null;
+
+    // It is possible to have a case where `abc' has a mapping, but
+    // neither `ab' nor `abd' do.  In this case we must treat `abd' as
+    // nothing special.
+    boolean found = false;
+
+    int i;
+    for (i = save + 1; i <= max; ++i)
+      {
+	s = cei.text.substring(save, i);
+	if (prefixes.get(s) == null)
+	  break;
+	found = true;
+      }
+    // Assume s != null.
+
+    Object obj = map.get(s);
+    // The special case.
+    while (found && obj == null && s.length() > 1)
+      {
+	--i;
+	s = cei.text.substring(save, i);
+	obj = map.get(s);
+      }
+
+    // Update state.
+    cei.index = i;
+
+    if (obj == null)
+      {
+	// This idea, and the values, come from JDK.
+	// assert (s.length() == 1)
+	cei.lookahead_set = true;
+	cei.lookahead = s.charAt(0) << 8;
+	return 0x7fff << 16;
+      }
+
+    return ((Integer) obj).intValue();
+  }
+
+  // A helper for compareTo() that returns the next character that has
+  // a nonzero ordering at the indicated strength.  This is also used
+  // in CollationKey.
+  static final int next (CollationElementIterator iter, int strength)
+  {
+    while (true)
+      {
+	int os = iter.next();
+	if (os == CollationElementIterator.NULLORDER)
+	  return os;
+	int c = 0;
+	switch (strength)
+	  {
+	  case PRIMARY:
+	    c = os & ~0xffff;
+	    break;
+	  case SECONDARY:
+	    c = os & ~0x00ff;
+	    break;
+	  case TERTIARY:
+	  case IDENTICAL:
+	    c = os;
+	    break;
+	  }
+	if (c != 0)
+	  return c;
+      }
+  }
+
+  /**
+   * This method returns an integer which indicates whether the first
+   * specified <code>String</code> is less than, greater than, or equal to
+   * the second.  The value depends not only on the collation rules in
+   * effect, but also the strength and decomposition settings of this object.
+   *
+   * @param s1 The first <code>String</code> to compare.
+   * @param s2 A second <code>String</code> to compare to the first.
+   *
+   * @return A negative integer if s1 &lt; s2, a positive integer
+   * if s1 &gt; s2, or 0 if s1 == s2.
+   */
+  public int compare (String source, String target)
+  {
+    CollationElementIterator cs, ct;
+
+    cs = new CollationElementIterator (source, this);
+    ct = new CollationElementIterator (target, this);
+
+    while (true)
+      {
+	int os = next (cs, strength);
+	int ot = next (ct, strength);
+
+	if (os == CollationElementIterator.NULLORDER
+	    && ot == CollationElementIterator.NULLORDER)
+	  break;
+	else if (os == CollationElementIterator.NULLORDER)
+	  {
+	    // Source string is shorter, so return "less than".
+	    return -1;
+	  }
+	else if (ot == CollationElementIterator.NULLORDER)
+	  {
+	    // Target string is shorter, so return "greater than".
+	    return 1;
+	  }
+
+	if (os != ot)
+	  return os - ot;
+      }
+
+    return 0;
+  }
+
+  /**
+   * This method tests this object for equality against the specified 
+   * object.  This will be true if and only if the specified object is
+   * another reference to this object.
+   *
+   * @param obj The <code>Object</code> to compare against this object.
+   *
+   * @return <code>true</code> if the specified object is equal to this object, <code>false</code> otherwise.
+   */
+  public boolean equals (Object obj)
+  {
+    if (! (obj instanceof RuleBasedCollator) || ! super.equals(obj))
+      return false;
+    RuleBasedCollator rbc = (RuleBasedCollator) obj;
+    // FIXME: this is probably wrong.  Instead we should compare maps
+    // directly.
+    return (frenchAccents == rbc.frenchAccents
+	    && rules.equals(rbc.rules));
+  }
+
+  /**
+   * This method returns an instance for <code>CollationElementIterator</code>
+   * for the specified <code>String</code> under the collation rules for this
+   * object.
+   *
+   * @param str The <code>String</code> to return the <code>CollationElementIterator</code> instance for.
+   *
+   * @return A <code>CollationElementIterator</code> for the specified <code>String</code>.
+   */
+  public CollationElementIterator getCollationElementIterator (String source)
+  {
+    StringBuffer expand = new StringBuffer (source.length());
+    int max = source.length();
+    for (int i = 0; i < max; ++i)
+      decomposeCharacter (source.charAt(i), expand);
+    return new CollationElementIterator (expand.toString(), this);
+  }
+
+  /**
+   * This method returns an instance of <code>CollationElementIterator</code>
+   * for the <code>String</code> represented by the specified
+   * <code>CharacterIterator</code>.
+   *
+   * @param ci The <code>CharacterIterator</code> with the desired <code>String</code>.
+   *
+   * @return A <code>CollationElementIterator</code> for the specified <code>String</code>.
+   */
+  public CollationElementIterator getCollationElementIterator (CharacterIterator source)
+  {
+    StringBuffer expand = new StringBuffer ();
+    for (char c = source.first ();
+	 c != CharacterIterator.DONE;
+	 c = source.next ())
+      decomposeCharacter (c, expand);
+
+    return new CollationElementIterator (expand.toString(), this);
+  }
+
+  /**
+   * This method returns an instance of <code>CollationKey</code> for the
+   * specified <code>String</code>.  The object returned will have a
+   * more efficient mechanism for its comparison function that could
+   * provide speed benefits if multiple comparisons are performed, such
+   * as during a sort.
+   *
+   * @param str The <code>String</code> to create a <code>CollationKey</code> for.
+   *
+   * @return A <code>CollationKey</code> for the specified <code>String</code>.
+   */
+  public CollationKey getCollationKey (String source)
+  {
+    return new CollationKey (getCollationElementIterator (source), source,
+			     strength);
+  }
+
+  /**
+   * This method returns a <code>String</code> containing the collation rules
+   * for this object.
+   *
+   * @return The collation rules for this object.
+   */
+  public String getRules()
+  {
+    return rules;
+  }
+
+  /**
+   * This method returns a hash value for this object.
+   *
+   * @return A hash value for this object.
+   */
+  public int hashCode()
+  {
+    return (frenchAccents ? 1231 : 1237
+	    ^ rules.hashCode()
+	    ^ map.hashCode()
+	    ^ prefixes.hashCode());
+  }
+
+  private final boolean is_special (char c)
+  {
+    // Rules from JCL book.
+    return ((c >= 0x0009 && c <= 0x000d)
+	    || (c >= 0x0020 && c <= 0x002f)
+	    || (c >= 0x003a && c <= 0x0040)
+	    || (c >= 0x005b && c <= 0x0060)
+	    || (c >= 0x007b && c <= 0x007e));
+  }
+
+  private final int text_argument (String rules, int index,
+				   StringBuffer result)
+  {
+    result.setLength(0);
+    int len = rules.length();
+    while (index < len)
+      {
+	char c = rules.charAt(index);
+	if (c == '\'' && index + 2 < len
+	    && rules.charAt(index + 2) == '\''
+	    && is_special (rules.charAt(index + 1)))
+	  index += 2;
+	else if (is_special (c) || Character.isWhitespace(c))
+	  return index;
+	result.append(c);
+	++index;
+      }
+    return index;
+  }
+
 }
