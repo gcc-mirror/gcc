@@ -911,6 +911,16 @@ gfc_resolve_modulo (gfc_expr * f, gfc_expr * a,
 		    a->ts.kind);
 }
 
+void
+gfc_resolve_nearest (gfc_expr * f, gfc_expr * a,
+             gfc_expr *p ATTRIBUTE_UNUSED)
+{
+
+  f->ts = a->ts;
+  f->value.function.name =
+    gfc_get_string ("__nearest_%c%d", gfc_type_letter (a->ts.type),
+            a->ts.kind);
+}
 
 void
 gfc_resolve_nint (gfc_expr * f, gfc_expr * a, gfc_expr * kind)

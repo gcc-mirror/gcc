@@ -1,5 +1,13 @@
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/15205
+	* iresolve.c (gfc_resolve_nearest): Add new function.
+	* intrinsic.h: ... declare it here.
+	* intrinsic.c (add_functions): ... add it as resolving function
+	for NEAREST.
+	
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
         PR fortran/14066
 	* match.c (gfc_match_do): Allow infinite loops with
 	label-do-stmt. Do not enforce space after comma.
