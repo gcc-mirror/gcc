@@ -4858,7 +4858,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
 	return CONST0_RTX (TYPE_MODE (TREE_TYPE (exp)));
 
-      /* Compute the argument.  */
+      /* Stabilize and compute the argument.  */
+      if (TREE_CODE (TREE_VALUE (arglist)) != VAR_DECL
+	  && TREE_CODE (TREE_VALUE (arglist)) != PARM_DECL)
+	{
+	  exp = copy_node (exp);
+	  arglist = copy_node (arglist);
+	  TREE_OPERAND (exp, 1) = arglist;
+	  TREE_VALUE (arglist) = save_expr (TREE_VALUE (arglist));
+	}
       op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
 
       /* Make a suitable register to place result in.  */
