@@ -3730,7 +3730,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  RTX_UNCHANGING_P (to_rtx) = 1;
 	}
 
-      if (! can_address_p (to))
+      if (GET_CODE (to_rtx) == MEM && ! can_address_p (to))
 	{
 	  if (to_rtx == orig_to_rtx)
 	    to_rtx = copy_rtx (to_rtx);
