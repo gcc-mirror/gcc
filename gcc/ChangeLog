@@ -1,5 +1,10 @@
 2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (a peephole2): Don't handle 65535.
+	(two peephole2): New.
+
+2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (several peephole2): Replace
 	find_regno_note with peep2_reg_dead_p.
 
