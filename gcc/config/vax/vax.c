@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -685,9 +685,9 @@ vms_check_external (decl, name, pending)
 	if (pending)
 	  return;
 
-	/* Was pending, but may now be defined; move it to other list.  */
+	/* Was pending, but has now been defined; move it to other list.  */
 	if (p == pending_head)
-	  pending_head = 0;
+	  pending_head = p->next;
 	else
 	  p0->next = p->next;
 	p->next = extern_head;
