@@ -1,3 +1,16 @@
+2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* diagnostic.h (output_formatted_scalar): Tweak.
+	* diagnostic.c (output_long_decimal): Likewise.
+	(output_unsigned_decimal): Likewise.
+	(output_long_unsigned_decimal): Likewise.
+	(output_octal): Likewise.
+	(output_long_octal): Likewise.
+	(output_hexadecimal): Likewise.
+	(output_long_hexadecimal): Likewise.
+	(output_pointer): New function.
+	(output_format): Use it.  Recognize "%p" format specifier.
+
 2003-04-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* function.c (purge_addressof_1): Postpone insn in fewer cases.

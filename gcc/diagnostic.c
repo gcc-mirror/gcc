@@ -307,60 +307,52 @@ output_decimal (buffer, i)
   output_formatted_scalar (buffer, "%d", i);
 }
 
-static void
-output_long_decimal (buffer, i)
-     output_buffer *buffer;
-     long int i;
+static inline void
+output_long_decimal (output_buffer *buffer, long int i)
 {
   output_formatted_scalar (buffer, "%ld", i);
 }
 
-static void
-output_unsigned_decimal (buffer, i)
-     output_buffer *buffer;
-     unsigned int i;
+static inline void
+output_unsigned_decimal (output_buffer *buffer, unsigned int i)
 {
   output_formatted_scalar (buffer, "%u", i);
 }
 
-static void
-output_long_unsigned_decimal (buffer, i)
-     output_buffer *buffer;
-     long unsigned int i;
+static inline void
+output_long_unsigned_decimal (output_buffer *buffer, long unsigned int i)
 {
   output_formatted_scalar (buffer, "%lu", i);
 }
 
-static void
-output_octal (buffer, i)
-     output_buffer *buffer;
-     unsigned int i;
+static inline void
+output_octal (output_buffer *buffer, unsigned int i)
 {
   output_formatted_scalar (buffer, "%o", i);
 }
 
-static void
-output_long_octal (buffer, i)
-     output_buffer *buffer;
-     unsigned long int i;
+static inline void
+output_long_octal (output_buffer *buffer, long unsigned int i)
 {
   output_formatted_scalar (buffer, "%lo", i);
 }
 
-static void
-output_hexadecimal (buffer, i)
-     output_buffer *buffer;
-     unsigned int i;
+static inline void
+output_hexadecimal (output_buffer *buffer, unsigned int i)
 {
   output_formatted_scalar (buffer, "%x", i);
 }
 
-static void
-output_long_hexadecimal (buffer, i)
-     output_buffer *buffer;
-     unsigned long int i;
+static inline void
+output_long_hexadecimal (output_buffer *buffer, long unsigned int i)
 {
   output_formatted_scalar (buffer, "%lx", i);
+}
+
+static inline void
+output_pointer (output_buffer *buffer, void *p)
+{
+  output_formatted_scalar (buffer, "%p", p);
 }
 
 /* Append to BUFFER a string specified by its STARTING character
@@ -497,6 +489,7 @@ output_buffer_to_stream (buffer)
    %ld, %li, %lo, %lu, %lx: long versions of the above.
    %c: character.
    %s: string.
+   %p: pointer.
    %%: `%'.
    %*.s: a substring the length of which is specified by an integer.
    %H: location_t.  */
@@ -530,7 +523,7 @@ output_format (buffer, text)
 	}
 
       /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %o, %s, %u,
-         %x, %.*s; %%.  And nothing else.  Front-ends should install
+         %x, %p, %.*s; %%.  And nothing else.  Front-ends should install
          printers to grok language specific format specifiers.  */
       switch (*text->format_spec)
 	{
@@ -557,6 +550,10 @@ output_format (buffer, text)
 	case 's':
 	  output_add_string (buffer, va_arg (*text->args_ptr, const char *));
 	  break;
+
+        case 'p':
+          output_pointer (buffer, va_arg (*text->args_ptr, void *));
+          break;
 
 	case 'u':
 	  if (long_integer)
