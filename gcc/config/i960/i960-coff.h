@@ -1,13 +1,10 @@
 /* Definitions of target machine for GNU compiler, for "naked" Intel
    80960 using coff object format and coff debugging symbols.
-   Copyright (C) 1988, 1989, 1991 Intel Corp.
-   Copyright (C) 1996 Free Software Foundation.
+   Copyright (C) 1988, 1989, 1991, 1996 Free Software Foundation.
    Contributed by Steven McGeady (mcg@omepd.intel.com)
    Additional work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Michael Tiemann, Cygnus Support.
- */
 
-/*
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -25,15 +22,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i960/i960.h"
+/* Support -gstabs using stabs in COFF sections.  */
 
 /* Generate SDB_DEBUGGING_INFO by default.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
-
-/* Support -gstabs using stabs in COFF sections.  */
-
-#include "dbxcoff.h"
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
