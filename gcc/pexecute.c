@@ -42,6 +42,25 @@ Boston, MA 02111-1307, USA.  */
 #include "libiberty.h"
 #endif
 
+#ifdef ENABLE_NLS
+# include <libintl.h>
+#else
+# ifdef gettext
+# undef gettext
+# endif
+# define gettext(msgid) (msgid)
+#endif
+
+#ifdef _
+#undef _
+#endif
+#define _(msgid) gettext (msgid)
+
+#ifdef N_
+#undef N_
+#endif
+#define N_(msgid) (msgid)
+
 /* stdin file number.  */
 #define STDIN_FILE_NO 0
 
@@ -54,7 +73,7 @@ Boston, MA 02111-1307, USA.  */
 /* value of `pipe': port index for writing.  */
 #define WRITE_PORT 1
 
-static char *install_error_msg = "installation problem, cannot exec `%s'";
+static char install_error_msg[] = N_("installation problem, cannot exec `%s'");
 
 /* pexecute: execute a program.
 
@@ -156,7 +175,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       int errno_save = errno;
       free (scmd);
       errno = errno_save;
-      *errmsg_fmt = "cannot open `%s.gp'";
+      *errmsg_fmt = _("cannot open `%s.gp'");
       *errmsg_arg = temp_base;
       return -1;
     }
@@ -186,7 +205,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   if (rc == -1)
     {
-      *errmsg_fmt = install_error_msg;
+      *errmsg_fmt = _(install_error_msg);
       *errmsg_arg = program;
       return -1;
     }
@@ -290,7 +309,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
     (_P_NOWAIT, program, fix_argv (argv));
   if (pid == -1)
     {
-      *errmsg_fmt = install_error_msg;
+      *errmsg_fmt = _(install_error_msg);
       *errmsg_arg = program;
       return -1;
     }
@@ -347,7 +366,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   pid = (flags & PEXECUTE_SEARCH ? spawnvp : spawnv) (1, program, argv);
   if (pid == -1)
     {
-      *errmsg_fmt = install_error_msg;
+      *errmsg_fmt = _(install_error_msg);
       *errmsg_arg = program;
       return -1;
     }
@@ -612,7 +631,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
       /* Note: Calling fprintf and exit here doesn't seem right for vfork.  */
       fprintf (stderr, "%s: ", this_pname);
-      fprintf (stderr, install_error_msg, program);
+      fprintf (stderr, _(install_error_msg), program);
 #ifdef IN_GCC
       fprintf (stderr, ": %s\n", my_strerror (errno));
 #else
