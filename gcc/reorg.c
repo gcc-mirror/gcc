@@ -1592,12 +1592,17 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
 
   /* We can't do anything if there are more delay slots in SEQ than we
      can handle, or if we don't know that it will be a taken branch.
-
      We know that it will be a taken branch if it is either an unconditional
-     branch or a conditional branch with a stricter branch condition.  */
+     branch or a conditional branch with a stricter branch condition.
+
+     Also, exit if the branch has more than one set, since then it is computing
+     other results that can't be ignored, e.g. the HPPA mov&branch instruction.
+     ??? It may be possible to move other sets into INSN in addition to
+     moving the instructions in the delay slots.  */
 
   if (XVECLEN (seq, 0) - 1 > slots_remaining
-      || ! condition_dominates_p (condition, XVECEXP (seq, 0, 0)))
+      || ! condition_dominates_p (condition, XVECEXP (seq, 0, 0))
+      || ! single_set (XVECEXP (seq, 0, 0)))
     return delay_list;
 
   for (i = 1; i < XVECLEN (seq, 0); i++)
