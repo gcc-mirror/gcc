@@ -1,3 +1,8 @@
+2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_mov_length): Fix length of
+	mov:SF on H8/300.
+
 2003-06-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h (BIGGEST_FIELD_ALIGNMENT): Make defintion

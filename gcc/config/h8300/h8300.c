@@ -1893,10 +1893,7 @@ compute_mov_length (rtx *operands)
 	      if (REG_P (src))
 		return 4;
 
-	      if (src == const0_rtx)
-		return 2;
-
-	      return 6;
+	      return 8;
 	    }
 
 	  base_length = 8;
