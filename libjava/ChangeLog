@@ -1,3 +1,8 @@
+2003-11-27  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/UIDefaults.java:
+	Reformated to match classpath's version.
+
 2003-11-27  Sascha Brawer  <brawer@dandelis.ch>
 
 	* javax/swing/UIManager.java (getDefaults, getDimension,
