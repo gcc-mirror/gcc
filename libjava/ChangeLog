@@ -1,3 +1,8 @@
+2000-02-16  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (_Jv_JNI_FindClass): Use ClassLoader.loadClass, not
+	findClass.
+
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
 	* resolve.cc (ncode): Set args_raw_size.  Compute jni_cif and

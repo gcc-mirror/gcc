@@ -337,7 +337,7 @@ _Jv_JNI_FindClass (JNIEnv *env, const char *name)
     loader = env->klass->getClassLoader ();
 
   // FIXME: exception processing.
-  jclass r = loader->findClass (n);
+  jclass r = loader->loadClass (n);
 
   return (jclass) wrap_value (env, r);
 }
