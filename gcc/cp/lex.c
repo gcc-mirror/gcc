@@ -1865,6 +1865,8 @@ get_last_nonwhite_on_line ()
 
 int linemode;
 
+int handle_cp_pragma ();
+
 int
 check_newline ()
 {
@@ -1909,251 +1911,36 @@ check_newline ()
 	      && getch () == 'm'
 	      && getch () == 'a')
 	    {
-	      /* Read first nonwhite char after the `#pragma'.  */
-
-	      do
+	      c = getch ();
+	      while (c == ' ' || c == '\t')
 		c = getch ();
-	      while (c == ' ' || c == '\t');
-
-	      if (c == 'v'
-		  && getch () == 't'
-		  && getch () == 'a'
-		  && getch () == 'b'
-		  && getch () == 'l'
-		  && getch () == 'e'
-		  && ((c = getch ()) == ' ' || c == '\t'))
+	      put_back (c);
+	      if (c == '\n' || c == EOF)
+		goto skipline;
+	      token = real_yylex ();
+	      if (token == IDENTIFIER
+		  && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
 		{
-		  extern tree pending_vtables;
-
-		  /* More follows: it must be a string constant (class name).  */
-		  token = real_yylex ();
-		  if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
-		    {
-		      error ("invalid #pragma vtable");
-		      goto skipline;
-		    }
-		  if (write_virtuals != 2)
-		    {
-		      warning ("use `+e2' option to enable #pragma vtable");
-		      goto skipline;
-		    }
-		  pending_vtables = perm_tree_cons (NULL_TREE, get_identifier (TREE_STRING_POINTER (yylval.ttype)), pending_vtables);
-		  if (nextchar < 0)
-		    nextchar = getch ();
-		  c = nextchar;
-		  if (c != EOF)
-		    warning ("trailing characters ignored");
+		  /* If this is 1, we handled it; if it's -1, it was one we
+		     wanted but had something wrong with it.  Only if it's
+		     0 was it not handled.  */
+		  if (handle_cp_pragma (IDENTIFIER_POINTER (yylval.ttype)))
+		    goto skipline;
 		}
-	      else if (c == 'u'
-		       && getch () == 'n'
-		       && getch () == 'i'
-		       && getch () == 't'
-		       && ((c = getch ()) == ' ' || c == '\t'))
-		{
-		  /* More follows: it must be a string constant (unit name).  */
-		  token = real_yylex ();
-		  if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
-		    {
-		      error ("invalid #pragma unit");
-		      goto skipline;
-		    }
-		  if (nextchar < 0)
-		    nextchar = getch ();
-		  c = nextchar;
-		  if (c != EOF)
-		    warning ("trailing characters ignored");
-		}
-	      else if (c == 'i')
-		{
-		  tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
-		  c = getch ();
+	      else if (token == END_OF_LINE)
+		goto skipline;
 
-		  if (c == 'n'
-		      && getch () == 't'
-		      && getch () == 'e'
-		      && getch () == 'r'
-		      && getch () == 'f'
-		      && getch () == 'a'
-		      && getch () == 'c'
-		      && getch () == 'e'
-		      && ((c = getch ()) == ' ' || c == '\t' || c == EOF))
-		    {
-		      int warned_already = 0;
-		      char *main_filename = input_filename;
-
-		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
-		      while (c == ' ' || c == '\t')
-			c = getch ();
-		      if (c != EOF)
-			{
-			  put_back (c);
-			  token = real_yylex ();
-			  if (token != STRING
-			      || TREE_CODE (yylval.ttype) != STRING_CST)
-			    {
-			      error ("invalid `#pragma interface'");
-			      goto skipline;
-			    }
-			  main_filename = TREE_STRING_POINTER (yylval.ttype);
-			  c = getch ();
-			  put_back (c);
-			}
-
-		      while (c == ' ' || c == '\t')
-			c = getch ();
-
-		      while (c != EOF)
-			{
-			  if (!warned_already && extra_warnings
-			      && c != ' ' && c != '\t')
-			    {
-			      warning ("garbage after `#pragma interface' ignored");
-			      warned_already = 1;
-			    }
-			  c = getch ();
-			}
-
-		      write_virtuals = 3;
-
-		      if (impl_file_chain == 0)
-			{
-			  /* If this is zero at this point, then we are
-			     auto-implementing.  */
-			  if (main_input_filename == 0)
-			    main_input_filename = input_filename;
-
-#ifdef AUTO_IMPLEMENT
-			  filename = FILE_NAME_NONDIRECTORY (main_input_filename);
-			  fi = get_time_identifier (filename);
-			  fi = IDENTIFIER_CLASS_VALUE (fi);
-			  TREE_INT_CST_LOW (fi) = 0;
-			  TREE_INT_CST_HIGH (fi) = 1;
-			  /* Get default.  */
-			  impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
-			  impl_file_chain->filename = filename;
-			  impl_file_chain->next = 0;
-#endif
-			}
-
-		      interface_only = interface_strcmp (main_filename);
-		      interface_unknown = 0;
-		      TREE_INT_CST_LOW (fileinfo) = interface_only;
-		      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-		    }
-		  else if (c == 'm'
-			   && getch () == 'p'
-			   && getch () == 'l'
-			   && getch () == 'e'
-			   && getch () == 'm'
-			   && getch () == 'e'
-			   && getch () == 'n'
-			   && getch () == 't'
-			   && getch () == 'a'
-			   && getch () == 't'
-			   && getch () == 'i'
-			   && getch () == 'o'
-			   && getch () == 'n'
-			   && ((c = getch ()) == ' ' || c == '\t' || c == EOF))
-		    {
-		      int warned_already = 0;
-		      char *main_filename = main_input_filename ? main_input_filename : input_filename;
-
-		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
-		      while (c == ' ' || c == '\t')
-			c = getch ();
-		      if (c != EOF)
-			{
-			  put_back (c);
-			  token = real_yylex ();
-			  if (token != STRING
-			      || TREE_CODE (yylval.ttype) != STRING_CST)
-			    {
-			      error ("invalid `#pragma implementation'");
-			      goto skipline;
-			    }
-			  main_filename = TREE_STRING_POINTER (yylval.ttype);
-			  c = getch ();
-			  put_back (c);
-			}
-
-		      while (c == ' ' || c == '\t')
-			c = getch ();
-
-		      while (c != EOF)
-			{
-			  if (!warned_already && extra_warnings
-			      && c != ' ' && c != '\t')
-			    {
-			      warning ("garbage after `#pragma implementation' ignored");
-			      warned_already = 1;
-			    }
-			  c = getch ();
-			}
-
-		      if (write_virtuals == 3)
-			{
-			  struct impl_files *ifiles = impl_file_chain;
-			  while (ifiles)
-			    {
-			      if (! strcmp (ifiles->filename, main_filename))
-				break;
-			      ifiles = ifiles->next;
-			    }
-			  if (ifiles == 0)
-			    {
-			      ifiles = (struct impl_files*) permalloc (sizeof (struct impl_files));
-			      ifiles->filename = main_filename;
-			      ifiles->next = impl_file_chain;
-			      impl_file_chain = ifiles;
-			    }
-			}
-		      else if ((main_input_filename != 0
-				&& ! strcmp (main_input_filename, input_filename))
-			       || ! strcmp (input_filename, main_filename))
-			{
-			  write_virtuals = 3;
-			  if (impl_file_chain == 0)
-			    {
-			      impl_file_chain = (struct impl_files*) permalloc (sizeof (struct impl_files));
-			      impl_file_chain->filename = main_filename;
-			      impl_file_chain->next = 0;
-			    }
-			}
-		      else
-			error ("`#pragma implementation' can only appear at top-level");
-		      interface_only = 0;
-#if 1
-		      /* We make this non-zero so that we infer decl linkage
-			 in the impl file only for variables first declared
-			 in the interface file.  */
-		      interface_unknown = 1;
-#else
-		      /* We make this zero so that templates in the impl
-                         file will be emitted properly. */
-		      interface_unknown = 0;
-#endif
-		      TREE_INT_CST_LOW (fileinfo) = interface_only;
-		      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-		    }
-		}
 #ifdef HANDLE_SYSV_PRAGMA
-	      else
-		{
-		  put_back (c);
-		  handle_sysv_pragma ();
-		}
+	      if (handle_sysv_pragma (finput, token))
+		goto skipline;
 #else
 #ifdef HANDLE_PRAGMA
-	      /* FIXME: This will break if we're doing any of the C++ input
-                 tricks.  */
-	      else
-		{
-		  c = HANDLE_PRAGMA (finput, c);
-		}
+	      if (HANDLE_PRAGMA (finput, yylval.ttype))
+		goto skipline;
 #endif
 #endif
-	      goto skipline;
 	    }
+	  goto skipline;
 	}
       else if (c == 'd')
 	{
@@ -4597,6 +4384,210 @@ yyerror (string)
   error (buf, token_buffer);
 }
 
+int
+handle_cp_pragma (pname)
+     char *pname;
+{
+  register int token;
+  register int c;
+
+  if (! strcmp (pname, "vtable"))
+    {
+      extern tree pending_vtables;
+
+      /* More follows: it must be a string constant (class name).  */
+      token = real_yylex ();
+      if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
+	{
+	  error ("invalid #pragma vtable");
+	  return -1;
+	}
+
+      if (write_virtuals != 2)
+	{
+	  warning ("use `+e2' option to enable #pragma vtable");
+	  return -1;
+	}
+      pending_vtables
+	= perm_tree_cons (NULL_TREE,
+			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
+			  pending_vtables);
+      if (nextchar < 0)
+	nextchar = getch ();
+      c = nextchar;
+      if (c != EOF)
+	warning ("trailing characters ignored");
+      return 1;
+    }
+  else if (! strcmp (pname, "unit"))
+    {
+      /* More follows: it must be a string constant (unit name).  */
+      token = real_yylex ();
+      if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
+	{
+	  error ("invalid #pragma unit");
+	  return -1;
+	}
+      if (nextchar < 0)
+	nextchar = getch ();
+      c = nextchar;
+      if (c != EOF)
+	warning ("trailing characters ignored");
+      return 1;
+    }
+  else if (! strcmp (pname, "interface"))
+    {
+      tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
+      int warned_already = 0;
+      char *main_filename = input_filename;
+
+      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
+
+      do
+	{
+	  c = getch ();
+	} while (c == ' ' || c == '\t');
+
+      if (c != EOF)
+	{
+	  put_back (c);
+	  token = real_yylex ();
+	  if (token != STRING
+	      || TREE_CODE (yylval.ttype) != STRING_CST)
+	    {
+	      error ("invalid `#pragma interface'");
+	      return -1;
+	    }
+	  main_filename = TREE_STRING_POINTER (yylval.ttype);
+	  c = getch();
+	  put_back (c);
+
+	  while (c == ' ' || c == '\t')
+	    c = getch ();
+
+	  while (c != EOF)
+	    {
+	      if (!warned_already && extra_warnings
+		  && c != ' ' && c != '\t')
+		{
+		  warning ("garbage after `#pragma interface' ignored");
+		  warned_already = 1;
+		}
+	      c = getch ();
+	    }
+
+	  write_virtuals = 3;
+
+	  if (impl_file_chain == 0)
+	    {
+	      /* If this is zero at this point, then we are
+		 auto-implementing.  */
+	      if (main_input_filename == 0)
+		main_input_filename = input_filename;
+
+#ifdef AUTO_IMPLEMENT
+	      filename = FILE_NAME_NONDIRECTORY (main_input_filename);
+	      fi = get_time_identifier (filename);
+	      fi = IDENTIFIER_CLASS_VALUE (fi);
+	      TREE_INT_CST_LOW (fi) = 0;
+	      TREE_INT_CST_HIGH (fi) = 1;
+	      /* Get default.  */
+	      impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
+	      impl_file_chain->filename = filename;
+	      impl_file_chain->next = 0;
+#endif
+	    }
+	}
+
+      interface_only = interface_strcmp (main_filename);
+      interface_unknown = 0;
+      TREE_INT_CST_LOW (fileinfo) = interface_only;
+      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+
+      return 1;
+    }
+  else if (! strcmp (pname, "implementation"))
+    {
+      tree fileinfo = IDENTIFIER_CLASS_VALUE (get_time_identifier (input_filename));
+      int warned_already = 0;
+      char *main_filename = main_input_filename ? main_input_filename : input_filename;
+
+      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
+      token = real_yylex ();
+      if (token != STRING
+	  || TREE_CODE (yylval.ttype) != STRING_CST)
+	{
+	  error ("invalid `#pragma implementation'");
+	  return -1;
+	}
+      main_filename = TREE_STRING_POINTER (yylval.ttype);
+      c = getch();
+      put_back (c);
+
+      while (c == ' ' || c == '\t')
+	c = getch ();
+
+      while (c != EOF)
+	{
+	  if (!warned_already && extra_warnings
+	      && c != ' ' && c != '\t')
+	    {
+	      warning ("garbage after `#pragma implementation' ignored");
+	      warned_already = 1;
+	    }
+	  c = getch ();
+	}
+
+      if (write_virtuals == 3)
+	{
+	  struct impl_files *ifiles = impl_file_chain;
+	  while (ifiles)
+	    {
+	      if (! strcmp (ifiles->filename, main_filename))
+		break;
+	      ifiles = ifiles->next;
+	    }
+	  if (ifiles == 0)
+	    {
+	      ifiles = (struct impl_files*) permalloc (sizeof (struct impl_files));
+	      ifiles->filename = main_filename;
+	      ifiles->next = impl_file_chain;
+	      impl_file_chain = ifiles;
+	    }
+	}
+      else if ((main_input_filename != 0
+		&& ! strcmp (main_input_filename, input_filename))
+	       || ! strcmp (input_filename, main_filename))
+	{
+	  write_virtuals = 3;
+	  if (impl_file_chain == 0)
+	    {
+	      impl_file_chain = (struct impl_files*) permalloc (sizeof (struct impl_files));
+	      impl_file_chain->filename = main_filename;
+	      impl_file_chain->next = 0;
+	    }
+	}
+      else
+	error ("`#pragma implementation' can only appear at top-level");
+      interface_only = 0;
+#if 1
+      /* We make this non-zero so that we infer decl linkage
+	 in the impl file only for variables first declared
+	 in the interface file.  */
+      interface_unknown = 1;
+#else
+      /* We make this zero so that templates in the impl
+	 file will be emitted properly. */
+      interface_unknown = 0;
+#endif
+      TREE_INT_CST_LOW (fileinfo) = interface_only;
+      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+      return 1;
+    }
+
+  return 0;
+}
+
 #ifdef HANDLE_SYSV_PRAGMA
 
 /* Handle a #pragma directive.  INPUT is the current input stream,
@@ -4605,43 +4596,51 @@ yyerror (string)
 
 /* This function has to be in this file, in order to get at
    the token types.  */
-
-handle_sysv_pragma ()
+int
+handle_sysv_pragma (finput, token)
+     FILE *finput;
+     register int token;
 {
   for (;;)
     {
-      switch (yylex ())
+      switch (token)
 	{
 	case IDENTIFIER:
 	case TYPENAME:
 	case STRING:
 	case CONSTANT:
 	  handle_pragma_token ("ignored", yylval.ttype);
+	  token = yylex ();
 	  break;
 	case '(':
 	  handle_pragma_token ("(", NULL_TREE);
+	  token = yylex ();
 	  break;
 	case ')':
 	  handle_pragma_token (")", NULL_TREE);
+	  token = yylex ();
 	  break;
 	case ',':
 	  handle_pragma_token (",", NULL_TREE);
+	  token = yylex ();
 	  break;
 	case '=':
 	  handle_pragma_token ("=", NULL_TREE);
+	  token = yylex ();
 	  break;
 	case LEFT_RIGHT:
 	  handle_pragma_token ("(", NULL_TREE);
 	  handle_pragma_token (")", NULL_TREE);
+	  token = yylex ();
 	  break;
 	case END_OF_LINE:
 	  handle_pragma_token (NULL_PTR, NULL_TREE);
-	  return;
+	  return 1;
 	default:
 	  handle_pragma_token (NULL_PTR, NULL_TREE);
 	  while (yylex () != END_OF_LINE)
 	    /* continue */;
-	  return;
+	  return 1;
 	}
     }
 }
