@@ -647,6 +647,7 @@ gcov.c
 #genemit.c is used only by GCC maintainers and installers
 #genextract.c is used only by GCC maintainers and installers
 #genflags.c is used only by GCC maintainers and installers
+#gengenrtl.c is used only by GCC maintainers and installers
 #genopinit.c is used only by GCC maintainers and installers
 #genoutput.c is used only by GCC maintainers and installers
 #genpeep.c is used only by GCC maintainers and installers
@@ -804,6 +805,7 @@ stor-layout.c
 stupid.c
 sys-protos.h
 sys-types.h
+system.h
 toplev.c
 tree.c
 tree.h
