@@ -1412,7 +1412,10 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	case DIV:
 	  if (trueop1 == CONST1_RTX (mode))
-	    return op0;
+	    {
+	      rtx x = gen_lowpart_common (mode, op0);
+	      return x ? x : op0;
+	    }
 
 	  /* In IEEE floating point, 0/x is not always 0.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
