@@ -1,3 +1,8 @@
+2004-09-27  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address, print_operand):
+	Handle AND pattern
+
 2004-09-27  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/13804
