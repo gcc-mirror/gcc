@@ -1,3 +1,7 @@
+Mon Dec  8 21:17:28 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cstamp-h, auto-config.h: Delete.
+
 Sun Dec  7 19:19:03 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
