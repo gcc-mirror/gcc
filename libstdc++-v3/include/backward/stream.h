@@ -30,7 +30,7 @@
 
 #include <backward/iostream.h>
 
-#endif /* _CPP_BACKWARD_STREAM_H */
+#endif 
 
 // Local Variables:
 // mode:C++

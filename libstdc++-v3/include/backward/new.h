@@ -1,21 +1,22 @@
+// -*- C++ -*- forwarding header.
+// Copyright (C) 2000 Free Software Foundation
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// This file is part of GNU CC.
 //
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 2, or (at your option)
+// GNU CC is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or (at your option)
 // any later version.
-
-// This library is distributed in the hope that it will be useful,
+// 
+// GNU CC is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this library; see the file COPYING.  If not, write to the Free
-// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-// USA.
+// 
+// You should have received a copy of the GNU General Public License
+// along with GNU CC; see the file COPYING.  If not, write to
+// the Free Software Foundation, 59 Temple Place - Suite 330,
+// Boston, MA 02111-1307, USA.
 
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
@@ -26,21 +27,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_BACKWARD_NEW_H
-#define _CPP_BACKWARD_NEW_H 1
+#ifndef __NEW_H__
+#define __NEW_H__
 
-#include <bits/std_new.h>
+#include <new>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::bad_alloc;
-using __STD::nothrow_t;
-using __STD::nothrow;
-using __STD::new_handler;
-using __STD::set_new_handler;
-#endif /* __STL_USE_NAMESPACES */
+using std::bad_alloc;
+using std::nothrow_t;
+using std::nothrow;
+using std::new_handler;
+using std::set_new_handler;
 
-#endif /* _CPP_BACKWARD_NEW_H */
-
-// Local Variables:
-// mode:C++
-// End:
+#endif // __NEW_H__

@@ -1,4 +1,3 @@
-
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,16 +31,14 @@
 #include <backward/iostream.h>
 #include <bits/std_iomanip.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::resetiosflags;
-using __STD::setiosflags;
-using __STD::setbase;
-using __STD::setfill;
-using __STD::setprecision;
-using __STD::setw;
-#endif /* __STL_USE_NAMESPACES */
+using std::resetiosflags;
+using std::setiosflags;
+using std::setbase;
+using std::setfill;
+using std::setprecision;
+using std::setw;
 
-#endif /* _CPP_BACKWARD_IOMANIP_H */
+#endif
 
 // Local Variables:
 // mode:C++
