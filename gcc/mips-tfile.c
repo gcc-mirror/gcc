@@ -4637,8 +4637,7 @@ copy_object ()
 			     (st_t) eptr->asym.st,
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
-			     (eptr->asym.index == indexNil
-			      ? (symint_t) indexNil : 0),
+			     (symint_t) indexNil,
 			     ((long) ifd < orig_sym_hdr.ifdMax
 			      ? remap_file_number[ifd] : (int) ifd));
     }
