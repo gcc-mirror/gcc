@@ -1,6 +1,6 @@
 /* 
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
- * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1991-1994, 2001 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1996 by Silicon Graphics.  All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
@@ -166,7 +166,7 @@
 #    define SPARC
 #    define mach_type_known
 # endif
-# if defined(LINUX) && defined(arm)
+# if defined(LINUX) && defined(__arm__)
 #    define ARM32
 #    define mach_type_known
 # endif
