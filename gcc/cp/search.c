@@ -3125,24 +3125,13 @@ void
 push_class_decls (type)
      tree type;
 {
-  struct obstack *ambient_obstack = current_obstack;
   search_stack = push_search_level (search_stack, &search_obstack);
-
-  /* Build up all the relevant bindings and such on the cache
-     obstack.  That way no memory is wasted when we throw away the
-     cache later.  */
-  push_cache_obstack ();
 
   /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
 
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
-
-  /* Undo the call to push_cache_obstack above.  */
-  pop_obstacks ();
-
-  current_obstack = ambient_obstack;
 }
 
 /* Here's a subroutine we need because C lacks lambdas.  */

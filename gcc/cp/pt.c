@@ -3623,7 +3623,7 @@ maybe_get_template_decl_from_type_decl (decl)
    D1 is the PTYPENAME terminal, and ARGLIST is the list of arguments.
    (Actually ARGLIST may be either a TREE_LIST or a TREE_VEC.  It will
    be a TREE_LIST if called directly from the parser, and a TREE_VEC
-   otherwise.)  Since ARGLIST is build on the decl_obstack, we must
+   otherwise.)  Since ARGLIST is build on the temp_decl_obstack, we must
    copy it here to keep it from being reclaimed when the decl storage
    is reclaimed.
 

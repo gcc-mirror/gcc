@@ -63,12 +63,6 @@ extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
 int ggc_p = 1;
 
-/* Obstack used for remembering local class declarations (like
-   enums and static (const) members.  */
-#include "stack.h"
-struct obstack decl_obstack;
-static struct stack_level *decl_stack;
-
 #ifndef WCHAR_UNSIGNED
 #define WCHAR_UNSIGNED 0
 #endif
@@ -106,8 +100,6 @@ static struct stack_level *decl_stack;
 static tree grokparms				PROTO((tree, int));
 static const char *redeclaration_error_message	PROTO((tree, tree));
 
-static struct stack_level *push_decl_level PROTO((struct stack_level *,
-						  struct obstack *));
 static void push_binding_level PROTO((struct binding_level *, int,
 				      int));
 static void pop_binding_level PROTO((void));
@@ -385,20 +377,6 @@ tree signed_size_zero_node;
    unit.  */
 tree anonymous_namespace_name;
 
-
-/* Allocate a level of searching.  */
-
-static
-struct stack_level *
-push_decl_level (stack, obstack)
-     struct stack_level *stack;
-     struct obstack *obstack;
-{
-  struct stack_level tem;
-  tem.prev = stack;
-
-  return push_stack_level (obstack, (char *)&tem, sizeof (tem));
-}
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -1569,7 +1547,6 @@ pushlevel_class ()
 
   push_binding_level (newlevel, 0, 0);
 
-  decl_stack = push_decl_level (decl_stack, &decl_obstack);
   class_binding_level = current_binding_level;
   class_binding_level->parm_flag = 2;
 }
@@ -1584,7 +1561,6 @@ poplevel_class ()
 
   my_friendly_assert (level != 0, 354);
   
-  decl_stack = pop_stack_level (decl_stack);
   /* If we're leaving a toplevel class, don't bother to do the setting
      of IDENTIFIER_CLASS_VALUE to NULL_TREE, since first of all this slot
      shouldn't even be used when current_class_type isn't set, and second,
@@ -4316,11 +4292,9 @@ push_class_level_binding (name, x)
      IDENTIFIER_CLASS_VALUE.  */
   if (push_class_binding (name, x))
     {
-      push_cache_obstack ();
       class_binding_level->class_shadowed
 	= tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
 		     class_binding_level->class_shadowed);
-      pop_obstacks ();
       /* Record the value we are binding NAME to so that we can know
 	 what to pop later.  */
       TREE_TYPE (class_binding_level->class_shadowed) = x;
@@ -6061,8 +6035,6 @@ init_decl_processing ()
 #ifdef SIGBUS
   signal (SIGBUS, signal_catch);
 #endif
-
-  gcc_obstack_init (&decl_obstack);
 
   build_common_tree_nodes (flag_signed_char);
 
