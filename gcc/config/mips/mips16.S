@@ -1,5 +1,5 @@
 /* mips16 floating point support code
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Cygnus Support
 
 This file is free software; you can redistribute it and/or modify it
@@ -81,6 +81,25 @@ SFOP(__mips16_mulsf3, mul.s)
 SFOP(__mips16_divsf3, div.s)
 #endif
 
+#define SFOP2(NAME, OPCODE)	\
+STARTFN (NAME);			\
+	.set	noreorder;	\
+	mtc1	$4,$f0;		\
+	nop;			\
+	OPCODE	$f0,$f0;	\
+	mfc1	$2,$f0;		\
+	j	$31;		\
+	nop;			\
+	.set	reorder;	\
+	ENDFN (NAME)
+	
+#ifdef L_m16negsf2
+SFOP2(__mips16_negsf2, neg.s)
+#endif
+#ifdef L_m16abssf2
+SFOP2(__mips16_abssf2, abs.s)
+#endif
+	
 /* Single precision comparisons.  */
 
 /* This macro defines a function which loads two single precision
@@ -161,6 +180,8 @@ STARTFN (__mips16_fixsfsi)
 	ENDFN (__mips16_fixsfsi)
 #endif
 
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
+		
 /* The double precision operations.  We need to use different code
    based on the preprocessor symbol __mips64, because the way in which
    double precision values will change.  Without __mips64, the value
@@ -169,28 +190,41 @@ STARTFN (__mips16_fixsfsi)
 
 /* Load the first double precision operand.  */
 
-#ifdef __mips64
-#define LDDBL1 dmtc1 $4,$f0
-#else
-#define LDDBL1 mtc1 $4,$f1; mtc1 $5,$f0
+#if defined(__mips64)
+#define LDDBL1 dmtc1 $4,$f12
+#elif defined(__mipsfp64)
+#define LDDBL1 sw $4,0($29); sw $5,4($29); l.d $f12,0($29)
+#elif defined(__MIPSEB__)	
+#define LDDBL1 mtc1 $4,$f13; mtc1 $5,$f12
+#else	
+#define LDDBL1 mtc1 $4,$f12; mtc1 $5,$f13
 #endif
 
 /* Load the second double precision operand.  */
 
-#ifdef __mips64
-#define LDDBL2 dmtc1 $5,$f2
-#else
-#define LDDBL2 mtc1 $6,$f3; mtc1 $7,$f2
+#if defined(__mips64)
+/* XXX this should be $6 for Algo arg passing model */
+#define LDDBL2 dmtc1 $5,$f14
+#elif defined(__mipsfp64)
+#define LDDBL2 sw $6,8($29); sw $7,12($29); l.d $f14,8($29)
+#elif defined(__MIPSEB__)	
+#define LDDBL2 mtc1 $6,$f15; mtc1 $7,$f14
+#else	
+#define LDDBL2 mtc1 $6,$f14; mtc1 $7,$f15
 #endif
-
+	
 /* Move the double precision return value to the right place.  */
 
-#ifdef __mips64
+#if defined(__mips64)
 #define RETDBL dmfc1 $2,$f0
-#else
+#elif defined(__mipsfp64)
+#define RETDBL s.d $f0,0($29); lw $2,0($29); lw $3,4($29)
+#elif defined(__MIPSEB__)	
 #define RETDBL mfc1 $2,$f1; mfc1 $3,$f0
+#else	
+#define RETDBL mfc1 $2,$f0; mfc1 $3,$f1
 #endif
-
+	
 /* Double precision math.  */
 
 /* This macro defines a function which loads two double precision
@@ -203,7 +237,7 @@ STARTFN (NAME);			\
 	LDDBL1;			\
 	LDDBL2;			\
 	nop;			\
-	OPCODE	$f0,$f0,$f2;	\
+	OPCODE	$f0,$f12,$f14;	\
 	RETDBL;			\
 	j	$31;		\
 	nop;			\
@@ -223,14 +257,34 @@ DFOP(__mips16_muldf3, mul.d)
 DFOP(__mips16_divdf3, div.d)
 #endif
 
+#define DFOP2(NAME, OPCODE)	\
+STARTFN (NAME);			\
+	.set	noreorder;	\
+	LDDBL1;			\
+	nop;			\
+	OPCODE	$f0,$f12;	\
+	RETDBL;			\
+	j	$31;		\
+	nop;			\
+	.set	reorder;	\
+	ENDFN (NAME)
+	
+#ifdef L_m16negdf2
+DFOP2(__mips16_negdf2, neg.d)
+#endif
+#ifdef L_m16absdf2
+DFOP2(__mips16_absdf2, abs.d)
+#endif
+
+	
 /* Conversions between single and double precision.  */
 
 #ifdef L_m16extsfdf2
 STARTFN (__mips16_extendsfdf2)
 	.set	noreorder
-	mtc1	$4,$f0
+	mtc1	$4,$f12
 	nop
-	cvt.d.s	$f0,$f0
+	cvt.d.s	$f0,$f12
 	RETDBL
 	j	$31
 	nop
@@ -243,7 +297,7 @@ STARTFN (__mips16_truncdfsf2)
 	.set	noreorder
 	LDDBL1
 	nop
-	cvt.s.d	$f0,$f0
+	cvt.s.d	$f0,$f12
 	mfc1	$2,$f0
 	j	$31
 	nop
@@ -262,7 +316,7 @@ STARTFN (__mips16_truncdfsf2)
 STARTFN (NAME);					\
 	LDDBL1;					\
 	LDDBL2;					\
-	OPCODE	$f0,$f2;			\
+	OPCODE	$f12,$f14;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -276,7 +330,7 @@ STARTFN (NAME);					\
 STARTFN (NAME);					\
 	LDDBL1;					\
 	LDDBL2;					\
-	OPCODE	$f2,$f0;			\
+	OPCODE	$f12,$f14;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
@@ -308,9 +362,9 @@ DFCMP(__mips16_ltdf2, c.lt.d, -1, 0)
 #ifdef L_m16fltsidf
 STARTFN (__mips16_floatsidf)
 	.set	noreorder
-	mtc1	$4,$f0
+	mtc1	$4,$f12
 	nop
-	cvt.d.w	$f0,$f0
+	cvt.d.w	$f0,$f12
 	RETDBL
 	j	$31
 	nop
@@ -323,13 +377,14 @@ STARTFN (__mips16_fixdfsi)
 	.set	noreorder
 	LDDBL1
 	nop
-	trunc.w.d $f0,$f0,$4
+	trunc.w.d $f0,$f12,$4
 	mfc1	$2,$f0
 	j	$31
 	nop
 	.set	reorder
 	ENDFN (__mips16_fixdfsi)
 #endif
+#endif /* !__mips_single_float */
 
 /* These functions are used to return floating point values from
    mips16 functions which do not use -mentry.  In this case we can
@@ -345,14 +400,30 @@ STARTFN (__mips16_ret_sf)
 	ENDFN (__mips16_ret_sf)
 #endif
 
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
 #ifdef L_m16retdf
 STARTFN (__mips16_ret_df)
 	.set	noreorder
+#if defined(__mips64)
+	j	$31
+	dmtc1	$2,$f0
+#elif defined(__mipsfp64)
+	sw	$2,0($29)
+	sw	$3,4($29)
+	l.d	$f0,0($29) 
+#elif defined(__MIPSEB__)	
 	mtc1	$2,$f1
 	j	$31
 	mtc1	$3,$f0
+#else	
+	mtc1	$2,$f0
+	j	$31
+	mtc1	$3,$f1
+#endif
+	.set	reorder
 	ENDFN (__mips16_ret_df)
 #endif
+#endif /* !__mips_single_float */
 
 /* These functions are used by 16 bit code when calling via a function
    pointer.  They must copy the floating point arguments from the gp
@@ -372,18 +443,6 @@ STARTFN (__mips16_call_stub_1)
 	ENDFN (__mips16_call_stub_1)
 #endif
 
-#ifdef L_m16stub2
-/* (double) */
-STARTFN (__mips16_call_stub_2)
-	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
-	j	$2
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_2)
-#endif
-
 #ifdef L_m16stub5
 /* (float, float) */
 STARTFN (__mips16_call_stub_5)
@@ -396,12 +455,24 @@ STARTFN (__mips16_call_stub_5)
 	ENDFN (__mips16_call_stub_5)
 #endif
 
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
+
+#ifdef L_m16stub2
+/* (double) */
+STARTFN (__mips16_call_stub_2)
+	.set	noreorder
+	LDDBL1
+	j	$2
+	nop
+	.set	reorder
+	ENDFN (__mips16_call_stub_2)
+#endif
+
 #ifdef L_m16stub6
 /* (double, float) */
 STARTFN (__mips16_call_stub_6)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
+	LDDBL1
 	mtc1	$6,$f14
 	j	$2
 	nop
@@ -414,8 +485,7 @@ STARTFN (__mips16_call_stub_6)
 STARTFN (__mips16_call_stub_9)
 	.set	noreorder
 	mtc1	$4,$f12
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL2
 	j	$2
 	nop
 	.set	reorder
@@ -426,15 +496,14 @@ STARTFN (__mips16_call_stub_9)
 /* (double, double) */
 STARTFN (__mips16_call_stub_10)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL1
+	LDDBL2
 	j	$2
 	nop
 	.set	reorder
 	ENDFN (__mips16_call_stub_10)
 #endif
+#endif /* !__mips_single_float */
 
 /* Now we have the same set of functions, except that this time the
    function being called returns an SFmode value.  The calling
@@ -455,7 +524,7 @@ STARTFN (__mips16_call_stub_sf_0)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
@@ -470,27 +539,11 @@ STARTFN (__mips16_call_stub_sf_1)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
 	ENDFN (__mips16_call_stub_sf_1)
-#endif
-
-#ifdef L_m16stubsf2
-/* (double) */
-STARTFN (__mips16_call_stub_sf_2)
-	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
-	move	$18,$31
-	jal	$2
-	nop
-	mfc1	$4,$f0
-	j	$18
-	nop
-	.set	reorder
-	ENDFN (__mips16_call_stub_sf_2)
 #endif
 
 #ifdef L_m16stubsf5
@@ -502,24 +555,39 @@ STARTFN (__mips16_call_stub_sf_5)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
 	ENDFN (__mips16_call_stub_sf_5)
 #endif
 
+#if !defined(__mips_single_float) && !defined(__SINGLE_FLOAT)
+#ifdef L_m16stubsf2
+/* (double) */
+STARTFN (__mips16_call_stub_sf_2)
+	.set	noreorder
+	LDDBL1
+	move	$18,$31
+	jal	$2
+	nop
+	mfc1	$2,$f0
+	j	$18
+	nop
+	.set	reorder
+	ENDFN (__mips16_call_stub_sf_2)
+#endif
+
 #ifdef L_m16stubsf6
 /* (double, float) */
 STARTFN (__mips16_call_stub_sf_6)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
+	LDDBL1
 	mtc1	$6,$f14
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
@@ -531,12 +599,11 @@ STARTFN (__mips16_call_stub_sf_6)
 STARTFN (__mips16_call_stub_sf_9)
 	.set	noreorder
 	mtc1	$4,$f12
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL2
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
@@ -547,14 +614,12 @@ STARTFN (__mips16_call_stub_sf_9)
 /* (double, double) */
 STARTFN (__mips16_call_stub_sf_10)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL1
+	LDDBL2
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$4,$f0
+	mfc1	$2,$f0
 	j	$18
 	nop
 	.set	reorder
@@ -571,8 +636,7 @@ STARTFN (__mips16_call_stub_df_0)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -587,8 +651,7 @@ STARTFN (__mips16_call_stub_df_1)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -599,13 +662,11 @@ STARTFN (__mips16_call_stub_df_1)
 /* (double) */
 STARTFN (__mips16_call_stub_df_2)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
+	LDDBL1
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -621,8 +682,7 @@ STARTFN (__mips16_call_stub_df_5)
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -633,14 +693,12 @@ STARTFN (__mips16_call_stub_df_5)
 /* (double, float) */
 STARTFN (__mips16_call_stub_df_6)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
+	LDDBL1
 	mtc1	$6,$f14
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -652,13 +710,11 @@ STARTFN (__mips16_call_stub_df_6)
 STARTFN (__mips16_call_stub_df_9)
 	.set	noreorder
 	mtc1	$4,$f12
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL2
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
@@ -669,17 +725,16 @@ STARTFN (__mips16_call_stub_df_9)
 /* (double, double) */
 STARTFN (__mips16_call_stub_df_10)
 	.set	noreorder
-	mtc1	$5,$f12
-	mtc1	$4,$f13
-	mtc1	$7,$f14
-	mtc1	$6,$f15
+	LDDBL1
+	LDDBL2
 	move	$18,$31
 	jal	$2
 	nop
-	mfc1	$5,$f0
-	mfc1	$4,$f1
+	RETDBL
 	j	$18
 	nop
 	.set	reorder
 	ENDFN (__mips16_call_stub_df_10)
 #endif
+#endif /* !__mips_single_float */
+
