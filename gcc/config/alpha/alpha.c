@@ -5890,14 +5890,11 @@ alpha_sa_mask (imaskP, fmaskP)
 	    }
 	}
      
-      if (!TARGET_ABI_UNICOSMK)
-	{
-	  /* If any register spilled, then spill the return address also.  */
-	  /* ??? This is required by the Digital stack unwind specification
-	     and isn't needed if we're doing Dwarf2 unwinding.  */
-	  if (imask || fmask || alpha_ra_ever_killed ())
-	    imask |= (1L << REG_RA);
-	}
+      /* If any register spilled, then spill the return address also.  */
+      /* ??? This is required by the Digital stack unwind specification
+	 and isn't needed if we're doing Dwarf2 unwinding.  */
+      if (imask || fmask || alpha_ra_ever_killed ())
+	imask |= (1L << REG_RA);
     }
 
   *imaskP = imask;
@@ -5907,34 +5904,23 @@ alpha_sa_mask (imaskP, fmaskP)
 int
 alpha_sa_size ()
 {
+  unsigned long mask[2];
   int sa_size = 0;
-  int i;
+  int i, j;
 
-#ifdef ASM_OUTPUT_MI_THUNK
-  if (current_function_is_thunk)
-    sa_size = 0;
-  else
-#endif
+  alpha_sa_mask (&mask[0], &mask[1]);
+
+  if (TARGET_ABI_UNICOSMK)
     {
-      if (TARGET_ABI_UNICOSMK)
-	{
-	  for (i = 9; i < 15 && sa_size == 0; i++)
-	    if (! fixed_regs[i] && ! call_used_regs[i]
-		&& regs_ever_live[i])
-	      sa_size = 14;
-	  for (i = 32 + 2; i < 32 + 10 && sa_size == 0; i++)
-	    if (! fixed_regs[i] && ! call_used_regs[i]
-		&& regs_ever_live[i])
-	      sa_size = 14;
-	}
-      else
-	{
-	  /* One for every register we have to save.  */
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (! fixed_regs[i] && ! call_used_regs[i]
-	        && regs_ever_live[i] && i != REG_RA)
-	      sa_size++;
-	}
+      if (mask[0] || mask[1])
+	sa_size = 14;
+    }
+  else
+    {
+      for (j = 0; j < 2; ++j)
+	for (i = 0; i < 32; ++i)
+	  if ((mask[j] >> i) & 1)
+	    sa_size++;
     }
 
   if (TARGET_ABI_UNICOSMK)
@@ -5945,14 +5931,13 @@ alpha_sa_size ()
 	 use alloca and have not determined that we need a frame for other
 	 reasons.  */
 
-      alpha_is_stack_procedure = sa_size != 0
-				|| alpha_ra_ever_killed ()
-				|| get_frame_size() != 0
-				|| current_function_outgoing_args_size
-				|| current_function_varargs
-				|| current_function_stdarg
-				|| current_function_calls_alloca
-				|| frame_pointer_needed;
+      alpha_is_stack_procedure = (sa_size
+				  || get_frame_size() != 0
+				  || current_function_outgoing_args_size
+				  || current_function_varargs
+				  || current_function_stdarg
+				  || current_function_calls_alloca
+				  || frame_pointer_needed);
 
       /* Always reserve space for saving callee-saved registers if we
 	 need a frame as required by the calling convention.  */
@@ -5964,7 +5949,12 @@ alpha_sa_size ()
       /* Start by assuming we can use a register procedure if we don't
 	 make any calls (REG_RA not used) or need to save any
 	 registers and a stack procedure if we do.  */
-      alpha_is_stack_procedure = sa_size != 0 || alpha_ra_ever_killed ();
+      alpha_is_stack_procedure = ((mask[0] >> REG_RA) & 1);
+
+      /* Don't reserve space for saving RA yet.  Do that later after we've
+	 made the final decision on stack procedure vs register procedure.  */
+      if (alpha_is_stack_procedure)
+	sa_size--;
 
       /* Decide whether to refer to objects off our PV via FP or PV.
 	 If we need FP for something else or if we receive a nonlocal
@@ -5998,11 +5988,6 @@ alpha_sa_size ()
     }
   else
     {
-      /* If some registers were saved but not RA, RA must also be saved,
-	 so leave space for it.  */
-      if (!TARGET_ABI_UNICOSMK && (sa_size != 0 || alpha_ra_ever_killed ()))
-	sa_size++;
-
       /* Our size must be even (multiple of 16 bytes).  */
       if (sa_size & 1)
 	sa_size++;
