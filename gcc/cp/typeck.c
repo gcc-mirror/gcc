@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2101,7 +2101,7 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
     return build (PSEUDO_DTOR_EXPR, void_type_node, object, scope,
 		  dtor_type);
   return lookup_member (object_type, complete_dtor_identifier,
-			/*protect=*/1, /*want_type=*/0);
+			/*protect=*/1, /*want_type=*/false);
 }
 
 /* This function is called by the parser to process a class member
@@ -2205,7 +2205,7 @@ finish_class_member_access_expr (tree object, tree name)
 	    {
 	      /* Look up the member.  */
 	      member = lookup_member (access_path, name, /*protect=*/1, 
-				      /*want_type=*/0);
+				      /*want_type=*/false);
 	      if (member == NULL_TREE)
 		{
 		  error ("'%D' has no member named '%E'", object_type, name);
@@ -2221,7 +2221,7 @@ finish_class_member_access_expr (tree object, tree name)
 	{
 	  /* An unqualified name.  */
 	  member = lookup_member (object_type, name, /*protect=*/1, 
-				  /*want_type=*/0);
+				  /*want_type=*/false);
 	  if (member == NULL_TREE)
 	    {
 	      error ("'%D' has no member named '%E'", object_type, name);
@@ -2285,7 +2285,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
   ptrmem_type = TREE_TYPE (ptrmem);
   my_friendly_assert (TYPE_PTRMEMFUNC_P (ptrmem_type), 20020804);
   member = lookup_member (ptrmem_type, member_name, /*protect=*/0,
-			  /*want_type=*/0);
+			  /*want_type=*/false);
   member_type = cp_build_qualified_type (TREE_TYPE (member),
 					 cp_type_quals (ptrmem_type));
   return fold (build (COMPONENT_REF, member_type, ptrmem, member));

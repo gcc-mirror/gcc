@@ -524,7 +524,7 @@ build_method_call (tree instance, tree name, tree parms,
   if (has_template_args)
     fn = lookup_fnfields (object_type, name, /*protect=*/2);
   else
-    fn = lookup_member (object_type, name, /*protect=*/2, /*want_type=*/0);
+    fn = lookup_member (object_type, name, /*protect=*/2, /*want_type=*/false);
   
   if (fn && TREE_CODE (fn) == TREE_LIST && !BASELINK_P (fn))
     {
@@ -2623,7 +2623,7 @@ resolve_scoped_fn_name (tree scope, tree name)
       if (BASELINK_P (name))
 	fn = name;
       else
-	fn = lookup_member (scope, name, /*protect=*/1, /*prefer_type=*/0);
+	fn = lookup_member (scope, name, /*protect=*/1, /*want_type=*/false);
       if (fn && current_class_type)
 	fn = (adjust_result_of_qualified_name_lookup 
 	      (fn, scope, current_class_type));
@@ -4529,7 +4529,7 @@ build_java_interface_fn_ref (tree fn, tree instance)
 
   /* Get the java.lang.Class pointer for the interface being called.  */
   iface = DECL_CONTEXT (fn);
-  iface_ref = lookup_field (iface, get_identifier ("class$"), 0, 0);
+  iface_ref = lookup_field (iface, get_identifier ("class$"), 0, false);
   if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
       || DECL_CONTEXT (iface_ref) != iface)
     {

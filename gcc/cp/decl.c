@@ -5560,7 +5560,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 	{
 	  tree tmpl = NULL_TREE;
 	  if (IS_AGGR_TYPE (context))
-	    tmpl = lookup_field (context, name, 0, 0);
+	    tmpl = lookup_field (context, name, 0, false);
 	  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	    {
 	      if (complain & tf_error)
@@ -5594,7 +5594,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 	      return error_mark_node;
 	    }
 
-	  t = lookup_field (context, name, 0, 1);
+	  t = lookup_field (context, name, 0, true);
 	  if (t)
 	    {
 	      if (TREE_CODE (t) != TYPE_DECL)
@@ -5657,7 +5657,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
       tree tmpl = NULL_TREE;
 
       if (IS_AGGR_TYPE (context))
-	tmpl = lookup_field (context, name, 0, 0);
+	tmpl = lookup_field (context, name, 0, false);
 
       if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	{
@@ -7099,7 +7099,7 @@ start_decl (tree declarator,
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
-	  tree field = lookup_field (context, DECL_NAME (decl), 0, 0);
+	  tree field = lookup_field (context, DECL_NAME (decl), 0, false);
 	  if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
 	    error ("`%#D' is not a static member of `%#T'", decl, context);
 	  else
@@ -9378,7 +9378,7 @@ compute_array_index_type (tree name, tree size)
 	  && TREE_OPERAND (size, 0) == current_class_type)
 	{
 	  tree t = lookup_field (current_class_type,
-				 TREE_OPERAND (size, 1), 0, 0);
+				 TREE_OPERAND (size, 1), 0, false);
 	  if (t)
 	    size = t;
 	}

@@ -1,7 +1,7 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -81,59 +81,55 @@ struct vbase_info
   tree inits;
 };
 
-static tree lookup_field_1 PARAMS ((tree, tree));
-static int is_subobject_of_p PARAMS ((tree, tree, tree));
-static int is_subobject_of_p_1 PARAMS ((tree, tree, tree));
-static tree dfs_check_overlap PARAMS ((tree, void *));
-static tree dfs_no_overlap_yet PARAMS ((tree, void *));
-static base_kind lookup_base_r
-	PARAMS ((tree, tree, base_access, int, int, int, tree *));
-static int dynamic_cast_base_recurse PARAMS ((tree, tree, int, tree *));
-static tree marked_pushdecls_p PARAMS ((tree, void *));
-static tree unmarked_pushdecls_p PARAMS ((tree, void *));
-static tree dfs_debug_unmarkedp PARAMS ((tree, void *));
-static tree dfs_debug_mark PARAMS ((tree, void *));
-static tree dfs_get_vbase_types PARAMS ((tree, void *));
-static tree dfs_push_type_decls PARAMS ((tree, void *));
-static tree dfs_push_decls PARAMS ((tree, void *));
-static tree dfs_unuse_fields PARAMS ((tree, void *));
-static tree add_conversions PARAMS ((tree, void *));
-static int look_for_overrides_r PARAMS ((tree, tree));
-static struct search_level *push_search_level
-	PARAMS ((struct stack_level *, struct obstack *));
-static struct search_level *pop_search_level
-	PARAMS ((struct stack_level *));
-static tree bfs_walk
-	PARAMS ((tree, tree (*) (tree, void *), tree (*) (tree, void *),
-	       void *));
-static tree lookup_field_queue_p PARAMS ((tree, void *));
-static int shared_member_p PARAMS ((tree));
-static tree lookup_field_r PARAMS ((tree, void *));
-static tree canonical_binfo PARAMS ((tree));
-static tree shared_marked_p PARAMS ((tree, void *));
-static tree shared_unmarked_p PARAMS ((tree, void *));
-static int  dependent_base_p PARAMS ((tree));
-static tree dfs_accessible_queue_p PARAMS ((tree, void *));
-static tree dfs_accessible_p PARAMS ((tree, void *));
-static tree dfs_access_in_type PARAMS ((tree, void *));
-static access_kind access_in_type PARAMS ((tree, tree));
-static tree dfs_canonical_queue PARAMS ((tree, void *));
-static tree dfs_assert_unmarked_p PARAMS ((tree, void *));
-static void assert_canonical_unmarked PARAMS ((tree));
-static int protected_accessible_p PARAMS ((tree, tree, tree));
-static int friend_accessible_p PARAMS ((tree, tree, tree));
-static void setup_class_bindings PARAMS ((tree, int));
-static int template_self_reference_p PARAMS ((tree, tree));
-static tree dfs_find_vbase_instance PARAMS ((tree, void *));
-static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
-static tree dfs_build_inheritance_graph_order PARAMS ((tree, void *));
+static tree lookup_field_1 (tree, tree);
+static int is_subobject_of_p (tree, tree, tree);
+static int is_subobject_of_p_1 (tree, tree, tree);
+static tree dfs_check_overlap (tree, void *);
+static tree dfs_no_overlap_yet (tree, void *);
+static base_kind lookup_base_r (tree, tree, base_access,
+				bool, bool, bool, tree *);
+static int dynamic_cast_base_recurse (tree, tree, bool, tree *);
+static tree marked_pushdecls_p (tree, void *);
+static tree unmarked_pushdecls_p (tree, void *);
+static tree dfs_debug_unmarkedp (tree, void *);
+static tree dfs_debug_mark (tree, void *);
+static tree dfs_get_vbase_types (tree, void *);
+static tree dfs_push_type_decls (tree, void *);
+static tree dfs_push_decls (tree, void *);
+static tree dfs_unuse_fields (tree, void *);
+static tree add_conversions (tree, void *);
+static int look_for_overrides_r (tree, tree);
+static struct search_level *push_search_level (struct stack_level *,
+					       struct obstack *);
+static struct search_level *pop_search_level (struct stack_level *);
+static tree bfs_walk (tree, tree (*) (tree, void *),
+		      tree (*) (tree, void *), void *);
+static tree lookup_field_queue_p (tree, void *);
+static int shared_member_p (tree);
+static tree lookup_field_r (tree, void *);
+static tree canonical_binfo (tree);
+static tree shared_marked_p (tree, void *);
+static tree shared_unmarked_p (tree, void *);
+static int  dependent_base_p (tree);
+static tree dfs_accessible_queue_p (tree, void *);
+static tree dfs_accessible_p (tree, void *);
+static tree dfs_access_in_type (tree, void *);
+static access_kind access_in_type (tree, tree);
+static tree dfs_canonical_queue (tree, void *);
+static tree dfs_assert_unmarked_p (tree, void *);
+static void assert_canonical_unmarked (tree);
+static int protected_accessible_p (tree, tree, tree);
+static int friend_accessible_p (tree, tree, tree);
+static void setup_class_bindings (tree, int);
+static int template_self_reference_p (tree, tree);
+static tree dfs_find_vbase_instance (tree, void *);
+static tree dfs_get_pure_virtuals (tree, void *);
+static tree dfs_build_inheritance_graph_order (tree, void *);
 
 /* Allocate a level of searching.  */
 
 static struct search_level *
-push_search_level (stack, obstack)
-     struct stack_level *stack;
-     struct obstack *obstack;
+push_search_level (struct stack_level *stack, struct obstack *obstack)
 {
   struct search_level tem;
 
@@ -144,8 +140,7 @@ push_search_level (stack, obstack)
 /* Discard a level of search allocation.  */
 
 static struct search_level *
-pop_search_level (obstack)
-     struct stack_level *obstack;
+pop_search_level (struct stack_level *obstack)
 {
   register struct search_level *stack = pop_stack_level (obstack);
 
@@ -180,14 +175,11 @@ static int n_contexts_saved;
    Otherwise BINFO's bases are searched.  */
 
 static base_kind
-lookup_base_r (binfo, base, access, within_current_scope,
-	       is_non_public, is_virtual, binfo_ptr)
-     tree binfo, base;
-     base_access access;
-     int within_current_scope;
-     int is_non_public;		/* inside a non-public part */
-     int is_virtual;		/* inside a virtual part */
-     tree *binfo_ptr;
+lookup_base_r (tree binfo, tree base, base_access access,
+	       bool within_current_scope,
+	       bool is_non_public,		/* inside a non-public part */
+	       bool is_virtual,			/* inside a virtual part */
+	       tree *binfo_ptr)
 {
   int i;
   tree bases;
@@ -307,10 +299,7 @@ lookup_base_r (binfo, base, access, within_current_scope,
    NULL_TREE is returned.  */
 
 tree
-lookup_base (t, base, access, kind_ptr)
-     tree t, base;
-     base_access access;
-     base_kind *kind_ptr;
+lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 {
   tree binfo = NULL;		/* The binfo we've found so far.  */
   tree t_binfo = NULL;
@@ -372,11 +361,8 @@ lookup_base (t, base, access, kind_ptr)
 /* Worker function for get_dynamic_cast_base_type.  */
 
 static int
-dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
-     tree subtype;
-     tree binfo;
-     int via_virtual;
-     tree *offset_ptr;
+dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
+			   tree *offset_ptr)
 {
   tree binfos;
   int i, n_baselinks;
@@ -384,7 +370,7 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
   
   if (BINFO_TYPE (binfo) == subtype)
     {
-      if (via_virtual)
+      if (is_via_virtual)
         return -1;
       else
         {
@@ -404,7 +390,7 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
         continue;
       rval = dynamic_cast_base_recurse
              (subtype, base_binfo,
-              via_virtual || TREE_VIA_VIRTUAL (base_binfo), offset_ptr);
+              is_via_virtual || TREE_VIA_VIRTUAL (base_binfo), offset_ptr);
       if (worst == -2)
         worst = rval;
       else if (rval >= 0)
@@ -429,13 +415,11 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
    BOFF == -3, SUBTYPE occurs as multiple public non-virtual bases.  */
 
 tree
-get_dynamic_cast_base_type (subtype, target)
-     tree subtype;
-     tree target;
+get_dynamic_cast_base_type (tree subtype, tree target)
 {
   tree offset = NULL_TREE;
   int boff = dynamic_cast_base_recurse (subtype, TYPE_BINFO (target),
-                                        0, &offset);
+                                        false, &offset);
   
   if (!boff)
     return offset;
@@ -454,8 +438,7 @@ get_dynamic_cast_base_type (subtype, target)
    level, this is reasonable.)  */
 
 static tree
-lookup_field_1 (type, name)
-     tree type, name;
+lookup_field_1 (tree type, tree name)
 {
   register tree field;
 
@@ -601,8 +584,7 @@ at_class_scope_p ()
 /* Return the scope of DECL, as appropriate when doing name-lookup.  */
 
 tree
-context_for_name_lookup (decl)
-     tree decl;
+context_for_name_lookup (tree decl)
 {
   /* [class.union]
      
@@ -624,8 +606,7 @@ context_for_name_lookup (decl)
    otherwise.  */
 
 static tree
-canonical_binfo (binfo)
-     tree binfo;
+canonical_binfo (tree binfo)
 {
   return (TREE_VIA_VIRTUAL (binfo)
 	  ? TYPE_BINFO (BINFO_TYPE (binfo)) : binfo);
@@ -635,9 +616,7 @@ canonical_binfo (binfo)
    canonical versions of virtual bases.  */
 
 static tree
-dfs_canonical_queue (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_canonical_queue (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   return canonical_binfo (binfo);
 }
@@ -645,9 +624,7 @@ dfs_canonical_queue (binfo, data)
 /* Called via dfs_walk from assert_canonical_unmarked.  */
 
 static tree
-dfs_assert_unmarked_p (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_assert_unmarked_p (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   my_friendly_assert (!BINFO_MARKED (binfo), 0);
   return NULL_TREE;
@@ -657,8 +634,7 @@ dfs_assert_unmarked_p (binfo, data)
    versions of virtual bases) are unmarked.  */
 
 static void
-assert_canonical_unmarked (binfo)
-     tree binfo;
+assert_canonical_unmarked (tree binfo)
 {
   dfs_walk (binfo, dfs_assert_unmarked_p, dfs_canonical_queue, 0);
 }
@@ -667,9 +643,7 @@ assert_canonical_unmarked (binfo)
    Otherwise, return NULL_TREE.  */
 
 static tree
-shared_marked_p (binfo, data)
-     tree binfo;
-     void *data;
+shared_marked_p (tree binfo, void *data)
 {
   binfo = canonical_binfo (binfo);
   return markedp (binfo, data);
@@ -679,9 +653,7 @@ shared_marked_p (binfo, data)
    Otherwise, return NULL_TREE.  */
 
 static tree
-shared_unmarked_p (binfo, data)
-     tree binfo;
-     void *data;
+shared_unmarked_p (tree binfo, void *data)
 {
   binfo = canonical_binfo (binfo);
   return unmarkedp (binfo, data);
@@ -703,9 +675,7 @@ shared_unmarked_p (binfo, data)
    DATA (which is really a DECL) in BINFO.  */
 
 static tree
-dfs_access_in_type (binfo, data)
-     tree binfo;
-     void *data;
+dfs_access_in_type (tree binfo, void *data)
 {
   tree decl = (tree) data;
   tree type = BINFO_TYPE (binfo);
@@ -798,9 +768,7 @@ dfs_access_in_type (binfo, data)
 /* Return the access to DECL in TYPE.  */
 
 static access_kind
-access_in_type (type, decl)
-     tree type;
-     tree decl;
+access_in_type (tree type, tree decl)
 {
   tree binfo = TYPE_BINFO (type);
 
@@ -825,9 +793,7 @@ access_in_type (type, decl)
 /* Called from dfs_accessible_p via dfs_walk.  */
 
 static tree
-dfs_accessible_queue_p (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_accessible_queue_p (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   if (BINFO_MARKED (binfo))
     return NULL_TREE;
@@ -845,9 +811,7 @@ dfs_accessible_queue_p (binfo, data)
 /* Called from dfs_accessible_p via dfs_walk.  */
 
 static tree
-dfs_accessible_p (binfo, data)
-     tree binfo;
-     void *data;
+dfs_accessible_p (tree binfo, void *data)
 {
   int protected_ok = data != 0;
   access_kind access;
@@ -867,10 +831,7 @@ dfs_accessible_p (binfo, data)
    indiated by BINFO in the context of DERIVED.  */
 
 static int
-protected_accessible_p (decl, derived, binfo)
-     tree decl;
-     tree derived;
-     tree binfo;
+protected_accessible_p (tree decl, tree derived, tree binfo)
 {
   access_kind access;
 
@@ -930,10 +891,7 @@ protected_accessible_p (decl, derived, binfo)
    to access DECL through the object indicated by BINFO.  */
 
 static int
-friend_accessible_p (scope, decl, binfo)
-     tree scope;
-     tree decl;
-     tree binfo;
+friend_accessible_p (tree scope, tree decl, tree binfo)
 {
   tree befriending_classes;
   tree t;
@@ -986,10 +944,7 @@ friend_accessible_p (scope, decl, binfo)
    at the most derived class along the path indicated by BINFO.  */
 
 int 
-accessible_p (type, decl)
-     tree type;
-     tree decl;
-     
+accessible_p (tree type, tree decl)
 {
   tree binfo;
   tree t;
@@ -1069,8 +1024,7 @@ accessible_p (type, decl)
    for documentation of the parameters.  */
 
 static int
-is_subobject_of_p_1 (parent, binfo, most_derived)
-     tree parent, binfo, most_derived;
+is_subobject_of_p_1 (tree parent, tree binfo, tree most_derived)
 {
   tree binfos;
   int i, n_baselinks;
@@ -1155,9 +1109,7 @@ struct lookup_field_info {
    lookup_field via breadth_first_search.  */
 
 static tree
-lookup_field_queue_p (binfo, data)
-     tree binfo;
-     void *data;
+lookup_field_queue_p (tree binfo, void *data)
 {
   struct lookup_field_info *lfi = (struct lookup_field_info *) data;
 
@@ -1184,9 +1136,7 @@ lookup_field_queue_p (binfo, data)
    Returns nonzero if DECL is such a declaration in a class TYPE.  */
 
 static int
-template_self_reference_p (type, decl)
-     tree type;
-     tree decl;
+template_self_reference_p (tree type, tree decl)
 {
   return  (CLASSTYPE_USE_TEMPLATE (type)
 	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
@@ -1207,8 +1157,7 @@ template_self_reference_p (type, decl)
    This function checks that T contains no nonstatic members.  */
 
 static int
-shared_member_p (t)
-     tree t;
+shared_member_p (tree t)
 {
   if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == TYPE_DECL \
       || TREE_CODE (t) == CONST_DECL)
@@ -1232,9 +1181,7 @@ shared_member_p (t)
    lookup_field via breadth_first_search.  */
 
 static tree
-lookup_field_r (binfo, data)
-     tree binfo;
-     void *data;
+lookup_field_r (tree binfo, void *data)
 {
   struct lookup_field_info *lfi = (struct lookup_field_info *) data;
   tree type = BINFO_TYPE (binfo);
@@ -1408,9 +1355,7 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
    If nothing can be found return NULL_TREE and do not issue an error.  */
 
 tree
-lookup_member (xbasetype, name, protect, want_type)
-     register tree xbasetype, name;
-     int protect, want_type;
+lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 {
   tree rval, rval_binfo = NULL_TREE;
   tree type = NULL_TREE, basetype_path = NULL_TREE;
@@ -1513,9 +1458,7 @@ lookup_member (xbasetype, name, protect, want_type)
    return NULL_TREE.  */
 
 tree
-lookup_field (xbasetype, name, protect, want_type)
-     register tree xbasetype, name;
-     int protect, want_type;
+lookup_field (tree xbasetype, tree name, int protect, bool want_type)
 {
   tree rval = lookup_member (xbasetype, name, protect, want_type);
   
@@ -1530,11 +1473,9 @@ lookup_field (xbasetype, name, protect, want_type)
    return NULL_TREE.  */
 
 tree
-lookup_fnfields (xbasetype, name, protect)
-     register tree xbasetype, name;
-     int protect;
+lookup_fnfields (tree xbasetype, tree name, int protect)
 {
-  tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/0);
+  tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/false);
 
   /* Ignore non-functions.  */
   if (rval && !BASELINK_P (rval))
@@ -1547,8 +1488,7 @@ lookup_fnfields (xbasetype, name, protect)
    the method vector with name NAME, or -1 is no such field exists.  */
 
 int
-lookup_fnfields_1 (type, name)
-     tree type, name;
+lookup_fnfields_1 (tree type, tree name)
 {
   tree method_vec = (CLASS_TYPE_P (type)
 		     ? CLASSTYPE_METHOD_VEC (type)
@@ -1692,11 +1632,8 @@ adjust_result_of_qualified_name_lookup (tree decl,
    called.  */
 
 static tree
-bfs_walk (binfo, fn, qfn, data)
-     tree binfo;
-     tree (*fn) PARAMS ((tree, void *));
-     tree (*qfn) PARAMS ((tree, void *));
-     void *data;
+bfs_walk (tree binfo, tree (*fn) (tree, void *),
+	  tree (*qfn) (tree, void *), void *data)
 {
   size_t head;
   size_t tail;
@@ -1755,12 +1692,9 @@ bfs_walk (binfo, fn, qfn, data)
    in postorder.  */
 
 tree
-dfs_walk_real (binfo, prefn, postfn, qfn, data)
-     tree binfo;
-     tree (*prefn) PARAMS ((tree, void *));
-     tree (*postfn) PARAMS ((tree, void *));
-     tree (*qfn) PARAMS ((tree, void *));
-     void *data;
+dfs_walk_real (tree binfo, 
+	       tree (*prefn) (tree, void *), tree (*postfn) (tree, void *),
+	       tree (*qfn) (tree, void *), void *data)
 {
   int i;
   int n_baselinks;
@@ -1804,11 +1738,8 @@ dfs_walk_real (binfo, prefn, postfn, qfn, data)
    performed.  */
 
 tree
-dfs_walk (binfo, fn, qfn, data)
-     tree binfo;
-     tree (*fn) PARAMS ((tree, void *));
-     tree (*qfn) PARAMS ((tree, void *));
-     void *data;
+dfs_walk (tree binfo, tree (*fn) (tree, void *),
+	  tree (*qfn) (tree, void *), void *data)
 {
   return dfs_walk_real (binfo, 0, fn, qfn, data);
 }
@@ -1817,8 +1748,7 @@ dfs_walk (binfo, fn, qfn, data)
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
 int
-check_final_overrider (overrider, basefn)
-     tree overrider, basefn;
+check_final_overrider (tree overrider, tree basefn)
 {
   tree over_type = TREE_TYPE (overrider);
   tree base_type = TREE_TYPE (basefn);
@@ -1926,8 +1856,7 @@ check_final_overrider (overrider, basefn)
    overridden.  */
 
 int
-look_for_overrides (type, fndecl)
-     tree type, fndecl;
+look_for_overrides (tree type, tree fndecl)
 {
   tree binfo = TYPE_BINFO (type);
   tree basebinfos = BINFO_BASETYPES (binfo);
@@ -1949,8 +1878,7 @@ look_for_overrides (type, fndecl)
    FNDECL.  */
 
 tree
-look_for_overrides_here (type, fndecl)
-     tree type, fndecl;
+look_for_overrides_here (tree type, tree fndecl)
 {
   int ix;
 
@@ -1988,8 +1916,7 @@ look_for_overrides_here (type, fndecl)
    TYPE itself and its bases.  */
 
 static int
-look_for_overrides_r (type, fndecl)
-     tree type, fndecl;
+look_for_overrides_r (tree type, tree fndecl)
 {
   tree fn = look_for_overrides_here (type, fndecl);
   if (fn)
@@ -2025,9 +1952,7 @@ look_for_overrides_r (type, fndecl)
    once.  */
 
 tree
-dfs_unmarked_real_bases_queue_p (binfo, data)
-     tree binfo;
-     void *data;
+dfs_unmarked_real_bases_queue_p (tree binfo, void *data)
 {
   if (TREE_VIA_VIRTUAL (binfo))
     {
@@ -2044,9 +1969,7 @@ dfs_unmarked_real_bases_queue_p (binfo, data)
    that are marked, rather than unmarked.  */
 
 tree
-dfs_marked_real_bases_queue_p (binfo, data)
-     tree binfo;
-     void *data;
+dfs_marked_real_bases_queue_p (tree binfo, void *data)
 {
   if (TREE_VIA_VIRTUAL (binfo))
     {
@@ -2063,9 +1986,7 @@ dfs_marked_real_bases_queue_p (binfo, data)
    bases).  */
 
 tree
-dfs_skip_vbases (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_skip_vbases (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   if (TREE_VIA_VIRTUAL (binfo))
     return NULL_TREE;
@@ -2076,9 +1997,7 @@ dfs_skip_vbases (binfo, data)
 /* Called via dfs_walk from dfs_get_pure_virtuals.  */
 
 static tree
-dfs_get_pure_virtuals (binfo, data)
-     tree binfo;
-     void *data;
+dfs_get_pure_virtuals (tree binfo, void *data)
 {
   tree type = (tree) data;
 
@@ -2106,8 +2025,7 @@ dfs_get_pure_virtuals (binfo, data)
 /* Set CLASSTYPE_PURE_VIRTUALS for TYPE.  */
 
 void
-get_pure_virtuals (type)
-     tree type;
+get_pure_virtuals (tree type)
 {
   tree vbases;
 
@@ -2148,41 +2066,31 @@ get_pure_virtuals (type)
 /* DEPTH-FIRST SEARCH ROUTINES.  */
 
 tree 
-markedp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{ 
+markedp (tree binfo, void *data ATTRIBUTE_UNUSED)
+{
   return BINFO_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
 tree
-unmarkedp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+unmarkedp (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   return !BINFO_MARKED (binfo) ? binfo : NULL_TREE;
 }
 
 tree
-marked_vtable_pathp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+marked_vtable_pathp (tree binfo, void *data ATTRIBUTE_UNUSED)
 { 
   return BINFO_VTABLE_PATH_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
 tree
-unmarked_vtable_pathp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+unmarked_vtable_pathp (tree binfo, void *data ATTRIBUTE_UNUSED)
 { 
   return !BINFO_VTABLE_PATH_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
 static tree
-marked_pushdecls_p (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+marked_pushdecls_p (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   return (CLASS_TYPE_P (BINFO_TYPE (binfo))
 	  && !dependent_base_p (binfo)
@@ -2190,9 +2098,7 @@ marked_pushdecls_p (binfo, data)
 }
 
 static tree
-unmarked_pushdecls_p (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+unmarked_pushdecls_p (tree binfo, void *data ATTRIBUTE_UNUSED)
 { 
   return (CLASS_TYPE_P (BINFO_TYPE (binfo))
 	  && !dependent_base_p (binfo)
@@ -2204,9 +2110,7 @@ unmarked_pushdecls_p (binfo, data)
    a predicate function (above).  */
 
 tree
-dfs_unmark (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_unmark (tree binfo, void *data ATTRIBUTE_UNUSED)
 { 
   CLEAR_BINFO_MARKED (binfo); 
   return NULL_TREE;
@@ -2217,9 +2121,7 @@ dfs_unmark (binfo, data)
    Ordering is very important, so don't change it.  */
 
 static tree
-dfs_get_vbase_types (binfo, data)
-     tree binfo;
-     void *data;
+dfs_get_vbase_types (tree binfo, void *data)
 {
   tree type = (tree) data;
 
@@ -2236,9 +2138,7 @@ dfs_get_vbase_types (binfo, data)
    inheritance graph order list of BINFOs.  */
 
 static tree
-dfs_build_inheritance_graph_order (binfo, data)
-     tree binfo;
-     void *data;
+dfs_build_inheritance_graph_order (tree binfo, void *data)
 {
   tree *last_binfo = (tree *) data;
 
@@ -2252,8 +2152,7 @@ dfs_build_inheritance_graph_order (binfo, data)
 /* Set CLASSTYPE_VBASECLASSES for TYPE.  */
 
 void
-get_vbase_types (type)
-     tree type;
+get_vbase_types (tree type)
 {
   tree last_binfo;
 
@@ -2276,9 +2175,7 @@ get_vbase_types (type)
 /* Called from find_vbase_instance via dfs_walk.  */
 
 static tree
-dfs_find_vbase_instance (binfo, data)
-     tree binfo;
-     void *data;
+dfs_find_vbase_instance (tree binfo, void *data)
 {
   tree base = TREE_VALUE ((tree) data);
 
@@ -2293,9 +2190,7 @@ dfs_find_vbase_instance (binfo, data)
    hierarchy dominated by TYPE.  */
 
 tree
-find_vbase_instance (base, type)
-     tree base;
-     tree type;
+find_vbase_instance (tree base, tree type)
 {
   tree instance;
 
@@ -2318,8 +2213,7 @@ find_vbase_instance (base, type)
    linker.  */
 
 void
-maybe_suppress_debug_info (t)
-     tree t;
+maybe_suppress_debug_info (tree t)
 {
   /* We can't do the usual TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
      does not support name references between translation units.  It supports
@@ -2361,9 +2255,7 @@ maybe_suppress_debug_info (t)
    information anyway.  */
 
 static tree
-dfs_debug_mark (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_debug_mark (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   tree t = BINFO_TYPE (binfo);
 
@@ -2376,9 +2268,7 @@ dfs_debug_mark (binfo, data)
    info for this base class.  */
 
 static tree 
-dfs_debug_unmarkedp (binfo, data) 
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_debug_unmarkedp (tree binfo, void *data ATTRIBUTE_UNUSED)
 { 
   return (!CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) 
 	  ? binfo : NULL_TREE);
@@ -2392,8 +2282,7 @@ dfs_debug_unmarkedp (binfo, data)
    the vtables themselves, were optimized away.  */
 
 void
-note_debug_info_needed (type)
-     tree type;
+note_debug_info_needed (tree type)
 {
   if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
     {
@@ -2410,8 +2299,7 @@ note_debug_info_needed (type)
    because it (or one of the intermediate bases) depends on template parms.  */
 
 static int
-dependent_base_p (binfo)
-     tree binfo;
+dependent_base_p (tree binfo)
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
@@ -2424,9 +2312,7 @@ dependent_base_p (binfo)
 }
 
 static void
-setup_class_bindings (name, type_binding_p)
-     tree name;
-     int type_binding_p;
+setup_class_bindings (tree name, int type_binding_p)
 {
   tree type_binding = NULL_TREE;
   tree value_binding;
@@ -2440,8 +2326,7 @@ setup_class_bindings (name, type_binding_p)
   if (type_binding_p)
     {
       type_binding = lookup_member (current_class_type, name,
-				    /*protect=*/2,
-				    /*want_type=*/1);
+				    /*protect=*/2, /*want_type=*/true);
       if (TREE_CODE (type_binding) == TREE_LIST 
 	  && TREE_TYPE (type_binding) == error_mark_node)
 	/* NAME is ambiguous.  */
@@ -2452,8 +2337,7 @@ setup_class_bindings (name, type_binding_p)
 
   /* Now, do the value binding.  */
   value_binding = lookup_member (current_class_type, name,
-				 /*protect=*/2,
-				 /*want_type=*/0);
+				 /*protect=*/2, /*want_type=*/false);
 
   if (type_binding_p
       && (TREE_CODE (value_binding) == TYPE_DECL
@@ -2485,9 +2369,7 @@ setup_class_bindings (name, type_binding_p)
    are TYPE_DECLS.  */
 
 static tree
-dfs_push_type_decls (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_push_type_decls (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   tree type;
   tree fields;
@@ -2510,9 +2392,7 @@ dfs_push_type_decls (binfo, data)
    are not TYPE_DECLS.  */
 
 static tree
-dfs_push_decls (binfo, data)
-     tree binfo;
-     void *data;
+dfs_push_decls (tree binfo, void *data)
 {
   tree type;
   tree method_vec;
@@ -2566,8 +2446,7 @@ dfs_push_decls (binfo, data)
    message.  */
 
 void
-push_class_decls (type)
-     tree type;
+push_class_decls (tree type)
 {
   search_stack = push_search_level (search_stack, &search_obstack);
 
@@ -2581,9 +2460,7 @@ push_class_decls (type)
 /* Here's a subroutine we need because C lacks lambdas.  */
 
 static tree
-dfs_unuse_fields (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+dfs_unuse_fields (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
   tree type = TREE_TYPE (binfo);
   tree fields;
@@ -2603,8 +2480,7 @@ dfs_unuse_fields (binfo, data)
 }
 
 void
-unuse_fields (type)
-     tree type;
+unuse_fields (tree type)
 {
   dfs_walk (TYPE_BINFO (type), dfs_unuse_fields, unmarkedp, 0);
 }
@@ -2652,9 +2528,7 @@ reinit_search_statistics ()
 }
 
 static tree
-add_conversions (binfo, data)
-     tree binfo;
-     void *data;
+add_conversions (tree binfo, void *data)
 {
   int i;
   tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
@@ -2691,8 +2565,7 @@ add_conversions (binfo, data)
    from which the conversion functions in this node were selected.  */
 
 tree
-lookup_conversions (type)
-     tree type;
+lookup_conversions (tree type)
 {
   tree t;
   tree conversions = NULL_TREE;
@@ -2716,9 +2589,7 @@ struct overlap_info
    at offset 0 in COMPARE_TYPE, and set found_overlap if so.  */
 
 static tree
-dfs_check_overlap (empty_binfo, data)
-     tree empty_binfo;
-     void *data;
+dfs_check_overlap (tree empty_binfo, void *data)
 {
   struct overlap_info *oi = (struct overlap_info *) data;
   tree binfo;
@@ -2741,9 +2612,7 @@ dfs_check_overlap (empty_binfo, data)
 /* Trivial function to stop base traversal when we find something.  */
 
 static tree
-dfs_no_overlap_yet (binfo, data)
-     tree binfo;
-     void *data;
+dfs_no_overlap_yet (tree binfo, void *data)
 {
   struct overlap_info *oi = (struct overlap_info *) data;
   return !oi->found_overlap ? binfo : NULL_TREE;
@@ -2753,8 +2622,7 @@ dfs_no_overlap_yet (binfo, data)
    offset 0 in NEXT_TYPE.  Used in laying out empty base class subobjects.  */
 
 int
-types_overlap_p (empty_type, next_type)
-     tree empty_type, next_type;
+types_overlap_p (tree empty_type, tree next_type)
 {
   struct overlap_info oi;
 
@@ -2773,8 +2641,7 @@ types_overlap_p (empty_type, next_type)
    FIXME: This does not work with the new ABI.  */
 
 tree
-binfo_for_vtable (var)
-     tree var;
+binfo_for_vtable (tree var)
 {
   tree main_binfo = TYPE_BINFO (DECL_CONTEXT (var));
   tree binfos = TYPE_BINFO_BASETYPES (BINFO_TYPE (main_binfo));
@@ -2800,8 +2667,7 @@ binfo_for_vtable (var)
    from BINFO, or NULL if binfo is not via virtual.  */
 
 tree
-binfo_from_vbase (binfo)
-     tree binfo;
+binfo_from_vbase (tree binfo)
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
@@ -2816,9 +2682,7 @@ binfo_from_vbase (binfo)
    via virtual.  */
 
 tree
-binfo_via_virtual (binfo, limit)
-     tree binfo;
-     tree limit;
+binfo_via_virtual (tree binfo, tree limit)
 {
   for (; binfo && (!limit || !same_type_p (BINFO_TYPE (binfo), limit));
        binfo = BINFO_INHERITANCE_CHAIN (binfo))
@@ -2833,9 +2697,7 @@ binfo_via_virtual (binfo, limit)
    C from the CLASSTYPE_VBASECLASSES list.  */
 
 tree
-binfo_for_vbase (basetype, classtype)
-     tree basetype;
-     tree classtype;
+binfo_for_vbase (tree basetype, tree classtype)
 {
   tree binfo;
 

@@ -1026,7 +1026,7 @@ expand_member_init (tree name, tree init)
   else
     {
       if (TREE_CODE (name) == IDENTIFIER_NODE)
-	field = lookup_field (current_class_type, name, 1, 0);
+	field = lookup_field (current_class_type, name, 1, false);
       else
 	field = name;
 
@@ -1490,7 +1490,7 @@ build_member_call (type, name, parmlist)
   if (constructor_name_p (method_name, type))
     return build_functional_cast (type, parmlist);
   if (TREE_CODE (name) == IDENTIFIER_NODE
-      && ((t = lookup_field (TYPE_BINFO (type), name, 1, 0))))
+      && ((t = lookup_field (TYPE_BINFO (type), name, 1, false))))
     {
       if (t == error_mark_node)
 	return error_mark_node;
