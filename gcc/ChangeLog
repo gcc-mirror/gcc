@@ -1,3 +1,7 @@
+2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* version.c:  Fix misplaced leading blanks on first line.
+
 2002-04-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/pa/pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON,
