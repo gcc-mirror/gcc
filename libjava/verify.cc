@@ -1010,6 +1010,7 @@ private:
 	  _Jv_Free (info);
 	  info = next;
 	}
+      seen_subrs = NULL;
     }
 
     void copy (const state *copy, int max_stack, int max_locals,
@@ -1035,11 +1036,10 @@ private:
       clean_subrs ();
       if (copy->seen_subrs)
 	{
-	  for (subr_info *info = seen_subrs; info != NULL; info = info->next)
+	  for (subr_info *info = copy->seen_subrs;
+	       info != NULL; info = info->next)
 	    add_subr (info->pc);
 	}
-      else
-	seen_subrs = NULL;
 
       this_type = copy->this_type;
       // Don't modify `next'.
