@@ -295,6 +295,109 @@ proc dg-prune-output { args } {
     lappend additional_prunes [lindex $args 1]
 }
 
+# Remove files matching the pattern from the build machine.
+proc remove-build-file { pat } {
+    verbose "remove-build-file `$pat'" 2
+    set file_list "[glob -nocomplain $pat]"
+    verbose "remove-build-file `$file_list'" 2
+    foreach output_file $file_list {
+	remote_file build delete $output_file
+    }
+}
+
+# Remove compiler-generated coverage files for the current test.
+proc cleanup-coverage-files { } {
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].gc??"
+
+    # Clean up coverage files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].gc??"
+	}
+    }
+}
+
+# Remove compiler-generated files from -repo for the current test.
+proc cleanup-repo-files { } {
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].o"
+    remove-build-file "[file rootname [file tail $testcase]].rpo"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].o"
+	    remove-build-file "[file rootname [file tail $srcfile]].rpo"
+	}
+    }
+}
+
+# Remove compiler-generated RTL dump files for the current test.
+#
+# SUFFIX is the filename suffix pattern.
+proc cleanup-rtl-dump { suffix } {
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file tail $testcase].??.$suffix"
+
+    # Clean up dump files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file tail $srcfile].??.$suffix"
+	}
+    }
+}
+
+# Remove a specific tree dump file for the current test.
+#
+# SUFFIX is the file suffix pattern.
+proc cleanup-tree-dump { suffix } {
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new dejagnu release.
+    upvar 2 name testcase
+    remove-build-file "[file tail $testcase].t??.$suffix"
+
+    # Clean up dump files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file tail $srcfile].t??.$suffix"
+	}
+    }
+}
+
+# Remove files kept by --save-temps for the current test.
+#
+# Currently this is only .i files, but more can be added if there are
+# tests generating them.
+proc cleanup-saved-temps { } {
+    global additional_sources
+
+    # This assumes that we are two frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    remove-build-file "[file rootname [file tail $testcase]].ii"
+    remove-build-file "[file rootname [file tail $testcase]].i"
+
+    # Clean up saved temp files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+            remove-build-file "[file rootname [file tail $srcfile]].ii"
+            remove-build-file "[file rootname [file tail $srcfile]].i"
+	}
+    }
+}
+
 # We need to make sure that additional_* are cleared out after every
 # test.  It is not enough to clear them out *before* the next test run
 # because gcc-target-compile gets run directly from some .exp files
