@@ -440,10 +440,18 @@ validate_replace_rtx_1 (loc, from, to, object)
   register const char *fmt;
   register rtx x = *loc;
   enum rtx_code code;
+  enum machine_mode op0_mode = VOIDmode;
+  int prev_changes = num_changes;
+  rtx new;
 
   if (!x)
     return;
+
   code = GET_CODE (x);
+  fmt = GET_RTX_FORMAT (code);
+  if (fmt[0] == 'e')
+    op0_mode = GET_MODE (XEXP (x, 0));
+
   /* X matches FROM if it is the same rtx or they are both referring to the
      same register in the same mode.  Avoid calling rtx_equal_p unless the
      operands look similar.  */
@@ -459,166 +467,101 @@ validate_replace_rtx_1 (loc, from, to, object)
       return;
     }
 
-  /* For commutative or comparison operations, try replacing each argument
-     separately and seeing if we made any changes.  If so, put a constant
-     argument last.*/
-  if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == 'c')
-    {
-      int prev_changes = num_changes;
+  /* Call ourseves recursivly to perform the replacements.  */
 
-      validate_replace_rtx_1 (&XEXP (x, 0), from, to, object);
-      validate_replace_rtx_1 (&XEXP (x, 1), from, to, object);
-      if (prev_changes != num_changes && CONSTANT_P (XEXP (x, 0)))
-	{
-	  validate_change (object, loc,
-			   gen_rtx_fmt_ee (GET_RTX_CLASS (code) == 'c' ? code
-					   : swap_condition (code),
-					   GET_MODE (x), XEXP (x, 1),
-					   XEXP (x, 0)),
-			   1);
-	  x = *loc;
-	  code = GET_CODE (x);
-	}
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
     }
 
-  /* Note that if CODE's RTX_CLASS is "c" or "<" we will have already
-     done the substitution, otherwise we won't.  */
+  /* In case we didn't substituted, there is nothing to do.  */
+  if (num_changes == prev_changes)
+    return;
+
+  /* Allow substituted expression to have different mode.  This is used by
+     regmove to change mode of pseudo register.  */
+  if (fmt[0] == 'e' && GET_MODE (XEXP (x, 0)) != VOIDmode)
+    op0_mode = GET_MODE (XEXP (x, 0));
+
+  /* Do changes needed to keep rtx consistent.  Don't do any other
+     simplifications, as it is not our job.  */
+
+  if ((GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == 'c')
+      && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
+    {
+      validate_change (object, loc,
+		       gen_rtx_fmt_ee (GET_RTX_CLASS (code) == 'c' ? code
+				       : swap_condition (code),
+				       GET_MODE (x), XEXP (x, 1),
+				       XEXP (x, 0)), 1);
+      x = *loc;
+      code = GET_CODE (x);
+    }
 
   switch (code)
     {
     case PLUS:
       /* If we have a PLUS whose second operand is now a CONST_INT, use
-	 plus_constant to try to simplify it.  */
+         plus_constant to try to simplify it.
+         ??? We may want later to remove this, once simplification is
+         separated from this function.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
-	validate_change (object, loc, plus_constant (XEXP (x, 0), INTVAL (to)),
-			 1);
-      return;
-
-    case MINUS:
-      if (GET_CODE (to) == CONST_INT && XEXP (x, 1) == from)
-	{
-	  validate_change (object, loc,
-			   plus_constant (XEXP (x, 0), - INTVAL (to)),
-			   1);
-	  return;
-	}
+	validate_change (object, loc,
+			 plus_constant (XEXP (x, 0), INTVAL (to)), 1);
       break;
-      
+    case MINUS:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  || GET_CODE (XEXP (x, 1)) == CONST_DOUBLE)
+	validate_change (object, loc,
+			 simplify_gen_binary
+			 (PLUS, GET_MODE (x), XEXP (x, 0),
+			  simplify_gen_unary (NEG,
+					      op0_mode, XEXP (x, 1),
+					      op0_mode)), 1);
+      break;
     case ZERO_EXTEND:
     case SIGN_EXTEND:
-      /* In these cases, the operation to be performed depends on the mode
-	 of the operand.  If we are replacing the operand with a VOIDmode
-	 constant, we lose the information.  So try to simplify the operation
-	 in that case.  */
-      if (GET_MODE (to) == VOIDmode
-	  && (rtx_equal_p (XEXP (x, 0), from)
-	      || (GET_CODE (XEXP (x, 0)) == SUBREG
-		  && rtx_equal_p (SUBREG_REG (XEXP (x, 0)), from))))
+      if (GET_MODE (XEXP (x, 0)) == VOIDmode)
 	{
-	  rtx new = NULL_RTX;
-
-	  /* If there is a subreg involved, crop to the portion of the
-	     constant that we are interested in.  */
-	  if (GET_CODE (XEXP (x, 0)) == SUBREG)
-	    {
-	      if (GET_MODE_SIZE (GET_MODE (XEXP (x, 0))) <= UNITS_PER_WORD)
-		to = operand_subword (to, 
-				      (SUBREG_BYTE (XEXP (x, 0)) 
-				       / UNITS_PER_WORD),
-				      0, GET_MODE (from));
-	      else if (GET_MODE_CLASS (GET_MODE (from)) == MODE_INT
-		       && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
-			   <= HOST_BITS_PER_WIDE_INT))
-		{
-		  int i = SUBREG_BYTE (XEXP (x, 0)) * BITS_PER_UNIT;
-		  HOST_WIDE_INT valh;
-		  unsigned HOST_WIDE_INT vall;
-
-		  if (GET_CODE (to) == CONST_INT)
-		    {
-		      vall = INTVAL (to);
-		      valh = (HOST_WIDE_INT) vall < 0 ? ~0 : 0;
-		    }
-		  else
-		    {
-		      vall = CONST_DOUBLE_LOW (to);
-		      valh = CONST_DOUBLE_HIGH (to);
-		    }
-
-		  if (WORDS_BIG_ENDIAN)
-		    i = (GET_MODE_BITSIZE (GET_MODE (from))
-			 - GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - i);
-		  if (i > 0 && i < HOST_BITS_PER_WIDE_INT)
-		    vall = vall >> i | valh << (HOST_BITS_PER_WIDE_INT - i);
-		  else if (i >= HOST_BITS_PER_WIDE_INT)
-		    vall = valh >> (i - HOST_BITS_PER_WIDE_INT);
-		  to = GEN_INT (trunc_int_for_mode (vall,
-						    GET_MODE (XEXP (x, 0))));
-		}
-	      else
-		to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-	    }
-
-	  /* If the above didn't fail, perform the extension from the
-	     mode of the operand (and not the mode of FROM).  */
-	  if (to)
-	    new = simplify_unary_operation (code, GET_MODE (x), to,
-					    GET_MODE (XEXP (x, 0)));
-
+	  new = simplify_gen_unary (code, GET_MODE (x), XEXP (x, 0),
+				    op0_mode);
 	  /* If any of the above failed, substitute in something that
 	     we know won't be recognized.  */
 	  if (!new)
 	    new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-
 	  validate_change (object, loc, new, 1);
-	  return;
 	}
       break;
-	
     case SUBREG:
-      /* In case we are replacing by constant, attempt to simplify it to
-	 non-SUBREG expression.  We can't do this later, since the information
-	 about inner mode may be lost.  */
-      if (rtx_equal_p (SUBREG_REG (x), from))
-        {
-	  rtx temp;
-	  temp = simplify_subreg (GET_MODE (x), to,
-			 	  GET_MODE (to) != VOIDmode
-				  ? GET_MODE (to) : GET_MODE (SUBREG_REG (x)),
-				  SUBREG_BYTE (x));
-	  if (temp)
-	    {
-	      validate_change (object, loc, temp, 1);
-	      return;
-	    }
-	  /* Avoid creating of invalid SUBREGS.  */
-	  if (GET_MODE (from) == VOIDmode)
-	    {
-	      /* Substitute in something that we know won't be
-		 recognized.  */
-	      to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-	      validate_change (object, loc, to, 1);
-	      return;
-	    }
-        }
-      break;
+      /* All subregs possible to simplify should be simplified.  */
+      new = simplify_subreg (GET_MODE (x), SUBREG_REG (x), op0_mode,
+			     SUBREG_BYTE (x));
 
+      /* Subregs of VOIDmode operands are incorect.  */
+      if (!new && GET_MODE (SUBREG_REG (x)) == VOIDmode)
+	new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+      if (new)
+	validate_change (object, loc, new, 1);
+      break;
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
       /* If we are replacing a register with memory, try to change the memory
-	 to be the mode required for memory in extract operations (this isn't
-	 likely to be an insertion operation; if it was, nothing bad will
-	 happen, we might just fail in some cases).  */
+         to be the mode required for memory in extract operations (this isn't
+         likely to be an insertion operation; if it was, nothing bad will
+         happen, we might just fail in some cases).  */
 
-      if (GET_CODE (from) == REG && GET_CODE (to) == MEM
-	  && rtx_equal_p (XEXP (x, 0), from)
+      if (GET_CODE (XEXP (x, 0)) == MEM
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && GET_CODE (XEXP (x, 2)) == CONST_INT
-	  && ! mode_dependent_address_p (XEXP (to, 0))
-	  && ! MEM_VOLATILE_P (to))
+	  && !mode_dependent_address_p (XEXP (XEXP (x, 0), 0))
+	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
 	  enum machine_mode wanted_mode = VOIDmode;
-	  enum machine_mode is_mode = GET_MODE (to);
+	  enum machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
 #ifdef HAVE_extzv
@@ -646,16 +589,18 @@ validate_replace_rtx_1 (loc, from, to, object)
 	      rtx newmem;
 
 	      /* If the bytes and bits are counted differently, we
-		 must adjust the offset.  */
+	         must adjust the offset.  */
 	      if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN)
-		offset = (GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (wanted_mode)
-			  - offset);
+		offset =
+		  (GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (wanted_mode) -
+		   offset);
 
 	      pos %= GET_MODE_BITSIZE (wanted_mode);
 
 	      newmem = gen_rtx_MEM (wanted_mode,
-				    plus_constant (XEXP (to, 0), offset));
-	      MEM_COPY_ATTRIBUTES (newmem, to);
+				    plus_constant (XEXP (XEXP (x, 0), 0),
+						   offset));
+	      MEM_COPY_ATTRIBUTES (newmem, XEXP (x, 0));
 
 	      validate_change (object, &XEXP (x, 2), GEN_INT (pos), 1);
 	      validate_change (object, &XEXP (x, 0), newmem, 1);
@@ -663,24 +608,9 @@ validate_replace_rtx_1 (loc, from, to, object)
 	}
 
       break;
-      
+
     default:
       break;
-    }
-      
-  /* For commutative or comparison operations we've already performed
-     replacements.  Don't try to perform them again.  */
-  if (GET_RTX_CLASS (code) != '<' && GET_RTX_CLASS (code) != 'c')
-    {
-      fmt = GET_RTX_FORMAT (code);
-      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-        {
-          if (fmt[i] == 'e')
-            validate_replace_rtx_1 (&XEXP (x, i), from, to, object);
-          else if (fmt[i] == 'E')
-            for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-              validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object);
-        }
     }
 }
 
@@ -1029,6 +959,11 @@ general_operand (op, mode)
 	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
 	return 0;
 #endif
+      /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
+         may result in incorrect reference.  We should simplify all valid
+         subregs of MEM anyway.  */
+      if (SUBREG_BYTE (op) && GET_CODE (SUBREG_REG (op)) == MEM)
+        return 0;
 
       op = SUBREG_REG (op);
       code = GET_CODE (op);
