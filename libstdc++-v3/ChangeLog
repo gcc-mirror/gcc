@@ -1,3 +1,8 @@
+2003-02-19  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (overflow): According to
+	27.7.1.3, p5, actual output is performed by sputc(c).
+
 2003-02-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/9582

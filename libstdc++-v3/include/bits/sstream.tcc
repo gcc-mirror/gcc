@@ -105,9 +105,7 @@ namespace std
 		  this->_M_buf_size = __len;
 		  _M_really_sync(this->_M_in_cur - this->_M_in_beg, 
 				 this->_M_out_cur - this->_M_out_beg);
-		  *this->_M_out_cur = traits_type::to_char_type(__c);
-		  _M_out_cur_move(1);
-		  __ret = __c;
+		  __ret = this->sputc(traits_type::to_char_type(__c));
 		}
 	    }
 	  else
