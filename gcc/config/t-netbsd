@@ -1,5 +1,9 @@
 # Don't run fixproto
 STMP_FIXPROTO =
 
+# We don't want the base GCC user headers, but we do want
+# any extras a target might specify.
+USER_H = $(EXTRA_HEADERS)
+
 # Always build crtstuff with PIC.
 CRTSTUFF_T_CFLAGS = -fPIC
