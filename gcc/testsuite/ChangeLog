@@ -1,3 +1,8 @@
+2003-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/12628
+	* gcc.dg/20031201-1.c: New test case.
+
 2003-12-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/unaligned-1.c: New test.
