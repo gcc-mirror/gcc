@@ -1,3 +1,12 @@
+2004-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/13521
+	Backport from mainline:
+		2003-03-22  Richard Henderson <rth@redhat.com>
+
+		* cfgcleanup.c (insns_match_p): Do not do EQUIV substitution
+		after reload.
+
 2003-12-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/12632
