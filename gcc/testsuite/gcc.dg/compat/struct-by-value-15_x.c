@@ -29,6 +29,8 @@ TEST(Scll16, _Complex long long)
 void
 struct_by_value_15_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Scll1, _Complex long long)

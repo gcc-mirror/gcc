@@ -158,6 +158,8 @@ TEST(Sldf)
 void
 struct_by_value_10_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE) testit##TYPE ();
 
 T(Sfd)

@@ -183,6 +183,8 @@ T(15, Si)
 void
 struct_by_value_4_x ()
 {
+DEBUG_INIT
+
 #define T(N, TYPE) testit##TYPE##N ();
 
 T(0, Sc)

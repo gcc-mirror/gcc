@@ -45,6 +45,8 @@ T(cf, _Complex float, (1.0,2.0))
 void
 scalar_return_4_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(cc)

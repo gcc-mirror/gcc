@@ -158,6 +158,8 @@ T(ld, long double, 92.0)
 void
 scalar_by_value_1_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(ui)

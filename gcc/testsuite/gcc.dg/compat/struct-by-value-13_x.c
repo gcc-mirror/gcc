@@ -29,6 +29,8 @@ TEST(Sci16, _Complex int)
 void
 struct_by_value_13_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Sci1, _Complex int)

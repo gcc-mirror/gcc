@@ -29,6 +29,8 @@ TEST(Sld16, long double)
 void
 struct_by_value_7_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Sld1, long double)

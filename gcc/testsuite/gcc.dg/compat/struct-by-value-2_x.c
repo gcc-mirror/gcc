@@ -159,6 +159,8 @@ T(15, ui, unsigned int)
 void
 struct_by_value_2_x ()
 {
+DEBUG_INIT
+
 #define T(N, NAME, TYPE) testit##NAME##N ();
 
 T(0, uc, unsigned char)
