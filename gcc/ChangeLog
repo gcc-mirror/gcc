@@ -1,5 +1,9 @@
 2000-05-04  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c (noce_process_if_block): Always reset X in the A == B case.
+
+2000-05-04  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (FPBIT_FUNCS): Remove _df_to_usi.
 	(DPBIT_FUNCS): Remove _sf_to_usi.
 	(stmp-multilib): Pass LIB1ASMSRC to libgcc.mk.
