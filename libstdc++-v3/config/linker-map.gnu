@@ -139,12 +139,12 @@ GLIBCXX_3.4 {
     _ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei;
     _ZNSt12__basic_fileIcE4syncEv;
     _ZNSt12__basic_fileIcE5closeEv;
-    _ZNSt12__basic_fileIcE6xsgetnEPci;
-    _ZNSt12__basic_fileIcE6xsputnEPKci;
-    _ZNSt12__basic_fileIcE7seekoffExSt12_Ios_Seekdir;
+    _ZNSt12__basic_fileIcE6xsgetn*;
+    _ZNSt12__basic_fileIcE6xsputn*;
+    _ZNSt12__basic_fileIcE7seekoff*;
     _ZNSt12__basic_fileIcE8sys_openEP8_IO_FILESt13_Ios_Openmode;
     _ZNSt12__basic_fileIcE8sys_openEiSt13_Ios_Openmode;
-    _ZNSt12__basic_fileIcE8xsputn_2EPKciS2_i;
+    _ZNSt12__basic_fileIcE8xsputn_2*;
     _ZNSt12__basic_fileIcE9showmanycEv;
     _ZNSt12__basic_fileIcEC*;
     _ZNSt12__basic_fileIcED*;

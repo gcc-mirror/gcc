@@ -1,3 +1,8 @@
+2004-06-08  Jason Merrill  <jason@redhat.com>
+
+	* config/linker-map.gnu: Use wildcards for
+	__basic_file::{xsgetn,xsputn,seekoff,xsputn_2}.
+
 2004-05-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (GLIBCXX_3.4.1): Add.
