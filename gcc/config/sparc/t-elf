@@ -24,6 +24,6 @@ INSTALL_LIBGCC = install-multilib
 
 # Assemble startup files.
 crti.o: $(srcdir)/config/sparc/sol2-ci.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/sparc/sol2-ci.asm
+	$(GCC_FOR_TARGET) -c -o crti.o -x assembler-with-cpp $(srcdir)/config/sparc/sol2-ci.asm
 crtn.o: $(srcdir)/config/sparc/sol2-cn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/sparc/sol2-cn.asm
+	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler-with-cpp $(srcdir)/config/sparc/sol2-cn.asm
