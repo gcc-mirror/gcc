@@ -27,6 +27,9 @@ MULTILIB_MATCHES	= $(MULTILIB_MATCHES_FLOAT) \
 			  mcpu?powerpc=mpowerpc-gpopt \
 			  mcpu?powerpc=mpowerpc-gfxopt
 
+# GCC 128-bit long double support routines.
+LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-ldouble.c
+
 # Aix 3.2.x needs milli.exp for -mcpu=common
 EXTRA_PARTS = milli.exp
 milli.exp: $(srcdir)/config/rs6000/milli.exp

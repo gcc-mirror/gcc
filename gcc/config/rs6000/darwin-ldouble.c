@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,12 +30,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Implementations of floating-point long double basic arithmetic
    functions called by the IBM C compiler when generating code for
    PowerPC platforms.  In particular, the following functions are
-   implemented: _xlqadd, _xlqsub, _xlqmul, and _xlqdiv.  Double-double
-   algorithms are based on the paper "Doubled-Precision IEEE Standard
-   754 Floating-Point Arithmetic" by W. Kahan, February 26, 1987.  An
-   alternative published reference is "Software for Doubled-Precision
-   Floating-Point Computations", by Seppo Linnainmaa, ACM TOMS vol 7
-   no 3, September 1981, pages 272-283.  */
+   implemented: __gcc_qadd, __gcc_qsub, __gcc_qmul, and __gcc_qdiv.
+   Double-double algorithms are based on the paper "Doubled-Precision
+   IEEE Standard 754 Floating-Point Arithmetic" by W. Kahan, February 26,
+   1987.  An alternative published reference is "Software for
+   Doubled-Precision Floating-Point Computations", by Seppo Linnainmaa,
+   ACM TOMS vol 7 no 3, September 1981, pages 272-283.  */
 
 /* Each long double is made up of two IEEE doubles.  The value of the
    long double is the sum of the values of the two parts.  The most
@@ -48,7 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This code currently assumes big-endian.  */
 
-#if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__))
+#if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__) || defined (_AIX))
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)
@@ -62,10 +62,27 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    but GCC currently generates poor code when a union is used to turn
    a long double into a pair of doubles.  */
 
-extern long double _xlqadd (double, double, double, double);
-extern long double _xlqsub (double, double, double, double);
-extern long double _xlqmul (double, double, double, double);
-extern long double _xlqdiv (double, double, double, double);
+extern long double __gcc_qadd (double, double, double, double);
+extern long double __gcc_qsub (double, double, double, double);
+extern long double __gcc_qmul (double, double, double, double);
+extern long double __gcc_qdiv (double, double, double, double);
+
+#ifdef __ELF__
+/* Provide definitions of the old symbol names to statisfy apps and
+   shared libs built against an older libgcc.  To access the _xlq
+   symbols an explicit version reference is needed, so these won't
+   satisfy an unadorned reference like _xlqadd.  If dot symbols are
+   not needed, the assembler will remove the aliases from the symbol
+   table.  */
+__asm__ (".symver __gcc_qadd,_xlqadd@GCC_3.4\n\t"
+	 ".symver __gcc_qsub,_xlqsub@GCC_3.4\n\t"
+	 ".symver __gcc_qmul,_xlqmul@GCC_3.4\n\t"
+	 ".symver __gcc_qdiv,_xlqdiv@GCC_3.4\n\t"
+	 ".symver .__gcc_qadd,._xlqadd@GCC_3.4\n\t"
+	 ".symver .__gcc_qsub,._xlqsub@GCC_3.4\n\t"
+	 ".symver .__gcc_qmul,._xlqmul@GCC_3.4\n\t"
+	 ".symver .__gcc_qdiv,._xlqdiv@GCC_3.4");
+#endif
 
 typedef union
 {
@@ -75,7 +92,7 @@ typedef union
 
 /* Add two 'long double' values and return the result.	*/
 long double
-_xlqadd (double a, double aa, double c, double cc)
+__gcc_qadd (double a, double aa, double c, double cc)
 {
   longDblUnion x;
   double z, q, zz, xh;
@@ -110,13 +127,13 @@ _xlqadd (double a, double aa, double c, double cc)
 }
 
 long double
-_xlqsub (double a, double b, double c, double d)
+__gcc_qsub (double a, double b, double c, double d)
 {
-  return _xlqadd (a, b, -c, -d);
+  return __gcc_qadd (a, b, -c, -d);
 }
 
 long double
-_xlqmul (double a, double b, double c, double d)
+__gcc_qmul (double a, double b, double c, double d)
 {
   longDblUnion z;
   double t, tau, u, v, w;
@@ -145,7 +162,7 @@ _xlqmul (double a, double b, double c, double d)
 }
 
 long double
-_xlqdiv (double a, double b, double c, double d)
+__gcc_qdiv (double a, double b, double c, double d)
 {
   longDblUnion z;
   double s, sigma, t, tau, u, v, w;

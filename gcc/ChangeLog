@@ -1,3 +1,17 @@
+2005-02-15  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/19019
+	* config/rs6000/darwin-ldouble.c (_xlqadd): Rename to __gcc_qadd.
+	(_xlqsub): Rename to __gcc_qsub.
+	(_xlqmul): Rename to __gcc_qmul.
+	(_xlqdiv): Rename to __gcc_qdiv.
+	Provide versioned symbol aliases with old names.
+	* config/rs6000/libgcc-ppc64.ver: Rename symbols.
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Rename symbols.
+	* config/rs6000/t-aix43 (LIB2FUNCS_EXTRA): New.
+	* config/rs6000/t-aix52 (LIB2FUNCS_EXTRA): New.
+	* config/rs6000/t-newas (LIB2FUNCS_EXTRA): New.
+
 2005-02-15  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (fold): Fold -(~A) to A + 1.  Fold ~(-A) to A - 1.
