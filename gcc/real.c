@@ -1080,6 +1080,8 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
       return do_compare (op0, op1, 1) >= 0;
     case UNEQ_EXPR:
       return do_compare (op0, op1, 0) == 0;
+    case LTGT_EXPR:
+      return do_compare (op0, op1, 0) != 0;
 
     default:
       abort ();

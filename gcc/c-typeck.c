@@ -6798,6 +6798,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case LTGT_EXPR:
       build_type = integer_type_node;
       if (code0 != REAL_TYPE || code1 != REAL_TYPE)
 	{

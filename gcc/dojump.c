@@ -525,7 +525,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
     {
       enum rtx_code rcode1;
-      enum tree_code tcode2;
+      enum tree_code tcode1 = UNORDERED_EXPR, tcode2;
 
       case UNLT_EXPR:
         rcode1 = UNLT;
@@ -547,6 +547,13 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         rcode1 = UNEQ;
         tcode2 = EQ_EXPR;
         goto unordered_bcc;
+      case LTGT_EXPR:
+	/* It is ok for LTGT_EXPR to trap when the result is unordered,
+	   so expand to (a < b) || (a > b).  */
+        rcode1 = LTGT;
+        tcode1 = LT_EXPR;
+        tcode2 = GT_EXPR;
+        goto unordered_bcc;
 
       unordered_bcc:
         mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
@@ -560,8 +567,8 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             tree cmp0, cmp1;
 
             /* If the target doesn't support combined unordered
-               compares, decompose into UNORDERED + comparison.  */
-            cmp0 = fold (build (UNORDERED_EXPR, TREE_TYPE (exp), op0, op1));
+               compares, decompose into two comparisons.  */
+            cmp0 = fold (build (tcode1, TREE_TYPE (exp), op0, op1));
             cmp1 = fold (build (tcode2, TREE_TYPE (exp), op0, op1));
             exp = build (TRUTH_ORIF_EXPR, TREE_TYPE (exp), cmp0, cmp1);
             do_jump (exp, if_false_label, if_true_label);

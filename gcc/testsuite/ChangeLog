@@ -1,3 +1,10 @@
+2004-05-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.c-torture/compare-fp-1.c, gcc.c-torture/compare-fp-2.c,
+	gcc.c-torture/compare-fp-3.c, gcc.c-torture/compare-fp-4.c,
+	gcc.c-torture/compare-fp-3.x, gcc.c-torture/compare-fp-4.x,
+	gcc.c-torture/pr15649-1.c: New.
+
 2004-05-27  Adam Nemet  <anemet@lnxw.com>
 
 	PR c++/12883

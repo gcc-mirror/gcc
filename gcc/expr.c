@@ -8305,6 +8305,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case LTGT_EXPR:
       temp = do_store_flag (exp,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
 			    tmode != VOIDmode ? tmode : mode, 0);
@@ -9814,6 +9815,9 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
       break;
     case UNEQ_EXPR:
       code = UNEQ;
+      break;
+    case LTGT_EXPR:
+      code = LTGT;
       break;
 
     default:
