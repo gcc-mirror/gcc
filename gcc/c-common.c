@@ -764,6 +764,9 @@ static void builtin_define_with_value PARAMS ((const char *, const char *,
                                                int));
 static void builtin_define_with_int_value PARAMS ((const char *,
 						   HOST_WIDE_INT));
+static void builtin_define_with_hex_fp_value PARAMS ((const char *, tree,
+						      int, const char *,
+						      const char *));
 static void builtin_define_type_max PARAMS ((const char *, tree, int));
 static void cpp_define_data_format PARAMS ((cpp_reader *));
 static void builtin_define_type_precision PARAMS ((const char *, tree));
@@ -4806,6 +4809,7 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
   char name[64], buf[128];
   int mant_dig, max_exp, min_exp;
   int dig, min_10_exp, max_10_exp;
+  int decimal_dig;
 
   /* ??? This information should be shared with real.c.  */
 
@@ -4879,7 +4883,7 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
 	    }
 	  break;
 	case 128: /* H_FLOAT */
-	  mant_dig = 114;
+	  mant_dig = 113;
 	  min_exp = -16383;
 	  max_exp = 16383;
 	  break;
@@ -4994,54 +4998,56 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
   sprintf (name, "__%s_MAX_10_EXP__", name_prefix);
   builtin_define_with_int_value (name, max_10_exp);
 
+  /* The number of decimal digits, n, such that any floating-point number
+     can be rounded to n decimal digits and back again without change to
+     the value. 
+
+	p * log10(b)			if b is a power of 10
+	ceil(1 + p * log10(b))		otherwise
+
+     The only macro we care about is this number for the widest supported
+     floating type, but we want this value for rendering constants below.  */
+  {
+    double d_decimal_dig = 1 + mant_dig * log10_b;
+    decimal_dig = d_decimal_dig;
+    if (decimal_dig < d_decimal_dig)
+      decimal_dig++;
+  }
+  if (type == long_double_type_node)
+    builtin_define_with_int_value ("__DECIMAL_DIG__", decimal_dig);
+
   /* Since, for the supported formats, B is always a power of 2, we
-     construct the following numbers directly as a hexadecimal constants.  */
+     construct the following numbers directly as a hexadecimal
+     constants.  */
 
   /* The maximum representable finite floating-point number,
-	(1 - b**-p) * b**max_exp  */
+     (1 - b**-p) * b**max_exp  */
   {
     int i, n;
     char *p;
-    sprintf (name, "__%s_MAX__", name_prefix);
 
     strcpy (buf, "0x0.");
-
     n = mant_dig * log2_b;
     for (i = 0, p = buf + 4; i + 3 < n; i += 4)
       *p++ = 'f';
     if (i < n)
       *p++ = "08ce"[n - i];
-    sprintf (p, "p%d%s", max_exp * log2_b, fp_suffix);
-    builtin_define_with_value (name, buf, 0);
+    sprintf (p, "p%d", max_exp * log2_b);
   }
+  sprintf (name, "__%s_MAX__", name_prefix);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 
-  /* The minimum normalized positive floating-point number, b**(min_exp-1).  */
+  /* The minimum normalized positive floating-point number,
+     b**(min_exp-1).  */
   sprintf (name, "__%s_MIN__", name_prefix);
-  sprintf (buf, "0x1p%d%s", (min_exp - 1) * log2_b, fp_suffix);
-  builtin_define_with_value (name, buf, 0);
+  sprintf (buf, "0x1p%d", (min_exp - 1) * log2_b);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
   sprintf (name, "__%s_EPSILON__", name_prefix);
-  sprintf (buf, "0x1p%d%s", (1 - mant_dig) * log2_b, fp_suffix);
-  builtin_define_with_value (name, buf, 0);
-
-  if (type == long_double_type_node)
-    {
-      /* The number of decimal digits, n, such that any floating-point number
-	 in the widest supported floating type with pmax radix b digits can be
-	 rounded to a floating-point number with n decimal digits and back
-	 again without change to the value,
-
-	        pmax log10(b)                   if b is a power of 10
-	        ceil(1 + pmax * log10(b))       otherwise
-      */
-      double d_decimal_dig = 1 + mant_dig * log10_b;
-      int decimal_dig = d_decimal_dig;
-      if (decimal_dig < d_decimal_dig)
-	decimal_dig++;
-      builtin_define_with_int_value ("__DECIMAL_DIG__", decimal_dig);
-    }
+  sprintf (buf, "0x1p%d", (1 - mant_dig) * log2_b);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 }
 
 /* Hook that registers front end and target-specific built-ins.  */
@@ -5253,6 +5259,35 @@ builtin_define_with_int_value (macro, value)
   buf[mlen] = '=';
   sprintf (buf + mlen + 1, HOST_WIDE_INT_PRINT_DEC, value);
 
+  cpp_define (parse_in, buf);
+}
+
+/* Pass an object-like macro a hexadecimal floating-point value.  */
+static void
+builtin_define_with_hex_fp_value (macro, type, digits, hex_str, fp_suffix)
+     const char *macro;
+     tree type;
+     int digits;
+     const char *hex_str;
+     const char *fp_suffix;
+{
+  REAL_VALUE_TYPE real;
+  char dec_str[64], buf[256];
+
+  /* Hex values are really cool and convenient, except that they're
+     not supported in strict ISO C90 mode.  First, the "p-" sequence
+     is not valid as part of a preprocessor number.  Second, we get a
+     pedwarn from the preprocessor, which has no context, so we can't
+     suppress the warning with __extension__.
+
+     So instead what we do is construct the number in hex (because 
+     it's easy to get the exact correct value), parse it as a real,
+     then print it back out as decimal.  */
+
+  real = REAL_VALUE_HTOF (hex_str, TYPE_MODE (type));
+  REAL_VALUE_TO_DECIMAL (real, dec_str, digits);
+
+  sprintf (buf, "%s=%s%s", macro, dec_str, fp_suffix);
   cpp_define (parse_in, buf);
 }
 
