@@ -1,3 +1,7 @@
+2002-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_GetJNIEnvNewFrame): Set env->ex in all cases.
+
 2002-11-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/applet/Applet.java, java/applet/AppletContext.java,

@@ -1984,9 +1984,9 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
     {
       env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
       env->p = &_Jv_JNIFunctions;
-      env->ex = NULL;
       env->klass = klass;
       env->locals = NULL;
+      // We set env->ex below.
 
       _Jv_SetCurrentJNIEnv (env);
     }
@@ -1999,10 +1999,12 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
   frame->marker = MARK_SYSTEM;
   frame->size = FRAME_SIZE;
   frame->next = env->locals;
-  env->locals = frame;
 
   for (int i = 0; i < frame->size; ++i)
     frame->vec[i] = NULL;
+
+  env->locals = frame;
+  env->ex = NULL;
 
   return env;
 }
