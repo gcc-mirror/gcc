@@ -3891,6 +3891,12 @@ compiling @file{foo.c} with @samp{-c -save-temps} would produce files
 preprocessed @file{foo.i} output file even though the compiler now
 normally uses an integrated preprocessor.
 
+When used in combination with the @option{-x} command line option,
+@option{-save-temps} is sensible enough to avoid over writing an
+input source file with the same extension as an intermediate file.
+The corresponding intermediate file may be obtained by renaming the
+source file before using @option{-save-temps}.
+
 @item -time
 @opindex time
 Report the CPU time taken by each subprocess in the compilation
