@@ -214,12 +214,17 @@ init_expr_once ()
   enum machine_mode mode;
   int num_clobbers;
   rtx mem, mem1;
+  rtx reg;
 
   /* Try indexing by frame ptr and try by stack ptr.
      It is known that on the Convex the stack ptr isn't a valid index.
      With luck, one or the other is valid on any machine.  */
   mem = gen_rtx_MEM (VOIDmode, stack_pointer_rtx);
   mem1 = gen_rtx_MEM (VOIDmode, frame_pointer_rtx);
+
+  /* A scratch register we can modify in-place below to avoid
+     useless RTL allocations.  */
+  reg = gen_rtx_REG (VOIDmode, -1);
 
   insn = rtx_alloc (INSN);
   pat = gen_rtx_SET (0, NULL_RTX, NULL_RTX);
@@ -229,11 +234,11 @@ init_expr_once ()
        mode = (enum machine_mode) ((int) mode + 1))
     {
       int regno;
-      rtx reg;
 
       direct_load[(int) mode] = direct_store[(int) mode] = 0;
       PUT_MODE (mem, mode);
       PUT_MODE (mem1, mode);
+      PUT_MODE (reg, mode);
 
       /* See if there is some register that can be used in this mode and
 	 directly loaded or stored from memory.  */
@@ -246,7 +251,7 @@ init_expr_once ()
 	    if (! HARD_REGNO_MODE_OK (regno, mode))
 	      continue;
 
-	    reg = gen_rtx_REG (mode, regno);
+	    REGNO (reg) = regno;
 
 	    SET_SRC (pat) = mem;
 	    SET_DEST (pat) = reg;

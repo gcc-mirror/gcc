@@ -156,6 +156,10 @@ static GTY((length ("reg_base_value_size"))) rtx *reg_base_value;
 static rtx *new_reg_base_value;
 static unsigned int reg_base_value_size; /* size of reg_base_value array */
 
+/* Static hunks of RTL used by the aliasing code; these are initialized
+   once per function to avoid unnecessary RTL allocations.  */
+static GTY (()) rtx static_reg_base_value[FIRST_PSEUDO_REGISTER];
+
 #define REG_BASE_VALUE(X) \
   (REGNO (X) < reg_base_value_size \
    ? reg_base_value[REGNO (X)] : 0)
@@ -2638,6 +2642,43 @@ init_alias_once ()
   alias_sets = splay_tree_new (splay_tree_compare_ints, 0, 0);
 }
 
+/* Per-function initializer for the aliasing code.
+
+   Allocate RTL for argument and other special use registers once
+   per function here intead of multiple times per function in 
+   init_alias_analysis.  */
+
+void
+init_alias_once_per_function ()
+{
+  int i;
+
+  /* Generate and mark all hard registers which may contain an address.
+     The stack, frame and argument pointers may contain an address.
+     An argument register which can hold a Pmode value may contain
+     an address even if it is not in BASE_REGS.
+
+     The address expression is VOIDmode for an argument and
+     Pmode for other registers.  */
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (argument_registers, i))
+      static_reg_base_value[i]
+	= gen_rtx_ADDRESS (VOIDmode, gen_rtx_REG (Pmode, i));
+
+
+  static_reg_base_value[STACK_POINTER_REGNUM]
+    = gen_rtx_ADDRESS (Pmode, stack_pointer_rtx);
+  static_reg_base_value[ARG_POINTER_REGNUM]
+    = gen_rtx_ADDRESS (Pmode, arg_pointer_rtx);
+  static_reg_base_value[FRAME_POINTER_REGNUM]
+    = gen_rtx_ADDRESS (Pmode, frame_pointer_rtx);
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+  static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+    = gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
+#endif
+}
+
 /* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE
    array.  */
 
@@ -2725,20 +2766,18 @@ init_alias_analysis ()
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (argument_registers, i))
-	  new_reg_base_value[i] = gen_rtx_ADDRESS (VOIDmode,
-						   gen_rtx_REG (Pmode, i));
+	  new_reg_base_value[i] = static_reg_base_value[i];
 
       new_reg_base_value[STACK_POINTER_REGNUM]
-	= gen_rtx_ADDRESS (Pmode, stack_pointer_rtx);
+	= static_reg_base_value[STACK_POINTER_REGNUM];
       new_reg_base_value[ARG_POINTER_REGNUM]
-	= gen_rtx_ADDRESS (Pmode, arg_pointer_rtx);
+	= static_reg_base_value[ARG_POINTER_REGNUM];
       new_reg_base_value[FRAME_POINTER_REGNUM]
-	= gen_rtx_ADDRESS (Pmode, frame_pointer_rtx);
+	= static_reg_base_value[FRAME_POINTER_REGNUM];
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-	= gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
+	= static_reg_base_value[HARD_FRAME_POINTER_REGNUM];
 #endif
-
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
