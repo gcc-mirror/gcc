@@ -1,3 +1,10 @@
+2003-06-01  Roger Sayle  <roger@eyesopen.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    Geoffrey Keating  <geoffk@apple.com>
+
+	* emit-rtl.c (gen_lowpart_common): Handle interpreting integer
+	constants as condition code values.
+
 2003-06-01  DJ Delorie  <dj@redhat.com>
 
 	* cppmacro.c (warn_of_redefinition): Handle cases where the two

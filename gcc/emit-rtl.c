@@ -1291,6 +1291,12 @@ gen_lowpart_common (mode, x)
 				 mode);
 #endif
     }
+  /* If MODE is a condition code and X is a CONST_INT, the value of X
+     must already have been "recognized" by the back-end, and we can
+     assume that it is valid for this mode.  */
+  else if (GET_MODE_CLASS (mode) == MODE_CC
+	   && GET_CODE (x) == CONST_INT)
+    return x;
 
   /* Otherwise, we can't do this.  */
   return 0;
