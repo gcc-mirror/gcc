@@ -106,29 +106,6 @@ static char *predefs = "";
 #define REGISTER_PREFIX ""
 #endif
 
-/* In the definition of a #assert name, this structure forms
-   a list of the individual values asserted.
-   Each value is itself a list of "tokens".
-   These are strings that are compared by name.  */
-
-struct tokenlist_list {
-  struct tokenlist_list *next;
-  struct arglist *tokens;
-};
-
-struct assertion_hashnode {
-  struct assertion_hashnode *next;	/* double links for easy deletion */
-  struct assertion_hashnode *prev;
-  /* also, a back pointer to this node's hash
-     chain is kept, in case the node is the head
-     of the chain and gets deleted.  */
-  struct assertion_hashnode **bucket_hdr;
-  int length;			/* length of token, for quick comparison */
-  U_CHAR *name;			/* the actual name */
-  /* List of token-sequences.  */
-  struct tokenlist_list *value;
-};
-
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 #define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
 
@@ -182,12 +159,8 @@ extern void fancy_abort ();
 static int check_macro_name		PROTO ((cpp_reader *, U_CHAR *, char *));
 static int compare_defs			PROTO ((cpp_reader *,
 						DEFINITION *, DEFINITION *));
-static int compare_token_lists		PROTO ((struct arglist *,
-						struct arglist *));
 static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *, U_CHAR *, int));
 static int change_newlines		PROTO ((U_CHAR *, int));
-static struct arglist *read_token_list	PROTO ((cpp_reader *, int *));
-static void free_token_list		PROTO ((struct arglist *));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
@@ -3121,100 +3094,6 @@ do_include (pfile, keyword, unused1, unused2)
   return 0;
 }
 
-/*
- * Install a name in the assertion hash table.
- *
- * If LEN is >= 0, it is the length of the name.
- * Otherwise, compute the length by scanning the entire name.
- *
- * If HASH is >= 0, it is the precomputed hash code.
- * Otherwise, compute the hash code.
- */
-
-static ASSERTION_HASHNODE *
-assertion_install (pfile, name, len, hash)
-     cpp_reader *pfile;
-     U_CHAR *name;
-     int len;
-     int hash;
-{
-  register ASSERTION_HASHNODE *hp;
-  register int i, bucket;
-  register U_CHAR *p, *q;
-
-  i = sizeof (ASSERTION_HASHNODE) + len + 1;
-  hp = (ASSERTION_HASHNODE *) xmalloc (i);
-  bucket = hash;
-  hp->bucket_hdr = &pfile->assertion_hashtab[bucket];
-  hp->next = pfile->assertion_hashtab[bucket];
-  pfile->assertion_hashtab[bucket] = hp;
-  hp->prev = NULL;
-  if (hp->next != NULL)
-    hp->next->prev = hp;
-  hp->length = len;
-  hp->value = 0;
-  hp->name = ((U_CHAR *) hp) + sizeof (ASSERTION_HASHNODE);
-  p = hp->name;
-  q = name;
-  for (i = 0; i < len; i++)
-    *p++ = *q++;
-  hp->name[len] = 0;
-  return hp;
-}
-/*
- * find the most recent hash node for name "name" (ending with first
- * non-identifier char) installed by install
- *
- * If LEN is >= 0, it is the length of the name.
- * Otherwise, compute the length by scanning the entire name.
- *
- * If HASH is >= 0, it is the precomputed hash code.
- * Otherwise, compute the hash code.
- */
-
-static ASSERTION_HASHNODE *
-assertion_lookup (pfile, name, len, hash)
-     cpp_reader *pfile;
-     U_CHAR *name;
-     int len;
-     int hash;
-{
-  register ASSERTION_HASHNODE *bucket;
-
-  bucket = pfile->assertion_hashtab[hash];
-  while (bucket) {
-    if (bucket->length == len && strncmp (bucket->name, name, len) == 0)
-      return bucket;
-    bucket = bucket->next;
-  }
-  return NULL;
-}
-
-static void
-delete_assertion (hp)
-     ASSERTION_HASHNODE *hp;
-{
-  struct tokenlist_list *tail;
-  if (hp->prev != NULL)
-    hp->prev->next = hp->next;
-  if (hp->next != NULL)
-    hp->next->prev = hp->prev;
-
-  for (tail = hp->value; tail; )
-    {
-      struct tokenlist_list *next = tail->next;
-      free_token_list (tail->tokens);
-      free (tail);
-      tail = next;
-    }
-
-  /* Make sure that the bucket chain header that
-     the deleted guy was on points to the right thing afterwards.  */
-  if (hp == *hp->bucket_hdr)
-    *hp->bucket_hdr = hp->next;
-
-  free (hp);
-}
 
 /* Convert a character string literal into a nul-terminated string.
    The input string is [IN ... LIMIT).
@@ -6049,351 +5928,240 @@ cpp_cleanup (pfile)
       pfile->all_include_files[i] = 0;
     }
 
-  for (i = ASSERTION_HASHSIZE; --i >= 0; )
-    {
-      while (pfile->assertion_hashtab[i])
-	delete_assertion (pfile->assertion_hashtab[i]);
-    }
-
   cpp_hash_cleanup (pfile);
 }
 
+/* Read an assertion into the token buffer, converting to
+   canonical form: `#predicate(a n swe r)'  The next non-whitespace
+   character to read should be the first letter of the predicate.
+   Returns 0 for syntax error, 1 for bare predicate, 2 for predicate
+   with answer (see callers for why). In case of 0, an error has been
+   printed. */
+static int
+parse_assertion (pfile)
+     cpp_reader *pfile;
+{
+  int c, dropwhite;
+  cpp_skip_hspace (pfile);
+  c = PEEKC();
+  if (! is_idstart[c])
+    {
+      cpp_error (pfile, "assertion predicate is not an identifier");
+      return 0;
+    }
+  CPP_PUTC(pfile, '#');
+  FORWARD(1);
+  parse_name(pfile, c);
+
+  c = PEEKC();
+  if (c != '(')
+    {
+      if (is_hor_space[c])
+	cpp_skip_hspace (pfile);
+      c = PEEKC();
+    }
+  if (c != '(')
+    return 1;
+
+  CPP_PUTC(pfile, '(');
+  FORWARD(1);
+  dropwhite = 1;
+  while ((c = GETC()) != ')')
+    {
+      if (is_hor_space[c])
+	{
+	  if (! dropwhite)
+	    {
+	      CPP_PUTC(pfile, ' ');
+	      dropwhite = 1;
+	    }
+	}
+      else if (c == '\\' && PEEKC() == '\n')
+	FORWARD(1);
+      else if (c == '\n' || c == EOF)
+	{
+	  if (c == '\n') FORWARD(-1);
+	  cpp_error (pfile, "un-terminated assertion answer");
+	  return 0;
+	}
+      else
+	{
+	  CPP_PUTC(pfile, c);
+	  dropwhite = 0;
+	}
+    }
+
+  if (pfile->limit[-1] == ' ')
+    pfile->limit[-1] = ')';
+  else if (pfile->limit[-1] == '(')
+    {
+      cpp_error (pfile, "empty token sequence in assertion");
+      return 0;
+    }
+  else
+    CPP_PUTC(pfile, ')');
+
+  CPP_NUL_TERMINATE(pfile);
+  return 2;
+}
+
 static int
 do_assert (pfile, keyword, buf, limit)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
-  long symstart;		/* remember where symbol name starts */
-  int c;
-  int sym_length;		/* and how long it is */
-  struct arglist *tokens = NULL;
+  char *sym;
+  int ret, c;
+  HASHNODE *base, *this;
+  int baselen, thislen;
 
   if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing
       && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
 
   cpp_skip_hspace (pfile);
-  symstart = CPP_WRITTEN (pfile);	/* remember where it starts */
-  parse_name (pfile, GETC());
-  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart,
-				 "assertion");
+  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  ret = parse_assertion (pfile);
+  if (ret == 0)
+    goto error;
+  else if (ret == 1)
+    {
+      cpp_error (pfile, "missing token-sequence in `#assert'");
+      goto error;
+    }
 
   cpp_skip_hspace (pfile);
-  if (PEEKC() != '(') {
-    cpp_error (pfile, "missing token-sequence in `#assert'");
+  c = PEEKC();
+  if (c != EOF && c != '\n')
+    {
+      cpp_error (pfile, "junk at end of `#assert'");
+      goto error;
+    }
+
+  thislen = strlen (sym);
+  baselen = index (sym, '(') - sym;
+  this = cpp_lookup (pfile, sym, thislen, -1);
+  if (this)
+    {
+      cpp_warning (pfile, "`%s' re-asserted", sym);
+      goto error;
+    }
+
+  base = cpp_lookup (pfile, sym, baselen, -1);
+  if (! base)
+    base = install (sym, baselen, T_ASSERT, 0, 0, -1);
+  else if (base->type != T_ASSERT)
+  {
+    /* Token clash - but with what?! */
+    cpp_fatal (pfile,
+	       "cpp internal error: base->type != T_ASSERT in do_assert");
     goto error;
   }
 
-  {
-    int error_flag = 0;
-    tokens = read_token_list (pfile, &error_flag);
-    if (error_flag)
-      goto error;
-    if (tokens == 0) {
-      cpp_error (pfile, "empty token-sequence in `#assert'");
-      goto error;
-    }
-  cpp_skip_hspace (pfile);
-  c = PEEKC ();
-  if (c != EOF && c != '\n')
-      cpp_pedwarn (pfile, "junk at end of `#assert'");
-  skip_rest_of_line (pfile);
-  }
-
-  /* If this name isn't already an assertion name, make it one.
-     Error if it was already in use in some other way.  */
-
-  {
-    ASSERTION_HASHNODE *hp;
-    U_CHAR *symname = pfile->token_buffer + symstart;
-    int hashcode = hashf (symname, sym_length, ASSERTION_HASHSIZE);
-    struct tokenlist_list *value
-      = (struct tokenlist_list *) xmalloc (sizeof (struct tokenlist_list));
-
-    hp = assertion_lookup (pfile, symname, sym_length, hashcode);
-    if (hp == NULL) {
-      if (sym_length == 7 && ! strncmp (symname, "defined", sym_length))
-	cpp_error (pfile, "`defined' redefined as assertion");
-      hp = assertion_install (pfile, symname, sym_length, hashcode);
-    }
-
-    /* Add the spec'd token-sequence to the list of such.  */
-    value->tokens = tokens;
-    value->next = hp->value;
-    hp->value = value;
-  }
-  CPP_SET_WRITTEN (pfile, symstart); /* Pop */
+  this = install (sym, thislen, T_ASSERT, 0,
+		  (char *)base->value.aschain, -1);
+  base->value.aschain = this;
+  
+  pfile->limit = sym; /* Pop */
   return 0;
+
  error:
-  CPP_SET_WRITTEN (pfile, symstart); /* Pop */
+  pfile->limit = sym; /* Pop */
   skip_rest_of_line (pfile);
   return 1;
 }
-
+
 static int
 do_unassert (pfile, keyword, buf, limit)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
-  long symstart;		/* remember where symbol name starts */
-  int sym_length;	/* and how long it is */
-  int c;
-
-  struct arglist *tokens = NULL;
-  int tokens_specified = 0;
-
+  int c, ret;
+  char *sym;
+  long baselen, thislen;
+  HASHNODE *base, *this, *next;
+  
   if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing
       && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#unassert'");
 
   cpp_skip_hspace (pfile);
 
-  symstart = CPP_WRITTEN (pfile);	/* remember where it starts */
-  parse_name (pfile, GETC());
-  sym_length = check_macro_name (pfile, pfile->token_buffer + symstart,
-				 "assertion");
-
-  cpp_skip_hspace (pfile);
-  if (PEEKC() == '(') {
-    int error_flag = 0;
-
-    tokens = read_token_list (pfile, &error_flag);
-    if (error_flag)
-      goto error;
-    if (tokens == 0) {
-      cpp_error (pfile, "empty token list in `#unassert'");
-      goto error;
-    }
-
-    tokens_specified = 1;
-  }
-
+  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  ret = parse_assertion (pfile);
+  if (ret == 0)
+    goto error;
+  
   cpp_skip_hspace (pfile);
   c = PEEKC ();
   if (c != EOF && c != '\n')
       cpp_error (pfile, "junk at end of `#unassert'");
-  skip_rest_of_line (pfile);
 
-  {
-    ASSERTION_HASHNODE *hp;
-    U_CHAR *symname = pfile->token_buffer + symstart;
-    int hashcode = hashf (symname, sym_length, ASSERTION_HASHSIZE);
-    struct tokenlist_list *tail, *prev;
-
-    hp = assertion_lookup (pfile, symname, sym_length, hashcode);
-    if (hp == NULL)
-      return 1;
-
-    /* If no token list was specified, then eliminate this assertion
-       entirely.  */
-    if (! tokens_specified)
-      delete_assertion (hp);
-    else {
-      /* If a list of tokens was given, then delete any matching list.  */
-
-      tail = hp->value;
-      prev = 0;
-      while (tail) {
-	struct tokenlist_list *next = tail->next;
-	if (compare_token_lists (tail->tokens, tokens)) {
-	  if (prev)
-	    prev->next = next;
-	  else
-	    hp->value = tail->next;
-	  free_token_list (tail->tokens);
-	  free (tail);
-	} else {
-	  prev = tail;
+  thislen = strlen (sym);
+  if (ret == 1)
+    {
+      base = cpp_lookup (pfile, sym, thislen, -1);
+      if (! base)
+	goto error;  /* It isn't an error to #undef what isn't #defined,
+			so it isn't an error to #unassert what isn't
+			#asserted either. */
+      
+      for (this = base->value.aschain; this; this = next)
+        {
+	  next = this->value.aschain;
+	  delete_macro (this);
 	}
-	tail = next;
-      }
+      delete_macro (base);
     }
-  }
+  else
+    {
+      baselen = index (sym, '(') - sym;
+      base = cpp_lookup (pfile, sym, baselen, -1);
+      if (! base) goto error;
+      this = cpp_lookup (pfile, sym, thislen, -1);
+      if (! this) goto error;
 
-  CPP_SET_WRITTEN (pfile, symstart); /* Pop */
+      next = base;
+      while (next->value.aschain != this)
+	next = next->value.aschain;
+
+      next->value.aschain = this->value.aschain;
+      delete_macro (this);
+
+      if (base->value.aschain == NULL)
+	delete_macro (base);  /* Last answer for this predicate deleted. */
+    }
+  
+  pfile->limit = sym; /* Pop */
   return 0;
  error:
-  CPP_SET_WRITTEN (pfile, symstart); /* Pop */
+  pfile->limit = sym; /* Pop */
   skip_rest_of_line (pfile);
   return 1;
 }
-
-/* Test whether there is an assertion named NAME
-   and optionally whether it has an asserted token list TOKENS.
-   NAME is not null terminated; its length is SYM_LENGTH.
-   If TOKENS_SPECIFIED is 0, then don't check for any token list.  */
 
 int
-check_assertion (pfile, name, sym_length, tokens_specified, tokens)
+cpp_read_check_assertion (pfile)
      cpp_reader *pfile;
-     U_CHAR *name;
-     int sym_length;
-     int tokens_specified;
-     struct arglist *tokens;
 {
-  ASSERTION_HASHNODE *hp;
-  int hashcode = hashf (name, sym_length, ASSERTION_HASHSIZE);
-
-  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
-    cpp_pedwarn (pfile, "ANSI C does not allow testing assertions");
-
-  hp = assertion_lookup (pfile, name, sym_length, hashcode);
-  if (hp == NULL)
-    /* It is not an assertion; just return false.  */
-    return 0;
-
-  /* If no token list was specified, then value is 1.  */
-  if (! tokens_specified)
-    return 1;
-
-  {
-    struct tokenlist_list *tail;
-
-    tail = hp->value;
-
-    /* If a list of tokens was given,
-       then succeed if the assertion records a matching list.  */
-
-    while (tail) {
-      if (compare_token_lists (tail->tokens, tokens))
-	return 1;
-      tail = tail->next;
-    }
-
-    /* Fail if the assertion has no matching list.  */
-    return 0;
-  }
-}
-
-/* Compare two lists of tokens for equality including order of tokens.  */
-
-static int
-compare_token_lists (l1, l2)
-     struct arglist *l1, *l2;
-{
-  while (l1 && l2) {
-    if (l1->length != l2->length)
-      return 0;
-    if (strncmp (l1->name, l2->name, l1->length))
-      return 0;
-    l1 = l1->next;
-    l2 = l2->next;
-  }
-
-  /* Succeed if both lists end at the same time.  */
-  return l1 == l2;
-}
-
-struct arglist *
-reverse_token_list (tokens)
-     struct arglist *tokens;
-{
-  register struct arglist *prev = 0, *this, *next;
-  for (this = tokens; this; this = next)
+  char *name = CPP_PWRITTEN (pfile);
+  int result;
+  HASHNODE *hp;
+  
+  FORWARD (1);  /* Skip '#' */
+  cpp_skip_hspace (pfile);
+  if (! parse_assertion (pfile))
+    result = 0;
+  else
     {
-      next = this->next;
-      this->next = prev;
-      prev = this;
-    }
-  return prev;
-}
-
-/* Read a space-separated list of tokens ending in a close parenthesis.
-   Return a list of strings, in the order they were written.
-   (In case of error, return 0 and store -1 in *ERROR_FLAG.) */
-
-static struct arglist *
-read_token_list (pfile, error_flag)
-     cpp_reader *pfile;
-     int *error_flag;
-{
-  struct arglist *token_ptrs = 0;
-  int depth = 1;
-  int length;
-
-  *error_flag = 0;
-  FORWARD (1);  /* Skip '(' */
-
-  /* Loop over the assertion value tokens.  */
-  while (depth > 0)
-    {
-      struct arglist *temp;
-      long name_written = CPP_WRITTEN (pfile);
-      int c;
-
-      cpp_skip_hspace (pfile);
-
-      c = GETC ();
-	  
-      /* Find the end of the token.  */
-      if (c == '(')
-        {
-	  CPP_PUTC (pfile, c);
-	  depth++;
-        }
-      else if (c == ')')
-        {
-	  depth--;
-	  if (depth == 0)
-	    break;
-	  CPP_PUTC (pfile, c);
-        }
-      else if (c == '"' || c == '\'')
-        {
-	  FORWARD(-1);
-	  cpp_get_token (pfile);
-        }
-      else if (c == '\n')
-	break;
-      else
-        {
-	  while (c != EOF && ! is_space[c] && c != '(' && c != ')'
-		 && c != '"' && c != '\'')
-	    {
-	      CPP_PUTC (pfile, c);
-	      c = GETC();
-	    }
-	  if (c != EOF)  FORWARD(-1);
-        }
-
-      length = CPP_WRITTEN (pfile) - name_written;
-      temp = (struct arglist *)
-	  xmalloc (sizeof (struct arglist) + length + 1);
-      temp->name = (U_CHAR *) (temp + 1);
-      bcopy ((char *) (pfile->token_buffer + name_written),
-	     (char *) temp->name, length);
-      temp->name[length] = 0;
-      temp->next = token_ptrs;
-      token_ptrs = temp;
-      temp->length = length;
-
-      CPP_ADJUST_WRITTEN (pfile, -length); /* pop */
-
-      if (c == EOF || c == '\n')
-        { /* FIXME */
-	  cpp_error (pfile,
-		     "unterminated token sequence following  `#' operator");
-	  return 0;
-	}
+      hp = cpp_lookup (pfile, name, (char *)CPP_PWRITTEN (pfile) - name, -1);
+      result = (hp != 0);
     }
 
-  /* We accumulated the names in reverse order.
-     Now reverse them to get the proper order.  */
-  return reverse_token_list (token_ptrs);
-}
-
-static void
-free_token_list (tokens)
-     struct arglist *tokens;
-{
-  while (tokens) {
-    struct arglist *next = tokens->next;
-    free (tokens->name);
-    free (tokens);
-    tokens = next;
-  }
+  pfile->limit = name;
+  return result;
 }
 
 /* FIXME: savestring() should be renamed strdup() and should
@@ -6465,34 +6233,6 @@ parse_move_mark (pmark, pfile)
   pmark->position = pbuf->cur - pbuf->buf;
 }
 
-int
-cpp_read_check_assertion (pfile)
-     cpp_reader *pfile;
-{
-  int name_start = CPP_WRITTEN (pfile);
-  int name_length, name_written;
-  int result;
-  FORWARD (1);  /* Skip '#' */
-  cpp_skip_hspace (pfile);
-  parse_name (pfile, GETC ());
-  name_written = CPP_WRITTEN (pfile);
-  name_length = name_written - name_start;
-  cpp_skip_hspace (pfile);
-  if (CPP_BUF_PEEK (CPP_BUFFER (pfile)) == '(')
-    {
-      int error_flag;
-      struct arglist *token_ptrs = read_token_list (pfile, &error_flag);
-      result = check_assertion (pfile,
-				pfile->token_buffer + name_start, name_length,
-				1, token_ptrs);
-    }
-  else
-    result = check_assertion (pfile,
-			      pfile->token_buffer + name_start, name_length,
-			      0, NULL_PTR);
-  CPP_ADJUST_WRITTEN (pfile, - name_length);  /* pop */
-  return result;
-}
 
 void
 cpp_print_file_and_line (pfile)

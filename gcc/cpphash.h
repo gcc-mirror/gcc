@@ -4,9 +4,7 @@ union hashval {
   int ival;
   char *cpval;
   DEFINITION *defn;
-#if 0
-  KEYDEF *keydef;
-#endif
+  struct hashnode *aschain; /* for #assert */
 };
 
 struct hashnode {

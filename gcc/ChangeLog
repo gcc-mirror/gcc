@@ -1,3 +1,38 @@
+1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpphash.h (union hash_value): Remove `keydef' member, add a
+          `struct hashnode *aschain' member for #assert.  
+
+	  * cpplib.c (struct tokenlist_list, struct
+          assertion_hashnode): Delete structure definitions.
+          (assertion_install, assertion_lookup, delete_assertion,
+          check_assertion, compare_token_lists, reverse_token_list,
+          read_token_list, free_token_list): Delete functions.
+          (parse_assertion): New function.  
+	  (cpp_cleanup): Don't destroy the assertion_hashtable.
+
+          (do_assert): Gut and rewrite.  #assert foo (bar) places
+          entries for `#foo' and `#foo(bar)' in the macro hash table,
+          type T_ASSERT.  The value union's `aschain' member is used
+          to chain all answers for a given predicate together.
+          (do_unassert): Also rewritten.  Take an un-asserted
+          answer off the chain from its predicate and call
+          delete_macro on the hashnode, or walk a predicate chain
+          calling delete_macro on all the entries.
+          (cpp_read_check_assertion): Simply call parse_assertion to
+          get the canonical assertion name, and look that up in the
+          hash table.
+
+	* cpplib.h (ASSERTION_HASHNODE,ASSERTION_HASHSIZE,assertion_hashtab):
+ 	Removed.
+
+	* cpphash.c (install): Use bcopy instead of an explicit loop
+          to copy the macro name.
+
+	* cppexp.c (cpp_lex): Convert the result of
+          cpp_read_check_assertion to a `struct operation' directly;
+          don't go through parse_number.
+
 Tue Dec 15 18:27:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.h (struct induction): Delete times_used member.

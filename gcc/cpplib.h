@@ -144,9 +144,6 @@ struct cpp_buffer {
 struct cpp_pending;  /* Forward declaration - for C++. */
 struct file_name_map_list;
 
-typedef struct assertion_hashnode ASSERTION_HASHNODE;
-#define ASSERTION_HASHSIZE 37
-
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
@@ -229,8 +226,6 @@ struct cpp_reader
   long lineno;
 
   struct tm *timebuf;
-
-  ASSERTION_HASHNODE *assertion_hashtab[ASSERTION_HASHSIZE];
 
   /* Buffer of -M output.  */
   char *deps_buffer;

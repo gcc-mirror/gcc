@@ -274,8 +274,11 @@ cpp_lex (pfile, skip_evaluation)
   cpp_skip_hspace (pfile);
   c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
   if (c == '#')
-    return parse_number (pfile,
-			 cpp_read_check_assertion (pfile) ? "1" : "0", 1);
+    {
+      op.op = INT;
+      op.value = cpp_read_check_assertion (pfile);
+      return op;
+    }
 
   if (c == '\n')
     {
