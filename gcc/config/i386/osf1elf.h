@@ -121,8 +121,8 @@ extern char *sys_siglist[];
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
-     { "mcount",		-MASK_NO_MCOUNT},			\
-     { "no-mcount",		 MASK_NO_MCOUNT},
+     { "mcount",		-MASK_NO_MCOUNT, "Profiling uses mcount" },			\
+     { "no-mcount",		 MASK_NO_MCOUNT, "" },
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.

@@ -1,3 +1,14 @@
+1999-04-02 20:16 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* config/i386/i386.h: Document all TARGET_SWITCHES or add
+	explicit null initializer.
+
+	* config/i386/cygwin.h: Document all SUBTARGET_SWITCHES.
+	* config/i386/dgux.h: Likewise.
+	* config/i386/osf1elf.h: Likewise.
+	* config/i386/win32.h: Likewise.
+	* config/i386/osfrose.h: Likewise.  Drop obsolete -mno-ident option.
+
 Fri Apr  2 17:49:44 1999  Toshiyasu Morita <tm@netcom.com>
 
 	* regmove.c (fixup_match_1): Remove now useless if (0).

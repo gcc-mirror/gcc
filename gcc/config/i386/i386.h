@@ -200,24 +200,24 @@ extern const int x86_double_with_add;
   { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS , "Do not return values of functions in FPU registers"},			\
   { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387, "Do not generate sin, cos, sqrt for 387" },		\
   { "fancy-math-387",		-MASK_NO_FANCY_MATH_387, "Generate sin, cos, sqrt for FPU"},		\
-  { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, 	\
-  { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER },       \
+  { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER, "Omit the frame pointer in leaf functions" }, 	\
+  { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER, "" },       \
   { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY, "multiplies of 32 bits constrained to 32 bits" },		\
   { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY, "multiplies of 32 bits are 64 bits" },		\
-  { "schedule-prologue",	 MASK_SCHEDULE_PROLOGUE },		\
-  { "no-schedule-prologue",	-MASK_SCHEDULE_PROLOGUE },		\
-  { "debug-addr",		 MASK_DEBUG_ADDR },			\
-  { "no-debug-addr",		-MASK_DEBUG_ADDR },			\
-  { "move",			-MASK_NO_MOVE },			\
-  { "no-move",			 MASK_NO_MOVE },			\
-  { "debug-arg",		 MASK_DEBUG_ARG },			\
-  { "no-debug-arg",		-MASK_DEBUG_ARG },			\
-  { "stack-arg-probe",		 MASK_STACK_PROBE },			\
-  { "no-stack-arg-probe",	-MASK_STACK_PROBE },			\
-  { "windows",			0 },					\
-  { "dll",			0 },					\
+  { "schedule-prologue",	 MASK_SCHEDULE_PROLOGUE, "Schedule function prologues" },		\
+  { "no-schedule-prologue",	-MASK_SCHEDULE_PROLOGUE, "" },		\
+  { "debug-addr",		 MASK_DEBUG_ADDR, 0 /* intentionally undoc */ },			\
+  { "no-debug-addr",		-MASK_DEBUG_ADDR, 0 /* intentionally undoc */ },			\
+  { "move",			-MASK_NO_MOVE, "Generate mem-mem moves" },			\
+  { "no-move",			 MASK_NO_MOVE, "Don't generate mem-mem moves" },			\
+  { "debug-arg",		 MASK_DEBUG_ARG, 0 /* intentionally undoc */ },			\
+  { "no-debug-arg",		-MASK_DEBUG_ARG, 0 /* intentionally undoc */ },			\
+  { "stack-arg-probe",		 MASK_STACK_PROBE, "Enable stack probing" },			\
+  { "no-stack-arg-probe",	-MASK_STACK_PROBE, "" },			\
+  { "windows",			0, 0 /* intentionally undoc */ },					\
+  { "dll",			0, 0 /* intentionally undoc */ },					\
   SUBTARGET_SWITCHES							\
-  { "", MASK_SCHEDULE_PROLOGUE | TARGET_DEFAULT}}
+  { "", MASK_SCHEDULE_PROLOGUE | TARGET_DEFAULT, 0 }}
 
 /* Which processor to schedule for. The cpu attribute defines a list that
    mirrors this list, so changes to i386.md must be made at the same time.  */
@@ -267,7 +267,7 @@ extern int ix86_arch;
   { "align-loops=",	&i386_align_loops_string, "Loop code aligned to this power of 2" }, \
   { "align-jumps=",	&i386_align_jumps_string, "Jump targets are aligned to this power of 2" }, \
   { "align-functions=",	&i386_align_funcs_string, "Function starts are aligned to this power of 2" }, \
-  { "branch-cost=",	&i386_branch_cost_string },			\
+  { "branch-cost=",	&i386_branch_cost_string, "Branches are this expensive (1-5, arbitrary units)" },			\
   SUBTARGET_OPTIONS							\
 }
 
