@@ -2520,7 +2520,7 @@ compile_file (name)
 	   and definitions which have not yet been forced out.  */
 
 	if (write_symbols == DWARF_DEBUG
-	    && DECL_RTL (decl) != 0
+	    && (TREE_CODE (decl) != VAR_DECL || DECL_RTL (decl) != 0)
 	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
 	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
 #endif
@@ -2753,7 +2753,13 @@ rest_of_type_compilation (type, toplev)
     TIMEVAR (symout_time, sdbout_symbol (TYPE_STUB_DECL (type), !toplev));
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
+  /* If this is a file-scope or function-scope type, or a class-scope type
+     for which the containing class has already been completed, write it
+     out now to avoid ordering headaches with member functions.  */
+  if (write_symbols == DWARF_DEBUG
+      && (TYPE_CONTEXT (type) == NULL_TREE
+	  || TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) != 't'
+	  || TREE_ASM_WRITTEN (TYPE_CONTEXT (type))))
     TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
 #endif
 }
