@@ -1474,7 +1474,7 @@ i960_function_prologue (file, size)
 	lnw = i960_split_reg_group (l, lnw, g->length);
     }
 
-  actual_fsize = compute_frame_size (size);
+  actual_fsize = compute_frame_size (size) + 4 * n_remaining_saved_regs;
 #if 0
   /* ??? The 1.2.1 compiler does this also.  This is meant to round the frame
      size up to the nearest multiple of 16.  I don't know whether this is
@@ -1526,7 +1526,7 @@ i960_function_prologue (file, size)
 
   /* Take hardware register save area created by the call instruction
      into account, but store them before the argument block area.  */
-  lvar_size = actual_fsize - compute_frame_size (0) - n_saved_regs * 4;
+  lvar_size = actual_fsize - compute_frame_size (0) - n_remaining_saved_regs * 4;
   offset = STARTING_FRAME_OFFSET + lvar_size;
   /* Save registers on stack if needed.  */
   /* ??? Is it worth to use the same algorithm as one for saving
