@@ -5087,11 +5087,35 @@ fold (expr)
 		      = TREE_INT_CST_LOW (DECL_SIZE
 					  (TREE_OPERAND
 					   (TREE_OPERAND (varop, 0), 1)));
+		    tree mask, unsigned_type;
+		    int precision;
+		    tree folded_compare;
 
+		    /* First check whether the comparison would come out
+		       always the same.  If we don't do that we would
+		       change the meaning with the masking.  */
+		    if (constopnum == 0)
+		      folded_compare = fold (build (code, type, constop,
+						    TREE_OPERAND (varop, 0)));
+		    else
+		      folded_compare = fold (build (code, type,
+						    TREE_OPERAND (varop, 0),
+						    constop));
+		    if (integer_zerop (folded_compare)
+			|| integer_onep (folded_compare))
+		      return omit_one_operand (type, folded_compare, varop);
+
+		    unsigned_type = type_for_size (size, 1);
+		    precision = TYPE_PRECISION (unsigned_type);
+		    mask = build_int_2 (~0, ~0);
+		    TREE_TYPE (mask) = unsigned_type;
+		    force_fit_type (mask, 0);
+		    mask = const_binop (RSHIFT_EXPR, mask,
+					size_int (precision - size), 0);
 		    newconst = fold (build (BIT_AND_EXPR,
 					    TREE_TYPE (varop), newconst,
 					    convert (TREE_TYPE (varop),
-						     build_int_2 (size, 0))));
+						     mask)));
 		  }
 							 
 
@@ -5120,11 +5144,32 @@ fold (expr)
 		      = TREE_INT_CST_LOW (DECL_SIZE
 					  (TREE_OPERAND
 					   (TREE_OPERAND (varop, 0), 1)));
+		    tree mask, unsigned_type;
+		    int precision;
+		    tree folded_compare;
 
+		    if (constopnum == 0)
+		      folded_compare = fold (build (code, type, constop,
+						    TREE_OPERAND (varop, 0)));
+		    else
+		      folded_compare = fold (build (code, type,
+						    TREE_OPERAND (varop, 0),
+						    constop));
+		    if (integer_zerop (folded_compare)
+			|| integer_onep (folded_compare))
+		      return omit_one_operand (type, folded_compare, varop);
+
+		    unsigned_type = type_for_size (size, 1);
+		    precision = TYPE_PRECISION (unsigned_type);
+		    mask = build_int_2 (~0, ~0);
+		    TREE_TYPE (mask) = TREE_TYPE (varop);
+		    force_fit_type (mask, 0);
+		    mask = const_binop (RSHIFT_EXPR, mask,
+					size_int (precision - size), 0);
 		    newconst = fold (build (BIT_AND_EXPR,
 					    TREE_TYPE (varop), newconst,
 					    convert (TREE_TYPE (varop),
-						     build_int_2 (size, 0))));
+						     mask)));
 		  }
 							 
 
