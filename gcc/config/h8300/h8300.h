@@ -561,8 +561,8 @@ enum reg_class {
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-  OFFSET = initial_offset (FROM, TO)
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)		\
+  ((OFFSET) = h8300_initial_elimination_offset ((FROM), (TO)))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
