@@ -550,6 +550,8 @@ public abstract class AbstractPreferences extends Preferences {
             String value;
             try {
                 value = getSpi(key);
+            } catch (ThreadDeath death) {
+                throw death;
             } catch (Throwable t) {
                 value = null;
             }
