@@ -1,3 +1,8 @@
+Wed May  9 12:15:46 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movdi splitter): Fix the splitting condition
+	(float_extenddftf splitter): Fix mode.
+
 Wed May  9 12:05:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* genrecog.c (write_switch): Avoid outputting of switch for
