@@ -976,7 +976,6 @@ ada_demangle (mangled, option)
   int len0;
   const char* p;
   char *demangled = NULL;
-  int at_start_name;
   int changed;
   size_t demangled_size = 0;
   
@@ -1029,15 +1028,12 @@ ada_demangle (mangled, option)
        i += 1, j += 1)
     demangled[j] = mangled[i];
   
-  at_start_name = 1;
   while (i < len0)
     {
-      at_start_name = 0;
-      
       if (i < len0 - 2 && mangled[i] == '_' && mangled[i + 1] == '_')
 	{
 	  demangled[j] = '.';
-	  changed = at_start_name = 1;
+	  changed = 1;
 	  i += 2; j += 1;
 	}
       else
@@ -2040,14 +2036,12 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
   int r;
   int need_comma = 0;
   int success = 0;
-  const char *start;
   int is_java_array = 0;
   string temp;
 
   (*mangled)++;
   if (is_type)
     {
-      start = *mangled;
       /* get template name */
       if (**mangled == 'z')
 	{
