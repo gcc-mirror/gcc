@@ -1515,7 +1515,7 @@ HP-UX:
 OpenServer/Unixware}.
 
 @item
-Sinix/Reliant Unix---@uref{ftp://ftp.siemens.de/sni/mr/pd/gnu/gcc,,Siemens}.
+Sinix/Reliant Unix---@uref{ftp://ftp.fujitsu-siemens.com/pub/pd/gnu/gcc/,,Siemens}.
  
 @item
 Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
@@ -2588,7 +2588,7 @@ AT&T 3b1, a.k.a.@: 7300 PC@.  This version of GCC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
 bootstrap.  Binaries are available from the OSU-CIS archive, at
-@uref{ftp://archive.cis.ohio-state.edu/pub/att7300/}.
+@uref{ftp://ftp.uu.net/systems/att7300/}.
 
 @html
 <hr />

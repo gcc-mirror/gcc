@@ -1,3 +1,9 @@
+2003-02-16  Kai Henningsen  <kaih@khms.westfalen.de>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Fix link for m68k-att-sysv.
+	(Binaries): Ditto for Sinix/Reliant Unix.
+
 2003-02-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* config/i386/i386-protos.h (function_arg_pass_by_reference): Declare.
