@@ -4210,10 +4210,11 @@ get_unwidened (op, for_type)
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (type) != REAL_TYPE
       /* Don't crash if field not laid out yet.  */
-      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
+      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
+      && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
     {
       unsigned int innerprec
-	= TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));
+	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
 
       type = type_for_size (innerprec, TREE_UNSIGNED (TREE_OPERAND (op, 1)));
 
@@ -4235,6 +4236,7 @@ get_unwidened (op, for_type)
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}
     }
+
   return win;
 }
 
@@ -4333,22 +4335,30 @@ int
 int_fits_type_p (c, type)
      tree c, type;
 {
-  if (TREE_UNSIGNED (type))
-    return (! (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
-	       && INT_CST_LT_UNSIGNED (TYPE_MAX_VALUE (type), c))
-	    && ! (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-		  && INT_CST_LT_UNSIGNED (c, TYPE_MIN_VALUE (type)))
-	    /* Negative ints never fit unsigned types.  */
-	    && ! (TREE_INT_CST_HIGH (c) < 0
-		  && ! TREE_UNSIGNED (TREE_TYPE (c))));
+  /* If the bounds of the type are integers, we can check ourselves.
+     Otherwise,. use force_fit_type, which checks against the precision.  */
+  if (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
+      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
+    {
+      if (TREE_UNSIGNED (type))
+	return (! INT_CST_LT_UNSIGNED (TYPE_MAX_VALUE (type), c)
+		&& ! INT_CST_LT_UNSIGNED (c, TYPE_MIN_VALUE (type))
+		/* Negative ints never fit unsigned types.  */
+		&& ! (TREE_INT_CST_HIGH (c) < 0
+		      && ! TREE_UNSIGNED (TREE_TYPE (c))));
+      else
+	return (! INT_CST_LT (TYPE_MAX_VALUE (type), c)
+		&& ! INT_CST_LT (c, TYPE_MIN_VALUE (type))
+		/* Unsigned ints with top bit set never fit signed types.  */
+		&& ! (TREE_INT_CST_HIGH (c) < 0
+		      && TREE_UNSIGNED (TREE_TYPE (c))));
+    }
   else
-    return (! (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
-	       && INT_CST_LT (TYPE_MAX_VALUE (type), c))
-	    && ! (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-		  && INT_CST_LT (c, TYPE_MIN_VALUE (type)))
-	    /* Unsigned ints with top bit set never fit signed types.  */
-	    && ! (TREE_INT_CST_HIGH (c) < 0
-		  && TREE_UNSIGNED (TREE_TYPE (c))));
+    {
+      c = copy_node (c);
+      TREE_TYPE (c) = type;
+      return !force_fit_type (c, 0);
+    }
 }
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or

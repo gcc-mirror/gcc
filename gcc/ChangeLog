@@ -1,3 +1,8 @@
+Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (get_unwidened): Use host_integerp and tree_low_cst.
+	(int_fits_type_p): For variable bounds, call force_fit_type.
+
 2000-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (struct deferred_string): New structure.
