@@ -787,7 +787,7 @@ acceptable.  Do NOT use for cryptographic purposes.
 --------------------------------------------------------------------
 */
 
-hashval_t burtle_hash (k_in, length, initval)
+hashval_t iterative_hash (k_in, length, initval)
      const PTR k_in;               /* the key */
      register size_t  length;      /* the length of the key */
      register hashval_t  initval;  /* the previous hash, or an arbitrary value */
