@@ -1031,6 +1031,9 @@ extern const char *rs6000_warn_altivec_long_switch;
         ((TARGET_SPE && SPE_VECTOR_MODE (MODE))		\
 	 || (TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (MODE)))
 
+#define UNITS_PER_SIMD_WORD     \
+        (TARGET_ALTIVEC ? 16 : (TARGET_SPE ? 8 : 0) )
+
 /* Value is TRUE if hard register REGNO can hold a value of
    machine-mode MODE.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
