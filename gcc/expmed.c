@@ -3247,6 +3247,44 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  }
 	else /* signed */
 	  {
+	    if (op1_is_constant && EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
+		&& INTVAL (op1) >= 0)
+	      {
+		/* This is extremely similar to the code for the unsigned case
+		   above.  For 2.7 we should merge these variants, but for
+		   2.6.1 I don't want to touch the code for unsigned since that
+		   get used in C.  The signed case will only be used by other
+		   languages (Ada).  */
+
+		rtx t1, t2, t3;
+		unsigned HOST_WIDE_INT d = INTVAL (op1);
+		t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+				   build_int_2 (floor_log2 (d), 0),
+				   tquotient, 0);
+		t2 = expand_binop (compute_mode, and_optab, op0,
+				   GEN_INT (d - 1),
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+		t3 = gen_reg_rtx (compute_mode);
+		t3 = emit_store_flag (t3, NE, t2, const0_rtx,
+				      compute_mode, 1, 1);
+		if (t3 == 0)
+		  {
+		    rtx lab;
+		    lab = gen_label_rtx ();
+		    emit_cmp_insn (t2, const0_rtx, EQ, NULL_RTX,
+				   compute_mode, 0, 0);
+		    emit_jump_insn (gen_beq (lab));
+		    expand_inc (t1, const1_rtx);
+		    emit_label (lab);
+		    quotient = t1;
+		  }
+		else
+		  quotient = force_operand (gen_rtx (PLUS, compute_mode,
+						     t1, t3),
+					    tquotient);
+		break;
+	      }
+
 	    /* Try using an instruction that produces both the quotient and
 	       remainder, using truncation.  We can easily compensate the
 	       quotient or remainder to get ceiling rounding, once we have the
