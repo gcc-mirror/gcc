@@ -237,6 +237,9 @@ static rtx *reg_equiv_replacement;
 /* Used for communication between update_equiv_regs and no_equiv.  */
 static rtx *reg_equiv_init_insns;
 
+/* Nonzero if we recorded an equivalence for a LABEL_REF.  */
+static int recorded_label_ref;
+
 static void alloc_qty		PROTO((int, enum machine_mode, int, int));
 static void validate_equiv_mem_from_store PROTO((rtx, rtx));
 static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
@@ -292,11 +295,15 @@ alloc_qty (regno, mode, size, birth)
 
 /* Main entry point of this file.  */
 
-void
+int
 local_alloc ()
 {
   register int b, i;
   int max_qty;
+
+  /* We need to keep track of whether or not we recorded a LABEL_REF so
+     that we know if the jump optimizer needs to be rerun.  */
+  recorded_label_ref = 0;
 
   /* Leaf functions and non-leaf functions have different needs.
      If defined, let the machine say what kind of ordering we
@@ -410,6 +417,7 @@ local_alloc ()
   free (reg_qty);
   free (reg_offset);
   free (reg_next_in_qty);
+  return recorded_label_ref;
 }
 
 /* Depth of loops we are in while in update_equiv_regs.  */
@@ -842,6 +850,19 @@ update_equiv_regs ()
 	{
 	  int regno = REGNO (dest);
 
+	  /* Record whether or not we created a REG_EQUIV note for a LABEL_REF.
+	     We might end up substituting the LABEL_REF for uses of the
+	     pseudo here or later.  That kind of transformation may turn an
+	     indirect jump into a direct jump, in which case we must rerun the
+	     jump optimizer to ensure that the JUMP_LABEL fields are valid.  */
+	  if (GET_CODE (XEXP (note, 0)) == LABEL_REF
+	      || (GET_CODE (XEXP (note, 0)) == CONST
+		  && GET_CODE (XEXP (XEXP (note, 0), 0)) == PLUS
+		  && (GET_CODE (XEXP (XEXP (XEXP (note, 0), 0), 0))
+		      == LABEL_REF)))
+	    recorded_label_ref = 1;
+	  
+	 
 	  reg_equiv_replacement[regno] = XEXP (note, 0);
 
 	  /* Don't mess with things live during setjmp.  */
