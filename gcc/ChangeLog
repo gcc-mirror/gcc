@@ -1,3 +1,17 @@
+Mon Aug 16 18:08:22 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* basic-block.h (struct edge_list): Stucture to maintain a vector
+	of edges.
+	(EDGE_INDEX_NO_EDGE, EDGE_INDEX, INDEX_EDGE_PRED_BB, INDEX_EDGE_SUCC_BB,
+	 INDEX_EDGE, NUM_EDGES): New Macros for accessing edge list.
+	(create_edge_list, free_edge-List, print_edge_list, verify_edge_list):
+	New function prototypes.
+	* flow.c (create_edge_list): Function to create an edge list.
+	(free_edge_list): Discards memory used by an edge list.
+	(print_edge_list): Debug output showing an edge list.
+	(verify_edge_list): Internal consistency check for an edge list.
+	(find_edge_index): Function to find an edge index for a pred and succ.
+
 Mon Aug 16 11:56:36 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (type_hash_add): Use permalloc to allocate nodes in the
