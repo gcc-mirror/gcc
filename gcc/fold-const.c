@@ -1788,6 +1788,10 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	      real_floor (&r, VOIDmode, &x);
 	      break;
 
+	    case FIX_ROUND_EXPR:
+	      real_round (&r, VOIDmode, &x);
+	      break;
+
 	    default:
 	      abort ();
 	    }
@@ -5630,6 +5634,7 @@ fold (tree expr)
     case FIX_TRUNC_EXPR:
     case FIX_CEIL_EXPR:
     case FIX_FLOOR_EXPR:
+    case FIX_ROUND_EXPR:
       if (TREE_TYPE (TREE_OPERAND (t, 0)) == type)
 	return TREE_OPERAND (t, 0);
 

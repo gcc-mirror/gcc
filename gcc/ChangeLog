@@ -1,3 +1,8 @@
+2004-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (fold_convert_const, fold): Add missing
+	FIX_ROUND_EXPR case.
+
 2004-05-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (FLEX, BISON): Only use tools from the build tree
