@@ -58,7 +58,7 @@ extern void machopic_define_ident PARAMS ((tree));
 extern void machopic_define_name PARAMS ((const char*));
 extern int machopic_name_defined_p PARAMS ((const char*));
 extern int machopic_ident_defined_p PARAMS ((tree));
-extern void darwin_encode_section_info PARAMS ((tree, int));
+extern void darwin_encode_section_info PARAMS ((tree, rtx, int));
 extern const char *darwin_strip_name_encoding PARAMS ((const char *));
 
 #endif /* TREE_CODE */

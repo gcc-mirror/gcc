@@ -6047,30 +6047,43 @@ constants in @code{flag_pic} mode in @code{data_section} and everything
 else in @code{readonly_data_section}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ENCODE_SECTION_INFO (tree @var{decl}, int @var{new_decl_p})
+@deftypefn {Target Hook} void TARGET_ENCODE_SECTION_INFO (tree @var{decl}, rtx @var{rtl}, int @var{new_decl_p})
 Define this hook if references to a symbol or a constant must be
 treated differently depending on something about the variable or
 function named by the symbol (such as what section it is in).
 
-The hook is executed under two circumstances.  One is immediately after
-the rtl for @var{decl} that represents a variable or a function has been
-created and stored in @code{DECL_RTL(@var{decl})}.  The value of the rtl
-will be a @code{mem} whose address is a @code{symbol_ref}.  The other is
-immediately after the rtl for @var{decl} that represents a constant has
-been created and stored in @code{TREE_CST_RTL (@var{decl})}.  The macro
-is called once for each distinct constant in a source file.
+The hook is executed immediately after rtl has been created for
+@var{decl}, which may be a variable or function declaration or
+an entry in the constant pool.  In either case, @var{rtl} is the
+rtl in question.  Do @emph{not} use @code{DECL_RTL (@var{decl})}
+or @code{TREE_CST_RTL (@var{decl})} in this hook; that field may
+not have been initialized yet.
+
+In the case of a constant, it is safe to assume that the rtl is
+a @code{mem} whose address is a @code{symbol_ref}.  Most decls
+will also have this form, but that is not guaranteed.  Global
+register variables, for instance, will have a @code{reg} for their
+rtl.  (Normally the right thing to do with such unusual rtl is
+leave it alone.)
 
 The @var{new_decl_p} argument will be true if this is the first time
-that @code{ENCODE_SECTION_INFO} has been invoked on this decl.  It will
+that @code{TARGET_ENCODE_SECTION_INFO} has been invoked on this decl.  It will
 be false for subsequent invocations, which will happen for duplicate
 declarations.  Whether or not anything must be done for the duplicate
 declaration depends on whether the hook examines @code{DECL_ATTRIBUTES}.
+@var{new_decl_p} is always true when the hook is called for a constant.
 
 @cindex @code{SYMBOL_REF_FLAG}, in @code{TARGET_ENCODE_SECTION_INFO}
-The usual thing for this hook to do is to record a flag in the
-@code{symbol_ref} (such as @code{SYMBOL_REF_FLAG}) or to store a
-modified name string in the @code{symbol_ref} (if one bit is not
-enough information).
+The usual thing for this hook to do is to record flags in the
+@code{symbol_ref}, using @code{SYMBOL_REF_FLAG} or @code{SYMBOL_REF_FLAGS}.
+Historically, the name string was modified if it was necessary to
+encode more than one bit of information, but this practice is now
+discouraged; use @code{SYMBOL_REF_FLAGS}.
+
+The default definition of this hook, @code{default_encode_section_info}
+in @file{varasm.c}, sets a number of commonly-useful bits in
+@code{SYMBOL_REF_FLAGS}.  Check whether the default does what you need
+before overriding it.
 @end deftypefn
 
 @deftypefn {Target Hook} const char *TARGET_STRIP_NAME_ENCODING (const char *name)

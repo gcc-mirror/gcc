@@ -119,7 +119,7 @@ static int pa_adjust_priority PARAMS ((rtx, int));
 static int pa_issue_rate PARAMS ((void));
 static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
-static void pa_encode_section_info PARAMS ((tree, int));
+static void pa_encode_section_info PARAMS ((tree, rtx, int));
 static const char *pa_strip_name_encoding PARAMS ((const char *));
 static bool pa_function_ok_for_sibcall PARAMS ((tree, tree));
 static void pa_globalize_label PARAMS ((FILE *, const char *))
@@ -7114,21 +7114,16 @@ hppa_encode_label (sym)
 }
 
 static void
-pa_encode_section_info (decl, first)
+pa_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   if (first && TEXT_SPACE_P (decl))
     {
-      rtx rtl;
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  || TREE_CODE (decl) == VAR_DECL)
-	rtl = DECL_RTL (decl);
-      else
-	rtl = TREE_CST_RTL (decl);
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	hppa_encode_label (XEXP (DECL_RTL (decl), 0));
+	hppa_encode_label (XEXP (rtl, 0));
     }
 }
 

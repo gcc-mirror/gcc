@@ -142,7 +142,7 @@ static void      cirrus_reorg                   PARAMS ((rtx));
 static void	 arm_elf_asm_named_section	PARAMS ((Ccstar, unsigned int));
 #endif
 #ifndef ARM_PE
-static void	 arm_encode_section_info	PARAMS ((tree, int));
+static void	 arm_encode_section_info	PARAMS ((tree, rtx, int));
 #endif
 #ifdef AOF_ASSEMBLER
 static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
@@ -12152,8 +12152,9 @@ arm_elf_asm_named_section (name, flags)
    simplification.  */
 
 static void
-arm_encode_section_info (decl, first)
+arm_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   /* This doesn't work with AOF syntax, since the string table may be in
@@ -12161,11 +12162,7 @@ arm_encode_section_info (decl, first)
 #ifndef AOF_ASSEMBLER
   if (optimize > 0 && TREE_CONSTANT (decl)
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-                 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-    }
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 #endif
 
   /* If we are referencing a function that is weak then encode a long call

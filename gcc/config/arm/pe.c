@@ -207,18 +207,15 @@ arm_mark_dllimport (decl)
 }
 
 void
-arm_pe_encode_section_info (decl, first)
+arm_pe_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   /* This bit is copied from arm_encode_section_info.  */
   if (optimize > 0 && TREE_CONSTANT (decl)
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-                 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-    }
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 
   /* Mark the decl so we can tell from the rtl whether the object is
      dllexport'd or dllimport'd.  */

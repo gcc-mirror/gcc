@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
-static void s390_encode_section_info PARAMS ((tree, int));
+static void s390_encode_section_info PARAMS ((tree, rtx, int));
 static bool s390_cannot_force_const_mem PARAMS ((rtx));
 static rtx s390_delegitimize_address PARAMS ((rtx));
 static void s390_init_builtins PARAMS ((void));
@@ -6406,17 +6406,18 @@ s390_select_rtx_section (mode, x, align)
    into its SYMBOL_REF_FLAGS.  */
 
 static void
-s390_encode_section_info (decl, first)
+s390_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
-  default_encode_section_info (decl, first);
+  default_encode_section_info (decl, rtl, first);
 
   /* If a variable has a forced alignment to < 2 bytes, mark it with
      SYMBOL_FLAG_ALIGN1 to prevent it from being used as LARL operand.  */
   if (TREE_CODE (decl) == VAR_DECL 
       && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16)
-    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= SYMBOL_FLAG_ALIGN1;
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
 }
 
 /* Output thunk to FILE that implements a C++ virtual function call (with

@@ -84,7 +84,7 @@ static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
 static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
 static int    m32r_issue_rate	   PARAMS ((void));
 
-static void m32r_encode_section_info PARAMS ((tree, int));
+static void m32r_encode_section_info PARAMS ((tree, rtx, int));
 static bool m32r_in_small_data_p PARAMS ((tree));
 static void init_idents PARAMS ((void));
 static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
@@ -349,15 +349,16 @@ m32r_handle_model_attribute (node, name, args, flags, no_add_attrs)
 */
 
 static void
-m32r_encode_section_info (decl, first)
+m32r_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   int extra_flags = 0;
   tree model_attr;
   enum m32r_model model;
 
-  default_encode_section_info (decl, first);
+  default_encode_section_info (decl, rtl, first);
 
   if (!DECL_P (decl))
     return;
@@ -394,7 +395,7 @@ m32r_encode_section_info (decl, first)
   extra_flags |= model << SYMBOL_FLAG_MODEL_SHIFT;
 
   if (extra_flags)
-    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= extra_flags;
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= extra_flags;
 }
 
 /* Only mark the object as being small data area addressable if

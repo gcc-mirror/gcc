@@ -81,7 +81,7 @@ static void asm_print_register PARAMS ((FILE *, int));
 static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
 static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
-static void m68hc11_encode_section_info PARAMS((tree, int));
+static void m68hc11_encode_section_info PARAMS((tree, rtx, int));
 static int autoinc_mode PARAMS((rtx));
 static int m68hc11_make_autoinc_notes PARAMS((rtx *, void *));
 
@@ -1287,19 +1287,17 @@ m68hc11_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
    in SYMBOL_REF_FLAG.  */
 
 static void
-m68hc11_encode_section_info (decl, first)
+m68hc11_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   tree func_attr;
   int trap_handler;
   int is_far = 0;
-  rtx rtl;
   
   if (TREE_CODE (decl) != FUNCTION_DECL)
     return;
-
-  rtl = DECL_RTL (decl);
 
   func_attr = TYPE_ATTRIBUTES (TREE_TYPE (decl));
 
