@@ -3691,6 +3691,13 @@ fold (expr)
 
 	  if (split_tree (arg1, code, &var, &con, &varsign))
 	    {
+	      if (TREE_CONSTANT (arg1))
+		return t;
+
+	      if (varsign == -1)
+		TREE_SET_CODE (t,
+			       (code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR));
+
 	      /* EXPR is ARG0 +- (CON +- VAR).  */
 	      if (TREE_CODE (t) == MINUS_EXPR
 		  && operand_equal_p (var, arg0, 0))
@@ -3701,11 +3708,7 @@ fold (expr)
 		  return fold (build1 (NEGATE_EXPR, TREE_TYPE (t),
 				       convert (TREE_TYPE (t), con)));
 		}
-	      if (TREE_CONSTANT (arg1))
-		return t;
-	      if (varsign == -1)
-		TREE_SET_CODE (t,
-			       (code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR));
+
 	      TREE_OPERAND (t, 0)
 		= fold (build (code, TREE_TYPE (t), arg0, con));
 	      TREE_OPERAND (t, 1) = var;
