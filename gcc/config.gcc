@@ -2840,6 +2840,11 @@ mips*-*-*)
 			tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 			;;
 	esac
+	case $tm_file in
+		*mips/elf.h* | *mips/elf64.h*)
+			tm_defines="OBJECT_FORMAT_ELF $tm_defines"
+			;;
+	esac
 	if test "x$enable_gofast" = xyes
 	then
 		tm_defines="INIT_SUBTARGET_OPTABS=INIT_GOFAST_OPTABS $tm_defines"
