@@ -29,6 +29,12 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "rtl.h"
 #include "regs.h"
@@ -5332,7 +5338,9 @@ mips_asm_file_end (file)
   int len;
 
   if (HALF_PIC_P ())
-    HALF_PIC_FINISH (file);
+    {
+      HALF_PIC_FINISH (file);
+    }
 
   if (extern_head)
     {
@@ -6079,7 +6087,9 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
+#ifndef FUNCTION_NAME_ALREADY_DECLARED
   char *fnname;
+#endif
   long tsize = current_frame_info.total_size;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
@@ -6118,7 +6128,7 @@ function_prologue (file, size)
 
   if (!flag_inhibit_size_directive)
     {
-      fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+      fprintf (file, "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %d, extra= %ld\n",
 	      reg_names[ (frame_pointer_needed) ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
 	      tsize,
 	      reg_names[31 + GP_REG_FIRST],
@@ -6856,6 +6866,7 @@ mips_can_use_return_insn ()
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 
+void
 mips_select_rtx_section (mode, x)
      enum machine_mode mode;
      rtx x;
@@ -6889,6 +6900,7 @@ mips_select_rtx_section (mode, x)
 /* Choose the section to use for DECL.  RELOC is true if its value contains
    any relocatable expression.  */
 
+void
 mips_select_section (decl, reloc)
      tree decl;
      int reloc;
