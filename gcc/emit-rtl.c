@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -995,15 +995,16 @@ operand_subword (op, i, validate_address, mode)
      Convert to proper endianness now since these cases need it.
      At this point, i == 0 means the low-order word.  
 
-     Note that it must be that BITS_PER_WORD <= HOST_BITS_PER_INT.
-     This is because if it were greater, it could only have been two
-     times greater since we do not support making wider constants.  In
-     that case, it MODE would have already been the proper size and
-     it would have been handled above.  This means we do not have to
-     worry about the case where we would be returning a CONST_DOUBLE.  */
+     We do not want to handle the case when BITS_PER_WORD <= HOST_BITS_PER_INT
+     in general.  However, if OP is (const_int 0), we can just return
+     it for any word.  */
+
+  if (op == const0_rtx)
+    return op;
 
   if (GET_MODE_CLASS (mode) != MODE_INT
-      || (GET_CODE (op) != CONST_INT && GET_CODE (op) != CONST_DOUBLE))
+      || (GET_CODE (op) != CONST_INT && GET_CODE (op) != CONST_DOUBLE)
+      || BITS_PER_WORD > HOST_BITS_PER_INT)
     return 0;
 
   if (WORDS_BIG_ENDIAN)
