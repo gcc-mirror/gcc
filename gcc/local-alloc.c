@@ -448,9 +448,9 @@ local_alloc ()
   qty_n_refs = (int *) alloca (max_qty * sizeof (int));
   qty_changes_size = (char *) alloca (max_qty * sizeof (char));
 
-  reg_qty = (int *) alloca (max_regno * sizeof (int));
-  reg_offset = (char *) alloca (max_regno * sizeof (char));
-  reg_next_in_qty = (int *) alloca (max_regno * sizeof (int));
+  reg_qty = (int *) xmalloc (max_regno * sizeof (int));
+  reg_offset = (char *) xmalloc (max_regno * sizeof (char));
+  reg_next_in_qty = (int *) xmalloc(max_regno * sizeof (int));
 
   /* Allocate the reg_renumber array */
   allocate_reg_info (max_regno, FALSE, TRUE);
@@ -519,6 +519,10 @@ local_alloc ()
       alloca (0);
 #endif
     }
+
+  free (reg_qty);
+  free (reg_offset);
+  free (reg_next_in_qty);
 }
 
 /* Depth of loops we are in while in update_equiv_regs.  */
