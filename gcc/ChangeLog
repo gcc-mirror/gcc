@@ -1,3 +1,8 @@
+2002-10-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (SIZE_TYPE, PTRDIFF_TYPE): Override
+	previously definitions.
+
 2002-10-06  Frank Ch. Eigler  <fche@redhat.com>
 
 	* cppinit.c (init_standard_includes, parse_option): Use strncmp.

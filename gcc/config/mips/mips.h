@@ -4584,15 +4584,14 @@ while (0)
 #define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
 
 
-/* Default definitions for size_t and ptrdiff_t.  */
+/* Default definitions for size_t and ptrdiff_t.  We must override the
+   definitions from ../svr4.h on mips-*-linux-gnu.  */
 
-#ifndef SIZE_TYPE
+#undef SIZE_TYPE
 #define SIZE_TYPE (Pmode == DImode ? "long unsigned int" : "unsigned int")
-#endif
 
-#ifndef PTRDIFF_TYPE
+#undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (Pmode == DImode ? "long int" : "int")
-#endif
 
 /* See mips_expand_prologue's use of loadgp for when this should be
    true.  */
