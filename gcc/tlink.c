@@ -654,7 +654,11 @@ scan_linker_output (fname)
 	      if (dem)
 		sym = symbol_hash_lookup (dem->mangled, false);
 	      else
-		sym = symbol_hash_lookup (p, false);
+	        {
+	          if (*p == '_' && prepends_underscore)
+		    ++p;
+		  sym = symbol_hash_lookup (p, false);
+		}
 	    }
 	}
 
