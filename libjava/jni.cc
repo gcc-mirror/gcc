@@ -2085,239 +2085,240 @@ struct JNINativeInterface _Jv_JNIFunctions =
   RESERVED,
   RESERVED,
   RESERVED,
-  _Jv_JNI_GetVersion,
-  _Jv_JNI_DefineClass,
-  _Jv_JNI_FindClass,
-  _Jv_JNI_FromReflectedMethod,
-  _Jv_JNI_FromReflectedField,
-  _Jv_JNI_ToReflectedMethod,
-  _Jv_JNI_GetSuperclass,
-  _Jv_JNI_IsAssignableFrom,
-  _Jv_JNI_ToReflectedField,
-  _Jv_JNI_Throw,
-  _Jv_JNI_ThrowNew,
-  _Jv_JNI_ExceptionOccurred,
-  _Jv_JNI_ExceptionDescribe,
-  _Jv_JNI_ExceptionClear,
-  _Jv_JNI_FatalError,
+  _Jv_JNI_GetVersion,		// GetVersion
+  _Jv_JNI_DefineClass,		// DefineClass
+  _Jv_JNI_FindClass,		// FindClass
+  _Jv_JNI_FromReflectedMethod,	// FromReflectedMethod
+  _Jv_JNI_FromReflectedField,	// FromReflectedField
+  _Jv_JNI_ToReflectedMethod,	// ToReflectedMethod
+  _Jv_JNI_GetSuperclass,	// GetSuperclass
+  _Jv_JNI_IsAssignableFrom,	// IsAssignableFrom
+  _Jv_JNI_ToReflectedField,	// ToReflectedField
+  _Jv_JNI_Throw,		// Throw
+  _Jv_JNI_ThrowNew,		// ThrowNew
+  _Jv_JNI_ExceptionOccurred,	// ExceptionOccurred
+  _Jv_JNI_ExceptionDescribe,	// ExceptionDescribe
+  _Jv_JNI_ExceptionClear,	// ExceptionClear
+  _Jv_JNI_FatalError,		// FatalError
 
-  _Jv_JNI_PushLocalFrame,
-  _Jv_JNI_PopLocalFrame,
-  _Jv_JNI_NewGlobalRef,
-  _Jv_JNI_DeleteGlobalRef,
-  _Jv_JNI_DeleteLocalRef,
+  _Jv_JNI_PushLocalFrame,	// PushLocalFrame
+  _Jv_JNI_PopLocalFrame,	// PopLocalFrame
+  _Jv_JNI_NewGlobalRef,		// NewGlobalRef
+  _Jv_JNI_DeleteGlobalRef,	// DeleteGlobalRef
+  _Jv_JNI_DeleteLocalRef,	// DeleteLocalRef
 
-  _Jv_JNI_IsSameObject,
+  _Jv_JNI_IsSameObject,		// IsSameObject
 
-  _Jv_JNI_NewLocalRef,
-  _Jv_JNI_EnsureLocalCapacity,
+  _Jv_JNI_NewLocalRef,		// NewLocalRef
+  _Jv_JNI_EnsureLocalCapacity,	// EnsureLocalCapacity
 
-  _Jv_JNI_AllocObject,
-  _Jv_JNI_NewObject,
-  _Jv_JNI_NewObjectV,
-  _Jv_JNI_NewObjectA,
-  _Jv_JNI_GetObjectClass,
-  _Jv_JNI_IsInstanceOf,
-  _Jv_JNI_GetAnyMethodID<false>,
+  _Jv_JNI_AllocObject,		    // AllocObject
+  _Jv_JNI_NewObject,		    // NewObject
+  _Jv_JNI_NewObjectV,		    // NewObjectV
+  _Jv_JNI_NewObjectA,		    // NewObjectA
+  _Jv_JNI_GetObjectClass,	    // GetObjectClass
+  _Jv_JNI_IsInstanceOf,		    // IsInstanceOf
+  _Jv_JNI_GetAnyMethodID<false>,    // GetMethodID
 
-  _Jv_JNI_CallMethod<jobject>,
-  _Jv_JNI_CallMethodV<jobject>,
-  _Jv_JNI_CallMethodA<jobject>,
-  _Jv_JNI_CallMethod<jboolean>,
-  _Jv_JNI_CallMethodV<jboolean>,
-  _Jv_JNI_CallMethodA<jboolean>,
-  _Jv_JNI_CallMethod<jbyte>,
-  _Jv_JNI_CallMethodV<jbyte>,
-  _Jv_JNI_CallMethodA<jbyte>,
-  _Jv_JNI_CallMethod<jchar>,
-  _Jv_JNI_CallMethodV<jchar>,
-  _Jv_JNI_CallMethodA<jchar>,
-  _Jv_JNI_CallMethod<jshort>,
-  _Jv_JNI_CallMethodV<jshort>,
-  _Jv_JNI_CallMethodA<jshort>,
-  _Jv_JNI_CallMethod<jint>,
-  _Jv_JNI_CallMethodV<jint>,
-  _Jv_JNI_CallMethodA<jint>,
-  _Jv_JNI_CallMethod<jlong>,
-  _Jv_JNI_CallMethodV<jlong>,
-  _Jv_JNI_CallMethodA<jlong>,
-  _Jv_JNI_CallMethod<jfloat>,
-  _Jv_JNI_CallMethodV<jfloat>,
-  _Jv_JNI_CallMethodA<jfloat>,
-  _Jv_JNI_CallMethod<jdouble>,
-  _Jv_JNI_CallMethodV<jdouble>,
-  _Jv_JNI_CallMethodA<jdouble>,
-  _Jv_JNI_CallVoidMethod,
-  _Jv_JNI_CallVoidMethodV,
-  _Jv_JNI_CallVoidMethodA,
+  _Jv_JNI_CallMethod<jobject>,		// CallObjectMethod
+  _Jv_JNI_CallMethodV<jobject>,		// CallObjectMethodV
+  _Jv_JNI_CallMethodA<jobject>,		// CallObjectMethodA
+  _Jv_JNI_CallMethod<jboolean>,		// CallBooleanMethod
+  _Jv_JNI_CallMethodV<jboolean>,	// CallBooleanMethodV
+  _Jv_JNI_CallMethodA<jboolean>,	// CallBooleanMethodA
+  _Jv_JNI_CallMethod<jbyte>,		// CallByteMethod
+  _Jv_JNI_CallMethodV<jbyte>,		// CallByteMethodV
+  _Jv_JNI_CallMethodA<jbyte>,		// CallByteMethodA
+  _Jv_JNI_CallMethod<jchar>,		// CallCharMethod
+  _Jv_JNI_CallMethodV<jchar>,		// CallCharMethodV
+  _Jv_JNI_CallMethodA<jchar>,		// CallCharMethodA
+  _Jv_JNI_CallMethod<jshort>,		// CallShortMethod
+  _Jv_JNI_CallMethodV<jshort>,		// CallShortMethodV
+  _Jv_JNI_CallMethodA<jshort>,		// CallShortMethodA
+  _Jv_JNI_CallMethod<jint>,		// CallIntMethod
+  _Jv_JNI_CallMethodV<jint>,		// CallIntMethodV
+  _Jv_JNI_CallMethodA<jint>,		// CallIntMethodA
+  _Jv_JNI_CallMethod<jlong>,		// CallLongMethod
+  _Jv_JNI_CallMethodV<jlong>,		// CallLongMethodV
+  _Jv_JNI_CallMethodA<jlong>,		// CallLongMethodA
+  _Jv_JNI_CallMethod<jfloat>,		// CallFloatMethod
+  _Jv_JNI_CallMethodV<jfloat>,		// CallFloatMethodV
+  _Jv_JNI_CallMethodA<jfloat>,		// CallFloatMethodA
+  _Jv_JNI_CallMethod<jdouble>,		// CallDoubleMethod
+  _Jv_JNI_CallMethodV<jdouble>,		// CallDoubleMethodV
+  _Jv_JNI_CallMethodA<jdouble>,		// CallDoubleMethodA
+  _Jv_JNI_CallVoidMethod,		// CallVoidMethod
+  _Jv_JNI_CallVoidMethodV,		// CallVoidMethodV
+  _Jv_JNI_CallVoidMethodA,		// CallVoidMethodA
 
   // Nonvirtual method invocation functions follow.
-  _Jv_JNI_CallAnyMethod<jobject, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jobject, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jobject, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jboolean, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jboolean, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jboolean, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jbyte, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jbyte, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jbyte, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jchar, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jchar, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jchar, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jshort, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jshort, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jshort, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jint, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jint, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jint, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jlong, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jlong, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jlong, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jfloat, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jfloat, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jfloat, nonvirtual>,
-  _Jv_JNI_CallAnyMethod<jdouble, nonvirtual>,
-  _Jv_JNI_CallAnyMethodV<jdouble, nonvirtual>,
-  _Jv_JNI_CallAnyMethodA<jdouble, nonvirtual>,
-  _Jv_JNI_CallAnyVoidMethod<nonvirtual>,
-  _Jv_JNI_CallAnyVoidMethodV<nonvirtual>,
-  _Jv_JNI_CallAnyVoidMethodA<nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jobject, nonvirtual>,	// CallNonvirtualObjectMethod
+  _Jv_JNI_CallAnyMethodV<jobject, nonvirtual>,	// CallNonvirtualObjectMethodV
+  _Jv_JNI_CallAnyMethodA<jobject, nonvirtual>,	// CallNonvirtualObjectMethodA
+  _Jv_JNI_CallAnyMethod<jboolean, nonvirtual>,	// CallNonvirtualBooleanMethod
+  _Jv_JNI_CallAnyMethodV<jboolean, nonvirtual>,	// CallNonvirtualBooleanMethodV
+  _Jv_JNI_CallAnyMethodA<jboolean, nonvirtual>,	// CallNonvirtualBooleanMethodA
+  _Jv_JNI_CallAnyMethod<jbyte, nonvirtual>,	// CallNonvirtualByteMethod
+  _Jv_JNI_CallAnyMethodV<jbyte, nonvirtual>,	// CallNonvirtualByteMethodV
+  _Jv_JNI_CallAnyMethodA<jbyte, nonvirtual>,	// CallNonvirtualByteMethodA
+  _Jv_JNI_CallAnyMethod<jchar, nonvirtual>,	// CallNonvirtualCharMethod
+  _Jv_JNI_CallAnyMethodV<jchar, nonvirtual>,	// CallNonvirtualCharMethodV
+  _Jv_JNI_CallAnyMethodA<jchar, nonvirtual>,	// CallNonvirtualCharMethodA
+  _Jv_JNI_CallAnyMethod<jshort, nonvirtual>,	// CallNonvirtualShortMethod
+  _Jv_JNI_CallAnyMethodV<jshort, nonvirtual>,	// CallNonvirtualShortMethodV
+  _Jv_JNI_CallAnyMethodA<jshort, nonvirtual>,	// CallNonvirtualShortMethodA
+  _Jv_JNI_CallAnyMethod<jint, nonvirtual>,	// CallNonvirtualIntMethod
+  _Jv_JNI_CallAnyMethodV<jint, nonvirtual>,	// CallNonvirtualIntMethodV
+  _Jv_JNI_CallAnyMethodA<jint, nonvirtual>,	// CallNonvirtualIntMethodA
+  _Jv_JNI_CallAnyMethod<jlong, nonvirtual>,	// CallNonvirtualLongMethod
+  _Jv_JNI_CallAnyMethodV<jlong, nonvirtual>,	// CallNonvirtualLongMethodV
+  _Jv_JNI_CallAnyMethodA<jlong, nonvirtual>,	// CallNonvirtualLongMethodA
+  _Jv_JNI_CallAnyMethod<jfloat, nonvirtual>,	// CallNonvirtualFloatMethod
+  _Jv_JNI_CallAnyMethodV<jfloat, nonvirtual>,	// CallNonvirtualFloatMethodV
+  _Jv_JNI_CallAnyMethodA<jfloat, nonvirtual>,	// CallNonvirtualFloatMethodA
+  _Jv_JNI_CallAnyMethod<jdouble, nonvirtual>,	// CallNonvirtualDoubleMethod
+  _Jv_JNI_CallAnyMethodV<jdouble, nonvirtual>,	// CallNonvirtualDoubleMethodV
+  _Jv_JNI_CallAnyMethodA<jdouble, nonvirtual>,	// CallNonvirtualDoubleMethodA
+  _Jv_JNI_CallAnyVoidMethod<nonvirtual>,	// CallNonvirtualVoidMethod
+  _Jv_JNI_CallAnyVoidMethodV<nonvirtual>,	// CallNonvirtualVoidMethodV
+  _Jv_JNI_CallAnyVoidMethodA<nonvirtual>,	// CallNonvirtualVoidMethodA
 
-  _Jv_JNI_GetAnyFieldID<false>,
-  _Jv_JNI_GetField<jobject>,
-  _Jv_JNI_GetField<jboolean>,
-  _Jv_JNI_GetField<jbyte>,
-  _Jv_JNI_GetField<jchar>,
-  _Jv_JNI_GetField<jshort>,
-  _Jv_JNI_GetField<jint>,
-  _Jv_JNI_GetField<jlong>,
-  _Jv_JNI_GetField<jfloat>,
-  _Jv_JNI_GetField<jdouble>,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_SetField,
-  _Jv_JNI_GetAnyMethodID<true>,
+  _Jv_JNI_GetAnyFieldID<false>,	// GetFieldID
+  _Jv_JNI_GetField<jobject>,	// GetObjectField
+  _Jv_JNI_GetField<jboolean>,	// GetBooleanField
+  _Jv_JNI_GetField<jbyte>,	// GetByteField
+  _Jv_JNI_GetField<jchar>,	// GetCharField
+  _Jv_JNI_GetField<jshort>,	// GetShortField
+  _Jv_JNI_GetField<jint>,	// GetIntField
+  _Jv_JNI_GetField<jlong>,	// GetLongField
+  _Jv_JNI_GetField<jfloat>,	// GetFloatField
+  _Jv_JNI_GetField<jdouble>,	// GetDoubleField
+  _Jv_JNI_SetField,		// SetObjectField
+  _Jv_JNI_SetField,		// SetBooleanField
+  _Jv_JNI_SetField,		// SetByteField
+  _Jv_JNI_SetField,		// SetCharField
+  _Jv_JNI_SetField,		// SetShortField
+  _Jv_JNI_SetField,		// SetIntField
+  _Jv_JNI_SetField,		// SetLongField
+  _Jv_JNI_SetField,		// SetFloatField
+  _Jv_JNI_SetField,		// SetDoubleField
+  _Jv_JNI_GetAnyMethodID<true>,	// GetStaticMethodID
 
-  _Jv_JNI_CallStaticMethod<jobject>,
-  _Jv_JNI_CallStaticMethodV<jobject>,
-  _Jv_JNI_CallStaticMethodA<jobject>,
-  _Jv_JNI_CallStaticMethod<jboolean>,
-  _Jv_JNI_CallStaticMethodV<jboolean>,
-  _Jv_JNI_CallStaticMethodA<jboolean>,
-  _Jv_JNI_CallStaticMethod<jbyte>,
-  _Jv_JNI_CallStaticMethodV<jbyte>,
-  _Jv_JNI_CallStaticMethodA<jbyte>,
-  _Jv_JNI_CallStaticMethod<jchar>,
-  _Jv_JNI_CallStaticMethodV<jchar>,
-  _Jv_JNI_CallStaticMethodA<jchar>,
-  _Jv_JNI_CallStaticMethod<jshort>,
-  _Jv_JNI_CallStaticMethodV<jshort>,
-  _Jv_JNI_CallStaticMethodA<jshort>,
-  _Jv_JNI_CallStaticMethod<jint>,
-  _Jv_JNI_CallStaticMethodV<jint>,
-  _Jv_JNI_CallStaticMethodA<jint>,
-  _Jv_JNI_CallStaticMethod<jlong>,
-  _Jv_JNI_CallStaticMethodV<jlong>,
-  _Jv_JNI_CallStaticMethodA<jlong>,
-  _Jv_JNI_CallStaticMethod<jfloat>,
-  _Jv_JNI_CallStaticMethodV<jfloat>,
-  _Jv_JNI_CallStaticMethodA<jfloat>,
-  _Jv_JNI_CallStaticMethod<jdouble>,
-  _Jv_JNI_CallStaticMethodV<jdouble>,
-  _Jv_JNI_CallStaticMethodA<jdouble>,
-  _Jv_JNI_CallStaticVoidMethod,
-  _Jv_JNI_CallStaticVoidMethodV,
-  _Jv_JNI_CallStaticVoidMethodA,
+  _Jv_JNI_CallStaticMethod<jobject>,	  // CallStaticObjectMethod
+  _Jv_JNI_CallStaticMethodV<jobject>,	  // CallStaticObjectMethodV
+  _Jv_JNI_CallStaticMethodA<jobject>,	  // CallStaticObjectMethodA
+  _Jv_JNI_CallStaticMethod<jboolean>,	  // CallStaticBooleanMethod
+  _Jv_JNI_CallStaticMethodV<jboolean>,	  // CallStaticBooleanMethodV
+  _Jv_JNI_CallStaticMethodA<jboolean>,	  // CallStaticBooleanMethodA
+  _Jv_JNI_CallStaticMethod<jbyte>,	  // CallStaticByteMethod
+  _Jv_JNI_CallStaticMethodV<jbyte>,	  // CallStaticByteMethodV
+  _Jv_JNI_CallStaticMethodA<jbyte>,	  // CallStaticByteMethodA
+  _Jv_JNI_CallStaticMethod<jchar>,	  // CallStaticCharMethod
+  _Jv_JNI_CallStaticMethodV<jchar>,	  // CallStaticCharMethodV
+  _Jv_JNI_CallStaticMethodA<jchar>,	  // CallStaticCharMethodA
+  _Jv_JNI_CallStaticMethod<jshort>,	  // CallStaticShortMethod
+  _Jv_JNI_CallStaticMethodV<jshort>,	  // CallStaticShortMethodV
+  _Jv_JNI_CallStaticMethodA<jshort>,	  // CallStaticShortMethodA
+  _Jv_JNI_CallStaticMethod<jint>,	  // CallStaticIntMethod
+  _Jv_JNI_CallStaticMethodV<jint>,	  // CallStaticIntMethodV
+  _Jv_JNI_CallStaticMethodA<jint>,	  // CallStaticIntMethodA
+  _Jv_JNI_CallStaticMethod<jlong>,	  // CallStaticLongMethod
+  _Jv_JNI_CallStaticMethodV<jlong>,	  // CallStaticLongMethodV
+  _Jv_JNI_CallStaticMethodA<jlong>,	  // CallStaticLongMethodA
+  _Jv_JNI_CallStaticMethod<jfloat>,	  // CallStaticFloatMethod
+  _Jv_JNI_CallStaticMethodV<jfloat>,	  // CallStaticFloatMethodV
+  _Jv_JNI_CallStaticMethodA<jfloat>,	  // CallStaticFloatMethodA
+  _Jv_JNI_CallStaticMethod<jdouble>,	  // CallStaticDoubleMethod
+  _Jv_JNI_CallStaticMethodV<jdouble>,	  // CallStaticDoubleMethodV
+  _Jv_JNI_CallStaticMethodA<jdouble>,	  // CallStaticDoubleMethodA
+  _Jv_JNI_CallStaticVoidMethod,		  // CallStaticVoidMethod
+  _Jv_JNI_CallStaticVoidMethodV,	  // CallStaticVoidMethodV
+  _Jv_JNI_CallStaticVoidMethodA,	  // CallStaticVoidMethodA
 
-  _Jv_JNI_GetAnyFieldID<true>,
-  _Jv_JNI_GetStaticField<jobject>,
-  _Jv_JNI_GetStaticField<jboolean>,
-  _Jv_JNI_GetStaticField<jbyte>,
-  _Jv_JNI_GetStaticField<jchar>,
-  _Jv_JNI_GetStaticField<jshort>,
-  _Jv_JNI_GetStaticField<jint>,
-  _Jv_JNI_GetStaticField<jlong>,
-  _Jv_JNI_GetStaticField<jfloat>,
-  _Jv_JNI_GetStaticField<jdouble>,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_SetStaticField,
-  _Jv_JNI_NewString,
-  _Jv_JNI_GetStringLength,
-  _Jv_JNI_GetStringChars,
-  _Jv_JNI_ReleaseStringChars,
-  _Jv_JNI_NewStringUTF,
-  _Jv_JNI_GetStringUTFLength,
-  _Jv_JNI_GetStringUTFChars,
-  _Jv_JNI_ReleaseStringUTFChars,
-  _Jv_JNI_GetArrayLength,
-  _Jv_JNI_NewObjectArray,
-  _Jv_JNI_GetObjectArrayElement,
-  _Jv_JNI_SetObjectArrayElement,
+  _Jv_JNI_GetAnyFieldID<true>,	       // GetStaticFieldID
+  _Jv_JNI_GetStaticField<jobject>,     // GetStaticObjectField
+  _Jv_JNI_GetStaticField<jboolean>,    // GetStaticBooleanField
+  _Jv_JNI_GetStaticField<jbyte>,       // GetStaticByteField
+  _Jv_JNI_GetStaticField<jchar>,       // GetStaticCharField
+  _Jv_JNI_GetStaticField<jshort>,      // GetStaticShortField
+  _Jv_JNI_GetStaticField<jint>,	       // GetStaticIntField
+  _Jv_JNI_GetStaticField<jlong>,       // GetStaticLongField
+  _Jv_JNI_GetStaticField<jfloat>,      // GetStaticFloatField
+  _Jv_JNI_GetStaticField<jdouble>,     // GetStaticDoubleField
+  _Jv_JNI_SetStaticField,	       // SetStaticObjectField
+  _Jv_JNI_SetStaticField,	       // SetStaticBooleanField
+  _Jv_JNI_SetStaticField,	       // SetStaticByteField
+  _Jv_JNI_SetStaticField,	       // SetStaticCharField
+  _Jv_JNI_SetStaticField,	       // SetStaticShortField
+  _Jv_JNI_SetStaticField,	       // SetStaticIntField
+  _Jv_JNI_SetStaticField,	       // SetStaticLongField
+  _Jv_JNI_SetStaticField,	       // SetStaticFloatField
+  _Jv_JNI_SetStaticField,	       // SetStaticDoubleField
+  _Jv_JNI_NewString,		       // NewString
+  _Jv_JNI_GetStringLength,	       // GetStringLength
+  _Jv_JNI_GetStringChars,	       // GetStringChars
+  _Jv_JNI_ReleaseStringChars,	       // ReleaseStringChars
+  _Jv_JNI_NewStringUTF,		       // NewStringUTF
+  _Jv_JNI_GetStringUTFLength,	       // GetStringUTFLength
+  _Jv_JNI_GetStringUTFChars,	       // GetStringUTFLength
+  _Jv_JNI_ReleaseStringUTFChars,       // ReleaseStringUTFChars
+  _Jv_JNI_GetArrayLength,	       // GetArrayLength
+  _Jv_JNI_NewObjectArray,	       // NewObjectArray
+  _Jv_JNI_GetObjectArrayElement,       // GetObjectArrayElement
+  _Jv_JNI_SetObjectArrayElement,       // SetObjectArrayElement
   _Jv_JNI_NewPrimitiveArray<jboolean, JvPrimClass (boolean)>,
-  _Jv_JNI_NewPrimitiveArray<jbyte, JvPrimClass (byte)>,
-  _Jv_JNI_NewPrimitiveArray<jchar, JvPrimClass (char)>,
-  _Jv_JNI_NewPrimitiveArray<jshort, JvPrimClass (short)>,
-  _Jv_JNI_NewPrimitiveArray<jint, JvPrimClass (int)>,
-  _Jv_JNI_NewPrimitiveArray<jlong, JvPrimClass (long)>,
-  _Jv_JNI_NewPrimitiveArray<jfloat, JvPrimClass (float)>,
-  _Jv_JNI_NewPrimitiveArray<jdouble, JvPrimClass (double)>,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_ReleasePrimitiveArrayElements,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_GetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_SetPrimitiveArrayRegion,
-  _Jv_JNI_RegisterNatives,
-  _Jv_JNI_UnregisterNatives,
-  _Jv_JNI_MonitorEnter,
-  _Jv_JNI_MonitorExit,
-  _Jv_JNI_GetJavaVM,
+							    // NewBooleanArray
+  _Jv_JNI_NewPrimitiveArray<jbyte, JvPrimClass (byte)>,	    // NewByteArray
+  _Jv_JNI_NewPrimitiveArray<jchar, JvPrimClass (char)>,	    // NewCharArray
+  _Jv_JNI_NewPrimitiveArray<jshort, JvPrimClass (short)>,   // NewShortArray
+  _Jv_JNI_NewPrimitiveArray<jint, JvPrimClass (int)>,	    // NewIntArray
+  _Jv_JNI_NewPrimitiveArray<jlong, JvPrimClass (long)>,	    // NewLongArray
+  _Jv_JNI_NewPrimitiveArray<jfloat, JvPrimClass (float)>,   // NewFloatArray
+  _Jv_JNI_NewPrimitiveArray<jdouble, JvPrimClass (double)>, // NewDoubleArray
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetBooleanArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetByteArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetCharArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetShortArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetIntArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetLongArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetFloatArrayElements
+  _Jv_JNI_GetPrimitiveArrayElements,	    // GetDoubleArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseBooleanArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseByteArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseCharArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseShortArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseIntArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseLongArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseFloatArrayElements
+  _Jv_JNI_ReleasePrimitiveArrayElements,    // ReleaseDoubleArrayElements
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetBooleanArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetByteArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetCharArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetShortArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetIntArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetLongArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetFloatArrayRegion
+  _Jv_JNI_GetPrimitiveArrayRegion,	    // GetDoubleArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetBooleanArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetByteArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetCharArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetShortArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetIntArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetLongArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetFloatArrayRegion
+  _Jv_JNI_SetPrimitiveArrayRegion,	    // SetDoubleArrayRegion
+  _Jv_JNI_RegisterNatives,		    // RegisterNatives
+  _Jv_JNI_UnregisterNatives,		    // UnregisterNatives
+  _Jv_JNI_MonitorEnter,			    // MonitorEnter
+  _Jv_JNI_MonitorExit,			    // MonitorExit
+  _Jv_JNI_GetJavaVM,			    // GetJavaVM
 
-  _Jv_JNI_GetStringRegion,
-  _Jv_JNI_GetStringUTFRegion,
-  _Jv_JNI_GetPrimitiveArrayCritical,
-  _Jv_JNI_ReleasePrimitiveArrayCritical,
-  _Jv_JNI_GetStringCritical,
-  _Jv_JNI_ReleaseStringCritical,
+  _Jv_JNI_GetStringRegion,		    // GetStringRegion
+  _Jv_JNI_GetStringUTFRegion,		    // GetStringUTFRegion
+  _Jv_JNI_GetPrimitiveArrayCritical,	    // GetPrimitiveArrayCritical
+  _Jv_JNI_ReleasePrimitiveArrayCritical,    // ReleasePrimitiveArrayCritical
+  _Jv_JNI_GetStringCritical,		    // GetStringCritical
+  _Jv_JNI_ReleaseStringCritical,	    // ReleaseStringCritical
 
   NOT_IMPL /* newweakglobalref */,
   NOT_IMPL /* deleteweakglobalref */,
