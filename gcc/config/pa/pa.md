@@ -7145,6 +7145,7 @@
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
+;;; Operands 2 and 3 are assumed to be CONST_INTs.
 (define_expand "extzv"
   [(set (match_operand 0 "register_operand" "")
 	(zero_extract (match_operand 1 "register_operand" "")
@@ -7153,21 +7154,26 @@
   ""
   "
 {
-  /* PA extraction insns don't support zero length bitfields.  */
-  if (INTVAL (operands[2]) == 0)
+  HOST_WIDE_INT len = INTVAL (operands[2]);
+  HOST_WIDE_INT pos = INTVAL (operands[3]);
+
+  /* PA extraction insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, we reject lengths
+     equal to a word as they are better handled by the move patterns.  */
+  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[1], VOIDmode))
     FAIL;
 
   if (TARGET_64BIT)
     emit_insn (gen_extzv_64 (operands[0], operands[1],
 			     operands[2], operands[3]));
   else
-    {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
-	FAIL;
-      emit_insn (gen_extzv_32 (operands[0], operands[1],
-			       operands[2], operands[3]));
-    }
+    emit_insn (gen_extzv_32 (operands[0], operands[1],
+			     operands[2], operands[3]));
   DONE;
 }")
 
@@ -7211,6 +7217,7 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
+;;; Operands 2 and 3 are assumed to be CONST_INTs.
 (define_expand "extv"
   [(set (match_operand 0 "register_operand" "")
 	(sign_extract (match_operand 1 "register_operand" "")
@@ -7219,21 +7226,26 @@
   ""
   "
 {
-  /* PA extraction insns don't support zero length bitfields.  */
-  if (INTVAL (operands[2]) == 0)
+  HOST_WIDE_INT len = INTVAL (operands[2]);
+  HOST_WIDE_INT pos = INTVAL (operands[3]);
+
+  /* PA extraction insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, we reject lengths
+     equal to a word as they are better handled by the move patterns.  */
+  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[1], VOIDmode))
     FAIL;
 
   if (TARGET_64BIT)
     emit_insn (gen_extv_64 (operands[0], operands[1],
 			    operands[2], operands[3]));
   else
-    {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
-	FAIL;
-      emit_insn (gen_extv_32 (operands[0], operands[1],
-			      operands[2], operands[3]));
-    }
+    emit_insn (gen_extv_32 (operands[0], operands[1],
+			    operands[2], operands[3]));
   DONE;
 }")
 
@@ -7277,7 +7289,7 @@
   [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
-;; Only specify the mode operands 0, the rest are assumed to be word_mode.
+;;; Operands 1 and 2 are assumed to be CONST_INTs.
 (define_expand "insv"
   [(set (zero_extract (match_operand 0 "register_operand" "")
                       (match_operand 1 "uint32_operand" "")
@@ -7286,17 +7298,26 @@
   ""
   "
 {
+  HOST_WIDE_INT len = INTVAL (operands[1]);
+  HOST_WIDE_INT pos = INTVAL (operands[2]);
+
+  /* PA insertion insns don't support zero length bitfields or fields
+     extending beyond the left or right-most bits.  Also, we reject lengths
+     equal to a word as they are better handled by the move patterns.  */
+  if (len <= 0 || len >= BITS_PER_WORD || pos < 0 || pos + len > BITS_PER_WORD)
+    FAIL;
+
+  /* From mips.md: insert_bit_field doesn't verify that our destination
+     matches the predicate, so check it again here.  */
+  if (!register_operand (operands[0], VOIDmode))
+    FAIL;
+
   if (TARGET_64BIT)
     emit_insn (gen_insv_64 (operands[0], operands[1],
 			    operands[2], operands[3]));
   else
-    {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
-	FAIL;
-      emit_insn (gen_insv_32 (operands[0], operands[1],
-			      operands[2], operands[3]));
-    }
+    emit_insn (gen_insv_32 (operands[0], operands[1],
+			    operands[2], operands[3]));
   DONE;
 }")
 

@@ -1,3 +1,8 @@
+2003-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (extzv, extv, insv): Fix operand limit checks.  Fail if
+	source/destination is not a register operand.
+
 2003-08-08  Richard Henderson  <rth@redhat.com>
 
         PR target/11535
