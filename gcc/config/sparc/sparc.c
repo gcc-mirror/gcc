@@ -99,7 +99,7 @@ char leaf_reg_remap[] =
   72, 73, 74, 75, 76, 77, 78, 79,
   80, 81, 82, 83, 84, 85, 86, 87,
   88, 89, 90, 91, 92, 93, 94, 95,
-  96, 97, 98, 99};
+  96, 97, 98, 99, 100};
 
 #endif
 
@@ -268,13 +268,19 @@ v9_regcmp_p (code)
 /* Operand constraints.  */
 
 /* Return non-zero only if OP is a register of mode MODE,
-   or const0_rtx.  */
+   or const0_rtx.  Don't allow const0_rtx if TARGET_LIVE_G0 because
+   %g0 may contain anything.  */
+
 int
 reg_or_0_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (op == const0_rtx || register_operand (op, mode))
+  if (register_operand (op, mode))
+    return 1;
+  if (TARGET_LIVE_G0)
+    return 0;
+  if (op == const0_rtx)
     return 1;
   if (GET_MODE (op) == VOIDmode && GET_CODE (op) == CONST_DOUBLE
       && CONST_DOUBLE_HIGH (op) == 0
@@ -288,6 +294,7 @@ reg_or_0_operand (op, mode)
 }
 
 /* Nonzero if OP is a floating point value with value 0.0.  */
+
 int
 fp_zero_operand (op)
      rtx op;
@@ -312,24 +319,36 @@ intreg_operand (op, mode)
 /* Nonzero if OP is a floating point condition code register.  */
 
 int
-ccfp_reg_operand (op, mode)
+fcc_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   /* This can happen when recog is called from combine.  Op may be a MEM.
      Fail instead of calling abort in this case.  */
-  if (GET_CODE (op) != REG || REGNO (op) == 0)
+  if (GET_CODE (op) != REG)
     return 0;
-  if (GET_MODE (op) != mode)
+  if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
 
-#if 0	/* ??? ==> 1 when %fcc1-3 are pseudos first.  See gen_compare_reg().  */
+#if 0	/* ??? ==> 1 when %fcc0-3 are pseudos first.  See gen_compare_reg().  */
   if (reg_renumber == 0)
     return REGNO (op) >= FIRST_PSEUDO_REGISTER;
   return REGNO_OK_FOR_CCFP_P (REGNO (op));
 #else
-  return (unsigned) REGNO (op) - 96 < 4;
+  return (unsigned) REGNO (op) - SPARC_FIRST_V9_FCC_REG < 4;
 #endif
+}
+
+/* Nonzero if OP is an integer or floating point condition code register.  */
+
+int
+icc_or_fcc_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == REG && REGNO (op) == SPARC_ICC_REG)
+    return 1;
+  return fcc_reg_operand (op, mode);
 }
 
 /* Nonzero if OP can appear as the dest of a RESTORE insn.  */
@@ -855,7 +874,7 @@ gen_compare_reg (code, x, y)
   rtx cc_reg;
 
   /* ??? We don't have movcc patterns so we cannot generate pseudo regs for the
-     fpcc regs (cse can't tell they're really call clobbered regs and will
+     fcc regs (cse can't tell they're really call clobbered regs and will
      remove a duplicate comparison even if there is an intervening function
      call - it will then try to reload the cc reg via an int reg which is why
      we need the movcc patterns).  It is possible to provide the movcc
@@ -875,8 +894,8 @@ gen_compare_reg (code, x, y)
     {
       int reg;
       /* We cycle through the registers to ensure they're all exercised.  */
-      static int next_fpcc_reg = 0;
-      /* Previous x,y for each fpcc reg.  */
+      static int next_fcc_reg = 0;
+      /* Previous x,y for each fcc reg.  */
       static rtx prev_args[4][2];
 
       /* Scan prev_args for x,y.  */
@@ -885,18 +904,20 @@ gen_compare_reg (code, x, y)
 	  break;
       if (reg == 4)
 	{
-	  reg = next_fpcc_reg;
+	  reg = next_fcc_reg;
 	  prev_args[reg][0] = x;
 	  prev_args[reg][1] = y;
-	  next_fpcc_reg = (next_fpcc_reg + 1) & 3;
+	  next_fcc_reg = (next_fcc_reg + 1) & 3;
 	}
-      cc_reg = gen_rtx (REG, mode, reg + 96);
+      cc_reg = gen_rtx (REG, mode, reg + SPARC_FIRST_V9_FCC_REG);
     }
 #else
     cc_reg = gen_reg_rtx (mode);
 #endif /* ! experiment */
+  else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    cc_reg = gen_rtx (REG, mode, SPARC_FCC_REG);
   else
-    cc_reg = gen_rtx (REG, mode, 0);
+    cc_reg = gen_rtx (REG, mode, SPARC_ICC_REG);
 
   emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
 		      gen_rtx (COMPARE, mode, x, y)));
@@ -1062,6 +1083,14 @@ eligible_for_epilogue_delay (trial, slot)
   if (get_attr_length (trial) != 1)
     return 0;
 
+  pat = PATTERN (trial);
+
+  /* If %g0 is live, there are lots of things we can't handle.
+     Rather than trying to find them all now, let's punt and only
+     optimize things as necessary.  */
+  if (TARGET_LIVE_G0)
+    return 0;
+
   /* In the case of a true leaf function, anything can go into the delay slot.
      A delay slot only exists however if the frame size is zero, otherwise
      we will put an insn to adjust the stack after the return.  */
@@ -1074,9 +1103,7 @@ eligible_for_epilogue_delay (trial, slot)
 
   /* Otherwise, only operations which can be done in tandem with
      a `restore' insn can go into the delay slot.  */
-  pat = PATTERN (trial);
   if (GET_CODE (SET_DEST (pat)) != REG
-      || REGNO (SET_DEST (pat)) == 0
       || REGNO (SET_DEST (pat)) >= 32
       || REGNO (SET_DEST (pat)) < 24)
     return 0;
@@ -1442,7 +1469,8 @@ emit_move_sequence (operands, mode)
     }
   else if (GET_CODE (operand0) == MEM)
     {
-      if (register_operand (operand1, mode) || operand1 == const0_rtx)
+      if (register_operand (operand1, mode)
+	  || (operand1 == const0_rtx && ! TARGET_LIVE_G0))
 	{
 	  /* Run this case quickly.  */
 	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
@@ -2575,7 +2603,8 @@ output_scc_insn (operands, insn)
 
   LABEL_NUSES (label) += 1;
 
-  operands[2] = label;
+  /* operands[3] is an unused slot.  */
+  operands[3] = label;
 
   /* If we are in a delay slot, assume it is the delay slot of an fpcc
      insn since our type isn't allowed anywhere else.  */
@@ -2598,17 +2627,17 @@ output_scc_insn (operands, insn)
   if (final_sequence)
     {
       strcpy (string, "mov 0,%0\n\t");
-      strcat (string, output_cbranch (operands[1], 0, 2, 0, 1, 0));
+      strcat (string, output_cbranch (operands[2], 3, 0, 1, 0));
       strcat (string, "\n\tmov 1,%0");
     }
   else
     {
-      strcpy (string, output_cbranch (operands[1], 0, 2, 0, 1, 0));
+      strcpy (string, output_cbranch (operands[2], 3, 0, 1, 0));
       strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
     }
 
   if (need_label)
-    strcat (string, "\n%l2:");
+    strcat (string, "\n%l3:");
 
   return string;
 }
@@ -2623,14 +2652,10 @@ output_scc_insn (operands, insn)
    mapped into one sparc_mode_class mode.  */
 
 enum sparc_mode_class {
-  C_MODE, CCFP_MODE,
   S_MODE, D_MODE, T_MODE, O_MODE,
-  SF_MODE, DF_MODE, TF_MODE, OF_MODE
+  SF_MODE, DF_MODE, TF_MODE, OF_MODE,
+  CC_MODE, CCFP_MODE
 };
-
-/* Modes for condition codes.  */
-#define C_MODES ((1 << (int) C_MODE) | (1 << (int) CCFP_MODE))
-#define CCFP_MODES (1 << (int) CCFP_MODE)
 
 /* Modes for single-word and smaller quantities.  */
 #define S_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
@@ -2653,7 +2678,8 @@ enum sparc_mode_class {
 #define DF_MODES64 (SF_MODES | DF_MODE /* | D_MODE*/)
 
 /* Modes for double-float only quantities.  */
-/* ??? Sparc64 fp regs cannot hold DImode values.  */
+/* ??? Sparc64 fp regs cannot hold DImode values.
+   See fix_truncsfdi2.  */
 #define DF_ONLY_MODES ((1 << (int) DF_MODE) /*| (1 << (int) D_MODE)*/)
 
 /* Modes for double-float and larger quantities.  */
@@ -2665,20 +2691,25 @@ enum sparc_mode_class {
 /* Modes for quad-float and smaller quantities.  */
 #define TF_MODES (DF_MODES | TF_ONLY_MODES)
 
-/* ??? Sparc64 fp regs cannot hold DImode values.  */
+/* ??? Sparc64 fp regs cannot hold DImode values.
+   See fix_truncsfdi2.  */
 #define TF_MODES64 (DF_MODES64 | TF_ONLY_MODES)
+
+/* Modes for condition codes.  */
+#define CC_MODES (1 << (int) CC_MODE)
+#define CCFP_MODES (1 << (int) CCFP_MODE)
 
 /* Value is 1 if register/mode pair is acceptable on sparc.
    The funny mixture of D and T modes is because integer operations
    do not specially operate on tetra quantities, so non-quad-aligned
    registers can hold quadword quantities (except %o4 and %i4 because
-   they cross fixed registers.  */
+   they cross fixed registers).  */
 
 /* This points to either the 32 bit or the 64 bit version.  */
 int *hard_regno_mode_classes;
 
 static int hard_32bit_mode_classes[] = {
-  C_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
+  S_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES, D_MODES, S_MODES,
@@ -2696,11 +2727,14 @@ static int hard_32bit_mode_classes[] = {
   DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
 
   /* %fcc[0123] */
-  CCFP_MODE, CCFP_MODE, CCFP_MODE, CCFP_MODE
+  CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
+
+  /* %icc */
+  CC_MODES
 };
 
 static int hard_64bit_mode_classes[] = {
-  C_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  D_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
@@ -2718,10 +2752,15 @@ static int hard_64bit_mode_classes[] = {
   DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
 
   /* %fcc[0123] */
-  CCFP_MODE, CCFP_MODE, CCFP_MODE, CCFP_MODE
+  CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
+
+  /* %icc */
+  CC_MODES
 };
 
 int sparc_mode_class [NUM_MACHINE_MODES];
+
+enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 static void
 sparc_init_modes ()
@@ -2767,7 +2806,7 @@ sparc_init_modes ()
 	    sparc_mode_class[i] = 1 << (int) CCFP_MODE;
 	  else if (i == (int) CCmode || i == (int) CC_NOOVmode
 		   || i == (int) CCXmode || i == (int) CCX_NOOVmode)
-	    sparc_mode_class[i] = 1 << (int) C_MODE;
+	    sparc_mode_class[i] = 1 << (int) CC_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
 	  break;
@@ -2778,6 +2817,21 @@ sparc_init_modes ()
     hard_regno_mode_classes = hard_64bit_mode_classes;
   else
     hard_regno_mode_classes = hard_32bit_mode_classes;
+
+  /* Initialize the array used by REGNO_REG_CLASS.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (i < 32)
+	sparc_regno_reg_class[i] = GENERAL_REGS;
+      else if (i < 64)
+	sparc_regno_reg_class[i] = FP_REGS;
+      else if (i < 96)
+	sparc_regno_reg_class[i] = EXTRA_FP_REGS;
+      else if (i < 100)
+	sparc_regno_reg_class[i] = FPCC_REGS;
+      else
+	sparc_regno_reg_class[i] = NO_REGS;
+    }
 }
 
 /* Save non call used registers from LOW to HIGH at BASE+OFFSET.
@@ -3320,11 +3374,9 @@ sparc_builtin_saveregs (arglist)
 #endif /* ! SPARC_ARCH64 */
 
 /* Return the string to output a conditional branch to LABEL, which is
-   the operand number of the label.  OP is the conditional expression.  The
-   mode of register 0 says what kind of comparison we made.
-
-   FP_COND_REG indicates which fp condition code register to use if this is
-   a floating point branch.
+   the operand number of the label.  OP is the conditional expression.
+   XEXP (OP, 0) is assumed to be a condition code register (integer or
+   floating point) and its mode specifies what kind of comparison we made.
 
    REVERSED is non-zero if we should reverse the sense of the comparison.
 
@@ -3333,14 +3385,15 @@ sparc_builtin_saveregs (arglist)
    NOOP is non-zero if we have to follow this branch by a noop.  */
 
 char *
-output_cbranch (op, fp_cond_reg, label, reversed, annul, noop)
-     rtx op, fp_cond_reg;
+output_cbranch (op, label, reversed, annul, noop)
+     rtx op;
      int label;
      int reversed, annul, noop;
 {
   static char string[20];
   enum rtx_code code = GET_CODE (op);
-  enum machine_mode mode = GET_MODE (XEXP (op, 0));
+  rtx cc_reg = XEXP (op, 0);
+  enum machine_mode mode = GET_MODE (cc_reg);
   static char v8_labelno[] = " %lX";
   static char v9_icc_labelno[] = " %%icc,%lX";
   static char v9_xcc_labelno[] = " %%xcc,%lX";
@@ -3467,7 +3520,7 @@ output_cbranch (op, fp_cond_reg, label, reversed, annul, noop)
 	  labeloff = 10;
 	  labelno = v9_fcc_labelno;
 	  /* Set the char indicating the number of the fcc reg to use.  */
-	  labelno[6] = REGNO (fp_cond_reg) - 96 + '0';
+	  labelno[6] = REGNO (cc_reg) - SPARC_FIRST_V9_FCC_REG + '0';
 	}
       else if (mode == CCXmode || mode == CCX_NOOVmode)
 	labelno = v9_xcc_labelno;
@@ -3930,8 +3983,9 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == MEM)
     {
       fputc ('[', file);
-      if (CONSTANT_P (XEXP (x, 0)))
 	/* Poor Sun assembler doesn't understand absolute addressing.  */
+      if (CONSTANT_P (XEXP (x, 0))
+	  && ! TARGET_LIVE_G0)
 	fputs ("%g0+", file);
       output_address (XEXP (x, 0));
       fputc (']', file);
@@ -4847,10 +4901,21 @@ sparc_flat_eligible_for_epilogue_delay (trial, slot)
      rtx trial;
      int slot;
 {
-  if (get_attr_length (trial) == 1
-      && ! reg_mentioned_p (stack_pointer_rtx, PATTERN (trial))
-      && ! reg_mentioned_p (frame_pointer_rtx, PATTERN (trial)))
+  rtx pat = PATTERN (trial);
+
+  if (get_attr_length (trial) != 1)
+    return 0;
+
+  /* If %g0 is live, there are lots of things we can't handle.
+     Rather than trying to find them all now, let's punt and only
+     optimize things as necessary.  */
+  if (TARGET_LIVE_G0)
+    return 0;
+
+  if (! reg_mentioned_p (stack_pointer_rtx, pat)
+      && ! reg_mentioned_p (frame_pointer_rtx, pat))
     return 1;
+
   return 0;
 }
 
