@@ -1,3 +1,8 @@
+Sun Nov  2 22:53:16 1997  Richard Earnshaw  (rearnsha@arm.com)
+
+	* arm.c (load_multiple_sequence): Support SUBREG of MEM.
+	(store_multiple_sequence): Likewise.
+
 Sun Nov  2 19:44:00 1997  Robert Lipe (robertl@dgii.com)
 
 	* i386/sco5.h: enable -gstabs once again.
