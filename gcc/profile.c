@@ -127,6 +127,7 @@ static FILE *bbg_file;
 /* Name and file pointer of the input file for the arc count data.  */
 
 static FILE *da_file;
+static char *da_file_name;
 
 /* Pointer of the output file for the basic block/line number map.  */
 static FILE *bb_file;
@@ -1185,12 +1186,11 @@ void
 init_branch_prob (filename)
   const char *filename;
 {
-  long len;
+  int len = strlen (filename);
   int i;
 
   if (flag_test_coverage)
     {
-      int len = strlen (filename);
       char *data_file, *bbg_file_name;
 
       /* Open an output file for the basic block/line number map.  */
@@ -1212,15 +1212,14 @@ init_branch_prob (filename)
       last_bb_file_name = 0;
     }
 
+  da_file_name = (char *) xmalloc (len + 4);
+  strcpy (da_file_name, filename);
+  strcat (da_file_name, ".da");
+  
   if (flag_branch_probabilities)
     {
-      char *da_file_name;
-
-      len = strlen (filename);
-      da_file_name = (char *) alloca (len + 4);
-      strcpy (da_file_name, filename);
-      strcat (da_file_name, ".da");
-      if ((da_file = fopen (da_file_name, "rb")) == 0)
+      da_file = fopen (da_file_name, "rb");
+      if (!da_file)
 	warning ("file %s not found, execution counts assumed to be zero",
 		 da_file_name);
     }
@@ -1251,6 +1250,7 @@ end_branch_prob ()
     {
       fclose (bb_file);
       fclose (bbg_file);
+      unlink (da_file_name);
     }
 
   if (flag_branch_probabilities && da_file)

@@ -890,7 +890,7 @@ opt)
 	;;
 esac
 else
-  coverage_flags="-O2"
+  coverage_flags=""
 fi
 
 
