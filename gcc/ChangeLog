@@ -1,3 +1,7 @@
+2002-05-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cfgrtl.c (purge_dead_edges): Correct handling of EDGE_EH.
+
 2002-05-09  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sol2.h (ASM_CPU_SPEC): Handle -mcpu=v9.
