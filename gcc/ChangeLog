@@ -1,3 +1,8 @@
+2003-09-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin.h (PREFERRED_RELOAD_CLASS): Always return
+	a subset of the input class.
+
 2003-09-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i860/i860.c: Follow spelling conventions.
