@@ -446,7 +446,7 @@ void FN ()					\
 
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	\
   do {									\
-    char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			\
+    const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		\
     HOST_WIDE_INT size;							\
     if (!flag_inhibit_size_directive					\
 	&& DECL_SIZE (DECL)						\

@@ -85,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_MI_THUNK
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
-  char *op, *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
+  const char *op, *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
   int reg;								\
 									\
   /* Mark end of prologue.  */						\

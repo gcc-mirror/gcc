@@ -1,3 +1,22 @@
+Fri Oct 29 13:53:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha/alpha-protos.h (literal_section): Add prototype.
+	(alpha_need_linkage, alpha_start_function,alpha_end_function):
+	Constify a char*.
+
+	* alpha/alpha.c (alpha_ra_ever_killed, set_frame_related_p): Add
+	prototype.
+	(alpha_start_function, alpha_end_function, float_strings,
+	alpha_need_linkage): Constify a char*
+
+	* alpha/alpha.h (ASM_OUTPUT_ASCII, ASM_OUTPUT_MI_THUNK): Likewise.
+
+	* alpha/alpha32.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
+	* alpha/elf.h (ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+	* alpha/vms.h (ASM_OUTPUT_SECTION_NAME): Likewise.
+
 Fri Oct 29 13:49:39 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* flow.c (debug_flow_info): Add prototype.
