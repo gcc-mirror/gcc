@@ -1342,7 +1342,9 @@ namespace std
 	if (this->max_size() - (this->size() - __n1) < __n2)
 	  __throw_length_error(__N("basic_string::_M_replace_aux"));
 	_M_mutate(__pos1, __n1, __n2);
-	if (__n2)
+	if (__n2 == 1)
+	  _M_data()[__pos1] = __c;
+	else if (__n2)
 	  traits_type::assign(_M_data() + __pos1, __n2, __c);
 	return *this;
       }
@@ -1352,7 +1354,9 @@ namespace std
 		      size_type __n2)
       {
 	_M_mutate(__pos1, __n1, __n2);
-	if (__n2)
+	if (__n2 == 1)
+	  _M_data()[__pos1] = *__s;
+	else if (__n2)
 	  traits_type::copy(_M_data() + __pos1, __s, __n2);
 	return *this;
       }
@@ -1960,7 +1964,7 @@ namespace std
    *  @param rhs  Last string.
    *  @return  New string with value of @a lhs followed by @a rhs.
    */
- template<typename _CharT, typename _Traits, typename _Alloc>
+  template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
