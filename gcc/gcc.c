@@ -94,7 +94,7 @@ compilation is specified by a string called a "spec".  */
 
 /* On MSDOS, write temp files in current dir
    because there's no place else we can expect to use.  */
-#if __MSDOS__
+#ifdef __MSDOS__
 #ifndef P_tmpdir
 #define P_tmpdir "."
 #endif
