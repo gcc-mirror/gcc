@@ -581,6 +581,13 @@ expand_builtin_setjmp_receiver (receiver_label)
     else
 #endif
       { /* Nothing */ }
+
+  /* @@@ This is a kludge.  Not all machine descriptions define a blockage
+     insn, but we must not allow the code we just generated to be reordered
+     by scheduling.  Specifically, the update of the frame pointer must
+     happen immediately, not later.  So emit an ASM_INPUT to act as blockage
+     insn.  */
+  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 }
 
 /* __builtin_setjmp is passed a pointer to an array of five words (not
