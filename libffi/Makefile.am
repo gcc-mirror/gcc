@@ -7,7 +7,7 @@ SUBDIRS = include
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
 		src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S \
-		src/x86/ffi.c src/x86/sysv.S \
+		src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 		src/alpha/ffi.c src/alpha/osf.S \
 		src/m68k/ffi.c src/m68k/sysv.S \
 		src/powerpc/ffi.c src/powerpc/sysv.S \
@@ -90,6 +90,7 @@ ffitest_LDFLAGS = -shared-libgcc
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
+TARGET_SRC_X86_WIN32 = src/x86/ffi.c src/x86/win32.S
 TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
@@ -109,6 +110,9 @@ libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
 endif
 if X86
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+endif
+if X86_WIN32
+libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
 endif
 if SPARC
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)

@@ -195,6 +195,12 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
+  /* ---- Intel x86 Win32 ---------- */
+#ifdef X86_WIN32
+  FFI_SYSV,
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
   /* ---- Intel ia64 ---------------- */
 #ifdef IA64
   FFI_UNIX,   	/* Linux and all Unix variants use the same conventions	*/
@@ -346,6 +352,12 @@ size_t ffi_java_raw_size (ffi_cif *cif);
 /* ---- Definitions for closures ----------------------------------------- */
 
 #ifdef X86
+
+#define FFI_CLOSURES 1		/* x86 supports closures */
+#define FFI_TRAMPOLINE_SIZE 10
+#define FFI_NATIVE_RAW_API 1	/* and has native raw api support */
+
+#elif defined(X86_WIN32)
 
 #define FFI_CLOSURES 1		/* x86 supports closures */
 #define FFI_TRAMPOLINE_SIZE 10
