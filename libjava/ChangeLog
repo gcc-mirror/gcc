@@ -2,6 +2,7 @@
 
 	* include/i386-signal.h (MAKE_THROW_FRAME): Add volatile
 	qualifier to _regs.
+	(HANDLE_DIVIDE_OVERFLOW): Likewise.
 
 2004-02-06  Michael Koch  <konqueror@gmx.de>
 
