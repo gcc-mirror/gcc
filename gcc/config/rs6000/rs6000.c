@@ -113,7 +113,7 @@ non_short_cint_operand (op, mode)
    ctr, or lr).  */
 
 int
-gen_reg_operand (op, mode)
+gpc_reg_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
@@ -147,7 +147,7 @@ reg_or_short_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return short_cint_operand (op, mode);
 
-  return gen_reg_operand (op, mode);
+  return gpc_reg_operand (op, mode);
 }
 
 /* Similar, except check if the negation of the constant would be valid for
@@ -161,7 +161,7 @@ reg_or_neg_short_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return CONST_OK_FOR_LETTER_P (INTVAL (op), 'P');
 
-  return gen_reg_operand (op, mode);
+  return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if the operand is either a register or an integer whose high-order
@@ -176,7 +176,7 @@ reg_or_u_short_operand (op, mode)
       && (INTVAL (op) & 0xffff0000) == 0)
     return 1;
 
-  return gen_reg_operand (op, mode);
+  return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 is the operand is either a non-special register or ANY
@@ -187,7 +187,7 @@ reg_or_cint_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-     return GET_CODE (op) == CONST_INT || gen_reg_operand (op, mode);
+     return GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if the operand is a CONST_DOUBLE and it can be put into a
@@ -279,7 +279,7 @@ logical_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (gen_reg_operand (op, mode)
+  return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((INTVAL (op) & 0xffff0000) == 0
 		  || (INTVAL (op) & 0xffff) == 0)));
@@ -364,7 +364,7 @@ reg_or_mem_operand (op, mode)
      register rtx op;
      register enum machine_mode mode;
 {
-  return gen_reg_operand (op, mode) || memory_operand (op, mode);
+  return gpc_reg_operand (op, mode) || memory_operand (op, mode);
 }
 
 /* Return 1 if the operand, used inside a MEM, is a valid first argument
@@ -397,7 +397,7 @@ input_operand (op, mode)
      is valid.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return gen_reg_operand (op, mode);
+    return gpc_reg_operand (op, mode);
 
   /* The only cases left are integral modes one word or smaller (we
      do not get called for MODE_CC values).  These can be in any

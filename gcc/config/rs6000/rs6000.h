@@ -1806,7 +1806,7 @@ toc_section ()						\
   {"short_cint_operand", {CONST_INT}},				\
   {"u_short_cint_operand", {CONST_INT}},			\
   {"non_short_cint_operand", {CONST_INT}},			\
-  {"gen_reg_operand", {SUBREG, REG}},				\
+  {"gpc_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
