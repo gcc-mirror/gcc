@@ -1,3 +1,7 @@
+1999-10-11  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+
+	* newcvsroot: New file.
+
 1999-09-11  Craig Burley  <craig@jcb-sc.com>
 
 	* convert_to_f2c, convert_to_g2c, download_f2c: New file.
