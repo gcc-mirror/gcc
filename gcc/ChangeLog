@@ -1,3 +1,9 @@
+2004-06-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/15738.
+	* builtins.c (fold_builtin_strchr): Transform
+	strrchr (s, '\0') to strchr (s, '\0').
+
 2004-06-02  Steven Bosscher  <stevenb@suse.de>
 
 	* i386.c (ix86_adjust_cost): Don't increase the cost for

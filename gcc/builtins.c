@@ -7123,6 +7123,21 @@ fold_builtin_strchr (tree exp, bool actually_strrchr)
 						 ssize_int (r - p1))));
 	}
 
+      if (actually_strrchr)
+	{
+	  tree fn;
+
+	  if (!integer_zerop (s2))
+	    return 0;
+
+	  fn = implicit_built_in_decls[BUILT_IN_STRCHR];
+	  if (!fn)
+	    return 0;
+
+	  /* Transform strrchr(s1, '\0') to strchr(s1, '\0').  */
+	  return build_function_call_expr (fn, arglist);
+	}
+
       return 0;
     }
 }
