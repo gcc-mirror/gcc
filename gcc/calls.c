@@ -383,7 +383,7 @@ prepare_call_address (rtx funexp, tree fndecl, rtx *call_fusage,
    denote registers used by the called function.  */
 
 static void
-emit_call_1 (rtx funexp, tree fndecl, tree funtype,
+emit_call_1 (rtx funexp, tree fndecl ATTRIBUTE_UNUSED, tree funtype ATTRIBUTE_UNUSED,
 	     HOST_WIDE_INT stack_size ATTRIBUTE_UNUSED,
 	     HOST_WIDE_INT rounded_stack_size,
 	     HOST_WIDE_INT struct_value_size ATTRIBUTE_UNUSED,
