@@ -9673,16 +9673,16 @@ sign-extending ones.
 @itemx -mno-knuthdiv
 Make the result of a division yielding a remainder have the same sign as
 the divisor.  With the default, @option{-mno-knuthdiv}, the sign of the
-result follows the sign of the dividend.  Both methods are arithmetically
-valid, the latter being almost exclusively used.
+remainder follows the sign of the dividend.  Both methods are
+arithmetically valid, the latter being almost exclusively used.
 
 @item -mtoplevel-symbols
 @itemx -mno-toplevel-symbols
-Prepend (do not prepend) a @code{:} to all global symbols, so the assembly
+Prepend (do not prepend) a @samp{:} to all global symbols, so the assembly
 code can be used with the @code{PREFIX} assembly directive.
 
 @item -melf
-Generate an executable in the @samp{ELF} format, rather than the default
+Generate an executable in the ELF format, rather than the default
 @samp{mmo} format used by the @command{mmix} simulator.
 @end table
 
