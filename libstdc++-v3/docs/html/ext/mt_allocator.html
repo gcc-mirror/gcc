@@ -107,8 +107,6 @@ The _S_init() function:
       This holds the pointer to the first free block for each thread in this
       bin. I.e., if we would like to know where the first free block of size 32
       for thread number 3 is we would look this up by: _S_bin[ 5 ].first[ 3 ]
-    - bin_record->last = See above, the only difference being that this points
-      to the last record on the same freelist.
 
     The above created block_record pointers members are now initialized to 
     their initial values. I.e. _S_bin[ n ].first[ n ] = NULL;
@@ -196,9 +194,9 @@ This is the first two blocks in freelist for thread id 3 in bin 3 (8 bytes):
 |                |  |
 +----------------+  |
 +----------------+  |
-| next*          |<-+  (If next == NULL it's the last one on the list and
-|                |      then the _S_bin[ 3 ].last[ 3 ] pointer points to
-|                |      here as well)
+| next*          |<-+  (If next == NULL it's the last one on the list)
+|                |
+|                |
 |                |
 +----------------+
 | thread_id = 3  |
@@ -242,16 +240,21 @@ If the freelist is empty (the pointer is NULL) we must get memory from the
 system and build us a freelist within this memory. All requests for new memory
 is made in chunks of _S_chunk_size. Knowing the size of a block_record and 
 the bytes that this bin stores we then calculate how many blocks we can create 
-within this chunk, build the list, remove the first block, update the pointers
-(_S_bin[ bin ].first[ 0 ] and _S_bin[ bin ].last[ 0 ]) and return a pointer 
-to that blocks data. 
+within this chunk, build the list, remove the first block, update the pointer
+(_S_bin[ bin ].first[ 0 ]) and return a pointer to that blocks data. 
 </p>
 
 <p>
 Deallocation is equally simple; the pointer is casted back to a block_record
-pointer, lookup which bin to use based on the size, add the block to the end 
-of the global freelist (with the next pointer set to NULL) and update the 
-pointers as needed (_S_bin[ bin ].first[ 0 ] and _S_bin[ bin ].last[ 0 ]).
+pointer, lookup which bin to use based on the size, add the block to the front 
+of the global freelist and update the pointer as needed 
+(_S_bin[ bin ].first[ 0 ]).
+</p>
+
+<p>
+The decision to add deallocated blocks to the front of the freelist was made
+after a set of performance measurements that showed that this is roughly 10%
+faster than maintaining a set of "last pointers" as well.
 </p>
 
 <h3 class="left">
@@ -350,7 +353,7 @@ current threads freelist instead of to the global.
 
 <p>
 The basic process of a deallocation call is simple: always add the
-block to the end of the current threads freelist and update the
+block to the front of the current threads freelist and update the
 counters and pointers (as described earlier with the specific check of
 ownership that causes the used counter of the thread that originally
 allocated the block to be decreased instead of the current threads
