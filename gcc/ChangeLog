@@ -1,3 +1,9 @@
+2002-05-07  Andreas Jaeger  <aj@suse.de>
+
+	* genautomata.c (output_internal_min_issue_delay_func): Add
+	ATTRIBUTE_UNUSED to avoid warning with empty dfa.
+	(output_internal_trans_func): Likewise.
+
 Tue May  7 10:06:22 2002  Jeffrey A Law  (law@redhat.com)
 
 	* pa.c (hppa_profile_hook): Use force_reg to get the address
@@ -21,7 +27,7 @@ Tue May  7 10:06:22 2002  Jeffrey A Law  (law@redhat.com)
 	(LINK_START_WINDISS_SPEC): Likewise.
 	(LINK_OS_WINDISS_SPEC): Likewise.
 	* config/rs6000/windiss.h: New file.
-	
+
 2002-05-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (bdesc_2arg): Fix vmax typos.
@@ -94,10 +100,10 @@ doc:
 
 2002-05-06  Bernd Schmidt  <bernds@redhat.com>
 
-	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Define __SSE2_BUILTINS__ if	
+	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Define __SSE2_BUILTINS__ if
 	-msse2.
 	* config/i386/xmmintrin.h: Use it to conditionalize SSE2 support.
-	
+
 2002-05-06  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (lshift-double): Cast the high word to an unsigned
@@ -215,7 +221,7 @@ doc:
 
 	* config/sparc/ultra3.md (us3_a0, us3_a1): Move the units into
 	automaton `ultrasparc3_1'.
-	
+
 2002-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (c_common_init): Set up CPP arithmetic.
@@ -245,7 +251,7 @@ doc:
 
 2002-05-05  Tim Josling  <tej@melbpc.org.au>
 
-	* treelang; New directory for new sample language treelang. 
+	* treelang; New directory for new sample language treelang.
 
 2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -306,10 +312,10 @@ doc:
 	_mm_min_pd, _mm_min_sd, _mm_max_sd, _mm_max_pd, _mm_and_pd,
 	_mm_andnot_pd, _mm_xor_pd, _mm_or_pd, _mm_cmpeq_pd, _mm_cmplt_pd,
 	_mm_cmple_pd, _mm_cmpgt_pd, _mm_cmpge_pd, _mm_cmpneq_pd,
-	_mm_cmpnlt_pd, _mm_cmpnle_pd, _mm_cmpngt_pd, _mm_cmpnge_pd, 
+	_mm_cmpnlt_pd, _mm_cmpnle_pd, _mm_cmpngt_pd, _mm_cmpnge_pd,
 	_mm_cmpord_pd, _mm_cmpunord_pd, _mm_cmpeq_sd, _mm_cmplt_sd,
 	_mm_cmple_sd, _mm_cmpgt_sd, _mm_cmpge_sd, _mm_cmpneq_sd,
-	_mm_cmpnlt_sd, _mm_cmpnle_sd, _mm_cmpngt_sd, _mm_cmpnge_sd, 
+	_mm_cmpnlt_sd, _mm_cmpnle_sd, _mm_cmpngt_sd, _mm_cmpnge_sd,
 	_mm_cmpord_sd, _mm_cmpunord_sd, _mm_comieq_sd, _mm_comilt_sd,
 	_mm_comile_sd, _mm_comigt_sd, _mm_comige_sd, _mm_comineq_sd,
 	_mm_ucomieq_sd, _mm_ucomieq_sd, _mm_ucomilt_sd, _mm_ucomile_sd,
@@ -339,7 +345,7 @@ doc:
 	_mm_sad_epu8, _mm_stream_si32, _mm_stream_si128, _mm_stream_pd,
 	_mm_movpi64_epi64, _mm_clflush, _mm_lfence, _mm_mfence): New
 	functions.
-	(_mm_shufflehi_epi16, _mm_shufflelo_epi16, _mm_shuffle_epi32, 
+	(_mm_shufflehi_epi16, _mm_shufflelo_epi16, _mm_shuffle_epi32,
 	_mm_extract_epi16, _mm_insert_epi16, _mm_shuffle_pd): New macros.
 
 2002-05-04  Kazu Hirata  <kazu@cs.umass.edu>
