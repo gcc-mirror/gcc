@@ -1,0 +1,27 @@
+# Config file that tells mauve about the `libjava' tag.
+JDK1.0
+JDK1.1
+!java.applet
+!java.awt
+!java.beans
+!java.io.Utf8Encoding
+java.lang.Character.classify12
+java.lang.String.hash
+# StringTest includes a test for NullPointerException, which we don't
+# handle.
+!java.lang.String.StringTest
+!java.math
+!java.net
+!java.rmi
+!java.security
+!java.sql
+java.text.StringCharacterIterator.iter
+# FIXME: can't enable these until we eliminate compiler bug.
+# java.text.FieldPosition.Test
+# java.text.ParsePosition.Test
+# java.text.SimpleDateFormat.getAndSet2DigitYearStart
+!java.text.ACIAttribute
+!java.text.AttributedCharacterIterator
+!java.text.resources
+!java.text.DateFormat
+!java.util.zip
