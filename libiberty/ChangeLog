@@ -1,3 +1,12 @@
+2003-05-15  Jim Blandy  <jimb@redhat.com>
+
+	* hex.c (_hex_value): Make this unsigned.
+	(hex_value): Update documentation for new return type.  hex_value
+	now expands to an unsigned int expression, to avoid unexpected
+	sign extension when we store it in a bfd_vma, which is larger than
+	int on some platforms.
+	* functions.texi: Regenerated.
+
 2003-05-07  Josef Zlomek  <zlomekj@suse.cz>
 
 	* splay-tree.c (splay_tree_predecessor): Fix comment.

@@ -1,3 +1,10 @@
+2003-05-15  Jim Blandy  <jimb@redhat.com>
+
+	* libiberty.h (hex_value): Make the value an unsigned int, to
+	avoid unexpected sign-extension when cast to unsigned types larger
+	than int --- like bfd_vma, on some platforms.
+	(_hex_value): Update declaration.
+
 2003-05-07  Jason Merrill  <jason@redhat.com>
 
 	* hashtab.h (iterative_hash): Prototype.
