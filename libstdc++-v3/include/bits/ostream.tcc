@@ -545,7 +545,8 @@ namespace std
 	    {
 	      streamsize __w = __out.width();
 	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
-	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
+	      streamsize __len = __s 
+		           ? static_cast<streamsize>(_Traits::length(__s)) : 0;
 	      if (__w > __len)
 		{
 		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
@@ -554,6 +555,8 @@ namespace std
 		}
 	      __out.write(__s, __len);
 	      __out.width(0);
+	      if (!__len)
+		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
@@ -575,14 +578,14 @@ namespace std
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 167.  Improper use of traits_type::length()
 // Note that this is only in 'Review' status.
-      typedef char_traits<char>		     __ctraits_type;
+      typedef char_traits<char>		     __traits_type;
 #endif
       typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
-	  size_t __clen = __ctraits_type::length(__s);
+	  size_t __clen = __s ? __traits_type::length(__s) : 0;
 	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__clen + 1)));
-	  for (size_t  __i = 0; __i <= __clen; ++__i)
+	  for (size_t  __i = 0; __i < __clen; ++__i)
 	    __ws[__i] = __out.widen(__s[__i]);
 	  _CharT* __str = __ws;
 	  
@@ -600,6 +603,8 @@ namespace std
 		}
 	      __out.write(__str, __len);
 	      __out.width(0);
+	      if (!__len)
+		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
@@ -626,7 +631,8 @@ namespace std
 	    {
 	      streamsize __w = __out.width();
 	      char* __pads = static_cast<char*>(__builtin_alloca(__w));
-	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
+	      streamsize __len = __s ? 
+		             static_cast<streamsize>(_Traits::length(__s)) : 0;
 	      if (__w > __len)
 		{
 		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
@@ -635,6 +641,8 @@ namespace std
 		}
 	      __out.write(__s, __len);
 	      __out.width(0);
+	      if (!__len)
+		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
