@@ -1,5 +1,16 @@
 2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* configure.in (libtool_VERSION): To 5:4:0.
+	* configure: Regenerated.
+
+	* testsuite/abi_check.cc (check_version): Update known versions.
+	Check added symbols for version_name != base version. Add missing
+	symbols to incompatible list.
+
+	* config/linker-map.gnu: Fixup for __basic_file::showmanyc_helper.
+	
+2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCPP_EXPORT_FLAGS): Remove -Winline.
 	* aclocal.m4: Regenerated.
 	* configure: Regenerated.

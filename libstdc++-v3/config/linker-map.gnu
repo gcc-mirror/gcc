@@ -82,7 +82,6 @@ GLIBCPP_3.2 {
       std::out_of_range*;
       std::[A-Zp-z]*;
       std::__throw_*;
-      std::__basic_file*;
       std::__numeric_limits_base*;
       std::__timepunct*;
       std::_S_bit_count;
@@ -157,6 +156,23 @@ GLIBCPP_3.2 {
     _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ES3_RKS6_;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_EPKS3_RKS6_;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ES3_RKS6_;
+
+    # std::__basic_file minus showmanyc_helper
+    _ZNSt12__basic_fileIcED*;
+    _ZNSt12__basic_fileIcEC*;	
+    _ZNSt12__basic_fileIcE8sys_open*;
+    _ZNSt12__basic_fileIcE8sys_getc*;
+    _ZNSt12__basic_fileIcE10sys_ungetc*;
+    _ZNSt12__basic_fileIcE7seekpos*;
+    _ZNSt12__basic_fileIcE7seekoff*;
+    _ZNSt12__basic_fileIcE6xsputn*;
+    _ZNSt12__basic_fileIcE6xsgetn*;
+    _ZNSt12__basic_fileIcE5close*;
+    _ZNSt12__basic_fileIcE4sync*;
+    _ZNSt12__basic_fileIcE4open*;
+    _ZNSt12__basic_fileIcE2fd*;
+    _ZNSt12__basic_fileIcE12_M_open_modeE*;
+    _ZNKSt12__basic_fileIcE7is_open*;
 
     # std::locale destructors
     _ZNSt6localeD*;
@@ -373,6 +389,9 @@ GLIBCPP_3.2.3 {
     _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE14_M_group_float*;
 
   _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE12_M_group_int*;
+
+    # __basic_file::showmanyc_helper
+    _ZNSt12__basic_fileIcE16showmanyc_helperEv;
 
     # vtable
     _ZTVSt19__locale_cache_base;
