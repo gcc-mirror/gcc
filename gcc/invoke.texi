@@ -3127,7 +3127,7 @@ exactly determine which path is taken more often.
 @item -fno-guess-branch-probability
 Sometimes gcc will opt to guess branch probabilities when none are
 available from either profile directed feedback (@samp{-fprofile-arcs})
-or @samp(__builtin_expect).  In a hard real-time system, people don't
+or @samp{__builtin_expect}.  In a hard real-time system, people don't
 want different runs of the compiler to produce code that has different
 behavior; minimizing non-determinism is of paramount import.  This
 switch allows users to reduce non-determinism, possibly at the expense
