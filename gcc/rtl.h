@@ -1577,7 +1577,7 @@ extern rtx simplify_rtx			PARAMS ((rtx));
 extern rtx avoid_constant_pool_reference PARAMS ((rtx));
 
 /* In function.c  */
-extern rtx gen_mem_addressof		PARAMS ((rtx, tree));
+extern rtx gen_mem_addressof		PARAMS ((rtx, tree, bool));
 
 /* In regclass.c  */
 extern enum machine_mode choose_hard_reg_mode PARAMS ((unsigned int,

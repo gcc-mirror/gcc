@@ -6919,7 +6919,7 @@ expand_expr (exp, target, tmode, modifier)
 	  temp = SAVE_EXPR_RTL (exp);
 	  if (temp && GET_CODE (temp) == REG)
 	    {
-	      put_var_into_stack (exp);
+	      put_var_into_stack (exp, /*rescan=*/true);
 	      temp = SAVE_EXPR_RTL (exp);
 	    }
 	  if (temp == 0 || GET_CODE (temp) != MEM)
@@ -7413,7 +7413,8 @@ expand_expr (exp, target, tmode, modifier)
 		   forcing the SAVE_EXPR into memory.  */
 		if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
 		  {
-		    put_var_into_stack (TREE_OPERAND (exp, 0));
+		    put_var_into_stack (TREE_OPERAND (exp, 0), 
+					/*rescan=*/true);
 		    op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
 		  }
 		else
@@ -9001,7 +9002,7 @@ expand_expr (exp, target, tmode, modifier)
 		preserve_temp_slots (target);
 		SET_DECL_RTL (slot, target);
 		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot);
+		  put_var_into_stack (slot, /*rescan=*/false);
 
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
@@ -9040,7 +9041,7 @@ expand_expr (exp, target, tmode, modifier)
 		/* If we must have an addressable slot, then make sure that
 		   the RTL that we just stored in slot is OK.  */
 		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot);
+		  put_var_into_stack (slot, /*rescan=*/true);
 	      }
 	  }
 
@@ -9190,7 +9191,8 @@ expand_expr (exp, target, tmode, modifier)
 		 forcing the SAVE_EXPR into memory.  */
 	      if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
 		{
-		  put_var_into_stack (TREE_OPERAND (exp, 0));
+		  put_var_into_stack (TREE_OPERAND (exp, 0),
+				      /*rescan=*/true);
 		  op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
 		}
 	      else

@@ -7443,7 +7443,7 @@ ffecom_sym_transform_ (ffesymbol s)
 		assert (et != NULL_TREE);
 
 		if (! TREE_STATIC (et))
-		  put_var_into_stack (et);
+		  put_var_into_stack (et, /*rescan=*/true);
 
 		offset = ffestorag_modulo (est)
 		  + ffestorag_offset (ffesymbol_storage (s))
@@ -14294,7 +14294,7 @@ ffe_mark_addressable (tree exp)
 	      }
 	    assert ("address of register var requested" == NULL);
 	  }
-	put_var_into_stack (x);
+	put_var_into_stack (x, /*rescan=*/true);
 
 	/* drops in */
       case FUNCTION_DECL:
