@@ -1,3 +1,7 @@
+2001-03-06  Andrew Haley  <aph@redhat.com>
+
+	* typeck.c (convert_arguments): Check that we have an fndecl.
+
 2001-03-05  Andrew Haley  <aph@redhat.com>
 
 	* typeck.c (convert_arguments): Don't do ellipsis conversion for
