@@ -1243,7 +1243,7 @@ ffelex_hash_ (FILE *finput)
 		  goto skipline;
 		}
 
-	      if (ffe_is_ident ())
+	      if (! flag_no_ident)
 		{
 #ifdef ASM_OUTPUT_IDENT
 		  ASM_OUTPUT_IDENT (asm_out_file,

@@ -1,3 +1,11 @@
+1999-02-01  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* top.c: Don't define ffe_is_ident_.  Don't process
+	-f(no-)ident here.
+	* top.h: Remove declaration of ffe_is_ident_ and macros
+	ffe_is_ident() and ffe_set_is_ident().
+	* lex.c: Use flag_no_ident instead of ffe_is_ident().
+
 Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* lang-specs.h: Map -Qn to -fno-ident.
