@@ -1,3 +1,8 @@
+2002-04-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5507
+	* g++.dg/template/typename2.C: New test.
+
 2002-04-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/execute/loop-12.c: New.
