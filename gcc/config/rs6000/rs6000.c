@@ -4115,6 +4115,10 @@ output_cbranch (op, label, reversed, insn)
   else
     s += sprintf (s, "{b%s|b%s%s} ", ccode, ccode, pred);
 
+  /* We need to escape any '%' characters in the reg_names string.
+     Assume they'd only be the first character...  */
+  if (reg_names[cc_regno + CR0_REGNO][0] == '%')
+    *s++ = '%';
   s += sprintf (s, "%s", reg_names[cc_regno + CR0_REGNO]);
 
   if (label != NULL)

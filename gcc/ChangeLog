@@ -1,3 +1,8 @@
+2000-05-28  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (output_cbranch): Escape '%' characters
+	so output_operand doesn't see them.
+
 Sun May 28 18:37:07 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* lcm.c (make_preds_opaque): Fix comment.
