@@ -1,3 +1,8 @@
+2005-02-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads): Swap address_reloaded flags when
+	swapping commutative operands.
+
 2005-02-14  Sebastian Pop  <pop@cri.ensmp.fr>
         
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest, perfect_nestify):
