@@ -1318,7 +1318,7 @@ extern int swap_operands;
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
 { if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names [REGNO (X)]);			\
+    fprintf (FILE, "%s", reg_names [REGNO (X) + ((CODE) == 'R')]);	\
 									\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
