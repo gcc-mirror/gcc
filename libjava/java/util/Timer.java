@@ -601,7 +601,7 @@ public class Timer
    * Tells the scheduler that the Timer task died
    * so there will be no more new tasks scheduled.
    */
-  protected void finalize()
+  protected void finalize() throws Throwable
   {
     queue.setNullOnEmpty(true);
   }

@@ -1,5 +1,9 @@
 2003-09-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Timer.java (finalize): Added "throws Throwable".
+
+2003-09-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(ch): Removed.
 	(receive): Use getChannel() instead of ch.
