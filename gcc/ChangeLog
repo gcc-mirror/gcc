@@ -1,3 +1,14 @@
+2001-03-12  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* emit-rtl.c (remove_unnecessary_notes): Reverse Richard Kenner's
+	2001-02-24 which broke building the Java library.
+	* function.c (identify_blocks): Likewise.
+	(all_blocks): Likewise.
+	* integrate.c (integrate_decl_tree): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* tree.h (BLOCK_NUMBER): Likewise.
+	(struct tree_block): Likewise.
+
 2001-03-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/aix51.h (CPP_SPEC, CPLUSPLUS_CPP_SPEC): Fix typo in

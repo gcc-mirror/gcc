@@ -584,14 +584,6 @@ print_node (file, prefix, node, indent)
       break;
 
     case 'b':
-      if (BLOCK_ABSTRACT (node))
-	fprintf (file, " abstract");
-      if (BLOCK_HANDLER_BLOCK (node))
-	fprintf (file, " handler-block");
-      if (BLOCK_DEAD (node))
-	fprintf (file, " dead");
-      fprintf (file, " block-number %d", BLOCK_NUMBER (node));
-
       print_node (file, "vars", BLOCK_VARS (node), indent + 4);
       print_node (file, "supercontext", BLOCK_SUPERCONTEXT (node), indent + 4);
       print_node (file, "subblocks", BLOCK_SUBBLOCKS (node), indent + 4);

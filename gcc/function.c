@@ -5740,7 +5740,8 @@ identify_blocks ()
 					 block_stack);
 
   /* If we didn't use all of the subblocks, we've misplaced block notes.  */
-  if (last_block_vector != block_vector + n_blocks)
+  /* ??? This appears to happen all the time.  Latent bugs elsewhere?  */
+  if (0 && last_block_vector != block_vector + n_blocks)
     abort ();
 
   free (block_vector);
@@ -5946,28 +5947,27 @@ blocks_nreverse (t)
    blocks.  */
 
 static int
-all_blocks (blocks, vector)
-     tree blocks;
+all_blocks (block, vector)
+     tree block;
      tree *vector;
 {
   int n_blocks = 0;
-  tree block;
 
-  for (block = blocks; block != 0; block = TREE_CHAIN (block))
-    if (!BLOCK_DEAD (block))
-      {
-	TREE_ASM_WRITTEN (block) = 0;
+  while (block)
+    {
+      TREE_ASM_WRITTEN (block) = 0;
 
-	/* Record this block.  */
-	if (vector)
-	  vector[n_blocks] = block;
+      /* Record this block.  */
+      if (vector)
+	vector[n_blocks] = block;
 
-	++n_blocks;
+      ++n_blocks;
 
-	/* Record the subblocks, and their subblocks...  */
-	n_blocks += all_blocks (BLOCK_SUBBLOCKS (block),
-				vector ? vector + n_blocks : 0);
-      }
+      /* Record the subblocks, and their subblocks...  */
+      n_blocks += all_blocks (BLOCK_SUBBLOCKS (block),
+			      vector ? vector + n_blocks : 0);
+      block = BLOCK_CHAIN (block);
+    }
 
   return n_blocks;
 }
