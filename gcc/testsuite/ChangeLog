@@ -1,3 +1,8 @@
+2003-12-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/12632
+	* g77.dg/12632.f: New test case.
+
 2003-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13445

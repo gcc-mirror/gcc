@@ -1,3 +1,14 @@
+2003-12-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/12632
+	* com.c (ffecom_subscript_check_): Take as an extra argument the
+	(possibly NULL) decl of the array.  Don't create unnecessary tree
+	nodes if the array index is known to be safe at compile-time.
+	If the array index is unsafe, force the array decl into memory to
+	avoid RTL expansion problems.
+	(ffecom_array_ref_): Update calls to ffecom_subscript_check_.
+	(ffecom_char_args_x_): Likewise.
+
 2003-12-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/12633

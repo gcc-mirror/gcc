@@ -1,3 +1,12 @@
+2003-12-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/12632
+	* tree.c (integer_nonzerop): New predicate for nonzero integers.
+	* tree.h (integer_nonzerop): Add function prototype.
+	* fold-const.c (fold) <COND_EXPR>: Don't fold a constant condition,
+	if we'd replace a COND_EXPR of non-void type by one of its operands
+	of void type.
+
 2003-12-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	Backport from mainline:

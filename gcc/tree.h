@@ -2637,6 +2637,11 @@ extern int integer_all_onesp		PARAMS ((tree));
 
 extern int integer_pow2p		PARAMS ((tree));
 
+/* integer_nonzerop (tree x) is nonzero if X is an integer constant
+   with a nonzero value.  */
+
+extern int integer_nonzerop (tree);
+
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  */
 

@@ -639,15 +639,16 @@ static GTY(()) tree shadowed_labels;
 
 /* Return the subscript expression, modified to do range-checking.
 
-   `array' is the array to be checked against.
+   `array' is the array type to be checked against.
    `element' is the subscript expression to check.
    `dim' is the dimension number (starting at 0).
    `total_dims' is the total number of dimensions (0 for CHARACTER substring).
+   `item' is the array decl or NULL_TREE.
 */
 
 static tree
 ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
-			 const char *array_name)
+			 const char *array_name, tree item)
 {
   tree low = TYPE_MIN_VALUE (TYPE_DOMAIN (array));
   tree high = TYPE_MAX_VALUE (TYPE_DOMAIN (array));
@@ -713,6 +714,10 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
                                    high));
         }
     }
+
+  /* If the array index is safe at compile-time, return element.  */
+  if (integer_nonzerop (cond))
+    return element;
 
   {
     int len;
@@ -808,13 +813,10 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
   TREE_SIDE_EFFECTS (die) = 1;
   die = convert (void_type_node, die);
 
-  element = ffecom_3 (COND_EXPR,
-		      TREE_TYPE (element),
-		      cond,
-		      element,
-		      die);
+  if (integer_zerop (cond) && item)
+    ffe_mark_addressable (item);
 
-  return element;
+  return ffecom_3 (COND_EXPR, TREE_TYPE (element), cond, element, die);
 }
 
 /* Return the computed element of an array reference.
@@ -900,7 +902,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
 	  if (flag_bounds_check)
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
-					       array_name);
+					       array_name, item);
 	  if (element == error_mark_node)
 	    return element;
 
@@ -946,7 +948,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
 	  if (flag_bounds_check)
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
-					       array_name);
+					       array_name, item);
 	  if (element == error_mark_node)
 	    return element;
 
@@ -2045,7 +2047,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 		end_tree = ffecom_expr (end);
 		if (flag_bounds_check)
 		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
-						      char_name);
+						      char_name, NULL_TREE);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,
 				    end_tree);
 
@@ -2063,7 +2065,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    start_tree = ffecom_expr (start);
 	    if (flag_bounds_check)
 	      start_tree = ffecom_subscript_check_ (array, start_tree, 0, 0,
-						    char_name);
+						    char_name, NULL_TREE);
 	    start_tree = convert (ffecom_f2c_ftnlen_type_node,
 				  start_tree);
 
@@ -2096,7 +2098,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 		end_tree = ffecom_expr (end);
 		if (flag_bounds_check)
 		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
-						      char_name);
+						      char_name, NULL_TREE);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,
 				    end_tree);
 

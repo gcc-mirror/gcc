@@ -723,6 +723,23 @@ integer_pow2p (expr)
 	  || (low == 0 && (high & (high - 1)) == 0));
 }
 
+/* Return 1 if EXPR is an integer constant other than zero or a
+   complex constant other than zero.  */
+
+int
+integer_nonzerop (tree expr)
+{
+  STRIP_NOPS (expr);
+
+  return ((TREE_CODE (expr) == INTEGER_CST
+	   && ! TREE_CONSTANT_OVERFLOW (expr)
+	   && (TREE_INT_CST_LOW (expr) != 0
+	       || TREE_INT_CST_HIGH (expr) != 0))
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && (integer_nonzerop (TREE_REALPART (expr))
+		  || integer_nonzerop (TREE_IMAGPART (expr)))));
+}
+
 /* Return the power of two represented by a tree node known to be a
    power of two.  */
 

@@ -6785,9 +6785,17 @@ fold (expr)
       /* Pedantic ANSI C says that a conditional expression is never an lvalue,
 	 so all simple results must be passed through pedantic_non_lvalue.  */
       if (TREE_CODE (arg0) == INTEGER_CST)
-	return pedantic_non_lvalue
-	  (TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1)));
-      else if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
+	{
+	  tem = TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1));
+	  /* Only optimize constant conditions when the selected branch
+	     has the same type as the COND_EXPR.  This avoids optimizing
+	     away "c ? x : throw", where the throw has a void type.  */
+	  if (! VOID_TYPE_P (TREE_TYPE (tem))
+	      || VOID_TYPE_P (TREE_TYPE (t)))
+	    return pedantic_non_lvalue (tem);
+	  return t;
+	}
+      if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
 	return pedantic_omit_one_operand (type, arg1, arg0);
 
       /* If the second operand is zero, invert the comparison and swap
