@@ -44,7 +44,7 @@ namespace std
   // Ulrich is going to make some detailed comment here, explaining
   // all this unpleasantness, providing detailed performance analysis
   // as to why we have to do all this lame vtable hacking instead of a
-  // sane, function-based approach. This verbage will provide a clear
+  // sane, function-based approach. This verbiage will provide a clear
   // and detailed description of the whole object-layout,
   // vtable-swapping, sordid history of this hack.
   template<typename _CharT>
@@ -136,7 +136,7 @@ namespace std
       _M_open_mode(ios_base::openmode __mode, int& __p_mode, int& __rw_mode, 
 		   char* __c_mode);
       
-      // Eqivalent to the normal fopen function.
+      // Equivalent to the normal fopen function.
       __basic_file* 
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
@@ -176,26 +176,26 @@ namespace std
       pbackfail(int __c);
 
       // A complex "write" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsputn(const _CharT* __s, streamsize __n);
 
       // A complex "read" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsgetn(_CharT* __s, streamsize __n);
 
       // A complex "seekoff" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
       seekoff(streamoff __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       // A complex "seekpos" function that sets all of __c_file_type's
-      // pointers and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
       seekpos(streamoff __pos, 
