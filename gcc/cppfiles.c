@@ -585,10 +585,9 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
      int include_next;
 {
   struct search_path *search_start = 0;
-  unsigned int len = header->val.str.len;
   unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
+  const char *fname = (const char *) header->val.str.text;
   struct include_file *inc;
-  char *fname;
   int print_dep;
 
   /* Help protect #include or similar from recursion.  */
@@ -626,10 +625,6 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	}
     }
 
-  fname = alloca (len + 1);
-  memcpy (fname, header->val.str.text, len);
-  fname[len] = '\0';
-
   if (!search_start)
     {
       if (angle_brackets)
@@ -660,8 +655,8 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	  /* Handle -H option.  */
 	  if (CPP_OPTION (pfile, print_include_names))
 	    {
-	      cpp_buffer *fp = CPP_BUFFER (pfile);
-	      while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
+	      cpp_buffer *fp = pfile->buffer;
+	      while ((fp = fp->prev) != NULL)
 		putc ('.', stderr);
 	      fprintf (stderr, " %s\n", inc->name);
 	    }
@@ -692,13 +687,13 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 
 	  /* FIXME: ptr can be null, no?  */
 	  len = ptr->len;
-	  p = (char *) alloca (len + strlen (fname) + 2);
+	  p = (char *) alloca (len + header->val.str.len + 2);
 	  if (len)
 	    {
 	      memcpy (p, ptr->name, len);
 	      p[len++] = '/';
 	    }
-	  strcpy (p + len, fname);
+	  memcpy (p + len, fname, header->val.str.len + 1);
 	  _cpp_simplify_pathname (p);
 	  deps_add_dep (pfile->deps, p);
 	}
@@ -722,8 +717,7 @@ _cpp_compare_file_date (pfile, f)
      cpp_reader *pfile;
      const cpp_token *f;
 {
-  unsigned int len = f->val.str.len;
-  char *fname;
+  const char *fname = (const char *) f->val.str.text;
   struct search_path *search_start;
   struct include_file *inc;
 
@@ -732,9 +726,6 @@ _cpp_compare_file_date (pfile, f)
   else if (CPP_OPTION (pfile, ignore_srcdir))
     search_start = pfile->buffer->search_from;
 
-  fname = alloca (len + 1);
-  memcpy (fname, f->val.str.text, len);
-  fname[len] = '\0';
   inc = find_include_file (pfile, fname, search_start);
   
   if (!inc)

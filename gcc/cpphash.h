@@ -339,10 +339,6 @@ struct cpp_reader
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
 
-  /* True after cpp_start_read completes.  Used to inhibit some
-     warnings while parsing the command line.  */
-  unsigned char done_initializing;
-
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
 
@@ -380,7 +376,6 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 
 /* Macros.  */
 
-#define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
   (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->sysp)

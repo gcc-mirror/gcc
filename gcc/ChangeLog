@@ -1,3 +1,19 @@
+2001-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (_cpp_execute_include): Don't make a null-terminated
+	copy of the filename.  Don't use CPP_PREV_BUFFER.  Don't call
+	strlen or strcpy; we already know the length.
+	(_cpp_compare_file_date): Similarly.
+	* cpphash.h (struct cpp_reader): Delete done_initialising.
+	(CPP_PREV_BUFFER): Delete.
+	* cppinit.c (cpp_start_read): Don't set done_initialising.
+	* cpplex.c (parse_string): Guarantee null-termination.
+	(_cpp_equiv_toklists): Remove.
+	* cpplib.c (glue_header_name): Null-terminate.
+	(do_line): Don't leak memory.
+	* cpplib.h (BT_WEAK): Delete.
+	* cppmain.c (cb_ident): Strings are now null-terminated.
+
 2001-03-04  Laurynas Biveinis  <lauras@softhome.net>
 
 	* gcc.c (convert_filename): Append executable suffix
