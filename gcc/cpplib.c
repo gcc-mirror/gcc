@@ -6643,7 +6643,7 @@ cpp_handle_option (pfile, argc, argv)
 	push_pending (pfile, "-U", argv[i] + 2);
       else if (i + 1 == argc)
 	{
-	  cpp_fatal (pfile, "Macro name missing after -U option", NULL);
+	  cpp_fatal (pfile, "Macro name missing after -U option");
 	  return argc;
 	}
       else

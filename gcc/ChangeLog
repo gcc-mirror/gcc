@@ -44,6 +44,16 @@ Mon Jun 22 08:18:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* varasm.c Include sdbout.h.
 	(assemble_static_space): Move sometimes-unused variable `rounded'
 	into the scope in which it is used. 
+	
+	* mips.c (gpr_mode): Don't say `static' twice.
+
+	* cpplib.c (cpp_handle_option): Don't pass unneeded NULL to cpp_fatal.
+
+	* objc/objc-act.c (init_selector): Hide prototype and definition.
+
+	* optabs.c (gen_cond_trap): Remove unused variable `icode'.
+	
+	* regmove.c (copy_src_to_dest): Likewise for `i'.
 
 Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 

@@ -192,7 +192,9 @@ static tree generate_protocol_list		PROTO((tree));
 static void generate_forward_declaration_to_string_table PROTO((void));
 static void build_protocol_reference		PROTO((tree));
 
+#if 0
 static tree init_selector			PROTO((int));
+#endif
 static tree build_keyword_selector		PROTO((tree));
 static tree synth_id_with_class_suffix		PROTO((char *, tree));
 
@@ -2057,6 +2059,7 @@ build_msg_pool_reference (offset)
   return expr;
 }
 
+#if 0
 static tree
 init_selector (offset)
      int offset;
@@ -2065,6 +2068,7 @@ init_selector (offset)
   TREE_TYPE (expr) = selector_type;
   return expr;
 }
+#endif
 
 static void
 build_selector_translation_table ()

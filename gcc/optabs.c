@@ -4436,7 +4436,6 @@ gen_cond_trap (code, op1, op2, tcode)
      rtx op1, op2, tcode;
 {
   enum machine_mode mode = GET_MODE (op1);
-  enum insn_code icode;
 
   if (mode == VOIDmode)
     return 0;
