@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -155,6 +155,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define current_function_uses_pic_offset_table	curfunc_uses_pic_offset_table
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
+#define lookup_name_current_level_global	lookup_name_current_level_gbl
 #define maybe_building_objc_message_expr	maybe_building_objc_msg_expr
 #define output_deferred_addressed_constants	output_deferred_addr_constants
 #define reg_overlap_mentioned_for_reload_p	reg_overlap_mtnd_for_reload_p
