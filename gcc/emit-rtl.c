@@ -290,7 +290,7 @@ get_mem_attrs (alias, decl, offset, size, align, mode)
   if (alias == 0 && decl == 0 && offset == 0
       && (size == 0
 	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
-      && (align == 1
+      && (align == BITS_PER_UNIT
 	  || (mode != BLKmode && align == GET_MODE_ALIGNMENT (mode))))
     return 0;
 
