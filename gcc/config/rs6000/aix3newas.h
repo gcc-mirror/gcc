@@ -22,6 +22,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/rs6000.h"
 
+#if 0
+/* Commented out because it breaks compiler bootstrapping because references
+   to environ get hosed */
+
 /* Tell the assembler to assume that all undefined names are external.  */
 
 #undef ASM_SPEC
@@ -32,3 +36,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_EXTERNAL
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#endif
