@@ -182,7 +182,7 @@ static int forbidden_inc_dec_class[N_REG_CLASSES];
 
 static char *in_inc_dec;
 
-#endif FORBIDDEN_INC_DEC_CLASSES
+#endif /* FORBIDDEN_INC_DEC_CLASSES */
 
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
