@@ -1,3 +1,8 @@
+2003-02-10  Tom Tromey  <tromey@redhat.com>
+
+	* javax/sql/ConnectionEvent.java (serialVersionUID): New field.
+	(ex): Renamed from sqlException.
+
 2003-02-10  Raif S. Naffah  <raif@fl.net.au>
 
 	* gnu/java/security/provider/SHA1PRNG.java (ensureIsSeeded): new 
