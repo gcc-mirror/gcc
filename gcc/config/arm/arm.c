@@ -4126,6 +4126,13 @@ arm_gen_rotated_half_load (memref)
   return gen_rtx_ROTATE (SImode, base, GEN_INT (16));
 }
 
+/* Select a dominance comparison mode if possible.  We support three forms.
+   COND_OR == 0 => (X && Y) 
+   COND_OR == 1 => ((! X( || Y)
+   COND_OR == 2 => (X || Y) 
+   If we are unable to support a dominance comparsison we return CC mode.  
+   This will then fail to match for the RTL expressions that generate this
+   call.  */
 static enum machine_mode
 select_dominance_cc_mode (x, y, cond_or)
      rtx x;
@@ -4144,7 +4151,10 @@ select_dominance_cc_mode (x, y, cond_or)
 	  != CCmode))
     return CCmode;
 
-  if (cond_or)
+  /* The if_then_else variant of this tests the second condition if the
+     first passes, but is true if the first fails.  Reverse the first
+     condition to get a true "inclusive-or" expression.  */
+  if (cond_or == 1)
     cond1 = reverse_condition (cond1);
 
   /* If the comparisons are not equal, and one doesn't dominate the other,
@@ -4296,6 +4306,29 @@ arm_select_cc_mode (op, x, y)
       && GET_CODE (y) == CONST_INT)
     return CC_Zmode;
 
+  /* A construct for a conditional compare, if the false arm contains
+     0, then both conditions must be true, otherwise either condition
+     must be true.  Not all conditions are possible, so CCmode is
+     returned if it can't be done.  */
+  if (GET_CODE (x) == IF_THEN_ELSE
+      && (XEXP (x, 2) == const0_rtx
+	  || XEXP (x, 2) == const1_rtx)
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
+				     INTVAL (XEXP (x, 2)));
+
+  /* Alternate canonicalizations of the above.  These are somewhat cleaner.  */
+  if (GET_CODE (x) == AND
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 0);
+
+  if (GET_CODE (x) == IOR
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 2);
+
   /* An operation that sets the condition codes as a side-effect, the
      V flag is not set correctly, so we can only use comparisons where
      this doesn't matter.  (For LT and GE we can use "mi" and "pl"
@@ -4311,18 +4344,6 @@ arm_select_cc_mode (op, x, y)
 	  || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == ROTATERT || GET_CODE (x) == ZERO_EXTRACT))
     return CC_NOOVmode;
-
-  /* A construct for a conditional compare, if the false arm contains
-     0, then both conditions must be true, otherwise either condition
-     must be true.  Not all conditions are possible, so CCmode is
-     returned if it can't be done.  */
-  if (GET_CODE (x) == IF_THEN_ELSE
-      && (XEXP (x, 2) == const0_rtx
-	  || XEXP (x, 2) == const1_rtx)
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
-    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
-				     INTVAL (XEXP (x, 2)));
 
   if (GET_MODE (x) == QImode && (op == EQ || op == NE))
     return CC_Zmode;
