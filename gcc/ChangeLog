@@ -1,3 +1,7 @@
+2004-07-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Don't call c++filt.
+
 2004-07-10  Steve Kargl  <sgk@troutmask.apl.washington.edu>
             James Morrison  <phython@gcc.gnu.org>
 
