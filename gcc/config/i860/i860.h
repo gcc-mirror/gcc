@@ -996,7 +996,7 @@ struct cumulative_args { int ints, floats; };
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_BYTE_OP "\t.byte"
+#define ASM_BYTE_OP "\t.byte\t"
 #define ASM_SHORT "\t.short"
 #define ASM_LONG "\t.long"
 #define ASM_DOUBLE "\t.double"
@@ -1026,11 +1026,11 @@ struct cumulative_args { int ints, floats; };
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

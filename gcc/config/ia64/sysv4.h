@@ -8,19 +8,19 @@
    definitions.  */
 
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP "data1"
+#define ASM_BYTE_OP "\tdata1\t"
 
 #undef STRING_ASM_OP
-#define STRING_ASM_OP "stringz"
+#define STRING_ASM_OP "\tstringz\t"
 
 #undef SKIP_ASM_OP
-#define SKIP_ASM_OP ".skip"
+#define SKIP_ASM_OP "\t.skip\t"
 
 #undef COMMON_ASM_OP
-#define COMMON_ASM_OP ".common"
+#define COMMON_ASM_OP "\t.common\t"
 
 #undef ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP "string"
+#define ASCII_DATA_ASM_OP "\tstring\t"
 
 /* ??? Unfortunately, .lcomm doesn't work, because it puts things in either
    .bss or .sbss, and we can't control the decision of which is used.  When
@@ -70,13 +70,13 @@ while (0)
 /* Intel assembler requires both flags and type if declaring a non-predefined
    section.  */
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP	".section\t.init,\"ax\",\"progbits\""
+#define INIT_SECTION_ASM_OP	"\t.section\t.init,\"ax\",\"progbits\""
 #undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP	".section\t.fini,\"ax\",\"progbits\""
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini,\"ax\",\"progbits\""
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\",\"progbits\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\",\"progbits\""
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\",\"progbits\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\",\"progbits\""
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
@@ -245,7 +245,7 @@ extern unsigned int ia64_section_threshold;
   SDATA_SECTION_FUNCTION						\
   SBSS_SECTION_FUNCTION
 
-#define SDATA_SECTION_ASM_OP ".sdata"
+#define SDATA_SECTION_ASM_OP "\t.sdata"
 
 #define SDATA_SECTION_FUNCTION						\
 void									\
@@ -258,7 +258,7 @@ sdata_section ()							\
     }									\
 }
 
-#define SBSS_SECTION_ASM_OP ".sbss"
+#define SBSS_SECTION_ASM_OP "\t.sbss"
 
 #define SBSS_SECTION_FUNCTION						\
 void									\

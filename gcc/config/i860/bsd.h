@@ -5,7 +5,7 @@
 
 #define DBX_DEBUGGING_INFO
 
-#define ASCII_DATA_ASM_OP ".byte"
+#define ASCII_DATA_ASM_OP "\t.byte\t"
 #define	ASM_OUTPUT_ASCII(f, p, size)	\
 do { register unsigned i;		\
   int inside;				\

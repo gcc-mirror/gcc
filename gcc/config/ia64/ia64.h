@@ -1920,17 +1920,17 @@ do {									\
 /* A C expression whose value is a string containing the assembler operation
    that should precede instructions and read-only data.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* A C expression whose value is a string containing the assembler operation to
    identify the following data as writable initialized data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* If defined, a C expression whose value is a string containing the assembler
    operation to identify the following data as uninitialized global data.  */
 
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 /* Define this macro if jump tables (for `tablejump' insns) should be output in
    the text section, along with the assembler instructions.  */
@@ -2498,7 +2498,7 @@ do {									\
 
    You should define this symbol if your target supports DWARF 2 frame unwind
    information and the default definition does not work.  */
-#define EH_FRAME_SECTION_ASM_OP ".section\t.IA_64.unwind,\"aw\""
+#define EH_FRAME_SECTION_ASM_OP "\t.section\t.IA_64.unwind,\"aw\""
 
 /* A C expression that is nonzero if the normal exception table output should
    be omitted.
@@ -2605,9 +2605,9 @@ do {									\
 /* C string constants giving the pseudo-op to use for a sequence of
    2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */
 
-#define UNALIGNED_SHORT_ASM_OP		"data2.ua"
-#define UNALIGNED_INT_ASM_OP		"data4.ua"
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"data8.ua"
+#define UNALIGNED_SHORT_ASM_OP		"\tdata2.ua\t"
+#define UNALIGNED_INT_ASM_OP		"\tdata4.ua\t"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	"\tdata8.ua\t"
 
 /* We need to override the default definition for this in dwarf2out.c so that
    we can emit the necessary # postfix.  */

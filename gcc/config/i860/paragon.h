@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
 #undef ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP	".byte"
+#define ASCII_DATA_ASM_OP	"\t.byte\t"
 
 /*
  *	the assembler we're using doesn't grok .ident...
@@ -222,6 +222,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SELECT_RTX_SECTION
 #undef READONLY_DATA_SECTION
 
-#define	BSS_SECTION_ASM_OP	".bss"		/* XXX */
+#define	BSS_SECTION_ASM_OP	"\t.bss"	/* XXX */
 #undef EXTRA_SECTIONS
 #undef EXTRA_SECTION_FUNCTIONS
