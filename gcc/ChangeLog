@@ -1,3 +1,8 @@
+Thu Sep 30 18:21:30 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.c (ix86_expand_int_movcc): Convert LEU and GTU comparisons
+	to LTU and GEU.  Handle more cases using sbb.
+
 Thu Sep 30 18:18:39 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (truncatexfdf splitters): Do not use subreg.

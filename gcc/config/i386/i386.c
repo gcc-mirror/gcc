@@ -4288,6 +4288,23 @@ ix86_expand_int_movcc (operands)
   enum rtx_code code = GET_CODE (operands[1]), compare_code;
   rtx compare_seq, compare_op;
 
+  /* When the compare code is not LTU or GEU, we can not use sbbl case.
+     In case comparsion is done with immediate, we can convert it to LTU or
+     GEU by altering the integer.  */
+
+  if ((code == LEU || code == GTU)
+      && GET_CODE (ix86_compare_op1) == CONST_INT
+      && GET_MODE (operands[0]) != HImode
+      && (unsigned int)INTVAL (ix86_compare_op1) != 0xffffffff
+      && GET_CODE (operands[2]) == CONST_INT 
+      && GET_CODE (operands[3]) == CONST_INT)
+    {
+      if (code == LEU)
+	code = LTU;
+      else
+	code = GEU;
+      ix86_compare_op1 = GEN_INT (INTVAL (ix86_compare_op1) + 1);
+    }
   start_sequence ();
   compare_op = ix86_expand_compare (code, code == EQ || code == NE);
   compare_seq = gen_sequence ();
@@ -4307,26 +4324,22 @@ ix86_expand_int_movcc (operands)
       HOST_WIDE_INT cf = INTVAL (operands[3]);
       HOST_WIDE_INT diff;
 
-      /* Special cases: */
-      if (ct == 0)
+      if (compare_code == LTU || compare_code == GEU)
 	{
-	  ct = cf;
-	  cf = 0;
-	  compare_code = reverse_condition (compare_code);
-	  code = reverse_condition (code);
-	}
-      if (cf == 0 && ct == -1 && (compare_code == LTU || compare_code == GEU))
-	{
-	  /*
-	   * xorl dest,dest
-	   * cmpl op0,op1
-	   * sbbl dest,dest
-	   *
-	   * Size 6.
-	   */
 
 	  /* Detect overlap between destination and compare sources.  */
 	  rtx tmp = out;
+
+	  /* To simplify rest of code, restrict to the GEU case. */
+	  if (compare_code == LTU)
+	    {
+	      int tmp = ct;
+	      ct = cf;
+	      cf = tmp;
+	      compare_code = reverse_condition (compare_code);
+	      code = reverse_condition (code);
+	    }
+	  diff = ct - cf;
 
 	  if (reg_overlap_mentioned_p (out, ix86_compare_op0)
 	      || reg_overlap_mentioned_p (out, ix86_compare_op0))
@@ -4335,8 +4348,57 @@ ix86_expand_int_movcc (operands)
 	  emit_insn (compare_seq);
 	  emit_insn (gen_x86_movsicc_0_m1 (tmp));
 
-	  if (compare_code == GEU)
-	    emit_insn (gen_one_cmplsi2 (tmp, tmp));
+	  if (diff == 1)
+	    {
+	      /*
+	       * cmpl op0,op1
+	       * sbbl dest,dest
+	       * [addl dest, ct]
+	       *
+	       * Size 5 - 8.
+	       */
+	      if (ct)
+	        emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
+	    }
+	  else if (cf == -1)
+	    {
+	      /*
+	       * cmpl op0,op1
+	       * sbbl dest,dest
+	       * orl $ct, dest
+	       *
+	       * Size 8.
+	       */
+	      emit_insn (gen_iorsi3 (out, out, GEN_INT (ct)));
+	    }
+	  else if (diff == -1 && ct)
+	    {
+	      /*
+	       * cmpl op0,op1
+	       * sbbl dest,dest
+	       * xorl $-1, dest
+	       * [addl dest, cf]
+	       *
+	       * Size 8 - 11.
+	       */
+	      emit_insn (gen_one_cmplsi2 (tmp, tmp));
+	      if (cf)
+	        emit_insn (gen_addsi3 (out, out, GEN_INT (cf)));
+	    }
+	  else
+	    {
+	      /*
+	       * cmpl op0,op1
+	       * sbbl dest,dest
+	       * andl cf - ct, dest
+	       * [addl dest, ct]
+	       *
+	       * Size 8 - 11.
+	       */
+	      emit_insn (gen_andsi3 (out, out, GEN_INT (cf - ct)));
+	      if (ct)
+	        emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
+	    }
 
 	  if (tmp != out)
 	    emit_move_insn (out, tmp);
