@@ -1,5 +1,12 @@
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
+	* invoke.texi: Use XX-bit instead of XXbit or XX bit where
+	appropriate.
+	* extend.texi: Likewise.
+	* tm.texi: Likewise.
+
+2001-04-28  Andreas Jaeger  <aj@suse.de>
+
         * md.texi: Use XX-bit instead of XXbit or XX bit where
         appropriate.
 
@@ -697,7 +704,7 @@ Fri Apr 13 21:40:28 2001  Loren J. Rittle  <ljrittle@acm.org>
 	gen_move_insn): Delete redundant declarations.
 
 2001-04-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
- 
+
 	* Makefile.in (CFLAGS, BOOT_CFLAGS): Partly revert 2000-10-27 patch.
 	(stage1_build): Instead pass down STAGE1_CFLAGS here. Pass down
 	MAKEINFO and MAKEINFOFLAGS too.

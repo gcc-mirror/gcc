@@ -197,7 +197,7 @@ Statement expressions are not supported fully in G++, and their fate
 there is unclear.  (It is possible that they will become fully supported
 at some point, or that they will be deprecated, or that the bugs that
 are present will continue to exist indefinitely.)  Presently, statement
-expressions do not work well as default arguments. 
+expressions do not work well as default arguments.
 
 In addition, there are semantic issues with statement-expressions in
 C++.  If you try to use statement-expressions instead of inline
@@ -340,7 +340,7 @@ Another use of label values is in an interpreter for threaded code.
 The labels within the interpreter function can be stored in the
 threaded code for super-fast dispatching.
 
-You may not use this mechanism to jump to code in a different function. 
+You may not use this mechanism to jump to code in a different function.
 If you do that, totally unpredictable things will happen.  The best way to
 avoid this is to store the label address only in automatic variables and
 never pass it as an argument.
@@ -897,7 +897,7 @@ thisline->length = this_length;
 In ISO C89, you would have to give @code{contents} a length of 1, which
 means either you waste space or complicate the argument to @code{malloc}.
 
-In ISO C99, you would use a @dfn{flexible array member}, which is 
+In ISO C99, you would use a @dfn{flexible array member}, which is
 slightly different in syntax and semantics:
 
 @itemize @bullet
@@ -912,7 +912,7 @@ of zero-length arrays, @code{sizeof} evaluates to zero.
 
 @item
 Flexible array members may only appear as the last member of a
-@code{struct} that is otherwise non-empty.  GCC currently allows 
+@code{struct} that is otherwise non-empty.  GCC currently allows
 zero-length arrays anywhere.  You may encounter problems, however,
 defining structures containing only a zero-length array.  Such usage
 is deprecated, and we recommend using zero-length arrays only in
@@ -1940,11 +1940,11 @@ Small model objects live in the lower 16MB of memory (so that their
 addresses can be loaded with the @code{ld24} instruction), and are
 callable with the @code{bl} instruction.
 
-Medium model objects may live anywhere in the 32 bit address space (the
+Medium model objects may live anywhere in the 32-bit address space (the
 compiler will generate @code{seth/add3} instructions to load their addresses),
 and are callable with the @code{bl} instruction.
 
-Large model objects may live anywhere in the 32 bit address space (the
+Large model objects may live anywhere in the 32-bit address space (the
 compiler will generate @code{seth/add3} instructions to load their addresses),
 and may not be reachable with the @code{bl} instruction (the compiler will
 generate the much slower @code{seth/add3/jl} instruction sequence).
@@ -2465,10 +2465,10 @@ section, consider using the facilities of the linker instead.
 
 @item shared
 @cindex @code{shared} variable attribute
-On Windows NT, in addition to putting variable definitions in a named 
-section, the section can also be shared among all running copies of an 
-executable or DLL. For example, this small program defines shared data 
-by putting it in a named section "shared" and marking the section 
+On Windows NT, in addition to putting variable definitions in a named
+section, the section can also be shared among all running copies of an
+executable or DLL. For example, this small program defines shared data
+by putting it in a named section "shared" and marking the section
 shareable:
 
 @smallexample
@@ -2484,7 +2484,7 @@ main()
 
 @noindent
 You may only use the @code{shared} attribute along with @code{section}
-attribute with a fully initialized global definition because of the way 
+attribute with a fully initialized global definition because of the way
 linkers work.  See @code{section} attribute for more information.
 
 The @code{shared} attribute is only available on Windows NT.
@@ -2514,7 +2514,7 @@ or @code{large}, representing each of the code models.
 Small model objects live in the lower 16MB of memory (so that their
 addresses can be loaded with the @code{ld24} instruction).
 
-Medium and large model objects may live anywhere in the 32 bit address space
+Medium and large model objects may live anywhere in the 32-bit address space
 (the compiler will generate @code{seth/add3} instructions to load their
 addresses).
 
@@ -2755,7 +2755,7 @@ inc (int *a)
 (If you are writing a header file to be included in ISO C programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.)
 You can also make all ``simple enough'' functions inline with the option
-@samp{-finline-functions}. 
+@samp{-finline-functions}.
 
 Note that certain usages in a function definition can make it unsuitable
 for inline substitution.  Among these usages are: use of varargs, use of
@@ -3741,7 +3741,7 @@ specify the @samp{-O} option.
 
 @findex __builtin_expect
 @item __builtin_expect(@var{exp}, @var{c})
-You may use @code{__builtin_expect} to provide the compiler with 
+You may use @code{__builtin_expect} to provide the compiler with
 branch prediction information.  In general, you should prefer to
 use actual profile feedback for this (@samp{-fprofile-arcs}), as
 programmers are notoriously bad at predicting how their programs
@@ -4342,7 +4342,7 @@ relative ordering.
 @item com_interface
 @cindex com_interface attribute
 
-@c This is based on:  1) grepping the code, 
+@c This is based on:  1) grepping the code,
 @c 2) http://gcc.gnu.org/ml/gcc-bugs/1999-08n/msg01212.html
 @c 3) http://gcc.gnu.org/ml/gcc-bugs/1999-08n/msg01215.html
 @c and 4) a lot of guesswork.  You can tell I don't use COM.  -pme 21Dec00
@@ -4358,10 +4358,10 @@ thus, only the base class in a COM hierarchy needs @code{com_interface}.
 @item java_interface
 @cindex java_interface attribute
 
-This type attribute informs C++ that the class is a Java interface.  It may 
+This type attribute informs C++ that the class is a Java interface.  It may
 only be applied to classes declared within an @code{extern "Java"} block.
-Calls to methods declared in this interface will be dispatched using GCJ's 
-interface table mechanism, instead of regular virtual table dispatch.  
+Calls to methods declared in this interface will be dispatched using GCJ's
+interface table mechanism, instead of regular virtual table dispatch.
 
 @end table
 
@@ -4429,4 +4429,3 @@ implicitly scoped inside a C language scope. Also, an empty prototype
 @code{()} will be treated as an unspecified number of arguments, rather
 than no arguments, as C++ demands.
 @end table
-
