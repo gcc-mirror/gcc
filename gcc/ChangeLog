@@ -1,3 +1,9 @@
+Fri Aug  4 06:53:46 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* (mips_legitimate_address_p): Don't allow register+offset              
+	if the offset is large and negative, and we are compiling               
+	for 64 bit registers.                                                   
+
 2000-08-04 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* gencodes.c (main): Define CODE_FOR_nothing as the last possible
