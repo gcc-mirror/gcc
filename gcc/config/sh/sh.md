@@ -1014,7 +1014,7 @@
   [(set_attr "type" "arith_media")])
 
 (define_insn "adddi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=&r")
 	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI T_REG))]
@@ -1122,7 +1122,7 @@
   [(set_attr "type" "arith_media")])
 
 (define_insn "subdi3_compact"
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=&r")
 	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI T_REG))]
