@@ -1,3 +1,9 @@
+2003-02-28  Aldy Hernandez  <aldyh@redhat.com>
+
+        * parser.c (cp_parser_init_declarator): Revert opaque
+        vector_opaque_p change.
+        Do not include target.h.
+
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9879

@@ -34,7 +34,6 @@
 #include "diagnostic.h"
 #include "toplev.h"
 #include "output.h"
-#include "target.h"
 
 
 /* The lexer.  */
@@ -9703,13 +9702,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Parse the initializer.  */
   if (is_initialized)
-    {
-      if ((*targetm.vector_opaque_p) (TREE_TYPE (decl)))
-	cp_parser_error (parser, "opaque vector types cannot be initialized");
-
-      initializer = cp_parser_initializer (parser, 
-					   &is_parenthesized_init);
-    }
+    initializer = cp_parser_initializer (parser, &is_parenthesized_init);
   else
     {
       initializer = NULL_TREE;
