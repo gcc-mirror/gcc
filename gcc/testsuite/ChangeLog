@@ -1,3 +1,8 @@
+2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9447
+	* g++.dg/template/using5.C: New test.
+
 2003-07-31  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-27.c: New test case.
