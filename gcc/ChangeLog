@@ -91,6 +91,11 @@
 	* config/ia64/ia64.md (pred_rel_mutex): Only take one register.
 	* config/ia64/ia64.c (emit_predicate_relation_info): Adjust to match.
 
+2000-06-22  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (compile_file): Always call timevar_print.
+	* Makefile.in (calls.o): Depend on TIMEVAR_H.
+
 2000-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* varasm.c (constant_descriptor): Make contents unsigned char.
