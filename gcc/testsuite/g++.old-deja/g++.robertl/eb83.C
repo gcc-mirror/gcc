@@ -1,3 +1,4 @@
+// Skip if not native
 // Special g++ Options: -fprofile-arcs -ftest-coverage
 void
 swap(int& x, int& y) throw()
