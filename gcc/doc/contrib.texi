@@ -32,6 +32,9 @@ the Intel 80387 register stack.
 Alasdair Baird for various bug fixes.
 
 @item
+Giovanni Bajo for analyzing lots of complicated C++ problem reports.
+
+@item
 Gerald Baumgartner added the signature extension to the C++ front end.
 
 @item
@@ -297,6 +300,9 @@ the c30/c40 ports functional.  Lots of loop and unroll improvements and
 fixes.
 
 @item
+Dara Hazeghi for wading through myriads of target-specific bug reports.
+
+@item
 Kate Hedstrom for staking the g77 folks with an initial testsuite.
 
 @item
@@ -325,6 +331,9 @@ Steve Holmgren for MachTen patches.
 
 @item
 Jan Hubicka for his x86 port improvements.
+
+@item
+Falk Hueffner for working on C and optimization bug reports.
 
 @item
 Christian Iseli for various bug fixes.
@@ -618,6 +627,9 @@ Matthias Pfaller for major improvements to the NS32k port.
 Gerald Pfeifer for his direction via the steering committee, pointing
 out lots of problems we need to solve, maintenance of the web pages, and
 taking care of documentation maintenance in general.
+
+@item
+Andrew Pinski for processing bug reports by the dozen.
 
 @item
 Ovidiu Predescu for his work on the Objective-C front end and runtime
