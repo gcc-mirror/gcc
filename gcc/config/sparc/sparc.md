@@ -45,6 +45,18 @@
    (UNSPEC_TLSIE		33)
    (UNSPEC_TLSLE		34)
    (UNSPEC_TLSLD_BASE		35)
+
+   (UNSPEC_FPACK16	 	40)
+   (UNSPEC_FPACK32		41)
+   (UNSPEC_FPACKFIX		42)
+   (UNSPEC_FEXPAND		43)
+   (UNSPEC_FPMERGE		44)
+   (UNSPEC_MUL16AL		45)
+   (UNSPEC_MUL8UL		46)
+   (UNSPEC_MULDUL		47)
+   (UNSPEC_ALIGNDATA		48)
+   (UNSPEC_ALIGNADDR		49)
+   (UNSPEC_PDIST		50)
   ])
 
 (define_constants
@@ -8961,3 +8973,161 @@
   "fnands\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "single")])
+
+;; Hard to generate VIS instructions.  We have builtins for these.
+
+(define_insn "fpack16_vis"
+  [(set (match_operand:V4QI 0 "register_operand" "=f")
+        (unspec:V4QI [(match_operand:V4HI 1 "register_operand" "e")]
+		      UNSPEC_FPACK16))]
+  "TARGET_VIS"
+  "fpack16\t%1, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_insn "fpackfix_vis"
+  [(set (match_operand:V2HI 0 "register_operand" "=f")
+        (unspec:V2HI [(match_operand:V2SI 1 "register_operand" "e")]
+		      UNSPEC_FPACKFIX))]
+  "TARGET_VIS"
+  "fpackfix\t%1, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_insn "fpack32_vis"
+  [(set (match_operand:V8QI 0 "register_operand" "=e")
+        (unspec:V8QI [(match_operand:V2SI 1 "register_operand" "e")
+        	      (match_operand:V8QI 2 "register_operand" "e")]
+                     UNSPEC_FPACK32))]
+  "TARGET_VIS"
+  "fpack32\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_insn "fexpand_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (unspec:V4HI [(match_operand:V4QI 1 "register_operand" "f")]
+         UNSPEC_FEXPAND))]
+ "TARGET_VIS"
+ "fexpand\t%1, %0"
+ [(set_attr "type" "fga")
+  (set_attr "fptype" "double")])
+
+;; It may be possible to describe this operation as (1 indexed):
+;; (vec_select (vec_duplicate (vec_duplicate (vec_concat 1 2)))
+;;  1,5,10,14,19,23,28,32)
+;; Note that (vec_merge:V8QI [(V4QI) (V4QI)] (10101010 = 170) doesn't work
+;; because vec_merge expects all the operands to be of the same type.
+(define_insn "fpmerge_vis"
+  [(set (match_operand:V8QI 0 "register_operand" "=e")
+        (unspec:V8QI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V4QI 2 "register_operand" "f")]
+         UNSPEC_FPMERGE))]
+ "TARGET_VIS"
+ "fpmerge\t%1, %2, %0"
+ [(set_attr "type" "fga")
+  (set_attr "fptype" "double")])
+
+;; Partitioned multiply instructions
+(define_insn "fmul8x16_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (mult:V4HI (match_operand:V4QI 1 "register_operand" "f")
+                   (match_operand:V4HI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fmul8x16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+;; Only one of the following two insns can be a multiply.
+(define_insn "fmul8x16au_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (mult:V4HI (match_operand:V4QI 1 "register_operand" "f")
+                   (match_operand:V2HI 2 "register_operand" "f")))]
+  "TARGET_VIS"
+  "fmul8x16au\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fmul8x16al_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (unspec:V4HI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V2HI 2 "register_operand" "f")]
+         UNSPEC_MUL16AL))]
+  "TARGET_VIS"
+  "fmul8x16al\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+;; Only one of the following two insns can be a multiply.
+(define_insn "fmul8sux16_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (mult:V4HI (match_operand:V8QI 1 "register_operand" "e")
+                   (match_operand:V4HI 2 "register_operand" "e")))]
+  "TARGET_VIS"
+  "fmul8sux16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fmul8ulx16_vis"
+  [(set (match_operand:V4HI 0 "register_operand" "=e")
+        (unspec:V4HI [(match_operand:V8QI 1 "register_operand" "e")
+                      (match_operand:V4HI 2 "register_operand" "e")]
+         UNSPEC_MUL8UL))]
+  "TARGET_VIS"
+  "fmul8ulx16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+;; Only one of the following two insns can be a multiply.
+(define_insn "fmuld8sux16_vis"
+  [(set (match_operand:V2SI 0 "register_operand" "=e")
+        (mult:V2SI (match_operand:V4QI 1 "register_operand" "f")
+                   (match_operand:V2HI 2 "register_operand" "f")))]
+  "TARGET_VIS"
+  "fmuld8sux16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+(define_insn "fmuld8ulx16_vis"
+  [(set (match_operand:V2SI 0 "register_operand" "=e")
+        (unspec:V2SI [(match_operand:V4QI 1 "register_operand" "f")
+                      (match_operand:V2HI 2 "register_operand" "f")]
+         UNSPEC_MULDUL))]
+  "TARGET_VIS"
+  "fmuld8ulx16\t%1, %2, %0"
+  [(set_attr "type" "fpmul")
+   (set_attr "fptype" "double")])
+
+;; Using faligndata only makes sense after an alignaddr since the choice of
+;; bytes to take out of each operand is dependant on the results of the last
+;; alignaddr.
+(define_insn "faligndata<V64I:mode>_vis"
+  [(set (match_operand:V64I 0 "register_operand" "=e")
+        (unspec:V64I [(match_operand:V64I 1 "register_operand" "e")
+                      (match_operand:V64I 2 "register_operand" "e")]
+         UNSPEC_ALIGNDATA))]
+  "TARGET_VIS"
+  "faligndata\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])
+
+(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+
+(define_insn "alignaddr<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+        (unspec:P [(match_operand:P 1 "reg_or_0_operand" "rJ")
+                   (match_operand:P 2 "reg_or_0_operand" "rJ")]
+         UNSPEC_ALIGNADDR))]
+  "TARGET_VIS"
+  "alignaddr\t%r1, %r2, %0")
+
+(define_insn "pdist_vis"
+  [(set (match_operand:DI 0 "register_operand" "=e")
+        (unspec:DI [(match_operand:V8QI 1 "register_operand" "e")
+                    (match_operand:V8QI 2 "register_operand" "e")
+                    (match_operand:DI 3 "register_operand" "0")]
+         UNSPEC_PDIST))]
+  "TARGET_VIS"
+  "pdist\t%1, %2, %0"
+  [(set_attr "type" "fga")
+   (set_attr "fptype" "double")])

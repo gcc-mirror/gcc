@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "real.h"
 #include "insn-config.h"
+#include "insn-codes.h"
 #include "conditions.h"
 #include "output.h"
 #include "insn-attr.h"
@@ -48,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "cfglayout.h"
 #include "tree-gimple.h"
+#include "langhooks.h"
 
 /* Processor costs */
 static const
@@ -332,6 +334,9 @@ static void emit_hard_tfmode_operation (enum rtx_code, rtx *);
 
 static bool sparc_function_ok_for_sibcall (tree, tree);
 static void sparc_init_libfuncs (void);
+static void sparc_init_builtins (void);
+static void sparc_vis_init_builtins (void);
+static rtx sparc_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
 static bool sparc_can_output_mi_thunk (tree, HOST_WIDE_INT,
@@ -417,6 +422,11 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS sparc_init_libfuncs
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS sparc_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN sparc_expand_builtin
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -8444,6 +8454,163 @@ sparc_init_libfuncs (void)
     }
 
   gofast_maybe_init_libfuncs ();
+}
+
+#define def_builtin(NAME, CODE, TYPE) \
+  lang_hooks.builtin_function((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, \
+                              NULL_TREE)
+
+/* Implement the TARGET_INIT_BUILTINS target hook.
+   Create builtin functions for special SPARC instructions.  */
+
+static void
+sparc_init_builtins (void)
+{
+  if (TARGET_VIS)
+    sparc_vis_init_builtins ();
+}
+
+/* Create builtin functions for VIS 1.0 instructions.  */
+
+static void
+sparc_vis_init_builtins (void)
+{
+  tree v4qi = build_vector_type (unsigned_intQI_type_node, 4);
+  tree v8qi = build_vector_type (unsigned_intQI_type_node, 8);
+  tree v4hi = build_vector_type (intHI_type_node, 4);
+  tree v2hi = build_vector_type (intHI_type_node, 2);
+  tree v2si = build_vector_type (intSI_type_node, 2);
+
+  tree v4qi_ftype_v4hi = build_function_type_list (v4qi, v4hi, 0);
+  tree v8qi_ftype_v2si_v8qi = build_function_type_list (v8qi, v2si, v8qi, 0);
+  tree v2hi_ftype_v2si = build_function_type_list (v2hi, v2si, 0);
+  tree v4hi_ftype_v4qi = build_function_type_list (v4hi, v4qi, 0);
+  tree v8qi_ftype_v4qi_v4qi = build_function_type_list (v8qi, v4qi, v4qi, 0);
+  tree v4hi_ftype_v4qi_v4hi = build_function_type_list (v4hi, v4qi, v4hi, 0);
+  tree v4hi_ftype_v4qi_v2hi = build_function_type_list (v4hi, v4qi, v2hi, 0);
+  tree v2si_ftype_v4qi_v2hi = build_function_type_list (v2si, v4qi, v2hi, 0);
+  tree v4hi_ftype_v8qi_v4hi = build_function_type_list (v4hi, v8qi, v4hi, 0);
+  tree v4hi_ftype_v4hi_v4hi = build_function_type_list (v4hi, v4hi, v4hi, 0);
+  tree v2si_ftype_v2si_v2si = build_function_type_list (v2si, v2si, v2si, 0);
+  tree v8qi_ftype_v8qi_v8qi = build_function_type_list (v8qi, v8qi, v8qi, 0);
+  tree di_ftype_v8qi_v8qi_di = build_function_type_list (intDI_type_node,
+							 v8qi, v8qi,
+							 intDI_type_node, 0);
+  tree di_ftype_di_di = build_function_type_list (intDI_type_node,
+						  intDI_type_node,
+						  intDI_type_node, 0);
+  tree ptr_ftype_ptr_si = build_function_type_list (ptr_type_node,
+		        			    ptr_type_node,
+					            intSI_type_node, 0);
+  tree ptr_ftype_ptr_di = build_function_type_list (ptr_type_node,
+		        			    ptr_type_node,
+					            intDI_type_node, 0);
+
+  /* Packing and expanding vectors.  */
+  def_builtin ("__builtin_vis_fpack16", CODE_FOR_fpack16_vis, v4qi_ftype_v4hi);
+  def_builtin ("__builtin_vis_fpack32", CODE_FOR_fpack32_vis,
+	       v8qi_ftype_v2si_v8qi);
+  def_builtin ("__builtin_vis_fpackfix", CODE_FOR_fpackfix_vis,
+	       v2hi_ftype_v2si);
+  def_builtin ("__builtin_vis_fexpand", CODE_FOR_fexpand_vis, v4hi_ftype_v4qi);
+  def_builtin ("__builtin_vis_fpmerge", CODE_FOR_fpmerge_vis,
+	       v8qi_ftype_v4qi_v4qi);
+
+  /* Multiplications.  */
+  def_builtin ("__builtin_vis_fmul8x16", CODE_FOR_fmul8x16_vis,
+	       v4hi_ftype_v4qi_v4hi);
+  def_builtin ("__builtin_vis_fmul8x16au", CODE_FOR_fmul8x16au_vis,
+	       v4hi_ftype_v4qi_v2hi);
+  def_builtin ("__builtin_vis_fmul8x16al", CODE_FOR_fmul8x16al_vis,
+	       v4hi_ftype_v4qi_v2hi);
+  def_builtin ("__builtin_vis_fmul8sux16", CODE_FOR_fmul8sux16_vis,
+	       v4hi_ftype_v8qi_v4hi);
+  def_builtin ("__builtin_vis_fmul8ulx16", CODE_FOR_fmul8ulx16_vis,
+	       v4hi_ftype_v8qi_v4hi);
+  def_builtin ("__builtin_vis_fmuld8sux16", CODE_FOR_fmuld8sux16_vis,
+	       v2si_ftype_v4qi_v2hi);
+  def_builtin ("__builtin_vis_fmuld8ulx16", CODE_FOR_fmuld8ulx16_vis,
+	       v2si_ftype_v4qi_v2hi);
+
+  /* Data aligning.  */
+  def_builtin ("__builtin_vis_faligndatav4hi", CODE_FOR_faligndatav4hi_vis,
+	       v4hi_ftype_v4hi_v4hi);
+  def_builtin ("__builtin_vis_faligndatav8qi", CODE_FOR_faligndatav8qi_vis,
+	       v8qi_ftype_v8qi_v8qi);
+  def_builtin ("__builtin_vis_faligndatav2si", CODE_FOR_faligndatav2si_vis,
+	       v2si_ftype_v2si_v2si);
+  def_builtin ("__builtin_vis_faligndatadi", CODE_FOR_faligndatadi_vis,
+               di_ftype_di_di);
+  if (TARGET_ARCH64)
+    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrdi_vis,
+	         ptr_ftype_ptr_di);
+  else
+    def_builtin ("__builtin_vis_alignaddr", CODE_FOR_alignaddrsi_vis,
+	         ptr_ftype_ptr_si);
+
+  /* Pixel distance.  */
+  def_builtin ("__builtin_vis_pdist", CODE_FOR_pdist_vis,
+	       di_ftype_v8qi_v8qi_di);
+}
+
+/* Handle TARGET_EXPAND_BUILTIN target hook.
+   Expand builtin functions for sparc instrinsics.  */
+
+static rtx
+sparc_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
+		      enum machine_mode tmode, int ignore ATTRIBUTE_UNUSED)
+{
+  tree arglist;
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  unsigned int icode = DECL_FUNCTION_CODE (fndecl);
+  rtx pat, op[4];
+  enum machine_mode mode[4];
+  int arg_count = 0;
+
+  mode[arg_count] = tmode;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    op[arg_count] = gen_reg_rtx (tmode);
+  else
+    op[arg_count] = target;
+
+  for (arglist = TREE_OPERAND (exp, 1); arglist;
+       arglist = TREE_CHAIN (arglist))
+    {
+      tree arg = TREE_VALUE (arglist);
+
+      arg_count++;
+      mode[arg_count] = insn_data[icode].operand[arg_count].mode;
+      op[arg_count] = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+
+      if (! (*insn_data[icode].operand[arg_count].predicate) (op[arg_count],
+							      mode[arg_count]))
+	op[arg_count] = copy_to_mode_reg (mode[arg_count], op[arg_count]);
+    }
+
+  switch (arg_count)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (op[0], op[1]);
+      break;
+    case 2:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2]);
+      break;
+    case 3:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+
+  return op[0];
 }
 
 int

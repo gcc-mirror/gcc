@@ -1,3 +1,11 @@
+2004-11-22  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.target/sparc/align.c, gcc.target/sparc/combined-2.c,
+	gcc.target/sparc/fpack16.c, gcc.target/sparc/fpack32.c,
+	gcc.target/sparc/fpackfix.c, gcc.target/fexpand.c,
+	gcc.target/sparc/fpmerge.c, gcc.target/sparc/fpmul.c,
+	gcc.target/sparc/pdist.c: New tests.
+
 2004-11-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* gcc.dg/uninit-H.c: Define ASM for Xtensa targets.
