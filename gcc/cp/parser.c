@@ -6717,7 +6717,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	}
 
       /* Add the DECL_SPEC to the list of specifiers.  */
-      decl_specs = tree_cons (NULL_TREE, decl_spec, decl_specs);
+      if (decl_specs == NULL || TREE_VALUE (decl_specs) != error_mark_node)
+	decl_specs = tree_cons (NULL_TREE, decl_spec, decl_specs);
 
       /* After we see one decl-specifier, further decl-specifiers are
 	 always optional.  */
@@ -9817,6 +9818,17 @@ cp_parser_init_declarator (cp_parser* parser,
      know we're going ahead.  By this point, we know that we cannot
      possibly be looking at any other construct.  */
   cp_parser_commit_to_tentative_parse (parser);
+
+  /* If the decl specifiers were bad, issue an error now that we're
+     sure this was intended to be a declarator.  Then continue
+     declaring the variable(s), as int, to try to cut down on further
+     errors.  */
+  if (decl_specifiers != NULL
+      && TREE_VALUE (decl_specifiers) == error_mark_node)
+    {
+      cp_parser_error (parser, "invalid type in declaration");
+      TREE_VALUE (decl_specifiers) = integer_type_node;
+    }
 
   /* Check to see whether or not this declaration is a friend.  */
   friend_p = cp_parser_friend_p (decl_specifiers);

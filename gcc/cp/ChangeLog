@@ -1,3 +1,12 @@
+2004-01-11  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR c++/3478
+	* parser.c (cp_parser_decl_specifier_seq): If the first decl_spec
+	is error_mark_node, don't add any more decl_specs.
+	(cp_parser_init_declarator): After committing to a declaration, if
+	the decl_specifiers start with error_mark_node, issue an error and
+	change the type to "int".
+
 2004-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/7817
