@@ -1,3 +1,8 @@
+2003-07-10  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	PR bootstrap/10758
+	* doc/install.texi: Document requirements for ia64-*-hpux* target.
+
 2003-07-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10032
