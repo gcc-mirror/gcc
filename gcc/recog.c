@@ -112,7 +112,7 @@ init_recog ()
    through this one.  (The only exception is in combine.c.)  */
 
 int
-recog_memoized (insn)
+recog_memoized_1 (insn)
      rtx insn;
 {
   if (INSN_CODE (insn) < 0)
