@@ -30,6 +30,9 @@
    our own exit function.  */
 #define HAVE_ATEXIT
 
+/* Specify the size_t type.  */
+#define SIZE_TYPE "unsigned int"
+
 #if 0 /* Not yet certain whether this is needed.  */
 /* If no 387, use the general regs to return floating values,
    since this system does not emulate the 80387.  */
