@@ -7869,12 +7869,16 @@ flow_loop_pre_header_scan (loop)
   sbitmap_zero (loop->pre_header_trace);
   
   ebb = loop->entry_edges[0]->src;
-  SET_BIT (loop->pre_header_trace, ebb->index);
-  while (ebb->pred->src != ENTRY_BLOCK_PTR
-	 && ! ebb->pred->pred_next)
+
+  if (ebb != ENTRY_BLOCK_PTR)
     {
-      ebb = ebb->pred->src;
       SET_BIT (loop->pre_header_trace, ebb->index);
+      while (ebb->pred->src != ENTRY_BLOCK_PTR
+	     && ! ebb->pred->pred_next)
+	{
+	  ebb = ebb->pred->src;
+	  SET_BIT (loop->pre_header_trace, ebb->index);
+	}
     }
   
   loop->pre_header_root = ebb;
