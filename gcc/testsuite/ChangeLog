@@ -1,3 +1,7 @@
+2002-07-24  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/loop-2e.c: Rewrite for 64 bit and no mmap.
+	
 2002-07-24  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* g++.dg/ext/alignof1.C (main): Return 0 for success.
