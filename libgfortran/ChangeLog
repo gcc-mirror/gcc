@@ -1,3 +1,8 @@
+2004-05-30  Steven G. Kargl  <kargls@comcast.net>
+
+	* libgfortran.h (random_seed): Update prototype.
+	* intrinsics/random.c: Disable old implementation and add new one.
+
 2004-05-30  Andreas Jaeger  <aj@suse.de>
 
 	* intrinsics/random.c: Include unistd.h for close and read
