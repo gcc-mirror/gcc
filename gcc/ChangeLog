@@ -1,5 +1,7 @@
 2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-sra.c (sra_walk_modify_expr): Handle RHS first, then LHS.
+
 	* tree-inline.c (copy_body_r): Explicitly copy a constant if the
 	type will be remapped.
 
