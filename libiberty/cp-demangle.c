@@ -424,7 +424,7 @@ string_list_delete (node)
   while (node != NULL)
     {
       string_list_t next = node->next;
-      free (node);
+      dyn_string_delete ((dyn_string_t) node);
       node = next;
     }
 }

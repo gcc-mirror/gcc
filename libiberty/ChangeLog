@@ -1,3 +1,9 @@
+2001-03-22  Jim Blandy  <jimb@redhat.com>
+
+	* cp-demangle.c (string_list_delete): Use dyn_string_delete
+	instead of free, to free the contents as well as the string
+	structure.
+
 2001-03-21  Zack Weinberg  <zackw@stanford.edu>
 
 	* make-temp-file.c: Always default DIR_SEPARATOR to '/'.
