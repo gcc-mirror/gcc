@@ -117,29 +117,24 @@ MAINT_CHARSET = latin1
 INTERFACE = v3
 gxx_include_dir = $(includedir)/g++
 
-SUBDIRS = math libio libsupc++ src
+SUBDIRS = libio libmath libsupc++ src
 
-#all-local:  stamp-rebuild
+# Compile flags that should be constant throughout the build, both for
+# SUBDIRS and for libstdc++-v3 in general.
+# Optimization flags that are probably a good idea for thrill-seekers. Just
+# uncomment the lines below and make, everything else is ready to go... 
+# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
+OPTIMIZE_CXXFLAGS = 
 
-# This has already been sanity-checked by configure to a certain extent
-#stamp-rebuild:  $(top_builddir)/config.status
-#	if test "$(GCC_OBJDIR)" != "no"; then \
-#	(cd "$(GCC_OBJDIR)/gcc" && \
-#	 if test -f libgcc2.ready ; then \
-#	   rm -f libgcc2.ready libgcc.a libgcc2.a ; \
-#	   $(MAKE) libgcc2.a TARGET_LIBGCC2_CFLAGS='@NAMESPACES@' ; \
-#	   $(MAKE) libgcc.a ; \
-#	 else \
-#	   echo '** There does not appear to be a previously-built' ; \
-#	   echo '** library here.  Please see' ; \
-#	   echo '** <http://sourceware.cygnus.com/libstdc++/install.html>' ; \
-#	   echo '** In particular, the "Building and Installing' ; \
-#	   echo '** the library (without GCC sources)" section.' ; \
-#	   exit 1 ; \
-#	 fi \
-#	) \
-#	fi
-#	touch stamp-rebuild
+# Warning flags to use.
+WARN_CXXFLAGS =  	-Wall -Wno-format -W -Wwrite-strings -Winline 	$(WERROR) @WFMT_FLAGS@
+
+
+# These bits are all figured out from configure. Look in acinclude.m4
+# or configure.in to see how they are set.
+# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
+CONFIG_CXXFLAGS =  	@CPU_FLAGS@ @EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
+
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -155,7 +150,7 @@ MULTICLEAN = true
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"includedir=$(includedir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"NM=$(NM)" 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" 	"DESTDIR=$(DESTDIR)" 	"WERROR=$(WERROR)"
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"includedir=$(includedir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"NM=$(NM)" 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" 	"DESTDIR=$(DESTDIR)" 	"WERROR=$(WERROR)" 	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" 	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" 	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" 
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs

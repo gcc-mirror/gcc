@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.33 2000/10/05 11:36:52 bkoz Exp $
+## $Id: Makefile.am,v 1.34 2000/10/06 23:31:22 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -39,24 +39,33 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
-# Using these options is probably a good idea for thrill-seekers. Just
-# uncomment the lines below and make, everything else is ready to go... 
-# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
-
-# These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set.
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-AC_CXXFLAGS = \
-	$(WERROR) @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
-	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
-
-# Need to manually set this option because AC_CXXFLAGS has to be at
+# AM_CXXFLAGS needs to be in each subdirectory so that it can be
+# modified in a per-library or per-sub-library way.
+# Need to manually set this option because CONFIG_CXXFLAGS has to be at
 # the end of the compile line so that -O2 can be overridden as the
 # occasion call for it. (ie, --enable-debug)
 AM_CXXFLAGS = \
-	-fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
-	-Wall -Wno-format -W -Wwrite-strings -Winline \
-	$(AC_CXXFLAGS) 
+	-fno-implicit-templates \
+	$(WARN_CXXFLAGS) \
+	$(OPTIMIZE_CXXFLAGS) \
+	$(CONFIG_CXXFLAGS) 
+
+# Need to explicitly set this so that AM_CXXFLAGS is last. In
+# addition, we don't use $(DEFS), which tries to set $(top_srcdir) as
+# an include diretory, which screws up shadow headers. (That way,
+# things like -O2 passed down from the toplevel can be overridden by
+# --enable-debug.)
+CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	     $(CXXFLAGS) $(AM_CXXFLAGS) 
+
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+
+# We have a problem when building the shared libstdc++ object if the
+# rules automake generates would be used.  We cannot allow CXX to be used
+# in libtool since this would add -lstdc++ to the link line which of
+# course is impossible.
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 # Root level of the include sources.
@@ -65,7 +74,7 @@ glibcpp_includedir = $(top_srcdir)/include
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
 
-LIBMATH_INCLUDES = -I$(top_srcdir)/math
+LIBMATH_INCLUDES = -I$(top_srcdir)/libmath
 
 if GLIBCPP_NEED_LIBIO
 LIBIO_INCLUDES = \
@@ -92,24 +101,6 @@ INCLUDES = \
 	-I$(top_builddir) -I$(glibcpp_includedir) \
 	 $(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
 	 $(TOPLEVEL_INCLUDES)	
-
-
-# Need to explicitly set this so that AM_CXXFLAGS is last. In
-# addition, we don't use $(DEFS), which tries to set $(top_srcdir) as
-# an include diretory, which screws up shadow headers. (That way,
-# things like -O2 passed down from the toplevel can be overridden by
-# --enable-debug.)
-CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	     $(CXXFLAGS) $(AM_CXXFLAGS) 
-
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
-
-# We have a problem when building the shared libstdc++ object if the
-# rules automake generates would be used.  We cannot allow CXX to be used
-# in libtool since this would add -lstdc++ to the link line which of
-# course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 headers = \
@@ -207,7 +198,7 @@ endif
 
 generated_headers = \
 	 $(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
-	 $(top_builddir)/bits/c++threads.h $(top_builddir)/bits/c++io.h
+	 $(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h 
 
 cpu_headers = \
 	 $(top_srcdir)/@cpu_include_dir@/bits/atomicity.h 
@@ -238,7 +229,7 @@ libstdc___la_SOURCES = $(sources)
 libinst_wstring_la_SOURCES = $(wstring_sources)
 
 libstdc___la_LIBADD = \
-	../math/libmath.la ../libio/libio.la \
+	../libmath/libmath.la ../libio/libio.la \
 	../libsupc++/libsupc++convenience.la \
 	@libinst_wstring_la@
 
