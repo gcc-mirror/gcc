@@ -1,3 +1,12 @@
+2000-11-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/os/gnu-linux/bits/os_defines.h: Include <features.h>.
+	If not glibc 2.1 or higher, include <gnu/types.h> and define
+	__off64_t as __loff_t and #define __THROW as empty.
+
+	* libio/libio.h [__P]: Move __THROW and __PMT into their own
+	ifndef:s.
+
 2000-11-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* porting.texi: Expand libtool information.
