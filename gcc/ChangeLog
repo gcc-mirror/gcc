@@ -1,3 +1,8 @@
+2004-04-30  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* flow.c (propagate_one_insn): Call mark_set_regs for stack pointer
+	updates too.
+
 2004-04-30  Paul Brook  <paul@codesourcery.com>
 
 	* arm.c (arm_needs_doubleword_align): Use mode alignment.
