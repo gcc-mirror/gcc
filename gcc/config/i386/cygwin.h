@@ -32,34 +32,24 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
-/* Augment TARGET_SWITCHES with the cygwin/no-cygwin options.  */
-#define MASK_WIN32 0x40000000 /* Use -lming32 interface */
-#define MASK_CYGWIN  0x20000000 /* Use -lcygwin interface */
-#define MASK_WINDOWS 0x10000000 /* Use windows interface */
-#define MASK_DLL     0x08000000 /* Use dll interface    */
-#define MASK_NOP_FUN_DLLIMPORT 0x20000 /* Ignore dllimport for functions */
+/* Masks for subtarget switches used by other files.  */
+#define MASK_NOP_FUN_DLLIMPORT 0x08000000 /* Ignore dllimport for functions */
 
-#define TARGET_WIN32             (target_flags & MASK_WIN32)
-#define TARGET_CYGWIN            (target_flags & MASK_CYGWIN)
-#define TARGET_WINDOWS           (target_flags & MASK_WINDOWS)
-#define TARGET_DLL               (target_flags & MASK_DLL)
+/* Used in winnt.c.  */
 #define TARGET_NOP_FUN_DLLIMPORT (target_flags & MASK_NOP_FUN_DLLIMPORT)
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-{ "cygwin",		  MASK_CYGWIN,					\
-  N_("Use the Cygwin interface") },					\
-{ "no-cygwin",		  MASK_WIN32,					\
-  N_("Use the Mingw32 interface") },					\
-{ "windows",		  MASK_WINDOWS, N_("Create GUI application") },	\
-{ "no-win32",		  -MASK_WIN32, N_("Don't set Windows defines") },\
-{ "win32",		  0, N_("Set Windows defines") },		\
-{ "console",		  -MASK_WINDOWS,				\
-  N_("Create console application") }, 					\
-{ "dll",		  MASK_DLL, N_("Generate code for a DLL") },	\
-{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,			\
-  N_("Ignore dllimport for functions") }, 				\
-{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" }, \
+{ "cygwin",		  0, N_("Use the Cygwin interface") },	\
+{ "no-cygwin",		  0, N_("Use the Mingw32 interface") },	\
+{ "windows",		  0, N_("Create GUI application") },	\
+{ "no-win32",		  0, N_("Don't set Windows defines") },	\
+{ "win32",		  0, N_("Set Windows defines") },	\
+{ "console",		  0, N_("Create console application") },\
+{ "dll",		  0, N_("Generate code for a DLL") },	\
+{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,		\
+  N_("Ignore dllimport for functions") }, 			\
+{ "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },	\
 { "threads",		  0, N_("Use Mingw-specific thread support") },
 
 #undef CPP_PREDEFINES
