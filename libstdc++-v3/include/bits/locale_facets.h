@@ -446,6 +446,11 @@ namespace std
     protected:
       __c_locale		_M_c_locale_ctype;
 
+      // Pre-computed narrowed and widened chars in the range 0-127.
+      bool                      _M_narrow_ok;      
+      char                      _M_narrow[128];
+      wint_t                    _M_widen[128];
+
     public:
       // Data Members:
       static locale::id        	id;
@@ -500,6 +505,10 @@ namespace std
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
 		char __dfault, char* __dest) const;
+
+      // For use at construction time only.
+      void 
+      _M_initialize_ctype();
     };
 
   template<>

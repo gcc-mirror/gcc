@@ -192,14 +192,17 @@ namespace std
   ctype<wchar_t>::
   do_widen(char __c) const
   {
+    const unsigned char __uc = static_cast<unsigned char>(__c);
+    if (__uc < 128)
+      return _M_widen[__uc];
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    wchar_t __ret = btowc(static_cast<unsigned char>(__c));
+    const wchar_t __wc = btowc(__uc);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
-    return __ret;
+    return __wc;
   }
 
   const char* 
@@ -211,7 +214,11 @@ namespace std
 #endif
     while (__lo < __hi)
       {
-	*__dest = btowc(static_cast<unsigned char>(*__lo));
+	const unsigned char __uc = static_cast<unsigned char>(*__lo);	
+	if (__uc < 128)
+	  *__dest = _M_widen[__uc];
+	else
+	  *__dest = btowc(__uc);	
 	++__lo;
 	++__dest;
       }
@@ -225,10 +232,12 @@ namespace std
   ctype<wchar_t>::
   do_narrow(wchar_t __wc, char __dfault) const
   { 
+    if (__wc >= 0 && __wc < 128 && _M_narrow_ok)
+      return _M_narrow[__wc];
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    int __c = wctob(__wc);
+    const int __c = wctob(__wc);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
@@ -243,17 +252,57 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
 #endif
-    while (__lo < __hi)
-      {
-	int __c = wctob(*__lo);
-	*__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
-	++__lo;
-	++__dest;
-      }
+    if (_M_narrow_ok)
+      while (__lo < __hi)
+	{
+	  if (*__lo >= 0 && *__lo < 128)
+	    *__dest = _M_narrow[*__lo];
+	  else
+	    {
+	      const int __c = wctob(*__lo);
+	      *__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	    }
+	  ++__lo;
+	  ++__dest;
+	}
+    else
+      while (__lo < __hi)
+	{
+	  const int __c = wctob(*__lo);
+	  *__dest = (__c == EOF ? __dfault : static_cast<char>(__c));
+	  ++__lo;
+	  ++__dest;
+	}
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif
     return __hi;
+  }
+
+  void
+  ctype<wchar_t>::_M_initialize_ctype()
+  {
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __c_locale __old = __uselocale(_M_c_locale_ctype);
+#endif
+    wint_t __i;
+    for (__i = 0; __i < 128; ++__i)
+      {
+	const int __c = wctob(__i);
+	if (__c == EOF)
+	  break;
+	else
+	  _M_narrow[__i] = static_cast<char>(__c);
+      }
+    if (__i == 128)
+      _M_narrow_ok = true;
+    else
+      _M_narrow_ok = false;
+    for (int __i = 0; __i < 128; ++__i)
+      _M_widen[__i] = btowc(__i);
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+    __uselocale(__old);
+#endif
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
 }
