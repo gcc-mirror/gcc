@@ -2503,7 +2503,14 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	}
       else if (n >= 2 + (extra != 0))
 	{
-	  temp = copy_to_suggested_reg (GEN_INT (high << 16), subtarget, mode);
+	  if (no_new_pseudos)
+	    {
+	      emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (high << 16)));
+	      temp = target;
+	    }
+	  else
+	    temp = copy_to_suggested_reg (GEN_INT (high << 16),
+					  subtarget, mode);
 
 	  /* As of 2002-02-23, addsi3 is only available when not optimizing.
 	     This means that if we go through expand_binop, we'll try to
