@@ -89,14 +89,42 @@ import gnu.gcj.RawData;
  */
 public class Thread implements Runnable
 {
-  /** The maximum priority for a Thread. */
-  public final static int MAX_PRIORITY = 10;
-
   /** The minimum priority for a Thread. */
-  public final static int MIN_PRIORITY = 1;
+  public static final int MIN_PRIORITY = 1;
 
   /** The priority a Thread gets by default. */
-  public final static int NORM_PRIORITY = 5;
+  public static final int NORM_PRIORITY = 5;
+
+  /** The maximum priority for a Thread. */
+  public static final int MAX_PRIORITY = 10;
+
+  /**
+   * The group this thread belongs to. This is set to null by
+   * ThreadGroup.removeThread when the thread dies.
+   */
+  ThreadGroup group;
+
+  /** The thread name, non-null. */
+  String name;
+
+  /** The object to run(), null if this is the target. */
+  private Runnable runnable;
+
+  /** The thread priority, 1 to 10. */
+  private int priority;
+
+  private boolean daemon_flag;
+  boolean interrupt_flag;
+  private boolean alive_flag;
+  private boolean startable_flag;
+  private ClassLoader context_class_loader;
+
+  // This describes the top-most interpreter frame for this thread.
+  RawData interp_frame;
+
+  // Our native data - points to an instance of struct natThread.
+  private Object data;
+
 
   /**
    * Get the number of active threads in the current Thread's ThreadGroup.
@@ -106,7 +134,7 @@ public class Thread implements Runnable
    * @return the number of active threads in the current ThreadGroup
    * @see ThreadGroup#activeCount()
    */
-  public static int activeCount ()
+  public static int activeCount()
   {
     return currentThread().getThreadGroup().activeCount();
   }
@@ -118,11 +146,11 @@ public class Thread implements Runnable
    * @throws SecurityException if the current Thread cannot modify this Thread
    * @see SecurityManager#checkAccess(Thread)
    */
-  public final void checkAccess ()
+  public final void checkAccess()
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkAccess(this);
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkAccess(this);
   }
 
   /**
@@ -133,20 +161,20 @@ public class Thread implements Runnable
    * @throws IllegalThreadStateException if this Thread is not suspended
    * @deprecated pointless, since suspend is deprecated
    */
-  public native int countStackFrames ();
+  public native int countStackFrames();
 
   /**
    * Get the currently executing Thread.
    *
    * @return the currently executing Thread
    */
-  public static native Thread currentThread ();
+  public static native Thread currentThread();
 
   /**
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
    */
-  public native void destroy ();
+  public native void destroy();
   
   /**
    * Print a stack trace of the current thread to stderr using the same
@@ -154,9 +182,9 @@ public class Thread implements Runnable
    *
    * @see Throwable#printStackTrace()
    */
-  public static void dumpStack ()
+  public static void dumpStack()
   {
-    (new Exception ("Stack trace")).printStackTrace ();
+    (new Exception("Stack trace")).printStackTrace();
   }
 
   /**
@@ -173,9 +201,9 @@ public class Thread implements Runnable
    * @see #activeCount()
    * @see SecurityManager#checkAccess(ThreadGroup)
    */
-  public static int enumerate (Thread[] threads)
+  public static int enumerate(Thread[] array)
   {
-    return currentThread().group.enumerate(threads);
+    return currentThread().group.enumerate(array);
   }
   
   /**
@@ -183,7 +211,7 @@ public class Thread implements Runnable
    *
    * @return this Thread's name
    */
-  public final String getName ()
+  public final String getName()
   {
     return name;
   }
@@ -193,7 +221,7 @@ public class Thread implements Runnable
    *
    * @return the Thread's priority
    */
-  public final int getPriority ()
+  public final int getPriority()
   {
     return priority;
   }
@@ -204,7 +232,7 @@ public class Thread implements Runnable
    *
    * @return this Thread's ThreadGroup
    */
-  public final ThreadGroup getThreadGroup ()
+  public final ThreadGroup getThreadGroup()
   {
     return group;
   }
@@ -213,10 +241,11 @@ public class Thread implements Runnable
    * Return true if this Thread holds the object's lock, false otherwise.
    *
    * @param obj the object to test lock ownership on.
+   * @return true if the current thread is currently synchronized on obj
    * @throws NullPointerException if obj is null.
    * @since 1.4
    */
-  public static native boolean holdsLock (Object obj);
+  public static native boolean holdsLock(Object obj);
 
   /**
    * Interrupt this Thread. First, there is a security check,
@@ -240,7 +269,7 @@ public class Thread implements Runnable
    *
    * @throws SecurityException if you cannot modify this Thread
    */
-  public native void interrupt ();
+  public native void interrupt();
 
   /**
    * Determine whether the current Thread has been interrupted, and clear
@@ -249,19 +278,19 @@ public class Thread implements Runnable
    * @return whether the current Thread has been interrupted
    * @see #isInterrupted()
    */
-  public static boolean interrupted ()
+  public static boolean interrupted()
   {
-    return currentThread().isInterrupted (true);
+    return currentThread().isInterrupted(true);
   }
 
   /**
    * Determine whether the given Thread has been interrupted, but leave
    * the <i>interrupted status</i> alone in the process.
    *
-   * @return whether the current Thread has been interrupted
+   * @return whether the Thread has been interrupted
    * @see #interrupted()
    */
-  public boolean isInterrupted ()
+  public boolean isInterrupted()
   {
     return interrupt_flag;
   }
@@ -272,7 +301,7 @@ public class Thread implements Runnable
    *
    * @return whether this Thread is alive
    */
-  public final boolean isAlive ()
+  public final boolean isAlive()
   {
     return alive_flag;
   }
@@ -283,7 +312,7 @@ public class Thread implements Runnable
    * @return whether this is a daemon Thread or not
    * @see #setDaemon(boolean)
    */
-  public final boolean isDaemon ()
+  public final boolean isDaemon()
   {
     return daemon_flag;
   }
@@ -294,9 +323,9 @@ public class Thread implements Runnable
    * @throws InterruptedException if the Thread is interrupted; it's
    *         <i>interrupted status</i> will be cleared
    */
-  public final void join () throws InterruptedException
+  public final void join() throws InterruptedException
   {
-    join (0, 0);
+    join(0, 0);
   }
 
   /**
@@ -306,9 +335,9 @@ public class Thread implements Runnable
    * @throws InterruptedException if the Thread is interrupted; it's
    *         <i>interrupted status</i> will be cleared
    */
-  public final void join (long timeout) throws InterruptedException
+  public final void join(long ms) throws InterruptedException
   {
-    join (timeout, 0);
+    join(ms, 0);
   }
 
   /**
@@ -327,18 +356,20 @@ public class Thread implements Runnable
    * @throws IllegalArgumentException if ns is invalid
    * @XXX A ThreadListener would be nice, to make this efficient.
    */
-  public final native void join (long timeout, int nanos)
+  public final native void join(long ms, int ns)
     throws InterruptedException;
 
   /**
    * Resume a suspended thread.
    *
-   * @see #resume()
+   * @throws SecurityException if you cannot resume the Thread
+   * @see #checkAccess()
+   * @see #suspend()
    * @deprecated pointless, since suspend is deprecated
    */
-  public final native void resume ();
+  public final native void resume();
 
-  private final native void finish_ ();
+  private final native void finish_();
 
   /**
    * Determine whether the given Thread has been interrupted, but leave
@@ -347,7 +378,7 @@ public class Thread implements Runnable
    * @return whether the current Thread has been interrupted
    * @see #interrupted()
    */
-  private boolean isInterrupted (boolean clear_flag)
+  private boolean isInterrupted(boolean clear_flag)
   {
     boolean r = interrupt_flag;
     if (clear_flag && r)
@@ -367,7 +398,7 @@ public class Thread implements Runnable
    * @see #start()
    * @see #Thread(ThreadGroup, Runnable, String)
    */
-  public void run ()
+  public void run()
   {
     if (runnable != null)
       runnable.run();
@@ -385,11 +416,11 @@ public class Thread implements Runnable
    * @see #isDaemon()
    * @see #checkAccess()
    */
-  public final void setDaemon (boolean status)
+  public final void setDaemon(boolean status)
   {
-    checkAccess ();
+    checkAccess();
     if (!startable_flag)
-      throw new IllegalThreadStateException ();
+      throw new IllegalThreadStateException();
     daemon_flag = status;
   }
 
@@ -410,12 +441,12 @@ public class Thread implements Runnable
   public synchronized ClassLoader getContextClassLoader()
   {
     if (context_class_loader == null)
-      context_class_loader = ClassLoader.getSystemClassLoader ();
+      context_class_loader = ClassLoader.getSystemClassLoader();
 
-    SecurityManager s = System.getSecurityManager();
+    SecurityManager sm = System.getSecurityManager();
     // FIXME: we can't currently find the caller's class loader.
     ClassLoader callers = null;
-    if (s != null && callers != null)
+    if (sm != null && callers != null)
       {
 	// See if the caller's class loader is the same as or an
 	// ancestor of this thread's class loader.
@@ -423,11 +454,11 @@ public class Thread implements Runnable
 	  {
 	    // FIXME: should use some internal version of getParent
 	    // that avoids security checks.
-	    callers = callers.getParent ();
+	    callers = callers.getParent();
 	  }
 
 	if (callers != context_class_loader)
-	  s.checkPermission (new RuntimePermission ("getClassLoader"));
+	  sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
 
     return context_class_loader;
@@ -442,17 +473,17 @@ public class Thread implements Runnable
    * class loader is not null or an ancestor of this thread's context class
    * loader.
    *
-   * @return the context class loader
+   * @param classloader the new context class loader
    * @throws SecurityException when permission is denied
-   * @see setContextClassLoader(ClassLoader)
+   * @see getContextClassLoader()
    * @since 1.2
    */
-  public synchronized void setContextClassLoader(ClassLoader cl)
+  public synchronized void setContextClassLoader(ClassLoader classloader)
   {
-    SecurityManager s = System.getSecurityManager ();
-    if (s != null)
-      s.checkPermission (new RuntimePermission ("setContextClassLoader"));
-    context_class_loader = cl;
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("setContextClassLoader"));
+    context_class_loader = classloader;
   }
 
   /**
@@ -463,14 +494,14 @@ public class Thread implements Runnable
    * @throws NullPointerException if name is null
    * @throws SecurityException if you cannot modify this Thread
    */
-  public final void setName (String n)
+  public final void setName(String name)
   {
-    checkAccess ();
+    checkAccess();
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
-    if (n == null)
-      throw new NullPointerException ();
-    name = n;
+    if (name == null)
+      throw new NullPointerException();
+    this.name = name;
   }
 
   /**
@@ -502,9 +533,9 @@ public class Thread implements Runnable
    * @see #notify()
    * @see #wait(long)
    */
-  public static void sleep (long timeout) throws InterruptedException
+  public static void sleep(long ms) throws InterruptedException
   {
-    sleep (timeout, 0);
+    sleep(ms, 0);
   }
 
   /**
@@ -527,7 +558,7 @@ public class Thread implements Runnable
    * @see #notify()
    * @see #wait(long, int)
    */
-  public static native void sleep (long timeout, int nanos)
+  public static native void sleep(long timeout, int nanos)
     throws InterruptedException;
 
   /**
@@ -540,7 +571,7 @@ public class Thread implements Runnable
    * @throws IllegalThreadStateException if the thread has already started
    * @see #run()
    */
-  public native void start ();
+  public native void start();
 
   /**
    * Cause this Thread to stop abnormally because of the throw of a ThreadDeath
@@ -565,11 +596,11 @@ public class Thread implements Runnable
    * @see SecurityManager#checkPermission(Permission)
    * @deprecated unsafe operation, try not to use
    */
-  public final void stop ()
+  public final void stop()
   {
     // Argument doesn't matter, because this is no longer
     // supported.
-    stop (null);
+    stop(null);
   }
 
   /**
@@ -599,7 +630,7 @@ public class Thread implements Runnable
    * @see SecurityManager#checkPermission(Permission)
    * @deprecated unsafe operation, try not to use
    */
-  public final native void stop (Throwable e);
+  public final native void stop(Throwable e);
 
   /**
    * Suspend this Thread.  It will not come back, ever, unless it is resumed.
@@ -613,7 +644,7 @@ public class Thread implements Runnable
    * @see #resume()
    * @deprecated unsafe operation, try not to use
    */
-  public final native void suspend ();
+  public final native void suspend();
 
   private final native void initialize_native ();
 
@@ -861,12 +892,12 @@ public class Thread implements Runnable
    * Returns a string representation of this thread, including the
    * thread's name, priority, and thread group.
    *
-   * @return  a string representation of this thread.
+   * @return a human-readable String representing this Thread
    */
-  public String toString ()
+  public String toString()
   {
-    return "Thread[" + name + "," + priority + "," + 
-      (group == null ? "" : group.getName()) + "]";
+    return ("Thread[" + name + "," + priority + ","
+	    + (group == null ? "" : group.getName()) + "]");
   }
 
   /**
@@ -875,20 +906,4 @@ public class Thread implements Runnable
    */
   public static native void yield ();
 
-  // Private data.
-  ThreadGroup group;
-  String name;
-  private Runnable runnable;
-  private int priority;
-  private boolean daemon_flag;
-  boolean interrupt_flag;
-  private boolean alive_flag;
-  private boolean startable_flag;
-  private ClassLoader context_class_loader;
-
-  // This describes the top-most interpreter frame for this thread.
-  RawData interp_frame;
-
-  // Our native data - points to an instance of struct natThread.
-  private Object data;
 }

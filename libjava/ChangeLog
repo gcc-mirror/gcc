@@ -1,5 +1,11 @@
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Thread.java: Reordered fields, reformated much code,
+	no functional changes, some variables renamed, javadoc comments
+	merged.
+
+2004-02-05  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/Deflater.java,
 	java/util/zip/DeflaterOutputStream.java,
 	java/util/zip/GZIPInputStream.java:
