@@ -26,6 +26,47 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+	if (TARGET_THUMB)				\
+	  builtin_define ("__arm__");			\
+	else						\
+	  builtin_define ("__thumb__");			\
+							\
+	if (TARGET_BIG_END)				\
+	  {						\
+	    builtin_define ("__ARMEB__");		\
+	    if (TARGET_THUMB)				\
+	      builtin_define ("__THUMBEB__");		\
+	    if (TARGET_LITTLE_WORDS)			\
+	      builtin_define ("__ARMWEL__");		\
+	  }						\
+        else						\
+	  {						\
+	    builtin_define ("__ARMEL__");		\
+	    if (TARGET_THUMB)				\
+	      builtin_define ("__THUMBEL__");		\
+	  }						\
+							\
+	if (TARGET_APCS_32)				\
+	  builtin_define ("__APCS_32__");		\
+	else						\
+	  builtin_define ("__APCS_26__");		\
+							\
+	if (TARGET_SOFT_FLOAT)				\
+	  builtin_define ("__SOFTFP__");		\
+							\
+	/* Add a define for interworking.		\
+	   Needed when building libgcc.a.  */		\
+	if (TARGET_INTERWORK)				\
+	  builtin_define ("__THUMB_INTERWORK__");	\
+							\
+	builtin_assert ("cpu=arm");			\
+	builtin_assert ("machine=arm");			\
+    } while (0)
+
 #define TARGET_CPU_arm2		0x0000
 #define TARGET_CPU_arm250	0x0000
 #define TARGET_CPU_arm3		0x0000
@@ -126,16 +167,17 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 
 #undef  CPP_SPEC
-#define CPP_SPEC "\
-%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
-%(cpp_endian) %(subtarget_cpp_spec) %(cpp_isa) %(cpp_interwork)"
-
-#define CPP_ISA_SPEC "%{mthumb:-D__thumb__} %{!mthumb:-D__arm__}"
+#define CPP_SPEC "%(cpp_cpu_arch) %(subtarget_cpp_spec)			\
+%{mapcs-32:%{mapcs-26:							\
+	%e-mapcs-26 and -mapcs-32 may not be used together}}		\
+%{msoft-float:%{mhard-float:						\
+	%e-msoft-float and -mhard_float may not be used together}}	\
+%{mbig-endian:%{mlittle-endian:						\
+	%e-mbig-endian and -mlittle-endian may not be used together}}"
 
 /* Set the architecture define -- if -march= is set, then it overrides
    the -mcpu= setting.  */
 #define CPP_CPU_ARCH_SPEC "\
--Acpu=arm -Amachine=arm \
 %{march=arm2:-D__ARM_ARCH_2__} \
 %{march=arm250:-D__ARM_ARCH_2__} \
 %{march=arm3:-D__ARM_ARCH_2__} \
@@ -206,58 +248,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{!mcpu*:%(cpp_cpu_arch_default)}} \
 "
 
-/* Define __APCS_26__ if the PC also contains the PSR */
-#define CPP_APCS_PC_SPEC "\
-%{mapcs-32:%{mapcs-26:%e-mapcs-26 and -mapcs-32 may not be used together} \
- -D__APCS_32__} \
-%{mapcs-26:-D__APCS_26__} \
-%{!mapcs-32: %{!mapcs-26:%(cpp_apcs_pc_default)}} \
-"
-
-#ifndef CPP_APCS_PC_DEFAULT_SPEC
-#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_26__"
-#endif
-
-#define CPP_FLOAT_SPEC "\
-%{msoft-float:\
-  %{mhard-float:%e-msoft-float and -mhard_float may not be used together} \
-  -D__SOFTFP__} \
-%{!mhard-float:%{!msoft-float:%(cpp_float_default)}} \
-"
-
-/* Default is hard float, which doesn't define anything */
-#define CPP_FLOAT_DEFAULT_SPEC ""
-
-#define CPP_ENDIAN_SPEC "\
-%{mbig-endian:								\
-  %{mlittle-endian:							\
-    %e-mbig-endian and -mlittle-endian may not be used together}	\
-  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__} %{mthumb:-D__THUMBEB__}}\
-%{mlittle-endian:-D__ARMEL__ %{mthumb:-D__THUMBEL__}}			\
-%{!mlittle-endian:%{!mbig-endian:%(cpp_endian_default)}}		\
-"
-
-/* Default is little endian.  */
-#define CPP_ENDIAN_DEFAULT_SPEC "-D__ARMEL__ %{mthumb:-D__THUMBEL__}"
-
-/* Add a define for interworking.  Needed when building libgcc.a.  
-   This must define __THUMB_INTERWORK__ to the pre-processor if
-   interworking is enabled by default.  */
-#ifndef CPP_INTERWORK_DEFAULT_SPEC
-#define CPP_INTERWORK_DEFAULT_SPEC ""
-#endif
-
-#define CPP_INTERWORK_SPEC "						\
-%{mthumb-interwork:							\
-  %{mno-thumb-interwork: %eincompatible interworking options}		\
-  -D__THUMB_INTERWORK__}						\
-%{!mthumb-interwork:%{!mno-thumb-interwork:%(cpp_interwork_default)}}	\
-"
-
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES ""
-#endif
-
 #ifndef CC1_SPEC
 #define CC1_SPEC ""
 #endif
@@ -274,15 +264,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define EXTRA_SPECS						\
   { "cpp_cpu_arch",		CPP_CPU_ARCH_SPEC },		\
   { "cpp_cpu_arch_default",	CPP_ARCH_DEFAULT_SPEC },	\
-  { "cpp_apcs_pc",		CPP_APCS_PC_SPEC },		\
-  { "cpp_apcs_pc_default",	CPP_APCS_PC_DEFAULT_SPEC },	\
-  { "cpp_float",		CPP_FLOAT_SPEC },		\
-  { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },	\
-  { "cpp_endian",		CPP_ENDIAN_SPEC },		\
-  { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },	\
-  { "cpp_isa",			CPP_ISA_SPEC },			\
-  { "cpp_interwork",		CPP_INTERWORK_SPEC },		\
-  { "cpp_interwork_default",	CPP_INTERWORK_DEFAULT_SPEC },	\
   { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
   SUBTARGET_EXTRA_SPECS
 

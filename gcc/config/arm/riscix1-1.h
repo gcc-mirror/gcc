@@ -29,9 +29,13 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC  \
   "%{pg:/usr/lib/gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem=unix"
-#endif
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("arm");		\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("riscix");		\
+	builtin_assert ("system=unix");		\
+    } while (0)
 
 /* Riscix 1.1 doesn't have X/OPEN support, so only accept -mbsd (but ignore
    it).  

@@ -44,10 +44,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some defines for CPP.
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--Dunix -Driscbsd -Darm32 -D__arm32__ -D__arm__ -D__NetBSD__ \
--Asystem=unix -Asystem=NetBSD"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("arm32");		\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("riscbsd");		\
+	builtin_define ("__NetBSD__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=NetBSD");	\
+    } while (0)
 
 /* Define _POSIX_SOURCE if necessary.  */
 #undef CPP_SPEC

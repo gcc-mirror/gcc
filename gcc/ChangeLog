@@ -1,5 +1,20 @@
 2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+config:
+	* arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define.
+	(CPP_SPEC): Update.
+	(CPP_APCS_PC_SPEC, CPP_APCS_PC_DEFAULT_SPEC,
+	CPP_FLOAT_SPEC, CPP_FLOAT_DEFAULT_SPEC, CPP_ENDIAN_SPEC,
+	CPP_ENDIAN_DEFAULT_SPEC, CPP_INTERWORK_DEFAULT_SPEC,
+	CPP_INTERWORK_SPEC, CPP_PREDEFINES): Remove.
+	(EXTRA_SPECS): Update.
+	* arm/conix-elf.h, arm/linux-elf.h, arm/netbsd.h, arm/riscix.h,
+	arm/riscix1-1.h, arm/rtems-elf.h, arm/semiaof.h, arm/unknown-elf.h,
+	arm/unknown-elf-oabi.h, arm/vxarm.h: Remove CPP_PREDEFINES and
+	define TARGET_OS_CPP_BUILTINS if necessary.
+
+2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gcc.c (cpp_options): Must pass -m* and -f* options
 	to the front end even when only preprocessing.
 	(cc1_options): Remove redundant -lang-c.
@@ -43,6 +58,10 @@ Tue May 14 12:38:30 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.md: Use define_constants for unspec numbers.
 	* config/i386/i386.c: Likewise.
+
+2002-05-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/contrib.texi: Update my entry.
 
 2002-05-13  Mark Mitchell  <mark@codesourcery.com>
 

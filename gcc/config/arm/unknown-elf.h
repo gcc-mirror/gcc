@@ -86,10 +86,6 @@ Boston, MA 02111-1307, USA.  */
     }									\
   while (0)
 
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__"
-#endif
-
 #ifndef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"
 #endif
