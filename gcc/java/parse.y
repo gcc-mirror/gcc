@@ -8656,7 +8656,9 @@ verify_constructor_super (mdecl)
 		  && m_arg_type != end_params_node);
 		 arg_type = TREE_CHAIN (arg_type), 
 		   m_arg_type = TREE_CHAIN (m_arg_type))
-	      if (TREE_VALUE (arg_type) != TREE_VALUE (m_arg_type))
+	      if (!valid_method_invocation_conversion_p 
+		     (TREE_VALUE (arg_type),
+		      TREE_VALUE (m_arg_type)))
 		break;
 
 	    if (arg_type == end_params_node && m_arg_type == end_params_node)
