@@ -2208,6 +2208,11 @@ build_component_ref (datum, component, basetype_path, protect)
 	    mark_used (field);
 	  else
 	    TREE_USED (field) = 1;
+
+	  /* Do evaluate the object when accessing a static member.  */
+	  if (TREE_SIDE_EFFECTS (datum))
+	    field = build (COMPOUND_EXPR, TREE_TYPE (field), datum, field);
+
 	  return field;
 	}
     }
@@ -7131,6 +7136,9 @@ strip_all_pointer_quals (type)
 {
   if (TREE_CODE (type) == POINTER_TYPE)
     return build_pointer_type (strip_all_pointer_quals (TREE_TYPE (type)));
+  else if (TREE_CODE (type) == OFFSET_TYPE)
+    return build_offset_type (TYPE_OFFSET_BASETYPE (type),
+			      strip_all_pointer_quals (TREE_TYPE (type)));
   else
     return TYPE_MAIN_VARIANT (type);
 }

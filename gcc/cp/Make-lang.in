@@ -279,9 +279,7 @@ cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
 # Update the tags table.
 cp/TAGS: force
 	cd $(srcdir)/cp ;			\
-	etags *.c *.h ;				\
-	echo 'l' | tr 'l' '\f' >> TAGS ;	\
-	echo 'parse.y,0' >> TAGS ; 		\
-	etags -a ../*.h ../*.c;
+	etags --no-globals -l c `echo *.c | sed 's/parse.c//'` \
+	  parse.y *.h ../*.c ../*.h;
 
 .PHONY: cp/TAGS
