@@ -1,5 +1,9 @@
 2004-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* convert.c (convert_to_real): Add more math builtins.
+
+2004-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* convert.c (convert_to_real): Reformat using switch stmt.
 
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>

@@ -89,11 +89,33 @@ void test(double d1, float f1, long double ld1)
 
 
 #ifdef __OPTIMIZE__
+  OUTER_CAST1 (acos, /*C99=*/ 0);
+  OUTER_CAST1 (acosh, /*C99=*/ 1);
+  OUTER_CAST1 (asin, /*C99=*/ 1);
+  OUTER_CAST1 (asinh, /*C99=*/ 1);
+  OUTER_CAST1 (atan, /*C99=*/ 0);
+  OUTER_CAST1 (atanh, /*C99=*/ 1);
+  OUTER_CAST1 (cbrt, /*C99=*/ 1);
   OUTER_CAST1 (cos, /*C99=*/ 0);
+  OUTER_CAST1 (cosh, /*C99=*/ 0);
+  OUTER_CAST1 (erf, /*C99=*/ 1);
+  OUTER_CAST1 (erfc, /*C99=*/ 1);
   OUTER_CAST1 (exp, /*C99=*/ 0);
+  OUTER_CAST1 (exp2, /*C99=*/ 1);
+  OUTER_CAST1 (expm1, /*C99=*/ 1);
+  OUTER_CAST1 (fabs, /*C99=*/ 0);
+  OUTER_CAST1 (lgamma, /*C99=*/ 1);
   OUTER_CAST1 (log, /*C99=*/ 0);
+  OUTER_CAST1 (log10, /*C99=*/ 0);
+  OUTER_CAST1 (log1p, /*C99=*/ 1);
+  OUTER_CAST1 (log2, /*C99=*/ 1);
+  OUTER_CAST1 (logb, /*C99=*/ 1);
   OUTER_CAST1 (sin, /*C99=*/ 0);
+  OUTER_CAST1 (sinh, /*C99=*/ 0);
   OUTER_CAST1 (sqrt, /*C99=*/ 0);
+  OUTER_CAST1 (tan, /*C99=*/ 0);
+  OUTER_CAST1 (tanh, /*C99=*/ 0);
+  OUTER_CAST1 (tgamma, /*C99=*/ 1);
 
   INNER_CAST1 (ceil, /*C99=*/ 0);
   OUTER_CAST1 (ceil, /*C99=*/ 0);
