@@ -1,3 +1,10 @@
+2001-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2-fde.c (__register_frame_info_bases, __register_frame):
+	Don't register empty .eh_frame sections.
+	(__deregister_frame_info_bases, __deregister_frame): Don't
+	unregister them either.
+
 2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in (HAVE_AS_GDWARF2_DEBUG_FLAG): Define.
