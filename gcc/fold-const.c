@@ -3510,9 +3510,7 @@ fold (expr)
 		      return omit_one_operand (type, integer_one_node, arg0);
 		    }
 
-		  return omit_one_operand (type, 
-					   fold (build (code, type, cval1, cval2)),
-					   arg0);
+		  return fold (build (code, type, cval1, cval2));
 		}
 	    }
 	}
