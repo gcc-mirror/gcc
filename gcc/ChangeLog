@@ -1,3 +1,9 @@
+2003-09-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11852
+	* varasm.c (initializer_constant_valid_p): Correct logic for
+	CONSTRUCTORs.
+
 Sun Sep  7 14:53:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix again the preivous patch.

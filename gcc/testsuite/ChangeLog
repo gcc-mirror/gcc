@@ -1,5 +1,10 @@
 2003-09-07  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11852
+	* g++.dg/init/struct1.C: New test.
+
+2003-09-07  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/12181
 	* g++.dg/expr/comma1.C: New test.
 
