@@ -377,10 +377,7 @@ fr30_expand_epilogue ()
     
   for (regno = 0; regno < STACK_POINTER_REGNUM; regno ++)
     if (current_frame_info.gmask & (1 << regno))
-      {
-	emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno)));
-	emit_insn (gen_rtx_USE (VOIDmode, regno));
-      }
+      emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno)));
   
   if (current_frame_info.pretend_size)
     emit_insn (gen_add_to_stack (GEN_INT (current_frame_info.pretend_size)));
@@ -388,7 +385,7 @@ fr30_expand_epilogue ()
   /* Reset state info for each function.  */
   current_frame_info = zero_frame_info;
 
-  emit_insn (gen_return_from_func ());
+  emit_jump_insn (gen_return_from_func ());
 }
 
 /* Do any needed setup for a variadic function.  We must create a register

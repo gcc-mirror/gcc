@@ -1,3 +1,8 @@
+Thu Jan 13 23:44:03 2000  Richard Henderson  <rth@cygnus.com>
+
+	* fr30.c (fr30_expand_epilogue): Revert last change.
+	Use emit_jump_insn for the return insn.
+
 Thu Jan 13 14:46:03 2000  Jason Eckhardt  <jle@cygnus.com>
                           Stan Cox  <scox@cygnus.com>
 
