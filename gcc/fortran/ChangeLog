@@ -1,5 +1,6 @@
 2004-12-08  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/18826
 	* resolve.c (resolve_code): Impose correct restrictions on
 	assigned variable.
 
