@@ -1,5 +1,15 @@
+2001-08-30  Loren J. Rittle  <ljrittle@acm.org>
+
+	PR libstdc++/4082
+	2001-08-13  H.J. Lu  (hjl@gnu.org)
+
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-copy-files):
+	New. Copy files.
+	(libstdc++-v3-init): Use it.
+
 2001-08-28  Loren J. Rittle  <ljrittle@acm.org>
 
+	PR libstdc++/4082
 	* include/Makefile.am: Use toplevel_srcdir to refer to src files
 	outside this component.
 	* include/Makefile.in: Regenerate.
