@@ -111,6 +111,8 @@ Boston, MA 02111-1307, USA.  */
    configuration files...  */
 #define DWARF2_UNWIND_INFO 0
 
+#undef ASM_PREFERRED_EH_DATA_FORMAT
+
 /* Assembler format: alignment output.  */
 
 /* A C statement to output to the stdio stream FILE an assembler
@@ -130,3 +132,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START ";#"
+
