@@ -27,7 +27,6 @@ m32r port		Nick Clifton		nickc@redhat.com
 			Michael Meissner	meissner@redhat.com
 h8 port			Jeff Law		law@redhat.com
 mcore			Nick Clifton		nickc@redhat.com
-			Jim Dein		jdein@windriver.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 			Alexandre Oliva		aoliva@redhat.com
