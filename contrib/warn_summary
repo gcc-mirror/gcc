@@ -4,6 +4,25 @@
 #
 # By Kaveh Ghazi  (ghazi@caip.rutgers.edu)  12/13/97.
 
+# This function does one of three things.  It either passes through
+# all warning data, or passes through gcc toplevel warnings, or passes
+# through a particular subdirectory set of warnings.
+subdirectoryFilter()
+{
+  if test "$filter" = '' ; then
+    # Pass through all lines.
+    cat $1
+  else
+    if test "$filter" = nosub ; then
+      # Omit all subdirectories.
+      $AWK 'BEGIN{t=1} ; /^cd [a-z]*; make/{if(t==1)t=0} ; /Leaving directory/{if(t==0)t=1} ; {if(t==1)print}' $1
+    else
+      # Pass through only subdir $filter.
+      $AWK "/^cd $filter"'; make/{if(t==0)t=1} ; /Leaving directory/{if(t==1)t=0} ; {if(t==1)print}' $1
+    fi
+  fi      
+}
+
 # This function displays all warnings from stageN of the bootstrap.
 stageNwarns()
 {
@@ -13,7 +32,7 @@ stageNwarns()
 	$AWK "/ warning: /{if(t==1)print} ; /stage$stageNminus1/{if(t==0)t=1} ; /stage$stageN/{if(t==1)t=0}"
 }
 
-usage="usage: `basename $0` [-s stage] [file(s)]"
+usage="usage: `basename $0` [-s stage] [-nosub|-ch|-cp|-f|-java] [file(s)]"
 stageN=3
 
 # Find a good awk.
@@ -31,36 +50,53 @@ while test -n "$1" ; do
  case "$1" in
    -s)  if test -z "$2"; then echo $usage; exit 1; fi; stageN="$2"; shift 2 ;;
    -s*) stageN="`expr $1 : '-s\(.*\)'`" ; shift ;;
+   -nosub|-ch|-cp|-f|-java) filter="`expr $1 : '-\(.*\)'`" ; shift ;;
    -*)  echo $usage ; exit 1 ;;
    *)   break ;;
  esac
 done
 
-
+# Check for a valid value of $stageN.
+case "$stageN" in
+  [1-9]) ;;
+  *) echo "Stage <$stageN> must be in the range [1..9]." ; exit 1 ;;
+esac
 
 for file in "$@" ; do
 
-  count=`stageNwarns $file | wc -l`
-  echo There are $count warnings in stage$stageN of this bootstrap.
+  if test "$filter" = '' ; then
+    echo "Counting all warnings,"
+  else
+    if test "$filter" = nosub ; then
+      echo "Counting non-subdirectory warnings,"
+    else
+      echo "Counting warnings in the gcc/$filter subdirectory,"
+    fi
+  fi
+  count=`subdirectoryFilter $file | stageNwarns | wc -l`
+  echo there are $count warnings in stage$stageN of this bootstrap.
 
   echo
   echo Number of warnings per file:
-  stageNwarns $file | $AWK -F: '{print$1}' | sort | uniq -c | sort -nr
+  subdirectoryFilter $file | stageNwarns | $AWK -F: '{print$1}' | \
+	sort | uniq -c | sort -nr
 
   echo
   echo Number of warning types:
-  stageNwarns $file | sed 's/.*warning: //; 
+  subdirectoryFilter $file | stageNwarns | sed 's/.*warning: //; 
 		s/`\(int\)'"'"'/"\1"/g;
+		s/`\(long\)'"'"'/"\1"/g;
 		s/`\(char\)'"'"'/"\1"/g;
 		s/`\(inline\)'"'"'/"\1"/g;
 		s/`\(else\)'"'"'/"\1"/g;
 		s/`\(return\)'"'"'/"\1"/g;
 		s/`\(static\)'"'"'/"\1"/g;
 		s/`\(extern\)'"'"'/"\1"/g;
+		s/`\(const\)'"'"'/"\1"/g;
 		s/`\(longjmp\)'"'"' or `\(vfork\)'"'"'/"\1" or "\2"/g;
 		s/`'"[^']*'/"'`???'"'/g;"'
-		s/.*format, .* arg (arg [0-9]*)/??? format, ??? arg (arg ???)/;
-		s/(arg [0-9]*)/(arg ???)/;
+		s/.*format, .* arg (arg [0-9][0-9]*)/??? format, ??? arg (arg ???)/;
+		s/\([( ]\)arg [0-9][0-9]*\([) ]\)/\1arg ???\2/;
 		s/"\([^"]*\)"/`\1'"'"'/g' | \
 	sort | uniq -c | sort -nr
 
