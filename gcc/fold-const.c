@@ -2647,6 +2647,7 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
      tree arg0, arg1;
      int upper0_p, upper1_p;
 {
+  tree tem;
   int result;
   int sgn0, sgn1;
 
@@ -2656,8 +2657,12 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
      are handled for consistency.  */
 
   if (arg0 != 0 && arg1 != 0)
-    return fold (build (code, type != 0 ? type : TREE_TYPE (arg0),
-			arg0, convert (TREE_TYPE (arg0), arg1)));
+    {
+      tem = fold (build (code, type != 0 ? type : TREE_TYPE (arg0),
+			 arg0, convert (TREE_TYPE (arg0), arg1)));
+      STRIP_NOPS (tem);
+      return TREE_CODE (tem) == INTEGER_CST ? tem : 0;
+    }
 
   if (TREE_CODE_CLASS (code) != '<')
     return 0;
@@ -2790,7 +2795,7 @@ make_range (exp, pin_p, plow, phigh)
 	case BIT_NOT_EXPR:
 	  /* ~ X -> -X - 1  */
 	  exp = build (MINUS_EXPR, type, build1 (NEGATE_EXPR, type, arg0),
-		       convert (type, integer_zero_node));
+		       convert (type, integer_one_node));
 	  continue;
 
 	case PLUS_EXPR:  case MINUS_EXPR:
@@ -2809,15 +2814,13 @@ make_range (exp, pin_p, plow, phigh)
 	      || (n_high != 0 && TREE_OVERFLOW (n_high)))
 	    break;
 
-	  /* Check for an unsigned range which has wrapped around the maximum
-	     value thus making n_high < n_low, and normalize it.  */
+	  /* Check for a range which has wrapped around the maximum value
+	     thus making n_high < n_low.  Normalize any such range it.  */
 	  if (n_low && n_high && tree_int_cst_lt (n_high, n_low))
-	    {
-	      low = n_high, high = n_low;
-	      in_p = ! in_p;
-	    }
+	    low = n_high, high = n_low, in_p = ! in_p;
 	  else
 	    low = n_low, high = n_high;
+
 	  exp = arg0;
 	  continue;
 
