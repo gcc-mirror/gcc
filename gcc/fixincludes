@@ -531,7 +531,7 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, nested comments
-  sed -e 's/#endif.*/#endif/' ${LIB}/$file > ${LIB}/${file}.sed
+  sed -e 's/^[ 	]*#endif.*/#endif/' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
