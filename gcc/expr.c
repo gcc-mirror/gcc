@@ -8941,18 +8941,18 @@ do_store_flag (exp, target, mode, only_cheap)
 
       if (bitnum != 0)
 	op0 = expand_shift (RSHIFT_EXPR, GET_MODE (op0), op0,
-			    size_int (bitnum), target, ops_unsignedp);
+			    size_int (bitnum), subtarget, ops_unsignedp);
 
       if (GET_MODE (op0) != mode)
 	op0 = convert_to_mode (mode, op0, ops_unsignedp);
 
       if ((code == EQ && ! invert) || (code == NE && invert))
-	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, target,
+	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, subtarget,
 			    ops_unsignedp, OPTAB_LIB_WIDEN);
 
       /* Put the AND last so it can combine with more things.  */
       if (bitnum != TYPE_PRECISION (type) - 1)
-	op0 = expand_and (op0, const1_rtx, target);
+	op0 = expand_and (op0, const1_rtx, subtarget);
 
       return op0;
     }
