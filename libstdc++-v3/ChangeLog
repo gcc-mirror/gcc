@@ -1,5 +1,18 @@
 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (money_get::do_get(...,
+	long double&): Properly size the temporary buffer.
+	* testsuite/22_locale/money_get/get/char/11.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/11.cc: Ditto.
+
+	* include/bits/locale_facets.tcc (num_put::_M_group_int,
+	num_put::_M_group_float, money_put::do_put(..., const
+	string_type&), collate::do_compare, collate::do_transform):
+	Prefer basic_string::data() to c_str() when the '\0'
+	terminator is not really needed.
+
+2003-10-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (__verify_grouping):
 	Prefer '=' to an unnecessary '&='.
 
