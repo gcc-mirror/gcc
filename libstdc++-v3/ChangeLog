@@ -162,45 +162,7 @@
 2004-11-18  Paolo Carlini  <pcarlini@suse.de>
 
 	DR 434. bitset::to_string() hard to use [Ready]
-2004-11-23  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* docs/doxygen/doxygroups.cc: Add std::tr1 namespace.
-	* docs/doxygen/run_doxygen: Renames for std::tr1.
-	* docs/doxygen/user.cfg.in: Add cxxabi.h.
-	* include/bits/*.tcc: Add file markup.
-	* include/bits/allocator.h: Add link to allocator.html.
-	* include/bits/atomicity.h: Add file markup.
-	* include/bits/concurrence.h: Same.
-	* include/bits/functexcept.h: Same.
-	* include/ext*: Adjust file markup, remove GCC3 bits.
-	* include/std/*: Adjust file markup, remove bits about renamed files.
-	* libsupc++/cxxabi.h: Add file markup.
-	* testsuite/20_util/memory/auto_ptr/assign_neg.cc: Adjust line numbers.
-
-2004-11-22  Benjamin Kosnik  <bkoz@redhat.com>
-
-	* include/bits/locale_facets.h (isspace, isprint, isupper,
-	islower, isalpha, isdigit, ispunct, isxdigit, isalnum, isgraph,
-	toupper, tolower): Add doxygen markup.
-	(codecvt_byname, ctype_byname, numpunct_byname, collate_byname,
-	time_get_byname, time_put_byname, moneypunct_byname,
-	messages_byname): Same.
-	* include/std/std_fstream.h: Remove superfluous markup.
-	* include/std/std_sstream.h: Same.
-	* include/std/std_streambuf.h: Same.
-	* include/ext/enc_filebuf.h: Adjust markup.
-	* include/ext/stdio_filebuf.h: Same.
-	* include/ext/stdio_sync_filebuf.h: Same.
-	* include/bits/codecvt.h: Same.
-	* config/os/gnu-linux/ctype_base.h: Same.
-	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
-	* include/tr1/array: Add markup.
-	* include/tr1/tuple: Same.
-	
-	* docs/doxygen/run_doxygen: Print arguments.
-
-	* docs/doxygen/user.cfg.in: Tweaks.
-	
 2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/basic_string.h, include/bits/locale_classes.h,
