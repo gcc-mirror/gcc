@@ -203,6 +203,7 @@ main (argc, argv)
 	  if (ptr == NULL || strlen (ptr) != 4)
 	    strcat (buff, ".exe");
 	  addarg (buff);
+	  addarg ("-debug:full -debugtype:coff");
 	}
       else if (arg_len > 2 && !strncmp (argv [i], "-L", 2))
 	{
