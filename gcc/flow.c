@@ -2191,7 +2191,10 @@ merge_blocks (e, b, c)
 
       /* If B does not have an incoming fallthru, and the exception regions
 	 match, then it can be moved immediately before C without introducing
-	 or modifying jumps.  */
+	 or modifying jumps.
+
+	 C can not be the first block, so we do not have to worry about
+	 accessing a non-existent block.  */
       d = BASIC_BLOCK (c->index - 1);
       if (! b_has_incoming_fallthru
 	  && d->eh_end == b->eh_beg
@@ -2199,10 +2202,14 @@ merge_blocks (e, b, c)
 	return merge_blocks_move_predecessor_nojumps (b, c);
 
       /* Otherwise, we're going to try to move C after B.  Make sure the
-	 exception regions match.  */
-      d = BASIC_BLOCK (b->index + 1);
+	 exception regions match.
+
+	 If B is the last basic block, then we must not try to access the
+	 block structure for block B + 1.  Luckily in that case we do not
+	 need to worry about matching exception regions.  */
+      d = (b->index + 1 < n_basic_blocks ? BASIC_BLOCK (b->index + 1) : NULL);
       if (b->eh_end == c->eh_beg
-	  && c->eh_end == d->eh_beg)
+	  && (d == NULL || c->eh_end == d->eh_beg))
 	{
 	  /* If C does not have an outgoing fallthru, then it can be moved
 	     immediately after B without introducing or modifying jumps.  */
