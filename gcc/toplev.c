@@ -5377,7 +5377,7 @@ main (argc, argv)
     {
       unsigned lang_processed;
       unsigned indep_processed;
-      
+
       /* Give the language a chance to decode the option for itself.  */
       lang_processed = lang_decode_option (argc - i, argv + i);
  
@@ -5394,7 +5394,7 @@ main (argc, argv)
 	i += (lang_processed > indep_processed
 	      ? lang_processed : indep_processed);
       else
-	/* This option applies to some other language; ignore it.  *
+	/* This option applies to some other language; ignore it.  */
 	i++;
     }
 
@@ -5520,7 +5520,7 @@ main (argc, argv)
   if (sorrycount)
     return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
-}
+    }
 
 /* Decode -m switches.  */
 /* Decode the switch -mNAME.  */
