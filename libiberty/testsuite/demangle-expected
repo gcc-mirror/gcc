@@ -2486,3 +2486,59 @@ f(Bar<21>, int)
 --format=gnu
 f__FGt3Bar1i24XY_t
 f(Bar<2>, XY_t)
+#
+--format=gnu
+foo__H1Zt2TA2ZRCiZt2NA1Ui9_X01_i
+int foo<TA<int const &, NA<9> > >(TA<int const &, NA<9> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZcZt2NA1Ui_20__X01_i
+int foo<TA<char, NA<20> > >(TA<char, NA<20> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZiZt8N___A___1Ui_99__X01_i
+int foo<TA<int, N___A___<99> > >(TA<int, N___A___<99> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZRCiZt2NA1im1_X01_i
+int foo<TA<int const &, NA<-1> > >(TA<int const &, NA<-1> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZRCiZt2NA1im9_X01_i
+int foo<TA<int const &, NA<-9> > >(TA<int const &, NA<-9> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZcZt2NA1i_m20__X01_i
+int foo<TA<char, NA<-20> > >(TA<char, NA<-20> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZcZt2NA1im1_X01_i
+int foo<TA<char, NA<-1> > >(TA<char, NA<-1> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZiZt4N__A1im9_X01_i
+int foo<TA<int, N__A<-9> > >(TA<int, N__A<-9> >)
+#
+--format=gnu
+foo__H1Zt2TA2ZiZt4N__A1i_m99__X01_i
+int foo<TA<int, N__A<-99> > >(TA<int, N__A<-99> >)
+#
+--format=gnu
+__opi__t2TA2ZiZt4N__A1i9
+TA<int, N__A<9> >::operator int(void)
+#
+--format=gnu
+__opi__t2TA2ZiZt8N___A___1i_m99_
+TA<int, N___A___<-99> >::operator int(void)
+#
+--format=gnu
+foo___bar__baz_____H1Zt2TA2ZiZt8N___A___1i_99__X01_i
+int foo___bar__baz___<TA<int, N___A___<99> > >(TA<int, N___A___<99> >)
+#
+--format=gnu
+foo__bar___foobar_____t2TA2ZiZt8N___A___1i_m99_
+TA<int, N___A___<-99> >::foo__bar___foobar___(void)
+#
+--format=gnu
+foo__bar___foobar_____t2TA2ZiZt4N__A1i9
+TA<int, N__A<9> >::foo__bar___foobar___(void)

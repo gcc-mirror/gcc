@@ -1,3 +1,9 @@
+2000-08-31  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/demangle-expected: Add nine tests for
+	underscore-after-number followed by five tests for name-signature
+	delimiter.
+
 2000-08-28  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (md5.o): Depend on config.h.
@@ -83,6 +89,20 @@
 	* Makefile.in (rename.o, waitpid.o): Depend on config.h
 	* rename.c: Include config.h, unistd.h
 	* waitpid.c: Include config.h, sys/wait.h
+
+2000-07-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* cplus-dem.c (work_stuff_copy_to_from): New.
+	(delete_non_B_K_work_stuff): New.
+	(delete_work_stuff): New.
+	(mop_up): Break out work_stuff partly destruction to
+	delete_non_B_K_work_stuff.
+	(iterate_demangle_function): New.
+	(demangle_prefix): Call iterate_demangle_function instead of
+	demangle_function_name.  Leave handling of name-signature
+	__-delimiters to iterate_demangle_function.
+	(demangle_integral_value): Strip an optional
+	following underscore cautiously.  Handle negative numbers.
 
 2000-07-24  Daniel Berlin <dberlin@redhat.com>
 
