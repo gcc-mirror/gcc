@@ -1,3 +1,12 @@
+2000-11-03  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* builtins.c (expand_builtin_strlen): Remove unused mode
+	argument.
+	* gcc.c (process_command): Remove unused variable.
+	* fold-const.c: Include expr.h.
+	* recog.c: Include reload.h.
+	* Makefile.in (recog.o, fold-const.o): Update deps.
+
 2000-11-02  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* fixinc/gnu-regex.c: Change 'CYGNUS LOCAL' to 'EGCS LOCAL'.
