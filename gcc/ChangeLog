@@ -1,3 +1,7 @@
+Fri Sep 25 14:18:33 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sdbout.c (sdbout_one_type): Don't look at TYPE_BINFO field of enums.
+
 Fri Sep 25 19:30:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_shl_sext): Fix case 5.

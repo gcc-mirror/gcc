@@ -1206,34 +1206,41 @@ sdbout_one_type (type)
 
 	/* Print out the base class information with fields
 	   named after the types they hold.  */
-	if (TYPE_BINFO (type)
-	    && TYPE_BINFO_BASETYPES (type))
-	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
-	for (i = 0; i < n_baseclasses; i++)
+	/* This is only relevent to aggregate types.  TYPE_BINFO is used
+	   for other purposes in an ENUMERAL_TYPE, so we must exclude that
+	   case.  */
+	if (TREE_CODE (type) != ENUMERAL_TYPE)
 	  {
-	    tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), i);
-	    tree child_type = BINFO_TYPE (child);
-	    tree child_type_name;
-	    if (TYPE_NAME (child_type) == 0)
-	      continue;
-	    if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)
-	      child_type_name = TYPE_NAME (child_type);
-	    else if (TREE_CODE (TYPE_NAME (child_type)) == TYPE_DECL)
+	    if (TYPE_BINFO (type)
+		&& TYPE_BINFO_BASETYPES (type))
+	      n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
+	    for (i = 0; i < n_baseclasses; i++)
 	      {
-		child_type_name = DECL_NAME (TYPE_NAME (child_type));
-		if (child_type_name && template_name_p (child_type_name))
-		  child_type_name
-		    = DECL_ASSEMBLER_NAME (TYPE_NAME (child_type));
-	      }
-	    else
-	      continue;
+		tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)),
+					   i);
+		tree child_type = BINFO_TYPE (child);
+		tree child_type_name;
+		if (TYPE_NAME (child_type) == 0)
+		  continue;
+		if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)
+		  child_type_name = TYPE_NAME (child_type);
+		else if (TREE_CODE (TYPE_NAME (child_type)) == TYPE_DECL)
+		  {
+		    child_type_name = DECL_NAME (TYPE_NAME (child_type));
+		    if (child_type_name && template_name_p (child_type_name))
+		      child_type_name
+			= DECL_ASSEMBLER_NAME (TYPE_NAME (child_type));
+		  }
+		else
+		  continue;
 
-	    CONTIN;
-	    PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
-	    PUT_SDB_INT_VAL (TREE_INT_CST_LOW (BINFO_OFFSET (child)));
-	    PUT_SDB_SCL (member_scl);
-	    sdbout_type (BINFO_TYPE (child));
-	    PUT_SDB_ENDEF;
+		CONTIN;
+		PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
+		PUT_SDB_INT_VAL (TREE_INT_CST_LOW (BINFO_OFFSET (child)));
+		PUT_SDB_SCL (member_scl);
+		sdbout_type (BINFO_TYPE (child));
+		PUT_SDB_ENDEF;
+	      }
 	  }
 
 	/* output the individual fields */
