@@ -1,4 +1,4 @@
-#if NOT defined (macro)
+#if NOT defined (guard)
  #ifdef VAR
    VAR++;
  #endif

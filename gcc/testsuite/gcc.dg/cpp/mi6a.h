@@ -1,4 +1,4 @@
-#if IND
+#if NOT_DEFINED
  #ifdef VAR
    VAR++;
  #endif

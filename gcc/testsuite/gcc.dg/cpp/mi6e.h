@@ -1,4 +1,4 @@
-#if !defined (macro) EMPTY
+#if !defined (guard) EMPTYR
  #ifdef VAR
    VAR++;
  #endif
