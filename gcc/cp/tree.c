@@ -1396,6 +1396,30 @@ walk_tree (tp, func, data)
 #undef WALK_SUBTREE
 }
 
+int n_trees;
+
+static tree
+count_trees_r (tp, walk_subtrees, data)
+     tree *tp ATTRIBUTE_UNUSED;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ++n_trees;
+  return NULL_TREE;
+}
+
+/* Debugging function for measuring the rough complexity of a tree
+   representation.  */
+
+int
+count_trees (t)
+     tree t;
+{
+  n_trees = 0;
+  walk_tree (&t, count_trees_r, NULL);
+  return n_trees;
+}  
+
 /* Passed to walk_tree.  Checks for the use of types with no linkage.  */
 
 static tree

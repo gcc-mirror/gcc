@@ -1470,6 +1470,9 @@ build_member_call (type, name, parmlist)
       return build_x_function_call (name, parmlist, current_class_ref);
     }
 
+  if (DECL_P (name))
+    name = DECL_NAME (name);
+
   if (type == std_node)
     return build_x_function_call (do_scoped_id (name, 0), parmlist,
 				  current_class_ref);

@@ -1,3 +1,15 @@
+2000-06-15  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (count_trees): New debugging function.
+
+	* typeck.c (build_x_function_call): Use DECL_FUNCTION_TEMPLATE_P.
+	* init.c (build_member_call): Pull out the name of a DECL.
+
+	* Makefile.in (semantics.o, pt.o): Depend on TIMEVAR_H.
+	* semantics.c (expand_body): Push to TV_INTEGRATION here.
+	* optimize.c (optimize_function): Not here.
+	* pt.c (instantiate_decl): Push to TV_PARSE.
+
 2000-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_PENDING_INLINE_P): Relax checking.

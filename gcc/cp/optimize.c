@@ -28,7 +28,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "input.h"
 #include "integrate.h"
 #include "varray.h"
-#include "timevar.h"
 
 /* To Do:
 
@@ -810,8 +809,6 @@ optimize_function (fn)
       tree prev_fn;
       struct saved_scope *s;
 
-      timevar_push (TV_INTEGRATION);
-      
       /* Clear out ID.  */
       memset (&id, 0, sizeof (id));
 
@@ -842,8 +839,6 @@ optimize_function (fn)
       /* Clean up.  */
       VARRAY_FREE (id.fns);
       VARRAY_FREE (id.target_exprs);
-
-      timevar_pop (TV_INTEGRATION);
     }
 }
 
