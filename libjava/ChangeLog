@@ -4,6 +4,11 @@
 	property is not set. Don't call decode with null argument.
 	* java/lang/Long.java (getLong): Likewise.
 
+	* java/io/CharArrayReader.java (CharArrayReader): Throw 
+	IllegalArgumentException if constructor arguments are illegal.
+	(ready): Return false if no more characters can be read.
+	* java/io/ByteArrayInputStream.java (ByteArrayInputStream): Likewise.
+
 2001-02-17  Mark Wielaard <mark@klomp.org>
 
 	* java/util/TimerTask.java: New version from Classpath.
