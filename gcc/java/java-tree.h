@@ -52,6 +52,7 @@ struct JCF;
       SWITCH_HAS_DEFAULT (in SWITCH_EXPR)
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
+      CALL_USING_SUPER (in CALL_EXPR)
    5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
       IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
@@ -211,7 +212,7 @@ extern tree string_array_type_node;
 extern tree TYPE_identifier_node;      /* "TYPE" */
 extern tree init_identifier_node;      /* "<init>" */
 extern tree clinit_identifier_node;      /* "<clinit>" */
-extern tree finit_identifier_node;      /* "<finit>" */
+extern tree finit_identifier_node;      /* "$finit$" */
 extern tree void_signature_node;       /* "()V" */
 extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
@@ -707,7 +708,7 @@ extern tree *type_map;
 #define CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P(TYPE) \
   TYPE_LANG_FLAG_5 (TYPE)
 
-/* True if class TYPE has a field initializer <finit> function */
+/* True if class TYPE has a field initializer $finit$ function */
 #define CLASS_HAS_FINIT_P(TYPE) TYPE_LANG_FLAG_6 (TYPE)
 
 /* True if identifier ID was seen while processing a single type import stmt */
@@ -759,6 +760,9 @@ extern tree *type_map;
 
 /* True if EXPR (a CALL_EXPR in that case) is a crafted StringBuffer */
 #define IS_CRAFTED_STRING_BUFFER_P(EXPR) TREE_LANG_FLAG_5 (EXPR)
+
+/* If set in CALL_EXPR, the receiver is 'super'. */
+#define CALL_USING_SUPER(EXPR) TREE_LANG_FLAG_4 (EXPR)
 
 /* True if NODE (a statement) can complete normally. */
 #define CAN_COMPLETE_NORMALLY(NODE) TREE_LANG_FLAG_6(NODE)
