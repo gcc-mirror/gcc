@@ -691,6 +691,7 @@ extern void dump_class          PROTO((struct table_elt*));
 static void check_fold_consts	PROTO((PTR));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
 static void free_cse_reg_info   PROTO((splay_tree_value));
+static void flush_hash_table	PROTO((void));
 
 extern int rtx_equal_function_value_matters;
 
@@ -1666,6 +1667,28 @@ merge_equiv_classes (class1, class2)
     }
 }
 
+
+/* Flush the entire hash table.  */
+
+static void
+flush_hash_table ()
+{
+  int i;
+  struct table_elt *p;
+
+  for (i = 0; i < NBUCKETS; i++)
+    for (p = table[i]; p; p = table[i])
+      {
+	/* Note that invalidate can remove elements
+	   after P in the current hash chain.  */
+	if (GET_CODE (p->exp) == REG)
+	  invalidate (p->exp, p->mode);
+	else
+	  remove_from_table (p, i);
+      }
+}
+
+
 /* Remove from the hash table, or mark as invalid,
    all expressions whose values could be altered by storing in X.
    X is a register, a subreg, or a memory reference with nonvarying address
@@ -7648,6 +7671,12 @@ cse_insn (insn, libcall_insn)
 	  invalidate (XEXP (dest, 0), GET_MODE (dest));
       }
 
+  /* A volatile ASM invalidates everything.  */
+  if (GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+      && MEM_VOLATILE_P (PATTERN (insn)))
+    flush_hash_table ();
+
   /* Make sure registers mentioned in destinations
      are safe for use in an expression to be inserted.
      This removes from the hash table
@@ -8855,8 +8884,6 @@ cse_basic_block (from, to, next_branch, around_loop)
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       register enum rtx_code code = GET_CODE (insn);
-      int i;
-      struct table_elt *p;
 
       /* If we have processed 1,000 insns, flush the hash table to
 	 avoid extreme quadratic behavior.  We must not include NOTEs
@@ -8869,17 +8896,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 	 Perhaps for 2.9.  */
       if (code != NOTE && num_insns++ > 1000)
 	{
-	  for (i = 0; i < NBUCKETS; i++)
-	    for (p = table[i]; p; p = table[i])
-	      {
-		/* Note that invalidate can remove elements
-		   after P in the current hash chain.  */
-		if (GET_CODE (p->exp) == REG)
-		  invalidate (p->exp, p->mode);
-		else
-		  remove_from_table (p, i);
-	      }
-
+	  flush_hash_table ();
 	  num_insns = 0;
 	}
 
