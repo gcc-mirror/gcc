@@ -1829,7 +1829,7 @@ wrap_help (const char *help, const char *item, unsigned int item_width)
 		len = i;
 	      else if ((help[i] == '-' || help[i] == '/')
 		       && help[i + 1] != ' '
-		       && ISALPHA (help[i - 1]))
+		       && i > 0 && ISALPHA (help[i - 1]))
 		len = i + 1;
 	    }
 	}
