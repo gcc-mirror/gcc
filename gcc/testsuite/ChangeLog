@@ -1,3 +1,7 @@
+2003-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/crossjump1.C: New test.
+
 2003-08-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11697
