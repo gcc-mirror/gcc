@@ -26,8 +26,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -Asystem(unix) -Asystem(bsd) -Amachine(mips)"
 #endif
 
+/* Always uses gas.  */
 #ifndef ASM_SPEC
-#define ASM_SPEC "%{G*}"
+#define ASM_SPEC "\
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
 #endif
 
 #ifndef CPP_SPEC
@@ -41,8 +50,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
 #endif
 
+/* Always uses GNU ld.  */
 #ifndef LINK_SPEC
-#define LINK_SPEC "%{G*}"
+#define LINK_SPEC "%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3}"
 #endif
 
 #define LIB_SPEC ""
