@@ -1,3 +1,16 @@
+2000-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c: (java_hash_hash_tree_node): Renamed from `decl_hash',
+	made global.
+	(java_hash_compare_tree_node): Renamed from `decl_compare, made
+	global.
+	(add_method_1): Use `java_hash_hash_tree_node' and
+	`java_hash_compare_tree_node'.
+	* java-tree.h: (java_hash_hash_tree_node): Prototyped.
+	(java_hash_compare_tree_node): Likewise.
+	* parse.y (find_applicable_accessible_methods_list): Create,
+	delete and use a hash table to remember already searched interfaces.
+
 2000-04-03  Matt Welsh  <mdw@cs.berkeley.edu>
 
 	* jcf-depend.c (add_entry): Fixed bug where list was always replaced

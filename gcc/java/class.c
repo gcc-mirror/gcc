@@ -594,21 +594,24 @@ init_test_hash_newfunc (entry, table, string)
   return (struct hash_entry *) ret;
 }
 
-static unsigned long
-decl_hash (k)
+/* Hash table helpers. Also reused in find_applicable_accessible_methods_list
+   (parse.y). The hash of a tree node is it's pointer value,
+   comparison is direct. */
+
+unsigned long
+java_hash_hash_tree_node (k)
      hash_table_key k;
 {
   return (long) k;
 }
 
-static boolean
-decl_compare (k1, k2)
+boolean
+java_hash_compare_tree_node (k1, k2)
      hash_table_key k1;
      hash_table_key k2;
 {
   return ((char*) k1 == (char*) k2);
 }
-
 
 tree
 add_method_1 (handle_class, access_flags, name, function_type)
@@ -632,8 +635,8 @@ add_method_1 (handle_class, access_flags, name, function_type)
 
   /* Initialize the static initializer test table.  */
   hash_table_init (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
-		   init_test_hash_newfunc, decl_hash,
-		   decl_compare);
+		   init_test_hash_newfunc, java_hash_hash_tree_node, 
+		   java_hash_compare_tree_node);
 
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;

@@ -9839,22 +9839,29 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   /* Search interfaces */
   if (CLASS_INTERFACE (TYPE_NAME (class)))
     {
-      static tree searched_interfaces = NULL_TREE;
+      static struct hash_table t, *searched_interfaces = NULL;
       static int search_not_done = 0;
       int i, n;
       tree basetype_vec = TYPE_BINFO_BASETYPES (class);
 
-      /* Have we searched this interface already? We shoud use a hash
-         table, FIXME */
+      /* Search in the hash table, otherwise create a new one if
+         necessary and insert the new entry. */
+
       if (searched_interfaces)
-	{  
-	  tree current;  
-	  for (current = searched_interfaces; 
-	       current; current = TREE_CHAIN (current))
-	    if (TREE_VALUE (current) == class)
-	      return NULL;
+	{
+	  if (hash_lookup (searched_interfaces, 
+			   (const hash_table_key) class, FALSE, NULL))
+	    return NULL;
 	}
-      searched_interfaces = tree_cons (NULL_TREE, class, searched_interfaces);
+      else
+	{
+	  hash_table_init (&t, hash_newfunc, java_hash_hash_tree_node,
+			   java_hash_compare_tree_node);
+	  searched_interfaces = &t;
+	}
+
+      hash_lookup (searched_interfaces, 
+		   (const hash_table_key) class, TRUE, NULL);
 
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
@@ -9879,7 +9886,8 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	    search_applicable_methods_list (lc, 
 					    TYPE_METHODS (object_type_node),
 					    name, arglist, &list, &all_list);
-	  searched_interfaces = NULL_TREE;  
+	  hash_table_free (searched_interfaces);
+	  searched_interfaces = NULL;  
 	}
     }
   /* Search classes */
