@@ -674,13 +674,14 @@ int switch_table_difference_label_flag;
 
 #define SWITCH_JUMP_MATCH   "jmp 6(%%pc,"
 
+/* cliffm@netcom.com says no need for .w suffix on jumps.  */
 #undef ASM_OUTPUT_OPCODE
 #define ASM_OUTPUT_OPCODE(FILE, PTR)			\
 { if ((PTR)[0] == 'j' && (PTR)[1] == 'b')		\
     { ++(PTR);						\
       while (*(PTR) != ' ')				\
 	{ putc (*(PTR), (FILE)); ++(PTR); }		\
-      fprintf ((FILE), ".w"); }				\
+    }							\
   else if ((PTR)[0] == 's')				\
     {							\
       if (!strncmp ((PTR), "swap", 4))			\
