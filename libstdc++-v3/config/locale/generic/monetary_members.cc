@@ -127,12 +127,9 @@ namespace std
       _M_data->_M_pos_format = money_base::_S_default_pattern;
       _M_data->_M_neg_format = money_base::_S_default_pattern;
 
-      unsigned char uc;
       for (size_t __i = 0; __i < money_base::_S_end; ++__i)
-	{
-	  uc = static_cast<unsigned char>(money_base::_S_atoms[__i]);
-	  _M_data->_M_atoms[__i] = btowc(uc);
-	}
+	_M_data->_M_atoms[__i] =
+	  static_cast<wchar_t>(money_base::_S_atoms[__i]);
     }
 
   template<> 
@@ -158,12 +155,9 @@ namespace std
       _M_data->_M_pos_format = money_base::_S_default_pattern;
       _M_data->_M_neg_format = money_base::_S_default_pattern;
 
-      unsigned char uc;
       for (size_t __i = 0; __i < money_base::_S_end; ++__i)
-	{
-	  uc = static_cast<unsigned char>(money_base::_S_atoms[__i]);
-	  _M_data->_M_atoms[__i] = btowc(uc);
-	}
+	_M_data->_M_atoms[__i] =
+	  static_cast<wchar_t>(money_base::_S_atoms[__i]);
     }
 
   template<> 
