@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for the GNU compiler for the Java(TM)
 # language.
-#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -108,14 +108,15 @@ JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
 
 GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/win32-host.o java/zextract.o version.o mkdeps.o errors.o ggc-none.o
+  java/win32-host.o java/zextract.o version.o mkdeps.o errors.o ggc-none.o \
+  intl.o
 
-JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o
+JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o intl.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/win32-host.o java/zextract.o errors.o version.o mkdeps.o ggc-none.o
+		java/win32-host.o java/zextract.o errors.o version.o mkdeps.o ggc-none.o intl.o
 
-JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o
+JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o intl.o
 
 # Use loose warnings for this front end.
 java-warn = $(WERROR)
@@ -272,9 +273,10 @@ JAVA_LEX_C = java/lex.c java/keyword.h java/chartables.h
 
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
-  version.h $(GGC_H)
+  version.h $(GGC_H) intl.h
 java/gjavah.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
-  java/gjavah.c java/jcf-reader.c java/jcf.h java/javaop.h version.h $(GGC_H)
+  java/gjavah.c java/jcf-reader.c java/jcf.h java/javaop.h version.h $(GGC_H) \
+  intl.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TREE_H) $(JAVA_TREE_H) java/parse.h toplev.h
 java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) coretypes.h \
@@ -308,9 +310,9 @@ java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   $(RTL_H) java/java-opcodes.h java/parse.h java/buffer.h $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-jcf-write.h $(TM_P_H)
 java/jv-scan.o: java/jv-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  version.h
+  version.h intl.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H)
+  coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(EXPR_H) diagnostic.h \
   langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h options.h

@@ -1,7 +1,7 @@
 /* Program to dump out a Java(TM) .class file.
    Functionally similar to Sun's javap.
 
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -54,6 +54,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "ggc.h"
+#include "intl.h"
 
 #include "jcf.h"
 #include "tree.h"
@@ -795,19 +796,19 @@ process_class (JCF *jcf)
 {
   int code;
   if (jcf_parse_preamble (jcf) != 0)
-    fprintf (stderr, "Not a valid Java .class file.\n");    
+    fprintf (stderr, _("Not a valid Java .class file.\n"));    
 
   /* Parse and possibly print constant pool */
   code = jcf_parse_constant_pool (jcf);
   if (code != 0)
     {
-      fprintf (stderr, "error while parsing constant pool\n");
+      fprintf (stderr, _("error while parsing constant pool\n"));
       exit (FATAL_EXIT_CODE);
     }
   code = verify_constant_pool (jcf);
   if (code > 0)
     {
-      fprintf (stderr, "error in constant pool entry #%d\n", code);
+      fprintf (stderr, _("error in constant pool entry #%d\n"), code);
       exit (FATAL_EXIT_CODE);
     }
   if (flag_print_constant_pool)
@@ -817,19 +818,19 @@ process_class (JCF *jcf)
   code = jcf_parse_fields (jcf);
   if (code != 0)
     {
-      fprintf (stderr, "error while parsing fields\n");
+      fprintf (stderr, _("error while parsing fields\n"));
       exit (FATAL_EXIT_CODE);
     }
   code = jcf_parse_methods (jcf);
   if (code != 0)
     {
-      fprintf (stderr, "error while parsing methods\n");
+      fprintf (stderr, _("error while parsing methods\n"));
       exit (FATAL_EXIT_CODE);
     }
   code = jcf_parse_final_attributes (jcf);
   if (code != 0)
     {
-      fprintf (stderr, "error while parsing final attributes\n");
+      fprintf (stderr, _("error while parsing final attributes\n"));
       exit (FATAL_EXIT_CODE);
     }
   jcf->filename = NULL;
@@ -865,30 +866,30 @@ static const struct option options[] =
 static void
 usage (void)
 {
-  fprintf (stderr, "Try `jcf-dump --help' for more information.\n");
+  fprintf (stderr, _("Try `jcf-dump --help' for more information.\n"));
   exit (1);
 }
 
 static void
 help (void)
 {
-  printf ("Usage: jcf-dump [OPTION]... CLASS...\n\n");
-  printf ("Display contents of a class file in readable form.\n\n");
-  printf ("  -c                      Disassemble method bodies\n");
-  printf ("  --javap                 Generate output in `javap' format\n");
+  printf (_("Usage: jcf-dump [OPTION]... CLASS...\n\n"));
+  printf (_("Display contents of a class file in readable form.\n\n"));
+  printf (_("  -c                      Disassemble method bodies\n"));
+  printf (_("  --javap                 Generate output in `javap' format\n"));
   printf ("\n");
-  printf ("  --classpath PATH        Set path to find .class files\n");
-  printf ("  -IDIR                   Append directory to class path\n");
-  printf ("  --bootclasspath PATH    Override built-in class path\n");
-  printf ("  --extdirs PATH          Set extensions directory path\n");
-  printf ("  -o FILE                 Set output file name\n");
+  printf (_("  --classpath PATH        Set path to find .class files\n"));
+  printf (_("  -IDIR                   Append directory to class path\n"));
+  printf (_("  --bootclasspath PATH    Override built-in class path\n"));
+  printf (_("  --extdirs PATH          Set extensions directory path\n"));
+  printf (_("  -o FILE                 Set output file name\n"));
   printf ("\n");
-  printf ("  --help                  Print this help, then exit\n");
-  printf ("  --version               Print version number, then exit\n");
-  printf ("  -v, --verbose           Print extra information while running\n");
+  printf (_("  --help                  Print this help, then exit\n"));
+  printf (_("  --version               Print version number, then exit\n"));
+  printf (_("  -v, --verbose           Print extra information while running\n"));
   printf ("\n");
-  printf ("For bug reporting instructions, please see:\n");
-  printf ("%s.\n", bug_report_url);
+  printf (_("For bug reporting instructions, please see:\n"
+	    "%s.\n"), bug_report_url);
   exit (0);
 }
 
@@ -896,9 +897,9 @@ static void
 version (void)
 {
   printf ("jcf-dump (GCC) %s\n\n", version_string);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
-  printf ("This is free software; see the source for copying conditions.  There is NO\n");
-  printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  printf ("Copyright %s 2004 Free Software Foundation, Inc.\n", _("(C)"));
+  printf (_("This is free software; see the source for copying conditions.  There is NO\n"
+	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (0);
 }
 
@@ -908,9 +909,11 @@ main (int argc, char** argv)
   JCF jcf[1];
   int argi, opt;
 
+  gcc_init_libintl ();
+
   if (argc <= 1)
     {
-      fprintf (stderr, "jcf-dump: no classes specified\n");
+      fprintf (stderr, _("jcf-dump: no classes specified\n"));
       usage ();
     }
 
@@ -975,7 +978,7 @@ main (int argc, char** argv)
 
   if (optind == argc)
     {
-      fprintf (stderr, "jcf-dump: no classes specified\n");
+      fprintf (stderr, _("jcf-dump: no classes specified\n"));
       usage ();
     }
 
@@ -995,7 +998,7 @@ main (int argc, char** argv)
       out = fopen (output_file, "w");
       if (! out)
 	{
-	  fprintf (stderr, "Cannot open '%s' for output.\n", output_file);
+	  fprintf (stderr, _("Cannot open '%s' for output.\n"), output_file);
 	  return FATAL_EXIT_CODE;
 	}
     }
@@ -1041,7 +1044,7 @@ main (int argc, char** argv)
 		    break;  /* got to central directory */
 		  if (magic != 0x04034b50) /* ZIPMAGIC (little-endian) */
 		    {
-		      fprintf (stderr, "bad format of .zip/.jar archive\n");
+		      fprintf (stderr, _("bad format of .zip/.jar archive\n"));
 		      return FATAL_EXIT_CODE;
 		    }
 		  JCF_FILL (jcf, 26);
@@ -1159,7 +1162,7 @@ disassemble_method (JCF* jcf, const unsigned char *byte_ops, int len)
 #define VAR_INDEX_2 (saw_index = 1, IMMEDIATE_u2)
 
 #define CHECK_PC_IN_RANGE(PC) (PC < 0 || PC > len ? \
-  (fprintf(stderr, "Bad byte codes.\n"), exit(-1)) : 1)
+  (fprintf(stderr, _("Bad byte codes.\n")), exit(-1)) : 1)
 
 /* Print out operand (if not implied by the opcode) for PUSCH opcodes.
    These all push a constant onto the opcode stack. */

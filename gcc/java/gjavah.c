@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003
+Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -40,6 +40,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-opcodes.h"
 #include "ggc.h"
 #include "hashtab.h"
+#include "intl.h"
 
 #include <getopt.h>
 
@@ -150,6 +151,7 @@ static const unsigned char *
   decode_signature_piece (FILE *, const unsigned char *,
 			  const unsigned char *, int *);
 static void print_class_decls (FILE *, JCF *, int);
+static void error (const char *msgid, ...);
 static void usage (void) ATTRIBUTE_NORETURN;
 static void help (void) ATTRIBUTE_NORETURN;
 static void version (void) ATTRIBUTE_NORETURN;
@@ -250,6 +252,21 @@ static int decompiled = 0;
 #define NEED_SKIP_ATTRIBUTE
 
 #include "jcf-reader.c"
+
+/* Print an error message and set found_error.  */
+static void
+error (const char *msgid, ...)
+{
+  va_list ap;
+
+  va_start (ap, msgid);
+
+  fprintf (stderr, "gcjh: ");
+  vfprintf (stderr, _(msgid), ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  found_error = 1;
+}
 
 /* Print a single-precision float, suitable for parsing by g++.  */
 static void
@@ -652,8 +669,7 @@ get_field_name (JCF *jcf, int name_index, JCF_u2 flags)
 	 trouble.  */
       if ((flags & ACC_STATIC))
 	{
-	  fprintf (stderr, "static field has same name as method\n");
-	  found_error = 1;
+	  error ("static field has same name as method");
 	  return NULL;
 	}
 
@@ -812,9 +828,9 @@ print_method_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	{
 	  /* FIXME: i18n bug here.  Order of prints should not be
 	     fixed.  */
-	  fprintf (stderr, "ignored method `");
+	  fprintf (stderr, _("ignored method `"));
 	  jcf_print_utf8 (stderr, str, length);
-	  fprintf (stderr, "' marked virtual\n");
+	  fprintf (stderr, _("' marked virtual\n"));
 	  found_error = 1;
 	  return;
 	}
@@ -1161,16 +1177,14 @@ throwable_p (const unsigned char *clname)
 
       if (! classfile_name)
 	{
-	  fprintf (stderr, "couldn't find class %s\n", current);
-	  found_error = 1;
+	  error ("couldn't find class %s", current);
 	  return 0;
 	}
       if (jcf_parse_preamble (&jcf) != 0
 	  || jcf_parse_constant_pool (&jcf) != 0
 	  || verify_constant_pool (&jcf) > 0)
 	{
-	  fprintf (stderr, "parse error while reading %s\n", classfile_name);
-	  found_error = 1;
+	  error ("parse error while reading %s", classfile_name);
 	  return 0;
 	}
       jcf_parse_class (&jcf);
@@ -1396,8 +1410,7 @@ print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
 	  next = decode_signature_piece (stream, str, limit, &need_space);
 	  if (! next)
 	    {
-	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
-	      found_error = 1;
+	      error ("unparseable signature: `%s'", str0);
 	      return;
 	    }
 	}
@@ -1499,8 +1512,7 @@ print_full_cxx_name (FILE* stream, JCF* jcf, int name_index,
 	  next = decode_signature_piece (stream, str, limit, &need_space);
 	  if (! next)
 	    {
-	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
-	      found_error = 1;
+	      error ("unparseable signature: `%s'", str0);
 	      return;
 	    }
 	  
@@ -1575,8 +1587,7 @@ print_stub_or_jni (FILE* stream, JCF* jcf, int name_index,
 	  next = decode_signature_piece (stream, str, limit, &need_space);
 	  if (! next)
 	    {
-	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
-	      found_error = 1;
+	      error ("unparseable signature: `%s'", str0);
 	      return;
 	    }
 	}
@@ -1966,8 +1977,7 @@ process_file (JCF *jcf, FILE *out)
 
   if (jcf_parse_preamble (jcf) != 0)
     {
-      fprintf (stderr, "Not a valid Java .class file.\n");
-      found_error = 1;
+      error ("Not a valid Java .class file.");
       return;
     }
 
@@ -1975,15 +1985,13 @@ process_file (JCF *jcf, FILE *out)
   code = jcf_parse_constant_pool (jcf);
   if (code != 0)
     {
-      fprintf (stderr, "error while parsing constant pool\n");
-      found_error = 1;
+      error ("error while parsing constant pool");
       return;
     }
   code = verify_constant_pool (jcf);
   if (code > 0)
     {
-      fprintf (stderr, "error in constant pool entry #%d\n", code);
-      found_error = 1;
+      error ("error in constant pool entry #%d", code);
       return;
     }
 
@@ -2126,8 +2134,7 @@ process_file (JCF *jcf, FILE *out)
 	  if (! print_cxx_classname (out, "class ", jcf,
 				     jcf->this_class, 0))
 	    {
-	      fprintf (stderr, "class is of array type\n");
-	      found_error = 1;
+	      error ("class is of array type\n");
 	      return;
 	    }
 	  if (jcf->super_class)
@@ -2135,8 +2142,7 @@ process_file (JCF *jcf, FILE *out)
 	      if (! print_cxx_classname (out, " : public ", 
 					 jcf, jcf->super_class, 1))
 		{
-		  fprintf (stderr, "base class is of array type\n");
-		  found_error = 1;
+		  error ("base class is of array type");
 		  return;
 		}
 	    }
@@ -2252,45 +2258,45 @@ static const struct option options[] =
 static void
 usage (void)
 {
-  fprintf (stderr, "Try `gcjh --help' for more information.\n");
+  fprintf (stderr, _("Try `gcjh --help' for more information.\n"));
   exit (1);
 }
 
 static void
 help (void)
 {
-  printf ("Usage: gcjh [OPTION]... CLASS...\n\n");
-  printf ("Generate C++ header files from .class files\n\n");
-  printf ("  -stubs                  Generate an implementation stub file\n");
-  printf ("  -jni                    Generate a JNI header or stub\n");
+  printf (_("Usage: gcjh [OPTION]... CLASS...\n\n"));
+  printf (_("Generate C++ header files from .class files\n\n"));
+  printf (_("  -stubs                  Generate an implementation stub file\n"));
+  printf (_("  -jni                    Generate a JNI header or stub\n"));
   printf ("\n");
-  printf ("  -add TEXT               Insert TEXT into class body\n");
-  printf ("  -append TEXT            Insert TEXT after class declaration\n");
-  printf ("  -friend TEXT            Insert TEXT as `friend' declaration\n");
-  printf ("  -prepend TEXT           Insert TEXT before start of class\n");
+  printf (_("  -add TEXT               Insert TEXT into class body\n"));
+  printf (_("  -append TEXT            Insert TEXT after class declaration\n"));
+  printf (_("  -friend TEXT            Insert TEXT as `friend' declaration\n"));
+  printf (_("  -prepend TEXT           Insert TEXT before start of class\n"));
   printf ("\n");
-  printf ("  --classpath PATH        Set path to find .class files\n");
-  printf ("  -IDIR                   Append directory to class path\n");
-  printf ("  --bootclasspath PATH    Override built-in class path\n");
-  printf ("  --extdirs PATH          Set extensions directory path\n");
-  printf ("  -d DIRECTORY            Set output directory name\n");
-  printf ("  -o FILE                 Set output file name\n");
-  printf ("  -td DIRECTORY           Set temporary directory name\n");
+  printf (_("  --classpath PATH        Set path to find .class files\n"));
+  printf (_("  -IDIR                   Append directory to class path\n"));
+  printf (_("  --bootclasspath PATH    Override built-in class path\n"));
+  printf (_("  --extdirs PATH          Set extensions directory path\n"));
+  printf (_("  -d DIRECTORY            Set output directory name\n"));
+  printf (_("  -o FILE                 Set output file name\n"));
+  printf (_("  -td DIRECTORY           Set temporary directory name\n"));
   printf ("\n");
-  printf ("  --help                  Print this help, then exit\n");
-  printf ("  --version               Print version number, then exit\n");
-  printf ("  -v, --verbose           Print extra information while running\n");
+  printf (_("  --help                  Print this help, then exit\n"));
+  printf (_("  --version               Print version number, then exit\n"));
+  printf (_("  -v, --verbose           Print extra information while running\n"));
   printf ("\n");
-  printf ("  -M                      Print all dependencies to stdout;\n");
-  printf ("                             suppress ordinary output\n");
-  printf ("  -MM                     Print non-system dependencies to stdout;\n");
-  printf ("                             suppress ordinary output\n");
-  printf ("  -MD                     Print all dependencies to stdout\n");
-  printf ("  -MMD                    Print non-system dependencies to stdout\n");
+  printf (_("  -M                      Print all dependencies to stdout;\n"
+	    "                             suppress ordinary output\n"));
+  printf (_("  -MM                     Print non-system dependencies to stdout;\n"
+	    "                             suppress ordinary output\n"));
+  printf (_("  -MD                     Print all dependencies to stdout\n"));
+  printf (_("  -MMD                    Print non-system dependencies to stdout\n"));
   /* We omit -MG until it is implemented.  */
   printf ("\n");
-  printf ("For bug reporting instructions, please see:\n");
-  printf ("%s.\n", bug_report_url);
+  printf (_("For bug reporting instructions, please see:\n"
+	    "%s.\n"), bug_report_url);
   exit (0);
 }
 
@@ -2298,9 +2304,9 @@ static void
 version (void)
 {
   printf ("gcjh (GCC) %s\n\n", version_string);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
-  printf ("This is free software; see the source for copying conditions.  There is NO\n");
-  printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  printf ("Copyright %s 2004 Free Software Foundation, Inc.\n", _("(C)"));
+  printf (_("This is free software; see the source for copying conditions.  There is NO\n"
+	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (0);
 }
 
@@ -2313,9 +2319,11 @@ main (int argc, char** argv)
   int emit_dependencies = 0, suppress_output = 0;
   int opt;
 
+  gcc_init_libintl ();
+
   if (argc <= 1)
     {
-      fprintf (stderr, "gcjh: no classes specified\n");
+      error ("no classes specified");
       usage ();
     }
 
@@ -2408,7 +2416,7 @@ main (int argc, char** argv)
 	  break;
 
 	case OPT_MG:
-	  fprintf (stderr, "gcjh: `-MG' option is unimplemented\n");
+	  error ("`-MG' option is unimplemented");
 	  exit (1);
 
 	case OPT_MD:
@@ -2429,7 +2437,7 @@ main (int argc, char** argv)
 
   if (optind == argc)
     {
-      fprintf (stderr, "gcjh: no classes specified\n");
+      error ("no classes specified");
       usage ();
     }
 
@@ -2437,7 +2445,7 @@ main (int argc, char** argv)
 
   if (output_file && emit_dependencies)
     {
-      fprintf (stderr, "gcjh: can't specify both -o and -MD\n");
+      error ("can't specify both -o and -MD");
       exit (1);
     }
 
@@ -2448,17 +2456,17 @@ main (int argc, char** argv)
       const char *classfile_name;
 
       if (verbose)
-	fprintf (stderr, "Processing %s\n", classname);
+	printf (_("Processing %s\n"), classname);
       if (! output_file)
 	jcf_dependency_reset ();
       classfile_name = find_class (classname, strlen (classname), &jcf, 0);
       if (classfile_name == NULL)
 	{
-	  fprintf (stderr, "%s: no such class\n", classname);
+	  error ("%s: no such class", classname);
 	  exit (1);
 	}
       if (verbose)
-	fprintf (stderr, "Found in %s\n", classfile_name);
+	printf (_("Found in %s\n"), classfile_name);
       if (output_file)
 	{
 	  if (strcmp (output_file, "-") == 0)
