@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.222 1998/01/26 20:40:21 karl Exp karl $
+%% $Id: texinfo.tex,v 2.223 1998/02/23 22:34:20 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.222 $
+\deftexinfoversion$Revision: 2.223 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1278,6 +1278,10 @@ where each line of input produces a line of output.}
 %
 \textfonts
 
+% Define these so they can be easily changed for other fonts.
+\def\angleleft{$\langle$}
+\def\angleright{$\rangle$}
+
 % Count depth in font-changes, for error checks
 \newcount\fontdepth \fontdepth=0
 
@@ -1315,15 +1319,15 @@ where each line of input produces a line of output.}
   \null
 }
 \let\ttfont=\t
-\def\samp #1{`\tclose{#1}'\null}
+\def\samp#1{`\tclose{#1}'\null}
 \setfont\smallrm\rmshape{8}{1000}
 \font\smallsy=cmsy9
 \def\key#1{{\smallrm\textfont2=\smallsy \leavevmode\hbox{%
-  \raise0.4pt\hbox{$\langle$}\kern-.08em\vtop{%
+  \raise0.4pt\hbox{\angleleft}\kern-.08em\vtop{%
     \vbox{\hrule\kern-0.4pt
-     \hbox{\raise0.4pt\hbox{\vphantom{$\langle$}}#1}}%
+     \hbox{\raise0.4pt\hbox{\vphantom{\angleleft}}#1}}%
     \kern-0.4pt\hrule}%
-  \kern-.06em\raise0.4pt\hbox{$\rangle$}}}}
+  \kern-.06em\raise0.4pt\hbox{\angleright}}}}
 % The old definition, with no lozenge:
 %\def\key #1{{\ttsl \nohyphenation \uppercase{#1}}\null}
 \def\ctrl #1{{\tt \rawbackslash \hat}#1}
@@ -1436,7 +1440,7 @@ where each line of input produces a line of output.}
 
 % rms does not like the angle brackets --karl, 17may97.
 % So now @email is just like @uref.
-%\def\email#1{$\langle${\tt #1}$\rangle$}
+%\def\email#1{\angleleft{\tt #1}\angleright}
 \let\email=\uref
 
 % Check if we are currently using a typewriter font.  Since all the
@@ -4389,7 +4393,7 @@ width0pt\relax} \fi
 \def\refx#1#2{%
   \expandafter\ifx\csname X#1\endcsname\relax
     % If not defined, say something at least.
-    $\langle$un\-de\-fined$\rangle$%
+    \angleleft un\-de\-fined\angleright
     \ifhavexrefs
       \message{\linenumber Undefined cross reference `#1'.}%
     \else
