@@ -1,3 +1,9 @@
+2002-11-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_get_frame_size): A leaf function does not need its
+	stack padding to an aligned boundary if it has no frame.
+	(thumb_get_frame_size): Likewise.
+
 2002-11-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* emit-rtl.c (gen_reg_rtx): Simplify mapping of Complex type
