@@ -1,0 +1,44 @@
+#   Copyright (C) 1997, 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Gcov test driver.
+
+# Load support procs.
+load_lib g77-dg.exp
+load_lib gcov.exp
+
+global G77_UNDER_TEST
+
+# For now find gcov in the same directory as $G77_UNDER_TEST.
+if { ![is_remote host] && [string match "*/*" [lindex $G77_UNDER_TEST 0]] } {
+    set GCOV [file dirname [lindex $G77_UNDER_TEST 0]]/gcov
+} else {
+    set GCOV gcov
+}
+
+# Initialize harness.
+dg-init
+
+# Delete old .da files.
+set files [glob -nocomplain gcov-*.da];
+if { $files != "" } {
+    eval "remote_file build delete $files";
+}
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/gcov-*.f]] "" ""
+
+dg-finish
