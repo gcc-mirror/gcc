@@ -1689,6 +1689,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
       DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
       DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
+      DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);
     }
 
   /* Merge the storage class information.  */

@@ -134,7 +134,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    global memory.  In "unsafe" mode we can be less careful.  */
 #undef ATTR_MATHFN_FPROUNDING
 #define ATTR_MATHFN_FPROUNDING (flag_unsafe_math_optimizations ? \
-	ATTR_CONST_NOTHROW_LIST : ATTR_PURE_NOTHROW_LIST)
+	ATTR_CONST_NOTHROW_LIST : ATTR_PURE_NOTHROW_NOVOPS_LIST)
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
@@ -612,7 +612,7 @@ DEF_GCC_BUILTIN        (BUILT_IN_POPCOUNT, "popcount", BT_FN_INT_UINT, ATTR_CONS
 DEF_GCC_BUILTIN        (BUILT_IN_POPCOUNTIMAX, "popcountimax", BT_FN_INT_UINTMAX, ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_POPCOUNTL, "popcountl", BT_FN_INT_ULONG, ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_POPCOUNTLL, "popcountll", BT_FN_INT_ULONGLONG, ATTR_CONST_NOTHROW_LIST)
-DEF_GCC_BUILTIN        (BUILT_IN_PREFETCH, "prefetch", BT_FN_VOID_CONST_PTR_VAR, ATTR_NULL)
+DEF_GCC_BUILTIN        (BUILT_IN_PREFETCH, "prefetch", BT_FN_VOID_CONST_PTR_VAR, ATTR_NOVOPS_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_RETURN, "return", BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_RETURN_ADDRESS, "return_address", BT_FN_PTR_UINT, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_SAVEREGS, "saveregs", BT_FN_PTR_VAR, ATTR_NULL)
