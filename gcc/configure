@@ -1603,7 +1603,7 @@ EOF
 fi
 
 
-for ac_func in strerror
+for ac_func in strerror strtoul bsearch
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1610: checking for $ac_func" >&5

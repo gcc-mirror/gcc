@@ -19,8 +19,14 @@
 /* Define if `sys_siglist' is declared by <signal.h>.  */
 #undef SYS_SIGLIST_DECLARED
 
+/* Define if you have the bsearch function.  */
+#undef HAVE_BSEARCH
+
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
+
+/* Define if you have the strtoul function.  */
+#undef HAVE_STRTOUL
 
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H

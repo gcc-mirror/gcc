@@ -142,7 +142,7 @@ GCC_NEED_DECLARATION(free)
 
 AC_DECL_SYS_SIGLIST
 
-AC_CHECK_FUNCS(strerror)
+AC_CHECK_FUNCS(strerror strtoul bsearch)
 
 # File extensions
 manext='.1'
