@@ -443,6 +443,9 @@
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
 
+/* Define if your assembler supports dwarf2 .file/.loc directives. */
+#undef HAVE_AS_DWARF2_DEBUG_LINE
+
 /* Define if you want to always select the new-abi for g++. */
 #undef ENABLE_NEW_GXX_ABI
 

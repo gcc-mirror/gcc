@@ -3127,9 +3127,13 @@ extern int flag_traditional;
   (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, DWARF2_ADDR_SIZE * 2) \
    - (2 * DWARF_OFFSET_SIZE + 4))
 
-/* The default is to have gcc emit the line number tables.  */
+/* Use assembler line directives if available.  */
 #ifndef DWARF2_ASM_LINE_DEBUG_INFO
+#ifdef HAVE_AS_DWARF2_DEBUG_LINE
+#define DWARF2_ASM_LINE_DEBUG_INFO 1
+#else
 #define DWARF2_ASM_LINE_DEBUG_INFO 0
+#endif
 #endif
 
 /* Define the architecture-dependent minimum instruction length (in bytes).

@@ -1210,7 +1210,7 @@ AC_MSG_RESULT($gcc_cv_nm)
 
 # Figure out what assembler alignment features are present.
 AC_MSG_CHECKING(assembler alignment features)
-gcc_cv_as_alignment_features=
+gcc_cv_as_alignment_features=none
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
 	# Gas version 2.6 and later support for .balign and .p2align.
 	# bytes to skip when using .p2align.
@@ -1245,7 +1245,7 @@ fi
 AC_MSG_RESULT($gcc_cv_as_alignment_features)
 
 AC_MSG_CHECKING(assembler subsection support)
-gcc_cv_as_subsections=
+gcc_cv_as_subsections=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
     gcc_cv_as_subsections="working .subsection -1"
@@ -1283,7 +1283,7 @@ fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
 AC_MSG_CHECKING(assembler weak support)
-gcc_cv_as_weak=
+gcc_cv_as_weak=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
     gcc_cv_as_weak="yes"
@@ -1302,7 +1302,7 @@ fi
 AC_MSG_RESULT($gcc_cv_as_weak)
 
 AC_MSG_CHECKING(assembler hidden support)
-gcc_cv_as_hidden=
+gcc_cv_as_hidden=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
     gcc_cv_as_hidden="yes"
@@ -1456,6 +1456,47 @@ changequote([,])dnl
     AC_MSG_RESULT($gcc_cv_as_instructions)
     ;;
 esac
+
+AC_MSG_CHECKING(assembler dwarf2 debug_line support)
+gcc_cv_as_dwarf2_debug_line=no
+# ??? Not all targets support dwarf2 debug_line, even within a version
+# of gas.  Moreover, we need to emit a valid instruction to trigger any
+# info to the output file.  So, as supported targets are added to gas 2.11,
+# add some instruction here to (also) show we expect this might work.
+# ??? Once 2.11 is released, probably need to add first known working
+# version to the per-target configury.
+case "$target" in
+  i?86*-*-* | mips*-*-* | alpha*-*-*)
+    insn="nop"
+    ;;
+  ia64*-*-*)
+    insn="nop 0"
+    ;;
+  esac
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
+then
+  if test "$gcc_cv_gas_major_version" -eq 2 \
+	-a "$gcc_cv_gas_minor_version" -ge 11 \
+	-o "$gcc_cv_gas_major_version" -gt 2 \
+     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+     && test x"$insn" != x ; then
+    gcc_cv_as_dwarf2_debug_line="yes"
+  fi
+elif test x$gcc_cv_as != x -a x"$insn" != x ; then
+	echo '	.file 0 "conftest.s"' > conftest.s
+	echo '	.loc 0 3 0' >> conftest.s
+	echo "	$insn" >> conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
+		gcc_cv_as_dwarf2_debug_line="yes"
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
+	AC_DEFINE(HAVE_AS_DWARF2_DEBUG_LINE, 1,
+	  [Define if your assembler supports dwarf2 .file/.loc directives.])
+fi
+AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
 
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
