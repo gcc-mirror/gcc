@@ -64,7 +64,7 @@ static const char jvgenmain_spec[] =
 		   %{g*} %{O*} \
 		   %{v:-version} %{pg:-p} %{p}\
 		   %<fbounds-check %<fno-bounds-check\
-		   %<fassume-compiled %<fno-assume-compiled\
+		   %<fassume-compiled* %<fno-assume-compiled*\
 		   %<fcompile-resource* %<fassert %<fno-assert \
 		   %<femit-class-file %<femit-class-files %<fencoding*\
 		   %<fuse-boehm-gc %<fhash-synchronization %<fjni\
