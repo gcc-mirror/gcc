@@ -1105,11 +1105,110 @@ package body Sem_Ch5 is
    ------------------------------
 
    procedure Analyze_Iteration_Scheme (N : Node_Id) is
+
+      procedure Process_Bounds (R : Node_Id);
+      --  If the iteration is given by a range, create temporaries and
+      --  assignment statements block to capture the bounds and perform
+      --  required finalization actions in case a bound includes a function
+      --  call that uses the temporary stack.
+
       procedure Check_Controlled_Array_Attribute (DS : Node_Id);
       --  If the bounds are given by a 'Range reference on a function call
       --  that returns a controlled array, introduce an explicit declaration
       --  to capture the bounds, so that the function result can be finalized
       --  in timely fashion.
+
+      --------------------
+      -- Process_Bounds --
+      --------------------
+
+      procedure Process_Bounds (R : Node_Id) is
+         Loc          : constant Source_Ptr := Sloc (N);
+         Lo           : constant Node_Id := Low_Bound  (R);
+         Hi           : constant Node_Id := High_Bound (R);
+         New_Lo_Bound : Node_Id := Empty;
+         New_Hi_Bound : Node_Id := Empty;
+         Typ          : constant Entity_Id := Etype (R);
+
+         function One_Bound (Bound : Node_Id) return Node_Id;
+         --  Create one declaration followed by one assignment statement
+         --  to capture the value of bound. We create a separate assignment
+         --  in order to force the creation of a block in case the bound
+         --  contains a call that uses the secondary stack.
+
+         ---------------
+         -- One_Bound --
+         ---------------
+
+         function One_Bound (Bound : Node_Id) return Node_Id is
+            Assign : Node_Id;
+            Id     : Entity_Id;
+            Decl   : Node_Id;
+
+         begin
+            --  If the bound is a constant or an object, no need for a
+            --  separate declaration. If the bound is the result of previous
+            --  expansion it is already analyzed and should not be modified.
+
+            if Nkind (Bound) = N_Integer_Literal
+              or else Is_Entity_Name (Bound)
+              or else Analyzed (Bound)
+            then
+               Resolve (Bound, Typ);
+               return Bound;
+            end if;
+
+            Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('S'));
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Id,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            Insert_Before (Parent (N), Decl);
+            Analyze (Decl);
+
+            Assign :=
+              Make_Assignment_Statement (Loc,
+                Name        => New_Occurrence_Of (Id, Loc),
+                Expression  => Relocate_Node (Bound));
+
+            Save_Interps (Bound, Expression (Assign));
+            Insert_Before (Parent (N), Assign);
+            Analyze (Assign);
+
+            Rewrite (Bound, New_Occurrence_Of (Id, Loc));
+
+            if Nkind (Assign) = N_Assignment_Statement then
+               return Expression (Assign);
+            else
+               return Bound;
+            end if;
+         end One_Bound;
+
+      --  Start of processing for Process_Bounds
+
+      begin
+         New_Lo_Bound := One_Bound (Lo);
+         New_Hi_Bound := One_Bound (Hi);
+
+         --  Propagate staticness to loop range itself, in case the
+         --  corresponding subtype is static.
+
+         if New_Lo_Bound /= Lo
+           and then Is_Static_Expression (New_Lo_Bound)
+         then
+            Rewrite  (Low_Bound (R), New_Copy (New_Lo_Bound));
+         end if;
+
+         if New_Hi_Bound /= Hi
+           and then Is_Static_Expression (New_Hi_Bound)
+         then
+            Rewrite (High_Bound (R), New_Copy (New_Hi_Bound));
+         end if;
+      end Process_Bounds;
 
       --------------------------------------
       -- Check_Controlled_Array_Attribute --
@@ -1212,9 +1311,17 @@ package body Sem_Ch5 is
                      end if;
                   end;
 
-                  --  Now analyze the subtype definition
+                  --  Now analyze the subtype definition. If it is
+                  --  a range, create temporaries for bounds.
 
-                  Analyze (DS);
+                  if Nkind (DS) = N_Range
+                    and then Expander_Active
+                  then
+                     Pre_Analyze_And_Resolve (DS);
+                     Process_Bounds (DS);
+                  else
+                     Analyze (DS);
+                  end if;
 
                   if DS = Error then
                      return;
@@ -1238,6 +1345,7 @@ package body Sem_Ch5 is
                   end if;
 
                   Check_Controlled_Array_Attribute (DS);
+
                   Make_Index (DS, LP);
 
                   Set_Ekind          (Id, E_Loop_Parameter);

@@ -459,7 +459,7 @@ package body Sem_Ch3 is
    --  build the associated Implicit type name.
 
    procedure Constrain_Integer (Def_Id : Node_Id; S : Node_Id);
-   --  Build subtype of a signed or modular integer type.
+   --  Build subtype of a signed or modular integer type
 
    procedure Constrain_Ordinary_Fixed (Def_Id : Node_Id; S : Node_Id);
    --  Constrain an ordinary fixed point type with a range constraint, and
@@ -1415,7 +1415,7 @@ package body Sem_Ch3 is
                elsif It.Typ = Universal_Real
                  or else It.Typ = Universal_Integer
                then
-                  --  Choose universal interpretation over any other.
+                  --  Choose universal interpretation over any other
 
                   T := It.Typ;
                   exit;
@@ -1806,6 +1806,18 @@ package body Sem_Ch3 is
          Apply_Static_Length_Check (E, T);
       end if;
 
+      --  If the No_Streams restriction is set, check that the type of the
+      --  object is not, and does not contain, any subtype derived from
+      --  Ada.Streams.Root_Stream_Type. Note that we guard the call to
+      --  Has_Stream just for efficiency reasons. There is no point in
+      --  spending time on a Has_Stream check if the restriction is not set.
+
+      if Restrictions.Set (No_Streams) then
+         if Has_Stream (T) then
+            Check_Restriction (No_Streams, N);
+         end if;
+      end if;
+
       --  Abstract type is never permitted for a variable or constant.
       --  Note: we inhibit this check for objects that do not come from
       --  source because there is at least one case (the expansion of
@@ -1917,7 +1929,7 @@ package body Sem_Ch3 is
 
          elsif Nkind (E) = N_Raise_Constraint_Error then
 
-            --  Aggregate is statically illegal. Place back in declaration.
+            --  Aggregate is statically illegal. Place back in declaration
 
             Set_Expression (N, E);
             Set_No_Initialization (N, False);
@@ -2759,7 +2771,7 @@ package body Sem_Ch3 is
          when N_Derived_Type_Definition =>
             null;
 
-         --  For record types, discriminants are allowed.
+         --  For record types, discriminants are allowed
 
          when N_Record_Definition =>
             null;
@@ -2940,7 +2952,7 @@ package body Sem_Ch3 is
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => Process_Declarations);
       use Variant_Choices_Processing;
-      --  Instantiation of the generic choice processing package.
+      --  Instantiation of the generic choice processing package
 
       -----------------------------
       -- Non_Static_Choice_Error --
@@ -2967,7 +2979,7 @@ package body Sem_Ch3 is
          end if;
       end Process_Declarations;
 
-      --  Variables local to Analyze_Case_Statement.
+      --  Variables local to Analyze_Case_Statement
 
       Discr_Name : Node_Id;
       Discr_Type : Entity_Id;
@@ -4180,7 +4192,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Build partial view of derived type from partial view of parent.
+         --  Build partial view of derived type from partial view of parent
 
          Build_Derived_Record_Type
            (N, Parent_Type, Derived_Type, Derive_Subps);
@@ -4388,7 +4400,7 @@ package body Sem_Ch3 is
                Copy_And_Build;
                Exchange_Declarations (Full_P);
 
-            --  Otherwise it is a local derivation.
+            --  Otherwise it is a local derivation
 
             else
                Copy_And_Build;
@@ -4545,7 +4557,7 @@ package body Sem_Ch3 is
    --  in the derived type definition, then the discriminant is said to be
    --  "specified" by that derived type definition.
 
-   --  3. DISCRIMINANTS IN DERIVED UNTAGGED RECORD TYPES.
+   --  3. DISCRIMINANTS IN DERIVED UNTAGGED RECORD TYPES
 
    --  We have spoken about stored discriminants in point 1 (introduction)
    --  above. There are two sort of stored discriminants: implicit and
@@ -4720,7 +4732,7 @@ package body Sem_Ch3 is
    --  Discriminant_Constraint from Der so that when parameter conformance is
    --  checked when P is overridden, no semantic errors are flagged.
 
-   --  6. SECOND TRANSFORMATION FOR DERIVED RECORDS.
+   --  6. SECOND TRANSFORMATION FOR DERIVED RECORDS
 
    --  Regardless of whether we are dealing with a tagged or untagged type
    --  we will transform all derived type declarations of the form
@@ -4755,9 +4767,7 @@ package body Sem_Ch3 is
    --      type T2 (X : positive) is new R (1, X) [with null record];
 
    --  As explained in 6. above, T1 is rewritten as
-
    --      type T1 (D1, D2 : Positive) is new R (D1, D2) [with null record];
-
    --  which makes the treatment for T1 and T2 identical.
 
    --  What we want when inheriting S, is that references to D1 and D2 in R are
@@ -4877,7 +4887,7 @@ package body Sem_Ch3 is
    --             subtype  T is BaseT (1);
    --          end;
 
-   --  (strictly speaking the above is incorrect Ada).
+   --  (strictly speaking the above is incorrect Ada)
 
    --  From the semantic standpoint the private view of private extension T
    --  should be flagged as constrained since one can clearly have
@@ -5037,7 +5047,7 @@ package body Sem_Ch3 is
         and then not Discriminant_Specs
         and then (Is_Constrained (Parent_Type) or else Constraint_Present)
       then
-         --  First, we must analyze the constraint (see comment in point 5.).
+         --  First, we must analyze the constraint (see comment in point 5.)
 
          if Constraint_Present then
             New_Discrs := Build_Discriminant_Constraints (Parent_Type, Indic);
@@ -5379,6 +5389,7 @@ package body Sem_Ch3 is
          end if;
 
          if not Has_Unknown_Discriminants (Derived_Type)
+           and then not Has_Unknown_Discriminants (Parent_Base)
            and then Has_Discriminants (Parent_Type)
          then
             Inherit_Discrims := True;
@@ -5407,7 +5418,7 @@ package body Sem_Ch3 is
                    or else Has_Unknown_Discriminants (Derived_Type)));
       end if;
 
-      --  STEP 3: initialize fields of derived type.
+      --  STEP 3: initialize fields of derived type
 
       Set_Is_Tagged_Type    (Derived_Type, Is_Tagged);
       Set_Stored_Constraint (Derived_Type, No_Elist);
@@ -5441,7 +5452,7 @@ package body Sem_Ch3 is
            (Derived_Type, Finalize_Storage_Only (Parent_Type));
       end if;
 
-      --  Set fields for private derived types.
+      --  Set fields for private derived types
 
       if Is_Private_Type (Derived_Type) then
          Set_Depends_On_Private (Derived_Type, True);
@@ -5901,7 +5912,7 @@ package body Sem_Ch3 is
 
       while Present (Constr) loop
 
-         --  Positional association forbidden after a named association.
+         --  Positional association forbidden after a named association
 
          if Nkind (Constr) /= N_Discriminant_Association then
             Error_Msg_N ("positional association follows named one", Constr);
@@ -6025,7 +6036,7 @@ package body Sem_Ch3 is
          end if;
       end loop;
 
-      --  Determine if there are discriminant expressions in the constraint.
+      --  Determine if there are discriminant expressions in the constraint
 
       for J in Discr_Expr'Range loop
          if Denotes_Discriminant (Discr_Expr (J), Check_Protected => True) then
@@ -6813,7 +6824,7 @@ package body Sem_Ch3 is
    begin
       if Has_Discriminants (T) then
 
-         --  Make the discriminants visible to component declarations.
+         --  Make the discriminants visible to component declarations
 
          declare
             D    : Entity_Id := First_Discriminant (T);
@@ -7752,7 +7763,7 @@ package body Sem_Ch3 is
 
          Set_Parent (Subtyp_Decl, Parent (Related_Node));
 
-         --  Itypes must be analyzed with checks off (see itypes.ads).
+         --  Itypes must be analyzed with checks off (see package Itypes)
 
          Analyze (Subtyp_Decl, Suppress => All_Checks);
 
@@ -7859,7 +7870,7 @@ package body Sem_Ch3 is
             return True;
          end if;
 
-         --  In all other cases we have something wrong.
+         --  In all other cases we have something wrong
 
          return False;
       end Is_Discriminant;
@@ -8252,7 +8263,7 @@ package body Sem_Ch3 is
           (Nkind (S) = N_Attribute_Reference
             and then Attribute_Name (S) = Name_Range)
       then
-         --  A Range attribute will transformed into N_Range by Resolve.
+         --  A Range attribute will transformed into N_Range by Resolve
 
          Analyze (S);
          Set_Etype (S, T);
@@ -8488,7 +8499,7 @@ package body Sem_Ch3 is
       then
          return;
 
-      --  Here we do the analysis of the range.
+      --  Here we do the analysis of the range
 
       --  Note: we do this manually, since if we do a normal Analyze and
       --  Resolve call, there are problems with the conversions used for
@@ -8642,7 +8653,7 @@ package body Sem_Ch3 is
       --  Collect parent type components that do not appear in a variant part
 
       procedure Create_All_Components;
-      --  Iterate over Comp_List to create the components of the subtype.
+      --  Iterate over Comp_List to create the components of the subtype
 
       function Create_Component (Old_Compon : Entity_Id) return Entity_Id;
       --  Creates a new component from Old_Compon, copying all the fields from
@@ -9822,7 +9833,7 @@ package body Sem_Ch3 is
       Discriminant : Entity_Id;
 
       function Type_With_Explicit_Discrims (Id : Entity_Id) return Entity_Id;
-      --  Find the nearest type that actually specifies discriminants.
+      --  Find the nearest type that actually specifies discriminants
 
       ---------------------------------
       -- Type_With_Explicit_Discrims --
@@ -10101,7 +10112,7 @@ package body Sem_Ch3 is
          T := Empty;
          Array_Type_Declaration (T, Obj_Def);
 
-      --  Create an explicit subtype whenever possible.
+      --  Create an explicit subtype whenever possible
 
       elsif Nkind (P) /= N_Component_Declaration
         and then Def_Kind = N_Subtype_Indication
@@ -10337,7 +10348,7 @@ package body Sem_Ch3 is
    -- Get_Discriminant_Value --
    ----------------------------
 
-   --  This is the situation...
+   --  This is the situation:
 
    --  There is a non-derived type
 
@@ -10709,7 +10720,7 @@ package body Sem_Ch3 is
             while Present (Discrim) loop
                Corr_Discrim := Corresponding_Discriminant (Discrim);
 
-               --  Corr_Discrimm could be missing in an error situation.
+               --  Corr_Discrimm could be missing in an error situation
 
                if Present (Corr_Discrim)
                  and then Original_Record_Component (Corr_Discrim) = Old_C
@@ -10746,7 +10757,7 @@ package body Sem_Ch3 is
          Append_Elmt (Derived_Base, Assoc_List);
       end if;
 
-      --  Inherit parent discriminants if needed.
+      --  Inherit parent discriminants if needed
 
       if Inherit_Discr then
          Parent_Discrim := First_Discriminant (Parent_Base);
@@ -10756,7 +10767,7 @@ package body Sem_Ch3 is
          end loop;
       end if;
 
-      --  Create explicit stored discrims for untagged types when necessary.
+      --  Create explicit stored discrims for untagged types when necessary
 
       if not Has_Unknown_Discriminants (Derived_Base)
         and then Has_Discriminants (Parent_Base)
@@ -11915,7 +11926,7 @@ package body Sem_Ch3 is
 
          Set_Original_Record_Component (Id, Id);
 
-         --  Create the discriminal for the discriminant.
+         --  Create the discriminal for the discriminant
 
          Build_Discriminal (Id);
 
@@ -12852,7 +12863,8 @@ package body Sem_Ch3 is
       --  expanded as part of the freezing actions if it is not a CPP_Class.
 
       if Is_Tagged then
-         --  Do not add the tag unless we are in expansion mode.
+
+         --  Do not add the tag unless we are in expansion mode
 
          if Expander_Active then
             Tag_Comp := Make_Defining_Identifier (Sloc (Def), Name_uTag);

@@ -324,7 +324,7 @@ package body Sem_Ch4 is
    procedure Analyze_Allocator (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       Sav_Errs : constant Nat        := Serious_Errors_Detected;
-      E        : Node_Id             := Expression (N);
+      E        : Node_Id            := Expression (N);
       Acc_Type : Entity_Id;
       Type_Id  : Entity_Id;
 
@@ -496,6 +496,18 @@ package body Sem_Ch4 is
          Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
+      end if;
+
+      --  If the No_Streams restriction is set, check that the type of the
+      --  object is not, and does not contain, any subtype derived from
+      --  Ada.Streams.Root_Stream_Type. Note that we guard the call to
+      --  Has_Stream just for efficiency reasons. There is no point in
+      --  spending time on a Has_Stream check if the restriction is not set.
+
+      if Restrictions.Set (No_Streams) then
+         if Has_Stream (Designated_Type (Acc_Type)) then
+            Check_Restriction (No_Streams, N);
+         end if;
       end if;
 
       Set_Etype (N, Acc_Type);
@@ -1662,7 +1674,7 @@ package body Sem_Ch4 is
             Process_Function_Call;
 
          elsif Nkind (P) = N_Selected_Component
-           and then Ekind (Entity (Selector_Name (P))) = E_Function
+           and then Is_Overloadable (Entity (Selector_Name (P)))
          then
             Process_Function_Call;
 
@@ -2614,11 +2626,11 @@ package body Sem_Ch4 is
                      or else
                       (Nkind (Parent_N) = N_Attribute_Reference
                          and then (Attribute_Name (Parent_N) = Name_First
-                                    or else
+                                     or else
                                    Attribute_Name (Parent_N) = Name_Last
-                                    or else
+                                     or else
                                    Attribute_Name (Parent_N) = Name_Length
-                                    or else
+                                     or else
                                    Attribute_Name (Parent_N) = Name_Range)))
                then
                   Set_Etype (N, Etype (Comp));
@@ -2630,7 +2642,10 @@ package body Sem_Ch4 is
                --  not make an actual subtype, we end up getting a direct
                --  reference to a discriminant which will not do.
 
-               else
+               --  Comment needs revision, "in all other cases" does not
+               --  reasonably describe the situation below with an elsif???
+
+               elsif Expander_Active then
                   Act_Decl :=
                     Build_Actual_Subtype_Of_Component (Etype (Comp), N);
                   Insert_Action (N, Act_Decl);
@@ -2652,6 +2667,9 @@ package body Sem_Ch4 is
                         Set_Etype (N, Subt);
                      end;
                   end if;
+
+               else
+                  Set_Etype (N, Etype (Comp));
                end if;
 
                return;
