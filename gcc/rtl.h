@@ -577,6 +577,7 @@ extern const char * const reg_note_name[];
 #define NOTE_RANGE_INFO(INSN)  	XCEXP(INSN, 3, NOTE)
 #define NOTE_LIVE_INFO(INSN)   	XCEXP(INSN, 3, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF(INSN, 3, NOTE)
+#define NOTE_EXPECTED_VALUE(INSN) XCEXP(INSN, 3, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
@@ -663,6 +664,10 @@ enum insn_note
 
   /* Record the struct for the following basic block.  Uses NOTE_BASIC_BLOCK. */
   NOTE_INSN_BASIC_BLOCK,
+
+  /* Record the expected value of a register at a location.  Uses
+     NOTE_EXPECTED_VALUE; stored as (eq (reg) (const_int)).  */
+  NOTE_INSN_EXPECTED_VALUE,
 
   NOTE_INSN_MAX
 };

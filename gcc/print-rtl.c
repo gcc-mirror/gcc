@@ -162,18 +162,19 @@ print_rtx (in_rtx)
       case '0':
 	if (i == 3 && GET_CODE (in_rtx) == NOTE)
 	  {
-	    if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_BEG
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END)
+	    switch (NOTE_LINE_NUMBER (in_rtx))
 	      {
+	      case NOTE_INSN_EH_REGION_BEG:
+	      case NOTE_INSN_EH_REGION_END:
 		if (flag_dump_unnumbered)
 		  fprintf (outfile, " #");
 		else
 		  fprintf (outfile, " %d", NOTE_EH_HANDLER (in_rtx));
 		sawclose = 1;
-	      }
-	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
-		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END)
-	      {
+		break;
+
+	      case NOTE_INSN_BLOCK_BEG:
+	      case NOTE_INSN_BLOCK_END:
 		fprintf (outfile, " ");
 		if (flag_dump_unnumbered)
 		  fprintf (outfile, "#");
@@ -181,36 +182,51 @@ print_rtx (in_rtx)
 		  fprintf (outfile, HOST_PTR_PRINTF, 
 			   (char *) NOTE_BLOCK (in_rtx));
 		sawclose = 1;
-	      }
-	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_START
-		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_END
-		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_LIVE)
-	      {
+		break;
+
+	      case NOTE_INSN_RANGE_START:
+	      case NOTE_INSN_RANGE_END:
+	      case NOTE_INSN_LIVE:
 		indent += 2;
 		if (!sawclose)
 		  fprintf (outfile, " ");
 		print_rtx (NOTE_RANGE_INFO (in_rtx));
 		indent -= 2;
-	      }
-	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BASIC_BLOCK)
-	      {
-		basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
+		break;
 
-		if (bb != 0)
-		  fprintf (outfile, " [bb %d]", bb->index);
-	      }
-	    else
-	      {
-		const char * const str = X0STR (in_rtx, i);
-		if (str == 0)
-		  fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
-		else
-		  {
-		    if (dump_for_graph)
-		      fprintf (outfile, " (\\\"%s\\\")", str);
-		    else
-		      fprintf (outfile, " (\"%s\")", str);
-		  }
+	      case NOTE_INSN_BASIC_BLOCK:
+		{
+		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
+		  if (bb != 0)
+		    fprintf (outfile, " [bb %d]", bb->index);
+		  break;
+	        }
+
+	      case NOTE_INSN_EXPECTED_VALUE:
+		indent += 2;
+		if (!sawclose)
+		  fprintf (outfile, " ");
+		print_rtx (NOTE_EXPECTED_VALUE (in_rtx));
+		indent -= 2;
+		break;
+
+	      default:
+		{
+		  const char * const str = X0STR (in_rtx, i);
+
+		  if (NOTE_LINE_NUMBER (in_rtx) < 0)
+		    ;
+		  else if (str == 0)
+		    fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
+		  else
+		    {
+		      if (dump_for_graph)
+		        fprintf (outfile, " (\\\"%s\\\")", str);
+		      else
+		        fprintf (outfile, " (\"%s\")", str);
+		    }
+		  break;
+		}
 	      }
 	  }
 	break;

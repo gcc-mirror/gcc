@@ -180,4 +180,91 @@ estimate_probability (loops_info)
 			       REG_NOTES (last_insn));
     }
 }
+
+/* __builtin_expect dropped tokens into the insn stream describing
+   expected values of registers.  Generate branch probabilities 
+   based off these values.  */
 
+static rtx find_expected_value		PARAMS ((rtx, rtx));
+
+void
+expected_value_to_br_prob ()
+{
+  rtx insn, cond, earliest, ev;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    {
+      /* Look for simple conditional branches.  */
+      if (GET_CODE (insn) != JUMP_INSN)
+	continue;
+      if (! condjump_p (insn) || simplejump_p (insn))
+	continue;
+
+      /* Collect the branch condition.  Some machines can branch on
+	 user values directly, others need a compare instruction.  If
+	 the branch condition involves a MODE_INT register, try that
+	 expression first.  Otherwise use get_condition.  */
+      cond = XEXP (SET_SRC (PATTERN (insn)), 0);
+      if (GET_RTX_CLASS (GET_CODE (cond)) != '<')
+	abort ();
+      if (GET_CODE (XEXP (cond, 0)) == REG
+	  && GET_MODE_CLASS (GET_MODE (XEXP (cond, 0))) == MODE_INT
+	  && (ev = find_expected_value (cond, insn)) != NULL_RTX)
+	;
+      else if ((cond = get_condition (insn, &earliest)) == NULL_RTX
+	       || (ev = find_expected_value (cond, earliest)) == NULL_RTX)
+	continue;
+
+      /* Substitute and simplify.  Given that the expression we're 
+	 building involves two constants, we should wind up with either
+	 true or false.  */
+      cond = gen_rtx_fmt_ee (GET_CODE (cond), VOIDmode,
+			     XEXP (ev, 1), XEXP (cond, 1));
+      cond = simplify_rtx (cond);
+
+      /* Turn the condition into a scaled branch probability.  */
+      if (cond == const0_rtx)
+	cond = const1_rtx;
+      else if (cond == const1_rtx)
+	cond = GEN_INT (REG_BR_PROB_BASE - 1);
+      else
+	abort ();
+      REG_NOTES (insn) = alloc_EXPR_LIST (REG_BR_PROB, cond, REG_NOTES (insn));
+    }
+}
+
+/* Search backwards for a NOTE_INSN_EXPECTED_VALUE note with a register
+   that matches the condition.  */
+
+static rtx
+find_expected_value (cond, earliest)
+     rtx cond, earliest;
+{
+  rtx insn, reg = XEXP (cond, 0);
+  int timeout;
+
+  /* The condition should be (op (reg) (const_int)), otherwise we
+     won't be able to intuit anything about it.  */
+  if (GET_CODE (reg) != REG
+      || GET_CODE (XEXP (cond, 1)) != CONST_INT
+      || GET_MODE_CLASS (GET_MODE (reg)) != MODE_INT)
+    return NULL_RTX;
+
+  /* Assuming the user wrote something like `if (__builtin_expect(...))',
+     we shouldn't have to search too far.  Also stop if we reach a code
+     label or if REG is modified.  */
+  for (insn = earliest, timeout = 10;
+       insn && timeout > 0;
+       insn = PREV_INSN (insn), --timeout)
+    {
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EXPECTED_VALUE
+	  && XEXP (NOTE_EXPECTED_VALUE (insn), 0) == reg)
+	return NOTE_EXPECTED_VALUE (insn);
+
+      if (GET_CODE (insn) == CODE_LABEL || reg_set_p (reg, insn))
+	break;
+    }
+
+  return NULL_RTX;
+}

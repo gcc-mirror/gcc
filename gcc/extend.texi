@@ -3199,7 +3199,9 @@ correspond to the C library functions @code{abort}, @code{abs},
 @code{sinf}, @code{sinl}, @code{sqrt}, @code{sqrtf}, @code{sqrtl},
 @code{strcmp}, @code{strcpy}, and @code{strlen}.
 
+@table @code
 @findex __builtin_constant_p
+@item __builtin_constant_p (@var{exp})
 You can use the builtin function @code{__builtin_constant_p} to
 determine if a value is known to be constant at compile-time and hence
 that GNU CC can perform constant-folding on expressions involving that
@@ -3227,6 +3229,39 @@ never return 1 when you call the inline function with a string constant
 or constructor expression (@pxref{Constructors}) and will not return 1
 when you pass a constant numeric value to the inline function unless you
 specify the @samp{-O} option.
+
+@findex __builtin_expect
+@item __builtin_expect(@var{exp}, @var{c})
+You may use @code{__builtin_expect} to provide the compiler with 
+branch prediction information.  In general, you should prefer to
+use actual profile feedback for this (@samp{-fprofile-arcs}), as
+programmers are notoriously bad at predicting how their programs
+actually preform.  However, there are applications in which this
+data is hard to collect.
+
+The return value is the value of @var{exp}, which should be an
+integral expression.  The value of @var{c} must be a compile-time
+constant.  The semantics of the builtin are that it is expected
+that @var{exp} == @var{c}.  For example:
+
+@smallexample
+if (__builtin_expect (x, 0))
+  foo ();
+@end smallexample
+
+@noindent
+would indicate that we do not expect to call @code{foo}, since
+we expect @code{x} to be zero.  Since you are limited to integral
+expressions for @var{exp}, you should use constructions such as
+
+@smallexample
+if (__builtin_expect (ptr != NULL, 1))
+  error ();
+@end smallexample
+
+@noindent
+when testing pointer or floating-point values.
+@end table
 
 @node Deprecated Features
 @section Deprecated Features

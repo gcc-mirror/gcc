@@ -1,3 +1,22 @@
+2000-04-17  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_expect): New.
+	(expand_builtin): Call it.
+	* builtins.def (BUILT_IN_EXPECT): New.
+	* c-common.c (c_common_nodes_and_builtins): Declare __builtin_expect.
+	* extend.texi: Document it.
+
+	* predict.c (expected_value_to_br_prob): New.
+	(find_expected_value): New.
+	* basic-block.h (expected_value_to_br_prob): Declare.
+	* toplev.c (rest_of_compilation): Invoke it.
+
+	* rtl.h (NOTE_EXPECTED_VALUE): New.
+	(NOTE_INSN_EXPECTED_VALUE): New.
+	* rtl.c (note_insn_name): Update.
+	* print-rtl.c (print_rtx): Reorg NOTE_LINE_NUMBER special
+	cases; handle NOTE_INSN_EXPECTED_VALUE.
+
 2000-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (eligible_for_sibcall_delay): Cannot use

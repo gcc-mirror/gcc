@@ -3767,6 +3767,16 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 						      endlink))),
 		    BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL_PTR);
 
+  /* ??? Ought to be `T __builtin_expect(T, T)' for any type T.  */
+  builtin_function ("__builtin_expect",
+		    build_function_type (long_integer_type_node,
+					 tree_cons (NULL_TREE,
+						    long_integer_type_node,
+						    tree_cons (NULL_TREE,
+							long_integer_type_node,
+							endlink))),
+		    BUILT_IN_EXPECT, BUILT_IN_NORMAL, NULL_PTR);
+
   /* Currently under experimentation.  */
   builtin_function ("__builtin_memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
 		    BUILT_IN_NORMAL, "memcpy");
