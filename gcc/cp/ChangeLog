@@ -1,5 +1,8 @@
 2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/7718
+	* pt.c (tsubst_decl): Remove assert.
+
 	Remove DR 295 implementation.
 	* pt.c (check_cv_quals_for_unify): Disable function & method cases.
 	* tree.c (cp_build_qualified_type_real): Likewise. Don't warn
