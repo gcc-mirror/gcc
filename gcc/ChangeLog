@@ -1,3 +1,9 @@
+2002-06-07  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) [EQ_EXPR]:  Place both integer and real
+	constants last in comparisons.  Optimize (x+1.0)>0.0 into the
+	equivalent x > -1.0 when -ffast-math.
+
 2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (mips*-*-netbsd*): Add mips/t-netbsd to ${tmake_file}.
