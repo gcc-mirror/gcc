@@ -345,7 +345,7 @@ typedef struct {
 
 #define __GTHREAD_ONCE_INIT {0, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
-#define __GTHREAD_MUTEX_INIT_DEFAULT {0, 0}
+#define __GTHREAD_MUTEX_INIT_DEFAULT {-1, 0}
 
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
@@ -356,6 +356,29 @@ typedef struct {
 extern int _CRT_MT;
 extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
 #endif /* __MINGW32__ version */
+
+/* The Windows95 kernel does not export InterlockedCompareExchange.
+   This provides a substitute.   When building apps that reference
+   gthread_mutex_try_lock, the  __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
+   macro  must be defined if Windows95 is a target.  Currently
+   gthread_mutex_try_lock is not referenced by libgcc or libstdc++.  */
+#ifdef __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
+static inline long
+__gthr_i486_lock_cmp_xchg(long *dest, long xchg, long comperand)
+{
+  long result;
+  __asm__ __volatile__ ("\n\
+	lock\n\
+	cmpxchg{l} {%4, %1|%1, %4}\n"
+	: "=a" (result), "=m" (*dest)
+	: "0" (comperand), "m" (*dest), "r" (xchg)
+	: "cc");
+  return result;
+}
+#define __GTHR_W32_InterlockedCompareExchange __gthr_i486_lock_cmp_xchg
+#else  /* __GTHREAD_I486_INLINE_LOCK_PRIMITIVES */
+#define __GTHR_W32_InterlockedCompareExchange InterlockedCompareExchange
+#endif /* __GTHREAD_I486_INLINE_LOCK_PRIMITIVES */
 
 static inline int
 __gthread_active_p (void)
@@ -536,7 +559,7 @@ __gthread_setspecific (__gthread_key_t key, const void *ptr)
 static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
-  mutex->counter = 0;
+  mutex->counter = -1;
   mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
@@ -547,13 +570,13 @@ __gthread_mutex_lock (__gthread_mutex_t *mutex)
 
   if (__gthread_active_p ())
     {
-      if (InterlockedIncrement (&mutex->counter) == 1 ||
+      if (InterlockedIncrement (&mutex->counter) == 0 ||
 	  WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
 	status = 0;
       else
 	{
-	  // WaitForSingleObject returns WAIT_FAILED, and we can only do
-	  // some best-effort cleanup here.
+	  /* WaitForSingleObject returns WAIT_FAILED, and we can only do
+	     some best-effort cleanup here.  */
 	  InterlockedDecrement (&mutex->counter);
 	  status = 1;
 	}
@@ -568,7 +591,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 
   if (__gthread_active_p ())
     {
-      if (InterlockedCompareExchange (&mutex->counter, 1, 0 ) == 0)
+      if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
 	status = 0;
       else
 	status = 1;
@@ -581,7 +604,7 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
     {
-      if (InterlockedDecrement (&mutex->counter))
+      if (InterlockedDecrement (&mutex->counter) >= 0)
 	return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
     }
   return 0;

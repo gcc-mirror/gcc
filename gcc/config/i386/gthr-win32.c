@@ -31,11 +31,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the executable file might be covered by the GNU General Public License.  */
 
 
+#include <windows.h>
 #ifndef __GTHREAD_HIDE_WIN32API
 # define __GTHREAD_HIDE_WIN32API 1
 #endif
+#undef  __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
+#define __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
 #include <gthr-win32.h>
-#include <windows.h>
 
 /* Windows32 threads specific definitions. The windows32 threading model
    does not map well into pthread-inspired gcc's threading model, and so 
@@ -144,20 +146,20 @@ __gthr_win32_setspecific (__gthread_key_t key, const void *ptr)
 void
 __gthr_win32_mutex_init_function (__gthread_mutex_t *mutex)
 {
-  mutex->counter = 0;
+  mutex->counter = -1;
   mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
 int
 __gthr_win32_mutex_lock (__gthread_mutex_t *mutex)
 {
-  if (InterlockedIncrement (&mutex->counter) == 1 ||
+  if (InterlockedIncrement (&mutex->counter) == 0 ||
       WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
     return 0;
   else
     {
-      // WaitForSingleObject returns WAIT_FAILED, and we can only do
-      // some best-effort cleanup here.
+      /* WaitForSingleObject returns WAIT_FAILED, and we can only do
+         some best-effort cleanup here.  */
       InterlockedDecrement (&mutex->counter);
       return 1;
     }
@@ -166,7 +168,7 @@ __gthr_win32_mutex_lock (__gthread_mutex_t *mutex)
 int
 __gthr_win32_mutex_trylock (__gthread_mutex_t *mutex)
 {
-  if (InterlockedCompareExchange (&mutex->counter, 1, 0 ) == 0)
+  if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
     return 0;
   else
     return 1;
@@ -175,7 +177,7 @@ __gthr_win32_mutex_trylock (__gthread_mutex_t *mutex)
 int
 __gthr_win32_mutex_unlock (__gthread_mutex_t *mutex)
 {
-  if (InterlockedDecrement (&mutex->counter))
+  if (InterlockedDecrement (&mutex->counter) >= 0)
     return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
   else
     return 0;

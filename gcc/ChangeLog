@@ -1,3 +1,21 @@
+2004-06-23  Wu Yongwei  <adah@sh163.net>
+
+	* gthr-win32.h (__GTHREAD_MUTEX_INIT_DEFAULT): Adjust.
+	(__gthr_i486_lock_cmp_xchg): New inline assembly function.
+	(__GTHR_W32_InterlockedCompareExchange): New macro to choose a
+	suitable function for interlocked compare-and-exchange.
+	(__gthread_mutex_trylock): Use
+	__GTHR_W32_InterlockedCompareExchange.
+	(__gthread_mutex_init_function, __gthread_mutex_lock,
+	__gthread_mutex_trylock, __gthread_mutex_unlock): Adjust the
+	initial counter value to work correctly under Windows 95.
+	* config/i386/gthr-win32.c: Adjust include order.
+	Define __GTHREAD_I486_INLINE_LOCK_PRIMITIVES before including
+	gthr-win32.h.
+	(__gthr_win32_mutex_init_function, __gthr_win32_mutex_lock,
+	__gthr_win32_mutex_trylock, __gthr_win32_mutex_unlock): Adjust
+	to match inline versions in gthr-win32.h.
+
 2004-06-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_use_dfa_pipeline_interface): Delete.
