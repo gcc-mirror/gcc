@@ -1,3 +1,8 @@
+Mon Nov  2 07:35:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sched.c ({true,anti,output}_dependence): Volatile conflicts with
+	anything where MEM_IN_STRUCT_P doesn't match.
+
 Fri Oct 30 14:05:32 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (struct move_by_pieces): New fields {to,from}_readonly.
