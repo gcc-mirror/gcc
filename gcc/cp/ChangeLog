@@ -1,3 +1,9 @@
+1999-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (cp_build_qualified_type_real): Rework ARRAY_TYPE
+	allocation to match practice throughout the rest of the 
+	compiler.
+
 1999-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* lex.c (make_lang_type): Create TYPE_BINFO for
