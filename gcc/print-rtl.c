@@ -77,6 +77,28 @@ int dump_for_graph;
 /* Nonzero to dump all call_placeholder alternatives.  */
 static int debug_call_placeholder_verbose;
 
+void
+print_mem_expr (outfile, expr)
+     FILE *outfile;
+     tree expr;
+{
+  if (TREE_CODE (expr) == COMPONENT_REF)
+    {
+      if (TREE_OPERAND (expr, 0))
+        print_mem_expr (outfile, TREE_OPERAND (expr, 0));
+      else
+	fputs (" <variable>", outfile);
+      fprintf (outfile, ".%s",
+	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (expr, 1))));
+    }
+  else if (DECL_NAME (expr))
+    fprintf (outfile, " %s", IDENTIFIER_POINTER (DECL_NAME (expr)));
+  else if (TREE_CODE (expr) == RESULT_DECL)
+    fputs (" <result>", outfile);
+  else
+    fputs (" <anonymous>", outfile);
+}
+
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
 static void
@@ -456,12 +478,9 @@ print_rtx (in_rtx)
     case MEM:
       fputs (" [", outfile);
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
-      if (MEM_DECL (in_rtx))
-	fprintf (outfile, " %s",
-		 DECL_NAME (MEM_DECL (in_rtx))
-		 ? IDENTIFIER_POINTER (DECL_NAME (MEM_DECL (in_rtx)))
-		 : TREE_CODE (MEM_DECL (in_rtx)) == RESULT_DECL ? "<result>"
-		 : "<anonymous>");
+
+      if (MEM_EXPR (in_rtx))
+	print_mem_expr (outfile, MEM_EXPR (in_rtx));
 
       if (MEM_OFFSET (in_rtx))
 	{
