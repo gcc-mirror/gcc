@@ -562,41 +562,44 @@ package body Make is
    is
       generic
          with package T is new Table.Table (<>);
-      function Generic_Position return Integer;
-      --  Generic procedure that adds S at the end or beginning of T depending
-      --  of the value of the boolean Append_Switch.
+      procedure Generic_Position (New_Position : out Integer);
+      --  Generic procedure that chooses a position for S in T at the
+      --  beginning or the end, depending on the boolean Append_Switch.
+
 
       ----------------------
       -- Generic_Position --
       ----------------------
 
-      function Generic_Position return Integer is
+      procedure  Generic_Position (New_Position : out Integer) is
       begin
          T.Increment_Last;
 
          if Append_Switch then
-            return Integer (T.Last);
+            New_Position := Integer (T.Last);
          else
             for J in reverse T.Table_Index_Type'Succ (T.First) .. T.Last loop
                T.Table (J) := T.Table (T.Table_Index_Type'Pred (J));
             end loop;
 
-            return Integer (T.First);
+            New_Position := Integer (T.First);
          end if;
       end Generic_Position;
 
-      function Gcc_Switches_Pos    is new Generic_Position (Gcc_Switches);
-      function Binder_Switches_Pos is new Generic_Position (Binder_Switches);
-      function Linker_Switches_Pos is new Generic_Position (Linker_Switches);
+      procedure Gcc_Switches_Pos    is new Generic_Position (Gcc_Switches);
+      procedure Binder_Switches_Pos is new Generic_Position (Binder_Switches);
+      procedure Linker_Switches_Pos is new Generic_Position (Linker_Switches);
 
-      function Saved_Gcc_Switches_Pos is new
+      procedure Saved_Gcc_Switches_Pos is new
         Generic_Position (Saved_Gcc_Switches);
 
-      function Saved_Binder_Switches_Pos is new
+      procedure Saved_Binder_Switches_Pos is new
         Generic_Position (Saved_Binder_Switches);
 
-      function Saved_Linker_Switches_Pos is new
+      procedure Saved_Linker_Switches_Pos is new
         Generic_Position (Saved_Linker_Switches);
+
+      New_Position : Integer;
 
    --  Start of processing for Add_Switch
 
@@ -604,13 +607,16 @@ package body Make is
       if And_Save then
          case Program is
             when Compiler =>
-               Saved_Gcc_Switches.Table (Saved_Gcc_Switches_Pos) := S;
+               Saved_Gcc_Switches_Pos (New_Position);
+               Saved_Gcc_Switches.Table (New_Position) := S;
 
             when Binder   =>
-               Saved_Binder_Switches.Table (Saved_Binder_Switches_Pos) := S;
+               Saved_Binder_Switches_Pos (New_Position);
+               Saved_Binder_Switches.Table (New_Position) := S;
 
             when Linker   =>
-               Saved_Linker_Switches.Table (Saved_Linker_Switches_Pos) := S;
+               Saved_Linker_Switches_Pos (New_Position);
+               Saved_Linker_Switches.Table (New_Position) := S;
 
             when None =>
                raise Program_Error;
@@ -619,13 +625,16 @@ package body Make is
       else
          case Program is
             when Compiler =>
-               Gcc_Switches.Table (Gcc_Switches_Pos) := S;
+               Gcc_Switches_Pos (New_Position);
+               Gcc_Switches.Table (New_Position) := S;
 
             when Binder   =>
-               Binder_Switches.Table (Binder_Switches_Pos) := S;
+               Binder_Switches_Pos (New_Position);
+               Binder_Switches.Table (New_Position) := S;
 
             when Linker   =>
-               Linker_Switches.Table (Linker_Switches_Pos) := S;
+               Linker_Switches_Pos (New_Position);
+               Linker_Switches.Table (New_Position) := S;
 
             when None =>
                raise Program_Error;
