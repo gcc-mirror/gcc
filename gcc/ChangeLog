@@ -1,3 +1,8 @@
+2001-06-07  Phil Edwards  <pme@sources.redhat.com>
+
+	* linux.h (CPLUSPLUS_CPP_SPEC):  Move -D_GNU_SOURCE to here.
+	* pa/pa-linux.h:  Allow CPLUSPLUS_CPP_SPEC to remain.
+
 2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/contrib.texi: Add copyright notice.
