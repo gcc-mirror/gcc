@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.198 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -286,12 +286,15 @@ package body Sem_Type is
 
          --  If the node is given in functional notation and the prefix
          --  is an expanded name, then the operator is visible if the
-         --  prefix is the scope of the result type as well.
+         --  prefix is the scope of the result type as well. If the
+         --  operator is (implicitly) defined in an extension of system,
+         --  it is know to be valid (see Defined_In_Scope, sem_ch4.adb).
 
          elsif Nkind (N) = N_Function_Call
            and then Nkind (Name (N)) = N_Expanded_Name
            and then (Entity (Prefix (Name (N))) = Scope (Base_Type (T))
-                      or else Entity (Prefix (Name (N))) = Scope (Vis_Type))
+                      or else Entity (Prefix (Name (N))) = Scope (Vis_Type)
+                      or else Scope (Vis_Type) = System_Aux_Id)
          then
             null;
 
