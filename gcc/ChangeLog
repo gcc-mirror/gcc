@@ -1,5 +1,6 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/vxworks.h: Replace "GNU compiler" with "GCC".
 	* config/sparc/aout.h, config/sparc/biarch64.h, config/sparc/elf.h,
 	config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
 	config/sparc/lite.h, config/sparc/litecoff.h, config/sparc/liteelf.h,
