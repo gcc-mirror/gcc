@@ -1,3 +1,9 @@
+2000-06-23  Tom Tromey  <tromey@cygnus.com>
+
+	For PR gcj/260:
+	* libjava.lang/PR260.out: New file.
+	* libjava.lang/PR260.java: New file.
+
 2000-06-13  Warren Levy  <warrenl@cygnus.com>
 
 	Test for PR java.lang/258:
