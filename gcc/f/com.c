@@ -10419,12 +10419,6 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 	    break;
 #endif
 
-#if FFETARGET_okREAL4
-	  case FFEINFO_kindtypeREAL4:
-	    val = ffetarget_value_real4 (ffebld_cu_val_real4 (*cu));
-	    break;
-#endif
-
 	  default:
 	    assert ("bad REAL constant kind type" == NULL);
 	    /* Fall through. */
@@ -10461,13 +10455,6 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 	  case FFEINFO_kindtypeREAL3:
 	    real = ffetarget_value_real3 (ffebld_cu_val_complex3 (*cu).real);
 	    imag = ffetarget_value_real3 (ffebld_cu_val_complex3 (*cu).imaginary);
-	    break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	  case FFEINFO_kindtypeREAL4:
-	    real = ffetarget_value_real4 (ffebld_cu_val_complex4 (*cu).real);
-	    imag = ffetarget_value_real4 (ffebld_cu_val_complex4 (*cu).imaginary);
 	    break;
 #endif
 

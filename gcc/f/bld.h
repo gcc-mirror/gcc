@@ -154,18 +154,6 @@ union _ffebld_constant_union_
 #if FFETARGET_okINTEGER4
     ffetargetInteger4 integer4;
 #endif
-#if FFETARGET_okINTEGER5
-    ffetargetInteger5 integer5;
-#endif
-#if FFETARGET_okINTEGER6
-    ffetargetInteger6 integer6;
-#endif
-#if FFETARGET_okINTEGER7
-    ffetargetInteger7 integer7;
-#endif
-#if FFETARGET_okINTEGER8
-    ffetargetInteger8 integer8;
-#endif
 #if FFETARGET_okLOGICAL1
     ffetargetLogical1 logical1;
 #endif
@@ -178,18 +166,6 @@ union _ffebld_constant_union_
 #if FFETARGET_okLOGICAL4
     ffetargetLogical4 logical4;
 #endif
-#if FFETARGET_okLOGICAL5
-    ffetargetLogical5 logical5;
-#endif
-#if FFETARGET_okLOGICAL6
-    ffetargetLogical6 logical6;
-#endif
-#if FFETARGET_okLOGICAL7
-    ffetargetLogical7 logical7;
-#endif
-#if FFETARGET_okLOGICAL8
-    ffetargetLogical8 logical8;
-#endif
 #if FFETARGET_okREAL1
     ffetargetReal1 real1;
 #endif
@@ -198,21 +174,6 @@ union _ffebld_constant_union_
 #endif
 #if FFETARGET_okREAL3
     ffetargetReal3 real3;
-#endif
-#if FFETARGET_okREAL4
-    ffetargetReal4 real4;
-#endif
-#if FFETARGET_okREAL5
-    ffetargetReal5 real5;
-#endif
-#if FFETARGET_okREAL6
-    ffetargetReal6 real6;
-#endif
-#if FFETARGET_okREAL7
-    ffetargetReal7 real7;
-#endif
-#if FFETARGET_okREAL8
-    ffetargetReal8 real8;
 #endif
 #if FFETARGET_okCOMPLEX1
     ffetargetComplex1 complex1;
@@ -223,44 +184,8 @@ union _ffebld_constant_union_
 #if FFETARGET_okCOMPLEX3
     ffetargetComplex3 complex3;
 #endif
-#if FFETARGET_okCOMPLEX4
-    ffetargetComplex4 complex4;
-#endif
-#if FFETARGET_okCOMPLEX5
-    ffetargetComplex5 complex5;
-#endif
-#if FFETARGET_okCOMPLEX6
-    ffetargetComplex6 complex6;
-#endif
-#if FFETARGET_okCOMPLEX7
-    ffetargetComplex7 complex7;
-#endif
-#if FFETARGET_okCOMPLEX8
-    ffetargetComplex8 complex8;
-#endif
 #if FFETARGET_okCHARACTER1
     ffetargetCharacter1 character1;
-#endif
-#if FFETARGET_okCHARACTER2
-    ffetargetCharacter2 character2;
-#endif
-#if FFETARGET_okCHARACTER3
-    ffetargetCharacter3 character3;
-#endif
-#if FFETARGET_okCHARACTER4
-    ffetargetCharacter4 character4;
-#endif
-#if FFETARGET_okCHARACTER5
-    ffetargetCharacter5 character5;
-#endif
-#if FFETARGET_okCHARACTER6
-    ffetargetCharacter6 character6;
-#endif
-#if FFETARGET_okCHARACTER7
-    ffetargetCharacter7 character7;
-#endif
-#if FFETARGET_okCHARACTER8
-    ffetargetCharacter8 character8;
 #endif
   };
 
@@ -278,18 +203,6 @@ union _ffebld_constant_array_
 #if FFETARGET_okINTEGER4
     ffetargetInteger4 *integer4;
 #endif
-#if FFETARGET_okINTEGER5
-    ffetargetInteger5 *integer5;
-#endif
-#if FFETARGET_okINTEGER6
-    ffetargetInteger6 *integer6;
-#endif
-#if FFETARGET_okINTEGER7
-    ffetargetInteger7 *integer7;
-#endif
-#if FFETARGET_okINTEGER8
-    ffetargetInteger8 *integer8;
-#endif
 #if FFETARGET_okLOGICAL1
     ffetargetLogical1 *logical1;
 #endif
@@ -302,18 +215,6 @@ union _ffebld_constant_array_
 #if FFETARGET_okLOGICAL4
     ffetargetLogical4 *logical4;
 #endif
-#if FFETARGET_okLOGICAL5
-    ffetargetLogical5 *logical5;
-#endif
-#if FFETARGET_okLOGICAL6
-    ffetargetLogical6 *logical6;
-#endif
-#if FFETARGET_okLOGICAL7
-    ffetargetLogical7 *logical7;
-#endif
-#if FFETARGET_okLOGICAL8
-    ffetargetLogical8 *logical8;
-#endif
 #if FFETARGET_okREAL1
     ffetargetReal1 *real1;
 #endif
@@ -322,21 +223,6 @@ union _ffebld_constant_array_
 #endif
 #if FFETARGET_okREAL3
     ffetargetReal3 *real3;
-#endif
-#if FFETARGET_okREAL4
-    ffetargetReal4 *real4;
-#endif
-#if FFETARGET_okREAL5
-    ffetargetReal5 *real5;
-#endif
-#if FFETARGET_okREAL6
-    ffetargetReal6 *real6;
-#endif
-#if FFETARGET_okREAL7
-    ffetargetReal7 *real7;
-#endif
-#if FFETARGET_okREAL8
-    ffetargetReal8 *real8;
 #endif
 #if FFETARGET_okCOMPLEX1
     ffetargetComplex1 *complex1;
@@ -347,44 +233,8 @@ union _ffebld_constant_array_
 #if FFETARGET_okCOMPLEX3
     ffetargetComplex3 *complex3;
 #endif
-#if FFETARGET_okCOMPLEX4
-    ffetargetComplex4 *complex4;
-#endif
-#if FFETARGET_okCOMPLEX5
-    ffetargetComplex5 *complex5;
-#endif
-#if FFETARGET_okCOMPLEX6
-    ffetargetComplex6 *complex6;
-#endif
-#if FFETARGET_okCOMPLEX7
-    ffetargetComplex7 *complex7;
-#endif
-#if FFETARGET_okCOMPLEX8
-    ffetargetComplex8 *complex8;
-#endif
 #if FFETARGET_okCHARACTER1
     ffetargetCharacterUnit1 *character1;
-#endif
-#if FFETARGET_okCHARACTER2
-    ffetargetCharacterUnit2 *character2;
-#endif
-#if FFETARGET_okCHARACTER3
-    ffetargetCharacterUnit3 *character3;
-#endif
-#if FFETARGET_okCHARACTER4
-    ffetargetCharacterUnit4 *character4;
-#endif
-#if FFETARGET_okCHARACTER5
-    ffetargetCharacterUnit5 *character5;
-#endif
-#if FFETARGET_okCHARACTER6
-    ffetargetCharacterUnit6 *character6;
-#endif
-#if FFETARGET_okCHARACTER7
-    ffetargetCharacterUnit7 *character7;
-#endif
-#if FFETARGET_okCHARACTER8
-    ffetargetCharacterUnit8 *character8;
 #endif
   };
 
@@ -479,34 +329,6 @@ bool ffebld_constant_is_zero (ffebldConstant c);
 ffebldConstant ffebld_constant_new_character1 (ffelexToken t);
 ffebldConstant ffebld_constant_new_character1_val (ffetargetCharacter1 val);
 #endif
-#if FFETARGET_okCHARACTER2
-ffebldConstant ffebld_constant_new_character2 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character2_val (ffetargetCharacter2 val);
-#endif
-#if FFETARGET_okCHARACTER3
-ffebldConstant ffebld_constant_new_character3 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character3_val (ffetargetCharacter3 val);
-#endif
-#if FFETARGET_okCHARACTER4
-ffebldConstant ffebld_constant_new_character4 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character4_val (ffetargetCharacter4 val);
-#endif
-#if FFETARGET_okCHARACTER5
-ffebldConstant ffebld_constant_new_character5 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character5_val (ffetargetCharacter5 val);
-#endif
-#if FFETARGET_okCHARACTER6
-ffebldConstant ffebld_constant_new_character6 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character6_val (ffetargetCharacter6 val);
-#endif
-#if FFETARGET_okCHARACTER7
-ffebldConstant ffebld_constant_new_character7 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character7_val (ffetargetCharacter7 val);
-#endif
-#if FFETARGET_okCHARACTER8
-ffebldConstant ffebld_constant_new_character8 (ffelexToken t);
-ffebldConstant ffebld_constant_new_character8_val (ffetargetCharacter8 val);
-#endif
 #if FFETARGET_okCOMPLEX1
 ffebldConstant ffebld_constant_new_complex1 (ffebldConstant real,
 					     ffebldConstant imaginary);
@@ -521,31 +343,6 @@ ffebldConstant ffebld_constant_new_complex2_val (ffetargetComplex2 val);
 ffebldConstant ffebld_constant_new_complex3 (ffebldConstant real,
 					     ffebldConstant imaginary);
 ffebldConstant ffebld_constant_new_complex3_val (ffetargetComplex3 val);
-#endif
-#if FFETARGET_okCOMPLEX4
-ffebldConstant ffebld_constant_new_complex4 (ffebldConstant real,
-					     ffebldConstant imaginary);
-ffebldConstant ffebld_constant_new_complex4_val (ffetargetComplex4 val);
-#endif
-#if FFETARGET_okCOMPLEX5
-ffebldConstant ffebld_constant_new_complex5 (ffebldConstant real,
-					     ffebldConstant imaginary);
-ffebldConstant ffebld_constant_new_complex5_val (ffetargetComplex5 val);
-#endif
-#if FFETARGET_okCOMPLEX6
-ffebldConstant ffebld_constant_new_complex6 (ffebldConstant real,
-					     ffebldConstant imaginary);
-ffebldConstant ffebld_constant_new_complex6_val (ffetargetComplex6 val);
-#endif
-#if FFETARGET_okCOMPLEX7
-ffebldConstant ffebld_constant_new_complex7 (ffebldConstant real,
-					     ffebldConstant imaginary);
-ffebldConstant ffebld_constant_new_complex7_val (ffetargetComplex7 val);
-#endif
-#if FFETARGET_okCOMPLEX8
-ffebldConstant ffebld_constant_new_complex8 (ffebldConstant real,
-					     ffebldConstant imaginary);
-ffebldConstant ffebld_constant_new_complex8_val (ffetargetComplex8 val);
 #endif
 ffebldConstant ffebld_constant_new_hollerith (ffelexToken t);
 ffebldConstant ffebld_constant_new_hollerith_val (ffetargetHollerith val);
@@ -564,22 +361,6 @@ ffebldConstant ffebld_constant_new_integer3_val (ffetargetInteger3 val);
 #if FFETARGET_okINTEGER4
 ffebldConstant ffebld_constant_new_integer4 (ffelexToken t);
 ffebldConstant ffebld_constant_new_integer4_val (ffetargetInteger4 val);
-#endif
-#if FFETARGET_okINTEGER5
-ffebldConstant ffebld_constant_new_integer5 (ffelexToken t);
-ffebldConstant ffebld_constant_new_integer5_val (ffetargetInteger5 val);
-#endif
-#if FFETARGET_okINTEGER6
-ffebldConstant ffebld_constant_new_integer6 (ffelexToken t);
-ffebldConstant ffebld_constant_new_integer6_val (ffetargetInteger6 val);
-#endif
-#if FFETARGET_okINTEGER7
-ffebldConstant ffebld_constant_new_integer7 (ffelexToken t);
-ffebldConstant ffebld_constant_new_integer7_val (ffetargetInteger7 val);
-#endif
-#if FFETARGET_okINTEGER8
-ffebldConstant ffebld_constant_new_integer8 (ffelexToken t);
-ffebldConstant ffebld_constant_new_integer8_val (ffetargetInteger8 val);
 #endif
 ffebldConstant ffebld_constant_new_integerbinary (ffelexToken t);
 ffebldConstant ffebld_constant_new_integerhex (ffelexToken t);
@@ -600,22 +381,6 @@ ffebldConstant ffebld_constant_new_logical3_val (ffetargetLogical3 val);
 ffebldConstant ffebld_constant_new_logical4 (bool truth);
 ffebldConstant ffebld_constant_new_logical4_val (ffetargetLogical4 val);
 #endif
-#if FFETARGET_okLOGICAL5
-ffebldConstant ffebld_constant_new_logical5 (bool truth);
-ffebldConstant ffebld_constant_new_logical5_val (ffetargetLogical5 val);
-#endif
-#if FFETARGET_okLOGICAL6
-ffebldConstant ffebld_constant_new_logical6 (bool truth);
-ffebldConstant ffebld_constant_new_logical6_val (ffetargetLogical6 val);
-#endif
-#if FFETARGET_okLOGICAL7
-ffebldConstant ffebld_constant_new_logical7 (bool truth);
-ffebldConstant ffebld_constant_new_logical7_val (ffetargetLogical7 val);
-#endif
-#if FFETARGET_okLOGICAL8
-ffebldConstant ffebld_constant_new_logical8 (bool truth);
-ffebldConstant ffebld_constant_new_logical8_val (ffetargetLogical8 val);
-#endif
 #if FFETARGET_okREAL1
 ffebldConstant ffebld_constant_new_real1 (ffelexToken integer,
 	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
@@ -633,36 +398,6 @@ ffebldConstant ffebld_constant_new_real3 (ffelexToken integer,
 	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
 		    ffelexToken exponent_sign, ffelexToken exponent_digits);
 ffebldConstant ffebld_constant_new_real3_val (ffetargetReal3 val);
-#endif
-#if FFETARGET_okREAL4
-ffebldConstant ffebld_constant_new_real4 (ffelexToken integer,
-	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
-		    ffelexToken exponent_sign, ffelexToken exponent_digits);
-ffebldConstant ffebld_constant_new_real4_val (ffetargetReal4 val);
-#endif
-#if FFETARGET_okREAL5
-ffebldConstant ffebld_constant_new_real5 (ffelexToken integer,
-	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
-		    ffelexToken exponent_sign, ffelexToken exponent_digits);
-ffebldConstant ffebld_constant_new_real5_val (ffetargetReal5 val);
-#endif
-#if FFETARGET_okREAL6
-ffebldConstant ffebld_constant_new_real6 (ffelexToken integer,
-	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
-		    ffelexToken exponent_sign, ffelexToken exponent_digits);
-ffebldConstant ffebld_constant_new_real6_val (ffetargetReal6 val);
-#endif
-#if FFETARGET_okREAL7
-ffebldConstant ffebld_constant_new_real7 (ffelexToken integer,
-	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
-		    ffelexToken exponent_sign, ffelexToken exponent_digits);
-ffebldConstant ffebld_constant_new_real7_val (ffetargetReal7 val);
-#endif
-#if FFETARGET_okREAL8
-ffebldConstant ffebld_constant_new_real8 (ffelexToken integer,
-	    ffelexToken decimal, ffelexToken fraction, ffelexToken exponent,
-		    ffelexToken exponent_sign, ffelexToken exponent_digits);
-ffebldConstant ffebld_constant_new_real8_val (ffetargetReal8 val);
 #endif
 ffebldConstant ffebld_constant_new_typeless_bm (ffelexToken t);
 ffebldConstant ffebld_constant_new_typeless_bv (ffelexToken t);

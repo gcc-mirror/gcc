@@ -73,27 +73,6 @@ struct _ffebld_pool_stack_ ffebld_pool_stack_;
 #if FFETARGET_okCHARACTER1
 static ffebldConstant ffebld_constant_character1_;
 #endif
-#if FFETARGET_okCHARACTER2
-static ffebldConstant ffebld_constant_character2_;
-#endif
-#if FFETARGET_okCHARACTER3
-static ffebldConstant ffebld_constant_character3_;
-#endif
-#if FFETARGET_okCHARACTER4
-static ffebldConstant ffebld_constant_character4_;
-#endif
-#if FFETARGET_okCHARACTER5
-static ffebldConstant ffebld_constant_character5_;
-#endif
-#if FFETARGET_okCHARACTER6
-static ffebldConstant ffebld_constant_character6_;
-#endif
-#if FFETARGET_okCHARACTER7
-static ffebldConstant ffebld_constant_character7_;
-#endif
-#if FFETARGET_okCHARACTER8
-static ffebldConstant ffebld_constant_character8_;
-#endif
 #if FFETARGET_okCOMPLEX1
 static ffebldConstant ffebld_constant_complex1_;
 #endif
@@ -102,21 +81,6 @@ static ffebldConstant ffebld_constant_complex2_;
 #endif
 #if FFETARGET_okCOMPLEX3
 static ffebldConstant ffebld_constant_complex3_;
-#endif
-#if FFETARGET_okCOMPLEX4
-static ffebldConstant ffebld_constant_complex4_;
-#endif
-#if FFETARGET_okCOMPLEX5
-static ffebldConstant ffebld_constant_complex5_;
-#endif
-#if FFETARGET_okCOMPLEX6
-static ffebldConstant ffebld_constant_complex6_;
-#endif
-#if FFETARGET_okCOMPLEX7
-static ffebldConstant ffebld_constant_complex7_;
-#endif
-#if FFETARGET_okCOMPLEX8
-static ffebldConstant ffebld_constant_complex8_;
 #endif
 #if FFETARGET_okINTEGER1
 static ffebldConstant ffebld_constant_integer1_;
@@ -130,18 +94,6 @@ static ffebldConstant ffebld_constant_integer3_;
 #if FFETARGET_okINTEGER4
 static ffebldConstant ffebld_constant_integer4_;
 #endif
-#if FFETARGET_okINTEGER5
-static ffebldConstant ffebld_constant_integer5_;
-#endif
-#if FFETARGET_okINTEGER6
-static ffebldConstant ffebld_constant_integer6_;
-#endif
-#if FFETARGET_okINTEGER7
-static ffebldConstant ffebld_constant_integer7_;
-#endif
-#if FFETARGET_okINTEGER8
-static ffebldConstant ffebld_constant_integer8_;
-#endif
 #if FFETARGET_okLOGICAL1
 static ffebldConstant ffebld_constant_logical1_;
 #endif
@@ -154,18 +106,6 @@ static ffebldConstant ffebld_constant_logical3_;
 #if FFETARGET_okLOGICAL4
 static ffebldConstant ffebld_constant_logical4_;
 #endif
-#if FFETARGET_okLOGICAL5
-static ffebldConstant ffebld_constant_logical5_;
-#endif
-#if FFETARGET_okLOGICAL6
-static ffebldConstant ffebld_constant_logical6_;
-#endif
-#if FFETARGET_okLOGICAL7
-static ffebldConstant ffebld_constant_logical7_;
-#endif
-#if FFETARGET_okLOGICAL8
-static ffebldConstant ffebld_constant_logical8_;
-#endif
 #if FFETARGET_okREAL1
 static ffebldConstant ffebld_constant_real1_;
 #endif
@@ -174,21 +114,6 @@ static ffebldConstant ffebld_constant_real2_;
 #endif
 #if FFETARGET_okREAL3
 static ffebldConstant ffebld_constant_real3_;
-#endif
-#if FFETARGET_okREAL4
-static ffebldConstant ffebld_constant_real4_;
-#endif
-#if FFETARGET_okREAL5
-static ffebldConstant ffebld_constant_real5_;
-#endif
-#if FFETARGET_okREAL6
-static ffebldConstant ffebld_constant_real6_;
-#endif
-#if FFETARGET_okREAL7
-static ffebldConstant ffebld_constant_real7_;
-#endif
-#if FFETARGET_okREAL8
-static ffebldConstant ffebld_constant_real8_;
 #endif
 static ffebldConstant ffebld_constant_hollerith_;
 static ffebldConstant ffebld_constant_typeless_[FFEBLD_constTYPELESS_LAST
@@ -255,30 +180,6 @@ ffebld_constant_cmp (ffebldConstant c1, ffebldConstant c2)
 				     ffebld_constant_integer4 (c2));
 #endif
 
-#if FFETARGET_okINTEGER5
-    case FFEBLD_constINTEGER5:
-      return ffetarget_cmp_integer5 (ffebld_constant_integer5 (c1),
-				     ffebld_constant_integer5 (c2));
-#endif
-
-#if FFETARGET_okINTEGER6
-    case FFEBLD_constINTEGER6:
-      return ffetarget_cmp_integer6 (ffebld_constant_integer6 (c1),
-				     ffebld_constant_integer6 (c2));
-#endif
-
-#if FFETARGET_okINTEGER7
-    case FFEBLD_constINTEGER7:
-      return ffetarget_cmp_integer7 (ffebld_constant_integer7 (c1),
-				     ffebld_constant_integer7 (c2));
-#endif
-
-#if FFETARGET_okINTEGER8
-    case FFEBLD_constINTEGER8:
-      return ffetarget_cmp_integer8 (ffebld_constant_integer8 (c1),
-				     ffebld_constant_integer8 (c2));
-#endif
-
 #if FFETARGET_okLOGICAL1
     case FFEBLD_constLOGICAL1:
       return ffetarget_cmp_logical1 (ffebld_constant_logical1 (c1),
@@ -303,30 +204,6 @@ ffebld_constant_cmp (ffebldConstant c1, ffebldConstant c2)
 				     ffebld_constant_logical4 (c2));
 #endif
 
-#if FFETARGET_okLOGICAL5
-    case FFEBLD_constLOGICAL5:
-      return ffetarget_cmp_logical5 (ffebld_constant_logical5 (c1),
-				     ffebld_constant_logical5 (c2));
-#endif
-
-#if FFETARGET_okLOGICAL6
-    case FFEBLD_constLOGICAL6:
-      return ffetarget_cmp_logical6 (ffebld_constant_logical6 (c1),
-				     ffebld_constant_logical6 (c2));
-#endif
-
-#if FFETARGET_okLOGICAL7
-    case FFEBLD_constLOGICAL7:
-      return ffetarget_cmp_logical7 (ffebld_constant_logical7 (c1),
-				     ffebld_constant_logical7 (c2));
-#endif
-
-#if FFETARGET_okLOGICAL8
-    case FFEBLD_constLOGICAL8:
-      return ffetarget_cmp_logical8 (ffebld_constant_logical8 (c1),
-				     ffebld_constant_logical8 (c2));
-#endif
-
 #if FFETARGET_okREAL1
     case FFEBLD_constREAL1:
       return ffetarget_cmp_real1 (ffebld_constant_real1 (c1),
@@ -345,82 +222,10 @@ ffebld_constant_cmp (ffebldConstant c1, ffebldConstant c2)
 				  ffebld_constant_real3 (c2));
 #endif
 
-#if FFETARGET_okREAL4
-    case FFEBLD_constREAL4:
-      return ffetarget_cmp_real4 (ffebld_constant_real4 (c1),
-				  ffebld_constant_real4 (c2));
-#endif
-
-#if FFETARGET_okREAL5
-    case FFEBLD_constREAL5:
-      return ffetarget_cmp_real5 (ffebld_constant_real5 (c1),
-				  ffebld_constant_real5 (c2));
-#endif
-
-#if FFETARGET_okREAL6
-    case FFEBLD_constREAL6:
-      return ffetarget_cmp_real6 (ffebld_constant_real6 (c1),
-				  ffebld_constant_real6 (c2));
-#endif
-
-#if FFETARGET_okREAL7
-    case FFEBLD_constREAL7:
-      return ffetarget_cmp_real7 (ffebld_constant_real7 (c1),
-				  ffebld_constant_real7 (c2));
-#endif
-
-#if FFETARGET_okREAL8
-    case FFEBLD_constREAL8:
-      return ffetarget_cmp_real8 (ffebld_constant_real8 (c1),
-				  ffebld_constant_real8 (c2));
-#endif
-
 #if FFETARGET_okCHARACTER1
     case FFEBLD_constCHARACTER1:
       return ffetarget_cmp_character1 (ffebld_constant_character1 (c1),
 				       ffebld_constant_character1 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER2
-    case FFEBLD_constCHARACTER2:
-      return ffetarget_cmp_character2 (ffebld_constant_character2 (c1),
-				       ffebld_constant_character2 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER3
-    case FFEBLD_constCHARACTER3:
-      return ffetarget_cmp_character3 (ffebld_constant_character3 (c1),
-				       ffebld_constant_character3 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER4
-    case FFEBLD_constCHARACTER4:
-      return ffetarget_cmp_character4 (ffebld_constant_character4 (c1),
-				       ffebld_constant_character4 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER5
-    case FFEBLD_constCHARACTER5:
-      return ffetarget_cmp_character5 (ffebld_constant_character5 (c1),
-				       ffebld_constant_character5 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER6
-    case FFEBLD_constCHARACTER6:
-      return ffetarget_cmp_character6 (ffebld_constant_character6 (c1),
-				       ffebld_constant_character6 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER7
-    case FFEBLD_constCHARACTER7:
-      return ffetarget_cmp_character7 (ffebld_constant_character7 (c1),
-				       ffebld_constant_character7 (c2));
-#endif
-
-#if FFETARGET_okCHARACTER8
-    case FFEBLD_constCHARACTER8:
-      return ffetarget_cmp_character8 (ffebld_constant_character8 (c1),
-				       ffebld_constant_character8 (c2));
 #endif
 
     default:
@@ -478,26 +283,6 @@ ffebld_constant_is_zero (ffebldConstant c)
       return ffebld_constant_integer4 (c) == 0;
 #endif
 
-#if FFETARGET_okINTEGER5
-    case FFEBLD_constINTEGER5:
-      return ffebld_constant_integer5 (c) == 0;
-#endif
-
-#if FFETARGET_okINTEGER6
-    case FFEBLD_constINTEGER6:
-      return ffebld_constant_integer6 (c) == 0;
-#endif
-
-#if FFETARGET_okINTEGER7
-    case FFEBLD_constINTEGER7:
-      return ffebld_constant_integer7 (c) == 0;
-#endif
-
-#if FFETARGET_okINTEGER8
-    case FFEBLD_constINTEGER8:
-      return ffebld_constant_integer8 (c) == 0;
-#endif
-
 #if FFETARGET_okLOGICAL1
     case FFEBLD_constLOGICAL1:
       return ffebld_constant_logical1 (c) == 0;
@@ -518,26 +303,6 @@ ffebld_constant_is_zero (ffebldConstant c)
       return ffebld_constant_logical4 (c) == 0;
 #endif
 
-#if FFETARGET_okLOGICAL5
-    case FFEBLD_constLOGICAL5:
-      return ffebld_constant_logical5 (c) == 0;
-#endif
-
-#if FFETARGET_okLOGICAL6
-    case FFEBLD_constLOGICAL6:
-      return ffebld_constant_logical6 (c) == 0;
-#endif
-
-#if FFETARGET_okLOGICAL7
-    case FFEBLD_constLOGICAL7:
-      return ffebld_constant_logical7 (c) == 0;
-#endif
-
-#if FFETARGET_okLOGICAL8
-    case FFEBLD_constLOGICAL8:
-      return ffebld_constant_logical8 (c) == 0;
-#endif
-
 #if FFETARGET_okREAL1
     case FFEBLD_constREAL1:
       return ffetarget_iszero_real1 (ffebld_constant_real1 (c));
@@ -551,31 +316,6 @@ ffebld_constant_is_zero (ffebldConstant c)
 #if FFETARGET_okREAL3
     case FFEBLD_constREAL3:
       return ffetarget_iszero_real3 (ffebld_constant_real3 (c));
-#endif
-
-#if FFETARGET_okREAL4
-    case FFEBLD_constREAL4:
-      return ffetarget_iszero_real4 (ffebld_constant_real4 (c));
-#endif
-
-#if FFETARGET_okREAL5
-    case FFEBLD_constREAL5:
-      return ffetarget_iszero_real5 (ffebld_constant_real5 (c));
-#endif
-
-#if FFETARGET_okREAL6
-    case FFEBLD_constREAL6:
-      return ffetarget_iszero_real6 (ffebld_constant_real6 (c));
-#endif
-
-#if FFETARGET_okREAL7
-    case FFEBLD_constREAL7:
-      return ffetarget_iszero_real7 (ffebld_constant_real7 (c));
-#endif
-
-#if FFETARGET_okREAL8
-    case FFEBLD_constREAL8:
-      return ffetarget_iszero_real8 (ffebld_constant_real8 (c));
 #endif
 
 #if FFETARGET_okCOMPLEX1
@@ -596,43 +336,9 @@ ffebld_constant_is_zero (ffebldConstant c)
      && ffetarget_iszero_real3 (ffebld_constant_complex3 (c).imaginary);
 #endif
 
-#if FFETARGET_okCOMPLEX4
-    case FFEBLD_constCOMPLEX4:
-      return ffetarget_iszero_real4 (ffebld_constant_complex4 (c).real)
-     && ffetarget_iszero_real4 (ffebld_constant_complex4 (c).imaginary);
-#endif
-
-#if FFETARGET_okCOMPLEX5
-    case FFEBLD_constCOMPLEX5:
-      return ffetarget_iszero_real5 (ffebld_constant_complex5 (c).real)
-     && ffetarget_iszero_real5 (ffebld_constant_complex5 (c).imaginary);
-#endif
-
-#if FFETARGET_okCOMPLEX6
-    case FFEBLD_constCOMPLEX6:
-      return ffetarget_iszero_real6 (ffebld_constant_complex6 (c).real)
-     && ffetarget_iszero_real6 (ffebld_constant_complex6 (c).imaginary);
-#endif
-
-#if FFETARGET_okCOMPLEX7
-    case FFEBLD_constCOMPLEX7:
-      return ffetarget_iszero_real7 (ffebld_constant_complex7 (c).real)
-     && ffetarget_iszero_real7 (ffebld_constant_complex7 (c).imaginary);
-#endif
-
-#if FFETARGET_okCOMPLEX8
-    case FFEBLD_constCOMPLEX8:
-      return ffetarget_iszero_real8 (ffebld_constant_complex8 (c).real)
-     && ffetarget_iszero_real8 (ffebld_constant_complex8 (c).imaginary);
-#endif
-
 #if FFETARGET_okCHARACTER1
     case FFEBLD_constCHARACTER1:
       return ffetarget_iszero_character1 (ffebld_constant_character1 (c));
-#endif
-
-#if FFETARGET_okCHARACTER2 || FFETARGET_okCHARACTER3  /* ... */
-#error "no support for these!!"
 #endif
 
     case FFEBLD_constHOLLERITH:
@@ -1564,30 +1270,6 @@ ffebld_constantarray_get (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  u.integer5 = *(array.integer5 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  u.integer6 = *(array.integer6 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  u.integer7 = *(array.integer7 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  u.integer8 = *(array.integer8 + offset);
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER kindtype" == NULL);
 	  break;
@@ -1621,30 +1303,6 @@ ffebld_constantarray_get (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  u.logical5 = *(array.logical5 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  u.logical6 = *(array.logical6 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  u.logical7 = *(array.logical7 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  u.logical8 = *(array.logical8 + offset);
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL kindtype" == NULL);
 	  break;
@@ -1669,36 +1327,6 @@ ffebld_constantarray_get (ffebldConstantArray array, ffeinfoBasictype bt,
 #if FFETARGET_okREAL3
 	case FFEINFO_kindtypeREAL3:
 	  u.real3 = *(array.real3 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  u.real4 = *(array.real4 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  u.real5 = *(array.real5 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  u.real6 = *(array.real6 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  u.real7 = *(array.real7 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  u.real8 = *(array.real8 + offset);
 	  break;
 #endif
 
@@ -1729,36 +1357,6 @@ ffebld_constantarray_get (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  u.complex4 = *(array.complex4 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  u.complex5 = *(array.complex5 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  u.complex6 = *(array.complex6 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  u.complex7 = *(array.complex7 + offset);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  u.complex8 = *(array.complex8 + offset);
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX kindtype" == NULL);
 	  break;
@@ -1772,55 +1370,6 @@ ffebld_constantarray_get (ffebldConstantArray array, ffeinfoBasictype bt,
 	case FFEINFO_kindtypeCHARACTER1:
 	  u.character1.length = 1;
 	  u.character1.text = array.character1 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  u.character2.length = 1;
-	  u.character2.text = array.character2 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  u.character3.length = 1;
-	  u.character3.text = array.character3 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  u.character4.length = 1;
-	  u.character4.text = array.character4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  u.character5.length = 1;
-	  u.character5.text = array.character5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  u.character6.length = 1;
-	  u.character6.text = array.character6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  u.character7.length = 1;
-	  u.character7.text = array.character7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  u.character8.length = 1;
-	  u.character8.text = array.character8 + offset;
 	  break;
 #endif
 
@@ -1889,42 +1438,6 @@ ffebld_constantarray_new (ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  ptr.integer5 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetInteger5),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  ptr.integer6 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetInteger6),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  ptr.integer7 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetInteger7),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  ptr.integer8 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetInteger8),
-					 0);
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER kindtype" == NULL);
 	  break;
@@ -1970,42 +1483,6 @@ ffebld_constantarray_new (ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  ptr.logical5 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetLogical5),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  ptr.logical6 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetLogical6),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  ptr.logical7 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetLogical7),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  ptr.logical8 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetLogical8),
-					 0);
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL kindtype" == NULL);
 	  break;
@@ -2038,51 +1515,6 @@ ffebld_constantarray_new (ffeinfoBasictype bt,
 	  ptr.real3 = malloc_new_zkp (ffebld_constant_pool(),
 				      "ffebldConstantArray",
 				      size *= sizeof (ffetargetReal3),
-				      0);
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  ptr.real4 = malloc_new_zkp (ffebld_constant_pool(),
-				      "ffebldConstantArray",
-				      size *= sizeof (ffetargetReal4),
-				      0);
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  ptr.real5 = malloc_new_zkp (ffebld_constant_pool(),
-				      "ffebldConstantArray",
-				      size *= sizeof (ffetargetReal5),
-				      0);
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  ptr.real6 = malloc_new_zkp (ffebld_constant_pool(),
-				      "ffebldConstantArray",
-				      size *= sizeof (ffetargetReal6),
-				      0);
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  ptr.real7 = malloc_new_zkp (ffebld_constant_pool(),
-				      "ffebldConstantArray",
-				      size *= sizeof (ffetargetReal7),
-				      0);
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  ptr.real8 = malloc_new_zkp (ffebld_constant_pool(),
-				      "ffebldConstantArray",
-				      size *= sizeof (ffetargetReal8),
 				      0);
 	  break;
 #endif
@@ -2123,51 +1555,6 @@ ffebld_constantarray_new (ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  ptr.complex4 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetComplex4),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  ptr.complex5 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetComplex5),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  ptr.complex6 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetComplex6),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  ptr.complex7 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetComplex7),
-					 0);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  ptr.complex8 = malloc_new_zkp (ffebld_constant_pool(),
-					 "ffebldConstantArray",
-					 size *= sizeof (ffetargetComplex8),
-					 0);
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX kindtype" == NULL);
 	  break;
@@ -2183,76 +1570,6 @@ ffebld_constantarray_new (ffeinfoBasictype bt,
 					   "ffebldConstantArray",
 					   size
 					   *= sizeof (ffetargetCharacterUnit1),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  ptr.character2 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit2),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  ptr.character3 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit3),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  ptr.character4 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit4),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  ptr.character5 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit5),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  ptr.character6 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit6),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  ptr.character7 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit7),
-					   0);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  ptr.character8 = malloc_new_zkp (ffebld_constant_pool(),
-					   "ffebldConstantArray",
-					   size
-					   *= sizeof (ffetargetCharacterUnit8),
 					   0);
 	  break;
 #endif
@@ -2313,30 +1630,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  *aptr = array.integer5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  *aptr = array.integer6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  *aptr = array.integer7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  *aptr = array.integer8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER akindtype" == NULL);
 	  break;
@@ -2370,30 +1663,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  *aptr = array.logical5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  *aptr = array.logical6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  *aptr = array.logical7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  *aptr = array.logical8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL akindtype" == NULL);
 	  break;
@@ -2418,36 +1687,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 #if FFETARGET_okREAL3
 	case FFEINFO_kindtypeREAL3:
 	  *aptr = array.real3 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  *aptr = array.real4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  *aptr = array.real5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  *aptr = array.real6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  *aptr = array.real7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  *aptr = array.real8 + offset;
 	  break;
 #endif
 
@@ -2478,36 +1717,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  *aptr = array.complex4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  *aptr = array.complex5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  *aptr = array.complex6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  *aptr = array.complex7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  *aptr = array.complex8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX akindtype" == NULL);
 	  break;
@@ -2520,48 +1729,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 #if FFETARGET_okCHARACTER1
 	case FFEINFO_kindtypeCHARACTER1:
 	  *aptr = array.character1 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  *aptr = array.character2 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  *aptr = array.character3 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  *aptr = array.character4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  *aptr = array.character5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  *aptr = array.character6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  *aptr = array.character7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  *aptr = array.character8 + offset;
 	  break;
 #endif
 
@@ -2609,34 +1776,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  *cptr = source_array.integer5;
-	  *size = sizeof (*source_array.integer5);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  *cptr = source_array.integer6;
-	  *size = sizeof (*source_array.integer6);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  *cptr = source_array.integer7;
-	  *size = sizeof (*source_array.integer7);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  *cptr = source_array.integer8;
-	  *size = sizeof (*source_array.integer8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER ckindtype" == NULL);
 	  break;
@@ -2674,34 +1813,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  *cptr = source_array.logical5;
-	  *size = sizeof (*source_array.logical5);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  *cptr = source_array.logical6;
-	  *size = sizeof (*source_array.logical6);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  *cptr = source_array.logical7;
-	  *size = sizeof (*source_array.logical7);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  *cptr = source_array.logical8;
-	  *size = sizeof (*source_array.logical8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL ckindtype" == NULL);
 	  break;
@@ -2729,41 +1840,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	case FFEINFO_kindtypeREAL3:
 	  *cptr = source_array.real3;
 	  *size = sizeof (*source_array.real3);
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  *cptr = source_array.real4;
-	  *size = sizeof (*source_array.real4);
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  *cptr = source_array.real5;
-	  *size = sizeof (*source_array.real5);
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  *cptr = source_array.real6;
-	  *size = sizeof (*source_array.real6);
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  *cptr = source_array.real7;
-	  *size = sizeof (*source_array.real7);
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  *cptr = source_array.real8;
-	  *size = sizeof (*source_array.real8);
 	  break;
 #endif
 
@@ -2797,41 +1873,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  *cptr = source_array.complex4;
-	  *size = sizeof (*source_array.complex4);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  *cptr = source_array.complex5;
-	  *size = sizeof (*source_array.complex5);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  *cptr = source_array.complex6;
-	  *size = sizeof (*source_array.complex6);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  *cptr = source_array.complex7;
-	  *size = sizeof (*source_array.complex7);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  *cptr = source_array.complex8;
-	  *size = sizeof (*source_array.complex8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX ckindtype" == NULL);
 	  break;
@@ -2845,55 +1886,6 @@ ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 	case FFEINFO_kindtypeCHARACTER1:
 	  *cptr = source_array.character1;
 	  *size = sizeof (*source_array.character1);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  *cptr = source_array.character2;
-	  *size = sizeof (*source_array.character2);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  *cptr = source_array.character3;
-	  *size = sizeof (*source_array.character3);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  *cptr = source_array.character4;
-	  *size = sizeof (*source_array.character4);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  *cptr = source_array.character5;
-	  *size = sizeof (*source_array.character5);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  *cptr = source_array.character6;
-	  *size = sizeof (*source_array.character6);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  *cptr = source_array.character7;
-	  *size = sizeof (*source_array.character7);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  *cptr = source_array.character8;
-	  *size = sizeof (*source_array.character8);
 	  break;
 #endif
 
@@ -2959,30 +1951,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  *aptr = array.integer5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  *aptr = array.integer6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  *aptr = array.integer7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  *aptr = array.integer8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER akindtype" == NULL);
 	  break;
@@ -3016,30 +1984,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  *aptr = array.logical5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  *aptr = array.logical6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  *aptr = array.logical7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  *aptr = array.logical8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL akindtype" == NULL);
 	  break;
@@ -3064,36 +2008,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 #if FFETARGET_okREAL3
 	case FFEINFO_kindtypeREAL3:
 	  *aptr = array.real3 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  *aptr = array.real4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  *aptr = array.real5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  *aptr = array.real6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  *aptr = array.real7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  *aptr = array.real8 + offset;
 	  break;
 #endif
 
@@ -3124,36 +2038,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  *aptr = array.complex4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  *aptr = array.complex5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  *aptr = array.complex6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  *aptr = array.complex7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  *aptr = array.complex8 + offset;
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX akindtype" == NULL);
 	  break;
@@ -3166,48 +2050,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 #if FFETARGET_okCHARACTER1
 	case FFEINFO_kindtypeCHARACTER1:
 	  *aptr = array.character1 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  *aptr = array.character2 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  *aptr = array.character3 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  *aptr = array.character4 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  *aptr = array.character5 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  *aptr = array.character6 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  *aptr = array.character7 + offset;
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  *aptr = array.character8 + offset;
 	  break;
 #endif
 
@@ -3255,34 +2097,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  *cptr = &constant->integer5;
-	  *size = sizeof (constant->integer5);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  *cptr = &constant->integer6;
-	  *size = sizeof (constant->integer6);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  *cptr = &constant->integer7;
-	  *size = sizeof (constant->integer7);
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  *cptr = &constant->integer8;
-	  *size = sizeof (constant->integer8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER ckindtype" == NULL);
 	  break;
@@ -3320,34 +2134,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  *cptr = &constant->logical5;
-	  *size = sizeof (constant->logical5);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  *cptr = &constant->logical6;
-	  *size = sizeof (constant->logical6);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  *cptr = &constant->logical7;
-	  *size = sizeof (constant->logical7);
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  *cptr = &constant->logical8;
-	  *size = sizeof (constant->logical8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL ckindtype" == NULL);
 	  break;
@@ -3375,41 +2161,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	case FFEINFO_kindtypeREAL3:
 	  *cptr = &constant->real3;
 	  *size = sizeof (constant->real3);
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  *cptr = &constant->real4;
-	  *size = sizeof (constant->real4);
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  *cptr = &constant->real5;
-	  *size = sizeof (constant->real5);
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  *cptr = &constant->real6;
-	  *size = sizeof (constant->real6);
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  *cptr = &constant->real7;
-	  *size = sizeof (constant->real7);
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  *cptr = &constant->real8;
-	  *size = sizeof (constant->real8);
 	  break;
 #endif
 
@@ -3443,41 +2194,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  *cptr = &constant->complex4;
-	  *size = sizeof (constant->complex4);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  *cptr = &constant->complex5;
-	  *size = sizeof (constant->complex5);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  *cptr = &constant->complex6;
-	  *size = sizeof (constant->complex6);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  *cptr = &constant->complex7;
-	  *size = sizeof (constant->complex7);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  *cptr = &constant->complex8;
-	  *size = sizeof (constant->complex8);
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX ckindtype" == NULL);
 	  break;
@@ -3491,55 +2207,6 @@ ffebld_constantarray_prepare (void **aptr, void **cptr, size_t *size,
 	case FFEINFO_kindtypeCHARACTER1:
 	  *cptr = ffetarget_text_character1 (constant->character1);
 	  *size = ffetarget_length_character1 (constant->character1);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  *cptr = ffetarget_text_character2 (constant->character2);
-	  *size = ffetarget_length_character2 (constant->character2);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  *cptr = ffetarget_text_character3 (constant->character3);
-	  *size = ffetarget_length_character3 (constant->character3);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  *cptr = ffetarget_text_character4 (constant->character4);
-	  *size = ffetarget_length_character4 (constant->character4);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  *cptr = ffetarget_text_character5 (constant->character5);
-	  *size = ffetarget_length_character5 (constant->character5);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  *cptr = ffetarget_text_character6 (constant->character6);
-	  *size = ffetarget_length_character6 (constant->character6);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  *cptr = ffetarget_text_character7 (constant->character7);
-	  *size = ffetarget_length_character7 (constant->character7);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  *cptr = ffetarget_text_character8 (constant->character8);
-	  *size = ffetarget_length_character8 (constant->character8);
 	  break;
 #endif
 
@@ -3592,30 +2259,6 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okINTEGER5
-	case FFEINFO_kindtypeINTEGER5:
-	  *(array.integer5 + offset) = constant.integer5;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER6
-	case FFEINFO_kindtypeINTEGER6:
-	  *(array.integer6 + offset) = constant.integer6;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER7
-	case FFEINFO_kindtypeINTEGER7:
-	  *(array.integer7 + offset) = constant.integer7;
-	  break;
-#endif
-
-#if FFETARGET_okINTEGER8
-	case FFEINFO_kindtypeINTEGER8:
-	  *(array.integer8 + offset) = constant.integer8;
-	  break;
-#endif
-
 	default:
 	  assert ("bad INTEGER kindtype" == NULL);
 	  break;
@@ -3649,30 +2292,6 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okLOGICAL5
-	case FFEINFO_kindtypeLOGICAL5:
-	  *(array.logical5 + offset) = constant.logical5;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL6
-	case FFEINFO_kindtypeLOGICAL6:
-	  *(array.logical6 + offset) = constant.logical6;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL7
-	case FFEINFO_kindtypeLOGICAL7:
-	  *(array.logical7 + offset) = constant.logical7;
-	  break;
-#endif
-
-#if FFETARGET_okLOGICAL8
-	case FFEINFO_kindtypeLOGICAL8:
-	  *(array.logical8 + offset) = constant.logical8;
-	  break;
-#endif
-
 	default:
 	  assert ("bad LOGICAL kindtype" == NULL);
 	  break;
@@ -3697,36 +2316,6 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 #if FFETARGET_okREAL3
 	case FFEINFO_kindtypeREAL3:
 	  *(array.real3 + offset) = constant.real3;
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  *(array.real4 + offset) = constant.real4;
-	  break;
-#endif
-
-#if FFETARGET_okREAL5
-	case FFEINFO_kindtypeREAL5:
-	  *(array.real5 + offset) = constant.real5;
-	  break;
-#endif
-
-#if FFETARGET_okREAL6
-	case FFEINFO_kindtypeREAL6:
-	  *(array.real6 + offset) = constant.real6;
-	  break;
-#endif
-
-#if FFETARGET_okREAL7
-	case FFEINFO_kindtypeREAL7:
-	  *(array.real7 + offset) = constant.real7;
-	  break;
-#endif
-
-#if FFETARGET_okREAL8
-	case FFEINFO_kindtypeREAL8:
-	  *(array.real8 + offset) = constant.real8;
 	  break;
 #endif
 
@@ -3757,36 +2346,6 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  *(array.complex4 + offset) = constant.complex4;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX5
-	case FFEINFO_kindtypeREAL5:
-	  *(array.complex5 + offset) = constant.complex5;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX6
-	case FFEINFO_kindtypeREAL6:
-	  *(array.complex6 + offset) = constant.complex6;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX7
-	case FFEINFO_kindtypeREAL7:
-	  *(array.complex7 + offset) = constant.complex7;
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX8
-	case FFEINFO_kindtypeREAL8:
-	  *(array.complex8 + offset) = constant.complex8;
-	  break;
-#endif
-
 	default:
 	  assert ("bad COMPLEX kindtype" == NULL);
 	  break;
@@ -3801,62 +2360,6 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 	  memcpy (array.character1 + offset,
 		  ffetarget_text_character1 (constant.character1),
 		  ffetarget_length_character1 (constant.character1));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  memcpy (array.character2 + offset,
-		  ffetarget_text_character2 (constant.character2),
-		  ffetarget_length_character2 (constant.character2));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  memcpy (array.character3 + offset,
-		  ffetarget_text_character3 (constant.character3),
-		  ffetarget_length_character3 (constant.character3));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  memcpy (array.character4 + offset,
-		  ffetarget_text_character4 (constant.character4),
-		  ffetarget_length_character4 (constant.character4));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER5
-	case FFEINFO_kindtypeCHARACTER5:
-	  memcpy (array.character5 + offset,
-		  ffetarget_text_character5 (constant.character5),
-		  ffetarget_length_character5 (constant.character5));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER6
-	case FFEINFO_kindtypeCHARACTER6:
-	  memcpy (array.character6 + offset,
-		  ffetarget_text_character6 (constant.character6),
-		  ffetarget_length_character6 (constant.character6));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER7
-	case FFEINFO_kindtypeCHARACTER7:
-	  memcpy (array.character7 + offset,
-		  ffetarget_text_character7 (constant.character7),
-		  ffetarget_length_character7 (constant.character7));
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER8
-	case FFEINFO_kindtypeCHARACTER8:
-	  memcpy (array.character8 + offset,
-		  ffetarget_text_character8 (constant.character8),
-		  ffetarget_length_character8 (constant.character8));
 	  break;
 #endif
 
@@ -3896,27 +2399,6 @@ ffebld_init_1 ()
 #if FFETARGET_okCHARACTER1
   ffebld_constant_character1_ = NULL;
 #endif
-#if FFETARGET_okCHARACTER2
-  ffebld_constant_character2_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER3
-  ffebld_constant_character3_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER4
-  ffebld_constant_character4_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER5
-  ffebld_constant_character5_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER6
-  ffebld_constant_character6_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER7
-  ffebld_constant_character7_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER8
-  ffebld_constant_character8_ = NULL;
-#endif
 #if FFETARGET_okCOMPLEX1
   ffebld_constant_complex1_ = NULL;
 #endif
@@ -3925,21 +2407,6 @@ ffebld_init_1 ()
 #endif
 #if FFETARGET_okCOMPLEX3
   ffebld_constant_complex3_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX4
-  ffebld_constant_complex4_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX5
-  ffebld_constant_complex5_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX6
-  ffebld_constant_complex6_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX7
-  ffebld_constant_complex7_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX8
-  ffebld_constant_complex8_ = NULL;
 #endif
 #if FFETARGET_okINTEGER1
   ffebld_constant_integer1_ = NULL;
@@ -3953,18 +2420,6 @@ ffebld_init_1 ()
 #if FFETARGET_okINTEGER4
   ffebld_constant_integer4_ = NULL;
 #endif
-#if FFETARGET_okINTEGER5
-  ffebld_constant_integer5_ = NULL;
-#endif
-#if FFETARGET_okINTEGER6
-  ffebld_constant_integer6_ = NULL;
-#endif
-#if FFETARGET_okINTEGER7
-  ffebld_constant_integer7_ = NULL;
-#endif
-#if FFETARGET_okINTEGER8
-  ffebld_constant_integer8_ = NULL;
-#endif
 #if FFETARGET_okLOGICAL1
   ffebld_constant_logical1_ = NULL;
 #endif
@@ -3977,18 +2432,6 @@ ffebld_init_1 ()
 #if FFETARGET_okLOGICAL4
   ffebld_constant_logical4_ = NULL;
 #endif
-#if FFETARGET_okLOGICAL5
-  ffebld_constant_logical5_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL6
-  ffebld_constant_logical6_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL7
-  ffebld_constant_logical7_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL8
-  ffebld_constant_logical8_ = NULL;
-#endif
 #if FFETARGET_okREAL1
   ffebld_constant_real1_ = NULL;
 #endif
@@ -3997,21 +2440,6 @@ ffebld_init_1 ()
 #endif
 #if FFETARGET_okREAL3
   ffebld_constant_real3_ = NULL;
-#endif
-#if FFETARGET_okREAL4
-  ffebld_constant_real4_ = NULL;
-#endif
-#if FFETARGET_okREAL5
-  ffebld_constant_real5_ = NULL;
-#endif
-#if FFETARGET_okREAL6
-  ffebld_constant_real6_ = NULL;
-#endif
-#if FFETARGET_okREAL7
-  ffebld_constant_real7_ = NULL;
-#endif
-#if FFETARGET_okREAL8
-  ffebld_constant_real8_ = NULL;
 #endif
   ffebld_constant_hollerith_ = NULL;
   for (i = FFEBLD_constTYPELESS_FIRST; i <= FFEBLD_constTYPELESS_LAST; ++i)
@@ -4036,27 +2464,6 @@ ffebld_init_2 ()
 #if FFETARGET_okCHARACTER1
   ffebld_constant_character1_ = NULL;
 #endif
-#if FFETARGET_okCHARACTER2
-  ffebld_constant_character2_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER3
-  ffebld_constant_character3_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER4
-  ffebld_constant_character4_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER5
-  ffebld_constant_character5_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER6
-  ffebld_constant_character6_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER7
-  ffebld_constant_character7_ = NULL;
-#endif
-#if FFETARGET_okCHARACTER8
-  ffebld_constant_character8_ = NULL;
-#endif
 #if FFETARGET_okCOMPLEX1
   ffebld_constant_complex1_ = NULL;
 #endif
@@ -4065,21 +2472,6 @@ ffebld_init_2 ()
 #endif
 #if FFETARGET_okCOMPLEX3
   ffebld_constant_complex3_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX4
-  ffebld_constant_complex4_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX5
-  ffebld_constant_complex5_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX6
-  ffebld_constant_complex6_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX7
-  ffebld_constant_complex7_ = NULL;
-#endif
-#if FFETARGET_okCOMPLEX8
-  ffebld_constant_complex8_ = NULL;
 #endif
 #if FFETARGET_okINTEGER1
   ffebld_constant_integer1_ = NULL;
@@ -4093,18 +2485,6 @@ ffebld_init_2 ()
 #if FFETARGET_okINTEGER4
   ffebld_constant_integer4_ = NULL;
 #endif
-#if FFETARGET_okINTEGER5
-  ffebld_constant_integer5_ = NULL;
-#endif
-#if FFETARGET_okINTEGER6
-  ffebld_constant_integer6_ = NULL;
-#endif
-#if FFETARGET_okINTEGER7
-  ffebld_constant_integer7_ = NULL;
-#endif
-#if FFETARGET_okINTEGER8
-  ffebld_constant_integer8_ = NULL;
-#endif
 #if FFETARGET_okLOGICAL1
   ffebld_constant_logical1_ = NULL;
 #endif
@@ -4117,18 +2497,6 @@ ffebld_init_2 ()
 #if FFETARGET_okLOGICAL4
   ffebld_constant_logical4_ = NULL;
 #endif
-#if FFETARGET_okLOGICAL5
-  ffebld_constant_logical5_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL6
-  ffebld_constant_logical6_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL7
-  ffebld_constant_logical7_ = NULL;
-#endif
-#if FFETARGET_okLOGICAL8
-  ffebld_constant_logical8_ = NULL;
-#endif
 #if FFETARGET_okREAL1
   ffebld_constant_real1_ = NULL;
 #endif
@@ -4137,21 +2505,6 @@ ffebld_init_2 ()
 #endif
 #if FFETARGET_okREAL3
   ffebld_constant_real3_ = NULL;
-#endif
-#if FFETARGET_okREAL4
-  ffebld_constant_real4_ = NULL;
-#endif
-#if FFETARGET_okREAL5
-  ffebld_constant_real5_ = NULL;
-#endif
-#if FFETARGET_okREAL6
-  ffebld_constant_real6_ = NULL;
-#endif
-#if FFETARGET_okREAL7
-  ffebld_constant_real7_ = NULL;
-#endif
-#if FFETARGET_okREAL8
-  ffebld_constant_real8_ = NULL;
 #endif
   ffebld_constant_hollerith_ = NULL;
   for (i = FFEBLD_constTYPELESS_FIRST; i <= FFEBLD_constTYPELESS_LAST; ++i)

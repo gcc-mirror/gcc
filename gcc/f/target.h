@@ -1,5 +1,6 @@
 /* target.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -265,26 +266,6 @@ typedef short int ffetargetInteger3;
 typedef long long int ffetargetInteger4;
 #define ffetargetInteger4_f "ll"
 #endif
-#if FFETARGET_okINTEGER5
-typedef ? ffetargetInteger5;
-#define ffetargetInteger5_f
-?
-#endif
-#if FFETARGET_okINTEGER6
-typedef ? ffetargetInteger6;
-#define ffetargetInteger6_f
-?
-#endif
-#if FFETARGET_okINTEGER7
-typedef ? ffetargetInteger7;
-#define ffetargetInteger7_f
-?
-#endif
-#if FFETARGET_okINTEGER8
-typedef ? ffetargetInteger8;
-#define ffetargetInteger8_f
-?
-#endif
 #if FFETARGET_okLOGICAL1
 #ifdef FFETARGET_32bit_longs
 typedef long int ffetargetLogical1;
@@ -305,26 +286,6 @@ typedef short int ffetargetLogical3;
 #if FFETARGET_okLOGICAL4
 typedef long long int ffetargetLogical4;
 #define ffetargetLogical4_f "ll"
-#endif
-#if FFETARGET_okLOGICAL5
-typedef ? ffetargetLogical5;
-#define ffetargetLogical5_f
-?
-#endif
-#if FFETARGET_okLOGICAL6
-typedef ? ffetargetLogical6;
-#define ffetargetLogical6_f
-?
-#endif
-#if FFETARGET_okLOGICAL7
-typedef ? ffetargetLogical7;
-#define ffetargetLogical7_f
-?
-#endif
-#if FFETARGET_okLOGICAL8
-typedef ? ffetargetLogical8;
-#define ffetargetLogical8_f
-?
 #endif
 #if FFETARGET_okREAL1
 typedef int ffetargetReal1;
@@ -356,26 +317,6 @@ typedef struct { int v[2]; } ffetargetReal2;
 typedef long ffetargetReal3[?];
 ?
 #endif
-#if FFETARGET_okREAL4
-typedef long ffetargetReal4[?];
-?
-#endif
-#if FFETARGET_okREAL5
-typedef long ffetargetReal5[?];
-?
-#endif
-#if FFETARGET_okREAL6
-typedef long ffetargetReal6[?];
-?
-#endif
-#if FFETARGET_okREAL7
-typedef long ffetargetReal7[?];
-?
-#endif
-#if FFETARGET_okREAL8
-typedef long ffetargetReal8[?];
-?
-#endif
 #if FFETARGET_okCOMPLEX1
 struct _ffetarget_complex_1_
   {
@@ -400,46 +341,6 @@ struct _ffetarget_complex_3_
   };
 typedef struct _ffetarget_complex_3_ ffetargetComplex3;
 #endif
-#if FFETARGET_okCOMPLEX4
-struct _ffetarget_complex_4_
-  {
-    ffetargetReal4 real;
-    ffetargetReal4 imaginary;
-  };
-typedef struct _ffetarget_complex_4_ ffetargetComplex4;
-#endif
-#if FFETARGET_okCOMPLEX5
-struct _ffetarget_complex_5_
-  {
-    ffetargetReal5 real;
-    ffetargetReal5 imaginary;
-  };
-typedef struct _ffetarget_complex_5_ ffetargetComplex5;
-#endif
-#if FFETARGET_okCOMPLEX6
-struct _ffetarget_complex_6_
-  {
-    ffetargetReal6 real;
-    ffetargetReal6 imaginary;
-  };
-typedef struct _ffetarget_complex_6_ ffetargetComplex6;
-#endif
-#if FFETARGET_okCOMPLEX7
-struct _ffetarget_complex_7_
-  {
-    ffetargetReal7 real;
-    ffetargetReal7 imaginary;
-  };
-typedef struct _ffetarget_complex_7_ ffetargetComplex7;
-#endif
-#if FFETARGET_okCOMPLEX8
-struct _ffetarget_complex_8_
-  {
-    ffetargetReal8 real;
-    ffetargetReal8 imaginary;
-  };
-typedef struct _ffetarget_complex_8_ ffetargetComplex8;
-#endif
 #if FFETARGET_okCHARACTER1
 struct _ffetarget_char_1_
   {
@@ -448,34 +349,6 @@ struct _ffetarget_char_1_
   };
 typedef struct _ffetarget_char_1_ ffetargetCharacter1;
 typedef unsigned char ffetargetCharacterUnit1;
-#endif
-#if FFETARGET_okCHARACTER2
-typedef ? ffetargetCharacter2;
-typedef ? ffetargetCharacterUnit2;
-#endif
-#if FFETARGET_okCHARACTER3
-typedef ? ffetargetCharacter3;
-typedef ? ffetargetCharacterUnit3;
-#endif
-#if FFETARGET_okCHARACTER4
-typedef ? ffetargetCharacter4;
-typedef ? ffetargetCharacterUnit4;
-#endif
-#if FFETARGET_okCHARACTER5
-typedef ? ffetargetCharacter5;
-typedef ? ffetargetCharacterUnit5;
-#endif
-#if FFETARGET_okCHARACTER6
-typedef ? ffetargetCharacter6;
-typedef ? ffetargetCharacterUnit6;
-#endif
-#if FFETARGET_okCHARACTER7
-typedef ? ffetargetCharacter7;
-typedef ? ffetargetCharacterUnit7;
-#endif
-#if FFETARGET_okCHARACTER8
-typedef ? ffetargetCharacter8;
-typedef ? ffetargetCharacterUnit8;
 #endif
 
 typedef unsigned long long int ffetargetTypeless;
@@ -604,26 +477,6 @@ ffebad ffetarget_divide_complex2 (ffetargetComplex2 *res, ffetargetComplex2 l,
 ffebad ffetarget_divide_complex3 (ffetargetComplex3 *res, ffetargetComplex3 l,
 				  ffetargetComplex3 r);
 #endif
-#if FFETARGET_okCOMPLEX4
-ffebad ffetarget_divide_complex4 (ffetargetComplex4 *res, ffetargetComplex4 l,
-				  ffetargetComplex4 r);
-#endif
-#if FFETARGET_okCOMPLEX5
-ffebad ffetarget_divide_complex5 (ffetargetComplex5 *res, ffetargetComplex5 l,
-				  ffetargetComplex5 r);
-#endif
-#if FFETARGET_okCOMPLEX6
-ffebad ffetarget_divide_complex6 (ffetargetComplex6 *res, ffetargetComplex6 l,
-				  ffetargetComplex6 r);
-#endif
-#if FFETARGET_okCOMPLEX7
-ffebad ffetarget_divide_complex7 (ffetargetComplex7 *res, ffetargetComplex7 l,
-				  ffetargetComplex7 r);
-#endif
-#if FFETARGET_okCOMPLEX8
-ffebad ffetarget_divide_complex8 (ffetargetComplex8 *res, ffetargetComplex8 l,
-				  ffetargetComplex8 r);
-#endif
 #if FFETARGET_okINTEGER1
 bool ffetarget_integer1 (ffetargetInteger1 *val, ffelexToken integer);
 #endif
@@ -635,18 +488,6 @@ bool ffetarget_integer3 (ffetargetInteger3 *val, ffelexToken integer);
 #endif
 #if FFETARGET_okINTEGER4
 bool ffetarget_integer4 (ffetargetInteger4 *val, ffelexToken integer);
-#endif
-#if FFETARGET_okINTEGER5
-bool ffetarget_integer5 (ffetargetInteger5 *val, ffelexToken integer);
-#endif
-#if FFETARGET_okINTEGER6
-bool ffetarget_integer6 (ffetargetInteger6 *val, ffelexToken integer);
-#endif
-#if FFETARGET_okINTEGER7
-bool ffetarget_integer7 (ffetargetInteger7 *val, ffelexToken integer);
-#endif
-#if FFETARGET_okINTEGER8
-bool ffetarget_integer8 (ffetargetInteger8 *val, ffelexToken integer);
 #endif
 bool ffetarget_integerbinary (ffetargetIntegerDefault *val,
 			     ffelexToken integer);
@@ -686,31 +527,6 @@ ffebad ffetarget_multiply_complex3 (ffetargetComplex3 *res,
 				    ffetargetComplex3 l,
 				    ffetargetComplex3 r);
 #endif
-#if FFETARGET_okCOMPLEX4
-ffebad ffetarget_multiply_complex4 (ffetargetComplex4 *res,
-				    ffetargetComplex4 l,
-				    ffetargetComplex4 r);
-#endif
-#if FFETARGET_okCOMPLEX5
-ffebad ffetarget_multiply_complex5 (ffetargetComplex5 *res,
-				    ffetargetComplex5 l,
-				    ffetargetComplex5 r);
-#endif
-#if FFETARGET_okCOMPLEX6
-ffebad ffetarget_multiply_complex6 (ffetargetComplex6 *res,
-				    ffetargetComplex6 l,
-				    ffetargetComplex6 r);
-#endif
-#if FFETARGET_okCOMPLEX7
-ffebad ffetarget_multiply_complex7 (ffetargetComplex7 *res,
-				    ffetargetComplex7 l,
-				    ffetargetComplex7 r);
-#endif
-#if FFETARGET_okCOMPLEX8
-ffebad ffetarget_multiply_complex8 (ffetargetComplex8 *res,
-				    ffetargetComplex8 l,
-				    ffetargetComplex8 r);
-#endif
 ffebad ffetarget_power_complexdefault_integerdefault (ffetargetComplexDefault *res,
 						  ffetargetComplexDefault l,
 						 ffetargetIntegerDefault r);
@@ -747,36 +563,6 @@ bool ffetarget_real2 (ffetargetReal2 *value, ffelexToken integer,
 #endif
 #if FFETARGET_okREAL3
 bool ffetarget_real3 (ffetargetReal3 *value, ffelexToken integer,
-		      ffelexToken decimal, ffelexToken fraction,
-		      ffelexToken exponent, ffelexToken exponent_sign,
-		      ffelexToken exponent_digits);
-#endif
-#if FFETARGET_okREAL4
-bool ffetarget_real4 (ffetargetReal4 *value, ffelexToken integer,
-		      ffelexToken decimal, ffelexToken fraction,
-		      ffelexToken exponent, ffelexToken exponent_sign,
-		      ffelexToken exponent_digits);
-#endif
-#if FFETARGET_okREAL5
-bool ffetarget_real5 (ffetargetReal5 *value, ffelexToken integer,
-		      ffelexToken decimal, ffelexToken fraction,
-		      ffelexToken exponent, ffelexToken exponent_sign,
-		      ffelexToken exponent_digits);
-#endif
-#if FFETARGET_okREAL6
-bool ffetarget_real6 (ffetargetReal6 *value, ffelexToken integer,
-		      ffelexToken decimal, ffelexToken fraction,
-		      ffelexToken exponent, ffelexToken exponent_sign,
-		      ffelexToken exponent_digits);
-#endif
-#if FFETARGET_okREAL7
-bool ffetarget_real7 (ffetargetReal7 *value, ffelexToken integer,
-		      ffelexToken decimal, ffelexToken fraction,
-		      ffelexToken exponent, ffelexToken exponent_sign,
-		      ffelexToken exponent_digits);
-#endif
-#if FFETARGET_okREAL8
-bool ffetarget_real8 (ffetargetReal8 *value, ffelexToken integer,
 		      ffelexToken decimal, ffelexToken fraction,
 		      ffelexToken exponent, ffelexToken exponent_sign,
 		      ffelexToken exponent_digits);
