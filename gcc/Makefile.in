@@ -1069,12 +1069,13 @@ libgcc.a: $(LIBGCC_DEPS)
 multilib.h: s-mlib; @true
 s-mlib: $(srcdir)/genmultilib Makefile
 	$(SHELL) $(srcdir)/genmultilib \
-	  "$(MULTILIB_OPTIONS)" \
-	  "$(MULTILIB_DIRNAMES)" \
-	  "$(MULTILIB_MATCHES)" \
-	  "$(MULTILIB_EXCEPTIONS)" \
-	  "$(MULTILIB_EXTRA_OPTS)" \
-	  "$(MULTILIB_EXCLUSIONS)" > tmp-mlib.h
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_OPTIONS)`" \
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_DIRNAMES)`" \
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_MATCHES)`" \
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXCEPTIONS)`" \
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXTRA_OPTS)`" \
+	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXCLUSIONS)`" \
+		> tmp-mlib.h
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	touch s-mlib
 
@@ -1269,11 +1270,13 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
-  `test "$(SHLIB_LINK)" -a "@enable_shared@" = "yes" && echo "-DENABLE_SHARED_LIBGCC"` \
-  `test "$(SHLIB_MULTILIB)" && echo "-DNO_SHARED_LIBGCC_MULTILIB"`
+  `test "$${SHLIB_LINK}" -a "@enable_shared@" = "yes" && echo "-DENABLE_SHARED_LIBGCC"` \
+  `test "$${SHLIB_MULTILIB}" && echo "-DNO_SHARED_LIBGCC_MULTILIB"`
 
 gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
     Makefile $(lang_specs_files) prefix.h $(GCC_H)
+	SHLIB_LIB='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c
@@ -1977,12 +1980,16 @@ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
 
 protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
    Makefile version.h
+	SHLIB_LIB='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION)
 
 unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) system.h Makefile version.h
+	SHLIB_LIB='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
 	  $(srcdir)/unprotoize.c $(OUTPUT_OPTION)

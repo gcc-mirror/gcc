@@ -61,6 +61,8 @@ C++ c++: cc1plus$(exeext)
 .PHONY: C++ c++
 
 g++spec.o: $(srcdir)/cp/g++spec.c system.h $(GCC_H) $(CONFIG_H)
+	SHLIB_LIB='$(SHLIB_LINK)' \
+	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/cp/g++spec.c
 
