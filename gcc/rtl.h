@@ -1725,6 +1725,7 @@ extern int insns_safe_to_move_p (rtx, rtx, rtx *);
 extern int loc_mentioned_in_p (rtx *, rtx);
 extern rtx find_first_parameter_load (rtx, rtx);
 extern bool keep_with_call_p (rtx);
+extern bool label_is_jump_target_p (rtx, rtx);
 
 /* flow.c */
 
