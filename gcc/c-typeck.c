@@ -6651,7 +6651,9 @@ c_finish_for_stmt (tree body, tree for_stmt)
 static void
 emit_side_effect_warnings (tree expr)
 {
-  if (!TREE_SIDE_EFFECTS (expr))
+  if (expr == error_mark_node)
+    ;
+  else if (!TREE_SIDE_EFFECTS (expr))
     {
       if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
 	warning ("%Hstatement with no effect",
@@ -6766,7 +6768,9 @@ c_finish_stmt_expr (tree body)
 
   /* In the case that the BIND_EXPR is not necessary, return the
      expression out from inside it.  */
-  if (last == BIND_EXPR_BODY (body) && BIND_EXPR_VARS (body) == NULL)
+  if (last == error_mark_node
+      || (last == BIND_EXPR_BODY (body)
+	  && BIND_EXPR_VARS (body) == NULL))
     return last;
 
   /* Extract the type of said expression.  */
