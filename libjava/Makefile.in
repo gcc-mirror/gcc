@@ -1961,7 +1961,6 @@ gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
-gnu/java/lang/CharData.java \
 gnu/java/lang/MainThread.java \
 gnu/java/lang/reflect/TypeSignature.java \
 gnu/java/locale/Calendar.java \
@@ -3237,9 +3236,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/io/ClassLoaderObjectInputStream.P \
 .deps/gnu/java/io/NullOutputStream.P \
 .deps/gnu/java/io/ObjectIdentityWrapper.P \
-.deps/gnu/java/lang/ArrayHelper.P .deps/gnu/java/lang/CharData.P \
-.deps/gnu/java/lang/ClassHelper.P .deps/gnu/java/lang/MainThread.P \
-.deps/gnu/java/lang/natMainThread.P \
+.deps/gnu/java/lang/ArrayHelper.P .deps/gnu/java/lang/ClassHelper.P \
+.deps/gnu/java/lang/MainThread.P .deps/gnu/java/lang/natMainThread.P \
 .deps/gnu/java/lang/reflect/TypeSignature.P \
 .deps/gnu/java/locale/Calendar.P .deps/gnu/java/locale/Calendar_de.P \
 .deps/gnu/java/locale/Calendar_en.P .deps/gnu/java/locale/Calendar_nl.P \

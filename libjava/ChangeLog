@@ -1,5 +1,20 @@
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
+	* scripts/unicode-muncher.pl: Updated to version 2.1
+	from GNU classpath. Added some clarifications on where to find the
+	needed files from www.unicode.org.
+	* gnu/gcj/convert/UnicodeCharacterDatabase-3.0.0.html,
+	gnu/gcj/convert/UnicodeData-3.0.0.txt:
+	Removed, these can directly be downloaded from www.unicode.org if
+	needed. 
+	* gnu/java/lang/CharData.java: Regenerated.
+	* include/java-chartables.h: Regenerated.
+	* Makefile.am (ordinary_java_source_files):
+	Removed gnu/java/lang/CharData.java.
+	* Makefile.in: Regenerated.
+
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/AccessControlContext.java,
 	java/security/SecureClassLoader.java:
 	Fixed javadocs.
