@@ -19,6 +19,7 @@ details.  */
 #include <java/lang/String.h>
 #include <java/net/URL.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/security/ProtectionDomain.h>
 
 // We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -105,7 +106,8 @@ struct _Jv_ifaces
 class java::lang::Class : public java::lang::Object
 {
 public:
-  static jclass forName (jstring className, java::lang::ClassLoader *loader);
+  static jclass forName (jstring className, jboolean initialize, 
+			 java::lang::ClassLoader *loader);
   static jclass forName (jstring className);
   JArray<jclass> *getClasses (void);
 
@@ -135,6 +137,7 @@ private:
 		    jint offset);
   java::lang::reflect::Field *getPrivateField (jstring);
   java::lang::reflect::Method *getPrivateMethod (jstring, JArray<jclass> *);
+  java::security::ProtectionDomain *getProtectionDomain0 ();
 
 public:
   JArray<java::lang::reflect::Field *> *getFields (void);
@@ -380,6 +383,8 @@ private:
   _Jv_IDispatchTable *idt;
   // Pointer to the class that represents an array of this class.
   jclass arrayclass;
+  // Security Domain to which this class belongs (or null).
+  java::security::ProtectionDomain *protectionDomain;
 };
 
 #endif /* __JAVA_LANG_CLASS_H__ */

@@ -1,3 +1,56 @@
+2001-04-25  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	java.security merge and ClassLoader compliance fixes.
+
+	* java/lang/Class.h (Class): Include ProtectionDomain.h. 
+	New protectionDomain field.
+	(forName): Add initialize parameter. Fixes declaration to comply with 
+	JDK spec.
+	* java/lang/natClass.cc (forName): Correct declaration of the three-arg
+	variant. Honour	"initialize" flag.
+	(getProtectionDomain0): New method.
+	* java/lang/Class.java: Fix forName() declaration.
+	(getPackage): New method based on Classpath implementation.
+	(getProtectionDomain0): New native method decl.
+	(getProtectionDomain): New method.
+	* java/lang/ClassLoader.java (getParent): Now final.
+	(definedPackages): New field.
+	(getPackage): New.
+	(defineClass): New variant with protectionDomain argument.
+	(definePackage): New.
+	(getPackages): New.
+	(findSystemClass): Now final.
+	(getSystemResourceAsStream): Remove redundant "final" modifier.
+	(getSystemResource): Remove redundant "final" modifier.
+	(getResources): Now final.
+	(protectionDomainPermission): New static field.
+	(unknownProtectionDomain): Ditto.
+	(defaultProtectionDomain): Ditto.
+	(getSystemClassLoader): Now non-native.
+	* java/util/ResourceBundle.java (tryGetSomeBundle): Use the correct
+	arguments for Class.forName().
+	* java/lang/Package.java: New file.
+	* gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): Removed.
+	(instance): Static initialize singleton.
+	(findClass): Override this, not findSystemClass.
+	* java/lang/natClassLoader.cc (defineClass0): Set class's
+	protectionDomain field as specified.
+	(getSystemClassLoader): Removed.
+	(findClass): Renamed from findSystemClass. Call the interpreter via
+	URLClassLoader.findClass if loading class via dlopen fails.
+
+	* java/security/*.java: java.security import/merge with Classpath.
+	* java/security/acl/*.java: Likewise.
+	* java/security/interfaces/*.java: Likewise.
+	* java/security/spec/*.java: Likewise.
+	* java/net/NetPermission.java: Likewise.
+	* java/net/SocketPermission.java: Likewise.
+	* gnu/java/security/provider/DefaultPolicy.java: Likewise.
+	
+	* Makefile.am: Add new classes.
+	* Makefile.in: Rebuilt.
+	* gcj/javaprims.h: CNI namespace rebuild.
+
 2001-04-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (CPPFLAGS): Added builddir and srcdir to CPPFLAGS

@@ -1,26 +1,61 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* DSAParams.java -- Digital Signature Algorithm parameter access
+   Copyright (C) 1998 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
- 
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 package java.security.interfaces;
+
 import java.math.BigInteger;
 
 /**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date February 1, 2000.
+ * This interface allows the Digital Signature Algorithm (DSA) parameters
+ * to be queried.
+ *
+ * @version 0.0
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-
-/* Written using on-line Java Platform 1.2 API Specification.
- * Status:  Believed complete and correct.
- */
- 
 public interface DSAParams
 {
-  public BigInteger getP();
-  public BigInteger getQ();
-  public BigInteger getG();
+  /**
+   * Returns the base, or 'g' value
+   *
+   * @return The DSA base value
+   */
+  public abstract BigInteger getG();
+
+  /**
+   * Returns the prime, or 'p' value
+   *
+   * @return The DSA prime value
+   */
+  public abstract BigInteger getP();
+
+  /**
+   * Returns the subprime, or 'q' value
+   *
+   * @return The DSA subprime value
+   */
+  public abstract BigInteger getQ();
 }

@@ -12,6 +12,7 @@ package java.lang;
 import java.io.Serializable;
 import java.io.InputStream;
 import java.lang.reflect.*;
+import java.security.*;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -30,7 +31,9 @@ public final class Class implements Serializable
 {
   public static native Class forName (String className)
     throws ClassNotFoundException;
-  public static native Class forName (String className, ClassLoader loader)
+  /** @since 1.2 */
+  public static native Class forName (String className, boolean initialize,
+				      ClassLoader loader)
     throws ClassNotFoundException;
   public native Class[] getClasses ();
   public native ClassLoader getClassLoader ();
@@ -87,6 +90,30 @@ public final class Class implements Serializable
 
   private native Field[] _getFields (Field[] result, int offset);
   public native Field[] getFields () throws SecurityException;
+
+  /**
+   * Returns the <code>Package</code> in which this class is defined
+   * Returns null when this information is not available from the
+   * classloader of this class or when the classloader of this class
+   * is null.
+   *
+   * @since 1.2
+   */
+  public Package getPackage()
+  {
+    ClassLoader cl = getClassLoader();
+    if (cl != null)
+      {
+        String name = getName();
+	String pkg = "";
+	int idx = name.lastIndexOf('.');
+	if (idx >= 0)
+	  pkg = name.substring(0, idx);
+	return cl.getPackage(pkg);
+      }
+    else
+      return null;
+  }
 
   public native Class[] getInterfaces ();
 
@@ -153,6 +180,35 @@ public final class Class implements Serializable
   public native boolean isPrimitive ();
   public native Object newInstance ()
     throws InstantiationException, IllegalAccessException;
+
+  // We need a native method to retrieve the protection domain, because we
+  // can't add fields to java.lang.Class that are accessible from Java.
+  private native ProtectionDomain getProtectionDomain0();
+
+  /**
+   * Returns the protection domain of this class. If the classloader
+   * did not record the protection domain when creating this class
+   * the unknown protection domain is returned which has a <code>null</code>
+   * code source and all permissions.
+   *
+   * @exception SecurityException if a security manager exists and the caller
+   * does not have <code>RuntimePermission("getProtectionDomain")</code>.
+   *
+   * @since 1.2
+   */
+  public ProtectionDomain getProtectionDomain()
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkPermission(ClassLoader.protectionDomainPermission);
+    
+    ProtectionDomain protectionDomain = getProtectionDomain0();
+
+    if (protectionDomain == null)
+      return ClassLoader.unknownProtectionDomain;
+    else
+      return protectionDomain;
+  }
 
   public String toString ()
   {

@@ -48,20 +48,12 @@ details.  */
 
 /////////// java.lang.ClassLoader native methods ////////////
 
-java::lang::ClassLoader *
-java::lang::ClassLoader::getSystemClassLoader (void)
-{
-  JvSynchronize sync (&ClassLoaderClass);
-  if (! system)
-    system = gnu::gcj::runtime::VMClassLoader::getVMClassLoader ();
-  return system;
-}
-
 java::lang::Class *
 java::lang::ClassLoader::defineClass0 (jstring name,
 				       jbyteArray data, 
 				       jint offset,
-				       jint length)
+				       jint length,
+				       java::security::ProtectionDomain *pd)
 {
 #ifdef INTERPRETER
   jclass klass;
@@ -109,6 +101,8 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 
       throw ex;
     }
+    
+  klass->protectionDomain = pd;
 
   // if everything proceeded sucessfully, we're loaded.
   JvAssert (klass->state == JV_STATE_LOADED);
@@ -180,10 +174,10 @@ java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
 }
 
 
-/** this is the only native method in VMClassLoader, so 
-    we define it here. */
+// This is the findClass() implementation for the System classloader. It is 
+// the only native method in VMClassLoader, so we define it here.
 jclass
-gnu::gcj::runtime::VMClassLoader::findSystemClass (jstring name)
+gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
 {
   _Jv_Utf8Const *name_u = _Jv_makeUtf8Const (name);
   jclass klass = _Jv_FindClassInCache (name_u, 0);
@@ -211,6 +205,12 @@ gnu::gcj::runtime::VMClassLoader::findSystemClass (jstring name)
 	  if (loaded)
 	    klass = _Jv_FindClassInCache (name_u, 0);
 	}
+    }
+
+  // Now try loading using the interpreter.
+  if (! klass)
+    {
+      klass = java::net::URLClassLoader::findClass (name);
     }
 
   return klass;

@@ -1,24 +1,96 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* SecureClassLoader.java --- A Secure Class Loader
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package java.security;
 
-// JDK1.2
-public class SecureClassLoader extends ClassLoader 
+/**
+   A Secure Class Loader for loading classes with additional 
+   support for specifying code source and permissions when
+   they are retrieved by the system policy handler.
+
+   @since JDK 1.2
+
+   @author Mark Benvenuto
+ */
+public class SecureClassLoader extends ClassLoader
 {
-    public SecureClassLoader ()
-    { 
-      this (null);
-    }
+  protected SecureClassLoader(ClassLoader parent)
+  {
+    super(parent);
+    // FIXME: What else?
+  }
 
-    public SecureClassLoader (ClassLoader parent)
-    { 
-      super (parent);
-    }
+  protected SecureClassLoader()
+  {
+    // FIXME: What do we need to do here?
+  }
+
+  /** 
+     Creates a class using an array of bytes and a 
+     CodeSource.
+
+     @param name the name to give the class.  null if unknown.
+     @param b the data representing the classfile, in classfile format.
+     @param off the offset into the data where the classfile starts.
+     @param len the length of the classfile data in the array.
+     @param cs the CodeSource for the class
+
+     @return the class that was defined and optional CodeSource.
+
+     @exception ClassFormatError if the byte array is not in proper classfile format.
+   */
+  protected final Class defineClass(String name, byte[] b, int off, int len,
+				    CodeSource cs)
+  {
+    // FIXME: Need to cache ProtectionDomains according to 1.3 docs.
+    ProtectionDomain protectionDomain =
+      new ProtectionDomain(cs, getPermissions(cs));
+    try
+      {
+	return super.defineClass(name, b, off, len, protectionDomain);
+      }
+    catch (ClassFormatError cfe)
+      {
+	return null;
+      }
+  }
+
+  /**
+     Returns a PermissionCollection for the specified CodeSource.
+     The default implmentation invokes 
+     java.security.Policy.getPermissions.
+
+     This method is called by defineClass that takes a CodeSource
+     arguement to build a proper ProtectionDomain for the class
+     being defined.
+
+   */
+  protected PermissionCollection getPermissions(CodeSource cs)
+  {
+    Policy policy = Policy.getPolicy();
+    return policy.getPermissions(cs);
+  }
 }
-
