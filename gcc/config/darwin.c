@@ -221,12 +221,9 @@ static GTY(()) char * function_base;
 const char *
 machopic_function_base_name (void)
 {
-  const char *current_name;
   /* if dynamic-no-pic is on, we should not get here */
   if (MACHO_DYNAMIC_NO_PIC_P)
     abort ();
-  current_name =
-    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
   if (function_base == NULL)
     function_base =
