@@ -194,7 +194,7 @@ static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
-void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
+static void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
 static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int,
 				       unsigned HOST_WIDE_INT));
 static int find_splittable_givs PROTO((struct iv_class *, enum unroll_types,
@@ -2329,7 +2329,7 @@ biv_total_increment (bl, loop_start, loop_end)
    Initial_value and/or increment are set to zero if their values could not
    be calculated.  */
 
-void
+static void
 iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
      rtx iteration_var, *initial_value, *increment;
      rtx loop_start, loop_end;
