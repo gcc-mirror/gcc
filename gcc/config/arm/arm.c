@@ -96,6 +96,15 @@ int arm_ccfsm_state;
 int arm_current_cc;
 rtx arm_target_insn;
 int arm_target_label;
+
+/* The condition codes of the ARM, and the inverse function.  */
+char *arm_condition_codes[] =
+{
+  "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
+  "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
+};
+
+#define ARM_INVERSE_CONDITION_CODE(X)  ((X) ^ 1)
 
 /* Return 1 if it is possible to return using a single instruction */
 
@@ -680,7 +689,7 @@ store_multiple_operation (op, mode)
 
 int
 const_pool_offset (symbol)
-     rtx (symbol);
+     rtx symbol;
 {
   return get_pool_offset (symbol) - get_pool_size () - get_prologue_size ();
 }
@@ -852,6 +861,22 @@ fp_immediate_constant (x)
   abort ();
 }
 
+/* As for fp_immediate_constant, but value is passed directly, not in rtx.  */
+static char *
+fp_const_from_val (r)
+     REAL_VALUE_TYPE *r;
+{
+  int i;
+
+  if (! fpa_consts_inited)
+    init_fpa_table ();
+
+  for (i = 0; i < 8; i++)
+    if (REAL_VALUES_EQUAL (*r, values_fpa[i]))
+      return strings_fpa[i];
+
+  abort ();
+}
 
 /* Output the operands of a LDM/STM instruction to STREAM.
    MASK is the ARM register set mask of which only bits 0-15 are important.
@@ -891,10 +916,10 @@ output_call (operands)
   if (REGNO (operands[0]) == 14)
     {
       operands[0] = gen_rtx (REG, SImode, 12);
-      output_asm_insn ("mov\t%0, lr", operands);
+      output_asm_insn ("mov%?\t%0, lr", operands);
     }
-  output_asm_insn ("mov\tlr, pc", operands);
-  output_asm_insn ("mov\tpc, %0", operands);
+  output_asm_insn ("mov%?\tlr, pc", operands);
+  output_asm_insn ("mov%?\tpc, %0", operands);
   return "";
 }
 
@@ -940,10 +965,10 @@ output_call_mem (operands)
   /* Handle calls using lr by using ip (which may be clobbered in subr anyway).
    */
   if (eliminate_lr2ip (&operands[0]))
-    output_asm_insn ("mov\tip, lr", operands);
+    output_asm_insn ("mov%?\tip, lr", operands);
 
-  output_asm_insn ("mov\tlr, pc", operands);
-  output_asm_insn ("ldr\tpc, %0", operands);
+  output_asm_insn ("mov%?\tlr, pc", operands);
+  output_asm_insn ("ldr%?\tpc, %0", operands);
   return "";
 }
 
@@ -966,8 +991,8 @@ output_mov_long_double_fpu_from_arm (operands)
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
   ops[2] = gen_rtx (REG, SImode, 2 + arm_reg0);
   
-  output_asm_insn ("stmfd\tsp!, {%0, %1, %2}", ops);
-  output_asm_insn ("ldfe\t%0, [sp], #12", operands);
+  output_asm_insn ("stm%?fd\tsp!, {%0, %1, %2}", ops);
+  output_asm_insn ("ldf%?e\t%0, [sp], #12", operands);
   return "";
 }
 
@@ -989,8 +1014,8 @@ output_mov_long_double_arm_from_fpu (operands)
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
   ops[2] = gen_rtx (REG, SImode, 2 + arm_reg0);
 
-  output_asm_insn ("stfe\t%1, [sp, #-12]!", operands);
-  output_asm_insn ("ldmfd\tsp!, {%0, %1, %2}", ops);
+  output_asm_insn ("stf%?e\t%1, [sp, #-12]!", operands);
+  output_asm_insn ("ldm%?fd\tsp!, {%0, %1, %2}", ops);
   return "";
 }
 
@@ -1013,7 +1038,7 @@ output_mov_long_double_arm_from_arm (operands)
 	{
 	  ops[0] = gen_rtx (REG, SImode, dest_start + i);
 	  ops[1] = gen_rtx (REG, SImode, src_start + i);
-	  output_asm_insn ("mov\t%0, %1", ops);
+	  output_asm_insn ("mov%?\t%0, %1", ops);
 	}
     }
   else
@@ -1022,7 +1047,7 @@ output_mov_long_double_arm_from_arm (operands)
 	{
 	  ops[0] = gen_rtx (REG, SImode, dest_start + i);
 	  ops[1] = gen_rtx (REG, SImode, src_start + i);
-	  output_asm_insn ("mov\t%0, %1", ops);
+	  output_asm_insn ("mov%?\t%0, %1", ops);
 	}
     }
 
@@ -1045,8 +1070,8 @@ output_mov_double_fpu_from_arm (operands)
     abort();
   ops[0] = gen_rtx (REG, SImode, arm_reg0);
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
-  output_asm_insn ("stmfd\tsp!, {%0, %1}", ops);
-  output_asm_insn ("ldfd\t%0, [sp], #8", operands);
+  output_asm_insn ("stm%?fd\tsp!, {%0, %1}", ops);
+  output_asm_insn ("ldf%?d\t%0, [sp], #8", operands);
   return "";
 }
 
@@ -1066,8 +1091,8 @@ output_mov_double_arm_from_fpu (operands)
 
   ops[0] = gen_rtx (REG, SImode, arm_reg0);
   ops[1] = gen_rtx (REG, SImode, 1 + arm_reg0);
-  output_asm_insn ("stfd\t%1, [sp, #-8]!", operands);
-  output_asm_insn ("ldmfd\tsp!, {%0, %1}", ops);
+  output_asm_insn ("stf%?d\t%1, [sp, #-8]!", operands);
+  output_asm_insn ("ldm%?fd\tsp!, {%0, %1}", ops);
   return "";
 }
 
@@ -1099,13 +1124,13 @@ output_move_double (operands)
 	  /* Ensure the second source is not overwritten */
 	  if (reg0 == 1 + reg1)
 	    {
-	      output_asm_insn("mov\t%0, %1", otherops);
-	      output_asm_insn("mov\t%0, %1", operands);
+	      output_asm_insn("mov%?\t%0, %1", otherops);
+	      output_asm_insn("mov%?\t%0, %1", operands);
 	    }
 	  else
 	    {
-	      output_asm_insn("mov\t%0, %1", operands);
-	      output_asm_insn("mov\t%0, %1", otherops);
+	      output_asm_insn("mov%?\t%0, %1", operands);
+	      output_asm_insn("mov%?\t%0, %1", otherops);
 	    }
 	}
       else if (code1 == CONST_DOUBLE)
@@ -1124,9 +1149,9 @@ output_move_double (operands)
 	  /* Note: output_mov_immediate may clobber operands[1], so we
 	     put this out first */
 	  if (INTVAL (operands[1]) < 0)
-	    output_asm_insn ("mvn\t%0, %1", otherops);
+	    output_asm_insn ("mvn%?\t%0, %1", otherops);
 	  else
-	    output_asm_insn ("mov\t%0, %1", otherops);
+	    output_asm_insn ("mov%?\t%0, %1", otherops);
 	  output_mov_immediate (operands, FALSE, "");
 	}
       else if (code1 == MEM)
@@ -1136,40 +1161,35 @@ output_move_double (operands)
 	    case REG:
 	      /* Handle the simple case where address is [r, #0] more
 		 efficient.  */
-	      operands[1] = XEXP (operands[1], 0);
-	      output_asm_insn ("ldmia\t%1, %M0", operands);
+	      output_asm_insn ("ldm%?ia\t%m1, %M0", operands);
 	      break;
   	    case PRE_INC:
-	      operands[1] = XEXP (XEXP (operands[1], 0), 0);
-	      output_asm_insn ("add\t%1, %1, #8", operands);
-	      output_asm_insn ("ldmia\t%1, %M0", operands);
+	      output_asm_insn ("add%?\t%m1, %m1, #8", operands);
+	      output_asm_insn ("ldm%?ia\t%m1, %M0", operands);
 	      break;
 	    case PRE_DEC:
-	      operands[1] = XEXP (XEXP (operands[1], 0), 0);
-	      output_asm_insn ("sub\t%1, %1, #8", operands);
-	      output_asm_insn ("ldmia\t%1, %M0", operands);
+	      output_asm_insn ("sub%?\t%m1, %m1, #8", operands);
+	      output_asm_insn ("ldm%?ia\t%m1, %M0", operands);
 	      break;
 	    case POST_INC:
-	      operands[1] = XEXP (XEXP (operands[1], 0), 0);
-	      output_asm_insn ("ldmia\t%1!, %M0", operands);
+	      output_asm_insn ("ldm%?ia\t%m1!, %M0", operands);
 	      break;
 	    case POST_DEC:
-	      operands[1] = XEXP (XEXP (operands[1], 0), 0);
-	      output_asm_insn ("ldmia\t%1, %M0", operands);
-	      output_asm_insn ("sub\t%1, %1, #8", operands);
+	      output_asm_insn ("ldm%?ia\t%m1, %M0", operands);
+	      output_asm_insn ("sub%?\t%m1, %m1, #8", operands);
 	      break;
 	    default:
 	      otherops[1] = adj_offsettable_operand (operands[1], 4);
 	      /* Take care of overlapping base/data reg.  */
 	      if (reg_mentioned_p (operands[0], operands[1]))
 		{
-		  output_asm_insn ("ldr\t%0, %1", otherops);
-		  output_asm_insn ("ldr\t%0, %1", operands);
+		  output_asm_insn ("ldr%?\t%0, %1", otherops);
+		  output_asm_insn ("ldr%?\t%0, %1", operands);
 		}
 	      else
 		{
-		  output_asm_insn ("ldr\t%0, %1", operands);
-		  output_asm_insn ("ldr\t%0, %1", otherops);
+		  output_asm_insn ("ldr%?\t%0, %1", operands);
+		  output_asm_insn ("ldr%?\t%0, %1", otherops);
 		}
 	    }
 	}
@@ -1182,39 +1202,34 @@ output_move_double (operands)
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
-	  operands[0] = XEXP (operands[0], 0);
-	  output_asm_insn ("stmia\t%0, %M1", operands);
+	  output_asm_insn ("stm%?ia\t%m0, %M1", operands);
 	  break;
         case PRE_INC:
-	  operands[0] = XEXP (XEXP (operands[0], 0), 0);
-	  output_asm_insn ("add\t%0, %0, #8", operands);
-	  output_asm_insn ("stmia\t%0, %M1", operands);
+	  output_asm_insn ("add%?\t%m0, %m0, #8", operands);
+	  output_asm_insn ("stm%?ia\t%m0, %M1", operands);
 	  break;
         case PRE_DEC:
-	  operands[0] = XEXP (XEXP (operands[0], 0), 0);
-	  output_asm_insn ("sub\t%0, %0, #8", operands);
-	  output_asm_insn ("stmia\t%0, %M1", operands);
+	  output_asm_insn ("sub%?\t%m0, %m0, #8", operands);
+	  output_asm_insn ("stm%?ia\t%m0, %M1", operands);
 	  break;
         case POST_INC:
-	  operands[0] = XEXP (XEXP (operands[0], 0), 0);
-	  output_asm_insn ("stmia\t%0!, %M1", operands);
+	  output_asm_insn ("stm%?ia\t%m0!, %M1", operands);
 	  break;
         case POST_DEC:
-	  operands[0] = XEXP (XEXP (operands[0], 0), 0);
-	  output_asm_insn ("stmia\t%0, %M1", operands);
-	  output_asm_insn ("sub\t%0, %0, #8", operands);
+	  output_asm_insn ("stm%?ia\t%m0, %M1", operands);
+	  output_asm_insn ("sub%?\t%m0, %m0, #8", operands);
 	  break;
         default:
 	  otherops[0] = adj_offsettable_operand (operands[0], 4);
 	  otherops[1] = gen_rtx (REG, SImode, 1 + REGNO (operands[1]));
-	  output_asm_insn ("str\t%1, %0", operands);
-	  output_asm_insn ("str\t%1, %0", otherops);
+	  output_asm_insn ("str%?\t%1, %0", operands);
+	  output_asm_insn ("str%?\t%1, %0", otherops);
 	}
     }
   else abort();  /* Constraints should prevent this */
 
-  return("");
-} /* output_move_double */
+  return "";
+}
 
 
 /* Output an arbitrary MOV reg, #n.
@@ -1231,7 +1246,7 @@ output_mov_immediate (operands)
   /* Try to use one MOV */
   if (const_ok_for_arm (n))
     {
-      output_asm_insn ("mov\t%0, %1", operands);
+      output_asm_insn ("mov%?\t%0, %1", operands);
       return "";
     }
 
@@ -1239,7 +1254,7 @@ output_mov_immediate (operands)
   if (const_ok_for_arm (~n))
     {
       operands[1] = GEN_INT (~n);
-      output_asm_insn ("mvn\t%0, %1", operands);
+      output_asm_insn ("mvn%?\t%0, %1", operands);
       return "";
     }
 
@@ -1250,9 +1265,11 @@ output_mov_immediate (operands)
       n_ones++;
 
   if (n_ones > 16)  /* Shorter to use MVN with BIC in this case. */
-    output_multi_immediate(operands, "mvn\t%0, %1", "bic\t%0, %0, %1", 1, ~n);
+    output_multi_immediate(operands, "mvn%?\t%0, %1", "bic%?\t%0, %0, %1", 1,
+			   ~n);
   else
-    output_multi_immediate(operands, "mov\t%0, %1", "orr\t%0, %0, %1", 1, n);
+    output_multi_immediate(operands, "mov%?\t%0, %1", "orr%?\t%0, %0, %1", 1,
+			   n);
 
   return "";
 }
@@ -1271,15 +1288,16 @@ output_add_immediate (operands)
     {
       if (n < 0)
 	output_multi_immediate (operands,
-				"sub\t%0, %1, %2", "sub\t%0, %0, %2", 2, -n);
+				"sub%?\t%0, %1, %2", "sub%?\t%0, %0, %2", 2,
+				-n);
       else
 	output_multi_immediate (operands,
-				"add\t%0, %1, %2", "add\t%0, %0, %2", 2, n);
+				"add%?\t%0, %1, %2", "add%?\t%0, %0, %2", 2,
+				n);
     }
 
   return "";
 }
-
 
 /* Output a multiple immediate operation.
    OPERANDS is the vector of operands referred to in the output patterns.
@@ -1322,7 +1340,7 @@ output_multi_immediate (operands, instr1, instr2, immed_op, n)
 	}
     }
   return "";
-} /* output_multi_immediate */
+}
 
 
 /* Return the appropriate ARM instruction for the operation code.
@@ -1335,7 +1353,7 @@ arithmetic_instr (op, shift_first_arg)
      rtx op;
      int shift_first_arg;
 {
-  switch (GET_CODE(op))
+  switch (GET_CODE (op))
     {
     case PLUS:
       return "add";
@@ -1361,18 +1379,26 @@ arithmetic_instr (op, shift_first_arg)
 /* Ensure valid constant shifts and return the appropriate shift mnemonic
    for the operation code.  The returned result should not be overwritten.
    OP is the rtx code of the shift.
-   SHIFT_PTR points to the shift size operand.  */
+   On exit, *AMOUNTP will be -1 if the shift is by a register, or a constant
+   shift. */
 
-char *
-shift_instr (op, shift_ptr)
-     enum rtx_code op;
-     rtx *shift_ptr;
+static char *
+shift_op (op, amountp)
+     rtx op;
+     HOST_WIDE_INT *amountp;
 {
   int min_shift = 0;
   int max_shift = 31;
   char *mnem;
 
-  switch (op)
+  if (GET_CODE (XEXP (op, 1)) == REG || GET_CODE (XEXP (op, 1)) == SUBREG)
+    *amountp = -1;
+  else if (GET_CODE (XEXP (op, 1)) == CONST_INT)
+    *amountp = INTVAL (XEXP (op, 1));
+  else
+    abort ();
+
+  switch (GET_CODE (op))
     {
     case ASHIFT:
       mnem = "asl";
@@ -1388,25 +1414,27 @@ shift_instr (op, shift_ptr)
       max_shift = 32;
       break;
 
+    case ROTATERT:
+      mnem = "ror";
+      max_shift = 31;
+      break;
+
     case MULT:
-      *shift_ptr = GEN_INT (int_log2 (INTVAL (*shift_ptr)));
+      if (*amountp != -1)
+	*amountp = int_log2 (*amountp);
+      else
+	abort ();
       return "asl";
 
     default:
       abort ();
     }
 
-  if (GET_CODE (*shift_ptr) == CONST_INT)
-    {
-      int shift = INTVAL (*shift_ptr);
-
-      if (shift < min_shift)
-	*shift_ptr = gen_rtx (CONST_INT, VOIDmode, 0);
-      else if (shift > max_shift)
-	*shift_ptr = gen_rtx (CONST_INT, VOIDmode, max_shift);
-    }
-  return (mnem);
-} /* shift_instr */
+  if (*amountp != -1
+      && (*amountp < min_shift || *amountp > max_shift))
+    abort ();
+  return mnem;
+}
 
 
 /* Obtain the shift from the POWER of two. */
@@ -1425,119 +1453,6 @@ int_log2 (power)
     }
 
   return shift;
-}
-
-
-/* Output an arithmetic instruction which may set the condition code.
-   OPERANDS[0] is the destination register.
-   OPERANDS[1] is the arithmetic operator expression.
-   OPERANDS[2] is the left hand argument.
-   OPERANDS[3] is the right hand argument.
-   CONST_FIRST_ARG is TRUE if the first argument of the operator was constant.
-   SET_COND is TRUE when the condition code should be set.  */
-
-char *
-output_arithmetic (operands, const_first_arg, set_cond)
-     rtx *operands;
-     int const_first_arg;
-     int set_cond;
-{
-  char mnemonic[80];
-  char *instr = arithmetic_instr (operands[1], const_first_arg);
-
-  sprintf (mnemonic, "%s%s\t%%0, %%2, %%3", instr, set_cond ? "s" : "");
-  output_asm_insn (mnemonic, operands);
-  return "";
-}
-
-
-/* Output an arithmetic instruction with a shift.
-   OPERANDS[0] is the destination register.
-   OPERANDS[1] is the arithmetic operator expression.
-   OPERANDS[2] is the unshifted register.
-   OPERANDS[3] is the shift operator expression.
-   OPERANDS[4] is the shifted register.
-   OPERANDS[5] is the shift constant or register.
-   SHIFT_FIRST_ARG is TRUE if the first argument of the operator was shifted.
-   SET_COND is TRUE when the condition code should be set.  */
-
-char *
-output_arithmetic_with_shift (operands, shift_first_arg, set_cond)
-     rtx *operands;
-     int shift_first_arg;
-     int set_cond;
-{
-  char mnemonic[80];
-  char *instr = arithmetic_instr (operands[1], shift_first_arg);
-  char *condbit = set_cond ? "s" : "";
-  char *shift = shift_instr (GET_CODE (operands[3]), &operands[5]);
-
-  sprintf (mnemonic, "%s%s\t%%0, %%2, %%4, %s %%5", instr, condbit, shift);
-  output_asm_insn (mnemonic, operands);
-  return "";
-}
-
-/* Output an arithmetic instruction with a power of two multiplication.
-   OPERANDS[0] is the destination register.
-   OPERANDS[1] is the arithmetic operator expression.
-   OPERANDS[2] is the unmultiplied register.
-   OPERANDS[3] is the multiplied register.
-   OPERANDS[4] is the constant multiple (power of two).
-   SHIFT_FIRST_ARG is TRUE if the first arg of the operator was multiplied.  */
-
-char *
-output_arithmetic_with_immediate_multiply (operands, shift_first_arg)
-     rtx *operands;
-     int shift_first_arg;
-{
-  char mnemonic[80];
-  char *instr = arithmetic_instr (operands[1], shift_first_arg);
-  HOST_WIDE_INT shift = int_log2 (INTVAL (operands[4]));
-
-  sprintf (mnemonic, "%s\t%%0, %%2, %%3, asl#%d", instr, (int) shift);
-  output_asm_insn (mnemonic, operands);
-  return "";
-}
-
-
-/* Output a move with a shift.
-   OP is the shift rtx code.
-   OPERANDS[0] = destination register.
-   OPERANDS[1] = source register.
-   OPERANDS[2] = shift constant or register.  */
-
-char *
-output_shifted_move (op, operands)
-     enum rtx_code op;
-     rtx *operands;
-{
-  char mnemonic[80];
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 0)
-    sprintf (mnemonic, "mov\t%%0, %%1");
-  else
-    sprintf (mnemonic, "mov\t%%0, %%1, %s %%2",
-	     shift_instr (op, &operands[2]));
-
-  output_asm_insn (mnemonic, operands);
-  return "";
-}
-
-char *
-output_shift_compare (operands, neg)
-     rtx *operands;
-     int neg;
-{
-  char buf[80];
-
-  if (neg)
-    sprintf (buf, "cmn\t%%1, %%3, %s %%4", shift_instr (GET_CODE (operands[2]),
-							&operands[4]));
-  else
-    sprintf (buf, "cmp\t%%1, %%3, %s %%4", shift_instr (GET_CODE (operands[2]),
-							&operands[4]));
-  output_asm_insn (buf, operands);
-  return "";
 }
 
 /* Output a .ascii pseudo-op, keeping track of lengths.  This is because
@@ -1760,9 +1675,9 @@ output_return_instruction (operand, really_return)
         live_regs++;
 
       if (frame_pointer_needed)
-        strcpy (instr, "ldm%d0ea\tfp, {");
+        strcpy (instr, "ldm%?%d0ea\tfp, {");
       else
-        strcpy (instr, "ldm%d0fd\tsp!, {");
+        strcpy (instr, "ldm%?%d0fd\tsp!, {");
 
       for (reg = 0; reg <= 10; reg++)
         if (regs_ever_live[reg] && ! call_used_regs[reg])
@@ -1787,7 +1702,7 @@ output_return_instruction (operand, really_return)
     }
   else if (really_return)
     {
-      strcpy (instr, TARGET_6 ? "mov%d0\tpc, lr" : "mov%d0s\tpc, lr");
+      strcpy (instr, TARGET_6 ? "mov%?%d0\tpc, lr" : "mov%?%d0s\tpc, lr");
       output_asm_insn (instr, &operand);
     }
 
@@ -2052,6 +1967,153 @@ output_func_epilogue (f, frame_size)
   current_function_anonymous_args = 0;
 }
 
+/* If CODE is 'd', then the X is a condition operand and the instruction
+   should only be executed if the condition is true.
+   if CODE is 'D', then the X is a condition operand and the instruciton
+   should only be executed if the condition is false: however, if the mode
+   of the comparison is CCFPEmode, then always execute the instruction -- we
+   do this because in these circumstances !GE does not necessarily imply LT;
+   in these cases the instruction pattern will take care to make sure that
+   an instruction containing %d will follow, thereby undoing the effects of
+   doing this instrucion unconditionally.
+   If CODE is 'N' then X is a floating point operand that must be negated
+   before output.
+   If CODE is 'B' then output a bitwise inverted value of X (a const int).
+   If X is a REG and CODE is `M', output a ldm/stm style multi-reg.  */
+
+void
+arm_print_operand (stream, x, code)
+     FILE *stream;
+     rtx x;
+     int code;
+{
+  switch (code)
+    {
+    case '@':
+      fputc (ARM_COMMENT_CHAR, stream);
+      return;
+
+    case '|':
+      fputs (ARM_REG_PREFIX, stream);
+      return;
+
+    case '?':
+      if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)
+	fputs (arm_condition_codes[arm_current_cc], stream);
+      return;
+
+    case 'N':
+      {
+	REAL_VALUE_TYPE r;
+	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	r = REAL_VALUE_NEGATE (r);
+	fprintf (stream, "%s", fp_const_from_val (&r));
+      }
+      return;
+
+    case 'B':
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (stream,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 "%d",
+#else
+		 "%ld",
+#endif
+		 ARM_SIGN_EXTEND (~ INTVAL (x)));
+      else
+	{
+	  putc ('~', stream);
+	  output_addr_const (stream, x);
+	}
+      return;
+
+    case 'i':
+      fprintf (stream, "%s", arithmetic_instr (x, 1));
+      return;
+
+    case 'I':
+      fprintf (stream, "%s", arithmetic_instr (x, 0));
+      return;
+
+    case 'S':
+      {
+	HOST_WIDE_INT val;
+
+	fprintf (stream, "%s ", shift_op (x, &val));
+	if (val == -1)
+	  arm_print_operand (stream, XEXP (x, 1), 0);
+	else
+	  fprintf (stream,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		   "#%d",
+#else
+		   "#%ld",
+#endif
+		   val);
+      }
+      return;
+
+    case 'R':
+      if (REGNO (x) > 15)
+	abort ();
+      fputs (reg_names[REGNO (x) + 1], stream);
+      return;
+
+    case 'm':
+      if (GET_CODE (XEXP (x, 0)) == REG)
+	fputs (reg_names[REGNO (XEXP (x, 0))], stream);
+      else
+	fputs (reg_names[REGNO (XEXP (XEXP (x, 0), 0))], stream);
+      return;
+
+    case 'M':
+      fprintf (stream, "{%s-%s}", reg_names[REGNO (x)],
+	       reg_names[REGNO (x) - 1
+			 + ((GET_MODE_SIZE (GET_MODE (x))
+			     + GET_MODE_SIZE (SImode) - 1)
+			    / GET_MODE_SIZE (SImode))]);
+      return;
+
+    case 'd':
+      if (x)
+        fputs (arm_condition_codes[get_arm_condition_code (x)],
+	       stream);
+      return;
+
+    case 'D':
+      if (x && (flag_fast_math
+		|| GET_CODE (x) == EQ || GET_CODE (x) == NE
+		|| (GET_MODE (XEXP (x, 0)) != CCFPEmode
+		    && (GET_MODE_CLASS (GET_MODE (XEXP (x, 0)))
+			!= MODE_FLOAT))))
+        fputs (arm_condition_codes[ARM_INVERSE_CONDITION_CODE
+				   (get_arm_condition_code (x))],
+	       stream);
+      return;
+
+    default:
+      if (x == 0)
+	abort ();
+
+      if (GET_CODE (x) == REG)
+	fputs (reg_names[REGNO (x)], stream);
+      else if (GET_CODE (x) == MEM)
+	{
+	  output_memory_reference_mode = GET_MODE (x);
+	  output_address (XEXP (x, 0));
+	}
+      else if (GET_CODE (x) == CONST_DOUBLE)
+	fprintf (stream, "#%s", fp_immediate_constant (x));
+      else if (GET_CODE (x) == NEG)
+	abort (); /* This should never happen now. */
+      else
+	{
+	  fputc ('#', stream);
+	  output_addr_const (stream, x);
+	}
+    }
+}
+
 /* Increase the `arm_text_location' by AMOUNT if we're in the text
    segment.  */
 
@@ -2143,7 +2205,7 @@ output_load_symbol (insn, operands)
     abort ();
 
   /* When generating the instructions, we never mask out the bits that we
-     think will be always zero, then if a mistake has occureed somewhere, the
+     think will be always zero, then if a mistake has occured somewhere, the
      assembler will spot it and generate an error.  */
 
   /* If the symbol is word aligned then we might be able to reduce the
@@ -2166,12 +2228,12 @@ output_load_symbol (insn, operands)
     {
       if (inst == 8)
 	{
-	  strcpy (buffer, "sub\t%0, pc, #(8 + . -%a1)");
+	  strcpy (buffer, "sub%?\t%0, pc, #(8 + . -%a1)");
 	  if ((never_mask | mask) != 0xffffffff)
 	    sprintf (buffer + strlen (buffer), " & 0x%x", mask | never_mask);
 	}
       else
-	sprintf (buffer, "sub\t%%0, %%0, #(%d + . -%%a1) & 0x%x",
+	sprintf (buffer, "sub%%?\t%%0, %%0, #(%d + . -%%a1) & 0x%x",
 		 inst, mask | never_mask);
 
       output_asm_insn (buffer, operands);
@@ -2234,15 +2296,6 @@ output_lcomm_directive (stream, name, size, rounded)
    of the instructions always reduces code size, but not always execution
    time.  But then, I want to reduce the code size to somewhere near what
    /bin/cc produces.  */
-
-/* The condition codes of the ARM, and the inverse function.  */
-char *arm_condition_codes[] =
-{
-  "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
-  "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
-};
-
-#define ARM_INVERSE_CONDITION_CODE(X)  ((X) ^ 1)
 
 /* Returns the index of the ARM condition code string in
    `arm_condition_codes'.  COMPARISON should be an rtx like
