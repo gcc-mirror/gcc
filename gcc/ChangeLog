@@ -1,3 +1,8 @@
+Sun Oct 26 09:21:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (simplify_giv_expr): Adding two invariants results
+	in an invariant.
+
 Sun Oct 26 09:15:15 1997  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (get_inner_reference): Remove the array bias after 

@@ -5353,9 +5353,12 @@ simplify_giv_expr (x, benefit)
 	  case CONST_INT:
 	  case USE:
 	    /* Both invariant.  Only valid if sum is machine operand.
-	       First strip off possible USE on first operand.  */
+	       First strip off possible USE on the operands.  */
 	    if (GET_CODE (arg0) == USE)
 	      arg0 = XEXP (arg0, 0);
+
+	    if (GET_CODE (arg1) == USE)
+	      arg1 = XEXP (arg1, 0);
 
 	    tem = 0;
 	    if (CONSTANT_P (arg0) && GET_CODE (arg1) == CONST_INT)
@@ -5363,6 +5366,13 @@ simplify_giv_expr (x, benefit)
 		tem = plus_constant (arg0, INTVAL (arg1));
 		if (GET_CODE (tem) != CONST_INT)
 		  tem = gen_rtx (USE, mode, tem);
+	      }
+	    else
+	      {
+		/* Adding two invariants must result in an invariant,
+		   so enclose addition operation inside a USE and
+		   return it.  */
+		tem = gen_rtx (USE, mode, gen_rtx (PLUS, mode, arg0, arg1));
 	      }
 
 	    return tem;
