@@ -18,7 +18,7 @@ int expect (int flags, std::type_info const &info)
       dynamic_cast <abi::__pbase_type_info const *> (&info);
   if (!ptr)
     return 0;
-  if (ptr->__qualifier_flags != flags)
+  if (ptr->__flags != flags)
     return 0;
   return 1;
 }
