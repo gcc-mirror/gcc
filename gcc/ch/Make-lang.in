@@ -132,11 +132,11 @@ CHILL.install-common:
 	  if [ -f chill.install ] ; then \
 	    if [ -f gcc-cross$(exeext) ]; then \
 	      rm -f $(bindir)/$(CHILL_CROSS_NAME); \
-	      $(INSTALL_PROGRAM) chill.install $(bindir)/$(CHILL_CROSS_NAME); \
+	      $(INSTALL_SCRIPT) chill.install $(bindir)/$(CHILL_CROSS_NAME); \
 	      chmod a+x $(bindir)/$(CHILL_CROSS_NAME); \
 	    else \
 	      rm -f $(bindir)/$(CHILL_INSTALL_NAME); \
-	      $(INSTALL_PROGRAM) chill.install $(bindir)/$(CHILL_INSTALL_NAME); \
+	      $(INSTALL_SCRIPT) chill.install $(bindir)/$(CHILL_INSTALL_NAME); \
 	      chmod a+x $(bindir)/$(CHILL_INSTALL_NAME); \
 	    fi ; \
 	  fi ; \
