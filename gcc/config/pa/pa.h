@@ -532,6 +532,8 @@ HP-PA immediate field sizes:
    : (C) == 'K' ? (unsigned) (VALUE) < 0x20			\
    : (C) == 'L' ? (unsigned) ((VALUE) + 0x10) < 0x20		\
    : (C) == 'M' ? (VALUE) == 0					\
+   : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)		\
+   : (C) == 'P' ? consec_zeros_p (VALUE)			\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1695,7 +1697,8 @@ bss_section ()								\
 #define SMALL_INT(OP) INT_14_BITS (OP)
 /* Define functions in pa.c and used in insn-output.c.  */
 
-extern char *output_zdepi ();
+extern char *output_and ();
+extern char *output_ior ();
 extern char *output_move_double ();
 extern char *output_fp_move_double ();
 extern char *output_block_move ();
