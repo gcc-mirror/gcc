@@ -1,3 +1,8 @@
+2003-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12486
+	* g++.dg/inherit/error1.C: New test.
+	
 2003-10-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/parse/parameter-declaration-1.C: Fix line number of
