@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -381,17 +381,6 @@
 
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #undef BYTEORDER
-
-/* Define to the floating point format of the host machine, if not IEEE. */
-#undef HOST_FLOAT_FORMAT
-
-/* Define to 1 if the host machine stores floating point numbers in
-   memory with the word containing the sign bit at the lowest address,
-   or to 0 if it does it the other way around.
-
-   This macro should not be defined if the ordering is the same as for
-   multi-word integers. */
-#undef HOST_FLOAT_WORDS_BIG_ENDIAN
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
