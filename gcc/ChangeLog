@@ -1,3 +1,9 @@
+2002-06-24  Jeff Law <law@redhat.com>
+
+	* flow.c (propagate_one_insn): When removing an insn
+	with a REG_LIBCALL note but not the entire libcall sequence,
+	delete the associated REG_RETVAL note.
+
 Mon Jun 24 21:05:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* lib1funcs.asm (sdivsi3): Add optimized SH64 implementations.
