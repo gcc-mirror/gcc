@@ -1,3 +1,9 @@
+2004-10-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/InflaterInputStream.java (fill): Don't throw an
+	exception if we hit EOF of `in'.
+	(read): Handle case where inflating returns -1.
+
 2004-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gnu/java/nio/channels/natFileChannelPosix.cc

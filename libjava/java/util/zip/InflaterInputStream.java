@@ -152,10 +152,8 @@ public class InflaterInputStream extends FilterInputStream
     
     len = in.read(buf, 0, buf.length);
 
-    if (len < 0)
-      throw new ZipException("Deflated stream ends early.");
-    
-    inf.setInput(buf, 0, len);
+    if (len >= 0)
+      inf.setInput(buf, 0, len);
   }
 
   /**
@@ -188,7 +186,7 @@ public class InflaterInputStream extends FilterInputStream
       return -1;
 
     int count = 0;
-    for (;;)
+    while (count == 0)
       {
 	if (inf.needsInput())
 	  fill();
@@ -211,10 +209,8 @@ public class InflaterInputStream extends FilterInputStream
 	  {
 	    throw new ZipException(dfe.getMessage());
 	  }
-
-	if (count > 0)
-	  return count;
       }
+    return count;
   }
 
   /**
