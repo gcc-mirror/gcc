@@ -3826,6 +3826,20 @@ asm_fprintf VPROTO((FILE *file, const char *p, ...))
 	    fputs (user_label_prefix, file);
 	    break;
 
+#ifdef ASM_FPRINTF_EXTENSIONS
+	    /* Upper case letters are reserved for general use by asm_fprintf
+	       and so are not available to target specific code.  In order to
+	       prevent the ASM_FPRINTF_EXTENSIONS macro from using them then,
+	       they are defined here.  As they get turned into real extensions
+	       to asm_fprintf they should be removed from this list.  */
+	  case 'A': case 'B': case 'C': case 'D': case 'E':
+	  case 'F': case 'G': case 'H': case 'J': case 'K':
+	  case 'M': case 'N': case 'P': case 'Q': case 'S':
+	  case 'T': case 'V': case 'W': case 'Y': case 'Z':
+	    break;
+	    
+	  ASM_FPRINTF_EXTENSIONS (file, argptr, p)
+#endif
 	  default:
 	    abort ();
 	  }

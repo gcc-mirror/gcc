@@ -6230,6 +6230,19 @@ If defined, C string expressions to be used for the @samp{%R}, @samp{%L},
 support multiple assembler formats.  In that case, the various @file{tm.h}
 files can define these macros differently.
 
+@item ASM_FPRINTF_EXTENSIONS(@var{file}, @var{argptr}, @var{format})
+@findex ASM_FPRINTF_EXTENSIONS
+If defiend this macro should expand to a series of @code{case}
+statements which will be parsed inside the @code{switch} statement of
+the @code{asm_fprintf} function.  This allows targets to define extra
+printf formats which may useful when generating their assembler
+statements.  Noet that upper case letters are reserved for future
+generic extensions to asm_fprintf, and so are not available to target
+specific code.  The output file is given by the parameter @var{file}.
+The varargs input pointer is @var{argptr} and the rest of the format
+string, starting the character after the one that is being switched
+upon, is pointed to by @var{format}.
+
 @findex ASSEMBLER_DIALECT
 @item ASSEMBLER_DIALECT
 If your target supports multiple dialects of assembler language (such as
