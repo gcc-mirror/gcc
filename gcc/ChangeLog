@@ -1,3 +1,7 @@
+Tue Apr 13 14:49:13 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.c (agi_dependent): Handle push operation more correctly.
+
 Tue Apr 13 14:45:17 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.md (anddi3): Add % constraint.

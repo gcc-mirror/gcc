@@ -5037,16 +5037,36 @@ int
 agi_dependent (insn, dep_insn)
      rtx insn, dep_insn;
 {
+  int push = 0, push_dep = 0;
   if (GET_CODE (dep_insn) == INSN
       && GET_CODE (PATTERN (dep_insn)) == SET
-      && GET_CODE (SET_DEST (PATTERN (dep_insn))) == REG)
-    return reg_mentioned_in_mem (SET_DEST (PATTERN (dep_insn)), insn);
+      && GET_CODE (SET_DEST (PATTERN (dep_insn))) == REG
+      && reg_mentioned_in_mem (SET_DEST (PATTERN (dep_insn)), insn))
+    return 1;
+
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET
+      && GET_CODE (SET_DEST (PATTERN (insn))) == MEM
+      && push_operand (SET_DEST (PATTERN (insn)),
+                       GET_MODE (SET_DEST (PATTERN (insn)))))
+    push = 1;
 
   if (GET_CODE (dep_insn) == INSN && GET_CODE (PATTERN (dep_insn)) == SET
       && GET_CODE (SET_DEST (PATTERN (dep_insn))) == MEM
       && push_operand (SET_DEST (PATTERN (dep_insn)),
                        GET_MODE (SET_DEST (PATTERN (dep_insn)))))
-    return reg_mentioned_in_mem (stack_pointer_rtx, insn);
+    push_dep = 1;
+
+  /* CPUs contain special hardware to allow two pushes.  */
+  if (push && push_dep) 
+    return 0;
+
+  /* Push operation implicitly change stack pointer causing AGI stalls.  */
+  if (push_dep && reg_mentioned_in_mem (stack_pointer_rtx, insn))
+    return 1;
+
+  /* Push also implicitly read stack pointer.  */
+  if (push && modified_in_p (stack_pointer_rtx, dep_insn))
+    return 1;
 
   return 0;
 }
