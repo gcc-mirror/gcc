@@ -1146,7 +1146,8 @@ __dynamic_cast (const void *src_ptr,    // object started from
   const void *vtable = *static_cast <const void *const *> (src_ptr);
   const vtable_prefix *prefix =
       adjust_pointer <vtable_prefix>
-        (vtable, -__PTRDIFF_TYPE__(static_cast <vtable_prefix *> (NULL)->origin));
+        (vtable, -reinterpret_cast <__PTRDIFF_TYPE__>
+          (&static_cast <vtable_prefix *> (NULL)->origin));
   const void *whole_ptr =
       adjust_pointer <void> (src_ptr, prefix->whole_object);
   const __class_type_info *whole_type = prefix->whole_type;

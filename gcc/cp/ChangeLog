@@ -1,3 +1,13 @@
+2000-05-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tinfo.cc (__dynamic_cast): Use a reinterpret_cast. Fix
+	offsetof expansion.
+
+2000-05-08  Branko Cibej  <branko.cibej@hermes.si>
+
+	* inc/cxxabi.h:  Fix typos in comment.
+	(__base_class_info::__offset): Use a static_cast.
+
 2000-05-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* inc/cxxabi.h: Use __SIZE_TYPE_ and __PTRDIFF_TYPE__ in place
