@@ -920,6 +920,8 @@ default_conversion (exp)
   else if (optimize
 	   && TREE_CODE (exp) == VAR_DECL
 	   && TREE_READONLY (exp)
+	   /* But not for iterators!  */
+	   && !ITERATOR_P (exp)
 	   && DECL_MODE (exp) != BLKmode)
     {
       exp = decl_constant_value (exp);
