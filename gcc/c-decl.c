@@ -3654,13 +3654,15 @@ complete_array_type (type, initial_value, do_default)
 
   if (maxindex)
     {
-      tree main;
       TYPE_DOMAIN (type) = build_index_type (maxindex);
       if (!TREE_TYPE (maxindex))
 	TREE_TYPE (maxindex) = TYPE_DOMAIN (type);
+#if 0 /* I took out this change
+	 together with the change in build_array_type. --rms  */
       change_main_variant (type,
 			   build_array_type (TREE_TYPE (type),
 					     TYPE_DOMAIN (type)));
+#endif
     }
 
   /* Lay out the type now that we can get the real answer.  */
