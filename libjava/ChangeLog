@@ -1,3 +1,7 @@
+2004-08-04  Andrew Haley  <aph@redhat.com>
+
+	* java/security/BasicPermission.java: Don't check wildcards.
+
 2004-08-04  Thomas Fitzsimmons <fitzsim@redhat.com>
 	    Michael Koch  <konqueror@gmx.de>
 
