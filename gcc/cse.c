@@ -7488,7 +7488,7 @@ count_reg_usage (x, counts, dest, incr)
 static bool
 set_live_p (set, insn, counts)
      rtx set;
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
      int *counts;
 {
 #ifdef HAVE_cc0
@@ -7630,8 +7630,19 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	  {
 	    in_libcall = 1;
-	    live_insn = 1;
-	    dead_libcall = dead_libcall_p (insn);
+	    /* If the insn storing return value is dead, whole libcall is dead.
+	       Otherwise attempt to eliminate libcall by doing an direct
+	       operation.  */
+	    if (!insn_live_p (insn, counts))
+	      {
+		live_insn = 0;
+		dead_libcall = 1;
+	      }
+	    else
+	      {
+		live_insn = 1;
+		dead_libcall = dead_libcall_p (insn);
+	      }
 	  }
 	else if (in_libcall)
 	  live_insn = ! dead_libcall;
@@ -7671,8 +7682,19 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	    {
 	      in_libcall = 1;
-	      live_insn = 1;
-	      dead_libcall = dead_libcall_p (insn);
+	    /* If the insn storing return value is dead, whole libcall is dead.
+	       Otherwise attempt to eliminate libcall by doing an direct
+	       operation.  */
+	    if (!insn_live_p (insn, counts))
+	      {
+		live_insn = 0;
+		dead_libcall = 1;
+	      }
+	    else
+	      {
+		live_insn = 1;
+		dead_libcall = dead_libcall_p (insn);
+	      }
 	    }
 	  else if (in_libcall)
 	    live_insn = ! dead_libcall;

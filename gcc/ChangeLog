@@ -1,3 +1,8 @@
+Wed Jul 18 18:35:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (delete_trivially_dead_insns): Delete the libcall block
+	when return value is unused.
+
 Wed Jul 18 18:28:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (pre_insert_copy_insn): Call update_ld_motion_stores.
