@@ -211,7 +211,9 @@ static struct pred_table
   {"pop_operand", {MEM}},
   {"memory_operand", {SUBREG, MEM}},
   {"indirect_operand", {SUBREG, MEM}},
-  {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU}},
+  {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU,
+			   UNORDERED, ORDERED, UNEQ, UNGE, UNGT, UNLE,
+			   UNLT, LTGT}},
   {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
 				LABEL_REF, SUBREG, REG, MEM}}
 };

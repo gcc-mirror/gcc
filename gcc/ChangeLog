@@ -1,6 +1,33 @@
+2000-04-09  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (pred): Update comparison_operator for the unordered
+	operators.
+
+	* config/i386/i386.c (no_comparison_operator): Disallow unordered
+	operators.
+	(fcmov_comparison_operator): Allow UNORDERED/ORDERED.
+	(uno_comparison_operator): New.
+	(put_condition_code): Handle UNORDERED/ORDERED.
+	(unsigned_comparison): Likewise.
+	(ix86_fp_compare_mode): Broken out of ix86_expand_fp_compare.
+	(ix86_use_fcomi_compare, ix86_prepare_fp_compare_args): Likewise.
+	(ix86_expand_fp_compare): Use them.  Take scratch as argument,
+	update all callers.  Handle all 8 unordered operators.
+	(ix86_expand_setcc): Lose the unordered argument, update all callers.
+	(ix86_expand_branch): Likewise.  Don't fully expand fp branches.
+	* config/i386/i386.h (PREDICATE_CODES): Update.
+	* config/i386/i386-protos.h (ix86_expand_fp_compare): Declare.
+	(ix86_expand_branch, ix86_expand_setcc): Update.
+	* config/i386/i386.md (sunordered, sordered): New.
+	(suneq, sunge, sungt, sunle, sunlt, sltgt): New.
+	(bunordered, bordered): New.
+	(buneq, bunge, bungt, bunle, bunlt, bltgt): New.
+	(*fp_jcc_1, *fp_jcc_2, *fp_jcc_3, *fp_jcc_4): New.
+	(*fp_jcc_5, *fp_jcc_6, and splitters): New.
+
 2000-04-09  Philip Blundell  <philb@gnu.org>
 
-        * config/arm/arm.h (ARM_NAME_ENCODING_LENGTHS): Strip `*' too.
+	* config/arm/arm.h (ARM_NAME_ENCODING_LENGTHS): Strip `*' too.
 	
 Sun Apr  9 15:16:14 EDT 2000  John Wehle  (john@feith.com)
 

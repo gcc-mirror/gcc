@@ -2508,6 +2508,8 @@ do { long l;						\
   {"non_q_regs_operand", {SUBREG, REG}},				\
   {"no_comparison_operator", {EQ, NE, LT, GE, LTU, GTU, LEU, GEU}},	\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU}},		\
+  {"uno_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
+			       GTU, UNORDERED, ORDERED}},		\
   {"cmp_fp_expander_operand", {CONST_DOUBLE, SUBREG, REG, MEM}},	\
   {"ext_register_operand", {SUBREG, REG}},				\
   {"binary_fp_operator", {PLUS, MINUS, MULT, DIV}},			\
