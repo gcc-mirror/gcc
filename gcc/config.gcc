@@ -1857,11 +1857,11 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	use_fixproto=yes
 	;;
 sh-*-rtemscoff*)
-	tmake_file="sh/t-sh t-rtems"
+	tmake_file="sh/t-sh t-rtems sh/t-rtems"
 	tm_file="${tm_file} dbxcoff.h sh/coff.h sh/rtems.h rtems.h"
 	;;
 sh-*-rtems*)
-	tmake_file="sh/t-sh sh/t-elf t-rtems"
+	tmake_file="sh/t-sh sh/t-elf t-rtems sh/t-rtems"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h"
 	;;
 sh-wrs-vxworks)
