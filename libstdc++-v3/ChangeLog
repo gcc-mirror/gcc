@@ -1,3 +1,7 @@
+2004-02-04  Zack Weinberg  <zack@codesourcery.com>
+
+	Revert previous change to config/abi/*/baseline_symbols.txt.
+
 2004-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
