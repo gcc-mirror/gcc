@@ -1,3 +1,16 @@
+2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (emit_call_1): Wrap varaible `struct_value_size_rtx' in
+	macro conditionals guarding use.
+
+	* dwarf2out.c: Include "tm_p.h".
+
+	* function.c (locate_and_pad_parm): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	(expand_function_end): Likewise for variable `context'.
+
+	* reorg.c (make_return_insns): Wrap prototype in macro HAVE_return.
+
 2000-01-13  Nick Clifton  <nickc@cygnus.com>
 
 	* config/fr30/fr30.c (fr30_expand_epilogue): Emit USEs of pop'ed
