@@ -1,3 +1,10 @@
+2003-07-11  Ben Elliston  <bje@redhat.com>
+
+	PR c++/1607
+	* doc/extend.texi (Function Attributes): Document the effect of
+	the C++ "this" parameter on the counting of arguments for the
+	"format" and "format_arg" attributes.
+
 2003-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	Backport from mainline.
