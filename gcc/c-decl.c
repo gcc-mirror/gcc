@@ -3374,7 +3374,7 @@ grokdeclarator (tree declarator, tree declspecs,
 		{
 		  if (i == RID_CONST || i == RID_VOLATILE || i == RID_RESTRICT)
 		    {
-		      if (!flag_isoc99)
+		      if (pedantic && !flag_isoc99)
 			pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
 		    }
 		  else
@@ -3631,12 +3631,15 @@ grokdeclarator (tree declarator, tree declspecs,
   volatilep
     = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (element_type);
   inlinep = !! (specbits & (1 << (int) RID_INLINE));
-  if (constp > 1 && ! flag_isoc99)
-    pedwarn ("duplicate `const'");
-  if (restrictp > 1 && ! flag_isoc99)
-    pedwarn ("duplicate `restrict'");
-  if (volatilep > 1 && ! flag_isoc99)
-    pedwarn ("duplicate `volatile'");
+  if (pedantic && !flag_isoc99)
+    {
+      if (constp > 1)
+	pedwarn ("duplicate `const'");
+      if (restrictp > 1)
+	pedwarn ("duplicate `restrict'");
+      if (volatilep > 1)
+	pedwarn ("duplicate `volatile'");
+    }
   if (! flag_gen_aux_info && (TYPE_QUALS (type)))
     type = TYPE_MAIN_VARIANT (type);
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
@@ -4089,12 +4092,15 @@ grokdeclarator (tree declarator, tree declspecs,
 
 	      if (erred)
 		error ("invalid type modifier within pointer declarator");
-	      if (constp > 1 && ! flag_isoc99)
-		pedwarn ("duplicate `const'");
-	      if (volatilep > 1 && ! flag_isoc99)
-		pedwarn ("duplicate `volatile'");
-	      if (restrictp > 1 && ! flag_isoc99)
-		pedwarn ("duplicate `restrict'");
+	      if (pedantic && !flag_isoc99)
+		{
+		  if (constp > 1)
+		    pedwarn ("duplicate `const'");
+		  if (volatilep > 1)
+		    pedwarn ("duplicate `volatile'");
+		  if (restrictp > 1)
+		    pedwarn ("duplicate `restrict'");
+		}
 
 	      type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 			    | (restrictp ? TYPE_QUAL_RESTRICT : 0)
