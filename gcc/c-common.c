@@ -1347,6 +1347,8 @@ type_for_mode (mode, unsignedp)
     return V4HI_type_node;
   if (mode == TYPE_MODE (V8QI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
     return V8QI_type_node;
+  if (mode == TYPE_MODE (V2SF_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V2SF_type_node;
 #endif
 
   return 0;

@@ -1,3 +1,34 @@
+2001-09-25  Bernd Schmidt  <bernds@redhat.com>
+
+	Mostly from Graham Stott  <grahams@redhat.com>
+	* c-common.c (type_for_mode): Add support for V2SFmode.
+	* tree.c (build_common_tree_nodes_2): Likewise.
+	* tree.h (enum tree_index, global_trees): Likewise.
+	* config/i386/i386.c (x86_3dnow_a): New variable.
+	(override_options): Support 3Dnow extensions.
+	(bdesc_2arg, bdesc_1arg): Some SSE instructions are also part of
+	Athlon's version of 3Dnow.
+	(ix86_init_mmx_sse_builtins): Create 3Dnow builtins.
+	(ix86_expand_builtin): Handle them.
+	(ix86_hard_regno_mode_ok): Support V2SFmode if using 3Dnow.
+	* config/i386/i386.h (MASK_3DNOW, MASK_3DNOW_A, TARGET_3DNOW,
+	TARGET_3DNOW_A): New macros.
+	(TARGET_SWITCHES): Add 3Dnow switches.
+	(VALID_MMX_REG_MODE_3DNOW): New macro.
+	(VECTOR_MODE_SUPPORTED_P): Use it.
+	(enum ix86_builtins): Add entries for 3Dnow builtins.
+	* config/i386/i386.md (movv2sf_internal, movv2sf, pushv2sf, pf2id,
+	pf2iw, addv2sf3, subv2sf3, subrv2sf3, gtv2sf3, gev2sf3, eqv2sf3,
+	pfmaxv23sf3, pfminv2sf3, mulv2sf3, femms, prefetch_3dnow, prefetchw,
+	pfacc, pfnacc, pfpnacc, pi2fw, floatv2si2, pavgusb, pfrcpv2sf2,
+	pfrcpit1v2sf3, pfrcpit2v2sf3, pfrsqrtv2sf2, pfrsqit1v2sf3,
+	pmulhrwvhi3, pswapdv2si2, pswapdv2sf2): New patterns.
+	(mmx_pmovmskb, mmx_maskmovq, sse_movntdi, umulv4hi3_highpart,
+	mmx_uavgv8qi3, mmx_uavgv4hi3, mmx_psadbw, mmx_pinsrw, mmx_pextrw,
+	mmx_pshufw, umaxv8qi3, smaxv4hi3, uminv8qi3, sminv4hi3, sfence,
+	sfence_insn, prefetch): Make these available if TARGET_SSE or
+	TARGET_3DNOW_A.
+	
 Fri Sep 28 19:18:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_setup_incoming_varargs, ix86_va_arg,

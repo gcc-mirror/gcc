@@ -118,10 +118,12 @@ extern int target_flags;
 #define MASK_MMX		0x00020000	/* Support MMX regs/builtins */
 #define MASK_SSE		0x00040000	/* Support SSE regs/builtins */
 #define MASK_SSE2		0x00080000	/* Support SSE2 regs/builtins */
-#define MASK_128BIT_LONG_DOUBLE 0x00100000	/* long double size is 128bit */
-#define MASK_MIX_SSE_I387	0x00200000	/* Mix SSE and i387 instructions */
-#define MASK_64BIT		0x00400000	/* Produce 64bit code */
-#define MASK_NO_RED_ZONE	0x00800000	/* Do not use red zone */
+#define MASK_3DNOW		0x00100000	/* Support 3Dnow builtins */
+#define MASK_3DNOW_A		0x00200000	/* Support Athlon 3Dnow builtins */
+#define MASK_128BIT_LONG_DOUBLE 0x00400000	/* long double size is 128bit */
+#define MASK_MIX_SSE_I387	0x00800000	/* Mix SSE and i387 instructions */
+#define MASK_64BIT		0x01000000	/* Produce 64bit code */
+#define MASK_NO_RED_ZONE	0x02000000	/* Do not use red zone */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -264,6 +266,8 @@ extern const int x86_epilogue_using_move;
 #define TARGET_SSE2 ((target_flags & MASK_SSE2) != 0)
 #define TARGET_MIX_SSE_I387 ((target_flags & MASK_MIX_SSE_I387) != 0)
 #define TARGET_MMX ((target_flags & MASK_MMX) != 0)
+#define TARGET_3DNOW ((target_flags & MASK_3DNOW) != 0)
+#define TARGET_3DNOW_A ((target_flags & MASK_3DNOW_A) != 0)
 
 #define TARGET_RED_ZONE (!(target_flags & MASK_NO_RED_ZONE))
 
@@ -335,6 +339,10 @@ extern const int x86_epilogue_using_move;
   { "mmx",			 MASK_MMX, N_("Support MMX builtins") },      \
   { "no-mmx",			-MASK_MMX,				      \
     N_("Do not support MMX builtins") },				      \
+  { "3dnow",                     MASK_3DNOW,				      \
+    N_("Support 3DNow! builtins") },					      \
+  { "no-3dnow",                 -MASK_3DNOW,				      \
+    N_("Do not support 3DNow! builtins") },				      \
   { "sse",			 MASK_SSE,				      \
     N_("Support MMX and SSE builtins and code generation") },		      \
   { "no-sse",			-MASK_SSE,				      \
@@ -918,13 +926,17 @@ extern int ix86_arch;
      || (MODE) == SFmode \
      || (TARGET_SSE2 && ((MODE) == DFmode || VALID_MMX_REG_MODE (MODE))))
 
+#define VALID_MMX_REG_MODE_3DNOW(MODE) \
+    ((MODE) == V2SFmode || (MODE) == SFmode)
+
 #define VALID_MMX_REG_MODE(MODE) \
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode \
      || (MODE) == V2SImode || (MODE) == SImode)
 
 #define VECTOR_MODE_SUPPORTED_P(MODE)					\
     (VALID_SSE_REG_MODE (MODE) && TARGET_SSE ? 1			\
-     : VALID_MMX_REG_MODE (MODE) && TARGET_MMX ? 1 : 0)
+     : VALID_MMX_REG_MODE (MODE) && TARGET_MMX ? 1			\
+     : VALID_MMX_REG_MODE_3DNOW (MODE) && TARGET_3DNOW ? 1 : 0)
 
 #define VALID_FP_MODE_P(mode) \
     ((mode) == SFmode || (mode) == DFmode || (mode) == TFmode	\
@@ -2203,6 +2215,38 @@ enum ix86_builtins
   IX86_BUILTIN_STMXCSR,
   IX86_BUILTIN_SFENCE,
   IX86_BUILTIN_PREFETCH,
+
+  /* 3DNow! Original */
+  IX86_BUILTIN_FEMMS,
+  IX86_BUILTIN_PAVGUSB,
+  IX86_BUILTIN_PF2ID,
+  IX86_BUILTIN_PFACC,
+  IX86_BUILTIN_PFADD,
+  IX86_BUILTIN_PFCMPEQ,
+  IX86_BUILTIN_PFCMPGE,
+  IX86_BUILTIN_PFCMPGT,
+  IX86_BUILTIN_PFMAX,
+  IX86_BUILTIN_PFMIN,
+  IX86_BUILTIN_PFMUL,
+  IX86_BUILTIN_PFRCP,
+  IX86_BUILTIN_PFRCPIT1,
+  IX86_BUILTIN_PFRCPIT2,
+  IX86_BUILTIN_PFRSQIT1,
+  IX86_BUILTIN_PFRSQRT,
+  IX86_BUILTIN_PFSUB,
+  IX86_BUILTIN_PFSUBR,
+  IX86_BUILTIN_PI2FD,
+  IX86_BUILTIN_PMULHRW,
+  IX86_BUILTIN_PREFETCH_3DNOW, /* PREFETCH already used */
+  IX86_BUILTIN_PREFETCHW,
+
+  /* 3DNow! Athlon Extensions */
+  IX86_BUILTIN_PF2IW,
+  IX86_BUILTIN_PFNACC,
+  IX86_BUILTIN_PFPNACC,
+  IX86_BUILTIN_PI2FW,
+  IX86_BUILTIN_PSWAPDSI,
+  IX86_BUILTIN_PSWAPDSF,
 
   /* Composite builtins, expand to more than one insn.  */
   IX86_BUILTIN_SETPS1,
