@@ -1,3 +1,8 @@
+2003-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9924
+	* decl2.c (do_nonmember_using_decl): Ignore anticipated builtins.
+
 2003-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9820
