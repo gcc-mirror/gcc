@@ -98,6 +98,7 @@ from the machine description file `md'.  */\n\n");
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+
 const char *
 get_insn_name (code)
      int code ATTRIBUTE_UNUSED;
@@ -107,6 +108,7 @@ get_insn_name (code)
 
 /* Called via traverse_md_constants; emit a #define for
    the current constant definition.  */
+
 static int
 print_md_constant (slot, info)
      void **slot;
