@@ -152,7 +152,7 @@ enum cpp_ttype
 #undef OP
 #undef TK
 
-/* C language kind, used when calling cpp_reader_init.  */
+/* C language kind, used when calling cpp_create_reader.  */
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
 	     CLK_GNUCXX, CLK_CXX98, CLK_ASM};
 

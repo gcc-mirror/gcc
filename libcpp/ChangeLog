@@ -1,3 +1,7 @@
+2005-01-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* include/cpplib.h (c_lang): Fix comment to say cpp_create_reader.
+
 2005-01-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* files.c (_cpp_find_file): Add files found by search_path_exhausted
