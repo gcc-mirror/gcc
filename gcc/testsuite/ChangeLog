@@ -1,5 +1,9 @@
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * gcc.dg/cpp/tr-warn1.c: Add tests.
+
+2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * gcc.dg/cpp/avoidpaste1.c: Update.
         * gcc.dg/cpp/paste4.c: Update.
 

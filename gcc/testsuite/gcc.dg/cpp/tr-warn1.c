@@ -24,6 +24,15 @@
  #assert baz(quux)	/* { dg-bogus "indented" "^ #ext"     } */
  # assert quux(weeble)	/* { dg-bogus "indented" "^ # ext"    } */
 
+/* We warn of #elif regardless of whether we're skipping or not, and
+   do not warn about indentaion.  */
+#if 0
+#if 1
+#elif 1			/* { dg-warning "#elif" "#elif skipping" }  */
+#endif
+#elif 0			/* { dg-warning "#elif" "#elif not skipping" }  */
+#endif
+
 /* { dg-warning "GCC extension" "extension warning" { target *-*-* } 22 } */
 /* { dg-warning "GCC extension" "extension warning" { target *-*-* } 23 } */
 /* { dg-warning "GCC extension" "extension warning" { target *-*-* } 24 } */
