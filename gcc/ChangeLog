@@ -1,3 +1,13 @@
+2000-10-24  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in (check-po): New target for doing checks in the po
+	subdir if all languages configured.
+	(CHECK_TARGETS): Add @CHECK_PO@, replaced with check-po via
+	configure if NLS is enabled.
+	* configure.in: If NLS is enabled, substitute CHECK_PO by check-po,
+	otherwise leave empty.
+	* configure: Regenerate.
+
 2000-10-23  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_expand_prologue): Mark extra 

@@ -2622,7 +2622,7 @@ site.exp: ./config.status Makefile
 		-e '1,/^## All variables above are.*##/ d' >> site.exp
 	-@rm -f ./tmp?
 
-CHECK_TARGETS = check-gcc check-g++ check-g77 check-objc
+CHECK_TARGETS = check-gcc check-g++ check-g77 check-objc @CHECK_PO@
 
 check: $(CHECK_TARGETS)
 
@@ -2674,6 +2674,12 @@ check-objc: testsuite/site.exp
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool objc $(RUNTESTFLAGS)
+
+check-po:
+	if test -f cp/Makefile && test -f f/Makefile && \
+	   test -f java/Makefile && test -f objc/Makefile; then \
+	   make -C po check-po; \
+	fi
 
 # These exist for maintenance purposes.
 

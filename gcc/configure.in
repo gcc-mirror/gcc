@@ -4198,6 +4198,15 @@ if test "${build}" != "${host}" && test "x$enable_nls" = "xyes"; then
   enable_nls=no
 fi
 
+# if NLS is enabled, also enable check in po subdir
+if test $enable_nls = yes; then
+  CHECK_PO=check-po
+else
+  CHECK_PO=""
+fi
+
+AC_SUBST(CHECK_PO)
+
 AM_GNU_GETTEXT
 XGETTEXT="AWK='$AWK' \$(SHELL) \$(top_srcdir)/exgettext $XGETTEXT"
 
