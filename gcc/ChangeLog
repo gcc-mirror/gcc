@@ -1,3 +1,7 @@
+2002-07-19  Richard Henderson  <rth@redhat.com>
+
+	* loop.c (loop_givs_rescan): Delete the REG_EQUAL note, not the insn.
+
 2002-07-19  Alan Modra  <amodra@bigpond.net.au>
 
 	* prefix.c (update_path): Don't zap single `.' path components
