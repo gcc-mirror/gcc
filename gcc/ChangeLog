@@ -42,6 +42,10 @@
 
 2002-05-21  Jeffrey A Law  <law@redhat.com>
 
+ 	* optabs.c (expand_binop): For double-word integer multiplies,
+	do not compute intermediate results into something that is
+	not a register (such as a SUBREG or MEM).
+
 	* i386.c (ix86_sched_reorder_ppro): Fix typo/thinko.
 	(ix86_sched_reorder): Make sure to initialize scheduling
 	data even when there's only one insn in the ready queue.
