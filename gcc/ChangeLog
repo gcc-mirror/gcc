@@ -1,3 +1,10 @@
+2001-04-12  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c: Remove all code ifdefed with the never-used
+	macro OBJC_INT_SELECTORS.
+	* config/d30v/d30v.h: Remove commented-out ref to OBJC_INT_SELECTORS.
+	* tm.texi: Remove doc for OBJC_INT_SELECTORS.
+
 Thu Apr 12 18:13:37 2001  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* config/pa/quadlib.c: Add prototypes.

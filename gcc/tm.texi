@@ -1435,14 +1435,6 @@ If you don't define this macro, the default is the first of
 unsigned int"} that has as much precision as @code{long long unsigned
 int}.
 
-@findex OBJC_INT_SELECTORS
-@item OBJC_INT_SELECTORS
-Define this macro if the type of Objective C selectors should be
-@code{int}.
-
-If this macro is not defined, then selectors should have the type
-@code{struct objc_selector *}.
-
 @findex OBJC_SELECTORS_WITHOUT_LABELS
 @item OBJC_SELECTORS_WITHOUT_LABELS
 Define this macro if the compiler can group all the selectors together
