@@ -185,10 +185,13 @@ static tree Unwind;
 
    ========================================================================= */
 
+#ifndef DWARF2_UNWIND_INFO
 /* Holds the pc for doing "throw" */
 static tree saved_pc;
 
 extern int throw_used;
+#endif
+
 extern rtx catch_clauses;
 extern tree const_ptr_type_node;
 
@@ -255,12 +258,14 @@ init_exception_processing ()
 
   pop_lang_context ();
 
+#ifndef DWARF2_UNWIND_INFO
   d = build_decl (VAR_DECL, get_identifier ("__eh_pc"), ptr_type_node);
   TREE_PUBLIC (d) = 1;
   DECL_EXTERNAL (d) = 1;
   DECL_ARTIFICIAL (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
   saved_pc = d;
+#endif
 
   /* If we use setjmp/longjmp EH, arrange for all cleanup actions to
      be protected with __terminate.  */
@@ -520,17 +525,6 @@ expand_start_catch_block (declspecs, declarator)
   if (! doing_eh (1))
     return;
 
-  /* If we are not doing setjmp/longjmp EH, because we are reordered
-     out of line, we arrange to rethrow in the outer context so as to
-     skip through the terminate region we are nested in, should we
-     encounter an exception in the catch handler.  We also need to do
-     this because we are not physically within the try block, if any,
-     that contains this catch block.
-
-     Matches the end in expand_end_catch_block.  */
-  if (! exceptions_via_longjmp)
-    expand_eh_region_start ();
-
   /* Create a binding level for the eh_info and the exception object
      cleanup.  */
   pushlevel (0);
@@ -655,35 +649,10 @@ expand_end_catch_block ()
   expand_end_bindings (getdecls (), kept_level_p (), 0);
   poplevel (kept_level_p (), 1, 0);
 
-  if (! exceptions_via_longjmp)
-    {
-      /* If we are not doing setjmp/longjmp EH, we need an extra
-	 region around the whole catch block to skip through the
-	 terminate region we are nested in.  */
-
-      tree t = make_node (RTL_EXPR);
-      TREE_TYPE (t) = void_type_node;
-      RTL_EXPR_RTL (t) = const0_rtx;
-      TREE_SIDE_EFFECTS (t) = 1;
-      do_pending_stack_adjust ();
-      start_sequence_for_rtl_expr (t);
-
-      expand_internal_throw (outer_context_label_stack->u.rlabel);
-
-      do_pending_stack_adjust ();
-      RTL_EXPR_SEQUENCE (t) = get_insns ();
-      end_sequence ();
-
-      /* For the rethrow region.  */
-      expand_eh_region_end (t);
-    }
-
   /* Fall to outside the try statement when done executing handler and
      we fall off end of handler.  This is jump Lresume in the
      documentation.  */
   expand_goto (top_label_entry (&caught_return_label_stack));
-
-  expand_leftover_cleanups ();
 
   /* label we emit to jump to if this catch block didn't match.  */
   /* This the closing } in the `if (eq) {' of the documentation.  */
@@ -1318,18 +1287,7 @@ expand_throw (exp)
       expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
-  if (exceptions_via_longjmp)
-    emit_throw ();
-  else
-    {
-      /* This is the label that represents where in the code we were, when
-	 we got an exception.  This needs to be updated when we rethrow an
-	 exception, so that the matching routine knows to search out.  */
-      label = gen_label_rtx ();
-      emit_label (label);
-
-      expand_internal_throw (label);
-    }
+  expand_internal_throw ();
 }
 
 /* Build a throw expression.  */

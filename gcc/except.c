@@ -417,7 +417,7 @@ int asynchronous_exceptions = 0;
 /* One to protect cleanup actions with a handler that calls
    __terminate, zero otherwise.  */
 
-int protect_cleanup_actions_with_terminate = 0;
+int protect_cleanup_actions_with_terminate;
 
 /* A list of labels used for exception handlers.  Created by
    find_exception_handler_labels for the optimization passes.  */
@@ -487,21 +487,20 @@ static tree protect_list;
 
 struct label_node *caught_return_label_stack = NULL;
 
-/* Keeps track of the label used as the context of a throw to rethrow an
-   exception to the outer exception region.  */
-
-struct label_node *outer_context_label_stack = NULL;
-
 /* A random data area for the front end's own use.  */
 
 struct label_node *false_label_stack = NULL;
 
+#ifndef DWARF2_UNWIND_INFO
 /* The rtx and the tree for the saved PC value.  */
 
 rtx eh_saved_pc_rtx;
 tree eh_saved_pc;
+#endif
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
+static void expand_rethrow	PROTO((rtx));
+
 
 /* Various support routines to manipulate the various data structures
    used by the exception handling code.  */
@@ -1097,7 +1096,9 @@ expand_eh_region_end (handler)
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
   NOTE_BLOCK_NUMBER (note)
     = CODE_LABEL_NUMBER (entry->exception_handler_label);
-  if (exceptions_via_longjmp == 0)
+  if (exceptions_via_longjmp == 0
+      /* We share outer_context between regions; only emit it once.  */
+      && INSN_UID (entry->outer_context) == 0)
     {
       rtx label;
 
@@ -1107,14 +1108,8 @@ expand_eh_region_end (handler)
       /* Emit a label marking the end of this exception region that
 	 is used for rethrowing into the outer context.  */
       emit_label (entry->outer_context);
+      expand_internal_throw ();
 
-      /* Put in something that takes up space, as otherwise the end
-	 address for this EH region could have the exact same address as
-	 its outer region. This would cause us to miss the fact that
-	 resuming exception handling with this PC value would be inside
-	 the outer region.  */
-      emit_insn (gen_nop ());
-      emit_barrier ();
       emit_label (label);
     }
 
@@ -1159,9 +1154,7 @@ void
 expand_fixup_region_end (cleanup)
      tree cleanup;
 {
-  tree t;
   struct eh_node *node;
-  int yes;
 
   if (! doing_eh (0) || exceptions_via_longjmp)
     return;
@@ -1174,20 +1167,10 @@ expand_fixup_region_end (cleanup)
   if (node == 0)
     abort ();
 
-  yes = suspend_momentary ();
+  ehstack.top->entry->outer_context = node->entry->outer_context;
 
-  t = build (RTL_EXPR, void_type_node, NULL_RTX, const0_rtx);
-  TREE_SIDE_EFFECTS (t) = 1;
-  do_pending_stack_adjust ();
-  start_sequence_for_rtl_expr (t);
-  expand_internal_throw (node->entry->outer_context);
-  do_pending_stack_adjust ();
-  RTL_EXPR_SEQUENCE (t) = get_insns ();
-  end_sequence ();
-
-  resume_momentary (yes);
-
-  expand_eh_region_end (t);
+  /* Just rethrow.  size_zero_node is just a NOP.  */
+  expand_eh_region_end (size_zero_node);
 }
 
 /* If we are using the setjmp/longjmp EH codegen method, we emit a
@@ -1225,27 +1208,23 @@ emit_throw ()
   emit_barrier ();
 }
 
-/* An internal throw with an indirect CONTEXT we want to throw from.
-   CONTEXT evaluates to the context of the throw.  */
-
-static void
-expand_internal_throw_indirect (context)
-     rtx context;
-{
-  assemble_external (eh_saved_pc);
-  emit_move_insn (eh_saved_pc_rtx, context);
-  emit_throw ();
-}
-
-/* An internal throw with a direct CONTEXT we want to throw from.
-   CONTEXT must be a label; its address will be used as the context of
-   the throw.  */
+/* Throw the current exception.  If appropriate, this is done by jumping
+   to the next handler.  */
 
 void
-expand_internal_throw (context)
-     rtx context;
+expand_internal_throw ()
 {
-  expand_internal_throw_indirect (gen_rtx (LABEL_REF, Pmode, context));
+#ifndef DWARF2_UNWIND_INFO
+  if (! exceptions_via_longjmp)
+    {
+      rtx label = gen_label_rtx ();
+      emit_label (label);
+      label = gen_rtx (LABEL_REF, Pmode, label);
+      assemble_external (eh_saved_pc);
+      emit_move_insn (eh_saved_pc_rtx, label);
+    }
+#endif
+  emit_throw ();
 }
 
 /* Called from expand_exception_blocks and expand_end_catch_block to
@@ -1284,19 +1263,9 @@ expand_leftover_cleanups ()
 
       prev = get_last_insn ();
       if (prev == NULL || GET_CODE (prev) != BARRIER)
-	{
-	  if (exceptions_via_longjmp)
-	    emit_throw ();
-	  else
-	    {
-	      /* The below can be optimized away, and we could just
-		 fall into the next EH handler, if we are certain they
-		 are nested.  */
-	      /* Emit code to throw to the outer context if we fall off
-		 the end of the handler.  */
-	      expand_internal_throw (entry->outer_context);
-	    }
-	}
+	/* Emit code to throw to the outer context if we fall off
+	   the end of the handler.  */
+	expand_rethrow (entry->outer_context);
 
       do_pending_stack_adjust ();
       free (entry);
@@ -1325,12 +1294,12 @@ expand_start_all_catch ()
 {
   struct eh_entry *entry;
   tree label;
+  rtx outer_context;
 
   if (! doing_eh (1))
     return;
 
-  push_label_entry (&outer_context_label_stack,
-		    ehstack.top->entry->outer_context, NULL_TREE);
+  outer_context = ehstack.top->entry->outer_context;
 
   /* End the try block.  */
   expand_eh_region_end (integer_zero_node);
@@ -1342,16 +1311,6 @@ expand_start_all_catch ()
      This is Lresume in the documention.  */
   expand_label (label);
   
-  if (exceptions_via_longjmp == 0)
-    {
-      /* Put in something that takes up space, as otherwise the end
-	 address for the EH region could have the exact same address as
-	 the outer region, causing us to miss the fact that resuming
-	 exception handling with this PC value would be inside the outer
-	 region.  */
-      emit_insn (gen_nop ());
-    }
-
   /* Push the label that points to where normal flow is resumed onto
      the top of the label stack.  */
   push_label_entry (&caught_return_label_stack, NULL_RTX, label);
@@ -1402,24 +1361,23 @@ expand_start_all_catch ()
 
       prev = get_last_insn ();
       if (prev == NULL || GET_CODE (prev) != BARRIER)
-	{
-	  if (exceptions_via_longjmp)
-	    emit_throw ();
-	  else
-	    {
-	      /* Code to throw out to outer context when we fall off end
-		 of the handler. We can't do this here for catch blocks,
-		 so it's done in expand_end_all_catch instead.
+	/* Code to throw out to outer context when we fall off end
+	   of the handler. We can't do this here for catch blocks,
+	   so it's done in expand_end_all_catch instead.  */
+	expand_rethrow (entry->outer_context);
 
-		 The below can be optimized away (and we could just fall
-		 into the next EH handler) if we are certain they are
-		 nested.  */
-
-	      expand_internal_throw (entry->outer_context);
-	    }
-	}
       do_pending_stack_adjust ();
       free (entry);
+    }
+
+  /* If we are not doing setjmp/longjmp EH, because we are reordered
+     out of line, we arrange to rethrow in the outer context.  We need to
+     do this because we are not physically within the region, if any, that
+     logically contains this catch block.  */
+  if (! exceptions_via_longjmp)
+    {
+      expand_eh_region_start ();
+      ehstack.top->entry->outer_context = outer_context;
     }
 }
 
@@ -1432,27 +1390,26 @@ expand_start_all_catch ()
 void
 expand_end_all_catch ()
 {
-  rtx new_catch_clause;
+  rtx new_catch_clause, outer_context;
 
   if (! doing_eh (1))
     return;
 
-  if (exceptions_via_longjmp)
-    emit_throw ();
-  else
-    {
-      /* Code to throw out to outer context, if we fall off end of catch
-	 handlers.  This is rethrow (Lresume, same id, same obj) in the
-	 documentation. We use Lresume because we know that it will throw
-	 to the correct context.
+  outer_context = ehstack.top->entry->outer_context;
+  if (! exceptions_via_longjmp)
+    /* Finish the rethrow region.  size_zero_node is just a NOP.  */
+    expand_eh_region_end (size_zero_node);
+  
+  /* Code to throw out to outer context, if we fall off end of catch
+     handlers.  This is rethrow (Lresume, same id, same obj) in the
+     documentation. We use Lresume because we know that it will throw
+     to the correct context.
 
-	 In other words, if the catch handler doesn't exit or return, we
-	 do a "throw" (using the address of Lresume as the point being
-	 thrown from) so that the outer EH region can then try to process
-	 the exception.  */
-
-      expand_internal_throw (outer_context_label_stack->u.rlabel);
-    }
+     In other words, if the catch handler doesn't exit or return, we
+     do a "throw" (using the address of Lresume as the point being
+     thrown from) so that the outer EH region can then try to process
+     the exception.  */
+  expand_rethrow (outer_context);
 
   /* Now we have the complete catch sequence.  */
   new_catch_clause = get_insns ();
@@ -1461,7 +1418,6 @@ expand_end_all_catch ()
   /* This level of catch blocks is done, so set up the successful
      catch jump label for the next layer of catch blocks.  */
   pop_label_entry (&caught_return_label_stack);
-  pop_label_entry (&outer_context_label_stack);
 
   /* Add the new sequence of catches to the main one for this function.  */
   push_to_sequence (catch_clauses);
@@ -1470,6 +1426,18 @@ expand_end_all_catch ()
   end_sequence ();
   
   /* Here we fall through into the continuation code.  */
+}
+
+/* Rethrow from the outer context LABEL.  */
+
+static void
+expand_rethrow (label)
+     rtx label;
+{
+  if (exceptions_via_longjmp)
+    emit_throw ();
+  else
+    emit_jump (label);
 }
 
 /* End all the pending exception regions on protect_list. The handlers
@@ -2006,11 +1974,13 @@ init_eh ()
      current context is saved.  */
   tree type = build_pointer_type (make_node (VOID_TYPE));
 
+#ifndef DWARF2_UNWIND_INFO
   eh_saved_pc = build_decl (VAR_DECL, get_identifier ("__eh_pc"), type);
   DECL_EXTERNAL (eh_saved_pc) = 1;
   TREE_PUBLIC (eh_saved_pc) = 1;
   make_decl_rtl (eh_saved_pc, NULL_PTR, 1);
   eh_saved_pc_rtx = DECL_RTL (eh_saved_pc);
+#endif
 }
 
 /* Initialize the per-function EH information.  */

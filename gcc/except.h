@@ -192,10 +192,9 @@ extern void add_partial_entry			PROTO((tree handler));
 
 extern void end_protect_partials		PROTO((void));
 
-/* An internal throw with a direct CONTEXT we want to throw
-   from. CONTEXT must be a label.  */
+/* An internal throw.  */
 
-extern void expand_internal_throw		PROTO((rtx context));
+extern void expand_internal_throw		PROTO((void));
 
 /* Called from expand_exception_blocks and expand_end_catch_block to
    expand and pending handlers.  */
@@ -226,11 +225,6 @@ extern void check_exception_handler_labels	PROTO((void));
    flow out of the current exception handler region.  */
 
 extern struct label_node *caught_return_label_stack;
-
-/* Keeps track of the label used as the context of a throw to rethrow an
-   exception to the outer exception region.  */
-
-extern struct label_node *outer_context_label_stack;
 
 /* A random area used for purposes elsewhere.  */
 

@@ -3154,8 +3154,6 @@ __sjpopnthrow ()
 /* This value identifies the place from which an exception is being
    thrown.  */
 
-void *__eh_pc;
-
 #ifdef EH_TABLE_LOOKUP
 
 EH_TABLE_LOOKUP
@@ -3211,6 +3209,8 @@ find_exception_handler (void *pc, exception_table *table)
 #ifndef DWARF2_UNWIND_INFO
 /* Support code for exception handling using inline unwinders or
    __unwind_function.  */
+
+void *__eh_pc;
 
 #ifndef EH_TABLE_LOOKUP
 typedef struct exception_table_node {
@@ -3489,7 +3489,7 @@ in_reg_window (int reg, frame_state *udata)
 void
 __throw ()
 {
-  void *pc, *handler, *retaddr;
+  void *pc, *handler, *retaddr, *__eh_pc;
   frame_state ustruct, ustruct2;
   frame_state *udata = &ustruct;
   frame_state *sub_udata = &ustruct2;
@@ -3524,6 +3524,7 @@ label:
   __builtin_unwind_init ();
 
   /* Now reset pc to the right throw point.  */
+  __eh_pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
   pc = __eh_pc;
 
   handler = 0;

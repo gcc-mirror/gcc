@@ -472,15 +472,10 @@ find_basic_blocks (f, nonlocal_label_list)
       /* If we encounter a CALL_INSN, note which exception handler it
 	 might pass control to.
 
-	 Because we do rethrows by loading the address of a label into
-	 __eh_pc and throwing, we need to treat labels as potentially
-	 jumping to exception handlers.
-
 	 If doing asynchronous exceptions, record the active EH handler
 	 for every insn, since most insns can throw.  */
       else if (eh_note
 	       && (asynchronous_exceptions
-		   || code == CODE_LABEL
 		   || (GET_CODE (insn) == CALL_INSN
 		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))))
 	active_eh_handler[INSN_UID (insn)] = XEXP (eh_note, 0);
@@ -574,11 +569,7 @@ find_basic_blocks (f, nonlocal_label_list)
 			   associated insns aren't marked dead, so we make
 			   the block in question live and create an edge from
 			   this insn to the label.  This is not strictly
-			   correct, but it is close enough for now.
-
-			   We also need to mark the CODE_LABEL as reaching
-			   its exception handler for nested exceptions to
-			   to work.  */
+			   correct, but it is close enough for now.  */
 			for (note = REG_NOTES (insn);
 			     note;
 			     note = XEXP (note, 1))
@@ -590,14 +581,6 @@ find_basic_blocks (f, nonlocal_label_list)
 				mark_label_ref (gen_rtx (LABEL_REF,
 							 VOIDmode, x),
 						insn, 0);
-
-				/* If the CODE_LABEL has an active exception
-				   handler, then make an edge to the exception
-				   handler from this insn.  */
-				if (active_eh_handler[INSN_UID (x)])
-				  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
-							   active_eh_handler[INSN_UID (x)]),
-						  insn, 0);
 			      }
 			  }
 
