@@ -1,5 +1,9 @@
 2004-05-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/System.java: Reordered imports.
+
+2004-05-30  Guilhem Lavaux <guilhem@kaffe.org>
+
 	* java/text/DecimalFormat.java
 	(parse): Fixed parsing of decimal strings. Number of maximum
 	digits to be read should now work.
