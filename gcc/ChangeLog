@@ -1,3 +1,9 @@
+2003-02-07  Richard Henderson  <rth@redhat.com>
+
+	PR 9226
+        * gcse.c (local_cprop_find_used_regs): New.
+        (local_cprop_pass): Use it.
+
 2003-02-07  Fred Fish  <fnf@intrinsity.com>
 
 	* mips-tfile.c (parse_def): Parenthesize assignments to fix
