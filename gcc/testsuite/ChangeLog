@@ -1,3 +1,8 @@
+Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/8492
+	* gcc.c-torture/compile/20030125-1.c
+
 2003-01-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9403
@@ -19,7 +24,7 @@
 
 	* gcc.c-torture/execute/switch-1.c: New test case.
 
-Sat Jan 25 12:32:55 CET 2003  Jan HUbicka  <jh@suse.cz>
+Sat Jan 25 12:32:55 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20030125-1.[cx]: New test.
 

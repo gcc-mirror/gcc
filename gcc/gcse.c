@@ -4378,6 +4378,7 @@ local_cprop_pass (alter_jumps)
   rtx insn;
   struct reg_use *reg_used;
   rtx libcall_stack[MAX_NESTED_LIBCALLS + 1], *libcall_sp;
+  bool changed = false;
 
   cselib_init ();
   libcall_sp = &libcall_stack[MAX_NESTED_LIBCALLS];
@@ -4409,13 +4410,19 @@ local_cprop_pass (alter_jumps)
 		   reg_used++, reg_use_count--)
 		if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
 		    libcall_sp))
-		  break;
+		  {
+		    changed = true;
+		    break;
+		  }
 	    }
 	  while (reg_use_count);
 	}
       cselib_process_insn (insn);
     }
   cselib_finish ();
+  /* Global analysis may get into infinite loops for unreachable blocks.  */
+  if (changed && alter_jumps)
+    delete_unreachable_blocks ();
 }
 
 /* Forward propagate copies.  This includes copies and constants.  Return
@@ -4506,6 +4513,9 @@ one_cprop_pass (pass, cprop_jumps, bypass_jumps)
       fprintf (gcse_file, "%d const props, %d copy props\n\n",
 	       const_prop_count, copy_prop_count);
     }
+  /* Global analysis may get into infinite loops for unreachable blocks.  */
+  if (changed && cprop_jumps)
+    delete_unreachable_blocks ();
 
   return changed;
 }
