@@ -271,6 +271,13 @@ unformatted_read (bt type, void *dest, int length)
 {
   void *source;
   int w;
+
+  /* Transfer functions get passed the kind of the entity, so we have
+     to fix this for COMPLEX data which are twice the size of their
+     kind.  */
+  if (type == BT_COMPLEX)
+    length *= 2;
+
   w = length;
   source = read_block (&w);
 
@@ -288,9 +295,14 @@ static void
 unformatted_write (bt type, void *source, int length)
 {
   void *dest;
-   dest = write_block (length);
-   if (dest != NULL)
-     memcpy (dest, source, length);
+
+  /* Correction for kind vs. length as in unformatted_read.  */
+  if (type == BT_COMPLEX)
+    length *= 2;
+
+  dest = write_block (length);
+  if (dest != NULL)
+    memcpy (dest, source, length);
 }
 
 

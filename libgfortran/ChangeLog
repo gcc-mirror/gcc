@@ -1,3 +1,9 @@
+2004-12-02  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18710
+	* io/transfer.c (unformatted_read, unformatted_write): width of
+	a COMPLEX is twice its kind.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
