@@ -82,6 +82,14 @@ g++.c: $(srcdir)/gcc.c
 g++spec.o: $(srcdir)/cp/g++spec.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
+$(INTL_TARGETS): $(srcdir)/cp/parse.c
+$(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
+	@cp_srcdir=`sed -n 's/^srcdir[ 	]*=[	 ]*//p' cp/Makefile` && \
+	echo "cd cp && $(MAKE) $$cp_srcdir/parse.c" && \
+	cd cp && \
+	  $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
+	    $$cp_srcdir/parse.c
+
 # N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
 # It'd be nice if we could find an easier way to do this---rather than have
 # to track changes to the toplevel gcc Makefile as well.
