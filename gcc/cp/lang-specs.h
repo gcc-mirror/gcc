@@ -1,6 +1,6 @@
 /* Definitions for specs for C++.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 	%(cc1_options) %2 %{+e1*}\
        %{!fsyntax-only:%(invoke_as)}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
-  {".ii", "@c++-cpp-output", 0},
+  {".ii", "@c++-cpp-output", 0, 0, 0},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
     cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\

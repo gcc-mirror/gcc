@@ -1,3 +1,7 @@
+2004-05-30  Andreas Jaeger  <aj@suse.de>
+
+	* lang-specs.h: Add missing initializers for .ii.
+
 2004-05-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl.c (cp_make_fname_decl): Free return value from
@@ -1510,7 +1514,7 @@
 2004-01-14  Danny Smith  <dannysmith@users,sourceforge.net>
 
 	PR c++/9021
-  	PR c++/11005
+	PR c++/11005
 	* parser.c (cp_parser_elaborated_type_specifier): Warn about
 	attributes and discard.
 	* decl.c (xref_tag): Don't overwite existing attributes with
