@@ -9,6 +9,9 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 SUBDIRS = testsuite
 
+# May be used by various substitution variables.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 SECTION_FLAGS = @SECTION_FLAGS@
 AM_CFLAGS = -Wall $(SECTION_FLAGS)
 
