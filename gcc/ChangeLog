@@ -1,3 +1,8 @@
+Thu Nov 26 14:12:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (addqi3): Emit addqi3_noclobber pattern
+	during reload.
+
 Wed Nov 25 22:05:28 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* config/sh/lib1funcs.asm (___udivsi3_i4): Don't switch to sz == 1

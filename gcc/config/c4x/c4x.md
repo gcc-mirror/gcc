@@ -1507,13 +1507,21 @@
 ;
 ; ADDI
 ;
+; This is used by reload when it calls gen_add2_insn for address arithmetic
+; so we must emit the pattern that doesn't clobber CC.
+;
 (define_expand "addqi3"
   [(parallel [(set (match_operand:QI 0 "reg_operand" "")
                    (plus:QI (match_operand:QI 1 "src_operand" "")
                             (match_operand:QI 2 "src_operand" "")))
               (clobber (reg:CC_NOOV 21))])]
   ""
-  "legitimize_operands (PLUS, operands, QImode);")
+  "legitimize_operands (PLUS, operands, QImode);
+   if (reload_in_progress)
+   {
+      emit_insn (gen_addqi3_noclobber (operands[0], operands[1], operands[2]));
+      DONE;
+   }")
 
 (define_insn "*addqi3_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
