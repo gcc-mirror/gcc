@@ -50,6 +50,7 @@ intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
+intrinsics/exit.c \
 intrinsics/getcwd.c \
 intrinsics/getXid.c \
 intrinsics/ishftc.c \
@@ -67,6 +68,8 @@ intrinsics/selected_int_kind.f90 \
 intrinsics/selected_real_kind.f90 \
 intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
+intrinsics/umask.c \
+intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
 runtime/in_unpack_generic.c \

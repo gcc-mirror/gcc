@@ -1856,6 +1856,20 @@ add_functions (void)
 
   make_generic ("ubound", GFC_ISYM_UBOUND, GFC_STD_F95);
 
+  /* g77 compatibility for UMASK.  */
+  add_sym_1 ("umask", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_umask, NULL, gfc_resolve_umask,
+	     a, BT_INTEGER, di, 0);
+
+  make_generic ("umask", GFC_ISYM_UMASK, GFC_STD_GNU);
+
+  /* g77 compatibility for UNLINK.  */
+  add_sym_1 ("unlink", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_unlink, NULL, gfc_resolve_unlink,
+	     a, BT_CHARACTER, dc, 0);
+
+  make_generic ("unlink", GFC_ISYM_UNLINK, GFC_STD_GNU);
+
   add_sym_3 ("unpack", 0, 1, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_unpack, NULL, gfc_resolve_unpack,
 	     v, BT_REAL, dr, 0, msk, BT_LOGICAL, dl, 0,
@@ -1984,6 +1998,10 @@ add_subroutines (void)
              gfc_check_srand, NULL, gfc_resolve_srand,
              c, BT_INTEGER, 4, 0);
 
+  add_sym_1s ("exit", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+             gfc_check_exit, NULL, gfc_resolve_exit,
+             c, BT_INTEGER, di, 1);
+
   add_sym_2s ("system", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      NULL, NULL, gfc_resolve_system_sub,
 	      c, BT_CHARACTER, dc, 0,
@@ -1993,6 +2011,17 @@ add_subroutines (void)
 	     gfc_check_system_clock, NULL, gfc_resolve_system_clock,
 	     c, BT_INTEGER, di, 1, cr, BT_INTEGER, di, 1,
 	     cm, BT_INTEGER, di, 1);
+
+  add_sym_2s ("umask", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+          gfc_check_umask_sub, NULL, gfc_resolve_umask_sub,
+	      val, BT_INTEGER, di, 0,
+	      num, BT_INTEGER, di, 1);
+
+  add_sym_2s ("unlink", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+          gfc_check_unlink_sub, NULL, gfc_resolve_unlink_sub,
+	      c, BT_CHARACTER, dc, 0,
+	      st, BT_INTEGER, di, 1);
+
 }
 
 

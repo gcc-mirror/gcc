@@ -1,3 +1,11 @@
+2004-11-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* Makefile.am: Add intrinsics/{umask.c,unlink.c,exit.c}
+	* Makefile.in: Regenerated
+	* intrinsics/umask.c: New file
+	* intrinsics/unlink.c: ditto
+	* intrinsics/exit.c: ditto
+
 2004-11-18  Victor Leikehman  <lei@il.ibm.com>
 
 	* m4/matmul.m4: Loops reordered to improve cache behavior.
@@ -273,7 +281,7 @@
 
 	PR fortran/17143	
 	* runtime/error.c (itoa): keep from overflowing during
-        mod operation by using unsigned variable.
+	mod operation by using unsigned variable.
 
 2004-08-24  Bud Davis  <bdavis9659@comcast.net>
 
@@ -545,9 +553,9 @@
 
 	PR gfortran/14897
 	* io/transfer.c (formatted_transfer): position is unique
-         for T and TL edit descriptors.
+	 for T and TL edit descriptors.
 	(data_transfer_init): set record length to size of internal
-         file.
+	 file.
 
 2004-06-09  Bud Davis  <bdavis9659@comcast.net>
 
@@ -743,7 +751,7 @@
 
 	PR fortran/14906
 	* io/format.c (format_item): gracefully handle a ')'
-        when it is the first character encountered in the string.
+	when it is the first character encountered in the string.
 
 2004-04-11  Bud Davis  <bdavis9659@comcast.net>
 
@@ -809,7 +817,7 @@
 	PR 13919
 	* io/io.h (global_t):
 	* io/list_read.c (next_char,list_formatted_read,ist_formatted_read):
-          Move eof_jmp to a global structure.
+	  Move eof_jmp to a global structure.
 	* io/transfer.c(finalize_transfer) : Set up eof_jump for callers.
 
 2004-03-24  Bud Davis  <bdavis9659@comcast.net>
@@ -1233,14 +1241,14 @@
 
 2003-04-11  Xiaoqiang Zhang <zhangapache@yahoo.com>
 
-        * io/write.c (extract_real): Ouput floating point value.
-        (write_float): New Function.
-        (write_e, write_f, write_en, write_es): Modified
-        * io/transfer.c (formatted_transfer): Modified.
-        * libgfor.h (default_rtoa): Declaration.
-        (rtoa): Declaration.
-        * runtime/error.c (default_rtoa): New Function.
-        (rtoa): New Function.
+	* io/write.c (extract_real): Ouput floating point value.
+	(write_float): New Function.
+	(write_e, write_f, write_en, write_es): Modified
+	* io/transfer.c (formatted_transfer): Modified.
+	* libgfor.h (default_rtoa): Declaration.
+	(rtoa): Declaration.
+	* runtime/error.c (default_rtoa): New Function.
+	(rtoa): New Function.
 
 2003-04-05  Paul Brook  <paul@nowt.org>
 
