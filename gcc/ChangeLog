@@ -1,3 +1,8 @@
+2000-05-24  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* stmt.c (expand_end_bindings): Look through NOTEs to find a
+	BARRIER.
+
 2000-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* calls.c (expand_call): Handle cleanups in tail-recursion

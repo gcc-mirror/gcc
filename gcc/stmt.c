@@ -3675,8 +3675,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
   if (thisblock->data.block.stack_level != 0
       || thisblock->data.block.cleanups != 0)
     {
-      /* Only clean up here if this point can actually be reached.  */
-      int reachable = GET_CODE (get_last_insn ()) != BARRIER;
+      int reachable;
+      rtx insn;
 
       /* Don't let cleanups affect ({...}) constructs.  */
       int old_expr_stmts_for_value = expr_stmts_for_value;
@@ -3684,6 +3684,12 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       tree old_last_expr_type = last_expr_type;
       expr_stmts_for_value = 0;
 
+      /* Only clean up here if this point can actually be reached.  */
+      insn = get_last_insn ();
+      if (GET_CODE (insn) == NOTE)
+	insn = prev_nonnote_insn (insn);
+      reachable = GET_CODE (insn) != BARRIER;
+      
       /* Do the cleanups.  */
       expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0, reachable);
       if (reachable)
