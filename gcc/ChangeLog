@@ -1,3 +1,9 @@
+2002-05-30  Jeff Law <law@redhat.com>
+
+	* flow.c (propagate_one_insn): Revise yesterday's patch.  Delete
+	a dead insn with a REG_RETVAL note when the entire libcall is not
+	dead and remove the associated REG_LIBCALL note at the same time.
+
 Thu May 30 19:54:30 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* lcm.c (output.h): #include.
