@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,6 +60,10 @@ DataInputStream din;
 DataOutputStream dout;
 ObjectInputStream oin;
 ObjectOutputStream oout;
+
+// reviveTime and expireTime make UnicastConnection pool-able
+long reviveTime = 0;
+long expireTime = Long.MAX_VALUE;
 
 UnicastConnection(UnicastConnectionManager man, Socket sock) {
 	this.manager = man;
@@ -137,7 +141,7 @@ DataOutputStream getDataOutputStream() throws IOException {
 
 ObjectInputStream getObjectInputStream() throws IOException {
 	if (oin == null) {
-		oin = new RMIObjectInputStream(din, manager);
+        oin = new RMIObjectInputStream(din);
 	}
 	return (oin);
 }
@@ -153,6 +157,7 @@ void disconnect() {
 	try {
 	    if(oout != null)
 	        oout.close();
+        sock.close();
 	}
 	catch (IOException _) {
     }
@@ -164,17 +169,35 @@ void disconnect() {
 	sock = null;
 }
 
+public static final long CONNECTION_TIMEOUT = 10000L;
+
+static boolean isExpired(UnicastConnection conn, long l){
+    if (l <= conn.expireTime )
+        return false;
+    return true;
+}
+
+static void resetTime(UnicastConnection conn){
+    long l = System.currentTimeMillis();
+    conn.reviveTime = l;
+    conn.expireTime = l + CONNECTION_TIMEOUT;
+}
+
 /**
  * We run connects on the server. Dispatch it then discard it.
  */
 public void run() {
+    do{
 	try {
 		UnicastServer.dispatch(this);
+            //don't discardConnection explicitly, only when
+            //  exception happens or the connection's expireTime 
+            //  comes
+        } catch (Exception e ){
 		manager.discardConnection(this);
+            break;
 	}
-	catch (Exception e) {
-		e.printStackTrace();
-	}
+    }while(true);
 }
 
 }

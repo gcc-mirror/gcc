@@ -78,6 +78,10 @@ public final class MarshalledObject
   {
     if(obj == null || !(obj instanceof MarshalledObject) )
       return false;
+
+    // hashCode even differs, don't do the time-consuming comparisons
+    if (obj.hashCode() != hash)
+      return false;
     
     MarshalledObject aobj = (MarshalledObject)obj;
     if (objBytes == null || aobj.objBytes == null)

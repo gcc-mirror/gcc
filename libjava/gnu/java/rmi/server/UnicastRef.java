@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,6 +62,8 @@ import java.io.ObjectOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class UnicastRef
 	implements RemoteRef, ProtocolConstants {
 
@@ -69,9 +71,10 @@ public ObjID objid;
 UnicastConnectionManager manager;
 
 /**
- * Used by serialization.
+ * Used by serialization, and let subclass capable of having default constructor
  */
-private UnicastRef() {
+//private 
+UnicastRef() {
 }
 
 public UnicastRef(ObjID objid, String host, int port, RMIClientSocketFactory csf) {
@@ -84,6 +87,21 @@ public UnicastRef(ObjID objid) {
 }
 
 public Object invoke(Remote obj, Method method, Object[] params, long opnum) throws Exception {
+    // Check if client and server are in the same VM, then local call can be used to
+    // replace remote call, but it's somewhat violating remote semantic.
+    Object svrobj = manager.serverobj;
+    if(svrobj != null){
+        //local call
+		Object ret = null;
+		try{
+		    ret = method.invoke(svrobj, params);
+		}catch(InvocationTargetException e){
+		    throw (Exception)e.getTargetException();
+		}
+		//System.out.println("\n\n ***** local call: " + method + "\nreturn: " + ret + "\n\n");
+		return ret;
+	}
+	//System.out.println("***************** remote call:" + manager.serverPort);
 	return (invokeCommon(obj, method, params, -1, opnum));
 }
 
@@ -107,18 +125,7 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 		objid.write(out);
 		out.writeInt(opnum);
 		out.writeLong(hash);
-		/*
-		if (params != null) {
-			for (int i = 0; i < params.length; i++) {
-				if (params[i] instanceof UnicastRemoteObject) {
-					out.writeObject(UnicastRemoteObject.exportObject((UnicastRemoteObject)params[i]));
-				}
-				else {
-					out.writeObject(params[i]);
-				}
-			}
-		}
-		*/
+		
 		// must handle primitive class and their wrapper classes
 		Class clss[] = method.getParameterTypes();
 	    for(int i = 0; i < clss.length; i++)
@@ -137,26 +144,30 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
 	UID ack;
 	try {
 		din = conn.getDataInputStream();
-		if (din.readUnsignedByte() != MESSAGE_CALL_ACK) {
-			throw new RemoteException("Call not acked");
+		
+		if ((returncode = din.readUnsignedByte()) != MESSAGE_CALL_ACK) {
+		    conn.disconnect();
+			throw new RemoteException("Call not acked:" + returncode);
 		}
 
 		in = conn.getObjectInputStream();
-
 		returncode = in.readUnsignedByte();
 		ack = UID.read(in);
-		//returnval = in.readObject();
+
 		Class cls = method.getReturnType();
         if(cls == Void.TYPE){
             returnval = null;
+            in.readObject();
         }else
             returnval = ((RMIObjectInputStream)in).readValue(cls);
+
 	}
 	catch (IOException e3) {
+	    //for debug: e3.printStackTrace();
 		throw new RemoteException("call return failed: ", e3);
 	}
 
-    /* if DGCAck is necessary
+    /* if DGCAck is necessary??
     //According to RMI wire protocol, send a DGCAck 
     // to indicate receiving return value
     dout.writeByte(MESSAGE_DGCACK);
@@ -166,7 +177,7 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
     
 	manager.discardConnection(conn);
 
-	if (returncode != RETURN_ACK) {
+	if (returncode != RETURN_ACK && returnval != null) {
 		throw (Exception)returnval;
 	}
 
@@ -177,7 +188,18 @@ private Object invokeCommon(Remote obj, Method method, Object[] params, int opnu
  * @deprecated
  */
 public RemoteCall newCall(RemoteObject obj, Operation[] op, int opnum, long hash) throws RemoteException {
-	return (new UnicastRemoteCall(obj, opnum, hash));
+    UnicastConnection conn;
+    
+	try {
+		conn = manager.getConnection();
+	}
+	catch (IOException e1) {
+		throw new RemoteException("connection failed to host: " + manager.serverName, e1);
+	}
+
+    //obj: useless?
+
+	return (new UnicastRemoteCall(conn, objid, opnum, hash));
 }
 
 /**
@@ -185,15 +207,19 @@ public RemoteCall newCall(RemoteObject obj, Operation[] op, int opnum, long hash
  */
 public void invoke(RemoteCall call) throws Exception {
 	UnicastRemoteCall c = (UnicastRemoteCall)call;
-	Object ret = invokeCommon((Remote)c.getObject(), (Method)null, c.getArguments(), c.getOpnum(), c.getHash());
-	c.setReturnValue(ret);
+	call.executeCall();
 }
 
 /**
  * @deprecated
  */
 public void done(RemoteCall call) throws RemoteException {
-	/* Does nothing */
+	UnicastRemoteCall c = (UnicastRemoteCall)call;
+	try{
+	    c.done();
+	} catch(IOException e){}
+    UnicastConnection conn = c.getConnection();
+	manager.discardConnection(conn);
 }
 
 public void writeExternal(ObjectOutput out) throws IOException {

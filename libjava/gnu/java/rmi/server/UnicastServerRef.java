@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,6 +63,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Hashtable;
 
 public class UnicastServerRef
@@ -71,10 +73,17 @@ public class UnicastServerRef
 
 final static private Class[] stubprototype = new Class[] { RemoteRef.class };
 
-Remote myself;
+Remote myself; //save the remote object itself
 private Skeleton skel;
 private RemoteStub stub;
 private Hashtable methods = new Hashtable();
+
+/**
+ * Used by serialization.
+ */
+UnicastServerRef()
+{
+}
 
 public UnicastServerRef(ObjID id, int port, RMIServerSocketFactory ssf) {
 	super(id);
@@ -84,6 +93,9 @@ public UnicastServerRef(ObjID id, int port, RMIServerSocketFactory ssf) {
 public RemoteStub exportObject(Remote obj) throws RemoteException {
 	if (myself == null) {
 		myself = obj;
+		// Save it to server manager, to let client calls in the same VM to issue
+		//  local call
+		manager.serverobj = obj;
 
 		// Find and install the stub
 		Class cls = obj.getClass();
@@ -110,6 +122,10 @@ public RemoteStub exportObject(Remote remote, Object obj)
 {
     //FIX ME
 	return exportObject(remote);
+}
+
+public RemoteStub getStub(){
+    return stub;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,24 +46,73 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.RMISocketFactory;
 import gnu.java.rmi.server.UnicastServerRef;
 
-public class DGCImpl
-	extends UnicastRemoteObject implements DGC {
+import java.util.Hashtable;
 
-private static final long leaseValue = 600000L;
+/**
+  * I let DGCImpl to extend UnicastServerRef, but not 
+  * UnicastRemoteObject, because UnicastRemoteObject must
+  * exportObject automatically.
+  */
+public class DGCImpl
+    extends UnicastServerRef implements DGC {
+
+    private static final long LEASE_VALUE = 600000L;
+    // leaseCache caches a LeaseRecord associated with a vmid
+    private Hashtable leaseCache = new Hashtable();
 
 public DGCImpl() throws RemoteException {
-	super(new UnicastServerRef(new ObjID(ObjID.DGC_ID), 0, RMISocketFactory.getSocketFactory()));
+    	super(new ObjID(ObjID.DGC_ID), 0, RMISocketFactory.getSocketFactory());
 }
 
 public Lease dirty(ObjID[] ids, long sequenceNum, Lease lease) throws RemoteException {
 	VMID vmid = lease.getVMID();
+    	if (vmid == null)
+    	    vmid = new VMID();
+    	long leaseValue = LEASE_VALUE;
+    	//long leaseValue = lease.getValue();
     lease = new Lease(vmid, leaseValue);
-	System.out.println("DGCImpl.dirty - not completely implemented");
+        synchronized(leaseCache){
+            LeaseRecord lr = (LeaseRecord)leaseCache.get(vmid);
+            if (lr != null)
+                lr.reset(leaseValue);
+            else{
+                lr = new LeaseRecord(vmid, leaseValue);
+                leaseCache.put(vmid, lr);
+            }
+        }
+        
 	return (lease);
 }
 
 public void clean(ObjID[] ids, long sequenceNum, VMID vmid, boolean strong) throws RemoteException {
-	System.out.println("DGCImpl.clean - not implemented");
+  // Not implemented
 }
+    
+  /**
+   * LeaseRecord associates a vmid to expireTime.
+   */
+  private static class LeaseRecord{
+    private VMID vmid;
+    private long expireTime;
+    
+    LeaseRecord(VMID vmid, long leaseValue){
+      this.vmid = vmid;
+      reset(leaseValue);
+    }
+    
+    // reset expireTime
+    void reset(long leaseValue){
+      long l = System.currentTimeMillis();
+      expireTime = l + leaseValue;
+    }
 
-}
+    boolean isExpired(){
+      long l = System.currentTimeMillis();
+      if ( l > expireTime)
+	return true;
+      return false;
+    }
+        
+  } //End of LeaseRecord
+
+} //End of DGCImpl

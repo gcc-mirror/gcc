@@ -61,42 +61,22 @@ public class RMIMarshalledObjectOutputStream extends RMIObjectOutputStream
   public RMIMarshalledObjectOutputStream(OutputStream objStream) throws IOException
   {
     super(objStream);
+    locBytesStream = new ByteArrayOutputStream(256);
+    locStream = new ObjectOutputStream(locBytesStream);
   }
   
   //This method overrides RMIObjectOutputStream's.
   protected void setAnnotation(String annotation) throws IOException{
-    synchronized(this){
-      if(locStream == null){
-	locBytesStream = new ByteArrayOutputStream();
-	locStream = new ObjectOutputStream(locBytesStream);
-      }
-    }
     locStream.writeObject(annotation);
-  }
-  
-  //This method overrides ObjectOutputStream's to replace Remote to RemoteStub 
-  protected Object replaceObject(Object obj) throws IOException
-  {
-    if((obj instanceof Remote) && !(obj instanceof RemoteStub))
-      {
-	UnicastServerRef ref = new UnicastServerRef(new ObjID(), 0, null);
-	try{
-	  return ref.exportObject((Remote)obj);
-	}catch(Exception e){}
-      }
-    return obj;
   }
   
   public void flush() throws IOException {
     super.flush();
-    if(locStream != null)
-      locStream.flush();
+    locStream.flush();
   }
   
   public byte[] getLocBytes(){
-    if(locStream != null)
-      return locBytesStream.toByteArray();
-    return null;
+    return locBytesStream.toByteArray();
   }
   
 } // End of RMIMarshalledObjectOutputStream
