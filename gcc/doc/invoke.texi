@@ -450,7 +450,7 @@ in the following sections.
 -mabi=altivec -mabi=no-altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
--msdata=@var{opt}  -mvxworks -G @var{num} -pthread}
+-msdata=@var{opt}  -mvxworks -mwindiss -G @var{num} -pthread}
 
 @emph{RT Options}
 @gccoptlist{
@@ -6728,6 +6728,10 @@ On embedded PowerPC systems, assume that the startup module is called
 @opindex mvxworks
 On System V.4 and embedded PowerPC systems, specify that you are
 compiling for a VxWorks system.
+
+@item -mwindiss
+@opindex mwindiss
+Specify that you are compiling for the WindISS simulation environment.
 
 @item -memb
 @opindex memb
