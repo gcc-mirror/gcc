@@ -92,6 +92,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR)	 	\
   (!strcmp (STR, "Ttext") ? 1 :			\
    !strcmp (STR, "Tdata") ? 1 :			\
+   !strcmp (STR, "Tbss") ? 1 :			\
    !strcmp (STR, "include") ? 1 :		\
    !strcmp (STR, "imacros") ? 1 :		\
    !strcmp (STR, "segalign") ? 1 :		\
