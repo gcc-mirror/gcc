@@ -36,7 +36,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifndef WINNT
+#ifndef _WIN32
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #else
 #include <process.h>
@@ -2012,7 +2012,7 @@ pexecute (search_flag, program, argv, not_last)
 
 #endif
 
-#if !defined(__MSDOS__) && !defined(OS2) && !defined(WINNT)
+#if !defined(__MSDOS__) && !defined(OS2) && !defined(_WIN32)
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -2102,11 +2102,11 @@ pexecute (search_flag, program, argv, not_last)
     }
 }
 
-#endif /* not __MSDOS__ and not OS2 and not WINNT */
+#endif /* not __MSDOS__ and not OS2 and not _WIN32 */
 
-#if defined(OS2) || defined(WINNT)
+#if defined(OS2) || defined(_WIN32)
 
-#ifdef WINNT
+#ifdef _WIN32
 
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
@@ -2133,7 +2133,6 @@ fix_argv (argvec)
               newtemp [j] = '\\';
               strncpy (&newtemp [j+1], &temp [j], len-j);
               newtemp [len+1] = 0;
-              free (temp);
               temp = newtemp;
               len++;
               j++;
@@ -2163,7 +2162,7 @@ pexecute (search_flag, program, argv, not_last)
 {
   return (search_flag ? spawnv : spawnvp) (1, program, FIX_ARGV (argv));
 }
-#endif /* OS2 or WINNT */
+#endif /* OS2 or _WIN32 */
 
 
 /* Execute the command specified by the arguments on the current line of spec.
@@ -2287,7 +2286,7 @@ execute ()
 #ifdef __MSDOS__
         status = pid = commands[i].pid;
 #else
-#ifdef WINNT
+#ifdef _WIN32
 	pid = cwait (&status, commands[i].pid, WAIT_CHILD);
 #else
 	pid = wait (&status);
