@@ -1,3 +1,8 @@
+2005-03-24  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Invoking gcj-dbtool): Document new LIBDIR option to
+	'gcj-dbtool -p'.
+
 2005-03-23  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (GCJ_CURRENT_BC_ABI_VERSION): New define.

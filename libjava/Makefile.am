@@ -130,6 +130,8 @@ propdir = $(libdir)
 dbexecdir = $(libdir)/gcj-$(gcc_version)
 ## Name of the default .db.
 db_name = classmap.db
+## Compiler specific component of the .db file
+db_pathtail = gcj-@gcc_version@/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
@@ -185,6 +187,7 @@ AM_CXXFLAGS = \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
+	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
 	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
 
 AM_GCJFLAGS = \
@@ -715,7 +718,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/nio/PipeImpl$$SourceChannelImpl.h \
 	$(PLATFORM_INNER_NAT_HDRS)
 
-nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
+nat_headers = $(ordinary_nat_headers) $(inner_nat_headers) gnu/gcj/tools/gcj_dbtool/Main.h
 nat_headers_install = $(ordinary_nat_headers)
 
 xlib_nat_headers = $(xlib_java_source_files:.java=.h)
@@ -1028,7 +1031,8 @@ jv_convert_LDADD = -L$(here)/.libs libgcj.la
 ## linking this program.
 jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
 
-gcj_dbtool_SOURCES = gnu/gcj/tools/gcj_dbtool/Main.java
+gcj_dbtool_SOURCES = gnu/gcj/tools/gcj_dbtool/Main.java \
+	gnu/gcj/tools/gcj_dbtool/natMain.cc
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
