@@ -11,6 +11,8 @@
 
 #define f(x) x
 #define g(x) x / 2
+#define h(a, b) a(b)
 f(g) (3)	    /* { dg-bogus "must be used with arguments" } */
 f 2		    /* { dg-warning "must be used with arguments" } */
 f(g) 3		    /* { dg-warning "must be used with arguments" } */
+h(f, 3)		    /* { dg-bogus "must be used with arguments" } */

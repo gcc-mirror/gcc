@@ -12,7 +12,7 @@
 2002-09-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppmacro.c: Don't warn about function-like macros without
-	'(' during pre-expandion.
+	'(' during pre-expansion.
 
 2002-09-20  Jim Wilson  <wilson@redhat.com>
 
