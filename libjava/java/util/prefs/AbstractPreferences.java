@@ -1,5 +1,5 @@
 /* AbstractPreferences - Partial implementation of a Preference node
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,8 +50,6 @@ import gnu.java.util.prefs.NodeWriter;
 
 /**
  * Partial implementation of a Preference node.
- *
- * Methods that still need to be implemented are <code>isUserNode(), XXX
  *
  * @since 1.4
  * @author Mark Wielaard (mark@klomp.org)
@@ -158,7 +156,12 @@ public abstract class AbstractPreferences extends Preferences {
      * Returns true if this node comes from the user preferences tree, false
      * if it comes from the system preferences tree.
      */
-    abstract public boolean isUserNode();
+    public boolean isUserNode() {
+        AbstractPreferences root = this;
+	while (root.parent != null)
+	    root = root.parent;
+	return root == Preferences.userRoot();
+    }
 
     /**
      * Returns the name of this preferences node. The name of the node cannot

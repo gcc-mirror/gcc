@@ -1,5 +1,10 @@
 2003-02-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/prefs/AbstractPreferences.java (isUserNode):
+	Implemented.
+
+2003-02-24  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/ClassLoader.java (defineClass(byte[],int,int)):
 	Deprecate.
 	* java/lang/Thread.java (resume): Deprecate.
