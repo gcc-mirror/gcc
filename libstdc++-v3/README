@@ -62,10 +62,11 @@ It has subdirectories:
      Test programs are here, and may be used to begin to exercise the 
      library.  Support for "make check" and "make check-install" is
      complete, and runs through all the subdirectories here when this
-     command is issued from the build directory. Please note that
-     "make check" calls the script mkcheck, which requires bash, and which
-     may need the paths to bash adjusted to work properly, as /bin/bash is
-     assumed.
+     command is issued from the build directory.  Please note that
+     "make check" requires DejaGNU 1.4 or later to be installed.  Please
+     note that "make check-script" calls the script mkcheck, which
+     requires bash, and which may need the paths to bash adjusted to
+     work properly, as /bin/bash is assumed.
 
 Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.

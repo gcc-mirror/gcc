@@ -33,7 +33,11 @@ dnl This is here just to satisfy automake.
 ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
 
 # Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.
+# AC 2.50 sets target_alias iff the user specified --target, but we use it
+# everywhere, so we set it here just to be sure.
 AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$target}
+AC_SUBST(target_alias)
 
 # We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
