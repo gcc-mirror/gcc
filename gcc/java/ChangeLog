@@ -1,3 +1,8 @@
+2000-02-03  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (java.mostlyclean): Remove executables in
+	`mostlyclean'.
+
 2000-01-31  Scott Bambrough  <scottb@netwinder.org>
 
 	* gcc/java/gjavah.c (D_NAN_MASK): Alternate definition required when
