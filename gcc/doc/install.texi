@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.13 2001/06/02 22:34:56 jsm28 Exp $
+@comment $Id: install.texi,v 1.1.2.14 2001/06/03 06:37:03 dje Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -247,6 +247,15 @@ where @var{srcdir} == @var{objdir} should still work, but doesn't
 get extensive testing; building where @var{objdir} is a subdirectory
 of @var{srcdir} is unsupported.
 
+If you have built GNU CC previously in the same directory for a
+different target machine, do @samp{make distclean} to delete all files
+that might be invalid.  One of the files this deletes is
+@file{Makefile}; if @samp{make distclean} complains that @file{Makefile}
+does not exist, it probably means that the directory is already suitably
+clean.  However, with the recommended method of building in a separate
+@var{objdir}, you should simply use a different @var{objdir} for each
+target.
+
 Second, when configuring a native system, either @command{cc} or
 @command{gcc} must be in your path or you must set @env{CC} in
 your environment before running configure.  Otherwise the configuration
@@ -407,10 +416,34 @@ On some systems, this is the default.
 Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
 compiler and runtime library, and exception handling for other languages
-like C++ and Java.  The possibilities for @var{lib} are @samp{aix},
-@samp{dce}, @samp{decosf1}, @samp{irix}, @samp{mach}, @samp{os2},
-@samp{posix}, @samp{pthreads}, @samp{single}, @samp{solaris},
-@samp{vxworks} and @samp{win32}.
+like C++ and Java.  The possibilities for @var{lib} are:
+
+@table @code
+@item aix
+AIX thread support.
+@item dce
+DCE thread support.
+@item decosf1
+DEC OSF/1 thread support.
+@item irix
+SGI IRIX thread support.
+@item mach
+Generic MACH thread support, known to work on NEXTSTEP.
+@item os2
+IBM OS/2 thread support.
+@item posix
+Generix POSIX thread support.
+@item pthreads
+Same as @samp{posix}.
+@item single
+Disable thread support, should work for all platforms.
+@item solaris
+SUN Solaris thread support.
+@item vxworks
+VxWorks thread support.
+@item win32
+Microsoft Win32 API thread support.
+@end table
 
 @item --with-cpu=@var{cpu}
 Specify which cpu variant the
@@ -493,6 +526,61 @@ you may use @option{--enable-libgcj} to override the default.
 @item --with-dwarf2
 Specify that the compiler should
 use DWARF2 debugging information as the default.
+
+@item --enable-win32-registry
+@itemx --enable-win32-registry=@var{KEY}
+@itemx --disable-win32-registry
+The @samp{--enable-win32-registry} option enables Windows-hosted GCC
+to look up installations paths in the registry using the following key:
+
+@smallexample
+@code{HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\<KEY>}
+@end smallexample
+
+<KEY> defaults to GCC version number, and can be overridden by the
+@code{--enable-win32-registry=KEY} option. Vendors and distributors
+who use custom installers are encouraged to provide a different key,
+perhaps one comprised of vendor name and GCC version number, to
+avoid conflict with existing installations. This feature is enabled
+by default, and can be disabled by @code{--disable-win32-registry}
+option.  This option has no effect on the other hosts.
+
+@item --nfp
+Specify that the machine does not have a floating point unit.  This
+option only applies to @samp{m68k-sun-sunos@var{n}} and
+@samp{m68k-isi-bsd}.  On any other system, @samp{--nfp} has no effect.
+
+@item --enable-checking
+@itemx --enable-checking=@var{list}
+When you specify this option, the compiler is built to perform checking
+of tree node types when referencing fields of that node, and some other
+internal consistency checks.  This does not change the generated code,
+but adds error checking within the compiler.  This will slow down the
+compiler and may only work properly if you are building the compiler
+with GNU C.  This is on by default when building from CVS or snapshots,
+but off for releases.  More control over the checks may be had by
+specifying @var{list}; the categories of checks available are
+@samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl} and @samp{gcac}.  The
+default when @var{list} is not specified is @samp{misc,tree,gc}; the
+checks @samp{rtl} and @samp{gcac} are very expensive.
+
+@item --enable-nls
+@itemx --disable-nls
+The @samp{--enable-nls} option enables Native Language Support (NLS),
+which lets GCC output diagnostics in languages other than American
+English. Native Language Support is enabled by default if not doing a
+canadian cross build. The @samp{--disable-nls} option disables NLS.
+
+@item --with-included-gettext
+If NLS is enbled, the @samp{--with-included-gettext} option causes the build
+procedure to prefer its copy of GNU @code{gettext}.
+
+@item --with-catgets
+If NLS is enabled, and if the host lacks @code{gettext} but has the
+inferior @code{catgets} interface, the GCC build procedure normally
+ignores @code{catgets} and instead uses GCC's copy of the GNU
+@code{gettext} library.  The @samp{--with-catgets} option causes the
+build procedure to use the host's @code{catgets} in this situation.
 @end table
 
 Some options which only apply to building cross compilers:
@@ -580,6 +668,17 @@ that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC.
 
+When building from CVS or snapshots, or if you modify parser sources,
+you need the Bison parser generator installed.  Any version 1.25 or
+later should work; older versions may also work.  If you do not modify
+parser sources, releases contain the Bison-generated files and you do
+not need Bison installed to build them.
+
+When building from CVS or snapshots, or if you modify Texinfo
+documentation, you need version 4.0 or later of Texinfo installed if you
+want Info documentation to be regenerated.  Releases contain Info
+documentation pre-built for the unmodified documentation in the release.
+
 @section Building a native compiler
 
 For a native build issue the command @samp{make bootstrap}.  This 
@@ -621,6 +720,17 @@ without debugging information with @samp{make CFLAGS='-O' LIBCFLAGS='-g
 roughly 40% of disk space both for the bootstrap and the final installation.
 (Libraries will still contain debugging information.)
 
+If you wish to use non-default flags when compiling the stage2 and
+stage3 compile, set @code{BOOT_CFLAGS} on the command line when doing
+@samp{make bootstrap}.  Non-default optimization flags are less well
+tested here than the default of @samp{-g -O2}, but should still work.
+In a few cases, you may find that you need to specify special flags such
+as @option{-msoft-float} here to complete the bootstrap; or, if the
+native compiler miscompiles the stage1 compiler, you may need to work
+around this, by choosing @code{BOOT_CFLAGS} to avoid the parts of the
+stage1 compiler that were miscompiled, or by using @samp{make
+bootstrap4} to increase the number of stages of bootstrap.
+
 If you used the flag @option{--enable-languages=...} to restrict
 the compilers to be built, only those you've actually enabled will be
 built. This will of course only build those runtime libraries, for
@@ -628,6 +738,12 @@ which the particular compiler has been built.  Please note,
 that re-defining LANGUAGES when calling @samp{make bootstrap}
 @strong{does not} work anymore!
 
+If the comparison of stage2 and stage3 fails, this normally indicates
+that the stage 2 compiler has compiled GCC incorrectly, and is therefore
+a potentially serious bug which you should investigate and report.  (On
+a few systems, meaningful comparison of object files is impossible; they
+always appear ``different''.  If you encounter this problem, you will
+need to disable comparison in the @file{Makefile}.)
 
 @section Building a cross compiler
 
@@ -1476,6 +1592,11 @@ compilers, you may need to add @samp{-Wf,-XNg1500 -Olimit 3000}.
 @heading @anchor{dos}DOS
 
 Please have a look at our @uref{binaries.html,,binaries page}.
+
+You cannot install GNU C by itself on MSDOS; it will not compile under
+any MSDOS compiler except itself.  You need to get the complete
+compilation package DJGPP, which includes binaries as well as sources,
+and includes all the necessary compilation tools and libraries.
 
 @html
 </p>
@@ -2895,6 +3016,9 @@ On System V, if you get an error like this,
 @noindent
 that too indicates a problem with disk space, ULIMIT, or @code{MAXUMEM}.
 
+On a System V release 4 system, make sure @file{/usr/bin} precedes
+@file{/usr/ucb} in @code{PATH}.  The @code{cc} command in
+@file{/usr/ucb} uses libraries which have bugs.
 
 @html
 </p>

@@ -2,23 +2,17 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@c The text of this file appears in the file INSTALL
-@c in the GCC distribution, as well as in the GCC manual.
-
-Note most of this information is out of date and superseded by the
-online GCC install procedures @uref{http://gcc.gnu.org/install/}.  It is
-provided for historical reference only.
-
-@ifclear INSTALLONLY
 @node Installation
 @chapter Installing GNU CC
-@end ifclear
 @cindex installing GNU CC
+
+Note most of this information is out of date and superseded by the
+new GCC install manual @file{gcc/doc/install.texi}.  It is
+provided for historical reference only.
 
 @menu
 * Configuration Files::  Files created by running @code{configure}.
 * Configurations::    Configurations Supported by GNU CC.
-* Other Dir::     Compiling in a separate directory (not where the source is).
 * Cross-Compiler::   Building and installing a cross-compiler.
 * VMS Install::   See below for installation on VMS.
 * Collect2::	  How @code{collect2} works; how it finds @code{ld}.
@@ -26,40 +20,9 @@ provided for historical reference only.
 @end menu
 
 Here is the procedure for installing GNU CC on a GNU or Unix system.
-See @ref{VMS Install}, for VMS systems.  In this section we assume you
-compile in the same directory that contains the source files; see
-@ref{Other Dir}, to find out how to compile in a separate directory on
-Unix systems.
-
-You cannot install GNU C by itself on MSDOS; it will not compile under
-any MSDOS compiler except itself.  You need to get the complete
-compilation package DJGPP, which includes binaries as well as sources,
-and includes all the necessary compilation tools and libraries.
+See @ref{VMS Install}, for VMS systems.
 
 @enumerate
-@item
-If you have built GNU CC previously in the same directory for a
-different target machine, do @samp{make distclean} to delete all files
-that might be invalid.  One of the files this deletes is
-@file{Makefile}; if @samp{make distclean} complains that @file{Makefile}
-does not exist, it probably means that the directory is already suitably
-clean.
-
-@item
-On a System V release 4 system, make sure @file{/usr/bin} precedes
-@file{/usr/ucb} in @code{PATH}.  The @code{cc} command in
-@file{/usr/ucb} uses libraries which have bugs.
-
-@cindex Bison parser generator
-@cindex parser generator, Bison
-@item
-Make sure the Bison parser generator is installed.  (This is unnecessary
-if the Bison output file @file{c-parse.c} is more recent than
-@file{c-parse.y},and you do not plan to change the @samp{.y} file.)
-
-Bison versions older than Sept 8, 1988 will produce incorrect output
-for @file{c-parse.c}.
-
 @item
 If you have chosen a configuration for GNU CC which requires other GNU
 tools (such as GAS or the GNU linker) instead of the standard system
@@ -194,63 +157,6 @@ information normally used on 386 SVR4 platforms; stabs provide a
 workable alternative.  This requires gas and gdb, as the normal SVR4
 tools can not generate or interpret stabs.
 
-@item --nfp
-On certain systems, you must specify whether the machine has a floating
-point unit.  These systems include @samp{m68k-sun-sunos@var{n}} and
-@samp{m68k-isi-bsd}.  On any other system, @samp{--nfp} currently has no
-effect, though perhaps there are other systems where it could usefully
-make a difference.
-
-@cindex Internal Compiler Checking
-@item --enable-checking
-When you specify this option, the compiler is built to perform checking
-of tree node types when referencing fields of that node.  This does not
-change the generated code, but adds error checking within the compiler.
-This will slow down the compiler and may only work properly if you
-are building the compiler with GNU C.
-
-@cindex Native Language Support
-@cindex NLS
-@item --enable-nls
-@itemx --disable-nls
-The @samp{--enable-nls} option enables Native Language Support (NLS),
-which lets GCC output diagnostics in languages other than American
-English. Native Language Support is enabled by default if not doing a
-canadian cross build. The @samp{--disable-nls} option disables NLS.
-
-@cindex @code{gettext}
-@item --with-included-gettext
-If NLS is enbled, the @samp{--with-included-gettext} option causes the build
-procedure to prefer its copy of GNU @code{gettext}. This is the default. If
-you want the GCC build procedure to prefer the host's @code{gettext}
-libraries, use @samp{--without-included-gettext}.
-
-@cindex @code{catgets}
-@item --with-catgets
-If NLS is enabled, and if the host lacks @code{gettext} but has the
-inferior @code{catgets} interface, the GCC build procedure normally
-ignores @code{catgets} and instead uses GCC's copy of the GNU
-@code{gettext} library.  The @samp{--with-catgets} option causes the
-build procedure to use the host's @code{catgets} in this situation.
-
-@cindex Windows32 Registry support
-@item --enable-win32-registry
-@itemx --enable-win32-registry=@var{KEY}
-@itemx --disable-win32-registry
-The @samp{--enable-win32-registry} option enables Windows-hosted GCC
-to look up installations paths in the registry using the following key:
-
-@smallexample
-@code{HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\<KEY>}
-@end smallexample
-
-<KEY> defaults to GCC version number, and can be overridden by the
-@code{--enable-win32-registry=KEY} option. Vendors and distributors
-who use custom installers are encouraged to provide a different key,
-perhaps one comprised of vendor name and GCC version number, to
-avoid conflict with existing installations. This feature is enabled
-by default, and can be disabled by @code{--disable-win32-registry}
-option.  This option has no effect on the other hosts.
 @end table
 
 @item
@@ -271,242 +177,6 @@ words from the list @samp{c}, @samp{c++}, @samp{objective-c},
 GNU compilers as subdirectories of the GNU CC source directory, you may
 also specify their names in this list.
 
-Ignore any warnings you may see about ``statement not reached'' in
-@file{insn-emit.c}; they are normal.  Also, warnings about ``unknown
-escape sequence'' are normal in @file{genopinit.c} and perhaps some
-other files.  Likewise, you should ignore warnings about ``constant is
-so large that it is unsigned'' in @file{insn-emit.c} and
-@file{insn-recog.c}, and a warning about a comparison always being zero
-in @file{enquire.o}.  Any other compilation errors may represent bugs in
-the port to your machine or operating system, and
-@ifclear INSTALLONLY
-should be investigated and reported (@pxref{Bugs}).
-@end ifclear
-@ifset INSTALLONLY
-should be investigated and reported.
-@end ifset
-
-Some compilers fail to compile GNU CC because they have bugs or
-limitations.  For example, the Microsoft compiler is said to run out of
-macro space.  Some Ultrix compilers run out of expression space; then
-you need to break up the statement where the problem happens.
-
-@item
-If you are building a cross-compiler, stop here.  @xref{Cross-Compiler}.
-
-@cindex stage1
-@item
-Move the first-stage object files and executables into a subdirectory
-with this command:
-
-@smallexample
-make stage1
-@end smallexample
-
-The files are moved into a subdirectory named @file{stage1}.
-Once installation is complete, you may wish to delete these files
-with @code{rm -r stage1}.
-
-@item
-If you have chosen a configuration for GNU CC which requires other GNU
-tools (such as GAS or the GNU linker) instead of the standard system
-tools, install the required tools in the @file{stage1} subdirectory
-under the names @file{as}, @file{ld} or whatever is appropriate.  This
-will enable the stage 1 compiler to find the proper tools in the
-following stage.
-
-Alternatively, you can do subsequent compilation using a value of the
-@code{PATH} environment variable such that the necessary GNU tools come
-before the standard system tools.
-
-@item
-Recompile the compiler with itself, with this command:
-
-@smallexample
-make CC="stage1/xgcc -Bstage1/" CFLAGS="-g -O2"
-@end smallexample
-
-This is called making the stage 2 compiler.
-
-The command shown above builds compilers for all the supported
-languages.  If you don't want them all, you can specify the languages to
-build by typing the argument @samp{LANGUAGES="@var{list}"}.  @var{list}
-should contain one or more words from the list @samp{c}, @samp{c++},
-@samp{objective-c}, and @samp{proto}.  Separate the words with spaces.
-@samp{proto} stands for the programs @code{protoize} and
-@code{unprotoize}; they are not a separate language, but you use
-@code{LANGUAGES} to enable or disable their installation.
-
-If you are going to build the stage 3 compiler, then you might want to
-build only the C language in stage 2.
-
-Once you have built the stage 2 compiler, if you are short of disk
-space, you can delete the subdirectory @file{stage1}.
-
-On a 68000 or 68020 system lacking floating point hardware,
-unless you have selected a @file{tm.h} file that expects by default
-that there is no such hardware, do this instead:
-
-@smallexample
-make CC="stage1/xgcc -Bstage1/" CFLAGS="-g -O2 -msoft-float"
-@end smallexample
-
-@item
-If you wish to test the compiler by compiling it with itself one more
-time, install any other necessary GNU tools (such as GAS or the GNU
-linker) in the @file{stage2} subdirectory as you did in the
-@file{stage1} subdirectory, then do this:
-
-@smallexample
-make stage2
-make CC="stage2/xgcc -Bstage2/" CFLAGS="-g -O2"
-@end smallexample
-
-@noindent
-This is called making the stage 3 compiler.  Aside from the @samp{-B}
-option, the compiler options should be the same as when you made the
-stage 2 compiler.  But the @code{LANGUAGES} option need not be the
-same.  The command shown above builds compilers for all the supported
-languages; if you don't want them all, you can specify the languages to
-build by typing the argument @samp{LANGUAGES="@var{list}"}, as described
-above.
-
-If you do not have to install any additional GNU tools, you may use the
-command
-
-@smallexample
-make bootstrap LANGUAGES=@var{language-list} BOOT_CFLAGS=@var{option-list}
-@end smallexample
-
-@noindent
-instead of making @file{stage1}, @file{stage2}, and performing
-the two compiler builds.
-
-@item
-Compare the latest object files with the stage 2 object files---they
-ought to be identical, aside from time stamps (if any).
-
-On some systems, meaningful comparison of object files is impossible;
-they always appear ``different.''  This is currently true on Solaris and
-some systems that use ELF object file format.  On some versions of Irix
-on SGI machines and DEC Unix (OSF/1) on Alpha systems, you will not be
-able to compare the files without specifying @file{-save-temps}; see the
-description of individual systems above to see if you get comparison
-failures.  You may have similar problems on other systems.
-
-Use this command to compare the files:
-
-@smallexample
-make compare
-@end smallexample
-
-This will mention any object files that differ between stage 2 and stage
-3.  Any difference, no matter how innocuous, indicates that the stage 2
-compiler has compiled GNU CC incorrectly, and is therefore a potentially
-@ifclear INSTALLONLY
-serious bug which you should investigate and report (@pxref{Bugs}).
-@end ifclear
-@ifset INSTALLONLY
-serious bug which you should investigate and report.
-@end ifset
-
-If your system does not put time stamps in the object files, then this
-is a faster way to compare them (using the Bourne shell):
-
-@smallexample
-for file in *.o; do
-cmp $file stage2/$file
-done
-@end smallexample
-
-If you have built the compiler with the @samp{-mno-mips-tfile} option on
-MIPS machines, you will not be able to compare the files.
-
-@item
-Install the compiler driver, the compiler's passes and run-time support
-with @samp{make install}.  Use the same value for @code{CC},
-@code{CFLAGS} and @code{LANGUAGES} that you used when compiling the
-files that are being installed.  One reason this is necessary is that
-some versions of Make have bugs and recompile files gratuitously when
-you do this step.  If you use the same variable values, those files will
-be recompiled properly.
-
-For example, if you have built the stage 2 compiler, you can use the
-following command:
-
-@smallexample
-make install CC="stage2/xgcc -Bstage2/" CFLAGS="-g -O" LANGUAGES="@var{list}"
-@end smallexample
-
-@noindent
-This copies the files @file{cc1}, @file{cpp} and @file{libgcc.a} to
-files @file{cc1}, @file{cpp} and @file{libgcc.a} in the directory
-@file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}, which is where
-the compiler driver program looks for them.  Here @var{target} is the
-canonicalized form of target machine type specified when you ran
-@file{configure}, and @var{version} is the version number of GNU CC.
-This naming scheme permits various versions and/or cross-compilers to
-coexist.  It also copies the executables for compilers for other
-languages (e.g., @file{cc1plus} for C++) to the same directory.
-
-This also copies the driver program @file{xgcc} into
-@file{/usr/local/bin/gcc}, so that it appears in typical execution
-search paths.  It also copies @file{gcc.1} into
-@file{/usr/local/man/man1} and info pages into @file{/usr/local/info}.
-
-On some systems, this command causes recompilation of some files.  This
-is usually due to bugs in @code{make}.  You should either ignore this
-problem, or use GNU Make.
-
-(It is usually better to install GNU CC executables from stage 2 or 3,
-since they usually run faster than the ones compiled with some other
-compiler.)
-
-@item
-GNU CC includes a runtime library for Objective-C because it is an
-integral part of the language.  You can find the files associated with
-the library in the subdirectory @file{objc}.  The GNU Objective-C
-Runtime Library requires header files for the target's C library in
-order to be compiled,and also requires the header files for the target's
-thread library if you want thread support.  @xref{Cross Headers,
-Cross-Compilers and Header Files, Cross-Compilers and Header Files}, for
-discussion about header files issues for cross-compilation.
-
-When you run @file{configure}, it picks the appropriate Objective-C
-thread implementation file for the target platform.  In some situations,
-you may wish to choose a different back-end as some platforms support
-multiple thread implementations or you may wish to disable thread
-support completely.  You do this by specifying a value for the
-@var{OBJC_THREAD_FILE} makefile variable on the command line when you
-run make, for example:
-
-@smallexample
-make CC="stage2/xgcc -Bstage2/" CFLAGS="-g -O2" OBJC_THREAD_FILE=thr-single
-@end smallexample
-
-@noindent
-Below is a list of the currently available back-ends.
-
-@itemize @bullet
-@item thr-single
-Disable thread support, should work for all platforms.
-@item thr-decosf1
-DEC OSF/1 thread support.
-@item thr-irix
-SGI IRIX thread support.
-@item thr-mach
-Generic MACH thread support, known to work on NEXTSTEP.
-@item thr-os2
-IBM OS/2 thread support.
-@item thr-posix
-Generix POSIX thread support.
-@item thr-pthreads
-PCThreads on Linux-based GNU systems.
-@item thr-solaris
-SUN Solaris thread support.
-@item thr-win32
-Microsoft Win32 API thread support.
-@end itemize
 @end enumerate
 
 @node Configuration Files
@@ -667,67 +337,6 @@ things you must know:
 @item vax-dec-vms
 See @ref{VMS Install}, for details on how to install GNU CC on VMS.
 @end table
-
-@node Other Dir
-@section Compilation in a Separate Directory
-@cindex other directory, compilation in
-@cindex compilation in a separate directory
-@cindex separate directory, compilation in
-
-If you wish to build the object files and executables in a directory
-other than the one containing the source files, here is what you must
-do differently:
-
-@enumerate
-@item
-Make sure you have a version of Make that supports the @code{VPATH}
-feature.  (GNU Make supports it, as do Make versions on most BSD
-systems.)
-
-@item
-If you have ever run @file{configure} in the source directory, you must undo
-the configuration.  Do this by running:
-
-@example
-make distclean
-@end example
-
-@item
-Go to the directory in which you want to build the compiler before
-running @file{configure}:
-
-@example
-mkdir gcc-sun3
-cd gcc-sun3
-@end example
-
-On systems that do not support symbolic links, this directory must be
-on the same file system as the source code directory.
-
-@item
-Specify where to find @file{configure} when you run it:
-
-@example
-../gcc/configure @dots{}
-@end example
-
-This also tells @code{configure} where to find the compiler sources;
-@code{configure} takes the directory from the file name that was used to
-invoke it.  But if you want to be sure, you can specify the source
-directory with the @samp{--srcdir} option, like this:
-
-@example
-../gcc/configure --srcdir=../gcc @var{other options}
-@end example
-
-The directory you specify with @samp{--srcdir} need not be the same
-as the one that @code{configure} is found in.
-@end enumerate
-
-Now, you can run @code{make} in that directory.  You need not repeat the
-configuration steps shown above, when ordinary source files change.  You
-must, however, run @code{configure} again when the configuration files
-change, if your system does not support symbolic links.
 
 @node Cross-Compiler
 @section Building and Installing a Cross-Compiler
