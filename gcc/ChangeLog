@@ -1,3 +1,8 @@
+2001-04-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_int_movcc,
+	ix86_expand_strlensi_unroll_1): Sign-extend CONST_INTs.
+
 2001-04-20  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (ctrsi_internal1, ctrsi_internal2,

@@ -6316,7 +6316,8 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      emit_insn (gen_andsi3 (out, out, GEN_INT (cf - ct)));
+	      emit_insn (gen_andsi3 (out, out, GEN_INT (trunc_int_for_mode
+							(cf - ct, SImode))));
 	      if (ct)
 	        emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
 	    }
@@ -6473,7 +6474,8 @@ ix86_expand_int_movcc (operands)
 				 ix86_compare_op1, VOIDmode, 0, 1);
 
 	  emit_insn (gen_addsi3 (out, out, constm1_rtx));
-	  emit_insn (gen_andsi3 (out, out, GEN_INT (cf-ct)));
+	  emit_insn (gen_andsi3 (out, out, GEN_INT (trunc_int_for_mode
+						    (cf - ct, SImode))));
 	  if (ct != 0)
 	    emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
 	  if (out != operands[0])
@@ -7886,7 +7888,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
   emit_insn (gen_addsi3 (tmpreg, scratch, GEN_INT (-0x01010101)));
   emit_insn (gen_one_cmplsi2 (scratch, scratch));
   emit_insn (gen_andsi3 (tmpreg, tmpreg, scratch));
-  emit_insn (gen_andsi3 (tmpreg, tmpreg, GEN_INT (0x80808080)));
+  emit_insn (gen_andsi3 (tmpreg, tmpreg,
+			 GEN_INT (trunc_int_for_mode
+				  (0x80808080, SImode))));
   emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0,
 			   SImode, 1, 0, align_4_label);
 
