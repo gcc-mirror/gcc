@@ -94,8 +94,8 @@ class hash_set
 {
   // concept requirements
   __glibcxx_class_requires(_Value, _SGIAssignableConcept)
-  __glibcxx_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept);
-  __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept);
+  __glibcxx_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept)
+  __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept)
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
@@ -250,8 +250,8 @@ class hash_multiset
 {
   // concept requirements
   __glibcxx_class_requires(_Value, _SGIAssignableConcept)
-  __glibcxx_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept);
-  __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept);
+  __glibcxx_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept)
+  __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept)
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
