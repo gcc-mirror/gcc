@@ -544,7 +544,7 @@ CONFIG_H = $(GCONFIG_H) insn-constants.h insn-flags.h
 TCONFIG_H = tconfig.h $(xm_file_list)
 TARGET_H = target.h
 HOOKS_H = hooks.h
-LANGHOOKS_DEF_H = langhooks.h $(HOOKS_H)
+LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h $(HOOKS_H)
 TM_P_H = tm_p.h $(tm_p_file_list) tm-preds.h
 
@@ -1231,7 +1231,7 @@ s-under: $(GCC_PASSES)
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
-	diagnostic.h tree-inline.h except.h gt-c-common.h real.h
+	diagnostic.h tree-inline.h except.h gt-c-common.h real.h langhooks.h
 
 # A file used by all variants of C and some other languages.
 
