@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3358,59 +3358,69 @@ fold (expr)
       if (TREE_TYPE (TREE_OPERAND (t, 0)) == TREE_TYPE (t))
 	return TREE_OPERAND (t, 0);
 
-      /* In addition to the cases of two conversions in a row 
-	 handled below, if we are converting something to its own
-	 type via an object of identical or wider precision, neither
-	 conversion is needed.  */
-      if ((TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
-	   || TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR)
-	  && TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == TREE_TYPE (t)
-	  && ((INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
-	       && INTEGRAL_TYPE_P (TREE_TYPE (t)))
-	      || (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0)))
-		  && FLOAT_TYPE_P (TREE_TYPE (t))))
-	  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-	      >= TYPE_PRECISION (TREE_TYPE (t))))
-	return TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+      /* Handle cases of two conversions in a row.  */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
+	  || TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR)
+	{
+	  tree inside_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	  tree inter_type = TREE_TYPE (TREE_OPERAND (t, 0));
+	  tree final_type = TREE_TYPE (t);
+	  int inside_int = INTEGRAL_TYPE_P (inside_type);
+	  int inside_ptr = TREE_CODE (inside_type) == POINTER_TYPE;
+	  int inside_float = FLOAT_TYPE_P (inside_type);
+	  int inside_prec = TYPE_PRECISION (inside_type);
+	  int inside_unsignedp = TREE_UNSIGNED (inside_type);
+	  int inter_int = INTEGRAL_TYPE_P (inter_type);
+	  int inter_ptr = TREE_CODE (inter_type) == POINTER_TYPE;
+	  int inter_float = FLOAT_TYPE_P (inter_type);
+	  int inter_prec = TYPE_PRECISION (inter_type);
+	  int inter_unsignedp = TREE_UNSIGNED (inter_type);
+	  int final_int = INTEGRAL_TYPE_P (final_type);
+	  int final_ptr = TREE_CODE (final_type) == POINTER_TYPE;
+	  int final_float = FLOAT_TYPE_P (final_type);
+	  int final_prec = TYPE_PRECISION (final_type);
+	  int final_unsignedp = TREE_UNSIGNED (final_type);
 
-      /* Two conversions in a row are not needed unless:
-	 - the intermediate type is narrower than both initial and final, or
-	 - the intermediate type and innermost type differ in signedness,
-	   and the outermost type is wider than the intermediate, or
-	 - the initial type is a pointer type and the precisions of the
-	   intermediate and final types differ, or
-	 - the final type is a pointer type and the precisions of the 
-	  initial and intermediate types differ.  */
-      if ((TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
-	   || TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR)
-	  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-	      > TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-	      ||
-	      TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-	      > TYPE_PRECISION (TREE_TYPE (t)))
-	  && ! ((TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-		 == INTEGER_TYPE)
-		&& (TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
-		    == INTEGER_TYPE)
-		&& (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (t, 0)))
-		    != TREE_UNSIGNED (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-		&& (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-		    < TYPE_PRECISION (TREE_TYPE (t))))
-	  && ((TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (t, 0)))
-	       && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-		   > TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))))
-	      ==
-	      (TREE_UNSIGNED (TREE_TYPE (t))
-	       && (TYPE_PRECISION (TREE_TYPE (t))
-		   > TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0))))))
-	  && ! ((TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-		 == POINTER_TYPE)
-		&& (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-		    != TYPE_PRECISION (TREE_TYPE (t))))
-	  && ! (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
-		&& (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-		    != TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0))))))
-	return convert (TREE_TYPE (t), TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	  /* In addition to the cases of two conversions in a row 
+	     handled below, if we are converting something to its own
+	     type via an object of identical or wider precision, neither
+	     conversion is needed.  */
+	  if (inside_type == final_type
+	      && ((inter_int && final_int) || (inter_float && final_float))
+	      && inter_prec >= final_prec)
+	    return TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
+	  /* Likewise, if the intermediate and final types are either both
+	     float or both integer, we don't need the middle conversion if
+	     it is wider than the final type and doesn't change the signedness
+	     (for integers).  */
+	  if ((((inter_int || inter_ptr) && (inside_int || inside_ptr))
+	       || (inter_float && inside_float))
+	      && inter_prec >= inside_prec
+	      && (inter_float || inter_unsignedp == inside_unsignedp))
+	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+
+	  /* Two conversions in a row are not needed unless:
+	     - some conversion is floating-point (overstrict for now), or
+	     - the intermediate type is narrower than both initial and
+	       final, or
+	     - the intermediate type and innermost type differ in signedness,
+	       and the outermost type is wider than the intermediate, or
+	     - the initial type is a pointer type and the precisions of the
+	       intermediate and final types differ, or
+	     - the final type is a pointer type and the precisions of the 
+	       initial and intermediate types differ.  */
+	  if (! inside_float && ! inter_float && ! final_float
+	      && (inter_prec > inside_prec || inter_prec > final_prec)
+	      && ! (inside_int && inter_int
+		    && inter_unsignedp != inside_unsignedp
+		    && inter_prec < final_prec)
+	      && ((inter_unsignedp && inter_prec > inside_prec)
+		  == (final_unsignedp && final_prec > inter_prec))
+	      && ! (inside_ptr && inter_prec != final_prec)
+	      && ! (final_ptr && inside_prec != inter_prec))
+	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	}
 
       if (TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR
 	  && TREE_CONSTANT (TREE_OPERAND (TREE_OPERAND (t, 0), 1))
