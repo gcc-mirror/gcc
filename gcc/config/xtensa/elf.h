@@ -51,8 +51,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		  %{mlongcalls:--longcalls} \
 		  %{mno-longcalls:--no-longcalls}"
 
-#undef ASM_FINAL_SPEC
-
 #undef LIB_SPEC
 #define LIB_SPEC "-lc -lsim -lc -lhandlers-sim -lhal"
 

@@ -176,8 +176,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "%{v} %(asm_cpu) %(relax)"
 
-#undef  ASM_FINAL_SPEC
-
 #define LINK_SPEC "%{v} %(link_cpu) %(relax)"
 
 #undef  STARTFILE_SPEC

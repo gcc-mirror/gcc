@@ -48,8 +48,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		  %{mlongcalls:--longcalls} \
 		  %{mno-longcalls:--no-longcalls}"
 
-#undef ASM_FINAL_SPEC
-
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{shared:-shared} \

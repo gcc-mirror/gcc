@@ -23,8 +23,7 @@
 #ifndef GCC_V850_H
 #define GCC_V850_H
 
-/* These are defiend in svr4.h but we want to override them.  */
-#undef ASM_FINAL_SPEC
+/* These are defined in svr4.h but we want to override them.  */
 #undef LIB_SPEC
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
