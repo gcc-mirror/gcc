@@ -20,7 +20,10 @@
 
 /* The handler_label field MUST be the first field in this structure. The 
    __throw()  library routine expects uses __eh_stub() from except.c, which
-   simply dereferences the context pointer to get the handler */
+   simply dereferences the context pointer to get the handler.
+   The routine get_dynamic_handler_chain() also has a dependancy on
+   the location of 'dynamic_handler_chain'. If its location is changed, 
+   that routine must be modified as well. */
 
 struct eh_context
 {
