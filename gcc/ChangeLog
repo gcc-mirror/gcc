@@ -1,3 +1,10 @@
+2003-12-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* varasm.c (incorporeal_function_p): New.
+	(assemble_external): Use it as a filter.
+	* config/mips/mips.c (mips_output_external): Don't check for builtin
+	functions here.
+
 2003-12-06  Richard Earnshaw  <reanrsha@arm.com>
 
 	* arm.md (IOR (COMPARISON) (AND)): New define_splits.

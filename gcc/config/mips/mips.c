@@ -5574,9 +5574,7 @@ mips_output_external (FILE *file ATTRIBUTE_UNUSED, tree decl, const char *name)
       extern_head = p;
     }
 
-  if (TARGET_IRIX && mips_abi == ABI_32
-      && TREE_CODE (decl) == FUNCTION_DECL
-      && !DECL_BUILT_IN (decl))
+  if (TARGET_IRIX && mips_abi == ABI_32 && TREE_CODE (decl) == FUNCTION_DECL)
     {
       p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
       p->next = extern_head;
