@@ -42,7 +42,7 @@ extern int code_for_indirect_jump_scratch;
 
 #define SDB_DELIM ";"
 
-#define CPP_SPEC "%{ml:-D__LITTLE_ENDIAN__} \
+#define CPP_SPEC " \
 %{m1:-D__sh1__} \
 %{m2:-D__sh2__} \
 %{m3:-D__sh3__} \
@@ -51,9 +51,34 @@ extern int code_for_indirect_jump_scratch;
 %{m4-single:-D__SH4_SINGLE__} \
 %{m4-nofpu:-D__sh3__ -D__SH4_NOFPU__} \
 %{m4:-D__SH4__} \
-%{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:%{!m4-nofpu:-D__sh1__}}}}}}}} \
+%{!m1:%{!m2:%{!m3*:%{!m4*:%(cpp_default_cpu_spec)}}}} \
 %{mnomacsave:-D__NOMACSAVE__} \
-%{mhitachi:-D__HITACHI__}"
+%{mhitachi:-D__HITACHI__} \
+%(subtarget_cpp_spec) \
+%(subtarget_cpp_ptr_spec) \
+%(subtarget_cpp_endian_spec) "
+
+#ifndef SUBTARGET_CPP_ENDIAN_SPEC
+#define SUBTARGET_CPP_ENDIAN_SPEC "%{ml:-D__LITTLE_ENDIAN__}"
+#endif
+
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
+
+#ifndef CPP_DEFAULT_CPU_SPEC
+#define CPP_DEFAULT_CPU_SPEC "-D__sh1__"
+#endif
+
+#ifndef SUBTARGET_CPP_PTR_SPEC
+#define SUBTARGET_CPP_PTR_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int"
+#endif
+
+#define EXTRA_SPECS						\
+  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },			\
+  { "subtarget_cpp_endian_spec", SUBTARGET_CPP_ENDIAN_SPEC },	\
+  { "subtarget_cpp_ptr_spec", SUBTARGET_CPP_PTR_SPEC },		\
+  { "cpp_default_cpu_spec", CPP_DEFAULT_CPU_SPEC },
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu=sh -Amachine=sh"
 
