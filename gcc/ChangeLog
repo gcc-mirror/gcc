@@ -1,3 +1,10 @@
+2005-03-21  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* tree-ssa-loop.c (gate_tree_complete_unroll): Run complete
+	unrolling if -fpeel-loops is specified, too.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	Remove superfluous check for flag_unroll_loops.
+
 2005-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR other/20564

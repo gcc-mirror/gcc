@@ -340,7 +340,7 @@ tree_complete_unroll (void)
 static bool
 gate_tree_complete_unroll (void)
 {
-  return flag_unroll_loops != 0;
+  return flag_peel_loops || flag_unroll_loops;
 }
 
 struct tree_opt_pass pass_complete_unroll =

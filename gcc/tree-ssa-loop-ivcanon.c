@@ -168,9 +168,6 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
     
   if (n_unroll)
     {
-      if (!flag_unroll_loops)
-	return false;
-
       old_cond = COND_EXPR_COND (cond);
       COND_EXPR_COND (cond) = dont_exit;
       modify_stmt (cond);
