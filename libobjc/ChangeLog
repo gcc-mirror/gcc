@@ -1,3 +1,8 @@
+2004-06-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* linking.m (_objcInit): New empty function
+	for Darwin only.
+
 2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* configure.ac: Support --enable-shared=libobjc.
