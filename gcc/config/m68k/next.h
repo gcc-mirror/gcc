@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* See m68k.h.  0407 means 68040 (or 68030 or 68020, with 68881/2).  */
 
-#define TARGET_DEFAULT (MASK_68040_ALSO|MASK_BITFIELD|MASK_68881|MASK_68020)
+#define TARGET_DEFAULT (MASK_68040|MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 
