@@ -3391,21 +3391,34 @@ static unsigned
 reserv_sets_hash_value (reservs)
      reserv_sets_t reservs;
 {
-  unsigned int hash_value;
-  int reservs_num;
+  set_el_t hash_value;
+  unsigned result;
+  int reservs_num, i;
   set_el_t *reserv_ptr;
 
   hash_value = 0;
   reservs_num = els_in_reservs;
   reserv_ptr = reservs;
+  i = 0;
   while (reservs_num != 0)
     {
       reservs_num--;
-      hash_value = ((hash_value >> (sizeof (unsigned) - 1) * CHAR_BIT)
-                    | (hash_value << CHAR_BIT)) + *reserv_ptr;
+      hash_value += ((*reserv_ptr >> i)
+		     | (*reserv_ptr << (sizeof (set_el_t) * CHAR_BIT - i)));
+      i++;
+      if (i == sizeof (set_el_t) * CHAR_BIT)
+	i = 0;
       reserv_ptr++;
     }
-  return hash_value;
+  if (sizeof (set_el_t) < sizeof (unsigned))
+    return hash_value;
+  result = 0;
+  for (i = sizeof (set_el_t); i > 0; i -= sizeof (unsigned))
+    {
+      result += (unsigned) hash_value;
+      hash_value >>= sizeof (unsigned) * CHAR_BIT;
+    }
+  return result;
 }
 
 /* Comparison of given reservation sets.  */
@@ -3638,12 +3651,10 @@ output_cycle_reservs (f, reservs, start_cycle, repetition_num)
     fprintf (f, NOTHING_NAME);
   if (repetition_num <= 0)
     abort ();
-  if (reserved_units_num != 0 && repetition_num != 1)
-    {
-      if (reserved_units_num > 1)
-        fprintf (f, ")");
-      fprintf (f, "*%d", repetition_num);
-    }
+  if (reserved_units_num > 1)
+    fprintf (f, ")");
+  if (repetition_num != 1)
+    fprintf (f, "*%d", repetition_num);
 }
 
 /* The function outputs string representation of units reservation in
@@ -4638,7 +4649,8 @@ transform_2 (regexp)
 /* The function makes transformations
    ...,A|B|...,C,... -> (...,A,C,...)|(...,B,C,...)|...
    ...+(A|B|...)+C+... -> (...+A+C+...)|(...+B+C+...)|...
-   ...+(A,B,...)+C+... -> (...+A+C+...),B,...  */
+   ...+(A,B,...)+C+... -> (...+A+C+...),B,...
+   ...+(A,B,...)+(C,D,...) -> (A+C),(B+D),...  */
 static regexp_t
 transform_3 (regexp)
      regexp_t regexp;
@@ -4695,9 +4707,9 @@ transform_3 (regexp)
   else if (regexp->mode == rm_allof)
     {
       regexp_t oneof, seq;
-      int oneof_index, seq_index;
+      int oneof_index, max_seq_length, allof_length;
       regexp_t result;
-      regexp_t allof;
+      regexp_t allof, allof_op;
       int i, j;
 
       for (i = 0; i < regexp->regexp.allof.regexps_num; i++)
@@ -4740,42 +4752,79 @@ transform_3 (regexp)
 	  regexp_transformed_p = 1;
 	  regexp = result;
 	}
+      max_seq_length = 0;
       for (i = 0; i < regexp->regexp.allof.regexps_num; i++)
 	if (regexp->regexp.allof.regexps [i]->mode == rm_sequence)
 	  {
-	    seq_index = i;
 	    seq = regexp->regexp.allof.regexps [i];
+	    if (max_seq_length < seq->regexp.sequence.regexps_num)
+	      max_seq_length = seq->regexp.sequence.regexps_num;
+	  }
+	else if (regexp->regexp.allof.regexps [i]->mode != rm_unit)
+	  {
+	    max_seq_length = 0;
 	    break;
 	  }
-      if (i < regexp->regexp.allof.regexps_num)
+      if (max_seq_length != 0)
 	{
-	  if (seq->regexp.sequence.regexps_num <= 1
-	      || regexp->regexp.allof.regexps_num <= 1)
+	  if (max_seq_length == 1 || regexp->regexp.allof.regexps_num <= 1)
 	    abort ();
 	  result = create_node (sizeof (struct regexp)
-				+ sizeof (regexp_t)
-				* (seq->regexp.sequence.regexps_num - 1));
+				+ sizeof (regexp_t) * (max_seq_length - 1));
 	  result->mode = rm_sequence;
 	  result->pos = regexp->pos;
-	  result->regexp.sequence.regexps_num
-	    = seq->regexp.sequence.regexps_num;
-	  allof = create_node (sizeof (struct regexp)
-			       + sizeof (regexp_t)
-			       * (regexp->regexp.allof.regexps_num - 1));
-	  allof->mode = rm_allof;
-	  allof->pos = regexp->pos;
-	  allof->regexp.allof.regexps_num = regexp->regexp.allof.regexps_num;
-	  result->regexp.sequence.regexps [0] = allof;
-	  for (j = 0; j < allof->regexp.allof.regexps_num; j++)
-	    if (j != seq_index)
-	      allof->regexp.allof.regexps [j]
-		= copy_insn_regexp (regexp->regexp.allof.regexps [j]);
-	    else
-	      allof->regexp.allof.regexps [j]
-		= copy_insn_regexp (seq->regexp.sequence.regexps [0]);
-	  for (i = 1; i < result->regexp.sequence.regexps_num; i++)
-	    result->regexp.sequence.regexps [i]
-	      = copy_insn_regexp (seq->regexp.sequence.regexps [i]);
+	  result->regexp.sequence.regexps_num = max_seq_length;
+	  for (i = 0; i < max_seq_length; i++)
+	    {
+	      allof_length = 0;
+	      for (j = 0; j < regexp->regexp.allof.regexps_num; j++)
+		if (regexp->regexp.allof.regexps [j]->mode == rm_sequence
+		    && (i < (regexp->regexp.allof.regexps [j]
+			     ->regexp.sequence.regexps_num)))
+		  {
+		    allof_op = (regexp->regexp.allof.regexps [j]
+				->regexp.sequence.regexps [i]);
+		    allof_length++;
+		  }
+		else if (i == 0
+			 && regexp->regexp.allof.regexps [j]->mode == rm_unit)
+		  {
+		    allof_op = regexp->regexp.allof.regexps [j];
+		    allof_length++;
+		  }
+	      if (allof_length == 1)
+		result->regexp.sequence.regexps [i] = allof_op;
+	      else
+		{
+		  allof = create_node (sizeof (struct regexp)
+				       + sizeof (regexp_t)
+				       * (allof_length - 1));
+		  allof->mode = rm_allof;
+		  allof->pos = regexp->pos;
+		  allof->regexp.allof.regexps_num = allof_length;
+		  result->regexp.sequence.regexps [i] = allof;
+		  allof_length = 0;
+		  for (j = 0; j < regexp->regexp.allof.regexps_num; j++)
+		    if (regexp->regexp.allof.regexps [j]->mode == rm_sequence
+			&& (i < (regexp->regexp.allof.regexps [j]
+				 ->regexp.sequence.regexps_num)))
+		      {
+			allof_op = (regexp->regexp.allof.regexps [j]
+				    ->regexp.sequence.regexps [i]);
+			allof->regexp.allof.regexps [allof_length] = allof_op;
+			
+			allof_length++;
+		      }
+		    else if (i == 0
+			     && (regexp->regexp.allof.regexps [j]->mode
+				 == rm_unit))
+		      {
+			allof_op = regexp->regexp.allof.regexps [j];
+			allof->regexp.allof.regexps [allof_length] = allof_op;
+			allof_length++;
+		      }
+		}
+	    }
 	  regexp_transformed_p = 1;
 	  regexp = result;
 	}
