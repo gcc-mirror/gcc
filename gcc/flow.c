@@ -336,7 +336,6 @@ static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 						  rtx));
 static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
 						 rtx));
-static void delete_dead_jumptables	PARAMS ((void));
 static void clear_log_links		PARAMS ((sbitmap));
 
 
@@ -844,7 +843,7 @@ delete_noop_moves (f)
    time of removing tablejump insn as they are referenced by the preceding
    insns computing the destination, so we delay deleting and garbagecollect
    them once life information is computed.  */
-static void
+void
 delete_dead_jumptables ()
 {
   rtx insn, next;
