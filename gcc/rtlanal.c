@@ -2881,6 +2881,49 @@ loc_mentioned_in_p (loc, in)
   return 0;
 }
 
+/* Given a subreg X, return the bit offset where the subreg begins
+   (counting from the least significant bit of the reg).  */
+
+unsigned int
+subreg_lsb (x)
+     rtx x;
+{
+  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
+  enum machine_mode mode = GET_MODE (x);
+  unsigned int bitpos;
+  unsigned int byte;
+  unsigned int word;
+
+  /* A paradoxical subreg begins at bit position 0.  */
+  if (GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (inner_mode))
+    return 0;
+
+  if (WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+    /* If the subreg crosses a word boundary ensure that
+       it also begins and ends on a word boundary.  */
+    if ((SUBREG_BYTE (x) % UNITS_PER_WORD
+	 + GET_MODE_SIZE (mode)) > UNITS_PER_WORD
+	&& (SUBREG_BYTE (x) % UNITS_PER_WORD
+	    || GET_MODE_SIZE (mode) % UNITS_PER_WORD))
+	abort ();
+
+  if (WORDS_BIG_ENDIAN)
+    word = (GET_MODE_SIZE (inner_mode)
+	    - (SUBREG_BYTE (x) + GET_MODE_SIZE (mode))) / UNITS_PER_WORD;
+  else
+    word = SUBREG_BYTE (x) / UNITS_PER_WORD;
+  bitpos = word * BITS_PER_WORD;
+
+  if (BYTES_BIG_ENDIAN)
+    byte = (GET_MODE_SIZE (inner_mode)
+	    - (SUBREG_BYTE (x) + GET_MODE_SIZE (mode))) % UNITS_PER_WORD;
+  else
+    byte = SUBREG_BYTE (x) % UNITS_PER_WORD;
+  bitpos += byte * BITS_PER_UNIT;
+
+  return bitpos;
+}
+
 /* This function returns the regno offset of a subreg expression.
    xregno - A regno of an inner hard subreg_reg (or what will become one).
    xmode  - The mode of xregno.
