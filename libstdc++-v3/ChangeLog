@@ -1,3 +1,68 @@
+2005-02-21  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/tr1/memory: New file.
+	* include/Makefile.am, include/Makefile.in: Add new TR1 header.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared2.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared3.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/shared.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/still_shared.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/assign.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/auto_ptr.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/auto_ptr_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/auto_ptr_rvalue_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/shared_ptr.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/shared_ptr_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/comparison/cmp.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/auto_ptr.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/auto_ptr_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/copy.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/default.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/pointer.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/weak_ptr.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/weak_ptr_expired.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/dest/dest.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/misc/io.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/misc/swap.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/modifiers/reset.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/modifiers/reset_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/modifiers/swap.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/modifiers/swap_neg.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/observers/bool_conv.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/observers/get.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/observers/unique.cc: New test.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/observers/use_count.cc: New test.
+
 2005-02-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (is_member_function_pointer):
