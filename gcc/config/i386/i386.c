@@ -1331,7 +1331,7 @@ fcmov_comparison_operator (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  enum machine_mode inmode = GET_MODE (XEXP (op, 0));
+  enum machine_mode inmode;
   enum rtx_code code = GET_CODE (op);
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;

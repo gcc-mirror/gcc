@@ -1,3 +1,8 @@
+2001-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (fcmov_comparison_operator): Only initialize
+	inmode after checking GET_CODE (op).
+
 2001-01-16  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (struct propagate_block_info): Add mem_set_list_len.
