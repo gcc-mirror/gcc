@@ -1,5 +1,10 @@
 2001-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcse.c (store_killed_in_insn): Consider pure calls
+	as potential store killers in addition to normal calls.
+
+2001-12-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* expr.c (expand_expr): When checking promoted value, use
 	DECL_MODE (exp) and not mode.
 
