@@ -2134,6 +2134,7 @@ build_new_1 (exp)
   int use_cookie, nothrow, check_new;
   int use_global_new;
   int use_java_new = 0;
+  int susp = 0;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
@@ -2163,11 +2164,13 @@ build_new_1 (exp)
   if (!complete_type_or_else (true_type, exp))
     return error_mark_node;
 
+  susp = suspend_momentary ();
   if (has_array)
     size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
 				  nelts));
   else
     size = size_in_bytes (type);
+  resume_momentary (susp);
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
@@ -2250,8 +2253,6 @@ build_new_1 (exp)
     }
   else
     {
-      int susp = 0;
-
       if (flag_exceptions)
 	/* We will use RVAL when generating an exception handler for
 	   this new-expression, so we must save it.  */
@@ -2424,7 +2425,7 @@ build_new_1 (exp)
 	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
 	  /* All cleanups must last longer than normal.  */
-	  int yes = suspend_momentary ();
+	  susp = suspend_momentary ();
 
 	  if (placement)
 	    {
@@ -2438,7 +2439,7 @@ build_new_1 (exp)
 
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 
-	  resume_momentary (yes);
+	  resume_momentary (susp);
 
 	  /* Ack!  First we allocate the memory.  Then we set our sentry
 	     variable to true, and expand a cleanup that deletes the memory
@@ -2452,11 +2453,11 @@ build_new_1 (exp)
 	      begin = get_target_expr (boolean_true_node);
 	      sentry = TREE_OPERAND (begin, 0);
 
-	      yes = suspend_momentary ();
+	      susp = suspend_momentary ();
 	      TREE_OPERAND (begin, 2)
 		= build (COND_EXPR, void_type_node, sentry,
 			 cleanup, void_zero_node);
-	      resume_momentary (yes);
+	      resume_momentary (susp);
 
 	      rval = get_target_expr (rval);
 
