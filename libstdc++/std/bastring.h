@@ -607,6 +607,4 @@ getline (istream&, basic_string <charT, traits, Allocator>&, charT delim = '\n')
 
 } // extern "C++"
 
-#include <std/bastring.cc>
-
 #endif

@@ -1,3 +1,8 @@
+1998-02-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h: Don't #include <std/bastring.cc> yet.
+	* sinst.cc: Revert.
+
 Tue Feb 10 01:03:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h (unique): We only need length bytes.
