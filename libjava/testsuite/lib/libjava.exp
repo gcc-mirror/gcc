@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation
 
 load_lib "libgloss.exp"
 
@@ -74,7 +74,7 @@ proc find_gcjh {} {
 }
 
 proc find_javac {} {
-    global SUN_JAVAC GCJ_UNDER_TEST env
+    global SUN_JAVAC GCJ_UNDER_TEST env libgcj_jar
     # If JDK doesn't run on your platform but some other
     # JDK-compatible javac does, you may set SUN_JAVAC to point to it.
     # One of the most important properties of a SUN_JAVAC is that it
@@ -87,7 +87,7 @@ proc find_javac {} {
 	if {[info exists env(SUN_JAVAC)]} {
 	    set SUN_JAVAC $env(SUN_JAVAC)
 	} else {
-	    set SUN_JAVAC "$GCJ_UNDER_TEST -C"
+	    set SUN_JAVAC "$GCJ_UNDER_TEST -C -I$libgcj_jar"
 	}
     }
     return $SUN_JAVAC
