@@ -1,3 +1,8 @@
+2004-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/g++.exp (g++_link_flags): Don't crash if LD_LIBRARY_PATH is
+	not defined.
+
 2004-02-27  Eric Christopher  <echristo@redhat.com>
 
 	* g++.dg/charset/charset.exp: Change CFLAGS to CHARSETCFLAGS.
