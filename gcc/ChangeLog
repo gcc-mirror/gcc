@@ -1,3 +1,8 @@
+2003-10-15  Olivier Hainque  <hainque@act-europe.fr>
+
+	* genmodes.c (calc_wider_mode): Allocate enough room for all the
+	entries we'll possibly assign in the sort buffer.
+	
 2003-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc (s390x-ibm-tpf*): New target.
