@@ -1,3 +1,8 @@
+2003-04-09  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* function.c (purge_addressof): Use free_INSN_LIST_node instead of
+	free_EXPR_LIST_node.
+
 2003-04-08  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold):  Use "fold" following build in more places.
