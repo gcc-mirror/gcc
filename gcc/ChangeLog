@@ -10,6 +10,12 @@ Thu Nov 27 12:20:19 1997  Jeffrey A Law  (law@cygnus.com)
 	* unroll.c (find_splittable_givs): Don't split givs with a dest_reg
 	that was created by loop.
 
+Thu Nov 27 09:34:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (preexpand_calls): Don't look past a TRY_CATCH_EXPR.
+
+	* except.c (expand_start_all_catch): One more do_pending_stack_adjust.
+
 Wed Nov 26 15:47:30 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (SMALL_DATA_REG): Register to use for small data relocs.
@@ -32,6 +38,11 @@ Wed Nov 26 15:47:30 1997  Michael Meissner  <meissner@cygnus.com>
 Wed Nov 26 11:12:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Complain about -gdwarfn.
+
+Tue Nov 25 22:43:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarfout.c (output_type): If finalizing, write out nested types 
+	of types we've already written.
 
 Tue Nov 25 20:32:24 1997  Michael Meissner  <meissner@cygnus.com>
 
@@ -72,6 +83,12 @@ Mon Nov 24 22:41:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* except.c (get_dynamic_handler_chain): Build up a FUNCTION_DECL.
 	* optabs.c (init_optabs): Lose get_dynamic_handler_chain_libfunc.
 	* expr.h: Likewise.
+
+Sat Nov 22 18:58:20 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* pa-hpux10.h (NEW_HP_ASSEMBLER): Define.
+	* pa.h (LEGITIMATE_CONSTANT_P): Reject LABEL_REFs if not using
+	gas and not using the new HP assembler.
 
 Fri Nov 21 15:20:05 1997  Jeffrey A Law  (law@cygnus.com)
 

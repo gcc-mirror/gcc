@@ -1366,6 +1366,7 @@ expand_start_all_catch ()
 	      expand_internal_throw (entry->outer_context);
 	    }
 	}
+      do_pending_stack_adjust ();
       free (entry);
     }
 }
