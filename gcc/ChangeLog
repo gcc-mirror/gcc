@@ -1,5 +1,8 @@
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gimplify.c (append_to_compound_expr): Deleted.
+	* tree-gimple.h (append_to_compound_expr): Deleted.
+
 	* fold-const.c (fold_addr_expr_with_type): Look through all
 	valid LHS modifiers to find a base to mark addressable.
 

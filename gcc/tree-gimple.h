@@ -82,8 +82,6 @@ extern tree get_call_expr_in (tree t);
 
 extern void recalculate_side_effects (tree);
 
-extern void append_to_compound_expr (tree, tree *);
-
 /* FIXME we should deduce this from the predicate.  */
 typedef enum fallback_t {
   fb_none = 0,
