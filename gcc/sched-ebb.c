@@ -94,7 +94,7 @@ init_ready_list (ready)
       next = NEXT_INSN (insn);
 
       if (INSN_DEP_COUNT (insn) == 0
-	  && (SCHED_GROUP_P (next) == 0 || ! INSN_P (next)))
+	  && (! INSN_P (next) || SCHED_GROUP_P (next) == 0))
 	ready_add (ready, insn);
       if (!(SCHED_GROUP_P (insn)))
 	target_n_insns++;
