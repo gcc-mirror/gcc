@@ -1,3 +1,8 @@
+2004-03-25  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (tree_expr_nonnegative_p): Handle BIT_XOR_EXPR like
+	BIT_IOR_EXPR; A^B is nonnegative when A and B are nonnegative.
+
 2004-03-25  Richard Henderson  <rth@redhat.com>
 
 	PR 11527
