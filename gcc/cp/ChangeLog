@@ -1,3 +1,8 @@
+Mon Jul 13 17:21:01 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lang-options.h: Format changed to work with new --help support
+	in gcc/toplev.c
+	
 1998-07-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (build_expr_from_tree): Change calls of do_identifier.
