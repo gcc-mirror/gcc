@@ -1,11 +1,11 @@
-@c Copyright (C) 1995-1997 Free Software Foundation, Inc.
+@c Copyright (C) 1995-1999 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-26
+@c 1999-03-05
 
 @ifclear NEWSONLY
 @node News
@@ -60,6 +60,12 @@ somewhat more difficult.
 
 @heading In 0.5.24 and @code{egcs} 1.1.2 (versus 0.5.23 and 1.1.1):
 @itemize @bullet
+@item
+Fix the @code{IDate} Intrinsic (VXT)
+so the returned year is in the documented, non-Y2K-compliant range
+of 0--99,
+instead of being returned as 100 in the year 2000.
+
 @item
 Fix the @samp{Date_and_Time} intrinsic (in @code{libg2c})
 to return the milliseconds value properly

@@ -1,3 +1,7 @@
+1999-03-05  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: IDATE (VXT) fixed to return year as 0..99.
+  
 1999-03-03  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi: Update with latest bug-fixes from 1.2.

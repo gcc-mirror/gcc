@@ -48,7 +48,7 @@ int G77_vxtidate_0 (integer *m, integer *d, integer *y)
   time_t tim;
   tim = time(NULL);
   lt = localtime(&tim);
-  *y = lt->tm_year;
+  *y = lt->tm_year % 100;
   *m = lt->tm_mon+1;
   *d = lt->tm_mday;
   return 0;
