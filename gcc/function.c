@@ -1207,6 +1207,17 @@ pop_temp_slots ()
 
   temp_slot_level--;
 }
+
+/* Initialize temporary slots.  */
+
+void
+init_temp_slots ()
+{
+  /* We have not allocated any temporaries yet.  */
+  temp_slots = 0;
+  temp_slot_level = 0;
+  target_temp_slot_level = 0;
+}
 
 /* Retroactively move an auto variable from a register to a stack slot.
    This is done when an address-reference to the variable is seen.  */
@@ -4826,10 +4837,8 @@ init_function_start (subr, filename, line)
   /* No RTL_EXPRs in this function yet.  */
   rtl_expr_chain = 0;
 
-  /* We have not allocated any temporaries yet.  */
-  temp_slots = 0;
-  temp_slot_level = 0;
-  target_temp_slot_level = 0;
+  /* Set up to allocate temporaries.  */
+  init_temp_slots ();
 
   /* Within function body, compute a type's size as soon it is laid out.  */
   immediate_size_expand++;
