@@ -32,9 +32,6 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-// XXX This test is not working for non-glibc locale models.
-// { dg-do run { xfail *-*-* } }
-
 typedef wchar_t char_type;
 typedef std::char_traits<char_type> traits_type;
 class gnu_ctype: public std::ctype<char_type> { };

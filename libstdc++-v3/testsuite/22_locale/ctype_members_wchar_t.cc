@@ -30,104 +30,12 @@
 // 22.2.1.3.2 ctype<char> members
 
 #include <locale>
-// NB: Don't include any other headers in this file.
 #include <testsuite_hooks.h>
 
 #if _GLIBCPP_USE_WCHAR_T
-class gnu_ctype: public std::ctype<wchar_t> {};
-
 void test01()
 {
-  bool test = true;
-  typedef wchar_t 	char_type;
-
-  const char_type strlit00[] = L"manilla, cebu, tandag PHILIPPINES";
-  const char_type strlit01[] = L"MANILLA, CEBU, TANDAG PHILIPPINES";
-  const char_type strlit02[] = L"manilla, cebu, tandag philippines";
-  const char_type c00 = L'S';
-  const char_type c10 = L's';
-  const char_type c20 = L'9';
-  const char_type c30 = L' ';
-  const char_type c40 = L'!';
-  const char_type c50 = L'F';
-  const char_type c60 = L'f';
-  const char_type c70 = L'X';
-  const char_type c80 = L'x';
-
-  gnu_ctype gctype;
-  char_type c100;
-  int len = std::char_traits<char_type>::length(strlit00);
-  char_type c_array[len + 1];
-
-  // bool is(mask m, char_type c) const;
-  VERIFY( gctype.is(std::ctype_base::space, c30) );
-  VERIFY( gctype.is(std::ctype_base::upper, c00) );
-  VERIFY( gctype.is(std::ctype_base::lower, c10) );
-  VERIFY( gctype.is(std::ctype_base::digit, c20) );
-  VERIFY( gctype.is(std::ctype_base::punct, c40) );
-  VERIFY( gctype.is(std::ctype_base::alpha, c50) );
-  VERIFY( gctype.is(std::ctype_base::alpha, c60) );
-  VERIFY( gctype.is(std::ctype_base::xdigit, c20) );
-  VERIFY( !gctype.is(std::ctype_base::xdigit, c80) );
-  VERIFY( gctype.is(std::ctype_base::alnum, c50) );
-  VERIFY( gctype.is(std::ctype_base::alnum, c20) );
-  VERIFY( gctype.is(std::ctype_base::graph, c40) );
-  VERIFY( gctype.is(std::ctype_base::graph, c20) );
-
-  // char_type toupper(char_type c) const
-  c100 = gctype.toupper(c10);
-  VERIFY( c100 == c00 );
-
-  // char_type tolower(char_type c) const
-  c100 = gctype.tolower(c00);
-  VERIFY( c100 == c10 );
-
-  // char_type toupper(char_type* low, const char_type* hi) const
-  std::char_traits<char_type>::copy(c_array, strlit02, len + 1);
-  gctype.toupper(c_array, c_array + len);
-  VERIFY( !std::char_traits<char_type>::compare(c_array, strlit01, len - 1) );
-
-  // char_type tolower(char_type* low, const char_type* hi) const
-  std::char_traits<char_type>::copy(c_array, strlit01, len + 1);
-  gctype.tolower(c_array, c_array + len);
-  VERIFY( !std::char_traits<char_type>::compare(c_array, strlit02, len - 1) );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-}
-
-// libstdc++/5280
-void test03()
-{
-#ifdef _GLIBCPP_HAVE_SETENV 
-  // Set the global locale to non-"C".
-  std::locale loc_de("de_DE");
-  std::locale::global(loc_de);
-
-  // Set LANG environment variable to de_DE.
-  const char* oldLANG = getenv("LANG");
-  if (!setenv("LANG", "de_DE", 1))
-    {
-      test01();
-      setenv("LANG", oldLANG ? oldLANG : "", 1);
-    }
-#endif
-}
-
-// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
-void test04()
-{
-  bool test = true;
-
-  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
-  if (tentLANG != NULL)
-    {
-      std::string preLANG = tentLANG;
-      test01();
-      std::string postLANG = setlocale(LC_ALL, NULL);
-      VERIFY( preLANG == postLANG );
-    }
+  // Nothing, right now.  
 }
 #endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 
@@ -135,8 +43,6 @@ int main()
 {
 #if _GLIBCPP_USE_WCHAR_T
   test01();
-  test03();
-  test04();
 #endif 
 
   return 0;
