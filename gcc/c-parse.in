@@ -257,9 +257,6 @@ do {									\
 static int stmt_count;
 static int compstmt_count;
 
-extern int c_in_iteration_stmt;
-extern int c_in_case_stmt;
-
 /* Input location of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
 static location_t if_stmt_locus;

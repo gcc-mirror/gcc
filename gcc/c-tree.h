@@ -176,6 +176,9 @@ extern void c_parse_init (void);
 extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
+extern int c_in_iteration_stmt;
+extern int c_in_case_stmt;
+
 extern int global_bindings_p (void);
 extern tree getdecls (void);
 extern void pushlevel (int);
