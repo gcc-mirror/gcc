@@ -1,3 +1,14 @@
+2004-06-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.in: Regenerate with automake 1.8.5.
+	* aclocal.m4: Same.
+	* include/Makefile.in: Same.
+	* libmath/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
 2004-06-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/slist: Trivial formatting fixes.
