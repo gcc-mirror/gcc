@@ -1,3 +1,9 @@
+Mon Nov 23 07:00:57 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips/abi64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove ABI_EABI test.
+	* mips.c (function_arg_pass_by_reference): Return 1 if would
+	otherwise pass both in registers and on stack.
+
 Fri Nov 13 06:56:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alpha/vms.h (struct avms_arg_info): Use int for num_args.
