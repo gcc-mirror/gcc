@@ -1381,7 +1381,7 @@ stmp-headers: stmp-int-hdrs gfloat.h
 	touch stmp-headers
 
 # Build fixed copies of system files.
-stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
+stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h xgcc cpp
 	rm -rf include
 	mkdir include
 	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
@@ -1389,7 +1389,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
 	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
 	    if [ -d $$dir ]; \
 	    then \
-	      $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
+	      $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir) "`pwd`/xgcc -B`pwd`/"; \
 	    else true; fi; \
 	  done; \
 	else true; \
