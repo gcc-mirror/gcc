@@ -6528,21 +6528,7 @@ store_killed_in_insn (x, insn)
     {
       /* A normal or pure call might read from pattern,
 	 but a const call will not.  */
-      if (CONST_OR_PURE_CALL_P (insn))
-	{
-	  rtx link;
-
-	  for (link = CALL_INSN_FUNCTION_USAGE (insn);
-	       link;
-	       link = XEXP (link, 1))
-	    if (GET_CODE (XEXP (link, 0)) == USE
-		&& GET_CODE (XEXP (XEXP (link, 0), 0)) == MEM
-		&& GET_CODE (XEXP (XEXP (XEXP (link, 0), 0), 0)) == SCRATCH)
-	      return 1;
-	  return 0;
-	}
-      else
-	return 1;
+      return ! CONST_OR_PURE_CALL_P (insn) || pure_call_p (insn);
     }
   
   if (GET_CODE (PATTERN (insn)) == SET)
