@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dm68k -DNeXT -Dunix -D__MACH__ -D__BIG_ENDIAN__ -D__ARCHITECTURE__=\"m68k\" -Asystem(unix)  -Asystem(mach) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dm68k -DNeXT -Dunix -D__MACH__ -D__BIG_ENDIAN__ -D__ARCHITECTURE__=\"m68k\" -Asystem(unix)  -Asystem(mach) -Acpu(m68k) -Amachine(m68k) -D_NEXT_SOURCE"
 
 /* Every structure or union's size must be a multiple of 2 bytes.
    (Why isn't this in m68k.h?)  */
