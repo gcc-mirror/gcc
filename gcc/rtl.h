@@ -1065,6 +1065,8 @@ enum label_kind
 
 /* in rtlanal.c */
 extern unsigned int subreg_lsb (rtx);
+extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
+				  unsigned int);
 extern unsigned int subreg_regno_offset	(unsigned int, enum machine_mode,
 					 unsigned int, enum machine_mode);
 extern bool subreg_offset_representable_p (unsigned int, enum machine_mode,
