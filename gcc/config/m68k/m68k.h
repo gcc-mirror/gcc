@@ -123,20 +123,23 @@ extern int target_flags;
     { "c68020", - (MASK_68060|MASK_68040)},				\
     { "68020", (MASK_68020|MASK_BITFIELD)},				\
     { "c68020", (MASK_68020|MASK_BITFIELD)},				\
-    { "68881", MASK_68881},						\
-    { "bitfield", MASK_BITFIELD},					\
     { "68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
     { "c68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
-    { "soft-float", - (MASK_68040_ONLY|MASK_68881)},			\
+    { "bitfield", MASK_BITFIELD},					\
     { "nobitfield", - MASK_BITFIELD},					\
     { "rtd", MASK_RTD},							\
     { "nortd", - MASK_RTD},						\
     { "short", MASK_SHORT},						\
     { "noshort", - MASK_SHORT},						\
+    { "fpa", -(MASK_SKY|MASK_68040_ONLY|MASK_68881)},			\
     { "fpa", MASK_FPA},							\
     { "nofpa", - MASK_FPA},						\
+    { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881)},			\
     { "sky", MASK_SKY},							\
     { "nosky", - MASK_SKY},						\
+    { "68881" - (MASK_FPA|MASK_SKY)},					\
+    { "68881", MASK_68881},						\
+    { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
     { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020)},		\
     { "68030", - (MASK_68040|MASK_68060)},				\
     { "68030", (MASK_68020|MASK_BITFIELD)},				\
@@ -158,24 +161,12 @@ extern int target_flags;
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 
-#ifdef SUPPORT_SUN_FPA
-/* Blow away 68881 flag silently on TARGET_FPA (since we can't clear
-   any bits in TARGET_SWITCHES above) */
-#define OVERRIDE_OPTIONS		\
-{					\
-  if (TARGET_FPA) target_flags &= ~ MASK_68881;	\
-  if (! TARGET_68020 && flag_pic == 2)	\
-    error("-fPIC is not currently supported on the 68000 or 68010\n");	\
-  SUBTARGET_OVERRIDE_OPTIONS;		\
-}
-#else
 #define OVERRIDE_OPTIONS		\
 {					\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
   SUBTARGET_OVERRIDE_OPTIONS;		\
 }
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_OVERRIDE_OPTIONS
