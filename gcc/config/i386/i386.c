@@ -8068,7 +8068,7 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
       use_sse = true;
     }
   else if (TARGET_SSE_MATH)
-    use_sse = SSE_REG_MODE_P (mode);
+    use_sse = SSE_FLOAT_MODE_P (mode);
 
   /* NEG and ABS performed with SSE use bitwise mask operations.
      Create the appropriate mask now.  */
