@@ -1,3 +1,11 @@
+2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
+
+	* java/awt/CardLayout.java (show): Rewrote.
+	(gotoComponent): Removed `target' argument.  Simplified code.
+	Don't pre-compute `choice' unless `what' is FIRST or LAST.
+	Changed all callers.
+	(NONE): Removed.
+	
 2003-01-14  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetSocketAddress.java
