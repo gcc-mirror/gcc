@@ -41,16 +41,6 @@ Boston, MA 02111-1307, USA. */
 #include "basic-block.h"
 #include "ggc.h"
 
-/* True when we want to do pushes before allocating stack to get better
-   scheduling.
-
-   Saving registers first is win in the most cases except for LEAVE
-   instruction.  Macro is 0 iff we will use LEAVE.  */
-
-#define SAVED_REGS_FIRST \
-  (!frame_pointer_needed || (!TARGET_USE_LEAVE && !optimize_size))
-
-
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
    constraint in REG_CLASS_FROM_LETTER will no longer work, and various
@@ -411,7 +401,6 @@ static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
 						     int *, int *, int *));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
-static void ix86_emit_restore_regs PARAMS((void));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 
 struct ix86_address
@@ -1705,16 +1694,13 @@ ix86_initial_elimination_offset (from, to)
 
      saved frame pointer if frame_pointer_needed
 						<- HARD_FRAME_POINTER
-     [saved regs if SAVED_REGS_FIRST]
+     [saved regs]
 
      [padding1]   \
 		   |				<- FRAME_POINTER
      [frame]	   > tsize
 		   |
      [padding2]   /
-
-     [saved regs if !SAVED_REGS_FIRST]
-     						<- STACK_POINTER
     */
 
   if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
@@ -1725,8 +1711,7 @@ ix86_initial_elimination_offset (from, to)
 	   && to == HARD_FRAME_POINTER_REGNUM)
     {
       ix86_compute_frame_size (get_frame_size (), &nregs, &padding1, (int *)0);
-      if (SAVED_REGS_FIRST)
-	padding1 += nregs * UNITS_PER_WORD;
+      padding1 += nregs * UNITS_PER_WORD;
       return -padding1;
     }
   else
@@ -1743,10 +1728,8 @@ ix86_initial_elimination_offset (from, to)
 	return tsize + nregs * UNITS_PER_WORD + frame_size;
       else if (from != FRAME_POINTER_REGNUM)
 	abort ();
-      else if (SAVED_REGS_FIRST)
-	return tsize - padding1;
       else
-	return tsize + nregs * UNITS_PER_WORD - padding1;
+	return tsize - padding1;
     }
 }
 
@@ -1788,13 +1771,10 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
     if (stack_alignment_needed < 4)
       stack_alignment_needed = 4;
 
-    if (stack_alignment_needed > preferred_alignment)
+    if (stack_alignment_needed > PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
       abort ();
 
-    if (SAVED_REGS_FIRST)
-      offset += nregs * UNITS_PER_WORD;
-    else
-      total_size += nregs * UNITS_PER_WORD;
+    offset += nregs * UNITS_PER_WORD;
 
     total_size += offset;
 
@@ -1807,9 +1787,8 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
       }
 
     /* Align stack boundary. */
-    if (!current_function_is_leaf)
-      padding2 = ((total_size + preferred_alignment - 1)
-		  & -preferred_alignment) - total_size;
+    padding2 = ((total_size + preferred_alignment - 1)
+		& -preferred_alignment) - total_size;
   }
 #endif
 
@@ -1868,18 +1847,16 @@ ix86_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (SAVED_REGS_FIRST)
-    ix86_emit_save_regs ();
+  ix86_emit_save_regs ();
 
   if (tsize == 0)
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
     {
       if (frame_pointer_needed)
-	insn = emit_insn (gen_prologue_allocate_stack (stack_pointer_rtx,
-						       stack_pointer_rtx,
-						       GEN_INT (-tsize),
-						       hard_frame_pointer_rtx));
+	insn = emit_insn (gen_pro_epilogue_adjust_stack
+			  (stack_pointer_rtx, stack_pointer_rtx,
+		           GEN_INT (-tsize), hard_frame_pointer_rtx));
       else
         insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				      GEN_INT (-tsize)));
@@ -1903,9 +1880,6 @@ ix86_expand_prologue ()
 			     CALL_INSN_FUNCTION_USAGE (insn));
     }
 
-  if (!SAVED_REGS_FIRST)
-    ix86_emit_save_regs ();
-
 #ifdef SUBTARGET_PROLOGUE
   SUBTARGET_PROLOGUE;
 #endif  
@@ -1918,25 +1892,6 @@ ix86_expand_prologue ()
      done that.  */
   if ((profile_flag || profile_block_flag) && ! pic_reg_used)
     emit_insn (gen_blockage ());
-}
-
-/* Emit code to pop all registers from stack.  */
-
-static void
-ix86_emit_restore_regs ()
-{
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
-  int limit = (frame_pointer_needed
-	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-  int regno;
-
-  for (regno = 0; regno < limit; regno++)
-    if ((regs_ever_live[regno] && !call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      {
-	emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
-      }
 }
 
 /* Emit code to add TSIZE to esp value.  Use POP instruction when
@@ -1980,9 +1935,16 @@ ix86_emit_epilogue_esp_adjustment (tsize)
     }
   else
     {
-      /* If there is no frame pointer, we must still release the frame. */
-      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (tsize)));
+      /* If a frame pointer is present, we must be sure to tie the sp
+	 to the fp so that we don't mis-schedule.  */
+      if (frame_pointer_needed)
+        emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
+						  stack_pointer_rtx,
+						  GEN_INT (tsize),
+						  hard_frame_pointer_rtx));
+      else
+        emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			       GEN_INT (tsize)));
     }
 }
 
@@ -1991,84 +1953,19 @@ ix86_emit_epilogue_esp_adjustment (tsize)
 void
 ix86_expand_epilogue ()
 {
-  int regno;
   int nregs;
-  int limit;
+  int regno;
+
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
   HOST_WIDE_INT offset;
-  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), &nregs, (int *)0,
-						 (int *)0);
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), &nregs,
+						 (int *)0, (int *)0);
 
-  /* SP is often unreliable so we may have to go off the frame pointer. */
 
-  offset = -(tsize + nregs * UNITS_PER_WORD);
-
-  if (SAVED_REGS_FIRST)
-    {
-      if (!sp_valid)
-        {
-	  if (nregs)
-	    emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				    gen_rtx_PLUS (SImode, hard_frame_pointer_rtx,
-						  GEN_INT (- nregs * UNITS_PER_WORD))));
-	  else
-	    emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						   hard_frame_pointer_rtx));
-	}
-      else if (tsize)
-	ix86_emit_epilogue_esp_adjustment (tsize);
-      ix86_emit_restore_regs ();
-    }
-
-  /* If we're only restoring one register and sp is not valid then
-     using a move instruction to restore the register since it's
-     less work than reloading sp and popping the register.  Otherwise,
-     restore sp (if necessary) and pop the registers. */
-
-  else if (nregs > 1 || sp_valid)
-    {
-      if (!sp_valid)
-	{
-	  rtx addr_offset;
-	  addr_offset = adj_offsettable_operand (AT_BP (QImode), offset);
-	  addr_offset = XEXP (addr_offset, 0);
-
-	  emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx, addr_offset));
-	}
-
-      ix86_emit_restore_regs ();
-    }
-  else
-    {
-      limit = (frame_pointer_needed
-	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
-      for (regno = 0; regno < limit; regno++)
-	if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-	  {
-	    emit_move_insn (gen_rtx_REG (SImode, regno),
-			    adj_offsettable_operand (AT_BP (Pmode), offset));
-	    offset += 4;
-	  }
-    }
-
-  if (frame_pointer_needed)
-    {
-      /* If not an i386, mov & pop is faster than "leave". */
-      if (TARGET_USE_LEAVE || optimize_size)
-	emit_insn (gen_leave ());
-      else
-	{
-	  if (!SAVED_REGS_FIRST)
-	    emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						   hard_frame_pointer_rtx));
-	  emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
-	}
-    }
-  else if (!SAVED_REGS_FIRST && tsize)
-    ix86_emit_epilogue_esp_adjustment (tsize);
+  /* Calculate start of saved registers relative to ebp.  */
+  offset = -nregs * UNITS_PER_WORD;
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
   if (profile_block_flag == 2)
@@ -2076,6 +1973,57 @@ ix86_expand_epilogue ()
       FUNCTION_BLOCK_PROFILER_EXIT;
     }
 #endif
+
+  /* If we're only restoring one register and sp is not valid then
+     using a move instruction to restore the register since it's
+     less work than reloading sp and popping the register.  */
+  if (!sp_valid && nregs <= 1)
+    {
+      if (!frame_pointer_needed)
+	abort();
+
+      for (regno = 0; regno < HARD_FRAME_POINTER_REGNUM; regno++)
+	if ((regs_ever_live[regno] && ! call_used_regs[regno])
+	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+	  {
+	    emit_move_insn (gen_rtx_REG (SImode, regno),
+			    adj_offsettable_operand (AT_BP (Pmode), offset));
+	    offset += 4;
+	  }
+
+      /* If not an i386, mov & pop is faster than "leave". */
+      if (TARGET_USE_LEAVE || optimize_size)
+	emit_insn (gen_leave ());
+      else
+	{
+	  emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
+						    hard_frame_pointer_rtx,
+						    const0_rtx,
+						    hard_frame_pointer_rtx));
+	  emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+	}
+    }
+  else
+    {
+      /* First step is to deallocate the stack frame so that we can
+	 pop the registers.  */
+      if (!sp_valid)
+	{
+	  if (!frame_pointer_needed)
+	    abort ();
+          emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
+						    hard_frame_pointer_rtx,
+						    GEN_INT (offset),
+						    hard_frame_pointer_rtx));
+	}
+      else if (tsize)
+	ix86_emit_epilogue_esp_adjustment (tsize);
+
+      for (regno = 0; regno < STACK_POINTER_REGNUM; regno++)
+	if ((regs_ever_live[regno] && !call_used_regs[regno])
+	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+	  emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
+    }
 
   if (current_function_pops_args && current_function_args_size)
     {
@@ -5853,14 +5801,14 @@ ix86_attr_length_default (insn)
       {
         /* Irritatingly, single_set doesn't work with REG_UNUSED present,
 	   as we'll get from running life_analysis during reg-stack when
-	   not optimizing.  */
+	   not optimizing.  Not that it matters anyway, now that
+	   pro_epilogue_adjust_stack uses lea, and is by design not
+	   single_set. */
         rtx set = PATTERN (insn);
         if (GET_CODE (set) == SET)
 	  ;
 	else if (GET_CODE (set) == PARALLEL
-		 && XVECLEN (set, 0) == 2
-		 && GET_CODE (XVECEXP (set, 0, 0)) == SET
-		 && GET_CODE (XVECEXP (set, 0, 1)) == CLOBBER)
+		 && GET_CODE (XVECEXP (set, 0, 0)) == SET)
 	  set = XVECEXP (set, 0, 0);
 	else
 	  abort ();
@@ -6011,17 +5959,16 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
   if (dep_insn_code_number < 0 || recog_memoized (insn) < 0)
     return cost;
 
-  /* Prologue and epilogue allocators have false dependency on ebp.
-     This results in one cycle extra stall on Pentium prologue scheduling, so
-     handle this important case manually. */
-
-  if ((dep_insn_code_number == CODE_FOR_prologue_allocate_stack
-       || dep_insn_code_number == CODE_FOR_epilogue_deallocate_stack)
-      && !reg_mentioned_p (stack_pointer_rtx, insn))
-    return 0;
-
   insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
+
+  /* Prologue and epilogue allocators can have a false dependency on ebp.
+     This results in one cycle extra stall on Pentium prologue scheduling,
+     so handle this important case manually.  */
+  if (dep_insn_code_number == CODE_FOR_pro_epilogue_adjust_stack
+      && dep_insn_type == TYPE_ALU
+      && !reg_mentioned_p (stack_pointer_rtx, insn))
+    return 0;
 
   switch (ix86_cpu)
     {
