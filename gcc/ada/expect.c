@@ -43,6 +43,16 @@
 #include "system.h"
 #endif
 
+#include <sys/types.h>
+
+#ifdef __MINGW32__
+#if OLD_MINGW
+#include <sys/wait.h>
+#endif
+#else
+#include <sys/wait.h>
+#endif
+
 /* This file provides the low level functionalities needed to implement Expect
    capabilities in GNAT.Expect.
    Implementations for unix and windows systems is provided.
@@ -72,8 +82,30 @@ __gnat_kill (int pid, int sig)
     {
       process_handle = OpenProcess (PROCESS_TERMINATE, FALSE, pid);
       if (process_handle != NULL)
-	TerminateProcess (process_handle, 0);
+	{
+	  TerminateProcess (process_handle, 0);
+	  CloseHandle (process_handle);
+	}
     }
+}
+
+int
+__gnat_waitpid (int pid)
+{
+  HANDLE process_handle;
+  DWORD exitcode = 1;
+  DWORD res;
+
+  process_handle = OpenProcess (PROCESS_QUERY_INFORMATION, FALSE, pid);
+
+  if (process_handle != NULL)
+    {
+      res = WaitForSingleObject (process_handle, INFINITE);
+      GetExitCodeProcess (process_handle, &exitcode);
+      CloseHandle (process_handle);
+    }
+
+  return (int) exitcode;
 }
 
 int
@@ -156,6 +188,17 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 #include <stdio.h>
 #include <vms/stsdef.h>
 #include <vms/iodef.h>
+
+int
+__gnat_waitpid (int pid)
+{
+  int status = 0;
+
+  waitpid (pid, &status, 0);
+  status =  WEXITSTATUS (status);
+
+  return status;
+}
 
 int
 __gnat_pipe (int *fd)
@@ -298,6 +341,17 @@ __gnat_kill (int pid, int sig)
 }
 
 int
+__gnat_waitpid (int pid)
+{
+  int status = 0;
+
+  waitpid (pid, &status, 0);
+  status =  WEXITSTATUS (status);
+
+  return status;
+}
+
+int
 __gnat_pipe (int *fd)
 {
   return pipe (fd);
@@ -402,6 +456,12 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 void
 __gnat_kill (int pid, int sig)
 {
+}
+
+int
+__gnat_waitpid (int pid, int sig)
+{
+  return 0;
 }
 
 int
