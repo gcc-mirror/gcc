@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "embedded" 68XXX.
    This is meant to be included after m68k.h.
-   Copyright (C) 1994, 1995, 1998, 1999 Free Software Foundation, Inc.  */
+   Copyright (C) 1994, 1995, 1998, 1999, 2004 Free Software Foundation, Inc.  */
 
 /* Override the SVR4 ABI for this target.  */
 
@@ -45,9 +45,8 @@
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define_std ("mc68000");		\
-	builtin_define ("__embedded__");	\
-   }						\
+      builtin_define ("__embedded__");		\
+    }						\
   while (0)
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
