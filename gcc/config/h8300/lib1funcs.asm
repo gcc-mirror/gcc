@@ -522,7 +522,7 @@ reti:
 	; A2/A3 denominator (A1P for H8/300H)
 	; returns A0/A1 quotient (A0P for H8/300H)
 	; S0/S1 remainder (S0P for H8/300H)
-	; trashes S2
+	; trashes S2H
 
 #ifdef __H8300__
 
@@ -651,7 +651,7 @@ divmod_L24:
 	;;  er1 contains divisor
 	;;  er2 contains shifted divisor
 	;;  er4 contains dividend, later remainder
-	divxu.w	r2,er0		; e0 now contains the approximate quotient (AQ)
+	divxu.w	r2,er0		; r0 now contains the approximate quotient (AQ)
 	extu.l	er0
 	beq	divmod_L25
 	subs	#1,er0		; er0 = AQ - 1
