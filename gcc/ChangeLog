@@ -1,3 +1,8 @@
+2001-02-27  Zack Weinberg  <zackw@stanford.edu>
+
+	* mips/xm-iris4.h: Delete #if 0 block (there since before 1997).
+	* pa/xm-linux.h, pa/xm-pa.h, pa/xm-papro.h: Don't declare errno.
+
 2001-02-27  Diego Novillo  <dnovillo@redhat.com>
 
 	* c-common.c (walk_stmt_tree): Visit the chain of the current tree
