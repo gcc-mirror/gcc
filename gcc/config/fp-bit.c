@@ -2,7 +2,7 @@
    the floating point routines in libgcc1.c for targets without hardware
    floating point.  */
 
-/* Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -944,13 +944,15 @@ _fpdiv_parts (fp_number_type * a,
     {
       return b;
     }
+
+  a->sign = a->sign ^ b->sign;
+
   if (isinf (a) || iszero (a))
     {
       if (a->class == b->class)
 	return nan ();
       return a;
     }
-  a->sign = a->sign ^ b->sign;
 
   if (isinf (b))
     {
