@@ -189,7 +189,7 @@ struct momentary_level *momentary_stack;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char *standard_tree_code_type[] = {
+char tree_code_type[MAX_TREE_CODES] = {
 #include "tree.def"
 };
 #undef DEFTREECODE
@@ -200,7 +200,7 @@ char *standard_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-int standard_tree_code_length[] = {
+int tree_code_length[MAX_TREE_CODES] = {
 #include "tree.def"
 };
 #undef DEFTREECODE
@@ -209,26 +209,10 @@ int standard_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-char *standard_tree_code_name[] = {
+char *tree_code_name[MAX_TREE_CODES] = {
 #include "tree.def"
 };
 #undef DEFTREECODE
-
-/* Table indexed by tree code giving a string containing a character
-   classifying the tree code.  Possibilities are
-   t, d, s, c, r, e, <, 1 and 2.  See tree.def for details.  */
-
-char **tree_code_type;
-
-/* Table indexed by tree code giving number of expression
-   operands beyond the fixed part of the node structure.
-   Not used for types or decls.  */
-
-int *tree_code_length;
-
-/* Table indexed by tree code giving name of tree code, as a string.  */
-
-char **tree_code_name;
 
 /* Statistics-gathering stuff.  */
 typedef enum
@@ -942,15 +926,7 @@ resume_momentary (yes)
 void
 init_tree_codes ()
 {
-  tree_code_type = (char **) xmalloc (sizeof (standard_tree_code_type));
-  tree_code_length = (int *) xmalloc (sizeof (standard_tree_code_length));
-  tree_code_name = (char **) xmalloc (sizeof (standard_tree_code_name));
-  bcopy ((char *) standard_tree_code_type, (char *) tree_code_type,
-	 sizeof (standard_tree_code_type));
-  bcopy ((char *) standard_tree_code_length, (char *) tree_code_length,
-	 sizeof (standard_tree_code_length));
-  bcopy ((char *) standard_tree_code_name, (char *) tree_code_name,
-	 sizeof (standard_tree_code_name));
+  
 }
 
 /* Return a newly allocated node of code CODE.
@@ -3906,8 +3882,7 @@ simple_cst_equal (t1, t2)
      handled above.  If this is a language-specific tree code, we can't
      trust what might be in the operand, so say we don't know
      the situation.  */
-  if ((int) code1
-      >= sizeof standard_tree_code_type / sizeof standard_tree_code_type[0])
+  if ((int) code1 >= (int) LAST_AND_UNUSED_TREE_CODE)
     return -1;
 
   switch (TREE_CODE_CLASS (code1))

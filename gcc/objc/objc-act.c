@@ -86,8 +86,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char *objc_tree_code_type[] = {
-  "x",
+char objc_tree_code_type[] = {
+  'x',
 #include "objc-tree.def"
 };
 #undef DEFTREECODE
@@ -8022,19 +8022,9 @@ init_objc ()
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
 
-  tree_code_type
-    = (char **) xrealloc (tree_code_type,
-			  sizeof (char *) * LAST_OBJC_TREE_CODE);
-  tree_code_length
-    = (int *) xrealloc (tree_code_length,
-			sizeof (int) * LAST_OBJC_TREE_CODE);
-  tree_code_name
-    = (char **) xrealloc (tree_code_name,
-			  sizeof (char *) * LAST_OBJC_TREE_CODE);
-  bcopy ((char *) objc_tree_code_type,
-	 (char *) (tree_code_type + (int) LAST_CODE),
-	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
-	  * sizeof (char *)));
+  bcopy (objc_tree_code_type,
+	 tree_code_type + (int) LAST_CODE,
+	 (int) LAST_OBJC_TREE_CODE - (int) LAST_CODE);
   bcopy ((char *) objc_tree_code_length,
 	 (char *) (tree_code_length + (int) LAST_CODE),
 	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_CODE)
