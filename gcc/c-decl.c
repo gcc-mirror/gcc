@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -665,8 +665,6 @@ c_decode_option (argc, argv)
     warn_bad_function_cast = 1;
   else if (!strcmp (p, "-Wno-bad-function-cast"))
     warn_bad_function_cast = 0;
-  else if (!strcmp (p, "-Wmissing-noreturn"))
-    warn_missing_noreturn = 1;
   else if (!strcmp (p, "-Wno-missing-noreturn"))
     warn_missing_noreturn = 0;
   else if (!strcmp (p, "-Wmissing-format-attribute"))
@@ -4487,7 +4485,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  else if (decl_context == FIELD)
 	    {
 	      /* ??? Need to check somewhere that this is a structure
-		 and not a union, that this field is last, and that 
+		 and not a union, that this field is last, and that
 		 this structure has at least one other named member.  */
 
 	      if (pedantic && !flag_isoc99 && !in_system_header)
@@ -6515,7 +6513,7 @@ store_parm_decls ()
   init_function_start (fndecl, input_filename, lineno);
 
   /* Begin the statement tree for this function.  */
-  DECL_LANG_SPECIFIC (current_function_decl) 
+  DECL_LANG_SPECIFIC (current_function_decl)
     =((struct lang_decl *) ggc_alloc (sizeof (struct lang_decl)));
   begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
 
@@ -6903,7 +6901,7 @@ c_expand_body (fndecl, nested_p)
 	  pop_function_context ();
 	}
     }
-      
+
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
@@ -6979,7 +6977,7 @@ push_c_function_context (f)
      struct function *f;
 {
   struct c_language_function *p;
-  p = ((struct c_language_function *) 
+  p = ((struct c_language_function *)
        xmalloc (sizeof (struct c_language_function)));
   f->language = (struct language_function *) p;
 
@@ -7001,7 +6999,7 @@ void
 pop_c_function_context (f)
      struct function *f;
 {
-  struct c_language_function *p 
+  struct c_language_function *p
     = (struct c_language_function *) f->language;
   tree link;
 
@@ -7042,7 +7040,7 @@ void
 mark_c_function_context (f)
      struct function *f;
 {
-  struct c_language_function *p 
+  struct c_language_function *p
     = (struct c_language_function *) f->language;
 
   if (p == 0)
@@ -7158,12 +7156,12 @@ c_begin_compound_stmt ()
   stmt = add_stmt (build_stmt (COMPOUND_STMT, NULL_TREE));
   /* If we haven't already declared __FUNCTION__ and its ilk then this
      is the opening curly brace of the function.  Declare them now.  */
-  if (!c_function_name_declared_p) 
+  if (!c_function_name_declared_p)
     {
       c_function_name_declared_p = 1;
       declare_function_name ();
     }
-  
+
   return stmt;
 }
 
@@ -7175,7 +7173,7 @@ c_expand_decl_stmt (t)
      tree t;
 {
   tree decl = DECL_STMT_DECL (t);
-  
+
   /* Expand nested functions.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_CONTEXT (decl) == current_function_decl

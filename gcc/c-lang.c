@@ -1,6 +1,6 @@
 /* Language-specific hook definitions for C front end.
    Copyright (C) 1991, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,10 +37,11 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 
 static int c_tree_printer PARAMS ((output_buffer *));
+static int c_missing_noreturn_ok_p PARAMS ((tree));
 
 /* Each of the functions defined here
    is an alternative to a function in objc-actions.c.  */
-   
+
 int
 lang_decode_option (argc, argv)
      int argc;
@@ -81,6 +82,7 @@ lang_init ()
   lang_safe_from_p = &c_safe_from_p;
   lang_printer = &c_tree_printer;
   lang_expand_decl_stmt = &c_expand_decl_stmt;
+  lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
   c_parse_init ();
 }
@@ -186,8 +188,8 @@ start_cdtor (method_type)
   tree body;
 
   start_function (void_list_node_1,
-		  build_parse_node (CALL_EXPR, fnname, 
-				    tree_cons (NULL_TREE, NULL_TREE, 
+		  build_parse_node (CALL_EXPR, fnname,
+				    tree_cons (NULL_TREE, NULL_TREE,
 					       void_list_node_1),
 				    NULL_TREE),
 		  NULL_TREE, NULL_TREE);
@@ -213,11 +215,11 @@ finish_cdtor (body)
   tree block;
 
   scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-  block = poplevel (0, 0, 0); 
+  block = poplevel (0, 0, 0);
   SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
   SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
 
-  RECHAIN_STMTS (body, COMPOUND_BODY (body)); 
+  RECHAIN_STMTS (body, COMPOUND_BODY (body));
 
   finish_function (0);
 }
@@ -252,7 +254,7 @@ finish_file ()
       finish_cdtor (body);
     }
 #endif
-  
+
   if (back_end_hook)
     (*back_end_hook) (getdecls ());
 
@@ -293,4 +295,13 @@ c_tree_printer (buffer)
     default:
       return 0;
     }
+}
+
+static int
+c_missing_noreturn_ok_p (decl)
+     tree decl;
+{
+  /* A missing noreturn is not ok for freestanding implementations and
+     ok for the `main' function in hosted implementations.  */
+  return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }

@@ -1,3 +1,21 @@
+2001-01-02  Andreas Jaeger  <aj@suse.de>
+
+	* c-decl.c (c_decode_option): Remove support of
+	-Wmissing-noreturn.
+
+	* toplev.c (documented_lang_options): Remove -Wmissing-noreturn.
+	(W_options): Add -Wmissing-noreturn here.
+
+	* flow.c: Define lang_missing_noreturn_ok_p.
+	(check_function_return_warnings): Use it.
+
+	* c-common.h: Declare lang_missing_noreturn_ok_p.
+
+	* c-lang.c (c_missing_noreturn_ok_p): New function.
+	(lang_init): Set lang_missing_noreturn_ok_p.
+
+	* invoke.texi (Warning Options): Document this.
+
 2000-12-27  Phil Edwards  <pme@sources.redhat.com>
 
 	* extend.texi (C++ Extensions):  New node for C++ attributes;
@@ -113,13 +131,13 @@ Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* unroll.c (copy_loop_body, loop_iterations): Likewise.
 	(remap_split_bivs): Likewise.
 
-2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.c (loop_ivs_free): New function.
 	(strength_reduce): Break out from...
 
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
-	
+
 	* loop.h (struct iv): New.
 	(REG_IV_TYPE, REG_IV_CLASS, REG_INFO): Modify to use 'struct iv'.
 	(struct loop_ivs): Replace 'reg_iv_type', 'reg_iv_info',
@@ -139,7 +157,7 @@ Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* loop.h (REG_IV_CLASS): New accessor macro.
 	* loop.c (REG_IV_CLASS): Use it instead of reg_iv_class array.
 	* unroll.c (REG_IV_CLASS): Likewise.
-	
+
 Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (loc_descriptor_from_tree, case WITH_RECORD_EXPR): New.
@@ -152,14 +170,14 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(prescan_loop): Set pre_header_has_call in loop_info.
 	* loop.h (struct_iv_class): Add `final_value' and `all_reduced'.
 	(struct loop_info): Add `pre_header_has_call'.
-	
+
 	* loop.c (loop_bivs_find): Break out from strength_reduce.
 	(loop_bivs_init_find, loop_bivs_check, loop_givs_find): Likewise.
 	(loop_givs_check, loop_biv_eliminable_p): Likewise.
-	
+
 	* loop.c (LOOP_REG_LIFETIME, LOOP_REG_GLOBAL_P): Define.
 	(scan_loop, record_giv): Use LOOP_REG_LIFETIME and LOOP_REG_GLOBAL_P.
-	
+
 	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Define.
 	* loop.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Use in place of
 	direct access to uid_luid array.
@@ -198,7 +216,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-12-30  Philip Blundell  <philb@gnu.org>
 
-	* config/arm/arm.c (arm_expand_prologue): Fix typos in error 
+	* config/arm/arm.c (arm_expand_prologue): Fix typos in error
 	message and comment.  Note location of testcase for an unhandled
 	situation.
 
@@ -236,7 +254,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (expand_decl): Don't use assign_stack_temp in error case.
 	(add_case_node): No need to copy nodes anymore.
-	
+
 2000-12-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (split_branches): Don't dereference re-computed
@@ -391,7 +409,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (store_one_arg):  If parm is passed both in stack and in
         register and offset is greater than reg_parm_stack_space, split
-        the offset and call emit_push_insn(). 
+        the offset and call emit_push_insn().
 
 2000-12-27  Nick Clifton  <nickc@redhat.com>
 
@@ -417,7 +435,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	between conditionally executed insns.
 	(sched_analyze_1, sched_analyze_2, sched_analyze_insn): Don't free
 	dependency lists if current insn is a COND_EXEC.
- 
+
 2000-12-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (define_attr "length"): Correct
@@ -478,7 +496,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(arm_expand_prologue): If the link register has not been saved set
 	lr_save_eliminated and emit a USE to prevent later passes from
 	scavenging it.
-	
+
 	* dwarf2out_frame_debug_expr: Allow the (scratch) frame
 	pointer to be initialised from the stack pointer plus a
 	constant.
@@ -513,7 +531,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (file_info_cmp): Prototype.
 	(dwarf2out_line): Hide variable `old_in_use'.
-	
+
 	* objc-act.c (objc_fatal): Delete.
 
 	* sched-vis.c (visualize_stall_cycles): Remove unused variable.
@@ -615,7 +633,7 @@ Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(nop_m, nop_i, nop_f, nop_b, nop_x, cycle_display, cycle_display_1,
 	bundle_selector): New patterns.
 	(insn_group_barrier): Now has an operand.
-	
+
 2000-12-21  DJ Delorie  <dj@redhat.com>
 
 	* dwarf2out.c (simple_decl_align_in_bits): new
@@ -958,9 +976,9 @@ Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/c4x/c4x-protos.h (c4x_init_builtins): Add tree argument.
 
-	* config/c4x/c4x.c (c4x_init_builtins): Add tree argument.	
+	* config/c4x/c4x.c (c4x_init_builtins): Add tree argument.
 	(c4x_output_ascii):  Fix.
-	
+
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
             Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
@@ -979,7 +997,7 @@ Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(*toieee_movqf_clobber, *frieee_movqf_clobber): Likewise.
 
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
-	
+
 	* libgcc2.h: Use Wtype for SItype and DWtype for DItype in prototypes.
 	* libgcc2.c (__absvsi2): Use Wtype and DWtype.
 	(__absvdi2, __addvsi3, __addvdi3, __subvsi3): Likewise.
@@ -1021,8 +1039,8 @@ Sat Dec 16 10:41:11 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
         (do_warning): New function.
         (finclude): Skip past the newline and increase the line number
         before calling output_line_command.
-        (do_line): Skip the new line after output_line_command.  Don't  
-        pre-decrement the line number.   
+        (do_line): Skip the new line after output_line_command.  Don't
+        pre-decrement the line number.
 
 2000-12-15  Diego Novillo  <dnovillo@redhat.com>
 
@@ -1087,7 +1105,7 @@ Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
 	* alias.c (get_alias_set): Call record_component_aliases for
 	COMPLEX_TYPE.
 	(record_component_aliases): Handle COMPLEX_TYPE.
-	
+
 2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/gnu-regex.c: Disable NLS.
@@ -1109,7 +1127,7 @@ Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
        * gcc.c (cpp_options): Update to use '&'.
        (struct switchstr): Change type of validated to save space.
        New member 'ordering'.
-       (handle_braces, validate_switches): Update to handle '&'.       
+       (handle_braces, validate_switches): Update to handle '&'.
 
 2000-12-13  Laurynas Biveinis  <lauras@softhome.net>
 
@@ -1153,7 +1171,7 @@ Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
         * tradcpp.c (special_symbol): Improve test for definedness,
         though it is still not perfect.
         (do_define): Don't define illegal macro names.
-	
+
 2000-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/mips/elf.h (ASM_OUTPUT_SECTION_NAME): emit @nobits
@@ -1262,7 +1280,7 @@ Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
 	* cppfiles.c (stack_include_file): Update.
 	(_cpp_pop_file_buffer): Update.
 	* cpphash.h (struct cpp_buffer): New members
-	include_stack_listed and type.	 
+	include_stack_listed and type.
 	* cpplib.c (_cpp_handle_directive): Buffer->inc is not null.
 	(run_directive): Take buffer type.  cpp_push_buffer cannot fail.
 	(_cpp_do__Pragma, cpp_define, _cpp_define_builtin, cpp_undef,
@@ -1296,7 +1314,7 @@ Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-09  Richard Henderson  <rth@redhat.com>
 
-	* genrecog.c (validate_pattern): Verify that ZERO_EXTRACT and 
+	* genrecog.c (validate_pattern): Verify that ZERO_EXTRACT and
 	STRICT_LOW_PART as SET_DEST have in-out constraints.
 
 2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
@@ -2065,8 +2083,8 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 2000-12-02  Geoffrey Keating  <geoffk@redhat.com>
 
 	* c-common.c (combine_strings): When the ISO C standard specifies
- 	the maximum length of a string, it doesn't include the trailing
- 	zero byte.
+	the maximum length of a string, it doesn't include the trailing
+	zero byte.
 
 	* cpplib.c (do_ifdef): Add check_eol() call.
 	(do_ifndef): Likewise.
@@ -2188,13 +2206,13 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 2000-12-01  Jim Blandy  <jimb@redhat.com>
 
 	* dbxout.c (dbxout_parms): Correctly describe parameters passed by
- 	invisible reference in registers, but then spilled to the stack.
-  	Remove code to emit a second stab for such parameters; it attempts
- 	to describe the value's location by introducing a synthetic C++
- 	`reference' type, and then saying the stack slot has that
- 	reference type.  This loses type information (breaking GDB's
- 	`ptype' command, among other things) just to describe a location
- 	which stabs can represent correctly in other ways.
+	invisible reference in registers, but then spilled to the stack.
+	Remove code to emit a second stab for such parameters; it attempts
+	to describe the value's location by introducing a synthetic C++
+	`reference' type, and then saying the stack slot has that
+	reference type.  This loses type information (breaking GDB's
+	`ptype' command, among other things) just to describe a location
+	which stabs can represent correctly in other ways.
 
 2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -2749,7 +2767,7 @@ Mon Nov 27 17:29:44 2000  kaz Kojima <kkojima@rr.iij4u.or.jp>
 	canonicalizes conditional compares.
 	(arm_select_cc_mode): Likewise.
 	* arm.md: Garbage collect some dead code.
- 	(cmp_and, cmp_ior): New patterns.
+	(cmp_and, cmp_ior): New patterns.
 	(splitter for conditional move with inverted false): Use cond_exec
 	and handle unordered comparisons.
 
@@ -2766,7 +2784,7 @@ Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
 	arm_subsi3_insn, anddi_zesidi_di, arm_andsi3_insn, anddi_notdi_di,
 	anddi_notzesidi_di, anddi_notsesidi_di, arm_iorsi3,
 	one_cmpldi2): Merge with splitters to create define_insn_and_split
- 	patterns.  Remove redundant splits.
+	patterns.  Remove redundant splits.
 	(peephole2 for add:SI of invalid immediate): New.
 	(peephole2 for minus:SI of invalid immediate): New.
 	(peephole2 for ior:SI of invalid immediate): New.
@@ -7486,7 +7504,7 @@ Mon 25-Sep-2000 23:31:45 BST  Neil Booth  <neilb@earthling.net>
 	* dwarf2out.c (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
 	UNALIGNED_DOUBLE_INT_ASM_OP, SECTION_ASM_OP, ASM_BYTE_OP): Here.
 	* dwarfout.c (FILE_ASM_OP, VERSION_ASM_OP,
- 	UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP, ASM_BYTE_OP,
+	UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP, ASM_BYTE_OP,
 	PUSHSECTION_ASM_OP, POPSECTION_ASM_OP): Here.
 	* defaults.h (ASM_STABD_OP, EH_FRAME_SECTION_ASM_OP): Here.
 	* varasm.c (ASM_STABS_OP): Here.

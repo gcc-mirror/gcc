@@ -1,6 +1,6 @@
 /* Top level of GNU C compiler
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -969,7 +969,7 @@ const char *user_label_prefix;
 
 lang_independent_options f_options[] =
 {
-  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1, 
+  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1,
    "Perform DWARF2 duplicate elimination"},
   {"float-store", &flag_float_store, 1,
    "Do not store floats in registers" },
@@ -1210,8 +1210,6 @@ documented_lang_options[] =
   { "-Wbad-function-cast",
     "Warn about casting functions to incompatible types" },
   { "-Wno-bad-function-cast", "" },
-  { "-Wmissing-noreturn",
-    "Warn about functions which might be candidates for attribute noreturn" },
   { "-Wno-missing-noreturn", "" },
   { "-Wmissing-format-attribute",
     "Warn about functions which might be candidates for format attributes" },
@@ -1461,7 +1459,9 @@ lang_independent_options W_options[] =
   {"padded", &warn_padded, 1,
    "Warn when padding is required to align struct members"},
   {"disabled-optimization", &warn_disabled_optimization, 1,
-   "Warn when an optimization pass is disabled"}
+   "Warn when an optimization pass is disabled"},
+  {"missing-noreturn", &warn_missing_noreturn, 1,
+   "Warn about functions which might be candidates for attribute noreturn"}
 };
 
 /* Output files for assembler code (real compiler output)
@@ -1576,7 +1576,7 @@ approx_sqrt (x)
   double s, d;
 
   if (x < 0)
-    abort ();   
+    abort ();
   if (x == 0)
     return 0;
 
@@ -1584,8 +1584,8 @@ approx_sqrt (x)
   do
     {
       d = (s * s - x) / (2 * s);
-      s -= d;                   
-    }        
+      s -= d;
+    }
   while (d > .0001);
   return s;
 }
@@ -1962,7 +1962,7 @@ wrapup_global_declarations (vec, len)
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
 	      && (! TREE_READONLY (decl)
 		  || TREE_PUBLIC (decl)
-		  || (!optimize 
+		  || (!optimize
 		      && flag_keep_static_consts
 		      && !DECL_ARTIFICIAL (decl))
 		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
@@ -2878,7 +2878,7 @@ rest_of_compilation (decl)
      integrate.*/
   rtx_equal_function_value_matters = 0;
   purge_hard_subreg_sets (get_insns ());
-  
+
   /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
     goto exit_rest_of_compilation;
@@ -3075,7 +3075,7 @@ rest_of_compilation (decl)
 
 	  insns = get_insns ();
 	  eliminate_dead_code();
-  
+
 	  close_dump_file (DFI_dce, print_rtl_with_bb, insns);
 	  timevar_pop (TV_DEAD_CODE_ELIM);
 	}

@@ -1,6 +1,6 @@
 /* Data flow analysis for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -251,6 +251,10 @@ regset regs_live_at_setjmp;
    are another pair, etc.  */
 rtx regs_may_share;
 
+/* Callback that determines if it's ok for a function to have no
+   noreturn attribute.  */
+int (*lang_missing_noreturn_ok_p) PARAMS ((tree));
+
 /* Set of registers that may be eliminable.  These are handled specially
    in updating regs_ever_live.  */
 
@@ -424,15 +428,15 @@ static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
 						 rtx));
 static void remove_fake_successors	PARAMS ((basic_block));
-static void flow_nodes_print		PARAMS ((const char *, const sbitmap, 
+static void flow_nodes_print		PARAMS ((const char *, const sbitmap,
 						 FILE *));
 static void flow_edge_list_print	PARAMS ((const char *, const edge *,
 						 int, FILE *));
 static void flow_loops_cfg_dump		PARAMS ((const struct loops *,
 						 FILE *));
-static int flow_loop_nested_p		PARAMS ((struct loop *, 
+static int flow_loop_nested_p		PARAMS ((struct loop *,
 						 struct loop *));
-static int flow_loop_entry_edges_find	PARAMS ((basic_block, const sbitmap, 
+static int flow_loop_entry_edges_find	PARAMS ((basic_block, const sbitmap,
 						 edge **));
 static int flow_loop_exit_edges_find	PARAMS ((const sbitmap, edge **));
 static int flow_loop_nodes_find	PARAMS ((basic_block, basic_block, sbitmap));
@@ -530,7 +534,9 @@ check_function_return_warnings ()
 {
   if (warn_missing_noreturn
       && !TREE_THIS_VOLATILE (cfun->decl)
-      && EXIT_BLOCK_PTR->pred == NULL)
+      && EXIT_BLOCK_PTR->pred == NULL
+      && (lang_missing_noreturn_ok_p
+	  && !lang_missing_noreturn_ok_p (cfun->decl)))
     warning ("function might be possible candidate for attribute `noreturn'");
 
   /* If we have a path to EXIT, then we do return.  */
@@ -1537,7 +1543,7 @@ split_block (bb, insn)
   /* Redirect the src of the successor edges of bb to point to new_bb.  */
   for (e = new_bb->succ; e; e = e->succ_next)
     e->src = new_bb;
-  
+
   /* Place the new block just after the block being split.  */
   VARRAY_GROW (basic_block_info, ++n_basic_blocks);
 
@@ -1576,7 +1582,7 @@ split_block (bb, insn)
 	 propagate_block to determine which registers are live.  */
       COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_end);
       propagate_block (new_bb, new_bb->global_live_at_start, NULL, NULL, 0);
-      COPY_REG_SET (bb->global_live_at_end, 
+      COPY_REG_SET (bb->global_live_at_end,
 		    new_bb->global_live_at_start);
     }
 
@@ -3382,7 +3388,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
       SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
 
       /* Before reload, there are a few registers that must be forced
-	 live everywhere -- which might not already be the case for 
+	 live everywhere -- which might not already be the case for
 	 blocks within infinite loops.  */
       if (! reload_completed)
 	{
@@ -4200,7 +4206,7 @@ insn_dead_p (pbi, x, call_ok, notes)
 #ifdef AUTO_INC_DEC
 	      /* Check if memory reference matches an auto increment. Only
 		 post increment/decrement or modify are valid.  */
-      	      if (GET_MODE (mem) == GET_MODE (r)
+	      if (GET_MODE (mem) == GET_MODE (r)
 	          && (GET_CODE (XEXP (mem, 0)) == POST_DEC
 	              || GET_CODE (XEXP (mem, 0)) == POST_INC
 	              || GET_CODE (XEXP (mem, 0)) == POST_MODIFY)
@@ -4978,7 +4984,7 @@ flush_reg_cond_reg_1 (node, data)
      the in-order traversal.  */
   if (xdata[1] >= (int) node->key)
     return 0;
-  
+
   /* Splice out portions of the expression that refer to regno.  */
   rcli = (struct reg_cond_life_info *) node->value;
   rcli->condition = elim_reg_cond (rcli->condition, regno);
@@ -6599,7 +6605,7 @@ count_or_remove_death_notes (blocks, kill)
 
 /* Update insns block within BB.  */
 
-void 
+void
 update_bb_for_insn (bb)
      basic_block bb;
 {
@@ -7089,7 +7095,7 @@ verify_edge_list (f, elist)
 	if (EDGE_INDEX (elist, BASIC_BLOCK (pred), BASIC_BLOCK (succ))
 	    != EDGE_INDEX_NO_EDGE && found_edge == 0)
 	  fprintf (f, "*** Edge (%d, %d) has index %d, but there is no edge\n",
-	  	   pred, succ, EDGE_INDEX (elist, BASIC_BLOCK (pred),
+		   pred, succ, EDGE_INDEX (elist, BASIC_BLOCK (pred),
 					   BASIC_BLOCK (succ)));
       }
   for (succ = 0; succ < n_basic_blocks; succ++)
@@ -7334,7 +7340,7 @@ redirect_edge_pred (e, new_pred)
 
 /* Dump the list of basic blocks in the bitmap NODES.  */
 
-static void 
+static void
 flow_nodes_print (str, nodes, file)
      const char *str;
      const sbitmap nodes;
@@ -7353,7 +7359,7 @@ flow_nodes_print (str, nodes, file)
 
 /* Dump the list of edges in the array EDGE_LIST.  */
 
-static void 
+static void
 flow_edge_list_print (str, edge_list, num_edges, file)
      const char *str;
      const edge *edge_list;
@@ -7467,7 +7473,7 @@ flow_loop_dump (loop, file, loop_dump_aux, verbose)
 
 /* Dump the loop information specified by LOOPS to the stream FILE,
    using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
-void 
+void
 flow_loops_dump (loops, file, loop_dump_aux, verbose)
      const struct loops *loops;
      FILE *file;
@@ -7481,7 +7487,7 @@ flow_loops_dump (loops, file, loop_dump_aux, verbose)
   if (! num_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found, %d levels\n", 
+  fprintf (file, ";; %d loops found, %d levels\n",
 	   num_loops, loops->levels);
 
   for (i = 0; i < num_loops; i++)
@@ -7510,7 +7516,7 @@ flow_loops_dump (loops, file, loop_dump_aux, verbose)
 		     must be disjoint.  */
 		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop,
 						   smaller ? oloop : loop);
-		  fprintf (file, 
+		  fprintf (file,
 			   ";; loop header %d shared by loops %d, %d %s\n",
 			   loop->header->index, i, j,
 			   disjoint ? "disjoint" : "nested");
@@ -7586,7 +7592,7 @@ flow_loop_entry_edges_find (header, nodes, entry_edges)
   for (e = header->pred; e; e = e->pred_next)
     {
       basic_block src = e->src;
-      
+
       if (src == ENTRY_BLOCK_PTR || ! TEST_BIT (nodes, src->index))
 	num_entries++;
     }
@@ -7600,7 +7606,7 @@ flow_loop_entry_edges_find (header, nodes, entry_edges)
   for (e = header->pred; e; e = e->pred_next)
     {
       basic_block src = e->src;
-      
+
       if (src == ENTRY_BLOCK_PTR || ! TEST_BIT (nodes, src->index))
 	(*entry_edges)[num_entries++] = e;
     }
@@ -7632,7 +7638,7 @@ flow_loop_exit_edges_find (nodes, exit_edges)
   EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, node, {
     for (e = BASIC_BLOCK (node)->succ; e; e = e->succ_next)
       {
-	basic_block dest = e->dest;	  
+	basic_block dest = e->dest;
 
 	if (dest == EXIT_BLOCK_PTR || ! TEST_BIT (nodes, dest->index))
 	    num_exits++;
@@ -7649,7 +7655,7 @@ flow_loop_exit_edges_find (nodes, exit_edges)
   EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, node, {
     for (e = BASIC_BLOCK (node)->succ; e; e = e->succ_next)
       {
-	basic_block dest = e->dest;	  
+	basic_block dest = e->dest;
 
 	if (dest == EXIT_BLOCK_PTR || ! TEST_BIT (nodes, dest->index))
 	  (*exit_edges)[num_exits++] = e;
@@ -8143,7 +8149,7 @@ flow_loops_find (loops, flags)
      must always be built if this function is called.  */
   if (! (flags & LOOP_TREE))
     abort ();
-    
+
   memset (loops, 0, sizeof (*loops));
 
   /* Taking care of this degenerate case makes the rest of
@@ -8258,7 +8264,7 @@ flow_loops_find (loops, flags)
 	  loop->nodes = sbitmap_alloc (n_basic_blocks);
 	  loop->num_nodes
 	    = flow_loop_nodes_find (loop->header, loop->latch, loop->nodes);
-	  
+
 	  /* Compute first and last blocks within the loop.
 	     These are often the same as the loop header and
 	     loop latch respectively, but this is not always
@@ -8267,7 +8273,7 @@ flow_loops_find (loops, flags)
 	    = BASIC_BLOCK (sbitmap_first_set_bit (loop->nodes));
 	  loop->last
 	    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));
-	  
+
 	  if (flags & LOOP_EDGES)
 	    {
 	      /* Find edges which enter the loop header.
@@ -8277,12 +8283,12 @@ flow_loops_find (loops, flags)
 		= flow_loop_entry_edges_find (loop->header,
 					      loop->nodes,
 					      &loop->entry_edges);
-	      
+
 	      /* Find edges which exit the loop.  */
 	      loop->num_exits
 		= flow_loop_exit_edges_find (loop->nodes,
 					     &loop->exit_edges);
-	      
+
 	      /* Determine which loop nodes dominate all the exits
 		 of the loop.  */
 	      loop->exits_doms = sbitmap_alloc (n_basic_blocks);
@@ -8290,17 +8296,17 @@ flow_loops_find (loops, flags)
 	      for (j = 0; j < loop->num_exits; j++)
 		sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
 				 dom[loop->exit_edges[j]->src->index]);
-	      
+
 	      /* The header of a natural loop must dominate
 		 all exits.  */
 	      if (! TEST_BIT (loop->exits_doms, loop->header->index))
 		abort ();
 	    }
-	  
+
 	  if (flags & LOOP_PRE_HEADER)
 	    {
 	      /* Look to see if the loop has a pre-header node.  */
-	      loop->pre_header 
+	      loop->pre_header
 		= flow_loop_pre_header_find (loop->header, dom);
 
 	      flow_loop_pre_header_scan (loop);
@@ -8347,7 +8353,7 @@ flow_loops_update (loops, flags)
      throw away the old stuff and rebuild what we need.  */
   if (loops->array)
     flow_loops_free (loops);
-  
+
   return flow_loops_find (loops, flags);
 }
 

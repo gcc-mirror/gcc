@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -222,7 +222,7 @@ typedef enum c_language_kind
 		       etc. */
   clk_cplusplus,   /* ANSI/ISO C++ */
   clk_objective_c  /* Objective C */
-} 
+}
 c_language_kind;
 
 /* Information about a statement tree.  */
@@ -244,10 +244,10 @@ struct stmt_tree_s {
      However, in order to represent aggregate initialization code as
      tree structure, we use statement-expressions.  The statements
      within the statement expression should not result in cleanups
-     being run until the entire enclosing statement is complete.  
+     being run until the entire enclosing statement is complete.
 
      This flag has no effect in C.  */
-  int stmts_are_full_exprs_p; 
+  int stmts_are_full_exprs_p;
 };
 
 typedef struct stmt_tree_s *stmt_tree;
@@ -294,10 +294,15 @@ extern void (*lang_expand_stmt)                 PARAMS ((tree));
 extern void (*lang_expand_decl_stmt)            PARAMS ((tree));
 extern void (*lang_expand_function_end)         PARAMS ((void));
 
+/* Callback that determines if it's ok for a function to have no
+   noreturn attribute.  */
+extern int (*lang_missing_noreturn_ok_p)	PARAMS ((tree));
+
+
 /* The type of a function that walks over tree structure.  */
 
-typedef tree (*walk_tree_fn)                    PARAMS ((tree *, 
-							 int *, 
+typedef tree (*walk_tree_fn)                    PARAMS ((tree *,
+							 int *,
 							 void *));
 
 extern stmt_tree current_stmt_tree              PARAMS ((void));
@@ -436,7 +441,7 @@ extern int warn_long_long;
    descending through array types.  Note that this macro evaluates its
    arguments mor than once.  */
 #define C_TYPE_QUALS(TYPE)				\
-  (TYPE_QUALS ((TREE_CODE (TYPE) == ARRAY_TYPE 		\
+  (TYPE_QUALS ((TREE_CODE (TYPE) == ARRAY_TYPE		\
 		&& c_language == clk_cplusplus)		\
 	       ? strip_array_types (TYPE) : TYPE))
 
@@ -595,7 +600,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
 
 /* DECL_STMT accessor. This gives access to the DECL associated with
-   the given declaration statement. */ 
+   the given declaration statement. */
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
 
 /* STMT_EXPR accessor. */
@@ -607,7 +612,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
 #define SCOPE_BEGIN_P(NODE) \
-  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE))) 
+  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE)))
 
 /* Nonzero if this SCOPE_STMT is for the end of a scope.  */
 #define SCOPE_END_P(NODE) \
@@ -629,7 +634,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
    For example, in:
-  
+
      S s;
      l:
      S s2;
@@ -654,12 +659,12 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* If non-zero, the STMT_LINENO for NODE is the line at which the
    function ended.  */
-#define STMT_LINENO_FOR_FN_P(NODE) 		\
+#define STMT_LINENO_FOR_FN_P(NODE)		\
   (TREE_LANG_FLAG_2 ((NODE)))
 
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables. */
-#define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE)) 
+#define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
@@ -754,7 +759,7 @@ extern void extract_interface_info		PARAMS ((void));
 
 extern void mark_c_language_function            PARAMS ((struct language_function *));
 
-extern int case_compare                         PARAMS ((splay_tree_key, 
+extern int case_compare                         PARAMS ((splay_tree_key,
 							 splay_tree_key));
 
 extern tree c_add_case_label                    PARAMS ((splay_tree,
@@ -807,5 +812,3 @@ struct c_fileinfo *get_fileinfo			PARAMS ((const char *));
 extern void dump_time_statistics		PARAMS ((void));
 
 #endif
-
-
