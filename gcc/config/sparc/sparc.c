@@ -210,7 +210,7 @@ sparc_override_options ()
   struct cpu_table *cpu;
   struct sparc_cpu_select *sel;
   int fpu;
-
+  
 #ifndef SPARC_BI_ARCH
   /* Check for unsupported architecture size.  */
   if (! TARGET_64BIT != DEFAULT_ARCH32_P)
@@ -220,8 +220,25 @@ sparc_override_options ()
     }
 #endif
 
+  /* At the moment we don't allow different pointer size and architecture */
+  if (! TARGET_64BIT != ! TARGET_PTR64)
+    {
+      error ("-mptr%d not allowed on -m%d",
+      	     TARGET_PTR64 ? 64 : 32, TARGET_64BIT ? 64 : 32);
+      if (TARGET_64BIT)
+    	target_flags |= MASK_PTR64;
+      else
+        target_flags &= ~MASK_PTR64;
+    }
+
   /* Code model selection.  */
   sparc_cmodel = SPARC_DEFAULT_CMODEL;
+  
+#ifdef SPARC_BI_ARCH
+  if (TARGET_ARCH32)
+    sparc_cmodel = CM_32;
+#endif
+
   if (sparc_cmodel_string != NULL)
     {
       if (TARGET_ARCH64)
@@ -280,8 +297,8 @@ sparc_override_options ()
   if (TARGET_V9 && TARGET_ARCH32)
     target_flags |= MASK_DEPRECATED_V8_INSNS;
 
-  /* V8PLUS requires V9 */
-  if (! TARGET_V9)
+  /* V8PLUS requires V9, makes no sense in 64 bit mode.  */
+  if (! TARGET_V9 || TARGET_ARCH64)
     target_flags &= ~MASK_V8PLUS;
 
   /* Don't use stack biasing in 32 bit mode.  */
@@ -5453,6 +5470,11 @@ void
 sparc64_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+                     0, VOIDmode, 1, tramp, Pmode);
+#endif
+
   /*
 	rd	%pc, %g1
 	ldx	[%g1+24], %g5
@@ -5466,12 +5488,13 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
 		  GEN_INT (0xca586018));
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
-		  GEN_INT (0x81c04000));
+		  GEN_INT (0x81c14000));
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
 		  GEN_INT (0xca586010));
   emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), cxt);
-  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 20)), fnaddr);
+  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), fnaddr);
   emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, tramp))));
+
   if (sparc_cpu != PROCESSOR_ULTRASPARC)
     emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
 }

@@ -109,33 +109,73 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_sparc64	5	/* alias */
 #define TARGET_CPU_ultrasparc	6
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc || TARGET_CPU_DEFAULT == TARGET_CPU_v8 || TARGET_CPU_DEFAULT == TARGET_CPU_supersparc
-#define CPP_CPU_DEFAULT_SPEC ""
-#define ASM_CPU_DEFAULT_SPEC ""
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclet
-#define CPP_CPU_DEFAULT_SPEC "-D__sparclet__"
-#define ASM_CPU_DEFAULT_SPEC "-Asparclet"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite
-#define CPP_CPU_DEFAULT_SPEC "-D__sparclite__"
-#define ASM_CPU_DEFAULT_SPEC "-Asparclite"
-#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+
+#define CPP_CPU32_DEFAULT_SPEC ""
+#define ASM_CPU32_DEFAULT_SPEC ""
+
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9
 /* ??? What does Sun's CC pass?  */
-#define CPP_CPU_DEFAULT_SPEC "-D__sparc_v9__"
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
 /* ??? It's not clear how other assemblers will handle this, so by default
    use GAS.  Sun's Solaris assembler recognizes -xarch=v8plus, but this case
    is handled in sol2.h.  */
-#define ASM_CPU_DEFAULT_SPEC "-Av9"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9"
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
-#define CPP_CPU_DEFAULT_SPEC "-D__sparc_v9__"
-#define ASM_CPU_DEFAULT_SPEC "-Av9a"
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9a"
 #endif
-#ifndef CPP_CPU_DEFAULT_SPEC
+
+#else
+
+#define CPP_CPU64_DEFAULT_SPEC ""
+#define ASM_CPU64_DEFAULT_SPEC ""
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc || TARGET_CPU_DEFAULT == TARGET_CPU_v8 || TARGET_CPU_DEFAULT == TARGET_CPU_supersparc
+#define CPP_CPU32_DEFAULT_SPEC ""
+#define ASM_CPU32_DEFAULT_SPEC ""
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclet
+#define CPP_CPU32_DEFAULT_SPEC "-D__sparclet__"
+#define ASM_CPU32_DEFAULT_SPEC "-Asparclet"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite
+#define CPP_CPU32_DEFAULT_SPEC "-D__sparclite__"
+#define ASM_CPU32_DEFAULT_SPEC "-Asparclite"
+#endif
+
+#endif
+
+#if !defined(CPP_CPU32_DEFAULT_SPEC) || !defined(CPP_CPU64_DEFAULT_SPEC)
 Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
+
+#ifdef SPARC_BI_ARCH
+
+#define CPP_CPU_DEFAULT_SPEC \
+(DEFAULT_ARCH32_P ? "\
+%{m64:" CPP_CPU64_DEFAULT_SPEC "} \
+%{!m64:" CPP_CPU32_DEFAULT_SPEC "} \
+" : "\
+%{m32:" CPP_CPU32_DEFAULT_SPEC "} \
+%{!m32:" CPP_CPU64_DEFAULT_SPEC "} \
+")
+#define ASM_CPU_DEFAULT_SPEC \
+(DEFAULT_ARCH32_P ? "\
+%{m64:" ASM_CPU64_DEFAULT_SPEC "} \
+%{!m64:" ASM_CPU32_DEFAULT_SPEC "} \
+" : "\
+%{m32:" ASM_CPU32_DEFAULT_SPEC "} \
+%{!m32:" ASM_CPU64_DEFAULT_SPEC "} \
+")
+
+#else /* !SPARC_BI_ARCH */
+
+#define CPP_CPU_DEFAULT_SPEC (DEFAULT_ARCH32_P ? CPP_CPU32_DEFAULT_SPEC : CPP_CPU64_DEFAULT_SPEC)
+#define ASM_CPU_DEFAULT_SPEC (DEFAULT_ARCH32_P ? ASM_CPU32_DEFAULT_SPEC : ASM_CPU64_DEFAULT_SPEC)
+
+#endif /* !SPARC_BI_ARCH */
 
 /* Names to predefine in the preprocessor for this target machine.
    ??? It would be nice to not include any subtarget specific values here,
@@ -171,8 +211,20 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    sparc64 in 32 bit environments, so for now we only use `sparc64' in
    64 bit environments.  */
 
+#ifdef SPARC_BI_ARCH
+
+#define CPP_ARCH32_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
+-D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
+#define CPP_ARCH64_SPEC "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
+-D__arch64__ -Acpu(sparc64) -Amachine(sparc64)"
+
+#else
+
 #define CPP_ARCH32_SPEC "-D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
 #define CPP_ARCH64_SPEC "-D__arch64__ -Acpu(sparc64) -Amachine(sparc64)"
+
+#endif
+
 #define CPP_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? CPP_ARCH32_SPEC : CPP_ARCH64_SPEC)
 
@@ -413,8 +465,7 @@ extern int target_flags;
 /* 0x2000, 0x4000 are unused */
 
 /* Nonzero if pointers are 64 bits.
-   This is not a user selectable option, though it may be one day -
-   so it is used to determine pointer size instead of an architecture flag.  */
+   At the moment it must follow architecture size flag.  */
 #define MASK_PTR64 0x8000
 #define TARGET_PTR64 (target_flags & MASK_PTR64)
 
@@ -512,9 +563,8 @@ extern int target_flags;
     {"v8", 0},				\
     {"supersparc", 0},			\
     /* End of deprecated options.  */	\
-    /* -mptrNN exists for *experimental* purposes.  */ \
-/*  {"ptr64", MASK_PTR64}, */		\
-/*  {"ptr32", -MASK_PTR64}, */		\
+    {"ptr64", MASK_PTR64},		\
+    {"ptr32", -MASK_PTR64},		\
     {"32", -MASK_64BIT},		\
     {"64", MASK_64BIT},			\
     {"stack-bias", MASK_STACK_BIAS},	\

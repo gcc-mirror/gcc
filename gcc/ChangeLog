@@ -1,3 +1,56 @@
+Thu Sep 24 01:35:34 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Define.
+	* config/sparc/sparc.c (sparc64_initialize_trampoline): If that is
+	defined, emit libcall to __enable_execute_stack.  Also fix opcodes
+	and offsets in actual stack trampoline code so they match the
+	commentary and actually work.
+
+Thu Sep 24 01:19:02 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* configure.in (sparcv9-*-solaris): Use t-sol2 and t-sol2-64 for
+	tmake_file.
+	(sparc64-*-linux): Use t-linux and sparc/t-linux64 for
+	tmake_file.  Set extra_parts to needed crt objects.
+	* configure: Rebuilt.
+	* config/sparc/linux64.h (SPARC_BI_ARCH): Define.
+	(TARGET_DEFAULT): Set if default is v9 or ultra.
+	(STARTFILE_SPEC32, STARTFILE_SPEC64): New macros.
+	(STARTFILE_SPEC): Set to those upon SPARC_BI_ARCH.
+	(ENDFILE_SPEC32, ENDFILE_SPEC64, ENDFILE_SPEC): Likewise.
+	(SUBTARGET_EXTRA_SPECS, LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
+	LINK_SPEC, LINK_ARCH_SPEC): Likewise.
+	(TARGET_VERSION): Define.
+	(MULTILIB_DEFAULT): Define.
+	* config/sparc/sparc.h (CPP_CPU_DEFAULT_SPEC): Rearrange so that
+	mixed 32/64 bit compilers based upon SPARC_BI_ARCH work.
+	(CPP_CPU64_DEFAULT_SPEC, CPP_CPU32_DEFAULT_SEC): Define
+	appropriately.
+	(TARGET_SWITCHES): Allow ptr32/ptr64 options once more.
+	* config/sparc/sparc.c (sparc_override_options): If arch and
+	pointer size disagree, emit diagnostic and fix it up.  If
+	SPARC_BI_ARCH and TARGET_ARCH32, set cmodel to CM_32.  Turn off
+	V8PLUS in 64-bit mode.
+	* config/sparc/t-linux64: New file.
+	* config/sparc/t-sol2-64: New file.
+	* config/sparc/t-sol2: Adjust build rules to use MULTILIB_CFLAGS.
+	* config/sparc/sol2-sld-64.h (SPARC_BI_ARCH): Define.
+	(ASM_CPU32_DEFAULT_SPEC, ASM_CPU64_DEFAULT_SPEC,
+	CPP_CPU32_DEFAULT_SPEC, CPP_CPU64_DEFAULT_SPEC): Define.
+	(ASM_SPEC, CPP_CPU_SPEC): Set appropriately based upon those.
+	(STARTFILE_SPEC32, STARTFILE_SPEC32, STARTFILE_ARCH_SPEC):
+	Define.
+	(STARTFILE_SPEC): Set approriately based upon those.
+	(CPP_CPU_DEFAULT_SPEC, ASM_CPU_DEFAULT_SPEC): Set based upon
+	disposition of DEFAULT_ARCH32_P.
+	(LINK_ARCH32_SPEC, LINK_ARCH64_SPEC): Define.
+	(LINK_ARCH_SPEC, LINK_ARCH_DEFAULT_SPEC): Set based upon those.
+	(CC1_SPEC, MULTILIB_DEFAULTS): Set based upon DEFAULT_ARCH32_P.
+	(MD_STARTFILE_PREFIX): Set correctly based upon SPARC_BI_ARCH.
+	* config/sparc/xm-sysv4-64.h (HOST_BITS_PER_LONG): Only set on
+	arch64/v9.
+	* config/sparc/xm-sp64.h (HOST_BITS_PER_LONG): Likewise.
+	
 Wed Sep 23 22:32:31 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* rtl.h (init_virtual_regs): New function.

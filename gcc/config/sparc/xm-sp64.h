@@ -21,5 +21,7 @@ Boston, MA 02111-1307, USA.  */
 #include <sparc/xm-sparc.h>
 
 /* This describes the machine the compiler is hosted on.  */
+#if defined(__arch64__) || defined(__sparc_v9__) || defined(__sparcv9)
 #undef HOST_BITS_PER_LONG
 #define HOST_BITS_PER_LONG 64
+#endif

@@ -1,0 +1,21 @@
+MULTILIB_OPTIONS = m64/m32
+MULTILIB_DIRNAMES = 64 32
+MULTILIB_MATCHES =
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o
+
+tcrtbeginS.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o tcrtbeginS$(objext)
+
+tcrtendS.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) \
+	  -c $(srcdir)/crtstuff.c -DCRT_END -o tcrtendS$(objext)
+
