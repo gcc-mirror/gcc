@@ -1,3 +1,20 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	Separate user and internals manuals.
+	* Makefile.in (info, $(docdir)/gcc.info, dvi, gcc.dvi): Update
+	dependencies.
+	($(docdir)/gccint.info, gccint.dvi): New targets.
+	(maintainer-clean, install-info, uninstall): Update.
+	* doc/.cvsignore: Add gccint.info*.
+	* doc/include/gcc-common.texi: New file.
+	* doc/gcc.texi: Use it.  Adjust to be a user-only manual.  Put
+	copyright notice in a macro.  Don't include ISBN unless FSFPRINT
+	is defined.
+	* doc/gccint.texi: New file.
+	* doc/configfiles.texi, doc/extend.texi, doc/invoke.texi,
+	doc/md.texi, doc/passes.texi, doc/tm.texi, doc/trouble.texi:
+	Update for separate user and internals manuals.
+
 2001-12-17  Dale Johannesen  <dalej@apple.com>
 
          * config/rs6000/rs6000.h:  CPP_CPU_SPEC: add mcpu=7400.

@@ -8283,13 +8283,7 @@ for a true value, but does not guarantee the value of any other bits,
 but we do not know of any machine that has such an instruction.  If you
 are trying to port GCC to such a machine, include an instruction to
 perform a logical-and of the result with 1 in the pattern for the
-comparison operators and let us know
-@ifset USING
-(@pxref{Bug Reporting,,How to Report Bugs}).
-@end ifset
-@ifclear USING
-(@pxref{Bug Reporting,,How to Report Bugs,gcc.info,Using GCC}).
-@end ifclear
+comparison operators and let us know at @email{gcc@@gcc.gnu.org}.
 
 Often, a machine will have multiple instructions that obtain a value
 from a comparison (or the condition codes).  Here are rules to guide the

@@ -1,0 +1,36 @@
+@c Copyright (C) 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@c Common values used in the GCC manuals:
+
+@set version-GCC 3.1
+
+@c Common macros to support generating man pages:
+
+@macro gcctabopt{body}
+@code{\body\}
+@end macro
+@macro gccoptlist{body}
+@smallexample
+\body\
+@end smallexample
+@end macro
+@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
+@c they get lost at some point in handling the macro.  But if @macro is
+@c used here rather than @alias, it produces double line breaks.
+@iftex
+@alias gol = *
+@end iftex
+@ifnottex
+@macro gol
+@end macro
+@end ifnottex
+
+@c For FSF printing, define FSFPRINT.  Also update the ISBNs and last
+@c printing dates in gcc.texi and gccint.texi.
+@c @set FSFPRINT
+@ifset FSFPRINT
+@smallbook
+@finalout
+@end ifset

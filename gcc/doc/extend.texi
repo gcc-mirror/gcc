@@ -379,64 +379,6 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 Some features that are in ISO C99 but not C89 or C++ are also, as
 extensions, accepted by GCC in C89 mode and in C++.
 
-@c The only difference between the two versions of this menu is that the
-@c version for clear INTERNALS has an extra node, "Constraints" (which
-@c appears in a separate chapter in the other version of the manual).
-@ifset INTERNALS
-@menu
-* Statement Exprs::     Putting statements and declarations inside expressions.
-* Local Labels::        Labels local to a statement-expression.
-* Labels as Values::    Getting pointers to labels, and computed gotos.
-* Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
-* Constructing Calls::	Dispatching a call to another function.
-* Naming Types::        Giving a name to the type of some expression.
-* Typeof::              @code{typeof}: referring to the type of an expression.
-* Lvalues::             Using @samp{?:}, @samp{,} and casts in lvalues.
-* Conditionals::        Omitting the middle operand of a @samp{?:} expression.
-* Long Long::		Double-word integers---@code{long long int}.
-* Complex::             Data types for complex numbers.
-* Hex Floats::          Hexadecimal floating-point constants.
-* Zero Length::         Zero-length arrays.
-* Variable Length::     Arrays whose length is computed at run time.
-* Variadic Macros::	Macros with a variable number of arguments.
-* Escaped Newlines::    Slightly looser rules for escaped newlines.
-* Multi-line Strings::  String literals with embedded newlines.
-* Subscripting::        Any array can be subscripted, even if not an lvalue.
-* Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
-* Initializers::        Non-constant initializers.
-* Compound Literals::   Compound literals give structures, unions
-                         or arrays as values.
-* Designated Inits::	Labeling elements of initializers.
-* Cast to Union::       Casting to union type from any member of the union.
-* Case Ranges::		`case 1 ... 9' and such.
-* Mixed Declarations::	Mixing declarations and code.
-* Function Attributes:: Declaring that functions have no side effects,
-                         or that they can never return.
-* Attribute Syntax::    Formal syntax for attributes.
-* Function Prototypes:: Prototype declarations and old-style definitions.
-* C++ Comments::        C++ comments are recognized.
-* Dollar Signs::        Dollar sign is allowed in identifiers.
-* Character Escapes::   @samp{\e} stands for the character @key{ESC}.
-* Variable Attributes::	Specifying attributes of variables.
-* Type Attributes::	Specifying attributes of types.
-* Alignment::           Inquiring about the alignment of a type or variable.
-* Inline::              Defining inline functions (as fast as macros).
-* Extended Asm::        Assembler instructions with C expressions as operands.
-                         (With them you can define ``built-in'' functions.)
-* Asm Labels::          Specifying the assembler name to use for a C symbol.
-* Explicit Reg Vars::   Defining variables residing in specified registers.
-* Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
-* Incomplete Enums::    @code{enum foo;}, with details to follow.
-* Function Names::	Printable strings which are the name of the current
-			 function.
-* Return Address::      Getting the return or frame address of a function.
-* Vector Extensions::   Using vector instructions through built-in functions.
-* Other Builtins::      Other built-in functions.
-* Pragmas::             Pragmas accepted by GCC.
-* Unnamed Fields::      Unnamed struct/union fields within structs/unions.
-@end menu
-@end ifset
-@ifclear INTERNALS
 @menu
 * Statement Exprs::     Putting statements and declarations inside expressions.
 * Local Labels::        Labels local to a statement-expression.
@@ -488,8 +430,8 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Other Builtins::      Other built-in functions.
 * Pragmas::             Pragmas accepted by GCC.
+* Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 @end menu
-@end ifclear
 
 @node Statement Exprs
 @section Statements and Declarations in Expressions
@@ -3791,11 +3733,7 @@ clobber for reg-stack.c to know that @code{fyl2xp1} pops both inputs.
 asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 @end example
 
-@ifclear INTERNALS
-@c Show the details on constraints if they do not appear elsewhere in
-@c the manual
 @include md.texi
-@end ifclear
 
 @node Asm Labels
 @section Controlling Names Used in Assembler Code

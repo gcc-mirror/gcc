@@ -1,3 +1,7 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcj.texi: Update link to GCC manual.
+
 2001-12-17  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (link_nested_class_to_enclosing): Removed useless

@@ -42,12 +42,8 @@ compiling a function definition, the storage used for that function
 definition's compilation is entirely freed, unless it is an inline
 function, or was deferred for some reason (this can occur in
 templates, for example).
-@ifset USING
-(@pxref{Inline,,An Inline Function is As Fast As a Macro}).
-@end ifset
-@ifclear USING
-(@pxref{Inline,,An Inline Function is As Fast As a Macro,gcc.texi,Using GCC}).
-@end ifclear
+(@pxref{Inline,,An Inline Function is As Fast As a Macro,gcc,Using the
+GNU Compiler Collection (GCC)}).
 
 Here is a list of all the passes of the compiler and their source files.
 Also included is a description of where debugging dumps can be requested

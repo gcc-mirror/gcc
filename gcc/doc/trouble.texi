@@ -87,13 +87,8 @@ it is the only way to win.)
 It is now possible to overcome these problems by defining macros such
 as @code{REAL_VALUE_TYPE}.  But doing so is a substantial amount of
 work for each target machine.
-@ifset INTERNALS
-@xref{Cross-compilation}.
-@end ifset
-@ifclear INTERNALS
-@xref{Cross-compilation,,Cross Compilation and Floating Point Format,
-gcc.info, Using and Porting GCC}.
-@end ifclear
+@xref{Cross-compilation,,Cross Compilation and Floating Point,
+gccint, GNU Compiler Collection (GCC) Internals}.
 
 @item
 At present, the program @file{mips-tfile} which adds debug

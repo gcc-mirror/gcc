@@ -1,30 +1,16 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
-@setfilename gcc.info
+@setfilename gccint.info
 @c INTERNALS is used by md.texi to determine whether to include the
 @c whole of that file, in the internals manual, or only the part
 @c dealing with constraints, in the user manual.
-@clear INTERNALS
+@set INTERNALS
 
-@c NOTE: checks/things to do:
-@c
-@c -have bob do a search in all seven files for "mew" (ideally --mew,
-@c  but i may have forgotten the occasional "--"..).
-@c     Just checked... all have `--'!  Bob 22Jul96
-@c     Use this to search:   grep -n '\-\-mew' *.texi
-@c -item/itemx, text after all (sub/sub)section titles, etc..
-@c -consider putting the lists of options on pp 17--> etc in columns or
-@c  some such.
-@c -overfulls.  do a search for "mew" in the files, and you will see
-@c   overfulls that i noted but could not deal with.
-@c -have to add text:  beginning of chapter 8
-
-@c
-@c anything else?                       --mew 10feb93
+@c See miscellaneous notes in gcc.texi on checks/things to do.
 
 @include gcc-common.texi
 
-@settitle Using the GNU Compiler Collection (GCC)
+@settitle GNU Compiler Collection (GCC) Internals
 
 @c Create a separate index for command line options.
 @defcodeindex op
@@ -67,9 +53,9 @@ Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 @ifnottex
 @dircategory Programming
 @direntry
-* gcc: (gcc).                  The GNU Compiler Collection.
+* gccint: (gccint).            Internals of the GNU Compiler Collection.
 @end direntry
-This file documents the use of the GNU compilers.
+This file documents the internals of the GNU compilers.
 @sp 1
 Published by the Free Software Foundation@*
 59 Temple Place - Suite 330@*
@@ -98,7 +84,7 @@ included in the section entitled ``GNU Free Documentation License''.
 
 @setchapternewpage odd
 @titlepage
-@center @titlefont{Using the GNU Compiler Collection}
+@center @titlefont{GNU Compiler Collection Internals}
 @sp 2
 @center Richard M. Stallman
 @sp 3
@@ -144,32 +130,32 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @contents
 @page
 
-@node Top, G++ and GCC,, (DIR)
+@node Top, Contributing,, (DIR)
 @top Introduction
 @cindex introduction
 
-This manual documents how to use the GNU compilers,
-as well as their features and incompatibilities, and how to report
-bugs.  It corresponds to GCC version @value{version-GCC}.
-The internals of the GNU compilers, including how to port them to new
-targets and some information about how to write front ends for new
-languages, are documented in a separate manual.  @xref{Top,,
-Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
+This manual documents the internals of the GNU compilers, including
+how to port them to new targets and some information about how to
+write front ends for new languages.  It corresponds to GCC version
+@value{version-GCC}.  The use of the GNU compilers is documented in a
+separate manual.  @xref{Top,, Introduction, gcc, Using the GNU
+Compiler Collection (GCC)}.
 
 @menu
-* G++ and GCC::     You can compile C or C++ programs.
-* Standards::       Language standards supported by GCC.
-* Invoking GCC::    Command options supported by @samp{gcc}.
-* C Implementation:: How GCC implements the ISO C specification.
-* C Extensions::    GNU extensions to the C language family.
-* C++ Extensions::  GNU extensions to the C++ language.
-* Objective-C::     GNU Objective-C runtime features.
-* Gcov::	    gcov: a GCC test coverage program.
-* Trouble::         If you have trouble using GCC.
-* Bugs::            How, why and where to report bugs.
-* Service::         How to find suppliers of support for GCC.
 * Contributing::    How to contribute to testing and developing GCC.
-* VMS::             Using GCC on VMS.
+* Makefile::        Additional Makefile and configure information.
+* Portability::     Goals of GCC's portability features.
+* Interface::       Function-call interface of GCC output.
+* Passes::          Order of passes, what they do, and what each file is for.
+* Trees::           The source representation used by the C and C++ front ends.
+* RTL::             The intermediate representation that most passes work on.
+* Machine Desc::    How to write machine description instruction patterns.
+* Target Macros::   How to write the machine description C macros and functions.
+* Config::          Writing the @file{xm-@var{machine}.h} file.
+* Fragments::       Writing the @file{t-@var{target}} and @file{x-@var{host}} files.
+* Configuration Files::  Files created by running @code{configure}.
+* Collect2::        How @code{collect2} works; how it finds @code{ld}.
+* Header Dirs::     Understanding the standard header file directories.
 
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
@@ -183,17 +169,21 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Index::	    Index of concepts and symbol names.
 @end menu
 
-@include frontends.texi
-@include standards.texi
-@include invoke.texi
-@include extend.texi
-@include objc.texi
-@include gcov.texi
-@include trouble.texi
-@include bugreport.texi
-@include service.texi
 @include contribute.texi
-@include vms.texi
+@include makefile.texi
+@include configterms.texi
+@include portability.texi
+@include interface.texi
+@include passes.texi
+@include c-tree.texi
+@include rtl.texi
+@include md.texi
+@include tm.texi
+@include hostconfig.texi
+@include fragments.texi
+@include configfiles.texi
+@include collect2.texi
+@include headerdirs.texi
 
 @include funding.texi
 @include gnu.texi
