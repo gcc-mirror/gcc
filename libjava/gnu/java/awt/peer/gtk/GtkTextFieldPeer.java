@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
+import java.awt.event.KeyEvent;
 import java.awt.peer.*;
 import java.awt.*;
 
@@ -101,5 +102,19 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
   public void setFont (Font f)
   {
     gtkSetFont(((GtkFontPeer)f.getPeer()).getXLFD(), f.getSize());
+  }
+
+  public void handleEvent (AWTEvent e)
+  {
+    if (e.getID () == KeyEvent.KEY_PRESSED)
+      {
+        KeyEvent ke = (KeyEvent)e;
+
+        if (!ke.isConsumed()
+            && ke.getKeyCode() == KeyEvent.VK_ENTER)
+          postActionEvent (getText(), ke.getModifiers ());
+      }
+
+    super.handleEvent (e);
   }
 }

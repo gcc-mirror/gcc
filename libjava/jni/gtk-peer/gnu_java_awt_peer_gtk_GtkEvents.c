@@ -90,10 +90,10 @@ keysym_to_awt_keycode (guint keyval)
 
   vk = gdk_keyval_to_upper (keyval);
 
-  if (vk <= 0x41 && vk <= 0x5A)	/* VK_A through VK_Z */
+  if (vk >= 0x41 && vk <= 0x5A)	/* VK_A through VK_Z */
     return vk;
 
-  if (vk <= 0x30 && vk <= 39)	/* VK_0 through VK_9 */
+  if (vk >= 0x30 && vk <= 0x39)	/* VK_0 through VK_9 */
     return vk;
 
   switch (vk)
@@ -232,6 +232,24 @@ keysym_to_awt_keycode (guint keyval)
     }
 }
 
+static int
+generates_key_typed_event (guint keyval)
+{
+  guint vk;
+
+  vk = gdk_keyval_to_upper (keyval);
+
+  if ((vk >= 0x20 && vk <= 0x7e)	/* Most printable keysyms on a
+                                           standard US keyboard. */
+      || (vk >= 0xFF9F && vk <= 0xFFB9) /* Numeric Keypad keysyms. */
+      || vk == GDK_BackSpace
+      || vk == GDK_Delete
+      || vk == GDK_Return)
+    return 1;
+  else
+    return 0;
+}
+
 void
 awt_event_handler (GdkEvent *event)
 {
@@ -275,6 +293,7 @@ awt_event_handler (GdkEvent *event)
        || event->type == GDK_CONFIGURE
        || event->type == GDK_EXPOSE
        || event->type == GDK_KEY_PRESS
+       || event->type == GDK_KEY_RELEASE
        || event->type == GDK_FOCUS_CHANGE
        || event->type == GDK_MOTION_NOTIFY)
       && gdk_property_get (event->any.window,
@@ -468,29 +487,70 @@ awt_event_handler (GdkEvent *event)
 				  NULL,
 				  NULL,
 				  (guchar **)&obj_ptr);
-		
+
 		/*  	    if (grab  && GTK_WIDGET_HAS_DEFAULT (widget) ) */
 		/*  	      { */
 		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
 					    postKeyEventID,
 					    (jint) AWT_KEY_PRESSED,
 					    (jlong) event->key.time,
-					  state_to_awt_mods (event->key.state),
-				     keysym_to_awt_keycode (event->key.keyval),
+                                            state_to_awt_mods (event->key.state),
+                                            keysym_to_awt_keycode (event->key.keyval),
 					    (jchar) (event->key.length) ? 
 					    event->key.string[0] : 
 					    AWT_KEY_CHAR_UNDEFINED);
-		if (event->key.length)
+
+		if (event->key.length
+                    && generates_key_typed_event(event->key.keyval))
 		  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
 					      postKeyEventID,
 					      (jint) AWT_KEY_TYPED,
 					      (jlong) event->key.time,
-					  state_to_awt_mods (event->key.state),
+                                              state_to_awt_mods (event->key.state),
 					      VK_UNDEFINED,
 					      (jchar) event->key.string[0]);
 	      }
 	  }
 	  break;
+        case GDK_KEY_RELEASE:
+	  {
+	    GtkWidget *widget;
+	    GtkWindow *window;
+
+	    gdk_window_get_user_data (event->any.window, (void **) &widget);
+
+	    window = GTK_WINDOW (gtk_widget_get_ancestor (widget, 
+							  GTK_TYPE_WINDOW));
+	    if (window
+		&& GTK_WIDGET_IS_SENSITIVE (window) 
+		&& window->focus_widget
+		&& GTK_WIDGET_IS_SENSITIVE (window->focus_widget)
+		&& window->focus_widget->window)
+	      {
+		gtk_widget_activate (window->focus_widget);
+		gdk_property_get (window->focus_widget->window,
+				  gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
+				  gdk_atom_intern ("CARDINAL", FALSE),
+				  0,
+				  sizeof (jobject),
+				  FALSE,
+				  NULL,
+				  NULL,
+				  NULL,
+				  (guchar **)&obj_ptr);
+
+		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
+					    postKeyEventID,
+					    (jint) AWT_KEY_RELEASED,
+					    (jlong) event->key.time,
+					  state_to_awt_mods (event->key.state),
+				     keysym_to_awt_keycode (event->key.keyval),
+					    (jchar) (event->key.length) ? 
+					    event->key.string[0] : 
+					    AWT_KEY_CHAR_UNDEFINED);
+              }
+          }
+          break;
 	case GDK_FOCUS_CHANGE:
 	  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
 				      postFocusEventID,

@@ -361,6 +361,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   const char *str;
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
+  jobject *obj_ptr;
 
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
@@ -370,6 +371,18 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   if (GTK_IS_EDITABLE (ptr))
     {
       gtk_entry_set_text (GTK_ENTRY (ptr), str);
+
+      if (gdk_property_get (GTK_WIDGET(ptr)->window,
+                            gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
+                            gdk_atom_intern ("CARDINAL", FALSE),
+                            0,
+                            sizeof (jobject),
+                            FALSE,
+                            NULL,
+                            NULL,
+                            NULL,
+                            (guchar **)&obj_ptr))
+        (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postTextEventID);
     }
   else
     {

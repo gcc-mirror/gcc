@@ -1,3 +1,24 @@
+2003-07-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
+	(setCaretPosition, setEditable): Rely entirely on native
+	implementation.
+	(getArgs): Remove.
+	(postTextEvent): New method.
+	(handleEvent): New method.
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java (handleEvent): New
+	method.
+	* java/awt/event/ActionEvent.java (paramString): Fix formatting.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(keysym_to_awt_keycode): Fix range checks.
+	(generates_key_typed_event): New function.
+	(awt_event_handler): Post AWT_KEY_RELEASED events to event
+	queue.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
+	(gtkInit): Store TextComponent's postTextEvent method ID.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c
+	(setText): Post TEXT_VALUE_CHANGED event to event queue.
+
 2003-07-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Check for usleep declaration.
