@@ -7791,14 +7791,14 @@ static rtx
 apply_distributive_law (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
+  enum rtx_code inner_code;
   rtx lhs, rhs, other;
   rtx tem;
-  enum rtx_code inner_code;
 
-  /* Distributivity is not true for floating point.
-     It can change the value.  So don't do it.
-     -- rms and moshier@world.std.com.  */
-  if (FLOAT_MODE_P (GET_MODE (x)))
+  /* Distributivity is not true for floating point as it can change the
+     value.  So we don't do it unless -funsafe-math-optimizations.  */
+  if (FLOAT_MODE_P (GET_MODE (x))
+      && ! flag_unsafe_math_optimizations)
     return x;
 
   /* The outer operation can only be one of the following:  */
@@ -7806,7 +7806,8 @@ apply_distributive_law (rtx x)
       && code != PLUS && code != MINUS)
     return x;
 
-  lhs = XEXP (x, 0), rhs = XEXP (x, 1);
+  lhs = XEXP (x, 0);
+  rhs = XEXP (x, 1);
 
   /* If either operand is a primitive we can't do anything, so get out
      fast.  */
