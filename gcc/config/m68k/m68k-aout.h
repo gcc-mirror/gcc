@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "naked" 68020,
    a.out object files and debugging, version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,4 +28,17 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 
-/* end of m68k-aout.h */
+/* If defined, a C expression whose value is a string containing the
+   assembler operation to identify the following data as uninitialized global
+   data.  */
+#define BSS_SECTION_ASM_OP "\t.bss"
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of an uninitialized global label named
+   NAME whose size is SIZE bytes.  The variable ROUNDED
+   is the size rounded up to whatever alignment the caller wants.
+   Try to use asm_output_bss to implement this macro.  */
+/* a.out files typically can't handle arbitrary variable alignments so
+   define ASM_OUTPUT_BSS instead of ASM_OUTPUT_ALIGNED_BSS.  */
+#define ASM_OUTPUT_BSS(FILE, NAME, SIZE, ROUNDED) \
+  asm_output_bss ((FILE), (NAME), (SIZE), (ROUNDED))
