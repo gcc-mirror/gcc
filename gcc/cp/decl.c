@@ -12677,10 +12677,12 @@ grok_op_properties (decl, friendp)
       /* Effective C++ rule 23.  */
       if (warn_ecpp
 	  && arity == 2
+	  && !DECL_ASSIGNMENT_OPERATOR_P (decl)
 	  && (operator_code == PLUS_EXPR
 	      || operator_code == MINUS_EXPR
 	      || operator_code == TRUNC_DIV_EXPR
-	      || operator_code == MULT_EXPR)
+	      || operator_code == MULT_EXPR
+	      || operator_code == TRUNC_MOD_EXPR)
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
 	warning ("`%D' should return by value", decl);
 
