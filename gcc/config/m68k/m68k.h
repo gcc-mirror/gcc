@@ -471,8 +471,8 @@ extern int target_flags;
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (((REGNO) < 16					\
-   && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE ((MODE)) / 4 > 8))	\
-   || ((REGNO) < 24				        \
+    && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE (MODE) / 4 > 8))	\
+   || ((REGNO) >= 16 && (REGNO) < 24				        \
        && TARGET_68881                                  \
        && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
 	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)))
@@ -486,6 +486,11 @@ extern int target_flags;
    (apparently) hold whatever you feel like putting in them.
    If using the fpa, don't put a double in d7/a0.  */
 
+/* ??? This is confused.  The check to prohibit d7/a0 overlaps should always
+   be enabled regardless of whether TARGET_FPA is specified.  It isn't clear
+   what the other d/a register checks are for.  Every check using REGNO
+   actually needs to use a range, e.g. 24>=X<56 not <56.  There is probably
+   no one using this code anymore.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 (((REGNO) < 16								\
   && !(TARGET_FPA							\
