@@ -48,10 +48,10 @@ namespace std {
   //
 
   inline int abs(int i)
-  { return i < 0 ? i : -i; }
+  { return i > 0 ? i : -i; }
 
   inline long abs(long i)
-  { return i < 0 ? i : -i; }
+  { return i > 0 ? i : -i; }
   
     //
     // float
