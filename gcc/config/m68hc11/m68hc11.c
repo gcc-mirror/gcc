@@ -221,6 +221,14 @@ m68hc11_override_options ()
 	  sizeof (m68hc11_reg_valid_for_index));
   memset (m68hc11_reg_valid_for_base, 0, sizeof (m68hc11_reg_valid_for_base));
 
+  /* Compilation with -fpic generates a wrong code.  */
+  if (flag_pic)
+    {
+      warning ("-f%s ignored for 68HC11/68HC12 (not supported)",
+	       (flag_pic > 1) ? "PIC" : "pic");
+      flag_pic = 0;
+    }
+
   /* Configure for a 68hc11 processor.  */
   if (TARGET_M6811)
     {
