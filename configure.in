@@ -1504,50 +1504,6 @@ AC_CHECK_PROGS([DEFAULT_YACC], ['bison -y' byacc yacc], [$MISSING bison])
 AC_CHECK_PROGS([DEFAULT_M4], [gm4 gnum4 m4], [$MISSING m4])
 AC_CHECK_PROGS([DEFAULT_LEX], [flex lex], [$MISSING flex])
 
-# FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
-# Set up the list of links to be made.
-# ${links} is the list of link names, and ${files} is the list of names to link to.
-
-# Make the links.
-configlinks="${links}"
-if test -r ./config.status  ; then
-  mv -f ./config.status ./config.back
-fi
-while test -n "${files}" ; do
-  # set file to car of files, files to cdr of files
-  set ${files}; file=$1; shift; files=$*
-  set ${links}; link=$1; shift; links=$*
-
-  if test ! -r ${srcdir}/${file} ; then
-    if test ! -r ${file} ; then
-      echo '***' "${progname}: cannot create a link \"${link}\"," 1>&2
-      echo '***' "since the file \"${srcdir}/${file}\" does not exist." 1>&2
-      exit 1
-    else
-      srcfile=${file}
-    fi
-  else
-    srcfile=${srcdir}/${file}
-  fi
-
-  ${remove} -f ${link}
-  # Make a symlink if possible, otherwise try a hard link
-  if ${symbolic_link} ${srcfile} ${link} >/dev/null 2>&1 ; then
-    true
-  else
-    # We need to re-remove the file because Lynx leaves a 
-    # very strange directory there when it fails an NFS symlink.
-    ${remove} -r -f ${link}
-    ${hard_link} ${srcfile} ${link}
-  fi
-  if test ! -r ${link} ; then
-    echo '***' "${progname}: unable to link \"${link}\" to \"${srcfile}\"." 1>&2
-    exit 1
-  fi
-
-  echo "Linked \"${link}\" to \"${srcfile}\"."
-done
-
 # Create a .gdbinit file which runs the one in srcdir
 # and tells GDB to look there for source files.
 
@@ -2040,7 +1996,6 @@ AC_SUBST(SET_LIB_PATH)
 AC_SUBST(RPATH_ENVVAR)
 AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
-AC_SUBST(configlinks)
 AC_SUBST(gcc_version_trigger)
 AC_SUBST(gcc_version)
 AC_SUBST(tooldir)
