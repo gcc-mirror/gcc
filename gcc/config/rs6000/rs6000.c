@@ -95,9 +95,6 @@ char *rs6000_sdata_name = (char *)0;
 /* Whether a System V.4 varargs area was created.  */
 int rs6000_sysv_varargs_p;
 
-/* Whether we need to save the TOC register.  */
-int rs6000_save_toc_p;
-
 /* ABI enumeration available for subtarget to use.  */
 enum rs6000_abi rs6000_current_abi;
 
@@ -2236,7 +2233,6 @@ rs6000_save_machine_status (p)
 
   p->machine = machine;
   machine->sysv_varargs_p = rs6000_sysv_varargs_p;
-  machine->save_toc_p     = rs6000_save_toc_p;
   machine->fpmem_size     = rs6000_fpmem_size;
   machine->fpmem_offset   = rs6000_fpmem_offset;
 }
@@ -2248,7 +2244,6 @@ rs6000_restore_machine_status (p)
   struct machine_function *machine = p->machine;
 
   rs6000_sysv_varargs_p = machine->sysv_varargs_p;
-  rs6000_save_toc_p     = machine->save_toc_p;
   rs6000_fpmem_size     = machine->fpmem_size;
   rs6000_fpmem_offset   = machine->fpmem_offset;
 
@@ -2263,7 +2258,6 @@ rs6000_init_expanders ()
 {
   /* Reset varargs and save TOC indicator */
   rs6000_sysv_varargs_p = 0;
-  rs6000_save_toc_p = 0;
   rs6000_fpmem_size = 0;
   rs6000_fpmem_offset = 0;
   pic_offset_table_rtx = (rtx)0;
@@ -3023,8 +3017,8 @@ rs6000_stack_info ()
   /* Does this function call anything? */
   info_ptr->calls_p = rs6000_makes_calls ();
 
-  /* Do we need to allocate space to save the toc? */
-  if (rs6000_save_toc_p)
+  /* Allocate space to save the toc. */
+  if (abi == ABI_NT)
     {
       info_ptr->toc_save_p = 1;
       info_ptr->toc_size = reg_size;
@@ -3482,10 +3476,6 @@ output_prolog (file, size)
 	asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset + sp_offset,
 		     reg_names[sp_reg]);
     }
-
-  if (info->toc_save_p)
-    asm_fprintf (file, store_reg, reg_names[2], info->toc_save_offset + sp_offset,
-		 reg_names[sp_reg]);
 
   /* NT needs us to probe the stack frame every 4k pages for large frames, so
      do it here.  */
