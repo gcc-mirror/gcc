@@ -1,4 +1,6 @@
-2003-01-15  Segher Boessenkool  <segher@koffie.nl>
+2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
+
+	Segher Boessenkool  <segher@koffie.nl>
 
 	* predict.c (real_inv_br_prob_base): New variable.
 	(propagate_freq): Use multiply by reciprocal instead of
