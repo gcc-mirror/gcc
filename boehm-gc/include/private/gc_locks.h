@@ -43,6 +43,7 @@
  *   
  */  
 # ifdef THREADS
+   void GC_noop1 GC_PROTO((word));
 #  ifdef PCR_OBSOLETE	/* Faster, but broken with multiple lwp's	*/
 #    include  "th/PCR_Th.h"
 #    include  "th/PCR_ThCrSec.h"
@@ -236,7 +237,7 @@
      /* "set" means 0 and "clear" means 1 here.		*/
 #    define GC_test_and_set(addr) !GC_test_and_clear(addr);
 #    define GC_TEST_AND_SET_DEFINED
-#    define GC_clear(addr) GC_noop1(addr); *(volatile unsigned int *)addr = 1;
+#    define GC_clear(addr) GC_noop1((word)(addr)); *(volatile unsigned int *)addr = 1;
 	/* The above needs a memory barrier! */
 #    define GC_CLEAR_DEFINED
 #  endif

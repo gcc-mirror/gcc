@@ -100,8 +100,8 @@ GC_thread GC_lookup_thread(pthread_t id);
  * The only way to suspend threads given the pthread interface is to send
  * signals.  Unfortunately, this means we have to reserve
  * a signal, and intercept client calls to change the signal mask.
+ * We use SIG_SUSPEND, defined in gc_priv.h.
  */
-# define SIG_SUSPEND (SIGRTMIN + 6)
 
 pthread_mutex_t GC_suspend_lock = PTHREAD_MUTEX_INITIALIZER;
 				/* Number of threads stopped so far	*/

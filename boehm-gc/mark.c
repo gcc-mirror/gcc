@@ -427,21 +427,22 @@ GC_bool GC_mark_stack_empty()
 #endif
 
 /* Given a pointer to someplace other than a small object page or the	*/
-/* first page of a large object, return a pointer either to the		*/
-/* start of the large object or NIL.					*/
-/* In the latter case black list the address current.			*/
-/* Returns NIL without black listing if current points to a block	*/
-/* with IGNORE_OFF_PAGE set.						*/
+/* first page of a large object, either:				*/
+/*	- return a pointer to somewhere in the first page of the large	*/
+/*	  object, if current points to a large object.			*/
+/*	  In this case *hhdr is replaced with a pointer to the header	*/
+/*	  for the large object.						*/
+/*	- just return current if it does not point to a large object.	*/
 /*ARGSUSED*/
 # ifdef PRINT_BLACK_LIST
-  ptr_t GC_find_start(current, hhdr, source)
-  word source;
+  ptr_t GC_find_start(current, hhdr, new_hdr_p, source)
+  ptr_t source;
 # else
-  ptr_t GC_find_start(current, hhdr)
+  ptr_t GC_find_start(current, hhdr, new_hdr_p)
 # define source 0
 # endif
 register ptr_t current;
-register hdr * hhdr;
+register hdr *hhdr, **new_hdr_p;
 {
     if (GC_all_interior_pointers) {
 	if (hhdr != 0) {
@@ -457,17 +458,15 @@ register hdr * hhdr;
 	    if ((word *)orig - (word *)current
 	         >= (ptrdiff_t)(hhdr->hb_sz)) {
 	        /* Pointer past the end of the block */
-	        GC_ADD_TO_BLACK_LIST_NORMAL((word)orig, source);
-	        return(0);
+	        return(orig);
 	    }
+	    *new_hdr_p = hhdr;
 	    return(current);
 	} else {
-	    GC_ADD_TO_BLACK_LIST_NORMAL((word)current, source);
-	    return(0);
+	    return(current);
         }
     } else {
-        GC_ADD_TO_BLACK_LIST_NORMAL((word)current, source);
-        return(0);
+        return(current);
     }
 #   undef source
 }

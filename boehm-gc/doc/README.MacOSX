@@ -17,3 +17,11 @@ June, 1 2000
 
 Dietmar Planitzer
 dave.pl@ping.at
+
+Note from Andrew Begel:
+
+One more fix to enable gc.a to link successfully into a shared library for
+MacOS X. You have to add -fno-common to the CFLAGS in the Makefile. MacOSX
+disallows common symbols in anything that eventually finds its way into a
+shared library. (I don't completely understand why, but -fno-common seems to
+work and doesn't mess up the garbage collector's functionality).

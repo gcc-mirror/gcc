@@ -25,7 +25,7 @@
 #ifndef GC_PMARK_H
 # define GC_PMARK_H
 
-# ifdef KEEP_BACK_PTRS
+# if defined(KEEP_BACK_PTRS) || defined(PRINT_BLACK_LIST)
 #   include "dbg_mlc.h"
 # endif
 # ifndef GC_MARK_H
@@ -132,12 +132,17 @@ extern mse * GC_mark_stack;
      */
 #endif /* PARALLEL_MARK */
 
+/* Return a pointer to within 1st page of object.  	*/
+/* Set *new_hdr_p to corr. hdr.				*/
+#ifdef __STDC__
 # ifdef PRINT_BLACK_LIST
-  ptr_t GC_find_start(ptr_t current, hdr *hhdr, word source);
+    ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p, word source);
 # else
-  ptr_t GC_find_start(ptr_t current, hdr *hhdr);
-# define source 0
+    ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p);
 # endif
+#else
+  ptr_t GC_find_start();
+#endif
 
 mse *GC_signal_mark_stack_overflow(mse *msp);
 
@@ -169,11 +174,11 @@ mse *GC_signal_mark_stack_overflow(mse *msp);
 }
 
 #ifdef PRINT_BLACK_LIST
-#   define GC_FIND_START(current, hhdr, source) \
-	GC_find_start(current, hhdr, source)
+#   define GC_FIND_START(current, hhdr, new_hdr_p, source) \
+	GC_find_start(current, hhdr, new_hdr_p, source)
 #else
-#   define GC_FIND_START(current, hhdr, source) \
-	GC_find_start(current, hhdr)
+#   define GC_FIND_START(current, hhdr, new_hdr_p, source) \
+	GC_find_start(current, hhdr, new_hdr_p)
 #endif
 
 /* Push the contents of current onto the mark stack if it is a valid	*/
@@ -188,9 +193,10 @@ mse *GC_signal_mark_stack_overflow(mse *msp);
  \
     GET_HDR(my_current, my_hhdr); \
     if (IS_FORWARDING_ADDR_OR_NIL(my_hhdr)) { \
-         my_current = GC_FIND_START(my_current, my_hhdr, (word)source); \
-         if (my_current == 0) goto exit_label; \
-         my_hhdr = GC_find_header(my_current); \
+	 hdr * new_hdr = GC_invalid_header; \
+         my_current = GC_FIND_START(my_current, my_hhdr, \
+			 	    &new_hdr, (word)source); \
+         my_hhdr = new_hdr; \
     } \
     PUSH_CONTENTS_HDR(my_current, mark_stack_top, mark_stack_limit, \
 		  source, exit_label, my_hhdr);	\
@@ -208,27 +214,6 @@ exit_label: ; \
     PUSH_CONTENTS_HDR(my_current, mark_stack_top, mark_stack_limit, \
 		  source, exit_label, my_hhdr);	\
 exit_label: ; \
-}
-
-/* As above, but deal with two pointers in interleaved fashion.	*/
-# define HC_PUSH_CONTENTS2(current1, current2, mark_stack_top, \
-			   mark_stack_limit, \
-		           source1, source2, exit_label1, exit_label2) \
-{ \
-    hdr * hhdr1; \
-    ptr_t my_current1 = current1; \
-    hdr * hhdr2; \
-    ptr_t my_current2 = current2; \
- \
-    HC_GET_HDR2(my_current1, hhdr1, source1, my_current2, hhdr2, source2); \
-    PUSH_CONTENTS_HDR(my_current1, mark_stack_top, mark_stack_limit, \
-		  source1, exit_label1, hhdr1);	\
-exit_label1: ; \
-    if (0 != hhdr2) { \
-      PUSH_CONTENTS_HDR(my_current2, mark_stack_top, mark_stack_limit, \
-		  source2, exit_label2, hhdr2);	\
-    } \
-exit_label2: ; \
 }
 
 /* Set mark bit, exit if it was already set.	*/
@@ -257,10 +242,12 @@ exit_label2: ; \
 # endif /* USE_MARK_BYTES */
 
 /* If the mark bit corresponding to current is not set, set it, and 	*/
-/* push the contents of the object on the mark stack.  Since we		*/
-/* already have the header, we only look at the low order bits of 	*/
-/* current.  (The value of current doesn't matter if hhdr = 		*/
-/* GC_invalid_header.)							*/
+/* push the contents of the object on the mark stack.  For a small 	*/
+/* object we assume that current is the (possibly interior) pointer	*/
+/* to the object.  For large objects we assume that current points	*/
+/* to somewhere inside the first page of the object.  If		*/
+/* GC_all_interior_pointers is set, it may have been previously 	*/
+/* adjusted to make that true.						*/
 # define PUSH_CONTENTS_HDR(current, mark_stack_top, mark_stack_limit, \
 		           source, exit_label, hhdr) \
 { \
@@ -346,7 +333,7 @@ mse * GC_mark_from GC_PROTO((mse * top, mse * bottom, mse *limit));
     while (!GC_mark_stack_empty()) MARK_FROM_MARK_STACK(); \
     if (GC_mark_state != MS_NONE) { \
         GC_set_mark_bit(real_ptr); \
-        while (!GC_mark_some((ptr_t)0)); \
+        while (!GC_mark_some((ptr_t)0)) {} \
     } \
 }
 

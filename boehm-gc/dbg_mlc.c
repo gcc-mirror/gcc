@@ -26,7 +26,7 @@ GC_API void GC_register_finalizer_no_order
 /* Check whether object with base pointer p has debugging info	*/ 
 /* p is assumed to point to a legitimate object in our part	*/
 /* of the heap.							*/
-/* This excludes the check as to whether tha back pointer is 	*/
+/* This excludes the check as to whether the back pointer is 	*/
 /* odd, which is added by the GC_HAS_DEBUG_INFO macro.		*/
 /* Note that if DBG_HDRS_ALL is set, uncollectable objects	*/
 /* on free lists may not have debug information set.  Thus it's	*/
@@ -233,7 +233,7 @@ ptr_t p;
 ptr_t GC_store_debug_info(p, sz, string, integer)
 register ptr_t p;	/* base pointer */
 word sz; 	/* bytes */
-char * string;
+GC_CONST char * string;
 word integer;
 {
     register word * result = (word *)((oh *)p + 1);
@@ -252,7 +252,7 @@ word integer;
       ((oh *)p) -> oh_sz = sz;
       ((oh *)p) -> oh_sf = START_FLAG ^ (word)result;
       ((word *)p)[BYTES_TO_WORDS(GC_size(p))-1] =
-         result[ROUNDED_UP_WORDS(sz)] = END_FLAG ^ (word)result;
+         result[SIMPLE_ROUNDED_UP_WORDS(sz)] = END_FLAG ^ (word)result;
 #   endif
     UNLOCK();
     return((ptr_t)result);
@@ -273,7 +273,7 @@ word integer;
     /* But that's expensive.  And this way things should only appear	*/
     /* inconsistent while we're in the handler.				*/
 #   ifdef KEEP_BACK_PTRS
-      ((oh *)p) -> oh_back_ptr = 0;
+      ((oh *)p) -> oh_back_ptr = HIDE_BACK_PTR(NOT_MARKED);
 #   endif
     ((oh *)p) -> oh_string = string;
     ((oh *)p) -> oh_int = integer;
@@ -281,7 +281,7 @@ word integer;
       ((oh *)p) -> oh_sz = sz;
       ((oh *)p) -> oh_sf = START_FLAG ^ (word)result;
       ((word *)p)[BYTES_TO_WORDS(GC_size(p))-1] =
-         result[ROUNDED_UP_WORDS(sz)] = END_FLAG ^ (word)result;
+         result[SIMPLE_ROUNDED_UP_WORDS(sz)] = END_FLAG ^ (word)result;
 #   endif
     return((ptr_t)result);
 }
@@ -305,9 +305,9 @@ register oh * ohdr;
     if (((word *)ohdr)[BYTES_TO_WORDS(gc_sz)-1] != (END_FLAG ^ (word)body)) {
         return((ptr_t)((word *)ohdr + BYTES_TO_WORDS(gc_sz)-1));
     }
-    if (((word *)body)[ROUNDED_UP_WORDS(ohdr -> oh_sz)]
+    if (((word *)body)[SIMPLE_ROUNDED_UP_WORDS(ohdr -> oh_sz)]
         != (END_FLAG ^ (word)body)) {
-        return((ptr_t)((word *)body + ROUNDED_UP_WORDS(ohdr -> oh_sz)));
+        return((ptr_t)((word *)body + SIMPLE_ROUNDED_UP_WORDS(ohdr -> oh_sz)));
     }
     return(0);
 }
@@ -964,15 +964,21 @@ struct closure {
     			  	      GC_make_closure(fn,cd), ofn, ocd);
 }
 
+#ifdef GC_ADD_CALLER
+# define RA GC_RETURN_ADDR,
+#else
+# define RA
+#endif
+
 GC_PTR GC_debug_malloc_replacement(lb)
 size_t lb;
 {
-    return GC_debug_malloc(lb, "unknown", 0);
+    return GC_debug_malloc(lb, RA "unknown", 0);
 }
 
 GC_PTR GC_debug_realloc_replacement(p, lb)
 GC_PTR p;
 size_t lb;
 {
-    return GC_debug_realloc(p, lb, "unknown", 0);
+    return GC_debug_realloc(p, lb, RA "unknown", 0);
 }

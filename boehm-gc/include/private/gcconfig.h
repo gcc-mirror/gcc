@@ -174,7 +174,7 @@
 #    define IA64
 #    define mach_type_known
 # endif
-# if defined(LINUX) && defined(powerpc)
+# if defined(LINUX) && (defined(powerpc) || defined(__powerpc__))
 #    define POWERPC
 #    define mach_type_known
 # endif
@@ -350,6 +350,14 @@
 #    define S370
 #    define mach_type_known
 # endif
+# if defined(__GNU__)
+#   if defined(__i386__)
+/* The Debian Hurd running on generic PC */  
+#     define  HURD
+#     define  I386
+#     define  mach_type_known
+#    endif 
+# endif
 
 /* Feel free to add more clauses here */
 
@@ -497,6 +505,14 @@
  * word stores of 0 are used instead.
  */
 
+/* If we are using a recent version of gcc, we can use __builtin_unwind_init()
+ * to push the relevant registers onto the stack.  This generally makes
+ * USE_GENERIC_PUSH_REGS the preferred approach for marking from registers.
+ */
+# if defined(__GNUC__) && ((__GNUC__ >= 3) || \
+			   (__GNUC__ == 2 && __GNUC_MINOR__ >= 8))
+#   define HAVE_BUILTIN_UNWIND_INIT
+# endif
 
 # define STACK_GRAN 0x1000000
 # ifdef M68K
@@ -804,6 +820,9 @@
 #     define ALIGN_DOUBLE /* Not strictly necessary, but may give speed   */
 			  /* improvement on Pentiums.			  */
 #   endif
+#   ifdef HAVE_BUILTIN_UNWIND_INIT
+#	define USE_GENERIC_PUSH_REGS
+#   endif
 #   ifdef SEQUENT
 #	define OS_TYPE "SEQUENT"
 	extern int etext;
@@ -1023,6 +1042,17 @@
 #     define DATASTART ((ptr_t) &__nullarea)
 #     define DATAEND ((ptr_t) &_end)
 #   endif
+#   ifdef HURD
+#     define OS_TYPE "HURD"
+#     define STACK_GROWS_DOWN
+#     define HEURISTIC2
+      extern int  __data_start;
+#     define DATASTART ( (ptr_t) (&__data_start))
+      extern int   _end;
+#     define DATAEND ( (ptr_t) (&_end))
+/* #     define MPROTECT_VDB  Not quite working yet? */
+#     define DYNAMIC_LOADING
+#   endif
 # endif
 
 # ifdef NS32K
@@ -1039,7 +1069,6 @@
 
 # ifdef MIPS
 #   define MACH_TYPE "MIPS"
-/* #   define STACKBOTTOM ((ptr_t)0x7fff8000)  sometimes also works.  */
 #   ifdef LINUX
       /* This was developed for a linuxce style platform.  Probably	*/
       /* needs to be tweaked for workstation class machines.		*/
@@ -1047,8 +1076,9 @@
       extern int __data_start;
 #     define DATASTART ((ptr_t)(&__data_start))
 #     define ALIGNMENT 4
-#     define USE_GENERIC_PUSH_REGS 1
-#     define STACKBOTTOM 0x80000000
+#     define USE_GENERIC_PUSH_REGS
+#     define STACKBOTTOM ((ptr_t)0x7fff8000)
+        /* Older toolchains may need 0x80000000.	*/
 	/* In many cases, this should probably use LINUX_STACKBOTTOM 	*/
 	/* instead. But some kernel versions seem to give the wrong	*/
 	/* value from /proc.						*/
@@ -1106,7 +1136,7 @@
 #     define ALIGNMENT 4
 #     define OS_TYPE "NETBSD"
 #     define HEURISTIC2
-#     define USE_GENERIC_PUSH_REGS 1
+#     define USE_GENERIC_PUSH_REGS
 #     ifdef __ELF__
         extern int etext;
 #       define DATASTART GC_data_start
@@ -1585,6 +1615,12 @@
 --> inconsistent configuration
 # endif
 # if defined(HPUX_THREADS) && !defined(HPUX)
+--> inconsistent configuration
+# endif
+# if defined(WIN32_THREADS) && !defined(MSWIN32)
+    /* Ideally CYGWIN32 should work, in addition to MSWIN32.  I suspect the necessary code	*/
+    /* is mostly there, but nobody has actually made sure the right combination of pieces is	*/
+    /* compiled in, etc.									*/
 --> inconsistent configuration
 # endif
 # if defined(PCR) || defined(SRC_M3) || \

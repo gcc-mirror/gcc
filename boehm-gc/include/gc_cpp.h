@@ -83,7 +83,7 @@ Cautions:
 1. Be sure the collector has been augmented with "make c++".
 
 2.  If your compiler supports the new "operator new[]" syntax, then
-add -DOPERATOR_NEW_ARRAY to the Makefile.
+add -DGC_OPERATOR_NEW_ARRAY to the Makefile.
 
 If your compiler doesn't support "operator new[]", beware that an
 array of type T, where T is derived from "gc", may or may not be
@@ -137,10 +137,17 @@ by UseGC.  GC is an alias for UseGC, unless GC_NAME_CONFLICT is defined.
 #define _cdecl
 #endif
 
-#if ! defined( OPERATOR_NEW_ARRAY ) \
-    && (__BORLANDC__ >= 0x450 || (__GNUC__ >= 2 && __GNUC_MINOR__ >= 6) \
-	|| __WATCOMC__ >= 1050 || _MSC_VER >= 1100)
-#   define OPERATOR_NEW_ARRAY
+#if ! defined( GC_NO_OPERATOR_NEW_ARRAY ) \
+    && !defined(_ENABLE_ARRAYNEW) /* Digimars */ \
+    && (defined(__BORLANDC__) && (__BORLANDC__ < 0x450) \
+	|| (defined(__GNUC__) && \
+	    (__GNUC__ < 2 || __GNUC__ == 2 && __GNUC_MINOR__ < 6)) \
+	|| (defined(__WATCOMC__) && __WATCOMC__ < 1050))
+#   define GC_NO_OPERATOR_NEW_ARRAY
+#endif
+
+#if !defined(GC_NO_OPERATOR_NEW_ARRAY) && !defined(GC_OPERATOR_NEW_ARRAY)
+#   define GC_OPERATOR_NEW_ARRAY
 #endif
 
 enum GCPlacement {UseGC,
@@ -154,11 +161,11 @@ class gc {public:
     inline void* operator new( size_t size, GCPlacement gcp );
     inline void operator delete( void* obj );
 
-#ifdef OPERATOR_NEW_ARRAY
+#ifdef GC_OPERATOR_NEW_ARRAY
     inline void* operator new[]( size_t size );
     inline void* operator new[]( size_t size, GCPlacement gcp );
     inline void operator delete[]( void* obj );
-#endif /* OPERATOR_NEW_ARRAY */
+#endif /* GC_OPERATOR_NEW_ARRAY */
     };    
     /*
     Instances of classes derived from "gc" will be allocated in the 
@@ -204,7 +211,7 @@ inline void* operator new(
     classes derived from "gc_cleanup" or containing members derived
     from "gc_cleanup". */
 
-#ifdef OPERATOR_NEW_ARRAY
+#ifdef GC_OPERATOR_NEW_ARRAY
 
 #ifdef _MSC_VER
  /** This ensures that the system default operator new[] doesn't get
@@ -257,7 +264,7 @@ inline void* operator new[](
     /*
     The operator new for arrays, identical to the above. */
 
-#endif /* OPERATOR_NEW_ARRAY */
+#endif /* GC_OPERATOR_NEW_ARRAY */
 
 /****************************************************************************
 
@@ -280,7 +287,7 @@ inline void gc::operator delete( void* obj ) {
     GC_FREE( obj );}
     
 
-#ifdef OPERATOR_NEW_ARRAY
+#ifdef GC_OPERATOR_NEW_ARRAY
 
 inline void* gc::operator new[]( size_t size ) {
     return gc::operator new( size );}
@@ -291,7 +298,7 @@ inline void* gc::operator new[]( size_t size, GCPlacement gcp ) {
 inline void gc::operator delete[]( void* obj ) {
     gc::operator delete( obj );}
     
-#endif /* OPERATOR_NEW_ARRAY */
+#endif /* GC_OPERATOR_NEW_ARRAY */
 
 
 inline gc_cleanup::~gc_cleanup() {
@@ -305,11 +312,12 @@ inline gc_cleanup::gc_cleanup() {
     void* oldData;
     void* base = GC_base( (void *) this );
     if (0 != base)  {
-      GC_REGISTER_FINALIZER_IGNORE_SELF( 
+      // Don't call the debug version, since this is a real base address.
+      GC_register_finalizer_ignore_self( 
         base, (GC_finalization_proc)cleanup, (void*) ((char*) this - (char*) base), 
         &oldProc, &oldData );
       if (0 != oldProc) {
-        GC_REGISTER_FINALIZER_IGNORE_SELF( base, oldProc, oldData, 0, 0 );}}}
+        GC_register_finalizer_ignore_self( base, oldProc, oldData, 0, 0 );}}}
 
 inline void* operator new( 
     size_t size, 
@@ -331,7 +339,7 @@ inline void* operator new(
     return obj;}
         
 
-#ifdef OPERATOR_NEW_ARRAY
+#ifdef GC_OPERATOR_NEW_ARRAY
 
 inline void* operator new[]( 
     size_t size, 
@@ -341,7 +349,7 @@ inline void* operator new[](
 {
     return ::operator new( size, gcp, cleanup, clientData );}
 
-#endif /* OPERATOR_NEW_ARRAY */
+#endif /* GC_OPERATOR_NEW_ARRAY */
 
 
 #endif /* GC_CPP_H */

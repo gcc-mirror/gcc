@@ -9,6 +9,9 @@ Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
 The files Makefile.am, and configure.in are
 Copyright (c) 2001 by Red Hat Inc. All rights reserved.
 
+The files config.guess and a few others are copyrighted by the Free
+Software Foundation.
+
 THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
 OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
 
@@ -18,7 +21,13 @@ Permission to modify the code and to distribute modified code is granted,
 provided the above notices are retained, and a notice that the code was
 modified is included with the above copyright notice.
 
-This is version 6.0alpha7 of a conservative garbage collector for C and C++.
+A few of the files needed to use the GNU-style build procedure come with
+slightly different licenses, though they are all similar in spirit.  A few
+are GPL'ed, but with an exception that should cover all uses in the
+collector.  (If you are concerned about such things, I recommend you look
+at the notice in config.guess or ltmain.sh.)
+
+This is version 6.0 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 

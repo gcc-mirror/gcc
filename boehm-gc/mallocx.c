@@ -323,10 +323,15 @@ extern ptr_t GC_reclaim_generic();
 /* GC_malloc_many or friends to replenish it.  (We do not round up	*/
 /* object sizes, since a call indicates the intention to consume many	*/
 /* objects of exactly this size.)					*/
+/* We return the free-list by assigning it to *result, since it is	*/
+/* not safe to return, e.g. a linked list of pointer-free objects,	*/
+/* since the collector would not retain the entire list if it were 	*/
+/* invoked just as we were returning.					*/
 /* Note that the client should usually clear the link field.		*/
-ptr_t GC_generic_malloc_many(lb, k)
+void GC_generic_malloc_many(lb, k, result)
 register word lb;
 register int k;
+ptr_t *result;
 {
 ptr_t op;
 ptr_t p;
@@ -345,13 +350,20 @@ DCL_LOCK_STATE;
     if (!SMALL_OBJ(lb)) {
         op = GC_generic_malloc(lb, k);
         if(0 != op) obj_link(op) = 0;
-        return(op);
+	*result = op;
+        return;
     }
     lw = ALIGNED_WORDS(lb);
     GC_INVOKE_FINALIZERS();
     DISABLE_SIGNALS();
     LOCK();
     if (!GC_is_initialized) GC_init_inner();
+    /* Do our share of marking work */
+      if (GC_incremental && !GC_dont_gc) {
+        ENTER_GC();
+	GC_collect_a_little_inner(1);
+        EXIT_GC();
+      }
     /* First see if we can reclaim a page of objects waiting to be */
     /* reclaimed.						   */
     {
@@ -403,6 +415,7 @@ DCL_LOCK_STATE;
 		GC_mem_found += my_words_allocd;
 #	      endif
 #	      ifdef PARALLEL_MARK
+		*result = op;
 		(void)GC_atomic_add(
 				(volatile GC_word *)(&GC_words_allocd_tmp),
 				(GC_word)(my_words_allocd));
@@ -410,7 +423,8 @@ DCL_LOCK_STATE;
 		-- GC_fl_builder_count;
 		if (GC_fl_builder_count == 0) GC_notify_all_builder();
 		GC_release_mark_lock();
-		return GC_clear_stack(op);
+		(void) GC_clear_stack(0);
+		return;
 #	      else
 	        GC_words_allocd += my_words_allocd;
 	        goto out;
@@ -464,11 +478,13 @@ DCL_LOCK_STATE;
 
 	  op = GC_build_fl(h, lw, ok -> ok_init, 0);
 #	  ifdef PARALLEL_MARK
+	    *result = op;
 	    GC_acquire_mark_lock();
 	    -- GC_fl_builder_count;
 	    if (GC_fl_builder_count == 0) GC_notify_all_builder();
 	    GC_release_mark_lock();
-	    return GC_clear_stack(op);
+	    (void) GC_clear_stack(0);
+	    return;
 #	  else
 	    goto out;
 #	  endif
@@ -481,14 +497,17 @@ DCL_LOCK_STATE;
       if (0 != op) obj_link(op) = 0;
     
   out:
+    *result = op;
     UNLOCK();
     ENABLE_SIGNALS();
-    return(GC_clear_stack(op));
+    (void) GC_clear_stack(0);
 }
 
 GC_PTR GC_malloc_many(size_t lb)
 {
-    return(GC_generic_malloc_many(lb, NORMAL));
+    ptr_t result;
+    GC_generic_malloc_many(lb, NORMAL, &result);
+    return result;
 }
 
 /* Note that the "atomic" version of this would be unsafe, since the	*/

@@ -26,13 +26,11 @@ typedef struct hblkhdr hdr;
  * table.
  *
  * This defines HDR, GET_HDR, and SET_HDR, the main macros used to
- * retrieve and set object headers.  We also define some variants to
- * retrieve 2 unrelated headers in interleaved fashion.  This
- * slightly improves scheduling.
+ * retrieve and set object headers.
  *
  * Since 5.0 alpha 5, we can also take advantage of a header lookup
  * cache.  This is a locally declared direct mapped cache, used inside
- * the marker.  The HC_GET_HDR and HC_GET_HDR2 macros use and maintain this
+ * the marker.  The HC_GET_HDR macro uses and maintains this
  * cache.  Assuming we get reasonable hit rates, this shaves a few
  * memory references from each pointer validation.
  */
@@ -67,16 +65,13 @@ extern hdr * GC_invalid_header; /* header for an imaginary block 	*/
 
 
 /* Check whether p and corresponding hhdr point to long or invalid	*/
-/* object.  If so, advance them	to					*/
+/* object.  If so, advance hhdr	to					*/
 /* beginning of	block, or set hhdr to GC_invalid_header.		*/
 #define ADVANCE(p, hhdr, source) \
-            if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) { \
-              p = GC_FIND_START(p, hhdr, (word)source); \
-              if (p == 0) { \
-		hhdr = GC_invalid_header; \
-	      } else { \
-                hhdr = GC_find_header(p); \
-	      } \
+	    { \
+	      hdr * new_hdr = GC_invalid_header; \
+              p = GC_FIND_START(p, hhdr, &new_hdr, (word)source); \
+	      hhdr = new_hdr; \
     	    }
 
 #ifdef USE_HDR_CACHE
@@ -124,35 +119,12 @@ extern hdr * GC_invalid_header; /* header for an imaginary block 	*/
 	  } else { \
 	    HC_MISS(); \
 	    GET_HDR(p, hhdr); \
-	    ADVANCE(p, hhdr, source); \
-	    hce -> block_addr = (word)(p) >> LOG_HBLKSIZE; \
-	    hce -> hce_hdr = hhdr; \
-	  } \
-	}
-
-# define HC_GET_HDR2(p1, hhdr1, source1, p2, hhdr2, source2) \
-	{ \
-	  hdr_cache_entry * hce1 = HCE(p1); \
-	  hdr_cache_entry * hce2 = HCE(p2); \
-	  if (HCE_VALID_FOR(hce1, p1)) { \
-	    HC_HIT(); \
-	    hhdr1 = hce1 -> hce_hdr; \
-	  } else { \
-	    HC_MISS(); \
-	    GET_HDR(p1, hhdr1); \
-	    ADVANCE(p1, hhdr1, source1); \
-	    hce1 -> block_addr = (word)(p1) >> LOG_HBLKSIZE; \
-	    hce1 -> hce_hdr = hhdr1; \
-	  } \
-	  if (HCE_VALID_FOR(hce2, p2)) { \
-	    HC_HIT(); \
-	    hhdr2 = hce2 -> hce_hdr; \
-	  } else { \
-	    HC_MISS(); \
-	    GET_HDR(p2, hhdr2); \
-	    ADVANCE(p2, hhdr2, source2); \
-	    hce2 -> block_addr = (word)(p2) >> LOG_HBLKSIZE; \
-	    hce2 -> hce_hdr = hhdr2; \
+            if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) { \
+	      ADVANCE(p, hhdr, source); \
+	    } else { \
+	      hce -> block_addr = (word)(p) >> LOG_HBLKSIZE; \
+	      hce -> hce_hdr = hhdr; \
+	    } \
 	  } \
 	}
 
@@ -165,16 +137,10 @@ extern hdr * GC_invalid_header; /* header for an imaginary block 	*/
 # define HC_GET_HDR(p, hhdr, source) \
 	{ \
 	  GET_HDR(p, hhdr); \
-	  ADVANCE(p, hhdr, source); \
+          if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) { \
+	    ADVANCE(p, hhdr, source); \
+	  } \
 	}
-
-# define HC_GET_HDR2(p1, hhdr1, source1, p2, hhdr2, source2) \
-	{ \
-	  GET_HDR2(p1, hhdr1, p2, hhdr2); \
-	  ADVANCE(p1, hhdr1, source1); \
-	  ADVANCE(p2, hhdr2, source2); \
-	}
-
 #endif
 
 typedef struct bi {
@@ -229,8 +195,6 @@ typedef struct bi {
 #   define GET_HDR(p, hhdr) (hhdr) = HDR(p)
 #   define SET_HDR(p, hhdr) HDR_INNER(p) = (hhdr)
 #   define GET_HDR_ADDR(p, ha) (ha) = &(HDR_INNER(p))
-#   define GET_HDR2(p1, hhdr1, p2, hhdr2) \
-	{ GET_HDR(p1, hhdr1); GET_HDR(p2, hhdr2); }
 # else /* hash */
 /*  Hash function for tree top level */
 #   define TL_HASH(hi) ((hi) & (TOP_SZ - 1))
@@ -257,40 +221,6 @@ typedef struct bi {
 #   define SET_HDR(p, hhdr) { register hdr ** _ha; GET_HDR_ADDR(p, _ha); \
 			      *_ha = (hhdr); }
 #   define HDR(p) GC_find_header((ptr_t)(p))
-    /* And some interleaved versions for two pointers at once.  	*/
-    /* This hopefully helps scheduling on processors like IA64.		*/
-#   define GET_BI2(p1, bottom_indx1, p2, bottom_indx2) \
-	{ \
-	    register word hi1 = \
-	        (word)(p1) >> (LOG_BOTTOM_SZ + LOG_HBLKSIZE); \
-	    register word hi2 = \
-	        (word)(p2) >> (LOG_BOTTOM_SZ + LOG_HBLKSIZE); \
-	    register bottom_index * _bi1 = GC_top_index[TL_HASH(hi1)]; \
-	    register bottom_index * _bi2 = GC_top_index[TL_HASH(hi2)]; \
-	    \
-	    while (_bi1 -> key != hi1 && _bi1 != GC_all_nils) \
-	    	_bi1 = _bi1 -> hash_link; \
-	    while (_bi2 -> key != hi2 && _bi2 != GC_all_nils) \
-	    	_bi2 = _bi2 -> hash_link; \
-	    (bottom_indx1) = _bi1; \
-	    (bottom_indx2) = _bi2; \
-	}
-#   define GET_HDR_ADDR2(p1, ha1, p2, ha2) \
-	{ \
-	    register bottom_index * bi1; \
-	    register bottom_index * bi2; \
-	    \
-	    GET_BI2(p1, bi1, p2, bi2);	\
-	    (ha1) = &(HDR_FROM_BI(bi1, p1)); \
-	    (ha2) = &(HDR_FROM_BI(bi2, p2)); \
-	}
-#   define GET_HDR2(p1, hhdr1, p2, hhdr2) \
-	{ register hdr ** _ha1;  \
-	  register hdr ** _ha2;  \
-	  GET_HDR_ADDR2(p1, _ha1, p2, _ha2); \
-	  (hhdr1) = *_ha1;  \
-	  (hhdr2) = *_ha2;  \
-	}
 # endif
 			    
 /* Is the result a forwarding address to someplace closer to the	*/
