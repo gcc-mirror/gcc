@@ -1,5 +1,8 @@
 2000-11-16  Jim Wilson  <wilson@redhat.com>
 
+	* config/ia64/ia64.h (MASK_INLINE_DIV_LAT, MASK_INLINE_DIV_THR):
+	Shift masks left by one to avoid conflict.
+
 	* config/ia64/ia64.c (ia64_encode_section_info): Disallow decls with
 	DECL_EXTERNAL set.
 
