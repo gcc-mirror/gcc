@@ -122,31 +122,13 @@
   ""
   "bitb %0,%1")
 
-;; The vax has no sltu or sgeu patterns, but does have two-operand
-;; add/subtract with carry.  This is still better than the alternative.
-;; Since the cc0-using insn cannot be separated from the cc0-setting insn,
-;; and the two are created independently, we can't just use a define_expand
-;; to try to optimize this.  (The "movl" and "clrl" insns alter the cc0
-;; flags, but leave the carry flag alone, but that can't easily be expressed.)
-;;
-;; Several two-operator combinations could be added to make slightly more
-;; optimal code, but they'd have to cover all combinations of plus and minus
-;; using match_dup.  If you want to do this, I'd suggest changing the "sgeu"
-;; pattern to something like (minus (const_int 1) (ltu ...)), so fewer
-;; patterns need to be recognized.
-;; -- Ken Raeburn (Raeburn@Watch.COM) 24 August 1991.
+;; The vax has no sCOND insns.  It does have add/subtract with carry
+;; which could be used to implement the sltu and sgeu patterns.  However,
+;; to do this properly requires a complete rewrite of the compare insns
+;; to keep them together with the sltu/sgeu insns until after the
+;; reload pass is complete.  The previous implementation didn't do this
+;; and has been deleted.
 
-(define_insn "sltu"
-  [(set (match_operand:SI 0 "general_operand" "=ro")
-	(ltu (cc0) (const_int 0)))]
-  ""
-  "clrl %0\;adwc $0,%0")
-
-(define_insn "sgeu"
-  [(set (match_operand:SI 0 "general_operand" "=ro")
-	(geu (cc0) (const_int 0)))]
-  ""
-  "movl $1,%0\;sbwc $0,%0")
 
 (define_insn "movdf"
   [(set (match_operand:DF 0 "general_operand" "=g,g")
