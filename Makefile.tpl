@@ -909,6 +909,7 @@ configure-[+module+]:
 .PHONY: all-[+module+] maybe-all-[+module+]
 maybe-all-[+module+]:
 @if [+module+]
+TARGET-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
 maybe-all-[+module+]: all-[+module+]
 all-[+module+]: configure-[+module+]
 	@[+ IF bootstrap +]test -f stage_last && exit 0; \
@@ -916,13 +917,8 @@ all-[+module+]: configure-[+module+]
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	  IF with_x 
-	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] [+extra_make_flags+] [+
-	  IF (== (get "module") "gcc") +] \
-	    `if [ -f gcc/stage_last ]; then echo quickstrap ; else echo all; fi` [+
-	  ELSE +]all[+ ENDIF +])
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] \
+	  $(TARGET-[+module+]))
 @endif [+module+]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
