@@ -206,6 +206,7 @@ or with constant text in a single argument.
  %P	like %p, but puts `__' before and after the name of each macro.
 	(Except macros that already have __.)
 	This is for ANSI C.
+ %I	Substitute a -iprefix option made from GCC_EXEC_PREFIX.
  %s     current argument is the name of a library or startup file of some sort.
         Search for that file in a standard list of directories
 	and substitute the full name found.
@@ -400,7 +401,7 @@ static struct compiler default_compilers[] =
 {
   {".c", "@c"},
   {"@c",
-   "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -420,7 +421,7 @@ static struct compiler default_compilers[] =
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
-   "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -432,7 +433,7 @@ static struct compiler default_compilers[] =
     %{!E:%e-E required when input is from standard input}"},
   {".m", "@objective-c"},
   {"@objective-c",
-   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__OBJC__ -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -455,7 +456,7 @@ static struct compiler default_compilers[] =
   {".h", "@c-header"},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    cpp %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+    cpp %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -468,7 +469,7 @@ static struct compiler default_compilers[] =
   {".cxx", "@c++"},
   {".C", "@c++"},
   {"@c++",
-   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
 	-undef -D__GNUC__=2 -D__GNUG__=2 -D__cplusplus \
@@ -514,7 +515,7 @@ static struct compiler default_compilers[] =
             %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o} %i %A\n }"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
-   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{trigraphs} \
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
@@ -828,6 +829,10 @@ static struct path_prefix library_prefix = { 0, 0, "libraryfile" };
 /* Suffix to attach to directories searched for commands.  */
 
 static char *machine_suffix = 0;
+
+/* Adjusted value of GCC_EXEC_PREFIX envvar.  */
+
+static char *gcc_exec_prefix;
 
 /* Default prefixes to attach to command names.  */
 
@@ -1682,17 +1687,18 @@ process_command (argc, argv)
   char *spec_lang = 0;
   int last_language_n_infiles;
 
+  gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
+
   n_switches = 0;
   n_infiles = 0;
   spec_version = version_string;
 
   /* Set up the default search paths.  */
 
-  temp = getenv ("GCC_EXEC_PREFIX");
-  if (temp)
+  if (gcc_exec_prefix)
     {
-      add_prefix (&exec_prefix, temp, 0, 0, 0);
-      add_prefix (&startfile_prefix, temp, 0, 0, 0);
+      add_prefix (&exec_prefix, gcc_exec_prefix, 0, 0, 0);
+      add_prefix (&startfile_prefix, gcc_exec_prefix, 0, 0, 0);
     }
 
   /* COMPILER_PATH and LIBRARY_PATH have values
@@ -1902,6 +1908,7 @@ process_command (argc, argv)
 	      if (!strcmp (p, "save-temps"))
 		{
 		  save_temps_flag = 1;
+		  n_switches++;
 		  break;
 		}
 	    default:
@@ -2024,6 +2031,19 @@ process_command (argc, argv)
 
   switches[n_switches].part1 = 0;
   infiles[n_infiles].name = 0;
+
+  /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
+  if (gcc_exec_prefix)
+    {
+      temp = (char *) xmalloc (strlen (gcc_exec_prefix) + strlen (spec_version)
+			       + strlen (spec_machine) + 3);
+      strcpy (temp, gcc_exec_prefix);
+      strcat (temp, spec_version);
+      strcat (temp, "/");
+      strcat (temp, spec_machine);
+      strcat (temp, "/");
+      gcc_exec_prefix = temp;
+    }
 }
 
 /* Process a spec string, accumulating and running commands.  */
@@ -2321,6 +2341,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'i':
 	    obstack_grow (&obstack, input_filename, input_filename_length);
 	    arg_going = 1;
+	    break;
+
+	  case 'I':
+	    if (gcc_exec_prefix)
+	      {
+		do_spec_1 ("-imacros", 1, 0);
+		/* Make this a separate argument.  */
+		do_spec_1 (" ", 0, 0);
+		do_spec_1 (gcc_exec_prefix, 1, 0);
+		do_spec_1 (" ", 0, 0);
+	      }
 	    break;
 
 	  case 'o':
