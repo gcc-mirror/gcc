@@ -4627,7 +4627,7 @@ insert_insn_end_bb (expr, bb, pre)
       /* It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
 	 Check this.  */
-      if (GET_CODE (insn) == insn && pre
+      if (GET_CODE (insn) == INSN && pre
 	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
           && !TEST_BIT (transp[bb->index], expr->bitmap_index))
 	abort ();
