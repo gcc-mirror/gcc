@@ -1067,6 +1067,10 @@ struct lang_decl
 /* Next method in CLASSTYPE_METHODS list. */
 #define DECL_NEXT_METHOD(NODE) (DECL_LANG_SPECIFIC(NODE)->next_method)
 
+/* In a VAR_DECL for a variable declared in a for statement,
+   this is the shadowed variable. */
+#define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
+
 /* Points back to the decl which caused this lang_decl to be allocated.  */
 #define DECL_MAIN_VARIANT(NODE) (DECL_LANG_SPECIFIC(NODE)->main_decl_variant)
 
@@ -1135,6 +1139,16 @@ struct lang_decl
 
 #define DECL_PUBLIC(NODE) (DECL_LANG_FLAG_7 (NODE))
 #endif
+
+extern int flag_new_for_scope;
+
+/* This flag is true of a local VAR_DECL if it was declared in a for
+   statement, but we are no longer in the scope of the for. */
+#define DECL_DEAD_FOR_LOCAL(NODE) DECL_LANG_FLAG_7 (NODE)
+
+/* This flag is set on a VAR_DECL that is a DECL_DEAD_FOR_LOCAL
+   if we already emitted a warning about using it.  */
+#define DECL_ERROR_REPORTED(NODE) DECL_LANG_FLAG_0 (NODE)
 
 /* This _DECL represents a compiler-generated entity.  */
 #define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)
