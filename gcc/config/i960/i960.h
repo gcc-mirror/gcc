@@ -1524,6 +1524,8 @@ extern enum insn_types i960_last_insn_type;
 extern char *i960_output_ldconst ();
 extern char *i960_output_call_insn ();
 extern char *i960_output_ret_insn ();
+extern char *i960_output_move_double ();
+extern char *i960_output_move_quad ();
 
 /* Defined in reload.c, and used in insn-recog.c.  */
 
