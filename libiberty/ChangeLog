@@ -1,3 +1,8 @@
+2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/10810
+	* test-demangle.c (getline): Fix fence-post error.
+
 2003-06-03  Nick Clifton  <nickc@redhat.com>
 
 	* asprintf.c: Change comment to note that -1 is returned upon
