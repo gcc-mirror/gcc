@@ -3396,7 +3396,14 @@ d_print_function_type (dpi, dc, mods)
   d_append_char (dpi, '(');
 
   if (d_right (dc) != NULL)
-    d_print_comp (dpi, d_right (dc));
+    {
+      struct d_print_mod *hold_modifiers;
+
+      hold_modifiers = dpi->modifiers;
+      dpi->modifiers = NULL;
+      d_print_comp (dpi, d_right (dc));
+      dpi->modifiers = hold_modifiers;
+    }
 
   d_append_char (dpi, ')');
 
