@@ -263,7 +263,8 @@ make_friend_class (type, friend_type)
       return;
     }
 
-  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
+  if (CLASS_TYPE_P (friend_type)
+      && CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
       && uses_template_parms (friend_type))
     {
       /* [temp.friend]

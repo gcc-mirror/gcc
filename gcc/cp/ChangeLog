@@ -1,3 +1,13 @@
+1999-03-19  Chip Salzenberg  <chip@perlsupport.com>
+
+	* friend.c (make_friend_class): Avoid core dump when
+	not-yet-defined friend type lacks TYPE_LANG_SPECIFIC().
+
+1999-03-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_function): Suppress normal linkage heuristics
+	for #pragma interface under MULTIPLE_SYMBOL_SPACES.
+
 1999-03-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Make-lang.in: ($(INTL_TARGETS)): depend on cp/parse.c
