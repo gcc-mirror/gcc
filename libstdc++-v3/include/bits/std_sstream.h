@@ -90,7 +90,7 @@ namespace std
 	if (_M_mode & ios_base::out)
 	  {
 	    // This is the deal: _M_string.size() is a value that
-	    // represents the size of the intial string that makes
+	    // represents the size of the initial string that makes
 	    // _M_string, and may not be the correct size of the
 	    // current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();

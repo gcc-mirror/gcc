@@ -89,7 +89,7 @@
    That means that all of the Standard classes and functions (such as
    string, vector<>, iostreams, and algorithms) will be freely available
    and fully compliant. Programmers will no longer need to "roll their
-   own" nor be worried about platform-specific incompatabilities.
+   own" nor be worried about platform-specific incompatibilities.
      _________________________________________________________________
 
 1.3 Who's in charge of it?
@@ -314,7 +314,7 @@
 
    Since the goal of ISO Standardization is for all C++ implementations
    to be able to share code, the final libstdc++ should, in theory, be
-   useable under any ISO-compliant compiler. It will still be targeted
+   usable under any ISO-compliant compiler. It will still be targeted
    and optimized for GCC/g++, however.
      _________________________________________________________________
 

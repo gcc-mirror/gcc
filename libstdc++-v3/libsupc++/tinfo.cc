@@ -172,12 +172,12 @@ __vmi_class_type_info::
 {}
 
 // __upcast_result is used to hold information during traversal of a class
-// heirarchy when catch matching.
+// hierarchy when catch matching.
 struct __class_type_info::__upcast_result
 {
   const void *dst_ptr;        // pointer to caught object
   __sub_kind part2dst;        // path from current base to target
-  int src_details;            // hints about the source type heirarchy
+  int src_details;            // hints about the source type hierarchy
   const __class_type_info *base_type; // where we found the target,
                               // if in vbase the __class_type_info of vbase
                               // if a non-virtual base then 1
@@ -189,14 +189,14 @@ struct __class_type_info::__upcast_result
 };
 
 // __dyncast_result is used to hold information during traversal of a class
-// heirarchy when dynamic casting.
+// hierarchy when dynamic casting.
 struct __class_type_info::__dyncast_result
 {
   const void *dst_ptr;        // pointer to target object or NULL
   __sub_kind whole2dst;       // path from most derived object to target
   __sub_kind whole2src;       // path from most derived object to sub object
   __sub_kind dst2src;         // path from target to sub object
-  int whole_details;          // details of the whole class heirarchy
+  int whole_details;          // details of the whole class hierarchy
   
   public:
   __dyncast_result (int details_ = __vmi_class_type_info::__flags_unknown_mask)
@@ -483,7 +483,7 @@ __do_dyncast (ptrdiff_t src2dst,
                   || !(result.whole_details & __diamond_shaped_mask)))
             {
               // We already found SRC_PTR as a base of most derived, and
-              // either it was non-virtual, or the whole heirarchy is
+              // either it was non-virtual, or the whole hierarchy is
               // not-diamond shaped. Therefore if it is in either choice, it
               // can only be in one of them, and we will already know.
               if (old_sub_kind == __unknown)

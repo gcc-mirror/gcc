@@ -977,7 +977,7 @@ rope<_CharT,_Alloc>::_S_flatten(_RopeRep* __r, _CharT* __buffer)
 	    }
 	case _RopeRep::_S_function:
 	case _RopeRep::_S_substringfn:
-	    // We dont yet do anything with substring nodes.
+	    // We don't yet do anything with substring nodes.
 	    // This needs to be fixed before ropefiles will work well.
 	    {
 		_RopeFunction* __f = (_RopeFunction*)__r;

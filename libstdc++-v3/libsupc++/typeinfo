@@ -90,7 +90,7 @@ namespace std
     // type. Uniqueness must use the _name value, not object address.
     bool operator==(const type_info& __arg) const;
 #else
-    /** Returns true if @c *this preceeds @c __arg in the implementation's
+    /** Returns true if @c *this precedes @c __arg in the implementation's
      *  collation order.  */
     // In new abi we can rely on type_info's NTBS being unique,
     // and therefore address comparisons are sufficient.

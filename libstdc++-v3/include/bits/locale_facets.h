@@ -502,7 +502,7 @@ namespace std
 
       ~_Format_cache() throw() { }
 
-      // Given a member of the ios heirarchy as an argument, extract
+      // Given a member of the ios hierarchy as an argument, extract
       // out all the current formatting information into a
       // _Format_cache object and return a pointer to it.
       static _Format_cache<_CharT>* 

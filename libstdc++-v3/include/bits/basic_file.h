@@ -254,7 +254,7 @@ namespace std
     };
 } // namespace std
 
-// Now include the bits that are dependant on the underlying I/O
+// Now include the bits that are dependent on the underlying I/O
 // model chosen at configure time.
 #include <bits/basic_file_model.h>
 

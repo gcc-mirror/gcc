@@ -176,7 +176,7 @@ starting point.
 @chapter Character types
 
 The library requires that you provide three header files to implement
-character classification, analagous to that provided by the C libraries
+character classification, analogous to that provided by the C libraries
 @file{<ctype.h>} header.  You can model these on the files provided in
 @file{config/os/generic/bits}.  However, these files will almost
 certainly need some modification.
@@ -185,7 +185,7 @@ The first file to write is @file{bits/ctype_base.h}.  This file provides
 some very basic information about character classification.  The libstdc++-v3
 library assumes that your C library implements @file{<ctype.h>} by using
 a table (indexed by character code) containing integers, where each of
-these integers is a bit-mask indicating whether the charcter is
+these integers is a bit-mask indicating whether the character is
 upper-case, lower-case, alphabetic, etc.  The @file{bits/ctype_base.h}
 file gives the type of the integer, and the values of the various bit
 masks.  You will have to peer at your own @file{<ctype.h>} to figure out
@@ -316,7 +316,7 @@ contains a few more functions.  On most systems, you can just copy
 @file{config/os/generic/ctype_inline.h} and use it on your system.
 
 In detail, the functions provided test characters for particular
-properties; they are analagous to the functions like @code{isalpha} and
+properties; they are analogous to the functions like @code{isalpha} and
 @code{islower} provided by the C library.
 
 The first function is implemented like this on IRIX:

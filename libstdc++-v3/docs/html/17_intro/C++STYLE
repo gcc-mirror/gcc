@@ -122,7 +122,7 @@ Notable areas of divergence from what may be previous local practice
     //
   }
 
-09. Member functions declarations and defintions
+09. Member functions declarations and definitions
    Keywords such as extern, static, export, explicit, inline, etc
    go on the line above the function name. Thus
 

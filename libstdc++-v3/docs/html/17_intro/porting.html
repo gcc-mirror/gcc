@@ -140,7 +140,7 @@ Up:<a rel=up href="#Top">Top</a>
 <h1>Character types</h1>
 
 <p>The library requires that you provide three header files to implement
-character classification, analagous to that provided by the C libraries
+character classification, analogous to that provided by the C libraries
 <code>&lt;ctype.h&gt;</code> header.  You can model these on the files provided in
 <code>config/os/generic/bits</code>.  However, these files will almost
 certainly need some modification.
@@ -149,7 +149,7 @@ certainly need some modification.
 some very basic information about character classification.  The libstdc++-v3
 library assumes that your C library implements <code>&lt;ctype.h&gt;</code> by using
 a table (indexed by character code) containing integers, where each of
-these integers is a bit-mask indicating whether the charcter is
+these integers is a bit-mask indicating whether the character is
 upper-case, lower-case, alphabetic, etc.  The <code>bits/ctype_base.h</code>
 file gives the type of the integer, and the values of the various bit
 masks.  You will have to peer at your own <code>&lt;ctype.h&gt;</code> to figure out
@@ -273,7 +273,7 @@ contains a few more functions.  On most systems, you can just copy
 <code>config/os/generic/ctype_inline.h</code> and use it on your system.
 
 <p>In detail, the functions provided test characters for particular
-properties; they are analagous to the functions like <code>isalpha</code> and
+properties; they are analogous to the functions like <code>isalpha</code> and
 <code>islower</code> provided by the C library.
 
 <p>The first function is implemented like this on IRIX:
