@@ -2894,7 +2894,7 @@ x86_64_general_operand (op, mode)
     return general_operand (op, mode);
   if (nonimmediate_operand (op, mode))
     return 1;
-  return x86_64_sign_extended_value (op, 1);
+  return x86_64_sign_extended_value (op);
 }
 
 /* Return nonzero if OP is general operand representable on x86_64
@@ -2909,7 +2909,7 @@ x86_64_szext_general_operand (op, mode)
     return general_operand (op, mode);
   if (nonimmediate_operand (op, mode))
     return 1;
-  return x86_64_sign_extended_value (op, 1) || x86_64_zero_extended_value (op);
+  return x86_64_sign_extended_value (op) || x86_64_zero_extended_value (op);
 }
 
 /* Return nonzero if OP is nonmemory operand representable on x86_64.  */
@@ -2923,7 +2923,7 @@ x86_64_nonmemory_operand (op, mode)
     return nonmemory_operand (op, mode);
   if (register_operand (op, mode))
     return 1;
-  return x86_64_sign_extended_value (op, 1);
+  return x86_64_sign_extended_value (op);
 }
 
 /* Return nonzero if OP is nonmemory operand acceptable by movabs patterns.  */
@@ -2935,7 +2935,7 @@ x86_64_movabs_operand (op, mode)
 {
   if (!TARGET_64BIT || !flag_pic)
     return nonmemory_operand (op, mode);
-  if (register_operand (op, mode) || x86_64_sign_extended_value (op, 0))
+  if (register_operand (op, mode) || x86_64_sign_extended_value (op))
     return 1;
   if (CONSTANT_P (op) && !symbolic_reference_mentioned_p (op))
     return 1;
@@ -2953,7 +2953,7 @@ x86_64_szext_nonmemory_operand (op, mode)
     return nonmemory_operand (op, mode);
   if (register_operand (op, mode))
     return 1;
-  return x86_64_sign_extended_value (op, 0) || x86_64_zero_extended_value (op);
+  return x86_64_sign_extended_value (op) || x86_64_zero_extended_value (op);
 }
 
 /* Return nonzero if OP is immediate operand representable on x86_64.  */
@@ -2965,7 +2965,7 @@ x86_64_immediate_operand (op, mode)
 {
   if (!TARGET_64BIT)
     return immediate_operand (op, mode);
-  return x86_64_sign_extended_value (op, 0);
+  return x86_64_sign_extended_value (op);
 }
 
 /* Return nonzero if OP is immediate operand representable on x86_64.  */
@@ -3085,10 +3085,7 @@ local_symbolic_operand (op, mode)
 {
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-      && (ix86_cmodel != CM_SMALL_PIC
-	  || (INTVAL (XEXP (XEXP (op, 0), 1)) >= -16*1024*1024
-	      && INTVAL (XEXP (XEXP (op, 0), 1)) < 16*1024*1024)))
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
     op = XEXP (XEXP (op, 0), 0);
 
   if (GET_CODE (op) == LABEL_REF)
@@ -3839,9 +3836,8 @@ ix86_can_use_return_insn_p ()
 
 /* Return 1 if VALUE can be stored in the sign extended immediate field.  */
 int
-x86_64_sign_extended_value (value, allow_rip)
+x86_64_sign_extended_value (value)
      rtx value;
-     int allow_rip;
 {
   switch (GET_CODE (value))
     {
@@ -3863,17 +3859,12 @@ x86_64_sign_extended_value (value, allow_rip)
 	 library.  Don't count TLS SYMBOL_REFs here, since they should fit
 	 only if inside of UNSPEC handled below.  */
       case SYMBOL_REF:
-	return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL
-		|| (allow_rip
-		    && ix86_cmodel == CM_SMALL_PIC
-		    && (CONSTANT_POOL_ADDRESS_P (value)
-			|| SYMBOL_REF_FLAG (value))
-		    && ! tls_symbolic_operand (value, GET_MODE (value))));
+	return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL);
 
       /* For certain code models, the code is near as well.  */
       case LABEL_REF:
-	return ix86_cmodel != CM_LARGE
-	       && (allow_rip || ix86_cmodel != CM_SMALL_PIC);
+	return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM
+		|| ix86_cmodel == CM_KERNEL);
 
       /* We also may accept the offsetted memory references in certain special
          cases.  */
@@ -3919,26 +3910,11 @@ x86_64_sign_extended_value (value, allow_rip)
 		      && offset > 0
 		      && trunc_int_for_mode (offset, SImode) == offset)
 		    return 1;
-		  /* For CM_SMALL_PIC, we can make similar assumptions
-		     as for CM_SMALL model, if we know the symbol is local
-		     to the shared library.  Disallow any TLS symbols,
-		     since they should always be enclosed in an UNSPEC.  */
-		  if (ix86_cmodel == CM_SMALL_PIC
-		      && allow_rip
-		      && (CONSTANT_POOL_ADDRESS_P (op1)
-			  || SYMBOL_REF_FLAG (op1))
-		      && ! tls_symbolic_operand (op1, GET_MODE (op1))
-		      && offset < 16*1024*1024
-		      && offset >= -16*1024*1024
-		      && trunc_int_for_mode (offset, SImode) == offset)
-		    return 1;
 		  break;
 		case LABEL_REF:
 		  /* These conditions are similar to SYMBOL_REF ones, just the
 		     constraints for code models differ.  */
-		  if ((ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM
-		       || (ix86_cmodel == CM_SMALL_PIC && allow_rip
-			   && offset >= -16*1024*1024))
+		  if ((ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM)
 		      && offset < 16*1024*1024
 		      && trunc_int_for_mode (offset, SImode) == offset)
 		    return 1;
@@ -5148,8 +5124,30 @@ legitimate_pic_address_disp_p (disp)
 
   /* In 64bit mode we can allow direct addresses of symbols and labels
      when they are not dynamic symbols.  */
-  if (TARGET_64BIT && local_symbolic_operand (disp, Pmode))
-    return 1;
+  if (TARGET_64BIT)
+    {
+      /* TLS references should always be enclosed in UNSPEC.  */
+      if (tls_symbolic_operand (disp, GET_MODE (disp)))
+	return 0;
+      if (GET_CODE (disp) == SYMBOL_REF
+	  && ix86_cmodel == CM_SMALL_PIC
+	  && (CONSTANT_POOL_ADDRESS_P (disp)
+	      || SYMBOL_REF_FLAG (disp)))
+	return 1;
+      if (GET_CODE (disp) == LABEL_REF)
+	return 1;
+      if (GET_CODE (disp) == CONST
+	  && GET_CODE (XEXP (disp, 0)) == PLUS
+	  && ((GET_CODE (XEXP (XEXP (disp, 0), 0)) == SYMBOL_REF
+	       && ix86_cmodel == CM_SMALL_PIC
+	       && (CONSTANT_POOL_ADDRESS_P (XEXP (XEXP (disp, 0), 0))
+		   || SYMBOL_REF_FLAG (XEXP (XEXP (disp, 0), 0))))
+	      || GET_CODE (XEXP (XEXP (disp, 0), 0)) == LABEL_REF)
+	  && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT
+	  && INTVAL (XEXP (XEXP (disp, 0), 1)) < 16*1024*1024
+	  && INTVAL (XEXP (XEXP (disp, 0), 1)) >= -16*1024*1024)
+	return 1;
+    }
   if (GET_CODE (disp) != CONST)
     return 0;
   disp = XEXP (disp, 0);
@@ -5356,23 +5354,6 @@ legitimate_address_p (mode, addr, strict)
     {
       reason_rtx = disp;
 
-      if (TARGET_64BIT)
-	{
-	  if (!x86_64_sign_extended_value (disp, !(index || base)))
-	    {
-	      reason = "displacement is out of range";
-	      goto report_error;
-	    }
-	}
-      else
-	{
-	  if (GET_CODE (disp) == CONST_DOUBLE)
-	    {
-	      reason = "displacement is a const_double";
-	      goto report_error;
-	    }
-	}
-
       if (GET_CODE (disp) == CONST
 	  && GET_CODE (XEXP (disp, 0)) == UNSPEC)
 	switch (XINT (XEXP (disp, 0), 1))
@@ -5450,6 +5431,16 @@ legitimate_address_p (mode, addr, strict)
 	  reason = "displacement is not constant";
 	  goto report_error;
 	}
+      else if (TARGET_64BIT && !x86_64_sign_extended_value (disp))
+	{
+	  reason = "displacement is out of range";
+	  goto report_error;
+	}
+      else if (!TARGET_64BIT && GET_CODE (disp) == CONST_DOUBLE)
+	{
+	  reason = "displacement is a const_double";
+	  goto report_error;
+	}
     }
 
   /* Everything looks valid.  */
@@ -5511,28 +5502,24 @@ legitimize_pic_address (orig, reg)
   return machopic_legitimize_pic_address (orig, GET_MODE (orig), reg);
 #endif
 
-  if (local_symbolic_operand (addr, Pmode))
+  if (TARGET_64BIT && legitimate_pic_address_disp_p (addr))
+    new = addr;
+  else if (!TARGET_64BIT && local_symbolic_operand (addr, Pmode))
     {
-      /* In 64bit mode we can address such objects directly.  */
-      if (TARGET_64BIT)
-	new = addr;
-      else
+      /* This symbol may be referenced via a displacement from the PIC
+	 base address (@GOTOFF).  */
+
+      if (reload_in_progress)
+	regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
+      new = gen_rtx_CONST (Pmode, new);
+      new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
+
+      if (reg != 0)
 	{
-	  /* This symbol may be referenced via a displacement from the PIC
-	     base address (@GOTOFF).  */
-
-	  if (reload_in_progress)
-	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
-	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
-	  new = gen_rtx_CONST (Pmode, new);
-	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-
-	  if (reg != 0)
-	    {
-	      emit_move_insn (reg, new);
-	      new = reg;
-	    }
-      	}
+	  emit_move_insn (reg, new);
+	  new = reg;
+	}
     }
   else if (GET_CODE (addr) == SYMBOL_REF)
     {
@@ -9218,7 +9205,7 @@ ix86_expand_int_movcc (operands)
 
       if ((diff == 1 || diff == 2 || diff == 4 || diff == 8
 	   || diff == 3 || diff == 5 || diff == 9)
-	  && (mode != DImode || x86_64_sign_extended_value (GEN_INT (cf), 0)))
+	  && (mode != DImode || x86_64_sign_extended_value (GEN_INT (cf))))
 	{
 	  /*
 	   * xorl dest,dest

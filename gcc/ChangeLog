@@ -1,3 +1,18 @@
+Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
+
+	* i386-protos.h (x86_64_sign_extended_value): Fix prototype.
+	* i386.c (x86_64_general_operand, x86_64_szext_general_operand,
+	x86_64_nonmemory_operand, x86_64_movabs_operand, 
+	x86_64_szext_nonmemory_operand, x86_64_immediate_operand,
+	ix86_expand_int_movcc): Update call of x86_64_sign_extended_value.
+	(local_symbolic_operand): Do not care the 64bit limits.
+	(x86_64_sign_extended_value): Remove allow_rip support.
+	(legitimate_pic_address_disp_p): Handle all cases allowed
+	with RIP addressing.
+	(legitimate_address_p): Use legitimate_pic_address_disp_p for PIC.
+	(legitimize_pic_address): Reorganize.
+	* i386.h (EXTRA_CONSTRAINT): Update call of x86_64_sign_extended_value.
+
 2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (arm*-*-netbsdelf*): Enable configuration.

@@ -1430,7 +1430,7 @@ enum reg_class
    constraint, the value returned should be 0 regardless of VALUE.  */
 
 #define EXTRA_CONSTRAINT(VALUE, D)				\
-  ((D) == 'e' ? x86_64_sign_extended_value (VALUE, 0)		\
+  ((D) == 'e' ? x86_64_sign_extended_value (VALUE)		\
    : (D) == 'Z' ? x86_64_zero_extended_value (VALUE)		\
    : (D) == 'C' ? standard_sse_constant_p (VALUE)		\
    : 0)
@@ -2566,7 +2566,7 @@ do {							\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
-    if (TARGET_64BIT && !x86_64_sign_extended_value (RTX, 0))	\
+    if (TARGET_64BIT && !x86_64_sign_extended_value (RTX))	\
       return 3;							\
     if (TARGET_64BIT && !x86_64_zero_extended_value (RTX))	\
       return 2;							\
