@@ -7876,9 +7876,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* If op1 was placed in target, swap op0 and op1.  */
       if (target != op0 && target == op1)
 	{
-	  rtx tem = op0;
+	  temp = op0;
 	  op0 = op1;
-	  op1 = tem;
+	  op1 = temp;
 	}
 
       /* We generate better code and avoid problems with op1 mentioning
@@ -7886,10 +7886,51 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (! CONSTANT_P (op1))
 	op1 = force_reg (mode, op1);
 
+#ifdef HAVE_conditional_move
+      /* Use a conditional move if possible.  */
+      if (can_conditionally_move_p (mode))
+	{
+	  enum rtx_code comparison_code;
+	  rtx insn;
+
+	  if (code == MAX_EXPR)
+	    comparison_code = unsignedp ? GEU : GE;
+	  else
+	    comparison_code = unsignedp ? LEU : LE;
+
+	  /* ??? Same problem as in expmed.c: emit_conditional_move
+	     forces a stack adjustment via compare_from_rtx, and we
+	     lose the stack adjustment if the sequence we are about
+	     to create is discarded.  */
+	  do_pending_stack_adjust ();
+
+	  start_sequence ();
+
+	  /* Try to emit the conditional move.  */
+	  insn = emit_conditional_move (target, comparison_code,
+					op0, op1, mode,
+					op0, op1, mode,
+					unsignedp);
+
+	  /* If we could do the conditional move, emit the sequence,
+	     and return.  */
+	  if (insn)
+	    {
+	      rtx seq = get_insns ();
+	      end_sequence ();
+	      emit_insn (seq);
+	      return target;
+	    }
+
+	  /* Otherwise discard the sequence and fall back to code with
+	     branches.  */
+	  end_sequence ();
+	}
+#endif
       if (target != op0)
 	emit_move_insn (target, op0);
 
-      op0 = gen_label_rtx ();
+      temp = gen_label_rtx ();
 
       /* If this mode is an integer too wide to compare properly,
 	 compare word by word.  Rely on cse to optimize constant cases.  */
@@ -7898,18 +7939,18 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	{
 	  if (code == MAX_EXPR)
 	    do_jump_by_parts_greater_rtx (mode, unsignedp, target, op1,
-					  NULL_RTX, op0);
+					  NULL_RTX, temp);
 	  else
 	    do_jump_by_parts_greater_rtx (mode, unsignedp, op1, target,
-					  NULL_RTX, op0);
+					  NULL_RTX, temp);
 	}
       else
 	{
 	  do_compare_rtx_and_jump (target, op1, code == MAX_EXPR ? GE : LE,
-				   unsignedp, mode, NULL_RTX, NULL_RTX, op0);
+				   unsignedp, mode, NULL_RTX, NULL_RTX, temp);
 	}
       emit_move_insn (target, op1);
-      emit_label (op0);
+      emit_label (temp);
       return target;
 
     case BIT_NOT_EXPR:
