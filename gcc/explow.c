@@ -78,6 +78,7 @@ plus_constant_wide (x, c)
      register HOST_WIDE_INT c;
 {
   register RTX_CODE code;
+  rtx y = x;
   register enum machine_mode mode;
   register rtx tem;
   int all_constant = 0;
@@ -159,18 +160,20 @@ plus_constant_wide (x, c)
 	  x = XEXP (x, 0);
 	  goto restart;
 	}
-      else if (CONSTANT_P (XEXP (x, 0)))
-	{
-	  x = gen_rtx_PLUS (mode,
-			    plus_constant (XEXP (x, 0), c),
-			    XEXP (x, 1));
-	  c = 0;
-	}
       else if (CONSTANT_P (XEXP (x, 1)))
 	{
-	  x = gen_rtx_PLUS (mode,
-			    XEXP (x, 0),
-			    plus_constant (XEXP (x, 1), c));
+	  x = gen_rtx_PLUS (mode, XEXP (x, 0), plus_constant (XEXP (x, 1), c));
+	  c = 0;
+	}
+      else if (find_constant_term_loc (&y))
+	{
+	  /* We need to be careful since X may be shared and we can't
+	     modify it in place.  */
+	  rtx copy = copy_rtx (x);
+	  rtx *const_loc = find_constant_term_loc (&copy);
+
+	  *const_loc = plus_constant (*const_loc, c);
+	  x = copy;
 	  c = 0;
 	}
       break;

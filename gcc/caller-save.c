@@ -329,15 +329,11 @@ setup_save_areas ()
 
 	/* Setup single word save area just in case...  */
 	for (k = 0; k < j; k++)
-	  {
-	    /* This should not depend on WORDS_BIG_ENDIAN.
-	       The order of words in regs is the same as in memory.  */
-	    rtx temp = gen_rtx_MEM (regno_save_mode[i + k][1], 
-				    XEXP (regno_save_mem[i][j], 0));
-
-	    regno_save_mem[i + k][1] 
-	      = adj_offsettable_operand (temp, k * UNITS_PER_WORD);
-	  }
+	  /* This should not depend on WORDS_BIG_ENDIAN.
+	     The order of words in regs is the same as in memory.  */
+	  regno_save_mem[i + k][1]
+	    = adjust_address (regno_save_mem[i][j], regno_save_mode[i + k][1],
+			      k * UNITS_PER_WORD);
       }
 
   /* Now loop again and set the alias set of any save areas we made to

@@ -1921,7 +1921,7 @@ c4x_print_operand (file, op, letter)
           if (GET_CODE(op1) == CONST_INT || GET_CODE(op1) == SYMBOL_REF)
 	    {
 	      asm_fprintf (file, "\t%s\t@", TARGET_C3X ? "ldp" : "ldpk");
-	      output_address (XEXP (adj_offsettable_operand (op, 1), 0));
+	      output_address (XEXP (adjust_address (op, VOIDmodem, 1), 0));
 	      asm_fprintf (file, "\n");
 	    }
 	}
@@ -1943,7 +1943,7 @@ c4x_print_operand (file, op, letter)
       if (code == MEM && c4x_autoinc_operand (op, Pmode))
 	break;
       else if (code == MEM)
-	output_address (XEXP (adj_offsettable_operand (op, 1), 0));
+	output_address (XEXP (adjust_address (op, 1), VOIDmode, 0));
       else if (code == REG)
 	fprintf (file, "%s", reg_names[REGNO (op) + 1]);
       else

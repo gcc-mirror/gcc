@@ -1,3 +1,28 @@
+Tue Jul  3 15:35:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (plus_constant_wide, case PLUS): Call find_constant_term
+	and avoid checking for constant as first operand.
+	* recog.c (find_constant_term_loc): No longer static.
+	(adj_offettable_operand): Delete.
+	* rtl.h (adj_offsettable_operand): Delete declaration.
+	(find_constant_term): Add declaration.
+	* caller-save.c: Replace calls to adj_offsettable_operand with calls
+	to adjust_address.
+	* config/arm/arm.c, config/c4x/c4x.c: Likewise.
+	* config/clipper/clipper.md, config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c, config/i386/i386.md: Likewise.
+	* config/i860/i860.c, config/i960/i960.c: Likewise.
+	* config/i960/i960.md, config/m68hc11/m68hc11.c: Likewise.
+	* config/m68k/m68k.c, config/m68k/m68k.md: Likewise.
+	* config/m88k/m88k.md, config/mcore/mcore.c: Likewise.
+	* config/mips/mips.c, config/mips/mips.md: Likewise.
+	* config/mn10200/mn10200.c, config/mn10300/mn10300.c: Likewise.
+	* config/ns32k/ns32k.c, config/ns32k/ns32k.md: Likewise.
+	* config/pa/pa.c, config/pdp11/pdp11.c: Likewise.
+	* config/pdp11/pdp11.md, config/sh/sh.c, config/v850/v850.c: Likewise.
+	* config/vax/vax.md, config/ns32k/ns32k.c: Likewise.
+	* config/ns32k/ns32k.md: Likewise.
+
 2001-07-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* rtl.c (copy_rtx): Handle 'T' format letter.

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10200 series
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -217,7 +217,7 @@ print_operand (file, x, code)
 	  {
 	  case MEM:
 	    fputc ('(', file);
-	    x = adj_offsettable_operand (x, 2);
+	    x = adjust_address (x, HImode, 2);
 	    output_address (XEXP (x, 0));
 	    fputc (')', file);
 	    break;

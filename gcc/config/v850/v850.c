@@ -482,7 +482,7 @@ print_operand (file, x, code)
 	  fprintf (file, reg_names[REGNO (x) + 1]);
 	  break;
 	case MEM:
-	  x = XEXP (adj_offsettable_operand (x, 4), 0);
+	  x = XEXP (adjust_address (x, SImode, 4), 0);
 	  print_operand_address (file, x);
 	  if (GET_CODE (x) == CONST_INT)
 	    fprintf (file, "[r0]");

@@ -1,5 +1,6 @@
 ;; Machine description for GNU compiler, AT&T we32000 Version
-;; Copyright (C) 1991, 1992, 1994, 1998, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1991, 1992, 1994, 1998, 1999, 2001
+;; Free Software Foundation, Inc.
 ;; Contributed by John Wehle (john@feith1.uucp)
 
 ;; This file is part of GNU CC.
@@ -128,7 +129,7 @@
     lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
-      lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
+      lsw_operands[0] = adjust_address (operands[0], SImode, 4);
     else
       abort();
 
@@ -136,7 +137,7 @@
     lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
-      lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
+      lsw_operands[2] = adjust_address (operands[2], SImode, 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
@@ -178,7 +179,7 @@
     lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
-      lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
+      lsw_operands[0] = adjust_address(operands[0], SImode, 4);
     else
       abort();
 
@@ -186,7 +187,7 @@
     lsw_operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else
     if (GET_CODE (operands[1]) == MEM && offsettable_memref_p (operands[1]))
-      lsw_operands[1] = adj_offsettable_operand(operands[1], 4);
+      lsw_operands[1] = adjust_address (operands[1], SImode, 4);
     else
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
         {
@@ -206,7 +207,7 @@
     lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
-      lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
+      lsw_operands[2] = adjust_address (operands[2], SImode, 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
@@ -292,7 +293,7 @@
     lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
-      lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
+      lsw_operands[0] = adjust_address (operands[0], SImode, 4);
     else
       abort();
 
@@ -300,7 +301,7 @@
     lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
-      lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
+      lsw_operands[2] = adjust_address (operands[2], SImode, 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
@@ -342,7 +343,7 @@
     lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
-      lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
+      lsw_operands[0] = adjust_address (operands[0], SImode, 4);
     else
       abort();
 
@@ -350,7 +351,7 @@
     lsw_operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else
     if (GET_CODE (operands[1]) == MEM && offsettable_memref_p (operands[1]))
-      lsw_operands[1] = adj_offsettable_operand(operands[1], 4);
+      lsw_operands[1] = adjust_address (operands[1], SImode, 4);
     else
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
         {
@@ -370,7 +371,7 @@
     lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
-      lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
+      lsw_operands[2] = adjust_address (operands[2], SImode, 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {

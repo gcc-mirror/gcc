@@ -5070,8 +5070,8 @@ move\\t%0,%z4\\n\\
 
 	  scratch = gen_rtx_REG (SImode, REGNO (scratch));
 	  memword = adjust_address (op1, SImode, 0);
-	  offword = change_address (adj_offsettable_operand (op1, 4),
-				    SImode, NULL_RTX);
+	  offword = adjust_address (op1, SImode, 4);
+
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      hi_word = memword;
@@ -5150,8 +5150,8 @@ move\\t%0,%z4\\n\\
 
 	  scratch = gen_rtx_REG (SImode, REGNO (operands[2]));
 	  memword = adjust_address (op0, SImode, 0);
-	  offword = change_address (adj_offsettable_operand (op0, 4),
-				    SImode, NULL_RTX);
+	  offword = adjust_address (op0, SImode, 4);
+
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      hi_word = memword;

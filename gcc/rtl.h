@@ -1295,7 +1295,7 @@ extern rtx get_label_after		PARAMS ((rtx));
 extern rtx follow_jumps			PARAMS ((rtx));
 
 /* In recog.c  */
-extern rtx adj_offsettable_operand	PARAMS ((rtx, int));
+extern rtx *find_constant_term_loc	PARAMS ((rtx *));
 
 /* In emit-rtl.c  */
 extern rtx try_split			PARAMS ((rtx, rtx, int));
