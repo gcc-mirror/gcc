@@ -1,3 +1,8 @@
+2001-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
+        get_multilibs to find gcc.
+	
 2001-05-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_C99):  Reorder output messages.
