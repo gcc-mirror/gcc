@@ -1,5 +1,10 @@
 2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*ixorsi3_zext_hi): Restrict to
+	TARGET_H8300H and TARGET_H8300S.
+
+2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (a peephole2): New.
 
 2003-03-03  Kazu Hirata  <kazu@cs.umass.edu>
