@@ -42,7 +42,7 @@ cxx_binding_make (tree value, tree type)
       free_bindings = binding->previous;
     }
   else
-    binding = ggc_alloc (sizeof (cxx_binding));
+    binding = ggc_alloc_cleared (sizeof (cxx_binding));
 
   binding->value = value;
   binding->type = type;
@@ -140,3 +140,4 @@ set_namespace_binding (tree name, tree scope, tree val)
   timevar_pop (TV_NAME_LOOKUP);
 }
 
+#include "gt-cp-name-lookup.h"
