@@ -3668,6 +3668,10 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
 	  pref_or_nothing[commutative + 1] = t;
 
+	  t = address_reloaded[commutative];
+	  address_reloaded[commutative] = address_reloaded[commutative + 1];
+	  address_reloaded[commutative + 1] = t;
+
 	  memcpy (constraints, recog_data.constraints,
 		  noperands * sizeof (char *));
 	  goto try_swapped;
