@@ -33,7 +33,7 @@ ac_help="$ac_help
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: misc,tree,rtl,gc,gcac; default
-			  is misc,tree,rtl"
+			  is misc,tree,gc"
 ac_help="$ac_help
   --disable-cpp           don't provide a user-visible C preprocessor."
 ac_help="$ac_help
@@ -782,7 +782,7 @@ ac_gc_always_collect=
 case "${enableval}" in
 yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;;
 no)	;;
-*)	IFS="${IFS= 	}"; ac_save_IFS="$IFS" IFS="$IFS,"
+*)	IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 	set fnord $enableval; shift
 	IFS="$ac_save_IFS"
 	for check
