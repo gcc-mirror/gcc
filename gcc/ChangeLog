@@ -1,3 +1,8 @@
+2002-07-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/invoke.texi (Debugging Options): Mention that -gdwarf is
+	deprecated.
+
 Wed Jul 10 19:50:03 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (gen_lowpart_for_combine): Handle vector modes.
