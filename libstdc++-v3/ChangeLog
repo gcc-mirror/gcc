@@ -1,3 +1,22 @@
+2001-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* mkcheck.in (static_fail): Remove S_FLAG decoration on output.
+
+	* include/bits/std_sstream.h (stringbuf::setbuf): Require both
+	arguments to be non-null.
+	* include/bits/fstream.tcc (filebuf::_M_allocate_buffers): Only
+	try allocations if allocated size is greater than zero.
+	(filebuf::_M_filebuf_init): Change to
+	(filebuf::_M_allocate_file): Which is what it does now. 
+	(filebuf::_M_allocate_bufers): Change to
+	(filebuf::_M_allocate_internal_buffer): This, and create
+	(filebuf::_M_allocate_pback_buffer): New.
+	(filebuf::_M_destroy_internal_buffer): New.
+	(filebuf::_M_buf_allocated): New data member.
+	(filebuf::setbuf): Use new logic, allow use of external buffer.
+	* testsuite/27_io/stringbuf_virtuals.cc: New file.
+	* testsuite/27_io/filebuf_virtuals.cc: New file.
+
 2001-05-21  Stephen M. Webb  <stephen@bregmasoft.com>
 
 	* include/c_std/bits/std_cstring.h (memchr): Define "C" functions to

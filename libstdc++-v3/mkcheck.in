@@ -393,8 +393,7 @@ test_file()
 
     printf "%s\t" "$RESULT"
     printf "%-2s %d\t%.3f\t%s\t%s\t%s\t%s %s\n"   \
-        "$RESULT" $C_TIME $E_TIME $TEXT $DATA $SIZE $NAME "$S_FLAG"    \
-        >> $RESULTS_FILE
+        "$RESULT" $C_TIME $E_TIME $TEXT $DATA $SIZE $NAME >> $RESULTS_FILE
 }
 
 setup_size_command

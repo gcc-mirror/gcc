@@ -39,7 +39,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
-    _M_filebuf_init()
+    _M_allocate_file()
     {
       if (!_M_file)
 	{
@@ -57,11 +57,12 @@ namespace std
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
-    _M_allocate_buffers()
+    _M_allocate_internal_buffer()
     {
-      if (!_M_buf)
+      if (!_M_buf && _M_buf_size_opt)
 	{
 	  _M_buf_size = _M_buf_size_opt;
+
 	  // Allocate internal buffer.
 	  try { _M_buf = new char_type[_M_buf_size]; }
 	  catch(...) 
@@ -69,7 +70,33 @@ namespace std
 	      delete [] _M_buf;
 	      __throw_exception_again;
 	    }
-	  
+	  _M_buf_allocated = true;
+	}
+    }
+
+  // Both close and setbuf need to deallocate internal buffers, if it exists.
+  template<typename _CharT, typename _Traits>
+    void
+    basic_filebuf<_CharT, _Traits>::
+    _M_destroy_internal_buffer()
+    {
+      if (_M_buf_allocated)
+	{
+	  delete [] _M_buf;
+	  _M_buf = NULL;
+	  _M_buf_allocated = false;
+	  this->setg(NULL, NULL, NULL);
+	  this->setp(NULL, NULL);
+	}
+    }
+
+ template<typename _CharT, typename _Traits>
+    void
+    basic_filebuf<_CharT, _Traits>::
+    _M_allocate_pback_buffer()
+    {
+      if (!_M_pback && _M_pback_size)
+	{
 	  // Allocate pback buffer.
 	  try 
 	    { _M_pback = new char_type[_M_pback_size]; }
@@ -85,16 +112,18 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() 
     : __streambuf_type(), _M_file(NULL), _M_state_cur(__state_type()), 
-    _M_state_beg(__state_type()), _M_last_overflowed(false)
+    _M_state_beg(__state_type()), _M_buf_allocated(false), 
+    _M_last_overflowed(false)
     { }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, int_type __s)
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
-    _M_state_beg(__state_type()), _M_last_overflowed(false)
+    _M_state_beg(__state_type()), _M_buf_allocated(false), 
+    _M_last_overflowed(false)
     {
-      _M_filebuf_init();
+      _M_allocate_file();
       _M_file->sys_open(__f, __mode);
       if (this->is_open())
 	{
@@ -102,9 +131,10 @@ namespace std
 	  if (__s)
 	    {
 	      _M_buf_size_opt = __s;
-	      _M_allocate_buffers();
+	      _M_allocate_internal_buffer();
 	      _M_set_indeterminate();
 	    }
+	  _M_allocate_pback_buffer();
 	}
     }
 
@@ -116,11 +146,12 @@ namespace std
       __filebuf_type *__ret = NULL;
       if (!this->is_open())
 	{
-	  _M_filebuf_init();
+	  _M_allocate_file();
 	  _M_file->open(__s, __mode);
 	  if (this->is_open())
 	    {
-	      _M_allocate_buffers();
+	      _M_allocate_internal_buffer();
+	      _M_allocate_pback_buffer();
 	      _M_mode = __mode;
 	      
 	      // For time being, set both (in/out) sets  of pointers.
@@ -159,14 +190,12 @@ namespace std
 #endif
 
 	  _M_mode = ios_base::openmode(0);
-	  if (_M_buf)
+	  _M_destroy_internal_buffer();
+
+	  if (_M_pback)
 	    {
-	      delete [] _M_buf;
-	      _M_buf = NULL;
 	      delete [] _M_pback;
 	      _M_pback = NULL;
-	      this->setg(NULL, NULL, NULL);
-	      this->setp(NULL, NULL);
 	    }
 	  __ret = this;
 	}
@@ -432,6 +461,34 @@ namespace std
       return __ret;
     }
 
+  template<typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>::__streambuf_type* 
+    basic_filebuf<_CharT, _Traits>::
+    setbuf(char_type* __s, streamsize __n)
+    {
+      if (!this->is_open() && __s == 0 && __n == 0)
+	_M_buf_size_opt = 0;
+      else if (__s && __n)
+	{
+	  // This is implementation-defined behavior, and assumes
+	  // that an external char_type array of length (__s + __n)
+	  // exists and has been pre-allocated. If this is not the
+	  // case, things will quickly blow up.
+	  // Step 1: Destroy the current internal array.
+	  _M_destroy_internal_buffer();
+	  
+	  // Step 2: Use the external array.
+	  _M_buf = __s;
+	  _M_buf_size_opt = _M_buf_size = __n;
+	  _M_set_indeterminate();
+	  
+	// Step 3: Make sure a pback buffer is allocated.
+	  _M_allocate_pback_buffer();
+	}
+      _M_last_overflowed = false;	
+      return this; 
+    }
+  
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
