@@ -1,3 +1,9 @@
+Tue Jun 29 10:10:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi: Undo Friday's change, as there's now a fix
+	available from netlib.
+	* news.texi: Document the fix.
+
 Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs

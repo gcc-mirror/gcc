@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995-1999
 
-@set last-update-bugs 1999-06-25
+@set last-update-bugs 1999-06-29
 
 @include root.texi
 
@@ -97,17 +97,6 @@ see "Problems Installing" in @file{@value{path-g77}/INSTALL}.
 The following information was last updated on @value{last-update-bugs}:
 
 @itemize @bullet
-@item
-Input to a @code{NAMELIST} read involving a repeat count,
-such as @samp{K(5)=10*3},
-is not properly handled by @code{libf2c}.
-The first item is written to @samp{K(5)},
-but the remaining nine are written elsewhere (still within the array),
-not necessarily starting at @samp{K(6)}.
-
-A fix is pending, certainly for @code{gcc} 3.0,
-perhaps for 2.96 if such a release is made.
-
 @item
 @code{g77} fails to warn about
 use of a ``live'' iterative-DO variable
