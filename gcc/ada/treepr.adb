@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -539,8 +539,39 @@ package body Treepr is
          Print_Eol;
       end if;
 
-      Write_Entity_Flags (Ent, Prefix);
+      if Field_Present (Field24 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field24_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field24 (Ent));
+         Print_Eol;
+      end if;
 
+      if Field_Present (Field25 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field25_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field25 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field26 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field26_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field26 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field27 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field27_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field27 (Ent));
+         Print_Eol;
+      end if;
+
+      Write_Entity_Flags (Ent, Prefix);
    end Print_Entity_Info;
 
    ---------------

@@ -209,6 +209,11 @@ package body Einfo is
    --    Privals_Chain                   Elist23
    --    Protected_Operation             Node23
 
+   --    (unused)                        Node24
+   --    (unused)                        Node25
+   --    (unused)                        Node26
+   --    (unused)                        Node27
+
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
    ---------------------------------------------
@@ -421,6 +426,38 @@ package body Einfo is
    --    Must_Be_On_Byte_Boundary       Flag183
 
    --    (unused)                       Flag153
+   --    (unused)                       Flag184
+   --    (unused)                       Flag185
+   --    (unused)                       Flag186
+   --    (unused)                       Flag187
+   --    (unused)                       Flag188
+   --    (unused)                       Flag189
+   --    (unused)                       Flag190
+   --    (unused)                       Flag191
+   --    (unused)                       Flag192
+   --    (unused)                       Flag193
+   --    (unused)                       Flag194
+   --    (unused)                       Flag195
+   --    (unused)                       Flag196
+   --    (unused)                       Flag197
+   --    (unused)                       Flag198
+   --    (unused)                       Flag199
+   --    (unused)                       Flag200
+   --    (unused)                       Flag201
+   --    (unused)                       Flag202
+   --    (unused)                       Flag203
+   --    (unused)                       Flag204
+   --    (unused)                       Flag205
+   --    (unused)                       Flag206
+   --    (unused)                       Flag207
+   --    (unused)                       Flag208
+   --    (unused)                       Flag209
+   --    (unused)                       Flag210
+   --    (unused)                       Flag211
+   --    (unused)                       Flag212
+   --    (unused)                       Flag213
+   --    (unused)                       Flag214
+   --    (unused)                       Flag215
 
    --------------------------------
    -- Attribute Access Functions --
@@ -6078,6 +6115,10 @@ package body Einfo is
       procedure W (Flag_Name : String; Flag : Boolean);
       --  Write out given flag if it is set
 
+      -------
+      -- W --
+      -------
+
       procedure W (Flag_Name : String; Flag : Boolean) is
       begin
          if Flag then
@@ -7158,6 +7199,54 @@ package body Einfo is
             Write_Str ("Field23??");
       end case;
    end Write_Field23_Name;
+
+   ------------------------
+   -- Write_Field24_Name --
+   ------------------------
+
+   procedure Write_Field24_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                     =>
+            Write_Str ("Field24??");
+      end case;
+   end Write_Field24_Name;
+
+   ------------------------
+   -- Write_Field25_Name --
+   ------------------------
+
+   procedure Write_Field25_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                     =>
+            Write_Str ("Field25??");
+      end case;
+   end Write_Field25_Name;
+
+   ------------------------
+   -- Write_Field26_Name --
+   ------------------------
+
+   procedure Write_Field26_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                     =>
+            Write_Str ("Field26??");
+      end case;
+   end Write_Field26_Name;
+
+   ------------------------
+   -- Write_Field27_Name --
+   ------------------------
+
+   procedure Write_Field27_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                     =>
+            Write_Str ("Field27??");
+      end case;
+   end Write_Field27_Name;
 
    -------------------------
    -- Iterator Procedures --
