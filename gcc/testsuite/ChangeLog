@@ -1,3 +1,10 @@
+2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/17855
+	* gcc.c-torture/compile/struct-non-lval-1.c,
+	gcc.c-torture/compile/struct-non-lval-2.c,
+	gcc.c-torture/compile/struct-non-lval-3.c: New tests.
+
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/tls/tls.exp: Remove temporary file.
