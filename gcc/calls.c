@@ -157,27 +157,37 @@ calls_function_1 (exp, which)
      int which;
 {
   register int i;
-  int type = TREE_CODE_CLASS (TREE_CODE (exp));
-  int length = tree_code_length[(int) TREE_CODE (exp)];
+  enum tree_code code = TREE_CODE (exp);
+  int type = TREE_CODE_CLASS (code);
+  int length = tree_code_length[(int) code];
+
+  /* If this code is langauge-specific, we don't know what it will do.  */
+  if ((int) code >= NUM_TREE_CODES)
+    return 1;
 
   /* Only expressions and references can contain calls.  */
-
   if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r'
       && type != 'b')
     return 0;
 
-  switch (TREE_CODE (exp))
+  switch (code)
     {
     case CALL_EXPR:
       if (which == 0)
 	return 1;
       else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-		   == FUNCTION_DECL)
-	       && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	       && (DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-		   == BUILT_IN_ALLOCA))
-	return 1;
+		   == FUNCTION_DECL))
+	{
+	  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+
+	  if ((DECL_BUILT_IN (fndecl)
+	       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA)
+	      || (DECL_SAVED_INSNS (fndecl)
+		  && (FUNCTION_FLAGS (DECL_SAVED_INSNS (fndecl))
+		      & FUNCTION_FLAGS_CALLS_ALLOCA)))
+	    return 1;
+	}
 
       /* Third operand is RTL.  */
       length = 2;
