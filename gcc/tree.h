@@ -1800,6 +1800,7 @@ extern tree rli_size_unit_so_far	PARAMS ((record_layout_info));
 extern tree rli_size_so_far		PARAMS ((record_layout_info));
 extern void normalize_rli		PARAMS ((record_layout_info));
 extern void place_field			PARAMS ((record_layout_info, tree));
+extern void compute_record_mode		PARAMS ((tree));
 extern void finish_record_layout	PARAMS ((record_layout_info));
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
