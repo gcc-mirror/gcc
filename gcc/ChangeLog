@@ -1,3 +1,8 @@
+2000-11-28  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (expand_call): Defer const/pure NO_DEFER_POP until
+	after sibcall do_pending_stack_adjust.
+
 Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* jump.c (delete_insn): Check that REG_LABEL note actually contains

@@ -2657,11 +2657,6 @@ expand_call (exp, target, ignore)
 	  expand_start_target_temps ();
 	}
 
-      /* When calling a const function, we must pop the stack args right away,
-	 so that the pop is deleted or moved with the call.  */
-      if (flags & (ECF_CONST | ECF_PURE))
-	NO_DEFER_POP;
-
       /* Don't let pending stack adjusts add up to too much.
 	 Also, do all pending adjustments now if there is any chance
 	 this might be a call to alloca or if we are expanding a sibling
@@ -2670,6 +2665,11 @@ expand_call (exp, target, ignore)
 	  || (pending_stack_adjust > 0 && (flags & ECF_MAY_BE_ALLOCA))
 	  || pass == 0)
 	do_pending_stack_adjust ();
+
+      /* When calling a const function, we must pop the stack args right away,
+	 so that the pop is deleted or moved with the call.  */
+      if (flags & (ECF_CONST | ECF_PURE))
+	NO_DEFER_POP;
 
       /* Push the temporary stack slot level so that we can free any
 	 temporaries we make.  */
