@@ -76,7 +76,7 @@ extern void bss_section ();
 extern struct rtx_def *dsp16xx_function_arg ();
 extern void dsp16xx_function_arg_advance ();
 extern enum rtx_code next_cc_user_code ();
-extern enum rtx_code save_next_cc_user_code;
+extern int next_cc_user_unsigned ();
 extern struct rtx_def *gen_tst_reg ();
 extern char *output_block_move();
 
@@ -436,7 +436,7 @@ extern int target_flags;
    The hardware registers are assigned numbers for the compiler
    from 0 to FIRST_PSEUDO_REGISTER-1 */
 
-#define FIRST_PSEUDO_REGISTER REG_YBASE31 + 1
+#define FIRST_PSEUDO_REGISTER (REG_YBASE31 + 1)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -1131,11 +1131,11 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define VALUE_REGNO(MODE)  (REG_Y)
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), VALUE_REGNO(TYPE_MODE(VALTYPE)))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), VALUE_REGNO(TYPE_MODE(VALTYPE)))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, VALUE_REGNO(MODE))
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, VALUE_REGNO(MODE))
 
 /* 1 if N is a possible register number for a function value. */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == REG_Y)
