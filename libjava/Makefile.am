@@ -1942,6 +1942,7 @@ java/util/Collection.java \
 java/util/Collections.java \
 java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
+java/util/Currency.java \
 java/util/Date.java \
 java/util/Dictionary.java \
 java/util/EmptyStackException.java \
@@ -2580,6 +2581,7 @@ java/text/DecimalFormat.java \
 java/text/DecimalFormatSymbols.java \
 java/text/FieldPosition.java \
 java/text/Format.java \
+java/text/FormatCharacterIterator.java \
 java/text/MessageFormat.java \
 java/text/NumberFormat.java \
 java/text/ParseException.java \

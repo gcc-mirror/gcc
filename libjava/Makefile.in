@@ -1664,6 +1664,7 @@ java/util/Collection.java \
 java/util/Collections.java \
 java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
+java/util/Currency.java \
 java/util/Date.java \
 java/util/Dictionary.java \
 java/util/EmptyStackException.java \
@@ -2297,6 +2298,7 @@ java/text/DecimalFormat.java \
 java/text/DecimalFormatSymbols.java \
 java/text/FieldPosition.java \
 java/text/Format.java \
+java/text/FormatCharacterIterator.java \
 java/text/MessageFormat.java \
 java/text/NumberFormat.java \
 java/text/ParseException.java \
@@ -3831,6 +3833,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/text/DateFormat.P .deps/java/text/DateFormatSymbols.P \
 .deps/java/text/DecimalFormat.P .deps/java/text/DecimalFormatSymbols.P \
 .deps/java/text/FieldPosition.P .deps/java/text/Format.P \
+.deps/java/text/FormatCharacterIterator.P \
 .deps/java/text/MessageFormat.P .deps/java/text/NumberFormat.P \
 .deps/java/text/ParseException.P .deps/java/text/ParsePosition.P \
 .deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
@@ -3842,17 +3845,18 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/Calendar.P .deps/java/util/Collection.P \
 .deps/java/util/Collections.P .deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
-.deps/java/util/Date.P .deps/java/util/Dictionary.P \
-.deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
-.deps/java/util/EventListener.P .deps/java/util/EventListenerProxy.P \
-.deps/java/util/EventObject.P .deps/java/util/GregorianCalendar.P \
-.deps/java/util/HashMap.P .deps/java/util/HashSet.P \
-.deps/java/util/Hashtable.P .deps/java/util/IdentityHashMap.P \
-.deps/java/util/Iterator.P .deps/java/util/LinkedHashMap.P \
-.deps/java/util/LinkedHashSet.P .deps/java/util/LinkedList.P \
-.deps/java/util/List.P .deps/java/util/ListIterator.P \
-.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
-.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
+.deps/java/util/Currency.P .deps/java/util/Date.P \
+.deps/java/util/Dictionary.P .deps/java/util/EmptyStackException.P \
+.deps/java/util/Enumeration.P .deps/java/util/EventListener.P \
+.deps/java/util/EventListenerProxy.P .deps/java/util/EventObject.P \
+.deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
+.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
+.deps/java/util/IdentityHashMap.P .deps/java/util/Iterator.P \
+.deps/java/util/LinkedHashMap.P .deps/java/util/LinkedHashSet.P \
+.deps/java/util/LinkedList.P .deps/java/util/List.P \
+.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
+.deps/java/util/Locale.P .deps/java/util/Map.P \
+.deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
