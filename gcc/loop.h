@@ -44,6 +44,10 @@ Boston, MA 02111-1307, USA.  */
   (INSN_UID (INSN) < max_uid_for_loop ? uid_luid[INSN_UID (INSN)] \
    : (abort (), -1))
 
+#define REGNO_FIRST_LUID(REGNO) uid_luid[REGNO_FIRST_UID (REGNO)]
+#define REGNO_LAST_LUID(REGNO) uid_luid[REGNO_LAST_UID (REGNO)]
+
+
 /* A "basic induction variable" or biv is a pseudo reg that is set
    (within this loop) only by incrementing or decrementing it.  */
 /* A "general induction variable" or giv is a pseudo reg whose

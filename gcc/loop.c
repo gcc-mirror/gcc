@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 
+
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.
    We use them to see whether a jump comes from outside a given loop.  */
@@ -823,12 +824,12 @@ scan_loop (loop, flags)
 		 or consec_sets_invariant_p returned 2
 		 (only conditionally invariant).  */
 	      m->cond = ((tem | tem1 | tem2) > 1);
-	      m->global = (uid_luid[REGNO_LAST_UID (regno)]
+	      m->global = (REGNO_LAST_LUID (regno)
 			   > INSN_LUID (loop_end)
-			   || uid_luid[REGNO_FIRST_UID (regno)] < INSN_LUID (loop_start));
+			   || REGNO_FIRST_LUID (regno) < INSN_LUID (loop_start));
 	      m->match = 0;
-	      m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
-			     - uid_luid[REGNO_FIRST_UID (regno)]);
+	      m->lifetime = (REGNO_LAST_LUID (regno)
+			     - REGNO_FIRST_LUID (regno));
 	      m->savings = VARRAY_INT (regs->n_times_set, regno);
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
@@ -921,12 +922,12 @@ scan_loop (loop, flags)
 		     INSN_LUID and hence must make a conservative
 		     assumption.  */
 		  m->global = (INSN_UID (p) >= max_uid_for_loop
-			       || (uid_luid[REGNO_LAST_UID (regno)]
+			       || (REGNO_LAST_LUID (regno)
 				   > INSN_LUID (loop_end))
-			       || (uid_luid[REGNO_FIRST_UID (regno)]
+			       || (REGNO_FIRST_LUID (regno)
 				   < INSN_LUID (p))
 			       || (labels_in_range_p
-				   (p, uid_luid[REGNO_FIRST_UID (regno)])));
+				   (p, REGNO_FIRST_LUID (regno))));
 		  if (maybe_never && m->global)
 		    m->savemode = GET_MODE (SET_SRC (set1));
 		  else
@@ -934,8 +935,8 @@ scan_loop (loop, flags)
 		  m->regno = regno;
 		  m->cond = 0;
 		  m->match = 0;
-		  m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
-				 - uid_luid[REGNO_FIRST_UID (regno)]);
+		  m->lifetime = (REGNO_LAST_LUID (regno)
+				 - REGNO_FIRST_LUID (regno));
 		  m->savings = 1;
 		  VARRAY_INT (regs->set_in_loop, regno) = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
@@ -1393,8 +1394,8 @@ combine_movables (movables, regs)
 	    && mode == GET_MODE (SET_SRC (PATTERN (NEXT_INSN (m->insn)))))
 	  {
 	    register struct movable *m1;
-	    int first = uid_luid[REGNO_FIRST_UID (m->regno)];
-	    int last = uid_luid[REGNO_LAST_UID (m->regno)];
+	    int first = REGNO_FIRST_LUID (m->regno);
+	    int last = REGNO_LAST_LUID (m->regno);
 
 	    if (m0 == 0)
 	      {
@@ -1412,8 +1413,8 @@ combine_movables (movables, regs)
 	       already combined together.  */
 	    for (m1 = movables->head; m1 != m; m1 = m1->next)
 	      if (m1 == m0 || (m1->partial && m1->match == m0))
-		if (! (uid_luid[REGNO_FIRST_UID (m1->regno)] > last
-		       || uid_luid[REGNO_LAST_UID (m1->regno)] < first))
+		if (! (REGNO_FIRST_LUID (m1->regno) > last
+		       || REGNO_LAST_LUID (m1->regno) < first))
 		  goto overlap;
 
 	    /* No overlap: we can combine this with the others.  */
@@ -2038,12 +2039,12 @@ move_movables (loop, movables, threshold, insn_count)
 		 to say it lives at least the full length of this loop.
 		 This will help guide optimizations in outer loops.  */
 
-	      if (uid_luid[REGNO_FIRST_UID (regno)] > INSN_LUID (loop_start))
+	      if (REGNO_FIRST_LUID (regno) > INSN_LUID (loop_start))
 		/* This is the old insn before all the moved insns.
 		   We can't use the moved insn because it is out of range
 		   in uid_luid.  Only the old insns have luids.  */
 		REGNO_FIRST_UID (regno) = INSN_UID (loop_start);
-	      if (uid_luid[REGNO_LAST_UID (regno)] < INSN_LUID (loop_end))
+	      if (REGNO_LAST_LUID (regno) < INSN_LUID (loop_end))
 		REGNO_LAST_UID (regno) = INSN_UID (loop_end);
 
 	      /* Combine with this moved insn any other matching movables.  */
@@ -3876,10 +3877,10 @@ strength_reduce (loop, insn_count, flags)
 	 long as init_insn doesn't use the biv itself.
 	 March 14, 1989 -- self@bayes.arc.nasa.gov */
 
-      if ((uid_luid[REGNO_LAST_UID (bl->regno)] < INSN_LUID (loop_end)
+      if ((REGNO_LAST_LUID (bl->regno) < INSN_LUID (loop_end)
 	   && bl->init_insn
 	   && INSN_UID (bl->init_insn) < max_uid_for_loop
-	   && uid_luid[REGNO_FIRST_UID (bl->regno)] >= INSN_LUID (bl->init_insn)
+	   && REGNO_FIRST_LUID (bl->regno) >= INSN_LUID (bl->init_insn)
 #ifdef HAVE_decrement_and_branch_until_zero
 	   && ! bl->nonneg
 #endif
@@ -4935,8 +4936,8 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
     {
       v->mode = GET_MODE (SET_DEST (set));
 
-      v->lifetime = (uid_luid[REGNO_LAST_UID (REGNO (dest_reg))]
-		     - uid_luid[REGNO_FIRST_UID (REGNO (dest_reg))]);
+      v->lifetime = (REGNO_LAST_LUID (REGNO (dest_reg))
+		     - REGNO_FIRST_LUID (REGNO (dest_reg)));
 
       /* If the lifetime is zero, it means that this register is
 	 really a dead store.  So mark this as a giv that can be
@@ -4981,7 +4982,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
 
       if (REGNO_FIRST_UID (REGNO (dest_reg)) == INSN_UID (insn)
 	  /* Previous line always fails if INSN was moved by loop opt.  */
-	  && uid_luid[REGNO_LAST_UID (REGNO (dest_reg))]
+	  && REGNO_LAST_LUID (REGNO (dest_reg))
 	  < INSN_LUID (loop->end)
 	  && (! not_every_iteration
 	      || last_use_this_basic_block (dest_reg, insn)))
@@ -5004,10 +5005,10 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
 	  for (b = bl->biv; b; b = b->next_iv)
 	    {
 	      if (INSN_UID (b->insn) >= max_uid_for_loop
-		  || ((uid_luid[INSN_UID (b->insn)]
-		       >= uid_luid[REGNO_FIRST_UID (REGNO (dest_reg))])
-		      && (uid_luid[INSN_UID (b->insn)]
-			  <= uid_luid[REGNO_LAST_UID (REGNO (dest_reg))])))
+		  || ((INSN_LUID (b->insn)
+		       >= REGNO_FIRST_LUID (REGNO (dest_reg)))
+		      && (INSN_LUID (b->insn)
+			  <= REGNO_LAST_LUID (REGNO (dest_reg)))))
 		{
 		  v->replaceable = 0;
 		  v->not_replaceable = 1;
@@ -8224,7 +8225,7 @@ update_reg_last_use (x, insn)
      and hence this insn will never be the last use of x.  */
   if (GET_CODE (x) == REG && REGNO (x) < max_reg_before_loop
       && INSN_UID (insn) < max_uid_for_loop
-      && uid_luid[REGNO_LAST_UID (REGNO (x))] < uid_luid[INSN_UID (insn)])
+      && REGNO_LAST_LUID (REGNO (x)) < INSN_LUID (insn))
     REGNO_LAST_UID (REGNO (x)) = INSN_UID (insn);
   else
     {
