@@ -23,7 +23,7 @@ struct lang_identifier
 {
   struct tree_identifier ignore;
   tree global_value, local_value, label_value, implicit_decl;
-  tree error_locus;
+  tree error_locus, limbo_value;
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
@@ -34,6 +34,10 @@ struct lang_identifier
   (((struct lang_identifier *)(NODE))->local_value)
 #define IDENTIFIER_LABEL_VALUE(NODE)	\
   (((struct lang_identifier *)(NODE))->label_value)
+/* IDENTIFIER_LIMBO_VALUE records the extern decl of this identifier,
+   if it has had one.  */
+#define IDENTIFIER_LIMBO_VALUE(NODE)	\
+  (((struct lang_identifier *)(NODE))->limbo_value)
 #define IDENTIFIER_IMPLICIT_DECL(NODE)	\
   (((struct lang_identifier *)(NODE))->implicit_decl)
 #define IDENTIFIER_ERROR_LOCUS(NODE)	\
