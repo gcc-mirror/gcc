@@ -1,3 +1,13 @@
+2004-04-24  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/thread/pthread7-rope.cc: Update comment to reflect test.
+
+2004-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/thread/pthread7-rope.cc: Fix, unpredictably, depending
+	on allocator behavior, the memory pointed by data2 may well be not
+	trashed.
+
 2004-04-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/time_members.cc
