@@ -108,6 +108,7 @@ void redirect_tablejump ();
 static int delete_labelref_insn ();
 static void mark_jump_label ();
 void delete_jump ();
+void delete_computation ();
 static void delete_from_jump_chain ();
 static int tension_vector_labels ();
 static void find_cross_jump ();
@@ -2820,13 +2821,12 @@ delete_jump (insn)
      rtx insn;
 {
   register rtx x = PATTERN (insn);
-  register rtx prev;
 
   if (GET_CODE (x) == SET
       && GET_CODE (SET_DEST (x)) == PC)
     {
-      prev = prev_nonnote_insn (insn);
 #ifdef HAVE_cc0
+      rtx prev = prev_nonnote_insn (insn);
       /* We assume that at this stage
 	 CC's are always set explicitly
 	 and always immediately before the jump that
@@ -2844,87 +2844,100 @@ delete_jump (insn)
 	    REG_NOTES (prev) = gen_rtx (EXPR_LIST, REG_UNUSED,
 					cc0_rtx, REG_NOTES (prev));
 	}
-#else
-      {
-	rtx note;
-
-	/* If we are running before flow.c, we need do nothing since flow.c
-	   will delete the set of the condition code if it is dead.  We also
-	   can't know if the register being used as the condition code is
-	   dead or not at this point.
-
-	   Otherwise, look at all our REG_DEAD notes.  If a previous insn
-	   does nothing other than set a register that dies in this jump,
-	   we can delete the insn.  */
-
-	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	  {
-	    rtx our_prev;
-
-	    if (REG_NOTE_KIND (note) != REG_DEAD
-		/* Verify that the REG_NOTE has a legal value.  */
-		|| GET_CODE (XEXP (note, 0)) != REG)
-	      continue;
-
-	    for (our_prev = prev_nonnote_insn (insn);
-		 our_prev && GET_CODE (our_prev) == INSN;
-		 our_prev = prev_nonnote_insn (our_prev))
-	      {
-		/* If we reach a SEQUENCE, it is too complex to try to
-		   do anything with it, so give up.  */
-		if (GET_CODE (PATTERN (our_prev)) == SEQUENCE)
-		  break;
-
-		if (GET_CODE (PATTERN (our_prev)) == USE
-		    && GET_CODE (XEXP (PATTERN (our_prev), 0)) == INSN)
-		  /* reorg creates USEs that look like this.  We leave them
-		     alone because reorg needs them for its own purposes.  */
-		  break;
-
-		if (reg_set_p (XEXP (note, 0), PATTERN (our_prev)))
-		  {
-		    if (FIND_REG_INC_NOTE (our_prev, NULL_RTX))
-		      break;
-
-		    if (GET_CODE (PATTERN (our_prev)) == PARALLEL)
-		      {
-			/* If we find a SET of something else, we can't
-			   delete the insn.  */
-
-			int i;
-
-			for (i = 0; i < XVECLEN (PATTERN (our_prev), 0); i++)
-			  {
-			    rtx part = XVECEXP (PATTERN (our_prev), 0, i);
-
-			    if (GET_CODE (part) == SET
-				&& SET_DEST (part) != XEXP (note, 0))
-			      break;
-			  }
-
-			if (i == XVECLEN (PATTERN (our_prev), 0))
-			  delete_insn (our_prev);
-		      }
-		    else if (GET_CODE (PATTERN (our_prev)) == SET
-			     && SET_DEST (PATTERN (our_prev)) == XEXP (note, 0))
-		      delete_insn (our_prev);
-
-		    break;
-		  }
-
-		/* If OUR_PREV references the register that dies here,
-		   it is an additional use.  Hence any prior SET isn't
-		   dead.  */
-		if (reg_overlap_mentioned_p (XEXP (note, 0),
-					     PATTERN (our_prev)))
-		  break;
-	      }
-	  }
-      }
 #endif
       /* Now delete the jump insn itself.  */
-      delete_insn (insn);
+      delete_computation (insn);
     }
+}
+
+/* Delete INSN and recursively delete insns that compute values used only
+   by INSN.  This uses the REG_DEAD notes computed during flow analysis.
+   If we are running before flow.c, we need do nothing since flow.c will
+   delete dead code.  We also can't know if the registers being used are
+   dead or not at this point.
+
+   Otherwise, look at all our REG_DEAD notes.  If a previous insn does
+   nothing other than set a register that dies in this insn, we can delete
+   that insn as well.  */
+
+void
+delete_computation (insn)
+     rtx insn;
+{
+#ifndef HAVE_cc0
+  rtx note, next;
+
+  for (note = REG_NOTES (insn); note; note = next)
+    {
+      rtx our_prev;
+
+      next = XEXP (note, 1);
+
+      if (REG_NOTE_KIND (note) != REG_DEAD
+	  /* Verify that the REG_NOTE is legitimate.  */
+	  || GET_CODE (XEXP (note, 0)) != REG)
+	continue;
+
+      for (our_prev = prev_nonnote_insn (insn);
+	   our_prev && GET_CODE (our_prev) == INSN;
+	   our_prev = prev_nonnote_insn (our_prev))
+	{
+	  /* If we reach a SEQUENCE, it is too complex to try to
+	     do anything with it, so give up.  */
+	  if (GET_CODE (PATTERN (our_prev)) == SEQUENCE)
+	    break;
+
+	  if (GET_CODE (PATTERN (our_prev)) == USE
+	      && GET_CODE (XEXP (PATTERN (our_prev), 0)) == INSN)
+	    /* reorg creates USEs that look like this.  We leave them
+	       alone because reorg needs them for its own purposes.  */
+	    break;
+
+	  if (reg_set_p (XEXP (note, 0), PATTERN (our_prev)))
+	    {
+	      if (FIND_REG_INC_NOTE (our_prev, NULL_RTX))
+		break;
+
+	      if (GET_CODE (PATTERN (our_prev)) == PARALLEL)
+		{
+		  /* If we find a SET of something else, we can't
+		     delete the insn.  */
+
+		  int i;
+
+		  for (i = 0; i < XVECLEN (PATTERN (our_prev), 0); i++)
+		    {
+		      rtx part = XVECEXP (PATTERN (our_prev), 0, i);
+
+		      if (GET_CODE (part) == SET
+			  && SET_DEST (part) != XEXP (note, 0))
+			break;
+		    }
+
+		  if (i == XVECLEN (PATTERN (our_prev), 0))
+		    delete_computation (our_prev);
+		}
+	      else if (GET_CODE (PATTERN (our_prev)) == SET
+		       && SET_DEST (PATTERN (our_prev)) == XEXP (note, 0))
+		delete_computation (our_prev);
+
+	      break;
+	    }
+
+	  /* If OUR_PREV references the register that dies here, it is an
+	     additional use.  Hence any prior SET isn't dead.  However, this
+	     insn becomes the new place for the REG_DEAD note.  */
+	  if (reg_overlap_mentioned_p (XEXP (note, 0),
+				       PATTERN (our_prev)))
+	    {
+	      XEXP (note, 1) = REG_NOTES (our_prev);
+	      REG_NOTES (our_prev) = note;
+	      break;
+	    }
+	}
+    }
+#endif /* Don't HAVE_cc0 */
+  delete_insn (insn);
 }
 
 /* Delete insn INSN from the chain of insns and update label ref counts.
