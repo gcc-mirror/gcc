@@ -1660,7 +1660,7 @@ emit_block_move (x, y, size, align)
 	      if (pat)
 		{
 		  emit_insn (pat);
-		  return;
+		  return 0;
 		}
 	      else
 		delete_insns_since (last);
@@ -10609,7 +10609,8 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
      from memory and this is a very wide item, it's possible this may
      be slower, but that's highly unlikely.  */
 
-  part = operand_subword_force (op0, 0, GET_MODE (op0));
+  part = gen_reg_rtx (word_mode);
+  emit_move_insn (part, operand_subword_force (op0, 0, GET_MODE (op0)));
   for (i = 1; i < nwords && part != 0; i++)
     part = expand_binop (word_mode, ior_optab, part,
 			 operand_subword_force (op0, i, GET_MODE (op0)),
