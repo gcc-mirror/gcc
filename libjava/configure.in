@@ -5,6 +5,7 @@ dnl Can't be done in LIBGCJ_CONFIGURE because that confuses automake.
 AC_CONFIG_AUX_DIR(..)
 
 AC_CANONICAL_SYSTEM
+AC_PROG_LN_S
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
