@@ -1,3 +1,7 @@
+2000-12-05  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/20001205-1.c: New.
+
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
 	* g++.old-deja/g++.other/virtual9.C: New test.
