@@ -24293,6 +24293,8 @@ cat >> $CONFIG_STATUS <<EOF
 srcdir=${srcdir}
 host=${host}
 target=${target}
+with_target_subdir=${with_target_subdir}
+with_build_subdir=${with_build_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
