@@ -4487,7 +4487,7 @@ write_test_expr (exp, in_comparison)
 
     /* The address of the branch target.  */
     case MATCH_DUP:
-      printf ("insn_addresses[INSN_UID (JUMP_LABEL (insn))]");
+      printf ("insn_addresses[INSN_UID (operands[%d])]", XINT (exp, 0));
       break;
 
     /* The address of the current insn.  It would be more consistent with
@@ -4592,6 +4592,10 @@ walk_attr_value (exp)
       return;
 
     case MATCH_DUP:
+      must_extract = 1;
+      address_used = 1;
+      return;
+
     case PC:
       address_used = 1;
       return;
