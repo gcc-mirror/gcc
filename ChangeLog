@@ -1,3 +1,8 @@
+2000-10-16  Matthias Klose  <doko@debian.org> 
+ 
+	* config.if: Search libstdc++-v3/configure.in for INTERFACE,
+	when configured for libstdc++-v3.
+
 2000-10-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure: Save configure arguments to gcc/configargs.h.

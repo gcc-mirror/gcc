@@ -23,15 +23,12 @@ fi
 
 if [ "${enable_libstdcxx_v3}" = "yes" ] ; then
   libstdcxx_srcdir=${if_topsrcdir}/libstdc++-v3
+  # We check libstdc++-v3/configure.in for libstdcxx_interface.
+  libstdcxx_interface=`grep "^INTERFACE" ${libstdcxx_srcdir}/configure.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
 else
   libstdcxx_srcdir=${if_topsrcdir}/libstdc++
-fi
-
-if [ -f ${libstdcxx_srcdir}/Makefile.in ]; then
-# We check libstdc++ for libstdcxx_interface.
-libstdcxx_interface=`grep "^INTERFACE" ${libstdcxx_srcdir}/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
-else
-libstdcxx_interface=
+  # We check libstdc++/Makefile.in for libstdcxx_interface.
+  libstdcxx_interface=`grep "^INTERFACE" ${libstdcxx_srcdir}/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
 fi
 
 if [ -f ${if_topsrcdir}/gcc/cp/Makefile.in ]; then
