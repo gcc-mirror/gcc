@@ -1,5 +1,9 @@
 Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10300.c (print_operand): Handle 'S'.
+	* mn10300.md (ashlsi3, lshrsi3, ashrsi3): Use %S for
+	shift amount in last alternative
+
 	* mn10300.c (expand_epilogue): Rework to handle register restores
 	in "ret" and "retf" instructions correctly.
 
