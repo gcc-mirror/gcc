@@ -3,7 +3,7 @@
 	* config/rs6000/rs6000.c (any_parallel_operand): New predicate.
 	* config/rs6000/rs6000.h (PREDICATE_CODES): Add
 	any_parallel_operand, lmw_operation, stmw_operation,
-	mfcr_operation, mtcrf_operation.
+	mfcr_operation, mtcrf_operation.  Remove PARALLEL from any_operand.
 	* config/rs6000/rs6000.md (save_fpregs_{si,di}): Use
 	any_parallel_operand.
 	(return_and_restore_fpregs_{si,di}): Same.
