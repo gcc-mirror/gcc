@@ -61,7 +61,7 @@ void test_04()
   fb_02.close();
   
   VERIFY( fb_02.sputc('T') == traits_type::eof() );
-  VERIFY( fb_01.sputn(buffer, sizeof(buffer)) == 0 );
+  VERIFY( fb_02.sputn(buffer, sizeof(buffer)) == 0 );
 }
 
 int

@@ -1,9 +1,13 @@
 2003-05-20  Paolo Carlini  <pcarlini@unitus.it>
 
+	* testsuite/27_io/basic_filebuf/close/char/4.cc: Fix typo.
+
+2003-05-20  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/27_io/basic_filebuf/close/char/5.cc: New file,
 	further testing that upon filebuf::close() 27.8.1.1,3 is enforced.
 
-2003-05-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+2003-05-20  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* include/bits/stl_alloc.h (__default_alloc_template::_S_chunk_alloc):
 	Cast via void* to avoid -Wcast-align warnings.
