@@ -3588,7 +3588,7 @@ parse_file (start)
 
 static void
 mark_stabs (start)
-     char *start;			/* Start of directive (ignored) */
+     const char *start;			/* Start of directive (ignored) */
 {
   if (!stabs_seen)
     {
