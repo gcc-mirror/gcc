@@ -1,4 +1,3 @@
-
 /* Top level of GNU C compiler
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002 Free Software Foundation, Inc.
@@ -2878,6 +2877,8 @@ rest_of_compilation (decl)
 
   if (optimize > 0 && flag_loop_optimize)
     {
+      int do_unroll, do_prefetch;
+
       timevar_push (TV_LOOP);
       delete_dead_jumptables ();
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
@@ -2885,12 +2886,15 @@ rest_of_compilation (decl)
       /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
 
+      do_unroll = flag_unroll_loops ? LOOP_UNROLL : LOOP_AUTO_UNROLL;
+      do_prefetch = flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0;
       if (flag_rerun_loop_opt)
 	{
 	  cleanup_barriers ();
 
 	  /* We only want to perform unrolling once.  */
-	  loop_optimize (insns, rtl_dump_file, LOOP_FIRST_PASS);
+	  loop_optimize (insns, rtl_dump_file, do_unroll);
+	  do_unroll = 0;
 
 	  /* The first call to loop_optimize makes some instructions
 	     trivially dead.  We delete those instructions now in the
@@ -2903,9 +2907,7 @@ rest_of_compilation (decl)
 	  reg_scan (insns, max_reg_num (), 1);
 	}
       cleanup_barriers ();
-      loop_optimize (insns, rtl_dump_file,
-		     (flag_unroll_loops ? LOOP_UNROLL : 0) | LOOP_BCT
-		     | (flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0));
+      loop_optimize (insns, rtl_dump_file, do_unroll | LOOP_BCT | do_prefetch);
 
       /* Loop can create trivially dead instructions.  */
       delete_trivially_dead_insns (insns, max_reg_num ());
