@@ -1,5 +1,8 @@
 Fri Apr  2 11:26:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stmt.c (pushcase{,_range}): Convert to NOMINAL_TYPE after
+	checking for within INDEX_TYPE, instead of before.
+
 	* dwarf2out.c (ctype.h): Include.
 	(dwarf2out_set_demangle_name_func): New function.
 	(size_of_line_info): Deleted.
