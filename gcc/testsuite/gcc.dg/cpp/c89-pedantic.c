@@ -6,5 +6,5 @@
 /* This file is for testing the preprocessor in -std=c89 -pedantic mode.
    Neil Booth, 2 Dec 2000.  */
 
-#if 1LL				/* { dg-warning "too many" } */
+#if 1LL				/* { dg-warning "long long" } */
 #endif

@@ -1774,6 +1774,9 @@ cpp_post_options (pfile)
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
+  CPP_OPTION (pfile, warn_long_long) = (CPP_OPTION (pfile, pedantic)
+					&& !CPP_OPTION (pfile, c99));
+
   /* Permanently disable macro expansion if we are rescanning
      preprocessed text.  Read preprocesed source in ISO mode.  */
   if (CPP_OPTION (pfile, preprocessed))
