@@ -55,14 +55,12 @@ Boston, MA 02111-1307, USA.  */
   {							\
     { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },		\
     { GPLUSPLUS_INCLUDE_DIR, 0, 1, 1 },			\
-    { LOCAL_INCLUDE_DIR, 0, 0, 1 },			\
     { GCC_INCLUDE_DIR, "GCC", 0, 0 },			\
     { GCC_INCLUDE_DIR "/ansi", 0, 0, 0 },		\
     { GCC_INCLUDE_DIR "/bsd", 0, 0, 0 },		\
     { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },		\
     { TOOL_INCLUDE_DIR "/ansi", 0, 0, 0 },		\
     { TOOL_INCLUDE_DIR "/bsd", 0, 0, 0 },		\
-    { STANDARD_INCLUDE_DIR, 0, 0, 0 },			\
     { "/usr/include/bsd", 0, 0, 0 },			\
     { 0, 0, 0, 0 }					\
   }
@@ -214,8 +212,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_ASM_CONSTRUCTOR  nextstep_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR   nextstep_asm_out_destructor
-extern void nextstep_asm_out_constructor  PARAMS ((struct rtx_def *, int));
-extern void nextstep_asm_out_destructor  PARAMS ((struct rtx_def *, int));
 
 #define TARGET_ASM_EXCEPTION_SECTION nextstep_exception_section
 
@@ -241,7 +237,6 @@ extern void nextstep_asm_out_destructor  PARAMS ((struct rtx_def *, int));
 
 #undef	HANDLE_PRAGMA
 #define HANDLE_PRAGMA(GETC, UNGETC, NAME) handle_pragma (GETC, UNGETC, NAME)
-extern int handle_pragma PARAMS ((int(*)(void), void (*)(int), const char *));
 
 /* Give methods pretty symbol names on NeXT. */
 

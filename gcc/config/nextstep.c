@@ -23,7 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "flags.h"
 #include "tree.h"
+#include "rtl.h"
 #include "toplev.h"
+#include "output.h"
+#include "tm_p.h"
 
 /* Make everything that used to go in the text section really go there.  */
 

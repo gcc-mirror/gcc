@@ -1029,6 +1029,7 @@ i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 	tmake_file=i386/t-crtpic
 	;;
 i[34567]86-next-*)
+	tm_p_file="${tm_p_file} nextstep-protos.h"
 	tm_file=i386/next.h
 	tmake_file=i386/t-next
 	extra_objs=nextstep.o
@@ -1854,6 +1855,7 @@ m68k-sony-bsd* | m68k-sony-newsos*)
 	float_format=m68k
 	;;
 m68k-next-nextstep2*)
+	tm_p_file="${tm_p_file} nextstep-protos.h"
 	tm_file=m68k/next21.h
 	tmake_file=m68k/t-next
 	xmake_file=m68k/x-next
@@ -1863,6 +1865,7 @@ m68k-next-nextstep2*)
 	float_format=m68k
         ;;
 m68k-next-nextstep[34]*)
+	tm_p_file="${tm_p_file} nextstep-protos.h"
 	tm_file=m68k/next.h
 	tmake_file=m68k/t-next
 	xmake_file=m68k/x-next
