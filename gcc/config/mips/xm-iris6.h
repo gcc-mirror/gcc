@@ -8,7 +8,7 @@ extern void *alloca ();
 #include "mips/xm-iris5.h"
 
 #undef HOST_BITS_PER_LONG
-#define HOST_BITS_PER_LONG	64
+#define HOST_BITS_PER_LONG	_MIPS_SZLONG
 
 /* Declare some functions needed for this machine.  We don't want to
    include these in the sources since other machines might define them
