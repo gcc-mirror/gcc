@@ -1,3 +1,47 @@
+2002-10-30  John David Anglin  <dave@hiauly.hia.nrc.ca>
+
+	* pa-linux.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Define.
+	* pa-protos.h (attr_length_millicode_call, attr_length_call,
+	pa_init_machine_status): Declare new global functions.
+	* pa.c (void copy_fp_args, length_fp_args, get_plabel): Declare and
+	implement new functions.
+	(attr_length_millicode_call, attr_length_call): Implement.
+	(total_code_bytes): Change type to long.
+	(pa_output_function_prologue): Compute total_code_bytes on TARGET_64BIT.
+	Reset counter if flag_function_sections.
+	(output_deferred_plabels): Set output alignment to 3 for TARGET_64BIT.
+	(output_cbranch): Move call to gen_label_rtx.
+	(output_millicode_call): Rewrite adding long TARGET_64BIT call, expose
+	delay slot in all variants, shorten pc-relative calls.
+	(output_call): Rewrite adding long TARGET_64BIT call, improved delay
+	slot usage and exposure, various new call variants, and shortened
+	sequences for some variants on TARGET_PA_20.
+	Miscellaneous format changes.
+	* pa.h (total_code_bytes): Change type to long.
+	(MASK_LONG_CALLS, TARGET_LONG_CALLS, TARGET_LONG_ABS_CALL,
+	TARGET_LONG_PIC_SDIFF_CALL, TARGET_LONG_PIC_PCREL_CALL): Define.
+	(TARGET_SWITCHES): Add "-mlong-calls" and "-mno-long-calls" options.
+	(EXTRA_CONSTRAINT, GO_IF_LEGITIMATE_ADDRESS,
+	LEGITIMIZE_RELOAD_ADDRESS): Don't use long floating point loads and
+	stores on TARGET_ELF32.
+	*pa.md (define_delay): Allow insns in delay on TARGET_PORTABLE_RUNTIME.
+	(unnamed patterns for mulsi3, divsi3, udivsi3, modsi3, umodsi3 and
+	canonicalize_funcptr_for_compare expanders): Calculate attribute length
+	attr_length_millicode_call().
+	(call_internal_symref, call_value_internal_symref): Clobber register 1.
+	Calculate attribute length using attr_length_call().
+	(call_internal_reg_64bit, call_value_internal_reg_64bit): Move gp load
+	to delay slot.
+	(sibcall, sibcall_value): Rewrite.
+	(sibcall_internal_symref, sibcall_value_internal_symref): Clobber
+	register 1.  Use attr_length_call().
+	(sibcall_internal_symref_64bit, sibcall_value_internal_symref_64bit):
+	New patterns.
+	(unamed pattern for canonicalize_funcptr_for_compare): Rewrite.
+	* som.h (MEMBER_TYPE_FORCES_BLK): Define.
+	* t-pa64 (TARGET_LIBGCC2_CFLAGS): Add "-mlong-calls".
+	* doc/invoke.texi (mlong-calls): Document.
+
 2002-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_binary_op_with_conditional_arg):  Improve

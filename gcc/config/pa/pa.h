@@ -31,7 +31,7 @@ enum cmp_type				/* comparison type */
 };
 
 /* For long call handling.  */
-extern unsigned int total_code_bytes;
+extern unsigned long total_code_bytes;
 
 /* Which processor to schedule for.  */
 
@@ -152,6 +152,12 @@ extern int target_flags;
 #define TARGET_GNU_LD (target_flags & MASK_GNU_LD)
 #endif
 
+/* Force generation of long calls.  */
+#define MASK_LONG_CALLS 32768
+#ifndef TARGET_LONG_CALLS
+#define TARGET_LONG_CALLS (target_flags & MASK_LONG_CALLS)
+#endif
+
 #ifndef TARGET_PA_10
 #define TARGET_PA_10 (target_flags & (MASK_PA_11 | MASK_PA_20) == 0)
 #endif
@@ -178,6 +184,27 @@ extern int target_flags;
 #ifndef TARGET_SOM
 #define TARGET_SOM 0
 #endif
+
+/* The following three defines are potential target switches.  The current
+   defines are optimal given the current capabilities of GAS and GNU ld.  */
+
+/* Define to a C expression evaluating to true to use long absolute calls.
+   Currently, only the HP assembler and SOM linker support long absolute
+   calls.  They are used only in non-pic code.  */
+#define TARGET_LONG_ABS_CALL (TARGET_SOM && !TARGET_GAS)
+
+/* Define to a C expression evaluating to true to use long pic symbol
+   difference calls.  This is a call variant similar to the long pic
+   pc-relative call.  Long pic symbol difference calls are only used with
+   the HP SOM linker.  Currently, only the HP assembler supports these
+   calls.  GAS doesn't allow an arbritrary difference of two symbols.  */
+#define TARGET_LONG_PIC_SDIFF_CALL (!TARGET_GAS)
+
+/* Define to a C expression evaluating to true to use long pic
+   pc-relative calls.  Long pic pc-relative calls are only used with
+   GAS.  Currently, they are usable for calls within a module but
+   not for external calls.  */
+#define TARGET_LONG_PIC_PCREL_CALL 0
 
 /* Macro to define tables used to set the flags.  This is a
    list in braces of target switches with each switch being
@@ -237,6 +264,10 @@ extern int target_flags;
      N_("Generate code for huge switch statements") },			\
    { "no-big-switch",		-MASK_BIG_SWITCH,			\
      N_("Do not generate code for huge switch statements") },		\
+   { "long-calls",		 MASK_LONG_CALLS,			\
+     N_("Always generate long calls") },				\
+   { "no-long-calls",		-MASK_LONG_CALLS,			\
+     N_("Generate long calls only when needed") },			\
    { "linker-opt",		 0,					\
      N_("Enable linker optimizations") },				\
    SUBTARGET_SWITCHES							\
@@ -1193,8 +1224,14 @@ extern int may_call_alloca;
        /* Using DFmode forces only short displacements	\
 	  to be recognized as valid in reg+d addresses. \
 	  However, this is not necessary for PA2.0 since\
-	  it has long FP loads/stores.  */		\
+	  it has long FP loads/stores.			\
+							\
+	  FIXME: the ELF32 linker clobbers the LSB of	\
+	  the FP register number in {fldw,fstw} insns.	\
+	  Thus, we only allow long FP loads/stores on	\
+	  TARGET_64BIT.  */				\
        && memory_address_p ((TARGET_PA_20		\
+			     && !TARGET_ELF32		\
 			     ? GET_MODE (OP)		\
 			     : DFmode),			\
 			    XEXP (OP, 0))		\
@@ -1300,7 +1337,7 @@ extern int may_call_alloca;
 	if (GET_CODE (index) == CONST_INT		\
 	    && ((INT_14_BITS (index)			\
 		 && (TARGET_SOFT_FLOAT			\
-		     || (TARGET_PA_20		\
+		     || (TARGET_PA_20			\
 			 && ((MODE == SFmode		\
 			      && (INTVAL (index) % 4) == 0)\
 			     || (MODE == DFmode		\
@@ -1327,6 +1364,7 @@ extern int may_call_alloca;
 	       /* We can allow symbolic LO_SUM addresses\
 		  for PA2.0.  */			\
 	       || (TARGET_PA_20				\
+		   && !TARGET_ELF32			\
 	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
 	       || ((MODE) != SFmode			\
 		   && (MODE) != DFmode)))		\
@@ -1340,6 +1378,7 @@ extern int may_call_alloca;
 	       /* We can allow symbolic LO_SUM addresses\
 		  for PA2.0.  */			\
 	       || (TARGET_PA_20				\
+		   && !TARGET_ELF32			\
 	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
 	       || ((MODE) != SFmode			\
 		   && (MODE) != DFmode)))		\
@@ -1354,7 +1393,7 @@ extern int may_call_alloca;
 	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
 	   && GET_CODE (XEXP (X, 1)) == UNSPEC		\
 	   && (TARGET_SOFT_FLOAT			\
-	       || TARGET_PA_20				\
+	       || (TARGET_PA_20	&& !TARGET_ELF32)	\
 	       || ((MODE) != SFmode			\
 		   && (MODE) != DFmode)))		\
     goto ADDR;						\
@@ -1386,7 +1425,7 @@ do { 									\
   rtx new, temp = NULL_RTX;						\
 									\
   mask = (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-	  ? (TARGET_PA_20 ? 0x3fff : 0x1f) : 0x3fff);			\
+	  ? (TARGET_PA_20 && !TARGET_ELF32 ? 0x3fff : 0x1f) : 0x3fff);	\
 									\
   if (optimize								\
       && GET_CODE (AD) == PLUS)						\

@@ -105,6 +105,8 @@ extern int jump_in_call_delay PARAMS ((rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
 extern int hppa_fpstore_bypass_p PARAMS ((rtx, rtx));
+extern int attr_length_millicode_call PARAMS ((rtx, int));
+extern int attr_length_call PARAMS ((rtx, int));
 
 /* Declare functions defined in pa.c and used in templates.  */
 

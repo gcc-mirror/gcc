@@ -508,7 +508,7 @@ in the following sections.
 -march=@var{architecture-type} @gol
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing @gol
 -mfast-indirect-calls  -mgas  -mgnu-ld -mhp-ld @gol
--mjump-in-delay -mlinker-opt @gol
+-mjump-in-delay -mlinker-opt -mlong-calls @gol
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
@@ -8093,6 +8093,33 @@ ld.  The ld that is called is determined by the @option{--with-ld}
 configure option, gcc's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
 `gcc -print-prog-name=ld`}.
+
+@item -mlong-calls
+@opindex mno-long-calls
+Generate code that uses long call sequences.  This ensures that a call
+is always able to reach linker generated stubs.  The default is to generate
+long calls only when the distance from the call site to the beginning
+of the function or translation unit, as the case may be, exceeds a
+predefined limit set by the branch type being used.  The limits for
+normal calls are 7,600,000 and 240,000 bytes, respectively for the
+PA 2.0 and PA 1.X architectures.  Sibcalls are always limited at
+240,000 bytes.
+
+Distances are measured from the beginning of functions when using the
+@option{-ffunction-sections} option, or when using the @option{-mgas}
+and @option{-mno-portable-runtime} options together under HP-UX with
+the SOM linker.
+
+It is normally not desirable to use this option as it will degrade
+performance.  However, it may be useful in large applications,
+particularly when partial linking is used to build the application.
+
+The types of long calls used depends on the capabilities of the
+assembler and linker, and the type of code being generated.  The
+impact on systems that support long absolute calls, and long pic
+symbol-difference or pc-relative calls should be relatively small.
+However, an indirect call is used on 32-bit ELF systems in pic code
+and it is quite long.
 
 @end table
 
