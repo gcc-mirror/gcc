@@ -1,5 +1,10 @@
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/20023
+	PR tree-optimization/20009
+	* gcc.c-torture/compile/20050217-1.c: New test.
+	* g++.dg/opt/switch3.C: New test.
+
 	PR tree-optimization/18947
 	* gcc.c-torture/compile/20050215-1.c: New test.
 	* gcc.c-torture/compile/20050215-2.c: New test.
