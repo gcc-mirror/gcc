@@ -4,6 +4,7 @@
 	was folded away.
 	* gcc.dg/tree-ssa/pr18133-1.c: New test.
 	* gcc.dg/tree-ssa/pr18133-2.c: New test.
+	* gcc.dg/tree-ssa/pr18134.c: New test.
 
 2005-03-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
