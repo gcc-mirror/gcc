@@ -437,7 +437,7 @@ extern char *note_insn_name[];
    to hold these things.  That happens to be true.  */
 
 /* For static or external objects.  */
-#define BYTECODE_LABEL(X) (XEXP ((X), 0))
+#define BYTECODE_LABEL(X) (XSTR ((X), 0))
 
 /* For goto labels inside bytecode functions.  */
 #define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
