@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Intel 80386.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1597,12 +1597,12 @@ extern char *qi_high_reg_name[];
 	 { fputs ("argp", FILE); break; }		\
        if (STACK_TOP_P (X))				\
 	 { fputs ("st(0)", FILE); break; }		\
+       if (FP_REG_P (X))				\
+	 { fputs (hi_name[REGNO(X)], FILE); break; }	\
        switch (GET_MODE_SIZE (GET_MODE (X)))		\
 	 {						\
-	 case 12:					\
-	 case 8:					\
-	 case 4:					\
-	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
+	 default:					\
+	   fputs ("e", FILE);				\
 	 case 2:					\
 	   fputs (hi_name[REGNO (X)], FILE);		\
 	   break;					\
