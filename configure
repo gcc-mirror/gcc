@@ -85,10 +85,11 @@ site_makefile_frag=
 site_option=
 srcdir=
 srctrigger=
+subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.47 $"
+version="$Revision: 1.48 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1077,8 +1078,47 @@ then
   all_build_modules='$(ALL_BUILD_MODULES_LIST)'
 fi
 
+for subdir in . ${subdirs} ; do
+
+    # ${subdir} is relative path from . to the directory we're currently
+    # configuring.
+    # ${invsubdir} is inverse of ${subdir), *with* trailing /, if needed.
+    invsubdir=`echo ${subdir}/ | sed -e 's|\./||g' -e 's|[^/]*/|../|g'`
+
+    ### figure out what to do with srcdir
+    case "${srcdir}" in
+        ".")  # no -srcdir option.  We're building in place.
+                makesrcdir=. ;;
+        /* | [A-Za-z]:[\\/]* ) # absolute path
+                makesrcdir=`echo ${srcdir}/${subdir} | sed -e 's|/\.$||'`
+                ;;
+        *) # otherwise relative
+                case "${subdir}" in
+                .) makesrcdir=${srcdir} ;;
+                *) makesrcdir=${invsubdir}${srcdir}/${subdir} ;;
+                esac
+                ;;
+    esac
+
+    if [ "${subdir}/" != "./" ] ; then
+        Makefile=${subdir}/Makefile
+    fi
+
+    if [ ! -d ${subdir} ] ; then
+        if mkdir ${subdir} ; then
+                true
+        else
+                echo '***' "${progname}: could not make ${PWD=`${PWDCMD-pwd}`}/${subdir}" 1>&2
+                exit 1
+        fi
+    fi
+
     case "${removing}" in
     "")
+        case "${subdir}" in
+        .) ;;
+        *) eval echo Building in ${subdir} ${redirect} ;;
+        esac
 
         # FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
         # Set up the list of links to be made.
@@ -1086,8 +1126,8 @@ fi
 
         # Make the links.
         configlinks="${links}"
-        if [ -r ./config.status ] ; then
-                mv -f ./config.status ./config.back
+        if [ -r ${subdir}/config.status ] ; then
+                mv -f ${subdir}/config.status ${subdir}/config.back
         fi
         while [ -n "${files}" ] ; do
                 # set file to car of files, files to cdr of files
@@ -1128,14 +1168,14 @@ fi
         # Create a .gdbinit file which runs the one in srcdir
         # and tells GDB to look there for source files.
 
-        if [ -r ${srcdir}/.gdbinit ] ; then
+        if [ -r ${srcdir}/${subdir}/.gdbinit ] ; then
                 case ${srcdir} in
                 .) ;;
-                *) cat > ./.gdbinit <<EOF
+                *) cat > ${subdir}/.gdbinit <<EOF
 # ${NO_EDIT}
-dir ${srcdir}
+dir ${makesrcdir}
 dir .
-source ${srcdir}/.gdbinit
+source ${makesrcdir}/.gdbinit
 EOF
                         ;;
                 esac
@@ -1153,22 +1193,22 @@ EOF
         # the five makefile fragments MUST end up in the resulting Makefile in this order: 
         # package macros, target, host, site, and package rules.
 
-        if [ -f ${srcdir}/${Makefile_in} ] ; then
+        if [ -f ${srcdir}/${subdir}/${Makefile_in} ] ; then
 
             # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
-            rm -f ./${Makefile}.tem
+            rm -f ${subdir}/${Makefile}.tem
             case "${package_makefile_rules_frag}" in
-              "") cp ${srcdir}/${Makefile_in} ./Makefile.tem ;;
+              "") cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem ;;
               *)
                       if [ ! -f ${package_makefile_rules_frag} ] ; then
                               package_makefile_rules_frag=${srcdir}/${package_makefile_rules_frag}
                       fi
                       if [ -f ${package_makefile_rules_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${Makefile_in} > ${Makefile}.tem
+                              sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}.tem
                       else
                               echo '***' Expected package makefile rules fragment \"${package_makefile_rules_frag}\" 1>&2
                               echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              cp ${srcdir}/${Makefile_in} ./Makefile.tem
+                              cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
                       fi
             esac
             # working copy now in ${Makefile}.tem
@@ -1176,15 +1216,15 @@ EOF
             # Conditionalize for this site.
             rm -f ${Makefile}
               case "${site}" in
-              "") mv ./Makefile.tem ${Makefile} ;;
+              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
               *)
                       site_makefile_frag=${srcdir}/config/ms-${site}
 
                       if [ -f ${site_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${site_makefile_frag}" ./Makefile.tem \
+                              sed -e "/^####/  r ${site_makefile_frag}" ${subdir}/Makefile.tem \
                                       > ${Makefile}
                       else
-                              mv ./Makefile.tem ${Makefile}
+                              mv ${subdir}/Makefile.tem ${Makefile}
                               site_makefile_frag=
                       fi
                       ;;
@@ -1192,35 +1232,35 @@ EOF
             # working copy now in ${Makefile}
 
             # Conditionalize the makefile for this host.
-            rm -f ./Makefile.tem
+            rm -f ${subdir}/Makefile.tem
             case "${host_makefile_frag}" in
-              "") mv ${Makefile} ./Makefile.tem ;;
+              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
               *)
                       if [ ! -f ${host_makefile_frag} ] ; then
                               host_makefile_frag=${srcdir}/${host_makefile_frag}
                       fi
                       if [ -f ${host_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ./Makefile.tem
+                              sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
                       else
                               echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
                               echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              mv ${Makefile} ./Makefile.tem
+                              mv ${Makefile} ${subdir}/Makefile.tem
                       fi
             esac
-            # working copy now in ./Makefile.tem
+            # working copy now in ${subdir)/Makefile.tem
 
             # Conditionalize the makefile for this target.
             rm -f ${Makefile}
             case "${target_makefile_frag}" in
-              "") mv ./Makefile.tem ${Makefile} ;;
+              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
               *)
                       if [ ! -f ${target_makefile_frag} ] ; then
                               target_makefile_frag=${srcdir}/${target_makefile_frag}
                       fi
                       if [ -f ${target_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${target_makefile_frag}" ./Makefile.tem > ${Makefile}
+                              sed -e "/^####/  r ${target_makefile_frag}" ${subdir}/Makefile.tem > ${Makefile}
                       else
-                              mv ./Makefile.tem ${Makefile}
+                              mv ${subdir}/Makefile.tem ${Makefile}
                               target_makefile_frag=
                       fi
                       ;;
@@ -1228,28 +1268,28 @@ EOF
             # working copy now in ${Makefile}
 
             # Emit the default values of this package's macros.
-            rm -f ./Makefile.tem
+            rm -f ${subdir}/Makefile.tem
             case "${package_makefile_frag}" in
-              "") mv ${Makefile} ./Makefile.tem ;;
+              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
               *)
                       if [ ! -f ${package_makefile_frag} ] ; then
                               package_makefile_frag=${srcdir}/${package_makefile_frag}
                       fi
                       if [ -f ${package_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ./Makefile.tem
+                              sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
                       else
                               echo '***' Expected package makefile fragment \"${package_makefile_rules_frag}\" 1>&2
                               echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
-                              mv ${Makefile} ./Makefile.tem
+                              mv ${Makefile} ${subdir}/Makefile.tem
                       fi
             esac
-            # real copy now in ./Makefile.tem
+            # real copy now in ${subdir}/Makefile.tem
 
             # prepend warning about editing, and a bunch of variables.
             rm -f ${Makefile}
             cat > ${Makefile} <<EOF
 # ${NO_EDIT}
-VPATH = ${srcdir}
+VPATH = ${makesrcdir}
 links = ${configlinks}
 host_alias = ${host_alias}
 host_cpu = ${host_cpu}
@@ -1276,23 +1316,23 @@ EOF
             case "${package_makefile_frag}" in
               "") ;;
               /* | [A-Za-z]:[\\/]* ) echo package_makefile_frag = ${package_makefile_frag} >>${Makefile} ;;
-              *)  echo package_makefile_frag = ${package_makefile_frag} >>${Makefile} ;;
+              *)  echo package_makefile_frag = ${invsubdir}${package_makefile_frag} >>${Makefile} ;;
             esac
 
             case "${target_makefile_frag}" in
               "") ;;
               /* | [A-Za-z]:[\\/]* ) echo target_makefile_frag = ${target_makefile_frag} >>${Makefile} ;;
-              *)  echo target_makefile_frag = ${target_makefile_frag} >>${Makefile} ;;
+              *)  echo target_makefile_frag = ${invsubdir}${target_makefile_frag} >>${Makefile} ;;
             esac
 
             case "${host_makefile_frag}" in
               "") ;;
               /* | [A-Za-z]:[\\/]* ) echo host_makefile_frag = ${host_makefile_frag} >>${Makefile} ;;
-              *)  echo host_makefile_frag = ${host_makefile_frag} >>${Makefile} ;;
+              *)  echo host_makefile_frag = ${invsubdir}${host_makefile_frag} >>${Makefile} ;;
             esac
 
             if [ "${site_makefile_frag}" != "" ] ; then
-                echo site_makefile_frag = ${site_makefile_frag} >>${Makefile}
+                echo site_makefile_frag = ${invsubdir}${site_makefile_frag} >>${Makefile}
             fi 
 
 	    echo enable_shared = ${enable_shared} >> ${Makefile}
@@ -1312,17 +1352,17 @@ EOF
 
             # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
             # remove any form feeds.
-            if [ -z "" ]; then
-                rm -f ./Makefile.tm2
+            if [ -z "${subdirs}" ]; then
+                rm -f ${subdir}/Makefile.tm2
                 sedtemp=sed.$$
                 cat >$sedtemp <<EOF
 s:@configdirs@:${configdirs}:
 EOF
                 sed -f $sedtemp \
-                    ./Makefile.tem > ./Makefile.tm2
+                    ${subdir}/Makefile.tem > ${subdir}/Makefile.tm2
                 rm -f $sedtemp
-                rm -f ./Makefile.tem
-                mv ./Makefile.tm2 ./Makefile.tem
+                rm -f ${subdir}/Makefile.tem
+                mv ${subdir}/Makefile.tm2 ${subdir}/Makefile.tem
 	    fi
 	    sed     -e "s|@prefix@|${prefix}|" \
                     -e "s|@exec_prefix@|${exec_prefix}|" \
@@ -1368,7 +1408,7 @@ EOF
 			s%^CXXFLAGS[ 	]*=.*$%CXXFLAGS = ${CXXFLAGS}%
 			}" \
 		    -e "s|@config_shell@|${config_shell}|" \
-                    -e "s|@srcdir@|${srcdir}|" \
+                    -e "s|@srcdir@|${makesrcdir}|" \
                     -e "s///" \
                     -e "s:@program_transform_name@:${program_transform_name}:" \
                     -e "s|@tooldir@|${tooldir}|" \
@@ -1376,7 +1416,7 @@ EOF
 		    -e "s:@DEFAULT_YACC@:${DEFAULT_YACC}:" \
 		    -e "s:@DEFAULT_LEX@:${DEFAULT_LEX}:" \
 		    -e "s:@DEFAULT_M4@:${DEFAULT_M4}:" \
-                    ./Makefile.tem >> ${Makefile}
+                    ${subdir}/Makefile.tem >> ${Makefile}
   
 	    sed -e "s:@GDB_TK@:${GDB_TK}:" ${Makefile} >${Makefile}.tem
 	    mv -f ${Makefile}.tem ${Makefile}
@@ -1400,10 +1440,10 @@ EOF
             # final copy now in ${Makefile}
 
         else
-           echo "No Makefile.in found in ${srcdir}, unable to configure" 1>&2
+           echo "No Makefile.in found in ${srcdir}/${subdir}, unable to configure" 1>&2
         fi
 
-        rm -f ./Makefile.tem
+        rm -f ${subdir}/Makefile.tem
 
         case "${host_makefile_frag}" in
         "") using= ;;
@@ -1436,20 +1476,30 @@ EOF
         *) ;;
         esac
 
-        echo "#!/bin/sh
+        if [ ${subdir} = . ] ; then
+            echo "#!/bin/sh
 # ${NO_EDIT}
 # This directory was configured as follows:
 ${progname}" ${arguments}  "
-# ${using}" > ./config.new
-        chmod a+x ./config.new
-        if [ -r ./config.back ] ; then
-                mv -f ./config.back ./config.status
+# ${using}" > ${subdir}/config.new
+        else
+            echo "#!/bin/sh
+# ${NO_EDIT}
+# This directory was configured as follows:
+cd ${invsubdir}
+${progname}" ${arguments}  "
+# ${using}" > ${subdir}/config.new
         fi
-	${config_shell} ${moveifchange} ./config.new ./config.status
+        chmod a+x ${subdir}/config.new
+        if [ -r ${subdir}/config.back ] ; then
+                mv -f ${subdir}/config.back ${subdir}/config.status
+        fi
+	${config_shell} ${moveifchange} ${subdir}/config.new ${subdir}/config.status
         ;;
 
-    *)  rm -f ${Makefile} ./config.status ${links} ;;
+    *)  rm -f ${Makefile} ${subdir}/config.status ${links} ;;
     esac
+done
 
 # If there are subdirectories, then recur.
 if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then 
