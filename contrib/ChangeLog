@@ -1,3 +1,7 @@
+2004-09-30  Release Manager
+
+	* GCC 3.3.5 Released.
+
 2004-08-26  Matthias Klose  <doko@debian.org>
 
 	* texi2pod.pl: keep references of the form @ref{...}, print them bold.
