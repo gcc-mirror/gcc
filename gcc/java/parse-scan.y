@@ -1174,4 +1174,6 @@ void
 yyerror (msg)
      const char *msg ATTRIBUTE_UNUSED;
 {
+  fprintf (stderr, "%s: %d: %s\n", input_filename, lineno, msg);
+  exit (1);
 }

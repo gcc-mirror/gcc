@@ -123,7 +123,7 @@ typedef struct _java_lc {
 #define SET_MODIFIER_CTX(TOKEN) java_lval->value = (TOKEN)
 #define GET_TYPE_PRECISION(NODE) 4
 #define BUILD_OPERATOR(TOKEN)	return TOKEN
-#define BUILD_OPERATOR2(TOKEN)	return TOKEN
+#define BUILD_OPERATOR2(TOKEN)	return ASSIGN_ANY_TK
 #define SET_LVAL_NODE(NODE)
 #define SET_LVAL_NODE_TYPE(NODE, TYPE)
 #define BUILD_ID_WFL(EXP) (EXP)

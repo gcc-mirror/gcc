@@ -1,3 +1,9 @@
+1999-10-04  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.h (BUILD_OPERATOR2): Return ASSIGN_ANY_TK in `lite' case as
+	well.  Fixes Java PR gcj/59.
+	* parse-scan.y (yyerror): Report errors.
+
 Fri Sep 24 12:23:05 1999  Glenn Chambers  <GChambers@provsol.com>
 
 	* decl.c (insert_block): Remove unconditional `abort'.
