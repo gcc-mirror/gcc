@@ -630,9 +630,15 @@ mark_reg_pointer (reg, align)
      rtx reg;
      int align;
 {
-  REGNO_POINTER_FLAG (REGNO (reg)) = 1;
+  if (! REGNO_POINTER_FLAG (REGNO (reg)))
+    {
+      REGNO_POINTER_FLAG (REGNO (reg)) = 1;
 
-  if (align)
+      if (align)
+	REGNO_POINTER_ALIGN (REGNO (reg)) = align;
+    }
+  else if (align && align < REGNO_POINTER_ALIGN (REGNO (reg)))
+    /* We can no-longer be sure just how aligned this pointer is */
     REGNO_POINTER_ALIGN (REGNO (reg)) = align;
 }
 

@@ -1,4 +1,9 @@
-1999-08-01  Bruce Korb  <ddsinc09@ix.netcom.com>
+1999-08-11  Richard Earnshaw (rearnsha@arm.com)
+
+        * emit-rtl.c (mark_reg_pointer): Don't increase the alignment of
+        a register that is already known to be a pointer.
+
+1999-08-11  Bruce Korb  <ddsinc09@ix.netcom.com>
 
 	* fixinc/inclhack.tpl: Only install assert.h conditionally.
 	* fixinc/inclhack.sh: Regenerated.
