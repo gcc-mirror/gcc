@@ -1,5 +1,9 @@
 2001-02-08  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/Float.java (parseFloat): New method.
+
+2001-02-08  Tom Tromey  <tromey@redhat.com>
+
 	From paul@dawa.demon.co.uk.  Fix for PR libgcj/1913:
 	* java/io/InputStreamReader.java (ready, read): Throw IOException
 	if stream has been closed.
