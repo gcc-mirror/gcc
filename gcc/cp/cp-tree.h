@@ -3162,8 +3162,6 @@ extern GTY(()) varray_type local_classes;
 #endif	/* NO_DOLLAR_IN_LABEL */
 
 #define THIS_NAME "this"
-#define CTOR_NAME "__ct"
-#define DTOR_NAME "__dt"
 
 #define IN_CHARGE_NAME "__in_chrg"
 

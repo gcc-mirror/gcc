@@ -1,3 +1,11 @@
+2004-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18530
+	* cp-tree.h (CTOR_NAME): Remove.
+	(DTOR_NAME): Remove.
+	* decl.c (initialize_predefined_identifiers): Add spaces to the
+	end of constructor and destructor names.
+
 2004-11-24  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8929
