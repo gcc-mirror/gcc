@@ -6149,8 +6149,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "ansidecl.h"
-#include "system.h"
+#include <sys/types.h>
 
 int
 main ()
