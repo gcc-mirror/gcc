@@ -1,3 +1,7 @@
+2004-10-08  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	* gcc.dg/ultrasp11.c: New test.
+
 2004-10-08  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/doloop-2.c: New test.
