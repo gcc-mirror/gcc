@@ -76,7 +76,7 @@ g77version.o: $(srcdir)/f/version.c
 	esac
 	if [ -f lang-f77 ]; then \
 	  $(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o g77version.o \
-	    $(srcdir)/f/version.c $(OUTPUT_OPTION); \
+	    $(srcdir)/f/version.c; \
 	else true; fi
 
 # Create the compiler driver for g77.

@@ -1,3 +1,7 @@
+2000-11-10  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* Make-lang.in: Remove OUTPUT_OPTION from g77version.o target.
+
 2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* root.texi: Remove non-historical EGCS reference.
@@ -5,8 +9,7 @@
 
 2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
-	* com.c (ffecom_stabilize_aggregate_) case RTL_EXPR:
-	Abort.
+	* com.c (ffecom_stabilize_aggregate_) case RTL_EXPR: Abort.
 
 2000-11-10  Zack Weinberg  <zack@wolery.stanford.edu>
 
