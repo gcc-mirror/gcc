@@ -1,3 +1,9 @@
+2003-03-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/power4.md: Allow delay between dispatch and
+	function units for simple instructions.  Correct store units.
+	Allow branch to occupy as many dispatch slots as necessary.
+
 2003-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_op_and_fetch): Fix comment.
