@@ -52,7 +52,11 @@ esac
 # Compute the flags necessary to run the testsuite.
 saved_ifs=$IFS
 # bash 2.01 does the wrong thing with $* if IFS doesn't include space
-IFS=': '
+if test ${BASH_VERSINFO[1]} = 01 ; then
+    IFS=': '
+else
+    IFS=':'
+fi
 set `../tests_flags ${query} $*` || exit 1
 BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; CXX=$4; CXXFLAGS=$5; INCLUDES=$6; LIBS=$7;
 IFS=$saved_ifs

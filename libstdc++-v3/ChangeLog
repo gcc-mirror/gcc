@@ -1,3 +1,7 @@
+2001-03-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* mkcheck.in:  Fix IFS regression for non-bash-2.01 hosts.
+
 2001-03-12  Felix Lee  <flee@redhat.com>
 
 	* mkcheck.in: workaround for bash 2.01 IFS bug.
