@@ -82,7 +82,7 @@ public class BeanContextSupport extends BeanContextChildSupport
     private static final long serialVersionUID = 3289144128843950629L;
   }
 
-  protected static class BCSIterator implements Iterator
+  protected static final class BCSIterator implements Iterator
   {
     public boolean hasNext ()
     {

@@ -1,5 +1,10 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/beans/beancontext/BeanContextSupport.java:
+	New version from classpath.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Window.java,
 	java/awt/font/GraphicAttribute.java,
 	java/awt/font/ImageGraphicAttribute.java,
