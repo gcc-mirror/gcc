@@ -1,3 +1,10 @@
+2000-07-04  Hans-Peter Nilsson  <hp@axis.com>
+	    Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def (libc1_ifdefd_memx): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/testing.h: Add testcase.
+
 2000-07-10  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (got_symbolic_operand): New.

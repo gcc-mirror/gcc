@@ -1294,6 +1294,37 @@ fix = {
 };
 
 
+/* GNU libc1 string.h does not prototype memcpy and memcmp for gcc
+   versions > 1.  That's a problem.  This fix will expose the prototype
+   for C++.  */
+fix = {
+    hackname  = libc1_ifdefd_memx;
+
+    /* The string.h result is overwritten by AAB_ultrix_string when doing
+       "make check" and will fail.  Therefore, we add the following kludgery
+       to insert the test_text into the special testing header.  :-}  */
+    files     = testing.h;
+    files     = string.h;
+
+    c_fix     = format;
+    select    = "' is a built-in function for gcc 2\\.x\\. \\*/";
+    bypass    = __cplusplus;
+    c_fix_arg = "%1 || defined(__cplusplus)\n%2";
+    c_fix_arg = "/\\* `mem...' is a built-in function for gcc 2\\.x\\. \\*/\n"
+                "(#if defined\\(__STDC__\\) && __GNUC__ < 2)\n"
+                "(/\\* .* \\*/\n"
+                "extern [a-z_]+ mem)";
+
+    test_text =
+    "/* \\`memcpy' is a built-in function for gcc 2.x. */\n"
+    "#if defined(__STDC__) && __GNUC__ < 2\n"
+    "/* Copy N bytes of SRC to DEST.  */\n"
+    "extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,\n"
+    "                         size_t __n));\n"
+    "#endif";
+};
+
+
 /*
  *  In limits.h, put #ifndefs around things that are supposed to be defined
  *  in float.h to avoid redefinition errors if float.h is included first.
