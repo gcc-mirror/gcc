@@ -4026,7 +4026,7 @@ else
 	gcc_version_trigger=${srcdir}/version.c
 fi
 changequote(,)dnl
-gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${gcc_version_trigger}`
+gcc_version=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
 changequote([,])dnl
 
 # Internationalization

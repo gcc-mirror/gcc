@@ -59,7 +59,7 @@ F77 f77: f771$(exeext)
   f77.extraclean f77.maintainer-clean f77.distdir f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
-g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h system.h gcc.h
+g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h system.h $(GCC_H)
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
