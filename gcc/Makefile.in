@@ -352,7 +352,7 @@ COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
+GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -576,7 +576,8 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(BC_ALL) \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
  bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
- $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
+ xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
+ $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
