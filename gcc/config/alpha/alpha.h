@@ -44,19 +44,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* No point in running CPP on our assembler output.  */
 #define ASM_SPEC "-nocpp"
 
-/* Right now Alpha OSF/1 doesn't seem to have debugging libraries.  */
+/* Under OSF/1, -p and -pg require -lprof1.  */
 
-#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof2} -lc"
+#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
-   -call_shared as appropriate.  */
+   -call_shared as appropriate.  Also pass -pg.  */
 #define LINK_SPEC  \
   "-G 8 %{O*:-O3} %{!O*:-O1} %{!shared:-init __main} %{static:-non_shared} \
-   %{!static:%{shared:-shared} %{!shared:-call_shared}}"
+   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg}"
 
 #define STARTFILE_SPEC  \
-  "%{!shared:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
+  "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
@@ -923,8 +923,8 @@ extern char *alpha_function_name;
 
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
     do {							\
-	fputs ("\tlda $27,_mcount\n", (FILE));			\
-	fputs ("\tjsr $27,($27),_mcount\n", (FILE));		\
+	fputs ("\tlda $28,_mcount\n", (FILE));			\
+	fputs ("\tjsr $28,($28),_mcount\n", (FILE));		\
 	fputs ("\tldgp $29,0($27)\n", (FILE));			\
     } while (0);
 
