@@ -184,6 +184,11 @@ extern int execv (), execvp ();
 
 #define MIN_FATAL_STATUS 1
 
+/* Flag saying to print the directories gcc will search through looking for
+   programs, libraries, etc.  */
+
+static int print_search_dirs;
+
 /* Flag saying to print the full filename of this file
    as found through our usual search mechanism.  */
 
@@ -255,6 +260,8 @@ struct path_prefix;
 
 static void set_spec		PROTO((char *, char *));
 static struct compiler *lookup_compiler PROTO((char *, int, char *));
+static char *build_search_list	PROTO((struct path_prefix *, char *, int));
+static void putenv_from_prefixes PROTO((struct path_prefix *, char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *, int));
 static void add_prefix		PROTO((struct path_prefix *, char *, int, int, int *));
 static char *skip_whitespace	PROTO((char *));
@@ -904,6 +911,7 @@ struct option_map option_map[] =
    {"--pipe", "-pipe", 0},
    {"--prefix", "-B", "a"},
    {"--preprocess", "-E", 0},
+   {"--print-search-dirs", "-print-search-dirs", 0},
    {"--print-file-name", "-print-file-name=", "aj"},
    {"--print-libgcc-file-name", "-print-libgcc-file-name", 0},
    {"--print-missing-file-dependencies", "-MG", 0},
@@ -1715,12 +1723,17 @@ putenv (str)
 #endif	/* HAVE_PUTENV */
 
 
-/* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables for collect.  */
+/* Build a list of search directories from PATHS.
+   PREFIX is a string to prepend to the list.
+   If CHECK_DIR_P is non-zero we ensure the directory exists.
+   This is used mostly by putenv_from_prefixes so we use `collect_obstack'.
+   It is also used by the --print-search-dirs flag.  */
 
-static void
-putenv_from_prefixes (paths, env_var)
+static char *
+build_search_list (paths, prefix, check_dir_p)
      struct path_prefix *paths;
-     char *env_var;
+     char *prefix;
+     int check_dir_p;
 {
   int suffix_len = (machine_suffix) ? strlen (machine_suffix) : 0;
   int just_suffix_len
@@ -1728,14 +1741,15 @@ putenv_from_prefixes (paths, env_var)
   int first_time = TRUE;
   struct prefix_list *pprefix;
 
-  obstack_grow (&collect_obstack, env_var, strlen (env_var));
+  obstack_grow (&collect_obstack, prefix, strlen (prefix));
 
   for (pprefix = paths->plist; pprefix != 0; pprefix = pprefix->next)
     {
       int len = strlen (pprefix->prefix);
 
       if (machine_suffix
-	  && is_directory (pprefix->prefix, machine_suffix, 0))
+	  && (!check_dir_p
+	      || is_directory (pprefix->prefix, machine_suffix, 0)))
 	{
 	  if (!first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
@@ -1747,7 +1761,8 @@ putenv_from_prefixes (paths, env_var)
 
       if (just_machine_suffix
 	  && pprefix->require_machine_suffix == 2
-	  && is_directory (pprefix->prefix, just_machine_suffix, 0))
+	  && (!check_dir_p
+	      || is_directory (pprefix->prefix, just_machine_suffix, 0)))
 	{
 	  if (!first_time)
 	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
@@ -1768,9 +1783,18 @@ putenv_from_prefixes (paths, env_var)
 	}
     }
   obstack_1grow (&collect_obstack, '\0');
-  putenv (obstack_finish (&collect_obstack));
+  return obstack_finish (&collect_obstack);
 }
 
+/* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables for collect.  */
+
+static void
+putenv_from_prefixes (paths, env_var)
+     struct path_prefix *paths;
+     char *env_var;
+{
+  putenv (build_search_list (paths, env_var, 1));
+}
 
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
    access to check permissions.
@@ -2588,12 +2612,14 @@ process_command (argc, argv)
 	  printf ("%s\n", spec_machine);
 	  exit  (0);
 	}
+      else if (! strcmp (argv[i], "-print-search-dirs"))
+	print_search_dirs = 1;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
-	  print_file_name = "libgcc.a";
+	print_file_name = "libgcc.a";
       else if (! strncmp (argv[i], "-print-file-name=", 17))
-	  print_file_name = argv[i] + 17;
+	print_file_name = argv[i] + 17;
       else if (! strncmp (argv[i], "-print-prog-name=", 17))
-	  print_prog_name = argv[i] + 17;
+	print_prog_name = argv[i] + 17;
       else if (! strcmp (argv[i], "-print-multi-lib"))
 	print_multi_lib = 1;
       else if (! strcmp (argv[i], "-print-multi-directory"))
@@ -2852,6 +2878,8 @@ process_command (argc, argv)
       if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strncmp (argv[i], "-Wp,", 4))
+	;
+      else if (! strcmp (argv[i], "-print-search-dirs"))
 	;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	;
@@ -4410,6 +4438,14 @@ main (argc, argv)
       error ("unrecognized option `-%s'", switches[i].part1);
 
   /* Obey some of the options.  */
+
+  if (print_search_dirs)
+    {
+      printf ("install: %s%s\n", standard_exec_prefix, machine_suffix);
+      printf ("programs: %s\n", build_search_list (&exec_prefixes, "", 0));
+      printf ("libraries: %s\n", build_search_list (&startfile_prefixes, "", 0));
+      exit (0);
+    }
 
   if (print_file_name)
     {
