@@ -1,3 +1,21 @@
+2004-05-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/15130
+	Backport from mainline:
+
+	* config/sh/sh-protos.h (sh_expand_epilogue): Change prototype.
+	* config/sh/sh.c (output_stack_adjust): Take the sibcall epilogue
+	into account.  Compute the correct number of general registers
+	for the return value.  Generate a special push/pop sequence when
+	failing to get a temporary register for non SHmedia epilogue.
+	(sh_expand_epilogue): Add an argument to show whether it's for
+	sibcall or not.  Set the 3rd argument of output_stack_adjust to
+	-1 if needed.
+	(sh_need_epilogue): Call sh_expand_epilogue with 0.
+	* config/sh/sh.md (sibcall_epilogue): Call sh_expand_epilogue
+	with 1.
+	(epilogue): Call sh_expand_epilogue with 0.
+
 2004-05-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md ("tstsflt_gpr"): Fix typo in unspec.
