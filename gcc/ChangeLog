@@ -1,3 +1,7 @@
+Mon Jul 13 23:31:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.c (output_scc_di): Use cmpw #0 only for address registers.
+
 Mon Jul 13 23:26:43 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* tree.h (tree_common): Note front-end dependencies on layout of
