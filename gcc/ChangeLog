@@ -1,5 +1,10 @@
 2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* fold-const.c (fold): Constify "type".
+	Replace "TREE_TYPE (t)" with "type".
+
+2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* bb-reorder.c, bt-load.c, c-decl.c, cfgcleanup.c, coverage.c,
 	dwarf2asm.c, ifcvt.c, stor-layout.c, varasm.c: Replace calls
 	via (*targetm.foo) () with targetm.foo ().
