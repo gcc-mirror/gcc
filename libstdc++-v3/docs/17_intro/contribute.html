@@ -62,11 +62,24 @@ properly evaluated. Ideally (and to ensure the fastest possible
 response from the maintainers) it would have all of these pieces:
 <p>
 <ul>
- <li> A description of the bug and how your patch fixes this bug. For new features a description of the feature and your implementation. 
- <li> A ChangeLog entry as plaintext; see the various ChangeLog files for format and content. If using you are using emacs as your editor, simply position the insertion point at the beginning of your change and hit CX-4a to bring up the appropriate ChangeLog entry. See--magic! Similar functionality also exists for vi.
- <li> A testsuite submission or sample program that will easily and simply show the existing error or test new functionality.  
- <li> The patch itself. If you are accessing the CVS repository at Cygnus, use "cvs update; cvs diff -c3p NEW"; else, use
-     "diff -c3p OLD NEW" or "diff -up OLD NEW". If your version of diff does not support these options, then get the latest version of GNU diff. 
+
+ <li> A description of the bug and how your patch fixes this bug. For
+ new features a description of the feature and your implementation.
+
+ <li> A ChangeLog entry as plaintext; see the various ChangeLog files
+ for format and content. If using you are using emacs as your editor,
+ simply position the insertion point at the beginning of your change
+ and hit CX-4a to bring up the appropriate ChangeLog
+ entry. See--magic! Similar functionality also exists for vi.
+
+ <li> A testsuite submission or sample program that will easily and
+ simply show the existing error or test new functionality.
+
+ <li> The patch itself. If you are accessing the CVS repository at
+ Cygnus, use "cvs update; cvs diff -c3p NEW"; else, use "diff -c3p OLD
+ NEW" ... If your version of diff does not support these options, then
+ get the latest version of GNU diff.
+
  <li> When you have all these pieces, bundle them up in a mail message
 and send it to libstdc++@sourceware.cygnus.com. All patches and related
 discussion should be sent to the libstdc++ mailinglist.

@@ -1,3 +1,19 @@
+2000-06-13  Steven King  <sxking@uswest.net>
+
+        * acinclude.m4:  Fixup some of the builtin math tests and add tests for
+        __builtin_fmod* and test libm for fmodf, fmodl or _fmodf, _fmodl.
+        * acconfig.h: Add entries for fmod*.
+
+2000-06-13  Benjamin Kosnik  <bkoz@redhat.com>
+	
+       	* acinclude.m4 (enable_cshadow_headers): Change CSHADOWFLAGS to
+	_GNU_SOURCE instead of _ISOC9X_SOURCE, as _GNU_SOURCE is the
+	superset, and already defined at top level.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+
+	* docs/17_intro/contribute.html: Plead with people to use -cp.
+	
 2000-06-13  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/23_containers/bitset_ctor.cc: Qualify reverse wth std::.
