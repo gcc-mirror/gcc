@@ -2355,32 +2355,18 @@
   ""
   "jump %0")
 
-;;(define_insn "tablejump"
-;;  [(set (pc)
-;;	(plus:SI (match_operand:SI 0 "general_operand" "g")
-;;		 (pc)))]
-;;  ""
-;;  "cased %0")
-
 (define_insn "tablejump"
   [(set (pc)
-	(plus:SI (pc) (match_operand:HI 0 "general_operand" "g")))
+	(plus:SI (pc) (match_operand:SI 0 "general_operand" "g")))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "*
 {
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"LI\",
 			     CODE_LABEL_NUMBER (operands[1]));
-  return \"casew %0\";
+  return \"cased %0\";
 }")
 
-;;(define_insn ""
-;;  [(set (pc)
-;;	(plus:SI (match_operand:QI 0 "general_operand" "g")
-;;		 (pc)))]
-;;  ""
-;;  "caseb %0")
-
 ;; Scondi instructions
 (define_insn "seq"
   [(set (match_operand:SI 0 "general_operand" "=g<")
