@@ -3705,7 +3705,8 @@ finish_struct_1 (t, warn_anon)
 	name = DECL_NAME (fdecl);
 
 	for (; i < n_methods; i++)
-	  if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
+	  if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
+		== name)
 	    {
 	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
 	      cp_error_at ("  because of local method `%#D' with same name",
@@ -3821,7 +3822,8 @@ finish_struct_1 (t, warn_anon)
 	    continue;
 
 	  for (; i < n_methods; ++i)
-	    if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
+	    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
+		== name)
 	      {
 		cp_error_at ("data member `%#D' conflicts with", x);
 		cp_error_at ("function member `%#D'",

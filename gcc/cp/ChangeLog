@@ -1,3 +1,15 @@
+Sun May 10 22:48:22 1998  H.J. Lu  (hjl@gnu.org)
+
+	* class.c (finish_struct_1): Use OVL_CURRENT on TREE_VEC_ELT.
+	* decl2.c (constructor_name_full): Likewise.
+
+Sun May 10 22:48:12 1998  Mike Stump  <mrs@wrs.com>
+
+	* tree.c (mapcar): Add OVERLOAD support.
+
+	* init.c (resolve_offset_ref): We must use basetype_path before we
+	destroy it with a call to convert_pointer_to.
+
 Sat May  9 14:44:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (currently_open_class): New fn.

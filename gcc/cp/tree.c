@@ -1590,6 +1590,15 @@ mapcar (t, func)
 	return t;
       }
 
+    case OVERLOAD:
+      {
+	tree chain = OVL_CHAIN (t);
+	t = copy_node (t);
+	OVL_FUNCTION (t) = mapcar (OVL_FUNCTION (t), func);
+	OVL_CHAIN (t) = mapcar (chain, func);
+	return t;
+      }
+
     case TREE_VEC:
       {
 	int len = TREE_VEC_LENGTH (t);

@@ -1982,7 +1982,7 @@ constructor_name_full (thing)
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
     {
       if (TYPE_WAS_ANONYMOUS (thing) && TYPE_HAS_CONSTRUCTOR (thing))
-	thing = DECL_NAME (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (thing), 0));
+	thing = DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (thing), 0)));
       else
 	thing = TYPE_NAME (thing);
     }

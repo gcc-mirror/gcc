@@ -1870,8 +1870,10 @@ resolve_offset_ref (exp)
 	  error_not_base_type (basetype, TREE_TYPE (TREE_TYPE (base)));
 	  return error_mark_node;
 	}
-      addr = convert_pointer_to (basetype, base);
+      /* Kludge: we need to use basetype_path now, because
+	 convert_pointer_to will bash it.  */
       access = compute_access (basetype_path, member);
+      addr = convert_pointer_to (basetype, base);
       if (access == access_public_node)
 	return build (COMPONENT_REF, TREE_TYPE (member),
 		      build_indirect_ref (addr, NULL_PTR), member);
