@@ -1,3 +1,7 @@
+Thu Apr 30 13:05:33 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* gxxint.texi: Add info for squangling codes K and B.
+
 Tue Apr 28 13:22:01 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* semantics.c (begin_stmt_expr): Avoid duplicating the effect of
