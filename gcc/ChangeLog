@@ -1,3 +1,9 @@
+2005-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/alpha/t-osf4, config/arm/t-netbsd, config/ia64/t-hpux
+	* config/pa/t-hpux-shlib (SHLIB_INSTALL): Create the
+	installation directory first.
+
 2005-02-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19065.
@@ -32,7 +38,7 @@
 
 	* configure.ac: Rename cc_for_cross_gnattools to host_cc_for_libada.
 	* configure: Regenerate.
-        * libada-mk.in: Remove CC; rename
+	* libada-mk.in: Remove CC; rename
 	cc_for_cross_gnattools / cc_set_by_configure to host_cc_for_libada.
 
 2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -317,9 +323,9 @@
 2005-02-22  Devang Patel  <dpatel@apple.com>
 
 	PR 19952
-	* tree-if-conv.c (process_phi_nodes): Use bsi_after_labels and skip 
+	* tree-if-conv.c (process_phi_nodes): Use bsi_after_labels and skip
 	all labels
-	
+
 2005-02-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (WINT_TYPE): Define.
@@ -365,7 +371,7 @@
 	numbering at LAST_VIRTUAL_REGISTER+1 to avoid possibly using hard
 	registers in unsupported ways.
 	* expmed.c (init_expmed): Likewise.
-	
+
 2005-02-21  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000/iq2000.h (DWARF_FRAME_RETURN_COLUMN): Change to 31.
