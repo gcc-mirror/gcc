@@ -1,3 +1,0 @@
-# If compiling GCC with the Unix assembler, -J will handle a large function.
-# With GAS, it should have no effect.
-X_CPPFLAGS = -J

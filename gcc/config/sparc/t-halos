@@ -1,0 +1,2 @@
+# For a native HALOS compile, we need to set -e1 for the assembler
+AS=as -e1

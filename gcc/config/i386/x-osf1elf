@@ -1,0 +1,8 @@
+# Defaults for OSF/1 1.3+
+CC		= $(OLDCC)
+CLIB		= -lld
+INSTALL		= installbsd -c
+OLDCC		= /usr/ccs/gcc/gcc
+X_CFLAGS	= -static
+
+# FIXPROTO_DEFINES = -D_XOPEN_SOURCE

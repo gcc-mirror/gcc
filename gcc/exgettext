@@ -1,0 +1,118 @@
+#! /bin/sh
+# Wrapper around gettext for GCC sources.
+# Copyright 1998 Free Software Foundation, Inc.
+
+# Written by Paul Eggert <eggert@twinsun.com>.
+
+# This file is part of GNU CC.
+
+# GNU CC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# GNU CC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GNU CC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+# Set environment to default value, if not already set.
+: ${AWK=awk}
+
+# The argument to this wrapper is the xgettext command to be executed.
+# Extract the xgettext program name from the rest of the command.
+xgettext=${1?}
+shift
+
+# Save work if we're just wrapping a no-op.
+case $xgettext in
+:) exit;;
+esac
+
+# Find the files to be scanned, and the directory to scan them from.
+directory=.
+files=
+for i
+do
+  case $i in
+  --directory=*)
+    directory=`expr " $i" : ' --directory=\(.*\)'`;;
+  --files-from=*)
+    files_from=`expr " $i" : ' --files-from=\(.*\)'`
+    files=`$AWK '/^[^#]/ { print }' $files_from`;;
+  esac
+done
+
+# Generate keyword options for xgettext,
+# by scanning for declarations of functions
+# whose parameter names end in "msgid".
+generate_keyword_options='
+  /^[A-Z_a-z].*\(.*msgid[,)]/ {
+
+    paren_index = index($0, "(")
+
+    name = substr($0, 1, paren_index - 1)
+    sub(/[^0-9A-Z_a-z]*$/, "", name)
+    sub(/[	 ]+PARAMS/, "", name)
+    sub(/[	 ]+VPROTO/, "", name)
+    sub(/.*[^0-9A-Z_a-z]/, "", name)
+
+    args = substr($0, paren_index)
+    sub(/msgid[,)].*/, "", args)
+    for (n = 1; sub(/^[^,]*,/, "", args); n++) {
+      continue;
+    }
+
+    if (n == 1) {
+      keyword = name
+    } else {
+      keyword = name ":" n
+    }
+
+    if (! keyword_seen[keyword]++) {
+      print "--keyword=" keyword
+    }
+  }
+'
+keyword_options=`(
+  cd $directory &&
+  $AWK "$generate_keyword_options" $files < /dev/null
+)` || exit
+
+# Generate temporary file reflecting the %e strings in the scanned files.
+tmp=tmp-emsgids.c
+
+generate_emsgids='
+  /%e.*}/ {
+    line = $0
+    while ((percent_index = index(line, "%e")) != 0) {
+      line = substr(line, percent_index + 2)
+      bracket_index = index(line, "}")
+      if (bracket_index == 0) {
+	continue
+      }
+      msgid = substr(line, 1, bracket_index - 1)
+      if (index(msgid, "%") != 0) {
+        continue
+      }
+      printf "#line %d \"%s\"\n", FNR, FILENAME
+      printf "_(\"%s\")\n", msgid
+      line = substr(line, bracket_index + 1)
+    }
+  }
+' 
+(cd $directory &&
+ $AWK "$generate_emsgids" $files < /dev/null
+) > $directory/$tmp || exit
+
+# Run the xgettext command, with temporary added as a file to scan.
+"$xgettext" $keyword_options ${1+"$@"} $tmp || exit
+
+# Clean up.
+# If we don't get here, `make clean' will remove this file later.
+rm -f $directory/$tmp
