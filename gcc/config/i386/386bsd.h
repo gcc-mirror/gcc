@@ -49,11 +49,6 @@
     }									\
 }
 
-/* There are conflicting reports about whether this system uses
-   a different assembler syntax.  wilson@cygnus.com says # is right.  */
-#undef COMMENT_BEGIN
-#define COMMENT_BEGIN "#"
-
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 
