@@ -211,6 +211,10 @@ extern int target_flags;
 #define TARGET_UPDATE		(! TARGET_NO_UPDATE)
 #define TARGET_FUSED_MADD	(! TARGET_NO_FUSED_MADD)
 
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
+#endif
+
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
 #if defined (__64BIT__) || defined (__powerpc64__)
@@ -1675,6 +1679,8 @@ typedef struct machine_function GTY(())
   int sysv_varargs_p;
   /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
   int ra_needs_full_frame;
+  /* Some local-dynamic symbol.  */
+  const char *some_ld_name;
   /* Whether the instruction chain has been scanned already.  */
   int insn_chain_scanned_p;
 } machine_function;
@@ -2012,9 +2018,10 @@ typedef struct rs6000_args
    acceptable.  */
 
 #define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
-   || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
-   || easy_fp_constant (X, GET_MODE (X)))
+  ((GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
+    || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
+    || easy_fp_constant (X, GET_MODE (X)))			\
+   && !rs6000_tls_referenced_p (X))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -2643,7 +2650,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* Define which CODE values are valid.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)  \
-  ((CODE) == '.')
+  ((CODE) == '.' || (CODE) == '&')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -2674,6 +2681,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
+  {"rs6000_tls_symbol_ref", {SYMBOL_REF}},				   \
   {"easy_fp_constant", {CONST_DOUBLE}},					   \
   {"easy_vector_constant", {CONST_VECTOR}},				   \
   {"easy_vector_constant_add_self", {CONST_VECTOR}},			   \
@@ -2697,6 +2705,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"count_register_operand", {REG}},					   \
   {"xer_operand", {REG}},						   \
   {"symbol_ref_operand", {SYMBOL_REF}},					   \
+  {"rs6000_tls_symbol_ref", {SYMBOL_REF}},				   \
   {"call_operand", {SYMBOL_REF, REG}},					   \
   {"current_file_function_operand", {SYMBOL_REF}},			   \
   {"input_operand", {SUBREG, MEM, REG, CONST_INT,			   \
