@@ -4200,8 +4200,10 @@ get_filename:
       /* Expand buffer and then remove any newline markers.
 	 We can't just tell expand_to_temp_buffer to omit the markers,
 	 since it would put extra spaces in include file names.  */
-      FILE_BUF trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
-      U_CHAR *src = trybuf.buf;
+      FILE_BUF trybuf;
+      U_CHAR *src;
+      trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
+      src = trybuf.buf;
       buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
       limit = buf;
       while (src != trybuf.bufp) {
