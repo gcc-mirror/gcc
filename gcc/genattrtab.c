@@ -100,6 +100,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), integrated))
 #define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
+#if 1
+#define strcmp_check(S1, S2) ((S1) == (S2)		\
+			      ? 0			\
+			      : (strcmp ((S1), (S2))	\
+				 ? 1			\
+				 : (abort (), 0)))
+#else
+#define strcmp_check(S1, S2) ((S1) != (S2))
+#endif
+
 #include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
@@ -339,6 +349,10 @@ static rtx true_rtx, false_rtx;
 /* Used to reduce calls to `strcmp' */
 
 static char *alternative_name;
+static const char *length_str;
+static const char *delay_type_str;
+static const char *delay_1_0_str;
+static const char *num_delay_slots_str;
 
 /* Indicate that REG_DEAD notes are valid if dead_or_set_p is ever
    called.  */
@@ -364,6 +378,8 @@ int optimize = 0;
       && XSTR ((EXP), 0) == alternative_name)			\
     (EXP) = (XSTR ((EXP), 1) == current_alternative_string	\
 	    ? true_rtx : false_rtx);
+
+#define DEF_ATTR_STRING(S) (attr_string ((S), strlen (S)))
 
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
    They won't actually be used.  */
@@ -449,7 +465,7 @@ static int write_expr_attr_cache (rtx, struct attr_desc *);
 static void write_toplevel_expr	(rtx);
 static void write_const_num_delay_slots (void);
 static char *next_comma_elt	(const char **);
-static struct attr_desc *find_attr (const char *, int);
+static struct attr_desc *find_attr (const char **, int);
 static struct attr_value *find_most_used  (struct attr_desc *);
 static rtx find_single_value	(struct attr_desc *);
 static void extend_range	(struct range *, int, int);
@@ -605,8 +621,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
     {
       char *arg0 = va_arg (p, char *);
 
-      if (code == SYMBOL_REF)
-	arg0 = attr_string (arg0, strlen (arg0));
+      arg0 = DEF_ATTR_STRING (arg0);
 
       hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
@@ -735,14 +750,13 @@ attr_printf (unsigned int len, const char *fmt, ...)
   vsprintf (str, fmt, p);
   va_end (p);
 
-  return attr_string (str, strlen (str));
+  return DEF_ATTR_STRING (str);
 }
 
 static rtx
 attr_eq (const char *name, const char *value)
 {
-  return attr_rtx (EQ_ATTR, attr_string (name, strlen (name)),
-		   attr_string (value, strlen (value)));
+  return attr_rtx (EQ_ATTR, DEF_ATTR_STRING (name), DEF_ATTR_STRING (value));
 }
 
 static const char *
@@ -915,7 +929,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
 	{
-	  attr = find_attr (XSTR (exp, 0), 0);
+	  attr = find_attr (&XSTR (exp, 0), 0);
 	  if (attr == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
@@ -1165,7 +1179,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 
     case ATTR:
       {
-	struct attr_desc *attr2 = find_attr (XSTR (exp, 0), 0);
+	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
 	  {
 	    message_with_line (attr ? attr->lineno : 0,
@@ -1325,7 +1339,7 @@ check_defs (void)
 	  if (value == NULL_RTX)
 	    continue;
 
-	  if ((attr = find_attr (XSTR (XEXP (value, 0), 0), 0)) == NULL)
+	  if ((attr = find_attr (&XSTR (XEXP (value, 0), 0), 0)) == NULL)
 	    {
 	      message_with_line (id->lineno, "unknown attribute %s",
 				 XSTR (XEXP (value, 0), 0));
@@ -1363,6 +1377,8 @@ make_canonical (struct attr_desc *attr, rtx exp)
 	    fatal ("(attr_value \"*\") used in invalid context");
 	  exp = attr->default_val->value;
 	}
+      else
+	XSTR (exp, 0) = DEF_ATTR_STRING (XSTR (exp, 0));
 
       break;
 
@@ -1423,6 +1439,17 @@ copy_boolean (rtx exp)
   if (GET_CODE (exp) == AND || GET_CODE (exp) == IOR)
     return attr_rtx (GET_CODE (exp), copy_boolean (XEXP (exp, 0)),
 		     copy_boolean (XEXP (exp, 1)));
+  if (GET_CODE (exp) == MATCH_OPERAND)
+    {
+      XSTR (exp, 1) = DEF_ATTR_STRING (XSTR (exp, 1));
+      XSTR (exp, 2) = DEF_ATTR_STRING (XSTR (exp, 2));
+    }
+  else if (GET_CODE (exp) == EQ_ATTR)
+    {
+      XSTR (exp, 0) = DEF_ATTR_STRING (XSTR (exp, 0));
+      XSTR (exp, 1) = DEF_ATTR_STRING (XSTR (exp, 1));
+    }
+
   return exp;
 }
 
@@ -1503,7 +1530,7 @@ expand_delays (void)
 	= make_numeric_value (XVECLEN (delay->def, 1) / 3);
     }
 
-  make_internal_attr ("*num_delay_slots", condexp, ATTR_NONE);
+  make_internal_attr (num_delay_slots_str, condexp, ATTR_NONE);
 
   /* If more than one delay type, do the same for computing the delay type.  */
   if (num_delays > 1)
@@ -1518,7 +1545,7 @@ expand_delays (void)
 	  XVECEXP (condexp, 0, i + 1) = make_numeric_value (delay->num);
 	}
 
-      make_internal_attr ("*delay_type", condexp, ATTR_SPECIAL);
+      make_internal_attr (delay_type_str, condexp, ATTR_SPECIAL);
     }
 
   /* For each delay possibility and delay slot, compute an eligibility
@@ -2238,8 +2265,8 @@ fill_attr (struct attr_desc *attr)
       value = NULL;
       if (XVEC (id->def, id->vec_idx))
 	for (i = 0; i < XVECLEN (id->def, id->vec_idx); i++)
-	  if (! strcmp (XSTR (XEXP (XVECEXP (id->def, id->vec_idx, i), 0), 0),
-			attr->name))
+	  if (! strcmp_check (XSTR (XEXP (XVECEXP (id->def, id->vec_idx, i), 0), 0),
+			      attr->name))
 	    value = XEXP (XVECEXP (id->def, id->vec_idx, i), 1);
 
       if (value == NULL)
@@ -2336,9 +2363,12 @@ substitute_address (rtx exp, rtx (*no_address_fn) (rtx),
 static void
 make_length_attrs (void)
 {
-  static const char *const new_names[] = {"*insn_default_length",
-				      "*insn_variable_length_p",
-				      "*insn_current_length"};
+  static const char *new_names[] =
+    {
+      "*insn_default_length",
+      "*insn_variable_length_p",
+      "*insn_current_length"
+    };
   static rtx (*const no_address_fn[]) (rtx) = {identity_fn, zero_fn, zero_fn};
   static rtx (*const address_fn[]) (rtx) = {max_fn, one_fn, identity_fn};
   size_t i;
@@ -2348,7 +2378,7 @@ make_length_attrs (void)
 
   /* See if length attribute is defined.  If so, it must be numeric.  Make
      it special so we don't output anything for it.  */
-  length_attr = find_attr ("length", 0);
+  length_attr = find_attr (&length_str, 0);
   if (length_attr == 0)
     return;
 
@@ -2365,7 +2395,7 @@ make_length_attrs (void)
 			  substitute_address (length_attr->default_val->value,
 					      no_address_fn[i], address_fn[i]),
 			  ATTR_NONE);
-      new_attr = find_attr (new_names[i], 0);
+      new_attr = find_attr (&new_names[i], 0);
       for (av = length_attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
 	  {
@@ -2411,7 +2441,7 @@ max_fn (rtx exp)
 static void
 write_length_unit_log (void)
 {
-  struct attr_desc *length_attr = find_attr ("length", 0);
+  struct attr_desc *length_attr = find_attr (&length_str, 0);
   struct attr_value *av;
   struct insn_ent *ie;
   unsigned int length_unit_log, length_or;
@@ -2727,7 +2757,7 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
   if (GET_CODE (value) == CONST_STRING)
     {
-      if (! strcmp (XSTR (value, 0), XSTR (exp, 1)))
+      if (! strcmp_check (XSTR (value, 0), XSTR (exp, 1)))
 	newexp = true_rtx;
       else
 	newexp = false_rtx;
@@ -2751,7 +2781,7 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
       newexp = attr_rtx (EQ, value,
 			 attr_rtx (SYMBOL_REF,
-				   attr_string (string, strlen (string))));
+				   DEF_ATTR_STRING (string)));
     }
   else if (GET_CODE (value) == COND)
     {
@@ -2898,7 +2928,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
       if (XSTR (exp, 0) != XSTR (*pterm, 0))
 	return exp;
 
-      if (! strcmp (XSTR (exp, 1), XSTR (*pterm, 1)))
+      if (! strcmp_check (XSTR (exp, 1), XSTR (*pterm, 1)))
 	return true_rtx;
       else
 	return false_rtx;
@@ -2910,7 +2940,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
       if (XSTR (*pterm, 0) != XSTR (XEXP (exp, 0), 0))
 	return exp;
 
-      if (! strcmp (XSTR (*pterm, 1), XSTR (XEXP (exp, 0), 1)))
+      if (! strcmp_check (XSTR (*pterm, 1), XSTR (XEXP (exp, 0), 1)))
 	return false_rtx;
       else
 	return true_rtx;
@@ -2922,7 +2952,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
       if (XSTR (exp, 0) != XSTR (XEXP (*pterm, 0), 0))
 	return exp;
 
-      if (! strcmp (XSTR (exp, 1), XSTR (XEXP (*pterm, 0), 1)))
+      if (! strcmp_check (XSTR (exp, 1), XSTR (XEXP (*pterm, 0), 1)))
 	return false_rtx;
       else
 	*pterm = true_rtx;
@@ -3036,9 +3066,10 @@ attr_rtx_cost (rtx x)
 	return 10;
       else
 	return 0;
+
     case EQ_ATTR:
       /* Alternatives don't result into function call.  */
-      if (!strcmp (XSTR (x, 0), "alternative"))
+      if (!strcmp_check (XSTR (x, 0), alternative_name))
 	return 0;
       else
 	return 5;
@@ -3335,7 +3366,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	 We normally can replace this comparison with the condition that
 	 would give this insn the values being tested for.  */
       if (XSTR (exp, 0) != alternative_name
-	  && (attr = find_attr (XSTR (exp, 0), 0)) != NULL)
+	  && (attr = find_attr (&XSTR (exp, 0), 0)) != NULL)
 	for (av = attr->first_value; av; av = av->next)
 	  for (ie = av->first_insn; ie; ie = ie->next)
 	    if (ie->insn_code == insn_code)
@@ -3499,7 +3530,10 @@ simplify_by_exploding (rtx exp)
       const char *name = XSTR (XEXP (list, 0), 0);
       rtx *prev;
 
-      if ((space[ndim].attr = find_attr (name, 0)) == 0
+      space[ndim].attr = find_attr (&name, 0);
+      XSTR (XEXP (list, 0), 0) = name;
+
+      if (space[ndim].attr == 0
 	  || space[ndim].attr->is_numeric)
 	{
 	  unmark_used_attributes (list, space, ndim);
@@ -3511,7 +3545,7 @@ simplify_by_exploding (rtx exp)
       space[ndim].values = 0;
       prev = &list;
       for (link = list; link; link = *prev)
-	if (! strcmp (XSTR (XEXP (link, 0), 0), name))
+	if (! strcmp_check (XSTR (XEXP (link, 0), 0), name))
 	  {
 	    space[ndim].num_values++;
 	    *prev = XEXP (link, 1);
@@ -3965,7 +3999,7 @@ gen_attr (rtx exp, int lineno)
 
   /* Make a new attribute structure.  Check for duplicate by looking at
      attr->default_val, since it is initialized by this routine.  */
-  attr = find_attr (XSTR (exp, 0), 1);
+  attr = find_attr (&XSTR (exp, 0), 1);
   if (attr->default_val)
     {
       message_with_line (lineno, "duplicate definition for attribute %s",
@@ -4007,7 +4041,7 @@ gen_attr (rtx exp, int lineno)
       XEXP (exp, 2) = XEXP (XEXP (exp, 2), 0);
     }
 
-  if (! strcmp (attr->name, "length") && ! attr->is_numeric)
+  if (! strcmp_check (attr->name, length_str) && ! attr->is_numeric)
     {
       message_with_line (lineno,
 			 "`length' attribute must take numeric values");
@@ -4251,6 +4285,8 @@ gen_unit (rtx def, int lineno)
       unit->first_lineno = lineno;
       units = unit;
     }
+  else
+    XSTR (def, 0) = unit->name;
 
   /* Make a new operation class structure entry and initialize it.  */
   op = oballoc (sizeof (struct function_unit_op));
@@ -4443,7 +4479,7 @@ write_test_expr (rtx exp, int flags)
 	  break;
 	}
 
-      attr = find_attr (XSTR (exp, 0), 0);
+      attr = find_attr (&XSTR (exp, 0), 0);
       if (! attr)
 	abort ();
 
@@ -4653,7 +4689,7 @@ walk_attr_value (rtx exp)
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)
 	must_extract = must_constrain = 1;
-      else if (strcmp (XSTR (exp, 0), "length") == 0)
+      else if (strcmp_check (XSTR (exp, 0), length_str) == 0)
 	length_used = 1;
       return;
 
@@ -5116,7 +5152,7 @@ write_attr_value (struct attr_desc *attr, rtx value)
 
     case ATTR:
       {
-	struct attr_desc *attr2 = find_attr (XSTR (value, 0), 0);
+	struct attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
 	printf ("get_attr_%s (%s)", attr2->name,
 		(attr2->is_const ? "" : "insn"));
       }
@@ -5190,6 +5226,7 @@ write_eligible_delay (const char *kind)
   struct delay_desc *delay;
   int max_slots;
   char str[50];
+  const char *pstr;
   struct attr_desc *attr;
   struct attr_value *av, *common_av;
   int i;
@@ -5218,7 +5255,7 @@ write_eligible_delay (const char *kind)
 
   if (num_delays > 1)
     {
-      attr = find_attr ("*delay_type", 0);
+      attr = find_attr (&delay_type_str, 0);
       if (! attr)
 	abort ();
       common_av = find_most_used (attr);
@@ -5247,7 +5284,7 @@ write_eligible_delay (const char *kind)
       printf ("  switch (recog_memoized (insn))\n");
       printf ("    {\n");
 
-      attr = find_attr ("*delay_1_0", 0);
+      attr = find_attr (&delay_1_0_str, 0);
       if (! attr)
 	abort ();
       common_av = find_most_used (attr);
@@ -5277,7 +5314,8 @@ write_eligible_delay (const char *kind)
 	    printf ("\t{\n");
 
 	    sprintf (str, "*%s_%d_%d", kind, delay->num, i / 3);
-	    attr = find_attr (str, 0);
+	    pstr = str;
+	    attr = find_attr (&pstr, 0);
 	    if (! attr)
 	      abort ();
 	    common_av = find_most_used (attr);
@@ -5381,6 +5419,7 @@ write_complex_function (struct function_unit *unit,
   struct attr_value *av, *common_av;
   rtx value;
   char str[256];
+  const char *pstr;
   int using_case;
   int i;
 
@@ -5398,7 +5437,8 @@ write_complex_function (struct function_unit *unit,
   if (strlen (unit->name) + sizeof "*_cases" > 256)
     abort ();
   sprintf (str, "*%s_cases", unit->name);
-  case_attr = find_attr (str, 0);
+  pstr = str;
+  case_attr = find_attr (&pstr, 0);
   if (! case_attr)
     abort ();
   common_av = find_most_used (case_attr);
@@ -5432,7 +5472,8 @@ write_complex_function (struct function_unit *unit,
 
       printf ("    case %d:\n", i);
       sprintf (str, "*%s_%s_%d", unit->name, connection, i);
-      attr = find_attr (str, 0);
+      pstr = str;
+      attr = find_attr (&pstr, 0);
       if (! attr)
 	abort ();
 
@@ -5484,13 +5525,15 @@ next_comma_elt (const char **pstr)
 }
 
 /* Return a `struct attr_desc' pointer for a given named attribute.  If CREATE
-   is nonzero, build a new attribute, if one does not exist.  */
+   is nonzero, build a new attribute, if one does not exist.  *NAME_P is
+   replaced by a pointer to a canonical copy of the string.  */
 
 static struct attr_desc *
-find_attr (const char *name, int create)
+find_attr (const char **name_p, int create)
 {
   struct attr_desc *attr;
   int index;
+  const char *name = *name_p;
 
   /* Before we resort to using `strcmp', see if the string address matches
      anywhere.  In most cases, it should have been canonicalized to do so.  */
@@ -5505,18 +5548,23 @@ find_attr (const char *name, int create)
   /* Otherwise, do it the slow way.  */
   for (attr = attrs[index]; attr; attr = attr->next)
     if (name[0] == attr->name[0] && ! strcmp (name, attr->name))
-      return attr;
+      {
+	*name_p = attr->name;
+	return attr;
+      }
 
   if (! create)
     return NULL;
 
   attr = oballoc (sizeof (struct attr_desc));
-  attr->name = attr_string (name, strlen (name));
+  attr->name = DEF_ATTR_STRING (name);
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
   attr->unsigned_p = attr->func_units_p = attr->blockage_p = attr->static_p = 0;
   attr->next = attrs[index];
   attrs[index] = attr;
+
+  *name_p = attr->name;
 
   return attr;
 }
@@ -5528,7 +5576,7 @@ make_internal_attr (const char *name, rtx value, int special)
 {
   struct attr_desc *attr;
 
-  attr = find_attr (name, 1);
+  attr = find_attr (&name, 1);
   if (attr->default_val)
     abort ();
 
@@ -5633,7 +5681,7 @@ copy_rtx_unchanging (rtx orig)
 static void
 write_const_num_delay_slots (void)
 {
-  struct attr_desc *attr = find_attr ("*num_delay_slots", 0);
+  struct attr_desc *attr = find_attr (&num_delay_slots_str, 0);
   struct attr_value *av;
   struct insn_ent *ie;
 
@@ -5691,7 +5739,11 @@ main (int argc, char **argv)
   ATTR_IND_SIMPLIFIED_P (true_rtx) = ATTR_IND_SIMPLIFIED_P (false_rtx) = 1;
   ATTR_PERMANENT_P (true_rtx) = ATTR_PERMANENT_P (false_rtx) = 1;
 
-  alternative_name = attr_string ("alternative", strlen ("alternative"));
+  alternative_name = DEF_ATTR_STRING ("alternative");
+  length_str = DEF_ATTR_STRING ("length");
+  delay_type_str = DEF_ATTR_STRING ("*delay_type");
+  delay_1_0_str = DEF_ATTR_STRING ("*delay_1_0");
+  num_delay_slots_str = DEF_ATTR_STRING ("*num_delay_slots");
 
   printf ("/* Generated automatically by the program `genattrtab'\n\
 from the machine description file `md'.  */\n\n");
@@ -5874,7 +5926,7 @@ from the machine description file `md'.  */\n\n");
 
 	    insn_alts_p
 	      = (attr->name [0] == '*'
-		 && strcmp (&attr->name [1], INSN_ALTS_FUNC_NAME) == 0);
+		 && strcmp (&attr->name[1], INSN_ALTS_FUNC_NAME) == 0);
 	    if (insn_alts_p)
 	      printf ("\n#if AUTOMATON_ALTS\n");
 	    write_attr_get (attr);
