@@ -1337,7 +1337,10 @@ $(srcdir)/c-parse.y: c-parse.in
 
 $(srcdir)/c-gperf.h: c-parse.gperf
 	gperf -L C -F ', 0, 0' -p -j1 -i 1 -g -o -t -G -N is_reserved_word \
-	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h
+	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h || ( \
+	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
+	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
+	exit 1 )
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
 c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h ggc.h \
@@ -2194,7 +2197,7 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version) ; fi; \
 	else true; fi
-
+	exit 1
 	touch stmp-fixinc
 
 # Files related to the fixproto script.
