@@ -412,11 +412,13 @@ mark_set_resources (x, res, in_dest, include_called_routine)
      int in_dest;
      int include_called_routine;
 {
-  register enum rtx_code code = GET_CODE (x);
+  register enum rtx_code code;
   register int i, j;
   register char *format_ptr;
 
  restart:
+
+  code = GET_CODE (x);
 
   switch (code)
     {
@@ -517,7 +519,7 @@ mark_set_resources (x, res, in_dest, include_called_routine)
 	}
 
       mark_set_resources (XEXP (x, 0), res, 0, 0);
-      goto restart;
+      return;
 
     case REG:
       for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
