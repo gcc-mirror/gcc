@@ -6045,8 +6045,7 @@ get_delta_difference (from, to, force)
 	return delta;
       if (binfo_from_vbase (binfo))
 	{
-	  binfo = binfo_member (BINFO_TYPE (binfo),
-				CLASSTYPE_VBASECLASSES (from));
+	  binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), from);
 	  cp_warning ("pointer to member cast to virtual base `%T'",
 		      BINFO_TYPE (binfo));
 	  warning ("  will only work if you are very careful");

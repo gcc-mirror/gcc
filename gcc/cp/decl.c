@@ -12522,7 +12522,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
   /* Now that we know all the base-classes, set up the list of virtual
      bases.  */
-  CLASSTYPE_VBASECLASSES (ref) = get_vbase_types (ref);
+  get_vbase_types (ref);
 }
   
 

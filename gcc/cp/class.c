@@ -331,8 +331,8 @@ build_vbase_path (code, type, expr, path, nonnull)
     {
       if (last_virtual)
 	{
-	  offset = BINFO_OFFSET (binfo_member (last_virtual,
-					       CLASSTYPE_VBASECLASSES (basetype)));
+	  offset = BINFO_OFFSET (BINFO_FOR_VBASE (last_virtual, 
+						  basetype));
 	  offset = size_binop (PLUS_EXPR, offset, BINFO_OFFSET (last));
 	}
       else
@@ -884,8 +884,7 @@ prepare_fresh_vtable (binfo, for_type)
 
   if (TREE_VIA_VIRTUAL (binfo))
     {
-      tree binfo1 = binfo_member (BINFO_TYPE (binfo), 
-				  CLASSTYPE_VBASECLASSES (for_type));
+      tree binfo1 = BINFO_FOR_VBASE (BINFO_TYPE (binfo), for_type);
 
       /* XXX - This should never happen, if it does, the caller should
 	 ensure that the binfo is from for_type's binfos, not from any
@@ -911,8 +910,8 @@ prepare_fresh_vtable (binfo, for_type)
   import_export_vtable (new_decl, for_type, 0);
 
   if (TREE_VIA_VIRTUAL (binfo))
-    my_friendly_assert (binfo == binfo_member (BINFO_TYPE (binfo),
-				   CLASSTYPE_VBASECLASSES (current_class_type)),
+    my_friendly_assert (binfo == BINFO_FOR_VBASE (BINFO_TYPE (binfo),
+						  current_class_type),
 			170);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
 }
@@ -2321,8 +2320,7 @@ finish_vtbls (binfo, do_self, t)
       int is_not_base_vtable
 	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (TREE_VIA_VIRTUAL (base_binfo))
-	base_binfo = binfo_member (BINFO_TYPE (base_binfo), 
-				   CLASSTYPE_VBASECLASSES (t));
+	base_binfo = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), t);
       finish_vtbls (base_binfo, is_not_base_vtable, t);
     }
 }
@@ -2375,8 +2373,7 @@ get_class_offset_1 (parent, binfo, context, t, fndecl)
       tree nrval;
 
       if (TREE_VIA_VIRTUAL (base_binfo))
-	base_binfo = binfo_member (BINFO_TYPE (base_binfo),
-				   CLASSTYPE_VBASECLASSES (t));
+	base_binfo = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), t);
       nrval = get_class_offset_1 (parent, base_binfo, context, t, fndecl);
       /* See if we have a new value */
       if (nrval && (nrval != error_mark_node || rval==0))
@@ -2699,7 +2696,7 @@ modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  via_virtual = 1;
-	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
+	  base_binfo = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), t);
 	}
       modify_all_indirect_vtables (base_binfo, is_not_base_vtable, via_virtual, t, fndecl);
     }
@@ -3769,10 +3766,7 @@ build_vbase_pointer_fields (rec, empty_p)
 	    {
 	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
 	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
-		  && binfo_member (basetype,
-				   CLASSTYPE_VBASECLASSES (BINFO_TYPE
-							   (other_base_binfo))
-				   ))
+		  && BINFO_FOR_VBASE (basetype, BINFO_TYPE (other_base_binfo)))
 		goto got_it;
 	    }
 	  FORMAT_VBASE_NAME (name, basetype);
