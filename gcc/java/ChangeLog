@@ -1,3 +1,8 @@
+Thu Mar 30 15:26:56 2000  Alexandre Petit-Bianco  <apbianco@dcygnus.com>
+
+	* expr.c (java_lang_expand_expr): Added Anthony's Thu Jan 6 2000
+	patch missing hunk. Fixed indentation.
+
 2000-03-30  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (D_NAN_MASK): Only define as word-reversed when
