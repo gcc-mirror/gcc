@@ -1,6 +1,7 @@
 2004-01-09  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (TARGET_CPU_CPP_BUILTINS): Add __m32r__.
+	* config/m32r/m32r.c (call26_operand): Allow in PIC mode.
 
 2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
