@@ -1,3 +1,8 @@
+2002-02-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* expr.c (ffeexpr_sym_impdoitem_): Allow other than
+	default INTEGER implied-do loop counts.
+
 2002-02-01  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* bad.def: Remove non-historical reference to version 0.6.
