@@ -228,6 +228,8 @@ tree integer_type_node;
 tree unsigned_type_node;
 tree char_type_node;
 tree current_function_decl;
+tree ptr_type_node;
+tree va_list_type_node;
 
 /* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
    reference it.  */
@@ -11807,8 +11809,10 @@ ffecom_init_0 ()
      so we might as well not have any types that claim to have it.  */
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
 
+  ptr_type_node = build_pointer_type (void_type_node);
+
   null_pointer_node = build_int_2 (0, 0);
-  TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
+  TREE_TYPE (null_pointer_node) = ptr_type_node;
   layout_type (TREE_TYPE (null_pointer_node));
 
   string_type_node = build_pointer_type (char_type_node);
