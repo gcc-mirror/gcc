@@ -187,6 +187,9 @@ extern void subst_reloads PROTO((void));
    the RTL.  */
 extern void copy_replacements PROTO((rtx, rtx));
 
+/* Change any replacements being done to *X to be done to *Y */
+extern void move_replacements PROTO((rtx *x, rtx *y));
+
 /* If LOC was scheduled to be replaced by something, return the replacement.
    Otherwise, return *LOC.  */
 extern rtx find_replacement PROTO((rtx *));
