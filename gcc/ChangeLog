@@ -1,3 +1,10 @@
+2004-09-01  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/14064
+	* config/avr/avr.c (avr_unique_section): Delete prototype and
+	definition.
+	(TARGET_ASM_UNIQUE_SECTION): Delete.
+
 2004-09-01  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-parse.in (primary): Call objc_build_message_expr(),
