@@ -1289,7 +1289,7 @@ asm_emit_uninitialised (decl, name, size, rounded)
 #ifdef ASM_OUTPUT_SECTION_NAME
   /* We already know that DECL_SECTION_NAME() == NULL.  */
   if (flag_data_sections != 0 || UNIQUE_SECTION_P (decl))
-    UNIQUE_SECTION (decl, NULL);
+    UNIQUE_SECTION (decl, 0);
 #endif
   
   switch (destination)
