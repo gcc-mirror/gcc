@@ -1,3 +1,8 @@
+2002-07-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (output_max_insn_queue_index_def): Take latencies
+	into account.
+
 2002-07-06  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md (peephole2): New peephole2 to optimize
