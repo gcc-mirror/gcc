@@ -390,6 +390,13 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	    {
 	      next = next_real_insn (JUMP_LABEL (insn));
 	      delete_jump (insn);
+
+	      /* Remove the "inactive" but "real" insns (i.e. uses and
+	         clobbers) in between here and there.  */
+	      temp = insn;
+	      while ((temp = next_real_insn (temp)) != next)
+		delete_insn (temp);
+
 	      changed = 1;
 	      continue;
 	    }
