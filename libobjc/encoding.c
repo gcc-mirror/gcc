@@ -62,6 +62,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define get_inner_array_type(TYPE)      ((TYPE) + 1)
 
+/* Some ports (eg ARM) allow the structure size boundary to be
+   selected at compile-time.  We override the normal definition with
+   one that has a constant value for this compilation.  */
+#undef STRUCTURE_SIZE_BOUNDARY
+#define STRUCTURE_SIZE_BOUNDARY (BITS_PER_UNIT * sizeof (struct{char a;}))
 
 static inline int
 atoi (const char* str)
@@ -724,9 +729,7 @@ objc_layout_structure (const char *type,
   layout->record_size = 0;
   layout->record_align = BITS_PER_UNIT;
 
-#ifdef STRUCTURE_SIZE_BOUNDARY
   layout->record_align = MAX (layout->record_align, STRUCTURE_SIZE_BOUNDARY);
-#endif
 }
 
 
