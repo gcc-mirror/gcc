@@ -67,28 +67,34 @@ void test02()
   using namespace std;
   bool test = true;
   
+  // If the underlying locale doesn't support these names, setlocale
+  // won't be reset. Therefore, disable unless we know named locales work.
+#if _GLIBCPP_C_LOCALE_GNU
+
   const string ph("en_PH");
   const string mx("es_MX");
 
   const locale loc_ph(ph.c_str());
   const locale loc_mx(mx.c_str());
 
-  // Get underlying current locale and environment settings.
-  const locale env_orig("");
+  // Use setlocale between two calls to locale("")
+  const locale loc_env_1("");
+  setlocale(LC_ALL, ph.c_str());
+  const locale loc_env_2("");
+  VERIFY( loc_env_1 == loc_env_2 );
 
-  // setlocale to en_PH
-  std::setlocale(LC_ALL, ph.c_str());
-
-  const locale loc_env("");
-  VERIFY( loc_env == env_orig );
-
+  // Change global locale.
   locale global_orig = locale::global(loc_mx);
-  const char* lc_all_mx = std::setlocale(LC_ALL, NULL);
+  const char* lc_all_mx = setlocale(LC_ALL, NULL);
   if (lc_all_mx)
-    VERIFY( mx == lc_all_mx );
+    {
+      cout << "lc_all_mx is " << lc_all_mx << endl;
+      VERIFY( mx == lc_all_mx );
+    }
 
   // Restore global settings.
   locale::global(global_orig);
+#endif
 }
 
 // Static counter for use in checking ctors/dtors.
