@@ -35,8 +35,8 @@ extern void free ();
 extern rtx read_rtx ();
 
 /* flags to determine output of machine description dependent #define's.  */
-static int max_recog_operands;
-static int max_dup_operands;
+static int max_recog_operands;  /* Largest operand number seen.  */
+static int max_dup_operands;    /* Largest number of match_dup in any insn.  */
 static int max_clobbers_per_insn;
 static int register_constraint_flag;
 static int have_cc0_flag;
@@ -278,7 +278,7 @@ main (argc, argv)
 from the machine description file `md'.  */\n\n");
 
   /* Allow at least 10 operands for the sake of asm constructs.  */
-  max_recog_operands = 10;
+  max_recog_operands = 9;  /* We will add 1 later.  */
   max_dup_operands = 1;
 
   /* Read the machine description.  */
@@ -301,7 +301,7 @@ from the machine description file `md'.  */\n\n");
 	gen_peephole (desc);
     }
 
-  printf ("\n#define MAX_RECOG_OPERANDS %d\n", max_recog_operands);
+  printf ("\n#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
 
   printf ("\n#define MAX_DUP_OPERANDS %d\n", max_dup_operands);
 
