@@ -1189,7 +1189,7 @@ dwarf2out_frame_debug (insn)
 	  else
 	    {
 	      if (GET_CODE (src) != PLUS
-		  || XEXP (src, 1) != stack_pointer_rtx
+		  || XEXP (src, 1) != stack_pointer_rtx)
 		abort ();
 	      if (GET_CODE (XEXP (src, 0)) != REG
 		  || REGNO (XEXP (src, 0)) != cfa_temp_reg)
