@@ -26,10 +26,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    Java.  */
 
-  {".java",   "@java" , 0},
-  {".class",  "@java" , 0},
-  {".zip",    "@java" , 0},
-  {".jar",    "@java" , 0},
+  {".java",   "@java" , 0, 0, 0},
+  {".class",  "@java" , 0, 0, 0},
+  {".zip",    "@java" , 0, 0, 0},
+  {".jar",    "@java" , 0, 0, 0},
   {"@java",
    "%{fjni:%{femit-class-files:%e-fjni and -femit-class-files are incompatible}}\
     %{fjni:%{femit-class-file:%e-fjni and -femit-class-file are incompatible}}\
@@ -37,5 +37,5 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
     %{femit-class-files:%{!fsyntax-only:%e-femit-class-file should used along with -fsyntax-only}}\
     %{!E:jc1 %i %(jc1) %(cc1_options) %{+e*} %{I*}\
              %{MD:-MD_} %{MMD:-MMD_} %{M} %{MM} %{MA} %{MT*} %{MF*}\
-             %{!fsyntax-only:%(invoke_as)}}", 0},
+             %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
 

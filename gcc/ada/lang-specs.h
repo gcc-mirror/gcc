@@ -27,8 +27,8 @@
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNAT.  */
 
-  {".ads", "@ada", 0},
-  {".adb", "@ada", 0},
+  {".ads", "@ada", 0, 0, 0},
+  {".adb", "@ada", 0, 0, 0},
   {"@ada",
    "\
  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
@@ -40,4 +40,4 @@
     %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{m*} %{a} %{f*} %{d*}\
     %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
-    %{!gnatc*:%{!gnatz*:%{!gnats*:%(invoke_as)}}}", 0},
+    %{!gnatc*:%{!gnatz*:%{!gnats*:%(invoke_as)}}}", 0, 0, 0},

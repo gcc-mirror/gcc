@@ -1,3 +1,43 @@
+2004-04-05  Caroline Tice  <ctice@apple.com>
+
+        * gcc.c (combine_flag): New global variable, for new driver option.
+	(struct compiler): Add two new fields, to be used when
+	combining multiple input files in a single pass (IMA).
+	(default_compilers):  Add values for the new fields to all 
+	compiler entries. Modify the "@c" compiler entry for doing IMA 
+	properly with "-save-temps" and the "combine" flag.
+	(option_map):  Add new driver option, "--combine", to tell driver
+	to pass multiple input files to compiler at one time.
+	(have_o_argbuf_index): New global variable.
+	(store_arg): Modify to assign value to have_o_argbuf_index.
+	(struct infile):  Add three new fields, to help with IMA.
+	(display_help): Add help for new "combine" option.
+	(process_command): Remove local variable have_o; add code to check
+	for new "combine" option; remove assignment to combine_inputs.
+	(do_spec_1):  Modify to deal with IMA better.
+	(main): Make variable 'lang_n_infiles' local to entire function
+	rather than to a single block.  Use flag combine_flag to 
+	determine whether to do IMA or not; Modify loop initializing 
+	infiles to deal properly with linker files.
+	Add code for doing preprocessing in presence of
+	IMA with "-save-temps" flag.  Modify "main" loop to handle
+	multiple input files, in multiple languages, with or without
+	preprocessing,  gracefully.
+	* toplev.c (set_src_pwd): Modify to not complain if attempting to
+	re-set it to same directory it's previously been set to (avoid
+	irritating, meaningless warning messages when doing IMA with 
+	save-temps).
+	* doc/invoke.texi: Add "-combine" to list of Overall Options;
+	remove documentation about IMA that is no longer accurate; Add
+	documentation explaining what "-combine" does.
+	* ada/lang-specs.h: Add initialization values for new fields in
+	"struct compiler".
+	* cp/lang-specs.h: Likewise.
+	* f/lang-specs.h: Likewise.
+	* java/lang-specs.h: Likewise.
+	* objc/lang-specs.h: Likewise.
+	* treelang/lang-specs.h: Likewise.
+
 2004-04-05  David Edelsohn
 
 	* config/rs6000/rs6000.c (VTABLE_NAME_P): Add _ZTI to special

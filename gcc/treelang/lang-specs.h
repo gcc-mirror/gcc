@@ -29,10 +29,10 @@ Boston, MA 02111-1307, USA.  */
    
 */
 
-{".tree", "@treelang", NULL},
-{".TREE", "@treelang", NULL},
-{".tre", "@treelang", NULL},
-{".TRE", "@treelang", NULL},
+{".tree", "@treelang", NULL, 0, 0},
+{".TREE", "@treelang", NULL, 0, 0},
+{".tre", "@treelang", NULL, 0, 0},
+{".TRE", "@treelang", NULL, 0, 0},
 {"@treelang",
     "tree1\
        %{!Q:-quiet}\
@@ -59,5 +59,5 @@ Boston, MA 02111-1307, USA.  */
        %{!c:-o %d%w%u%O}\
        %g.s\
        %A\n}\
-       ", NULL
+       ", NULL , 0, 0
 },
