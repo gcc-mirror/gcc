@@ -1,3 +1,7 @@
+2001-05-05  Richard Henderson  <rth@redhat.com>
+
+	* integrate.c (copy_insn_list): Substitute NOTE_EXPECTED_VALUE.
+
 2001-05-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Optimize moves
