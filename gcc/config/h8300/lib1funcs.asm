@@ -448,27 +448,40 @@ ___modsi3:
 
 	.global	___udivsi3
 ___udivsi3:
+#ifdef __H8300__
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
 	mov.b	#0,S2L	; keep sign low
 	bsr	divmodsi4
 	bra	exitdiv
+#else
+	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
+	PUSHP	S0P
+	bsr	divmodsi4
+	POPP	S0P
+	rts
+#endif
 
 	.global	___umodsi3
 ___umodsi3:
+#ifdef __H8300__
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
 	mov.b	#0,S2L	; keep sign low
 	bsr	divmodsi4
-#ifdef __H8300__
 	mov	S0,A0
 	mov	S1,A1
-#else
-	mov.l	S0P,A0P
-#endif
 	bra	exitdiv
+#else
+	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
+	PUSHP	S0P
+	bsr	divmodsi4
+	mov.l	S0P,A0P
+	POPP	S0P
+	rts
+#endif
 
 	.global	___divsi3
 ___divsi3:
