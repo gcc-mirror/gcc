@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,7 +112,7 @@ package body System.Task_Primitives.Operations is
    -- Local Data  --
    -----------------
 
-   --  The OS/2 DosAllocThreadLocalMemory API is used to allocate our TCB_Ptr.
+   --  The OS/2 DosAllocThreadLocalMemory API is used to allocate our TCB_Ptr
 
    --  This API reserves a small range of virtual addresses that is backed
    --  by different physical memory for each running thread. In this case we
@@ -141,7 +141,7 @@ package body System.Task_Primitives.Operations is
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    Environment_Task_Id : Task_Id;
-   --  A variable to hold Task_Id for the environment task.
+   --  A variable to hold Task_Id for the environment task
 
    -----------------------
    -- Local Subprograms --
@@ -223,7 +223,7 @@ package body System.Task_Primitives.Operations is
       Self_ID : Task_Id renames Thread_Local_Data_Ptr.Self_ID;
 
    begin
-      --  Check that the thread local data has been initialized.
+      --  Check that the thread local data has been initialized
 
       pragma Assert
         ((Thread_Local_Data_Ptr /= null
@@ -458,7 +458,7 @@ package body System.Task_Primitives.Operations is
       Count : aliased ULONG; -- Used to store dummy result
 
    begin
-      --  Must reset Cond BEFORE L is unlocked.
+      --  Must reset Cond BEFORE L is unlocked
 
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV, Count'Unchecked_Access));
@@ -475,7 +475,7 @@ package body System.Task_Primitives.Operations is
       Sem_Must_Not_Fail
         (DosWaitEventSem (Self_ID.Common.LL.CV, SEM_INDEFINITE_WAIT));
 
-      --  Since L was previously accquired, lock operation should not fail.
+      --  Since L was previously accquired, lock operation should not fail
 
       if Single_Lock then
          Lock_RTS;
@@ -516,7 +516,7 @@ package body System.Task_Primitives.Operations is
       Count      : aliased ULONG;  --  Used to store dummy result
 
    begin
-      --  Must reset Cond BEFORE Self_ID is unlocked.
+      --  Must reset Cond BEFORE Self_ID is unlocked
 
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV,
@@ -611,7 +611,7 @@ package body System.Task_Primitives.Operations is
          Write_Lock (Self_ID);
       end if;
 
-      --  Must reset Cond BEFORE Self_ID is unlocked.
+      --  Must reset Cond BEFORE Self_ID is unlocked
 
       Sem_Must_Not_Fail
         (DosResetEventSem (Self_ID.Common.LL.CV,
@@ -767,7 +767,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
-      --  Initialize thread local data. Must be done first.
+      --  Initialize thread local data. Must be done first
 
       Thread_Local_Data_Ptr.Self_ID := Self_ID;
       Thread_Local_Data_Ptr.Lock_Prio_Level := 0;
@@ -927,7 +927,7 @@ package body System.Task_Primitives.Operations is
 
       T.Common.LL.Wrapper := To_PFNTHREAD (Wrapper);
 
-      --  The OS implicitly gives the new task the priority of this task.
+      --  The OS implicitly gives the new task the priority of this task
 
       T.Common.LL.Current_Priority := Self.Common.LL.Current_Priority;
 
@@ -1007,7 +1007,7 @@ package body System.Task_Primitives.Operations is
    begin
       null;
 
-      --  Task abortion not implemented yet.
+      --  Task abort not implemented yet.
       --  Should perform other action ???
 
    end Abort_Task;
@@ -1103,9 +1103,9 @@ package body System.Task_Primitives.Operations is
       Environment_Task_Id := Environment_Task;
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
-      --  Initialize the lock used to synchronize chain of all ATCBs.
+      --  Initialize the lock used to synchronize chain of all ATCBs
 
-      --  Set ID of environment task.
+      --  Set ID of environment task
 
       Thread_Local_Data_Ptr.Self_ID := Environment_Task;
       Environment_Task.Common.LL.Thread := 1; --  By definition

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,8 @@ package System.Bit_Ops is
    --  Note: in all the following routines, the System.Address parameters
    --  represent the address of the first byte of an array used to represent
    --  a packed array (of type System.Unsigned_Types.Packed_Bytes{1,2,4})
-   --  The length in bits is passed as a separate parameter.
+   --  The length in bits is passed as a separate parameter. Note that all
+   --  addresses must be of byte aligned arrays.
 
    procedure Bit_And
      (Left   : System.Address;
@@ -57,8 +58,7 @@ package System.Bit_Ops is
      (Left  : System.Address;
       Llen  : Natural;
       Right : System.Address;
-      Rlen  : Natural)
-      return  Boolean;
+      Rlen  : Natural) return Boolean;
    --  Left and Right are the addresses of two bit packed arrays with Llen
    --  and Rlen being the respective length in bits. The routine compares the
    --  two bit strings for equality, being careful not to include the unused

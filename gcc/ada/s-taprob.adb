@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Ada Core Technologies               --
+--             Copyright (C) 1995-2005, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,15 +90,15 @@ package body System.Tasking.Protected_Objects is
       Ceiling_Violation : Boolean;
 
    begin
-      --  The lock is made without defering abortion.
+      --  The lock is made without defering abort
 
-      --  Therefore the abortion has to be deferred before calling this
-      --  routine. This means that the compiler has to generate a Defer_Abort
-      --  call before the call to Lock.
+      --  Therefore the abort has to be deferred before calling this routine.
+      --  This means that the compiler has to generate a Defer_Abort call
+      --  before the call to Lock.
 
-      --  The caller is responsible for undeferring abortion, and compiler
+      --  The caller is responsible for undeferring abort, and compiler
       --  generated calls must be protected with cleanup handlers to ensure
-      --  that abortion is undeferred in all cases.
+      --  that abort is undeferred in all cases.
 
       Write_Lock (Object.L'Access, Ceiling_Violation);
 

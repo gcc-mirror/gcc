@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,9 +121,9 @@ package System.Tasking.Stages is
    --   activate_tasks (_chain'unchecked_access);
 
    procedure Abort_Tasks (Tasks : Task_List);
-   --  Compiler interface only. Do not call from within the RTS.
-   --  Initiate abortion, however, the actual abortion is done by abortee by
-   --  means of Abort_Handler and Abort_Undefer
+   --  Compiler interface only. Do not call from within the RTS. Initiate
+   --  abort, however, the actual abort is done by abortee by means of
+   --  Abort_Handler and Abort_Undefer
    --
    --  source code:
    --     Abort T1, T2;

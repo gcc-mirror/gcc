@@ -52,7 +52,7 @@ package System.Soft_Links is
    pragma Import
      (Ada, Current_Target_Exception,
       "__gnat_current_target_exception");
-   --  Import this subprogram from the private part of Ada.Exceptions.
+   --  Import this subprogram from the private part of Ada.Exceptions
 
    --  First we have the access subprogram types used to establish the links.
    --  The approach is to establish variables containing access subprogram
@@ -112,20 +112,20 @@ package System.Soft_Links is
    --  Declarations for the no tasking versions of the required routines
 
    procedure Abort_Defer_NT;
-   --  Defer task abortion (non-tasking case, does nothing)
+   --  Defer task abort (non-tasking case, does nothing)
 
    procedure Abort_Undefer_NT;
-   --  Undefer task abortion (non-tasking case, does nothing)
+   --  Undefer task abort (non-tasking case, does nothing)
 
    procedure Abort_Handler_NT;
-   --  Handle task abortion (non-tasking case, does nothing). Currently,
-   --  only VMS uses this.
+   --  Handle task abort (non-tasking case, does nothing). Currently, only VMS
+   --  uses this.
 
    procedure Update_Exception_NT (X : EO := Current_Target_Exception);
-   --  Handle exception setting. This routine is provided for targets
-   --  which have built-in exception handling such as the Java Virtual
-   --  Machine. Currently, only JGNAT uses this. See 4jexcept.ads for
-   --  an explanation on how this routine is used.
+   --  Handle exception setting. This routine is provided for targets which
+   --  have built-in exception handling such as the Java Virtual Machine.
+   --  Currently, only JGNAT uses this. See 4jexcept.ads for an explanation on
+   --  how this routine is used.
 
    function Check_Abort_Status_NT return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
@@ -143,14 +143,14 @@ package System.Soft_Links is
 
    Abort_Defer : No_Param_Proc := Abort_Defer_NT'Access;
    pragma Suppress (Access_Check, Abort_Defer);
-   --  Defer task abortion (task/non-task case as appropriate)
+   --  Defer task abort (task/non-task case as appropriate)
 
    Abort_Undefer : No_Param_Proc := Abort_Undefer_NT'Access;
    pragma Suppress (Access_Check, Abort_Undefer);
-   --  Undefer task abortion (task/non-task case as appropriate)
+   --  Undefer task abort (task/non-task case as appropriate)
 
    Abort_Handler : No_Param_Proc := Abort_Handler_NT'Access;
-   --  Handle task abortion (task/non-task case as appropriate)
+   --  Handle task abort (task/non-task case as appropriate)
 
    Update_Exception : Special_EO_Call := Update_Exception_NT'Access;
    --  Handle exception setting and tasking polling when appropriate
@@ -196,7 +196,7 @@ package System.Soft_Links is
    --  explicitly or implicitly during the critical locked region.
 
    Adafinal : No_Param_Proc := Null_Adafinal'Access;
-   --  Performs the finalization of the Ada Runtime.
+   --  Performs the finalization of the Ada Runtime
 
    function  Get_Jmpbuf_Address_NT return  Address;
    procedure Set_Jmpbuf_Address_NT (Addr : Address);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,30 +41,30 @@ pragma Polling (Off);
 --  to poll it can cause infinite loops.
 
 with Ada.Exceptions;
---  used for Exception_Occurrence_Access.
+--  Used for Exception_Occurrence_Access
 
 with System.Tasking;
 pragma Elaborate_All (System.Tasking);
---  ensure that the first step initializations have been performed
+--  Ensure that the first step initializations have been performed
 
 with System.Task_Primitives;
---  used for Lock
+--  Used for Lock
 
 with System.Task_Primitives.Operations;
---  used for Set_Priority
+--  Used for Set_Priority
 --           Write_Lock
 --           Unlock
 --           Initialize_Lock
 
 with System.Soft_Links;
---  used for the non-tasking routines (*_NT) that refer to global data.
+--  Used for the non-tasking routines (*_NT) that refer to global data.
 --  They are needed here before the tasking run time has been elaborated.
 
 with System.Soft_Links.Tasking;
 --  Used for Init_Tasking_Soft_Links
 
 with System.Tasking.Debug;
---  used for Trace
+--  Used for Trace
 
 with System.Stack_Checking;
 
@@ -88,7 +88,7 @@ package body System.Tasking.Initialization is
    function Current_Target_Exception return AE.Exception_Occurrence;
    pragma Import
      (Ada, Current_Target_Exception, "__gnat_current_target_exception");
-   --  Import this subprogram from the private part of Ada.Exceptions.
+   --  Import this subprogram from the private part of Ada.Exceptions
 
    ----------------------------------------------------------------------
    -- Tasking versions of some services needed by non-tasking programs --
@@ -150,7 +150,7 @@ package body System.Tasking.Initialization is
    -- Change_Base_Priority --
    --------------------------
 
-   --  Call only with abort deferred and holding Self_ID locked.
+   --  Call only with abort deferred and holding Self_ID locked
 
    procedure Change_Base_Priority (T : Task_Id) is
    begin
@@ -269,7 +269,7 @@ package body System.Tasking.Initialization is
       --  while we had abort deferred below.
 
       loop
-         --  Temporarily defer abortion so that we can lock Self_ID.
+         --  Temporarily defer abort so that we can lock Self_ID
 
          Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
 
@@ -286,7 +286,7 @@ package body System.Tasking.Initialization is
             Unlock_RTS;
          end if;
 
-         --  Restore the original Deferral value.
+         --  Restore the original Deferral value
 
          Self_ID.Deferral_Level := Self_ID.Deferral_Level - 1;
 
@@ -401,11 +401,11 @@ package body System.Tasking.Initialization is
 
       SSL.Tasking.Init_Tasking_Soft_Links;
 
-      --  Install tasking locks in the GCC runtime.
+      --  Install tasking locks in the GCC runtime
 
       Gnat_Install_Locks (Task_Lock'Access, Task_Unlock'Access);
 
-      --  Abortion is deferred in a new ATCB, so we need to undefer abortion
+      --  Abort is deferred in a new ATCB, so we need to undefer abort
       --  at this stage to make the environment task abortable.
 
       Undefer_Abort (Environment_Task);
@@ -426,15 +426,16 @@ package body System.Tasking.Initialization is
    --  hurt to uncomment the above call, until the error is corrected for
    --  all targets.
 
-   --  See extended comments in package body System.Tasking.Abortion
-   --  for the overall design of the implementation of task abort.
+   --  See extended comments in package body System.Tasking.Abort for the
+   --  overall design of the implementation of task abort.
+   --  ??? there is no such package ???
 
-   --  If the task is sleeping it will be in an abort-deferred region,
-   --  and will not have Abort_Signal raised by Abort_Task.
-   --  Such an "abort deferral" is just to protect the RTS internals,
-   --  and not necessarily required to enforce Ada semantics.
-   --  Abort_Task should wake the task up and let it decide if it wants
-   --  to complete the aborted construct immediately.
+   --  If the task is sleeping it will be in an abort-deferred region, and
+   --  will not have Abort_Signal raised by Abort_Task. Such an "abort
+   --  deferral" is just to protect the RTS internals, and not necessarily
+   --  required to enforce Ada semantics. Abort_Task should wake the task up
+   --  and let it decide if it wants to complete the aborted construct
+   --  immediately.
 
    --  Note that the effect of the lowl-level Abort_Task is not persistent.
    --  If the target task is not blocked, this wakeup will be missed.
@@ -452,14 +453,13 @@ package body System.Tasking.Initialization is
    --  implement delays). That still left the possibility of missed
    --  wakeups.
 
-   --  We cannot safely call Vulnerable_Complete_Activation here,
-   --  since that requires locking Self_ID.Parent. The anti-deadlock
-   --  lock ordering rules would then require us to release the lock
-   --  on Self_ID first, which would create a timing window for other
-   --  tasks to lock Self_ID. This is significant for tasks that may be
-   --  aborted before their execution can enter the task body, and so
-   --  they do not get a chance to call Complete_Task. The actual work
-   --  for this case is done in Terminate_Task.
+   --  We cannot safely call Vulnerable_Complete_Activation here, since that
+   --  requires locking Self_ID.Parent. The anti-deadlock lock ordering rules
+   --  would then require us to release the lock on Self_ID first, which would
+   --  create a timing window for other tasks to lock Self_ID. This is
+   --  significant for tasks that may be aborted before their execution can
+   --  enter the task body, and so they do not get a chance to call
+   --  Complete_Task. The actual work for this case is done in Terminate_Task.
 
    procedure Locked_Abort_To_Level
      (Self_ID : Task_Id;
@@ -694,12 +694,12 @@ package body System.Tasking.Initialization is
 
    --  Precondition : Self does not hold any locks!
 
-   --  Undefer_Abort is called on any abortion completion point (aka.
+   --  Undefer_Abort is called on any abort completion point (aka.
    --  synchronization point). It performs the following actions if they
    --  are pending: (1) change the base priority, (2) abort the task.
 
-   --  The priority change has to occur before abortion. Otherwise, it would
-   --  take effect no earlier than the next abortion completion point.
+   --  The priority change has to occur before abort. Otherwise, it would
+   --  take effect no earlier than the next abort completion point.
 
    procedure Undefer_Abort (Self_ID : Task_Id) is
    begin
@@ -761,8 +761,8 @@ package body System.Tasking.Initialization is
    -- Undefer_Abortion --
    ----------------------
 
-   --  Phase out RTS-internal use of Undefer_Abortion
-   --  to reduce overhead due to multiple calls to Self.
+   --  Phase out RTS-internal use of Undefer_Abortion to reduce overhead due
+   --  to multiple calls to Self.
 
    procedure Undefer_Abortion is
       Self_ID : Task_Id;
@@ -806,7 +806,7 @@ package body System.Tasking.Initialization is
    -- Update_Exception --
    ----------------------
 
-   --  Call only when holding no locks.
+   --  Call only when holding no locks
 
    procedure Update_Exception
      (X : AE.Exception_Occurrence := Current_Target_Exception)

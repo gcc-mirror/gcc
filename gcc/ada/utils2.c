@@ -679,9 +679,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		 || (TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
 		     == ARRAY_TYPE))
 	     && (0 == (best_type
-		       == find_common_type (right_type,
-					    TREE_TYPE (TREE_OPERAND
-						       (right_operand, 0))))
+		       = find_common_type (right_type,
+					   TREE_TYPE (TREE_OPERAND
+					   (right_operand, 0))))
 		 || right_type != best_type))
 	{
 	  right_operand = TREE_OPERAND (right_operand, 0);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +35,13 @@
 
 --  This implementation assumes that the underlying malloc/free/realloc
 --  implementation is thread safe, and thus, no additional lock is required.
---  Note that we still need to defer abortion because on most systems,
---  an asynchronous signal (as used for implementing asynchronous abortion
---  of task) cannot safely be handled while malloc is executing.
+--  Note that we still need to defer abort because on most systems, an
+--  asynchronous signal (as used for implementing asynchronous abort of
+--  task) cannot safely be handled while malloc is executing.
 
---  If you are not using Ada constructs containing the "abort" keyword,
---  then you can remove the calls to Abort_Defer.all and Abort_Undefer.all
---  from this unit.
+--  If you are not using Ada constructs containing the "abort" keyword, then
+--  you can remove the calls to Abort_Defer.all and Abort_Undefer.all from
+--  this unit.
 
 with Ada.Exceptions;
 with System.Soft_Links;

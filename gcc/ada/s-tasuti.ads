@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,9 +72,9 @@ package System.Tasking.Utilities is
    --  the environment task (because every independent task depends on it),
    --  this counter is protected by the environment task's lock.
 
-   ------------------------------------
-   -- Task Abortion related routines --
-   ------------------------------------
+   ---------------------------------
+   -- Task Abort Related Routines --
+   ---------------------------------
 
    procedure Cancel_Queued_Entry_Calls (T : Task_Id);
    --  Cancel any entry calls queued on target task.
@@ -93,13 +93,13 @@ package System.Tasking.Utilities is
    --    (3) always aborts whole task
 
    procedure Abort_Tasks (Tasks : Task_List);
-   --  Abort_Tasks is called to initiate abortion, however, the actual
-   --  abortion is done by abortee by means of Abort_Handler
+   --  Abort_Tasks is called to initiate abort, however, the actual
+   --  aborti is done by aborted task by means of Abort_Handler
 
    procedure Make_Passive (Self_ID : Task_Id; Task_Completed : Boolean);
-   --  Update counts to indicate current task is either terminated
-   --  or accepting on a terminate alternative.
-   --  Call holding no locks except Global_Task_Lock when calling from
-   --  Terminate_Task, and RTS_Lock when Single_Lock is True.
+   --  Update counts to indicate current task is either terminated or
+   --  accepting on a terminate alternative. Call holding no locks except
+   --  Global_Task_Lock when calling from Terminate_Task, and RTS_Lock when
+   --  Single_Lock is True.
 
 end System.Tasking.Utilities;

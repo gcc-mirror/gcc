@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,26 +31,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package encapsulates and centralizes information about all
---  uses of interrupts (or signals), including the target-dependent
---  mapping of interrupts (or signals) to exceptions.
+--  This package encapsulates and centralizes information about all uses of
+--  interrupts (or signals), including the target-dependent mapping of
+--  interrupts (or signals) to exceptions.
 
---  Unlike the original design, System.Interrupt_Management can only
---  be used for tasking systems.
+--  Unlike the original design, System.Interrupt_Management can only be used
+--  for tasking systems.
 
 --  PLEASE DO NOT remove the Elaborate_Body pragma from this package.
 --  Elaboration of this package should happen early, as most other
---  initializations depend on it. Forcing immediate elaboration of
---  the body also helps to enforce the design assumption that this
---  is a second-level package, just one level above System.OS_Interface
---  with no cross-dependencies.
+--  initializations depend on it. Forcing immediate elaboration of the body
+--  also helps to enforce the design assumption that this is a second-level
+--  package, just one level above System.OS_Interface with no
+--  cross-dependencies.
 
---  PLEASE DO NOT put any subprogram declarations with arguments of
---  type Interrupt_ID into the visible part of this package. The type
---  Interrupt_ID is used to derive the type in Ada.Interrupts, and
---  adding more operations to that type would be illegal according
---  to the Ada Reference Manual. This is the reason why the signals
---  sets are implemeneted using visible arrays rather than functions.
+--  PLEASE DO NOT put any subprogram declarations with arguments of type
+--  Interrupt_ID into the visible part of this package. The type Interrupt_ID
+--  is used to derive the type in Ada.Interrupts, and adding more operations
+--  to that type would be illegal according to the Ada Reference Manual. This
+--  is the reason why the signals sets are implemeneted using visible arrays
+--  rather than functions.
 
 with System.OS_Interface;
 --  used for sigset_t
@@ -69,49 +69,49 @@ package System.Interrupt_Management is
 
    type Interrupt_Set is array (Interrupt_ID) of Boolean;
 
-   --  The following objects serve as constants, but are initialized
-   --  in the body to aid portability.  This permits us to use more
-   --  portable names for interrupts, where distinct names may map to
-   --  the same interrupt ID value.
-   --
-   --  For example, suppose SIGRARE is a signal that is not defined on
-   --  all systems, but is always reserved when it is defined. If we
-   --  have the convention that ID zero is not used for any "real"
-   --  signals, and SIGRARE = 0 when SIGRARE is not one of the locally
-   --  supported signals, we can write
-   --     Reserved (SIGRARE) := true;
+   --  The following objects serve as constants, but are initialized in the
+   --  body to aid portability. This permits us to use more portable names for
+   --  interrupts, where distinct names may map to the same interrupt ID
+   --  value.
+
+   --  For example, suppose SIGRARE is a signal that is not defined on all
+   --  systems, but is always reserved when it is defined. If we have the
+   --  convention that ID zero is not used for any "real" signals, and SIGRARE
+   --  = 0 when SIGRARE is not one of the locally supported signals, we can
+   --  write
+
+   --     Reserved (SIGRARE) := True;
+
    --  and the initialization code will be portable.
 
    Abort_Task_Interrupt : Interrupt_ID;
-   --  The interrupt that is used to implement task abortion if
-   --  an interrupt is used for that purpose. This is one of the
-   --  reserved interrupts.
+   --  The interrupt that is used to implement task abort if an interrupt is
+   --  used for that purpose. This is one of the reserved interrupts.
 
    Keep_Unmasked : Interrupt_Set := (others => False);
-   --  Keep_Unmasked (I) is true iff the interrupt I is one that must
-   --  that must be kept unmasked at all times, except (perhaps) for
-   --  short critical sections. This includes interrupts that are
-   --  mapped to exceptions (see System.Interrupt_Exceptions.Is_Exception),
-   --  but may also include interrupts (e.g. timer) that need to be kept
-   --  unmasked for other reasons. Where interrupts are implemented as
-   --  OS signals, and signal masking is per-task, the interrupt should
-   --  be unmasked in ALL TASKS.
+   --  Keep_Unmasked (I) is true iff the interrupt I is one that must that
+   --  must be kept unmasked at all times, except (perhaps) for short critical
+   --  sections. This includes interrupts that are mapped to exceptions (see
+   --  System.Interrupt_Exceptions.Is_Exception), but may also include
+   --  interrupts (e.g. timer) that need to be kept unmasked for other
+   --  reasons. Where interrupts are implemented as OS signals, and signal
+   --  masking is per-task, the interrupt should be unmasked in ALL TASKS.
 
    Reserve : Interrupt_Set := (others => False);
-   --  Reserve (I) is true iff the interrupt I is one that cannot be
-   --  permitted to be attached to a user handler. The possible reasons
-   --  are many. For example, it may be mapped to an exception used to
-   --  implement task abortion, or used to implement time delays.
+   --  Reserve (I) is true iff the interrupt I is one that cannot be permitted
+   --  to be attached to a user handler. The possible reasons are many. For
+   --  example, it may be mapped to an exception used to implement task abort,
+   --  or used to implement time delays.
 
    procedure Initialize_Interrupts;
    --  On systems where there is no signal inheritance between tasks (e.g
    --  VxWorks, GNU/LinuxThreads), this procedure is used to initialize
-   --  interrupts handling in each task. Otherwise this function should
-   --  only be called by initialize in this package body.
+   --  interrupts handling in each task. Otherwise this function should only
+   --  be called by initialize in this package body.
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;
-   --  In some implementation Interrupt_Mask can be represented
-   --  as a linked list.
+   --  In some implementations Interrupt_Mask can be represented as a linked
+   --  list.
 
 end System.Interrupt_Management;
