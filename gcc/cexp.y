@@ -525,13 +525,12 @@ yylex ()
       }
 
   switch (c) {
-  case 0:
+  case '\n':
     return 0;
     
   case ' ':
   case '\t':
   case '\r':
-  case '\n':
     lexptr++;
     goto retry;
     
@@ -927,6 +926,8 @@ right_shift (a, b)
 
 /* Parse STRING as an expression, and complain if this fails
    to use up all of the contents of STRING.  */
+/* STRING may contain '\0' bytes; it is terminated by the first '\n'
+   outside a string constant, so that we can diagnose '\0' properly.  */
 /* We do not support C comments.  They should be removed before
    this function is called.  */
 
@@ -950,7 +951,7 @@ parse_c_expression (string)
   if (yyparse ())
     return 0;			/* actually this is never reached
 				   the way things stand. */
-  if (*lexptr)
+  if (*lexptr != '\n')
     error ("Junk after end of expression.");
 
   return expression_value;	/* set by yyparse () */
@@ -974,11 +975,10 @@ main ()
   for (;;) {
     printf ("enter expression: ");
     n = 0;
-    while ((buf[n] = getchar ()) != '\n' && buf[n] != EOF)
+    while ((buf[n] = c = getchar ()) != '\n' && c != EOF)
       n++;
-    if (buf[n] == EOF)
+    if (c == EOF)
       break;
-    buf[n] = '\0';
     printf ("parser returned %ld\n", parse_c_expression (buf));
   }
 
