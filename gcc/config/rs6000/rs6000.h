@@ -714,7 +714,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
   (! (NAMED) ? 0							\
-  : USE_FP_FOR_ARG_P (CUM, MODE, TYPE)					\
+   : ((TYPE) != 0 && TREE_CODE (TYPE_CODE (TYPE)) != INTEGER_CST)	\
+   : USE_FP_FOR_ARG_P (CUM, MODE, TYPE)					\
    ? ((CUM).nargs_prototype > 0						\
       ? gen_rtx (REG, MODE, (CUM).fregno)				\
       : ((CUM).words < 8						\
