@@ -1,3 +1,108 @@
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+@c 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the G77 manual.   
+@c For copying conditions, see the file g77.texi.
+
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be included in translations
+approved by the Free Software Foundation instead of in the original
+English.
+@c man end
+@c Set file name and title for the man page.
+@setfilename g77
+@settitle GNU project Fortran 77 compiler.
+@c man begin SYNOPSIS
+g77 [@option{-c}|@option{-S}|@option{-E}] [@option{-std=}@var{standard}]
+    [@option{-g}] [@option{-pg}] [@option{-O}@var{level}]
+    [@option{-W}@var{warn}@dots{}] [@option{-pedantic}]
+    [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+    [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
+    [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
+    [@option{-o} @var{outfile}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+cpp(1), gcov(1), gcc(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1)
+and the Info entries for @file{gcc}, @file{cpp}, @file{g77}, @file{as},
+@file{ld}, @file{binutils} and @file{gdb}.
+@c man end
+@c man begin BUGS
+For instructions on reporting bugs, see
+@w{@uref{http://gcc.gnu.org/bugs.html}}.  Use of the @command{gccbug}  
+script to report bugs is recommended.
+@c man end
+@c man begin AUTHOR
+See the Info entry for @file{g77}, or
+@w{@uref{http://gcc.gnu.org/thanks.html}}, for contributors to G77@.
+@c man end
+@end ignore
+
+@node Invoking G77
+@chapter GNU Fortran Command Options
+@cindex GNU Fortran command options
+@cindex command options
+@cindex options, GNU Fortran command
+
+The @code{g77} command supports all the options supported by the
+@code{gcc} command.
+@xref{Invoking GCC,,GNU CC Command Options,gcc,Using and Porting GNU CC},
+for information
+on the non-Fortran-specific aspects of the @code{gcc} command (and,
+therefore, the @code{g77} command).
+
+@cindex options, negative forms
+@cindex negative forms of options
+All @code{gcc} and @code{g77} options
+are accepted both by @code{g77} and by @code{gcc}
+(as well as any other drivers built at the same time,
+such as @code{g++}),
+since adding @code{g77} to the @code{gcc} distribution
+enables acceptance of @code{g77}-specific options
+by all of the relevant drivers.
+
+In some cases, options have positive and negative forms;
+the negative form of @samp{-ffoo} would be @samp{-fno-foo}.
+This manual documents only one of these two forms, whichever
+one is not the default.
+
+@menu
+* Option Summary::      Brief list of all @code{g77} options,
+                        without explanations.
+* Overall Options::     Controlling the kind of output:
+                        an executable, object files, assembler files,
+                        or preprocessed source.
+* Shorthand Options::   Options that are shorthand for other options.
+* Fortran Dialect Options::  Controlling the variant of Fortran language
+                             compiled.
+* Warning Options::     How picky should the compiler be?
+* Debugging Options::   Symbol tables, measurements, and debugging dumps.
+* Optimize Options::    How much optimization?
+* Preprocessor Options:: Controlling header files and macro definitions.
+                         Also, getting dependency information for Make.
+* Directory Options::   Where to find header files and libraries.
+                        Where to find the compiler executable files.
+* Code Gen Options::    Specifying conventions for function calls, data layout
+                        and register usage.
+* Environment Variables:: Env vars that affect GNU Fortran.
+@end menu
+
 @node Option Summary
 @section Option Summary
 

@@ -1,3 +1,12 @@
+2001-11-08  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Add rules for building g77.1.
+	* invoke.texi: Add man page stuff.  Move indexing
+	from g77.texi to here.
+	* g77.texi: Remove indexing specific to invoke.texi.
+	* news.texi: Document that g77.1 is now a generated
+	file.
+
 Tue Nov  6 21:17:47 2001  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* com.c: Include langhooks-def.h.
