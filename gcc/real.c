@@ -1311,6 +1311,10 @@ real_to_integer (r)
     case rvc_normal:
       if (r->exp <= 0)
 	goto underflow;
+      /* Only force overflow for unsigned overflow.  Signed overflow is
+	 undefined, so it doesn't matter what we return, and some callers
+	 expect to be able to use this routine for both signed and 
+	 unsigned conversions.  */
       if (r->exp > HOST_BITS_PER_WIDE_INT)
 	goto overflow;
 
@@ -1371,6 +1375,10 @@ real_to_integer2 (plow, phigh, r)
       exp = r->exp;
       if (exp <= 0)
 	goto underflow;
+      /* Only force overflow for unsigned overflow.  Signed overflow is
+	 undefined, so it doesn't matter what we return, and some callers
+	 expect to be able to use this routine for both signed and 
+	 unsigned conversions.  */
       if (exp > 2*HOST_BITS_PER_WIDE_INT)
 	goto overflow;
 
