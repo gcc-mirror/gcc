@@ -2206,7 +2206,7 @@
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
-	(ashift:SI (match_operand:SI 1 "arith5_operand" "")
+	(ashift:SI (match_operand:SI 1 "lhs_lshift_operand" "")
 		   (match_operand:SI 2 "arith32_operand" "")))]
   ""
   "
@@ -2215,7 +2215,10 @@
     {
       rtx temp = gen_reg_rtx (SImode);
       emit_insn (gen_subsi3 (temp, GEN_INT (31), operands[2]));
-      emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
+	if (GET_CODE (operands[1]) == CONST_INT)
+	  emit_insn (gen_zvdep_imm (operands[0], operands[1], temp));
+	else
+	  emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
     }
   /* Make sure both inputs are not constants, 
@@ -2228,17 +2231,14 @@
 	(ashift:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "*
-{
-  rtx xoperands[4];
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[1];
-  xoperands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
-  xoperands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
-  output_asm_insn (\"zdep %1,%2,%3,%0\", xoperands);
-  return \"\";
-}")
+  "zdep %1,%P2,%L2,%0")
 
+; Match cases of op1 a CONST_INT here that zvdep_imm doesn't handle.
+; Doing it like this makes slightly better code since reload can
+; replace a register with a known value in range -16..15 with a
+; constant.  Ideally, we would like to merge zvdep32 and zvdep_imm,
+; but since we have no more CONST_OK... characters, that is not
+; possible.
 (define_insn "zvdep32"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(ashift:SI (match_operand:SI 1 "arith5_operand" "r,L")
@@ -2248,6 +2248,20 @@
   "@
    zvdep %1,32,%0
    zvdepi %1,32,%0")
+
+(define_insn "zvdep_imm"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "lhs_lshift_cint_operand" "")
+		   (minus:SI (const_int 31)
+			     (match_operand:SI 2 "register_operand" "q"))))]
+  ""
+  "*
+{
+  int x = INTVAL (operands[1]);
+  operands[2] = GEN_INT (4 + exact_log2 ((x >> 4) + 1));
+  operands[1] = GEN_INT ((x & 0xf) - 0x10);
+  return \"zvdepi %1,%2,%0\";
+}")
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -2270,16 +2284,7 @@
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "*
-{
-  rtx xoperands[4];
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[1];
-  xoperands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
-  xoperands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
-  output_asm_insn (\"extrs %1,%2,%3,%0\", xoperands);
-  return \"\";
-}")
+  "extrs %1,%P2,%L2,%0")
 
 (define_insn "vextrs32"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2290,31 +2295,26 @@
   "vextrs %1,32,%0")
 
 (define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "arith32_operand" "qn")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r,r")
+		     (match_operand:SI 2 "arith32_operand" "q,n")))]
+  ""
+  "@
+   vshd 0,%1,%0
+   extru %1,%P2,%L2,%0")
+
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "r,r")
+		     (match_operand:SI 2 "arith32_operand" "q,n")))]
   ""
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
-      operands[3] = GEN_INT (32 - (INTVAL (operands[2]) & 31));
-      operands[2] = GEN_INT (31 - (INTVAL (operands[2]) & 31));
-      return \"extru %1,%2,%3,%0\";
+      operands[2] = GEN_INT (INTVAL (operands[2]) & 31);
+      return \"shd %1,%1,%2,%0\";
     }
-  else
-    return \"vshd 0,%1,%0\";
-}")
-
-(define_insn "rotrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "arith32_operand" "qn")))]
-  ""
-  "*
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    return \"shd %1,%1,%2,%0\";
   else
     return \"vshd %1,%1,%0\";
 }")
@@ -2367,7 +2367,6 @@
   operands[2] = GEN_INT (31 - cnt);
   return \"zdep %1,%2,%3,%0\";
 }")
-
 
 ;; Unconditional and other jump instructions.
 
@@ -2438,7 +2437,6 @@
     }
 }"
  [(set_attr "length" "3")])
-
 
 ;; Need nops for the calls because execution is supposed to continue
 ;; past; we don't want to nullify an instruction that we need.
@@ -2681,7 +2679,6 @@
 	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
     }
 }")
-
 
 (define_peephole 
   [(set (match_operand 3 "register_operand" "+fx")
