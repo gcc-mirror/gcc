@@ -1,3 +1,10 @@
+2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13957
+	* g++.dg/template/non-type-template-argument-1.C, 
+	g++.dg/template/qualified-id1.C: Update dg-error marks.
+	* g++.dg/template/nontype6.C: New test.
+
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/titype-1.c: New test.

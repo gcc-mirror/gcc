@@ -16,8 +16,8 @@ template <> struct A::B<false> {};
 
 template <typename T> void foo()
 {
-  T::C (); // { dg-error "names a type" "" }
-  T::template B<false>(); // { dg-error "names a type" "" }
+  T::C (); // { dg-error "parsed as a non-type|if a type is meant" "" }
+  T::template B<false>(); // { dg-error "parsed as a non-type|if a type is meant" "" }
 }
 
 void bar()
