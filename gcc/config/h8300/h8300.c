@@ -160,7 +160,7 @@ dosize (file, op, size)
       || (TARGET_H8300 && current_function_needs_context
 	  && strcmp (op, "sub")))
     {
-      HOST_WIDE_INT amount;
+      unsigned HOST_WIDE_INT amount;
 
       /* Try different amounts in descending order.  */
       for (amount = (TARGET_H8300H || TARGET_H8300S) ? 4 : 2;
@@ -1371,7 +1371,7 @@ print_operand_address (file, addr)
 
     case CONST_INT:
       {
-	/* Since the h8/300 only has 16 bit pointers, negative values are also
+	/* Since the H8/300 only has 16 bit pointers, negative values are also
 	   those >= 32768.  This happens for example with pointer minus a
 	   constant.  We don't want to turn (char *p - 2) into
 	   (char *p + 65534) because loop unrolling can build upon this
@@ -1725,8 +1725,8 @@ nshift_operator (x, mode)
 }
 
 /* Called from the .md file to emit code to do shifts.
-   Returns a boolean indicating success
-   (currently this is always TRUE).  */
+   Return a boolean indicating success.
+   (Currently this is always TRUE).  */
 
 int
 expand_a_shift (mode, code, operands)
@@ -1973,7 +1973,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
   /* We don't handle negative shifts or shifts greater than the word size,
      they should have been handled already.  */
 
-  if (count < 0 || count > GET_MODE_BITSIZE (mode))
+  if (count < 0 || (unsigned int) count > GET_MODE_BITSIZE (mode))
     abort ();
 
   switch (mode)
@@ -2537,7 +2537,7 @@ emit_a_shift (insn, operands)
       /* If the count is too big, truncate it.
          ANSI says shifts of GET_MODE_BITSIZE are undefined - we choose to
 	 do the intuitive thing.  */
-      else if (n > GET_MODE_BITSIZE (mode))
+      else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
 	n = GET_MODE_BITSIZE (mode);
 
       alg = get_shift_alg (cpu_type, shift_type, mode, n, &assembler,
@@ -2990,15 +2990,15 @@ h8300_adjust_insn_length (insn, length)
       && GET_MODE (SET_DEST (pat)) == SImode
       && INTVAL (SET_SRC (pat)) != 0)
     {
+      int val = INTVAL (SET_SRC (pat));
+
       if (TARGET_H8300
-	  && ((INTVAL (SET_SRC (pat)) & 0xffff) == 0
-	      || ((INTVAL (SET_SRC (pat)) >> 16) & 0xffff) == 0))
+	  && ((val & 0xffff) == 0
+	      || ((val >> 16) & 0xffff) == 0))
 	return -2;
 
       if (TARGET_H8300H || TARGET_H8300S)
 	{
-	  int val = INTVAL (SET_SRC (pat));
-
 	  if (val == (val & 0xff)
 	      || val == (val & 0xff00))
 	    return -6;
