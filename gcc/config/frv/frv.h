@@ -2970,6 +2970,9 @@ do {                                                                    \
 #define ASM_OUTPUT_ALIGN(STREAM, POWER) \
   fprintf ((STREAM), "\t.p2align %d\n", (POWER))
 
+/* Inside the text section, align with unpacked nops rather than zeros.  */
+#define ASM_OUTPUT_ALIGN_WITH_NOP(STREAM, POWER) \
+  fprintf ((STREAM), "\t.p2alignl %d,0x80880000\n", (POWER))
 
 /* Macros Affecting all Debug Formats.  */
 
