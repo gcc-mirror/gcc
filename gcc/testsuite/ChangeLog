@@ -1,3 +1,8 @@
+2004-07-03  Scott Brumbaugh  <scottb.lists@verizon.net>
+
+	PR c++/3761
+	* g++.dg/lookup/crash4.C: New test.
+
 2004-07-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/builtin-abs-1.c
