@@ -1,3 +1,8 @@
+Wed Jan 27 01:13:42 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.c (input_operand): Don't expect CONST around CONSTANT_P_RTX.
+	* rs6000.md (movsi, movdi): Likewise.
+
 Tue Jan 26 13:31:38 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* function.c (expand_function_end): Pass arg_pointer_save_area to
