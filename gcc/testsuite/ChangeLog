@@ -1,3 +1,7 @@
+2001-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20001212-1.c: New test.
+
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * gcc.dg/cpp/widestr1.c: Update.
