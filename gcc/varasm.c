@@ -603,18 +603,14 @@ variable_section (decl, reloc)
    table.  */
 
 void
-exception_section ()
+default_exception_section ()
 {
-#if defined (EXCEPTION_SECTION)
-  EXCEPTION_SECTION ();
-#else
   if (targetm.have_named_sections)
     named_section (NULL_TREE, ".gcc_except_table", 0);
   else if (flag_pic)
     data_section ();
   else
     readonly_data_section ();
-#endif
 }
 
 /* Tell assembler to switch to the section for string merging.  */

@@ -7151,15 +7151,6 @@ A C expression to output text to mark the end of an exception region.
 
 This macro need not be defined on most platforms.
 
-@findex EXCEPTION_SECTION
-@item EXCEPTION_SECTION ()
-A C expression to switch to the section in which the main
-exception table is to be placed (@pxref{Sections}).  The default is a
-section named @code{.gcc_except_table} on machines that support named
-sections via @code{TARGET_ASM_NAMED_SECTION}, otherwise if @option{-fpic}
-or @option{-fPIC} is in effect, the @code{data_section}, otherwise the
-@code{readonly_data_section}.
-
 @findex EH_FRAME_SECTION_NAME
 @item EH_FRAME_SECTION_NAME
 If defined, a C string constant for the name of the section containing
@@ -7231,6 +7222,24 @@ minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
 the target supports DWARF 2 frame unwind information.
 
 @end table
+
+@deftypefn {Target Hook} void TARGET_ASM_EXCEPTION_SECTION ()
+If defined, a function that switches to the section in which the main
+exception table is to be placed (@pxref{Sections}).  The default is a
+function that switches to a section named @code{.gcc_except_table} on
+machines that support named sections via
+@code{TARGET_ASM_NAMED_SECTION}, otherwise if @option{-fpic} or
+@option{-fPIC} is in effect, the @code{data_section}, otherwise the
+@code{readonly_data_section}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_EH_FRAME_SECTION ()
+If defined, a function that switches to the section in which the DWARF 2
+frame unwind information to be placed (@pxref{Sections}).  The default
+is a function that outputs a standard GAS section directive, if
+@code{EH_FRAME_SECTION_NAME} is defined, or else a data section
+directive followed by a synthetic label.
+@end deftypefn
 
 @node Alignment Output
 @subsection Assembler Commands for Alignment

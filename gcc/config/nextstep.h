@@ -217,13 +217,10 @@ Boston, MA 02111-1307, USA.  */
 extern void nextstep_asm_out_constructor  PARAMS ((struct rtx_def *, int));
 extern void nextstep_asm_out_destructor  PARAMS ((struct rtx_def *, int));
 
-/* ??? Should be changed to EH_FRAME_SECTION_NAME, but that requires
-   named section support.  Based on this definition, it seems clear
-   that the object file format supports named sections, but it has
-   not been implemented in gcc.  */
-#error "Implement named section support"
-#define EH_FRAME_SECTION_ASM_OP "\t.section __TEXT,__eh_frame,regular"
+#define TARGET_ASM_EXCEPTION_SECTION nextstep_exception_section
 
+#define TARGET_ASM_EH_FRAME_SECTION nextstep_eh_frame_section
+  
 /* Don't output a .file directive.  That is only used by the assembler for
    error reporting.  */
 #undef	ASM_FILE_START
@@ -326,6 +323,7 @@ FUNCTION ()								\
 #define EXTRA_SECTIONS					\
   in_const, in_cstring, in_literal4, in_literal8,	\
   in_constructor, in_destructor,			\
+  in_nextstep_exception, in_nextstep_eh_frame,		\
   in_objc_class, in_objc_meta_class, in_objc_category,	\
   in_objc_class_vars, in_objc_instance_vars,		\
   in_objc_cls_meth, in_objc_inst_meth,			\
@@ -357,6 +355,12 @@ SECTION_FUNCTION (constructor_section,		\
 SECTION_FUNCTION (destructor_section,		\
 		  in_destructor,		\
 		  ".destructor", 0, 0)		\
+SECTION_FUNCTION (nextstep_exception_section,	\
+		  in_nextstep_exception,	\
+		  ".section __TEXT,__gcc_except_tab,regular", 0, 0)	\
+SECTION_FUNCTION (nextstep_eh_frame_section,	\
+		  in_nextstep_eh_frame,		\
+		  ".section __TEXT,__eh_frame,regular", 0, 0)		\
 SECTION_FUNCTION (objc_class_section,		\
 		  in_objc_class,		\
 		  ".objc_class", 0, 1)		\

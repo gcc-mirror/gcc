@@ -4493,23 +4493,6 @@ do {									\
    This macro need not be defined on most platforms.  */
 /* #define ASM_OUTPUT_EH_REGION_END() */
 
-/* A C expression to switch to the section in which the main exception table is
-   to be placed.  The default is a section named `.gcc_except_table' on machines
-   that support named sections via `ASM_OUTPUT_SECTION_NAME', otherwise if `-fpic'
-   or `-fPIC' is in effect, the `data_section', otherwise the
-   `readonly_data_section'.  */
-/* #define EXCEPTION_SECTION() */
-
-/* If defined, a C string constant for the assembler operation to switch to the
-   section for exception handling frame unwind information.  If not defined,
-   GNU CC will provide a default definition if the target supports named
-   sections.  `crtstuff.c' uses this macro to switch to the appropriate
-   section.
-
-   You should define this symbol if your target supports DWARF 2 frame unwind
-   information and the default definition does not work.  */
-/* #define EH_FRAME_SECTION_ASM_OP */
-
 /* A C expression that is nonzero if the normal exception table output should
    be omitted.
 

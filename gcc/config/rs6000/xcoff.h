@@ -495,7 +495,7 @@ toc_section ()						\
 
 /* Define the name of the section to use for the EH language specific
    data areas (.gcc_except_table on most other systems).  */
-#define EXCEPTION_SECTION data_section
+#define TARGET_ASM_EXCEPTION_SECTION data_section
 
 /* Define to prevent DWARF2 unwind info in the data section rather
    than in the .eh_frame section.  We do this because the AIX linker

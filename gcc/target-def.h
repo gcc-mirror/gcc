@@ -19,11 +19,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-/* See target.h for a desciption of what this file contains and how to
+/* See target.h for a description of what this file contains and how to
    use it.
 
    We want to have non-NULL default definitions of all hook functions,
    even if they do nothing.  */
+
+/* Note that if one of these macros must be defined in an OS .h file
+   rather than the .c file, then we need to wrap the default
+   definition in a #ifndef, since files include tm.h before this one.  */
 
 /* Assembler output.  */
 #define TARGET_ASM_OPEN_PAREN "("
@@ -72,6 +76,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_HAVE_NAMED_SECTIONS false
 #endif
 
+#ifndef TARGET_ASM_EXCEPTION_SECTION
+#define TARGET_ASM_EXCEPTION_SECTION default_exception_section
+#endif
+
+#ifndef TARGET_ASM_EH_FRAME_SECTION
+#define TARGET_ASM_EH_FRAME_SECTION default_eh_frame_section
+#endif
+
 #define TARGET_ASM_OUT {TARGET_ASM_OPEN_PAREN,			\
 			TARGET_ASM_CLOSE_PAREN,			\
 			TARGET_ASM_FUNCTION_PROLOGUE,		\
@@ -79,6 +91,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\
 			TARGET_ASM_FUNCTION_EPILOGUE,		\
 			TARGET_ASM_NAMED_SECTION,		\
+			TARGET_ASM_EXCEPTION_SECTION,		\
+			TARGET_ASM_EH_FRAME_SECTION,		\
 			TARGET_ASM_CONSTRUCTOR,			\
 			TARGET_ASM_DESTRUCTOR}
 

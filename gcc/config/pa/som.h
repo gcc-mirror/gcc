@@ -265,7 +265,7 @@ do {  \
    complain.
 
    So, we force exception information into the data section.  */
-#define EXCEPTION_SECTION data_section
+#define TARGET_ASM_EXCEPTION_SECTION data_section
 
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
