@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-11-02
+@set last-update-news 2002-11-19
 
 @include root.texi
 
@@ -181,6 +181,8 @@ gave wrong results)
 (libf2c) DATE_AND_TIME milliseconds field inactive on Windows
 @item 7388
 Incorrect output with 0-based array of characters
+@item 8587
+Double complex zero ** double precision number -> NaN instead of zero
 @end table
 @item
 Richard Henderson (@email{rth@@redhat.com}) analysed and improved the handling
