@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    embedded system running pSOS. We assume GNU tools with ELF, but
    try to maintain compatibility with the MRI tools. Based on svr4.h.
-   Copyright (C) 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -96,8 +96,8 @@ while (0)
 /* Define the pseudo-ops used to switch to the .ctors and .dtors
    sections. */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -142,7 +142,7 @@ dtors_section ()							\
    global constructors.  */
 
 #ifndef INT_ASM_OP
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		"\t.long\t"
 #endif
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\

@@ -1,5 +1,5 @@
 /* Base configuration file for all FreeBSD targets.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
    the version of GCC which compiled this code.  The format of the .ident
    string is patterned after the ones produced by native SVR4 C compilers.  */
 #undef IDENT_ASM_OP
-#define IDENT_ASM_OP ".ident"
+#define IDENT_ASM_OP "\t.ident\t"
 
 /* Output #ident as a .ident.  */
 #undef ASM_OUTPUT_IDENT

@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
    Renamed and changed to suit Dynix/ptx v4 and later.
    Modified by Tim Wright (timw@sequent.com).
@@ -176,7 +176,7 @@ Boston, MA 02111-1307, USA.
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
-#define IDENT_ASM_OP ".ident"
+#define IDENT_ASM_OP "\t.ident\t"
 
 #define ASM_FILE_END(FILE)					\
 do {				 				\
@@ -306,10 +306,10 @@ while (0)
 /* #define MULTIBYTE_CHARS */
 
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	".byte"
+#define ASM_BYTE_OP	"\t.byte\t"
 
 #undef SET_ASM_OP
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 
 /* This is how to begin an assembly language file.  Most svr4 assemblers want
    at least a .file directive to come first, and some want to see a .version
@@ -325,7 +325,7 @@ while (0)
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
 
-#define SKIP_ASM_OP	".zero"
+#define SKIP_ASM_OP	"\t.zero\t"
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
@@ -373,7 +373,7 @@ do {									\
    make sure that the location counter for the .rodata section gets pro-
    perly re-aligned prior to the actual beginning of the jump table.  */
 
-#define ALIGN_ASM_OP ".align"
+#define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
@@ -399,7 +399,7 @@ do {									\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define COMMON_ASM_OP	".comm"
+#define COMMON_ASM_OP	"\t.comm\t"
 
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
@@ -414,7 +414,7 @@ do {									\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define LOCAL_ASM_OP	".local"
+#define LOCAL_ASM_OP	"\t.local\t"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
@@ -429,14 +429,14 @@ do {									\
    specific value in some section.  This is the same for all known svr4
    assemblers.  */
 
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		"\t.long\t"
 
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
    AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */
 
 #undef ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP	".ascii"
+#define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const
@@ -448,7 +448,7 @@ do {									\
 
 #define USE_CONST_SECTION	1
 
-#define CONST_SECTION_ASM_OP	".section\t.rodata"
+#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
 
@@ -465,8 +465,8 @@ do {									\
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
@@ -474,8 +474,8 @@ do {									\
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
 
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#define FINI_SECTION_ASM_OP	".section\t.fini"
+#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -607,8 +607,8 @@ dtors_section ()							\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
@@ -752,7 +752,7 @@ do {									 \
 
 #define STRING_LIMIT	((unsigned) 256)
 
-#define STRING_ASM_OP	".string"
+#define STRING_ASM_OP	"\t.string\t"
 
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the

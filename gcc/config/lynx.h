@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993, 1994, 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -138,11 +138,11 @@ do {								\
   FINI_SECTION_FUNCTION
 
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors"
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors"
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors"
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors"
 
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		"\t.long\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
