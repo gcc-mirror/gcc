@@ -794,26 +794,6 @@ h8300_pr_saveall (pfile)
   pragma_saveall = 1;
 }
 
-static const char *const hand_list[] =
-{
-  "__main",
-  "__cmpsi2",
-  "__divhi3",
-  "__modhi3",
-  "__udivhi3",
-  "__umodhi3",
-  "__divsi3",
-  "__modsi3",
-  "__udivsi3",
-  "__umodsi3",
-  "__mulhi3",
-  "__mulsi3",
-  "__reg_memcpy",
-  "__reg_memset",
-  "__ucmpsi2",
-  0,
-};
-
 /* If the next function argument with MODE and TYPE is to be passed in
    a register, return a reg RTX for the hard register in which to pass
    the argument.  CUM represents the state after the last argument.
@@ -826,6 +806,25 @@ function_arg (cum, mode, type, named)
      tree type;
      int named;
 {
+  static const char *const hand_list[] = {
+    "__main",
+    "__cmpsi2",
+    "__divhi3",
+    "__modhi3",
+    "__udivhi3",
+    "__umodhi3",
+    "__divsi3",
+    "__modsi3",
+    "__udivsi3",
+    "__umodsi3",
+    "__mulhi3",
+    "__mulsi3",
+    "__reg_memcpy",
+    "__reg_memset",
+    "__ucmpsi2",
+    0,
+  };
+
   rtx result = NULL_RTX;
   const char *fname;
   int regpass = 0;
