@@ -607,6 +607,9 @@ case $basic_machine in
 	i370-*)
 		os=-mvs
 		;;
+	*-next)
+		os=-bsd
+		;;
 	i[34]86-*)
 		os=-sco3.2v2
 		;;
