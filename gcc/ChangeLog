@@ -1,5 +1,10 @@
 2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Fix move of sp
+	to tmp reg.
+
+2001-09-30  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h(INCOMING_RETURN_ADDR_RTX): Remove so
 	that we use setjmp/longjmp exceptions.
 
