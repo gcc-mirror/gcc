@@ -1,3 +1,7 @@
+2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* pt.c: Fix a comment typo.
+
 2004-10-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (composite_pointer_type): Remove comment about DR 195.
