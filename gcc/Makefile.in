@@ -562,13 +562,13 @@ g++-cross: $(srcdir)/g++.c
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
 	   -DGCC_NAME=\"$(target)-gcc\" $(srcdir)/g++.c version.o $(LIBS)
 
-cc1:bytecode $(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1: $(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
-cc1plus:bytecode $(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1plus: $(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(BC_OBJS) $(OBJS) $(LIBS)
 
-cc1obj:bytecode $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
 # Copy float.h from its source.
@@ -1337,16 +1337,19 @@ bc-arity.h: stamp-bcarity ; @true
 stamp-bcarity : $(srcdir)/bytecode.def bi-arity $(srcdir)/move-if-change
 	./bi-arity < $(srcdir)/bytecode.def >tmp-bc-arity.h
 	$(srcdir)/move-if-change tmp-bc-arity.h bc-arity.h
+	touch stamp-bcarity
 
 bc-opcode.h: stamp-bcopcode ; @true
 stamp-bcopcode : $(srcdir)/bytecode.def bi-opcode $(srcdir)/move-if-change
 	./bi-opcode < $(srcdir)/bytecode.def >tmp-bcopcd.h
 	$(srcdir)/move-if-change tmp-bcopcd.h bc-opcode.h
+	touch stamp-bcopcode
 
 bc-opname.h: stamp-bcopname ; @true
 stamp-bcopname : $(srcdir)/bytecode.def bi-opname $(srcdir)/move-if-change
 	./bi-opname < $(srcdir)/bytecode.def >tmp-bcopnm.h
 	$(srcdir)/move-if-change tmp-bcopnm.h bc-opname.h
+	touch stamp-bcopname
 
 bytecode.mostlyclean:
 	-rm -f bc-arity.h bc-opcode.h bc-opname.h
