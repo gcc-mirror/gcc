@@ -187,7 +187,6 @@ static void dump_rtl PROTO((const char *, tree, void (*) (FILE *, rtx), rtx));
 static void clean_dump_file PROTO((const char *));
 static void compile_file PROTO((char *));
 static void display_help PROTO ((void));
-static int check_lang_option PROTO ((const char *, const char *));
 static void report_file_and_line PROTO ((const char *, int, int));
 static void vnotice PROTO ((FILE *, const char *, va_list));
 static void mark_file_stack PROTO ((void *));
