@@ -429,7 +429,6 @@ Mon Aug  9 01:52:24 1999  Jason Merrill  <jason@yorick.cygnus.com>
 	* except.c (expand_eh_region_start_for_decl): Always start a new block.
 	* stmt.c (is_eh_region): Make sure current_function is present, too.
 
->>>>>>> 1.4094
 Mon Aug  9 01:15:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (HARD_REGNO_MODE_OK): Correctly handle FPregs, even when
