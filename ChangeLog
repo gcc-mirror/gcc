@@ -1,3 +1,9 @@
+2002-10-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Make RPATH_ENVVAR substitution more autoconfy.
+	* configure.in: Make RPATH_ENVVAR substitution more autoconfy.
+	* Makefile.in: Regenerate.
+
 2002-10-02  Janis Johnson  <janis187@us.ibm.com>
 
 	* MAINTAINERS: Add myself as web pages co-maintainer.
