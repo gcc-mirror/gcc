@@ -1,5 +1,7 @@
 2002-01-12  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (bdesc_2arg): Mark psadbw MASK_3DNOW_A.
+
 	* doc/invoke.texi: Update Alpha options.
 
 	* doc/invoke.texi: Update i386 built-in function lists.
