@@ -61,6 +61,7 @@ struct function_unit
 };
 
 static void extend_range PROTO((struct range *, int, int));
+static void init_range PROTO((struct range *));
 static void write_upcase PROTO((char *));
 static void gen_attr PROTO((rtx));
 static void write_units PROTO((int, struct range *, struct range *,

@@ -296,9 +296,13 @@ static int libcall_benefit PROTO((rtx));
 static void ignore_some_movables PROTO((struct movable *));
 static void force_movables PROTO((struct movable *));
 static void combine_movables PROTO((struct movable *, int));
+static int regs_patch_p PROTO((rtx, rtx, struct movable *));
 static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
+static void add_label_notes PROTO((rtx, rtx));
 static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
+static int count_nonfixed_reads PROTO((rtx));
 static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx, int));
+static void find_single_use_in_loop PROTO((rtx, rtx, rtx *));
 static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
 static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
 static void record_biv PROTO((struct induction *, rtx, rtx, rtx, rtx, int, int));
@@ -310,8 +314,13 @@ static rtx simplify_giv_expr PROTO((rtx, int *));
 static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *));
 static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *));
 static int check_dbra_loop PROTO((rtx, int, rtx));
+#ifdef ADDRESS_COST
 static rtx express_from PROTO((struct induction *, struct induction *));
+#endif
 static int combine_givs_p PROTO((struct induction *, struct induction *));
+#ifdef GIV_SORT_CRITERION
+static int giv_sort PROTO((struct induction **, struct induction **));
+#endif
 static void combine_givs PROTO((struct iv_class *));
 static int product_cheap_p PROTO((rtx, rtx));
 static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
