@@ -1,5 +1,5 @@
 /* Header file for libgcc2.c.  */
-/* Copyright (C) 2000, 2001, 2004
+/* Copyright (C) 2000, 2001, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
