@@ -1,3 +1,9 @@
+2003-06-02  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* emit-rtl.c (gen_complex_constant_part):  Remove unnecessary
+	test of TREE_CONSTANT_POOL_ADDRESS_P.
+
 2003-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c: Don't include output.h twice.
