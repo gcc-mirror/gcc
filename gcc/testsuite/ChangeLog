@@ -1,3 +1,7 @@
+2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/vtable3.h: Check vcall offsets too.
+
 2001-02-26  Will Cohen  <wcohen@redhat.com>
 
 	* gcc.c-torture/execute/ieee/20010226-1.c: New test.

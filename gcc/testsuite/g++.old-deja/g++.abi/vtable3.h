@@ -7,11 +7,8 @@
 #include <typeinfo>
 #include <stdio.h>
 
-// XXX. vcall offsets are still broken, remove this define to re-enable
-// testing when fixed.
-#define NO_VCALL_TEST
-
 int fail;
+struct A;
 
 template <typename BASE, typename DERIVED>
 int Test (DERIVED *d, int expect)
@@ -19,6 +16,7 @@ int Test (DERIVED *d, int expect)
   BASE *b = static_cast <BASE *> (d);
   void *full_b = dynamic_cast <void *> (b);
   void *full_d = dynamic_cast <void *> (d);
+  A *ap = static_cast <A *> (b);
   
   if (full_b != full_d)
     {
@@ -37,8 +35,8 @@ int Test (DERIVED *d, int expect)
               typeid (BASE).name (), typeid (DERIVED).name ());
       return 1;
     }
-#ifndef NO_VCALL_TEST
-  b->Baz (static_cast <void *> (b));
+
+  b->Baz (static_cast <void *> (ap));
   
   int res = b->Foo (static_cast <void *> (d));
   
@@ -49,7 +47,7 @@ int Test (DERIVED *d, int expect)
               typeid (BASE).name (), res, expect);
       return 1;
     }
-#endif
+
   return 0;
 }
 
