@@ -1,5 +1,9 @@
 1998-10-16  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (lookup_name_real): Handle template parameters for member
+	temlates where said parameters have the same name as the
+	surrounding class.
+	
 	* decl.c (expand_static_init): Build cleanups before entering the
 	anonymous function used to do them to avoid access-checking
 	confusion.
