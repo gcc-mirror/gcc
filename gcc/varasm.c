@@ -169,6 +169,7 @@ static struct constant_descriptor *record_constant_rtx PARAMS ((enum machine_mod
 static struct pool_constant *find_pool_constant PARAMS ((struct function *, rtx));
 static void mark_constant_pool		PARAMS ((void));
 static void mark_constants		PARAMS ((rtx));
+static int mark_constant		PARAMS ((rtx *current_rtx, void *data));
 static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
@@ -3927,7 +3928,8 @@ output_constant_pool (fnname, fndecl)
 }
 
 /* Look through the instructions for this function, and mark all the
-   entries in the constant pool which are actually being used.  */
+   entries in the constant pool which are actually being used.
+   Emit used deferred strings.  */
 
 static void
 mark_constant_pool ()
@@ -3950,41 +3952,16 @@ mark_constant_pool ()
        insn = XEXP (insn, 1))
     if (INSN_P (insn))
       mark_constants (PATTERN (insn));
-
-  /* It's possible that the only reference to a symbol is in a symbol
-     that's in the constant pool.  This happens in Fortran under some
-     situations.  (When the constant contains the address of another
-     constant, and only the first is used directly in an insn.) 
-     This is potentially suboptimal if there's ever a possibility of
-     backwards (in pool order) 2'd level references.  However, it's
-     not clear that 2'd level references can happen. */
-  for (pool = first_pool; pool; pool = pool->next)
-    {
-      struct pool_constant *tem;
-      const char *label;
-
-      /* skip unmarked entries; no insn refers to them. */
-      if (!pool->mark)
-	  continue;
-
-      /* Skip everything except SYMBOL_REFs.  */
-      if (GET_CODE (pool->constant) != SYMBOL_REF)
-	continue;
-      label = XSTR (pool->constant, 0);
-
-      /* Be sure the symbol's value is marked. */
-      for (tem = const_rtx_sym_hash_table[SYMHASH (label)]; tem; 
-           tem = tem->next)
-	  if (tem->label == label)
-	    tem->mark = 1;
-      /* If we didn't find it, there's something truly wrong here, but it
-	 will be announced by the assembler. */
-    }
 }
+
+/* Look through appropriate parts of X, marking all entries in the
+   constant pool which are actually being used.  Entries that are only
+   referenced by other constants are also marked as used.  Emit
+   deferred strings that are used.  */
 
 static void
 mark_constants (x)
-     register rtx x;
+     rtx x;
 {
   register int i;
   register const char *format_ptr;
@@ -3994,24 +3971,7 @@ mark_constants (x)
 
   if (GET_CODE (x) == SYMBOL_REF)
     {
-      if (CONSTANT_POOL_ADDRESS_P (x))
-	find_pool_constant (cfun, x)->mark = 1;
-      else if (STRING_POOL_ADDRESS_P (x))
-	{
-	  struct deferred_string **defstr;
-
-	  defstr = (struct deferred_string **)
-		   htab_find_slot_with_hash (const_str_htab, XSTR (x, 0),
-					     STRHASH (XSTR (x, 0)), NO_INSERT);
-	  if (defstr)
-	    {
-	      struct deferred_string *p = *defstr;
-
-	      STRING_POOL_ADDRESS_P (x) = 0;
-	      output_constant_def_contents (p->exp, 0, p->labelno);
-	      htab_clear_slot (const_str_htab, (void **) defstr);
-	    }
-	}
+      mark_constant (&x, NULL);
       return;
     }
   /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
@@ -4061,6 +4021,55 @@ mark_constants (x)
 	  abort ();
 	}
     }
+}
+
+/* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
+   to as used.  Emit referenced deferred strings.  This function can
+   be used with for_each_rtx () to mark all SYMBOL_REFs in an rtx.  */
+
+static int
+mark_constant (current_rtx, data)
+     rtx *current_rtx;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *current_rtx;
+
+  if (x == NULL_RTX)
+    return 0;
+  else if (GET_CODE(x) == CONST_DOUBLE)
+    /* Never search inside a CONST_DOUBLE because CONST_DOUBLE_MEM may
+       be a MEM but does not constitute a use of that MEM.  */
+    return -1;
+  else if (GET_CODE (x) == SYMBOL_REF)
+    {
+      if (CONSTANT_POOL_ADDRESS_P (x))
+	{
+	  struct pool_constant *pool = find_pool_constant (cfun, x);
+	  if (pool->mark == 0) {
+	    pool->mark = 1;
+	    for_each_rtx (&(pool->constant), &mark_constant, NULL);
+	  }
+	  else
+	    return -1;
+	}
+      else if (STRING_POOL_ADDRESS_P (x))
+	{
+	  struct deferred_string **defstr;
+
+	  defstr = (struct deferred_string **)
+	    htab_find_slot_with_hash (const_str_htab, XSTR (x, 0),
+				      STRHASH (XSTR (x, 0)), NO_INSERT);
+	  if (defstr)
+	    {
+	      struct deferred_string *p = *defstr;
+
+	      STRING_POOL_ADDRESS_P (x) = 0;
+	      output_constant_def_contents (p->exp, 0, p->labelno);
+	      htab_clear_slot (const_str_htab, (void **) defstr);
+	    }
+	}
+    }
+  return 0;
 }
 
 /* Find all the constants whose addresses are referenced inside of EXP,
