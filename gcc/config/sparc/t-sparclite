@@ -15,3 +15,10 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	echo '#define US_SOFTWARE_GOFAST' >> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+MULTILIB_OPTIONS=mfpu/msoft-float mflat/mno-flat
+MULTILIB_DIRNAMES=
+MULTILIB_MATCHES= mfpu=mhard-float mno-fpu=msoft-float
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
