@@ -72,7 +72,7 @@ java::lang::VMThrowable::fillInStackTrace (java::lang::Throwable* t)
       state->length = n;
       int len = n;
       addrs = (_Jv_frame_info *) _Jv_Malloc (n * sizeof (_Jv_frame_info));
-      while (n--)
+      for (n = 0; n < len; n++)
 	{
 	  addrs[n].addr = p[n];
 #ifdef INTERPRETER

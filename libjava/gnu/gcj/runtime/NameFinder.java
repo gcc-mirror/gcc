@@ -34,11 +34,15 @@ import java.io.File;
  *     should be removed from the stack trace. Only done when names are
  *     demangled.</ul>
  * <ul><code>gnu.gcj.runtime.NameFinder.remove_unknown</code>
- *     Wheter calls to unknown functions (class and method names are unknown)
+ *     Whether calls to unknown functions (class and method names are unknown)
  *     should be removed from the stack trace. Only done when the stack is
  *     sanitized.</ul>
+ * <ul><code>gnu.gcj.runtime.NameFinder.remove_interpreter</code>
+ *     Whether runtime interpreter calls (methods in the _Jv_InterpMethod class
+ *     and functions starting with 'ffi_') should be removed from the stack
+ *     trace. Only done when the stack is sanitized.</ul>
  * <ul><code>gnu.gcj.runtime.NameFinder.use_addr2line</code>
- *     Wheter an external process (addr2line or addr2name.awk) should be used
+ *     Whether an external process (addr2line or addr2name.awk) should be used
  *     as fallback to convert the addresses to function names when the runtime
  *     is unable to do it through <code>dladdr</code>.</ul>
  * </li>
@@ -67,6 +71,10 @@ public class NameFinder
   private static final boolean remove_unknown
 	  = Boolean.valueOf(System.getProperty
 		("gnu.gcj.runtime.NameFinder.remove_unknown", "true")
+	    ).booleanValue();
+  private static final boolean remove_interpreter
+	  = Boolean.valueOf(System.getProperty
+		("gnu.gcj.runtime.NameFinder.remove_interpreter", "true")
 	    ).booleanValue();
   private static final boolean use_addr2line
 	  = Boolean.valueOf(System.getProperty
@@ -257,6 +265,7 @@ public class NameFinder
       consName = className.substring(lastDot + 1) + '(';
 
     int unknown = 0;
+    int interpreter = 0;
     int last_throw = -1;
     int length = elements.length;
     int end = length-1;
@@ -274,10 +283,20 @@ public class NameFinder
 	    && (MName.startsWith(consName)
 		|| MName.startsWith("Throwable(")
 		|| MName.startsWith("fillInStackTrace("))))
-	  last_throw = i;
+	  {
+	    last_throw = i;
+	    // Reset counting of unknown and interpreter frames.
+	    unknown = 0;
+	    interpreter = 0;
+	  }
 	else if (remove_unknown && CName == null 
 		 && (MName == null || MName.startsWith("0x")))
 	  unknown++;
+	else if (remove_interpreter
+		 && ((CName == null
+		      && MName != null && MName.startsWith("ffi_"))
+		     || (CName != null && CName.equals("_Jv_InterpMethod"))))
+	  interpreter++;
 	else if ("main(java.lang.String[])".equals(MName))
 	  {
 	    end = i;
@@ -287,20 +306,28 @@ public class NameFinder
     int begin = last_throw+1;
 
     // Now filter out everything at the start and the end that is not part
-    // of the "normal" user program including any elements that have no
-    // usefull information whatsoever unless that means we filter out all info.
-    int nr_elements = end-begin-unknown+1;
-    if ((begin > 0 || end < length-1 || unknown > 0) && nr_elements > 0)
+    // of the "normal" user program including any elements that are interpreter
+    // calls or have no usefull information whatsoever.
+    // Unless that means we filter out all info.
+    int nr_elements = end-begin-unknown-interpreter+1;
+    if ((begin > 0 || end < length-1 || unknown > 0 || interpreter > 0)
+	&& nr_elements > 0)
       {
 	stack = new StackTraceElement[nr_elements];
 	int pos =0;
 	for (int i=begin; i<=end; i++)
 	  {
-	    String MName;
-	    if (unknown == 0
-		|| !(elements[i].getClassName() == null
-		     && ((MName = elements[i].getMethodName()) == null
-			 || MName.startsWith("0x"))))
+	    String MName = elements[i].getMethodName();
+	    String CName = elements[i].getClassName();
+	    if (remove_unknown && CName == null 
+		 && (MName == null || MName.startsWith("0x")))
+	      ; // Skip unknown frame
+	    else if (remove_interpreter
+		     && ((CName == null
+			 && MName != null && MName.startsWith("ffi_"))
+			|| (CName != null && CName.equals("_Jv_InterpMethod"))))
+	      ; // Skip interpreter runtime frame
+	    else
 	      {
 		stack[pos] = elements[i];
 		pos++;
@@ -392,6 +419,111 @@ public class NameFinder
     }
 
     return s;
+  }
+
+  /**
+   * Returns human readable method name and aguments given a method type
+   * signature as known to the interpreter and a classname.
+   */
+  public static String demangleInterpreterMethod(String m, String cn)
+  {
+    int index = 0;
+    int length = m.length();
+    StringBuffer sb = new StringBuffer(length);
+
+    // Figure out the real method name
+    if (m.startsWith("<init>"))
+      {
+	String className;
+	int i = cn.lastIndexOf('.');
+	if (i < 0)
+	  className = cn;
+	else
+	  className = cn.substring(i + 1);
+	sb.append(className);
+	index += 7;
+      }
+    else
+      {
+	int i = m.indexOf('(');
+	if (i > 0)
+	  {
+	    sb.append(m.substring(0,i));
+	    index += i + 1;
+	  }
+      }
+
+    sb.append('(');
+
+    // Demangle the type arguments
+    int arrayDepth = 0;
+    char c = (index < length) ? m.charAt(index) : ')';
+    while (c != ')')
+      {
+	String type;
+	switch(c)
+	{
+          case 'B':
+            type = "byte";
+	    break;
+          case 'C':
+            type = "char";
+	    break;
+          case 'D':
+            type = "double";
+	    break;
+          case 'F':
+            type = "float";
+	    break;
+          case 'I':
+            type = "int";
+	    break;
+          case 'J':
+            type = "long";
+	    break;
+          case 'S':
+            type = "short";
+	    break;
+          case 'Z':
+            type = "boolean";
+	    break;
+          case 'L':
+	    int i = m.indexOf(';', index);
+	    if (i > 0)
+	      {
+		type = m.substring(index+1, i);
+		index = i;
+	      }
+	    else
+	      type = "<unknown ref>";
+	    break;
+          case '[':
+	    type = "";
+	    arrayDepth++;
+	    break;
+          default:
+	    type = "<unknown " + c + '>';
+	}
+	sb.append(type);
+
+	// Handle arrays
+	if (c != '[' && arrayDepth > 0)
+	  while (arrayDepth > 0)
+	    {
+	      sb.append("[]");
+	      arrayDepth--;
+	    }
+
+	index++;
+	char nc = (index < length) ? m.charAt(index) : ')';
+	if (c != '[' && nc  != ')')
+	  sb.append(", ");
+	c = nc;
+      }
+
+    // Stop. We are not interested in the return type.
+    sb.append(')');
+    return sb.toString();
   }
 
   /**

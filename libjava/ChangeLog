@@ -1,3 +1,13 @@
+2002-09-01  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/gcj/runtime/NameFinder.java (remove_interpreter): New field.
+	(sanitizeStack): Correctly reset unknown and interpreter counters,
+	detect interpreter runtime frames.
+	(demangleInterpreterMethod): New method.
+	* gnu/gcj/runtime/natNameFinder.cc (lookupInterp): Use new method.
+	* java/lang/natVMThrowable.cc (fillInStackTrace): Change order of
+	filling in addrs[].
+
 2002-09-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramPacket.java, java/net/MulticsstSocket.java:
