@@ -1,3 +1,7 @@
+2002-06-20  Steve Ellcey  <sje@cup.hp.com>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 2002-06-19  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* configure.in: replace ${topsrcdir} with ${srcdir}
