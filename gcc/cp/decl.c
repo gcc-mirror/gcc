@@ -10176,9 +10176,8 @@ compute_array_index_type (name, size)
 	    error ("size of array is negative");
 	  size = integer_one_node;
 	}
-      /* Except that an extension we allow zero-sized arrays.  We
-	 always allow them in system headers because glibc uses
-	 them.  */
+      /* As an extension we allow zero-sized arrays.  We always allow
+         them in system headers because glibc uses them.  */
       else if (integer_zerop (size) && pedantic && !in_system_header)
 	{
 	  if (name)

@@ -2,6 +2,15 @@
 
 	Backport from mainline
 	2004-01-16  Mark Mitchell  <mark@codesourcery.com>
+ 
+	PR c++/13574
+	* decl.c (compute_array_index_type): Fix grammar in comment.
+	* init.c (build_zero_init): Handle zero-sized arrays correctly.
+	
+2004-01-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	2004-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13478
 	* call.c (initialize_reference): Pass -1 for inner parameter to

@@ -245,15 +245,18 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       max_index = nelts ? nelts : array_type_nelts (type);
       my_friendly_assert (TREE_CODE (max_index) == INTEGER_CST, 20030618);
 
-      for (index = size_zero_node;
-	   !tree_int_cst_lt (max_index, index);
-	   index = size_binop (PLUS_EXPR, index, size_one_node))
-	inits = tree_cons (index,
-			   build_zero_init (TREE_TYPE (type),
-					    /*nelts=*/NULL_TREE,
-					    static_storage_p),
-			   inits);
-      CONSTRUCTOR_ELTS (init) = nreverse (inits);
+      /* A zero-sized array, which is accepted as an extension, will
+         have an upper bound of -1.  */
+      if (!tree_int_cst_equal (max_index, integer_minus_one_node))
+        for (index = size_zero_node;
+             !tree_int_cst_lt (max_index, index);
+             index = size_binop (PLUS_EXPR, index, size_one_node))
+          inits = tree_cons (index,
+                             build_zero_init (TREE_TYPE (type),
+                                              /*nelts=*/NULL_TREE,
+                                              static_storage_p),
+                             inits);
+         CONSTRUCTOR_ELTS (init) = nreverse (inits);
     }
   else if (TREE_CODE (type) == REFERENCE_TYPE)
     ;
