@@ -1,3 +1,20 @@
+Fri Mar 22 12:08:36 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (outgoing_edges_math): Fix condition; relax
+	frequencies match; avoid match on different loop depths.
+	(try_crossjump_to_bb): Kill tests that no longer brings time
+	savings.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Fix loop_depth
+	updating code.
+	(split_edge): Likewise.
+
+	* flow.c (update_life_info_in_dirty_blocks): Fix uninitialized
+	variable.
+
+	* Makefile.in (cfgrtl): Add insn-config.h depenendency.
+	* cfgrtl.c: Include insn-config.h
+	(split_block) Dirtify block in presence of conditional execution
+
 2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/abi64.h (SETUP_INCOMING_VARARGS): Undefine.
