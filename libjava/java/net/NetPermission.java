@@ -1,5 +1,5 @@
 /* NetPermission.java -- A class for basic miscellaneous network permission
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
