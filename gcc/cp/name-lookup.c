@@ -38,7 +38,7 @@ static tree lookup_name_current_level (tree);
 static void push_local_binding (tree, tree, int);
 static tree push_overloaded_decl (tree, int);
 static bool lookup_using_namespace (tree, cxx_binding *, tree,
-                                    tree, int, tree *);
+                                    tree, int);
 static bool qualified_lookup_using_namespace (tree, tree, cxx_binding *, int);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
@@ -3640,11 +3640,10 @@ select_decl (cxx_binding *binding, int flags)
 }
 
 /* Unscoped lookup of a global: iterate over current namespaces,
-   considering using-directives.  If SPACESP is non-NULL, store a list
-   of the namespaces we've considered in it.  */
+   considering using-directives.  */
 
 static tree
-unqualified_namespace_lookup (tree name, int flags, tree* spacesp)
+unqualified_namespace_lookup (tree name, int flags)
 {
   tree initial = current_decl_namespace ();
   tree scope = initial;
@@ -3655,15 +3654,11 @@ unqualified_namespace_lookup (tree name, int flags, tree* spacesp)
 
   timevar_push (TV_NAME_LOOKUP);
   cxx_binding_clear (&binding);
-  if (spacesp)
-    *spacesp = NULL_TREE;
 
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
       cxx_binding *b =
          cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
-      if (spacesp)
-	*spacesp = tree_cons (scope, NULL_TREE, *spacesp);
 
       /* Ignore anticipated built-in functions.  */
       if (b && b->value && DECL_P (b->value)
@@ -3681,7 +3676,7 @@ unqualified_namespace_lookup (tree name, int flags, tree* spacesp)
 	   level->kind != sk_namespace;
 	   level = level->level_chain)
 	if (!lookup_using_namespace (name, &binding, level->using_directives,
-                                     scope, flags, spacesp))
+                                     scope, flags))
 	  /* Give up because of error.  */
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
@@ -3692,7 +3687,7 @@ unqualified_namespace_lookup (tree name, int flags, tree* spacesp)
 	{
 	  if (!lookup_using_namespace (name, &binding,
                                        DECL_NAMESPACE_USING (siter),
-				       scope, flags, spacesp))
+				       scope, flags))
 	    /* Give up because of error.  */
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	  if (siter == scope) break;
@@ -3728,8 +3723,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
       flags |= LOOKUP_COMPLAIN;
       if (is_type_p)
 	flags |= LOOKUP_PREFER_TYPES;
-      if (qualified_lookup_using_namespace (name, scope, &binding, 
-					    flags))
+      if (qualified_lookup_using_namespace (name, scope, &binding, flags))
 	return select_decl (&binding, flags);
     }
   else if (is_aggr_type (scope, complain))
@@ -3752,7 +3746,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
 
 static bool
 lookup_using_namespace (tree name, cxx_binding *val, tree usings, tree scope,
-                        int flags, tree *spacesp)
+                        int flags)
 {
   tree iter;
   timevar_push (TV_NAME_LOOKUP);
@@ -3764,8 +3758,6 @@ lookup_using_namespace (tree name, cxx_binding *val, tree usings, tree scope,
         tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
         cxx_binding *val1 =
           cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (used), name);
-        if (spacesp)
-          *spacesp = tree_cons (used, NULL_TREE, *spacesp);
         /* Resolve ambiguities.  */
         if (val1)
           val = ambiguous_decl (name, val, val1, flags);
@@ -3900,7 +3892,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
   /* Now lookup in namespace scopes.  */
   if (!val)
     {
-      tree t = unqualified_namespace_lookup (name, flags, 0);
+      tree t = unqualified_namespace_lookup (name, flags);
       if (t)
 	val = t;
     }
@@ -4371,14 +4363,23 @@ lookup_arg_dependent (tree name, tree fns, tree args)
   k.functions = fns;
   k.classes = NULL_TREE;
 
-  /* Note that we've already looked at some namespaces during normal
-     unqualified lookup, unless we found a decl in function scope.  */
+  /* We've already looked at some namespaces during normal unqualified
+     lookup -- but we don't know exactly which ones.  If the functions
+     we found were brought into the current namespace via a using
+     declaration, we have not really checked the namespace from which
+     they came.  Therefore, we check all namespaces here -- unless the
+     function we have is from the current namespace.  */
   if (fns)
     fn = OVL_CURRENT (fns);
-  if (fn && TREE_CODE (fn) == FUNCTION_DECL && DECL_LOCAL_FUNCTION_P (fn))
+  if (fn && TREE_CODE (fn) == FUNCTION_DECL 
+      && CP_DECL_CONTEXT (fn) != current_decl_namespace ())
     k.namespaces = NULL_TREE;
   else
-    unqualified_namespace_lookup (name, 0, &k.namespaces);
+    /* Setting NAMESPACES is purely an optimization; it prevents
+       adding functions which are already in FNS.  Adding them would
+       be safe -- "joust" will eliminate the duplicates -- but
+       wasteful.  */
+    k.namespaces = build_tree_list (current_decl_namespace (), NULL_TREE);
 
   arg_assoc_args (&k, args);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, k.functions);
