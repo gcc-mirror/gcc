@@ -1,3 +1,8 @@
+2004-06-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.md (movdi, movdf): Use high/low for movu
+	operands.
+
 2004-06-22  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (legitimate_offset_address_p): Make
