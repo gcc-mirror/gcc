@@ -71,7 +71,8 @@ endif
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
-INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) $(EH_COMMON_INCLUDE)
+INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
+	$(EH_COMMON_INCLUDE) $(ZINCS)
 
 
 ## ################################################################

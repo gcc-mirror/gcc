@@ -1,3 +1,10 @@
+1999-05-21  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): Added $(ZINCS).
+	* configure: Rebuilt.
+	* configure.in (ZINCS): New subst.
+
 1999-05-21  Andrew Haley  <aph@cygnus.com>
 
 	* include/sparc-signal.h (INIT_FPE, INIT_SEGV): SA_NODEFER added
