@@ -606,7 +606,7 @@
   [(set (reg:CCFP 96)
 	(compare:CCFP (match_operand:TF 0 "register_operand" "")
 		      (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "
 {
   sparc_compare_op0 = operands[0];
@@ -834,12 +834,6 @@
       emit_insn (pat);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }      
   else if (TARGET_V9)
     {
       if (gen_v9_scc (EQ, operands))
@@ -887,12 +881,6 @@
       emit_insn (pat);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }      
   else if (TARGET_V9)
     {
       if (gen_v9_scc (NE, operands))
@@ -908,13 +896,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }
-  else if (TARGET_V9)
+  if (TARGET_V9)
     {
       if (gen_v9_scc (GT, operands))
 	DONE;
@@ -929,13 +911,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }
-  else if (TARGET_V9)
+  if (TARGET_V9)
     {
       if (gen_v9_scc (LT, operands))
 	DONE;
@@ -950,13 +926,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }
-  else if (TARGET_V9)
+  if (TARGET_V9)
     {
       if (gen_v9_scc (GE, operands))
 	DONE;
@@ -971,13 +941,7 @@
   "! TARGET_LIVE_G0"
   "
 {
-  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
-      emit_insn (gen_sne (operands[0]));
-      DONE;
-    }
-  else if (TARGET_V9)
+  if (TARGET_V9)
     {
       if (gen_v9_scc (LE, operands))
 	DONE;
@@ -1605,12 +1569,6 @@
       emit_v9_brxx_insn (EQ, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (EQ, sparc_compare_op0, sparc_compare_op1);
 }")
 
@@ -1629,12 +1587,6 @@
       emit_v9_brxx_insn (NE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (NE, sparc_compare_op0, sparc_compare_op1);
 }")
 
@@ -1653,12 +1605,6 @@
       emit_v9_brxx_insn (GT, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (GT, sparc_compare_op0, sparc_compare_op1);
 }")
 
@@ -1687,12 +1633,6 @@
       emit_v9_brxx_insn (LT, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (LT, sparc_compare_op0, sparc_compare_op1);
 }")
 
@@ -1721,12 +1661,6 @@
       emit_v9_brxx_insn (GE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (GE, sparc_compare_op0, sparc_compare_op1);
 }")
 
@@ -1755,12 +1689,6 @@
       emit_v9_brxx_insn (LE, sparc_compare_op0, operands[0]);
       DONE;
     }
-  else if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
-    {
-      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
-      emit_jump_insn (gen_bne (operands[0]));
-      DONE;
-    }      
   operands[1] = gen_compare_reg (LE, sparc_compare_op0, sparc_compare_op1);
 }")
 

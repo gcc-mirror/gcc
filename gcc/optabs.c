@@ -270,11 +270,11 @@ static void init_traps PROTO((void));
 static int cmp_available_p PROTO((enum machine_mode, enum rtx_code, int));
 static void emit_cmp_and_jump_insn_1 PROTO((rtx, rtx, enum machine_mode,
 					    enum rtx_code, int, rtx));
-static void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code, rtx,
+static void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code *, rtx,
 				    enum machine_mode *, int *, int));
 static rtx prepare_operand PROTO((int, rtx, int, enum machine_mode,
 				  enum machine_mode, int));
-static void prepare_float_lib_cmp PROTO((rtx *, rtx *, enum rtx_code,
+static void prepare_float_lib_cmp PROTO((rtx *, rtx *, enum rtx_code *,
 					 enum machine_mode *, int *));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
@@ -3019,15 +3019,16 @@ cmp_available_p (mode, code, can_use_tst_p)
    The values which are passed in through pointers can be modified; the caller
    should perform the comparison on the modified values.  */
 
-void
-prepare_cmp_insn (px, py, comparison, size, pmode, punsignedp, align)
+static void
+prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
      rtx *px, *py;
-     enum rtx_code comparison;
+     enum rtx_code *pcomparison;
      rtx size;
      enum machine_mode *pmode;
      int *punsignedp;
      int align;
 {
+  enum rtx_code comparison = *pcomparison;
   enum machine_mode mode = *pmode;
   rtx x = *px, y = *py;
   int unsignedp = *punsignedp;
@@ -3181,7 +3182,7 @@ prepare_cmp_insn (px, py, comparison, size, pmode, punsignedp, align)
     }
 
   if (class == MODE_FLOAT)
-    prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp);
+    prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp);
 
   else
     abort ();
@@ -3322,7 +3323,7 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
   emit_queue ();
   if (unsignedp)
     comparison = unsigned_condition (comparison);
-  prepare_cmp_insn (&op0, &op1, comparison, size, &mode, &unsignedp, align);
+  prepare_cmp_insn (&op0, &op1, &comparison, size, &mode, &unsignedp, align);
   emit_cmp_and_jump_insn_1 (op0, op1, mode, comparison, unsignedp, label);
 }
 
@@ -3360,13 +3361,14 @@ can_compare_p (mode)
 /* Emit a library call comparison between floating point X and Y.
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  */
 
-void
-prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp)
+static void
+prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
      rtx *px, *py;
-     enum rtx_code comparison;
+     enum rtx_code *pcomparison;
      enum machine_mode *pmode;
      int *punsignedp;
 {
+  enum rtx_code comparison = *pcomparison;
   rtx x = *px, y = *py;
   enum machine_mode mode = GET_MODE (x);
   rtx libfunc = 0;
@@ -3537,7 +3539,7 @@ prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp)
 	      y = protect_from_queue (y, 0);
 	      *px = convert_to_mode (wider_mode, x, 0);
 	      *py = convert_to_mode (wider_mode, y, 0);
-	      prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp);
+	      prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp);
 	      return;
 	    }
 	}
@@ -3558,6 +3560,10 @@ prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp)
   *px = result;
   *py = const0_rtx;
   *pmode = word_mode;
+#ifdef FLOAT_LIB_COMPARE_RETURNS_BOOL
+  if (FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
+    *pcomparison = NE;
+#endif
   *punsignedp = 0;
 }
 
