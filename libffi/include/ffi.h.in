@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------*-C-*-
-   libffi @VERSION@ - Copyright (c) 1996-2002  Cygnus Solutions
+   libffi @VERSION@ - Copyright (c) 1996-2003  Cygnus Solutions
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -441,6 +441,18 @@ struct ffi_ia64_trampoline_struct {
 
 #define FFI_CLOSURES 1
 #define FFI_TRAMPOLINE_SIZE 24 /* see struct below */ 
+#define FFI_NATIVE_RAW_API 0
+
+#elif defined(SPARC64)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 24
+#define FFI_NATIVE_RAW_API 0
+
+#elif defined(SPARC)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 16
 #define FFI_NATIVE_RAW_API 0
 
 #elif defined(S390)
