@@ -141,7 +141,7 @@ files and object files, and it can read both Java source code and
 @ignore
 @c man begin SYNOPSIS gcj
 gcj [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
-    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
+    [@option{--CLASSPATH}=@var{path}] [@option{--classpath}=@var{path}]
     [@option{-f}@var{option}@dots{}] [@option{--encoding}=@var{name}]
     [@option{--main}=@var{classname}] [@option{-D}@var{name}[=@var{value}]@dots{}]
     [@option{-C}] [@option{-R} @var{resource-name}] [@option{-d} @var{directory}]
@@ -240,11 +240,12 @@ compatibility with tools like @code{javac} is imported, we recommend
 always using @code{-I} instead of the other options for manipulating the
 class path.
 
-@item --classpath=@var{path}
-This sets the class path to @var{path}, a colon-separated list of paths
-(on Windows-based systems, a semicolon-separate list of paths).
-
 @item --CLASSPATH=@var{path}
+This sets the class path to @var{path}, a colon-separated list of paths
+(on Windows-based systems, a semicolon-separate list of paths). Using
+this option causes the built in path to be suppressed.
+
+@item --classpath=@var{path}
 This sets the class path to @var{path}, a colon-separated list of paths
 (on Windows-based systems, a semicolon-separate list of paths).  This
 differs from the @code{--classpath} option in that it does not suppress
@@ -261,17 +262,18 @@ The final class path is constructed like so:
 First come all directories specified via @code{-I}.
 
 @item
-If @code{--classpath} is specified, its value is appended and processing
-stops.  That is, @code{--classpath} suppresses all the options mentioned
+If @option{--CLASSPATH} is specified, its value is appended and processing
+stops.  That is, @option{--CLASSPATH} suppresses all the options mentioned
 later in this list.
 
 @item
-If @code{--CLASSPATH} is specified, its value is appended and the
+If @option{--classpath} is specified, its value is appended and the
 @code{CLASSPATH} environment variable is suppressed.
 
 @item
 If the @code{CLASSPATH} environment variable is specified (and was not
-suppressed by @code{--CLASSPATH}), then its value is appended.
+suppressed by @option{--classpath} or @option{--CLASSPATH}), then its
+value is appended.
 
 @item
 Finally, the built-in system directory, @file{libgcj.jar}, is appended.

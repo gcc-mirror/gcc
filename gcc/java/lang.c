@@ -299,17 +299,17 @@ java_decode_option (argc, argv)
       return 1;
     }
 #undef CLARG
-#define CLARG "-fclasspath="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
-      return 1;
-    }
-#undef CLARG
 #define CLARG "-fCLASSPATH="
   if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
     {
       jcf_path_CLASSPATH_arg (p + sizeof (CLARG) - 1);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fclasspath="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
       return 1;
     }
 #undef CLARG

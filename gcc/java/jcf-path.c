@@ -71,8 +71,8 @@ static void add_path PARAMS ((struct entry **, const char *, int));
 
    built-in system directory (only libgcj.jar)
    CLASSPATH environment variable
-   -CLASSPATH overrides CLASSPATH
-   -classpath option - overrides CLASSPATH, -CLASSPATH, and built-in
+   -classpath option overrides $CLASSPATH
+   -CLASSPATH option overrides $CLASSPATH, -classpath, and built-in
    -I prepends path to list
 
    We implement this by keeping several path lists, and then simply
@@ -84,10 +84,10 @@ static struct entry *include_dirs;
 /* This holds the CLASSPATH environment variable.  */
 static struct entry *classpath_env;
 
-/* This holds the -CLASSPATH command-line option.  */
+/* This holds the -classpath command-line option.  */
 static struct entry *classpath_u;
 
-/* This holds the -classpath command-line option.  */
+/* This holds the -CLASSPATH command-line option.  */
 static struct entry *classpath_l;
 
 /* This holds the default directories.  Some of these will have the
@@ -284,18 +284,23 @@ jcf_path_init ()
   add_path (&classpath_env, cp, 0);
 }
 
-/* Call this when -classpath is seen on the command line.  */
+/* Call this when -CLASSPATH is seen on the command line.
+   This is the override-all switch, even the built in classes
+   are overridden.
+ */
 void
-jcf_path_classpath_arg (path)
+jcf_path_CLASSPATH_arg (path)
      const char *path;
 {
   free_entry (&classpath_l);
   add_path (&classpath_l, path, 0);
 }
 
-/* Call this when -CLASSPATH is seen on the command line.  */
+/* Call this when -classpath is seen on the command line.
+   This overrides only the $CLASSPATH environment variable.
+ */
 void
-jcf_path_CLASSPATH_arg (path)
+jcf_path_classpath_arg (path)
      const char *path;
 {
   free_entry (&classpath_u);
