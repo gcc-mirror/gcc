@@ -358,7 +358,7 @@ estimate_probability (loops_info)
 	         successors.  */
 	      if (!header_found)
 		for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
-		  if (e->dest->index <= 0
+		  if (e->dest->index < 0
 		      || !TEST_BIT (loop->nodes, e->dest->index))
 		    predict_edge (e, PRED_LOOP_EXIT,
 				  (REG_BR_PROB_BASE
