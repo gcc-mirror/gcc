@@ -1,5 +1,9 @@
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
 
+	* sched-deps.c (sched_analyze): Check HARD_REGNO_CALL_PART_CLOBBERED.
+
+2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/sh/sh.md (udivsi3): Don't put udivsi3_i4_media instructions
 	into a libcall block.
 	(divsi3): Likewise divsi3_i4_media.
