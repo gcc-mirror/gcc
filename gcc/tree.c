@@ -1363,8 +1363,9 @@ array_type_nelts (tree type)
 	  : fold (build2 (MINUS_EXPR, TREE_TYPE (max), max, min)));
 }
 
-/* Return true if arg is static -- a reference to an object in
-   static storage.  This is not the same as the C meaning of `static'.  */
+/* If arg is static -- a reference to an object in static storage -- then
+   return the object.  This is not the same as the C meaning of `static'.
+   If arg isn't static, return NULL.  */
 
 tree
 staticp (tree arg)
@@ -2270,7 +2271,11 @@ do { tree _node = (NODE); \
      address of a volatile variable is not volatile.)  If it's a constant,
      the address is both invariant and constant.  Otherwise it's neither.  */
   if (TREE_CODE (node) == INDIRECT_REF)
-    UPDATE_TITCSE (node);
+    {
+      /* If this is &((T*)0)->field, then this is a form of addition.  */
+      if (TREE_CODE (TREE_OPERAND (node, 0)) != INTEGER_CST)
+	UPDATE_TITCSE (node);
+    }
   else if (DECL_P (node))
     {
       if (staticp (node))
