@@ -931,9 +931,11 @@ enum reg_class
    Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
    movdf to do mem-to-mem moves through integer regs. */
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)	\
-  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode \
-   ? (standard_80387_constant_p (X) ? FLOAT_REGS : NO_REGS) \
+#define PREFERRED_RELOAD_CLASS(X,CLASS)					\
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode		\
+   ? (standard_80387_constant_p (X)					\
+      ? reg_class_subset_p (CLASS, FLOAT_REGS) ? CLASS : FLOAT_REGS	\
+      : NO_REGS)							\
    : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
    : ((CLASS) == ALL_REGS						\
       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) ? GENERAL_REGS	\
