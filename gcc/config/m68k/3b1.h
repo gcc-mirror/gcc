@@ -190,7 +190,7 @@ do { union { float f; long l;} tem;			\
     if (++sp < (LEN)) \
       {	if (lp > 60) \
 	  { lp = 0; \
-	    fprintf ((FILE), "\n%s ", ASCII_DATA_ASM_OP); }	\
+	    fprintf ((FILE), "\n\t%s ", ASCII_DATA_ASM_OP); }	\
 	else \
 	  putc (',', (FILE)); \
 	goto loop; } \
