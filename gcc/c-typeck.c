@@ -3799,7 +3799,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
        || codel == COMPLEX_TYPE)
        &&
       (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
-       || codel == COMPLEX_TYPE))
+       || coder == COMPLEX_TYPE))
     return convert_and_check (type, rhs);
   /* Conversion to a union from its member types.  */
   else if (codel == UNION_TYPE)
