@@ -46,107 +46,107 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Vector;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Jorge Aliss <jaliss@hotmail.com>
- * @date March 3, 1999
- */
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 from http://www.javasoft.com.
- * Status:  Believed complete and correct to 1.2, except serialization.
- *          and parsing.
- */
-final class MessageFormatElement
-{
-  // Argument number.
-  int argNumber;
-  // Formatter to be used.  This is the format set by setFormat.
-  Format setFormat;
-  // Formatter to be used based on the type.
-  Format format;
-
-  // Argument will be checked to make sure it is an instance of this
-  // class.
-  Class formatClass;
-
-  // Formatter type.
-  String type;
-  // Formatter style.
-  String style;
-
-  // Text to follow this element.
-  String trailer;
-
-  // Recompute the locale-based formatter.
-  void setLocale (Locale loc)
-  {
-    if (type == null)
-      ;
-    else if (type.equals("number"))
-      {
-	formatClass = java.lang.Number.class;
-
-	if (style == null)
-	  format = NumberFormat.getInstance(loc);
-	else if (style.equals("currency"))
-	  format = NumberFormat.getCurrencyInstance(loc);
-	else if (style.equals("percent"))
-	  format = NumberFormat.getPercentInstance(loc);
-	else if (style.equals("integer"))
-	  {
-	    NumberFormat nf = NumberFormat.getNumberInstance(loc);
-	    nf.setMaximumFractionDigits(0);
-	    nf.setGroupingUsed(false);
-	    format = nf;
-	  }
-	else
-	  {
-	    format = NumberFormat.getNumberInstance(loc);
-	    DecimalFormat df = (DecimalFormat) format;
-	    df.applyPattern(style);
-	  }
-      }
-    else if (type.equals("time") || type.equals("date"))
-      {
-	formatClass = java.util.Date.class;
-
-	int val = DateFormat.DEFAULT;
-	if (style == null)
-	  ;
-	else if (style.equals("short"))
-	  val = DateFormat.SHORT;
-	else if (style.equals("medium"))
-	  val = DateFormat.MEDIUM;
-	else if (style.equals("long"))
-	  val = DateFormat.LONG;
-	else if (style.equals("full"))
-	  val = DateFormat.FULL;
-
-	if (type.equals("time"))
-	  format = DateFormat.getTimeInstance(val, loc);
-	else
-	  format = DateFormat.getDateInstance(val, loc);
-
-	if (style != null && val == DateFormat.DEFAULT)
-	  {
-	    SimpleDateFormat sdf = (SimpleDateFormat) format;
-	    sdf.applyPattern(style);
-	  }
-      }
-    else if (type.equals("choice"))
-      {
-	formatClass = java.lang.Number.class;
-
-	if (style == null)
-	  throw new
-	    IllegalArgumentException ("style required for choice format");
-	format = new ChoiceFormat (style);
-      }
-  }
-}
-
 public class MessageFormat extends Format
 {
+  /**
+   * @author Tom Tromey (tromey@cygnus.com)
+   * @author Jorge Aliss (jaliss@hotmail.com)
+   * @date March 3, 1999
+   */
+  /* Written using "Java Class Libraries", 2nd edition, plus online
+   * API docs for JDK 1.2 from http://www.javasoft.com.
+   * Status:  Believed complete and correct to 1.2, except serialization.
+   *          and parsing.
+   */
+  private static final class MessageFormatElement
+  {
+    // Argument number.
+    int argNumber;
+    // Formatter to be used.  This is the format set by setFormat.
+    Format setFormat;
+    // Formatter to be used based on the type.
+    Format format;
+
+    // Argument will be checked to make sure it is an instance of this
+    // class.
+    Class formatClass;
+
+    // Formatter type.
+    String type;
+    // Formatter style.
+    String style;
+
+    // Text to follow this element.
+    String trailer;
+
+    // Recompute the locale-based formatter.
+    void setLocale (Locale loc)
+    {
+      if (type == null)
+        ;
+      else if (type.equals("number"))
+        {
+	  formatClass = java.lang.Number.class;
+
+	  if (style == null)
+	    format = NumberFormat.getInstance(loc);
+	  else if (style.equals("currency"))
+	    format = NumberFormat.getCurrencyInstance(loc);
+	  else if (style.equals("percent"))
+	    format = NumberFormat.getPercentInstance(loc);
+	  else if (style.equals("integer"))
+	    {
+	      NumberFormat nf = NumberFormat.getNumberInstance(loc);
+	      nf.setMaximumFractionDigits(0);
+	      nf.setGroupingUsed(false);
+	      format = nf;
+	    }
+	  else
+	    {
+	      format = NumberFormat.getNumberInstance(loc);
+	      DecimalFormat df = (DecimalFormat) format;
+	      df.applyPattern(style);
+	    }
+        }
+      else if (type.equals("time") || type.equals("date"))
+        {
+	  formatClass = java.util.Date.class;
+
+	  int val = DateFormat.DEFAULT;
+	  if (style == null)
+	    ;
+	  else if (style.equals("short"))
+	    val = DateFormat.SHORT;
+	  else if (style.equals("medium"))
+	    val = DateFormat.MEDIUM;
+	  else if (style.equals("long"))
+	    val = DateFormat.LONG;
+	  else if (style.equals("full"))
+	    val = DateFormat.FULL;
+
+	  if (type.equals("time"))
+	    format = DateFormat.getTimeInstance(val, loc);
+	  else
+	    format = DateFormat.getDateInstance(val, loc);
+
+	  if (style != null && val == DateFormat.DEFAULT)
+	    {
+	      SimpleDateFormat sdf = (SimpleDateFormat) format;
+	      sdf.applyPattern(style);
+	    }
+        }
+      else if (type.equals("choice"))
+        {
+	  formatClass = java.lang.Number.class;
+
+	  if (style == null)
+	    throw new
+	      IllegalArgumentException ("style required for choice format");
+	  format = new ChoiceFormat (style);
+        }
+    }
+  }
+
   private static final long serialVersionUID = 6479157306784022952L;
 
   public static class Field extends Format.Field

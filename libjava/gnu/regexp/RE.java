@@ -43,15 +43,6 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
-class IntPair implements Serializable {
-  public int first, second;
-}
-
-class CharUnit implements Serializable {
-  public char ch;
-  public boolean bk;
-}
-
 /**
  * RE provides the user interface for compiling and matching regular
  * expressions.
@@ -119,6 +110,16 @@ class CharUnit implements Serializable {
  */
 
 public class RE extends REToken {
+
+  private static final class IntPair implements Serializable {
+    public int first, second;
+  }
+
+  private static final class CharUnit implements Serializable {
+    public char ch;
+    public boolean bk;
+  }
+
   // This String will be returned by getVersion()
   private static final String VERSION = "1.1.5-dev";
 
