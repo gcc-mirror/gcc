@@ -1,3 +1,17 @@
+2003-03-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_preferred_reload_class): Do not
+	force constants to the pool unless necessary.
+	(s390_decompose_address): Prefer to use pointer as base,
+	not index register.
+	* config/s390/s390.md ("*tsthiCCT_only"): Remove '?' from
+	Q alternative.
+	("*movdi_64", "*movsi", "movhi", "movqi_64", "movqi", 
+	"*movdf_64", "*movsf"): Add '?' to Q->Q alternatives.
+	("*extractqi", "*extracthi", "*zero_extendhisi2_31",
+	"*zero_extendqisi2_31", "*zero_extendqihi2_31",
+	"*adddi3_31", "*subdi3_31"): Do not set "type" attribute.
+
 2003-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Don't call
