@@ -1729,11 +1729,27 @@ redundant_insn_p (insn, target, delay_list)
 
       if (GET_CODE (pat) == SEQUENCE)
 	{
-	  /* Stop for a CALL and its delay slots because it difficult to track
-	     its resource needs correctly.  */
+	  /* Stop for a CALL and its delay slots because it is difficult to
+	     track its resource needs correctly.  */
 	  if (GET_CODE (XVECEXP (pat, 0, 0)) == CALL_INSN)
 	    return 0;
 
+	  /* Stop for an INSN or JUMP_INSN with delayed effects and its delay
+	     slots because it is difficult to track its resource needs 
+	     correctly.  */
+
+#ifdef INSN_SETS_ARE_DELAYED
+	  if (INSN_SETS_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	    return 0; 
+#endif
+
+#ifdef INSN_REFERENCES_ARE_DELAYED
+	  if (INSN_REFERENCES_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	    return 0; 
+#endif
+
+	  /* See if any of the insns in the delay slot match, updating
+	     resource requirements as we go.  */
 	  for (i = XVECLEN (pat, 0) - 1; i > 0; i--)
 	    if (GET_CODE (XVECEXP (pat, 0, i)) == GET_CODE (insn)
 		&& rtx_equal_p (PATTERN (XVECEXP (pat, 0, i)), ipat))
@@ -1815,6 +1831,19 @@ redundant_insn_p (insn, target, delay_list)
 	     the resource needs properly, so give up.  */
 	  if (GET_CODE (XVECEXP (pat, 0, 0)) == CALL_INSN)
 	    return 0;
+
+	  /* If this this is an INSN or JUMP_INSN with delayed effects, it
+	     is hard to track the resource needs properly, so give up.  */
+
+#ifdef INSN_SETS_ARE_DELAYED
+	  if (INSN_SETS_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	    return 0; 
+#endif
+
+#ifdef INSN_REFERENCES_ARE_DELAYED
+	  if (INSN_REFERENCES_ARE_DELAYED (XVECEXP (pat, 0, 0)))
+	    return 0; 
+#endif
 
 	  /* See if any of the insns in the delay slot match, updating
 	     resource requirements as we go.  */
