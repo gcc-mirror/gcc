@@ -1,3 +1,8 @@
+2003-06-08  Anthony Green  <green@redhat.com>
+
+	* parse.y (patch_cast): Fix conversions from floating-point to
+	integral types.
+
 2003-06-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update.

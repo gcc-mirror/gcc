@@ -14224,14 +14224,15 @@ patch_cast (tree node, tree wfl_op)
       if (cast_type == op_type)
 	return node;
 
-      /* float and double type are converted to the original type main
-	 variant and then to the target type. */
-      if (JFLOAT_TYPE_P (op_type) && TREE_CODE (cast_type) == CHAR_TYPE)
-	op = convert (integer_type_node, op);
+      /* A narrowing conversion from a floating-point number to an
+	 integral type requires special handling (5.1.3).  */
+      if (JFLOAT_TYPE_P (op_type) && JINTEGRAL_TYPE_P (cast_type))
+	if (cast_type != long_type_node)
+	  op = convert (integer_type_node, op);
 
-      /* Try widening/narowwing convertion. Potentially, things need
+      /* Try widening/narrowing convertion.  Potentially, things need
 	 to be worked out in gcc so we implement the extreme cases
-	 correctly. fold_convert() needs to be fixed. */
+	 correctly.  fold_convert() needs to be fixed.  */
       return convert (cast_type, op);
     }
 
