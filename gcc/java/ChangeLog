@@ -1,3 +1,7 @@
+2003-04-13  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (print_c_decl): Indentation fix.
+
 2003-04-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* class.c (make_field_value, make_method_value, get_dispatch_table)

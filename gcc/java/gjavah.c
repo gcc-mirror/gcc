@@ -1402,12 +1402,12 @@ print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
 	 because the "new" C++ ABI changed the alignemnt of non-POD
 	 classes.  gcj, however, still uses the "old" alignment.  */
       if (is_first_data_member && ! (flags & ACC_STATIC) && ! is_method)
-      {
-	is_first_data_member = 0;
-	print_cxx_classname (out, " __attribute__((aligned(__alignof__( ",
-			     jcf, jcf->super_class, 1);
-	fputs (" )))) ", stream);
-      }
+	{
+	  is_first_data_member = 0;
+	  print_cxx_classname (out, " __attribute__((aligned(__alignof__( ",
+			       jcf, jcf->super_class, 1);
+	  fputs (" )))) ", stream);
+	}
 
       /* Now print the name of the thing.  */
       if (need_space)
