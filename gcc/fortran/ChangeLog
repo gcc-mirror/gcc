@@ -1,5 +1,11 @@
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/15129
+	* trans-decl.c (gfc_build_function_decl): Create a new chardecl
+	for every assumed length character dummy argument.
+
+2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
  	PR fortran/15324
 	* trans-array.c gfc_trans_g77_array,
 	gfc_trans_dummy_array_bias): Don't call gfc_trans_string_init
