@@ -5,8 +5,8 @@ use the new style DejaGnu framework.  Eventually, we'll abandon
 // 1: Thoughts on naming test cases, and structuring them.
 The testsuite directory has been divided into 11 directories, directly
 correlated to the relevant chapters in the standard. For example, the
-directory testsuite/21_strings contains tests related to chapter 21,
-Strings library in the C++ standard.
+directory testsuite/21_strings contains tests related to "Chapter 21,
+Strings library" in the C++ standard.
 
 So, the first step in making a new test case is to choose the correct
 directory. The second item is seeing if a test file exists that tests
@@ -18,9 +18,11 @@ after the section headings in ISO 14882, the C++ standard. For instance,
 Has a related test case:
 21_strings/inserters_extractors.cc
 
-Not so hard. Some time, the works "ctor" and "dtor" are used instead
+Not so hard. Some time, the words "ctor" and "dtor" are used instead
 of "construct", "constructor", "cons", "destructor", etc. Other than
-that, the naming seems mostly consistent.
+that, the naming seems mostly consistent. If the file exists, add a
+test to it. If it does not, then create a new file. All files are
+copyright the FSF, and GPL'd: this is very important. 
 
 Inside a test file, the plan is to test the relevant parts of the
 standard, and then add specific regressions as additional test
