@@ -530,6 +530,9 @@ extern rtx expr_size ();
 
 extern rtx lookup_static_chain ();
 
+/* Indicate how an input argument register was promoted.  */
+extern rtx promoted_input_arg ();
+
 /* Return an rtx like arg but sans any constant terms.
    Returns the original rtx if it has no constant terms.
    The constant terms are added and stored via a second arg.  */
