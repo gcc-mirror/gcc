@@ -1,5 +1,10 @@
 2000-12-29  Bernd Schmidt  <bernds@redhat.com>
 
+	* flow.c (PROP_POSTRELOAD): New macro.
+	(update_life_info): Add it to prop_flags.
+	(mark_set_1): If it is set, compute REG_N_SETS for the original
+	register number of a hard reg.
+
 	* emit-rtl.c (gen_raw_REG): New function.
 	(gen_rtx_REG, gen_reg_rtx, init_emit_once): Use it instead of
 	gen_rtx_raw_REG.
