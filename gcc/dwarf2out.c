@@ -10929,7 +10929,7 @@ dwarf2out_begin_block (blocknum)
      register unsigned blocknum;
 {
   function_section (current_function_decl);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
 
 /* Output a marker (i.e. a label) for the end of the generated code for a
@@ -10940,7 +10940,7 @@ dwarf2out_end_block (blocknum)
      register unsigned blocknum;
 {
   function_section (current_function_decl);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
 /* Returns nonzero if it is appropriate not to emit any debugging
@@ -10975,7 +10975,7 @@ dwarf2out_label (insn)
     {
       function_section (current_function_decl);
       sprintf (label, INSN_LABEL_FMT, current_funcdef_number);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, label,
+      ASM_OUTPUT_DEBUG_LABEL (asm_out_file, label,
 				 (unsigned) INSN_UID (insn));
     }
 }

@@ -133,6 +133,15 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #define ASM_OUTPUT_LABELREF(FILE,NAME)  asm_fprintf ((FILE), "%U%s", (NAME))
 #endif
 
+/* Allow target to print debug info labels specially.  This is useful for
+   VLIW targets, since debug info labels should go into the middle of
+   instruction bundles instead of breaking them.  */
+
+#ifndef ASM_OUTPUT_DEBUG_LABEL
+#define ASM_OUTPUT_DEBUG_LABEL(FILE, PREFIX, NUM) \
+  ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM)
+#endif
+
 /* This determines whether or not we support weak symbols.  */
 #ifndef SUPPORTS_WEAK
 #ifdef ASM_WEAKEN_LABEL

@@ -2270,7 +2270,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	     referenced (in the form of having its address taken.  */
 	  /* ??? Figure out how not to do this unconditionally.  This
 	     interferes with bundling on LIW targets.  */
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
+	  ASM_OUTPUT_DEBUG_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
 
 	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE)

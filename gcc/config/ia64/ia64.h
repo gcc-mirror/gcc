@@ -2637,6 +2637,18 @@ do {									\
 
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 
+/* Use tags for debug info labels, so that they don't break instruction
+   bundles.  This also avoids getting spurious DV warnings from the
+   assembler.  This is similar to ASM_OUTPUT_INTERNAL_LABEL, except that we
+   add brackets around the label.  */
+
+#define ASM_OUTPUT_DEBUG_LABEL(FILE, PREFIX, NUM) \
+  do							\
+    {							\
+      fprintf (FILE, "[.%s%d:]\n", PREFIX, NUM);	\
+    }							\
+  while (0)
+
 
 /* Cross Compilation and Floating Point.  */
 
