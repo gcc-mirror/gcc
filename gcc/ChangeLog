@@ -1,3 +1,7 @@
+Mon Oct 12 01:22:53 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Oct 11 23:04:30 1998  Robert Lipe  <robertl@dgii.com>
 
         * c-pragma.c (handle_pragma_token): If passed a token instead
