@@ -1,6 +1,6 @@
 // Iostreams wrapper for stdio FILE* -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,16 +38,6 @@
 
 #include <streambuf>
 #include <unistd.h>
-
-#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
-# include <sys/stat.h>
-# ifdef _GLIBCXX_HAVE_S_ISREG
-#  define _GLIBCXX_ISREG(x) S_ISREG(x)
-# else
-#  define _GLIBCXX_ISREG(x) (((x) & S_IFMT) == S_IFREG)
-# endif
-#endif
-
 #include <cstdio>
 
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -82,7 +72,6 @@ namespace __gnu_cxx
       { }
 
     protected:
-
       int_type
       syncgetc();
 
@@ -131,19 +120,6 @@ namespace __gnu_cxx
 
       virtual std::streamsize
       xsgetn(char_type* __s, std::streamsize __n);
-
-      virtual std::streamsize
-      showmanyc()
-      {
-#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
-	// Regular files.
-	struct stat __buffer;
-	int __ret = fstat(fileno(_M_file), &__buffer);
-	if (!__ret && _GLIBCXX_ISREG(__buffer.st_mode))
-	  return __buffer.st_size - ftell(_M_file);
-#endif
-	return 0;
-      }
 
       virtual int_type
       overflow(int_type __c = traits_type::eof())
