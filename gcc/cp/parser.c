@@ -706,7 +706,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
 static void
 cp_lexer_start_debugging (cp_lexer* lexer)
 {
-  ++lexer->debugging_p;
+  lexer->debugging_p = true;
 }
 
 /* Stop emitting debugging information.  */
@@ -714,7 +714,7 @@ cp_lexer_start_debugging (cp_lexer* lexer)
 static void
 cp_lexer_stop_debugging (cp_lexer* lexer)
 {
-  --lexer->debugging_p;
+  lexer->debugging_p = false;
 }
 
 #endif /* ENABLE_CHECKING */
