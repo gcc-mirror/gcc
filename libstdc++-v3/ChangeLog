@@ -1,3 +1,13 @@
+2001-12-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/configopts.html:  Describe recent options.
+	* docs/html/documentation.html:  Point to new doxygen tarballs.
+	* docs/html/install.html:  Brief updates.
+	* docs/html/17_intro/RELEASE-NOTES:  Remove weird control character.
+	* docs/html/ext/howto.html:  Fix typos, describe filebuf::fd().
+	* docs/html/faq/index.html:  Update for 3.0.95.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2001-12-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	libstdc++-v3/5148

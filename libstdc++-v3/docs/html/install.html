@@ -39,11 +39,13 @@
 <h2><a name="prereqs">Tools you will need beforehand</a></h2>
    <p>You will need a recent version of g++ to compile the snapshot of
       libstdc++, such as one of the GCC 3.x snapshots (insert standard
-      caveat about using snapshots rather than formal releases).  You
-      will need the full source
-      distribution to whatever compiler release you are using.  The
-      GCC snapshots can be had from one of the sites on their
-      <a href="http://gcc.gnu.org/mirrors.html">mirror list</a>.
+      caveat about using snapshots rather than formal releases).  You will
+      need the full source distribution to whatever compiler release you are
+      using.  The GCC snapshots can be had from one of the sites on their
+      <a href="http://gcc.gnu.org/mirrors.html">mirror list</a>.  If you are
+      using a 2.x compiler, see
+      <a href="http://gcc.gnu.org/libstdc++/status.html">the status page</a>
+      first.
    </p>
 
    <p>In addition, if you plan to modify the makefiles or regenerate the
@@ -55,9 +57,6 @@
       These tools are all required to be installed in the same location
       (most linux distributions install these tools by default, so no
       worries as long as the versions are correct).
-   </p>
-
-   <p>GNU Make is the only 'make' that will parse the makefiles correctly.
    </p>
 
    <p>To test your build, you will need either DejaGNU 1.4 (to run
@@ -120,8 +119,9 @@
       </ol>
    </p>
 
-   <p>Check out or download the gcc sources: the resulting source directory
-      (<code>gcc</code> or <code>gcc-3.0</code>, for example) is <em>gccsrcdir</em>.
+   <p>Check out or download the GCC sources: the resulting source directory
+      (<code>gcc</code> or <code>gcc-3.0.3</code>, for example) is
+      <em>gccsrcdir</em>.
       Once in <em>gccsrcdir</em>, you'll need to rename or delete the
       libstdc++-v3 directory which comes with that snapshot:
       <pre>
@@ -145,7 +145,7 @@
 <h2><a name="config">Configuring</a></h2>
    <p>If you have never done this before, you should read the basic
       <a href="http://gcc.gnu.org/install/">GCC Installation
-      Instructions</a> first.
+      Instructions</a> first.  Read <em>all of them</em>.  Twice.
    </p>
    <p>When building libstdc++-v3 you'll have to configure
       the entire <em>gccsrcdir</em> directory.  The full list of libstdc++-v3
