@@ -1,3 +1,8 @@
+2001-04-08  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_valarray.h(valarray<>::operator[]): Make
+	inline. 
+
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/25_algorithms/equal.cc: New test.
