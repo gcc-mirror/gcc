@@ -251,3 +251,22 @@ hash_value_for_key (cache_ptr cache, const void *key)
 
   return retval;
 }
+
+/* Given KEY, return YES if it exists in the CACHE.
+   Return NO if it does not */
+
+BOOL
+hash_is_key_in_hash (cache_ptr cache, const void *key)
+{
+  node_ptr node = cache->node_table[(*cache->hash_func)(cache, key)];
+
+  if (node)
+    do {
+      if ((*cache->compare_func)(node->key, key))
+	  return YES;
+      else
+        node = node->next;
+    } while (node);
+
+  return NO;
+}
