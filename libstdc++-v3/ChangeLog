@@ -1,5 +1,10 @@
 2004-02-02  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/vector.tcc (vector::_M_insert_aux(iterator)):
+	Remove, unused.
+
+2004-02-02  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/13976
 	* include/ext/malloc_allocator.h (malloc_allocator::allocate,
 	deallocate): Make the second parameter unnamed, to void unused
