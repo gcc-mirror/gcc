@@ -1,3 +1,8 @@
+2004-05-15  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (simplify_builtin_strcpy): Avoid use of chainon, so
+	that simplify_builtin doesn't destructively modify its argument.
+
 2004-05-15  Richard Earnshaw  <reanrsha@arm.com>
 
 	* arm/lib1funcs.asm (_lshrdi3, _ashrdi3, _ashldi3): Add ASM 
