@@ -1,3 +1,8 @@
+2004-01-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/proto-qual-1.m (ROUND, aligned_sizeof): New.
+	(scan_initial, main): Use aligned_sizeof instead of sizeof.
+	
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13791
