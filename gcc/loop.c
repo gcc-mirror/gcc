@@ -6851,6 +6851,13 @@ restart:
 
 	      g2->new_reg = can_combine[i * giv_count + j];
 	      g2->same = g1;
+	      /* For destination, we now may replace by mem expression instead
+		 of register.  This changes the costs considerably, so add the
+		 compensation.  */
+	      if (g2->giv_type == DEST_ADDR)
+		g2->benefit = (g2->benefit + reg_address_cost
+			       - address_cost (g2->new_reg,
+			       GET_MODE (g2->mem)));
 	      g1->combined_with++;
 	      g1->lifetime += g2->lifetime;
 
