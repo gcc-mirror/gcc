@@ -1,3 +1,7 @@
+2000-10-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure: Save configure arguments to gcc/configargs.h.
+
 2000-10-04  Philipp Thomas  <pthomas@suse.de>
 
 	* config.guess: Import CVS version 1.157.
