@@ -1,3 +1,10 @@
+2004-08-18  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.h (FIXED_REGISTERS): Update encoding to be
+	-ffixed-reg safe, by preserving the meanings of zero and one.
+	(CALL_USED_REGISTERS): Likewise.
+	(CONDITIONAL_REGISTER_USAGE): Update to process new encodings.
+
 2004-08-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (split_branches): Check the result of

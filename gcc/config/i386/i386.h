@@ -932,23 +932,25 @@ extern int x86_prefetch_sse;
    and are not available for the register allocator.
    On the 80386, the stack pointer is such, as is the arg pointer.
 
-   The value is a mask - bit 1 is set for fixed registers
-   for 32bit target, while 2 is set for fixed registers for 64bit.
-   Proper value is computed in the CONDITIONAL_REGISTER_USAGE.
+   The value is zero if the register is not fixed on either 32 or
+   64 bit targets, one if the register if fixed on both 32 and 64
+   bit targets, two if it is only fixed on 32bit targets and three
+   if its only fixed on 64bit targets.
+   Proper values are computed in the CONDITIONAL_REGISTER_USAGE.
  */
 #define FIXED_REGISTERS						\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
-{  0, 0, 0, 0, 0, 0, 0, 3, 0,  0,  0,  0,  0,  0,  0,  0,	\
+{  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,	\
 /*arg,flags,fpsr,dir,frame*/					\
-    3,    3,   3,  3,    3,					\
+    1,    1,   1,  1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
-     1,   1,   1,   1,   1,   1,   1,   1,			\
+     2,   2,   2,   2,   2,   2,   2,   2,			\
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-     1,   1,    1,    1,    1,    1,    1,    1}
+     2,   2,    2,    2,    2,    2,    2,    2}
 
 
 /* 1 for registers not available across function calls.
@@ -958,23 +960,25 @@ extern int x86_prefetch_sse;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.
 
-   The value is a mask - bit 1 is set for call used
-   for 32bit target, while 2 is set for call used for 64bit.
-   Proper value is computed in the CONDITIONAL_REGISTER_USAGE.
+   The value is zero if the register is not fixed on either 32 or
+   64 bit targets, one if the register if fixed on both 32 and 64
+   bit targets, two if it is only fixed on 32bit targets and three
+   if its only fixed on 64bit targets.
+   Proper values are computed in the CONDITIONAL_REGISTER_USAGE.
 */
 #define CALL_USED_REGISTERS					\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
-{  3, 3, 3, 0, 2, 2, 0, 3, 3,  3,  3,  3,  3,  3,  3,  3,	\
+{  1, 1, 1, 0, 3, 3, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\
 /*arg,flags,fpsr,dir,frame*/					\
-     3,   3,   3,  3,    3,					\
+     1,   1,   1,  1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
-     3,   3,   3,   3,   3,  3,    3,   3,			\
+     1,   1,   1,   1,   1,  1,    1,   1,			\
 /*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
-     3,   3,   3,   3,   3,   3,   3,   3,			\
+     1,   1,   1,   1,   1,   1,   1,   1,			\
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
-     3,   3,   3,   3,   1,   1,   1,   1,			\
+     1,   1,   1,   1,   2,   2,   2,   2,			\
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-     3,   3,    3,    3,    3,    3,    3,    3}		\
+     1,   1,    1,    1,    1,    1,    1,    1}		\
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -1004,9 +1008,11 @@ do {									\
     int i;								\
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)				\
       {									\
-        fixed_regs[i] = (fixed_regs[i] & (TARGET_64BIT ? 2 : 1)) != 0;	\
-        call_used_regs[i] = (call_used_regs[i]				\
-			     & (TARGET_64BIT ? 2 : 1)) != 0;		\
+	if (fixed_regs[i] > 1)						\
+	  fixed_regs[i] = (fixed_regs[i] == (TARGET_64BIT ? 3 : 2));	\
+	if (call_used_regs[i] > 1)					\
+	  call_used_regs[i] = (call_used_regs[i]			\
+			       == (TARGET_64BIT ? 3 : 2));		\
       }									\
     if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)			\
       {									\
