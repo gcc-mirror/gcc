@@ -209,9 +209,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"09/18/92"
+#define VERSION_INFO2	"10/07/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.12.2 09/18/92 06:21:09"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.13.1 10/07/92 06:31:59"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -425,16 +425,20 @@ extern char * reg_names[];
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+/* The best alignment to use in cases where we have a choice.  */
+#define FASTEST_ALIGNMENT (TARGET_88100 ? 32 : 64)
 
-/* Make arrays of chars word-aligned for the same reasons.  */
+/* Make strings 4/8 byte aligned so strcpy from constants will be faster.  */
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
+  ((TREE_CODE (EXP) == STRING_CST	\
+    && (ALIGN) < FASTEST_ALIGNMENT)	\
+   ? FASTEST_ALIGNMENT : (ALIGN))
+
+/* Make arrays of chars 4/8 byte aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+   && (ALIGN) < FASTEST_ALIGNMENT ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Alignment of field after `int : 0' in a structure.
    Ignored with PCC_BITFIELD_TYPE_MATTERS.  */
@@ -2015,7 +2019,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, TABLE)			\
   do {									\
     if (! CASE_VECTOR_INSNS)						\
-      readonly_data_section ();						\
+      {									\
+        readonly_data_section ();					\
+        ASM_OUTPUT_ALIGN (FILE, 2);					\
+      }									\
     ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
   } while (0)
 
@@ -2403,8 +2410,6 @@ sdata_section ()							\
   DTORS_SECTION_FUNCTION						\
   INIT_SECTION_FUNCTION							\
   FINI_SECTION_FUNCTION
-
-#undef READONLY_DATA_SECTION
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
