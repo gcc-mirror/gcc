@@ -1,3 +1,8 @@
+2000-02-17  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c: Replace includes of system headers with
+	#include "system.h".
+
 2000-02-16  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-linux*, alpha-netbsd) [extra_parts]:
