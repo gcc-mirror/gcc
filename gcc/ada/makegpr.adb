@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--       Copyright (C) 2004-2005 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,6 @@ with Output;           use Output;
 with Opt;              use Opt;
 with Osint;            use Osint;
 with Prj;              use Prj;
-with Prj.Com;          use Prj.Com;
 with Prj.Pars;
 with Prj.Util;         use Prj.Util;
 with Snames;           use Snames;
@@ -167,6 +166,8 @@ package body Makegpr is
       Linker_String   'Access);
    Packages_To_Check : constant String_List_Access := List_Of_Packages'Access;
    --  List of the packages to be checked when parsing/processing project files
+
+   Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
 
    Main_Project : Project_Id;
    --  The project id of the main project
@@ -617,7 +618,7 @@ package body Makegpr is
          --  Nothing to do when there is no project specified
 
          if Project /= No_Project then
-            Data := Projects.Table (Project);
+            Data := Project_Tree.Projects.Table (Project);
 
             --  Nothing to do if the project has already been processed
 
@@ -625,7 +626,7 @@ package body Makegpr is
 
                --  Mark the project as processed, to avoid processing it again
 
-               Projects.Table (Project).Seen := True;
+               Project_Tree.Projects.Table (Project).Seen := True;
 
                Recursive_Add_Archives (Data.Extends);
 
@@ -634,17 +635,22 @@ package body Makegpr is
                --  Call itself recursively for all imported projects
 
                while Imported /= Empty_Project_List loop
-                  Prj := Project_Lists.Table (Imported).Project;
+                  Prj := Project_Tree.Project_Lists.Table
+                           (Imported).Project;
 
                   if Prj /= No_Project then
-                     while Projects.Table (Prj).Extended_By /= No_Project loop
-                        Prj := Projects.Table (Prj).Extended_By;
+                     while Project_Tree.Projects.Table
+                             (Prj).Extended_By /= No_Project
+                     loop
+                        Prj := Project_Tree.Projects.Table
+                                 (Prj).Extended_By;
                      end loop;
 
                      Recursive_Add_Archives (Prj);
                   end if;
 
-                  Imported := Project_Lists.Table (Imported).Next;
+                  Imported := Project_Tree.Project_Lists.Table
+                                (Imported).Next;
                end loop;
 
                --  If there is sources of language other than Ada in this
@@ -664,8 +670,10 @@ package body Makegpr is
    begin
       --  First, mark all projects as not processed
 
-      for Project in 1 .. Projects.Last loop
-         Projects.Table (Project).Seen := False;
+      for Project in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+      loop
+         Project_Tree.Projects.Table (Project).Seen := False;
       end loop;
 
       --  Take care of the run path option
@@ -939,10 +947,10 @@ package body Makegpr is
             raise Program_Error;
 
          when Linker =>
-            Pkg := Value_Of (Name_Linker, Data.Decl.Packages);
+            Pkg := Value_Of (Name_Linker, Data.Decl.Packages, Project_Tree);
 
          when Compiler =>
-            Pkg := Value_Of (Name_Compiler, Data.Decl.Packages);
+            Pkg := Value_Of (Name_Compiler, Data.Decl.Packages, Project_Tree);
       end case;
 
       if Pkg /= No_Package then
@@ -950,24 +958,30 @@ package body Makegpr is
 
          Switches_Array := Prj.Util.Value_Of
            (Name      => Name_Switches,
-            In_Arrays => Packages.Table (Pkg).Decl.Arrays);
+            In_Arrays => Project_Tree.Packages.Table
+                          (Pkg).Decl.Arrays,
+            In_Tree   => Project_Tree);
 
          Switches :=
            Prj.Util.Value_Of
              (Index     => File_Name,
               Src_Index => 0,
-              In_Array  => Switches_Array);
+              In_Array  => Switches_Array,
+              In_Tree   => Project_Tree);
 
          --  Otherwise, get the Default_Switches ("language"), if they exist
 
          if Switches = Nil_Variable_Value then
             Defaults := Prj.Util.Value_Of
               (Name      => Name_Default_Switches,
-               In_Arrays => Packages.Table (Pkg).Decl.Arrays);
+               In_Arrays => Project_Tree.Packages.Table
+                              (Pkg).Decl.Arrays,
+               In_Tree   => Project_Tree);
             Switches := Prj.Util.Value_Of
               (Index     => Language_Names.Table (Language),
                Src_Index => 0,
-               In_Array  => Defaults);
+               In_Array  => Defaults,
+               In_Tree   => Project_Tree);
          end if;
 
          --  If there are switches, add them to Arguments
@@ -975,7 +989,8 @@ package body Makegpr is
          if Switches /= Nil_Variable_Value then
             Element_Id := Switches.Values;
             while Element_Id /= Nil_String loop
-               Element := String_Elements.Table (Element_Id);
+               Element := Project_Tree.String_Elements.Table
+                            (Element_Id);
 
                if Element.Value /= No_Name then
                   Get_Name_String (Element.Value);
@@ -1003,7 +1018,8 @@ package body Makegpr is
    --------------------------
 
    procedure Build_Global_Archive is
-      Data      : Project_Data := Projects.Table (Main_Project);
+      Data      : Project_Data :=
+                    Project_Tree.Projects.Table (Main_Project);
       Source_Id : Other_Source_Id;
       Source    : Other_Source;
       Success   : Boolean;
@@ -1072,8 +1088,10 @@ package body Makegpr is
                --  Put all sources of language other than Ada in
                --  Source_Indexes.
 
-               for Proj in 1 .. Projects.Last loop
-                  Data := Projects.Table (Proj);
+               for Proj in Project_Table.First ..
+                           Project_Table.Last (Project_Tree.Projects)
+               loop
+                  Data := Project_Tree.Projects.Table (Proj);
 
                   if not Data.Library then
                      Last_Source := 0;
@@ -1081,7 +1099,8 @@ package body Makegpr is
 
                      while Source_Id /= No_Other_Source loop
                         Add_Source_Id (Proj, Source_Id);
-                        Source_Id := Other_Sources.Table (Source_Id).Next;
+                        Source_Id := Project_Tree.Other_Sources.Table
+                                       (Source_Id).Next;
                      end loop;
                   end if;
                end loop;
@@ -1100,7 +1119,8 @@ package body Makegpr is
 
                   for S in 1 .. Last_Source loop
                      Source_Id := Source_Indexes (S).Id;
-                     Source := Other_Sources.Table (Source_Id);
+                     Source := Project_Tree.Other_Sources.Table
+                                 (Source_Id);
 
                      if (not Source_Indexes (S).Found)
                        and then Source.Object_Path = Object_Path
@@ -1219,14 +1239,17 @@ package body Makegpr is
 
          --  Followed by all the object files of the non library projects
 
-         for Proj in 1 .. Projects.Last loop
-            Data := Projects.Table (Proj);
+         for Proj in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+         loop
+            Data := Project_Tree.Projects.Table (Proj);
 
             if not Data.Library then
                Source_Id := Data.First_Other_Source;
 
                while Source_Id /= No_Other_Source loop
-                  Source := Other_Sources.Table (Source_Id);
+                  Source :=
+                    Project_Tree.Other_Sources.Table (Source_Id);
 
                   --  Only include object file name that have not been
                   --  overriden in extending projects.
@@ -1345,7 +1368,8 @@ package body Makegpr is
    -------------------
 
    procedure Build_Library (Project : Project_Id; Unconditionally : Boolean) is
-      Data      : constant Project_Data := Projects.Table (Project);
+      Data      : constant Project_Data :=
+                    Project_Tree.Projects.Table (Project);
       Source_Id : Other_Source_Id;
       Source    : Other_Source;
 
@@ -1366,7 +1390,7 @@ package body Makegpr is
       Time_Stamp  : Time_Stamp_Type;
       Driver_Name : Name_Id := No_Name;
 
-      Lib_Opts : Argument_List_Access := No_Argument'Unrestricted_Access;
+      Lib_Opts : Argument_List_Access := No_Argument'Access;
    begin
       Check_Archive_Builder;
 
@@ -1414,7 +1438,8 @@ package body Makegpr is
 
                while Source_Id /= No_Other_Source loop
                   Add_Source_Id (Project, Source_Id);
-                  Source_Id := Other_Sources.Table (Source_Id).Next;
+                  Source_Id := Project_Tree.Other_Sources.Table
+                                 (Source_Id).Next;
                end loop;
 
                --  Read the dependency file, line by line
@@ -1430,16 +1455,17 @@ package body Makegpr is
                   --  Check if this object file is for a source of this project
 
                   for S in 1 .. Last_Source loop
-                     if (not Source_Indexes (S).Found) and then
-                       Other_Sources.Table
-                         (Source_Indexes (S).Id).Object_Name =
-                       Object_Name
+                     if (not Source_Indexes (S).Found)
+                       and then
+                         Project_Tree.Other_Sources.Table
+                           (Source_Indexes (S).Id).Object_Name = Object_Name
                      then
                         --  We have found the object file: get the source
                         --  data, and mark it as found.
 
                         Source_Id := Source_Indexes (S).Id;
-                        Source := Other_Sources.Table (Source_Id);
+                        Source := Project_Tree.Other_Sources.Table
+                                    (Source_Id);
                         Source_Indexes (S).Found := True;
                         exit;
                      end if;
@@ -1526,7 +1552,8 @@ package body Makegpr is
 
                         if Verbose_Mode then
                            Source_Id := Source_Indexes (Index).Id;
-                           Source := Other_Sources.Table (Source_Id);
+                           Source := Project_Tree.Other_Sources.Table
+                                       (Source_Id);
                            Write_Str  ("      -> ");
                            Write_Str  (Get_Name_String (Source.Object_Name));
                            Write_Str  (" is not in the archive ");
@@ -1566,7 +1593,7 @@ package body Makegpr is
             Source_Id := Data.First_Other_Source;
 
             while Source_Id /= No_Other_Source loop
-               Source := Other_Sources.Table (Source_Id);
+               Source := Project_Tree.Other_Sources.Table (Source_Id);
                Add_Argument
                  (Get_Name_String (Source.Object_Name), Verbose_Mode);
                Source_Id := Source.Next;
@@ -1605,7 +1632,8 @@ package body Makegpr is
                   Library_Options : constant Variable_Value :=
                                       Value_Of
                                         (Name_Library_Options,
-                                         Data.Decl.Attributes);
+                                         Data.Decl.Attributes,
+                                         Project_Tree);
 
                begin
                   if not Library_Options.Default then
@@ -1615,7 +1643,8 @@ package body Makegpr is
 
                      begin
                         while Current /= Nil_String loop
-                           Element := String_Elements.Table (Current);
+                           Element := Project_Tree.String_Elements.
+                                        Table (Current);
                            Get_Name_String (Element.Value);
 
                            if Name_Len /= 0 then
@@ -2034,9 +2063,12 @@ package body Makegpr is
    begin
       C_Plus_Plus_Is_Used := False;
 
-      for Project in 1 .. Projects.Last loop
+      for Project in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+      loop
          if
-           Projects.Table (Project).Languages (C_Plus_Plus_Language_Index)
+           Project_Tree.Projects.Table (Project).Languages
+                                           (C_Plus_Plus_Language_Index)
          then
             C_Plus_Plus_Is_Used := True;
             exit;
@@ -2053,7 +2085,8 @@ package body Makegpr is
       Data         : in Project_Data;
       Local_Errors : in out Boolean)
    is
-      Source  : Other_Source := Other_Sources.Table (Source_Id);
+      Source  : Other_Source :=
+        Project_Tree.Other_Sources.Table (Source_Id);
       Success : Boolean;
       CPATH   : String_Access := null;
 
@@ -2283,7 +2316,7 @@ package body Makegpr is
          else
             --  Everything looks fine, update the Other_Sources table
 
-            Other_Sources.Table (Source_Id) := Source;
+            Project_Tree.Other_Sources.Table (Source_Id) := Source;
          end if;
 
       --  Compilation failed
@@ -2302,7 +2335,8 @@ package body Makegpr is
    --------------------------------
 
    procedure Compile_Individual_Sources is
-      Data         : Project_Data := Projects.Table (Main_Project);
+      Data         : Project_Data :=
+                       Project_Tree.Projects.Table (Main_Project);
       Source_Id    : Other_Source_Id;
       Source       : Other_Source;
       Source_Name  : Name_Id;
@@ -2318,7 +2352,7 @@ package body Makegpr is
       Compile_Only := True;
 
       Get_Imported_Directories (Main_Project, Data);
-      Projects.Table (Main_Project) := Data;
+      Project_Tree.Projects.Table (Main_Project) := Data;
 
       --  Compilation will occur in the object directory
 
@@ -2361,7 +2395,8 @@ package body Makegpr is
                   Source_Id := Data.First_Other_Source;
 
                   while Source_Id /= No_Other_Source loop
-                     Source := Other_Sources.Table (Source_Id);
+                     Source :=
+                       Project_Tree.Other_Sources.Table (Source_Id);
                      exit when Source.File_Name = Source_Name;
                      Source_Id := Source.Next;
                   end loop;
@@ -2406,7 +2441,8 @@ package body Makegpr is
    --------------------------------
 
    procedure Compile_Link_With_Gnatmake (Mains_Specified : Boolean) is
-      Data    : constant Project_Data := Projects.Table (Main_Project);
+      Data    : constant Project_Data :=
+                  Project_Tree.Projects.Table (Main_Project);
       Success : Boolean;
 
    begin
@@ -2571,9 +2607,11 @@ package body Makegpr is
    begin
       --  Loop through project files
 
-      for Project in 1 .. Projects.Last loop
+      for Project in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+      loop
          Local_Errors := False;
-         Data := Projects.Table (Project);
+         Data := Project_Tree.Projects.Table (Project);
 
          --  Nothing to do when no sources of language other than Ada
 
@@ -2584,7 +2622,7 @@ package body Makegpr is
             if not Data.Include_Data_Set then
                Get_Imported_Directories (Project, Data);
                Data.Include_Data_Set := True;
-               Projects.Table (Project) := Data;
+               Project_Tree.Projects.Table (Project) := Data;
             end if;
 
             Need_To_Rebuild_Archive := Force_Compilations;
@@ -2598,7 +2636,7 @@ package body Makegpr is
             --  Process each source one by one
 
             while Source_Id /= No_Other_Source loop
-               Source := Other_Sources.Table (Source_Id);
+               Source := Project_Tree.Other_Sources.Table (Source_Id);
                Need_To_Compile := Force_Compilations;
 
                --  Check if compilation is needed
@@ -2679,7 +2717,7 @@ package body Makegpr is
       Create (Dep_File, Append_File, Name);
 
       while Source_Id /= No_Other_Source loop
-         Source := Other_Sources.Table (Source_Id);
+         Source := Project_Tree.Other_Sources.Table (Source_Id);
          Put_Line (Dep_File, Get_Name_String (Source.Object_Name));
          Put_Line (Dep_File, String (Source.Object_TS));
          Source_Id := Source.Next;
@@ -2713,12 +2751,15 @@ package body Makegpr is
 
       --  Get all the object files of non-Ada sources in non-library projects
 
-      for Project in 1 .. Projects.Last loop
-         if not Projects.Table (Project).Library then
-            Source_Id := Projects.Table (Project).First_Other_Source;
+      for Project in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+      loop
+         if not Project_Tree.Projects.Table (Project).Library then
+            Source_Id :=
+              Project_Tree.Projects.Table (Project).First_Other_Source;
 
             while Source_Id /= No_Other_Source loop
-               Source := Other_Sources.Table (Source_Id);
+               Source := Project_Tree.Other_Sources.Table (Source_Id);
 
                --  Put only those object files that are in the global archive
 
@@ -2791,10 +2832,14 @@ package body Makegpr is
    ------------------
 
    procedure Get_Compiler (For_Language : First_Language_Indexes) is
-      Data : constant Project_Data := Projects.Table (Main_Project);
+      Data : constant Project_Data :=
+               Project_Tree.Projects.Table (Main_Project);
 
       Ide : constant Package_Id :=
-        Value_Of (Name_Ide, In_Packages => Data.Decl.Packages);
+        Value_Of
+          (Name_Ide,
+           In_Packages => Data.Decl.Packages,
+           In_Tree     => Project_Tree);
       --  The id of the package IDE in the project file
 
       Compiler : constant Variable_Value :=
@@ -2802,7 +2847,8 @@ package body Makegpr is
           (Name                    => Language_Names.Table (For_Language),
            Index                   => 0,
            Attribute_Or_Array_Name => Name_Compiler_Command,
-           In_Package              => Ide);
+           In_Package              => Ide,
+           In_Tree                 => Project_Tree);
       --  The value of Compiler_Command ("language") in package IDE, if defined
 
    begin
@@ -2902,7 +2948,7 @@ package body Makegpr is
          --  Add each source directory path name, preceded by "-I" to Arguments
 
          while Element_Id /= Nil_String loop
-            Element := String_Elements.Table (Element_Id);
+            Element := Project_Tree.String_Elements.Table (Element_Id);
 
             if Element.Value /= No_Name then
                Get_Name_String (Element.Value);
@@ -2960,7 +3006,7 @@ package body Makegpr is
          --  Nothing to do if project is undefined
 
          if Prj /= No_Project then
-            Data := Projects.Table (Prj);
+            Data := Project_Tree.Projects.Table (Prj);
 
             --  Nothing to do if project has already been processed
 
@@ -2969,7 +3015,7 @@ package body Makegpr is
                --  Mark the project as processed, to avoid multiple processing
                --  of the same project.
 
-               Projects.Table (Prj).Seen := True;
+               Project_Tree.Projects.Table (Prj).Seen := True;
 
                --  Add the source directories of this project
 
@@ -2984,8 +3030,11 @@ package body Makegpr is
                --  Call itself for all imported projects, if any
 
                while Imported /= Empty_Project_List loop
-                  Recursive_Get_Dirs (Project_Lists.Table (Imported).Project);
-                  Imported := Project_Lists.Table (Imported).Next;
+                  Recursive_Get_Dirs
+                    (Project_Tree.Project_Lists.Table
+                       (Imported).Project);
+                  Imported :=
+                    Project_Tree.Project_Lists.Table (Imported).Next;
                end loop;
             end if;
          end if;
@@ -2996,8 +3045,10 @@ package body Makegpr is
    begin
       --  First, mark all project as not processed
 
-      for J in 1 .. Projects.Last loop
-         Projects.Table (J).Seen := False;
+      for J in Project_Table.First ..
+               Project_Table.Last (Project_Tree.Projects)
+      loop
+         Project_Tree.Projects.Table (J).Seen := False;
       end loop;
 
       --  Empty Arguments
@@ -3006,15 +3057,18 @@ package body Makegpr is
 
       --  Process this project individually, project data are already known
 
-      Projects.Table (Project).Seen := True;
+      Project_Tree.Projects.Table (Project).Seen := True;
 
       Add (Data.Source_Dirs);
 
       Recursive_Get_Dirs (Data.Extends);
 
       while Imported_Projects /= Empty_Project_List loop
-         Recursive_Get_Dirs (Project_Lists.Table (Imported_Projects).Project);
-         Imported_Projects := Project_Lists.Table (Imported_Projects).Next;
+         Recursive_Get_Dirs
+           (Project_Tree.Project_Lists.Table
+              (Imported_Projects).Project);
+         Imported_Projects := Project_Tree.Project_Lists.Table
+                                (Imported_Projects).Next;
       end loop;
 
       Data.Imported_Directories_Switches :=
@@ -3059,6 +3113,7 @@ package body Makegpr is
 
       Prj.Pars.Parse
         (Project           => Main_Project,
+         In_Tree           => Project_Tree,
          Project_File_Name => Project_File_Name.all,
          Packages_To_Check => Packages_To_Check);
 
@@ -3092,7 +3147,8 @@ package body Makegpr is
 
       else
          declare
-            Data : constant Prj.Project_Data := Projects.Table (Main_Project);
+            Data : constant Prj.Project_Data :=
+                     Project_Tree.Projects.Table (Main_Project);
          begin
             if Data.Library and then Mains.Number_Of_Mains /= 0 then
                Osint.Fail
@@ -3143,7 +3199,7 @@ package body Makegpr is
       Csets.Initialize;
       Namet.Initialize;
       Snames.Initialize;
-      Prj.Initialize;
+      Prj.Initialize (Project_Tree);
       Mains.Delete;
 
       --  Set Name_Ide and Name_Compiler_Command
@@ -3198,19 +3254,22 @@ package body Makegpr is
      (Object_Name : Name_Id;
       Project     : Project_Id) return Boolean
    is
-      Data   : Project_Data := Projects.Table (Project);
+      Data   : Project_Data := Project_Tree.Projects.Table (Project);
       Source : Other_Source_Id;
 
    begin
       while Data.Extended_By /= No_Project loop
-         Data := Projects.Table (Data.Extended_By);
-         Source := Data.First_Other_Source;
+         Data := Project_Tree.Projects.Table (Data.Extended_By);
 
+         Source := Data.First_Other_Source;
          while Source /= No_Other_Source loop
-            if Other_Sources.Table (Source).Object_Name = Object_Name then
+            if Project_Tree.Other_Sources.Table (Source).Object_Name =
+                 Object_Name
+            then
                return False;
             else
-               Source := Other_Sources.Table (Source).Next;
+               Source :=
+                 Project_Tree.Other_Sources.Table (Source).Next;
             end if;
          end loop;
       end loop;
@@ -3223,7 +3282,8 @@ package body Makegpr is
    ----------------------
 
    procedure Link_Executables is
-      Data : constant Project_Data := Projects.Table (Main_Project);
+      Data : constant Project_Data :=
+               Project_Tree.Projects.Table (Main_Project);
 
       Mains_Specified : constant Boolean := Mains.Number_Of_Mains /= 0;
       --  True if main sources were specified on the command line
@@ -3288,8 +3348,10 @@ package body Makegpr is
          Prj_Data : Project_Data;
 
       begin
-         for Prj in 1 .. Projects.Last loop
-            Prj_Data := Projects.Table (Prj);
+         for Prj in Project_Table.First ..
+                    Project_Table.Last (Project_Tree.Projects)
+         loop
+            Prj_Data := Project_Tree.Projects.Table (Prj);
 
             --  There is an archive only in project
             --  files with sources other than Ada
@@ -3381,10 +3443,11 @@ package body Makegpr is
          Executable_Name : constant String :=
                              Get_Name_String
                                (Executable_Of
-                                  (Project  => Main_Project,
-                                   Main     => Main_Id,
-                                   Index    => 0,
-                                   Ada_Main => False));
+                                    (Project  => Main_Project,
+                                     In_Tree  => Project_Tree,
+                                     Main     => Main_Id,
+                                     Index    => 0,
+                                     Ada_Main => False));
          --  File name of the executable
 
          Executable_Path : constant String :=
@@ -3453,6 +3516,7 @@ package body Makegpr is
                Get_Name_String
                  (Executable_Of
                     (Project  => Main_Project,
+                     In_Tree  => Project_Tree,
                      Main     => Main_Id,
                      Index    => 0,
                      Ada_Main => False)),
@@ -3484,7 +3548,7 @@ package body Makegpr is
             if Link_Options_Switches = null then
                Link_Options_Switches :=
                  new Argument_List'
-                   (Linker_Options_Switches (Main_Project));
+                   (Linker_Options_Switches (Main_Project, Project_Tree));
             end if;
 
             Add_Arguments (Link_Options_Switches.all, True);
@@ -3532,7 +3596,8 @@ package body Makegpr is
 
          begin
             while Element_Id /= Nil_String loop
-               Element := String_Elements.Table (Element_Id);
+               Element := Project_Tree.String_Elements.Table
+                            (Element_Id);
 
                if Element.Value /= No_Name then
                   Mains.Add_Main (Get_Name_String (Element.Value));
@@ -3629,7 +3694,8 @@ package body Makegpr is
                   --  Check if it is a source of a language other than Ada
 
                   while Source_Id /= No_Other_Source loop
-                     Source := Other_Sources.Table (Source_Id);
+                     Source :=
+                       Project_Tree.Other_Sources.Table (Source_Id);
                      exit when Source.File_Name = Main_Id;
                      Source_Id := Source.Next;
                   end loop;
@@ -3674,6 +3740,7 @@ package body Makegpr is
                        (Get_Name_String
                           (Executable_Of
                              (Project  => Main_Project,
+                              In_Tree  => Project_Tree,
                               Main     => Other_Mains.Table (Main).File_Name,
                               Index    => 0,
                               Ada_Main => False)),
@@ -3774,7 +3841,8 @@ package body Makegpr is
                   --  Check if it is a source of the main project file
 
                   while Source_Id /= No_Other_Source loop
-                     Source := Other_Sources.Table (Source_Id);
+                     Source :=
+                       Project_Tree.Other_Sources.Table (Source_Id);
                      exit when Source.File_Name = Main_Id;
                      Source_Id := Source.Next;
                   end loop;
@@ -3815,6 +3883,7 @@ package body Makegpr is
                        (Get_Name_String
                           (Executable_Of
                              (Project  => Main_Project,
+                              In_Tree  => Project_Tree,
                               Main     => Main_Id,
                               Index    => 0,
                               Ada_Main => False)));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
+--              Copyright (C) 2001-2005, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ package MLib.Prj is
 
    procedure Build_Library
      (For_Project   : Project_Id;
+      In_Tree       : Project_Tree_Ref;
       Gnatbind      : String;
       Gnatbind_Path : String_Access;
       Gcc           : String;
@@ -45,7 +46,8 @@ package MLib.Prj is
    --  files. If Bind is False the binding of a stand-alone library is skipped.
    --  If Link is False, the library is not linked/built.
 
-   procedure Check_Library (For_Project : Project_Id);
+   procedure Check_Library
+     (For_Project : Project_Id; In_Tree : Project_Tree_Ref);
    --  Check if the library of a library project needs to be rebuilt,
    --  because its time-stamp is earlier than the time stamp of one of its
    --  object files.

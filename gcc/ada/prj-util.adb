@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,7 @@ package body Prj.Util is
 
    function Executable_Of
      (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
       Main     : Name_Id;
       Index    : Int;
       Ada_Main : Boolean := True) return Name_Id
@@ -82,19 +83,21 @@ package body Prj.Util is
       pragma Assert (Project /= No_Project);
 
       The_Packages : constant Package_Id :=
-                       Projects.Table (Project).Decl.Packages;
+                       In_Tree.Projects.Table (Project).Decl.Packages;
 
       Builder_Package : constant Prj.Package_Id :=
                           Prj.Util.Value_Of
                             (Name        => Name_Builder,
-                             In_Packages => The_Packages);
+                             In_Packages => The_Packages,
+                             In_Tree     => In_Tree);
 
       Executable : Variable_Value :=
                      Prj.Util.Value_Of
                        (Name                    => Main,
                         Index                   => Index,
                         Attribute_Or_Array_Name => Name_Executable,
-                        In_Package              => Builder_Package);
+                        In_Package              => Builder_Package,
+                        In_Tree                 => In_Tree);
 
       Executable_Suffix : constant Variable_Value :=
                             Prj.Util.Value_Of
@@ -102,15 +105,16 @@ package body Prj.Util is
                                Index                   => 0,
                                Attribute_Or_Array_Name =>
                                  Name_Executable_Suffix,
-                               In_Package              => Builder_Package);
+                               In_Package              => Builder_Package,
+                               In_Tree                 => In_Tree);
 
       Body_Append : constant String := Get_Name_String
-                                          (Projects.Table
+                                          (In_Tree.Projects.Table
                                             (Project).
                                               Naming.Ada_Body_Suffix);
 
       Spec_Append : constant String := Get_Name_String
-                                          (Projects.Table
+                                          (In_Tree.Projects.Table
                                             (Project).
                                                Naming.Ada_Spec_Suffix);
 
@@ -128,7 +132,7 @@ package body Prj.Util is
                Last : Positive := Name_Len;
 
                Naming : constant Naming_Data :=
-                          Projects.Table (Project).Naming;
+                          In_Tree.Projects.Table (Project).Naming;
 
                Spec_Suffix : constant String :=
                                Get_Name_String (Naming.Ada_Spec_Suffix);
@@ -163,7 +167,8 @@ package body Prj.Util is
                       (Name                    => Name_Find,
                        Index                   => 0,
                        Attribute_Or_Array_Name => Name_Executable,
-                       In_Package              => Builder_Package);
+                       In_Package              => Builder_Package,
+                       In_Tree                 => In_Tree);
                end if;
             end;
          end if;
@@ -400,7 +405,8 @@ package body Prj.Util is
 
    function Value_Of
      (Index     : Name_Id;
-      In_Array  : Array_Element_Id) return Name_Id
+      In_Array  : Array_Element_Id;
+      In_Tree   : Project_Tree_Ref) return Name_Id
    is
       Current    : Array_Element_Id := In_Array;
       Element    : Array_Element;
@@ -411,7 +417,7 @@ package body Prj.Util is
          return No_Name;
       end if;
 
-      Element := Array_Elements.Table (Current);
+      Element := In_Tree.Array_Elements.Table (Current);
 
       if not Element.Index_Case_Sensitive then
          Get_Name_String (Index);
@@ -420,7 +426,7 @@ package body Prj.Util is
       end if;
 
       while Current /= No_Array_Element loop
-         Element := Array_Elements.Table (Current);
+         Element := In_Tree.Array_Elements.Table (Current);
 
          if Real_Index = Element.Index then
             exit when Element.Value.Kind /= Single;
@@ -437,7 +443,8 @@ package body Prj.Util is
    function Value_Of
      (Index     : Name_Id;
       Src_Index : Int := 0;
-      In_Array  : Array_Element_Id) return Variable_Value
+      In_Array  : Array_Element_Id;
+      In_Tree   : Project_Tree_Ref) return Variable_Value
    is
       Current : Array_Element_Id := In_Array;
       Element : Array_Element;
@@ -448,7 +455,7 @@ package body Prj.Util is
          return Nil_Variable_Value;
       end if;
 
-      Element := Array_Elements.Table (Current);
+      Element := In_Tree.Array_Elements.Table (Current);
 
       if not Element.Index_Case_Sensitive then
          Get_Name_String (Index);
@@ -457,7 +464,7 @@ package body Prj.Util is
       end if;
 
       while Current /= No_Array_Element loop
-         Element := Array_Elements.Table (Current);
+         Element := In_Tree.Array_Elements.Table (Current);
 
          if Real_Index = Element.Index and then
            Src_Index = Element.Src_Index
@@ -475,7 +482,8 @@ package body Prj.Util is
      (Name                    : Name_Id;
       Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
-      In_Package              : Package_Id) return Variable_Value
+      In_Package              : Package_Id;
+      In_Tree                 : Project_Tree_Ref) return Variable_Value
    is
       The_Array     : Array_Element_Id;
       The_Attribute : Variable_Value := Nil_Variable_Value;
@@ -488,12 +496,14 @@ package body Prj.Util is
          The_Array :=
            Value_Of
              (Name      => Attribute_Or_Array_Name,
-              In_Arrays => Packages.Table (In_Package).Decl.Arrays);
+              In_Arrays => In_Tree.Packages.Table (In_Package).Decl.Arrays,
+              In_Tree   => In_Tree);
          The_Attribute :=
            Value_Of
              (Index     => Name,
               Src_Index => Index,
-              In_Array  => The_Array);
+              In_Array  => The_Array,
+              In_Tree   => In_Tree);
 
          --  If there is no array element, look for a variable
 
@@ -501,7 +511,9 @@ package body Prj.Util is
             The_Attribute :=
               Value_Of
                 (Variable_Name => Attribute_Or_Array_Name,
-                 In_Variables  => Packages.Table (In_Package).Decl.Attributes);
+                 In_Variables  => In_Tree.Packages.Table
+                                    (In_Package).Decl.Attributes,
+                 In_Tree       => In_Tree);
          end if;
       end if;
 
@@ -511,16 +523,18 @@ package body Prj.Util is
    function Value_Of
      (Index     : Name_Id;
       In_Array  : Name_Id;
-      In_Arrays : Array_Id) return Name_Id
+      In_Arrays : Array_Id;
+      In_Tree   : Project_Tree_Ref) return Name_Id
    is
       Current : Array_Id := In_Arrays;
       The_Array : Array_Data;
 
    begin
       while Current /= No_Array loop
-         The_Array := Arrays.Table (Current);
+         The_Array := In_Tree.Arrays.Table (Current);
          if The_Array.Name = In_Array then
-            return Value_Of (Index, In_Array => The_Array.Value);
+            return Value_Of
+              (Index, In_Array => The_Array.Value, In_Tree => In_Tree);
          else
             Current := The_Array.Next;
          end if;
@@ -531,14 +545,15 @@ package body Prj.Util is
 
    function Value_Of
      (Name      : Name_Id;
-      In_Arrays : Array_Id) return Array_Element_Id
+      In_Arrays : Array_Id;
+      In_Tree   : Project_Tree_Ref) return Array_Element_Id
    is
       Current    : Array_Id := In_Arrays;
       The_Array  : Array_Data;
 
    begin
       while Current /= No_Array loop
-         The_Array := Arrays.Table (Current);
+         The_Array := In_Tree.Arrays.Table (Current);
 
          if The_Array.Name = Name then
             return The_Array.Value;
@@ -552,14 +567,15 @@ package body Prj.Util is
 
    function Value_Of
      (Name        : Name_Id;
-      In_Packages : Package_Id) return Package_Id
+      In_Packages : Package_Id;
+      In_Tree     : Project_Tree_Ref) return Package_Id
    is
       Current : Package_Id := In_Packages;
       The_Package : Package_Element;
 
    begin
       while Current /= No_Package loop
-         The_Package := Packages.Table (Current);
+         The_Package := In_Tree.Packages.Table (Current);
          exit when The_Package.Name /= No_Name
            and then The_Package.Name = Name;
          Current := The_Package.Next;
@@ -570,14 +586,16 @@ package body Prj.Util is
 
    function Value_Of
      (Variable_Name : Name_Id;
-      In_Variables  : Variable_Id) return Variable_Value
+      In_Variables  : Variable_Id;
+      In_Tree       : Project_Tree_Ref) return Variable_Value
    is
       Current      : Variable_Id := In_Variables;
       The_Variable : Variable;
 
    begin
       while Current /= No_Variable loop
-         The_Variable := Variable_Elements.Table (Current);
+         The_Variable :=
+           In_Tree.Variable_Elements.Table (Current);
 
          if Variable_Name = The_Variable.Name then
             return The_Variable.Value;

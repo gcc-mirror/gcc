@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,17 +29,19 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
-with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with MLib.Fil;
 with MLib.Utl;
-with Namet;             use Namet;
-with Opt;               use Opt;
-with Output;            use Output;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Output;   use Output;
 with Prj.Com;
-with System;            use System;
-with System.Case_Util;  use System.Case_Util;
+
+with System;           use System;
+with System.Case_Util; use System.Case_Util;
+with System.CRTL;      use System.CRTL;
 
 package body MLib.Tgt is
 
@@ -50,7 +52,7 @@ package body MLib.Tgt is
    --  Used to add the generated auto-init object files for auto-initializing
    --  stand-alone libraries.
 
-   Macro_Name   : constant String := "mcr gnu:[bin]gcc -c -x assembler";
+   Macro_Name : constant String := "mcr gnu:[bin]gcc -c -x assembler";
    --  The name of the command to invoke the macro-assembler
 
    VMS_Options : Argument_List := (1 .. 1 => null);
@@ -71,16 +73,6 @@ package body MLib.Tgt is
                                (1 => Shared_Libgcc'Access);
    Link_With_Shared_Libgcc : Argument_List_Access :=
                                No_Shared_Libgcc_Switch'Access;
-
-   ------------------------------
-   -- Target dependent section --
-   ------------------------------
-
-   function Popen (Command, Mode : System.Address) return System.Address;
-   pragma Import (C, Popen);
-
-   function Pclose (File : System.Address) return Integer;
-   pragma Import (C, Pclose);
 
    ---------------------
    -- Archive_Builder --
@@ -302,12 +294,12 @@ package body MLib.Tgt is
             Len             : Natural;
             OK              : Boolean := True;
 
-            Command  : constant String :=
+            command  : constant String :=
                          Macro_Name & " " & Macro_File_Name & ASCII.NUL;
             --  The command to invoke the assembler on the generated auto-init
             --  assembly file.
 
-            Mode : constant String := "r" & ASCII.NUL;
+            mode : constant String := "r" & ASCII.NUL;
             --  The mode for the invocation of Popen
 
          begin
@@ -365,8 +357,8 @@ package body MLib.Tgt is
                Write_Line ("""");
             end if;
 
-            Popen_Result := Popen (Command (Command'First)'Address,
-                                   Mode (Mode'First)'Address);
+            Popen_Result := popen (command (command'First)'Address,
+                                   mode (mode'First)'Address);
 
             if Popen_Result = Null_Address then
                Fail ("assembly of auto-init assembly file """,
@@ -375,7 +367,7 @@ package body MLib.Tgt is
 
             --  Wait for the end of execution of the macro-assembler
 
-            Pclose_Result := Pclose (Popen_Result);
+            Pclose_Result := pclose (Popen_Result);
 
             if Pclose_Result < 0 then
                Fail ("assembly of auto init assembly file """,
@@ -604,9 +596,11 @@ package body MLib.Tgt is
    -- Library_Exists_For --
    ------------------------
 
-   function Library_Exists_For (Project : Project_Id) return Boolean is
+   function Library_Exists_For
+     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+   is
    begin
-      if not Projects.Table (Project).Library then
+      if not In_Tree.Projects.Table (Project).Library then
          Fail ("INTERNAL ERROR: Library_Exists_For called " &
                "for non library project");
          return False;
@@ -614,12 +608,16 @@ package body MLib.Tgt is
       else
          declare
             Lib_Dir : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Dir);
+              Get_Name_String
+                (In_Tree.Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Name);
+              Get_Name_String
+                (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
-            if Projects.Table (Project).Library_Kind = Static then
+            if In_Tree.Projects.Table (Project).Library_Kind =
+              Static
+            then
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
                   Fil.Ext_To (Lib_Name, Archive_Ext));
@@ -637,9 +635,12 @@ package body MLib.Tgt is
    -- Library_File_Name_For --
    ---------------------------
 
-   function Library_File_Name_For (Project : Project_Id) return Name_Id is
+   function Library_File_Name_For
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Name_Id
+   is
    begin
-      if not Projects.Table (Project).Library then
+      if not In_Tree.Projects.Table (Project).Library then
          Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
                        "for non library project");
          return No_Name;
@@ -647,13 +648,16 @@ package body MLib.Tgt is
       else
          declare
             Lib_Name : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Name);
+              Get_Name_String
+                (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
             Name_Len := 3;
             Name_Buffer (1 .. Name_Len) := "lib";
 
-            if Projects.Table (Project).Library_Kind = Static then
+            if In_Tree.Projects.Table (Project).Library_Kind =
+              Static
+            then
                Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
 
             else

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc        --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,14 +32,15 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 package Prj.Env is
 
    procedure Initialize;
-   --  Called by Prj.Initialize to perform required initialization
-   --  steps for this package.
+   --  Called by Prj.Initialize to perform required initialization steps for
+   --  this package.
 
-   procedure Print_Sources;
+   procedure Print_Sources (In_Tree : Project_Tree_Ref);
    --  Output the list of sources, after Project files have been scanned
 
    procedure Create_Mapping_File
      (Project : Project_Id;
+      In_Tree : Project_Tree_Ref;
       Name    : out Name_Id);
    --  Create a temporary mapping file for project Project. For each unit
    --  in the closure of immediate sources of Project, put the mapping of
@@ -52,6 +53,7 @@ package Prj.Env is
    procedure Create_Config_Pragmas_File
      (For_Project          : Project_Id;
       Main_Project         : Project_Id;
+      In_Tree              : Project_Tree_Ref;
       Include_Config_Files : Boolean := True);
    --  If there needs to have SFN pragmas, either for non standard naming
    --  schemes or for individual units, or (when Include_Config_Files is True)
@@ -61,12 +63,15 @@ package Prj.Env is
    --  a temporary file that contains all configuration pragmas, and specify
    --  the configuration pragmas file in the project data.
 
-   function Ada_Include_Path (Project : Project_Id) return String_Access;
+   function Ada_Include_Path
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return String_Access;
    --  Get the ADA_INCLUDE_PATH of a Project file. For the first call, compute
    --  it and cache it.
 
    function Ada_Include_Path
      (Project   : Project_Id;
+      In_Tree   : Project_Tree_Ref;
       Recursive : Boolean) return String;
    --  Get the ADA_INCLUDE_PATH of a Project file. If Recursive it True,
    --  get all the source directories of the imported and modified project
@@ -76,6 +81,7 @@ package Prj.Env is
 
    function Ada_Objects_Path
      (Project             : Project_Id;
+      In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean := True) return String_Access;
    --  Get the ADA_OBJECTS_PATH of a Project file. For the first call, compute
    --  it and cache it. When Including_Libraries is False, do not include the
@@ -83,22 +89,25 @@ package Prj.Env is
 
    procedure Set_Ada_Paths
      (Project             : Project_Id;
+      In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean);
    --  Set the env vars for additional project path files, after
    --  creating the path files if necessary.
 
-   procedure Delete_All_Path_Files;
+   procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref);
    --  Delete all temporary path files that have been created by
    --  calls to Set_Ada_Paths.
 
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
-      Project : Project_Id) return String;
+      Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return String;
    --  Returns the Path of a library unit
 
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
       Project           : Project_Id;
+      In_Tree           : Project_Tree_Ref;
       Main_Project_Only : Boolean := True;
       Full_Path         : Boolean := False) return String;
    --  Returns the file name of a library unit, in canonical case. Name may or
@@ -117,7 +126,8 @@ package Prj.Env is
 
    function Project_Of
      (Name         : String;
-      Main_Project : Project_Id) return Project_Id;
+      Main_Project : Project_Id;
+      In_Tree      : Project_Tree_Ref) return Project_Id;
    --  Get the project of a source. The source file name may be truncated
    --  (".adb" or ".ads" may be missing). If the source is in a project being
    --  extended, return the ultimate extending project. If it is not a source
@@ -125,20 +135,25 @@ package Prj.Env is
 
    procedure Get_Reference
      (Source_File_Name : String;
+      In_Tree          : Project_Tree_Ref;
       Project          : out Project_Id;
       Path             : out Name_Id);
    --  Returns the project of a source and its path in displayable form
 
    generic
       with procedure Action (Path : String);
-   procedure For_All_Source_Dirs (Project : Project_Id);
-   --  Iterate through all the source directories of a project,
-   --  including those of imported or modified projects.
+   procedure For_All_Source_Dirs
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref);
+   --  Iterate through all the source directories of a project, including
+   --  those of imported or modified projects.
 
    generic
       with procedure Action (Path : String);
-   procedure For_All_Object_Dirs (Project : Project_Id);
-   --  Iterate through all the object directories of a project,
-   --  including those of imported or modified projects.
+   procedure For_All_Object_Dirs
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref);
+   --  Iterate through all the object directories of a project, including
+   --  those of imported or modified projects.
 
 end Prj.Env;

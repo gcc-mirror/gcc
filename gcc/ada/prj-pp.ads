@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 --  This package is the Project File Pretty Printer.
 --  It is used to output a project file from a project file tree.
 --  It is used by gnatname to update or create project files.
---  It is also used GLIDE2 to display project file trees.
+--  It is also used GPS to display project file trees.
 --  It can also be used for debugging purposes for tools that create project
 --  file trees.
 
@@ -46,6 +46,7 @@ package Prj.PP is
 
    procedure Pretty_Print
      (Project                            : Prj.Tree.Project_Node_Id;
+      In_Tree                            : Prj.Tree.Project_Node_Tree_Ref;
       Increment                          : Positive      := 3;
       Eliminate_Empty_Case_Constructions : Boolean       := False;
       Minimize_Empty_Lines               : Boolean       := False;
