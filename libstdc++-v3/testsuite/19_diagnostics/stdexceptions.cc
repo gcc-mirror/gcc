@@ -1,6 +1,6 @@
 // 2001-02-26 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ void test01()
 {
   bool test = true;
   std::string s("lack of sunlight, no water error");
-  // XXX work around long-standing, pathalogical, hostility-inducing parser bug
-  // std::logic_error obj(std::string(strlit));
 
   // 1
   std::logic_error obj = std::logic_error(s);

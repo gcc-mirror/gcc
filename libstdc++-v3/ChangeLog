@@ -1,4 +1,15 @@
+2002-04-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/concept-inst.cc (vector<locale::facet*>): Remove instantiations.
+	* src/stl-inst.cc (vector::_M_insert_aux): Remove instantiation.
+	(__malloc_alloc_template): Conditionalize.
+
+	* include/bits/istream.tcc: Remove sputbackc calls.
+
+	* testsuite/19_diagnostics/stdexceptions.cc: Fix comment.
+	
 2002-04-16  Paolo Carlini <pcarlini@unitus.it>
+
  	* testsuite/24_iterators/rel_ops.cc: New test.
 	
 2002-04-16  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
