@@ -1,3 +1,9 @@
+2004-07-17  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/CollationElementIterator.java
+	(text_decomposition): Changed type to RuleBasedCollator.CollationElement[]
+	(setText): Use ArrayList instead of Vector.
+
 2004-07-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteOrder.java

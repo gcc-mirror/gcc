@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.text;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.
@@ -89,7 +89,7 @@ public final class CollationElementIterator
    * Array containing the collation decomposition of the
    * text given to the constructor.
    */
-  private Object[] text_decomposition;
+  private RuleBasedCollator.CollationElement[] text_decomposition;
 
   /**
    * Array containing the index of the specified block.
@@ -116,8 +116,7 @@ public final class CollationElementIterator
     if (index >= text_decomposition.length)
       return null;
     
-    RuleBasedCollator.CollationElement e =
-      (RuleBasedCollator.CollationElement) text_decomposition[index];
+    RuleBasedCollator.CollationElement e = text_decomposition[index];
     
     textIndex = text_indexes[index+1];
 
@@ -132,8 +131,7 @@ public final class CollationElementIterator
       return null;
     
     index--;
-    RuleBasedCollator.CollationElement e =
-      (RuleBasedCollator.CollationElement) text_decomposition[index];
+    RuleBasedCollator.CollationElement e = text_decomposition[index];
 
     textIndex = text_indexes[index+1];
     
@@ -247,8 +245,8 @@ public final class CollationElementIterator
 
     String work_text = text.intern();
 
-    Vector v = new Vector();
-    Vector vi = new Vector();
+    ArrayList a_element = new ArrayList();
+    ArrayList a_idx = new ArrayList();
 
     // Build element collection ordered as they come in "text".
     while (idx < work_text.length())
@@ -301,8 +299,8 @@ public final class CollationElementIterator
 		RuleBasedCollator.CollationElement e =
 		  collator.getDefaultAccentedElement (work_text.charAt (idx));
 		
-		v.add (e);
-		vi.add (new Integer(idx_idx));
+		a_element.add (e);
+		a_idx.add (new Integer(idx_idx));
 		idx++;
 		alreadyExpanded--;
 		if (alreadyExpanded == 0)
@@ -326,10 +324,10 @@ public final class CollationElementIterator
 		/* Don't forget to mark it as a special sequence so the
 		 * string can be ordered.
 		 */
-		v.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
-		vi.add (i_ref);
-		v.add (e);
-		vi.add (i_ref);
+		a_element.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
+		a_idx.add (i_ref);
+		a_element.add (e);
+		a_idx.add (i_ref);
 		idx_idx++;
 		idx++;
 	      }
@@ -346,8 +344,8 @@ public final class CollationElementIterator
 	    work_text = prefix.expansion
 	      + work_text.substring (idx+prefix.key.length());
 	    idx = 0;
-	    v.add (prefix);
-	    vi.add (new Integer(idx_idx));
+	    a_element.add (prefix);
+	    a_idx.add (new Integer(idx_idx));
 	    if (alreadyExpanded == 0)
 	      idxToMove = prefix.key.length();
 	    alreadyExpanded += prefix.expansion.length()-prefix.key.length();
@@ -357,8 +355,8 @@ public final class CollationElementIterator
 	    /* Third case: the simplest. We have got the prefix and it
 	     * has not to be expanded.
 	     */
-	    v.add (prefix);
-	    vi.add (new Integer(idx_idx));
+	    a_element.add (prefix);
+	    a_idx.add (new Integer(idx_idx));
 	    idx += prefix.key.length();
 	    /* If the sequence is in an expansion, we must decrease the
 	     * counter.
@@ -376,13 +374,14 @@ public final class CollationElementIterator
 	  }
       }
     
-    text_decomposition = v.toArray();
-    text_indexes = new int[vi.size()+1];
-    for (int i = 0; i < vi.size(); i++) 
+    text_decomposition = (RuleBasedCollator.CollationElement[])
+	   a_element.toArray(new RuleBasedCollator.CollationElement[a_element.size()]);
+    text_indexes = new int[a_idx.size()+1];
+    for (int i = 0; i < a_idx.size(); i++) 
       {
-	text_indexes[i] = ((Integer)vi.elementAt(i)).intValue();
+	text_indexes[i] = ((Integer)a_idx.get(i)).intValue();
       }
-    text_indexes[vi.size()] = text.length();
+    text_indexes[a_idx.size()] = text.length();
   }
 
   /**
