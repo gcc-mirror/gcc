@@ -1,3 +1,33 @@
+2004-05-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/std/std_complex.h (complex<_Tp>): Properly indent
+	to follow C++STYLE. 
+	(complex<>::__rep): New.
+	(__complex_abs): New.  Dispatch to built-ins.
+	(abs): Use them.
+	(__complex_arg): New. Dispatch to built-ins.
+	(arg): Use it.
+	(__complex_cos): New. Dispatch to built-ins.
+	(cos): Use it.
+	(__complex_cosh): New. Dispatch to built-ins.
+	(cosh): Use it.
+	(__complex_exp): New. Dispatch to built-ins.
+	(exp): Use it.
+	(__complex_log): New. Dispatch to built-ins.
+	(log): Use it.
+	(__complex_sin): New. Dispatch to built-ins.
+	(sin): Use it.
+	(__complex_sinh): New. Dispatch to built-ins.
+	(sinh): Use it.
+	(__complex_sqrt): New. Dispatch to built-ins.
+	(sqrt): Use it.
+	(__complex_tan): New. Dispatch to built-ins.
+	(tan): Use it.
+	(__complex_tanh): New. Dispatch to built-ins.
+	(tanh): Use it.
+	(__complex_pow): New. Dispatch to built-ins.
+	(pow): Use it.
+
 2004-05-29  Richard B. Kreckel  <Richard.Kreckel@Framatome-ANP.com>
             Benjamin Kosnik  <bkoz@redhat.com>
 	
