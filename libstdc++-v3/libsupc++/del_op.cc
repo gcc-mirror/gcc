@@ -29,10 +29,10 @@
 // the GNU General Public License.
 
 #include "new"
+#include <bits/c++config.h>
 #if _GLIBCXX_HOSTED
 #include <cstdlib>
 #endif
-#include <bits/c++config.h>
 
 #if _GLIBCXX_HOSTED
 using std::free;
