@@ -844,7 +844,7 @@ types of all the arguments.\n\n");
 	      break;
 
 	    default:
-	      assert ("E1" == NULL);
+	      assert ("N1" == NULL);
 	      break;
 	    }
 	  break;
