@@ -53,7 +53,9 @@ public class GtkDialogPeer extends GtkWindowPeer
 
   void create ()
   {
-    create (GTK_WINDOW_POPUP);
+    create (GTK_WINDOW_POPUP,
+	    awtComponent.getWidth(),
+	    awtComponent.getHeight());
   }
 
   public void getArgs (Component component, GtkArgList args)
