@@ -1,3 +1,9 @@
+2005-02-22  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/20091
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Don't special case
+	decrement of uncaughtExceptions for rethrow.
+
 2005-02-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional: Fix License to GPL with exception.
