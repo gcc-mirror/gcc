@@ -1,3 +1,9 @@
+Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* flow.c (count_basic_blocks, find_basic_blocks_1): Remove last change.
+	* optabs.c (emit_libcall_block): If have REG_EHG_REGION, update
+	region number to -1.
+
 2000-04-15  Richard Earnshaw (rearnsah@arm.com)
 
 	* emit-rtl.c (unshare_all_rtl_again): Unmark everything, then

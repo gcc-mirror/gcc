@@ -2758,19 +2758,21 @@ emit_libcall_block (insns, target, result, equiv)
   rtx prev, next, first, last, insn;
 
   /* look for any CALL_INSNs in this sequence, and attach a REG_EH_REGION
-     reg note to indicate that this call cannot throw. (Unless there is
-     already a REG_EH_REGION note.) */
+     reg note to indicate that this call cannot throw or execute a nonlocal
+     goto. (Unless there is already a REG_EH_REGION note, in which case
+     we update it.)  */
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
-    {
-      if (GET_CODE (insn) == CALL_INSN)
-        {
-          rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-          if (note == NULL_RTX)
-            REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
-                                                  REG_NOTES (insn));
-        }
-    }
+    if (GET_CODE (insn) == CALL_INSN)
+      {
+	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+
+	if (note != 0)
+	  XEXP (note, 0) = GEN_INT (-1);
+	else
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
+						REG_NOTES (insn));
+      }
 
   /* First emit all insns that set pseudos.  Remove them from the list as
      we go.  Avoid insns that set pseudos which were referenced in previous

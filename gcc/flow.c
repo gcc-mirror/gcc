@@ -462,7 +462,6 @@ count_basic_blocks (f)
   register int count = 0;
   int eh_region = 0;
   int call_had_abnormal_edge = 0;
-  int in_libcall = 0;
 
   prev_code = JUMP_INSN;
   for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -473,16 +472,8 @@ count_basic_blocks (f)
 	  || (GET_RTX_CLASS (code) == 'i'
 	      && (prev_code == JUMP_INSN
 		  || prev_code == BARRIER
-		  || (prev_code == CALL_INSN
-		      && call_had_abnormal_edge && in_libcall == 0))))
+		  || (prev_code == CALL_INSN && call_had_abnormal_edge))))
 	count++;
-
-      /* Track whether or not we are in a LIBCALL block.  These must
-	 all be within the same basic block.  */
-      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX) != 0)
-	in_libcall++;
-      else if (find_reg_note (insn, REG_RETVAL, NULL_RTX) != 0)
-	in_libcall--;
 
       /* Record whether this call created an edge.  */
       if (code == CALL_INSN)
@@ -538,7 +529,6 @@ find_basic_blocks_1 (f)
   rtx label_value_list = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
-  int in_libcall = 0;
   
   /* We process the instructions in a slightly different way than we did
      previously.  This is so that we see a NOTE_BASIC_BLOCK after we have
@@ -671,9 +661,8 @@ find_basic_blocks_1 (f)
 	      call_has_abnormal_edge = 1;
 
 	    /* A basic block ends at a call that can either throw or
-	       do a non-local goto.  LIBCALLs must reside totally in one
-	       basic block, so don't end a block after them.  */
-	    if (call_has_abnormal_edge && in_libcall == 0)
+	       do a non-local goto.  */
+	    if (call_has_abnormal_edge)
 	      {
 	      new_bb_inclusive:
 		if (head == NULL_RTX)
@@ -713,27 +702,21 @@ find_basic_blocks_1 (f)
 	     we know isn't part of any otherwise visible control flow.  */
 	     
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    {
-	      if (REG_NOTE_KIND (note) == REG_LABEL)
-		{
-		  rtx lab = XEXP (note, 0), next;
+	    if (REG_NOTE_KIND (note) == REG_LABEL)
+	      {
+		rtx lab = XEXP (note, 0), next;
 
-		  if (lab == eh_return_stub_label)
+		if (lab == eh_return_stub_label)
 		    ;
-		  else if ((next = next_nonnote_insn (lab)) != NULL
-			   && GET_CODE (next) == JUMP_INSN
-			   && (GET_CODE (PATTERN (next)) == ADDR_VEC
-			       || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
-		    ;
-		  else
-		    label_value_list
-		      = alloc_EXPR_LIST (0, XEXP (note, 0), label_value_list);
-		}
-	      else if (REG_NOTE_KIND (note) == REG_LIBCALL)
-		in_libcall++;
-	      else if (REG_NOTE_KIND (note) == REG_RETVAL)
-		in_libcall--;
-	    }
+		else if ((next = next_nonnote_insn (lab)) != NULL
+			 && GET_CODE (next) == JUMP_INSN
+			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+		  ;
+		else
+		  label_value_list
+		    = alloc_EXPR_LIST (0, XEXP (note, 0), label_value_list);
+	      }
 	}
     }
 
