@@ -608,7 +608,7 @@ build_conv (code, type, from)
   tree t;
   int rank = ICS_STD_RANK (from);
 
-  /* We can't use buidl1 here because CODE could be USER_CONV, which
+  /* We can't use buildl1 here because CODE could be USER_CONV, which
      takes two arguments.  In that case, the caller is responsible for
      filling in the second argument.  */
   t = make_node (code);
@@ -1563,7 +1563,12 @@ promoted_arithmetic_type_p (type)
 /* Create any builtin operator overload candidates for the operator in
    question given the converted operand types TYPE1 and TYPE2.  The other
    args are passed through from add_builtin_candidates to
-   build_builtin_candidate.  */
+   build_builtin_candidate.  
+   
+   TYPE1 and TYPE2 may not be permissible, and we must filter them. 
+   If CODE is requires candidates operands of the same type of the kind
+   of which TYPE1 and TYPE2 are, we add both candidates
+   CODE (TYPE1, TYPE1) and CODE (TYPE2, TYPE2).  */
 
 static struct z_candidate *
 add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
@@ -1611,8 +1616,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	return candidates;
     case POSTINCREMENT_EXPR:
     case PREINCREMENT_EXPR:
-      if ((ARITHMETIC_TYPE_P (type1) && TREE_CODE (type1) != ENUMERAL_TYPE)
-	  || TYPE_PTROB_P (type1))
+      if (ARITHMETIC_TYPE_P (type1) || TYPE_PTROB_P (type1))
 	{
 	  type1 = build_reference_type (type1);
 	  break;
@@ -1712,8 +1716,8 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
      candidate operator functions of the form112)
 	     ptrdiff_t operator-(T, T);
 
-   16For  every pointer type T, there exist candidate operator functions of
-     the form
+   16For  every enumeral or pointer type T, there exist candidate operator
+     functions of the form
 	     bool    operator<(T, T);
 	     bool    operator>(T, T);
 	     bool    operator<=(T, T);
@@ -1757,15 +1761,19 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	  type1 = type2;
 	  break;
 	}
+      /* FALLTHROUGH */
     case LT_EXPR:
     case GT_EXPR:
     case LE_EXPR:
     case GE_EXPR:
     case MAX_EXPR:
     case MIN_EXPR:
-      if ((ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
-	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2)))
+      if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
+        break;
+      if (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
 	break;
+      if (TREE_CODE (type1) == ENUMERAL_TYPE && TREE_CODE (type2) == ENUMERAL_TYPE)
+        break;
       if (TYPE_PTR_P (type1) && null_ptr_cst_p (args[1]))
 	{
 	  type2 = type1;
@@ -1940,15 +1948,16 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       my_friendly_abort (367);
     }
 
-  /* If we're dealing with two pointer types, we need candidates
-     for both of them.  */
+  /* If we're dealing with two pointer types or two enumeral types,
+     we need candidates for both of them.  */
   if (type2 && !same_type_p (type1, type2)
       && TREE_CODE (type1) == TREE_CODE (type2)
       && (TREE_CODE (type1) == REFERENCE_TYPE
 	  || (TREE_CODE (type1) == POINTER_TYPE
 	      && TYPE_PTRMEM_P (type1) == TYPE_PTRMEM_P (type2))
 	  || TYPE_PTRMEMFUNC_P (type1)
-	  || IS_AGGR_TYPE (type1)))
+	  || IS_AGGR_TYPE (type1)
+	  || TREE_CODE (type1) == ENUMERAL_TYPE))
     {
       candidates = build_builtin_candidate
 	(candidates, fnname, type1, type1, args, argtypes, flags);
@@ -1977,7 +1986,12 @@ type_decays_to (type)
    2) pointer-pair taking candidates.  These are generated for each type
       one of the input types converts to.
    3) arithmetic candidates.  According to the standard, we should generate
-      all of these, but I'm trying not to... */
+      all of these, but I'm trying not to...
+   
+   Here we generate a superset of the possible candidates for this particular
+   case.  That is a subset of the full set the standard defines, plus some
+   other cases which the standard disallows. add_builtin_candidate will
+   filter out the illegal set.  */
 
 static struct z_candidate *
 add_builtin_candidates (candidates, code, code2, fnname, args, flags)
@@ -1987,6 +2001,7 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
      int flags;
 {
   int ref1, i;
+  int enum_p = 0;
   tree type, argtypes[3];
   /* TYPES[i] is the set of possible builtin-operator parameter types
      we will consider for the Ith argument.  These are represented as
@@ -2038,6 +2053,16 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
     case COMPONENT_REF:
       return candidates;
 
+    case COND_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+      enum_p = 1;
+      /* FALLTHROUGH */
+    
     default:
       ref1 = 0;
     }
@@ -2086,8 +2111,8 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	      if (i != 0 || ! ref1)
 		{
 		  type = TYPE_MAIN_VARIANT (type_decays_to (type));
-		  if (code == COND_EXPR && TREE_CODE (type) == ENUMERAL_TYPE)
-		    types[i] = tree_cons (NULL_TREE, type, types[i]);
+	          if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
+	            types[i] = tree_cons (NULL_TREE, type, types[i]);
 		  if (INTEGRAL_TYPE_P (type))
 		    type = type_promotes_to (type);
 		}
@@ -2105,8 +2130,8 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	  if (i != 0 || ! ref1)
 	    {
 	      type = TYPE_MAIN_VARIANT (type_decays_to (type));
-	      if (code == COND_EXPR && TREE_CODE (type) == ENUMERAL_TYPE)
-		types[i] = tree_cons (NULL_TREE, type, types[i]);
+	      if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
+	        types[i] = tree_cons (NULL_TREE, type, types[i]);
 	      if (INTEGRAL_TYPE_P (type))
 		type = type_promotes_to (type);
 	    }
@@ -5186,21 +5211,34 @@ joust (cand1, cand2, warn)
   if (winner)
     return winner;
 
-  /* or, if not that,
-     F1 is a non-template function and F2 is a template function */
+  /* or, if not that, a non-template function is better than a
+     template function.  */
 
   if (! cand1->template && cand2->template)
     return 1;
   else if (cand1->template && ! cand2->template)
     return -1;
   else if (cand1->template && cand2->template)
-    winner = more_specialized
-      (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
-       DEDUCE_ORDER,
-       /* Never do unification on the 'this' parameter.  */
-       TREE_VEC_LENGTH (cand1->convs)
-       - DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn));
+    {
+      winner = more_specialized
+        (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
+         DEDUCE_ORDER,
+         /* Never do unification on the 'this' parameter.  */
+         TREE_VEC_LENGTH (cand1->convs)
+         - DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn));
+      if (winner)
+        return winner;
+    }
 
+  /* or, if not that, a non-template user function is better than a
+     builtin.  */
+  if (TREE_CODE (cand1->fn) != IDENTIFIER_NODE
+      && TREE_CODE (cand2->fn) == IDENTIFIER_NODE)
+    return 1;
+  else if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE
+           && TREE_CODE (cand2->fn) != IDENTIFIER_NODE)
+    return -1;
+  
   /* or, if not that,
      the  context  is  an  initialization by user-defined conversion (see
      _dcl.init_  and  _over.match.user_)  and  the  standard   conversion
@@ -5209,11 +5247,15 @@ joust (cand1, cand2, warn)
      sequence  than the standard conversion sequence from the return type
      of F2 to the destination type.  */
 
-  if (! winner && cand1->second_conv)
-    winner = compare_ics (cand1->second_conv, cand2->second_conv);
-
+  if (cand1->second_conv)
+    {
+      winner = compare_ics (cand1->second_conv, cand2->second_conv);
+      if (winner)
+        return winner;
+    }
+  
   /* If the built-in candidates are the same, arbitrarily pick one.  */
-  if (! winner && cand1->fn == cand2->fn
+  if (cand1->fn == cand2->fn
       && TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
     {
       for (i = 0; i < len; ++i)
@@ -5253,7 +5295,7 @@ tweak:
 
   /* Extension: If the worst conversion for one candidate is worse than the
      worst conversion for the other, take the first.  */
-  if (! winner && ! pedantic)
+  if (!pedantic)
     {
       int rank1 = IDENTITY_RANK, rank2 = IDENTITY_RANK;
 
@@ -5271,7 +5313,8 @@ tweak:
 	return -1;
     }
 
-  return winner;
+  my_friendly_assert (!winner, 20010121);
+  return 0;
 }
 
 /* Given a list of candidates for overloading, find the best one, if any.
