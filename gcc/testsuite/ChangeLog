@@ -1,3 +1,7 @@
+Wed Jan  6 02:21:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990106-1.c: New test.
+
 Wed Dec 30 23:05:28 1998  Zack Weinberg <zack@rabi.columbia.edu>
 
 	* gcc.c-torture/compile/981223-1.c: New test.
