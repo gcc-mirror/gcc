@@ -48,12 +48,12 @@ Boston, MA 02111-1307, USA.  */
 	    builtin_define ("__alpha_max__");		\
 	    builtin_assert ("cpu=max");			\
 	  }						\
-	if (TARGET_CPU_EV6)				\
+	if (alpha_cpu == PROCESSOR_EV6)			\
 	  {						\
 	    builtin_define ("__alpha_ev6__");		\
 	    builtin_assert ("cpu=ev6");			\
 	  }						\
-	else if (TARGET_CPU_EV5)			\
+	else if (alpha_cpu == PROCESSOR_EV5)		\
 	  {						\
 	    builtin_define ("__alpha_ev5__");		\
 	    builtin_assert ("cpu=ev5");			\
@@ -122,6 +122,7 @@ enum processor_type
 };
 
 extern enum processor_type alpha_cpu;
+extern enum processor_type alpha_tune;
 
 enum alpha_trap_precision
 {
@@ -153,102 +154,8 @@ extern enum alpha_fp_rounding_mode alpha_fprm;
 extern enum alpha_fp_trap_mode alpha_fptm;
 extern int alpha_tls_size;
 
-/* This means that floating-point support exists in the target implementation
-   of the Alpha architecture.  This is usually the default.  */
-#define MASK_FP		(1 << 0)
-#define TARGET_FP	(target_flags & MASK_FP)
-
-/* This means that floating-point registers are allowed to be used.  Note
-   that Alpha implementations without FP operations are required to
-   provide the FP registers.  */
-
-#define MASK_FPREGS	(1 << 1)
-#define TARGET_FPREGS	(target_flags & MASK_FPREGS)
-
-/* This means that gas is used to process the assembler file.  */
-
-#define MASK_GAS	(1 << 2)
-#define TARGET_GAS	(target_flags & MASK_GAS)
-
-/* This means that we should mark procedures as IEEE conformant.  */
-
-#define MASK_IEEE_CONFORMANT (1 << 3)
-#define TARGET_IEEE_CONFORMANT	(target_flags & MASK_IEEE_CONFORMANT)
-
-/* This means we should be IEEE-compliant except for inexact.  */
-
-#define MASK_IEEE	(1 << 4)
-#define TARGET_IEEE	(target_flags & MASK_IEEE)
-
-/* This means we should be fully IEEE-compliant.  */
-
-#define MASK_IEEE_WITH_INEXACT (1 << 5)
-#define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
-
-/* This means we must construct all constants rather than emitting
-   them as literal data.  */
-
-#define MASK_BUILD_CONSTANTS (1 << 6)
-#define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
-
-/* This means we handle floating points in VAX F- (float)
-   or G- (double) Format.  */
-
-#define MASK_FLOAT_VAX	(1 << 7)
-#define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
-
-/* This means that the processor has byte and half word loads and stores
-   (the BWX extension).  */
-
-#define MASK_BWX	(1 << 8)
-#define TARGET_BWX	(target_flags & MASK_BWX)
-
-/* This means that the processor has the MAX extension.  */
-#define MASK_MAX	(1 << 9)
-#define TARGET_MAX	(target_flags & MASK_MAX)
-
-/* This means that the processor has the FIX extension.  */
-#define MASK_FIX	(1 << 10)
-#define TARGET_FIX	(target_flags & MASK_FIX)
-
-/* This means that the processor has the CIX extension.  */
-#define MASK_CIX	(1 << 11)
-#define TARGET_CIX	(target_flags & MASK_CIX)
-
-/* This means use !literal style explicit relocations.  */
-#define MASK_EXPLICIT_RELOCS (1 << 12)
-#define TARGET_EXPLICIT_RELOCS (target_flags & MASK_EXPLICIT_RELOCS)
-
-/* This means use 16-bit relocations to .sdata/.sbss.  */
-#define MASK_SMALL_DATA (1 << 13)
-#define TARGET_SMALL_DATA (target_flags & MASK_SMALL_DATA)
-
-/* This means emit thread pointer loads for kernel not user.  */
-#define MASK_TLS_KERNEL	(1 << 14)
-#define TARGET_TLS_KERNEL (target_flags & MASK_TLS_KERNEL)
-
-/* This means use direct branches to local functions.  */
-#define MASK_SMALL_TEXT (1 << 15)
-#define TARGET_SMALL_TEXT (target_flags & MASK_SMALL_TEXT)
-
-/* This means use IEEE quad-format for long double.  Assumes the
-   presence of the GEM support library routines.  */
-#define MASK_LONG_DOUBLE_128 (1 << 16)
-#define TARGET_LONG_DOUBLE_128 (target_flags & MASK_LONG_DOUBLE_128)
-
-/* This means that the processor is an EV5, EV56, or PCA56.
-   Unlike alpha_cpu this is not affected by -mtune= setting.  */
-#define MASK_CPU_EV5	(1 << 28)
-#define TARGET_CPU_EV5	(target_flags & MASK_CPU_EV5)
-
-/* Likewise for EV6.  */
-#define MASK_CPU_EV6	(1 << 29)
-#define TARGET_CPU_EV6	(target_flags & MASK_CPU_EV6)
-
-/* This means we support the .arch directive in the assembler.  Only
-   defined in TARGET_CPU_DEFAULT.  */
-#define MASK_SUPPORT_ARCH (1 << 30)
-#define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
+/* Invert the easy way to make options work.  */
+#define TARGET_FP	(!TARGET_SOFT_FP)
 
 /* These are for target os support and cannot be changed at runtime.  */
 #define TARGET_ABI_WINDOWS_NT 0
@@ -283,60 +190,7 @@ extern int alpha_tls_size;
 #define HAVE_AS_TLS 0
 #endif
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES							\
-  { {"no-soft-float", MASK_FP, N_("Use hardware fp")},			\
-    {"soft-float", - MASK_FP, N_("Do not use hardware fp")},		\
-    {"fp-regs", MASK_FPREGS, N_("Use fp registers")},			\
-    {"no-fp-regs", - (MASK_FP|MASK_FPREGS),				\
-     N_("Do not use fp registers")},					\
-    {"alpha-as", -MASK_GAS, N_("Do not assume GAS")},			\
-    {"gas", MASK_GAS, N_("Assume GAS")},				\
-    {"ieee-conformant", MASK_IEEE_CONFORMANT,				\
-     N_("Request IEEE-conformant math library routines (OSF/1)")},	\
-    {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT,				\
-     N_("Emit IEEE-conformant code, without inexact exceptions")},	\
-    {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT,	\
-     N_("Emit IEEE-conformant code, with inexact exceptions")},		\
-    {"build-constants", MASK_BUILD_CONSTANTS,				\
-     N_("Do not emit complex integer constants to read-only memory")},	\
-    {"float-vax", MASK_FLOAT_VAX, N_("Use VAX fp")},			\
-    {"float-ieee", -MASK_FLOAT_VAX, N_("Do not use VAX fp")},		\
-    {"bwx", MASK_BWX, N_("Emit code for the byte/word ISA extension")},	\
-    {"no-bwx", -MASK_BWX, ""},						\
-    {"max", MASK_MAX,							\
-     N_("Emit code for the motion video ISA extension")},		\
-    {"no-max", -MASK_MAX, ""},						\
-    {"fix", MASK_FIX,							\
-     N_("Emit code for the fp move and sqrt ISA extension")}, 		\
-    {"no-fix", -MASK_FIX, ""},						\
-    {"cix", MASK_CIX, N_("Emit code for the counting ISA extension")},	\
-    {"no-cix", -MASK_CIX, ""},						\
-    {"explicit-relocs", MASK_EXPLICIT_RELOCS,				\
-     N_("Emit code using explicit relocation directives")},		\
-    {"no-explicit-relocs", -MASK_EXPLICIT_RELOCS, ""},			\
-    {"small-data", MASK_SMALL_DATA,					\
-     N_("Emit 16-bit relocations to the small data areas")},		\
-    {"large-data", -MASK_SMALL_DATA,					\
-     N_("Emit 32-bit relocations to the small data areas")},		\
-    {"small-text", MASK_SMALL_TEXT,					\
-     N_("Emit direct branches to local functions")},			\
-    {"large-text", -MASK_SMALL_TEXT, ""},				\
-    {"tls-kernel", MASK_TLS_KERNEL,					\
-     N_("Emit rdval instead of rduniq for thread pointer")},		\
-    {"long-double-128", MASK_LONG_DOUBLE_128,				\
-     N_("Use 128-bit long double")},					\
-    {"long-double-64", -MASK_LONG_DOUBLE_128,				\
-     N_("Use 64-bit long double")},					\
-    {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT				\
-	 | TARGET_DEFAULT_EXPLICIT_RELOCS, ""} }
-
-#define TARGET_DEFAULT MASK_FP|MASK_FPREGS
+#define TARGET_DEFAULT MASK_FPREGS
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
@@ -345,36 +199,15 @@ extern int alpha_tls_size;
 #ifndef TARGET_DEFAULT_EXPLICIT_RELOCS
 #ifdef HAVE_AS_EXPLICIT_RELOCS
 #define TARGET_DEFAULT_EXPLICIT_RELOCS MASK_EXPLICIT_RELOCS
+#define TARGET_SUPPORT_ARCH 1
 #else
 #define TARGET_DEFAULT_EXPLICIT_RELOCS 0
 #endif
 #endif
 
-extern const char *alpha_cpu_string;	/* For -mcpu= */
-extern const char *alpha_tune_string;	/* For -mtune= */
-extern const char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
-extern const char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
-extern const char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
-extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
-extern const char *alpha_tls_size_string; /* For -mtls-size= */
-
-#define TARGET_OPTIONS					\
-{							\
-  {"cpu=",		&alpha_cpu_string,		\
-   N_("Use features of and schedule given CPU"), 0},	\
-  {"tune=",		&alpha_tune_string,		\
-   N_("Schedule given CPU"), 0},			\
-  {"fp-rounding-mode=",	&alpha_fprm_string,		\
-   N_("Control the generated fp rounding mode"), 0},	\
-  {"fp-trap-mode=",	&alpha_fptm_string,		\
-   N_("Control the IEEE trap mode"), 0},		\
-  {"trap-precision=",	&alpha_tp_string,		\
-   N_("Control the precision given to fp exceptions"), 0},	\
-  {"memory-latency=",	&alpha_mlat_string,		\
-   N_("Tune expected memory latency"), 0},		\
-  {"tls-size=",		&alpha_tls_size_string,		\
-   N_("Specify bit size of immediate TLS offsets"), 0},	\
-}
+#ifndef TARGET_SUPPORT_ARCH
+#define TARGET_SUPPORT_ARCH 0
+#endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-cpu is ignored if -mcpu is specified.

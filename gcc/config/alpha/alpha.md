@@ -87,8 +87,8 @@
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
 
-(define_attr "cpu" "ev4,ev5,ev6"
-  (const (symbol_ref "alpha_cpu")))
+(define_attr "tune" "ev4,ev5,ev6"
+  (const (symbol_ref "alpha_tune")))
 
 ;; Define an insn type attribute.  This is used in function unit delay
 ;; computations, among other purposes.  For the most part, we use the names
@@ -6982,7 +6982,7 @@
   [(prefetch (match_operand:DI 0 "address_operand" "p")
 	     (match_operand:DI 1 "const_int_operand" "n")
 	     (match_operand:DI 2 "const_int_operand" "n"))]
-  "TARGET_FIXUP_EV5_PREFETCH || TARGET_CPU_EV6"
+  "TARGET_FIXUP_EV5_PREFETCH || alpha_cpu == PROCESSOR_EV6"
 {
   /* Interpret "no temporal locality" as this data should be evicted once
      it is used.  The "evict next" alternatives load the data into the cache
