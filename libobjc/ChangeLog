@@ -1,3 +1,9 @@
+2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/12035
+	* gc.c: Remove definition of LOGWL, modWORDSZ, and divWORDSZ since
+	they are not used.  Include limits.h and stdlib.h.
+
 2004-12-12  Alexander Malmberg  <alexander@malmberg.org>
 
 	* selector.c (__objc_init_selector_tables): Add missing void to
