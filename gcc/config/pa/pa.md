@@ -123,6 +123,7 @@
 ;; fsqrt,sgl	14	MPY	14
 ;; fsqrt,dbl	18	MPY	18
 
+(define_function_unit "fp_alu" 1 0 (eq_attr "type" "fpcc") 4 2)
 (define_function_unit "fp_alu" 1 0 (eq_attr "type" "fpalu") 3 2)
 (define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpmul") 3 2)
 (define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpdivsgl") 10 10)
