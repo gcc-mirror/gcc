@@ -224,6 +224,32 @@ public abstract class URLStreamHandler
   }
 
   /**
+   * Provides the default equals calculation. May be overidden by handlers for
+   * other protocols that have different requirements for equals(). This method
+   * requires that none of its arguments is null. This is guaranteed by the
+   * fact that it is only called by java.net.URL class.
+   *
+   * @param url1 An URL object
+   * @param url2 An URL object
+   */
+  protected boolean equals (URL url1, URL url2)
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * Compares the host components of two URLs.
+   *
+   * @exception UnknownHostException If an unknown host is found
+   */
+  protected boolean hostsEqual (URL url1, URL url2)
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
    * Get the IP address of our host. An empty host field or a DNS failure will
    * result in a null return.
    */
@@ -251,6 +277,16 @@ public abstract class URLStreamHandler
   protected int getDefaultPort ()
   {
     return -1;
+  }
+
+  /**
+   * Provides the default hash calculation. May be overidden by handlers for
+   * other protocols that have different requirements for hashCode calculation.
+   */
+  protected int hashCode (URL url)
+  {
+    // FIXME: implement this
+    return 0;
   }
 
   /**

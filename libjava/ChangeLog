@@ -1,3 +1,41 @@
+2002-10-08  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/HttpURLConnection.java
+	(getPermission): New method.
+	(getErrorStream): New stub method.
+	(getHeaderFieldDate): New stub method.
+	* java/net/Inet4Address.java:
+	(isLinkLocalAddress): Typo fixed.
+	* java/net/InetAddress.java:
+	(readResolve): New stubbed method (for serialization).
+	(isAnyLocalAddress): New stubbed method.
+	(isLoopbackAddress): New stubbed method.
+	(isLinkLocalAddress): New stubbed method.
+	(isSiteLocalAddress): New stubbed method.
+	(isMCGlobal): New stubbed method.
+	(isMCNodeGlobal): New stubbed method.
+	(isMCLinkLocal): New stubbed method.
+	(isMCSiteLocal): New stubbed method.
+	(isMCOrgLocal): New stubbed method.
+	(getCanonicalHostName): New stubbed method.
+	(getByAddress): Create instances of Inet4Address/Inet6Address,
+	instead of InetAddress, documentation added.
+	* java/net/MulticastSocket.java
+	(getInterface): Removed FIXME.
+	(getNetworkInterface): New method.
+	(setNetworkInterface): New method.
+	* java/net/NetworkInterface.java:
+	(toString): Use property "line.separator" instead of "\n".
+	* java/net/URLConnection.java
+	(getContent): New stubbed method.
+	* java/net/URLStreamHandler.java:
+	(equals): New stubbed method.
+	(hostsEqual): New stubbed method.
+	(hashCode): New stubbed method.
+	* java/net/natNetworkInterface.cc:
+	(getRealNetworkInterfaces): Create Inet4Address object
+	instead of InetAddress.
+
 2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* interpret.cc (_Jv_InterpMethod::run): Use UINT32 instead of
