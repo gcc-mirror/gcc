@@ -1,5 +1,4 @@
 EXTRA_OBJS	= halfpic.o
-LIMITS_H	=
 
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
 # PREMADE_ATTRTAB = $(srcdir)/config/mips/mips-at.c
