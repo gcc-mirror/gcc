@@ -24,7 +24,7 @@ version=2.7.2
 mainversion=2.7.2
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
-s/^	\ *\.\//	go32 /
+s/^	\ *\.\//	/
 s/<\ *\$(srcdir)\//< $(srcdir)\\/g
 s/^	\$(srcdir)\/move-if-change/	update/
 s/^USE_/# USE_/
@@ -36,8 +36,9 @@ USE_HOST_OBSTACK=obstack.o
 /^stamp-attrtab/,/update/ {
   /\\/d
   /[ 	]fi[ 	]/d
+  /[ 	]fi$/d
   /update/ i\
-	  go32 genattrtab md > t-attrtab.c
+	genattrtab md > t-attrtab.c
 }
 /^enquire[ 	]*:/ s/\$(GCC_PARTS)//g
 /^enquire.o[ 	]*:/ s/\$(GCC_PASSES)//g
