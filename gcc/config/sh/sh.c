@@ -1417,8 +1417,9 @@ static int extra_push;
 /* Adjust the stack and return the number of bytes taken to do it.  */
 
 static void
-output_stack_adjust (size)
+output_stack_adjust (size, reg)
      int size;
+     rtx reg;
 {
   if (size)
     {
@@ -1432,7 +1433,7 @@ output_stack_adjust (size)
 	  val = reg;
 	}
 
-      insn = gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, val);
+      insn = gen_addsi3 (reg, reg, val);
       emit_insn (insn);
     }
 }
@@ -1530,7 +1531,7 @@ sh_expand_prologue ()
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
-  output_stack_adjust (-current_function_pretend_args_size);
+  output_stack_adjust (-current_function_pretend_args_size, stack_pointer_rtx);
 
   extra_push = 0;
 
@@ -1552,7 +1553,7 @@ sh_expand_prologue ()
 	}
     }
   push_regs (live_regs_mask);
-  output_stack_adjust (-get_frame_size ());
+  output_stack_adjust (-get_frame_size (), stack_pointer_rtx);
 
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
@@ -1567,9 +1568,16 @@ sh_expand_epilogue ()
   live_regs_mask = calc_live_regs (&d);
 
   if (frame_pointer_needed)
-    emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
-
-  output_stack_adjust (get_frame_size ());
+    {
+      /* We deliberately make the add dependent on the frame_pointer,
+	 to ensure that instruction scheduling won't move the stack pointer
+	 adjust before instructions reading from the frame.  This can fail
+	 if there is an interrupt which then writes to the stack.  */
+      output_stack_adjust (get_frame_size (), frame_pointer_rtx);
+      emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
+    }
+  else
+    output_stack_adjust (get_frame_size (), stack_pointer_rtx);
 
   /* Pop all the registers.  */
 
@@ -1580,7 +1588,8 @@ sh_expand_epilogue ()
 	pop (j);
     }
 
-  output_stack_adjust (extra_push + current_function_pretend_args_size);
+  output_stack_adjust (extra_push + current_function_pretend_args_size,
+		       stack_pointer_rtx);
 }
 
 /* Clear variables at function end.  */
