@@ -2707,7 +2707,7 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return (TARGET_V8 || TARGET_SPARCLITE || TARGET_V9) \
+    return (TARGET_V8 || TARGET_SPARCLITE)              \
 	? COSTS_N_INSNS (5) : COSTS_N_INSNS (25);	\
   case DIV:						\
   case UDIV:						\

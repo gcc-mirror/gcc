@@ -272,6 +272,43 @@
 ;; The multiply unit has a latency of 5.
 (define_function_unit "tsc701_mul" 1 0
   (and (eq_attr "type" "imul")		(eq_attr "cpu" "tsc701")) 5 5)
+
+;; ----- The UltraSPARC-1 scheduling
+;; The Ultrasparc can issue 1 - 4 insns per cycle; here we assume
+;; four insns/cycle, and hence multiply all costs by four.
+
+;; Memory delivers its result in three cycles to IU, three cycles to FP
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load,fpload")   (eq_attr "cpu" "ultrasparc")) 12 4)
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store,fpstore") (eq_attr "cpu" "ultrasparc"))  4 4)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "ialu")          (eq_attr "cpu" "ultrasparc"))  1 2)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "shift")         (eq_attr "cpu" "ultrasparc"))  1 4)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "cmove")         (eq_attr "cpu" "ultrasparc"))  8 4)
+
+;; Timings; throughput/latency
+;; ?? FADD     1/3    add/sub, format conv, compar, abs, neg
+;; ?? FMUL     1/3
+;; ?? FDIVs    1/12
+;; ?? FDIVd    1/22
+;; ?? FSQRTs   1/12
+;; ?? FSQRTd   1/22
+
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fp")       (eq_attr "cpu" "ultrasparc")) 12 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpcmp")    (eq_attr "cpu" "ultrasparc"))  8 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpmul")    (eq_attr "cpu" "ultrasparc")) 12 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpdivs")   (eq_attr "cpu" "ultrasparc")) 48 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpdivd")   (eq_attr "cpu" "ultrasparc")) 88 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpsqrt")   (eq_attr "cpu" "ultrasparc")) 48 2)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
