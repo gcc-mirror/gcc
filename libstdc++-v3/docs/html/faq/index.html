@@ -924,6 +924,11 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       <p>This is a bit cleaner than defining typedefs for all the
          instantiations you might need.
       </p>
+      <p><strong>Note:</strong> explicit template specializations must
+         be declared in the same namespace as the original template.
+         This means you cannot use a namespace alias when declaring
+         an explicit specialization.
+      </p>
       <p>Extensions to the library have
          <a href="../ext/howto.html">their own page</a>.
       </p>
