@@ -3205,10 +3205,24 @@ output_arg_descriptor (insn)
   for (prev_insn = PREV_INSN (insn); GET_CODE (prev_insn) == INSN;
        prev_insn = PREV_INSN (prev_insn))
     {
-      if (!(GET_CODE (PATTERN (prev_insn)) == USE &&
-	    GET_CODE (XEXP (PATTERN (prev_insn), 0)) == REG &&
-	    FUNCTION_ARG_REGNO_P (REGNO (XEXP (PATTERN (prev_insn), 0)))))
+      /* Terminate search for arguments if a non-USE insn is encountered
+	 or a USE insn which does not specify an argument, STATIC_CHAIN,
+	 or STRUCT_VALUE register.  */
+      if (!(GET_CODE (PATTERN (prev_insn)) == USE
+	    && GET_CODE (XEXP (PATTERN (prev_insn), 0)) == REG
+	    && (FUNCTION_ARG_REGNO_P (REGNO (XEXP (PATTERN (prev_insn), 0)))
+		|| REGNO (XEXP (PATTERN (prev_insn), 0)) == STATIC_CHAIN_REGNUM
+		|| REGNO (XEXP (PATTERN (prev_insn), 0))
+		== STRUCT_VALUE_REGNUM)))
 	break;
+
+      /* If this is a USE for the STATIC_CHAIN or STRUCT_VALUE register,
+	 then skip it and continue the loop since those are not encoded
+	 in the argument relocation bits.  */
+      if (REGNO (XEXP (PATTERN (prev_insn), 0)) == STATIC_CHAIN_REGNUM
+	  || REGNO (XEXP (PATTERN (prev_insn), 0)) == STRUCT_VALUE_REGNUM)
+	continue;
+
       arg_mode = GET_MODE (XEXP (PATTERN (prev_insn), 0));
       regno = REGNO (XEXP (PATTERN (prev_insn), 0));
       if (regno >= 23 && regno <= 26)
