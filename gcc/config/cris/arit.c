@@ -223,7 +223,7 @@ __Div (long a, long b)
      which is still 32 bits.  */
 
   sign = a ^ b;
-  result = __Udiv (abs (a), abs (b));
+  result = __Udiv (__builtin_labs (a), __builtin_labs (b));
 
   return  (sign < 0) ? -result : result;
 }
@@ -286,7 +286,7 @@ __Mod (long a, long b)
 {
   long	result;
 
-  result = __Umod (abs (a), abs (b));
+  result = __Umod (__builtin_labs (a), __builtin_labs (b));
 
   return (a < 0) ? -result : result;
 }
