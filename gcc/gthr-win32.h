@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1999, 2000, 2002, 2003  Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2000, 2002, 2003, 2004  Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
 This file is part of GCC.
@@ -54,10 +54,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       This may cause incorrect error return due to truncation values on
       hw where sizeof (DWORD) > sizeof (int).
 
-   3. We might consider using Critical Sections instead of Windows32
-      mutexes for better performance, but emulating __gthread_mutex_trylock
-      interface becomes more complicated (Win9x does not support
-      TryEnterCriticalSectioni, while NT does).
+   3. We are currently using a special mutex instead of the Critical
+      Sections, since Win9x does not support TryEnterCriticalSection
+      (while NT does).
 
    The basic framework should work well enough. In the long term, GCC
    needs to use Structured Exception Handling on Windows32.  */
@@ -339,11 +338,14 @@ typedef struct {
   long started;
 } __gthread_once_t;
 
-typedef void* __gthread_mutex_t;
+typedef struct {
+  long counter;
+  void *sema;
+} __gthread_mutex_t;
 
 #define __GTHREAD_ONCE_INIT {0, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
-#define __GTHREAD_MUTEX_INIT_DEFAULT 0
+#define __GTHREAD_MUTEX_INIT_DEFAULT {0, 0}
 
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
@@ -534,8 +536,8 @@ __gthread_setspecific (__gthread_key_t key, const void *ptr)
 static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
-  /* Create unnamed mutex with default security attr and no initial owner.  */
-  *mutex = CreateMutex (NULL, 0, NULL);
+  mutex->counter = 0;
+  mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
 static inline int
@@ -545,10 +547,16 @@ __gthread_mutex_lock (__gthread_mutex_t *mutex)
 
   if (__gthread_active_p ())
     {
-      if (WaitForSingleObject (*mutex, INFINITE) == WAIT_OBJECT_0)
+      if (InterlockedIncrement (&mutex->counter) == 1 ||
+	  WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
 	status = 0;
       else
-	status = 1;
+	{
+	  // WaitForSingleObject returns WAIT_FAILED, and we can only do
+	  // some best-effort cleanup here.
+	  InterlockedDecrement (&mutex->counter);
+	  status = 1;
+	}
     }
   return status;
 }
@@ -560,7 +568,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 
   if (__gthread_active_p ())
     {
-      if (WaitForSingleObject (*mutex, 0) == WAIT_OBJECT_0)
+      if (InterlockedCompareExchange (&mutex->counter, 1, 0 ) == 0)
 	status = 0;
       else
 	status = 1;
@@ -572,9 +580,11 @@ static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
-    return (ReleaseMutex (*mutex) != 0) ? 0 : 1;
-  else
-    return 0;
+    {
+      if (InterlockedDecrement (&mutex->counter))
+	return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
+    }
+  return 0;
 }
 
 #endif /*  __GTHREAD_HIDE_WIN32API */
