@@ -6203,8 +6203,12 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
      general_induction_var below, so we can allocate it on our stack.
      If this is a giv, our caller will replace the induct var entry with
      a new induction structure.  */
-  struct induction *v
-    = (struct induction *) alloca (sizeof (struct induction));
+  struct induction *v;
+
+  if (REG_IV_TYPE (ivs, REGNO (dest_reg)) != UNKNOWN_INDUCT)
+    return 0;
+
+  v = (struct induction *) alloca (sizeof (struct induction));
   v->src_reg = src_reg;
   v->mult_val = *mult_val;
   v->add_val = *add_val;
@@ -6265,6 +6269,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
 	}
     }
 
+  REG_IV_TYPE (ivs, REGNO (dest_reg)) = UNKNOWN_INDUCT;
   *last_consec_insn = p;
   return v->benefit;
 }
