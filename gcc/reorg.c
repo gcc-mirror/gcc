@@ -165,6 +165,9 @@ struct resources
  do { (RES)->memory = (RES)->volatil = (RES)->cc = 0;	\
       CLEAR_HARD_REG_SET ((RES)->regs); } while (0)
 
+/* Indicates what resources are required at the beginning of the epilogue.  */
+static struct resources start_of_epilogue_needs;
+
 /* Indicates what resources are required at function end.  */
 static struct resources end_of_function_needs;
 
@@ -2124,13 +2127,20 @@ mark_target_live_regs (target, res)
 		  }
 	    }
 
-	  if (GET_CODE (real_insn) == CODE_LABEL)
+	  else if (GET_CODE (real_insn) == CODE_LABEL)
 	    {
 	      /* A label clobbers the pending dead registers since neither
 		 reload nor jump will propagate a value across a label.  */
 	      AND_COMPL_HARD_REG_SET (current_live_regs, pending_dead_regs);
 	      CLEAR_HARD_REG_SET (pending_dead_regs);
 	    }
+
+	  /* The beginning of the epilogue corresponds to the end of the
+	     RTL chain when there are no epilogue insns.  Certain resources
+	     are implicitly required at that point.  */
+	  else if (GET_CODE (real_insn) == NOTE
+ 		   && NOTE_LINE_NUMBER (real_insn) == NOTE_INSN_EPILOGUE_BEG)
+	    IOR_HARD_REG_SET (current_live_regs, start_of_epilogue_needs.regs);
 	}
 
       COPY_HARD_REG_SET (res->regs, current_live_regs);
@@ -3549,7 +3559,7 @@ dbr_schedule (first, file)
      rtx first;
      FILE *file;
 {
-  rtx insn, next;
+  rtx insn, next, epilogue_insn = 0;
   int i;
 #if 0
   int old_flag_no_peephole = flag_no_peephole;
@@ -3566,8 +3576,13 @@ dbr_schedule (first, file)
   /* Find the highest INSN_UID and allocate and initialize our map from
      INSN_UID's to position in code.  */
   for (max_uid = 0, insn = first; insn; insn = NEXT_INSN (insn))
-    if (INSN_UID (insn) > max_uid)
-      max_uid = INSN_UID (insn);
+    {
+      if (INSN_UID (insn) > max_uid)
+	max_uid = INSN_UID (insn);
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+	epilogue_insn = insn;
+    }
 
   uid_to_ruid = (int *) alloca ((max_uid + 1) * sizeof (int *));
   for (i = 0, insn = first; insn; i++, insn = NEXT_INSN (insn))
@@ -3634,6 +3649,28 @@ dbr_schedule (first, file)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (global_regs[i])
       SET_HARD_REG_BIT (end_of_function_needs.regs, i);
+
+  /* The registers required to be live at the end of the function are
+     represented in the flow information as being dead just prior to
+     reaching the end of the function.  For example, the return of a value
+     might be represented by a USE of the return register immediately
+     followed by an unconditional jump to the return label where the
+     return label is the end of the RTL chain.  The end of the RTL chain
+     is then taken to mean that the return register is live.
+
+     This sequence is no longer maintained when epilogue instructions are
+     added to the RTL chain.  To reconstruct the original meaning, the
+     start of the epilogue (NOTE_INSN_EPILOGUE_BEG) is regarded as the
+     point where these registers become live (start_of_epilogue_needs).
+     If epilogue instructions are present, the registers set by those
+     instructions won't have been processed by flow.  Thus, those
+     registers are additionally required at the end of the RTL chain
+     (end_of_function_needs).  */
+
+  start_of_epilogue_needs = end_of_function_needs;
+
+  while (epilogue_insn = next_nonnote_insn (epilogue_insn))
+    mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 0);
 
   /* Show we haven't computed an end-of-function label yet.  */
   end_of_function_label = 0;
