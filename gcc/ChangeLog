@@ -1,3 +1,7 @@
+2002-05-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/mingw32.h (CPP_SPEC): Remove -remap.
+
 2002-05-23  Gabriel Dos Reis  <gdr@codesourcery.com>
             Zack Weinberg     <zack@codesourcery.com>
 
