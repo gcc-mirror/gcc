@@ -169,7 +169,7 @@ static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
 static tree fold_builtin_strncmp (tree);
 static tree fold_builtin_signbit (tree);
-static tree fold_builtin_copysign (tree, tree);
+static tree fold_builtin_copysign (tree, tree, tree);
 static tree fold_builtin_isascii (tree);
 static tree fold_builtin_toascii (tree);
 static tree fold_builtin_isdigit (tree);
@@ -6844,7 +6844,10 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
   if (TREE_CODE (arg1) == REAL_CST
       && ! TREE_CONSTANT_OVERFLOW (arg1))
     {
+      REAL_VALUE_TYPE cint;
       REAL_VALUE_TYPE c;
+      HOST_WIDE_INT n;
+
       c = TREE_REAL_CST (arg1);
 
       /* Optimize pow(x,0.0) = 1.0.  */
@@ -6874,17 +6877,14 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
 	    }
 	}
 
-      /* Attempt to evaluate pow at compile-time.  */
-      if (TREE_CODE (arg0) == REAL_CST
-	  && ! TREE_CONSTANT_OVERFLOW (arg0))
+      /* Check for an integer exponent.  */
+      n = real_to_integer (&c);
+      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      if (real_identical (&c, &cint))
 	{
-	  REAL_VALUE_TYPE cint;
-	  HOST_WIDE_INT n;
-
-	  n = real_to_integer (&c);
-	  real_from_integer (&cint, VOIDmode, n,
-			     n < 0 ? -1 : 0, 0);
-	  if (real_identical (&c, &cint))
+	  /* Attempt to evaluate pow at compile-time.  */
+	  if (TREE_CODE (arg0) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (arg0))
 	    {
 	      REAL_VALUE_TYPE x;
 	      bool inexact;
@@ -6893,6 +6893,18 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
 	      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
 	      if (flag_unsafe_math_optimizations || !inexact)
 		return build_real (type, x);
+	    }
+
+	  /* Strip sign ops from even integer powers.  */
+	  if ((n & 1) == 0 && flag_unsafe_math_optimizations)
+	    {
+	      tree narg0 = fold_strip_sign_ops (arg0);
+	      if (narg0)
+		{
+		  arglist = build_tree_list (NULL_TREE, arg1);
+		  arglist = tree_cons (NULL_TREE, narg0, arglist);
+		  return build_function_call_expr (fndecl, arglist);
+		}
 	    }
 	}
     }
@@ -7447,9 +7459,9 @@ fold_builtin_signbit (tree exp)
    Return NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_copysign (tree arglist, tree type)
+fold_builtin_copysign (tree fndecl, tree arglist, tree type)
 {
-  tree arg1, arg2;
+  tree arg1, arg2, tem;
 
   if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
@@ -7482,6 +7494,14 @@ fold_builtin_copysign (tree arglist, tree type)
     return omit_one_operand (type,
 			     fold (build1 (ABS_EXPR, type, arg1)),
 			     arg2);
+
+  /* Strip sign changing operations for the first argument.  */
+  tem = fold_strip_sign_ops (arg1);
+  if (tem)
+    {
+      arglist = tree_cons (NULL_TREE, tem, TREE_CHAIN (arglist));
+      return build_function_call_expr (fndecl, arglist);
+    }
 
   return NULL_TREE;
 }
@@ -8056,7 +8076,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_COPYSIGN:
     case BUILT_IN_COPYSIGNF:
     case BUILT_IN_COPYSIGNL:
-      return fold_builtin_copysign (arglist, type);
+      return fold_builtin_copysign (fndecl, arglist, type);
 
     case BUILT_IN_FINITE:
     case BUILT_IN_FINITEF:
