@@ -1,3 +1,9 @@
+2002-01-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gennews (files): Replace gcc-2.95/gcc-2.95.html,
+	gcc-2.95/gcc-2.95.1.html, gcc-2.95/gcc-2.95.2.html,
+	and gcc-2.95/gcc-2.95.3.html by gcc-2.95/index.html.
+
 2002-01-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gennews (files): Replace egcs-1.1/egcs-1.1.2.html,
