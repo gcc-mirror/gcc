@@ -4642,7 +4642,10 @@ tsubst (t, args, in_decl)
 	    tmpl = DECL_TI_TEMPLATE (t);
 
 	    /* Start by getting the innermost args.  */
-	    argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
+	    if (DECL_TEMPLATE_SPECIALIZATION (tmpl))
+	      argvec = args;
+	    else
+	      argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
 
 	    if (DECL_TEMPLATE_INFO (tmpl))
 	      argvec = complete_template_args (tmpl, argvec, 0);
@@ -5728,11 +5731,11 @@ instantiate_template (tmpl, targ_ptr)
 
   my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 283);
 
-  /* FIXME this won't work with member templates; we only have one level
-     of args here.  */
+  /* Check to see if we already have this specialization.  This does work
+     for member template specializations; the list is set up from the
+     tsubst TEMPLATE_DECL case when the containing class is instantiated.  */
   if (DECL_FUNCTION_TEMPLATE_P (tmpl))
     {
-      /* Check to see if we already have this specialization.  */
       tree spec = retrieve_specialization (tmpl, targ_ptr);
       
       if (spec != NULL_TREE)
