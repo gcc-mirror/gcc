@@ -30,6 +30,13 @@ Tue Jan 19 16:37:36 1999  Richard Henderson  <rth@cygnus.com>
 
 Tue Jan 19 15:00:10 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (NUM_STORES): Delete.
+	(loop_store_mems): Turn into an EXPR_LIST of MEMs.
+	(prescan_loop): Properly initialize loop_mems_idx.
+	(note_addr_stored): Simplify using list structure instead of
+	fixed sized array.
+	(invariant_p, check_dbra_loop, load_mems): Similarly.
+
 	* flow.c (invalidate_from_autoinc): New function.
 	(mark_set_1, mark_used_regs): Use it.
 
