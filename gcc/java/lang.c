@@ -61,6 +61,7 @@ static void java_print_error_function PARAMS ((diagnostic_context *,
 static int process_option_with_no PARAMS ((const char *,
 					   const struct string_option *,
 					   int));
+static int java_unsafe_for_reeval PARAMS ((tree));
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
@@ -238,6 +239,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_POST_OPTIONS java_post_options
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE java_parse_file
+#undef LANG_HOOKS_UNSAFE_FOR_REEVAL
+#define LANG_HOOKS_UNSAFE_FOR_REEVAL java_unsafe_for_reeval
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE java_mark_addressable
 #undef LANG_HOOKS_EXPAND_EXPR
@@ -792,6 +795,26 @@ java_post_options ()
 
   /* Initialize the compiler back end.  */
   return false;
+}
+
+/* Called from unsafe_for_reeval.  */
+static int
+java_unsafe_for_reeval (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case BLOCK:
+      /* Our expander tries to expand the variables twice.  Boom.  */
+      if (BLOCK_EXPR_DECLS (t) != NULL)
+	return 2;
+      return unsafe_for_reeval (BLOCK_EXPR_BODY (t));
+
+    default:
+      break;
+    }
+
+  return -1;
 }
 
 #include "gt-java-lang.h"
