@@ -1,3 +1,11 @@
+2003-03-27  Olivier Hainque  <hainque@act-europe.fr>
+
+	PR ada/9953
+	* ada/Makefile.in (gnatlib configuration for HPUX): Split
+	the general section for HPUX into specific sections for
+	HPUX 10 and HPUX 11. Fix the setting of TGT_LIB in the HPUX
+	11 case.
+
 2003-03-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_optimize_prolog): Do not save/restore

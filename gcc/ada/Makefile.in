@@ -750,7 +750,25 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
   LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
 endif
 
-ifeq ($(strip $(filter-out hppa% hp hpux%,$(targ))),)
+ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-excpol.adb<4wexcpol.adb \
+  a-intnam.ads<4hintnam.ads \
+  s-inmaop.adb<7sinmaop.adb \
+  s-interr.adb<5ginterr.adb \
+  s-intman.adb<7sintman.adb \
+  s-osinte.adb<5hosinte.adb \
+  s-osinte.ads<5hosinte.ads \
+  s-parame.ads<5hparame.ads \
+  s-osprim.adb<7sosprim.adb \
+  s-taprop.adb<5htaprop.adb \
+  s-taspri.ads<5htaspri.ads \
+  s-tpopsp.adb<7stpopsp.adb \
+  g-soccon.ads<3hsoccon.ads \
+  system.ads<5hsystem.ads
+endif
+
+ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<4hintnam.ads \
   s-inmaop.adb<7sinmaop.adb \
@@ -766,7 +784,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux%,$(targ))),)
   g-soccon.ads<3hsoccon.ads \
   system.ads<5hsystem.ads
 
-  TGT_LIB = /usr/lib/libcl.a -lpthread
+  TGT_LIB = /usr/lib/libcl.a
   THREADSLIB = -lpthread -lc_r
   SYMLIB = -laddr2line -lbfd $(INTLLIBS)
   soext = .sl
@@ -789,6 +807,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux%,$(targ))),)
     g-soccon.ads<3hsoccon.ads \
     system.ads<5hsystem.ads
 
+    TGT_LIB =
     THREADSLIB = -lcma
   endif
 endif
