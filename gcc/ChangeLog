@@ -1,3 +1,13 @@
+2003-07-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11210
+	* expr.c (handled_component_p) [NOP_EXPR]: Add ??? note
+	about the behaviour with regard to bitfields.
+	* fold-const (decode_field_reference): Record outermost type in
+	case the expression is a NOP. Strip all NOPs. Set the signedness
+	to that of the outermost type (if any) when the bitsize is equal
+	to the size of the type.
+
 2003-07-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (addsi3): Remove workaround for adds of -32768.

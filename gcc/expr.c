@@ -5903,6 +5903,9 @@ handled_component_p (tree t)
     case VIEW_CONVERT_EXPR:
       return 1;
 
+    /* ??? Sure they are handled, but get_inner_reference may return
+       a different PBITSIZE, depending upon whether the expression is
+       wrapped up in a NOP_EXPR or not, e.g. for bitfields.  */
     case NOP_EXPR:
     case CONVERT_EXPR:
       return (TYPE_MODE (TREE_TYPE (t))

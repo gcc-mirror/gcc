@@ -2625,6 +2625,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize, HOST_WIDE_INT *pbitpo
 			enum machine_mode *pmode, int *punsignedp, int *pvolatilep,
 			tree *pmask, tree *pand_mask)
 {
+  tree outer_type = 0;
   tree and_mask = 0;
   tree mask, inner, offset;
   tree unsigned_type;
@@ -2636,6 +2637,13 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize, HOST_WIDE_INT *pbitpo
   if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
+  /* We are interested in the bare arrangement of bits, so strip everything
+     that doesn't affect the machine mode.  However, record the type of the
+     outermost expression if it may matter below.  */
+  if (TREE_CODE (exp) == NOP_EXPR
+      || TREE_CODE (exp) == CONVERT_EXPR
+      || TREE_CODE (exp) == NON_LVALUE_EXPR)
+    outer_type = TREE_TYPE (exp);
   STRIP_NOPS (exp);
 
   if (TREE_CODE (exp) == BIT_AND_EXPR)
@@ -2653,6 +2661,12 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize, HOST_WIDE_INT *pbitpo
       || *pbitsize < 0 || offset != 0
       || TREE_CODE (inner) == PLACEHOLDER_EXPR)
     return 0;
+
+  /* If the number of bits in the reference is the same as the bitsize of
+     the outer type, then the outer type gives the signedness. Otherwise
+     (in case of a small bitfield) the signedness is unchanged.  */
+  if (outer_type && *pbitsize == tree_low_cst (TYPE_SIZE (outer_type), 1))
+    *punsignedp = TREE_UNSIGNED (outer_type);
 
   /* Compute the mask to access the bitfield.  */
   unsigned_type = (*lang_hooks.types.type_for_size) (*pbitsize, 1);
