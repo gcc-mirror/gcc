@@ -1,3 +1,11 @@
+2002-06-20  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/7073:
+	* resolve.cc (_Jv_PrepareClass): Only resolve superclass if it
+	exists.
+	* defineclass.cc (handleClassBegin): Superclass for interface is
+	`null'.
+
 2002-06-18  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class declaration list.

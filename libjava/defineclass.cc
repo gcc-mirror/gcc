@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -895,20 +895,11 @@ _Jv_ClassReader::handleClassBegin
   pool_data[this_class].clazz = def;
   pool_tags[this_class] = JV_CONSTANT_ResolvedClass;
 
-  if (super_class == 0)
+  if (super_class == 0 && ! (access_flags & Modifier::INTERFACE))
     {
-      // interfaces have java.lang.Object as super.
-      if (access_flags & Modifier::INTERFACE)
-	{
-	  def->superclass = (jclass)&java::lang::Object::class$;
-	}
-
       // FIXME: Consider this carefully!  
-      else if (!_Jv_equalUtf8Consts (def->name,
-				     java::lang::Object::class$.name))
-	{
-	  throw_no_class_def_found_error ("loading java.lang.Object");
-	}
+      if (! _Jv_equalUtf8Consts (def->name, java::lang::Object::class$.name))
+	throw_no_class_def_found_error ("loading java.lang.Object");
     }
 
   // In the pre-loading state, it can be looked up in the
@@ -924,25 +915,30 @@ _Jv_ClassReader::handleClassBegin
 
   if (super_class != 0)
     {
-      // load the super class
+      // Load the superclass.
       check_tag (super_class, JV_CONSTANT_Class);
       _Jv_Utf8Const* super_name = pool_data[super_class].utf8; 
 
-      // load the super class using our defining loader
+      // Load the superclass using our defining loader.
       jclass the_super = _Jv_FindClass (super_name,
 					def->loader);
 
       // This will establish that we are allowed to be a subclass,
-      // and check for class circularity error
+      // and check for class circularity error.
       checkExtends (def, the_super);
 
-      def->superclass = the_super;
+      // Note: for an interface we will find Object as the
+      // superclass.  We still check it above to ensure class file
+      // validity, but we simply assign `null' to the actual field in
+      // this case.
+      def->superclass = (((access_flags & Modifier::INTERFACE))
+			 ? NULL : the_super);
       pool_data[super_class].clazz = the_super;
       pool_tags[super_class] = JV_CONSTANT_ResolvedClass;
     }
 
-  // now we've come past the circularity problem, we can 
-  // now say that we're loading...
+  // Now we've come past the circularity problem, we can 
+  // now say that we're loading.
 
   def->state = JV_STATE_LOADING;
   def->notifyAll ();
