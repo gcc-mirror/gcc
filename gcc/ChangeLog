@@ -1,3 +1,9 @@
+2005-03-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	PR target/18551
+	* config/avr/avr.c (avr_output_function_prologue): Do not use
+	current_function_name() in a label, use a local label instead.
+
 2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c.opt (ansi, std=iso9899:1990, std=iso9899:1999,
