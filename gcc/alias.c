@@ -825,7 +825,7 @@ true_dependence (mem, mem_mode, x, varies)
      If either memory reference is a variable structure the other is a
      fixed scalar and there is no aliasing.  */
   if ((MEM_IN_STRUCT_P (mem) && varies (mem_addr))
-      || (MEM_IN_STRUCT_P (x) && varies (x)))
+      || (MEM_IN_STRUCT_P (x) && varies (x_addr)))
     return 0;
 
   return 1;
