@@ -3550,25 +3550,7 @@ fastcompare fastcompare3 fastcompare4 fastcompare-lean fastcompare3-lean fastcom
  gnucompare  gnucompare3  gnucompare4  gnucompare-lean  gnucompare3-lean  gnucompare4-lean: force
 	-rm -f .bad_compare
 	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for file in *$(objext); do \
-	  case "$@" in \
-	    slowcompare* ) \
-	      tail +16c ./$$file > tmp-foo1; \
-	      tail +16c stage$$stage/$$file > tmp-foo2 \
-	        && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
-	      ;; \
-	    fastcompare* ) \
-	      cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
-	      test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-	      ;; \
-	    gnucompare* ) \
-	      cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
-	      test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-	      ;; \
-	  esac ; \
-	done
-	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in tmp-foo $(SUBDIRS); do \
+	for dir in . $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
 	      case "$@" in \
