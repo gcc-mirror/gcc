@@ -4122,6 +4122,7 @@ extern int unemitted_tinfo_decl_p    	        PARAMS((tree, void *));
 extern int emit_tinfo_decl                      PARAMS((tree *, void *));
 
 /* in search.c */
+extern bool accessible_base_p (tree, tree);
 extern tree lookup_base PARAMS ((tree, tree, base_access, base_kind *));
 extern int types_overlap_p			PARAMS ((tree, tree));
 extern tree get_vbase				PARAMS ((tree, tree));
