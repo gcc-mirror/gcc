@@ -75,8 +75,7 @@ public:
 protected:
   _Sequence c;
 public:
-  queue() : c() {}
-  explicit queue(const _Sequence& __c) : c(__c) {}
+  explicit queue(const _Sequence& __c = _Sequence()) : c(__c) {}
 
   bool empty() const { return c.empty(); }
   size_type size() const { return c.size(); }
@@ -154,25 +153,15 @@ protected:
   _Sequence c;
   _Compare comp;
 public:
-  priority_queue() : c() {}
-  explicit priority_queue(const _Compare& __x) :  c(), comp(__x) {}
-  priority_queue(const _Compare& __x, const _Sequence& __s) 
+  explicit priority_queue(const _Compare& __x = _Compare(),
+			  const _Sequence& __s = _Sequence()) 
     : c(__s), comp(__x) 
     { make_heap(c.begin(), c.end(), comp); }
 
   template <class _InputIterator>
-  priority_queue(_InputIterator __first, _InputIterator __last) 
-    : c(__first, __last) { make_heap(c.begin(), c.end(), comp); }
-
-  template <class _InputIterator>
-  priority_queue(_InputIterator __first, 
-                 _InputIterator __last, const _Compare& __x)
-    : c(__first, __last), comp(__x) 
-    { make_heap(c.begin(), c.end(), comp); }
-
-  template <class _InputIterator>
   priority_queue(_InputIterator __first, _InputIterator __last,
-                 const _Compare& __x, const _Sequence& __s)
+                 const _Compare& __x = _Compare(),
+		 const _Sequence& __s = _Sequence())
   : c(__s), comp(__x)
   { 
     c.insert(c.end(), __first, __last);

@@ -1,3 +1,9 @@
+2001-06-04  Brendan Kehoe  <brendan@zen.org>
+
+	PR libstdc++/3016
+	* include/bits/stl_queue.h (classes queue, priority_queue):  Fix
+	ctors to match the standard.
+
 2001-06-04  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* include/bits/char_traits.h (move): Reverse qualification of
