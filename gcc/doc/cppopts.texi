@@ -204,10 +204,13 @@ When used with the driver options @option{-MD} or @option{-MMD},
 
 @item -MG
 @opindex MG
-When used with @option{-M} or @option{-MM}, @option{-MG} says to treat missing
-header files as generated files and assume they live in the same
-directory as the source file.  It suppresses preprocessed output, as a
-missing header file is ordinarily an error.
+In conjunction with an option such as @option{-M} requesting
+dependency generation, @option{-MG} assumes missing header files are
+generated files and adds them to the dependency list without raising
+an error.  The dependency filename is taken directly from the
+@code{#include} directive without prepending any path.  @option{-MG}
+also suppresses preprocessed output, as a missing header file renders
+this useless.
 
 This feature is used in automatic updating of makefiles.
 
