@@ -60,38 +60,6 @@ struct _GtkLayoutChild {
   gint y;
 };
 
-static
-void sr (GtkWidget *widget, GtkRequisition *requisition, gpointer user_data)
-{
-  GtkLayout *layout;
-  GtkLayoutChild *child;
-  GList *children;
-
-  layout = GTK_LAYOUT (widget);
-  requisition->width = GTK_WIDGET (widget)->allocation.width;
-  requisition->height = GTK_WIDGET (widget)->allocation.height;
-
-  children = layout->children;
-  while (children)
-    {
-      child = children->data;
-      children = children->next;
-
-      if (GTK_WIDGET_VISIBLE (child->widget))
-	{
-          requisition->height = MAX (requisition->height,
-                                     child->y +
-                                     child->widget->allocation.height);
-          requisition->width = MAX (requisition->width,
-                                    child->x +
-                                    child->widget->allocation.width);
-	}
-    }
-
-  requisition->height += GTK_CONTAINER (layout)->border_width * 2;
-  requisition->width += GTK_CONTAINER (layout)->border_width * 2;
-}
-
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectHooks
   (JNIEnv *env, jobject obj)

@@ -40,7 +40,8 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkToolkit.h"
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkToolkit_beep (JNIEnv *env, jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkToolkit_beep
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
 {
   gdk_threads_enter ();
   gdk_beep ();
@@ -48,7 +49,8 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_beep (JNIEnv *env, jobject obj)
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkToolkit_sync (JNIEnv *env, jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkToolkit_sync
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
 {
   gdk_threads_enter ();
   gdk_flush ();
@@ -57,7 +59,8 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_sync (JNIEnv *env, jobject obj)
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenSizeDimensions
-(JNIEnv *env, jobject obj, jintArray jdims)
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+   jintArray jdims)
 {
   jint *dims = (*env)->GetIntArrayElements (env, jdims, 0);  
 
@@ -72,8 +75,8 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenSizeDimensions
 }
 
 JNIEXPORT jint JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenResolution (JNIEnv *env, 
-							   jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenResolution
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
 {
   jint res;
 

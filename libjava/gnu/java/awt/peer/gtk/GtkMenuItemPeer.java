@@ -85,7 +85,10 @@ public class GtkMenuItemPeer extends GtkMenuComponentPeer
     setEnabled (true);
   }
 
-  native public void setEnabled (boolean b);
+  public void setEnabled (boolean b)
+  {
+    // do nothing, for now.
+  }
   native public void setLabel (String label);
 
   protected void postMenuActionEvent ()

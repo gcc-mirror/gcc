@@ -39,6 +39,10 @@ exception statement from your version. */
 #include <jcl.h>
 #include <malloc.h>
 
+#ifndef __GNUC__
+#define __attribute__(x) /* nothing */
+#endif
+
 static char errstr[4098]; // this way the memory is pre-allocated, so that we do not have to worry if we are out of memory.
 
 JNIEXPORT void JNICALL JCL_ThrowException(JNIEnv * env, char * className, char * errMsg) {
@@ -85,7 +89,9 @@ JNIEXPORT void * JNICALL JCL_realloc(JNIEnv *env, void *ptr, size_t size)
   return(ptr);
 }
 
-JNIEXPORT void JNICALL JCL_free(JNIEnv * env, void * p) {
+JNIEXPORT void JNICALL JCL_free(JNIEnv * env __attribute__((unused)),
+				void * p)
+{
 	if(p != NULL) {
 		free(p);
 	}

@@ -94,14 +94,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setLabel
   (*env)->ReleaseStringUTFChars (env, label, str);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setEnabled
-  (JNIEnv *env, jobject obj, jboolean enabled)
-{
-/*    Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setEnabled (env, obj, enabled); */
-}
-
 static void
-item_activate (GtkMenuItem *item, jobject *peer_obj)
+item_activate (GtkMenuItem *item __attribute__((unused)), jobject *peer_obj)
 {
   (*gdk_env)->CallVoidMethod (gdk_env, *peer_obj,
 			      postMenuActionEventID);

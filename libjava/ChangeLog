@@ -1,3 +1,53 @@
+2003-10-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkMenuItemPeer.java (setEnabled): Stub
+	out.
+	* jni/classpath/jcl.c [!__GNUC__]: Elide __attribute__.
+	(JCL_free): Attach "unused" attribute to env parameter.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c,
+	jni/gtk-peer/gthread-jni.c: Attach "unused" attribute to unused
+	parameters.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c:
+	(initNativeState): Pass 0 as info argument to
+	gtk_selection_add_target.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	(setVisible, gtkFixedNew, gtkFixedPut, gtkFixedMove): Remove
+	unused method implementations.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(awt_event_handler): Add break statement after default label.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c
+	(drawPixels): Remove unused variable i.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c
+	(setEnabled): Remove method implementation.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c
+	(accel_attach): Call _gtk_accel_group_attach with G_OBJECT
+	argument.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c (sr): Remove
+	unused function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c
+	(menu_pos): Assign TRUE to push_in.
+	(setupAccelGroup): Call _gtk_accel_group_attach with G_OBJECT
+	argument.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c
+	(create): Remove unused variable layout.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c (create):
+	Pass window_widget, rather than window, to
+	gtk_widget_set_size_request.
+	* jni/gtk-peer/gthread-jni.c (g_thread_jni_functions): Fill out
+	structure initialization with NULL values.
+	* jni/gtk-peer/gtkpeer.h [!__GNUC__]: Elide __attribute__.
+
 2003-10-08  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/LinkedList.java:
