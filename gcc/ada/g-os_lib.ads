@@ -470,6 +470,18 @@ pragma Elaborate_Body (OS_Lib);
    --  contains the name of the file to which it is linked. Symbolic links may
    --  span file systems and may refer to directories.
 
+   procedure Set_Writable (Name : String);
+   --  Change the permissions on the named file to make it writable
+   --  for its owner.
+
+   procedure Set_Read_Only (Name : String);
+   --  Change the permissions on the named file to make it non-writable
+   --  for its owner.
+
+   procedure Set_Executable (Name : String);
+   --  Change the permissions on the named file to make it executable
+   --  for its owner.
+
    function Locate_Exec_On_Path
      (Exec_Name : String) return String_Access;
    --  Try to locate an executable whose name is given by Exec_Name in the
@@ -562,9 +574,7 @@ pragma Elaborate_Body (OS_Lib);
    --  Returns Invalid_Time is Name doesn't correspond to an existing file.
 
    function Is_Regular_File (Name : C_File_Name) return Boolean;
-
    function Is_Directory (Name : C_File_Name) return Boolean;
-
    function Is_Readable_File (Name : C_File_Name) return Boolean;
    function Is_Writable_File (Name : C_File_Name) return Boolean;
    function Is_Symbolic_Link (Name : C_File_Name) return Boolean;

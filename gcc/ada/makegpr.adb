@@ -3315,12 +3315,6 @@ package body Makegpr is
             Change_Dir (Object_Dir);
 
             declare
-               procedure Set_Executable (Name : System.Address);
-               pragma Import
-                 (C, Set_Executable, "__gnat_set_executable");
-
-               Name : constant String := Cpp_Linker & ASCII.NUL;
-
                File : Ada.Text_IO.File_Type;
                use Ada.Text_IO;
 
@@ -3336,7 +3330,7 @@ package body Makegpr is
                   " $* ${LIBGCC}");
 
                Close (File);
-               Set_Executable (Name (Name'First)'Address);
+               Set_Executable (Cpp_Linker);
             end;
          end if;
       end Choose_C_Plus_Plus_Link_Process;
