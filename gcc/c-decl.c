@@ -70,8 +70,8 @@ enum decl_context
 #define WCHAR_TYPE "int"
 #endif
 
-/* Don't do GC.  */
-int ggc_p = 0;
+/* Do GC.  */
+int ggc_p = 1;
 
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */

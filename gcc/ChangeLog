@@ -1,3 +1,7 @@
+Wed Oct  6 23:56:30 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c (ggc_p): Enable.
+
 Wed Oct  6 17:17:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* flow.c (verify_flow_info): Make it extern & unconditionally define.
