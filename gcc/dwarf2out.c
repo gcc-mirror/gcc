@@ -10422,20 +10422,20 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	   link != NULL; link = TREE_CHAIN (link))
 	{
 	  dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die, link);
+	  tree value = TREE_VALUE (link);
 
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
 
-	  if (host_integerp (TREE_VALUE (link), 
-			     TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (link)))))
-	    {
-	      if (tree_int_cst_sgn (TREE_VALUE (link)) < 0)
-		add_AT_int (enum_die, DW_AT_const_value,
-			    tree_low_cst (TREE_VALUE (link), 0));
-	      else
-		add_AT_unsigned (enum_die, DW_AT_const_value,
-				 tree_low_cst (TREE_VALUE (link), 1));
-	    }
+	  if (host_integerp (value, TREE_UNSIGNED (TREE_TYPE (value))))
+	    /* DWARF2 does not provide a way of indicating whether or
+	       not enumeration constants are signed or unsigned.  GDB
+	       always assumes the values are signed, so we output all
+	       values as if they were signed.  That means that
+	       enumeration constants with very large unsigned values
+	       will appear to have negative values in the debugger.  */
+	    add_AT_int (enum_die, DW_AT_const_value,
+			tree_low_cst (value, tree_int_cst_sgn (value) > 0));
 	}
     }
   else

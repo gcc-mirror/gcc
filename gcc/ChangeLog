@@ -1,4 +1,10 @@
-2004-02-27  Mark Mitchell  <mark@codesourcery.com>
+2004-02-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/14328
+	* dwarf2out.c (gen_enumeration_type_die): Output all enumeration
+	constants as signed values.
+
+2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR middle-end/13448
 	* c-tree.h (readonly_warning): Rename to ...
