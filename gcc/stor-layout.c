@@ -1316,7 +1316,7 @@ set_sizetype (type)
      calculating signed sizes / offsets in bits.  However, when
      cross-compiling from a 32 bit to a 64 bit host, we are limited to 64 bit
      precision.  */
-  int precision = MAX (oprecision + BITS_PER_UNIT_LOG + 1,
+  int precision = MIN (oprecision + BITS_PER_UNIT_LOG + 1,
 		       2 * HOST_BITS_PER_WIDE_INT);
 
   sizetype = type;

@@ -1,3 +1,9 @@
+1999-12-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (explow.o): Depend on function.h.
+	
+	* stor-layout.c (set_sizetype): Fix typo.
+	
 1999-12-20  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* function.c (cfun): Renamed from current_function.  All users
