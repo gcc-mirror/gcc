@@ -1,3 +1,9 @@
+2002-03-03  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/std/std_sstream.h:  Remove trailing spaces.
+	(basic_stringbuf::_M_stringbuf_init):  Also check for ios_base::app.
+	* testsuite/27_io/stringbuf.cc (test05, test06):  New tests.
+
 2002-03-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/num_get_members_char.cc (test04):
