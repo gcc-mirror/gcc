@@ -1,3 +1,8 @@
+2003-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_expect_jump): Save pending_stack_adjust
+	and restore it if returning NULL.
+
 2003-08-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	* calls.c (initialize_argument_information): If an argument has no
