@@ -459,7 +459,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 		  warning ("  (if this is not what you intended, make sure");
 		  warning ("  the function template has already been declared,");
 		  warning ("  and add <> after the function name here)");
- 		  warning ("  To disable warning use -Wno-non-template-friend");
+ 		  warning ("  -Wno-non-template-friend disables this warning.");
 		  explained = 1;
 		}
 	    }
