@@ -1427,9 +1427,10 @@ gen-protos: gen-protos.o scan.o
 	${HOST_CC} -o gen-protos gen-protos.o scan.o
 
 xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
-	cat deduced.h $(srcdir)/sys-protos.h |\
-	  sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' >tmp.c
-	$(GCC_FOR_TARGET) tmp.c -E | ./gen-protos >xsys-protos.h
+	cat deduced.h $(srcdir)/sys-protos.h >tmp.c
+	$(GCC_FOR_TARGET) tmp.c -E \
+	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
+	  | ./gen-protos >xsys-protos.h
 
 scan-decls: scan-decls.o scan.o
 	$(HOST_CC) -o scan-decls scan-decls.o scan.o
@@ -1511,8 +1512,8 @@ mostlyclean:
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
-	rm -rf patch-header scan-decls xsys-protos.h deduced.h tmp-deduced.h \
-	  tmp.i tmp.c
+	-rm -rf patch-header scan-decls xsys-protos.h deduced.h tmp-deduced.h \
+	  gen-protos fixproto.list fixtmp.?
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 # Delete sorted indices we don't actually use.
