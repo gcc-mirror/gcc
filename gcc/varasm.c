@@ -705,6 +705,7 @@ assemble_variable (decl, top_level, at_end)
   int align;
   tree size_tree;
   int reloc = 0;
+  enum in_section saved_in_section;
 
   if (GET_CODE (DECL_RTL (decl)) == REG)
     {
@@ -781,27 +782,6 @@ assemble_variable (decl, top_level, at_end)
 
   TREE_ASM_WRITTEN (decl) = 1;
 
-#ifdef DBX_DEBUGGING_INFO
-  /* File-scope global variables are output here.  */
-  if (write_symbols == DBX_DEBUG && top_level)
-    dbxout_symbol (decl, 0);
-#endif
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG && top_level
-      /* Leave initialized global vars for end of compilation;
-	 see comment in compile_file.  */
-      && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
-    sdbout_symbol (decl, 0);
-#endif
-
-  /* Don't output any DWARF debugging information for variables here.
-     In the case of local variables, the information for them is output
-     when we do our recursive traversal of the tree representation for
-     the entire containing function.  In the case of file-scope variables,
-     we output information for all of them at the very end of compilation
-     while we are doing our final traversal of the chain of file-scope
-     declarations.  */
-
   /* If storage size is erroneously variable, just continue.
      Error message was already made.  */
 
@@ -844,6 +824,28 @@ assemble_variable (decl, top_level, at_end)
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+
+#ifdef DBX_DEBUGGING_INFO
+      /* File-scope global variables are output here.  */
+      if (write_symbols == DBX_DEBUG && top_level)
+	dbxout_symbol (decl, 0);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+      if (write_symbols == SDB_DEBUG && top_level
+	  /* Leave initialized global vars for end of compilation;
+	     see comment in compile_file.  */
+	  && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+	sdbout_symbol (decl, 0);
+#endif
+
+      /* Don't output any DWARF debugging information for variables here.
+	 In the case of local variables, the information for them is output
+	 when we do our recursive traversal of the tree representation for
+	 the entire containing function.  In the case of file-scope variables,
+	 we output information for all of them at the very end of compilation
+	 while we are doing our final traversal of the chain of file-scope
+	 declarations.  */
+
 #if 0
       if (flag_shared_data)
 	data_section ();
@@ -913,6 +915,47 @@ assemble_variable (decl, top_level, at_end)
   else
     data_section ();
 #endif
+
+  /* Record current section so we can restore it if dbxout.c clobbers it.  */
+  saved_in_section = in_section;
+
+  /* Output the dbx info now that we have chosen the section.  */
+
+#ifdef DBX_DEBUGGING_INFO
+  /* File-scope global variables are output here.  */
+  if (write_symbols == DBX_DEBUG && top_level)
+    dbxout_symbol (decl, 0);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG && top_level
+      /* Leave initialized global vars for end of compilation;
+	 see comment in compile_file.  */
+      && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+    sdbout_symbol (decl, 0);
+#endif
+
+  /* Don't output any DWARF debugging information for variables here.
+     In the case of local variables, the information for them is output
+     when we do our recursive traversal of the tree representation for
+     the entire containing function.  In the case of file-scope variables,
+     we output information for all of them at the very end of compilation
+     while we are doing our final traversal of the chain of file-scope
+     declarations.  */
+
+  if (in_section != saved_in_section)
+    {
+      /* Switch to the proper section for this data.  */
+#ifdef SELECT_SECTION
+      SELECT_SECTION (decl, reloc);
+#else
+      if (TREE_READONLY (decl)
+	  && ! TREE_THIS_VOLATILE (decl)
+	  && ! (flag_pic && reloc))
+	readonly_data_section ();
+      else
+	data_section ();
+#endif
+    }
 
   /* Compute and output the alignment of this data.  */
 
