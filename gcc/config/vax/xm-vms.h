@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,7 +48,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_FLOAT_FORMAT VAX_FLOAT_FORMAT
 
 #define SUCCESS_EXIT_CODE 1
-#define FATAL_EXIT_CODE (44 | 0x10000000)  /* Failure, and no DCL message.  */
+#define FAILURE_EXIT_CODE (2 | 0x10000000)  /* Error, and no DCL message.  */
+#define FATAL_EXIT_CODE (44 | 0x10000000)  /* Abort, and no DCL message.  */
+/* (FAILURE_ is used in cccp.c, FATAL_ by toplev.c, plus gen*.c and bi-*.c) */
 
 
 /* A couple of conditionals for execution machine are controlled here.  */
