@@ -145,18 +145,18 @@ do								\
   }								\
 while (0)  
 
-/* You might wonder why we use syscall(SYS_sigaction) in INIT_FPE
- * instead of the standard sigaction().  This is necessary because of
- * the shenanigans above where we increment the PC saved in the
- * context and then return.  This trick will only work when we are
+/* You might wonder why we use syscall(SYS_sigaction) in INIT_SEGV and
+ * INIT_FPE instead of the standard sigaction().  This is necessary
+ * because of the shenanigans above where we increment the PC saved in
+ * the context and then return.  This trick will only work when we are
  * called _directly_ by the kernel, because linuxthreads wraps signal
- * handlers and its wrappers do not copy the sigcontext struct back
- * when returning from a signal handler.  If we return from our divide
- * handler to a linuxthreads wrapper, we will lose the PC adjustment
- * we made and return to the faulting instruction again.  Using
- * syscall(SYS_sigaction) causes our handler to be called directly by
- * the kernel, bypassing any wrappers.  This is a kludge, and a future
- * version of this handler will do something better.  */
+ * handlers and its wrappers do not copy the sigcontext struct back when
+ * returning from a signal handler.  If we return from our divide handler
+ * to a linuxthreads wrapper, we will lose the PC adjustment we made and
+ * return to the faulting instruction again.  Using syscall(SYS_sigaction)
+ * causes our handler to be called directly by the kernel, bypassing
+ * any wrappers.  This is a kludge, and a future version of this handler
+ * will do something better.  */
 
 #endif /* JAVA_SIGNAL_H */
   
