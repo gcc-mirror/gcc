@@ -120,12 +120,12 @@ struct varasm_status
   rtx x_const_double_chain;
 };
 
-#define const_rtx_hash_table (current_function->varasm->x_const_rtx_hash_table)
-#define const_rtx_sym_hash_table (current_function->varasm->x_const_rtx_sym_hash_table)
-#define first_pool (current_function->varasm->x_first_pool)
-#define last_pool (current_function->varasm->x_last_pool)
-#define pool_offset (current_function->varasm->x_pool_offset)
-#define const_double_chain (current_function->varasm->x_const_double_chain)
+#define const_rtx_hash_table (cfun->varasm->x_const_rtx_hash_table)
+#define const_rtx_sym_hash_table (cfun->varasm->x_const_rtx_sym_hash_table)
+#define first_pool (cfun->varasm->x_first_pool)
+#define last_pool (cfun->varasm->x_last_pool)
+#define pool_offset (cfun->varasm->x_pool_offset)
+#define const_double_chain (cfun->varasm->x_const_double_chain)
 
 /* Number for making the label on the next
    constant that is stored in memory.  */
@@ -2108,7 +2108,7 @@ immed_double_const (i0, i1, mode)
 
   /* Search the chain for an existing CONST_DOUBLE with the right value.
      If one is found, return it.  */
-  if (current_function != 0)
+  if (cfun != 0)
     for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
       if (CONST_DOUBLE_LOW (r) == i0 && CONST_DOUBLE_HIGH (r) == i1
 	  && GET_MODE (r) == mode)
@@ -2180,7 +2180,7 @@ immed_real_const_1 (d, mode)
 
   /* Search the chain for an existing CONST_DOUBLE with the right value.
      If one is found, return it.  */
-  if (current_function != 0)
+  if (cfun != 0)
     for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
       if (! bcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
 	  && GET_MODE (r) == mode)
@@ -3686,7 +3686,7 @@ rtx
 get_pool_constant (addr)
      rtx addr;
 {
-  return (find_pool_constant (current_function, addr))->constant;
+  return (find_pool_constant (cfun, addr))->constant;
 }
 
 /* Likewise, but for the constant pool of a specific function.  */
@@ -3705,7 +3705,7 @@ enum machine_mode
 get_pool_mode (addr)
      rtx addr;
 {
-  return (find_pool_constant (current_function, addr))->mode;
+  return (find_pool_constant (cfun, addr))->mode;
 }
 
 enum machine_mode
@@ -3722,7 +3722,7 @@ int
 get_pool_offset (addr)
      rtx addr;
 {
-  return (find_pool_constant (current_function, addr))->offset;
+  return (find_pool_constant (cfun, addr))->offset;
 }
 
 /* Return the size of the constant pool.  */
@@ -3895,7 +3895,7 @@ mark_constants (x)
   if (GET_CODE (x) == SYMBOL_REF)
     {
       if (CONSTANT_POOL_ADDRESS_P (x))
-	find_pool_constant (current_function, x)->mark = 1;
+	find_pool_constant (cfun, x)->mark = 1;
       return;
     }
   /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be

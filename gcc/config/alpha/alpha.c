@@ -2739,13 +2739,13 @@ alpha_return_addr (count, frame)
   if (count != 0)
     return const0_rtx;
 
-  reg = current_function->machine->ra_rtx;
+  reg = cfun->machine->ra_rtx;
   if (reg == NULL)
     {
       /* No rtx yet.  Invent one, and initialize it from $26 in
 	 the prologue.  */
       reg = gen_reg_rtx (Pmode);
-      current_function->machine->ra_rtx = reg;
+      cfun->machine->ra_rtx = reg;
       init = gen_rtx_SET (VOIDmode, reg, gen_rtx_REG (Pmode, REG_RA));
 
       /* Emit the insn to the prologue with the other argument copies.  */
@@ -2766,7 +2766,7 @@ alpha_ra_ever_killed ()
   if (current_function_is_thunk)
     return 0;
 #endif
-  if (!current_function->machine->ra_rtx)
+  if (!cfun->machine->ra_rtx)
     return regs_ever_live[REG_RA];
 
   push_topmost_sequence ();
@@ -4090,7 +4090,7 @@ alpha_expand_epilogue ()
   fp_is_frame_pointer = ((TARGET_OPEN_VMS && vms_is_stack_procedure)
 			 || (!TARGET_OPEN_VMS && frame_pointer_needed));
 
-  eh_ofs = current_function->machine->eh_epilogue_sp_ofs;
+  eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   if (sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */

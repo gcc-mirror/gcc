@@ -5153,7 +5153,7 @@
   "! TARGET_OPEN_VMS"
   "
 {
-  current_function->machine->eh_epilogue_sp_ofs = operands[1];
+  cfun->machine->eh_epilogue_sp_ofs = operands[1];
   if (GET_CODE (operands[2]) != REG || REGNO (operands[2]) != 26)
     {
       rtx ra = gen_rtx_REG (Pmode, 26);

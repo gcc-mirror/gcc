@@ -285,8 +285,7 @@ init_expr_once ()
 void
 init_expr ()
 {
-  current_function->expr
-    = (struct expr_status *) xmalloc (sizeof (struct expr_status));
+  cfun->expr = (struct expr_status *) xmalloc (sizeof (struct expr_status));
 
   pending_chain = 0;
   pending_stack_adjust = 0;
@@ -2671,8 +2670,7 @@ emit_move_insn_1 (x, y)
 
 		      rtx cmem = change_address (mem, mode, NULL_RTX);
 
-		      current_function->cannot_inline
-			= "function uses short complex types";
+		      cfun->cannot_inline = "function uses short complex types";
 
 		      if (packed_dest_p)
 			{
@@ -5873,7 +5871,7 @@ expand_expr (exp, target, tmode, modifier)
 	 memory protection).
 
 	 Aggregates are not checked here; they're handled elsewhere.  */
-      if (current_function && current_function_check_memory_usage
+      if (cfun && current_function_check_memory_usage
 	  && code == VAR_DECL
 	  && GET_CODE (DECL_RTL (exp)) == MEM
 	  && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
@@ -6391,7 +6389,7 @@ expand_expr (exp, target, tmode, modifier)
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
 
-	if (current_function && current_function_check_memory_usage
+	if (cfun && current_function_check_memory_usage
 	    && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
 	  {
 	    enum memory_use_mode memory_usage;

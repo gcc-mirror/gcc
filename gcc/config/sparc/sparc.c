@@ -2763,8 +2763,7 @@ mem_min_alignment (mem, desired)
 	  /* Check if the compiler has recorded some information
 	     about the alignment of the base REG.  If reload has
 	     completed, we already matched with proper alignments.  */
-	  if (((current_function != 0
-		&& REGNO_POINTER_ALIGN (regno) >= desired)
+	  if (((cfun != 0 && REGNO_POINTER_ALIGN (regno) >= desired)
 	       || reload_completed)
 	      && ((INTVAL (offset) & (desired - 1)) == 0))
 	    return 1;

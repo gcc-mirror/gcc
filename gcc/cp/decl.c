@@ -491,7 +491,7 @@ struct binding_level
 /* The binding level currently in effect.  */
 
 #define current_binding_level			\
-  (current_function				\
+  (cfun						\
    ? cp_function_chain->bindings   		\
    : scope_chain->bindings)
 
@@ -776,7 +776,7 @@ pushlevel (tag_transparent)
 {
   struct binding_level *newlevel;
 
-  if (current_function && !doing_semantic_analysis_p ())
+  if (cfun && !doing_semantic_analysis_p ())
     return;
 
   /* Reuse or create a struct for this binding level.  */
@@ -1135,7 +1135,7 @@ poplevel (keep, reverse, functionbody)
   int block_previously_created;
   int leaving_for_scope;
 
-  if (current_function && !doing_semantic_analysis_p ())
+  if (cfun && !doing_semantic_analysis_p ())
     return NULL_TREE;
 
   my_friendly_assert (current_binding_level->parm_flag != 2,
@@ -1379,7 +1379,7 @@ poplevel (keep, reverse, functionbody)
 
   /* Any uses of undefined labels now operate under constraints
      of next binding contour.  */
-  if (current_function)
+  if (cfun)
     {
       struct binding_level *level_chain;
       level_chain = current_binding_level->level_chain;
@@ -2335,7 +2335,7 @@ maybe_push_to_top_level (pseudo)
   b = scope_chain ? current_binding_level : 0;
 
   /* If we're in the middle of some function, save our state.  */
-  if (current_function)
+  if (cfun)
     {
       need_pop = 1;
       push_function_context_to (NULL_TREE);
@@ -3605,7 +3605,7 @@ pushdecl (x)
 
   /* We shouldn't be calling pushdecl when we're generating RTL for a
      function that we already did semantic analysis on previously.  */
-  my_friendly_assert (!current_function || doing_semantic_analysis_p (),
+  my_friendly_assert (!cfun || doing_semantic_analysis_p (),
 		      19990913);
 
   name = DECL_ASSEMBLER_NAME (x);
@@ -7616,7 +7616,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   /* Handling __FUNCTION__ and its ilk in a template-function requires
      some special processing because we are called from
      language-independent code.  */
-  if (current_function && processing_template_decl 
+  if (cfun && processing_template_decl 
       && current_function_name_declared == 2)
     {
       /* Since we're in a template function, we need to
@@ -13068,8 +13068,7 @@ start_function (declspecs, declarator, attrs, flags)
   /* Initialize RTL machinery.  We cannot do this until
      CURRENT_FUNCTION_DECL and DECL_RESULT are set up.  We do this
      even when processing a template; this is how we get
-     CURRENT_FUNCTION set up, and our per-function variables
-     initialized.  */
+     CFUN set up, and our per-function variables initialized.  */
   bl = current_binding_level;
   init_function_start (decl1, input_filename, lineno);
   current_binding_level = bl;
@@ -13080,7 +13079,7 @@ start_function (declspecs, declarator, attrs, flags)
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
   immediate_size_expand = 0;
-  current_function->x_dont_save_pending_sizes_p = 1;
+  cfun->x_dont_save_pending_sizes_p = 1;
 
   /* If we're building a statement-tree, start the tree now.  */
   if (processing_template_decl || !expanding_p)
@@ -13114,7 +13113,7 @@ start_function (declspecs, declarator, attrs, flags)
 
   /* Reset these in case the call to pushdecl changed them.  */
   current_function_decl = decl1;
-  current_function->decl = decl1;
+  cfun->decl = decl1;
 
   /* Initialize the per-function data.  */
   if (!DECL_PENDING_INLINE_P (decl1) && DECL_SAVED_FUNCTION_DATA (decl1))
@@ -13127,7 +13126,7 @@ start_function (declspecs, declarator, attrs, flags)
 
       /* This function is being processed in whole-function mode; we
 	 already did semantic analysis.  */
-      current_function->x_whole_function_mode_p = 1;
+      cfun->x_whole_function_mode_p = 1;
 
       /* If we decided that we didn't want to inline this function,
 	 make sure the back-end knows that.  */
@@ -13957,11 +13956,11 @@ finish_function (lineno, flags)
   else
     {
       /* Clear out memory we no longer need.  */
-      free_after_parsing (current_function);
+      free_after_parsing (cfun);
       /* Since we never call rest_of_compilation, we never clear
-	 CURRENT_FUNCTION.  Do so explicitly.  */
-      free_after_compilation (current_function);
-      current_function = NULL;
+	 CFUN.  Do so explicitly.  */
+      free_after_compilation (cfun);
+      cfun = NULL;
     }
 
   /* If this is a in-class inline definition, we may have to pop the

@@ -245,7 +245,7 @@ struct machine_function
   rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
 };
 
-#define ix86_stack_locals (current_function->machine->stack_locals)
+#define ix86_stack_locals (cfun->machine->stack_locals)
 
 /* which cpu are we scheduling for */
 enum processor_type ix86_cpu;

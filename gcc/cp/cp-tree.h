@@ -707,7 +707,7 @@ struct language_function
 
 /* The current C++-specific per-function global variables.  */
 
-#define cp_function_chain (current_function->language)
+#define cp_function_chain (cfun->language)
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -737,14 +737,14 @@ struct language_function
    expression for `*this'.  */
 
 #define current_class_ptr \
-  (current_function ? cp_function_chain->x_current_class_ptr : NULL_TREE)
+  (cfun ? cp_function_chain->x_current_class_ptr : NULL_TREE)
 #define current_class_ref \
-  (current_function ? cp_function_chain->x_current_class_ref : NULL_TREE)
+  (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
 /* Information about the current statement tree.  */
 
 #define current_stmt_tree			\
-  (current_function 				\
+  (cfun						\
    ? &cp_function_chain->x_stmt_tree		\
    : &scope_chain->x_stmt_tree)
 

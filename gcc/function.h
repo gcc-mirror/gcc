@@ -115,15 +115,13 @@ struct emit_status
 };
 
 /* For backward compatibility... eventually these should all go away.  */
-#define reg_rtx_no (current_function->emit->x_reg_rtx_no)
-#define seq_rtl_expr (current_function->emit->sequence_rtl_expr)
-#define regno_reg_rtx (current_function->emit->x_regno_reg_rtx)
-#define seq_stack (current_function->emit->sequence_stack)
+#define reg_rtx_no (cfun->emit->x_reg_rtx_no)
+#define seq_rtl_expr (cfun->emit->sequence_rtl_expr)
+#define regno_reg_rtx (cfun->emit->x_regno_reg_rtx)
+#define seq_stack (cfun->emit->sequence_stack)
 
-#define REGNO_POINTER_ALIGN(REGNO) \
-  (current_function->emit->regno_pointer_align[REGNO])
-#define REGNO_POINTER_FLAG(REGNO) \
-  (current_function->emit->regno_pointer_flag[REGNO])
+#define REGNO_POINTER_ALIGN(REGNO) (cfun->emit->regno_pointer_align[REGNO])
+#define REGNO_POINTER_FLAG(REGNO) (cfun->emit->regno_pointer_flag[REGNO])
 
 struct expr_status
 {
@@ -163,12 +161,12 @@ struct expr_status
   rtx x_pending_chain;
 };
 
-#define pending_stack_adjust (current_function->expr->x_pending_stack_adjust)
-#define inhibit_defer_pop (current_function->expr->x_inhibit_defer_pop)
-#define saveregs_value (current_function->expr->x_saveregs_value)
-#define apply_args_value (current_function->expr->x_apply_args_value)
-#define forced_labels (current_function->expr->x_forced_labels)
-#define pending_chain (current_function->expr->x_pending_chain)
+#define pending_stack_adjust (cfun->expr->x_pending_stack_adjust)
+#define inhibit_defer_pop (cfun->expr->x_inhibit_defer_pop)
+#define saveregs_value (cfun->expr->x_saveregs_value)
+#define apply_args_value (cfun->expr->x_apply_args_value)
+#define forced_labels (cfun->expr->x_forced_labels)
+#define pending_chain (cfun->expr->x_pending_chain)
 
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
@@ -469,65 +467,68 @@ struct function
   rtx epilogue_delay_list;
 };
 
-extern struct function *current_function;
+/* The function currently being compiled.  */
+extern struct function *cfun;
+
+/* A list of all functions we have compiled so far.  */
 extern struct function *all_functions;
 
 /* For backward compatibility... eventually these should all go away.  */
-#define current_function_name (current_function->name)
-#define current_function_pops_args (current_function->pops_args)
-#define current_function_returns_struct (current_function->returns_struct)
-#define current_function_returns_pcc_struct (current_function->returns_pcc_struct)
-#define current_function_returns_pointer (current_function->returns_pointer)
-#define current_function_needs_context (current_function->needs_context)
-#define current_function_calls_setjmp (current_function->calls_setjmp)
-#define current_function_calls_alloca (current_function->calls_alloca)
-#define current_function_calls_longjmp (current_function->calls_longjmp)
-#define current_function_has_computed_jump (current_function->has_computed_jump)
-#define current_function_contains_functions (current_function->contains_functions)
-#define current_function_is_thunk (current_function->is_thunk)
-#define current_function_args_info (current_function->args_info)
-#define current_function_args_size (current_function->args_size)
-#define current_function_pretend_args_size (current_function->pretend_args_size)
-#define current_function_outgoing_args_size (current_function->outgoing_args_size)
-#define current_function_arg_offset_rtx (current_function->arg_offset_rtx)
-#define current_function_varargs (current_function->varargs)
-#define current_function_stdarg (current_function->stdarg)
-#define current_function_internal_arg_pointer (current_function->internal_arg_pointer)
-#define current_function_return_rtx (current_function->return_rtx)
-#define current_function_instrument_entry_exit (current_function->instrument_entry_exit)
-#define current_function_check_memory_usage (current_function->check_memory_usage)
-#define current_function_limit_stack (current_function->limit_stack)
-#define current_function_uses_pic_offset_table (current_function->uses_pic_offset_table)
-#define current_function_uses_const_pool (current_function->uses_const_pool)
-#define current_function_cannot_inline (current_function->cannot_inline)
-#define current_function_epilogue_delay_list (current_function->epilogue_delay_list)
-#define current_function_has_nonlocal_label (current_function->has_nonlocal_label)
-#define current_function_has_nonlocal_goto (current_function->has_nonlocal_goto)
+#define current_function_name (cfun->name)
+#define current_function_pops_args (cfun->pops_args)
+#define current_function_returns_struct (cfun->returns_struct)
+#define current_function_returns_pcc_struct (cfun->returns_pcc_struct)
+#define current_function_returns_pointer (cfun->returns_pointer)
+#define current_function_needs_context (cfun->needs_context)
+#define current_function_calls_setjmp (cfun->calls_setjmp)
+#define current_function_calls_alloca (cfun->calls_alloca)
+#define current_function_calls_longjmp (cfun->calls_longjmp)
+#define current_function_has_computed_jump (cfun->has_computed_jump)
+#define current_function_contains_functions (cfun->contains_functions)
+#define current_function_is_thunk (cfun->is_thunk)
+#define current_function_args_info (cfun->args_info)
+#define current_function_args_size (cfun->args_size)
+#define current_function_pretend_args_size (cfun->pretend_args_size)
+#define current_function_outgoing_args_size (cfun->outgoing_args_size)
+#define current_function_arg_offset_rtx (cfun->arg_offset_rtx)
+#define current_function_varargs (cfun->varargs)
+#define current_function_stdarg (cfun->stdarg)
+#define current_function_internal_arg_pointer (cfun->internal_arg_pointer)
+#define current_function_return_rtx (cfun->return_rtx)
+#define current_function_instrument_entry_exit (cfun->instrument_entry_exit)
+#define current_function_check_memory_usage (cfun->check_memory_usage)
+#define current_function_limit_stack (cfun->limit_stack)
+#define current_function_uses_pic_offset_table (cfun->uses_pic_offset_table)
+#define current_function_uses_const_pool (cfun->uses_const_pool)
+#define current_function_cannot_inline (cfun->cannot_inline)
+#define current_function_epilogue_delay_list (cfun->epilogue_delay_list)
+#define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
+#define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
 
-#define max_parm_reg (current_function->x_max_parm_reg)
-#define parm_reg_stack_loc (current_function->x_parm_reg_stack_loc)
-#define cleanup_label (current_function->x_cleanup_label)
-#define return_label (current_function->x_return_label)
-#define save_expr_regs (current_function->x_save_expr_regs)
-#define stack_slot_list (current_function->x_stack_slot_list)
-#define parm_birth_insn (current_function->x_parm_birth_insn)
-#define frame_offset (current_function->x_frame_offset)
-#define tail_recursion_label (current_function->x_tail_recursion_label)
-#define tail_recursion_reentry (current_function->x_tail_recursion_reentry)
-#define arg_pointer_save_area (current_function->x_arg_pointer_save_area)
-#define rtl_expr_chain (current_function->x_rtl_expr_chain)
-#define last_parm_insn (current_function->x_last_parm_insn)
-#define context_display (current_function->x_context_display)
-#define trampoline_list (current_function->x_trampoline_list)
-#define function_call_count (current_function->x_function_call_count)
-#define temp_slots (current_function->x_temp_slots)
-#define temp_slot_level (current_function->x_temp_slot_level)
-#define target_temp_slot_level (current_function->x_target_temp_slot_level)
-#define var_temp_slot_level (current_function->x_var_temp_slot_level)
-#define nonlocal_labels (current_function->x_nonlocal_labels)
-#define nonlocal_goto_handler_slots (current_function->x_nonlocal_goto_handler_slots)
-#define nonlocal_goto_handler_labels (current_function->x_nonlocal_goto_handler_labels)
-#define nonlocal_goto_stack_level (current_function->x_nonlocal_goto_stack_level)
+#define max_parm_reg (cfun->x_max_parm_reg)
+#define parm_reg_stack_loc (cfun->x_parm_reg_stack_loc)
+#define cleanup_label (cfun->x_cleanup_label)
+#define return_label (cfun->x_return_label)
+#define save_expr_regs (cfun->x_save_expr_regs)
+#define stack_slot_list (cfun->x_stack_slot_list)
+#define parm_birth_insn (cfun->x_parm_birth_insn)
+#define frame_offset (cfun->x_frame_offset)
+#define tail_recursion_label (cfun->x_tail_recursion_label)
+#define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
+#define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
+#define rtl_expr_chain (cfun->x_rtl_expr_chain)
+#define last_parm_insn (cfun->x_last_parm_insn)
+#define context_display (cfun->x_context_display)
+#define trampoline_list (cfun->x_trampoline_list)
+#define function_call_count (cfun->x_function_call_count)
+#define temp_slots (cfun->x_temp_slots)
+#define temp_slot_level (cfun->x_temp_slot_level)
+#define target_temp_slot_level (cfun->x_target_temp_slot_level)
+#define var_temp_slot_level (cfun->x_var_temp_slot_level)
+#define nonlocal_labels (cfun->x_nonlocal_labels)
+#define nonlocal_goto_handler_slots (cfun->x_nonlocal_goto_handler_slots)
+#define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
+#define nonlocal_goto_stack_level (cfun->x_nonlocal_goto_stack_level)
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 extern tree inline_function_decl;

@@ -138,15 +138,15 @@ struct eh_status
   rtx x_eh_return_stub_label;
 };
 
-#define ehstack (current_function->eh->x_ehstack)
-#define catchstack (current_function->eh->x_catchstack)
-#define ehqueue (current_function->eh->x_ehqueue)
-#define catch_clauses (current_function->eh->x_catch_clauses)
-#define false_label_stack (current_function->eh->x_false_label_stack)
-#define caught_return_label_stack (current_function->eh->x_caught_return_label_stack)
-#define protect_list (current_function->eh->x_protect_list)
-#define current_function_ehc (current_function->eh->ehc)
-#define eh_return_stub_label (current_function->eh->x_eh_return_stub_label)
+#define ehstack (cfun->eh->x_ehstack)
+#define catchstack (cfun->eh->x_catchstack)
+#define ehqueue (cfun->eh->x_ehqueue)
+#define catch_clauses (cfun->eh->x_catch_clauses)
+#define false_label_stack (cfun->eh->x_false_label_stack)
+#define caught_return_label_stack (cfun->eh->x_caught_return_label_stack)
+#define protect_list (cfun->eh->x_protect_list)
+#define current_function_ehc (cfun->eh->ehc)
+#define eh_return_stub_label (cfun->eh->x_eh_return_stub_label)
 
 #ifdef TREE_CODE
 /* Start an exception handling region.  All instructions emitted after
