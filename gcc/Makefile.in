@@ -1313,7 +1313,7 @@ local-alloc.o : local-alloc.c $(CONFIG_H) $(RTL_H) flags.h basic-block.h \
 global.o : global.c $(CONFIG_H) $(RTL_H) flags.h  \
    basic-block.h regs.h hard-reg-set.h insn-config.h output.h
 
-reload.o : reload.c $(CONFIG_H) $(RTL_H) flags.h output.h \
+reload.o : reload.c $(CONFIG_H) $(RTL_H) flags.h output.h expr.h\
    reload.h recog.h hard-reg-set.h insn-config.h insn-codes.h regs.h real.h
 reload1.o : reload1.c $(CONFIG_H) $(RTL_H) real.h flags.h expr.h \
    reload.h regs.h hard-reg-set.h insn-config.h insn-flags.h insn-codes.h \
