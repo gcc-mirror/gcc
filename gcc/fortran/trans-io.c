@@ -1140,6 +1140,79 @@ gfc_trans_dt_end (gfc_code * code)
   return gfc_finish_block (&block);
 }
 
+static void
+transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr);
+
+static tree
+transfer_array_component (tree expr, gfc_component * cm)
+{
+  tree tmp;
+  stmtblock_t body;
+  stmtblock_t block;
+  gfc_loopinfo loop;
+  int n,i;
+  gfc_ss *ss;
+  gfc_se se;
+  gfc_array_ref ar;
+
+  gfc_start_block (&block);
+  gfc_init_se (&se, NULL);
+
+  ss = gfc_get_ss ();
+  ss->type = GFC_SS_COMPONENT;
+  ss->expr = NULL;
+  ss->shape = gfc_get_shape (cm->as->rank);
+  ss->next = gfc_ss_terminator;
+  ss->data.info.dimen = cm->as->rank;
+  ss->data.info.descriptor = expr;
+  ss->data.info.data = gfc_conv_array_data (expr);
+  ss->data.info.offset = gfc_conv_array_offset (expr);
+  for (n = 0; n < cm->as->rank; n++)
+    {
+      ss->data.info.dim[n] = n;
+      ss->data.info.start[n] = gfc_conv_array_lbound (expr, n);
+      ss->data.info.stride[n] = gfc_index_one_node;
+
+      mpz_init (ss->shape[n]);
+      mpz_sub (ss->shape[n], cm->as->upper[n]->value.integer,
+               cm->as->lower[n]->value.integer);
+      mpz_add_ui (ss->shape[n], ss->shape[n], 1);
+    }
+
+  gfc_init_loopinfo (&loop);
+  gfc_add_ss_to_loop (&loop, ss);
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop);
+  gfc_mark_ss_chain_used (ss, 1);
+  gfc_start_scalarized_body (&loop, &body);
+
+  gfc_copy_loopinfo_to_se (&se, &loop);
+  se.ss = ss;
+  se.expr = expr;
+
+  ar.type = AR_FULL;
+  ar.as = cm->as;
+  ar.dimen = cm->as->rank;
+  for (i = 0; i < cm->as->rank; i++)
+    {
+      ar.dimen_type[i] = DIMEN_RANGE;
+      ar.start[i] = ar.end[i] = ar.stride[i] = NULL;
+    }
+  gfc_conv_array_ref (&se, &ar);
+  tmp = gfc_build_addr_expr (NULL, se.expr);
+  transfer_expr (&se, &cm->ts, tmp);
+
+  gfc_add_block_to_block (&body, &se.pre);
+  gfc_add_block_to_block (&body, &se.post);
+  gfc_trans_scalarizing_loops (&loop, &body);
+  gfc_add_block_to_block (&loop.pre, &loop.post);
+  tmp = gfc_finish_block (&loop.pre);
+  gfc_cleanup_loop (&loop);
+  for (n = 0; n < cm->as->rank; n++)
+    mpz_clear (ss->shape[n]);
+  gfc_free (ss->shape);
+  return tmp;
+}
 
 /* Generate the call for a scalar transfer node.  */
 
@@ -1199,11 +1272,18 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 	      se->string_length =
 		TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
 	    }
-	  if (c->dimension)
-	    gfc_todo_error ("IO of arrays in derived types");
-	  if (!c->pointer)
-	    tmp = gfc_build_addr_expr (NULL, tmp);
-	  transfer_expr (se, &c->ts, tmp);
+
+          if (c->dimension)
+            {
+              tmp = transfer_array_component (tmp, c);
+              gfc_add_expr_to_block (&se->pre, tmp);
+            }
+          else
+            {
+              if (!c->pointer)
+                tmp = gfc_build_addr_expr (NULL, tmp);
+              transfer_expr (se, &c->ts, tmp);
+            }
 	}
       return;
 

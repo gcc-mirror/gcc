@@ -1241,6 +1241,10 @@ add_functions (void)
   make_generic ("fraction", GFC_ISYM_FRACTION);
 
   /* Unix IDs (g77 compatibility)  */
+  add_sym_1 ("getcwd", 0, 1, BT_INTEGER, di, NULL, NULL, gfc_resolve_getcwd,
+	     c, BT_CHARACTER, dc, 0);
+  make_generic ("getcwd", GFC_ISYM_GETCWD);
+
   add_sym_0 ("getgid", 1, 0, BT_INTEGER, di, NULL, NULL, gfc_resolve_getgid);
   make_generic ("getgid", GFC_ISYM_GETGID);
 
@@ -1914,6 +1918,11 @@ add_subroutines (void)
 	     gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
 	     vl, BT_REAL, 4, 0, tm, BT_REAL, 4, 0);
 
+  add_sym_2s ("getcwd", 0, 1, BT_UNKNOWN, 0,
+          gfc_check_getcwd_sub, NULL, gfc_resolve_getcwd_sub,
+	      c, BT_CHARACTER, dc, 0,
+	      st, BT_INTEGER, di, 1);
+
   add_sym_2s ("getenv", 0, 1, BT_UNKNOWN, 0,
 	      NULL, NULL, NULL,
 	      name, BT_CHARACTER, dc, 0,
@@ -1922,6 +1931,7 @@ add_subroutines (void)
   add_sym_2s ("getarg", 0, 1, BT_UNKNOWN, 0,
 	      NULL, NULL, gfc_resolve_getarg,
 	      c, BT_INTEGER, di, 0, vl, BT_CHARACTER, dc, 0);
+
 
   /* F2003 commandline routines.  */
 
