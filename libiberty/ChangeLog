@@ -1,6 +1,6 @@
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
-	* cplus_dem.c: Eliminate use of DEFUN, it is obsolete and cannot
+	* cplus-dem.c: Eliminate use of DEFUN, it is obsolete and cannot
 	be used in GCC.
 
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
