@@ -1,3 +1,7 @@
+2004-04-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/const-elim-1.c: XFAIL hppa*.*-*-* (PA32).  Update commentary.
+
 2004-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-ctype-2.c: Test builtin isdigit.
@@ -18,7 +22,7 @@
 
 2004-04-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/20020720-1.x: XFAIL for powerpc-*-*spe.
+	* gcc.c-torture/execute/20020720-1.x: XFAIL for powerpc-*-*spe.
 
 2004-04-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 

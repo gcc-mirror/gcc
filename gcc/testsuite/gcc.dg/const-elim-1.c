@@ -7,10 +7,13 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c99" } */
-/* This test fails on ARM and Xtensa cores because we use a block move to
-   initialize "S" in test2, and GCC is not clever enough to eliminate
-   the block move.  */
-/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* powerpc*-*-aix* xtensa-*-* } } } */
+/* This test fails on all processors where we use a block move to
+   initialize "S" in test2.  The RTL optimizers are not clever enough
+   to eliminate the block move, so the constant gets emitted.
+   Currently known targets with this problem: all ARM; PA32 ("hppa*.*"
+   matches "hppa2.0w" but not "hppa64"); PPC if string instructions
+   are enabled (notably under AIX); Xtensa.  */
+/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* hppa*.*-*-* powerpc*-*-aix* xtensa-*-* } } } */
 
 #define I (__extension__ 1.0iF)
 
