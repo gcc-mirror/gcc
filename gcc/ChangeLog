@@ -1,3 +1,8 @@
+2002-04-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_epilogue): Always restore registers
+	needed by the compiler, even if they are used as global regs.
+
 2002-04-25  Steven Bosscher  <S.Bosscher@student.tudelft.nl>
 
 	* doc/c-tree.texi: Fix typo in introduction.
