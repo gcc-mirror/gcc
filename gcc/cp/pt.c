@@ -9881,7 +9881,8 @@ instantiate_decl (d, defer_ok)
   /* Reject all external templates except inline functions.  */
   else if (DECL_INTERFACE_KNOWN (d)
 	   && ! DECL_NOT_REALLY_EXTERN (d)
-	   && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
+	   && ! (TREE_CODE (d) == FUNCTION_DECL 
+		 && DECL_INLINE (d)))
     goto out;
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  We restore the source position here

@@ -3517,7 +3517,6 @@ finish_file ()
 	  if (!DECL_EXTERNAL (decl)
 	      && DECL_NEEDED_P (decl)
 	      && DECL_SAVED_TREE (decl)
-	      && !DECL_SAVED_INSNS (decl)
 	      && !TREE_ASM_WRITTEN (decl))
 	    {
 	      int saved_not_really_extern;

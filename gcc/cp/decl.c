@@ -3676,10 +3676,6 @@ duplicate_decls (newdecl, olddecl)
 	    DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
-	  if ((DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl)))
-	    /* Previously saved insns go together with
-	       the function's previous definition.  */
-	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  /* Don't clear out the arguments if we're redefining a function.  */
 	  if (DECL_ARGUMENTS (olddecl))
 	    DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);

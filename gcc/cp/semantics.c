@@ -2443,12 +2443,10 @@ expand_body (fn)
      to decide whether to write it out or not.  */
   if (/* We have to generate RTL if it's not an inline function.  */
       (DECL_INLINE (fn) || DECL_COMDAT (fn))
-      /* Or if we have to keep all inline functions anyhow.  */
+      /* Or if we have to emit code for inline functions anyhow.  */
       && !flag_keep_inline_functions
       /* Or if we actually have a reference to the function.  */
-      && !DECL_NEEDED_P (fn)
-      /* Or if this is a nested function.  */
-      && !decl_function_context (fn))
+      && !DECL_NEEDED_P (fn))
     {
       /* Set DECL_EXTERNAL so that assemble_external will be called as
 	 necessary.  We'll clear it again in finish_file.  */
@@ -2469,6 +2467,14 @@ expand_body (fn)
      functions.  */
   if (DECL_DECLARED_INLINE_P (fn))
     import_export_decl (fn);
+
+  /* If FN is external, then there's no point in generating RTL for
+     it.  This situation can arise with an inline function under
+     `-fexternal-tempaltes'; we instantiate the function, even though
+     we're not planning on emitting it, in case we get a chance to
+     inline it.  */
+  if (DECL_EXTERNAL (fn))
+    return;
 
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
@@ -2610,9 +2616,6 @@ genrtl_start_function (fn)
 
   /* Create a binding level for the parameters.  */
   expand_start_bindings (2);
-  /* Clear out any previously saved instructions for this function, in
-     case it was defined more than once.  */
-  DECL_SAVED_INSNS (fn) = NULL;
   /* Go through the PARM_DECLs for this function to see if any need
      cleanups.  */
   for (parm = DECL_ARGUMENTS (fn); parm; parm = TREE_CHAIN (parm))
@@ -2643,6 +2646,7 @@ genrtl_finish_function (fn)
      tree fn;
 {
   tree no_return_label = NULL_TREE;
+  tree t;
 
 #if 0
   if (write_symbols != NO_DEBUG)
@@ -2753,16 +2757,6 @@ genrtl_finish_function (fn)
   if (function_depth > 1)
     ggc_pop_context ();
 
-  if (DECL_SAVED_INSNS (fn) && ! TREE_ASM_WRITTEN (fn))
-    {
-      /* Set DECL_EXTERNAL so that assemble_external will be called as
-	 necessary.  We'll clear it again in finish_file.  */
-      if (! DECL_EXTERNAL (fn))
-	DECL_NOT_REALLY_EXTERN (fn) = 1;
-      DECL_EXTERNAL (fn) = 1;
-      defer_fn (fn);
-    }
-
 #if 0
   /* Keep this code around in case we later want to control debug info
      based on whether a type is "used".  (jason 1999-11-11) */
@@ -2785,32 +2779,30 @@ genrtl_finish_function (fn)
 
   --function_depth;
 
-  /* If we don't need the RTL for this function anymore, stop pointing
-     to it.  That's especially important for LABEL_DECLs, since you
-     can reach all the instructions in the function from the
-     CODE_LABEL stored in the DECL_RTL for the LABEL_DECL.  */
-  if (!DECL_SAVED_INSNS (fn))
+  /* In C++, we should never be saving RTL for the function.  */
+  my_friendly_assert (!DECL_SAVED_INSNS (fn), 20010903);
+
+  /* Since we don't need the RTL for this function anymore, stop
+     pointing to it.  That's especially important for LABEL_DECLs,
+     since you can reach all the instructions in the function from the
+     CODE_LABEL stored in the DECL_RTL for the LABEL_DECL.  Walk the
+     BLOCK-tree, clearing DECL_RTL for LABEL_DECLs and non-static
+     local variables.  */
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				clear_decl_rtl,
+				NULL);
+
+  /* Clear out the RTL for the arguments.  */
+  for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
     {
-      tree t;
-
-      /* Walk the BLOCK-tree, clearing DECL_RTL for LABEL_DECLs and
-	 non-static local variables.  */
-      walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-				    clear_decl_rtl,
-				    NULL);
-
-      /* Clear out the RTL for the arguments.  */
-      for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
-	{
-	  SET_DECL_RTL (t, NULL_RTX);
-	  DECL_INCOMING_RTL (t) = NULL_RTX;
-	}
-
-      if (!(flag_inline_trees && DECL_INLINE (fn)))
-	/* DECL_INITIAL must remain nonzero so we know this was an
-	   actual function definition.  */
-	DECL_INITIAL (fn) = error_mark_node;
+      SET_DECL_RTL (t, NULL_RTX);
+      DECL_INCOMING_RTL (t) = NULL_RTX;
     }
+
+  if (!(flag_inline_trees && DECL_INLINE (fn)))
+    /* DECL_INITIAL must remain nonzero so we know this was an
+       actual function definition.  */
+    DECL_INITIAL (fn) = error_mark_node;
   
   /* Let the error reporting routines know that we're outside a
      function.  For a nested function, this value is used in
