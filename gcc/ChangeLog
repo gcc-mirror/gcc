@@ -1,3 +1,8 @@
+Thu Jun  4 00:54:21 1998  Graham  <grahams@rcp.co.uk>
+
+	* loop.c (check_dbra_loop): Initialise final_value before
+	normalizing the loop.
+
 Wed Jun  3 20:00:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): New arguments out and
