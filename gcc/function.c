@@ -457,7 +457,7 @@ static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
 #endif /* HAVE_prologue || HAVE_epilogue */
 static void put_addressof_into_stack PROTO((rtx));
-static void purge_addressof_1	PROTO((rtx *, rtx, int));
+static void purge_addressof_1	PROTO((rtx *, rtx, int, int));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -2812,10 +2812,10 @@ put_addressof_into_stack (r)
    the stack.  */
 
 static void
-purge_addressof_1 (loc, insn, force)
+purge_addressof_1 (loc, insn, force, store)
      rtx *loc;
      rtx insn;
-     int force;
+     int force, store;
 {
   rtx x;
   RTX_CODE code;
@@ -2847,7 +2847,7 @@ purge_addressof_1 (loc, insn, force)
 			     0))
 	abort ();
 
-      insns = get_insns ();
+      insns = gen_sequence ();
       end_sequence ();
       emit_insns_before (insns, insn);
       return;
@@ -2867,11 +2867,73 @@ purge_addressof_1 (loc, insn, force)
 	}
       else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
-	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
+	  int size_x, size_sub;
+
+	  size_x = GET_MODE_BITSIZE (GET_MODE (x));
+	  size_sub = GET_MODE_BITSIZE (GET_MODE (sub));
+
+	  /* Don't even consider working with paradoxical subregs,
+	     or the moral equivalent seen here.  */
+	  if (size_x < size_sub)
 	    {
-	      rtx sub2 = gen_rtx_SUBREG (GET_MODE (x), sub, 0);
-	      if (validate_change (insn, loc, sub2, 0))
-		goto restart;
+	      /* Do a bitfield insertion to mirror what would happen
+		 in memory.  */
+
+	      int bitpos;
+	      rtx val, seq;
+
+	      bitpos = 0;
+	      if (WORDS_BIG_ENDIAN)
+		{
+		  bitpos += (size_sub / BITS_PER_WORD) * BITS_PER_WORD;
+		  bitpos += (size_x / BITS_PER_WORD) * BITS_PER_WORD;
+		}
+	      if (BYTES_BIG_ENDIAN)
+		{
+		  bitpos += size_sub % BITS_PER_WORD;
+		  bitpos -= size_x % BITS_PER_WORD;
+		}
+
+	      if (store)
+		{
+		  /* If we can't replace with a register, be afraid.  */
+
+		  start_sequence ();
+		  val = gen_reg_rtx (GET_MODE (x));
+		  if (! validate_change (insn, loc, val, 0))
+		    abort ();
+		  seq = gen_sequence ();
+		  end_sequence ();
+		  emit_insn_before (seq, insn);
+	      
+		  start_sequence ();
+		  store_bit_field (sub, size_x, bitpos, GET_MODE (x),
+				   val, GET_MODE_SIZE (GET_MODE (sub)),
+				   GET_MODE_SIZE (GET_MODE (sub)));
+
+		  seq = gen_sequence ();
+		  end_sequence ();
+		  emit_insn_after (seq, insn);
+		}
+	      else
+		{
+		  start_sequence ();
+		  val = extract_bit_field (sub, size_x, bitpos, 1, NULL_RTX,
+					   GET_MODE (x), GET_MODE (x),
+					   GET_MODE_SIZE (GET_MODE (sub)),
+					   GET_MODE_SIZE (GET_MODE (sub)));
+
+		  /* If we can't replace with a register, be afraid.  */
+		  if (! validate_change (insn, loc, val, 0))
+		    abort ();
+
+		  seq = gen_sequence ();
+		  end_sequence ();
+		  emit_insn_before (seq, insn);
+		}
+
+	      /* We replaced with a reg -- all done.  */
+	      return;
 	    }
 	}
       else if (validate_change (insn, loc, sub, 0))
@@ -2883,16 +2945,22 @@ purge_addressof_1 (loc, insn, force)
       put_addressof_into_stack (x);
       return;
     }
+  else if (code == SET)
+    {
+      purge_addressof_1 (&SET_DEST (x), insn, force, 1);
+      purge_addressof_1 (&SET_SRC (x), insn, force, 0);
+      return;
+    }
 
   /* Scan all subexpressions. */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
-	purge_addressof_1 (&XEXP (x, i), insn, force);
+	purge_addressof_1 (&XEXP (x, i), insn, force, 0);
       else if (*fmt == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force);
+	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force, 0);
     }
 }
 
@@ -2910,8 +2978,8 @@ purge_addressof (insns)
 	|| GET_CODE (insn) == CALL_INSN)
       {
 	purge_addressof_1 (&PATTERN (insn), insn,
-			   asm_noperands (PATTERN (insn)) > 0);
-	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0);
+			   asm_noperands (PATTERN (insn)) > 0, 0);
+	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0);
       }
 }
 
