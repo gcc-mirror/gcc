@@ -507,7 +507,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	       operand_number < insn_n_operands[insn_code_number];
 	       operand_number++)
 	    {
-	      rtx p, src, dst, src_subreg;
+	      rtx src, dst, src_subreg;
 	      enum reg_class src_class, dst_class;
 
 	      match_number = match.with[operand_number];
@@ -788,7 +788,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		    }
 		  /* If there is a REG_DEAD note for DST on P, then remove
 		     it, because DST is now set there.  */
-		  if (dst_note = find_reg_note (p, REG_DEAD, dst))
+		  if ((dst_note = find_reg_note (p, REG_DEAD, dst)))
 		    remove_note (p, dst_note);
 
 		  dstno = REGNO (dst);
@@ -868,8 +868,6 @@ find_matches (insn, matchp)
   for (operand_number = 0; operand_number < insn_n_operands[insn_code_number];
        operand_number++)
     {
-      int output_operand = 0;
-      int matching_operand = operand_number;
       char *p, c;
       int i = 0;
 
@@ -1218,7 +1216,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	    }
 	}
     }
-  if (0) ;
+  
 #if defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT)
   else if ((code == PLUS || code == MINUS) && insn_const
 	   && try_auto_increment (p, insn, 0, src, insn_const, 1))

@@ -39,6 +39,16 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -1300,7 +1310,7 @@ v_message_with_decl (decl, prefix, s, ap)
      char *s;
      va_list ap;
 {
-  char *n, *p;
+  char *p;
 
   fprintf (stderr, "%s:%d: ",
 	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
@@ -1906,6 +1916,7 @@ do_abort ()
 
 void
 botch (s)
+  char * s;
 {
   abort ();
 }
@@ -3734,7 +3745,7 @@ main (argc, argv, envp)
 	    optimize_size = 1;
 	  else
 	    {	    
-	      while (c = *p++)
+	      while ((c = *p++))
 		if (! (c >= '0' && c <= '9'))
 		  break;
 	      if (c == 0)

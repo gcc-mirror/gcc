@@ -248,7 +248,7 @@ static unsigned current_dienum;
    represents a function or data object defined in this compilation
    unit which has "extern" linkage.  */
 
-static next_pubname_number = 0;
+static int next_pubname_number = 0;
 
 #define NEXT_DIE_NUM pending_sibling_stack[pending_siblings-1]
 
@@ -369,7 +369,9 @@ static inline void fund_type_attribute	PROTO((unsigned));
 static void mod_fund_type_attribute	PROTO((tree, int, int));
 static inline void user_def_type_attribute PROTO((tree));
 static void mod_u_d_type_attribute	PROTO((tree, int, int));
+#ifdef USE_ORDERING_ATTRIBUTE
 static inline void ordering_attribute	PROTO((unsigned));
+#endif /* defined(USE_ORDERING_ATTRIBUTE) */
 static void subscript_data_attribute	PROTO((tree));
 static void byte_size_attribute		PROTO((tree));
 static inline void bit_offset_attribute	PROTO((tree));
@@ -392,7 +394,9 @@ static inline void producer_attribute	PROTO((char *));
 static inline void inline_attribute	PROTO((tree));
 static inline void containing_type_attribute PROTO((tree));
 static inline void abstract_origin_attribute PROTO((tree));
+#ifdef DWARF_DECL_COORDINATES
 static inline void src_coords_attribute PROTO((unsigned, unsigned));
+#endif /* defined(DWARF_DECL_COORDINATES) */
 static inline void pure_or_virtual_attribute PROTO((tree));
 static void name_and_src_coords_attributes PROTO((tree));
 static void type_attribute		PROTO((tree, int, int));
@@ -403,7 +407,9 @@ static inline tree member_declared_type PROTO((tree));
 static char *function_start_label	PROTO((tree));
 static void output_array_type_die	PROTO((void *));
 static void output_set_type_die		PROTO((void *));
+#if 0
 static void output_entry_point_die	PROTO((void *));
+#endif
 static void output_inlined_enumeration_type_die PROTO((void *));
 static void output_inlined_structure_type_die PROTO((void *));
 static void output_inlined_union_type_die PROTO((void *));
@@ -416,8 +422,10 @@ static void output_lexical_block_die	PROTO((void *));
 static void output_inlined_subroutine_die PROTO((void *));
 static void output_local_variable_die	PROTO((void *));
 static void output_member_die		PROTO((void *));
+#if 0
 static void output_pointer_type_die	PROTO((void *));
 static void output_reference_type_die	PROTO((void *));
+#endif
 static void output_ptr_to_mbr_type_die	PROTO((void *));
 static void output_compile_unit_die	PROTO((void *));
 static void output_string_type_die	PROTO((void *));
@@ -432,7 +440,6 @@ static void output_die			PROTO((void (*) (), void *));
 static void end_sibling_chain		PROTO((void));
 static void output_formal_types		PROTO((tree));
 static void pend_type			PROTO((tree));
-static inline int type_of_for_scope	PROTO((tree, tree));
 static void output_pending_types_for_scope PROTO((tree));
 static void output_type			PROTO((tree, tree));
 static void output_tagged_type_instantiation PROTO((tree));
@@ -1243,7 +1250,7 @@ output_unsigned_leb128 (value)
 	byte |= 0x80;
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
       if (flag_debug_asm && value == 0)
-	fprintf (asm_out_file, "\t%s ULEB128 number - value = %u",
+	fprintf (asm_out_file, "\t%s ULEB128 number - value = %lu",
 		 ASM_COMMENT_START, orig_value);
       fputc ('\n', asm_out_file);
     }
@@ -1275,7 +1282,7 @@ output_signed_leb128 (value)
 	}
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
       if (flag_debug_asm && more == 0)
-	fprintf (asm_out_file, "\t%s SLEB128 number - value = %d",
+	fprintf (asm_out_file, "\t%s SLEB128 number - value = %ld",
 		 ASM_COMMENT_START, orig_value);
       fputc ('\n', asm_out_file);
     }
@@ -3104,14 +3111,17 @@ type_attribute (type, decl_const, decl_volatile)
 			|| TYPE_READONLY (type) || TYPE_VOLATILE (type));
 
   if (type_is_fundamental (root_type (type)))
-    if (root_type_modified)
+    {
+      if (root_type_modified)
 	mod_fund_type_attribute (type, decl_const, decl_volatile);
-    else
+      else
 	fund_type_attribute (fundamental_type_code (type));
+    }
   else
-    if (root_type_modified)
+    {
+      if (root_type_modified)
 	mod_u_d_type_attribute (type, decl_const, decl_volatile);
-    else
+      else
 	/* We have to get the type_main_variant here (and pass that to the
 	   `user_def_type_attribute' routine) because the ..._TYPE node we
 	   have might simply be a *copy* of some original type node (where
@@ -3122,6 +3132,7 @@ type_attribute (type, decl_const, decl_volatile)
 	   only creates labels for DIEs representing *main variants*, and it
 	   never even knows about non-main-variants.)  */
 	user_def_type_attribute (type_main_variant (type));
+    }
 }
 
 /* Given a tree pointer to a struct, class, union, or enum type node, return

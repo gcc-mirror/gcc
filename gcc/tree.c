@@ -948,7 +948,9 @@ make_node (code)
   register int length;
   register struct obstack *obstack = current_obstack;
   register int i;
+#ifdef GATHER_STATISTICS
   register tree_node_kind kind;
+#endif
 
   switch (type)
     {
@@ -1419,9 +1421,6 @@ real_value_from_int_cst (type, i)
      tree type, i;
 {
   REAL_VALUE_TYPE d;
-  REAL_VALUE_TYPE e;
-  /* Some 386 compilers mishandle unsigned int to float conversions,
-     so introduce a temporary variable E to avoid those bugs.  */
 
 #ifdef REAL_ARITHMETIC
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
@@ -1431,8 +1430,12 @@ real_value_from_int_cst (type, i)
     REAL_VALUE_FROM_UNSIGNED_INT (d, TREE_INT_CST_LOW (i),
 				  TREE_INT_CST_HIGH (i), TYPE_MODE (type));
 #else /* not REAL_ARITHMETIC */
+  /* Some 386 compilers mishandle unsigned int to float conversions,
+     so introduce a temporary variable E to avoid those bugs.  */
   if (TREE_INT_CST_HIGH (i) < 0 && ! TREE_UNSIGNED (TREE_TYPE (i)))
     {
+      REAL_VALUE_TYPE e;
+
       d = (double) (~ TREE_INT_CST_HIGH (i));
       e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
@@ -1443,6 +1446,8 @@ real_value_from_int_cst (type, i)
     }
   else
     {
+      REAL_VALUE_TYPE e;
+
       d = (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (i);
       e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
@@ -1959,7 +1964,7 @@ tree_last (chain)
 {
   register tree next;
   if (chain)
-    while (next = TREE_CHAIN (chain))
+    while ((next = TREE_CHAIN (chain)))
       chain = next;
   return chain;
 }
@@ -2980,7 +2985,9 @@ build1 (code, type, node)
 {
   register struct obstack *obstack = expression_obstack;
   register int i, length;
+#ifdef GATHER_STATISTICS
   register tree_node_kind kind;
+#endif
   register tree t;
 
 #ifdef GATHER_STATISTICS
@@ -4611,7 +4618,7 @@ print_obstack_statistics (str, o)
       n_alloc += chunk->limit - &chunk->contents[0];
       chunk = chunk->prev;
     }
-  fprintf (stderr, "obstack %s: %lu bytes, %d chunks\n",
+  fprintf (stderr, "obstack %s: %u bytes, %d chunks\n",
 	   str, n_alloc, n_chunks);
 }
 
@@ -4621,8 +4628,10 @@ print_obstack_statistics (str, o)
 void
 dump_tree_statistics ()
 {
+#ifdef GATHER_STATISTICS
   int i;
   int total_nodes, total_bytes;
+#endif
 
   fprintf (stderr, "\n??? tree nodes created\n\n");
 #ifdef GATHER_STATISTICS

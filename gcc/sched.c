@@ -119,6 +119,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"
@@ -179,7 +182,7 @@ static unsigned int *insn_blockage;
 #define UNIT_BLOCKED(B) ((B) >> (2 * BLOCKAGE_BITS))
 #define BLOCKAGE_RANGE(B) \
   (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
-   | (B) & BLOCKAGE_MASK)
+   | ((B) & BLOCKAGE_MASK))
 
 /* Encodings of the `<name>_unit_blockage_range' function.  */
 #define MIN_BLOCKAGE_COST(R) ((R) >> (HOST_BITS_PER_INT / 2))
@@ -1866,7 +1869,7 @@ rank_for_schedule (x, y)
   int value;
 
   /* Choose the instruction with the highest priority, if different.  */
-  if (value = INSN_PRIORITY (tmp) - INSN_PRIORITY (tmp2))
+  if ((value = INSN_PRIORITY (tmp) - INSN_PRIORITY (tmp2)))
     return value;
 
   if (last_scheduled_insn)
@@ -1892,7 +1895,7 @@ rank_for_schedule (x, y)
       else
 	tmp2_class = 2;
 
-      if (value = tmp_class - tmp2_class)
+      if ((value = tmp_class - tmp2_class))
 	return value;
     }
 
@@ -3181,7 +3184,7 @@ schedule_block (b, file)
 	  register int stalls;
 
 	  for (stalls = 1; stalls < INSN_QUEUE_SIZE; stalls++)
-	    if (insn = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)])
+	    if ((insn = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)]))
 	      {
 		for (; insn; insn = NEXT_INSN (insn))
 		  {
@@ -3565,12 +3568,12 @@ regno_use_in (regno, x)
     {
       if (fmt[i] == 'e')
 	{
-	  if (tem = regno_use_in (regno, XEXP (x, i)))
+	  if ((tem = regno_use_in (regno, XEXP (x, i))))
 	    return tem;
 	}
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  if (tem = regno_use_in (regno , XVECEXP (x, i, j)))
+	  if ((tem = regno_use_in (regno , XVECEXP (x, i, j))))
 	    return tem;
     }
 
@@ -4238,7 +4241,6 @@ schedule_insns (dump_file)
 {
   int max_uid = MAX_INSNS_PER_SPLIT * (get_max_uid () + 1);
   int b;
-  int i;
   rtx insn;
 
   /* Taking care of this degenerate case makes the rest of
