@@ -460,31 +460,30 @@ i386_return_pops_args (fundecl, funtype, size)
      tree fundecl;
      tree funtype;
      int size;
-{
+{ 
   int rtd = TARGET_RTD;
 
   if (TREE_CODE (funtype) == IDENTIFIER_NODE)
     return 0;
 
-  /* Cdecl functions override -mrtd, and never pop the stack */
-  if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype)))
+    /* Cdecl functions override -mrtd, and never pop the stack */
+  if (!lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
+  
+    /* Stdcall functions will pop the stack if not variable args */
+    if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
+      rtd = 1;
+  
+    if (rtd
+        && (TYPE_ARG_TYPES (funtype) == NULL_TREE
+	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype))) == void_type_node)))
+      return size;
+  }
+  
+  /* Lose any fake structure return argument */
+  if (aggregate_value_p (TREE_TYPE (funtype)))
+    return GET_MODE_SIZE (Pmode);
+  
     return 0;
-
-  /* Stdcall functions will pop the stack if not variable args */
-  if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
-    rtd = 1;
-
-  if (rtd)
-    {
-      if (TYPE_ARG_TYPES (funtype) == NULL_TREE
-	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype))) == void_type_node))
-	return size;
-
-      if (aggregate_value_p (TREE_TYPE (funtype)))
-	return GET_MODE_SIZE (Pmode);
-    }
-
-  return 0;
 }
 
 
