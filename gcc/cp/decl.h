@@ -42,11 +42,6 @@ extern tree this_identifier, in_charge_identifier;
    or a chain or parameter decls here.  */
 extern tree last_function_parms;
 
-/* A list of static class variables.  This is needed, because a
-   static class variable can be declared inside the class without
-   an initializer, and then initialized, staticly, outside the class.  */
-extern tree pending_statics;
-
 /* A list of objects which have constructors or destructors
    which reside in the global scope.  The decl is stored in
    the TREE_VALUE slot and the initializer is stored

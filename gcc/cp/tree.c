@@ -2687,12 +2687,6 @@ pod_type_p (t)
   return 1;
 }
 
-/* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
-   the TREE_VALUE slot and the initializer is stored
-   in the TREE_PURPOSE slot.  */
-tree static_aggregates_initp;
-
 /* Return a 1 if ATTR_NAME and ATTR_ARGS denote a valid C++-specific
    attribute for either declaration DECL or type TYPE and 0 otherwise.
    Plugged into valid_lang_attribute.  */
@@ -2773,9 +2767,7 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
 	    ("requested init_priority is reserved for internal use");
 	}
 
-      static_aggregates_initp
-	= perm_tree_cons (initp_expr, decl, static_aggregates_initp);
-
+      DECL_INIT_PRIORITY (decl) = pri;
       return 1;
     }
 

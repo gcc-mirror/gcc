@@ -50,15 +50,21 @@ extern struct obstack permanent_obstack;
 
 extern int lineno;
 extern char *input_filename;
-struct pending_inline *pending_template_expansions;
 
 tree current_template_parms;
 HOST_WIDE_INT processing_template_decl;
 
-tree pending_templates;
+/* The PENDING_TEMPLATES is a TREE_LIST of templates whose
+   instantiations have been deferred, either because their definitions
+   were not yet available, or because we were putting off doing the
+   work.  The TREE_PURPOSE of each entry is a SRCLOC indicating where
+   the instantiate request occurred; the TREE_VALUE is a either a DECL
+   (for a function or static data member), or a TYPE (for a class)
+   indicating what we are hoping to instantiate.  */
+static tree pending_templates;
 static tree *template_tail = &pending_templates;
 
-tree maybe_templates;
+static tree maybe_templates;
 static tree *maybe_template_tail = &maybe_templates;
 
 int minimal_parse_mode;
@@ -5124,7 +5130,7 @@ instantiate_class_template (type)
   input_filename = DECL_SOURCE_FILE (typedecl);
 
   unreverse_member_declarations (type);
-  type = finish_struct_1 (type, 0);
+  finish_struct_1 (type, 0);
   CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
   /* Clear this now so repo_template_used is happy.  */
@@ -9419,6 +9425,115 @@ out:
   pop_tinst_level ();
 
   return d;
+}
+
+/* Run through the list of templates that we wish we could
+   instantiate, and instantiate any we can.  */
+
+int
+instantiate_pending_templates ()
+{
+  tree *t;
+  int instantiated_something = 0;
+  int reconsider;
+  
+  do 
+    {
+      reconsider = 0;
+
+      t = &pending_templates;
+      while (*t)
+	{
+	  tree srcloc = TREE_PURPOSE (*t);
+	  tree instantiation = TREE_VALUE (*t);
+
+	  input_filename = SRCLOC_FILE (srcloc);
+	  lineno = SRCLOC_LINE (srcloc);
+
+	  if (TREE_CODE_CLASS (TREE_CODE (instantiation)) == 't')
+	    {
+	      tree fn;
+
+	      if (!TYPE_SIZE (instantiation))
+		{
+		  instantiate_class_template (instantiation);
+		  if (CLASSTYPE_TEMPLATE_INSTANTIATION (instantiation))
+		    for (fn = TYPE_METHODS (instantiation); 
+			 fn;
+			 fn = TREE_CHAIN (fn))
+		      if (! DECL_ARTIFICIAL (fn))
+			instantiate_decl (fn);
+		  if (TYPE_SIZE (instantiation))
+		    {
+		      instantiated_something = 1;
+		      reconsider = 1;
+		    }
+		}
+
+	      if (TYPE_SIZE (instantiation))
+		/* If INSTANTIATION has been instantiated, then we don't
+		   need to consider it again in the future.  */
+		*t = TREE_CHAIN (*t);
+	      else 
+		t = &TREE_CHAIN (*t);
+	    }
+	  else
+	    {
+	      if (DECL_TEMPLATE_INSTANTIATION (instantiation)
+		  && !DECL_TEMPLATE_INSTANTIATED (instantiation))
+		{
+		  instantiation = instantiate_decl (instantiation);
+		  if (DECL_TEMPLATE_INSTANTIATED (instantiation))
+		    {
+		      instantiated_something = 1;
+		      reconsider = 1;
+		    }
+		}
+
+	      if (!DECL_TEMPLATE_INSTANTIATION (instantiation)
+		  || DECL_TEMPLATE_INSTANTIATED (instantiation))
+		/* If INSTANTIATION has been instantiated, then we don't
+		   need to consider it again in the future.  */
+		*t = TREE_CHAIN (*t);
+	      else 
+		t = &TREE_CHAIN (*t);
+	    }
+	}
+      template_tail = t;
+
+      /* Go through the things that are template instantiations if we are
+	 using guiding declarations.  */
+      t = &maybe_templates;
+      while (*t)
+	{
+	  tree template;
+	  tree fn;
+	  tree args;
+
+	  fn = TREE_VALUE (*t);
+
+	  if (DECL_INITIAL (fn))
+	    /* If the FN is already defined, then it was either already
+	       instantiated or, even though guiding declarations were
+	       allowed, a non-template definition was provided.  */
+	    ;
+	  else
+	    {
+	      template = TREE_PURPOSE (*t);
+	      args = get_bindings (template, fn, NULL_TREE);
+	      fn = instantiate_template (template, args);
+	      instantiate_decl (fn);
+	      reconsider = 1;
+	    }
+	
+	  /* Remove this entry from the chain.  */
+	  *t = TREE_CHAIN (*t);
+	}
+      maybe_template_tail = t;
+    } 
+  while (reconsider);
+
+  return instantiated_something;
 }
 
 /* Substitute ARGVEC into T, which is a TREE_LIST.  In particular, it

@@ -86,6 +86,11 @@ static char *scratch_firstobj;
 			   OB_PUTCP (digit_buffer); } while (0)
 # define OB_UNPUT(N) obstack_blank (&scratch_obstack, - (N));
 
+# define OB_END_TEMPLATE_ID() 						    \
+  ((obstack_next_free (&scratch_obstack) != obstack_base (&scratch_obstack) \
+    && obstack_next_free (&scratch_obstack)[-1] == '>')			    \
+   ? OB_PUTC2 (' ', '>') : OB_PUTC ('>'))
+
 # define NEXT_CODE(t) (TREE_CODE (TREE_TYPE (t)))
 
 enum pad { none, before, after };
@@ -292,7 +297,7 @@ dump_type_real (t, v, canonical_name)
 	      if (i < TREE_VEC_LENGTH (args)-1)
 	        OB_PUTC2 (',', ' ');
 	    }
-	  OB_PUTC ('>');
+	  OB_END_TEMPLATE_ID ();
 	}
       break;
 
@@ -863,7 +868,8 @@ dump_decl (t, v)
 	      }
 	    if (len != 0)
 	      OB_UNPUT (2);
-	    OB_PUTC2 ('>', ' ');
+	    OB_END_TEMPLATE_ID ();
+	    OB_PUTC (' ');
 	  }
 	nreverse(orig_args);
 
@@ -905,7 +911,7 @@ dump_decl (t, v)
 	    if (TREE_CHAIN (args))
 	      OB_PUTC2 (',', ' ');
 	  }
-	OB_PUTC ('>');
+	OB_END_TEMPLATE_ID ();
       }
       break;
 
@@ -1199,7 +1205,7 @@ dump_function_name (t)
 		}
 	    }
 	}
-      OB_PUTC ('>');
+      OB_END_TEMPLATE_ID ();
     }
 }
 
