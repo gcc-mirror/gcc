@@ -191,7 +191,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 									\
     if (signo_ && (*signo_ == 11 || *signo_ == 7))			\
       {									\
-	(FS)->regs.reg[33].loc.exp = regs_->psw_addr + 1;		\
+	(FS)->regs.reg[33].loc.exp = 					\
+		(unsigned char *)regs_->psw_addr + 1;			\
 	(FS)->regs.reg[32].loc.offset = 				\
 		(long)&(FS)->regs.reg[33].loc.exp - new_cfa_;		\
       }									\

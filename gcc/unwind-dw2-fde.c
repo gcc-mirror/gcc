@@ -273,7 +273,7 @@ get_cie_encoding (const struct dwarf_cie *cie)
   if (aug[0] != 'z')
     return DW_EH_PE_absptr;
 
-  p = aug + strlen (aug) + 1;		/* Skip the augmentation string.  */
+  p = aug + strlen ((const char *)aug) + 1; /* Skip the augmentation string.  */
   p = read_uleb128 (p, &utmp);		/* Skip code alignment.  */
   p = read_sleb128 (p, &stmp);		/* Skip data alignment.  */
   if (cie->version == 1)		/* Skip return address column.  */
@@ -808,7 +808,7 @@ linear_search_fdes (struct object *ob, const fde *this_fde, void *pc)
       else
 	{
 	  _Unwind_Ptr mask;
-	  const char *p;
+	  const unsigned char *p;
 
 	  p = read_encoded_value_with_base (encoding, base,
 					    this_fde->pc_begin, &pc_begin);
@@ -878,7 +878,7 @@ binary_search_single_encoding_fdes (struct object *ob, void *pc)
       size_t i = (lo + hi) / 2;
       const fde *f = vec->array[i];
       _Unwind_Ptr pc_begin, pc_range;
-      const char *p;
+      const unsigned char *p;
 
       p = read_encoded_value_with_base (encoding, base, f->pc_begin,
 					&pc_begin);
@@ -906,7 +906,7 @@ binary_search_mixed_encoding_fdes (struct object *ob, void *pc)
       size_t i = (lo + hi) / 2;
       const fde *f = vec->array[i];
       _Unwind_Ptr pc_begin, pc_range;
-      const char *p;
+      const unsigned char *p;
       int encoding;
 
       encoding = get_fde_encoding (f);

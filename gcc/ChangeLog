@@ -1,5 +1,16 @@
 2004-08-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* unwind-dw2-fde.c (get_cie_encoding): Cast argument to strlen
+	to eliminate warning.
+	(linear_search_fdes): Declare p as unsigned.
+	(binary_search_mixed_encoding_fdes): Likewise.
+	* unwind-dw2.c (get_cie_encoding): Cast argument to strlen
+	to eliminate warning.
+	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Add missing
+	type cast.
+
+2004-08-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390-protos.h (preferred_la_operand_p): Adapt prototype.
 	* config/s390/s390.c (preferred_la_operand_p): Accept two operands
 	instead of one.  Check for strictly legitimate address.
