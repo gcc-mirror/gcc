@@ -1,3 +1,8 @@
+Tue Aug 25 12:54:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (valid_machine_attribute): Don't apply attributes to both
+	decl and type.
+
 Tue Aug 25 12:23:20 PDT 1998  Richard Henderson  <rth@cygnus.com>
 
         * reload.c (operands_match_p): Handle rtvecs.
@@ -85,8 +90,6 @@ Mon Aug 24 10:25:46 1998  Jeffrey A Law  (law@cygnus.com)
 Mon Aug 24 00:53:53 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* fixinc.irix: Add curses.h handling from fixinc.wrap.
-
-Fri Aug 14 14:12:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-common.c (combine_strings): Also set TREE_READONLY.
 	Change warn_write_strings to flag_const_strings.
