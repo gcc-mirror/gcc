@@ -1,5 +1,10 @@
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline): 
+	Move definition in the RTX_CODE section.
+
+2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return 
 	address as relative to the argument pointer.
 
