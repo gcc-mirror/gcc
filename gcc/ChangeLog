@@ -1,5 +1,12 @@
 2000-10-31  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (fcmov_comparison_operator): Check for
+	CCFPmode or CCFPUmode instead of CCmode.
+	(ix86_expand_fp_movcc): Call ix86_expand_setcc for most
+	unordered operations as well.
+
+2000-10-31  Richard Henderson  <rth@redhat.com>
+
 	* c-semantics.c (genrtl_do_stmt): Use integer_zerop instead
 	of integer_zero_node.
 
