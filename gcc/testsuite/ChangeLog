@@ -1,3 +1,8 @@
+2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
+
+	* g++.old-deja/g++.robertl/eb130.C: hash_set is now
+	in namespace __gnu_cxx
+
 2001-12-30  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/debug-6.c: New.
