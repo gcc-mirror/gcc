@@ -74,39 +74,51 @@ extern const char * const *h8_reg_names;
 
 extern int target_flags;
 
+/* Masks for the -m switches.  */
+#define MASK_H8300S		0x00000001
+#define MASK_MAC		0x00000002
+#define MASK_INT32		0x00000008
+#define MASK_ADDRESSES		0x00000040
+#define MASK_QUICKCALL		0x00000080
+#define MASK_SLOWBYTE		0x00000100
+#define MASK_RELAX		0x00000400
+#define MASK_RTL_DUMP		0x00000800
+#define MASK_H8300H		0x00001000
+#define MASK_ALIGN_300		0x00002000
+
 /* Macros used in the machine description to test the flags.  */
 
 /* Make int's 32 bits.  */
-#define TARGET_INT32 (target_flags & 8)
+#define TARGET_INT32 (target_flags & MASK_INT32)
 
 /* Dump recorded insn lengths into the output file.  This helps debug the
    md file.  */
-#define TARGET_ADDRESSES (target_flags & 64)
+#define TARGET_ADDRESSES (target_flags & MASK_ADDRESSES)
 
 /* Pass the first few arguments in registers.  */
-#define TARGET_QUICKCALL (target_flags & 128)
+#define TARGET_QUICKCALL (target_flags & MASK_QUICKCALL)
 
 /* Pretend byte accesses are slow.  */
-#define TARGET_SLOWBYTE (target_flags & 256)
+#define TARGET_SLOWBYTE (target_flags & MASK_SLOWBYTE)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler only.  */
-#define TARGET_RTL_DUMP	(target_flags & 2048)
+#define TARGET_RTL_DUMP	(target_flags & MASK_RTL_DUMP)
 
 /* Select between the H8/300 and H8/300H CPUs.  */
 #define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
-#define TARGET_H8300H	(target_flags & 4096)
-#define TARGET_H8300S	(target_flags & 1)
+#define TARGET_H8300H	(target_flags & MASK_H8300H)
+#define TARGET_H8300S	(target_flags & MASK_H8300S)
 
 /* mac register and relevant instructions are available.  */
-#define TARGET_MAC    (target_flags & 2)
+#define TARGET_MAC    (target_flags & MASK_MAC)
 
 /* Align all values on the H8/300H the same way as the H8/300.  Specifically,
    32 bit and larger values are aligned on 16 bit boundaries.
    This is all the hardware requires, but the default is 32 bits for the 300H.
    ??? Now watch someone add hardware floating point requiring 32 bit
    alignment.  */
-#define TARGET_ALIGN_300 (target_flags & 8192)
+#define TARGET_ALIGN_300 (target_flags & MASK_ALIGN_300)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -114,25 +126,25 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES  \
-  { {"s",		1,     N_("Generate H8S code")},		\
-    {"no-s",		-1,    N_("Do not generate H8S code")},	\
-    {"s2600",		2,     N_("Generate H8S/2600 code")},           \
-    {"no-s2600",	-2,    N_("Do not generate H8S/2600 code")},    \
-    {"int32",		8,     N_("Make integers 32 bits wide")},	\
-    {"addresses",	64,    NULL},					\
-    {"quickcall",	128,						\
-     N_("Use registers for argument passing")},			\
-    {"no-quickcall",	-128,						\
-     N_("Do not use registers for argument passing")},			\
-    {"slowbyte",	256,						\
-     N_("Consider access to byte sized memory slow")},			\
-    {"relax",		1024,  N_("Enable linker relaxing")},		\
-    {"rtl-dump",	2048,  NULL},					\
-    {"h",		4096,  N_("Generate H8/300H code")},		\
-    {"no-h",		-4096, N_("Do not generate H8/300H code")},	\
-    {"align-300",	8192,  N_("Use H8/300 alignment rules")},	\
-    { "", TARGET_DEFAULT, NULL}}
+#define TARGET_SWITCHES							    \
+{ {"s",			 MASK_H8300S, N_("Generate H8S code")},		    \
+  {"no-s",		-MASK_H8300S, N_("Do not generate H8S code")},	    \
+  {"s2600",		 MASK_MAC, N_("Generate H8S/2600 code")},	    \
+  {"no-s2600",		-MASK_MAC, N_("Do not generate H8S/2600 code")},    \
+  {"int32",		 MASK_INT32, N_("Make integers 32 bits wide")},	    \
+  {"addresses",		 MASK_ADDRESSES, NULL},				    \
+  {"quickcall",		 MASK_QUICKCALL,				    \
+   N_("Use registers for argument passing")},				    \
+  {"no-quickcall",	-MASK_QUICKCALL,				    \
+   N_("Do not use registers for argument passing")},			    \
+  {"slowbyte",		 MASK_SLOWBYTE,					    \
+   N_("Consider access to byte sized memory slow")},			    \
+  {"relax",		 MASK_RELAX, N_("Enable linker relaxing")},	    \
+  {"rtl-dump",		 MASK_RTL_DUMP, NULL},				    \
+  {"h",			 MASK_H8300H, N_("Generate H8/300H code")},	    \
+  {"no-h",		-MASK_H8300H, N_("Do not generate H8/300H code")},  \
+  {"align-300",		 MASK_ALIGN_300, N_("Use H8/300 alignment rules")}, \
+  { "",			 TARGET_DEFAULT, NULL}}
 
 #ifdef IN_LIBGCC2
 #undef TARGET_H8300H
