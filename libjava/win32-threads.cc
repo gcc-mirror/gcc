@@ -15,7 +15,6 @@ details.  */
 #ifdef HAVE_BOEHM_GC
 extern "C"
 {
-#include <boehm-config.h>
 #include <gc.h>
 };
 #endif /* HAVE_BOEHM_GC */
@@ -62,50 +61,97 @@ DWORD _Jv_ThreadDataKey;
 // Condition variables.
 //
 
-int
-_Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint nanos)
-{
-  DWORD time;
-  DWORD rval;
+// we do lazy creation of Events since CreateEvent() is insanely
+// expensive, and because the rest of libgcj will call _Jv_CondInit
+// when only a mutex is needed.
 
-  // FIXME: check for mutex ownership?
+inline void
+ensure_condvar_initialized(_Jv_ConditionVariable_t *cv)
+{
+  if (cv->ev[0] == 0) {
+    cv->ev[0] = CreateEvent (NULL, 0, 0, NULL);
+    if (cv->ev[0] == 0) JvFail("CreateEvent() failed");
+    cv->ev[1] = CreateEvent (NULL, 1, 0, NULL);
+    if (cv->ev[1] == 0) JvFail("CreateEvent() failed");
+  }
+}
+
+// Reimplementation of the general algorithm described at
+// http://www.cs.wustl.edu/~schmidt/win32-cv-1.html (isomorphic to
+// 3.2, not a cut-and-paste).
+
+int
+_Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint nanos)
+{
+
+  EnterCriticalSection(&cv->count_mutex);
+  ensure_condvar_initialized(cv);
+  cv->blocked_count++;
+  LeaveCriticalSection(&cv->count_mutex);
+
+  DWORD time;
+  if ((millis == 0) && (nanos > 0)) time = 1;
+  else if (millis == 0) time = INFINITE;
+  else time = millis;
 
   _Jv_MutexUnlock (mu);
 
-  if((millis == 0) && (nanos > 0))
-    time = 1;
-  else if(millis == 0)
-    time = INFINITE;
-  else
-    time = millis;
+  DWORD rval = WaitForMultipleObjects (2, &(cv->ev[0]), 0, time);
 
-  rval = WaitForSingleObject (*cv, time);
+  EnterCriticalSection(&cv->count_mutex);
+  cv->blocked_count--;
+  // If we were unblocked by the second event (the broadcast one) and nobody is
+  // left, then reset the signal.
+  int last_waiter = rval == WAIT_OBJECT_0 + 1 && cv->blocked_count == 0;
+  LeaveCriticalSection(&cv->count_mutex);
+
+  if (last_waiter) ResetEvent(&cv->ev[1]);
+
   _Jv_MutexLock (mu);
 
-  if (rval == WAIT_FAILED)
-    return _JV_NOT_OWNER;       // FIXME?
-  else
-    return 0;
+  if (rval == WAIT_FAILED) return GetLastError();
+  else if (rval == WAIT_TIMEOUT) return ETIMEDOUT;
+  else return 0;
 }
 
-//
-// Mutexes.
-//
+void
+_Jv_CondInit (_Jv_ConditionVariable_t *cv)
+{
+  // we do lazy creation of Events since CreateEvent() is insanely expensive
+  cv->ev[0] = 0;
+  InitializeCriticalSection(&cv->count_mutex);
+  cv->blocked_count = 0;
+}
+
+void
+_Jv_CondDestroy (_Jv_ConditionVariable_t *cv)
+{
+  if (cv->ev[0] != 0) CloseHandle(cv->ev[0]);
+  cv = NULL;
+}
 
 int
-_Jv_MutexLock (_Jv_Mutex_t *mu)
+_Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
 {
-  DWORD rval;
+  EnterCriticalSection(&cv->count_mutex);
+  ensure_condvar_initialized(cv);
+  int somebody_is_blocked = cv->blocked_count > 0;
+  LeaveCriticalSection(&cv->count_mutex);
 
-  // FIXME: Are Win32 mutexs recursive? Should we use critical section objects
-  rval = WaitForSingleObject (*mu, INFINITE);
+  if (somebody_is_blocked) return SetEvent (cv->ev[0]) ? 0 : GetLastError();
+  else return 0;
+}
 
-  if (rval == WAIT_FAILED)
-    return GetLastError ();       // FIXME: Map to errno?
-  else if (rval == WAIT_TIMEOUT)
-    return ETIMEDOUT;
-  else
-    return 0;
+int
+_Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
+{
+  EnterCriticalSection(&cv->count_mutex);
+  ensure_condvar_initialized(cv);
+  int somebody_is_blocked = cv->blocked_count > 0;
+  LeaveCriticalSection(&cv->count_mutex);
+
+  if (somebody_is_blocked) return SetEvent (cv->ev[1]) ? 0 : GetLastError();
+  else return 0;
 }
 
 //
@@ -193,7 +239,7 @@ _Jv_ThreadUnRegister ()
 // This function is called when a thread is started.  We don't arrange
 // to call the `run' method directly, because this function must
 // return a value.
-static DWORD __stdcall
+static DWORD WINAPI
 really_start (void* x)
 {
   struct starter *info = (struct starter *) x;
@@ -239,7 +285,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
   else
     data->flags |= FLAG_DAEMON;
 
-  HANDLE h = CreateThread(NULL, 0, really_start, info, 0, &id);
+  HANDLE h = GC_CreateThread(NULL, 0, really_start, info, 0, &id);
   _Jv_ThreadSetPriority(data, thread->getPriority());
 
   //if (!h)
