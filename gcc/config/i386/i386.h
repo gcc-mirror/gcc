@@ -3095,9 +3095,6 @@ extern const char *ix86_branch_cost_string;	/* values 1-5: see jump.c */
 extern int ix86_regparm;			/* ix86_regparm_string as a number */
 extern int ix86_preferred_stack_boundary;	/* preferred stack boundary alignment in bits */
 extern int ix86_branch_cost;			/* values 1-5: see jump.c */
-extern const char * const hi_reg_name[];	/* names for 16 bit regs */
-extern const char * const qi_reg_name[];	/* names for 8 bit regs (low) */
-extern const char * const qi_high_reg_name[];	/* names for 8 bit regs (high) */
 extern enum reg_class const regclass_map[];	/* smalled class containing REGNO */
 extern struct rtx_def *ix86_compare_op0;	/* operand 0 for comparisons */
 extern struct rtx_def *ix86_compare_op1;	/* operand 1 for comparisons */

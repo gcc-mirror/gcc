@@ -361,9 +361,9 @@ static int use_fast_prologue_epilogue;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
-const char * const hi_reg_name[] = HI_REGISTER_NAMES;
-const char * const qi_reg_name[] = QI_REGISTER_NAMES;
-const char * const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
+static const char *const hi_reg_name[] = HI_REGISTER_NAMES; /* names for 16 bit regs */
+static const char *const qi_reg_name[] = QI_REGISTER_NAMES; /* names for 8 bit regs (low) */
+static const char *const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES; /* names for 8 bit regs (high) */
 
 /* Array of the smallest class containing reg number REGNO, indexed by
    REGNO.  Used by REGNO_REG_CLASS in i386.h.  */

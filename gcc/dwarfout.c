@@ -1849,7 +1849,7 @@ fundamental_type_code (type)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    const char *name =
+	    const char *const name =
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    if (!strcmp (name, "unsigned char"))
@@ -1908,7 +1908,7 @@ fundamental_type_code (type)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    const char *name =
+	    const char *const name =
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    /* Note that here we can run afowl of a serious bug in "classic"

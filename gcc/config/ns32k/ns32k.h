@@ -1441,7 +1441,6 @@ do {									\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address(FILE, ADDR)
 
 extern unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1];
-extern const char *const ns32k_out_reg_names[];
 extern enum reg_class regclass_map[];		/* smallest class containing REGNO */
 
 /*

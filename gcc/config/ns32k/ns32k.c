@@ -59,7 +59,7 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FRAME_POINTER_REG, STACK_POINTER_REG
 };
 
-const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
+static const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 
 static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
 static const char *singlemove_string PARAMS ((rtx *));

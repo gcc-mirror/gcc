@@ -1,3 +1,43 @@
+2001-09-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (yyerror): Const-ification and/or static-ization.
+	* c-typeck.c (push_member_name): Likewise.
+	* collect2.c (main): Likewise.
+	* dbxout.c (dbxout_parms): Likewise.
+	* diagnostic.c (format_with_decl): Likewise.
+	* dwarf2out.c (output_ranges): Likewise.
+	* dwarfout.c (fundamental_type_code): Likewise.
+	* except.c (dw2_output_call_site_table): Likewise.
+	* gcc.c (do_spec_1): Likewise.
+	* genopinit.c (optabs): Likewise.
+	* objc/objc-act.c (synth_id_with_class_suffix, start_class,
+	gen_declaration_1, handle_impent): Likewise.
+	* protoize.c (default_include, in_system_include_dir, abspath):
+	Likewise.
+	* sched-vis.c (visualize_stall_cycles): Likewise.
+	* sdbout.c (plain_type_1, sdbout_end_function,
+	sdbout_end_epilogue): Likewise.
+	* varasm.c (decode_reg_name): Likewise.
+	
+	* 1750a.c (mod_regno_adjust): Likewise.
+	* alpha.c (alpha_write_one_linkage,
+	unicosmk_output_default_externs): Likewise.
+	* arm.c (arm_condition_codes): Likewise.
+	* arm.h (arm_condition_codes): Likewise.
+	* avr.c (output_movsisf, encode_section_info): Likewise.
+	* darwin.h (GEN_BINDER_NAME_FOR_STUB, GEN_SYMBOL_NAME_FOR_SYMBOL):
+	Likewise.
+	* i386.c (hi_reg_name, qi_reg_name, qi_high_reg_name): Likewise.
+	* i386.h (hi_reg_name, qi_reg_name, qi_high_reg_name): Likewise.
+	* m88k.c (output_function_profiler): Likewise.
+	* mips.c (mips_output_conditional_branch): Likewise.
+	* ns32k.c (ns32k_out_reg_names): Likewise.
+	* ns32k.h (ns32k_out_reg_names): Likewise.
+	* pj.c (pj_output_rval): Likewise.
+	* rs6000.c (GEN_LOCAL_LABEL_FOR_SYMBOL): Likewise.
+	* sparc.c (sparc_flat_function_prologue,
+	sparc_flat_function_epilogue): Likewise.
+
 2001-09-13  Markus Werle <numerical.simulation@web.de>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

@@ -5992,7 +5992,7 @@ tsubst_decl (t, args, type)
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
 	if (DECL_PRETTY_FUNCTION_P (r))
 	  {
-	    const char *name = (*decl_printable_name)
+	    const char *const name = (*decl_printable_name)
 	      			(current_function_decl, 2);
 	    DECL_INITIAL (r) = cp_fname_init (name);
 	    TREE_TYPE (r) = TREE_TYPE (DECL_INITIAL (r));

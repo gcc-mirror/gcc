@@ -719,7 +719,7 @@ enum machopic_addr_class {
 
 #define GEN_BINDER_NAME_FOR_STUB(BUF,STUB,STUB_LENGTH)		\
   do {								\
-    const char *stub_ = (STUB);					\
+    const char *const stub_ = (STUB);				\
     char *buffer_ = (BUF);					\
     strcpy (buffer_, stub_);					\
     if (stub_[0] == '"')					\
@@ -734,7 +734,7 @@ enum machopic_addr_class {
 
 #define GEN_SYMBOL_NAME_FOR_SYMBOL(BUF,SYMBOL,SYMBOL_LENGTH)	\
   do {								\
-    const char *symbol_ = (SYMBOL);				\
+    const char *const symbol_ = (SYMBOL);			\
     char *buffer_ = (BUF);					\
     if (name_needs_quotes (symbol_) && symbol_[0] != '"')	\
       {								\

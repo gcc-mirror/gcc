@@ -3028,9 +3028,9 @@ static void
 warn_extern_redeclared_static (newdecl, olddecl)
      tree newdecl, olddecl;
 {
-  static const char *explicit_extern_static_warning
+  static const char *const explicit_extern_static_warning
     = "`%D' was declared `extern' and later `static'";
-  static const char *implicit_extern_static_warning
+  static const char *const implicit_extern_static_warning
     = "`%D' was declared implicitly `extern' and later `static'";
 
   tree name;
@@ -6574,7 +6574,7 @@ cp_make_fname_decl (id, type_dep)
      tree id;
      int type_dep;
 {
-  const char *name = (type_dep && processing_template_decl
+  const char *const name = (type_dep && processing_template_decl
 		      ? NULL : fname_as_string (type_dep));
   tree init = cp_fname_init (name);
   tree decl = build_decl (VAR_DECL, id, TREE_TYPE (init));

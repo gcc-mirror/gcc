@@ -2566,7 +2566,7 @@ dbxout_parms (parms)
 	       living on the stack.  DECL_RTL looks like
 	       (MEM (MEM (PLUS (REG ...) (CONST_INT ...)))) or it
 	       could look like (MEM (MEM (REG))).  */
-	    const char *decl_name = (DECL_NAME (parms)
+	    const char *const decl_name = (DECL_NAME (parms)
 				     ? IDENTIFIER_POINTER (DECL_NAME (parms))
 				     : "(anon)");
            if (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 0)) == REG)

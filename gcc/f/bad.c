@@ -349,7 +349,7 @@ void
 ffebad_finish ()
 {
 #define MAX_SPACES 132
-  static const char *spaces
+  static const char *const spaces
   = "...>\
 \040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\
 \040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\

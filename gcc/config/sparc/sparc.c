@@ -6702,7 +6702,7 @@ sparc_flat_function_prologue (file, size)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
       const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
-      const char *const t1_str = "%g1";
+      static const char *const t1_str = "%g1";
 
       /* Things get a little tricky if local variables take up more than ~4096
 	 bytes and outgoing arguments take up more than ~4096 bytes.  When that
@@ -6887,7 +6887,7 @@ sparc_flat_function_epilogue (file, size)
       unsigned HOST_WIDE_INT size1;
       const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
       const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
-      const char *const t1_str = "%g1";
+      static const char *const t1_str = "%g1";
 
       /* In the reload sequence, we don't need to fill the load delay
 	 slots for most of the loads, also see if we can fill the final

@@ -205,7 +205,7 @@ static const int hash_mask = (HASH_TABLE_SIZE - 1);
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
-struct default_include { const char *const fname; 
+static const struct default_include { const char *const fname; 
 			 const char *const component;
 			 int x1, x2; } include_defaults[]
 #ifdef INCLUDE_DEFAULTS
@@ -743,7 +743,7 @@ static int
 in_system_include_dir (path)
      const char *path;
 {
-  struct default_include *p;
+  const struct default_include *p;
 
   if (! is_abspath (path))
     abort ();		/* Must be an absolutized filename.  */
@@ -1195,7 +1195,7 @@ abspath (cwd, rel_filename)
      const char *rel_filename;
 {
   /* Setup the current working directory as needed.  */
-  const char *cwd2 = (cwd) ? cwd : cwd_buffer;
+  const char *const cwd2 = (cwd) ? cwd : cwd_buffer;
   char *const abs_buffer
     = (char *) alloca (strlen (cwd2) + strlen (rel_filename) + 2);
   char *endp = abs_buffer;

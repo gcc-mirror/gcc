@@ -283,7 +283,7 @@ rtx arm_target_insn;
 int arm_target_label;
 
 /* The condition codes of the ARM, and the inverse function.  */
-const char *const arm_condition_codes[] =
+static const char *const arm_condition_codes[] =
 {
   "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"

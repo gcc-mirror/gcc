@@ -1,3 +1,9 @@
+2001-09-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (warn_extern_redeclared_static, cp_make_fname_decl):
+	Const-ification.
+	* pt.c (tsubst_decl): Likewise.
+
 2001-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl2.c (lang_f_options): Const-ification.

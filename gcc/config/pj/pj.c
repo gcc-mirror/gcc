@@ -400,7 +400,7 @@ pj_output_rval (op, mode, outer_op)
     }
   else if (tab && tab->handlers[mode].insn_code != CODE_FOR_nothing)
     {
-      const char *template =
+      const char *const template =
 	(const char *) insn_data[tab->handlers[mode].insn_code].output;
       if (code == NEG)
 	pj_printf (template, 0, XEXP (op, 0));

@@ -3615,7 +3615,7 @@ yyerror (msgid)
   else if (last_token == CPP_CHAR || last_token == CPP_WCHAR)
     {
       unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
-      const char *ell = (last_token == CPP_CHAR) ? "" : "L";
+      const char *const ell = (last_token == CPP_CHAR) ? "" : "L";
       if (val <= UCHAR_MAX && ISGRAPH (val))
 	error ("%s before %s'%c'", string, ell, val);
       else

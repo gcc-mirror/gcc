@@ -4618,7 +4618,7 @@ synth_id_with_class_suffix (preamble, ctxt)
   if (TREE_CODE (ctxt) == CLASS_IMPLEMENTATION_TYPE
       || TREE_CODE (ctxt) == CLASS_INTERFACE_TYPE)
     {
-      const char *class_name
+      const char *const class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (implementation_context));
       string = (char *) alloca (strlen (preamble) + strlen (class_name) + 3);
       sprintf (string, "%s_%s", preamble,
@@ -4628,9 +4628,9 @@ synth_id_with_class_suffix (preamble, ctxt)
 	   || TREE_CODE (ctxt) == CATEGORY_INTERFACE_TYPE)
     {
       /* We have a category.  */
-      const char *class_name
+      const char *const class_name
 	= IDENTIFIER_POINTER (CLASS_NAME (implementation_context));
-      const char *class_super_name
+      const char *const class_super_name
 	= IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context));
       string = (char *) alloca (strlen (preamble)
 				+ strlen (class_name)
@@ -6252,7 +6252,7 @@ start_class (code, class_name, super_name, protocol_list)
 	  && (super_name != CLASS_SUPER_NAME (implementation_template)))
         {
 	  tree previous_name = CLASS_SUPER_NAME (implementation_template);
-          const char *name =
+          const char *const name =
 	    previous_name ? IDENTIFIER_POINTER (previous_name) : "";
 	  error ("conflicting super class name `%s'",
 		 IDENTIFIER_POINTER (super_name));
@@ -8046,7 +8046,7 @@ gen_declaration_1 (atype_or_adecl, buf)
 	  || TREE_CODE (atype_or_adecl) == PARM_DECL
 	  || TREE_CODE (atype_or_adecl) == FUNCTION_DECL)
 	{
-	  const char *decl_name =
+	  const char *const decl_name =
 	    (DECL_NAME (atype_or_adecl)
 	     ? IDENTIFIER_POINTER (DECL_NAME (atype_or_adecl)) : "");
 
@@ -8506,7 +8506,7 @@ handle_impent (impent)
 
   if (TREE_CODE (impent->imp_context) == CLASS_IMPLEMENTATION_TYPE)
     {
-      const char *class_name =
+      const char *const class_name =
 	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
 
       string = (char *) alloca (strlen (class_name) + 30);
@@ -8516,9 +8516,9 @@ handle_impent (impent)
     }
   else if (TREE_CODE (impent->imp_context) == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      const char *class_name =
+      const char *const class_name =
 	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
-      const char *class_super_name =
+      const char *const class_super_name =
         IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
 
       string = (char *) alloca (strlen (class_name)

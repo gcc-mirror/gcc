@@ -1,3 +1,9 @@
+Thu Sep 13 10:33:27 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Const-ification and/or static-ization.
+	* intrin.c (ffeintrin_cmp_name_): Likewise.
+	* stc.c (ffestc_R904): Likewise.
+
 Wed Sep 12 12:09:04 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bld.c (ffebld_op_string_): Const-ification.
