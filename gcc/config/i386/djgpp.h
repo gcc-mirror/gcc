@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 /* Support generation of DWARF2 debugging info.  */
 #define DWARF2_DEBUGGING_INFO
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 #define HANDLE_SYSV_PRAGMA
@@ -86,7 +86,7 @@ Boston, MA 02111-1307, USA.  */
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/dev/env/DJDIR/include/"
 
-/* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
+/* Search for as.exe and ld.exe in DJGPP's binary directory.  */ 
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/dev/env/DJDIR/bin/"
 

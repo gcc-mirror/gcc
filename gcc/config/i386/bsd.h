@@ -113,7 +113,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 #endif
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #ifdef NO_UNDERSCORES
 #define USER_LABEL_PREFIX ""

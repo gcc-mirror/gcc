@@ -96,13 +96,13 @@ Boston, MA 02111-1307, USA.  */
    && ! (REGNO == 2 && GET_MODE_UNIT_SIZE (MODE) > 4))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry. */
+   for profiling a function entry.  */
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
    fprintf (FILE, "\tmovl $.LP%d,%%eax\n\tcall mcount\n", (LABELNO));
 
-/* Assembler pseudo-op for shared data segment. */
+/* Assembler pseudo-op for shared data segment.  */
 #define SHARED_SECTION_ASM_OP "\t.shdata"
 
 /* A C statement or statements which output an assembler instruction
@@ -141,7 +141,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 
-/* The native compiler passes the address of the returned structure in eax. */
+/* The native compiler passes the address of the returned structure in eax.  */
 #undef STRUCT_VALUE
 #undef STRUCT_VALUE_INCOMING
 #define STRUCT_VALUE_REGNUM	0

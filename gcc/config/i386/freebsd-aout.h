@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 #include "i386/gstabs.h"
@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Ensure we the configuration knows our system correctly so we can link with
-   libraries compiled with the native cc. */
+   libraries compiled with the native cc.  */
 #undef NO_DOLLAR_IN_LABEL
 
 /* i386 freebsd still uses old binutils that don't insert nops by default

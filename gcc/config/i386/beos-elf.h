@@ -84,7 +84,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* BeOS uses lots of multichars, so don't warn about them unless the
    user explicitly asks for the warnings with -Wmultichar.  Note that
-   CC1_SPEC is used for both cc1 and cc1plus. */
+   CC1_SPEC is used for both cc1 and cc1plus.  */
 
 #undef CC1_SPEC
 #define CC1_SPEC "%{!no-fpic:%{!fPIC:-fpic}} %{!Wmultichar: -Wno-multichar} %(cc1_cpu) %{profile:-p}"
@@ -95,9 +95,9 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a LINK_SPEC appropriate for BeOS.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
-   combinations of options at link-time. */
+   combinations of options at link-time.  */
 
-/* If ELF is the default format, we should not use /lib/elf. */
+/* If ELF is the default format, we should not use /lib/elf.  */
 
 #undef	LINK_SPEC
 #define LINK_SPEC "%{!o*:-o %b} -m elf_i386_be -shared -Bsymbolic %{nostart:-e 0}"

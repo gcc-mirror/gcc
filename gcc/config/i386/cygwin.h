@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA. */
+Boston, MA 02111-1307, USA.  */
 
 #define YES_UNDERSCORES
 
@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA. */
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
-/* Augment TARGET_SWITCHES with the cygwin/no-cygwin options. */
+/* Augment TARGET_SWITCHES with the cygwin/no-cygwin options.  */
 #define MASK_WIN32 0x40000000 /* Use -lming32 interface */
 #define MASK_CYGWIN  0x20000000 /* Use -lcygwin interface */
 #define MASK_WINDOWS 0x10000000 /* Use windows interface */
@@ -128,7 +128,7 @@ Boston, MA 02111-1307, USA. */
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
    GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
-   by calling the init function from the prologue. */
+   by calling the init function from the prologue.  */
 
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
@@ -245,7 +245,7 @@ switch_to_section (section, decl) 				\
 }
 
 /* Don't allow flag_pic to propagate since gas may produce invalid code
-   otherwise. */
+   otherwise.  */
 
 #undef  SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\
@@ -341,7 +341,7 @@ do {							\
 
 
 /* Emit code to check the stack when allocating more that 4000
-   bytes in one go. */
+   bytes in one go.  */
 
 #define CHECK_STACK_LIMIT 4000
 
@@ -406,7 +406,7 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
   i386_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
 
-/* This says out to put a global symbol in the BSS section. */
+/* This says out to put a global symbol in the BSS section.  */
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
@@ -419,7 +419,7 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 #define SUBTARGET_PROLOGUE						\

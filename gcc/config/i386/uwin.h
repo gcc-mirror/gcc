@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA. */
+Boston, MA 02111-1307, USA.  */
 
 /* Most of this is the same as for Cygwin32, except for changing some
    specs.  */
@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA. */
 #define LIB_SPEC \
   "%{pg:-lgmon} %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 -ladvapi32"
 
-/* This is needed in g77spec.c for now. Will be removed in the future. */
+/* This is needed in g77spec.c for now. Will be removed in the future.  */
 #define WIN32_UWIN_TARGET 1
 
 /* Include in the mingw32 libraries with libgcc */
@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA. */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s} %{pg:gcrt2%O%s}"
 
-/* These are PE BFD bug workarounds. Should go away eventually. */
+/* These are PE BFD bug workarounds. Should go away eventually.  */
 
 /* Write the extra assembler code needed to declare a function
    properly.  If we are generating SDB debugging information, this
@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA. */
     {									\
       if (i386_pe_dllexport_name_p (NAME))				\
 	i386_pe_record_exported_symbol (NAME, 0);			\
-      /* UWIN binutils bug workaround. */				\
+      /* UWIN binutils bug workaround.  */				\
       if (0 && write_symbols != SDB_DEBUG)				\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\

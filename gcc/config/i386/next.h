@@ -117,12 +117,12 @@ Boston, MA 02111-1307, USA.  */
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.
 
-   GAS requires the %cl argument, so override unx386.h. */
+   GAS requires the %cl argument, so override unx386.h.  */
 
 #undef	SHIFT_DOUBLE_OMITS_COUNT
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
-/* Print opcodes the way that GAS expects them. */
+/* Print opcodes the way that GAS expects them.  */
 #define GAS_MNEMONICS 1
 
 /* Names to predefine in the preprocessor for this target machine.  */
@@ -131,7 +131,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ \
   -D__ARCHITECTURE__=\"i386\" -Asystem=unix -Asystem=mach"
 
-/* This accounts for the return pc and saved fp on the i386. */
+/* This accounts for the return pc and saved fp on the i386.  */
 
 #define OBJC_FORWARDING_STACK_OFFSET 8
 #define OBJC_FORWARDING_MIN_OFFSET 8

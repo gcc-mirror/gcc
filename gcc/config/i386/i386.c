@@ -12240,7 +12240,7 @@ ix86_free_from_memory (mode)
 /* Put float CONST_DOUBLE in the constant pool instead of fp regs.
    QImode must go into class Q_REGS.
    Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
-   movdf to do mem-to-mem moves through integer regs. */
+   movdf to do mem-to-mem moves through integer regs.  */
 enum reg_class
 ix86_preferred_reload_class (x, class)
      rtx x;

@@ -2,7 +2,7 @@
    Interactive Unix System V. Specifically, this is for recent versions
    that support POSIX.  */
 
-/* Use crt1.o, not crt0.o, as a startup file, and crtn.o as a closing file. */
+/* Use crt1.o, not crt0.o, as a startup file, and crtn.o as a closing file.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
@@ -33,7 +33,7 @@
    the standard calling sequence in which the called function pops the
    extra arg.  */
 /* caller has to pop the extra argument passed to functions that return
-   structures. */
+   structures.  */
 
 #undef RETURN_POPS_ARGS
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
@@ -56,7 +56,7 @@
 
    ISC's software emulation of a 387 fails to handle the `fucomp'
    opcode.  fucomp is only used when generating IEEE compliant code.
-   So don't make TARGET_IEEE_FP default for ISC. */
+   So don't make TARGET_IEEE_FP default for ISC.  */
 
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_FLOAT_RETURNS)
@@ -92,5 +92,5 @@
   } while (0)
 
 /* Work around assembler forward label references generated in exception
-   handling code. */
+   handling code.  */
 #define DWARF2_UNWIND_INFO 0

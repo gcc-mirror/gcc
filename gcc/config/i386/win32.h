@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA. */
+Boston, MA 02111-1307, USA.  */
 
 #define YES_UNDERSCORES
 
@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA. */
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
-/* Augment TARGET_SWITCHES with the cygwin/win32 options. */
+/* Augment TARGET_SWITCHES with the cygwin/win32 options.  */
 #define MASK_WIN32 0x40000000 /* Use -lming32 interface */
 #define MASK_CYGWIN  0x20000000 /* Use -lcygwin interface */
 #define MASK_WINDOWS 0x10000000 /* Use windows interface */
@@ -113,7 +113,7 @@ Boston, MA 02111-1307, USA. */
    On i386 running Windows NT, modify the assembler name with a suffix 
    consisting of an atsign (@) followed by string of digits that represents
    the number of bytes of arguments passed to the function, if it has the 
-   attribute STDCALL. */
+   attribute STDCALL.  */
 
 #ifdef ENCODE_SECTION_INFO
 #undef ENCODE_SECTION_INFO
@@ -162,7 +162,7 @@ do {									\
       
 
 /* Emit code to check the stack when allocating more that 4000
-   bytes in one go. */
+   bytes in one go.  */
 
 #define CHECK_STACK_LIMIT 4000
 
@@ -201,7 +201,7 @@ extern void i386_pe_unique_section ();
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 #define SUBTARGET_PROLOGUE						\

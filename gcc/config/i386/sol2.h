@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
    bytes.  The linker pads it to 16 bytes with a single 0x90 byte, and
    two 0x00000090 ints, which generates a segmentation violation when
    executed.  This macro forces the assembler to do the padding, since
-   it knows what it is doing. */
+   it knows what it is doing.  */
 
 #define FORCE_INIT_SECTION_ALIGN asm (ALIGN_ASM_OP ## "16")
 #define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN

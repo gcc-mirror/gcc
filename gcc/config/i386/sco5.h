@@ -102,7 +102,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP_ELF		"\t.section\t.init"
-/* Rename these for COFF because crt1.o will try to run them. */
+/* Rename these for COFF because crt1.o will try to run them.  */
 #define INIT_SECTION_ASM_OP_COFF	"\t.section\t.ctor ,\"x\""
 #define INIT_SECTION_ASM_OP	\
   ((TARGET_ELF) ? INIT_SECTION_ASM_OP_ELF : INIT_SECTION_ASM_OP_COFF)
@@ -400,7 +400,7 @@ do {									\
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
@@ -755,7 +755,7 @@ init_section ()								\
   %{G:-G} %{!mcoff:%{Qn:} %{!Qy:-Qn}}"
 
 /* The SCO COFF linker gets confused on the difference between "-ofoo"
-   and "-o foo".   So we just always force a single space. */
+   and "-o foo".   So we just always force a single space.  */
 
 #define SWITCHES_NEED_SPACES "o"
 
@@ -780,7 +780,7 @@ init_section ()								\
 #define NO_DOLLAR_IN_LABEL
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  They are 
-   faster on OpenServer libraries. */
+   faster on OpenServer libraries.  */
 
 #define TARGET_MEM_FUNCTIONS
 

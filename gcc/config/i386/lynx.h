@@ -24,9 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-DI386 -DLynx -DIBITS32 -Asystem=unix -Asystem=lynx"
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
-/* Override the svr3 convention of adding a leading underscore. */
+/* Override the svr3 convention of adding a leading underscore.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
