@@ -1,3 +1,7 @@
+2002-10-06  Richard Henderson  <rth@redhat.com>
+
+	* toplev.c (rest_of_compilation): Revert opt/2960 change.
+
 2002-10-09  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/7353
