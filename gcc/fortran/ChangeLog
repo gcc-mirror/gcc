@@ -1,3 +1,7 @@
+2004-05-29  Paul Brook  <paul@codesourcery.com>
+
+	* trans-common.c (find_equivalence): Find multiple rules.
+
 2004-05-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_current_locus, gfc_set_locus): Remove.

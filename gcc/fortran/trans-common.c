@@ -649,7 +649,8 @@ add_condition (segment_info *f, gfc_equiv *eq1, gfc_equiv *eq2)
 
 
 /* Given a segment element, search through the equivalence lists for unused
-   conditions that involve the symbol.  Add these rules to the segment.  */
+   conditions that involve the symbol.  Add these rules to the segment.  Only
+   checks for rules involving the first symbol in the equivalence set.  */
  
 static bool
 find_equivalence (segment_info *f)
@@ -666,7 +667,7 @@ find_equivalence (segment_info *f)
 	  if (l->used)
 	    continue;
 
-	  if (c->expr->symtree->n.sym ==f-> sym)
+	  if (c->expr->symtree->n.sym == f-> sym)
 	    {
 	      eq = c;
 	      other = l;
@@ -682,9 +683,12 @@ find_equivalence (segment_info *f)
 	  if (eq)
 	    {
 	      add_condition (f, eq, other);
-	      l->used = 1;
+	      eq->used = 1;
 	      found = TRUE;
-	      break;
+	      /* If this symbol is the fist in the chain we may find other
+		 matches. Otherwise we can skip to the next equivalence.  */
+	      if (eq == l) 
+		break;
 	    }
 	}
     }
