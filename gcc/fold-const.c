@@ -3424,7 +3424,17 @@ fold_truthop (code, truth_type, lhs, rhs)
   if (lcode != wanted_code)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
-	l_const = ll_mask;
+	{
+	  if (ll_unsignedp)
+	    l_const = ll_mask;
+	else
+	  /* Since ll_arg is a single bit bit mask, we can sign extend
+	     it appropriately with a NEGATE_EXPR.
+	     l_const is made a signed value here, but since for l_const != NULL
+	     lr_unsignedp is not used, we don't need to clear the latter.  */
+	  l_const = fold (build1 (NEGATE_EXPR, TREE_TYPE (ll_arg),
+				  convert (TREE_TYPE (ll_arg), ll_mask)));
+	}
       else
 	return 0;
     }
@@ -3432,7 +3442,14 @@ fold_truthop (code, truth_type, lhs, rhs)
   if (rcode != wanted_code)
     {
       if (r_const && integer_zerop (r_const) && integer_pow2p (rl_mask))
-	r_const = rl_mask;
+	{
+	  if (rl_unsignedp)
+	    r_const = rl_mask;
+	else
+	  /* This is analogous to the code for l_const above.  */
+	  r_const = fold (build1 (NEGATE_EXPR, TREE_TYPE (rl_arg),
+				  convert (TREE_TYPE (rl_arg), rl_mask)));
+	}
       else
 	return 0;
     }
