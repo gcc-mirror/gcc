@@ -7631,7 +7631,7 @@ case 740:
     break;}
 case 741:
 #line 3281 "parse.y"
-{ finish_switch_stmt (yyvsp[-3].ttype, yyvsp[-1].ttype); ;
+{ finish_switch_stmt (yyvsp[-3].ttype, yyvsp[-5].ttype); ;
     break;}
 case 742:
 #line 3283 "parse.y"
