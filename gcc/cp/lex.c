@@ -4853,7 +4853,7 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma interface' ignored");
 
-#ifndef NO_LINKAGE_HEURISTICS
+#ifndef MULTIPLE_SYMBOL_SPACES
       write_virtuals = 3;
 
       if (impl_file_chain == 0)
@@ -4880,7 +4880,7 @@ handle_cp_pragma (pname)
       interface_unknown = 0;
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-#endif /* NO_LINKAGE_HEURISTICS */
+#endif /* MULTIPLE_SYMBOL_SPACES */
 
       return 1;
     }
@@ -4906,7 +4906,7 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma implementation' ignored");
 
-#ifndef NO_LINKAGE_HEURISTICS
+#ifndef MULTIPLE_SYMBOL_SPACES
       if (write_virtuals == 3)
 	{
 	  struct impl_files *ifiles = impl_file_chain;
@@ -4951,7 +4951,7 @@ handle_cp_pragma (pname)
 #endif
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
-#endif /* NO_LINKAGE_HEURISTICS */
+#endif /* MULTIPLE_SYMBOL_SPACES */
 
       return 1;
     }
