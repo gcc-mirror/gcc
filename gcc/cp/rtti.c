@@ -184,7 +184,7 @@ throw_bad_cast ()
 static tree
 throw_bad_typeid ()
 {
-  tree fn = get_identifier ("__throw_bad_cast");
+  tree fn = get_identifier ("__throw_bad_typeid");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
