@@ -42,4 +42,3 @@ ALLOCA=alloca.o
 # (This is an undocumented feature of the native svr4 C compiler.)
 
 CCLIBFLAGS=-Bstatic -dn -gg
-X_CFLAGS=-static -g -O2
