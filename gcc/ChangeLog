@@ -1,3 +1,7 @@
+Wed Jul 15 00:52:20 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Jul 14 14:15:30 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c: Remove ANSI-C ism from --help code.
