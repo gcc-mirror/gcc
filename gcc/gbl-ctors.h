@@ -73,9 +73,9 @@ extern void __do_global_dtors ();
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
   func_ptr *p;								\
-  ON_EXIT (__do_global_dtors, 0);					\
   for (p = __CTOR_LIST__ + 1; *p; )					\
     (*p++) ();								\
+  ON_EXIT (__do_global_dtors, 0);					\
 } while (0)
 #endif
 
