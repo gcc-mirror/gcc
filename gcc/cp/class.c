@@ -503,7 +503,7 @@ get_vtable_name (type)
      tree type;
 {
   tree type_id = build_typename_overload (type);
-  char *buf = (char *)alloca (sizeof (VTABLE_NAME_FORMAT)
+  char *buf = (char *)alloca (strlen (VTABLE_NAME_FORMAT)
 			      + IDENTIFIER_LENGTH (type_id) + 2);
   char *ptr = IDENTIFIER_POINTER (type_id);
   int i;
@@ -1608,17 +1608,23 @@ finish_struct_bits (t, max_has_virtual)
   if (n_baseclasses && max_has_virtual)
     {
       /* Done by `finish_struct' for classes without baseclasses.  */
-      int has_abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (t) != 0;
+      int might_have_abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (t) != 0;
       tree binfos = TYPE_BINFO_BASETYPES (t);
       for (i = n_baseclasses-1; i >= 0; i--)
 	{
-	  has_abstract_virtuals
+	  might_have_abstract_virtuals
 	    |= (CLASSTYPE_ABSTRACT_VIRTUALS (BINFO_TYPE (TREE_VEC_ELT (binfos, i))) != 0);
-	  if (has_abstract_virtuals)
+	  if (might_have_abstract_virtuals)
 	    break;
 	}
-      if (has_abstract_virtuals)
-	CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
+      if (might_have_abstract_virtuals)
+	{
+	  /* We use error_mark_node from override_one_vtable to signal
+	     an artificial abstract. */
+	  if (CLASSTYPE_ABSTRACT_VIRTUALS (t) == error_mark_node)
+	    CLASSTYPE_ABSTRACT_VIRTUALS (t) = NULL_TREE;
+	  CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
+	}
     }
 
   if (n_baseclasses)
@@ -1809,10 +1815,12 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    }
 	}
 
-      /* Constructors are handled easily in search routines.
-	 Besides, we know we won't find any, so do not bother looking.  */
-      if (fn_name == name && TREE_VEC_ELT (method_vec, 0) == 0)
-	TREE_VEC_ELT (method_vec, 0) = fn_fields;
+      /* Constructors are handled easily in search routines.  */
+      if (fn_name == name)
+	{
+	  DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
+	  TREE_VEC_ELT (method_vec, 0) = fn_fields;
+	}
       else
 	{
 	  testp = &TREE_VEC_ELT (method_vec, 0);
@@ -2122,17 +2130,13 @@ static void
 modify_one_vtable (binfo, t, fndecl, pfn)
      tree binfo, t, fndecl, pfn;
 {
-  tree virtuals;
+  tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
   
-  virtuals = BINFO_VIRTUALS (binfo);
   n = 0;
-  /* Skip RTTI fake object. */
-  if (flag_dossier)
-    {
-      ++n;
+  /* Skip initial vtable length field and RTTI fake object. */
+  for (; virtuals && n < 1 + flag_dossier; n++)
       virtuals = TREE_CHAIN (virtuals);
-    }
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
@@ -2262,6 +2266,176 @@ modify_all_vtables (t, fndecl, vfn)
   modify_all_direct_vtables (TYPE_BINFO (t), 1, t, fndecl, vfn);
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     modify_all_indirect_vtables (TYPE_BINFO (t), 1, 0, t, fndecl, vfn);
+}
+
+/* Here, we already know that they match in every respect.
+   All we have to check is where they had their declarations.  */
+static int 
+strictly_overrides (fndecl1, fndecl2)
+     tree fndecl1, fndecl2;
+{
+  int distance = get_base_distance (DECL_CLASS_CONTEXT (fndecl2),
+				    DECL_CLASS_CONTEXT (fndecl1),
+				    0, (tree *)0);
+  if (distance == -2 || distance > 0)
+    return 1;
+  return 0;
+}
+
+/* Merge overrides for one vtable.
+   If we want to merge in same function, we are fine.
+   else
+     if one has a DECL_CLASS_CONTEXT that is a parent of the
+       other, than choose the more derived one
+     else
+       potentially ill-formed (see 10.3 [class.virtual])
+       we have to check later to see if there was an
+       override in this class.  If there was ok, if not
+       then it is ill-formed.  (mrs)
+
+   We take special care to reuse a vtable, if we can.  */
+static void
+override_one_vtable (binfo, old, t)
+     tree binfo, old, t;
+{
+  tree virtuals = BINFO_VIRTUALS (binfo);
+  tree old_virtuals = BINFO_VIRTUALS (old);
+  enum { REUSE_NEW, REUSE_OLD, UNDECIDED, NEITHER } choose = UNDECIDED;
+
+  /* If we have already committed to modifying it, then don't try and
+     reuse another vtable. */
+  if (BINFO_NEW_VTABLE_MARKED (binfo))
+    choose = NEITHER;
+
+  /* Skip size entry. */
+  virtuals = TREE_CHAIN (virtuals);
+  /* Skip RTTI fake object. */
+  if (flag_dossier)
+    {
+      virtuals = TREE_CHAIN (virtuals);
+    }
+
+  /* Skip size entry. */
+  old_virtuals = TREE_CHAIN (old_virtuals);
+  /* Skip RTTI fake object. */
+  if (flag_dossier)
+    {
+      old_virtuals = TREE_CHAIN (old_virtuals);
+    }
+
+  while (virtuals)
+    {
+      tree fndecl = TREE_VALUE (virtuals);
+      tree old_fndecl = TREE_VALUE (old_virtuals);
+      fndecl = FNADDR_FROM_VTABLE_ENTRY (fndecl);
+      old_fndecl = FNADDR_FROM_VTABLE_ENTRY (old_fndecl);
+      fndecl = TREE_OPERAND (fndecl, 0);
+      old_fndecl = TREE_OPERAND (old_fndecl, 0);
+      /* First check to see if they are the same. */
+      if (DECL_ASSEMBLER_NAME (fndecl) == DECL_ASSEMBLER_NAME (old_fndecl))
+	{
+	  /* No need to do anything. */
+	}
+      else if (strictly_overrides (fndecl, old_fndecl))
+	{
+	  if (choose == UNDECIDED)
+	    choose = REUSE_NEW;
+	  else if (choose == REUSE_OLD)
+	    {
+	      choose = NEITHER;
+	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		{
+		  prepare_fresh_vtable (binfo, t);
+		  override_one_vtable (binfo, old, t);
+		  return;
+		}
+	    }
+	}
+      else if (strictly_overrides (old_fndecl, fndecl))
+	{
+	  if (choose == UNDECIDED)
+	    choose = REUSE_OLD;
+	  else if (choose == REUSE_NEW)
+	    {
+	      choose = NEITHER;
+	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		{
+		  prepare_fresh_vtable (binfo, t);
+		  override_one_vtable (binfo, old, t);
+		  return;
+		}
+	    }
+	  TREE_VALUE (virtuals) = TREE_VALUE (old_virtuals);
+	}
+      else
+	{
+	  choose = NEITHER;
+	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
+	    {
+	      prepare_fresh_vtable (binfo, t);
+	      override_one_vtable (binfo, old, t);
+	      return;
+	    }
+	  {
+	    /* This MUST be overriden, or the class is ill-formed.  */
+	    /* For now, we just make it abstract.  */
+	    tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
+	    tree vfn;
+
+	    fndecl = copy_node (fndecl);
+	    copy_lang_decl (fndecl);
+	    DECL_ABSTRACT_VIRTUAL_P (fndecl) = 1;
+	    /* Make sure we search for it later. */
+	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
+	      CLASSTYPE_ABSTRACT_VIRTUALS (t) = error_mark_node;
+
+	    vfn = build1 (ADDR_EXPR, ptr_type_node, fndecl);
+	    TREE_CONSTANT (vfn) = 1;
+	    
+	    /* We can use integer_zero_node, as we will will core dump
+	       if this is used anyway. */
+	    TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, vfn);
+	  }
+	}
+      virtuals = TREE_CHAIN (virtuals);
+      old_virtuals = TREE_CHAIN (old_virtuals);
+    }
+
+  /* Let's reuse the old vtable. */
+  if (choose == REUSE_OLD)
+    {
+      BINFO_VTABLE (binfo) = BINFO_VTABLE (old);
+      BINFO_VIRTUALS (binfo) = BINFO_VIRTUALS (old);
+    }
+}
+
+/* Merge in overrides for virtual bases.
+   BINFO is the hierarchy we want to modify, and OLD has the potential
+   overrides.  */
+static void
+merge_overrides (binfo, old, do_self, t)
+     tree binfo, old, t;
+     int do_self;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  tree old_binfos = BINFO_BASETYPES (old);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      override_one_vtable (binfo, old, t);
+    }
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      tree old_base_binfo = TREE_VEC_ELT (old_binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (! TREE_VIA_VIRTUAL (base_binfo))
+	merge_overrides (base_binfo, old_base_binfo, is_not_base_vtable, t);
+    }
 }
 
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
@@ -2802,7 +2976,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (TREE_CODE (type) == ARRAY_TYPE)
 		type = TREE_TYPE (type);
 
-	      if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x))
+	      if (TYPE_LANG_SPECIFIC (type) && ! ANON_UNION_P (x)
+		  && ! TYPE_PTRMEMFUNC_P (type))
 		{
 		  /* Never let anything with uninheritable virtuals
 		     make it through without complaint.  */
@@ -3268,11 +3443,34 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
       while (vbases)
 	{
+	  /* The rtti code should do this.  (mrs) */
 	  /* Update dossier info with offsets for virtual baseclasses.  */
 	  if (flag_dossier && ! BINFO_NEW_VTABLE_MARKED (vbases))
 	    prepare_fresh_vtable (vbases, t);
-
 	  vbases = TREE_CHAIN (vbases);
+	}
+
+      {
+	/* Now fixup overrides of all functions in vtables from all
+	   direct or indirect virtual base classes.  */
+	tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
+	int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+	for (i = 0; i < n_baseclasses; i++)
+	  {
+	    tree base_binfo = TREE_VEC_ELT (binfos, i);
+	    tree basetype = BINFO_TYPE (base_binfo);
+	    tree vbases;
+
+	    vbases = CLASSTYPE_VBASECLASSES (basetype);
+	    while (vbases)
+	      {
+		merge_overrides (binfo_member (BINFO_TYPE (vbases),
+					       CLASSTYPE_VBASECLASSES (t)),
+				 vbases, 1, t);
+		vbases = TREE_CHAIN (vbases);
+	      }
+	  }
 	}
     }
 
@@ -3618,16 +3816,16 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  /* Don't output full info about any type
 	     which does not have its implementation defined here.  */
 	  if (TYPE_VIRTUAL_P (t) && write_virtuals == 2)
-	    DECL_IGNORED_P (TYPE_NAME (t))
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t))
 	      = (value_member (TYPE_IDENTIFIER (t), pending_vtables) == 0);
 	  else if (CLASSTYPE_INTERFACE_ONLY (t))
-	    DECL_IGNORED_P (TYPE_NAME (t)) = 1;
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
 	  else if (CLASSTYPE_INTERFACE_UNKNOWN (t))
 	    /* Only a first approximation!  */
-	    DECL_IGNORED_P (TYPE_NAME (t)) = 1;
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
 	}
       else if (CLASSTYPE_INTERFACE_ONLY (t))
-	DECL_IGNORED_P (TYPE_NAME (t)) = 1;
+	TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
     }
 
   /* Finish debugging output for this type.  */

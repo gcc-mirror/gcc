@@ -615,7 +615,6 @@ void
 cplus_expand_end_except (dfault)
      tree dfault;
 {
-  extern tree expand_end_except (); /* stmt.c.  */
   tree decls, raised;
 
   if (dfault == NULL_TREE)

@@ -574,10 +574,7 @@ get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
    PARENT can also be a binfo, in which case that exact parent is found
    and no other.  convert_pointer_to_real uses this functionality.
 
-   If BINFO is a binfo, its BINFO_INHERITANCE_CHAIN will be left alone.
-
-   Code in prepare_fresh_vtable relies upon the path being built even
-   when -2 is returned.  */
+   If BINFO is a binfo, its BINFO_INHERITANCE_CHAIN will be left alone.  */
 
 int
 get_base_distance (parent, binfo, protect, path_ptr)
@@ -632,6 +629,16 @@ get_base_distance (parent, binfo, protect, path_ptr)
 
   if (rval && protect && rval_private)
     return -3;
+
+  /* find real virtual base classes. */
+  if (rval == -1 && TREE_CODE (parent) == TREE_VEC
+      && parent == binfo_member (BINFO_TYPE (parent),
+				 CLASSTYPE_VBASECLASSES (type)))
+    {
+      BINFO_INHERITANCE_CHAIN (parent) = binfo;
+      new_binfo = parent;
+      rval = 1;
+    }
 
   if (path_ptr)
     *path_ptr = new_binfo;
@@ -765,6 +772,9 @@ compute_access (basetype_path, field)
   /* Replaces static decl above.  */
   tree previous_scope;
 #endif
+  int static_mem =
+    ((TREE_CODE (field) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (field))
+     || (TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field)));
 
   /* The field lives in the current class.  */
   if (BINFO_TYPE (basetype_path) == current_class_type)
@@ -803,7 +813,7 @@ compute_access (basetype_path, field)
     PUBLIC_RETURN;
 
   /* Member found immediately within object.  */
-  if (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE)
+  if (BINFO_INHERITANCE_CHAIN (basetype_path) == NULL_TREE || static_mem)
     {
       /* Are we (or an enclosing scope) friends with the class that has
          FIELD? */
@@ -822,9 +832,7 @@ compute_access (basetype_path, field)
       else if (TREE_PROTECTED (field))
 	{
 	  if (current_class_type
-	      && ((TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field))
-		  || (TREE_CODE (field) == FUNCTION_DECL
-		      && DECL_STATIC_FUNCTION_P (field)))
+	      && static_mem
   	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
 	    PUBLIC_RETURN;
 	  else
@@ -839,8 +847,7 @@ compute_access (basetype_path, field)
   types = basetype_path;
   via_protected = 0;
   access = access_default;
-  protected_ok = current_class_type
-    && ACCESSIBLY_UNIQUELY_DERIVED_P (BINFO_TYPE (types), current_class_type);
+  protected_ok = 0;
 
   while (1)
     {
@@ -1031,15 +1038,16 @@ lookup_field (xbasetype, name, protect, want_type)
 
   if (TREE_CODE (xbasetype) == TREE_VEC)
     {
-      extern struct obstack temporary_obstack;
-      struct obstack *tmp = current_obstack;
-      current_obstack = &temporary_obstack;
-      basetype_path = copy_binfo (xbasetype);
-      current_obstack = tmp;
       type = BINFO_TYPE (xbasetype);
+      basetype_path = xbasetype;
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
-    basetype_path = TYPE_BINFO (xbasetype), type = xbasetype;
+    {
+      type = xbasetype;
+      basetype_path = TYPE_BINFO (xbasetype);
+      BINFO_VIA_PUBLIC (basetype_path) = 1;
+      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+    }
   else my_friendly_abort (97);
 
   if (CLASSTYPE_MTABLE_ENTRY (type))
@@ -1132,14 +1140,14 @@ lookup_field (xbasetype, name, protect, want_type)
       return rval;
     }
 
-  basetype_chain = CLASSTYPE_BINFO_AS_LIST (type);
-  TREE_VIA_PUBLIC (basetype_chain) = 1;
+  basetype_chain = build_tree_list (NULL_TREE, basetype_path);
+  TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
+  TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
+  TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
 
   /* The ambiguity check relies upon breadth first searching. */
 
   search_stack = push_search_level (search_stack, &search_obstack);
-  BINFO_VIA_PUBLIC (basetype_path) = 1;
-  BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
   binfo = basetype_path;
   binfo_h = binfo;
 
@@ -1579,14 +1587,24 @@ lookup_fnfields (basetype_path, name, complain)
     }
   rval = NULL_TREE;
 
-  basetype_chain = CLASSTYPE_BINFO_AS_LIST (type);
-  TREE_VIA_PUBLIC (basetype_chain) = 1;
+  if (basetype_path == TYPE_BINFO (type))
+    {
+      basetype_chain = CLASSTYPE_BINFO_AS_LIST (type);
+      TREE_VIA_PUBLIC (basetype_chain) = 1;
+      BINFO_VIA_PUBLIC (basetype_path) = 1;
+      BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
+    }
+  else
+    {
+      basetype_chain = build_tree_list (NULL_TREE, basetype_path);
+      TREE_VIA_PUBLIC (basetype_chain) = TREE_VIA_PUBLIC (basetype_path);
+      TREE_VIA_PROTECTED (basetype_chain) = TREE_VIA_PROTECTED (basetype_path);
+      TREE_VIA_VIRTUAL (basetype_chain) = TREE_VIA_VIRTUAL (basetype_path);
+    }
 
   /* The ambiguity check relies upon breadth first searching. */
 
   search_stack = push_search_level (search_stack, &search_obstack);
-  BINFO_VIA_PUBLIC (basetype_path) = 1;
-  BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
   binfo = basetype_path;
   binfo_h = binfo;
 
@@ -2502,13 +2520,13 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	}
 
       /* Initialized with vtables of type TYPE.  */
-      while (vbases)
+      for (; vbases; vbases = TREE_CHAIN (vbases))
 	{
 	  tree addr;
 	  if (use_computed_offsets)
 	    addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
 	  else
-	    addr = convert_pointer_to (vbases, vbase_decl_ptr);
+	    addr = convert_pointer_to_real (vbases, vbase_decl_ptr);
 	  if (addr == error_mark_node)
 	    continue;
 
@@ -2517,7 +2535,6 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	     binfos.  (in the CLASSTPE_VFIELD_PARENT sense)  */
 	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
 				    1, 0, addr);
-	  vbases = TREE_CHAIN (vbases);
 	}
 
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep);

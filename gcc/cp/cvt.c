@@ -579,7 +579,7 @@ build_up_reference (type, arg, flags, checkconst)
  done:
   if (TYPE_USES_COMPLEX_INHERITANCE (argtype))
     {
-      TREE_TYPE (rval) = TYPE_POINTER_TO (argtype);
+      TREE_TYPE (rval) = build_pointer_type (argtype);
       if (flags & LOOKUP_PROTECT)
 	rval = convert_pointer_to (target_type, rval);
       else
@@ -618,8 +618,11 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
   register enum tree_code form = TREE_CODE (intype);
   tree rval = NULL_TREE;
 
+#if 0
   if (TREE_CODE (type) == ARRAY_TYPE)
     type = build_pointer_type (TREE_TYPE (type));
+#endif
+  
   if (form == REFERENCE_TYPE)
     intype = TREE_TYPE (intype);
   intype = TYPE_MAIN_VARIANT (intype);
@@ -642,12 +645,18 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
 	     convert_for_assignment, we have to do this checking here.
 	     FIXME: We should have a common routine between here and
 	     convert_for_assignment.  */
-	  if (form == REFERENCE_TYPE)
-	    {
-	      register tree ttl = TREE_TYPE (reftype);
-	      register tree ttr = TREE_TYPE (TREE_TYPE (expr));
 
-	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
+	  tree ttl = TREE_TYPE (reftype);
+	  tree ttr;
+	  
+	  if (form == REFERENCE_TYPE)
+	    ttr = TREE_TYPE (TREE_TYPE (expr));
+	  else
+	    ttr = TREE_TYPE (expr);
+
+	  if (! TYPE_READONLY (ttl))
+	    {
+	      if (TYPE_READONLY (ttr) && decl != NULL_TREE)
 		{
 		  if (fndecl)
 		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
@@ -656,29 +665,29 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
 		    cp_pedwarn ("%s to `%T' from `%T' discards const",
 				errtype, reftype, TREE_TYPE (expr));
 		}
-	      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
+	      else if (! lvalue_p (expr))
 		{
+		  /* Ensure semantics of 8.4.3 */
 		  if (fndecl)
-		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
+		    cp_pedwarn ("ANSI C++ forbids passing non-lvalue `%T' as argument %P of `%D' into non-const &",
 				TREE_TYPE (expr), parmnum, fndecl);
 		  else
-		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
+		    cp_pedwarn ("ANSI C++ forbids %s to `%T' from non-lvalue `%T'",
 				errtype, reftype, TREE_TYPE (expr));
 		}
-	  } else if (TREE_CODE (reftype) == REFERENCE_TYPE
-		     && ! TREE_READONLY (TREE_TYPE (reftype))
-		     && ! lvalue_p (expr))
+	    }
+	  else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr)
+		   && decl != NULL_TREE)
 	    {
-	      /* Ensure semantics of 8.4.3 */
 	      if (fndecl)
-		cp_pedwarn ("ANSI C++ forbids passing non-lvalue `%T' as argument %P of `%D' into non-const &",
+		cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 			    TREE_TYPE (expr), parmnum, fndecl);
 	      else
-		cp_pedwarn ("ANSI C++ forbids %s to `%T' from non-lvalue `%T'",
+		cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 			    errtype, reftype, TREE_TYPE (expr));
 	    }
 	}
-
+      
       /* If EXPR is of aggregate type, and is really a CALL_EXPR,
 	 then we don't need to convert it to reference type if
 	 it is only being used to initialize DECL which is also
@@ -857,7 +866,7 @@ convert_from_reference (val)
 	  return nval;
 	}
 
-      nval = build1 (INDIRECT_REF, TYPE_MAIN_VARIANT (target_type), val);
+      nval = build1 (INDIRECT_REF, target_type, val);
 
       TREE_THIS_VOLATILE (nval) = TYPE_VOLATILE (target_type);
       TREE_SIDE_EFFECTS (nval) = TYPE_VOLATILE (target_type);
@@ -1459,7 +1468,7 @@ convert_force (type, expr)
 
   if (code == REFERENCE_TYPE)
     return fold (convert_to_reference (0, type, e, NULL_TREE, -1,
-				       NULL, -1, LOOKUP_COMPLAIN));
+				       "casting", -1, LOOKUP_COMPLAIN));
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 
@@ -1706,33 +1715,10 @@ build_type_conversion (code, xtype, expr, for_sure)
 
  try_pointer:
 
-  if (type == ptr_type_node)
+  if (TREE_CODE (type) == POINTER_TYPE && TYPE_READONLY (TREE_TYPE (type)))
     {
-      /* Try converting to some other pointer type
-	 with which void* is compatible, or in situations
-	 in which void* is appropriate (such as &&,||, and !).  */
-
-      while (TYPE_HAS_CONVERSION (basetype))
-	{
-	  if (CLASSTYPE_CONVERSION (basetype, ptr_conv) != 0)
-	    {
-	      if (CLASSTYPE_CONVERSION (basetype, ptr_conv) == error_mark_node)
-		return error_mark_node;
-	      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, ptr_conv));
-	      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
-	    }
-	  if (TYPE_BINFO_BASETYPES (basetype))
-	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
-	  else
-	    break;
-	}
-    }
-  if (TREE_CODE (type) == POINTER_TYPE
-      && TYPE_READONLY (TREE_TYPE (type))
-      && TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
-    {
-      /* Try converting to some other pointer type
-	 with which const void* is compatible.  */
+      /* Try converting to some other const pointer type and then using
+         standard conversions. */
 
       while (TYPE_HAS_CONVERSION (basetype))
 	{
@@ -1749,6 +1735,27 @@ build_type_conversion (code, xtype, expr, for_sure)
 	    break;
 	}
     }
+  if (TREE_CODE (type) == POINTER_TYPE)
+    {
+      /* Try converting to some other pointer type and then using standard
+	 conversions.  */
+
+      while (TYPE_HAS_CONVERSION (basetype))
+	{
+	  if (CLASSTYPE_CONVERSION (basetype, ptr_conv) != 0)
+	    {
+	      if (CLASSTYPE_CONVERSION (basetype, ptr_conv) == error_mark_node)
+		return error_mark_node;
+	      typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, ptr_conv));
+	      return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
+	    }
+	  if (TYPE_BINFO_BASETYPES (basetype))
+	    basetype = TYPE_BINFO_BASETYPE (basetype, 0);
+	  else
+	    break;
+	}
+    }
+
   /* Use the longer or shorter conversion that is appropriate.  Have
      to check against 0 because the conversion may come from a baseclass.  */
   if (TREE_CODE (type) == INTEGER_TYPE
@@ -2019,4 +2026,40 @@ build_default_unary_type_conversion (code, arg)
       return 0;
     }
   return 1;
+}
+
+/* Implements integral promotion (4.1) and float->double promotion. */
+tree
+type_promotes_to (type)
+     tree type;
+{
+  int constp = TYPE_READONLY (type);
+  int volatilep = TYPE_VOLATILE (type);
+  type = TYPE_MAIN_VARIANT (type);
+  
+  /* Normally convert enums to int,
+     but convert wide enums to something wider.  */
+  if (TREE_CODE (type) == ENUMERAL_TYPE
+      || type == wchar_type_node)
+    type = type_for_size (MAX (TYPE_PRECISION (type),
+			       TYPE_PRECISION (integer_type_node)),
+			  ((flag_traditional
+			    || (TYPE_PRECISION (type)
+				>= TYPE_PRECISION (integer_type_node)))
+			   && TREE_UNSIGNED (type)));
+  else if (C_PROMOTING_INTEGER_TYPE_P (type))
+    {
+      /* Traditionally, unsignedness is preserved in default promotions.
+         Otherwise, retain unsignedness if really not getting bigger.  */
+      if (TREE_UNSIGNED (type)
+	  && (flag_traditional
+	      || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
+	type = unsigned_type_node;
+      else
+	type = integer_type_node;
+    }
+  else if (type == float_type_node)
+    type = double_type_node;
+
+  return build_type_variant (type, constp, volatilep);
 }

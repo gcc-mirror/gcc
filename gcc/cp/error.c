@@ -330,6 +330,10 @@ dump_type_prefix (t, v)
 	      case METHOD_TYPE:
 		break;
 		
+	      case ARRAY_TYPE:
+		OB_PUTC2 (' ', '(');
+		break;
+
 	      case POINTER_TYPE:
 		/* We don't want "char * *" */
 		if (! (TYPE_READONLY (sub) || TYPE_VOLATILE (sub)))
@@ -433,6 +437,8 @@ dump_type_suffix (t, v)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
+      if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	OB_PUTC (')');
       dump_type_suffix (TREE_TYPE (t), v);
       break;
 

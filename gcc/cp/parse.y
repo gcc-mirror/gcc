@@ -244,12 +244,12 @@ empty_parms ()
 %type <ttype> maybe_raises raise_identifier raise_identifiers ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> component_declarator0
 %type <ttype> forhead.1 operator_name
-%type <ttype> new object aggr
-%type <itype> delete
+%type <ttype> object aggr
+%type <itype> new delete
 /* %type <ttype> primary_no_id */
 %type <ttype> nonmomentary_expr
 %type <itype> forhead.2 initdcl0 notype_initdcl0 member_init_list
-%type <itype> .scope try ansi_try
+%type <itype> try ansi_try
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type template_arg_list template_arg
 %type <ttype> template_instantiation template_type_name tmpl.2
@@ -262,6 +262,7 @@ empty_parms ()
 %type <ttype> qualified_type_name complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
+%type <ttype> new_initializer new_placement
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
@@ -1022,8 +1023,10 @@ nonnull_exprlist:
 unary_expr:
 	  primary %prec UNARY
 		{
+#if 0
 		  if (TREE_CODE ($$) == TYPE_EXPR)
 		    $$ = build_component_type_expr (C_C_D, $$, NULL_TREE, 1);
+#endif
 		}
 	/* __extension__ turns off -pedantic for following primary.  */
 	| EXTENSION
@@ -1039,7 +1042,7 @@ unary_expr:
 	| '~' cast_expr
 		{ $$ = build_x_unary_op (BIT_NOT_EXPR, $2); }
 	| unop cast_expr  %prec UNARY
-		{ $$ = build_x_unary_op ((enum tree_code) $$, $2);
+		{ $$ = build_x_unary_op ($1, $2);
 		  if ($1 == NEGATE_EXPR && TREE_CODE ($2) == INTEGER_CST)
 		    TREE_NEGATED_INT ($$) = 1;
 		  overflow_warning ($$);
@@ -1083,41 +1086,25 @@ unary_expr:
 	| ALIGNOF '(' type_id ')'  %prec HYPERUNARY
 		{ $$ = c_alignof (groktypename ($3)); }
 
-	| .scope new new_type_id %prec '='
-		{ $$ = build_new ($2, $3, NULL_TREE, $$ != NULL_TREE); }
-	| .scope new '(' nonnull_exprlist ')' new_type_id %prec '='
-		{ $$ = build_new ($4, $6, NULL_TREE, $$ != NULL_TREE); }
-	| .scope new typespec '(' nonnull_exprlist ')'
-		{ $$ = build_new ($2, $3, $5, $$ != NULL_TREE); }
-	| .scope new typespec '(' typespec ')'
-		{ cp_error ("`%T' is not a valid expression", $5);
-		  $$ = error_mark_node; }
-	| .scope new '(' nonnull_exprlist ')' typespec '(' nonnull_exprlist ')'
-		{ $$ = build_new ($4, $6, $8, $$ != NULL_TREE); }
-	| .scope new typespec LEFT_RIGHT
-		{ $$ = build_new ($2, $3, NULL_TREE, $$ != NULL_TREE); }
-	| .scope new '(' nonnull_exprlist ')' typespec LEFT_RIGHT
-		{ $$ = build_new ($4, $6, NULL_TREE, $$ != NULL_TREE); }
-	| .scope new new_type_id '=' init %prec '='
-		{ $$ = build_new ($2, $3, $5, $$ != NULL_TREE); }
-	| .scope new '(' nonnull_exprlist ')' new_type_id '=' init %prec '='
-		{ $$ = build_new ($4, $6, $8, $$ != NULL_TREE); }
-	/* If you don't understand why this is illegal, read 5.3.4. (jason) */
-	| .scope new '(' type_id ')' '[' nonmomentary_expr ']'
-		{ 
-		  tree absdcl, typename;
-
-		  absdcl = build_parse_node (ARRAY_REF, TREE_VALUE ($4), $7);
-		  typename = build_decl_list (TREE_PURPOSE ($4), absdcl);
-		  pedwarn ("ANSI C++ forbids array dimensions with parenthesized type");
-		  $$ = build_new ($2, typename, NULL_TREE, $$ != NULL_TREE);
-		}
-	| .scope new '(' type_id ')'
-		{ $$ = build_new ($2, groktypename ($4), NULL_TREE,
-				  $$ != NULL_TREE); }
-	| .scope new '(' nonnull_exprlist ')' '(' type_id ')'
-		{ $$ = build_new ($4, groktypename ($7), NULL_TREE,
-				  $$ != NULL_TREE); }
+	/* The %prec EMPTY's here are required by the = init initializer
+	   syntax extension; see below.  */
+	| new new_type_id %prec EMPTY
+		{ $$ = build_new (NULL_TREE, $2, NULL_TREE, $1); }
+	| new new_type_id new_initializer
+		{ $$ = build_new (NULL_TREE, $2, $3, $1); }
+	| new new_placement new_type_id %prec EMPTY
+		{ $$ = build_new ($2, $3, NULL_TREE, $1); }
+	| new new_placement new_type_id new_initializer
+		{ $$ = build_new ($2, $3, $4, $1); }
+	| new '(' type_id ')' %prec EMPTY
+		{ $$ = build_new (NULL_TREE, groktypename($3),
+				  NULL_TREE, $1); }
+	| new '(' type_id ')' new_initializer
+		{ $$ = build_new (NULL_TREE, groktypename($3), $5, $1); }
+	| new new_placement '(' type_id ')' %prec EMPTY
+		{ $$ = build_new ($2, groktypename($4), NULL_TREE, $1); }
+	| new new_placement '(' type_id ')' new_initializer
+		{ $$ = build_new ($2, groktypename($4), $6, $1); }
 
 	| delete cast_expr  %prec UNARY
 		{ $$ = delete_sanity ($2, NULL_TREE, 0, $1); }
@@ -1129,6 +1116,37 @@ unary_expr:
 		{ $$ = delete_sanity ($5, $3, 2, $1);
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX; }
+	;
+
+new_placement:
+	  '(' nonnull_exprlist ')'
+		{ $$ = $2; }
+	| '{' nonnull_exprlist '}'
+		{
+		  $$ = $2; 
+		  pedwarn ("old style placement syntax, use () instead");
+		}
+	;
+
+new_initializer:
+	  '(' nonnull_exprlist ')'
+		{ $$ = $2; }
+	| LEFT_RIGHT
+		{ $$ = NULL_TREE; }
+	| '(' typespec ')'
+		{
+		  cp_error ("`%T' is not a valid expression", $2);
+		  $$ = error_mark_node;
+		}
+	/* GNU extension so people can use initializer lists.  Note that
+	   this alters the meaning of `new int = 1', which was previously
+	   syntactically valid but semantically invalid.  */
+	| '=' init
+		{
+		  if (pedantic || flag_ansi)
+		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
+		  $$ = $2;
+		}
 	;
 
 /* This is necessary to postpone reduction of `int ((int)(int)(int))'.  */
@@ -1615,18 +1633,8 @@ primary_no_id:
 */
 
 new:	  NEW
-		{ $$ = NULL_TREE; }
-	| NEW '{' nonnull_exprlist '}'
-		{
-		  $$ = $3;
-		  pedwarn ("old style placement syntax, use () instead");
-		}
-	;
-
-.scope:
-	/* empty  */
 		{ $$ = 0; }
-	| global_scope
+	| global_scope NEW
 		{ got_scope = NULL_TREE; $$ = 1; }
 	;
 
@@ -1997,16 +2005,28 @@ attribute_list
     ;
 
 attrib
-    : TYPE_QUAL
-    | IDENTIFIER
+    : identifier
 	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed")
 	      && strcmp (IDENTIFIER_POINTER ($1), "noreturn"))
 	    warning ("`%s' attribute directive ignored",
 		     IDENTIFIER_POINTER ($1));
 	  $$ = $1; }
-    | IDENTIFIER '(' IDENTIFIER ')'
-	{ /* If not "mode (m)", then issue warning.  */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "mode") != 0)
+    | TYPE_QUAL
+    | identifier '(' expr_no_commas ')'
+	{ /* If not aligned(n), section(name), or mode(name),
+	     then issue warning */
+	  if (strcmp (IDENTIFIER_POINTER ($1), "section") == 0
+	      || strcmp (IDENTIFIER_POINTER ($1), "mode") == 0)
+	    {
+	      if (TREE_CODE ($3) != STRING_CST)
+		{
+		  error ("invalid argument in `%s' attribute",
+			 IDENTIFIER_POINTER ($1));
+		  $$ = $1;
+		}
+	      $$ = tree_cons ($1, $3, NULL_TREE);
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
 	    {
 	      warning ("`%s' attribute directive ignored",
 		       IDENTIFIER_POINTER ($1));
@@ -2014,29 +2034,20 @@ attrib
 	    }
 	  else
 	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | IDENTIFIER '(' CONSTANT ')'
-	{ /* if not "aligned(n)", then issue warning */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0
-	      || TREE_CODE ($3) != INTEGER_CST)
-	    {
-	      warning ("`%s' attribute directive ignored",
-		       IDENTIFIER_POINTER ($1));
-	      $$ = $1;
-	    }
-	  else
-	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | IDENTIFIER '(' IDENTIFIER ',' CONSTANT ',' CONSTANT ')'
+    | identifier '(' IDENTIFIER ',' expr_no_commas ',' expr_no_commas ')'
 	{ /* if not "format(...)", then issue warning */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "format") != 0
-	      || TREE_CODE ($5) != INTEGER_CST
-	      || TREE_CODE ($7) != INTEGER_CST)
+	  if (strcmp (IDENTIFIER_POINTER ($1), "format") != 0)
 	    {
 	      warning ("`%s' attribute directive ignored",
 		       IDENTIFIER_POINTER ($1));
 	      $$ = $1;
 	    }
 	  else
-	    $$ = tree_cons ($1, tree_cons ($3, tree_cons ($5, $7, NULL_TREE), NULL_TREE), NULL_TREE); }
+	    $$ = tree_cons ($1,
+			    tree_cons ($3,
+				       tree_cons ($5, $7, NULL_TREE),
+				       NULL_TREE),
+			    NULL_TREE); }
     ;
 
 /* A nonempty list of identifiers, including typenames.  */
@@ -2623,7 +2634,7 @@ notype_component_declarator0:
 		  cplus_decl_attributes ($$, $4); }
 	| ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
-		  $$ = grokbitfield (NULL_TREE, NULL_TREE, $2);
+		  $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
 		  cplus_decl_attributes ($$, $3); }
 	;
 
@@ -2650,7 +2661,7 @@ notype_component_declarator:
 		{ $$ = grokbitfield ($$, current_declspecs, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| ':' expr_no_commas maybe_attribute
-		{ $$ = grokbitfield (NULL_TREE, NULL_TREE, $2);
+		{ $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
 		  cplus_decl_attributes ($$, $3); }
 	;
 
@@ -2681,6 +2692,15 @@ new_type_id:
 		{ $$ = build_decl_list ($$, NULL_TREE); }
 	| nonempty_type_quals %prec EMPTY
 		{ $$ = build_decl_list ($$, NULL_TREE); }
+	/* GNU extension to allow arrays of arbitrary types with
+	   non-constant dimension.  */
+	| '(' type_id ')' '[' expr ']'
+		{
+		  if (pedantic || flag_ansi)
+		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
+		  $$ = build_parse_node (ARRAY_REF, TREE_VALUE ($2), $5);
+		  $$ = build_decl_list (TREE_PURPOSE ($2), $$);
+		}
 	;
 
 type_quals:

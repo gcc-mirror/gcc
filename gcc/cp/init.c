@@ -1879,7 +1879,7 @@ build_member_call (cname, name, parmlist)
 
   if (dont_use_this)
     {
-      basetype_path = NULL_TREE;
+      basetype_path = TYPE_BINFO (type);
       decl = build1 (NOP_EXPR, TYPE_POINTER_TO (type), error_mark_node);
     }
   else if (current_class_decl == 0)
@@ -1903,7 +1903,7 @@ build_member_call (cname, name, parmlist)
 
   decl = build_indirect_ref (decl, NULL_PTR);
 
-  if (t = lookup_fnfields (TYPE_BINFO (type), method_name, 0))
+  if (t = lookup_fnfields (basetype_path, method_name, 0))
     return build_method_call (decl, method_name, parmlist, basetype_path,
 			      LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
   if (TREE_CODE (name) == IDENTIFIER_NODE
@@ -1994,10 +1994,12 @@ build_offset_ref (cname, name)
       return error_mark_node;
     }
 
+#if 0
   if (TREE_CODE (name) == TYPE_EXPR)
     /* Pass a TYPE_DECL to build_component_type_expr.  */
     return build_component_type_expr (TYPE_NAME (TREE_TYPE (cname)),
 				      name, NULL_TREE, 1);
+#endif
 
   fnfields = lookup_fnfields (TYPE_BINFO (type), name, 1);
   fields = lookup_field (type, name, 0, 0);
@@ -2115,7 +2117,7 @@ build_offset_ref (cname, name)
   if (t == NULL_TREE)
     {
       cp_error ("`%D' is not a member of type `%T'", name,
-		  IDENTIFIER_TYPE_VALUE (cname));
+		IDENTIFIER_TYPE_VALUE (cname));
       return error_mark_node;
     }
 
@@ -2274,13 +2276,11 @@ resolve_offset_ref (exp)
       enum access_type access;
 
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  basetype = TYPE_OFFSET_BASETYPE (type);
-	  base = convert_pointer_to (basetype, current_class_decl);
-	}
+	basetype = TYPE_OFFSET_BASETYPE (type);
       else
-	base = current_class_decl;
-      basetype = DECL_CONTEXT (member);
+	basetype = DECL_CONTEXT (member);
+
+      base = current_class_decl;
       
       if (get_base_distance (basetype, TREE_TYPE (TREE_TYPE (base)), 0, &basetype_path) < 0)
 	{

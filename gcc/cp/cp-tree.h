@@ -275,7 +275,12 @@ extern int flag_elide_constructors;
 
 extern int flag_handle_exceptions;
 
-/* Nonzero means recognize and handle ansi-style exception handling constructs.  */
+/* Nonzero means handle things in ANSI, instead of GNU fashion.  */
+
+extern int flag_ansi;
+
+/* Nonzero means recognize and handle ansi-style exception handling
+   constructs.  */
 
 extern int flag_ansi_exceptions;
 
@@ -325,6 +330,8 @@ enum languages { lang_c, lang_cplusplus };
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\
    && IS_AGGR_TYPE (TYPE1)&IS_AGGR_TYPE (TYPE2))
+#define IS_OVERLOAD_TYPE_CODE(t) (IS_AGGR_TYPE_CODE (t) || t == ENUMERAL_TYPE)
+#define IS_OVERLOAD_TYPE(t) (IS_OVERLOAD_TYPE_CODE (TREE_CODE (t)))
 
 /* In a *_TYPE, nonzero means a built-in type.  */
 #define TYPE_BUILT_IN(NODE) TYPE_LANG_FLAG_6(NODE)
@@ -1075,7 +1082,7 @@ struct lang_decl
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
    should be looked up in a non-standard way.  */
 #define TREE_OVERLOADED(NODE) (TREE_LANG_FLAG_0 (NODE))
-#define DECL_OVERLOADED(NODE) (NOTHING)
+#define DECL_OVERLOADED(NODE) (DECL_LANG_FLAG_4 (NODE))
 #endif
 
 /* Nonzero if this (non-TYPE)_DECL has its virtual attribute set.
@@ -1091,7 +1098,7 @@ struct lang_decl
 
 #if 0
 /* Same, but tells if this field is private in current context.  */
-#define DECL_PRIVATE(NODE) (DECL_LANG_FLAG_5 (NODE))
+#define DECL_PRIVATE(NODE) NOTHING
 
 /* Same, but tells if this field is private in current context.  */
 #define DECL_PROTECTED(NODE) (DECL_LANG_FLAG_6 (NODE))
@@ -1253,11 +1260,11 @@ struct lang_decl
 
 /* Macros for a DECL or TYPE generated from a template to indicate that it
    was explicitly instantiated.  */
-#define DECL_EXPLICITLY_INSTANTIATED(NODE) (DECL_LANG_FLAG_4 (NODE))
+#define DECL_EXPLICITLY_INSTANTIATED(NODE) (DECL_LANG_FLAG_5 (NODE))
 #define CLASSTYPE_EXPLICITLY_INSTANTIATED(NODE) \
   (DECL_EXPLICITLY_INSTANTIATED (TYPE_NAME (NODE)))
 
-#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.u)
+#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
 /* ...and for unexpanded-parameterized-type nodes.  */
 #define UPT_TEMPLATE(NODE)      TREE_PURPOSE(TYPE_VALUES(NODE))
@@ -1442,7 +1449,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_NAME "_$tmp_"
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
 #define VTABLE_BASE "$vb"
-#define VTABLE_NAME_FORMAT "_vt$%s"
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT$%s" : "_vt$%s")
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
@@ -1464,7 +1471,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_NAME "_.tmp_"
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
 #define VTABLE_BASE ".vb"
-#define VTABLE_NAME_FORMAT "_vt.%s"
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT.%s" : "_vt.%s")
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
@@ -1493,7 +1500,7 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_FORMAT "__tmp_%d"
 #define VTABLE_BASE "__vtb"
 #define VTABLE_NAME "__vt_"
-#define VTABLE_NAME_FORMAT "__vt_%s"
+#define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "_VT_%s" : "_vt_%s")
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))
@@ -1784,6 +1791,7 @@ extern tree convert_force			PROTO((tree, tree));
 extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
 extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
 extern int build_default_unary_type_conversion	PROTO((enum tree_code, tree *));
+extern tree type_promotes_to			PROTO((tree));
 
 /* decl.c */
 extern int global_bindings_p			PROTO((void));
@@ -2271,6 +2279,18 @@ extern void GNU_xref_function			PROTO((tree, tree));
 extern void GNU_xref_assign			PROTO((tree));
 extern void GNU_xref_hier			PROTO((char *, char *, int, int, int));
 extern void GNU_xref_member			PROTO((tree, tree));
+
+#define in_try_block(X) (0)
+#define in_exception_handler(X) (0)
+#define expand_raise(X) (0)
+#define expand_start_try(A,B,C) ((void)0)
+#define expand_end_try() ((void)0)
+#define expand_start_except(A,B) ((void)0)
+#define expand_escape_except() (0)
+#define expand_end_except() (NULL_TREE)
+#define expand_catch(X) (0)
+#define expand_catch_default() (0)
+#define expand_end_catch() (0)
 
 /* -- end of C++ */
 
