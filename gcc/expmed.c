@@ -963,6 +963,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   register rtx op0 = str_rtx;
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
+  enum machine_mode int_mode;
 #ifdef HAVE_extv
   int extv_bitsize;
   enum machine_mode extv_mode;
@@ -1168,10 +1169,19 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 			   NULL_RTX, 0);
     }
   
-  /* From here on we know the desired field is smaller than a word
-     so we can assume it is an integer.  So we can safely extract it as one
-     size of integer, if necessary, and then truncate or extend
-     to the size that is wanted.  */
+  /* From here on we know the desired field is smaller than a word.  */
+
+  /* Check if there is a correspondingly-sized integer field, so we can
+     safely extract it as one size of integer, if necessary; then
+     truncate or extend to the size that is wanted; then use SUBREGs or
+     convert_to_mode to get one of the modes we really wanted.  */
+  
+  int_mode = int_mode_for_mode (tmode);
+  if (int_mode == BLKmode)
+    int_mode = int_mode_for_mode (mode);
+  if (int_mode == BLKmode)
+    abort();    /* Should probably push op0 out to memory and then
+		   do a load.  */
 
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
@@ -1326,15 +1336,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  else
 	    {
 	      delete_insns_since (last);
-	      target = extract_fixed_bit_field (tmode, op0, offset, bitsize,
+	      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
 						bitpos, target, 1, align);
 	    }
 	}
       else
         extzv_loses:
 #endif
-	target = extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
-					  target, 1, align);
+      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize, 
+					bitpos, target, 1, align);
     }
   else
     {
@@ -1462,15 +1472,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  else
 	    {
 	      delete_insns_since (last);
-	      target = extract_fixed_bit_field (tmode, op0, offset, bitsize,
+	      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
 						bitpos, target, 0, align);
 	    }
 	} 
       else
 	extv_loses:
 #endif
-	target = extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
-					  target, 0, align);
+      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize, 
+					bitpos, target, 0, align);
     }
   if (target == spec_target)
     return target;
