@@ -419,9 +419,10 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       d = EXEC_BINARY (LSHIFT_EXPR, niter_type,
 		       build_int_cst_type (niter_type, 1), bits);
       s = EXEC_BINARY (RSHIFT_EXPR, niter_type, step0, bits);
-      bound = EXEC_BINARY (RSHIFT_EXPR, niter_type,
-			   build_int_cst (niter_type, -1),
-			   bits);
+
+      bound = build_low_bits_mask (niter_type,
+				   (TYPE_PRECISION (niter_type)
+				    - tree_low_cst (bits, 1)));
 
       assumption = fold (build2 (FLOOR_MOD_EXPR, niter_type, base1, d));
       assumption = fold (build2 (EQ_EXPR, boolean_type_node,

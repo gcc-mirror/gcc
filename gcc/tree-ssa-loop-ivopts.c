@@ -3603,20 +3603,32 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
   bitmap act_inv = BITMAP_XMALLOC ();
   unsigned i;
   struct cost_pair *cp;
+  bitmap_iterator bi;
+  struct iv_cand *cand;
+  bitmap depends_on;
 
   bitmap_copy (best_ivs, ivs);
   bitmap_copy (best_inv, inv);
 
-  for (i = 0; i < use->n_map_members; i++)
+  /* First try important candidates.  Only if it fails, try the specific ones.
+     Rationale -- in loops with many variables the best choice often is to use
+     just one generic biv.  If we added here many ivs specific to the uses,
+     the optimization algorithm later would be likely to get stuck in a local
+     minimum, thus causing us to create too many ivs.  The approach from
+     few ivs to more seems more likely to be succesful -- starting from few
+     ivs, replacing an expensive use by a specific iv should always be a
+     win.  */
+  EXECUTE_IF_SET_IN_BITMAP (data->important_candidates, 0, i, bi)
     {
-      cp = use->cost_map + i;
-      if (cp->cost == INFTY)
+      cand = iv_cand (data, i);
+
+      if (get_use_iv_cost (data, use, cand, &depends_on) == INFTY)
 	continue;
 
       bitmap_copy (act_ivs, ivs);
-      bitmap_set_bit (act_ivs, cp->cand->id);
-      if (cp->depends_on)
-	bitmap_a_or_b (act_inv, inv, cp->depends_on);
+      bitmap_set_bit (act_ivs, cand->id);
+      if (depends_on)
+	bitmap_a_or_b (act_inv, inv, depends_on);
       else
 	bitmap_copy (act_inv, inv);
       act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);
@@ -3626,6 +3638,35 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
 	  best_cost = act_cost;
 	  bitmap_copy (best_ivs, act_ivs);
 	  bitmap_copy (best_inv, act_inv);
+	}
+    }
+
+  if (best_cost == INFTY)
+    {
+      for (i = 0; i < use->n_map_members; i++)
+	{
+	  cp = use->cost_map + i;
+	  if (cp->cost == INFTY)
+	    continue;
+
+	  /* Already tried this.  */
+	  if (cp->cand->important)
+	    continue;
+
+	  bitmap_copy (act_ivs, ivs);
+	  bitmap_set_bit (act_ivs, cp->cand->id);
+	  if (cp->depends_on)
+	    bitmap_a_or_b (act_inv, inv, cp->depends_on);
+	  else
+	    bitmap_copy (act_inv, inv);
+	  act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);
+
+	  if (act_cost < best_cost)
+	    {
+	      best_cost = act_cost;
+	      bitmap_copy (best_ivs, act_ivs);
+	      bitmap_copy (best_inv, act_inv);
+	    }
 	}
     }
 

@@ -1,3 +1,14 @@
+2004-10-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18048
+	* fold-const.c (try_move_mult_to_index): New function.
+	(fold): Use try_move_mult_to_index.
+	* tree-ssa-loop-ivopts.c (try_add_cand_for): Prefer common candidates.
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Produce
+	an all-ones unsigned constant without extra bits.
+	* tree.c (build_low_bits_mask): New function.
+	* tree.h (build_low_bits_mask): Declare.
+
 2004-10-27  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/17956
