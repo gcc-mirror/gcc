@@ -1,3 +1,7 @@
+2004-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20041126-1.c: New test.
+
 2004-11-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/mips-args-1.c: Don't expect _R3000 or _R4000 to be defined
