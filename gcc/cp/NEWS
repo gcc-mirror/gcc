@@ -32,6 +32,10 @@
   ABI is subject to change without notice, so don't use it for anything
   that you don't want to rebuild with every release of the compiler.
 
+  As with all ABI-changing flags, this flag is for experts only, as all
+  code (including the library code in libgcc and libstdc++) must be
+  compiled with the same ABI.
+
 *** Changes in EGCS 1.0:
 
 * A public review copy of the December 1996 Draft of the ISO/ANSI C++
