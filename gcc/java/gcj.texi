@@ -107,8 +107,8 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @node Top
 @top Introduction
 
-This manual describes how to use @code{gcj}, the GNU compiler for the
-Java programming language.  @code{gcj} can generate both @file{.class}
+This manual describes how to use @command{gcj}, the GNU compiler for the
+Java programming language.  @command{gcj} can generate both @file{.class}
 files and object files, and it can read both Java source code and
 @file{.class} files.
 
@@ -116,7 +116,7 @@ files and object files, and it can read both Java source code and
 * Copying::		The GNU General Public License
 * GNU Free Documentation License::
 			How you can share and copy this manual
-* Invoking gcj::	Compiler options supported by @code{gcj}
+* Invoking gcj::	Compiler options supported by @command{gcj}
 * Compatibility::	Compatibility between gcj and other tools for Java
 * Invoking gcjh::       Generate header files from class files
 * Invoking jv-scan::    Print information about source files
@@ -156,10 +156,10 @@ and the Info entries for @file{gcj} and @file{gcc}.
 
 @c man begin DESCRIPTION gcj
 
-As @code{gcj} is just another front end to @code{gcc}, it supports many
+As @command{gcj} is just another front end to @command{gcc}, it supports many
 of the same options as gcc.  @xref{Option Summary, , Option Summary,
 gcc, Using the GNU Compiler Collection (GCC)}.  This manual only documents the
-options specific to @code{gcj}.
+options specific to @command{gcj}.
 
 @c man end
 
@@ -177,7 +177,7 @@ options specific to @code{gcj}.
 @node Input and output files
 @section Input and output files
 
-A @code{gcj} command is like a @code{gcc} command, in that it
+A @command{gcj} command is like a @command{gcc} command, in that it
 consists of a number of options and file names.  The following kinds
 of input file names are supported:
 
@@ -198,17 +198,17 @@ Each named file is compiled, just as if it had been on the command line.
 @item @var{library}.a
 @itemx @var{library}.so
 @itemx -l@var{libname}
-Libraries to use when linking.  See the @code{gcc} manual.
+Libraries to use when linking.  See the @command{gcc} manual.
 @end table
 
-You can specify more than one input file on the @code{gcj} command line,
+You can specify more than one input file on the @command{gcj} command line,
 in which case they will all be compiled.  If you specify a
 @code{-o @var{FILENAME}}
 option, all the input files will be compiled together, producing a
 single output file, named @var{FILENAME}.
 This is allowed even when using @code{-S} or @code{-c},
 but not when using @code{-C} or @code{-R}.
-(This is an extension beyond the what plain @code{gcc} allows.)
+(This is an extension beyond the what plain @command{gcc} allows.)
 (If more than one input file is specified, all must currently
 be @code{.java} files, though we hope to fix this.)
 
@@ -217,20 +217,20 @@ be @code{.java} files, though we hope to fix this.)
 
 @cindex class path
 
-@code{gcj} has options to control where it looks to find files it needs.
-For instance, @code{gcj} might need to load a class that is referenced
+@command{gcj} has options to control where it looks to find files it needs.
+For instance, @command{gcj} might need to load a class that is referenced
 by the file it has been asked to compile.  Like other compilers for the
-Java language, @code{gcj} has a notion of a @dfn{class path}.  There are
+Java language, @command{gcj} has a notion of a @dfn{class path}.  There are
 several options and environment variables which can be used to
-manipulate the class path.  When @code{gcj} looks for a given class, it
+manipulate the class path.  When @command{gcj} looks for a given class, it
 searches the class path looking for matching @file{.class} or
-@file{.java} file.  @code{gcj} comes with a built-in class path which
+@file{.java} file.  @command{gcj} comes with a built-in class path which
 points at the installed @file{libgcj.jar}, a file which contains all the
 standard classes.
 
 In the below, a directory or path component can refer either to an
 actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
-file, which @code{gcj} will search as if it is a directory.
+file, which @command{gcj} will search as if it is a directory.
 
 @table @gcctabopt
 @item -I@var{dir}
@@ -272,7 +272,7 @@ Finally, if @code{--bootclasspath} was specified, append its value.
 Otherwise, append the built-in system directory, @file{libgcj.jar}.
 @end itemize
 
-The classfile built by @code{gcj} for the class @code{java.lang.Object}
+The classfile built by @command{gcj} for the class @code{java.lang.Object}
 (and placed in @code{libgcj.jar}) contains a special zero length
 attribute @code{gnu.gcj.gcj-compiled}. The compiler looks for this
 attribute when loading @code{java.lang.Object} and will report an error
@@ -291,24 +291,24 @@ issue an error if it isn't found.
 @section Encodings
 
 The Java programming language uses Unicode throughout.  In an effort to
-integrate well with other locales, @code{gcj} allows @file{.java} files
-to be written using almost any encoding.  @code{gcj} knows how to
+integrate well with other locales, @command{gcj} allows @file{.java} files
+to be written using almost any encoding.  @command{gcj} knows how to
 convert these encodings into its internal encoding at compile time.
 
 You can use the @code{--encoding=@var{NAME}} option to specify an
 encoding (of a particular character set) to use for source files.  If
 this is not specified, the default encoding comes from your current
 locale.  If your host system has insufficient locale support, then
-@code{gcj} assumes the default encoding to be the @samp{UTF-8} encoding
+@command{gcj} assumes the default encoding to be the @samp{UTF-8} encoding
 of Unicode.
 
-To implement @code{--encoding}, @code{gcj} simply uses the host
+To implement @code{--encoding}, @command{gcj} simply uses the host
 platform's @code{iconv} conversion routine.  This means that in practice
-@code{gcj} is limited by the capabilities of the host platform.
+@command{gcj} is limited by the capabilities of the host platform.
 
 The names allowed for the argument @code{--encoding} vary from platform
 to platform (since they are not standardized anywhere).  However,
-@code{gcj} implements the encoding named @samp{UTF-8} internally, so if
+@command{gcj} implements the encoding named @samp{UTF-8} internally, so if
 you choose to use this for your source files you can be assured that it
 will work on every host.
 
@@ -316,28 +316,28 @@ will work on every host.
 @node Warnings
 @section Warnings
 
-@code{gcj} implements several warnings.  As with other generic
-@code{gcc} warnings, if an option of the form @code{-Wfoo} enables a
+@command{gcj} implements several warnings.  As with other generic
+@command{gcc} warnings, if an option of the form @code{-Wfoo} enables a
 warning, then @code{-Wno-foo} will disable it.  Here we've chosen to
 document the form of the warning which will have an effect -- the
 default being the opposite of what is listed.
 
 @table @gcctabopt
 @item -Wredundant-modifiers
-With this flag, @code{gcj} will warn about redundant modifiers.  For
+With this flag, @command{gcj} will warn about redundant modifiers.  For
 instance, it will warn if an interface method is declared @code{public}.
 
 @item -Wextraneous-semicolon
-This causes @code{gcj} to warn about empty statements.  Empty statements
+This causes @command{gcj} to warn about empty statements.  Empty statements
 have been deprecated.
 
 @item -Wno-out-of-date
-This option will cause @code{gcj} not to warn when a source file is
-newer than its matching class file.  By default @code{gcj} will warn
+This option will cause @command{gcj} not to warn when a source file is
+newer than its matching class file.  By default @command{gcj} will warn
 about this.
 
 @item -Wunused
-This is the same as @code{gcc}'s @code{-Wunused}.
+This is the same as @command{gcc}'s @code{-Wunused}.
 
 @item -Wall
 This is the same as @code{-Wredundant-modifiers -Wextraneous-semicolon
@@ -348,8 +348,8 @@ This is the same as @code{-Wredundant-modifiers -Wextraneous-semicolon
 @node Code Generation
 @section Code Generation
 
-In addition to the many @code{gcc} options controlling code generation,
-@code{gcj} has several options specific to itself.
+In addition to the many @command{gcc} options controlling code generation,
+@command{gcj} has several options specific to itself.
 
 @table @gcctabopt
 @item --main=@var{CLASSNAME}
@@ -369,11 +369,11 @@ are initialized at the program's startup and can be retrieved at runtime
 using the @code{java.lang.System.getProperty} method.
 
 @item -C
-This option is used to tell @code{gcj} to generate bytecode
+This option is used to tell @command{gcj} to generate bytecode
 (@file{.class} files) rather than object code.
 
 @item -R @var{resource-name}
-This option is used to tell @code{gcj} to compile the contents of a
+This option is used to tell @command{gcj} to compile the contents of a
 given file to object code so it may be accessed at runtime with the core
 protocol handler as @var{core:/resource-name}.
 
@@ -384,7 +384,7 @@ default they will be put in subdirectories of the current working
 directory.
 
 @item -fno-bounds-check
-By default, @code{gcj} generates code which checks the bounds of all
+By default, @command{gcj} generates code which checks the bounds of all
 array indexing operations.  With this option, these checks are omitted, which
 can improve performance for code that uses arrays extensively.  Note that this 
 can result in unpredictable behavior if the code in question actually does 
@@ -401,16 +401,16 @@ It is safe to use this option if you are sure your code will never throw an
 @code{ArrayStoreException}.
 
 @item -fjni
-With @code{gcj} there are two options for writing native methods: CNI
-and JNI@.  By default @code{gcj} assumes you are using CNI@.  If you are
+With @command{gcj} there are two options for writing native methods: CNI
+and JNI@.  By default @command{gcj} assumes you are using CNI@.  If you are
 compiling a class with native methods, and these methods are implemented
 using JNI, then you must use @code{-fjni}.  This option causes
-@code{gcj} to generate stubs which will invoke the underlying JNI
+@command{gcj} to generate stubs which will invoke the underlying JNI
 methods.
 
 @item -fno-optimize-static-class-initialization
 When the optimization level is greather or equal to @code{-O2},
-@code{gcj} will try to optimize the way calls into the runtime are made
+@command{gcj} will try to optimize the way calls into the runtime are made
 to initialize static classes upon their first use (this optimization
 isn't carried out if @code{-C} was specified.) When compiling to native
 code, @code{-fno-optimize-static-class-initialization} will turn this
@@ -421,23 +421,23 @@ optimization off, regardless of the optimization level in use.
 @node Configure-time Options
 @section Configure-time Options
 
-Some @code{gcj} code generations options affect the resulting ABI, and
+Some @command{gcj} code generations options affect the resulting ABI, and
 so can only be meaningfully given when @code{libgcj}, the runtime
 package, is configured.  @code{libgcj} puts the appropriate options from
-this group into a @samp{spec} file which is read by @code{gcj}.  These
+this group into a @samp{spec} file which is read by @command{gcj}.  These
 options are listed here for completeness; if you are using @code{libgcj}
 then you won't want to touch these options.
 
 @table @gcctabopt
 @item -fuse-boehm-gc
 This enables the use of the Boehm GC bitmap marking code.  In particular
-this causes @code{gcj} to put an object marking descriptor into each
+this causes @command{gcj} to put an object marking descriptor into each
 vtable.
 
 @item -fhash-synchronization
 By default, synchronization data (the data used for @code{synchronize},
 @code{wait}, and @code{notify}) is pointed to by a word in each object.
-With this option @code{gcj} assumes that this information is stored in a
+With this option @command{gcj} assumes that this information is stored in a
 hash table and not in the object itself.
 
 @item -fuse-divide-subroutine
@@ -458,16 +458,16 @@ processor.
 @chapter Compatibility with the Java Platform
 
 As we believe it is important that the Java platform not be fragmented,
-@code{gcj} and @code{libgcj} try to conform to the relevant Java
+@command{gcj} and @code{libgcj} try to conform to the relevant Java
 specifications.  However, limited manpower and incomplete and unclear
 documentation work against us.  So, there are caveats to using
-@code{gcj}.
+@command{gcj}.
 
 This list of compatibility issues is by no means complete.
 
 @itemize @bullet
 @item
-@code{gcj} implements the JDK 1.1 language.  It supports inner classes,
+@command{gcj} implements the JDK 1.1 language.  It supports inner classes,
 though these are known to still be buggy.  It does not yet support the
 Java 2 @code{strictfp} keyword (it recognizes the keyword but ignores
 it).
@@ -552,7 +552,7 @@ This is ignored in JNI mode.
 @itemx -I@var{directory}
 @itemx -d @var{directory}
 @itemx -o @var{file}
-These options are all identical to the corresponding @code{gcj} options.
+These options are all identical to the corresponding @command{gcj} options.
 
 @item -o @var{file}
 Sets the output file name.  This cannot be used if there is more than
@@ -621,7 +621,7 @@ This prints a complexity measure, related to cyclomatic complexity, for
 each input file.
 
 @item --encoding=@var{name}
-This works like the corresponding @code{gcj} option.
+This works like the corresponding @command{gcj} option.
 
 @item --print-main
 This prints the name of the class in this file containing a @code{main}
@@ -687,7 +687,7 @@ feature is very incomplete.
 @itemx --CLASSPATH=@var{path}
 @itemx -I@var{directory}
 @itemx -o @var{file}
-These options as the same as the corresponding @code{gcj} options.
+These options as the same as the corresponding @command{gcj} options.
 
 @item --help
 Print help, then exit.
@@ -726,7 +726,7 @@ and the Info entries for @file{gcj} and @file{gcc}.
 @code{gij} is a Java bytecode interpreter included with @code{libgcj}.
 @code{gij} is not available on every platform; porting it requires a
 small amount of assembly programming which has not been done for all the
-targets supported by @code{gcj}.
+targets supported by @command{gcj}.
 
 The primary argument to @code{gij} is the name of a class or, with
 @code{-jar}, a jar file.  Options before this argument are interpreted
@@ -883,7 +883,7 @@ Classes are organized in a package hierarchy.
 All of the listed attributes are also true of C++, though C++ has
 extra features (for example in C++ objects may be allocated not just
 on the heap, but also statically or in a local stack frame).  Because
-@code{gcj} uses the same compiler technology as G++ (the GNU
+@command{gcj} uses the same compiler technology as G++ (the GNU
 C++ compiler), it is possible to make the intersection of the two
 languages use the same ABI (object representation and calling
 conventions).  The key idea in CNI is that Java objects are C++
@@ -1530,9 +1530,10 @@ jint
 @end example
 
 But this restriction can cause a problem so @acronym{CNI} includes the
-@code{GcjRaw} class.  The @code{GcjRaw} class is a @dfn{non-scanned reference} 
-type.  In other words variables declared of type @code{GcjRaw} can
-contain any data and are not checked by the compiler in any way.
+@code{gnu.gcj.RawData} class.  The @code{RawData} class is a
+@dfn{non-scanned reference} type.  In other words variables declared
+of type @code{RawData} can contain any data and are not checked by the
+compiler in any way.
 
 This means that you can put C/C++ data structures (including classes)
 in your @acronym{CNI} classes, as long as you use the appropriate cast.
@@ -1546,7 +1547,7 @@ class ::MyClass : public java::lang::Object
    GcjRaw string;
 
    MyClass ();
-   GcjRaw getText ();
+   gnu.gcj.RawData getText ();
    void printText ();
 @}
 
@@ -1556,7 +1557,7 @@ class ::MyClass : public java::lang::Object
    string = text;
 @}
 
-GcjRaw
+gnu.gcj.RawData
 ::MyClass::getText ()
 @{
    return string;
@@ -1674,7 +1675,7 @@ This is equivalent to wrapping the entire method body in a
 (Alternatively, an implementation could require the caller to do
 the synchronization.  This is not practical for a compiler, because
 each virtual method call would have to test at run-time if
-synchronization is needed.)  Since in @code{gcj}
+synchronization is needed.)  Since in @command{gcj}
 the @code{synchronized} attribute is handled by the
 method implementation, it is up to the programmer
 of a synchronized native method to handle the synchronization
@@ -1709,14 +1710,14 @@ are as in JNI@.
 @node Resources
 @chapter Resources
 
-While writing @code{gcj} and @code{libgcj} we have, of course, relied
+While writing @command{gcj} and @code{libgcj} we have, of course, relied
 heavily on documentation from Sun Microsystems.  In particular we have
 used The Java Language Specification (both first and second editions),
 the Java Class Libraries (volumes one and two), and the Java Virtual
 Machine Specification.  In addition we've used the online documentation
 at @uref{http://java.sun.com/}.
 
-The current @code{gcj} home page is
+The current @command{gcj} home page is
 @uref{http://gcc.gnu.org/java/}.
 
 For more information on gcc, see @uref{http://gcc.gnu.org/}.
