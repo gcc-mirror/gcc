@@ -9259,9 +9259,9 @@ build_ptrmem_type (tree class_type, tree member_type)
 		    (class_type,
 		     cp_type_quals (TREE_TYPE (TREE_VALUE (arg_types)))));
       member_type 
-	= build_cplus_method_type (class_type, 
-				   TREE_TYPE (member_type),
-				   TREE_CHAIN (arg_types));
+	= build_method_type_directly (class_type, 
+				      TREE_TYPE (member_type),
+				      TREE_CHAIN (arg_types));
       return build_ptrmemfunc_type (build_pointer_type (member_type));
     }
   else
@@ -10933,7 +10933,9 @@ grokdeclarator (tree declarator,
 		else if (TREE_CODE (type) == FUNCTION_TYPE)
 		  {
 		    if (current_class_type == NULL_TREE || friendp)
-		      type = build_cplus_method_type (ctype, TREE_TYPE (type),
+		      type 
+			= build_method_type_directly (ctype, 
+						      TREE_TYPE (type),
 						      TYPE_ARG_TYPES (type));
 		    else
 		      {
@@ -10975,8 +10977,9 @@ grokdeclarator (tree declarator,
 		  /* In this case, we will deal with it later.  */
 		  ;
 		else if (TREE_CODE (type) == FUNCTION_TYPE)
-		  type = build_cplus_method_type (ctype, TREE_TYPE (type),
-						  TYPE_ARG_TYPES (type));
+		  type = build_method_type_directly (ctype, 
+						     TREE_TYPE (type),
+						     TYPE_ARG_TYPES (type));
 	      }
 	  }
 	  break;
@@ -11412,8 +11415,9 @@ grokdeclarator (tree declarator,
 		      }
 		  }
 		else if (staticp < 2)
-		  type = build_cplus_method_type (ctype, TREE_TYPE (type),
-						  TYPE_ARG_TYPES (type));
+		  type = build_method_type_directly (ctype, 
+						     TREE_TYPE (type),
+						     TYPE_ARG_TYPES (type));
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
@@ -11649,8 +11653,9 @@ grokdeclarator (tree declarator,
 	      }
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2)
-	  type = build_cplus_method_type (ctype, TREE_TYPE (type),
-					  TYPE_ARG_TYPES (type));
+	  type = build_method_type_directly (ctype, 
+					     TREE_TYPE (type),
+					     TYPE_ARG_TYPES (type));
 
 	/* Record presence of `static'.  */
 	publicp = (ctype != NULL_TREE
@@ -13317,9 +13322,9 @@ check_function_type (tree decl, tree current_function_parms)
 	{
 	  tree ctype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype)));
 	  TREE_TYPE (decl)
-	    = build_cplus_method_type (ctype,
-				       void_type_node,
-				       FUNCTION_ARG_CHAIN (decl));
+	    = build_method_type_directly (ctype,
+					  void_type_node,
+					  FUNCTION_ARG_CHAIN (decl));
 	}
       else
 	TREE_TYPE (decl)

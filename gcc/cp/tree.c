@@ -373,43 +373,6 @@ get_target_expr (tree init)
 }
 
 
-/* Construct, lay out and return the type of methods belonging to class
-   BASETYPE and whose arguments are described by ARGTYPES and whose values
-   are described by RETTYPE.  If each type exists already, reuse it.  */
-
-tree
-build_cplus_method_type (tree basetype, tree rettype, tree argtypes)
-{
-  register tree t;
-  tree ptype;
-  int hashcode;
-
-  /* Make a node of the sort we want.  */
-  t = make_node (METHOD_TYPE);
-
-  TYPE_METHOD_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
-  TREE_TYPE (t) = rettype;
-  ptype = build_pointer_type (basetype);
-
-  /* The actual arglist for this function includes a "hidden" argument
-     which is "this".  Put it into the list of argument types.  */
-  argtypes = tree_cons (NULL_TREE, ptype, argtypes);
-  TYPE_ARG_TYPES (t) = argtypes;
-  TREE_SIDE_EFFECTS (argtypes) = 1;  /* Mark first argtype as "artificial".  */
-
-  /* If we already have such a type, use the old one and free this one.
-     Note that it also frees up the above cons cell if found.  */
-  hashcode = TYPE_HASH (basetype) + TYPE_HASH (rettype) +
-    type_hash_list (argtypes);
-
-  t = type_hash_canon (hashcode, t);
-
-  if (!COMPLETE_TYPE_P (t))
-    layout_type (t);
-
-  return t;
-}
-
 static tree
 build_cplus_array_type_1 (tree elt_type, tree index_type)
 {

@@ -1,3 +1,22 @@
+2003-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8795
+	* cp-tree.h (build_cplus_method_type): Remove.
+	* call.c (standard_conversion): Use build_method_type_directly
+	instead of build_cplus_method_type.
+	* class.c (build_clone): Likewise.
+	(adjust_clone_args): Likewise.
+	* decl.c (build_ptrmem_type): Likewise.
+	(grokdeclarator): Likewise.
+	(check_function_type): Likewise.
+	* decl2.c (grok_method_quals): Likewise.
+	(maybe_retrofit_in_chrg): Likewise.
+	* pt.c (copy_default_args_to_explicit_spec): Likewise.
+	(tsubst_function_type): Likewise.
+	(tsubst): Likewise.
+	* tree.c (build_cplus_method_type): Remove.
+	* typeck.c (merge_types): Use build_method_type_directly.
+
 2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/3765

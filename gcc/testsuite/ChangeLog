@@ -1,3 +1,8 @@
+2003-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8795
+	* g++.dg/ext/altivec-1.C: New test.
+
 2003-08-24  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/eh/simd-2.C: Add -w for x86.
