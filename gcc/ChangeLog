@@ -1,3 +1,16 @@
+Sun Sep 17 18:48:32 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md ("mcu_enhanced"): New attribute.
+	("mcu_mega"): Likewise.
+	("extendhisi2"): Use "mcu_enhanced".
+	("zero_extendhisi2"): Likewise.
+	("call_insn"): Use "mcu_enhanced" and "mcu_mega".
+	("call_value_insn"): Likewise.
+	("*sbrx_branch"): Use "mcu_mega".
+	("*sbrx_and_branchsi"): Likewise.
+	("*sbrx_and_branchhi"): Likewise.
+	("*tablejump_lib"): Likewise.
+
 Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (grokdeclarator): Reorder tests to avoid looking at
