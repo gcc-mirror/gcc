@@ -180,7 +180,11 @@ enum dwarf_location_atom {
     OP_CONST	= 0x04,
     OP_DEREF2	= 0x05,
     OP_DEREF4	= 0x06,
-    OP_ADD	= 0x07
+    OP_ADD	= 0x07,
+
+    /* GNU extensions.  */
+
+    OP_MULT	= 0x80
 };
 
 #define OP_LO_USER	0x80  /* implementation-defined range start */
