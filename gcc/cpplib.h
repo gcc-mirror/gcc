@@ -410,6 +410,10 @@ struct cpp_options {
 
   char no_output;
 
+  /* Nonzero means we should look for header.gcc files that remap file
+     names.  */
+  char remap;
+
   /* Nonzero means don't output line number information.  */
 
   char no_line_commands;
