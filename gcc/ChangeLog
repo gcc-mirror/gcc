@@ -1,3 +1,9 @@
+2004-10-13  Richard Henderson  <rth@redhat.com>
+
+	PR debug/15860
+	* dwarf2out.c (rtl_for_decl_location): Apply big-endian correction
+	for DECL_INCOMING_RTL.
+
 2004-10-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/17984
