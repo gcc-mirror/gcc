@@ -1,3 +1,10 @@
+2000-02-14  Geoff Keating  <geoffk@cygnus.com>
+
+	* collect2.c (main) [COLLECT_EXPORT_LIST]: If we have frames,
+	then we will need to import the frame handling functions.
+	(scan_prog_file) [COLLECT_EXPORT_LIST]: We will also need
+	to import the frames themselves.
+
 Mon Feb 14 13:31:01 2000  Stan Cox  <scox@cygnus.com>
                           Jason Eckhardt  <jle@cygnus.com>
 
