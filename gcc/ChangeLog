@@ -1,5 +1,9 @@
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
+	* sched-rgn.c (is_cfg_nonregular): Fix thinko's last change.
+
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (DRIVER_DEFINES): Define ENABLE_SHARED_LIBGCC and
 	NO_SHARED_LIBGCC_MULTILIB as required for the target.
 	* gcc.c (init_spec): Massage the existing libgcc_spec into a
