@@ -4634,6 +4634,7 @@ expand_expr (exp, target, tmode, modifier)
       this_optab = ior_optab;
       goto binop;
 
+    case TRUTH_XOR_EXPR:
     case BIT_XOR_EXPR:
       this_optab = xor_optab;
       goto binop;
