@@ -240,8 +240,6 @@ extern enum graph_dump_types graph_dump_format;
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
 
-extern int flag_web;
-
 /* Nonzero means that we defer emitting functions until they are actually
    used.  */
 extern int flag_remove_unreachable_functions;

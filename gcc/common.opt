@@ -407,11 +407,11 @@ Common Report Var(flag_gcse_lm) Init(1)
 Perform enhanced load motion during global common subexpression elimination
 
 fgcse-sm
-Common Report Var(flag_gcse_sm) Init(1)
+Common Report Var(flag_gcse_sm) Init(0)
 Perform store motion after global common subexpression elimination
 
 fgcse-las
-Common Report Var(flag_gcse_las) Init(1)
+Common Report Var(flag_gcse_las) Init(0)
 Perform redundant load after store elimination in global common subexpression
 elimination
 
@@ -936,7 +936,7 @@ Common Report Var(flag_value_profile_transformations)
 Use expression value profiles in optimizations
 
 fweb
-Common Report Var(flag_web) VarExists
+Common Report Var(flag_web) Init(0)
 Construct webs and split unrelated uses of single variable
 
 fwrapv
