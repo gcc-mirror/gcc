@@ -1,5 +1,13 @@
 2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("*addsi3"): Use 'o' constraint to
+	avoid the auto increment addressing modes.
+	("*subsi3"): Likewise.
+	(split for add/sub on address): For 68HC12 push the value on 
+	the stack and do the operation with a pop.
+
+2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.h (OPTIMIZATION_OPTIONS): Define.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_optimization_options):
 	Declare.
