@@ -236,7 +236,7 @@ New features for Motorola 68k family:
 
 New features for the HP PA RISC:
 
-    -mspace and m-no-space
+    -mspace and -mno-space
     -mlong-load-store and -mno-long-load-store
     -mbig-switch -mno-big-switch
 
@@ -269,7 +269,7 @@ New features for rs6000 and PowerPC systems:
     The Linux-based GNU system running on PowerPC's.
     -mcpu=604e,602,603e,620,801,823,mpc505,821,860,power2
     -mtune=xxx
-    -mrelocatable-lib, m-no-relocatable-lib
+    -mrelocatable-lib, -mno-relocatable-lib
     -msim, -mmve, -memb
     -mupdate, -mno-update
     -mfused-madd, -mno-fused-madd
