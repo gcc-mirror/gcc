@@ -1,3 +1,7 @@
+2001-12-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/other/init2.C: New test.
+
 2001-12-24  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20011223-1.c: New.

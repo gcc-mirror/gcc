@@ -5494,13 +5494,7 @@ build_modify_expr (lhs, modifycode, rhs)
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
 
-  /* Types that aren't fully specified cannot be used in assignments.  */
-  lhs = require_complete_type (lhs);
-
-  newrhs = rhs;
-
   /* Handle control structure constructs used as "lvalues".  */
-
   switch (TREE_CODE (lhs))
     {
       /* Handle --foo = 5; as these are valid constructs in C++ */
@@ -5532,13 +5526,14 @@ build_modify_expr (lhs, modifycode, rhs)
 
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
-      rhs = save_expr (rhs);
       {
 	/* Produce (a ? (b = rhs) : (c = rhs))
 	   except that the RHS goes through a save-expr
 	   so the code to compute it is only emitted once.  */
 	tree cond;
 
+	rhs = save_expr (rhs);
+	
 	/* Check this here to avoid odd errors when trying to convert
 	   a throw to the type of the COND_EXPR.  */
 	if (!lvalue_or_else (lhs, "assignment"))
@@ -5558,54 +5553,27 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
 	return build (COMPOUND_EXPR, TREE_TYPE (lhs),
-		      /* Case to void to suppress warning
+		      /* Cast to void to suppress warning
 			 from warn_if_unused_value.  */
 		      cp_convert (void_type_node, rhs), cond);
       }
-
+      
+    case OFFSET_REF:
+      lhs = resolve_offset_ref (lhs);
+      if (lhs == error_mark_node)
+	return error_mark_node;
+      olhstype = lhstype = TREE_TYPE (lhs);
+    
     default:
       break;
     }
-
-  if (TREE_CODE (lhs) == OFFSET_REF)
-    {
-      if (TREE_OPERAND (lhs, 0) == NULL_TREE)
-	{
-	  /* Static class member?  */
-	  tree member = TREE_OPERAND (lhs, 1);
-	  if (TREE_CODE (member) == VAR_DECL)
-	    lhs = member;
-	  else
-	    {
-	      compiler_error ("invalid static class member");
-	      return error_mark_node;
-	    }
-	}
-      else
-	lhs = resolve_offset_ref (lhs);
-
-      olhstype = lhstype = TREE_TYPE (lhs);
-    }
-
-  if (lhs == error_mark_node)
-    return lhs;
-
-  if (TREE_CODE (lhstype) == REFERENCE_TYPE
-      && modifycode != INIT_EXPR)
-    {
-      lhs = convert_from_reference (lhs);
-      olhstype = lhstype = TREE_TYPE (lhs);
-    }
-
-  /* If a binary op has been requested, combine the old LHS value with the RHS
-     producing the value we should actually store into the LHS.  */
 
   if (modifycode == INIT_EXPR)
     {
       if (TREE_CODE (rhs) == CONSTRUCTOR)
 	{
-	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
-	    abort ();
+	  my_friendly_assert (same_type_p (TREE_TYPE (rhs), lhstype),
+			      20011220);
 	  result = build (INIT_EXPR, lhstype, lhs, rhs);
 	  TREE_SIDE_EFFECTS (result) = 1;
 	  return result;
@@ -5622,35 +5590,55 @@ build_modify_expr (lhs, modifycode, rhs)
 	  return result;
 	}
     }
-  else if (modifycode == NOP_EXPR)
-    {
-      /* `operator=' is not an inheritable operator.  */
-      if (! IS_AGGR_TYPE (lhstype))
-	/* Do the default thing */;
-      else
-	{
-	  result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
-				   lhs, rhs, make_node (NOP_EXPR));
-	  if (result == NULL_TREE)
-	    return error_mark_node;
-	  return result;
-	}
-      lhstype = olhstype;
-    }
-  else if (PROMOTES_TO_AGGR_TYPE (lhstype, REFERENCE_TYPE))
-    {
-      my_friendly_abort (978652);
-    }
   else
     {
-      lhs = stabilize_reference (lhs);
-      newrhs = cp_build_binary_op (modifycode, lhs, rhs);
-      if (newrhs == error_mark_node)
+      if (TREE_CODE (lhstype) == REFERENCE_TYPE)
 	{
-	  error ("  in evaluation of `%Q(%#T, %#T)'", modifycode,
-		    TREE_TYPE (lhs), TREE_TYPE (rhs));
-	  return error_mark_node;
+	  lhs = convert_from_reference (lhs);
+	  olhstype = lhstype = TREE_TYPE (lhs);
 	}
+      lhs = require_complete_type (lhs);
+      if (lhs == error_mark_node)
+	return error_mark_node;
+
+      if (modifycode == NOP_EXPR)
+	{
+	  /* `operator=' is not an inheritable operator.  */
+	  if (! IS_AGGR_TYPE (lhstype))
+	    /* Do the default thing */;
+	  else
+	    {
+	      result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
+				       lhs, rhs, make_node (NOP_EXPR));
+	      if (result == NULL_TREE)
+		return error_mark_node;
+	      return result;
+	    }
+	  lhstype = olhstype;
+	}
+      else
+	{
+	  /* A binary op has been requested.  Combine the old LHS
+     	     value with the RHS producing the value we should actually
+     	     store into the LHS.  */
+
+	  my_friendly_assert (!PROMOTES_TO_AGGR_TYPE (lhstype, REFERENCE_TYPE),
+			      978652);
+	  lhs = stabilize_reference (lhs);
+	  newrhs = cp_build_binary_op (modifycode, lhs, rhs);
+	  if (newrhs == error_mark_node)
+	    {
+	      error ("  in evaluation of `%Q(%#T, %#T)'", modifycode,
+		     TREE_TYPE (lhs), TREE_TYPE (rhs));
+	      return error_mark_node;
+	    }
+	  
+	  /* Now it looks like a plain assignment.  */
+	  modifycode = NOP_EXPR;
+	}
+      my_friendly_assert (TREE_CODE (lhstype) != REFERENCE_TYPE, 20011220);
+      my_friendly_assert (TREE_CODE (TREE_TYPE (newrhs)) != REFERENCE_TYPE,
+			  20011220);
     }
 
   /* Handle a cast used as an "lvalue".
@@ -5669,15 +5657,16 @@ build_modify_expr (lhs, modifycode, rhs)
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
     case FIX_CEIL_EXPR:
-      if (TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
-	  || TREE_CODE (TREE_TYPE (newrhs)) == FUNCTION_TYPE
-	  || TREE_CODE (TREE_TYPE (newrhs)) == METHOD_TYPE
-	  || TREE_CODE (TREE_TYPE (newrhs)) == OFFSET_TYPE)
-	newrhs = default_conversion (newrhs);
       {
 	tree inner_lhs = TREE_OPERAND (lhs, 0);
 	tree result;
 
+	if (TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
+	    || TREE_CODE (TREE_TYPE (newrhs)) == FUNCTION_TYPE
+	    || TREE_CODE (TREE_TYPE (newrhs)) == METHOD_TYPE
+	    || TREE_CODE (TREE_TYPE (newrhs)) == OFFSET_TYPE)
+	  newrhs = default_conversion (newrhs);
+	
 	/* ISO C++ 5.4/1: The result is an lvalue if T is a reference
 	   type, otherwise the result is an rvalue.  */
 	if (! lvalue_p (lhs))
@@ -5703,23 +5692,23 @@ build_modify_expr (lhs, modifycode, rhs)
 
   GNU_xref_assign (lhs);
 
-  /* Warn about storing in something that is `const'.  */
-  /* For C++, don't warn if this is initialization.  */
+  /* Warn about modifying something that is `const'.  Don't warn if
+     this is initialization.  */
   if (modifycode != INIT_EXPR
       && (TREE_READONLY (lhs) || CP_TYPE_CONST_P (lhstype)
 	  /* Functions are not modifiable, even though they are
 	     lvalues.  */
 	  || TREE_CODE (TREE_TYPE (lhs)) == FUNCTION_TYPE
+	  || TREE_CODE (TREE_TYPE (lhs)) == METHOD_TYPE
+	  /* If it's an aggregate and any field is const, then it is
+	     effectively const.  */
 	  || (IS_AGGR_TYPE_CODE (TREE_CODE (lhstype))
-	      && C_TYPE_FIELDS_READONLY (lhstype))
-	  || (TREE_CODE (lhstype) == REFERENCE_TYPE
-	      && CP_TYPE_CONST_P (TREE_TYPE (lhstype)))))
+	      && C_TYPE_FIELDS_READONLY (lhstype))))
     readonly_error (lhs, "assignment", 0);
 
-  /* If storing into a structure or union member,
-     it has probably been given type `int'.
-     Compute the type that would go with
-     the actual amount of storage the member occupies.  */
+  /* If storing into a structure or union member, it has probably been
+     given type `int'.  Compute the type that would go with the actual
+     amount of storage the member occupies.  */
 
   if (TREE_CODE (lhs) == COMPONENT_REF
       && (TREE_CODE (lhstype) == INTEGER_TYPE
@@ -5738,39 +5727,13 @@ build_modify_expr (lhs, modifycode, rhs)
 	}
     }
 
-  if (modifycode != INIT_EXPR)
+  if (TREE_CODE (lhstype) != REFERENCE_TYPE)
     {
-      /* Make modifycode now either a NOP_EXPR or an INIT_EXPR.  */
-      modifycode = NOP_EXPR;
-      /* Reference-bashing */
-      if (TREE_CODE (lhstype) == REFERENCE_TYPE)
-	{
-	  tree tmp = convert_from_reference (lhs);
-	  lhstype = TREE_TYPE (tmp);
-	  if (!COMPLETE_TYPE_P (lhstype))
-	    {
-	      incomplete_type_error (lhs, lhstype);
-	      return error_mark_node;
-	    }
-	  lhs = tmp;
-	  olhstype = lhstype;
-	}
-      if (TREE_CODE (TREE_TYPE (newrhs)) == REFERENCE_TYPE)
-	{
-	  tree tmp = convert_from_reference (newrhs);
-	  if (!COMPLETE_TYPE_P (TREE_TYPE (tmp)))
-	    {
-	      incomplete_type_error (newrhs, TREE_TYPE (tmp));
-	      return error_mark_node;
-	    }
-	  newrhs = tmp;
-	}
+      if (TREE_SIDE_EFFECTS (lhs))
+	lhs = stabilize_reference (lhs);
+      if (TREE_SIDE_EFFECTS (newrhs))
+	newrhs = stabilize_reference (newrhs);
     }
-
-  if (TREE_SIDE_EFFECTS (lhs))
-    lhs = stabilize_reference (lhs);
-  if (TREE_SIDE_EFFECTS (newrhs))
-    newrhs = stabilize_reference (newrhs);
 
   /* Convert new value to destination type.  */
 
@@ -5795,17 +5758,8 @@ build_modify_expr (lhs, modifycode, rhs)
     }
 
   if (modifycode == INIT_EXPR)
-    {
-      newrhs = convert_for_initialization (lhs, lhstype, newrhs, LOOKUP_NORMAL,
-					   "initialization", NULL_TREE, 0);
-      if (current_function_decl && 
-	  lhs == DECL_RESULT (current_function_decl))
-	{
-	  if (DECL_INITIAL (lhs))
-	    warning ("return value from function receives multiple initializations");
-	  DECL_INITIAL (lhs) = newrhs;
-	}
-    }
+    newrhs = convert_for_initialization (lhs, lhstype, newrhs, LOOKUP_NORMAL,
+					 "initialization", NULL_TREE, 0);
   else
     {
       /* Avoid warnings on enum bit fields.  */
