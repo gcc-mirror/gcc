@@ -260,9 +260,10 @@ print_line (const struct line_map *map, unsigned int line, const char *special_f
 /* Called when a line of output is started.  TOKEN is the first token
    of the line, and at end of file will be CPP_EOF.  */
 static void
-cb_line_change (cpp_reader *pfile, const cpp_token *token, int parsing_args)
+cb_line_change (cpp_reader *pfile, const cpp_token *token,
+		int parsing_args ATTRIBUTE_UNUSED)
 {
-  if (token->type == CPP_EOF || parsing_args)
+  if (token->type == CPP_EOF)
     return;
 
   maybe_print_line (print.map, token->line);
