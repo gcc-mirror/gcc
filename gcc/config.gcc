@@ -259,6 +259,9 @@ strongarm*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	;;
+ep9312*-*-*)
+	cpu_type=arm
+	;;
 xscale-*-*)
 	cpu_type=arm
 	;;
@@ -700,7 +703,7 @@ arm*-*-rtems*)
 	  thread_file='rtems'
 	fi
 	;;
-arm*-*-elf)
+arm*-*-elf | ep9312-*-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-elf
 	;;
@@ -2789,6 +2792,7 @@ arm*-*-*)
 		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
 		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
 		| xxscale \
+		| xep9312 \
 		| xstrongarm | xstrongarm110 | xstrongarm1100)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
 			;;
@@ -2804,6 +2808,11 @@ arm*-*-*)
 				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
 				exit 1
 			fi
+			;;
+	esac
+	case $machine in
+		9ep9312-*-*)
+			target_cpu_default2="TARGET_CPU_9ep9312"
 			;;
 	esac
 	;;

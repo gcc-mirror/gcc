@@ -24,6 +24,10 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 MULTILIB_OPTIONS     = marm/mthumb
 MULTILIB_DIRNAMES    = arm thumb
 MULTILIB_EXCEPTIONS  = 
+
+# MULTILIB_OPTIONS    += mcpu=ep9312
+# MULTILIB_DIRNAMES   += ep9312
+# MULTILIB_EXCEPTIONS += *mthumb/*mcpu=ep9312*
 	
 # MULTILIB_OPTIONS     += mlittle-endian/mbig-endian
 # MULTILIB_DIRNAMES    += le be
