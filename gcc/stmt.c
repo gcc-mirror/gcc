@@ -3957,9 +3957,10 @@ expand_decl_cleanup (decl, cleanup)
 	{
 	  seq = get_insns ();
 	  end_sequence ();
-	  thisblock->data.block.last_unconditional_cleanup
-	    = emit_insns_after (seq,
-				thisblock->data.block.last_unconditional_cleanup);
+	  if (seq)
+	    thisblock->data.block.last_unconditional_cleanup
+	      = emit_insns_after (seq,
+				  thisblock->data.block.last_unconditional_cleanup);
 	}
       else
 	{
