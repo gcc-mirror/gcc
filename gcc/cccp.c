@@ -184,7 +184,7 @@ extern struct tm *localtime ();
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
-#if defined(bsd4_4) || defined(__NetBSD__)
+#if defined(bsd4_4)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
