@@ -1,3 +1,10 @@
+Wed Feb  5 23:12:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (x86_emit_floatuns):  Declare.
+	* i386.c (x86_emit_floatuns): New global function.
+	* i386.md (floatunssisf2, floatunsdisf2,
+	floatunsdidf2):  New patterns.
+
 2003-01-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopmanip.c (force_single_succ_latches): Fix missindentation.
