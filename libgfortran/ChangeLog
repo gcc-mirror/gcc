@@ -1,3 +1,9 @@
+2004-10-03  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+
+	* intrinsics/abort.c ("libgfortran.h"): Move.
+	* intrinsics/date_and_time.c ("libgfortran.h"): Same.
+	* intrinsics/write.c ("libgfortran.h"): Same.
+
 2004-09-26  Tobias Schlueter  <tobis.schlueter@physik.uni-muenchen.de>
 
 	PR libfortran/16137
