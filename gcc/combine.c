@@ -451,13 +451,27 @@ combine_instructions (f, nregs)
 
      Scan all SETs and see if we can deduce anything about what
      bits are known to be zero for some registers and how many copies
-     of the sign bit are known to exist for those registers.  */
+     of the sign bit are known to exist for those registers.
+
+     Also set any known values so that we can use it while searching
+     for what bits are known to be set.  */
+
+  label_tick = 1;
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       INSN_CUID (insn) = ++i;
+      subst_low_cuid = i;
+      subst_insn = insn;
+
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies);
+	{
+	  note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies);
+	  record_dead_and_set_regs (insn);
+	}
+
+      if (GET_CODE (insn) == CODE_LABEL)
+	label_tick++;
     }
 
   nonzero_sign_valid = 1;
@@ -467,6 +481,12 @@ combine_instructions (f, nregs)
   label_tick = 1;
   last_call_cuid = 0;
   mem_last_set = 0;
+  bzero (reg_last_death, nregs * sizeof (rtx));
+  bzero (reg_last_set, nregs * sizeof (rtx));
+  bzero (reg_last_set_value, nregs * sizeof (rtx));
+  bzero (reg_last_set_table_tick, nregs * sizeof (short));
+  bzero (reg_last_set_label, nregs * sizeof (short));
+  bzero (reg_last_set_invalid, nregs * sizeof (char));
 
   for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
     {
@@ -606,7 +626,15 @@ set_nonzero_bits_and_sign_copies (x, set)
       /* If this is a complex assignment, see if we can convert it into a
 	 simple assignment.  */
       set = expand_field_assignment (set);
-      if (SET_DEST (set) == x)
+
+      /* If this is a simple assignment, or we have a paradoxical SUBREG,
+	 set what we know about X.  */
+
+      if (SET_DEST (set) == x
+	  || (GET_CODE (SET_DEST (set)) == SUBREG
+	      && (GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x)))))
+	      && SUBREG_REG (SET_DEST (set)) == x))
 	{
 	  reg_nonzero_bits[REGNO (x)]
 	    |= nonzero_bits (SET_SRC (set), nonzero_bits_mode);
