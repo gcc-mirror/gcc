@@ -101,6 +101,24 @@ extern int target_flags;
 #define DBX_DEBUGGING_INFO
 #define DEFAULT_GDB_EXTENSIONS 1
 
+/* This is the way other stabs-in-XXX tools do things.  We will be
+   compatable.  */
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+
+/* Likewise for linenos.  */
+#undef  ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
+  { static int sym_lineno = 1;				\
+    fprintf (file, "\t.stabn 68,0,%d,L$M%d-%s\nL$M%d:\n",	\
+	     line, sym_lineno,				\
+	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0) + 1, \
+	     sym_lineno);				\
+    sym_lineno += 1; }
+
+/* But, to make this work, we have to output the stabs for the function
+   name *first*...  */
+#define DBX_FUNCTION_FIRST
+
 /* Only lables should ever begin in colunm zero.  */
 #define ASM_STABS_OP "\t.stabs"
 #define ASM_STABN_OP "\t.stabn"
@@ -265,9 +283,9 @@ extern int target_flags;
                   so is not fixed.
    Reg 1	= ADDIL target/Temporary (hardware).
    Reg 2	= Return Pointer
-   Reg 3	= Preserved Register (Gnu).  Frame Pointer (> 8k frames HP.)
-   Reg 4	= Frame Pointer (Gnu)
-   Reg 5-18	= Preserved Registers
+   Reg 3	= Frame Pointer
+   Reg 4	= Frame Pointer (>8k varying frame with HP compilers only)
+   Reg 4-18	= Preserved Registers
    Reg 19	= Linkage Table Register in HPUX 8.0 shared library scheme.
    Reg 20-22	= Temporary Registers
    Reg 23-26	= Temporary/Parameter Registers
@@ -449,7 +467,7 @@ extern int target_flags;
 #define STACK_POINTER_REGNUM 30
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 4
+#define FRAME_POINTER_REGNUM 3
 
 /* Value should be nonzero if functions must have frame pointers. */
 #define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
@@ -465,7 +483,7 @@ extern int target_flags;
   do {(VAR) = - compute_frame_size (get_frame_size (), 0);} while (0)
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 4
+#define ARG_POINTER_REGNUM 3
 
 /* Register in which static-chain is passed to a function.  */
 /* ??? */
@@ -1595,19 +1613,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 /* Supposedly the assembler rejects the command if there is no tab!  */
 #define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
 
-#if 0
-/* This has apparently triggered a latent GAS bug which manifests itself
-   as numerous warnings from the debugger of the form:
-
-   During symbol reading, inner block not inside outer block in ...
-   inner block not inside outer block in ...
-
-   Or as local variables not being accessable from the debugger.
-
-   Disable $LIT$ for now.  Try it with GAS-2 when it is functional (I
-   am not even going to try to fix this in GAS-1).  */
 #define READONLY_DATA_SECTION readonly_data
-#endif
 
 /* Output before writable data.  */
 
