@@ -161,7 +161,7 @@ static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
 static tree fold_builtin_round (tree);
-static tree fold_builtin_bitop (tree);
+static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_memcpy (tree);
 static tree fold_builtin_mempcpy (tree, tree, int);
 static tree fold_builtin_memmove (tree, tree);
@@ -6668,10 +6668,8 @@ fold_builtin_lround (tree exp)
    Return NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_bitop (tree exp)
+fold_builtin_bitop (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
   if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
@@ -8236,7 +8234,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_PARITY:
     case BUILT_IN_PARITYL:
     case BUILT_IN_PARITYLL:
-      return fold_builtin_bitop (exp);
+      return fold_builtin_bitop (fndecl, arglist);
 
     case BUILT_IN_MEMCPY:
       return fold_builtin_memcpy (exp);
