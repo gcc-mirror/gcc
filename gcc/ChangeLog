@@ -1,3 +1,9 @@
+2003-07-01  David Edelsohn  <edelsohn@gnu.org>
+	    J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/rs6000/rs6000.md (ctr{s,d}i_internal?): Add earlyclobber
+	for MEM case.
+
 2003-07-01  Devang Patel  <dpatel@apple.com>
 
 	* dbxout.c (DBXOUT_DECR_NESTING): Emit pending bincls, if required.
