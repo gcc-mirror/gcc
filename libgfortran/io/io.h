@@ -400,7 +400,7 @@ int compare_files (stream *, stream *);
 stream *init_error_stream (void);
 
 #define open_external prefix(open_external)
-stream *open_external (unit_action, unit_status);
+stream *open_external (unit_flags *);
 
 #define open_internal prefix(open_internal)
 stream *open_internal (char *, int);

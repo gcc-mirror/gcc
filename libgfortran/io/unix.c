@@ -988,14 +988,18 @@ tempfile (void)
 }
 
 
-/* regular_file()-- Open a regular file.  Returns the descriptor, which is less than zero on error. */
+/* regular_file()-- Open a regular file.
+ * Change flags->action if it is ACTION_UNSPECIFIED on entry.
+ * Returns the descriptor, which is less than zero on error. */
 
 static int
-regular_file (unit_action action, unit_status status)
+regular_file (unit_flags *flags)
 {
   char path[PATH_MAX + 1];
   struct stat statbuf;
   int mode;
+  int rwflag;
+  int fd;
 
   if (unpack_filename (path, ioparm.file, ioparm.file_len))
     {
@@ -1003,30 +1007,31 @@ regular_file (unit_action action, unit_status status)
       return -1;
     }
 
-  mode = 0;
+  rwflag = 0;
 
-  switch (action)
+  switch (flags->action)
     {
     case ACTION_READ:
-      mode = O_RDONLY;
+      rwflag = O_RDONLY;
       break;
 
     case ACTION_WRITE:
-      mode = O_WRONLY;
+      rwflag = O_WRONLY;
       break;
 
     case ACTION_READWRITE:
-      mode = O_RDWR;
+    case ACTION_UNSPECIFIED:
+      rwflag = O_RDWR;
       break;
 
     default:
       internal_error ("regular_file(): Bad action");
     }
 
-  switch (status)
+  switch (flags->status)
     {
     case STATUS_NEW:
-      mode |= O_CREAT | O_EXCL;
+      rwflag |= O_CREAT | O_EXCL;
       break;
 
     case STATUS_OLD:		/* file must exist, so check for its existence */
@@ -1036,40 +1041,74 @@ regular_file (unit_action action, unit_status status)
 
     case STATUS_UNKNOWN:
     case STATUS_SCRATCH:
-      mode |= O_CREAT;
+      rwflag |= O_CREAT;
       break;
 
     case STATUS_REPLACE:
-        mode |= O_CREAT | O_TRUNC;
+        rwflag |= O_CREAT | O_TRUNC;
       break;
 
     default:
       internal_error ("regular_file(): Bad status");
     }
 
-  /* mode |= O_LARGEFILE; */
+  /* rwflag |= O_LARGEFILE; */
 
-  return open (path, mode,
-	       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+  mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+  fd = open (path, rwflag, mode);
+  if (flags->action == ACTION_UNSPECIFIED)
+    {
+      if (fd < 0)
+        {
+          rwflag = rwflag & !O_RDWR | O_RDONLY;
+          fd = open (path, rwflag, mode);
+          if (fd < 0)
+            {
+	      rwflag = rwflag & !O_RDONLY | O_WRONLY;
+              fd = open (path, rwflag, mode);
+              if (fd < 0)
+                flags->action = ACTION_READWRITE; /* Could not open at all.  */
+              else
+                flags->action = ACTION_WRITE;
+            }
+          else
+            flags->action = ACTION_READ;
+        }
+      else
+        flags->action = ACTION_READWRITE;
+    }
+  return fd;
 }
 
 
 /* open_external()-- Open an external file, unix specific version.
+ * Change flags->action if it is ACTION_UNSPECIFIED on entry.
  * Returns NULL on operating system error. */
 
 stream *
-open_external (unit_action action, unit_status status)
+open_external (unit_flags *flags)
 {
   int fd, prot;
 
-  fd =
-    (status == STATUS_SCRATCH) ? tempfile () : regular_file (action, status);
+  if (flags->status == STATUS_SCRATCH)
+    {
+      fd = tempfile ();
+      if (flags->action == ACTION_UNSPECIFIED)
+        flags->action = ACTION_READWRITE;
+      /* We can unlink scratch files now and it will go away when closed. */
+      unlink (ioparm.file);
+    }
+  else
+    {
+      /* regular_file resets flags->action if it is ACTION_UNSPECIFIED.  */
+      fd = regular_file (flags);
+    }
 
   if (fd < 0)
     return NULL;
   fd = fix_fd (fd);
 
-  switch (action)
+  switch (flags->action)
     {
     case ACTION_READ:
       prot = PROT_READ;
@@ -1086,12 +1125,6 @@ open_external (unit_action action, unit_status status)
     default:
       internal_error ("open_external(): Bad action");
     }
-
-  /* If this is a scratch file, we can unlink it now and the file will
-   * go away when it is closed. */
-
-  if (status == STATUS_SCRATCH)
-    unlink (ioparm.file);
 
   return fd_to_stream (fd, prot);
 }

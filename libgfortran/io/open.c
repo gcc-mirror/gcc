@@ -207,13 +207,12 @@ new_unit (unit_flags * flags)
   stream *s;
   char tmpname[5 /* fort. */ + 10 /* digits of unit number */ + 1 /* 0 */];
 
-  /* Change unspecifieds to defaults.  */
+  /* Change unspecifieds to defaults.  Leave (flags->action ==
+     ACTION_UNSPECIFIED) alone so open_external() can set it based on
+     what type of open actually works.  */
 
   if (flags->access == ACCESS_UNSPECIFIED)
     flags->access = ACCESS_SEQUENTIAL;
-
-  if (flags->action == ACTION_UNSPECIFIED)
-    flags->action = ACTION_READWRITE;	/* Processor dependent.  */
 
   if (flags->form == FORM_UNSPECIFIED)
     flags->form = (flags->access == ACCESS_SEQUENTIAL)
@@ -325,7 +324,7 @@ new_unit (unit_flags * flags)
 
   /* Open file.  */
 
-  s = open_external (flags->action, flags->status);
+  s = open_external (flags);
   if (s == NULL)
     {
       generate_error (ERROR_OS, NULL);
