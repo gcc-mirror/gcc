@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -103,9 +103,9 @@ struct objc_class {
   unsigned long       info;                   /* Bit mask.  See class masks 
                                                 defined above. */
   long                instance_size;          /* Size in bytes of the class.  
-                                                The sum of the class definition 
-                                                and all super class 
-                                                definitions. */
+                                                The sum of the class 
+						definition and all super 
+						class definitions. */
   struct objc_ivar_list* ivars;               /* Pointer to a structure that
                                                 describes the instance 
                                                 variables in the class

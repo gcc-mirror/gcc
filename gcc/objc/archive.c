@@ -141,7 +141,8 @@ __objc_code_unsigned_short (unsigned char* buf, unsigned short val)
 }
 
 int
-objc_write_unsigned_short (struct objc_typed_stream* stream, unsigned short value)
+objc_write_unsigned_short (struct objc_typed_stream* stream, 
+			   unsigned short value)
 {
   unsigned char buf[sizeof (unsigned short)+1];
   int len = __objc_code_unsigned_short (buf, value);
@@ -252,7 +253,8 @@ __objc_code_unsigned_long (unsigned char* buf, unsigned long val)
 }
 
 int
-objc_write_unsigned_long (struct objc_typed_stream* stream, unsigned long value)
+objc_write_unsigned_long (struct objc_typed_stream* stream, 
+			  unsigned long value)
 {
   unsigned char buf[sizeof(unsigned long)+1];
   int len = __objc_code_unsigned_long (buf, value);
@@ -315,7 +317,8 @@ objc_write_string_atomic (struct objc_typed_stream* stream,
 }
 
 static int
-objc_write_register_common (struct objc_typed_stream* stream, unsigned long key)
+objc_write_register_common (struct objc_typed_stream* stream, 
+			    unsigned long key)
 {
   unsigned char buf[sizeof (unsigned long)+2];
   int len = __objc_code_unsigned_long (buf+1, key);
@@ -488,7 +491,8 @@ objc_write_selector (struct objc_typed_stream* stream, SEL selector)
   else
     {
       int length;
-      hash_add (&stream->stream_table, LONG2PTR(key=PTR2LONG(sel_name)), (char*)sel_name);
+      hash_add (&stream->stream_table, 
+		LONG2PTR(key=PTR2LONG(sel_name)), (char*)sel_name);
       if ((length = objc_write_register_common (stream, key)))
 	return __objc_write_selector (stream, selector);
       return length;
@@ -840,8 +844,10 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 	{
 	  struct objc_list* other;
 	  len = objc_read_unsigned_long (stream, &key);
-	  other = (struct objc_list*)hash_value_for_key (stream->object_refs, LONG2PTR(key));
-	  hash_add (&stream->object_refs, LONG2PTR(key), (void*)list_cons(object, other));
+	  other = (struct objc_list*)hash_value_for_key (stream->object_refs, 
+							 LONG2PTR(key));
+	  hash_add (&stream->object_refs, LONG2PTR(key), 
+		    (void*)list_cons(object, other));
 	}
 
       else if (buf[0] == (_B_EXT | _BX_OBJROOT)) /* a root object */
@@ -948,7 +954,8 @@ objc_read_selector (struct objc_typed_stream* stream, SEL* selector)
 	  if (key)
 	    __objc_fatal("cannot register use upcode...");
 	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
-	  (*selector) = hash_value_for_key (stream->stream_table, LONG2PTR(key));
+	  (*selector) = hash_value_for_key (stream->stream_table, 
+					    LONG2PTR(key));
 	}
 
       else
@@ -1019,7 +1026,8 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     break;
 
   case _C_ATOM:
-    return objc_write_string_atomic (stream, *(char**)data, strlen(*(char**)data));
+    return objc_write_string_atomic (stream, *(char**)data, 
+				     strlen(*(char**)data));
     break;
 
   case _C_ARY_B:

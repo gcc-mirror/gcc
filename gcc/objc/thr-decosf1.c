@@ -82,7 +82,8 @@ objc_thread_create(void (*func)(void *arg), void *arg)
     
     if (pthread_create(&new_thread_handle, pthread_attr_default,
                        (void *)func, arg) == 0) {
-        thread_id = *(_objc_thread_t *)&new_thread_handle; /* ??? May not work! (64bit)*/
+      /* ??? May not work! (64bit)*/
+        thread_id = *(_objc_thread_t *)&new_thread_handle; 
         pthread_detach(&new_thread_handle);     /* Fully detach thread.     */
 	__objc_runtime_threads_alive++;
     }

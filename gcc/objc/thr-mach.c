@@ -107,7 +107,8 @@ objc_thread_create(void (*func)(void *arg), void *arg)
     new_thread_handle = cthread_fork((cthread_fn_t)func, arg);
 
     if(new_thread_handle) {
-        thread_id = *(_objc_thread_t *)&new_thread_handle; /* this is not terribly portable */
+      /* this is not terribly portable */
+        thread_id = *(_objc_thread_t *)&new_thread_handle; 
         cthread_detach(new_thread_handle);      /* fully detach thread */
         __objc_runtime_threads_alive++;         /* increment thread count */
     }
@@ -122,10 +123,10 @@ objc_thread_create(void (*func)(void *arg), void *arg)
 int
 objc_thread_set_priority(int priority)
 {
-    _objc_thread_t 	*t	     = objc_thread_id();
-    cthread_t      	cT	     = (cthread_t) t; /* see objc_thread_id() */
-    int 		maxPriority  = __mach_get_max_thread_priority(cT, NULL);
-    int         	sys_priority = 0;
+    _objc_thread_t   *t	     = objc_thread_id();
+    cthread_t        cT	     = (cthread_t) t; 
+    int 	     maxPriority  = __mach_get_max_thread_priority(cT, NULL);
+    int              sys_priority = 0;
 
     if (maxPriority == -1)
 	return -1;

@@ -306,7 +306,8 @@ class_pose_as (Class impostor, Class super_class)
 	    if (CLS_ISCLASS (sub))
 	      {
 		/* meta classes */
-		CLASSOF (sub)->sibling_class = CLASSOF (impostor)->subclass_list;
+		CLASSOF (sub)->sibling_class = 
+		  CLASSOF (impostor)->subclass_list;
 		CLASSOF (sub)->super_class = CLASSOF (impostor);
 		CLASSOF (impostor)->subclass_list = CLASSOF (sub);
 	      }

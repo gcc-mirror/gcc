@@ -174,7 +174,8 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
     /* The bucket was previously empty (or something like that), */
     /* allocate a new.  This is the effect of `lazy' allocation */  
     new_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
-    memcpy((void *) new_bucket, (const void*)array->empty_bucket, sizeof(struct sbucket));
+    memcpy((void *) new_bucket, (const void*)array->empty_bucket, 
+	   sizeof(struct sbucket));
     new_bucket->version.version = array->version.version;
     *the_bucket = new_bucket;                   /* Prepared for install. */
     

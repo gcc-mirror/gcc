@@ -27,10 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include "runtime.h"
 
-/*****************************************************************************
+/*************************************************************************
  *  Universal static variables:
  */
-int     __objc_thread_exit_status = 0;          /* Global exit status.      */
+int __objc_thread_exit_status = 0;      /* Global exit status.   */
 
 /* Flag which lets us know if we ever became multi threaded */
 int __objc_is_multi_threaded = 0;
