@@ -1,3 +1,15 @@
+2005-01-03  Richard Henderson  <rth@redhat.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/14631
+	* config/i386/i386.c (ix86_expand_builtin): [IX86_BUILTIN_PINSRW,
+	IX86_BUILTIN_PINSRW128]: Fix wrong selector range in error message.
+	* config/i386/i386.md (mmx_pinsrw, sse2_pinsrw): Fix selector
+	handling.
+	(*mmx_pinsrw, *sse2_pinsrw): New patterns.
+	* config/i386/i386/predicates.md (const_pow2_1_to_8_operand,
+	const_pow2_1_to_128_operand): New predicates.
+
 2005-01-02  Greg McGary  <greg@mcgary.org>
 
 	* tree-mudflap.c (mf_varname_tree): decl_printable_name handles

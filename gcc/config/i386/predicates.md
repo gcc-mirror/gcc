@@ -546,6 +546,22 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 255")))
 
+;; Match exactly one bit in 4-bit mask.
+(define_predicate "const_pow2_1_to_8_operand"
+  (match_code "const_int")
+{
+  unsigned int log = exact_log2 (INTVAL (op));
+  return log <= 3;
+})
+
+;; Match exactly one bit in 8-bit mask.
+(define_predicate "const_pow2_1_to_128_operand"
+  (match_code "const_int")
+{
+  unsigned int log = exact_log2 (INTVAL (op));
+  return log <= 7;
+})
+
 ;; True if this is a constant appropriate for an increment or decrement.
 (define_predicate "incdec_operand"
   (match_code "const_int")

@@ -13437,7 +13437,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
 	{
 	  error ("selector must be an integer constant in the range 0..%i",
-		  fcode == IX86_BUILTIN_PINSRW ? 15:255);
+		  fcode == IX86_BUILTIN_PINSRW ? 3:7);
 	  return const0_rtx;
 	}
       if (target == 0
