@@ -1,3 +1,8 @@
+2002-04-09  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/private/gcconfig.h (DATAEND): Update comment example
+	to match reality.
+
 2002-04-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/private/gcconfig.h (DATAEND): Clarify comment.
