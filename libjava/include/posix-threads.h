@@ -136,7 +136,7 @@ inline int
 _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
   if (_Jv_PthreadCheckMonitor (mu))
-    return _JV_NOT_OWNER;
+    return 1;
     
   mu->count--;
 
