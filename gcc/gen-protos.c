@@ -16,6 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include "scan.h"
 
 #define HASH_SIZE 2503 /* a prime */
