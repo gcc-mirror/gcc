@@ -1,3 +1,9 @@
+2004-02-29  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	PR middle-end/14203
+	* function.c (uninitialized_vars_warning): Use DECL_RTL_SET_P
+	instead of testing whether DECL_RTL is not NULL.
+
 2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sh/sh.c: Fix formatting.
