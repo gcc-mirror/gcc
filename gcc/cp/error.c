@@ -717,13 +717,14 @@ dump_type_prefix (t, flags)
 	   so let the OFFSET_TYPE case handle it.  */
 	if (!TYPE_PTRMEM_P (t))
 	  {
-	    if (padding != none)
-	      output_add_space (scratch_buffer);
 	    if (TREE_CODE (sub) == ARRAY_TYPE)
-	      print_left_paren (scratch_buffer);
+              {
+                output_add_space (scratch_buffer);
+                print_left_paren (scratch_buffer);
+              }
             output_add_character
               (scratch_buffer, "&*"[TREE_CODE (t) == POINTER_TYPE]);
-	    padding = dump_qualifiers (t, none);
+	    padding = dump_qualifiers (t, before);
 	  }
       }
       break;
@@ -1268,8 +1269,8 @@ dump_function_decl (t, flags)
                   && !DECL_DESTRUCTOR_P (t);
   if (show_return)
     {
-      if (dump_type_prefix (TREE_TYPE (fntype), flags) != none)
-        output_add_space (scratch_buffer);
+      dump_type_prefix (TREE_TYPE (fntype), flags);
+      output_add_space (scratch_buffer);
     }
 
   /* Print the function name.  */
