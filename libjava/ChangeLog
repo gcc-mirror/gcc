@@ -1,3 +1,7 @@
+2001-08-19  Release Manager
+
+	* GCC 3.0.1 Released.
+
 2001-08-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* include/posix.h (_POSIX_PII_SOCKET): Define.

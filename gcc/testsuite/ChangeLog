@@ -1,3 +1,7 @@
+2001-08-19  Release Manager
+
+	* GCC 3.0.1 Released.
+
 2001-08-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/empty4.C: New test.
