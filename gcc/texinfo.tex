@@ -1,5 +1,9 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-\def\texinfoversion{1998-09-30}%
+%
+% Load plain if necessary, i.e., if running under initex.
+\expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
+%
+\def\texinfoversion{1998-10-27}%
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -49,12 +53,6 @@
 % The extra runs of TeX get the cross-reference information correct.
 % Sometimes one run after texindex suffices, and sometimes you need more
 % than two; texi2dvi does it as many times as necessary.
-
-
-% Make it possible to create a .fmt file just by loading this file:
-% if the underlying format is not loaded, start by loading it now.
-% Added by gildea November 1993.
-\expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 
 \message{Loading texinfo [version \texinfoversion]:}
 
@@ -846,7 +844,7 @@ where each line of input produces a line of output.}
     \immediate\write16{If you are running another version of TeX, relax.}
     \immediate\write16{If you are running Unix TeX 3.0, kill this TeX process.}
     \immediate\write16{  Then upgrade your TeX installation if you can.}
-    \immediate\write16{  (See ftp://ftp.gnu.ai.mit.edu/pub/gnu/TeX.README.)}
+    \immediate\write16{  (See ftp://ftp.gnu.org/pub/gnu/TeX.README.)}
     \immediate\write16{If you are stuck with version 3.0, run the}
     \immediate\write16{  script ``tex3patch'' from the Texinfo distribution}
     \immediate\write16{  to use a workaround.}
@@ -2408,6 +2406,9 @@ width0pt\relax} \fi
 \def\copyright{\realbackslash copyright}%
 \def\tclose##1{\realbackslash tclose {##1}}%
 \def\code##1{\realbackslash code {##1}}%
+\def\env##1{\realbackslash env {##1}}%
+\def\command##1{\realbackslash command {##1}}%
+\def\option##1{\realbackslash option {##1}}%
 \def\dotless##1{\realbackslash dotless {##1}}%
 \def\samp##1{\realbackslash samp {##1}}%
 \def\,##1{\realbackslash ,{##1}}%
@@ -2423,6 +2424,7 @@ width0pt\relax} \fi
 \def\kbd##1{\realbackslash kbd {##1}}%
 \def\dfn##1{\realbackslash dfn {##1}}%
 \def\emph##1{\realbackslash emph {##1}}%
+\def\acronym##1{\realbackslash acronym {##1}}%
 %
 % Handle some cases of @value -- where the variable name does not
 % contain - or _, and the value does not contain any
@@ -2486,6 +2488,9 @@ width0pt\relax} \fi
 %\let\tt=\indexdummyfont
 \let\tclose=\indexdummyfont
 \let\code=\indexdummyfont
+\let\env=\indexdummyfont
+\let\command=\indexdummyfont
+\let\option=\indexdummyfont
 \let\file=\indexdummyfont
 \let\samp=\indexdummyfont
 \let\kbd=\indexdummyfont
