@@ -1,3 +1,48 @@
+2001-03-11  Nicola Pero <n.pero@mi.flashnet.it>
+
+	* objc/execute/va_method.m: Added.
+	* objc/execute/IMP.m: Added.
+	* objc/execute/_cmd.m: Added.
+	* objc/execute/accessing_ivars.m: Added.
+	* objc/execute/class-1.m: Added.
+	* objc/execute/class-10.m: Added.
+	* objc/execute/class-11.m: Added.
+	* objc/execute/class-12.m: Added.
+	* objc/execute/class-13.m: Added.
+	* objc/execute/class-14.m: Added.
+	* objc/execute/class-2.m: Added.
+	* objc/execute/class-3.m: Added.
+	* objc/execute/class-4.m: Added.
+	* objc/execute/class-5.m: Added.
+	* objc/execute/class-6.m: Added.
+	* objc/execute/class-7.m: Added.
+	* objc/execute/class-8.m: Added.
+	* objc/execute/class-9.m: Added.
+	* objc/execute/class-tests-1.h
+	* objc/execute/class-tests-2.h
+	* objc/execute/compatibility_alias.m: Added.
+	* objc/execute/encode-1.m: Added.
+	* objc/execute/formal_protocol-1.m: Added.
+	* objc/execute/formal_protocol-2.m: Added.
+	* objc/execute/formal_protocol-3.m: Added.
+	* objc/execute/formal_protocol-4.m: Added.
+	* objc/execute/formal_protocol-5.m: Added.
+	* objc/execute/formal_protocol-6.m: Added.
+	* objc/execute/formal_protocol-7.m: Added.
+	* objc/execute/informal_protocol.m: Added.
+	* objc/execute/initialize.m: Added.
+	* objc/execute/load.m: Added.
+	* objc/execute/many_args_method.m: Added.
+	* objc/execute/nested-3.m: Added.
+	* objc/execute/no_clash.m: Added.
+	* objc/execute/private.m: Added.
+	* objc/execute/redefining_self.m: Added.
+	* objc/execute/root_methods.m: Added.
+	* objc/execute/selector-1.m: Added.
+	* objc/execute/static-1.m: Added.
+	* objc/execute/static-2.m: Added.
+	* objc/execute/va_method.m: Added.
+
 2001-03-10  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.oliva/delete3.C (main): Catch the exception.
@@ -10,6 +55,10 @@
 	* gcc.c-torture/execute/20010123-1.x: XFAIL.
 	* gcc.c-torture/execute/20010124-1.x: XFAIL.
 	* gcc.dg/sequence-pt-1.c: XFAIL one test.
+
+2001-03-06  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/execute/nested-2.m: Added. Contributed by Nicola Pero.
 
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
@@ -52,6 +101,7 @@
 
 	* g++.old-deja/g++.other/using9.C: New test.
 
+>>>>>>> 1.1111
 2001-02-28  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/bycopy-3.m: Added new test from Nicola Pero.
