@@ -3059,7 +3059,9 @@ type_list_equal (l1, l2)
 	  int cmp = simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2));
 	  if (cmp < 0)
 	    abort ();
-	  if (cmp == 0)
+	  if (cmp == 0
+	      || TREE_TYPE (TREE_PURPOSE (t1))
+	         != TREE_TYPE (TREE_PURPOSE (t2)))
 	    return 0;
 	}
     }
