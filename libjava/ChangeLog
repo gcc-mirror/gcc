@@ -1,5 +1,9 @@
 2001-09-05  Tom Tromey  <tromey@redhat.com>
 
+	From Eric Blake, via Classpath:
+	* java/lang/String.java (CaseInsensitiveComparator): New class.
+	(CASE_INSENSITIVE_ORDER): Use instance of CaseInsensitiveComparator.
+
 	* java/util/Date.java: Re-merged with Classpath.
 
 	* java/text/DateFormatSymbols.java: Re-merged with Classpath.
