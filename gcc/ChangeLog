@@ -1,3 +1,8 @@
+2000-05-10  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (find_basic_blocks_1): Remove any spare bb_note
+	after completion.
+
 2000-05-10  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/gnu-regex.c:  reg_syntax_t re_syntax_options must be static
