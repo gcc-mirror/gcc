@@ -1156,20 +1156,27 @@ alpha_builtin_saveregs (arglist)
 	  ? plus_constant (virtual_incoming_args_rtx, 6 * UNITS_PER_WORD)
 	  : plus_constant (virtual_incoming_args_rtx, - (6 * UNITS_PER_WORD)));
 
+  addr = force_operand (addr, NULL_RTX);
+
   /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
-  /* Store the address of the first integer register in the
-     __va_base member.  */
-  emit_move_insn (change_address (block, Pmode, XEXP (block, 0)),
-		  force_operand (addr, NULL_RTX));
+  /* Store the address of the first integer register in the __base member.
+     Note that our offsets are correct for both 32- and 64-bit pointers
+     due to the alignment of the __offset field (a long).  */
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  addr = convert_memory_address (ptr_mode, addr);
+#endif
+
+  emit_move_insn (change_address (block, ptr_mode, XEXP (block, 0)), addr);
 
   /* Store the argsize as the __va_offset member.  */
-  emit_move_insn (change_address (block, Pmode,
+  emit_move_insn (change_address (block, ptr_mode,
 				  plus_constant (XEXP (block, 0),
-						 UNITS_PER_WORD)),
+						 GET_MODE_SIZE (ptr_mode))),
 		  force_operand (argsize, NULL_RTX));
 
   /* Return the address of the va_list constructor, but don't put it in a
