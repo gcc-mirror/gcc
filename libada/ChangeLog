@@ -1,3 +1,14 @@
+2004-04-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Revert most of Arnaud's last change.  Prefer anything
+	over error-prone Make abuse.  Remove temporary debug code.
+	(gnatlib-zcx): New target.
+	(gnattools): Split into gnattools-native, gnattools-cross, to fix
+	previous bug; select which on the basis of default_gnattools_target.
+	(ada.all.cross): Merged with gnattools-cross target.
+	* configure.ac: Set default_gnattools_target.
+	* configure: Regenerate.
+
 2004-04-19  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* Makefile.in: Fix errors introduced in previous change (in particular,
