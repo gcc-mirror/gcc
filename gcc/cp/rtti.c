@@ -62,13 +62,13 @@ Boston, MA 02111-1307, USA.  */
 /* Accessors for the type_info objects. We need to remember several things
    about each of the type_info types. The global tree nodes such as
    bltn_desc_type_node are TREE_LISTs, and these macros are used to access
-   the required information. */
-/* The RECORD_TYPE of a type_info derived class. */
+   the required information.  */
+/* The RECORD_TYPE of a type_info derived class.  */
 #define TINFO_PSEUDO_TYPE(NODE) TREE_TYPE (NODE)
 /* The VAR_DECL of the vtable for the type_info derived class.
-   This is only filled in at the end of the translation. */
+   This is only filled in at the end of the translation.  */
 #define TINFO_VTABLE_DECL(NODE) TREE_VALUE (NODE)
-/* The IDENTIFIER_NODE naming the real class. */
+/* The IDENTIFIER_NODE naming the real class.  */
 #define TINFO_REAL_NAME(NODE) TREE_PURPOSE (NODE)
 
 static tree build_headof PARAMS((tree));
@@ -923,7 +923,7 @@ dfs_class_hint_mark (binfo, data)
   return NULL_TREE;
 };
 
-/* Clear the base's dfs marks, after searching for duplicate bases. */
+/* Clear the base's dfs marks, after searching for duplicate bases.  */
 
 static tree
 dfs_class_hint_unmark (binfo, data)
@@ -1104,7 +1104,7 @@ get_pseudo_ti_init (type, var_desc, non_public_p)
 	  /* Prepend the number of bases.  */
 	  base_inits = tree_cons (NULL_TREE,
 				  build_int_2 (nbases, 0), base_inits);
-	  /* Prepend the hint flags. */
+	  /* Prepend the hint flags.  */
 	  base_inits = tree_cons (NULL_TREE,
 				  build_int_2 (hint, 0), base_inits);
 
@@ -1146,21 +1146,21 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   VA_FIXEDARG (ap, const char *, real_name);
   VA_FIXEDARG (ap, int, ident);
 
-  /* Generate the pseudo type name. */
+  /* Generate the pseudo type name.  */
   pseudo_name = (char *)alloca (strlen (real_name) + 30);
   strcpy (pseudo_name, real_name);
   strcat (pseudo_name, "_pseudo");
   if (ident)
     sprintf (pseudo_name + strlen (pseudo_name), "%d", ident);
   
-  /* First field is the pseudo type_info base class. */
+  /* First field is the pseudo type_info base class.  */
   fields[0] = build_decl (FIELD_DECL, NULL_TREE, ti_desc_type_node);
   
   /* Now add the derived fields.  */
   for (ix = 0; (field_decl = va_arg (ap, tree));)
     fields[++ix] = field_decl;
   
-  /* Create the pseudo type. */
+  /* Create the pseudo type.  */
   pseudo_type = make_aggr_type (RECORD_TYPE);
   finish_builtin_type (pseudo_type, pseudo_name, fields, ix, ptr_type_node);
   TYPE_HAS_CONSTRUCTOR (pseudo_type) = 1;
@@ -1214,7 +1214,7 @@ get_pseudo_ti_desc (type)
 	      && TREE_PUBLIC (base_binfo)
 	      && !TREE_VIA_VIRTUAL (base_binfo)
 	      && integer_zerop (BINFO_OFFSET (base_binfo)))
-	    /* single non-virtual public. */
+	    /* single non-virtual public.  */
 	    return si_class_desc_type_node;
 	  else
 	    {
@@ -1287,7 +1287,7 @@ create_tinfo_types ()
       ("__fundamental_type_info", 0,
        NULL);
 
-  /* Array, function and enum type_info. No additional fields. */
+  /* Array, function and enum type_info. No additional fields.  */
   ary_desc_type_node = create_pseudo_type_info
       ("__array_type_info", 0,
        NULL);
@@ -1311,7 +1311,7 @@ create_tinfo_types ()
             NULL);
   
   /* Base class internal helper. Pointer to base type, offset to base,
-     flags. */
+     flags.  */
   {
     tree fields[2];
     
@@ -1323,12 +1323,12 @@ create_tinfo_types ()
     TYPE_HAS_CONSTRUCTOR (base_desc_type_node) = 1;
   }
   
-  /* General hierarchy is created as necessary in this vector. */
+  /* General hierarchy is created as necessary in this vector.  */
   vmi_class_desc_type_node = make_tree_vec (10);
   
   /* Pointer type_info. Adds two fields, qualification mask
      and pointer to the pointed to type.  This is really a descendant of
-     __pbase_type_info. */
+     __pbase_type_info.  */
   ptr_desc_type_node = create_pseudo_type_info
       ("__pointer_type_info", 0,
        build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
@@ -1462,7 +1462,7 @@ emit_tinfo_decl (decl_ptr, data)
 
   DECL_INITIAL (decl) = var_init;
   cp_finish_decl (decl, var_init, NULL_TREE, 0);
-  /* cp_finish_decl will have dealt with linkage. */
+  /* cp_finish_decl will have dealt with linkage.  */
   
   /* Say we've dealt with it.  */
   TREE_TYPE (DECL_NAME (decl)) = NULL_TREE;

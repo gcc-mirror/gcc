@@ -204,7 +204,7 @@ lookup_base_r (binfo, base, access, within_current_scope,
   if (same_type_p (BINFO_TYPE (binfo), base))
     {
       /* We have found a base. Check against what we have found
-         already. */
+         already.  */
       found = bk_same_type;
       if (is_virtual)
 	found = bk_via_virtual;
@@ -311,7 +311,7 @@ lookup_base (t, base, access, kind_ptr)
      base_access access;
      base_kind *kind_ptr;
 {
-  tree binfo = NULL;		/* The binfo we've found so far. */
+  tree binfo = NULL;		/* The binfo we've found so far.  */
   tree t_binfo = NULL;
   base_kind bk;
   
@@ -1995,7 +1995,7 @@ look_for_overrides_here (type, fndecl)
 }
 
 /* Look in TYPE for virtual functions overridden by FNDECL. Check both
-   TYPE itself and its bases. */
+   TYPE itself and its bases.  */
 
 static int
 look_for_overrides_r (type, fndecl)
@@ -2795,7 +2795,7 @@ binfo_for_vtable (var)
     }
 
   /* If no secondary base classes matched, return the primary base, if
-     there is one.   */
+     there is one.  */
   if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (main_binfo)))
     return get_primary_binfo (main_binfo);
 

@@ -749,7 +749,7 @@ synthesize_method (fndecl)
      during the generation of the implicit body points at the place
      where the attempt to generate the function occurs, giving the
      user a hint as to why we are attempting to generate the
-     function. */
+     function.  */
   DECL_SOURCE_LINE (fndecl) = lineno;
   DECL_SOURCE_FILE (fndecl) = input_filename;
 

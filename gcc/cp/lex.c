@@ -1073,7 +1073,7 @@ do_pending_lang_change ()
     pop_lang_context ();
 }
 
-/* Return true if d is in a global scope. */
+/* Return true if d is in a global scope.  */
 
 static int
 is_global (d)

@@ -86,7 +86,7 @@ struct unparsed_text GTY(())
 
   struct token_chunk *last_chunk; /* End of the token list.  */
   short last_pos;	/* Number of tokens used in the last chunk of
-			   TOKENS. */
+			   TOKENS.  */
 
   short cur_pos;	/* Current token in 'cur_chunk', when rescanning.  */
   struct token_chunk *cur_chunk;  /* Current chunk, when rescanning.  */
@@ -185,7 +185,7 @@ static int first_token;
 static GTY(()) tree defarg_fns;
 /* current default parameter */
 static GTY(()) tree defarg_parm;
-/* list of unprocessed fns met during current fn. */
+/* list of unprocessed fns met during current fn.  */
 static GTY(()) tree defarg_depfns;
 /* list of fns with circular defargs */
 static GTY(()) tree defarg_fnsdone;
@@ -668,7 +668,7 @@ do_aggr ()
 void
 see_typename ()
 {
-  /* Only types expected, not even namespaces. */
+  /* Only types expected, not even namespaces.  */
   looking_for_typename = 2;
   if (yychar < 0)
     if ((yychar = yylex ()) < 0) yychar = 0;
@@ -754,7 +754,7 @@ yylex ()
     case PTYPENAME:
     case PTYPENAME_DEFN:
       /* If we see a SCOPE next, restore the old value.
-	 Otherwise, we got what we want. */
+	 Otherwise, we got what we want.  */
       looking_for_typename = old_looking_for_typename;
       looking_for_template = 0;
       break;
@@ -887,7 +887,7 @@ frob_id (yyc, peek, idp)
           case NSNAME:
           case PTYPENAME:
 	    /* If this got special lookup, remember it.  In these
-	       cases, we know it can't be a declarator-id. */
+	       cases, we know it can't be a declarator-id.  */
             if (got_scope || got_object)
               *idp = trrr;
             /* FALLTHROUGH */
@@ -1372,7 +1372,7 @@ do_pending_defargs ()
               /* No need to say what else is dependent, as they will be
                  picked up in another pass.  */
 
-              /* Immediately repeat, but marked so that we break the loop. */
+              /* Immediately repeat, but marked so that we break the loop.  */
               defarg_fns = current;
               TREE_PURPOSE (current) = error_mark_node;
             }
@@ -1384,7 +1384,7 @@ do_pending_defargs ()
 }
 
 /* After parsing all the default arguments, we must clear any that remain,
-   which will be part of a circular dependency. */
+   which will be part of a circular dependency.  */
 void
 done_pending_defargs ()
 {

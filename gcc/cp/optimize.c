@@ -41,7 +41,7 @@ static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
 static void update_cloned_parm PARAMS ((tree, tree));
 static void dump_function PARAMS ((enum tree_dump_index, tree));
 
-/* Optimize the body of FN. */
+/* Optimize the body of FN.  */
 
 void
 optimize_function (fn)
@@ -119,15 +119,15 @@ update_cloned_parm (parm, cloned_parm)
 {
   DECL_ABSTRACT_ORIGIN (cloned_parm) = parm;
 
-  /* We may have taken its address. */
+  /* We may have taken its address.  */
   TREE_ADDRESSABLE (cloned_parm) = TREE_ADDRESSABLE (parm);
 
-  /* The definition might have different constness. */
+  /* The definition might have different constness.  */
   TREE_READONLY (cloned_parm) = TREE_READONLY (parm);
   
   TREE_USED (cloned_parm) = TREE_USED (parm);
   
-  /* The name may have changed from the declaration. */
+  /* The name may have changed from the declaration.  */
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
   DECL_SOURCE_LOCATION (cloned_parm) = DECL_SOURCE_LOCATION (parm);
 }
@@ -176,7 +176,7 @@ maybe_clone_body (fn)
       DECL_NOT_REALLY_EXTERN (clone) = DECL_NOT_REALLY_EXTERN (fn);
       TREE_PUBLIC (clone) = TREE_PUBLIC (fn);
 
-      /* Adjust the parameter names and locations. */
+      /* Adjust the parameter names and locations.  */
       parm = DECL_ARGUMENTS (fn);
       clone_parm = DECL_ARGUMENTS (clone);
       /* Update the `this' parameter, which is always first.  */
@@ -194,7 +194,7 @@ maybe_clone_body (fn)
 	{
 	  /* Update this parameter.  */
 	  update_cloned_parm (parm, clone_parm);
-	  /* We should only give unused information for one clone. */
+	  /* We should only give unused information for one clone.  */
 	  if (!first)
 	    TREE_USED (clone_parm) = 1;
 	}
@@ -275,7 +275,7 @@ maybe_clone_body (fn)
   return 1;
 }
 
-/* Dump FUNCTION_DECL FN as tree dump PHASE. */
+/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
 
 static void
 dump_function (phase, fn)

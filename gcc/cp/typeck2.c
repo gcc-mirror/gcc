@@ -514,7 +514,7 @@ digest_init (type, init, tail)
 
   if (TREE_CODE (init) == ERROR_MARK)
     /* __PRETTY_FUNCTION__'s initializer is a bogus expression inside
-       a template function. This gets substituted during instantiation. */
+       a template function. This gets substituted during instantiation.  */
     return init;
 
   /* We must strip the outermost array type when completing the type,
@@ -1403,7 +1403,7 @@ add_exception_specifier (list, spec, complain)
 }
 
 /* Combine the two exceptions specifier lists LIST and ADD, and return
-   their union. */
+   their union.  */
 
 tree
 merge_exception_specifiers (list, add)
