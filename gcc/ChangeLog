@@ -1,3 +1,7 @@
+Thu Oct 28 09:45:48 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcse.c (delete_null_pointer_checks): Fix typo in previous change.
+
 Thu Oct 28 03:37:50 1999  Peter Gerwinski <peter@gerwinski.de>
 
 	* tree.def (PLACEHOLDER_EXPR): Update comments.
