@@ -56,36 +56,32 @@ extern struct Elmt_Item *Elmts_Ptr;
 
 /* Element List Access Functions:  */
 
-static Node_Id Node		PARAMS ((Elmt_Id));
-static Elmt_Id First_Elmt	PARAMS ((Elist_Id));
-static Elmt_Id Last_Elmt	PARAMS ((Elist_Id));
-static Elmt_Id Next_Elmt	PARAMS ((Elmt_Id));
-static Boolean Is_Empty_Elmt_List PARAMS ((Elist_Id));
+static Node_Id Node		(Elmt_Id);
+static Elmt_Id First_Elmt	(Elist_Id);
+static Elmt_Id Last_Elmt	(Elist_Id);
+static Elmt_Id Next_Elmt	(Elmt_Id);
+static Boolean Is_Empty_Elmt_List (Elist_Id);
 
 INLINE Node_Id
-Node (Elmt)
-     Elmt_Id Elmt;
+Node (Elmt_Id Elmt)
 {
   return Elmts_Ptr[Elmt - First_Elmt_Id].node;
 }
 
 INLINE Elmt_Id
-First_Elmt (List)
-     Elist_Id List;
+First_Elmt (Elist_Id List)
 {
   return Elists_Ptr[List - First_Elist_Id].first;
 }
 
 INLINE Elmt_Id
-Last_Elmt (List)
-     Elist_Id List;
+Last_Elmt (Elist_Id List)
 {
   return Elists_Ptr[List - First_Elist_Id].last;
 }
 
 INLINE Elmt_Id
-Next_Elmt (Node)
-     Elmt_Id Node;
+Next_Elmt (Elmt_Id Node)
 {
   Int N = Elmts_Ptr[Node - First_Elmt_Id].next;
 
@@ -96,8 +92,7 @@ Next_Elmt (Node)
 }
 
 INLINE Boolean
-Is_Empty_Elmt_List (Id)
-     Elist_Id Id;
+Is_Empty_Elmt_List (Elist_Id Id)
 {
   return Elists_Ptr[Id - First_Elist_Id].first == No_Elmt;
 }

@@ -51,19 +51,19 @@ struct Exception_Occurrence
 
 typedef struct Exception_Occurrence *Exception_Occurrence_Access;
 
-extern void _gnat_builtin_longjmp	PARAMS ((void *, int));
-extern void __gnat_unhandled_terminate	PARAMS ((void));
-extern void *__gnat_malloc		PARAMS ((__SIZE_TYPE__));
-extern void __gnat_free			PARAMS ((void *));
-extern void *__gnat_realloc		PARAMS ((void *, __SIZE_TYPE__));
-extern void __gnat_finalize		PARAMS ((void));
-extern void set_gnat_exit_status	PARAMS ((int));
-extern void __gnat_set_globals		PARAMS ((int, int,
+extern void _gnat_builtin_longjmp	(void *, int);
+extern void __gnat_unhandled_terminate	(void);
+extern void *__gnat_malloc		(__SIZE_TYPE__);
+extern void __gnat_free			(void *);
+extern void *__gnat_realloc		(void *, __SIZE_TYPE__);
+extern void __gnat_finalize		(void);
+extern void set_gnat_exit_status	(int);
+extern void __gnat_set_globals		(int, int,
 						 char, char, char, char,
 						 char *, char *,
-						 int, int, int, int));
-extern void __gnat_initialize		PARAMS ((void));
-extern void __gnat_init_float		PARAMS ((void));
-extern void __gnat_install_handler	PARAMS ((void));
+						 int, int, int, int);
+extern void __gnat_initialize		(void);
+extern void __gnat_init_float		(void);
+extern void __gnat_install_handler	(void);
 
 extern int gnat_exit_status;

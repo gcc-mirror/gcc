@@ -42,9 +42,9 @@
    verbose information).
    VERBOSE is nonzero if more information about the entity is to be
    added at the end of the Ada name and surrounded by ( and ).  */
-extern void __gnat_decode PARAMS ((const char *, char *, int));
+extern void __gnat_decode (const char *, char *, int);
 
 /* ada_demangle is added for COMPATIBILITY ONLY. It has the name of the
    function used in the binutils and GDB. Always consider using __gnat_decode
    instead of ada_demangle. Caller must free the pointer returned.  */
-extern char *ada_demangle PARAMS ((const char *));
+extern char *ada_demangle (const char *);
