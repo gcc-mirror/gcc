@@ -149,26 +149,22 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
     
   jmethodID meth = _Jv_FromReflectedMethod (this);
 
-  jclass klass;
-  if (! Modifier::isStatic(meth->accflags))
-    {
-      if (! obj)
-	throw new java::lang::NullPointerException;
-      klass = obj->getClass();
-      if (! declaringClass->isAssignableFrom(klass))
-	throw new java::lang::IllegalArgumentException;
-
-      // Find the possibly overloaded method based on the runtime type
-      // of the object.
-      meth = _Jv_LookupDeclaredMethod (klass, meth->name, meth->signature);
-    }
-  else
+  jclass objClass;
+  
+  if (Modifier::isStatic(meth->accflags))
     {
       // We have to initialize a static class.  It is safe to do this
       // here and not in _Jv_CallAnyMethodA because JNI initializes a
       // class whenever a method lookup is done.
       _Jv_InitClass (declaringClass);
-      klass = declaringClass;
+      objClass = declaringClass;
+    }
+  else
+    {
+      objClass = JV_CLASS (obj);
+     
+      if (! _Jv_IsAssignableFrom (declaringClass, objClass))
+        throw new java::lang::IllegalArgumentException;
     }
 
   // Check accessibility, if required.
@@ -188,7 +184,7 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
 	{
 	}
 
-      if (! _Jv_CheckAccess(caller, klass, meth->accflags))
+      if (! _Jv_CheckAccess(caller, objClass, meth->accflags))
 	throw new IllegalAccessException;
     }
 
@@ -341,6 +337,7 @@ _Jv_CallAnyMethodA (jobject obj,
 		    jclass return_type,
 		    jmethodID meth,
 		    jboolean is_constructor,
+		    jboolean is_virtual_call,
 		    JArray<jclass> *parameter_types,
 		    jvalue *args,
 		    jvalue *result,
@@ -465,9 +462,21 @@ _Jv_CallAnyMethodA (jobject obj,
       break;
     }
 
+  void *ncode;
+
+  if (is_virtual_call)
+    {
+      _Jv_VTable *vtable = *(_Jv_VTable **) obj;
+      ncode = vtable->get_method (meth->index);
+    }
+  else
+    {
+      ncode = meth->ncode;
+    }
+
   try
     {
-      ffi_call (&cif, (void (*)()) meth->ncode, &ffi_result, values);
+      ffi_call (&cif, (void (*)()) ncode, &ffi_result, values);
     }
   catch (Throwable *ex)
     {
@@ -599,6 +608,7 @@ _Jv_CallAnyMethodA (jobject obj,
 
   jvalue ret_value;
   _Jv_CallAnyMethodA (obj, return_type, meth, is_constructor,
+  		      _Jv_isVirtualMethod (meth),
 		      parameter_types, argvals, &ret_value,
 		      false);
 
