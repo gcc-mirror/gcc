@@ -357,6 +357,7 @@ decl_attributes (decl, attributes)
 #define T_C	&char_type_node
 #define T_V	&void_type_node
 #define T_W	&wchar_type_node
+#define T_ST    &size_type
 
 typedef struct {
   char *format_chars;
@@ -380,6 +381,9 @@ static format_char_info print_char_table[] = {
   { "di",	0,	T_I,	T_I,	T_L,	NULL,	"-wp0 +"	},
   { "oxX",	0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0#"		},
   { "u",	0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0"		},
+/* Two GNU extensions.  */
+  { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	"-wp0"		},
+  { "m",	0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp"		},
   { "feEgG",	0,	T_D,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	T_W,	NULL,	"-w"		},
   { "C",	0,	T_W,	NULL,	NULL,	NULL,	"-w"		},
@@ -394,8 +398,8 @@ static format_char_info scan_char_table[] = {
   { "di",	1,	T_I,	T_S,	T_L,	NULL,	"*"	},
   { "ouxX",	1,	T_UI,	T_US,	T_UL,	NULL,	"*"	},	
   { "efgEG",	1,	T_F,	NULL,	T_D,	T_LD,	"*"	},
-  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	"*"	},
-  { "[",	1,	T_C,	NULL,	NULL,	NULL,	"*"	},
+  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	"*a"	},
+  { "[",	1,	T_C,	NULL,	NULL,	NULL,	"*a"	},
   { "C",	1,	T_W,	NULL,	NULL,	NULL,	"*"	},
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	"*"	},
   { "p",	2,	T_V,	NULL,	NULL,	NULL,	"*"	},
@@ -583,6 +587,7 @@ check_format_info (info, params)
   first_fillin_param = params;
   while (1)
     {
+      int aflag;
       if (*format_chars == 0)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
@@ -748,6 +753,12 @@ check_format_info (info, params)
 	length_char = *format_chars++;
       else
 	length_char = 0;
+      aflag = 0;
+      if (*format_chars == 'a')
+	{
+	  aflag = 1;
+	  format_chars++;
+	}
       if (suppressed && length_char != 0)
 	{
 	  sprintf (message,
@@ -788,6 +799,12 @@ check_format_info (info, params)
       if (precise && index (fci->flag_chars, 'p') == 0)
 	{
 	  sprintf (message, "precision used with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      if (aflag && index (fci->flag_chars, 'a') == 0)
+	{
+	  sprintf (message, "`a' flag used with `%c' format",
 		   format_char);
 	  warning (message);
 	}
