@@ -44,25 +44,35 @@ jint gnu::gcj::xlib::Font::getXIDFromStruct(gnu::gcj::RawData* structure)
 jint gnu::gcj::xlib::Font::getMaxAscent()
 {
   XFontStruct* fontStruct = (XFontStruct*) structure;
-  return fontStruct->max_bounds.ascent;
+  return fontStruct->max_bounds.ascent+1;   // +1 to include the baseline
 }
 
 jint gnu::gcj::xlib::Font::getMaxDescent()
 {
   XFontStruct* fontStruct = (XFontStruct*) structure;
-  return fontStruct->max_bounds.descent;
+  return fontStruct->max_bounds.descent-1;  // -1 to exclude the baseline
 }
 
 jint gnu::gcj::xlib::Font::getAscent()
 {
   XFontStruct* fontStruct = (XFontStruct*) structure;
-  return fontStruct->ascent;
+  jint returnValue = fontStruct->ascent;
+  if (fontStruct->min_byte1==0 && fontStruct->min_char_or_byte2<=(unsigned)'O')
+    returnValue = fontStruct
+        ->per_char[(unsigned)'O'-fontStruct->min_char_or_byte2]
+        ->ascent;
+  return returnValue+1;  // +1 to include the baseline
 }
 
 jint gnu::gcj::xlib::Font::getDescent()
 {
   XFontStruct* fontStruct = (XFontStruct*) structure;
-  return fontStruct->ascent;
+  jint returnValue = fontStruct->descent;
+  if (fontStruct->min_byte1==0 && fontStruct->min_char_or_byte2<=(unsigned)'y')
+    returnValue = fontStruct
+        ->per_char[(unsigned)'y'-fontStruct->min_char_or_byte2]
+        ->descent;
+  return returnValue-1;  // -1 to exclude the baseline
 }
 
 jint gnu::gcj::xlib::Font::getStringWidth(java::lang::String* text)
