@@ -1,3 +1,7 @@
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (add_exception_specifier): Use complete_type.
+
 1999-08-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* error.c (dump_expr): Handle EXACT_DIV_EXPR.
