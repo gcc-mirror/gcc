@@ -1,3 +1,15 @@
+2004-01-27  Ulrich Weigand  <uweigand@de.ibm.com>
+	    PJ Darcy  <darcypj@us.ibm.com>
+
+	* configure.host: Add support for *-tpf.
+	* crossconfig.m4: Likewise.
+	* configure: Regenerate.
+	* config/os/tpf: New directory.
+	* config/os/tpf/os_defines.h: New file.
+	* config/os/tpf/ctype_base.h: Likewise.
+	* config/os/tpf/ctype_inline.h: Likewise.
+	* config/os/tpf/ctype_noninline.h: Likewise.
+
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13884
