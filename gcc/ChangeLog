@@ -1,3 +1,7 @@
+Sun Mar 15 23:39:10 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Update for egcs-1.0.2 release.
+
 Sun Mar 15 23:29:25 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config/m68k/mot3300.h (ASM_BYTE_OP): Don't include '\t' in the
