@@ -1098,37 +1098,38 @@ if [ \! -z "$file_to_fix" ]; then
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
   ex /tmp/$base <<EOF
-/^stat(path, buf)/j
+/^stat(/
+s/(.*$/(/
 j
--
-/^stat(path, buf)/c
-stat (const char *path, struct stat *buf)
-.
-/^lstat(path, buf)/j
+s/;/,/
 j
--
-/^lstat(path, buf)/c
-lstat (const char *path, struct stat *buf)
-.
-/^fstat(fd, buf)/j
+s/;/)/
+/^lstat(/
+s/(.*$/(/
 j
--
-/^fstat(fd, buf)/c
-fstat (int fd, struct stat *buf)
-.
-/^mknod(path, mode, dev)/j
+s/;/,/
 j
+s/;/)/
+/^fstat(/
+s/(.*$/(/
 j
--
-/^mknod(path, mode, dev)/c
-mknod (const char *path, mode_t mode, dev_t dev)
-.
-1,\$s/path/__path/g
-1,\$s/buf/__buf/g
-1,\$s/fd/__fd/g
-1,\$s/ret\\([^u]\\)/__ret\1/g
-1,\$s/\\([^_]\\)mode\\([^_]\\)/\\1__mode\\2/g
-1,\$s/\\([^_r]\\)dev\\([^_]\\)/\\1__dev\\2/g
+s/;/,/
+j
+s/;/)/
+/^mknod(/
+s/(.*$/(/
+j
+s/;/,/
+j
+s/;/,/
+j
+s/;/)/
+1,\$s/\([^A-Za-z]\)path\([^A-Za-z]\)/\1__path\2/g
+1,\$s/\([^A-Za-z]\)buf\([^A-Za-z]\)/\1__buf\2/g
+1,\$s/\([^A-Za-z]\)fd\([^A-Za-z]\)/\1__fd\2/g
+1,\$s/ret\([^u]\)/__ret\1/g
+1,\$s/\([^_]\)mode\([^_]\)/\1__mode\2/g
+1,\$s/\([^_r]\)dev\([^_]\)/\1__dev\2/g
 wq
 EOF
   echo Fixed $file_to_fix
