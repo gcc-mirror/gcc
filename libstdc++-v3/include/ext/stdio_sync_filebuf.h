@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file ext/stdiostream.h
+/** @file ext/stdio_sync_filebuf.h
  *  This file is a GNU extension to the Standard C++ Library.
  */
 

@@ -257,8 +257,7 @@ namespace std
       // Data Members (public):
       // NB: This is an unsigned type, and thus represents the maximum
       // size that the allocator can hold.
-      /// @var
-      /// Value returned by various member functions when they fail.
+      ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
     private:
