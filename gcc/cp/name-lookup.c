@@ -381,22 +381,22 @@ push_binding (tree id, tree decl, cxx_scope* level)
   else
     {
       cp_class_binding *cb;
-      size_t length;
-      size_t i;
-      bool need_fixup;
 
-      length = VEC_length (cp_class_binding, level->class_shadowed);
-      need_fixup = (length && length == level->class_shadowed->alloc);
-      cb = VEC_safe_push (cp_class_binding, level->class_shadowed, NULL);
+      if (VEC_reserve (cp_class_binding, level->class_shadowed, -1))
+	{
+	  /* Fixup the current bindings, as they might have moved.  */
+	  size_t i;
+	  
+	  for (i = 0;
+	       (cb = VEC_iterate (cp_class_binding, level->class_shadowed, i));
+	       i++)
+	    IDENTIFIER_BINDING (cb->identifier) = &cb->base;
+	}
+
+      cb = VEC_quick_push (cp_class_binding, level->class_shadowed, NULL);
       cb->identifier = id;
       binding = &cb->base;
       cxx_binding_init (binding, decl, NULL_TREE);
-      if (need_fixup)
-	for (i = 0; i < length; ++i)
-	  {
-	    cb = VEC_index (cp_class_binding, level->class_shadowed, i);
-	    IDENTIFIER_BINDING (cb->identifier) = &cb->base;
-	  }
     }
 			      
   /* Now, fill in the binding information.  */

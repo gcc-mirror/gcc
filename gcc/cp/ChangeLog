@@ -1,3 +1,7 @@
+2004-07-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* name-lookup.c (push_binding): Use VEC_reserve.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h (expand_eh_spec_block): Remove.
