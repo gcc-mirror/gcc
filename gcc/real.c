@@ -2117,7 +2117,6 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
   else
     {
       int base = 10, d;
-      bool neg = false;
 
       memset (r, 0, sizeof (*r));
       r->cl = rvc_nan;
@@ -2127,7 +2126,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
       while (ISSPACE (*str))
 	str++;
       if (*str == '-')
-	str++, neg = true;
+	str++;
       else if (*str == '+')
 	str++;
       if (*str == '0')

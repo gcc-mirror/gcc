@@ -14,6 +14,8 @@
 
 	* loop-unroll.c (analyze_insns_in_loop): Remove preheader.
 
+	* real.c (real_nan): Remove neg.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
