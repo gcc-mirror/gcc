@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -115,26 +115,22 @@ public abstract class ResourceBundle
 	    }
 
 	  // Look for a properties file.
-	  {
-	    String prop_name = (bundleName.replace('.', '/') + ".properties");
-	    System.out.println ("trying '" + prop_name + "' for '" + bundleName);
-	    InputStream i = ClassLoader.getSystemResourceAsStream (prop_name);
-	    /*
-	    InputStream i = 
-		ClassLoader.getSystemResourceAsStream (bundleName.replace ('.', '/') 
-						       + ".properties");
-	    */
-	    if (i != null)
-	      {
-		try {
+	  InputStream i = 
+	    ClassLoader.getSystemResourceAsStream (bundleName.replace ('.', '/') 
+						   + ".properties");
+	  if (i != null)
+	    {
+	      try
+		{
 		  return new PropertyResourceBundle (i);
-		} catch (java.io.IOException e) {
+		}
+	      catch (java.io.IOException e)
+		{
 		  // The docs don't appear to define what happens in
 		  // this case, but it seems like continuing the
 		  // search is a reasonable thing to do.
 		}
-	      }
-	  }
+	    }
 
 	  if (bundleName.equals(stopHere))
 	    return result;
