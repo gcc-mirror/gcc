@@ -10,11 +10,6 @@
 	* gnu/awt/gtk/GtkLabelPeer.java: New file.
 	* gnu/awt/gtk/GtkButtonPeer.java: New file.
 
-	* java/awt/dnd/DropTargetListener.java: New file.
-	* java/awt/dnd/DragSourceListener.java: New file.
-	* java/awt/dnd/DragGestureListener.java: New file.
-	* java/awt/dnd/AutoScroll.java: New file.
-
 	* java/lang/natSystem.cc: Include locale.h if it exists.
 	* configure: Rebuilt.
 	* configure.in: Check for locale.h.
