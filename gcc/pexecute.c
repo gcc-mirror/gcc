@@ -95,6 +95,11 @@ static char *install_error_msg = "installation problem, cannot exec `%s'";
    On systems that don't support waiting for a particular child, PID is
    ignored.  On systems like MSDOS that don't really multitask pwait
    is just a mechanism to provide a consistent interface for the caller.
+
+   pfinish: finish generation of script
+
+   pfinish is necessary for systems like MPW where a script is generated that
+   runs the requested programs.
 */
 
 #ifdef __MSDOS__
@@ -299,7 +304,143 @@ pwait (pid, status, flags)
 
 #endif /* OS2 */
 
-#if ! defined (__MSDOS__) && ! defined (_WIN32) && ! defined (OS2)
+#ifdef MPW
+
+/* MPW pexecute doesn't actually run anything; instead, it writes out
+   script commands that, when run, will do the actual executing.
+
+   For example, in GCC's case, GCC will write out several script commands:
+
+   cpp ...
+   cc1 ...
+   as ...
+   ld ...
+
+   and then exit.  None of the above programs will have run yet.  The task
+   that called GCC will then execute the script and cause cpp,etc. to run.
+   The caller must invoke pfinish before calling exit.  This adds
+   the finishing touches to the generated script.  */
+
+static int first_time = 1;
+
+int
+pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
+     const char *program;
+     char * const *argv;
+     const char *this_pname;
+     const char *temp_base;
+     char **errmsg_fmt, **errmsg_arg;
+     int flags;
+{
+  char tmpprogram[255];
+  char *cp, *tmpname;
+  int i;
+
+  mpwify_filename (program, tmpprogram);
+  if (first_time)
+    {
+      printf ("Set Failed 0\n");
+      first_time = 0;
+    }
+
+  fputs ("If {Failed} == 0\n", stdout);
+  /* If being verbose, output a copy of the command.  It should be
+     accurate enough and escaped enough to be "clickable". */
+  if (verbose_flag)
+    {
+      fputs ("\tEcho ", stdout);
+      fputc ('\'', stdout);
+      fputs (tmpprogram, stdout);
+      fputc ('\'', stdout);
+      fputc (' ', stdout);
+      for (i=1; argv[i]; i++)
+	{
+	  fputc ('\'', stdout);
+	  /* See if we have an argument that needs fixing. */
+	  if (strchr(argv[i], '/'))
+	    {
+	      tmpname = xmalloc (256);
+	      mpwify_filename (argv[i], tmpname);
+	      argv[i] = tmpname;
+	    }
+	  for (cp = argv[i]; *cp; cp++)
+	    {
+	      /* Write an Option-d escape char in front of special chars. */
+	      if (strchr("'+", *cp))
+		fputc ('\266', stdout);
+	      fputc (*cp, stdout);
+	    }
+	  fputc ('\'', stdout);
+	  fputc (' ', stdout);
+	}
+      fputs ("\n", stdout);
+    }
+  fputs ("\t", stdout);
+  fputs (tmpprogram, stdout);
+  fputc (' ', stdout);
+
+  for (i=1; argv[i]; i++)
+    {
+      /* See if we have an argument that needs fixing. */
+      if (strchr(argv[i], '/'))
+	{
+	  tmpname = xmalloc (256);
+	  mpwify_filename (argv[i], tmpname);
+	  argv[i] = tmpname;
+	}
+      if (strchr (argv[i], ' '))
+	fputc ('\'', stdout);
+      for (cp = argv[i]; *cp; cp++)
+	{
+	  /* Write an Option-d escape char in front of special chars. */
+	  if (strchr("'+", *cp))
+	    fputc ('\266', stdout);
+	  fputc (*cp, stdout);
+	}
+      if (strchr (argv[i], ' '))
+	fputc ('\'', stdout);
+      fputc (' ', stdout);
+    }
+
+  fputs ("\n", stdout);
+
+  /* Output commands that arrange to clean up and exit if a failure occurs.
+     We have to be careful to collect the status from the program that was
+     run, rather than some other script command.  Also, we don't exit
+     immediately, since necessary cleanups are at the end of the script. */
+  fputs ("\tSet TmpStatus {Status}\n", stdout);
+  fputs ("\tIf {TmpStatus} != 0\n", stdout);
+  fputs ("\t\tSet Failed {TmpStatus}\n", stdout);
+  fputs ("\tEnd\n", stdout);
+  fputs ("End\n", stdout);
+
+  /* We're just composing a script, can't fail here. */
+  return 0;
+}
+
+int
+pwait (pid, status, flags)
+     int pid;
+     int *status;
+     int flags;
+{
+  *status = 0;
+  return 0;
+}
+
+/* Write out commands that will exit with the correct error code
+   if something in the script failed. */
+
+void
+pfinish ()
+{
+  printf ("\tExit \"{Failed}\"\n");
+}
+
+#endif /* MPW */
+
+#if ! defined (__MSDOS__) && ! defined (_WIN32) && ! defined (OS2) \
+    && ! defined (MPW)
 
 #ifdef USG
 #define vfork fork
@@ -436,4 +577,4 @@ pwait (pid, status, flags)
   return pid;
 }
 
-#endif /* !MSDOS && !WIN32 && !OS2 */
+#endif /* !MSDOS && !WIN32 && !OS2 && !MPW */
