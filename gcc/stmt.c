@@ -3895,8 +3895,6 @@ pushcase (value, converter, label, duplicate)
   index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
   nominal_type = case_stack->data.case_stmt.nominal_type;
 
-  check_seenlabel ();
-
   /* If the index is erroneous, avoid more problems: pretend to succeed.  */
   if (index_type == error_mark_node)
     return 0;
@@ -3904,6 +3902,8 @@ pushcase (value, converter, label, duplicate)
   /* Convert VALUE to the type in which the comparisons are nominally done.  */
   if (value != 0)
     value = (*converter) (nominal_type, value);
+
+  check_seenlabel ();
 
   /* Fail if this value is out of range for the actual type of the index
      (which may be narrower than NOMINAL_TYPE).  */
@@ -4612,6 +4612,13 @@ expand_end_case (orig_index)
 
   do_pending_stack_adjust ();
 
+  /* This might get an spurious warning in the presence of a syntax error;
+     it could be fixed by moving the call to check_seenlabel after the
+     check for error_mark_node, and copying the code of check_seenlabel that
+     deals with case_stack->data.case_stmt.line_number_status /
+     restore_line_number_status in front of the call to end_cleanup_deferral;
+     However, this might miss some useful warnings in the presence of
+     non-syntax errors.  */
   check_seenlabel ();
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
