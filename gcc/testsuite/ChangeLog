@@ -1,3 +1,10 @@
+2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/14635
+	* builtins-1.c (nan, nans): Don't test.
+	* builtins-30.c: Don't use nan, nanf, nanl.
+	* builtins-35.c: New test.
+
 2004-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/placement3.C: New test.
