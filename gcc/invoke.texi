@@ -1,4 +1,5 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+@c 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3792,8 +3793,10 @@ libraries and for parts of the compiler:
 Add the directory @var{dir} to the head of the list of directories to be
 searched for header files.  This can be used to override a system header
 file, substituting your own version, since these directories are
-searched before the system header file directories.  If you use more
-than one @samp{-I} option, the directories are scanned in left-to-right
+searched before the system header file directories.  However, you should
+not use this option to add directories that contain vendor-supplied
+system header files (use @samp{-isystem} for that). If you use more than
+one @samp{-I} option, the directories are scanned in left-to-right
 order; the standard system directories come after.
 
 @item -I-
