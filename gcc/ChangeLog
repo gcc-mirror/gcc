@@ -1,3 +1,8 @@
+Sat May 22 09:06:33 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (NEED_PLT_GOT): Only define if not already
+	defined. 
+
 Sat May 22 07:17:05 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* tm.texi (FUNCTION_ARG): Correct description of a stack element
