@@ -3330,6 +3330,20 @@ purge_addressof (insns)
   hash_table_free (&ht);
   purge_bitfield_addressof_replacements = 0;
   purge_addressof_replacements = 0;
+
+  /* REGs are shared.  purge_addressof will destructively replace a REG
+     with a MEM, which creates shared MEMs.
+
+     Unfortunately, the children of put_reg_into_stack assume that MEMs
+     referring to the same stack slot are shared (fixup_var_refs and
+     the associated hash table code).
+
+     So, we have to do another unsharing pass after we have flushed any
+     REGs that had their address taken into the stack.
+
+     It may be worth tracking whether or not we converted any REGs into
+     MEMs to avoid this overhead when it is not needed.  */
+  unshare_all_rtl_again (get_insns ());
 }
 
 /* Pass through the INSNS of function FNDECL and convert virtual register
