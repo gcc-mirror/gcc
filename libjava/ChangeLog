@@ -1,5 +1,13 @@
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/PlainSocketImpl.java:
+	Reformatting.
+	(static): New implicit method.
+	(read): Made package private.
+	(write): Likewise.
+
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/SimpleTimeZone.java:
 	Removed unneeded import, reformatting.
 

@@ -41,18 +41,29 @@ package java.net;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import gnu.classpath.Configuration;
 
 /**
- * The standard GCJ socket implementation.
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  Believed complete and correct.
- *
+ */
+
+/**
  * @author Per Bothner <bothner@cygnus.com>
  * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
  */
 class PlainSocketImpl extends SocketImpl
 {
+  // Static initializer to load native library.
+  static
+    {
+      if (Configuration.INIT_LOAD_LIBRARY)
+        {
+          System.loadLibrary("javanet");
+        }
+    }
+  
   // These fields are mirrored for use in native code to avoid cpp conflicts
   // when the #defines in system header files are the same as the public fields.
   static final int _Jv_TCP_NODELAY_ = SocketOptions.TCP_NODELAY,
@@ -137,17 +148,17 @@ class PlainSocketImpl extends SocketImpl
 
   // The native read methods.
 
-  private native int read() throws IOException;
+  native int read() throws IOException;
 
-  private native int read(byte[] buffer, int offset, int count)
+  native int read(byte[] buffer, int offset, int count)
     throws IOException;
 
 
   // The native write methods.
 
-  private native void write(int c) throws IOException;
+  native void write(int c) throws IOException;
 
-  private native void write(byte[] buffer, int offset, int count)
+  native void write(byte[] buffer, int offset, int count)
     throws IOException;
 
   protected void finalize() throws Throwable
