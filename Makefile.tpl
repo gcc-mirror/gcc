@@ -1318,7 +1318,7 @@ all-itcl: maybe-all-tcl maybe-all-tk
 # We put install-tcl before install-itcl because itcl wants to run a
 # program on installation which uses the Tcl libraries.
 install-itcl: maybe-install-tcl
-all-sid: maybe-all-tcl maybe-all-tk
+all-sid: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-tcl maybe-all-tk
 install-sid: maybe-install-tcl maybe-install-tk
 all-sim: maybe-all-libiberty maybe-all-bfd maybe-all-opcodes maybe-all-readline maybe-configure-gdb
 configure-tk: maybe-configure-tcl
