@@ -965,7 +965,7 @@ i960_function_prologue (file, size)
   register int i, j, nr;
   int n_iregs = 0;
   int rsize = 0;
-  int actual_fsize;
+  int actual_fsize, offset;
   char tmpstr[1000];
   /* -1 if reg must be saved on proc entry, 0 if available, 1 if saved
      somewhere.  */
@@ -1051,7 +1051,12 @@ i960_function_prologue (file, size)
 #if 0
   /* ??? The 1.2.1 compiler does this also.  This is meant to round the frame
      size up to the nearest multiple of 16.  I don't know whether this is
-     necessary, or even desirable.  */
+     necessary, or even desirable.
+
+     The frame pointer must be aligned, but the call instruction takes care of
+     that.  If we leave the stack pointer unaligned, we may save a little on
+     dynamic stack allocation.  And we don't lose, at least according to the
+     i960CA manual.  */
   actual_fsize = (actual_fsize + 15) & ~0xF;
 #endif
 
@@ -1063,7 +1068,10 @@ i960_function_prologue (file, size)
       else
 	fprintf (file, "\tlda\t%d(sp),sp\n", actual_fsize);
     }
-  
+
+  /* Take hardware register save area created by the call instruction
+     into account.  */
+  offset = compute_frame_size (size) + 64;
   /* Save registers on stack if needed.  */
   for (i = 0, j = n_iregs; j > 0 && i < 16; i++)
     {
@@ -1072,10 +1080,11 @@ i960_function_prologue (file, size)
 
       nr = 1;
 
-      if (i <= 14 && i % 2 == 0 && regs[i+1] == -1)
+      if (i <= 14 && i % 2 == 0 && regs[i+1] == -1 && offset % 2 == 0)
 	nr = 2;
 
-      if (nr == 2 && i <= 12 && i % 4 == 0 && regs[i+2] == -1)
+      if (nr == 2 && i <= 12 && i % 4 == 0 && regs[i+2] == -1
+	  && offset % 4 == 0)
 	nr = 3;
 
       if (nr == 3 && regs[i+3] == -1)
@@ -1085,15 +1094,16 @@ i960_function_prologue (file, size)
 	       ((nr == 4) ? "q" :
 		(nr == 3) ? "t" :
 		(nr == 2) ? "l" : ""),
-	       reg_names[i], size+(nr*4));
+	       reg_names[i], offset);
       sprintf (tmpstr,"\tld%s	%d(fp),%s\n",
 	       ((nr == 4) ? "q" :
 		(nr == 3) ? "t" :
 		(nr == 2) ? "l" : ""),
-	       size+(nr*4), reg_names[i]);
+	       offset, reg_names[i]);
       strcat (epilogue_string, tmpstr);
       i += nr-1;
       j -= nr;
+      offset += nr * 4;
     }
 
   if (actual_fsize == 0 && size == 0 && rsize == 0)
