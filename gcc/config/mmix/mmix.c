@@ -71,8 +71,8 @@ Boston, MA 02111-1307, USA.  */
    increasing rL and clearing unused (unset) registers with lower numbers.  */
 #define MMIX_OUTPUT_REGNO(N)					\
  (TARGET_ABI_GNU 						\
-  || (N) < MMIX_RETURN_VALUE_REGNUM				\
-  || (N) > MMIX_LAST_STACK_REGISTER_REGNUM			\
+  || (int) (N) < MMIX_RETURN_VALUE_REGNUM				\
+  || (int) (N) > MMIX_LAST_STACK_REGISTER_REGNUM			\
   ? (N) : ((N) - MMIX_RETURN_VALUE_REGNUM			\
 	   + cfun->machine->highest_saved_stack_register + 1))
 
@@ -1454,10 +1454,6 @@ mmix_constant_address_p (x)
   /* When using "base addresses", anything constant goes.  */
   int constant_ok = TARGET_BASE_ADDRESSES != 0;
 
-  if (code == CONSTANT_P_RTX || code == HIGH)
-    /* FIXME: Don't know how to dissect these.  Avoid them for now.  */
-    return constant_ok;
-
   switch (code)
     {
     case LABEL_REF:
@@ -1618,37 +1614,6 @@ mmix_select_cc_mode (op, x, y)
     return CC_UNSmode;
 
   return CCmode;
-}
-
-/* CANONICALIZE_COMPARISON.
-   FIXME: Check if the number adjustments trig.  */
-
-void
-mmix_canonicalize_comparison (codep, op0p, op1p)
-     RTX_CODE * codep;
-     rtx * op0p ATTRIBUTE_UNUSED;
-     rtx * op1p;
-{
-  /* Change -1 to zero, if possible.  */
-  if ((*codep == LE || *codep == GT)
-      && GET_CODE (*op1p) == CONST_INT
-      && *op1p == constm1_rtx)
-    {
-      *codep = *codep == LE ? LT : GE;
-      *op1p = const0_rtx;
-    }
-
-  /* Fix up 256 to 255, if possible.  */
-  if ((*codep == LT || *codep == LTU || *codep == GE || *codep == GEU)
-      && GET_CODE (*op1p) == CONST_INT
-      && INTVAL (*op1p) == 256)
-    {
-      /* FIXME: Remove when I know this trigs.  */
-      fatal_insn ("oops, not debugged; fixing up value:", *op1p);
-      *codep = *codep == LT ? LE : *codep == LTU ? LEU : *codep
-	== GE ? GT : GTU;
-      *op1p = GEN_INT (255);
-    }
 }
 
 /* REVERSIBLE_CC_MODE.  */
@@ -2360,14 +2325,6 @@ mmix_print_operand_address (stream, x)
       rtx x1 = XEXP (x, 0);
       rtx x2 = XEXP (x, 1);
 
-      /* Try swap the order.  FIXME: Do we need this?  */
-      if (! REG_P (x1))
-	{
-	  rtx tem = x1;
-	  x1 = x2;
-	  x2 = tem;
-	}
-
       if (REG_P (x1))
 	{
 	  fprintf (stream, "%s,", reg_names[MMIX_OUTPUT_REGNO (REGNO (x1))]);
@@ -2787,20 +2744,6 @@ mmix_reg_or_8bit_operand (op, mode)
 	&& CONST_OK_FOR_LETTER_P (INTVAL (op), 'I'));
 }
 
-/* True if this is a register or an int 0..256.  We include 256,
-   because it can be canonicalized into 255 for comparisons, which is
-   currently the only use of this predicate.
-   FIXME:  Check that this happens and does TRT.  */
-
-int
-mmix_reg_or_8bit_or_256_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return mmix_reg_or_8bit_operand (op, mode)
-    || (GET_CODE (op) == CONST_INT && INTVAL (op) == 256);
-}
-
 /* Returns zero if code and mode is not a valid condition from a
    compare-type insn.  Nonzero if it is.  The parameter op, if non-NULL,
    is the comparison of mode is CC-somethingmode.  */
@@ -2859,8 +2802,6 @@ mmix_gen_compare_reg (code, x, y)
   /* FIXME:  Can we avoid emitting a compare insn here?  */
   if (! REG_P (x) && ! REG_P (y))
     x = force_reg (mode, x);
-
-  CANONICALIZE_COMPARISON (code, x, y);
 
   /* If it's not quite right yet, put y in a register.  */
   if (! REG_P (y)
