@@ -1236,7 +1236,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
      HOST_WIDE_INT c;
      int n;
 {
-  HOST_WIDE_INT new = c;
+  HOST_WIDE_INT new;
   int i, bits;
   /* Use a pseudo if highly optimizing and still generating RTL.  */
   rtx subtarget
@@ -1250,7 +1250,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
      cross-compiling on a narrow machine.  */
 
   if (mode == SImode)
-    c = (c & 0xffffffff) - 2 * (c & 0x80000000);
+    c = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
 #endif
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
@@ -1260,10 +1260,9 @@ alpha_emit_set_const_1 (target, mode, c, n)
   if (HOST_BITS_PER_WIDE_INT != 64
       || c >> 31 == -1 || c >> 31 == 0)
     {
-      HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
+      HOST_WIDE_INT low = ((c & 0xffff) ^ 0x8000) - 0x8000;
       HOST_WIDE_INT tmp1 = c - low;
-      HOST_WIDE_INT high
-	= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
+      HOST_WIDE_INT high = (((tmp1 >> 16) & 0xffff) ^ 0x8000) - 0x8000;
       HOST_WIDE_INT extra = 0;
 
       /* If HIGH will be interpreted as negative but the constant is
@@ -1291,13 +1290,13 @@ alpha_emit_set_const_1 (target, mode, c, n)
 	}
       else if (n >= 2 + (extra != 0))
 	{
-	  temp = copy_to_suggested_reg (GEN_INT (low), subtarget, mode);
+	  temp = copy_to_suggested_reg (GEN_INT (high << 16), subtarget, mode);
 
 	  if (extra != 0)
 	    temp = expand_binop (mode, add_optab, temp, GEN_INT (extra << 16),
 				 subtarget, 0, OPTAB_WIDEN);
 
-	  return expand_binop (mode, add_optab, temp, GEN_INT (high << 16),
+	  return expand_binop (mode, add_optab, temp, GEN_INT (low),
 			       target, 0, OPTAB_WIDEN);
 	}
     }
@@ -1311,34 +1310,22 @@ alpha_emit_set_const_1 (target, mode, c, n)
       || (mode == SImode && ! rtx_equal_function_value_matters))
     return 0;
 
-#if HOST_BITS_PER_WIDE_INT == 64
-  /* First, see if can load a value into the target that is the same as the
-     constant except that all bytes that are 0 are changed to be 0xff.  If we
-     can, then we can do a ZAPNOT to obtain the desired constant.  */
-
-  for (i = 0; i < 64; i += 8)
-    if ((new & ((HOST_WIDE_INT) 0xff << i)) == 0)
-      new |= (HOST_WIDE_INT) 0xff << i;
-
-  /* We are only called for SImode and DImode.  If this is SImode, ensure that
-     we are sign extended to a full word.  */
-
-  if (mode == SImode)
-    new = (new & 0xffffffff) - 2 * (new & 0x80000000);
-
-  if (new != c
-      && (temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
-    return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
-			 target, 0, OPTAB_WIDEN);
-#endif
-
   /* Next, see if we can load a related constant and then shift and possibly
      negate it to get the constant we want.  Try this once each increasing
      numbers of insns.  */
 
   for (i = 1; i < n; i++)
     {
-      /* First try complementing.  */
+      /* First, see if minus some low bits, we've an easy load of
+	 high bits.  */
+
+      new = ((c & 0xffff) ^ 0x8000) - 0x8000;
+      if (new != 0
+          && (temp = alpha_emit_set_const (subtarget, mode, c - new, i)) != 0)
+	return expand_binop (mode, add_optab, temp, GEN_INT (new),
+			     target, 0, OPTAB_WIDEN);
+
+      /* Next try complementing.  */
       if ((temp = alpha_emit_set_const (subtarget, mode, ~ c, i)) != 0)
 	return expand_unop (mode, one_cmpl_optab, temp, target, 0);
 
@@ -1354,8 +1341,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
       if ((bits = exact_log2 (c & - c)) > 0)
 	for (; bits > 0; bits--)
 	  if ((temp = (alpha_emit_set_const
-		       (subtarget, mode,
-			(unsigned HOST_WIDE_INT) (c >> bits), i))) != 0
+		       (subtarget, mode, c >> bits, i))) != 0
 	      || ((temp = (alpha_emit_set_const
 			  (subtarget, mode,
 			   ((unsigned HOST_WIDE_INT) c) >> bits, i)))
@@ -1400,13 +1386,27 @@ alpha_emit_set_const_1 (target, mode, c, n)
 				 target, 0, OPTAB_WIDEN);
     }
 
-  /* Next, see if, minus some low bits, we've an easy load of high bits.  */
+#if HOST_BITS_PER_WIDE_INT == 64
+  /* Finally, see if can load a value into the target that is the same as the
+     constant except that all bytes that are 0 are changed to be 0xff.  If we
+     can, then we can do a ZAPNOT to obtain the desired constant.  */
 
-  new = ((c & 0xffff) ^ 0x8000) - 0x8000;
-  if (new != 0
-      && (temp = alpha_emit_set_const (subtarget, mode, c - new, n - 1)) != 0)
-    return expand_binop (mode, add_optab, temp, GEN_INT (new),
+  new = c;
+  for (i = 0; i < 64; i += 8)
+    if ((new & ((HOST_WIDE_INT) 0xff << i)) == 0)
+      new |= (HOST_WIDE_INT) 0xff << i;
+
+  /* We are only called for SImode and DImode.  If this is SImode, ensure that
+     we are sign extended to a full word.  */
+
+  if (mode == SImode)
+    new = ((new & 0xffffffff) ^ 0x80000000) - 0x80000000;
+
+  if (new != c && new != -1
+      && (temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
+    return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
 			 target, 0, OPTAB_WIDEN);
+#endif
 
   return 0;
 }

@@ -1,3 +1,8 @@
+2000-03-03  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_set_const_1): Re-order cases to prefer
+	addition over compliments over shifts.
+
 Fri Mar  3 12:49:28 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine_note_use): Handle return register USEs.
