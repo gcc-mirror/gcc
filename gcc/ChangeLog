@@ -1,5 +1,16 @@
 2002-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* emit-rtl.c (emit_jump_insn_before, emit_call_insn_before,
+	emit_jump_insn): Fix uninitialized variable.
+	* gcov.c (init_line_info): Likewise.
+	* genautomata.c (transform_3): Add braces around ambiguous
+	else.
+	* ifcvt.c (cond_exec_process_insns): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* ra-build.c (parts_to_webs_1): Fix uninitialized variable.
+	* regrename.c (copyprop_hardreg_forward): Fix uninitialized
+	variable.
+
 	* gengtype.c (write_gc_structure_fields): Avoid signed/unsigned
 	warnings in output files.
 

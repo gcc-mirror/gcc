@@ -3974,7 +3974,7 @@ rtx
 emit_jump_insn_before (x, before)
      rtx x, before;
 {
-  rtx insn, last;
+  rtx insn, last = NULL_RTX;
 
 #ifdef ENABLE_RTL_CHECKING
   if (before == NULL_RTX)
@@ -4021,7 +4021,7 @@ rtx
 emit_call_insn_before (x, before)
      rtx x, before;
 {
-  rtx last, insn;
+  rtx last = NULL_RTX, insn;
 
 #ifdef ENABLE_RTL_CHECKING
   if (before == NULL_RTX)
@@ -4506,7 +4506,7 @@ rtx
 emit_jump_insn (x)
      rtx x;
 {
-  rtx last, insn;
+  rtx last = NULL_RTX, insn;
 
   switch (GET_CODE (x))
     {

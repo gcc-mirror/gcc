@@ -1815,7 +1815,7 @@ parts_to_webs_1 (df, copy_webs, all_refs)
   webnum = 0;
   for (i = 0; i < def_id + use_id; i++)
     {
-      struct web *web, *subweb;
+      struct web *subweb, *web = 0; /* Initialize web to silence warnings.  */
       struct web_part *wp = &web_parts[i];
       struct ref *ref = wp->ref;
       unsigned int ref_id;

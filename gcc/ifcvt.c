@@ -224,7 +224,7 @@ block_fallthru (bb)
 
 static int
 cond_exec_process_insns (ce_info, start, end, test, prob_val, mod_ok)
-     ce_if_block_t *ce_info;	/* if block information */
+     ce_if_block_t *ce_info ATTRIBUTE_UNUSED;	/* if block information */
      rtx start;			/* first insn to look at */
      rtx end;			/* last insn to look at */
      rtx test;			/* conditional execution test */
