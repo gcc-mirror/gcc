@@ -73,8 +73,6 @@ typedef unsigned char U_CHAR;
 #include <sys/time.h>		/* for __DATE__ and __TIME__ */
 #include <sys/resource.h>
 #else
-#define index strchr
-#define rindex strrchr
 #include <time.h>
 #include <fcntl.h>
 #endif /* USG */
@@ -1625,7 +1623,7 @@ main (argc, argv)
 
     s = spec;
     /* Find the space before the DEPS_TARGET, if there is one.  */
-    /* Don't use `index'; that causes trouble on USG.  */
+    /* This should use index.  (mrs) */
     while (*s != 0 && *s != ' ') s++;
     if (*s != 0) {
       deps_target = s + 1;
