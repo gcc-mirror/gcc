@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -249,8 +249,6 @@ static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
 static int contains_replace_regs PROTO((rtx, char *));
 static int memref_referenced_p	PROTO((rtx, rtx));
 static int memref_used_between_p PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
-static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
 static void block_alloc		PROTO((int));
 static int qty_sugg_compare    	PROTO((int, int));
@@ -738,263 +736,6 @@ memref_used_between_p (memref, start, end)
   return 0;
 }
 
-/* INSN is a copy from SRC to DEST, both registers, and SRC does not die
-   in INSN.
-
-   Search forward to see if SRC dies before either it or DEST is modified,
-   but don't scan past the end of a basic block.  If so, we can replace SRC
-   with DEST and let SRC die in INSN. 
-
-   This will reduce the number of registers live in that range and may enable
-   DEST to be tied to SRC, thus often saving one register in addition to a
-   register-register copy.  */
-
-static void
-optimize_reg_copy_1 (insn, dest, src)
-     rtx insn;
-     rtx dest;
-     rtx src;
-{
-  rtx p, q;
-  rtx note;
-  rtx dest_death = 0;
-  int sregno = REGNO (src);
-  int dregno = REGNO (dest);
-
-  /* We don't want to mess with hard regs if register classes are small. */
-  if (sregno == dregno
-      || (SMALL_REGISTER_CLASSES
-	  && (sregno < FIRST_PSEUDO_REGISTER
-	      || dregno < FIRST_PSEUDO_REGISTER))
-      /* We don't see all updates to SP if they are in an auto-inc memory
-	 reference, so we must disallow this optimization on them.  */
-      || sregno == STACK_POINTER_REGNUM || dregno == STACK_POINTER_REGNUM)
-    return;
-
-  for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
-    {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
-	break;
-
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
-	continue;
-
-      if (reg_set_p (src, p) || reg_set_p (dest, p)
-	  /* Don't change a USE of a register.  */
-	  || (GET_CODE (PATTERN (p)) == USE
-	      && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))
-	break;
-
-      /* See if all of SRC dies in P.  This test is slightly more
-	 conservative than it needs to be.  */
-      if ((note = find_regno_note (p, REG_DEAD, sregno)) != 0
-	  && GET_MODE (XEXP (note, 0)) == GET_MODE (src))
-	{
-	  int failed = 0;
-	  int length = 0;
-	  int d_length = 0;
-	  int n_calls = 0;
-	  int d_n_calls = 0;
-
-	  /* We can do the optimization.  Scan forward from INSN again,
-	     replacing regs as we go.  Set FAILED if a replacement can't
-	     be done.  In that case, we can't move the death note for SRC.
-	     This should be rare.  */
-
-	  /* Set to stop at next insn.  */
-	  for (q = next_real_insn (insn);
-	       q != next_real_insn (p);
-	       q = next_real_insn (q))
-	    {
-	      if (reg_overlap_mentioned_p (src, PATTERN (q)))
-		{
-		  /* If SRC is a hard register, we might miss some
-		     overlapping registers with validate_replace_rtx,
-		     so we would have to undo it.  We can't if DEST is
-		     present in the insn, so fail in that combination
-		     of cases.  */
-		  if (sregno < FIRST_PSEUDO_REGISTER
-		      && reg_mentioned_p (dest, PATTERN (q)))
-		    failed = 1;
-
-		  /* Replace all uses and make sure that the register
-		     isn't still present.  */
-		  else if (validate_replace_rtx (src, dest, q)
-			   && (sregno >= FIRST_PSEUDO_REGISTER
-			       || ! reg_overlap_mentioned_p (src,
-							     PATTERN (q))))
-		    {
-		      /* We assume that a register is used exactly once per
-			 insn in the updates below.  If this is not correct,
-			 no great harm is done.  */
-		      if (sregno >= FIRST_PSEUDO_REGISTER)
-			REG_N_REFS (sregno) -= loop_depth;
-		      if (dregno >= FIRST_PSEUDO_REGISTER)
-			REG_N_REFS (dregno) += loop_depth;
-		    }
-		  else
-		    {
-		      validate_replace_rtx (dest, src, q);
-		      failed = 1;
-		    }
-		}
-
-	      /* Count the insns and CALL_INSNs passed.  If we passed the
-		 death note of DEST, show increased live length.  */
-	      length++;
-	      if (dest_death)
-		d_length++;
-
-	      /* If the insn in which SRC dies is a CALL_INSN, don't count it
-		 as a call that has been crossed.  Otherwise, count it.  */
-	      if (q != p && GET_CODE (q) == CALL_INSN)
-		{
-		  n_calls++;
-		  if (dest_death)
-		    d_n_calls++;
-		}
-
-	      /* If DEST dies here, remove the death note and save it for
-		 later.  Make sure ALL of DEST dies here; again, this is
-		 overly conservative.  */
-	      if (dest_death == 0
-		  && (dest_death = find_regno_note (q, REG_DEAD, dregno)) != 0
-		  && GET_MODE (XEXP (dest_death, 0)) == GET_MODE (dest))
-		remove_note (q, dest_death);
-	    }
-
-	  if (! failed)
-	    {
-	      if (sregno >= FIRST_PSEUDO_REGISTER)
-		{
-		  if (REG_LIVE_LENGTH (sregno) >= 0)
-		    {
-		      REG_LIVE_LENGTH (sregno) -= length;
-		      /* reg_live_length is only an approximation after
-			 combine if sched is not run, so make sure that we
-			 still have a reasonable value.  */
-		      if (REG_LIVE_LENGTH (sregno) < 2)
-			REG_LIVE_LENGTH (sregno) = 2;
-		    }
-
-		  REG_N_CALLS_CROSSED (sregno) -= n_calls;
-		}
-
-	      if (dregno >= FIRST_PSEUDO_REGISTER)
-		{
-		  if (REG_LIVE_LENGTH (dregno) >= 0)
-		    REG_LIVE_LENGTH (dregno) += d_length;
-
-		  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
-		}
-
-	      /* Move death note of SRC from P to INSN.  */
-	      remove_note (p, note);
-	      XEXP (note, 1) = REG_NOTES (insn);
-	      REG_NOTES (insn) = note;
-	    }
-
-	  /* Put death note of DEST on P if we saw it die.  */
-	  if (dest_death)
-	    {
-	      XEXP (dest_death, 1) = REG_NOTES (p);
-	      REG_NOTES (p) = dest_death;
-	    }
-
-	  return;
-	}
-
-      /* If SRC is a hard register which is set or killed in some other
-	 way, we can't do this optimization.  */
-      else if (sregno < FIRST_PSEUDO_REGISTER
-	       && dead_or_set_p (p, src))
-	break;
-    }
-}
-
-/* INSN is a copy of SRC to DEST, in which SRC dies.  See if we now have
-   a sequence of insns that modify DEST followed by an insn that sets
-   SRC to DEST in which DEST dies, with no prior modification of DEST.
-   (There is no need to check if the insns in between actually modify
-   DEST.  We should not have cases where DEST is not modified, but
-   the optimization is safe if no such modification is detected.)
-   In that case, we can replace all uses of DEST, starting with INSN and
-   ending with the set of SRC to DEST, with SRC.  We do not do this
-   optimization if a CALL_INSN is crossed unless SRC already crosses a
-   call or if DEST dies before the copy back to SRC.
-
-   It is assumed that DEST and SRC are pseudos; it is too complicated to do
-   this for hard registers since the substitutions we may make might fail.  */
-
-static void
-optimize_reg_copy_2 (insn, dest, src)
-     rtx insn;
-     rtx dest;
-     rtx src;
-{
-  rtx p, q;
-  rtx set;
-  int sregno = REGNO (src);
-  int dregno = REGNO (dest);
-
-  for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
-    {
-      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
-	  || (GET_CODE (p) == NOTE
-	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
-		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
-	break;
-
-      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
-	continue;
-
-      set = single_set (p);
-      if (set && SET_SRC (set) == dest && SET_DEST (set) == src
-	  && find_reg_note (p, REG_DEAD, dest))
-	{
-	  /* We can do the optimization.  Scan forward from INSN again,
-	     replacing regs as we go.  */
-
-	  /* Set to stop at next insn.  */
-	  for (q = insn; q != NEXT_INSN (p); q = NEXT_INSN (q))
-	    if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
-	      {
-		if (reg_mentioned_p (dest, PATTERN (q)))
-		  {
-		    PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
-
-		    /* We assume that a register is used exactly once per
-		       insn in the updates below.  If this is not correct,
-		       no great harm is done.  */
-		    REG_N_REFS (dregno) -= loop_depth;
-		    REG_N_REFS (sregno) += loop_depth;
-		  }
-
-
-	      if (GET_CODE (q) == CALL_INSN)
-		{
-		  REG_N_CALLS_CROSSED (dregno)--;
-		  REG_N_CALLS_CROSSED (sregno)++;
-		}
-	      }
-
-	  remove_note (p, find_reg_note (p, REG_DEAD, dest));
-	  REG_N_DEATHS (dregno)--;
-	  remove_note (insn, find_reg_note (insn, REG_DEAD, src));
-	  REG_N_DEATHS (sregno)--;
-	  return;
-	}
-
-      if (reg_set_p (src, p)
-	  || find_reg_note (p, REG_DEAD, dest)
-	  || (GET_CODE (p) == CALL_INSN && REG_N_CALLS_CROSSED (sregno) == 0))
-	break;
-    }
-}
-	      
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are set once
    from a single constant).  Lower their priority for a register.
@@ -1079,22 +820,7 @@ update_equiv_regs ()
 	  = gen_rtx (EXPR_LIST, REG_EQUIV, dest,
 		     REG_NOTES (reg_equiv_init_insn[regno]));
 
-      /* If this is a register-register copy where SRC is not dead, see if we
-	 can optimize it.  */
-      if (flag_expensive_optimizations && GET_CODE (dest) == REG
-	  && GET_CODE (SET_SRC (set)) == REG
-	  && ! find_reg_note (insn, REG_DEAD, SET_SRC (set)))
-	optimize_reg_copy_1 (insn, dest, SET_SRC (set));
-
-      /* Similarly for a pseudo-pseudo copy when SRC is dead.  */
-      else if (flag_expensive_optimizations && GET_CODE (dest) == REG
-	       && REGNO (dest) >= FIRST_PSEUDO_REGISTER
-	       && GET_CODE (SET_SRC (set)) == REG
-	       && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
-	       && find_reg_note (insn, REG_DEAD, SET_SRC (set)))
-	optimize_reg_copy_2 (insn, dest, SET_SRC (set));
-
-      /* Otherwise, we only handle the case of a pseudo register being set
+      /* We only handle the case of a pseudo register being set
 	 once and only if neither the source nor the destination are
 	 in a register class that's likely to be spilled.  */
       if (GET_CODE (dest) != REG
