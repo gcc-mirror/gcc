@@ -1121,6 +1121,7 @@ extern tree purpose_member		PROTO((tree, tree));
 extern tree binfo_member		PROTO((tree, tree));
 extern int tree_int_cst_equal		PROTO((tree, tree));
 extern int tree_int_cst_lt		PROTO((tree, tree));
+extern int tree_int_cst_sgn		PROTO((tree));
 extern int index_type_equal		PROTO((tree, tree));
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
