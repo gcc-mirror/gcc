@@ -3972,7 +3972,11 @@ finclude (f, fname, op, system_header_p, dirptr)
   CHECK_DEPTH (return;);
 
   if (file_size_and_mode (f, &st_mode, &st_size) < 0)
-    goto nope;		/* Impossible? */
+    {
+      perror_with_name (fname);
+      close (f);
+      return;
+    }
 
   fp = &instack[indepth + 1];
   bzero (fp, sizeof (FILE_BUF));
