@@ -1,3 +1,15 @@
+2002-06-09  H.J. Lu  (hjl@gnu.org)
+
+	* include/private/gc_locks.h (GC_test_and_set): Support
+	Linux/mips.
+	(GC_TEST_AND_SET_DEFINED): Likewise.
+
+	* include/private/gcconfig.h (DYNAMIC_LOADING): Defined for
+	Linux/mips.
+	(DATAEND): Likewise.
+	(LINUX_STACKBOTTOM): Likewise.
+	(STACKBOTTOM): Removed for Linux/mips.
+
 Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 	* irix_threads.cc (GC_pthread_detach): Do not use REAL_FUNC.
