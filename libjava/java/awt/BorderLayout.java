@@ -637,7 +637,7 @@ private static final int PREF = 2;
 private Dimension
 calcCompSize(Component comp, int what)
 {
-  if (comp == null)
+  if (comp == null || !comp.isVisible())
     return new Dimension(0, 0);
   if (what == MIN)
     return comp.getMinimumSize();

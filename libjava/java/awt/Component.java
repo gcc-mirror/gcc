@@ -879,6 +879,7 @@ public abstract class Component
     this.visible = true;
     if (peer != null)
       peer.setVisible(true);
+    invalidate();
   }
 
   /**
@@ -905,6 +906,7 @@ public abstract class Component
     if (peer != null)
       peer.setVisible(false);
     this.visible = false;
+    invalidate();
   }
 
   /**

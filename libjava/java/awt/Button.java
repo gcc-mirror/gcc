@@ -148,6 +148,7 @@ public synchronized void
 setLabel(String label)
 {
   this.label = label;
+  actionCommand = label;
   if (peer != null)
     {
       ButtonPeer bp = (ButtonPeer) peer;
