@@ -2037,59 +2037,6 @@ setup_vtbl_ptr ()
   if (base_init_expr == 0
       && DECL_CONSTRUCTOR_P (current_function_decl))
     emit_base_init (current_class_type, 0);
-
-#if 0
-  /* This has something a little wrong with it.
-
-     On a sun4, code like:
-
-        be L6
-        ld [%i0],%o1
-
-     is generated, when the below is used when -O4 is given.  The delay
-     slot it filled with an instruction that is safe, when this isn't
-     used, like in:
-
-        be L6
-        sethi %hi(LC1),%o0
-        ld [%i0],%o1
-
-     on code like:
-
-        struct A {
-          virtual void print() { printf("xxx"); }
-          void f();
-        };
-
-        void A::f() {
-          if (this) {
-            print();
-          } else {
-            printf("0");
-          }
-        }
-
-     And that is why this is disabled for now. (mrs)
-  */
-
-  if ((flag_this_is_variable & 1) == 0
-      && optimize
-      && current_class_type
-      && CLASSTYPE_VSIZE (current_class_type)
-      && ! DECL_STATIC_FUNCTION_P (current_function_decl))
-    {
-      tree vfield = build_vfield_ref (C_C_D, current_class_type);
-      current_vtable_decl = CLASSTYPE_VTBL_PTR (current_class_type);
-      DECL_RTL (current_vtable_decl) = 0;
-      DECL_INITIAL (current_vtable_decl) = error_mark_node;
-      /* Have to cast the initializer, since it may have come from a
-	 more base class then we ascribe CURRENT_VTABLE_DECL to be.  */
-      finish_decl (current_vtable_decl, convert_force (TREE_TYPE (current_vtable_decl), vfield, 0), NULL_TREE, 0, 0);
-      current_vtable_decl = build_indirect_ref (current_vtable_decl, NULL_PTR);
-    }
-  else
-#endif
-    current_vtable_decl = NULL_TREE;
 }
 
 /* Record the existence of an addressable inline function.  */

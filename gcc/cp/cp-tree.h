@@ -493,8 +493,6 @@ struct lang_type
   union tree_node *as_list;
   union tree_node *id_as_list;
   union tree_node *binfo_as_list;
-  union tree_node *vtbl_ptr;
-  union tree_node *instance_variable;
   union tree_node *friend_classes;
 
   char *mi_matrix;
@@ -806,12 +804,6 @@ struct lang_type
 #define CLASSTYPE_ID_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->id_as_list)
 /* Same, but cache a list whose value is the binfo of this type.  */
 #define CLASSTYPE_BINFO_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->binfo_as_list)
-
-/* Slot in which to cache a copy of the local vtable pointer.  */
-#define CLASSTYPE_VTBL_PTR(NODE) (TYPE_LANG_SPECIFIC(NODE)->vtbl_ptr)
-
-/* Hold the instance object associated with this method.  */
-#define CLASSTYPE_INST_VAR(NODE) (TYPE_LANG_SPECIFIC(NODE)->instance_variable)
 
 /* A list of class types with which this type is a friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->friend_classes)
@@ -1524,7 +1516,6 @@ extern tree current_lang_name, lang_name_cplusplus, lang_name_c;
 extern tree original_function_name;
 
 extern tree current_class_name, current_class_type, current_class_decl, C_C_D;
-extern tree current_vtable_decl;
 
 /* in init.c  */
 extern tree global_base_init_list;
