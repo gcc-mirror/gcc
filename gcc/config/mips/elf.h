@@ -44,3 +44,10 @@ do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
 } while (0)
+
+/* Biggest alignment supported by the object file format of this
+   machine.  Use this macro to limit the alignment which can be
+   specified using the `__attribute__ ((aligned (N)))' construct.  If
+   not defined, the default value is `BIGGEST_ALIGNMENT'.  */
+
+#define MAX_OFILE_ALIGNMENT (32768*8)
