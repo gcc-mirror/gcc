@@ -43,6 +43,7 @@ with Opt;      use Opt;
 with Restrict; use Restrict;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
+with Sem_Dist; use Sem_Dist;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
@@ -838,20 +839,12 @@ package body Rtsfind is
                      E = RE_Params_Stream_Type
                        or else
                      E = RE_Request_Access)
+           and then Get_PCS_Name = Name_No_DSA
          then
-            declare
-               DSA_Implementation : constant Entity_Id :=
-                                      RTE (RE_DSA_Implementation);
-            begin
-               if Chars (Entity (Expression
-                                  (Parent (DSA_Implementation)))) = Name_No_DSA
-               then
-                  Set_Standard_Error;
-                  Write_Str ("distribution feature not supported");
-                  Write_Eol;
-                  raise Unrecoverable_Error;
-               end if;
-            end;
+            Set_Standard_Error;
+            Write_Str ("distribution feature not supported");
+            Write_Eol;
+            raise Unrecoverable_Error;
          end if;
       end Check_RPC;
 

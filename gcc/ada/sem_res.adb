@@ -168,7 +168,7 @@ package body Sem_Res is
    --  by other node rewriting procedures.
 
    procedure Resolve_Actuals (N : Node_Id; Nam : Entity_Id);
-   --  Resolve actuals of call, and add default expressions for missing ones.
+   --  Resolve actuals of call, and add default expressions for missing ones
 
    procedure Resolve_Entry_Call (N : Node_Id; Typ : Entity_Id);
    --  Called from Resolve_Call, when the prefix denotes an entry or element
@@ -182,7 +182,7 @@ package body Sem_Res is
    --  to the corresponding predefined operator, with suitable conversions.
 
    procedure Resolve_Intrinsic_Unary_Operator (N : Node_Id; Typ : Entity_Id);
-   --  Ditto, for unary operators (only arithmetic ones).
+   --  Ditto, for unary operators (only arithmetic ones)
 
    procedure Rewrite_Operator_As_Call (N : Node_Id; Nam : Entity_Id);
    --  If an operator node resolves to a call to a user-defined operator,
@@ -371,14 +371,14 @@ package body Sem_Res is
       D    : Node_Id;
 
    begin
-      --  Any use in a default expression is legal.
+      --  Any use in a default expression is legal
 
       if In_Default_Expression then
          null;
 
       elsif Nkind (PN) = N_Range then
 
-         --  Discriminant cannot be used to constrain a scalar type.
+         --  Discriminant cannot be used to constrain a scalar type
 
          P := Parent (PN);
 
@@ -1320,7 +1320,7 @@ package body Sem_Res is
       Full_Analysis := Save_Full_Analysis;
    end Pre_Analyze_And_Resolve;
 
-   --  Version without context type.
+   --  Version without context type
 
    procedure Pre_Analyze_And_Resolve (N : Node_Id) is
       Save_Full_Analysis : constant Boolean := Full_Analysis;
@@ -1534,17 +1534,9 @@ package body Sem_Res is
             Is_Remote : Boolean := True;
 
          begin
-            --  Check that Typ is a fat pointer with a reference to a RAS as
-            --  original access type.
+            --  Check that Typ is a remote access-to-subprogram type
 
-            if
-              (Ekind (Typ) = E_Access_Subprogram_Type
-                 and then Present (Equivalent_Type (Typ)))
-              or else
-                (Ekind (Typ) = E_Record_Type
-                   and then Present (Corresponding_Remote_Type (Typ)))
-
-            then
+            if Is_Remote_Access_To_Subprogram_Type (Typ) then
                --  Prefix (N) must statically denote a remote subprogram
                --  declared in a package specification.
 
@@ -1581,6 +1573,7 @@ package body Sem_Res is
                     or else Attr = Attribute_Unchecked_Access
                     or else Attr = Attribute_Unrestricted_Access)
                  and then Expander_Active
+                 and then Get_PCS_Name /= Name_No_DSA
                then
                   Check_Subtype_Conformant
                     (New_Id  => Entity (Prefix (N)),
@@ -2020,7 +2013,7 @@ package body Sem_Res is
 
                      elsif Nkind (Name (N)) = N_Selected_Component then
 
-                        --  Protected operation: retrieve operation name.
+                        --  Protected operation: retrieve operation name
 
                         Subp_Name := Selector_Name (Name (N));
                      else
@@ -2411,7 +2404,7 @@ package body Sem_Res is
             else
                Set_Parent (Actval, N);
 
-               --  See note above concerning aggregates.
+               --  See note above concerning aggregates
 
                if Nkind (Actval) = N_Aggregate
                  and then Has_Discriminants (Etype (Actval))
@@ -3131,13 +3124,13 @@ package body Sem_Res is
          elsif Etype (N) = T
            and then B_Typ /= Universal_Fixed
          then
-            --  Not a mixed-mode operation. Resolve with context.
+            --  Not a mixed-mode operation, resolve with context
 
             Resolve (N, B_Typ);
 
          elsif Etype (N) = Any_Fixed then
 
-            --  N may itself be a mixed-mode operation, so use context type.
+            --  N may itself be a mixed-mode operation, so use context type
 
             Resolve (N, B_Typ);
 
@@ -4512,7 +4505,7 @@ package body Sem_Res is
 
       if Nkind (Entry_Name) = N_Selected_Component then
 
-         --  Simple entry call.
+         --  Simple entry call
 
          Nam := Entity (Selector_Name (Entry_Name));
          Obj := Prefix (Entry_Name);
@@ -4520,7 +4513,7 @@ package body Sem_Res is
 
       else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
 
-         --  Call to member of entry family.
+         --  Call to member of entry family
 
          Nam := Entity (Selector_Name (Prefix (Entry_Name)));
          Obj := Prefix (Prefix (Entry_Name));
@@ -4941,7 +4934,7 @@ package body Sem_Res is
          Array_Type := Designated_Type (Array_Type);
       end if;
 
-      --  If name was overloaded, set component type correctly now.
+      --  If name was overloaded, set component type correctly now
 
       Set_Etype (N, Component_Type (Array_Type));
 
@@ -5247,7 +5240,7 @@ package body Sem_Res is
          return;
       end if;
 
-      --  The null literal takes its type from the context.
+      --  The null literal takes its type from the context
 
       Set_Etype (N, Typ);
    end Resolve_Null;
@@ -6347,11 +6340,14 @@ package body Sem_Res is
            and then (Etype (Right_Opnd (Operand)) = Universal_Real
                      or else Etype (Left_Opnd (Operand)) = Universal_Real)
          then
-            if Unique_Fixed_Point_Type (N) = Any_Type then
-               return;    --  expression is ambiguous.
-            else
-               --  If nothing else, the available fixed type is Duration.
+            --  Return if expression is ambiguous
 
+            if Unique_Fixed_Point_Type (N) = Any_Type then
+               return;
+
+            --  If nothing else, the available fixed type is Duration
+
+            else
                Set_Etype (Operand, Standard_Duration);
             end if;
 
@@ -6548,7 +6544,7 @@ package body Sem_Res is
       Opnd_Type : constant Entity_Id := Etype (Operand);
 
    begin
-      --  Resolve operand using its own type.
+      --  Resolve operand using its own type
 
       Resolve (Operand, Opnd_Type);
       Eval_Unchecked_Conversion (N);
@@ -6770,7 +6766,11 @@ package body Sem_Res is
       Scop : Entity_Id;
 
       procedure Fixed_Point_Error;
-      --  If true ambiguity, give details.
+      --  If true ambiguity, give details
+
+      -----------------------
+      -- Fixed_Point_Error --
+      -----------------------
 
       procedure Fixed_Point_Error is
       begin
@@ -6778,6 +6778,8 @@ package body Sem_Res is
          Error_Msg_NE ("\possible interpretation as}", N, T1);
          Error_Msg_NE ("\possible interpretation as}", N, T2);
       end Fixed_Point_Error;
+
+   --  Start of processing for Unique_Fixed_Point_Type
 
    begin
       --  The operations on Duration are visible, so Duration is always a
@@ -6810,7 +6812,7 @@ package body Sem_Res is
          Scop := Scope (Scop);
       end loop;
 
-      --  Look for visible fixed type declarations in the context.
+      --  Look for visible fixed type declarations in the context
 
       Item := First (Context_Items (Cunit (Current_Sem_Unit)));
       while Present (Item) loop
@@ -6896,15 +6898,15 @@ package body Sem_Res is
          Opnd_Type   : Entity_Id) return Boolean
       is
       begin
-         --  Upward conversions are allowed (RM 4.6(22)).
+         --  Upward conversions are allowed (RM 4.6(22))
 
          if Covers (Target_Type, Opnd_Type)
            or else Is_Ancestor (Target_Type, Opnd_Type)
          then
             return True;
 
-         --  Downward conversion are allowed if the operand is
-         --  is class-wide (RM 4.6(23)).
+         --  Downward conversion are allowed if the operand is class-wide
+         --  (RM 4.6(23)).
 
          elsif Is_Class_Wide_Type (Opnd_Type)
               and then Covers (Opnd_Type, Target_Type)
@@ -7285,7 +7287,7 @@ package body Sem_Res is
       elsif Is_Tagged_Type (Target_Type) then
          return Valid_Tagged_Conversion (Target_Type, Opnd_Type);
 
-      --  Types derived from the same root type are convertible.
+      --  Types derived from the same root type are convertible
 
       elsif Root_Type (Target_Type) = Root_Type (Opnd_Type) then
          return True;

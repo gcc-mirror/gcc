@@ -152,11 +152,6 @@ package body Exp_Dist is
    pragma Warnings (Off, Get_Subprogram_Id);
    --  One homonym only is unreferenced (specific to the GARLIC version)
 
-   function Get_PCS_Name return PCS_Names;
-   --  Return the name of a literal of type
-   --    System.Partition_Interface.DSA_Implementation_Type
-   --  indicating what PCS is currently in use.
-
    procedure Add_RAS_Dereference_TSS (N : Node_Id);
    --  Add a subprogram body for RAS Dereference TSS
 
@@ -4784,18 +4779,6 @@ package body Exp_Dist is
                Prefix        => New_Occurrence_Of (Prefix, Loc),
                Selector_Name => Make_Identifier (Loc, Selector_Name));
    end Make_Selected_Component;
-
-   ------------------
-   -- Get_PCS_Name --
-   ------------------
-
-   function Get_PCS_Name return PCS_Names is
-      PCS_Name : constant PCS_Names :=
-                   Chars (Entity (Expression
-                                    (Parent (RTE (RE_DSA_Implementation)))));
-   begin
-      return PCS_Name;
-   end Get_PCS_Name;
 
    -----------------------
    -- Get_Subprogram_Id --
