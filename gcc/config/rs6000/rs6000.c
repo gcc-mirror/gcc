@@ -939,6 +939,10 @@ init_cumulative_args (cum, fntype, libname, incoming)
       && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (fntype)))
     cum->call_cookie = CALL_NT_DLLIMPORT;
 
+  /* Also check for longcall's */
+  else if (fntype && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype)))
+    cum->call_cookie = CALL_LONG;
+
   if (TARGET_DEBUG_ARG)
     {
       fprintf (stderr, "\ninit_cumulative_args:");
@@ -952,8 +956,11 @@ init_cumulative_args (cum, fntype, libname, incoming)
       if (abi == ABI_V4 && incoming)
 	fprintf (stderr, " varargs = %d, ", cum->varargs_offset);
 
-      if (cum->call_cookie == CALL_NT_DLLIMPORT)
+      if (cum->call_cookie & CALL_NT_DLLIMPORT)
 	fprintf (stderr, " dllimport,");
+
+      if (cum->call_cookie & CALL_LONG)
+	fprintf (stderr, " longcall,");
 
       fprintf (stderr, " proto = %d, nargs = %d\n",
 	       cum->prototype, cum->nargs_prototype);
@@ -1089,12 +1096,10 @@ function_arg (cum, mode, type, named)
 	  && cum->nargs_prototype < 0
 	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
 	{
-	  if (cum->call_cookie != CALL_NORMAL)
-	    abort ();
-
-	  return GEN_INT ((cum->fregno == FP_ARG_MIN_REG)
-			  ? CALL_V4_SET_FP_ARGS
-			  : CALL_V4_CLEAR_FP_ARGS);
+	  return GEN_INT (cum->call_cookie
+			  | ((cum->fregno == FP_ARG_MIN_REG)
+			     ? CALL_V4_SET_FP_ARGS
+			     : CALL_V4_CLEAR_FP_ARGS));
 	}
 
       return GEN_INT (cum->call_cookie);
@@ -4248,6 +4253,11 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
       && TREE_CODE (type) != TYPE_DECL)
     return 0;
 
+  /* Longcall attribute says that the function is not within 2**26 bytes
+     of the current function, and to do an indirect call.  */
+  if (is_attribute_p ("longcall", identifier))
+    return (args == NULL_TREE);
+
   if (DEFAULT_ABI == ABI_NT)
     {
       /* Stdcall attribute says callee is responsible for popping arguments
@@ -4322,6 +4332,34 @@ rs6000_dll_import_ref (call_ref)
   emit_move_insn (reg2, gen_rtx (MEM, Pmode, reg1));
 
   return reg2;
+}
+
+/* Return a reference suitable for calling a function with the longcall attribute.  */
+struct rtx_def *
+rs6000_longcall_ref (call_ref)
+     rtx call_ref;
+{
+  char *call_name;
+  int len;
+  char *p;
+  rtx reg1, reg2;
+  tree node;
+
+  if (GET_CODE (call_ref) != SYMBOL_REF)
+    return call_ref;
+
+  /* System V adds '.' to the internal name, so skip them.  */
+  call_name = XSTR (call_ref, 0);
+  if (*call_name == '.')
+    {
+      while (*call_name == '.')
+	call_name++;
+
+      node = get_identifier (call_name);
+      call_ref = gen_rtx (SYMBOL_REF, VOIDmode, IDENTIFIER_POINTER (node));
+    }
+
+  return force_reg (Pmode, call_ref);
 }
 
 

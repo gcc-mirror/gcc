@@ -1246,13 +1246,11 @@ extern int rs6000_sysv_varargs_p;
 #define FP_ARG_RETURN FP_ARG_MIN_REG
 
 /* Flags for the call/call_value rtl operations set up by function_arg */
-enum rs6000_call_cookie
-{
-  CALL_V4_SET_FP_ARGS	= -1,		/* V4, FP args passed */
-  CALL_NORMAL		= 0,		/* no special processing */
-  CALL_V4_CLEAR_FP_ARGS	= 1,		/* V4, no FP args passed */
-  CALL_NT_DLLIMPORT	= 2		/* NT, this is a DLL import call */
-};
+#define CALL_NORMAL		0x00000000	/* no special processing */
+#define CALL_NT_DLLIMPORT	0x00000001	/* NT, this is a DLL import call */
+#define CALL_V4_CLEAR_FP_ARGS	0x00000002	/* V.4, no FP args passed */
+#define CALL_V4_SET_FP_ARGS	0x00000004	/* V.4, FP args were passed */
+#define CALL_LONG		0x00000008	/* always call indirect */
 
 /* Define cutoff for using external functions to save floating point */
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
@@ -1287,13 +1285,13 @@ enum rs6000_call_cookie
 
 typedef struct rs6000_args
 {
-  int words;				/* # words uses for passing GP registers */
-  int fregno;				/* next available FP register */
-  int nargs_prototype;			/* # args left in the current prototype */
-  int orig_nargs;			/* Original value of nargs_prototype */
-  int varargs_offset;			/* offset of the varargs save area */
-  int prototype;			/* Whether a prototype was defined */
-  enum rs6000_call_cookie call_cookie;	/* Do special things for this call */
+  int words;			/* # words uses for passing GP registers */
+  int fregno;			/* next available FP register */
+  int nargs_prototype;		/* # args left in the current prototype */
+  int orig_nargs;		/* Original value of nargs_prototype */
+  int varargs_offset;		/* offset of the varargs save area */
+  int prototype;		/* Whether a prototype was defined */
+  int call_cookie;		/* Do special things for this call */
 } CUMULATIVE_ARGS;
 
 /* Define intermediate macro to compute the size (in registers) of an argument
@@ -2879,3 +2877,4 @@ extern int rs6000_valid_decl_attribute_p ();
 extern int rs6000_valid_type_attribute_p ();
 extern void rs6000_set_default_type_attributes ();
 extern struct rtx_def *rs6000_dll_import_ref ();
+extern struct rtx_def *rs6000_longcall_ref ();
