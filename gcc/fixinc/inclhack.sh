@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 113 fixup scripts.
+# This script contains 117 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -1283,37 +1283,6 @@ struct rusage;
 
 
     #
-    # Fix Sco5_Stat_Wrappers
-    #
-    case "${file}" in ./sys/stat.h )
-    case "$target_canonical" in i*86-*-sco3.2v5* )
-    fixlist="${fixlist}
-      sco5_stat_wrappers"
-    if [ ! -r ${DESTFILE} ]
-    then infile=${file}
-    else infile=${DESTFILE} ; fi 
-
-    sed -e '/^static int[ 	]*[a-z]*stat(/i\
-#ifdef __cplusplus\
-extern "C"\
-{\
-#endif\
-' \
-        -e '/^}$/a\
-#ifdef __cplusplus\
-}\
-#endif /* __cplusplus */\
-' \
-          < $infile > ${DESTDIR}/fixinc.tmp
-    rm -f ${DESTFILE}
-    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    ;; # case end for machine type test
-    esac
-    ;; # case end for file name test
-    esac
-
-
-    #
     # Fix Hp_Inline
     #
     case "${file}" in ./sys/spinlock.h )
@@ -2426,6 +2395,82 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
+    # Fix Sco_Strict_Ansi
+    #
+    case "$target_canonical" in i?86-*-sco3.2* )
+    if ( test -n "`egrep '^[ 	]*#[ 	]*if.*!__STDC__' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      sco_strict_ansi"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/!__STDC__/!defined(__STRICT_ANSI__)/g' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
+
+
+    #
+    # Fix Sco_Static_Func
+    #
+    case "${file}" in ./sys/stat.h )
+    case "$target_canonical" in i?86-*-sco3.2* )
+    if ( test -n "`egrep '^static int' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      sco_static_func"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e '/^static int/i\
+#if __cplusplus\
+extern "C" {\
+#endif /* __cplusplus */' \
+        -e '/^}$/a\
+#if __cplusplus\
+ }\
+#endif /* __cplusplus */' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Sco_Utime
+    #
+    case "${file}" in ./sys/times.h )
+    case "$target_canonical" in i?86-*-sco3.2v4* )
+    if ( test -n "`egrep '(const char *, struct utimbuf *);' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      sco_utime"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/(const char \*, struct utimbuf \*);/(const char *, const struct utimbuf *);/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
+    ;; # case end for file name test
+    esac
+
+
+    #
     # Fix Sony_Include
     #
     case "${file}" in ./machine/machparam.h )
@@ -2518,6 +2563,35 @@ s@_Va_LIST@_VA_LIST@' \
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of bypass 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Sun_Auth_Proto
+    #
+    case "${file}" in ./rpc/auth.h | \
+	./rpc/clnt.h | \
+	./rpc/svc.h | \
+	./rpc/xdr.h )
+    if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      sun_auth_proto"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/^\(.*(\*[a-z][a-z_]*)(\)\();.*\)/\
+#ifdef __cplusplus\
+\1...\2\
+#else\
+\1\2\
+#endif/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
     ;; # case end for file name test
     esac
 
@@ -2665,35 +2739,6 @@ void	(*signal(...))(...);\
 
 
     #
-    # Fix Sun_Auth_Proto
-    #
-    case "${file}" in ./rpc/auth.h | \
-	./rpc/clnt.h | \
-	./rpc/svc.h | \
-	./rpc/xdr.h )
-    if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`"
-       ) > /dev/null 2>&1 ; then
-    fixlist="${fixlist}
-      sun_auth_proto"
-    if [ ! -r ${DESTFILE} ]
-    then infile=${file}
-    else infile=${DESTFILE} ; fi 
-
-    sed -e 's/^\(.*(\*[a-z][a-z_]*)(\)\();.*\)/\
-#ifdef __cplusplus\
-\1...\2\
-#else\
-\1\2\
-#endif/' \
-          < $infile > ${DESTDIR}/fixinc.tmp
-    rm -f ${DESTFILE}
-    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of select 'if'
-    ;; # case end for file name test
-    esac
-
-
-    #
     # Fix Sunos_Matherr_Decl
     #
     case "${file}" in ./math.h )
@@ -2734,6 +2779,48 @@ struct exception;
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of select 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Svr4_Getcwd
+    #
+    case "${file}" in ./stdlib.h | \
+	./unistd.h | \
+	./prototypes.h )
+    if ( test -n "`egrep 'getcwd\\(char \\*, int\\)' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      svr4_getcwd"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/getcwd(char \*, int)/getcwd(char *, size_t)/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Svr4_Profil
+    #
+    case "${file}" in ./stdlib.h | \
+	./unistd.h )
+    fixlist="${fixlist}
+      svr4_profil"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/profil(unsigned short \*, unsigned int, unsigned int, unsigned int)/profil(unsigned short *, size_t, int, unsigned)/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     ;; # case end for file name test
     esac
 
