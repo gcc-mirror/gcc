@@ -1464,7 +1464,7 @@ typedef struct rs6000_stack {
 #define RETURN_IN_MEMORY(TYPE) \
   (AGGREGATE_TYPE_P (TYPE) && \
    (TARGET_AIX_STRUCT_RET || \
-    (unsigned HOST_WIDEST_INT) int_size_in_bytes (TYPE) > 8))
+    (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 8))
 
 /* DRAFT_V4_STRUCT_RET defaults off.  */
 #define DRAFT_V4_STRUCT_RET 0
@@ -1577,8 +1577,7 @@ typedef struct rs6000_args
 #define RS6000_ARG_SIZE(MODE, TYPE)					\
 ((MODE) != BLKmode							\
  ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD	\
- : ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) 			\
-    + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+ : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
