@@ -4,6 +4,9 @@
 
 2000-07-11  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa.c (hppa_encode_label): Store labels in gc memory when ggc_p is
+	true.
+
 	* aclocal.m4 (AC_FUNC_MMAP_ANYWHERE): Extend test to detect systems
 	with MAP_ANONYMOUS and MAP_ANON.
 	* configure, config.in: Rebuilt.
