@@ -1,6 +1,6 @@
 /*
   dostime.h - function prototypes
-  Copyright (C) 1999  Bryan Burns
+  Copyright (C) 1999, 2002  Bryan Burns
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -18,5 +18,4 @@
  */
 
 time_t dos2unixtime(unsigned long dostime);
-unsigned long dostime(int, int, int, int, int, int);
 unsigned long unix2dostime(time_t*);
