@@ -2276,6 +2276,7 @@ init_alias_analysis ()
 			   && REG_N_SETS (regno) == 1)
 			  || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
 		      && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		      && ! rtx_varies_p (XEXP (note, 0), 1)
 		      && ! reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
 		    {
 		      reg_known_value[regno] = XEXP (note, 0);
@@ -2289,8 +2290,7 @@ init_alias_analysis ()
 			   && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		    {
 		      rtx op0 = XEXP (src, 0);
-		      if (reg_known_value[REGNO (op0)])
-			op0 = reg_known_value[REGNO (op0)];
+		      op0 = reg_known_value[REGNO (op0)];
 		      reg_known_value[regno]
 			= plus_constant_for_output (op0,
 						    INTVAL (XEXP (src, 1)));
