@@ -1,3 +1,8 @@
+2002-08-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Configuration, Building): Fix a typo and
+	some formatting directives.
+
 2002-08-30  Paul Koning <pkoning@equallogic.com>
 
 	* doc/c-tree.texi (RDIV_EXPR): Fix typo.
