@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[user|maint|man]  v3srcdir  v3builddir
 #
@@ -154,6 +154,11 @@ test $do_html = yes && {
       -e "s=@DATE@=${DATEtext}=" \
       ${srcdir}/docs/doxygen/mainpage.html > ${outdir}/html_${mode}/index.html
   cd ${outdir}/html_${mode}
+  # The following bit of line noise changes annoying
+  #   std::foo < typename _Ugly1, typename _Ugly2, .... _DefaultUgly17 >
+  # to user-friendly
+  #   std::foo
+  # in the major "Compound List" page.
   sed -e 's=\(::[[:alnum:]_]*\)&lt; .* &gt;=\1=' annotated.html > annstrip.html
   mv annstrip.html annotated.html
   cp ${srcdir}/docs/doxygen/tables.html tables.html
@@ -231,7 +236,40 @@ a\
     mv TEMP $f
 done
 
-cp ${srcdir}/docs/doxygen/Intro.3 .
+# Also, break this (generated) line up.  It's ugly as sin.
+problematic=`grep -l '[^^]Definition at line' *.3`
+for f in $problematic; do
+    sed 's/Definition at line/\
+.PP\
+&/'  $f > TEMP
+    mv TEMP $f
+done
+
+cp ${srcdir}/docs/doxygen/Intro.3 C++Intro.3
+
+# Why didn't I do this at the start?  Were rabid weasels eating my brain?
+# Who the fsck would "man std_vector" when the class isn't named that?
+for f in std_*; do
+    newname=`echo $f | sed 's/^std_/std::/'`
+    mv $f $newname
+done
+for f in __gnu_cxx_*; do
+    newname=`echo $f | sed 's/^__gnu_cxx_/__gnu_cxx::/'`
+    mv $f $newname
+done
+for f in *__policy_*; do
+    newname=`echo $f | sed 's/__policy_/__policy::/'`
+    mv $f $newname
+done
+
+# Also, for some reason, typedefs don't get their own man pages.  Sigh.
+for f in ios streambuf istream ostream iostream stringbuf \
+         istringstream ostringstream stringstream filebuf ifstream \
+         ofstream fstream string;
+do
+    echo ".so man3/std::basic_${f}.3" > std::${f}.3
+    echo ".so man3/std::basic_${f}.3" > std::w${f}.3
+done
 
 echo ::
 echo :: Man pages in ${outdir}/man
@@ -243,4 +281,3 @@ echo ::
 exit 0
 
 # vim:ts=4:et:
-
