@@ -5748,7 +5748,7 @@ case 327:
     break;}
 case 328:
 #line 1460 "parse.y"
-{ yyval.ttype = build_x_typeid (yyvsp[-1].ttype); ;
+{ yyval.ttype = build_typeid (yyvsp[-1].ttype); ;
     break;}
 case 329:
 #line 1462 "parse.y"

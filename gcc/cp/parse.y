@@ -1457,7 +1457,7 @@ primary:
 		  check_for_new_type ("const_cast", $3);
 		  $$ = build_const_cast (type, $6); }
 	| TYPEID '(' expr ')'
-		{ $$ = build_x_typeid ($3); }
+		{ $$ = build_typeid ($3); }
 	| TYPEID '(' type_id ')'
 		{ tree type = groktypename ($3.t);
 		  check_for_new_type ("typeid", $3);

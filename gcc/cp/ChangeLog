@@ -1,3 +1,33 @@
+2000-01-18  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* cp-tree.h (get_tinfo_fn_dynamic): Remove prototype.
+	(build_x_typeid): Likewise.
+	(get_tinfo_fn): Likewise.
+	(get_tinfo_fn_unused): Rename to ...
+	(get_tinfo_decl): ... here.
+	* rtti.c (build_headof): Replace logic error with assertion.
+	(get_tinfo_fn_dynamic): Rename to ...
+	(get_tinfo_decl_dynamic): ... here. Make static. Use
+	complete_type_or_else.
+	(build_x_typeid): Move into ...
+	(build_typeid): ... here. Adjust call to
+	get_tinfo_decl_dynamic. Use tinfo_from_decl. Simplify
+	throw_bad_typeid expression.
+	(get_tinfo_fn_unused): Rename to ...
+	(get_tinfo_decl): ... here. Adjust comment.
+	(get_tinfo_fn): Delete.
+	(tinfo_from_decl): New static function.
+	(get_typeid_1): Call get_tinfo_decl and tinfo_from_decl.
+	(get_typeid): Use complete_type_or_else.
+	(build_dynamic_cast_1): Adjust calls to
+	get_tinfo_decl_dynamic. Simplify throw_bad_cast expression.
+	* parse.y (primary): Adjust call to build_typeid.
+	* except.c (build_eh_type_type_ref): Adjust call to
+	get_tinfo_decl. Mark as used.
+	* class.c (set_rtti_entry): Adjust call to get_tinfo_decl.
+	* decl2.c (build_expr_from_tree): Adjust call to build_typeid.
+	* parse.c: Regenerated.
+
 2000-01-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (fixed_type_or_null): Don't clear NONNULL.  Document

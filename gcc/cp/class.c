@@ -829,7 +829,7 @@ set_rtti_entry (virtuals, offset, type)
     return;
 
   if (flag_rtti)
-    fn = get_tinfo_fn_unused (type);
+    fn = get_tinfo_decl (type);
   else
     /* If someone tries to get RTTI information for a type compiled
        without RTTI, they're out of luck.  By calling __pure_virtual

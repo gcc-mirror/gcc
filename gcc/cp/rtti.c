@@ -48,6 +48,8 @@ static void expand_ptr_desc PROTO((tree, tree));
 static void expand_generic_desc PROTO((tree, tree, const char *));
 static tree throw_bad_cast PROTO((void));
 static tree throw_bad_typeid PROTO((void));
+static tree get_tinfo_decl_dynamic PROTO((tree));
+static tree tinfo_from_decl PROTO((tree));
 
 void
 init_rtti_processing ()
@@ -95,11 +97,7 @@ build_headof (exp)
   tree aref;
   tree offset;
 
-  if (TREE_CODE (type) != POINTER_TYPE)
-    {
-      error ("`headof' applied to non-pointer type");
-      return error_mark_node;
-    }
+  my_friendly_assert (TREE_CODE (type) == POINTER_TYPE, 20000112);
   type = TREE_TYPE (type);
 
   if (!TYPE_POLYMORPHIC_P (type))
@@ -172,24 +170,18 @@ throw_bad_typeid ()
   return call_void_fn ("__throw_bad_typeid");
 }
 
-/* Return the type_info function associated with the expression EXP.  If
-   EXP is a reference to a polymorphic class, return the dynamic type;
+/* Return a pointer to type_info function associated with the expression EXP.
+   If EXP is a reference to a polymorphic class, return the dynamic type;
    otherwise return the static type of the expression.  */
 
-tree
-get_tinfo_fn_dynamic (exp)
+static tree
+get_tinfo_decl_dynamic (exp)
      tree exp;
 {
   tree type;
-
+  
   if (exp == error_mark_node)
     return error_mark_node;
-
-  if (type_unknown_p (exp))
-    {
-      error ("typeid of overloaded function");
-      return error_mark_node;
-    }
 
   type = TREE_TYPE (exp);
 
@@ -199,12 +191,12 @@ get_tinfo_fn_dynamic (exp)
 
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
-
-  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
-    {
-      cp_error ("taking typeid of incomplete type `%T'", type);
-      return error_mark_node;
-    }
+  
+  if (type != void_type_node)
+    type = complete_type_or_else (type, exp);
+  
+  if (!type)
+    return error_mark_node;
 
   /* If exp is a reference to polymorphic type, get the real type_info.  */
   if (TYPE_POLYMORPHIC_P (type) && ! resolves_to_fixed_type_p (exp, 0))
@@ -223,7 +215,7 @@ get_tinfo_fn_dynamic (exp)
       /* If we don't have rtti stuff, get to a sub-object that does.  */
       if (! CLASSTYPE_VFIELDS (type))
 	{
-	  exp = build_unary_op (ADDR_EXPR, exp, 0);
+      	  exp = build_unary_op (ADDR_EXPR, exp, 0);
 	  exp = build_headof_sub (exp);
 	  exp = build_indirect_ref (exp, NULL_PTR);
 	}
@@ -237,20 +229,12 @@ get_tinfo_fn_dynamic (exp)
     }
 
   /* otherwise return the type_info for the static type of the expr.  */
-  return get_tinfo_fn (TYPE_MAIN_VARIANT (type));
+  exp = get_tinfo_decl (TYPE_MAIN_VARIANT (type));
+  return build_unary_op (ADDR_EXPR, exp, 0);
 }
 
 tree
 build_typeid (exp)
-     tree exp;
-{
-  exp = get_tinfo_fn_dynamic (exp);
-  exp = build_call (exp, TREE_TYPE (tinfo_fn_type), NULL_TREE);
-  return convert_from_reference (exp);
-}  
-
-tree
-build_x_typeid (exp)
      tree exp;
 {
   tree cond = NULL_TREE;
@@ -282,22 +266,18 @@ build_x_typeid (exp)
       cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0));
     }
 
-  exp = get_tinfo_fn_dynamic (exp);
+  exp = get_tinfo_decl_dynamic (exp);
 
   if (exp == error_mark_node)
     return error_mark_node;
 
-  type = TREE_TYPE (tinfo_fn_type);
-  exp = build_call (exp, type, NULL_TREE);
+  exp = tinfo_from_decl (exp);
 
   if (cond)
     {
       tree bad = throw_bad_typeid ();
 
-      bad = build_compound_expr
-	(tree_cons (NULL_TREE, bad, build_tree_list
-		    (NULL_TREE, cp_convert (type, integer_zero_node))));
-      exp = build (COND_EXPR, type, cond, exp, bad);
+      exp = build (COND_EXPR, TREE_TYPE (exp), cond, exp, bad);
     }
 
   return convert_from_reference (exp);
@@ -345,19 +325,16 @@ get_tinfo_var (type)
   return declare_global_var (tname, arrtype);
 }
 
-/* Returns the decl for a function which will return a type_info node for
-   TYPE.  This version does not mark the function used, for use in
-   set_rtti_entry; for the vtable case, we'll get marked in
-   finish_vtable_vardecl, when we know that we want to be emitted.
-
-   We do this to avoid emitting the tinfo node itself, since we don't
-   currently support DECL_DEFER_OUTPUT for variables.  Also, we don't
-   associate constant pools with their functions properly, so we would
-   emit string constants and such even though we don't emit the actual
-   function.  When those bugs are fixed, this function should go away.  */
+/* Returns a decl for a function or variable which can be used to obtain a
+   type_info object for TYPE.  The old-abi uses functions, the new-abi will
+   use the type_info object directly.  You can take the address of the
+   returned decl, to save the decl.  To use the generator call
+   tinfo_from_generator.  You must arrange that the decl is mark_used, if
+   actually use it --- decls in vtables are only used if the vtable is
+   output.  */
 
 tree
-get_tinfo_fn_unused (type)
+get_tinfo_decl (type)
      tree type;
 {
   tree name;
@@ -385,19 +362,20 @@ get_tinfo_fn_unused (type)
   pushdecl_top_level (d);
   make_function_rtl (d);
   mark_inline_for_output (d);
-
+  
   return d;
 }
 
-/* Likewise, but also mark it used.  Called by various EH and RTTI code.  */
+/* Given an expr produced by get_tinfo_decl, return an expr which
+   produces a reference to the type_info object.  */
 
-tree
-get_tinfo_fn (type)
-     tree type;
+static tree
+tinfo_from_decl (expr)
+     tree expr;
 {
-  tree d = get_tinfo_fn_unused (type);
-  mark_used (d);
-  return d;
+  tree t = build_call (expr, TREE_TYPE (tinfo_fn_type), NULL_TREE);
+  
+  return t;
 }
 
 tree
@@ -406,12 +384,12 @@ get_typeid_1 (type)
 {
   tree t;
 
-  t = build_call
-    (get_tinfo_fn (type), TREE_TYPE (tinfo_fn_type), NULL_TREE);
+  t = get_tinfo_decl (type);
+  t = tinfo_from_decl (t);
   return convert_from_reference (t);
 }
   
-/* Return the type_info object for TYPE, creating it if necessary.  */
+/* Return the type_info object for TYPE.  */
 
 tree
 get_typeid (type)
@@ -439,11 +417,11 @@ get_typeid (type)
      that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
-    {
-      cp_error ("taking typeid of incomplete type `%T'", type);
-      return error_mark_node;
-    }
+  if (type != void_type_node)
+    type = complete_type_or_else (type, NULL_TREE);
+  
+  if (!type)
+    return error_mark_node;
 
   return get_typeid_1 (type);
 }
@@ -627,15 +605,15 @@ build_dynamic_cast_1 (type, expr)
 	  expr2 = build_headof (expr1);
 
 	  if (ec == POINTER_TYPE)
-	    td1 = get_tinfo_fn_dynamic (build_indirect_ref (expr, NULL_PTR));
+	    td1 = get_tinfo_decl_dynamic (build_indirect_ref (expr, NULL_PTR));
 	  else
-	    td1 = get_tinfo_fn_dynamic (expr);
+	    td1 = get_tinfo_decl_dynamic (expr);
 	  td1 = decay_conversion (td1);
 	  
 	  target_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
-	  td2 = decay_conversion (get_tinfo_fn (target_type));
-	  td3 = decay_conversion (get_tinfo_fn (static_type));
+	  td2 = decay_conversion (get_tinfo_decl (target_type));
+	  td3 = decay_conversion (get_tinfo_decl (static_type));
 
           /* Determine how T and V are related.  */
           boff = get_dynamic_cast_base_type (static_type, target_type);
@@ -678,10 +656,6 @@ build_dynamic_cast_1 (type, expr)
 	  if (tc == REFERENCE_TYPE)
 	    {
 	      expr1 = throw_bad_cast ();
-	      expr1 = build_compound_expr
-		(tree_cons (NULL_TREE, expr1,
-			    build_tree_list (NULL_TREE, cp_convert (type, integer_zero_node))));
-	      TREE_TYPE (expr1) = type;
 	      result = save_expr (result);
 	      return build (COND_EXPR, type, result, result, expr1);
 	    }
