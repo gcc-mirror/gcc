@@ -1,5 +1,17 @@
 Sun Mar 21 17:33:48 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i860.h (TARGET_SWITCHES): Add documentation for default case.
+	* i860/paragon.h (TARGET_SWITCHES): Add documentation for default case.
+	* i370.h (TARGET_SWITCHES): Add documentation for default case.
+	* fx80.h (TARGET_SWITCHES): Add documentation for default case.
+        * elxsi.h (TARGET_SWITCHES): Add documentation for default case.
+	* clipper.h (TARGET_SWITCHES): Add documentation for default case.
+	* 1750a.h (TARGET_SWITCHES): Add documentation for default case.
+	* pa.h (TARGET_SWITCHES): Add documentation for default case.
+	(TARGET_OPTIONS): Likewise for default case.
+	* mn10300.h (TARGET_SWITCHES): Add documentation for default case.
+	* h8300.h (TARGET_SWITCHES): Add documentation for default case.
+
 	* gcse.c (dump_hash_table): Fix whitespace in declaration.
 	(compute_transpout): Renamed from pre_compute_transpout.
 	(compute_pre_*): Deleted
