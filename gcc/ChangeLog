@@ -12,6 +12,10 @@ Wed Jan  6 17:55:19 1999  Robert Lipe  <robertlipe@usa.net>
 
 Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.h (DONT_RECORD_EQUIVALENCE): Kill.
+	* local-alloc.c (update_equiv_regs): Corresponding changes.
+	* tm.texi (DONT_RECORD_EQUIVALENCE): Kill.
+
 	* calls.c (special_function_p): Push alloca test inside the large
 	conditional which excludes functions not at file scope or not
 	extern.  
