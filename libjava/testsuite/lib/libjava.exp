@@ -127,6 +127,9 @@ proc libjava_init { args } {
 	}
     }
 
+    # Always set encoding used by gcj.
+    append GCJ_UNDER_TEST " --encoding=UTF-8"
+
     if [info exists env(LD_LIBRARY_PATH)] {
 	set original_ld_library_path $env(LD_LIBRARY_PATH)
     } else {
@@ -501,15 +504,18 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     # Find name to use for --main, and name of all class files.
     set jvscan [find_jvscan]
     verbose "jvscan is $jvscan"
+    # We insulate ourselves from the user's locale by forcing the
+    # encoding on jvscan.
+    set jvscan "compiler=$jvscan additional_flags=--encoding=UTF-8"
     set main_name [string trim \
 		     [prune_warnings \
 			[libjava_tcompile $srcfile "" none \
-			   "compiler=$jvscan additional_flags=--print-main"]]]
+			   "$jvscan additional_flags=--print-main"]]]
     verbose "main name is $main_name"
     set class_out [string trim \
 		     [prune_warnings \
 			[libjava_tcompile $srcfile "" none \
-			   "compiler=$jvscan additional_flags=--list-class"]]]
+			   "$jvscan additional_flags=--list-class"]]]
     verbose "class list is $class_out"
 
     if {[string match "*parse error*" $main_name]

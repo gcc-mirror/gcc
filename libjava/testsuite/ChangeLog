@@ -1,3 +1,8 @@
+2001-04-25  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (libjava_init): Use UTF-8 encoding.
+	(test_libjava_from_javac): Likewise.
+
 2001-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/pr83.xfail: Removed.
