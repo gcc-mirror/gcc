@@ -1,3 +1,8 @@
+2002-11-02  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (make_method_value): Put class name, not signature, into
+	`throws' field.  For PR java/8415.
+
 2002-10-24  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Invoking gij): Document --showversion.
