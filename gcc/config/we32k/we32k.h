@@ -105,6 +105,9 @@ extern int target_flags;
 /* Integer bit fields should have the same size and alignment
    as actual integers */
 #define PCC_BITFIELD_TYPE_MATTERS 1
+
+/* Specify the size_t type.  */
+#define SIZE_TYPE "unsigned int"
 
 /* Standard register usage.  */
 
