@@ -8031,8 +8031,8 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
         lo = ~lo, hi = ~hi;
 
       /* Force this value into the low part of a fp vector constant.  */
-      mask = immed_double_const (lo, hi, mode == SFmode ? SImode : DImode);
-      mask = gen_lowpart (mode, mask);
+      mask = immed_double_const (lo, hi, elt_mode == SFmode ? SImode : DImode);
+      mask = gen_lowpart (elt_mode, mask);
 
       switch (mode)
 	{
