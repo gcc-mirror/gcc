@@ -239,10 +239,6 @@ EOF
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
       -c "--enable-generated-files-in-srcdir" build || \
       error "Could not rebuild GCC"
-
-    # Regenerate the Fotran NEWS and BUGS files.
-    (cd ${OBJECT_DIRECTORY}/gcc && make f77.rebuilt) || \
-      error "Could not regenerate Fortran NEWS and BUGS files"
   fi
 
   # Move message catalogs to source directory.
