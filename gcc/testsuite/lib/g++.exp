@@ -1,4 +1,5 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002
+# Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -108,6 +109,7 @@ proc g++_link_flags { paths } {
     global rootme
     global srcdir
     global ld_library_path
+    global GXX_UNDER_TEST
 
     set gccpath ${paths}
     set libio_dir ""
@@ -137,6 +139,20 @@ proc g++_link_flags { paths } {
           append flags "-L${gccpath}/librx "
       }
       append ld_library_path ":${rootme}"
+      set compiler [lindex $GXX_UNDER_TEST 0]
+      if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	foreach i "[exec $compiler --print-multi-lib]" {
+	  set mldir ""
+	  regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+	  set mldir [string trimright $mldir "\;@"]
+	  if { "$mldir" == "." } {
+	    continue
+	  }
+	  if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] == 1 } {
+	    append ld_library_path ":${rootme}/${mldir}"
+	  }
+	}
+      }
     } else {
       global tool_root_dir;
 

@@ -113,6 +113,8 @@ proc libjava_init { args } {
     global original_ld_library_path
     global env objdir
     global env gcc_version
+    global tool_root_dir
+    global libjava_libgcc_s_path
 
     if { $libjava_initialized == 1 } { return; }
 
@@ -167,6 +169,29 @@ proc libjava_init { args } {
 	    set wrap_compile_flags [lindex $result 1];
 	} else {
 	    warning "Status wrapper failed to build."
+	}
+    }
+
+    # Finally, add the gcc build directory so that we can find the
+    # shared libgcc.  This, like much of dejagnu, is hideous.
+    set libjava_libgcc_s_path {}
+    set gccdir [lookfor_file $tool_root_dir gcc/libgcc_s.so]
+    if {$gccdir != ""} {
+	set gccdir [file dirname $gccdir]
+	lappend libjava_libgcc_s_path $gccdir
+	set compiler ${gccdir}/xgcc
+	if { [is_remote host] == 0 && [which $compiler] != 0 } {
+	    foreach i "[exec $compiler --print-multi-lib]" {
+		set mldir ""
+		regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+		set mldir [string trimright $mldir "\;@"]
+		if { "$mldir" == "." } {
+		    continue
+		}
+		if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] == 1 } {
+		    lappend libjava_libgcc_s_path "${gccdir}/${mldir}"
+		}
+	    }
 	}
     }
 
@@ -252,6 +277,7 @@ proc libjava_arguments {{mode compile}} {
     global env
     global tool_root_dir
     global gcc_version
+    global libjava_libgcc_s_path
 
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
@@ -301,13 +327,7 @@ proc libjava_arguments {{mode compile}} {
 	}
     }
 
-    # Finally, add the gcc build directory so that we can find the
-    # shared libgcc.  This, like much of dejagnu, is hideous.
-    set gccdir [lookfor_file $tool_root_dir gcc/libgcc_s.so]
-    if {$gccdir != ""} {
-	lappend lpath [file dirname $gccdir]
-    }
-
+    set lpath [concat $lpath $libjava_libgcc_s_path]
     set ld_library_path [join $lpath :]
 
     # That's enough to make things work for the normal case.
