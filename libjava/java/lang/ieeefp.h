@@ -6,11 +6,21 @@
 #endif
 
 #if defined(__arm__) || defined(__thumb__)
-/* ARM always has big-endian words.  Within those words the byte ordering
-   will be big or little endian depending upon the target.  */
+/* ARM traditionally used big-endian words; and within those words the
+   byte ordering was big or little endian depending upon the target.  
+   Modern floating-point formats are naturally ordered; in this case
+   __VFP_FP__ will be defined, even if soft-float.  */
+#ifdef __VFP_FP__
+#ifdef __ARMEL__
+#define __IEEE_LITTLE_ENDIAN
+#else
+#define __IEEE_BIG_ENDIAN
+#endif
+#else
 #define __IEEE_BIG_ENDIAN
 #ifdef __ARMEL__
 #define __IEEE_BYTES_LITTLE_ENDIAN
+#endif
 #endif
 #endif
 

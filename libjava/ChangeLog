@@ -1,3 +1,8 @@
+2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* java/lang/ieeefp.h: Handle ARM platforms that have pure-endian
+	floating point.
+
 2003-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.host (*-linux*): Don't set slow_pthread_self if primary
