@@ -1,3 +1,8 @@
+Wed Jul  1 10:56:55 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* c-decl.c (grokdeclarator): Don't warn about implicit int in
+	`typedef foo = bar'.
+
 Wed Jul  1 02:12:33 1998  Robert Lipe  <robertl@dgii.com>
 
 	* i386.c (asm_output_function_prefix): Make 686 function
