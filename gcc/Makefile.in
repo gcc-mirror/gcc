@@ -2363,7 +2363,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f testsuite/{gcc,g++}.{log,sum}
 	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c splay-tree.c obstack.c alloca.c hashtab.c safe-ctype.c
-	-rm -f mklibgcc libgcc.map gccbug configargs.h
+	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
 	-rmdir cp f java objc fixinc intl po 2>/dev/null

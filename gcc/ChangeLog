@@ -1,3 +1,11 @@
+2001-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* .gdbinit: Rename to gdbinit.in.
+	* gdbinit.in: New file, 
+	* configure.in: Generate .gdbinit from gdbinit.in.
+	* configure: Regenerated.
+	* Makefile.in (distclean): Always remove .gdbinit.
+
 2001-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc/objc-act.c (start_class): Register implemented_classes with
