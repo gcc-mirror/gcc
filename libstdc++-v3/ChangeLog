@@ -1,4 +1,4 @@
-2002-03-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+2002-03-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/codecvt_members_unicode_wchar_t.cc
