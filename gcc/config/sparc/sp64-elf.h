@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Sun SPARC-V9 on a hypothetical elf format machine.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -37,6 +37,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "sparc/sol2.h"
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
+
 /* A v9 compiler with stack-bias, 32 bit integers and 64 bit pointers,
    in a Medium/Anywhere code model environment.  */
 
@@ -44,10 +47,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_STACK_BIAS + MASK_MEDANY + MASK_PTR64 + MASK_HARD_QUAD + MASK_EPILOGUE + MASK_FPU)
 
+/* __svr4__ is used by the C library */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Dsun -Dsparc -Dunix -D__svr4__ -D__sparc_v9__ \
-  -Asystem(unix) -Asystem(svr4) -Acpu(sparc64) -Amachine(sparc64)"
+#define CPP_PREDEFINES "\
+-D__sparc__ -D__sparc_v9__ -D__svr4__ \
+-Acpu(sparc64) -Amachine(sparc64) \
+"
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
@@ -58,26 +63,30 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* Use the default (for now).  */
-#undef STARTFILE_SPEC
-
-/* Use the default (for now).  */
-#undef LIB_SPEC
+#undef ASM_SPEC
+#define ASM_SPEC "\
+%{V} %{v:%{!V:-V}} -s %{fpic:-K PIC} %{fPIC:-K PIC} \
+"
 
 /* This is taken from sol2.h.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{!nostdlib:%{!r*:%{!e*:-e _start}}} \
-%{h*} %{V} %{v:%{!V:-V}} \
-%{b} %{Wl,*:%*} \
-%{static:-dn -Bstatic} \
-%{shared:-G -dy} \
-%{symbolic:-Bsymbolic -G -dy} \
-%{G:-G} \
-%{YP,*} \
-%{R*} \
-%{Qy:} %{!Qn:-Qy} \
+%{V} %{v:%{!V:-V}} \
 "
+
+/* We need something a little simpler for the embedded environment.
+   Profiling doesn't really work yet so we just copy the default.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}} \
+crtbegin.o%s \
+"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!nostartfiles:crtend.o%s}"
+
+/* Use the default (for now).  */
+#undef LIB_SPEC
 
 /* Unfortunately, svr4.h redefines these so we have to restore them to
    their original values in sparc.h.  */
@@ -120,22 +129,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* DWARF stuff.  */
 
-#define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);		\
-	assemble_name (FILE, LABEL);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+#define ASM_OUTPUT_DWARF_ADDR(FILE, LABEL) \
+do {								\
+  fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);	\
+  assemble_name ((FILE), (LABEL));				\
+  fprintf ((FILE), "\n");					\
+} while (0)
 
-#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
-  do {									\
-    fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);		\
-    output_addr_const ((FILE), (RTX));					\
-    fputc ('\n', (FILE));						\
-  } while (0)
+#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE, RTX) \
+do {								\
+  fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);	\
+  output_addr_const ((FILE), (RTX));				\
+  fputc ('\n', (FILE));						\
+} while (0)
 
 /* ??? Not sure if this should be 4 or 8 bytes.  4 works for now.  */
-#define ASM_OUTPUT_DWARF_REF(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
-	assemble_name (FILE, LABEL);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+#define ASM_OUTPUT_DWARF_REF(FILE, LABEL) \
+do {								\
+  fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+  assemble_name ((FILE), (LABEL));				\
+  fprintf ((FILE), "\n");					\
+} while (0)
