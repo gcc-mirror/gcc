@@ -1,5 +1,27 @@
 2004-09-14 Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dom.c (avail_exprs_stack): New global varray.
+	(struct dom_walk_block_data): Remove avail_exprs member.
+	(tree_ssa_dominator_optimize): Initialize avail_exprs_stack.
+	(lookup_avail_expr): No longer need to pass in address of
+	the block local available exprs stack.  All callers changed.
+	(simplify_cond_and_lookup_avail_expr): Similarly.
+	(simplify_switch_and_lookup_avail_expr): Similarly.
+	(get_eq_expr_value, record_cond): Likewise.
+	(record_dominating_conditions): Likewise.
+	(update_rhs_and_lookup_avail_expr): Likewise.
+	(record_equivalences_from_stmt): Likewise.
+	(dom_opt_initialize_block_local_data): No longer test state of
+	block local avail_exprs.
+	(dom_opt_initialize_block): Mark unwind point in the global
+	avail_expr stack.
+	(remove_expressions_from_table): Update to unwind to the
+	most recent unwind marker in the global avail_expr stack.
+	All callers changed.
+	(dom_opt_finalize_block): Mark unwind point in the global
+	avail_expr stack as needed.
+	(record_cond): Push elements into the global avail_exprs stack.
+
 	* tree-dfa.c (free_df_for_stmt): No longer static.
 	(free_df): Update comments.
 	* tree-flow.h (free_df_for_stmt): Prototype.
