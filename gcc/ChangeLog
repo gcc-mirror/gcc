@@ -1,3 +1,7 @@
+Fri Mar  6 11:43:35 1998  Joern Rennecke  (amylaar@cygnus.co.uk)
+
+	* final.c (shorten_branches): Restore accidentally removed code.
+
 Fri Mar  6 11:00:49 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* configure.in: Remove duplicate uses of AC_PROG_CC and
