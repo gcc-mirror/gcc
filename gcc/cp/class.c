@@ -188,6 +188,7 @@ static void build_vtt PARAMS ((tree));
 static tree *build_vtt_inits PARAMS ((tree, tree, tree *, tree *));
 static tree dfs_build_vtt_inits PARAMS ((tree, void *));
 static tree dfs_fixup_binfo_vtbls PARAMS ((tree, void *));
+static int indirect_primary_base_p PARAMS ((tree, tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -1807,6 +1808,35 @@ set_primary_base (t, i, vfuns_p)
   *vfuns_p = CLASSTYPE_VSIZE (basetype);
 }
 
+/* Returns true iff BINFO (a direct virtual base of T) is an indirect
+   primary base.  */
+
+static int
+indirect_primary_base_p (t, binfo)
+     tree t;
+     tree binfo;
+{
+  int i;
+
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+    {
+      tree type;
+      tree b;
+
+      /* Figure out to which type the Ith base corresponds.  */
+      type = TYPE_BINFO_BASETYPE (t, i);
+      /* See if any of the primary bases have the same type as BINFO.  */
+      for (b = TYPE_BINFO (type); b; b = TREE_CHAIN (b))
+	/* If this base is primary, and has the same type as BINFO,
+	   then BINFO is an indirect primary base.  */
+	if (BINFO_PRIMARY_MARKED_P (b)
+	    && same_type_p (BINFO_TYPE (b), BINFO_TYPE (binfo)))
+	  return 1;
+    }
+
+  return 0;
+}
+
 /* Determine the primary class for T.  */
 
 static void
@@ -1874,19 +1904,50 @@ determine_primary_base (t, vfuns_p)
      class as the primary base class if no non-virtual polymorphic
      base can be found.  */
   if (flag_new_abi && !CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-    for (i = 0; i < n_baseclasses; ++i)
-      {
-	tree base_binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
-	tree basetype = BINFO_TYPE (base_binfo);
+    {
+      /* If not -1, this is the index in TYPE_BINFO_BASETYPEs of the
+	 best primary base candidate we have found so far.  */
+      int candidate = -1;
 
-	if (TREE_VIA_VIRTUAL (base_binfo) 
-	    && CLASSTYPE_NEARLY_EMPTY_P (basetype))
-	  {
-	    set_primary_base (t, i, vfuns_p);
-	    CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
-	    break;
-	  }
-      }
+      /* Loop over the baseclasses.  */
+      for (i = 0; i < n_baseclasses; ++i)
+	{
+	  tree base_binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
+	  tree basetype = BINFO_TYPE (base_binfo);
+
+	  if (TREE_VIA_VIRTUAL (base_binfo) 
+	      && CLASSTYPE_NEARLY_EMPTY_P (basetype))
+	    {
+	      int indirect_primary_p;
+
+	      /* Figure out whether or not this base is an indirect
+		 primary base.  */
+	      indirect_primary_p = indirect_primary_base_p (t, base_binfo);
+
+	      /* If this is not an indirect primary base, then it's
+		 definitely our primary base.  */
+	      if (!indirect_primary_p) 
+		{
+		  candidate = i;
+		  break;
+		}
+	      /* If this was an indirect primary base, it's still our
+		 primary base -- unless there's another nearly-empty
+		 virtual base that isn't an indirect primary base.  */
+	      else if (candidate == -1)
+		candidate = i;
+	    }
+	}
+
+      /* If we've got a primary base, use it.  */
+      if (candidate != -1) 
+	{
+	  set_primary_base (t, candidate, vfuns_p);
+	  CLASSTYPE_VFIELDS (t) 
+	    = copy_list (CLASSTYPE_VFIELDS (TYPE_BINFO_BASETYPE (t, 
+								 candidate)));
+	}	
+    }
 
   /* Mark the primary base classes at this point.  */
   mark_primary_bases (t);
