@@ -1,5 +1,8 @@
 2004-11-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR pch/14940
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __hppa__.
+
 	PR rtl-optimization/14838
 	* emit-rtl.c (get_first_nonnote_insn): Don't assume first insn is a
 	note.
