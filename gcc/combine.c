@@ -927,14 +927,16 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
       if (GET_CODE (src) == REG
 	  && ((REGNO (dest) < FIRST_PSEUDO_REGISTER
 	       && ! HARD_REGNO_MODE_OK (REGNO (dest), GET_MODE (dest)))
-#ifdef SMALL_REGISTER_CLASSES
-	      /* Don't extend the life of a hard register.  */
-	      || REGNO (src) < FIRST_PSEUDO_REGISTER
-#else
+	      /* Don't extend the life of a hard register unless it is
+		 user variable (if we have few registers) or it can't
+		 fit into the desired register (meaning something special
+		 is going on).  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
-		  && ! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src)))
+		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
+#ifdef SMALL_REGISTER_CLASSES
+		      || ! REG_USERVAR_P (src)
 #endif
-	  ))
+		      ))))
 	return 0;
     }
   else if (GET_CODE (dest) != CC0)
@@ -1038,7 +1040,8 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
    of a SET must prevent combination from occurring.
 
    On machines where SMALL_REGISTER_CLASSES is defined, we don't combine
-   if the destination of a SET is a hard register.
+   if the destination of a SET is a hard register that isn't a user
+   variable.
 
    Before doing the above check, we first try to expand a field assignment
    into a set of logical operations.
@@ -1108,14 +1111,12 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	     CALL operation.  */
 	  || (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
+	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
+					GET_MODE (inner_dest))
 #ifdef SMALL_REGISTER_CLASSES
-	      && GET_CODE (src) != CALL
-#else
-	      && ! HARD_REGNO_MODE_OK (REGNO (inner_dest),
-				       GET_MODE (inner_dest))
+		 || (GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest))
 #endif
-	      )
-
+		  ))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
@@ -1254,7 +1255,8 @@ try_combine (i3, i2, i1)
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
 #ifdef SMALL_REGISTER_CLASSES
       && (GET_CODE (SET_DEST (PATTERN (i3))) != REG
-	  || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER)
+	  || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
+	  || REG_USERVAR_P (SET_DEST (PATTERN (i3))))
 #endif
       && find_reg_note (i3, REG_DEAD, SET_SRC (PATTERN (i3)))
       && GET_CODE (PATTERN (i2)) == PARALLEL
