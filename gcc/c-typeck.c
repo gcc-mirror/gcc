@@ -5413,8 +5413,14 @@ push_init_level (implicit)
   if (TREE_CODE (constructor_type) == RECORD_TYPE
       || TREE_CODE (constructor_type) == UNION_TYPE)
     {
-      constructor_type = TREE_TYPE (constructor_fields);
-      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+      /* Don't die if there are extra init elts at the end.  */
+      if (constructor_fields == 0)
+	constructor_type = 0;
+      else
+	{
+	  constructor_type = TREE_TYPE (constructor_fields);
+	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	}
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5425,8 +5431,15 @@ push_init_level (implicit)
   /* Turn off constructor_incremental if type is a struct with bitfields.  */
   check_init_type_bitfields (constructor_type);
 
-  if (TREE_CODE (constructor_type) == RECORD_TYPE
-      || TREE_CODE (constructor_type) == UNION_TYPE)
+  if (constructor_type == 0)
+    {
+      error_init ("extra brace group at end of initializer%s",
+		  " for `%s'", NULL);
+      constructor_fields = 0;
+      constructor_unfilled_fields = 0;
+    }
+  else if (TREE_CODE (constructor_type) == RECORD_TYPE
+	   || TREE_CODE (constructor_type) == UNION_TYPE)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
       constructor_unfilled_fields = constructor_fields;
@@ -5495,7 +5508,9 @@ pop_init_level (implicit)
     }
 
   p = constructor_stack;
-  size = int_size_in_bytes (constructor_type);
+
+  if (constructor_type != 0)
+    size = int_size_in_bytes (constructor_type);
 
   /* Now output all pending elements.  */
   output_pending_init_elements (1);
@@ -5554,6 +5569,8 @@ pop_init_level (implicit)
 	  output_constant (constructor, size);
 	}
     }
+  else if (constructor_type == 0)
+    ;
   else if (! constructor_incremental)
     {
       if (constructor_erroneous)
@@ -6050,6 +6067,11 @@ process_init_element (value)
 		  " after `%s'", NULL_PTR);
       return;
     }
+
+  /* Ignore elements of a brace group if it is entirely superfluous
+     and has already been diagnosed.  */
+  if (constructor_type == 0)
+    return;
 
   /* If we've exhausted any levels that didn't have braces,
      pop them now.  */
