@@ -4,6 +4,11 @@ Wed Nov  3 12:12:59 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Wed Nov  3 03:26:28 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (ireg_operand): New function.
+	* pa.h (PREDICATE_CODES): Handle ireg_operand.
+	* pa.md (parallel_addb, parallel_movb): Use ireg_operand.
+	Fix out of date comment.
+
 	* pa.md (negdi2): Turn into expander + anonymous pattern.
 
 	* reload.c (find_reloads): Fix typos in recent change.
