@@ -1,3 +1,8 @@
+Mon Mar 30 12:15:00 1998  Mark Mitchell  <mmitchell@usa.net>
+
+ 	* pt.c (fn_type_unification): Allow incomplete unification without 
+	an immediate error message.
+
 Mon Mar 30 08:55:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (member_p): New fn.

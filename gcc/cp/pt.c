@@ -5325,12 +5325,16 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
     fn_arg_types = scratch_tree_cons (NULL_TREE, extra_fn_arg,
 				      fn_arg_types); 
 
+  /* We allow incomplete unification without an error message here
+     because the standard doesn't seem to explicitly prohibit it.  Our
+     callers must be ready to deal with unification failures in any
+     event.  */
   i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
 			targs,
 			fn_arg_types,
 			decl_arg_types,
 			explicit_targs,
-			strict, 0);
+			strict, 1);
 
   return i;
 }
