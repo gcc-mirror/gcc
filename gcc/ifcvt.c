@@ -86,7 +86,7 @@ static bool life_data_ok;
 
 /* Forward references.  */
 static int count_bb_insns (basic_block);
-static int total_bb_rtx_cost (basic_block);
+static bool cheap_bb_rtx_cost_p (basic_block, int);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
 static basic_block block_fallthru (basic_block);
@@ -162,12 +162,12 @@ count_bb_insns (basic_block bb)
   return count;
 }
 
-/* Count the total insn_rtx_cost of non-jump active insns in BB.
-   This function returns -1, if the cost of any instruction could
-   not be estimated.  */
+/* Determine whether the total insn_rtx_cost on non-jump insns in
+   basic block BB is less than MAX_COST.  This function returns
+   false if the cost of any instruction could not be estimated.  */
 
-static int
-total_bb_rtx_cost (basic_block bb)
+static bool
+cheap_bb_rtx_cost_p (basic_block bb, int max_cost)
 {
   int count = 0;
   rtx insn = BB_HEAD (bb);
@@ -178,18 +178,34 @@ total_bb_rtx_cost (basic_block bb)
 	{
 	  int cost = insn_rtx_cost (PATTERN (insn));
 	  if (cost == 0)
-	    return -1;
+	    return false;
+
+	  /* If this instruction is the load or set of a "stack" register,
+	     such as a floating point register on x87, then the cost of
+	     speculatively executing this instruction needs to include
+	     the additional cost of popping this register off of the
+	     register stack.  */
+#ifdef STACK_REGS
+	  {
+	    rtx set = single_set (insn);
+	    if (set && STACK_REG_P (SET_DEST (set)))
+	      cost += COSTS_N_INSNS (1);
+	  }
+#endif
+
 	  count += cost;
+	  if (count >= max_cost)
+	    return false;
 	}
       else if (CALL_P (insn))
-	return -1;
+	return false;
  
       if (insn == BB_END (bb))
 	break;
       insn = NEXT_INSN (insn);
     }
 
-  return count;
+  return true;
 }
 
 /* Return the first non-jump active insn in the basic block.  */
@@ -2853,7 +2869,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 {
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest, new_bb;
-  int then_bb_index, bb_cost;
+  int then_bb_index;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2896,8 +2912,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, then_bb->index);
 
   /* THEN is small.  */
-  bb_cost = total_bb_rtx_cost (then_bb);
-  if (bb_cost < 0 || bb_cost >= COSTS_N_INSNS (BRANCH_COST))
+  if (! cheap_bb_rtx_cost_p (then_bb, COSTS_N_INSNS (BRANCH_COST)))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
@@ -2944,7 +2959,6 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ;
-  int bb_cost;
   rtx note;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -3001,8 +3015,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
-  bb_cost = total_bb_rtx_cost (else_bb);
-  if (bb_cost < 0 || bb_cost >= COSTS_N_INSNS (BRANCH_COST))
+  if (! cheap_bb_rtx_cost_p (else_bb, COSTS_N_INSNS (BRANCH_COST)))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */

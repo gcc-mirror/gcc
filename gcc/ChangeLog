@@ -1,5 +1,12 @@
 2004-12-18  Roger Sayle  <roger@eyesopen.com>
 
+	* ifcvt.c (total_bb_rtx_cost): Rename function to cheap_bb_rtx_cost_p.
+	Take a max_cost argument to avoid scanning large blocks, by returning
+	a Boolean instead of a total.  Include the cost of a "fstp %st(0)"
+	instruction required to pop dead values off of a register stack.
+
+2004-12-18  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/18548
 	* expr.c (expand_expr_real_1) <MAX_EXPR>: Ensure that target, op0
 	and op1 are all registers (or constants) before expanding the RTL
