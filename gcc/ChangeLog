@@ -1,3 +1,8 @@
+2001-09-24  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* config/sh/linux.h (LINK_SPEC): Set dynamic-linker to agree with
+	glibc.
+
 2001-09-25  Janis Johnson  <janis187@us.ibm.com>
 	    Jim Wilson  <wilson@redhat.com>
 
