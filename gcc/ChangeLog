@@ -1,3 +1,32 @@
+Wed Dec 15 14:55:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* caller-save.c (insert_one_insn): Returns struct insn_chain *.
+	Handle live_throughout / dead_or_set instead of live_before /
+	live_after.
+	(save_call_clobbered_regs): Get register livenessinformation from
+	chain->live_throughout.
+	(add_stored_regs): New function.
+	(insert_restore, insert_save): Add restored / saved registers to
+	dead_or_set.
+	* global.c (reg_dies): New parameter chain.
+	(reg_becomes_live): Third parameter is regs_set now.
+	Changed all callers.
+	(reg_dies): New parameter chain.  Changed all callers.
+	(build_insn_chain): Set live_throughout instead of
+	live_before / live_after.
+	* reload.h (struct insn_chain): Replace members live_before /
+	live_after with live_throughout / dead_or_set.
+	* reload1.c (new_insn_chain): Handle live_throughout / dead_or_set
+	instead of live_before / live_after.
+	(maybe_fix_stack_asms, find_reload_regs, finish_spills): Likewise.
+	(order_regs_for_reload, find_reg, finish_spills): Likewise.
+	(choose_reload_regs_init): Likewise.
+	* stupid.c (current_chain, find_clobbered_regs): Delete.
+	(stupid_life_analysis): Set chain->live_throughout chain->dead_or_set
+	instead of chain->live_before / chain->live_after.
+	(mark_hard_ref): New function.
+	(stupid_mark_refs): Call mark_hard_ref. Clear chain->live_throughout.
+
 1999-12-15  David S. Miller  <davem@redhat.com>
 
 	* rtlanal.c (reg_overlap_mentioned_p): Handle CONCAT.
