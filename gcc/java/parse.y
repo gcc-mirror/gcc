@@ -755,8 +755,7 @@ type_declaration:
 		{ end_class_declaration (0); }
 |	interface_declaration
 		{ end_class_declaration (0); }
-|	SC_TK
-		{ $$ = NULL; }
+|	empty_statement
 |	error
 		{
 		  YYERROR_NOW;
@@ -880,13 +879,12 @@ class_body_declaration:
 
 class_member_declaration:
 	field_declaration
-|	field_declaration SC_TK
-		{ $$ = $1; }
 |	method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
 		{ end_class_declaration (1); }
 |	interface_declaration	/* Added, JDK1.1 inner interfaces */
 		{ end_class_declaration (1); }
+|	empty_statement
 ;
 
 /* 19.8.2 Productions from 8.3: Field Declarations  */
@@ -1085,19 +1083,12 @@ class_type_list:
 
 method_body:
 	block
-|	block SC_TK
-|	SC_TK
-		{ $$ = NULL_TREE; } /* Probably not the right thing to do. */
+|	SC_TK { $$ = NULL_TREE; }
 ;
 
 /* 19.8.4 Productions from 8.5: Static Initializers  */
 static_initializer:
 	static block
-		{
-		  TREE_CHAIN ($2) = CPC_STATIC_INITIALIZER_STMT (ctxp);
-		  SET_CPC_STATIC_INITIALIZER_STMT (ctxp, $2);
-		}
-|	static block SC_TK	/* Shouldn't be here. FIXME */
 		{
 		  TREE_CHAIN ($2) = CPC_STATIC_INITIALIZER_STMT (ctxp);
 		  SET_CPC_STATIC_INITIALIZER_STMT (ctxp, $2);
@@ -1166,7 +1157,7 @@ constructor_body:
 
 constructor_block_end:
 	block_end
-|	block_end SC_TK
+;
 
 /* Error recovery for that rule moved down expression_statement: rule.  */
 explicit_constructor_invocation:
@@ -1397,7 +1388,14 @@ statement_without_trailing_substatement:
 
 empty_statement:
 	SC_TK
-		{ $$ = empty_stmt_node; }
+		{ 
+		  if (flag_extraneous_semicolon)
+		    {
+		      EXPR_WFL_SET_LINECOL (wfl_operator, lineno, -1);
+		      parse_warning_context (wfl_operator, "An empty declaration is a deprecated feature that should not be used");
+		    }
+		  $$ = empty_stmt_node;
+		}
 ;
 
 label_decl:

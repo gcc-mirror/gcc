@@ -98,7 +98,7 @@ int flag_emit_xref = 0;
 /* When non zero, -Wall was turned on.  */
 int flag_wall = 0;
 
-/* When non zero,  check for redundant modifier uses.  */
+/* When non zero, check for redundant modifier uses.  */
 int flag_redundant = 0;
 
 /* When non zero, warns about overridings that don't occur.  */
@@ -120,6 +120,9 @@ int flag_hash_synchronization;
 /* When non zero, assume all native functions are implemented with
    JNI, not CNI.  */
 int flag_jni = 0;
+
+/* When non zero, report the now deprecated empty statements.  */
+int flag_extraneous_semicolon;
 
 /* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
 
@@ -256,6 +259,7 @@ lang_decode_option (argc, argv)
     {
       flag_wall = 1;
       flag_redundant = 1;
+      flag_extraneous_semicolon = 1;
       /* When -Wall given, enable -Wunused.  We do this because the C
 	 compiler does it, and people expect it.  */
       set_Wunused (1);
@@ -271,6 +275,12 @@ lang_decode_option (argc, argv)
   if (strcmp (p, "-Wredundant-modifiers") == 0)
     {
       flag_redundant = 1;
+      return 1;
+    }
+
+  if (strcmp (p, "-Wextraneous-semicolon") == 0)
+    {
+      flag_extraneous_semicolon = 1;
       return 1;
     }
 

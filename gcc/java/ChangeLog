@@ -66,6 +66,23 @@ Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
 	`case' statement.
 	(patch_assignment): Set DECL_INITIAL on integral final local.
 
+2000-08-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (flag_extraneous_semicolon): New extern.
+	* lang-options.h: (-Wextraneous-semicolon): New option.
+	* lang.c (flag_redundant): Fixed typo in leading comment.
+	(flag_extraneous_semicolon): New global.
+	(lang_decode_option): Set `flag_extraneous_semicolon' when
+	-Wall. Decode `-Wextraneous-semicolon'.
+	* parse.y (type_declaration:): Removed `SC_TK' hack, added
+	`empty_statement' rule.
+	(class_body_declaration): Likewise.
+	(method_body:): Accept `;' as a method body.
+	(static_initializer:): Removed `SC_TK' hack.
+	(constructor_block_end:): Likewise.
+	(empty_statement:): Report deprecated empty declaration. Fixes
+	gcj/295
+
 2000-08-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (build_dot_class_method_invocation): Changed parameter
