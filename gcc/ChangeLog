@@ -1,3 +1,10 @@
+2000-03-08  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_strlen): Be prepared for strlensi
+	to fail.  Don't pre-expand the source operand.
+
+	* i386.md (strlensi): Initialize eoschar and align before use.
+
 2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
 
 	* expr.c (expand_expr, case ARRAY_REF): Still check for missing

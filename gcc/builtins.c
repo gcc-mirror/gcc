@@ -1334,13 +1334,14 @@ expand_builtin_strlen (exp, target, mode)
     return 0;
   else
     {
+      rtx pat;
       tree src = TREE_VALUE (arglist);
       tree len = c_strlen (src);
 
       int align
 	= get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 
-      rtx result, src_rtx, char_rtx;
+      rtx result, src_reg, char_rtx, before_strlen;
       enum machine_mode insn_mode = value_mode, char_mode;
       enum insn_code icode = CODE_FOR_nothing;
 
@@ -1352,8 +1353,7 @@ expand_builtin_strlen (exp, target, mode)
       if (align == 0)
 	return 0;
 
-      /* Call a function if we can't compute strlen in the right mode.  */
-
+      /* Bail out if we can't compute strlen in the right mode.  */
       while (insn_mode != VOIDmode)
 	{
 	  icode = strlen_optab->handlers[(int) insn_mode].insn_code;
@@ -1373,21 +1373,19 @@ expand_builtin_strlen (exp, target, mode)
 	     && REGNO (result) >= FIRST_PSEUDO_REGISTER))
 	result = gen_reg_rtx (insn_mode);
 
-      /* Make sure the operands are acceptable to the predicates.  */
+      /* Make a place to hold the source address.  We will not expand
+	 the actual source until we are sure that the expansion will
+	 not fail -- there are trees that cannot be expanded twice.  */
+      src_reg = gen_reg_rtx (Pmode);
 
-      if (! (*insn_data[(int)icode].operand[0].predicate) (result, insn_mode))
-	result = gen_reg_rtx (insn_mode);
-      src_rtx = memory_address (BLKmode,
-				expand_expr (src, NULL_RTX, ptr_mode,
-					     EXPAND_NORMAL));
-
-      if (! (*insn_data[(int)icode].operand[1].predicate) (src_rtx, Pmode))
-	src_rtx = copy_to_mode_reg (Pmode, src_rtx);
+      /* Mark the beginning of the strlen sequence so we can emit the
+	 source operand later.  */
+      before_strlen = get_last_insn();
 
       /* Check the string is readable and has an end.  */
       if (current_function_check_memory_usage)
 	emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
-			   src_rtx, Pmode,
+			   src_reg, Pmode,
 			   GEN_INT (MEMORY_USE_RO),
 			   TYPE_MODE (integer_type_node));
 
@@ -1396,20 +1394,30 @@ expand_builtin_strlen (exp, target, mode)
       if (! (*insn_data[(int)icode].operand[2].predicate) (char_rtx, char_mode))
 	char_rtx = copy_to_mode_reg (char_mode, char_rtx);
 
-      emit_insn (GEN_FCN (icode) (result,
-				  gen_rtx_MEM (BLKmode, src_rtx),
-				  char_rtx, GEN_INT (align)));
+      pat = GEN_FCN (icode) (result, gen_rtx_MEM (BLKmode, src_reg),
+			     char_rtx, GEN_INT (align));
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+
+      /* Now that we are assured of success, expand the source.  */
+      start_sequence ();
+      pat = expand_expr (src, src_reg, ptr_mode, EXPAND_SUM);
+      if (pat != src_reg)
+	emit_move_insn (src_reg, pat);
+      pat = gen_sequence ();
+      end_sequence ();
+      emit_insn_after (pat, before_strlen);
 
       /* Return the value in the proper mode for this function.  */
       if (GET_MODE (result) == value_mode)
-	return result;
+	target = result;
       else if (target != 0)
-	{
-	  convert_move (target, result, 0);
-	  return target;
-	}
+	convert_move (target, result, 0);
       else
-	return convert_to_mode (value_mode, result, 0);
+	target = convert_to_mode (value_mode, result, 0);
+
+      return target;
     }
 }
 
