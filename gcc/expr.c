@@ -8042,7 +8042,12 @@ expand_increment (exp, post)
      shared (it was made by the expand_expr call above).  */
 
   if (GET_CODE (op0) == SUBREG && SUBREG_PROMOTED_VAR_P (op0))
-    SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
+    {
+      if (post)
+	SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
+      else
+	bad_subreg = 1;
+    }
   else if (GET_CODE (op0) == SUBREG
 	   && GET_MODE_BITSIZE (GET_MODE (op0)) < BITS_PER_WORD)
     {
