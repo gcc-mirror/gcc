@@ -22,17 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_MACHINE_MODES
 
 /* Strictly speaking, this isn't the proper place to include these definitions,
-   but this file is included by every GCC file.
-
-   Some systems define these in, e.g., param.h.  We undefine these names
-   here to avoid the warnings.  We prefer to use our definitions since we
-   know they are correct.  */
-
-#undef MIN
-#undef MAX
-
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
-#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+   but this file is included by every GCC file. */
 
 /* Find the largest host integer type and set its size and type.  */
 

@@ -87,11 +87,6 @@ static int hack_vms_include_specification ();
 #define INO_T_EQ(a, b) 0
 #endif
 
-#undef MIN
-#undef MAX
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
-#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
-
 /* Find the largest host integer type and set its size and type.
    Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
