@@ -99,7 +99,7 @@ Boston, MA 02111-1307, USA.  */
 	fputs("\t.LEVEL 1.1\n", FILE);				\
       else							\
 	fputs("\t.LEVEL 1.0\n", FILE);				\
-      if (current_function_profile)				\
+      if (profile_flag)						\
 	fputs ("\t.IMPORT _mcount, CODE\n", FILE);		\
     }								\
    while (0)

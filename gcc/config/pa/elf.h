@@ -41,7 +41,7 @@ do {  \
        fputs("\t.LEVEL 1.1\n", FILE); \
      else \
        fputs("\t.LEVEL 1.0\n", FILE); \
-     if (current_function_profile)\
+     if (profile_flag)\
        fprintf (FILE, "\t.IMPORT _mcount, ENTRY\n");\
      if (write_symbols != NO_DEBUG) \
        output_file_directive ((FILE), main_input_filename); \

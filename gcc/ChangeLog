@@ -1,3 +1,10 @@
+2002-01-04  William Cohen  <wcohen@redhat.com>
+
+	* config/pa/elf.h (ASM_FILE_START): Reverted to profile_flag.
+	* config/pa/pa-linux.h (ASM_FILE_START): Likewise.
+	* config/pa/pa64-hpux.h (ASM_FILE_START): Likewise.
+	* config/pa/som.h (ASM_FILE_START): Likewise.
+
 2001-01-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* lcm.c: Include df.h.
