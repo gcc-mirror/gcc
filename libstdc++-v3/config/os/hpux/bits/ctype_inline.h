@@ -36,21 +36,28 @@
   
   bool
   ctype<char>::
-  is(mask __m, char __c) const throw()
+  is(mask __m, char __c) const 
   { return _M_table[(unsigned char)(__c)] & __m; }
 
   const char*
   ctype<char>::
-  is(const char* __low, const char* __high, mask* __vec) const throw()
+  is(const char* __low, const char* __high, mask* __vec) const 
   {
-    while (__low < __high)
-      *__vec++ = _M_table[(unsigned char)(*__low++)];
+    const int __bitmasksize = 11; // Highest bitmask in ctype_base == 10
+    for (;__low < __high; ++__vec, ++__low)
+      {
+        mask __m = _M_table[*__low];
+        int __i = 0; // Lowest bitmask in ctype_base == 0
+        while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
+          ++__i;
+        *__vec = static_cast<mask>(1 << __i);
+      }
     return __high;
   }
 
   const char*
   ctype<char>::
-  scan_is(mask __m, const char* __low, const char* __high) const throw()
+  scan_is(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && !this->is(__m, *__low))
       ++__low;
@@ -59,7 +66,7 @@
 
   const char*
   ctype<char>::
-  scan_not(mask __m, const char* __low, const char* __high) const throw()
+  scan_not(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && this->is(__m, *__low) != 0)
       ++__low;

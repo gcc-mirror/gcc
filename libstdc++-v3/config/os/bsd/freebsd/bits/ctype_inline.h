@@ -36,7 +36,7 @@
   
   bool
   ctype<char>::
-  is(mask __m, char __c) const throw()
+  is(mask __m, char __c) const
   { 
     if (__m & (digit | xdigit))
       return __isctype(__c, __m);
@@ -46,7 +46,7 @@
 
   const char*
   ctype<char>::
-  is(const char* __low, const char* __high, mask* __vec) const throw()
+  is(const char* __low, const char* __high, mask* __vec) const
   {
     const int __bitmasksize = sizeof(mask) * 8;
     for (;__low < __high; ++__vec, ++__low)
@@ -62,7 +62,7 @@
 
   const char*
   ctype<char>::
-  scan_is(mask __m, const char* __low, const char* __high) const throw()
+  scan_is(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && !this->is(__m, *__low))
       ++__low;
@@ -71,7 +71,7 @@
 
   const char*
   ctype<char>::
-  scan_not(mask __m, const char* __low, const char* __high) const throw()
+  scan_not(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && this->is(__m, *__low) != 0)
       ++__low;

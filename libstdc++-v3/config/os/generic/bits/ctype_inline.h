@@ -41,7 +41,7 @@
 
   bool
   ctype<char>::
-  is(mask __m, char __c) const throw()
+  is(mask __m, char __c) const
   { 
     bool __ret;
     switch (__m)
@@ -88,7 +88,7 @@
    
   const char*
   ctype<char>::
-  is(const char* __low, const char* __high, mask* __vec) const throw()
+  is(const char* __low, const char* __high, mask* __vec) const
   {
     const int __bitmasksize = 11; // Highest bitmask in ctype_base == 10
     for (;__low < __high; ++__vec, ++__low)
@@ -104,7 +104,7 @@
 
   const char*
   ctype<char>::
-  scan_is(mask __m, const char* __low, const char* __high) const throw()
+  scan_is(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && !this->is(__m, *__low))
       ++__low;
@@ -113,7 +113,7 @@
 
   const char*
   ctype<char>::
-  scan_not(mask __m, const char* __low, const char* __high) const throw()
+  scan_not(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && this->is(__m, *__low) != 0)
       ++__low;

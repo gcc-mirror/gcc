@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,25 +35,21 @@
   
   struct ctype_base
   {
-    typedef unsigned int 	mask;
     // Non-standard typedefs.
     typedef const int* 		__to_type;
 
-    enum
-    {
-      space = (1 << 5),	// Whitespace
-      print = (1 << 6),	// Printing
-      cntrl = (1 << 9),	// Control character
-      upper = (1 << 0),	// UPPERCASE
-      lower = (1 << 1),	// lowercase
-      alpha = (1 << 5),	// Alphabetic
-      digit = (1 << 2),	// Numeric
-      punct = (1 << 10),// Punctuation
-      xdigit = (1 << 4),// Hexadecimal numeric
-      alnum = (1 << 11),// Alphanumeric
-      graph = (1 << 7)	// Graphical
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef unsigned int        mask;   
+    static const mask upper     = 1 << 0;
+    static const mask lower     = 1 << 1;
+    static const mask alpha     = 1 << 2;
+    static const mask digit     = 1 << 3;
+    static const mask xdigit    = 1 << 4;
+    static const mask space     = 1 << 5;
+    static const mask print     = 1 << 6;
+    static const mask graph     = 1 << 7;
+    static const mask cntrl     = 1 << 8;
+    static const mask punct     = 1 << 9;
+    static const mask alnum     = 1 << 10;
   };
-
-
-
