@@ -1,3 +1,10 @@
+Tue Apr 20 01:15:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* stb.c (ffestb_R5282_): Convert DATA repeat count
+	to default INTEGER, to avoid problems downstream.
+
+	* version.c: Bump version.
+
 Mon Apr 19 21:36:48 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* ste.c (ffeste_R819B): Start the loop before expanding
