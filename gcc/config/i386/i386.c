@@ -10601,7 +10601,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 	      long l[3];
 
 	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
-	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+	      real_to_target (l, &r, mode);
 	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
 	      if (HOST_BITS_PER_WIDE_INT >= 64)
 	        parts[0]
