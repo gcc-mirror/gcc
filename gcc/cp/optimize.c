@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "ggc.h"
 #include "params.h"
+#include "hashtab.h"
 
 /* To Do:
 
@@ -80,6 +81,9 @@ typedef struct inline_data
      distinguish between those two situations.  This flag is true nif
      we are cloning, rather than inlining.  */
   bool cloning_p;
+  /* Hash table used to prevent walk_tree from visiting the same node
+     umpteen million times.  */
+  htab_t tree_pruner;
 } inline_data;
 
 /* Prototypes.  */
@@ -706,7 +710,7 @@ expand_call_inline (tp, walk_subtrees, data)
 	  if (i == 2)
 	    ++id->in_target_cleanup_p;
 	  walk_tree (&TREE_OPERAND (*tp, i), expand_call_inline, data,
-		     NULL);
+		     id->tree_pruner);
 	  if (i == 2)
 	    --id->in_target_cleanup_p;
 	}
@@ -889,8 +893,12 @@ expand_calls_inline (tp, id)
      inline_data *id;
 {
   /* Search through *TP, replacing all calls to inline functions by
-     appropriate equivalents.  */
-  walk_tree (tp, expand_call_inline, id, NULL);
+     appropriate equivalents.  Use walk_tree in no-duplicates mode
+     to avoid exponential time complexity.  (We can't just use
+     walk_tree_without_duplicates, because of the special TARGET_EXPR
+     handling in expand_calls.  The hash table is set up in
+     optimize_function.  */
+  walk_tree (tp, expand_call_inline, id, id->tree_pruner);
 }
 
 /* Optimize the body of FN.  */
@@ -949,9 +957,12 @@ optimize_function (fn)
 
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */
+      id.tree_pruner = htab_create (37, htab_hash_pointer,
+				    htab_eq_pointer, NULL);
       expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
 
       /* Clean up.  */
+      htab_delete (id.tree_pruner);
       VARRAY_FREE (id.fns);
       VARRAY_FREE (id.target_exprs);
       if (DECL_LANG_SPECIFIC (fn))

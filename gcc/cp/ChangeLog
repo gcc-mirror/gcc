@@ -1,3 +1,11 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* cp/optimize.c: Include hashtab.h.
+	(struct inline_data): Add tree_pruner.
+	(expand_call_inline, expand_calls_inline): Use it when calling
+	walk_tree.
+	(optimize_function): Initialize and free tree_pruner.
+
 2001-04-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_enum): Change prototype.
