@@ -29,6 +29,10 @@ Sun Apr 12 20:47:37 1998  Pat Rankin  <rankin@eql.caltech.edu>
 
 Sun Apr 12 20:40:44 1998  Richard Henderson  <rth@dot.cygnus.com>
 
+	* configure.in (alpha*-*-linux-gnu*): Add alpha/t-crtbe.
+	Add crt{begin,end}.o in extra_parts and delete crt{begin,end}S.o.o
+	* alpha/t-crtbe, alpha/crt{begin,end}.asm: New files.
+	
 	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
 	* alpha.c (print_operand): Handle it.
 	* alpha.md (fix_trunc[ds]fdi2): Use it.  Add earlyclobber pattern
