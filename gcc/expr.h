@@ -936,19 +936,7 @@ extern rtx (*lang_expand_expr) PROTO ((union tree_node *, rtx,
 				       enum machine_mode,
 				       enum expand_modifier modifier));
 
-#ifdef TREE_CODE
-/* Build bytecode call descriptor for function SUBR. */
-extern rtx bc_build_calldesc PROTO((tree));
-
-/* Emit a type code to be used by the runtime support in handling
-   parameter passing.   The type code consists of the machine mode
-   plus the minimal alignment shifted left 8 bits.  */
-extern tree bc_runtime_type_code PROTO((tree));
-#endif
-
 extern void init_all_optabs			PROTO ((void));
 extern void init_mov_optab			PROTO ((void));
-extern void bc_adjust_stack			PROTO ((int));
-extern void bc_load_localaddr			PROTO ((rtx));
 extern void do_jump_by_parts_greater_rtx	PROTO ((enum machine_mode, int,
 							rtx, rtx, rtx, rtx));

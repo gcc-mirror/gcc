@@ -439,17 +439,6 @@ extern char *note_insn_name[];
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
 #define LABEL_NUSES(LABEL) ((LABEL)->fld[5].rtint)
 
-/* The rest is used instead of the above, in a CODE_LABEL,
-   if bytecode is being output.
-   We make the slightly kludgy assumption that a LABEL has enough slots
-   to hold these things.  That happens to be true.  */
-
-/* For static or external objects.  */
-#define BYTECODE_LABEL(X) (XSTR ((X), 0))
-
-/* For goto labels inside bytecode functions.  */
-#define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
-
 /* The original regno this ADDRESSOF was built for.  */
 #define ADDRESSOF_REGNO(RTX) ((RTX)->fld[1].rtint)
 
@@ -680,10 +669,6 @@ extern int ceil_log2			PROTO((unsigned HOST_WIDE_INT));
 
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
-
-struct bc_label;
-extern rtx bc_gen_rtx			PROTO ((char *, int,
-						struct bc_label *));
 
 extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
@@ -1254,7 +1239,6 @@ extern void emit_jump			PROTO ((rtx));
 extern int preserve_subexpressions_p	PROTO ((void));
 
 /* In expr.c */
-extern rtx bc_allocate_local		PROTO ((int, int));
 extern void init_expr_once		PROTO ((void));
 
 /* In stupid.c */

@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "except.h"
 #include "function.h"
-#include "bytecode.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -3272,12 +3271,6 @@ output_inline_function (fndecl)
 {
   rtx head;
   rtx last;
-
-  if (output_bytecode)
-    {
-      warning ("`inline' ignored for bytecode output");
-      return;
-    }
 
   /* Things we allocate from here on are part of this function, not
      permanent.  */
