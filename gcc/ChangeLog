@@ -1,3 +1,10 @@
+2000-04-25  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/Makefile.in: make the removal of old programs more
+	robust
+	* fixinc/mkfixinc.sh: use the two new targets in the Makefile:
+	install-bin and install-sh
+
 2000-04-25  Nick Clifton  <nickc@cygnus.com>
 
 	* integrate.c (FUNCTION_ATTRIBUTE_INLINABLE_P): If not

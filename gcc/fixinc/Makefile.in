@@ -96,14 +96,20 @@ procopen.o : procopen.c server.h
 fixlib.o: machname.h
 
 fixincl.x: fixincl.tpl inclhack.def
-	cd $(srcdir) ; ./genfixes $@
+	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
-	cd $(srcdir) ; ./genfixes $@
+	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 # fixinc.sh, unlike the other two, has _no_ dependency on the .def file.
 fixincl.sh: inclhack.tpl
-	cd $(srcdir) ; ./genfixes $@
+	cd $(srcdir) ; $(SHELL) ./genfixes $@
+
+#  This invocation of genfixes is done from the build dir,
+#  not the source dir (as above)
+#
+machname.h: ../specs
+	$(SHELL) $(srcdir)/genfixes $@
 
 clean:
 	rm -f *.o $(TARGETS) fixincl.x machname.h
@@ -113,30 +119,33 @@ clean:
 #  "inclhack.sh" script.  Otherwise, we install that program
 #  plus the wrapper script, "fixincl.sh".
 #
-install: $(TARGETS)
-	@rm -f ../fixinc.sh ; \
-	if ( ./fixincl -v > /dev/null 2>&1 ) ; then \
-		echo cp fixincl.sh ../fixinc.sh ; \
-		if [ -f ./fixincl.sh ] ; \
-		then cp fixincl.sh ../fixinc.sh ; \
-		else cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi ; \
-		chmod 555 ../fixinc.sh ; \
-		rm -f ../fixincl ; \
-		echo cp fixincl .. ; \
-		cp fixincl .. ; \
-		chmod 555 ../fixincl ; \
-	else \
-		echo Could not install binary fixincludes.  ; \
-		echo Installing shell script instead. ; \
-		echo cp inclhack.sh ../fixinc.sh ; \
-		if [ -f ./inclhack.sh ] ; \
-		then cp inclhack.sh ../fixinc.sh ; \
-		else cp $(srcdir)/inclhack.sh ../fixinc.sh ; fi ; \
-	fi
+install-bin: fixincl fixincl.sh
+	@if [ -f ../fixincl ] ; then rm -f ../fixincl || \
+	    mv -f ../fixincl ../fixincl.$$ || exit 1 ; fi
+	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
+	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
+	./fixincl -v
+	cp fixincl ..
+	@if [ -f ./fixincl.sh ] ; \
+	then echo cp ./fixincl.sh ../fixinc.sh ; \
+		cp ./fixincl.sh ../fixinc.sh ; \
+	else echo cp $(srcdir)/fixincl.sh ../fixinc.sh ; \
+		cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi
+	chmod 755 ../fixinc.sh ../fixincl
+
+install-sh: fixfixes fixtests inclhack.sh
+	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
+	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
+	echo Could not install binary fixincludes.  ; \
+	echo Installing shell script instead.
+	@if [ -f ./fixincl.sh ] ; \
+	then echo cp ./inclhack.sh ../fixinc.sh ; \
+		cp ./inclhack.sh ../fixinc.sh ; \
+	else echo cp $(srcdir)/inclhack.sh ../fixinc.sh ; \
+		cp $(srcdir)/inclhack.sh ../fixinc.sh ; fi
+	chmod 755 ../fixinc.sh
 
 Makefile: Makefile.in ../config.status
 	cd .. \
-	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
-
-machname.h: ../specs
-	$(SHELL) $(srcdir)/genfixes $@
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= \
+	  $(SHELL) ./config.status
