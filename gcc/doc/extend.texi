@@ -7934,37 +7934,24 @@ almost certainly break things.
 another way to control placement of these constructs.
 
 @node C++ Interface
-@section Declarations and Definitions in One Header
+@section #pragma interface and implementation
 
 @cindex interface and implementation headers, C++
 @cindex C++ interface and implementation headers
-C++ object definitions can be quite complex.  In principle, your source
-code will need two kinds of things for each object that you use across
-more than one source file.  First, you need an @dfn{interface}
-specification, describing its structure with type declarations and
-function prototypes.  Second, you need the @dfn{implementation} itself.
-It can be tedious to maintain a separate interface description in a
-header file, in parallel to the actual implementation.  It is also
-dangerous, since separate interface and implementation definitions may
-not remain parallel.
-
 @cindex pragmas, interface and implementation
-With GNU C++, you can use a single header file for both purposes.
 
-@quotation
-@emph{Warning:} The mechanism to specify this is in transition.  For the
-nonce, you must use one of two @code{#pragma} commands; in a future
-release of GNU C++, an alternative mechanism will make these
-@code{#pragma} commands unnecessary.
-@end quotation
+@code{#pragma interface} and @code{#pragma implementation} provide the
+user with a way of explicitly directing the compiler to emit entities
+with vague linkage (and debugging information) in a particular
+translation unit.
 
-The header file contains the full definitions, but is marked with
-@samp{#pragma interface} in the source code.  This allows the compiler
-to use the header file only as an interface specification when ordinary
-source files incorporate it with @code{#include}.  In the single source
-file where the full implementation belongs, you can use either a naming
-convention or @samp{#pragma implementation} to indicate this alternate
-use of the header file.
+@emph{Note:} As of GCC 2.7.2, these @code{#pragma}s are not useful in
+most cases, because of COMDAT support and the ``key method'' heuristic
+mentioned in @ref{Vague Linkage}.  Using them can actually cause your
+program to grow due to unnecesary out-of-line copies of inline
+functions.  Currently the only benefit of these @code{#pragma}s is
+reduced duplication of debugging information, and that should be
+addressed soon on DWARF 2 targets with the use of COMDAT sections.
 
 @table @code
 @item #pragma interface
@@ -8014,9 +8001,6 @@ an implementation file whenever you would include it from
 implementation}.  This was deemed to be more trouble than it was worth,
 however, and disabled.
 
-If you use an explicit @samp{#pragma implementation}, it must appear in
-your source file @emph{before} you include the affected header files.
-
 Use the string argument if you want a single implementation file to
 include code from multiple header files.  (You must also use
 @samp{#include} to include the header file; @samp{#pragma
@@ -8034,10 +8018,10 @@ multiple implementation files.
 effect on function inlining.
 
 If you define a class in a header file marked with @samp{#pragma
-interface}, the effect on a function defined in that class is similar to
-an explicit @code{extern} declaration---the compiler emits no code at
-all to define an independent version of the function.  Its definition
-is used only for inlining with its callers.
+interface}, the effect on an inline function defined in that class is
+similar to an explicit @code{extern} declaration---the compiler emits
+no code at all to define an independent version of the function.  Its
+definition is used only for inlining with its callers.
 
 @opindex fno-implement-inlines
 Conversely, when you include the same header file in a main source file
@@ -8188,9 +8172,6 @@ management.  Code written for the Borland model will work fine, but
 each translation unit will contain instances of each of the templates it
 uses.  In a large program, this can lead to an unacceptable amount of code
 duplication.
-
-@xref{C++ Interface,,Declarations and Definitions in One Header}, for
-more discussion of these pragmas.
 @end enumerate
 
 @node Bound member functions

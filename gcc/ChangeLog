@@ -1,3 +1,9 @@
+2004-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15815
+	* doc/extend.texi (C++ Interface): Correct information and
+	discourage use.
+
 2004-07-07  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md: Define new attribute "empty".
