@@ -1,3 +1,14 @@
+2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/rs6000/aix43.h: Fix comment typos.
+	* config/rs6000/aix51.h: Likewise.
+	* config/rs6000/aix52.h: Likewise.
+	* config/rs6000/altivec.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/rs6000/spe.md: Likewise.
+
 2003-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (builtin_define_float_constants): Define

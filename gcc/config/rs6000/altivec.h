@@ -1,5 +1,5 @@
 /* PowerPC AltiVec include file.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
 This file is part of GNU CC.
@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define __vector __attribute__((vector_size(16)))
 
-/* You are allowed to undef this for C++ compatability.  */
+/* You are allowed to undef this for C++ compatibility.  */
 #define vector __vector
 
 #define bool signed
