@@ -1,7 +1,7 @@
 2003-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11345
-	* g++.old-deja/g++.jason/access8.C: New test.
+	* g++.old-deja/g++.jason/access8.C: Reove error marker.
 
 2003-07-05  Mark Mitchell  <mark@codesourcery.com>
 
