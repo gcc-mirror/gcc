@@ -1,3 +1,19 @@
+2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_base_arch_macro, avr_extra_arch_macro): New.
+	(avr_asm_only_p): Make non-static.
+	(enum avr_arch): Remove.
+	(avr_arch_types): New.
+	(avr_mcu_types): Update.
+	(avr_override_options): Use avr_arch_types table instead of switch.
+	* avr.h (CPP_PREDEFINES): Die.
+	(avr_base_arch_macro, avr_extra_arch_macro): New.
+	(TARGET_CPU_CPP_BUILTINS): New.
+	(CPP_SPEC, EXTRA_SPECS): Simplify.
+	(CPP_AVR1_SPEC, CPP_AVR2_SPEC, CPP_AVR3_SPEC, CPP_AVR4_SPEC,
+	CPP_AVR5_SPEC): Die.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/arm/netbsd.h (TARGET_OS_CPP_BUILTINS): Use
