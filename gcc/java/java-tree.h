@@ -88,7 +88,6 @@ struct JCF;
    3: METHOD_FINAL (in FUNCTION_DECL)
       FIELD_FINAL (in FIELD_DECL)
       CLASS_FINAL (in TYPE_DECL)
-      LOCAL_FINAL (in VAR_DECL)
    4: METHOD_SYNCHRONIZED (in FUNCTION_DECL).
       LABEL_IN_SUBR (in LABEL_DECL)
       CLASS_INTERFACE (in TYPE_DECL)
@@ -701,11 +700,12 @@ struct lang_identifier
    is excluded, because sometimes created as a parameter before the
    function decl exists. */
 #define DECL_FUNCTION_NAP(DECL) (DECL_LANG_SPECIFIC(DECL)->nap)
-
-/* For a FIELD_DECL, holds the name of the access method used to
-   read/write the content of the field from an inner class. 
-   The cast is ugly. FIXME  */
-#define FIELD_INNER_ACCESS(DECL)       ((tree)DECL_LANG_SPECIFIC (DECL))
+/* True if DECL is a synthetic ctor.  */
+#define DECL_FUNCTION_SYNTHETIC_CTOR(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->synthetic_ctor)
+/* True if DECL initializes all its finals */
+#define DECL_FUNCTION_ALL_FINAL_INITIALIZED(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->init_final)
 
 /* True when DECL aliases an outer context local variable.  */
 #define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (DECL)
@@ -779,6 +779,46 @@ struct lang_identifier
    slot_number in decl_map. */
 #define DECL_LOCAL_SLOT_CHAIN(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->slot_chain)
+/* For a FIELD_DECL, holds the name of the access method. Used to
+   read/write the content of the field from an inner class.  */
+#define FIELD_INNER_ACCESS(DECL) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(DECL))->am)
+/* Safely tests whether FIELD_INNER_ACCESS exists or not. */
+#define FIELD_INNER_ACCESS_P(DECL) \
+  DECL_LANG_SPECIFIC (DECL) && FIELD_INNER_ACCESS (DECL)
+/* True if a final variable was initialized upon its declaration. */
+#define DECL_FIELD_FINAL_IUD(NODE) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_iud)
+/* Set to true if a final variable is seen locally initialized on a
+   ctor. */
+#define DECL_FIELD_FINAL_LIIC(NODE) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_liic)
+/* Set to true if an initialization error was already found with this
+   final variable. */
+#define DECL_FIELD_FINAL_IERR(NODE) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_ierr)
+/* The original WFL of a final variable. */
+#define DECL_FIELD_FINAL_WFL(NODE) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->wfl)
+/* True if NODE is a local final (as opposed to a final variable.)
+   This macro accesses the flag to read or set it. */
+#define LOCAL_FINAL(NODE) \
+  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->local_final)
+/* True if NODE is a local final. */
+#define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && LOCAL_FINAL (NODE))
+/* True if NODE is a final variable */
+#define FINAL_VARIABLE_P(NODE) (FIELD_FINAL (NODE) && !FIELD_STATIC (NODE))
+/* True if NODE is a class final variable */
+#define CLASS_FINAL_VARIABLE_P(NODE) \
+  (FIELD_FINAL (NODE) && FIELD_STATIC (NODE))
+/* Create a DECL_LANG_SPECIFIC if necessary. */
+#define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)			\
+  if (DECL_LANG_SPECIFIC (T) == NULL)				\
+    {								\
+      DECL_LANG_SPECIFIC ((T))					\
+	= ((struct lang_decl *)					\
+	   ggc_alloc_cleared (sizeof (struct lang_decl_var)));	\
+    }
 
 /* For a local VAR_DECL, holds the index into a words bitstring that
    specifies if this decl is definitively assigned.
@@ -798,15 +838,15 @@ struct lang_decl
   tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */
   tree called_constructor;	/* When decl is a constructor, the
-				   list of other constructor it calls. */
+				   list of other constructor it calls */
   struct hash_table init_test_table;
-				/* Class initialization test variables.  */
+				/* Class initialization test variables  */
   tree inner_access;		/* The identifier of the access method
 				   used for invocation from inner classes */
   int nap;			/* Number of artificial parameters */
-
-  int native : 1;		/* Nonzero if this is a native
-				   method.  */
+  int native : 1;		/* Nonzero if this is a native method  */
+  int synthetic_ctor : 1;	/* Nonzero if this is a synthetic ctor */
+  int init_final : 1;		/* Nonzero all finals are initialized */
 };
 
 /* init_test_table hash table entry structure.  */
@@ -816,13 +856,20 @@ struct init_test_hash_entry
   tree init_test_decl;
 };
 
-/* DECL_LANG_SPECIFIC for VAR_DECL and PARM_DECL. */
+/* DECL_LANG_SPECIFIC for VAR_DECL, PARM_DECL and sometimes FIELD_DECL
+   (access methods on outer class fields) and final fields. */
 struct lang_decl_var
 {
   int slot_number;
   int start_pc;
   int end_pc;
   tree slot_chain;
+  tree am;			/* Access method for this field (1.1) */
+  tree wfl;			/* Original wfl */
+  int final_iud : 1;		/* Final initialized upon declaration */
+  int final_liic : 1;		/* Final locally initialized in ctors */
+  int final_ierr : 1;		/* Initialization error already detected */
+  int local_final : 1;		/* True if the decl is a local final */
 };
 
 /* Macro to access fields in `struct lang_type'.  */
@@ -847,6 +894,7 @@ struct lang_decl_var
 #define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC(T)->dot_class)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
+#define TYPE_HAS_FINAL_VARIABLE(T) (TYPE_LANG_SPECIFIC(T)->afv)
 
 struct lang_type
 {
@@ -863,6 +911,7 @@ struct lang_type
 				   <non_primitive_type>.class */
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
+  unsigned afv:1;		/* Has final variables */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -1110,7 +1159,6 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define FIELD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 #define FIELD_VOLATILE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define FIELD_TRANSIENT(DECL) DECL_LANG_FLAG_5 (DECL)
-#define LOCAL_FINAL(DECL) FIELD_FINAL(DECL)
 
 /* Access flags etc for a class (a TYPE_DECL): */
 

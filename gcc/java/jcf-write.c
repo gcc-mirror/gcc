@@ -57,7 +57,7 @@ char *jcf_write_base_directory = NULL;
 /* Add a 1-byte instruction/operand I to bytecode.data,
    assuming space has already been RESERVE'd. */
 
-#define OP1(I) (*state->bytecode.ptr++ = (I), CHECK_OP(state))
+#define OP1(I) (state->last_bc = *state->bytecode.ptr++ = (I), CHECK_OP(state))
 
 /* Like OP1, but I is a 2-byte big endian integer. */
 
@@ -131,13 +131,14 @@ struct jcf_block
 
   int linenumber;
 
-  /* After finish_jcf_block is called, The actual instructions contained in this block.
-     Before than NULL, and the instructions are in state->bytecode. */
+  /* After finish_jcf_block is called, The actual instructions
+     contained in this block.  Before than NULL, and the instructions
+     are in state->bytecode. */
   union {
     struct chunk *chunk;
 
     /* If pc==PENDING_CLEANUP_PC, start_label is the start of the region
-       coveed by the cleanup. */
+       covered by the cleanup. */
     struct jcf_block *start_label;
   } v;
 
@@ -272,8 +273,10 @@ struct jcf_partial
   /* If non-NULL, use this for the return value. */
   tree return_value_decl;
 
-  /* Information about the current switch statemenet. */
+  /* Information about the current switch statement. */
   struct jcf_switch_state *sw_state;
+
+  enum java_opcode last_bc;	/* The last emitted bytecode */
 };
 
 static void generate_bytecode_insns PARAMS ((tree, int, struct jcf_partial *));
@@ -2158,7 +2161,16 @@ generate_bytecode_insns (exp, target, state)
 	tree src = TREE_OPERAND (exp, 0);
 	tree src_type = TREE_TYPE (src);
 	tree dst_type = TREE_TYPE (exp);
-	generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
+	/* Detect the situation of compiling an empty synchronized
+	   block.  A nop should be emitted in order to produce
+	   verifiable bytecode. */
+	if (exp == empty_stmt_node
+	    && state->last_bc == OPCODE_monitorenter
+	    && state->labeled_blocks
+	    && state->labeled_blocks->pc == PENDING_CLEANUP_PC)
+	  OP1 (OPCODE_nop);
+	else
+	  generate_bytecode_insns (TREE_OPERAND (exp, 0), target, state);
 	if (target == IGNORE_TARGET || src_type == dst_type)
 	  break;
 	if (TREE_CODE (dst_type) == POINTER_TYPE)

@@ -127,8 +127,7 @@ push_jvm_slot (index, decl)
   /* Now link the decl into the decl_map. */
   if (DECL_LANG_SPECIFIC (decl) == NULL)
     {
-      DECL_LANG_SPECIFIC (decl)
-	= (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl_var));
+      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
       DECL_LOCAL_START_PC (decl) = 0;
       DECL_LOCAL_END_PC (decl) = DECL_CODE_LENGTH (current_function_decl);
       DECL_LOCAL_SLOT_NUMBER (decl) = index;
@@ -1620,8 +1619,7 @@ give_name_to_locals (jcf)
 	     comments for expr.c:maybe_adjust_start_pc. */
 	  start_pc = maybe_adjust_start_pc (jcf, code_offset, start_pc, slot);
 
-	  DECL_LANG_SPECIFIC (decl)
-	    = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl_var));
+	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
 	  DECL_LOCAL_SLOT_NUMBER (decl) = slot;
 	  DECL_LOCAL_START_PC (decl) = start_pc;
 #if 0
@@ -1901,7 +1899,8 @@ lang_mark_tree (t)
       ggc_mark_tree (li->utf8_ref);
     }
   else if (TREE_CODE (t) == VAR_DECL
-	   || TREE_CODE (t) == PARM_DECL)
+	   || TREE_CODE (t) == PARM_DECL
+	   || TREE_CODE (t) == FIELD_DECL)
     {
       struct lang_decl_var *ldv = 
 	((struct lang_decl_var *) DECL_LANG_SPECIFIC (t));
@@ -1909,6 +1908,8 @@ lang_mark_tree (t)
 	{
 	  ggc_mark (ldv);
 	  ggc_mark_tree (ldv->slot_chain);
+	  ggc_mark_tree (ldv->am);
+	  ggc_mark_tree (ldv->wfl);
 	}
     }
   else if (TREE_CODE (t) == FUNCTION_DECL)
