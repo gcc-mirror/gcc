@@ -1,3 +1,19 @@
+2004-05-03  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_expm1.
+	(expm1_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize expm1_optab.
+	* genopinit.c (optabs): Implement expm1_optab using expm1?f2
+	patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_EXPM1{,F,L}
+	using expm1_optab.
+	(expand_builtin): Expand BUILT_IN_EXPM1{,F,L} using
+	expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (expm1df2, expm1sf2, expm1xf2): New expanders
+	to implement expm1, expm1f and expm1l built-ins as inline x87
+	intrinsics.
+
 2004-05-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	2003-11-19  Richard Sandiford  <rsandifo@redhat.com>
