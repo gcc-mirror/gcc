@@ -47,14 +47,14 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Function prototypes for stupid compilers:  */
-static void const_double_split
-  PARAMS ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
-static int  const_costs_int        PARAMS ((HOST_WIDE_INT, int));
-static void substitute_ep_register PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
-static int  ep_memory_offset       PARAMS ((enum machine_mode, int));
-static void v850_set_data_area     PARAMS ((tree, v850_data_area));
-static void v850_save_machine_status    PARAMS ((struct function *));
-static void v850_restore_machine_status PARAMS ((struct function *));
+static void const_double_split       PARAMS ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
+static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
+static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
+static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
+static void v850_set_data_area       PARAMS ((tree, v850_data_area));
+static void v850_init_machine_status PARAMS ((struct function *));
+static void v850_mark_machine_status PARAMS ((struct function *));
+static void v850_free_machine_status PARAMS ((struct function *));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -1153,7 +1153,7 @@ Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, end
    as a C statement to act on the code starting at INSN.
 
    On the 850, we use it to implement the -mep mode to copy heavily used
-   pointers to ep to use the implicit addressing */
+   pointers to ep to use the implicit addressing.  */
 
 void v850_reorg (start_insn)
      rtx start_insn;
@@ -1173,7 +1173,7 @@ void v850_reorg (start_insn)
   rtx insn;
   rtx pattern;
 
-  /* If not ep mode, just return now */
+  /* If not ep mode, just return now.  */
   if (!TARGET_EP)
     return;
 
@@ -2556,7 +2556,7 @@ void
 v850_output_aligned_bss (file, decl, name, size, align)
      FILE * file;
      tree decl;
-     char * name;
+     const char * name;
      int size;
      int align;
 {
@@ -2596,7 +2596,7 @@ void
 v850_output_common (file, decl, name, size, align)
      FILE * file;
      tree decl;
-     char * name;
+     const char * name;
      int size;
      int align;
 {
@@ -2635,7 +2635,7 @@ void
 v850_output_local (file, decl, name, size, align)
      FILE * file;
      tree decl;
-     char * name;
+     const char * name;
      int size;
      int align;
 {
@@ -2788,9 +2788,6 @@ v850_va_arg (valist, type)
 }
 
 /* Functions to save and restore machine-specific function data.  */
-
-static rtx ra_rtx;
-
 struct machine_function
 {
   /* Records __builtin_return address.  */
@@ -2798,19 +2795,24 @@ struct machine_function
 };
 
 static void
-v850_save_machine_status (p)
+v850_init_machine_status (p)
      struct function * p;
 {
   p->machine =
     (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-  p->machine->ra_rtx = ra_rtx;
 }
 
 static void
-v850_restore_machine_status (p)
+v850_mark_machine_status (p)
      struct function * p;
 {
-  ra_rtx = p->machine->ra_rtx;
+  ggc_mark_rtx (p->machine->ra_rtx);
+}
+
+static void
+v850_free_machine_status (p)
+     struct function * p;
+{
   free (p->machine);
   p->machine = NULL;
 }
@@ -2825,17 +2827,17 @@ v850_return_addr (count)
   if (count != 0)
     return const0_rtx;
 
-  if (ra_rtx == NULL)
+  if (cfun->machine->ra_rtx == NULL)
     {
       rtx init;
       
       /* No rtx yet.  Invent one, and initialize it for r31 (lp) in 
        the prologue.  */
-      ra_rtx = gen_reg_rtx (Pmode);
+      cfun->machine->ra_rtx = gen_reg_rtx (Pmode);
       
       init = gen_rtx_REG (Pmode, LINK_POINTER_REGNUM);
 
-      init = gen_rtx_SET (VOIDmode, ra_rtx, init);
+      init = gen_rtx_SET (VOIDmode, cfun->machine->ra_rtx, init);
 
       /* Emit the insn to the prologue with the other argument copies.  */
       push_topmost_sequence ();
@@ -2843,8 +2845,7 @@ v850_return_addr (count)
       pop_topmost_sequence ();
     }
 
-  debug_rtx (ra_rtx);
-  return ra_rtx;
+  return cfun->machine->ra_rtx;
 }
 
 /* Do anything needed before RTL is emitted for each function.  */
@@ -2852,8 +2853,7 @@ v850_return_addr (count)
 void
 v850_init_expanders ()
 {
-  ra_rtx = NULL;
-
-  save_machine_status    = v850_save_machine_status;
-  restore_machine_status = v850_restore_machine_status;
+  init_machine_status = v850_init_machine_status;
+  mark_machine_status = v850_mark_machine_status;
+  free_machine_status = v850_free_machine_status;
 }
