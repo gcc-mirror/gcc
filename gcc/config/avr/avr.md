@@ -356,13 +356,14 @@
   "{
   rtx addr0, addr1;
   int cnt8;
+  enum machine_mode mode;
 
   if (GET_CODE (operands[2]) != CONST_INT)
     FAIL;
-  cnt8 = byte_immediate_operand (operands[2], GET_MODE (operands[2]));
-  operands[2] = copy_to_mode_reg (cnt8 ? QImode : HImode, operands[2]);
-  operands[4] = operands[2];
-
+  cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
+  mode = cnt8 ? QImode : HImode;
+  operands[1] = copy_to_mode_reg (mode,
+                                  gen_int_mode (INTVAL (operands[1]), mode));
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
   addr1 = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
 
@@ -428,12 +429,15 @@
   "{
   rtx addr0;
   int cnt8;
+  enum machine_mode mode;
 
   if (GET_CODE (operands[1]) != CONST_INT)
     FAIL;
 
   cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
-  operands[1] = copy_to_mode_reg (cnt8 ? QImode : HImode, operands[1]);
+  mode = cnt8 ? QImode : HImode;
+  operands[1] = copy_to_mode_reg (mode,
+                                  gen_int_mode (INTVAL (operands[1]), mode));
   operands[3] = operands[1];
 
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));

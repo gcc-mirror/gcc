@@ -1,3 +1,8 @@
+2002-09-09  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md (movstrhi, clrstrhi): Use gen_int_mode for
+	right conversion of operands[1].
+
 2002-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*tmdi_reg", "*tmsi_reg"): Do not mark as
