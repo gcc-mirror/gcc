@@ -57,10 +57,11 @@ static void hack_vms_include_specification PROTO ((char *));
 #endif
 
 /* Windows does not natively support inodes, and neither does MSDOS.
+   Cygwin's emulation can generate non-unique inodes, so don't use it.
    VMS has non-numeric inodes. */
 #ifdef VMS
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
-#elif (defined _WIN32 && !defined CYGWIN && ! defined (_UWIN)) \
+#elif (defined _WIN32 && ! defined (_UWIN)) \
        || defined __MSDOS__
 #define INO_T_EQ(a, b) 0
 #else
