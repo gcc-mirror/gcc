@@ -187,7 +187,7 @@ Ada Core Technologies, Inc.@*
 * GNAT and Libraries::
 * Using the GNU make Utility::
 @end ifclear
-* Finding Memory Problems::
+* Memory Management Issues::
 * Creating Sample Bodies Using gnatstub::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
@@ -368,6 +368,7 @@ GNAT Project Manager
 * Objects and Sources in Project Files::
 * Importing Projects::
 * Project Extension::
+* Project Hierarchy Extension::
 * External References in Project Files::
 * Packages in Project Files::
 * Variables from Imported Projects::
@@ -445,12 +446,17 @@ Using the GNU make Utility
 * Overcoming Command Line Length Limits::
 @end ifclear
 
-Finding Memory Problems
+Memory Management Issues
 
+* Some Useful Memory Pools::
+* The GNAT Debug Pool Facility::
 @ifclear vms
 * The gnatmem Tool::
 @end ifclear
-* The GNAT Debug Pool Facility::
+
+Some Useful Memory Pools
+
+The GNAT Debug Pool Facility
 
 @ifclear vms
 The gnatmem Tool
@@ -460,9 +466,7 @@ The gnatmem Tool
 * Example of gnatmem Usage::
 @end ifclear
 
-The GNAT Debug Pool Facility
-
-Creating Sample Bodies Using gnatstub
+ Sample Bodies Using gnatstub
 
 * Running gnatstub::
 * Switches for gnatstub::
@@ -758,12 +762,13 @@ the GNAT toolset in Makefiles.
 @end ifclear
 
 @item
-@ref{Finding Memory Problems}, describes
+@ref{Memory Management Issues}, describes some useful predefined storage pools
+and in particular the GNAT Debug Pool facility, which helps detect incorrect
+memory references.
 @ifclear vms
-@command{gnatmem}, a utility that monitors dynamic allocation and deallocation
-and helps detect ``memory leaks'', and
+It also describes @command{gnatmem}, a utility that monitors dynamic
+allocation and deallocation and helps detect ``memory leaks''.
 @end ifclear
-the GNAT Debug Pool facility, which helps detect incorrect memory references.
 
 @item
 @ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
@@ -3258,7 +3263,7 @@ class Origin @{
 class A : public Origin @{
  public:
   void method1 (void);
-  virtual void method2 (int v);
+  void method2 (int v);
   A();
   int   a_value;
 @};
@@ -10286,6 +10291,7 @@ are used in this example.
 * Objects and Sources in Project Files::
 * Importing Projects::
 * Project Extension::
+* Project Hierarchy Extension::
 * External References in Project Files::
 * Packages in Project Files::
 * Variables from Imported Projects::
@@ -12029,6 +12035,78 @@ projects.
 
 A project is not allowed to import directly or indirectly at the same time a
 child project and any of its ancestors.
+
+@c *******************************
+@c * Project Hierarchy Extension *
+@c *******************************
+
+@node Project Hierarchy Extension
+@section Project Hierarchy Extension
+
+@noindent
+When extending a large system spanning multiple projects, it is often
+inconvenient to extend every project in the hierarchy that is impacted by a
+small change introduced. In such cases, it is possible to create a virtual
+extension of entire hierarchy using @code{extends all} relationship.
+
+When the project is extended using @code{extends all} inheritance, all projects
+that are imported by it, both directly and indirectly, are considered virtually
+extended. That is, the Project Manager creates "virtual projects"
+that extend every project in the hierarchy; all these virtual projects have
+no sources of their own and have as object directory the object directory of
+the root of "extending all" project.
+
+It is possible to explicitly extend one or more projects in the hierarchy
+in order to modify the sources. These extending projects must be imported by
+the "extending all" project, which will replace the corresponding virtual
+projects with the explicit ones.
+
+When building such a project hierarchy extension, the Project Manager will
+ensure that both modified sources and sources in virtual extending projects
+that depend on them, are recompiled.
+
+By means of example, consider the following hierarchy of projects.
+
+@enumerate
+@item
+project A, containing package P1
+@item
+project B importing A and containing package P2 which depends on P1
+@item
+project C importing B and containing package P3 which depends on P2
+@end enumerate
+
+@noindent
+We want to modify packages P1 and P3.
+
+This project hierarchy will need to be extended as follows:
+
+@enumerate
+@item
+Create project A1 that extends A, placing modified P1 there:
+
+@smallexample @c 0projectfile
+project A1 extends "(...)/A" is
+end A1;
+@end smallexample
+
+@item
+Create project C1 that "extends all" C and imports A1, placing modified
+P3 there:
+
+@smallexample @c 0projectfile
+with "(...)/A1";
+project C1 extends all "(...)/C" is
+end C1;
+@end smallexample
+@end enumerate
+
+When you build project C1, your entire modified project space will be
+recompiled, including the virtual project B1 that has been impacted by the
+"extending all" inheritance of project C.
+
+Note that if a Library Project in the hierarchy is virtually extended,
+the virtual project that extends the Library Project is not a Library Project.
 
 @c ****************************************
 @c * External References in Project Files *
@@ -17137,24 +17215,236 @@ all:
 @end smallexample
 @end ifclear
 
-@node Finding Memory Problems
-@chapter Finding Memory Problems
+@node Memory Management Issues
+@chapter Memory Management Issues
 
 @noindent
-This chapter describes
+This chapter describes some useful memory pools provided in the GNAT library
+and in particular the GNAT Debug Pool facility, which can be used to detect
+incorrect uses of access values (including ``dangling references'').
 @ifclear vms
-the @command{gnatmem} tool, which can be used to track down
-``memory leaks'', and
+It also describes the @command{gnatmem} tool, which can be used to track down
+``memory leaks''.
 @end ifclear
-the GNAT Debug Pool facility, which can be used to detect incorrect uses of
-access values (including ``dangling references'').
 
 @menu
+* Some Useful Memory Pools::
+* The GNAT Debug Pool Facility::
 @ifclear vms
 * The gnatmem Tool::
 @end ifclear
-* The GNAT Debug Pool Facility::
 @end menu
+
+@node Some Useful Memory Pools
+@section Some Useful Memory Pools
+@findex Memory Pool
+@cindex storage, pool
+
+@noindent
+The @code{System.Pool_Global} package offers the Unbounded_No_Reclaim_Pool
+storage pool. Allocations use the standard system call @code{malloc} while
+deallocations use the standard system call @code{free}. No reclamation is
+performed when the pool goes out of scope. For performance reasons, the
+standard default Ada allocators/deallocators do not use any explicit storage
+pools but if they did, they could use this storage pool without any change in
+behavior. That is why this storage pool is used  when the user
+manages to make the default implicit allocator explicit as in this example:
+@smallexample @c ada
+   type T1 is access Something;
+    -- no Storage pool is defined for T2
+   type T2 is access Something_Else;
+   for T2'Storage_Pool use T1'Storage_Pool;
+   -- the above is equivalent to
+   for T2'Storage_Pool use System.Pool_Global.Global_Pool_Object;
+@end smallexample
+
+@noindent
+The @code{System.Pool_Local} package offers the Unbounded_Reclaim_Pool storage
+pool. The allocation strategy is similar to @code{Pool_Local}'s
+except that the all
+storage allocated with this pool is reclaimed when the pool object goes out of
+scope. This pool provides a explicit mechanism similar to the implicit one
+provided by several Ada 83 compilers for allocations performed through a local
+access type and whose purpose was to reclaim memory when exiting the
+scope of a given local access. As an example, the following program does not
+leak memory even though it does not perform explicit deallocation:
+
+@smallexample @c ada
+with System.Pool_Local;
+procedure Pooloc1 is
+   procedure Internal is
+      type A is access Integer;
+      X : System.Pool_Local.Unbounded_Reclaim_Pool;
+      for A'Storage_Pool use X;
+      v : A;
+   begin
+      for I in  1 .. 50 loop
+         v := new Integer;
+      end loop;
+   end Internal;
+begin
+   for I in  1 .. 100 loop
+      Internal;
+   end loop;
+end Pooloc1;
+@end smallexample
+
+@noindent
+The @code{System.Pool_Size} package implements the Stack_Bounded_Pool used when
+@code{Storage_Size} is specified for an access type.
+The whole storage for the pool is
+allocated at once, usually on the stack at the point where the access type is
+elaborated. It is automatically reclaimed when exiting the scope where the
+access type is defined. This package is not intended to be used directly by the
+user and it is implicitly used for each such declaration:
+
+@smallexample @c ada
+   type T1 is access Something;
+   for T1'Storage_Size use 10_000;
+@end smallexample
+
+
+@node The GNAT Debug Pool Facility
+@section The GNAT Debug Pool Facility
+@findex Debug Pool
+@cindex storage, pool, memory corruption
+
+@noindent
+The use of unchecked deallocation and unchecked conversion can easily
+lead to incorrect memory references. The problems generated by such
+references are usually difficult to tackle because the symptoms can be
+very remote from the origin of the problem. In such cases, it is
+very helpful to detect the problem as early as possible. This is the
+purpose of the Storage Pool provided by @code{GNAT.Debug_Pools}.
+
+In order to use the GNAT specific debugging pool, the user must
+associate a debug pool object with each of the access types that may be
+related to suspected memory problems. See Ada Reference Manual 13.11.
+@smallexample @c ada
+type Ptr is access Some_Type;
+Pool : GNAT.Debug_Pools.Debug_Pool;
+for Ptr'Storage_Pool use Pool;
+@end smallexample
+
+@noindent
+@code{GNAT.Debug_Pools} is derived from a GNAT-specific kind of
+pool: the @code{Checked_Pool}. Such pools, like standard Ada storage pools,
+allow the user to redefine allocation and deallocation strategies. They
+also provide a checkpoint for each dereference, through the use of
+the primitive operation @code{Dereference} which is implicitly called at
+each dereference of an access value.
+
+Once an access type has been associated with a debug pool, operations on
+values of the type may raise four distinct exceptions,
+which correspond to four potential kinds of memory corruption:
+@itemize @bullet
+@item
+@code{GNAT.Debug_Pools.Accessing_Not_Allocated_Storage}
+@item
+@code{GNAT.Debug_Pools.Accessing_Deallocated_Storage}
+@item
+@code{GNAT.Debug_Pools.Freeing_Not_Allocated_Storage}
+@item
+@code{GNAT.Debug_Pools.Freeing_Deallocated_Storage }
+@end itemize
+
+@noindent
+For types associated with a Debug_Pool, dynamic allocation is performed using
+the standard GNAT allocation routine. References to all allocated chunks of
+memory are kept in an internal dictionary. Several deallocation strategies are
+provided, whereupon the user can choose to release the memory to the system,
+keep it allocated for further invalid access checks, or fill it with an easily
+recognizable pattern for debug sessions. The memory pattern is the old IBM
+hexadecimal convention: @code{16#DEADBEEF#}.
+
+See the documentation in the file g-debpoo.ads for more information on the
+various strategies.
+
+Upon each dereference, a check is made that the access value denotes a
+properly allocated memory location. Here is a complete example of use of
+@code{Debug_Pools}, that includes typical instances of  memory corruption:
+@smallexample @c ada
+@iftex
+@leftskip=0cm
+@end iftex
+with Gnat.Io; use Gnat.Io;
+with Unchecked_Deallocation;
+with Unchecked_Conversion;
+with GNAT.Debug_Pools;
+with System.Storage_Elements;
+with Ada.Exceptions; use Ada.Exceptions;
+procedure Debug_Pool_Test is
+
+   type T is access Integer;
+   type U is access all T;
+
+   P : GNAT.Debug_Pools.Debug_Pool;
+   for T'Storage_Pool use P;
+
+   procedure Free is new Unchecked_Deallocation (Integer, T);
+   function UC is new Unchecked_Conversion (U, T);
+   A, B : aliased T;
+
+   procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
+
+begin
+   Info (P);
+   A := new Integer;
+   B := new Integer;
+   B := A;
+   Info (P);
+   Free (A);
+   begin
+      Put_Line (Integer'Image(B.all));
+   exception
+      when E : others => Put_Line ("raised: " & Exception_Name (E));
+   end;
+   begin
+      Free (B);
+   exception
+      when E : others => Put_Line ("raised: " & Exception_Name (E));
+   end;
+   B := UC(A'Access);
+   begin
+      Put_Line (Integer'Image(B.all));
+   exception
+      when E : others => Put_Line ("raised: " & Exception_Name (E));
+   end;
+   begin
+      Free (B);
+   exception
+      when E : others => Put_Line ("raised: " & Exception_Name (E));
+   end;
+   Info (P);
+end Debug_Pool_Test;
+@end smallexample
+
+@noindent
+The debug pool mechanism provides the following precise diagnostics on the
+execution of this erroneous program:
+@smallexample
+Debug Pool info:
+  Total allocated bytes :  0
+  Total deallocated bytes :  0
+  Current Water Mark:  0
+  High Water Mark:  0
+
+Debug Pool info:
+  Total allocated bytes :  8
+  Total deallocated bytes :  0
+  Current Water Mark:  8
+  High Water Mark:  8
+
+raised: GNAT.DEBUG_POOLS.ACCESSING_DEALLOCATED_STORAGE
+raised: GNAT.DEBUG_POOLS.FREEING_DEALLOCATED_STORAGE
+raised: GNAT.DEBUG_POOLS.ACCESSING_NOT_ALLOCATED_STORAGE
+raised: GNAT.DEBUG_POOLS.FREEING_NOT_ALLOCATED_STORAGE
+Debug Pool info:
+  Total allocated bytes :  8
+  Total deallocated bytes :  4
+  Current Water Mark:  4
+  High Water Mark:  8
+@end smallexample
 
 @ifclear vms
 @node The gnatmem Tool
@@ -17497,150 +17787,6 @@ The allocation root #1 of the first example has been split in 2 roots #1
 and #3 thanks to the more precise associated backtrace.
 
 @end ifclear
-
-@node The GNAT Debug Pool Facility
-@section The GNAT Debug Pool Facility
-@findex Debug Pool
-@cindex storage, pool, memory corruption
-
-@noindent
-The use of unchecked deallocation and unchecked conversion can easily
-lead to incorrect memory references. The problems generated by such
-references are usually difficult to tackle because the symptoms can be
-very remote from the origin of the problem. In such cases, it is
-very helpful to detect the problem as early as possible. This is the
-purpose of the Storage Pool provided by @code{GNAT.Debug_Pools}.
-
-In order to use the GNAT specific debugging pool, the user must
-associate a debug pool object with each of the access types that may be
-related to suspected memory problems. See Ada Reference Manual 13.11.
-@smallexample @c ada
-type Ptr is access Some_Type;
-Pool : GNAT.Debug_Pools.Debug_Pool;
-for Ptr'Storage_Pool use Pool;
-@end smallexample
-
-@noindent
-@code{GNAT.Debug_Pools} is derived from a GNAT-specific kind of
-pool: the @code{Checked_Pool}. Such pools, like standard Ada storage pools,
-allow the user to redefine allocation and deallocation strategies. They
-also provide a checkpoint for each dereference, through the use of
-the primitive operation @code{Dereference} which is implicitly called at
-each dereference of an access value.
-
-Once an access type has been associated with a debug pool, operations on
-values of the type may raise four distinct exceptions,
-which correspond to four potential kinds of memory corruption:
-@itemize @bullet
-@item
-@code{GNAT.Debug_Pools.Accessing_Not_Allocated_Storage}
-@item
-@code{GNAT.Debug_Pools.Accessing_Deallocated_Storage}
-@item
-@code{GNAT.Debug_Pools.Freeing_Not_Allocated_Storage}
-@item
-@code{GNAT.Debug_Pools.Freeing_Deallocated_Storage }
-@end itemize
-
-@noindent
-For types associated with a Debug_Pool, dynamic allocation is performed using
-the standard
-GNAT allocation routine. References to all allocated chunks of memory
-are kept in an internal dictionary.
-Several deallocation strategies are provided, whereupon the user can choose
-to release the memory to the system, keep it allocated for further invalid
-access checks, or fill it with an easily recognizable pattern for debug
-sessions.
-The memory pattern is the old IBM hexadecimal convention: @code{16#DEADBEEF#}.
-
-See the documentation in the file g-debpoo.ads for more information on the
-various strategies.
-
-Upon each dereference, a check is made that the access value denotes a
-properly allocated memory location. Here is a complete example of use of
-@code{Debug_Pools}, that includes typical instances of  memory corruption:
-@smallexample @c ada
-@iftex
-@leftskip=0cm
-@end iftex
-with Gnat.Io; use Gnat.Io;
-with Unchecked_Deallocation;
-with Unchecked_Conversion;
-with GNAT.Debug_Pools;
-with System.Storage_Elements;
-with Ada.Exceptions; use Ada.Exceptions;
-procedure Debug_Pool_Test is
-
-   type T is access Integer;
-   type U is access all T;
-
-   P : GNAT.Debug_Pools.Debug_Pool;
-   for T'Storage_Pool use P;
-
-   procedure Free is new Unchecked_Deallocation (Integer, T);
-   function UC is new Unchecked_Conversion (U, T);
-   A, B : aliased T;
-
-   procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
-
-begin
-   Info (P);
-   A := new Integer;
-   B := new Integer;
-   B := A;
-   Info (P);
-   Free (A);
-   begin
-      Put_Line (Integer'Image(B.all));
-   exception
-      when E : others => Put_Line ("raised: " & Exception_Name (E));
-   end;
-   begin
-      Free (B);
-   exception
-      when E : others => Put_Line ("raised: " & Exception_Name (E));
-   end;
-   B := UC(A'Access);
-   begin
-      Put_Line (Integer'Image(B.all));
-   exception
-      when E : others => Put_Line ("raised: " & Exception_Name (E));
-   end;
-   begin
-      Free (B);
-   exception
-      when E : others => Put_Line ("raised: " & Exception_Name (E));
-   end;
-   Info (P);
-end Debug_Pool_Test;
-@end smallexample
-
-@noindent
-The debug pool mechanism provides the following precise diagnostics on the
-execution of this erroneous program:
-@smallexample
-Debug Pool info:
-  Total allocated bytes :  0
-  Total deallocated bytes :  0
-  Current Water Mark:  0
-  High Water Mark:  0
-
-Debug Pool info:
-  Total allocated bytes :  8
-  Total deallocated bytes :  0
-  Current Water Mark:  8
-  High Water Mark:  8
-
-raised: GNAT.DEBUG_POOLS.ACCESSING_DEALLOCATED_STORAGE
-raised: GNAT.DEBUG_POOLS.FREEING_DEALLOCATED_STORAGE
-raised: GNAT.DEBUG_POOLS.ACCESSING_NOT_ALLOCATED_STORAGE
-raised: GNAT.DEBUG_POOLS.FREEING_NOT_ALLOCATED_STORAGE
-Debug Pool info:
-  Total allocated bytes :  8
-  Total deallocated bytes :  4
-  Current Water Mark:  4
-  High Water Mark:  8
-@end smallexample
 
 @node Creating Sample Bodies Using gnatstub
 @chapter Creating Sample Bodies Using @command{gnatstub}
