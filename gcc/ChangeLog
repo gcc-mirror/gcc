@@ -1,3 +1,26 @@
+2004-07-20  John David Anglin  <dava.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/14607
+	* config/pa/pa-hpux10.h (SUPPORTS_ONE_ONLY): Define.
+	(MAKE_DECL_ONE_ONLY): Undefine.
+	* pa-protos.h (som_text_section_asm_op, one_only_readonly_data_section,
+	readonly_data, one_only_data_section, forget_section): New prototypes.
+	* pa.c (pa_init_machine_status, som_text_section_asm_op): New
+	functions.
+	(pa_select_section): Add one-only (COMDAT) support.
+	* pa.h (struct machine_function): Define.
+	* som.h (ASM_OUTPUT_FUNCTION_PREFIX): Delete.
+	(TEXT_SECTION_ASM_OP): Call som_text_section_asm_op.
+	(DEFAULT_TEXT_SECTION_ASM_OP, NEW_TEXT_SECTION_ASM_OP,
+	ONE_ONLY_TEXT_SECTION_ASM_OP, ONE_ONLY_READONLY_DATA_SECTION_ASM_OP,
+	ONE_ONLY_DATA_SECTION_ASM_OP): New defines.
+	(EXTRA_SECTIONS): Add in_one_only_readonly_data and in_one_only_data.
+	(EXTRA_SECTION_FUNCTIONS): Rework to use individual function macros.
+	(READONLY_DATA_FUNCTION, ONE_ONLY_READONLY_DATA_SECTION_FUNCTION,
+	ONE_ONLY_DATA_SECTION_FUNCTION, FORGET_SECTION_FUNCTION): New defines
+	for EXTRA_SECTION_FUNCTIONS.
+	* doc/install.texi: Update binutils requirements.
+
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* dbxout.c (dbxout_type): Fix printf format.

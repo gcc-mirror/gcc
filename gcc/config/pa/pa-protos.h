@@ -135,6 +135,7 @@ extern int zdepi_cint_p (unsigned HOST_WIDE_INT);
 
 extern void override_options (void);
 extern void output_ascii (FILE *, const char *, int);
+extern const char * som_text_section_asm_op (void);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int *);
 extern int and_mask_p (unsigned HOST_WIDE_INT);
 extern int cint_ok_for_move (HOST_WIDE_INT);
@@ -151,7 +152,6 @@ extern int cmpib_comparison_operator (rtx, enum machine_mode);
 #endif
 
 
-
 #ifdef TREE_CODE
 extern int reloc_needed (tree);
 #ifdef RTX_CODE
@@ -164,3 +164,9 @@ extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
 				       tree, int);
 extern bool pa_return_in_memory (tree, tree);
 #endif /* TREE_CODE */
+
+/* Functions in varasm.c used by pa.c.  */
+extern void readonly_data (void);
+extern void one_only_readonly_data_section (void);
+extern void one_only_data_section (void);
+extern void forget_section (void);

@@ -2607,9 +2607,8 @@ longer a multiple of 2 bytes.
 @heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
 Support for HP-UX version 9 and older was discontinued in GCC 3.4.
 
-We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
-platforms; you may encounter a variety of problems when using the HP
-assembler.
+We @emph{highly} recommend using gas/binutils on all hppa platforms;
+you may encounter a variety of problems when using the HP assembler.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless you
@@ -2664,6 +2663,13 @@ the 3-stage comparison test to fail during a @samp{make bootstrap}.
 You should be able to continue by saying @samp{make all} after getting
 the failure from @samp{make bootstrap}.
 
+GCC 3.5 requires CVS binutils as of April 28, 2004 or later.  Earlier
+versions require binutils 2.8 or later.
+
+The C++ ABI has changed incompatibly in GCC 3.5.  COMDAT subspaces are
+used for one-only code and data.  This resolves many of the previous
+problems in using C++ on this target.  However, the ABI is not compatible
+with the one implemented under HP-UX 11 using secondary definitions.
 
 @html
 <hr />
@@ -2732,8 +2738,8 @@ result, it's not possible to switch linkers in the middle of a GCC build.
 This has been been reported to sometimes occur in unified builds of
 binutils and GCC.
 
-With GCC 3.0 through 3.2, you must use binutils 2.11 or above.  As of
-GCC 3.3, binutils 2.14 or later is required.
+GCC 3.0 through 3.2 require binutils 2.11 or above.  GCC 3.3 through
+GCC 3.5 require binutils 2.14 or later.
 
 Although the HP assembler can be used for an initial build, it shouldn't
 be used with any languages other than C and perhaps Fortran due to its
