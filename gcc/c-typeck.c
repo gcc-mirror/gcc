@@ -6303,6 +6303,78 @@ process_init_element (value)
     }
 }
 
+/* Build an asm-statement, whose components are a CV_QUALIFIER, a
+   STRING, some OUTPUTS, some INPUTS, and some CLOBBERS.  */
+
+tree
+build_asm_stmt (cv_qualifier, string, outputs, inputs, clobbers)
+     tree cv_qualifier;
+     tree string;
+     tree outputs;
+     tree inputs;
+     tree clobbers;
+{
+  tree tail;
+
+  if (TREE_CHAIN (string))
+    string = combine_strings (string);
+  if (TREE_CODE (string) != STRING_CST)
+    {
+      error ("asm template is not a string constant");
+      return NULL_TREE;
+    }
+
+  if (cv_qualifier != NULL_TREE
+      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
+    {
+      warning ("%s qualifier ignored on asm",
+	       IDENTIFIER_POINTER (cv_qualifier));
+      cv_qualifier = NULL_TREE;
+    }
+
+  /* We can remove output conversions that change the type,
+     but not the mode.  */
+  for (tail = outputs; tail; tail = TREE_CHAIN (tail))
+    {
+      tree output = TREE_VALUE (tail);
+
+      STRIP_NOPS (output);
+      TREE_VALUE (tail) = output;
+
+      /* Allow conversions as LHS here.  build_modify_expr as called below
+	 will do the right thing with them.  */
+      while (TREE_CODE (output) == NOP_EXPR
+	     || TREE_CODE (output) == CONVERT_EXPR
+	     || TREE_CODE (output) == FLOAT_EXPR
+	     || TREE_CODE (output) == FIX_TRUNC_EXPR
+	     || TREE_CODE (output) == FIX_FLOOR_EXPR
+	     || TREE_CODE (output) == FIX_ROUND_EXPR
+	     || TREE_CODE (output) == FIX_CEIL_EXPR)
+	output = TREE_OPERAND (output, 0);
+
+      lvalue_or_else (TREE_VALUE (tail), "invalid lvalue in asm statement");
+    }
+
+  /* Remove output conversions that change the type but not the mode.  */
+  for (tail = outputs; tail; tail = TREE_CHAIN (tail))
+    {
+      tree output = TREE_VALUE (tail);
+      STRIP_NOPS (output);
+      TREE_VALUE (tail) = output;
+    }
+
+  /* Perform default conversions on array and function inputs. 
+     Don't do this for other types as it would screw up operands
+     expected to be in memory.  */
+  for (tail = inputs; tail; tail = TREE_CHAIN (tail))
+    if (TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == ARRAY_TYPE
+	|| TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == FUNCTION_TYPE)
+      TREE_VALUE (tail) = default_conversion (TREE_VALUE (tail));
+
+  return add_stmt (build_stmt (ASM_STMT, cv_qualifier, string,
+			       outputs, inputs, clobbers));
+}
+
 /* Expand an ASM statement with operands, handling output operands
    that are not variables or INDIRECT_REFS by transforming such
    cases into cases that expand_asm_operands can handle.
@@ -6322,57 +6394,12 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   register tree *o = (tree *) alloca (noutputs * sizeof (tree));
   register tree tail;
 
-  if (TREE_CODE (string) == ADDR_EXPR)
-    string = TREE_OPERAND (string, 0);
-  if (last_tree && TREE_CODE (string) != STRING_CST)
-    {
-      error ("asm template is not a string constant");
-      return;
-    }
-
   /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
-    {
-      tree output = TREE_VALUE (tail);
+    o[i] = TREE_VALUE (tail);
 
-      /* We can remove conversions that just change the type, not the mode.  */
-      STRIP_NOPS (output);
-      o[i] = output;
-
-      /* Allow conversions as LHS here.  build_modify_expr as called below
-	 will do the right thing with them.  */
-      while (TREE_CODE (output) == NOP_EXPR
-	     || TREE_CODE (output) == CONVERT_EXPR
-	     || TREE_CODE (output) == FLOAT_EXPR
-	     || TREE_CODE (output) == FIX_TRUNC_EXPR
-	     || TREE_CODE (output) == FIX_FLOOR_EXPR
-	     || TREE_CODE (output) == FIX_ROUND_EXPR
-	     || TREE_CODE (output) == FIX_CEIL_EXPR)
-	output = TREE_OPERAND (output, 0);
-
-      if (last_tree)
-	lvalue_or_else (o[i], "invalid lvalue in asm statement");
-    }
-
-  /* Perform default conversions on array and function inputs.  */
-  /* Don't do this for other types--
-     it would screw up operands expected to be in memory.  */
-  for (i = 0, tail = inputs; tail; tail = TREE_CHAIN (tail), i++)
-    if (TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == ARRAY_TYPE
-	|| TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == FUNCTION_TYPE)
-      TREE_VALUE (tail) = default_conversion (TREE_VALUE (tail));
-
-  if (last_tree)
-    {
-      add_stmt (build_stmt (ASM_STMT, 
-			    vol ? ridpointers[(int) RID_VOLATILE] : NULL_TREE,
-			    string, outputs, inputs, clobbers));
-      return;
-    }
-
-  /* Generate the ASM_OPERANDS insn;
-     store into the TREE_VALUEs of OUTPUTS some trees for
-     where the values were actually stored.  */
+  /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
+     OUTPUTS some trees for where the values were actually stored.  */
   expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line);
 
   /* Copy all the intermediate outputs into the specified outputs.  */
@@ -6410,7 +6437,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
    RETVAL is the expression for what to return,
    or a null pointer for `return;' with no value.  */
 
-void
+tree
 c_expand_return (retval)
      tree retval;
 {
@@ -6440,7 +6467,7 @@ c_expand_return (retval)
       tree inner;
 
       if (t == error_mark_node)
-	return;
+	return NULL_TREE;
 
       inner = t = convert (TREE_TYPE (res), t);
 
@@ -6499,7 +6526,7 @@ c_expand_return (retval)
       current_function_returns_value = 1;
     }
 
- add_stmt (build_return_stmt (retval));
+ return add_stmt (build_return_stmt (retval));
 }
 
 struct c_switch {
@@ -6581,20 +6608,27 @@ c_start_case (exp)
 
 /* Process a case label.  */
 
-void
+tree
 do_case (low_value, high_value)
      tree low_value;
      tree high_value;
 {
+  tree label = NULL_TREE;
+
   if (switch_stack)
-    c_add_case_label (switch_stack->cases, 
-		      SWITCH_COND (switch_stack->switch_stmt), 
-		      low_value, 
-		      high_value);
+    {
+      label = c_add_case_label (switch_stack->cases, 
+				SWITCH_COND (switch_stack->switch_stmt), 
+				low_value, high_value);
+      if (label == error_mark_node)
+	label = NULL_TREE;
+    }
   else if (low_value)
     error ("case label not within a switch statement");
   else
     error ("`default' label not within a switch statement");
+
+  return label;
 }
 
 /* Finish the switch statement.  */

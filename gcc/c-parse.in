@@ -177,7 +177,7 @@ end ifc
 %type <ttype> any_word extension
 
 %type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
-%type <ttype> do_stmt_start poplevel
+%type <ttype> do_stmt_start poplevel stmt label
 
 %type <ttype> c99_block_start c99_block_end
 %type <ttype> declarator
@@ -365,8 +365,10 @@ fndef:
 		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
-	  compstmt_or_error
-		{ finish_function (0); 
+	  save_filename save_lineno compstmt_or_error
+		{ DECL_SOURCE_FILE (current_function_decl) = $7;
+		  DECL_SOURCE_LINE (current_function_decl) = $8;
+		  finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -381,8 +383,10 @@ fndef:
 		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
-	  compstmt_or_error
-		{ finish_function (0); 
+	  save_filename save_lineno compstmt_or_error
+		{ DECL_SOURCE_FILE (current_function_decl) = $7;
+		  DECL_SOURCE_LINE (current_function_decl) = $8;
+		  finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -397,8 +401,10 @@ fndef:
 		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
-	  compstmt_or_error
-		{ finish_function (0); 
+	  save_filename save_lineno compstmt_or_error
+		{ DECL_SOURCE_FILE (current_function_decl) = $6;
+		  DECL_SOURCE_LINE (current_function_decl) = $7;
+		  finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -1192,8 +1198,10 @@ nested_function:
    which then was handled by compstmt_or_error.
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
-	  compstmt
+	  save_filename save_lineno compstmt
 		{ tree decl = current_function_decl;
+		  DECL_SOURCE_FILE (decl) = $5;
+		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1);
 		  pop_function_context (); 
 		  add_decl_stmt (decl); }
@@ -1220,8 +1228,10 @@ notype_nested_function:
    which then was handled by compstmt_or_error.
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
-	  compstmt
+	  save_filename save_lineno compstmt
 		{ tree decl = current_function_decl;
+		  DECL_SOURCE_FILE (decl) = $5;
+		  DECL_SOURCE_LINE (decl) = $6;
 		  finish_function (1);
 		  pop_function_context (); 
 		  add_decl_stmt (decl); }
@@ -1750,7 +1760,7 @@ compstmt_primary_start:
 
 compstmt: compstmt_start compstmt_nostart
 		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); 
-                  $$ = $2; }
+                  $$ = $1; }
 	;
 
 /* Value is number of statements counted as of the closeparen.  */
@@ -1808,13 +1818,8 @@ save_lineno:
 	;
 
 lineno_labeled_stmt:
-	  save_filename save_lineno stmt
-		{ }
-/*	| save_filename save_lineno error
-		{ }
-*/
-	| save_filename save_lineno label lineno_labeled_stmt
-		{ }
+	  lineno_stmt
+	| lineno_label lineno_labeled_stmt
 	;
 
 /* Like lineno_labeled_stmt, but a block in C99.  */
@@ -1826,12 +1831,25 @@ c99_block_lineno_labeled_stmt:
 
 lineno_stmt:
 	  save_filename save_lineno stmt
-		{ }
+		{ if ($3)
+		    {
+		      STMT_LINENO ($3) = $2;
+		      /* ??? We currently have no way of recording
+			 the filename for a statement.  This probably
+			 matters little in practice at the moment,
+			 but I suspect that problems will ocurr when
+			 doing inlining at the tree level.  */
+		    }
+		}
 	;
 
 lineno_label:
 	  save_filename save_lineno label
-		{ }
+		{ if ($3)
+		    {
+		      STMT_LINENO ($3) = $2;
+		    }
+		}
 	;
 
 select_or_iter_stmt:
@@ -1900,25 +1918,26 @@ for_init_stmt:
 /* Parse a single real statement, not including any labels.  */
 stmt:
 	  compstmt
-		{ stmt_count++; }
+		{ stmt_count++; $$ = $1; }
 	| expr ';'
 		{ stmt_count++;
-		  c_expand_expr_stmt ($1); }
+		  $$ = c_expand_expr_stmt ($1); }
 	| c99_block_start select_or_iter_stmt c99_block_end
 		{ if (flag_isoc99)
-		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); }
+		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
+		  $$ = NULL_TREE; }
 	| BREAK ';'
 	        { stmt_count++;
-		  add_stmt (build_break_stmt ()); }
+		  $$ = add_stmt (build_break_stmt ()); }
 	| CONTINUE ';'
                 { stmt_count++;
-		  add_stmt (build_continue_stmt ()); }
+		  $$ = add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
                 { stmt_count++;
-		  c_expand_return (NULL_TREE); }
+		  $$ = c_expand_return (NULL_TREE); }
 	| RETURN expr ';'
                 { stmt_count++;
-		  c_expand_return ($2); }
+		  $$ = c_expand_return ($2); }
 	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
 		{ stmt_count++;
 		  STRIP_NOPS ($4);
@@ -1930,30 +1949,30 @@ stmt:
 			$4 = TREE_OPERAND ($4, 0);
 		      if (TREE_CHAIN ($4))
 			$4 = combine_strings ($4);
-		      add_stmt (build_stmt (ASM_STMT, NULL_TREE, $4,
-					    NULL_TREE, NULL_TREE, NULL_TREE));
+		      $$ = add_stmt (build_stmt (ASM_STMT, NULL_TREE, $4,
+						 NULL_TREE, NULL_TREE,
+						 NULL_TREE));
 		    }
 		  else
-		    error ("argument of `asm' is not a constant string"); }
+		    {
+		      error ("argument of `asm' is not a constant string");
+		      $$ = NULL_TREE;
+		    }
+		}
 	/* This is the case with just output operands.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ')' ';'
 		{ stmt_count++;
-		  c_expand_asm_operands ($4, $6, NULL_TREE, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno); }
+		  $$ = build_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
 	/* This is the case with input operands as well.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':' asm_operands ')' ';'
+	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
+	  asm_operands ')' ';'
 		{ stmt_count++;
-		  c_expand_asm_operands ($4, $6, $8, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno); }
+		  $$ = build_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
   	  asm_operands ':' asm_clobbers ')' ';'
 		{ stmt_count++;
-		  c_expand_asm_operands ($4, $6, $8, $10,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno); }
+		  $$ = build_asm_stmt ($2, $4, $6, $8, $10); }
 	| GOTO identifier ';'
 		{ tree decl;
 		  stmt_count++;
@@ -1961,16 +1980,19 @@ stmt:
 		  if (decl != 0)
 		    {
 		      TREE_USED (decl) = 1;
-		      add_stmt (build_stmt (GOTO_STMT, decl));
+		      $$ = add_stmt (build_stmt (GOTO_STMT, decl));
 		    }
+		  else
+		    $$ = NULL_TREE;
 		}
 	| GOTO '*' expr ';'
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids `goto *expr;'");
 		  stmt_count++;
 		  $3 = convert (ptr_type_node, $3);
-		  add_stmt (build_stmt (GOTO_STMT, $3)); }
+		  $$ = add_stmt (build_stmt (GOTO_STMT, $3)); }
 	| ';'
+		{ $$ = NULL_TREE; }
 	;
 
 /* Any kind of label, including jump labels and case labels.
@@ -1979,21 +2001,23 @@ stmt:
 
 label:	  CASE expr_no_commas ':'
                 { stmt_count++;
-		  do_case ($2, NULL_TREE); }
+		  $$ = do_case ($2, NULL_TREE); }
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
                 { stmt_count++;
-		  do_case ($2, $4); }
+		  $$ = do_case ($2, $4); }
 	| DEFAULT ':'
                 { stmt_count++;
-		  do_case (NULL_TREE, NULL_TREE); }
+		  $$ = do_case (NULL_TREE, NULL_TREE); }
 	| identifier save_filename save_lineno ':' maybe_attribute
 		{ tree label = define_label ($2, $3, $1);
 		  stmt_count++;
 		  if (label)
 		    {
 		      decl_attributes (label, $5, NULL_TREE);
-		      add_stmt (build_stmt (LABEL_STMT, label));
+		      $$ = add_stmt (build_stmt (LABEL_STMT, label));
 		    }
+		  else
+		    $$ = NULL_TREE;
 		}
 	;
 

@@ -220,7 +220,9 @@ finish_stmt_tree (t)
 
 /* Build a generic statement based on the given type of node and
    arguments. Similar to `build_nt', except that we set
-   TREE_COMPLEXITY to be the current line number.  */
+   STMT_LINENO to be the current line number.  */
+/* ??? This should be obsolete with the lineno_stmt productions
+   in the grammar.  */
 
 tree
 build_stmt VPARAMS ((enum tree_code code, ...))
@@ -241,7 +243,7 @@ build_stmt VPARAMS ((enum tree_code code, ...))
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
-  TREE_COMPLEXITY (t) = lineno;
+  STMT_LINENO (t) = lineno;
 
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
