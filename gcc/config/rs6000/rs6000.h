@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_IBMR2 -D_AIX"
+#define CPP_PREDEFINES "-D_IBMR2 -D_AIX -D_AIX32"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
@@ -1492,7 +1492,7 @@ toc_section ()						\
   fprintf (FILE, "\t.long .");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ", TOC[tc0], 0\n");				\
-  fprintf (FILE, ".csect [PR]\n.");				\
+  fprintf (FILE, ".csect .text[PR]\n.");				\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ":\n");					\
   if (write_symbols == XCOFF_DEBUG)				\
@@ -1631,7 +1631,7 @@ toc_section ()						\
 
 /* Output before instructions.  */
 
-#define TEXT_SECTION_ASM_OP ".csect [PR]"
+#define TEXT_SECTION_ASM_OP ".csect .text[PR]"
 
 /* Output before writable data.  */
 
@@ -1679,6 +1679,10 @@ toc_section ()						\
 /* How to renumber registers for dbx and gdb.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+
+/* Bit number to use in cror after branch.  Different between AIX 3.2 and 
+   earlier systems.  */
+#define RS6000_CROR_BIT_NUMBER 31
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -1842,7 +1846,7 @@ toc_section ()						\
 
 /* Define which CODE values are valid.  */
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  0
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  ((CODE) == '.')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
