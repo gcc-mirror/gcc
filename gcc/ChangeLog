@@ -4,6 +4,11 @@
 	not available.  Use tail calls wherever possible.
 	(make_edge): Call unchecked_make_edge to create an edge.
 
+	* tree-outof-ssa.c (SSANORM_USE_COALESCE_LIST): Remove.
+	(coalesce_ssa_name): Don't check for
+	SSANORM_USE_COALESCE_LIST.
+	(rewrite_out_of_ssa): Don't use SSANORM_USE_COALESCE_LIST.
+
 2005-02-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-into-ssa.c (rewrite_blocks): Move debug dumps from ...

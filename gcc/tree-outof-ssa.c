@@ -52,7 +52,6 @@ Boston, MA 02111-1307, USA.  */
 #define SSANORM_PERFORM_TER		0x1
 #define SSANORM_COMBINE_TEMPS		0x2
 #define SSANORM_COALESCE_PARTITIONS	0x4
-#define SSANORM_USE_COALESCE_LIST	0x8
 
 /* Used to hold all the components required to do SSA PHI elimination.
    The node and pred/succ list is a simple linear list of nodes and
@@ -696,10 +695,6 @@ coalesce_ssa_name (var_map map, int flags)
   if (num_var_partitions (map) <= 1)
     return NULL;
 
-  /* If no preference given, use cheap coalescing of all partitions.  */
-  if ((flags & (SSANORM_COALESCE_PARTITIONS | SSANORM_USE_COALESCE_LIST)) == 0)
-    flags |= SSANORM_COALESCE_PARTITIONS;
-  
   liveinfo = calculate_live_on_entry (map);
   calculate_live_on_exit (liveinfo);
   rv = root_var_init (map);
@@ -707,51 +702,48 @@ coalesce_ssa_name (var_map map, int flags)
   /* Remove single element variable from the list.  */
   root_var_compact (rv);
 
-  if (flags & SSANORM_USE_COALESCE_LIST)
-    {
-      cl = create_coalesce_list (map);
-      
-      /* Add all potential copies via PHI arguments to the list.  */
-      FOR_EACH_BB (bb)
-	{
-	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	    {
-	      tree res = PHI_RESULT (phi);
-	      int p = var_to_partition (map, res);
-	      if (p == NO_PARTITION)
-		continue;
-	      for (x = 0; x < (unsigned)PHI_NUM_ARGS (phi); x++)
-		{
-		  tree arg = PHI_ARG_DEF (phi, x);
-		  int p2;
+  cl = create_coalesce_list (map);
 
-		  if (TREE_CODE (arg) != SSA_NAME)
-		    continue;
-		  if (SSA_NAME_VAR (res) != SSA_NAME_VAR (arg))
-		    continue;
-		  p2 = var_to_partition (map, PHI_ARG_DEF (phi, x));
-		  if (p2 != NO_PARTITION)
-		    add_coalesce (cl, p, p2, 1);
-		}
+  /* Add all potential copies via PHI arguments to the list.  */
+  FOR_EACH_BB (bb)
+    {
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  tree res = PHI_RESULT (phi);
+	  int p = var_to_partition (map, res);
+	  if (p == NO_PARTITION)
+	    continue;
+	  for (x = 0; x < (unsigned)PHI_NUM_ARGS (phi); x++)
+	    {
+	      tree arg = PHI_ARG_DEF (phi, x);
+	      int p2;
+
+	      if (TREE_CODE (arg) != SSA_NAME)
+		continue;
+	      if (SSA_NAME_VAR (res) != SSA_NAME_VAR (arg))
+		continue;
+	      p2 = var_to_partition (map, PHI_ARG_DEF (phi, x));
+	      if (p2 != NO_PARTITION)
+		add_coalesce (cl, p, p2, 1);
 	    }
 	}
+    }
 
-      /* Coalesce all the result decls together.  */
-      var = NULL_TREE;
-      i = 0;
-      for (x = 0; x < num_var_partitions (map); x++)
+  /* Coalesce all the result decls together.  */
+  var = NULL_TREE;
+  i = 0;
+  for (x = 0; x < num_var_partitions (map); x++)
+    {
+      tree p = partition_to_var (map, x);
+      if (TREE_CODE (SSA_NAME_VAR(p)) == RESULT_DECL)
 	{
-	  tree p = partition_to_var (map, x);
-	  if (TREE_CODE (SSA_NAME_VAR(p)) == RESULT_DECL)
+	  if (var == NULL_TREE)
 	    {
-	      if (var == NULL_TREE)
-		{
-		  var = p;
-		  i = x;
-		}
-	      else
-		add_coalesce (cl, i, x, 1);
+	      var = p;
+	      i = x;
 	    }
+	  else
+	    add_coalesce (cl, i, x, 1);
 	}
     }
 
@@ -832,16 +824,14 @@ coalesce_ssa_name (var_map map, int flags)
     dump_var_map (dump_file, map);
 
   /* Coalesce partitions.  */
-  if (flags & SSANORM_USE_COALESCE_LIST)
-    coalesce_tpa_members (rv, graph, map, cl, 
-			  ((dump_flags & TDF_DETAILS) ? dump_file 
-							   : NULL));
+  coalesce_tpa_members (rv, graph, map, cl,
+			((dump_flags & TDF_DETAILS) ? dump_file
+			 : NULL));
 
-  
   if (flags & SSANORM_COALESCE_PARTITIONS)
-    coalesce_tpa_members (rv, graph, map, NULL, 
-			  ((dump_flags & TDF_DETAILS) ? dump_file 
-							   : NULL));
+    coalesce_tpa_members (rv, graph, map, NULL,
+			  ((dump_flags & TDF_DETAILS) ? dump_file
+			   : NULL));
   if (cl)
     delete_coalesce_list (cl);
   root_var_delete (rv);
@@ -2489,7 +2479,7 @@ rewrite_out_of_ssa (void)
 {
   var_map map;
   int var_flags = 0;
-  int ssa_flags = SSANORM_USE_COALESCE_LIST;
+  int ssa_flags = 0;
 
   /* If elimination of a PHI requires inserting a copy on a backedge,
      then we will have to split the backedge which has numerous
