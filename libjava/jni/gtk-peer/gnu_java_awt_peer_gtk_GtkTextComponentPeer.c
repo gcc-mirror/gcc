@@ -39,20 +39,47 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkTextComponentPeer.h"
 
-#define GET_EDITABLE(obj) (GTK_IS_EDITABLE (obj) ? GTK_EDITABLE (obj) : \
-  GTK_EDITABLE (GTK_SCROLLED_WINDOW (obj)->container.child))
-
 JNIEXPORT jint JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getCaretPosition
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
   int pos;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextMark *mark;
+  GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  pos = gtk_editable_get_position (GET_EDITABLE (ptr));
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      pos = gtk_editable_get_position (editable);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  mark = gtk_text_buffer_get_insert (buf);
+	  gtk_text_buffer_get_iter_at_mark (buf, &iter, mark);
+	  pos = gtk_text_iter_get_offset (&iter);
+	}
+    }
+
   gdk_threads_leave ();
   
   return pos;
@@ -63,11 +90,40 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setCaretPosition
   (JNIEnv *env, jobject obj, jint pos)
 {
   void *ptr;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextMark *mark;
+  GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  gtk_editable_set_position (GET_EDITABLE (ptr), pos);
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      gtk_editable_set_position (editable, pos);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  mark = gtk_text_buffer_get_insert (buf);
+	  gtk_text_buffer_get_iter_at_mark (buf, &iter, mark);
+	  gtk_text_iter_set_offset (&iter, pos);
+	}
+    }
+
   gdk_threads_leave ();
 }
 
@@ -77,11 +133,42 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionStart
 {
   void *ptr;
   int pos;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextIter start;
+  GtkTextIter end;
+  int starti, endi;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  pos = GET_EDITABLE (ptr)->selection_start_pos;
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      if (gtk_editable_get_selection_bounds (editable, &starti, &endi))
+	pos = starti;
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  if (gtk_text_buffer_get_selection_bounds(buf, &start, &end))
+	    pos = gtk_text_iter_get_offset (&start);
+	}
+    }
+
   gdk_threads_leave ();
 
   return pos;
@@ -93,11 +180,42 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionEnd
 {
   void *ptr;
   int pos;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextIter start;
+  GtkTextIter end;
+  int starti, endi;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  pos = GET_EDITABLE (ptr)->selection_end_pos;
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      if (gtk_editable_get_selection_bounds (editable, &starti, &endi))
+	pos = endi;
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  if (gtk_text_buffer_get_selection_bounds(buf, &start, &end))
+	    pos = gtk_text_iter_get_offset (&end);
+	}
+    }
+
   gdk_threads_leave ();
 
   return pos;
@@ -108,11 +226,44 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_select
   (JNIEnv *env, jobject obj, jint start, jint end)
 {
   void *ptr;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  gtk_editable_select_region (GET_EDITABLE (ptr), start, end);
+
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      gtk_editable_select_region (editable, start, end);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  gtk_text_buffer_get_iter_at_offset (buf, &iter, start);
+	  /* quickly move both 'insert' and 'selection_bound' to the 
+	     same position */
+	  gtk_text_buffer_place_cursor (buf, &iter);  
+	  gtk_text_buffer_get_iter_at_offset (buf, &iter, end);
+	  gtk_text_buffer_move_mark_by_name (buf, "selection_bound", &iter);
+	}
+    }
+
   gdk_threads_leave ();
 }
 
@@ -121,11 +272,35 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setEditable
   (JNIEnv *env, jobject obj, jboolean state)
 {
   void *ptr;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  gtk_editable_set_editable (GET_EDITABLE (ptr), state);
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      gtk_editable_set_editable (editable, state);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  gtk_text_view_set_editable (GTK_TEXT_VIEW (text), state);
+	}
+    }
+
   gdk_threads_leave ();
 }
 
@@ -136,11 +311,40 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getText
   void *ptr;
   char *contents;
   jstring jcontents;
+  GtkEditable *editable;    // type of GtkEntry    (TextField)
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
+  GtkTextIter start, end;
 
   ptr = NSA_GET_PTR (env, obj);
   
   gdk_threads_enter ();
-  contents = gtk_editable_get_chars (GET_EDITABLE (ptr), 0, -1);
+
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      editable = GTK_EDITABLE (ptr);
+      contents = gtk_editable_get_chars (editable, 0, -1);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
+
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  gtk_text_buffer_get_start_iter (buf, &start);
+	  gtk_text_buffer_get_end_iter (buf, &end);
+	  contents = gtk_text_buffer_get_text (buf, &start, &end, FALSE);
+	}
+    }
+
   gdk_threads_leave ();
 
   jcontents = (*env)->NewStringUTF (env, contents);
@@ -154,25 +358,36 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   (JNIEnv *env, jobject obj, jstring contents)
 {
   void *ptr;
-  GtkEditable *text;
   const char *str;
-  int pos = 0;
+  GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
+  GtkTextBuffer *buf;
 
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
   
   gdk_threads_enter ();
 
-  text = GET_EDITABLE (ptr);
+  if (GTK_IS_EDITABLE (ptr))
+    {
+      gtk_entry_set_text (GTK_ENTRY (ptr), str);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+	  text = GTK_WIDGET (GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child));
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_WIDGET (ptr);
+	}
 
-  if (GTK_IS_TEXT (text))
-    gtk_text_freeze (GTK_TEXT (text));
-
-  gtk_editable_delete_text (text, 0, -1);
-  gtk_editable_insert_text (text, str, strlen (str), &pos);
-
-  if (GTK_IS_TEXT (text))
-    gtk_text_thaw (GTK_TEXT (text));
+      if (text)
+	{
+	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+	  gtk_text_buffer_set_text (buf, str, strlen (str));
+	}
+    }
 
   gdk_threads_leave ();
 

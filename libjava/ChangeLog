@@ -1,3 +1,32 @@
+2003-06-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* glib-2.0.m4: New file.
+	* gtk-2.0.m4: New file.
+	* glib.m4: Remove.
+	* gtk.m4: Remove.
+	* configure.in: Update AM_PATH_GTK macro call to
+	AM_PATH_GTK_2_0.  Likewise for AM_PATH_GLIB.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c,
+	jni/gtk-peer/gthread-jni.c,
+	jni/gtk-peer/gthread-jni.h:
+	New versions from classpath.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2003-06-30  Gary Benson  <gbenson@redhat.com>
 
 	For PR libgcj/11349:

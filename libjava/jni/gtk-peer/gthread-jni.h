@@ -43,5 +43,6 @@ exception statement from your version. */
 #include "gtkpeer.h"
 
 extern GThreadFunctions g_thread_jni_functions;
+extern JavaVM *gdk_vm;
 
 #endif /* __GTHREADJNI_H__ */
