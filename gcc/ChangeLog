@@ -1,5 +1,13 @@
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
+        * config.gcc (arm*-*-rtems*): Include crtinit.o and crtfini.o as
+        extra multilib parts like arm-elf.
+        (i960-*-coff*, i960-*-rtems): Should not use collect2.
+        (m68020-*-elf*, m68k-*-elf*, m68k-*-rtems*): Include crtinit.o and
+        crtfini.o as extra multilib parts.
+
+2001-07-24  Joel Sherrill <joel@OARcorp.com>
+
 	* configure.in: Add rtems as a supported thread model.
 	* gthr-rtems.h: Add missing entry point __gthread_active_p.
 	* configure: Rebuilt.

@@ -545,7 +545,6 @@ arm*-*-rtems*)
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
-	extra_parts="crtinit.o crtfini.o"
 	;;
 arc-*-elf*)
 	extra_parts="crtinit.o crtfini.o"
@@ -1612,12 +1611,10 @@ i960-wrs-vxworks*)
 i960-*-coff*)
 	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
 	tmake_file=i960/t-960bare
-	use_collect2=yes
 	;;
 i960-*-rtems)
 	tmake_file="i960/t-960bare t-rtems"
 	tm_file="${tm_file} dbxcoff.h i960/rtems.h"
-	use_collect2=yes
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -2020,6 +2017,7 @@ m68020-*-elf* | m68k-*-elf*)
 	xm_file=m68k/xm-m68kv.h
 	tmake_file=m68k/t-m68kelf
 	header_files=math-68881.h
+	extra_parts="crtbegin.o crtend.o"
 	;;
 m68k-*-lynxos*)
 	if test x$gas = xyes
@@ -2118,6 +2116,7 @@ m68k-*-rtemself*|m68k-*-rtems*)
 	tm_file=m68k/rtemself.h
 	extra_headers=math-68881.h
 	float_format=m68k
+	extra_parts="crtbegin.o crtend.o"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
