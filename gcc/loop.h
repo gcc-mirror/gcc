@@ -205,7 +205,7 @@ enum iv_mode
 struct iv
 {
   enum iv_mode type;
-  union 
+  union
   {
     struct iv_class *class;
     struct induction *info;
@@ -394,7 +394,7 @@ int loop_invariant_p PARAMS ((const struct loop *, rtx));
 rtx get_condition_for_loop PARAMS ((const struct loop *, rtx));
 void loop_iv_add_mult_hoist PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
 void loop_iv_add_mult_sink PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
-void loop_iv_add_mult_emit_before PARAMS ((const struct loop *, rtx, 
+void loop_iv_add_mult_emit_before PARAMS ((const struct loop *, rtx,
 					   rtx, rtx, rtx,
 					   basic_block, rtx));
 rtx express_from PARAMS ((struct induction *, struct induction *));
@@ -414,7 +414,7 @@ int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 int loop_insn_first_p PARAMS ((rtx, rtx));
 typedef rtx (*loop_insn_callback) PARAMS ((struct loop *, rtx, int, int));
 void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
-rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block, 
+rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block,
 				  rtx, rtx));
 rtx loop_insn_sink PARAMS((const struct loop *, rtx));
 rtx loop_insn_hoist PARAMS((const struct loop *, rtx));

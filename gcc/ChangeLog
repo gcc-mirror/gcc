@@ -1,7 +1,19 @@
-2002-05-30	Marc Espie <espie@openbsd.org>
-	* config.gcc (sparc64-*-openbsd*):  New.
-	* config/sparc/openbsd1-64.h:  New.
-	* config/sparc/openbsd64.h:  New.
+2002-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* langhooks.c: Fix formatting.
+	* langhooks.h: Likewise.
+	* lcm.c: Likewise.
+	* libgcc2.c: Likewise.
+	* lists.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* loop.h: Likewise.
+
+2002-05-30  Marc Espie <espie@openbsd.org>
+
+	* config.gcc (sparc64-*-openbsd*): New.
+	* config/sparc/openbsd1-64.h: New.
+	* config/sparc/openbsd64.h: New.
 
 2002-05-30  Jeff Law <law@redhat.com>
 

@@ -62,7 +62,7 @@ free_list (listp, unused_listp)
 }
 
 /* This call is used in place of a gen_rtx_INSN_LIST. If there is a cached
-   node available, we'll use it, otherwise a call to gen_rtx_INSN_LIST 
+   node available, we'll use it, otherwise a call to gen_rtx_INSN_LIST
    is made.  */
 rtx
 alloc_INSN_LIST (val, next)
@@ -85,7 +85,7 @@ alloc_INSN_LIST (val, next)
 }
 
 /* This call is used in place of a gen_rtx_EXPR_LIST. If there is a cached
-   node available, we'll use it, otherwise a call to gen_rtx_EXPR_LIST 
+   node available, we'll use it, otherwise a call to gen_rtx_EXPR_LIST
    is made.  */
 rtx
 alloc_EXPR_LIST (kind, val, next)
@@ -118,14 +118,14 @@ zap_lists (dummy)
   unused_insn_list = NULL;
 }
 
-void 
+void
 init_EXPR_INSN_LIST_cache ()
 {
   ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
 }
 
 /* This function will free up an entire list of EXPR_LIST nodes.  */
-void 
+void
 free_EXPR_LIST_list (listp)
      rtx *listp;
 {
@@ -135,7 +135,7 @@ free_EXPR_LIST_list (listp)
 }
 
 /* This function will free up an entire list of INSN_LIST nodes.  */
-void 
+void
 free_INSN_LIST_list (listp)
      rtx *listp;
 {
@@ -145,7 +145,7 @@ free_INSN_LIST_list (listp)
 }
 
 /* This function will free up an individual EXPR_LIST node.  */
-void 
+void
 free_EXPR_LIST_node (ptr)
      rtx ptr;
 {
@@ -154,7 +154,7 @@ free_EXPR_LIST_node (ptr)
 }
 
 /* This function will free up an individual INSN_LIST node.  */
-void 
+void
 free_INSN_LIST_node (ptr)
      rtx ptr;
 {
