@@ -108,6 +108,50 @@ Boston, MA 02111-1307, USA.  */
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
+/* List the order in which to allocate registers.  Each register must be
+   listed once, even those in FIXED_REGISTERS.
+
+   We allocate in the following order:
+   $f1			(nonsaved floating-point register)
+   $f10-$f15		(likewise)
+   $f22-$f30		(likewise)
+   $f21-$f16		(likewise, but input args)
+   $f0			(nonsaved, but return value)
+   $f2-$f9		(saved floating-point registers)
+   $1			(nonsaved integer registers)
+   $22-$25		(likewise)
+   $28			(likewise)
+   $0			(likewise, but return value)
+   $21-$16		(likewise, but input args)
+   $27			(procedure value in OSF, nonsaved in NT)
+   $2-$8		(saved integer registers)
+   $9-$14		(saved integer registers)
+   $26			(return PC)
+   $15			(frame pointer)
+   $29			(global pointer)
+   $30, $31, $f31	(stack pointer and always zero/ap & fp)  */
+
+#undef REG_ALLOC_ORDER
+#define REG_ALLOC_ORDER		\
+  {33,					\
+   42, 43, 44, 45, 46, 47,		\
+   54, 55, 56, 57, 58, 59, 60, 61, 62,	\
+   53, 52, 51, 50, 49, 48,		\
+   32,					\
+   34, 35, 36, 37, 38, 39, 40, 41,	\
+   1,					\
+   22, 23, 24, 25,			\
+   28,					\
+   0,					\
+   21, 20, 19, 18, 17, 16,		\
+   27,					\
+   2, 3, 4, 5, 6, 7, 8,			\
+   9, 10, 11, 12, 13, 14,		\
+   26,					\
+   15,					\
+   29,					\
+   30, 31, 63 }
+
 #undef HARD_FRAME_POINTER_REGNUM
 #define HARD_FRAME_POINTER_REGNUM 29
 
