@@ -1,3 +1,8 @@
+Mon Jan 26 23:52:51 1998  Markus F.X.J. Oberhumer <k3040e4@c210.edvz.uni-linz.ac.at>
+
+	* configure.in (i*86-pc-msdosdjgpp): Treat like msdos & go32
+	configurations.
+
 Fri Jan 23 09:39:36 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c: Add -dM command line option to dump RTL after the
