@@ -35,11 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #define MULTIBYTE_CHARS 1
 #endif
 
-/* There are conflicting reports about whether this system uses
-   a different assembler syntax.  wilson@cygnus.com says # is right.  */
-#undef COMMENT_BEGIN
-#define COMMENT_BEGIN "#"
-
 /* Use stabs instead of DWARF debug format.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #include <sparc/sysv4.h>
