@@ -1,3 +1,8 @@
+2000-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* jump.c (delete_computation): Don't assume that just becuase an
+	instruction sets a register, that register is dead.
+
 2000-11-12  Neil Booth  <neilb@earthling.net>
 
         * cppexp.c: Don't worry about pfile->skipping.

@@ -2680,7 +2680,6 @@ delete_computation (insn)
      rtx insn;
 {
   rtx note, next;
-  rtx set;
 
 #ifdef HAVE_cc0
   if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
@@ -2716,32 +2715,6 @@ delete_computation (insn)
       return;
     }
 #endif
-
-  /* The REG_DEAD note may have been omitted for a register
-     which is both set and used by the insn.  */
-  set = single_set (insn);
-  if (set && GET_CODE (SET_DEST (set)) == REG)
-    {
-      int dest_regno = REGNO (SET_DEST (set));
-      int dest_endregno
-	= dest_regno + (dest_regno < FIRST_PSEUDO_REGISTER
-			? HARD_REGNO_NREGS (dest_regno,
-					    GET_MODE (SET_DEST (set))) : 1);
-      int i;
-
-      for (i = dest_regno; i < dest_endregno; i++)
-	{
-	  if (! refers_to_regno_p (i, i + 1, SET_SRC (set), NULL_PTR)
-	      || find_regno_note (insn, REG_DEAD, i))
-	    continue;
-
-	  note = gen_rtx_EXPR_LIST (REG_DEAD,
-				    (i < FIRST_PSEUDO_REGISTER
-				     ? gen_rtx_REG (reg_raw_mode[i], i)
-				     : SET_DEST (set)), NULL_RTX);
-	  delete_prior_computation (note, insn);
-	}
-    }
 
   for (note = REG_NOTES (insn); note; note = next)
     {
