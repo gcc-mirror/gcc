@@ -2666,17 +2666,18 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
       && GET_MODE_CLASS (TYPE_MODE (type)) != MODE_VECTOR_FLOAT)
     {
       enum machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
-      mode = TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
-	     ? MIN_MODE_VECTOR_FLOAT : MIN_MODE_VECTOR_INT;
+      enum machine_mode newmode
+	= TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
+	  ? MIN_MODE_VECTOR_FLOAT : MIN_MODE_VECTOR_INT;
 
       /* Get the mode which has this inner mode and number of units.  */
-      while (GET_MODE_NUNITS (mode) != TYPE_VECTOR_SUBPARTS (type)
-	     || GET_MODE_INNER (mode) != innermode)
-	{
-	  mode = GET_MODE_WIDER_MODE (mode);
-	  if (mode == VOIDmode)
-	    abort ();
-	}
+      for (; newmode != VOIDmode; newmode = GET_MODE_WIDER_MODE (newmode))
+	if (GET_MODE_NUNITS (newmode) == TYPE_VECTOR_SUBPARTS (type)
+	    && GET_MODE_INNER (newmode) == innermode)
+	  {
+	    mode = newmode;
+	    break;
+	  }
     }
 
   /* Handle a hidden AL argument containing number of registers for varargs

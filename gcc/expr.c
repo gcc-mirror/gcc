@@ -3445,16 +3445,14 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 static rtx
 get_subtarget (rtx x)
 {
-  return ((x == 0
+  return (optimize
+          || x == 0
 	   /* Only registers can be subtargets.  */
 	   || !REG_P (x)
 	   /* If the register is readonly, it can't be set more than once.  */
 	   || RTX_UNCHANGING_P (x)
 	   /* Don't use hard regs to avoid extending their life.  */
 	   || REGNO (x) < FIRST_PSEUDO_REGISTER
-	   /* Avoid subtargets inside loops,
-	      since they hide some invariant expressions.  */
-	   || preserve_subexpressions_p ())
 	  ? 0 : x);
 }
 

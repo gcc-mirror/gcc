@@ -1,3 +1,22 @@
+2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Trust toplevel's notion of BISON/FLEX/MAKEINFO.
+	No need to check if in a cross configuration.
+	* configure: Regenerate.
+
+	* calls.c (precompute_register_parameters):
+	Inline preserve_subexpressions_p ().
+	* expmed.c (expand_mult_const, emit_store_flag): Likewise.
+	* optabs.c (expand_binop, expand_twoval_binop, prepare_cmp_insn):
+	Likewise.
+	* expr.c (get_subtarget): Likewise.
+	* rtl.h (preserve_subexpressions_p): Remove.
+	* stmt.c (preserve_subexpressions_p): Remove.
+
+	* dojump.c (do_jump) <COND_EXPR, EQ_EXPR, NE_EXPR,
+	TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR, COMPOUND_EXPR>:
+	Abort on gimplified cases.
+
 2004-08-16  James E Wilson  <wilson@specifixinc.com>
 
 	* tree.h (VECTOR_FLOAT_TYPE_P): New.
@@ -115,6 +134,7 @@
 	Check for arificial variables, not is_gimple_tmp_var.
 	* tree-ssa-live.c (var_union): Likewise.
 
+>>>>>>> 2.4930
 2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* calls.c (load_register_parameters): Remove spurious FIXME token.

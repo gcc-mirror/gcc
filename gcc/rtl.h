@@ -2239,7 +2239,6 @@ extern void update_temp_slot_address (rtx, rtx);
 extern void expand_null_return (void);
 extern void expand_naked_return (void);
 extern void emit_jump (rtx);
-extern int preserve_subexpressions_p (void);
 
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
