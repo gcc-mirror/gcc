@@ -1,3 +1,11 @@
+2004-06-19  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (free_after_compilation): Do not free computed_goto_common*.
+	* function.h (struct function): Kill computed_goto_common*.
+	* stmt.c (expand_computed_goto): Do not commonize the computed gotos.
+	* tree-cfg.c (disband_implicit_edges): Do not forward across the
+	commonized computed goto.
+
 2004-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/invoke.texi: Remove obsolete comment regarding PA 2.0 support
