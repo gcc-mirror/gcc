@@ -183,7 +183,7 @@ extern int target_flags;
 #define MASK_SHORT	(1<<12)
 #define TARGET_SHORT	(target_flags & MASK_SHORT)
 
-/* Align ints to a word boundary.  This breaks compatibility with the 
+/* Align ints to a word boundary.  This breaks compatibility with the
    published ABI's for structures containing ints, but produces faster
    code on cpus with 32-bit busses (020, 030, 040, 060, CPU32+, ColdFire).
    It's required for ColdFire cpus without a misalignment module.  */
@@ -355,12 +355,7 @@ extern int target_flags;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
-{ { "align-loops=",	&m68k_align_loops_string,			\
-    N_("Loop code aligned to this power of 2"), 0},			\
-  { "align-jumps=",	&m68k_align_jumps_string,			\
-    N_("Jump targets are aligned to this power of 2"), 0},		\
-  { "align-functions=",	&m68k_align_funcs_string,			\
-    N_("Function starts are aligned to this power of 2"), 0},		\
+{									\
   { "shared-library-id=",	&m68k_library_id_string,		\
     N_("ID of shared library to build"), 0},				\
   SUBTARGET_OPTIONS							\
@@ -420,7 +415,7 @@ extern int target_flags;
 #define STACK_BOUNDARY 16
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (1 << (m68k_align_funcs + 3))
+#define FUNCTION_BOUNDARY 16
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 16
@@ -442,19 +437,13 @@ extern int target_flags;
 /* Maximum number of library ids we permit */
 #define MAX_LIBRARY_ID 255
 
-/* Align loop starts for optimal branching.  */
-#define LOOP_ALIGN(LABEL) (m68k_align_loops)
-
-/* This is how to align an instruction for optimal branching.  */
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (m68k_align_jumps)
-
 /* Define number of bits in most basic integer type.
    (If undefined, default is BITS_PER_WORD).  */
 
 #define INT_TYPE_SIZE (TARGET_SHORT ? 16 : 32)
 
 /* Define these to avoid dependence on meaning of `int'.  */
- 
+
 #define WCHAR_TYPE "long int"
 #define WCHAR_TYPE_SIZE 32
 
@@ -1699,13 +1688,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
 /* Variables in m68k.c */
-extern const char *m68k_align_loops_string;
-extern const char *m68k_align_jumps_string;
-extern const char *m68k_align_funcs_string;
 extern const char *m68k_library_id_string;
-extern int m68k_align_loops;
-extern int m68k_align_jumps;
-extern int m68k_align_funcs;
 extern int m68k_last_compare_had_fp_operands;
 
 
