@@ -2,8 +2,7 @@
 
 #include "compat-common.h"
 
-/* Turn off checking for variable arguments with -DSKIPVA.  */
-#ifdef SKIPVA
+#ifdef SKIP_VA
 const int test_va = 0;
 #else
 const int test_va = 1;
@@ -85,8 +84,10 @@ testva##NAME (int n, ...)					\
     }								\
 }
 
+#ifndef SKIP_COMPLEX_INT
 T(ci, _Complex int, (2,3))
 T(cl, _Complex long, (3,4))
 T(cll, _Complex long long, (5,6))
+#endif
 T(cd, _Complex double, (7.0,8.0))
 T(cld, _Complex long double, (8.0,9.0))

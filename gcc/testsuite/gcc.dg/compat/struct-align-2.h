@@ -11,6 +11,7 @@ struct epoll_event_orig {
   unsigned long long data;
 };
 
+#ifndef SKIP_ATTRIBUTE
 #define DESC_structmax "maximum useful struct alignment"
 struct epoll_event_structmax {
   unsigned int events;
@@ -71,3 +72,4 @@ struct epoll_event_pdata8 {
   unsigned int events;
   unsigned long long data __attribute__ ((aligned(8)));
 } __attribute__ ((packed));
+#endif

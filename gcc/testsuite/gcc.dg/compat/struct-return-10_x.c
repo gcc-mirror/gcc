@@ -75,18 +75,18 @@ testit##TYPE (void)						\
 #include "fp2-struct-defs.h"
 #include "fp2-struct-check.h"
 
-T(Sfd);
-T(Sfl);
-T(Sdf);
-T(Sdl);
-T(Slf);
-T(Sld);
-T(Sfdl);
-T(Sfld);
-T(Sdfl);
-T(Sdlf);
-T(Slfd);
-T(Sldf);
+T(Sfd)
+T(Sfl)
+T(Sdf)
+T(Sdl)
+T(Slf)
+T(Sld)
+T(Sfdl)
+T(Sfld)
+T(Sdfl)
+T(Sdlf)
+T(Slfd)
+T(Sldf)
 
 #undef T
 

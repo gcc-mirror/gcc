@@ -144,9 +144,11 @@ testit##NAME (void)						\
   DEBUG_NL;							\
 }
 
+#ifndef SKIP_COMPLEX_INT
 T(ci, _Complex int, (2,3))
 T(cl, _Complex long, (3,4))
 T(cll, _Complex long long, (5,6))
+#endif
 T(cd, _Complex double, (7.0,8.0))
 T(cld, _Complex long double, (8.0,9.0))
 
@@ -159,9 +161,11 @@ DEBUG_INIT
 
 #define T(NAME) testit##NAME ();
 
+#ifndef SKIP_COMPLEX_INT
 T(ci)
 T(cl)
 T(cll)
+#endif
 T(cd)
 T(cld)
 
