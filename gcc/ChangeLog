@@ -1,3 +1,7 @@
+Thu Sep  9 01:55:21 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (main): Always init_ggc.
+
 Wed Sep  8 23:53:22 1999  Richard Henderson  <rth@cygnus.com>
 
 	* except.c (find_all_handler_type_matches): Free the list if

@@ -4795,8 +4795,7 @@ main (argc, argv)
 #endif
 
   /* Initialize the garbage-collector.  */
-  if (ggc_p)
-    init_ggc ();
+  init_ggc ();
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
 		&mark_file_stack);
 
