@@ -2049,7 +2049,7 @@ typedef struct dw_val_struct
       unsigned val_fde_index;
       char *val_str;
       char *val_lbl_id;
-      char *val_section;
+      char *val_section_label;
       unsigned char val_flag;
     }
   v;
@@ -2582,8 +2582,24 @@ static unsigned lookup_filename		PROTO((char *));
    If necessary, these may be overridden from within the tm.h file, but
    typically, overriding these defaults is unnecessary.  */
 
+static char abbrev_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char debug_info_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char debug_line_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char text_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
+#ifndef ABBREV_LABEL
+#define ABBREV_LABEL		"Labbrev"
+#endif
+#ifndef DEBUG_INFO_LABEL
+#define DEBUG_INFO_LABEL	"Ldebug_info"
+#endif
+#ifndef DEBUG_LINE_LABEL
+#define DEBUG_LINE_LABEL	"Ldebug_line"
+#endif
+#ifndef TEXT_LABEL
+#define TEXT_LABEL		"Ltext"
+#endif
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
 #endif
@@ -3796,17 +3812,17 @@ add_AT_lbl_id (die, attr_kind, lbl_id)
 /* Add a section offset attribute value to a DIE.  */
 
 static inline void
-add_AT_section_offset (die, attr_kind, section)
+add_AT_section_offset (die, attr_kind, section_label)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     register char *section;
+     register char *section_label;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
   attr->dw_attr_val.val_class = dw_val_class_section_offset;
-  attr->dw_attr_val.v.val_section = section;
+  attr->dw_attr_val.v.val_section_label = section_label;
   add_dwarf_attr (die, attr);
   
 }
@@ -4272,7 +4288,8 @@ print_die (die, outfile)
 	  fprintf (outfile, "label: %s", a->dw_attr_val.v.val_lbl_id);
 	  break;
 	case dw_val_class_section_offset:
-	  fprintf (outfile, "section: %s", a->dw_attr_val.v.val_section);
+	  fprintf (outfile, "section_label: %s",
+		   a->dw_attr_val.v.val_section_label);
 	  break;
 	case dw_val_class_str:
 	  if (a->dw_attr_val.v.val_str != NULL)
@@ -5336,8 +5353,7 @@ output_die (die)
 
 	case dw_val_class_section_offset:
 	  ASM_OUTPUT_DWARF_OFFSET (asm_out_file,
-				   stripattributes
-				   (a->dw_attr_val.v.val_section));
+				   a->dw_attr_val.v.val_section_label);
 	  break;
 
 	case dw_val_class_str:
@@ -5397,7 +5413,7 @@ output_compilation_unit_header ()
     fprintf (asm_out_file, "\t%s DWARF version number", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (ABBREV_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, abbrev_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset Into Abbrev. Section",
 	     ASM_COMMENT_START);
@@ -5470,7 +5486,7 @@ output_pubnames ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, debug_info_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -5550,7 +5566,7 @@ output_aranges ()
     fprintf (asm_out_file, "\t%s DWARF Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_INFO_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, debug_info_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	     ASM_COMMENT_START);
@@ -5576,12 +5592,12 @@ output_aranges ()
 	     ASM_COMMENT_START, 2 * PTR_SIZE);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, text_label);
   if (flag_debug_asm)
     fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
 
@@ -5766,14 +5782,14 @@ output_line_info ()
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_LNE_set_address);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_label);
   fputc ('\n', asm_out_file);
 
   /* Generate the line number to PC correspondence table, encoded as
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
-  strcpy (prev_line_label, TEXT_SECTION);
+  strcpy (prev_line_label, text_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
       register dw_line_info_ref line_info;
@@ -9771,7 +9787,14 @@ dwarf2out_init (asm_out_file, main_input_filename)
      invoked when the given (base) source file was compiled.  */
   gen_compile_unit_die (main_input_filename);
 
+  ASM_GENERATE_INTERNAL_LABEL (abbrev_label, ABBREV_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_info_label, DEBUG_INFO_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (debug_line_label, DEBUG_LINE_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (text_label, TEXT_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
+
+  text_section ();
+  ASM_OUTPUT_LABEL (asm_out_file, text_label);
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -9833,22 +9856,24 @@ dwarf2out_finish ()
     {
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
+      ASM_OUTPUT_LABEL (asm_out_file, debug_line_label);
       output_line_info ();
 
       /* We can only use the low/high_pc attributes if all of the code
 	 was in .text.  */
       if (separate_line_info_table_in_use == 0)
 	{
-	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
+	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_label);
 	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
 	}
 
-      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, DEBUG_LINE_SECTION);
+      add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, debug_line_label);
     }
 
   /* Output the abbreviation table.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, abbrev_label);
   build_abbrev_table (comp_unit_die);
   output_abbrev_section ();
 
@@ -9859,6 +9884,7 @@ dwarf2out_finish ()
   /* Output debugging information.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, DEBUG_INFO_SECTION);
+  ASM_OUTPUT_LABEL (asm_out_file, debug_info_label);
   output_compilation_unit_header ();
   output_die (comp_unit_die);
 
