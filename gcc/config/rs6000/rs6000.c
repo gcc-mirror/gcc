@@ -3189,6 +3189,7 @@ legitimate_indexed_address_p (rtx x, int strict)
 
   if (GET_CODE (x) != PLUS)
     return false;
+
   op0 = XEXP (x, 0);
   op1 = XEXP (x, 1);
 
@@ -3805,6 +3806,14 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 int
 rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
 {
+  /* If this is an unaligned stvx/ldvx type address, discard the outer AND.  */
+  if (TARGET_ALTIVEC
+      && ALTIVEC_VECTOR_MODE (mode)
+      && GET_CODE (x) == AND
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && INTVAL (XEXP (x, 1)) == -16)
+    x = XEXP (x, 0);
+
   if (RS6000_SYMBOL_REF_TLS_P (x))
     return 0;
   if (legitimate_indirect_address_p (x, reg_ok_strict))
@@ -10559,6 +10568,11 @@ print_operand (FILE *file, rtx x, int code)
 
 	    /* Fall through.  Must be [reg+reg].  */
 	  }
+	if (TARGET_ALTIVEC
+	    && GET_CODE (tmp) == AND
+	    && GET_CODE (XEXP (tmp, 1)) == CONST_INT
+	    && INTVAL (XEXP (tmp, 1)) == -16)
+	  tmp = XEXP (tmp, 0);
 	if (GET_CODE (tmp) == REG)
 	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else if (GET_CODE (tmp) == PLUS && GET_CODE (XEXP (tmp, 1)) == REG)
