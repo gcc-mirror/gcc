@@ -5409,16 +5409,17 @@ arguments (those not passed using a construct such as @code{%VAL()})
 by reference or descriptor, depending on the type of
 the actual argument.
 Thus, given @samp{INTEGER I}, @samp{CALL FOO(I)} would
-seem to mean the same thing as @samp{CALL FOO(%LOC(I))}, and
+seem to mean the same thing as @samp{CALL FOO(%VAL(%LOC(I)))}, and
 in fact might compile to identical code.
 
-However, @samp{CALL FOO(%LOC(I))} emphatically means ``pass the
-address of @samp{I} in memory''.
+However, @samp{CALL FOO(%VAL(%LOC(I)))} emphatically means
+``pass, by value, the address of @samp{I} in memory''.
 While @samp{CALL FOO(I)} might use that same approach in a
 particular version of @code{g77}, another version or compiler
 might choose a different implementation, such as copy-in/copy-out,
 to effect the desired behavior---and which will therefore not
-necessarily compile to the same code as would @samp{CALL FOO(%LOC(I))}
+necessarily compile to the same code as would
+@samp{CALL FOO(%VAL(%LOC(I)))}
 using the same version or compiler.
 
 @xref{Debugging and Interfacing}, for detailed information on

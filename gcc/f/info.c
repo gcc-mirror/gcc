@@ -256,7 +256,6 @@ ffeinfo_type (ffeinfoBasictype basictype, ffeinfoKindtype kindtype)
 {
   assert (basictype < FFEINFO_basictype);
   assert (kindtype < FFEINFO_kindtype);
-  assert (ffeinfo_types_[basictype][kindtype] != NULL);
 
   return ffeinfo_types_[basictype][kindtype];
 }

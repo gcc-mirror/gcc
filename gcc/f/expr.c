@@ -9385,9 +9385,13 @@ ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t)
 		  as = FFEGLOBAL_argsummaryALTRTN;
 		  break;
 
+#if 0
+		  /* No, %LOC(foo) is just like any INTEGER(KIND=7)
+		     expression, so don't treat it specially.  */
 		case FFEBLD_opPERCENT_LOC:
 		  as = FFEGLOBAL_argsummaryPTR;
 		  break;
+#endif
 
 		case FFEBLD_opPERCENT_VAL:
 		  as = FFEGLOBAL_argsummaryVAL;
@@ -9402,6 +9406,9 @@ ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t)
 		  break;
 
 		case FFEBLD_opFUNCREF:
+#if 0
+		  /* No, LOC(foo) is just like any INTEGER(KIND=7)
+		     expression, so don't treat it specially.  */
 		  if ((ffebld_op (ffebld_left (item)) == FFEBLD_opSYMTER)
 		      && (ffesymbol_specific (ffebld_symter (ffebld_left (item)))
 			  == FFEINTRIN_specLOC))
@@ -9409,6 +9416,7 @@ ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t)
 		      as = FFEGLOBAL_argsummaryPTR;
 		      break;
 		    }
+#endif
 		  /* Fall through.  */
 		default:
 		  if (ffebld_op (item) == FFEBLD_opSYMTER)

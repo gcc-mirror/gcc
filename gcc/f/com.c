@@ -12351,10 +12351,11 @@ ffecom_init_0 ()
     fatal ("no INTEGER type can hold a pointer on this configuration");
   else if (0 && ffe_is_do_internal_checks ())
     fprintf (stderr, "Pointer type kt=%d\n", ffecom_pointer_kind_);
-  type = ffetype_new ();
   ffetype_set_kind (ffeinfo_type (FFEINFO_basictypeINTEGER,
 				  FFEINFO_kindtypeINTEGERDEFAULT),
-		    7, type);
+		    7,
+		    ffeinfo_type (FFEINFO_basictypeINTEGER,
+				  ffecom_pointer_kind_));
 
   if (ffe_is_ugly_assign ())
     ffecom_label_kind_ = ffecom_pointer_kind_;	/* Require ASSIGN etc to this. */
