@@ -2470,9 +2470,9 @@ extern int making_const_table;
   else if (GET_CODE (X) == PLUS)			\
     {							\
       if (GET_CODE (XEXP (X, 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "[%r, #%d]", 		\
+	asm_fprintf (STREAM, "[%r, #%wd]", 		\
 		     REGNO (XEXP (X, 0)),		\
-		     (int) INTVAL (XEXP (X, 1)));	\
+		     INTVAL (XEXP (X, 1)));		\
       else						\
 	asm_fprintf (STREAM, "[%r, %r]",		\
 		     REGNO (XEXP (X, 0)),		\
