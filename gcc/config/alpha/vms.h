@@ -323,6 +323,8 @@ void *function_arg ();
 #define DBX_DEBUGGING_INFO
 #endif
 
+#define DWARF2_DEBUGGING_INFO
+
 #ifdef PREFERRED_DEBUGGING_TYPE
 #undef PREFERRED_DEBUGGING_TYPE
 #endif
