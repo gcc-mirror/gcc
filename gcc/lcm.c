@@ -112,16 +112,18 @@ compute_antinout_edge (antloc, transp, antin, antout)
      ANTIN.  */
   sbitmap_vector_ones (antin, n_basic_blocks);
 
-  /* Put the predecessors of the exit block on the worklist.  */
-  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  /* Put every block on the worklist; this is necessary because of the
+     optimistic initialization of ANTIN above.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
     {
-      *tos++ = e->src;
-
-      /* We use the block's aux field to track blocks which are in
-	 the worklist; we also use it to quickly determine which blocks
-	 are predecessors of the EXIT block.  */
-      e->src->aux = EXIT_BLOCK_PTR;
+      *tos++ = BASIC_BLOCK (bb);
+      BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
     }
+
+  /* Mark blocks which are predecessors of the exit block so that we
+     can easily identify them below.  */
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+    e->src->aux = EXIT_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
   while (tos != worklist)
@@ -467,16 +469,18 @@ compute_available (avloc, kill, avout, avin)
   /* We want a maximal solution.  */
   sbitmap_vector_ones (avout, n_basic_blocks);
 
-  /* Put the successors of the entry block on the worklist.  */
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+  /* Put every block on the worklist; this is necessary because of the
+     optimistic initialization of AVOUT above.  */
+  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
     {
-      *tos++ = e->dest;
-
-      /* We use the block's aux field to track blocks which are in
-	 the worklist; we also use it to quickly determine which blocks
-	 are successors of the ENTRY block.  */
-      e->dest->aux = ENTRY_BLOCK_PTR;
+      *tos++ = BASIC_BLOCK (bb);
+      BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
     }
+
+  /* Mark blocks which are successors of the entry block so that we
+     can easily identify them below.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    e->dest->aux = ENTRY_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
   while (tos != worklist)

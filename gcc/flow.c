@@ -5339,24 +5339,21 @@ compute_flow_dominators (dominators, post_dominators)
 
   if (dominators)
     {
-      /* Clear the AUX field for each basic block.  */
+      /* The optimistic setting of dominators requires us to put every
+	 block on the work list initially.  */
       for (bb = 0; bb < n_basic_blocks; bb++)
-	BASIC_BLOCK (bb)->aux = NULL;
+	{
+	  *tos++ = BASIC_BLOCK (bb);
+	  BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
+	}
 
       /* We want a maximal solution, so initially assume everything dominates
 	 everything else.  */
       sbitmap_vector_ones (dominators, n_basic_blocks);
 
-      /* Put the successors of the entry block on the worklist.  */
+      /* Mark successors of the entry block so we can identify them below.  */
       for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
-	{
-	  *tos++ = e->dest;
-
-	  /* We use the block's aux field to track blocks which are in
-	     the worklist; we also use it to quickly determine which blocks
-	     are successors of the ENTRY block.  */
-	  e->dest->aux = ENTRY_BLOCK_PTR;
-	}
+	e->dest->aux = ENTRY_BLOCK_PTR;
 
       /* Iterate until the worklist is empty.  */
       while (tos != worklist)
@@ -5412,24 +5409,21 @@ compute_flow_dominators (dominators, post_dominators)
 
   if (post_dominators)
     {
-      /* Clear the AUX field for each basic block.  */
+      /* The optimistic setting of dominators requires us to put every
+	 block on the work list initially.  */
       for (bb = 0; bb < n_basic_blocks; bb++)
-	BASIC_BLOCK (bb)->aux = NULL;
+	{
+	  *tos++ = BASIC_BLOCK (bb);
+	  BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
+	}
 
       /* We want a maximal solution, so initially assume everything post
 	 dominates everything else.  */
       sbitmap_vector_ones (post_dominators, n_basic_blocks);
 
-      /* Put the predecessors of the exit block on the worklist.  */
+      /* Mark predecessors of the exit block so we can identify them below.  */
       for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
-	{
-	  *tos++ = e->src;
-
-	  /* We use the block's aux field to track blocks which are in
-	     the worklist; we also use it to quickly determine which blocks
-	     are predecessors of the EXIT block.  */
-	  e->src->aux = EXIT_BLOCK_PTR;
-	}
+	e->src->aux = EXIT_BLOCK_PTR;
 
       /* Iterate until the worklist is empty.  */
       while (tos != worklist)
