@@ -1,0 +1,23 @@
+If you think you may have found a bug in GNU CC, please
+read the Bugs section of the GCC manual for advice on
+
+(1) how to tell when to report a bug, 
+(2) where to send your bug report, and
+(2) how to write a useful bug report and what information
+it needs to have.
+
+There are three ways to read the Bugs section.
+
+(1) In a printed copy of the GCC manual.  You can order one from the
+Free Software Foundation; see the file ORDERS.  But if you don't have
+a copy on hand and you think you have found a bug, you shouldn't wait
+to get a printed manual; you should read the section right away as
+described below.
+
+(2) With Info.  Start Emacs, do C-h i to enter Info,
+then m gcc RET to get to the GCC manual, then m Bugs RET
+to get to the section on bugs.  Or use standalone Info in
+a like manner.  (Standalone Info is part of the Texinfo distribution.)
+
+(3) By hand. Search for the chapter "Reporting Bugs" in gcc.texi, or
+    cat /usr/local/info/gcc* | more "+/^File: emacs,  Node: Bugs,"
