@@ -1,7 +1,6 @@
 /* Sparse Arrays for Objective C dispatch tables
    Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Contributed by Kresten Krab Thorup.
 
 This file is part of GNU CC.
 
@@ -109,9 +108,6 @@ union sofftype {
 };
 
 #endif /* not PRECOMPUTE_SELECTORS */
-
-void * __objc_xrealloc (void *optr, size_t size);
-void * __objc_xmalloc (size_t size);
 
 union sversion {
   int	version;
