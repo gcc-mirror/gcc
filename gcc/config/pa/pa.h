@@ -159,6 +159,11 @@ extern int target_flags;
 #define TARGET_ELF32 0
 #endif
 
+/* Generate code for SOM ABI.  */
+#ifndef TARGET_SOM
+#define TARGET_SOM 0
+#endif
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }

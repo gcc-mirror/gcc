@@ -3078,9 +3078,11 @@ pa_output_function_prologue (file, size)
 
   fputs ("\n\t.ENTRY\n", file);
 
-  /* If we're using GAS and not using the portable runtime model, then
-     we don't need to accumulate the total number of code bytes.  */
-  if (TARGET_GAS && ! TARGET_PORTABLE_RUNTIME)
+  /* If we're using GAS, SOM and not the portable runtime model, or if
+     we're using function sections, then we don't need to accumulate the
+     total number of code bytes in the translation unit.  */
+  if ((TARGET_GAS && TARGET_SOM && !TARGET_PORTABLE_RUNTIME)
+      || flag_function_sections)
     total_code_bytes = 0;
   else if (INSN_ADDRESSES_SET_P ())
     {

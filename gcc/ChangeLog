@@ -1,3 +1,11 @@
+2002-12-28  John David Anglin  <dave.anglin@nrc.ca>
+
+	* pa.h (TARGET_SOM): Define if not defined.
+	* som.h (OBJ_SOM): Rename to TARGET_SOM.
+	* pa.c (pa_output_function_prologue): Don't accumulate the total code
+	bytes in the translation unit when using gas, som and not the portable
+	runtime, or when using function sections.
+
 2002-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8599
