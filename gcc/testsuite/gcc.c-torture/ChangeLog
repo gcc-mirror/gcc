@@ -1,3 +1,7 @@
+1999-11-27  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* compile/991127-1.c: New test.
+
 Wed Oct 20 16:18:23 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* noncompile/noncompile.exp: For 940510-1.c, change compiler_output
