@@ -1,3 +1,14 @@
+2000-03-27  Stan Cox  <scox@cygnus.com>	
+
+	* resource.h (mark_resource_type): New.
+	* resource.c (find_dead_or_set_registers, mark_target_live_regs, 
+	find_free_register): Use mark_resource_type.
+	(mark_set_resources): Change include_delayed_effects
+	to mark_resource_type.
+	* reorg.c (steal_delay_list_from_target, try_merge_delay_insns, 
+	redundant_insn, fill_simple_delay_slots, fill_slots_from_thread): 
+	Use mark_resource_type.
+	
 2000-03-27  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (call_pop_0, call_value_pop_0): New.
