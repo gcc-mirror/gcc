@@ -429,6 +429,9 @@ struct z_candidate {
   z_candidate *next;
 };
 
+/* Returns true iff T is a null pointer constant in the sense of
+   [conv.ptr].  */
+
 bool
 null_ptr_cst_p (tree t)
 {
@@ -436,12 +439,13 @@ null_ptr_cst_p (tree t)
 
      A null pointer constant is an integral constant expression
      (_expr.const_) rvalue of integer type that evaluates to zero.  */
+  if (DECL_INTEGRAL_CONSTANT_VAR_P (t))
+    t = decl_constant_value (t);
   if (t == null_node
       || (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t)))
     return true;
   return false;
 }
-
 
 /* Returns nonzero if PARMLIST consists of only default parms and/or
    ellipsis.  */

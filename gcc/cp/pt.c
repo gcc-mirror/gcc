@@ -3233,9 +3233,7 @@ convert_nontype_argument (tree type, tree expr)
 	   will not return the initializer.  Handle that special case
 	   here.  */
 	if (expr == const_expr
-	    && TREE_CODE (expr) == VAR_DECL
-	    && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (expr)
-	    && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (expr))
+	    && DECL_INTEGRAL_CONSTANT_VAR_P (expr)
 	    /* DECL_INITIAL can be NULL if we are processing a
 	       variable initialized to an expression involving itself.
 	       We know it is initialized to a constant -- but not what

@@ -5,4 +5,4 @@
 volatile const int a = 5;
 
 template <int> struct K;
-template struct K<a>;	// { dg-error "non-constant" }
+template struct K<a>;	// { dg-error "" }
