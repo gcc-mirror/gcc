@@ -84,9 +84,12 @@
   if (current_sym_addr && current_sym_code == N_FUN		\
       && GET_CODE (current_sym_addr) == SYMBOL_REF)		\
     {								\
-      char *_p;							\
-      for (_p = XSTR (current_sym_addr, 0); *_p != '[' && *_p; _p++) \
-	fprintf (asmfile, "%c", *_p);				\
+      char *_p = XSTR (current_sym_addr, 0);			\
+      if (*_p == '*')						\
+	fprintf (asmfile, "%s", _p+1);				\
+      else							\
+        for (; *_p != '[' && *_p; _p++)				\
+	  fprintf (asmfile, "%c", *_p);				\
     }								\
   else if (current_sym_addr)					\
     output_addr_const (asmfile, current_sym_addr);		\
