@@ -1,3 +1,9 @@
+Sun Sep 20 11:02:55 1998  Robert Lipe  <robertl@dgii.com>
+
+	* except.c: Include system.h.
+
+	* Makefile.in (except.o): Depend on system.h.
+
 Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (actions.o, convert.o, decl.o, expr.o, lang.o,
