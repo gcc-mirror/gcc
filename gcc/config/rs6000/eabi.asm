@@ -252,7 +252,7 @@ FUNC_START(__eabi_convert)
 
 .Lcvt:
 	lwzu	6,4(3)				/* pointer to convert */
-	cmpi	0,6,0
+	cmpwi	0,6,0
 	beq-	.Lcvt2				/* if pointer is null, don't convert */
 
         add	6,6,12				/* convert pointer */
