@@ -80,7 +80,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using sdb.  */
 
-int sdb_begin_function_line = -1;
+static int sdb_begin_function_line = -1;
 
 /* Counter to generate unique "names" for nameless struct members.  */
 
@@ -92,11 +92,14 @@ extern tree current_function_decl;
 
 #include "sdbout.h"
 
-static void sdbout_init			PARAMS ((FILE *, const char *));
+static void sdbout_init			PARAMS ((const char *));
 static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
 static void sdbout_end_source_file	PARAMS ((unsigned));
-static void sdbout_begin_block		PARAMS ((FILE *, unsigned, unsigned));
-static void sdbout_end_block		PARAMS ((FILE *, unsigned, unsigned));
+static void sdbout_begin_block		PARAMS ((unsigned, unsigned));
+static void sdbout_end_block		PARAMS ((unsigned, unsigned));
+static void sdbout_source_line		PARAMS ((const char *, rtx));
+static void sdbout_end_epilogue		PARAMS ((void));
+static void sdbout_end_function		PARAMS ((unsigned int));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
 static int template_name_p		PARAMS ((tree));
@@ -225,15 +228,6 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 	   SDB_DELIM, SDB_DELIM, SDB_DELIM, (LINE), SDB_DELIM)
 #endif
 
-#ifndef PUT_SDB_EPILOGUE_END
-#define PUT_SDB_EPILOGUE_END(NAME)			\
-do { fprintf (asm_out_file, "\t.def\t");		\
-     assemble_name (asm_out_file, NAME);		\
-     fprintf (asm_out_file,				\
-	      "%s\t.val\t.%s\t.scl\t-1%s\t.endef\n",	\
-	      SDB_DELIM, SDB_DELIM, SDB_DELIM); } while (0)
-#endif
-
 #ifndef SDB_GENERATE_FAKE
 #define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
   sprintf ((BUFFER), ".%dfake", (NUMBER));
@@ -297,13 +291,16 @@ static struct sdb_file *current_file;
 struct gcc_debug_hooks sdb_debug_hooks =
 {
   sdbout_init,
-  debug_nothing_file_charstar,
+  debug_nothing_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   sdbout_start_source_file,
   sdbout_end_source_file,
   sdbout_begin_block,
-  sdbout_end_block
+  sdbout_end_block,
+  sdbout_source_line,
+  sdbout_end_epilogue,
+  sdbout_end_function
 };
 
 #if 0
@@ -1471,8 +1468,7 @@ sdbout_reg_parms (parms)
    if the count starts at 0 for the outermost one.  */
 
 static void
-sdbout_begin_block (file, line, n)
-     FILE *file ATTRIBUTE_UNUSED;
+sdbout_begin_block (line, n)
      unsigned int line;
      unsigned int n;
 {
@@ -1508,9 +1504,8 @@ sdbout_begin_block (file, line, n)
 
 /* Describe the end line-number of an internal block within a function.  */
 
-void
-sdbout_end_block (file, line, n)
-     FILE *file ATTRIBUTE_UNUSED;
+static void
+sdbout_end_block (line, n)
      unsigned int line;
      unsigned int n ATTRIBUTE_UNUSED;
 {
@@ -1523,6 +1518,26 @@ sdbout_end_block (file, line, n)
   if (n != 1)
 #endif
   PUT_SDB_BLOCK_END (line - sdb_begin_function_line);
+}
+
+static void
+sdbout_source_line (filename, note)
+     const char *filename ATTRIBUTE_UNUSED;
+     rtx note;
+{
+  unsigned int line = NOTE_LINE_NUMBER (note);
+
+  /* COFF relative line numbers must be positive.  */
+  if (line > sdb_begin_function_line)
+    {
+#ifdef ASM_OUTPUT_SOURCE_LINE
+      ASM_OUTPUT_SOURCE_LINE (asm_out_file, line);
+#else
+      fprintf (asm_out_file, "\t.ln\t%d\n",
+	       ((sdb_begin_function_line > -1)
+		? line - sdb_begin_function_line : 1));
+#endif
+    }
 }
 
 /* Output sdb info for the current function name.
@@ -1553,9 +1568,9 @@ sdbout_begin_function (line)
 /* Called at end of function (before epilogue).
    Describe end of outermost block.  */
 
-void
+static void
 sdbout_end_function (line)
-     int line;
+     unsigned int line;
 {
 #ifdef SDB_ALLOW_FORWARD_REFERENCES
   sdbout_dequeue_anonymous_types ();
@@ -1571,11 +1586,20 @@ sdbout_end_function (line)
 /* Output sdb info for the absolute end of a function.
    Called after the epilogue is output.  */
 
-void
+static void
 sdbout_end_epilogue ()
 {
-  PUT_SDB_EPILOGUE_END
-    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
+  const char *name
+    = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
+
+#ifdef PUT_SDB_EPILOGUE_END
+  PUT_SDB_EPILOGUE_END (name);
+#else
+  fprintf (asm_out_file, "\t.def\t");
+  assemble_name (asm_out_file, name);
+  fprintf (asm_out_file, "%s\t.val\t.%s\t.scl\t-1%s\t.endef\n",
+	   SDB_DELIM, SDB_DELIM, SDB_DELIM);
+#endif
 }
 
 /* Output sdb info for the given label.  Called only if LABEL_NAME (insn)
@@ -1628,8 +1652,7 @@ sdbout_end_source_file (line)
 /* Set up for SDB output at the start of compilation.  */
 
 static void
-sdbout_init (asm_file, input_file_name)
-     FILE *asm_file ATTRIBUTE_UNUSED;
+sdbout_init (input_file_name)
      const char *input_file_name ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO

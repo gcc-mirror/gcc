@@ -62,7 +62,7 @@ extern void final_start_function  PARAMS ((rtx, FILE *, int));
 /* Output assembler code for the end of a function.
    For clarity, args are same as those of `final_start_function'
    even though not all of them are needed.  */
-extern void final_end_function  PARAMS ((rtx, FILE *, int));
+extern void final_end_function  PARAMS ((void));
 
 /* Output assembler code for some insns: all or part of a function.  */
 extern void final		PARAMS ((rtx, FILE *, int, int));
@@ -372,13 +372,6 @@ extern void output_constant		PARAMS ((tree, int));
 
    This variable is defined  in final.c.  */
 extern rtx final_sequence;
-#endif
-
-/* The line number of the beginning of the current function.
-   sdbout.c needs this so that it can output relative linenumbers.  */
-
-#ifdef SDB_DEBUGGING_INFO /* Avoid undef sym in certain broken linkers.  */
-extern int sdb_begin_function_line;
 #endif
 
 /* File in which assembler code is being written.  */

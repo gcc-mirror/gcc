@@ -19,14 +19,11 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 extern void sdbout_begin_function	PARAMS ((int));
-extern void sdbout_end_function		PARAMS ((int));
 
 extern void sdbout_label		PARAMS ((rtx));
 extern void sdbout_symbol		PARAMS ((tree, int));
 extern void sdbout_toplevel_data	PARAMS ((tree));
 extern void sdbout_types		PARAMS ((tree));
-
-extern void sdbout_end_epilogue		PARAMS ((void));
 
 extern void sdbout_mark_begin_function	PARAMS ((void));
 

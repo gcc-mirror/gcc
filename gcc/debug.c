@@ -22,22 +22,29 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /* The do-nothing debug hooks.  */
 struct gcc_debug_hooks do_nothing_debug_hooks =
 {
-  debug_nothing_file_charstar,
-  debug_nothing_file_charstar,
+  debug_nothing_charstar,
+  debug_nothing_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int,
-  debug_nothing_file_int_int,
-  debug_nothing_file_int_int
+  debug_nothing_int_int,
+  debug_nothing_int_int,
+  debug_nothing_charstar_rtx,
+  debug_nothing_void,
+  debug_nothing_int
 };
 
 /* This file contains implementations of each debug hook that do
    nothing.  */
 
 void
-debug_nothing_file_charstar (file, main_filename)
-     FILE *file ATTRIBUTE_UNUSED;
+debug_nothing_void ()
+{
+}
+
+void
+debug_nothing_charstar (main_filename)
      const char *main_filename ATTRIBUTE_UNUSED;
 {
 }
@@ -56,9 +63,15 @@ debug_nothing_int (line)
 }
 
 void
-debug_nothing_file_int_int (file, line, n)
-     FILE *file ATTRIBUTE_UNUSED;
+debug_nothing_int_int (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n ATTRIBUTE_UNUSED;
+{
+}
+
+void
+debug_nothing_charstar_rtx (filename, note)
+     const char *filename ATTRIBUTE_UNUSED;
+     struct rtx_def *note ATTRIBUTE_UNUSED;
 {
 }

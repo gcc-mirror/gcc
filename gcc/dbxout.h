@@ -26,5 +26,4 @@ extern void dbxout_parms		PARAMS ((tree));
 extern void dbxout_reg_parms		PARAMS ((tree));
 extern int dbxout_syms			PARAMS ((tree));
 extern void dbxout_function		PARAMS ((tree));
-extern void dbxout_source_line		PARAMS ((FILE *, const char *, int));
 extern void dbxout_begin_function	PARAMS ((tree));

@@ -18,17 +18,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef GCC_DEBUG_H
 #define GCC_DEBUG_H
 
+struct rtx_def;
+
 /* This structure contains hooks for the debug information output
    functions, accessed through the global instance debug_hooks set in
    toplev.c according to command line options.  */
 struct gcc_debug_hooks
 {
-  /* Initialise debug output to FILE.  MAIN_FILENAME is the name of
-     the main input file.  */
-  void (* init) PARAMS ((FILE * file, const char *main_filename));
+  /* Initialise debug output.  MAIN_FILENAME is the name of the main
+     input file.  */
+  void (* init) PARAMS ((const char *main_filename));
 
-  /* Output debug symbols to FILE.  */
-  void (* finish) PARAMS ((FILE * file, const char *main_filename));
+  /* Output debug symbols.  */
+  void (* finish) PARAMS ((const char *main_filename));
 
   /* Macro defined on line LINE with name and expansion TEXT.  */
   void (* define) PARAMS ((unsigned int line, const char *text));
@@ -45,24 +47,38 @@ struct gcc_debug_hooks
   void (* end_source_file) PARAMS ((unsigned int line));
 
   /* Record the beginning of block N, counting from 1 and not
-     including the function-scope block, at LINE.  Output to FILE.  */
-  void (* begin_block) PARAMS ((FILE *, unsigned int line, unsigned int n));
+     including the function-scope block, at LINE.  */
+  void (* begin_block) PARAMS ((unsigned int line, unsigned int n));
 
   /* Record the end of a block.  Arguments as for begin_block.  */
-  void (* end_block) PARAMS ((FILE *, unsigned int line, unsigned int n));
+  void (* end_block) PARAMS ((unsigned int line, unsigned int n));
+
+  /* Record a line based on NOTE.  Obtain the line number with
+     NOTE_LINE_NUMBER (note).  */
+  void (* source_line) PARAMS ((const char *filename, struct rtx_def *note));
+
+  /* Record end of epilogue code.  */
+  void (* end_epilogue) PARAMS ((void));
+
+  /* Record end of function.  LINE is highest line number in function.  */
+  void (* end_function) PARAMS ((unsigned int line));
 };
 
 extern struct gcc_debug_hooks *debug_hooks;
 
 /* The do-nothing hooks.  */
-extern void debug_nothing_file_charstar
-  PARAMS ((FILE *, const char *));
+extern void debug_nothing_void
+  PARAMS ((void));
+extern void debug_nothing_charstar
+  PARAMS ((const char *));
 extern void debug_nothing_int_charstar
   PARAMS ((unsigned int, const char *));
 extern void debug_nothing_int
   PARAMS ((unsigned int));
-extern void debug_nothing_file_int_int
-  PARAMS ((FILE *, unsigned int, unsigned int));
+extern void debug_nothing_int_int
+  PARAMS ((unsigned int, unsigned int));
+extern void debug_nothing_charstar_rtx
+  PARAMS ((const char *, struct rtx_def *));
 
 /* Hooks for various debug formats.  */
 extern struct gcc_debug_hooks do_nothing_debug_hooks;
@@ -71,5 +87,10 @@ extern struct gcc_debug_hooks sdb_debug_hooks;
 extern struct gcc_debug_hooks xcoff_debug_hooks;
 extern struct gcc_debug_hooks dwarf_debug_hooks;
 extern struct gcc_debug_hooks dwarf2_debug_hooks;
+
+/* Dwarf2 frame information.  */
+
+extern void dwarf2out_end_epilogue
+  PARAMS ((void));
 
 #endif /* !GCC_DEBUG_H  */

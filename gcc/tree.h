@@ -2924,10 +2924,6 @@ extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
 
 extern void dwarf2out_begin_prologue	PARAMS ((void));
 
-/* Output a marker (i.e. a label) for the absolute end of the generated
-   code for a function definition.  */
-
-extern void dwarf2out_end_epilogue	PARAMS ((void));
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic
