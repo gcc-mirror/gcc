@@ -6908,6 +6908,9 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
   if (!constrain_operands (1))
     fatal_insn_not_found (insn);
 
+  if (recog_data.n_alternatives == 0)
+    return false;
+
   /* Fill in recog_op_alt with information about the constraints of this insn.  */
   preprocess_constraints ();
 

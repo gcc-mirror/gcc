@@ -2093,7 +2093,10 @@ preprocess_constraints (void)
 {
   int i;
 
-  memset (recog_op_alt, 0, sizeof recog_op_alt);
+  for (i = 0; i < recog_data.n_operands; i++)
+    memset (recog_op_alt[i], 0, (recog_data.n_alternatives
+				 * sizeof (struct operand_alternative)));
+
   for (i = 0; i < recog_data.n_operands; i++)
     {
       int j;
