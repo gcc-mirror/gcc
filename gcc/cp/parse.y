@@ -1356,6 +1356,8 @@ primary:
 		  if (processing_template_decl)
 		    push_obstacks (&permanent_obstack, &permanent_obstack);
 		  $$ = combine_strings ($$);
+		  /* combine_strings doesn't set up TYPE_MAIN_VARIANT of
+		     a const array the way we want, so fix it.  */
 		  if (flag_const_strings)
 		    TREE_TYPE ($$) = build_cplus_array_type
 		      (TREE_TYPE (TREE_TYPE ($$)),
