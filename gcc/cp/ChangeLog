@@ -1,3 +1,13 @@
+2000-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_CLONED_FUNCTION_P): Check DECL_LANG_SPECIFIC.
+	* mangle.c (write_function_type): Change prototype.
+	(write_encoding): Don't mangle return types for
+	constructors or destructors.
+	(write_type): Adjust call to write_function_type.
+	* pt.c (instantiate_template): Instantiate alternate entry points
+	when instantiating the main function.
+	
 2000-08-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (cp_print_error_function): Don't use embedded '\n' in
