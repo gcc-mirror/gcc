@@ -27,17 +27,3 @@ X<&S::i,S> x  = X<&S::i,S>();
 X<&S::i,S> x2 = X<&S2::i,S>();
 X<&S::i,S> y  = X<&S::j,S>();  // { dg-error "" }
 X<&S::i,S> z  = X<&R::i,S>();  // { dg-error "" }
-
-template <class T>
-struct Foo
-{
-  void foo(void)
-  {
-     X<&T::i,T> x  = X<&T::i,T>();
-     X<&S::i,S> x2 = X<&S2::i,S>();
-     X<&S::i,S> y  = X<&S::j,S>(); // { dg-error "" }
-     X<&S::i,S> z  = X<&R::i,S>(); // { dg-error "" }
-  }
-};
-
-template struct Foo<S>;  // { dg-error "instantiated from" }

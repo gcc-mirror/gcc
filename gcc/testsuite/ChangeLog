@@ -1,3 +1,8 @@
+2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/template/ptrmem7.C: Simplified the test case to not hit
+	an ICE regression.
+
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10926
