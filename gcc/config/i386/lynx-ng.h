@@ -28,3 +28,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC "-P1000 %{msystem-v:-V} %{mcoff:-k}"
 
+/* Apparently LynxOS clobbers ebx when you call into the OS.  */
+
+#undef CALL_USED_REGISTERS
+#define CALL_USED_REGISTERS \
+/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
+{  1, 1, 1, 1, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
