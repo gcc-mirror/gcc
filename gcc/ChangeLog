@@ -1,5 +1,9 @@
 2003-12-29  Jan Hubicka  <jh@suse.cz>
 
+	* coverage.c (read_counts_file): Better error messages; cause corrupted
+	profiles to produce hard errors, not just warnings
+	(get_coverage_counts): Similarly.
+
 	* toplev.c (rest_of_handle_loop_optimize): Enable LOOP_AUTO_UNROLL.
 
 2003-12-29  Phil Edwards  <phil@codesourcery.com>

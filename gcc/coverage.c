@@ -154,7 +154,7 @@ read_counts_file (void)
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   gcov_unsigned_t tag;
-  int error = 0;
+  int is_error = 0;
 
   if (!gcov_open (da_file_name, 1))
     return;
@@ -250,17 +250,26 @@ read_counts_file (void)
 	      entry->summary.num = n_counts;
 	      entry->counts = xcalloc (n_counts, sizeof (gcov_type));
 	    }
-	  else if (entry->checksum != checksum
-		   || entry->summary.num != n_counts)
+	  else if (entry->checksum != checksum)
 	    {
-	      warning ("coverage mismatch for function %u", fn_ident);
+	      error ("coverage mismatch for function %u while reading execution counters.",
+		     fn_ident);
+	      error ("checksum is %x instead of %x", entry->checksum, checksum);
+	      htab_delete (counts_hash);
+	      break;
+	    }
+	  else if (entry->summary.num != n_counts)
+	    {
+	      error ("coverage mismatch for function %u while reading execution counters.",
+		     fn_ident);
+	      error ("number of counters is %d instead of %d", entry->summary.num, n_counts);
 	      htab_delete (counts_hash);
 	      break;
 	    }
 	  else if (elt.ctr >= GCOV_COUNTERS_SUMMABLE)
 	    {
-	      warning ("cannot merge separate %s counters for function %u",
-		       ctr_names[elt.ctr], fn_ident);
+	      error ("cannot merge separate %s counters for function %u",
+		     ctr_names[elt.ctr], fn_ident);
 	      goto skip_merge;
 	    }
 
@@ -278,14 +287,14 @@ read_counts_file (void)
 	skip_merge:;
 	}
       gcov_sync (offset, length);
-      if ((error = gcov_is_error ()))
+      if ((is_error = gcov_is_error ()))
 	break;
     }
 
   if (!gcov_is_eof ())
     {
-      warning (error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
-	       da_file_name);
+      error (is_error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
+	     da_file_name);
       htab_delete (counts_hash);
     }
 
@@ -299,6 +308,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 		     const struct gcov_ctr_summary **summary)
 {
   counts_entry_t *entry, elt;
+  gcov_unsigned_t checksum = -1;
 
   /* No hash table, no counts.  */
   if (!counts_hash)
@@ -321,12 +331,22 @@ get_coverage_counts (unsigned counter, unsigned expected,
       return 0;
     }
 
-  if (expected != entry->summary.num
-      || compute_checksum () != entry->checksum)
+  checksum = compute_checksum ();
+  if (entry->checksum != checksum)
     {
-      warning ("coverage mismatch for `%s'", IDENTIFIER_POINTER
-	       (DECL_ASSEMBLER_NAME (current_function_decl)));
-      return NULL;
+      error ("coverage mismatch for function '%s' while reading counter '%s'.",
+	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),
+	     ctr_names[counter]);
+      error ("checksum is %x instead of %x", entry->checksum, checksum);
+      return 0;
+    }
+  else if (entry->summary.num != expected)
+    {
+      error ("coverage mismatch for function '%s' while reading counter '%s'.",
+	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),
+	     ctr_names[counter]);
+      error ("number of counters is %d instead of %d", entry->summary.num, expected);
+      return 0;
     }
 
   if (summary)
