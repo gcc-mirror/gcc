@@ -498,7 +498,7 @@ eligible_for_epilogue_delay (trial, slot)
   if (leaf_function)
     {
       if (leaf_return_peephole_ok ())
-	return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
+	return (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
       return 0;
     }
 
@@ -983,7 +983,7 @@ singlemove_string (operands)
    aligned at least to a 8-byte boundary.  This should only be called
    for memory accesses whose size is 8 bytes or larger.  */
 
-static int
+int
 mem_aligned_8 (mem)
      register rtx mem;
 {
@@ -992,7 +992,7 @@ mem_aligned_8 (mem)
   register rtx offset;
 
   if (GET_CODE (mem) != MEM)
-    abort ();	/* It's gotta be a MEM! */
+    return 0;	/* It's gotta be a MEM! */
 
   addr = XEXP (mem, 0);
 
@@ -2596,7 +2596,7 @@ output_arc_profiler (arcno, insert_after)
    abort if we are passed pseudo registers.  */
 
 int
-registers_ok_for_ldd (reg1, reg2)
+registers_ok_for_ldd_peep (reg1, reg2)
      rtx reg1, reg2;
 {
 
@@ -2631,7 +2631,7 @@ registers_ok_for_ldd (reg1, reg2)
    need only check that the offset for addr1 % 8 == 0.  */
 
 int
-memory_ok_for_ldd (addr1, addr2)
+addrs_ok_for_ldd_peep (addr1, addr2)
       rtx addr1, addr2;
 {
   int reg1, offset1;
@@ -2688,6 +2688,26 @@ memory_ok_for_ldd (addr1, addr2)
   /* All the tests passed.  addr1 and addr2 are valid for ldd and std
      instructions.  */
   return 1;
+}
+
+/* Return 1 if reg is a pseudo, or is the first register in 
+   a hard register pair.  This makes it a candidate for use in
+   ldd and std insns.  */
+
+int
+register_ok_for_ldd (reg)
+     rtx reg;
+{
+
+  /* We might have been passed a SUBREG.  */
+  if (GET_CODE (reg) != REG) 
+    return 0;
+
+  if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
+    return (REGNO (reg) % 2 == 0);
+  else 
+    return 1;
+
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
