@@ -4576,8 +4576,8 @@ rtx_needs_barrier (x, flags, pred)
     case UNSPEC:
       switch (XINT (x, 1))
 	{
-	case 1: /* st8.spill */
-	case 2: /* ld8.fill */
+	case UNSPEC_GR_SPILL:
+	case UNSPEC_GR_RESTORE:
 	  {
 	    HOST_WIDE_INT offset = INTVAL (XVECEXP (x, 0, 1));
 	    HOST_WIDE_INT bit = (offset >> 3) & 63;
@@ -4589,31 +4589,31 @@ rtx_needs_barrier (x, flags, pred)
 	    break;
 	  }
 	  
-	case 3: /* stf.spill */
-	case 4: /* ldf.spill */
-	case 8: /* popcnt */
+	case UNSPEC_FR_SPILL:
+	case UNSPEC_FR_RESTORE:
+	case UNSPEC_POPCNT:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
-	case 7: /* pred_rel_mutex */
-	case 9: /* pic call */
-        case 12: /* mf */
-        case 19: /* fetchadd_acq */
-	case 20: /* mov = ar.bsp */
-	case 21: /* flushrs */
-	case 22: /* bundle selector */
+	case UNSPEC_PRED_REL_MUTEX:
+	case UNSPEC_PIC_CALL:
+        case UNSPEC_MF:
+        case UNSPEC_FETCHADD_ACQ:
+	case UNSPEC_BSP_VALUE:
+	case UNSPEC_FLUSHRS:
+	case UNSPEC_BUNDLE_SELECTOR:
           break;
 
-        case 24: /* addp4 */
+        case UNSPEC_ADDP4:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
-	case 5: /* recip_approx */
+	case UNSPEC_FR_RECIP_APPROX:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
 	  break;
 
-        case 13: /* cmpxchg_acq */
+        case UNSPEC_CMPXCHG_ACQ:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
 	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 2), flags, pred);
 	  break;
@@ -4626,7 +4626,7 @@ rtx_needs_barrier (x, flags, pred)
     case UNSPEC_VOLATILE:
       switch (XINT (x, 1))
 	{
-	case 0: /* alloc */
+	case UNSPECV_ALLOC:
 	  /* Alloc must always be the first instruction of a group.
 	     We force this by always returning true.  */
 	  /* ??? We might get better scheduling if we explicitly check for
@@ -4640,17 +4640,15 @@ rtx_needs_barrier (x, flags, pred)
 	  rws_access_regno (REG_AR_CFM, new_flags, pred);
 	  return 1;
 
-	case 1: /* blockage */
-	case 2: /* insn group barrier */
-	  return 0;
-
-	case 5: /* set_bsp  */
+	case UNSPECV_SET_BSP:
 	  need_barrier = 1;
           break;
 
-	case 7: /* pred.rel.mutex */
-	case 8: /* safe_across_calls all */
-	case 9: /* safe_across_calls normal */
+	case UNSPECV_BLOCKAGE:
+	case UNSPECV_INSN_GROUP_BARRIER:
+	case UNSPECV_BREAK:
+	case UNSPECV_PSAC_ALL:
+	case UNSPECV_PSAC_NORMAL:
 	  return 0;
 
 	default:
@@ -4877,7 +4875,7 @@ emit_insn_group_barriers (dump, insns)
 	}
       else if (GET_CODE (insn) == INSN
 	       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	       && XINT (PATTERN (insn), 1) == 2)
+	       && XINT (PATTERN (insn), 1) == UNSPECV_INSN_GROUP_BARRIER)
 	{
 	  init_insn_group_barriers ();
 	  last_label = 0;
@@ -6646,7 +6644,7 @@ ia64_emit_nops ()
       pat = INSN_P (insn) ? PATTERN (insn) : const0_rtx;
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
-      if ((GET_CODE (pat) == UNSPEC && XINT (pat, 1) == 22)
+      if ((GET_CODE (pat) == UNSPEC && XINT (pat, 1) == UNSPEC_BUNDLE_SELECTOR)
 	  || GET_CODE (insn) == CODE_LABEL)
 	{
 	  if (b)
@@ -6662,7 +6660,8 @@ ia64_emit_nops ()
 	  bundle_pos = 0;
 	  continue;
 	}
-      else if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == 2)
+      else if (GET_CODE (pat) == UNSPEC_VOLATILE
+	       && XINT (pat, 1) == UNSPECV_INSN_GROUP_BARRIER)
 	{
 	  int t = INTVAL (XVECEXP (pat, 0, 0));
 	  if (b)
@@ -6754,7 +6753,7 @@ ia64_reorg (insns)
         insn = prev_active_insn (insn);
       if (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	  && XINT (PATTERN (insn), 1) == 2)
+	  && XINT (PATTERN (insn), 1) == UNSPECV_INSN_GROUP_BARRIER)
 	{
 	  saw_stop = 1;
 	  insn = prev_active_insn (insn);
@@ -6996,7 +6995,7 @@ process_set (asm_out_file, pat)
 
   /* Look for the ALLOC insn.  */
   if (GET_CODE (src) == UNSPEC_VOLATILE
-      && XINT (src, 1) == 0
+      && XINT (src, 1) == UNSPECV_ALLOC
       && GET_CODE (dest) == REG)
     {
       dest_regno = REGNO (dest);
