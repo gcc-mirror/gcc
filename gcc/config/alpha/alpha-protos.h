@@ -136,7 +136,6 @@ extern rtx alpha_va_arg PARAMS ((tree, tree));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
 				 tree, int));
 #endif
-extern int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
 #endif /* TREE CODE */

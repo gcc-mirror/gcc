@@ -391,9 +391,6 @@ do {									\
     fprintf (FILE, "\n");				\
   } while (0)
 
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
-  (vms_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
-
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
 #undef DBX_DEBUGGING_INFO

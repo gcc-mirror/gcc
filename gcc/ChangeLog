@@ -1,3 +1,12 @@
+2001-07-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* config/alpha/alpha-protos.h (vms_valid_decl_attribute_p): Delete.
+	* config/alpha/alpha.c (alpha_init_machine_status,
+	alpha_mark_machine_status, alpha_free_machine_status): Delete.
+	(TARGET_VALID_DECL_ATTRIBUTE): Define for VMS.
+	(vms_valid_decl_attribute_p): Make static, conditionally compile.
+	* config/alpha/alpha.h (VALID_MACHINE_DECL_ATTRIBUTE): Delete.
+
 2001-07-06  Stan Shebs  <shebs@apple.com>
 
 	* target.h (targetm): Rename global from "target", so as not to
