@@ -1,5 +1,13 @@
 2001-06-25  Tom Tromey  <tromey@redhat.com>
 
+	* scripts/encodings.pl: Generate lower-case names.  Updated URL
+	for `character-sets' file.
+	* gnu/gcj/convert/IOConverter.java (canonicalize): Convert name to
+	lower case.
+	Rebuilt list of aliases.
+
+2001-06-25  Tom Tromey  <tromey@redhat.com>
+
 	* java/io/natFileDescriptorPosix.cc (open): Change error message
 	formatting.  From David Brownell.
 
