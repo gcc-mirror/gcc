@@ -647,7 +647,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 /* specify the costs of various sorts of constants,
    and also indicate that multiplication is cheap on this machine.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     /* Constant zero is super cheap due to clr instruction.  */	\
     if (RTX == const0_rtx) return 0;				\

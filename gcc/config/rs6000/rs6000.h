@@ -1200,7 +1200,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    On the RS/6000, if it is legal in the insn, it is free.  So this
    always returns 0.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
   case CONST:							\
   case LABEL_REF:						\
@@ -1211,7 +1211,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
 
-#define RTX_COSTS(X,CODE)				\
+#define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
     return (GET_CODE (XEXP (X, 1)) != CONST_INT		\
 	    ? COSTS_N_INSNS (5)				\

@@ -1482,7 +1482,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    is as good as a register; since it can't be placed in any insn, it
    won't do anything in cse, but it will cause expand_binop to pass the
    constant to the define_expands).  */
-#define CONST_COSTS(RTX,CODE)				\
+#define CONST_COSTS(RTX,CODE,OUTER_CODE)		\
   case CONST_INT:					\
     if (SMALL_INT (RTX))				\
       return 0;						\
@@ -1516,7 +1516,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
-#define RTX_COSTS(X,CODE)				\
+#define RTX_COSTS(X,CODE,OUTER_CODE)				\
   case MEM:						\
     return COSTS_N_INSNS (2);				\
   case MULT:						\

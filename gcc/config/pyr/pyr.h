@@ -1030,7 +1030,7 @@ extern int current_function_calls_alloca;
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (CONST_OK_FOR_LETTER_P (INTVAL (RTX),'I')) return 0;	\
   case CONST:							\

@@ -1281,7 +1281,7 @@ extern struct rtx_def *legitimize_pic_address ();
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (INTVAL (RTX) == 0)					\
       return 0;							\
@@ -1322,7 +1322,7 @@ extern struct rtx_def *legitimize_pic_address ();
    If we need more than 12 insns to do a multiply, then go out-of-line,
    since the call overhead will be < 10% of the cost of the multiply.  */
 
-#define RTX_COSTS(X,CODE)				\
+#define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
     return COSTS_N_INSNS (25);				\
   case DIV:						\
