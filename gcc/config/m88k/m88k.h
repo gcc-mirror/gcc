@@ -97,7 +97,7 @@ extern struct rtx_def *m88k_compare_op1;
 
 extern enum attr_cpu m88k_cpu;
 
-extern int null_epilogue ();
+extern int null_prologue ();
 extern int integer_ok_for_set ();
 extern int m88k_debugger_offset ();
 
@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"29 Jun 1992"
+#define VERSION_INFO2	"02 Jul 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.3.5 29 Jun 1992 13:11:13"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.5 02 Jul 1992 06:21:15"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1747,6 +1747,14 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    "#x8"+1, "#x9"+1, "#x10"+1,"#x11"+1,"#x12"+1,"#x13"+1,"#x14"+1,"#x15"+1,\
    "#x16"+1,"#x17"+1,"#x18"+1,"#x19"+1,"#x20"+1,"#x21"+1,"#x22"+1,"#x23"+1,\
    "#x24"+1,"#x25"+1,"#x26"+1,"#x27"+1,"#x28"+1,"#x29"+1,"#x30"+1,"#x31"+1}
+
+/* Define additional names for use in asm clobbers and asm declarations.
+
+   We define the fake Condition Code register as an alias for reg 0 (which
+   is our `condition code' register), so that condition codes can easily
+   be clobbered by an asm.  The carry bit in the PSR is now used.  */
+
+#define ADDITIONAL_REGISTER_NAMES	{"psr", 0, "cc", 0}
 
 /* How to renumber registers for dbx and gdb.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
