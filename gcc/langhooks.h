@@ -96,6 +96,12 @@ struct lang_hooks_for_types
   /* Return a type the same as TYPE except unsigned or signed
      according to UNSIGNEDP.  */
   tree (*signed_or_unsigned_type) PARAMS ((int, tree));
+
+  /* This routine is called in tree.c to print an error message for
+     invalid use of an incomplete type.  VALUE is the expression that
+     was used (or 0 if that isn't known) and TYPE is the type that was
+     invalid.  */
+  void (*incomplete_type_error) PARAMS ((tree value, tree type));
 };
 
 /* Language hooks related to decls and the symbol table.  */

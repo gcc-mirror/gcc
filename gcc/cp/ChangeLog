@@ -1,3 +1,16 @@
+2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* call.c (build_new_method_call): Update.
+	* cp-lang.c (LANG_HOOKS_INCOMPLETE_TYPE_ERROR): Redefine.
+	* cp-tree.h (cxx_incomplete_type_error): New.
+	* decl.c (grokdeclarator, grokparms): Update.
+	* decl2.c (check_classfn): Update.
+	* pt.c (tsubst): Update.
+	* typeck.c (complete_type_or_else, expr_sizeof,
+	decay_conversion): Update.
+	* typeck2.c (incomplete_type_error): Rename.
+	(add_exception_specifier): Update.
+
 2002-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5658

@@ -6810,7 +6810,7 @@ tsubst (t, args, complain, in_decl)
 	    if (!COMPLETE_TYPE_P (ctx))
 	      {
 		if (complain & tf_error)
-		  incomplete_type_error (NULL_TREE, ctx);
+		  cxx_incomplete_type_error (NULL_TREE, ctx);
 		return error_mark_node;
 	      }
 	  }

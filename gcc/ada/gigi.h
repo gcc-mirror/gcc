@@ -439,10 +439,6 @@ extern tree gnat_signed_type		PARAMS ((tree));
    UNSIGNEDP.  */
 extern tree gnat_signed_or_unsigned_type PARAMS ((int, tree));
 
-/* This routine is called in tree.c to print an error message for invalid use
-   of an incomplete type.  */
-extern void incomplete_type_error	PARAMS ((tree, tree));
-
 /* This function is called indirectly from toplev.c to handle incomplete 
    declarations, i.e. VAR_DECL nodes whose DECL_SIZE is zero.  To be precise,
    compile_file in toplev.c makes an indirect call through the function pointer

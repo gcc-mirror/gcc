@@ -685,17 +685,6 @@ init_gigi_decls (long_long_float_type, exception_type)
   ggc_add_tree_root (gnat_raise_decls, ARRAY_SIZE (gnat_raise_decls));
 }
 
-/* This routine is called in tree.c to print an error message for invalid use
-   of an incomplete type.  */
-
-void
-incomplete_type_error (dont_care_1, dont_care_2)
-     tree dont_care_1 ATTRIBUTE_UNUSED;
-     tree dont_care_2 ATTRIBUTE_UNUSED;
-{
-  gigi_abort (404);
-}
-
 /* This function is called indirectly from toplev.c to handle incomplete 
    declarations, i.e. VAR_DECL nodes whose DECL_SIZE is zero.  To be precise,
    compile_file in toplev.c makes an indirect call through the function pointer

@@ -4373,6 +4373,7 @@ extern tree check_return_expr                   PARAMS ((tree));
   build_binary_op(code, arg1, arg2, 1)
 
 /* in typeck2.c */
+extern void cxx_incomplete_type_error		PARAMS ((tree, tree));
 extern tree error_not_base_type			PARAMS ((tree, tree));
 extern tree binfo_or_else			PARAMS ((tree, tree));
 extern void readonly_error			PARAMS ((tree, const char *, int));

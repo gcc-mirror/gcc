@@ -1353,7 +1353,7 @@ check_classfn (ctype, function)
     {
       methods = 0;
       if (!COMPLETE_TYPE_P (ctype))
-        incomplete_type_error (function, ctype);
+        cxx_incomplete_type_error (function, ctype);
       else
         error ("no `%#D' member function declared in class `%T'",
 		  function, ctype);

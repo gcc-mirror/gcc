@@ -171,7 +171,7 @@ complete_type_or_else (type, value)
     return NULL_TREE;
   else if (!COMPLETE_TYPE_P (type))
     {
-      incomplete_type_error (value, type);
+      cxx_incomplete_type_error (value, type);
       return NULL_TREE;
     }
   else
@@ -1566,7 +1566,7 @@ expr_sizeof (e)
     }
   else if (type_unknown_p (e))
     {
-      incomplete_type_error (e, TREE_TYPE (e));
+      cxx_incomplete_type_error (e, TREE_TYPE (e));
       return c_sizeof (char_type_node);
     }
   /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
@@ -1648,7 +1648,7 @@ decay_conversion (exp)
 
   if (type_unknown_p (exp))
     {
-      incomplete_type_error (exp, TREE_TYPE (exp));
+      cxx_incomplete_type_error (exp, TREE_TYPE (exp));
       return error_mark_node;
     }
   

@@ -4636,7 +4636,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       if (flags & LOOKUP_SPECULATIVELY)
 	return NULL_TREE;
       if (!COMPLETE_TYPE_P (basetype))
-	incomplete_type_error (instance_ptr, basetype);
+	cxx_incomplete_type_error (instance_ptr, basetype);
       else
 	error ("no matching function for call to `%T::%D(%A)%#V'",
 	       basetype, pretty_name, user_args,
