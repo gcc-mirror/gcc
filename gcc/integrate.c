@@ -1148,7 +1148,7 @@ copy_for_inline (orig)
 	    {
 	      register int j;
 
-	      XVEC (x, i) = gen_rtvec_v (XVECLEN (x, i), &XVECEXP (x, i, 0));
+	      XVEC (x, i) = gen_rtvec_vv (XVECLEN (x, i), XVEC (x, i)->elem);
 	      for (j = 0; j < XVECLEN (x, i); j++)
 		XVECEXP (x, i, j)
 		  = copy_for_inline (XVECEXP (x, i, j));

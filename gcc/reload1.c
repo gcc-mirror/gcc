@@ -3166,8 +3166,8 @@ eliminate_regs (x, mem_mode, insn)
 	      new = eliminate_regs (XVECEXP (x, i, j), mem_mode, insn);
 	      if (new != XVECEXP (x, i, j) && ! copied_vec)
 		{
-		  rtvec new_v = gen_rtvec_v (XVECLEN (x, i),
-					     &XVECEXP (x, i, 0));
+		  rtvec new_v = gen_rtvec_vv (XVECLEN (x, i),
+					      XVEC (x, i)->elem);
 		  if (! copied)
 		    {
 		      rtx new_x = rtx_alloc (code);
