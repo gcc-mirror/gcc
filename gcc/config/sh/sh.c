@@ -2198,13 +2198,17 @@ arith_reg_operand (op, mode)
 {
   if (register_operand (op, mode))
     {
+      int regno;
+
       if (GET_CODE (op) == REG)
-	return (REGNO (op) != T_REG
-		&& REGNO (op) != PR_REG
-		&& REGNO (op) != FPUL_REG
-		&& REGNO (op) != MACH_REG
-		&& REGNO (op) != MACL_REG);
-      return 1;
+	regno = REGNO (op);
+      else if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
+	regno = REGNO (SUBREG_REG (op));
+      else
+	return 1;
+
+      return (regno != T_REG && regno != PR_REG && regno != FPUL_REG
+	      && regno != MACH_REG && regno != MACL_REG);
     }
   return 0;
 }
