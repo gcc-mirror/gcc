@@ -938,6 +938,10 @@ use_return_insn (iscond)
      consideration.  */
   if (func_type & (ARM_FT_VOLATILE | ARM_FT_NAKED))
     return 0;
+
+  /* So do interrupt functions that use the frame pointer.  */
+  if (IS_INTERRUPT (func_type) && frame_pointer_needed)
+    return 0;
   
   /* As do variadic functions.  */
   if (current_function_pretend_args_size
@@ -7092,7 +7096,7 @@ output_move_double (operands)
 		    {
 		      if (GET_CODE (otherops[2]) == CONST_INT)
 			{
-			  switch (INTVAL (otherops[2]))
+			  switch ((int) INTVAL (otherops[2]))
 			    {
 			    case -8:
 			      output_asm_insn ("ldm%?db\t%1, %M0", otherops);
@@ -7168,7 +7172,7 @@ output_move_double (operands)
 	case PLUS:
 	  if (GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT)
 	    {
-	      switch (INTVAL (XEXP (XEXP (operands[0], 0), 1)))
+	      switch ((int) INTVAL (XEXP (XEXP (operands[0], 0), 1)))
 		{
 		case -8:
 		  output_asm_insn ("stm%?db\t%m0, %M1", operands);
@@ -8813,18 +8817,19 @@ arm_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  /* If this is an interrupt service routine, and the link register is
-     going to be pushed, subtracting four now will mean that the
-     function return can be done with a single instruction.  */
+  /* If this is an interrupt service routine, and the link register
+     is going to be pushed, and we are not creating a stack frame,
+     (which would involve an extra push of IP and a pop in the epilogue)
+     subtracting four from LR now will mean that the function return
+     can be done with a single instruction.  */
   if ((func_type == ARM_FT_ISR || func_type == ARM_FT_FIQ)
-      && (live_regs_mask & (1 << LR_REGNUM)) != 0)
-    {
-      emit_insn (gen_rtx_SET (SImode, 
-			      gen_rtx_REG (SImode, LR_REGNUM),
-			      gen_rtx_PLUS (SImode,
-				    gen_rtx_REG (SImode, LR_REGNUM),
-				    GEN_INT (-4))));
-    }
+      && (live_regs_mask & (1 << LR_REGNUM)) != 0
+      && ! frame_pointer_needed)
+    emit_insn (gen_rtx_SET (SImode, 
+			    gen_rtx_REG (SImode, LR_REGNUM),
+			    gen_rtx_PLUS (SImode,
+					  gen_rtx_REG (SImode, LR_REGNUM),
+					  GEN_INT (-4))));
 
   if (live_regs_mask)
     {

@@ -1,3 +1,53 @@
+2003-01-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (use_return_insn): Do not use a single return
+	instruction for interrupt handelrs which have to create a stack
+	frame.
+	(arm_expand_prologue): Do not pre-bias the return address of
+	interrupt handlers which create a stack frame.
+
+2003-01-24  Nick Clifton  <nickc@redhat.com>
+
+	* Add sh2e support:
+
+	2002-08-12  Alexandre Oliva  <aoliva@redhat.com>
+
+		* config/sh/sh.c (output_branch) [TARGET_SH2E]: Handle
+		med_cbranches.  Fix logic in short_cbranches.
+
+	2002-04-03  Alexandre Oliva  <aoliva@redhat.com>
+
+		* config/sh/sh.md (delay for cbranch): Don't annul delay
+		slots on SH2e.
+		* config/sh/sh.c (sh_insn_length_adjustment): Add 2 for
+		cbranch with unfilled delay slot on SH2e.
+		(output_branch): Fill with a nop the delay slot of a
+		branch that required a delay slot but didn't get one.
+
+	2002-04-02  Alexandre Oliva  <aoliva@redhat.com>
+
+		* doc/invoke.texi (SH options): Document -m2e.
+		* config/sh/crt1.asm: Add __SH2E__ Next to __SH3E__.
+		* config/sh/lib1funcs.asm: Likewise.
+		* config/sh/sh.c: Replace all uses of TARGET_SH3E with SH2E.
+		* config/sh/sh.h (CPP_SPEC): Define __SH2E__ for -m2e, and
+		not __sh1__.
+		(CONDITIONAL_REGISTER_USAGE): Don't disable FP regs from
+		SH2E up.
+		(SH3E_BIT): Renamed to...
+		(SH_E_BIT): ... this.  Replace all uses.
+		(TARGET_SH2E): Define from SH_E_BIT and TARGET_SH2.
+		Replace all uses of TARGET_SH3E with TARGET_SH2E.
+		(TARGET_SWITCHES): Added 2e.
+		(OVERRIDE_OPTIONS): Set sh_cpu for SH2E.
+		(processor_type): Added PROCESSOR_SH2E.
+		* config/sh/sh.md: Replace all uses of TARGET_SH3E with
+		TARGET_SH2E, except in sqrtsf2_i.
+		(attribute cpu): Added sh2e.
+		* config/sh/t-sh (MULTILIB_OPTIONS): Replace m3e with m2e.
+		(MULTILIB_MATCHES): Use m2e multilib for m3e.
+		* config.gcc: Add sh2e target support.
+
 2003-01-24  Phil Edwards  <pme@gcc.gnu.org>
 
 	Rename -W to -Wextra.
