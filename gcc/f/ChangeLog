@@ -1,3 +1,10 @@
+2002-03-23  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_check_size_overflow_): Add a test
+	so that arrays too large for 32-bit byte-offset
+	addressing get caught.
+	* news.texi: Document the fixing of this problem.
+
 Mon Mar 18 18:43:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* target.h (FFETARGET_32bit_longs): Undefine for x86-64.
