@@ -188,6 +188,24 @@ common_type (t1, t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
+  /* If one type is complex, form the common type
+     of the non-complex components,
+     then make that complex.  */
+  if (code1 == COMPLEX_TYPE || code2 == COMPLEX_TYPE)
+    {
+      tree subtype1, subtype2, subtype;
+      if (code1 == COMPLEX_TYPE)
+	subtype1 = TREE_TYPE (t1);
+      else
+	subtype1 = t1;
+      if (code2 == COMPLEX_TYPE)
+	subtype2 = TREE_TYPE (t2);
+      else
+	subtype2 = t2;
+      subtype = common_type (subtype1, subtype2);
+      return build_complex_type (subtype);
+    }
+
   switch (code1)
     {
     case INTEGER_TYPE:
@@ -2308,8 +2326,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	{
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
@@ -2363,8 +2383,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == POINTER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == POINTER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == POINTER_TYPE
+	   || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == POINTER_TYPE
+	      || code1 == REAL_TYPE || code1 == COMPLEX_TYPE))
 	{
 	  /* Result of these operations is always an int,
 	     but that does not mean the operands should be
@@ -2473,8 +2495,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	 but don't convert the args to int!  */
       result_type = integer_type_node;
       converted = 1;
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -2525,8 +2549,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
     case MAX_EXPR:
     case MIN_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -2543,8 +2569,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -2589,9 +2617,12 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
       break;
     }
 
-  if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-      && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+  if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
+      &&
+      (code1 == INTEGER_TYPE || code1 == REAL_TYPE || code1 == COMPLEX_TYPE))
     {
+      int none_complex = (code0 != COMPLEX_TYPE && code1 != COMPLEX_TYPE);
+
       if (shorten || common || short_compare)
 	result_type = common_type (type0, type1);
 
@@ -2606,7 +2637,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	 Eg, (short)-1 | (unsigned short)-1 is (int)-1
 	 but calculated in (unsigned short) it would be (unsigned short)-1.  */
 
-      if (shorten)
+      if (shorten && none_complex)
 	{
 	  int unsigned0, unsigned1;
 	  tree arg0 = get_narrower (op0, &unsigned0);
@@ -2708,7 +2739,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
       /* Comparison operations are shortened too but differently.
 	 They identify themselves by setting short_compare = 1.  */
 
-      if (short_compare)
+      if (short_compare && none_complex)
 	{
 	  /* Don't write &op0, etc., because that would prevent op0
 	     from being kept in a register.
@@ -2938,14 +2969,16 @@ build_unary_op (code, xarg, noconvert)
       /* This is used for unary plus, because a CONVERT_EXPR
 	 is enough to prevent anybody from looking inside for
 	 associativity, but won't generate any code.  */
-      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
+      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
+	    || typecode == COMPLEX_TYPE))
         errstring = "wrong type argument to unary plus";
       else if (!noconvert)
 	arg = default_conversion (arg);
       break;
 
     case NEGATE_EXPR:
-      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
+      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
+	    || typecode == COMPLEX_TYPE))
         errstring = "wrong type argument to unary minus";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -2959,7 +2992,8 @@ build_unary_op (code, xarg, noconvert)
       break;
 
     case ABS_EXPR:
-      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE))
+      if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
+	    || typecode == COMPLEX_TYPE))
         errstring = "wrong type argument to abs";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -2968,6 +3002,7 @@ build_unary_op (code, xarg, noconvert)
     case TRUTH_NOT_EXPR:
       if (typecode != INTEGER_TYPE
 	  && typecode != REAL_TYPE && typecode != POINTER_TYPE
+	  && typecode != COMPLEX_TYPE
 	  /* These will convert to a pointer.  */
 	  && typecode != ARRAY_TYPE && typecode != FUNCTION_TYPE)
 	{
@@ -2979,6 +3014,22 @@ build_unary_op (code, xarg, noconvert)
 
     case NOP_EXPR:
       break;
+
+    case REALPART_EXPR:
+      if (TREE_CODE (arg) == COMPLEX_CST)
+	return TREE_REALPART (arg);
+      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	return fold (build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+      else
+	return arg;
+
+    case IMAGPART_EXPR:
+      if (TREE_CODE (arg) == COMPLEX_CST)
+	return TREE_IMAGPART (arg);
+      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	return fold (build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+      else
+	return convert (TREE_TYPE (arg), integer_zero_node);
       
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:
@@ -2990,6 +3041,19 @@ build_unary_op (code, xarg, noconvert)
       val = unary_complex_lvalue (code, arg);
       if (val != 0)
 	return val;
+
+      /* Increment or decrement the real part of the value,
+	 and don't change the imaginary part.  */
+      if (typecode == COMPLEX_TYPE)
+	{
+	  tree real, imag;
+
+	  arg = stabilize_reference (arg);
+	  real = build_unary_op (REALPART_EXPR, arg, 1);
+	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);
+	  return build (COMPLEX_EXPR, TREE_TYPE (arg),
+			build_unary_op (code, real, 1), imag);
+	}
 
       /* Report invalid types.  */
 
@@ -3273,6 +3337,8 @@ lvalue_p (ref)
 
   switch (code)
     {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case COMPONENT_REF:
       return lvalue_p (TREE_OPERAND (ref, 0));
 
@@ -4057,9 +4123,11 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       return error_mark_node;
     }
   /* Arithmetic types all interconvert, and enum is treated like int.  */
-  if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == ENUMERAL_TYPE)
+  if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == ENUMERAL_TYPE
+       || codel == COMPLEX_TYPE)
        &&
-      (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE))
+      (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
+       || codel == COMPLEX_TYPE))
     return convert_and_check (type, rhs);
   /* Conversion to a union from its member types.  */
   else if (codel == UNION_TYPE)
