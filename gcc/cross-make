@@ -1,0 +1,17 @@
+# Don't really put anything in libgcc1.
+LIBGCC1 = libgcc1.null
+
+# Specify tools and options for manipulating libraries for the target machine.
+AR = $(AR_FOR_TARGET)
+AR_FLAGS = $(AR_FOR_TARGET_FLAGS)
+OLDAR = $(AR_FOR_TARGET)
+OLDAR_FLAGS = $(AR_FOR_TARGET_FLAGS)
+RANLIB = $(RANLIB_FOR_TARGET)
+RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
+
+# Cause installation of the cross-compilation tools
+# before we try to build libgcc.a.
+CROSS_TOOLS = install-cross-tools
+
+# Cause installation using install-cross.
+INSTALL_TARGET = install-cross
