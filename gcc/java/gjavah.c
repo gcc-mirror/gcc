@@ -106,6 +106,9 @@ static void print_c_decl PROTO ((FILE*, JCF*, int, int, int, const char *));
 static void decompile_method PROTO ((FILE *, JCF *, int));
 static void add_class_decl PROTO ((FILE *, JCF *, JCF_u2));
 
+static int java_float_finite PROTO ((jfloat));
+static int java_double_finite PROTO ((jdouble));
+
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
 JCF_u2 current_field_signature;

@@ -1,3 +1,8 @@
+Thu Apr 15 13:08:03 1999  Anthony Green  <green@cygnus.com>
+
+	* gjavah.c: New prototypes for java_float_finite and
+	java_double_finite.
+
 Mon Apr 12 18:27:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_unaryop): Fix ++ operator check on array
