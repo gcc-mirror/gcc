@@ -9231,7 +9231,8 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_bgtu (operands[4]));
 
       /* Do the PIC jump.  */
-      emit_insn (gen_casesi_internal (reg, operands[3], gen_reg_rtx (SImode)));
+      emit_jump_insn (gen_casesi_internal (reg, operands[3],
+					   gen_reg_rtx (SImode)));
 
       DONE;
     }
@@ -9239,7 +9240,7 @@ move\\t%0,%z4\\n\\
 
 ;; An embedded PIC switch statement looks like this:
 ;;	bal	$LS1
-;;	sll	$reg,$reg,2
+;;	sll	$reg,$index,2
 ;; $LS1:
 ;;	addu	$reg,$reg,$31
 ;;	lw	$reg,$L1-$LS1($reg)
@@ -9249,8 +9250,6 @@ move\\t%0,%z4\\n\\
 ;;	.word	case1-$LS1
 ;;	.word	case2-$LS1
 ;;	...
-;;
-;; ??? So how does operand 2 get used?
 
 (define_insn "casesi_internal"
   [(set (pc)
@@ -9260,13 +9259,8 @@ move\\t%0,%z4\\n\\
    (clobber (match_operand:SI 2 "register_operand" "=d"))
    (clobber (reg:SI 31))]
   "TARGET_EMBEDDED_PIC"
-  "*
-{
-  output_asm_insn (\"%(bal\\t%S1\;sll\\t%0,2\\n%~%S1:\", operands);
-  output_asm_insn (\"addu\\t%0,%0,$31%)\", operands);
-  output_asm_insn (\"lw\\t%0,%1-%S1(%0)\;addu\\t%0,%0,$31\", operands);
-  return \"j\\t%0\";
-}"
+  "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
+lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])

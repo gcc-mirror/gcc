@@ -6393,7 +6393,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 void
 function_prologue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   const char *fnname;

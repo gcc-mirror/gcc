@@ -1,3 +1,9 @@
+Fri Oct 15 13:48:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* mips.c (function_prologue): Fix argument types.
+	* mips.md (casesi): Use emit_jump_insn for casesi_internal.
+	(casesi_internal): Write to the scratch register.
+
 1999-10-15 11:16 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cppexp.c (cpp_parse_escape): Make static.  Change second arg
