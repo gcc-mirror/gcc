@@ -41,7 +41,6 @@
 namespace __gnu_cxx
 {
   /**
-   *  @class stdio_filebuf ext/stdio_filebuf.h <ext/stdio_filebuf.h>
    *  @brief Provides a layer of compatibility for C/POSIX.
    *
    *  This GNU extension provides extensions for working with standard C

@@ -35,6 +35,11 @@
 
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
 
+/** @file bits/codecvt_specializations.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
   // XXX
   // Define this here so codecvt.cc can have _S_max_size definition.
 #define _GLIBCXX_USE___ENC_TRAITS 1
@@ -192,9 +197,9 @@
     { return _M_ext_enc; }    
   };
 
-  /// Partial specialization.
-  // This specialization takes advantage of iconv to provide code
-  // conversions between a large number of character encodings.
+  /// @brief  class codecvt<InternT, _ExternT, __enc_traits> specialization.
+  // This partial specialization takes advantage of iconv to provide
+  // code conversions between a large number of character encodings.
   template<typename _InternT, typename _ExternT>
     class codecvt<_InternT, _ExternT, __enc_traits>
     : public __codecvt_abstract_base<_InternT, _ExternT, __enc_traits>

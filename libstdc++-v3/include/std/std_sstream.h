@@ -73,16 +73,9 @@ namespace std
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
 
-      //@{
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_string<char_type, _Traits, _Alloc> 	__string_type;
       typedef typename __string_type::size_type		__size_type;
-      //@}
 
     protected:
       /**
@@ -93,11 +86,6 @@ namespace std
       ios_base::openmode 	_M_mode;
 
       // Data Members:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __string_type 		_M_string;
 
     public:
@@ -169,11 +157,6 @@ namespace std
 
     protected:
       // Common initialization code goes here.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       void
       _M_stringbuf_init(ios_base::openmode __mode)
       {
@@ -185,15 +168,12 @@ namespace std
 	_M_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
       }
 
-      // [documentation is inherited]
       virtual int_type
       underflow();
 
-      // [documentation is inherited]
       virtual int_type
       pbackfail(int_type __c = traits_type::eof());
 
-      // [documentation is inherited]
       virtual int_type
       overflow(int_type __c = traits_type::eof());
 
@@ -227,12 +207,10 @@ namespace std
 	return this;
       }
 
-      // [documentation is inherited]
       virtual pos_type
       seekoff(off_type __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      // [documentation is inherited]
       virtual pos_type
       seekpos(pos_type __sp,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
@@ -243,11 +221,6 @@ namespace std
       // Assumes: contents of _M_string and internal buffer match exactly.
       // __i == _M_in_cur - _M_in_beg
       // __o == _M_out_cur - _M_out_beg
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       void
       _M_sync(char_type* __base, __size_type __i, __size_type __o)
       {
@@ -320,11 +293,6 @@ namespace std
       typedef basic_istream<char_type, traits_type>	__istream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __stringbuf_type	_M_stringbuf;
 
     public:
@@ -438,11 +406,6 @@ namespace std
       typedef basic_ostream<char_type, traits_type>	__ostream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __stringbuf_type	_M_stringbuf;
 
     public:
@@ -556,11 +519,6 @@ namespace std
       typedef basic_iostream<char_type, traits_type>	__iostream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __stringbuf_type	_M_stringbuf;
 
     public:
