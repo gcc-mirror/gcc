@@ -1,5 +1,13 @@
 2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* Makefile.in: Get parsedir and docobjdir from configure.
+	* configure.in: Recogonize --enable-generated-files-in-srcdir.
+	Pass along parsedir and docobjdir.
+	* configure: Regenerate.
+	* doc/install.texi: Document --enable-generated-files-in-srcdir.
+
+2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* Makefile.in: Define $(docdir) before the Make-lang.in fragments are
 	included.
 

@@ -957,6 +957,20 @@ catalog, configuring with @option{--enable-maintainer-mode} will enable
 this.  Note that you need a recent version of the @code{gettext} tools
 to do so.
 
+@item --enable-generated-files-in-srcdir
+Neither the .c and .h files that are generated from bison and flex nor the
+info manuals and man pages that are built from the .texi files are present
+in the CVS development tree.  When building GCC from that development tree,
+or from a snapshot which are created from CVS, then those generated files
+are placed in your build directory, which allows for the source to be in a
+readonly directory.
+
+If you configure with @option{--enable-generated-files-in-srcdir} then those
+generated files will go into the source directory.  This is mainly intended
+for generating release or prerelease tarballs of the GCC sources, since it
+is not a requirement that the users of source releases to have flex, bison, or
+makeinfo.  
+
 @item --enable-version-specific-runtime-libs
 Specify
 that runtime libraries should be installed in the compiler specific
