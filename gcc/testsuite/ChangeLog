@@ -1,3 +1,16 @@
+2004-09-08  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/bitfield-2.m: Make 'id' definition a typedef.
+	* obj.dg/bitfield-4.m: Allow 'unsigned' in addition to 'unsigned int'
+	in error message.
+	* objc.dg/id-1.m: Attempt to define 'id' in an incompatible fashion.
+	* objc.dg/method-6.m: Allow 'unsigned' in addition to 'unsigned int'
+	in error message.
+	* objc.dg/proto-qual-1.m: Protocol qualifiers now appear before the
+	types they qualify.
+	* objc.dg/type-size-2.m: Fix wording in comment.
+	* objc.dg/va-meth-1.m: New test case.
+
 2004-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/16633:

@@ -1,6 +1,6 @@
 /* Make sure that array arguments to methods are given the size of pointers.  */
 /* As in the case of ivars, arrays without size (e.g., 'int []') are
-   encoded as pointers as well.  */
+   encoded as pointers.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
 

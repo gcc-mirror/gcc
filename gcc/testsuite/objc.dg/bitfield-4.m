@@ -19,11 +19,10 @@
 @implementation WithBitfields {
   char *isa;  /* { dg-error "conflicting instance variable type .char \\*isa." } */
   /* { dg-error "previous declaration of .void \\*isa." "" { target *-*-* } 12 } */
-  unsigned a: 5;  /* { dg-error "conflicting instance variable type .unsigned a: 5." } */
-  /* { dg-error "previous declaration of .unsigned a: 3." "" { target *-*-* } 13 } */                     
+  unsigned a: 5;  /* { dg-error "conflicting instance variable type .unsigned( int)? a: 5." } */
+  /* { dg-error "previous declaration of .unsigned( int)? a: 3." "" { target *-*-* } 13 } */                     
   signed b: 4;  /* This one is fine. */
   int c: 3;  /* { dg-error "conflicting instance variable type .int c: 3." } */
   /* { dg-error "previous declaration of .int c: 5." "" { target *-*-* } 15 } */ 
 }
 @end
-

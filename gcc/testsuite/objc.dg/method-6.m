@@ -19,7 +19,7 @@ void foo(void) {
   Class receiver;
 
   [receiver port];  /* { dg-warning "multiple methods named .\\+port. found" } */
-       /* { dg-warning "using .\\-\\(unsigned\\)port." "" { target *-*-* } 9 } */
+       /* { dg-warning "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } 9 } */
        /* { dg-warning "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 14 } */
 
   [receiver starboard];  /* { dg-warning ".Class. may not respond to .\\+starboard." } */
