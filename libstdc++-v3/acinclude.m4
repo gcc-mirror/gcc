@@ -713,6 +713,9 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
       arm*)
 	cpu_include_dir="config/cpu/arm"
         ;;
+      ia64)
+	cpu_include_dir="config/cpu/ia64"
+	;;
       i386)
 	cpu_include_dir="config/cpu/i386"
 	;;
