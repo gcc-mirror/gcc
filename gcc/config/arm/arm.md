@@ -4267,7 +4267,7 @@
 ;; Often the return insn will be the same as loading from memory, so set attr
 (define_insn "return"
   [(return)]
-  "USE_RETURN_INSN(FALSE)"
+  "USE_RETURN_INSN (FALSE)"
   "*
 {
   extern int arm_ccfsm_state;
@@ -4287,7 +4287,7 @@
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (return)
                       (pc)))]
-  "USE_RETURN_INSN(TRUE)"
+  "USE_RETURN_INSN (TRUE)"
   "*
 {
   extern int arm_ccfsm_state;
@@ -4308,7 +4308,7 @@
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (pc)
 		      (return)))]
-  "USE_RETURN_INSN(TRUE)"
+  "USE_RETURN_INSN (TRUE)"
   "*
 {
   extern int arm_ccfsm_state;
@@ -5974,7 +5974,7 @@
 			  (match_operand:SI 1 "general_operand" "g"))
 		    (clobber (reg:SI 14))])
    (return)]
-  "(GET_CODE (operands[0]) == SYMBOL_REF && USE_RETURN_INSN(FALSE)
+  "(GET_CODE (operands[0]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
     && !get_frame_size () && !current_function_calls_alloca
     && !frame_pointer_needed && !current_function_args_size)"
   "*
@@ -6002,7 +6002,7 @@
 			 (match_operand:SI 2 "general_operand" "g")))
 	      (clobber (reg:SI 14))])
    (return)]
-  "(GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN(FALSE)
+  "(GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
     && !get_frame_size () && !current_function_calls_alloca
     && !frame_pointer_needed && !current_function_args_size)"
   "*
@@ -6034,7 +6034,7 @@
 	      (clobber (reg:SI 14))])
    (use (match_dup 0))
    (return)]
-  "(GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN(FALSE)
+  "(GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
     && !get_frame_size () && !current_function_calls_alloca
     && !frame_pointer_needed && !current_function_args_size)"
   "*

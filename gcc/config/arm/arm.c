@@ -73,7 +73,7 @@ static int const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode));
 /* True if we are currently building a constant table. */
 int making_const_table;
 
-/*  Define the information needed to generate branch insns.  This is
+/* Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
 rtx arm_compare_op0, arm_compare_op1;
 
