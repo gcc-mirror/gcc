@@ -250,7 +250,7 @@
 	(build_x_function_call): Deal with OVERLOAD.  Handle template-ids.
 	* Makefile.in (class.o): Depend on splay-tree.h.
 
-Wed Mar 31 11:30:43 BST 1999  Nathan Sidwell  <nathan@acm.org>
+Wed Mar 31 11:30:43 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* cvt.c (convert_pointer_to_real): Use same_type_p.
 	* typeck.c (comp_target_types): Use same_type_p.
@@ -1015,7 +1015,7 @@ Thu Feb 18 23:40:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(fn_type_unification): Substitute explicit arguments before
 	unification.
 
-1999-02-16  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1999-02-16  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* decl.c (pushdecl): Remove dead code.
 
@@ -1063,7 +1063,7 @@ Thu Feb 18 23:40:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	specialization in wrong namespace.
 	* tree.c (decl_namespace_context): New fn.
 
-1999-02-06  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1999-02-06  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* decl2.c (arg_assoc_type): Handle TEMPLATE_TEMPLATE_PARM.
 	* pt.c (coerce_template_template_parms): Handle nested
@@ -1073,7 +1073,7 @@ Sat Feb  6 18:08:40 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck2.c: Update email addresses.
 
-1999-02-04  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1999-02-04  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* pt.c (unify): Call coerce_template_parms with the COMPLAIN flag
 	turned off.
@@ -1092,13 +1092,13 @@ Sat Feb  6 18:08:40 1999  Jeffrey A Law  (law@cygnus.com)
 	(do_ctors, do_dtors): Use DEFAULT_INIT_PRIORITY for the non-initp
 	objects.
 
-Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+Wed Feb  3 22:50:17 1999  Marc Espie  <Marc.Espie@liafa.jussieu.fr>
 
 	* Make-lang.in (GXX_OBJS): Remove choose-temp.o, pexecute.o and
 	mkstemp.o.  Get them from libiberty now.
 	(DEMANGLER_PROG): Simlarly, remove getopt.o getopt1.o.
 
-Tue Feb  2 22:38:48 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+Tue Feb  2 22:38:48 1999  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* decl2.c (lang_decode_option): Use read_integral_parameter.
 
@@ -1270,7 +1270,7 @@ Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* tree.c (copy_template_template_parm): Use permanent_obstack.
 
-1999-01-18  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1999-01-18  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* pt.c (unify): Remove restrictions on deduction of argument
 	of template template parameters.
@@ -1287,7 +1287,7 @@ Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 	* typeck.c (comp_ptr_ttypes_reinterpret): Per ANSI, tighten up
 	definition of 'casting away const' in reinterpret_cast<>.
 
-1999-01-18  Graham <grahams@rcp.co.uk>
+1999-01-18  Graham  <grahams@rcp.co.uk>
 
 	* cvt.c: Add include for decl.h, remove extern for
 	static_aggregates which is now provided by decl.h.
@@ -1805,7 +1805,7 @@ Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* class.c (finish_struct_bits): Don't bother working out whether
 	get_abstract_virtuals will do anything, just do it.
 
-1998-11-24  Graham <grahams@rcp.co.uk>
+1998-11-24  Graham  <grahams@rcp.co.uk>
 
 	* typeck.c (build_component_ref): Remove unused statement.
 
@@ -2031,7 +2031,7 @@ Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 	* pt.c (process_template_parm): Don't set
 	CLASSTYPE_GOT_SEMICOLON.
-	(lookup_template_class) Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	(lookup_template_class): Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 	Coerce arguments on the momentary obstack.
 	(for_each_template_parm): Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 	(instantiate_class_template): Calculate template arguments on the
@@ -2173,7 +2173,7 @@ Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* pt.c (tsubst_decl): Don't mess with the global value of an
 	un-mangled DECL_ASSEMBLER_NAME.
 
-1998-11-03  Christopher Faylor <cgf@cygnus.com>
+1998-11-03  Christopher Faylor  <cgf@cygnus.com>
 
 	* decl.c (init_decl_processing): Remove CYGWIN conditional
 	since CYGWIN is now able to deal with trapping signals.
@@ -2672,7 +2672,7 @@ Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (fn.def2): Fix 'attrs' format.
 
-1998-10-18  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
+1998-10-18  Alastair J. Houghton  <ajh8@doc.ic.ac.uk>
 
 	* Makefile.in (CONFLICTS): Update.
 	* parse.y (expr_or_declarator_intern): New rule.
@@ -2778,7 +2778,7 @@ Sat Oct 17 23:27:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(make_typename_type): Use it.
 	* search.c (lookup_field): Likewise.
 
-1998-10-14 Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+1998-10-14  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* pt.c (convert_nontype_argument): Check against type_referred_to.
 	* decl.c (grokvardecl): Check for declarator name before building
@@ -2819,7 +2819,7 @@ Sat Oct 17 23:27:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tinfo.cc (operator==): Always compare names.
 
-1998-10-12  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+1998-10-12  Herman ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* decl.c (start_function): Fix cut-and-paste error.
 
@@ -2833,7 +2833,7 @@ Sat Oct 17 23:27:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck2.c (my_friendly_abort): Add URL.
 
-1998-10-12  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
+1998-10-12  Alastair J. Houghton  <ajh8@doc.ic.ac.uk>
 
 	* decl.c (start_method): Added extra parameter for attributes.
 	* cp-tree.h (start_method): Update prototype.
@@ -3069,7 +3069,7 @@ Tue Oct  6 07:57:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	`fn' into the scope where it is used.  Don't access variable
 	`fn' when it is uninitialized, instead use `fns'.
 
-1998-10-04  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+1998-10-04  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* errfn.c (cp_thing): Print buf as a string not as a printf format
 	to avoid problems with the operator%.  Consequently, `%%' sequences
@@ -3395,7 +3395,7 @@ Mon Sep 21 01:53:05 1998  Felix Lee  <flee@cygnus.com>
 	DECL_ABSTRACT_ORIGIN of the new decl matches the TYPE_NAME of the
 	type.
 
-1998-09-09  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1998-09-09  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* class.c (get_enclosing_class): New function.
 	(is_base_of_enclosing_class): Likewise.
@@ -4696,7 +4696,7 @@ Mon Jul 13 17:21:01 1998  Nick Clifton  <nickc@cygnus.com>
 	* decl.c (xref_baseypes): Change caller.
 	* friend.c (make_friend_class): Likewise.
 
-1998-07-12  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+1998-07-12  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* typeck.c (comptypes, case TEMPLATE_TEMPLATE_PARM): Add parameter
 	comparison.
@@ -4717,7 +4717,7 @@ Mon Jul 13 17:21:01 1998  Nick Clifton  <nickc@cygnus.com>
 	current_class_type.  Don't display error message when COMPLAIN is
 	false.
 
-1998-07-12  Klaus Kaempf (kkaempf@progis.de)
+1998-07-12  Klaus Kaempf  (kkaempf@progis.de)
 
 	* repo.c (get_base_filename): Use file_name_nondirectory.
 	(open_repo_file): Likewise.
@@ -5818,7 +5818,7 @@ Fri May 15 00:46:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_decl): Use 'tem'.
 
-Thu May 14 16:30:47 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu May 14 16:30:47 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* exception.cc: Include eh-common.h.
 	(struct cp_eh_info): Add eh_info struct with NEW_EH_MODEL.
@@ -6259,7 +6259,7 @@ Fri May  8 00:43:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* call.c (build_user_type_conversion_1): Handle second_conv
 	properly for templates.
 
-Thu May  7 17:09:25 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu May  7 17:09:25 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* method.c (build_decl_overload_real): Set TREE_USED flag to
 	zero for build_type_variants nodes as well.
@@ -6304,7 +6304,7 @@ Tue May  5 23:54:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* init.c (expand_vec_init): The initialization of each array
 	element is a full-expression.
 
-Tue May  5 18:24:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Tue May  5 18:24:13 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* method.c (build_mangled_name): Add a call to build_type_variant
 	to get the right type.
@@ -6325,7 +6325,7 @@ Thu Apr 30 18:59:23 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (g++FAQ.info): Put -o option before input file.
 
-Thu Apr 30 13:05:33 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+Thu Apr 30 13:05:33 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* gxxint.texi: Add info for squangling codes K and B.
 
@@ -7502,7 +7502,7 @@ Thu Feb 19 10:36:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Thu Feb 19 10:15:55 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
-	* pt.c (coerce_template_parms) Add a new parameter, is_tmpl_parm,
+	* pt.c (coerce_template_parms): Add a new parameter, is_tmpl_parm,
 	all callers changed.  Rely on the new parameter instead of arg
 	being a TREE_LIST when determine whether we are working inside
 	template template parameter.  Clean up is_type test.
@@ -7653,7 +7653,7 @@ Tue Feb 10 20:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl.c (grokdeclarator): Use DECL_USE_TEMPLATE instead
 	when deciding to override DECL_ASSEMBLER_NAME.
 
-Tue Feb 10 15:30:55 EST 1998 Andrew MacLeod <amacleod@torpedo.to.cygnus.com>
+Tue Feb 10 15:30:55 1998  Andrew MacLeod  <amacleod@torpedo.to.cygnus.com>
 
 	* decl2.c (lang_f_options): Add -fsquangle to option processing list.
 	* cp-tree.h (flag_do_squangling): Add declaration.
@@ -7742,7 +7742,7 @@ Tue Feb  3 22:04:01 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 	* typeck.c (comptypes): Merge template argument comparison codes in
 	TEMPLATE_TEMPLATE_PARM and RECORD_TYPE.
 
-Tue Jan  6 01:42:44 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Tue Jan  6 01:42:44 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* lex.c (file_name_nondirectory): Also check for '/'.
 
@@ -7903,7 +7903,7 @@ Mon Feb  2 00:57:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xref.c (GNU_xref_decl): Initialize `cls' to 0.
 
-Sun Feb  1 12:45:34 1998 J"orn Rennecke <amylaar@cygnus.co.uk>
+Sun Feb  1 12:45:34 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* decl.c (init_decl_processing): Use set_sizetype.
 	* decl2.c (sizetype): Don't declare.
@@ -8057,7 +8057,7 @@ Sat Jan 24 12:13:54 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* error.c (dump_decl): Fix type default template args.
 	(dump_type): Hand TEMPLATE_DECL off to dump_decl.
 
-Fri Jan 23 18:34:37 1998  Mumit Khan <khan@xraylith.wisc.edu>
+Fri Jan 23 18:34:37 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* lex.c (DIR_SEPARATOR): Define to be '/' if not already defined.
 	(file_name_nondirectory): Use.
@@ -8089,7 +8089,7 @@ Wed Jan 21 10:29:57 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 	(grokdeclarator): Handle TEMPLATE_DECL.
 	* decl2.c (constructor_name_full): Handle TEMPLATE_TEMPLATE_PARM.
 	* error.c (dump_type): Add TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM.
-	(dump_type_prefix, dump_type_suffix) Handle TEMPLATE_TEMPLATE_PARM.
+	(dump_type_prefix, dump_type_suffix): Handle TEMPLATE_TEMPLATE_PARM.
 	(dump_decl): Handle unnamed template type parameters.
 	Handle template template parameters.
 	(dump_function_name): Handle template template parameters.
@@ -8341,7 +8341,7 @@ Wed Dec 17 17:08:52 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 	processing_template_decl is true, as pollutes current_binding_level
 	for base classes.
 
-Wed Dec 17 21:17:39 1997  Peter Schmid <schmid@ltoi.iap.physik.tu-darmstadt.de>
+Wed Dec 17 21:17:39 1997  Peter Schmid  <schmid@ltoi.iap.physik.tu-darmstadt.de>
 
 	* pt.c (maybe_fold_nontype_arg): Add prototype.
 
@@ -8686,7 +8686,7 @@ Wed Nov 19 10:39:27 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl.c (make_implicit_typename): New fn.
 	(lookup_name_real): Use it.  Use current_class_type as the context.
 
-Mon Nov 17 23:42:03 1997  Bruno Haible <haible@ilog.fr>
+Mon Nov 17 23:42:03 1997  Bruno Haible  <haible@ilog.fr>
 
 	* pt.c (do_poplevel): Don't prohibit jumps into this contour.
 
@@ -8771,7 +8771,7 @@ Mon Nov 10 20:25:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(maybe_fold_nontype_arg): Split out from tsubst_copy.
 	* tree.c (get_first_fn): Just return a TEMPLATE_ID_EXPR.
 
-Mon Nov 10 20:08:38 1997  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+Mon Nov 10 20:08:38 1997  Kriang Lerdsuwanakij  <lerdsuwa@scf-fs.usc.edu>
 
 	* pt.c (tsubst_copy): Handle explicit template arguments in
 	function calls.
@@ -8939,7 +8939,7 @@ Sun Oct 19 09:13:01 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (g++): Include prefix.o.
 
-Thu Oct 16 15:31:09 1997  Judy Goldberg <judygold@sanwafp.com>
+Thu Oct 16 15:31:09 1997  Judy Goldberg  <judygold@sanwafp.com>
 
 	* pt.c (determine_explicit_specialization): Initialize "dummy"
 	to keep Purify quiet.
@@ -8991,7 +8991,7 @@ Thu Oct  9 12:08:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* call.c (build_new_method_call): Use simple constructor_name for
 	error messages.
 
-Wed Oct  8 22:44:42 1997  Jeffrey A Law  (law@cygnus.com)
+Wed Oct  8 22:44:42 1997  Jeffrey A Law  <law@cygnus.com>
 
 	* method.c (build_underscore_int): Don't use ANSI specific
 	features.
@@ -9093,7 +9093,7 @@ Tue Sep 30 00:18:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	-traditional and -ansi now do not mess with
 	dollars_in_ident.
 
-Mon Sep 29 19:57:51 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+Mon Sep 29 19:57:51 1997  H.J. Lu  <hjl@gnu.ai.mit.edu>
 
 	* Makefile.in (parse.o, decl.o): Also depend on
 	$(srcdir)/../except.h $(srcdir)/../output.h.
@@ -9521,7 +9521,7 @@ Mon Sep  8 02:33:20 1997  Jody Goldberg  <jodyg@idt.net>
 	* decl.c (current_local_enum): Remove static.
 	* pt.c (tsubst_enum): Save and restore value of current_local_enum
 	in case template is expanded in enum decl.
-	(instantiate_class_template) : Use new tsubst_enum signature.
+	(instantiate_class_template): Use new tsubst_enum signature.
 	(tsubst_expr): Likewise.
 
 Mon Sep  8 01:21:43 1997  Mark Mitchell  <mmitchell@usa.net>
@@ -9738,7 +9738,7 @@ Tue Sep  2 10:27:08 1997  Richard Henderson  <rth@cygnus.com>
 
 	* typeck.c (build_ptrmemfunc1): Clean up ptr->int cast warnings.
 
-Mon Sep  1 13:19:04 1997  Eugene Mamchits <eugin@ips.ras.ru>
+Mon Sep  1 13:19:04 1997  Eugene Mamchits  <eugin@ips.ras.ru>
 
 	* call.c (add_builtin_candidate): Add missing TREE_TYPE.
 	(compare_ics): Likewise.
@@ -9760,7 +9760,7 @@ Thu Aug 28 09:45:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (null_ptr_cst_p): Remove support for (void*)0.
 
-Wed Aug 27 02:03:34 1997  Jeffrey A Law  (law@cygnus.com)
+Wed Aug 27 02:03:34 1997  Jeffrey A Law  <law@cygnus.com>
 
 	* typeck.c (expand_target_expr): Make definition match declaration.
 
@@ -9780,7 +9780,7 @@ Sat Aug 23 18:02:59 1997  Mark Mitchell  <mmitchell@usa.net>
 	* error.c (type_as_string): Put const/volatile on template type
 	parameters where appropriate.
 
-Sat Aug 23 17:47:22 1997  Jeffrey A Law  (law@cygnus.com)
+Sat Aug 23 17:47:22 1997  Jeffrey A Law  <law@cygnus.com>
 
 	* call.c (strictly_better): Make arguments unsigned ints.
 
@@ -9788,7 +9788,7 @@ Thu Aug 21 18:48:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (real_yylex): Refer to __complex instead of complex.
 
-Thu Aug 21 22:25:46 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Aug 21 22:25:46 1997  J"orn Rennecke  <amylaar@cygnus.co.uk>
 
 	* lex.c (real_yylex): Don't use getc directly.
 
@@ -9865,7 +9865,7 @@ Tue Aug 12 20:13:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl.c (duplicate_decls): Don't complain about exception
 	specification mismatch if flag_exceptions is off.
 
-Mon Aug 11 15:01:56  1997  Marc Lehmann <pcg@goof.com>
+Mon Aug 11 15:01:56 1997  Marc Lehmann  <pcg@goof.com>
 
 	* Make-lang.in (c++.distclean): Remove g++.c on make distclean.
 
@@ -11040,7 +11040,7 @@ Fri Dec 27 10:31:40 1996  Paul Eggert  <eggert@twinsun.com>
 	* Make-lang.in (g++spec.o): Don't use $< with an explicit target;
 	this isn't portable to some versions of `make' (e.g. Solaris 2.5.1).
 
-Tue Dec 24 10:24:03 1996  Jeffrey A Law  (law@cygnus.com)
+Tue Dec 24 10:24:03 1996  Jeffrey A Law  <law@cygnus.com>
 
 	* decl.c (grokvardecl): Avoid ANSI style initialization.
 
@@ -11403,7 +11403,7 @@ Thu Oct 31 17:08:49 1996  Jason Merrill  <jason@yorick.cygnus.com>
 	similar code in build_up_ref.
 	* cvt.c (build_up_reference): Drastically simplify.
 
-Mon Oct 28 12:45:05 1996  Jeffrey A Law  (law@cygnus.com)
+Mon Oct 28 12:45:05 1996  Jeffrey A Law  <law@cygnus.com>
 
 	* typeck.c (signed_or_unsigned_type): If the given type already
 	as the correct signedness, then just return it.
@@ -15136,7 +15136,7 @@ Thu Dec 14 14:16:26 1995  Mike Stump  <mrs@cygnus.com>
 	copy constructors well.  The compiler would do bitwise copying,
 	instead of ctor calling in some cases.
 
-Wed Dec 13 17:05:54 PST 1995  Paul Eggert  <eggert@twinsun.com>
+Wed Dec 13 17:05:54 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* g++.c (my_strerror): Return "cannot access" if errno is 0.
 	(pfatal_with_name, perror_exec): Don't assume that

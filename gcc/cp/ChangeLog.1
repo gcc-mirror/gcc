@@ -41,7 +41,7 @@ Wed Oct 11 12:20:56 1995  Mike Stump  <mrs@cygnus.com>
 	* search.c (envelope_add_decl): New routine.  Fix so that
 	methods are hidden in the same way that other members are.
 	(dfs_pushdecls): Cleanup and move functionality out of line,
-	into envelope_add_decl. 
+	into envelope_add_decl.
 
 Tue Oct 10 15:46:01 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -95,7 +95,7 @@ Tue Oct  3 14:09:46 1995  Mike Stump  <mrs@cygnus.com>
 	(expand_exception_blocks): Add a call to end_eh_unwinder.
 	(start_eh_unwinder, end_eh_unwinder): New routines to build machine
 	independent stack unwinders for function/method calls.
-	
+
 Mon Oct  2 17:20:42 1995  Mike Stump  <mrs@cygnus.com>
 
 	* tree.c (unsave_expr_now): Make sure we process the argument list
@@ -199,7 +199,7 @@ Tue Sep 12 17:43:07 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 Tue Sep 12 17:31:33 1995  Douglas Rupp  <drupp@cs.washington.edu>
 
-	* Make-lang.in (cc1plus) : Removed unnecessary $(exeext).
+	* Make-lang.in (cc1plus): Removed unnecessary $(exeext).
 
 Mon Sep 11 23:24:07 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -273,7 +273,7 @@ Wed Aug 30 15:24:38 1995  Stephen L. Favor  <sfavor@tigger.intecom.com>
 	* except.c (expand_builtin_throw): Moved gen_label_rtx calls beyond
 	the store_parm_decls call which does initialization in the emit_*
 	code concerning label numbering.
-	
+
 Thu Aug 31 09:01:07 1995  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_internal_throw): Let the frontend be responsible
@@ -287,7 +287,7 @@ Thu Aug 31 09:01:07 1995  Mike Stump  <mrs@cygnus.com>
 	(expand_end_catch_block): Likewise.
 	(expand_builtin_throw): Likewise.
 	(expand_throw): Likewise.
-	
+
 Tue Aug 29 15:04:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* cp-tree.h (DECL_REAL_CONTEXT): Give the real declaration context
@@ -395,7 +395,7 @@ Sun Aug 20 13:53:24 1995  Mike Stump  <mrs@cygnus.com>
 	EH region to handle it.
 	(build_vec_delete): Move lots of code to build_vec_delete_1, use
 	build_vec_delete_1 to do the grunt work.
-	
+
 Sat Aug 19 14:25:33 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	Handle decl attributes properly for function definitions without
@@ -572,7 +572,7 @@ Wed Aug  2 11:25:33 1995  Mike Stump  <mrs@cygnus.com>
 
 Tue Aug  1 14:20:16 1995  Mike Stump  <mrs@cygnus.com>
 
-	* except.c: Fix up comments, cleanup code and eliminate	exceptNode,
+	* except.c: Fix up comments, cleanup code and eliminate exceptNode,
 	exceptStack, exceptstack, push_except_stmts, pop_except_stmts,
 	new_except_stack, push_last_insn, pop_last_insn, insn_save_node and
 	InsnSave.  Also, numerous speed improvements, and correctness
@@ -1075,7 +1075,7 @@ Mon Jun  5 11:20:34 1995  Gerald Baumgartner  <gb@alexander.cs.purdue.edu>
 	call this function anymore from build_signature_method_call.
 
 	* cp-tree.h (SIGNATURE_VPTR_NAME): Deleted.  We use the right vptr
-	field in the object now instead of in the signature pointer/ref. 
+	field in the object now instead of in the signature pointer/ref.
 	(build_vptr_ref): Deleted extern declaration.
 	* sig.c (build_vptr_ref): Deleted.
 	(build_signature_pointer_or_reference_type): Deleted construction of
@@ -1217,7 +1217,7 @@ Mon May 22 17:38:48 1995  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Wed May 24 01:39:03 1995  Jason Merrill  <jason@deneb.cygnus.com>
 
-	* call.c (build_method_call): parms can be null, duh.
+	* call.c (build_method_call): Parms can be null, duh.
 
 Tue May 23 01:32:09 1995  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -1296,7 +1296,7 @@ Tue May 16 12:05:26 1995  Mike Stump  <mrs@cygnus.com>
 	namespaces.
 	* class.c (finish_struct): Likewise.
 	* cp-tree.h (NAMESPACE_LEVEL): Likewise.
-	* cvt.c (build_up_reference, convert_to_reference): Likewise. 
+	* cvt.c (build_up_reference, convert_to_reference): Likewise.
 	* decl.c (binding_level::namespace_p, suspend_binding_level): Likewise.
 	(resume_binding_level, toplevel_bindings_p): Likewise
 	(namespace_bindings_p, declare_namespace_level): Likewise.
@@ -1737,9 +1737,9 @@ Mon Apr 10 12:15:59 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 	whether or not to synthesize a method.
 
 	Undo these changes:
-	* class.c (finish_vtbls): build more vtables if flag_rtti is on.
-	* class.c (modify_all_direct_vtables): ditto.
-	* init.c (expand_direct_vtbls_init): expand more vtables if
+	* class.c (finish_vtbls): Build more vtables if flag_rtti is on.
+	* class.c (modify_all_direct_vtables): Likewise.
+	* init.c (expand_direct_vtbls_init): Expand more vtables if
 	flag_rtti is on.
 
 Sat Apr  8 17:45:41 1995  Mike Stump  <mrs@cygnus.com>
@@ -1934,12 +1934,12 @@ Wed Mar 29 16:04:25 1995  Mike Stump  <mrs@cygnus.com>
 	__throw_type_match and add decl for new rtti matching routine
 	__throw_type_match_rtti.
 	(build_eh_type): New routine to build a run time descriptor for the
-	expression given. 
+	expression given.
 	(expand_start_catch_block): Update to use new calling convention for
 	the matcher.
 	(expand_throw): Update to use build_eh_type.
 
-Mon Mar 27 07:14:33 1995  Warner Losh	<imp@village.org>
+Mon Mar 27 07:14:33 1995  Warner Losh  <imp@village.org>
 
 	* g++.c: Removed __NetBSD__ from conditional.
 	Declare strerror if HAVE_STRERROR is defined; otherwise
@@ -2047,7 +2047,7 @@ Wed Mar 22 13:33:45 1995  Jason Merrill  <jason@python.cygnus.com>
 
 Wed Mar 22 04:56:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-	* typeck.c (common_type): Handle ptms properly.  Also handle 
+	* typeck.c (common_type): Handle ptms properly.  Also handle
 	T* -> void*.
 	(build_binary_op_nodefault): New variable build_type controls what
 	type is given to the expression when it is created.  Set this to
@@ -2138,7 +2138,7 @@ Fri Mar 17 17:43:02 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 Fri Mar 17 14:40:45 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* decl.c (expand_static_init): Also use expand_aggr_init if the
-	initializer is a TREE_LIST.	
+	initializer is a TREE_LIST.
 	(grokdeclarator): Only pedwarn about extra qualification if -pedantic.
 
 	* pt.c (unify): Fix unification of return type.
@@ -2162,7 +2162,7 @@ Thu Mar 16 20:28:16 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 Thu Mar 16 19:21:14 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-	* pt.c (instantiate_template): Call assemble_external.	
+	* pt.c (instantiate_template): Call assemble_external.
 
 Thu Mar 16 18:07:54 1995  Brendan Kehoe  <brendan@phydeaux.cygnus.com>
 
@@ -2212,7 +2212,7 @@ Tue Mar 14 19:14:19 1995  Doug Evans  <dje@chestnut.cygnus.com>
 Wed Mar 15 13:00:00 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* decl.c (pushdecl): Check if the type of the VAR_DECL is an
-	error_mark_node before trying to read TYPE_LANG_SPECIFIC. 
+	error_mark_node before trying to read TYPE_LANG_SPECIFIC.
 
 Mon Mar 13 21:00:28 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
@@ -2225,7 +2225,7 @@ Mon Mar 13 08:01:02 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 	argument, and tack it onto the front of the COND_EXPR to make the
 	semantics come out right.  Grab the instance argument from
 	'*instance_ptrptr', rather than having it passed in separately.
-	
+
 	* various: Change various consed-up comparison operations to have
 	boolean type.  Remove the instance argument in calls to
 	get_member_function_from_ptrfunc.
@@ -3123,10 +3123,10 @@ Tue Jan 17 19:56:15 1995  Mike Stump  <mrs@cygnus.com>
 	* except.c (exception_section): Use the data section on the rs6000.
 	Change calling convention for named_section.
 
-Wed Jan 17 18:20:57 1994  Fergus Henderson <fjh@munta.cs.mu.oz.au>
+Wed Jan 17 18:20:57 1994  Fergus Henderson  <fjh@munta.cs.mu.oz.au>
 
-	* cp-tree.h : Make if (x=0) warn with wall
-	* parse.y : Make if (x=0) warn with wall
+	* cp-tree.h: Make if (x=0) warn with wall
+	* parse.y: Make if (x=0) warn with wall
 
 Tue Jan 17 14:12:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
@@ -3232,13 +3232,13 @@ Thu Jan 12 12:17:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 Thu Jan 12 17:15:21 1995  Michael Ben-Gershon  <mybg@cs.huji.ac.il>
 
-	* except.c (push_eh_entry): set LABEL_PRESERVE_P flag for
+	* except.c (push_eh_entry): Set LABEL_PRESERVE_P flag for
 	exception table labels.
 	(expand_start_all_catch): Likewise.
 	(expand_leftover_cleanups): Likewise.
 	(expand_end_catch_block): Likewise.
-	* except.c (make_first_label): new function.
-	(expand_start_all_catch): add a call to make_first_label() before
+	* except.c (make_first_label): New function.
+	(expand_start_all_catch): Add a call to make_first_label() before
 	using a label as a jump destination.
 	(expand_end_all_catch): Likewise.
 	(expand_leftover_cleanups): Likewise.
@@ -3527,7 +3527,7 @@ Thu Dec 15 16:32:12 1994  Mike Stump  <mrs@cygnus.com>
 
 Thu Dec 15 15:17:55 1994  Mike Stump  <mrs@cygnus.com>
 
-	* *.[chy] (expand_aggr_init) Add fourth argument to handle
+	* *.[chy] (expand_aggr_init): Add fourth argument to handle
 	distinction between = init and (init) style of initializations.
 	* *.[chy] (finish_decl): Add fifth argument to handle
 	distinction between = init and (init) style of initializations.
@@ -3631,7 +3631,7 @@ Tue Dec  6 15:43:20 1994  Mike Stump  <mrs@cygnus.com>
 
 Tue Dec  6 14:16:34 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-	* parse.y: : has lower precedence than =.
+	* parse.y: : Has lower precedence than =.
 
 Tue Dec  6 12:46:17 1994  Mike Stump  <mrs@cygnus.com>
 
@@ -3727,7 +3727,7 @@ Tue Nov 29 19:12:07 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 Tue Nov 29 11:28:59 1994  Mike Stump  <mrs@cygnus.com>
 
 	* parse.y (maybe_raises): Handle throw ().
-	* parse.y (ansi_raise_identifier): grok type-ids in exception
+	* parse.y (ansi_raise_identifier): Grok type-ids in exception
 	specifications.
 	* tree.c (build_exception_variant): Use list compare to check if
 	two exception specifications match.
@@ -3755,10 +3755,10 @@ Mon Nov 28 16:44:41 1994  Mike Stump  <mrs@cygnus.com>
 
 Thu Nov 17 20:11:24 1994  Doug Evans  <dje@cygnus.com>
 
-	* cp/Make-lang.in (CXX_INSTALL_NAME) Use program_transform_name.
-	(GXX_INSTALL_NAME) Likewise.
-	(CXX_CROSS_NAME) Use program_transform_cross_name.
-	(GXX_CROSS_NAME) Likewise.
+	* cp/Make-lang.in (CXX_INSTALL_NAME): Use program_transform_name.
+	(GXX_INSTALL_NAME): Likewise.
+	(CXX_CROSS_NAME): Use program_transform_cross_name.
+	(GXX_CROSS_NAME): Likewise.
 	(c++.install-man): Use program_transform_name on g++.1.
 	(c++.uninstall): Likewise.
 
@@ -3853,53 +3853,53 @@ Wed Nov  2 15:05:47 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 Mon Oct 31 14:50:48 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* gc.c (build_dynamic_cast): rewrite to make it work.
-	* class.c (finish_vtbls): build more vtables if flag_rtti is on.
-	* class.c (modify_all_direct_vtables): ditto.
-	* init.c (expand_direct_vtbls_init): expand more vtables if
+	* gc.c (build_dynamic_cast): Rewrite to make it work.
+	* class.c (finish_vtbls): Build more vtables if flag_rtti is on.
+	* class.c (modify_all_direct_vtables): Likewise.
+	* init.c (expand_direct_vtbls_init): Expand more vtables if
 	flag_rtti is on.
-	* decl.c (init_type_desc): add default return.
+	* decl.c (init_type_desc): Add default return.
 
 Tue Oct 25 17:13:09 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* tree.c (debug_binfo): get rid of the initial size entry of
+	* tree.c (debug_binfo): Get rid of the initial size entry of
 	vtable.
-	* cp-tree.h: change flag_dossier to flag rtti, define type
+	* cp-tree.h: Change flag_dossier to flag rtti, define type
 	descriptor type nodes.
-	* decl.c (init_type_desc): new function to initialize type
+	* decl.c (init_type_desc): New function to initialize type
 	descriptor type nodes.
-	* decl.c (record_builtin_type): change flag_dossier to flag_rtti.
-	* lex.c (init_lex): ditto.
-	* decl.c : change variable flag_dossier to flag_rtti.
-	* decl.c (duplicate_decls): get rid initial size entry of vtable.
-	* decl.c (hack_incomplete_structures): take out assert 164.
-	* search.c (get_abstract_virtuals_1): ditto.
-	* search.c (dfs_init_vbase_pointers): change CLASSTYPE_DOSSIER to
+	* decl.c (record_builtin_type): Change flag_dossier to flag_rtti.
+	* lex.c (init_lex): Likewise.
+	* decl.c: Change variable flag_dossier to flag_rtti.
+	* decl.c (duplicate_decls): Get rid initial size entry of vtable.
+	* decl.c (hack_incomplete_structures): Take out assert 164.
+	* search.c (get_abstract_virtuals_1): Likewise.
+	* search.c (dfs_init_vbase_pointers): Change CLASSTYPE_DOSSIER to
 	CLASSTYPE_RTTI.
-	* parse.y: ditto.
-	* class.c (prepare_fresh_vtable): for virtual bases, get right
+	* parse.y: Likewise.
+	* class.c (prepare_fresh_vtable): For virtual bases, get right
 	offset.
-	* class.c (add_virtual_function): change flag_dossier to
+	* class.c (add_virtual_function): Change flag_dossier to
 	flag_rtti.
-	* class.c (modify_one_vtable): modify the right rtti entry.
-	* class.c (override_one_vtable): get rid of size entry.
-	* class.c (finish_struct): change flag_dossier to flag_rtti, and
+	* class.c (modify_one_vtable): Modify the right rtti entry.
+	* class.c (override_one_vtable): Get rid of size entry.
+	* class.c (finish_struct): Change flag_dossier to flag_rtti, and
 	build extra vtables, build type descriptors for polymorphic
 	classes.
-	* gc.c (build_headof): make headof() works correctly with new
+	* gc.c (build_headof): Make headof() works correctly with new
 	rtti.
-	* gc.c (build_typeid): make this function work with new rtti.
-	* gc.c (get_typeid): make this function work with new rtti.
-	* gc.c (build_bltn_desc): new function for new rtti.
-	* gc.c (build_user_desc): ditto.
-	* gc.c (build_class_desc): ditto.
-	* gc.c (build_ptr_desc): ditto.
-	* gc.c (build_attr_desc): ditto.
-	* gc.c (build_func_desc): ditto.
-	* gc.c (build_ptmf_desc): ditto.
-	* gc.c (build_ptmd_desc): ditto.
-	* gc.c (build_t_desc): ditto.
-	* gc.c : comment out old build_t_desc, build_i_desc, build_m_desc.
+	* gc.c (build_typeid): Make this function work with new rtti.
+	* gc.c (get_typeid): Make this function work with new rtti.
+	* gc.c (build_bltn_desc): New function for new rtti.
+	* gc.c (build_user_desc): Likewise.
+	* gc.c (build_class_desc): Ditto.
+	* gc.c (build_ptr_desc): Ditto.
+	* gc.c (build_attr_desc): Ditto.
+	* gc.c (build_func_desc): Ditto.
+	* gc.c (build_ptmf_desc): Ditto.
+	* gc.c (build_ptmd_desc): Ditto.
+	* gc.c (build_t_desc): Ditto.
+	* gc.c: Comment out old build_t_desc, build_i_desc, build_m_desc.
 
 Tue Oct 25 13:37:41 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 
@@ -4153,7 +4153,7 @@ Sat Oct  8 14:59:43 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 	TREE_PUBLIC.
 	(pushdecl): Likewise.
 	(duplicate_decls): Likewise.  Deal with DECL_DECLARED_STATIC and
-	DECL_INTERFACE_KNOWN. 
+	DECL_INTERFACE_KNOWN.
 	(redeclaration_error_message): Fix checking for conflicting linkage.
 	(define_function): Set DECL_INTERFACE_KNOWN.
 	(grokfndecl): Function decls are PUBLIC until we are sure about
@@ -4245,11 +4245,11 @@ Sat Oct  1 15:18:49 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
 	push_c_function_context.
 	(pop_cp_function_context): Similarly.
 	(finish_function): Reverse order of poplevel and pop_nested_class so
-	that current_class_decl is restored properly.  
+	that current_class_decl is restored properly. 
 	(start_function): Likewise.
 	(finish_function): Add parameter 'nested'.  Don't call
 	permanent_allocation if (nested).
-	* various: Pass extra parameter to finish_function.	
+	* various: Pass extra parameter to finish_function.
 	* decl2.c (finish_file): Reorganize end-of-file inline handling,
 	synthesizing methods as necessary.
 	* lex.c (cons_up_default_function): Call mark_inline_for_output.
@@ -4356,7 +4356,7 @@ Mon Sep 19 00:51:39 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	(init_decl_processing): Push artificial declaration of wchar_t so
 	people don't have to declare it before they can use it.
 
-	* error.c (cp_line_of): return lineno in lieu of 0.
+	* error.c (cp_line_of): Return lineno in lieu of 0.
 
 	* typeck.c (convert_for_assignment): Handle conversion of pmfs to
 	int and bool.
@@ -4449,7 +4449,7 @@ Wed Sep  7 13:17:10 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon Sep  5 12:49:18 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
-	* call.c (build_method_call): if -Wsynth, warn when selecting
+	* call.c (build_method_call): If -Wsynth, warn when selecting
 	synthesized op= over user-supplied one cfront would select.
 	* decl2.c (lang_decode_option): Handle -Wsynth.
 
@@ -4478,7 +4478,7 @@ Wed Aug 31 14:29:22 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Tue Aug 30 13:50:18 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
-	* method.c (build_assign_ref): return *this;
+	* method.c (build_assign_ref): Return *this;
 	(build_assign_ref): Fix base assignment order.
 	(build_copy_constructor): Fix member init order.
 
@@ -4583,12 +4583,12 @@ Sun Aug 21 23:07:35 1994  Gerald Baumgartner  <gb@cs.purdue.edu>
 
 Fri Aug 19 14:04:47 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* method.c (build_overload_nested_name): in qualified name
+	* method.c (build_overload_nested_name): In qualified name
 	mangling, the template with value instantiation will have numeric
 	at end and may mixed with the name length of next nested level.
 	Add a '_' in between.
-	* method.c (build_overload_name): ditto.
-	* method.c (build_overload_identifier): ditto.
+	* method.c (build_overload_name): Ditto.
+	* method.c (build_overload_identifier): Ditto.
 
 Thu Aug 18 16:24:43 1994  Mike Stump  <mrs@cygnus.com>
 
@@ -4596,7 +4596,7 @@ Thu Aug 18 16:24:43 1994  Mike Stump  <mrs@cygnus.com>
 
 Thu Sep 29 16:15:36 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
 
-	* g++.c: Rework last change so it's done like collect.c (and 
+	* g++.c: Rework last change so it's done like collect.c (and
 	gcc.c).
 
 Wed Sep 14 10:17:27 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
@@ -4616,7 +4616,7 @@ Thu Aug 18 12:48:09 1994  Mike Stump  <mrs@cygnus.com>
 Thu Aug 11 11:32:42 1994  H.J. Lu  <hjl@nynexst.com>
 
 	* g++.c (main): Only decrement "added" and set "library" to
-	  NULL when "library" != NULL.
+	NULL when "library" != NULL.
 
 Sat Aug 13 00:14:52 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -5021,7 +5021,7 @@ Thu Jul  7 13:39:37 1994  Jason Merrill  <jason@deneb.cygnus.com>
 Wed Jul  6 20:25:48 1994  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (init_exception_processing): Setup interim_eh_hook to
-	call lang_interim_eh. 
+	call lang_interim_eh.
 	* except.c (do_unwind): Propagate throw object value across
 	stack unwinding.
 	* except.c (saved_throw_value): Used to hold the value of the object
@@ -5064,7 +5064,7 @@ Thu Jun 30 00:35:22 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	* decl2.c (lang_decode_option): Set warn_nonvdtor along with -Wall.
 	warn_nonvdtor defaults to off.
 
-	* class.c (instantiate_type): Use comptypes rather than relying on 
+	* class.c (instantiate_type): Use comptypes rather than relying on
 	types to satisfy ==.
 
 	* decl.c (start_function): Set DECL_DEFER_OUTPUT on all inlines that
@@ -5296,7 +5296,7 @@ Sat Jun 11 17:09:05 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	type to be emitted.
 
 	* decl.c (start_decl): Clear up uses of various types of templates
-	(say sorry for static data members, rather than "invalid template"). 
+	(say sorry for static data members, rather than "invalid template").
 	(expand_static_init): Fix initialization of static data members of
 	template classes.
 
@@ -6076,7 +6076,7 @@ Thu May  5 17:35:37 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Thu May  5 16:17:27 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* parse.y (already_scoped_stmt): move expand_end_binding() to
+	* parse.y (already_scoped_stmt): Move expand_end_binding() to
 	fix the unmatched LBB/LBE in stabs.
 
 Thu May  5 14:36:17 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -6231,7 +6231,7 @@ Mon May  2 15:02:11 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon May  2 12:51:31 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* search.c (dfs_debug_mark): unmark TYPE_DECL_SUPPRESS_DEBUG, not
+	* search.c (dfs_debug_mark): Unmark TYPE_DECL_SUPPRESS_DEBUG, not
 	DECL_IGNORED_P.
 
 Fri Apr 29 12:29:56 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -6296,10 +6296,10 @@ Thu Apr 28 02:12:08 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* decl.c (duplicate_decls): Check for ambiguous overloads here.
 	(push_overloaded_decl): Instead of here.
-	
+
 	* decl.c (pushdecl): Back out Chip's last change.
 
-	* decl.c (grok_op_properties): operators cannot be static members.
+	* decl.c (grok_op_properties): Operators cannot be static members.
 
 	* cp-tree.h (DECL_SYNTHESIZED): DECL_SOURCE_LINE == 0
 	(SET_DECL_SYNTHESIZED): DECL_SOURCE_LINE = 0
@@ -6313,7 +6313,7 @@ Thu Apr 28 02:12:08 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Thu Apr 28 15:19:46 1994  Mike Stump  <mrs@cygnus.com>
 
-	* cp-tree.h: disable use of backend EH.
+	* cp-tree.h: Disable use of backend EH.
 
 Wed Apr 27 21:01:24 1994  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -6330,7 +6330,7 @@ Wed Apr 27 21:01:24 1994  Doug Evans  <dje@canuck.cygnus.com>
 
 Wed Apr 27 19:10:04 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* decl.c (xref_tag): not to use strstr(), it's not available on
+	* decl.c (xref_tag): Not to use strstr(), it's not available on
 	all platforms.
 
 Wed Apr 27 18:10:12 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -6562,12 +6562,12 @@ Fri Apr 22 12:55:42 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	* cp/typeck.c (signed_or_unsigned_type): Check for any
 	INTEGRAL_TYPE_P not just INTEGER_TYPE.
 
-	Mon Dec  6 13:35:31 1993  Norbert Kiesel  (norbert@i3.INformatik.rwth-aachen.DE)
+	Mon Dec  6 13:35:31 1993  Norbert Kiesel  <norbert@i3.INformatik.rwth-aachen.DE>
 
 	* cp/decl.c (finish_enum): Start from 0 when determining precision
 	for short enums.
 
-	Fri Dec  3 17:07:58 1993  Ralph Campbell  (ralphc@pyramid.COM)
+	Fri Dec  3 17:07:58 1993  Ralph Campbell  <ralphc@pyramid.COM>
 
 	* cp/parse.y (unary_expr): Look at $1 for tree_code rather than
 	casting $$.
@@ -6590,9 +6590,9 @@ Fri Apr 22 12:55:42 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Fri Apr 22 12:48:10 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* class.c (finish_struct): use TYPE_DECL_SUPPRESS_DEBUG to flag
+	* class.c (finish_struct): Use TYPE_DECL_SUPPRESS_DEBUG to flag
 	types not to be dumped in stabs, like types in #pragma interface.
-	* decl.c (init_decl_processing): use TYPE_DECL_SUPPRESS_DEBUG to
+	* decl.c (init_decl_processing): Use TYPE_DECL_SUPPRESS_DEBUG to
 	mark unknown type.
 
 Fri Apr 22 03:27:26 1994  Doug Evans  <dje@cygnus.com>
@@ -6665,7 +6665,7 @@ Tue Apr 19 22:25:41 1994  Mike Stump  <mrs@cygnus.com>
 	* cp-tree.h (init_vtbl_ptrs, expand_direct_vtbls_init,
 	get_first_matching_virtual, get_matching_virtual,
 	expand_vbase_vtables_init,  expand_indirect_vtbls_init): Update.
-	* cvt.c (convert_pointer_to_real): cleanup error message.
+	* cvt.c (convert_pointer_to_real): Cleanup error message.
 	* decl.c (grokfndecl): General cleanup.
 	* decl.c (finish_function): Change init_vtbl_ptrs call to
 	expand_direct_vtbls_init.  Change expand_vbase_vtables_init call to
@@ -6746,7 +6746,7 @@ Sat Apr 16 01:18:21 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Fri Apr 15 16:36:33 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
-	Horrible kludge to prevent templates from being	instantiated by
+	Horrible kludge to prevent templates from being instantiated by
 	their base classes.
 	* parse.y (template_instantiate_once): Unset TYPE_BEING_DEFINED
 	before we get to left_curly.
@@ -6764,8 +6764,8 @@ Fri Apr 15 16:36:33 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Fri Apr 15 15:56:35 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* class.c (build_vtable_entry): revert Apr 4 change.
-	* decl2.c (mark_vtable_entries): replace pure virtual function
+	* class.c (build_vtable_entry): Revert Apr 4 change.
+	* decl2.c (mark_vtable_entries): Replace pure virtual function
 	decl with abort's.
 
 Fri Apr 15 13:49:33 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -6793,7 +6793,7 @@ Thu Apr 14 16:12:31 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	(pushdecl_nonclass_level): New function for pushing mangled decls of
 	nested types into the appropriate scope.
 	(xref_defn_tag): Use pushdecl_nonclass_level instead of
-	pushdecl_top_level. 
+	pushdecl_top_level.
 	(grokfndecl): Don't mess with IDENTIFIER_GLOBAL_VALUE for local
 	class methods.
 	* method.c (do_inline_function_hair): Likewise.
@@ -6842,7 +6842,7 @@ Wed Apr 13 00:22:35 1994  Jason Merrill  <jason@deneb.cygnus.com>
 Tue Apr 12 02:14:17 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 	Clean up overloading of the template name.
-	* class.c (pushclass): overload the template name whenever pushing
+	* class.c (pushclass): Overload the template name whenever pushing
 	into the scope of a template class, not just if it is
 	uninstantiated.
 	(popclass): Correspondingly.
@@ -6998,7 +6998,7 @@ Fri Apr  8 16:39:35 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	* parse.y: Simplify fn.def2 and component_decl.  Support 'enum
 	A::foo' syntax.  Catch invalid scopes better.
 
-	* parse.y, lex.c: lose TYPENAME_COLON.
+	* parse.y, lex.c: Lose TYPENAME_COLON.
 
 	* decl2.c (groktypefield): #if 0 out.
 
@@ -7160,7 +7160,7 @@ Wed Apr  6 10:53:56 1994  Mike Stump  <mrs@cygnus.com>
 
 Tue Apr  5 17:43:35 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* class.c (add_virtual_function): fix bug for pure virtual, so
+	* class.c (add_virtual_function): Fix bug for pure virtual, so
 	that DECL_VINDEX of the dummy decl copied won't be error.
 	(see also Apr 4 change)
 
@@ -7177,12 +7177,12 @@ Tue Apr  5 13:26:42 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon Apr  4 11:28:17 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* class.c (finish_struct): backup out the change below, put the
-	new change for the same purpose. The change below breaks code.
+	* class.c (finish_struct): Backup out the change below, put the
+	new change for the same purpose.  The change below breaks code.
 
-	* class.c (finish_struct): if pure virtual, copy node and make
+	* class.c (finish_struct): If pure virtual, copy node and make
 	RTL point to abort, then put in virtual table.
-	* decl2.c (grok_function_iit): reinstate Mar 31 change.
+	* decl2.c (grok_function_iit): Reinstate Mar 31 change.
 
 Sat Apr  2 03:12:58 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -7210,10 +7210,10 @@ Thu Mar 31 19:50:35 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Thu Mar 31 16:20:16 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* decl2.c (grok_func_init): do not abort as rtl for pur virtual
-	fucntions. They can be defined somewhere else.
+	* decl2.c (grok_func_init): Do not abort as rtl for pur virtual
+	fucntions.  They can be defined somewhere else.
 
-Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aachen.de)
+Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  <berg@pool.informatik.rwth-aachen.de>
 
 	* decl.c (init_decl_processing): Declare __builtin_return_address
 	and __builtin_frame_address for C++ as well.
@@ -7223,7 +7223,7 @@ Thu Mar 31 12:35:49 1994  Mike Stump  <mrs@cygnus.com>
 	* typeck2.c (store_init_value): Integral constant variables are
 	always constant, even when doing -fpic.
 
-Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aachen.de)
+Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  <berg@pool.informatik.rwth-aachen.de>
 
 	* decl.c (redeclaration_error_message): Pass the types to
 	comptypes.
@@ -7292,7 +7292,7 @@ Tue Mar 29 00:54:18 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* decl.c (pushdecl): Call push_overloaded_decl for functions and
 	function templates.
-	(duplicate_decls): functions and function templates are not
+	(duplicate_decls): Functions and function templates are not
 	duplicates, but don't complain about calling this function to
 	compare them.
 	(push_overloaded_decl): Don't deal with linkage.  Call
@@ -7395,7 +7395,7 @@ Thu Mar 24 23:18:19 1994  Jason Merrill  <jason@deneb.cygnus.com>
 Thu Mar 24 16:21:52 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_new, build_vec_delete): Use global new and delete
-	for arrays. 
+	for arrays.
 	* decl2.c (delete_sanity): Likewise.
 
 Thu Mar 24 02:10:46 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -7584,7 +7584,7 @@ Thu Mar 17 17:30:01 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	(see_typename): Don't accept type_quals any more.
 
 	* decl2.c (reparse_decl_as_expr): New function to deal with parse
-	nodes for code like `int (*a)++;'.	
+	nodes for code like `int (*a)++;'.
 	(reparse_decl_as_expr1): Recursive subroutine of the above.
 	(finish_decl_parsing): New function to deal with parse nodes for
 	code like `int (*a);'.  See the difference?
@@ -7604,10 +7604,10 @@ Thu Mar 17 12:01:10 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Wed Mar 16 17:42:52 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* parse.y (typespec): add SCOPE TYPENAME for global scoped 
+	* parse.y (typespec): Add SCOPE TYPENAME for global scoped
 	type. e.g. ::B x.
 
-	* decl.c (complete_array_type): fix a bug that in -pendantic
+	* decl.c (complete_array_type): Fix a bug that in -pendantic
 	mode even there's no initializer, it will continue to build
 	default index.
 
@@ -7632,7 +7632,7 @@ Tue Mar 15 20:02:35 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Tue Mar 15 19:22:05 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* decl.c (complete_array_type): complete TYPE_DOMAIN of the 
+	* decl.c (complete_array_type): Complete TYPE_DOMAIN of the
 	initializer also, because back-end requires it.
 
 Tue Mar 15 15:33:31 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -7647,13 +7647,13 @@ Mon Mar 14 16:24:36 1994  Mike Stump  <mrs@cygnus.com>
 
 Fri Mar 11 15:35:39 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* call.c (build_method_call): if basetype not equal to type
+	* call.c (build_method_call): If basetype not equal to type
 	of the instance, use the type of the instance in building
 	destructor.
 
 Thu Mar 10 17:07:10 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* parse.y (direct_notype_declarator): add push_nested_type for
+	* parse.y (direct_notype_declarator): Add push_nested_type for
 	'template_type SCOPED_NAME' rule.
 
 Tue Mar  8 00:19:58 1994  Jason Merrill  <jason@deneb.cygnus.com>
@@ -7803,7 +7803,7 @@ Wed Mar  2 14:12:23 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	the declspecs on class_obstack, so don't.  This way typed_typespecs
 	can reduce to typed_declspecs.
 
-Wed Mar  2 14:29:18 1994  Jason Merrill <jason@cygnus.com>
+Wed Mar  2 14:29:18 1994  Jason Merrill  <jason@cygnus.com>
 
 	* cvt.c (build_up_reference): If we aren't checking visibility,
 	also allow base->derived conversions.
@@ -7923,7 +7923,7 @@ Fri Feb 18 11:49:42 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	* init.c (is_aggr_typedef): Pretend template type parms are
 	aggregates.
 	* decl2.c (build_push_scope): If cname refers to a template type
-	parm, just grin and nod.	
+	parm, just grin and nod.
 
 	* call.c (build_overload_call_real): Pass subr argument to
 	type_unification.
@@ -8001,7 +8001,7 @@ Tue Feb 15 19:47:19 1994  Jason Merrill  <jason@deneb.cygnus.com>
 	tacking on a NOP_EXPR.  Support LOOKUP_SPECULATIVELY.
 
 	* call.c (build_method_call): Set TREE_HAS_CONSTRUCTOR on
-	constructor calls.	
+	constructor calls.
 
 Mon Feb 14 14:50:17 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -8017,7 +8017,7 @@ Mon Feb 14 11:31:31 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 	* cvt.c (build_up_reference):  Don't ever call expand_aggr_init.
 	It's ugly, and I don't think it's the right thing to do.
 
-	* cp-tree.h, class.c, decl.c, decl2.c, sp/search.c: 
+	* cp-tree.h, class.c, decl.c, decl2.c, sp/search.c:
 	Remove NEW_CLASS_SCOPING, assuming it is always 1.
 	* decl.c (pop_decl_level):  Removed; manually inlined.
 
@@ -8038,18 +8038,18 @@ Fri Feb 11 11:52:26 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* error.c (dump_type_prefix): Output basetype for METHOD_TYPEs.
 
-hu Jan 13 17:55:51 EST 1994 Gnanasekaran Swaminathan <gs4t@virginia.edu>
+Thu Jan 13 17:55:51 1994  Gnanasekaran Swaminathan  <gs4t@virginia.edu>
 
-	    * cp-tree.h (DESTRUCTOR_NAME_P): do not confuse AUTO_TEMP names
-	    with destructor names when either NO_DOLLAR_IN_LABEL or
-	    NO_DOT_IN_LABEL are not defined.
+	* cp-tree.h (DESTRUCTOR_NAME_P): Do not confuse AUTO_TEMP names
+	with destructor names when either NO_DOLLAR_IN_LABEL or
+	NO_DOT_IN_LABEL are not defined.
 
-	    Now `template <class T, T f(T&), const T*> class A {...}' works.
+	Now `template <class T, T f(T&), const T*> class A {...}' works.
 
-	    * pt.c (grok_template_type): substitute template parm types
-	    with actual types in complex type as well.
-	    (coerce_template_parms): update the grok_template_type ()
-	    function call.
+	* pt.c (grok_template_type): Substitute template parm types
+	with actual types in complex type as well.
+	(coerce_template_parms): Update the grok_template_type ()
+	function call.
 
 	* pt.c (tsubst): Traverse method list using DECL_CHAIN.
 
@@ -8191,7 +8191,7 @@ Mon Feb  7 14:42:03 1994  Jason Merrill  <jason@deneb.cygnus.com>
 Mon Feb  7 13:57:19 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* decl.c (pushtag, xref_tag), cp-tree.h:  Add extra parameter
-	 'globalize' to signify implicit declarations.
+	'globalize' to signify implicit declarations.
 	* decl.c (globalize_nested_type, maybe_globalize_type):  Removed.
 	* decl.c (set_identifier_type_value_with_scope):  New function.
 	* decl.c (set_identifier_local_value):  Simplify.
@@ -8317,7 +8317,7 @@ Thu Feb  3 11:36:46 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* init.c (xref_friend): Don't set up DECL_UNDEFINED_FRIENDS.
 	(embrace_waiting_friends): Don't use DECL_UNDEFINED_FRIENDS.
-	
+
 	* decl.c (grokdeclarator): Set TYPE_NESTED_NAME properly on nested
 	anonymous structs that get typedef'd.
 
@@ -8575,9 +8575,9 @@ Tue Jan 25 13:11:45 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon Jan 24 15:50:06 1994  Chip Salzenberg  <chip@fin.uucp>
 
-	    [ cp-* changes propagated from c-* changes in 940114 snapshot ]
-	    * cp-parse.y (maybe_attribute): Allow multiple __attribute__
-	    clauses on a declaration.
+	[ cp-* changes propagated from c-* changes in 940114 snapshot ]
+	* cp-parse.y (maybe_attribute): Allow multiple __attribute__
+	clauses on a declaration.
 
 Mon Jan 24 17:06:23 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -8586,17 +8586,17 @@ Mon Jan 24 17:06:23 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon Jan 24 13:50:13 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* decl.c (xref_tag): handle anonymous nested type.
-	* decl.c (globalize_nested_type): add no globalize bit check.
-	* spew.c (hack_more_ids) : templated nested decl not push top
+	* decl.c (xref_tag): Handle anonymous nested type.
+	* decl.c (globalize_nested_type): Add no globalize bit check.
+	* spew.c (hack_more_ids): Templated nested decl not push top
 	level.
 
-	* parse.y : get rid of 'goto do_components'. It is much better
+	* parse.y: Get rid of 'goto do_components'. It is much better
 	for debugging.
 
-	* decl.c (is_anon_name): get rid of the function and use the
+	* decl.c (is_anon_name): Get rid of the function and use the
 	macro ANON_AGGRNAME_P.
-	* pt.c : ditto.
+	* pt.c: Ditto.
 
 Fri Jan 21 14:06:02 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -8718,11 +8718,11 @@ Thu Jan 13 15:38:29 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Fri Jan 14 18:25:29 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* cp-decl (xref_tag): fix a bug in conflict type.
-	* cp-parse.y : add SCOPED_NAME for uninstantiated template nested
+	* cp-decl (xref_tag): Fix a bug in conflict type.
+	* cp-parse.y: Add SCOPED_NAME for uninstantiated template nested
 	type reference.
-	* cp-spew.c (yylex) : generated SCOPED_NAME token.
-	* cp-lex.c (yyprint): handle SCOPED_NAME.
+	* cp-spew.c (yylex): Generated SCOPED_NAME token.
+	* cp-lex.c (yyprint): Handle SCOPED_NAME.
 
 Fri Jan 14 17:00:29 1994  Mike Stump  <mrs@cygnus.com>
 
@@ -8731,7 +8731,7 @@ Fri Jan 14 17:00:29 1994  Mike Stump  <mrs@cygnus.com>
 
 Thu Jan 13 14:00:35 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* cp-decl2.c (grok_x_components): fix a bug that enum type does not
+	* cp-decl2.c (grok_x_components): Fix a bug that enum type does not
 	have type_flags.
 
 Thu Jan 13 11:39:34 1994  Mike Stump  <mrs@cygnus.com>
@@ -8759,10 +8759,10 @@ Thu Jan 13 11:39:34 1994  Mike Stump  <mrs@cygnus.com>
 
 Wed Jan 12 18:24:16 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* cp-decl.c (xref_tag): re-implement globalize nested type.
-	* cp-decl2.c (grok_x_components): ditto.
-	* cp-parse.y: ditto.
-	* cp-tree.h (lang_type): add no_globalize bit in type_flags.
+	* cp-decl.c (xref_tag): Re-implement globalize nested type.
+	* cp-decl2.c (grok_x_components): Ditto.
+	* cp-parse.y: Ditto.
+	* cp-tree.h (lang_type): Add no_globalize bit in type_flags.
 
 Wed Jan 12 14:08:09 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -8795,21 +8795,21 @@ Mon Jan 10 18:48:06 1994  Mike Stump  <mrs@cygnus.com>
 
 Mon Jan 10 17:48:37 1994  Kung Hsu  <kung@mexican.cygnus.com>
 
-	* cp-decl.c (finish_decl): fix incorrect popclass call.
+	* cp-decl.c (finish_decl): Fix incorrect popclass call.
 
-	* cp-decl.c (is_anon_name): new function, check whether the name
+	* cp-decl.c (is_anon_name): New function, check whether the name
 	is anonymous name generated by compiler.
-	* cp-decl.c (grokdeclarator): allow nested SCOPE_REF
-	* cp-spew.c (hack_more_ids): handle nested type in template.
-	* cp-parse.y : handle nested type reference in uninstantiated
+	* cp-decl.c (grokdeclarator): Allow nested SCOPE_REF
+	* cp-spew.c (hack_more_ids): Handle nested type in template.
+	* cp-parse.y: Handle nested type reference in uninstantiated
 	template.
-	* cp-call.c (build_method_call): handle uninstantiated template
+	* cp-call.c (build_method_call): Handle uninstantiated template
 	case.
-	* cp-pt.c (search_nested_type_in_tmpl): new function, search nested 
-	type in	template.
-	* cp-pt.c (lookup_nested_type_by_name): new function, lookup nested 
+	* cp-pt.c (search_nested_type_in_tmpl): New function, search nested
+	type in template.
+	* cp-pt.c (lookup_nested_type_by_name): New function, lookup nested
 	type by name.
-	* cp-pt.c (tsubst): handle nested type search by name.
+	* cp-pt.c (tsubst): Handle nested type search by name.
 
 Mon Jan 10 14:32:18 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
@@ -8824,8 +8824,8 @@ Fri Jan  7 19:03:26 1994  Jason Merrill  <jason@deneb.cygnus.com>
 
 Tue Jan  4 16:45:51 1994  Kung Hsu  <kung@cirdan.cygnus.com>
 
-	* cp-parse.y: change to handle whether to globalize nested class.
-	* cp-decl.c(xref_tag, maybe_globalize_type): Likewise.
+	* cp-parse.y: Change to handle whether to globalize nested class.
+	* cp-decl.c (xref_tag, maybe_globalize_type): Likewise.
 
 Mon Jan  3 22:22:32 1994  Gerald Baumgartner  <gb@cygnus.com>
 
@@ -8950,8 +8950,8 @@ Fri Dec 17 12:41:17 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 Thu Dec 16 16:48:05 1993  Kung Hsu  <kung@cirdan.cygnus.com>
 
-	* cp-lex.c (default_assign_ref_body): add check when TYPE_NESTED_
-	NAME(type) may not be exist. It's not a problem for old compiler.
+	* cp-lex.c (default_assign_ref_body): Add check when TYPE_NESTED_
+	NAME(type) may not be exist.  It's not a problem for old compiler.
 
 Thu Dec 16 14:46:06 1993  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
@@ -9023,9 +9023,9 @@ Tue Dec 14 11:37:23 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 Mon Dec 13 18:04:33 1993  Kung Hsu  <kung@cirdan.cygnus.com>
 
-	* cp-decl.c (xref_tag): fix regression created by changes made 
+	* cp-decl.c (xref_tag): Fix regression created by changes made
 	in Dec. 7 1993.
-	* cp-decl.c (xref_defn_tag): fix parallel nested class problem.
+	* cp-decl.c (xref_defn_tag): Fix parallel nested class problem.
 
 Fri Dec 10 12:40:25 1993  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
@@ -9046,7 +9046,7 @@ Thu Dec  9 18:27:22 1993  Mike Stump  <mrs@cygnus.com>
 	* cp-tree.h (delta_type_node): Likewise.
 	* cp-decl.c (init_decl_processing): Setup delta_type_node.
 	* cp-decl.c (init_decl_processing, build_ptrmemfunc_type): Use
-	delta_type_node instead of short_integer_type_node. 
+	delta_type_node instead of short_integer_type_node.
 	* cp-class.c (build_vtable_entry): Likewise.
 
 Thu Dec  9 16:19:05 1993  Brendan Kehoe  <brendan@lisa.cygnus.com>
@@ -9241,7 +9241,7 @@ Fri Dec  3 16:01:10 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 Fri Dec  3 15:32:34 1993  Kung Hsu  <kung@cirdan.cygnus.com>
 
-	* cp-init.c (expand_member_init): when initializer name is null,
+	* cp-init.c (expand_member_init): When initializer name is null,
 	don't try to build it now because emit_base_init will handle it.
 
 Fri Dec  3 12:28:59 1993  Jason Merrill  <jason@deneb.cygnus.com>
@@ -9259,7 +9259,7 @@ Fri Dec  3 10:32:08 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 Thu Dec  2 18:05:56 1993  Kung Hsu  <kung@cirdan.cygnus.com>
 
-	* cp-call.c (build_method_call): use binfo from instance if it's
+	* cp-call.c (build_method_call): Use binfo from instance if it's
 	different from binfo (basetype_path) passed from above.
 
 Wed Nov 17 19:14:29 1993  Chip Salzenberg  <chip@fin.uucp>
@@ -9416,7 +9416,7 @@ Fri Nov 12 15:30:27 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* cp-pt.c (tsubst): Deal with new overloading.
 
-	* cp-typeck.c (fntype_p): is the arg function type?
+	* cp-typeck.c (fntype_p): Is the arg function type?
 	(comp_target_parms): pedwarn on conversion from (anything) to (...).
 	(build_x_function_call): Deal with new overloading.
 
@@ -9440,7 +9440,7 @@ Mon Nov  8 13:50:49 1993  Jason Merrill  <jason@deneb.cygnus.com>
 	(is_overloaded_fn): Returns whether or not the passed tree is
 	a function or list of functions.
 
-	* cp-init.c (init_init_processing): use `get_first_fn' to find
+	* cp-init.c (init_init_processing): Use `get_first_fn' to find
 	the FUNCTION_DEFN for new and delete.
 
 	* cp-decl.c (push_overloaded_decl): Use new overloading strategy, cut
