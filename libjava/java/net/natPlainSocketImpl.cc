@@ -22,7 +22,8 @@ details.  */
 
 // These functions make the Win32 socket API look more POSIXy
 static inline int
-close(int s) {
+close(int s)
+{
   return closesocket(s);
 }
 
