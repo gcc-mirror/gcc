@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #undef CALL_USED_REGISTERS
 #undef MAYBE_VMS_FUNCTION_PROLOGUE
-#undef FUNCTION_PROLOGUE
 #undef STARTING_FRAME_OFFSET
 
 /* Predefine this in CPP because VMS limits the size of command options
@@ -69,25 +68,14 @@ Boston, MA 02111-1307, USA.  */
 
 #define CALL_USED_REGISTERS {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}
 
-/* We redefine this because there is a hidden variable on the stack
-   that VAXC$ESTABLISH uses.  We just need to add four bytes to whatever
-   gcc thinks that we need.  Similarly, we need to move all local variables
-   down 4 bytes in the stack.  */
+/* The run-time library routine VAXC$ESTABLISH (necessary when mixing
+   VMS exception handling and setjmp/longjmp in the same program) requires
+   that a hidden automatic variable at the top of the stack be reserved
+   for its use.  We accomplish this by simply adding 4 bytes to the local
+   stack for all functions, and making sure that normal local variables
+   are 4 bytes lower on the stack then they would otherwise have been.  */
 
 #define STARTING_FRAME_OFFSET -4
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno;						\
-  register int mask = 0;					\
-  register int newsize = SIZE + 4;				\
-  extern char call_used_regs[];					\
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && !call_used_regs[regno])	\
-       mask |= 1 << regno;					\
-  fprintf (FILE, "\t.word 0x%x\n", mask);			\
-  MAYBE_VMS_FUNCTION_PROLOGUE(FILE)				\
-  if (newsize >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -newsize);\
-  else fprintf (FILE, "\tsubl2 $%d,sp\n", newsize); }
 
 #define __MAIN_NAME " main("
 /*
