@@ -1614,9 +1614,8 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) system.h
 halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H) system.h
 
 # Normally this target is not used; but it is used if you
-# define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
-# from the GNU Emacs distribution.
-alloca.o:	$(srcdir)/../libiberty/alloca.c
+# define ALLOCA=alloca.o.
+alloca.o:	$(srcdir)/../libiberty/alloca.c $(GCONFIG_H)
 	rm -f alloca.c
 	$(LN_S) $(srcdir)/../libiberty/alloca.c alloca.c
 	$(CC) $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1895,9 +1894,9 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) system.h $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
 
-$(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c
+$(HOST_PREFIX_1)alloca.o: $(srcdir)/../libiberty/alloca.c $(HCONFIG_H)
 	rm -f $(HOST_PREFIX)alloca.c
-	$(LN_S) $(srcdir)/../libiberty/alloca.c $(HOST_PREFIX)alloca.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/alloca.c > $(HOST_PREFIX)alloca.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)alloca.c
 
 $(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(HCONFIG_H)

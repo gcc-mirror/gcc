@@ -1,3 +1,9 @@
+2001-05-19  Brad Lucier  <lucier@math.purdue.edu>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (alloca.o): Depend on $(GCONFIG_H).
+	($(HOST_PREFIX_1)alloca.o): Depend on $(HCONFIG_H).  Arrange for
+	hconfig.h to be included.
+
 Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 
 	* except.c (dw2_build_landing_pads): Use word_mode, not Pmode,
