@@ -630,6 +630,9 @@ tree_ssa_dominator_optimize (void)
 
   /* And finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
+
+  /* Free nonzero_vars.   */
+  BITMAP_XFREE (nonzero_vars);
 }
 
 static bool
