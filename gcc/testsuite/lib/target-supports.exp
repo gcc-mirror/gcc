@@ -276,7 +276,7 @@ proc check_profiling_available { test_what } {
     return $profiling_available_saved
 }
 
-# Return true if iconv is supported on the target. In particular IBM-1047.
+# Return true if iconv is supported on the target. In particular IBM1047.
 
 proc check_iconv_available { test_what } {
     global tool
