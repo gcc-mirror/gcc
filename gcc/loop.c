@@ -2368,7 +2368,7 @@ find_and_verify_loops (f)
 
 	    /* Make sure that the target of P is within the current loop.  */
 
-	    if (JUMP_LABEL (p)
+	    if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p)
 		&& uid_loop_num[INSN_UID (JUMP_LABEL (p))] != this_loop_num)
 	      outer_loop = this_loop_num;
 
