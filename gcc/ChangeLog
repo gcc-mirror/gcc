@@ -1,3 +1,12 @@
+1999-11-25  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (pend_type, output_pending_types_for_scope): Lose.
+	(splice_child_die): Handle moving a child DIE from the declaration
+	DIE of a class to its specification.
+	(gen_struct_or_union_type_die): Use 'complete' consistently.
+	(gen_decl_die): Generate the virtual context DIE first.
+	Use decl_ultimate_origin instead of DECL_ABSTRACT_ORIGIN.
+
 1999-11-24  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.md (call_value_multiple_interanal1): New.
