@@ -125,9 +125,10 @@ struct eh_status
      normal control flow out of a handler (instead of, say, returning to
      the caller of the current function or exiting the program).  */
   struct label_node *x_caught_return_label_stack;
-  /* A TREE_CHAINed list of handlers for regions that are not yet
-     closed. The TREE_VALUE of each entry contains the handler for the
-     corresponding entry on the ehstack.  */
+  /* A stack (TREE_LIST) of lists of handlers.  The TREE_VALUE of each
+     node is itself a TREE_CHAINed list of handlers for regions that
+     are not yet closed. The TREE_VALUE of each entry contains the
+     handler for the corresponding entry on the ehstack.  */
   union tree_node *x_protect_list;
   /* The EH context.  Nonzero if the function has already
      fetched a pointer to the EH context  for exception handling.  */
@@ -367,6 +368,11 @@ extern void expand_start_all_catch		PROTO((void));
 /* Called at the end of a block of catch statements.  */
 
 extern void expand_end_all_catch		PROTO((void));
+
+/* Begin a region that will contain entries created with
+   add_partial_entry.  */
+
+extern void begin_protect_partials              PROTO((void));
 
 #ifdef TREE_CODE
 /* Create a new exception region and add the handler for the region

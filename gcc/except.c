@@ -643,13 +643,9 @@ enqueue_eh_entry (queue, entry)
   node->chain = NULL;
 
   if (queue->head == NULL)
-    {
-      queue->head = node;
-    }
+    queue->head = node;
   else
-    {
-      queue->tail->chain = node;
-    }
+    queue->tail->chain = node;
   queue->tail = node;
 }
 
@@ -912,7 +908,10 @@ struct handler_info *
 get_first_handler (region)
      int region;
 {
-  return function_eh_regions[find_func_region (region)].handlers;
+  int r = find_func_region (region);
+  if (r == -1)
+    abort ();
+  return function_eh_regions[r].handlers;
 }
 
 /* Clean out the function_eh_region table and free all memory */
@@ -1097,7 +1096,15 @@ add_partial_entry (handler)
      with __terminate.  */
   handler = protect_with_terminate (handler);
 
-  protect_list = tree_cons (NULL_TREE, handler, protect_list);
+  /* For backwards compatibility, we allow callers to omit calls to
+     begin_protect_partials for the outermost region.  So, we must
+     explicitly do so here.  */
+  if (!protect_list)
+    begin_protect_partials ();
+
+  /* Add this entry to the front of the list.  */
+  TREE_VALUE (protect_list) 
+    = tree_cons (NULL_TREE, handler, TREE_VALUE (protect_list));
   pop_obstacks ();
 }
 
@@ -1675,7 +1682,7 @@ expand_leftover_cleanups ()
        entry;
        entry = dequeue_eh_entry (&ehqueue))
     {
-      /* A leftover try bock.  Shouldn't be one here.  */
+      /* A leftover try block.  Shouldn't be one here.  */
       if (entry->finalization == integer_zero_node)
 	abort ();
 
@@ -1788,6 +1795,13 @@ emit_cleanup_handler (entry)
 {
   rtx prev;
   rtx handler_insns;
+  struct eh_queue q;
+
+  /* Since the cleanup could itself contain try-catch blocks, we
+     squirrel away the current queue and replace it when we are done
+     with this function.  */
+  q = ehqueue;
+  ehqueue.head = ehqueue.tail = NULL;
 
   /* Put these handler instructions in a sequence.  */
   do_pending_stack_adjust ();
@@ -1828,6 +1842,10 @@ emit_cleanup_handler (entry)
   emit_insns (handler_insns);
   catch_clauses = get_insns ();
   end_sequence ();
+
+  /* Now we've left the handler.  */
+  expand_leftover_cleanups ();
+  ehqueue = q;
 }
 
 /* Generate RTL for the start of a group of catch clauses. 
@@ -1868,6 +1886,9 @@ expand_start_all_catch ()
      the handlers in this handler-seq.  */
   start_sequence ();
 
+  /* Throw away entries in the queue that we won't need anymore.  We
+     need entries for regions that have ended but to which there might
+     still be gotos pending.  */
   for (entry = dequeue_eh_entry (&ehqueue); 
        entry->finalization != integer_zero_node;
        entry = dequeue_eh_entry (&ehqueue))
@@ -1989,17 +2010,44 @@ expand_rethrow (label)
       emit_jump (label);
 }
 
+/* Begin a region that will contain entries created with
+   add_partial_entry.  */
+
+void
+begin_protect_partials ()
+{
+  /* Put the entry on the function obstack.  */
+  push_obstacks_nochange ();
+  resume_temporary_allocation ();
+
+  /* Push room for a new list.  */
+  protect_list = tree_cons (NULL_TREE, NULL_TREE, protect_list);
+
+  /* We're done with the function obstack now.  */
+  pop_obstacks ();
+}
+
 /* End all the pending exception regions on protect_list. The handlers
    will be emitted when expand_leftover_cleanups is invoked.  */
 
 void
 end_protect_partials ()
 {
-  while (protect_list)
-    {
-      expand_eh_region_end (TREE_VALUE (protect_list));
-      protect_list = TREE_CHAIN (protect_list);
-    }
+  tree t;
+  
+  /* For backwards compatibility, we allow callers to omit the call to
+     begin_protect_partials for the outermost region.  So,
+     PROTECT_LIST may be NULL.  */
+  if (!protect_list)
+    return;
+
+  /* End all the exception regions.  */
+  for (t = TREE_VALUE (protect_list); t; t = TREE_CHAIN (t))
+    expand_eh_region_end (TREE_VALUE (t));
+
+  /* Pop the topmost entry.  */
+  protect_list = TREE_CHAIN (protect_list);
+  
 }
 
 /* Arrange for __terminate to be called if there is an unhandled throw
@@ -2528,20 +2576,7 @@ void
 init_eh_for_function ()
 {
   current_function->eh
-    = (struct eh_status *) xmalloc (sizeof (struct eh_status));
-
-  ehstack.top = 0;
-  catchstack.top = 0;
-  ehqueue.head = ehqueue.tail = 0;
-  catch_clauses = NULL_RTX;
-  false_label_stack = 0;
-  caught_return_label_stack = 0;
-  protect_list = NULL_TREE;
-  current_function_ehc = NULL_RTX;
-  eh_return_context = NULL_RTX;
-  eh_return_stack_adjust = NULL_RTX;
-  eh_return_handler = NULL_RTX;
-  eh_return_stub_label = NULL_RTX;
+    = (struct eh_status *) xcalloc (1, sizeof (struct eh_status));
 }
 
 void
