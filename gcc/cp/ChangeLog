@@ -1,5 +1,10 @@
 2004-06-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* call.c (build_over_call), typeck.c (build_function_call): Call
+	check_function_arguments instead of check_function_format.
+
+2004-06-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* call.c (build_over_call), typeck.c (build_function_call): Update
 	calls to check_function_format.
 
