@@ -1,3 +1,14 @@
+1999-03-26 Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Makefile.in (xcpp, cppspec.o): New targets.
+	(CPP_INSTALL_NAME): New macro.
+	(install-cpp): Install xcpp.  Use CPP_INSTALL_NAME.
+	(all.build, start.encap): Build xcpp.
+
+	* cppspec.c: New file, implements argument filtering for a
+	user-visible C preprocessor.
+	* cpp.sh: Removed.
+
 Fri Mar 26 20:41:46 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (stmp-fixinc): Use tooldir instead of gcc_tooldir.
