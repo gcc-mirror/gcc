@@ -591,6 +591,7 @@ objc_finish_file (void)
 #ifdef OBJCPLUS
   /* We need to instantiate templates _before_ we emit ObjC metadata;
      if we do not, some metadata (such as selectors) may go missing.  */
+  at_eof = 1;
   instantiate_pending_templates (0);
 #endif
 
