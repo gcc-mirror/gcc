@@ -36,6 +36,11 @@ set TORTURE_OPTIONS [list { } { -DWIDE } ]
 set torture_with_loops [list { } { -DWIDE } ]
 set torture_without_loops [list { } { -DWIDE } ]
 
+# Need to copy the format.h header.
+if [is_remote host] {
+    remote_download host $srcdir/$subdir/format.h
+}
+
 load_lib gcc-dg.exp
 
 dg-init

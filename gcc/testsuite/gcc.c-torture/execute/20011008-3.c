@@ -81,18 +81,24 @@ __db_txnlist_lsnadd(int val, DB_TXNLIST *elp, DB_LSN *lsnp, u_int32_t flags)
    return val;
 }
 
+#ifndef STACK_SIZE
+#define	VLEN	1235
+#else
+#define VLEN (STACK_SIZE/10)
+#endif
+
 int main (void)
 {
   DB_TXNLIST el;
-  DB_LSN lsn, lsn_a[1235];
+  DB_LSN lsn, lsn_a[VLEN];
   
-  el.u.l.ntxns = 1234;
+  el.u.l.ntxns = VLEN-1;
   el.u.l.lsn_array = lsn_a;
   
   if (__db_txnlist_lsnadd (0, &el, &lsn, 0) != 1)
     abort ();
   
-  if (__db_txnlist_lsnadd (0, &el, &lsn, 1) != 1234)
+  if (__db_txnlist_lsnadd (0, &el, &lsn, 1) != VLEN-1)
     abort ();
   
   exit (0);
