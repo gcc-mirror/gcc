@@ -7640,10 +7640,23 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
 {
   rtx seq;
   rtx result;
+  rtx last;
+  rtx set;
+  rtx exp;
+  enum machine_mode mode = GET_MODE (reg);
 
   /* Prevent unexpected sharing of these rtx.  */
   a = copy_rtx (a);
   b = copy_rtx (b);
+
+  /* We may be faced to (plus (symbol_ref) (const_int)).  We want to simplify
+     this to CONST rtx.  */
+  exp = simplify_rtx (a);
+  if (exp)
+    a = exp;
+  exp = simplify_rtx (b);
+  if (exp)
+    b = exp;
 
   /* Increase the lifetime of any invariants moved further in code.  */
   update_reg_last_use (a, insert_before);
@@ -7657,7 +7670,7 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
   seq = gen_sequence ();
   end_sequence ();
 
-  emit_insn_before (seq, insert_before);
+  last = emit_insn_before (seq, insert_before);
 
   /* It is entirely possible that the expansion created lots of new 
      registers.  Iterate over the sequence we just created and 
@@ -7668,14 +7681,47 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
       int i;
       for (i = 0; i < XVECLEN (seq, 0); ++i)
 	{
-	  rtx set = single_set (XVECEXP (seq, 0, i));
+	  set = single_set (XVECEXP (seq, 0, i));
 	  if (set && GET_CODE (SET_DEST (set)) == REG)
 	    record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
 	}
+      last = XVECEXP (seq, 0, i - 1);
     }
-  else if (GET_CODE (seq) == SET
-	   && GET_CODE (SET_DEST (seq)) == REG)
-    record_base_value (REGNO (SET_DEST (seq)), SET_SRC (seq), 0);
+  else
+    {
+      set = single_set (last);
+      if (set && GET_CODE (SET_DEST (set)) == REG)
+        record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
+    }
+  if (!last)
+    return;
+  /* Sequence really ought to end by set storing final value to the register.
+    
+     Attach note indicating expression we've just calculated to it.  This is
+     important for second run of loop optimizer to understand strength reduced
+     givs from the first run.  */
+  if (GET_CODE (last) != INSN)
+    abort();
+  set = single_set (last);
+  if (!set)
+    return;
+  if (SET_DEST (set) != reg)
+    abort();
+
+  /* In case we start to emit some usefull notes to these insns, get abort
+     here, since we need to decide what information is more important.  */
+  if (find_reg_note (last, REG_EQUIV, NULL_RTX)
+      || find_reg_note (last, REG_EQUAL, NULL_RTX))
+    abort();
+
+  /* Expression we've just caluclated.  */
+  exp = simplify_gen_binary (PLUS, mode,
+			     simplify_gen_binary (MULT, mode, b, m),
+			     a);
+  REG_NOTES (last)
+	= gen_rtx_EXPR_LIST (REG_EQUAL,
+	    		     exp,
+	    		     REG_NOTES (last));
 }
 
 /* Test whether A * B can be computed without
