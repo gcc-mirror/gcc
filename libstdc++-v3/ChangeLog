@@ -1,3 +1,11 @@
+2003-12-20  Carlo Wood  <carlo@alinoe.com>
+
+	* bits/demangle.h
+	namespace __gnu_cxx::demangler
+	(session<Allocator>::decode_encoding): Put the postfix
+	of the return type of (member) functions after the function
+	instead of after the return type.
+
 2003-12-19  Jerry Quinn  <jlquinn@optonline.net>
 
         * include/bits/locale_facet.h
