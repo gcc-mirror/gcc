@@ -1,3 +1,8 @@
+2004-07-13  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Swap
+	arguments for COND_EXPR in big-endian adjustment code.
+
 2004-07-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-64.h (ARG_POINTER_REGNUM, STATIC_CHAIN_REGNUM): Delete.

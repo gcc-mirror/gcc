@@ -2623,7 +2623,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
     {
       t = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
       t = fold (build (GE_EXPR, boolean_type_node, type_size, t));
-      t = fold (build (COND_EXPR, sizetype, t, type_size, va_size));
+      t = fold (build (COND_EXPR, sizetype, t, va_size, type_size));
       size = t;
     }
   else
