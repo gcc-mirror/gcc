@@ -128,7 +128,7 @@ javao_files = $(java_source_files:.java=.lo) \
 x_javao_files = $(x_java_source_files:.java=.lo)
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc name-finder.cc verify.cc \
+	resolve.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	win32-threads.cc posix.cc win32.cc \
@@ -1527,6 +1527,7 @@ java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/VMClassLoader.java \
 java/lang/VMSecurityManager.java \
+java/lang/VMThrowable.java \
 java/lang/Void.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -1687,6 +1688,7 @@ gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
+gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -2204,6 +2206,7 @@ gnu/gcj/io/shs.cc \
 gnu/gcj/protocol/core/natCoreInputStream.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
+gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 java/io/natFile.cc \
@@ -2223,7 +2226,7 @@ java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
-java/lang/natThrowable.cc \
+java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \

@@ -46,11 +46,6 @@ import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date October 30, 1998 
- */
-
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status: Sufficient for compiled code, but methods applicable to
@@ -116,7 +111,7 @@ import java.io.OutputStream;
  * @author Tom Tromey
  * @author Eric Blake <ebb9@email.byu.edu>
  * @since 1.0
- * @status still missing 1.4 functionality
+ * @status updated to 1.4
  */
 public class Throwable implements Serializable
 {
@@ -130,7 +125,7 @@ public class Throwable implements Serializable
    *
    * @serial specific details about the exception, may be null
    */
-  private String detailMessage;
+  private final String detailMessage;
 
   /**
    * The cause of the throwable, including null for an unknown or non-chained
@@ -374,7 +369,7 @@ public class Throwable implements Serializable
    */
   public void printStackTrace(PrintStream s)
   {
-    printStackTrace(new PrintWriter(s));
+    s.print(stackTraceString());
   }
 
   /**
@@ -409,71 +404,87 @@ public class Throwable implements Serializable
    */
   public void printStackTrace (PrintWriter pw)
   {
-    // First line
-    pw.println(toString());
+    pw.print(stackTraceString());
+  }
 
-    // The stacktrace
+  private static final String nl = System.getProperty("line.separator");
+  // Create whole stack trace in a stringbuffer so we don't have to print
+  // it line by line. This prevents printing multiple stack traces from
+  // different threads to get mixed up when written to the same PrintWriter.
+  private String stackTraceString()
+  {
+    StringBuffer sb = new StringBuffer();
+
+    // Main stacktrace
     StackTraceElement[] stack = getStackTrace();
-    if (stack == null || stack.length == 0)
-      {
-	pw.println("   <<No stacktrace available>>");
-	return;
-      }
-    else
-      {
-	for (int i = 0; i < stack.length; i++)
-	  pw.println("   at " + stack[i]);
-      }
+    stackTraceStringBuffer(sb, this.toString(), stack, 0);
 
     // The cause(s)
     Throwable cause = getCause();
     while (cause != null)
       {
-        // Cause first line
-        pw.println("Caused by: " + cause);
+	// Cause start first line
+        sb.append("Caused by: ");
 
         // Cause stacktrace
         StackTraceElement[] parentStack = stack;
         stack = cause.getStackTrace();
-	if (stack == null || stack.length == 0)
-	  {
-	    pw.println("   <<No stacktrace available>>");
-	  }
-	else if (parentStack == null || parentStack.length == 0)
-	  {
-	    for (int i = 0; i < stack.length; i++)
-	      pw.println("   at " + stack[i]);
-	  }
+	if (parentStack == null || parentStack.length == 0)
+	  stackTraceStringBuffer(sb, cause.toString(), stack, 0);
 	else
 	  {
-	    boolean equal = false; // Is rest of stack equal to parent frame?
-	    for (int i = 0; i < stack.length && ! equal; i++)
+	    int equal = 0; // Count how many of the last stack frames are equal
+	    int frame = stack.length-1;
+	    int parentFrame = parentStack.length-1;
+	    while (frame > 0 && parentFrame > 0)
 	      {
-		// Check if we already printed the rest of the stack
-		// since it was the tail of the parent stack
-		int remaining = stack.length - i;
-		int element = i;
-		int parentElement = parentStack.length - remaining;
-		equal = parentElement >= 0
-		      && parentElement < parentStack.length; // be optimistic
-		while (equal && element < stack.length)
+		if (stack[frame].equals(parentStack[parentFrame]))
 		  {
-		    if (stack[element].equals(parentStack[parentElement]))
-		      {
-			element++;
-			parentElement++;
-		      }
-		    else
-		      equal = false;
+		    equal++;
+		    frame--;
+		    parentFrame--;
 		  }
-		// Print stacktrace element or indicate the rest is equal 
-		if (! equal)
-		  pw.println("   at " + stack[i]);
 		else
-		  pw.println("   ..." + remaining + " more");
+		  break;
 	      }
+	    stackTraceStringBuffer(sb, cause.toString(), stack, equal);
 	  }
         cause = cause.getCause();
+      }
+
+    return sb.toString();
+  }
+
+  // Adds to the given StringBuffer a line containing the name and
+  // all stacktrace elements minus the last equal ones.
+  private static void stackTraceStringBuffer(StringBuffer sb, String name,
+					StackTraceElement[] stack, int equal)
+  {
+    // (finish) first line
+    sb.append(name);
+    sb.append(nl);
+
+    // The stacktrace
+    if (stack == null || stack.length == 0)
+      {
+	sb.append("   <<No stacktrace available>>");
+	sb.append(nl);
+      }
+    else
+      {
+	for (int i = 0; i < stack.length-equal; i++)
+	  {
+	    sb.append("   at ");
+	    sb.append(stack[i] == null ? "<<Unknown>>" : stack[i].toString());
+	    sb.append(nl);
+	  }
+	if (equal > 0)
+	  {
+	    sb.append("   ...");
+	    sb.append(equal);
+	    sb.append(" more");
+	    sb.append(nl);
+	  }
       }
   }
 
@@ -483,7 +494,13 @@ public class Throwable implements Serializable
    * @return this same throwable
    * @see #printStackTrace()
    */
-  public native Throwable fillInStackTrace();
+  public Throwable fillInStackTrace()
+  {
+    vmState = VMThrowable.fillInStackTrace(this);
+    stackTrace = null; // Should be regenerated when used.
+
+    return this;
+  }
 
   /**
    * Provides access to the information printed in {@link #printStackTrace()}.
@@ -499,7 +516,13 @@ public class Throwable implements Serializable
   public StackTraceElement[] getStackTrace()
   {
     if (stackTrace == null)
-      stackTrace = getStackTrace0();
+      if (vmState == null)
+	stackTrace = new StackTraceElement[0];
+      else 
+	{
+	  stackTrace = vmState.getStackTrace(this);
+	  vmState = null; // No longer needed
+	}
 
     return stackTrace;
   }
@@ -508,6 +531,10 @@ public class Throwable implements Serializable
    * Change the stack trace manually. This method is designed for remote
    * procedure calls, which intend to alter the stack trace before or after
    * serialization according to the context of the remote call.
+   * <p>
+   * The contents of the given stacktrace is copied so changes to the
+   * original * array do not change the stack trace elements of this
+   * throwable.
    *
    * @param stackTrace the new trace to use
    * @throws NullPointerException if stackTrace is null or has null elements
@@ -515,15 +542,22 @@ public class Throwable implements Serializable
    */
   public void setStackTrace(StackTraceElement[] stackTrace)
   {
-    for (int i = stackTrace.length; --i >= 0; )
+    int i = stackTrace.length;
+    StackTraceElement[] st = new StackTraceElement[i];
+
+    while (--i >= 0)
       if (stackTrace[i] == null)
-        throw new NullPointerException();
-    this.stackTrace = stackTrace;
+	throw new NullPointerException();
+      else
+	st[i] = stackTrace[i];
+
+    this.stackTrace = st;
   }
 
-  private native final StackTraceElement[] getStackTrace0 ();
-
-  // Setting this flag to false prevents fillInStackTrace() from running.
-  static boolean trace_enabled = true;
-  private transient byte stackTraceBytes[];
+  /**
+   * VM state when fillInStackTrace was called.
+   * Used by getStackTrace() to get an array of StackTraceElements.
+   * Cleared when no longer needed.
+   */
+  private transient VMThrowable vmState;
 }

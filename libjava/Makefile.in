@@ -195,7 +195,7 @@ javao_files = $(java_source_files:.java=.lo) \
 x_javao_files = $(x_java_source_files:.java=.lo)
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc name-finder.cc verify.cc \
+	resolve.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files)
 
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
@@ -1294,6 +1294,7 @@ java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/VMClassLoader.java \
 java/lang/VMSecurityManager.java \
+java/lang/VMThrowable.java \
 java/lang/Void.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -1449,6 +1450,7 @@ gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
+gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -1965,6 +1967,7 @@ gnu/gcj/io/shs.cc \
 gnu/gcj/protocol/core/natCoreInputStream.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
+gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 java/io/natFile.cc \
@@ -1984,7 +1987,7 @@ java/lang/natString.cc \
 java/lang/natStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
-java/lang/natThrowable.cc \
+java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
@@ -2123,7 +2126,7 @@ X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
-defineclass.lo interpret.lo name-finder.lo verify.lo gnu/gcj/natCore.lo \
+defineclass.lo interpret.lo verify.lo gnu/gcj/natCore.lo \
 gnu/gcj/convert/JIS0208_to_Unicode.lo \
 gnu/gcj/convert/JIS0212_to_Unicode.lo gnu/gcj/convert/Unicode_to_JIS.lo \
 gnu/gcj/convert/natIconv.lo gnu/gcj/convert/natInput_EUCJIS.lo \
@@ -2131,7 +2134,7 @@ gnu/gcj/convert/natInput_SJIS.lo gnu/gcj/convert/natOutput_EUCJIS.lo \
 gnu/gcj/convert/natOutput_SJIS.lo gnu/gcj/io/natSimpleSHSStream.lo \
 gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
-gnu/gcj/runtime/natSharedLibLoader.lo \
+gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStringBuffer.lo java/io/natFile.lo \
 java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
 java/io/natObjectOutputStream.lo java/lang/natCharacter.lo \
@@ -2140,7 +2143,7 @@ java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
 java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
 java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
-java/lang/natThread.lo java/lang/natThrowable.lo \
+java/lang/natThread.lo java/lang/natVMThrowable.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
 java/lang/reflect/natMethod.lo java/net/natInetAddress.lo \
@@ -2246,11 +2249,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/runtime/FileDeleter.P \
 .deps/gnu/gcj/runtime/FinalizerThread.P \
 .deps/gnu/gcj/runtime/FirstThread.P .deps/gnu/gcj/runtime/JNIWeakRef.P \
+.deps/gnu/gcj/runtime/NameFinder.P \
 .deps/gnu/gcj/runtime/SharedLibLoader.P \
 .deps/gnu/gcj/runtime/StringBuffer.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
 .deps/gnu/gcj/runtime/natFinalizerThread.P \
 .deps/gnu/gcj/runtime/natFirstThread.P \
+.deps/gnu/gcj/runtime/natNameFinder.P \
 .deps/gnu/gcj/runtime/natSharedLibLoader.P \
 .deps/gnu/gcj/runtime/natStringBuffer.P .deps/gnu/gcj/xlib/Clip.P \
 .deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
@@ -2813,8 +2818,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/UnsupportedClassVersionError.P \
 .deps/java/lang/UnsupportedOperationException.P \
 .deps/java/lang/VMClassLoader.P .deps/java/lang/VMSecurityManager.P \
-.deps/java/lang/VerifyError.P .deps/java/lang/VirtualMachineError.P \
-.deps/java/lang/Void.P .deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
+.deps/java/lang/VMThrowable.P .deps/java/lang/VerifyError.P \
+.deps/java/lang/VirtualMachineError.P .deps/java/lang/Void.P \
+.deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
 .deps/java/lang/e_asin.P .deps/java/lang/e_atan2.P \
 .deps/java/lang/e_exp.P .deps/java/lang/e_fmod.P \
 .deps/java/lang/e_log.P .deps/java/lang/e_pow.P \
@@ -2828,7 +2834,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/natMath.P .deps/java/lang/natObject.P \
 .deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
 .deps/java/lang/natStringBuffer.P .deps/java/lang/natSystem.P \
-.deps/java/lang/natThread.P .deps/java/lang/natThrowable.P \
+.deps/java/lang/natThread.P .deps/java/lang/natVMThrowable.P \
 .deps/java/lang/ref/PhantomReference.P .deps/java/lang/ref/Reference.P \
 .deps/java/lang/ref/ReferenceQueue.P \
 .deps/java/lang/ref/SoftReference.P .deps/java/lang/ref/WeakReference.P \
@@ -3468,17 +3474,17 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/transaction/UserTransaction.P \
 .deps/javax/transaction/xa/XAException.P \
 .deps/javax/transaction/xa/XAResource.P \
-.deps/javax/transaction/xa/Xid.P .deps/jni.P .deps/name-finder.P \
-.deps/no-threads.P .deps/nogc.P .deps/org/w3c/dom/Attr.P \
-.deps/org/w3c/dom/CDATASection.P .deps/org/w3c/dom/CharacterData.P \
-.deps/org/w3c/dom/Comment.P .deps/org/w3c/dom/DOMException.P \
-.deps/org/w3c/dom/DOMImplementation.P .deps/org/w3c/dom/Document.P \
-.deps/org/w3c/dom/DocumentFragment.P .deps/org/w3c/dom/DocumentType.P \
-.deps/org/w3c/dom/Element.P .deps/org/w3c/dom/Entity.P \
-.deps/org/w3c/dom/EntityReference.P .deps/org/w3c/dom/NamedNodeMap.P \
-.deps/org/w3c/dom/Node.P .deps/org/w3c/dom/NodeList.P \
-.deps/org/w3c/dom/Notation.P .deps/org/w3c/dom/ProcessingInstruction.P \
-.deps/org/w3c/dom/Text.P .deps/org/w3c/dom/ranges/DocumentRange.P \
+.deps/javax/transaction/xa/Xid.P .deps/jni.P .deps/no-threads.P \
+.deps/nogc.P .deps/org/w3c/dom/Attr.P .deps/org/w3c/dom/CDATASection.P \
+.deps/org/w3c/dom/CharacterData.P .deps/org/w3c/dom/Comment.P \
+.deps/org/w3c/dom/DOMException.P .deps/org/w3c/dom/DOMImplementation.P \
+.deps/org/w3c/dom/Document.P .deps/org/w3c/dom/DocumentFragment.P \
+.deps/org/w3c/dom/DocumentType.P .deps/org/w3c/dom/Element.P \
+.deps/org/w3c/dom/Entity.P .deps/org/w3c/dom/EntityReference.P \
+.deps/org/w3c/dom/NamedNodeMap.P .deps/org/w3c/dom/Node.P \
+.deps/org/w3c/dom/NodeList.P .deps/org/w3c/dom/Notation.P \
+.deps/org/w3c/dom/ProcessingInstruction.P .deps/org/w3c/dom/Text.P \
+.deps/org/w3c/dom/ranges/DocumentRange.P \
 .deps/org/w3c/dom/ranges/Range.P \
 .deps/org/w3c/dom/ranges/RangeException.P \
 .deps/org/w3c/dom/traversal/DocumentTraversal.P \
