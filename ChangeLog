@@ -1,3 +1,7 @@
+2003-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* README.SCO: New file.
+
 2003-08-01  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.tpl (check, check-c++): Express dependencies using
