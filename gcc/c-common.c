@@ -430,6 +430,7 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_nonnull_attribute },
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute },
+  { "may_alias",	      0, 0, false, true, false, NULL },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -2549,6 +2550,10 @@ c_common_get_alias_set (t)
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r'
       && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
       && TYPE_PRECISION (TREE_TYPE (t)) == TYPE_PRECISION (char_type_node))
+    return 0;
+
+  /* If it has the may_alias attribute, it can alias anything.  */
+  if (TYPE_P (t) && lookup_attribute ("may_alias", TYPE_ATTRIBUTES (t)))
     return 0;
 
   /* That's all the expressions we handle specially.  */
