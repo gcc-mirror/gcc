@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file/law */
 /* Define __gnuc_va_list. */
 
 #ifndef __GNUC_VA_LIST
@@ -9,7 +8,6 @@ typedef void *__gnuc_va_list;
 /* If this is for internal libc use, don't define anything but
    __gnuc_va_list.  */
 #if defined (_STDARG_H) || defined (_VARARGS_H)
-#define __gnuc_va_start(AP) (AP = (__gnuc_va_list)__builtin_saveregs())
 #define __va_ellipsis ...
 
 #ifdef _STDARG_H
@@ -34,4 +32,3 @@ void va_end (__gnuc_va_list);
   : (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
     *((TYPE *) (void *) ((char *) (AP) - __va_rounded_size (TYPE)))))
 #endif
-/* END CYGNUS LOCAL */
