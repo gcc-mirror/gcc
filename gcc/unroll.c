@@ -1373,6 +1373,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		copy_notes_from)
      rtx copy_start, copy_end;
      struct inline_remap *map;
+     rtx exit_label;
      int last_iteration;
      enum unroll_types unroll_type;
      rtx start_label, loop_end, insert_before, copy_notes_from;
