@@ -1022,28 +1022,6 @@ struct cum_args {int regs;};
 
 /* Node: Varargs */
 
-/* We save the register number of the first anonymous argument in
-   first_vararg_reg, and take care of this in the function prologue.
-   This behavior is used by at least one more port (the ARM?), but
-   may be unsafe when compiling nested functions.  (With varargs? Hairy.)
-   Note that nested-functions is a GNU C extension.
-
-   FIXME: We can actually put the size in PRETEND and deduce the number
-   of registers from it in the prologue and epilogue.  */
-#define SETUP_INCOMING_VARARGS(ARGSSF, MODE, TYPE, PRETEND, SECOND)	\
-  do									\
-    {									\
-      if ((ARGSSF).regs < (CRIS_MAX_ARGS_IN_REGS))			\
-	(PRETEND) = ((CRIS_MAX_ARGS_IN_REGS) - (ARGSSF).regs) * 4;	\
-      if (TARGET_PDEBUG)						\
-	{								\
-	  fprintf (asm_out_file,					\
-		   "\n; VA:: ANSI: %d args before, anon @ #%d, %dtime\n", \
-		   (ARGSSF).regs, PRETEND, SECOND);			\
-	}								\
-    }									\
-  while (0)
-
 /* FIXME: This and other EXPAND_BUILTIN_VA_... target macros are not
    documented, although used by several targets.  */
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
