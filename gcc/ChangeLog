@@ -1,3 +1,8 @@
+2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_indirect_call): Only use %r2 as the link register in
+	indirect calls with the long PA 2.0 pc-relative branch.
+
 2004-07-10  James E Wilson  <wilson@specifixinc.com>
 
 	* config/gofast.h (gofast_maybe_init_libfuncs): Use SImode for litodp.
