@@ -9479,7 +9479,8 @@ bc_expand_constructor (constr)
      this code is common for both types of constructors: literals
      and non-literals. */
 
-  bc_emit_instruction (constP, (HOST_WIDE_INT) ptroffs = bc_define_pointer (l));
+  ptroffs = bc_define_pointer (l);
+  bc_emit_instruction (constP, ptroffs);
 
   /* This is all that has to be done if it's a literal. */
   if (TREE_CONSTANT (constr))
