@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1678,7 +1678,7 @@ expand_call (exp, target, ignore)
   /* If register arguments require space on the stack and stack space
      was not preallocated, allocate stack space here for arguments
      passed in registers.  */
-#if ! defined(ALLOCATE_OUTGOING_ARGS) && defined(OUTGOING_REG_PARM_STACK_SPACE)
+#if ! defined(ACCUMULATE_OUTGOING_ARGS) && defined(OUTGOING_REG_PARM_STACK_SPACE)
   if (must_preallocate == 0 && reg_parm_stack_space > 0)
     anti_adjust_stack (GEN_INT (reg_parm_stack_space));
 #endif
