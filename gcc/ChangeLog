@@ -1,5 +1,8 @@
 Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED): Adjust for addition
+	of new GP reg classes.
+
 	* expr.c (store_field): When making temp object for unaligned
 	component, set it to alias set 0.
 
