@@ -1,3 +1,13 @@
+2001-06-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in.in: Take --defines switch off of xgettext   
+	command line.                                           
+	* POTFILES.in: Massive update, removing all dead files and
+	adding approximately 300 files which had been left out.
+	Clarify comments on what should and should not appear here.
+
+	* gcc.pot, cat-id-tbl.c: Regenerate.
+
 2001-05-23  Zack Weinberg  <zackw@stanford.edu>
 
 	* POTFILES.in: Remove frame-dwarf2.c, frame.c, and frame.h.
