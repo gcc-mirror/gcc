@@ -6088,12 +6088,12 @@ finish_function (void)
  	}
     }
 
-  if (DECL_INITIAL (fndecl) != error_mark_node && DECL_INITIAL (fndecl))
+  if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
     BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Must mark the RESULT_DECL as being in this function.  */
 
-  if (DECL_RESULT (fndecl) != error_mark_node && DECL_RESULT (fndecl))
+  if (DECL_RESULT (fndecl) && DECL_RESULT (fndecl) != error_mark_node)
     DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
   if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted)
@@ -6226,7 +6226,7 @@ void
 c_expand_body (tree fndecl)
 {
 
-  if (DECL_INITIAL (fndecl) != error_mark_node && DECL_INITIAL (fndecl))
+  if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
     c_expand_body_1 (fndecl, 0);
 }
 

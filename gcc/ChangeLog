@@ -1,4 +1,10 @@
+2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-decl.c (finish_function): Change order of checks.
+	(c_expand_body): Likewise.
+
 2003-12-22  Fariborz Jahanian <fjahanian@apple.com>
+
         * config/rs6000/rs6000.c (legitimate_offset_address_p): Correct
         check for the legitimate offset when memory of 
 	DImode/DFmode/TFmode/TImode mode is being referenced and target 
