@@ -78,6 +78,8 @@ static struct z_candidate * splice_viable PROTO((struct z_candidate *));
 static int any_viable PROTO((struct z_candidate *));
 static struct z_candidate * add_template_candidate
 	PROTO((struct z_candidate *, tree, tree, tree, int));
+static struct z_candidate * add_template_conv_candidate 
+        PROTO((struct z_candidate *, tree, tree, tree, tree));
 static struct z_candidate * add_builtin_candidates
 	PROTO((struct z_candidate *, enum tree_code, enum tree_code,
 	       tree, tree *, int));
@@ -4170,6 +4172,33 @@ add_template_candidate (candidates, tmpl, arglist, return_type, flags)
   return cand;
 }
 
+
+static struct z_candidate *
+add_template_conv_candidate (candidates, tmpl, obj, arglist, return_type)
+     struct z_candidate *candidates;
+     tree tmpl, obj, arglist, return_type;
+{
+  int ntparms = DECL_NTPARMS (tmpl);
+  tree targs = make_tree_vec (ntparms);
+  struct z_candidate *cand;
+  int i;
+  tree fn;
+
+  i = fn_type_unification (tmpl, targs, arglist, return_type, 0);
+
+  if (i != 0)
+    return candidates;
+
+  fn = instantiate_template (tmpl, targs);
+  if (fn == error_mark_node)
+    return candidates;
+
+  cand = add_conv_candidate (candidates, fn, obj, arglist);
+  cand->template = DECL_TEMPLATE_INFO (fn);
+  return cand;
+}
+
+
 static int
 any_viable (cands)
      struct z_candidate *cands;
@@ -4508,6 +4537,7 @@ build_object_call (obj, args)
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, mem_args;
   tree type = TREE_TYPE (obj);
+  tree templates = NULL_TREE;
 
   fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 0);
 
@@ -4523,9 +4553,19 @@ build_object_call (obj, args)
 
       for (; fn; fn = DECL_CHAIN (fn))
 	{
-	  candidates = add_function_candidate
-	    (candidates, fn, mem_args, LOOKUP_NORMAL);
-	  candidates->basetype_path = TREE_PURPOSE (fns);
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    {
+	      templates = decl_tree_cons (NULL_TREE, fn, templates);
+	      candidates = add_template_candidate (candidates, fn,
+						   mem_args, NULL_TREE, 
+						   LOOKUP_NORMAL);
+	    }
+	  else
+	    candidates = add_function_candidate
+	      (candidates, fn, mem_args, LOOKUP_NORMAL);
+
+	  if (candidates)
+	    candidates->basetype_path = TREE_PURPOSE (fns);
 	}
     }
 
@@ -4540,8 +4580,20 @@ build_object_call (obj, args)
 	  && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
 	for (; fn; fn = DECL_CHAIN (fn))
 	  {
-	    candidates = add_conv_candidate (candidates, fn, obj, args);
-	    candidates->basetype_path = TREE_PURPOSE (convs);
+	    if (TREE_CODE (fn) == TEMPLATE_DECL) 
+	      {
+		templates = decl_tree_cons (NULL_TREE, fn, templates);
+		candidates = add_template_conv_candidate (candidates,
+							  fn,
+							  obj,
+							  args,
+							  totype);
+	      }
+	    else
+	      candidates = add_conv_candidate (candidates, fn, obj, args);
+
+	    if (candidates)
+	      candidates->basetype_path = TREE_PURPOSE (convs);
 	  }
     }
 

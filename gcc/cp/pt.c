@@ -82,29 +82,40 @@ static tree add_to_template_args PROTO((tree, tree));
 /* Restore the template parameter context. */
 
 void 
-begin_member_template_processing (parms)
-     tree parms;
+begin_member_template_processing (decl)
+     tree decl;
 {
+  tree parms;
   int i;
+
+  parms = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (decl));
 
   ++processing_template_decl;
   current_template_parms 
     = tree_cons (build_int_2 (0, processing_template_decl),
 		 parms, current_template_parms);
+  pushlevel (0);
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i) 
     {
-      tree parm = TREE_VEC_ELT (parms, i);
-
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (parm)) == 'd', 0);
+      
       switch (TREE_CODE (parm))
 	{
-	case TEMPLATE_TYPE_PARM:
-	  pushdecl (TYPE_NAME (parm));
-	  break;
-
-	case TEMPLATE_CONST_PARM:
+	case TYPE_DECL:
 	  pushdecl (parm);
 	  break;
-	  
+
+	case PARM_DECL:
+	  {
+	    /* Make a CONST_DECL as is done in process_template_parm. */
+	    tree decl = build_decl (CONST_DECL, DECL_NAME (parm),
+				    TREE_TYPE (parm));
+	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
+	    pushdecl (decl);
+	  }
+	break;
+
 	default:
 	  my_friendly_abort (0);
 	}
@@ -121,6 +132,7 @@ end_member_template_processing ()
 
   --processing_template_decl;
   current_template_parms = TREE_CHAIN (current_template_parms);
+  poplevel (0, 0, 0);
 }
 
 /* Returns non-zero iff T is a member template function.  Works if T
@@ -449,7 +461,11 @@ push_template_decl (decl)
       DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
       DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
       if (DECL_LANG_SPECIFIC (decl))
-	DECL_CLASS_CONTEXT (tmpl) = DECL_CLASS_CONTEXT (decl);
+	{
+	  DECL_CLASS_CONTEXT (tmpl) = DECL_CLASS_CONTEXT (decl);
+	  DECL_STATIC_FUNCTION_P (tmpl) = 
+	    DECL_STATIC_FUNCTION_P (decl);
+	}
     }
   else
     {
