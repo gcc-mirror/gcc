@@ -5375,6 +5375,35 @@ emit_reload_insns (insn)
 			  pat = (GEN_FCN (tertiary_icode)
 				 (reloadreg, second_reloadreg, third_reloadreg));
 			}
+#ifdef SECONDARY_MEMORY_NEEDED
+		      /* If we need a memory location to do the move, do it that way.  */
+		      else if (GET_CODE (reloadreg) == REG
+			       && REGNO (reloadreg) < FIRST_PSEUDO_REGISTER
+			       && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (reloadreg)),
+					   REGNO_REG_CLASS (REGNO (second_reloadreg)),
+					   GET_MODE (second_reloadreg)))
+			{
+			  /* Get the memory to use and rewrite both registers
+			     to its mode.  */
+			  rtx loc = get_secondary_mem (reloadreg,
+						       GET_MODE (second_reloadreg));
+			  rtx tmp_reloadreg;
+			    
+			  if (GET_MODE (loc) != GET_MODE (second_reloadreg))
+			    second_reloadreg = gen_rtx (REG, GET_MODE (loc),
+							REGNO (second_reloadreg));
+			  
+			  if (GET_MODE (loc) != GET_MODE (reloadreg))
+			    tmp_reloadreg = gen_rtx (REG, GET_MODE (loc),
+						     REGNO (reloadreg));
+			  else
+			    tmp_reloadreg = reloadreg;
+			  
+			  emit_insn_before (gen_move_insn (loc, second_reloadreg),
+					    first_output_reload_insn);
+			  pat = gen_move_insn (tmp_reloadreg, loc);
+			}
+#endif
 		      else
 			pat = gen_move_insn (reloadreg, second_reloadreg);
 
