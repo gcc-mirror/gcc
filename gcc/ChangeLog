@@ -1,3 +1,15 @@
+2005-01-08  Sergey M. Samoylov  <ssamoylov@dev.rtsoft.ru>
+
+	Backport:
+	2004-02-12  Richard Sandiford  <rsandifo@redhat.com>
+	PR bootstrap/13617
+	* config/mips/mips-protos.h (mips_output_aligned_decl_common): Declare.
+	(mips_declare_object): Make variadic.
+	* config/mips/mips.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Use
+	mips_output_aligned_decl_common.
+	* config/mips/mips.c (mips_output_aligned_decl_common): New function.
+	(mips_declare_object): Make variadic.
+
 2005-01-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/17565

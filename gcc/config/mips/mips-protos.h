@@ -1,6 +1,6 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2001, 2002, 2005 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -36,9 +36,13 @@ extern void		iris6_asm_output_align PARAMS ((FILE *, unsigned));
 extern const char *	current_section_name PARAMS ((void));
 extern unsigned int	current_section_flags PARAMS ((void));
 extern int		mips_can_use_return_insn PARAMS ((void));
-extern void		mips_declare_object PARAMS ((FILE *, const char *,
-						     const char *,
-						     const char *, int));
+extern void 		mips_output_aligned_decl_common
+				PARAMS ((FILE *, tree, const char *,
+					 unsigned HOST_WIDE_INT,
+					 unsigned int));
+extern void		mips_declare_object
+				PARAMS ((FILE *, const char *, const char *,
+					 const char *, ...));
 extern void		mips_expand_epilogue PARAMS ((void));
 extern void		mips_expand_prologue PARAMS ((void));
 extern void		mips_output_filename PARAMS ((FILE *, const char *));
