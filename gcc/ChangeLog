@@ -1,3 +1,7 @@
+2004-11-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/t-iris6 (tp-bit.c): Fix target filename.
+
 2004-11-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Set to 3.4.4.
