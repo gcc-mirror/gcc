@@ -149,6 +149,14 @@ c_cannot_inline_tree_fn (fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     return 1;
 
+  /* Don't auto-inline anything that might not be bound within 
+     this unit of translation.  */
+  if (!DECL_DECLARED_INLINE_P (fn) && flag_pic && TREE_PUBLIC (fn))
+    {
+      DECL_UNINLINABLE (fn) = 1;
+      return 1;
+    }
+
   if (! function_attribute_inlinable_p (fn))
     {
       DECL_UNINLINABLE (fn) = 1;
