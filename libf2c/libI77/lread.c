@@ -13,7 +13,6 @@ extern int f__fmtlen;
 
 #ifdef Allow_TYQUAD
 static longint f__llx;
-static int quad_read;
 #endif
 
 #undef abs
