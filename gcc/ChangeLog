@@ -1,5 +1,10 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.c (loop_ivs_free): New function.
+	(strength_reduce): Break out from...
+
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
+	
 	* loop.h (struct iv): New.
 	(REG_IV_TYPE, REG_IV_CLASS, REG_INFO): Modify to use 'struct iv'.
 	(struct loop_ivs): Replace 'reg_iv_type', 'reg_iv_info',
