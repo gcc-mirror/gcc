@@ -1972,8 +1972,11 @@ output_block_move (insn, operands, num_regs)
       if (reg_mentioned_p (operands[i], operands[0])
 	  || reg_mentioned_p (operands[i], operands[1]))
 	{
-	  warning ("register $%d passed as address and temp register to block move",
-		   REGNO (operands[i]));
+	  /* register passed as address and temp register to block move  */
+	  /* To have a correct compiler, either this function
+	     has to handle the case, or something else has to make
+	     sure the case won't arise.  */
+	  abort ();
 
 	  for (j = i+1; j < last_operand; j++)
 	    operands[j-1] = operands[j];
