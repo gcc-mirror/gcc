@@ -1,6 +1,6 @@
-// Specific definitions for generic platforms  -*- C++ -*-
+// Specific definitions for HPUX  -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,7 @@
 // the GNU General Public License.
 
 #ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES
+#define _GLIBCPP_OS_DEFINES 1
 
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
@@ -62,7 +62,8 @@
 
    We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
-namespace std {
+namespace std 
+{
 #ifndef __LP64__
   __extension__ extern "C" long long strtoll (const char *, char **, int)
     __asm  ("__strtoll");
@@ -75,5 +76,14 @@ namespace std {
     __asm  ("strtoul");
 #endif
 }
+
 #define _GLIBCPP_USE_LONG_LONG 1
+
+// HPUX on IA64 requires vtable to be 64 bit aligned even at 32 bit
+// mode.  We need to pad the vtable structure to achieve this.  
+#if !defined(_LP64) && defined (__ia64__)
+#define _GLIBCPP_VTABLE_PADDING 8
+typedef long int __padding_type;
+#endif
+
 #endif

@@ -28,6 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <bits/c++config.h>
 #include <cstddef>
 #include "tinfo.h"
 #include "new"			// for placement new
@@ -91,12 +92,28 @@ namespace {
 using namespace std;
 using namespace abi;
 
-// initial part of a vtable, this structure is used with offsetof, so we don't
+// Initial part of a vtable, this structure is used with offsetof, so we don't
 // have to keep alignments consistent manually.
-struct vtable_prefix {
-  ptrdiff_t whole_object;           // offset to most derived object
-  const __class_type_info *whole_type;  // pointer to most derived type_info
-  const void *origin;               // what a class's vptr points to
+struct vtable_prefix 
+{
+  // Offset to most derived object.
+  ptrdiff_t whole_object;
+
+  // Additional padding if necessary.
+#ifdef _GLIBCPP_VTABLE_PADDING
+  ptrdiff_t padding1;               
+#endif
+
+  // Pointer to most derived type_info.
+  const __class_type_info *whole_type;  
+
+  // Additional padding if necessary.
+#ifdef _GLIBCPP_VTABLE_PADDING
+  ptrdiff_t padding2;               
+#endif
+
+  // What a class's vptr points to.
+  const void *origin;               
 };
 
 template <typename T>
