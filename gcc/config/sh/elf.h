@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 /* No SDB debugging info.  */
 #undef SDB_DEBUGGING_INFO
 
+/* Prefer stabs.  */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
 /* Undefine some macros defined in both sh.h and svr4.h.  */
 #undef IDENT_ASM_OP
 #undef ASM_FILE_END
@@ -36,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_CONSTRUCTOR
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef ASM_DECLARE_FUNCTION_NAME
-#undef PREFERRED_DEBUGGING_TYPE
 
 /* Be ELF-like.  */
 #include "svr4.h"
