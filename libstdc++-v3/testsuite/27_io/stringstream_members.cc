@@ -177,10 +177,26 @@ test03()
   std::stringstream ss2(str3, std::ios_base::in|std::ios_base::out);
 }
 
+// libstdc++/8466
+void test04()
+{
+  bool test = true;
+
+  const char* strlit00 = "orvieto";
+  const std::string str00 = strlit00;
+
+  std::ostringstream oss;
+
+  oss.str(str00);
+  oss << "cortona";
+  VERIFY( str00 == strlit00 );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

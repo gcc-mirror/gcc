@@ -105,7 +105,8 @@ namespace std
       void
       str(const __string_type& __s)
       {
-	_M_string = __s;
+	// Cannot use _M_string = __s, since v3 strings are COW.
+	_M_string.assign(__s.c_str(), __s.size());
 	_M_stringbuf_init(_M_mode);
       }
 
