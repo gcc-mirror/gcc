@@ -1067,7 +1067,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
 {								\
-  if (GET_CODE (x) == PLUS					\
+  if (GET_CODE (X) == PLUS					\
       && (GET_MODE_SIZE (MODE) == 4				\
 	  || GET_MODE_SIZE (MODE) == 8)				\
       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
@@ -1092,11 +1092,11 @@ extern struct rtx_def *sh_builtin_saveregs ();
 	offset_base = offset & ~60;				\
       /* Sometimes the normal form does not suit DImode.  We	\
 	 could avoid that by using smaller ranges, but that	\
-	 would give less optimized code when SImode is
+	 would give less optimized code when SImode is		\
 	 prevalent.  */						\
       if (GET_MODE_SIZE (MODE) + offset - offset_base <= 64)	\
 	{							\
-	  sum = expand_binop (Pmode, add_optab, XEXP (x, 0),	\
+	  sum = expand_binop (Pmode, add_optab, XEXP (X, 0),	\
 			      GEN_INT (offset_base), NULL_RTX, 0, \
 			      OPTAB_LIB_WIDEN);			\
                                                                 \
