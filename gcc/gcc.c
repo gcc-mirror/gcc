@@ -3216,7 +3216,6 @@ process_command (argc, argv)
 	  n_infiles++;
 	  n_switches++;
 
-	  add_preprocessor_option ("--help", 6);
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
 	}
@@ -3229,7 +3228,6 @@ process_command (argc, argv)
           n_infiles++;
           n_switches++;
 
-          add_preprocessor_option ("--target-help", 13);
           add_assembler_option ("--target-help", 13);
           add_linker_option ("--target-help", 13);
         }
