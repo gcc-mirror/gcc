@@ -242,7 +242,7 @@ file, which @command{gcj} will search as if it is a directory.
 @item -I@var{dir}
 All directories specified by @code{-I} are kept in order and prepended
 to the class path constructed from all the other options.  Unless
-compatibility with tools like @code{javac} is imported, we recommend
+compatibility with tools like @code{javac} is important, we recommend
 always using @code{-I} instead of the other options for manipulating the
 class path.
 
