@@ -1,3 +1,6 @@
+2002-12-10  Matt Austern   <austern@apple.com>
+	* cp-tree.h: get rid of needs_virtual_reinit bit.
+	
 2002-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* NEWS: Document removal of in-class initialization extension for 
