@@ -18,8 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Put leading underscores in front of names. */
+#define YES_UNDERSCORES
+
 #include "halfpic.h"
-#include "i386gas.h"
+#include "i386gstabs.h"
 
 #define OSF_OS
 
@@ -42,11 +45,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "half-pic",	 MASK_HALF_PIC},				\
      { "no-half-pic",	-MASK_HALF_PIC},				\
      { "debugb",	 MASK_HALF_PIC_DEBUG},
-
-/* Put leading underscores in front of names. */
-#undef	NO_UNDERSCORES
-#undef	ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
 
 /* Prefix that appears before all global/static identifiers, except for
    temporary labels.  */
