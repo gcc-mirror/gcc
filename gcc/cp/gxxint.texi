@@ -311,7 +311,7 @@ vtables.  See also vtable and vfield.
 This section describes some of the macros used on trees.  The list
 should be alphabetical.  Eventually all macros should be documented
 here.  There are some postscript drawings that can be used to better
-understnad from of the more complex data structures, contact Mike Stump
+understand from of the more complex data structures, contact Mike Stump
 (@code{mrs@@cygnus.com}) for information about them.
 
 @table @code
@@ -551,14 +551,14 @@ output in another file, or where a sub-type is known not to be needed
 because the enclosing type is not needed.
 
 A compiler constructed virtual destructor in derived classes that do not
-define an exlicit destructor that was defined exlicit in a base class
+define an explicit destructor that was defined explicit in a base class
 has this bit set as well.  Also used on __FUNCTION__ and
 __PRETTY_FUNCTION__ to mark they are ``compiler generated.''  c-decl and
 c-lex.c both want DECL_IGNORED_P set for ``internally generated vars,''
 and ``user-invisible variable.''
 
 Functions built by the C++ front-end such as default destructors,
-virtual desctructors and default constructors want to be marked that
+virtual destructors and default constructors want to be marked that
 they are compiler generated, but unsure why.
 
 Currently, it is used in an absolute way in the C++ front-end, as an
@@ -784,7 +784,7 @@ Components:
 	DECL_SOURCE_LINE identifies what source line number in the
 	source file the declaration was found at.  A value of 0
 	indicates that this TYPE_DECL is just an internal binding layer
-	marker, and does not correspond to a user suppiled typedef.
+	marker, and does not correspond to a user supplied typedef.
 
 	DECL_SOURCE_FILE
 
