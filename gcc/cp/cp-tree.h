@@ -3441,7 +3441,6 @@ extern tree convert_arguments			PROTO((tree, tree, tree, int));
 extern tree build_x_binary_op			PROTO((enum tree_code, tree, tree));
 extern tree build_binary_op			PROTO((enum tree_code, tree, tree));
 extern tree build_binary_op_nodefault		PROTO((enum tree_code, tree, tree, enum tree_code));
-extern tree build_component_addr		PROTO((tree, tree, const char *));
 extern tree build_x_unary_op			PROTO((enum tree_code, tree));
 extern tree build_unary_op			PROTO((enum tree_code, tree, int));
 extern tree unary_complex_lvalue		PROTO((enum tree_code, tree));

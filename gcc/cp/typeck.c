@@ -55,6 +55,7 @@ static tree convert_sequence PROTO((tree, tree));
 #endif
 static tree lookup_anon_field PROTO((tree, tree));
 static tree pointer_diff PROTO((tree, tree, tree));
+static tree build_component_addr PROTO((tree, tree));
 static tree qualify_type PROTO((tree, tree));
 static tree get_delta_difference PROTO((tree, tree, int));
 static int comp_cv_target_types PROTO((tree, tree, int));
@@ -2687,8 +2688,7 @@ build_x_function_call (function, params, decl)
 	{
 	  if (current_class_type == NULL_TREE)
 	    {
-	      error ("object missing in call to method `%s'",
-		     IDENTIFIER_POINTER (function));
+	      cp_error ("object missing in call to method `%D'", function);
 	      return error_mark_node;
 	    }
 	  /* Yow: call from a static member function.  */
@@ -4244,17 +4244,14 @@ pointer_diff (op0, op1, ptrtype)
 }
 
 /* Handle the case of taking the address of a COMPONENT_REF.
-   Called by `build_unary_op' and `build_up_reference'.
+   Called by `build_unary_op'.
 
    ARG is the COMPONENT_REF whose address we want.
-   ARGTYPE is the pointer type that this address should have.
-   MSG is an error message to print if this COMPONENT_REF is not
-   addressable (such as a bitfield).  */
+   ARGTYPE is the pointer type that this address should have. */
 
-tree
-build_component_addr (arg, argtype, msg)
+static tree
+build_component_addr (arg, argtype)
      tree arg, argtype;
-     const char *msg;
 {
   tree field = TREE_OPERAND (arg, 1);
   tree basetype = decl_type_context (field);
@@ -4264,7 +4261,8 @@ build_component_addr (arg, argtype, msg)
 
   if (DECL_C_BIT_FIELD (field))
     {
-      error (msg, IDENTIFIER_POINTER (DECL_NAME (field)));
+      cp_error ("attempt to take address of bit-field structure member `%D'",
+                field);
       return error_mark_node;
     }
 
@@ -4749,9 +4747,7 @@ build_unary_op (code, xarg, noconvert)
 	tree addr;
 
 	if (TREE_CODE (arg) == COMPONENT_REF)
-	  addr = build_component_addr
-	    (arg, argtype,
-	     "attempt to take address of bit-field structure member `%s'");
+	  addr = build_component_addr (arg, argtype);
 	else
 	  addr = build1 (ADDR_EXPR, argtype, arg);
 
