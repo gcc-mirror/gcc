@@ -1806,6 +1806,30 @@ notice_update_cc (body, insn)
     }
 }
 
+/* Return nonzero if X is a constant suitable for inc/dec.  */
+
+int
+incdec_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && (CONST_OK_FOR_M (INTVAL (x))
+	      || CONST_OK_FOR_O (INTVAL (x))));
+}
+
+/* Return nonzero if X is either EQ or NE.  */
+
+int
+eqne_operator (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  return (code == EQ || code == NE);
+}
+
 /* Recognize valid operators for bit instructions.  */
 
 int
