@@ -2792,7 +2792,7 @@
 	(match_operand 1 "" "i"))
   (clobber (reg:SI 2))
   (use (const_int 0))]
- ""
+ "! TARGET_LONG_CALLS"
  "*
 {
   output_arg_descriptor (insn);
@@ -2855,7 +2855,7 @@
    (clobber (reg:SI 2))
    (use (const_int 0))]
   ;;- Don't use operand 1 for most machines.
-  ""
+  "! TARGET_LONG_CALLS"
   "*
 {
   output_arg_descriptor (insn);
