@@ -1,3 +1,9 @@
+1999-12-16  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/991216-1.c: New test.
+	* execute/991216-2.c: New test.
+	* execute/991216-3.c: New test.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* compile/991214-1.c: New test.
