@@ -1,5 +1,9 @@
 2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
 
+	* doc/install.texi: boehm-gc now uses automake 1.8.5.
+
+2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
+
 	* toplev.h (rest_of_compilation): Adjust prototype.
 
 2004-06-16  Paolo Bonzini  <bonzini@gnu.org>

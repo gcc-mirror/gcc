@@ -1,3 +1,15 @@
+2005-06-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* boehm-gc/configure.ac: New name of configure.in.
+	Remove useless multilib stuff.  Change uses of
+	INCLUDES and CXXINCLUDES to AM_CPPFLAGS.
+	* boehm-gc/configure.in: New name of configure.in.
+	* boehm-gc/Makefile.am: Update for automake 1.8.5.
+	* boehm-gc/acinclude.m4: Include ../config/acx.m4.
+	* boehm-gc/aclocal.m4: Regenerate.
+	* boehm-gc/configure: Regenerate.
+	* boehm-gc/Makefile.in: Regenerate.
+
 2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* .cvsignore: New file.

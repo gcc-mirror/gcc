@@ -24,40 +24,11 @@ AC_INIT(gcj_mlc.c)
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
-dnl Default to --enable-multilib
-AC_ARG_ENABLE(multilib,
-[  --enable-multilib       build many library versions (default)],
-[case "${enableval}" in
-  yes) multilib=yes ;;
-  no)  multilib=no ;;
-  *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
- esac], [multilib=yes])dnl
-
-dnl We may get other options which we don't document:
-dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
-
-dnl I needed to add the -n test to allow configuration in src directory - HB
-if test "[$]{srcdir}" = "."; then
-  if test "[$]{with_target_subdir}" != "." -a -n "[$]{with_target_subdir}"; then
-    gc_basedir="[$]{srcdir}/[$]{with_multisrctop}../."
-  else
-    gc_basedir="[$]{srcdir}/[$]{with_multisrctop}."
-  fi
-else
-  gc_basedir="[$]{srcdir}/."
-fi
-AC_SUBST(gc_basedir)
-AC_CONFIG_AUX_DIR($gc_basedir/..)
-if :; then :; else
-  # This overrides the previous occurrence for automake, but not for
-  # autoconf, which is exactly what we want.
-  AC_CONFIG_AUX_DIR(..)
-fi
+AM_ENABLE_MULTILIB(, ..)
 
 AC_CANONICAL_SYSTEM
 
 # Get the 'noncanonical' system names.
-sinclude(../config/acx.m4)
 _GCC_TOPLEV_NONCANONICAL_BUILD
 _GCC_TOPLEV_NONCANONICAL_HOST
 _GCC_TOPLEV_NONCANONICAL_TARGET
@@ -81,6 +52,8 @@ m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 AC_PROG_CXX
 m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AM_PROG_CC_C_O
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -143,7 +116,7 @@ AC_ARG_ENABLE(parallel-mark,
     esac]
 )
 
-INCLUDES="-I`cd $srcdir && ${PWDCMD-pwd}`/include"
+AM_CPPFLAGS="-I`cd $srcdir && ${PWDCMD-pwd}`/include"
 THREADLIBS=
 case "$THREADS" in
  no | none | single)
@@ -182,7 +155,7 @@ case "$THREADS" in
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
 	AC_DEFINE(GC_FREEBSD_THREADS)
-	INCLUDES="$INCLUDES -pthread"
+	AM_CPPFLAGS="$AM_CPPFLAGS -pthread"
 	THREADLIBS=-pthread
       	;;
      *-*-solaris*)
@@ -210,7 +183,7 @@ case "$THREADS" in
 	  # May want to enable it in other cases, too.
 	  # Measurements havent yet been done.
 	fi
-	INCLUDES="$INCLUDES -pthread"
+	AM_CPPFLAGS="$AM_CPPFLAGS -pthread"
 	THREADLIBS="-lpthread -lrt"
 	;;
     esac
@@ -232,7 +205,7 @@ AC_MSG_RESULT($THREADLIBS)
     AC_DEFINE(GC_DGUX386_THREADS)
     AC_DEFINE(DGUX_THREADS)
     # Enable _POSIX4A_DRAFT10_SOURCE with flag -pthread
-    INCLUDES="-pthread $INCLUDES"
+    AM_CPPFLAGS="-pthread $AM_CPPFLAGS"
     ;;
  aix)
     THREADS=posix
@@ -285,13 +258,12 @@ addobjs=
 addlibs=
 addincludes=
 addtests=
-CXXINCLUDES=
 case "$TARGET_ECOS" in
    no)
       ;;
    *)
       AC_DEFINE(ECOS)
-      CXXINCLUDES="-I${TARGET_ECOS}/include"
+      AM_CPPFLAGS="${AM_CPPFLAGS} -I${TARGET_ECOS}/include"
       addobjs="$addobjs ecos.lo"
       ;;
 esac
@@ -305,8 +277,7 @@ AM_CONDITIONAL(CPLUSPLUS, test "${enable_cplusplus}" = yes)
 
 AC_SUBST(CXX)
 
-AC_SUBST(INCLUDES)
-AC_SUBST(CXXINCLUDES)
+AC_SUBST(AM_CPPFLAGS)
 
 # Configuration of shared libraries
 #
@@ -509,23 +480,10 @@ else
   multilib_arg=
 fi
 
-AC_OUTPUT(Makefile include/Makefile, [
+AC_CONFIG_COMMANDS(boehm-cflags, [
 dnl Put all the -I and -D options in a file.
-echo "$INCLUDES $DEFS" > boehm-cflags
-
-if test -n "$CONFIG_FILES"; then
-  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-  ac_file=Makefile . ${gc_basedir}/../config-ml.in
-fi],
-srcdir=${srcdir}
-host=${host}
-target=${target}
-with_multisubdir=${with_multisubdir}
-ac_configure_args="${multilib_arg} ${ac_configure_args}"
-CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-gc_basedir=${gc_basedir}
-CC="${CC}"
-ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
+echo "$AM_CPPFLAGS $DEFS" > boehm-cflags], [
 DEFS="$DEFS"
-INCLUDES="$INCLUDES"
-)
+AM_CPPFLAGS="$AM_CPPFLAGS"])
+AC_CONFIG_FILES(Makefile include/Makefile)
+AC_OUTPUT
