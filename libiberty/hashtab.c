@@ -535,14 +535,14 @@ htab_find_slot_with_hash (htab, element, hash, insert)
   if (insert == NO_INSERT)
     return NULL;
 
-  htab->n_elements++;
-
   if (first_deleted_slot)
     {
+      htab->n_deleted--;
       *first_deleted_slot = EMPTY_ENTRY;
       return first_deleted_slot;
     }
 
+  htab->n_elements++;
   return &htab->entries[index];
 }
 
