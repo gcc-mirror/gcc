@@ -1,5 +1,9 @@
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
 
+	* compile/var_defs: Add uninitialized variables.
+
+2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
 	* compile/extrafunc.tree, compile/extravar.tree: New tests.
 
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>

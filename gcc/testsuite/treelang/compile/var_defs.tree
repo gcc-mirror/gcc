@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-Wuninitialized -O" }
 external_definition void boring (int arg0);
 external_definition char condition (char arg1, char arg2);
 external_definition int first_nonzero (int arg5, int arg6);
@@ -14,11 +15,12 @@ condition
   if (arg1)
     {
       automatic int i;
-      return arg1;
+      return i + 1; // { dg-warning "uninitialized" }
     }
   else
     {
-      return 0;
+      automatic int j;
+      return j; // { dg-warning "uninitialized" }
     }
 }
 
