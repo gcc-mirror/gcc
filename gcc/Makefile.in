@@ -2129,7 +2129,7 @@ cpp.dvi: $(srcdir)/cpp.texi
 
 
 INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
-	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY --no-header \
+	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY \
 		--no-split -o INSTALL install1.texi 
 #
 # Deletion of files made during compilation.

@@ -1,5 +1,7 @@
 Sat Aug 29 12:39:56 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (INSTALL): Remove "--no-header" argument.
+
         * NEWS: Various updates.
 
 Fri Aug 28 19:00:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
