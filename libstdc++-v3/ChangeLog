@@ -1,3 +1,10 @@
+2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE):  Search for gettext outside
+	of libc if message translations are being used.  Fix info text in
+	xieee_1003.1-2001 case.
+	* aclocal.m4, configure:  Regenerate.
+
 2003-04-29 Joel Sherrill  <joel.sherrill@OARcorp.com>
 	   Loren J. Rittle <ljrittle@acm.org>
 	   Martin v. Loewis  <martin@v.loewis.de>
