@@ -2294,6 +2294,7 @@ ix86_epilogue (do_rtl)
   rtx xops[3];
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
+  int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
   long tsize = get_frame_size ();
 
   /* Compute the number of registers to pop */
@@ -2307,12 +2308,7 @@ ix86_epilogue (do_rtl)
 	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       nregs++;
 
-  /* sp is often  unreliable so we must go off the frame pointer.
-
-     In reality, we may not care if sp is unreliable, because we can restore
-     the register relative to the frame pointer.  In theory, since each move
-     is the same speed as a pop, and we don't need the leal, this is faster.
-     For now restore multiple registers the old way. */
+  /* sp is often unreliable so we may have to go off the frame pointer. */
 
   offset = - tsize - (nregs * UNITS_PER_WORD);
 
@@ -2329,9 +2325,14 @@ ix86_epilogue (do_rtl)
   if (flag_pic || profile_flag || profile_block_flag)
     emit_insn (gen_blockage ());
 
-  if (nregs > 1 || ! frame_pointer_needed)
+  /* If we're only restoring one register and sp is not valid then
+     using a move instruction to restore the register since it's
+     less work than reloading sp and popping the register.  Otherwise,
+     restore sp (if necessary) and pop the registers. */
+
+  if (nregs > 1 || sp_valid)
     {
-      if (frame_pointer_needed)
+      if ( !sp_valid )
 	{
 	  xops[0] = adj_offsettable_operand (AT_BP (QImode), offset);
 	  if (do_rtl)

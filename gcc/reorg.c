@@ -3452,7 +3452,8 @@ fill_simple_delay_slots (non_jumps_p)
       SET_HARD_REG_BIT (needed.regs, HARD_FRAME_POINTER_REGNUM);
 #endif
 #ifdef EXIT_IGNORE_STACK
-      if (! EXIT_IGNORE_STACK)
+      if (! EXIT_IGNORE_STACK
+	  || current_function_sp_is_unchanging)
 #endif
 	SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
     }
@@ -4602,7 +4603,8 @@ dbr_schedule (first, file)
       SET_HARD_REG_BIT (end_of_function_needs.regs, HARD_FRAME_POINTER_REGNUM);
 #endif
 #ifdef EXIT_IGNORE_STACK
-      if (! EXIT_IGNORE_STACK)
+      if (! EXIT_IGNORE_STACK
+	  || current_function_sp_is_unchanging)
 #endif
 	SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
     }

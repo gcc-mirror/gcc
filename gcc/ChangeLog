@@ -1,3 +1,21 @@
+Sun Oct 11 16:49:15 EDT 1998  John Wehle  (john@feith.com)
+
+	* flow.c: Update comment.
+	(notice_stack_pointer_modification): New static function.
+	(record_volatile_insns): Use it.
+	(mark_regs_live_at_end): Mark the stack pointer as alive
+	at the end of the function if current_function_sp_is_unchanging
+	is set.
+	(life_analysis_1): Set current_function_sp_is_unchanging.
+	* function.c: Define it.
+	(init_function_start): Initialize it.
+	* output.h: Declare it.
+	* reorg.c (fill_simple_delay_slots, dbr_schedule): Mark
+	the stack pointer as alive at the end of the function if
+	current_function_sp_is_unchanging is set.
+	* i386.c (ix86_epilogue): Optimize the restoring
+	of the stack pointer.
+
 Mon Oct 12 02:03:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* i386/t-cygwin32 (TARGET_LIBGCC2_CFLAGS): Define.

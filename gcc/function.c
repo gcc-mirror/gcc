@@ -138,6 +138,12 @@ int current_function_has_computed_jump;
 
 int current_function_contains_functions;
 
+/* Nonzero if function being compiled doesn't modify the stack pointer
+   (ignoring the prologue and epilogue).  This is only valid after
+   life_analysis has run. */
+
+int current_function_sp_is_unchanging;
+
 /* Nonzero if the current function is a thunk (a lightweight function that
    just adjusts one of its arguments and forwards to another function), so
    we should try to cut corners where we can.  */
@@ -5426,6 +5432,7 @@ init_function_start (subr, filename, line)
   current_function_has_nonlocal_label = 0;
   current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
+  current_function_sp_is_unchanging = 0;
   current_function_is_thunk = 0;
 
   current_function_returns_pcc_struct = 0;
