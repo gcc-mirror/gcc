@@ -52,6 +52,7 @@ host_modules= { module= findutils; };
 host_modules= { module= find; };
 host_modules= { module= flex; no_check_cross= true; bootstrap=true; };
 host_modules= { module= gas; bootstrap=true; };
+host_modules= { module= gcc; extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gawk; };
 host_modules= { module= gettext; };
 host_modules= { module= gnuserv; };

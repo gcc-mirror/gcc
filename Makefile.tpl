@@ -484,6 +484,14 @@ PICFLAG_FOR_TARGET =
 # Miscellaneous targets and flag lists
 # ------------------------------------
 
+@if gcc-bootstrap
+# Let's leave this as the first rule in the file until toplevel
+# bootstrap is fleshed out completely.
+sorry:
+	@echo Toplevel bootstrap temporarily out of commission.
+	@echo Please reconfigure without --enable-bootstrap
+@endif gcc-bootstrap
+
 # The first rule in the file had better be this one.  Don't put any above it.
 # This lives here to allow makefile fragments to contain dependencies.
 @default_target@:
@@ -583,7 +591,7 @@ EXTRA_GCC_FLAGS = \
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
 
 .PHONY: configure-host
-configure-host: maybe-configure-gcc [+
+configure-host: [+
   FOR host_modules +] \
     maybe-configure-[+module+][+
   ENDFOR host_modules +]
@@ -595,7 +603,7 @@ configure-target: [+
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
-all: all-build all-host all-target
+all: unstage all-build all-host all-target stage
 
 .PHONY: all-build
 all-build: [+
@@ -603,7 +611,7 @@ all-build: [+
     maybe-all-build-[+module+][+
   ENDFOR build_modules +]
 .PHONY: all-host
-all-host: maybe-all-gcc [+
+all-host: [+
   FOR host_modules +] \
     maybe-all-[+module+][+
   ENDFOR host_modules +]
@@ -619,10 +627,10 @@ all-target: [+
 # but it may do additional work as well).
 [+ FOR recursive_targets +]
 .PHONY: do-[+make_target+]
-do-[+make_target+]: [+make_target+]-host [+make_target+]-target
+do-[+make_target+]: unstage [+make_target+]-host [+make_target+]-target stage
 
 .PHONY: [+make_target+]-host
-[+make_target+]-host: maybe-[+make_target+]-gcc [+
+[+make_target+]-host: [+
   FOR host_modules +] \
     maybe-[+make_target+]-[+module+][+
   ENDFOR host_modules +]
@@ -694,13 +702,13 @@ clean-target-libgcc:
 check: do-check
 
 # Only include modules actually being configured and built.
-do-check: maybe-check-gcc [+
+do-check: unstage [+
   FOR host_modules +] \
     maybe-check-[+module+][+
   ENDFOR host_modules +][+
   FOR target_modules +] \
     maybe-check-target-[+module+][+
-  ENDFOR target_modules +]
+  ENDFOR target_modules +] stage
 
 # Automated reporting of test results.
 
@@ -735,7 +743,7 @@ install-host-nogcc: [+
   ENDFOR host_modules +]
 
 .PHONY: install-host
-install-host: maybe-install-gcc [+
+install-host: [+
   FOR host_modules +] \
     maybe-install-[+module+][+
   ENDFOR host_modules +]
@@ -909,7 +917,10 @@ all-[+module+]: configure-[+module+]
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] [+extra_make_flags+] all)
+	  ENDIF with_x +] [+extra_make_flags+] [+
+	  IF (== (get "module") "gcc") +] \
+	    `if [ -f gcc/stage_last ]; then echo quickstrap ; else echo all; fi` [+
+	  ELSE +]all[+ ENDIF +])
 @endif [+module+]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
@@ -982,7 +993,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS); do \
+	for flag in $(EXTRA_HOST_FLAGS) [+extra_make_flags+]; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing [+make_target+] in [+module+]" ; \
@@ -991,7 +1002,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+extra_make_flags+] [+make_target+]) \
+	          [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
 @endif [+module+]
@@ -1178,76 +1189,11 @@ ENDIF raw_cxx +]
 # GCC module
 # ----------
 
-# Unfortunately, while gcc _should_ be a host module,
-# libgcc is a target module, and gen* programs are
-# build modules.  So GCC is a sort of hybrid.
-
-# gcc is the only module which uses GCC_FLAGS_TO_PASS.
-# Don't use shared host config.cache, as it will confuse later
-# directories; GCC wants slightly different values for some
-# precious variables.  *sigh*
-
-# We must skip configuring if toplevel bootstrap is going.
-.PHONY: configure-gcc maybe-configure-gcc
-maybe-configure-gcc:
-@if gcc
-maybe-configure-gcc: configure-gcc
-configure-gcc:
-@endif gcc
 @if gcc-no-bootstrap
-	@test ! -f gcc/Makefile || exit 0; \
-	[ -d gcc ] || mkdir gcc; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo Configuring in gcc; \
-	cd gcc || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
-	    libsrcdir="$$s/gcc";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  || exit 1
-@endif gcc-no-bootstrap
+# GCC has some more recursive targets, which trigger the old
+# (but still current, until the toplevel bootstrap project
+# is finished) compiler bootstrapping rules.
 
-# Don't 'make all' in gcc if it's already been made by 'bootstrap'; that
-# causes trouble.  This wart will be fixed eventually by moving
-# the bootstrap behavior to this file.
-.PHONY: all-gcc maybe-all-gcc
-maybe-all-gcc:
-@if gcc
-maybe-all-gcc: all-gcc
-all-gcc: configure-gcc
-@endif gcc
-@if gcc-no-bootstrap
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	if [ -f gcc/stage_last ] ; then \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
-	else \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
-	fi
-
-# Building GCC uses some tools for rebuilding "source" files
-# like texinfo, bison/byacc, etc.  So we must depend on those.
-#
-# While building GCC, it may be necessary to run various target
-# programs like the assembler, linker, etc.  So we depend on
-# those too.
-#
-# In theory, on an SMP all those dependencies can be resolved
-# in parallel.
-#
 GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
 .PHONY: $(GCC_STRAP_TARGETS)
 $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
@@ -1317,21 +1263,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LANGUAGES="c c++" all
 @endif gcc-no-bootstrap
 
-.PHONY: check-gcc maybe-check-gcc
-maybe-check-gcc:
 @if gcc
-maybe-check-gcc: check-gcc
-check-gcc:
-	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(SET_LIB_PATH) \
-	  $(HOST_EXPORTS) \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
-	else \
-	  true; \
-	fi
-
 .PHONY: check-gcc-c++
 check-gcc-c++:
 	@if [ -f ./gcc/Makefile ] ; then \
@@ -1346,23 +1278,6 @@ check-gcc-c++:
 
 .PHONY: check-c++
 check-c++: check-target-libstdc++-v3 check-gcc-c++
-@endif gcc
-
-.PHONY: install-gcc maybe-install-gcc
-maybe-install-gcc:
-@if gcc
-maybe-install-gcc: install-gcc
-install-gcc:
-	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(SET_LIB_PATH) \
-	  $(HOST_EXPORTS) \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
-	else \
-	  true; \
-	fi
-@endif gcc
 
 # Install the gcc headers files, but not the fixed include files,
 # which Cygnus is not allowed to distribute.  This rule is very
@@ -1385,43 +1300,29 @@ gcc-no-fixedincludes:
 	  rm -rf gcc/include; \
 	  mv gcc/tmp-include gcc/include 2>/dev/null; \
 	else true; fi
-
-# Other targets (dvi, info, etc.)
-[+ FOR recursive_targets +]
-.PHONY: maybe-[+make_target+]-gcc [+make_target+]-gcc
-maybe-[+make_target+]-gcc:
-@if gcc
-maybe-[+make_target+]-gcc: [+make_target+]-gcc
-[+make_target+]-gcc: [+
-  FOR depend +]\
-    [+depend+]-gcc [+
-  ENDFOR depend +]
-	@[ -f ./gcc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	for flag in $(EXTRA_GCC_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	$(HOST_EXPORTS) \
-	echo "Doing [+make_target+] in gcc" ; \
-	(cd gcc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
-	  || exit 1
 @endif gcc
 
-[+ ENDFOR recursive_targets +]
-
-@if gcc-bootstrap
 # ---------------------
 # GCC bootstrap support
 # ---------------------
 
-# We track the current stage (the one in 'gcc') in the stage_last file.
+# We track the current stage (the one in 'gcc') in the stage_current file.
+# stage_last instead tracks the stage that was built last.  These targets
+# are dummy when toplevel bootstrap is not active.
+
+.PHONY: unstage
+unstage:
+@if gcc-bootstrap
+	@[ -f stage_current ] || $(MAKE) `cat stage_last`-start
+@endif gcc-bootstrap
+
+.PHONY: stage
+stage:
+@if gcc-bootstrap
+	@$(MAKE) `cat stage_current`-end
+@endif gcc-bootstrap
+
+@if gcc-bootstrap
 # We name the build directories for the various stages "stage1-gcc",
 # "stage2-gcc","stage3-gcc", etc.
 
@@ -1486,14 +1387,15 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 .PHONY: stage[+id+]-start stage[+id+]-end
 
 stage[+id+]-start::
-	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	echo stage[+id+] > stage_current ; \
 	echo stage[+id+] > stage_last ; \
 	[ -d stage[+id+]-gcc ] || mkdir stage[+id+]-gcc; \
 	set stage[+id+]-gcc gcc ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
 	set stage[+prev+]-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
 
 stage[+id+]-end::
-	rm -f stage_last ; \
+	rm -f stage_current ; \
 	set gcc stage[+id+]-gcc ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
 	set prev-gcc stage[+prev+]-gcc ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
 
@@ -1559,7 +1461,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 
 [+ IF compare-target +]
 [+compare-target+]: all-stage[+id+]-gcc
-	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
@@ -1586,8 +1488,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 [+bootstrap-target+]:
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble [+
 	  IF compare-target +] [+compare-target+] [+
-	  ENDIF compare-target +] \
-	  stage[+id+]-start all stage[+id+]-end 
+	  ENDIF compare-target +] all
 [+ ENDIF bootstrap-target +]
 
 .PHONY: restage[+id+] touch-stage[+id+] distclean-stage[+id+]
@@ -1595,7 +1496,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 [+ IF prev +]distclean-stage[+prev+]:: distclean-stage[+id+] [+ ENDIF prev +]
 distclean-stage[+id+]::
-	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf configure-stage[+id+]-gcc all-stage[+id+]-gcc stage[+id+]-gcc [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
@@ -1639,7 +1540,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
-	$(MAKE) stageprofile-bubble distclean-stagefeedback stageprofile-start
+	$(MAKE) stageprofile-bubble distclean-stagefeedback
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \

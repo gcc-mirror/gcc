@@ -1,3 +1,23 @@
+2004-08-03 Paolo Bonzini <bonzini@gnu.org>
+
+	* Makefile.def (host-modules): Add gcc.
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (sorry): New rule.
+	(configure-host, all-host, [+make_target+]-host, do-check,
+	install-host): Do not add gcc as a special case.
+	(host modules): Add a small special-casing for gcc.  Export
+	extra_make_flags through the environment.
+	(maybe-configure-gcc, configure-gcc, maybe-all-gcc, all-gcc,
+	maybe-check-gcc, check-gcc, maybe-install-gcc, install-gcc,
+	other recursive targets for gcc): Remove.
+
+	(all, do-[+make_target+], do-check): Wrap between unstage and stage.
+	(stage, unstage): New rules.
+	(stage[+id+]-start, stage[+id+]-end, [+compare-target+],
+	distclean-stage[+id+]): Use stage_current.
+	([+bootstrap-target+], profiledbootstrap): Do not invoke manually
+	the stage*-start rules.
+
 2004-08-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* ltcf-cxx.sh: On Darwin, make archive multi-module, and don't
