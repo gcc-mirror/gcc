@@ -47,6 +47,11 @@ package java.net;
 
 public class InetSocketAddress extends SocketAddress
 {
+  /**
+   * Compatible with JDK 1.4+
+   */
+  private static final long serialVersionUID = 5076001401234631237L;
+  
   String hostname;
   InetAddress addr;
   int port;
