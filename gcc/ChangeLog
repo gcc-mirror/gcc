@@ -1,3 +1,10 @@
+2003-11-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* cppfiles.c (pch_open_file): New parameter 'invalid_pch', set it.
+	(find_file_in_dir): Likewise.
+	(_cpp_find_file): Print message if no header file is found
+	but an invalid PCH file was.
+
 2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (pedantic_lvalue_warning): Deprecate compound

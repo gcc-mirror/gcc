@@ -1,3 +1,7 @@
+2003-11-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/warn-1.c: Allow for more helpful error message.
+
 2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/compound-lvalue-1.c: New test.
