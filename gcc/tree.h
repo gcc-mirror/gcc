@@ -749,6 +749,10 @@ struct tree_vec
 /* In a RTL_EXPR node.  */
 #define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[0])
 #define RTL_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[1])
+/* Nonzero if the RTL_EXPR does not define a scope, i.e., if
+   temporaries defined during its scope should persist even after the
+   RTL_EXPR has been expanded.  */
+#define RTL_EXPR_HAS_NO_SCOPE(NODE) TREE_ASM_WRITTEN (NODE)
 
 /* In a CALL_EXPR node.  */
 #define CALL_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[2])

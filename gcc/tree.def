@@ -686,10 +686,14 @@ DEFTREECODE (SAVE_EXPR, "save_expr", 'e', 3)
    but where we must re-expand.  */
 DEFTREECODE (UNSAVE_EXPR, "unsave_expr", 'e', 1)
 
-/* Represents something whose RTL has already been expanded
-   as a sequence which should be emitted when this expression is expanded.
-   The first operand is the RTL to emit.  It is the first of a chain of insns.
-   The second is the RTL expression for the result.  */
+/* Represents something whose RTL has already been expanded as a
+   sequence which should be emitted when this expression is expanded.
+   The first operand is the RTL to emit.  It is the first of a chain
+   of insns.  The second is the RTL expression for the result.  If
+   RTL_EXPR_HAS_NO_SCOPE does not hold for this expression, then all
+   temporaries created within this RTL_EXPR (except for the
+   RTL_EXPR_RTL) are out-of-scope after the RTL_EXPR is expanded.  (In
+   other words, their stack slots may be reused.)  */
 DEFTREECODE (RTL_EXPR, "rtl_expr", 'e', 2)
 
 /* & in C.  Value is the address at which the operand's value resides.

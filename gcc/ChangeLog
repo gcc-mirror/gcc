@@ -1,5 +1,12 @@
 2000-03-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.def (RTL_EXPR): Update documentation.
+	* tree.h (RTL_EXPR_HAS_NO_SCOPE): New macro.
+	* expr.c (expand_expr): Handle RTL_EXPR_HAS_NO_SCOPE.
+	* function.c (preserve_rtl_expr_temp): New function.
+	(preserve_rtl_expr_temps): Likewise.
+	(preserve_rtl_expr_result): Use it.
+
 	Revert this patch:
 	2000-03-04  Mark Mitchell  <mark@codesourcery.com>
 
