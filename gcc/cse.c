@@ -193,6 +193,11 @@ Related expressions:
 
 static int max_reg;
 
+/* One plus largest instruction UID used in this function at time of
+   cse_main call.  */
+
+static int max_insn_uid;
+
 /* Length of vectors indexed by quantity number.
    We know in advance we will not need a quantity number this big.  */
 
@@ -7942,10 +7947,16 @@ cse_around_loop (loop_start)
 
      The only thing we do with SET_DEST is invalidate entries, so we
      can safely process each SET in order.  It is slightly less efficient
-     to do so, but we only want to handle the most common cases.  */
+     to do so, but we only want to handle the most common cases.
+
+     The gen_move_insn call in cse_set_around_loop may create new pseudos.
+     These pseudos won't have valid entries in any of the tables indexed
+     by register number, such as reg_qty.  We avoid out-of-range array
+     accesses by not processing any instructions created after cse started.  */
 
   for (insn = NEXT_INSN (loop_start);
        GET_CODE (insn) != CALL_INSN && GET_CODE (insn) != CODE_LABEL
+       && INSN_UID (insn) < max_insn_uid
        && ! (GET_CODE (insn) == NOTE
 	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END);
        insn = NEXT_INSN (insn))
@@ -8401,6 +8412,8 @@ cse_main (f, nregs, after_loop, file)
   init_recog ();
 
   max_reg = nregs;
+
+  max_insn_uid = get_max_uid ();
 
   all_minus_one = (int *) alloca (nregs * sizeof (int));
   consec_ints = (int *) alloca (nregs * sizeof (int));
