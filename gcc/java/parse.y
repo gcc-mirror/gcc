@@ -6714,6 +6714,15 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  type = QUAL_DECL_TYPE (decl);
 	  continue;
 
+	case PLUS_EXPR:
+	  if ((decl = java_complete_tree (qual_wfl)) == error_mark_node)
+	    return 1;
+	  if ((type = patch_string (decl)))
+	    decl = type;
+	  *where_found = QUAL_RESOLUTION (q) = decl;
+	  *type_found = type = TREE_TYPE (decl);
+	  break;
+
 	default:
 	  /* Fix for -Wall Just go to the next statement. Don't
              continue */
@@ -7885,7 +7894,8 @@ qualify_ambiguous_name (id)
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
 
-    else if (code == STRING_CST || code == CONDITIONAL_EXPR)
+    else if (code == STRING_CST || code == CONDITIONAL_EXPR 
+	     || code == PLUS_EXPR)
       {
 	qual = TREE_CHAIN (qual);
 	qual_wfl = QUAL_WFL (qual);

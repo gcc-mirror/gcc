@@ -1,3 +1,8 @@
+Thu Nov  4 16:27:01 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Handle PLUS_EXPR.
+	(qualify_ambiguous_name): Likewise.
+	
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
