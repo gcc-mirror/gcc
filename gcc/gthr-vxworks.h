@@ -1,4 +1,4 @@
-/* Threads compatibily routines for libgcc2 for VxWorks.  */
+/* Threads compatibility routines for libgcc2 for VxWorks.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@wrs.com>.

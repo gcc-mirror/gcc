@@ -1,4 +1,4 @@
-/* Threads compatibily routines for libgcc2.  */
+/* Threads compatibility routines for libgcc2.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
