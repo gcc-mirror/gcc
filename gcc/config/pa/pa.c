@@ -8169,6 +8169,79 @@ pa_asm_out_destructor (rtx symbol, int priority)
 }
 #endif
 
+/* This function places uninitialized global data in the bss section.
+   The ASM_OUTPUT_ALIGNED_BSS macro needs to be defined to call this
+   function on the SOM port to prevent uninitialized global data from
+   being placed in the data section.  */
+   
+void
+pa_asm_output_aligned_bss (FILE *stream,
+			   const char *name,
+			   unsigned HOST_WIDE_INT size,
+			   unsigned int align)
+{
+  bss_section ();
+  fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
+
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
+#endif
+
+#ifdef ASM_OUTPUT_SIZE_DIRECTIVE
+  ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
+#endif
+
+  fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
+  ASM_OUTPUT_LABEL (stream, name);
+  fprintf (stream, "\t.block "HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+}
+
+/* Both the HP and GNU assemblers under HP-UX provide a .comm directive
+   that doesn't allow the alignment of global common storage to be directly
+   specified.  The SOM linker aligns common storage based on the rounded
+   value of the NUM_BYTES parameter in the .comm directive.  It's not
+   possible to use the .align directive as it doesn't affect the alignment
+   of the label associated with a .comm directive.  */
+
+void
+pa_asm_output_aligned_common (FILE *stream,
+			      const char *name,
+			      unsigned HOST_WIDE_INT size,
+			      unsigned int align)
+{
+  bss_section ();
+
+  assemble_name (stream, name);
+  fprintf (stream, "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",
+           MAX (size, align / BITS_PER_UNIT));
+}
+
+/* We can't use .comm for local common storage as the SOM linker effectively
+   treats the symbol as universal and uses the same storage for local symbols
+   with the same name in different object files.  The .block directive
+   reserves an uninitialized block of storage.  However, it's not common
+   storage.  Fortunately, GCC never requests common storage with the same
+   name in any given translation unit.  */
+
+void
+pa_asm_output_aligned_local (FILE *stream,
+			     const char *name,
+			     unsigned HOST_WIDE_INT size,
+			     unsigned int align)
+{
+  bss_section ();
+  fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
+
+#ifdef LOCAL_ASM_OP
+  fprintf (stream, "%s", LOCAL_ASM_OP);
+  assemble_name (stream, name);
+  fprintf (stream, "\n");
+#endif
+
+  ASM_OUTPUT_LABEL (stream, name);
+  fprintf (stream, "\t.block "HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+}
+
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
    use in fmpysub instructions.  */
 int
