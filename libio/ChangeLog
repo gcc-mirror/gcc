@@ -1,3 +1,7 @@
+Wed Feb 10 09:25:48 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gen-params (VTABLE_LABEL_PREFIX): Handle windows32. 
+
 Wed Feb  3 22:05:41 1999  H.J. Lu  (hjl@gnu.org)
 			  Jeffrey A Law  (law@cygnus.com)
 

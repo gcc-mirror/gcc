@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 1992, 1993, 1994 Free Software Foundation
+# Copyright (C) 1992, 1993, 1994, 1997, 1998, 1999 Free Software Foundation
 # 
 # This file is part of the GNU IO Library.  This library is free
 # software; you can redistribute it and/or modify it under the
@@ -124,9 +124,13 @@ if test -z "${NAMES_HAVE_UNDERSCORE}" -o -z "${DOLLAR_IN_LABEL}" \
 	>>dummy.out
       # Now we get rid of the <>, and any other junk on the nm output line.
       # (We get rid of <filebuf> in case nm included debugging output for
-      # class filebuf itself.)  Finally, we select the first line of
-      # the result, and hope that's what we wanted!
-      vtab_name=`${SED} -n -e '/<filebuf>/d' -e 's/^.*<\(.*\)>.*$/\1/p' \
+      # class filebuf itself.)  On windows32, we also need to delete the 
+      # unique sections (.data$_vt$*), otherwise we get the wrong result.
+      # Finally, we select the first line of the result, and hope that's 
+      # what we wanted!
+      vtab_name=`${SED} -n -e '/<filebuf>/d' \
+        -e '/\.data[$_.]<_vt\$7filebuf>/d' \
+        -e 's/^.*<\(.*\)>.*$/\1/p' \
         <dummy.out | ${SED} -n -e '1p'`
       case "${vtab_name}" in
         *7filebuf) echo "#define ${macro_prefix}VTABLE_LABEL_HAS_LENGTH 1" ;;
