@@ -140,9 +140,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "splay-tree.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

@@ -73,9 +73,6 @@ static GTY(()) tree current_tinst_level;
    local variables.  */
 static htab_t local_specializations;
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 #define UNIFY_ALLOW_NONE 0
 #define UNIFY_ALLOW_MORE_CV_QUAL 1
 #define UNIFY_ALLOW_LESS_CV_QUAL 2

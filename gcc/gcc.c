@@ -122,9 +122,6 @@ extern int getrusage PARAMS ((int, struct rusage *));
 
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
 #ifndef LIBRARY_PATH_ENV
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"

@@ -143,9 +143,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef DELAY_SLOTS
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 #ifndef ANNUL_IFTRUE_SLOTS
 #define eligible_for_annul_true(INSN, SLOTS, TRIAL, FLAGS) 0
 #endif

@@ -90,9 +90,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* This obstack is used to accumulate the encoding of a data type.  */
 static struct obstack util_obstack;
 /* This points to the beginning of obstack contents,

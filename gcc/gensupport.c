@@ -32,9 +32,6 @@ int target_flags;
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 static int sequence_num;
 static int errors;
 

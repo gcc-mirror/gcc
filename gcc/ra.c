@@ -38,9 +38,6 @@
 #include "flags.h"
 #include "ra.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* This is the toplevel file of a graph coloring register allocator.
    It is able to act like a George & Appel allocator, i.e. with iterative
    coalescing plus spill coalescing/propagation.

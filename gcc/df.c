@@ -189,9 +189,6 @@ do {                                                            \
   EXECUTE_IF_SET_IN_SBITMAP (BITMAP, MIN, node_,                \
     {(BB) = BASIC_BLOCK (node_); CODE;});} while (0)
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 static struct obstack df_ref_obstack;
 static struct df *ddf;
 

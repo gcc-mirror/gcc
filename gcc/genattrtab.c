@@ -121,9 +121,6 @@ static struct obstack obstack1, obstack2;
 struct obstack *hash_obstack = &obstack1;
 struct obstack *temp_obstack = &obstack2;
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* enough space to reserve for printing out ints */
 #define MAX_DIGITS (HOST_BITS_PER_INT * 3 / 10 + 3)
 

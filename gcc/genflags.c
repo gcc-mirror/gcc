@@ -29,10 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "errors.h"
 #include "gensupport.h"
 
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* Obstack to remember insns with.  */
 static struct obstack obstack;
 

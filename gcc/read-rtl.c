@@ -25,9 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "hashtab.h"
 
-#define	obstack_chunk_alloc	xmalloc
-#define	obstack_chunk_free	free
-
 static htab_t md_constants;
 
 static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
