@@ -769,16 +769,6 @@ bit_memory_operand (op, mode)
 	  && EXTRA_CONSTRAINT (op, 'U'));
 }
 
-/* Recognize valid operators for bit test.  */
-
-int
-eq_operator (x, mode)
-     rtx x;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (x) == EQ || GET_CODE (x) == NE);
-}
-
 /* Handle machine specific pragmas for compatibility with existing
    compilers for the H8/300.
 
