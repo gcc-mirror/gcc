@@ -501,6 +501,7 @@ prepare_scc_operands (code)
   /* First need a compare insn.  */
   switch (code)
     {
+    default:
     case NE:
       /* It isn't possible to handle this case.  */
       abort ();
@@ -515,8 +516,6 @@ prepare_scc_operands (code)
       break;
     case LEU:
       code = GEU;
-      break;
-    default:
       break;
     }
   if (code != oldcode)
@@ -2212,23 +2211,23 @@ find_barrier (num_mova, mova, from)
     }
 
   if (num_mova)
-  {
-    if (leading_mova)
-      {
-	/* Try as we might, the leading mova is out of range.  Change
-	   it into a load (which will become a pcload) and retry.  */
-	SET_SRC (PATTERN (mova)) = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
-	INSN_CODE (mova) = -1;
-        return find_barrier (0, 0, mova);
-      }
-    else
-      {
-	/* Insert the constant pool table before the mova instruction,
-	   to prevent the mova label reference from going out of range.  */
-	from = mova;
-	good_barrier = found_barrier = barrier_before_mova;
-      }
-  }
+    {
+      if (leading_mova)
+	{
+	  /* Try as we might, the leading mova is out of range.  Change
+	     it into a load (which will become a pcload) and retry.  */
+	  SET_SRC (PATTERN (mova)) = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
+	  INSN_CODE (mova) = -1;
+	  return find_barrier (0, 0, mova);
+	}
+      else
+	{
+	  /* Insert the constant pool table before the mova instruction,
+	     to prevent the mova label reference from going out of range.  */
+	  from = mova;
+	  good_barrier = found_barrier = barrier_before_mova;
+	}
+    }
 
   if (found_barrier)
     {
@@ -2530,7 +2529,8 @@ gen_block_redirect (jump, addr, need_block)
 	      break;
 	    }
 	}
-      for (used = dead = 0, scan = JUMP_LABEL (jump); (scan = NEXT_INSN (scan)); )
+      for (used = dead = 0, scan = JUMP_LABEL (jump);
+	   (scan = NEXT_INSN (scan)); )
 	{
 	  enum rtx_code code;
 
@@ -2549,12 +2549,12 @@ gen_block_redirect (jump, addr, need_block)
 		  break;
 		}
 	      if (code == JUMP_INSN)
-	      {
-		if (jump_left-- && simplejump_p (scan))
-		  scan = JUMP_LABEL (scan);
-		else
-		  break;
-	      }
+		{
+		  if (jump_left-- && simplejump_p (scan))
+		    scan = JUMP_LABEL (scan);
+		  else
+		    break;
+		}
 	    }
 	}
       /* Mask out the stack pointer again, in case it was
@@ -2624,7 +2624,7 @@ struct far_branch
   int address;
 };
 
-static  void gen_far_branch PARAMS ((struct far_branch *));
+static void gen_far_branch PARAMS ((struct far_branch *));
 enum mdep_reorg_phase_e mdep_reorg_phase;
 void
 gen_far_branch (bp)
@@ -3326,12 +3326,12 @@ split_branches (first)
 			bp->near_label = label;
 		      }
 		    else if (label && ! NEXT_INSN (label))
-		    {
-		      if (addr + 2 - bp->address <= CONDJUMP_MAX)
-			bp->insert_place = insn;
-		      else
-			gen_far_branch (bp);
-		    }
+		      {
+			if (addr + 2 - bp->address <= CONDJUMP_MAX)
+			  bp->insert_place = insn;
+			else
+			  gen_far_branch (bp);
+		      }
 		  }
 		if (! label
 		    || (NEXT_INSN (label) && bp->address - addr < CONDJUMP_MIN))
@@ -3737,25 +3737,25 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	    live_regs_mask |= 1 << reg;
 	  count++;
 	  if (TARGET_SH4 && TARGET_FMOVD && reg >= FIRST_FP_REG)
-	  {
-	    if (reg <= LAST_FP_REG)
-	      {
-		if (! TARGET_FPU_SINGLE && ! regs_ever_live[reg ^ 1])
-		  {
-		    if (reg >= 32)
-		      *live_regs_mask2 |= 1 << ((reg ^ 1) - 32);
-		    else
-		      live_regs_mask |= 1 << (reg ^ 1);
-		    count++;
-		  }
-	      }
-	    else if (reg <= LAST_XD_REG)
-	      {
-		/* Must switch to double mode to access these registers.  */
-		target_flags &= ~FPU_SINGLE_BIT;
-		count++;
-	      }
-	  }
+	    {
+	      if (reg <= LAST_FP_REG)
+		{
+		  if (! TARGET_FPU_SINGLE && ! regs_ever_live[reg ^ 1])
+		    {
+		      if (reg >= 32)
+			*live_regs_mask2 |= 1 << ((reg ^ 1) - 32);
+		      else
+			live_regs_mask |= 1 << (reg ^ 1);
+		      count++;
+		    }
+		}
+	      else if (reg <= LAST_XD_REG)
+		{
+		  /* Must switch to double mode to access these registers.  */
+		  target_flags &= ~FPU_SINGLE_BIT;
+		  count++;
+		}
+	    }
 	}
     }
 
