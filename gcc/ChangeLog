@@ -1,5 +1,12 @@
 2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
 
+	PR preprocessor/8497
+	PR preprocessor/8501
+	* cpptrad.c (scan_out_logical_line): A '#' from a macro doesn't
+	start a directive.  In assembler, #NUM is not a line directive.
+
+2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cppmain.c (cpp_preprocess_file): Loop to pop any -included
 	buffers.
 
