@@ -1,3 +1,8 @@
+2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/sh/sh.c (sh_asm_named_section): Fix typo in align
+	parameter in last change.
+
 2001-08-04  Zack Weinberg  <zackw@panix.com>
 
 	* sparc.md: Don't use #if inside C test expression.
