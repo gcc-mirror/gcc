@@ -1,3 +1,7 @@
+2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lib/dg-pch.exp: Work round PCH bug.
+
 2003-08-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-1.c: Add macro helpers.  Add missing math

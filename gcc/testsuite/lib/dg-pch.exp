@@ -39,7 +39,7 @@ proc dg-pch { subdir test options suffix } {
 	set dg-do-what-default precompile
 	catch { file delete "$bname$suffix" }
 	gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-	dg-test -keep-output "$bname$suffix" $flags ""
+	dg-test -keep-output "./$bname$suffix" $flags ""
 
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile

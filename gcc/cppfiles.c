@@ -621,7 +621,7 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   pfile->mi_cmacro = 0;
 
   /* Generate the call back.  */
-  _cpp_do_file_change (pfile, LC_ENTER, file->name, 1, sysp);
+  _cpp_do_file_change (pfile, LC_ENTER, file->path, 1, sysp);
 
   return true;
 }
