@@ -39,7 +39,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JPOOL_UTF(JCF, INDEX) CPOOL_UTF(&(JCF)->cpool, INDEX)
 #define JPOOL_UTF_LENGTH(JCF, INDEX) IDENTIFIER_LENGTH (JPOOL_UTF (JCF, INDEX))
 #define JPOOL_UTF_DATA(JCF, INDEX) \
-  ((unsigned char*) IDENTIFIER_POINTER (JPOOL_UTF (JCF, INDEX)))
+  ((const unsigned char *) IDENTIFIER_POINTER (JPOOL_UTF (JCF, INDEX)))
 #define HANDLE_CONSTANT_Utf8(JCF, INDEX, LENGTH) \
   do { \
     unsigned char save;  unsigned char *text; \
@@ -87,12 +87,14 @@ static void process_zip_dir PROTO ((void));
 static void parse_source_file PROTO ((tree));
 static void jcf_parse_source PROTO ((void));
 static int jcf_figure_file_type PROTO ((JCF *));
-static int find_in_current_zip PROTO ((char *, struct JCF **));
+static int find_in_current_zip PROTO ((const char *, struct JCF **));
 static void parse_class_file PROTO ((void));
+static void set_source_filename PROTO ((JCF *, int));
+static int predefined_filename_p PROTO ((tree));
 
 /* Handle "SourceFile" attribute. */
 
-void
+static void
 set_source_filename (jcf, index)
      JCF *jcf;
      int index;
@@ -303,10 +305,10 @@ get_constant (jcf, index)
       {
 	extern struct obstack *expression_obstack;
 	tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));
-	char *utf8_ptr = IDENTIFIER_POINTER (name);
+	const char *utf8_ptr = IDENTIFIER_POINTER (name);
 	unsigned char *str_ptr;
 	int utf8_len = IDENTIFIER_LENGTH (name);
-	unsigned char *str = (unsigned char*)utf8_ptr;
+	const unsigned char *str = (const unsigned char *)utf8_ptr;
 	int i = utf8_len;
 	int str_len;
 
@@ -327,7 +329,7 @@ get_constant (jcf, index)
 	TREE_STRING_POINTER (value)
 	  = obstack_alloc (expression_obstack, 2 * str_len);
 	str_ptr = (unsigned char *) TREE_STRING_POINTER (value);
-	str = (unsigned char*)utf8_ptr;
+	str = (const unsigned char *)utf8_ptr;
 	for (i = 0; i < str_len; i++)
 	  {
 	    int char_value;
@@ -426,7 +428,7 @@ get_class_constant (JCF *jcf , int i)
     {
       int name_index = JPOOL_USHORT1 (jcf, i);
       /* verify_constant_pool confirmed that name_index is a CONSTANT_Utf8. */
-      char *name = JPOOL_UTF_DATA (jcf, name_index);
+      const char *name = JPOOL_UTF_DATA (jcf, name_index);
       int nlength = JPOOL_UTF_LENGTH (jcf, name_index);
       if (name[0] == '[')  /* Handle array "classes". */
 	  type = TREE_TYPE (parse_signature_string (name, nlength));
@@ -1007,7 +1009,7 @@ static void process_zip_dir()
    zip file.  */
 static int
 DEFUN(find_in_current_zip, (name, length, jcf),
-      char *name AND JCF **jcf)
+      const char *name AND JCF **jcf)
 {
   JCF *local_jcf;
   tree class_name = maybe_get_identifier (name), class, icv;

@@ -39,6 +39,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static void expand_start_java_handler PROTO ((struct eh_range *));
 static void expand_end_java_handler PROTO ((struct eh_range *));
+static struct eh_range *find_handler_in_range PROTO ((int, struct eh_range *,
+						      struct eh_range *));
+static void link_handler PROTO ((struct eh_range *, struct eh_range *));
+static void check_start_handlers PROTO ((struct eh_range *, int));
 
 extern struct obstack permanent_obstack;
 

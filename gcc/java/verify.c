@@ -35,6 +35,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static void push_pending_label PROTO ((tree));
 static tree merge_types PROTO ((tree, tree));
+static const char *check_pending_block PROTO ((tree));
+static void type_stack_dup PROTO ((int, int));
+static int start_pc_cmp PROTO ((const PTR, const PTR));
 
 extern int stack_pointer;
 
@@ -310,8 +313,8 @@ struct pc_index
 /* A helper that is used when sorting exception ranges.  */
 static int
 start_pc_cmp (xp, yp)
-     const GENERIC_PTR xp;
-     const GENERIC_PTR yp;
+     const PTR xp;
+     const PTR yp;
 {
   struct pc_index *x = (struct pc_index *) xp;
   struct pc_index *y = (struct pc_index *) yp;
@@ -344,7 +347,7 @@ start_pc_cmp (xp, yp)
 int
 verify_jvm_instructions (jcf, byte_ops, length)
      JCF* jcf;
-     unsigned char* byte_ops;
+     const unsigned char *byte_ops;
      long length;
 {
   tree label;

@@ -207,11 +207,18 @@ typedef unsigned long     ulg;  /*  predefined on some systems) & match zip  */
 
 
 /***********************/
+/* Prototypes          */
+/***********************/
+
+static ush makeword PROTO ((const uch *));
+static ulg makelong PROTO ((const uch *));
+
+/***********************/
 /* Function makeword() */
 /***********************/
 
 static ush makeword(b)
-    uch *b;
+    const uch *b;
 {
     /*
      * Convert Intel style 'short' integer to non-Intel non-16-bit
@@ -226,7 +233,7 @@ static ush makeword(b)
 /***********************/
 
 static ulg makelong(sig)
-    uch *sig;
+    const uch *sig;
 {
     /*
      * Convert intel style 'long' variable to non-Intel non-16-bit

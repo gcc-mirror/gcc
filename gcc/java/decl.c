@@ -40,6 +40,8 @@ static tree push_jvm_slot PROTO ((int, tree));
 static tree builtin_function PROTO ((const char *, tree,
 				     enum built_in_function, const char *));
 static tree lookup_name_current_level PROTO ((tree));
+static tree push_promoted_type PROTO ((const char *, tree));
+static struct binding_level *make_binding_level PROTO ((void));
 
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
@@ -380,7 +382,7 @@ tree va_list_type_node;
 
 static tree
 push_promoted_type (name, actual_type)
-     char *name;
+     const char *name;
      tree actual_type;
 {
   tree type = make_node (TREE_CODE (actual_type));
@@ -940,7 +942,7 @@ pushdecl (x)
   DECL_CONTEXT (x) = current_function_decl;
   if (name)
     {
-      char *file;
+      const char *file;
       int line;
 
       t = lookup_name_current_level (name);
@@ -1009,7 +1011,7 @@ pushdecl (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
-	      char *warnstring = 0;
+	      const char *warnstring = 0;
 
 	      if (TREE_CODE (x) == PARM_DECL
 		  && current_binding_level->level_chain->parm_flag)

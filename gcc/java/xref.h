@@ -24,7 +24,7 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Exported functions. */
-int xref_flag_value PROTO ((char *));
+int xref_flag_value PROTO ((const char *));
 void expand_xref PROTO ((tree));
 void xref_set_data PROTO ((int, void *));
 void *xref_get_data PROTO ((int));

@@ -45,6 +45,8 @@ static tree get_dispatch_vector PROTO ((tree));
 static tree get_dispatch_table PROTO ((tree, tree));
 static void append_gpp_mangled_type PROTO ((struct obstack *, tree));
 static tree mangle_static_field PROTO ((tree));
+static void add_interface_do PROTO ((tree, tree, int));
+static tree maybe_layout_super_class PROTO ((tree, tree));
 
 static rtx registerClass_libfunc;
 
@@ -448,7 +450,7 @@ add_method (this_class, access_flags, name, method_sig)
 {
   tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
   tree function_type, fndecl;
-  unsigned char *sig = (unsigned char*)IDENTIFIER_POINTER (method_sig);
+  const unsigned char *sig = (const unsigned char*)IDENTIFIER_POINTER (method_sig);
   push_obstacks (&permanent_obstack, &permanent_obstack);
   if (sig[0] != '(')
     fatal ("bad method signature");
@@ -555,7 +557,7 @@ tree
 build_utf8_ref (name)
      tree name;
 {
-  char* name_ptr = IDENTIFIER_POINTER(name);
+  const char * name_ptr = IDENTIFIER_POINTER(name);
   int name_len = IDENTIFIER_LENGTH(name);
   char buf[60];
   char *buf_ptr;
@@ -662,7 +664,7 @@ build_class_ref (type)
 	}
       else
 	{
-	  char *name;
+	  const char *name;
 	  char buffer[25];
 	  if (flag_emit_class_files)
 	    {
@@ -1329,7 +1331,7 @@ append_gpp_mangled_type (obstack, type)
 	}
       else
 	{
-	  char *class_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	  const char *class_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 	  append_gpp_mangled_classtype (obstack, class_name);
 	}
       break;
@@ -1547,7 +1549,7 @@ tree
 layout_class_method (this_class, super_class, method_decl, dtable_count)
      tree this_class, super_class, method_decl, dtable_count;
 {
-  char *ptr;
+  const char *ptr;
   char *asm_name;
   tree arg, arglist, t;
   int method_name_needs_escapes = 0;
@@ -1647,7 +1649,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 
   if (method_name == init_identifier_node)
     {
-      char *p = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class)));
+      const char *p = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class)));
       for (ptr = p; *ptr; )
 	{
 	  if (*ptr++ == '.')

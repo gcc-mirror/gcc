@@ -82,12 +82,15 @@ static void print_access_flags PROTO ((FILE *, uint16, char));
 static void print_constant_terse PROTO ((FILE*, JCF*, int, int));
 static void print_constant PROTO ((FILE *, JCF *, int, int));
 static void print_constant_ref PROTO ((FILE *, JCF *, int));
-static void disassemble_method PROTO ((JCF*, unsigned char *, int));
+static void disassemble_method PROTO ((JCF*, const unsigned char *, int));
 static void print_name PROTO ((FILE*, JCF*, int));
 static void print_signature PROTO ((FILE*, JCF*, int, int));
 static int utf8_equal_string PROTO ((struct JCF*, int, const char *));
 static int usage PROTO ((void));
 static void process_class PROTO ((struct JCF *));
+static void print_constant_pool PROTO ((struct JCF *));
+static void print_exception_table PROTO ((struct JCF *,
+					  const unsigned char *entries, int));
 
 #define PRINT_SIGNATURE_RESULT_ONLY 1
 #define PRINT_SIGNATURE_ARGS_ONLY 2
@@ -482,7 +485,7 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
       break;
     case CONSTANT_Utf8:
       {
-	register unsigned char *str = JPOOL_UTF_DATA (jcf, index);
+	register const unsigned char *str = JPOOL_UTF_DATA (jcf, index);
 	int length = JPOOL_UTF_LENGTH (jcf, index);
 	if (verbosity > 0)
 	  { /* Print as 8-bit bytes. */
@@ -503,7 +506,7 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
     }
 }
 
-void
+static void
 DEFUN(print_constant_pool, (jcf),
       JCF *jcf)
 {
@@ -630,13 +633,13 @@ DEFUN(print_signature, (stream, jcf, signature_index, int options),
 
 static void
 DEFUN(print_exception_table, (jcf, entries, count),
-      JCF *jcf AND unsigned char *entries AND int count)
+      JCF *jcf AND const unsigned char *entries AND int count)
 {
   /* Print exception table. */
   int i = count;
   if (i > 0)
     {
-      unsigned char *ptr = entries;
+      const unsigned char *ptr = entries;
       fprintf (out, "Exceptions (count: %d):\n", i);
       for (; --i >= 0;  ptr+= 8)
 	{
@@ -726,7 +729,7 @@ DEFUN(main, (argc, argv),
 
   for (argi = 1; argi < argc; argi++)
     {
-      char *arg = argv[argi];
+      const char *arg = argv[argi];
 
       if (arg[0] != '-' || ! strcmp (arg, "--"))
 	break;
@@ -802,7 +805,7 @@ DEFUN(main, (argc, argv),
       for (; argi < argc; argi++)
 	{
 	  char *arg = argv[argi];
-	  char* class_filename = find_class (arg, strlen (arg), jcf, 0);
+	  const char *class_filename = find_class (arg, strlen (arg), jcf, 0);
 	  if (class_filename == NULL)
 	    class_filename = find_classfile (arg, jcf, NULL);
 	  if (class_filename == NULL)
@@ -816,7 +819,7 @@ DEFUN(main, (argc, argv),
 	      long compressed_size, member_size;
 	      int compression_method, filename_length, extra_length;
 	      int general_purpose_bits;
-	      char *filename;
+	      const char *filename;
 	      int total_length;
 	      if (flag_print_class_info)
 		fprintf (out, "Reading classes from archive %s.\n",
@@ -910,7 +913,7 @@ DEFUN(main, (argc, argv),
 
 static void
 DEFUN(disassemble_method, (jcf, byte_ops, len),
-      JCF* jcf AND unsigned char *byte_ops AND int len)
+      JCF* jcf AND const unsigned char *byte_ops AND int len)
 {
 #undef AND /* Causes problems with opcodes for iand and land. */
 #undef PTR
@@ -999,7 +1002,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #define ARRAY_NEW(TYPE) ARRAY_NEW_##TYPE
 #define ARRAY_NEW_NUM \
  INT_temp = IMMEDIATE_u1; \
- { char *str; \
+ { const char *str; \
   switch (INT_temp) {  \
     case  4: str = "boolean"; break; \
     case  5: str = "char"; break; \

@@ -34,6 +34,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "convert.h"
 #include "toplev.h"
 
+static tree convert_ieee_real_to_integer PROTO ((tree, tree));
+static tree parse_signature_type PROTO ((const unsigned char **,
+					 const unsigned char *));
+
 tree * type_map;
 extern struct obstack permanent_obstack;
 
@@ -546,7 +550,7 @@ parse_signature_string (sig_string, sig_length)
 tree
 get_type_from_signature (tree signature)
 {
-  unsigned char *sig = (unsigned char *) IDENTIFIER_POINTER (signature);
+  const unsigned char *sig = (const unsigned char *) IDENTIFIER_POINTER (signature);
   int len = IDENTIFIER_LENGTH (signature);
   tree type;
   /* Primitive types aren't cached. */

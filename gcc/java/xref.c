@@ -42,7 +42,7 @@ static xref_flag_table xref_table [] = {
 
 int
 xref_flag_value (flag)
-     char *flag;
+     const char *flag;
 {
   int i;
   for (i = 0; xref_table [i].key; i++)

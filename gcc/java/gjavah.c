@@ -1652,7 +1652,8 @@ DEFUN(main, (argc, argv),
   for (; argi < argc; argi++)
     {
       char *classname = argv[argi];
-      char *classfile_name, *current_output_file;
+      char *current_output_file;
+      const char *classfile_name;
 
       if (verbose)
 	fprintf (stderr, "Processing %s\n", classname);

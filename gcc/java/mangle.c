@@ -87,7 +87,7 @@ emit_unicode_mangled_name (obstack, name, len)
 	  break;
 	}
       if (ch >= '0' && ch <= '9')
-	emit_escape = (ptr == (unsigned char*) name);
+	emit_escape = (ptr == (const unsigned char *) name);
       else
 	emit_escape = (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z');
       if (emit_escape)

@@ -2315,7 +2315,7 @@ java_push_constant_from_pool (jcf, index)
 int
 process_jvm_instruction (PC, byte_ops, length)
      int PC;
-     unsigned char* byte_ops;
+     const unsigned char* byte_ops;
      long length ATTRIBUTE_UNUSED;
 { 
   const char *opname; /* Temporary ??? */

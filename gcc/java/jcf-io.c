@@ -240,7 +240,7 @@ DEFUN(open_class, (filename, jcf, fd, dep_name),
 #endif
 
 
-char *
+const char *
 DEFUN(find_classfile, (filename, jcf, dep_name),
       char *filename AND JCF *jcf AND const char *dep_name)
 {
@@ -262,7 +262,7 @@ DEFUN(find_classfile, (filename, jcf, dep_name),
    failure.  If JCF != NULL, it is suitably initialized.
    SOURCE_OK is true if we should also look for .java file. */
 
-char *
+const char *
 DEFUN(find_class, (classname, classname_length, jcf, source_ok),
       const char *classname AND int classname_length AND JCF *jcf AND int source_ok)
 
@@ -290,7 +290,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
-      char *path_name = jcf_path_name (entry);
+      const char *path_name = jcf_path_name (entry);
       if (class != 0)
 	{
 	  int dir_len;

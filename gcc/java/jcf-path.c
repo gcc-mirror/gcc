@@ -58,6 +58,11 @@ struct entry
   struct entry *next;
 };
 
+static void free_entry PROTO ((struct entry **));
+static void append_entry PROTO ((struct entry **, struct entry *));
+static void add_entry PROTO ((struct entry **, const char *, int));
+static void add_path PROTO ((struct entry **, const char *, int));
+
 /* We support several different ways to set the class path.
 
    built-in system directory (only libgcj.zip)
@@ -130,7 +135,7 @@ append_entry (entp, ent)
 static void
 add_entry (entp, filename, is_system)
      struct entry **entp;
-     char *filename;
+     const char *filename;
      int is_system;
 {
   int len;
@@ -177,10 +182,10 @@ add_entry (entp, filename, is_system)
 static void
 add_path (entp, cp, is_system)
      struct entry **entp;
-     char *cp;
+     const char *cp;
      int is_system;
 {
-  char *startp, *endp;
+  const char *startp, *endp;
 
   if (cp)
     {
@@ -229,7 +234,7 @@ jcf_path_init ()
 /* Call this when -classpath is seen on the command line.  */
 void
 jcf_path_classpath_arg (path)
-     char *path;
+     const char *path;
 {
   free_entry (&classpath_l);
   add_path (&classpath_l, path, 0);
@@ -238,7 +243,7 @@ jcf_path_classpath_arg (path)
 /* Call this when -CLASSPATH is seen on the command line.  */
 void
 jcf_path_CLASSPATH_arg (path)
-     char *path;
+     const char *path;
 {
   free_entry (&classpath_u);
   add_path (&classpath_u, path, 0);
@@ -247,7 +252,7 @@ jcf_path_CLASSPATH_arg (path)
 /* Call this when -I is seen on the command line.  */
 void
 jcf_path_include_arg (path)
-     char *path;
+     const char *path;
 {
   add_entry (&include_dirs, path, 0);
 }
