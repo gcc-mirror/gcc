@@ -1276,15 +1276,15 @@ extern char *a29k_function_name;
 
 /* Output before instructions.  */
 
-#define TEXT_SECTION_ASM_OP "\t.text"
+#define TEXT_SECTION_ASM_OP ".text"
 
 /* Output before read-only data.  */
 
-#define READONLY_DATA_SECTION_ASM_OP "\t.use .lit"
+#define READONLY_DATA_SECTION_ASM_OP ".use .lit"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP "\t.data"
+#define DATA_SECTION_ASM_OP ".data"
 
 /* Define an extra section for read-only data, a routine to enter it, and
    indicate that it is for read-only data.  */

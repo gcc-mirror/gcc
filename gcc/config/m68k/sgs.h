@@ -33,17 +33,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* SGS specific assembler pseudo ops. */
 
-#define	BYTE_ASM_OP		"\t.byte"
-#define WORD_ASM_OP		"\t.short"
-#define LONG_ASM_OP		"\t.long"
-#define SPACE_ASM_OP		"\t.space"
-#define ALIGN_ASM_OP		"\t.align"
-#define GLOBAL_ASM_OP		"\t.global"
-#define SWBEG_ASM_OP		"\t.swbeg"
-#define SET_ASM_OP		"\t.set"
+#define	BYTE_ASM_OP		".byte"
+#define WORD_ASM_OP		".short"
+#define LONG_ASM_OP		".long"
+#define SPACE_ASM_OP		".space"
+#define ALIGN_ASM_OP		".align"
+#define GLOBAL_ASM_OP		".global"
+#define SWBEG_ASM_OP		".swbeg"
+#define SET_ASM_OP		".set"
 
-#define UNALIGNED_SHORT_ASM_OP	"\t.short"	/* Used in dwarfout.c */
-#define UNALIGNED_INT_ASM_OP	"\t.long"	/* Used in dwarfout.c */
+#define UNALIGNED_SHORT_ASM_OP	".short"	/* Used in dwarfout.c */
+#define UNALIGNED_INT_ASM_OP	".long"		/* Used in dwarfout.c */
 
 #define ASM_PN_FORMAT		"%s_%d"		/* Format for private names */
 
@@ -114,7 +114,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_SHORT
 #define ASM_OUTPUT_SHORT(FILE,VALUE)			\
-( fprintf ((FILE), "%s ", WORD_ASM_OP),			\
+( fprintf ((FILE), "\t%s ", WORD_ASM_OP),		\
   output_addr_const ((FILE), (VALUE)),			\
   fprintf ((FILE), "\n"))
 
@@ -124,7 +124,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
 do { union { double d; long l[2]; } tem;		\
      tem.d = (VALUE);					\
-     fprintf((FILE), "%s 0x%x,0x%x\n", LONG_ASM_OP,	\
+     fprintf((FILE), "\t%s 0x%x,0x%x\n", LONG_ASM_OP,	\
 	     tem.l[0], tem.l[1]);			\
    } while (0)
 
@@ -134,7 +134,7 @@ do { union { double d; long l[2]; } tem;		\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { union { float f; long l;} tem;			\
      tem.f = (VALUE);					\
-     fprintf ((FILE), "%s 0x%x\n", LONG_ASM_OP, tem.l); \
+     fprintf ((FILE), "\t%s 0x%x\n", LONG_ASM_OP, tem.l); \
    } while (0)
 
 /* This is how to output an assembler line that says to advance the
@@ -143,7 +143,7 @@ do { union { float f; long l;} tem;			\
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
   if ((LOG) > 0)						\
-    fprintf ((FILE), "%s \t%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
+    fprintf ((FILE), "\t%s \t%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
   else if ((LOG) > 31)						\
     abort ();
 
@@ -157,7 +157,7 @@ do { union { float f; long l;} tem;			\
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 {								\
   register int sp = 0, lp = 0, ch;				\
-  fprintf ((FILE), "%s ", BYTE_ASM_OP);				\
+  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
   do {								\
     ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -172,7 +172,7 @@ do { union { float f; long l;} tem;			\
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n%s ", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n\t%s ", BYTE_ASM_OP);		\
 	  }							\
 	else							\
 	  {							\
@@ -205,7 +205,7 @@ do { union { float f; long l;} tem;			\
 #undef ASM_GLOBALIZE_LABEL
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)				\
     do {							\
-	fprintf ((FILE), "%s ", GLOBAL_ASM_OP);			\
+	fprintf ((FILE), "\t%s ", GLOBAL_ASM_OP);		\
 	assemble_name ((FILE), NAME);				\
 	fputs ("\n", FILE);					\
     } while (0)
@@ -226,7 +226,7 @@ do { union { float f; long l;} tem;			\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s %u\n", SPACE_ASM_OP, (SIZE))
+  fprintf (FILE, "\t%s %u\n", SPACE_ASM_OP, (SIZE))
 
 /* Translate Motorola opcodes such as `jbeq' into SGS opcodes such
    as `beq.w'.
@@ -387,7 +387,7 @@ do { union { float f; long l;} tem;			\
    example, can identify that it is the start of a switch table. */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\
-    fprintf ((FILE), "%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1)); \
+    fprintf ((FILE), "\t%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1)); \
     ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));
 
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
@@ -401,14 +401,14 @@ do { union { float f; long l;} tem;			\
 #undef ASM_OUTPUT_CASE_END
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
   if (RTX_INTEGRATED_P (TABLE))				\
-    asm_fprintf (FILE, "%s %LLD%d,%LL%d-%LLI%d-2.b\n",	\
+    asm_fprintf (FILE, "\t%s %LLD%d,%LL%d-%LLI%d-2.b\n",\
 		 SET_ASM_OP, (NUM), (NUM), (NUM))
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
-  asm_fprintf (FILE, "%s %LL%d-%LL%d\n", WORD_ASM_OP, VALUE, REL)
+  asm_fprintf (FILE, "\t%s %LL%d-%LL%d\n", WORD_ASM_OP, VALUE, REL)
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
    keep switch tables in the text section. */

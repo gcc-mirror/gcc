@@ -100,14 +100,14 @@ extern char *current_function_original_name;
   } while (0)
 
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\",\"progbits\"\n"
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",\"progbits\""
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\",\"progbits\"\n"
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",\"progbits\""
 
 /* Add definitions to support the .tdesc section as specified in the svr4
    ABI for the i860.  */
 
-#define TDESC_SECTION_ASM_OP    "\t.section\t.tdesc"
+#define TDESC_SECTION_ASM_OP    ".section\t.tdesc"
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_tdesc
