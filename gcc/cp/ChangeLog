@@ -1,5 +1,8 @@
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* g++spec.c: Adjust type of second argument to
+	lang_specific_driver, and update code as necessary.
+
 	* cp-tree.h: Don't prototype min_precision here.
 	(my_friendly_assert): Cast expression to void.
 	* semantics.c (do_poplevel): Initialize scope_stmts.

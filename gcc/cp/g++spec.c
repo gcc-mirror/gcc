@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
-     char ***in_argv;
+     const char *const **in_argv;
      int *in_added_libraries;
 {
   int i, j;
@@ -62,7 +62,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   const char *quote = NULL;
 
   /* The new argument list will be contained in this.  */
-  char **real_arglist;
   const char **arglist;
 
   /* Non-zero if we saw a `-xfoo' language specification on the
@@ -87,7 +86,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int argc;
 
   /* The argument list.  */
-  char **argv;
+  const char *const *argv;
 
   /* The number of libraries added in.  */
   int added_libraries;
@@ -203,14 +202,13 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   /* Make sure to have room for the trailing NULL argument.  */
   num_args = argc + added + need_math + 1;
-  real_arglist = (char **) xmalloc (num_args * sizeof (char *));
-  arglist = (const char **) real_arglist;
+  arglist = (const char **) xmalloc (num_args * sizeof (char *));
 
   i = 0;
   j = 0;
   
   /* Copy the 0th argument, i.e., the name of the program itself.  */
-  arglist[i++] = arglist[j++];
+  arglist[i++] = argv[j++];
 
 #if ENABLE_NEW_GXX_ABI
   /* If we should use the new ABI by default, add the appropriate flag
@@ -274,7 +272,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   arglist[j] = NULL;
 
   *in_argc = j;
-  *in_argv = real_arglist;
+  *in_argv = arglist;
   *in_added_libraries = added_libraries;
 }
 

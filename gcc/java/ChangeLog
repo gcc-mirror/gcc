@@ -1,5 +1,8 @@
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* jvspec.c: Adjust type of second argument to
+	lang_specific_driver, and update code as necessary.
+
 	* class.c (build_dtable_decl): Initialize dummy.
 
 2000-07-27  Tom Tromey  <tromey@cygnus.com>

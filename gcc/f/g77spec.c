@@ -86,14 +86,13 @@ typedef enum
 
 /* The original argument list and related info is copied here.  */
 static int g77_xargc;
-static const char **g77_xargv;
+static const char *const *g77_xargv;
 static void lookup_option PARAMS ((Option *, int *, const char **,
 				   const char *));
 static void append_arg PARAMS ((const char *));
 
 /* The new argument list will be built here.  */
 static int g77_newargc;
-static char **real_g77_newargv;
 static const char **g77_newargv;
 
 /* --- This comes from gcc.c (2.8.1) verbatim: */
@@ -240,8 +239,7 @@ append_arg (arg)
       int i;
 
       newargsize = (g77_xargc << 2) + 20;	/* This should handle all. */
-      real_g77_newargv = (char **) xmalloc (newargsize * sizeof (char *));
-      g77_newargv = (const char **) real_g77_newargv;
+      g77_newargv = (const char **) xmalloc (newargsize * sizeof (char *));
 
       /* Copy what has been done so far.  */
       for (i = 0; i < g77_newargc; ++i)
@@ -257,11 +255,11 @@ append_arg (arg)
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
-     char ***in_argv;
+     const char *const **in_argv;
      int *in_added_libraries ATTRIBUTE_UNUSED;
 {
   int argc = *in_argc;
-  const char **argv = (const char **) *in_argv;
+  const char *const *argv = *in_argv;
   int i;
   int verbose = 0;
   Option opt;
@@ -302,12 +300,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   fprintf (stderr, "\n");
 #endif
 
-  real_g77_newargv = *in_argv;
-
   g77_xargc = argc;
   g77_xargv = argv;
   g77_newargc = 0;
-  g77_newargv = argv;
+  g77_newargv = (const char **) argv;
 
   /* First pass through arglist.
 
@@ -572,7 +568,7 @@ For bug reporting instructions, please see:\n\
     }
 
   *in_argc = g77_newargc;
-  *in_argv = real_g77_newargv;
+  *in_argv = g77_newargv;
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */

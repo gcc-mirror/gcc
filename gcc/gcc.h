@@ -34,7 +34,7 @@ extern void fatal PARAMS ((const char *, ...))
 /* Spec files linked with gcc.c must provide definitions for these. */
 
 /* Called before processing to change/add/remove arguments. */
-extern void lang_specific_driver PARAMS ((int *, char ***, int *));
+extern void lang_specific_driver PARAMS ((int *, const char *const **, int *));
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
 extern int lang_specific_pre_link PARAMS ((void));

@@ -1,5 +1,8 @@
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* g77spec.c: Adjust type of second argument to
+	lang_specific_driver, and update code as necessary.
+
 	* expr.c (ffeexpr_finished_): Cast signed side of ?:
 	expression to bool.
 
