@@ -30,11 +30,11 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
 	    set output_file "[file rootname [file tail $prog]].i"
 	}
 	"compile" {
-	    set compile_type "object"
+	    set compile_type "assembly"
 	    set output_file "[file rootname [file tail $prog]].s"
 	}
 	"assemble" {
-	    set compile_type "assembly"
+	    set compile_type "object"
 	    set output_file "[file rootname [file tail $prog]].o"
 	}
 	"link" {
