@@ -255,6 +255,10 @@ static struct globals
    one) before collection is performed.  */
 #define GGC_MIN_EXPAND_FOR_GC (1.3)
 
+/* Bound `allocated_last_gc' to 4MB, to prevent the memory expansion
+   test from triggering too often when the heap is small.  */
+#define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
+
 
 static page_entry *lookup_page_table_entry PROTO ((void *));
 static void set_page_table_entry PROTO ((void *, page_entry *));
@@ -724,9 +728,7 @@ init_ggc ()
   G.debug_file = stdout;
 #endif
 
-  /* Set the initial allocation to 4MB, so no collection will be
-     performed until the heap is somewhat larger than 4 MB.  */
-  G.allocated_last_gc = 4 * 1024 * 1024;
+  G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
   empty_string = ggc_alloc_string ("", 0);
   ggc_add_string_root (&empty_string, 1);
@@ -1034,6 +1036,8 @@ ggc_collect ()
 #endif
 
   G.allocated_last_gc = G.allocated;
+  if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)
+    G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
   time = get_run_time () - time;
   gc_time += time;
