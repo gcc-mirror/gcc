@@ -1,5 +1,10 @@
 2000-04-25  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (combine_instructions): Add missing argument
+	to try_combine.
+
+2000-04-25  Richard Henderson  <rth@cygnus.com>
+
 	* toplev.c (rest_of_compilation): Delay sibcall optimization
 	until after emit_eh_context.
 

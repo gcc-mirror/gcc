@@ -658,7 +658,8 @@ combine_instructions (f, nregs)
 		   nextlinks;
 		   nextlinks = XEXP (nextlinks, 1))
 		if ((next = try_combine (insn, XEXP (links, 0),
-					 XEXP (nextlinks, 0))) != 0)
+					 XEXP (nextlinks, 0),
+					 &new_direct_jump_p)) != 0)
 		  goto retry;
 	    }
 
