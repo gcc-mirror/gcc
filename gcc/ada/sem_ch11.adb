@@ -401,7 +401,7 @@ package body Sem_Ch11 is
                     ("?assignment to pass-by-copy formal may have no effect",
                       P);
                   Error_Msg_N
-                    ("\?RAISE statement is abnormal return" &
+                    ("\?RAISE statement may result in abnormal return" &
                      " ('R'M 6.4.1(17))", P);
                end if;
             end if;
