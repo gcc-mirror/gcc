@@ -1283,6 +1283,7 @@ find_barrier (from)
 
       from = emit_jump_insn_after (gen_jump (label), from);
       JUMP_LABEL (from) = label;
+      LABEL_NUSES (label) = 1;
       found_barrier = emit_barrier_after (from);
       emit_label_after (label, found_barrier);
     }
