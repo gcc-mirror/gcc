@@ -32,14 +32,6 @@ Written by Per Bothner 1994.  */
 #include <locale.h>
 #endif
 
-/* This is used for communicating lists of keywords with cccp.c.  */
-struct arglist {
-  struct arglist *next;
-  U_CHAR *name;
-  int length;
-  int argno;
-};
-
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -124,98 +116,110 @@ struct operation {
     char unsignedp;    /* true if value should be treated as unsigned */
     HOST_WIDE_INT value;        /* The value logically "right" of op.  */
 };
-
-/* Take care of parsing a number (anything that starts with a digit).
-   LEN is the number of characters in it.  */
 
-/* maybe needs to actually deal with floating point numbers */
+/* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
+   with or without size suffixes.  */
 
-struct operation
-parse_number (pfile, start, olen)
+static struct operation
+parse_number (pfile, start, end)
      cpp_reader *pfile;
-     char *start;
-     int olen;
+     U_CHAR *start;
+     U_CHAR *end;
 {
   struct operation op;
-  register char *p = start;
-  register int c;
-  register unsigned long n = 0, nd, ULONG_MAX_over_base;
-  register int base = 10;
-  register int len = olen;
-  register int overflow = 0;
-  register int digit, largest_digit = 0;
+  U_CHAR *p = start;
+  int c;
+  unsigned HOST_WIDE_INT n = 0, nd, MAX_over_base;
+  int base = 10;
+  int overflow = 0;
+  int digit, largest_digit = 0;
   int spec_long = 0;
 
   op.unsignedp = 0;
 
-  for (c = 0; c < len; c++)
-    if (p[c] == '.') {
-      /* It's a float since it contains a point.  */
-      cpp_error (pfile,
-		 "floating point numbers not allowed in #if expressions");
-      op.op = ERROR;
-      return op;
+  if (p[0] == '0')
+    {
+      if (end - start >= 3 && (p[1] == 'x' || p[1] == 'X'))
+	{
+	  p += 2;
+	  base = 16;
+	}
+      else
+	{
+	  p += 1;
+	  base = 8;
+	}
     }
-
-  if (len >= 3 && (!strncmp (p, "0x", 2) || !strncmp (p, "0X", 2))) {
-    p += 2;
-    base = 16;
-    len -= 2;
-  }
-  else if (*p == '0')
-    base = 8;
 
   /* Some buggy compilers (e.g. MPW C) seem to need both casts.  */
-  ULONG_MAX_over_base = ((unsigned long) -1) / ((unsigned long) base);
+  MAX_over_base = (((unsigned HOST_WIDE_INT) -1)
+		   / ((unsigned HOST_WIDE_INT) base));
 
-  for (; len > 0; len--) {
-    c = *p++;
-
-    if (c >= '0' && c <= '9')
-      digit = c - '0';
-    else if (base == 16 && c >= 'a' && c <= 'f')
-      digit = c - 'a' + 10;
-    else if (base == 16 && c >= 'A' && c <= 'F')
-      digit = c - 'A' + 10;
-    else {
-      /* `l' means long, and `u' means unsigned.  */
-      while (1) {
-	if (c == 'l' || c == 'L')
-	  {
-	    if (spec_long)
-	      cpp_error (pfile, "two `l's in integer constant");
-	    spec_long = 1;
-	  }
-	else if (c == 'u' || c == 'U')
-	  {
-	    if (op.unsignedp)
-	      cpp_error (pfile, "two `u's in integer constant");
-	    op.unsignedp = 1;
-	  }
-	else
-	  break;
-
-	if (--len == 0)
-	  break;
-	c = *p++;
-      }
-      /* Don't look for any more digits after the suffixes.  */
-      break;
-    }
-    if (largest_digit < digit)
-      largest_digit = digit;
-    nd = n * base + digit;
-    overflow |= ULONG_MAX_over_base < n || nd < n;
-    n = nd;
-  }
-
-  if (len != 0)
+  while (p < end)
     {
-      cpp_error (pfile, "Invalid number in #if expression");
-      op.op = ERROR;
-      return op;
+      c = *p++;
+
+      if (c >= '0' && c <= '9')
+	digit = c - '0';
+      else if (base == 16 && c >= 'a' && c <= 'f') /* FIXME: assumes ASCII */
+	digit = c - 'a' + 10;
+      else if (base == 16 && c >= 'A' && c <= 'F')
+	digit = c - 'A' + 10;
+      else if (c == '.')
+	{
+	  /* It's a float since it contains a point.  */
+	  cpp_error (pfile,
+		"floating point numbers are not allowed in #if expressions");
+	  goto error;
+	}
+      else
+	{
+	  /* `l' means long, and `u' means unsigned.  */
+	  for (;;)
+	    {
+	      if (c == 'l' || c == 'L')
+		  spec_long++;
+	      else if (c == 'u' || c == 'U')
+		  op.unsignedp++;
+	      else
+		{
+		  /* Decrement p here so that the error for an invalid number
+		     will be generated below in the case where this is the
+		     last character in the buffer.  */
+		  p--;
+		  break;
+		}
+	      if (p == end)
+		break;
+	      c = *p++;
+	    }
+	  /* Don't look for any more digits after the suffixes.  */
+	  break;
+	}
+      
+      if (largest_digit < digit)
+	largest_digit = digit;
+      nd = n * base + digit;
+      overflow |= MAX_over_base < n || nd < n;
+      n = nd;
     }
 
+  if (p != end)
+    {
+      cpp_error (pfile, "invalid number in #if expression");
+      goto error;
+    }
+  else if (spec_long > (CPP_OPTIONS (pfile)->c89 ? 1 : 2))
+    {
+      cpp_error (pfile, "too many `l' suffixes in integer constant");
+      goto error;
+    }
+  else if (op.unsignedp > 1)
+    {
+      cpp_error (pfile, "too many `u' suffixes in integer constant");
+      goto error;
+    }
+  
   if (base <= largest_digit)
     cpp_pedwarn (pfile, "integer constant contains digits beyond the radix");
 
@@ -223,17 +227,131 @@ parse_number (pfile, start, olen)
     cpp_pedwarn (pfile, "integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
-  if ((long) n < 0 && ! op.unsignedp)
+  else if ((HOST_WIDE_INT) n < 0 && ! op.unsignedp)
     {
       if (base == 10)
-	cpp_warning (pfile, "integer constant is so large that it is unsigned");
+	cpp_warning (pfile,
+		     "integer constant is so large that it is unsigned");
       op.unsignedp = 1;
     }
 
   op.value = n;
   op.op = INT;
   return op;
+
+ error:
+  op.op = ERROR;
+  return op;
 }
+
+/* Parse and convert a character constant for #if.  Understands backslash
+   escapes (\n, \031) and multibyte characters (if so configured).  */
+static struct operation
+parse_charconst (pfile, start, end)
+     cpp_reader *pfile;
+     U_CHAR *start;
+     U_CHAR *end;
+{
+  struct operation op;
+  HOST_WIDE_INT result = 0;
+  int num_chars = 0;
+  int num_bits;
+  unsigned int width = MAX_CHAR_TYPE_SIZE, mask = MAX_CHAR_TYPE_MASK;
+  int max_chars;
+  U_CHAR *ptr = start;
+
+  /* FIXME: Should use reentrant multibyte functions.  */
+#ifdef MULTIBYTE_CHARS
+  wchar_t c;
+  (void) mbtowc (NULL_PTR, NULL_PTR, 0);
+#else
+  int c;
+#endif
+
+  if (*ptr == 'L')
+    {
+      ++ptr;
+      width = MAX_WCHAR_TYPE_SIZE, mask = MAX_WCHAR_TYPE_MASK;
+    }
+  max_chars = MAX_LONG_TYPE_SIZE / width;
+
+  ++ptr;  /* skip initial quote */
+
+  while (ptr < end)
+    {
+#ifndef MULTIBYTE_CHARS
+      c = *ptr++;
+#else
+      ptr += mbtowc (&c, ptr, end - ptr);
+#endif
+      if (c == '\'' || c == '\0')
+	break;
+      else if (c == '\\')
+	{
+	  /* Hopefully valid assumption: if mbtowc returns a backslash,
+	     we are in initial shift state.  No valid escape-sequence
+	     character can take us out of initial shift state or begin
+	     an unshifted multibyte char, so cpp_parse_escape doesn't
+	     need to know about multibyte chars.  */
+
+	  c = cpp_parse_escape (pfile, (char **) &ptr, mask);
+	  if (width < HOST_BITS_PER_INT
+	      && (unsigned int) c >= (unsigned int)(1 << width))
+	    cpp_pedwarn (pfile, "escape sequence out of range for character");
+	}
+	  
+      /* Merge character into result; ignore excess chars.  */
+      if (++num_chars <= max_chars)
+	{
+	  if (width < HOST_BITS_PER_INT)
+	    result = (result << width) | (c & ((1 << width) - 1));
+	  else
+	    result = c;
+	}
+    }
+
+  if (num_chars == 0)
+    {
+      cpp_error (pfile, "empty character constant");
+      goto error;
+    }
+  else if (c != '\'')
+    {
+      /* cpp_get_token has already emitted an error if !traditional. */
+      if (! CPP_TRADITIONAL (pfile))
+	cpp_error (pfile, "malformatted character constant");
+      goto error;
+    }
+  else if (num_chars > max_chars)
+    {
+      cpp_error (pfile, "character constant too long");
+      goto error;
+    }
+  else if (num_chars != 1 && ! CPP_TRADITIONAL (pfile))
+    cpp_warning (pfile, "multi-character character constant");
+
+  /* If char type is signed, sign-extend the constant.  */
+  num_bits = num_chars * width;
+      
+  if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
+		  sizeof ("__CHAR_UNSIGNED__")-1, -1)
+      || ((result >> (num_bits - 1)) & 1) == 0)
+    op.value = result & ((unsigned long) ~0
+			 >> (HOST_BITS_PER_LONG - num_bits));
+  else
+    op.value = result | ~((unsigned long) ~0
+			  >> (HOST_BITS_PER_LONG - num_bits));
+
+  /* This is always a signed type.  */
+  op.unsignedp = 0;
+  op.op = CHAR;
+  return op;
+
+ error:
+  op.op = ERROR;
+  return op;
+}
+
 
 struct token {
   char *operator;
@@ -254,10 +372,6 @@ static struct token tokentab2[] = {
   {NULL, ERROR}
 };
 
-/* This is used to accumulate the value of a character literal.  It is static
-   so that it only gets allocated once per compilation.  */
-static char *token_buffer = NULL;
-
 /* Read one token.  */
 
 struct operation
@@ -265,8 +379,8 @@ cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;
 {
-  register HOST_WIDE_INT c;
-  register struct token *toktab;
+  U_CHAR c;
+  struct token *toktab;
   enum cpp_token token;
   struct operation op;
   U_CHAR *tok_start, *tok_end;
@@ -308,140 +422,26 @@ cpp_lex (pfile, skip_evaluation)
 	}
       cpp_pop_buffer (pfile);
       goto retry;
-    case CPP_HSPACE:   case CPP_COMMENT: 
+    case CPP_HSPACE:
+    case CPP_COMMENT: 
       goto retry;
     case CPP_NUMBER:
-      return parse_number (pfile, tok_start, tok_end - tok_start);
+      return parse_number (pfile, tok_start, tok_end);
     case CPP_STRING:
       cpp_error (pfile, "string constants not allowed in #if expressions");
       op.op = ERROR;
       return op;
     case CPP_CHAR:
-      /* This code for reading a character constant
-	 handles multicharacter constants and wide characters.
-	 It is mostly copied from c-lex.c.  */
-      {
-        register int result = 0;
-	register int num_chars = 0;
-	unsigned width = MAX_CHAR_TYPE_SIZE;
-	int wide_flag = 0;
-	int max_chars;
-	U_CHAR *ptr = tok_start;
-
-	/* We need to allocate this buffer dynamically since the size is not
-	   a constant expression on all platforms.  */
-	if (token_buffer == NULL)
-	  {
-#ifdef MULTIBYTE_CHARS
-	    token_buffer = xmalloc (MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE
-				    + MB_CUR_MAX);
-#else
-	    token_buffer = xmalloc (MAX_LONG_TYPE_SIZE/MAX_CHAR_TYPE_SIZE + 1);
-#endif
-	  }
-
-	if (*ptr == 'L')
-	  {
-	    ptr++;
-	    wide_flag = 1;
-	    width = MAX_WCHAR_TYPE_SIZE;
-#ifdef MULTIBYTE_CHARS
-	    max_chars = MB_CUR_MAX;
-#else
-	    max_chars = 1;
-#endif
-	  }
-	else
-	    max_chars = MAX_LONG_TYPE_SIZE / width;
-
-	++ptr;
-	while (ptr < tok_end && ((c = *ptr++) != '\''))
-	  {
-	    if (c == '\\')
-	      {
-		c = cpp_parse_escape (pfile, (char **) &ptr,
-				      wide_flag ? MAX_WCHAR_TYPE_MASK
-				      		: MAX_CHAR_TYPE_MASK);
-		if (width < HOST_BITS_PER_INT
-		  && (unsigned) c >= (unsigned)(1 << width))
-		    cpp_pedwarn (pfile,
-				 "escape sequence out of range for character");
-	      }
-
-	    num_chars++;
-
-	    /* Merge character into result; ignore excess chars.  */
-	    if (num_chars < max_chars + 1)
-	      {
-	        if (width < HOST_BITS_PER_INT)
-		  result = (result << width) | (c & ((1 << width) - 1));
-		else
-		  result = c;
-		token_buffer[num_chars - 1] = c;
-	      }
-	  }
-
-	token_buffer[num_chars] = 0;
-
-	if (c != '\'')
-	  cpp_error (pfile, "malformatted character constant");
-	else if (num_chars == 0)
-	  cpp_error (pfile, "empty character constant");
-	else if (num_chars > max_chars)
-	  {
-	    num_chars = max_chars;
-	    cpp_error (pfile, "character constant too long");
-	  }
-	else if (num_chars != 1 && ! CPP_TRADITIONAL (pfile))
-	  cpp_warning (pfile, "multi-character character constant");
-
-	/* If char type is signed, sign-extend the constant.  */
-	if (! wide_flag)
-	  {
-	    int num_bits = num_chars * width;
-
-	    if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
-			    sizeof ("__CHAR_UNSIGNED__")-1, -1)
-		|| ((result >> (num_bits - 1)) & 1) == 0)
-		op.value
-		    = result & ((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
-	    else
-		op.value
-		    = result | ~((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
-	  }
-	else
-	  {
-#ifdef MULTIBYTE_CHARS
-	    /* Set the initial shift state and convert the next sequence.  */
-	      result = 0;
-	      /* In all locales L'\0' is zero and mbtowc will return zero,
-		 so don't use it.  */
-	      if (num_chars > 1
-		  || (num_chars == 1 && token_buffer[0] != '\0'))
-	        {
-		  wchar_t wc;
-		  (void) mbtowc (NULL_PTR, NULL_PTR, 0);
-		  if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
-		    result = wc;
-		  else
-		    cpp_pedwarn (pfile,"Ignoring invalid multibyte character");
-	        }
-#endif
-	      op.value = result;
-	    }
-        }
-
-      /* This is always a signed type.  */
-      op.unsignedp = 0;
-      op.op = CHAR;
-    
-      return op;
+      return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
       if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
 	cpp_warning (pfile, "`%.*s' is not defined",
 		     (int) (tok_end - tok_start), tok_start);
-      return parse_number (pfile, "0", 0);
+      op.op = INT;
+      op.unsignedp = 0;
+      op.value = 0;
+      return op;
 
     case CPP_OTHER:
       /* See if it is a special token of length 2.  */
@@ -733,6 +733,8 @@ cpp_parse_expr (pfile)
         case '?':
 	  lprio = COND_PRIO + 1;  rprio = COND_PRIO;
 	  goto maybe_reduce;
+	case ERROR:
+	  goto syntax_error;
 	binop:
 	  flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
 	  rprio = lprio + 1;
