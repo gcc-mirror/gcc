@@ -2797,6 +2797,7 @@ record_constant (exp)
   struct constant_descriptor *next = 0;
   char *label = 0;
   rtx rtl = 0;
+  int pad;
 
   /* Make a struct constant_descriptor.  The first three pointers will
      be filled in later.  Here we just leave space for them.  */
@@ -2804,6 +2805,14 @@ record_constant (exp)
   obstack_grow (&permanent_obstack, (char *) &next, sizeof next);
   obstack_grow (&permanent_obstack, (char *) &label, sizeof label);
   obstack_grow (&permanent_obstack, (char *) &rtl, sizeof rtl);
+
+  /* Align the descriptor for the data payload.  */
+  pad = (offsetof (struct constant_descriptor, u)
+	 - offsetof(struct constant_descriptor, rtl)
+	 - sizeof(next->rtl));
+  if (pad > 0)
+    obstack_blank (&permanent_obstack, pad);
+
   record_constant_1 (exp);
   return (struct constant_descriptor *) obstack_finish (&permanent_obstack);
 }
