@@ -1,4 +1,12 @@
+2002-05-30  Richard Henderson  <rth@redhat.com>
+	    Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR optimization/6822
+	* config/i386/i386.c (ix86_expand_int_movcc): Don't cast INTVAL
+	to unsigned int for op1 comparisons.  Use gen_int_mode.
+
 2002-05-30	Marc Espie <espie@openbsd.org>
+
 	* config.gcc (sparc64-*-openbsd*):  New.
 	* config/sparc/openbsd1-64.h:  New.
 	* config/sparc/openbsd64.h:  New.

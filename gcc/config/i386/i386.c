@@ -7963,11 +7963,12 @@ ix86_expand_int_movcc (operands)
   if ((code == LEU || code == GTU)
       && GET_CODE (ix86_compare_op1) == CONST_INT
       && mode != HImode
-      && (unsigned int) INTVAL (ix86_compare_op1) != 0xffffffff
-      /* The operand still must be representable as sign extended value.  */
+      && INTVAL (ix86_compare_op1) != -1
+      /* For x86-64, the immediate field in the instruction is 32-bit
+	 signed, so we can't increment a DImode value above 0x7fffffff.  */
       && (!TARGET_64BIT
 	  || GET_MODE (ix86_compare_op0) != DImode
-	  || (unsigned int) INTVAL (ix86_compare_op1) != 0x7fffffff)
+	  || INTVAL (ix86_compare_op1) != 0x7fffffff)
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -7975,7 +7976,8 @@ ix86_expand_int_movcc (operands)
 	code = LTU;
       else
 	code = GEU;
-      ix86_compare_op1 = GEN_INT (INTVAL (ix86_compare_op1) + 1);
+      ix86_compare_op1 = gen_int_mode (INTVAL (ix86_compare_op1) + 1,
+				       GET_MODE (ix86_compare_op0));
     }
 
   start_sequence ();
