@@ -1,3 +1,8 @@
+2001-11-19  Brad Kaiser  <bkaiser@acelink.net>
+ 
+	* reload1.c (elimination_effects): Use function_invariant_p
+	instead of CONSTANT_P when considering register equivalences.
+
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR bootstrap/4020
