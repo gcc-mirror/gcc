@@ -1,3 +1,9 @@
+2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14028
+	* parser.c (cp_parser_enclosed_template_argument_list): Emit straight
+	error when terminator can not be found.
+
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	Make-lang.in (po-generated):  Delete.
