@@ -1,3 +1,8 @@
+Thu Feb 26 07:05:14 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* reorg.c (fill_slots_from_thread): Don't steal delay list from target
+	if condition code of jump conflicts with opposite_needed.
+
 Thu Feb 26 06:45:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* varasm.c ({compare,record}_constant_1, case CONSTRUCTOR):
