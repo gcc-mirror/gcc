@@ -265,6 +265,21 @@ pubname_entry;
    type) and non-zero for all incomplete tagged types.  */
 #define TYPE_USED_FOR_FUNCTION(tagged_type) (TYPE_SIZE (tagged_type) == 0)
 
+/* Define a macro which returns non-zero for a TYPE_DECL which was
+   implicitly generated for a tagged type.
+
+   Note that unlike the gcc front end (which generates a NULL named
+   TYPE_DECL node for each complete tagged type, each array type, and
+   each function type node created) the g++ front end generates a
+   _named_ TYPE_DECL node for each tagged type node created.
+   These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
+   generate a DW_TAG_typedef DIE for them.  */
+#define TYPE_DECL_IS_STUB(decl)				\
+  (DECL_NAME (decl) == NULL				\
+   || (DECL_ARTIFICIAL (decl)				\
+       && is_tagged_type (TREE_TYPE (decl))		\
+       && decl == TYPE_STUB_DECL (TREE_TYPE (decl))))
+
 /* Information concerning the compilation unit's programming
    language, and compiler version.  */
 extern int flag_traditional;
@@ -499,11 +514,6 @@ static unsigned line_info_table_in_use;
    line_info_table.  */
 #define LINE_INFO_TABLE_INCREMENT 1024
 
-/* Keep track of the last line_info_table entry number, returned
-   by the prior call to lookup_filename().  This serves as a
-   cache used to speed up file name look ups.  */
-static unsigned prev_file_entry_num = (unsigned) -1;
-
 /* A pointer to the base of a table that contains frame description
    information for each routine.  */
 static dw_fde_ref fde_table;
@@ -714,15 +724,6 @@ static enum dwarf_form value_format PROTO((dw_val_ref));
 #ifndef DATA_SECTION
 #define DATA_SECTION		".data"
 #endif
-#ifndef DATA1_SECTION
-#define DATA1_SECTION		".data1"
-#endif
-#ifndef RODATA_SECTION
-#define RODATA_SECTION		".rodata"
-#endif
-#ifndef RODATA1_SECTION
-#define RODATA1_SECTION		".rodata1"
-#endif
 #ifndef BSS_SECTION
 #define BSS_SECTION		".bss"
 #endif
@@ -732,73 +733,45 @@ static enum dwarf_form value_format PROTO((dw_val_ref));
    (artificial) labels which may be generated within this file (when the -g
    options is used and DWARF_DEBUGGING_INFO is in effect.
    If necessary, these may be overridden from within the tm.h file, but
-   typically, overriding these defaults is unnecessary.
-   These labels have been hacked so that they all begin with a
-   `.L' sequence to appease the stock sparc/svr4 assembler and the
-   stock m88k/svr4 assembler, both of which need to see .L at the start of a
-   label in order to prevent that label from going into the linker symbol
-   table).  Eventually, the ASM_GENERATE_INTERNAL_LABEL and 
-   ASM_OUTPUT_INTERNAL_LABEL should be used, but that will require
-   a major rework.  */
-#ifndef TEXT_BEGIN_LABEL
-#define TEXT_BEGIN_LABEL	".L_text_b"
-#endif
+   typically, overriding these defaults is unnecessary.  */
+
+char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+
 #ifndef TEXT_END_LABEL
-#define TEXT_END_LABEL		".L_text_e"
-#endif
-#ifndef DATA_BEGIN_LABEL
-#define DATA_BEGIN_LABEL	".L_data_b"
+#define TEXT_END_LABEL		"Letext"
 #endif
 #ifndef DATA_END_LABEL
-#define DATA_END_LABEL		".L_data_e"
-#endif
-#ifndef RODATA_BEGIN_LABEL
-#define RODATA_BEGIN_LABEL	".L_rodata_b"
-#endif
-#ifndef RODATA_END_LABEL
-#define RODATA_END_LABEL	".L_rodata_e"
-#endif
-#ifndef BSS_BEGIN_LABEL
-#define BSS_BEGIN_LABEL		".L_bss_b"
+#define DATA_END_LABEL		"Ledata"
 #endif
 #ifndef BSS_END_LABEL
-#define BSS_END_LABEL		".L_bss_e"
-#endif
-#ifndef LINE_BEGIN_LABEL
-#define LINE_BEGIN_LABEL	".L_line_b"
-#endif
-#ifndef LINE_END_LABEL
-#define LINE_END_LABEL		".L_line_e"
+#define BSS_END_LABEL           "Lebss"
 #endif
 #ifndef INSN_LABEL_FMT
-#define INSN_LABEL_FMT		".L_I%u_%u"
+#define INSN_LABEL_FMT		"LI%u_"
 #endif
-#ifndef BLOCK_BEGIN_LABEL_FMT
-#define BLOCK_BEGIN_LABEL_FMT	".L_B%u"
+#ifndef BLOCK_BEGIN_LABEL
+#define BLOCK_BEGIN_LABEL	"LBB"
 #endif
-#ifndef BLOCK_END_LABEL_FMT
-#define BLOCK_END_LABEL_FMT	".L_B%u_e"
+#ifndef BLOCK_END_LABEL
+#define BLOCK_END_LABEL		"LBE"
 #endif
-#ifndef BODY_BEGIN_LABEL_FMT
-#define BODY_BEGIN_LABEL_FMT	".L_b%u"
+#ifndef BODY_BEGIN_LABEL
+#define BODY_BEGIN_LABEL	"Lbb"
 #endif
-#ifndef BODY_END_LABEL_FMT
-#define BODY_END_LABEL_FMT	".L_b%u_e"
+#ifndef BODY_END_LABEL
+#define BODY_END_LABEL		"Lbe"
 #endif
-#ifndef FUNC_BEGIN_LABEL_FMT
-#define FUNC_BEGIN_LABEL_FMT	".L_f%u"
+#ifndef FUNC_BEGIN_LABEL
+#define FUNC_BEGIN_LABEL	"LFB"
 #endif
-#ifndef FUNC_END_LABEL_FMT
-#define FUNC_END_LABEL_FMT	".L_f%u_e"
+#ifndef FUNC_END_LABEL
+#define FUNC_END_LABEL		"LFE"
 #endif
-#ifndef LINE_CODE_LABEL_FMT
-#define LINE_CODE_LABEL_FMT	".L_LC%u"
+#ifndef LINE_CODE_LABEL
+#define LINE_CODE_LABEL		"LM"
 #endif
-#ifndef SEPARATE_LINE_CODE_LABEL_FMT
-#define SEPARATE_LINE_CODE_LABEL_FMT	".L_SLC%u"
-#endif
-#ifndef SFNAMES_ENTRY_LABEL_FMT
-#define SFNAMES_ENTRY_LABEL_FMT	".L_F%u"
+#ifndef SEPARATE_LINE_CODE_LABEL
+#define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
 
 /* Definitions of defaults for various types of primitive assembly language
@@ -2449,7 +2422,6 @@ equate_type_number_to_die (type, type_die)
      register dw_die_ref type_die;
 {
   register unsigned type_id = TYPE_UID (type);
-  register unsigned i;
   register unsigned num_allocated;
   if (type_id >= type_die_table_allocated)
     {
@@ -3006,7 +2978,6 @@ size_of_die (die)
 {
   register unsigned long size = 0;
   register dw_attr_ref a;
-  register dw_loc_descr_ref loc;
   size += size_of_uleb128 (die->die_abbrev);
   for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
     {
@@ -3069,7 +3040,6 @@ calc_die_sizes (die)
      dw_die_ref die;
 {
   register dw_die_ref c;
-  register unsigned long die_size;
   die->die_offset = next_die_offset;
   next_die_offset += size_of_die (die);
   for (c = die->die_child; c != NULL; c = c->die_sib)
@@ -3089,8 +3059,6 @@ static unsigned long
 size_of_line_prolog ()
 {
   register unsigned long size;
-  register unsigned opc;
-  register unsigned n_op_args;
   register unsigned long ft_index;
   size = DWARF_LINE_PROLOG_HEADER_SIZE;
   /* Count the size of the table giving number of args for each
@@ -4282,7 +4250,7 @@ output_aranges ()
       fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, TEXT_END_LABEL, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, text_end_label, TEXT_SECTION);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
@@ -4478,7 +4446,7 @@ output_line_info ()
 		   ASM_COMMENT_START);
 	}
       fputc ('\n', asm_out_file);
-      sprintf (line_label, LINE_CODE_LABEL_FMT, lt_index);
+      ASM_GENERATE_INTERNAL_LABEL (line_label, LINE_CODE_LABEL, lt_index);
       ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
       fputc ('\n', asm_out_file);
       line_info = &line_info_table[lt_index];
@@ -4542,7 +4510,7 @@ output_line_info ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, TEXT_END_LABEL, prev_line_label);
+  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, text_end_label, prev_line_label);
   fputc ('\n', asm_out_file);
 
   /* Output the marker for the end of the line number info.  */
@@ -4564,7 +4532,8 @@ output_line_info ()
     {
       register dw_separate_line_info_ref line_info
 	= &separate_line_info_table[lt_index];
-      sprintf (line_label, SEPARATE_LINE_CODE_LABEL_FMT, lt_index);
+      ASM_GENERATE_INTERNAL_LABEL (line_label, SEPARATE_LINE_CODE_LABEL,
+				   lt_index);
       if (function != line_info->function)
 	{
 	  function = line_info->function;
@@ -4655,7 +4624,7 @@ output_line_info ()
 	    fprintf (asm_out_file, "\t%s DW_LNS_fixed_advance_pc",
 		     ASM_COMMENT_START);
 	  fputc ('\n', asm_out_file);
-	  sprintf (line_label, FUNC_END_LABEL_FMT, function);
+	  ASM_GENERATE_INTERNAL_LABEL (line_label, FUNC_END_LABEL, function);
 	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, line_label, prev_line_label);
 	  fputc ('\n', asm_out_file);
 
@@ -5230,11 +5199,10 @@ loc_descriptor (rtl)
          contains the given subreg.  */
 
       rtl = XEXP (rtl, 0);
-      loc_result = new_loc_descr (DW_OP_regx, reg_number (rtl), 0);
-      break;
+      /* fall through */
 
     case REG:
-      loc_result = new_loc_descr (DW_OP_regx, reg_number (rtl), 0);
+      loc_result = reg_loc_descriptor (rtl);
       break;
 
     case MEM:
@@ -6567,7 +6535,6 @@ gen_subprogram_die (decl, context_die)
   register tree type;
   register tree fn_arg_types;
   register tree outer_scope;
-  register tree label;
   dw_die_ref old_die = lookup_decl_die (decl);
 
   if (origin != NULL)
@@ -6650,16 +6617,17 @@ gen_subprogram_die (decl, context_die)
     {
       if (origin == NULL)
 	equate_decl_number_to_die (decl, subr_die);
-      sprintf (label_id, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
+				   current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
-      sprintf (label_id, FUNC_END_LABEL_FMT, current_funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+				   current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
 
       add_pubname (decl, subr_die);
       add_arange (decl, subr_die);
 
 #ifdef MIPS_DEBUGGING_INFO
-
       /* Add a reference to the FDE for this routine.  */
       add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, current_funcdef_fde);
 #endif
@@ -6675,9 +6643,11 @@ gen_subprogram_die (decl, context_die)
       add_AT_loc (subr_die, DW_AT_frame_base, fp_loc);
 
 #ifdef DWARF_GNU_EXTENSIONS
-      sprintf (label_id, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL (label_id, BODY_BEGIN_LABEL,
+				   current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_body_begin, label_id);
-      sprintf (label_id, BODY_END_LABEL_FMT, current_funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL (label_id, BODY_END_LABEL,
+				   current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_body_end, label_id);
 #endif
 
@@ -6858,6 +6828,7 @@ gen_label_die (decl, context_die)
   register dw_die_ref lbl_die = new_die (DW_TAG_label, context_die);
   register rtx insn;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  char label2[MAX_ARTIFICIAL_LABEL_BYTES];
   if (origin != NULL)
     {
       add_abstract_origin_attribute (lbl_die, origin);
@@ -6884,8 +6855,9 @@ gen_label_die (decl, context_die)
 	    {
 	      abort ();		/* Should never happen.  */
 	    }
-	  sprintf (label, INSN_LABEL_FMT, current_funcdef_number,
-		   (unsigned) INSN_UID (insn));
+	  sprintf (label2, INSN_LABEL_FMT, current_funcdef_number);
+	  ASM_GENERATE_INTERNAL_LABEL (label, label2,
+				       (unsigned) INSN_UID (insn));
 	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
 	}
     }
@@ -6902,9 +6874,10 @@ gen_lexical_block_die (stmt, context_die, depth)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   if (!BLOCK_ABSTRACT (stmt))
     {
-      sprintf (label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
+				   next_block_number);
       add_AT_lbl_id (stmt_die, DW_AT_low_pc, label);
-      sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL, next_block_number);
       add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
     }
   push_decl_scope (stmt);
@@ -6926,9 +6899,10 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
       register tree decl = block_ultimate_origin (stmt);
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
       add_abstract_origin_attribute (subr_die, decl);
-      sprintf (label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
+				   next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
-      sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
       push_decl_scope (decl);
       decls_for_scope (stmt, subr_die, depth);
@@ -7570,35 +7544,28 @@ gen_decl_die (decl, context_die)
          type or a formal parameter type of some function.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
-	  if ((DECL_NAME (decl) != NULL
-	       || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
-	      && ! DECL_ARTIFICIAL (decl))
+	  if (! TYPE_DECL_IS_STUB (decl)
+	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
 	    {
 	      break;
 	    }
 	}
 
-      /* In the special case of a null-named TYPE_DECL node (representing the 
-         declaration of some type tag), if the given TYPE_DECL is marked as
+      /* In the special case of a TYPE_DECL node representing the 
+         declaration of some type tag, if the given TYPE_DECL is marked as
          having been instantiated from some other (original) TYPE_DECL node
          (e.g. one which was generated within the original definition of an
          inline function) we have to generate a special (abbreviated)
          DW_TAG_structure_type, DW_TAG_union_type, or DW_TAG_enumeration-type 
          DIE here.  */
-      if (!DECL_NAME (decl) && DECL_ABSTRACT_ORIGIN (decl))
+      if (TYPE_DECL_IS_STUB (decl) && DECL_ABSTRACT_ORIGIN (decl))
 	{
 	  gen_tagged_type_instantiation_die (TREE_TYPE (decl), context_die);
 	  break;
 	}
       gen_type_die (TREE_TYPE (decl), context_die);
 
-      /* Note that unlike the gcc front end (which generates a NULL named
-         TYPE_DECL node for each complete tagged type, each array type, and
-         each function type node created) the g++ front end generates a
-         _named_ TYPE_DECL node for each tagged type node created.
-	 These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
-	 generate a DW_TAG_typedef DIE for them.  */
-      if (DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
+      if (! TYPE_DECL_IS_STUB (decl))
 	{
 	  /* Output a DIE to represent the typedef itself.  */
 	  gen_typedef_die (decl, context_die);
@@ -7773,9 +7740,8 @@ dwarfout_file_scope_decl (decl, set_finalizing)
          type or a formal parameter type of some function.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
-	  if ((DECL_NAME (decl) != NULL
-	       || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
-	      && ! DECL_ARTIFICIAL (decl))
+	  if (! TYPE_DECL_IS_STUB (decl)
+	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
 	    {
 	      return;
 	    }
@@ -7802,11 +7768,8 @@ void
 dwarfout_begin_block (blocknum)
      register unsigned blocknum;
 {
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
   function_section (current_function_decl);
-  sprintf (label, BLOCK_BEGIN_LABEL_FMT, blocknum);
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
 
 /* Output a marker (i.e. a label) for the end of the generated code for a
@@ -7815,11 +7778,8 @@ void
 dwarfout_end_block (blocknum)
      register unsigned blocknum;
 {
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
   function_section (current_function_decl);
-  sprintf (label, BLOCK_END_LABEL_FMT, blocknum);
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
 /* Output a marker (i.e. a label) at a point in the assembly code which
@@ -7832,9 +7792,9 @@ dwarfout_label (insn)
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       function_section (current_function_decl);
-      sprintf (label, INSN_LABEL_FMT, current_funcdef_number,
-	       (unsigned) INSN_UID (insn));
-      ASM_OUTPUT_LABEL (asm_out_file, label);
+      sprintf (label, INSN_LABEL_FMT, current_funcdef_number);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, label,
+				 (unsigned) INSN_UID (insn));
     }
 }
 
@@ -7845,10 +7805,10 @@ dwarfout_begin_prologue ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register dw_fde_ref fde;
-  register dw_cfi_ref cfi;
 
   function_section (current_function_decl);
-  sprintf (label, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
+  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
+			       current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 
   /* Expand the fde table if necessary.  */
@@ -7883,7 +7843,8 @@ dwarfout_begin_function ()
   register dw_cfi_ref cfi;
 
   function_section (current_function_decl);
-  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+  ASM_GENERATE_INTERNAL_LABEL (label, BODY_BEGIN_LABEL,
+			       current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 
   /* Record the end-of-prolog location in the FDE.  */
@@ -7973,7 +7934,7 @@ dwarfout_end_function ()
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   function_section (current_function_decl);
-  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+  ASM_GENERATE_INTERNAL_LABEL (label, BODY_END_LABEL, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   /* Record the ending code location in the FDE.  */
   fde = &fde_table[fde_table_in_use - 1];
@@ -7990,7 +7951,7 @@ dwarfout_end_epilogue ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   /* Output a label to mark the endpoint of the code generated for this
      function.        */
-  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
+  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_end = xstrdup (label);
@@ -8060,8 +8021,6 @@ dwarfout_line (filename, line)
      register char *filename;
      register unsigned line;
 {
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  register unsigned this_file_entry_num = lookup_filename (filename);
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
       function_section (current_function_decl);
@@ -8069,9 +8028,8 @@ dwarfout_line (filename, line)
       if (DECL_SECTION_NAME (current_function_decl))
 	{
 	  register dw_separate_line_info_ref line_info;
-	  sprintf (label, SEPARATE_LINE_CODE_LABEL_FMT,
-		   separate_line_info_table_in_use);
-	  ASM_OUTPUT_LABEL (asm_out_file, label);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, SEPARATE_LINE_CODE_LABEL,
+				     separate_line_info_table_in_use);
 	  fputc ('\n', asm_out_file);
 
 	  /* expand the line info table if necessary */
@@ -8095,8 +8053,8 @@ dwarfout_line (filename, line)
       else
 	{
 	  register dw_line_info_ref line_info;
-	  sprintf (label, LINE_CODE_LABEL_FMT, line_info_table_in_use);
-	  ASM_OUTPUT_LABEL (asm_out_file, label);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, LINE_CODE_LABEL,
+				     line_info_table_in_use);
 	  fputc ('\n', asm_out_file);
 
 	  /* expand the line info table if necessary */
@@ -8164,7 +8122,6 @@ dwarfout_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
      register char *main_input_filename;
 {
-
   /* Remember the name of the primary input file.  */
   primary_filename = main_input_filename;
 
@@ -8221,28 +8178,6 @@ dwarfout_init (asm_out_file, main_input_filename)
   fde_table_allocated = FDE_TABLE_INCREMENT;
   fde_table_in_use = 0;
 
-#if 0
-  /* Output a starting label for the .text section.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, TEXT_BEGIN_LABEL);
-
-  /* Output a starting label for the .data section.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, DATA_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, DATA_BEGIN_LABEL);
-
-  /* Output a starting label for the .rodata section.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, RODATA_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, RODATA_BEGIN_LABEL);
-
-  /* Output a starting label for the .bss section.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, BSS_BEGIN_LABEL);
-#endif
-
   /* Generate the initial DIE for the .debug section.  Note that the (string) 
      value given in the DW_AT_name attribute of the DW_TAG_compile_unit DIE
      will (typically) be a relative pathname and that this pathname should be 
@@ -8252,6 +8187,8 @@ dwarfout_init (asm_out_file, main_input_filename)
 
   /* clear the association between base types and their DIE's */
   init_base_type_table ();
+
+  ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -8266,23 +8203,18 @@ dwarfout_finish ()
   /* Output a terminator label for the .text section.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, TEXT_END_LABEL);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, TEXT_END_LABEL, 0);
 
 #if 0
   /* Output a terminator label for the .data section.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, DATA_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, DATA_END_LABEL);
-
-  /* Output a terminator label for the .rodata section.  */
-  fputc ('\n', asm_out_file);
-  ASM_OUTPUT_SECTION (asm_out_file, RODATA_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, RODATA_END_LABEL);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, DATA_END_LABEL, 0);
 
   /* Output a terminator label for the .bss section.  */
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
-  ASM_OUTPUT_LABEL (asm_out_file, BSS_END_LABEL);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BSS_END_LABEL, 0);
 #endif
 
   /* Output the source line correspondence table.  */
@@ -8297,7 +8229,7 @@ dwarfout_finish ()
       if (separate_line_info_table_in_use == 0)
 	{
 	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, TEXT_SECTION);
-	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, TEXT_END_LABEL);
+	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
 	}
       add_AT_section_offset (comp_unit_die, DW_AT_stmt_list, LINE_SECTION);
     }
