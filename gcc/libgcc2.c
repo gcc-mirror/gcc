@@ -997,24 +997,34 @@ __floatdidf (u)
 #define HIGH_HALFWORD_COEFF (((UDItype) 1) << (WORD_SIZE / 2))
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 #define DI_SIZE (sizeof (DItype) * BITS_PER_UNIT)
-#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#define DF_SIZE 53
-#define SF_SIZE 24
-#else
-#if TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT
-#define DF_SIZE 56
-#define SF_SIZE 24
-#else
-#if TARGET_FLOAT_FORMAT == VAX_FLOAT_FORMAT
-#define DF_SIZE 56
-#define SF_SIZE 24
-#else
-#define DF_SIZE 0
-#define SF_SIZE 0
-#endif
-#endif
+
+/* Define codes for all the float formats that we know of.  Note
+   that this is copied from real.h.  */
+   
+#define UNKNOWN_FLOAT_FORMAT 0
+#define IEEE_FLOAT_FORMAT 1
+#define VAX_FLOAT_FORMAT 2
+#define IBM_FLOAT_FORMAT 3
+
+/* Default to IEEE float if not specified.  Nearly all machines use it.  */
+#ifndef HOST_FLOAT_FORMAT
+#define	HOST_FLOAT_FORMAT	IEEE_FLOAT_FORMAT
 #endif
 
+#if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+#define DF_SIZE 53
+#define SF_SIZE 24
+#endif
+
+#if HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
+#define DF_SIZE 56
+#define SF_SIZE 24
+#endif
+
+#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+#define DF_SIZE 56
+#define SF_SIZE 24
+#endif
 
 SFtype
 __floatdisf (u)
