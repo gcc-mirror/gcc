@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
 
    Based upon original work of Ron Guilmette (rfg@netcom.com).
    Whacked into submission by Andy Pfiffer (andyp@ssd.intel.com).
@@ -54,17 +54,17 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{mnx:-D__NODE}"
 
 /* autoinit.o autolaunches NX applications */
-#define STARTFILE_SPEC "-ycrt0.o%s %{mnx:-yoptions/autoinit.o%s}"
+#define STARTFILE_SPEC "crt0.o%s %{mnx:-yoptions/autoinit.o%s}"
 
 /* libic.a is the PGI intrinsic library */
 /* libpm.o and guard.o are for the performance monitoring modules (ignored) */
 /* /usr/lib/noieee contains non-IEEE compliant (but faster) math routines */
 #if	HAVE_DASH_G
-#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} -L/usr/lib %{mnx:-lnx -lmach} %
+#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx -lmach} %
 {g*:-lg} -lc -lic"
 #else	/* HAVE_DASH_G */
 /* can't use -g for -lg; libg.a doesn't have a symbol table and ld complains */
-#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} -L/usr/lib %{mnx:-lnx -lmach} -lc -lic"
+#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx -lmach} -lc -lic"
 #endif	/* HAVE_DASH_G */
 
 /* Get rid of definition from svr3.h.  */
