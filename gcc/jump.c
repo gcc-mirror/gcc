@@ -871,7 +871,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (SET_SRC (temp1)) != CONST_INT
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
-	      && rtx_cost (SET_SRC (temp1)) < 10)
+	      && rtx_cost (SET_SRC (temp1), SET) < 10)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
@@ -910,12 +910,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 #endif
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
-	      && rtx_cost (SET_SRC (temp1)) < 10
+	      && rtx_cost (SET_SRC (temp1), SET) < 10
 	      && (temp4 = single_set (temp3)) != 0
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
-	      && rtx_cost (SET_SRC (temp4)) < 10)
+	      && rtx_cost (SET_SRC (temp4), SET) < 10)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
@@ -962,7 +962,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && regno_last_uid[REGNO (temp5)] == INSN_UID (temp3)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
-	      && rtx_cost (SET_SRC (temp1)) < 10
+	      && rtx_cost (SET_SRC (temp1), SET) < 10
 	      && (temp4 = single_set (temp3)) != 0
 	      && (temp2 = SET_DEST (temp4), GET_CODE (temp2) == REG)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
@@ -972,7 +972,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
-	      && rtx_cost (SET_SRC (temp4)) < 10)
+	      && rtx_cost (SET_SRC (temp4), SET) < 10)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
