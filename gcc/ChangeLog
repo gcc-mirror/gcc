@@ -1,3 +1,13 @@
+2002-07-06  Andreas Jaeger  <aj@suse.de>
+
+	* toplev.c (set_fast_math_flags): Don't use ISO C style function
+	definitions.
+	* gengtype.c (open_base_files): Likewise.
+	(close_output_files): Likewise.
+	* tracer.c (find_best_predecessor): Likewise.
+	(find_best_successor): Likewise.
+	(ignore_bb_p): Likewise.
+
 2002-07-05  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/7099
@@ -29,7 +39,7 @@
 
 	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Avoid allocating
 	QI mode registers in soft registers.
-	("zero_extendqihi2"): Do not take into account soft registers 
+	("zero_extendqihi2"): Do not take into account soft registers
 	for register allocation (use '*' constraint).
 
 2002-07-05  Stephane Carrez  <stcarrez@nerim.fr>
@@ -55,7 +65,7 @@
 	* dwarfout.c (output_reg_number): Fix warning message.
 	(output_bound_representation): Check SAVE_EXPR_RTL is not NULL
 	before using it.
-	
+
 2002-07-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc/gcc.c (asm_debug): Move initialization ...
