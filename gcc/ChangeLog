@@ -1,3 +1,8 @@
+2000-11-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* mklibgcc.in (EXTRA_MULTILIB_PARTS): Generate multilib parts
+	in-place.
+
 2000-11-07  Richard Henderson  <rth@redhat.com>
 
 	* dwarfout.c (INSN_LABEL_FMT): Remove.

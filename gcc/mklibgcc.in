@@ -358,23 +358,20 @@ echo '	done'
 echo '	if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi'
 
 for f in $EXTRA_MULTILIB_PARTS; do
-  lastout="stmp-dirs force"
   for ml in $MULTILIBS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-    out="$dir/$f"
+    case $dir in
+    .) out=$f ; t= ;;
+    *) out="$dir/$f" ; t=$dir/ ;;
+    esac
 
-    # Depend on previous out to serialize all sub-makes of this
-    # target file.  This because ./$f is used as a temporary in
-    # each case before being moved to libgcc/$dir/.
-    echo $out: $lastout
+    echo $out: stmp-dirs
     echo "	$make_compile" \\
     echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-    echo '	  MULTILIB_CFLAGS="'$flags'"' T=t t$f
-    echo "	mv t$f $out"
+    echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $out
 
     all="$all $out"
-    lastout="$out"
   done
 done
 
