@@ -1913,13 +1913,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       while (c = *p++)
 	if (c == '%')
 	  {
-	    /* The last operand should not be marked commutative.  This
-	       problem is hard to detect, so make it obvious by calling
-	       abort here.  */
+	    /* The last operand should not be marked commutative.  */
 	    if (i == noperands - 1)
-	      abort ();
-
-	    commutative = i;
+	      {
+		if (this_insn_is_asm)
+		  warning_for_asm (this_insn,
+				   "`%' constraint used with last operand");
+		else
+		  abort ();
+	      }
+	    else
+	      commutative = i;
 	  }
 	else if (c >= '0' && c <= '9')
 	  {

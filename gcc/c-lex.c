@@ -1290,7 +1290,7 @@ yylex ()
 		set_float_handler (0);
 	      }
 #ifdef ERANGE
-	    if (errno == ERANGE && !flag_traditional)
+	    if (errno == ERANGE && !flag_traditional && pedantic)
 	      {
 		char *p1 = token_buffer;
 		/* Check for "0.0" and variants;
@@ -1321,9 +1321,14 @@ yylex ()
 		  {
 		    if (f_seen)
 		      error ("two `f's in floating constant");
-		    f_seen = 1;
-		    type = float_type_node;
-		    value = REAL_VALUE_TRUNCATE (TYPE_MODE (type), value);
+		    else
+		      {
+			f_seen = 1;
+			type = float_type_node;
+			value = REAL_VALUE_TRUNCATE (TYPE_MODE (type), value);
+			if (REAL_VALUE_ISINF (value) && pedantic)
+			  pedwarn ("floating point number exceeds range of `float'");
+		      }
 		  }
 		else if (c == 'l' || c == 'L')
 		  {
