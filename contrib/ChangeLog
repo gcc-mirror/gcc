@@ -1,3 +1,7 @@
+2004-06-17  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy: Update for doxygen 1.3.5.
+
 2004-06-14  Andreas Jaeger  <aj@suse.de>
 
 	* gcc_update: boehm-gc/configure.in -> configure.ac.
