@@ -2302,7 +2302,10 @@ generate_bytecode_insns (exp, target, state)
 	int worthwhile_finally = 1;
 	tree try_block = TREE_OPERAND (exp, 0);
 	tree finally = TREE_OPERAND (exp, 1);
-	tree return_link, exception_type, exception_decl;
+	tree return_link, exception_decl;
+
+	finished_label = finally_label = start_label = NULL;
+	return_link = exception_decl = NULL_TREE;
 
 	/* If the finally clause happens to be empty, set a flag so we
            remember to just skip it. */
@@ -2311,6 +2314,7 @@ generate_bytecode_insns (exp, target, state)
 
 	if (worthwhile_finally)
 	  {
+	    tree exception_type;
 	    return_link = build_decl (VAR_DECL, NULL_TREE,
 				      return_address_type_node);
 	    exception_type = build_pointer_type (throwable_type_node);
