@@ -34,3 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
+
+/* OSF1 wants to be different and use unsigned long as size_t.  */
+#undef SIZE_TYPE
+#define SIZE_TYPE "long unsigned int"
