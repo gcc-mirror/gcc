@@ -2496,6 +2496,7 @@ This describes the stack layout and calling conventions.
 
 @menu
 * Frame Layout::
+* Exception Handling::
 * Stack Checking::
 * Frame Registers::
 * Elimination::
@@ -2680,6 +2681,18 @@ You only need to define this macro if the default is incorrect, and you
 want to support call frame debugging information like that provided by
 DWARF 2.
 
+@findex SMALL_STACK
+@item SMALL_STACK
+Define this macro if the stack size for the target is very small.  This
+has the effect of disabling gcc's built-in @samp{alloca}, though
+@samp{__builtin_alloca} is not affected.
+@end table
+
+@node Exception Handling
+@subsection Exception Handling Support
+@cindex exception handling
+
+@table @code
 @findex EH_RETURN_DATA_REGNO
 @item EH_RETURN_DATA_REGNO (@var{N})
 A C expression whose value is the @var{N}th register number used for
@@ -2755,11 +2768,21 @@ handled.  @var{encoding} is the format chosen, @var{size} is the number
 of bytes that the format occupies, @var{addr} is the @code{SYMBOL_REF}
 to be emitted.
 
-@findex SMALL_STACK
-@item SMALL_STACK
-Define this macro if the stack size for the target is very small.  This
-has the effect of disabling gcc's built-in @samp{alloca}, though
-@samp{__builtin_alloca} is not affected.
+@findex MD_FALLBACK_FRAME_STATE_FOR
+@item MD_FALLBACK_FRAME_STATE_FOR(@var{context}, @var{fs}, @var{success})
+This macro allows the target to add cpu and operating system specific
+code to the call-frame unwinder for use when there is no unwind data
+available.  The most common reason to implement this macro is to unwind
+through signal frames.
+
+This macro is called from @code{uw_frame_state_for} in @file{unwind-dw2.c}
+and @file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
+@var{fs} is an @code{_Unwind_FrameState}.  Examine @code{context->ra}
+for the address of the code being executed and @code{context->cfa} for
+the stack pointer value.  If the frame can be decoded, the register save
+addresses should be updated in @var{fs} and the macro should branch to
+@var{success}.  If the frame cannot be decoded, the macro should do 
+nothing.
 @end table
 
 @node Stack Checking
