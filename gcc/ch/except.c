@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "ch-tree.h"
 #include "rtl.h"
+#include "system.h"
 #include "toplev.h"
 
 /* On Suns this can get you to the right definition if you

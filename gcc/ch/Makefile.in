@@ -278,7 +278,7 @@ convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
-	$(srcdir)/../toplev.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../tree.h lex.h \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
