@@ -4187,35 +4187,19 @@ output_387_binary_op (insn, operands)
   switch (GET_CODE (operands[3]))
     {
     case PLUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	base_op = "fiadd";
-      else
-	base_op = "fadd";
+      base_op = "fadd";
       break;
 
     case MINUS:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	base_op = "fisub";
-      else
-	base_op = "fsub";
+      base_op = "fsub";
       break;
 
     case MULT:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	base_op = "fimul";
-      else
-	base_op = "fmul";
+      base_op = "fmul";
       break;
 
     case DIV:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_INT
-	  || GET_MODE_CLASS (GET_MODE (operands[2])) == MODE_INT)
-	base_op = "fidiv";
-      else
-	base_op = "fdiv";
+      base_op = "fdiv";
       break;
 
     default:
@@ -4238,17 +4222,8 @@ output_387_binary_op (insn, operands)
       if (GET_CODE (operands[2]) == MEM)
 	return strcat (buf, AS1 (%z2,%2));
 
-      if (NON_STACK_REG_P (operands[1]))
-	{
-	  output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
-	  return "";
-	}
-
-      else if (NON_STACK_REG_P (operands[2]))
-	{
-	  output_op_from_reg (operands[2], strcat (buf, AS1 (%z0,%1)));
-	  return "";
-	}
+      if (! STACK_REG_P (operands[1]) || ! STACK_REG_P (operands[2]))
+	abort ();
 
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[2])))
 	{
@@ -4270,18 +4245,6 @@ output_387_binary_op (insn, operands)
 
       if (GET_CODE (operands[2]) == MEM)
 	return strcat (buf, AS1 (%z2,%2));
-
-      if (NON_STACK_REG_P (operands[1]))
-	{
-	  output_op_from_reg (operands[1], strcat (buf, AS1 (r%z0,%1)));
-	  return "";
-	}
-
-      else if (NON_STACK_REG_P (operands[2]))
-	{
-	  output_op_from_reg (operands[2], strcat (buf, AS1 (%z0,%1)));
-	  return "";
-	}
 
       if (! STACK_REG_P (operands[1]) || ! STACK_REG_P (operands[2]))
 	abort ();
@@ -4442,24 +4405,19 @@ output_float_compare (insn, operands)
     {
       static char buf[100];
 
-      /* Decide if this is the integer or float compare opcode, or the
-	 unordered float compare. */
+      /* Decide if this is a float compare or an unordered float compare. */
 
       if (unordered_compare)
 	strcpy (buf, (cc_status.flags & CC_FCOMI) ? "fucomi" : "fucom");
-      else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_FLOAT)
-	strcpy (buf, (cc_status.flags & CC_FCOMI) ? "fcomi" : "fcom");
       else
-	strcpy (buf, "ficom");
+	strcpy (buf, (cc_status.flags & CC_FCOMI) ? "fcomi" : "fcom");
 
       /* Modify the opcode if the 387 stack is to be popped. */
 
       if (stack_top_dies)
 	strcat (buf, "p");
 
-      if (NON_STACK_REG_P (operands[1]))
-	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
-      else if (cc_status.flags & CC_FCOMI)
+      if (cc_status.flags & CC_FCOMI)
 	{
 	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%0)), operands);
 	  return "";

@@ -1,3 +1,11 @@
+Fri Apr  2 14:12:06 EST 1999  John Wehle  (john@feith.com)
+
+	* i386.md: Delete floating point compare, add, subtract,
+	multiply, and divide patterns which allowed integer
+	operands.
+	* i386.c (output_386_binary_op): Delete unused code.
+	(output_float_compare): Likewise.
+
 Fri Apr  2 11:53:37 1999  John Wehle  (john@feith.com)
 
 	* i386.md (movsf+1, movdf+1, movxf+1): Update constraints
