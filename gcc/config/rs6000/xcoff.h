@@ -345,9 +345,18 @@ toc_section ()						\
     SYMBOL_REF_FLAG (sym_ref) = 1;				\
   if (TREE_PUBLIC (DECL))					\
     {								\
-      fputs ("\t.globl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      putc ('\n', FILE);					\
+      if (RS6000_WEAK && DECL_WEAK (decl))			\
+	{							\
+	  fputs ("\t.weak .", FILE);				\
+	  RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+	  putc ('\n', FILE);					\
+	}							\
+      else							\
+	{							\
+	  fputs ("\t.globl .", FILE);				\
+	  RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+	  putc ('\n', FILE);					\
+	}							\
     }								\
   else								\
     {								\

@@ -1,3 +1,8 @@
+2001-12-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (indirect_jump): Prefer CTR over LR.
+	* xcoff.h (ASM_DECLARE_FUNCTION_NAME): Handle weak function.
+
 Tue Dec 25 12:04:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c: Reformatting and minor code rearrangement.
