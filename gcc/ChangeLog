@@ -1,3 +1,7 @@
+2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (combine_strings): Only warn about long strings for C.
+
 Tue Nov  7 19:44:30 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* combine.c (distribute_notes): Fix typo in last change.
