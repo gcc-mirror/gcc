@@ -1,3 +1,15 @@
+Thu Dec 11 21:08:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (use_eh_context): Don't copy_rtx a REG.
+	(emit_throw): Lose old unwinder support.
+	(expand_internal_throw): Likewise.
+	* libgcc2.c (struct eh_context): Likewise.
+	(new_eh_context): Likewise.
+	(__get_eh_info): Lose redundant cast.
+	(__get_dynamic_handler_chain): Likewise.
+	(__get_saved_pc): Lose.
+	Lose all old unwinder support code.
+
 Thu Dec 11 20:42:18 1997  Teemu Torma  <tot@trema.com>
 
 	Thread-safe EH support for pthreads, DCE threads and Solaris threads.

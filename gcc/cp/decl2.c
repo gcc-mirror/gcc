@@ -3166,8 +3166,6 @@ finish_file ()
       assemble_constructor (IDENTIFIER_POINTER (fnname));
     }
 
-  expand_builtin_throw ();
-
   permanent_allocation (1);
 
   /* Done with C language context needs.  */
