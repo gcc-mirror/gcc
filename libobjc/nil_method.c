@@ -29,10 +29,25 @@ Boston, MA 02111-1307, USA.  */
 
 #include "runtime.h"
 
-/* nil_method is declared with variable arguments but the runtime calls it
-   in a way that does not setup the variable arguments correctly.  Some Architectures
-   that have special arg calling conventions like x86-64 do need every function with
-   variable arguments called the correct way.  */
+/* When the receiver of a method invocation is nil, the runtime
+   returns nil_method() as the method implementation.  This function
+   will be casted to whatever function was supposed to be executed to
+   execute that method (that function will take an id, followed by a
+   SEL, followed by who knows what arguments, depends on the method),
+   and executed.
+   
+   For this reason, nil_method() should be a function which can be
+   called in place of any function taking an 'id' argument followed by
+   a 'SEL' argument, followed by zero, or one, or any number of
+   arguments (both a fixed number, or a variable number !).
+   
+   There is no "proper" implementation of such a nil_method function
+   in C, however in all existing implementations it does not matter
+   when extra arguments are present, so we can simply create a function
+   taking a receiver and a selector, and all other arguments will be
+   ignored. :-)
+*/
+
 id
 nil_method (id receiver, SEL op __attribute__ ((__unused__)))
 {
