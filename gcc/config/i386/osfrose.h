@@ -30,16 +30,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define abort fancy_abort
 #endif
 
-#define MASK_HALF_PIC     0x00000100  /* Mask for half-pic code */
-#define TARGET_HALF_PIC   (target_flags & MASK_HALF_PIC)
+#define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
+#define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
+
+#define TARGET_HALF_PIC	(target_flags & MASK_HALF_PIC)
+#define TARGET_DEBUG	(target_flags & MASK_HALF_PIC_DEBUG)
+#define HALF_PIC_DEBUG	TARGET_DEBUG
 
 #ifdef SUBTARGET_SWITCHES
 #undef SUBTARGET_SWITCHES
 #endif
 #define SUBTARGET_SWITCHES \
-     { "half-pic",     MASK_HALF_PIC},    \
-     { "no-half-pic", -MASK_HALF_PIC},
- 
+     { "half-pic",	 MASK_HALF_PIC},				\
+     { "no-half-pic",	-MASK_HALF_PIC},				\
+     { "debugb",	 MASK_HALF_PIC_DEBUG},
+
 /* Prefix that appears before all global/static identifiers, except for
    temporary labels.  */
 
@@ -65,36 +70,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}} \
-%{!fbuiltin: %{!fno-builtin: %{O*: \
-	-Dmemcpy=__builtin_memcpy \
-	-Dmemcmp=__builtin_memcmp \
-	-Dstrcpy=__builtin_strcpy \
-	-Dstrlen=__builtin_strlen }}}"
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
 #ifdef  CC1_SPEC
 #undef  CC1_SPEC
 #endif
 
-#ifndef NO_HALF_PIC
-/* Turn on -mpic-extern and -fno-builtin by default.  */
+/* Turn on -mpic-extern by default.  */
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
-%{!pic-*:     -mhalf-pic} \
-%{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
-%{save-temps: }"
-
-#else
-/* Turn on -fno-builtin by default.  */
-#define CC1_SPEC "\
-%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
-%{save-temps: }"
-#endif
+%{!pic-*:     -mhalf-pic}"
 
 #ifdef ASM_SPEC
 #undef ASM_SPEC
@@ -159,26 +148,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define OPTIMIZATION_OPTIONS(LEVEL)					\
 {									\
-  flag_gnu_linker			= FALSE;			\
-									\
-  if (LEVEL)								\
-    {									\
-      flag_omit_frame_pointer		= TRUE;				\
-      flag_thread_jumps			= TRUE;				\
-    }									\
-									\
-  if (LEVEL >= 2)							\
-    {									\
-      flag_strength_reduce		= TRUE;				\
-      flag_cse_follow_jumps		= TRUE;				\
-      flag_expensive_optimizations	= TRUE;				\
-      flag_rerun_cse_after_loop		= TRUE;				\
-    }									\
+  flag_gnu_linker = FALSE;						\
 									\
   if (LEVEL >= 3)							\
-    {									\
-      flag_inline_functions		= TRUE;				\
-    }									\
+    flag_inline_functions = TRUE;					\
 }
 
 /* A C expression that is 1 if the RTX X is a constant which is a
@@ -196,6 +169,51 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #define CONSTANT_ADDRESS_P(X)                                           \
   (CONSTANT_P (X) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
+
+/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
+   that is a valid memory address for an instruction.
+   The MODE argument is the machine mode for the MEM expression
+   that wants to use this address. */
+
+#undef GO_IF_LEGITIMATE_ADDRESS
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
+{									\
+  if (CONSTANT_P (X))							\
+    {									\
+      if (! HALF_PIC_P () || ! HALF_PIC_ADDRESS_P (X))			\
+	goto ADDR;							\
+    }									\
+  else									\
+    {									\
+      GO_IF_INDEXING (X, ADDR);						\
+									\
+      if (GET_CODE (X) == PLUS)						\
+	{								\
+	  rtx x1 = XEXP (X, 1);						\
+									\
+	  if (CONSTANT_P (x1))						\
+	    {								\
+	      if (! HALF_PIC_P () || ! HALF_PIC_ADDRESS_P (x1))		\
+		{							\
+		  rtx x0 = XEXP (X, 0);					\
+		  GO_IF_INDEXING (x0, ADDR);				\
+		}							\
+	    }								\
+	}								\
+    }									\
+}
+
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.  */
+
+#define OVERRIDE_OPTIONS						\
+{									\
+  if (TARGET_HALF_PIC)							\
+    half_pic_init ();							\
+}
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
@@ -262,6 +280,15 @@ do									\
    ASM_OUTPUT_LABEL(STREAM,NAME);                                       \
    HALF_PIC_DECLARE (NAME);						\
  }									\
+while (0)
+
+/* This says what to print at the end of the assembly file */
+#define ASM_FILE_END(STREAM)						\
+do									\
+  {									\
+    if (HALF_PIC_P ())							\
+      HALF_PIC_FINISH (STREAM);						\
+  }									\
 while (0)
 
 /* Tell collect that the object format is OSF/rose.  */
