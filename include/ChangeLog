@@ -1,3 +1,13 @@
+2002-02-22  Jim Blandy  <jimb@redhat.com>
+
+	Allow the user to specify functions for allocating memory for
+	splay tree roots and nodes.
+	* splay-tree.h (splay_tree_allocate_fn, splay_tree_deallocate_fn):
+	New types.
+	(splay_tree): New fields: `allocate', `deallocate', and
+	`allocate_data'.
+	(splay_tree_new_with_allocator): New function declaration.
+
 2002-02-05  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (cplus_demangle_v3): Add "options" parm.

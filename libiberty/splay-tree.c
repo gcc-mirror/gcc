@@ -70,7 +70,7 @@ splay_tree_delete_helper (sp, node)
   if (sp->delete_value)
     (*sp->delete_value)(node->value);
 
-  free ((char*) node);
+  (*sp->deallocate) ((char*) node, sp->allocate_data);
 }
 
 /* Help splay SP around KEY.  PARENT and GRANDPARENT are the parent
@@ -227,9 +227,25 @@ splay_tree_foreach_helper (sp, node, fn, data)
   return splay_tree_foreach_helper (sp, node->right, fn, data);
 }
 
+
+/* An allocator and deallocator based on xmalloc.  */
+static void *
+splay_tree_xmalloc_allocate (int size, void *data)
+{
+  return xmalloc (size);
+}
+
+static void
+splay_tree_xmalloc_deallocate (void *object, void *data)
+{
+  free (object);
+}
+
+
 /* Allocate a new splay tree, using COMPARE_FN to compare nodes,
    DELETE_KEY_FN to deallocate keys, and DELETE_VALUE_FN to deallocate
-   values.  */
+   values.  Use xmalloc to allocate the splay tree structure, and any
+   nodes added.  */
 
 splay_tree 
 splay_tree_new (compare_fn, delete_key_fn, delete_value_fn)
@@ -237,11 +253,35 @@ splay_tree_new (compare_fn, delete_key_fn, delete_value_fn)
      splay_tree_delete_key_fn delete_key_fn;
      splay_tree_delete_value_fn delete_value_fn;
 {
-  splay_tree sp = (splay_tree) xmalloc (sizeof (struct splay_tree_s));
+  return (splay_tree_new_with_allocator
+          (compare_fn, delete_key_fn, delete_value_fn,
+           splay_tree_xmalloc_allocate, splay_tree_xmalloc_deallocate, 0));
+}
+
+
+/* Allocate a new splay tree, using COMPARE_FN to compare nodes,
+   DELETE_KEY_FN to deallocate keys, and DELETE_VALUE_FN to deallocate
+   values.  */
+
+splay_tree 
+splay_tree_new_with_allocator (compare_fn, delete_key_fn, delete_value_fn,
+                               allocate_fn, deallocate_fn, allocate_data)
+     splay_tree_compare_fn compare_fn;
+     splay_tree_delete_key_fn delete_key_fn;
+     splay_tree_delete_value_fn delete_value_fn;
+     splay_tree_allocate_fn allocate_fn;
+     splay_tree_deallocate_fn deallocate_fn;
+     void *allocate_data;
+{
+  splay_tree sp = (splay_tree) (*allocate_fn) (sizeof (struct splay_tree_s),
+                                               allocate_data);
   sp->root = 0;
   sp->comp = compare_fn;
   sp->delete_key = delete_key_fn;
   sp->delete_value = delete_value_fn;
+  sp->allocate = allocate_fn;
+  sp->deallocate = deallocate_fn;
+  sp->allocate_data = allocate_data;
 
   return sp;
 }
@@ -253,7 +293,7 @@ splay_tree_delete (sp)
      splay_tree sp;
 {
   splay_tree_delete_helper (sp, sp->root);
-  free ((char*) sp);
+  (*sp->deallocate) ((char*) sp, sp->allocate_data);
 }
 
 /* Insert a new node (associating KEY with DATA) into SP.  If a
@@ -286,7 +326,9 @@ splay_tree_insert (sp, key, value)
       /* Create a new node, and insert it at the root.  */
       splay_tree_node node;
       
-      node = (splay_tree_node) xmalloc (sizeof (struct splay_tree_node_s));
+      node = ((splay_tree_node)
+              (*sp->allocate) (sizeof (struct splay_tree_node_s),
+                               sp->allocate_data));
       node->key = key;
       node->value = value;
       
@@ -330,7 +372,7 @@ splay_tree_remove (sp, key)
       /* Delete the root node itself.  */
       if (sp->delete_value)
 	(*sp->delete_value) (sp->root->value);
-      free (sp->root);
+      (*sp->deallocate) (sp->root, sp->allocate_data);
 
       /* One of the children is now the root.  Doesn't matter much
 	 which, so long as we preserve the properties of the tree.  */
