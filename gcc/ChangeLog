@@ -1,3 +1,10 @@
+2004-10-07  Geoffrey Keating  <geoffk@apple.com>
+
+	Radar 3813796
+	* config/rs6000/rs6000.c (rs6000_generate_compare): When
+	flag_trapping_math is in effect, don't generate subtract
+	instructions.
+
 2004-10-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_narrow_logical_operator): Add.

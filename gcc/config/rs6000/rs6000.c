@@ -11489,6 +11489,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   enum machine_mode compare_mode = GET_MODE (op0);
   enum machine_mode result_mode = GET_MODE (dest);
   rtx temp;
+  bool is_against_zero;
 
   /* These modes should always match.  */
   if (GET_MODE (op1) != compare_mode
@@ -11511,6 +11512,17 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     }
   else if (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS
 	   && GET_MODE_CLASS (compare_mode) == MODE_FLOAT)
+    return 0;
+
+  is_against_zero = op1 == CONST0_RTX (compare_mode);
+  
+  /* A floating-point subtract might overflow, underflow, or produce
+     an inexact result, thus changing the floating-point flags, so it
+     can't be generated if we care about that.  It's safe if one side
+     of the construct is zero, since then no subtract will be
+     generated.  */
+  if (GET_MODE_CLASS (compare_mode) == MODE_FLOAT
+      && flag_trapping_math && ! is_against_zero)
     return 0;
 
   /* Eliminate half of the comparisons by switching operands, this
@@ -11545,14 +11557,18 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 	  || (! rtx_equal_p (op0, true_cond)
 	      && ! rtx_equal_p (op1, true_cond))))
     return 0;
+
   /* At this point we know we can use fsel.  */
 
   /* Reduce the comparison to a comparison against zero.  */
-  temp = gen_reg_rtx (compare_mode);
-  emit_insn (gen_rtx_SET (VOIDmode, temp,
-			  gen_rtx_MINUS (compare_mode, op0, op1)));
-  op0 = temp;
-  op1 = CONST0_RTX (compare_mode);
+  if (! is_against_zero)
+    {
+      temp = gen_reg_rtx (compare_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp,
+			      gen_rtx_MINUS (compare_mode, op0, op1)));
+      op0 = temp;
+      op1 = CONST0_RTX (compare_mode);
+    }
 
   /* If we don't care about NaNs we can reduce some of the comparisons
      down to faster ones.  */
