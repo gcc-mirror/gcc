@@ -4833,6 +4833,36 @@ is evaluated if it includes side effects but no other code is generated
 and GCC does not issue a warning.
 @end deftypefn
 
+@deftypefn {Built-in Function} double __builtin_huge_val (void)
+Returns a positive infinity, if supported by the floating-point format,
+else @code{DBL_MAX}.  This function is suitable for implementing the
+ISO C macro @code{HUGE_VAL}.
+@end deftypefn
+
+@deftypefn {Built-in Function} float __builtin_huge_valf (void)
+Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
+@end deftypefn
+
+@deftypefn {Built-in Function} long double __builtin_huge_vall (void)
+Similar to @code{__builtin_huge_val}, except the return
+type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} double __builtin_inf (void)
+Similar to @code{__builtin_huge_val}, except a warning is generated
+if the target floating-point format does not support infinities.
+This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
+@end deftypefn
+
+@deftypefn {Built-in Function} float __builtin_inff (void)
+Similar to @code{__builtin_inf}, except the return type is @code{float}.
+@end deftypefn
+
+@deftypefn {Built-in Function} long double __builtin_infl (void)
+Similar to @code{__builtin_inf}, except the return
+type is @code{long double}.
+@end deftypefn
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 

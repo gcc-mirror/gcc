@@ -292,6 +292,7 @@ extern int target_isinf		PARAMS ((REAL_VALUE_TYPE));
 extern int target_negative	PARAMS ((REAL_VALUE_TYPE));
 extern void debug_real		PARAMS ((REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE ereal_atof PARAMS ((const char *, enum machine_mode));
+extern REAL_VALUE_TYPE ereal_inf PARAMS ((enum machine_mode));
 
 /* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
 extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
