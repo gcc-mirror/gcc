@@ -1274,8 +1274,6 @@ set_spec (name, spec)
   int name_len = strlen (name);
   int i;
 
-  /* See if the
-
   /* See if the spec already exists */
   for (sl = specs; sl; sl = sl->next)
     if (name_len == sl->name_len && !strcmp (sl->name, name))
