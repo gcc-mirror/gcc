@@ -2248,7 +2248,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2298,7 +2298,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2348,7 +2348,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
@@ -2389,7 +2389,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
@@ -2516,7 +2516,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2559,7 +2559,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2602,7 +2602,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2645,7 +2645,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   if (TARGET_CHECK_RANGE_DIV)
@@ -2688,7 +2688,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
@@ -2722,7 +2722,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
@@ -2756,7 +2756,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
@@ -2790,7 +2790,7 @@
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0),
 			       GEN_INT (0x7)));
     }
   
