@@ -316,7 +316,7 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-
 # Programs which produce files for the target machine
 # ---------------------------------------------------
 
-AR_FOR_TARGET = ` \
+AR_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/ar ] ; then \
     echo $(objdir)/../binutils/ar ; \
   else \
@@ -325,11 +325,11 @@ AR_FOR_TARGET = ` \
     else \
        t='$(program_transform_name)'; echo ar | sed -e $$t ; \
     fi; \
-  fi`
+  fi)
 AR_FLAGS_FOR_TARGET =
 AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
 AR_EXTRACT_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) x
-RANLIB_FOR_TARGET = ` \
+RANLIB_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
   else \
@@ -338,8 +338,8 @@ RANLIB_FOR_TARGET = ` \
     else \
        t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
     fi; \
-  fi`
-NM_FOR_TARGET = ` \
+  fi)
+NM_FOR_TARGET := $(shell \
   if [ -f ./nm ] ; then \
     echo ./nm ; \
   elif [ -f $(objdir)/../binutils/nm-new ] ; then \
@@ -350,7 +350,7 @@ NM_FOR_TARGET = ` \
     else \
        t='$(program_transform_name)'; echo nm | sed -e $$t ; \
     fi; \
-  fi`
+  fi)
 
 # --------
 # UNSORTED
@@ -416,7 +416,6 @@ host_hook_obj=@out_host_hook_obj@
 gcc_version=@gcc_version@
 gcc_version_trigger=@gcc_version_trigger@
 version=$(gcc_version)
-mainversion=`grep version_string $(srcdir)/version.c | sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/'`
 
 # ------------------------
 # Installation directories
