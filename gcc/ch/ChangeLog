@@ -1,3 +1,8 @@
+Wed Oct  7 12:19:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (hash.h): Add -L KR-C -F ', 0, 0, 0' flags to gperf.
+	(hash.h): Regenerate using gperf 2.7.1 (19981006 egcs).
+
 Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
