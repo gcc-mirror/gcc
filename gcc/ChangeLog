@@ -1,3 +1,15 @@
+Sun Mar  7 11:21:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (reg_last_clobbers): New.
+	(reg_pending_clobbers, bb_reg_last_clobbers): New.
+	(compute_block_backward_dependences): Allocate memory for them.
+	(schedule_region): Likewise.
+	(sched_analyze_1): Clobbers don't interfere with one another.
+	They do interfere with sets ...
+	(sched_analyze_2): ... and uses.
+	(sched_analyze): Likewise.
+	(sched_analyze_insn): Update reg_last_clobbers appropriately.
+
 Sun Mar  7 08:30:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gmon-sol2.c: Include config.h and system.h.  Don't redundantly
