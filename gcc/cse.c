@@ -1628,7 +1628,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
       int exp_q = REG_QTY (REGNO (classp->exp));
       struct qty_table_elem *exp_ent = &qty_table[exp_q];
 
-      exp_ent->const_rtx = gen_lowpart_if_possible (exp_ent->mode, x);
+      exp_ent->const_rtx = gen_lowpart (exp_ent->mode, x);
       exp_ent->const_insn = this_insn;
     }
 
@@ -1647,7 +1647,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
 	      struct qty_table_elem *x_ent = &qty_table[x_q];
 
 	      x_ent->const_rtx
-		= gen_lowpart_if_possible (GET_MODE (x), p->exp);
+		= gen_lowpart (GET_MODE (x), p->exp);
 	      x_ent->const_insn = this_insn;
 	      break;
 	    }
@@ -3577,7 +3577,7 @@ fold_rtx (rtx x, rtx insn)
 	    if (((BYTES_BIG_ENDIAN
 		  && offset == GET_MODE_SIZE (GET_MODE (constant)) - 1)
 		 || (! BYTES_BIG_ENDIAN && offset == 0))
-		&& (new = gen_lowpart_if_possible (mode, constant)) != 0)
+		&& (new = gen_lowpart (mode, constant)) != 0)
 	      return new;
 	  }
 
@@ -3683,7 +3683,7 @@ fold_rtx (rtx x, rtx insn)
 		    && GET_CODE (arg_ent->const_rtx) != REG
 		    && GET_CODE (arg_ent->const_rtx) != PLUS)
 		  const_arg
-		    = gen_lowpart_if_possible (GET_MODE (arg),
+		    = gen_lowpart (GET_MODE (arg),
 					       arg_ent->const_rtx);
 	      }
 	    break;
@@ -4289,7 +4289,7 @@ equiv_constant (rtx x)
       struct qty_table_elem *x_ent = &qty_table[x_q];
 
       if (x_ent->const_rtx)
-	x = gen_lowpart_if_possible (GET_MODE (x), x_ent->const_rtx);
+	x = gen_lowpart (GET_MODE (x), x_ent->const_rtx);
     }
 
   if (x == 0 || CONSTANT_P (x))
@@ -4327,7 +4327,7 @@ equiv_constant (rtx x)
 
    If the requested operation cannot be done, 0 is returned.
 
-   This is similar to gen_lowpart in emit-rtl.c.  */
+   This is similar to gen_lowpart_general in emit-rtl.c.  */
 
 rtx
 gen_lowpart_if_possible (enum machine_mode mode, rtx x)
@@ -4442,7 +4442,7 @@ record_jump_cond (enum rtx_code code, enum machine_mode mode, rtx op0,
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
-      rtx tem = gen_lowpart_if_possible (inner_mode, op1);
+      rtx tem = gen_lowpart (inner_mode, op1);
 
       record_jump_cond (code, mode, SUBREG_REG (op0),
 			tem ? tem : gen_rtx_SUBREG (inner_mode, op1, 0),
@@ -4454,7 +4454,7 @@ record_jump_cond (enum rtx_code code, enum machine_mode mode, rtx op0,
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
-      rtx tem = gen_lowpart_if_possible (inner_mode, op0);
+      rtx tem = gen_lowpart (inner_mode, op0);
 
       record_jump_cond (code, mode, SUBREG_REG (op1),
 			tem ? tem : gen_rtx_SUBREG (inner_mode, op0, 0),
@@ -4474,7 +4474,7 @@ record_jump_cond (enum rtx_code code, enum machine_mode mode, rtx op0,
 	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
-      rtx tem = gen_lowpart_if_possible (inner_mode, op1);
+      rtx tem = gen_lowpart (inner_mode, op1);
 
       record_jump_cond (code, mode, SUBREG_REG (op0),
 			tem ? tem : gen_rtx_SUBREG (inner_mode, op1, 0),
@@ -4487,7 +4487,7 @@ record_jump_cond (enum rtx_code code, enum machine_mode mode, rtx op0,
 	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
     {
       enum machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
-      rtx tem = gen_lowpart_if_possible (inner_mode, op0);
+      rtx tem = gen_lowpart (inner_mode, op0);
 
       record_jump_cond (code, mode, SUBREG_REG (op1),
 			tem ? tem : gen_rtx_SUBREG (inner_mode, op0, 0),
@@ -5176,7 +5176,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		   const_elt; const_elt = const_elt->next_same_value)
 		if (GET_CODE (const_elt->exp) == REG)
 		  {
-		    src_related = gen_lowpart_if_possible (mode,
+		    src_related = gen_lowpart (mode,
 							   const_elt->exp);
 		    break;
 		  }
@@ -5200,7 +5200,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
 	       tmode = GET_MODE_WIDER_MODE (tmode))
 	    {
-	      rtx inner = gen_lowpart_if_possible (tmode, XEXP (src, 0));
+	      rtx inner = gen_lowpart (tmode, XEXP (src, 0));
 	      struct table_elt *larger_elt;
 
 	      if (inner)
@@ -5216,7 +5216,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		    if (GET_CODE (larger_elt->exp) == REG)
 		      {
 			src_related
-			  = gen_lowpart_if_possible (mode, larger_elt->exp);
+			  = gen_lowpart (mode, larger_elt->exp);
 			break;
 		      }
 
@@ -5261,7 +5261,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		   larger_elt; larger_elt = larger_elt->next_same_value)
 		if (GET_CODE (larger_elt->exp) == REG)
 		  {
-		    src_related = gen_lowpart_if_possible (mode,
+		    src_related = gen_lowpart (mode,
 							   larger_elt->exp);
 		    break;
 		  }
@@ -6087,8 +6087,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 	   we are also doing (set (reg:m2 foo) (subreg:m2 (bar:m1) 0)) so
 	   make that equivalence as well.
 
-	   However, BAR may have equivalences for which gen_lowpart_if_possible
-	   will produce a simpler value than gen_lowpart_if_possible applied to
+	   However, BAR may have equivalences for which gen_lowpart
+	   will produce a simpler value than gen_lowpart applied to
 	   BAR (e.g., if BAR was ZERO_EXTENDed from M2), so we will scan all
 	   BAR's equivalences.  If we don't get a simplified form, make
 	   the SUBREG.  It will not be used in an equivalence, but will
@@ -6433,7 +6433,7 @@ cse_process_notes (rtx x, rtx object)
 	      && (CONSTANT_P (ent->const_rtx)
 		  || GET_CODE (ent->const_rtx) == REG))
 	    {
-	      rtx new = gen_lowpart_if_possible (GET_MODE (x), ent->const_rtx);
+	      rtx new = gen_lowpart (GET_MODE (x), ent->const_rtx);
 	      if (new)
 		return new;
 	    }
@@ -6983,6 +6983,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   constant_pool_entries_cost = 0;
   constant_pool_entries_regcost = 0;
   val.path_size = 0;
+  gen_lowpart = gen_lowpart_if_possible;
 
   init_recog ();
   init_alias_analysis ();
@@ -7102,6 +7103,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   free (uid_cuid);
   free (reg_eqv_table);
   free (val.path);
+  gen_lowpart = gen_lowpart_general;
 
   return cse_jumps_altered || recorded_label_ref;
 }

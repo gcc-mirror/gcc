@@ -1,3 +1,18 @@
+2004-01-31  Paolo Bonzini  <bonzini@gnu.org>
+
+ 	* combine.c (cse_main): Set gen_lowpart to gen_lowpart_for_combine
+	and restore it to gen_lowpart_general on exit.
+	(gen_lowpart_for_combine): Adjust all callers to go through
+	gen_lowpart.
+	* cse.c (cse_main): Set gen_lowpart to gen_lowpart_if_possible
+	and restore it to gen_lowpart_general on exit.
+	(gen_lowpart_if_possible): Adjust all callers to go through
+	gen_lowpart.
+	* emit-rtl.c (gen_lowpart_general): New name of gen_lowpart.
+	(gen_lowpart): Declare as pointer to function, initialized to
+	gen_lowpart_general.
+	* rtl.h (gen_lowpart): Declare as pointer to function.
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bt-load.c: Replace "gen_rtx (FOO, " with "gen_rtx_FOO (".
