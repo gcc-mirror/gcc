@@ -8518,9 +8518,7 @@ schedule_insns (dump_file)
 	     We could (should?) recompute register live information.  Doing
 	     so may even be beneficial.  */
 
-	  /* CYGNUS LOCAL edge_splitting/law */
-	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs, 0);
-	  /* END CYGNUS LOCAL */
+	  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
 	  /* Compute the dominators and post dominators.  We don't currently use
 	     post dominators, but we should for speculative motion analysis.  */
