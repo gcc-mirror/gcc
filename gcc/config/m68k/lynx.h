@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,3 +52,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  {1, 1, 1, 1, 0, 0, 0, 0,   \
   1, 1, 0, 0, 0, 0, 0, 1,   \
   1, 1, 0, 0, 0, 0, 0, 0 }
+
+/* Return floating point values in a fp register.  This make fp code a
+   little bit faster.  It also makes -msoft-float code incompatible with
+   -m68881 code, so people have to be careful not to mix the two.  */
+#undef FUNCTION_VALUE
+#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
+
+#undef LIBCALL_VALUE
+#define LIBCALL_VALUE(MODE)                                                \
+ gen_rtx (REG, (MODE),                                                     \
+          ((TARGET_68881                                                   \
+            && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
+           ? 16 : 0))
+
+#undef FUNCTION_VALUE_REGNO_P
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (TARGET_68881 && (N) == 16))
+
+#undef NEEDS_UNTYPED_CALL
+#define NEEDS_UNTYPED_CALL 1
