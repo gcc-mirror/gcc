@@ -337,7 +337,7 @@ one_utf8_to_utf16 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
   int rval;
-  cppchar_t s;
+  cppchar_t s = 0;
   const uchar *save_inbuf = *inbufp;
   size_t save_inbytesleft = *inbytesleftp;
   uchar *outbuf = *outbufp;
