@@ -68,10 +68,10 @@ __inline__ IMP
 get_imp (Class_t class, SEL sel)
 {
 #ifdef OBJC_SPARSE_LOOKUP
-  void* res = sarray_get (class->dtable, (unsigned int) sel);
+  void* res = sarray_get (class->dtable, (size_t) sel);
   if(res == __objc_init_install_dtable)
     __objc_install_dispatch_table_for_class (class);
-  return sarray_get (class->dtable, (unsigned int) sel);
+  return sarray_get (class->dtable, (size_t) sel);
 #else
   return cache_get (class, sel);
 #endif
@@ -529,7 +529,7 @@ __objc_double_cache(Cache_t cache)
 static Cache_t
 __objc_cache_insert(Cache_t cache, SEL op, IMP imp)
 {
-  int index = ((unsigned int)op)&(cache)->mask;
+  int index = ((size_t)op)&(cache)->mask;
 
   if(op == 0)
     return cache;

@@ -52,6 +52,9 @@ extern int idxsize;
 
 #include <assert.h>
 
+/* An unsigned integer of same size as a pointer */
+#define SIZET_BITS (sizeof(size_t)*8)
+
 #if defined(sparc) || defined(OBJC_SPARSE2)
 #define PRECOMPUTE_SELECTORS
 #endif
@@ -79,24 +82,24 @@ extern int idxsize;
 
 #endif /* OBJC_SPARSE2 */
 
-typedef unsigned int sidx;
+typedef size_t sidx;
 
 #ifdef PRECOMPUTE_SELECTORS
 
 struct soffset {
 #ifdef OBJC_SPARSE3
-  unsigned char unused;
-  unsigned char eoffset;
-  unsigned char boffset;
-  unsigned char ioffset;
+  unsigned int unused : SIZET_BITS/4;
+  unsigned int eoffset : SIZET_BITS/4;
+  unsigned int boffset : SIZET_BITS/4;
+  unsigned int ioffset : SIZET_BITS/4;
 #else /* OBJC_SPARSE2 */
 #ifdef sparc
-  unsigned int boffset : 30 - BUCKET_BITS;
+  unsigned int boffset : (SIZET_BITS - 2) - BUCKET_BITS;
   unsigned int eoffset : BUCKET_BITS;
   unsigned int unused  : 2;
 #else
-  unsigned short boffset;
-  unsigned short eoffset;
+  unsigned int boffset : SIZET_BITS/2;
+  unsigned int eoffset : SIZET_BITS/2;
 #endif
 #endif /* OBJC_SPARSE2 */
 };
@@ -165,7 +168,7 @@ soffset_decode(sidx index)
 }
 
 static inline sidx
-soffset_encode(unsigned int offset)
+soffset_encode(size_t offset)
 {
   union sofftype x;
   x.off.eoffset = offset%BUCKET_SIZE;
@@ -180,14 +183,14 @@ soffset_encode(unsigned int offset)
 
 #else /* not PRECOMPUTE_SELECTORS */
 
-static inline unsigned int
+static inline size_t
 soffset_decode(sidx index)
 {
   return index;
 }
 
 static inline sidx
-soffset_encode(unsigned int offset)
+soffset_encode(size_t offset)
 {
   return offset;
 }

@@ -485,7 +485,7 @@ extern __inline__ IMP
 objc_msg_lookup(id receiver, SEL op)
 {
   if(receiver)
-    return sarray_get(receiver->class_pointer->dtable, (unsigned int) op);
+    return sarray_get(receiver->class_pointer->dtable, (size_t) op);
   else
     return nil_method;
 }
