@@ -1,3 +1,7 @@
+Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
+
+	* gcc.c-torture/execute/990527-1.c: New test.
+
 1999-05-25  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/19990525-0.f: New test.
