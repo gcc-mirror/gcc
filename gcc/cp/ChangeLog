@@ -1,5 +1,16 @@
 1999-10-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (SCOPE_PARTIAL_P): New macro.
+	(pushlevel_temporary): Remove.
+	(add_scope_stmt): New function.
+	* decl.c (pushlevel_temporary): Remove.
+	(poplevel): Use add_scope_stmt.
+	(start_decl_1): Likewise.
+	* semantics.c (add_scope_stmt): New function.
+	(do_pushlevel): Use it.
+	(do_poplevel): Use it.
+	(expand_stmt): Check SCOPE_PARTIAL_P.
+	
 	* cp-tree.def (EMPTY_CLASS_EXPR): New tree node.
 	* call.c (build_call): Use EMPTY_CLASS_EXPR instead of RTL_EXPR.
 	* expr.c (cplus_expand_expr): Expand it.
