@@ -1,3 +1,9 @@
+2000-12-02  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/cpp/c++98.c,c++98-pedantic.c,c89.c,c89-pedantic.c,
+        c94.c,c94-pedantic.c,c99.c,c99-pedantic.c,gnuc89.c,gnuc89-pedantic.c,
+        gnuc99.c,gnuc99-pedantic.c: New tests.
+
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-no-exargs-1.c, gcc.dg/format-no-y2k-1.c,
