@@ -1559,6 +1559,52 @@ the enclosing @code{if}.  The resulting code would look like this:
 @}
 @end smallexample
 
+@item -Wsequence-point
+Warn about code that may have undefined semantics because of violations
+of sequence point rules in the C standard.
+
+The C standard defines the order in which expressions in a C program are
+evaluated in terms of @dfn{sequence points}, which represent a partial
+ordering between the execution of parts of the program: those executed
+before the sequence point, and those executed after it.  These occur
+after the evaluation of a full expression (one which is not part of a
+larger expression), after the evaluation of the first operand of a
+@code{&&}, @code{||}, @code{? :} or @code{,} (comma) operator, before a
+function is called (but after the evaluation of its arguments and the
+expression denoting the called function), and in certain other places.
+Other than as expressed by the sequence point rules, the order of
+evaluation of subexpressions of an expression is not specified.  All
+these rules describe only a partial order rather than a total order,
+since, for example, if two functions are called within one expression
+with no sequence point between them, the order in which the functions
+are called is not specified.  However, the standards committee have
+ruled that function calls do not overlap.
+
+It is not specified when between sequence points modifications to the
+values of objects take effect.  Programs whose behavior depends on this
+have undefined behavior; the C standard specifies that ``Between the
+previous and next sequence point an object shall have its stored value
+modified at most once by the evaluation of an expression.  Furthermore,
+the prior value shall be read only to determine the value to be
+stored.''.  If a program breaks these rules, the results on any
+particular implementation are entirely unpredictable.
+
+Examples of code with undefined behavior are @code{a = a++;}, @code{a[n]
+= b[n++]} and @code{a[i++] = i;}.  Some more complicated cases are not
+diagnosed by this option, and it may give an occasional false positive
+result, but in general it has been found fairly effective at detecting
+this sort of problem in programs.
+
+The present implementation of this option only works for C programs.  A
+future implementation may also work for C++ programs.
+
+There is some controversy over the precise meaning of the sequence point
+rules in subtle cases.  Alternative formal definitions may be found in
+Clive Feather's ``Annex S''
+@uref{http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/n908.htm} and in
+Michael Norrish's thesis
+@uref{http://www.cl.cam.ac.uk/users/mn200/PhD/thesis-report.ps.gz}.
+
 @item -Wreturn-type
 Warn whenever a function is defined with a return-type that defaults to
 @code{int}.  Also warn about any @code{return} statement with no

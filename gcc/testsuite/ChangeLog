@@ -1,3 +1,7 @@
+2000-10-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/sequence-pt-1.c: New test.
+
 2000-10-11  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.c-torture/execute/20001011-1.c: New testcase.

@@ -497,6 +497,10 @@ int warn_float_equal = 0;
 
 int warn_multichar = 1;
 
+/* Nonzero means warn about possible violations of sequence point rules.  */
+
+int warn_sequence_point;
+
 /* The variant of the C language being processed.  */
 
 c_language_kind c_language = clk_c;
@@ -765,6 +769,10 @@ c_decode_option (argc, argv)
     warn_return_type = 1;
   else if (!strcmp (p, "-Wno-return-type"))
     warn_return_type = 0;
+  else if (!strcmp (p, "-Wsequence-point"))
+    warn_sequence_point = 1;
+  else if (!strcmp (p, "-Wno-sequence-point"))
+    warn_sequence_point = 0;
   else if (!strcmp (p, "-Wcomment"))
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-comment"))
@@ -826,6 +834,7 @@ c_decode_option (argc, argv)
       warn_format = 1;
       warn_char_subscripts = 1;
       warn_parentheses = 1;
+      warn_sequence_point = 1;
       warn_missing_braces = 1;
       /* We set this to 2 here, but 1 in -Wmain, so -ffreestanding can turn
 	 it off only if it's not explicit.  */
