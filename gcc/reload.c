@@ -6290,8 +6290,22 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	   || GET_CODE (x) == CC0)
     return reg_mentioned_p (x, in);
   else if (GET_CODE (x) == PLUS)
-    return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
-	    || reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
+    {
+      /* We actually want to know if X is mentioned somewhere inside IN.
+	 We must not say that (plus (sp) (const_int 124)) is in
+	 (plus (sp) (const_int 64)), since that can lead to incorrect reload
+	 allocation when spuriously changing a RELOAD_FOR_OUTPUT_ADDRESS
+	 into a RELOAD_OTHER on behalf of another RELOAD_OTHER.  */
+      while (GET_CODE (in) == MEM)
+	in = XEXP (in, 0);
+      if (GET_CODE (in) == REG)
+	return 0;
+      else if (GET_CODE (in) == PLUS)
+	return (reg_overlap_mentioned_for_reload_p (x, XEXP (in, 0))
+		|| reg_overlap_mentioned_for_reload_p (x, XEXP (in, 1)));
+      else return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
+		   || reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
+    }
   else
     abort ();
 

@@ -1,3 +1,12 @@
+2003-12-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* reload.c (reg_overlap_mentioned_for_reload_p):
+	When looking at a PLUS in X, avoid spuriously returning nonzero
+	when IN is a REG or another simple PLUS, or a MEM containing one.
+
+	* loop.c (loop_invariant_p): Amend comment about where new registers
+	might come from.
+
 2003-12-15  Andreas Jaeger  <aj@suse.de>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Remove
