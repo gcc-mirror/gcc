@@ -1,3 +1,8 @@
+2002-02-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c (init_gcc_specs): Get -static and -static-libgcc to
+	override -shared and -shared-libgcc.
+
 2002-02-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC,
