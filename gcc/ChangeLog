@@ -1,3 +1,7 @@
+2003-03-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* toplev.c (independent_decode_option): Don't skip a 'Y' prefix.
+
 2003-03-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Testing): Mention test result links from build
