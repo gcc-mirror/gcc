@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,7 +65,7 @@ private short count;
  */
 public UID() {
 	synchronized (lock) {
-		if (count == Short.MAX_VALUE) {
+		if (nextCount == Short.MAX_VALUE) {
 			long newtime;
 			for (;;) {
 				newtime = System.currentTimeMillis();
