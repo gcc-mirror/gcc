@@ -126,10 +126,15 @@ fixinc.sh : fixinc.in mkfixinc.sh Makefile
 $(srcdir)/fixincl.x: @MAINT@ fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes
 
-clean:
+mostlyclean:
 	rm -f *.o *-stamp $(AF) $(FI) *~
 
-maintainer-clean : clean
+clean: mostlyclean
+
+distclean: clean
+	rm -f Makefile config.h config.log config.status stamp-h
+
+maintainer-clean: distclean
 	rm -f $(srcdir)/fixincl.x
 
 Makefile: $(srcdir)/Makefile.in config.status
