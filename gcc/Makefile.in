@@ -593,7 +593,7 @@ float.h-cross:
 # Let's try with GCC.
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o enquire
-enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
+enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
 #	-if [ "$(srcdir)" != "." ]; then rm -f ./enquire.c; else true; fi
 #	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
 # Breaking this line caused a problem with one version of GNU make.
