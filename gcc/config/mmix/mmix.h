@@ -589,7 +589,7 @@ enum reg_class
  mmix_const_ok_for_letter_p (VALUE, C)
 
 #define EXTRA_CONSTRAINT(VALUE, C)	\
- mmix_extra_constraint (VALUE, C)
+ mmix_extra_constraint (VALUE, C, MMIX_REG_OK_STRICT)
 
 /* Do we need anything serious here?  Yes, any FLOT constant.  */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)			\
