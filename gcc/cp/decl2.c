@@ -2789,6 +2789,9 @@ start_objects (method_type, initp)
   TREE_PUBLIC (current_function_decl) = 0;
 #endif
 
+  /* Mark this declaration as used to avoid spurious warnings.  */
+  TREE_USED (current_function_decl) = 1;
+
   store_parm_decls ();
   pushlevel (0);
   clear_last_expr ();
