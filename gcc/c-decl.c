@@ -3832,7 +3832,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	      type = error_mark_node;
 	    }
 
-	  if (pedantic && flexible_array_type_p (type))
+	  if (pedantic && !in_system_header && flexible_array_type_p (type))
 	    pedwarn ("invalid use of structure with flexible array member");
 
 	  if (size == error_mark_node)
@@ -5027,7 +5027,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	    }
 	}
 
-      if (pedantic && TREE_CODE (t) == RECORD_TYPE
+      if (pedantic && !in_system_header && TREE_CODE (t) == RECORD_TYPE
 	  && flexible_array_type_p (TREE_TYPE (x)))
 	pedwarn ("%Jinvalid use of structure with flexible array member", x);
 

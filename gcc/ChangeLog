@@ -1,3 +1,10 @@
+2004-05-31  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/15749
+	* c-decl.c (grokdeclarator, finish_struct): Don't pedwarn for
+	misuses of structures with flexible array members if
+	in_system_header.
+
 2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/15693
