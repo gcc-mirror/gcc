@@ -365,6 +365,7 @@ rtx pic_offset_table_rtx;
 static void attr_hash_add_rtx	PARAMS ((int, rtx));
 static void attr_hash_add_string PARAMS ((int, char *));
 static rtx attr_rtx		PARAMS ((enum rtx_code, ...));
+static rtx attr_rtx_1		PARAMS ((enum rtx_code, va_list));
 static char *attr_printf	PARAMS ((unsigned int, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 static char *attr_string        PARAMS ((const char *, int));
@@ -541,24 +542,14 @@ attr_hash_add_string (hashcode, str)
    rtx attr_rtx (code, [element1, ..., elementn])  */
 
 static rtx
-attr_rtx VPARAMS ((enum rtx_code code, ...))
+attr_rtx_1 (code, p)
+     enum rtx_code code;
+     va_list p;
 {
-#ifndef ANSI_PROTOTYPES
-  enum rtx_code code;
-#endif
-  va_list p;
-  int i;		/* Array indices...			*/
-  const char *fmt;	/* Current rtx's format...		*/
   rtx rt_val = NULL_RTX;/* RTX to return to caller...		*/
   int hashcode;
   struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;
-
-  VA_START (p, code);
-
-#ifndef ANSI_PROTOTYPES
-  code = va_arg (p, enum rtx_code);
-#endif
 
   /* For each of several cases, search the hash table for an existing entry.
      Use that entry if one is found; otherwise create a new RTL and add it
@@ -573,7 +564,6 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	{
 	  rt_val = rtx_alloc (code);
 	  XEXP (rt_val, 0) = arg0;
-	  va_end (p);
 	  return rt_val;
 	}
 
@@ -582,7 +572,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
 	    && XEXP (h->u.rtl, 0) == arg0)
-	  goto found;
+	  return h->u.rtl;
 
       if (h == 0)
 	{
@@ -604,7 +594,6 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	  rt_val = rtx_alloc (code);
 	  XEXP (rt_val, 0) = arg0;
 	  XEXP (rt_val, 1) = arg1;
-	  va_end (p);
 	  return rt_val;
 	}
 
@@ -614,7 +603,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	    && GET_CODE (h->u.rtl) == code
 	    && XEXP (h->u.rtl, 0) == arg0
 	    && XEXP (h->u.rtl, 1) == arg1)
-	  goto found;
+	  return h->u.rtl;
 
       if (h == 0)
 	{
@@ -637,7 +626,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
 	    && XSTR (h->u.rtl, 0) == arg0)
-	  goto found;
+	  return h->u.rtl;
 
       if (h == 0)
 	{
@@ -659,7 +648,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	    && GET_CODE (h->u.rtl) == code
 	    && XSTR (h->u.rtl, 0) == arg0
 	    && XSTR (h->u.rtl, 1) == arg1)
-	  goto found;
+	  return h->u.rtl;
 
       if (h == 0)
 	{
@@ -673,19 +662,16 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
     {
       HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
       if (arg0 == 0)
-	{
-	  va_end (p);
-	  return false_rtx;
-	}
-      if (arg0 == 1)
-	{
-	  va_end (p);
-	  return true_rtx;
-	}
-      goto nohash;
+	return false_rtx;
+      else if (arg0 == 1)
+	return true_rtx;
+      else
+	goto nohash;
     }
   else
     {
+      int i;		/* Array indices...			*/
+      const char *fmt;	/* Current rtx's format...		*/
     nohash:
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */
 
@@ -722,19 +708,25 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 	      abort ();
 	    }
 	}
-      va_end (p);
       return rt_val;
     }
 
   rtl_obstack = old_obstack;
-  va_end (p);
   attr_hash_add_rtx (hashcode, rt_val);
   RTX_INTEGRATED_P (rt_val) = 1;
   return rt_val;
+}
 
- found:
-  va_end (p);
-  return h->u.rtl;
+static rtx
+attr_rtx VPARAMS ((enum rtx_code code, ...))
+{
+  rtx result;
+  
+  VA_OPEN (p, code);
+  VA_FIXEDARG (p, enum rtx_code, code);
+  result = attr_rtx_1 (code, p);
+  VA_CLOSE (p);
+  return result;
 }
 
 /* Create a new string printed with the printf line arguments into a space

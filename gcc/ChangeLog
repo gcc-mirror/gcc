@@ -1,3 +1,11 @@
+2001-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattrtab.c (attr_rtx_1): New function containing the
+	majority of `attr_rtx'.  Move variable declarations into the
+	scope where they are used.  Eliminate unnecessary gotos.
+	(attr_rtx): Now just a wrapper for `attr_rtx_1' using VA_OPEN,
+	VA_FIXEDARG, and VA_CLOSE.
+
 2001-11-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_notice_update_cc): Check first
