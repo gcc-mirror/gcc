@@ -80,22 +80,6 @@ target_tools="target-examples target-groff target-gperf"
 
 ################################################################################
 
-## These two lists are of directories that are to be removed from the
-## ${configdirs} list for either cross-compilations or for native-
-## compilations.  For example, it doesn't make that much sense to
-## cross-compile Emacs, nor is it terribly useful to compile target-libiberty in
-## a native environment.  
-
-# directories to be built in the native environment only
-#
-# This must be a single line because of the way it is searched by grep in
-# the code below.
-native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf"
-
-# directories to be built in a cross environment only
-#
-cross_only="target-libgloss target-newlib target-opcodes"
-
 ## All tools belong in one of the four categories, and are assigned above
 ## We assign ${configdirs} this way to remove all embedded newlines.  This
 ## is important because configure will choke if they ever get through.
@@ -184,8 +168,12 @@ case ${with_x} in
 esac
 
 # Some tools are only suitable for building in a "native" situation.
-# Remove these if host!=target.  Similarly, some are only suitable
-# for cross toolchains; remove if host=target.
+# Remove these if host!=target.  
+native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf"
+
+# Similarly, some are only suitable for cross toolchains.
+# Remove these if host=target.
+cross_only="target-libgloss target-newlib target-opcodes"
 
 case $is_cross_compiler in
   no) skipdirs="${skipdirs} ${cross_only}" ;;
@@ -755,8 +743,7 @@ for dir in . $skipdirs $noconfigdirs ; do
   dirname=`echo $dir | sed -e s/target-//g`
   if test $dir != .  && echo " ${configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
     configdirs=`echo " ${configdirs} " | sed -e "s/ ${dir} / /"`
-    if test -r $srcdir/$dirname/configure \
-	|| test -r $srcdir/$dirname/configure.in ; then
+    if test -r $srcdir/$dirname/configure ; then
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
@@ -766,8 +753,7 @@ for dir in . $skipdirs $noconfigdirs ; do
   fi
   if test $dir != . && echo " ${target_configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
     target_configdirs=`echo " ${target_configdirs} " | sed -e "s/ ${dir} / /"`
-    if test -r $srcdir/$dirname/configure \
-	|| test -r $srcdir/$dirname/configure.in ; then
+    if test -r $srcdir/$dirname/configure ; then
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
       else
@@ -783,7 +769,7 @@ if test -n "${target_configdirs}" ; then
   others=
   for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
     if test "$i" != "libiberty" ; then
-      if test -r $srcdir/$i/configure || test -r $srcdir/$i/configure.in ; then
+      if test -r $srcdir/$i/configure ; then
 	others=yes;
 	break;
       fi
