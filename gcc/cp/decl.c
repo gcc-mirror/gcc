@@ -168,6 +168,7 @@ static tree lookup_tag PROTO((enum tree_code, tree,
 static void set_identifier_type_value_with_scope
 	PROTO((tree, tree, struct binding_level *));
 static void record_builtin_type PROTO((enum rid, char *, tree));
+static void record_unknown_type PROTO((tree, char *));
 static int member_function_or_else PROTO((tree, tree, char *));
 static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
@@ -5102,6 +5103,22 @@ record_builtin_type (rid_index, name, type)
     }
 }
 
+/* Push a type into the namespace so that the back-ends ignore it. */
+
+static void
+record_unknown_type (type, name)
+     tree type;
+     char *name;
+{
+  tree decl = pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
+  /* Make sure the "unknown type" typedecl gets ignored for debug info.  */
+  DECL_IGNORED_P (decl) = 1;
+  TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
+  TYPE_SIZE (type) = TYPE_SIZE (void_type_node);
+  TYPE_ALIGN (type) = 1;
+  TYPE_MODE (type) = TYPE_MODE (void_type_node);
+} 
+
 /* Push overloaded decl, in global scope, with one argument so it
    can be used as a callback from define_function.  */
 
@@ -5697,14 +5714,8 @@ init_decl_processing ()
   /* C++ extensions */
 
   unknown_type_node = make_node (UNKNOWN_TYPE);
-  decl = pushdecl (build_decl (TYPE_DECL, get_identifier ("unknown type"),
-			unknown_type_node));
-  /* Make sure the "unknown type" typedecl gets ignored for debug info.  */
-  DECL_IGNORED_P (decl) = 1;
-  TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
-  TYPE_SIZE (unknown_type_node) = TYPE_SIZE (void_type_node);
-  TYPE_ALIGN (unknown_type_node) = 1;
-  TYPE_MODE (unknown_type_node) = TYPE_MODE (void_type_node);
+  record_unknown_type (unknown_type_node, "unknown type");
+
   /* Indirecting an UNKNOWN_TYPE node yields an UNKNOWN_TYPE node.  */
   TREE_TYPE (unknown_type_node) = unknown_type_node;
 
@@ -5828,7 +5839,7 @@ init_decl_processing ()
   pushdecl (std_node);
 
   global_type_node = make_node (LANG_TYPE);
-  record_builtin_type (RID_MAX, "global type", global_type_node);
+  record_unknown_type (global_type_node, "global type");
 
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
