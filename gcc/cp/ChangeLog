@@ -1,5 +1,8 @@
 1999-05-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (for_each_template_parm): Walk into TYPENAME_TYPEs,
+	INDIRECT_REFs, and COMPONENT_REFs.  Handle FIELD_DECLs.
+	
 	* cp-tree.h (push_nested_namespace): Declare.
 	(pop_nested_namespace): Likewise.
 	* decl.c (push_nested_namespace): New function.
