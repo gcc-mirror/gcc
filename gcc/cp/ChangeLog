@@ -1,3 +1,10 @@
+2004-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12815
+	* class.c (build_base_path): Do not mark vtable references as
+	TREE_CONSTANT.
+	(build_vtbl_ref_1): Likewise.
+
 2004-01-12  Richard Henderson  <rth@redhat.com>
 
 	PR opt/10776
