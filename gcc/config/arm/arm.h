@@ -109,7 +109,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define CPP_PREDEFINES  "-Darm -Acpu(arm) -Amachine(arm)"
 #endif
 
-#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian)"
+#define CPP_SPEC "\
+%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
+%(cpp_endian) %(subtarget_cpp_spec)"
 
 /* Set the architecture define -- if -march= is set, then it overrides
    the -mcpu= setting.  */
@@ -228,9 +230,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },	\
   { "cpp_endian",		CPP_ENDIAN_SPEC },		\
   { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },	\
+  { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
   SUBTARGET_EXTRA_SPECS
 
 #define SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_CPP_SPEC      ""
 
 
 /* Run-time Target Specification.  */
