@@ -1,3 +1,8 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* testsuite/lib/libffi-dg.exp: Accept more than one multilib libgcc.
+
 2004-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcj/17465

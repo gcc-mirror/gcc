@@ -1,3 +1,8 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* testsuite/lib/libstdc++.exp: Accept more than one multilib libgcc.
+
 2004-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_memory.h (__get_temporary_buffer): Don't use

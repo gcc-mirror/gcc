@@ -1,3 +1,8 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* testsuite/lib/libjava.exp: Accept more than one multilib libgcc.
+
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.
