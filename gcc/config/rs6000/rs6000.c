@@ -347,6 +347,20 @@ rs6000_override_options (default_cpu)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 }
+
+void
+optimization_options (level, size)
+     int level;
+     int size ATTRIBUTE_UNUSED;
+{
+#if 0
+#ifdef HAIFA
+  /* When optimizing, enable use of BCT instruction.  */
+  if (level >= 1)
+      flag_branch_on_count_reg = 1;
+#endif
+#endif
+}
 
 /* Do anything needed at the start of the asm file.  */
 
@@ -1305,14 +1319,18 @@ function_arg_padding (mode, type)
    
    Windows NT wants anything >= 8 bytes to be double word aligned.
 
-   V.4 wants long longs to be double word aligned.  */
+   V.4 wants long longs to be double word aligned.
+
+   FP emulation: double precision passed, returned, and same alignment
+   as long long.  */
 
 int
 function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && mode == DImode)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      && ((mode == DImode) || (TARGET_SOFT_FLOAT && mode == DFmode)))
     return 64;
 
   if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
@@ -2188,10 +2206,7 @@ secondary_reload_class (class, mode, in)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx in;
 {
-  int regno = true_regnum (in);
-
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    regno = -1;
+  int regno;
 
   /* We can not copy a symbolic operand directly into anything other than
      BASE_REGS for TARGET_ELF.  So indicate that a register from BASE_REGS
@@ -2202,6 +2217,25 @@ secondary_reload_class (class, mode, in)
 	  || GET_CODE (in) == LABEL_REF
 	  || GET_CODE (in) == CONST))
     return BASE_REGS;
+
+  if (GET_CODE (in) == REG)
+    {
+      regno = REGNO (in);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	{
+	  regno = true_regnum (in);
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    regno = -1;
+	}
+    }
+  else if (GET_CODE (in) == SUBREG)
+    {
+      regno = true_regnum (in);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	regno = -1;
+    }
+  else
+    regno = -1;
 
   /* We can place anything into GENERAL_REGS and can put GENERAL_REGS
      into anything.  */

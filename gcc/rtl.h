@@ -1350,7 +1350,7 @@ extern void print_inline_rtx		PROTO ((FILE *, rtx, int));
 /* In loop.c */
 extern void init_loop			PROTO ((void));
 #ifdef BUFSIZ
-extern void loop_optimize		PROTO ((rtx, FILE *, int));
+extern void loop_optimize		PROTO ((rtx, FILE *, int, int));
 #endif
 extern void record_excess_regs		PROTO ((rtx, rtx, rtx *));
 

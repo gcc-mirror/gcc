@@ -1,3 +1,27 @@
+Fri Sep 18 23:50:56 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* toplev.c (rest_of_compilation): Set bct_p on second call to
+	loop_optimize.
+	* loop.c (loop_optimize, scan_loop, strength_reduce): New argument
+	bct_p.
+	(strength_reduce): Only call analyze_loop_iterations and
+	insert_bct if bct_p set.
+	(check_dbra_loop): Fix typo.
+	(insert_bct): Use word_mode instead of SImode.
+	(instrument_loop_bct): Likewise.  Do not delete iteration count
+	condition code generation insn.  Initialize iteration count before
+	loop start.
+	* rtl.h (loop_optimize): Update prototype.
+
+	* ginclude/va-ppc.h (va_arg): longlong types in overflow area are
+	not doubleword aligned.
+
+	* rs6000.c (optimization_options): New function.
+	(secondary_reload_class): Only call true_regnum for PSEUDO_REGs.
+	* rs6000.h (OPTIMIZATION_OPTIONS): Define.
+	(REG_ALLOC_ORDER): Allocate highest numbered condition regsiters
+	first; cr1 can be used for FP record condition insns.
+
 Fri Sep 18 09:44:55 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.h (m32r_block_immediate_operand): Add to
