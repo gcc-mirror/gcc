@@ -4,6 +4,8 @@
 
 	* testsuite/23_containers/map_operators.cc: Don't xfail.
 	* testsuite/23_containers/set_operators.cc: Same.
+	* testsuite/backward/header_iterator_h.cc: Pass in -Wno-deprecated.
+	* testsuite/backward/header_deque_h.cc: Same.
 
 2001-11-27  Loren J. Rittle  <ljrittle@acm.org>
 	    Paolo Carlini  <pcarlini@unitus.it>
