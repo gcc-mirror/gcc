@@ -301,7 +301,9 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
+#ifndef STRICT_ALIGNMENT 1
 #define STRICT_ALIGNMENT 1
+#endif
 
 /* Define this as 1 if `char' should by default be signed; else as 0.
 
