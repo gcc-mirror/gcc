@@ -182,36 +182,6 @@ scan_tokens (n)
     }
 }
 
-/* Create room for N tokens at the front of the fifo.  This is used
-   to insert new tokens into the stream ahead of the current token.  */
-
-static void
-shift_tokens (n)
-     int n;
-{
-  if (first_token >= n)
-    first_token -= n;
-  else
-    {
-      int old_token_count = num_tokens ();
-      char *tmp;
-
-      obstack_blank (&token_obstack, (n-first_token) * sizeof (struct token));
-      if (old_token_count)
-	{
-	  tmp = (char *)alloca ((num_tokens () + (n-first_token))
-				* sizeof (struct token));
-	  /* This move does not rely on the system being able to handle
-	     overlapping moves.  */
-	  bcopy ((char *) nth_token (0), tmp,
-		 old_token_count * sizeof (struct token));
-	  bcopy (tmp, (char *) nth_token (n),
-		 old_token_count * sizeof (struct token));
-	}
-      first_token = 0;
-    }
-}
-
 static int
 probe_obstack (h, obj, nlevels)
      struct obstack *h;
@@ -360,10 +330,12 @@ yylex()
       break;
 
     case SCSPEC:
-      /* do_aggr needs to check if the previous token was RID_FRIEND,
-	 so just increment first_token instead of calling consume_token. */
-      first_token++;
+    case NEW:
+      /* do_aggr needs to check if the previous token was RID_NEW,
+	 so just increment first_token instead of calling consume_token.  */
+      ++first_token;
       break;
+
     case TYPESPEC:
       consume_token ();
       break;
@@ -394,7 +366,7 @@ yylex()
  * Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
  * If token[2] == '{' or ':' then it's TYPENAME_DEFN.
  * It's also a definition if it's a forward declaration (as in 'struct Foo;')
- * which we can tell lf token[2] == ';' *and* token[-1] != FRIEND.
+ * which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.
  */
 static int
 do_aggr ()
@@ -408,10 +380,16 @@ do_aggr ()
   yc2 = nth_token (2)->yychar;
   if (yc2 == ';')
     {
-      /* It's a forward declaration iff we were not preceded by 'friend'. */
-      if (first_token > 0 && nth_token (-1)->yychar == SCSPEC
-	  && nth_token (-1)->yylval.ttype == ridpointers[(int) RID_FRIEND])
-	return 0;
+      /* It's a forward declaration iff we were not preceded by
+         'friend' or `new'. */
+      if (first_token > 0)
+	{
+	  if (nth_token (-1)->yychar == SCSPEC
+	      && nth_token (-1)->yylval.ttype == ridpointers[(int) RID_FRIEND])
+	    return 0;
+	  if (nth_token (-1)->yychar == NEW)
+	    return 0;
+	}
     }
   else if (yc2 != '{' && yc2 != ':')
     return 0;

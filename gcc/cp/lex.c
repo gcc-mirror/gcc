@@ -360,9 +360,6 @@ lang_init ()
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   put_back (check_newline ());
-
-  if (flag_cadillac)
-    cadillac_start ();
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
 }
@@ -793,7 +790,7 @@ init_lex ()
     }
 #endif
 
-  if (! (flag_gc || flag_rtti) || flag_no_gnu_keywords)
+  if (!flag_rtti || flag_no_gnu_keywords)
     {
       UNSET_RESERVED_WORD ("classof");
       UNSET_RESERVED_WORD ("headof");
@@ -1129,7 +1126,7 @@ do_pending_inlines ()
   /* Reverse the pending inline functions, since
      they were cons'd instead of appended.  */
   {
-    struct pending_inline *prev = 0, *tail, *bottom = 0;
+    struct pending_inline *prev = 0, *tail;
     t = pending_inlines;
     pending_inlines = 0;
 
@@ -1139,33 +1136,6 @@ do_pending_inlines ()
 	t->next = prev;
 	t->deja_vu = 1;
 	prev = t;
-      }
-
-    /* This kludge should go away when synthesized methods are handled
-       properly, i.e. only when needed.  */
-    for (t = prev; t; t = t->next)
-      {
-	if (t->lineno <= 0)
-	  {
-	    tree f = t->fndecl;
-	    DECL_PENDING_INLINE_INFO (f) = 0;
-	    interface_unknown = t->interface == 1;
-	    interface_only = t->interface == 0;
-	    synthesize_method (f);
-	    if (tail)
-	      tail->next = t->next;
-	    else
-	      prev = t->next;
-	    if (! bottom)
-	      bottom = t;
-	  }
-	else
-	  tail = t;
-      }
-    if (bottom)
-      {
-	obstack_free (&synth_obstack, bottom);
-	extract_interface_info ();
       }
     t = prev;
   }
@@ -2491,9 +2461,6 @@ linenum:
 	  body_time = this_time;
 	}
 
-      if (flag_cadillac)
-	cadillac_note_source ();
-
       input_filename
 	= (char *) permalloc (TREE_STRING_LENGTH (yylval.ttype) + 1);
       strcpy (input_filename, TREE_STRING_POINTER (yylval.ttype));
@@ -2607,8 +2574,6 @@ linenum:
 		  && write_symbols == DWARF_DEBUG)
 		dwarfout_start_new_source_file (input_filename);
 #endif /* DWARF_DEBUGGING_INFO */
-	      if (flag_cadillac)
-		cadillac_push_source ();
 	      in_system_header = entering_system_header;
 	      if (c_header_level)
 		++c_header_level;
@@ -2631,8 +2596,6 @@ linenum:
 			warning ("badly nested C headers from preprocessor");
 		      --pending_lang_change;
 		    }
-		  if (flag_cadillac)
-		    cadillac_pop_source ();
 		  in_system_header = entering_system_header;
 
 		  p = input_file_stack;
@@ -2653,11 +2616,7 @@ linenum:
 		error ("#-lines for entering and leaving files don't match");
 	    }
 	  else
-	    {
-	      in_system_header = entering_system_header;
-	      if (flag_cadillac)
-		cadillac_switch_source (-1);
-	    }
+	    in_system_header = entering_system_header;
 	}
 
       /* If NEXTCHAR is not end of line, we don't care what it is.  */

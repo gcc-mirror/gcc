@@ -159,8 +159,8 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 # Language-specific object files for g++
 
 CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
- class.o decl2.o error.o gc.o lex.o parse.o ptree.o spew.o typeck.o cvt.o \
- edsel.o except.o init.o method.o search.o tree.o xref.o repo.o
+ class.o decl2.o error.o lex.o parse.o ptree.o rtti.o spew.o typeck.o cvt.o \
+ except.o init.o method.o search.o tree.o xref.o repo.o
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
@@ -238,11 +238,10 @@ cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H)
-gc.o : gc.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
+rtti.o : rtti.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
   $(srcdir)/../expr.h ../insn-codes.h
-edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h
 pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H)
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)

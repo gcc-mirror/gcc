@@ -86,9 +86,9 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o $(LIBDEPS)
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/except.c $(srcdir)/cp/input.c $(srcdir)/cp/pt.c \
  $(srcdir)/cp/spew.c $(srcdir)/cp/xref.c $(srcdir)/cp/class.c \
- $(srcdir)/cp/edsel.c $(srcdir)/cp/expr.c $(srcdir)/cp/lex.c \
+ $(srcdir)/cp/expr.c $(srcdir)/cp/lex.c \
  $(srcdir)/cp/ptree.c $(srcdir)/cp/tree.c $(srcdir)/cp/cvt.c \
- $(srcdir)/cp/errfn.c $(srcdir)/cp/gc.c $(srcdir)/cp/method.c \
+ $(srcdir)/cp/errfn.c $(srcdir)/cp/rtti.c $(srcdir)/cp/method.c \
  $(srcdir)/cp/search.c $(srcdir)/cp/typeck.c $(srcdir)/cp/decl.c \
  $(srcdir)/cp/error.c $(srcdir)/cp/init.c $(srcdir)/cp/parse.y \
  $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c $(srcdir)/cp/repo.c

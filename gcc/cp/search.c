@@ -440,34 +440,6 @@ convert_pointer_to_vbase (type, expr)
   return convert_pointer_to_real (vb, expr);
 }
 
-/* This is the newer recursive depth first search routine. */
-#if 0				/* unused */
-/* Return non-zero if PARENT is directly derived from TYPE.  By directly
-   we mean it's only one step up the inheritance lattice.  We check this
-   by walking horizontally across the types that TYPE directly inherits
-   from, to see if PARENT is among them.  This is used by get_binfo and
-   by compute_access.  */
-static int
-immediately_derived (parent, type)
-     tree parent, type;
-{
-  if (TYPE_BINFO (type))
-    {
-      tree binfos = BINFO_BASETYPES (TYPE_BINFO (type));
-      int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-      for (i = 0; i < n_baselinks; i++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-
-	  if (parent == BINFO_TYPE (base_binfo))
-	    return 1;
-	}
-    }
-  return 0;
-}
-#endif
-
 /* Check whether the type given in BINFO is derived from PARENT.  If
    it isn't, return 0.  If it is, but the derivation is MI-ambiguous
    AND protect != 0, emit an error message and return error_mark_node.
@@ -1320,7 +1292,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	    {
 	      /* This is ambiguous. */
 	      errstr = "request for member `%D' is ambiguous";
-	      protect = 2;
+	      protect += 2;
 	      break;
 	    }
 	}
@@ -1424,6 +1396,14 @@ lookup_field (xbasetype, name, protect, want_type)
 	  /* Mark entry as having no error string.  */
 	  TREE_TYPE (entry) = NULL_TREE;
 	}
+    }
+
+  if (protect == 2)
+    {
+      /* If we are not interested in ambiguities, don't report them,
+	 just return NULL_TREE.  */
+      rval = NULL_TREE;
+      protect = 0;
     }
 
   if (errstr && protect)
@@ -1911,16 +1891,6 @@ breadth_first_search (binfo, testfn, qfn)
 typedef tree (*pft)();
 typedef int (*pfi)();
 
-int tree_needs_constructor_p (binfo, i)
-     tree binfo;
-     int i;
-{
-  tree basetype;
-  my_friendly_assert (i != 0, 296);
-  basetype = BINFO_TYPE (BINFO_BASETYPE (binfo, i));
-  return TYPE_NEEDS_CONSTRUCTING (basetype);
-}
-
 static tree declarator;
 
 static tree
@@ -2098,8 +2068,6 @@ get_matching_virtual (binfo, fndecl, dtorp)
 	      break;
 	    }
 	}
-      if (best == NULL_TREE && warn_overloaded_virtual)
-	cp_warning_at ("conflicting specification deriving virtual function `%D'", fndecl);
 
       return best;
     }
@@ -2836,26 +2804,19 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
    ICK!  */
 
 void
-expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
+expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
      tree binfo;
      tree true_exp, decl_ptr;
-     int use_computed_offsets;
 {
   tree type = BINFO_TYPE (binfo);
+
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       rtx fixup_insns = NULL_RTX;
-      int old_flag = flag_this_is_variable;
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       vbase_types = vbases;
       vbase_decl_ptr = true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) : decl_ptr;
       vbase_decl = true_exp ? true_exp : build_indirect_ref (decl_ptr, NULL_PTR);
-
-      if (use_computed_offsets)
-	{
-	  /* This is an object of type IN_TYPE,  */
-	  flag_this_is_variable = -2;
-	}
 
       dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep);
 
@@ -2863,48 +2824,14 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
       for (; vbases; vbases = TREE_CHAIN (vbases))
 	{
 	  tree addr;
-	  if (use_computed_offsets)
-	    addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
-	  else
-	    {
-#if 1
-	      addr = convert_pointer_to_vbase (TREE_TYPE (vbases), vbase_decl_ptr);
-#else
-	      /* This should should never work better than the above.  (mrs) */
-	      tree vbinfo = get_binfo (TREE_TYPE (vbases),
-				       TREE_TYPE (vbase_decl),
-				       0);
 
-	      /* See is we can get lucky.  */
-	      if (TREE_VIA_VIRTUAL (vbinfo))
-		addr = convert_pointer_to_real (vbinfo, vbase_decl_ptr);
-	      else
-		{
-		  /* We go through all these contortions to avoid this
-		     call, as it will fail when the virtual base type
-		     is ambiguous from here.  We don't yet have a way
-		     to search for and find just an instance of the
-		     virtual base class.  Searching for the binfo in
-		     vbases won't work, as we don't have the vbase
-		     pointer field, for all vbases in the main class,
-		     only direct vbases.  */
-		  addr = convert_pointer_to_real (TREE_TYPE (vbases),
-						  vbase_decl_ptr);
-		  if (addr == error_mark_node)
-		    continue;
-		}
-#endif
-	    }
+	  addr = convert_pointer_to_vbase (TREE_TYPE (vbases), vbase_decl_ptr);
 
 	  /* Do all vtables from this virtual base. */
 	  /* This assumes that virtual bases can never serve as parent
 	     binfos.  (in the CLASSTPE_VFIELD_PARENT sense)  */
 	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
 				    1, 0, addr);
-
-	  /* If we are using computed offsets we can skip fixups.  */
-	  if (use_computed_offsets)
-	    continue;
 
 	  /* Now we adjust the offsets for virtual functions that cross
 	     virtual boundaries on an implicit upcast on vf call so that
@@ -2944,17 +2871,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	}
 
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep);
-
-      flag_this_is_variable = old_flag;
     }
-}
-
-void
-clear_search_slots (type)
-     tree type;
-{
-  dfs_walk (TYPE_BINFO (type),
-	    dfs_clear_search_slot, dfs_search_slot_nonempty_p);
 }
 
 /* get virtual base class types.
@@ -3359,15 +3276,6 @@ push_class_decls (type)
   search_stack = push_search_level (search_stack, &search_obstack);
 
   id = TYPE_IDENTIFIER (type);
-#if 0
-  if (IDENTIFIER_TEMPLATE (id) != 0)
-    {
-      tree tmpl = IDENTIFIER_TEMPLATE (id);
-      push_template_decls (DECL_ARGUMENTS (TREE_PURPOSE (tmpl)),
-			   TREE_VALUE (tmpl), 1);
-      overload_template_name (id, 1);
-    }
-#endif
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarkedp);

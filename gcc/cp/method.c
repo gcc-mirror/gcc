@@ -929,21 +929,6 @@ build_static_name (basetype, name)
   return get_identifier (buf);
 }  
 
-/* Generate an identifier that encodes the (ANSI) exception TYPE. */
-
-/* This should be part of `ansi_opname', or at least be defined by the std.  */
-#define EXCEPTION_NAME_PREFIX "__ex"
-#define EXCEPTION_NAME_LENGTH 4
-
-tree
-cplus_exception_name (type)
-     tree type;
-{
-  OB_INIT ();
-  OB_PUTS (EXCEPTION_NAME_PREFIX);
-  return get_identifier (build_overload_name (type, 0, 1));
-}
-
 /* Change the name of a function definition so that it may be
    overloaded. NAME is the name of the function to overload,
    PARMS is the parameter list (which determines what name the

@@ -2697,6 +2697,167 @@ merge_overrides (binfo, old, do_self, t)
     }
 }
 
+/* Get the base virtual function declarations in T that are either
+   overridden or hidden by FNDECL as a list.  We set TREE_PURPOSE with
+   the overrider/hider.  */
+tree
+get_basefndecls (fndecl, t)
+     tree fndecl, t;
+{
+  tree methods = TYPE_METHODS (t);
+  tree base_fndecls = NULL_TREE;
+  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
+  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  while (methods)
+    {
+      tree purpose = NULL_TREE;
+
+      if (TREE_CODE (methods) == FUNCTION_DECL
+	  && DECL_VINDEX (methods) != NULL_TREE
+	  && DECL_NAME (fndecl) == DECL_NAME (methods))
+	base_fndecls = temp_tree_cons (fndecl, methods, base_fndecls);
+
+      methods = TREE_CHAIN (methods);
+    }
+
+  if (base_fndecls)
+    return base_fndecls;
+
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      tree basetype = BINFO_TYPE (base_binfo);
+      tree methods = TYPE_METHODS (basetype);
+
+      base_fndecls = chainon (get_basefndecls (fndecl, basetype),
+			      base_fndecls);
+    }
+
+  return base_fndecls;
+}
+
+/* Mark the functions that have been hidden with their overriders.
+   Since we start out with all functions already marked with a hider,
+   no need to mark functions that are just hidden.  */
+void
+mark_overriders (fndecl, base_fndecls)
+     tree fndecl, base_fndecls;
+{
+  while (base_fndecls)
+    {
+      if (overrides (TREE_VALUE (base_fndecls), fndecl))
+	TREE_PURPOSE (base_fndecls) = fndecl;
+
+      base_fndecls = TREE_CHAIN (base_fndecls);
+    }
+}
+
+/* Warn about hidden virtual functions that are not overridden in t.  */
+void
+warn_hidden (t)
+     tree t;
+{
+  tree method_vec = CLASSTYPE_METHOD_VEC (t);
+  int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
+  int i;
+
+  /* We go through each separately named virtual function.  */
+  for (i = 1; i < n_methods; ++i)
+    {
+      tree fndecl = TREE_VEC_ELT (method_vec, i);
+
+      tree base_fndecls = NULL_TREE;
+      tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
+      int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+      if (DECL_VINDEX (fndecl) == NULL_TREE)
+	continue;
+
+      /* First we get a list of all possible functions that might be
+	 hidden from each base class.  */
+      for (i = 0; i < n_baseclasses; i++)
+	{
+	  tree base_binfo = TREE_VEC_ELT (binfos, i);
+	  tree basetype = BINFO_TYPE (base_binfo);
+
+	  base_fndecls = chainon (get_basefndecls (fndecl, basetype),
+				  base_fndecls);
+	}
+
+      if (TREE_CHAIN (fndecl)
+	  && DECL_NAME (TREE_CHAIN (fndecl)) == DECL_NAME (fndecl))
+	  fndecl = TREE_CHAIN (fndecl);
+	else
+	  fndecl = NULL_TREE;
+
+      /* ...then mark up all the base functions with overriders, preferring
+	 overriders to hiders.  */
+      if (base_fndecls)
+	while (fndecl)
+	  {
+	    mark_overriders (fndecl, base_fndecls);
+	    
+	    if (TREE_CHAIN (fndecl)
+		&& DECL_NAME (TREE_CHAIN (fndecl)) == DECL_NAME (fndecl))
+	      fndecl = TREE_CHAIN (fndecl);
+	    else
+	      fndecl = NULL_TREE;
+	  }
+
+      /* Now give a warning for all base functions without overriders,
+	 as they are hidden.  */
+      while (base_fndecls)
+	{
+	  if (! overrides (TREE_VALUE (base_fndecls),
+			   TREE_PURPOSE (base_fndecls)))
+	    {
+	      /* Here we know it is a hider, and no overrider exists.  */
+	      cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
+	      cp_warning_at ("  by `%D'", TREE_PURPOSE (base_fndecls));
+	    }
+
+	  base_fndecls = TREE_CHAIN (base_fndecls);
+	}
+    }
+}
+
+/* Check for things that are invalid.  There are probably plenty of other
+   things we should check for also.  */
+static void
+finish_struct_anon (t)
+     tree t;
+{
+  tree field;
+  for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+    {
+      if (TREE_STATIC (field))
+	continue;
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+
+      if (DECL_NAME (field) == NULL_TREE
+	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	{
+	  tree* uelt = &TYPE_FIELDS (TREE_TYPE (field));
+	  for (; *uelt; uelt = &TREE_CHAIN (*uelt))
+	    {
+	      tree offset, x;
+
+	      if (TREE_CODE (*uelt) != FIELD_DECL)
+		continue;
+
+	      if (TREE_PRIVATE (*uelt))
+		cp_pedwarn_at ("private member `%#D' in anonymous union",
+			       *uelt);
+	      else if (TREE_PROTECTED (*uelt))
+		cp_pedwarn_at ("protected member `%#D' in anonymous union",
+			       *uelt);
+	    }
+	}
+    }
+}
+
 extern int interface_only, interface_unknown;
 
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
@@ -3577,52 +3738,7 @@ finish_struct_1 (t, warn_anon)
 
   layout_type (t);
 
-  {
-    tree field;
-    for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
-      {
-	if (TREE_STATIC (field))
-	  continue;
-	if (TREE_CODE (field) != FIELD_DECL)
-	  continue;
-
-	/* If this field is an anonymous union,
-	   give each union-member the same position as the union has.
-
-	   ??? This is a real kludge because it makes the structure
-	   of the types look strange.  This feature is only used by
-	   C++, which should have build_component_ref build two
-	   COMPONENT_REF operations, one for the union and one for
-	   the inner field.  We set the offset of this field to zero
-	   so that either the old or the correct method will work.
-	   Setting DECL_FIELD_CONTEXT is wrong unless the inner fields are
-	   moved into the type of this field, but nothing seems to break
-	   by doing this.  */
-
-	if (DECL_NAME (field) == NULL_TREE
-	    && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-	  {
-	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
-	    for (; uelt; uelt = TREE_CHAIN (uelt))
-	      {
-		if (TREE_CODE (uelt) != FIELD_DECL)
-		  continue;
-
-		if (TREE_PRIVATE (uelt))
-		  cp_pedwarn_at ("private member `%#D' in anonymous union",
-				 uelt);
-		else if (TREE_PROTECTED (uelt))
-		  cp_pedwarn_at ("protected member `%#D' in anonymous union",
-				 uelt);
-
-		DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
-		DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
-	      }
-
-	    DECL_FIELD_BITPOS (field) = integer_zero_node;
-	  }
-      }
-  }
+  finish_struct_anon (t);
 
   if (n_baseclasses)
     TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
@@ -4001,8 +4117,8 @@ finish_struct_1 (t, warn_anon)
 
   resume_momentary (old);
 
-  if (flag_cadillac)
-    cadillac_finish_struct (t);
+  if (warn_overloaded_virtual)
+    warn_hidden (t);
 
 #if 0
   /* This has to be done after we have sorted out what to do with
@@ -4453,9 +4569,6 @@ pushclass (type, modify)
 
       current_function_decl = this_fndecl;
     }
-
-  if (flag_cadillac)
-    cadillac_push_class (type);
 }
  
 /* Get out of the current class scope. If we were in a class scope
@@ -4466,9 +4579,6 @@ void
 popclass (modify)
      int modify;
 {
-  if (flag_cadillac)
-    cadillac_pop_class ();
-
   if (modify < 0)
     {
       /* Back this old class out completely.  */
@@ -4589,18 +4699,12 @@ push_lang_context (name)
     }
   else
     error ("language string `\"%s\"' not recognized", IDENTIFIER_POINTER (name));
-
-  if (flag_cadillac)
-    cadillac_push_lang (name);
 }
   
 /* Get out of the current language scope.  */
 void
 pop_lang_context ()
 {
-  if (flag_cadillac)
-    cadillac_pop_lang ();
-
   current_lang_name = *--current_lang_stack;
   if (current_lang_name == lang_name_cplusplus)
     strict_prototype = strict_prototypes_lang_cplusplus;

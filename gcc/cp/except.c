@@ -481,12 +481,6 @@ push_eh_entry (stack)
   struct ehNode *node = (struct ehNode*)xmalloc (sizeof (struct ehNode));
   struct ehEntry *entry = (struct ehEntry*)xmalloc (sizeof (struct ehEntry));
 
-  if (stack == NULL) {
-    free (node);
-    free (entry);
-    return NULL_RTX;
-  }
-
   /* These are saved for the exception table.  */
   push_rtl_perm ();
   entry->start_label = gen_label_rtx ();
@@ -510,22 +504,20 @@ push_eh_entry (stack)
   return entry->start_label;
 }
 
+/* Pop an entry from the given STACK.  */
 static struct ehEntry *
 pop_eh_entry (stack)
      struct ehStack *stack;
 {
   struct ehNode *tempnode;
   struct ehEntry *tempentry;
+  
+  tempnode = stack->top;
+  tempentry = tempnode->entry;
+  stack->top = stack->top->chain;
+  free (tempnode);
 
-  if (stack && (tempnode = stack->top)) {
-    tempentry = tempnode->entry;
-    stack->top = stack->top->chain;
-    free (tempnode);
-
-    return tempentry;
-  }
-
-  return NULL;
+  return tempentry;
 }
 
 static struct ehEntry *
@@ -742,21 +734,21 @@ init_exception_processing ()
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_pc"));
   d = start_decl (d, declspecs, 0, NULL_TREE);
   DECL_COMMON (d) = 1;
-  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_pc = lookup_name (get_identifier ("__eh_pc"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_type"));
   d = start_decl (d, declspecs, 0, NULL_TREE);
   DECL_COMMON (d) = 1;
-  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_throw_type = lookup_name (get_identifier ("__eh_type"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
   d = build_parse_node (INDIRECT_REF, get_identifier ("__eh_value"));
   d = start_decl (d, declspecs, 0, NULL_TREE);
   DECL_COMMON (d) = 1;
-  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_throw_value = lookup_name (get_identifier ("__eh_value"), 0);
 
   declspecs = tree_cons (NULL_TREE, get_identifier ("void"), NULL_TREE);
@@ -764,7 +756,7 @@ init_exception_processing ()
   d = build_parse_node (CALL_EXPR, d, void_list_node, NULL_TREE);
   d = start_decl (d, declspecs, 0, NULL_TREE);
   DECL_COMMON (d) = 1;
-  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_cleanup = lookup_name (get_identifier ("__eh_cleanup"), 0);
 }
 
