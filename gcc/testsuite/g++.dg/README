@@ -1,18 +1,25 @@
 Subdirectories:
 
 abi	 Tests for ABI compatibility -- mangling, object layout, etc.
-compat   Tests for binary compatibility (consistency, not ABI conformance)
+bprob	 Tests for functionality of profile-directed block ordering.
+compat	 Tests for binary compatibility (consistency, not ABI conformance).
 cpp	 Tests for the preprocessor.
+debug	 Tests for debugging options.
 eh	 Tests for exception handling.
 expr     Tests for expressions.
 ext	 Tests for GNU language extensions.
+gcov	 Tests for GCOV (code coverage) support.
 inherit	 Tests for inheritance -- virtual functions, multiple inheritance, etc.
 init	 Tests for initialization semantics, constructors/destructors, etc.
 lookup	 Tests for lookup semantics, namespaces, using, etc.
+opt	 Tests for fixes of bugs with particular optimizations.
+other	 Tests that don't quite fit anywhere else.
 overload Tests for overload resolution and conversions.
 parse	 Tests for parsing.
 rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
+special	 Tests requiring individual processing.
 template Tests for templates.
+tls	 Tests for support of thread-local data.
 warn	 Tests for compiler warnings.
 
 other	 Tests that don't fit into one of the other categories.
