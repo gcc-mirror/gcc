@@ -35,10 +35,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
+/* Arguments to use with `exit'.  */
+#define SUCCESS_EXIT_CODE	0
+#define FATAL_EXIT_CODE		33
+
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
 #include "tm.h"
-
-#define HAVE_VPRINTF
-#define HAVE_PUTENV
-

@@ -1,3 +1,11 @@
+2002-02-14  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xm-xtensa.h:  Add missing SUCCESS_EXIT_CODE
+	and FATAL_EXIT_CODE; remove HAVE_VPRINTF and HAVE_PUTENV.
+	* config/xtensa/lib1funcs.asm: Fix copyright to include
+	special case for libgcc files.
+	* config/xtensa/lib2funcs.S: Likewise.
+
 2002-02-14  Janis Johnson  <janis187@us.ibm.com>
 
 	* config.gcc (i*86-sequent-sysv4): Fix setting of tm_file.
