@@ -758,6 +758,12 @@ hash table and not in the object itself.
 On some systems, a library routine is called to perform integer
 division.  This is required to get exception handling correct when
 dividing by zero.
+
+@item -fcheck-references
+On some systems it's necessary to insert inline checks whenever
+accessing an object via a reference.  On other systems you won't need
+this because null pointer accesses are caught automatically by the
+processor.
 @end table
 
 

@@ -181,6 +181,9 @@ extern int flag_use_boehm_gc;
    object to its synchronization structure.  */
 extern int flag_hash_synchronization;
 
+/* When non zero, generate checks for references to NULL.  */
+extern int flag_check_references;
+
 /* Encoding used for source files.  */
 extern const char *current_encoding;
 
@@ -1010,6 +1013,8 @@ extern tree build_anewarray PARAMS ((tree, tree));
 extern tree build_new_array PARAMS ((tree, tree));
 extern tree build_java_array_length_access PARAMS ((tree));
 extern tree build_java_arraynull_check PARAMS ((tree, tree, tree));
+extern tree build_java_indirect_ref PARAMS ((tree, tree, int));
+extern tree java_check_reference PARAMS ((tree, int));
 extern tree build_get_class PARAMS ((tree));
 extern tree build_instanceof PARAMS ((tree, tree));
 extern tree create_label_decl PARAMS ((tree));

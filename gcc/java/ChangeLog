@@ -1,3 +1,19 @@
+2001-02-07  Andrew Haley  <aph@redhat.com>
+
+	* gcj.texi (Configure-time Options): Add -fcheck-references.
+	* expr.c (build_java_indirect_ref): New function.
+	(build_java_array_length_access): Use build_java_indirect_ref to
+	check for null references.
+	(build_java_arrayaccess): Likewise.
+	(build_get_class): Likewise.
+	(build_field_ref): Likewise.
+	(invoke_build_dtable): Likewise.
+	(build_invokeinterface): Likewise.
+	* lang.c (lang_f_options): Add flag_check_references.
+	* jvspec.c (jvgenmain_spec): Add flag_check_references.
+	* java-tree.h (flag_check_references): New variable.
+	* lang.c (flag_check_references): Likewise.
+
 2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gjavah.c (cxx_keywords): Update from the definitive list in cp/lex.c.
