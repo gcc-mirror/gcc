@@ -1,3 +1,8 @@
+2004-02-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc_update (files_and_dependencies): Update intl/configure.in
+	to intl/configure.ac.
+
 2004-01-09  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_update (files_and_dependencies): Update fastjar/configure.in
