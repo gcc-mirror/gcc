@@ -7140,7 +7140,7 @@ emit_predicate_relation_info (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       int r;
-      rtx head = bb->head;
+      rtx head = BB_HEAD (bb);
 
       /* We only need such notes at code labels.  */
       if (GET_CODE (head) != CODE_LABEL)
@@ -7154,8 +7154,8 @@ emit_predicate_relation_info (void)
 	  {
 	    rtx p = gen_rtx_REG (BImode, r);
 	    rtx n = emit_insn_after (gen_pred_rel_mutex (p), head);
-	    if (head == bb->end)
-	      bb->end = n;
+	    if (head == BB_END (bb))
+	      BB_END (bb) = n;
 	    head = n;
 	  }
     }
@@ -7166,7 +7166,7 @@ emit_predicate_relation_info (void)
      the call.  */
   FOR_EACH_BB_REVERSE (bb)
     {
-      rtx insn = bb->head;
+      rtx insn = BB_HEAD (bb);
 
       while (1)
 	{
@@ -7176,13 +7176,13 @@ emit_predicate_relation_info (void)
 	    {
 	      rtx b = emit_insn_before (gen_safe_across_calls_all (), insn);
 	      rtx a = emit_insn_after (gen_safe_across_calls_normal (), insn);
-	      if (bb->head == insn)
-		bb->head = b;
-	      if (bb->end == insn)
-		bb->end = a;
+	      if (BB_HEAD (bb) == insn)
+		BB_HEAD (bb) = b;
+	      if (BB_END (bb) == insn)
+		BB_END (bb) = a;
 	    }
 
-	  if (insn == bb->end)
+	  if (insn == BB_END (bb))
 	    break;
 	  insn = NEXT_INSN (insn);
 	}

@@ -588,7 +588,7 @@ make_forwarder_block (basic_block bb, int redirect_latch, int redirect_nonlatch,
   insn = PREV_INSN (first_insn_after_basic_block_note (bb));
 
   /* For empty block split_block will return NULL.  */
-  if (bb->end == insn)
+  if (BB_END (bb) == insn)
     emit_note_after (NOTE_INSN_DELETED, insn);
 
   fallthru = split_block (bb, insn);

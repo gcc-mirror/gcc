@@ -444,8 +444,8 @@ rewrite_program (bitmap new_deaths)
 		end_sequence ();
 		emit_insn_before (insns, insn);
 
-	        if (bb->head == insn)
-		  bb->head = NEXT_INSN (prev);
+	        if (BB_HEAD (bb) == insn)
+		  BB_HEAD (bb) = NEXT_INSN (prev);
 		for (insn = PREV_INSN (insn); insn != prev;
 		     insn = PREV_INSN (insn))
 		  {
@@ -492,8 +492,8 @@ rewrite_program (bitmap new_deaths)
 	      if (insns)
 		{
 		  emit_insn_after (insns, insn);
-		  if (bb->end == insn)
-		    bb->end = PREV_INSN (following);
+		  if (BB_END (bb) == insn)
+		    BB_END (bb) = PREV_INSN (following);
 		  for (insn = insns; insn != following; insn = NEXT_INSN (insn))
 		    {
 		      set_block_for_insn (insn, bb);
@@ -685,8 +685,8 @@ insert_stores (bitmap new_deaths)
 		  if (insns)
 		    {
 		      emit_insn_after (insns, insn);
-		      if (bb->end == insn)
-			bb->end = PREV_INSN (following);
+		      if (BB_END (bb) == insn)
+			BB_END (bb) = PREV_INSN (following);
 		      for (ni = insns; ni != following; ni = NEXT_INSN (ni))
 			{
 			  set_block_for_insn (ni, bb);
@@ -941,8 +941,8 @@ emit_loads (struct rewrite_info *ri, int nl_first_reload, rtx last_block_insn)
 	  rtx foll = NEXT_INSN (after);
 	  bb = BLOCK_FOR_INSN (after);
 	  emit_insn_after (ni, after);
-	  if (bb->end == after)
-	    bb->end = PREV_INSN (foll);
+	  if (BB_END (bb) == after)
+	    BB_END (bb) = PREV_INSN (foll);
 	  for (ni = NEXT_INSN (after); ni != foll; ni = NEXT_INSN (ni))
 	    {
 	      set_block_for_insn (ni, bb);
@@ -954,8 +954,8 @@ emit_loads (struct rewrite_info *ri, int nl_first_reload, rtx last_block_insn)
 	  rtx prev = PREV_INSN (before);
 	  bb = BLOCK_FOR_INSN (before);
 	  emit_insn_before (ni, before);
-	  if (bb->head == before)
-	    bb->head = NEXT_INSN (prev);
+	  if (BB_HEAD (bb) == before)
+	    BB_HEAD (bb) = NEXT_INSN (prev);
 	  for (; ni != before; ni = NEXT_INSN (ni))
 	    {
 	      set_block_for_insn (ni, bb);

@@ -256,8 +256,8 @@ mark_flags_life_zones (rtx flags)
       rtx insn, end;
       int live;
 
-      insn = block->head;
-      end = block->end;
+      insn = BB_HEAD (block);
+      end = BB_END (block);
 
       /* Look out for the (unlikely) case of flags being live across
 	 basic block boundaries.  */
@@ -810,7 +810,7 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
 	  bb = regmove_bb_head[insn_uid];
 	  if (bb >= 0)
 	    {
-	      BLOCK_HEAD (bb) = move_insn;
+	      BB_HEAD (BASIC_BLOCK (bb)) = move_insn;
 	      regmove_bb_head[insn_uid] = -1;
 	    }
 	}
@@ -1061,7 +1061,7 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
   regmove_bb_head = xmalloc (sizeof (int) * (old_max_uid + 1));
   for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
   FOR_EACH_BB (bb)
-    regmove_bb_head[INSN_UID (bb->head)] = bb->index;
+    regmove_bb_head[INSN_UID (BB_HEAD (bb))] = bb->index;
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
@@ -1491,13 +1491,13 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
      ends.  Fix that here.  */
   FOR_EACH_BB (bb)
     {
-      rtx end = bb->end;
+      rtx end = BB_END (bb);
       rtx new = end;
       rtx next = NEXT_INSN (new);
       while (next != 0 && INSN_UID (next) >= old_max_uid
-	     && (bb->next_bb == EXIT_BLOCK_PTR || bb->next_bb->head != next))
+	     && (bb->next_bb == EXIT_BLOCK_PTR || BB_HEAD (bb->next_bb) != next))
 	new = next, next = NEXT_INSN (new);
-      bb->end = new;
+      BB_END (bb) = new;
     }
 
  done:
@@ -2304,9 +2304,9 @@ combine_stack_adjustments_for_block (basic_block bb)
   struct record_stack_memrefs_data data;
   bool end_of_block = false;
 
-  for (insn = bb->head; !end_of_block ; insn = next)
+  for (insn = BB_HEAD (bb); !end_of_block ; insn = next)
     {
-      end_of_block = insn == bb->end;
+      end_of_block = insn == BB_END (bb);
       next = NEXT_INSN (insn);
 
       if (! INSN_P (insn))

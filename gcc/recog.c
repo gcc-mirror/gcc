@@ -2696,12 +2696,12 @@ split_all_insns (int upd_life)
       rtx insn, next;
       bool finish = false;
 
-      for (insn = bb->head; !finish ; insn = next)
+      for (insn = BB_HEAD (bb); !finish ; insn = next)
 	{
 	  /* Can't use `next_real_insn' because that might go across
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
-	  finish = (insn == bb->end);
+	  finish = (insn == BB_END (bb));
 	  if (INSN_P (insn))
 	    {
 	      rtx set = single_set (insn);
@@ -3042,7 +3042,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
       pbi = init_propagate_block_info (bb, live, NULL, NULL, PROP_DEATH_NOTES);
 #endif
 
-      for (insn = bb->end; ; insn = prev)
+      for (insn = BB_END (bb); ; insn = prev)
 	{
 	  prev = PREV_INSN (insn);
 	  if (INSN_P (insn))
@@ -3158,7 +3158,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 						     XEXP (note, 0),
 						     REG_NOTES (x));
 
-			    if (x != bb->end && eh_edge)
+			    if (x != BB_END (bb) && eh_edge)
 			      {
 				edge nfte, nehe;
 				int flags;
@@ -3242,7 +3242,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 		}
 	    }
 
-	  if (insn == bb->head)
+	  if (insn == BB_HEAD (bb))
 	    break;
 	}
 

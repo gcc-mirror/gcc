@@ -7963,9 +7963,10 @@ fixup_abnormal_edges (void)
 	      == (EDGE_ABNORMAL | EDGE_EH))
 	    break;
 	}
-      if (e && GET_CODE (bb->end) != CALL_INSN && !can_throw_internal (bb->end))
+      if (e && GET_CODE (BB_END (bb)) != CALL_INSN
+	  && !can_throw_internal (BB_END (bb)))
 	{
-	  rtx insn = bb->end, stop = NEXT_INSN (bb->end);
+	  rtx insn = BB_END (bb), stop = NEXT_INSN (BB_END (bb));
 	  rtx next;
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if (e->flags & EDGE_FALLTHRU)
@@ -7974,11 +7975,11 @@ fixup_abnormal_edges (void)
 	     be already deleted.  */
 	  while ((GET_CODE (insn) == INSN || GET_CODE (insn) == NOTE)
 		 && !can_throw_internal (insn)
-		 && insn != bb->head)
+		 && insn != BB_HEAD (bb))
 	    insn = PREV_INSN (insn);
 	  if (GET_CODE (insn) != CALL_INSN && !can_throw_internal (insn))
 	    abort ();
-	  bb->end = insn;
+	  BB_END (bb) = insn;
 	  inserted = true;
 	  insn = NEXT_INSN (insn);
 	  while (insn && insn != stop)

@@ -665,7 +665,7 @@ reg_alloc (void)
       for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
 	{
 	  basic_block bb = e->src;
-	  last = bb->end;
+	  last = BB_END (bb);
 	  if (!INSN_P (last) || GET_CODE (PATTERN (last)) != USE)
 	    {
 	      rtx insns;

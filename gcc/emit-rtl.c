@@ -3803,12 +3803,12 @@ add_insn_after (rtx insn, rtx after)
 	bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEL.  */
-      if (bb->end == after
+      if (BB_END (bb) == after
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && GET_CODE (insn) != BARRIER
 	  && (GET_CODE (insn) != NOTE
 	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
-	bb->end = insn;
+	BB_END (bb) = insn;
     }
 
   NEXT_INSN (after) = insn;
@@ -3871,7 +3871,7 @@ add_insn_before (rtx insn, rtx before)
 	bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEl.  */
-      if (bb->head == insn
+      if (BB_HEAD (bb) == insn
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && GET_CODE (insn) != BARRIER
 	  && (GET_CODE (insn) != NOTE
@@ -3946,16 +3946,16 @@ remove_insn (rtx insn)
     {
       if (INSN_P (insn))
 	bb->flags |= BB_DIRTY;
-      if (bb->head == insn)
+      if (BB_HEAD (bb) == insn)
 	{
 	  /* Never ever delete the basic block note without deleting whole
 	     basic block.  */
 	  if (GET_CODE (insn) == NOTE)
 	    abort ();
-	  bb->head = next;
+	  BB_HEAD (bb) = next;
 	}
-      if (bb->end == insn)
-	bb->end = prev;
+      if (BB_END (bb) == insn)
+	BB_END (bb) = prev;
     }
 }
 
@@ -4048,13 +4048,13 @@ reorder_insns (rtx from, rtx to, rtx after)
       if (GET_CODE (from) != BARRIER
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
-	  if (bb2->end == to)
-	    bb2->end = prev;
+	  if (BB_END (bb2) == to)
+	    BB_END (bb2) = prev;
 	  bb2->flags |= BB_DIRTY;
 	}
 
-      if (bb->end == after)
-	bb->end = to;
+      if (BB_END (bb) == after)
+	BB_END (bb) = to;
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
 	set_block_for_insn (x, bb);
@@ -4443,8 +4443,8 @@ emit_insn_after_1 (rtx first, rtx after)
 	  set_block_for_insn (last, bb);
       if (GET_CODE (last) != BARRIER)
 	set_block_for_insn (last, bb);
-      if (bb->end == after)
-	bb->end = last;
+      if (BB_END (bb) == after)
+	BB_END (bb) = last;
     }
   else
     for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))

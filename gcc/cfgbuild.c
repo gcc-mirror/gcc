@@ -303,13 +303,14 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
       enum rtx_code code;
       int force_fallthru = 0;
 
-      if (GET_CODE (bb->head) == CODE_LABEL && LABEL_ALT_ENTRY_P (bb->head))
+      if (GET_CODE (BB_HEAD (bb)) == CODE_LABEL
+	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
 	cached_make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
 
       /* Examine the last instruction of the block, and discover the
 	 ways we can leave the block.  */
 
-      insn = bb->end;
+      insn = BB_END (bb);
       code = GET_CODE (insn);
 
       /* A branch.  */
@@ -432,7 +433,7 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
 	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
       else if (bb->next_bb != EXIT_BLOCK_PTR)
 	{
-	  if (force_fallthru || insn == bb->next_bb->head)
+	  if (force_fallthru || insn == BB_HEAD (bb->next_bb))
 	    cached_make_edge (edge_cache, bb, bb->next_bb, EDGE_FALLTHRU);
 	}
     }
@@ -649,12 +650,12 @@ enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
 static void
 find_bb_boundaries (basic_block bb)
 {
-  rtx insn = bb->head;
-  rtx end = bb->end;
+  rtx insn = BB_HEAD (bb);
+  rtx end = BB_END (bb);
   rtx flow_transfer_insn = NULL_RTX;
   edge fallthru = NULL;
 
-  if (insn == bb->end)
+  if (insn == BB_END (bb))
     return;
 
   if (GET_CODE (insn) == CODE_LABEL)
@@ -670,7 +671,7 @@ find_bb_boundaries (basic_block bb)
 	{
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  if (flow_transfer_insn)
-	    bb->end = flow_transfer_insn;
+	    BB_END (bb) = flow_transfer_insn;
 
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
@@ -684,7 +685,7 @@ find_bb_boundaries (basic_block bb)
       if (flow_transfer_insn && inside_basic_block_p (insn))
 	{
 	  fallthru = split_block (bb, PREV_INSN (insn));
-	  bb->end = flow_transfer_insn;
+	  BB_END (bb) = flow_transfer_insn;
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
 	  flow_transfer_insn = NULL_RTX;
@@ -701,7 +702,7 @@ find_bb_boundaries (basic_block bb)
      return and barrier, or possibly other sequence not behaving like
      ordinary jump, we need to take care and move basic block boundary.  */
   if (flow_transfer_insn)
-    bb->end = flow_transfer_insn;
+    BB_END (bb) = flow_transfer_insn;
 
   /* We've possibly replaced the conditional jump by conditional jump
      followed by cleanup at fallthru edge, so the outgoing edges may
@@ -719,7 +720,7 @@ compute_outgoing_frequencies (basic_block b)
 
   if (b->succ && b->succ->succ_next && !b->succ->succ_next->succ_next)
     {
-      rtx note = find_reg_note (b->end, REG_BR_PROB, NULL);
+      rtx note = find_reg_note (BB_END (b), REG_BR_PROB, NULL);
       int probability;
 
       if (!note)

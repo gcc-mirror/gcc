@@ -1085,8 +1085,8 @@ scan_one_insn (rtx insn, int pass)
 	{
 	  basic_block b;
 	  FOR_EACH_BB (b)
-	    if (insn == b->head)
-	      b->head = newinsn;
+	    if (insn == BB_HEAD (b))
+	      BB_HEAD (b) = newinsn;
 	}
 
       /* This makes one more setting of new insns's dest.  */
@@ -1240,10 +1240,10 @@ regclass (rtx f, int nregs, FILE *dump)
 	       aggressive than the assumptions made elsewhere and is being
 	       tried as an experiment.  */
 	    frequency = REG_FREQ_FROM_BB (bb);
-	    for (insn = bb->head; ; insn = NEXT_INSN (insn))
+	    for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
 	      {
 		insn = scan_one_insn (insn, pass);
-		if (insn == bb->end)
+		if (insn == BB_END (bb))
 		  break;
 	      }
 	  }

@@ -112,8 +112,8 @@ blocks_invariant_registers (basic_block *bbs, int nbbs, regset regs)
   for (i = 0; i < max_reg_num (); i++)
     SET_REGNO_REG_SET (regs, i);
   for (i = 0; i < nbbs; i++)
-    for (insn = bbs[i]->head;
-	 insn != NEXT_INSN (bbs[i]->end);
+    for (insn = BB_HEAD (bbs[i]);
+	 insn != NEXT_INSN (BB_END (bbs[i]));
 	 insn = NEXT_INSN (insn))
       if (INSN_P (insn))
 	note_stores (PATTERN (insn),
@@ -157,8 +157,8 @@ blocks_single_set_registers (basic_block *bbs, int nbbs, rtx *regs)
     regs[i] = NULL;
 
   for (i = 0; i < nbbs; i++)
-    for (insn = bbs[i]->head;
-	 insn != NEXT_INSN (bbs[i]->end);
+    for (insn = BB_HEAD (bbs[i]);
+	 insn != NEXT_INSN (BB_END (bbs[i]));
 	 insn = NEXT_INSN (insn))
       {
 	rtx set = single_set (insn);
@@ -171,8 +171,8 @@ blocks_single_set_registers (basic_block *bbs, int nbbs, rtx *regs)
 
   data.regs = regs;
   for (i = 0; i < nbbs; i++)
-    for (insn = bbs[i]->head;
-	 insn != NEXT_INSN (bbs[i]->end);
+    for (insn = BB_HEAD (bbs[i]);
+	 insn != NEXT_INSN (BB_END (bbs[i]));
 	 insn = NEXT_INSN (insn))
       {
         if (!INSN_P (insn))
@@ -360,12 +360,12 @@ simple_increment (struct loops *loops, struct loop *loop,
       if (mod_bb1 == mod_bb)
 	{
 	  for (;
-	       mod_insn != PREV_INSN (mod_bb->head);
+	       mod_insn != PREV_INSN (BB_HEAD (mod_bb));
 	       mod_insn = PREV_INSN (mod_insn))
 	    if (mod_insn == mod_insn1)
 	      break;
 
-	  if (mod_insn == PREV_INSN (mod_bb->head))
+	  if (mod_insn == PREV_INSN (BB_HEAD (mod_bb)))
 	    return NULL;
 	}
 
@@ -416,7 +416,7 @@ variable_initial_value (rtx insn, regset invariant_regs,
   bb = BLOCK_FOR_INSN (insn);
   while (1)
     {
-      for (; insn != bb->head; insn = PREV_INSN (insn))
+      for (; insn != BB_HEAD (bb); insn = PREV_INSN (insn))
 	{
 	  if (INSN_P (insn))
 	    note_stores (PATTERN (insn),
@@ -426,7 +426,7 @@ variable_initial_value (rtx insn, regset invariant_regs,
 	    break;
 	}
 
-      if (insn != bb->head)
+      if (insn != BB_HEAD (bb))
 	{
 	  /* We found place where var is set.  */
 	  rtx set_dest;
@@ -471,7 +471,7 @@ variable_initial_value (rtx insn, regset invariant_regs,
 	return NULL;
 
       bb = bb->pred->src;
-      insn = bb->end;
+      insn = BB_END (bb);
     }
 
   return NULL;
@@ -496,7 +496,7 @@ variable_initial_values (edge e, rtx var, enum machine_mode inner_mode)
   if (e->src == ENTRY_BLOCK_PTR)
     return list;
 
-  set_insn = e->src->end;
+  set_insn = BB_END (e->src);
   while (REG_P (var)
 	 && (var = variable_initial_value (set_insn, invariant_regs, var,
 					   &set_insn, inner_mode)))
@@ -983,7 +983,7 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
     return false;
 
   /* It must end in a simple conditional jump.  */
-  if (!any_condjump_p (exit_bb->end))
+  if (!any_condjump_p (BB_END (exit_bb)))
     return false;
 
   ei = exit_bb->succ;
@@ -995,7 +995,7 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
 
   /* Condition must be a simple comparison in that one of operands
      is register and the other one is invariant.  */
-  if (!(condition = get_condition (exit_bb->end, NULL, false)))
+  if (!(condition = get_condition (BB_END (exit_bb), NULL, false)))
     return false;
 
   if (!simple_condition_p (loop, condition, invariant_regs, desc))
@@ -1323,7 +1323,7 @@ num_loop_insns (struct loop *loop)
     {
       bb = bbs[i];
       ninsns++;
-      for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
+      for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  ninsns++;
     }
@@ -1347,7 +1347,7 @@ average_num_loop_insns (struct loop *loop)
       bb = bbs[i];
 
       binsns = 1;
-      for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
+      for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  binsns++;
 

@@ -435,9 +435,9 @@ conflict_graph_compute (regset regs, partition p)
       AND_REG_SET (live, regs);
 
       /* Walk the instruction stream backwards.  */
-      head = bb->head;
-      insn = bb->end;
-      for (insn = bb->end; insn != head; insn = PREV_INSN (insn))
+      head = BB_HEAD (bb);
+      insn = BB_END (bb);
+      for (insn = BB_END (bb); insn != head; insn = PREV_INSN (insn))
 	{
 	  int born_reg;
 	  int live_reg;

@@ -788,7 +788,7 @@ loop_delete_branch_edge (edge e, int really_delete)
       if (src->succ->succ_next->succ_next)
 	return false;
       /* And it must be just a simple branch.  */
-      if (!any_condjump_p (src->end))
+      if (!any_condjump_p (BB_END (src)))
 	return false;
 
       snd = e == src->succ ? src->succ->succ_next : src->succ;
@@ -1126,7 +1126,7 @@ create_preheader (struct loop *loop, dominance_info dom, int flags)
     insn = PREV_INSN (insn);
   else
     insn = get_last_insn ();
-  if (insn == loop->header->end)
+  if (insn == BB_END (loop->header))
     {
       /* Split_block would not split block after its end.  */
       emit_note_after (NOTE_INSN_DELETED, insn);
@@ -1243,7 +1243,7 @@ loop_split_edge_with (edge e, rtx insns, struct loops *loops)
     }
 
   if (insns)
-    emit_insn_after (insns, new_bb->end);
+    emit_insn_after (insns, BB_END (new_bb));
 
   set_immediate_dominator (loops->cfg.dom, new_bb, src);
   set_immediate_dominator (loops->cfg.dom, dest,

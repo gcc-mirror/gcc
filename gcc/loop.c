@@ -10697,18 +10697,18 @@ loop_dump_aux (const struct loop *loop, FILE *file,
 
   /* Print diagnostics to compare our concept of a loop with
      what the loop notes say.  */
-  if (! PREV_INSN (loop->first->head)
-      || GET_CODE (PREV_INSN (loop->first->head)) != NOTE
-      || NOTE_LINE_NUMBER (PREV_INSN (loop->first->head))
+  if (! PREV_INSN (BB_HEAD (loop->first))
+      || GET_CODE (PREV_INSN (BB_HEAD (loop->first))) != NOTE
+      || NOTE_LINE_NUMBER (PREV_INSN (BB_HEAD (loop->first)))
       != NOTE_INSN_LOOP_BEG)
     fprintf (file, ";;  No NOTE_INSN_LOOP_BEG at %d\n",
-	     INSN_UID (PREV_INSN (loop->first->head)));
-  if (! NEXT_INSN (loop->last->end)
-      || GET_CODE (NEXT_INSN (loop->last->end)) != NOTE
-      || NOTE_LINE_NUMBER (NEXT_INSN (loop->last->end))
+	     INSN_UID (PREV_INSN (BB_HEAD (loop->first))));
+  if (! NEXT_INSN (BB_END (loop->last))
+      || GET_CODE (NEXT_INSN (BB_END (loop->last))) != NOTE
+      || NOTE_LINE_NUMBER (NEXT_INSN (BB_END (loop->last)))
       != NOTE_INSN_LOOP_END)
     fprintf (file, ";;  No NOTE_INSN_LOOP_END at %d\n",
-	     INSN_UID (NEXT_INSN (loop->last->end)));
+	     INSN_UID (NEXT_INSN (BB_END (loop->last))));
 
   if (loop->start)
     {

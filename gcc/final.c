@@ -673,7 +673,7 @@ compute_alignments (void)
 
   FOR_EACH_BB (bb)
     {
-      rtx label = bb->head;
+      rtx label = BB_HEAD (bb);
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;
 

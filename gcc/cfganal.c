@@ -89,7 +89,7 @@ forwarder_block_p (basic_block bb)
       || !bb->succ || bb->succ->succ_next)
     return false;
 
-  for (insn = bb->head; insn != bb->end; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
     if (INSN_P (insn) && flow_active_insn_p (insn))
       return false;
 
@@ -103,8 +103,8 @@ forwarder_block_p (basic_block bb)
 bool
 can_fallthru (basic_block src, basic_block target)
 {
-  rtx insn = src->end;
-  rtx insn2 = target == EXIT_BLOCK_PTR ? NULL : target->head;
+  rtx insn = BB_END (src);
+  rtx insn2 = target == EXIT_BLOCK_PTR ? NULL : BB_HEAD (target);
 
   if (src->next_bb != target)
     return 0;
@@ -232,11 +232,11 @@ set_edge_can_fallthru_flag (void)
 	 CAN_FALLTHRU edges.  */
       if (!bb->succ || !bb->succ->succ_next || bb->succ->succ_next->succ_next)
 	continue;
-      if (!any_condjump_p (bb->end))
+      if (!any_condjump_p (BB_END (bb)))
 	continue;
-      if (!invert_jump (bb->end, JUMP_LABEL (bb->end), 0))
+      if (!invert_jump (BB_END (bb), JUMP_LABEL (BB_END (bb)), 0))
 	continue;
-      invert_jump (bb->end, JUMP_LABEL (bb->end), 0);
+      invert_jump (BB_END (bb), JUMP_LABEL (BB_END (bb)), 0);
       bb->succ->flags |= EDGE_CAN_FALLTHRU;
       bb->succ->succ_next->flags |= EDGE_CAN_FALLTHRU;
     }
@@ -305,10 +305,10 @@ flow_call_edges_add (sbitmap blocks)
   if (check_last_block)
     {
       basic_block bb = EXIT_BLOCK_PTR->prev_bb;
-      rtx insn = bb->end;
+      rtx insn = BB_END (bb);
 
       /* Back up past insns that must be kept in the same block as a call.  */
-      while (insn != bb->head
+      while (insn != BB_HEAD (bb)
 	     && keep_with_call_p (insn))
 	insn = PREV_INSN (insn);
 
@@ -342,7 +342,7 @@ flow_call_edges_add (sbitmap blocks)
       if (blocks && !TEST_BIT (blocks, i))
 	continue;
 
-      for (insn = bb->end; ; insn = prev_insn)
+      for (insn = BB_END (bb); ; insn = prev_insn)
 	{
 	  prev_insn = PREV_INSN (insn);
 	  if (need_fake_edge_p (insn))
@@ -353,7 +353,7 @@ flow_call_edges_add (sbitmap blocks)
 	      /* Don't split the block between a call and an insn that should
 	         remain in the same block as the call.  */
 	      if (GET_CODE (insn) == CALL_INSN)
-		while (split_at_insn != bb->end
+		while (split_at_insn != BB_END (bb)
 		       && keep_with_call_p (NEXT_INSN (split_at_insn)))
 		  split_at_insn = NEXT_INSN (split_at_insn);
 
@@ -363,7 +363,7 @@ flow_call_edges_add (sbitmap blocks)
 		 cause us to mark that edge as fake and remove it later.  */
 
 #ifdef ENABLE_CHECKING
-	      if (split_at_insn == bb->end)
+	      if (split_at_insn == BB_END (bb))
 		for (e = bb->succ; e; e = e->succ_next)
 		  if (e->dest == EXIT_BLOCK_PTR)
 		    abort ();
@@ -371,7 +371,7 @@ flow_call_edges_add (sbitmap blocks)
 
 	      /* Note that the following may create a new basic block
 		 and renumber the existing basic blocks.  */
-	      if (split_at_insn != bb->end)
+	      if (split_at_insn != BB_END (bb))
 		{
 		  e = split_block (bb, split_at_insn);
 		  if (e)
@@ -381,7 +381,7 @@ flow_call_edges_add (sbitmap blocks)
 	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	    }
 
-	  if (insn == bb->head)
+	  if (insn == BB_HEAD (bb))
 	    break;
 	}
     }

@@ -15673,7 +15673,7 @@ ix86_reorg (void)
   for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
   {
     basic_block bb = e->src;
-    rtx ret = bb->end;
+    rtx ret = BB_END (bb);
     rtx prev;
     bool replace = false;
 

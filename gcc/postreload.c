@@ -664,7 +664,7 @@ reload_combine (void)
 
   FOR_EACH_BB_REVERSE (bb)
     {
-      insn = bb->head;
+      insn = BB_HEAD (bb);
       if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  HARD_REG_SET live;

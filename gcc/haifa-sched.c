@@ -123,8 +123,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This pass must update information that subsequent passes expect to
    be correct.  Namely: reg_n_refs, reg_n_sets, reg_n_deaths,
-   reg_n_calls_crossed, and reg_live_length.  Also, BLOCK_HEAD,
-   BLOCK_END.
+   reg_n_calls_crossed, and reg_live_length.  Also, BB_HEAD, BB_END.
 
    The information in the line number notes is carefully retained by
    this pass.  Notes that refer to the starting and ending of
@@ -1432,8 +1431,8 @@ void
 get_block_head_tail (int b, rtx *headp, rtx *tailp)
 {
   /* HEAD and TAIL delimit the basic block being scheduled.  */
-  rtx head = BLOCK_HEAD (b);
-  rtx tail = BLOCK_END (b);
+  rtx head = BB_HEAD (BASIC_BLOCK (b));
+  rtx tail = BB_END (BASIC_BLOCK (b));
 
   /* Don't include any notes or labels at the beginning of the
      basic block, or notes at the ends of basic blocks.  */
@@ -2791,7 +2790,7 @@ sched_init (FILE *dump_file)
   h_i_d[0].luid = 0;
   luid = 1;
   FOR_EACH_BB (b)
-    for (insn = b->head;; insn = NEXT_INSN (insn))
+    for (insn = BB_HEAD (b); ; insn = NEXT_INSN (insn))
       {
 	INSN_LUID (insn) = luid;
 
@@ -2803,7 +2802,7 @@ sched_init (FILE *dump_file)
 	if (GET_CODE (insn) != NOTE)
 	  ++luid;
 
-	if (insn == b->end)
+	if (insn == BB_END (b))
 	  break;
       }
 
@@ -2825,7 +2824,7 @@ sched_init (FILE *dump_file)
 
       FOR_EACH_BB (b)
 	{
-	  for (line = b->head; line; line = PREV_INSN (line))
+	  for (line = BB_HEAD (b); line; line = PREV_INSN (line))
 	    if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
 	      {
 		line_note_head[b->index] = line;
@@ -2833,7 +2832,7 @@ sched_init (FILE *dump_file)
 	      }
 	  /* Do a forward search as well, since we won't get to see the first
 	     notes in a basic block.  */
-	  for (line = b->head; line; line = NEXT_INSN (line))
+	  for (line = BB_HEAD (b); line; line = NEXT_INSN (line))
 	    {
 	      if (INSN_P (line))
 		break;
@@ -2852,16 +2851,16 @@ sched_init (FILE *dump_file)
   /* ??? Add a NOTE after the last insn of the last basic block.  It is not
      known why this is done.  */
 
-  insn = EXIT_BLOCK_PTR->prev_bb->end;
+  insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
   if (NEXT_INSN (insn) == 0
       || (GET_CODE (insn) != NOTE
 	  && GET_CODE (insn) != CODE_LABEL
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
 	  && GET_CODE (NEXT_INSN (insn)) != BARRIER))
     {
-      emit_note_after (NOTE_INSN_DELETED, EXIT_BLOCK_PTR->prev_bb->end);
+      emit_note_after (NOTE_INSN_DELETED, BB_END (EXIT_BLOCK_PTR->prev_bb));
       /* Make insn to appear outside BB.  */
-      EXIT_BLOCK_PTR->prev_bb->end = PREV_INSN (EXIT_BLOCK_PTR->prev_bb->end);
+      BB_END (EXIT_BLOCK_PTR->prev_bb) = PREV_INSN (BB_END (EXIT_BLOCK_PTR->prev_bb));
     }
 
   /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before

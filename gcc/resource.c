@@ -155,7 +155,7 @@ find_basic_block (rtx insn, int search_limit)
        insn = next_nonnote_insn (insn))
     {
       FOR_EACH_BB (bb)
-	if (insn == bb->head)
+	if (insn == BB_HEAD (bb))
 	  return bb->index;
     }
 
@@ -913,7 +913,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	 information, we can get it from there unless the insn at the
 	 start of the basic block has been deleted.  */
       if (tinfo && tinfo->block != -1
-	  && ! INSN_DELETED_P (BLOCK_HEAD (tinfo->block)))
+	  && ! INSN_DELETED_P (BB_HEAD (BASIC_BLOCK (tinfo->block))))
 	b = tinfo->block;
     }
 
@@ -979,7 +979,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
-      start_insn = (b == 0 ? insns : BLOCK_HEAD (b));
+      start_insn = (b == 0 ? insns : BB_HEAD (BASIC_BLOCK (b)));
       stop_insn = target;
 
       if (GET_CODE (start_insn) == INSN

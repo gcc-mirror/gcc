@@ -336,7 +336,7 @@ next_flags_user (rtx insn)
   /* Search forward looking for the first use of this value.
      Stop at block boundaries.  */
 
-  while (insn != current_block->end)
+  while (insn != BB_END (current_block))
     {
       insn = NEXT_INSN (insn);
 
@@ -973,10 +973,10 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
   /* Find the previous insn involving stack regs, but don't pass a
      block boundary.  */
   i1 = NULL;
-  if (current_block && insn != current_block->head)
+  if (current_block && insn != BB_HEAD (current_block))
     {
       rtx tmp = PREV_INSN (insn);
-      rtx limit = PREV_INSN (current_block->head);
+      rtx limit = PREV_INSN (BB_HEAD (current_block));
       while (tmp != limit)
 	{
 	  if (GET_CODE (tmp) == CODE_LABEL
@@ -1022,7 +1022,7 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
   if (i1)
     emit_insn_after (swap_rtx, i1);
   else if (current_block)
-    emit_insn_before (swap_rtx, current_block->head);
+    emit_insn_before (swap_rtx, BB_HEAD (current_block));
   else
     emit_insn_before (swap_rtx, insn);
 }
@@ -1232,7 +1232,7 @@ swap_rtx_condition (rtx insn)
 
       /* Search forward looking for the first use of this value.
 	 Stop at block boundaries.  */
-      while (insn != current_block->end)
+      while (insn != BB_END (current_block))
 	{
 	  insn = NEXT_INSN (insn);
 	  if (INSN_P (insn) && reg_mentioned_p (dest, insn))
@@ -2292,7 +2292,7 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
 
   if (where == EMIT_AFTER)
     {
-      if (current_block && current_block->end == insn)
+      if (current_block && BB_END (current_block) == insn)
 	update_end = 1;
       insn = NEXT_INSN (insn);
     }
@@ -2375,7 +2375,7 @@ change_stack (rtx insn, stack old, stack new, enum emit_where where)
     }
 
   if (update_end)
-    current_block->end = PREV_INSN (insn);
+    BB_END (current_block) = PREV_INSN (insn);
 }
 
 /* Print stack configuration.  */
@@ -2536,7 +2536,7 @@ compensate_edge (edge e, FILE *file)
 	  /* change_stack kills values in regstack.  */
 	  tmpstack = regstack;
 
-	  change_stack (block->end, &tmpstack, target_stack, EMIT_AFTER);
+	  change_stack (BB_END (block), &tmpstack, target_stack, EMIT_AFTER);
 	  return false;
 	}
 
@@ -2607,8 +2607,8 @@ compensate_edge (edge e, FILE *file)
       /* change_stack kills values in regstack.  */
       tmpstack = regstack;
 
-      change_stack (block->end, &tmpstack, target_stack,
-		    (GET_CODE (block->end) == JUMP_INSN
+      change_stack (BB_END (block), &tmpstack, target_stack,
+		    (GET_CODE (BB_END (block)) == JUMP_INSN
 		     ? EMIT_BEFORE : EMIT_AFTER));
     }
   else
@@ -2714,7 +2714,7 @@ convert_regs_1 (FILE *file, basic_block block)
 
   /* Process all insns in this block.  Keep track of NEXT so that we
      don't process insns emitted while substituting in INSN.  */
-  next = block->head;
+  next = BB_HEAD (block);
   regstack = bi->stack_in;
   do
     {
@@ -2724,7 +2724,7 @@ convert_regs_1 (FILE *file, basic_block block)
       /* Ensure we have not missed a block boundary.  */
       if (next == NULL)
 	abort ();
-      if (insn == block->end)
+      if (insn == BB_END (block))
 	next = NULL;
 
       /* Don't bother processing unless there is a stack reg
@@ -2753,7 +2753,7 @@ convert_regs_1 (FILE *file, basic_block block)
       print_stack (file, &regstack);
     }
 
-  insn = block->end;
+  insn = BB_END (block);
   if (GET_CODE (insn) == JUMP_INSN)
     insn = PREV_INSN (insn);
 

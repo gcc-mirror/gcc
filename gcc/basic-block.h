@@ -193,7 +193,7 @@ struct loops;
 /* Basic block information indexed by block number.  */
 typedef struct basic_block_def {
   /* The first and last insns of the block.  */
-  rtx head, end;
+  rtx head_, end_;
 
   /* The first and last trees of the block.  */
   tree head_tree;
@@ -316,11 +316,8 @@ extern struct obstack flow_obstack;
 
 /* Stuff for recording basic block info.  */
 
-#define BLOCK_HEAD(B)      (BASIC_BLOCK (B)->head)
-#define BLOCK_END(B)       (BASIC_BLOCK (B)->end)
-
-#define BLOCK_HEAD_TREE(B) (BASIC_BLOCK (B)->head_tree)
-#define BLOCK_END_TREE(B) (BASIC_BLOCK (B)->end_tree)
+#define BB_HEAD(B)      (B)->head_
+#define BB_END(B)       (B)->end_
 
 /* Special block numbers [markers] for entry and exit.  */
 #define ENTRY_BLOCK (-1)

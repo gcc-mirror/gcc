@@ -154,9 +154,9 @@ static bool
 predicted_by_p (basic_block bb, enum br_predictor predictor)
 {
   rtx note;
-  if (!INSN_P (bb->end))
+  if (!INSN_P (BB_END (bb)))
     return false;
-  for (note = REG_NOTES (bb->end); note; note = XEXP (note, 1))
+  for (note = REG_NOTES (BB_END (bb)); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_BR_PRED
 	&& INTVAL (XEXP (XEXP (note, 0), 0)) == (int)predictor)
       return true;
@@ -199,7 +199,7 @@ void
 predict_edge (edge e, enum br_predictor predictor, int probability)
 {
   rtx last_insn;
-  last_insn = e->src->end;
+  last_insn = BB_END (e->src);
 
   /* We can store the branch prediction information only about
      conditional jumps.  */
@@ -445,7 +445,7 @@ estimate_probability (struct loops *loops_info)
 	     statements construct loops via "non-loop" constructs
 	     in the source language and are better to be handled
 	     separately.  */
-	  if (!can_predict_insn_p (bb->end)
+	  if (!can_predict_insn_p (BB_END (bb))
 	      || predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
@@ -476,7 +476,7 @@ estimate_probability (struct loops *loops_info)
   /* Attempt to predict conditional jumps using a number of heuristics.  */
   FOR_EACH_BB (bb)
     {
-      rtx last_insn = bb->end;
+      rtx last_insn = BB_END (bb);
       rtx cond, earliest;
       edge e;
 
@@ -509,7 +509,7 @@ estimate_probability (struct loops *loops_info)
 		 is improbable.  This is because such calls are often used
 		 to signal exceptional situations such as printing error
 		 messages.  */
-	      for (insn = e->dest->head; insn != NEXT_INSN (e->dest->end);
+	      for (insn = BB_HEAD (e->dest); insn != NEXT_INSN (BB_END (e->dest));
 		   insn = NEXT_INSN (insn))
 		if (GET_CODE (insn) == CALL_INSN
 		    /* Constant and pure calls are hardly used to signalize
@@ -613,10 +613,10 @@ estimate_probability (struct loops *loops_info)
 
   /* Attach the combined probability to each conditional jump.  */
   FOR_EACH_BB (bb)
-    if (GET_CODE (bb->end) == JUMP_INSN
-	&& any_condjump_p (bb->end)
+    if (GET_CODE (BB_END (bb)) == JUMP_INSN
+	&& any_condjump_p (BB_END (bb))
 	&& bb->succ->succ_next != NULL)
-      combine_predictions_for_insn (bb->end, bb);
+      combine_predictions_for_insn (BB_END (bb), bb);
 
   free_dominance_info (post_dominators);
   free_dominance_info (dominators);
@@ -765,7 +765,7 @@ process_note_prediction (basic_block bb, int *heads,
 
   /* Now find the edge that leads to our branch and aply the prediction.  */
 
-  if (y == last_basic_block || !can_predict_insn_p (BASIC_BLOCK (y)->end))
+  if (y == last_basic_block || !can_predict_insn_p (BB_END (BASIC_BLOCK (y))))
     return;
   for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
     if (e->dest->index >= 0
@@ -790,8 +790,8 @@ process_note_predictions (basic_block bb, int *heads,
   int was_bb_head = 0;
   int noreturn_block = 1;
 
-  for (insn = bb->end; insn;
-       was_bb_head |= (insn == bb->head), insn = PREV_INSN (insn))
+  for (insn = BB_END (bb); insn;
+       was_bb_head |= (insn == BB_HEAD (bb)), insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) != NOTE)
 	{
@@ -1105,7 +1105,7 @@ expensive_function_p (int threshold)
     {
       rtx insn;
 
-      for (insn = bb->head; insn != NEXT_INSN (bb->end);
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	if (active_insn_p (insn))
 	  {
@@ -1149,7 +1149,7 @@ estimate_bb_frequencies (struct loops *loops)
          notes.  */
       FOR_EACH_BB (bb)
 	{
-	  rtx last_insn = bb->end;
+	  rtx last_insn = BB_END (bb);
 
 	  if (!can_predict_insn_p (last_insn))
 	    {
