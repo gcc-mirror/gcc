@@ -169,7 +169,12 @@ lines
     };
 #undef DEFTREECODE
 
+#define ENUM_BITFIELD(X) enum X
+#define class klass
+
 #include "real.h"
+
+#undef class
   }
 
 /* We never produce signals from the library.  Thus setjmp need do nothing.  */
@@ -184,11 +189,13 @@ static int verbose_index = 0;
    real.c.  I.e. the object of this excersize.  Templated so that we can
    all fp sizes.  */
 
-template<int SIZE, enum machine_mode MODE>
 class real_c_float
 {
+ public:
+  static const enum machine_mode MODE = SFmode;
+
  private:
-  long image[SIZE / 32];
+  long image[128 / 32];
 
   void from_long(long);
   void from_str(const char *);
@@ -241,9 +248,8 @@ class real_c_float
   void ldexp (int);
 };
 
-template<int SIZE, enum machine_mode MODE>
 void
-real_c_float<SIZE, MODE>::from_long (long l)
+real_c_float::from_long (long l)
 {
   REAL_VALUE_TYPE f;
 
@@ -251,12 +257,11 @@ real_c_float<SIZE, MODE>::from_long (long l)
   real_to_target (image, &f, MODE);
 }
 
-template<int SIZE, enum machine_mode MODE>
 void
-real_c_float<SIZE, MODE>::from_str (const char *s)
+real_c_float::from_str (const char *s)
 {
   REAL_VALUE_TYPE f;
-  char *p = s;
+  const char *p = s;
 
   if (*p == '-' || *p == '+')
     p++;
@@ -274,9 +279,8 @@ real_c_float<SIZE, MODE>::from_str (const char *s)
   real_to_target (image, &f, MODE);
 }
 
-template<int SIZE, enum machine_mode MODE>
 void
-real_c_float<SIZE, MODE>::binop (int code, const real_c_float &b)
+real_c_float::binop (int code, const real_c_float &b)
 {
   REAL_VALUE_TYPE ai, bi, ri;
 
@@ -288,13 +292,14 @@ real_c_float<SIZE, MODE>::binop (int code, const real_c_float &b)
   if (verbose)
     {
       char ab[64], bb[64], rb[64];
-      const int digits = int(SIZE / 4);
+      const real_format *fmt = real_format_for_mode[MODE - QFmode];
+      const int digits = (fmt->p * fmt->log2_b + 3) / 4;
       char symbol_for_code;
 
       real_from_target (&ri, image, MODE);
-      real_to_hexadecimal (ab, &ai, digits);
-      real_to_hexadecimal (bb, &bi, digits);
-      real_to_hexadecimal (rb, &ri, digits);
+      real_to_hexadecimal (ab, &ai, sizeof(ab), digits, 0);
+      real_to_hexadecimal (bb, &bi, sizeof(bb), digits, 0);
+      real_to_hexadecimal (rb, &ri, sizeof(rb), digits, 0);
 
       switch (code)
 	{
@@ -319,9 +324,8 @@ real_c_float<SIZE, MODE>::binop (int code, const real_c_float &b)
     }
 }
 
-template<int SIZE, enum machine_mode MODE>
 void
-real_c_float<SIZE, MODE>::unop (int code)
+real_c_float::unop (int code)
 {
   REAL_VALUE_TYPE ai, ri;
 
@@ -332,12 +336,13 @@ real_c_float<SIZE, MODE>::unop (int code)
   if (verbose)
     {
       char ab[64], rb[64];
-      const int digits = int(SIZE / 4);
+      const real_format *fmt = real_format_for_mode[MODE - QFmode];
+      const int digits = (fmt->p * fmt->log2_b + 3) / 4;
       const char *symbol_for_code;
 
       real_from_target (&ri, image, MODE);
-      real_to_hexadecimal (ab, &ai, digits);
-      real_to_hexadecimal (rb, &ri, digits);
+      real_to_hexadecimal (ab, &ai, sizeof(ab), digits, 0);
+      real_to_hexadecimal (rb, &ri, sizeof(rb), digits, 0);
 
       switch (code)
 	{
@@ -356,9 +361,8 @@ real_c_float<SIZE, MODE>::unop (int code)
     }
 }
 
-template<int SIZE, enum machine_mode MODE>
 bool
-real_c_float<SIZE, MODE>::cmp (int code, const real_c_float &b) const
+real_c_float::cmp (int code, const real_c_float &b) const
 {
   REAL_VALUE_TYPE ai, bi;
   bool ret;
@@ -370,11 +374,12 @@ real_c_float<SIZE, MODE>::cmp (int code, const real_c_float &b) const
   if (verbose)
     {
       char ab[64], bb[64];
-      const int digits = int(SIZE / 4);
+      const real_format *fmt = real_format_for_mode[MODE - QFmode];
+      const int digits = (fmt->p * fmt->log2_b + 3) / 4;
       const char *symbol_for_code;
 
-      real_to_hexadecimal (ab, &ai, digits);
-      real_to_hexadecimal (bb, &bi, digits);
+      real_to_hexadecimal (ab, &ai, sizeof(ab), digits, 0);
+      real_to_hexadecimal (bb, &bi, sizeof(bb), digits, 0);
 
       switch (code)
 	{
@@ -407,55 +412,52 @@ real_c_float<SIZE, MODE>::cmp (int code, const real_c_float &b) const
   return ret;
 }
 
-template<int SIZE, enum machine_mode MODE>
 const char *
-real_c_float<SIZE, MODE>::str() const
+real_c_float::str() const
 {
   REAL_VALUE_TYPE f;
-  const int digits = int(SIZE * .30102999566398119521 + 1);
+  const real_format *fmt = real_format_for_mode[MODE - QFmode];
+  const int digits = int(fmt->p * fmt->log2_b * .30102999566398119521 + 1);
 
   real_from_target (&f, image, MODE);
   char *buf = new char[digits + 10];
-  real_to_decimal (buf, &f, digits);
+  real_to_decimal (buf, &f, digits+10, digits, 0);
 
   return buf;
 }
 
-template<int SIZE, enum machine_mode MODE>
 const char *
-real_c_float<SIZE, MODE>::hex() const
+real_c_float::hex() const
 {
   REAL_VALUE_TYPE f;
-  const int digits = int(SIZE / 4);
+  const real_format *fmt = real_format_for_mode[MODE - QFmode];
+  const int digits = (fmt->p * fmt->log2_b + 3) / 4;
 
   real_from_target (&f, image, MODE);
   char *buf = new char[digits + 10];
-  real_to_hexadecimal (buf, &f, digits);
+  real_to_hexadecimal (buf, &f, digits+10, digits, 0);
 
   return buf;
 }
 
-template<int SIZE, enum machine_mode MODE>
 long
-real_c_float<SIZE, MODE>::integer() const
+real_c_float::integer() const
 {
   REAL_VALUE_TYPE f;
   real_from_target (&f, image, MODE);
   return real_to_integer (&f);
 }
 
-template<int SIZE, enum machine_mode MODE>
 int
-real_c_float<SIZE, MODE>::exp() const
+real_c_float::exp() const
 {
   REAL_VALUE_TYPE f;
   real_from_target (&f, image, MODE);
   return real_exponent (&f);
 }
 
-template<int SIZE, enum machine_mode MODE>
 void
-real_c_float<SIZE, MODE>::ldexp (int exp)
+real_c_float::ldexp (int exp)
 {
   REAL_VALUE_TYPE ai;
 
@@ -2605,8 +2607,6 @@ Paranoia<FLOAT>::notify (const char *s)
 
 int main(int ac, char **av)
 {
-  init_real_once ();
-
   while (1)
     switch (getopt (ac, av, "pvg:fdl"))
       {
@@ -2620,30 +2620,49 @@ int main(int ac, char **av)
 	break;
       case 'g':
 	{
-	  int size = strtol (optarg, 0, 0);
+	  static const struct {
+	    const char *name;
+	    const struct real_format *fmt;
+	  } fmts[] = {
+#define F(x) { #x, &x##_format }
+	    F(ieee_single),
+	    F(ieee_double),
+	    F(ieee_extended_motorola),
+	    F(ieee_extended_intel_96),
+	    F(ieee_extended_intel_128),
+	    F(ibm_extended),
+	    F(ieee_quad),
+	    F(vax_f),
+	    F(vax_d),
+	    F(vax_g),
+	    F(i370_single),
+	    F(i370_double),
+	    F(c4x_single),
+	    F(c4x_extended),
+#undef F
+	  };
 
-	  switch (size)
+	  int i, n = sizeof (fmts)/sizeof(*fmts);
+
+	  for (i = 0; i < n; ++i)
+	    if (strcmp (fmts[i].name, optarg) == 0)
+	      break;
+
+	  if (i == n)
 	    {
-	    case 32:
-	      Paranoia< real_c_float<32, SFmode> >().main();
-	      break;
-
-	    case 64:
-	      Paranoia< real_c_float<64, DFmode> >().main();
-	      break;
-
-	    case 96:
-	      Paranoia< real_c_float<96, XFmode> >().main();
-	      break;
-
-	    case 128:
-	      Paranoia< real_c_float<128, TFmode> >().main();
-	      break;
-
-	    default:
-	      puts ("Invalid gcc implementation size.");
+	      printf ("Unknown implementation \"%s\"; "
+		      "available implementations:\n", optarg);
+	      for (i = 0; i < n; ++i)
+		printf ("\t%s\n", fmts[i].name);
 	      return 1;
 	    }
+
+	  // We cheat and use the same mode all the time, but vary
+	  // the format used for that mode.
+	  real_format_for_mode[int(real_c_float::MODE) - int(QFmode)]
+	    = fmts[i].fmt;
+
+	  Paranoia<real_c_float>().main();
 	  break;
 	}
 
@@ -2661,7 +2680,7 @@ int main(int ac, char **av)
 
       case '?':
 	puts ("-p\tpause between pages");
-	puts ("-g<N>\treal.c implementation size N");
+	puts ("-g<FMT>\treal.c implementation FMT");
 	puts ("-f\tnative float");
 	puts ("-d\tnative double");
 	puts ("-l\tnative long double");
@@ -2678,21 +2697,3 @@ fancy_abort ()
 }
 
 int target_flags = 0;
-
-extern "C"
-enum machine_mode
-mode_for_size (unsigned int size, enum mode_class, int)
-{
-  switch (size)
-    {
-    case 32:
-      return SFmode;
-    case 64:
-      return DFmode;
-    case 96:
-      return XFmode;
-    case 128:
-      return TFmode;
-    }
-  abort ();
-}
