@@ -238,7 +238,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 
       // First search the class itself.
       the_method = _Jv_SearchMethodInClass (owner, klass, 
-	           method_name, method_signature);
+					    method_name, method_signature);
 
       if (the_method != 0)
         {
@@ -246,9 +246,10 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
           goto end_of_method_search;
 	}
 
-      // If we are resolving an interface method, search the interface's 
-      // superinterfaces (A superinterface is not an interface's superclass - 
-      // a superinterface is implemented by the interface).
+      // If we are resolving an interface method, search the
+      // interface's superinterfaces (A superinterface is not an
+      // interface's superclass - a superinterface is implemented by
+      // the interface).
       if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
         {
 	  _Jv_ifaces ifaces;
@@ -257,8 +258,8 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  ifaces.list = (jclass *) _Jv_Malloc (ifaces.len * sizeof (jclass *));
 
 	  _Jv_GetInterfaces (owner, &ifaces);	  
-          
-	  for (int i=0; i < ifaces.count; i++)
+
+	  for (int i = 0; i < ifaces.count; i++)
 	    {
 	      jclass cls = ifaces.list[i];
 	      the_method = _Jv_SearchMethodInClass (cls, klass, method_name, 
@@ -269,9 +270,9 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
                   break;
 		}
 	    }
-	  
+
 	  _Jv_Free (ifaces.list);
-	  
+
 	  if (the_method != 0)
 	    goto end_of_method_search;
 	}
@@ -281,7 +282,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
            cls = cls->getSuperclass ())
 	{
 	  the_method = _Jv_SearchMethodInClass (cls, klass, 
-	               method_name, method_signature);
+						method_name, method_signature);
           if (the_method != 0)
 	    {
 	      found_class = cls;
@@ -361,6 +362,58 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 	}
     }
   return 0;
+}
+
+// A helper for _Jv_PrepareClass.  This adds missing `Miranda methods'
+// to a class.
+void
+_Jv_PrepareMissingMethods (jclass base2, jclass iface_class)
+{
+  _Jv_InterpClass *base = reinterpret_cast<_Jv_InterpClass *> (base2);
+  for (int i = 0; i < iface_class->interface_count; ++i)
+    {
+      for (int j = 0; j < iface_class->interfaces[i]->method_count; ++j)
+	{
+	  _Jv_Method *meth = &iface_class->interfaces[i]->methods[j];
+	  // Don't bother with <clinit>.
+	  if (meth->name->data[0] == '<')
+	    continue;
+	  _Jv_Method *new_meth = _Jv_LookupDeclaredMethod (base, meth->name,
+							   meth->signature);
+	  if (! new_meth)
+	    {
+	      // We assume that such methods are very unlikely, so we
+	      // just reallocate the method array each time one is
+	      // found.  This greatly simplifies the searching --
+	      // otherwise we have to make sure that each such method
+	      // found is really unique among all superinterfaces.
+	      int new_count = base->method_count + 1;
+	      _Jv_Method *new_m
+		= (_Jv_Method *) _Jv_AllocBytes (sizeof (_Jv_Method)
+						 * new_count);
+	      memcpy (new_m, base->methods,
+		      sizeof (_Jv_Method) * base->method_count);
+
+	      // Add new method.
+	      new_m[base->method_count] = *meth;
+	      new_m[base->method_count].index = (_Jv_ushort) -1;
+	      new_m[base->method_count].accflags
+		|= java::lang::reflect::Modifier::INVISIBLE;
+
+	      _Jv_MethodBase **new_im
+		= (_Jv_MethodBase **) _Jv_AllocBytes (sizeof (_Jv_MethodBase *)
+						      * new_count);
+	      memcpy (new_im, base->interpreted_methods,
+		      sizeof (_Jv_MethodBase *) * base->method_count);
+
+	      base->methods = new_m;
+	      base->interpreted_methods = new_im;
+	      base->method_count = new_count;
+	    }
+	}
+
+      _Jv_PrepareMissingMethods (base, iface_class->interfaces[i]);
+    }
 }
 
 void 
@@ -516,12 +569,23 @@ _Jv_PrepareClass(jclass klass)
 	}
     }
 
-  if (clz->accflags & Modifier::INTERFACE)
+  if ((clz->accflags & Modifier::INTERFACE))
     {
       clz->state = JV_STATE_PREPARED;
       clz->notifyAll ();
       return;
     }
+
+  // A class might have so-called "Miranda methods".  This is a method
+  // that is declared in an interface and not re-declared in an
+  // abstract class.  Some compilers don't emit declarations for such
+  // methods in the class; this will give us problems since we expect
+  // a declaration for any method requiring a vtable entry.  We handle
+  // this here by searching for such methods and constructing new
+  // internal declarations for them.  We only need to do this for
+  // abstract classes.
+  if ((clz->accflags & Modifier::ABSTRACT))
+    _Jv_PrepareMissingMethods (clz, clz);
 
   clz->vtable_method_count = -1;
   _Jv_MakeVTable (clz);

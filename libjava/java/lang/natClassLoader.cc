@@ -56,17 +56,18 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 				  sizeof (_Jv_InterpClass));
   _Jv_InitNewClassFields (klass);
 
-  // synchronize on the class, so that it is not
-  // attempted initialized until we're done loading.
-  _Jv_MonitorEnter (klass);
+  // Synchronize on the class, so that it is not attempted initialized
+  // until we're done loading.
+  JvSynchronize sync (klass);
 
-  // record which is the defining loader
-  klass->loader = this;
+  // Record the defining loader.  For the system class loader, we
+  // record NULL.
+  if (this != java::lang::ClassLoader::getSystemClassLoader())
+    klass->loader = this;
 
-  // register that we are the initiating loader...
   if (name != 0)
     {
-      _Jv_Utf8Const *   name2 = _Jv_makeUtf8Const (name);
+      _Jv_Utf8Const *name2 = _Jv_makeUtf8Const (name);
 
       if (! _Jv_VerifyClassName (name2))
 	throw new java::lang::ClassFormatError
@@ -86,16 +87,8 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 
       _Jv_UnregisterClass (klass);
 
-      _Jv_MonitorExit (klass);
-
-      // FIXME: Here we may want to test that EX does
-      // indeed represent a valid exception.  That is,
-      // anything but ClassNotFoundException, 
-      // or some kind of Error.
-
-      // FIXME: Rewrite this as a cleanup instead of
-      // as a catch handler.
-
+      // If EX is not a ClassNotFoundException, that's ok, because we
+      // account for the possibility in defineClass().
       throw ex;
     }
     
@@ -103,10 +96,6 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 
   // if everything proceeded sucessfully, we're loaded.
   JvAssert (klass->state == JV_STATE_LOADED);
-
-  // if an exception is generated, this is initially missed.
-  // however, we come back here in handleException0 below...
-  _Jv_MonitorExit (klass);
 
   return klass;
 
@@ -293,10 +282,11 @@ _Jv_PrepareCompiledClass (jclass klass)
 // Hash function for Utf8Consts.
 #define HASH_UTF(Utf) (((Utf)->hash) % HASH_LEN)
 
-struct _Jv_LoaderInfo {
-    _Jv_LoaderInfo          *next;
-    java::lang::Class       *klass;
-    java::lang::ClassLoader *loader;
+struct _Jv_LoaderInfo
+{
+  _Jv_LoaderInfo          *next;
+  java::lang::Class       *klass;
+  java::lang::ClassLoader *loader;
 };
 
 static _Jv_LoaderInfo *initiated_classes[HASH_LEN];
@@ -309,8 +299,11 @@ static jclass loaded_classes[HASH_LEN];
 jclass
 _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 {
-  _Jv_MonitorEnter (&java::lang::Class::class$);
+  JvSynchronize sync (&java::lang::Class::class$);
   jint hash = HASH_UTF (name);
+
+  if (loader && loader == java::lang::ClassLoader::getSystemClassLoader())
+    loader = NULL;
 
   // first, if LOADER is a defining loader, then it is also initiating
   jclass klass;
@@ -337,15 +330,13 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	}
     }
 
-  _Jv_MonitorExit (&java::lang::Class::class$);
-
   return klass;
 }
 
 void
 _Jv_UnregisterClass (jclass the_class)
 {
-  _Jv_MonitorEnter (&java::lang::Class::class$);
+  JvSynchronize sync (&java::lang::Class::class$);
   jint hash = HASH_UTF(the_class->name);
 
   jclass *klass = &(loaded_classes[hash]);
@@ -363,29 +354,32 @@ _Jv_UnregisterClass (jclass the_class)
     {
       while (*info && (*info)->klass == the_class)
 	{
+	  _Jv_LoaderInfo *old = *info;
 	  *info = (*info)->next;
+	  _Jv_Free (old);
 	}
 
       if (*info == NULL)
 	break;
     }
-
-  _Jv_MonitorExit (&java::lang::Class::class$);
 }
 
 void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
-  // non-gc alloc!
-  _Jv_LoaderInfo *info = (_Jv_LoaderInfo *) _Jv_Malloc (sizeof(_Jv_LoaderInfo));
+  if (loader && loader == java::lang::ClassLoader::getSystemClassLoader())
+    loader = NULL;
+
+  // This information can't be visible to the GC.
+  _Jv_LoaderInfo *info
+    = (_Jv_LoaderInfo *) _Jv_Malloc (sizeof(_Jv_LoaderInfo));
   jint hash = HASH_UTF(klass->name);
 
-  _Jv_MonitorEnter (&java::lang::Class::class$);
+  JvSynchronize sync (&java::lang::Class::class$);
   info->loader = loader;
   info->klass  = klass;
   info->next   = initiated_classes[hash];
   initiated_classes[hash] = info;
-  _Jv_MonitorExit (&java::lang::Class::class$);
 }
 
 // This function is called many times during startup, before main() is
@@ -471,6 +465,9 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
     {
       jstring sname = _Jv_NewStringUTF (name->data);
 
+      java::lang::ClassLoader *sys
+	= java::lang::ClassLoader::getSystemClassLoader ();
+
       if (loader)
 	{
 	  // Load using a user-defined loader, jvmspec 5.3.2
@@ -479,14 +476,14 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	  // If "loader" delegated the loadClass operation to another
 	  // loader, explicitly register that it is also an initiating
 	  // loader of the given class.
-	  if (klass && (klass->getClassLoader () != loader))
+	  java::lang::ClassLoader *delegate = (loader == sys
+					       ? NULL
+					       : loader);
+	  if (klass && klass->getClassLoaderInternal () != delegate)
 	    _Jv_RegisterInitiatingLoader (klass, loader);
 	}
       else 
 	{
-	  java::lang::ClassLoader *sys
-	    = java::lang::ClassLoader::getSystemClassLoader ();
-
 	  // Load using the bootstrap loader jvmspec 5.3.1.
 	  klass = sys->loadClass (sname, false); 
 

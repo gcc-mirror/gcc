@@ -1,5 +1,5 @@
 /* java.lang.reflect.Modifier
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -156,6 +156,17 @@ public class Modifier
    * All the flags, only used by code in this package.
    */
   static final int ALL_FLAGS = 0xfff;
+
+  /**
+   * GCJ-LOCAL: This access flag is set on methods we declare
+   * internally but which must not be visible to reflection.
+   */
+  static final int INVISIBLE = 0x1000;
+
+  /**
+   * GCJ-LOCAL: This access flag is set on interpreted classes.
+   */
+  static final int INTERPRETED = 0x1000;
 
   /**
    * Check whether the given modifier is abstract.

@@ -343,7 +343,9 @@ java::lang::Class::_getDeclaredMethod (jstring name,
   while (--i >= 0)
     {
       if (_Jv_equalUtf8Consts (methods[i].name, utf_name)
-	  && _Jv_equaln (methods[i].signature, partial_sig, p_len))
+	  && _Jv_equaln (methods[i].signature, partial_sig, p_len)
+	  && (methods[i].accflags
+	      & java::lang::reflect::Modifier::INVISIBLE) == 0)
 	{
 	  // Found it.
 	  using namespace java::lang::reflect;
@@ -368,7 +370,9 @@ java::lang::Class::getDeclaredMethods (void)
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name)
+	  || (methods[i].accflags
+	      & java::lang::reflect::Modifier::INVISIBLE) != 0)
 	continue;
       numMethods++;
     }
@@ -382,7 +386,9 @@ java::lang::Class::getDeclaredMethods (void)
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name)
+	  || (methods[i].accflags
+	      & java::lang::reflect::Modifier::INVISIBLE) != 0)
 	continue;
       java::lang::reflect::Method* rmethod
 	= new java::lang::reflect::Method ();
@@ -514,7 +520,9 @@ java::lang::Class::_getMethod (jstring name, JArray<jclass> *param_types)
 	{
 	  // FIXME: access checks.
 	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
-	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len))
+	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len)
+	      && (klass->methods[i].accflags
+		  & java::lang::reflect::Modifier::INVISIBLE) == 0)
 	    {
 	      // Found it.
 	      using namespace java::lang::reflect;
@@ -565,7 +573,9 @@ java::lang::Class::_getMethods (JArray<java::lang::reflect::Method *> *result,
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
 	  || _Jv_equalUtf8Consts (method->name, init_name)
-	  || _Jv_equalUtf8Consts (method->name, finit_name))
+	  || _Jv_equalUtf8Consts (method->name, finit_name)
+	  || (method->accflags
+	      & java::lang::reflect::Modifier::INVISIBLE) != 0)
 	continue;
       // Only want public methods.
       if (! java::lang::reflect::Modifier::isPublic (method->accflags))
@@ -1564,6 +1574,13 @@ isVirtualMethod (_Jv_Method *meth)
           && meth->name->data[0] != '<');
 }
 
+// This is put in empty vtable slots.
+static void
+_Jv_abstractMethodError (void)
+{
+  throw new java::lang::AbstractMethodError();
+}
+
 // Prepare virtual method declarations in KLASS, and any superclasses as 
 // required, by determining their vtable index, setting method->index, and
 // finally setting the class's vtable_method_count. Must be called with the
@@ -1594,13 +1611,16 @@ _Jv_LayoutVTableMethods (jclass klass)
 	continue;
 
       if (superclass != NULL)
-        super_meth = _Jv_LookupDeclaredMethod (superclass, meth->name, 
-					       meth->signature);
+	{
+	  super_meth = _Jv_LookupDeclaredMethod (superclass, meth->name, 
+						 meth->signature);
+	}
 
       if (super_meth)
         meth->index = super_meth->index;
-      else if (! (meth->accflags & java::lang::reflect::Modifier::FINAL))
-        meth->index = index++;
+      else if (! (meth->accflags & java::lang::reflect::Modifier::FINAL)
+	       && ! (klass->accflags & java::lang::reflect::Modifier::FINAL))
+	meth->index = index++;
     }
 
   klass->vtable_method_count = index;
@@ -1626,8 +1646,7 @@ _Jv_SetVTableEntries (jclass klass, _Jv_VTable *vtable, jboolean *flags)
 	continue;
       if ((meth->accflags & Modifier::ABSTRACT))
 	{
-	  // FIXME: we should set abstract slots to a function that
-	  // throws AbstractMethodError.  How can we do that on IA-64?
+	  vtable->set_method(meth->index, (void *) &_Jv_abstractMethodError);
 	  flags[meth->index] = false;
 	}
       else

@@ -21,6 +21,7 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#include <java/lang/reflect/Modifier.h>
 #include <gnu/gcj/runtime/StackTrace.h>
 
 extern "C" {
@@ -30,7 +31,7 @@ extern "C" {
 extern inline jboolean
 _Jv_IsInterpretedClass (jclass c)
 {
-  return (c->loader != 0);
+  return (c->accflags & java::lang::reflect::Modifier::INTERPRETED) != 0;
 }
 
 struct _Jv_ResolvedMethod;
@@ -158,6 +159,7 @@ class _Jv_InterpClass : public java::lang::Class
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
   friend void  _Jv_PrepareClass(jclass);
+  friend void  _Jv_PrepareMissingMethods (jclass base2, jclass iface_class);
   friend void  _Jv_InitField (jobject, jclass, int);
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
