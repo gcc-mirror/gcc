@@ -1,3 +1,8 @@
+2003-06-25	Dhananjay Deshpande <dhananjayd@kpitcummins.com>
+
+	* config/sh/sh.c (sh_register_move_cost):
+	Add case for moving between MAC_REGS.
+
 2003-06-25  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 10178
