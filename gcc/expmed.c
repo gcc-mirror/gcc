@@ -2740,7 +2740,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       case TRUNC_DIV_EXPR:
 	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
 	  {
-	    if (unsignedp)
+	    if (unsignedp
+		|| (INTVAL (op1)
+		    == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (compute_mode) - 1)))
 	      {
 		unsigned HOST_WIDE_INT mh, ml;
 		int pre_shift, post_shift;
@@ -2901,6 +2903,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						 tquotient, 0);
 		      }
 
+		    /* We have computed OP0 / abs(OP1).  If OP1 is negative, negate
+		       the quotient.  */
 		    if (d < 0)
 		      {
 			insn = get_last_insn ();
