@@ -1,3 +1,7 @@
+2001-11-15  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Fix insn length of bit insns.
+
 2001-11-15  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Don't abort because of orphan
