@@ -2780,7 +2780,6 @@ cp_finish_file (void)
   do 
     {
       tree t;
-      size_t n_old, n_new;
 
       reconsider = false;
 
@@ -2823,32 +2822,16 @@ cp_finish_file (void)
 
       /* Write out needed type info variables.  We have to be careful
  	 looping through unemitted decls, because emit_tinfo_decl may
- 	 cause other variables to be needed.  We stick new elements
- 	 (and old elements that we may need to reconsider) at the end
- 	 of the array, then shift them back to the beginning once we're
- 	 done.  */
-
-      n_old = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls);
-      for (i = 0; i < n_old; ++i)
-  	{
-  	  tree tinfo_decl = VARRAY_TREE (unemitted_tinfo_decls, i);
-  	  if (emit_tinfo_decl (tinfo_decl))
- 	    reconsider = true;
-  	  else
-  	    VARRAY_PUSH_TREE (unemitted_tinfo_decls, tinfo_decl);
-  	}
-  
-      /* The only elements we want to keep are the new ones.  Copy
-  	 them to the beginning of the array, then get rid of the
-  	 leftovers.  */
-      n_new = VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) - n_old;
-      if (n_new)
-	memmove (&VARRAY_TREE (unemitted_tinfo_decls, 0),
-		 &VARRAY_TREE (unemitted_tinfo_decls, n_old),
-		 n_new * sizeof (tree));
-      memset (&VARRAY_TREE (unemitted_tinfo_decls, n_new),
-  	      0, n_old * sizeof (tree));
-      VARRAY_ACTIVE_SIZE (unemitted_tinfo_decls) = n_new;
+ 	 cause other variables to be needed. New elements will be
+ 	 appended, and we remove from the vector those that actually
+ 	 get emitted.  */
+      for (i = VEC_length (tree, unemitted_tinfo_decls);
+	   VEC_iterate (tree, unemitted_tinfo_decls, --i, t);)
+	if (emit_tinfo_decl (t))
+	  {
+	    reconsider = true;
+	    VEC_unordered_remove (tree, unemitted_tinfo_decls, i);
+	  }
 
       /* The list of objects with static storage duration is built up
 	 in reverse order.  We clear STATIC_AGGREGATES so that any new
