@@ -1,3 +1,14 @@
+1998-10-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Complain about a variable using
+	constructor syntax coming back null from start_decl.
+
+	* friend.c (make_friend_class): Complain about trying to make
+	a non-class type a friend.
+
+	* decl.c (grokfndecl): Set DECL_INITIAL for a defn here.
+	(start_function): Not here.
+
 1998-10-26  Brendan Kehoe  <brendan@cygnus.com>
 
 	* decl.c (grokdeclarator): Disallow `explicit' in a friend declaration.

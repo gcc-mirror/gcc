@@ -8181,6 +8181,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       && (! DECL_USE_TEMPLATE (decl) || name_mangling_version < 1))
     set_mangled_name_for_decl (decl);
 
+  if (funcdef_flag)
+    /* Make the init_value nonzero so pushdecl knows this is not
+       tentative.  error_mark_node is replaced later with the BLOCK.  */
+    DECL_INITIAL (decl) = error_mark_node;
+
   /* Caller will do the rest of this.  */
   if (check < 0)
     return decl;
@@ -8641,10 +8646,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		init = TREE_OPERAND (decl, 1);
 
 		decl = start_decl (declarator, declspecs, 1, NULL_TREE, NULL_TREE);
-		/* Look for __unused__ attribute */
-		if (TREE_USED (TREE_TYPE (decl)))
-		  TREE_USED (decl) = 1;
-		finish_decl (decl, init, NULL_TREE);
+		if (decl)
+		  {
+		    /* Look for __unused__ attribute */
+		    if (TREE_USED (TREE_TYPE (decl)))
+		      TREE_USED (decl) = 1;
+		    finish_decl (decl, init, NULL_TREE);
+		  }
+		else
+		  cp_error ("invalid declarator");
 		return 0;
 	      }
 	    innermost_code = TREE_CODE (decl);
@@ -12504,10 +12514,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
     cp_warning ("`operator=' should return a reference to `*this'");
-
-  /* Make the init_value nonzero so pushdecl knows this is not tentative.
-     error_mark_node is replaced below (in poplevel) with the BLOCK.  */
-  DECL_INITIAL (decl1) = error_mark_node;
 
 #ifdef SET_DEFAULT_DECL_ATTRIBUTES
   SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
