@@ -1,3 +1,9 @@
+2005-04-04  Steve Pribyl <steve@netfuel.com>
+
+	PR libgcj/20761
+	* configure.ac: Fix fastjar definition for cross builds.
+	* configure: Rebuilt.
+
 2005-04-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (loadClass): Resolve class even if
