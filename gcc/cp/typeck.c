@@ -4660,7 +4660,7 @@ unary_complex_lvalue (code, arg)
 					   DECL_FIELD_BITPOS (t),
 					   size_int (BITS_PER_UNIT)));
 
-	  /* We offset all pointer to data memebers by 1 so that we can
+	  /* We offset all pointer to data members by 1 so that we can
 	     distinguish between a null pointer to data member and the first
 	     data member of a structure.  */
 	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
