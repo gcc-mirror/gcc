@@ -790,18 +790,18 @@ emit_mode_mask (void)
   print_decl ("unsigned HOST_WIDE_INT", "mode_mask_array",
 	      "NUM_MACHINE_MODES");
   puts ("\
-#define MASK(m)                               \\\n\
+#define MODE_MASK(m)                          \\\n\
   ((m) >= HOST_BITS_PER_WIDE_INT)             \\\n\
    ? ~(unsigned HOST_WIDE_INT) 0              \\\n\
    : ((unsigned HOST_WIDE_INT) 1 << (m)) - 1\n");
 
   for_all_modes (c, m)
     if (m->bitsize != (unsigned int)-1)
-      tagged_printf ("MASK (%u)", m->bitsize, m->name);
+      tagged_printf ("MODE_MASK (%u)", m->bitsize, m->name);
     else
-      tagged_printf ("MASK (%u*BITS_PER_UNIT)", m->bytesize, m->name);
+      tagged_printf ("MODE_MASK (%u*BITS_PER_UNIT)", m->bytesize, m->name);
 
-  puts ("#undef MASK");
+  puts ("#undef MODE_MASK");
   print_closer ();
 }
 
