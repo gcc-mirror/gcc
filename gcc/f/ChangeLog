@@ -1,3 +1,8 @@
+Thu Apr 19 12:49:24 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* top.c (ffe_decode_option): Do not permit language-independent
+	processing for -ffixed-line-length.
+
 Thu Apr 12 17:57:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (inhibit_warnings): Delete redundant declaration.

@@ -154,7 +154,12 @@ struct lang_hooks
      single option (typically starting with -f or -W or +).  It should
      return the number of command-line arguments it uses if it handles
      the option, or 0 and not complain if it does not recognise the
-     option.  This hook cannot be NULL.  */
+     option.  If this function returns a negative number, then its
+     absolute value is the number of command-line arguments used, but,
+     in addition, no language-independent option processing should be
+     done for this option.
+
+     This hook cannot be NULL.  */
   int (*decode_option) PARAMS ((int, char **));
 
   /* Called when all command line options have been processed.  */
