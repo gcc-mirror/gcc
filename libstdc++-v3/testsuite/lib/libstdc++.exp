@@ -302,3 +302,307 @@ proc libstdc++-process-options { testfile } {
 	}
     }
 }
+
+###
+### The following is an abominal hack, non-recomandable software practice.
+### This is supposed to be a very-very short term solution.
+### Please, do not add any piece of code without my approval.
+### -- Gaby
+###
+
+# dg-test -- runs a new style DejaGnu test
+#
+# Syntax: dg-test [-keep-output] prog tool_flags default_extra_tool_flags
+#
+# PROG is the full path name of the file to pass to the tool (eg: compiler).
+# TOOL_FLAGS is a set of options to always pass.
+# DEFAULT_EXTRA_TOOL_FLAGS are additional options if the testcase has none.
+
+#proc dg-test { prog tool_flags default_extra_tool_flags } {
+proc dg-test { args } {
+    global dg-do-what-default dg-interpreter-batch-mode dg-linenum-format
+    global errorCode errorInfo
+    global tool
+    global srcdir		;# eg: /calvin/dje/devo/gcc/./testsuite/
+    global host_triplet target_triplet
+
+    set keep 0
+    set i 0
+
+    if { [string index [lindex $args 0] 0] == "-" } {
+	for { set i 0 } { $i < [llength $args] } { incr i } {
+	    if { [lindex $args $i] == "--" } {
+		incr i
+		break
+	    } elseif { [lindex $args $i] == "-keep-output" } {
+		set keep 1
+	    } elseif { [string index [lindex $args $i] 0] == "-" } {
+		clone_output "ERROR: dg-test: illegal argument: [lindex $args $i]"
+		return
+	    } else {
+		break
+	    }
+	}
+    }
+
+    if { $i + 3 != [llength $args] } {
+	clone_output "ERROR: dg-test: missing arguments in call"
+	return
+    }
+    set prog [lindex $args $i]
+    set tool_flags [lindex $args [expr $i + 1]]
+    set default_extra_tool_flags [lindex $args [expr $i + 2]]
+
+    set text "\[- A-Za-z0-9\.\;\"\_\:\'\`\(\)\!\#\=\+\?\&\*]*"
+
+    set name [dg-trim-dirname $srcdir $prog]
+    # If we couldn't rip $srcdir out of `prog' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $name] {
+	set name "[file tail [file dirname $prog]]/[file tail $prog]"
+    }
+
+    # Process any embedded dg options in the testcase.
+
+    # Use "" for the second element of dg-do-what so we can tell if it's been
+    # explicitly set to "S".
+    set dg-do-what [list ${dg-do-what-default} "" P]
+    set dg-excess-errors-flag 0
+    set dg-messages ""
+    set dg-extra-tool-flags $default_extra_tool_flags
+    set dg-final-code ""
+
+    # `dg-output-text' is a list of two elements: pass/fail and text.
+    # Leave second element off for now (indicates "don't perform test")
+    set dg-output-text "P"
+
+    # Define our own "special function" `unknown' so we catch spelling errors.
+    # But first rename the existing one so we can restore it afterwards.
+    catch {rename dg-save-unknown ""}
+    rename unknown dg-save-unknown
+    proc unknown { args } {
+	return -code error "unknown dg option: $args"
+    }
+
+    set tmp [dg-get-options $prog]
+    foreach op $tmp {
+	verbose "Processing option: $op" 3
+	set status [catch "$op" errmsg]
+	if { $status != 0 } {
+	    if { 0 && [info exists errorInfo] } {
+		# This also prints a backtrace which will just confuse
+		# testcase writers, so it's disabled.
+		perror "$name: $errorInfo\n"
+	    } else {
+		perror "$name: $errmsg for \"$op\"\n"
+	    }
+	    # ??? The call to unresolved here is necessary to clear `errcnt'.
+	    # What we really need is a proc like perror that doesn't set errcnt.
+	    # It should also set exit_status to 1.
+	    unresolved "$name: $errmsg for \"$op\""
+	    return
+	}
+    }
+
+    # Restore normal error handling.
+    rename unknown ""
+    rename dg-save-unknown unknown
+
+    # If we're not supposed to try this test on this target, we're done.
+    if { [lindex ${dg-do-what} 1] == "N" } {
+	unsupported "$name"
+	verbose "$name not supported on this target, skipping it" 3
+	return
+    }
+
+    # Run the tool and analyze the results.
+    # The result of ${tool}-dg-test is in a bit of flux.
+    # Currently it is the name of the output file (or "" if none).
+    # If we need more than this it will grow into a list of things.
+    # No intention is made (at this point) to preserve upward compatibility
+    # (though at some point we'll have to).
+
+    set results [${tool}-dg-test $prog [lindex ${dg-do-what} 0] "$tool_flags ${dg-extra-tool-flags}"];
+
+    set comp_output [lindex $results 0];
+    set output_file [lindex $results 1];
+
+    #send_user "\nold_dejagnu.exp: comp_output1 = :$comp_output:\n\n"
+    #send_user "\nold_dejagnu.exp: message = :$message:\n\n"
+    #send_user "\nold_dejagnu.exp: message length = [llength $message]\n\n"
+
+    foreach i ${dg-messages} {
+	verbose "Scanning for message: $i" 4
+
+	# Remove all error messages for the line [lindex $i 0]
+	# in the source file.  If we find any, success!
+	set line [lindex $i 0]
+	set pattern [lindex $i 2]
+	set comment [lindex $i 3]
+	#send_user "Before:\n$comp_output\n"
+	if [regsub -all "(^|\n)(\[^\n\]+$line\[^\n\]*($pattern)\[^\n\]*\n?)+" $comp_output "\n" comp_output] {
+            set comp_output [string trimleft $comp_output]
+	    set ok pass
+	    set uhoh fail
+	} else {
+	    set ok fail
+	    set uhoh pass
+	}
+	#send_user "After:\n$comp_output\n"
+
+	# $line will either be a formatted line number or a number all by
+	# itself.  Delete the formatting.
+	scan $line ${dg-linenum-format} line
+	switch [lindex $i 1] {
+	    "ERROR" {
+		$ok "$name $comment (test for errors, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "XERROR" {
+		x$ok "$name $comment (test for errors, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "WARNING" {
+		$ok "$name $comment (test for warnings, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "XWARNING" {
+		x$ok "$name $comment (test for warnings, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "BOGUS" {
+		$uhoh "$name $comment (test for bogus messages, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "XBOGUS" {
+		x$uhoh "$name $comment (test for bogus messages, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "BUILD" {
+		$uhoh "$name $comment (test for build failure, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "XBUILD" {
+		x$uhoh "$name $comment (test for build failure, line $line), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	    "EXEC" { }
+	    "XEXEC" { }
+	}
+	#send_user "\nold_dejagnu.exp: comp_output2= :$comp_output:\n\n"
+    }
+    #send_user "\nold_dejagnu.exp: comp_output3 = :$comp_output:\n\n"
+
+    # Remove messages from the tool that we can ignore.
+    #send_user "comp_output: $comp_output\n"
+    set comp_output [prune_warnings $comp_output]
+
+    if { [info proc ${tool}-dg-prune] != "" } {
+	set comp_output [${tool}-dg-prune $target_triplet $comp_output]
+	switch -glob $comp_output {
+	    "::untested::*" {
+		regsub "::untested::" $comp_output "" message
+		untested "$name: $message"
+		return
+	    }
+	    "::unresolved::*" {
+		regsub "::unresolved::" $comp_output "" message
+		unresolved "$name: $message"
+		return
+	    }
+	    "::unsupported::*" {
+		regsub "::unsupported::" $comp_output "" message
+		unsupported "$name: $message"
+		return
+	    }
+	}
+    }
+
+    # See if someone forgot to delete the extra lines.
+    regsub -all "\n+" $comp_output "\n" comp_output
+    regsub "^\n+" $comp_output "" comp_output
+    #send_user "comp_output: $comp_output\n"
+
+    # Don't do this if we're testing an interpreter.
+    # FIXME: why?
+    if { ${dg-interpreter-batch-mode} == 0 } {
+	# Catch excess errors (new bugs or incomplete testcases).
+	if ${dg-excess-errors-flag} {
+	    setup_xfail "*-*-*"
+	}
+	if ![string match "" $comp_output] {
+	    fail "$name (test for excess errors), $tool_flags ${dg-extra-tool-flags}"
+	    send_log "Excess errors:\n$comp_output\n"
+	} else {
+	    pass "$name (test for excess errors), $tool_flags ${dg-extra-tool-flags}"
+	}
+    }
+
+    # Run the executable image if asked to do so.
+    # FIXME: This is the only place where we assume a standard meaning to
+    # the `keyword' argument of dg-do.  This could be cleaned up.
+    if { [lindex ${dg-do-what} 0] == "run" } {
+	if ![file exists $output_file] {
+	    warning "$name compilation failed to produce executable"
+	} else {
+	    set status -1
+	    set result [${tool}_load $output_file]
+	    set status [lindex $result 0];
+	    set output [lindex $result 1];
+	    #send_user "After exec, status: $status\n"
+	    if { [lindex ${dg-do-what} 2] == "F" } {
+		setup_xfail "*-*-*"
+	    }
+	    if { "$status" == "pass" } {
+		pass "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+		verbose "Exec succeeded." 3
+		if { [llength ${dg-output-text}] > 1 } {
+		    #send_user "${dg-output-text}\n"
+		    if { [lindex ${dg-output-text} 0] == "F" } {
+			setup_xfail "*-*-*"
+		    }
+		    set texttmp [lindex ${dg-output-text} 1]
+		    if { ![regexp $texttmp ${output}] } {
+			fail "$name output pattern test, is ${output}, should match $texttmp"
+			verbose "Failed test for output pattern $texttmp" 3
+		    } else {
+			pass "$name output pattern test, $texttmp"
+			verbose "Passed test for output pattern $texttmp" 3
+		    }
+		    unset texttmp
+		}
+	    } elseif { "$status" == "fail" } {
+		# It would be nice to get some info out of errorCode.
+		if [info exists errorCode] {
+		    verbose "Exec failed, errorCode: $errorCode" 3
+		} else {
+		    verbose "Exec failed, errorCode not defined!" 3
+		}
+		fail "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+	    } else {
+		$status "$name (execution test), $tool_flags ${dg-extra-tool-flags}"
+	    }
+	}
+    }
+
+    # Are there any further tests to perform?
+    # Note that if the program has special run-time requirements, running
+    # of the program can be delayed until here.  Ditto for other situations.
+    # It would be a bit cumbersome though.
+
+    if ![string match ${dg-final-code} ""] {
+	regsub -all "\\\\(\[{}\])" ${dg-final-code} "\\1" dg-final-code
+	# Note that the use of `args' here makes this a varargs proc.
+	proc dg-final-proc { args } ${dg-final-code}
+	verbose "Running dg-final tests." 3
+	verbose "dg-final-proc:\n[info body dg-final-proc]" 4
+	if [catch "dg-final-proc $prog" errmsg] {
+	    perror "$name: error executing dg-final: $errmsg"
+	    # ??? The call to unresolved here is necessary to clear `errcnt'.
+	    # What we really need is a proc like perror that doesn't set errcnt.
+	    # It should also set exit_status to 1.
+	    unresolved "$name: error executing dg-final: $errmsg"
+	}
+    }
+
+    # Do some final clean up.
+    # When testing an interpreter, we don't compile something and leave an
+    # output file.
+    if { ! ${keep} && ${dg-interpreter-batch-mode} == 0 } {
+	catch "exec rm -f $output_file"
+    }
+}
