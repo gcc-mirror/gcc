@@ -19,60 +19,56 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 
-/* ??? Format checking yields "null format string" warnings, which is
-   the way these routines are signaled that there is no associated
-   debug information.  So the attributes are commented out.  */
-
 extern void dw2_assemble_integer	PARAMS ((int, rtx));
 
 extern void dw2_asm_output_data		PARAMS ((int, unsigned HOST_WIDE_INT,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_delta	PARAMS ((int, const char *,
 						 const char *,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_4 */;
+     ATTRIBUTE_NULL_PRINTF_4;
 
 extern void dw2_asm_output_offset	PARAMS ((int, const char *,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_pcrel	PARAMS ((int, const char *,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_addr		PARAMS ((int, const char *,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_addr_rtx	PARAMS ((int, rtx,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_encoded_addr_rtx PARAMS ((int, rtx,
 						     const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_nstring	PARAMS ((const char *, size_t,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_data_uleb128	PARAMS ((unsigned HOST_WIDE_INT,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_2 */;
+     ATTRIBUTE_NULL_PRINTF_2;
 
 extern void dw2_asm_output_data_sleb128	PARAMS ((HOST_WIDE_INT,
 						 const char *, ...))
-     /* ATTRIBUTE_PRINTF_2 */;
+     ATTRIBUTE_NULL_PRINTF_2;
 
 extern void dw2_asm_output_delta_uleb128 PARAMS ((const char *, const char *,
 						  const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern void dw2_asm_output_delta_sleb128 PARAMS ((const char *, const char *,
 						  const char *, ...))
-     /* ATTRIBUTE_PRINTF_3 */;
+     ATTRIBUTE_NULL_PRINTF_3;
 
 extern int size_of_uleb128		PARAMS ((unsigned HOST_WIDE_INT));
 extern int size_of_sleb128		PARAMS ((HOST_WIDE_INT));
