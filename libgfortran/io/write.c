@@ -297,7 +297,7 @@ output_float (fnode *f, double value, int len)
 
   /* We should always know the field width and precision.  */
   if (d < 0)
-    internal_error ("Uspecified precision");
+    internal_error ("Unspecified precision");
 
   /* Use sprintf to print the number in the format +D.DDDDe+ddd
      For an N digit exponent, this gives us (32-6)-N digits after the
