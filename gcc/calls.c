@@ -1770,6 +1770,8 @@ expand_call (exp, target, ignore)
 	}
     }
 
+  funexp = prepare_call_address (funexp, fndecl, &use_insns);
+
   /* Now do the register loads required for any wholly-register parms or any
      parms which are passed both on the stack and in a register.  Their
      expressions were already evaluated. 
@@ -1843,8 +1845,6 @@ expand_call (exp, target, ignore)
   emit_queue ();
 
   /* All arguments and registers used for the call must be set up by now!  */
-
-  funexp = prepare_call_address (funexp, fndecl, &use_insns);
 
   /* Generate the actual call instruction.  */
   emit_call_1 (funexp, funtype, args_size.constant, struct_value_size,
@@ -2324,6 +2324,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   argnum = 0;
 #endif
 
+  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
+
   /* Now load any reg parms into their regs.  */
 
   for (count = 0; count < nargs; count++, argnum += inc)
@@ -2350,8 +2352,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   use_insns = get_insns ();
   end_sequence ();
-
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
 
   /* Don't allow popping to be deferred, since then
      cse'ing of library calls could delete a call and leave the pop.  */
@@ -2670,6 +2670,8 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   argnum = 0;
 #endif
 
+  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
+
   /* Now load any reg parms into their regs.  */
 
   for (count = 0; count < nargs; count++, argnum += inc)
@@ -2714,8 +2716,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	  end_sequence ();
 	}
     }
-
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
 
   /* Don't allow popping to be deferred, since then
      cse'ing of library calls could delete a call and leave the pop.  */
