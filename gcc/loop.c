@@ -916,8 +916,7 @@ scan_loop (loop_start, end, nregs)
 	 executed during each iteration.  Therefore, we can
 	 only move out sets of trivial variables
 	 (those not used after the loop).  */
-      /* This code appears in three places, once in scan_loop, and twice
-	 in strength_reduce.  */
+      /* Similar code appears twice in strength_reduce.  */
       else if ((GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
 	       /* If we enter the loop in the middle, and scan around to the
 		  beginning, don't set maybe_never for that.  This must be an
@@ -3323,7 +3322,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       /* Past CODE_LABEL, we get to insns that may be executed multiple
 	 times.  The only way we can be sure that they can't is if every
 	 every jump insn between here and the end of the loop either
-	 returns, exits the loop, or is a forward jump.  */
+	 returns, exits the loop, is a forward jump, or is a jump
+	 to the loop start.  */
 
       if (GET_CODE (p) == CODE_LABEL)
 	{
@@ -3350,31 +3350,46 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  && GET_CODE (PATTERN (insn)) != RETURN
 		  && (! condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
+			  && JUMP_LABEL (insn) != scan_start
 			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
 			      || INSN_UID (insn) >= max_uid_for_loop
 			      || (INSN_LUID (JUMP_LABEL (insn))
 				  < INSN_LUID (insn))))))
-	      {
-		maybe_multiple = 1;
-		break;
-	      }
+		{
+		  maybe_multiple = 1;
+		  break;
+		}
 	    }
 	}
 
-      /* Past a label or a jump, we get to insns for which we can't count
-	 on whether or how many times they will be executed during each
-	 iteration.  */
-      /* This code appears in three places, once in scan_loop, and twice
-	 in strength_reduce.  */
-      if ((GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
+      /* Past a jump, we get to insns for which we can't count
+	 on whether they will be executed during each iteration.  */
+      /* This code appears twice in strength_reduce.  There is also similar
+	 code in scan_loop.  */
+      if (GET_CODE (p) == JUMP_INSN
 	  /* If we enter the loop in the middle, and scan around to the
 	     beginning, don't set not_every_iteration for that.
 	     This can be any kind of jump, since we want to know if insns
 	     will be executed if the loop is executed.  */
-	  && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop_top
+	  && ! (JUMP_LABEL (p) == loop_top
 		&& ((NEXT_INSN (NEXT_INSN (p)) == loop_end && simplejump_p (p))
 		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
-	not_every_iteration = 1;
+	{
+	  rtx label = 0;
+
+	  /* If this is a jump outside the loop, then it also doesn't
+	     matter.  Check to see if the target of this branch is on the
+	     loop_number_exits_labels list.  */
+	     
+	  for (label = loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]];
+	       label;
+	       label = LABEL_NEXTREF (label))
+	    if (XEXP (label, 0) == JUMP_LABEL (p))
+	      break;
+
+	  if (! label)
+	    not_every_iteration = 1;
+	}
 
       else if (GET_CODE (p) == NOTE)
 	{
@@ -3396,8 +3411,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
 	 Therefore, if we have just passed a label and have no more labels
 	 between here and the test insn of the loop, we know these insns
-	 will be executed each iteration.  This can also happen if we
-	 have just passed a jump, for example, when there are nested loops.  */
+	 will be executed each iteration.  */
 
       if (not_every_iteration && GET_CODE (p) == CODE_LABEL
 	  && no_labels_between_p (p, loop_end))
@@ -3639,20 +3653,34 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	|| GET_CODE (p) == CODE_LABEL)
 	update_giv_derive (p);
 
-      /* Past a label or a jump, we get to insns for which we can't count
-	 on whether or how many times they will be executed during each
-	 iteration.  */
-      /* This code appears in three places, once in scan_loop, and twice
-	 in strength_reduce.  */
-      if ((GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN)
-	  /* If we enter the loop in the middle, and scan around
-	     to the beginning, don't set not_every_iteration for that.
+      /* Past a jump, we get to insns for which we can't count
+	 on whether they will be executed during each iteration.  */
+      /* This code appears twice in strength_reduce.  There is also similar
+	 code in scan_loop.  */
+      if (GET_CODE (p) == JUMP_INSN
+	  /* If we enter the loop in the middle, and scan around to the
+	     beginning, don't set not_every_iteration for that.
 	     This can be any kind of jump, since we want to know if insns
 	     will be executed if the loop is executed.  */
-	  && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop_top
+	  && ! (JUMP_LABEL (p) == loop_top
 		&& ((NEXT_INSN (NEXT_INSN (p)) == loop_end && simplejump_p (p))
 		    || (NEXT_INSN (p) == loop_end && condjump_p (p)))))
-	not_every_iteration = 1;
+	{
+	  rtx label = 0;
+
+	  /* If this is a jump outside the loop, then it also doesn't
+	     matter.  Check to see if the target of this branch is on the
+	     loop_number_exits_labels list.  */
+	     
+	  for (label = loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]];
+	       label;
+	       label = LABEL_NEXTREF (label))
+	    if (XEXP (label, 0) == JUMP_LABEL (p))
+	      break;
+
+	  if (! label)
+	    not_every_iteration = 1;
+	}
 
       else if (GET_CODE (p) == NOTE)
 	{
@@ -3858,20 +3886,83 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  struct induction *tv;
 	  if (! v->ignore && v->same == 0)
 	    {
+	      int auto_inc_opt = 0;
+
 	      v->new_reg = gen_reg_rtx (v->mode);
 
-	      /* For each place where the biv is incremented,
-		 add an insn to increment the new, reduced reg for the giv.  */
+#ifdef AUTO_INC_DEC
+	      /* If the target has auto-increment addressing modes, and
+		 this is an address giv, then try to put the increment
+		 immediately after its use, so that flow can create an
+		 auto-increment addressing mode.  */
+	      if (v->giv_type == DEST_ADDR && bl->biv_count == 1
+		  && bl->biv->always_executed
+		  && ! bl->biv->maybe_multiple
+		  && v->always_executed && ! v->maybe_multiple)
+		{
+		  /* If other giv's have been combined with this one, then
+		     this will work only if all uses of the other giv's occur
+		     before this giv's insn.  This is difficult to check.
+
+		     We simplify this by looking for the common case where
+		     there is one DEST_REG giv, and this giv's insn is the
+		     last use of the dest_reg of that DEST_REG giv.  If the
+		     the increment occurs after the address giv, then we can
+		     perform the optimization.  (Otherwise, the increment
+		     would have to go before other_giv, and we would not be
+		     able to combine it with the address giv to get an
+		     auto-inc address.)  */
+		  if (v->combined_with)
+		    {
+		      struct induction *other_giv = 0;
+
+		      for (tv = bl->giv; tv; tv = tv->next_iv)
+			if (tv->same == v)
+			  {
+			    if (other_giv)
+			      break;
+			    else
+			      other_giv = tv;
+			  }
+		      if (! tv && other_giv
+			  && (regno_last_uid[REGNO (other_giv->dest_reg)]
+			      == INSN_UID (v->insn))
+			  && INSN_LUID (v->insn) < INSN_LUID (bl->biv->insn))
+			auto_inc_opt = 1;
+		    }
+		  /* Check for case where increment is before the the address
+		     giv.  */
+		  else if (INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn))
+		    auto_inc_opt = -1;
+		  else
+		    auto_inc_opt = 1;
+
+		  if (auto_inc_opt)
+		    v->auto_inc_opt = 1;
+		}
+#endif
+
+	      /* For each place where the biv is incremented, add an insn
+		 to increment the new, reduced reg for the giv.  */
 	      for (tv = bl->biv; tv; tv = tv->next_iv)
 		{
+		  rtx insert_before;
+
+		  if (! auto_inc_opt)
+		    insert_before = tv->insn;
+		  else if (auto_inc_opt == 1)
+		    insert_before = NEXT_INSN (v->insn);
+		  else
+		    insert_before = v->insn;
+
 		  if (tv->mult_val == const1_rtx)
 		    emit_iv_add_mult (tv->add_val, v->mult_val,
-				      v->new_reg, v->new_reg, tv->insn);
+				      v->new_reg, v->new_reg, insert_before);
 		  else /* tv->mult_val == const0_rtx */
 		    /* A multiply is acceptable here
 		       since this is presumed to be seldom executed.  */
 		    emit_iv_add_mult (tv->add_val, v->mult_val,
-				      v->add_val, v->new_reg, tv->insn);
+				      v->add_val, v->new_reg, insert_before);
 		}
 
 	      /* Add code at loop start to initialize giv's reduced reg.  */
@@ -4262,6 +4353,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val,
   v->add_val = inc_val;
   v->mode = GET_MODE (dest_reg);
   v->always_computable = ! not_every_iteration;
+  v->always_executed = ! not_every_iteration;
   v->maybe_multiple = maybe_multiple;
 
   /* Add this to the reg's iv_class, creating a class
@@ -4374,6 +4466,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->new_reg = 0;
   v->final_value = 0;
   v->same_insn = 0;
+  v->auto_inc_opt = 0;
 
   /* The v->always_computable field is used in update_giv_derive, to
      determine whether a giv can be used to derive another giv.  For a
@@ -4387,6 +4480,8 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
     v->always_computable = 1;
   else
     v->always_computable = ! not_every_iteration;
+
+  v->always_executed = ! not_every_iteration;
 
   if (type == DEST_ADDR)
     {
@@ -6049,6 +6144,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
 	      {
+		/* If the giv V had the auto-inc address optimization applied
+		   to it, and INSN occurs between the giv insn and the biv
+		   insn, then we must adjust the value used here.
+		   This is rare, so we don't bother to do so.  */
+		if (v->auto_inc_opt
+		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
+			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		  continue;
+
 		if (! eliminate_p)
 		  return 1;
 
@@ -6074,6 +6180,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
 	      {
+		/* If the giv V had the auto-inc address optimization applied
+		   to it, and INSN occurs between the giv insn and the biv
+		   insn, then we must adjust the value used here.
+		   This is rare, so we don't bother to do so.  */
+		if (v->auto_inc_opt
+		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
+			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		  continue;
+
 		if (! eliminate_p)
 		  return 1;
 
@@ -6131,6 +6248,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
 	      {
+		/* If the giv V had the auto-inc address optimization applied
+		   to it, and INSN occurs between the giv insn and the biv
+		   insn, then we must adjust the value used here.
+		   This is rare, so we don't bother to do so.  */
+		if (v->auto_inc_opt
+		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
+			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		  continue;
+
 		if (! eliminate_p)
 		  return 1;
 
@@ -6169,6 +6297,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	      {
 		rtx tem;
 
+		/* If the giv V had the auto-inc address optimization applied
+		   to it, and INSN occurs between the giv insn and the biv
+		   insn, then we must adjust the value used here.
+		   This is rare, so we don't bother to do so.  */
+		if (v->auto_inc_opt
+		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
+			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		  continue;
+
 		if (! eliminate_p)
 		  return 1;
 
@@ -6199,6 +6338,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		    && v->mode == mode)
 		  {
 		    rtx tem;
+
+		    /* If the giv V had the auto-inc address optimization applied
+		       to it, and INSN occurs between the giv insn and the biv
+		       insn, then we must adjust the value used here.
+		       This is rare, so we don't bother to do so.  */
+		    if (v->auto_inc_opt
+			&& ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			     && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			    || (INSN_LUID (v->insn) > INSN_LUID (insn)
+				&& INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		      continue;
 
 		    if (! eliminate_p)
 		      return 1;
@@ -6251,6 +6401,17 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		    && rtx_equal_p (tv->add_val, v->add_val)
 		    && tv->mode == mode)
 		  {
+		    /* If the giv V had the auto-inc address optimization applied
+		       to it, and INSN occurs between the giv insn and the biv
+		       insn, then we must adjust the value used here.
+		       This is rare, so we don't bother to do so.  */
+		    if (v->auto_inc_opt
+			&& ((INSN_LUID (v->insn) < INSN_LUID (insn)
+			     && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
+			    || (INSN_LUID (v->insn) > INSN_LUID (insn)
+				&& INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		      continue;
+
 		    if (! eliminate_p)
 		      return 1;
 
