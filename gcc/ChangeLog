@@ -1,3 +1,7 @@
+2003-08-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfg.c (dump_edge_info): Add name of loop_exit edge flag.
+
 2003-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_adjust_insn_length): Delete adjustment for delay slot in
