@@ -2231,8 +2231,8 @@ extern struct rtx_def *fpscr_rtx;
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
   {"fp_extended_operand", {SUBREG, REG, FLOAT_EXTEND}},			\
   {"fpscr_operand", {REG}},						\
-  {"general_movsrc_operand", {SUBREG, REG, CONST_INT, MEM}},		\
-  {"general_movdst_operand", {SUBREG, REG, CONST_INT, MEM}},		\
+  {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
+  {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
   {"noncommutative_float_operator", {MINUS, DIV}},			\
   {"register_operand", {SUBREG, REG}},
