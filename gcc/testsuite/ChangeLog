@@ -1,3 +1,7 @@
+2002-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020116-2.c: New test.
+
 2002-01-15  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/20020103-1.c: Also test for __PPC__, since that's used

@@ -1,3 +1,9 @@
+2002-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/5357:
+	* config/sparc/sparc.c (sparc_override_options): Avoid MASK_V9 and
+	MASK_V8 being both set.
+
 2002-01-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Do not emit USE
