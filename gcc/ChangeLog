@@ -1,3 +1,7 @@
+2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-copyrename.c (rename_ssa_copies): Make it static.
+
 2004-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/2064.md ("z_int", "z_agen"): Ensure the condition
