@@ -513,7 +513,10 @@ _Jv_PrepareClass(jclass klass)
 	}
     }
 
-  // set the instance size for the class
+  // Set the instance size for the class.  Note that first we round it
+  // to the alignment required for Object; this keeps us in sync with
+  // our current ABI.
+  instance_size = ROUND (instance_size, __alignof__ (java::lang::Object));
   clz->size_in_bytes = instance_size;
 
   // allocate static memory
