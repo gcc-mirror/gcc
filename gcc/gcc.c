@@ -3774,6 +3774,7 @@ process_command (argc, argv)
 
 	  switches[n_switches].live_cond = SWITCH_OK;
 	  switches[n_switches].validated = 0;
+	  switches[n_switches].ordering = 0;
 	  /* These are always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps")
 	      || !strcmp (p, "static-libgcc")

@@ -1,3 +1,7 @@
+2001-01-09  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* gcc.c (process_command): Set switches[n_switches].ordering to 0.
+
 2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (OPT_MD, OPT_MMD): Restore.
