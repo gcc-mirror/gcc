@@ -100,6 +100,11 @@
 
 	* verify.c (verify_jvm_instructions): Initialize variable.
 
+2001-04-27  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* parse.y (do_resolve_class): Check for cyclic inheritance during
+	inner class resolution. 
+
 2001-04-27  Per Bothner  <per@bothner.com>
 
 	* parse.y (java_expand_classes):  Don't change ctxp_for_generation
