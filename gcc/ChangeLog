@@ -1,3 +1,8 @@
+2001-07-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/freebsd-aout.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
+	the definition in defaults.h.
+
 2001-07-22  Richard Henderson  <rth@redhat.com>
 
 	* regrename.c (regrename_optimize): Compute nregs for each
