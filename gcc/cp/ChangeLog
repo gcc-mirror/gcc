@@ -1,3 +1,8 @@
+1999-07-21  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* lex.c (real_yylex) : Correct the test for overflow when lexing
+	integer literals.
+
 1999-07-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (warn_extern_redeclared_static): Check DECL_ARTIFICIAL,

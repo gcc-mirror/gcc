@@ -1,3 +1,8 @@
+Wed Jul 21 08:39:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* c-lex.c (yylex) : Correct the test for overflow when lexing
+	integer literals.
+
 Tue Jul 20 18:02:42 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (insn_cost): FREE implies cost 0 and vice versa.
