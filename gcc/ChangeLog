@@ -1,3 +1,16 @@
+2004-02-22  Josef Zlomek  <zlomekj@suse.cz>
+
+	Merge from tree-ssa:
+	2003-11-20  Richard Henderson  <rth@redhat.com>
+
+		* tree-inline.c (insert_decl_map): New.
+		(remap_decl, remap_type, remap_block, copy_body_r,
+		initialize_inlined_parameters, declare_return_variable,
+		remap_save_expr): Use it.
+
+	* function.c (copy_body_r): Add mapping from id->ret_label to
+	id->ret_label.  Revert test for ret_label.
+
 2004-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* genoutput.c (process_template): Strip trailing whitespace in @
