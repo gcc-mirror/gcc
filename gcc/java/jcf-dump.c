@@ -880,7 +880,7 @@ DEFUN(main, (argc, argv),
   if (output_file)
     {
       out = fopen (output_file, "w");
-      if (out)
+      if (! out)
 	{
 	  fprintf (stderr, "Cannot open '%s' for output.\n", output_file);
 	  return FATAL_EXIT_CODE;
