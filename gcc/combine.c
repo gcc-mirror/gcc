@@ -5342,9 +5342,21 @@ force_to_mode (x, mode, bits, reg)
     case ASHIFT:
     case LSHIFT:
       /* For left shifts, do the same, but just for the first operand.
-	 If the shift count is a constant, we need even fewer bits of the
-	 first operand.  */
+	 However, we cannot do anything with shifts where we cannot
+	 guarantee that the counts are smaller than the size of the mode
+	 because such a count will have a different meaning in a
+	 wider mode.
 
+	 If we can narrow the shift and know the count, we need even fewer
+	 bits of the first operand.  */
+
+      if (! (GET_CODE (XEXP (x, 1)) == CONST_INT
+	     && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode))
+	  && ! (GET_MODE (XEXP (x, 1)) != VOIDmode
+		&& (nonzero_bits (XEXP (x, 1), GET_MODE (XEXP (x, 1)))
+		    < (unsigned) GET_MODE_BITSIZE (mode))))
+	break;
+	
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) < bits)
 	bits -= INTVAL (XEXP (x, 1));
 
@@ -5364,8 +5376,8 @@ force_to_mode (x, mode, bits, reg)
 
     case LSHIFTRT:
       /* Here we can only do something if the shift count is a constant and
-	 the count plus BITS is no larger than the width of MODE, we can do
-	 the shift in MODE.  */
+	 the count plus BITS is no larger than the width of MODE.  In that
+	 case, we can do the shift in MODE.  */
 
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) + bits <= GET_MODE_BITSIZE (mode))
