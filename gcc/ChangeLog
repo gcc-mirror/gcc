@@ -1,3 +1,8 @@
+2001-12-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* rs6000.h (RETURN_IN_MEMORY): Cast result of
+	int_size_in_bytes to unsigned HOST_WIDEST_INT so that -1 > 8.
+
 Mon Dec  3 09:18:34 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (negsf2): Use -0x8000 instead of 0x8000 for
