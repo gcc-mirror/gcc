@@ -4458,7 +4458,7 @@ mdr_try_propagate_clr_sequence (first_insn, regno)
 	      && GET_MODE_SIZE (GET_MODE (XEXP (set2, 1))) == 2
 	      && REGNO (XEXP (set2, 1)) == regno)
             {
-	      new_insn = gen_rtx_SET (VOIDmode, gen_rtx (CC0, VOIDmode),
+	      new_insn = gen_rtx_SET (VOIDmode, gen_rtx_CC0 (VOIDmode),
 				      gen_rtx_REG(QImode, regno + 1));
               new_insn = emit_insn_before (new_insn, try_insn);
 	    }

@@ -866,7 +866,7 @@ m68hc11_emit_libcall (const char *name, enum rtx_code code,
     case 2:
       ret = emit_library_call_value (libcall, NULL_RTX, LCT_CONST,
                                      dmode, 1, operands[1], smode);
-      equiv = gen_rtx (code, dmode, operands[1]);
+      equiv = gen_rtx_fmt_e (code, dmode, operands[1]);
       break;
 
     case 3:
@@ -874,7 +874,7 @@ m68hc11_emit_libcall (const char *name, enum rtx_code code,
                                      LCT_CONST, dmode, 2,
                                      operands[1], smode, operands[2],
                                      smode);
-      equiv = gen_rtx (code, dmode, operands[1], operands[2]);
+      equiv = gen_rtx_fmt_ee (code, dmode, operands[1], operands[2]);
       break;
 
     default:
@@ -2498,7 +2498,7 @@ m68hc11_expand_compare (enum rtx_code code, rtx op0, rtx op1)
     {
       emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
 			      gen_rtx_COMPARE (VOIDmode, op0, op1)));
-      ret = gen_rtx (code, VOIDmode, cc0_rtx, const0_rtx);
+      ret = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
     }
 
   return ret;
@@ -2976,17 +2976,18 @@ m68hc11_emit_logical (enum machine_mode mode, int code, rtx *operands)
 	{
 	  emit_move_insn (operands[3], operands[1]);
 	  emit_insn (gen_rtx_SET (mode,
-			      operands[3],
-			      gen_rtx (code, mode,
-				       operands[3], operands[2])));
+				  operands[3],
+				  gen_rtx_fmt_ee (code, mode,
+						  operands[3], operands[2])));
 	  insn = emit_move_insn (operands[0], operands[3]);
 	}
       else
 	{
 	  insn = emit_insn (gen_rtx_SET (mode,
-				     operands[0],
-				     gen_rtx (code, mode,
-					      operands[0], operands[2])));
+					 operands[0],
+					 gen_rtx_fmt_ee (code, mode,
+							 operands[0],
+							 operands[2])));
 	}
     }
 
