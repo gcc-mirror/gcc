@@ -2803,7 +2803,7 @@ import_export_decl (decl)
 	     since it will not be emitted when the vtable for the type
 	     is output (which is when the unqualified version is
 	     generated).  */
-	  && ctype == TYPE_MAIN_VARIANT (ctype))
+	  && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
@@ -2814,7 +2814,8 @@ import_export_decl (decl)
 	  if (flag_weak)
 	    comdat_linkage (decl);
 	}
-      else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
+      else if (TYPE_BUILT_IN (ctype) 
+	       && same_type_p (ctype, TYPE_MAIN_VARIANT (ctype)))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
       else
 	comdat_linkage (decl);

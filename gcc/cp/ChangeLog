@@ -1,5 +1,10 @@
 1999-06-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (import_export_decl): Use same_type_p, rather than
+	relying on pointer-equality for types.
+
+	* method.c (do_build_copy_constructor): Simplify.
+
 	* call.c (build_method_call): Remove bogus code for two-argument
 	delete.
 	* init.c (build_new_1): Expand on comment, and remove dead code.
