@@ -357,14 +357,14 @@ f/bld.o: f/bld.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bld.h f/bld-op.def f/bit.h \
  f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
  f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h f/top.h f/lex.h \
  f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
- f/name.h f/intrin.h f/intrin.def
+ f/name.h f/intrin.h f/intrin.def real.h
 f/com.o: f/com.c f/proj.h $(CONFIG_H) $(SYSTEM_H) flags.h $(RTL_H) $(TREE_H) \
  output.h convert.h f/com.h f/com-rt.def f/bld.h f/bld-op.def f/bit.h \
  f/malloc.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h \
  f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
  f/name.h f/expr.h f/implic.h f/src.h f/st.h $(GGC_H) toplev.h diagnostic.h \
- langhooks.h langhooks-def.h intl.h
+ langhooks.h langhooks-def.h intl.h real.h
 f/data.o: f/data.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/data.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
@@ -380,7 +380,7 @@ f/expr.o: f/expr.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/expr.h f/bld.h f/bld-op.de
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
  f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h \
  f/global.h f/name.h f/intrin.h f/intrin.def f/implic.h f/src.h f/st.h \
- f/stamp-str
+ f/stamp-str real.h
 f/fini.o: f/fini.c f/proj.h hconfig.h $(SYSTEM_H) f/malloc.h
 f/global.o: f/global.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/global.h f/info.h \
  f/info-b.def f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def \
@@ -512,7 +512,7 @@ f/symbol.o: f/symbol.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/symbol.h \
  f/lex.h f/type.h f/lab.h f/storag.h f/intrin.h f/intrin.def f/equiv.h \
  f/global.h f/name.h f/src.h f/st.h
 f/target.o: f/target.c f/proj.h $(CONFIG_H) $(SYSTEM_H) glimits.h f/target.h \
- $(TREE_H) f/bad.h f/bad.def f/where.h f/top.h f/malloc.h f/info.h \
+ $(TREE_H) f/bad.h f/bad.def f/where.h f/top.h f/malloc.h f/info.h real.h \
  f/info-b.def f/info-k.def f/info-w.def f/type.h f/lex.h diagnostic.h
 f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  glimits.h f/bad.h f/bad.def f/bit.h f/bld.h f/bld-op.def f/com.h \

@@ -82,6 +82,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "proj.h"
 #include "flags.h"
+#include "real.h"
 #include "rtl.h"
 #include "toplev.h"
 #include "tree.h"

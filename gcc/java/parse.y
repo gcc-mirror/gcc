@@ -51,6 +51,7 @@ definitions and other extensions.  */
 #include <dirent.h>
 #include "tree.h"
 #include "rtl.h"
+#include "real.h"
 #include "obstack.h"
 #include "toplev.h"
 #include "flags.h"

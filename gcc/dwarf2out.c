@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "tree.h"
 #include "flags.h"
+#include "real.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "regs.h"

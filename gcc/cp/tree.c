@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
+#include "real.h"
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"

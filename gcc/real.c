@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "real.h"
 #include "tree.h"
 #include "toplev.h"
 #include "tm_p.h"

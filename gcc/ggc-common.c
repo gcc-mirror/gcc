@@ -457,6 +457,10 @@ ggc_mark_trees ()
 	  ggc_mark_tree (TREE_IMAGPART (t));
 	  break;
 
+	case REAL_CST:
+	  ggc_mark (TREE_REAL_CST_PTR (t));
+	  break;
+
 	case PARM_DECL:
 	  ggc_mark_rtx (DECL_INCOMING_RTL (t));
 	  break;

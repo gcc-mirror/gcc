@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_REAL_H
 #define GCC_REAL_H
 
+#include "machmode.h"
+
 /* Define codes for all the float formats that we know of.  */
 #define UNKNOWN_FLOAT_FORMAT 0
 #define IEEE_FLOAT_FORMAT 1
@@ -87,12 +89,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define REAL_WIDTH \
   (REAL_VALUE_TYPE_SIZE/HOST_BITS_PER_WIDE_INT \
    + (REAL_VALUE_TYPE_SIZE%HOST_BITS_PER_WIDE_INT ? 1 : 0)) /* round up */
-typedef struct {
+struct realvaluetype {
   HOST_WIDE_INT r[REAL_WIDTH];
-} realvaluetype;
+};
 /* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it needs
-   to be a macro.  */
-#define REAL_VALUE_TYPE realvaluetype
+   to be a macro.  realvaluetype cannot be a typedef as this interferes with
+   other headers declaring opaque pointers to it.  */
+#define REAL_VALUE_TYPE struct realvaluetype
 
 /* Calculate the format for CONST_DOUBLE.  We need as many slots as
    are necessary to overlay a REAL_VALUE_TYPE on them.  This could be
@@ -289,5 +292,9 @@ extern int target_isinf		PARAMS ((REAL_VALUE_TYPE));
 extern int target_negative	PARAMS ((REAL_VALUE_TYPE));
 extern void debug_real		PARAMS ((REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE ereal_atof PARAMS ((const char *, enum machine_mode));
+
+/* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
+extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
+
 
 #endif /* ! GCC_REAL_H */

@@ -1,3 +1,25 @@
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h: Forward-declare struct realvaluetype.
+	(struct tree_real_cst): Point to the REAL_VALUE_TYPE, do not
+	contain it.
+	(TREE_REAL_CST_PTR): New accessor.
+	(TREE_REAL_CST): Update.
+	* real.h: Include machmode.h.
+	(realvaluetype): Make it struct realvaluetype, not a typedef.  
+	(build_real): Prototype here.
+
+	* tree.c: Include real.h.
+	(build_real): Allocate the REAL_VALUE_TYPE as a separate  
+	object in GC memory, set TREE_REAL_CST_PTR to point to it. 
+	(build_real_from_int_cst): Use build_real.
+	* ggc-common.c (ggc_mark_trees): Mark TREE_REAL_CST_PTR of a
+	REAL_CST.
+
+	* builtins.c, c-common.c, c-lex.c, dwarf2out.c, expr.c,
+	fold-const.c, print-tree.c, real.c: Include real.h.
+	* Makefile.in: Update dependency lists.
+
 2002-05-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* basic-block.h (last_basic_block): Declare.

@@ -1,3 +1,8 @@
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* bld.c, com.c, expr.c, target.c: Include real.h.
+	* Make-lang.in: Update dependency lists.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.

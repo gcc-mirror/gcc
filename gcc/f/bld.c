@@ -43,6 +43,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "malloc.h"
 #include "target.h"
 #include "where.h"
+#include "real.h"
 
 /* Externals defined here.  */
 
