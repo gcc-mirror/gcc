@@ -31,6 +31,7 @@ You should have received a copy of the GNU General Public License along with
 #ifndef __alpha__
 
 #include "runtime.h"
+#include "typedstream.h"
 
 #define __objc_fatal(format, args...) \
  { fprintf(stderr, "archining: "); \
@@ -606,7 +607,7 @@ objc_read_string (struct objc_typed_stream* stream,
       case _B_SSTR:
 	{
 	  int length = buf[0]&_B_VALUE;
-	  (*string) = (char*)malloc(length+1);
+	  (*string) = (char*)__objc_xmalloc(length+1);
 	  if (key)
 	    hash_add (&stream->stream_table, (void*)key, *string);
 	  len = (*stream->read)(stream->physical, *string, length);
@@ -626,7 +627,7 @@ objc_read_string (struct objc_typed_stream* stream,
 	  unsigned int nbytes = buf[0]&_B_VALUE;
 	  len = __objc_read_nbyte_uint(stream, nbytes, &nbytes);
 	  if (len) {
-	    (*string) = (char*)malloc(nbytes);
+	    (*string) = (char*)__objc_xmalloc(nbytes);
 	    if (key)
 	      hash_add (&stream->stream_table, (void*)key, *string);
 	    len = (*stream->read)(stream->physical, *string, buf[0]&_B_VALUE);
@@ -1377,7 +1378,7 @@ objc_open_typed_stream (FILE* physical, int mode)
 {
   int fflush(FILE*);
 
-  TypedStream* s = (TypedStream*)malloc(sizeof(TypedStream));
+  TypedStream* s = (TypedStream*)__objc_xmalloc(sizeof(TypedStream));
 
   s->mode = mode;
   s->physical = physical;

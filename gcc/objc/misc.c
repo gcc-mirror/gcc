@@ -29,9 +29,6 @@ You should have received a copy of the GNU General Public License along with
 void objc_error(id object, const char* fmt, va_list);
 
 void (*_objc_error)(id, const char*, va_list) = objc_error;
-/* id (*_objc_object_alloc)(Class*) = 0; */
-/* id (*_objc_object_dispose)(id)    = 0; */
-/* id (*_objc_object_copy)(id)       = 0; */
 
 void
 objc_error(id object, const char* fmt, va_list ap)

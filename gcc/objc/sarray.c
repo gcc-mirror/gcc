@@ -26,7 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/sarray.h"
 #include <stdio.h>
 #include "assert.h"
-#include <memory.h>
 
 int nbuckets = 0;
 int nindices = 0;
