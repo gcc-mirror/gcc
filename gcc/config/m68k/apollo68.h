@@ -75,7 +75,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These are the ones defined by Apollo, plus mc68000 for uniformity with
    GCC on other 68000 systems.  */
 
-#define CPP_PREDEFINES "-Dapollo -Daegis -Dunix"
+#define CPP_PREDEFINES "-Dapollo -Daegis -Dunix -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
 
 /* cpp has to support a #sccs directive for the /usr/include files */
 

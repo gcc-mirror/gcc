@@ -35,7 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-  "-Di860 -Dunix -DSVR4 -D__svr4__ -Asystem(unix) -Acpu(i860) -Amachine(i860)"
+  "-Di860 -Dunix -DSVR4 -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(i860) -Amachine(i860)"
 
 /* The prefix to be used in assembler output for all names of registers.
    This string gets prepended to all i860 register names (svr4 only).  */

@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Macros to be automatically defined.  */
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES \
-    "-DMACH -Dm88k -Dunix -Dluna -Dluna88k -D__CLASSIFY_TYPE__=2"
+    "-DMACH -Dm88k -Dunix -Dluna -Dluna88k -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Asystem(mach) -Acpu(m88k) -Amachine(m88k)"
 
 /* If -m88000 is in effect, add -Dmc88000; similarly for -m88100 and -m88110.
    However, reproduce the effect of -Dmc88100 previously in CPP_PREDEFINES.

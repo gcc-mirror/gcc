@@ -7,4 +7,5 @@
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
-#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DMSDOS"
+#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DMSDOS \
+  -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386)"

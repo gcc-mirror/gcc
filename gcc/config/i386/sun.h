@@ -43,7 +43,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Di386 -Dsun386 -Dsun"
+#define CPP_PREDEFINES "-Dunix -Di386 -Dsun386 -Dsun -Asystem(unix) -Asystem(bsd) -Acpu(i386) -Amachine(i386)"
 
 /* Allow #sccs in preprocessor.  */
 

@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D__H8300__ -D_DOUBLE_IS_32BITS"
+#define CPP_PREDEFINES "-D__H8300__ -D_DOUBLE_IS_32BITS -Acpu(h8300) -Amachine(h8300)"
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} "
 

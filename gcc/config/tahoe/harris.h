@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tahoe/tahoe.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dtahoe -Dunix -Dhcx"
+#define CPP_PREDEFINES "-Dtahoe -Dunix -Dhcx -Asystem(unix) -Acpu(tahoe) -Amachine(tahoe)"
 
 #undef DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO

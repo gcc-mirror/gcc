@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dibm032 -Dunix"
+#define CPP_PREDEFINES "-Dibm032 -Dunix -Asystem(unix) -Asystem(bsd)  -Acpu(ibm032) -Amachine(ibm032)"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;

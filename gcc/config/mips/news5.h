@@ -19,7 +19,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_SYSV
 
-#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -Dsony -Dsonyrisc -DMIPSEB -DSYSTYPE_SYSV"
+#define CPP_PREDEFINES "\
+-Dmips -Dunix -Dhost_mips -Dsony -Dsonyrisc -DMIPSEB -DSYSTYPE_SYSV \
+-Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
 
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 

@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "ns32k/pc532.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dns32532 -DPC532 -DMACH=1"
+#define CPP_PREDEFINES "-Dns32532 -DPC532 -DMACH=1 -Asystem(unix) -Asystem(mach) -Acpu(ns32k) -Amachine(ns32k)"
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */

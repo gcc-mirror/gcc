@@ -95,9 +95,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* The tek6100.h and tek6200.h files add stratos or merlin respectively. */
 
 #define CPP_PREDEFINES_Tek6000 \
-  "-Dns16000 -Dns32000 -Dns32k -Dns32016 -DUTek -DUTEK -Dbsd -DBSD"
+  "-Dns16000 -Dns32000 -Dns32k -Dns32016 -DUTek -DUTEK -Dbsd -DBSD \
+   -Asystem(unix) -Asystem(bsd) -Acpu(ns32k) -Amachine(ns32k)"
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "CPP_PREDEFINES_Tek6000"
+#define CPP_PREDEFINES CPP_PREDEFINES_Tek6000
 
 /* This is how to align the code that follows an unconditional branch.
    Don't define it, since it confuses the assembler (we hear).  */

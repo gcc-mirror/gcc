@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dpyr -Dunix"
+#define CPP_PREDEFINES "-Dpyr -Dunix -Asystem(unix) -Acpu(pyr) -Amachine(pyr)"
 
 /* Print subsidiary information on the compiler version in use.  */
 

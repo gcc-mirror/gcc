@@ -33,7 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Di386 -Dsequent"
+#define CPP_PREDEFINES "-Dunix -Di386 -Dsequent -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 /* Pass -Z and -ZO options to the linker.  */
 

@@ -207,7 +207,7 @@ extern char * reg_names[];
 
 /* Names to predefine in the preprocessor for this target machine.
    Redefined in m88kv3.h, m88kv4.h, m88kdgux.h, and m88kluna.h.  */
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Acpu(m88k) -Amachine(m88k)"
 
 #define TARGET_VERSION fprintf (stderr, " (%s%s)", \
 				VERSION_INFO1, VERSION_INFO2)

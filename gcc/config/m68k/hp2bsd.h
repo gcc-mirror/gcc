@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dmc68010 -Dhp200 -Dunix"
+#define CPP_PREDEFINES "-Dmc68000 -Dmc68010 -Dhp200 -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
 
 /* Link with libg.a when debugging, for dbx's sake.  */
 

@@ -46,7 +46,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-	"-Dns32000 -Dns32k -Dns16000 -Dmerlin -Dunix -DUtek -Dbsd"
+	"-Dns32000 -Dns32k -Dns16000 -Dmerlin -Dunix -DUtek -Dbsd \
+	-Asystem(unix) -Asystem(bsd) -Acpu(ns32k) -Amachine(ns32k)"
 
 /* This is how to align the code that follows an unconditional branch.
    Don't define it, since it confuses the assembler (we hear).  */
