@@ -1,3 +1,9 @@
+2002-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6497
+	* method.c (do_build_assign_ref): Pass a derivation to
+	build_method_call when calling base class assignment operators.
+
 2002-04-26  Richard Henderson  <rth@redhat.com>
 
 	* parse.y (yyoverflow): Revert.
