@@ -155,11 +155,20 @@ _IO_file_finish (fp, dummy)
   _IO_default_finish (fp, 0);
 }
 
+#if _G_IO_IO_FILE_VERSION == 0x20001
+_IO_FILE *
+_IO_file_fopen (fp, filename, mode, some_int)
+     _IO_FILE *fp;
+     const char *filename;
+     const char *mode;
+     int some_int;
+#else
 _IO_FILE *
 _IO_file_fopen (fp, filename, mode)
      _IO_FILE *fp;
      const char *filename;
      const char *mode;
+#endif
 {
   int oflags = 0, omode;
   int read_write, fdesc;
@@ -419,12 +428,21 @@ _IO_file_sync (fp)
   return retval;
 }
 
-_IO_pos_t
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+_IO_off64_t
+_IO_file_seekoff (fp, offset, dir, mode)
+     _IO_FILE *fp;
+     _IO_off64_t offset;
+     int dir;
+     int mode;
+#else
+_IO_off_t
 _IO_file_seekoff (fp, offset, dir, mode)
      _IO_FILE *fp;
      _IO_off_t offset;
      int dir;
      int mode;
+#endif
 {
   _IO_pos_t result;
   _IO_off_t delta, new_offset;
@@ -587,11 +605,19 @@ _IO_file_read (fp, buf, size)
   return read (fp->_fileno, buf, size);
 }
 
-_IO_pos_t
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+_IO_off64_t
+_IO_file_seek (fp, offset, dir)
+     _IO_FILE *fp;
+     _IO_off64_t offset;
+     int dir;
+#else
+_IO_off_t
 _IO_file_seek (fp, offset, dir)
      _IO_FILE *fp;
      _IO_off_t offset;
      int dir;
+#endif
 {
   return lseek (fp->_fileno, offset, dir);
 }

@@ -128,8 +128,7 @@ namespace std {
 	{
 	  while (__retval < __n)
 	    {
-	      bool __testget = _M_in_cur < _M_in_end;
-	      if (__testget)
+	      if (_M_in_cur < _M_in_end)
 		{
 		  size_t __len;
 		  if (_M_in_cur + __n - __retval <= _M_in_end)

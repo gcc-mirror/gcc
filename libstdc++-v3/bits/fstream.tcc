@@ -198,8 +198,8 @@ namespace std
 	      if (__testout)
 		_M_really_overflow();
 	      else 
-		_M_file->seekoff(_M_in_cur - _M_in_beg, ios_base::cur, 
-				 ios_base::in);
+		_M_file->seekoff(_M_in_cur - _M_in_beg, 
+				 ios_base::cur, ios_base::in);
 	    }
 
 	  if (__testinit || __testget)
@@ -208,7 +208,7 @@ namespace std
 	      // external byte sequence (whatever physical byte sink or
 	      // FILE actually is.)
 	      char __conv_buf[_M_buf_size];
-	      int_type __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
+	      streamsize __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
 	      
 	      // Part two: (Re)fill internal buf contents from external buf.
 	      if (0 < __size)
@@ -240,9 +240,9 @@ namespace std
 		  // Part three: Sync the current internal buffer
 		  // position with the (now overshot) external buffer
 		  // position.  
-		  pos_type __p = _M_file->seekoff(0 - __size, ios_base::cur, 
+		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
 						  ios_base::in);
-		  if (__p._M_position() == -1)
+		  if (__p == -1)
 		    {
 		      // XXX Something is wrong, do error checking.
 		    }
@@ -379,11 +379,11 @@ namespace std
 	  // _M_file->sys_write(), and do error (minimal) checking.
 	  if (__r != codecvt_base::error)
 	    {
-	      streamsize __r = _M_file->xsputn(__conv_buf, __plen);
+	      streamsize __len = _M_file->xsputn(__conv_buf, __plen);
 	      // NB: Need this so that external byte sequence reflects
 	      // internal buffer.
 	      _M_file->sync();
-	      if (__r == __plen)
+	      if (__len == __plen)
 		{
 		  _M_set_indeterminate();
 		  __retval = traits_type::not_eof(__c);
@@ -431,8 +431,6 @@ namespace std
 		__computed_off += _M_in_cur - _M_in_beg;
 	  
 	      __retval = _M_file->seekoff(__computed_off, __way, __mode);
-	      if (__retval._M_position() == -1)
-		__retval == pos_type(off_type(-1)); 
 	      _M_set_indeterminate();
 	    }
 	  // NB: Need to do this in case _M_file in indeterminate
@@ -511,8 +509,7 @@ namespace std
 		
 		if (__r != codecvt_base::error)
 		  {
-		    streamsize __r = _M_file->xsputn(__conv_buf, 
-						     __rlen);
+		    streamsize __r = _M_file->xsputn(__conv_buf, __rlen);
 		    if (__r == __rlen)
 		      {
 			_M_out_cur = _M_out_beg;

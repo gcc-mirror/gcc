@@ -171,7 +171,7 @@ namespace std {
 	    // the position of the external byte sequence (_M_file)
 	    // plus the offset in the current internal buffer
 	    // (_M_out_beg - _M_out_cur)
-	    __c_streampos __cur = _M_file->seekoff(0, ios_base::cur);
+	    streamoff __cur = _M_file->seekoff(0, ios_base::cur);
 	    off_type __off = _M_out_cur - _M_out_beg;
 	    this->_M_really_overflow();
 	    _M_file->seekpos(__cur + __off);

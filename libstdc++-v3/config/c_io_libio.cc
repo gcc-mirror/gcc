@@ -204,14 +204,14 @@ namespace std {
   __basic_file::xsgetn(char* __s, streamsize __n)
   { return _IO_default_xsgetn(this, __s, __n); }
 
-  __c_streampos 
+  streamoff
   __basic_file::seekoff(streamoff __off, ios_base::seekdir __way, 
 			ios_base::openmode __mode)
   { return _IO_file_seekoff(this, __off, __way, __mode); }
 
-  __c_streampos 
-  __basic_file::seekpos(__c_streampos __pos, ios_base::openmode __mode)
-    { return _IO_file_seekoff(this, __pos, ios_base::beg, __mode); }
+  streamoff
+  __basic_file::seekpos(streamoff __pos, ios_base::openmode __mode)
+  { return _IO_file_seekoff(this, __pos, ios_base::beg, __mode); }
 
   // NB: Unused.
   streambuf* 
@@ -238,8 +238,8 @@ namespace std {
   { return _IO_file_write(this, __s, __n); }
 
   // NB: Unused.
-  __c_streampos 
-  __basic_file::sys_seek(__c_streampos __pos, ios_base::seekdir __way)
+  streamoff
+  __basic_file::sys_seek(streamoff __pos, ios_base::seekdir __way)
   { return _IO_file_seek(this, __pos, __way); }
   
   // NB: Unused.
