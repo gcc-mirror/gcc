@@ -1,3 +1,9 @@
+/* NETBSD_NATIVE is defined when gcc is integrated into the NetBSD
+   source tree so it can be configured appropriately without using
+   the GNU configure/build mechanism. */
+
+#ifdef NETBSD_NATIVE
+
 /* Look for the include files in the system-defined places.  */
 
 #undef GPLUSPLUS_INCLUDE_DIR
@@ -14,18 +20,19 @@
     { 0, 0, 0 }				\
   }
 
+/* Under NetBSD, the normal location of the compiler back ends is the
+   /usr/libexec directory.  */
 
-/* Under NetBSD, the normal location of the `ld' and `as' programs is the
-   /usr/bin directory.  */
-
-#undef MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/bin/"
+#undef STANDARD_EXEC_PREFIX
+#define STANDARD_EXEC_PREFIX		"/usr/libexec/"
 
 /* Under NetBSD, the normal location of the various *crt*.o files is the
    /usr/lib directory.  */
 
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/usr/lib/"
+#undef STANDARD_STARTFILE_PREFIX
+#define STANDARD_STARTFILE_PREFIX	"/usr/lib/"
+
+#endif
 
 
 /* Provide a CPP_SPEC appropriate for NetBSD.  Current we just deal with
