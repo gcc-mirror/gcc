@@ -414,7 +414,7 @@ do {									\
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
 do {									\
-  sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
+  sprintf (LABEL, "*.%s%d", PREFIX, (unsigned) (NUM));			\
 } while (0)
 
 /* Output the label which precedes a jumptable.  Note that for all svr4

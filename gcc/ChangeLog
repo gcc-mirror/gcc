@@ -1,3 +1,9 @@
+Fri Jun 19 22:37:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* svr4.h (ASM_GENERATE_INTERNAL_LABEL): Cast arg to unsigned.
+	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA1): Likewise.
+	Add parens to various macros.
+
 Fri Jun 19 23:22:42 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* c-typeck.c (pop_init_level): Warn about implicit zero initialization
