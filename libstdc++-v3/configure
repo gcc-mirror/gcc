@@ -1547,7 +1547,7 @@ target_alias=${target_alias-$host_alias}
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
   GLIBCXX_IS_NATIVE=false
-  GCC_NO_EXECUTABLES
+  # GCC_NO_EXECUTABLES
 else
   GLIBCXX_IS_NATIVE=true
 fi

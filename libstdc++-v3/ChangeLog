@@ -1,5 +1,11 @@
 2003-08-17  Phil Edwards  <pme@gcc.gnu.org>
 
+	* configure.ac:  GCC_NO_EXECUTABLES was supposed to be commented
+	in the patch from 3 minutes ago.  Boy, is my face red.
+	* configure:  At least I remembered to regenerate this.
+
+2003-08-17  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4 (GLIBCXX_EXPORT_INCLUDES):  Remove LIBMATH_INCLUDES
 	and LIBSUPCXX_INCLUDES.  Re-purpose TOPLEVEL_INCLUDES to refer to
 	things from the top level.
