@@ -1670,6 +1670,18 @@ package body Sem_Res is
                Wrong_Type (Expression (N), Designated_Type (Typ));
                Found := True;
 
+            --  Check for view mismatch on Null in instances, for
+            --  which the view-swapping mechanism has no identifier.
+
+            elsif (In_Instance or else In_Inlined_Body)
+              and then (Nkind (N) = N_Null)
+              and then Is_Private_Type (Typ)
+              and then Is_Access_Type (Full_View (Typ))
+            then
+               Resolve (N, Full_View (Typ));
+               Set_Etype (N, Typ);
+               return;
+
             --  Check for an aggregate. Sometimes we can get bogus
             --  aggregates from misuse of parentheses, and we are
             --  about to complain about the aggregate without even
@@ -4522,7 +4534,7 @@ package body Sem_Res is
    begin
       --  For now allow circumvention of the restriction against
       --  anonymous null access values via a debug switch to allow
-      --  for easier trasition.
+      --  for easier transition.
 
       if not Debug_Flag_J
         and then Ekind (Typ) = E_Anonymous_Access_Type

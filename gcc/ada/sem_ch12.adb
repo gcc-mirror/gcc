@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.776 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -4197,6 +4197,9 @@ package body Sem_Ch12 is
       --  field may hold a Node_Id, a List_Id, or an Elist_Id, or a plain
       --  value (Sloc, Uint, Char) in which case it need not be copied.
 
+      procedure Copy_Descendants;
+      --  Common utility for various nodes.
+
       function Copy_Generic_Elist (E : Elist_Id) return Elist_Id;
       --  Make copy of element list.
 
@@ -4205,6 +4208,19 @@ package body Sem_Ch12 is
          Parent_Id : Node_Id)
          return      List_Id;
       --  Apply Copy_Node recursively to the members of a node list.
+
+      -----------------------
+      --  Copy_Descendants --
+      -----------------------
+
+      procedure Copy_Descendants is
+      begin
+         Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
+         Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
+         Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
+         Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
+         Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+      end Copy_Descendants;
 
       -----------------------------
       -- Copy_Generic_Descendant --
@@ -4606,10 +4622,40 @@ package body Sem_Ch12 is
             end if;
          end if;
 
+         --  Do not copy the associated node, which points to
+         --  the generic copy of the aggregate.
+
          Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
          Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
          Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
          Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+
+      --  Allocators do not have an identifier denoting the access type,
+      --  so we must locate it through the expression to check whether
+      --  the views are consistent.
+
+      elsif Nkind (N) = N_Allocator
+        and then Nkind (Expression (N)) = N_Qualified_Expression
+        and then Instantiating
+      then
+         declare
+            T : Node_Id := Associated_Node (Subtype_Mark (Expression (N)));
+            Acc_T : Entity_Id;
+
+         begin
+            if Present (T) then
+               --  Retrieve the allocator node in the generic copy.
+
+               Acc_T := Etype (Parent (Parent (T)));
+               if Present (Acc_T)
+                 and then Is_Private_Type (Acc_T)
+               then
+                  Switch_View (Acc_T);
+               end if;
+            end if;
+
+            Copy_Descendants;
+         end;
 
       --  For a proper body, we must catch the case of a proper body that
       --  replaces a stub. This represents the point at which a separate
@@ -4632,11 +4678,7 @@ package body Sem_Ch12 is
             --  Now copy the fields of the proper body, using the new
             --  adjustment factor if one was needed as per test above.
 
-            Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-            Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-            Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-            Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
-            Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+            Copy_Descendants;
 
             --  Restore the original adjustment factor in case changed
 
@@ -4659,22 +4701,14 @@ package body Sem_Ch12 is
                New_N := Make_Null_Statement (Sloc (N));
 
             else
-               Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-               Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-               Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-               Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
-               Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+               Copy_Descendants;
             end if;
          end;
 
       --  For the remaining nodes, copy recursively their descendants.
 
       else
-         Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-         Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-         Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-         Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
-         Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+         Copy_Descendants;
 
          if Instantiating
            and then Nkind (N) = N_Subprogram_Body
