@@ -731,6 +731,7 @@ FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 @tindex PARM_DECL
 @tindex FIELD_DECL
 @tindex NAMESPACE_DECL
+@tindex RESULT_DECL
 @tindex TEMPLATE_DECL
 @tindex USING_DECL
 @findex DECL_INITIAL
@@ -791,6 +792,13 @@ These nodes are used to represent enumeration constants.  The value of
 the constant is given by @code{DECL_INITIAL} which will be an
 @code{INTEGER_CST} with the same type as the @code{TREE_TYPE} of the
 @code{CONST_DECL}, i.e., an @code{ENUMERAL_TYPE}.
+
+@item RESULT_DECL
+These nodes represent the value returned by a function.  When a value is
+assigned to a @code{RESULT_DECL}, that indicates that the value should
+be returned, via bitwise copy, by the function.  You can use
+@code{DECL_SIZE} and @code{DECL_ALIGN} on a @code{RESULT_DECL}, just as
+with a @code{VAR_DECL}.
 
 @item TYPE_DECL
 These nodes represent @code{typedef} declarations.  The @code{TREE_TYPE}
@@ -987,6 +995,9 @@ compute run-time type information, and so forth.
 This macro returns the @code{PARM_DECL} for the first argument to the
 function.  Subsequent @code{PARM_DECL} nodes can be obtained by
 following the @code{TREE_CHAIN} links.
+
+@item DECL_RESULT
+This macro returns the @code{RESULT_DECL} for the function.
 
 @item TREE_TYPE
 This macro returns the @code{FUNCTION_TYPE} or @code{METHOD_TYPE} for
