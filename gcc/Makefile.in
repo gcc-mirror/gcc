@@ -2043,7 +2043,7 @@ cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
 cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
 cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
-cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
+cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \

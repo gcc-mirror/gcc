@@ -27,7 +27,6 @@ Written by Per Bothner 1994.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
@@ -331,8 +330,8 @@ parse_charconst (pfile, start, end)
   /* If char type is signed, sign-extend the constant.  */
   num_bits = num_chars * width;
       
-  if (cpp_lookup (pfile, (const U_CHAR *)"__CHAR_UNSIGNED__",
-		  sizeof ("__CHAR_UNSIGNED__")-1)
+  if (cpp_defined (pfile, (const U_CHAR *)"__CHAR_UNSIGNED__",
+		   sizeof ("__CHAR_UNSIGNED__")-1)
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
 			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
@@ -377,56 +376,28 @@ cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;
 {
-  U_CHAR c;
   struct token *toktab;
   enum cpp_token token;
   struct operation op;
   U_CHAR *tok_start, *tok_end;
-  int old_written;
-
- retry:
+  long old_written;
 
   old_written = CPP_WRITTEN (pfile);
-  cpp_skip_hspace (pfile);
-  c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
-  if (c == '#')
-    {
-      op.op = INT;
-      op.value = cpp_read_check_assertion (pfile);
-      return op;
-    }
+  token = get_directive_token (pfile);
 
-  if (c == '\n')
-    {
-      op.op = 0;
-      return op;
-    }
-
-  token = cpp_get_token (pfile);
   tok_start = pfile->token_buffer + old_written;
   tok_end = CPP_PWRITTEN (pfile);
-  pfile->limit = tok_start;
+  CPP_SET_WRITTEN (pfile, old_written);
   switch (token)
   {
     case CPP_EOF: /* Should not happen ...  */
     case CPP_VSPACE:
       op.op = 0;
       return op;
-    case CPP_POP:
-      if (CPP_BUFFER (pfile)->fname != NULL)
-	{
-	  op.op = 0;
-	  return op;
-	}
-      cpp_pop_buffer (pfile);
-      goto retry;
-    case CPP_HSPACE:
-    case CPP_COMMENT: 
-      goto retry;
     case CPP_NUMBER:
       return parse_number (pfile, tok_start, tok_end);
     case CPP_STRING:
-      cpp_error (pfile, "string constants not allowed in #if expressions");
+      cpp_error (pfile, "string constants are not allowed in #if expressions");
       op.op = ERROR;
       return op;
     case CPP_CHAR:
@@ -445,45 +416,38 @@ cpp_lex (pfile, skip_evaluation)
       else
 	{
 	  int paren = 0, len;
-	  cpp_buffer *ip = CPP_BUFFER (pfile);
 	  U_CHAR *tok;
-	  HASHNODE *hp;
 
-	  cpp_skip_hspace (pfile);
-	  if (*ip->cur == '(')
+	  pfile->no_macro_expand++;
+	  token = get_directive_token (pfile);
+	  if (token == CPP_LPAREN)
 	    {
 	      paren++;
-	      ip->cur++;			/* Skip over the paren */
-	      cpp_skip_hspace (pfile);
+	      CPP_SET_WRITTEN (pfile, old_written);
+	      token = get_directive_token (pfile);
 	    }
 
-	  if (!is_idstart(*ip->cur))
+	  if (token != CPP_NAME)
 	    goto oops;
-	  if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
-	    goto oops;
-	  tok = ip->cur;
-	  while (is_idchar(*ip->cur))
-	    ++ip->cur;
-	  len = ip->cur - tok;
-	  cpp_skip_hspace (pfile);
+
+	  tok = pfile->token_buffer + old_written;
+	  len = CPP_PWRITTEN (pfile) - tok;
+	  if (cpp_defined (pfile, tok, len))
+	    op.value = 1;
+
 	  if (paren)
 	    {
-	      if (*ip->cur != ')')
+	      if (get_directive_token (pfile) != CPP_RPAREN)
 		goto oops;
-	      ++ip->cur;
 	    }
-	  hp = cpp_lookup (pfile, tok, len);
-	  if (hp != NULL)
-	    {
-	      if (hp->type == T_POISON)
-		cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
-	      else
-		op.value = 1;
-	    }
+	  CPP_SET_WRITTEN (pfile, old_written);
+	  pfile->no_macro_expand--;
 	}
       return op;
 
     oops:
+      CPP_SET_WRITTEN (pfile, old_written);
+      pfile->no_macro_expand--;
       cpp_error (pfile, "`defined' without an identifier");
       return op;
 
@@ -499,6 +463,13 @@ cpp_lex (pfile, skip_evaluation)
 	    cpp_error (pfile, "`%s' not allowed in operand of `#if'",
 		       tok_start);
 	  op.op = toktab->token; 
+	  return op;
+	}
+      else if (tok_start + 1 == tok_end && *tok_start == '#')
+	{
+	  CPP_FORWARD (CPP_BUFFER (pfile), -1);
+	  op.op = INT;
+	  op.value = cpp_read_check_assertion (pfile);
 	  return op;
 	}
       /* fall through */
@@ -736,15 +707,16 @@ cpp_parse_expr (pfile)
 	  cpp_ice (pfile, "cpp_lex returns a NAME");
 	  goto syntax_error;
 	case INT:  case CHAR:
-	  top->value = op.value;
-	  top->unsignedp = op.unsignedp;
 	  goto set_value;
 	case 0:
 	  lprio = 0;  goto maybe_reduce;
 	case '+':  case '-':
-	  /* Is this correct if unary ? FIXME */
-	  flags = RIGHT_OPERAND_REQUIRED;
-	  lprio = PLUS_PRIO;  rprio = lprio + 1;  goto maybe_reduce;
+	  if (top->flags & HAVE_VALUE)
+	    {
+	      lprio = PLUS_PRIO;
+	      goto binop;
+	    }
+	  /* else fall through */
 	case '!':  case '~':
 	  flags = RIGHT_OPERAND_REQUIRED;
 	  rprio = UNARY_PRIO;  lprio = rprio + 1;  goto maybe_reduce;
@@ -777,10 +749,6 @@ cpp_parse_expr (pfile)
 	  goto maybe_reduce;
 	case ERROR:
 	  goto syntax_error;
-	binop:
-	  flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
-	  rprio = lprio + 1;
-	  goto maybe_reduce;
 	default:
 	  cpp_error (pfile, "invalid character in #if");
 	  goto syntax_error;
@@ -793,8 +761,14 @@ cpp_parse_expr (pfile)
 	  cpp_error (pfile, "syntax error in #if");
 	  goto syntax_error;
 	}
+      top->value = op.value;
+      top->unsignedp = op.unsignedp;
       top->flags |= HAVE_VALUE;
       continue;
+
+    binop:
+      flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
+      rprio = lprio + 1;
 
     maybe_reduce:
       /* Push an operator, and check if we can reduce now.  */
@@ -1065,6 +1039,5 @@ cpp_parse_expr (pfile)
  syntax_error:
   if (stack != init_stack)
     free (stack);
-  skip_rest_of_line (pfile);
   return 0;
 }

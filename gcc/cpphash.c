@@ -140,19 +140,30 @@ cpp_lookup (pfile, name, len)
   return (HASHNODE *) 0;
 }
 
+/* Free a DEFINITION structure.  Used by delete_macro, and by
+   do_define when redefining macros.  */
+
+void
+free_definition (d)
+     DEFINITION *d;
+{
+  struct reflist *ap, *nextap;
+
+  for (ap = d->pattern; ap != NULL; ap = nextap)
+    {
+      nextap = ap->next;
+      free (ap);
+    }
+  if (d->nargs >= 0)
+    free (d->argnames);
+  free (d);
+}
+
 /*
  * Delete a hash node.  Some weirdness to free junk from macros.
  * More such weirdness will have to be added if you define more hash
  * types that need it.
  */
-
-/* Note that the DEFINITION of a macro is removed from the hash table
-   but its storage is not freed.  This would be a storage leak
-   except that it is not reasonable to keep undefining and redefining
-   large numbers of macros many times.
-   In any case, this is necessary, because a macro can be #undef'd
-   in the middle of reading the arguments to a call to it.
-   If #undef freed the DEFINITION, that would crash.  */
 
 void
 delete_macro (hp)
@@ -170,19 +181,7 @@ delete_macro (hp)
     *hp->bucket_hdr = hp->next;
 
   if (hp->type == T_MACRO)
-    {
-      DEFINITION *d = hp->value.defn;
-      struct reflist *ap, *nextap;
-
-      for (ap = d->pattern; ap != NULL; ap = nextap)
-	{
-	  nextap = ap->next;
-	  free (ap);
-	}
-      if (d->nargs >= 0)
-	free (d->argnames);
-      free (d);
-    }
+    free_definition (hp->value.defn);
 
   free (hp);
 }
