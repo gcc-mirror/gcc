@@ -110,6 +110,7 @@ extern const char * lshrhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 extern const char * lshrsi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 
 extern void avr_output_bld PARAMS ((rtx operands[], int bit_nr));
+extern void avr_output_addr_vec_elt PARAMS ((FILE *stream, int value));
 
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));

@@ -88,6 +88,9 @@ static int commands_in_epilogues;
 static int prologue_size;
 static int epilogue_size;
 
+/* Size of all jump tables in the current function, in words.  */
+static int jump_tables_size;
+
 /* Initial stack value specified by the `-minit-stack=' option */
 const char *avr_init_stack = "__stack";
 
@@ -549,6 +552,7 @@ function_prologue (file, size)
 	      && !interrupt_func_p && !signal_func_p && live_seq);
 
   last_insn_address = 0;
+  jump_tables_size = 0;
   prologue_size = 0;
   fprintf (file, "/* prologue: frame size=%d */\n", size);
   
@@ -683,6 +687,7 @@ function_epilogue (file, size)
   main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
   function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
 		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
+  function_size += jump_tables_size;
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
 	      && !interrupt_func_p && !signal_func_p && live_seq);
@@ -5294,5 +5299,18 @@ avr_output_bld (operands, bit_nr)
   s[5] = 'A' + (bit_nr >> 3);
   s[8] = '0' + (bit_nr & 7);
   output_asm_insn (s, operands);
+}
+
+void
+avr_output_addr_vec_elt (stream, value)
+     FILE *stream;
+     int value;
+{
+  if (AVR_MEGA)
+    fprintf (stream, "\t.word pm(.L%d)\n", value);
+  else
+    fprintf (stream, "\trjmp .L%d\n", value);
+
+  jump_tables_size++;
 }
 

@@ -1849,11 +1849,6 @@
    (set_attr "cc" "none,none")])
 
 ;; table jump
-(define_expand "tablejump"
-  [(parallel [(set (pc) (match_operand:HI 0 "register_operand" ""))
-	      (use (label_ref (match_operand 1 "" "")))])]
-  "0 && optimize"
-  "")
 
 ;; Note: the (mem:HI (...)) memory references here are special - actually
 ;; the data is read from a word address in program memory (r31:r30 is the
