@@ -2872,7 +2872,7 @@ expand_return (retval)
     }
 
   /* Attempt to optimize the call if it is tail recursive.  */
-  if (optimize
+  if (flag_optimize_sibling_calls
       && retval_rhs != NULL_TREE
       && frame_offset == 0
       && TREE_CODE (retval_rhs) == CALL_EXPR

@@ -164,8 +164,8 @@ in the following sections.
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop
 -fno-function-cse  -fno-inline  -fno-peephole
--fomit-frame-pointer  -foptimize-register-moves  -fregmove
--frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
+-fomit-frame-pointer  -foptimize-register-moves -foptimize-sibling-calls
+-fregmove -frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
 -fschedule-insns  -fschedule-insns2  -fstrength-reduce
 -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
 -funroll-loops
@@ -2460,6 +2460,9 @@ don't need one.  This avoids the instructions to save, set up and
 restore frame pointers; it also makes an extra register available
 in many functions.  @strong{It also makes debugging impossible on
 some machines.}
+
+@item -foptimize-sibling-calls
+Optimize sibling and tail recursive calls.
 
 @ifset INTERNALS
 On some machines, such as the Vax, this flag has no effect, because

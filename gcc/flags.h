@@ -299,6 +299,10 @@ extern int flag_volatile_static;
 
 extern int flag_fast_math;
 
+/* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
+
+extern int flag_optimize_sibling_calls;
+
 /* Nonzero means the front end generally wants `errno' maintained by math
    operations, like built-in SQRT, unless overridden by flag_fast_math.  */
 

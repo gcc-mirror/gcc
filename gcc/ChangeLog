@@ -1,3 +1,18 @@
+Wed Mar 29 11:51:13 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* flags.h (flag_optimize_sibling_calls): Declare.
+	* calls.c (expand_call): Fail sibcall when
+	!flag_optimize_sibling_calls
+	* invoke.texi (flag_optimize_sibling_calls): Document.
+	* toplev.c (flag_optimize_sibling_calls): New global variable.
+	(f_options): Add flag_optimize_sibling_calls.
+	(rest_of_compilation): Conditionize
+	optimize_sibling_and_tail_recursive_calls by
+	flag_optimize_sibling_calls.
+	(main): Set flag_optimize_sibling_calls for -O2.
+	* stmt.c (expand_return): Conditionize tail recursion by
+	flag_optimize_sibling_calls.
+
 2000-03-29  Richard Henderson  <rth@cygnus.com>
 
 	* config/i386/att.h (LOCAL_LABEL_PREFIX): Define.
