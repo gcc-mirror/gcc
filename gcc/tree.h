@@ -3307,10 +3307,6 @@ extern GTY(()) tree current_function_func_begin_label;
 
 extern GTY(()) tree current_file_decl;
 
-/* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
-
-extern int all_types_permanent;
-
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */
 extern tree builtin_function (const char *, tree, int, enum built_in_class,

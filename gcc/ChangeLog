@@ -1,5 +1,9 @@
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* tree.h (all_types_permanent): Remove.
+
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* langhooks.h (estimate_num_insns, pushlevel, poplevel, set_block,
 	maybe_build_cleanup, update_decl_after_saving): Remove hooks.
 	* langhooks.c (lhd_clear_binding_stack): Remove.
