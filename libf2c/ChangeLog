@@ -1467,3 +1467,7 @@ Thu Feb  2 12:22:41 1995  Craig Burley  (burley@gnu.ai.mit.edu)
 	* libF77/Makefile.in (libf77): Add rule to .PHONY list.
 
 	* libI77/Makefile.in (libi77): Add rule to .PHONY list.
+
+Local Variables:
+add-log-time-format: current-time-string
+End:
