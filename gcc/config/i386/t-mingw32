@@ -1,0 +1,4 @@
+#
+# collect2 doesn't work for i386-mingw32* yet.
+#
+USE_COLLECT2=
