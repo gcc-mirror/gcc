@@ -582,8 +582,8 @@ typeof (x[0](1))
 @end example
 
 @noindent
-This assumes that @code{x} is an array of functions; the type described
-is that of the values of the functions.
+This assumes that @code{x} is an array of pointers to functions;
+the type described is that of the values of the functions.
 
 Here is an example with a typename as the argument:
 

@@ -1,3 +1,8 @@
+2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* extend.texi: Refer to an array of pointers to functions instead
+	of one of functions.
+
 Fri Jan 12 12:08:12 MET 2001  Andreas Jaeger  <aj@suse.de>
 			      Jan Hubicka  <jh@suse.cz>
 
