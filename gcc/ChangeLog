@@ -1,3 +1,8 @@
+Sun May  9 11:12:19 1999  Philip Blundell <bp@nexus.co.uk>
+
+	* config/arm/arm.h (ASM_OUTPUT_MI_THUNK): Add (PLT) to branch if
+	necessary.  Reported by jim@federated.com.
+
 Sat May  8 23:05:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (PRINT_OPERAND_ADDRESS): Output "%r0", not "r0" for the
