@@ -3697,11 +3697,9 @@
   operands[3] = gen_rtx_REG (DImode, REGNO (operands[2]));
 }")
 
-;; ??? This should be a define expand.
-
 ;; x/r can be created by inlining/cse, e.g. for execute/961213-1.c
 ;; compiled with -m2 -ml -O3 -funroll-loops
-(define_insn ""
+(define_insn "*movdi_i"
   [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r,r,*!x")
 	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,I,i,x,r"))]
   "TARGET_SH1
