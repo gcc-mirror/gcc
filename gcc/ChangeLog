@@ -1,5 +1,11 @@
 2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (CPLUSPLUS_STD_VER, C_STD_VER, C_STD_NAME): Define.
+	(maybe_read_dollar_number, check_format_info_main): Use them for
+	pedantic warning messages.
+
+2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (check_format_info_main): Minor cleanup: move
 	variables into inner scopes; initialize declarations where
 	appropriate; don't hardcode "scanf" name on warning for zero

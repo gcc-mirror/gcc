@@ -1265,6 +1265,23 @@ enum format_std_version
   STD_EXT
 };
 
+/* The C standard version C++ is treated as equivalent to
+   or inheriting from, for the purpose of format features supported.  */
+#define CPLUSPLUS_STD_VER	STD_C89
+/* The C standard version we are checking formats against when pedantic.  */
+#define C_STD_VER		(c_language == clk_cplusplus		  \
+				 ? CPLUSPLUS_STD_VER			  \
+				 : (flag_isoc99				  \
+				    ? STD_C99				  \
+				    : (flag_isoc94 ? STD_C94 : STD_C89)))
+/* The name to give to the standard version we are warning about when
+   pedantic.  FEATURE_VER is the version in which the feature warned out
+   appeared, which is higher than C_STD_VER.  */
+#define C_STD_NAME(FEATURE_VER) (c_language == clk_cplusplus	\
+				 ? "ISO C++"			\
+				 : ((FEATURE_VER) == STD_EXT	\
+				    ? "ISO C"			\
+				    : "ISO C89"))
 
 /* Flags that may apply to a particular kind of format checked by GCC.  */
 enum
@@ -2113,7 +2130,9 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
   *format = fcp + 1;
   if (pedantic && !dollar_format_warned)
     {
-      status_warning (status, "ISO C does not support %%n$ operand number formats");
+      status_warning (status,
+		      "%s does not support %%n$ operand number formats",
+		      C_STD_NAME (STD_EXT));
       dollar_format_warned = 1;
     }
   if (overflow_flag || argnum == 0
@@ -2755,13 +2774,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  if (pedantic)
 	    {
 	      /* Warn if the length modifier is non-standard.  */
-	      if (length_chars_std == STD_EXT)
-		status_warning (status, "ISO C does not support the `%s' %s length modifier",
-			 length_chars, fki->name);
-	      else if ((length_chars_std == STD_C99 && !flag_isoc99)
-		       || (length_chars_std == STD_C94 && !flag_isoc94))
-		status_warning (status, "ISO C89 does not support the `%s' %s length modifier",
-			 length_chars, fki->name);
+	      if (length_chars_std > C_STD_VER)
+		status_warning (status, "%s does not support the `%s' %s length modifier",
+				C_STD_NAME (length_chars_std), length_chars,
+				fki->name);
 	    }
 	}
 
@@ -2828,13 +2844,9 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
       if (pedantic)
 	{
-	  if (fci->std == STD_EXT)
-	    status_warning (status, "ISO C does not support the `%%%c' %s format",
-		     format_char, fki->name);
-	  else if ((fci->std == STD_C99 && !flag_isoc99)
-		   || (fci->std == STD_C94 && !flag_isoc94))
-	    status_warning (status, "ISO C89 does not support the `%%%c' %s format",
-		     format_char, fki->name);
+	  if (fci->std > C_STD_VER)
+	    status_warning (status, "%s does not support the `%%%c' %s format",
+			    C_STD_NAME (fci->std), format_char, fki->name);
 	}
 
       /* Validate the individual flags used, removing any that are invalid.  */
@@ -2857,26 +2869,19 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	    if (pedantic)
 	      {
 		const format_flag_spec *t;
-		if (s->std == STD_EXT)
-		  status_warning (status, "ISO C does not support %s",
-				  _(s->long_name));
-		else if ((s->std == STD_C99 && !flag_isoc99)
-			 || (s->std == STD_C94 && !flag_isoc94))
-		  status_warning (status, "ISO C89 does not support %s",
-				  _(s->long_name));
+		if (s->std > C_STD_VER)
+		  status_warning (status, "%s does not support %s",
+				  C_STD_NAME (s->std), _(s->long_name));
 		t = get_flag_spec (flag_specs, flag_chars[i], fci->flags2);
 		if (t != NULL && t->std > s->std)
 		  {
 		    const char *long_name = (t->long_name != NULL
 					     ? t->long_name
 					     : s->long_name);
-		    if (t->std == STD_EXT)
-		      status_warning (status, "ISO C does not support %s with the `%%%c' %s format",
-				      _(long_name), format_char, fki->name);
-		    else if ((t->std == STD_C99 && !flag_isoc99)
-			     || (t->std == STD_C94 && !flag_isoc94))
-		      status_warning (status, "ISO C89 does not support %s with the `%%%c' %s format",
-				      _(long_name), format_char, fki->name);
+		    if (t->std > C_STD_VER)
+		      status_warning (status, "%s does not support %s with the `%%%c' %s format",
+				      C_STD_NAME (t->std), _(long_name),
+				      format_char, fki->name);
 		  }
 	      }
 	  }
@@ -2991,13 +2996,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		   && wanted_type_std > length_chars_std
 		   && wanted_type_std > fci->std)
 	    {
-	      if (wanted_type_std == STD_EXT)
-		status_warning (status, "ISO C does not support the `%%%s%c' %s format",
-				length_chars, format_char, fki->name);
-	      else if ((wanted_type_std == STD_C99 && !flag_isoc99)
-		       || (wanted_type_std == STD_C94 && !flag_isoc94))
-		status_warning (status, "ISO C89 does not support the `%%%s%c' %s format",
-				length_chars, format_char, fki->name);
+	      if (wanted_type_std > C_STD_VER)
+		status_warning (status, "%s does not support the `%%%s%c' %s format",
+				C_STD_NAME (wanted_type_std), length_chars,
+				format_char, fki->name);
 	    }
 	}
 
