@@ -146,7 +146,7 @@ proc f-torture-execute { src } {
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
+    if [expr [search_for_re $src "do *\[0-9\]"]+[search_for_re $src "end *do"]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
@@ -232,7 +232,7 @@ proc f-torture-execute { src } {
 	# See if this source file uses "long long" types, if it does, and
 	# no_long_long is set, skip execution of the test.
 	if [target_info exists no_long_long] then {
-	    if [expr [search_for $src "integer\*8"]] then {
+	    if [expr [search_for_re $src "integer\*8"]] then {
 		untested "$testcase execution, $option"
 		continue
 	    }
@@ -257,13 +257,12 @@ proc f-torture-execute { src } {
 }
 
 #
-# search_for -- looks for a string match in a file
+# search_for_re -- looks for a case-insensitive regexp match in a file
 #
-proc search_for { file pattern } {
+proc search_for_re { file pattern } {
     set fd [open $file r]
     while { [gets $fd cur_line]>=0 } {
-	set lower [string tolower $cur_line]
-	if [regexp "$pattern" $lower] then {
+	if [regexp -nocase -- "$pattern" $cur_line] then {
 	    close $fd
 	    return 1
 	}
@@ -311,7 +310,7 @@ proc f-torture { args } {
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
+    if [expr [search_for_re $src "do *\[0-9\]"]+[search_for_re $src "end *do"]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
