@@ -1,3 +1,26 @@
+2003-02-13  Michael  <konqueror@gmx.de>
+
+	* gnu/java/nio/FileChannelImpl.java
+	(lengthInternal): Must be native.
+	(size): Check if channel is already closed.
+	(implCloseChannel): Reformated.
+	(read): w was unused, removed it.
+	(read): Removed.
+	(read): New method.
+	(write): New method.
+	(map): Check arguments.
+	(force): Throws IOException, check if channel is closed.
+	(transferTo): New method.
+	(transferFrom): New method.
+	(lock): New method.
+	(tryLock): New method.
+	(position): New method.
+	(truncate): New method.
+	(nio_mmap_file): Uncommented.
+	(nio_munmap_file): Uncommented.
+	(nio_msync): Uncommented.
+	* gnu/java/nio/natFileChannelImpl.cc: New file.
+
 2003-02-13  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteBuffer.java
