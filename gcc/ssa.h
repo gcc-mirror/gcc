@@ -33,7 +33,7 @@ extern int remove_phi_alternative	PARAMS ((rtx, basic_block));
 
 /* Optimizations.  */
 /* In ssa-dce.c */
-extern void eliminate_dead_code		PARAMS ((void));
+extern void ssa_eliminate_dead_code	PARAMS ((void));
 
 /* SSA definitions and uses.  */
 /* This flag is set when the CFG is in SSA form.  */

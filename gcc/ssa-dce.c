@@ -503,7 +503,7 @@ delete_insn_bb (insn)
 /* Perform the dead-code elimination.  */
 
 void
-eliminate_dead_code ()
+ssa_eliminate_dead_code ()
 {
   int i;
   rtx insn;

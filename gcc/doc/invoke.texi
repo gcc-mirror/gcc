@@ -254,7 +254,7 @@ in the following sections.
 -falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
 -fbranch-probabilities  -fcaller-saves @gol
--fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections  -fdce @gol
+-fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
@@ -270,7 +270,7 @@ in the following sections.
 -fregmove  -frename-registers @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
--fsingle-precision-constant  -fssa @gol
+-fsingle-precision-constant  -fssa -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -ftrapv @gol
 -funroll-all-loops  -funroll-loops  @gol
 --param @var{name}=@var{value}
@@ -2946,7 +2946,7 @@ sometimes follows CSE), to @file{@var{file}.10.cse2}.
 Dump after the second flow pass, to @file{@var{file}.21.flow2}.
 @item X
 @opindex dX
-Dump after dead code elimination, to @file{@var{file}.06.dce}.
+Dump after SSA aggressive dead code elimination, to @file{@var{file}.06.ssadce}.
 @item z
 @opindex dz
 Dump after the peephole pass, to @file{@var{file}.22.peephole2}.
@@ -3732,10 +3732,10 @@ flow graph is translated into SSA form, optimizations are performed, and
 the flow graph is translated back from SSA form.  Users should not
 specify this option, since it is not yet ready for production use.
 
-@item -fdce
-@opindex fdce
-Perform dead-code elimination in SSA form.  Requires @option{-fssa}.  Like
-@option{-fssa}, this is an experimental feature.
+@item -fssa-dce
+@opindex fssa-dce
+Perform aggressive dead-code elimination in SSA form.  Requires @option{-fssa}.
+Like @option{-fssa}, this is an experimental feature.
 
 @item -fsingle-precision-constant
 @opindex fsingle-precision-constant

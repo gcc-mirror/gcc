@@ -1,5 +1,17 @@
 Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* ssa-dce.c (ssa_eliminate_dead_code): Renamed from
+	eliminate_date_code.
+	* ssa.h (ssa_eliminate_dead_code): Corresponding changes.
+	* timevar.def (TV_SSA_DCE): Renamed from TV_DEAD_CODE_ELIM.
+	* toplev.c (DFI_ssa_dce): Renamed from DFI_dce.
+	(dump_file_info): Similar changes.
+	(flag_ssa_dce): Similarly
+	(f_options): Similar changes.
+	(rest_of_compilation): Corresponding changes.
+	* doc/invoke.texi: Update as option is now -fssa-dce instead
+	of -fdce.  Update dump file name.
+
 	* ssa-dce.c (note_inherently_necessary_set): New function.
 	(find_inherently_necessary): Use it.  Do not consider
 	NOTEs, CODE_LABELs or BARRIERS are necessary.  Improve
