@@ -357,7 +357,7 @@ do								\
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
    FRAME_REGNO_P(REGNO)?                                            \
-     (MODE) == Pmode :                                              \
+     (enum machine_mode) (MODE) == Pmode :                          \
    0)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
