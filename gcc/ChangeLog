@@ -1,3 +1,8 @@
+2000-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* varasm.c (struct constant_descriptor): Put CONTENTS inside a
+	union to make it well-aligned.  Update all uses.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-parse.in (initelt): Give appropriate pedantic warnings,
