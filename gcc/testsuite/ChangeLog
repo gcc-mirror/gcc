@@ -1,3 +1,7 @@
+2000-10-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/qual-return-1.c, gcc.dg/qual-return-2.c: New tests.
+
 2000-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20001024-1.c: New test.
