@@ -1,3 +1,9 @@
+2003-12-15  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	* tree.c (initializer_zerop): Add test for empty set.
+	* integrate.c (function_cannot_inline_p): Forbid inlining
+	functions calling `longjmp'.
+
 2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11773
@@ -62,7 +68,7 @@
 	(ggc_collect_1): Always mark and sweep if a zone has the `dead'
 	flag set.
 	(ggc_collect): Free dead zones after collecting.
- 
+
 2003-12-13  Jan Hubicka  <jh@suse.cz>
 
 	* coverage.c (get_coverage_counts):  Use inform instead of warning

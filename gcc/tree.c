@@ -5011,6 +5011,11 @@ initializer_zerop (tree init)
 	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
     case CONSTRUCTOR:
       {
+	/* Set is empty if it has no elements.  */
+        if ((TREE_CODE (TREE_TYPE (init)) == SET_TYPE)
+             && CONSTRUCTOR_ELTS (init))
+	  return false;
+
 	if (AGGREGATE_TYPE_P (TREE_TYPE (init)))
 	  {
 	    tree aggr_init = CONSTRUCTOR_ELTS (init);
