@@ -4854,12 +4854,16 @@ fold (expr)
 	      case GE_EXPR:
 	      case GT_EXPR:
 		return pedantic_non_lvalue
-		  (fold (build1 (ABS_EXPR, type, arg1)));
+		  (convert (type, fold (build1 (ABS_EXPR,
+						TREE_TYPE (arg1), arg1))));
 	      case LE_EXPR:
 	      case LT_EXPR:
 		return pedantic_non_lvalue
 		  (fold (build1 (NEGATE_EXPR, type,
-				 fold (build1 (ABS_EXPR, type, arg1)))));
+				 convert (type,
+					  fold (build1 (ABS_EXPR,
+							TREE_TYPE (arg1),
+							arg1))))));
 	      }
 
 	  /* If this is A != 0 ? A : 0, this is simply A.  For ==, it is
