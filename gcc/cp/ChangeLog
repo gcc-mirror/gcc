@@ -1,3 +1,7 @@
+2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* typeck2.c: Convert to ISO C.
+
 2003-06-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10635
