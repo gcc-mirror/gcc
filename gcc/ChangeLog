@@ -1,3 +1,7 @@
+2001-03-28  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (stage1_build): Revert CFLAGS patch.
+
 2001-03-28  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/libgcc.S (__mulhi3): Correct tests to exit the loop
