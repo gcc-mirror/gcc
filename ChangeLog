@@ -1,3 +1,7 @@
+Sun Mar 12 17:30:30 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* MAINTAINERS: Add self in write-after-approval section.
+
 Sun Mar 12 00:23:32 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* MAINTAINERS: Add self as ia64 port maintainer.
