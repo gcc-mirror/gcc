@@ -2542,8 +2542,10 @@ is_ancestor (tree root, tree child)
     }
 }
 
-/* Enter the class or namespace scope indicated by T.  Returns TRUE iff
-   pop_scope should be called later to exit this scope.  */
+/* Enter the class or namespace scope indicated by T suitable for
+   name lookup.  T can be arbitrary scope, not necessary nested inside
+   the current scope.  Returns TRUE iff pop_scope should be called
+   later to exit this scope.  */
 
 bool
 push_scope (tree t)
@@ -2577,6 +2579,110 @@ pop_scope (tree t)
     pop_decl_namespace ();
   else if CLASS_TYPE_P (t)
     pop_nested_class ();
+}
+
+/* Subroutine of push_inner_scope.  */
+
+static void
+push_inner_scope_r (tree outer, tree inner)
+{
+  tree prev;
+
+  if (outer == inner
+      || (TREE_CODE (inner) != NAMESPACE_DECL && !CLASS_TYPE_P (inner)))
+    return;
+
+  prev = CP_DECL_CONTEXT (TREE_CODE (inner) == NAMESPACE_DECL ? inner : TYPE_NAME (inner));
+  if (outer != prev)
+    push_inner_scope_r (outer, prev);
+  if (TREE_CODE (inner) == NAMESPACE_DECL)
+    {
+      struct cp_binding_level *save_template_parm = 0;
+      /* Temporary take out template parameter scopes.  They are saved
+	 in reversed order in save_template_parm.  */
+      while (current_binding_level->kind == sk_template_parms)
+	{
+	  struct cp_binding_level *b = current_binding_level;
+	  current_binding_level = b->level_chain;
+	  b->level_chain = save_template_parm;
+	  save_template_parm = b;
+	}
+
+      resume_scope (NAMESPACE_LEVEL (inner));
+      current_namespace = inner;
+
+      /* Restore template parameter scopes.  */
+      while (save_template_parm)
+	{
+	  struct cp_binding_level *b = save_template_parm;
+	  save_template_parm = b->level_chain;
+	  b->level_chain = current_binding_level;
+	  current_binding_level = b;
+	}
+    }
+  else
+    pushclass (inner);
+}
+
+/* Enter the scope INNER from current scope.  INNER must be a scope
+   nested inside current scope.  This works with both name lookup and
+   pushing name into scope.  In case a template parameter scope is present,
+   namespace is pushed under the template parameter scope according to
+   name lookup rule in 14.6.1/6.
+   
+   Return the former current scope suitable for pop_inner_scope.  */
+
+tree
+push_inner_scope (tree inner)
+{
+  tree outer = current_scope ();
+  if (!outer)
+    outer = current_namespace;
+
+  push_inner_scope_r (outer, inner);
+  return outer;
+}
+
+/* Exit the current scope INNER back to scope OUTER.  */
+
+void
+pop_inner_scope (tree outer, tree inner)
+{
+  if (outer == inner
+      || (TREE_CODE (inner) != NAMESPACE_DECL && !CLASS_TYPE_P (inner)))
+    return;
+
+  while (outer != inner)
+    {
+      if (TREE_CODE (inner) == NAMESPACE_DECL)
+	{
+	  struct cp_binding_level *save_template_parm = 0;
+	  /* Temporary take out template parameter scopes.  They are saved
+	     in reversed order in save_template_parm.  */
+	  while (current_binding_level->kind == sk_template_parms)
+	    {
+	      struct cp_binding_level *b = current_binding_level;
+	      current_binding_level = b->level_chain;
+	      b->level_chain = save_template_parm;
+	      save_template_parm = b;
+	    }
+
+	  pop_namespace ();
+
+	  /* Restore template parameter scopes.  */
+	  while (save_template_parm)
+	    {
+	      struct cp_binding_level *b = save_template_parm;
+	      save_template_parm = b->level_chain;
+	      b->level_chain = current_binding_level;
+	      current_binding_level = b;
+	    }
+	}
+      else
+	popclass ();
+
+      inner = CP_DECL_CONTEXT (TREE_CODE (inner) == NAMESPACE_DECL ? inner : TYPE_NAME (inner));
+    }
 }
 
 /* Do a pushlevel for class declarations.  */
@@ -4125,14 +4231,17 @@ lookup_name (tree name, int prefer_type)
 
 /* Look up NAME for type used in elaborated name specifier in
    the scopes given by SCOPE.  SCOPE can be either TS_CURRENT or
-   TS_WITHIN_ENCLOSING_NON_CLASS (possibly more scope is checked if 
-   cleanup or template parameter scope is encountered).
+   TS_WITHIN_ENCLOSING_NON_CLASS.  Although not implied by the
+   name, more scopes are checked if cleanup or template parameter
+   scope is encountered.
 
    Unlike lookup_name_real, we make sure that NAME is actually
-   declared in the desired scope, not from inheritance, using 
-   declaration, nor using directive.  A TYPE_DECL best matching
-   the NAME is returned.  Catching error and issuing diagnostics
-   are caller's responsibility.  */
+   declared in the desired scope, not from inheritance, nor using
+   directive.  For using declaration, there is DR138 still waiting
+   to be resolved.
+
+   A TYPE_DECL best matching the NAME is returned.  Catching error
+   and issuing diagnostics are caller's responsibility.  */
 
 tree
 lookup_type_scope (tree name, tag_scope scope)
@@ -4182,12 +4291,9 @@ lookup_type_scope (tree name, tag_scope scope)
 	  /* If this is the kind of thing we're looking for, we're done.
 	     Ignore names found via using declaration.  See DR138 for
 	     current status.  */
-	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES)
-	      && (CP_DECL_CONTEXT (iter->type) == iter->scope->this_entity))
+	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
 	    val = iter->type;
-	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES)
-		   && (CP_DECL_CONTEXT (iter->value)
-		       == iter->scope->this_entity))
+	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
 	    val = iter->value;
 	}
 	

@@ -12240,7 +12240,7 @@ cp_parser_class_specifier (cp_parser* parser)
   int has_trailing_semicolon;
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;
-  bool pop_p = false;
+  tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
 
   push_deferring_access_checks (dk_no_deferred);
@@ -12279,7 +12279,7 @@ cp_parser_class_specifier (cp_parser* parser)
   if (nested_name_specifier_p)
     {
       scope = CP_DECL_CONTEXT (TYPE_MAIN_DECL (type));
-      pop_p = push_scope (scope);
+      old_scope = push_inner_scope (scope);
     }
   type = begin_class_definition (type);
 
@@ -12304,8 +12304,8 @@ cp_parser_class_specifier (cp_parser* parser)
     }
   if (type != error_mark_node)
     type = finish_struct (type, attributes);
-  if (pop_p)
-    pop_scope (scope);
+  if (nested_name_specifier_p)
+    pop_inner_scope (old_scope, scope);
   /* If this class is not itself within the scope of another class,
      then we need to parse the bodies of all of the queued function
      definitions.  Note that the queued functions defined in a class

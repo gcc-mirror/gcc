@@ -306,6 +306,8 @@ extern void keep_next_level (bool);
 extern bool is_ancestor (tree, tree);
 extern bool push_scope (tree);
 extern void pop_scope (tree);
+extern tree push_inner_scope (tree);
+extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (struct cp_binding_level *);
 
 extern void push_namespace (tree);
