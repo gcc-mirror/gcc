@@ -1,3 +1,8 @@
+2001-03-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileDescriptorPosix.cc (open): Add O_CREAT in
+	read/write case.  Fixes PR libgcj/2338.
+
 2001-03-19  Per Bothner  <per@bothner.com>
 
 	* java/net/URLStreamHandler.java (parseURL):  Fix bug which would
