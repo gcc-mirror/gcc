@@ -1457,8 +1457,17 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
       return memrefs_conflict_p (xsize, x, ysize, XEXP (y, 0), c);
     }
 
-  if (GET_CODE (x) == ADDRESSOF && GET_CODE (y) == ADDRESSOF)
-    return xsize < 0 || ysize < 0;
+  if (GET_CODE (x) == ADDRESSOF)
+    {
+      if (y == frame_pointer_rtx
+	  || GET_CODE (y) == ADDRESSOF)
+	return xsize <= 0 || ysize <= 0;
+    }
+  if (GET_CODE (y) == ADDRESSOF)
+    {
+      if (x == frame_pointer_rtx)
+	return xsize <= 0 || ysize <= 0;
+    }
 
   if (CONSTANT_P (x))
     {
