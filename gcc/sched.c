@@ -1441,11 +1441,12 @@ priority (insn)
 	{
 	  rtx x = XEXP (prev, 0);
 
-	  /* A dependence pointing to a note is always obsolete, because
-	     sched_analyze_insn will have created any necessary new dependences
-	     which replace it.  Notes can be created when instructions are
-	     deleted by insn splitting, or by register allocation.  */
-	  if (GET_CODE (x) == NOTE)
+	  /* A dependence pointing to a note or deleted insn is always
+	     obsolete, because sched_analyze_insn will have created any
+	     necessary new dependences which replace it.  Notes and deleted
+	     insns can be created when instructions are deleted by insn
+	     splitting, or by register allocation.  */
+	  if (GET_CODE (x) == NOTE || INSN_DELETED_P (x))
 	    {
 	      remove_dependence (insn, x);
 	      continue;
