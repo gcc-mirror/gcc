@@ -7189,7 +7189,8 @@ cp_parser_mem_initializer_list (cp_parser* parser)
 
   /* Let the semantic analysis code know that we are starting the
      mem-initializer-list.  */
-  begin_mem_initializers ();
+  if (!DECL_CONSTRUCTOR_P (current_function_decl))
+    error ("only constructors take base initializers");
 
   /* Loop through the list.  */
   while (true)
@@ -7212,7 +7213,8 @@ cp_parser_mem_initializer_list (cp_parser* parser)
     }
 
   /* Perform semantic analysis.  */
-  finish_mem_initializers (mem_initializer_list);
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
+    finish_mem_initializers (mem_initializer_list);
 }
 
 /* Parse a mem-initializer.
@@ -11789,7 +11791,7 @@ cp_parser_class_head (cp_parser* parser,
 	 class was originally declared, the program is invalid.  */
       if (scope && !is_ancestor (scope, CP_DECL_CONTEXT (type)))
 	{
-	  error ("declaration of `%D' in  `%D' which does not "
+	  error ("declaration of `%D' in `%D' which does not "
 		 "enclose `%D'", type, scope, nested_name_specifier);
 	  return NULL_TREE;
 	}

@@ -1142,15 +1142,6 @@ finish_eh_cleanup (cleanup)
   add_stmt (r);
 }
 
-/* Begin processing a mem-initializer-list.  */
-
-void
-begin_mem_initializers ()
-{
-  if (! DECL_CONSTRUCTOR_P (current_function_decl))
-    error ("only constructors take base initializers");
-}
-
 /* The MEM_INITS is a list of mem-initializers, in reverse of the
    order they were written by the user.  Each node is as for
    emit_mem_initializers.  */

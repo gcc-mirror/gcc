@@ -1,5 +1,13 @@
 2003-03-08  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9823
+	* cp-tree.h (begin_mem_initializers): Remove.
+	* parser.c (cp_parser_mem_initializer_list): Inline it here.
+	Do not call finish_mem_initializers if not in a constructor.
+	(cp_parser_class_head): Fix typo in error message.
+	* semantics.c (begin_mem_initializers): Remove.
+	* testsuite/g++.dg/parser/constructor1.C: New test.
+
 	PR c++/9809
 	* call.c (add_function_candidate): Skip builtin fuctions that have
 	not yet been declared.
