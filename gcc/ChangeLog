@@ -1,3 +1,7 @@
+2002-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (scan_prog_file): Fix typo in message.
+
 2002-06-28  Aaron Lehmann  <aaronl@vitelus.com>
 
         * fold-cont.c: Remove unused CHARMASK.

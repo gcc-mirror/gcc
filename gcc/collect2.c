@@ -2135,7 +2135,7 @@ scan_prog_file (prog_name, which_pass)
 	fatal_perror ("close %d", pipe_fd[1]);
 
       execv (nm_file_name, real_nm_argv);
-      fatal_perror ("execvp %s", nm_file_name);
+      fatal_perror ("execv %s", nm_file_name);
     }
 
   /* Parent context from here on.  */
