@@ -1080,7 +1080,18 @@ small_data_operand (op, mode)
     return 0;
 
   else
-    sym_ref = XEXP (XEXP (op, 0), 0);
+    {
+      rtx sum = XEXP (op, 0);
+      HOST_WIDE_INT summand;
+
+      /* We have to be careful here, because it is the referenced address
+        that must be 32k from _SDA_BASE_, not just the symbol.  */
+      summand = INTVAL (XEXP (sum, 1));
+      if (summand < 0 || summand > g_switch_value)
+       return 0;
+
+      sym_ref = XEXP (sum, 0);
+    }
 
   if (*XSTR (sym_ref, 0) != '@')
     return 0;

@@ -3,6 +3,10 @@ Mon Mar 16 15:57:17 1998  Michael Meissner  <meissner@cygnus.com>
 	* gcc.c (default_arg): Don't wander off the end of allocated
 	memory.
 
+	(From Geoffrey Keating  <geoffk@ozemail.com.au>)
+	* rs6000.c (small_data_operand): Ensure that any address
+	referenced relative to the small data area is inside the SDA.	
+
 Mon Mar 16 12:55:15 1998  Jim Wilson  <wilson@cygnus.com>
 	
 	* config/m68k/netbsd.h (ASM_SPEC): Add %{m68060}.
