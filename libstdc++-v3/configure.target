@@ -111,6 +111,9 @@ case "${target_os}" in
   windiss*)
     os_include_dir="config/os/windiss"
     ;;
+  qnx6.[12]*)
+    os_include_dir="config/os/qnx/qnx6.1"
+    ;;
   *)
     os_include_dir="config/os/generic"
     ;;

@@ -1,3 +1,16 @@
+2002-06-11  J.T. Conklin  <jtc@acorntoolworks.com>
+            Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* configure.target: Set os_include_dir to config/os/qnx/qnx6.1
+	under *-qnx6.[12]*.
+	* configure.in: Add support for *-qnx6.[12]*.
+	* configure: Regenerate.
+
+	* config/os/qnx, config/os/qnx/qnx6.1, config/os/qnx/qnx6.1/bits:
+	New directories.  
+	* config/os/qnx/qnx6.1/bits/ctype_base.h, ctype_inline.h,
+	ctype_noninline.h, os_defines.h: New files.
+
 2002-06-10  Loren J. Rittle <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCPP_CHECK_SETRLIMIT_ancilliary): Reorder and
