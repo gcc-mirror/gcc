@@ -1567,8 +1567,13 @@ swap_tree_comparison (code)
     }
 }
 
-/* Return nonzero if two operands are necessarily equal. 
-   If ONLY_CONST is non-zero, only return non-zero for constants.  */
+/* Return nonzero if two operands are necessarily equal.
+   If ONLY_CONST is non-zero, only return non-zero for constants.
+   This function tests whether the operands are indistinguishable;
+   it does not test whether they are equal using C's == operation.
+   The distinction is important for IEEE floating point, because
+   (1) -0.0 and 0.0 are distinguishable, but -0.0==0.0, and
+   (2) two NaNs may be indistinguishable, but NaN!=NaN.  */
 
 int
 operand_equal_p (arg0, arg1, only_const)
@@ -1604,18 +1609,11 @@ operand_equal_p (arg0, arg1, only_const)
       && TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1))
     return 1;
 
-  /* Detect when real constants are equal.
-     But reject weird values because we can't be sure what to do with them.  */
+  /* Detect when real constants are equal.  */
   if (TREE_CODE (arg0) == TREE_CODE (arg1)
-      && TREE_CODE (arg0) == REAL_CST
-      && !bcmp (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1),
-		sizeof (REAL_VALUE_TYPE))
-      /* Some people say these are not necessary.
-	 But they do little harm, and taking them out would be risky.
-	 So leave them and let's not spend any more time on them--rms.  */
-      && !REAL_VALUE_ISINF (TREE_REAL_CST (arg0))
-      && !REAL_VALUE_ISNAN (TREE_REAL_CST (arg0)))
-    return 1;
+      && TREE_CODE (arg0) == REAL_CST)
+    return !bcmp (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1),
+		  sizeof (REAL_VALUE_TYPE));
 
   if (only_const)
     return 0;
@@ -3316,7 +3314,7 @@ fold (expr)
 	  /* Fold &x - &x.  This can happen from &x.foo - &x. 
 	     This is unsafe for certain floats even in non-IEEE formats.
 	     In IEEE, it is unsafe because it does wrong for NaNs.
-	     Also note that operand_equal_p is always false is an operand
+	     Also note that operand_equal_p is always false if an operand
 	     is volatile.  */
 
 	  if (operand_equal_p (arg0, arg1,
