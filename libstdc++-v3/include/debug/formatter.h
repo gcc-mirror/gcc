@@ -191,15 +191,13 @@ namespace __gnu_debug
 
       _Parameter() : _M_kind(__unused_param) { }
       
-      _Parameter(long __value, const char* __name) 
-      : _M_kind(__integer)
+      _Parameter(long __value, const char* __name) : _M_kind(__integer)
       { 
 	_M_variant._M_integer._M_name = __name;
 	_M_variant._M_integer._M_value = __value; 
       }
 
-      _Parameter(const char* __value, const char* __name)
-      : _M_kind(__string)
+      _Parameter(const char* __value, const char* __name) : _M_kind(__string)
       {
 	_M_variant._M_string._M_name = __name;
 	_M_variant._M_string._M_value = __value; 
@@ -276,7 +274,7 @@ namespace __gnu_debug
 	}
 
       template<typename _Sequence>
-        _Parameter(const _Safe_sequence<_Sequence>& __seq,
+        _Parameter(const _Safe_sequence<_Sequence>& __seq, 
 		   const char* __name, _Is_sequence)
 	: _M_kind(__sequence)
         {
@@ -357,6 +355,10 @@ namespace __gnu_debug
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0),
       _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { }
+
+    template<typename _T>
+      void
+      _M_format_word(char*, int, const char*, _T) const;
 
     void 
     _M_print_word(const char* __word) const;
