@@ -1,3 +1,8 @@
+2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary)
+	<COND_EXPR>: Use EDGE_COUNT instead of GOTO_DESTINATION.
+
 2004-10-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/contrib.texi, doc/cpp.texi, doc/cppopts.texi,
