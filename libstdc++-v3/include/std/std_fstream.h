@@ -454,16 +454,16 @@ namespace std
       void
       _M_output_unshift();
 
-       // This function sets the pointers of the internal buffer, both get
-       // and put areas. Typically, __off == _M_in_end - _M_in_beg upon
-       // _M_underflow; __off == 0 upon _M_overflow, seekoff, open, setbuf.
-       // 
-       // NB: _M_out_end - _M_out_beg == _M_buf_size - 1, since _M_buf_size
-       // reflects the actual allocated memory and the last cell is reserved
-       // for the overflow char of a full put area.
-       void
-       _M_set_buffer(streamsize __off)
-       {
+      // This function sets the pointers of the internal buffer, both get
+      // and put areas. Typically, __off == _M_in_end - _M_in_beg upon
+      // _M_underflow; __off == 0 upon _M_overflow, seekoff, open, setbuf.
+      // 
+      // NB: _M_out_end - _M_out_beg == _M_buf_size - 1, since _M_buf_size
+      // reflects the actual allocated memory and the last cell is reserved
+      // for the overflow char of a full put area.
+      void
+      _M_set_buffer(streamsize __off)
+      {
  	const bool __testin = this->_M_mode & ios_base::in;
  	const bool __testout = this->_M_mode & ios_base::out;
 	if (_M_buf_size)
@@ -477,7 +477,7 @@ namespace std
 	      }
 	    _M_filepos = this->_M_buf + __off;
 	  }
-       }
+      }
     };
 
   // [27.8.1.5] Template class basic_ifstream
