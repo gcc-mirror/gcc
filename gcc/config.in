@@ -347,7 +347,7 @@
    through valgrind (a memory checker).  This is extremely expensive. */
 #undef ENABLE_VALGRIND_CHECKING
 
-/* Define if valgrind's memcheck.h header is installed.  */
+/* Define if valgrind's memcheck.h header is installed. */
 #undef HAVE_MEMCHECK_H
 
 /* Define if you want to use __cxa_atexit, rather than atexit, to
@@ -395,9 +395,6 @@
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define to `long' if <sys/resource.h> doesn't define. */
-#undef rlim_t
 
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
@@ -491,6 +488,9 @@
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETRUSAGE
+
+/* Define to `long' if <sys/resource.h> doesn't define. */
+#undef rlim_t
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_LDGETNAME
