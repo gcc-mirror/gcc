@@ -106,7 +106,7 @@ static HARD_REG_SET *after_insn_hard_regs;
 #define MARK_LIVE_AFTER(INSN,REGNO)  \
   SET_HARD_REG_BIT (after_insn_hard_regs[INSN_SUID (INSN)], (REGNO))
 
-static int stupid_reg_compare	PROTO((int *, int *));
+static int stupid_reg_compare	PROTO((const GENERIC_PTR,const GENERIC_PTR));
 static int stupid_find_reg	PROTO((int, enum reg_class, enum machine_mode,
 				       int, int, int));
 static void stupid_mark_refs	PROTO((rtx, rtx));
@@ -303,9 +303,10 @@ stupid_life_analysis (f, nregs, file)
 
 static int
 stupid_reg_compare (r1p, r2p)
-     int *r1p, *r2p;
+     const GENERIC_PTR r1p;
+     const GENERIC_PTR r2p;
 {
-  register int r1 = *r1p, r2 = *r2p;
+  register int r1 = *(int *)r1p, r2 = *(int *)r2p;
   register int len1 = reg_where_dead[r1] - reg_where_born[r1];
   register int len2 = reg_where_dead[r2] - reg_where_born[r2];
   int tem;
