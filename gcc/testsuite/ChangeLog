@@ -1,5 +1,8 @@
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc.dg/noreturn-5.c: New file.
+	* gcc.dg/noreturn-6.c: New file.
+
 	* gcc.c-torture/compile/inline-1.c: New file.
 
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>

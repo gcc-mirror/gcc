@@ -630,9 +630,23 @@ function_types_compatible_p (f1, f2)
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   int val = 1;
   int val1;
+  tree ret1, ret2;
 
-  if (!(TREE_TYPE (f1) == TREE_TYPE (f2)
-	|| (val = comptypes (TREE_TYPE (f1), TREE_TYPE (f2)))))
+  ret1 = TREE_TYPE (f1);
+  ret2 = TREE_TYPE (f2);
+
+  /* 'volatile' qualifiers on a function's return type mean the function
+     is noreturn.  */
+  if (pedantic && TYPE_VOLATILE (ret1) != TYPE_VOLATILE (ret2))
+    pedwarn ("function return types not compatible due to `volatile'");
+  if (TYPE_VOLATILE (ret1))
+    ret1 = build_qualified_type (TYPE_MAIN_VARIANT (ret1),
+				 TYPE_QUALS (ret1) & ~TYPE_QUAL_VOLATILE);
+  if (TYPE_VOLATILE (ret2))
+    ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
+				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
+  val = comptypes (ret1, ret2);
+  if (val == 0)
     return 0;
 
   args1 = TYPE_ARG_TYPES (f1);
