@@ -720,7 +720,7 @@ AC_PROG_MAKE_SET
 
 # Find some useful tools
 AC_PROG_AWK
-# We need awk to run opts.sh (to create options.c and options.h).
+# We need awk to create options.c and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") AC_MSG_ERROR([can't build without awk, bailing out]) ;;
