@@ -1,3 +1,8 @@
+Wed Oct 15 17:42:41 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (following_call): Fail if the CALL_INSN is an indirect
+	call.
+
 Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* cplus-dem.c (demangle_signature): Don't look for return types on
