@@ -534,6 +534,13 @@ void
 dump_variable (FILE *file, tree var)
 {
   var_ann_t ann;
+  
+  if (TREE_CODE (var) == SSA_NAME)
+    {
+      if (POINTER_TYPE_P (TREE_TYPE (var)))
+	dump_points_to_info_for (file, var);
+      var = SSA_NAME_VAR (var);
+    }
 
   if (var == NULL_TREE)
     {
@@ -542,9 +549,6 @@ dump_variable (FILE *file, tree var)
     }
 
   print_generic_expr (file, var, dump_flags);
-  
-  if (TREE_CODE (var) == SSA_NAME)
-    var = SSA_NAME_VAR (var);
 
   ann = var_ann (var);
 

@@ -59,6 +59,9 @@ struct ptr_info_def GTY(())
   /* Nonzero if the value of this pointer escapes the current function.  */
   unsigned int value_escapes_p : 1;
 
+  /* Nonzero if this pointer is dereferenced.  */
+  unsigned int is_dereferenced : 1;
+
   /* Set of variables that this pointer may point to.  */
   bitmap pt_vars;
 
@@ -550,6 +553,8 @@ extern void dump_alias_info (FILE *);
 extern void debug_alias_info (void);
 extern void dump_points_to_info (FILE *);
 extern void debug_points_to_info (void);
+extern void dump_points_to_info_for (FILE *, tree);
+extern void debug_points_to_info_for (tree);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */

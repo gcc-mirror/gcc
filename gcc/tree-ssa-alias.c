@@ -432,21 +432,9 @@ collect_points_to_info_for (struct alias_info *ai, tree ptr)
 
   if (!bitmap_bit_p (ai->ssa_names_visited, SSA_NAME_VERSION (ptr)))
     {
-      struct ptr_info_def *pi;
-
       bitmap_set_bit (ai->ssa_names_visited, SSA_NAME_VERSION (ptr));
       walk_use_def_chains (ptr, collect_points_to_info_r, ai);
-
       VARRAY_PUSH_TREE (ai->processed_ptrs, ptr);
-
-      /* If we could not determine where PTR was pointing to, clear all the
-	 other points-to information.  */
-      pi = SSA_NAME_PTR_INFO (ptr);
-      if (pi->pt_anything)
-	{
-	  pi->pt_malloc = 0;
-	  pi->pt_vars = NULL;
-	}
     }
 }
 
@@ -609,15 +597,12 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	      if (ptr_is_dereferenced_by (op, stmt, &is_store))
 		{
 		  /* If we found OP to point to a set of variables or
-		     malloc, then create a name memory tag for it.  This
-		     gives more precise aliasing information, which helps
-		     the optimizers.
-
-		     FIXME: Cycles in the SSA web and the lack of SSA 
-		     information for structures will prevent the creation
-		     of name tags.  Find ways around this limitation.  */
+		     malloc, then mark it as being dereferenced.  In a
+		     subsequent pass, dereferenced pointers that point
+		     to a set of variables will be assigned a name tag
+		     to alias all the variables OP points to.  */
 		  if (pi->pt_malloc || pi->pt_vars)
-		    pi->name_mem_tag = get_nmt_for (op);
+		    pi->is_dereferenced = 1;
 
 		  /* Keep track of how many time we've dereferenced each
 		     pointer.  Again, we don't need to grow
@@ -695,6 +680,92 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 }
 
 
+/* Create name tags for all the pointers that have been dereferenced.
+   We only create a name tag for a pointer P if P is found to point to
+   a set of variables (so that we can alias them to *P) or if it is
+   the result of a call to malloc (which means that P cannot point to
+   anything else nor alias any other variable).
+
+   If two pointers P and Q point to the same set of variables, they
+   are assigned the same name tag.  */
+
+static void
+create_name_tags (struct alias_info *ai)
+{
+  size_t i;
+
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+    {
+      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+
+      /* If we could not determine where PTR was pointing to, clear
+	 all the other points-to flags.  */
+      pi = SSA_NAME_PTR_INFO (ptr);
+      if (pi->pt_anything)
+	{
+	  pi->pt_malloc = 0;
+	  pi->pt_vars = NULL;
+	  pi->is_dereferenced = 0;
+	}
+
+      if (!pi->is_dereferenced)
+	continue;
+
+      if (pi->pt_vars)
+	{
+	  size_t j;
+
+	  /* If PTR points to a set of variables, check if we don't
+	     have another pointer Q with the same points-to set before
+	     creating a tag.  If so, use Q's tag instead of creating a
+	     new one.
+
+	     This is important for not creating unnecessary symbols
+	     and also for copy propagation.  If we ever need to
+	     propagate PTR into Q or vice-versa, we would run into
+	     problems if they both had different name tags because
+	     they would have different SSA version numbers (which
+	     would force us to take the name tags in and out of SSA).  */
+	  pi->name_mem_tag = NULL_TREE;
+	  for (j = 0; j < i; j++)
+	    {
+	      tree q = VARRAY_TREE (ai->processed_ptrs, j);
+	      struct ptr_info_def *qi = SSA_NAME_PTR_INFO (q);
+
+	      if (qi
+		  && qi->pt_vars
+		  && qi->name_mem_tag
+		  && bitmap_equal_p (pi->pt_vars, qi->pt_vars))
+		{
+		  pi->name_mem_tag = qi->name_mem_tag;
+		  break;
+		}
+	    }
+
+	  if (pi->name_mem_tag == NULL_TREE)
+	    pi->name_mem_tag = get_nmt_for (ptr);
+	}
+      else if (pi->pt_malloc)
+	{
+	  /* Otherwise, create a unique name tag for this pointer.  */
+	  pi->name_mem_tag = get_nmt_for (ptr);
+	}
+      else
+	{
+	  /* Only pointers that may point to malloc or other variables
+	     may receive a name tag.  If the pointer does not point to
+	     a known spot, we should use type tags.  */
+	  abort ();
+	}
+
+      /* Mark the new name tag for renaming.  */
+      bitmap_set_bit (vars_to_rename, var_ann (pi->name_mem_tag)->uid);
+    }
+}
+
+
+
 /* For every pointer P_i in AI->PROCESSED_PTRS, create may-alias sets for
    the name memory tag (NMT) associated with P_i.  If P_i escapes, then its
    name tag and the variables it points-to are call-clobbered.  Finally, if
@@ -707,6 +778,8 @@ static void
 compute_flow_sensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
+
+  create_name_tags (ai);
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
     {
@@ -1173,10 +1246,10 @@ setup_pointers_and_addressables (struct alias_info *ai)
       tree var = referenced_var (i);
       var_ann_t v_ann = var_ann (var);
 
-      /* Name memory tags already have flow-sensitive aliasing information, so
-	 they need not be processed by compute_may_aliases.  Similarly,
-	 type memory tags are already accounted for when we process their
-	 associated pointer.  */
+      /* Name memory tags already have flow-sensitive aliasing
+	 information, so they need not be processed by
+	 compute_may_aliases.  Similarly, type memory tags are already
+	 accounted for when we process their associated pointer.  */
       if (v_ann->mem_tag_kind != NOT_A_TAG)
 	continue;
 
@@ -1192,8 +1265,9 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      && v_ann->mem_tag_kind == NOT_A_TAG
 	      && !needs_to_live_in_memory (var))
 	    {
-	      /* The address of VAR is not needed, remove the addressable bit,
-	         so that it can be optimized as a regular variable.  */
+	      /* The address of VAR is not needed, remove the
+		 addressable bit, so that it can be optimized as a
+		 regular variable.  */
 	      mark_non_addressable (var);
 
 	      /* Since VAR is now a regular GIMPLE register, we will need
@@ -1227,11 +1301,17 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	  tree tag = v_ann->type_mem_tag;
 	  var_ann_t t_ann;
 
-	  /* If pointer VAR still doesn't have a memory tag associated with it,
-	     create it now or re-use an existing one.  */
+	  /* If pointer VAR still doesn't have a memory tag associated
+	     with it, create it now or re-use an existing one.  */
 	  if (tag == NULL_TREE)
 	    tag = get_tmt_for (var, ai);
 	  t_ann = var_ann (tag);
+
+	  /* The type tag will need to be renamed into SSA afterwards.
+	     Note that we cannot do this inside get_tmt_for because
+	     aliasing may run multiple times and we only create type
+	     tags the first time.  */
+	  bitmap_set_bit (vars_to_rename, t_ann->uid);
 
 	  /* Associate the tag with pointer VAR.  */
 	  v_ann->type_mem_tag = tag;
@@ -1548,7 +1628,32 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
   if (orig_pi)
     {
       dest_pi->pt_anything |= orig_pi->pt_anything;
-      dest_pi->pt_malloc |= orig_pi->pt_malloc;
+
+      /* Notice that we never merge PT_MALLOC.  This attribute is only
+	 true if the pointer is the result of a malloc() call.
+	 Otherwise, we can end up in this situation:
+
+	 P_i = malloc ();
+	 ...
+	 P_j = P_i + X;
+
+	 P_j would be marked as PT_MALLOC, which is wrong because
+	 PT_MALLOC implies that the pointer may not point to another
+	 variable.
+
+	 FIXME 1: Subsequent analysis may determine that P_j
+	 cannot alias anything else, but we are being conservative
+	 here.
+
+	 FIXME 2: If the merging comes from a copy assignment, we
+	 ought to merge PT_MALLOC, but then both pointers would end up
+	 getting different name tags because create_name_tags is not
+	 smart enough to determine that the two come from the same
+	 malloc call.  Copy propagation before aliasing should cure
+	 this.  */
+      dest_pi->pt_malloc = 0;
+      if (orig_pi->pt_malloc)
+	dest_pi->pt_anything = 1;
 
       if (orig_pi->pt_vars)
 	{
@@ -1559,9 +1664,9 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 	    }
 	  else
 	    bitmap_a_or_b (dest_pi->pt_vars,
-			   dest_pi->pt_vars,
-			   orig_pi->pt_vars);
-      }
+		           dest_pi->pt_vars,
+		           orig_pi->pt_vars);
+	}
     }
 }
 
@@ -1821,9 +1926,8 @@ create_memory_tag (tree type, bool is_type_tag)
   ann->mem_tag_kind = (is_type_tag) ? TYPE_TAG : NAME_TAG;
   ann->type_mem_tag = NULL_TREE;
 
-  /* Add the tag to the symbol table and mark it for renaming.  */
+  /* Add the tag to the symbol table.  */
   add_referenced_tmp_var (tag);
-  bitmap_set_bit (vars_to_rename, ann->uid);
 
   return tag;
 }
@@ -2030,7 +2134,7 @@ get_ptr_info (tree t)
 
 /* Dump points-to information for SSA_NAME PTR into FILE.  */
 
-static void
+void
 dump_points_to_info_for (FILE *file, tree ptr)
 {
   struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
@@ -2038,38 +2142,50 @@ dump_points_to_info_for (FILE *file, tree ptr)
   fprintf (file, "Pointer ");
   print_generic_expr (file, ptr, dump_flags);
 
-  if (pi == NULL)
-    return;
-
-  if (pi->name_mem_tag)
+  if (pi)
     {
-      fprintf (file, ", name memory tag: ");
-      print_generic_expr (file, pi->name_mem_tag, dump_flags);
-    }
+      if (pi->name_mem_tag)
+	{
+	  fprintf (file, ", name memory tag: ");
+	  print_generic_expr (file, pi->name_mem_tag, dump_flags);
+	}
 
-  if (pi->value_escapes_p)
-    fprintf (file, ", its value escapes");
+      if (pi->is_dereferenced)
+	fprintf (file, ", is dereferenced");
 
-  if (pi->pt_anything)
-    fprintf (file, ", points-to anything");
+      if (pi->value_escapes_p)
+	fprintf (file, ", its value escapes");
 
-  if (pi->pt_malloc)
-    fprintf (file, ", points-to malloc");
+      if (pi->pt_anything)
+	fprintf (file, ", points-to anything");
 
-  if (pi->pt_vars)
-    {
-      unsigned ix;
+      if (pi->pt_malloc)
+	fprintf (file, ", points-to malloc");
 
-      fprintf (file, ", points-to vars: { ");
-      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix,
-	  {
-	    print_generic_expr (file, referenced_var (ix), dump_flags);
-	    fprintf (file, " ");
-	  });
-      fprintf (file, "}");
+      if (pi->pt_vars)
+	{
+	  unsigned ix;
+
+	  fprintf (file, ", points-to vars: { ");
+	  EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix,
+	      {
+		print_generic_expr (file, referenced_var (ix), dump_flags);
+		fprintf (file, " ");
+	      });
+	  fprintf (file, "}");
+	}
     }
 
   fprintf (file, "\n");
+}
+
+
+/* Dump points-to information for VAR into stderr.  */
+
+void
+debug_points_to_info_for (tree var)
+{
+  dump_points_to_info_for (stderr, var);
 }
 
 
