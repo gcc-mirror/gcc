@@ -40,6 +40,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "stdio.h"
 #include "target.h"
+#include "expr.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -131,9 +132,9 @@ write_resource_constructor (void)
   for (iter = nreverse (resources); iter != NULL_TREE;
        iter = TREE_CHAIN (iter))
     {
-      const char *name = IDENTIFIER_POINTER (DECL_NAME (TREE_VALUE (iter)));
       emit_library_call (registerResource_libfunc, 0, VOIDmode, 1,
-			 gen_rtx (SYMBOL_REF, Pmode, name),
+			 expand_expr (build_address_of (TREE_VALUE (iter)),
+				      0, Pmode, 0),
 			 Pmode);
     }
 
