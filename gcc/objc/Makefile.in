@@ -1,3 +1,23 @@
+#  GNU Objective C Runtime Makefile
+#  Copyright (C) 1993 Free Software Foundation, Inc.
+#
+#  Author: Kresten Krab Thorup
+#
+#  This file is part of GNU CC.
+#
+#  GNU CC is free software; you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation; either version 2, or (at your option) any later version.
+#
+#  GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+#  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+#  details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  GNU CC; see the file COPYING.  If not, write to the Free Software
+#  Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#
 # This makefile is run by the parent dir's makefile.
 # thisdir1=`pwd`; \
 # srcdir1=`cd $(srcdir); pwd`; \
@@ -30,21 +50,48 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 all:
 	cd ..; $(MAKE) sublibobjc.a
 
-libobjc.a: core.o hash.o object.o
+OBJS = hash.o sarray.o objc-class.o objc-msg.o objc-init.o objc-archive.o \
+	objc-sel.o objc-object.o objc-misc.o Object.o Protocol.o
+
+all: libobjc.a
+
+runtime.h: hash.h list.h sarray.h objc.h objc-api.h
+
+Object.m: Object.h
+
+Object.h: objc.h objc-api.h 
+
+sarray.c: sarray.h
+
+hash.c: hash.h
+
+objc-class.c: runtime.h
+
+objc-msg.c: runtime.h
+
+objc-init.c: runtime.h
+
+objc-sel.c: runtime.h
+
+objc-object.c: runtime.h
+
+objc-class.o: objc-class.c
+
+objc-msg.o: objc-msg.c
+
+objc-init.o: objc-init.c
+
+objc-sel.o: objc-sel.c
+
+objc-object.o: objc-object.c
+
+libobjc.a: $(OBJS)
 	-rm -f libobjc.a
-	$(AR) rc libobjc.a object.o core.o hash.o
+	$(AR) rc libobjc.a $(OBJS)
 # ranlib is run in the parent directory's makefile.
 
-OBJC_H = objc.h objc-proto.h record.h $(srcdir)/assert.h $(srcdir)/gstdarg.h
-HASH_H = hash.h mutex.h
-
-core.o: core.c $(OBJC_H) $(HASH_H) $(srcdir)/gstddef.h
-hash.o: hash.c $(OBJC_H) $(HASH_H) $(srcdir)/gstddef.h
-object.o: object.m object.h $(OBJC_H)
-	$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
-
 mostlyclean:
-	-rm -f core.o hash.o object.o libobjc.a
+	-rm -f $(OBJS) libobjc.a
 clean: mostlyclean
 distclean: mostlyclean
 extraclean: mostlyclean

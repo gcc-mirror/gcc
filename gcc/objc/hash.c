@@ -1,5 +1,5 @@
-/* Hash tables for Objective C method dispatch.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+/* Hash tables for Objective C internal structures
+   Copyright (C) 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,15 +23,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#include "tconfig.h"
-#include "gstddef.h"
-#include "gstdarg.h"
 #include "assert.h"
 
-#include "hash.h"
-#include "objc.h"
-#include "objc-proto.h"
+#include <objc/hash.h>
+#include <objc/objc.h>
 
+#include "runtime.h"		/* for DEBUG_PRINTF */
 
 /* These two macros determine when a hash table is full and
    by how much it should be expanded respectively.
