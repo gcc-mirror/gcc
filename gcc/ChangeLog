@@ -1,3 +1,7 @@
+Thu Sep 17 12:24:33 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (copy_src_to_dest): Check that modes match.
+
 Wed Sep 16 22:10:42 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config/i386/sco5.h (SUPPORTS_WEAK): True only if targeting ELF.
