@@ -2841,7 +2841,6 @@ expand_mult_highpart_adjust (enum machine_mode mode, rtx adj_operand, rtx op0,
   rtx tem;
   enum rtx_code adj_code = unsignedp ? PLUS : MINUS;
 
-  op1 = gen_int_mode (INTVAL (op1), mode);
   tem = expand_shift (RSHIFT_EXPR, mode, op0,
 		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
 		      NULL_RTX, 0);
@@ -2914,7 +2913,7 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 			  unsignedp, OPTAB_DIRECT);
       if (tem)
 	/* We used the wrong signedness.  Adjust the result.  */
-	return expand_mult_highpart_adjust (mode, tem, op0, op1,
+	return expand_mult_highpart_adjust (mode, tem, op0, narrow_op1,
 					    tem, unsignedp);
     }
 
@@ -2954,7 +2953,7 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 	{
 	  tem = extract_high_half (mode, tem);
 	  /* We used the wrong signedness.  Adjust the result.  */
-	  return expand_mult_highpart_adjust (mode, tem, op0, op1,
+	  return expand_mult_highpart_adjust (mode, tem, op0, narrow_op1,
 					      target, unsignedp);
 	}
     }
