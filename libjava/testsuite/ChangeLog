@@ -1,3 +1,9 @@
+2002-12-01  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jacks/jacks.exp (gcj_jacks_setup_xfail): New function.
+	(gcj_jacks_parse): Use it; set up xfails.
+	* libjava.jacks/jacks.xfail: New file.
+
 2002-12-01  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/xfails: Remove Inspector FAILs that now PASS.
