@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "i386.h"	/* Base i386 target machine definitions */
-#include "att386.h"	/* Use the i386 AT&T assembler syntax */
+#include "i386/i386.h"	/* Base i386 target machine definitions */
+#include "i386/att.h"	/* Use the i386 AT&T assembler syntax */
 #include "svr4.h"	/* Definitions common to all SVR4 targets */
 
 #undef TARGET_VERSION
