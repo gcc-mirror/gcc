@@ -60,7 +60,7 @@ static void finish_sigtable_vardecl PROTO((tree, tree));
 static int is_namespace_ancestor PROTO((tree, tree));
 static tree namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
-static tree ambiguous_decl PROTO((tree, tree, tree));
+static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
 static void check_decl_namespace PROTO((void));
 
@@ -3857,15 +3857,21 @@ add_using_namespace (user, used, indirect)
      tree used;
      int indirect;
 {
-  tree iter;
+  tree t;
   /* Using oneself is a no-op. */
   if (user == used)
     return;
   my_friendly_assert (TREE_CODE (user) == NAMESPACE_DECL, 380);
   my_friendly_assert (TREE_CODE (used) == NAMESPACE_DECL, 380);
   /* Check if we already have this. */
-  if (purpose_member (used, DECL_NAMESPACE_USING (user)) != NULL_TREE)
-    return;
+  t = purpose_member (used, DECL_NAMESPACE_USING (user));
+  if (t != NULL_TREE)
+    {
+      if (!indirect)
+	/* Promote to direct usage. */
+	TREE_INDIRECT_USING (t) = 0;
+      return;
+    }
 
   /* Add used to the user's using list. */
   DECL_NAMESPACE_USING (user) 
@@ -3879,13 +3885,13 @@ add_using_namespace (user, used, indirect)
     = perm_tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
 
   /* Recursively add all namespaces used. */
-  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
+  for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
     /* indirect usage */
-    add_using_namespace (user, TREE_PURPOSE (iter), 1);
+    add_using_namespace (user, TREE_PURPOSE (t), 1);
 
   /* Tell everyone using us about the new used namespaces. */
-  for (iter = DECL_NAMESPACE_USERS (user); iter; iter = TREE_CHAIN (iter))
-    add_using_namespace (TREE_PURPOSE (iter), used, 1);
+  for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
+    add_using_namespace (TREE_PURPOSE (t), used, 1);
 }
 
 /* Combines two sets of overloaded functions into an OVERLOAD chain.
@@ -3916,42 +3922,77 @@ merge_functions (s1, s2)
    XXX I don't want to repeat the entire duplicate_decls here */
 
 static tree
-ambiguous_decl (name, old, new)
+ambiguous_decl (name, old, new, flags)
      tree name;
      tree old;
      tree new;
+     int flags;
 {
+  tree val, type;
   my_friendly_assert (old != NULL_TREE, 393);
   /* Copy the value. */
+  val = BINDING_VALUE (new);
+  if (val)
+    switch (TREE_CODE (val))
+      {
+      case TEMPLATE_DECL:
+        /* If we expect types or namespaces, and not templates,
+           or this is not a template class. */
+        if (LOOKUP_QUALIFIERS_ONLY (flags)
+            && (!(flags & LOOKUP_TEMPLATES_EXPECTED)
+                || !DECL_CLASS_TEMPLATE_P (val)))
+          val = NULL_TREE;
+        break;
+      case TYPE_DECL:
+        if (LOOKUP_NAMESPACES_ONLY (flags))
+          val = NULL_TREE;
+        break;
+      case NAMESPACE_DECL:
+        if (LOOKUP_TYPES_ONLY (flags))
+          val = NULL_TREE;
+        break;
+      default:
+        if (LOOKUP_QUALIFIERS_ONLY (flags))
+          val = NULL_TREE;
+      }
+        
   if (!BINDING_VALUE (old))
-    BINDING_VALUE (old) = BINDING_VALUE (new);
-  else if (BINDING_VALUE (new) 
-	   && BINDING_VALUE (new) != BINDING_VALUE (old))
+    BINDING_VALUE (old) = val;
+  else if (val && val != BINDING_VALUE (old))
     {
       if (is_overloaded_fn (BINDING_VALUE (old)) 
-	  && is_overloaded_fn (BINDING_VALUE (new)))
+	  && is_overloaded_fn (val))
 	{
 	  BINDING_VALUE (old) = merge_functions (BINDING_VALUE (old),
-						 BINDING_VALUE (new));
+						 val);
 	}
       else
 	{
 	  /* Some declarations are functions, some are not. */
-	  cp_error ("use of `%D' is ambiguous", name);
-	  cp_error_at ("  first declared as `%#D' here", BINDING_VALUE (old));
-	  cp_error_at ("  also declared as `%#D' here", BINDING_VALUE (new));
+          if (flags & LOOKUP_COMPLAIN)
+            {
+              cp_error ("use of `%D' is ambiguous", name);
+              cp_error_at ("  first declared as `%#D' here",
+                           BINDING_VALUE (old));
+              cp_error_at ("  also declared as `%#D' here", val);
+            }
 	  return error_mark_node;
 	}
     }
   /* ... and copy the type. */
+  type = BINDING_TYPE (new);
+  if (LOOKUP_NAMESPACES_ONLY (flags))
+    type = NULL_TREE;
   if (!BINDING_TYPE (old))
-    BINDING_TYPE (old) = BINDING_TYPE (new);
-  else if(BINDING_TYPE (new)
-	  && BINDING_TYPE (old) != BINDING_TYPE (new))
+    BINDING_TYPE (old) = type;
+  else if(type && BINDING_TYPE (old) != type)
     {
-      cp_error ("`%D' denotes an ambiguous type",name);
-      cp_error_at ("first type here", BINDING_TYPE (old));
-      cp_error_at ("other type here", BINDING_TYPE (new));
+      if (flags & LOOKUP_COMPLAIN)
+        {
+          cp_error ("`%D' denotes an ambiguous type",name);
+          cp_error_at ("  first type here", BINDING_TYPE (old));
+          cp_error_at ("  other type here", type);
+        }
     }
   return old;
 }
@@ -3961,8 +4002,9 @@ ambiguous_decl (name, old, new)
    Returns zero on errors. */
 
 int
-lookup_using_namespace (name, val, usings, scope)
+lookup_using_namespace (name, val, usings, scope, flags)
      tree name, val, usings, scope;
+     int flags;
 {
   tree iter;
   tree val1;
@@ -3973,7 +4015,7 @@ lookup_using_namespace (name, val, usings, scope)
       {
 	val1 = binding_for_name (name, TREE_PURPOSE (iter));
 	/* Resolve ambiguities. */
-	val = ambiguous_decl (name, val, val1);
+	val = ambiguous_decl (name, val, val1, flags);
       }
   return val != error_mark_node;
 }
@@ -3984,10 +4026,11 @@ lookup_using_namespace (name, val, usings, scope)
    or 0 on error. */
 
 int
-qualified_lookup_using_namespace (name, scope, result)
+qualified_lookup_using_namespace (name, scope, result, flags)
      tree name;
      tree scope;
      tree result;
+     int flags;
 {
   /* Maintain a list of namespaces visited... */
   tree seen = NULL_TREE;
@@ -3997,7 +4040,8 @@ qualified_lookup_using_namespace (name, scope, result)
   while (scope && (result != error_mark_node))
     {
       seen = temp_tree_cons (scope, NULL_TREE, seen);
-      result = ambiguous_decl (name, result, binding_for_name (name, scope));
+      result = ambiguous_decl (name, result,
+                               binding_for_name (name, scope), flags);
       if (!BINDING_VALUE (result) && !BINDING_TYPE (result))
 	/* Consider using directives. */
 	for (usings = DECL_NAMESPACE_USING (scope); usings;
@@ -4437,7 +4481,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 
   *newval = *newtype = NULL_TREE;
   decls = binding_init (&_decls);
-  if (!qualified_lookup_using_namespace (name, scope, decls))
+  if (!qualified_lookup_using_namespace (name, scope, decls, 0))
     /* Lookup error */
     return;
 

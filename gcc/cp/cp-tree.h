@@ -2174,7 +2174,16 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    LOOKUP_NO_CONVERSION means that user-defined conversions are not
      permitted.  Built-in conversions are permitted.
    LOOKUP_DESTRUCTOR means explicit call to destructor.
-   LOOKUP_NO_TEMP_BIND means temporaries will not be bound to references.  */
+   LOOKUP_NO_TEMP_BIND means temporaries will not be bound to references.
+
+   These are used in global lookup to support elaborated types and
+   qualifiers.
+   
+   LOOKUP_PREFER_TYPES means not to accept objects, and possibly namespaces.
+   LOOKUP_PREFER_NAMESPACES means not to accept objects, and possibly types.
+   LOOKUP_PREFER_BOTH means class-or-namespace-name.
+   LOOKUP_TEMPLATES_EXPECTED means that class templates also count
+     as types.  */
 
 #define LOOKUP_PROTECT (1)
 #define LOOKUP_COMPLAIN (2)
@@ -2189,6 +2198,17 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
 #define LOOKUP_NO_TEMP_BIND (1024)
+#define LOOKUP_PREFER_TYPES (2048)
+#define LOOKUP_PREFER_NAMESPACES (4096)
+#define LOOKUP_PREFER_BOTH (6144)
+#define LOOKUP_TEMPLATES_EXPECTED (8192)
+
+#define LOOKUP_NAMESPACES_ONLY(f)  \
+  (((f) & LOOKUP_PREFER_NAMESPACES) && !((f) & LOOKUP_PREFER_TYPES))
+#define LOOKUP_TYPES_ONLY(f)  \
+  (!((f) & LOOKUP_PREFER_NAMESPACES) && ((f) & LOOKUP_PREFER_TYPES))
+#define LOOKUP_QUALIFIERS_ONLY(f)     ((f) & LOOKUP_PREFER_BOTH)
+     
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
@@ -2386,8 +2406,8 @@ extern tree lookup_name_current_level		PROTO((tree));
 extern tree lookup_name_namespace_only          PROTO((tree));
 extern void begin_only_namespace_names          PROTO((void));
 extern void end_only_namespace_names            PROTO((void));
-extern int  lookup_using_namespace              PROTO((tree,tree,tree,tree));
-extern int  qualified_lookup_using_namespace    PROTO((tree,tree,tree));
+extern int  lookup_using_namespace              PROTO((tree,tree,tree,tree,int));
+extern int  qualified_lookup_using_namespace    PROTO((tree,tree,tree,int));
 extern tree auto_function			PROTO((tree, tree, enum built_in_function));
 extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));

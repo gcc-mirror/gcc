@@ -3014,7 +3014,7 @@ do_scoped_id (token, parsing)
     {
       struct tree_binding _b;
       id = binding_init (&_b);
-      if (!qualified_lookup_using_namespace (token, global_namespace, id))
+      if (!qualified_lookup_using_namespace (token, global_namespace, id, 0))
 	id = NULL_TREE;
       else
 	id = BINDING_VALUE (id);
