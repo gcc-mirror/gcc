@@ -6605,20 +6605,16 @@ fold_complex_div (tree type, tree ac, tree bc, enum tree_code code)
    expression.  */
 
 static tree
-fold_unary (tree expr)
+fold_unary (enum tree_code code, tree type, tree op0)
 {
-  const tree t = expr;
-  const tree type = TREE_TYPE (expr);
   tree tem;
-  tree op0, arg0;
-  enum tree_code code = TREE_CODE (t);
+  tree arg0;
   enum tree_code_class kind = TREE_CODE_CLASS (code);
 
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 1);
 
-
-  arg0 = op0 = TREE_OPERAND (t, 0);
+  arg0 = op0;
   if (arg0)
     {
       if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
@@ -7022,15 +7018,11 @@ fold_unary (tree expr)
    expression.  */
 
 static tree
-fold_binary (tree expr)
+fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 {
-  const tree t = expr;
-  const tree type = TREE_TYPE (expr);
   tree t1 = NULL_TREE;
   tree tem;
-  tree op0, op1;
   tree arg0 = NULL_TREE, arg1 = NULL_TREE;
-  enum tree_code code = TREE_CODE (t);
   enum tree_code_class kind = TREE_CODE_CLASS (code);
 
   /* WINS will be nonzero when the switch is done
@@ -7040,8 +7032,8 @@ fold_binary (tree expr)
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 2);
 
-  arg0 = op0 = TREE_OPERAND (t, 0);
-  arg1 = op1 = TREE_OPERAND (t, 1);
+  arg0 = op0;
+  arg1 = op1;
 
   if (arg0)
     {
@@ -9908,13 +9900,19 @@ fold (tree expr)
 
   if (IS_EXPR_CODE_CLASS (kind))
     {
+      tree type = TREE_TYPE (t);
+      tree op0, op1;
+
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
-	  tem = fold_unary (expr);
+	  op0 = TREE_OPERAND (t, 0);
+	  tem = fold_unary (code, type, op0);
 	  return tem ? tem : expr;
 	case 2:
-	  tem = fold_binary (expr);
+	  op0 = TREE_OPERAND (t, 0);
+	  op1 = TREE_OPERAND (t, 1);
+	  tem = fold_binary (code, type, op0, op1);
 	  return tem ? tem : expr;
 	case 3:
 	  tem = fold_ternary (expr);

@@ -5,6 +5,10 @@
 	(fold): Return the original tree when any of the functions
 	mentioned above NULL_TREE.
 
+	* fold-const.c (fold_unary, fold_binary): Take decomposed
+	arguments, code, type, op0, and op1 in case of fold_binary.
+	(fold): Update calls to fold_unary and fold_binary.
+
 2005-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_unordered_cmp): Change prototype to take
