@@ -675,7 +675,8 @@ static bool is_too_expensive (const char *);
 
 
 /* Entry point for global common subexpression elimination.
-   F is the first instruction in the function.  */
+   F is the first instruction in the function.  Return nonzero if a
+   change is mode.  */
 
 int
 gcse_main (rtx f, FILE *file)
