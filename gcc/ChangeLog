@@ -1,4 +1,8 @@
-2002-02-06  Aldy Hernandez  <aldyh@redhat.com>
+2002-01-06  H.J. Lu <hjl@gnu.org>
+
+	* cfgcleanup.c (thread_jump): Fix 2 typos.
+
+2002-01-06  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.gcc: Add support for --enable-altivec.
 
