@@ -1,3 +1,29 @@
+2004-08-18  Fariborz Jahanian <fjahanian@apple.com>
+
+        * config/rs6000/altivec.md: Add new patterns for calls to
+        save_world/rest_world functions.
+
+        * config/rs6000/rs6000-protos.h: (save_world_operation,
+        restore_world_operation) new declarations.
+
+        * config/rs6000/rs6000.c: (struct rs6000_stack) new world_save_p
+        field added.
+        (rs6000_stack_info): Set world_save_p field.
+        (save_world_operation): New function.
+        (restore_world_operation): New function.
+        (compute_save_world_info): New function.
+        (rs6000_stack_info): Call compute_save_world_info.
+        (rs6000_emit_prologue): Check for world_save_p and generate
+        pattern to call save_world for saving all non-volatile and
+        special registers.
+        (rs6000_emit_epilogue): Check for world_save_p and generate
+        pattern to call rest_world to restore saved registers.
+
+        config/rs6000/rs6000.h: macros FIRST_SAVED_ALTIVEC_REGNO,
+        FIRST_SAVED_FP_REGNO, FIRST_SAVED_GP_REGNO defined.
+        (rs6000_reg_names): New entries added for save_world_operation and
+        restore_world_operation.
+
 2004-08-18  Caroline Tice  <ctice@apple.com>
 
         * Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS) Add

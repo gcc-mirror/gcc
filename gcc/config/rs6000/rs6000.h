@@ -916,6 +916,10 @@ extern const char *rs6000_warn_altivec_long_switch;
 #define SPE_ACC_REGNO		111
 #define SPEFSCR_REGNO		112
 
+#define FIRST_SAVED_ALTIVEC_REGNO (FIRST_ALTIVEC_REGNO+20)
+#define FIRST_SAVED_FP_REGNO    (14+32)
+#define FIRST_SAVED_GP_REGNO 13
+
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
 
@@ -2587,6 +2591,8 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"lmw_operation", {PARALLEL}},					   \
   {"stmw_operation", {PARALLEL}},					   \
   {"vrsave_operation", {PARALLEL}},					   \
+  {"save_world_operation", {PARALLEL}},                                    \
+  {"restore_world_operation", {PARALLEL}},                                 \
   {"mfcr_operation", {PARALLEL}},					   \
   {"mtcrf_operation", {PARALLEL}},					   \
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,			   \
