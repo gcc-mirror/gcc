@@ -1,3 +1,8 @@
+Sat Dec 15 17:53:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* calls.c (emit_call_1): If ECF_SP_DEPRESSED, pretend have adjusted
+	for rounded_stack_size.
+
 2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c, config/i386/i386.h, config/mcore/mcore.h,
