@@ -105,9 +105,6 @@ static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
 extern int rtl_dump_and_exit;
 extern int warnings_are_errors;
 
-/* Front-end specific tree formatter, if non-NULL.  */
-printer_fn lang_printer = NULL;
-
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;
 diagnostic_context *global_dc = &global_diagnostic_context;
@@ -128,15 +125,6 @@ static int last_error_tick;
 
 void (*print_error_function) PARAMS ((const char *)) =
   default_print_error_function;
-
-/* Maximum characters per line in automatic line wrapping mode.
-   Zero means don't wrap lines. */
-
-int diagnostic_message_length_per_line;
-
-/* Used to control every diagnostic message formatting.  Front-ends should
-   call set_message_prefixing_rule to set up their policies.  */
-static diagnostic_prefixing_rule_t current_prefixing_rule;
 
 /* Prevent recursion into the error handler.  */
 static int diagnostic_lock;
@@ -179,24 +167,20 @@ record_last_error_function ()
 /* Initialize the diagnostic message outputting machinery.  */
 
 void
-initialize_diagnostics ()
+diagnostic_initialize (context)
+     diagnostic_context *context;
 {
-  /* By default, we don't line-wrap messages.  */
-  diagnostic_message_length_per_line = 0;
-  set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+  memset (context, 0, sizeof *context);
+  obstack_init (&context->buffer.obstack);
 
-  /* Proceed to actual initialization.  */
-  default_initialize_buffer (diagnostic_buffer);
+  /* By default, diagnostics are sent to stderr.  */
+  output_buffer_attached_stream (&context->buffer) = stderr;
 
-  diagnostic_starter (global_dc) = default_diagnostic_starter;
-  diagnostic_finalizer (global_dc) = default_diagnostic_finalizer;
-}
+  /* By default, we emit prefixes once per message.  */
+  diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
 
-void
-set_message_prefixing_rule (rule)
-     diagnostic_prefixing_rule_t rule;
-{
-  current_prefixing_rule = rule;
+  diagnostic_starter (context) = default_diagnostic_starter;
+  diagnostic_finalizer (context) = default_diagnostic_finalizer;
 }
 
 /* Returns true if BUFFER is in line-wrappind mode.  */
@@ -252,7 +236,7 @@ output_set_maximum_length (buffer, length)
      output_buffer *buffer;
      int length;
 {
- ideal_line_wrap_cutoff (buffer) = length;
+  ideal_line_wrap_cutoff (buffer) = length;
   set_real_maximum_length (buffer);
 }
 
@@ -330,32 +314,10 @@ init_output_buffer (buffer, prefix, maximum_length)
   obstack_init (&buffer->obstack);
   output_buffer_attached_stream (buffer) = stderr;
   ideal_line_wrap_cutoff (buffer) = maximum_length;
-  prefixing_policy (buffer) = current_prefixing_rule;
+  prefixing_policy (buffer) = diagnostic_prefixing_rule (global_dc);
   output_set_prefix (buffer, prefix);
   output_text_length (buffer) = 0;
   clear_diagnostic_info (buffer);  
-}
-
-/* Initialize BUFFER with a NULL prefix and current diagnostic message
-   length cutoff.  */
-
-void
-default_initialize_buffer (buffer)
-     output_buffer *buffer;
-{
-  init_output_buffer (buffer, NULL, diagnostic_message_length_per_line);
-}
-
-/* Recompute diagnostic_buffer's attributes to reflect any change
-   in diagnostic formatting global options.  */
-
-void
-reshape_diagnostic_buffer ()
-{
-  ideal_line_wrap_cutoff (diagnostic_buffer) =
-    diagnostic_message_length_per_line;
-  prefixing_policy (diagnostic_buffer) = current_prefixing_rule;
-  set_real_maximum_length (diagnostic_buffer);
 }
 
 /* Reinitialize BUFFER.  */
@@ -776,7 +738,7 @@ output_format (buffer)
           break;
 
         default:
-          if (! lang_printer || !(*lang_printer) (buffer))
+          if (!buffer->format_decoder || !(*buffer->format_decoder) (buffer))
             {
               /* Hmmm.  The front-end failed to install a format translator
                  but called us with an unrecognized format.  Sorry.  */

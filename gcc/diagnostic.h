@@ -116,6 +116,18 @@ struct output_buffer
   /* This must be large enough to hold any printed integer or
      floating-point value.  */
   char digit_buffer[128];
+
+/* If non-NULL, this function formats data in the BUFFER. When called,
+   output_buffer_text_cursor (BUFFER) points to a format code.
+   FORMAT_DECODER should call output_add_string (and related functions)
+   to add data to the BUFFER.  FORMAT_DECODER can read arguments from
+   output_buffer_format_args (BUFFER) using VA_ARG.  If the BUFFER needs
+   additional characters from the format string, it should advance
+   the output_buffer_text_cursor (BUFFER) as it goes.  When FORMAT_DECODER
+   returns, output_buffer_text_cursor (BUFFER) should point to the last
+   character processed.  */
+
+  printer_fn format_decoder;
 };
 
 #define output_buffer_state(BUFFER) (BUFFER)->state
@@ -177,20 +189,12 @@ struct diagnostic_context
 #define diagnostic_starter(DC) (DC)->begin_diagnostic
 #define diagnostic_finalizer(DC) (DC)->end_diagnostic
 #define diagnostic_auxiliary_data(DC) (DC)->x_data
+#define diagnostic_format_decoder(DC) (DC)->buffer.format_decoder
+#define diagnostic_prefixing_rule(DC) (DC)->buffer.state.prefixing_rule
 
-/* If non-NULL, this function formats data in the BUFFER. When called,
-   output_buffer_text_cursor (BUFFER) points to a format code.  LANG_PRINTER
-   should call output_add_string (and related functions) to add data to
-   the BUFFER.  LANG_PRINTER can read arguments from
-   output_buffer_format_args (BUFFER) using VA_ARG.  If the BUFFER needs
-   additional characters from the format string, it should advance
-   the output_buffer_text_cursor (BUFFER) as it goes.  When LANG_PRINTER
-   returns, output_buffer_text_cursor (BUFFER) should point to the last
-   character processed.  */
-
-extern printer_fn lang_printer;
-
-extern int diagnostic_message_length_per_line;
+/* Maximum characters per line in automatic line wrapping mode.
+   Zero means don't wrap lines. */
+#define diagnostic_line_cutoff(DC) (DC)->buffer.state.ideal_maximum_length
 
 /* This output buffer is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
@@ -225,9 +229,7 @@ extern void set_internal_error_function	PARAMS ((void (*)
 						 PARAMS ((const char *,
 							  va_list *))));
 extern void report_diagnostic		PARAMS ((diagnostic_context *));
-extern void initialize_diagnostics	PARAMS ((void));
-extern void reshape_diagnostic_buffer	PARAMS ((void));
-extern void default_initialize_buffer	PARAMS ((output_buffer *));
+extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
 extern void init_output_buffer		PARAMS ((output_buffer *,
 						 const char *, int));
 extern void flush_diagnostic_buffer	PARAMS ((void));
@@ -237,7 +239,7 @@ extern const char *output_last_position PARAMS ((const output_buffer *));
 extern void output_set_prefix		PARAMS ((output_buffer *,
 						 const char *));
 extern void output_destroy_prefix	PARAMS ((output_buffer *));
-extern void output_set_maximum_length	PARAMS ((output_buffer *, int));
+extern void output_set_maximum_length   PARAMS ((output_buffer *, int));
 extern void output_emit_prefix		PARAMS ((output_buffer *));
 extern void output_add_newline		PARAMS ((output_buffer *));
 extern void output_add_space		PARAMS ((output_buffer *));
@@ -253,7 +255,6 @@ extern void output_clear_message_text	PARAMS ((output_buffer *));
 extern void output_printf		PARAMS ((output_buffer *, const char *,
 						 ...)) ATTRIBUTE_PRINTF_2;
 extern int output_is_line_wrapping	PARAMS ((output_buffer *));
-extern void set_message_prefixing_rule	PARAMS ((diagnostic_prefixing_rule_t));
 extern void output_verbatim		PARAMS ((output_buffer *, const char *,
 						 ...)) ATTRIBUTE_PRINTF_2;
 extern void verbatim			PARAMS ((const char *, ...))

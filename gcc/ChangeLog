@@ -1,3 +1,27 @@
+2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* toplev.c (decode_f_option): Adjust setting.
+	(toplev_main): Call diagnostic_initialize.  Remove call to
+	reshape_diagnostic_buffer._
+
+	* diagnostic.h (struct output_buffer): Add new field format_decoder.
+	(diagnostic_format_decoder): New macro.
+	(diagnostic_prefixing_rule): Likewise.
+	(diagnostic_line_cutoff): Likewise.
+	(set_message_prefixing_rule): Remove.
+
+	* diagnostic.c (lang_printer): Remove.
+	(diagnostic_message_length_per_line): Likewise.
+	(current_prefixing_rule): Likewise.
+	(initialize_diagnostics): Rename to...
+	(diagnostic_initialize): ...this. Tweak.
+	(default_initialize_buffer): Remove.
+	(reshape_diagnostic_buffer): Likewise.
+	(init_output_buffer): Adjust prefixing rule setting.
+	(output_format): Use format_decoder from the output_buffer.
+
+	* c-lang.c (c_init): Adjust tree formatter setting.
+
 2001-06-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (CPP_SPEC): Pass -P for .S files.

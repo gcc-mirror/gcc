@@ -194,7 +194,7 @@ init_error ()
   print_error_function = lang_print_error_function;
   diagnostic_starter (global_dc) = cp_diagnostic_starter;
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
-  lang_printer = cp_tree_printer;
+  diagnostic_format_decoder (global_dc) = cp_tree_printer;
   
   init_output_buffer (scratch_buffer, /* prefix */NULL, /* line-width */0);
 }
