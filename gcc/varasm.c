@@ -3417,6 +3417,10 @@ force_const_mem (mode, x)
       align = (mode == VOIDmode) ? UNITS_PER_WORD : GET_MODE_SIZE (mode);
       if (align > BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 	align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+#ifdef CONSTANT_ALIGNMENT
+      align = CONSTANT_ALIGNMENT (make_tree (type_for_mode (mode, 0), x),
+				 align * BITS_PER_UNIT) / BITS_PER_UNIT;
+#endif
 
       pool_offset += align - 1;
       pool_offset &= ~ (align - 1);
