@@ -1,3 +1,35 @@
+2002-03-24  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/beans/IntrospectionException.java: Update to 1.4.
+	* java/beans/PropertyVetoException.java: Ditto.
+
+2002-03-24  Eric Blake  <ebb9@email.byu.edu>
+
+	* gnu/java/beans/BeanInfoEmbryo.java (hasMethod): Use
+	Arrays.equals instead of ArrayHelper.equalsArray.
+
+2002-03-24  C. Brian Jones <cbj@gnu.org>
+
+	* java/beans/Introspector.java: added new static final fields
+	introduced in 1.2, lots of other updates remain to be done
+
+2002-03-24  C. Brian Jones <cbj@gnu.org>
+
+	* java/beans/Introspector.java: reformatting
+
+2002-03-24  C. Brian Jones <cbj@gnu.org>
+
+	* java/beans/Introspector.java: default beanInfoSearchPath will
+	not include sun.beans.infos given we provide no such package and
+	the API doesn't really require it; gnu.java.beans.info is the
+	default.
+
+2002-03-24  Mark Wielaard  <mark@klomp.org>
+
+	Thanks to Orp developers
+	* gnu/java/beans/editors/NativeBooleanEditor.java (setAsText(String)):
+	switch TRUE and FALSE return values.
+
 2002-03-23  Tom Tromey  <tromey@redhat.com>
 
 	* include/name-finder.h (_Jv_name_finder::myclose): New method.

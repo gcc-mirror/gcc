@@ -1,5 +1,5 @@
-/* java.beans.PropertyVetoException
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+/* PropertyVetoException.java -- thrown to veto a proposed property change
+   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,30 +39,47 @@ exception statement from your version. */
 package java.beans;
 
 /**
- ** PropertyVetoException is thrown when a VetoableChangeListener doesn't like the proposed change.
- **
- ** @author John Keiser
- ** @since JDK1.1
- ** @version 1.1.0, 31 May 1998
- ** @see java.beans.VetoableChangeListener
- **/
+ * PropertyVetoException is thrown when a VetoableChangeListener doesn't
+ * like the proposed change.
+ *
+ * @author John Keiser
+ * @see VetoableChangeListener
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class PropertyVetoException extends Exception
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 129596057694162164L;
 
-public class PropertyVetoException extends Exception {
-	PropertyChangeEvent evt;
+  /**
+   * The vetoed change.
+   *
+   * @serial the event that was vetoed
+   */
+  private final PropertyChangeEvent evt;
 
-	private static final long serialVersionUID = 129596057694162164L;
+  /**
+   * Instantiate this exception with the given message and property change.
+   *
+   * @param msg the reason for the veto
+   * @param changeEvent the PropertyChangeEvent that was thrown
+   */
+  public PropertyVetoException(String msg, PropertyChangeEvent changeEvent)
+  {
+    super(msg);
+    evt = changeEvent;
+  }
 
-	/** Instantiate this exception with the given message and property change.
-	 ** @param msg the reason for the veto.
-	 ** @param changeEvent the PropertyChangeEvent that was thrown.
-	 **/
-	public PropertyVetoException(String msg, PropertyChangeEvent changeEvent) {
-		super(msg);
-		evt = changeEvent;
-	}
-
-	/** Get the PropertyChange event that was vetoed. **/
-	public PropertyChangeEvent getPropertyChangeEvent() {
-		return evt;
-	}
+  /**
+   * Get the PropertyChange event that was vetoed.
+   *
+   * @return the vetoed change
+   */
+  public PropertyChangeEvent getPropertyChangeEvent()
+  {
+    return evt;
+  }
 }

@@ -1,5 +1,5 @@
-/* java.beans.IntrospectionException
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* IntrospectionException -- thrown when an exception occurs in introspection
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,19 +39,29 @@ exception statement from your version. */
 package java.beans;
 
 /**
- ** IntrospectionException is thrown when the Introspector fails.  Surprise, surprise.
- **
- ** @author John Keiser
- ** @since JDK1.1
- ** @version 1.1.0, 31 May 1998
- ** @see java.beans.Introspector
- **/
+ * IntrospectionException is thrown when the Introspector fails. Typical
+ * causes are the inability to map a name to its Class, or specifying a
+ * wrong type signature.
+ *
+ * @author John Keiser
+ * @see Introspector
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class IntrospectionException extends Exception
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -3728150539969542619L;
 
-public class IntrospectionException extends Exception {
-	/** Instantiate this exception with the given message.
-	 ** @param msg the message for the exception.
-	 **/
-	public IntrospectionException(String msg) {
-		super(msg);
-	}
+  /**
+   * Instantiate this exception with the given message.
+   *
+   * @param msg the message for the exception
+   */
+  public IntrospectionException(String msg)
+  {
+    super(msg);
+  }
 }
