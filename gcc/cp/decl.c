@@ -3198,7 +3198,10 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  if (CAN_HAVE_FULL_LANG_DECL_P (newdecl)
 	      && DECL_LANG_SPECIFIC (newdecl)
 	      && DECL_LANG_SPECIFIC (olddecl))
-	    DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
+	    {
+	      DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
+	      DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
+	    }
 	}
 
       /* Merge the section attribute.

@@ -1,3 +1,7 @@
+2003-09-30  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (duplicate_decls): Copy DECL_SAVED_INSNS too.
+
 2003-09-30  Kelley Cook  <kelleycoook@wideopenwest.com>
 
 	* g++spec.c: Convert to ISO C90 prototypes.
