@@ -2666,6 +2666,7 @@ extern void gcc_obstack_init		PARAMS ((struct obstack *));
 extern void init_obstacks		PARAMS ((void));
 extern void build_common_tree_nodes	PARAMS ((int));
 extern void build_common_tree_nodes_2	PARAMS ((int));
+extern void mark_tree_hashtable         PARAMS ((void *));
 
 /* In function.c */
 extern void setjmp_protect_args		PARAMS ((void));

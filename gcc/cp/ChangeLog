@@ -1,3 +1,17 @@
+2000-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (struct list_hash): Remove.
+	(list_hash_table): Make it be an htab.
+	(struct list_proxy): New type.
+	(list_hash_eq): New function.
+	(list_hash_pieces): Renamed from ...
+	(list_hash): ... this.
+	(list_hash_lookup): Remove.
+	(list_hash_add): Remove.
+	(hash_tree_cons): Use the generic hashtable.
+	(mark_list_hash): Remove.
+	(init_tree): Create the hashtable.
+
 2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* method.c (build_mangled_C9x_name): Rename to

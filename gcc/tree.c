@@ -170,6 +170,7 @@ static unsigned int type_hash_hash PARAMS ((const void*));
 static void print_type_hash_statistics PARAMS((void));
 static int mark_hash_entry PARAMS((void **, void *));
 static void finish_vector_type PARAMS((tree));
+static int mark_tree_hashtable_entry PARAMS((void **, void *));
 
 /* If non-null, these are language-specific helper functions for
    unsave_expr_now.  If present, LANG_UNSAVE is called before its
@@ -3182,6 +3183,29 @@ mark_type_hash (arg)
   htab_t t = *(htab_t *) arg;
 
   htab_traverse (t, mark_hash_entry, 0);
+}
+
+/* Mark the hashtable slot pointed to by ENTRY (which is really a
+   `tree**') for GC.  */
+
+static int
+mark_tree_hashtable_entry (entry, data)
+     void **entry;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ggc_mark_tree ((tree) *entry);
+  return 1;
+}
+
+/* Mark ARG (which is really a htab_t whose slots are trees) for 
+   GC.  */
+
+void
+mark_tree_hashtable (arg)
+     void *arg;
+{
+  htab_t t = *(htab_t *) arg;
+  htab_traverse (t, mark_tree_hashtable_entry, 0);
 }
 
 static void
