@@ -1749,7 +1749,7 @@ chill_expand_assignment (lhs, modifycode, rhs)
   			    NULL_TREE)))))))));
     }
 
-  /* The following is probably superceded by the
+  /* The following is probably superseded by the
      above code for SET_IN_EXPR. FIXME! */
   else if (TREE_CODE (lhs) == BIT_FIELD_REF)
     {

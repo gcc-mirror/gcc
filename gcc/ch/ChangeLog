@@ -1,3 +1,8 @@
+2001-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog, actions.c, ch-tree.def, decl.c, except.c, inout.c,
+	tasking.c, typeck.c: Fix spelling errors.
+
 2001-10-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* convert.c, inout.c, loop.c, nloop.c, tasking.c, timing.c,
@@ -864,7 +869,7 @@ Wed Oct  7 12:19:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 
-	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	* lex.c: Replace occurrences of HANDLE_SYSV_PRAGMA with
 	HANDLE_GENERIC_PRAGMAS.
 	(handle_generic_pragma): New function: Parse generic pragmas.
 
@@ -1120,7 +1125,7 @@ Sat Sep  5 23:49:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 Sat Sep  5 22:25:51 1998  Richard Henderson  <rth@cygnus.com>
 
-	* Makefile.in: Update dependancies for top-level gcc files that moved.
+	* Makefile.in: Update dependencies for top-level gcc files that moved.
 
 Sat Sep  5 02:21:08 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -1396,7 +1401,7 @@ Thu Feb 19 17:33:06 1998  Dave Brolley  <brolley@cygnus.com>
 
 Wed Feb 18 23:48:57 1998  Richard Henderson  <rth@cygnus.com>
 
-	* Make-lang.in (cc1chill): Kill lingering bc-opcode.h dependancy.
+	* Make-lang.in (cc1chill): Kill lingering bc-opcode.h dependency.
 
 Wed Feb 18 17:35:05 1998  Dave Brolley  <brolley@cygnus.com>
 
@@ -2043,7 +2048,7 @@ Wed Oct  4 05:14:00 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* grant.c (print_integer_selective): In case of a RANGE of
 	a SET mode, try to find and grant the parent mode.
-	(grant_seized_identifier): Dont write it out, if the identifier
+	(grant_seized_identifier): Don't write it out, if the identifier
 	doesn't have a seize file (it may come from a SPEC MODULE
 	defined in the compilation unit).
 
@@ -2325,7 +2330,7 @@ Mon Jun 19 06:01:42 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* grant.c (write_spec_module): If not GRANT ALL specified,
 	write only this identifiers to grant file which are
-	neccessary to form a prober grant file. This will shorten
+	necessary to form a prober grant file. This will shorten
 	grant files and speed up compilation.
 	(decode_constant_selective, decode_mode_selective,
 	get_type_selective, decode_decl_selective,
@@ -8488,7 +8493,7 @@ Fri Aug 13 16:36:36 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* ch-parse.y (optprogendname, optname):  Rename to opt_end_label.
 	* ch-parse.y:  Add support for compound name strings, but defer
 	using all over teh place, due to parser ambiguities.
-	Howver, do use defining_occurrence where appropriate.
+	However, do use defining_occurrence where appropriate.
 	* ch-parse.y:  Re-write syntax and semantics of GRANT and SEIZE
 	statements to support Blue Book functionality.  Neato!
 
@@ -10526,7 +10531,7 @@ Fri Apr  2 21:55:14 1993  Per Bothner  (bothner@rtl.cygnus.com)
 	Now, a grantfile is a spec module and contains all the
 	top-level declarations of the granting module, not just
 	those that are granted.  It also contains explicit grant
-	statments naming those declared names that are granted.
+	statements naming those declared names that are granted.
 	It also has seize statements and use_seize_file directives
 	to correctly handle transitive dependencies.
 
@@ -11229,7 +11234,7 @@ Fri Jan 29 17:18:22 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
 	* Makefile.in (install-libchill, install-librmt):  Removed.
 	* ch-actions.c (build_chill_exception_decl):  Change decl
-	to initialized char array, rather than unitialized common.
+	to initialized char array, rather than uninitialized common.
 	(Simplifies extracting string name of exception.)
 	* ch-actions.c:  Adjust interface to cause_exception accordingly.
 	* ch-typeck.c (build_chill_array_ref):  Cause rangefail if

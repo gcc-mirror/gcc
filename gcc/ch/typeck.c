@@ -570,7 +570,7 @@ build_chill_array_ref_1 (array, idx)
   if (! integer_zerop (TYPE_MIN_VALUE (domain)))
     {
       /* The C part of the compiler doesn't understand how to do
-	 arithmetic with dissimilar enum types.  So we check compatability
+	 arithmetic with dissimilar enum types.  So we check compatibility
 	 here, and perform the math in INTEGER_TYPE.  */
       if (TREE_CODE (TREE_TYPE (idx)) == ENUMERAL_TYPE
 	  && chill_comptypes (TREE_TYPE (idx), domain, 0))
@@ -1114,7 +1114,7 @@ build_chill_cast (type, expr)
   if (expr_type_is_discrete && type_is_discrete)
     {
       /* do an overflow check
-	 FIXME: is this always neccessary ??? */
+	 FIXME: is this always necessary ??? */
       /* FIXME: don't do range chacking when target type is PTR.
 	 PTR doesn't have MIN and MAXVALUE. result is sigsegv. */
       if (range_checking && type != ptr_type_node)

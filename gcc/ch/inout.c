@@ -4577,7 +4577,7 @@ build_chill_readtext (text_arg, exprlist)
   return build1 (CONVERT_EXPR, void_type_node, integer_zero_node);
 }
 
-/* this function build all neccesary enum-tables used for
+/* this function build all necessary enum-tables used for
    WRITETEXT or READTEXT of an enum */
 
 void build_enum_tables ()

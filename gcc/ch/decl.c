@@ -4475,7 +4475,7 @@ layout_enum (enumtype)
     }
 
   /* Fix all error_mark_nodes in enum. Increment maxnode and assign value.
-     This is neccessary to make a duplicate value check in the enum */
+     This is necessary to make a duplicate value check in the enum */
   for (pair = values; pair; pair = TREE_CHAIN (pair))
     {
       tree decl = TREE_VALUE (pair);
