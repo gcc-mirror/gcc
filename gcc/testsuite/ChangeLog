@@ -1,3 +1,7 @@
+2004-07-07  Eric Christopher  <echristo@redhat.com>
+
+	* gcc.c-torture/compile/20020210-1.c: xfail with optimization.
+
 2004-07-07  Andrew Pinski  <apinski@apple.com>
 
 	* gcc.c-torture/execute/931004-12.x: Xfail on powerpc-*-darwin*.
