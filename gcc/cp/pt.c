@@ -4475,9 +4475,7 @@ instantiate_class_template (type)
          struct S<int> {};
 
        Now, the `S<U>' in `f<int>' is the specialization, not an
-       instantiation of the original template.  Mark the type as
-       complete, in the same way that we do for a definition of a
-       template class.  */
+       instantiation of the original template.  */
     goto end;
 
   /* Determine what specialization of the original template to
@@ -5043,7 +5041,7 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
       /* else fall through */
     case ENUMERAL_TYPE:
     case UNION_TYPE:
-      if (uses_template_parms (t))
+      if (TYPE_TEMPLATE_INFO (t))
 	{
 	  tree argvec;
 	  tree context;
@@ -7671,7 +7669,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
   
-      if (CLASSTYPE_TEMPLATE_INFO (parm) && uses_template_parms (parm))
+      if (CLASSTYPE_TEMPLATE_INFO (parm))
 	{
 	  tree t = NULL_TREE;
 	  if (strict & UNIFY_ALLOW_DERIVED)
