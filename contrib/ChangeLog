@@ -1,3 +1,8 @@
+Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* test_summary: new switch (-i) and environment variable
+	(append_logs) for including files in the report.
+
 1998-06-01  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* warn_summary: Update to Kaveh's latest version allowing to
