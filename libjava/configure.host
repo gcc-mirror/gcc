@@ -96,6 +96,7 @@ case "${host}" in
 	slow_pthread_self=yes
 	;;
   x86_64-*)
+ 	CHECKREFSPEC="%{m32:-fcheck-references}"
 	sysdeps_dir=x86-64
 	libgcj_flags="${libgcj_flags} -ffloat-store"
 	libgcj_interpreter=no

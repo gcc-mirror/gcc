@@ -1,3 +1,8 @@
+2003-01-22  Andrew Haley  <aph@redhat.com>
+
+        * x86_64-signal.h: Add simple handler for x86_64 32-bit mode.
+        * configure.host (CHECKREFSPEC): Define for x86_64.
+
 2003-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/natResourceBundle.cc (getCallingClassLoader): Start

@@ -16,6 +16,8 @@ details.  */
 #include <signal.h>
 #include <sys/syscall.h>
 
+#ifdef __x86_64__
+
 #define HANDLE_SEGV 1
 
 #define SIGNAL_HANDLER(_name)	\
@@ -79,5 +81,16 @@ while (0)
  * go away if all systems ever have pthreads libraries that are
  * compiled with unwind info.  */
 
+#else /* __x86_64__ */
+
+/* This is for the 32-bit subsystem on on x86-64.  Catching signals
+   doesn't yet work on that target.  */
+
+#undef HANDLE_SEGV
+#undef HANDLE_FPE
+
+#define INIT_SEGV   do {} while (0)
+#define INIT_FPE   do {} while (0)
+
+#endif /* __x86_64__ */
 #endif /* JAVA_SIGNAL_H */
-  
