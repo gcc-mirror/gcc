@@ -5155,8 +5155,8 @@ push_init_level (implicit)
 
   /* Structure elements may require alignment.  Do this now
      if necessary for the subaggregate.  */
-  if (constructor_incremental && TREE_CODE (constructor_type) == RECORD_TYPE
-      && constructor_fields)
+  if (constructor_incremental && constructor_type != 0
+      && TREE_CODE (constructor_type) == RECORD_TYPE && constructor_fields)
     {
       /* Advance to offset of this element.  */
       if (! tree_int_cst_equal (constructor_bit_index,
