@@ -1,3 +1,7 @@
+2004-12-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c (gcse_main): Add a comment.
+
 2004-12-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* mklibgcc.in: Build shared libgcc and shared libunwind in gcc/.
