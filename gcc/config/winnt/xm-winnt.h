@@ -19,11 +19,27 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdlib.h>
+
+#ifndef USG
 #define USG 1
+#endif
+
+#ifndef ONLY_INT_FIELD
 #define ONLY_INT_FIELDS 1
+#endif
+
+#ifndef USE_PROTOTYPES
 #define USE_PROTOTYPES 1
+#endif
+
+#ifndef HAVE_PUTENV
 #define HAVE_PUTENV 1
+#endif
+
+#ifndef HAVE_VPRINTF
 #define HAVE_VPRINTF 1
+#endif
+
 #define NO_SYS_SIGLIST 1
 #define bcmp(a,b,c) memcmp (a,b,c)
 #define bcopy(a,b,c) memcpy (b,a,c)
