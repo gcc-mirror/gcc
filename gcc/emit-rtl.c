@@ -3393,16 +3393,16 @@ gen_sequence ()
   for (tem = first_insn; tem; tem = NEXT_INSN (tem))
     len++;
 
-  /* If only one insn, return its pattern rather than a SEQUENCE.
+  /* If only one insn, return it rather than a SEQUENCE.
      (Now that we cache SEQUENCE expressions, it isn't worth special-casing
-     the case of an empty list.)  */
+     the case of an empty list.)     
+     We only return the pattern of an insn if its code is INSN and it
+     has no notes.  This ensures that no information gets lost.  */
   if (len == 1
       && ! RTX_FRAME_RELATED_P (first_insn)
-      && (GET_CODE (first_insn) == INSN
-	  || GET_CODE (first_insn) == JUMP_INSN
-	  /* Don't discard the call usage field.  */
-	  || (GET_CODE (first_insn) == CALL_INSN
-	      && CALL_INSN_FUNCTION_USAGE (first_insn) == NULL_RTX)))
+      && GET_CODE (first_insn) == INSN
+      /* Don't throw away any reg notes. */
+      && REG_NOTES (first_insn) == 0)
     {
       if (!ggc_p)
 	{
