@@ -505,8 +505,10 @@ dump_flow_info (file)
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
   for (i = 0; i < n_basic_blocks; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK (i), dom_bb;
       edge e;
+      int sum;
+      gcov_type lsum;
 
       fprintf (file, "\nBasic block %d: first insn %d, last %d, ",
 	       i, INSN_UID (bb->head), INSN_UID (bb->end));
@@ -529,6 +531,37 @@ dump_flow_info (file)
       dump_regset (bb->global_live_at_end, file);
 
       putc ('\n', file);
+
+      /* Check the consistency of profile information.  We can't do that
+	 in verify_flow_info, as the counts may get invalid for incompletely
+	 solved graphs, later elliminating of conditionals or roundoff errors.
+	 It is still practical to have them reported for debugging of simple
+	 testcases.  */
+      sum = 0;
+      for (e = bb->succ; e; e = e->succ_next)
+	sum += e->probability;
+      if (bb->succ && abs (sum - REG_BR_PROB_BASE) > 100)
+	fprintf (file, "Invalid sum of outgoing probabilities %.1f%%\n",
+		 sum * 100.0 / REG_BR_PROB_BASE);
+      sum = 0;
+      for (e = bb->pred; e; e = e->pred_next)
+	sum += EDGE_FREQUENCY (e);
+      if (abs (sum - bb->frequency) > 100)
+	fprintf (file,
+		 "Invalid sum of incomming frequencies %i, should be %i\n",
+		 sum, bb->frequency);
+      lsum = 0;
+      for (e = bb->pred; e; e = e->pred_next)
+	lsum += e->count;
+      if (lsum - bb->count > 100 || lsum - bb->count < -100)
+	fprintf (file, "Invalid sum of incomming counts %i, should be %i\n",
+		 (int)lsum, (int)bb->count);
+      lsum = 0;
+      for (e = bb->succ; e; e = e->succ_next)
+	lsum += e->count;
+      if (bb->succ && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	fprintf (file, "Invalid sum of incomming counts %i, should be %i\n",
+		 (int)lsum, (int)bb->count);
     }
 
   putc ('\n', file);
