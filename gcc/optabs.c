@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2530,6 +2530,14 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	  HOST_WIDE_INT hi, lo;
 	  rtx last = get_last_insn ();
 
+	  /* Handle targets with different FP word orders.  */
+	  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+	    {
+	      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+	      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
+	      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
+	    }
+
 	  if (bitpos < HOST_BITS_PER_WIDE_INT)
 	    {
 	      hi = 0;
@@ -2674,6 +2682,14 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
 	{
 	  HOST_WIDE_INT hi, lo;
 	  rtx last = get_last_insn ();
+
+	  /* Handle targets with different FP word orders.  */
+	  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+	    {
+	      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+	      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
+	      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
+	    }
 
 	  if (bitpos < HOST_BITS_PER_WIDE_INT)
 	    {

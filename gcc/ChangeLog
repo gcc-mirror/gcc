@@ -1,3 +1,11 @@
+2003-01-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/9009
+	* optabs.c (expand_unop):  When manipulating the FP sign bit
+	using integer operations, account for targets with different
+	integer and FP word orders.
+	(expand_abs): Likewise.
+
 2003-01-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_gen_section_name): Do not include
