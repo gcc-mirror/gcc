@@ -1,4 +1,14 @@
-2004-01-05  Julian Brown  <julian@codesourcery.com>
+2005-01-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/12902
+	* config/i386/i386.md (sse_movhps, sse_movlps): Remove.
+	(sse_shufps): Change operand 3 to const_int_operand.
+	(sse2_storelps): Fix typo in template.
+	(sse_storehps, sse_loadhps, sse_storelps, sse_loadlps): New.
+	* config/i386/i386.c (ix86_expand_vector_move_misalign): Use them.
+	(ix86_expand_builtin): Likewise.
+
+2005-01-05  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_return_in_memory): Treat complex types
 	as aggregates for AAPCS ABIs.
