@@ -1,5 +1,6 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright 1996, 1997, 1998, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.
@@ -38,7 +39,9 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
+    || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
 /* A 64 bit v9 compiler with stack-bias,
    in a Medium/Low code model environment.  */
 

@@ -1,3 +1,8 @@
+2004-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/linux64.h (TARGET_DEFAULT): Make 64-bit by default
+	also for TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3.
+
 2004-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/15202
