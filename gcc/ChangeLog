@@ -1,3 +1,8 @@
+2004-08-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* system.h (gcc_assert): Remove __builtin_expect.  Evaluate EXPR
+	even when not checking.
+
 2004-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13684

@@ -508,10 +508,10 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 /* Use gcc_assert(EXPR) to test invariants.  */
 #if ENABLE_ASSERT_CHECKING
 #define gcc_assert(EXPR) 						\
-   ((void)(__builtin_expect (!(EXPR), 0)				\
-	   ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
+   ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
 #else
-#define gcc_assert(EXPR) ((void)0)
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define gcc_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
 /* Use gcc_unreachable() to mark unreachable locations (like an
