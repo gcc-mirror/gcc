@@ -77,24 +77,10 @@ namespace std
       istreambuf_iterator(streambuf_type* __s) throw()
       : _M_sbuf(__s), _M_c(-2) { }
        
-      // NB: This should really have an int_type return
-      // value, so "end of stream" postion can be checked without
-      // hacking.
+      // NB: The result of operator*() on an end of stream is undefined.
       char_type 
       operator*() const
-      { 
-	// The result of operator*() on an end of stream is undefined.
-	int_type __ret = traits_type::eof();
-	if (_M_sbuf)
-	  { 
-	    if (_M_c != static_cast<int_type>(-2))
-	      __ret = _M_c;
-	    else 
-	      if ((__ret = _M_sbuf->sgetc()) == traits_type::eof())
-		_M_sbuf = 0;
-	  }
-	return traits_type::to_char_type(__ret);
-      }
+      { return traits_type::to_char_type(_M_get()); }
 	
       istreambuf_iterator& 
       operator++()
@@ -124,11 +110,27 @@ namespace std
       equal(const istreambuf_iterator& __b) const
       {
 	const int_type __eof = traits_type::eof();
-	bool __thiseof = traits_type::eq_int_type(this->operator*(), __eof);
-	bool __beof = traits_type::eq_int_type(__b.operator*(), __eof);
+	bool __thiseof = _M_get() == __eof;
+	bool __beof = __b._M_get() == __eof;
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 #endif
+
+    private:
+      int_type 
+      _M_get() const
+      { 
+	int_type __ret = traits_type::eof();
+	if (_M_sbuf)
+	  { 
+	    if (_M_c != static_cast<int_type>(-2))
+	      __ret = _M_c;
+	    else 
+	      if ((__ret = _M_sbuf->sgetc()) == traits_type::eof())
+		_M_sbuf = 0;
+	  }
+	return __ret;
+      }
     };
 
   template<typename _CharT, typename _Traits>
