@@ -4531,10 +4531,13 @@ signal_catch (sig)
   my_friendly_abort (0);
 }
 
+#if 0
+/* Unused -- brendan 970107 */
 /* Array for holding types considered "built-in".  These types
    are output in the module in which `main' is defined.  */
 static tree *builtin_type_tdescs_arr;
 static int builtin_type_tdescs_len, builtin_type_tdescs_max;
+#endif
 
 /* Push the declarations of builtin types into the namespace.
    RID_INDEX, if < RID_MAX is the index of the builtin type
@@ -4612,7 +4615,7 @@ void
 init_decl_processing ()
 {
   tree decl;
-  register tree endlink, int_endlink, double_endlink;
+  register tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree fields[20];
   /* Data type of memcpy.  */
   tree memcpy_ftype, strlen_ftype;
@@ -4623,6 +4626,9 @@ init_decl_processing ()
   tree vb_off_identifier;
   /* Function type `char *(char *, char *)' and similar ones */
   tree string_ftype_ptr_ptr, int_ftype_string_string;
+  tree sizetype_endlink;
+  tree ptr_ftype, ptr_ftype_unsigned, ptr_ftype_sizetype;
+  tree void_ftype, void_ftype_int, void_ftype_ptr;
 
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
@@ -4878,6 +4884,19 @@ init_decl_processing ()
   endlink = void_list_node;
   int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   double_endlink = tree_cons (NULL_TREE, double_type_node, endlink);
+  unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
+
+  ptr_ftype = build_function_type (ptr_type_node, NULL_TREE);
+  ptr_ftype_unsigned = build_function_type (ptr_type_node, unsigned_endlink);
+  sizetype_endlink = tree_cons (NULL_TREE, sizetype, endlink);
+  /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
+  ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
+
+  void_ftype = build_function_type (void_type_node, endlink);
+  void_ftype_int = build_function_type (void_type_node, int_endlink);
+  void_ftype_ptr
+    = build_function_type (void_type_node,
+ 			   tree_cons (NULL_TREE, ptr_type_node, endlink));
 
   float_ftype_float
     = build_function_type (float_type_node,
@@ -4935,9 +4954,7 @@ init_decl_processing ()
     = build_function_type (ptr_type_node,
 			   tree_cons (NULL_TREE, ptr_type_node,
 				      tree_cons (NULL_TREE, const_ptr_type_node,
-						 tree_cons (NULL_TREE,
-							    sizetype,
-							    endlink))));
+						 sizetype_endlink)));
 
   if (flag_huge_objects)
     delta_type_node = long_integer_type_node;
@@ -4948,44 +4965,27 @@ init_decl_processing ()
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
   builtin_return_address_fndecl =
-  builtin_function ("__builtin_return_address",
-		    build_function_type (ptr_type_node, 
-					 tree_cons (NULL_TREE,
-						    unsigned_type_node,
-						    endlink)),
+  builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
 		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
 
-  builtin_function ("__builtin_frame_address",
-		    build_function_type (ptr_type_node, 
-					 tree_cons (NULL_TREE,
-						    unsigned_type_node,
-						    endlink)),
+  builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
 		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
 
-  builtin_function ("__builtin_alloca",
-		    build_function_type (ptr_type_node,
-					 tree_cons (NULL_TREE,
-						    sizetype,
-						    endlink)),
+  builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
 		    BUILT_IN_ALLOCA, "alloca");
   builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
   /* Define alloca, ffs as builtins.
      Declare _exit just to mark it as volatile.  */
   if (! flag_no_builtin && !flag_no_nonansi_builtin)
     {
-      temp = builtin_function ("alloca",
-			       build_function_type (ptr_type_node,
-						    tree_cons (NULL_TREE,
-							       sizetype,
-							       endlink)),
+      temp = builtin_function ("alloca", ptr_ftype_sizetype,
 			       BUILT_IN_ALLOCA, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
       temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("_exit", build_function_type (void_type_node,
-							     int_endlink),
+      temp = builtin_function ("_exit", void_ftype_int,
 			       NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
@@ -5002,42 +5002,27 @@ init_decl_processing ()
 		    NULL_PTR);
   builtin_function ("__builtin_labs", long_ftype_long,
 		    BUILT_IN_LABS, NULL_PTR);
-  builtin_function ("__builtin_saveregs",
-		    build_function_type (ptr_type_node, NULL_TREE),
+  builtin_function ("__builtin_saveregs", ptr_ftype,
 		    BUILT_IN_SAVEREGS, NULL_PTR);
   builtin_function ("__builtin_classify_type", default_function_type,
 		    BUILT_IN_CLASSIFY_TYPE, NULL_PTR);
-  builtin_function ("__builtin_next_arg",
-		    build_function_type (ptr_type_node, NULL_TREE),
+  builtin_function ("__builtin_next_arg", ptr_ftype,
 		    BUILT_IN_NEXT_ARG, NULL_PTR);
-  builtin_function ("__builtin_args_info",
-		    build_function_type (integer_type_node,
-					 tree_cons (NULL_TREE,
-						    integer_type_node,
-						    endlink)),
+  builtin_function ("__builtin_args_info", int_ftype_int,
 		    BUILT_IN_ARGS_INFO, NULL_PTR);
 
   /* Untyped call and return.  */
-  builtin_function ("__builtin_apply_args",
-		    build_function_type (ptr_type_node, NULL_TREE),
+  builtin_function ("__builtin_apply_args", ptr_ftype,
 		    BUILT_IN_APPLY_ARGS, NULL_PTR);
 
   temp = tree_cons (NULL_TREE,
 		    build_pointer_type (build_function_type (void_type_node,
 							     NULL_TREE)),
-		    tree_cons (NULL_TREE,
-			       ptr_type_node,
-			       tree_cons (NULL_TREE,
-					  sizetype,
-					  endlink)));
+		    ptr_ftype_sizetype);
   builtin_function ("__builtin_apply",
 		    build_function_type (ptr_type_node, temp),
 		    BUILT_IN_APPLY, NULL_PTR);
-  builtin_function ("__builtin_return",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE,
-						    ptr_type_node,
-						    endlink)),
+  builtin_function ("__builtin_return", void_ftype_ptr,
 		    BUILT_IN_RETURN, NULL_PTR);
 
   /* Currently under experimentation.  */
@@ -5101,16 +5086,14 @@ init_decl_processing ()
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
-      temp = builtin_function ("abort",
-			       build_function_type (void_type_node, endlink),
+      temp = builtin_function ("abort", void_ftype,
 			       NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
       /* Well, these are actually ANSI, but we can't set DECL_BUILT_IN on
          them...  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("exit", build_function_type (void_type_node,
-							    int_endlink),
+      temp = builtin_function ("exit", void_ftype_int,
 			       NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
@@ -5375,30 +5358,17 @@ init_decl_processing ()
   /* Now, C++.  */
   current_lang_name = lang_name_cplusplus;
 
-  auto_function (ansi_opname[(int) NEW_EXPR],
-		 build_function_type (ptr_type_node,
-				      tree_cons (NULL_TREE, sizetype,
-						 void_list_node)),
+  auto_function (ansi_opname[(int) NEW_EXPR], ptr_ftype_sizetype,
 		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) VEC_NEW_EXPR],
-		 build_function_type (ptr_type_node,
-				      tree_cons (NULL_TREE, sizetype,
-						 void_list_node)),
+  auto_function (ansi_opname[(int) VEC_NEW_EXPR], ptr_ftype_sizetype,
 		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) DELETE_EXPR],
-		 build_function_type (void_type_node,
-				      tree_cons (NULL_TREE, ptr_type_node,
-						 void_list_node)),
+  auto_function (ansi_opname[(int) DELETE_EXPR], void_ftype_ptr,
 		 NOT_BUILT_IN);
-  auto_function (ansi_opname[(int) VEC_DELETE_EXPR],
-		 build_function_type (void_type_node,
-				      tree_cons (NULL_TREE, ptr_type_node,
-						 void_list_node)),
+  auto_function (ansi_opname[(int) VEC_DELETE_EXPR], void_ftype_ptr,
 		 NOT_BUILT_IN);
 
   abort_fndecl
-    = define_function ("__pure_virtual",
-		       build_function_type (void_type_node, void_list_node),
+    = define_function ("__pure_virtual", void_ftype,
 		       NOT_BUILT_IN, 0, 0);
 
   /* Perform other language dependent initializations.  */
@@ -5600,8 +5570,6 @@ shadow_tag (declspecs)
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))))
     {
       /* See also grok_x_components.  */
-
-      tree fn;
       tree *q;
 
       /* Wipe out memory of synthesized methods */
@@ -10644,7 +10612,7 @@ finish_enum (enumtype, values)
   else
     maxnode = minnode = integer_zero_node;
 
-  TYPE_VALUES (enumtype) = values;
+  TYPE_VALUES (enumtype) = nreverse (values);
 
   if (processing_template_decl)
     return enumtype;
@@ -12013,7 +11981,7 @@ finish_function (lineno, call_poplevel, nested)
 	 was an actual function definition.  */
       DECL_INITIAL (fndecl) = error_mark_node;
       for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
-	DECL_RTL (t) = NULL_RTX;
+	DECL_RTL (t) = DECL_INCOMING_RTL (t) = NULL_RTX;
     }
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))

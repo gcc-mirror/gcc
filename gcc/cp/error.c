@@ -1323,12 +1323,19 @@ dump_expr (t, nop)
       }
 
     case TEMPLATE_CONST_PARM:
-      {
-	tree r = TREE_VEC_ELT (TREE_VALUE (current_template_parms),
-			       TEMPLATE_CONST_IDX (t));
-	dump_decl (TREE_VALUE (r), -1);
-	break;
-      }
+      if (current_template_parms)
+	{
+	  tree r = TREE_VEC_ELT (TREE_VALUE (current_template_parms),
+				 TEMPLATE_CONST_IDX (t));
+	  dump_decl (TREE_VALUE (r), -1);
+	}
+      else
+	{
+	  OB_PUTS ("<tparm ");
+	  OB_PUTI (TEMPLATE_CONST_IDX (t));
+	  OB_PUTS (">");
+	}
+      break;
 
     case IDENTIFIER_NODE:
       OB_PUTID (t);

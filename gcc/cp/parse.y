@@ -340,6 +340,12 @@ extdefs_opt:
 		{ have_extern_spec = 0; }
 	;
 
+extension:
+	EXTENSION
+		{ $<itype>$ = pedantic;
+		  pedantic = 0; }
+	;
+
 asm_keyword:
 	  ASM_KEYWORD
 	| GCC_ASM_KEYWORD
@@ -384,6 +390,8 @@ extdef:
 		{ do_toplevel_using_decl ($1); }
 	| USING NAMESPACE any_id ';'
 		{ do_using_directive ($3); }
+	| extension extdef
+		{ pedantic = $<itype>1; }
 	;
 
 using_decl:
@@ -1021,11 +1029,8 @@ unary_expr:
 	  primary  %prec UNARY
 		{ $$ = $1; }
 	/* __extension__ turns off -pedantic for following primary.  */
-	| EXTENSION
-		{ $<itype>1 = pedantic;
-		  pedantic = 0; }
-	  cast_expr  	  %prec UNARY
-		{ $$ = $3;
+	| extension cast_expr  	  %prec UNARY
+		{ $$ = $2;
 		  pedantic = $<itype>1; }
 	| '*' cast_expr   %prec UNARY
 		{ $$ = build_x_indirect_ref ($2, "unary *"); }
@@ -1664,6 +1669,8 @@ decl:
 		}
 	| declmods ';'
 		{ warning ("empty declaration"); }
+	| extension decl
+		{ pedantic = $<itype>1; }
 	;
 
 /* Any kind of declarator (thus, all declarators allowed
@@ -2625,6 +2632,9 @@ component_decl:
 		{ $$ = finish_method ($$); }
 	| ';'
 		{ $$ = NULL_TREE; }
+	| extension component_decl
+		{ $$ = $2;
+		  pedantic = $<itype>1; }
 	;
 
 component_decl_1:

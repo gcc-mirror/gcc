@@ -1650,7 +1650,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 {
   register tree function, fntype, value_type;
   register tree basetype, save_basetype;
-  register tree baselink, result, parmtypes, parm;
+  register tree baselink, result, parmtypes;
   tree last;
   int pass;
   tree access = access_public_node;
@@ -2629,7 +2629,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
      int require_complete;
 {
   /* must check for overloading here */
-  tree functions, function, parm;
+  tree functions, function;
   tree parmtypes, last;
   register tree outer;
   int length;
@@ -2976,6 +2976,15 @@ non_reference (t)
   return t;
 }
 
+tree
+strip_top_quals (t)
+     tree t;
+{
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return t;
+  return TYPE_MAIN_VARIANT (t);
+}
+
 /* Returns the standard conversion path (see [conv]) from type FROM to type
    TO, if any.  For proper handling of null pointer constants, you must
    also pass the expression EXPR to convert from.  */
@@ -2986,14 +2995,22 @@ standard_conversion (to, from, expr)
 {
   enum tree_code fcode, tcode;
   tree conv;
+  int fromref = 0;
+
+  if (TREE_CODE (to) == REFERENCE_TYPE)
+    to = TREE_TYPE (to);
+  if (TREE_CODE (from) == REFERENCE_TYPE)
+    {
+      fromref = 1;
+      from = TREE_TYPE (from);
+    }
+  to = strip_top_quals (to);
+  from = strip_top_quals (from);
 
   fcode = TREE_CODE (from);
   tcode = TREE_CODE (to);
 
   conv = build1 (IDENTITY_CONV, from, expr);
-
-  if (from == to)
-    return conv;
 
   if (fcode == FUNCTION_TYPE)
     {
@@ -3007,6 +3024,11 @@ standard_conversion (to, from, expr)
       fcode = TREE_CODE (from);
       conv = build_conv (LVALUE_CONV, from, conv);
     }
+  else if (fromref || (expr && real_lvalue_p (expr)))
+    conv = build_conv (RVALUE_CONV, from, conv);
+
+  if (from == to)
+    return conv;
 
   if ((tcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (to))
       && expr && null_ptr_cst_p (expr))
@@ -3129,15 +3151,6 @@ standard_conversion (to, from, expr)
   return conv;
 }
 
-tree
-strip_top_quals (t)
-     tree t;
-{
-  if (TREE_CODE (t) == ARRAY_TYPE)
-    return t;
-  return TYPE_MAIN_VARIANT (t);
-}
-
 /* Returns the conversion path from type FROM to reference type TO for
    purposes of reference binding.  For lvalue binding, either pass a
    reference type to FROM or an lvalue expression to EXPR.
@@ -3146,13 +3159,14 @@ strip_top_quals (t)
    an lvalue and a temporary.  Should it?  */
 
 tree
-reference_binding (rto, from, expr, flags)
-     tree rto, from, expr;
+reference_binding (rto, rfrom, expr, flags)
+     tree rto, rfrom, expr;
      int flags;
 {
   tree conv;
   int lvalue = 1;
   tree to = TREE_TYPE (rto);
+  tree from = rfrom;
 
   if (TREE_CODE (from) == REFERENCE_TYPE)
     from = TREE_TYPE (from);
@@ -3181,13 +3195,13 @@ reference_binding (rto, from, expr, flags)
 
   if (! conv)
     {
-      conv = standard_conversion
-	(TYPE_MAIN_VARIANT (to), strip_top_quals (from), expr);
+      conv = standard_conversion (to, rfrom, expr);
       if (conv)
 	{
 	  conv = build_conv (REF_BIND, rto, conv);
 
-	  /* Bind directly to a base subobject of a class rvalue.  */
+	  /* Bind directly to a base subobject of a class rvalue.  Do it
+             after building the conversion for proper handling of ICS_RANK.  */
 	  if (TREE_CODE (TREE_OPERAND (conv, 0)) == BASE_CONV)
 	    TREE_OPERAND (conv, 0) = TREE_OPERAND (TREE_OPERAND (conv, 0), 0);
 	}
@@ -3223,16 +3237,10 @@ implicit_conversion (to, from, expr, flags)
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, flags);
   else
-    conv = standard_conversion
-      (TYPE_MAIN_VARIANT (non_reference (to)),
-       strip_top_quals (non_reference (from)), expr);
+    conv = standard_conversion (to, from, expr);
 
   if (conv)
-    {
-      if (TREE_CODE (conv) == IDENTITY_CONV && IS_AGGR_TYPE (to)
-	  && (TREE_CODE (from) == REFERENCE_TYPE || (expr && real_lvalue_p (expr))))
-	conv = build_conv (RVALUE_CONV, to, conv);
-    }
+    ;
   else if ((IS_AGGR_TYPE (non_reference (from))
 	    || IS_AGGR_TYPE (non_reference (to)))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
@@ -3833,9 +3841,18 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       break;
 
     case COND_EXPR:
+#if 0
       /* Kludge around broken overloading rules whereby
-	 bool ? const char& : enum is ambiguous.  */
+	 bool ? const char& : enum is ambiguous
+	 (between int and const char&).  */
+      /* Not needed for compiles without -pedantic, since the rank compare
+	 in joust will pick the int promotion.  Let's just leave this out
+	 for now.  */
       flags |= LOOKUP_NO_TEMP_BIND;
+#endif
+
+      /* Extension: Support ?: of enumeral type.  Hopefully this will not
+         be an extension for long.  */
       if (TREE_CODE (type1) == ENUMERAL_TYPE && type1 == type2)
 	break;
       else if (TREE_CODE (type1) == ENUMERAL_TYPE
@@ -4342,8 +4359,7 @@ build_object_call (obj, args)
      tree obj, args;
 {
   struct z_candidate *candidates = 0, *cand;
-  tree fns, convs, mem_args, *p;
-  enum tree_code code2 = NOP_EXPR;
+  tree fns, convs, mem_args;
   tree type = TREE_TYPE (obj);
 
   fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 0);
@@ -4442,7 +4458,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
      tree arg1, arg2, arg3;
 {
   struct z_candidate *candidates = 0, *cand;
-  tree fns, mem_arglist, arglist, fnname, *p;
+  tree fns, mem_arglist, arglist, fnname;
   enum tree_code code2 = NOP_EXPR;
   tree templates = NULL_TREE;
 
@@ -4893,8 +4909,11 @@ convert_like (convs, expr)
 
   switch (TREE_CODE (convs))
     {
-    case BASE_CONV:
     case RVALUE_CONV:
+      if (! IS_AGGR_TYPE (TREE_TYPE (convs)))
+	return expr;
+      /* else fall through */
+    case BASE_CONV:
       return build_user_type_conversion
 	(TREE_TYPE (convs), expr, LOOKUP_NORMAL);
     case REF_BIND:
@@ -5035,10 +5054,18 @@ build_over_call (fn, convs, args, flags)
 
   /* Default arguments */
   for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm))
-    converted_args = tree_cons
-      (NULL_TREE,
-       convert_default_arg (TREE_VALUE (parm), TREE_PURPOSE (parm)),
-       converted_args);
+    {
+      tree arg = TREE_PURPOSE (parm);
+
+      if (PARM_DEFAULT_FROM_TEMPLATE (parm))
+	/* This came from a template.  Instantiate the default arg here,
+	   not in tsubst.  */
+	arg = tsubst_expr (arg, &TREE_VEC_ELT (DECL_TI_ARGS (fn), 0),
+			   TREE_VEC_LENGTH (DECL_TI_ARGS (fn)), NULL_TREE);
+      converted_args = tree_cons
+	(NULL_TREE, convert_default_arg (TREE_VALUE (parm), arg),
+	 converted_args);
+    }
 
   /* Ellipsis */
   for (; arg; arg = TREE_CHAIN (arg))
@@ -5667,8 +5694,10 @@ joust (cand1, cand2)
 	  break;
       if (i == TREE_VEC_LENGTH (cand1->convs))
 	return 1;
+#if 0
       /* Kludge around broken overloading rules whereby
 	 bool ? void *const & : void *const & is ambiguous.  */
+      /* Huh?  Explain the problem better.  */
       if (cand1->fn == ansi_opname[COND_EXPR])
 	{
 	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
@@ -5684,6 +5713,7 @@ joust (cand1, cand2)
 		return -1;
 	    }
 	}
+#endif
     }
 
 tweak:

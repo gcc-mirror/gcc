@@ -235,12 +235,20 @@ perform_member_init (member, name, init, explicit)
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
     {
-      tree expr = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
+      tree expr;
+
+      /* All cleanups must be on the function_obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
+
+      expr = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
       expr = build_delete (type, expr, integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
 	add_partial_entry (expr);
+
+      pop_obstacks ();
     }
 }
 
@@ -997,22 +1005,21 @@ expand_member_init (exp, name, init)
 		}
 #endif
 	    }
-	  else
+	  else if (basetype != type
+		   && ! current_template_parms
+		   && ! vec_binfo_member (basetype,
+					  TYPE_BINFO_BASETYPES (type))
+		   && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
 	    {
-	      if (basetype != type
-		  && ! vec_binfo_member (basetype, TYPE_BINFO_BASETYPES (type))
-		  && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
-		{
-		  if (IDENTIFIER_CLASS_VALUE (name))
-		    goto try_member;
-		  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-		    cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
-			      basetype, type);
-		  else
-		    cp_error ("type `%T' is not an immediate basetype for `%T'",
-			      basetype, type);
-		  return;
-		}
+	      if (IDENTIFIER_CLASS_VALUE (name))
+		goto try_member;
+	      if (TYPE_USES_VIRTUAL_BASECLASSES (type))
+		cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
+			  basetype, type);
+	      else
+		cp_error ("type `%T' is not an immediate basetype for `%T'",
+			  basetype, type);
+	      return;
 	    }
 
 	  if (purpose_member (basetype, current_base_init_list))
@@ -2637,10 +2644,10 @@ build_new (placement, decl, init, use_global_new)
 {
   tree type, true_type, size, rval;
   tree nelts;
-  tree alloc_expr, alloc_temp;
+  tree alloc_expr;
   int has_array = 0;
   enum tree_code code = NEW_EXPR;
-  int use_cookie;
+  int use_cookie, nothrow, check_new;
 
   tree pending_sizes = NULL_TREE;
 
@@ -2841,6 +2848,14 @@ build_new (placement, decl, init, use_global_new)
       return error_mark_node;
     }
 
+  nothrow = (placement
+	     && TREE_TYPE (placement)
+	     && IS_AGGR_TYPE (TREE_TYPE (placement))
+	     && (TYPE_IDENTIFIER (TREE_TYPE (placement))
+		 == get_identifier ("nothrow_t")));
+
+  check_new = flag_check_new || nothrow;
+
 #if 1
   /* Get a little extra space to store a couple of things before the new'ed
      array, if this isn't the default placement new.  */
@@ -2853,10 +2868,7 @@ build_new (placement, decl, init, use_global_new)
      array, if this is either non-placement new or new (nothrow).  */
   
   use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
-		&& (! placement
-		    || (IS_AGGR_TYPE (TREE_TYPE (placement))
-			&& (TYPE_IDENTIFIER (TREE_TYPE (placement))
-			    == get_identifier ("nothrow_t")))));
+		&& (! placement || nothrow));
 #endif
 
   if (use_cookie)
@@ -2904,7 +2916,7 @@ build_new (placement, decl, init, use_global_new)
       TREE_CALLS_NEW (rval) = 1;
     }
 
-  if (flag_check_new && rval)
+  if (check_new && rval)
     alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;

@@ -530,7 +530,8 @@ build_overload_value (type, value)
 	  sorry ("template instantiation with pointer to method that is too complex");
 	  return;
 	}
-      if (TREE_CODE (value) == INTEGER_CST)
+      if (TREE_CODE (value) == INTEGER_CST
+	  || TREE_CODE (value) == TEMPLATE_CONST_PARM)
 	{
 	  build_overload_int (value);
 	  numeric_output_need_bar = 1;
@@ -1465,7 +1466,7 @@ tree
 hack_identifier (value, name)
      tree value, name;
 {
-  tree type, context;
+  tree type;
 
   if (TREE_CODE (value) == ERROR_MARK)
     {
@@ -1981,7 +1982,7 @@ do_build_copy_constructor (fndecl)
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree name, init, t;
+	  tree init, t;
 	  tree field = fields;
 
 	  if (TREE_CODE (field) != FIELD_DECL)
@@ -2114,7 +2115,6 @@ synthesize_method (fndecl)
 {
   int nested = (current_function_decl != NULL_TREE);
   tree context = hack_decl_function_context (fndecl);
-  tree base = DECL_CLASS_CONTEXT (fndecl);
 
   if (! context)
     push_to_top_level ();

@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1130,6 +1130,15 @@ lookup_field (xbasetype, name, protect, want_type)
   if (IDENTIFIER_TEMPLATE (name))
     name = constructor_name (name);
 #endif
+
+  if (xbasetype == current_class_type && TYPE_BEING_DEFINED (xbasetype)
+      && IDENTIFIER_CLASS_VALUE (name))
+    {
+      tree field = IDENTIFIER_CLASS_VALUE (name);
+      if (TREE_CODE (field) != FUNCTION_DECL
+	  && ! (want_type && TREE_CODE (field) != TYPE_DECL))
+	return field;
+    }
 
   if (TREE_CODE (xbasetype) == TREE_VEC)
     {
@@ -2784,7 +2793,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	  && (vc=virtual_context (current_fndecl, t, vbase)) != vbase)
 	{
 	  /* This may in fact need a runtime fixup.  */
-	  tree idx = DECL_VINDEX (current_fndecl);
+	  tree idx = build_int_2 (n, 0);
 	  tree vtbl = BINFO_VTABLE (binfo);
 	  tree nvtbl = lookup_name (DECL_NAME (vtbl), 0);
 	  tree aref, ref, naref;

@@ -674,7 +674,6 @@ lookup_template_class (d1, arglist, in_decl)
   tree template, parmlist;
   char *mangled_name;
   tree id, t;
-  tree code_type_node;
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
@@ -1078,7 +1077,7 @@ instantiate_class_template (type)
 	    }
 	}
       TYPE_BEING_DEFINED (type) = 1;
-      return;
+      return error_mark_node;
     }
   else if (t)
     pattern = TREE_TYPE (t);
@@ -1160,7 +1159,7 @@ instantiate_class_template (type)
 	tree bases;
 	int i;
 	int len = TREE_VEC_LENGTH (pbases);
-	BINFO_BASETYPES (binfo) = bases = make_tree_vec (len);
+	bases = make_tree_vec (len);
 	for (i = 0; i < len; ++i)
 	  {
 	    tree elt;
@@ -1175,6 +1174,9 @@ instantiate_class_template (type)
 	      cp_error ("base class `%T' of `%T' has incomplete type",
 			TREE_TYPE (elt), type);
 	  }
+	/* Don't initialize this until the vector is filled out, or
+	   lookups will crash.  */
+	BINFO_BASETYPES (binfo) = bases;
       }
   }
 
@@ -1812,9 +1814,13 @@ tsubst (t, args, nargs, in_decl)
 	      {
 		tree value = TYPE_MAIN_VARIANT (type_decays_to
 		  (tsubst (TREE_VALUE (values), args, nargs, in_decl)));
-		tree purpose = tsubst_expr (TREE_PURPOSE (values),
-					    args, nargs, in_decl);
+		/* Don't instantiate default args unless they are used.
+		   Handle it in build_over_call instead.  */
+		tree purpose = TREE_PURPOSE (values);
 		tree x = build_tree_list (purpose, value);
+
+		if (purpose)
+		  PARM_DEFAULT_FROM_TEMPLATE (x) = 1;
 
 		if (first)
 		  TREE_CHAIN (last) = x;
@@ -2757,7 +2763,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	      default:
 		;
 	      }
-	  my_friendly_abort (87);
+	  /* else we get two different bindings, so deduction fails.  */
 	  return 1;
 	}
 /*	else if (typeof arg != tparms[idx])
@@ -3345,7 +3351,29 @@ instantiate_decl (d)
 
   if (d_defined)
     return d;
-  else if (pattern_defined)
+
+  /* This needs to happen before any tsubsting.  */
+  if (! push_tinst_level (d))
+    return d;
+
+  push_to_top_level ();
+  lineno = DECL_SOURCE_LINE (d);
+  input_filename = DECL_SOURCE_FILE (d);
+
+  /* We need to set up DECL_INITIAL regardless of pattern_defined if the
+     variable is a static const initialized in the class body.  */
+  if (TREE_CODE (d) == VAR_DECL
+      && ! DECL_INITIAL (d) && DECL_INITIAL (pattern))
+    {
+      pushclass (DECL_CONTEXT (d), 2);
+      DECL_INITIAL (d) = tsubst_expr
+	(DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
+	 TREE_VEC_LENGTH (args), tmpl);
+      popclass (1);
+    }
+
+  /* import_export_decl has to happen after DECL_INITIAL is set up.  */
+  if (pattern_defined)
     {
       repo_template_used (d);
 
@@ -3369,24 +3397,6 @@ instantiate_decl (d)
 	import_export_decl (d);
     }
 
-  /* We need to set up DECL_INITIAL regardless of pattern_defined if the
-     variable is a static const initialized in the class body.  */
-  if (TREE_CODE (d) == VAR_DECL
-      && ! DECL_INITIAL (d) && DECL_INITIAL (pattern))
-    {
-      lineno = DECL_SOURCE_LINE (d);
-      input_filename = DECL_SOURCE_FILE (d);
-
-      pushclass (DECL_CONTEXT (d), 2);
-      DECL_INITIAL (d) = tsubst_expr
-	(DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
-	 TREE_VEC_LENGTH (args), tmpl);
-      popclass (1);
-
-      lineno = line;
-      input_filename = file;
-    }
-
   if (! pattern_defined
       || (TREE_CODE (d) == FUNCTION_DECL && ! DECL_INLINE (d)
 	  && (! DECL_INTERFACE_KNOWN (d)
@@ -3398,13 +3408,8 @@ instantiate_decl (d)
       || (TREE_CODE (d) == FUNCTION_DECL && ! nested && ! at_eof))
     {
       add_pending_template (d);
-      return d;
+      goto out;
     }
-
-  if (! push_tinst_level (d))
-    return d;
-
-  push_to_top_level ();
 
   lineno = DECL_SOURCE_LINE (d);
   input_filename = DECL_SOURCE_FILE (d);
@@ -3482,6 +3487,7 @@ instantiate_decl (d)
       finish_function (lineno, 0, nested);
     }
 
+out:
   lineno = line;
   input_filename = file;
 
