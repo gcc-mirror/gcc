@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 void fatal PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void warning PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PARAMS ((struct obstack *obstack));
+void report PARAMS ((void));
 
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
@@ -61,6 +62,7 @@ char *exec_name;
 int flag_find_main = 0;
 int flag_dump_class = 0;
 int flag_list_filename = 0;
+int flag_complexity = 0;
 
 int pedantic = 0;
 
@@ -81,6 +83,7 @@ static struct option options[] =
   { "list-filename", no_argument,   &flag_list_filename, 1 },
   { "list-class", no_argument,      &flag_dump_class, 1 },
   { "encoding",  required_argument, NULL, OPT_ENCODING },
+  { "complexity", no_argument,	    &flag_complexity, 1 },
   { NULL,        no_argument,       NULL, 0 }
 };
 
@@ -96,6 +99,7 @@ help ()
 {
   printf ("Usage: jv-scan [OPTION]... FILE...\n\n");
   printf ("Print useful information read from Java source files.\n\n");
+  printf ("  --complexity            Print cyclomatic complexity of input file\n");
   printf ("  --encoding NAME         Specify encoding of input file\n");
   printf ("  --print-main            Print name of class containing `main'\n");
   printf ("  --list-class            List all classes defined in file\n");
@@ -169,12 +173,12 @@ DEFUN (main, (argc, argv),
     }
 
   /* No flags? Do nothing */
-  if (!flag_find_main && !flag_dump_class)
+  if (! flag_find_main && ! flag_dump_class && ! flag_complexity)
     return 0;
 
   /* Check on bad usage */
-  if (flag_find_main && flag_dump_class)
-    fatal ("Options `--print-main' and `--list-class' can't be turned on at the same time");
+  if (flag_find_main + flag_dump_class + flag_complexity > 1)
+    fatal ("Only one of `--print-main', `--list-class', and `--complexity' allowed");
 
   if (output_file && !(out = fopen (output_file, "w")))
     fatal ("Can't open output file `%s'", output_file);
@@ -205,6 +209,7 @@ DEFUN (main, (argc, argv),
 
 	    java_init_lex (finput, encoding);
 	    yyparse ();
+	    report ();
 	    if (ftell (out) != ft)
 	      fputc ('\n', out);
 	    ft = ftell (out);
