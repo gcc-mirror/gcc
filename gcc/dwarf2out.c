@@ -1221,6 +1221,39 @@ dwarf2out_frame_debug (insn)
 	      if (cfa_store_reg == STACK_POINTER_REGNUM)
 		cfa_store_offset += offset;
 	    }
+          else if (dest == hard_frame_pointer_rtx)
+            {
+              /* Either setting the FP from an offset of the SP,
+                 or adjusting the FP */
+	      if (! frame_pointer_needed
+		  || REGNO (dest) != HARD_FRAME_POINTER_REGNUM)
+		abort ();
+
+              if (XEXP (src, 0) == stack_pointer_rtx
+                  && GET_CODE (XEXP (src, 1)) == CONST_INT)
+                {
+		  if (cfa_reg != STACK_POINTER_REGNUM)
+		    abort ();
+                  offset = INTVAL (XEXP (src, 1));
+                  if (GET_CODE (src) == PLUS)
+                    offset = -offset;
+                  cfa_offset += offset;
+                  cfa_reg = HARD_FRAME_POINTER_REGNUM;
+                }
+              else if (XEXP (src, 0) == hard_frame_pointer_rtx
+                       && GET_CODE (XEXP (src, 1)) == CONST_INT)
+                {
+		  if (cfa_reg != HARD_FRAME_POINTER_REGNUM)
+		    abort ();
+                  offset = INTVAL (XEXP (src, 1));
+                  if (GET_CODE (src) == PLUS)
+                    offset = -offset;
+                  cfa_offset += offset;
+                }
+
+              else 
+                abort();
+            }
 	  else
 	    {
 	      if (GET_CODE (src) != PLUS
