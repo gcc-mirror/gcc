@@ -2800,6 +2800,204 @@ get_sentry (base)
   return sentry;
 }
 
+/* Start the process of running a particular set of global constructors
+   or destructors.  Subroutine of do_[cd]tors.  */
+
+static void
+start_objects (method_type)
+     int method_type;
+{
+  tree fnname;
+
+  /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
+
+  fnname = get_file_function_name (method_type);
+
+  start_function (void_list_node,
+		  make_call_declarator (fnname, void_list_node, NULL_TREE,
+					NULL_TREE),
+		  NULL_TREE, 0);
+
+  store_parm_decls ();
+  pushlevel (0);
+  clear_last_expr ();
+  push_momentary ();
+  expand_start_bindings (0);
+}
+
+/* Finish the process of running a particular set of global constructors
+   or destructors.  Subroutine of do_[cd]tors.  */
+
+static void
+finish_objects (method_type)
+     int method_type;
+{
+  char *fnname;
+
+  tree list = (method_type == 'I' ? static_ctors : static_dtors);
+
+  if (! current_function_decl && list)
+    start_objects (method_type);
+
+  for (; list; list = TREE_CHAIN (list))
+    expand_expr_stmt (build_function_call (TREE_VALUE (list), NULL_TREE));
+
+  if (! current_function_decl)
+    return;
+
+  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+
+  /* Finish up. */
+  expand_end_bindings (getdecls (), 1, 0);
+  poplevel (1, 0, 0);
+  pop_momentary ();
+  finish_function (lineno, 0, 0);
+
+  if (method_type == 'I')
+    assemble_constructor (fnname);
+  else
+    assemble_destructor (fnname);
+}
+
+/* Generate a function to run a set of global destructors.  Subroutine of
+   finish_file.  */
+
+static void
+do_dtors ()
+{
+  tree vars = static_aggregates;
+
+  for (; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+      tree type = TREE_TYPE (decl);
+      tree temp;
+
+      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars)
+	  && ! DECL_EXTERNAL (decl))
+	{
+	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
+						|| DECL_ONE_ONLY (decl)
+						|| DECL_WEAK (decl)));
+
+	  if (! current_function_decl)
+	    start_objects ('D');
+
+	  temp = build_cleanup (decl);
+
+	  if (protect)
+	    {
+	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
+	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node, 1);
+	      expand_start_cond (sentry, 0);
+	    }
+
+	  expand_expr_stmt (temp);
+
+	  if (protect)
+	    expand_end_cond ();
+	}
+    }
+
+  finish_objects ('D');
+}
+
+/* Generate a function to run a set of global constructors.  Subroutine of
+   finish_file.  */
+
+static void
+do_ctors ()
+{
+  tree vars = static_aggregates;
+
+  /* Reverse the list so it's in the right order for ctors.  */
+  vars = nreverse (vars);
+
+  for (; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+      tree init = TREE_PURPOSE (vars);
+
+      /* If this was a static attribute within some function's scope,
+	 then don't initialize it here.  Also, don't bother
+	 with initializers that contain errors.  */
+      if (TREE_STATIC (vars)
+	  || DECL_EXTERNAL (decl)
+	  || (init && TREE_CODE (init) == TREE_LIST
+	      && value_member (error_mark_node, init)))
+	continue;
+
+      if (TREE_CODE (decl) == VAR_DECL)
+	{
+	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
+						|| DECL_ONE_ONLY (decl)
+						|| DECL_WEAK (decl)));
+
+	  if (! current_function_decl)
+	    start_objects ('I');
+
+	  /* Set these global variables so that GDB at least puts
+	     us near the declaration which required the initialization.  */
+	  input_filename = DECL_SOURCE_FILE (decl);
+	  lineno = DECL_SOURCE_LINE (decl);
+	  emit_note (input_filename, lineno);
+
+	  /* 9.5p5: The initializer of a static member of a class has
+	     the same access rights as a member function.  */
+	  if (member_p (decl))
+	    {
+	      DECL_CLASS_CONTEXT (current_function_decl)
+		= DECL_CONTEXT (decl);
+	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
+	    }
+
+	  if (protect)
+	    {
+	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+	      sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
+	      sentry = build_binary_op
+		(EQ_EXPR, sentry, integer_one_node, 1);
+	      expand_start_cond (sentry, 0);
+	    }
+
+	  expand_start_target_temps ();
+
+	  if (IS_AGGR_TYPE (TREE_TYPE (decl))
+	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	    expand_aggr_init (decl, init, 0, 0);
+	  else if (TREE_CODE (init) == TREE_VEC)
+	    {
+	      expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
+					    TREE_VEC_ELT (init, 1),
+					    TREE_VEC_ELT (init, 2), 0),
+			   const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+	  else
+	    expand_assignment (decl, init, 0, 0);
+	      
+	  /* The expression might have involved increments and
+	     decrements.  */
+	  emit_queue ();
+
+	  /* Cleanup any temporaries needed for the initial value.  */
+	  expand_end_target_temps ();
+
+	  if (protect)
+	    expand_end_cond ();
+
+	  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
+	  DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
+	}
+      else if (decl == error_mark_node)
+	/* OK */;
+      else
+	my_friendly_abort (22);
+    }
+
+  finish_objects ('I');
+}
+
 /* This routine is called from the last rule in yyparse ().
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -2901,193 +3099,19 @@ finish_file ()
 
   if (static_ctors || vars)
     needs_messing_up = 1;
-  if (static_dtors)
+  if (static_dtors || vars)
     needs_cleaning = 1;
 
-  /* See if we really need the hassle.  */
-  while (vars && needs_cleaning == 0)
+  /* The aggregates are listed in reverse declaration order, for cleaning.  */
+  if (needs_cleaning)
     {
-      tree decl = TREE_VALUE (vars);
-      tree type = TREE_TYPE (decl);
-      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars))
-	{
-	  needs_cleaning = 1;
-	  break;
-	}
-
-      vars = TREE_CHAIN (vars);
+      do_dtors ();
     }
 
-  if (needs_cleaning == 0)
-    goto mess_up;
-
-  fnname = get_file_function_name ('D');
-  start_function (void_list_node,
-		  make_call_declarator (fnname, void_list_node, NULL_TREE,
-					NULL_TREE),
-		  NULL_TREE, 0);
-  fnname = DECL_ASSEMBLER_NAME (current_function_decl);
-  store_parm_decls ();
-
-  pushlevel (0);
-  clear_last_expr ();
-  push_momentary ();
-  expand_start_bindings (0);
-
-  /* These must be done in backward order to destroy,
-     in which they happen to be!  */
-  for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-      tree type = TREE_TYPE (decl);
-      tree temp = TREE_PURPOSE (vars);
-
-      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars)
-	  && ! DECL_EXTERNAL (decl))
-	{
-	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-						|| DECL_ONE_ONLY (decl)
-						|| DECL_WEAK (decl)));
-
-	  temp = build_cleanup (decl);
-
-	  if (protect)
-	    {
-	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
-	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
-	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node, 1);
-	      expand_start_cond (sentry, 0);
-	    }
-
-	  expand_expr_stmt (temp);
-
-	  if (protect)
-	    expand_end_cond ();
-	}
-    }
-
-  for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
-    expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
-					   NULL_TREE));
-      
-  expand_end_bindings (getdecls (), 1, 0);
-  poplevel (1, 0, 0);
-  pop_momentary ();
-
-  finish_function (lineno, 0, 0);
-
-  assemble_destructor (IDENTIFIER_POINTER (fnname));
-
-  /* If it needed cleaning, then it will need messing up: drop through.  */
-
- mess_up:
-  /* Must do this while we think we are at the top level.  */
-  vars = nreverse (static_aggregates);
+  /* do_ctors will reverse the lists for messing up.  */
   if (needs_messing_up)
     {
-      fnname = get_file_function_name ('I');
-      start_function (void_list_node,
-		      make_call_declarator (fnname, void_list_node, NULL_TREE,
-					    NULL_TREE),
-		      NULL_TREE, 0);
-      fnname = DECL_ASSEMBLER_NAME (current_function_decl);
-      store_parm_decls ();
-
-      pushlevel (0);
-      clear_last_expr ();
-      push_momentary ();
-      expand_start_bindings (0);
-
-      while (vars)
-	{
-	  tree decl = TREE_VALUE (vars);
-	  tree init = TREE_PURPOSE (vars);
-
-	  /* If this was a static attribute within some function's scope,
-	     then don't initialize it here.  Also, don't bother
-	     with initializers that contain errors.  */
-	  if (TREE_STATIC (vars)
-	      || DECL_EXTERNAL (decl)
-	      || (init && TREE_CODE (init) == TREE_LIST
-		  && value_member (error_mark_node, init)))
-	    goto next_mess;
-
-	  if (TREE_CODE (decl) == VAR_DECL)
-	    {
-	      int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-						    || DECL_ONE_ONLY (decl)
-						    || DECL_WEAK (decl)));
-
-	      /* Set these global variables so that GDB at least puts
-		 us near the declaration which required the initialization.  */
-	      input_filename = DECL_SOURCE_FILE (decl);
-	      lineno = DECL_SOURCE_LINE (decl);
-	      emit_note (input_filename, lineno);
-
-	      /* 9.5p5: The initializer of a static member of a class has
-		 the same access rights as a member function.  */
-	      if (member_p (decl))
-		{
-		  DECL_CLASS_CONTEXT (current_function_decl)
-		    = DECL_CONTEXT (decl);
-		  DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
-		}
-
-	      if (protect)
-		{
-		  tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
-		  sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
-		  sentry = build_binary_op
-		    (EQ_EXPR, sentry, integer_one_node, 1);
-		  expand_start_cond (sentry, 0);
-		}
-
-	      expand_start_target_temps ();
-
-	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
-		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-		expand_aggr_init (decl, init, 0, 0);
-	      else if (TREE_CODE (init) == TREE_VEC)
-		{
-		  expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
-						TREE_VEC_ELT (init, 1),
-						TREE_VEC_ELT (init, 2), 0),
-			       const0_rtx, VOIDmode, EXPAND_NORMAL);
-		}
-	      else
-		expand_assignment (decl, init, 0, 0);
-	      
-	      /* The expression might have involved increments and
-		 decrements.  */
-	      emit_queue ();
-
-	      /* Cleanup any temporaries needed for the initial value.  */
-	      expand_end_target_temps ();
-
-	      if (protect)
-		expand_end_cond ();
-
-	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
-	      DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
-	    }
-	  else if (decl == error_mark_node)
-	    ;
-	  else my_friendly_abort (22);
-
-	next_mess:
-	  vars = TREE_CHAIN (vars);
-	}
-
-      for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
-	expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
-					       NULL_TREE));
-      
-      expand_end_bindings (getdecls (), 1, 0);
-      poplevel (1, 0, 0);
-      pop_momentary ();
-
-      finish_function (lineno, 0, 0);
-      assemble_constructor (IDENTIFIER_POINTER (fnname));
+      do_ctors ();
     }
 
   permanent_allocation (1);
