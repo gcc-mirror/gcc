@@ -4472,9 +4472,9 @@ output_constant (exp, size, align)
 
   if (TREE_CODE (exp) == FDESC_EXPR)
     {
+#ifdef ASM_OUTPUT_FDESC
       HOST_WIDE_INT part = tree_low_cst (TREE_OPERAND (exp, 1), 0);
       tree decl = TREE_OPERAND (exp, 0);
-#ifdef ASM_OUTPUT_FDESC
       ASM_OUTPUT_FDESC (asm_out_file, decl, part);
 #else
       abort ();
