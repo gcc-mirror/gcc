@@ -11,7 +11,7 @@ This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 1, or (at your option)
+the Free Software Foundation; either version 2, or (at your option)
 any later version.
 
 GNU CC is distributed in the hope that it will be useful,
@@ -217,15 +217,18 @@ while (0)
 
 /* Use the default action for outputting the case label.  */
 #undef ASM_OUTPUT_CASE_LABEL
-#define ASM_RETURN_CASE_JUMP						\
-do									\
-  {									\
-    if (TARGET_5200)							\
-      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";				\
-    else								\
-      return "jmp %%pc@(2,%0:w)";					\
-  }									\
-while (0)
+#define ASM_RETURN_CASE_JUMP				\
+  do {							\
+    if (TARGET_5200)					\
+      {							\
+	if (ADDRESS_REG_P (operands[0]))		\
+	  return "jmp %%pc@(2,%0:l)";			\
+	else						\
+	  return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+      }							\
+    else						\
+      return "jmp %%pc@(2,%0:w)";			\
+  } while (0)
 
 
 /* This is how to output an assembler line that says to advance the
