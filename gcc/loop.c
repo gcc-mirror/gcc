@@ -5578,14 +5578,10 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 	}
     }
 
-#ifndef DONT_REDUCE_ADDR
   /* Look for givs which are memory addresses.  */
-  /* This resulted in worse code on a VAX 8600.  I wonder if it
-     still does.  */
   if (GET_CODE (p) == INSN)
     find_mem_givs (loop, PATTERN (p), p, not_every_iteration,
 		   maybe_multiple);
-#endif
 
   /* Update the status of whether giv can derive other givs.  This can
      change when we pass a label or an insn that updates a biv.  */
