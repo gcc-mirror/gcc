@@ -1,33 +1,54 @@
 2003-04-06  Zack Weinberg  <zack@codesourcery.com>
 
+	* tree.c (tree_size): For all 'c' and 'x' nodes, look directly
+	at the sizes of the relevant structures, rather than relying
+	on TREE_CODE_LENGTH.  Call lang_hooks.tree_size to get the
+	sizes of any such we don't know about.  Use
+	lang_hooks.identifier_size for IDENTIFIER_NODE.
+
+	(initializer_zerop): Use CONSTRUCTOR_ELTS.
+	* tree.def: Update commentary.  Make fourth element of
+	the definition for all 'c' and 'x' nodes zero.
+
+	* langhooks.h: New hook, tree_size / LANG_HOOKS_TREE_SIZE.
+	* langhooks-def.h: Update to match.
+	* langhooks.c: New default, lhd_tree_size.
+
+	* c-common.def (SRCLOC): Kill.
+	* c-pretty-print.c (pp_c_postfix_expression [case SRCLOC]):
+	Remove entirely - was already #if-ed out.
+
+
+2003-04-06  Zack Weinberg  <zack@codesourcery.com>
+
 	* mklibgcc.in: Use a here document to avoid running afoul of
 	shells that generate control-A from "echo \1".
 
 2003-04-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi (RS/6000 and PowerPC Options): Document -mspe
-        option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mspe
+	option.
 
-        * config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Set
-        rs6000_spe.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Set
+	rs6000_spe.
 
-        * config/rs6000/eabi.h (TARGET_E500): Define.
+	* config/rs6000/eabi.h (TARGET_E500): Define.
 
-        * config/rs6000/rs6000.h (TARGET_E500): Define.
-        (TARGET_OPTIONS): Add spe= option.
-        Declare rs6000_spe and rs6000_spe_string extern.
+	* config/rs6000/rs6000.h (TARGET_E500): Define.
+	(TARGET_OPTIONS): Add spe= option.
+	Declare rs6000_spe and rs6000_spe_string extern.
 
-        * config/rs6000/rs6000.c (branch_positive_comparison_operator):
-        Change TARGET_SPE to TARGET_E500.
-        (ccr_bit): Change TARGET_SPE to TARGET_E500.  Check for
-        !TARGET_FPRS.
-        (print_operand): Same.
-        (rs6000_generate_compare): Same.
-        (output_cbranch): Same.
-        (rs6000_spe): Declare.
-        (rs6000_spe_string): Declare.
-        (rs6000_override_options): Call rs6000_parse_spe_option.
-        (rs6000_parse_spe_option): New.
+	* config/rs6000/rs6000.c (branch_positive_comparison_operator):
+	Change TARGET_SPE to TARGET_E500.
+	(ccr_bit): Change TARGET_SPE to TARGET_E500.  Check for
+	!TARGET_FPRS.
+	(print_operand): Same.
+	(rs6000_generate_compare): Same.
+	(output_cbranch): Same.
+	(rs6000_spe): Declare.
+	(rs6000_spe_string): Declare.
+	(rs6000_override_options): Call rs6000_parse_spe_option.
+	(rs6000_parse_spe_option): New.
 
 2003-04-06  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -150,15 +171,15 @@
 
 Fri Apr  4 17:43:52 2003  Olivier Hainque <hainque@act-europe.fr>
 
-        * emit-rtl.c (get_mem_attrs): Adjust alignment tests determining
-        use of default attributes to agree MEM_ALIGN macro.
+	* emit-rtl.c (get_mem_attrs): Adjust alignment tests determining
+	use of default attributes to agree MEM_ALIGN macro.
 
 Fri Apr  4 17:33:24 2003  Joel Brobecker  <brobecker@gnat.com>
 
-        * dbxout.c (dbxout_type): When printing type index of range type
+	* dbxout.c (dbxout_type): When printing type index of range type
 	whose bounds are printed in octal format, print type of parent type if
 	it exists so enumerated type descriptions are not transformed
-        into unsigned types.
+	into unsigned types.
 
 2003-04-04  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -307,7 +328,7 @@ Thu Apr  3 17:08:09 2003  J"orn Rennecke <joern.rennecke@superh.com>
 2003-04-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/sparc/sol2-bi.h (ASM_CPU64_DEFAULT_SPEC): Add -TSO.
-        (DEF_ARCH64_SPEC): Likewise.
+	(DEF_ARCH64_SPEC): Likewise.
 
 Thu Apr  3 09:53:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -367,8 +388,8 @@ Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
-        * dwarf2out.c (output_call_frame_info): Ignore fde->nothrow as an
-        optimization when flag_exceptions not enabled.
+	* dwarf2out.c (output_call_frame_info): Ignore fde->nothrow as an
+	optimization when flag_exceptions not enabled.
 
 2003-04-02  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -394,42 +415,42 @@ Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-01  Richard Henderson  <rth@redhat.com>
 
-        * except.c (convert_from_eh_region_ranges_1): Smash REG_EH_REGION
-        notes for nothrow calls if flag_forced_unwind_exceptions.
-        (build_post_landing_pads): Mind flag_forced_unwind_exceptions.
-        (sjlj_find_directly_reachable_regions): Likewise.
-        (reachable_handlers): Likewise.
-        (can_throw_external): Likewise.
-        (collect_one_action_chain): Record cleanups after catch-all and
-        must-not-throw if flag_forced_unwind_exceptions.
-        * flags.h (flag_forced_unwind_exceptions): Declare.
-        * toplev.c (flag_forced_unwind_exceptions): New.
-        (lang_independent_options): Add it.
+	* except.c (convert_from_eh_region_ranges_1): Smash REG_EH_REGION
+	notes for nothrow calls if flag_forced_unwind_exceptions.
+	(build_post_landing_pads): Mind flag_forced_unwind_exceptions.
+	(sjlj_find_directly_reachable_regions): Likewise.
+	(reachable_handlers): Likewise.
+	(can_throw_external): Likewise.
+	(collect_one_action_chain): Record cleanups after catch-all and
+	must-not-throw if flag_forced_unwind_exceptions.
+	* flags.h (flag_forced_unwind_exceptions): Declare.
+	* toplev.c (flag_forced_unwind_exceptions): New.
+	(lang_independent_options): Add it.
 	* doc/invoke.text: Add it.
 
 2003-04-01  David Mosberger <davidm@hpl.hp.com>
 
-        * config/ia64/crti.asm: Clean up trailing whitespace.
-        Remove trailing hashes (#) from identifiers.
+	* config/ia64/crti.asm: Clean up trailing whitespace.
+	Remove trailing hashes (#) from identifiers.
 
-        * config/ia64/crtn.asm: Ditto.
+	* config/ia64/crtn.asm: Ditto.
 
-        * config/ia64/crtend.asm: Remove trailing hashes (#) from
-        identifiers.
-        (__do_global_ctors_aux): Align to 32-byte boundary.  Add unwind
-        directives.  Drop explicit bundling---it just makes the code
-        harder to read.  Don't save/restore gp needlessly.
+	* config/ia64/crtend.asm: Remove trailing hashes (#) from
+	identifiers.
+	(__do_global_ctors_aux): Align to 32-byte boundary.  Add unwind
+	directives.  Drop explicit bundling---it just makes the code
+	harder to read.  Don't save/restore gp needlessly.
 
-        * config/ia64/crtbegin.asm: Remove trailing hashes (#) from
-        identifiers (they're only needed if the identifier would clash
-        with a register name otherwise).
-        (__do_global_dtors_aux): Align to 32-byte boundary. Add unwind
-        directives.  Drop explicit bundling---it just makes the code
-        harder to read.
-        (__do_jv_register_classes): Ditto.
-        (.fini_array): Remove "progbits" (newer
-        assemblers don't like wrong section-types).
-        (.init_array): Ditto.
+	* config/ia64/crtbegin.asm: Remove trailing hashes (#) from
+	identifiers (they're only needed if the identifier would clash
+	with a register name otherwise).
+	(__do_global_dtors_aux): Align to 32-byte boundary. Add unwind
+	directives.  Drop explicit bundling---it just makes the code
+	harder to read.
+	(__do_jv_register_classes): Ditto.
+	(.fini_array): Remove "progbits" (newer
+	assemblers don't like wrong section-types).
+	(.init_array): Ditto.
 
 2003-04-01  Roger Sayle  <roger@eyesopen.com>
 
@@ -546,56 +567,56 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-31  Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.c-torture/execute/simd-3.c: New.
+	* testsuite/gcc.c-torture/execute/simd-3.c: New.
 
-        * expr.c (expand_expr): Handle VECTOR_CST.
-        (const_vector_from_tree): New.
+	* expr.c (expand_expr): Handle VECTOR_CST.
+	(const_vector_from_tree): New.
 
-        * varasm.c (output_constant): Handle VECTOR_CST.
+	* varasm.c (output_constant): Handle VECTOR_CST.
 
-        * c-typeck.c (digest_init): Build a vector constant from a
-        VECTOR_TYPE.
+	* c-typeck.c (digest_init): Build a vector constant from a
+	VECTOR_TYPE.
 
-        * config/rs6000/rs6000.c: Remove prototype for
-        easy_vector_constant.
-        (easy_vector_constant): Add mode parameter.  Rewrite to handle
-        more easy constants.
-        (rs6000_emit_move): Pass mode to easy_vector_constant.
-        Call emit_easy_vector_insn for SPE V2SI vector constant moves.
-        (emit_easy_vector_insn): New.
-        (easy_vector_same): New.
-        (EASY_VECTOR_15): New macro.
-        (EASY_VECTOR_15_ADD_SELF): New macro.
-        (bdesc_2arg): Rename to xorv2si3.
-        (easy_vector_constant_add_self): New.
-        (input_operand): Allow vector constants.
+	* config/rs6000/rs6000.c: Remove prototype for
+	easy_vector_constant.
+	(easy_vector_constant): Add mode parameter.  Rewrite to handle
+	more easy constants.
+	(rs6000_emit_move): Pass mode to easy_vector_constant.
+	Call emit_easy_vector_insn for SPE V2SI vector constant moves.
+	(emit_easy_vector_insn): New.
+	(easy_vector_same): New.
+	(EASY_VECTOR_15): New macro.
+	(EASY_VECTOR_15_ADD_SELF): New macro.
+	(bdesc_2arg): Rename to xorv2si3.
+	(easy_vector_constant_add_self): New.
+	(input_operand): Allow vector constants.
 
-        * config/rs6000/rs6000.h (PREDICATE_CODES): Add
-        easy_vector_constant, easy_vector_constant_add_self.
-        (EXTRA_CONSTRAINT): Add 'W'.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add
+	easy_vector_constant, easy_vector_constant_add_self.
+	(EXTRA_CONSTRAINT): Add 'W'.
 
-        * config/rs6000/rs6000-protos.h: Add prototype for
-        easy_vector_constant, emit_easy_vector_insn.
+	* config/rs6000/rs6000-protos.h: Add prototype for
+	easy_vector_constant, emit_easy_vector_insn.
 
-        * config/rs6000/altivec.md (xorv8hi3): New.
-        (xorv16qi3): New.
-        Remove all _const0 patterns.
-        (movv4si_internal): Rewrite to use code.  Add vector constant to
-        vector alternative.  Add splitter.
-        (movv8hi_internal): Same.
-        (movv16qi_internal): Same.
-        (movv4sf_internal): Same.
-        Change the unspecs for vspltis* to use constants.
+	* config/rs6000/altivec.md (xorv8hi3): New.
+	(xorv16qi3): New.
+	Remove all _const0 patterns.
+	(movv4si_internal): Rewrite to use code.  Add vector constant to
+	vector alternative.  Add splitter.
+	(movv8hi_internal): Same.
+	(movv16qi_internal): Same.
+	(movv4sf_internal): Same.
+	Change the unspecs for vspltis* to use constants.
 
-        * config/rs6000/spe.md ("xorv4hi3"): New.
-        ("spe_evxor"): Rename to xorv2si3.
-        ("xorv1di3"): New.
-        Remove all _const0 patterns.
-        (movv2si_internal): Rewrite to use code.  Add vector constant to
-        alternatives.  Add splitter.
-        (movv4hi_internal): Add vector constant to alternatives.
-        (movv1di_internal): Same.
-        (movv2sf_internal): Same.
+	* config/rs6000/spe.md ("xorv4hi3"): New.
+	("spe_evxor"): Rename to xorv2si3.
+	("xorv1di3"): New.
+	Remove all _const0 patterns.
+	(movv2si_internal): Rewrite to use code.  Add vector constant to
+	alternatives.  Add splitter.
+	(movv4hi_internal): Add vector constant to alternatives.
+	(movv1di_internal): Same.
+	(movv2sf_internal): Same.
 
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
@@ -759,8 +780,8 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-30  Richard Henderson  <rth@redhat.com>
 
 	PR opt/10011, opt/10252:
-        * toplev.c (rest_of_compilation): Run purge_builtin_constant_p
-        before post-gcse cse pass.
+	* toplev.c (rest_of_compilation): Run purge_builtin_constant_p
+	before post-gcse cse pass.
 
 2003-03-30  Roger Sayle  <roger@eyesopen.com>
 
@@ -786,8 +807,8 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-        * Makefile.in (STRICT_WARN): Don't warn for ISO C constructs.
-        (STRICT2_WARN): Likewise.
+	* Makefile.in (STRICT_WARN): Don't warn for ISO C constructs.
+	(STRICT2_WARN): Likewise.
 
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -910,7 +931,7 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(load_mems): Adjust replace_loop_mems call.
 
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	PR target/10114 and PR target/10084
 	* dwarf2out.c (mem_loc_descriptor): Handle LO_SUM.
@@ -961,13 +982,13 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-27  David Mosberger  <davidm@hpl.hp.com>
 
-        * unwind-libunwind.c (uw_frame_state_for): Adjust for libunwind
-        v0.9 API change: replace read of UNW_REG_HANDLER with
-        unw_get_proc_info().
-        (_Unwind_GetLanguageSpecificData): Replace read of UNW_REG_LSDA
-        with unw_get_proc_info().
-        (_Unwind_GetRegionStart): Replace UNW_REG_PROC_START with
-        unw_get_proc_info().
+	* unwind-libunwind.c (uw_frame_state_for): Adjust for libunwind
+	v0.9 API change: replace read of UNW_REG_HANDLER with
+	unw_get_proc_info().
+	(_Unwind_GetLanguageSpecificData): Replace read of UNW_REG_LSDA
+	with unw_get_proc_info().
+	(_Unwind_GetRegionStart): Replace UNW_REG_PROC_START with
+	unw_get_proc_info().
 
 2003-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -993,7 +1014,7 @@ Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-26  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * config/rs6000/8540.md: New file.
+	* config/rs6000/8540.md: New file.
 
 	* config/rs6000/{40x.md, 603.md, 6xx.md, 7450.md, 7xx.md, mpc.md,
 	power4.md, rios1.md, rios2.md, rs64.md}: Add mult_compare to

@@ -34,9 +34,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    's' for codes for expressions with inherent side effects.
    'e' for codes for other kinds of expressions.  */
 
-/* For `r', `e', `<', `1', `2', `s' and `x' nodes,
-   the 4th element is the number of argument slots to allocate.
-   This determines the size of the tree node object.  */
+/* For `r', `e', `<', `1', `2', and `s' nodes, which use struct
+   tree_exp, the 4th element is the number of argument slots to
+   allocate.  This determines the size of the tree node object.
+   Other nodes use different structures, and the size is determined
+   by the tree_union member structure; the 4th element should be
+   zero.  Languages that define language-specific 'x' or 'c' codes
+   must define the tree_size langhook to say how big they are.  */
 
 /* Any erroneous construct is parsed into a node of this type.
    This type of node is accepted without complaint in all contexts
@@ -49,17 +53,17 @@ DEFTREECODE (ERROR_MARK, "error_mark", 'x', 0)
    Internally it looks like a STRING_CST node.
    There is only one IDENTIFIER_NODE ever made for any particular name.
    Use `get_identifier' to get it (or create it, the first time).  */
-DEFTREECODE (IDENTIFIER_NODE, "identifier_node", 'x', ((LANG_HOOKS_IDENTIFIER_SIZE - sizeof (struct tree_common) + sizeof (tree) - 1) / sizeof (tree)))
+DEFTREECODE (IDENTIFIER_NODE, "identifier_node", 'x', 0)
 
 /* Has the TREE_VALUE and TREE_PURPOSE fields.  */
 /* These nodes are made into lists by chaining through the
    TREE_CHAIN field.  The elements of the list live in the
    TREE_VALUE fields, while TREE_PURPOSE fields are occasionally
    used as well to get the effect of Lisp association lists.  */
-DEFTREECODE (TREE_LIST, "tree_list", 'x', 2)
+DEFTREECODE (TREE_LIST, "tree_list", 'x', 0)
 
 /* These nodes contain an array of tree nodes.  */
-DEFTREECODE (TREE_VEC, "tree_vec", 'x', 2)
+DEFTREECODE (TREE_VEC, "tree_vec", 'x', 0)
 
 /* A symbol binding block.  These are arranged in a tree,
    where the BLOCK_SUBBLOCKS field contains a chain of subblocks
@@ -257,22 +261,20 @@ DEFTREECODE (LANG_TYPE, "lang_type", 't', 0)
    Note: constants of type char in Pascal are INTEGER_CST,
    and so are pointer constants such as nil in Pascal or NULL in C.
    `(int *) 1' in C also results in an INTEGER_CST.  */
-DEFTREECODE (INTEGER_CST, "integer_cst", 'c', 2)
+DEFTREECODE (INTEGER_CST, "integer_cst", 'c', 0)
 
-/* Contents are in TREE_REAL_CST field.  Also there is TREE_CST_RTL.  */
-DEFTREECODE (REAL_CST, "real_cst", 'c', 3)
+/* Contents are in TREE_REAL_CST field.  */
+DEFTREECODE (REAL_CST, "real_cst", 'c', 0)
 
 /* Contents are in TREE_REALPART and TREE_IMAGPART fields,
-   whose contents are other constant nodes.
-   Also there is TREE_CST_RTL.  */
-DEFTREECODE (COMPLEX_CST, "complex_cst", 'c', 3)
+   whose contents are other constant nodes.  */
+DEFTREECODE (COMPLEX_CST, "complex_cst", 'c', 0)
 
 /* Contents are in TREE_VECTOR_CST_ELTS field.  */
-DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 3)     
+DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 0)     
 
-/* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields.
-   Also there is TREE_CST_RTL.  */
-DEFTREECODE (STRING_CST, "string_cst", 'c', 3)
+/* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields. */
+DEFTREECODE (STRING_CST, "string_cst", 'c', 0)
 
 /* Declarations.  All references to names are represented as ..._DECL nodes.
    The decls in one binding context are chained through the TREE_CHAIN field.

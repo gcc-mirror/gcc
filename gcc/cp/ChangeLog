@@ -1,5 +1,19 @@
 2003-04-06  Zack Weinberg   <zack@codesourcery.com>
 
+	* cp-tree.def: Make fourth element for all 'c' and 'x' nodes zero.
+	* cp-lang.c (cp_tree_size): New function.
+	(LANG_HOOKS_TREE_SIZE): Override.
+
+	* cp-tree.h (SOURCE_LOCUS, SRCLOC_FILE, SRCLOC_LINE, struct
+	tree_srcloc, TS_CP_COMMON, TS_CP_SRCLOC): Kill.
+	(union lang_tree_node): Remove common and srcloc members.
+	(build_srcloc_here): Don't prototype.
+	* decl.c (cp_tree_node_structure): Kill SRCLOC case.
+	* pt.c (pending_templates): Correct comment.
+	* tree.c (build_srcloc, build_srcloc_here): Kill.
+
+2003-04-06  Zack Weinberg   <zack@codesourcery.com>
+
 	* call.c: Include intl.h.
 	(print_z_candidate): Always use inform; get rid of errfn
 	argument. Reorganize so that all the strings get picked up
@@ -3897,7 +3911,7 @@
 
 2002-08-11  Gabriel Dos Reis  <gdr@nerim.net>
 
-	* decl.c (duplicate_decls): Replace DECL_SOURCE_FILE +
+	* decl.c (duplicate_decls): Replace DECL_SOURCE_FILE
 	DECL_SOURCE_LINE with DECL_SOURCE_LOCATION.
 	* optimize.c (maybe_clone_body): Likewise.
 	* pt.c (tsubst_enum): Likewise.
