@@ -1,3 +1,11 @@
+2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (altivec_init_builtins): Fix typo
+        building void typed builtins.
+
+        * config/rs6000/altivec.h (vec_ld*): Fix typos.
+        (vec_step): Implement for C++.
+
 Mon Feb  4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (final_scan_insn): Add case for NOTE_INSN_LOOP_END_TOP_COND.

@@ -720,8 +720,20 @@ vec_ld (int a1, vector float *a2)
   return (vector float) __builtin_altivec_lvx (a1, (void *) a2);
 }
 
+inline vector float
+vec_ld (int a1, float *a2)
+{
+  return (vector float) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
 inline vector signed int
 vec_ld (int a1, vector signed int *a2)
+{
+  return (vector signed int) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
+inline vector signed int
+vec_ld (int a1, signed int *a2)
 {
   return (vector signed int) __builtin_altivec_lvx (a1, (void *) a2);
 }
@@ -732,8 +744,20 @@ vec_ld (int a1, vector unsigned int *a2)
   return (vector unsigned int) __builtin_altivec_lvx (a1, (void *) a2);
 }
 
+inline vector unsigned int
+vec_ld (int a1, unsigned int *a2)
+{
+  return (vector unsigned int) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
 inline vector signed short
 vec_ld (int a1, vector signed short *a2)
+{
+  return (vector signed short) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
+inline vector signed short
+vec_ld (int a1, signed short *a2)
 {
   return (vector signed short) __builtin_altivec_lvx (a1, (void *) a2);
 }
@@ -744,8 +768,20 @@ vec_ld (int a1, vector unsigned short *a2)
   return (vector unsigned short) __builtin_altivec_lvx (a1, (void *) a2);
 }
 
+inline vector unsigned short
+vec_ld (int a1, unsigned short *a2)
+{
+  return (vector unsigned short) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
 inline vector signed char
 vec_ld (int a1, vector signed char *a2)
+{
+  return (vector signed char) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
+inline vector signed char
+vec_ld (int a1, signed char *a2)
 {
   return (vector signed char) __builtin_altivec_lvx (a1, (void *) a2);
 }
@@ -756,46 +792,52 @@ vec_ld (int a1, vector unsigned char *a2)
   return (vector unsigned char) __builtin_altivec_lvx (a1, (void *) a2);
 }
 
+inline vector unsigned char
+vec_ld (int a1, unsigned char *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvx (a1, (void *) a2);
+}
+
 /* vec_lde */
 
 inline vector signed char
-vec_lde (int a1, vector signed char *a2)
+vec_lde (int a1, signed char *a2)
 {
   return (vector signed char) __builtin_altivec_lvebx (a1, (void *) a2);
 }
 
 inline vector unsigned char
-vec_lde (int a1, vector unsigned char *a2)
+vec_lde (int a1, unsigned char *a2)
 {
   return (vector unsigned char) __builtin_altivec_lvebx (a1, (void *) a2);
 }
 
 inline vector signed short
-vec_lde (int a1, vector signed short *a2)
+vec_lde (int a1, signed short *a2)
 {
   return (vector signed short) __builtin_altivec_lvehx (a1, (void *) a2);
 }
 
 inline vector unsigned short
-vec_lde (int a1, vector unsigned short *a2)
+vec_lde (int a1, unsigned short *a2)
 {
   return (vector unsigned short) __builtin_altivec_lvehx (a1, (void *) a2);
 }
 
 inline vector float
-vec_lde (int a1, vector float *a2)
+vec_lde (int a1, float *a2)
 {
   return (vector float) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector signed int
-vec_lde (int a1, vector signed int *a2)
+vec_lde (int a1, signed int *a2)
 {
   return (vector signed int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector unsigned int
-vec_lde (int a1, vector unsigned int *a2)
+vec_lde (int a1, unsigned int *a2)
 {
   return (vector unsigned int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
@@ -808,8 +850,20 @@ vec_ldl (int a1, vector float *a2)
   return (vector float) __builtin_altivec_lvxl (a1, (void *) a2);
 }
 
+inline vector float
+vec_ldl (int a1, float *a2)
+{
+  return (vector float) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
 inline vector signed int
 vec_ldl (int a1, vector signed int *a2)
+{
+  return (vector signed int) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
+inline vector signed int
+vec_ldl (int a1, signed int *a2)
 {
   return (vector signed int) __builtin_altivec_lvxl (a1, (void *) a2);
 }
@@ -820,8 +874,20 @@ vec_ldl (int a1, vector unsigned int *a2)
   return (vector unsigned int) __builtin_altivec_lvxl (a1, (void *) a2);
 }
 
+inline vector unsigned int
+vec_ldl (int a1, unsigned int *a2)
+{
+  return (vector unsigned int) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
 inline vector signed short
 vec_ldl (int a1, vector signed short *a2)
+{
+  return (vector signed short) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
+inline vector signed short
+vec_ldl (int a1, signed short *a2)
 {
   return (vector signed short) __builtin_altivec_lvxl (a1, (void *) a2);
 }
@@ -832,14 +898,32 @@ vec_ldl (int a1, vector unsigned short *a2)
   return (vector unsigned short) __builtin_altivec_lvxl (a1, (void *) a2);
 }
 
+inline vector unsigned short
+vec_ldl (int a1, unsigned short *a2)
+{
+  return (vector unsigned short) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
 inline vector signed char
 vec_ldl (int a1, vector signed char *a2)
 {
   return (vector signed char) __builtin_altivec_lvxl (a1, (void *) a2);
 }
 
+inline vector signed char
+vec_ldl (int a1, signed char *a2)
+{
+  return (vector signed char) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
 inline vector unsigned char
 vec_ldl (int a1, vector unsigned char *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvxl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_ldl (int a1, unsigned char *a2)
 {
   return (vector unsigned char) __builtin_altivec_lvxl (a1, (void *) a2);
 }
@@ -3897,6 +3981,59 @@ vec_any_out (vector float a1, vector float a2)
 {
   return __builtin_altivec_vcmpbfp_p (__CR6_EQ_REV, a1, a2);
 }
+
+/* vec_step */
+
+template<typename _Tp>
+struct vec_step_help
+{
+  // All proper vector types will specialize elem.
+};
+
+template<>
+struct vec_step_help<vector signed short>
+{
+  static const int elem = 8;
+};
+
+template<>
+struct vec_step_help<vector unsigned short>
+{
+  static const int elem = 8;
+};
+
+template<>
+struct vec_step_help<vector signed int>
+{
+  static const int elem = 4;
+};
+
+template<>
+struct vec_step_help<vector unsigned int>
+{
+  static const int elem = 4;
+};
+
+template<>
+struct vec_step_help<vector unsigned char>
+{
+  static const int elem = 16;
+};
+
+template<>
+struct vec_step_help<vector signed char>
+{
+  static const int elem = 16;
+};
+
+template<>
+struct vec_step_help<vector float>
+{
+  static const int elem = 4;
+};
+
+#define vec_step(t)  vec_step_help<t>::elem
+
 #else /* not C++ */
 
 /* "... and so I think no man in a century will suffer as greatly as
