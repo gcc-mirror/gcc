@@ -1,3 +1,12 @@
+2003-10-31  Fariborz Jahanian  <fjahanian@apple.com>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): New.
+	(function_arg): Call it.
+	(rs6000_function_value): Widen integral return value to mode based
+	on TARGET_32BIT, not word_mode.
+	* config/rs6000/rs6000.h (PROMOTE_MODE): Likewise.
+
 2003-10-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* .cvsignore: No longer ignore gengtype-lex.c, gengtype-yacc.c,

@@ -347,6 +347,8 @@ static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_complex_function_value (enum machine_mode);
 static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree);
+static rtx rs6000_mixed_function_arg (CUMULATIVE_ARGS *,
+				      enum machine_mode, tree, int);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
 				    int *, int);
@@ -3211,7 +3213,7 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
 	{
 	  if (ud1 & 0x8000)
-	    emit_move_insn (dest, GEN_INT (((ud1  ^ 0x8000) -  0x8000)));
+	    emit_move_insn (dest, GEN_INT (((ud1 ^ 0x8000) -  0x8000)));
 	  else
 	    emit_move_insn (dest, GEN_INT (ud1));
 	}
@@ -3894,6 +3896,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 /* Determine where to put a SIMD argument on the SPE.  */
+
 static rtx
 rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
 			 tree type)
@@ -3919,15 +3922,119 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
 	}
       else
-	return NULL;
+	return NULL_RTX;
     }
   else
     {
       if (cum->sysv_gregno <= GP_ARG_MAX_REG)
 	return gen_rtx_REG (mode, cum->sysv_gregno);
       else
-	return NULL;
+	return NULL_RTX;
     }
+}
+
+/* Determine where to place an argument in 64-bit mode with 32-bit ABI.  */
+
+static rtx
+rs6000_mixed_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
+			   tree type, int align_words)
+{
+  if (mode == DFmode)
+    {
+      /* -mpowerpc64 with 32bit ABI splits up a DFmode argument
+	 in vararg list into zero, one or two GPRs */
+      if (align_words >= GP_ARG_NUM_REG)
+	return gen_rtx_PARALLEL (DFmode,
+		 gen_rtvec (2,
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       NULL_RTX, const0_rtx), 
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (mode,
+							    cum->fregno),
+					       const0_rtx)));
+      else if (align_words + RS6000_ARG_SIZE (mode, type)
+	       > GP_ARG_NUM_REG)
+	/* If this is partially on the stack, then we only
+	   include the portion actually in registers here. */
+	return gen_rtx_PARALLEL (DFmode,
+		 gen_rtvec (2,   
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (SImode,
+							    GP_ARG_MIN_REG
+							    + align_words),
+					       const0_rtx),
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (mode,
+							    cum->fregno),
+					       const0_rtx)));
+
+      /* split a DFmode arg into two GPRs */
+      return gen_rtx_PARALLEL (DFmode,
+	       gen_rtvec (3,
+			  gen_rtx_EXPR_LIST (VOIDmode,       
+					     gen_rtx_REG (SImode,
+							  GP_ARG_MIN_REG
+							  + align_words),
+					     const0_rtx),
+			  gen_rtx_EXPR_LIST (VOIDmode,
+					     gen_rtx_REG (SImode,
+							  GP_ARG_MIN_REG
+							  + align_words + 1),
+					     GEN_INT (4)),
+			  gen_rtx_EXPR_LIST (VOIDmode,
+					     gen_rtx_REG (mode, cum->fregno),
+					     const0_rtx)));
+    }
+  /* -mpowerpc64 with 32bit ABI splits up a DImode argument into one
+     or two GPRs */
+  else if (mode == DImode)
+    {
+      if (align_words < GP_ARG_NUM_REG - 1)
+	return gen_rtx_PARALLEL (DImode,
+		 gen_rtvec (2,
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (SImode,
+							    GP_ARG_MIN_REG
+							    + align_words),
+					       const0_rtx),
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (SImode,
+							    GP_ARG_MIN_REG
+							    + align_words + 1),
+					       GEN_INT (4))));
+      else if (align_words == GP_ARG_NUM_REG - 1)
+	  return gen_rtx_PARALLEL (DImode,
+		   gen_rtvec (2,
+			      gen_rtx_EXPR_LIST (VOIDmode,
+						 NULL_RTX, const0_rtx),
+			      gen_rtx_EXPR_LIST (VOIDmode,
+						 gen_rtx_REG (SImode,
+							      GP_ARG_MIN_REG
+							      + align_words),
+						 const0_rtx)));
+    }
+  else if (mode == BLKmode && align_words <= (GP_ARG_NUM_REG - 1))
+    {
+      int k;
+      int size = int_size_in_bytes (type);
+      int no_units = size / 4;
+      int max_no_words = GP_ARG_NUM_REG - align_words;
+      int rtlvec_len = no_units < max_no_words ? no_units : max_no_words;
+      rtx *rtlvec = (rtx *) alloca (rtlvec_len * sizeof (rtx));
+
+      memset ((char *) rtlvec, 0, rtlvec_len * sizeof (rtx));
+
+      for (k=0; k < rtlvec_len; k++)
+	rtlvec[k] = gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (SImode,
+						    GP_ARG_MIN_REG
+						    + align_words + k),
+				       k == 0 ? const0_rtx : GEN_INT (k*4));
+
+      return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (k, rtlvec));
+  }
+
+  return NULL_RTX;
 }
 
 /* Determine where to put an argument to a function.
@@ -4029,7 +4136,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  if (cum->fregno <= FP_ARG_V4_MAX_REG)
 	    return gen_rtx_REG (mode, cum->fregno);
 	  else
-	    return NULL;
+	    return NULL_RTX;
 	}
       else
 	{
@@ -4051,7 +4158,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  if (gregno + n_words - 1 <= GP_ARG_MAX_REG)
 	    return gen_rtx_REG (mode, gregno);
 	  else
-	    return NULL;
+	    return NULL_RTX;
 	}
     }
   else
@@ -4062,6 +4169,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
         return NULL_RTX;
+
+      if (TARGET_32BIT && TARGET_POWERPC64
+	  && (mode == DFmode || mode == DImode || mode == BLKmode))
+	return rs6000_mixed_function_arg (cum, mode, type, align_words);
 
       if (USE_FP_FOR_ARG_P (*cum, mode, type))
 	{
@@ -4074,53 +4185,6 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		      || ! TARGET_XL_CALL
 		      || (align_words < GP_ARG_NUM_REG))))
 	    return gen_rtx_REG (mode, cum->fregno);
-
-	  if (TARGET_32BIT && TARGET_POWERPC64 && mode == DFmode)
-	    {
-              /* -mpowerpc64 with 32bit ABI splits up a DFmode argument
-		 in vararg list into zero, one or two GPRs */
-	      if (align_words >= GP_ARG_NUM_REG)
-		return gen_rtx_PARALLEL (DFmode,
-		  gen_rtvec (2,
-			     gen_rtx_EXPR_LIST (VOIDmode,
-						NULL_RTX, const0_rtx), 
-			     gen_rtx_EXPR_LIST (VOIDmode,
-						gen_rtx_REG (mode,
-							     cum->fregno),
-						const0_rtx)));
-	      else if (align_words + RS6000_ARG_SIZE (mode, type)
-		       > GP_ARG_NUM_REG)
-		/* If this is partially on the stack, then we only
-		   include the portion actually in registers here. */
-		return gen_rtx_PARALLEL (DFmode,
-		  gen_rtvec (2,   
-			     gen_rtx_EXPR_LIST (VOIDmode,
-						gen_rtx_REG (SImode,
-							     GP_ARG_MIN_REG
-							     + align_words),
-						const0_rtx),
-			     gen_rtx_EXPR_LIST (VOIDmode,
-						gen_rtx_REG (mode,
-							     cum->fregno),
-						const0_rtx)));
-
-	      /* split a DFmode arg into two GPRs */
-	      return gen_rtx_PARALLEL (DFmode,
-		gen_rtvec (3,
-			   gen_rtx_EXPR_LIST (VOIDmode,       
-					      gen_rtx_REG (SImode,
-							   GP_ARG_MIN_REG
-							   + align_words),
-					      const0_rtx),
-			   gen_rtx_EXPR_LIST (VOIDmode,
-					      gen_rtx_REG (SImode,
-							   GP_ARG_MIN_REG
-							   + align_words + 1),
-					      GEN_INT (4)),
-			   gen_rtx_EXPR_LIST (VOIDmode,
-					      gen_rtx_REG (mode, cum->fregno),
-					      const0_rtx)));
-            }
 
           return gen_rtx_PARALLEL (mode,
 	    gen_rtvec (2,
@@ -4141,37 +4205,6 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		       gen_rtx_EXPR_LIST (VOIDmode,
 				gen_rtx_REG (mode, cum->fregno),
 				const0_rtx)));
-	}
-      /* -mpowerpc64 with 32bit ABI splits up a DImode argument into one
-	 or two GPRs */
-      else if (TARGET_32BIT && TARGET_POWERPC64 && mode == DImode
-	       && align_words < GP_ARG_NUM_REG - 1)
-	{
-	  return gen_rtx_PARALLEL (DImode,
-	    gen_rtvec (2,
-		       gen_rtx_EXPR_LIST (VOIDmode,
-					  gen_rtx_REG (SImode,
-						       GP_ARG_MIN_REG
-						       + align_words),
-					  const0_rtx),
-		       gen_rtx_EXPR_LIST (VOIDmode,
-					  gen_rtx_REG (SImode,
-						       GP_ARG_MIN_REG
-						       + align_words + 1),
-					  GEN_INT (4))));
-	}
-      else if (TARGET_32BIT && TARGET_POWERPC64 && mode == DImode
-	       && align_words == GP_ARG_NUM_REG - 1)
-	{
-	  return gen_rtx_PARALLEL (DImode,
-	    gen_rtvec (2,
-		       gen_rtx_EXPR_LIST (VOIDmode,
-					  NULL_RTX, const0_rtx),
-		       gen_rtx_EXPR_LIST (VOIDmode,
-					  gen_rtx_REG (SImode,
-						       GP_ARG_MIN_REG
-						       + align_words),
-					  const0_rtx)));
 	}
       else if (align_words < GP_ARG_NUM_REG)
 	return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
@@ -11365,7 +11398,7 @@ rs6000_emit_prologue (void)
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx frame_ptr_rtx = gen_rtx_REG (Pmode, 12);
   rtx frame_reg_rtx = sp_reg_rtx;
-  rtx cr_save_rtx = NULL;
+  rtx cr_save_rtx = NULL_RTX;
   rtx insn;
   int saving_FPRs_inline;
   int using_store_multiple;
@@ -15456,7 +15489,7 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   if ((INTEGRAL_TYPE_P (valtype)
        && TYPE_PRECISION (valtype) < BITS_PER_WORD)
       || POINTER_TYPE_P (valtype))
-    mode = word_mode;
+    mode = TARGET_32BIT ? SImode : DImode;
   else
     mode = TYPE_MODE (valtype);
 
