@@ -705,7 +705,7 @@ static struct compiler default_compilers[] =
   {".h", "@c-header"},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp-options)"},
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
   {".i", "@cpp-output"},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:\
