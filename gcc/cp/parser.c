@@ -4901,15 +4901,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
       *nelts = declarator->u.array.bounds;
       if (*nelts == error_mark_node)
 	*nelts = integer_one_node;
-      else if (!processing_template_decl)
-	{
-	  if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, *nelts,
-					   false))
-	    pedwarn ("size in array new must have integral type");
-	  *nelts = save_expr (cp_convert (sizetype, *nelts));
-	  if (*nelts == integer_zero_node)
-	    warning ("zero size array reserves no space");
-	}
+      
       if (outer_declarator)
 	outer_declarator->declarator = declarator->declarator;
       else
