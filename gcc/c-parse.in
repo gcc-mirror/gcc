@@ -31,7 +31,7 @@ ifobjc
 %expect 66
 end ifobjc
 ifc
-%expect 45 
+%expect 46
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -309,6 +309,8 @@ end ifobjc
 		    assemble_asm ($3);
 		  else
 		    error ("argument of `asm' is not a constant string"); }
+	| extension extdef
+		{ pedantic = $<itype>1; }
 	;
 
 datadef:
@@ -447,11 +449,8 @@ unary_expr:
 	| '*' cast_expr   %prec UNARY
 		{ $$ = build_indirect_ref ($2, "unary *"); }
 	/* __extension__ turns off -pedantic for following primary.  */
-	| EXTENSION
-		{ $<itype>1 = pedantic;
-		  pedantic = 0; }
-	  cast_expr	  %prec UNARY
-		{ $$ = $3;
+	| extension cast_expr	  %prec UNARY
+		{ $$ = $2;
 		  pedantic = $<itype>1; }
 	| unop cast_expr  %prec UNARY
 		{ $$ = build_unary_op ($1, $2, 0);
@@ -1012,6 +1011,8 @@ decl:
 		{ shadow_tag ($1); }
 	| declmods ';'
 		{ pedwarn ("empty declaration"); }
+	| extension decl
+		{ pedantic = $<itype>1; }
 	;
 
 /* Declspecs which contain at least one type specifier or typedef name.
@@ -1564,6 +1565,9 @@ component_decl:
 		  $$ = NULL_TREE; }
 	| error
 		{ $$ = NULL_TREE; }
+	| extension component_decl
+		{ $$ = $2;
+		  pedantic = $<itype>1; }
 	;
 
 components:
@@ -2356,6 +2360,12 @@ identifiers_or_typenames:
 		{ $$ = build_tree_list (NULL_TREE, $1); }
 	| identifiers_or_typenames ',' identifier
 		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
+	;
+
+extension:
+	EXTENSION
+		{ $<itype>$ = pedantic;
+		  pedantic = 0; }
 	;
 
 ifobjc
