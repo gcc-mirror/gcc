@@ -90,7 +90,7 @@ static htab_t local_specializations;
 			     type with the desired type.  */
 
 static void push_access_scope_real PARAMS ((tree, tree, tree));
-static void push_access_scope PARAMS ((tree, tree));
+static void push_access_scope PARAMS ((tree));
 static void pop_access_scope PARAMS ((tree));
 static int resolve_overloaded_unification PARAMS ((tree, tree, tree, tree,
 						   unification_kind_t, int));
@@ -207,28 +207,30 @@ push_access_scope_real (t, args, context)
 	  if (spec)
 	    t = spec;
 	}
+    }
 
+  if (!context)
+    context = DECL_CONTEXT (t);
+  if (context && TYPE_P (context))
+    push_nested_class (context, 2);
+  else
+    push_to_top_level ();
+    
+  if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
+    {
       saved_access_scope = tree_cons
 	(NULL_TREE, current_function_decl, saved_access_scope);
       current_function_decl = t;
-    }
-
-  if (DECL_CLASS_SCOPE_P (t))
-    {
-      if (context)
-	pushclass (context, 2);
-      else
-	pushclass (DECL_CONTEXT (t), 2);
     }
 }
 
 /* Like push_access_scope_real, but always uses DECL_CONTEXT.  */
 
 void
-push_access_scope (t, args)
-  tree t, args;
+push_access_scope (t)
+  tree t;
 {
-  push_access_scope_real (t, args, NULL_TREE);
+  push_access_scope_real (t, NULL_TREE, NULL_TREE);
 }
 
 /* Restore the scope set up by push_access_scope.  T is the node we
@@ -238,14 +240,16 @@ void
 pop_access_scope (t)
   tree t;
 {
-  if (DECL_CLASS_SCOPE_P (t))
-    popclass ();
-
   if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
     {
       current_function_decl = TREE_VALUE (saved_access_scope);
       saved_access_scope = TREE_CHAIN (saved_access_scope);
     }
+
+  if (DECL_CLASS_SCOPE_P (t))
+    pop_nested_class ();
+  else
+    pop_from_top_level ();
 }
 
 /* Do any processing required when DECL (a member template declaration
@@ -5775,7 +5779,7 @@ tsubst_default_argument (fn, type, arg)
      binding properly.  */
 
   /* FN is already the desired FUNCTION_DECL.  */
-  push_access_scope (fn, NULL_TREE);
+  push_access_scope (fn);
 
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
 		     tf_error | tf_warning, NULL_TREE);
@@ -9985,7 +9989,7 @@ regenerate_decl_from_template (decl, tmpl)
      instantiation of a specialization, which it isn't: it's a full
      instantiation.  */
   gen_tmpl = most_general_template (tmpl);
-  push_access_scope (gen_tmpl, args);
+  push_access_scope_real (gen_tmpl, args, DECL_CONTEXT (decl));
   unregistered = unregister_specialization (decl, gen_tmpl);
 
   /* If the DECL was not unregistered then something peculiar is
@@ -10014,7 +10018,7 @@ regenerate_decl_from_template (decl, tmpl)
       DECL_INITIAL (decl) = NULL_TREE;
     }
 
-  pop_access_scope (gen_tmpl);
+  pop_access_scope (decl);
 
   /* The immediate parent of the new template is still whatever it was
      before, even though tsubst sets DECL_TI_TEMPLATE up as the most
@@ -10209,7 +10213,7 @@ instantiate_decl (d, defer_ok)
       /* Make sure that we can see identifiers, and compute access
 	 correctly.  D is already the target FUNCTION_DECL with the
 	 right context.  */
-      push_access_scope (d, NULL_TREE);
+      push_access_scope (d);
 
       if (TREE_CODE (gen) == FUNCTION_DECL)
 	{
@@ -10564,7 +10568,7 @@ get_mostly_instantiated_function_type (decl)
 	 partial substitution here.  It depends only on outer template
 	 parameters, regardless of whether the innermost level is
 	 specialized or not.  */
-      push_access_scope (decl, NULL_TREE);
+      push_access_scope (decl);
 
       /* Now, do the (partial) substitution to figure out the
 	 appropriate function type.  */

@@ -64,6 +64,10 @@ is_friend (type, supplicant)
 		  if (supplicant == TREE_VALUE (friends))
 		    return 1;
 
+		  /* We haven't completed the instantiation yet.  */
+		  if (TREE_CODE (supplicant) == TEMPLATE_DECL)
+		    return 1;
+
 		  /* Temporarily, we are more lenient to deal with
 		     nested friend functions, for which there can be
 		     more than one FUNCTION_DECL, despite being the

@@ -1,3 +1,10 @@
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9453
+	* g++.dg/template/friend14.C: New test.
+	* g++.dg/template/friend15.C: New test.
+	* g++.old-deja/g++.other/defarg1.C: Adjust error message.
+
 2003-01-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9437

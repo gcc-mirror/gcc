@@ -1,3 +1,15 @@
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9453
+	* friend.c (is_friend): Always accept when SUPPLICANT is still
+	a TEMPLATE_DECL.
+	* pt.c (push_access_scope_real): Call push_to_top_level for
+	function in namespace scope.
+	(push_access_scope): Remove ARGS argument, all caller adjusted.
+	(pop_access_scope): Call pop_from_top_level for function in
+	namespace scope.
+	(regenerate_decl_from_template): Use push_access_scope_real.
+	
 2003-01-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9437
