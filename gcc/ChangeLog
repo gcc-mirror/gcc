@@ -1,5 +1,9 @@
 2005-02-17  Ira Rosen  <irar@il.ibm.com>
 
+        * tree-data-ref.c (array_base_name_differ_p): Remove gcc_assert.
+
+2005-02-17  Ira Rosen  <irar@il.ibm.com>
+
 	* tree-vect-analyze.c (vect_analyze_pointer_ref_access): Use
 	POINTER_TYPE_P when checking that type is a pointer.
 	(vect_get_memtag): Remove.
