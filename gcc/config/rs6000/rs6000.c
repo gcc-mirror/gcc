@@ -217,8 +217,8 @@ static void rs6000_emit_stack_tie (void);
 static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
 static rtx spe_synthesize_frame_save (rtx);
 static bool spe_func_has_64bit_regs_p (void);
-static void emit_frame_save (rtx, rtx, enum machine_mode,
-				     unsigned int, int, int);
+static void emit_frame_save (rtx, rtx, enum machine_mode, unsigned int,
+			     int, int);
 static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
 static void rs6000_emit_allocate_stack (HOST_WIDE_INT, int);
 static unsigned rs6000_hash_constant (rtx);
@@ -243,8 +243,8 @@ extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
-					    HOST_WIDE_INT, tree);
+static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
+				    tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 static bool rs6000_return_in_memory (tree, tree);
 static void rs6000_file_start (void);
@@ -255,7 +255,7 @@ static void rs6000_elf_asm_out_destructor (rtx, int);
 static void rs6000_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void rs6000_elf_unique_section (tree, int);
 static void rs6000_elf_select_rtx_section (enum machine_mode, rtx,
-						   unsigned HOST_WIDE_INT);
+					   unsigned HOST_WIDE_INT);
 static void rs6000_elf_encode_section_info (tree, rtx, int)
      ATTRIBUTE_UNUSED;
 static bool rs6000_elf_in_small_data_p (tree);
@@ -266,7 +266,7 @@ static void rs6000_xcoff_asm_named_section (const char *, unsigned int);
 static void rs6000_xcoff_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void rs6000_xcoff_unique_section (tree, int);
 static void rs6000_xcoff_select_rtx_section (enum machine_mode, rtx,
-						     unsigned HOST_WIDE_INT);
+					     unsigned HOST_WIDE_INT);
 static const char * rs6000_xcoff_strip_name_encoding (const char *);
 static unsigned int rs6000_xcoff_section_type_flags (tree, const char *, int);
 static void rs6000_xcoff_file_start (void);
@@ -294,9 +294,9 @@ static void altivec_init_builtins (void);
 static void rs6000_common_init_builtins (void);
 static void rs6000_init_libfuncs (void);
 
-static void enable_mask_for_builtins (struct builtin_description *,
-					      int, enum rs6000_builtins,
-					      enum rs6000_builtins);
+static void enable_mask_for_builtins (struct builtin_description *, int,
+				      enum rs6000_builtins,
+				      enum rs6000_builtins);
 static void spe_init_builtins (void);
 static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
@@ -330,7 +330,7 @@ static inline int rs6000_tls_symbol_ref_1 (rtx *, void *);
 static const char *rs6000_get_some_local_dynamic_name (void);
 static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_complex_function_value (enum machine_mode);
-static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *, 
+static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
@@ -975,8 +975,9 @@ rs6000_parse_abi_options (void)
 static void
 rs6000_parse_alignment_option (void)
 {
-  if (rs6000_alignment_string == 0
-      || ! strcmp (rs6000_alignment_string, "power"))
+  if (rs6000_alignment_string == 0)
+    return;
+  else if (! strcmp (rs6000_alignment_string, "power"))
     rs6000_alignment_flags = MASK_ALIGN_POWER;
   else if (! strcmp (rs6000_alignment_string, "natural"))
     rs6000_alignment_flags = MASK_ALIGN_NATURAL;

@@ -65,11 +65,13 @@
 #define	SUBSUBTARGET_OVERRIDE_OPTIONS				\
   do								\
     {								\
+      if (rs6000_alignment_string == 0)				\
+	rs6000_alignment_flags = MASK_ALIGN_NATURAL;		\
       if (TARGET_64BIT)						\
 	{							\
 	  if (DEFAULT_ABI != ABI_AIX)				\
 	    {							\
-	      DEFAULT_ABI = ABI_AIX;				\
+	      rs6000_current_abi = ABI_AIX;			\
 	      error (INVALID_64BIT, "call");			\
 	    }							\
 	  if (TARGET_RELOCATABLE)				\
@@ -202,8 +204,7 @@
 /* We don't need to generate entries in .fixup.  */
 #undef RELOCATABLE_NEEDS_FIXUP
 
-/* This now supports a natural alignment mode. */
-/* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
+/* PowerPC64 Linux word-aligns FP doubles when -malign-power is given.  */
 #undef  ADJUST_FIELD_ALIGN
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
   ((TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)	\
@@ -216,8 +217,8 @@
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 
-/* AIX increases natural record alignment to doubleword if the first
-   field is an FP double while the FP fields remain word aligned.  */
+/* PowerPC64 Linux increases natural record alignment to doubleword if
+   the first field is an FP double.  */
 #undef  ROUND_TYPE_ALIGN
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)		\
   ((TARGET_ALTIVEC && TREE_CODE (STRUCT) == VECTOR_TYPE)	\
