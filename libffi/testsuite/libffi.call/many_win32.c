@@ -7,6 +7,7 @@
 /* { dg-do run { target i?86-*-cygwin* i?86-*-mingw* } } */
 
 #include "ffitest.h"
+#include <float.h>
 
 static float __attribute__((stdcall)) stdcall_many(float f1,
 						   float f2,
@@ -32,7 +33,7 @@ int main (void)
   void *values[13];
   float fa[13];
   float f, ff;
-  int i;
+  unsigned long ul;
   
   for (ul = 0; ul < 13; ul++)
     {
