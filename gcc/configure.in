@@ -1200,7 +1200,7 @@ changequote(,)dnl
 	i[34567]86-go32-msdos | i[34567]86-*-go32*)
 changequote([,])dnl
 		echo "GO32/DJGPP V1.X is no longer supported. Use *-pc-msdosdjgpp for DJGPP V2.X instead."
-		exit (1)
+		exit 1
 		;;
 changequote(,)dnl
 	i[34567]86-pc-msdosdjgpp*)
