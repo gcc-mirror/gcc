@@ -290,13 +290,22 @@ init_expr_once ()
 {
   rtx insn, pat;
   enum machine_mode mode;
+  rtx mem, mem1;
+  char *free_point;
+
+  start_sequence ();
+
+  /* Since we are on the permanent obstack, we must be sure we save this
+     spot AFTER we call start_sequence, since it will reuse the rtl it
+     makes.  */
+  free_point = (char *) oballoc (0);
+
   /* Try indexing by frame ptr and try by stack ptr.
      It is known that on the Convex the stack ptr isn't a valid index.
      With luck, one or the other is valid on any machine.  */
-  rtx mem = gen_rtx (MEM, VOIDmode, stack_pointer_rtx);
-  rtx mem1 = gen_rtx (MEM, VOIDmode, frame_pointer_rtx);
+  mem = gen_rtx (MEM, VOIDmode, stack_pointer_rtx);
+  mem1 = gen_rtx (MEM, VOIDmode, frame_pointer_rtx);
 
-  start_sequence ();
   insn = emit_insn (gen_rtx (SET, 0, NULL_RTX, NULL_RTX));
   pat = PATTERN (insn);
 
@@ -347,6 +356,7 @@ init_expr_once ()
     }
 
   end_sequence ();
+  obfree (free_point);
 }
       
 /* This is run at the start of compiling a function.  */
