@@ -232,11 +232,6 @@ GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
 # to link anything.
 GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PARTS)
 
-# Name of `ld' to link into the binary directory for a cross-compiler.
-# If we are using collect2, this will be `gld', since `ld' is collect2.
-# Otherwise it is `ld'.
-REAL_LD_NAME=`if [ x$(USE_COLLECT2) = xld ]; then echo "gld"; else echo "ld"; fi` 
-
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
