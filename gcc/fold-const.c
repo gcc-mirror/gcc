@@ -61,7 +61,7 @@ static tree fold_convert PROTO((tree, tree));
 static enum tree_code invert_tree_comparison PROTO((enum tree_code));
 static enum tree_code swap_tree_comparison PROTO((enum tree_code));
 static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
-static int twoval_comparison_p PROTO((tree, tree *, tree *));
+static int twoval_comparison_p PROTO((tree, tree *, tree *, int *));
 static tree eval_subst	PROTO((tree, tree, tree, tree, tree));
 static tree omit_one_operand PROTO((tree, tree, tree));
 static tree distribute_bit_expr PROTO((enum tree_code, tree, tree, tree));
@@ -1900,46 +1900,59 @@ operand_equal_for_comparison_p (arg0, arg1, other)
    two different values, which will be stored in *CVAL1 and *CVAL2; if
    they are non-zero it means that some operands have already been found.
    No variables may be used anywhere else in the expression except in the
-   comparisons.
+   comparisons.  If SAVE_P is true it means we removed a SAVE_EXPR around
+   the expression and save_expr needs to be called with CVAL1 and CVAL2.
 
    If this is true, return 1.  Otherwise, return zero.  */
 
 static int
-twoval_comparison_p (arg, cval1, cval2)
+twoval_comparison_p (arg, cval1, cval2, save_p)
      tree arg;
      tree *cval1, *cval2;
+     int *save_p;
 {
   enum tree_code code = TREE_CODE (arg);
   char class = TREE_CODE_CLASS (code);
 
   /* We can handle some of the 'e' cases here.  */
-  if (class == 'e'
-      && (code == TRUTH_NOT_EXPR
-	  || (code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0)))
+  if (class == 'e' && code == TRUTH_NOT_EXPR)
     class = '1';
   else if (class == 'e'
 	   && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR
 	       || code == COMPOUND_EXPR))
     class = '2';
+  else if (class == 'e' && code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0)
+    {
+      /* If we've already found a CVAL1 or CVAL2, this expression is
+	 two complex to handle.  */
+      if (*cval1 || *cval2)
+	return 0;
+
+      class = '1';
+      *save_p = 1;
+    }
 
   switch (class)
     {
     case '1':
-      return twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2);
+      return twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2, save_p);
 
     case '2':
-      return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2)
-	      && twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2));
+      return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2, save_p)
+	      && twoval_comparison_p (TREE_OPERAND (arg, 1),
+				      cval1, cval2, save_p));
 
     case 'c':
       return 1;
 
     case 'e':
       if (code == COND_EXPR)
-	return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2)
-		&& twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2)
+	return (twoval_comparison_p (TREE_OPERAND (arg, 0),
+				     cval1, cval2, save_p)
+		&& twoval_comparison_p (TREE_OPERAND (arg, 1),
+					cval1, cval2, save_p)
 		&& twoval_comparison_p (TREE_OPERAND (arg, 2),
-					cval1, cval2));
+					cval1, cval2, save_p));
       return 0;
 	  
     case '<':
@@ -4346,8 +4359,9 @@ fold (expr)
       if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) != INTEGER_CST)
 	{
 	  tree cval1 = 0, cval2 = 0;
+	  int save_p = 0;
 
-	  if (twoval_comparison_p (arg0, &cval1, &cval2)
+	  if (twoval_comparison_p (arg0, &cval1, &cval2, &save_p)
 	      /* Don't handle degenerate cases here; they should already
 		 have been handled anyway.  */
 	      && cval1 != 0 && cval2 != 0
@@ -4419,7 +4433,11 @@ fold (expr)
 		      return omit_one_operand (type, integer_one_node, arg0);
 		    }
 
-		  return fold (build (code, type, cval1, cval2));
+		  t = build (code, type, cval1, cval2);
+		  if (save_p)
+		    return save_expr (t);
+		  else
+		    return fold (t);
 		}
 	    }
 	}
