@@ -14,7 +14,7 @@ template<class T >
 struct Derived
 {
   class Nested : public X<T>
-  { // { dg-error "instantiated"
+  { // { dg-error "instantiated" "" }
   };
   
   Nested m; // { dg-error "instantiated" "" }

@@ -5173,8 +5173,14 @@ instantiate_class_template (tree type)
       tree base_list = NULL_TREE;
       tree pbases = BINFO_BASETYPES (pbinfo);
       tree paccesses = BINFO_BASEACCESSES (pbinfo);
+      tree context = TYPE_CONTEXT (type);
       int i;
 
+      /* We must enter the scope containing the type, as that is where
+	 the accessibility of types named in dependent bases are
+	 looked up from.  */
+      push_scope (context ? context : global_namespace);
+  
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
       for (i = 0; i < TREE_VEC_LENGTH (pbases); ++i)
@@ -5201,6 +5207,8 @@ instantiate_class_template (tree type)
       /* Now call xref_basetypes to set up all the base-class
 	 information.  */
       xref_basetypes (type, base_list);
+
+      pop_scope (context ? context : global_namespace);
     }
 
   /* Now that our base classes are set up, enter the scope of the
