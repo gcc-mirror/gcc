@@ -6805,7 +6805,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  emit_cmp_insn (target, target, EQ, 0, GET_MODE (target), 0, 0);
 	  emit_jump_insn (gen_beq (lab1));
 
-#if TARGET_EDOM
+#ifdef TARGET_EDOM
 	  {
 #ifdef GEN_ERRNO_RTX
 	    rtx errno_rtx = GEN_ERRNO_RTX;
