@@ -4132,7 +4132,7 @@ override_options (void)
     }
 
   /* Deprecate -mint64. Remove after 4.0 branches.  */
-  if ((target_flags_explicit & MASK_INT64) != 0)
+  if (TARGET_INT64)
     warning ("-mint64 is a deprecated option");
 
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
