@@ -1,3 +1,13 @@
+2002-09-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (addr_generation_dependency_p): Handle SUBREG 
+	and STRICT_LOW_PART within SET_DEST.
+	* config/s390/s390.md ("*extractqi", "*extracthi"): New insns with
+	splitters, replacing pre-reload splitters.
+	("*zero_extendhisi2_31", "*zero_extendqisi2_31", 
+	"*zero_extendqihi2_31"): New insns.
+	("*zero_extendqihi2_64"): Do not clobber CC.
+
 2002-09-18  Devang Patel  <dpatel@apple.com>
 
 	* cp/cp-tree.h: New prototype for walk_vtabls().        

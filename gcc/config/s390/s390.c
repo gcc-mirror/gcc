@@ -2812,7 +2812,11 @@ addr_generation_dependency_p (dep_rtx, insn)
   if (GET_CODE (dep_rtx) == SET)
     {
       target = SET_DEST (dep_rtx);
-      
+      if (GET_CODE (target) == STRICT_LOW_PART)
+	target = XEXP (target, 0);
+      while (GET_CODE (target) == SUBREG)
+	target = SUBREG_REG (target);
+
       if (GET_CODE (target) == REG)
 	{
 	  int regno = REGNO (target);
