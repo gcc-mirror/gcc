@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    PC532 with National 32532, running Mach 3.0.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,6 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dns32532 -DPC532 -DMACH=1 -Asystem(unix) -Asystem(mach) -Acpu(ns32k) -Amachine(ns32k)"
 
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions.  */
-#define DEFAULT_PCC_STRUCT_RETURN 0
+/* There's a bug in the setjmp implementation that strikes
+   if the caller of setjmp doesn't have a frame pointer.  */
+#undef FRAME_POINTER_REQUIRED
+#define FRAME_POINTER_REQUIRED current_function_calls_setjmp
