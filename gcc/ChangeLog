@@ -1,3 +1,7 @@
+2001-11-30  Zoltan Hidvegi <hzoli@hzoli.2y.net>
+
+	* unroll.c (unroll_loop): Correct special exit cases.
+
 2001-11-30  Stephane Carrez  <Stephane.Carrez@sun.com>
 
 	* config/sparc/sparc.c (DF_MODES_NO_S): Fix pr/3623, define to
