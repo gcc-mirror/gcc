@@ -55,14 +55,17 @@
   return output_move_double (operands);
 }")
 
-(define_insn ""
-  [(set (match_operand:DI 0 "push_operand" "=m")
-	(match_operand:DF 1 "general_operand" "rmF"))]
-  ""
-  "*
-{
-  return output_move_double (operands);
-}")
+;; This pattern is illegal (modes of SET_DEST and SET_SRC don't match).
+;; It is not clear what it was intended to accomplish, therefore
+;; I have not corrected it.  -zw, 1999-09-13
+;(define_insn ""
+;  [(set (match_operand:DI 0 "push_operand" "=m")
+;	(match_operand:DF 1 "general_operand" "rmF"))]
+;  ""
+;  "*
+;{
+;  return output_move_double (operands);
+;}")
 
 ;; We don't want to allow a constant operand for test insns because
 ;; (set (cc0) (const_int foo)) has no mode information.  Such insns will
