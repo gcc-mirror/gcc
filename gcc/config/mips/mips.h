@@ -163,6 +163,7 @@ extern struct rtx_def *mips16_gp_pseudo_rtx; /* psuedo reg holding $gp */
 /* Functions to change what output section we are using.  */
 extern void		rdata_section PARAMS ((void));
 extern void		sdata_section PARAMS ((void));
+extern void		sbss_section PARAMS ((void));
 
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 

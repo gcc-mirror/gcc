@@ -101,6 +101,8 @@ do {								\
 #define BSS_SECTION_ASM_OP	".section\t.bss"
 #endif
 
+#define SBSS_SECTION_ASM_OP	"\t.section .sbss"
+
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
    separate, explicit argument.  If you define this macro, it is used
    in place of `ASM_OUTPUT_BSS', and gives you more flexibility in
@@ -111,7 +113,17 @@ do {								\
    `varasm.c' when defining this macro. */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+do {									\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  if (SIZE > 0 && SIZE <= mips_section_threshold)			\
+    sbss_section ();							\
+  else									\
+    bss_section ();							\
+  ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));		\
+  last_assemble_variable_decl = DECL;					\
+  ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);				\
+  ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);				\
+} while (0)
 #endif
 
 /* These macros generate the special .type and .size directives which
@@ -281,7 +293,7 @@ do {									   \
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_sdata, in_sbss, in_rdata, in_ctors, in_dtors
  
 #define INVOKE__main
 #define NAME__MAIN "__gccmain"
@@ -290,6 +302,7 @@ do {									   \
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(ctors_section, in_ctors, CTORS_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(dtors_section, in_dtors, DTORS_SECTION_ASM_OP)
