@@ -1,3 +1,8 @@
+2005-01-20  Richard Henderson  <rth@redhat.com>
+
+	* rtl.def (CONST_VECTOR): Use RTX_CONST_OBJ.
+	* rtl.h (CONSTANT_P): Don't special case CONST_VECTOR.
+
 2005-01-19  Richard Henderson  <rth@redhat.com>
 
 	PR target/19350

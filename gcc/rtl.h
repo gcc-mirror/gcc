@@ -382,8 +382,7 @@ struct rtvec_def GTY(()) {
 /* 1 if X is a constant value that is an integer.  */
 
 #define CONSTANT_P(X)   \
-  (GET_RTX_CLASS (GET_CODE (X)) == RTX_CONST_OBJ			\
-   || GET_CODE (X) == CONST_VECTOR)
+  (GET_RTX_CLASS (GET_CODE (X)) == RTX_CONST_OBJ)
 
 /* 1 if X can be used to represent an object.  */
 #define OBJECT_P(X)							\

@@ -315,7 +315,7 @@ DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 DEF_RTL_EXPR(CONST_DOUBLE, "const_double", CONST_DOUBLE_FORMAT, RTX_CONST_OBJ)
 
 /* Describes a vector constant.  */
-DEF_RTL_EXPR(CONST_VECTOR, "const_vector", "E", RTX_EXTRA)
+DEF_RTL_EXPR(CONST_VECTOR, "const_vector", "E", RTX_CONST_OBJ)
 
 /* String constant.  Used for attributes in machine descriptions and
    for special cases in DWARF2 debug output.  NOT used for source-
