@@ -1,3 +1,10 @@
+Sun Jan 31 13:22:02 1999  John Wehle  (john@feith.com)
+
+	* i386.md (movsicc, movhicc, movsfcc, movdfcc,
+	movxfcc, movdicc): Delete unconstrained alternatives.
+	* i386.c (output_fp_conditional_move,
+	output_int_conditional_move): Delete unused case.
+
 Sun Jan 31 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
