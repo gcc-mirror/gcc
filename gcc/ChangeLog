@@ -1,3 +1,9 @@
+Thu Apr 23 15:01:13 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (find_barrier): Return as soon as a barrier is
+	found, rather than at end of the loop, after the insn has been
+	changed. 
+
 Thu Apr 23 20:21:06 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_ashift_hi): Implement right shifts via gen_ashift.
