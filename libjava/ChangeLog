@@ -1,5 +1,12 @@
 2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
 
+	* java/text/DecimalFormatSymbols.java (locale): New field.
+	(DecimalFormatSymbols (Locale)): Set locale.
+	(serialVersionOnStream): Upgraded to number 2.
+	(readObject): Assign locale if it wasn't by the serializer.
+
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
 	* java/text/FormatCharacterIterator.java: Documented the class and
 
 2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
