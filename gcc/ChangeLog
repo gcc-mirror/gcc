@@ -1,5 +1,9 @@
 2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
+	* c-format.c (T99_I, T99_UI): Remove.
+
+2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
+
 	* c-typeck.c (SAVE_SPELLING_DEPTH): Remove.
 
 Sun Jul 21 21:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
