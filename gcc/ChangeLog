@@ -13,6 +13,11 @@ Thu Oct  1 15:56:01 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 Thu Oct  1 10:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* config/v850/v850.c: Add function prototypes.
+	Add support for v850 special data areas.
+
+	* config/v850/v850.h: Add support for v850 special data areas.
+	
 	* c-pragma.c: Add support for HANDLE_PRAGMA_PACK and
 	HANDLE_PRAGMA_PACK_PUSH_POP.
 	(push_alignment): New function: Cache an alignment requested
