@@ -137,6 +137,18 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	       result.  The assumptions are true only if the address was
 	       valid to begin with.  */
 	    call_target = validize_mem (call_target);
+
+	    /* If this is a reference to a symbol, expand_inline_function
+	       will do this transformation and return a different target
+	       than the one we gave it, though functionally equivalent.  Do
+	       the transformation here to avoid confusion.  */
+	    if (! cse_not_expected && GET_CODE (call_target) == MEM
+		&& GET_CODE (XEXP (call_target, 0)) == SYMBOL_REF)
+	      {
+		call_target = gen_rtx
+		  (MEM, mode, memory_address (mode, XEXP (call_target, 0)));
+		MEM_IN_STRUCT_P (call_target) = 1;
+	      }
 	  }
 
 	call_exp = build (CALL_EXPR, type, func, args, NULL_TREE);

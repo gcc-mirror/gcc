@@ -1,3 +1,33 @@
+Thu Oct 17 11:31:59 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (convert_to_pointer_force): Add code to support pointer to
+ 	member function to pointer to function conversions.
+	* init.c (resolve_offset_ref): Add code to allow faked up objects,
+ 	ignoring them if they are not used, and giving an error, if they
+ 	are needed.
+	* typeck.c (get_member_function_from_ptrfunc): Fold e1 to improve
+ 	code, and so that we can give an error, if we needed an object,
+ 	and one was not provided.
+	(build_c_cast): Don't call default_conversion when we want to
+ 	convert to pointer to function from a METHOD_TYPE.
+
+Mon Oct 14 00:28:51 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Make-lang.in (cplib2.ready): Fix logic.
+
+	* decl.c (shadow_tag): Only complain about non-artificial function
+ 	members.
+
+	* class.c (finish_struct_1): Add synthesized methods to TYPE_METHODS.
+
+Fri Oct 11 16:12:40 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (cplus_expand_expr): Pre-tweak call_target like
+ 	expand_inline_function would.
+
+	* pt.c (mark_decl_instantiated): If extern_p, call
+ 	mark_inline_for_output.
+
 Thu Oct 10 15:58:08 1996  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (unary_complex_lvalue): Add code to handle intermediate

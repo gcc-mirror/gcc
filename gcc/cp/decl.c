@@ -5647,10 +5647,16 @@ shadow_tag (declspecs)
 	  || (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))))
     {
+      tree fn;
+
       /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
 	 function members.  */
-      if (TYPE_METHODS (t))
-	error ("an anonymous union cannot have function members");
+      for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+	if (! DECL_ARTIFICIAL (fn))
+	  {
+	    error ("an anonymous union cannot have function members");
+	    break;
+	  }
 
       if (TYPE_FIELDS (t))
 	{
