@@ -1,3 +1,8 @@
+2002-07-30  Neil Booth  <neil@daikokuya.co.uk>
+
+	* objc/objc-act.c (objc_init): Return immediately if filename
+	is NULL.
+
 2002-07-29  Eric Christopher  <echristo@redhat.com>
 
        	* config/mips/elf.h: Remove ecoff.h and gofast includes.
