@@ -2708,9 +2708,18 @@ print_operand (file, x, code)
 	fputs ("\n\tnop", file);
       return;
     case '*':
-      /* Output an annul flag if there's nothing for the delay slot.  */
-      if (dbr_sequence_length () == 0)
-        fputs (",a", file);
+      /* Output an annul flag if there's nothing for the delay slot and we
+	 are optimizing.  This is always used with '(' below.  */
+      /* Sun OS 4.1.1 dbx can't handle an annulled unconditional branch;
+	 this is a dbx bug.  So, we only do this when optimizing.  */
+      if (dbr_sequence_length () == 0 && optimize)
+	fputs (",a", file);
+      return;
+    case '(':
+      /* Output a 'nop' if there's nothing for the delay slot and we are
+	 not optimizing.  This is always used with '*' above.  */
+      if (dbr_sequence_length () == 0 && ! optimize)
+	fputs ("\n\tnop", file);
       return;
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
