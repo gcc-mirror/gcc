@@ -1,3 +1,7 @@
+Mon May 17 23:50:41 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* collect2.c (main):  Fix typo in COLLECT2_HOST_INITIALIZATION.
+
 Mon May 17 19:45:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/fixincl.c (process): Wait for children from chain_open()

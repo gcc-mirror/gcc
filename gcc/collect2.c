@@ -1011,9 +1011,9 @@ main (argc, argv)
   int first_file;
   int num_c_args	= argc+9;
 
-#if defined (COLLECT2_HOST_INITIALZATION)
+#if defined (COLLECT2_HOST_INITIALIZATION)
   /* Perform system dependant initialization, if neccessary.  */
-  COLLECT2_HOST_INITIALZATION;
+  COLLECT2_HOST_INITIALIZATION;
 #endif
 
 #ifdef HAVE_LC_MESSAGES
