@@ -608,7 +608,7 @@ find_basic_blocks (f, nonlocal_label_list)
 		     to as live.  */
 
 		  for (insn = basic_block_head[i];
-		       insn != basic_block_end[i];
+		       insn != NEXT_INSN (basic_block_end[i]);
 		       insn = NEXT_INSN (insn))
 		    {
 		      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
