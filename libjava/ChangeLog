@@ -1,5 +1,8 @@
 2002-01-30  Tom Tromey  <tromey@redhat.com>
 
+	* java/net/natPlainSocketImpl.cc (_Jv_recv): Added template
+	parameter for `recv' return type.
+
 	* verify.cc (handle_ret_insn): Check for subroutine merge here...
 	(state::merge): ... not here.
 	(subr_entry_info): New structure.
