@@ -527,7 +527,7 @@ namespace std
 	     {
 	       if (__avail == 1)
 		 *__s = *this->gptr();
-	       else if (__avail > 1)
+	       else
 		 traits_type::copy(__s, this->gptr(), __avail);
 	       __s += __avail;
 	       this->gbump(__avail);
