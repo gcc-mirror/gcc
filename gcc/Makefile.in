@@ -3909,7 +3909,11 @@ stagefeedback-start:
 	-if [ -f ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
 	-rm -f stagefeedback/libgcc.a stagefeedback/libgcov.a stagefeedback/libgcc_eh.a
-	-rm -f *.da ada/*.da cp/*.da f/*.da java/*.da objc/*.da fixinc/*.da intl po testsuite 2>/dev/null
+	-rm -f *.da
+	-for dir in fixinc intl po testsuite $(SUBDIRS); \
+	 do \
+	   rm -f $$dir/*.da ; \
+	 done
 	-cp libgcc.a stagefeedback
 	-$(RANLIB_FOR_TARGET) stagefeedback/libgcc.a
 	-cp libgcov.a stagefeedback
