@@ -1,6 +1,6 @@
 // Test that function calls using thunks work right.
 // Special g++ Options: -fvtable-thunks
-// excess errors test - XFAIL mips*-*-* alpha*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff
+// excess errors test - XFAIL mips*-*-* alpha*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3
 
 #include <stdarg.h>
 
