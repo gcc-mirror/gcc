@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -494,37 +494,37 @@ struct JNINativeInterface
 
   void 		(*GetBooleanArrayRegion)   (JNIEnv *, jbooleanArray,
 					    jsize, jsize, jboolean *);
-  void 		(*GetByteArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetCharArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetShortArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetIntArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetLongArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetFloatArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*GetDoubleArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
+  void 		(*GetByteArrayRegion)	   (JNIEnv *, jbyteArray,
+					    jsize, jsize, jbyte *);
+  void 		(*GetCharArrayRegion)	   (JNIEnv *, jcharArray,
+					    jsize, jsize, jchar *);
+  void 		(*GetShortArrayRegion)	   (JNIEnv *, jshortArray,
+					    jsize, jsize, jshort *);
+  void 		(*GetIntArrayRegion)	   (JNIEnv *, jintArray,
+					    jsize, jsize, jint *);
+  void 		(*GetLongArrayRegion)	   (JNIEnv *, jlongArray,
+					    jsize, jsize, jlong *);
+  void 		(*GetFloatArrayRegion)	   (JNIEnv *, jfloatArray,
+					    jsize, jsize, jfloat *);
+  void 		(*GetDoubleArrayRegion)	   (JNIEnv *, jdoubleArray,
+					    jsize, jsize, jdouble *);
 
   void 		(*SetBooleanArrayRegion)   (JNIEnv *, jbooleanArray,
 					    jsize, jsize, jboolean *);
-  void 		(*SetByteArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetCharArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetShortArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetIntArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetLongArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetFloatArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
-  void 		(*SetDoubleArrayRegion)	   (JNIEnv *, jbooleanArray,
-					    jsize, jsize, jboolean *);
+  void 		(*SetByteArrayRegion)	   (JNIEnv *, jbyteArray,
+					    jsize, jsize, jbyte *);
+  void 		(*SetCharArrayRegion)	   (JNIEnv *, jcharArray,
+					    jsize, jsize, jchar *);
+  void 		(*SetShortArrayRegion)	   (JNIEnv *, jshortArray,
+					    jsize, jsize, jshort *);
+  void 		(*SetIntArrayRegion)	   (JNIEnv *, jintArray,
+					    jsize, jsize, jint *);
+  void 		(*SetLongArrayRegion)	   (JNIEnv *, jlongArray,
+					    jsize, jsize, jlong *);
+  void 		(*SetFloatArrayRegion)	   (JNIEnv *, jfloatArray,
+					    jsize, jsize, jfloat *);
+  void 		(*SetDoubleArrayRegion)	   (JNIEnv *, jdoubleArray,
+					    jsize, jsize, jdouble *);
 
   jint     (*RegisterNatives)              (JNIEnv *, jclass,
 					    const JNINativeMethod *, jint);
@@ -1343,49 +1343,49 @@ public:
   void GetBooleanArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
   { p->GetBooleanArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetByteArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetByteArrayRegion (jbyteArray val0, jsize val1, jsize val2, jbyte * val3)
   { p->GetByteArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetCharArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetCharArrayRegion (jcharArray val0, jsize val1, jsize val2, jchar * val3)
   { p->GetCharArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetShortArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetShortArrayRegion (jshortArray val0, jsize val1, jsize val2, jshort * val3)
   { p->GetShortArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetIntArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetIntArrayRegion (jintArray val0, jsize val1, jsize val2, jint * val3)
   { p->GetIntArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetLongArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetLongArrayRegion (jlongArray val0, jsize val1, jsize val2, jlong * val3)
   { p->GetLongArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetFloatArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetFloatArrayRegion (jfloatArray val0, jsize val1, jsize val2, jfloat * val3)
   { p->GetFloatArrayRegion (this, val0, val1, val2, val3); }
 
-  void GetDoubleArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void GetDoubleArrayRegion (jdoubleArray val0, jsize val1, jsize val2, jdouble * val3)
   { p->GetDoubleArrayRegion (this, val0, val1, val2, val3); }
 
   void SetBooleanArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
   { p->SetBooleanArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetByteArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetByteArrayRegion (jbyteArray val0, jsize val1, jsize val2, jbyte * val3)
   { p->SetByteArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetCharArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetCharArrayRegion (jcharArray val0, jsize val1, jsize val2, jchar * val3)
   { p->SetCharArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetShortArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetShortArrayRegion (jshortArray val0, jsize val1, jsize val2, jshort * val3)
   { p->SetShortArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetIntArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetIntArrayRegion (jintArray val0, jsize val1, jsize val2, jint * val3)
   { p->SetIntArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetLongArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetLongArrayRegion (jlongArray val0, jsize val1, jsize val2, jlong * val3)
   { p->SetLongArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetFloatArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetFloatArrayRegion (jfloatArray val0, jsize val1, jsize val2, jfloat * val3)
   { p->SetFloatArrayRegion (this, val0, val1, val2, val3); }
 
-  void SetDoubleArrayRegion (jbooleanArray val0, jsize val1, jsize val2, jboolean * val3)
+  void SetDoubleArrayRegion (jdoubleArray val0, jsize val1, jsize val2, jdouble * val3)
   { p->SetDoubleArrayRegion (this, val0, val1, val2, val3); }
 
   jint RegisterNatives (jclass cl0, const JNINativeMethod * val1, jint val2)
