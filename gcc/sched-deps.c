@@ -153,6 +153,11 @@ get_condition (rtx insn)
     return 0;
 
   src = SET_SRC (pc_set (insn));
+#if 0
+  /* The previous code here was completely invalid and could never extract
+     the condition from a jump.  This code does the correct thing, but that
+     triggers latent bugs later in the scheduler on ports with conditional
+     execution.  So this is disabled for now.  */
   if (XEXP (src, 2) == pc_rtx)
     return XEXP (src, 0);
   else if (XEXP (src, 1) == pc_rtx)
@@ -165,8 +170,9 @@ get_condition (rtx insn)
       return gen_rtx_fmt_ee (revcode, GET_MODE (cond), XEXP (cond, 0),
 			     XEXP (cond, 1));
     }
-  else
-    return 0;
+#endif
+
+  return 0;
 }
 
 /* Return nonzero if conditions COND1 and COND2 can never be both true.  */
