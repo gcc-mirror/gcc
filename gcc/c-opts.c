@@ -34,7 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static cpp_options *cpp_opts;
 
 static void missing_arg PARAMS ((size_t));
-static size_t parse_option PARAMS ((const char *, int));
+static size_t find_opt PARAMS ((const char *, int));
 static void set_Wimplicit PARAMS ((int));
 static void complain_wrong_lang PARAMS ((size_t));
 static void write_langs PARAMS ((char *, int));
@@ -42,6 +42,7 @@ static void print_help PARAMS ((void));
 static void handle_OPT_d PARAMS ((const char *));
 static void set_std_cxx98 PARAMS ((int));
 static void set_std_c89 PARAMS ((int, int));
+static void set_std_c99 PARAMS ((int));
 
 #define CL_C_ONLY	(1 << 0) /* Only C.  */
 #define CL_OBJC_ONLY	(1 << 1) /* Only ObjC.  */
@@ -216,10 +217,11 @@ static void set_std_c89 PARAMS ((int, int));
   OPT("lang-objc",              CL_ALL,   OPT_lang_objc)		     \
   OPT("nostdinc",               CL_ALL,   OPT_nostdinc)			     \
   OPT("nostdinc++",             CL_ALL,   OPT_nostdincplusplus)		     \
+  OPT("o",			CL_ALL | CL_ARG, OPT_o)                      \
   OPT("pedantic",		CL_ALL,   OPT_pedantic)			     \
   OPT("pedantic-errors",	CL_ALL,   OPT_pedantic_errors)		     \
   OPT("print-objc-runtime-info", CL_OBJC, OPT_print_objc_runtime_info)	     \
-  OPT("std=",			CL_ALL | CL_JOINED, OPT_std_bad)	     \
+  OPT("remap",			CL_ALL,   OPT_remap)                         \
   OPT("std=c++98",		CL_CXX,	  OPT_std_cplusplus98)		     \
   OPT("std=c89",		CL_C,     OPT_std_c89)			     \
   OPT("std=c99",		CL_C,     OPT_std_c99)			     \
@@ -294,13 +296,16 @@ missing_arg (opt_index)
     case OPT_fname_mangling:
     case OPT_ftabstop:
     case OPT_ftemplate_depth:
-    case OPT_std_bad:
     default:
       error ("missing argument to \"-%s\"", cl_options[opt_index].opt_text);
       break;
 
     case OPT_fconstant_string_class:
       error ("no class name specified with -fconstant-string-class=");
+      break;
+
+    case OPT_o:
+      error ("missing filename after \"-%s\"", cl_options[opt_index].opt_text);
       break;
     }
 }
@@ -314,7 +319,7 @@ missing_arg (opt_index)
    and -pedantic-errors.  Also, some options are only accepted by some
    languages.  */
 static size_t
-parse_option (input, lang_flag)
+find_opt (input, lang_flag)
      const char *input;
      int lang_flag;
 {
@@ -435,32 +440,32 @@ c_common_decode_option (argc, argv)
      int argc;
      char **argv;
 {
+  static int lang_flags[] = {CL_C_ONLY, CL_C, CL_CXX_ONLY, CL_CXX};
   size_t opt_index;
   const char *opt, *arg = 0;
   char *dup = 0;
   bool on = true;
-  int result, lang_flag;
+  int result;
   const struct cl_option *option;
   enum opt_code code;
 
-  result = cpp_handle_option (parse_in, argc, argv);
   opt = argv[0];
 
-  /* Until handling CPP stuff, ignore non-switches.  */
+  /* Interpret "-" or a non-switch as a file name.  */
   if (opt[0] != '-' || opt[1] == '\0')
-    return result;
-
-  switch (c_language)
     {
-    case clk_c:			lang_flag = (flag_objc
-					     ? CL_C
-					     : CL_C_ONLY);
-				break;
-    case clk_cplusplus:		lang_flag = (flag_objc
-					     ? CL_CXX
-					     : CL_CXX_ONLY);
-				break;
-    default:			abort ();
+      if (!cpp_opts->in_fname)
+	cpp_opts->in_fname = opt;
+      else if (!cpp_opts->out_fname)
+	cpp_opts->out_fname = opt;
+      else
+	{
+	  error ("too many filenames given.  Type %s --help for usage",
+		 progname);
+	  return argc;
+	}
+
+      return 1;
     }
 
   /* Drop the "no-" from negative switches.  */
@@ -477,8 +482,10 @@ c_common_decode_option (argc, argv)
       on = false;
     }
 
+  result = cpp_handle_option (parse_in, argc, argv);
+
   /* Skip over '-'.  */
-  opt_index = parse_option (opt + 1, lang_flag);
+  opt_index = find_opt (opt + 1, lang_flags[(c_language << 1) + flag_objc]);
   if (opt_index == N_OPTS)
     goto done;
 
@@ -1102,6 +1109,16 @@ c_common_decode_option (argc, argv)
       cpp_opts->no_standard_cplusplus_includes = 1;
       break;
 
+    case OPT_o:
+      if (!cpp_opts->out_fname)
+	cpp_opts->out_fname = arg;
+      else
+	{
+	  error ("output filename specified twice");
+	  result = argc;
+	}
+      break;
+
       /* We need to handle the -pedantic switches here, rather than in
 	 c_common_post_options, so that a subsequent -Wno-endif-labels
 	 is not overridden.  */
@@ -1117,29 +1134,19 @@ c_common_decode_option (argc, argv)
       print_struct_values = 1;
       break;
 
-    case OPT_std_bad:
-      error ("unknown standard \"%s\"", arg);
+    case OPT_remap:
+      cpp_opts->remap = 1;
       break;
-
-      /* Language standards.  We currently recognize:
-	 -std=iso9899:1990	same as -ansi
-	 -std=iso9899:199409	ISO C as modified in amend. 1
-	 -std=iso9899:1999	ISO C 99
-	 -std=c89		same as -std=iso9899:1990
-	 -std=c99		same as -std=iso9899:1999
-	 -std=gnu89		default, iso9899:1990 + gnu extensions
-	 -std=gnu99		iso9899:1999 + gnu extensions
-      */
 
     case OPT_std_cplusplus98:
     case OPT_std_gnuplusplus98:
-      set_std_cxx98 (code == OPT_std_cplusplus98);
+      set_std_cxx98 (code == OPT_std_cplusplus98 /* ISO */);
       break;
 
-    case OPT_std_iso9899_199409:
     case OPT_std_c89:
     case OPT_std_iso9899_1990:
-      set_std_c89 (code == OPT_std_iso9899_199409, true);
+    case OPT_std_iso9899_199409:
+      set_std_c89 (code == OPT_std_iso9899_199409 /* c94 */, true /* ISO */);
       break;
 
     case OPT_std_gnu89:
@@ -1150,25 +1157,12 @@ c_common_decode_option (argc, argv)
     case OPT_std_c9x:
     case OPT_std_iso9899_1999:
     case OPT_std_iso9899_199x:
-      cpp_set_lang (parse_in, CLK_STDC99);
-      flag_writable_strings = 0;
-      flag_no_asm = 1;
-      flag_no_nonansi_builtin = 1;
-      flag_noniso_default_format_attributes = 0;
-      flag_isoc99 = 1;
-      flag_isoc94 = 1;
-      flag_iso = 1;
+      set_std_c99 (true /* ISO */);
       break;
 
     case OPT_std_gnu99:
     case OPT_std_gnu9x:
-      cpp_set_lang (parse_in, CLK_GNUC99);
-      flag_writable_strings = 0;
-      flag_no_asm = 0;
-      flag_no_nonansi_builtin = 0;
-      flag_noniso_default_format_attributes = 1;
-      flag_isoc99 = 1;
-      flag_isoc94 = 1;
+      set_std_c99 (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -1246,7 +1240,7 @@ c_common_post_options ()
 }
 
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU
-   extensions if ISO).  */
+   extensions if ISO).  There is no concept of gnu94.  */
 static void
 set_std_c89 (c94, iso)
      int c94, iso;
@@ -1259,6 +1253,21 @@ set_std_c89 (c94, iso)
   flag_noniso_default_format_attributes = !iso;
   flag_isoc94 = c94;
   flag_isoc99 = 0;
+  flag_writable_strings = 0;
+}
+
+/* Set the C 99 standard (without GNU extensions if ISO).  */
+static void
+set_std_c99 (iso)
+     int iso;
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC99: CLK_GNUC99);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_noniso_default_format_attributes = !iso;
+  flag_iso = iso;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
   flag_writable_strings = 0;
 }
 
