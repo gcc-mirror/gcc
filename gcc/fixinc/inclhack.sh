@@ -54,6 +54,9 @@ else
   }
 fi
 
+FIXTESTS=$PWD/fixinc/fixtests
+FIXFIXES=$PWD/fixinc/fixfixes
+
 # Define what target system we're fixing.
 #
 if test -r ./Makefile; then
