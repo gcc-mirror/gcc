@@ -1,3 +1,9 @@
+2004-06-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t>::_M_initialize_moneypunct): Clean up
+	assignments of _M_decimal_point and _M_thousands_sep.
+
 2004-06-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/17_intro/contribute.html: Update some links.
