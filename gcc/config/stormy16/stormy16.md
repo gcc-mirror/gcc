@@ -1,5 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.
@@ -20,6 +20,30 @@
 ;; Boston, MA 02111-1307, USA.
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
+
+;; Constraints
+;; a  $0
+;; b  $1
+;; c  $2
+;; d  $8
+;; e  $0..$7
+;; t  $0..$1
+;; y  Carry
+;; z  $8..$9
+;; I  0..3
+;; J  2**N mask
+;; K  2**N antimask
+;; L  0..255
+;; M  -255..0
+;; N  -3..0
+;; O  1..4
+;; P  -4..-1
+;; Q  post-inc mem (push)
+;; R  pre-dec mem (pop)
+;; S  immediate mem
+;; T  Rx
+;; U  -inf..1 or 16..inf
+;; Z  0
 
 
 ;; ::::::::::::::::::::
@@ -276,21 +300,25 @@
 ; carry register as an input, and some output reloads or input
 ; reloads might need to use it.  In fact, without the '&' reload
 ; will fail in some cases.
+; Note that the 'Z' constraint matches "add $reg,0", which reload
+; will occasionally emit.  We avoid the "add $reg,imm" match because
+; it clobbers the carry.
 (define_insn "addhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,T,T,r,r,r")
-	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0,0")
-		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "O,P,L,M,Ir,N,i")))
-   (clobber (match_scratch:BI 3 "=X,X,&y,&y,&y,&y,&y"))]
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,T,T,r,r,r")
+	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0,0,0")
+		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "O,P,Z,L,M,Ir,N,i")))
+   (clobber (match_scratch:BI 3 "=X,X,X,&y,&y,&y,&y,&y"))]
   ""
   "@
    inc %0,%o2
    dec %0,%O2
+   ;
    add Rx,%2
    sub Rx,#%n2
    add %0,%2
    sub %0,#%n2
    add %0,%2"
-  [(set_attr "length" "2,2,2,2,2,2,4")])
+  [(set_attr "length" "2,2,0,2,2,2,2,4")])
 
 ; Reload can generate addition operations.  The SECONDARY_RELOAD_CLASS
 ; macro causes it to allocate the carry register; this pattern

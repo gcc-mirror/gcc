@@ -1,5 +1,5 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -696,6 +696,12 @@ xstormy16_extra_constraint_p (x, c)
     case 'U':
       return (GET_CODE (x) == CONST_INT
 	      && (INTVAL (x) < 2 || INTVAL (x) > 15));
+
+      /* 'Z' is for CONST_INT value zero.  This is for adding zero to
+	 a register in addhi3, which would otherwise require a carry.  */
+    case 'Z':
+      return (GET_CODE (x) == CONST_INT
+	      && (INTVAL (x) == 0));
 
     default:
       return 0;
