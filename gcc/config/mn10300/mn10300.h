@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -517,9 +517,6 @@ enum reg_class {
 #define FRAME_POINTER_REQUIRED 0
 #define CAN_DEBUG_WITHOUT_FP
 
-/* A guess for the MN10300.  */
-#define PROMOTE_PROTOTYPES 1
-
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
@@ -621,16 +618,7 @@ struct cum_arg {int nbytes; };
 #define FUNCTION_VALUE_REGNO_P(N) \
   ((N) == FIRST_DATA_REGNUM || (N) == FIRST_ADDRESS_REGNUM)
 
-/* Return values > 8 bytes in length in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
-#define RETURN_IN_MEMORY(TYPE)  \
-  (int_size_in_bytes (TYPE) > 8 || TYPE_MODE (TYPE) == BLKmode)
-
-/* Register in which address to store a structure value
-   is passed to a function.  On the MN10300 it's passed as
-   the first parameter.  */
-
-#define STRUCT_VALUE 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -687,13 +675,6 @@ struct cum_arg {int nbytes; };
   ((COUNT == 0)                         \
    ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
    : (rtx) 0)
-
-/* Emit code for a call to builtin_saveregs.  We must emit USE insns which
-   reference the 2 integer arg registers.
-   Ordinarily they are not call used registers, but they are for
-   _builtin_saveregs, so we must make this explicit.  */
-
-#define EXPAND_BUILTIN_SAVEREGS() mn10300_builtin_saveregs ()
 
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
