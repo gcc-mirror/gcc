@@ -208,6 +208,17 @@ namespace __gnu_test
       }
   }
 
+  int
+  try_mkfifo (const char* filename, mode_t mode)
+  {
+#ifdef _NEWLIB_VERSION
+    /* Newlib does not have mkfifo.  */
+    exit(0);
+#else
+    return mkfifo(filename, mode);
+#endif
+  }
+
   counter::size_type  counter::count = 0;
   unsigned int copy_constructor::count_ = 0;
   unsigned int copy_constructor::throw_on_ = 0;

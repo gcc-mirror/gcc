@@ -20,9 +20,6 @@
 
 // 27.3 Standard iostream objects
 
-// XXX cygwin does not support mkfifo
-// { dg-do run { xfail *-*-cygwin* } }
-
 #include <fstream>
 #include <iostream>
 #include <unistd.h>
@@ -36,6 +33,7 @@
 void test07()
 {
   using namespace std;
+  using namespace __gnu_test;
   bool test __attribute__((unused)) = true;
 
   const char* name = "tmp_fifo4";
@@ -43,7 +41,7 @@ void test07()
   signal(SIGPIPE, SIG_IGN);
 
   unlink(name);  
-  mkfifo(name, S_IRWXU);
+  try_mkfifo(name, S_IRWXU);
   
   int child = fork();
   VERIFY( child != -1 );

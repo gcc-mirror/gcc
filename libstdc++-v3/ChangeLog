@@ -1,3 +1,21 @@
+2004-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/testsuite_hooks.h (__gnu_test::try_mkfifo): Declare it.
+	* testsuite/testsuite_hooks.cc (__gnu_test::try_mkfifo): Define
+	it.
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Use try_mkfifo
+	and remove Cygwin XFAIL.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
+
 2004-01-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_complex.h (std::complex<>::real): Return a

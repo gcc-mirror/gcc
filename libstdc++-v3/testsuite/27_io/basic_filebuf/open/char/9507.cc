@@ -23,9 +23,6 @@
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
 
-// XXX cygwin does not support mkfifo
-// { dg-do run { xfail *-*-cygwin* } }
-
 #include <fstream>
 #include <unistd.h>
 #include <signal.h>
@@ -37,13 +34,14 @@
 // libstdc++/9507
 void test_06()
 {
+  using namespace __gnu_test;
   bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo2";
 
   signal(SIGPIPE, SIG_IGN);
 
   unlink(name);
-  mkfifo(name, S_IRWXU);
+  try_mkfifo(name, S_IRWXU);
 	
   if (!fork())
     {
