@@ -614,7 +614,8 @@ You can also test for the C dialect being compiled.  The variable
 or @code{clk_objective_c}.  Note that if we are preprocessing
 assembler, this variable will be @code{clk_c} but the function-like
 macro @code{preprocessing_asm_p()} will return true, so you might want
-to check for that first.
+to check for that first.  If you need to check for strict ANSI, the
+variable @code{flag_iso} can be used.
 
 With @code{TARGET_OS_CPP_BUILTINS} this macro obsoletes the
 @code{CPP_PREDEFINES} target macro.
@@ -7982,7 +7983,7 @@ defined by the C language for both.
 @end deftypefn
 
 @deftypefn Macro int REAL_VALUE_NEGATIVE (REAL_VALUE_TYPE @var{x})
-Returns 1 if @var{x} is negative (including negative zero), 0 otherwise.  
+Returns 1 if @var{x} is negative (including negative zero), 0 otherwise.
 @end deftypefn
 
 @deftypefn Macro int REAL_VALUE_ISINF (REAL_VALUE_TYPE @var{x})

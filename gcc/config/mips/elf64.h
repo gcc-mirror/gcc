@@ -48,15 +48,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "mips/mips.h"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000"
-
-/* I would rather put this in CPP_PREDEFINES, but the gcc driver
-   doesn't handle -U options in CPP_PREDEFINES.  */
-#undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "\
-%{!mips1:%{!mips2:-U__mips -D__mips=3 -D__mips64}}"
-
 /* Use memcpy, et. al., rather than bcopy.  */
 #define TARGET_MEM_FUNCTIONS
 

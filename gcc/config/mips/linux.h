@@ -127,66 +127,54 @@ void FN ()							\
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)
 
-/* Specify predefined symbols in preprocessor.  */
-#undef CPP_PREDEFINES
-#if TARGET_ENDIAN_DEFAULT == 0
-#define CPP_PREDEFINES "-DMIPSEL -D_MIPSEL -Dunix -Dmips -D_mips \
--DR3000 -D_R3000 -D__gnu_linux__ -Dlinux -Asystem=posix -Acpu=mips \
--Amachine=mips -D__ELF__ -D__PIC__ -D__pic__"
-#else
-#define CPP_PREDEFINES "-DMIPSEB -D_MIPSEB -Dunix -Dmips -D_mips \
--DR3000 -D_R3000 -D__gnu_linux__ -Dlinux -Asystem=posix -Acpu=mips \
--Amachine=mips -D__ELF__ -D__PIC__ -D__pic__"
-#endif
+#define TARGET_OS_CPP_BUILTINS()				\
+    do {							\
+	builtin_define ("__gnu_linux__");			\
+	builtin_define ("__ELF__");				\
+	builtin_define ("__PIC__");				\
+	builtin_define ("__pic__");				\
+	builtin_define_std ("unix");				\
+	builtin_define_std ("linux");				\
+	builtin_assert ("system=linux");			\
+	/* The GNU C++ standard library requires this.  */	\
+	if (c_language = clk_cplusplus)				\
+	  builtin_define ("_GNU_SOURCE");			\
+								\
+      if (mips_abi == ABI_N32)					\
+      {								\
+        builtin_define ("_ABIN32=2");				\
+        builtin_define ("_MIPS_SIM=_ABIN32");			\
+        builtin_define ("_MIPS_SZLONG=32");			\
+        builtin_define ("_MIPS_SZPTR=32");			\
+      }								\
+     else if (mips_abi == ABI_64)				\
+      {								\
+        builtin_define ("_ABI64=3");				\
+        builtin_define ("_MIPS_SIM=_ABI64");			\
+        builtin_define ("_MIPS_SZLONG=64");			\
+        builtin_define ("_MIPS_SZPTR=64");			\
+      }								\
+     else							\
+      {								\
+        builtin_define ("_MIPS_SIM=_MIPS_SIM_ABI32");		\
+        builtin_define ("_MIPS_SZLONG=32");			\
+        builtin_define ("_MIPS_SZPTR=32");			\
+      }								\
+     if (TARGET_FLOAT64)					\
+        builtin_define ("_MIPS_FPSET=32");			\
+     else							\
+        builtin_define ("_MIPS_FPSET=16");			\
+								\
+     if (TARGET_INT64)						\
+        builtin_define ("_MIPS_SZINT=64");			\
+     else							\
+        builtin_define ("_MIPS_SZINT=32");			\
+} while (0)
 
-/* We must make -mips3 do what -mlong64 used to do.  */
-/* ??? If no mipsX option given, but a mabi=X option is, then should set
-   _MIPS_ISA based on the mabi=X option.  */
-/* ??? If no mabi=X option give, but a mipsX option is, then should set
-   _MIPS_SIM based on the mipsX option.  */
-/* ??? Same for _MIPS_SZINT.  */
-/* ??? Same for _MIPS_SZPTR.  */
-#undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
-%{mfp32: -D_MIPS_FPSET=16} \
-%{mfp64: -D_MIPS_FPSET=32} \
-%{!mfp*: -D_MIPS_FPSET=32} \
-%{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
-%{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
-%{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
-%{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{mips5: -D_MIPS_ISA=_MIPS_ISA_MIPS5} \
-%{mips32: -D_MIPS_ISA=_MIPS_ISA_MIPS32} \
-%{mips64: -D_MIPS_ISA=_MIPS_ISA_MIPS64} \
-%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
-%{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
-%{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi*: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{mabi=32: -D_MIPS_SZLONG=32} \
-%{mabi=n32: -D_MIPS_SZLONG=32} \
-%{mabi=64: -D_MIPS_SZLONG=64} \
-%{!mabi*: -D_MIPS_SZLONG=32} \
-%{mabi=32: -D_MIPS_SZPTR=32} \
-%{mabi=n32: -D_MIPS_SZPTR=32} \
-%{mabi=64: -D_MIPS_SZPTR=64} \
-%{!mabi*: -D_MIPS_SZPTR=32} \
-%{!mips*: -U__mips -D__mips} \
-%{mabi=32: -U__mips64} \
-%{mabi=n32: -D__mips64} \
-%{mabi=64: -U__mips64} \
-%{!mabi*: -U__mips64} \
 %{fno-PIC:-U__PIC__ -U__pic__} %{fno-pic:-U__PIC__ -U__pic__} \
 %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} \
 %{pthread:-D_REENTRANT}"
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "\
--D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
--D_GNU_SOURCE %(cpp) \
-"
 
 /* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects
