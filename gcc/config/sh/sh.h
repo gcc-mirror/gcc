@@ -1079,7 +1079,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
       rtx sum;							\
 								\
       GO_IF_LEGITIMATE_INDEX (MODE, index_rtx, WIN);		\
-      /* On rare occaisons, we might get an unaligned pointer	\
+      /* On rare occasions, we might get an unaligned pointer	\
 	 that is indexed in a way to give an aligned address.	\
 	 Therefore, keep the lower two bits in offset_base.  */ \
       /* Instead of offset_base 128..131 use 124..127, so that	\
