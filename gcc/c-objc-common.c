@@ -26,7 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
-#include "expr.h"
 #include "c-tree.h"
 #include "function.h"
 #include "flags.h"

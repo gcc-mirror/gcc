@@ -33,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "recog.h"
 #include "function.h"
-#include "expr.h"
+#include "emit-rtl.h"
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"

@@ -19,6 +19,21 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_EXPR_H
+#define GCC_EXPR_H
+
+/* For inhibit_defer_pop */
+#include "function.h"
+/* For XEXP, GEN_INT, rtx_code */
+#include "rtl.h"
+/* For optimize_size */
+#include "flags.h"
+/* For host_integerp, tree_low_cst, convert, size_binop, ssize_int, TREE_CODE,
+   TYPE_SIZE, int_size_in_bytes,    */
+#include "tree.h"
+/* For GET_MODE_BITSIZE, word_mode */
+#include "machmode.h"
+
 /* The default branch cost is 1.  */
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -305,6 +320,8 @@ extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);
 
+#include "insn-config.h"
+
 #ifdef HAVE_conditional_move
 /* Emit a conditional move operation.  */
 rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, enum machine_mode,
@@ -360,12 +377,6 @@ extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_longjmp (rtx, rtx);
 extern rtx expand_builtin_saveregs (void);
 extern void expand_builtin_trap (void);
-extern HOST_WIDE_INT get_varargs_alias_set (void);
-extern HOST_WIDE_INT get_frame_alias_set (void);
-extern void record_base_value (unsigned int, rtx, int);
-extern void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
-extern HOST_WIDE_INT new_alias_set (void);
-extern int can_address_p (tree);
 extern tree simplify_builtin_fputs (tree, int, int, tree);
 extern tree simplify_builtin_strcpy (tree, tree);
 extern tree simplify_builtin_strncpy (tree, tree);
@@ -563,6 +574,15 @@ extern int try_tablejump (tree, tree, tree, tree, rtx, rtx);
    XXX Should be a target hook.  */
 extern unsigned int case_values_threshold (void);
 
+/* Functions from alias.c */
+#include "alias.h"
+/* extern HOST_WIDE_INT get_varargs_alias_set (void); */
+/* extern HOST_WIDE_INT get_frame_alias_set (void); */
+/* extern void record_base_value (unsigned int, rtx, int); */
+/* extern void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT); */
+/* extern HOST_WIDE_INT new_alias_set (void); */
+/* extern int can_address_p (tree); */
+
 
 /* rtl.h and tree.h were included.  */
 /* Return an rtx for the size in bytes of the value of an expr.  */
@@ -623,21 +643,6 @@ extern rtx memory_address (enum machine_mode, rtx);
 /* Like `memory_address' but pretent `flag_force_addr' is 0.  */
 extern rtx memory_address_noforce (enum machine_mode, rtx);
 
-/* Set the alias set of MEM to SET.  */
-extern void set_mem_alias_set (rtx, HOST_WIDE_INT);
-
-/* Set the alignment of MEM to ALIGN bits.  */
-extern void set_mem_align (rtx, unsigned int);
-
-/* Set the expr for MEM to EXPR.  */
-extern void set_mem_expr (rtx, tree);
-
-/* Set the offset for MEM to OFFSET.  */
-extern void set_mem_offset (rtx, rtx);
-
-/* Set the size for MEM to SIZE.  */
-extern void set_mem_size (rtx, rtx);
-
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
@@ -672,14 +677,8 @@ extern rtx adjust_automodify_address_1 (rtx, enum machine_mode, rtx,
    known to be in OFFSET (possibly 1).  */
 extern rtx offset_address (rtx, rtx, unsigned HOST_WIDE_INT);
 
-/* Return a memory reference like MEMREF, but with its address changed to
-   ADDR.  The caller is asserting that the actual piece of memory pointed
-   to is the same, just the form of the address is being changed, such as
-   by putting something into a register.  */
-extern rtx replace_equiv_address (rtx, rtx);
-
-/* Likewise, but the reference is not required to be valid.  */
-extern rtx replace_equiv_address_nv (rtx, rtx);
+/* Definitions from emit-rtl.c */
+#include "emit-rtl.h"
 
 /* Return a memory reference like MEMREF, but with its mode widened to
    MODE and adjusted by OFFSET.  */
@@ -810,3 +809,5 @@ extern void do_jump_by_parts_greater_rtx (enum machine_mode, int, rtx, rtx,
 					  rtx, rtx);
 
 extern int vector_mode_valid_p (enum machine_mode);
+
+#endif /* GCC_EXPR_H */

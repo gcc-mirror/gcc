@@ -1,3 +1,23 @@
+2004-06-01  Jerry Quinn  <jlquinn@optonline.net>
+
+	* Makefile.in (EXPR_H): Add insn-config.h, function.h,
+	$(RTL_H), flags.h, $(TREE_H), $(MACHMODE_H), $(EXPR_H).
+	(ALIAS_H, EMIT_RTL_H): New.
+	(cselib.o): Replace EXPR_H with EMIT_RTL_H.
+	(cfgcleanup.o): Add EMIT_RTL_H.
+	(alias.o): Replace EXPR_H with EMIT_RTL_H and ALIAS_H.
+	* alias.c: Replace expr.h with emit-rtl.h and alias.h.
+	* attribs.c, c-lex.c, c-obj-common.c, c-semantics.c: Remove expr.h.
+	* cfgcleanup.c, cselib.c: Replace expr.h with emit-rtl.h.
+	* expr.h: Add include guard.  Include function.h, rtl.h, flags.h,
+	tree.h, machmode.h, insn-config.h, alias.h, emit-rtl.h.
+	(get_varargs_alias_set, get_frame_alias_set, record_base_value,
+	record_alias_subset, new_alias_set, can_address_p): Move to alias.h.
+	(set_mem_alias_set, set_mem_align, set_mem_expr, set_mem_offset,
+	set_mem_size): Move to emit-rtl.h.
+	* emit-rtl.h: New.
+	* alias.h: New.
+
 2004-06-01  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* function.c (walk_fixup_memory_subreg): New parameter 'var'.
