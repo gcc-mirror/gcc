@@ -32,7 +32,7 @@
 
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   func_callback two;
   two.push_back(&test02);
   run_tests_wrapped_locale("ja_JP.eucjp", two);

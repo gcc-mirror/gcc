@@ -46,7 +46,7 @@ void test03()
 
 int main(void)
 {
-  __gnu_cxx_test::set_memory_limits();
+  __gnu_test::set_memory_limits();
   test03();
   return 0;
 }

@@ -123,7 +123,7 @@ void test02()
 
 int main(void)
 {
-  __gnu_cxx_test::set_memory_limits();
+  __gnu_test::set_memory_limits();
   test02();
   return 0;
 }

@@ -25,7 +25,7 @@
 // libcwd tests
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // cplus-dem CORE
   verify_demangle("_X11TransParseAddress", "_X11TransParseAddress");

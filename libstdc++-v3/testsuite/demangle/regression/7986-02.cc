@@ -25,7 +25,7 @@
 // libstdc++/7986
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // Equivalent, but formatting difference in void argument.
   //  verify_demangle("_Z1fM1AFivEPS0_", "f(int (A::*)(void), int (*)(void))");

@@ -34,7 +34,7 @@ void test01()
   fbout.close();
   
   wfilebuf fbin;
-  locale loc(__gnu_cxx_test::try_named_locale("en_US.UTF-8"));
+  locale loc(__gnu_test::try_named_locale("en_US.UTF-8"));
   fbin.pubimbue(loc);
   fbin.open(name_01, ios_base::in);
   VERIFY( fbin.sbumpc() == L'a' );

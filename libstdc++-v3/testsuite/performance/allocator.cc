@@ -189,7 +189,7 @@ test_ints_mt_alloc(int iterations)
 // http://gcc.gnu.org/ml/libstdc++/2003-05/msg00231.html
 int main(void)
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   time_counter time;
   resource_counter resource;

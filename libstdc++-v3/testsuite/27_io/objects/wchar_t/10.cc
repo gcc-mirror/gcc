@@ -30,7 +30,7 @@ void test10()
   bool test = true;
   const char* name = "tmp_10";
 
-  locale loc(__gnu_cxx_test::try_named_locale("se_NO.UTF-8"));
+  locale loc(__gnu_test::try_named_locale("se_NO.UTF-8"));
   locale::global(loc);
   wcin.imbue(loc);
   wcout.imbue(loc);

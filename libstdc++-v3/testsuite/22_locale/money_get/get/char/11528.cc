@@ -29,7 +29,7 @@ void test01()
 
   bool test = true;
 
-  locale loc_us = __gnu_cxx_test::try_named_locale("en_US");
+  locale loc_us = __gnu_test::try_named_locale("en_US");
 
   iterator_type end;
   istringstream iss;

@@ -28,7 +28,7 @@
 
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   func_callback two;
   two.push_back(&test01);
   run_tests_wrapped_env("de_DE", "LANG", two);

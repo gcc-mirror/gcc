@@ -25,7 +25,7 @@
 // libstdc++/7986
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   verify_demangle("_ZlsRKU3fooU4bart1XS2_", 
 		  "operator<<(X bart foo const&, X bart foo const)");

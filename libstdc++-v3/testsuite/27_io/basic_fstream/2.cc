@@ -38,7 +38,7 @@
 namespace test 
 {
   using namespace std;
-  using __gnu_cxx_test::pod_char;
+  using __gnu_test::pod_char;
   typedef short type_t;
   template class basic_fstream<type_t, char_traits<type_t> >;
   template class basic_fstream<pod_char, char_traits<pod_char> >;

@@ -49,7 +49,7 @@ extern "C"
 }
 #endif
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {
   class time_counter
   {
@@ -190,7 +190,7 @@ namespace __gnu_cxx_test
     out << std::endl;
     out.close();
   }
-}; // namespace __gnu_cxx_test
+}; // namespace __gnu_test
 
 #endif // _GLIBCXX_PERFORMANCE_H
 

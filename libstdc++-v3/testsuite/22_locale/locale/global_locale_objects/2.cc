@@ -42,13 +42,13 @@ void test02()
   // named locales work.
   if (testph && testmx)
     {
-      const locale loc_ph = __gnu_cxx_test::try_named_locale(ph.c_str());
-      const locale loc_mx = __gnu_cxx_test::try_named_locale(mx.c_str());
+      const locale loc_ph = __gnu_test::try_named_locale(ph.c_str());
+      const locale loc_mx = __gnu_test::try_named_locale(mx.c_str());
       
       // Use setlocale between two calls to locale("")
-      const locale loc_env_1 = __gnu_cxx_test::try_named_locale("");
+      const locale loc_env_1 = __gnu_test::try_named_locale("");
       setlocale(LC_ALL, ph.c_str());
-      const locale loc_env_2 = __gnu_cxx_test::try_named_locale("");
+      const locale loc_env_2 = __gnu_test::try_named_locale("");
       VERIFY( loc_env_1 == loc_env_2 );
       
       // Change global locale.

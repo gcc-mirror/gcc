@@ -1,4 +1,8 @@
-2003-07-24  Nathan Myers <ncm-nospam@cantrip.org>
+2003-07-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/*: Change __gnu_cxx_test to __gnu_test.
+
+2003-07-24  Nathan Myers  <ncm-nospam@cantrip.org>
 
         * testsuite/23_containers/map_operators.cc: Conform to 
         container requirement as value must be Assignable.

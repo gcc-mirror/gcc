@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // template<int I> void foo (int (&)[I + 1]) { };
   // template void foo<2> (int (&)[3]);    

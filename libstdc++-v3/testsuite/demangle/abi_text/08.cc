@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // encoding of N::f::"Itanium C++ ABI" (no discriminator)
   verify_demangle("_ZZN1N1fEiEs", "N::f(int)::string literal");

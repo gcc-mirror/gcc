@@ -25,7 +25,7 @@
 // c++/3111
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   verify_demangle("_Z1fKPFiiE", "f(int (* const)(int))");
 

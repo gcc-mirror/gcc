@@ -32,7 +32,7 @@ void test01()
   string str;
   locale loc_c = locale::classic();
 
-  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
+  locale loc_de = __gnu_test::try_named_locale("de_DE");
   str = loc_de.name();
 
   locale loc_byname(locale::classic(), new collate_byname<char>("de_DE"));

@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi-examples.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   verify_demangle("_Z1fI1XEvPVN1AIT_E1TE", "void f<X>(A<X>::T volatile*)");
 

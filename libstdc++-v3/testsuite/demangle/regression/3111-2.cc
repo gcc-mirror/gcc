@@ -25,7 +25,7 @@
 // c++/3111
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // cplus-dem FAIL
   // icc FAIL

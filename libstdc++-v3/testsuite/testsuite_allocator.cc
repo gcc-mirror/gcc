@@ -30,7 +30,7 @@
 
 #include <testsuite_allocator.h>
 
-namespace __gnu_cxx_test
+namespace __gnu_test
 {
   allocation_tracker::size_type allocation_tracker::allocationTotal_   = 0;
   allocation_tracker::size_type allocation_tracker::deallocationTotal_ = 0;

@@ -29,7 +29,7 @@ void test02()
   
   bool test = true;
 
-  locale loc_it = __gnu_cxx_test::try_named_locale("it_IT");
+  locale loc_it = __gnu_test::try_named_locale("it_IT");
 
   const numpunct<char>& nump_it = use_facet<numpunct<char> >(loc_it); 
 

@@ -56,7 +56,7 @@
 
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   func_callback two;
   two.push_back(&test01);
   two.push_back(&test02);

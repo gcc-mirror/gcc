@@ -155,7 +155,7 @@ void test01(void)
 
 int main()
 { 
-  __gnu_cxx_test::set_memory_limits();
+  __gnu_test::set_memory_limits();
   test01();
   return 0;
 }

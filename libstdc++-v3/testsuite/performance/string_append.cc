@@ -52,7 +52,7 @@ test_append_string(int how_much)
 void 
 run_benchmark1(int how_much)
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   time_counter time;
   resource_counter resource;
   start_counters(time, resource);
@@ -64,7 +64,7 @@ run_benchmark1(int how_much)
 void 
 run_benchmark2(int how_much)
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   time_counter time;
   resource_counter resource;
   start_counters(time, resource);

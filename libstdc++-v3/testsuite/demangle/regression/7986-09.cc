@@ -25,7 +25,7 @@
 // libstdc++/7986
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
  // cplus-dem FAIL
   // Equivalent as considered order-insensitive?

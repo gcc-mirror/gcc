@@ -26,7 +26,7 @@
 // http://www.codesourcery.com/cxx-abi/abi-examples.html#mangling
 int main()
 {
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
 
   // int operator<< (X const&, X const&) { };
   verify_demangle("_ZlsRK1XS1_", "operator<<(X const&, X const&)");

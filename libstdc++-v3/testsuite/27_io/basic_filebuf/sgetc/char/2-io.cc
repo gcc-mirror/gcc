@@ -34,7 +34,7 @@ const char name_03[] = "tmp_sgetc_2io.tst"; // empty file, need to create
 void test05() 
 {
   using namespace std;
-  using namespace __gnu_cxx_test;
+  using namespace __gnu_test;
   typedef std::filebuf::int_type 	int_type;
   typedef filebuf::traits_type 		traits_type;
 
