@@ -2094,7 +2094,7 @@ tSCC zHpux_MaxintName[] =
  *  File name selection pattern
  */
 tSCC zHpux_MaxintList[] =
-  "|sys/param.h|";
+  "|sys/param.h|values.h|";
 /*
  *  Machine/OS name selection pattern
  */
