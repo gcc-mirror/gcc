@@ -1,3 +1,27 @@
+2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8442, c++/8806
+	* decl.c (qualify_lookup): Accept TEMPLATE_DECL if types are
+	preferred.
+	(check_elaborated_type_specifier): Add allow_template_p
+	parameter.  Check tag mismatch and class template.
+	(xref_tag): Add template_header_p parameter.  Add assertion
+	that name is an IDENTIFIER_NODE.  Remove implicit typename
+	warning.  Simplify lookup process if globalize is true.
+	(cxx_init_decl_processing): Adjust call to xref_tag.
+	(xref_tag_from_type): Likewise.
+	* decl2.c (handle_class_head): Likewise.
+	* parser.c (cp_parser_elaborated_type_specifier,
+	cp_parser_class_head): Likewise.
+	* rtti.c (init_rtti_processing, build_dynamic_cast1,
+	tinfo_base_init, emit_support_tinfos): Likewise.
+	* class.c (is_base_of_enclosing_class): Remove.
+	* pt.c (convert_template_argument): Don't accept RECORD_TYPE as
+	template template argument.
+	* cp-tree.h (xref_tag): Adjust declaration.
+	(is_base_of_enclosing_class): Remove.
+	* NEWS: Document template template argument change.
+
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parser.c (cp_parser_init_declarator,

@@ -3431,33 +3431,15 @@ convert_template_argument (tree parm,
   requires_type = (TREE_CODE (parm) == TYPE_DECL
 		   || requires_tmpl_type);
 
-  if (TREE_CODE (arg) != RECORD_TYPE)
-    is_tmpl_type = ((TREE_CODE (arg) == TEMPLATE_DECL
-		     && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
-		    || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
-		    || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
-  else if (CLASSTYPE_TEMPLATE_INFO (arg) && !CLASSTYPE_USE_TEMPLATE (arg)
-	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (arg)))
-    {
-      if (is_base_of_enclosing_class (arg, current_class_type))
-	/* This is a template name used within the scope of the
-	   template. It could be the template, or it could be the
-	   instantiation. Choose whichever makes sense.  */
-	is_tmpl_type = requires_tmpl_type;
-      else
-	is_tmpl_type = 1;
-    }
-  else
-    /* It is a non-template class, or a specialization of a template
-       class, or a non-template member of a template class.  */
-    is_tmpl_type = 0;
+  is_tmpl_type = ((TREE_CODE (arg) == TEMPLATE_DECL
+		   && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+		  || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+		  || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
   
   if (is_tmpl_type
       && (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
 	  || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE))
     arg = TYPE_STUB_DECL (arg);
-  else if (is_tmpl_type && TREE_CODE (arg) == RECORD_TYPE)
-    arg = CLASSTYPE_TI_TEMPLATE (arg);
 
   is_type = TYPE_P (arg) || is_tmpl_type;
 

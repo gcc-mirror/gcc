@@ -65,7 +65,7 @@ void Array<Type>::init(const Type *array, int sz)
 //     ---------------   Array_RC.h  &&  Array_RC.cc   ----------------
 
 template <class Type>
-class Array_RC : public Array<Type> {// { dg-error "" } previous declaration.*
+class Array_RC : public Array<Type> {
 public:
     Array_RC(const Type *ar, int sz);
     Type& operator[](int ix);

@@ -5753,7 +5753,8 @@ qualify_lookup (tree val, int flags)
     return val;
   if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
     return val;
-  if ((flags & LOOKUP_PREFER_TYPES) && TREE_CODE (val) == TYPE_DECL)
+  if ((flags & LOOKUP_PREFER_TYPES)
+      && (TREE_CODE (val) == TYPE_DECL || TREE_CODE (val) == TEMPLATE_DECL))
     return val;
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return NULL_TREE;
@@ -6339,7 +6340,7 @@ cxx_init_decl_processing (void)
     push_namespace (std_identifier);
     bad_alloc_type_node 
       = xref_tag (class_type, get_identifier ("bad_alloc"), 
-		  /*attributes=*/NULL_TREE, 1);
+		  /*attributes=*/NULL_TREE, true, false);
     pop_namespace ();
     ptr_ftype_sizetype 
       = build_function_type (ptr_type_node,
@@ -12553,15 +12554,15 @@ tag_name (enum tag_types code)
 /* Name lookup in an elaborated-type-specifier (after the keyword
    indicated by TAG_CODE) has found TYPE.  If the
    elaborated-type-specifier is invalid, issue a diagnostic and return
-   error_mark_node; otherwise, return TYPE itself.  */
+   error_mark_node; otherwise, return TYPE itself.  
+   If ALLOW_TEMPLATE_P is true, TYPE may be a class template.  */
 
 static tree
 check_elaborated_type_specifier (enum tag_types tag_code,
-				 tree type)
+				 tree type,
+				 bool allow_template_p)
 {
-  tree t;
-
-  t = follow_tag_typedef (type);
+  tree t = follow_tag_typedef (type);
 
   /* [dcl.type.elab] If the identifier resolves to a typedef-name or a
      template type-parameter, the elaborated-type-specifier is
@@ -12578,30 +12579,67 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	     type, tag_name (tag_code));
       t = error_mark_node;
     }
+  else if (TREE_CODE (type) != RECORD_TYPE
+	   && TREE_CODE (type) != UNION_TYPE
+	   && tag_code != enum_type)
+    {
+      error ("`%T' referred to as `%s'", type, tag_name (tag_code));
+      t = error_mark_node;
+    }
+  else if (TREE_CODE (type) != ENUMERAL_TYPE
+	   && tag_code == enum_type)
+    {
+      error ("`%T' referred to as enum", type);
+      t = error_mark_node;
+    }
+  else if (!allow_template_p
+	   && TREE_CODE (type) == RECORD_TYPE
+	   && CLASSTYPE_IS_TEMPLATE (type))
+    {
+      /* If a class template appears as elaborated type specifier
+	 without a template header such as:
+
+	   template <class T> class C {};
+	   void f(class C);		// No template header here
+
+	 then the required template argument is missing.  */
+
+      error ("template argument required for `%s %T'",
+	     tag_name (tag_code),
+	     DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)));
+      t = error_mark_node;
+    }
 
   return t;
 }
 
-/* Get the struct, enum or union (CODE says which) with tag NAME.
+/* Get the struct, enum or union (TAG_CODE says which) with tag NAME.
    Define the tag as a forward-reference if it is not defined.
 
-   C++: If a class derivation is given, process it here, and report
-   an error if multiple derivation declarations are not identical.
+   If a declaration is given, process it here, and report an error if
+   multiple declarations are not identical.  ATTRIBUTE is the attribute
+   appeared in this declaration.
 
-   If this is a definition, come in through xref_tag and only look in
+   GLOBALIZE is false when this is also a definition.  Only look in
    the current frame for the name (since C++ allows new names in any
-   scope.)  */
+   scope.)
+
+   TEMPLATE_HEADER_P is true when this declaration is preceded by
+   a set of template parameters.  */
 
 tree
 xref_tag (enum tag_types tag_code, tree name, tree attributes, 
-	  bool globalize)
+	  bool globalize, bool template_header_p)
 {
   enum tree_code code;
-  register tree ref, t;
+  register tree t;
   struct cp_binding_level *b = current_binding_level;
   tree context = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
+
+  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
+
   switch (tag_code)
     {
     case record_type:
@@ -12618,93 +12656,50 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
       abort ();
     }
 
-  /* If a cross reference is requested, look up the type
-     already defined for this tag and return it.  */
-  if (TYPE_P (name))
-    {
-      t = name;
-      name = TYPE_IDENTIFIER (t);
-    }
-  else
-    t = IDENTIFIER_TYPE_VALUE (name);
-
-  /* Warn about 'friend struct Inherited;' doing the wrong thing.  */
-  if (t && globalize && TREE_CODE (t) == TYPENAME_TYPE)
-    {
-      static int explained;
-      tree shadowed;
-
-      warning ("`%s %T' declares a new type at namespace scope",
-		  tag_name (tag_code), name);
-      if (!explained++)
-	warning ("  names from dependent base classes are not visible to unqualified name lookup - to refer to the inherited type, say `%s %T::%T'",
-		    tag_name (tag_code),
-		    constructor_name (current_class_type),
-		    TYPE_IDENTIFIER (t));
-
-      /* We need to remove the class scope binding for the
-         TYPENAME_TYPE as otherwise poplevel_class gets confused.  */
-      for (shadowed = b->class_shadowed;
-	   shadowed;
-	   shadowed = TREE_CHAIN (shadowed))
-	if (TREE_TYPE (shadowed) == TYPE_NAME (t))
-	  {
-	    TREE_PURPOSE (shadowed) = NULL_TREE;
-	    break;
-	  }
-    }
-
-  if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (t) != BOUND_TEMPLATE_TEMPLATE_PARM)
-    t = NULL_TREE;
-
   if (! globalize)
     {
       /* If we know we are defining this tag, only look it up in
 	 this scope and don't try to find it as a type.  */
-      ref = lookup_tag (code, name, b, 1);
+      t = lookup_tag (code, name, b, 1);
     }
   else
     {
-      if (t)
+      tree decl = lookup_name (name, 1);
+
+      if (decl && DECL_CLASS_TEMPLATE_P (decl))
+	decl = DECL_TEMPLATE_RESULT (decl);
+
+      if (decl && TREE_CODE (decl) == TYPE_DECL)
 	{
-	  ref = check_elaborated_type_specifier (tag_code, t);
-	  if (ref == error_mark_node)
+	  /* Two cases we need to consider when deciding if a class
+	     template is allowed as an elaborated type specifier:
+	     1. It is a self reference to its own class.
+	     2. It comes with a template header.
+
+	     For example:
+
+	       template <class T> class C {
+		 class C *c1;		// DECL_SELF_REFERENCE_P is true
+	 	 class D;
+	       };
+	       template <class U> class C; // template_header_p is true
+	       template <class T> class C<T>::D {
+		 class C *c2;		// DECL_SELF_REFERENCE_P is true
+	       };  */
+
+	  t = check_elaborated_type_specifier (tag_code, 
+					       TREE_TYPE (decl),
+					       template_header_p
+					       | DECL_SELF_REFERENCE_P (decl));
+	  if (t == error_mark_node)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	}
       else
-	ref = lookup_tag (code, name, b, 0);
+	t = NULL_TREE;
 
-      if (! ref)
-	{
-	  /* Try finding it as a type declaration.  If that wins,
-	     use it.  */
-	  ref = lookup_name (name, 1);
-
-	  if (ref != NULL_TREE
-	      && processing_template_decl
-	      && DECL_CLASS_TEMPLATE_P (ref)
-	      && template_class_depth (current_class_type) == 0)
-	    /* Since GLOBALIZE is true, we're declaring a global
-	       template, so we want this type.  */
-	    ref = DECL_TEMPLATE_RESULT (ref);
-
-	  if (ref && TREE_CODE (ref) == TYPE_DECL)
-	    {
-	      ref = check_elaborated_type_specifier (tag_code, 
-						     TREE_TYPE (ref));
-	      if (ref == error_mark_node)
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-	      if (ref && TREE_CODE (ref) != code)
-		ref = NULL_TREE;
-	    }
-	  else
-	    ref = NULL_TREE;
-	}
-
-      if (ref && current_class_type
+      if (t && current_class_type
 	  && template_class_depth (current_class_type)
-	  && PROCESSING_REAL_TEMPLATE_DECL_P ())
+	  && template_header_p)
 	{
 	  /* Since GLOBALIZE is nonzero, we are not looking at a
 	     definition of this tag.  Since, in addition, we are currently
@@ -12742,12 +12737,12 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	      accomplish this by making sure that the new type we
 	      create to represent this declaration has the right
 	      TYPE_CONTEXT.  */
-	  context = TYPE_CONTEXT (ref);
-	  ref = NULL_TREE;
+	  context = TYPE_CONTEXT (t);
+	  t = NULL_TREE;
 	}
     }
 
-  if (! ref)
+  if (! t)
     {
       /* If no such tag is yet defined, create a forward-reference node
 	 and record it as the "definition".
@@ -12757,44 +12752,41 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	{
 	  error ("use of enum `%#D' without previous declaration", name);
 
-	  ref = make_node (ENUMERAL_TYPE);
+	  t = make_node (ENUMERAL_TYPE);
 
 	  /* Give the type a default layout like unsigned int
 	     to avoid crashing if it does not get defined.  */
-	  TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
-	  TYPE_ALIGN (ref) = TYPE_ALIGN (unsigned_type_node);
-	  TYPE_USER_ALIGN (ref) = 0;
-	  TREE_UNSIGNED (ref) = 1;
-	  TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
-	  TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
-	  TYPE_MAX_VALUE (ref) = TYPE_MAX_VALUE (unsigned_type_node);
+	  TYPE_MODE (t) = TYPE_MODE (unsigned_type_node);
+	  TYPE_ALIGN (t) = TYPE_ALIGN (unsigned_type_node);
+	  TYPE_USER_ALIGN (t) = 0;
+	  TREE_UNSIGNED (t) = 1;
+	  TYPE_PRECISION (t) = TYPE_PRECISION (unsigned_type_node);
+	  TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (unsigned_type_node);
+	  TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (unsigned_type_node);
 
 	  /* Enable us to recognize when a type is created in class context.
 	     To do nested classes correctly, this should probably be cleared
 	     out when we leave this classes scope.  Currently this in only
 	     done in `start_enum'.  */
 
-	  pushtag (name, ref, globalize);
+	  pushtag (name, t, globalize);
 	}
       else
 	{
-	  struct cp_binding_level *old_b = class_binding_level;
-
-	  ref = make_aggr_type (code);
-	  TYPE_CONTEXT (ref) = context;
-	  pushtag (name, ref, globalize);
-	  class_binding_level = old_b;
+	  t = make_aggr_type (code);
+	  TYPE_CONTEXT (t) = context;
+	  pushtag (name, t, globalize);
 	}
     }
   else
     {
-      if (!globalize && processing_template_decl && IS_AGGR_TYPE (ref))
-	redeclare_class_template (ref, current_template_parms);
+      if (!globalize && processing_template_decl && IS_AGGR_TYPE (t))
+	redeclare_class_template (t, current_template_parms);
     }
 
-  TYPE_ATTRIBUTES (ref) = attributes;
+  TYPE_ATTRIBUTES (t) = attributes;
 
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ref);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 }
 
 tree
@@ -12810,7 +12802,7 @@ xref_tag_from_type (tree old, tree id, int globalize)
   if (id == NULL_TREE)
     id = TYPE_IDENTIFIER (old);
 
-  return xref_tag (tag_kind, id, /*attributes=*/NULL_TREE, globalize);
+  return xref_tag (tag_kind, id, /*attributes=*/NULL_TREE, globalize, false);
 }
 
 /* REF is a type (named NAME), for which we have just seen some

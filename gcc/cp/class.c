@@ -6333,21 +6333,6 @@ get_enclosing_class (tree type)
   return NULL_TREE;
 }
 
-/* Return 1 if TYPE or one of its enclosing classes is derived from BASE.  */
-
-int
-is_base_of_enclosing_class (tree base, tree type)
-{
-  while (type)
-    {
-      if (lookup_base (type, base, ba_any, NULL))
-	return 1;
-
-      type = get_enclosing_class (type);
-    }
-  return 0;
-}
-
 /* Note that NAME was looked up while the current class was being
    defined and that the result of that lookup was DECL.  */
 
