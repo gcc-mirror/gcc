@@ -1,3 +1,7 @@
+2001-01-26  Tom Tromey  <tromey@redhat.com>
+
+	* configure.in: Allow libgcj to be built on Sparc Solaris.
+
 2001-01-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* ltcf-c.sh: Add aix5 case.
