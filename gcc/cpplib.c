@@ -2110,8 +2110,7 @@ output_line_command (pfile, conditional, file_change)
   long line, col;
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  if (CPP_OPTIONS (pfile)->no_line_commands
-      || ip->fname == NULL || CPP_OPTIONS (pfile)->no_output) {
+  if (ip->fname == NULL || CPP_OPTIONS (pfile)->no_output) {
     return;
   }
 
@@ -2119,6 +2118,9 @@ output_line_command (pfile, conditional, file_change)
   line = CPP_BUFFER (pfile)->lineno;
   col = CPP_BUFFER (pfile)->colno;
   adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
+
+  if (CPP_OPTIONS (pfile)->no_line_commands)
+    return;
 
   if (conditional) {
     if (line == pfile->lineno)
