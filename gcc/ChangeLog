@@ -1,3 +1,8 @@
+2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppspec.c (lang_specific_driver): Use double quotes in error
+	message.
+
 Mon Jul  3 16:53:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* calls.c (emit_library_call_value_1): Use valreg instead

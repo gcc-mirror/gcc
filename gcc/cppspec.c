@@ -125,7 +125,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 		need_E = 0;
 	      else if (argv[i][1] == 'S' || argv[i][1] == 'c')
 		{
-		  fatal ("`%s' is not a legal option to the preprocessor",
+		  fatal ("\"%s\" is not a legal option to the preprocessor",
 			 argv[i]);
 		  return;
 		}
