@@ -97,7 +97,7 @@ struct emit_status GTY(())
   /* Indexed by pseudo register number, if nonzero gives the known alignment
      for that pseudo (if REG_POINTER is set in x_regno_reg_rtx).
      Allocated in parallel with x_regno_reg_rtx.  */
-  unsigned char * GTY ((length ("%h.regno_pointer_align_length"))) 
+  unsigned char * GTY ((length ("%h.x_reg_rtx_no")))
     regno_pointer_align;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
@@ -105,7 +105,7 @@ struct emit_status GTY(())
 
      Note MEM expressions can appear in this array due to the actions
      of put_var_into_stack.  */
-  rtx * GTY ((length ("%h.regno_pointer_align_length"))) x_regno_reg_rtx;
+  rtx * GTY ((length ("%h.x_reg_rtx_no"))) x_regno_reg_rtx;
 };
 
 /* For backward compatibility... eventually these should all go away.  */

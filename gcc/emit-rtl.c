@@ -5350,8 +5350,7 @@ init_emit ()
 					   * sizeof (unsigned char));
 
   regno_reg_rtx
-    = (rtx *) ggc_alloc_cleared (f->emit->regno_pointer_align_length
-				 * sizeof (rtx));
+    = (rtx *) ggc_alloc (f->emit->regno_pointer_align_length * sizeof (rtx));
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,

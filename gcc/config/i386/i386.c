@@ -679,9 +679,19 @@ static char const tls_model_chars[] = " GLil";
 #define X86_64_VARARGS_SIZE (REGPARM_MAX * UNITS_PER_WORD + SSE_REGPARM_MAX * 16)
 
 /* Define the structure for the machine field in struct function.  */
+
+struct stack_local_entry GTY(())
+{
+  unsigned short mode;
+  unsigned short n;
+  rtx rtl;
+  struct stack_local_entry *next;
+};
+
+
 struct machine_function GTY(())
 {
-  rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+  struct stack_local_entry *stack_locals;
   const char *some_ld_name;
   int save_varrargs_registers;
   int accesses_prev_frame;
@@ -11634,14 +11644,24 @@ assign_386_stack_local (mode, n)
      enum machine_mode mode;
      int n;
 {
+  struct stack_local_entry *s;
+
   if (n < 0 || n >= MAX_386_STACK_LOCALS)
     abort ();
 
-  if (ix86_stack_locals[(int) mode][n] == NULL_RTX)
-    ix86_stack_locals[(int) mode][n]
-      = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+  for (s = ix86_stack_locals; s; s = s->next)
+    if (s->mode == mode && s->n == n)
+      return s->rtl;
 
-  return ix86_stack_locals[(int) mode][n];
+  s = (struct stack_local_entry *)
+    ggc_alloc (sizeof (struct stack_local_entry));
+  s->n = n;
+  s->mode = mode;
+  s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+
+  s->next = ix86_stack_locals;
+  ix86_stack_locals = s;
+  return s->rtl;
 }
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
