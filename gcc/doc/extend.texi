@@ -6226,8 +6226,8 @@ When used with @code{extern} or @code{static}, @code{__thread} must appear
 immediately after the other storage class specifier.
 
 The @code{__thread} specifier may be applied to any global, file-scoped
-static, function-scoped static, or class-scoped static variable.  It may
-not be applied to block-scoped automatic or class-scoped member variables.
+static, function-scoped static, or static data member of a class.  It may
+not be applied to block-scoped automatic or non-static data member.
 
 When the address-of operator is applied to a thread-local variable, it is
 evaluated at run-time and returns the address of the current thread's
@@ -6237,8 +6237,9 @@ in that thread become invalid.
 
 No static initialization may refer to the address of a thread-local variable.
 
-In C++, a thread-local variable may not be initialized at runtime,
-that is, either by a static constructor or a non-constant expression.
+In C++, if an initializer is present for a thread-local variable, it must
+be a @var{constant-expression}, as defined in 5.19.2 of the ANSI/ISO C++
+standard.
 
 See @uref{http://people.redhat.com/drepper/tls.pdf,
 ELF Handling For Thread-Local Storage} for a detailed explanation of
@@ -6379,7 +6380,9 @@ dynamic initialization.
 Add after paragraph 3
 
 @quotation
-An object of thread storage duration shall not require a destructor.
+The type of an object with thread storage duration shall not have a
+non-trivial destructor, nor shall it be an array type whose elements
+(directly or indirectly) have non-trivial destructors.
 @end quotation
 
 @item
