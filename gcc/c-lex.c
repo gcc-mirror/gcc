@@ -1069,6 +1069,18 @@ yylex ()
 
 	  if (lastiddecl != 0 && TREE_CODE (lastiddecl) == TYPE_DECL)
 	    value = TYPENAME;
+	  /* A user-invisible read-only initialized variable
+	     should be replaced by its value.
+	     We handle only strings since that's the only case used in C.  */
+	  else if (lastiddecl != 0 && TREE_CODE (lastiddecl) == VAR_DECL
+		   && DECL_IGNORED_P (lastiddecl)
+		   && TREE_READONLY (lastiddecl)
+		   && DECL_INITIAL (lastiddecl) != 0
+		   && TREE_CODE (DECL_INITIAL (lastiddecl)) == STRING_CST)
+	    {
+	      yylval.ttype = DECL_INITIAL (lastiddecl);
+	      value = STRING;
+	    }
           else if (doing_objc_thang)
             {
 	      tree objc_interface_decl = lookup_interface (yylval.ttype);
