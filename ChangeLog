@@ -1,3 +1,8 @@
+2003-02-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Remove duplicate entry for Bernd Schmidt from Write
+	After Approval.
+
 2003-02-02  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* MAINTAINERS (Write after approval): Add myself.
