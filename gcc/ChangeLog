@@ -1,3 +1,8 @@
+2003-02-13  Robert Lipe <robertlipe@usa.net>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Update three SCO-related URLs.
+
 2003-02-13  Andreas Schwab  <schwab@suse.de>
 
 	* cgraph.c (SET_NPREDECESORS): Add intermediate cast to size_t.
@@ -77,7 +82,6 @@ Wed Feb 12 22:47:18 CET 2003  Jan Hubicka  <jh@suse.cz>
         (__ev_create_sfix32_fs): Same.
         (__ev_get_sfix32_fs_internal): Cast arguments to builtins.
         (__ev_get_ufix32_fs_internal): Same.
-
 
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
