@@ -9033,6 +9033,14 @@ loc_descriptor_from_tree (loc, addressp)
       break;
 
     default:
+      /* Leave front-end specific codes as simply unknown.  This comes
+	 up, for instance, with the C STMT_EXPR.  */
+      if ((unsigned int) TREE_CODE (loc)
+          >= (unsigned int) LAST_AND_UNUSED_TREE_CODE)
+	return 0;
+
+      /* Otherwise this is a generic code; we should just lists all of
+	 these explicitly.  Aborting means we forgot one.  */
       abort ();
     }
 
