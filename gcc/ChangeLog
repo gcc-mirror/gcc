@@ -1,3 +1,9 @@
+2001-11-30  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (is_cxx): New fn.
+	(add_data_member_location_attribute): Check it.
+	* dbxout.c (dbxout_type): Only look at BINFO_VPTR_FIELD for C++.
+
 Fri Nov 30 08:26:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2asm.c (dw2_asm_output_encoded_addr_rtx): Handle const1_rtx.
