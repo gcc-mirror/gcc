@@ -1654,7 +1654,7 @@ add_subroutines (void)
 	      gfc_check_random_number, NULL, gfc_resolve_random_number,
 	      h, BT_REAL, dr, 0);
 
-  add_sym_3 ("random_seed", 0, 1, BT_UNKNOWN, 0,
+  add_sym_3s ("random_seed", 0, 1, BT_UNKNOWN, 0,
 	     gfc_check_random_seed, NULL, NULL,
 	     sz, BT_INTEGER, di, 1, pt, BT_INTEGER, di, 1,
 	     gt, BT_INTEGER, di, 1);
