@@ -2887,10 +2887,12 @@ Define the macros @var{__GNUC__}, @var{__GNUC_MINOR__} and
 Make an assertion with the predicate @var{predicate} and answer
 @var{answer}.  @xref{Assertions}.
 
-@noindent
-You can use @samp{-A-} to disable all predefined assertions; it also
-undefines all predefined macros and all macros that preceded it on the
-command line.
+@item -A -@var{predicate}(@var{answer})
+Disable an assertion with the predicate @var{predicate} and answer
+@var{answer}.  Specifiying no predicate, by @samp{-A-} or @samp{-A -},
+disables all predefined assertions and all assertions preceding it on
+the command line; and also undefines all predefined macros and all
+macros preceding it on the command line.
 
 @item -dM
 @findex -dM

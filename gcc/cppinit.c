@@ -1493,26 +1493,35 @@ handle_option (pfile, argc, argv)
 	      opts->no_output = 1;
 	  break;
 	case OPT_A:
-	  if (strcmp (arg, "-"))
-	    new_pending_directive (opts, arg, cpp_assert);
-	  else
+	  if (arg[0] == '-')
 	    {
-	      /* -A- eliminates all predefined macros and assertions.
-		 Let's include also any that were specified earlier
-		 on the command line.  That way we can get rid of any
-		 that were passed automatically in from GCC.  */
-	      struct pending_option *o1, *o2;
+	      /* -A with an argument beginning with '-' acts as
+		 #unassert on whatever immediately follows the '-'.
+		 If "-" is the whole argument, we eliminate all
+		 predefined macros and assertions, including those
+		 that were specified earlier on the command line.
+		 That way we can get rid of any that were passed
+		 automatically in from GCC.  */
 
-	      o1 = opts->pending->directive_head;
-	      while (o1)
+	      if (arg[1] == '\0')
 		{
-		  o2 = o1->next;
-		  free (o1);
-		  o1 = o2;
+		  struct pending_option *o1, *o2;
+
+		  o1 = opts->pending->directive_head;
+		  while (o1)
+		    {
+		      o2 = o1->next;
+		      free (o1);
+		      o1 = o2;
+		    }
+		  opts->pending->directive_head = NULL;
+		  opts->pending->directive_tail = NULL;
 		}
-	      opts->pending->directive_head = NULL;
-	      opts->pending->directive_tail = NULL;
+	      else
+		new_pending_directive (opts, arg + 1, cpp_unassert);
 	    }
+	  else
+	    new_pending_directive (opts, arg, cpp_assert);
 	  break;
 	case OPT_U:
 	  new_pending_directive (opts, arg, cpp_undef);
@@ -1750,6 +1759,7 @@ Switches:\n\
   -D<macro>                 Define a <macro> with string '1' as its value\n\
   -D<macro>=<val>           Define a <macro> with <val> as its value\n\
   -A<question> (<answer>)   Assert the <answer> to <question>\n\
+  -A-<question> (<answer>)  Disable the <answer> to <question>\n\
   -U<macro>                 Undefine <macro> \n\
   -v                        Display the version number\n\
   -H                        Print the name of header files as they are used\n\
