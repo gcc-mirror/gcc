@@ -2253,7 +2253,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      rtx shift_subtarget = preserve ? 0 : accum;
 	      rtx add_target
 		= (opno == alg.ops - 1 && target != 0 && variant != add_variant
-		  ? target : 0);
+		   && ! preserve)
+		  ? target : 0;
 	      rtx accum_target = preserve ? 0 : accum;
 	      
 	      switch (alg.op[opno])
