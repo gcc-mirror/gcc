@@ -229,7 +229,7 @@ namespace std
        *  @param  sb  A pointer to a streambuf
        *
        *  This function behaves like one of the basic arithmetic extractors,
-       *  in that it also constructs a sentry onject and has the same error
+       *  in that it also constructs a sentry object and has the same error
        *  handling behavior.
        *
        *  If @a sb is NULL, the stream will set failbit in its error state.
