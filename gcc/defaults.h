@@ -1,10 +1,9 @@
 /* Definitions of various defaults for how to do assembler output
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
+   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@monkeys.com)
 
-   Written by Ron Guilmette (rfg@netcom.com)
-
-Copyright (C) 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,19 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
 do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
      ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (VALUE));			\
-     fputc ('\n', FILE);						\
-   } while (0)
-#endif
-
-/* This is how to output an element of a case-vector that is relative.
-   Some targets don't use this, but we have to define it anyway.  */
-
-#ifndef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
-     ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (VALUE));			\
-     fputc ('-', FILE);							\
-     ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (REL));			\
      fputc ('\n', FILE);						\
    } while (0)
 #endif
