@@ -4594,7 +4594,9 @@ mips_debugger_offset (addr, offset)
    'L'  print low-order register of double-word register operand.
    'M'  print high-order register of double-word register operand.
    'C'  print part of opcode for a branch condition.
+   'F'  print part of opcode for a floating-point branch condition.
    'N'  print part of opcode for a branch condition, inverted.
+   'W'  print part of opcode for a floating-point branch condition, inverted.
    'S'  X is CODE_LABEL, print with prefix of "LS" (for embedded switch).
    'B'  print 'z' for EQ, 'n' for NE
    'b'  print 'n' for EQ, 'z' for NE
@@ -4790,6 +4792,24 @@ print_operand (file, op, letter)
       case LEU: fputs ("gtu", file); break;
       default:
 	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%N");
+      }
+
+  else if (letter == 'F')
+    switch (code)
+      {
+      case EQ: fputs ("c1f", file); break;
+      case NE: fputs ("c1t", file); break;
+      default:
+	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%F");
+      }
+
+  else if (letter == 'W')
+    switch (code)
+      {
+      case EQ: fputs ("c1t", file); break;
+      case NE: fputs ("c1f", file); break;
+      default:
+	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%W");
       }
 
   else if (letter == 'S')
@@ -8332,7 +8352,7 @@ machine_dependent_reorg (first)
   insns_len = 0;
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      insns_len += get_attr_length (insn) * 2;
+      insns_len += get_attr_length (insn);
 
       /* ??? We put switch tables in .text, but we don't define
          JUMP_TABLES_IN_TEXT_SECTION, so get_attr_length will not
@@ -8440,7 +8460,7 @@ machine_dependent_reorg (first)
 	    }
 	}
 
-      addr += get_attr_length (insn) * 2;
+      addr += get_attr_length (insn);
 
       /* ??? We put switch tables in .text, but we don't define
          JUMP_TABLES_IN_TEXT_SECTION, so get_attr_length will not
@@ -8519,4 +8539,297 @@ highpart_shift_operator (x, mode)
 	  || code == ASHIFTRT
 	  || code == ROTATERT
 	  || code == ROTATE);
+}
+
+/* Return the length of INSN.  LENGTH is the initial length computed by 
+   attributes in the machine-description file.  */
+
+int
+mips_adjust_insn_length (insn, length)
+     rtx insn;
+     int length;
+{
+  /* A unconditional jump has an unfilled delay slot if it is not part
+     of a sequence.  A conditional jump normally has a delay slot, but
+     does not on MIPS16.  */
+  if (simplejump_p (insn)
+      || (!TARGET_MIPS16  && (GET_CODE (insn) == JUMP_INSN 
+			      || GET_CODE (insn) == CALL_INSN)))
+    length += 4;
+
+  /* All MIPS16 instructions are a measly two bytes.  */
+  if (TARGET_MIPS16)
+    length /= 2;
+
+  return length;
+}
+
+/* Output assembly instructions to peform a conditional branch.  
+
+   INSN is the branch instruction.  OPERANDS[0] is the condition.
+   OPERANDS[1] is the target of the branch.  OPERANDS[2] is the target
+   of the first operand to the condition.  If TWO_OPERANDS_P is
+   non-zero the comparison takes two operands; OPERANDS[3] will be the
+   second operand.
+
+   If INVERTED_P is non-zero we are to branch if the condition does
+   not hold.  If FLOAT_P is non-zero this is a floating-point comparison.
+
+   LENGTH is the length (in bytes) of the sequence we are to generate.
+   That tells us whether to generate a simple conditional branch, or a
+   reversed conditional branch around a `jr' instruction.  */
+char *
+mips_output_conditional_branch (insn, 
+				operands, 
+				two_operands_p,
+				float_p,
+				inverted_p,
+				length)
+     rtx insn;
+     rtx *operands;
+     int two_operands_p;
+     int float_p;
+     int inverted_p;
+     int length;
+{
+  static char buffer[200];
+  /* The kind of comparison we are doing.  */
+  enum rtx_code code = GET_CODE (operands[0]);
+  /* Non-zero if the opcode for the comparison needs a `z' indicating
+     that it is a comparision against zero.  */
+  int need_z_p;
+  /* A string to use in the assembly output to represent the first
+     operand.  */
+  char *op1 = "%z2";
+  /* A string to use in the assembly output to represent the second
+     operand.  Use the hard-wired zero register if there's no second
+     operand.  */
+  char *op2 = (two_operands_p ? ",%z3" : ",%.");
+  /* The operand-printing string for the comparison.  */
+  char *comp = (float_p ? "%F0" : "%C0");
+  /* The operand-printing string for the inverted comparison.  */
+  char *inverted_comp = (float_p ? "%W0" : "%N0");
+
+  /* The MIPS processors (for levels of the ISA at least two), have
+     "likely" variants of each branch instruction.  These instructions
+     annul the instruction in the delay slot if the branch is not
+     taken.  */
+  mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
+
+  if (!two_operands_p)
+    {
+      /* To compute whether than A > B, for example, we normally
+	 subtract B from A and then look at the sign bit.  But, if we
+	 are doing an unsigned comparison, and B is zero, we don't
+	 have to do the subtraction.  Instead, we can just check to
+	 see if A is non-zero.  Thus, we change the CODE here to
+	 reflect the simpler comparison operation.  */
+      switch (code)
+	{
+	case GTU:
+	  code = NE;
+	  break;
+
+	case LEU:
+	  code = EQ;
+	  break;
+
+	case GEU:
+	  /* A condition which will always be true.  */
+	  code = EQ;
+	  op1 = "%.";
+	  break;
+
+	case LTU:
+	  /* A condition which will always be false. */
+	  code = NE;
+	  op1 = "%.";
+	  break;
+
+	default:
+	  /* Not a special case.  */
+	}
+    }
+
+  /* Relative comparisons are always done against zero.  But
+     equality comparisons are done between two operands, and therefore
+     do not require a `z' in the assembly language output.  */
+  need_z_p = (!float_p && code != EQ && code != NE);
+  /* For comparisons against zero, the zero is not provided 
+     explicitly.  */
+  if (need_z_p)
+    op2 = "";
+
+  /* Begin by terminating the buffer.  That way we can always use
+     strcat to add to it.  */
+  buffer[0] = '\0';
+
+  switch (length) 
+    {
+    case 4:
+    case 8:
+      /* Just a simple conditional branch.  */
+      if (float_p)
+	sprintf (buffer, "%%*b%s%%?\t%%Z2%%1",
+		 inverted_p ? inverted_comp : comp);
+      else
+	sprintf (buffer, "%%*b%s%s%%?\t%s%s,%%1",
+		 inverted_p ? inverted_comp : comp,
+		 need_z_p ? "z" : "",
+		 op1,
+		 op2);
+      return buffer;
+
+    case 12:
+    case 16:
+      {
+	/* Generate a reversed conditional branch around ` j'
+	   instruction:
+
+		.set noreorder
+		.set nomacro
+		bc    l
+		nop
+		j     target
+		.set macro
+		.set reorder
+	     l:
+
+	   Because we have to jump four bytes *past* the following
+	   instruction if this branch was annulled, we can't just use
+	   a label, as in the picture above; there's no way to put the
+	   label after the next instruction, as the assembler does not
+	   accept `.L+4' as the target of a branch.  (We can't just
+	   wait until the next instruction is output; it might be a
+	   macro and take up more than four bytes.  Once again, we see
+	   why we want to eliminate macros.)
+	   
+	   If the branch is annulled, we jump four more bytes that we
+	   would otherwise; that way we skip the annulled instruction
+	   in the delay slot.  */
+
+	char *target 
+	  = ((mips_branch_likely || length == 16) ? ".+16" : ".+12");
+	char *c;
+
+	strcpy (buffer, "%(%<");
+	c = strchr (buffer, '\0');
+	/* Generate the reversed comparision.  This takes four 
+	   bytes.  */
+	if (float_p)
+	  sprintf (c, "%%*b%s\t%%Z2%s",
+		   inverted_p ? comp : inverted_comp,
+		   target);
+	else
+	  sprintf (c, "%%*b%s%s\t%s%s,%s",
+		   inverted_p ? comp : inverted_comp,
+		   need_z_p ? "z" : "",
+		   op1,
+		   op2,
+		   target);
+	strcat (c, "\n\tnop\n\tj\t%1");
+	if (length == 16)
+	  /* The delay slot was unfilled.  Since we're inside
+	     .noreorder, the assembler will not fill in the NOP for
+	     us, so we must do it ourselves.  */
+	  strcat (buffer, "\n\tnop");
+	strcat (buffer, "%>%)");
+	return buffer;
+      }
+
+    /* We do not currently use this code.  It handles jumps to
+       arbitrary locations, using `jr', even across a 256MB boundary.
+       We could add a -mhuge switch, and then use this code instead of
+       the `j' alternative above when -mhuge was used.  */
+#if 0
+    case 16:
+    case 20:
+      {
+	/* Generate a reversed conditional branch around a `jr'
+	   instruction:
+
+		 .set noreorder
+		 .set nomacro
+		 .set noat
+		 bc    l
+		 la    $at, target
+		 jr    $at
+		 .set at
+		 .set macro
+		 .set reorder
+	      l:
+
+	   Not pretty, but allows a conditional branch anywhere in the
+	   32-bit address space.  If the original branch is annulled,
+	   then the instruction in the delay slot should be executed
+	   only if the branch is taken.  The la instruction is really
+	   a macro which will usually take eight bytes, but sometimes
+	   takes only four, if the instruction to which we're jumping
+	   gets its own entry in the global pointer table, which will
+	   happen if its a case label.  The assembler will then
+	   generate only a four-byte sequence, rather than eight, and
+	   there seems to be no way to tell it not to.  Thus, we can't
+	   just use a `.+x' addressing form; we don't know what value
+	   to give for `x'.  
+
+	   So, we resort to using the explicit relocation syntax
+	   available in the assembler and do:
+
+	      lw $at,%got_page(target)($gp)
+	      daddiu $at,$at,%got_ofst(target)
+
+	   That way, this always takes up eight bytes, and we can use
+	   the `.+x' form.  Of course, these explicit machinations
+	   with relocation will not work with old assemblers.  Then
+	   again, neither do out-of-range branches, so we haven't lost
+	   anything.  */
+
+	/* The target of the reversed branch.  */
+	char *target 
+	  = ((mips_branch_likely || length == 20) ? ".+20" : ".+16");
+	char *at_register = mips_reg_names[ASSEMBLER_SCRATCH_REGNUM];
+	char *gp_register = mips_reg_names[PIC_OFFSET_TABLE_REGNUM];
+	char *c;
+
+	strcpy (buffer, "%(%<%[");
+	c = strchr (buffer, '\0');
+	/* Generate the reversed comparision.  This takes four 
+	   bytes.  */
+	if (float_p)
+	  sprintf (c, "%%*b%s\t%%Z2%s",
+		   inverted_p ? comp : inverted_comp,
+		   target);
+	else
+	  sprintf (c, "%%*b%s%s\t%s%s,%s",
+		   inverted_p ? comp : inverted_comp,
+		   need_z_p ? "z" : "",
+		   op1,
+		   op2,
+		   target);
+	c = strchr (buffer, '\0');
+	/* Generate the load-address, and jump.  This takes twelve
+	   bytes, for a total of 16.  */
+	sprintf (c,
+		 "\n\tlw\t%s,%%%%got_page(%%1)(%s)\n\tdaddiu\t%s,%s,%%%%got_ofst(%%1)\n\tjr\t%s",
+		 at_register,
+		 gp_register,
+		 at_register,
+		 at_register,
+		 at_register);
+	if (length == 20)
+	  /* The delay slot was unfilled.  Since we're inside
+	     .noreorder, the assembler will not fill in the NOP for
+	     us, so we must do it ourselves.  */
+	  strcat (buffer, "\n\tnop");
+	strcat (buffer, "%]%>%)");
+	return buffer;
+      }
+#endif
+
+    default:
+      abort ();
+    }
+
+  /* NOTREACHED */
+  return 0;
 }

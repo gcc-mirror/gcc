@@ -1,3 +1,24 @@
+Sat Jun  5 12:11:24 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* mips.h (mips_output_conditional_branch): New function.
+	(mips_adjust_insn_length): Likewise.
+	(ASSEMBLER_SCRATCH_REGNUM): New macro.
+	(ADJUST_INSN_LENGTH): Likewise.
+	* mips.c (print_operand): Add `F' and `W' for floating-point
+	comparison opcodes.
+	(machine_dependent_reorg): Adjust MIPS16 code; instruction-lengths
+	are now in bytes.
+	(mips_adjust_insn_length): New function.
+	(mips_output_conditional_branch): New function.
+	* mips.md (length): Adjust attribute definition to handle
+	conditional branches.  	Change lengths to bytes, rather than
+	instructions throughout.  Remove length attribute from
+	instructions whose length is four bytes, and rely on the default
+	instead.
+	(dslot): Fix typo in comment.
+	Reword conditional branch patterns to use
+	mips_output_conditional_branch.
+
 Fri Jun  4 13:30:27 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* alpha/osf.h (CPP_SUBTARGET_SPEC): Handle -threads.
