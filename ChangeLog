@@ -1,3 +1,7 @@
+2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libstdcxx_flags): Remove reference to libstdc++.INC.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (target_libs): Remove target-libchill.
