@@ -8327,7 +8327,7 @@ build_dot_class_method (class)
   /* Create the "class$" function */
   mdecl = create_artificial_method (class, ACC_STATIC, 
 				    build_pointer_type (class_type_node),
-				    get_identifier ("class$"), args);
+				    classdollar_identifier_node, args);
   DECL_FUNCTION_THROWS (mdecl) = build_tree_list (NULL_TREE,
 						  no_class_def_found_error);
   
@@ -8401,7 +8401,7 @@ build_dot_class_method_invocation (type)
 
   s = build_string (IDENTIFIER_LENGTH (sig_id), 
 		    IDENTIFIER_POINTER (sig_id));
-  return build_method_invocation (build_wfl_node (get_identifier ("class$")),
+  return build_method_invocation (build_wfl_node (classdollar_identifier_node),
 				  build_tree_list (NULL_TREE, s));
 }
 
@@ -10427,10 +10427,10 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
 
-      /* When looking finit$, we turn LC to 1 so that we only search
-	 in class. Note that we should have found something at
-	 this point. */
-      if (ID_FINIT_P (name))
+      /* When looking finit$ or class$, we turn LC to 1 so that we
+	 only search in class. Note that we should have found
+	 something at this point. */
+      if (ID_FINIT_P (name) || ID_CLASSDOLLAR_P (name))
 	{
 	  lc = 1;
 	  if (!list)
