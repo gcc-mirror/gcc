@@ -1,3 +1,7 @@
+2003-06-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Add 970.
+
 2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dwarf2out.c (add_AT_string): Replace ggc_alloc_string (X,
