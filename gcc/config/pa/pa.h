@@ -1473,6 +1473,10 @@ extern struct rtx_def *hppa_va_arg();
 	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
 	   && CONSTANT_P (XEXP (X, 1))			\
 	   && (TARGET_SOFT_FLOAT			\
+	       /* We can allow symbolic LO_SUM addresses\
+		  for PA2.0.  */			\
+	       || (TARGET_PA_20				\
+	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
 	       || ((MODE) != SFmode			\
 		   && (MODE) != DFmode)))		\
     goto ADDR;						\
@@ -1482,6 +1486,10 @@ extern struct rtx_def *hppa_va_arg();
 	   && REG_OK_FOR_BASE_P (SUBREG_REG (XEXP (X, 0)))\
 	   && CONSTANT_P (XEXP (X, 1))			\
 	   && (TARGET_SOFT_FLOAT			\
+	       /* We can allow symbolic LO_SUM addresses\
+		  for PA2.0.  */			\
+	       || (TARGET_PA_20				\
+	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
 	       || ((MODE) != SFmode			\
 		   && (MODE) != DFmode)))		\
     goto ADDR;						\
