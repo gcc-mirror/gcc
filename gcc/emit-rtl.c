@@ -3457,3 +3457,25 @@ init_emit_once (line_numbers)
   pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 #endif
 }
+
+/* Query and clear/ restore no_line_numbers.  This is used by the
+   switch / case handling in stmt.c to give proper line numbers in
+   warnings about unreachable code.  */
+
+int
+force_line_numbers ()
+{
+  int old = no_line_numbers;
+
+  no_line_numbers = 0;
+  if (old)
+    force_next_line_note ();
+  return old;
+}
+
+void
+restore_line_number_status (old_value)
+     int old_value;
+{
+  no_line_numbers = old_value;
+}
