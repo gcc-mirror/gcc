@@ -798,6 +798,19 @@ find_constant_index (tree value, struct jcf_partial *state)
     {
       long words[2];
 
+      /* IEEE NaN can have many values, but the Java VM spec defines a
+	 canonical NaN.  */      
+      if (flag_emit_class_files
+	  && REAL_VALUE_ISNAN (TREE_REAL_CST (value)))
+	{
+	  if (TYPE_PRECISION (TREE_TYPE (value)) == 32)
+ 	    return find_constant1 (&state->cpool, CONSTANT_Float,
+ 				   0x7fc00000);
+	  else
+ 	    return find_constant2 (&state->cpool, CONSTANT_Double,
+ 				   0x7ff80000, 0x00000000);
+	}	    
+      
       real_to_target (words, &TREE_REAL_CST (value),
 		      TYPE_MODE (TREE_TYPE (value)));
       words[0] &= 0xffffffff;

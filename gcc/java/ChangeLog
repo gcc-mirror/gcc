@@ -1,3 +1,8 @@
+2004-08-16  Andrew Haley  <aph@redhat.com>
+
+	* jcf-write.c (find_constant_index): Canonicalize NaNs when
+	generating bytecode.
+
 2004-08-16  Elliot Lee <sopwith@redhat.com>
 
 	PR java/9677
