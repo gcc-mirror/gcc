@@ -1,3 +1,9 @@
+2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcj.texi: Use gpl.texi.
+	* Make-lang.in ($(srcdir)/java/gcj.info, java/gcj.dvi): Update
+	dependencies and use doc/include in search path.
+
 2001-07-03  Jeff Sturm  <jsturm@one-point.com>
 
 	* parse.y (fix_constructors): Test if a CALL_EXPR invokes
