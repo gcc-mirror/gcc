@@ -2245,7 +2245,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 }
 
 
-/* Return true if the two SS could be aliased, ie. both point to the same data
+/* Return true if the two SS could be aliased, i.e. both point to the same data
    object.  */
 /* TODO: resolve aliases based on frontend expressions.  */
 
@@ -3060,7 +3060,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
       gfc_trans_init_string_length (sym->ts.cl, &block);
 
       /* Emit a DECL_EXPR for this variable, which will cause the
-	 gimplifier to allocate stoage, and all that good stuff.  */
+	 gimplifier to allocate storage, and all that good stuff.  */
       tmp = build1 (DECL_EXPR, TREE_TYPE (decl), decl);
       gfc_add_expr_to_block (&block, tmp);
     }
@@ -3572,7 +3572,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       /* A transformational function return value will be a temporary
 	 array descriptor.  We still need to go through the scalarizer
 	 to create the descriptor.  Elemental functions ar handled as
-	 arbitary expressions, ie. copy to a temporary.  */
+	 arbitary expressions, i.e. copy to a temporary.  */
       secss = ss;
       /* Look for the SS for this function.  */
       while (secss != gfc_ss_terminator

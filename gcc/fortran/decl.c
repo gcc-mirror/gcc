@@ -399,7 +399,7 @@ match_old_style_init (const char *name)
 }
 
 /* Match the stuff following a DATA statement. If ERROR_FLAG is set,
-   we are matching a DATA stement and are therefore issuing an error
+   we are matching a DATA statement and are therefore issuing an error
    if we encounter something unexpected, if not, we're trying to match 
    an old-style intialization expression of the form INTEGER I /2/.   */
 

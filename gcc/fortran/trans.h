@@ -271,7 +271,7 @@ void gfc_conv_string_parameter (gfc_se * se);
 /* Add an item to the end of TREE_LIST.  */
 tree gfc_chainon_list (tree, tree);
 
-/* When using the gfc_conv_* make sure you understand what they do, ie.
+/* When using the gfc_conv_* make sure you understand what they do, i.e.
    when a POST chain may be created, and what the retured expression may be
    used for.  Note that character strings have special handling.  This
    should not be a problem as most statements/operations only deal with

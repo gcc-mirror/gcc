@@ -524,7 +524,7 @@ exit_label:
 
    TODO: Large loop counts
    Does not work loop counts which do not fit into a signed integer kind,
-   ie. Does not work for loop counts > 2^31 for integer(kind=4) variables
+   i.e. Does not work for loop counts > 2^31 for integer(kind=4) variables
    We must support the full range.  */
 
 tree
@@ -1286,9 +1286,9 @@ gfc_trans_forall_loop (forall_info *forall_tmp, int nvar, tree body, int mask_fl
 
 
 /* Generate the body and loops according to MASK_FLAG and NEST_FLAG.
-   if MASK_FLAG is non-zero, the body is controlled by maskes in forall
+   if MASK_FLAG is nonzero, the body is controlled by maskes in forall
    nest, otherwise, the body is not controlled by maskes.
-   if NEST_FLAG is non-zero, generate loops for nested forall, otherwise,
+   if NEST_FLAG is nonzero, generate loops for nested forall, otherwise,
    only generate loops for the current forall level.  */
 
 static tree

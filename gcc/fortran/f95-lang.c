@@ -354,7 +354,7 @@ static GTY(()) struct binding_level *global_binding_level;
 /* Binding level structures are initialized by copying this one.  */
 static struct binding_level clear_binding_level = { NULL, NULL, NULL };
 
-/* Return non-zero if we are currently in the global binding level.  */
+/* Return nonzero if we are currently in the global binding level.  */
 
 int
 global_bindings_p (void)

@@ -974,7 +974,7 @@ typedef union
 gfc_simplify_f;
 
 /* Again like gfc_check_f, these specify the type of the resolution
-   function associated with an intrinsic. The fX are juse like in
+   function associated with an intrinsic. The fX are just like in
    gfc_check_f. f1m is used for MIN and MAX, s1 is used for abort().
    */
 

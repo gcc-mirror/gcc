@@ -1,3 +1,10 @@
+2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* data.c, decl.c, f95-lang.c, gfortran.h, match.c,
+	trans-array.c, trans-common.c, trans-expr.c,
+	trans-intrinsic.c, trans-stmt.c, trans-types.c, trans.h: Fix
+	comment typos.  Follow spelling conventions.
+
 2004-09-09  Paul Brook  <paul@codesourcery.com>
 
 	* scanner.c (get_file): Add ATTRIBUTE_UNUSED.
