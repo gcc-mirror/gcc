@@ -4976,6 +4976,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   long gp_offset;
   long fp_offset;
   long end_offset;
+  rtx insn;
 
   if (frame_pointer_needed && !BITSET_P (mask, FRAME_POINTER_REGNUM - GP_REG_FIRST))
     abort ();
@@ -5019,9 +5020,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      if (TARGET_LONG64)
-		emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
-		emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5037,11 +5039,13 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = gp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
+	      insn = emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
-		emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
-		emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
@@ -5067,7 +5071,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 		  if (store_p)
 		    {
-		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
+		      insn = emit_move_insn (mem_rtx, reg_rtx);
 		      RTX_FRAME_RELATED_P (insn) = 1;
 		    }
 		  else if (!TARGET_ABICALLS || mips_abi != ABI_32
@@ -5133,9 +5137,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      if (TARGET_LONG64)
-		emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
-		emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5151,11 +5156,13 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = fp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
+	      insn = emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
-		emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
-		emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
@@ -5183,7 +5190,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 		  if (store_p)
 		    {
-		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
+		      insn = emit_move_insn (mem_rtx, reg_rtx);
 		      RTX_FRAME_RELATED_P (insn) = 1;
 		    }
 		  else
@@ -5416,7 +5423,8 @@ mips_expand_prologue ()
 	  if (tsize > 32767)
 	    {
 	      tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
-	      emit_move_insn (tmp_rtx, tsize_rtx);
+	      insn = emit_move_insn (tmp_rtx, tsize_rtx);
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	      tsize_rtx = tmp_rtx;
 	    }
 
