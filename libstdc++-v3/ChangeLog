@@ -1,5 +1,6 @@
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
+	PR 17856
 	* config/cpu/i486/atomicity.h (__exchange_and_add, __atomic_add):
 	Split in-out memory constraints.
 
