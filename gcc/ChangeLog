@@ -1,3 +1,7 @@
+Thu Jun 10 20:45:27 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin.h (SET_ASM_OP): Define.
+
 Thu Jun 10 20:37:57 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* reg-stack.c (stack_reg_life_analysis): Find all the RETURN insns.
