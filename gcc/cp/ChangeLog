@@ -1,3 +1,16 @@
+1999-08-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* error.c (dump_expr): Handle EXACT_DIV_EXPR.
+	(dump_binary_op): Bulletproof.
+	* lex.c (init_parse): Set opname_tab[EXACT_DIV_EXPR].
+	* tree.c (search_tree): Don't enumerate all the nodes of classes
+	`1', `2', and `<'; handle them generically.  Don't be sorry about
+	"unrecognized tree codes"; just abort.
+	(no_linkage_check): Don't do linkage checks for templates.
+	
+	* tree.c (cp_build_qualified_type_real): Handle
+	pointer-to-member-function types correctly.
+
 1999-08-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (pushdecl): Only give an error for shadowing a parm 

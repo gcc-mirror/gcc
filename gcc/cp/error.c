@@ -1521,6 +1521,7 @@ dump_expr (t, nop)
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
+    case EXACT_DIV_EXPR:
       dump_binary_op (opname_tab[(int) TREE_CODE (t)], t);
       break;
 
@@ -1847,7 +1848,10 @@ dump_binary_op (opstring, t)
   OB_PUTC ('(');
   dump_expr (TREE_OPERAND (t, 0), 1);
   OB_PUTC (' ');
-  OB_PUTCP (opstring);
+  if (opstring)
+    OB_PUTCP (opstring);
+  else
+    OB_PUTS ("<unknown operator>");
   OB_PUTC (' ');
   dump_expr (TREE_OPERAND (t, 1), 1);
   OB_PUTC (')');

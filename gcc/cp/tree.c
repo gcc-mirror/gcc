@@ -503,6 +503,8 @@ cp_build_qualified_type_real (type, type_quals, complain)
      int type_quals;
      int complain;
 {
+  tree result;
+
   if (type == error_mark_node)
     return type;
   
@@ -571,7 +573,32 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	= TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (element_type));
       return t;
     }
-  return build_qualified_type (type, type_quals);
+  else if (TYPE_PTRMEMFUNC_P (type))
+    {
+      /* For a pointer-to-member type, we can't just return a
+	 cv-qualified version of the RECORD_TYPE.  If we do, we
+	 haven't change the field that contains the actual pointer to
+	 a method, and so TYPE_PTRMEMFUNC_FN_TYPE will be wrong.  */
+      tree t;
+
+      t = TYPE_PTRMEMFUNC_FN_TYPE (type);
+      t = cp_build_qualified_type_real (t, type_quals, complain);
+      return build_ptrmemfunc_type (t);
+    }
+
+  /* Retrieve (or create) the appropriately qualified variant.  */
+  result = build_qualified_type (type, type_quals);
+
+  /* If this was a pointer-to-method type, and we just made a copy,
+     then we need to clear the cached associated
+     pointer-to-member-function type; it is not valid for the new
+     type.  */
+  if (result != type 
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+    TYPE_SET_PTRMEMFUNC_TYPE (result, NULL_TREE);
+
+  return result;
 }
 
 /* Returns the canonical version of TYPE.  In other words, if TYPE is
@@ -1540,14 +1567,30 @@ search_tree (t, func)
 #define TRY(ARG) if (tmp=search_tree (ARG, func), tmp != NULL_TREE) return tmp
 
   tree tmp;
+  enum tree_code code; 
 
   if (t == NULL_TREE)
     return t;
-
-  if (tmp = func (t), tmp != NULL_TREE)
+  
+  tmp = func (t);
+  if (tmp)
     return tmp;
 
-  switch (TREE_CODE (t))
+  /* Handle some common cases up front.  */
+  code = TREE_CODE (t);
+  if (TREE_CODE_CLASS (code) == '1')
+    {
+      TRY (TREE_OPERAND (t, 0));
+      return NULL_TREE;
+    }
+  else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+    {
+      TRY (TREE_OPERAND (t, 0));
+      TRY (TREE_OPERAND (t, 1));
+      return NULL_TREE;
+    }
+
+  switch (code)
     {
     case ERROR_MARK:
       break;
@@ -1611,35 +1654,8 @@ search_tree (t, func)
       TRY (TREE_OPERAND (t, 2));
       break;
 
-    case MODIFY_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case MIN_EXPR:
-    case MAX_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-    case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case CEIL_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-    case COMPOUND_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
@@ -1654,28 +1670,16 @@ search_tree (t, func)
       break;
 
     case SAVE_EXPR:
-    case CONVERT_EXPR:
     case ADDR_EXPR:
     case INDIRECT_REF:
-    case NEGATE_EXPR:
-    case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
-    case NOP_EXPR:
-    case NON_LVALUE_EXPR:
     case COMPONENT_REF:
     case CLEANUP_POINT_EXPR:
     case LOOKUP_EXPR:
-    case SIZEOF_EXPR:
-    case ALIGNOF_EXPR:
       TRY (TREE_OPERAND (t, 0));
       break;
 
     case MODOP_EXPR:
-    case CAST_EXPR:
-    case REINTERPRET_CAST_EXPR:
-    case CONST_CAST_EXPR:
-    case STATIC_CAST_EXPR:
-    case DYNAMIC_CAST_EXPR:
     case ARROW_EXPR:
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
@@ -1738,13 +1742,8 @@ search_tree (t, func)
 	TRY (TYPE_PTRMEMFUNC_FN_TYPE (t));
       break;
       
-      /*  This list is incomplete, but should suffice for now.
-	  It is very important that `sorry' not call
-	  `report_error_function'.  That could cause an infinite loop.  */
     default:
-      sorry ("initializer contains unrecognized tree code");
-      return error_mark_node;
-
+      my_friendly_abort (19990803);
     }
 
   return NULL_TREE;
@@ -1773,6 +1772,11 @@ tree
 no_linkage_check (t)
      tree t;
 {
+  /* There's no point in checking linkage on template functions; we
+     can't know their complete types.  */
+  if (processing_template_decl)
+    return NULL_TREE;
+
   t = search_tree (t, no_linkage_helper);
   if (t != error_mark_node)
     return t;
