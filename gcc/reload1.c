@@ -9497,7 +9497,7 @@ fixup_abnormal_edges ()
 	}
       if (e && GET_CODE (bb->end) != CALL_INSN && !can_throw_internal (bb->end))
 	{
-	  rtx insn = bb->end;
+	  rtx insn = bb->end, stop = NEXT_INSN (bb->end);
 	  rtx next;
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if (e->flags & EDGE_FALLTHRU)
@@ -9513,11 +9513,14 @@ fixup_abnormal_edges ()
 	  bb->end = insn;
 	  inserted = true;
 	  insn = NEXT_INSN (insn);
-	  while (insn && GET_CODE (insn) == INSN)
+	  while (insn && insn != stop)
 	    {
 	      next = NEXT_INSN (insn);
-	      insert_insn_on_edge (PATTERN (insn), e);
-	      flow_delete_insn (insn);
+	      if (INSN_P (insn))
+		{
+	          insert_insn_on_edge (PATTERN (insn), e);
+	          flow_delete_insn (insn);
+		}
 	      insn = next;
 	    }
 	}
