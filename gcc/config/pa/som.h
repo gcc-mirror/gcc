@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,19 +129,6 @@ do {								\
 #endif
 
 
-/* NAME refers to the function's name.  If we are placing each function into
-   its own section, we need to switch to the section for this function.  Note
-   that the section name will have a "." prefix.  */
-#define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
-  {									\
-    const char *name = (*targetm.strip_name_encoding) (NAME);		\
-    if (TARGET_GAS && in_section == in_text) 				\
-      fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
-    else if (TARGET_GAS)						\
-      fprintf (FILE,							\
-	       "\t.SUBSPA .%s\n", name);				\
-  }
-    
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
 	 tree tree_type = TREE_TYPE (DECL);				\
@@ -219,29 +206,83 @@ do {								\
 
 #define TARGET_ASM_FILE_START pa_som_file_start
 
-/* Output before code.  */
+/* Select and return a TEXT_SECTION_ASM_OP string.  */
+#define TEXT_SECTION_ASM_OP som_text_section_asm_op ()
 
-/* Supposedly the assembler rejects the command if there is no tab!  */
-#define TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$\n"
+/* Output before code in the default text section.  */
+#define DEFAULT_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$"
+
+/* Output before text in a new subspace.  This allows the linker to
+   place stubs between functions.  */
+#define NEW_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$"
+    
+/* Output before text in a new one-only subspace.  */
+#define ONE_ONLY_TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\
+\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=24,COMDAT"
 
 /* Output before read-only data.  */
-
-/* Supposedly the assembler rejects the command if there is no tab!  */
 #define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
 
-#define EXTRA_SECTIONS in_readonly_data
+/* Output before one-only readonly data.  We make readonly data one only
+   by creating a new $LIT$ subspace in $TEXT$ with the comdat flag.  */
+#define ONE_ONLY_READONLY_DATA_SECTION_ASM_OP "\t.SPACE $TEXT$\n\
+\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=0x2c,SORT=16,COMDAT\n"
+
+/* Output before writable data.  */
+#define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
+
+/* Output before one-only data.  We make data one only by creating
+   a new $DATA$ subspace in $PRIVATE$ with the comdat flag.  */
+#define ONE_ONLY_DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\
+\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31,SORT=24,COMDAT\n"
+
+/* Output before uninitialized data.  */
+#define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
+
+#define EXTRA_SECTIONS							\
+  in_readonly_data,							\
+  in_one_only_readonly_data,						\
+  in_one_only_data
 
 #define EXTRA_SECTION_FUNCTIONS						\
-extern void readonly_data (void);					\
+  READONLY_DATA_FUNCTION						\
+  ONE_ONLY_READONLY_DATA_SECTION_FUNCTION				\
+  ONE_ONLY_DATA_SECTION_FUNCTION					\
+  FORGET_SECTION_FUNCTION
+
+#define READONLY_DATA_FUNCTION						\
 void									\
 readonly_data (void)							\
 {									\
   if (in_section != in_readonly_data)					\
     {									\
       in_section = in_readonly_data;					\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
+      fputs (READONLY_DATA_ASM_OP, asm_out_file);			\
     }									\
+}									\
+
+#define ONE_ONLY_READONLY_DATA_SECTION_FUNCTION				\
+void									\
+one_only_readonly_data_section (void)					\
+{									\
+  in_section = in_one_only_readonly_data;				\
+  fputs (ONE_ONLY_READONLY_DATA_SECTION_ASM_OP, asm_out_file);		\
+}									\
+
+#define ONE_ONLY_DATA_SECTION_FUNCTION					\
+void									\
+one_only_data_section (void)						\
+{									\
+  in_section = in_one_only_data;					\
+  fputs (ONE_ONLY_DATA_SECTION_ASM_OP, asm_out_file);			\
 }
+
+#define FORGET_SECTION_FUNCTION						\
+void									\
+forget_section (void)							\
+{									\
+  in_section = no_section;						\
+}									\
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
@@ -255,17 +296,7 @@ readonly_data (void)							\
    $TEXT$ space during PIC generation.  Instead place all constant
    data into the $PRIVATE$ subspace (this reduces sharing, but it
    works correctly).  */
-
 #define READONLY_DATA_SECTION (flag_pic ? data_section : readonly_data)
-
-/* Output before writable data.  */
-
-/* Supposedly the assembler rejects the command if there is no tab!  */
-#define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
-
-/* Output before uninitialized data.  */
-
-#define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
 
 /* We must not have a reference to an external symbol defined in a
    shared library in a readonly section, else the SOM linker will

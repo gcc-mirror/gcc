@@ -430,6 +430,12 @@ do {								\
 #define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
+typedef struct machine_function GTY(())
+{
+  /* Flag indicating that a .NSUBSPA directive has been output for
+     this function.  */
+  int in_nsubspa;
+} machine_function;
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
