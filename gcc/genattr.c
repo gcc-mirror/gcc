@@ -36,10 +36,10 @@ extern rtx read_rtx PROTO((FILE *));
 char *xmalloc PROTO((unsigned));
 
 #ifdef HAVE_VPRINTF
-static void fatal PVPROTO((char *, ...));
+void fatal PVPROTO((char *, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
-static void fatal PROTO(());
+void fatal PROTO(());
 #endif
 
 void fancy_abort ();
@@ -220,7 +220,8 @@ xrealloc (ptr, size)
 }
 
 #ifdef HAVE_VPRINTF
-static void
+
+void
 fatal VPROTO((char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES

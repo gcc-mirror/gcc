@@ -195,10 +195,10 @@ char *xrealloc			PROTO((char *, unsigned));
 char *xmalloc			PROTO((unsigned));
 void fancy_abort		PROTO((void));
 #ifdef HAVE_VPRINTF
-static void fatal PVPROTO((char *, ...));
+void fatal PVPROTO((char *, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
-static void fatal PROTO(());
+void fatal PROTO(());
 #endif
 
 /* Construct and return a sequence of decisions
@@ -1696,7 +1696,7 @@ xmalloc (size)
 }
 
 #ifdef HAVE_VPRINTF
-static void
+void
 fatal VPROTO((char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -1718,7 +1718,7 @@ fatal VPROTO((char *s, ...))
 }
 #else /* not HAVE_VPRINTF */
 
-static void
+void
 fatal (s, a1, a2)
      char *s;
 {

@@ -51,7 +51,7 @@ static void gencode			PROTO((void));
 /* Handle fatal errors.  The macro "abort" calls this.  */
 
 #ifdef HAVE_VPRINTF
-static void
+void
 fatal VPROTO((char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -73,7 +73,7 @@ fatal VPROTO((char *s, ...))
 }
 #else /* not HAVE_VPRINTF */
 
-static void
+void
 fatal (s, a1, a2)
      char *s;
 {
