@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -108,7 +108,7 @@ extern rtx nonlocal_goto_stack_level;
 extern tree nonlocal_labels;
 #endif
 
-#define NO_DEFER_POP (inhibit_defer_pop += 1)
+#define NO_DEFER_POP (do_pending_stack_adjust (), inhibit_defer_pop += 1)
 #define OK_DEFER_POP (inhibit_defer_pop -= 1)
 
 /* Number of units that we should eventually pop off the stack.
