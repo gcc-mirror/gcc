@@ -1,6 +1,9 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* tree-ssa-live (calculate_live_on_entry): Free saw_def
+	* tree-ssa-pre.c (execute_pre): Free ephi_use_pool and
+	idfs_cache at the end of the function.
+
+	* tree-ssa-live.c (calculate_live_on_entry): Free saw_def
 	at the end of the function.
 
 	* tree-ssa-dce.c (perform_tree_ssa_dce): Free
