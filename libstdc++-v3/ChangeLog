@@ -1,3 +1,10 @@
+2002-02-26  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (num_put::_M_widen_int):
+	Group all the integral types, not only decs.
+	* testsuite/27_io/ios_manip_basefield.cc (test01): Tweak existing
+	tests, add a few more.
+
 2002-02-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/ios.cc (ios_base::~ios_base): Tweak.
