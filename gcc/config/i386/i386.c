@@ -284,25 +284,25 @@ struct processor_costs athlon_cost = {
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
-  {4, 5, 4},				/* cost of loading integer registers
+  {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {2, 3, 2},				/* cost of storing integer registers */
+  {3, 4, 3},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {6, 6, 20},				/* cost of loading fp registers
+  {4, 4, 12},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 16},				/* cost of loading integer registers */
+  {6, 6, 8},				/* cost of loading integer registers */
   2,					/* cost of moving MMX register */
-  {2, 2},				/* cost of loading MMX registers
+  {4, 4},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {2, 2},				/* cost of storing MMX registers
+  {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2,					/* cost of moving SSE register */
-  {2, 2, 8},				/* cost of loading SSE registers
+  {4, 4, 6},				/* cost of loading SSE registers
 					   in SImode, DImode and TImode */
-  {2, 2, 8},				/* cost of storing SSE registers
+  {4, 4, 5},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  6,					/* MMX or SSE register to integer */
+  5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
 };

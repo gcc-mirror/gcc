@@ -1,3 +1,9 @@
+Wed Oct  9 19:09:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/7912
+	PR opt/7390
+	* i386.c (athlon_cost): Fix the move costs.
+
 2002-10-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* libgcc2.c (__floatdisf): Properly cure double rounding.
