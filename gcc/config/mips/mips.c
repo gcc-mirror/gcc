@@ -264,6 +264,7 @@ static void mips_arg_info (const CUMULATIVE_ARGS *, enum machine_mode,
 static bool mips_get_unaligned_mem (rtx *, unsigned int, int, rtx *, rtx *);
 static void mips_set_architecture (const struct mips_cpu_info *);
 static void mips_set_tune (const struct mips_cpu_info *);
+static bool mips_handle_option (size_t, const char *, int);
 static struct machine_function *mips_init_machine_status (void);
 static void print_operand_reloc (FILE *, rtx, const char **);
 #if TARGET_IRIX
@@ -328,7 +329,7 @@ static void mips_avoid_hazards (void);
 static void mips_reorg (void);
 static bool mips_strict_matching_cpu_name_p (const char *, const char *);
 static bool mips_matching_cpu_name_p (const char *, const char *);
-static const struct mips_cpu_info *mips_parse_cpu (const char *, const char *);
+static const struct mips_cpu_info *mips_parse_cpu (const char *);
 static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
 static bool mips_return_in_memory (tree, tree);
 static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
@@ -547,13 +548,7 @@ const struct mips_cpu_info *mips_tune_info;
 int mips_isa;
 
 /* Which ABI to use.  */
-int mips_abi;
-
-/* Strings to hold which cpu and instruction set architecture to use.  */
-const char *mips_arch_string;   /* for -march=<xxx> */
-const char *mips_tune_string;   /* for -mtune=<xxx> */
-const char *mips_isa_string;	/* for -mips{1,2,3,4} */
-const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
+int mips_abi = MIPS_ABI_DEFAULT;
 
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
@@ -561,10 +556,14 @@ const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
    should arrange to call mips32 hard floating point code.  */
 int mips16_hard_float;
 
-const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
+/* The arguments passed to -march and -mtune.  */
+static const char *mips_arch_string;
+static const char *mips_tune_string;
 
-/* Holds string <X> if -mfix-vr4130<X> was passed on the command line.  */
-const char *mips_fix_vr4130_string;
+/* The architecture selected by -mipsN.  */
+static const struct mips_cpu_info *mips_isa_info;
+
+const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
@@ -754,6 +753,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
    | TARGET_FP_EXCEPTIONS_DEFAULT		\
    | MASK_CHECK_ZERO_DIV			\
    | MASK_FUSED_MADD)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION mips_handle_option
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall
@@ -4191,6 +4192,52 @@ mips_set_tune (const struct mips_cpu_info *info)
     }
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mabi_:
+      if (strcmp (arg, "32") == 0)
+	mips_abi = ABI_32;
+      else if (strcmp (arg, "o64") == 0)
+	mips_abi = ABI_O64;
+      else if (strcmp (arg, "n32") == 0)
+	mips_abi = ABI_N32;
+      else if (strcmp (arg, "64") == 0)
+	mips_abi = ABI_64;
+      else if (strcmp (arg, "eabi") == 0)
+	mips_abi = ABI_EABI;
+      else
+	return false;
+      return true;
+
+    case OPT_march_:
+      mips_arch_string = arg;
+      return mips_parse_cpu (arg) != 0;
+
+    case OPT_mtune_:
+      mips_tune_string = arg;
+      return mips_parse_cpu (arg) != 0;
+
+    case OPT_mips:
+      mips_isa_info = mips_parse_cpu (ACONCAT (("mips", arg, NULL)));
+      return mips_isa_info != 0;
+
+    case OPT_mflush_func_:
+      mips_cache_flush_func = arg;
+      return true;
+
+    case OPT_mno_flush_func:
+      mips_cache_flush_func = NULL;
+      return true;
+
+    default:
+      return true;
+    }
+}
 
 /* Set up the threshold for data to go into the small data area, instead
    of the normal data area, and detect any conflicts in the switches.  */
@@ -4203,57 +4250,28 @@ override_options (void)
 
   mips_section_threshold = g_switch_set ? g_switch_value : MIPS_DEFAULT_GVALUE;
 
-  /* Interpret -mabi.  */
-  mips_abi = MIPS_ABI_DEFAULT;
-  if (mips_abi_string != 0)
-    {
-      if (strcmp (mips_abi_string, "32") == 0)
-	mips_abi = ABI_32;
-      else if (strcmp (mips_abi_string, "o64") == 0)
-	mips_abi = ABI_O64;
-      else if (strcmp (mips_abi_string, "n32") == 0)
-	mips_abi = ABI_N32;
-      else if (strcmp (mips_abi_string, "64") == 0)
-	mips_abi = ABI_64;
-      else if (strcmp (mips_abi_string, "eabi") == 0)
-	mips_abi = ABI_EABI;
-      else
-	fatal_error ("bad value (%s) for -mabi= switch", mips_abi_string);
-    }
-
   /* The following code determines the architecture and register size.
      Similar code was added to GAS 2.14 (see tc-mips.c:md_after_parse_args()).
      The GAS and GCC code should be kept in sync as much as possible.  */
 
   if (mips_arch_string != 0)
-    mips_set_architecture (mips_parse_cpu ("-march", mips_arch_string));
+    mips_set_architecture (mips_parse_cpu (mips_arch_string));
 
-  if (mips_isa_string != 0)
+  if (mips_isa_info != 0)
     {
-      /* Handle -mipsN.  */
-      char *whole_isa_str = concat ("mips", mips_isa_string, NULL);
-      const struct mips_cpu_info *isa_info;
-
-      isa_info = mips_parse_cpu ("-mips option", whole_isa_str);
-      free (whole_isa_str);
-
-      /* -march takes precedence over -mipsN, since it is more descriptive.
-	 There's no harm in specifying both as long as the ISA levels
-	 are the same.  */
-      if (mips_arch_info != 0 && mips_isa != isa_info->isa)
-	error ("-mips%s conflicts with the other architecture options, "
-	       "which specify a MIPS%d processor",
-	       mips_isa_string, mips_isa);
-
-      /* Set architecture based on the given option.  */
-      mips_set_architecture (isa_info);
+      if (mips_arch_info == 0)
+	mips_set_architecture (mips_isa_info);
+      else if (mips_arch_info->isa != mips_isa_info->isa)
+	error ("-%s conflicts with the other architecture options, "
+	       "which specify a %s processor",
+	       mips_isa_info->name,
+	       mips_cpu_info_from_isa (mips_arch_info->isa)->name);
     }
 
   if (mips_arch_info == 0)
     {
 #ifdef MIPS_CPU_STRING_DEFAULT
-      mips_set_architecture (mips_parse_cpu ("default CPU",
-					     MIPS_CPU_STRING_DEFAULT));
+      mips_set_architecture (mips_parse_cpu (MIPS_CPU_STRING_DEFAULT));
 #else
       mips_set_architecture (mips_cpu_info_from_isa (MIPS_ISA_DEFAULT));
 #endif
@@ -4265,7 +4283,7 @@ override_options (void)
 
   /* Optimize for mips_arch, unless -mtune selects a different processor.  */
   if (mips_tune_string != 0)
-    mips_set_tune (mips_parse_cpu ("-mtune", mips_tune_string));
+    mips_set_tune (mips_parse_cpu (mips_tune_string));
 
   if (mips_tune_info == 0)
     mips_set_tune (mips_arch_info);
@@ -4335,9 +4353,6 @@ override_options (void)
 
   if (TARGET_INT64 && !TARGET_LONG64)
     error ("unsupported combination: %s", "-mint64 -mlong32");
-
-  if (mips_fix_vr4130_string && mips_fix_vr4130_string[0] != 0)
-    error ("unrecognized option %<-mfix-vr4130%s%>", mips_fix_vr4130_string);
 
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
       && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
@@ -9177,15 +9192,13 @@ mips_matching_cpu_name_p (const char *canonical, const char *given)
 }
 
 
-/* Parse an option that takes the name of a processor as its argument.
-   OPTION is the name of the option and CPU_STRING is the argument.
-   Return the corresponding processor enumeration if the CPU_STRING is
-   recognized, otherwise report an error and return null.
+/* Return the mips_cpu_info entry for the processor or ISA given
+   by CPU_STRING.  Return null if the string isn't recognised.
 
    A similar function exists in GAS.  */
 
 static const struct mips_cpu_info *
-mips_parse_cpu (const char *option, const char *cpu_string)
+mips_parse_cpu (const char *cpu_string)
 {
   const struct mips_cpu_info *p;
   const char *s;
@@ -9217,7 +9230,6 @@ mips_parse_cpu (const char *option, const char *cpu_string)
     if (mips_matching_cpu_name_p (p->name, cpu_string))
       return p;
 
-  error ("bad value (%s) for %s", cpu_string, option);
   return 0;
 }
 

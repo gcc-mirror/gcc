@@ -102,10 +102,6 @@ extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
-extern const char *mips_arch_string;    /* for -march=<xxx> */
-extern const char *mips_tune_string;    /* for -mtune=<xxx> */
-extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
-extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
@@ -485,26 +481,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define ENDIAN_SPEC "%{!EL:%{!mel:-EB}} %{EL|mel:-EL}"
 #endif
 #endif
-
-#define TARGET_OPTIONS							\
-{									\
-  SUBTARGET_TARGET_OPTIONS						\
-  { "tune=",    &mips_tune_string,			                \
-      N_("Specify CPU for scheduling purposes"), 0},                    \
-  { "arch=",    &mips_arch_string,                                      \
-      N_("Specify CPU for code generation purposes"), 0},               \
-  { "abi=", &mips_abi_string,						\
-      N_("Specify an ABI"), 0},						\
-  { "ips",	&mips_isa_string,					\
-      N_("Specify a Standard MIPS ISA"), 0},				\
-  { "no-flush-func", &mips_cache_flush_func,				\
-      N_("Don't call any cache flush functions"), 0},			\
-  { "flush-func=", &mips_cache_flush_func,				\
-      N_("Specify cache flush function"), 0},				\
-}
-
-/* This is meant to be redefined in the host dependent files.  */
-#define SUBTARGET_TARGET_OPTIONS
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march is specified or a -mips is specified
