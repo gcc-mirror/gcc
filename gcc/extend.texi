@@ -2579,6 +2579,96 @@ If you are writing a header file that should be includable in ANSI C
 programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate
 Keywords}.
 
+@subsection i386 floating point asm operands
+
+There are several rules on the usage of stack-like regs in
+asm_operands insns.  These rules apply only to the operands that are
+stack-like regs:
+
+@enumerate
+@item
+Given a set of input regs that die in an asm_operands, it is
+necessary to know which are implicitly popped by the asm, and
+which must be explicitly popped by gcc.
+
+An input reg that is implicitly popped by the asm must be
+explicitly clobbered, unless it is constrained to match an
+output operand.
+
+@item
+For any input reg that is implicitly popped by an asm, it is
+necessary to know how to adjust the stack to compensate for the pop.
+If any non-popped input is closer to the top of the reg-stack than
+the implicitly popped reg, it would not be possible to know what the
+stack looked like --- it's not clear how the rest of the stack ``slides
+up''.
+
+All implicitly popped input regs must be closer to the top of
+the reg-stack than any input that is not implicitly popped.
+
+It is possible that if an input dies in an insn, reload might
+use the input reg for an output reload.  Consider this example:
+
+@example
+asm ("foo" : "=t" (a) : "f" (b));
+@end example
+
+This asm says that input B is not popped by the asm, and that
+the asm pushes a result onto the reg-stack, ie, the stack is one
+deeper after the asm than it was before.  But, it is possible that
+reload will think that it can use the same reg for both the input and
+the output, if input B dies in this insn.
+
+If any input operand uses the @code{f} constraint, all output reg
+constraints must use the @code{&} earlyclobber.
+
+The asm above would be written as
+
+@example
+asm ("foo" : "=&t" (a) : "f" (b));
+@end example
+
+@item
+Some operands need to be in particular places on the stack.  All
+output operands fall in this category --- there is no other way to
+know which regs the outputs appear in unless the user indicates
+this in the constraints.
+
+Output operands must specifically indicate which reg an output
+appears in after an asm.  @code{=f} is not allowed: the operand
+constraints must select a class with a single reg.
+
+@item
+Output operands may not be ``inserted'' between existing stack regs.
+Since no 387 opcode uses a read/write operand, all output operands
+are dead before the asm_operands, and are pushed by the asm_operands.
+It makes no sense to push anywhere but the top of the reg-stack.
+
+Output operands must start at the top of the reg-stack: output
+operands may not ``skip'' a reg.
+
+@item
+Some asm statements may need extra stack space for internal
+calculations.  This can be guaranteed by clobbering stack registers
+unrelated to the inputs and outputs.
+
+@end enumerate
+
+Here are a couple of reasonable asms to want to write.  This asm
+takes one input, which is internally popped, and produces two outputs.
+
+@example
+asm ("fsincos" : "=t" (cos), "=u" (sin) : "0" (inp));
+@end example
+
+This asm takes two inputs, which are popped by the @code{fyl2xp1} opcode,
+and replaces them with one output.  The user must code the @code{st(1)}
+clobber for reg-stack.c to know that @code{fyl2xp1} pops both inputs.
+
+@example
+asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
+@end example
+
 @ifclear INTERNALS
 @c Show the details on constraints if they do not appear elsewhere in
 @c the manual
