@@ -59,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwrx} \
 %{mcpu=power3: -m604} \
-%{mcpu=power4: -m604} \
+%{mcpu=power4: -mpower4} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
