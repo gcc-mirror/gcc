@@ -1,3 +1,11 @@
+2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	PR target/15491
+        * vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
+	(vax_rtx_costs): Return false when passed unsupported rtx's.  Handle
+	FLOAT_EXTEND, FLOAT_TRUNCATE and TRUNCATE.  Fix costs for POST_INC,
+	PRE_DEC, NEG and NOT.
+
 2005-03-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/20249
