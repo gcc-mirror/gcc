@@ -305,6 +305,8 @@ init_lex ()
   ridpointers[(int) RID_CONST] = get_identifier ("const");
   ridpointers[(int) RID_RESTRICT] = get_identifier ("restrict");
   ridpointers[(int) RID_VOLATILE] = get_identifier ("volatile");
+  ridpointers[(int) RID_BOUNDED] = get_identifier ("__bounded");
+  ridpointers[(int) RID_UNBOUNDED] = get_identifier ("__unbounded");
   ridpointers[(int) RID_AUTO] = get_identifier ("auto");
   ridpointers[(int) RID_STATIC] = get_identifier ("static");
   ridpointers[(int) RID_EXTERN] = get_identifier ("extern");
