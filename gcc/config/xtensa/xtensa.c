@@ -2479,6 +2479,11 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   tree f_ndx, ndx;
   tree type_size, array, orig_ndx, addr, size, va_size, t;
   tree lab_false, lab_over, lab_false2;
+  bool indirect;
+
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
 
   /* Handle complex values as separate real and imaginary parts.  */
   if (TREE_CODE (type) == COMPLEX_TYPE)
@@ -2637,6 +2642,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   addr = build (MINUS_EXPR, ptr_type_node, addr, t);
 
   addr = fold_convert (build_pointer_type (type), addr);
+  if (indirect)
+    addr = build_fold_indirect_ref (addr);
   return build_fold_indirect_ref (addr);
 }
 

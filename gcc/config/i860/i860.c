@@ -1932,6 +1932,7 @@ i860_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   tree size, t, u, addr, type_ptr;
   tree reg, n_reg, sav_ofs, lim_reg;
   HOST_WIDE_INT isize;
+  bool indirect;
 
 #ifdef I860_SVR4_VA_LIST
   f_gpr = TYPE_FIELDS (va_list_type_node);
@@ -1950,6 +1951,9 @@ i860_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem, NULL_TREE);
   sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
   size = size_in_bytes (type);
   type_ptr = build_pointer_type (type);
 
@@ -2029,6 +2033,8 @@ i860_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
     }
 
   addr = fold_convert (type_ptr, addr);
+  if (indirect)
+    addr = build_fold_indirect_ref (addr);
   return build_fold_indirect_ref (addr);
 }
 

@@ -3970,7 +3970,7 @@ static tree
 ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   /* Variable sized types are passed by reference.  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
       tree ptrtype = build_pointer_type (type);
       tree addr = std_gimplify_va_arg_expr (valist, ptrtype, pre_p, post_p);
