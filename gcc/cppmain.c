@@ -78,7 +78,12 @@ cpp_preprocess_file (pfile, in_fname, out_stream)
       /* A successful cpp_read_main_file guarantees that we can call
 	 cpp_scan_nooutput or cpp_get_token next.  */
       if (options->no_output)
-	cpp_scan_nooutput (pfile);
+	{
+	  /* Scan -included buffers, then the main file.  */
+	  while (pfile->buffer->prev)
+	    cpp_scan_nooutput (pfile);
+	  cpp_scan_nooutput (pfile);
+	}
       else if (options->traditional)
 	scan_translation_unit_trad (pfile);
       else
