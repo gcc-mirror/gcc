@@ -4536,6 +4536,9 @@ set_decl_namespace (decl, scope, friendp)
       if (!old)
 	/* No old declaration at all. */
 	goto complain;
+      /* A template can be explicitly specialized in any namespace.  */
+      if (processing_explicit_instantiation)
+	return;
       if (!is_overloaded_fn (decl))
 	/* Don't compare non-function decls with decls_match here,
 	   since it can't check for the correct constness at this

@@ -1,3 +1,8 @@
+2001-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (set_decl_namespace): Allow explicit instantiations in
+	any namespace.
+
 2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* optimize.c (expand_call_inline): Don't walk subtrees of type
