@@ -146,13 +146,14 @@ static int output_addressed_constants	PROTO((tree));
 static void bc_assemble_integer		PROTO((tree, int));
 static void output_constructor		PROTO((tree, int));
 
-#ifdef EXTRA_SECTIONS
-static enum in_section {no_section, in_text, in_data, in_named, EXTRA_SECTIONS} in_section
-  = no_section;
-#else
-static enum in_section {no_section, in_text, in_data, in_named} in_section
-  = no_section;
+static enum in_section { no_section, in_text, in_data, in_named
+#ifdef BSS_SECTION_ASM_OP
+  , in_bss
 #endif
+#ifdef EXTRA_SECTIONS
+  , EXTRA_SECTIONS
+#endif
+} in_section = no_section;
 
 /* Return a non-zero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL) \
@@ -268,6 +269,76 @@ named_section (decl, name)
     }
 }
 
+#ifdef BSS_SECTION_ASM_OP
+
+/* Tell the assembler to switch to the bss section.  */
+
+void
+bss_section (decl, name)
+{
+  if (in_section != in_bss)
+    {
+      if (output_bytecode)
+	bc_data ();
+      else
+	{
+#ifdef SHARED_BSS_SECTION_ASM_OP
+	  if (flag_shared_data)
+	    fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);
+	  else
+#endif
+	    fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
+	}
+
+      in_section = in_bss;
+    }
+}
+
+#ifdef ASM_OUTPUT_BSS
+
+/* Utility function for ASM_OUTPUT_BSS for targets to use if
+   they don't support alignments in .bss.
+   ??? It is believed that this function will work in most cases so such
+   support is localized here.  */
+
+static void
+asm_output_bss (file, name, size, rounded)
+     FILE *file;
+     char *name;
+     int size, rounded;
+{
+  ASM_GLOBALIZE_LABEL (file, name);
+  bss_section ();
+  ASM_OUTPUT_LABEL (file, name);
+  ASM_OUTPUT_SKIP (file, rounded);
+}
+
+#endif
+
+#ifdef ASM_OUTPUT_ALIGNED_BSS
+
+/* Utility function for targets to use in implementing
+   ASM_OUTPUT_ALIGNED_BSS.
+   ??? It is believed that this function will work in most cases so such
+   support is localized here.  */
+
+static void
+asm_output_aligned_bss (file, name, size, align)
+     FILE *file;
+     char *name;
+     int size, align;
+{
+  ASM_GLOBALIZE_LABEL (file, name);
+  bss_section ();
+  ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
+  ASM_OUTPUT_LABEL (file, name);
+  ASM_OUTPUT_SKIP (file, size);
+}
+
+#endif
+
+#endif /* BSS_SECTION_ASM_OP */
+
 /* Switch to the section for function DECL.
 
    If DECL is NULL_TREE, switch to the text section.
@@ -305,7 +376,12 @@ variable_section (decl, reloc)
 
 	 error_mark_node is used by the C front end to indicate that the
 	 initializer has not been seen yet.  In this case, we assume that
-	 the initializer must be constant.  */
+	 the initializer must be constant.
+
+	 C++ uses error_mark_node for variables that have complicated
+	 initializers, but these variables go in BSS so we won't be called
+	 for them.  */
+
 #ifdef SELECT_SECTION
       SELECT_SECTION (decl, reloc);
 #else
@@ -1134,16 +1210,19 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      initializer equal to zero.  (Section 3.7.2)
      -fno-common gives strict ANSI behavior.  Usually you don't want it.
      This matters only for variables with external linkage.  */
-  if ((! flag_no_common || ! TREE_PUBLIC (decl))
+
+  if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
+      /* If the target can't output uninitialized but not common global data
+	 in .bss, then we have to use .data.  */
+#if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
+      && (! flag_no_common || ! TREE_PUBLIC (decl))
       && DECL_COMMON (decl)
-      && ! dont_output_data
-      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
+#endif
+      && ! dont_output_data)
     {
       int size = TREE_INT_CST_LOW (size_tree);
       int rounded = size;
 
-      if (TREE_INT_CST_HIGH (size_tree) != 0)
-	error_with_decl (decl, "size of variable `%s' is too large");
       /* Don't allocate zero bytes of common,
 	 since that means "undefined external" in the linker.  */
       if (size == 0) rounded = 1;
@@ -1174,11 +1253,18 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	 while we are doing our final traversal of the chain of file-scope
 	 declarations.  */
 
-#if 0
+#if 0 /* ??? We should either delete this or add a comment describing what
+	 it was intended to do and why we shouldn't delete it.  */
       if (flag_shared_data)
 	data_section ();
 #endif
-      if (TREE_PUBLIC (decl))
+
+      if (TREE_PUBLIC (decl)
+#if defined (ASM_OUTPUT_BSS) || defined (ASM_OUTPUT_ALIGNED_BSS)
+	  && DECL_COMMON (decl)
+	  && ! flag_no_common
+#endif
+	  )
 	{
 #ifdef ASM_OUTPUT_SHARED_COMMON
 	  if (flag_shared_data)
@@ -1199,6 +1285,29 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
 	      }
 	}
+#if defined (ASM_OUTPUT_BSS) || defined (ASM_OUTPUT_ALIGNED_BSS)
+      else if (TREE_PUBLIC (decl))
+	{
+#ifdef ASM_OUTPUT_SHARED_BSS
+	  if (flag_shared_data)
+	    ASM_OUTPUT_SHARED_BSS (asm_out_file, name, size, rounded);
+	  else
+#endif
+	    if (output_bytecode)
+	      {
+		BC_OUTPUT_BSS (asm_out_file, name, size, rounded);
+	      }
+	    else
+	      {
+#ifdef ASM_OUTPUT_ALIGNED_BSS
+		ASM_OUTPUT_ALIGNED_BSS (asm_out_file, name, size,
+					DECL_ALIGN (decl));
+#else
+		ASM_OUTPUT_BSS (asm_out_file, name, size, rounded);
+#endif
+	      }
+	}
+#endif /* ASM_OUTPUT_BSS || ASM_OUTPUT_ALIGNED_BSS */
       else
 	{
 #ifdef ASM_OUTPUT_SHARED_LOCAL
@@ -1223,7 +1332,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       goto finish;
     }
 
-  /* Handle initialized definitions.  */
+  /* Handle initialized definitions.
+     Also handle uninitialized global definitions if -fno-common and the
+     target doesn't support ASM_OUTPUT_BSS.  */
 
   /* First make the assembler name(s) global if appropriate.  */
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
