@@ -6,6 +6,8 @@
 	(NON_TYPE_CHECK): Use TYPE_P instead of
 	IS_NON_TYPE_CODE_CLASS.
 
+	* fold-const.c (fold): Remove handling of binary expressions.
+
 2005-03-05  James A. Morrison  <phython@gcc.gnu.org>
 
 	* doc/c-tree.texi: Wrap comments in @r{}.
