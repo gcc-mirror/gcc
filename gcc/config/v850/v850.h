@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 #include "svr4.h"
 
 #undef ASM_SPEC
+#define ASM_SPEC "%{mv*:-mv%*}"
+
 #undef ASM_FINAL_SPEC
 #undef LIB_SPEC
 #undef ENDFILE_SPEC
@@ -31,7 +33,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
+#ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__v850__ -D__v851__ -D__v850"
+#endif
+
+/* Print subsidiary information on the compiler version in use.  */
+
+#ifndef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (NEC V850)");
+#endif
 
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
@@ -97,10 +107,17 @@ extern int target_flags;
    { "no-prolog-function",	-MASK_PROLOG_FUNCTION },		\
    { "space",			 MASK_EP | MASK_PROLOG_FUNCTION },	\
    { "debug",			 MASK_DEBUG },				\
+   { "v850",		 	 MASK_V850 },				\
+   { "v850",		 	 -(MASK_V850 ^ MASK_CPU) },		\
+   EXTRA_SWITCHES							\
    { "",			 TARGET_DEFAULT}}
 
+#ifndef EXTRA_SWITCHES
+#define EXTRA_SWITCHES
+#endif
+
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT MASK_DEFAULT
 #endif
 
 /* Information about the various small memory areas.  */
@@ -150,10 +167,6 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
   { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value },		\
   { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value },		\
 }
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#define TARGET_VERSION fprintf (stderr, " (NEC V850)");
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
