@@ -1,3 +1,8 @@
+2003-03-03  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (finish_enum): Do set the type in a template. Simplify.
+	* pt.c (tsubst_enum, tsubst_copy): Revert last patch.
+
 2003-03-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9878
