@@ -544,7 +544,7 @@ const short rid_to_yy[RID_MAX] =
   /* RID_FRIEND */	SCSPEC,
   /* RID_VIRTUAL */	SCSPEC,
   /* RID_EXPLICIT */	SCSPEC,
-  /* RID_EXPORT */	SCSPEC,
+  /* RID_EXPORT */	EXPORT,
   /* RID_MUTABLE */	SCSPEC,
 
   /* ObjC */
