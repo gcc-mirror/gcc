@@ -3473,6 +3473,7 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb
+		tm_p_file=arm/thumb-protos.h
 		;;
 	thumb-*-elf* | thumbel-*-elf*)
 		tm_file=arm/telf.h
@@ -3480,6 +3481,7 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb-elf
+		tm_p_file=arm/thumb-protos.h
 		;;
 	thumb-*-linux-gnu*)
 		tm_file=arm/linux-telf.h
@@ -3487,6 +3489,7 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb-linux
+		tm_p_file=arm/thumb-protos.h
 		;;
 	thumb-*-uclinux*)
 		tm_file=arm/uclinux-telf.h
@@ -3494,6 +3497,7 @@ changequote([,])dnl
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb-linux
 		xm_file=arm/xm-thumb.h
+		tm_p_file=arm/thumb-protos.h
 		;;
 	thumb-wrs-vxworks)
 		tm_file=arm/tcoff.h
@@ -3502,6 +3506,7 @@ changequote([,])dnl
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb
 		thread_file='vxworks'
+		tm_p_file=arm/thumb-protos.h
 		;;
 	thumb-*-pe)
 		tm_file=arm/tpe.h
@@ -3510,6 +3515,7 @@ changequote([,])dnl
 		md_file=arm/thumb.md
 		tmake_file=arm/t-pe-thumb
 		extra_objs=pe.o
+		tm_p_file=arm/thumb-protos.h
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)

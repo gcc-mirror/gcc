@@ -1,3 +1,11 @@
+2000-02-11  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add tm_p_file specification for thumb targets.
+	* configure: Regenerate.
+
+	* config/arm/thumb-protos.h: New file: Prototypes for exported
+	functions defined in thumb.c.
+
 2000-02-11  Robert Lipe  <robertl@sco.com>
 
 	* Makefile.in (bootstrap-lean): Remove additional files.
