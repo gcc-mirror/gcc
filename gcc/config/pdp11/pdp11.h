@@ -193,6 +193,9 @@ extern int target_flags;
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 16
 
+/* Boundary (in *bits*) on which stack pointer should be aligned.  */
+#define STACK_BOUNDARY 16
+
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 16
 
