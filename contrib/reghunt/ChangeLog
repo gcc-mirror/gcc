@@ -1,0 +1,7 @@
+2003-03-27  Janis Johnson  <janis187@us.ibm.com>
+
+	* README: New file.
+	* reg_search: New file.
+	* reg_periodic: New file.
+	* reg_test_template: New file.
+

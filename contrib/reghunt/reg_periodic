@@ -1,0 +1,164 @@
+#! /bin/bash
+
+########################################################################
+#
+# File:    reg_periodic
+# Author:  Janis Johnson
+# Date:    2002/12/28
+#
+# Over a range of dates at specified intervals, invoke separate tools to
+# update sources, do a build, and run one or more tests. 
+#
+# Define these in a file whose name is the argument to this script:
+#   LOW_DATE:   Date string recognized by the date command.
+#   HIGH_DATE:  Date string recognized by the date command.
+#   INTERVAL:   Time (in seconds) between dates for which to build.
+#   REG_UPDATE: Pathname of script to update your source tree.
+#   REG_BUILD:  Pathname of script to build enough of the product to run
+#               the test.
+#   REG_TEST:   Pathname of script to run one or more tests.
+# Optional:
+#   VERBOSITY:  Default is 0, to print only errors and final message.
+#   DATE_IN_MSG If set to anything but 0, include the time and date in
+#               messages
+#   REG_STOP    Pathname of a file whose existence says to quit; default
+#               is STOP in the current directory.
+#
+#
+# Copyright (c) 2002, 2003 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+########################################################################
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue a message if its verbosity level is high enough.
+
+msg() {
+  test ${1} -gt ${VERBOSITY}  && return
+
+  if [ "x${DATE_IN_MSG}" = "x" ]; then
+    echo "${2}"
+  else
+    echo "`date`  ${2}"
+  fi
+}
+
+# Issue an error message and exit with a nonzero status.
+
+error() {
+  msg 0 "error: ${1}"
+  exit 1
+}
+
+# Turn seconds since the epoch into a date we can use with source
+# control tools and report to the user.
+
+make_date() {
+  MADE_DATE="`date -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
+    || error "make_date: date command failed"
+}
+
+# Build the components to test using sources as of a particular date and
+# run a test case.  Pass each of the scripts the date that we're
+# testing; the first one needs it, the others can ignore it if they want.
+
+process_date() {
+  DATE="${1}"
+
+  ${REG_UPDATE} "${DATE}"
+  if [ $? -ne 0 ]; then
+    msg 0 "source update failed for ${DATE}"
+    return
+  fi
+  ${REG_BUILD} "${DATE}"
+  if [ $? -ne 0 ]; then
+    msg 0 "build failed for ${DATE}"
+    return
+  fi
+  ${REG_TEST} "${DATE}"
+}
+ 
+########################################################################
+# Main program (so to speak)
+########################################################################
+
+# Process the configuration file.
+
+if [ $# -ne 1 ]; then
+  echo Usage: $0 config_file
+  exit 1
+fi
+
+CONFIG=${1}
+if [ ! -f ${CONFIG} ]; then
+  error "configuration file ${CONFIG} does not exist"
+fi
+
+# OK, the config file exists.  Source it, make sure required parameters
+# are defined and their files exist, and give default values to optional
+# parameters.
+
+. ${CONFIG}
+
+test "x${REG_UPDATE}" = "x" && error "REG_UPDATE is not defined"
+test "x${REG_BUILD}" = "x" && error "REG_BUILD is not defined"
+test "x${REG_TEST}" = "x" && error "REG_TEST is not defined"
+test "x${INTERVAL}" = "x" && error "INTERVAL is not defined"
+test -x ${REG_TEST} || error "REG_TEST is not an executable file"
+test "x${VERBOSITY}" = "x" && VERBOSITY=0
+test "x${REG_STOP}" = "x" && REG_STOP="STOP"
+
+msg 2 "LOW_DATE   = ${LOW_DATE}"
+msg 2 "HIGH_DATE  = ${HIGH_DATE}"
+msg 2 "INTERVAL   = ${INTERVAL}"
+msg 2 "REG_UPDATE = ${REG_UPDATE}"
+msg 2 "REG_BUILD  = ${REG_BUILD}"
+msg 2 "REG_TEST   = ${REG_TEST}"
+msg 2 "VERBOSITY  = ${VERBOSITY}"
+
+# Change the dates into seconds since the epoch.  This uses an extension
+# in GNU date.
+
+LOW_DATE=`date +%s --date "${LOW_DATE}"` || \
+  error "date command failed for \"${LOW_DATE}\""
+HIGH_DATE=`date +%s --date "${HIGH_DATE}"` || \
+  error "date command failed for \"${LOW_DATE}\""
+
+# Process each date in the range.
+
+while [ ${LOW_DATE} -le ${HIGH_DATE} ]; do
+
+  # If a file called STOP appears, stop; this allows a clean way to
+  # interrupt a search.
+
+  if [ -f ${REG_STOP} ]; then
+    msg 0 "STOP file detected"
+    rm -f ${REG_STOP}
+    exit 1
+  fi
+
+  # Get a version of the date that is usable by tools and readable
+  # by people, then process it.
+
+  make_date ${LOW_DATE}
+  process_date "${MADE_DATE}"
+  let LOW_DATE=LOW_DATE+INTERVAL
+done
+
+msg 1 "done"

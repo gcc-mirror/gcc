@@ -1,0 +1,293 @@
+#! /bin/bash
+
+########################################################################
+#
+# File:    reg_search
+# Author:  Janis Johnson <janis187@us.ibm.com>
+# Date:    2002/12/15
+#
+# Search for a small time interval within a range of dates in which
+# results for a test changed, using a binary search.  The functionality
+# for getting sources, building the component to test, and running the
+# test are in other scripts that are run from here.  Before the search
+# begins, we verify that we get the expected behavior for the first and
+# last dates.
+#
+# Define these in a file whose name is the argument to this script:
+#   LOW_DATE:   Date string recognized by the date command (local time).
+#   HIGH_DATE:  Date string recognized by the date command (local time).
+#   REG_UPDATE: Pathname of script to update your source tree; returns
+#               zero for success, nonzero for failure.
+#   REG_BUILD:  Pathname of script to build enough of the product to run
+#               the test; returns zero for success, nonzero for failure.
+#   REG_TEST:   Pathname of script to run the test; returns 1 if we
+#               should search later dates, 0 if we should search earlier
+#               dates.
+# Optional:
+#   DELTA:      Search to an interval within this many seconds; default
+#               is one hour (although 300 works well).
+#   REG_FINISH  Pathname of script to call at the end with the two final
+#               dates as arguments.
+#   SKIP_LOW    If 1, skip verifying the low date of the range;
+#               define this only if you're restarting and have already
+#               tested the low date.
+#   SKIP_HIGH   If 1, skip verifying the high date of the range;
+#               define this only if you're restarting and have already
+#               tested the high date.
+#   FIRST_MID   Use this as the first midpoint, to avoid a midpoint that
+#               is known not to build.
+#   HAS_CHANGES Pathname of script to report whether the current date has
+#               no differences from one of the ends of the current range
+#               to skip unnecessary build and testing; default is "true".
+#   VERBOSITY   Default is 0, to print only errors and final message.
+#   DATE_IN_MSG If set to anything but 0, include the time and date in
+#               messages.
+#
+#
+#
+# Copyright (c) 2002, 2003 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+# 
+########################################################################
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue a message if its verbosity level is high enough.
+
+msg() {
+  test ${1} -gt ${VERBOSITY}  && return
+
+  if [ "x${DATE_IN_MSG}" = "x" ]; then
+    echo "${2}"
+  else
+    echo "`date`  ${2}"
+  fi
+}
+
+# Issue an error message and exit with a non-zero status.  If there
+# is a valid current range whose end points have been tested, report
+# it so the user can start again from there.
+
+error() {
+  msg 0 "error: ${1}"
+  test ${VALID_RANGE} -eq 1 && \
+    echo "current range:"
+    echo "LOW_DATE=\"${LATER_THAN}\""
+    echo "HIGH_DATE=\"${EARLIER_THAN}\""
+  exit 1
+}
+
+# Turn seconds since the epoch into a date we can use with source
+# control tools and report to the user.
+
+make_date() {
+  MADE_DATE="`date -u +\"%Y-%m-%d %H:%M %Z\" --date \"1970-01-01 00:00:${1}\"`" \
+    || error "make_date: date command failed"
+}
+
+# Build the components to test using sources as of a particular date and
+# run a test case.  Pass each of the scripts the date that we're
+# testing; the first one needs it, the others can ignore it if they want.
+
+process_date() {
+  DATE="${1}"
+
+  ${REG_UPDATE} "${DATE}" || error "source update failed for ${DATE}"
+
+  # If we're already in a valid range, skip this date if there are no
+  # differences from either end of the range and adjust LATER.
+
+  if [ ${VALID_RANGE} = 1 ]; then
+    ${HAS_CHANGES} "${DATE}" "${LATER_THAN}" "${EARLIER_THAN}"
+    RET=$?
+    case ${RET} in
+    0) ;;
+    1) LATER=1; return;;
+    2) LATER=0; return;;
+    *) error "process_date: unexpected return value from ${HAS_CHANGES}";;
+    esac
+  fi
+
+  ${REG_BUILD} "${DATE}"  || error "build failed for ${DATE}"
+  ${REG_TEST} "${DATE}"
+  LATER=$?
+}
+
+# Perform a binary search on dates within the range specified by
+# the arguments, bounded by the number of seconds in DELTA.
+
+search_dates() {
+  let LOW=$1
+  let HIGH=$2
+  let DIFF=HIGH-LOW
+
+  # Get the date in the middle of the range; MID is in seconds since
+  # the epoch, DATE is readable by humans and tools.  The user can
+  # override the initial mid date if it is known to have problems,
+  # e.g., if a build fails for that date.
+
+  if [ ${FIRST_MID} -ne 0 ]; then
+    let MID=${FIRST_MID}
+  else
+    let MID=LOW/2+HIGH/2
+  fi
+
+  while [ ${DIFF} -ge ${DELTA} ]; do
+    make_date ${MID}
+    DATE="${MADE_DATE}"
+
+    # Test it.
+
+    process_date "${DATE}"
+
+    # Narrow the search based on the outcome of testing DATE.
+
+    if [ ${LATER} -eq 1 ]; then
+      msg 1 "search dates later than \"${DATE}\""
+      LATER_THAN="${DATE}"
+      let LOW=MID
+    else
+      msg 1 "search dates earlier than \"${DATE}\""
+      EARLIER_THAN="${DATE}"
+      let HIGH=MID
+    fi
+
+    let DIFF=HIGH-LOW
+    let MID=LOW/2+HIGH/2
+  done
+}
+
+########################################################################
+# Main program (so to speak)
+########################################################################
+
+# The error function uses this.
+
+VALID_RANGE=0
+
+# Process the configuration file.
+
+if [ $# != 1 ]; then
+  echo Usage: $0 config_file
+  exit 1
+fi
+
+CONFIG=${1}
+if [ ! -f ${CONFIG} ]; then
+  error "configuration file ${CONFIG} does not exist"
+fi
+
+# OK, the config file exists.  Source it, make sure required parameters
+# are defined and their files exist, and give default values to optional
+# parameters.
+
+. ${CONFIG}
+
+test "x${REG_UPDATE}" = "x" && error "REG_UPDATE is not defined"
+test "x${REG_BUILD}" = "x" && error "REG_BUILD is not defined"
+test "x${REG_TEST}" = "x" && error "REG_TEST is not defined"
+test -x ${REG_TEST} || error "REG_TEST is not an executable file"
+test "x${SKIP_LOW}" = "x" && SKIP_LOW=0
+test "x${SKIP_HIGH}" = "x" && SKIP_HIGH=0
+test "x${DELTA}" = "x" && DELTA=3600
+test "x${VERBOSITY}" = "x" && VERBOSITY=0
+test "x${HAS_CHANGES}" = "x" && HAS_CHANGES=true
+test "x${REG_FINISH}" = "x" && REG_FINISH=true
+
+msg 2 "LOW_DATE   = ${LOW_DATE}"
+msg 2 "HIGH_DATE  = ${HIGH_DATE}"
+msg 2 "REG_UPDATE = ${REG_UPDATE}"
+msg 2 "REG_BUILD  = ${REG_BUILD}"
+msg 2 "REG_TEST   = ${REG_TEST}"
+msg 2 "SKIP_LOW   = ${SKIP_LOW}"
+msg 2 "SKIP_HIGH  = ${SKIP_HIGH}"
+msg 2 "FIRST_MID  = ${FIRST_MID}"
+msg 2 "VERBOSITY  = ${VERBOSITY}"
+msg 2 "DELTA      = ${DELTA}"
+
+# Verify that DELTA is at least two minutes.
+
+test ${DELTA} -lt 120 && \
+  error "DELTA is ${DELTA}, must be at least 120 (two minutes)"
+
+# Change the dates into seconds since the epoch.  This uses an extension
+# in GNU date.
+
+LOW_DATE=`date +%s --date "${LOW_DATE}"` || \
+  error "date command failed for \"${LOW_DATE}\""
+HIGH_DATE=`date +%s --date "${HIGH_DATE}"` || \
+  error "date command failed for \"${LOW_DATE}\""
+
+# If FIRST_MID was defined, convert it and make sure it's in the range.
+
+if [ "x${FIRST_MID}" != "x" ]; then
+  FIRST_MID=`date +%s --date "${FIRST_MID}"` || \
+    error "date command failed for \"${FIRST_MID}\""
+  test ${FIRST_MID} -le ${LOW_DATE}  && \
+    error "FIRST_MID date is earlier than LOW_DATE"
+  test ${FIRST_MID} -ge ${HIGH_DATE} && \
+    error "FIRST_MID is later than HIGH_DATE"
+else
+  FIRST_MID=0
+fi 
+
+# Keep track of the bounds of the range where the test behavior changes,
+# using a human-readable version of each date.
+
+make_date ${LOW_DATE}
+LATER_THAN="${MADE_DATE}"
+make_date ${HIGH_DATE}
+EARLIER_THAN="${MADE_DATE}"
+
+msg 2 "LATER_THAN   = ${LATER_THAN}"
+msg 2 "EARLIER_THAN = ${EARLIER_THAN}"
+
+# Verify that the range isn't backwards.
+
+test ${LOW_DATE} -lt ${HIGH_DATE} || error "date range is backwards"
+
+# Verify that the first and last date in the range get the results we
+# expect.  If not, quit, because any of several things could be wrong.
+
+if [ ${SKIP_LOW} -eq 0 ]; then
+  process_date "${LATER_THAN}"
+  test ${LATER} -ne 1 && \
+    error "unexpected result for low date ${LATER_THAN}"
+  msg 1 "result for low date is as expected"
+fi
+
+if [ ${SKIP_HIGH} -eq 0 ]; then
+  process_date "${EARLIER_THAN}"
+  test ${LATER} -ne 0 && \
+    error "unexpected result for high date ${EARLIER_THAN}"
+  msg 1 "result for high date is as expected"
+fi
+
+# Search within the range, now that we know that the end points are valid.
+
+VALID_RANGE=1
+search_dates ${LOW_DATE} ${HIGH_DATE}
+
+# Report the range that's left to investigate.
+
+echo "Continue search between ${LATER_THAN} and ${EARLIER_THAN}"
+
+# Invoke the optional script to report additional information about
+# changes between the two dates.
+
+${REG_FINISH} "${LATER_THAN}" "${EARLIER_THAN}"

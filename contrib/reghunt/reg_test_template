@@ -1,0 +1,40 @@
+#! /bin/sh
+
+# Template for the test script specified for REG_TEST.
+
+# Run the test case for a regression search.  The argument is the date
+# of the CVS sources.  The return value is 1 if the binary search should
+# continue with later dates, 0 if it should continue with earlier dates.
+
+DATE="${1}"
+
+# Specify the PR number and the directory where the test should be run.
+PR=xxxx
+DIR=xxxx
+
+LOG_DATE="`echo ${DATE} | sed 's/[-: ]/_/g'`"
+LOG="${PR}.${LOG_DATE}.out"
+
+echo "`date`  running test for PR ${PR}"
+cd ${DIR}
+
+# Compile the test case with whatever options are needed to trigger the
+# error.
+
+<compiler_to_run> <options> ${PR}.<x> > ${LOG} 2>&1
+
+# Some tests will require additional commands to determine whether the
+# test passed or failed, such as grepping compiler output for a
+# particular message, or running the test and possibly comparing its
+# output with the expected output.
+
+xxxxx
+
+# The return value depends on whether the last command is expected to be
+# zero or nonzero for a passing test, and whether we're looking for a
+# regression or for the patch that fixed the bug.
+
+# Return 1 to continue the search with later dates, 0 for earlier dates.
+
+test $? -eq 0 && exit 1
+exit 0
