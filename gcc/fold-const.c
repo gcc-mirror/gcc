@@ -4150,25 +4150,6 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 		      TREE_OPERAND (t, 1));
       break;
 
-    case SAVE_EXPR:
-      /* If this has not been evaluated and the operand has no side effects,
-	 we can see if we can do something inside it and make a new one.
-	 Note that this test is overly conservative since we can do this
-	 if the only reason it had side effects is that it was another
-	 similar SAVE_EXPR, but that isn't worth bothering with.  */
-      if (SAVE_EXPR_RTL (t) == 0 && ! TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0))
-	  && 0 != (t1 = extract_muldiv (TREE_OPERAND (t, 0), c, code,
-					wide_type)))
-	{
-	  t1 = save_expr (t1);
-	  if (SAVE_EXPR_PERSISTENT_P (t) && TREE_CODE (t1) == SAVE_EXPR)
-	    SAVE_EXPR_PERSISTENT_P (t1) = 1;
-	  if (is_pending_size (t))
-	    put_pending_size (t1);
-	  return t1;
-	}
-      break;
-
     case LSHIFT_EXPR:  case RSHIFT_EXPR:
       /* If the second operand is constant, this is a multiplication
 	 or floor division, by a power of two, so we can treat it that
