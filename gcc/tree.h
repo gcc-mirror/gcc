@@ -2931,7 +2931,7 @@ extern tree build_qualified_type (tree, int);
 extern tree build_type_copy (tree);
 
 /* Finish up a builtin RECORD_TYPE. Give it a name and provide its
-   fields. Optionally specify an alignment, and then lsy it out.  */
+   fields. Optionally specify an alignment, and then lay it out.  */
 
 extern void finish_builtin_struct (tree, const char *,
 							 tree, tree);
