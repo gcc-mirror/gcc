@@ -313,7 +313,7 @@ to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.59 (exactly), but the toplevel
 still requires autoconf 2.13 (exactly).
 
-@item automake versions 1.8.5 and 1.9.1
+@item automake versions 1.9.x
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -324,9 +324,8 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 The Java directory @file{libjava} and the @file{libstdc++-v3} directory
-require automake 1.9.1.  Every other directory should work with either
-automake 1.8.5 and automake 1.9.1, but most of them have been tested only
-with automake 1.8.5 so far.
+require automake 1.9.x series.  It is preferred to use the lastest released
+version of this series.
 
 @item gettext version 0.12 (or later)
 

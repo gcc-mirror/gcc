@@ -1,3 +1,7 @@
+2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/install.texi (automake): Document that everything now uses 1.9.
+
 2004-11-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* cse.c (cse_insn): Stores in a libcall sequence can invalidate
