@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
 
@@ -180,6 +180,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
 
+#undef	ASM_OUTPUT_SECTION_NAME	/* Override svr4.h's definition.  */
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
 do {									\
   if (TREE_CODE (DECL) == FUNCTION_DECL)				\
