@@ -63,6 +63,7 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions.
 @c man end
 @end titlepage
+@contents
 @page
 
 @node Top, Conventions,, (DIR)
@@ -426,5 +427,4 @@ the file minus the base name.
 @unnumbered Index
 @printindex cp
 
-@contents
 @bye

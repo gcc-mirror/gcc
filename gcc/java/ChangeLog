@@ -1,3 +1,7 @@
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcj.texi: Move contents to just after title page.
+
 2001-06-01  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (type_literals:): Use `build_incomplete_class_ref' with

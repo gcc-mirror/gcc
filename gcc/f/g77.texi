@@ -173,6 +173,8 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
 @end titlepage
+@summarycontents
+@contents
 @page
 
 @ifinfo
@@ -15069,6 +15071,4 @@ that is not Year-2000 (Y2K) compliant.
 @unnumbered Index
 
 @printindex cp
-@summarycontents
-@contents
 @bye

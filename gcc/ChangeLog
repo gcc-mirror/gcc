@@ -1,5 +1,10 @@
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* cpp.texi, cppinternals.texi, gcc.texi: Move contents to just
+	after title page.
+
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* install.texi: Remove documentation of some configuration
 	options.
 	* doc/install.texi: Add relevant parts of this documentation here.
