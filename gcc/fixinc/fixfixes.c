@@ -371,10 +371,10 @@ apply_fix( fixname, filname )
   const char* fixname;
   const char* filname;
 {
-  #define _FT_(n,p) { n, p },
+#define _FT_(n,p) { n, p },
   static fix_entry_t fix_table[] = { FIXUP_TABLE { NULL, NULL }};
-  #undef _FT_
-  #define FIX_TABLE_CT ((sizeof(fix_table)/sizeof(fix_table[0]))-1)
+#undef _FT_
+#define FIX_TABLE_CT ((sizeof(fix_table)/sizeof(fix_table[0]))-1)
 
   char* buf;
   int ct = FIX_TABLE_CT;
