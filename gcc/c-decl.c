@@ -1576,9 +1576,10 @@ duplicate_decls (newdecl, olddecl)
 	      && DECL_INITIAL (olddecl) != 0)
 	    warning_with_decl (newdecl,
 			       "`%s' declared inline after its definition");
-	  /* It is nice to warn when a function is declared
-	     global first and then static.  */
-	  if (TREE_CODE (olddecl) == FUNCTION_DECL
+
+	  /* If pedantic, warn when static declaration follows a non-static
+	     declaration.  Otherwise, do so only for functions.  */
+	  if ((pedantic || TREE_CODE (olddecl) == FUNCTION_DECL)
 	      && TREE_PUBLIC (olddecl)
 	      && !TREE_PUBLIC (newdecl))
 	    warning_with_decl (newdecl, "static declaration for `%s' follows non-static");
