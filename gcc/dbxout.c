@@ -2403,6 +2403,15 @@ dbxout_parms (parms)
 	      current_sym_value = INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1));
 	    current_sym_addr = 0;
 
+	    /* Make a big endian correction if the mode of the type of the
+	       parameter is not the same as the mode of the rtl.  */
+	    if (BYTES_BIG_ENDIAN
+		&& TYPE_MODE (TREE_TYPE (parms)) != GET_MODE (DECL_RTL (parms))
+		&& GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))) < UNITS_PER_WORD)
+	      {
+		current_sym_value += UNITS_PER_WORD - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms)));
+	      }
+
 	    FORCE_TEXT;
 	    if (DECL_NAME (parms))
 	      {

@@ -1,3 +1,8 @@
+Sat May 16 18:32:45 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* dbxout.c (dbxout_parms): If mode of type of parameter living
+	in memory doesn't match mode of DECL_RTL, make big endian correction.
+
 Fri May 15 21:40:06 1998  John Wehle  (john@feith.com)
 
 	* i386.md (movdi-1, movdi): Rewrite based on SI move patterns.
