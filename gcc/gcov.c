@@ -851,7 +851,7 @@ scan_for_source_files ()
 	}
       else if (line_num < 0)
 	{
-	  /* Don't know what this is, but it's garbage. */
+	  /* Don't know what this is, but it's garbage.  */
 	  abort();
 	}
     }

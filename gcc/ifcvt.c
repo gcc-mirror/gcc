@@ -326,7 +326,7 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
   rtx then_end;			/* last insn + 1 in THEN block */
   rtx else_start = NULL_RTX;	/* first insn in ELSE block or NULL */
   rtx else_end = NULL_RTX;	/* last insn + 1 in ELSE block */
-  int max;			/* max # of insns to convert. */
+  int max;			/* max # of insns to convert.  */
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
   rtx false_expr;		/* test for then block insns */

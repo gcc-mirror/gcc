@@ -184,7 +184,7 @@ local_mbtowc (pwc, s, n)
       if (s == NULL)
 	{
 	  save_state = ASCII;
-	  /* State-dependent. */
+	  /* State-dependent.  */
 	  return 1;
 	}
 
@@ -283,7 +283,7 @@ local_mbtowc (pwc, s, n)
   return 1;
 #else
 
-  /* This must be the "C" locale or unknown locale. */
+  /* This must be the "C" locale or unknown locale.  */
   return mbtowc (pwc, s, n);
 #endif
 }

@@ -1604,7 +1604,7 @@ rtx_equal_for_loop_p (x, y, movables, regs)
 
 /* If X contains any LABEL_REF's, add REG_LABEL notes for them to all
    insns in INSNS which use the reference.  LABEL_NUSES for CODE_LABEL
-   references is incremented once for each added note. */
+   references is incremented once for each added note.  */
 
 static void
 add_label_notes (x, insns)

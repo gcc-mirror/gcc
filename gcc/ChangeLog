@@ -1,5 +1,39 @@
 2001-08-12  Kazu Hirata  <kazu@hxi.com>
 
+	* gcc.c: Fix comment formatting.
+	* gccspec.c: Likewise.
+	* gcov.c: Likewise.
+	* gcse.c: Likewise.
+	* genemit.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* genrecog.c: Likewise.
+	* gensupport.c: Likewise.
+	* ggc-page.c: Likewise.
+	* global.c: Likewise.
+	* graph.c: Likewise.
+	* ifcvt.c: Likewise.
+	* integrate.c: Likewise.
+	* lcm.c: Likewise.
+	* libgcc2.c: Likewise.
+	* loop.c: Likewise.
+	* mbchar.c: Likewise.
+	* optabs.c: Likewise.
+	* predict.c: Likewise.
+	* prefix.c: Likewise.
+	* profile.c: Likewise.
+	* protoize.c: Likewise.
+	* real.c: Likewise.
+	* recog.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* resource.c: Likewise.
+	* rtlanal.c: Likewise.
+	* rtl.c: Likewise.
+
+2001-08-12  Kazu Hirata  <kazu@hxi.com>
+
 	* doc/tm.texi (ENCODE_SECTION_INFO): Add documentation on how
 	a tree representing a constant is passed to the macro.
 

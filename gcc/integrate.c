@@ -71,7 +71,7 @@ extern struct obstack *function_maybepermanent_obstack;
 #endif
 
 
-/* Private type used by {get/has}_func_hard_reg_initial_val. */
+/* Private type used by {get/has}_func_hard_reg_initial_val.  */
 typedef struct initial_value_pair {
   rtx hard_reg;
   rtx pseudo;
@@ -2006,7 +2006,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       if (NOTE_LINE_NUMBER (orig) != NOTE_INSN_DELETED_LABEL)
 	break;
 
-      /* ... FALLTHRU ... */
+      /* ... FALLTHRU ...  */
     case CODE_LABEL:
       LABEL_PRESERVE_P (get_label_from_map (map, CODE_LABEL_NUMBER (orig)))
 	= LABEL_PRESERVE_P (orig);

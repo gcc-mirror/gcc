@@ -437,7 +437,7 @@ optimize_reg_copy_1 (insn, dest, src)
   int sregno = REGNO (src);
   int dregno = REGNO (dest);
 
-  /* We don't want to mess with hard regs if register classes are small. */
+  /* We don't want to mess with hard regs if register classes are small.  */
   if (sregno == dregno
       || (SMALL_REGISTER_CLASSES
 	  && (sregno < FIRST_PSEUDO_REGISTER
@@ -1225,7 +1225,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (recog_data.operand[match_no] != SET_DEST (set))
 		continue;
 
-	      /* If the operands already match, then there is nothing to do. */
+	      /* If the operands already match, then there is nothing to do.  */
 	      if (operands_match_p (src, dst))
 		continue;
 
@@ -1304,7 +1304,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  || RTX_UNCHANGING_P (dst))
 		continue;
 
-	      /* If the operands already match, then there is nothing to do. */
+	      /* If the operands already match, then there is nothing to do.  */
 	      if (operands_match_p (src, dst))
 		continue;
 
@@ -2007,7 +2007,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	{
 	  /* ??? We can't scan past the end of a basic block without updating
 	     the register lifetime info
-	     (REG_DEAD/basic_block_live_at_start). */
+	     (REG_DEAD/basic_block_live_at_start).  */
 	  if (perhaps_ends_bb_p (q))
 	    break;
 	  else if (! INSN_P (q))

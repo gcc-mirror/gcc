@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
-   is properly defined. */
+   is properly defined.  */
 #include "insn-config.h"
 #include "rtl.h"
 #include "tree.h"

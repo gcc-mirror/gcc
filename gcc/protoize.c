@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #include "version.h"
 
-/* Include getopt.h for the sake of getopt_long. */
+/* Include getopt.h for the sake of getopt_long.  */
 #include "getopt.h"
 
 /* Macro to see if the path elements match.  */
@@ -1173,7 +1173,7 @@ continue_outer: ;
   return (got_unexpanded ? savestring (line_buf, copy_p - line_buf) : 0);
 }
 
-/* Return 1 if pathname is absolute. */
+/* Return 1 if pathname is absolute.  */
 
 static int
 is_abspath (path)
@@ -2237,7 +2237,7 @@ start_over: ;
   
     fd_flags = O_RDONLY;
 #ifdef O_BINARY
-    /* Use binary mode to avoid having to deal with different EOL characters. */
+    /* Use binary mode to avoid having to deal with different EOL characters.  */
     fd_flags |= O_BINARY;
 #endif
     if ((aux_info_file = open (aux_info_filename, fd_flags, 0444 )) == -1)
@@ -4191,7 +4191,7 @@ edit_file (hp)
 
     fd_flags = O_RDONLY;
 #ifdef O_BINARY
-    /* Use binary mode to avoid having to deal with different EOL characters. */
+    /* Use binary mode to avoid having to deal with different EOL characters.  */
     fd_flags |= O_BINARY;
 #endif
     if ((input_file = open (convert_filename, fd_flags, 0444)) == -1)

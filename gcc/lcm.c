@@ -307,7 +307,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
   qin = worklist;
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. In fact the above allocation
-     of n_basic_blocks + 1 elements is not encessary. */
+     of n_basic_blocks + 1 elements is not encessary.  */
   qend = &worklist[n_basic_blocks];
   qlen = n_basic_blocks;
 

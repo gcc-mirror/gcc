@@ -177,7 +177,7 @@ process_rtx (desc, lineno)
 	rtvec attr;
 	int i;
 
-	/* Create a split with values from the insn_and_split. */
+	/* Create a split with values from the insn_and_split.  */
 	split = rtx_alloc (DEFINE_SPLIT);
 
 	i = XVECLEN (desc, 1);

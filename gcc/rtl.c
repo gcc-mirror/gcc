@@ -239,7 +239,7 @@ const char * const rtx_format[] = {
      "u" a pointer to another insn
          prints the uid of the insn.
      "b" is a pointer to a bitmap header.
-     "t" is a tree pointer. */
+     "t" is a tree pointer.  */
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   FORMAT ,
 #include "rtl.def"		/* rtl expressions are defined here */
@@ -518,7 +518,7 @@ copy_most_rtx (orig, may_share)
 	  break;
 
 	case '0':
-	  /* Copy this through the wide int field; that's safest. */
+	  /* Copy this through the wide int field; that's safest.  */
 	  X0WINT (copy, i) = X0WINT (orig, i);
 	  break;
 

@@ -300,7 +300,7 @@ UPDATE_PATH_HOST_CANONICALIZE (path, key);
 #endif
 
 #ifdef DIR_SEPARATOR_2
-  /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR. */
+  /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR.  */
   if (DIR_SEPARATOR != DIR_SEPARATOR_2)
     {
       char *new_path = xstrdup (path);

@@ -2391,7 +2391,7 @@ record_last_mem_set_info (insn)
      rtx insn;
 {
   /* load_killed_in_block_p will handle the case of calls clobbering
-     everything. */
+     everything.  */
   modify_mem_list[BLOCK_NUM (insn)] = 
     alloc_INSN_LIST (insn, modify_mem_list[BLOCK_NUM (insn)]);
 
@@ -2399,7 +2399,7 @@ record_last_mem_set_info (insn)
     {
       /* Note that traversals of this loop (other than for free-ing)
 	 will break after encountering a CALL_INSN.  So, there's no
-	 need to insert a pair of items, as canon_list_insert does. */
+	 need to insert a pair of items, as canon_list_insert does.  */
       canon_modify_mem_list[BLOCK_NUM (insn)] = 
         alloc_INSN_LIST (insn, canon_modify_mem_list[BLOCK_NUM (insn)]);
     }
@@ -3208,7 +3208,7 @@ expr_reaches_here_p_work (occr, expr, bb, check_self_loop, visited)
 }
 
 /* This wrapper for expr_reaches_here_p_work() is to ensure that any
-   memory allocated for that function is returned. */
+   memory allocated for that function is returned.  */
 
 static int
 expr_reaches_here_p (occr, expr, bb, check_self_loop)
@@ -4116,7 +4116,7 @@ cprop_insn (bb, insn, alter_jumps)
   
   note = find_reg_equal_equiv_note (insn);
 
-  /* We may win even when propagating constants into notes. */
+  /* We may win even when propagating constants into notes.  */
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
@@ -4128,7 +4128,7 @@ cprop_insn (bb, insn, alter_jumps)
       struct expr *set;
 
       /* Ignore registers created by GCSE.
-	 We do this because ... */
+	 We do this because ...  */
       if (regno >= max_gcse_regno)
 	continue;
 
@@ -4514,7 +4514,7 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited)
 }
 
 /* The wrapper for pre_expr_reaches_here_work that ensures that any
-   memory allocated for that function is returned. */
+   memory allocated for that function is returned.  */
 
 static int
 pre_expr_reaches_here_p (occr_bb, expr, bb)
@@ -6673,7 +6673,7 @@ build_store_vectors ()
       {
 	if (store_killed_after (ptr->pattern, BLOCK_HEAD (b), BASIC_BLOCK (b)))
 	  {
-	    /* The anticipatable expression is not killed if it's gen'd. */
+	    /* The anticipatable expression is not killed if it's gen'd.  */
 	    /*
 	      We leave this check out for now. If we have a code sequence 
 	      in a block which looks like:
