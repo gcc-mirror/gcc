@@ -1,3 +1,7 @@
+2003-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* stmt.c (expand_start_case): Call emit_queue ().
+
 2003-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR 10062
