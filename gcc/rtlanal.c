@@ -28,6 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "flags.h"
 
 /* Forward declarations */
 static int global_reg_mentioned_p_1 PARAMS ((rtx *, void *));
@@ -2348,7 +2349,8 @@ may_trap_p (x)
     case UDIV:
     case UMOD:
       if (! CONSTANT_P (XEXP (x, 1))
-	  || GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	  || (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+	      && flag_trapping_math))
 	return 1;
       /* This was const0_rtx, but by not using that,
 	 we can link this file into other programs.  */
@@ -2367,6 +2369,8 @@ may_trap_p (x)
     case LT:
     case COMPARE:
       /* Some floating point comparisons may trap.  */
+      if (!flag_trapping_math)
+	break;
       /* ??? There is no machine independent way to check for tests that trap
 	 when COMPARE is used, though many targets do make this distinction.
 	 For instance, sparc uses CCFPE for compares which generate exceptions
@@ -2387,7 +2391,8 @@ may_trap_p (x)
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+	  && flag_trapping_math)
 	return 1;
     }
 

@@ -1467,6 +1467,7 @@ try_crossjump_bb (mode, bb)
 {
   edge e, e2, nexte2, nexte, fallthru;
   bool changed;
+  int n = 0;
 
   /* Nothing to do if there is not at least two incoming edges.  */
   if (!bb->pred || !bb->pred->pred_next)
@@ -1475,9 +1476,13 @@ try_crossjump_bb (mode, bb)
   /* It is always cheapest to redirect a block that ends in a branch to
      a block that falls through into BB, as that adds no branches to the
      program.  We'll try that combination first.  */
-  for (fallthru = bb->pred; fallthru; fallthru = fallthru->pred_next)
-    if (fallthru->flags & EDGE_FALLTHRU)
-      break;
+  for (fallthru = bb->pred; fallthru; fallthru = fallthru->pred_next, n++)
+    {
+      if (fallthru->flags & EDGE_FALLTHRU)
+	break;
+      if (n > 100)
+	return false;
+    }
 
   changed = false;
   for (e = bb->pred; e; e = nexte)

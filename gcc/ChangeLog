@@ -1,3 +1,11 @@
+Thu Mar 28 13:21:53 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c: Include flags.h
+	(may_trap_p): Do not mark FP operations if trapping
+	if !flag_trapping_math
+	* Makefile.in (rtlanal.o): Add dependency on flag.h
+	* ifcvt.c (noce_operand_ok): Avoid the lameness.
+
 2002-03-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* mips.md: Use dconst1, not 1.0, as first argument of

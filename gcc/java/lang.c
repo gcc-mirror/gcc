@@ -752,4 +752,7 @@ java_init_options ()
   flag_bounds_check = 1;
   flag_exceptions = 1;
   flag_non_call_exceptions = 1;
+
+  /* In Java floating point operations never trap.  */
+  flag_trapping_math = 0;
 }

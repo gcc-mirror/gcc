@@ -1554,35 +1554,6 @@ noce_operand_ok (op)
   if (side_effects_p (op))
     return FALSE;
 
-  /* ??? Unfortuantely may_trap_p can't look at flag_trapping_math, due to
-     being linked into the genfoo programs.  This is probably a mistake.
-     With finite operands, most fp operations don't trap.  */
-  if (!flag_trapping_math && FLOAT_MODE_P (GET_MODE (op)))
-    switch (GET_CODE (op))
-      {
-      case DIV:
-      case MOD:
-      case UDIV:
-      case UMOD:
-	/* ??? This is kinda lame -- almost every target will have forced
-	   the constant into a register first.  But given the expense of
-	   division, this is probably for the best.  */
-	return (CONSTANT_P (XEXP (op, 1))
-		&& XEXP (op, 1) != CONST0_RTX (GET_MODE (op))
-		&& ! may_trap_p (XEXP (op, 0)));
-
-      default:
-	switch (GET_RTX_CLASS (GET_CODE (op)))
-	  {
-	  case '1':
-	    return ! may_trap_p (XEXP (op, 0));
-	  case 'c':
-	  case '2':
-	    return ! may_trap_p (XEXP (op, 0)) && ! may_trap_p (XEXP (op, 1));
-	  }
-	break;
-      }
-
   return ! may_trap_p (op);
 }
 
