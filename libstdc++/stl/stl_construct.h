@@ -57,15 +57,15 @@ template <class _ForwardIterator>
 inline void
 __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
 {
-  for ( ; __first < __last; ++__first)
+  for ( ; __first != __last; ++__first)
     destroy(&*__first);
 }
 
-template <class _ForwardIterator> 
+template <class _ForwardIterator>
 inline void __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type) {}
 
 template <class _ForwardIterator, class _Tp>
-inline void 
+inline void
 __destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
 {
   typedef typename __type_traits<_Tp>::has_trivial_destructor
