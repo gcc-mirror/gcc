@@ -243,7 +243,7 @@ static tree build_instinit_invocation PARAMS ((tree));
 static void fix_constructors PARAMS ((tree));
 static tree build_alias_initializer_parameter_list PARAMS ((int, tree,
 							    tree, int *));
-static void craft_constructor PARAMS ((tree, tree));
+static tree craft_constructor PARAMS ((tree, tree));
 static int verify_constructor_super PARAMS ((tree));
 static tree create_artificial_method PARAMS ((tree, int, tree, tree, tree));
 static void start_artificial_method_body PARAMS ((tree));
@@ -5400,7 +5400,7 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
    where found. ARGS is non NULL when a special signature must be
    enforced. This is the case for anonymous classes.  */
 
-static void
+static tree
 craft_constructor (class_decl, args)
      tree class_decl, args;
 {
@@ -5449,6 +5449,7 @@ craft_constructor (class_decl, args)
   /* Now, mark the artificial parameters. */
   DECL_FUNCTION_NAP (decl) = artificial;
   DECL_FUNCTION_SYNTHETIC_CTOR (decl) = DECL_CONSTRUCTOR_P (decl) = 1;
+  return decl;
 }
 
 
@@ -8999,8 +9000,10 @@ java_expand_classes ()
     }
   input_filename = main_input_filename;
 
-  /* Find anonymous classes and expand their constructor, now they
-     have been fixed. */
+
+  /* Find anonymous classes and expand their constructor. This extra pass is
+     neccessary because the constructor itself is only generated when the
+     method in which it is defined is expanded. */
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       tree current;
@@ -9018,7 +9021,7 @@ java_expand_classes ()
 		      restore_line_number_status (1);
 		      java_complete_expand_method (d);
 		      restore_line_number_status (0);
-		      break;	/* We now there are no other ones */
+		      break;	/* There is only one constructor. */
 		    }
 		}
 	    }
@@ -10855,7 +10858,14 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
      know the arguments' types. */
 
   if (lc && ANONYMOUS_CLASS_P (class))
-    craft_constructor (TYPE_NAME (class), atl);
+    {
+      tree saved_current_class;
+      tree mdecl = craft_constructor (TYPE_NAME (class), atl);
+      saved_current_class = current_class;
+      current_class = class;
+      fix_constructors (mdecl);
+      current_class = saved_current_class;
+    }
 
   /* Find all candidates and then refine the list, searching for the
      most specific method. */
