@@ -1,3 +1,8 @@
+2004-11-03  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree.c (tree_fold_gcd): Use FLOOR_MOD_EXPR instead of
+	CEIL_MOD_EXPR.
+
 2004-11-03 Jeff Law  <law@redhat.com>
 
 	* stmt.c (expand_case): Speed up code to detect duplicate case
