@@ -1,3 +1,7 @@
+2004-07-07  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.c-torture/execute/931004-12.x: Xfail on powerpc-*-darwin*.
+
 2004-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/call1.C: XFAIL.
