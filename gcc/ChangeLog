@@ -1,3 +1,26 @@
+2005-04-04  Adrian Strae¤tling  <straetling@de.ibm.com>
+
+	* config/s390/s390-protos.h: (s390_comparison,
+	s390_alc_comparison, s390_slb_comparison, const0_operand,
+	consttable_operand, larl_operand, s_operand,
+	shift_count_operand, bras_sym_operand, load_multiple_operation,
+	store_multiple_operation, s390_plus_operand): Remove prototypes.
+	(s390_legitimate_address_without_index_p): New prototype.
+	* config/s390/s390.c: (SYMBOL_FLAG_ALIGN1, DISP_IN_RANGE): Move
+	to s390.h.
+	(s390_comparison, s390_alc_comparison, s390_slb_comparison,
+	const0_operand, consttable_operand, larl_operand, s_operand,
+	shift_count_operand, bras_sym_operand, load_multiple_operation,
+	store_multiple_operation, s390_plus_operand): Move to
+	predicates.md.
+	(check_mode): Remove.
+	(s390_branch_condition_mask): Remove 'static'. Move prototype to
+	s390-protos.h.
+	(s390_legitimate_address_without_index_p): New.
+	* config/s390/s390.h (PREDICATE_CODES): Remove.
+	* config/s390/s390.md: Include predicates.md.
+	* config/s390/predicates.md: New.
+
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/20446

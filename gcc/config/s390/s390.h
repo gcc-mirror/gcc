@@ -1043,26 +1043,6 @@ do {									\
 
 /* Miscellaneous parameters.  */
 
-/* Define the codes that are matched by predicates in aux-output.c.  */
-#define PREDICATE_CODES							\
-  {"s_operand",       { SUBREG, MEM }},					\
-  {"shift_count_operand", { REG, SUBREG, PLUS, CONST_INT }},		\
-  {"bras_sym_operand",{ SYMBOL_REF, CONST }},				\
-  {"larl_operand",    { SYMBOL_REF, CONST, CONST_INT, CONST_DOUBLE }},	\
-  {"load_multiple_operation", {PARALLEL}},			        \
-  {"store_multiple_operation", {PARALLEL}},			        \
-  {"const0_operand",  { CONST_INT, CONST_DOUBLE }},			\
-  {"consttable_operand", { SYMBOL_REF, LABEL_REF, CONST, 		\
-			   CONST_INT, CONST_DOUBLE }},			\
-  {"s390_plus_operand", { PLUS }},					\
-  {"s390_comparison",     { EQ, NE, LT, GT, LE, GE, LTU, GTU, LEU, GEU,	\
-			    UNEQ, UNLT, UNGT, UNLE, UNGE, LTGT,		\
-			    UNORDERED, ORDERED }},			\
-  {"s390_alc_comparison", { ZERO_EXTEND, SIGN_EXTEND, 			\
-			    LTU, GTU, LEU, GEU }},			\
-  {"s390_slb_comparison", { ZERO_EXTEND, SIGN_EXTEND,			\
-			    LTU, GTU, LEU, GEU }},
-
 /* Specify the machine mode that this machine uses for the index in the
    tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
@@ -1082,5 +1062,13 @@ do {									\
 /* A function address in a call instruction is a byte address (for
    indexing purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
+
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
+
+/* Check whether integer displacement is in range.  */
+#define DISP_IN_RANGE(d) \
+  (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
+                           : ((d) >= 0 && (d) <= 4095))
 
 #endif
