@@ -10661,30 +10661,39 @@ fold_ignored_result (tree t)
 tree
 round_up (tree value, int divisor)
 {
-  tree div, t;
+  tree div = NULL_TREE;
 
-  if (divisor == 0)
+  if (divisor <= 0)
     abort ();
   if (divisor == 1)
     return value;
 
-  div = size_int_type (divisor, TREE_TYPE (value));
-
   /* See if VALUE is already a multiple of DIVISOR.  If so, we don't
-     have to do anything.  */
-  if (multiple_of_p (TREE_TYPE (value), value, div))
-    return value;
+     have to do anything.  Only do this when we are not given a const,
+     because in that case, this check is more expensive than just
+     doing it. */
+  if (TREE_CODE (value) != INTEGER_CST)
+    {
+      div = size_int_type (divisor, TREE_TYPE (value));
+
+      if (multiple_of_p (TREE_TYPE (value), value, div))
+	return value;
+    }
 
   /* If divisor is a power of two, simplify this to bit manipulation.  */
   if (divisor == (divisor & -divisor))
     {
-      t = size_int_type (divisor - 1, TREE_TYPE (value));
+      tree t;
+      
+      t = build_int_cst (TREE_TYPE (value), divisor - 1, 0);
       value = size_binop (PLUS_EXPR, value, t);
-      t = size_int_type (-divisor, TREE_TYPE (value));
+      t = build_int_cst (TREE_TYPE (value), -divisor, -1);
       value = size_binop (BIT_AND_EXPR, value, t);
     }
   else
     {
+      if (!div)
+	div = size_int_type (divisor, TREE_TYPE (value));
       value = size_binop (CEIL_DIV_EXPR, value, div);
       value = size_binop (MULT_EXPR, value, div);
     }
@@ -10697,9 +10706,9 @@ round_up (tree value, int divisor)
 tree
 round_down (tree value, int divisor)
 {
-  tree div, t;
+  tree div = NULL_TREE;
 
-  if (divisor == 0)
+  if (divisor <= 0)
     abort ();
   if (divisor == 1)
     return value;
@@ -10707,18 +10716,29 @@ round_down (tree value, int divisor)
   div = size_int_type (divisor, TREE_TYPE (value));
 
   /* See if VALUE is already a multiple of DIVISOR.  If so, we don't
-     have to do anything.  */
-  if (multiple_of_p (TREE_TYPE (value), value, div))
-    return value;
+     have to do anything.  Only do this when we are not given a const,
+     because in that case, this check is more expensive than just
+     doing it. */
+  if (TREE_CODE (value) != INTEGER_CST)
+    {
+      div = size_int_type (divisor, TREE_TYPE (value));
+
+      if (multiple_of_p (TREE_TYPE (value), value, div))
+	return value;
+    }
 
   /* If divisor is a power of two, simplify this to bit manipulation.  */
   if (divisor == (divisor & -divisor))
     {
-      t = size_int_type (-divisor, TREE_TYPE (value));
+      tree t;
+      
+      t = build_int_cst (TREE_TYPE (value), -divisor, -1);
       value = size_binop (BIT_AND_EXPR, value, t);
     }
   else
     {
+      if (!div)
+	div = size_int_type (divisor, TREE_TYPE (value));
       value = size_binop (FLOOR_DIV_EXPR, value, div);
       value = size_binop (MULT_EXPR, value, div);
     }
