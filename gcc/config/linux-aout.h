@@ -36,9 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
 
-#undef ASM_COMMENT_START
-#define ASM_COMMENT_START "#"
-
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 

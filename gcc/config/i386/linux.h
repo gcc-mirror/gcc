@@ -37,6 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
+
 /* This is how to output an element of a case-vector that is relative.
    This is only used for PIC code.  See comments by the `casesi' insn in
    i386.md for an explanation of the expression this outputs. */
