@@ -4,6 +4,8 @@
 	* fixinc/fixincl.c: improve the debug displays, ignore SIGPIPE
 	* fixinc/server.c: likewise
 	* fixinc/fixfixes.c( char_macro_def_fix ): fix regex
+	* fixinc/inclhack.def( hpux11_fabsf ): Keep HP-UX 11 from stomping
+	on C++ math namespace
 
 2000-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

@@ -931,6 +931,26 @@ fix = {
 
 
 /*
+ *  Keep HP-UX 11 from stomping on C++ math namespace
+ *  with defines for fabsf.
+ */
+fix = {
+    hackname  = hpux11_fabsf;
+    files     = math.h;
+    select    = "^[ \t]*#[ \t]*define[ \t]+fabsf\\(.*";
+    bypass    = "__cplusplus";
+
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+
+    test_text =
+    "#ifdef _PA_RISC\n"
+    "#  define fabsf(x) ((float)fabs((double)(float)(x)))\n"
+    "#endif";
+};
+
+
+/*
  *  get rid of bogus inline definitions in HP-UX 8.0
  */
 fix = {
