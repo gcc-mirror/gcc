@@ -1,3 +1,10 @@
+2002-06-22  David S. Miller  <davem@redhat.com>
+
+	PR target/6841 target/6770 target/6719
+	* config/sparc/sparc.h (PREFERRED_RELOAD_CLASS): Return
+	NO_REGS	for constant X when CLASS is GENERAL_OR_FP_REGS or
+	GENERAL_OR_EXTRA_FP_REGS.
+
 2002-06-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpptrad.c (struct fun_macro): Add line number.
