@@ -6018,8 +6018,9 @@ force_to_mode (x, mode, mask, reg, just_select)
     case ASHIFTRT:
       /* If we are just looking for the sign bit, we don't need this shift at
 	 all, even if it has a variable count.  */
-      if (mask == ((HOST_WIDE_INT) 1
-		   << (GET_MODE_BITSIZE (GET_MODE (x)) - 1)))
+      if (GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+	  && (mask == ((HOST_WIDE_INT) 1
+		       << (GET_MODE_BITSIZE (GET_MODE (x)) - 1))))
 	return force_to_mode (XEXP (x, 0), mode, mask, reg, next_select);
 
       /* If this is a shift by a constant, get a mask that contains those bits
