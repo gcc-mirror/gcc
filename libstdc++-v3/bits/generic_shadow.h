@@ -1,6 +1,6 @@
 // generic C header shadow file -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,28 +30,28 @@
 // This file is included by all the standard C <foo.h> headers
 // after defining _SHADOW_NAME.
 
-#ifdef _IN_C_SWAMP_  /* sub-included by a C header */
+#ifdef _IN_C_LEGACY_  /* sub-included by a C header */
 
-      // get out of the "swamp"
-    } // close extern "C"
-  }   // close namespace _C_Swamp::
+      // Get out of the "swamp."
+    } // Close extern "C"
+  }   // Close namespace _C_legacy::
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 # include _SHADOW_NAME
 
-  // dive back into the "swamp"
-  namespace _C_Swamp {
+  // Dive back into the "swamp."
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
   
-#else /* not _IN_C_SWAMP_:  directly included by user program */
+#else /* not _IN_C_LEGACY_:  directly included by user program */
   
 # include _SHADOW_NAME
   
-  // expose global C names, including non-standard ones, but shadow
-  //   some names and types with the std:: C++ version.
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
 
-  using namespace ::_C_Swamp::_C_Shadow;
+  using namespace ::_C_legacy::_C_Shadow;
   
-#endif /* _IN_C_SWAMP_ */
+#endif /* _IN_C_LEGACY_ */
     
