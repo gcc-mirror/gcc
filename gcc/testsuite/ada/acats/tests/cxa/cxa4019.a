@@ -1,0 +1,1027 @@
+-- CXA4019.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the subprograms defined in package Ada.Strings.Wide_Bounded
+--      are available, and that they produce correct results, especially 
+--      under conditions where truncation of the result is required.  
+--      Specifically, check the subprograms Append, Count with non-Identity
+--      maps, Index with non-Identity maps, Index with Set parameters, 
+--      Insert (function and procedure), Replace_Slice (function and 
+--      procedure), To_Bounded_Wide_String, and Translate (function and 
+--      procedure).
+--
+-- TEST DESCRIPTION:
+--      This test, in conjunction with tests CXA4017, CXA4018, and CXA4020, 
+--      will provide coverage of the most common usages of the functionality
+--      found in the Ada.Strings.Wide_Bounded package.  It deals in large part
+--      with truncation effects and options.  This test contains many small, 
+--      specific test cases, situations that are often difficult to generate 
+--      in large numbers in an application-based test.  These cases represent 
+--      specific usage paradigms in-the-small.
+--
+--       
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      06 Nov 95   SAIC    Corrected expected result string in subtest for
+--                          ACVC 2.0.1.
+--                          Moved function Dog_to_Cat_Mapping to library
+--                          level to correct accessibility problem in test.
+--      22 Aug 96   SAIC    Corrected three subtests identified in reviewer
+--                          comments.
+--      17 Feb 97   PWB.CTA Corrected result strings for Translate and Insert
+--
+--!
+
+package CXA40190 is
+
+   -- Wide Character mapping function defined for use with specific 
+   -- versions of functions Index and Count.
+
+   function Dog_to_Cat_Mapping (From : Wide_Character) 
+        return Wide_Character;
+
+end CXA40190;
+
+package body CXA40190 is
+
+   -- Translates "dog" to "cat".
+   function Dog_to_Cat_Mapping (From : Wide_Character) 
+     return Wide_Character is
+   begin
+      if From = 'd' then
+         return 'c';
+      elsif From = 'o' then
+         return 'a';
+      elsif From = 'g' then
+         return 't';
+      else
+         return From;
+      end if;
+   end Dog_to_Cat_Mapping;
+
+end CXA40190;
+
+
+with CXA40190;
+with Report;
+with Ada.Characters.Handling;
+with Ada.Strings.Wide_Bounded;
+with Ada.Strings.Wide_Maps;
+with Ada.Strings.Wide_Maps.Wide_Constants;
+
+procedure CXA4019 is
+
+   -- The following two functions are used to translate character and string 
+   -- values to "Wide" values.  They will be applied to all the Wide_Bounded
+   -- subprogram parameters to simulate the use of Wide_Characters and 
+   -- Wide_Strings in actual practice.
+
+   function Equiv (Ch : Character) return Wide_Character is
+      C : Character := Ch;
+   begin
+      if Ch = ' ' then
+         return Ada.Characters.Handling.To_Wide_Character(C);
+      else
+         return Wide_Character'Val(Character'Pos(Ch) + 
+                Character'Pos(Character'Last) + 1);
+      end if;
+   end Equiv;
+
+
+   function Equiv (Str : String) return Wide_String is
+      WS : Wide_String(Str'First..Str'Last);
+   begin
+      for i in Str'First..Str'Last loop
+         WS(i) := Equiv(Str(i));
+      end loop;
+      return WS;
+   end Equiv;
+
+begin
+
+   Report.Test("CXA4019", "Check that the subprograms defined in "      &
+                          "package Ada.Strings.Wide_Bounded are "       &
+                          "available, and that they produce correct "   &
+                          "results, especially under conditions where " &
+                          "truncation of the result is required");
+
+   Test_Block:
+   declare
+
+      use CXA40190;
+
+      package AS   renames Ada.Strings;
+      package ASB  renames Ada.Strings.Wide_Bounded;
+      package ASWC renames Ada.Strings.Wide_Maps.Wide_Constants;
+      package Maps renames Ada.Strings.Wide_Maps;
+
+      package B10 is new ASB.Generic_Bounded_Length(Max => 10);
+      use type B10.Bounded_Wide_String;
+
+      Result_String : B10.Bounded_Wide_String;
+      Test_String   : B10.Bounded_Wide_String;
+      AtoE_Bnd_Str  : B10.Bounded_Wide_String := 
+                        B10.To_Bounded_Wide_String(Equiv("abcde"));
+      FtoJ_Bnd_Str  : B10.Bounded_Wide_String := 
+                        B10.To_Bounded_Wide_String(Equiv("fghij"));
+      AtoJ_Bnd_Str  : B10.Bounded_Wide_String := 
+                        B10.To_Bounded_Wide_String(Equiv("abcdefghij"));
+
+      Location     : Natural := 0;
+      Total_Count  : Natural := 0;
+
+      CD_Set       : Maps.Wide_Character_Set := Maps.To_Set("cd"); 
+      Wide_CD_Set  : Maps.Wide_Character_Set := Maps.To_Set(Equiv("cd")); 
+
+      AB_to_YZ_Map : Maps.Wide_Character_Mapping :=
+                     Maps.To_Mapping(From => "ab", To => "yz");
+
+      Wide_AB_to_YZ_Map : Maps.Wide_Character_Mapping :=
+                          Maps.To_Mapping(From => Equiv("ab"),  
+                                          To   => Equiv("yz"));
+
+      CD_to_XY_Map : Maps.Wide_Character_Mapping :=
+                       Maps.To_Mapping(From => "cd", To => "xy");
+
+      Wide_CD_to_XY_Map : Maps.Wide_Character_Mapping :=
+                          Maps.To_Mapping(From => Equiv("cd"),  
+                                          To   => Equiv("xy"));
+
+
+      -- Access-to-Subprogram object defined for use with specific versions of 
+      -- functions Index, Count Translate, and procedure Translate.
+
+      Map_Ptr : Maps.Wide_Character_Mapping_Function := 
+                  Dog_to_Cat_Mapping'Access;
+
+
+
+   begin
+
+      -- Function To_Bounded_Wide_String with Truncation 
+      -- Evaluate the function Append with parameters that will 
+      -- cause the truncation of the result.
+
+      -- Drop = Error (default case, Length_Error will be raised)
+
+      begin
+         Test_String := 
+           B10.To_Bounded_Wide_String
+             (Equiv("Much too long for this bounded wide string"));
+         Report.Failed("Length Error not raised by To_Bounded_Wide_String");
+      exception
+         when AS.Length_Error => null;  -- Expected exception raised.
+         when others          =>
+           Report.Failed
+            ("Incorrect exception raised by To_Bounded_Wide_String");
+      end;
+
+      -- Drop = Left 
+
+      Test_String := 
+        B10.To_Bounded_Wide_String(Source => Equiv("abcdefghijklmn"),
+                                   Drop   => Ada.Strings.Left);
+
+      if Test_String /= B10.To_Bounded_Wide_String(Equiv("efghijklmn")) then
+         Report.Failed
+           ("Incorrect result from To_Bounded_Wide_String, Drop = Left");
+      end if;
+
+      -- Drop = Right 
+
+      Test_String := 
+        B10.To_Bounded_Wide_String(Source => Equiv("abcdefghijklmn"),
+                                   Drop   => Ada.Strings.Right);
+
+      if not(Test_String = AtoJ_Bnd_Str) then
+         Report.Failed
+           ("Incorrect result from To_Bounded_Wide_String, Drop = Right");
+      end if;
+
+
+
+
+      -- Function Append with Truncation 
+      -- Evaluate the function Append with parameters that will 
+      -- cause the truncation of the result.
+
+      -- Drop = Error (default case, Length_Error will be raised)
+
+      begin
+         -- Append (Bnd Str, Bnd Str);
+         Result_String := 
+           B10.Append(B10.To_Bounded_Wide_String(Equiv("abcde")),
+                      B10.To_Bounded_Wide_String(Equiv("fghijk"))); -- 11 char
+         Report.Failed("Length_Error not raised by Append - 1");
+      exception
+         when AS.Length_Error => null;   -- OK, correct exception raised.
+         when others          =>
+            Report.Failed("Incorrect exception raised by Append - 1");
+      end;
+
+      begin
+         -- Append (Str, Bnd Str);
+         Result_String := 
+           B10.Append(B10.To_Wide_String(AtoE_Bnd_Str),
+                      B10.To_Bounded_Wide_String(Equiv("fghijk")), 
+                      AS.Error); 
+         Report.Failed("Length_Error not raised by Append - 2");
+      exception
+         when AS.Length_Error => null;   -- OK, correct exception raised.
+         when others          =>
+            Report.Failed("Incorrect exception raised by Append - 2");
+      end;
+
+      begin
+         -- Append (Bnd Str, Char);
+         Result_String := 
+           B10.Append(B10.To_Bounded_Wide_String("abcdefghij"), 'k');
+         Report.Failed("Length_Error not raised by Append - 3");
+      exception
+         when AS.Length_Error => null;   -- OK, correct exception raised.
+         when others          =>
+            Report.Failed("Incorrect exception raised by Append - 3");
+      end;
+
+      -- Drop = Left 
+
+      -- Append (Bnd Str, Bnd Str)
+      Result_String := 
+        B10.Append(B10.To_Bounded_Wide_String(Equiv("abcdefgh")), -- 8 chs
+                   B10.To_Bounded_Wide_String(Equiv("ijklmn")),   -- 6 chs
+                   Ada.Strings.Left);
+
+      if Result_String /= 
+         B10.To_Bounded_Wide_String(Equiv("efghijklmn"))  -- 10 chars
+      then
+         Report.Failed("Incorrect truncation performed by Append - 4");
+      end if;
+
+      -- Append (Bnd Str, Str)
+      Result_String := 
+        B10.Append(B10.To_Bounded_Wide_String("abcdefghij"), 
+                   "xyz",
+                   Ada.Strings.Left);
+
+      if Result_String /= B10.To_Bounded_Wide_String("defghijxyz") then
+         Report.Failed("Incorrect truncation performed by Append - 5");
+      end if;
+
+      -- Append (Char, Bnd Str)
+
+      Result_String := 
+        B10.Append(Equiv('A'), 
+                   B10.To_Bounded_Wide_String(Equiv("abcdefghij")),
+                   Ada.Strings.Left);
+
+      if Result_String /= B10.To_Bounded_Wide_String(Equiv("abcdefghij")) 
+      then
+         Report.Failed("Incorrect truncation performed by Append - 6");
+      end if;
+
+      -- Drop = Right 
+
+      -- Append (Bnd Str, Bnd Str)
+      Result_String := B10.Append(FtoJ_Bnd_Str, 
+                                  AtoJ_Bnd_Str,
+                                  Ada.Strings.Right);
+
+      if Result_String /= 
+         B10.To_Bounded_Wide_String(Equiv("fghijabcde")) 
+      then
+         Report.Failed("Incorrect truncation performed by Append - 7");
+      end if;
+
+      -- Append (Str, Bnd Str)
+      Result_String := B10.Append(B10.To_Wide_String(AtoE_Bnd_Str), 
+                                  AtoJ_Bnd_Str,
+                                  Ada.Strings.Right);
+
+      if Result_String /= 
+         B10.To_Bounded_Wide_String(Equiv("abcdeabcde")) 
+      then
+         Report.Failed("Incorrect truncation performed by Append - 8");
+      end if;
+
+      -- Append (Char, Bnd Str)
+      Result_String := B10.Append(Equiv('A'), AtoJ_Bnd_Str, Ada.Strings.Right);
+
+      if Result_String /= B10.To_Bounded_Wide_String(Equiv("Aabcdefghi")) then
+         Report.Failed("Incorrect truncation performed by Append - 9");
+      end if;
+
+
+
+      -- Function Index with non-Identity map. 
+      -- Evaluate the function Index with a non-identity map 
+      -- parameter which will cause mapping of the source parameter 
+      -- prior to the evaluation of the index position search.
+
+      Location := 
+        B10.Index(Source  => B10.To_Bounded_Wide_String("foxy fox 2"),
+                  Pattern => "FOX",
+                  Going   => Ada.Strings.Backward,
+                  Mapping => ASWC.Upper_Case_Map);
+
+      if Location /= 6 then
+         Report.Failed("Incorrect result from Index, non-Identity map - 1");
+      end if;
+
+      Location := 
+        B10.Index(B10.To_Bounded_Wide_String("THE QUICK "),
+                  "quick",
+                  Ada.Strings.Forward,
+                  Ada.Strings.Wide_Maps.Wide_Constants.Lower_Case_Map);
+
+      if Location /= 5 then
+         Report.Failed("Incorrect result from Index, non-Identity map - 2");
+      end if;
+
+      Location := B10.Index(Source  => B10.To_Bounded_Wide_String("The the"),
+                            Pattern => "the",
+                            Going   => Ada.Strings.Forward,
+                            Mapping => ASWC.Lower_Case_Map); 
+
+      if Location /= 1 then
+         Report.Failed("Incorrect result from Index, non-Identity map - 3");
+      end if;
+
+
+
+      if B10.Index(B10.To_Bounded_Wide_String("abcd"),   -- Pattern = Source
+                   "abcd")                       /= 1 or
+         B10.Index(B10.To_Bounded_Wide_String("abc"),    -- Pattern < Source
+                   "abcd")                       /= 0 or
+         B10.Index(B10.Null_Bounded_Wide_String,         -- Source = Null
+                   "abc")                        /= 0 
+      then
+         Report.Failed("Incorrect result from Index with string patterns");
+      end if;
+
+
+
+      -- Function Index with access-to-subprogram mapping value. 
+      -- Evaluate the function Index with a wide character mapping function
+      -- object that performs the mapping operation.
+
+      Location := B10.Index(Source  => B10.To_Bounded_Wide_String("My dog"),
+                            Pattern => "cat",
+                            Going   => Ada.Strings.Forward,
+                            Mapping => Map_Ptr);  -- change "dog" to "cat"
+
+      if Location /= 4 then
+         Report.Failed("Incorrect result from Index, w/map ptr - 1");
+      end if;
+
+      Location := B10.Index(B10.To_Bounded_Wide_String("cat or dog"),
+                            "cat",
+                            Ada.Strings.Backward,
+                            Map_Ptr);   
+
+      if Location /= 8 then
+         Report.Failed("Incorrect result from Index, w/map ptr - 2");
+      end if;
+
+      if B10.Index(B10.To_Bounded_Wide_String("dog"),   -- Pattern = Source
+                   "cat",
+                   Ada.Strings.Forward,
+                   Map_Ptr)                            /= 1 or
+         B10.Index(B10.To_Bounded_Wide_String("dog"),    -- Pattern < Source
+                   "cats",
+                   Ada.Strings.Backward,
+                   Map_Ptr)                            /= 0 or
+         B10.Index(B10.Null_Bounded_Wide_String,         -- Source = Null
+                   "cat",
+                   Ada.Strings.Forward,
+                   Map_Ptr)                            /= 0 or
+         B10.Index(B10.To_Bounded_Wide_String("hot dog"),
+                   "dog",
+                   Ada.Strings.Backward,
+                   Map_Ptr)                            /= 0 or
+         B10.Index(B10.To_Bounded_Wide_String(" cat dog "),
+                   " cat",
+                   Ada.Strings.Backward,
+                   Map_Ptr)                           /= 5 or
+         B10.Index(B10.To_Bounded_Wide_String("dog CatDog"),
+                   "cat",
+                   Ada.Strings.Backward,
+                   Map_Ptr)                           /= 1 or
+         B10.Index(B10.To_Bounded_Wide_String("CatandDog"),
+                   "cat",
+                   Ada.Strings.Forward,
+                   Map_Ptr)                           /= 0 or
+         B10.Index(B10.To_Bounded_Wide_String("dddd"),
+                   "ccccc",
+                   Ada.Strings.Backward,
+                   Map_Ptr)                           /= 0
+      then
+         Report.Failed("Incorrect result from Index w/map ptr - 3");
+      end if;
+
+
+
+      -- Function Index (for Sets).           
+      -- This version of Index uses Sets as the basis of the search.
+
+      -- Test = Inside, Going = Forward  (Default case).
+      Location := 
+        B10.Index(Source => B10.To_Bounded_Wide_String(Equiv("abcdeabcde")),
+                  Set    => Wide_CD_Set, 
+                  Test   => Ada.Strings.Inside,
+                  Going  => Ada.Strings.Forward);
+
+      if not (Location = 3) then -- position of first 'c' equivalent in source.
+         Report.Failed("Incorrect result from Index using Sets - 1");
+      end if;
+
+      -- Test = Inside, Going = Backward.
+      Location := 
+        B10.Index(Source => B10."&"(AtoE_Bnd_Str, AtoE_Bnd_Str), 
+                  Set    => Wide_CD_Set, 
+                  Test   => Ada.Strings.Inside,
+                  Going  => Ada.Strings.Backward);
+
+      if not (Location = 9) then   -- position of last 'd' in source.
+         Report.Failed("Incorrect result from Index using Sets - 2");
+      end if;
+
+      -- Test = Outside, Going = Forward.
+      Location := B10.Index(B10.To_Bounded_Wide_String("deddacd"),  
+                            CD_Set,
+                            Test  => Ada.Strings.Outside,
+                            Going => Ada.Strings.Forward);
+
+      if Location /= 2  then  -- position of 'e' in source.
+         Report.Failed("Incorrect result from Index using Sets - 3");
+      end if;
+
+      -- Test = Outside, Going = Backward.
+      Location := B10.Index(B10.To_Bounded_Wide_String(Equiv("deddacd")),
+                            Wide_CD_Set,
+                            Ada.Strings.Outside,
+                            Ada.Strings.Backward);
+
+      if Location /= 5 then    -- position of 'a', correct.
+         Report.Failed("Incorrect result from Index using Sets - 4");
+      end if;
+
+      if B10.Index(B10.To_Bounded_Wide_String("cd"),   -- Source = Set
+                   CD_Set)                     /= 1 or
+         B10.Index(B10.To_Bounded_Wide_String("c"),    -- Source < Set
+                   CD_Set)                     /= 1 or
+         B10.Index(B10.Null_Bounded_Wide_String,       -- Source = Null
+                   Wide_CD_Set)                /= 0 or
+         B10.Index(AtoE_Bnd_Str,
+                   Maps.To_Set('x'))           /= 0    -- No match.
+      then
+         Report.Failed("Incorrect result from Index using Sets - 5");
+      end if;
+
+
+
+      -- Function Count with non-Identity mapping. 
+      -- Evaluate the function Count with a non-identity map 
+      -- parameter which will cause mapping of the source parameter 
+      -- prior to the evaluation of the number of matching patterns.
+
+      Total_Count := 
+        B10.Count(Source  => B10.To_Bounded_Wide_String("THE THE TH"),
+                  Pattern => "th",
+                  Mapping => ASWC.Lower_Case_Map);
+
+      if Total_Count /= 3 then    
+         Report.Failed
+           ("Incorrect result from function Count, non-Identity map - 1");
+      end if;
+
+      -- And a few with identity maps as well.
+
+      if B10.Count(B10.To_Bounded_Wide_String(Equiv("ABABABABAB")),
+                   Equiv("ABA"),
+                   Maps.Identity)                       /= 2 or
+         B10.Count(B10.To_Bounded_Wide_String("ADCBADABCD"),
+                   "AB",
+                   Maps.To_Mapping("CD", "AB"))         /= 5 or
+         B10.Count(B10.To_Bounded_Wide_String(Equiv("aaaaaaaaaa")),
+                   Equiv("aaa"))                        /= 3 or
+         B10.Count(B10.To_Bounded_Wide_String(Equiv("XX")),
+                   Equiv("XXX"),
+                   Maps.Identity)                       /= 0 or
+         B10.Count(AtoE_Bnd_Str,                        -- Source = Pattern
+                   Equiv("abcde"))                      /= 1 or
+         B10.Count(B10.Null_Bounded_Wide_String,        -- Source = Null
+                   " ")                                 /= 0
+      then
+         Report.Failed
+           ("Incorrect result from function Count, w,w/o mapping");
+      end if;
+                                         
+
+
+
+
+      -- Function Count with access-to-subprogram mapping. 
+      -- Evaluate the version function Count that uses an access-to-subprogram
+      -- map parameter.
+
+      Total_Count := 
+        B10.Count(Source  => B10.To_Bounded_Wide_String("dogdogdo"),
+                  Pattern => "ca",
+                  Mapping => Map_Ptr);
+
+      if Total_Count /= 3 then    
+         Report.Failed
+           ("Incorrect result from function Count, w/map ptr - 1");
+      end if;
+
+
+      if B10.Count(B10.To_Bounded_Wide_String("DdOoGgod"),
+                   "c",
+                   Map_Ptr)                                 /= 2 or
+         B10.Count(B10.To_Bounded_Wide_String("dododododo"),
+                   "do",
+                   Map_Ptr)                                 /= 0 or
+         B10.Count(B10.To_Bounded_Wide_String("Dog or dog"),
+                   "cat",
+                   Map_Ptr)                                 /= 1 or
+         B10.Count(B10.To_Bounded_Wide_String("dddddddddd"),
+                   "ccccc",
+                   Map_Ptr)                                 /= 2 or
+         B10.Count(B10.To_Bounded_Wide_String("do"),    -- Source < Pattern
+                   "cat",
+                   Map_Ptr)                                 /= 0 or
+         B10.Count(B10.To_Bounded_Wide_String(" dog "), -- Source = Pattern
+                   " cat ",
+                   Map_Ptr)                                 /= 1 or
+         B10.Count(B10.Null_Bounded_Wide_String,        -- Source = Null
+                   " ",
+                   Map_Ptr)                                 /= 0
+      then
+         Report.Failed
+           ("Incorrect result from function Count, w/map ptr - 2");
+      end if;
+
+
+
+
+      -- Procedure Translate   
+
+      -- Partial mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String("abcdeabcab");
+
+      B10.Translate(Source => Test_String, Mapping => AB_to_YZ_Map);
+
+      if Test_String /= B10.To_Bounded_Wide_String("yzcdeyzcyz") then
+         Report.Failed("Incorrect result from procedure Translate - 1");
+      end if;
+
+      -- Total mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String("abbaaababb");
+
+      B10.Translate(Source => Test_String, Mapping => ASWC.Upper_Case_Map);
+
+      if Test_String /= B10.To_Bounded_Wide_String("ABBAAABABB") then
+         Report.Failed("Incorrect result from procedure Translate - 2");
+      end if;
+
+      -- No mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String(Equiv("xyzsypcc"));
+
+      B10.Translate(Source => Test_String, Mapping => Wide_AB_to_YZ_Map);
+
+      if Test_String /= B10.To_Bounded_Wide_String(Equiv("xyzsypcc")) then
+         Report.Failed("Incorrect result from procedure Translate - 3");
+      end if;
+
+      -- Map > 2 characters, partial mapping.
+
+      Test_String := B10.To_Bounded_Wide_String("opabcdelmn");
+
+      B10.Translate(Test_String, 
+                    Maps.To_Mapping("abcde", "lmnop"));
+
+      if Test_String /= B10.To_Bounded_Wide_String("oplmnoplmn") then
+         Report.Failed("Incorrect result from procedure Translate - 4");
+      end if;
+
+
+
+
+      -- Procedure Translate with access-to-subprogram mapping.
+      -- Use the version of Procedure Translate that takes an
+      -- access-to-subprogram parameter to perform the Source mapping.
+
+      -- Partial mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String("dogeatdog");
+
+      B10.Translate(Source => Test_String, Mapping => Map_Ptr);
+
+      if Test_String /= B10.To_Bounded_Wide_String("cateatcat") then
+         Report.Failed
+           ("Incorrect result from procedure Translate w/map ptr - 1");
+      end if;
+
+      Test_String := B10.To_Bounded_Wide_String("odogcatlmn");
+
+      B10.Translate(Test_String, Map_Ptr);
+
+      if Test_String /= B10.To_Bounded_Wide_String("acatcatlmn") then
+         Report.Failed
+           ("Incorrect result from procedure Translate w/map ptr - 2");
+      end if;
+
+
+      -- Total mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String("gggooooddd");
+
+      B10.Translate(Source => Test_String, Mapping => Map_Ptr);
+
+      if Test_String /= B10.To_Bounded_Wide_String("tttaaaaccc") then
+         Report.Failed
+           ("Incorrect result from procedure Translate w/map ptr- 3");
+      end if;
+
+      -- No mapping of source.
+
+      Test_String := B10.To_Bounded_Wide_String(" DOG cat ");
+
+      B10.Translate(Source => Test_String, Mapping => Map_Ptr);
+
+      if Test_String /= B10.To_Bounded_Wide_String(" DOG cat ") then
+         Report.Failed
+           ("Incorrect result from procedure Translate w/map ptr - 4");
+      end if;
+
+      Test_String := B10.Null_Bounded_Wide_String;
+
+      B10.Translate(Source => Test_String, Mapping => Map_Ptr);
+
+      if Test_String /= B10.To_Bounded_Wide_String("") then
+         Report.Failed
+           ("Incorrect result from procedure Translate w/map ptr - 5");
+      end if;
+
+
+
+
+      -- Function Translate with access-to-subprogram mapping.
+      -- Use the version of Function Translate that takes an
+      -- access-to-subprogram parameter to perform the Source mapping.
+
+      -- Partial mapping of source.
+
+      if B10.Translate(Source  => B10.To_Bounded_Wide_String("cateatdog"),
+                       Mapping => Map_Ptr) /= 
+         B10.To_Bounded_Wide_String("cateatcat") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr - 1");
+      end if;
+
+      if B10.Translate(B10.To_Bounded_Wide_String("cadogtac"),
+                       Map_Ptr) /= 
+         B10.To_Bounded_Wide_String("cacattac") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr - 2");
+      end if;
+
+      -- Total mapping of source.
+
+      if B10.Translate(Source  => B10.To_Bounded_Wide_String("dogodggdo"),
+                       Mapping => Map_Ptr) /= 
+         B10.To_Bounded_Wide_String("catacttca") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr- 3");
+      end if;
+
+      -- No mapping of source.
+
+      if B10.Translate(Source  => B10.To_Bounded_Wide_String(" DOG cat "),
+                       Mapping => Map_Ptr) /= 
+         B10.To_Bounded_Wide_String(" DOG cat ") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr - 4");
+      end if;
+
+      if B10.Translate(B10.To_Bounded_Wide_String("d "), Map_Ptr)         /=
+         B10.To_Bounded_Wide_String("c ")                                   or
+         B10.Translate(B10.To_Bounded_Wide_String("  god"), Map_Ptr)      /=
+         B10.To_Bounded_Wide_String("  tac")                                or
+         B10.Translate(B10.To_Bounded_Wide_String("d o g D og"), Map_Ptr) /=
+         B10.To_Bounded_Wide_String("c a t D at")                           or
+         B10.Translate(B10.To_Bounded_Wide_String("   "), Map_Ptr)        /=
+         B10.To_Bounded_Wide_String("   ")                                  or
+         B10.Translate(B10.To_Bounded_Wide_String("dddddddddd"), Map_Ptr) /=
+         B10.To_Bounded_Wide_String("cccccccccc") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr - 5");
+      end if;
+
+      if B10.Translate(Source  => B10.Null_Bounded_Wide_String,
+                       Mapping => Map_Ptr) /= 
+         B10.To_Bounded_Wide_String("") 
+      then
+         Report.Failed
+           ("Incorrect result from function Translate w/map ptr - 6");
+      end if;
+
+
+
+
+      -- Function Replace_Slice    
+      -- Evaluate function Replace_Slice with 
+      -- a variety of Truncation options.
+
+      -- Drop = Error (Default)
+
+      begin
+         Test_String   := AtoJ_Bnd_Str;
+         Result_String := 
+           B10.Replace_Slice(Source => Test_String, 
+                             Low    => 3,
+                             High   => 5,                   -- 3-5, 3 chars.
+                             By     => Equiv("xxxxxx"));    -- more than 3.
+         Report.Failed("Length_Error not raised by Function Replace_Slice");
+      exception
+         when AS.Length_Error => null;   -- Correct exception raised.
+         when others          =>
+            Report.Failed
+              ("Incorrect exception raised by Function Replace_Slice");
+      end;
+
+      -- Drop = Left                                                          
+
+      Result_String := 
+        B10.Replace_Slice(Source => Test_String, 
+                          Low    =>  7,
+                          High   => 10,                  -- 7-10, 4 chars.
+                          By     => Equiv("xxxxxx"),     --  6 chars.
+                          Drop   => Ada.Strings.Left);
+
+      if Result_String /= 
+         B10.To_Bounded_Wide_String(Equiv("cdefxxxxxx")) -- drop a,b
+      then
+         Report.Failed
+           ("Incorrect result from Function Replace Slice, Drop = Left");
+      end if;
+
+      -- Drop = Right
+
+      Result_String := 
+        B10.Replace_Slice(Source => Test_String,
+                          Low    =>  2,
+                          High   =>  5,                 -- 2-5, 4 chars.
+                          By     => Equiv("xxxxxx"),    --  6 chars.
+                          Drop   => Ada.Strings.Right);
+
+      if Result_String /= 
+         B10.To_Bounded_Wide_String(Equiv("axxxxxxfgh")) -- drop i,j
+      then
+         Report.Failed
+           ("Incorrect result from Function Replace Slice, Drop = Right");
+      end if;
+
+      -- Low = High = Source'Last, "By" length = 1.
+
+      if B10.Replace_Slice(AtoE_Bnd_Str,
+                           B10.To_Wide_String(AtoE_Bnd_Str)'Last,
+                           B10.To_Wide_String(AtoE_Bnd_Str)'Last,
+                           Equiv("X"),
+                           Ada.Strings.Error)  /=
+         B10.To_Bounded_Wide_String(Equiv("abcdX"))
+      then
+         Report.Failed("Incorrect result from Function Replace_Slice");
+      end if;
+
+      -- Index_Error raised when High < Source'First - 1.
+      begin
+         Test_String := 
+           B10.Replace_Slice(AtoE_Bnd_Str, 
+                             B10.To_Wide_String(AtoE_Bnd_Str)'First,
+                             B10.To_Wide_String(AtoE_Bnd_Str)'First - 2,
+                             Equiv("hijklm"));
+         Report.Failed("Index_Error not raised by Function Replace_Slice");
+      exception
+         when AS.Index_Error   => null;  -- OK, expected exception
+         when Constraint_Error => null;  -- Also OK, since RM is not clear
+         when others           =>
+            Report.Failed
+              ("Incorrect exception raised by Function Replace_Slice");
+      end;
+
+
+
+      -- Procedure Replace_Slice  
+      -- Evaluate procedure Replace_Slice with 
+      -- a variety of Truncation options.
+
+      -- Drop = Error (Default)
+
+      begin
+         Test_String := AtoJ_Bnd_Str;
+         B10.Replace_Slice(Source => Test_String, 
+                           Low    => 3,
+                           High   => 5,                   -- 3-5, 3 chars.
+                           By     => Equiv("xxxxxx"));    -- more than 3.
+         Report.Failed("Length_Error not raised by Procedure Replace_Slice");
+      exception
+         when AS.Length_Error => null;   -- Correct exception raised.
+         when others          =>
+            Report.Failed
+              ("Incorrect exception raised by Procedure Replace_Slice");
+      end;
+
+      -- Drop = Left                                                          
+
+      Test_String := AtoJ_Bnd_Str;
+      B10.Replace_Slice(Source => Test_String, 
+                        Low    =>  7,
+                        High   =>  9,                  -- 7-9, 3 chars.
+                        By     => Equiv("xxxxx"),      --  5 chars.
+                        Drop   => Ada.Strings.Left);
+
+      if Test_String /= 
+         B10.To_Bounded_Wide_String(Equiv("cdefxxxxxj")) -- drop a,b
+      then
+         Report.Failed
+           ("Incorrect result from Procedure Replace Slice, Drop = Left");
+      end if;
+
+      -- Drop = Right
+
+      Test_String := AtoJ_Bnd_Str;
+      B10.Replace_Slice(Source => Test_String, 
+                        Low    =>  1,
+                        High   =>  3,                  -- 1-3, 3chars.
+                        By     => Equiv("xxxx"),       --  4 chars.
+                        Drop   => Ada.Strings.Right);
+
+      if Test_String /= 
+         B10.To_Bounded_Wide_String(Equiv("xxxxdefghi"))  -- drop j
+      then
+         Report.Failed
+           ("Incorrect result from Procedure Replace Slice, Drop = Right");
+      end if;
+
+      -- High = Source'First, Low > High (Insert before Low).
+
+      Test_String := AtoE_Bnd_Str;
+      B10.Replace_Slice(Source => Test_String, 
+                        Low    => B10.To_Wide_String(Test_String)'Last,
+                        High   => B10.To_Wide_String(Test_String)'First,
+                        By     => Equiv("XXXX"),       --  4 chars.
+                        Drop   => Ada.Strings.Right);
+
+      if Test_String /= B10.To_Bounded_Wide_String(Equiv("abcdXXXXe")) then 
+         Report.Failed
+           ("Incorrect result from Procedure Replace Slice");
+      end if;
+
+
+
+
+      -- Function Insert with Truncation 
+      -- Drop = Error (Default).
+
+      begin
+         Result_String := 
+           B10.Insert(Source   => AtoJ_Bnd_Str,    -- "abcdefghij"
+                      Before   => 2,
+                      New_Item => Equiv("xyz"));
+         Report.Failed("Length_Error not raised by Function Insert");
+      exception
+         when AS.Length_Error => null;  -- Correct exception raised.
+         when others          => 
+            Report.Failed("Incorrect exception raised by Function Insert");
+      end;
+
+      -- Drop = Left
+
+      Result_String :=
+        B10.Insert(Source   => AtoJ_Bnd_Str,      -- "abcdefghij"
+                   Before   => 5,
+                   New_Item => Equiv("xyz"),      -- 3 additional chars.
+                   Drop     => Ada.Strings.Left);
+
+      if B10.To_Wide_String(Result_String) /= Equiv("dxyzefghij") then 
+         Report.Failed("Incorrect result from Function Insert, Drop = Left");
+      end if;
+
+      -- Drop = Right
+
+      Result_String := 
+        B10.Insert(Source   => B10.To_Bounded_Wide_String("abcdef"),
+                   Before   => 2,
+                   New_Item => "vwxyz",             -- 5 additional chars.
+                   Drop     => Ada.Strings.Right);
+
+      if B10.To_Wide_String(Result_String) /= "avwxyzbcde" then     -- drop f.
+         Report.Failed("Incorrect result from Function Insert, Drop = Right");
+      end if;
+
+      -- Additional cases.
+
+      if B10.Insert(B10.To_Bounded_Wide_String("a"), 1, " B")        /=   
+         B10.To_Bounded_Wide_String(" Ba")                              or
+         B10.Insert(B10.Null_Bounded_Wide_String, 1, Equiv("abcde")) /=
+         AtoE_Bnd_Str                                                   or
+         B10.Insert(B10.To_Bounded_Wide_String("ab"), 2, "")         /=
+         B10.To_Bounded_Wide_String("ab")
+      then
+         Report.Failed("Incorrect result from Function Insert");
+      end if;
+
+
+
+      -- Procedure Insert 
+
+      -- Drop = Error (Default).
+      begin
+         Test_String := AtoJ_Bnd_Str;
+         B10.Insert(Source   => Test_String,   
+                    Before   => 9,
+                    New_Item => Equiv("wxyz"),
+                    Drop     => Ada.Strings.Error);
+         Report.Failed("Length_Error not raised by Procedure Insert");
+      exception
+         when AS.Length_Error => null;  -- Correct exception raised.
+         when others          => 
+            Report.Failed("Incorrect exception raised by Procedure Insert");
+      end;
+
+      -- Drop = Left
+      
+      Test_String := AtoJ_Bnd_Str;
+      B10.Insert(Source   => Test_String,            
+                 Before   => B10.Length(Test_String), -- before last char
+                 New_Item => Equiv("xyz"),            -- 3 additional chars.
+                 Drop     => Ada.Strings.Left);
+
+      if B10.To_Wide_String(Test_String) /= Equiv("defghixyzj") then 
+         Report.Failed("Incorrect result from Procedure Insert, Drop = Left");
+      end if;
+
+      -- Drop = Right
+
+      Test_String := AtoJ_Bnd_Str;
+      B10.Insert(Source   => Test_String,
+                 Before   => 4,
+                 New_Item => Equiv("yz"),             -- 2 additional chars.
+                 Drop     => Ada.Strings.Right);
+
+      if B10.To_Wide_String(Test_String) /= Equiv("abcyzdefgh") then   
+         Report.Failed
+           ("Incorrect result from Procedure Insert, Drop = Right");
+      end if;
+
+      -- Before = Source'First, New_Item length = 1.
+
+      Test_String := B10.To_Bounded_Wide_String(" abc ");
+      B10.Insert(Test_String, 
+                 B10.To_Wide_String(Test_String)'First,
+                 "Z");
+
+      if Test_String /= B10.To_Bounded_Wide_String("Z abc ") then
+         Report.Failed("Incorrect result from Procedure Insert");
+      end if;
+
+
+   exception
+      when others => Report.Failed("Exception raised in  Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+end CXA4019;

@@ -1,0 +1,189 @@
+-- C392004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that subprograms inherited from tagged derivations, which are
+--      subsequently redefined for the derived type, are available to the
+--      package defining the new class via view conversion.  Check
+--      that operations performed on objects using view conversion do not 
+--      affect the extended fields.  Check that visible operations not masked 
+--      by the deriving package remain available to the client, and do not 
+--      affect the extended fields.
+--
+-- TEST DESCRIPTION:
+--      This test declares a tagged type, with a constructor operation,
+--      derives a type from that tagged type, and declares a constructor
+--      operation which masks the inherited operation.  It then tests
+--      that the correct constructor is called, and that the extended
+--      part of the derived type remains untouched as appropriate.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed RM references from objective text.
+--      04 Jan 94   SAIC    Fixed objective typo, removed dead code.
+--
+--!
+
+with Report;
+
+package C392004_1 is
+
+  type Vehicle is tagged private;
+
+  procedure Create ( The_Vehicle :    out Vehicle; TC_Flag : Natural );
+  procedure Start  ( The_Vehicle : in out Vehicle );
+
+private
+
+  type Vehicle is tagged record
+    Engine_On : Boolean;
+  end record;
+
+end C392004_1;
+
+package body C392004_1 is
+  procedure Create ( The_Vehicle : out Vehicle; TC_Flag : Natural ) is
+  begin
+    case TC_Flag is
+      when 1 => null; -- expected flag for this subprogram
+      when others =>
+         Report.Failed ("Called Vehicle Create");
+    end case;
+    The_Vehicle := (Engine_On => False);
+  end Create;
+
+  procedure Start ( The_Vehicle : in out Vehicle ) is
+  begin
+    The_Vehicle.Engine_On := True;
+  end Start;
+
+end C392004_1;
+
+----------------------------------------------------------------------------
+
+with C392004_1;
+package C392004_2 is
+
+  type Car is new C392004_1.Vehicle with record
+    Convertible : Boolean;
+  end record;
+
+  -- masking definition
+  procedure Create( The_Car : out Car; TC_Flag : Natural );
+
+  type Limo is new Car with null record;
+
+  procedure Create( The_Limo : out Limo; TC_Flag : Natural );
+
+end C392004_2;
+
+----------------------------------------------------------------------------
+
+with Report;
+package body C392004_2 is
+
+  procedure Create( The_Car : out Car; TC_Flag : Natural ) is
+  begin
+    case TC_Flag is
+      when 2      => null; -- expected flag for this subprogram
+      when others => Report.Failed ("Called Car Create");
+    end case;
+    C392004_1.Create( C392004_1.Vehicle(The_Car), 1);
+    The_Car.Convertible := False;
+  end Create;
+
+  procedure Create( The_Limo : out Limo; TC_Flag : Natural ) is
+  begin
+    case TC_Flag is
+      when 3      => null; -- expected flag for this subprogram
+      when others => Report.Failed ("Called Limo Create");
+    end case;
+    C392004_1.Create( C392004_1.Vehicle(The_Limo), 1);
+    The_Limo.Convertible := True;
+ end Create;
+
+end C392004_2;
+
+----------------------------------------------------------------------------
+
+with Report;
+with C392004_1; use C392004_1;
+with C392004_2; use C392004_2;
+procedure C392004 is
+
+  My_Car : Car;
+  Your_Car : Limo;
+
+  procedure TC_Assert( Is_True : Boolean; Message : String ) is
+  begin
+    if not Is_True then
+      Report.Failed (Message);
+    end if;
+  end TC_Assert;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C392004", "Check subprogram inheritance & visibility " &
+                          "for derived tagged types" );
+
+  My_Car.Convertible := False;
+  Create( Vehicle( My_Car ), 1 );
+  TC_Assert( not My_Car.Convertible, "Altered descendent component 1");
+
+  Create( Your_Car, 3 );
+  TC_Assert( Your_Car.Convertible, "Did not set inherited component 2");
+
+  My_Car.Convertible := True;
+  Create( Vehicle( My_Car ), 1 );
+  TC_Assert( My_Car.Convertible, "Altered descendent component 3");
+
+  Create( My_Car, 2 );
+  TC_Assert( not My_Car.Convertible, "Did not set extending component 4");
+
+  My_Car.Convertible := False;
+  Start( Vehicle( My_Car ) );
+  TC_Assert( not My_Car.Convertible , "Altered descendent component 5");
+
+  Start( My_Car );
+  TC_Assert( not My_Car.Convertible, "Altered unreferenced component 6");
+
+  Your_Car.Convertible := False;
+  Start( Vehicle( Your_Car ) );
+  TC_Assert( not Your_Car.Convertible , "Altered descendent component 7");
+
+  Start( Your_Car );
+  TC_Assert( not Your_Car.Convertible, "Altered unreferenced component 8");
+
+  My_Car.Convertible := True;
+  Start( Vehicle( My_Car ) );
+  TC_Assert( My_Car.Convertible, "Altered descendent component 9");
+
+  Start( My_Car );
+  TC_Assert( My_Car.Convertible, "Altered unreferenced component 10");
+
+  Report.Result;
+
+end C392004;

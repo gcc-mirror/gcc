@@ -1,0 +1,707 @@
+-- C452001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      For a type extension, check that predefined equality is defined in
+--      terms of the primitive equals operator of the parent type and any
+--      tagged components of the extension part.
+--
+--      For other composite types, check that the primitive equality operator
+--      of any matching tagged components is used to determine equality of the
+--      enclosing type.
+--
+--      For private types, check that predefined equality is defined in
+--      terms of the user-defined (primitive) operator of the full type if
+--      the full type is tagged. The partial view of the type may be
+--      tagged or untagged. Check that predefined equality for a private
+--      type whose full view is untagged is defined in terms of the
+--      predefined equality operator of its full type.
+--
+-- TEST DESCRIPTION:
+--      Tagged types are declared and used as components in several
+--      differing composite type declarations, both tagged and untagged.
+--      To differentiate between predefined and primitive equality
+--      operations, user-defined equality operators are declared for
+--      each component type that is to contribute to the equality
+--      operator of the composite type that houses it. All user-defined
+--      equality operations are designed to yield the opposite result
+--      from the predefined operator, given the same component values.
+--
+--      For cases where primitive equality is to be incorporated into
+--      equality for the enclosing composite type, values are assigned
+--      to the component type so that user-defined equality will return
+--      True. If predefined equality is to be used instead, then the
+--      same strategy results in the equality operator returning False.
+--
+--      When equality for a type incorporates the user-defined equality
+--      operator of one of its component types, the resulting operator
+--      is considered to be the predefined operator of the composite type.
+--      This case is confirmed by defining an tagged component of an
+--      untagged composite type, then using the resulting untagged type
+--      as a component of another composite type. The user-defined operator
+--      for the lowest level should still be called.
+--
+--      Three cases are set up to test private types:
+--
+--                        Case 1        Case 2      Case 3
+--         partial view:  tagged       untagged    untagged
+--         full view:     tagged        tagged     untagged
+--
+--      Types are declared for each of the above cases and user-defined
+--      (primitive) operators are declared following the full type
+--      declaration of each type (i.e., in the private part).
+--
+--      Values are assigned into objects of these types using the same
+--      strategy outlined above. Cases 1 and 2 should execute the
+--      user-defined operator. Case 3 should ignore the user-defined
+--      operator and user predefined equality for the type.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed RM references from objective text.
+--      15 Nov 95   SAIC    Fixed for 2.0.1
+--      04 NOV 96   SAIC    Typographical revision
+--
+--!
+
+package c452001_0 is
+
+   type Point is
+      record
+         X : Integer := 0;
+         Y : Integer := 0;
+      end record;
+
+   type Circle is tagged
+      record
+         Center : Point;
+         Radius : Integer;
+      end record;
+
+   function "=" (L, R : Circle) return Boolean;
+
+   type Colors is (Red, Orange, Yellow, Green, Blue, Purple, Black, White);
+
+   type Colored_Circle is new Circle
+      with record
+         Color : Colors := White;
+      end record;
+
+   function "=" (L, R : Colored_Circle) return Boolean;
+   -- Override predefined equality for this tagged type. Predefined
+   -- equality should incorporate user-defined (primitive) equality
+   -- from type Circle. See C340001 for a test of that feature.
+
+   -- Equality is overridden to ensure that predefined equality 
+   -- incorporates this user-defined function for
+   -- any composite type with Colored_Circle as a component type.
+   -- (i.e., the type extension is recognized as a tagged type for
+   -- the purpose of defining predefined equality for the composite type).
+
+end C452001_0;
+
+package body c452001_0 is
+
+   function "=" (L, R : Circle) return Boolean is
+   begin
+      return L.Radius = R.Radius; -- circles are same size
+   end "=";
+
+   function "=" (L, R : Colored_Circle) return Boolean is
+   begin
+      return Circle(L) = Circle(R);
+   end "=";
+
+end C452001_0;
+
+with C452001_0;
+package C452001_1 is
+
+   type Planet is tagged record
+      Name : String (1..15);
+      Representation : C452001_0.Colored_Circle;
+   end record;
+
+   -- Type Planet will be used to check that predefined equality
+   -- for a tagged type with a tagged component incorporates
+   -- user-defined equality for the component type.
+
+   type TC_Planet is new Planet with null record;
+
+   -- A "copy" of Planet. Used to create a type extension. An "="
+   -- operator will be defined for this type that should be
+   -- incorporated by the type extension.
+
+   function "=" (Arg1, Arg2 : in TC_Planet) return Boolean;
+
+   type Craters is array (1..3) of C452001_0.Colored_Circle;
+
+   -- An array type (untagged) with tagged components
+
+   type Moon is new TC_Planet
+     with record
+        Crater : Craters;
+     end record;
+     
+   -- A tagged record type. Extended component type is untagged,
+   -- but its predefined equality operator should incorporate
+   -- the user-defined operator of its tagged component type.
+
+end C452001_1;
+
+package body C452001_1 is
+
+   function "=" (Arg1, Arg2 : in TC_Planet) return Boolean is
+   begin
+      return Arg1.Name = Arg2.Name;
+   end "=";
+
+end C452001_1;
+
+package C452001_2 is
+
+   -- Untagged record types
+   -- Equality should not be incorporated
+
+   type Spacecraft_Design is (Mariner, Pioneer, Viking, Voyager);
+   type Spacecraft is record
+     Design      : Spacecraft_Design;
+     Operational : Boolean;
+   end record;
+
+   function "=" (L : in Spacecraft; R : in Spacecraft) return Boolean;
+
+   type Mission is record
+      Craft       : Spacecraft;
+      Launch_Date : Natural;
+   end record;
+
+   type Inventory is array (Positive range <>) of Spacecraft;
+
+end C452001_2;
+
+package body C452001_2 is
+
+   function "=" (L : in Spacecraft; R : in Spacecraft) return Boolean is
+   begin
+      return L.Design = R.Design;
+   end "=";
+
+end C452001_2;
+
+package C452001_3 is
+
+   type Tagged_Partial_Tagged_Full is tagged private;
+   procedure Change (Object : in out Tagged_Partial_Tagged_Full;
+                    Value  : in Boolean);
+
+   type Untagged_Partial_Tagged_Full is private;
+   procedure Change (Object : in out Untagged_Partial_Tagged_Full;
+                    Value  : in Integer);
+
+   type Untagged_Partial_Untagged_Full is private;
+   procedure Change (Object : in out Untagged_Partial_Untagged_Full;
+                    Value  : in Duration);
+
+private
+
+   type Tagged_Partial_Tagged_Full is
+      tagged record
+         B : Boolean := True;
+         C : Character := ' ';
+      end record;
+   -- predefined equality checks that all components are equal
+
+   function "=" (L, R : in Tagged_Partial_Tagged_Full) return Boolean;
+   -- primitive equality checks that records equate in component C only
+
+   type Untagged_Partial_Tagged_Full is
+      tagged record
+         I : Integer := 0;
+         P : Positive := 1;
+      end record;
+   -- predefined equality checks that all components are equal
+
+   function "=" (L, R : in Untagged_Partial_Tagged_Full) return Boolean;
+   -- primitive equality checks that records equate in component P only
+
+   type Untagged_Partial_Untagged_Full is
+      record
+         D : Duration := 0.0;
+         S : String (1..12) := "Ada 9X rules";
+      end record;
+   -- predefined equality checks that all components are equal
+
+   function "=" (L, R : in Untagged_Partial_Untagged_Full) return Boolean;
+   -- primitive equality checks that records equate in component S only
+
+end C452001_3;
+   
+with Report;
+package body C452001_3 is
+
+   procedure Change (Object : in out Tagged_Partial_Tagged_Full;
+                    Value  : in Boolean) is
+   begin
+      Object := (Report.Ident_Bool(Value), Object.C);
+   end Change;
+
+   procedure Change (Object : in out Untagged_Partial_Tagged_Full;
+                    Value  : in Integer) is
+   begin
+      Object := (Report.Ident_Int(Value), Object.P);
+   end Change;
+
+   procedure Change (Object : in out Untagged_Partial_Untagged_Full;
+                    Value  : in Duration) is
+   begin
+      Object := (Value, Report.Ident_Str(Object.S));
+   end Change;
+
+   function "=" (L, R : in Tagged_Partial_Tagged_Full) return Boolean is
+   begin
+      return L.C = R.C;
+   end "=";
+
+   function "=" (L, R : in Untagged_Partial_Tagged_Full) return Boolean is
+   begin
+      return L.P = R.P;
+   end "=";
+
+   function "=" (L, R : in Untagged_Partial_Untagged_Full) return Boolean is
+   begin
+      return R.S = L.S;
+   end "=";
+
+end C452001_3;
+
+
+with C452001_0;
+with C452001_1;
+with C452001_2;
+with C452001_3;
+with Report;
+procedure C452001 is
+
+   Mars_Aphelion : C452001_1.Planet :=
+      (Name           => "Mars           ",
+       Representation => (Center => (Report.Ident_Int(20),
+                                     Report.Ident_Int(0)),
+                          Radius => Report.Ident_Int(4),
+                          Color  => C452001_0.Red));
+
+   Mars_Perihelion : C452001_1.Planet :=
+      (Name           => "Mars           ",
+       Representation => (Center => (Report.Ident_Int(-20),
+                                     Report.Ident_Int(0)),
+                          Radius => Report.Ident_Int(4),
+                          Color  => C452001_0.Red));
+
+   -- Mars_Perihelion = Mars_Aphelion if user-defined equality from
+   -- the tagged type Colored_Circle was incorporated into
+   -- predefined equality for the tagged type Planet. User-defined
+   -- equality for Colored_Circle checks only that the Radii are equal.
+
+   Blue_Mars : C452001_1.Planet :=
+      (Name           => "Mars           ",
+       Representation => (Center => (Report.Ident_Int(10),
+                                     Report.Ident_Int(10)),
+                          Radius => Report.Ident_Int(4),
+                          Color  => C452001_0.Blue));
+
+   -- Blue_Mars should equal Mars_Perihelion, because Names and
+   -- Radii are equal (all other components are not).
+
+   Green_Mars : C452001_1.Planet :=
+      (Name           => "Mars           ",
+       Representation => (Center => (Report.Ident_Int(10),
+                                     Report.Ident_Int(10)),
+                          Radius => Report.Ident_Int(4),
+                          Color  => C452001_0.Green));
+
+   -- Blue_Mars should equal Green_Mars. They differ only in the
+   -- Color component. All user-defined equality operations return
+   -- True, but records are not equal by predefined equality.
+
+   -- Blue_Mars should equal Mars_Perihelion, because Names and
+   -- Radii are equal (all other components are not).
+
+   Moon_Craters : C452001_1.Craters :=
+      ((Center => (Report.Ident_Int(9), Report.Ident_Int(11)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Black),
+       (Center => (Report.Ident_Int(10), Report.Ident_Int(10)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Black),
+       (Center => (Report.Ident_Int(11), Report.Ident_Int(9)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Black));
+
+   Alternate_Moon_Craters : C452001_1.Craters :=
+      ((Center => (Report.Ident_Int(9), Report.Ident_Int(9)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Yellow),
+       (Center => (Report.Ident_Int(10), Report.Ident_Int(10)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Purple),
+       (Center => (Report.Ident_Int(11), Report.Ident_Int(11)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Purple));
+
+   -- Moon_Craters = Alternate_Moon_Craters if user-defined equality from
+   -- the tagged type Colored_Circle was incorporated into
+   -- predefined equality for the untagged type Craters. User-defined
+   -- equality checks only that the Radii are equal.
+
+   New_Moon : C452001_1.Moon := 
+      (Name           => "Moon           ",
+       Representation => (Center => (Report.Ident_Int(10),
+                                     Report.Ident_Int(8)),
+                          Radius => Report.Ident_Int(3),
+                          Color  => C452001_0.Black),
+       Crater         => Moon_Craters);
+
+   Full_Moon : C452001_1.Moon := 
+      (Name           => "Moon           ",
+       Representation => (Center => (Report.Ident_Int(10),
+                                     Report.Ident_Int(8)),
+                          Radius => Report.Ident_Int(3),
+                          Color  => C452001_0.Black),
+       Crater         => Alternate_Moon_Craters);
+
+   -- New_Moon = Full_Moon if user-defined equality from
+   -- the tagged type Colored_Circle was incorporated into
+   -- predefined equality for the untagged type Craters. This
+   -- equality test should call user-defined equality for type
+   -- TC_Planet (checks that Names are equal), then predefined
+   -- equality for Craters (ultimately calls user-defined equality
+   -- for type Circle, checking that Radii of craters are equal).
+
+   Mars_Moon : C452001_1.Moon := 
+      (Name           => "Phobos         ",
+       Representation => (Center => (Report.Ident_Int(10),
+                                     Report.Ident_Int(8)),
+                          Radius => Report.Ident_Int(3),
+                          Color  => C452001_0.Black),
+       Crater         => Alternate_Moon_Craters);
+
+   -- Mars_Moon /= Full_Moon since the Names differ.
+
+   Alternate_Moon_Craters_2 : C452001_1.Craters :=
+      ((Center => (Report.Ident_Int(10), Report.Ident_Int(10)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Red),
+       (Center => (Report.Ident_Int(9), Report.Ident_Int(9)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Red),
+       (Center => (Report.Ident_Int(10), Report.Ident_Int(9)),
+        Radius => Report.Ident_Int(1),
+        Color  => C452001_0.Red));
+
+   Harvest_Moon : C452001_1.Moon := 
+      (Name           => "Moon           ",
+       Representation => (Center => (Report.Ident_Int(11),
+                                     Report.Ident_Int(7)),
+                          Radius => Report.Ident_Int(4),
+                          Color  => C452001_0.Orange),
+       Crater         => Alternate_Moon_Craters_2);
+
+   -- Only the fields that are employed by the user-defined equality
+   -- operators are the same. Everything else differs. Equality should
+   -- still return True.
+
+   Viking_1_Orbiter : C452001_2.Mission :=
+      (Craft => (Design      => C452001_2.Viking,
+                 Operational => Report.Ident_Bool(False)),
+       Launch_Date => 1975);
+
+   Viking_1_Lander : C452001_2.Mission :=
+      (Craft => (Design      => C452001_2.Viking,
+                 Operational => Report.Ident_Bool(True)),
+       Launch_Date => 1975);
+
+   -- Viking_1_Orbiter /= Viking_1_Lander if predefined equality
+   -- from the untagged type Spacecraft is used for equality
+   -- of matching components in type Mission. If user-defined
+   -- equality for type Spacecraft is incorporated, which it
+   -- should not be by 4.5.2(21), then Viking_1_Orbiter = Viking_1_Lander.
+   
+   Voyagers : C452001_2.Inventory (1..2):=
+    ((C452001_2.Voyager, Operational => Report.Ident_Bool(True)),
+     (C452001_2.Voyager, Operational => Report.Ident_Bool(False)));
+
+   Jupiter_Craft : C452001_2.Inventory (1..2):=
+    ((C452001_2.Voyager, Operational => Report.Ident_Bool(True)),
+     (C452001_2.Voyager, Operational => Report.Ident_Bool(True)));
+   
+   -- Voyagers /= Jupiter_Craft if predefined equality
+   -- from the untagged type Spacecraft is used for equality
+   -- of matching components in type Inventory. If user-defined
+   -- equality for type Spacecraft is incorporated, which it
+   -- should not be by 4.5.2(21), then Voyagers = Jupiter_Craft.
+
+   TPTF_1 : C452001_3.Tagged_Partial_Tagged_Full;
+   TPTF_2 : C452001_3.Tagged_Partial_Tagged_Full;
+   
+   -- With differing values for Boolean component, user-defined
+   -- (primitive) equality returns True, predefined equality
+   -- returns False. Since full type is tagged, primitive equality
+   -- should be used.
+
+   UPTF_1 : C452001_3.Untagged_Partial_Tagged_Full;
+   UPTF_2 : C452001_3.Untagged_Partial_Tagged_Full;
+
+   -- With differing values for Boolean component, user-defined
+   -- (primitive) equality returns True, predefined equality
+   -- returns False. Since full type is tagged, primitive equality
+   -- should be used.
+
+   UPUF_1 : C452001_3.Untagged_Partial_Untagged_Full;
+   UPUF_2 : C452001_3.Untagged_Partial_Untagged_Full;
+
+   -- With differing values for Duration component, user-defined
+   -- (primitive) equality returns True, predefined equality
+   -- returns False. Since full type is untagged, predefined equality
+   -- should be used.
+
+   -- Use type clauses make "=" and "/=" operators directly visible
+   use type C452001_1.Planet;
+   use type C452001_1.Craters;
+   use type C452001_1.Moon;
+   use type C452001_2.Mission;
+   use type C452001_2.Inventory;
+   use type C452001_3.Tagged_Partial_Tagged_Full;
+   use type C452001_3.Untagged_Partial_Tagged_Full;
+   use type C452001_3.Untagged_Partial_Untagged_Full;
+
+begin
+
+   Report.Test ("C452001", "Equality of private types and " &
+                           "composite types with tagged components");
+
+   -------------------------------------------------------------------
+   -- Tagged type with tagged component.
+   -------------------------------------------------------------------
+
+   if not (Mars_Aphelion = Mars_Perihelion) then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined equality " &
+                     "for enclosing tagged record type");
+   end if;
+
+   if Mars_Aphelion /= Mars_Perihelion then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined inequality " &
+                     "for enclosing tagged record type");
+   end if;
+
+   if not (Blue_Mars = Mars_Perihelion) then
+      Report.Failed ("Equality test for tagged record type " &
+                     "incorporates record components " &
+                     "other than those used by user-defined equality");
+   end if;
+
+   if Blue_Mars /= Mars_Perihelion then
+      Report.Failed ("Inequality test for tagged record type " &
+                     "incorporates record components " &
+                     "other than those used by user-defined equality");
+   end if;
+
+   if Blue_Mars /= Green_Mars then
+      Report.Failed ("Records are unequal even though they only differ " &
+                     "in a component not used by user-defined equality");
+   end if;
+
+   if not (Blue_Mars = Green_Mars) then
+      Report.Failed ("Records are not equal even though they only differ " &
+                     "in a component not used by user-defined equality");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Untagged (array) type with tagged component.
+   -------------------------------------------------------------------
+
+   if not (Moon_Craters = Alternate_Moon_Craters) then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined equality " &
+                     "for enclosing array type");
+   end if;
+
+   if Moon_Craters /= Alternate_Moon_Craters then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined inequality " &
+                     "for enclosing array type");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Tagged type with untagged composite component. Untagged
+   -- component itself has tagged components.
+   -------------------------------------------------------------------
+   if not (New_Moon = Full_Moon) then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined equality " &
+                     "for array component of tagged record type");
+   end if;
+
+   if New_Moon /= Full_Moon then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined inequality " &
+                     "for array component of tagged record type");
+   end if;
+
+   if Mars_Moon = Full_Moon then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined equality " &
+                     "for array component of tagged record type");
+   end if;
+
+   if not (Mars_Moon /= Full_Moon) then
+      Report.Failed ("User-defined equality for tagged component " &
+                     "was not incorporated into predefined inequality " &
+                     "for array component of tagged record type");
+   end if;
+
+   if not (Harvest_Moon = Full_Moon) then
+      Report.Failed ("Equality test for record with array of tagged " &
+                     "components incorporates record components " &
+                     "other than those used by user-defined equality");
+   end if;
+
+   if Harvest_Moon /= Full_Moon then
+      Report.Failed ("Inequality test for record with array of tagged " &
+                     "components incorporates record components " &
+                     "other than those used by user-defined equality");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Untagged types with no tagged components.
+   -------------------------------------------------------------------
+
+   -- Record type
+
+   if Viking_1_Orbiter = Viking_1_Lander then
+      Report.Failed ("User-defined equality for untagged composite " &
+                     "component was incorporated into predefined " &
+                     "equality for " &
+                     "untagged record type");
+   end if;
+
+   if not (Viking_1_Orbiter /= Viking_1_Lander) then
+      Report.Failed ("User-defined equality for untagged composite " &
+                     "component was incorporated into predefined " &
+                     "inequality for " &
+                     "untagged record type");
+   end if;
+
+   -- Array type
+   
+   if Voyagers = Jupiter_Craft then
+      Report.Failed ("User-defined equality for untagged composite " &
+                     "component was incorporated into predefined " &
+                     "equality for " &
+                     "array type");
+   end if;
+
+   if not (Voyagers /= Jupiter_Craft) then
+      Report.Failed ("User-defined equality for untagged composite " &
+                     "component was incorporated into predefined " &
+                     "inequality for " &
+                     "array type");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Private types tests.
+   -------------------------------------------------------------------
+
+   -- Make objects differ from one another
+
+   C452001_3.Change (TPTF_1, False);
+   C452001_3.Change (UPTF_1, 999);
+   C452001_3.Change (UPUF_1, 40.0);
+
+   -------------------------------------------------------------------
+   -- Partial type and full type are tagged. (Full type must be tagged
+   -- if partial type is tagged)
+   -------------------------------------------------------------------
+
+   if not (TPTF_1 = TPTF_2) then
+      Report.Failed ("Predefined equality for full type " &
+                     "was used to determine equality of " &
+                     "tagged private type " &
+                     "instead of user-defined (primitive) equality");
+   end if;
+
+   if TPTF_1 /= TPTF_2 then
+      Report.Failed ("Predefined equality for full type " &
+                     "was used to determine inequality of " &
+                     "tagged private type " &
+                     "instead of user-defined (primitive) equality");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Partial type untagged, full type tagged.
+   -------------------------------------------------------------------
+
+   if not (UPTF_1 = UPTF_2) then
+      Report.Failed ("Predefined equality for full type " &
+                     "was used to determine equality of " &
+                     "private type (untagged partial view, " &
+                     "tagged full view) " &
+                     "instead of user-defined (primitive) equality");
+   end if;
+
+   if UPTF_1 /= UPTF_2 then
+      Report.Failed ("Predefined equality for full type " &
+                     "was used to determine inequality of " &
+                     "private type (untagged partial view, " &
+                     "tagged full view) " &
+                     "instead of user-defined (primitive) equality");
+   end if;
+
+   -------------------------------------------------------------------
+   -- Partial type and full type are both untagged.
+   -------------------------------------------------------------------
+
+   if UPUF_1 = UPUF_2 then
+      Report.Failed ("User-defined (primitive) equality for full type " &
+                     "was used to determine equality of " &
+                     "private type (untagged partial view, " &
+                     "untagged full view) " &
+                     "instead of predefined equality");
+   end if;
+
+   if not (UPUF_1 /= UPUF_2) then
+      Report.Failed ("User-defined (primitive) equality for full type " &
+                     "was used to determine inequality of " &
+                     "private type (untagged partial view, " &
+                     "untagged full view) " &
+                     "instead of predefined equality");
+   end if;
+
+   -------------------------------------------------------------------
+   Report.Result;
+
+end C452001;

@@ -1,0 +1,210 @@
+-- C460011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are 
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release, 
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that conversion of a decimal type to a modular type raises
+--     Constraint_Error when the operand value is outside the base range
+--     of the modular type.
+--     Check that a conversion of a decimal type to an integer type
+--     rounds correctly.
+--
+-- TEST DESCRIPTION:
+--      Test conversion from decimal types to modular types.  Test
+--      conversion to mod 255, mod 256 and mod 258 to test the boundaries
+--      of 8 bit (+/-) unsigned numbers.
+--      Test operand values that are negative, the value of the mod,
+--      and greater than the value of the mod.
+--      Declare a generic test procedure and instantiate it for each of the
+--      unsigned types for each operand type.
+--      Check that the the operand is properly rounded during the conversion.
+--
+-- APPLICABILITY CRITERIA:
+--      This test is applicable to all implementations which support
+--      decimal types.
+--
+-- CHANGE HISTORY:
+--      24 NOV 98   RLB  Split decimal cases from C460008 into this
+--                       test, added conversions to integer types.
+--      18 JAN 99   RLB  Repaired errors in test.
+--
+--!
+
+------------------------------------------------------------------- C460011
+
+with Report;
+
+procedure C460011 is
+
+  Shy_By_One   : constant := 2**8-1;
+  Heavy_By_Two : constant := 2**8+2;
+
+  type Unsigned_Edge_8 is mod Shy_By_One;
+  type Unsigned_8_Bit  is mod 2**8;
+  type Unsigned_Over_8 is mod Heavy_By_Two;
+
+  type Signed_8_Bit is range -128 .. 127;
+  type Signed_Over_8 is range -200 .. 200;
+
+  NPC : constant String := " not properly converted";
+
+  procedure Assert( Truth: Boolean; Message: String ) is
+  begin
+    if not Truth then
+      Report.Failed(Message);
+    end if;
+  end Assert;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+  type Decim is delta 0.1 digits 5;    -- N/A => ERROR.
+
+  generic
+    type Source is delta <> digits <>;
+    type Target is mod <>;
+  procedure Decimal_Conversion_Check( For_The_Value : Source;
+                                      Message       : String );
+
+  procedure Decimal_Conversion_Check( For_The_Value : Source;
+                                      Message       : String ) is
+
+    Item : Target;
+
+  begin  
+    Item := Target( For_The_Value );
+    Report.Failed("Deci expected Constraint_Error " & Message);
+    Report.Comment("Value of" & Target'Image(Item) & NPC);
+  exception
+    when Constraint_Error => null; -- expected case
+    when others => Report.Failed("Deci raised wrong exception " & Message);
+  end Decimal_Conversion_Check;
+
+  procedure Decim_To_Short is
+    new Decimal_Conversion_Check( Decim, Unsigned_Edge_8 );
+
+  procedure Decim_To_Eight is
+    new Decimal_Conversion_Check( Decim, Unsigned_8_Bit );
+
+  procedure Decim_To_Wide is
+    new Decimal_Conversion_Check( Decim, Unsigned_Over_8 );
+
+  function Identity( Launder: Decim ) return Decim is
+    Flat_Broke : constant Decim := 0.0;
+  begin
+    if Report.Ident_Bool( Launder = Flat_Broke ) then
+      return Flat_Broke;
+    else
+      return Launder;
+    end if;
+  end Identity;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+begin  -- Main test procedure.
+
+  Report.Test ("C460011", "Check that conversion to " &
+                          "a modular type raises Constraint_Error when " &
+                          "the operand value is outside the base range " &
+                          "of the modular type" );
+   
+  -- Decimal Error cases
+
+  Decim_To_Short( Identity( -5.00 ), "M2S Dynamic, Negative" );
+  Decim_To_Short( Shy_By_One * 1.0, "M2S Static,  At_Mod" );
+  Decim_To_Short( 1995.9, "M2S Static,  Over_Mod" );
+
+  Decim_To_Eight( -0.5, "M28 Static, Negative" );
+  Decim_To_Eight( 2.0*128, "M28 Static,  At_Mod" );
+  Decim_To_Eight( Identity( 2001.2 ), "M28 Dynamic, Over_Mod" );
+
+  Decim_To_Wide ( Decim'First, "M2W Static,  Negative" );
+  Decim_To_Wide ( Identity( 2*128.0 +2.0 ), "M2W Dynamic, At_Mod" );
+  Decim_To_Wide ( Decim'Last, "M2W Static,  Over_Mod" );
+
+  -- Check a few, correct, edge cases, for modular types.
+
+  Eye_Dew: declare
+    Sense     : Decim    := 0.00;
+
+    Little   : Unsigned_Edge_8;
+    Moderate : Unsigned_8_Bit;
+    Big      : Unsigned_Over_8;
+
+  begin
+    Moderate := Unsigned_8_Bit (Sense);
+    Assert( Moderate = 0, "Sense => Moderate, 0");
+
+    Sense     := 2*128.0;
+
+    Big := Unsigned_Over_8 (Sense);
+    Assert( Big = 256, "Sense => Big, 256");
+
+  end Eye_Dew;
+
+  Rounding: declare
+    Easy     : Decim  := Identity ( 2.0);
+    Simple   : Decim  := Identity ( 2.1);
+    Halfway  : Decim  := Identity ( 2.5);
+    Upward   : Decim  := Identity ( 2.8);
+    Chop     : Decim  := Identity (-2.2);
+    Neg_Half : Decim  := Identity (-2.5);
+    Downward : Decim  := Identity (-2.7);
+
+    Little   : Unsigned_Edge_8;
+    Moderate : Unsigned_8_Bit;
+    Big      : Unsigned_Over_8;
+
+    Also_Little:Signed_8_Bit;
+    Also_Big : Signed_Over_8;
+    
+  begin
+    Little := Unsigned_Edge_8 (Easy);
+    Assert( Little = 2, "Easy => Little, 2");
+
+    Moderate := Unsigned_8_Bit (Simple);
+    Assert( Moderate = 2, "Simple => Moderate, 2");
+
+    Big := Unsigned_Over_8 (Halfway); -- Rounds up by 4.6(33).
+    Assert( Big = 3, "Halfway => Big, 3");
+
+    Little := Unsigned_Edge_8 (Upward);
+    Assert( Little = 3, "Upward => Little, 3");
+
+    Also_Big := Signed_Over_8 (Halfway); -- Rounds up by 4.6(33).
+    Assert( Also_Big = 3, "Halfway => Also_Big, 3");
+
+    Also_Little := Signed_8_Bit (Chop);
+    Assert( Also_Little = -2, "Chop => Also_Little, -2");
+
+    Also_Big := Signed_Over_8 (Neg_Half); -- Rounds down by 4.6(33).
+    Assert( Also_Big = -3, "Halfway => Also_Big, -3");
+
+    Also_Little := Signed_8_Bit (Downward);
+    Assert( Also_Little = -3, "Downward => Also_Little, -3");
+
+  end Rounding;
+
+
+  Report.Result;
+
+end C460011;

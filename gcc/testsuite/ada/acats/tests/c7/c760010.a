@@ -1,0 +1,418 @@
+-- C760010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that explicit calls to Initialize, Adjust and Finalize
+--      procedures that raise exceptions propagate the exception raised,
+--      not Program_Error.  Check this for both a user defined exception
+--      and a language defined exception.  Check that implicit calls to
+--      initialize procedures that raise an exception propagate the
+--      exception raised, not Program_Error;
+--
+--      Check that the utilization of a controlled type as the actual for
+--      a generic formal tagged private parameter supports the correct
+--      behavior in the instantiated software.
+--
+-- TEST DESCRIPTION:
+--      Declares a generic package instantiated to check that controlled
+--      types are not impacted by the "generic boundary."
+--      This instance is then used to perform the tests of various calls to
+--      the procedures.  After each operation in the main program that should
+--      cause implicit calls where an exception is raised, the program handles
+--      Program_Error.  After each explicit call, the program handles the
+--      Expected_Error.  Handlers for the opposite exception are provided to
+--      catch the obvious failure modes.  The predefined exception
+--      Tasking_Error is used to be certain that some other reason has not
+--      raised a predefined exception.
+--
+--     
+-- DATA STRUCTURES
+--
+--      C760010_1.Simple_Control is derived from
+--        Ada.Finalization.Controlled
+--
+--      C760010_2.Embedded_Derived is derived from C760010_1.Simple_Control
+--        by way of generic instantiation
+--
+--
+-- CHANGE HISTORY:
+--      01 MAY 95   SAIC    Initial version
+--      23 APR 96   SAIC    Fix visibility problem for 2.1
+--      14 NOV 96   SAIC    Revisit for 2.1 release
+--      26 JUN 98   EDS     Added pragma Elaborate_Body to
+--                          package C760010_0.Check_Formal_Tagged
+--                          to avoid possible instantiation error
+--!
+
+---------------------------------------------------------------- C760010_0
+
+package C760010_0 is
+
+  User_Defined_Exception : exception;
+
+  type Actions is ( No_Action,
+                    Init_Raise_User_Defined, Init_Raise_Standard,
+                    Adj_Raise_User_Defined,  Adj_Raise_Standard,
+                    Fin_Raise_User_Defined,  Fin_Raise_Standard );
+
+  Action : Actions := No_Action;
+
+  function Unique return Natural;
+
+end C760010_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C760010_0 is
+
+  Value : Natural := 101;
+
+  function Unique return Natural is
+  begin
+    Value := Value +1;
+    return Value;
+  end Unique;
+
+end C760010_0;
+
+---------------------------------------------------------------- C760010_0
+------------------------------------------------------ Check_Formal_Tagged
+
+generic
+
+  type Formal_Tagged is tagged private;
+
+package C760010_0.Check_Formal_Tagged is
+
+  pragma Elaborate_Body;
+
+  type Embedded_Derived is new Formal_Tagged with record
+    TC_Meaningless_Value : Natural := Unique;
+  end record;
+
+  procedure Initialize( ED: in out Embedded_Derived );
+  procedure Adjust    ( ED: in out Embedded_Derived );
+  procedure Finalize  ( ED: in out Embedded_Derived );
+
+end C760010_0.Check_Formal_Tagged;
+
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760010_0.Check_Formal_Tagged is
+
+
+  procedure Initialize( ED: in out Embedded_Derived ) is
+  begin
+    ED.TC_Meaningless_Value := Unique;
+    case Action is
+      when Init_Raise_User_Defined => raise User_Defined_Exception;
+      when Init_Raise_Standard     => raise Tasking_Error;
+      when others                  => null;
+    end case;
+  end Initialize;
+
+  procedure Adjust    ( ED: in out Embedded_Derived ) is
+  begin
+    ED.TC_Meaningless_Value := Unique;
+    case Action is
+      when Adj_Raise_User_Defined => raise User_Defined_Exception;
+      when Adj_Raise_Standard     => raise Tasking_Error;
+      when others                 => null;
+    end case;
+  end Adjust;
+
+  procedure Finalize  ( ED: in out Embedded_Derived ) is
+  begin
+    ED.TC_Meaningless_Value := Unique;
+    case Action is
+      when Fin_Raise_User_Defined => raise User_Defined_Exception;
+      when Fin_Raise_Standard     => raise Tasking_Error;
+      when others                 => null;
+    end case;
+  end Finalize;
+
+end C760010_0.Check_Formal_Tagged;
+ 
+---------------------------------------------------------------- C760010_1
+
+with Ada.Finalization;
+package C760010_1 is
+
+  procedure Check_Counters(Init,Adj,Fin : Natural; Message: String);
+  procedure Reset_Counters;
+
+  type Simple_Control is new Ada.Finalization.Controlled with record
+    Item: Integer;
+  end record;
+  procedure Initialize( AV: in out Simple_Control );
+  procedure Adjust    ( AV: in out Simple_Control );
+  procedure Finalize  ( AV: in out Simple_Control );
+
+end C760010_1;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760010_1 is
+
+  Initialize_Called : Natural;
+  Adjust_Called     : Natural;
+  Finalize_Called   : Natural;
+
+  procedure Check_Counters(Init,Adj,Fin : Natural; Message: String) is
+  begin
+    if Init /= Initialize_Called then
+      Report.Failed("Initialize mismatch " & Message);
+    end if;
+    if Adj /= Adjust_Called then
+      Report.Failed("Adjust mismatch " & Message);
+    end if;
+    if Fin /= Finalize_Called then
+      Report.Failed("Finalize mismatch " & Message);
+    end if;
+  end Check_Counters;
+
+  procedure Reset_Counters is
+  begin
+    Initialize_Called := 0;
+    Adjust_Called     := 0;
+    Finalize_Called   := 0;
+  end Reset_Counters;
+
+  procedure Initialize( AV: in out Simple_Control ) is
+  begin
+    Initialize_Called := Initialize_Called +1;
+    AV.Item := 0;
+  end Initialize;
+
+  procedure Adjust    ( AV: in out Simple_Control ) is
+  begin
+    Adjust_Called := Adjust_Called +1;
+    AV.Item := AV.Item +1;
+  end Adjust;
+
+  procedure Finalize  ( AV: in out Simple_Control ) is
+  begin
+    Finalize_Called := Finalize_Called +1;
+    AV.Item := AV.Item +1;
+  end Finalize;
+
+end C760010_1;
+ 
+---------------------------------------------------------------- C760010_2
+
+with C760010_0.Check_Formal_Tagged;
+with C760010_1;
+package C760010_2 is
+  new C760010_0.Check_Formal_Tagged(C760010_1.Simple_Control);
+ 
+---------------------------------------------------------------------------
+
+with Report;
+with C760010_0;
+with C760010_1;
+with C760010_2;
+procedure C760010 is
+
+  use type C760010_0.Actions;
+
+  procedure Case_Failure(Message: String) is
+  begin
+    Report.Failed(Message & " for case "
+                  & C760010_0.Actions'Image(C760010_0.Action) );
+  end Case_Failure;
+
+  procedure Check_Implicit_Initialize is
+    Item   : C760010_2.Embedded_Derived;  -- exception here propagates to
+    Gadget : C760010_2.Embedded_Derived;  -- caller
+  begin
+    if C760010_0.Action
+       in C760010_0.Init_Raise_User_Defined..C760010_0.Init_Raise_Standard
+    then
+      Case_Failure("Anticipated exception at implicit init");
+    end if;
+    begin
+      Item := Gadget;                     -- exception here handled locally
+      if C760010_0.Action in C760010_0.Adj_Raise_User_Defined
+                                   .. C760010_0.Fin_Raise_Standard then
+        Case_Failure ("Anticipated exception at assignment");
+      end if;
+    exception
+      when Program_Error =>
+        if C760010_0.Action not in C760010_0.Adj_Raise_User_Defined
+                                   .. C760010_0.Fin_Raise_Standard then
+          Report.Failed("Program_Error in Check_Implicit_Initialize");
+        end if;
+      when Tasking_Error =>
+        Report.Failed("Tasking_Error in Check_Implicit_Initialize");
+      when C760010_0.User_Defined_Exception =>
+        Report.Failed("User_Error in Check_Implicit_Initialize");
+      when others =>
+        Report.Failed("Wrong exception Check_Implicit_Initialize");
+    end;
+  end Check_Implicit_Initialize;
+
+---------------------------------------------------------------------------
+
+  Global_Item : C760010_2.Embedded_Derived;
+
+---------------------------------------------------------------------------
+
+  procedure Check_Explicit_Initialize is
+  begin
+    begin
+      C760010_2.Initialize( Global_Item );
+    if C760010_0.Action
+       in C760010_0.Init_Raise_User_Defined..C760010_0.Init_Raise_Standard
+    then
+      Case_Failure("Anticipated exception at explicit init");
+    end if;
+    exception
+      when Program_Error =>
+        Report.Failed("Program_Error in Check_Explicit_Initialize");
+      when Tasking_Error =>
+        if C760010_0.Action /= C760010_0.Init_Raise_Standard then
+          Report.Failed("Tasking_Error in Check_Explicit_Initialize");
+        end if;
+      when C760010_0.User_Defined_Exception =>
+        if C760010_0.Action /= C760010_0.Init_Raise_User_Defined then
+          Report.Failed("User_Error in Check_Explicit_Initialize");
+        end if;
+      when others =>
+        Report.Failed("Wrong exception in Check_Explicit_Initialize");
+    end;
+  end Check_Explicit_Initialize;
+
+---------------------------------------------------------------------------
+
+  procedure Check_Explicit_Adjust is
+  begin
+    begin
+      C760010_2.Adjust( Global_Item );
+    if C760010_0.Action
+       in C760010_0.Adj_Raise_User_Defined..C760010_0.Adj_Raise_Standard
+    then
+      Case_Failure("Anticipated exception at explicit Adjust");
+    end if;
+    exception
+      when Program_Error =>
+        Report.Failed("Program_Error in Check_Explicit_Adjust");
+      when Tasking_Error =>
+        if C760010_0.Action /= C760010_0.Adj_Raise_Standard then
+          Report.Failed("Tasking_Error in Check_Explicit_Adjust");
+        end if;
+      when C760010_0.User_Defined_Exception =>
+        if C760010_0.Action /= C760010_0.Adj_Raise_User_Defined then
+          Report.Failed("User_Error in Check_Explicit_Adjust");
+        end if;
+      when others =>
+        Report.Failed("Wrong exception in Check_Explicit_Adjust");
+    end;
+  end Check_Explicit_Adjust;
+
+---------------------------------------------------------------------------
+
+  procedure Check_Explicit_Finalize is
+  begin
+    begin
+      C760010_2.Finalize( Global_Item );
+    if C760010_0.Action
+       in C760010_0.Fin_Raise_User_Defined..C760010_0.Fin_Raise_Standard
+    then
+      Case_Failure("Anticipated exception at explicit Finalize");
+    end if;
+    exception
+      when Program_Error =>
+        Report.Failed("Program_Error in Check_Explicit_Finalize");
+      when Tasking_Error =>
+        if C760010_0.Action /= C760010_0.Fin_Raise_Standard then
+          Report.Failed("Tasking_Error in Check_Explicit_Finalize");
+        end if;
+      when C760010_0.User_Defined_Exception =>
+        if C760010_0.Action /= C760010_0.Fin_Raise_User_Defined then
+          Report.Failed("User_Error in Check_Explicit_Finalize");
+        end if;
+      when others =>
+        Report.Failed("Wrong exception in Check_Explicit_Finalize");
+    end;
+  end Check_Explicit_Finalize;
+
+---------------------------------------------------------------------------
+
+begin  -- Main test procedure.
+
+  Report.Test ("C760010", "Check that explicit calls to finalization " &
+                          "procedures that raise exceptions propagate " &
+                          "the exception raised.  Check the utilization " &
+                          "of a controlled type as the actual for a " &
+                          "generic formal tagged private parameter" );
+
+  for Act in C760010_0.Actions loop
+    C760010_1.Reset_Counters;
+    C760010_0.Action := Act;
+
+    begin
+      Check_Implicit_Initialize;
+      if Act in
+         C760010_0.Init_Raise_User_Defined..C760010_0.Init_Raise_Standard then
+        Case_Failure("No exception at Check_Implicit_Initialize");
+      end if;
+    exception
+      when Tasking_Error =>
+        if Act /= C760010_0.Init_Raise_Standard then
+          Case_Failure("Tasking_Error at Check_Implicit_Initialize");
+        end if;
+      when C760010_0.User_Defined_Exception =>
+        if Act /= C760010_0.Init_Raise_User_Defined then
+          Case_Failure("User_Error at Check_Implicit_Initialize");
+        end if;
+      when Program_Error =>
+         -- If finalize raises an exception, all other object are finalized
+         -- first and Program_Error is raised upon leaving the master scope.
+         -- 7.6.1:14
+         if Act not in C760010_0.Fin_Raise_User_Defined..
+                       C760010_0.Fin_Raise_Standard then
+            Case_Failure("Program_Error at Check_Implicit_Initialize");
+         end if;
+      when others =>
+        Case_Failure("Wrong exception at Check_Implicit_Initialize");
+    end;
+
+    Check_Explicit_Initialize;
+    Check_Explicit_Adjust;
+    Check_Explicit_Finalize;
+
+    C760010_1.Check_Counters(0,0,0, C760010_0.Actions'Image(Act));
+
+  end loop;
+
+  -- Set to No_Action to avoid exception in finalizing Global_Item
+  C760010_0.Action := C760010_0.No_Action;
+
+  Report.Result;
+
+end C760010;

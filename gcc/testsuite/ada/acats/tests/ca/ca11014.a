@@ -1,0 +1,302 @@
+-- CA11014.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an instantiation of a child package of a generic package
+--      can use its parent's declarations and operations, including a formal 
+--      package of the parent. 
+--
+-- TEST DESCRIPTION:
+--      Declare a list abstraction in a generic package which manages lists of
+--      elements of any discrete type. Declare a generic package which 
+--      operates on lists of elements of integer types.  Declare a generic
+--      child of this package which defines additional list operations. 
+--      Use the formal discrete type as the generic formal actual part for the
+--      parent formal package. 
+--
+--      Declare an instance of parent, then declare an instance of the child 
+--      which is itself a child the parent's instance. In the main program,
+--      check that the operations in both instances perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      15 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--      07 Sep 96   SAIC    Change formal param E to be out only.
+--      19 Oct 96   SAIC    ACVC 2.1: Added pragma Elaborate to context
+--                          clauses of CA11014_0, CA11014_1, and CA11014_5.
+--      27 Feb 97   PWB.CTA Added elaboration pragma at package CA11014_4
+--!
+  
+-- Actual package for the parent's formal.
+generic               
+
+   type Element_Type is (<>);  -- List elems may be of any discrete types.
+
+package CA11014_0 is              
+
+   type Node_Type;
+   type Node_Pointer is access Node_Type;
+
+   type Node_Type is record
+      Item : Element_Type;
+      Next : Node_Pointer := null;
+   end record;
+
+   type List_Type is record
+      First   : Node_Pointer := null;
+      Current : Node_Pointer := null;
+      Last    : Node_Pointer := null;
+   end record;
+
+   -- Return true if current element is last in the list.
+   function End_Of_List (L : List_Type) return boolean;
+
+   -- Set "current" pointer to first list element.
+   procedure Reset (L : in out List_Type);
+
+end CA11014_0;
+
+     --==================================================================--
+
+package body CA11014_0 is
+
+   function End_Of_List (L : List_Type) return boolean is
+   begin
+      return (L.Current = null);
+   end End_Of_List;
+   -------------------------------------------------------
+   procedure Reset (L : in out List_Type) is
+   begin
+      L.Current := L.First;                 -- Set "current" pointer to first
+   end Reset;                               -- list element.
+
+end CA11014_0;
+
+     --==================================================================--
+
+with CA11014_0;            -- Generic list abstraction.
+pragma Elaborate (CA11014_0);
+generic             
+
+   -- Import the list abstraction defined in CA11014_0.
+   with package List_Mgr is new CA11014_0 (<>);
+
+package CA11014_1 is    
+
+   -- Write to current element and advance "current" pointer.
+   procedure Write_Element (L : in out List_Mgr.List_Type; 
+                            E : in     List_Mgr.Element_Type);
+
+   -- Read from current element and advance "current" pointer.
+   procedure Read_Element (L : in out List_Mgr.List_Type; 
+                           E :    out List_Mgr.Element_Type);
+
+   -- Add element to end of list.
+   procedure Add_Element (L : in out List_Mgr.List_Type; 
+                          E : in     List_Mgr.Element_Type);
+
+end CA11014_1;
+
+     --==================================================================--
+
+package body CA11014_1 is
+
+   procedure Write_Element (L : in out List_Mgr.List_Type; 
+                            E : in     List_Mgr.Element_Type) is
+   begin
+      L.Current.Item := E;               -- Write to current element.
+      L.Current      := L.Current.Next;  -- Advance "current" pointer.
+   end Write_Element;
+   -------------------------------------------------------
+   procedure Read_Element (L : in out List_Mgr.List_Type; 
+                           E :    out List_Mgr.Element_Type) is
+   begin
+      E         := L.Current.Item;       -- Retrieve current element.
+      L.Current := L.Current.Next;       -- Advance "current" pointer.
+   end Read_Element;
+   -------------------------------------------------------
+   procedure Add_Element (L : in out List_Mgr.List_Type; 
+                          E : in     List_Mgr.Element_Type) is
+      New_Node : List_Mgr.Node_Pointer := new List_Mgr.Node_Type'(E, null); 
+       use type List_Mgr.Node_Pointer;
+   begin
+      if L.First = null then                -- No elements in list, so add new
+         L.First := New_Node;               -- element at beginning of list.
+      else
+         L.Last.Next := New_Node;           -- Add new element at end of list.
+      end if;
+      L.Last := New_Node;                   -- Set last-in-list pointer.
+   end Add_Element;
+
+end CA11014_1;
+
+     --==================================================================--
+
+-- Generic child of list operation.  This child adds a layer of 
+-- functionality to the parent generic.
+
+generic
+
+package CA11014_1.CA11014_2 is
+
+   procedure Write_First_To_List (L : in out List_Mgr.List_Type);
+
+   -- ... Various other operations used by the application.
+
+end CA11014_1.CA11014_2;
+
+     --==================================================================--
+
+package body CA11014_1.CA11014_2 is
+
+   procedure Write_First_To_List (L : in out List_Mgr.List_Type) is
+   begin
+      List_Mgr.Reset (L);    -- Parent's formal package.
+
+      while not List_Mgr.End_Of_List (L) loop     -- Parent's formal package.
+         Write_Element (L, List_Mgr.Element_Type'First);   
+                                                  -- Parent's operation, 
+      end loop;                                   -- parent's formal.
+      
+   end Write_First_To_List;
+
+end CA11014_1.CA11014_2;
+
+     --==================================================================--
+
+package CA11014_3 is
+
+   type Points is range 0 .. 100;
+
+   -- ... Various other types used by the application.
+
+end CA11014_3;
+
+
+-- No body for CA11014_3;
+
+     --==================================================================--
+
+-- Declare instances of the generic list packages for the discrete type.
+-- The instance of the child must itself be declared as a child of the 
+-- instance of the parent.
+
+with CA11014_0;               -- Generic list abstraction.
+with CA11014_3;               -- Package containing discrete type declaration.
+pragma Elaborate (CA11014_0);
+package CA11014_4 is new CA11014_0 (CA11014_3.Points);  -- Points list.
+
+with CA11014_4;               -- Points list.
+with CA11014_1;               -- Generic list operation.
+pragma Elaborate (CA11014_1);
+package CA11014_5 is new CA11014_1 (CA11014_4);         -- Scores list.
+
+with CA11014_1.CA11014_2;     -- Additional generic list operation,
+with CA11014_5;
+pragma Elaborate (CA11014_5);
+package CA11014_5.CA11014_6 is new CA11014_5.CA11014_2;
+                                                   -- Points list operation.
+
+     --==================================================================--
+
+with CA11014_1.CA11014_2;      -- Additional generic list operation,
+                               -- implicitly with list operation.
+with CA11014_3;                -- Package containing discrete type declaration.
+with CA11014_4;                -- Points list.
+with CA11014_5.CA11014_6;      -- Points list operation.
+with Report;
+
+procedure CA11014 is
+
+   package Lists_Of_Scores renames CA11014_4;
+   package Score_Ops renames CA11014_5;
+   package Point_Ops renames CA11014_5.CA11014_6;
+
+   Scores : Lists_Of_Scores.List_Type;                -- List of points.
+
+   type TC_Score_Array is array (1 .. 3) of CA11014_3.Points;
+
+   TC_Initial_Values : constant TC_Score_Array := (10, 21, 49);
+   TC_Final_Values   : constant TC_Score_Array := (0, 0, 0);
+
+   TC_Initial_Values_Are_Correct : boolean := false;
+   TC_Final_Values_Are_Correct   : boolean := false;
+
+               --------------------------------------------------
+
+   -- Initial list contains 3 scores with the values 10, 21, and 49.
+   procedure TC_Initialize_List (L : in out Lists_of_Scores.List_Type) is
+   begin                                  
+      for I in TC_Score_Array'range loop  
+         Score_Ops.Add_Element (L, TC_Initial_Values(I));
+                   -- Operation from generic parent.
+      end loop;
+   end TC_Initialize_List;
+
+               --------------------------------------------------
+
+   -- Verify that all scores have been set to zero.
+   procedure TC_Verify_List (L        : in out Lists_of_Scores.List_Type;
+                             Expected : in     TC_Score_Array;
+                             OK       :    out boolean) is
+      Actual : TC_Score_Array;
+   begin                                  
+      Lists_of_Scores.Reset (L);       -- Operation from parent's formal.
+      for I in TC_Score_Array'range loop
+         Score_Ops.Read_Element (L, Actual(I));
+                   -- Operation from generic parent.
+      end loop;
+      OK := (Actual = Expected);
+   end TC_Verify_List;
+
+               --------------------------------------------------
+
+begin -- CA11014 
+
+   Report.Test ("CA11014", "Check that an instantiation of a child package " &
+                           "of a generic package can use its parent's "      & 
+                           "declarations and operations, including a "       &
+                           "formal package of the parent");
+
+   TC_Initialize_List (Scores);
+   TC_Verify_List (Scores, TC_Initial_Values, TC_Initial_Values_Are_Correct);
+
+   if not TC_Initial_Values_Are_Correct then
+      Report.Failed ("List contains incorrect initial values");
+   end if;
+
+   Point_Ops.Write_First_To_List (Scores);
+                   -- Operation from generic child package.
+
+   TC_Verify_List (Scores, TC_Final_Values, TC_Final_Values_Are_Correct);
+
+   if not TC_Final_Values_Are_Correct then
+      Report.Failed ("List contains incorrect final values");
+   end if;
+
+   Report.Result;
+
+end CA11014;

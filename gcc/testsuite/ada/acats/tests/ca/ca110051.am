@@ -1,0 +1,224 @@
+-- CA110051.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that entities and operations declared in a package can be used
+--      in the private part of a child of a child of the package.
+--
+-- TEST DESCRIPTION:
+--      Declare a series of library unit packages -- parent, child, and 
+--      grandchild.  The grandchild package will have a private part.
+--      From within the private part of the grandchild, make use of 
+--      components declared in the parent and grandparent packages.
+--
+-- TEST FILES:
+--      The test consists of the following files:
+--
+--         CA110050.A
+--      => CA110051.AM
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+                                    -- Grandchild Package Message.Text.Encoded
+package CA110050_0.CA110050_1.CA110050_2 is  
+
+   type Coded_Message is new Text_Message_Type with private;
+
+   procedure Send (Message : in     Coded_Message;
+                   Confirm :    out Coded_Message;
+                   Status  :    out Boolean);
+
+   function Encode (Message : Text_Message_Type) return Coded_Message;
+   function Decode (Message : Coded_Message)     return Boolean;
+   function Test_Connection                      return Boolean;
+
+private
+
+   Uncoded : Descriptor renames Null_Descriptor_Value; -- Grandparent object.
+
+   type Coded_Message is new Text_Message_Type with    -- Parent type.
+      record
+         Key       : Descriptor := Uncoded;
+         Coded_Key : Descriptor := Next_Available_Message;
+                                 -- Grandparent type, grandparent function.
+         Scrambled : Text_Type  := Null_Text;          -- Parent object.
+      end record;                                      
+
+   Coded_Msg : Coded_Message;
+
+   type Blank_Message is new Message_Type with         -- Grandparent type.
+      record
+         ID        : Descriptor := Next_Available_Message;
+                                 -- Grandparent type, grandparent function.
+      end record;                                      
+
+   Test_Message     : Blank_Message;
+
+   Confirm_String   : constant String := "OK";
+   Scrambled_String : constant String := "KO";
+
+   Confirm_Text : Text_Type (Confirm_String'Length) :=
+     (Max_Length => Confirm_String'Length,
+      Length     => Confirm_String'Length,
+      Text_Field => Confirm_String);
+
+   Scrambled_Text : Text_Type (Scrambled_String'Length) :=
+     (Max_Length => Scrambled_String'Length,
+      Length     => Scrambled_String'Length,
+      Text_Field => Scrambled_String);
+     
+end CA110050_0.CA110050_1.CA110050_2; -- Grandchild Pkg Message.Text.Encoded
+
+     --=================================================================--
+
+                               -- Grandchild Package body Message.Text.Encoded
+package body CA110050_0.CA110050_1.CA110050_2 is 
+
+   procedure Send (Message : in     Coded_Message;
+                   Confirm :    out Coded_Message;
+                   Status  :    out Boolean) is
+
+      Confirmation_Message : Coded_Message :=
+        (Number    => Message.Number,
+         Text      => Confirm_Text,
+         Key       => Message.Number,
+         Coded_Key => Message.Number,
+         Scrambled => Scrambled_Text);  
+
+   begin                                          -- Dummy processing unit.
+      Confirm := Confirmation_Message;
+      if Confirm.Number /= Null_Message_Descriptor then
+         Status := True;                            
+      else
+         Status := False;
+      end if;
+   end Send;
+   -------------------------------------------------------------------------
+   function Encode (Message : Text_Message_Type)  return Coded_Message is
+   begin
+      Coded_Msg.Number       := Message.Number;
+      if Message.Text.Length > 0 then
+         Coded_Msg.Text      := Message.Text;     -- Record assignment.
+         Coded_Msg.Key       := Message.Number;   -- Same as msg number.
+         Coded_Msg.Coded_Key := Message.Number;   -- Same as msg number.
+         Coded_Msg.Scrambled := Message.Text;     -- Dummy processing.
+      end if;
+      return (Coded_Msg);
+   end Encode;
+   -------------------------------------------------------------------------
+   function Decode (Message : Coded_Message) return Boolean is
+      Decoded : Boolean := False;
+   begin                                                       
+      if (Message.Text.Length = Confirm_String'Length)        and then
+         (Message.Text.Text_Field = Confirm_String)           and then
+         (Message.Scrambled.Length = Scrambled_String'Length) and then
+         (Message.Scrambled.Text_Field = Scrambled_String)    and then
+         (Message.Coded_Key = 15)
+      then
+         Decoded := True;
+      end if;
+      return (Decoded);
+   end Decode;
+   -------------------------------------------------------------------------
+   function Test_Connection return Boolean is
+   begin
+      return Test_Message.Id = 10;
+   end Test_Connection;
+
+end CA110050_0.CA110050_1.CA110050_2;        
+                               -- Grandchild Package body Message.Text.Encoded
+ 
+     --=================================================================--
+
+with CA110050_0.CA110050_1.CA110050_2; 
+with Report;
+
+procedure CA110051 is
+
+   package Message_Package renames CA110050_0.CA110050_1;
+   package Code_Package    renames CA110050_0.CA110050_1.CA110050_2; 
+
+   Message_String : constant String := "One if by land, two if by sea";
+
+   Message_Text   : Message_Package.Text_Type (Message_String'Length) := 
+     (Max_Length => Message_String'Length,
+      Length     => Message_String'Length,
+      Text_Field => Message_String);
+
+   Message : Message_Package.Text_Message_Type := 
+     (Number => CA110050_0.Next_Available_Message,
+      Text   => Message_Text);
+
+   Confirmation_Message : Code_Package.Coded_Message;
+   Verification_OK      : Boolean := False;
+   Transmission_OK      : Boolean := False;
+
+begin
+
+-- This test simulates the use of child library unit packages to implement
+-- a message encoding and transmission scheme.  The full capability of the
+-- encoding and transmission mechanisms are not developed here, but the 
+-- intent is to demonstrate that a grandchild library unit package with a
+-- private part will provide the framework for this type of processing.
+
+   Report.Test ("CA110051", "Check that entities and operations declared "  &
+                            "in a package can be used in the private part " & 
+                            "of a child of a child of the package");
+
+                            -- The following code demonstrates the use
+                            -- of functionality contained in a grandchild
+                            -- library unit.  The grandchild unit made use
+                            -- of components declared in the ancestor
+                            -- packages.
+   
+   Code_Package.Send                            -- Message object declared
+     (Message => Code_Package.Encode (Message), -- above in "encoded" by a
+      Confirm => Confirmation_Message,          -- call to grandchild pkg
+      Status  => Transmission_OK);              -- function call, reseting
+                                                -- fields and returning a
+                                                -- coded message to the
+                                                -- parameter.  The confirm
+                                                -- parameter receives an
+                                                -- encoded message value
+                                                -- from proc Send, which is 
+                                                -- "decoded"/verified below.
+
+   if not Code_Package.Test_Connection then
+      Report.Failed ("Bad initialization");
+   end if;
+
+   Verification_OK := Code_Package.Decode (Confirmation_Message);
+
+   if not (Transmission_OK and Verification_OK) then
+      Report.Failed ("Message transmission failure");
+   end if;
+
+   Report.Result;
+
+end CA110051;

@@ -1,0 +1,112 @@
+-- FC51C00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares a hierarchy of tagged types, which includes
+--      both abstract and non-abstract types, and which have both abstract
+--      and non-abstract primitive subprograms.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      03 Nov 95   SAIC    ACVC 2.0.1 fixes: Deleted primitive operation Proc
+--                          of Concrete_Root.
+--      11 Aug 96   SAIC    ACVC 2.1: Changed procedure bodies to update
+--                          actual parameters.
+--
+--!
+
+package FC51C00 is
+
+--
+-- Non-abstract ultimate ancestor type:
+--
+
+   type Concrete_Root is tagged null record;
+
+   function Func (P: Concrete_Root) return Concrete_Root;    -- Abstract when
+                                                             -- inherited.
+
+
+--
+-- Abstract descendant of non-abstract ultimate ancestor:
+--
+
+   type Abstract_Child is abstract new Concrete_Root with null record;
+
+   -- Inherits:
+   -- function Func (P: Abstract_Child) return Abstract_Child is abstract;
+
+   procedure Proc (P: in out Abstract_Child) is abstract;    -- Abstract.
+   procedure New_Proc (P : out Abstract_Child) is abstract;  -- Abstract.
+
+   
+
+--
+-- Non-abstract descendant of abstract descendant:
+--
+
+   type Concrete_GrandChild is new Abstract_Child with null record;
+
+   function Func (P: Concrete_GrandChild) return Concrete_GrandChild;
+
+   procedure Proc (P: in out Concrete_GrandChild);
+   procedure New_Proc (P : out Concrete_GrandChild);
+
+   
+end FC51C00;
+
+
+     --===================================================================--
+
+
+package body FC51C00 is
+
+   Value : Concrete_GrandChild;
+
+
+   function Func (P: Concrete_Root) return Concrete_Root is
+   begin
+      return P;
+   end Func;
+
+
+   function Func (P: Concrete_GrandChild) return Concrete_GrandChild is
+   begin
+      return P;
+   end Func;
+
+
+   procedure Proc (P: in out Concrete_GrandChild) is
+   begin
+      P := Value;
+   end Proc;
+
+
+   procedure New_Proc (P : out Concrete_GrandChild) is
+   begin
+      P := Value;
+   end New_Proc;
+
+end FC51C00;

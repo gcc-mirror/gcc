@@ -1,0 +1,277 @@
+-- C854001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a subprogram declaration can be completed by a
+--      subprogram renaming declaration. In particular, check that such a
+--      renaming-as-body can be given in a package body to complete a
+--      subprogram declared in the package specification. Check that calls
+--      to the subprogram invoke the body of the renamed subprogram.  Check
+--      that a renaming allows a copy of an inherited or predefined subprogram
+--      before overriding it later.  Check that renaming a dispatching 
+--      operation calls the correct body in case of overriding.
+--
+-- TEST DESCRIPTION:
+--      This test declares a record type, an integer type, and a tagged type
+--      with a set of operations in a package. A renaming of a predefined 
+--      equality operation of a tagged type is also defined in this package.
+--      The predefined operation is overridden in the private part. In a 
+--      separate package, a subtype of the record type and integer type 
+--      are declared.  Subset of the full set of operations for the record 
+--      and types is reexported using renamings-as-bodies. Other operations 
+--      are given explicit bodies.  The test verifies that the appropriate 
+--      body is executed for each operation on the subtype.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      07 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+
+package C854001_0 is
+
+   type Component is (Op_Of_Type, Op_Of_Subtype, Initial_Value);
+
+   type Root is record
+      Called : Component := Op_Of_Subtype;
+   end record;
+
+   procedure Root_Proc (P: in out Root);
+   procedure Over_Proc (P: in out Root);
+
+   function Root_Func return Root;
+   function Over_Func return Root;
+
+   type Short_Int is range 1 .. 98;
+
+   function "+" (P1, P2 : Short_Int) return Short_Int;
+   function Name (P1, P2 : Short_Int) return Short_Int;
+
+   type Tag_Type is tagged record
+      C : Component := Initial_Value;
+   end record;
+   -- Inherits predefined operator "=" and others.
+
+   function Predefined_Equal (P1, P2 : Tag_Type) return Boolean
+     renames "=";             
+   -- Renames predefined operator "=" before overriding.
+
+private
+   function "=" (P1, P2 : Tag_Type) 
+     return Boolean;                   -- Overrides predefined operator "=".
+
+
+end C854001_0;
+
+
+     --==================================================================--
+
+
+package body C854001_0 is
+
+   procedure Root_Proc (P: in out Root) is
+   begin
+      P.Called := Initial_Value;
+   end Root_Proc;
+
+   ---------------------------------------
+   procedure Over_Proc (P: in out Root) is
+   begin
+      P.Called := Op_Of_Type;
+   end Over_Proc;
+
+   ---------------------------------------
+   function Root_Func return Root is
+   begin
+      return (Called => Op_Of_Type);
+   end Root_Func;
+ 
+   ---------------------------------------
+   function Over_Func return Root is
+   begin
+      return (Called => Initial_Value);
+   end Over_Func;
+
+   ---------------------------------------
+   function "+" (P1, P2 : Short_Int) return Short_Int is
+   begin
+      return 15;
+   end "+";
+
+   ---------------------------------------
+   function Name (P1, P2 : Short_Int) return Short_Int is
+   begin
+      return 47;
+   end Name;
+
+   ---------------------------------------
+   function "=" (P1, P2 : Tag_Type) return Boolean is
+   begin
+      return False;
+   end "=";
+
+end C854001_0;
+
+     --==================================================================--
+
+
+with C854001_0;
+package C854001_1 is
+
+   subtype Root_Subtype is C854001_0.Root;
+   subtype Short_Int_Subtype is C854001_0.Short_Int;
+   
+   procedure Ren_Proc  (P: in out Root_Subtype);       
+   procedure Same_Proc (P: in out Root_Subtype);       
+
+   function Ren_Func  return Root_Subtype;             
+   function Same_Func return Root_Subtype;             
+
+   function Other_Name (P1, P2 : Short_Int_Subtype) return Short_Int_Subtype;
+   function "-" (P1, P2 : Short_Int_Subtype) return Short_Int_Subtype;
+
+   function User_Defined_Equal (P1, P2 : C854001_0.Tag_Type) return Boolean 
+     renames C854001_0."=";                       -- Executes body of the
+                                                  -- overriding declaration in
+                                                  -- the private part.
+end C854001_1;
+
+
+     --==================================================================--
+
+
+with C854001_0;
+package body C854001_1 is
+
+   --
+   -- Renaming-as-body for procedure:
+   --
+
+   procedure Ren_Proc  (P: in out Root_Subtype)  
+     renames C854001_0.Root_Proc;
+   procedure Same_Proc (P: in out Root_Subtype) 
+     renames C854001_0.Over_Proc;
+
+   --
+   -- Renaming-as-body for function:
+   --
+
+   function Ren_Func  return Root_Subtype renames C854001_0.Root_Func;
+   function Same_Func return Root_Subtype renames C854001_0.Over_Func;
+ 
+   function Other_Name (P1, P2 : Short_Int_Subtype) return Short_Int_Subtype
+     renames C854001_0."+";
+   function "-" (P1, P2 : Short_Int_Subtype) return Short_Int_Subtype 
+     renames C854001_0.Name;
+
+end C854001_1;
+
+
+     --==================================================================--
+
+with C854001_0;
+with C854001_1;  -- Subtype and associated operations.
+use  C854001_1;
+
+with Report;
+
+procedure C854001 is
+   Operand1  : Root_Subtype;
+   Operand2  : Root_Subtype;
+   Operand3  : Root_Subtype;
+   Operand4  : Root_Subtype;
+   Operand5  : Short_Int_Subtype := 55;
+   Operand6  : Short_Int_Subtype := 46;
+   Operand7  : Short_Int_Subtype;
+   Operand8  : C854001_0.Tag_Type;         -- Both Operand8 & Operand9 have
+   Operand9  : C854001_0.Tag_Type;         -- the same default values.
+
+   -- Direct visibility to operator symbols
+   use type C854001_0.Component;
+   use type C854001_0.Short_Int;
+
+begin
+   Report.Test ("C854001", "Check that a renaming-as-body can be given " &
+                           "in a package body to complete a subprogram " &
+                           "declared in the package specification. "     &
+                           "Check that calls to the subprogram invoke "  &
+                           "the body of the renamed subprogram");
+
+   --
+   -- Only operations of the subtype are available.
+   --
+
+   Ren_Proc  (Operand1);
+   if Operand1.Called /= C854001_0.Initial_Value then
+      Report.Failed ("Error calling procedure Ren_Proc");
+   end if;
+
+   ---------------------------------------
+   Same_Proc (Operand2);
+   if Operand2.Called /= C854001_0.Op_Of_Type then
+      Report.Failed ("Error calling procedure Same_Proc");
+   end if;
+
+   ---------------------------------------
+   Operand3 := Ren_Func;
+   if Operand3.Called /= C854001_0.Op_Of_Type then
+      Report.Failed ("Error calling function Ren_Func");
+   end if;
+
+   ---------------------------------------
+   Operand4 := Same_Func;
+   if Operand4.Called /= C854001_0.Initial_Value then
+      Report.Failed ("Error calling function Same_Func");
+   end if;
+   
+   ---------------------------------------
+   Operand7 := C854001_1."-" (Operand5, Operand6);
+   if Operand7 /= 47 then
+      Report.Failed ("Error calling function & ""-""");
+   end if;
+
+   ---------------------------------------
+   Operand7 := Other_Name (Operand5, Operand6);
+   if Operand7 /= 15 then
+      Report.Failed ("Error calling function Other_Name");
+   end if;
+
+   ---------------------------------------
+   -- Executes body of the overriding declaration in the private part
+   -- of C854001_0.
+   if User_Defined_Equal (Operand8, Operand9) then
+      Report.Failed ("Error calling function User_Defined_Equal");
+   end if;
+
+   ---------------------------------------
+   -- Executes predefined operation.
+   if not C854001_0.Predefined_Equal (Operand8, Operand9) then
+      Report.Failed ("Error calling function Predefined_Equal");
+   end if;
+
+   Report.Result;
+
+end C854001;

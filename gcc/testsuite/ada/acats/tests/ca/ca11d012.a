@@ -1,0 +1,73 @@
+-- CA11D012.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See CA11D013.AM
+--
+-- TEST DESCRIPTION:
+--      See CA11D013.AM
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FA11D00.A
+--         CA11D010.A
+--         CA11D011.A
+--      => CA11D012.A
+--         CA11D013.AM
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      21 Dec 94   SAIC    Declared child function specification
+--      26 Apr 96   SAIC    ACVC 2.1: Modified prologue.
+--
+--!
+
+with Report;
+
+-- Child function of FA11D00.
+-- Does not divide zero complex numbers.
+
+function FA11D00.CA11D012 (Left, Right : Complex_Type)
+  return Complex_Type; 
+
+--=======================================================================--
+
+function FA11D00.CA11D012 (Left, Right : Complex_Type)
+  return Complex_Type is                       -- Divide_Complex
+
+begin
+   -- Zero is declared in parent package.
+
+   if Right.Real = Zero.Real or Right.Imag = Zero.Imag then
+      raise Divide_Error;  -- Reference to exception in parent package. 
+      Report.Failed ("Program control not transferred by raise in " &
+                     "child function FA11D00.CA11D012");
+   else
+      return ( Real => (Left.Real / Right.Real),
+               Imag => (Left.Imag / Right.Imag) );
+   end if;
+
+end FA11D00.CA11D012;     -- Divide_Complex

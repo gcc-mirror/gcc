@@ -1,0 +1,71 @@
+-- LA140201.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See LA140202.AM.
+--
+-- TEST DESCRIPTION:
+--      See LA140202.AM.
+--
+-- SPECIAL REQUIREMENTS:
+--      See LA140202.AM.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140200.A
+--      -> LA140201.A
+--         LA140202.AM
+--         LA140203.A
+--
+-- PASS/FAIL CRITERIA:    
+--      See LA140202.AM.
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008Q baseline version
+--     23 JUN 95   SAIC        Initial version
+--     29 FEB 96   SAIC        First revision after review
+--     12 DEC 96   SAIC        Reorganized to permit automatic recompilation.
+--                             Reworded objective. Moved instance to
+--                             library-level and redesigned to use generic
+--                             formal function. Fixed arithmetic errors.
+--
+--!
+
+with LA14020_0;
+generic
+     type Basket is new LA14020_0.Fruit_Basket with private;
+function LA14020_2 (Left, Right : Basket) return Basket;
+
+    --==================================================================--
+
+function LA14020_2 (Left, Right : Basket) return Basket is
+   Result : Basket;
+begin
+   Result.App := Left.App + Left.App;
+   Result.Ora := Right.Ora + Right.Ora;
+        -- wrong algorithm, to be corrected later
+
+   return Result;
+end LA14020_2;

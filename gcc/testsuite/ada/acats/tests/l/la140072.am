@@ -1,0 +1,102 @@
+-- LA140072.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a separate procedure body depends on
+--      a non-generic package specification that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a package specification, a procedure,
+--      the separate procedure body and a main procedure that
+--      withs the first package.  Then, a new version of the
+--      first package specification is compiled (in a separate
+--      file, simulating editing and modification of the unit). 
+--      Unless automatic recompilation is supported, this test
+--      should fail to link.  Otherwise, the test should 
+--      recompile and link the correct version of the withed 
+--      package and report "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140070 (and include the results in the
+--            program library).
+--         2) Compile the file LA140071 (and include the results in the
+--            program library).
+--         3) Compile the file LA140072 (and include the results in the
+--            program library).
+--         4) Compile the file LA140073 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140070.A
+--         LA140071.A
+--      -> LA140072.AM
+--         LA140073.A 
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14007_1.LA14007_2 is missing or obsolete and no executable 
+--      image results.  The test also passes if an executable image is 
+--      produced and reports "PASSED" (in the case where the implementation
+--      supports automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5007L baseline version
+--     12 MAY 95   SAIC        Initial version
+--     17 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--
+--!
+
+
+with Report; use Report;
+with LA14007_1;
+
+procedure LA140072 is
+     TC_Val : integer := 0;
+begin
+     Test ("LA14007", "Check that a compilation unit may not " &
+                      "depend semantically on two different " &
+                      "versions of the same compilation unit.  " &
+                      "Check the case where a separate procedure " &
+                      "body depends on a non-generic package " &
+                      "specification that is changed");
+
+     LA14007_1 (TC_Val);
+
+     if TC_Val = 12 then
+          Failed ("Obsolete unit used in elaboration");
+     elsif TC_Val /= 3 then
+          Failed ("Incorrect test value returned");
+     end if;
+
+     Result;
+end LA140072;

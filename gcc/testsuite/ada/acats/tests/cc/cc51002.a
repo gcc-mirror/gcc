@@ -1,0 +1,198 @@
+-- CC51002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for formal derived tagged types, the formal parameter
+--      names and default expressions for a primitive subprogram in an
+--      instance are determined by the primitive subprogram of the ancestor
+--      type, but that the primitive subprogram body executed is that of the
+--      actual type.
+--
+-- TEST DESCRIPTION:
+--      Define a root tagged type in a library-level package and give it a
+--      primitive subprogram. Provide a default expression for a non-tagged
+--      parameter of the subprogram. Declare a library-level generic subprogram
+--      with a formal derived type using the root type as ancestor. Call
+--      the primitive subprogram of the root type using named association for
+--      the tagged parameter, and provide no actual for the defaulted
+--      parameter. Extend the root type in a second package and override the
+--      root type's subprogram with one which has different parameter names
+--      and no default expression for the non-tagged parameter. Instantiate
+--      the generic subprogram for each of the tagged types in the class and
+--      call the instances.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CC51002_0 is  -- Root message type and operations.
+
+   type Recipients is (None, Root, Sysop, Local, Remote);
+
+   type Msg_Type is tagged record                             -- Root type of
+      Text : String (1 .. 10);                                -- class.
+   end record;
+
+   function Send (Msg : in Msg_Type;                          -- Primitive
+                  To  : Recipients := Local) return Boolean;  -- subprogram.
+
+   -- ...Other message operations.
+
+end CC51002_0;
+
+
+     --==================================================================--
+
+
+package body CC51002_0 is
+
+   -- The implementation of Send is purely artificial; the validity of
+   -- its implementation in the context of the abstraction is irrelevant to
+   -- the feature being tested.
+
+   function Send (Msg : in Msg_Type;
+                  To  : Recipients := Local) return Boolean is
+   begin
+      return (Msg.Text = "Greetings!" and To = Local);
+   end Send;
+
+end CC51002_0;
+
+
+     --==================================================================--
+
+
+with CC51002_0;  -- Root message type and operations.
+generic          -- Message class function.
+   type Msg_Block is new CC51002_0.Msg_Type with private;
+function CC51002_1 (M : in Msg_Block) return Boolean;
+
+
+     --==================================================================--
+
+
+function CC51002_1 (M : in Msg_Block) return Boolean is
+   Okay : Boolean := False;
+begin
+
+   -- The call to Send below uses the ancestor type's parameter name, which
+   -- should be legal even if the actual subprogram called does not have a
+   -- parameter of that name. Furthermore, it uses the ancestor type's default
+   -- expression for the second parameter, which should be legal even if the
+   -- the actual subprogram called has no such default expression.
+
+   Okay := Send (Msg => M);
+   -- ...Other processing.
+   return Okay;
+
+end CC51002_1;
+
+
+     --==================================================================--
+
+
+with CC51002_0;       -- Root message type and operations.
+package CC51002_2 is  -- Extended message type and operations.
+
+   type Sender_Type is (Inside, Outside);
+
+   type Who_Msg_Type is new CC51002_0.Msg_Type with record   -- Derivative of
+      From : Sender_Type;                                    -- root type of
+   end record;                                               -- class.
+
+
+   -- Note: this overriding version of Send has different parameter names
+   -- from the root type's function. It also has no default expression.
+
+   function Send (M : Who_Msg_Type;                          -- Overrides
+                  R : CC51002_0.Recipients) return Boolean;  -- root type's
+                                                             -- operation.
+   -- ...Other extended message operations.
+
+end CC51002_2;
+
+
+     --==================================================================--
+
+
+package body CC51002_2 is
+
+   -- The implementation of Send is purely artificial; the validity of
+   -- its implementation in the context of the abstraction is irrelevant to
+   -- the feature being tested.
+
+   function Send (M : Who_Msg_Type; R : CC51002_0.Recipients) return Boolean is
+      use type CC51002_0.Recipients;
+   begin
+      return (M.Text = "Willkommen"     and
+              M.From = Outside          and
+              R      = CC51002_0.Local);
+   end Send;
+
+end CC51002_2;
+
+
+     --==================================================================--
+
+
+with CC51002_0;  -- Root message type and operations.
+with CC51002_1;  -- Message class function.
+with CC51002_2;  -- Extended message type and operations.
+
+with Report;
+procedure CC51002 is
+
+   function Send_Msg  is new CC51002_1 (CC51002_0.Msg_Type);
+   function Send_WMsg is new CC51002_1 (CC51002_2.Who_Msg_Type);
+
+   Mess  : CC51002_0.Msg_Type     := (Text => "Greetings!");
+   WMess : CC51002_2.Who_Msg_Type := (Text => "Willkommen",
+                                      From => CC51002_2.Outside);
+
+   TC_Okay_MStatus  : Boolean := False;
+   TC_Okay_WMStatus : Boolean := False;
+
+begin
+   Report.Test ("CC51002", "Check that, for formal derived tagged types, " &
+                "the formal parameter names and default expressions for "  &
+                "a primitive subprogram in an instance are determined by " &
+                "the primitive subprogram of the ancestor type, but that " &
+                "the primitive subprogram body executed is that of the"    &
+                "actual type");
+
+   TC_Okay_MStatus := Send_Msg (Mess);
+   if not TC_Okay_MStatus then
+      Report.Failed ("Wrong result from call to root type's operation");
+   end if;
+
+   TC_Okay_WMStatus := Send_WMsg (WMess);
+   if not TC_Okay_WMStatus then
+      Report.Failed ("Wrong result from call to derived type's operation");
+   end if;
+
+   Report.Result;
+end CC51002;

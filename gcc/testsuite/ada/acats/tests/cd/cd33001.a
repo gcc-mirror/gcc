@@ -1,0 +1,139 @@
+-- CD33001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that Component_Sizes that are a factor of the word
+--      size are supported.
+--
+--      Check that for such Component_Sizes arrays contain no gaps between
+--      components.
+--
+-- TEST DESCRIPTION:
+--      This test defines three array types and specifies their layouts
+--      using representation specifications for the 'Component_Size and
+--      pragma Packs for each.  It then checks that the implied assumptions
+--      about the resulting layout actually can be made.
+--
+-- APPLICABILITY CRITERIA:
+--      All implementations must attempt to compile this test.
+--
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute and report PASSED.
+--
+--      For implementations not validating against Annex C:
+--        this test may report compile time errors at one or more points
+--        indicated by "-- ANX-C RQMT", in which case it may be graded as inapplicable.
+--        Otherwise, the test must execute and report PASSED.
+--
+--
+-- CHANGE HISTORY:
+--      22 JUL 95   SAIC   Initial version
+--      07 MAY 96   SAIC   Revised for 2.1
+--      24 AUG 96   SAIC   Additional 2.1 revisions
+--      17 FEB 97   PWB.CTA  Corrected prefix of 'Component_Size to name
+--                           array object instead of array subtype
+--      16 FEB 98   EDS    Modified documentation.
+--!
+
+----------------------------------------------------------------- CD33001_0
+
+with System;
+package CD33001_0 is
+
+  S_Units_per_Word : constant := System.Word_Size/System.Storage_Unit;
+
+  type Nibble is mod 2**4;
+
+  type Byte is mod 2**8;
+
+  type Half_Stuff is array(Natural range <>) of Nibble;
+    for Half_Stuff'Component_Size
+      use System.Word_Size / 2;   -- factor                   -- ANX-C RQMT.
+  pragma Pack(Half_Stuff);                                    -- ANX-C RQMT.
+
+  type Word_Stuff is array(Natural range <>) of Byte;
+    for Word_Stuff'Component_Size
+      use System.Word_Size;                                   -- ANX-C RQMT.
+
+  type Address_Calculator is record
+    Item_1 : Nibble;
+    Item_2 : Nibble;
+  end record;
+
+  for Address_Calculator use record
+    Item_1 at 0 range 0..3;
+    Item_2 at 1 range 0..3;
+  end record;
+
+  -- given that Item_1 is specified to be at 'Position = 0 and
+  --            Item_2 is specified to be at 'Position = 1
+  -- by definition (13.5.2(2)) abs(Item_2'Address - Item_1'Address) = 1
+
+end CD33001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- there is no package body CD33001_0
+
+------------------------------------------------------------------- CD33001
+
+with Report;
+with System.Storage_Elements;
+with CD33001_0;
+procedure CD33001 is
+
+  use type System.Storage_Elements.Storage_Offset;
+
+  A_Half   : CD33001_0.Half_Stuff(0..15);
+
+  A_Word   : CD33001_0.Word_Stuff(0..15);
+ 
+  procedure Unexpected( Message : String; Wanted, Got: Integer ) is
+  begin
+    Report.Failed( Message & " Wanted:"
+                   & Integer'Image(Wanted) & " Got:" & Integer'Image(Got) );
+  end Unexpected;
+
+begin  -- Main test procedure.
+
+  Report.Test ("CD33001", "Check that Component_Sizes that are factor of " &
+                          "the word size are supported.  Check that for " &
+                          "such Component_Sizes arrays contain no gaps " &
+                          "between components" );
+
+  if A_Half'Size /= A_Half'Component_Size * 16 then
+    Unexpected("Half word Size",
+               CD33001_0.Half_Stuff'Component_Size * 16,
+               A_Half'Size );
+  end if;
+
+  if A_Word(1)'Size /= System.Word_Size then
+    Unexpected("Word Size", System.Word_Size, A_Word(1)'Size );
+  end if;
+
+
+  Report.Result;
+
+end CD33001;

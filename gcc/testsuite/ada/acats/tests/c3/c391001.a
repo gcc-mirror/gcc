@@ -1,0 +1,329 @@
+-- C391001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that structures nesting discriminated records as
+--      components in record extension are correctly supported.  Check
+--      for this using limited private structures.
+--      Check that record extensions inherit all the visible components
+--      of their ancestor types. 
+--      Check that discriminants are correctly inherited.
+--
+-- TEST DESCRIPTION:
+--      This test defines a textbook object, a serial number plaque.
+--      This object is used in each of several other structures modeled
+--      after those used in an existing antenna modeling software system.
+--      Record types discriminated and undiscriminated are nested to
+--      produce a layered design.  Some parametrization is programmatic;
+--      some parametrization is data-driven.
+--
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed RM references from objective text.
+--      19 Apr 95   SAIC    Added "limited" to full type def of "Object"
+--
+--!
+ 
+ package C391001_1 is 
+   type Object is tagged limited private;
+   -- Constructor operation
+   procedure Create( The_Plaque : in out Object );
+   -- Selector operations
+   function "="( Left_Plaque,Right_Plaque : Object ) return Boolean;
+   function TC_Match( Left_Plaque : Object; Right_Natural : Natural )
+     return Boolean;
+   function Serial_Number( A_Plaque : Object ) return Natural;
+   Unserialized : exception;  -- Serial_Number called before Create
+   Reserialized : exception;  -- Create called twice
+ private
+   type Object is tagged limited record
+     Serial_Number : Natural := 0;
+   end record;
+ end C391001_1;
+ 
+ package body C391001_1 is
+   Counter : Natural := 0;
+   procedure Create( The_Plaque : in out Object ) is
+   begin
+     if The_Plaque.Serial_Number = 0 then
+       Counter := Counter +1;
+       The_Plaque.Serial_Number := Counter;
+     else
+       raise Reserialized;
+     end if;
+   end Create;
+ 
+   function "="( Left_Plaque,Right_Plaque : Object ) return Boolean is
+   begin
+     return (Left_Plaque.Serial_Number = Right_Plaque.Serial_Number)
+            and then -- two uninitialized plates are unequal
+              (Left_Plaque.Serial_Number /= 0);
+   end "=";
+ 
+   function TC_Match( Left_Plaque : Object; Right_Natural : Natural )
+     return Boolean is
+   begin
+     return (Left_Plaque.Serial_Number = Right_Natural);
+   end TC_Match;
+ 
+   function Serial_Number( A_Plaque : Object ) return Natural is
+   begin
+     if A_Plaque.Serial_Number = 0 then
+       raise Unserialized;
+     end if;
+     return A_Plaque.Serial_Number;
+   end Serial_Number;
+ end C391001_1;
+ 
+ with C391001_1;
+ package C391001_2 is -- package Boards is
+ 
+   package Plaque renames C391001_1;
+ 
+   type Modes is (Receiving, Transmitting, Standby);
+   type Link(Mode: Modes := Standby) is record
+     case Mode is
+       when Receiving    => TC_R : Integer := 100; 
+       when Transmitting => TC_T : Integer := 200;
+       when Standby      => TC_S : Integer := 300; -- TGA, TSA, SSA
+     end case;
+   end record;
+ 
+   type Data_Formats is (S_Band, KU_Band, UHF);
+ 
+ 
+   type Transceiver(Band: Data_Formats) is tagged limited record
+     ID : Plaque.Object;
+     The_Link: Link;
+     case Band is
+       when S_Band  => TC_S_Band_Data  : Integer := 1; -- TGA, SSA
+       when KU_Band => TC_KU_Band_Data : Integer := 2; -- TSA
+       when UHF     => TC_UHF_Data     : Integer := 3;
+     end case;
+   end record;
+ end C391001_2;
+ 
+ with C391001_1;
+ with C391001_2;
+ package C391001_3 is -- package Modules
+   package Plaque renames C391001_1;
+   package Boards renames C391001_2;
+   use type Boards.Modes;
+   use type Boards.Data_Formats;
+ 
+   type Command_Formats is ( Set_Compression_Code,
+                             Set_Data_Rate,
+                             Set_Power_State );
+ 
+   type Electronics_Module(EBand             : Boards.Data_Formats;
+                           The_Command_Format: Command_Formats)
+     is new Boards.Transceiver(EBand) with record
+       case The_Command_Format is
+         when Set_Compression_Code => TC_SCC : Integer := 10; -- SSA
+         when Set_Data_Rate        => TC_SDR : Integer := 20; -- TGA
+         when Set_Power_State      => TC_SPS : Integer := 30; -- TSA
+       end case;
+     end record;
+ end C391001_3;
+ 
+ with Report;
+ with C391001_1;
+ with C391001_2;
+ with C391001_3;
+ procedure C391001 is
+   package Plaque  renames C391001_1;
+   package Boards  renames C391001_2;
+   package Modules renames C391001_3;
+   use type Boards.Modes;
+   use type Boards.Data_Formats;
+   use type Modules.Command_Formats;
+ 
+   type Azimuth is range 0..359;
+ 
+   type Ground_Antenna(The_Band          : Boards.Data_Formats;
+                       The_Command_Format: Modules.Command_Formats) is
+     record
+       ID          : Plaque.Object;
+       Electronics : Modules.Electronics_Module(The_Band,The_Command_Format);
+       Pointing    : Azimuth;
+     end record;
+ 
+   type Space_Antenna(The_Band    : Boards.Data_Formats := Boards.KU_Band;
+                      The_Command : Modules.Command_Formats
+                                    := Modules.Set_Power_State)
+   is
+     record
+       ID          : Plaque.Object;
+       Electronics : Modules.Electronics_Module(The_Band,The_Command);
+     end record;
+ 
+   The_Ground_Antenna     : Ground_Antenna (Boards.S_Band,
+                                            Modules.Set_Data_Rate);
+   The_Space_Antenna      : Space_Antenna;
+   Space_Station_Antenna  : Space_Antenna  (Boards.S_Band,
+                                            Modules.Set_Compression_Code);
+ 
+ 
+   procedure Validate( Condition : Boolean; Message: String ) is
+   begin
+     if not Condition then
+       Report.Failed("Failed " & Message );
+     end if;
+   end Validate;
+ 
+ begin
+   Report.Test("C391001", "Check nested tagged discriminated "
+                        & "record structures");
+ 
+   Plaque.Create( The_Ground_Antenna.ID );               -- 1
+   Plaque.Create( The_Ground_Antenna.Electronics.ID );   -- 2
+   Plaque.Create( The_Space_Antenna.ID );                -- 3
+   Plaque.Create( The_Space_Antenna.Electronics.ID );    -- 4
+   Plaque.Create( Space_Station_Antenna.ID );            -- 5
+   Plaque.Create( Space_Station_Antenna.Electronics.ID );-- 6
+ 
+   The_Ground_Antenna.Pointing := 180;
+   Validate( The_Ground_Antenna.The_Band = Boards.S_Band, "TGA discr 1" );
+   Validate( The_Ground_Antenna.The_Command_Format = Modules.Set_Data_Rate,
+             "TGA discr 2" );
+   Validate( Plaque.TC_Match(The_Ground_Antenna.ID,1), "TGA comp 1" );
+   Validate( The_Ground_Antenna.Electronics.EBand = Boards.S_Band,
+             "TGA comp 2.discr 1" );
+   Validate( The_Ground_Antenna.Electronics.The_Command_Format
+             = Modules.Set_Data_Rate, "TGA comp 2.discr 2" );
+   Validate( The_Ground_Antenna.Electronics.TC_SDR = 20,
+             "TGA comp 2.1" );
+   Validate( Plaque.TC_Match( The_Ground_Antenna.Electronics.ID, 2 ),
+             "TGA comp 2.inher.1" );
+   Validate( The_Ground_Antenna.Electronics.The_Link.Mode = Boards.Standby,
+             "TGA comp 2.inher.2.discr" );
+   Validate( The_Ground_Antenna.Electronics.The_Link.TC_S = 300,
+             "TGA comp 2.inher.2.1" );
+   Validate( The_Ground_Antenna.Electronics.TC_S_Band_Data = 1,
+             "TGA comp 2.inher.3" );
+   Validate( The_Ground_Antenna.Pointing = 180, "TGA comp 3" );
+ 
+   Validate( The_Space_Antenna.The_Band = Boards.KU_Band, "TSA discr 1");
+   Validate( The_Space_Antenna.The_Command = Modules.Set_Power_State,
+             "TSA discr 2");
+   Validate( Plaque.TC_Match(The_Space_Antenna.ID,3),
+             "TSA comp 1");
+   Validate( The_Space_Antenna.Electronics.EBand = Boards.KU_Band,
+             "TSA comp 2.discr 1");
+   Validate( The_Space_Antenna.Electronics.The_Command_Format
+             = Modules.Set_Power_State,  "TSA comp 2.discr 2");
+   Validate( Plaque.TC_Match(The_Space_Antenna.Electronics.ID,4),
+             "TSA comp 2.inher.1");
+   Validate( The_Space_Antenna.Electronics.The_Link.Mode = Boards.Standby,
+             "TSA comp 2.inher.2.discr");
+   Validate( The_Space_Antenna.Electronics.The_Link.TC_S = 300,
+             "TSA comp 2.inher.2.1");
+   Validate( The_Space_Antenna.Electronics.TC_KU_Band_Data = 2,
+             "TSA comp 2.inher.3");
+   Validate( The_Space_Antenna.Electronics.TC_SPS = 30,
+             "TSA comp 2.1");
+ 
+   Validate( Space_Station_Antenna.The_Band = Boards.S_Band, "SSA discr 1");
+   Validate( Space_Station_Antenna.The_Command = Modules.Set_Compression_Code,
+             "SSA discr 2");
+   Validate( Plaque.TC_Match(Space_Station_Antenna.ID,5),
+             "SSA comp 1");
+   Validate( Space_Station_Antenna.Electronics.EBand = Boards.S_Band,
+             "SSA comp 2.discr 1");
+   Validate( Space_Station_Antenna.Electronics.The_Command_Format
+             = Modules.Set_Compression_Code,  "SSA comp 2.discr 2");
+   Validate( Plaque.TC_Match(Space_Station_Antenna.Electronics.ID,6),
+             "SSA comp 2.inher.1");
+   Validate( Space_Station_Antenna.Electronics.The_Link.Mode = Boards.Standby,
+             "SSA comp 2.inher.2.discr");
+   Validate( Space_Station_Antenna.Electronics.The_Link.TC_S = 300,
+             "SSA comp 2.inher.2.1");
+   Validate( Space_Station_Antenna.Electronics.TC_S_Band_Data = 1,
+             "SSA comp 2.inher.3");
+   Validate( Space_Station_Antenna.Electronics.TC_SCC = 10,
+             "SSA comp 2.1");
+ 
+   The_Ground_Antenna.Electronics.TC_SDR         := 1001;
+   The_Ground_Antenna.Electronics.The_Link       :=
+(Boards.Transmitting,2001);
+   The_Ground_Antenna.Electronics.TC_S_Band_Data := 3001;
+   The_Ground_Antenna.Pointing                   :=   41;
+ 
+   The_Space_Antenna.Electronics.The_Link        := (Boards.Receiving,1010);
+   The_Space_Antenna.Electronics.TC_KU_Band_Data := 2020;
+   The_Space_Antenna.Electronics.TC_SPS          := 3030;
+ 
+   Space_Station_Antenna.Electronics.The_Link
+     := The_Space_Antenna.Electronics.The_Link;
+   Space_Station_Antenna.Electronics.The_Link.TC_R  := 111;
+   Space_Station_Antenna.Electronics.TC_S_Band_Data := 222;
+   Space_Station_Antenna.Electronics.TC_SCC         := 333;
+ 
+ ----------------------------------------------------------------------
+   begin -- should fail discriminant check
+     The_Ground_Antenna.Electronics.TC_SCC := 909;
+     Report.Failed("Discriminant check, no exception");
+   exception
+     when Constraint_Error => null;
+     when others =>
+          Report.Failed("Discriminant check, wrong exception");
+   end;
+ 
+   Validate( The_Ground_Antenna.Electronics.TC_SDR         = 1001,
+             "assigned value 1");
+   Validate( The_Ground_Antenna.Electronics.The_Link.Mode
+                                            = Boards.Transmitting,
+             "assigned value 2.1");
+   Validate( The_Ground_Antenna.Electronics.The_Link.TC_T  = 2001,
+             "assigned value 2.2");
+   Validate( The_Ground_Antenna.Electronics.TC_S_Band_Data = 3001,
+             "assigned value 3");
+   Validate( The_Ground_Antenna.Pointing                   =   41,
+             "assigned value 4");
+ 
+   Validate( The_Space_Antenna.Electronics.The_Link.Mode   = Boards.Receiving,
+             "assigned value 5.1");
+   Validate( The_Space_Antenna.Electronics.The_Link.TC_R   = 1010,
+             "assigned value 5.2");
+   Validate( The_Space_Antenna.Electronics.TC_KU_Band_Data = 2020,
+             "assigned value 6");
+   Validate( The_Space_Antenna.Electronics.TC_SPS          = 3030,
+             "assigned value 7");
+ 
+   Validate( Space_Station_Antenna.Electronics.The_Link.Mode
+                                                 = Boards.Receiving,
+             "assigned value 8.1");
+   Validate( Space_Station_Antenna.Electronics.The_Link.TC_R  = 111,
+             "assigned value 8.2");
+   Validate( Space_Station_Antenna.Electronics.TC_S_Band_Data = 222,
+             "assigned value 9");
+   Validate( Space_Station_Antenna.Electronics.TC_SCC         = 333,
+             "assigned value 10");
+ 
+   Report.Result;
+ 
+end C391001;

@@ -1,0 +1,197 @@
+-- C974006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the sequence of statements of the triggering alternative
+--      of an asynchronous select statement is executed if the triggering
+--      statement is a protected entry call, and the entry is accepted
+--      immediately. Check that the corresponding entry body is executed
+--      before the sequence of statements of the triggering alternative.
+--      Check that the abortable part is not executed.
+--
+-- TEST DESCRIPTION:
+--      Declare a main procedure containing an asynchronous select with a
+--      protected entry call as triggering statement. Declare a protected
+--      procedure which sets the protected entry's barrier true. Force the
+--      entry call to be accepted immediately by calling this protected
+--      procedure prior to the asynchronous select. Since the entry call
+--      is accepted immediately, the abortable part should never start. When
+--      entry call completes, the sequence of statements of the triggering
+--      alternative should execute.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+
+package C974006_0 is  -- Automated teller machine abstraction.
+
+
+   -- Flag for testing purposes:
+
+   Entry_Body_Executed : Boolean := False;
+
+
+   type Key_Enum is (None, Cancel, Deposit, Withdraw);
+
+   type Card_Number_Type is private;
+   type Card_PIN_Type    is private;
+   type ATM_Card_Type    is private;
+
+
+   Transaction_Canceled : exception;
+
+
+   protected type ATM_Keyboard_Protected is
+      entry Cancel_Pressed;
+      procedure Read_Key;
+   private
+      Last_Key_Pressed : Key_Enum := None;
+   end ATM_Keyboard_Protected;
+
+
+   procedure Read_Card (Card : in out ATM_Card_Type);
+
+   procedure Validate_Card (Card : in ATM_Card_Type);
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type);
+
+private
+
+   type Card_Number_Type is range   1 .. 9999;
+   type Card_PIN_Type    is range 100 ..  999;
+
+   type ATM_Card_Type is record
+      Number : Card_Number_Type;
+      PIN    : Card_PIN_Type;
+   end record;
+
+end C974006_0;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C974006_0 is
+
+
+   protected body ATM_Keyboard_Protected is
+
+      entry Cancel_Pressed when (Last_Key_Pressed = Cancel) is
+      begin
+         Entry_Body_Executed := True;
+      end Cancel_Pressed;
+
+      procedure Read_Key is
+      begin
+         -- Simulate a procedure which processes user keyboard input, and
+         -- which is called by some interrupt handler.
+         Last_Key_Pressed := Cancel;
+      end Read_Key;
+
+   end ATM_Keyboard_Protected;
+
+
+   procedure Read_Card (Card : in out ATM_Card_Type) is
+   begin
+      Card.Number := 9999;
+      Card.PIN    := 111;
+   end Read_Card;
+
+
+   procedure Validate_Card (Card : in ATM_Card_Type) is
+   begin
+      Report.Failed ("Abortable part executed");
+   end Validate_Card;
+
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type) is
+   begin
+      Report.Failed ("Triggering alternative sequence of statements " &
+                      "not fully executed");
+   end Perform_Transaction;
+
+
+end C974006_0;
+
+
+     --==================================================================--
+
+
+with Report;
+
+with C974006_0;  -- Automated teller machine abstraction.
+use  C974006_0;
+
+procedure C974006 is
+
+   Card_Data : ATM_Card_Type;
+
+begin
+
+   Report.Test ("C974006", "ATC: trigger is protected entry call" &
+                              " and completes first");
+
+   Read_Card (Card_Data);
+
+   declare
+      Keyboard : C974006_0.ATM_Keyboard_Protected;
+   begin
+
+      -- Simulate the situation where the user hits cancel before the
+      -- validation process can start:
+      Keyboard.Read_Key;                 -- Force Keyboard.Cancel_Pressed to
+                                         -- be accepted immediately.
+
+      --                                    --
+      -- Asynchronous select is tested here --
+      --                                    --
+
+      select
+         Keyboard.Cancel_Pressed;        -- Entry call is accepted immediately,
+                                         -- so abortable part does NOT start.
+
+         if not Entry_Body_Executed then -- Executes after entry completes.
+            Report.Failed ("Triggering alternative sequence of statements " &
+                           "executed before triggering statement complete");
+         end if;
+
+         raise Transaction_Canceled;     -- Control passes to exception
+                                         -- handler.
+      then abort
+         Validate_Card (Card_Data);      -- Should not be executed.
+      end select;
+      Perform_Transaction (Card_Data);   -- Should not be reached.
+   exception
+      when Transaction_Canceled =>
+         null;
+   end;
+
+   Report.Result;
+
+end C974006;

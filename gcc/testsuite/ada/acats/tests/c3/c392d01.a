@@ -1,0 +1,324 @@
+-- C392D01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for an implicitly declared dispatching operation that is
+--      overridden, the body executed is the body for the overriding
+--      subprogram, even if the overriding occurs in a private part.
+--      Check that, for an implicitly declared dispatching operation that is
+--      NOT overridden, the body executed is the body of the corresponding
+--      subprogram of the parent type.
+--
+--      Check for the case where the overriding (and non-overriding) operations
+--      are declared for a private extension (and its full type) in a public
+--      child unit of the package declaring the ancestor type, and the ancestor
+--      type is a tagged private type whose full view is itself a derived type.
+--
+-- TEST DESCRIPTION:
+--      Consider:
+--
+--      package Parent is
+--         type Root is tagged ...
+--         procedure Vis_Op (P: Root);
+--      private
+--         procedure Pri_Op (P: Root);                     -- (A)
+--      end Parent;
+--
+--      package Intermediate is
+--         type Mid is tagged private;
+--      private
+--         type Mid is new Parent.Root with record ...
+--         -- Implicit Vis_Op (P: Mid) declared here.
+--
+--         procedure Vis_Op (P: Mid);                      -- (B)
+--      end Intermediate;
+--
+--      package Intermediate.Child is
+--         type Derived is new Mid with private; 
+--
+--         procedure Pri_Op (P: Derived);                  -- (C)
+--         ...
+--
+--      private
+--         type Derived is new Mid with record...
+--         -- Implicit Vis_Op (P: Derived) declared here.
+--         ...
+--      end Intermediate.Child;
+--
+--      Type Derived inherits Vis_Op from the parent type Mid. Note, however,
+--      that it is implicitly declared in the private part (inherited
+--      subprograms for a derived_type_definition -- in this case, the full
+--      type -- are implicitly declared at the  earliest place within the
+--      immediate scope of the type_declaration where the corresponding
+--      declaration from the parent is visible).
+--
+--      Because Parent.Pri_Op is never visible within the immediate scope
+--      of Mid, it is not implicitly declared for Mid. Thus, it is also not
+--      implicitly declared for Derived. As a result, the version of Pri_Op
+--      declared at (C) above does not override an inherited version of
+--      Parent.Pri_Op and is totally unrelated to it.
+--
+--      Dispatching calls with tag Mid will execute (A) and (B). Dispatching 
+--      calls with tag Derived from Parent will execute the bodies of (B) 
+--      and (A).  Dispatching calls with tag Derived from Parent.Child
+--      will execute the bodies of (B) and (C).  
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         F392D00.A
+--         C392D01.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+with F392D00;
+package C392D01_0 is
+
+   type Zoom_Camera is tagged private;
+
+   procedure Self_Test (C : in out Zoom_Camera'Class);
+
+   -- ...Additional operations.
+
+
+   function TC_Correct_Result (C : Zoom_Camera;
+                               D : F392D00.Depth_Of_Field;
+                               S : F392D00.Shutter_Speed) return Boolean;
+
+private
+
+   type Magnification is (Low, Medium, High);
+
+   type Zoom_Camera is new F392D00.Remote_Camera with record
+      Mag : Magnification;
+   end record;
+
+   -- procedure Focus (C     : in out Zoom_Camera;               -- Implicitly
+   --                  Depth : in     Depth_Of_Field)            -- declared
+                                                                 -- here.
+
+   procedure Focus (C     : in out Zoom_Camera;                -- Overrides
+                    Depth : in     F392D00.Depth_Of_Field);    -- inherited op.
+
+   -- For the remote zoom camera, perhaps the focusing algorithm is different
+   -- in some way, so the original Focus operation is overridden here.
+
+   -- Since the partial view is not an extension, the overriding operation
+   -- must be declared after the full type. This version of Focus, although
+   -- not visible for type Zoom_Camera from outside the package, can still be
+   -- dispatched to.  
+
+
+   -- Note: F392D00.Set_Shutter_Speed is inherited by Zoom_Camera from
+   -- F392D00.Remote_Camera, but since the operation never becomes visible
+   -- within the immediate scope of Zoom_Camera, it is never implicitly
+   -- declared. 
+
+end C392D01_0;
+
+
+     --==================================================================--
+
+
+package body C392D01_0 is
+
+   procedure Focus (C     : in out Zoom_Camera;
+                    Depth : in     F392D00.Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      C.DOF := 83;
+   end Focus;
+
+   -----------------------------------------------------------
+   -- Indirect call to F392D00.Self_Test since the main does not know 
+   -- that Zoom_Camera is a private extension of F392D00.Basic_Camera.
+   procedure Self_Test (C : in out Zoom_Camera'Class) is
+   begin
+      F392D00.Self_Test (C);
+      -- ...Additional self-testing.
+   end Self_Test;
+
+   -----------------------------------------------------------
+   function TC_Correct_Result (C : Zoom_Camera;
+                               D : F392D00.Depth_Of_Field;
+                               S : F392D00.Shutter_Speed) return Boolean is
+      use type F392D00.Depth_Of_Field;
+      use type F392D00.Shutter_Speed;
+   begin
+      return (C.DOF = D and C.Shutter = S);
+   end TC_Correct_Result;
+
+end C392D01_0;
+
+
+     --==================================================================--
+
+
+with F392D00;
+package C392D01_0.C392D01_1 is
+
+   type Film_Speed is private;
+
+   type Auto_Speed is new Zoom_Camera with private;
+
+   -- Implicit function TC_Correct_Result (Auto_Speed) declared here.
+
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;     
+                                Speed : in     F392D00.Shutter_Speed); 
+
+   -- This version of Set_Shutter_Speed does NOT override the operation
+   -- inherited from Zoom_Camera, because the inherited operation is never
+   -- visible (and thus, is never implicitly declared) within the immediate
+   -- scope of type Auto_Speed.
+
+   procedure Self_Test (C : in out Auto_Speed'Class);
+
+   -- ...Other operations.
+
+private
+   type Film_Speed is (One_Hundred, Two_Hundred, Four_Hundred);
+
+   type Auto_Speed is new Zoom_Camera with record
+      ASA : Film_Speed;
+   end record;
+
+   -- procedure Focus (C     : in out Auto_Speed;                -- Implicitly
+   --                  Depth : in     F392D00.Depth_Of_Field);   -- declared
+                                                                 -- here.
+
+end C392D01_0.C392D01_1;
+
+
+     --==================================================================--
+
+
+package body C392D01_0.C392D01_1 is
+
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;
+                                Speed : in     F392D00.Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      C.Shutter := F392D00.Two_Fifty;
+   end Set_Shutter_Speed;
+
+   -------------------------------------------------------
+   procedure Self_Test (C : in out Auto_Speed'Class) is
+   begin
+      -- Artificial for testing purposes.
+      Set_Shutter_Speed (C, F392D00.Thousand);
+      Focus (C, 27);
+   end Self_Test;
+
+end C392D01_0.C392D01_1;
+
+
+     --==================================================================--
+
+
+with F392D00;
+with C392D01_0.C392D01_1;
+
+with Report;
+
+procedure C392D01 is
+   Zooming_Camera : C392D01_0.Zoom_Camera;
+   Auto_Camera1   : C392D01_0.C392D01_1.Auto_Speed;
+   Auto_Camera2   : C392D01_0.C392D01_1.Auto_Speed;
+
+   TC_Expected_Zoom_Depth : constant F392D00.Depth_Of_Field := 83;
+   TC_Expected_Auto_Depth : constant F392D00.Depth_Of_Field := 83;
+   TC_Expected_Depth      : constant F392D00.Depth_Of_Field := 83;
+   TC_Expected_Zoom_Speed : constant F392D00.Shutter_Speed 
+                          := F392D00.Thousand;
+   TC_Expected_Auto_Speed : constant F392D00.Shutter_Speed 
+                          := F392D00.Thousand;
+   TC_Expected_Speed      : constant F392D00.Shutter_Speed 
+                          := F392D00.Two_Fifty;
+
+   use type F392D00.Depth_Of_Field;
+   use type F392D00.Shutter_Speed;
+
+begin
+   Report.Test ("C392D01", "Dispatching for overridden and non-overridden "   &
+                "primitive subprograms: private extension declared in child " &
+                "unit, parent is tagged private whose full view is derived  " &
+                "type");
+
+
+
+-- Call the class-wide operation (Self_Test) for Zoom_Camera'Class, which 
+-- itself calls the class-wide operation for Remote_Camera'Class, which
+-- in turn makes dispatching calls to Focus and Set_Shutter_Speed:
+
+
+   -- For an object of type Zoom_Camera, the dispatching call to Focus should
+   -- dispatch to the body explicitly declared for Zoom_Camera. The dispatching
+   -- to Set_Shutter_Speed should dispatch to the body declared for
+   -- Remote_Camera:
+     
+   C392D01_0.Self_Test(Zooming_Camera);
+
+   if not C392D01_0.TC_Correct_Result (Zooming_Camera,
+                                       TC_Expected_Zoom_Depth,
+                                       TC_Expected_Zoom_Speed)
+   then
+      Report.Failed ("Calls dispatched incorrectly for tagged private type");
+   end if;
+
+   -- For an object of type Auto_Speed, the dispatching call to Focus should
+   -- dispatch to the body explicitly declared for Zoom_Camera. The dispatching
+   -- call to Set_Shutter_Speed should dispatch to the body explicitly declared 
+   -- for Remote_Camera:
+     
+   C392D01_0.Self_Test(Auto_Camera1);
+
+   if not C392D01_0.C392D01_1.TC_Correct_Result (Auto_Camera1,
+                                                 TC_Expected_Auto_Depth,
+                                                 TC_Expected_Auto_Speed)
+   then
+      Report.Failed ("Calls dispatched incorrectly for private extension");
+   end if;
+
+   -- Call to Self_Test from C392D01_0.C392D01_1 invokes the dispatching call
+   -- to Focus which should dispatch to the body explicitly declared for 
+   -- Zoom_Camera. The dispatching call to Set_Shutter_Speed should dispatch 
+   -- to the body explicitly declared for Auto_Speed:
+
+   C392D01_0.C392D01_1.Self_Test(Auto_Camera2);
+
+   if not C392D01_0.C392D01_1.TC_Correct_Result (Auto_Camera2,
+                                                 TC_Expected_Depth,
+                                                 TC_Expected_Speed)
+   then
+      Report.Failed ("Call to explicit subprogram executed the wrong body");
+   end if;
+
+   Report.Result;
+
+end C392D01;

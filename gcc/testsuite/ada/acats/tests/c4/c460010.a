@@ -1,0 +1,354 @@
+-- C460010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for an array aggregate without an others choice assigned
+--      to an object of a constrained array subtype, Constraint_Error is not
+--      raised if the length of each dimension of the aggregate equals the
+--      length of the corresponding dimension of the target object, even if
+--      the bounds of the corresponding index ranges do not match.
+--
+-- TEST DESCRIPTION:
+--      The test verifies that sliding of array bounds is performed on array
+--      aggregates that are part of a larger aggregate, where the bounds of
+--      the corresponding index ranges do not match but the lengths of the
+--      corresponding dimensions are the same. Both aggregates containing
+--      named associations and positional associations are checked. Cases
+--      involving static and nonstatic index constraints, as well as pre-
+--      defined and modular integer index subtypes, are included.
+--
+--
+-- CHANGE HISTORY:
+--      15 Apr 96   SAIC    Prerelease version for ACVC 2.1.
+--      20 Oct 96   SAIC    Removed unnecessary parentheses and type
+--                          conversions.
+--
+--!
+
+with Report;
+pragma Elaborate (Report);
+
+package C460010_0 is
+
+  type Modular_Type is mod 10;  -- Range 0 .. 9.
+
+
+  Two  : Modular_Type := Modular_Type (Report.Ident_Int(2));
+  Four : Modular_Type := Modular_Type (Report.Ident_Int(4));
+
+  type Array_Modular_Index is array (Modular_Type range <>) of Integer;
+
+  subtype Array_Static_Modular_Constraint    is Array_Modular_Index(2..4);
+  subtype Array_Nonstatic_Modular_Constraint is Array_Modular_Index(Two..Four);
+
+end C460010_0;
+
+
+     --==================================================================--
+
+
+with Report;
+pragma Elaborate (Report);
+
+package C460010_1 is
+
+  One  : Integer := Report.Ident_Int(1);
+  Ten  : Integer := Report.Ident_Int(10);
+
+  subtype Integer_Subtype is Integer range One .. Ten;
+
+
+  Two  : Integer := Report.Ident_Int(2);
+  Four : Integer := Report.Ident_Int(4);
+
+  type Array_Integer_Index is array (Integer_Subtype range <>) of Boolean;
+
+  subtype Array_Static_Integer_Constraint    is Array_Integer_Index(2..4);
+  subtype Array_Nonstatic_Integer_Constraint is Array_Integer_Index(Two..Four);
+
+end C460010_1;
+
+
+     --==================================================================--
+
+
+-- Generic equality function:
+
+generic
+   type Operand_Type is private;
+function C460010_2 (L, R : Operand_Type) return Boolean;
+
+
+function C460010_2 (L, R : Operand_Type) return Boolean is
+begin
+   return L = R;
+end C460010_2;
+
+
+     --==================================================================--
+
+
+with C460010_0;
+with C460010_1;
+with C460010_2;
+
+with Report;
+
+procedure C460010 is
+
+   generic function Generic_Equality renames C460010_2;
+
+begin
+   Report.Test ("C460010", "Check that Constraint_Error is not raised if " &
+                "an array aggregate without an others choice is assigned " &
+                "to an object of a constrained array subtype, and the "    &
+                "length of each dimension of the aggregate equals the "    &
+                "length of the corresponding dimension of the target object");
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   declare
+     type Arr is array (1..1) of C460010_0.Array_Static_Modular_Constraint;
+     function Equals is new Generic_Equality (Arr);
+     Target : Arr;
+   begin
+                       ---=---=---=---=---=---=---
+     CASE_1:
+     begin
+        Target := (1 => (1 => 1, 2 => 2, 3 => 3));  -- Named associations.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 1");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 1");
+      end CASE_1;
+
+                       ---=---=---=---=---=---=---
+
+     CASE_2:
+     begin
+        Target := (1 => (5, 10, 15));  -- Positional associations.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 2");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 2");
+      end CASE_2;
+
+                       ---=---=---=---=---=---=---
+   end;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   declare
+     type Rec (Disc : C460010_0.Modular_Type := 4) is record
+       Arr : C460010_0.Array_Modular_Index(2 .. Disc);
+     end record;
+
+     function Equals is new Generic_Equality (Rec);
+     Target : Rec;
+   begin
+                       ---=---=---=---=---=---=---
+     CASE_3:
+     begin
+        Target := (Disc => 4, Arr => (1 => 1, 2 => 2, 3 => 3));  -- Named.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 3");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 3");
+      end CASE_3;
+
+                       ---=---=---=---=---=---=---
+
+     CASE_4:
+     begin
+        Target := (Disc => 4, Arr => (1 ,2, 3));    -- Positional.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 4");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 4");
+      end CASE_4;
+
+                       ---=---=---=---=---=---=---
+   end;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   declare
+     type Arr is array (1..1) of C460010_0.Array_Nonstatic_Modular_Constraint;
+     function Equals is new Generic_Equality (Arr);
+     Target : Arr;
+   begin
+                       ---=---=---=---=---=---=---
+     CASE_5:
+     begin
+        Target := (1 => (1 => 1, 2 => 2, 3 => 3));  -- Named associations.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 5");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 5");
+      end CASE_5;
+
+                       ---=---=---=---=---=---=---
+
+     CASE_6:
+     begin
+        Target := (1 => ((5, 10, 15)));  -- Positional associations.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 6");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 6");
+      end CASE_6;
+
+                       ---=---=---=---=---=---=---
+   end;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   declare
+     type Arr is array (1..1) of C460010_1.Array_Static_Integer_Constraint;
+     function Equals is new Generic_Equality (Arr);
+     Target : Arr;
+   begin
+                       ---=---=---=---=---=---=---
+     CASE_7:
+     begin
+        Target := (1 => (1 => True, 2 => True, 3 => False));  -- Named.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 7");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 7");
+      end CASE_7;
+
+                       ---=---=---=---=---=---=---
+
+     CASE_8:
+     begin
+        Target := (1 => ((False, False, True)));  -- Positional.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 8");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 8");
+      end CASE_8;
+
+                       ---=---=---=---=---=---=---
+   end;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   declare
+     type Arr is array (1..1) of C460010_1.Array_Nonstatic_Integer_Constraint;
+     function Equals is new Generic_Equality (Arr);
+     Target : Arr;
+   begin
+                       ---=---=---=---=---=---=---
+     CASE_9:
+     begin
+        Target := (1 => (1 => True, 2 => True, 3 => False));  -- Named.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 9");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 9");
+      end CASE_9;
+
+                       ---=---=---=---=---=---=---
+
+     CASE_10:
+     begin
+        Target := (1 => (False, False, True));      -- Positional.
+
+        if not Equals (Target, Target) then
+             Report.Failed ("Avoid optimization");  -- Never executed.
+        end if;
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error raised: Case 10");
+         when others           =>
+            Report.Failed ("Unexpected exception raised: Case 10");
+      end CASE_10;
+
+                       ---=---=---=---=---=---=---
+   end;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+     Report.Result;
+
+end C460010;

@@ -1,0 +1,276 @@
+-- CA11001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a child unit can be used to provide an alternate view and
+--      operations on a private type in its parent package.  Check that a 
+--      child unit can be a package.  Check that a WITH of a child unit 
+--      includes an implicit WITH of its ancestor unit.  
+--
+-- TEST DESCRIPTION:
+--      Declare a private type in a package specification. Declare 
+--      subprograms for the type.
+--
+--      Add a public child to the above package.  Within the body of this
+--      package, access the private type. Declare operations to read and 
+--      write to its parent private type.
+--
+--      In the main program, "with" the child.  Declare objects of the
+--      parent private type.  Access the subprograms from both parent and
+--      child packages.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CA11001_0 is   -- Cartesian_Complex
+--  This package represents a Cartesian view of a complex number.  It contains 
+--  a private type plus subprograms to construct and decompose a complex 
+--  number.
+
+   type Complex_Int is range 0 .. 100;
+
+   type Complex_Type is private;
+
+   Constant_Complex : constant Complex_Type;
+
+   Complex_Error : exception;
+
+   procedure Cartesian_Assign   (R, I : in     Complex_Int; 
+                                 C    :    out Complex_Type);
+
+   function Cartesian_Real_Part (C : Complex_Type) 
+     return Complex_Int;
+
+   function Cartesian_Imag_Part (C : Complex_Type) 
+     return Complex_Int;
+
+   function Complex (Real, Imaginary : Complex_Int)
+     return Complex_Type;                             
+
+private
+   type Complex_Type is                      -- Parent private type
+      record
+         Real, Imaginary : Complex_Int;
+      end record;
+
+   Constant_Complex : constant Complex_Type := (Real => 0, Imaginary => 0);
+
+end CA11001_0;       -- Cartesian_Complex
+
+--=======================================================================--
+
+package body CA11001_0 is  -- Cartesian_Complex
+
+   procedure Cartesian_Assign (R, I : in     Complex_Int; 
+                               C    :    out Complex_Type) is
+   begin
+      C.Real      := R;
+      C.Imaginary := I;
+   end Cartesian_Assign;
+   -------------------------------------------------------------
+   function Cartesian_Real_Part (C : Complex_Type) 
+     return Complex_Int is
+   begin
+      return C.Real;
+   end Cartesian_Real_Part;
+   -------------------------------------------------------------
+   function Cartesian_Imag_Part (C : Complex_Type) 
+     return Complex_Int is
+   begin
+      return C.Imaginary;
+   end Cartesian_Imag_Part;
+   -------------------------------------------------------------
+   function Complex (Real, Imaginary : Complex_Int)
+     return Complex_Type is
+   begin
+      return (Real, Imaginary);
+   end Complex;
+
+end CA11001_0;      -- Cartesian_Complex
+
+--=======================================================================--
+
+package CA11001_0.CA11001_1 is    -- Polar_Complex
+--  This public child provides a different view of the private type from its
+--  parent.  It provides a polar view by the provision of subprograms which
+--  construct and decompose a complex number.
+
+   procedure Polar_Assign (R, Theta : in     Complex_Int; 
+                           C        :    out Complex_Type);  
+                                             -- Complex_Type is a 
+                                             -- record of CA11001_0
+
+   function Polar_Real_Part (C: Complex_Type) return Complex_Int;           
+
+   function Polar_Imag_Part (C: Complex_Type) return Complex_Int;
+
+   function Equals_Const (Num : Complex_Type) return Boolean;
+
+end CA11001_0.CA11001_1;    -- Polar_Complex
+
+--=======================================================================--
+
+package body CA11001_0.CA11001_1 is   -- Polar_Complex
+
+   function Cos (Angle : Complex_Int) return Complex_Int is
+      Num : constant Complex_Int := 2;
+   begin
+      return (Angle * Num);   -- not true Cosine function
+   end Cos;
+   -------------------------------------------------------------
+   function Sine (Angle : Complex_Int) return Complex_Int is
+   begin
+      return 1;     -- not true Sine function
+   end Sine;
+   -------------------------------------------------------------
+   function Sqrt (Num : Complex_Int) 
+     return Complex_Int is
+   begin
+     return (Num);     -- not true Square root function
+   end Sqrt;
+   -------------------------------------------------------------
+   function Tan  (Angle : Complex_Int) return Complex_Int is
+   begin
+     return Angle;     -- not true Tangent function
+   end Tan;
+   -------------------------------------------------------------
+   procedure Polar_Assign (R, Theta : in     Complex_Int;  
+                           C        :    out Complex_Type) is 
+   begin
+      if R = 0 and Theta = 0 then
+         raise Complex_Error;
+      end if;
+      C.Real := R * Cos (Theta);
+      C.Imaginary := R * Sine (Theta);
+   end Polar_Assign;
+   -------------------------------------------------------------
+   function Polar_Real_Part (C: Complex_Type) return Complex_Int is
+   begin
+      return Sqrt ((Cartesian_Imag_Part (C)) ** 2 + 
+                   (Cartesian_Real_Part (C)) ** 2);
+   end Polar_Real_Part;
+   -------------------------------------------------------------
+   function Polar_Imag_Part (C: Complex_Type) return Complex_Int is
+   begin
+      return (Tan (Cartesian_Imag_Part (C) / 
+              Cartesian_Real_Part (C)));
+   end Polar_Imag_Part;
+   -------------------------------------------------------------
+   function Equals_Const (Num : Complex_Type) return Boolean is
+   begin
+      return Num.Real = Constant_Complex.Real and
+         Num.Imaginary = Constant_Complex.Imaginary;
+   end Equals_Const;
+
+end CA11001_0.CA11001_1;     -- Polar_Complex
+
+--=======================================================================--
+
+with CA11001_0.CA11001_1;        -- Polar_Complex
+with Report;
+
+procedure CA11001 is
+
+   Complex_No  : CA11001_0.Complex_Type;    -- Complex_Type is a
+                                            -- record of CA11001_0
+
+   Complex_5x2 : CA11001_0.Complex_Type := CA11001_0.Complex (5, 2);
+
+   Int_2       :  CA11001_0.Complex_Int 
+               := CA11001_0.Complex_Int (Report.Ident_Int (2));
+
+begin
+
+   Report.Test ("CA11001", "Check that a child unit can be used " &
+                "to provide an alternate view and operations " &
+                "on a private type in its parent package");
+
+   Basic_View_Subtest:
+
+   begin
+      -- Assign using Cartesian coordinates.
+      CA11001_0.Cartesian_Assign 
+        (CA11001_0.Complex_Int (Report.Ident_Int (1)), Int_2, Complex_No);
+
+      -- Read back in Polar coordinates.
+      -- Polar values are surrogates used in checking for correct
+      -- subprogram calls.
+      if CA11001_0."/=" (CA11001_0.CA11001_1.Polar_Real_Part (Complex_No),
+        CA11001_0.Cartesian_Real_Part (Complex_5x2)) and CA11001_0."/="
+          (CA11001_0.CA11001_1.Polar_Imag_Part (Complex_No),  
+            CA11001_0.Cartesian_Imag_Part (Complex_5x2)) then
+           Report.Failed ("Incorrect Cartesian result");
+      end if;
+
+   end Basic_View_Subtest;
+   -------------------------------------------------------------
+   Alternate_View_Subtest:
+   begin
+      -- Assign using Polar coordinates.
+      CA11001_0.CA11001_1.Polar_Assign 
+        (Int_2, CA11001_0.Complex_Int (Report.Ident_Int (3)), Complex_No);
+
+      -- Read back in Cartesian coordinates.
+      if CA11001_0."/=" (CA11001_0.Cartesian_Real_Part 
+        (Complex_No), CA11001_0.Complex_Int (Report.Ident_Int (12))) or 
+          CA11001_0."/=" (CA11001_0.Cartesian_Imag_Part (Complex_No), Int_2) 
+      then
+         Report.Failed ("Incorrect Polar result");
+      end if;
+   end Alternate_View_Subtest;
+   -------------------------------------------------------------
+   Other_Subtest:
+   begin
+      -- Assign using Polar coordinates.
+      CA11001_0.CA11001_1.Polar_Assign 
+        (CA11001_0.Complex_Int (Report.Ident_Int (0)), Int_2, Complex_No);
+
+      -- Compare with Complex_Num in CA11001_0.
+      if not CA11001_0.CA11001_1.Equals_Const (Complex_No)
+        then
+         Report.Failed ("Incorrect result");
+      end if;
+   end Other_Subtest;
+   -------------------------------------------------------------
+   Exception_Subtest:
+   begin
+      -- Raised parent's exception.
+      CA11001_0.CA11001_1.Polar_Assign 
+        (CA11001_0.Complex_Int (Report.Ident_Int (0)), 
+           CA11001_0.Complex_Int (Report.Ident_Int (0)), Complex_No);
+      Report.Failed ("Exception was not raised");
+   exception
+      when CA11001_0.Complex_Error => 
+         null;
+      when others                  =>
+         Report.Failed ("Unexpected exception raised in test");
+   end Exception_Subtest;
+
+   Report.Result;
+
+end CA11001;

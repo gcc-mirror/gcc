@@ -1,0 +1,259 @@
+-- CA13002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that two library child units and/or subunits may have the same 
+--      simple names if they have distinct expanded names.
+--
+-- TEST DESCRIPTION:
+--      Declare a package that provides some primitive functionality (minimal
+--      terminal driver operations in this case).  Add child packages to 
+--      expand the functionality for different but related contexts (different
+--      terminal kinds).  Add child packages, or subunits, to the children to
+--      provide the same high level operation for each of the different 
+--      contexts (terminals).  Since the operations are the same, at the leaf
+--      level they are likely to have the same names.
+--
+--      The main program "with"s the child packages.  Check that the
+--      child units and subunits perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+   
+-- Public parent.
+package CA13002_0 is                     -- Terminal_Driver.
+
+   type TC_Name is (First_Child, Second_Child, Third_Child, Fourth_Child);
+   type TC_Call_From is (First_Grandchild, Second_Grandchild, First_Subunit, 
+                           Second_Subunit);
+   type TC_Calls_Arr is array (TC_Name, TC_Call_From) of boolean;
+   TC_Calls : TC_Calls_Arr := (others => (others => false));
+
+   -- In real application, Send_Control_Sequence sends keystrokes from
+   -- the terminal, i.e., space, escape, etc.
+   procedure Send_Control_Sequence (Row : in TC_Name;
+                                    Col : in TC_Call_From);
+
+end CA13002_0;
+
+     --==================================================================--
+
+-- First child.
+package CA13002_0.CA13002_1 is           -- Terminal_Driver.VT100
+
+   -- Move cursor up, down, left, or right.
+   procedure Move_Cursor (Col : in TC_Call_From);
+
+end CA13002_0.CA13002_1;
+
+     --==================================================================--
+
+-- First grandchild.
+procedure CA13002_0.CA13002_1.CA13002_5; -- Terminal_Driver.VT100.Cursor_Up
+
+     --==================================================================--
+
+-- Second child.
+package CA13002_0.CA13002_2 is           -- Terminal_Driver.IBM3270
+
+   procedure Move_Cursor (Col : in TC_Call_From);
+
+end CA13002_0.CA13002_2;
+
+     --==================================================================--
+
+-- Second grandchild.
+procedure CA13002_0.CA13002_2.CA13002_5; -- Terminal_Driver.IBM3270.Cursor_Up
+
+     --==================================================================--
+
+-- Third child.
+package CA13002_0.CA13002_3 is           -- Terminal_Driver.DOS_ANSI
+
+   procedure Move_Cursor (Col : in TC_Call_From);
+
+   procedure CA13002_5;                  -- Terminal_Driver.DOS_ANSI.Cursor_Up
+                                         -- implementation will be as a 
+                                         -- separate subunit.
+end CA13002_0.CA13002_3;
+
+     --==================================================================--
+
+-- Fourth child.
+package CA13002_0.CA13002_4 is           -- Terminal_Driver.WYSE
+
+   procedure Move_Cursor (Col : in TC_Call_From);
+
+   procedure CA13002_5;                  -- Terminal_Driver.WYSE.Cursor_Up
+                                         -- implementation will be as a 
+                                         -- separate subunit.
+
+end CA13002_0.CA13002_4;
+
+     --==================================================================--
+
+-- Terminal_Driver.
+package body CA13002_0 is                  
+
+   procedure Send_Control_Sequence (Row : in TC_Name;
+                                    Col : in TC_Call_From) is
+   begin
+      -- Reads a key and takes action.
+      TC_Calls (Row, Col) := true;
+   end Send_Control_Sequence;
+
+end CA13002_0;
+
+     --==================================================================--
+
+-- Terminal_Driver.VT100.
+package body CA13002_0.CA13002_1 is                     
+
+   procedure Move_Cursor (Col : in TC_Call_From) is
+   begin
+      Send_Control_Sequence (First_Child, Col);
+   end Move_Cursor;
+
+end CA13002_0.CA13002_1;
+
+     --==================================================================--
+
+-- Terminal_Driver.VT100.Cursor_Up.
+procedure CA13002_0.CA13002_1.CA13002_5 is 
+begin
+   Move_Cursor (First_Grandchild);        -- from Terminal_Driver.VT100.
+end CA13002_0.CA13002_1.CA13002_5;
+
+     --==================================================================--
+
+-- Terminal_Driver.IBM3270.
+package body CA13002_0.CA13002_2 is                     
+
+   procedure Move_Cursor (Col : in TC_Call_From) is
+   begin
+      Send_Control_Sequence (Second_Child, Col);
+   end Move_Cursor;
+
+end CA13002_0.CA13002_2;
+
+     --==================================================================--
+
+-- Terminal_Driver.IBM3270.Cursor_Up.
+procedure CA13002_0.CA13002_2.CA13002_5 is 
+begin
+   Move_Cursor (Second_Grandchild);       -- from Terminal_Driver.IBM3270.
+end CA13002_0.CA13002_2.CA13002_5;
+
+     --==================================================================--
+
+-- Terminal_Driver.DOS_ANSI.
+package body CA13002_0.CA13002_3 is                     
+
+   procedure Move_Cursor (Col : in TC_Call_From) is
+   begin
+      Send_Control_Sequence (Third_Child, Col);
+   end Move_Cursor;
+
+   procedure CA13002_5 is separate;
+
+end CA13002_0.CA13002_3;
+
+     --==================================================================--
+
+-- Terminal_Driver.DOS_ANSI.Cursor_Up.
+separate (CA13002_0.CA13002_3)
+procedure CA13002_5 is 
+begin
+   Move_Cursor (First_Subunit);           -- from Terminal_Driver.DOS_ANSI.
+end CA13002_5;
+
+     --==================================================================--
+
+-- Terminal_Driver.WYSE.
+package body CA13002_0.CA13002_4 is                     
+
+   procedure Move_Cursor (Col : in TC_Call_From) is
+   begin
+      Send_Control_Sequence (Fourth_Child, Col);
+   end Move_Cursor;
+
+   procedure CA13002_5 is separate;
+
+end CA13002_0.CA13002_4;
+
+     --==================================================================--
+
+-- Terminal_Driver.WYSE.Cursor_Up.
+separate (CA13002_0.CA13002_4)
+procedure CA13002_5 is 
+begin
+   Move_Cursor (Second_Subunit);          -- from Terminal_Driver.WYSE.
+end CA13002_5;
+
+     --==================================================================--
+
+with CA13002_0.CA13002_1.CA13002_5;     -- Terminal_Driver.VT100.Cursor_Up,
+                                        -- implicitly with parent, CA13002_0.
+with CA13002_0.CA13002_2.CA13002_5;     -- Terminal_Driver.IBM3270.Cursor_Up.
+with CA13002_0.CA13002_3;               -- Terminal_Driver.DOS_ANSI.
+with CA13002_0.CA13002_4;               -- Terminal_Driver.WYSE.
+with Report;
+use  CA13002_0;                         -- All primitive subprograms directly
+                                        -- visible.
+
+procedure CA13002 is
+   Expected_Calls : constant CA13002_0.TC_Calls_Arr 
+                  := ((true,  false, false, false),
+                      (false, true , false, false),
+                      (false, false, true , false),
+                      (false, false, false, true ));
+begin
+   Report.Test ("CA13002", "Check that two library units and/or subunits " &
+                "may have the same simple names if they have distinct " &
+                "expanded names");
+
+   -- Note that the leaves all have the same name.
+   -- Call the first grandchild.
+   CA13002_0.CA13002_1.CA13002_5;       
+
+   -- Call the second grandchild.
+   CA13002_0.CA13002_2.CA13002_5;
+
+   -- Call the first subunit.
+   CA13002_0.CA13002_3.CA13002_5;
+
+   -- Call the second subunit.
+   CA13002_0.CA13002_4.CA13002_5;
+
+   if TC_Calls /= Expected_Calls then
+      Report.Failed ("Wrong result");
+   end if;  
+
+   Report.Result;
+
+end CA13002;

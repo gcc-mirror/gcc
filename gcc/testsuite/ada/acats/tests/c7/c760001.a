@@ -1,0 +1,390 @@
+-- C760001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that Initialize is called for objects and components of
+--      a controlled type when the objects and components are not
+--      assigned explicit initial values.  Check this for "simple" controlled
+--      objects, controlled record components and arrays with controlled
+--      components.
+--
+--      Check that if an explicit initial value is assigned to an object
+--      or component of a controlled type then Initialize is not called.
+--
+-- TEST DESCRIPTION:
+--      This test derives a type for Ada.Finalization.Controlled, and
+--      overrides the Initialize and Adjust operations for the type.  The
+--      intent of the type is that it should carry incremental values
+--      indicating the ordering of events with respect to these (and default
+--      initialization) operations.  The body of the test uses these values
+--      to determine that the implicit calls to these subprograms happen
+--      (or don't) at the appropriate times.
+--
+--      The test further derives types from this "root" type, which are the
+--      actual types used in the test.  One of the types is "simply" derived
+--      from the "root" type, the other contains a component of the first
+--      type, thus nesting a controlled object as a record component in
+--      controlled objects.
+--
+--      The main program declares objects of these types and checks the
+--      values of the components to ascertain that they have been touched
+--      as expected.
+--
+--      Note that Finalization procedures are provided.  This test does not
+--      test that the calls to Finalization are made correctly.  The
+--      Finalization procedures are provided to catch an implementation that
+--      calls Finalization at an incorrect time.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      10 Oct 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+
+---------------------------------------------------------------- C760001_0
+
+with Ada.Finalization;
+package C760001_0 is
+  subtype Unique_ID is Natural;
+  function Unique_Value return Unique_ID;
+  -- increments each time it's called
+
+  function Most_Recent_Unique_Value return Unique_ID;
+  -- returns the same value as the most recent call to Unique_Value
+
+  type Root_Controlled is new Ada.Finalization.Controlled with record
+    My_ID      : Unique_ID := Unique_Value;
+    My_Init_ID : Unique_ID := Unique_ID'First;
+    My_Adj_ID  : Unique_ID := Unique_ID'First;
+  end record;
+
+  procedure Initialize( R: in out Root_Controlled );
+  procedure Adjust    ( R: in out Root_Controlled );
+
+  TC_Initialize_Calls_Is_Failing : Boolean := False;
+
+end C760001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760001_0 is
+
+  Global_Unique_Counter : Unique_ID := 0;
+  
+  function Unique_Value return Unique_ID is
+  begin
+    Global_Unique_Counter := Global_Unique_Counter +1;
+    return Global_Unique_Counter;
+  end Unique_Value;
+  
+  function Most_Recent_Unique_Value return Unique_ID is
+  begin
+    return Global_Unique_Counter;
+  end Most_Recent_Unique_Value;
+  
+  procedure Initialize( R: in out Root_Controlled ) is
+  begin
+    if TC_Initialize_Calls_Is_Failing then
+      Report.Failed("Initialized incorrectly called");
+    end if;
+    R.My_Init_ID := Unique_Value;
+  end Initialize;
+
+  procedure Adjust( R: in out Root_Controlled ) is
+  begin
+    R.My_Adj_ID := Unique_Value;
+  end Adjust;
+
+end C760001_0;
+
+---------------------------------------------------------------- C760001_1
+
+with Ada.Finalization;
+with C760001_0;
+package C760001_1 is
+
+  type Proc_ID is (None, Init, Adj, Fin);
+
+  type Test_Controlled is new C760001_0.Root_Controlled with record
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Test_Controlled );
+  procedure Adjust    ( TC: in out Test_Controlled );
+  procedure Finalize  ( TC: in out Test_Controlled );
+
+  type Nested_Controlled is new C760001_0.Root_Controlled with record
+    Nested : C760001_0.Root_Controlled;
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Nested_Controlled );
+  procedure Adjust    ( TC: in out Nested_Controlled );
+  procedure Finalize  ( TC: in out Nested_Controlled );
+
+end C760001_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760001_1 is
+
+  procedure Initialize( TC: in out Test_Controlled ) is
+  begin
+    if TC.Last_Proc_Called /= None then
+      Report.Failed("Initialize for Test_Controlled");
+    end if;
+    TC.Last_Proc_Called := Init;
+    C760001_0.Initialize(C760001_0.Root_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Test_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Adj;
+    C760001_0.Adjust(C760001_0.Root_Controlled(TC));
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Test_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+  procedure Initialize( TC: in out Nested_Controlled ) is
+  begin
+    if TC.Last_Proc_Called /= None then
+      Report.Failed("Initialize for Nested_Controlled");
+    end if;
+    TC.Last_Proc_Called := Init;
+    C760001_0.Initialize(C760001_0.Root_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Nested_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Adj;
+    C760001_0.Adjust(C760001_0.Root_Controlled(TC));
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Nested_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+end C760001_1;
+
+---------------------------------------------------------------- C760001
+
+with Report;
+with TCTouch;
+with C760001_0;
+with C760001_1;
+with Ada.Finalization;
+procedure C760001 is
+
+  use type C760001_1.Proc_ID;
+
+  -- in the first test, test the simple case.  Check that a controlled object
+  -- causes a call to the procedure Initialize.
+  -- Also check that assignment causes a call to Adjust.
+
+  procedure Check_Simple_Objects is
+    S,T : C760001_1.Test_Controlled;
+  begin
+    TCTouch.Assert(S.My_ID < S.My_Init_ID,"Default before dispatch");
+    TCTouch.Assert((S.Last_Proc_Called = C760001_1.Init) and
+                                        (T.Last_Proc_Called = C760001_1.Init),
+                   "Initialize for simple object");
+    S := T;
+    TCTouch.Assert((S.Last_Proc_Called = C760001_1.Adj),
+                   "Adjust for simple object");
+    TCTouch.Assert((S.My_ID = T.My_ID),
+                   "Simple object My_ID's don't match");
+    TCTouch.Assert((S.My_Init_ID = T.My_Init_ID),
+                   "Simple object My_Init_ID's don't match");
+    TCTouch.Assert((S.My_Adj_ID > T.My_Adj_ID),
+                   "Simple object My_Adj_ID's in wrong order");
+  end Check_Simple_Objects;
+
+  -- in the second test, test a more complex case, check that a controlled
+  -- component of a controlled object gets processed correctly
+
+  procedure Check_Nested_Objects is
+    NO1 : C760001_1.Nested_Controlled;
+  begin
+    TCTouch.Assert((NO1.My_ID < NO1.My_Init_Id),
+                   "Default value order incorrect");
+    TCTouch.Assert((NO1.My_Init_Id > NO1.Nested.My_Init_ID),
+                   "Initialization call order incorrect");
+  end Check_Nested_Objects;
+
+  -- check that objects assigned an initial value at declaration are Adjusted
+  -- and NOT Initialized
+
+  procedure Check_Objects_With_Initial_Values is
+
+    TC_Now : constant C760001_0.Unique_ID := C760001_0.Unique_Value;
+
+    A: C760001_1.Test_Controlled := 
+      ( Ada.Finalization.Controlled
+        with TC_Now,
+             TC_Now,
+             TC_Now,
+             C760001_1.None);
+
+    B: C760001_1.Nested_Controlled := 
+      ( Ada.Finalization.Controlled
+        with TC_Now,
+             TC_Now,
+             TC_Now,
+             C760001_0.Root_Controlled(A),
+             C760001_1.None);
+
+  begin
+    -- the implementation may or may not call Adjust for the values
+    -- assigned into A and B,
+    -- but should NOT call Initialize.
+    -- if the value used in the aggregate is overwritten by Initialize,
+    -- this indicates failure
+    TCTouch.Assert(A.My_Init_Id = TC_Now,
+                   "Initialize was called for A with initial value");
+    TCTouch.Assert(B.My_Init_Id = TC_Now,
+                   "Initialize was called for B with initial value");
+    TCTouch.Assert(B.Nested.My_Init_ID = TC_Now,
+                   "Initialize was called for B.Nested initial value");
+  end Check_Objects_With_Initial_Values;
+
+  procedure Check_Array_Case is
+    type Array_Simple is array(1..4) of C760001_1.Test_Controlled;
+    type Array_Nested is array(1..4) of C760001_1.Nested_Controlled;
+
+    Simple_Array_Default : Array_Simple;
+
+    Nested_Array_Default : Array_Nested;
+
+    TC_A_Bit_Later : C760001_0.Unique_ID;
+
+  begin
+    TC_A_Bit_Later := C760001_0.Unique_Value;
+    for N in 1..4 loop
+      TCTouch.Assert(Simple_Array_Default(N).Last_Proc_Called
+                     = C760001_1.Init,
+                     "Initialize for array initial value");
+
+      TCTouch.Assert( (Simple_Array_Default(N).My_Init_ID
+                       > C760001_0.Unique_ID'First)
+                      and (Simple_Array_Default(N).My_Init_ID
+                       < TC_A_Bit_Later),
+                     "Initialize timing for simple array");
+
+      TCTouch.Assert( (Nested_Array_Default(N).My_Init_ID
+                       > C760001_0.Unique_ID'First)
+                      and (Nested_Array_Default(N).My_Init_ID
+                       < TC_A_Bit_Later),
+                     "Initialize timing for container array");
+
+      TCTouch.Assert(Nested_Array_Default(N).Last_Proc_Called
+                     = C760001_1.Init,
+                     "Initialize for nested array (outer) initial value");
+
+      TCTouch.Assert( (Nested_Array_Default(N).Nested.My_Init_ID
+                       > C760001_0.Unique_ID'First)
+                      and (Nested_Array_Default(N).Nested.My_Init_ID
+                       < Nested_Array_Default(N).My_Init_ID),
+                     "Initialize timing for array content");
+    end loop;
+  end Check_Array_Case;
+
+  procedure Check_Array_Case_With_Initial_Values is
+
+    TC_Now : constant C760001_0.Unique_ID := C760001_0.Unique_Value;
+
+    type Array_Simple is array(1..4) of C760001_1.Test_Controlled;
+    type Array_Nested is array(1..4) of C760001_1.Nested_Controlled;
+
+    Simple_Array_Explicit : Array_Simple := ( 1..4 => (
+        Ada.Finalization.Controlled
+        with TC_Now,
+             TC_Now,
+             TC_Now,
+             C760001_1.None                 )         );
+
+    A : constant C760001_0.Root_Controlled := 
+      ( Ada.Finalization.Controlled
+        with others => TC_Now);
+
+    Nested_Array_Explicit : Array_Nested := ( 1..4 => (
+        Ada.Finalization.Controlled
+        with TC_Now,
+             TC_Now,
+             TC_Now,
+             A,
+             C760001_1.None                 )         );
+
+  begin
+    -- the implementation may or may not call Adjust for the values
+    -- assigned into Simple_Array_Explicit and Nested_Array_Explicit,
+    -- but should NOT call Initialize.
+    -- if the value used in the aggregate is overwritten by Initialize,
+    -- this indicates failure
+    for N in 1..4 loop
+      TCTouch.Assert(Simple_Array_Explicit(N).My_Init_ID
+                     = TC_Now,
+                     "Initialize was called for array with initial value");
+      TCTouch.Assert(Nested_Array_Explicit(N).My_Init_ID
+                     = TC_Now,
+        "Initialize was called for nested array (outer) with initial value");
+      TCTouch.Assert(Nested_Array_Explicit(N).Nested.My_Init_ID = TC_Now,
+        "Initialize was called for nested array (inner) with initial value");
+    end loop;
+  end Check_Array_Case_With_Initial_Values;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+begin  -- Main test procedure.
+
+  Report.Test ("C760001", "Check that Initialize is called for objects " &
+                          "and components of a controlled type when the " &
+                          "objects and components are not assigned " &
+                          "explicit initial values.  Check that if an " &
+                          "explicit initial value is assigned to an " &
+                          "object or component of a controlled type " &
+                          "then Initialize is not called" );
+
+  Check_Simple_Objects;
+
+  Check_Nested_Objects;
+
+  Check_Array_Case;
+
+  C760001_0.TC_Initialize_Calls_Is_Failing := True;
+
+  Check_Objects_With_Initial_Values;
+
+  Check_Array_Case_With_Initial_Values;
+
+  Report.Result;
+
+end C760001;

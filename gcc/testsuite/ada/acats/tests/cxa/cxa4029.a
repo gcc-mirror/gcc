@@ -1,0 +1,333 @@
+-- CXA4029.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the functionality found in packages Ada.Strings.Wide_Maps,
+--      Ada.Strings.Wide_Bounded, and Ada.Strings.Wide_Maps.Wide_Constants 
+--      is available and produces correct results.
+--
+-- TEST DESCRIPTION:
+--      This test tests the subprograms found in the 
+--      Ada.Strings.Wide_Bounded package.  It is based on the tests
+--      CXA4027-28, which are tests for the complementary "non-wide" 
+--      packages.
+--      
+--      The functions found in CXA4029_0 provide mapping capability, when
+--      used in conjunction with Wide_Character_Mapping_Function objects.
+--
+--       
+-- CHANGE HISTORY:
+--      23 Jun 95   SAIC    Initial prerelease version.
+--      18 Apr 96   SAIC    Incorporated reviewer comments for ACVC 2.1.
+--
+--!
+
+package CXA4029_0 is
+   -- Functions used to supply mapping capability.
+   function Map_To_Lower_Case (From : Wide_Character) return Wide_Character;
+   function Map_To_Upper_Case (From : Wide_Character) return Wide_Character;
+end CXA4029_0;
+
+with Ada.Characters.Handling;
+package body CXA4029_0 is
+      -- Function Map_To_Lower_Case will return the lower case form of 
+      -- Wide_Characters in the range 'A'..'Z' only, and return the input
+      -- wide_character otherwise.
+
+      function Map_To_Lower_Case (From : Wide_Character) 
+         return Wide_Character is
+      begin
+         return Ada.Characters.Handling.To_Wide_Character(
+                  Ada.Characters.Handling.To_Lower(
+                    Ada.Characters.Handling.To_Character(From)));
+      end Map_To_Lower_Case;
+
+      -- Function Map_To_Upper_Case will return the upper case form of 
+      -- Wide_Characters in the range 'a'..'z', or whose position is in one
+      -- of the ranges 223..246 or 248..255, provided the wide_character has
+      -- an upper case form.               
+
+      function Map_To_Upper_Case (From : Wide_Character) 
+        return Wide_Character is
+      begin
+         return Ada.Characters.Handling.To_Wide_Character(
+                  Ada.Characters.Handling.To_Upper(
+                    Ada.Characters.Handling.To_Character(From)));
+      end Map_To_Upper_Case;
+
+end CXA4029_0;
+
+
+with CXA4029_0;
+with Report;
+with Ada.Characters.Handling;
+with Ada.Characters.Latin_1;
+with Ada.Strings;
+with Ada.Strings.Wide_Maps;
+with Ada.Strings.Wide_Maps.Wide_Constants;
+with Ada.Strings.Wide_Fixed;
+with Ada.Strings.Wide_Bounded;
+
+procedure CXA4029 is
+begin
+   Report.Test ("CXA4029",
+                "Check that subprograms defined in package " &
+                "Ada.Strings.Wide_Bounded produce correct results");
+
+   Test_Block:
+   declare
+
+      package ACL1 renames Ada.Characters.Latin_1;
+      package BS1  is new Ada.Strings.Wide_Bounded.Generic_Bounded_Length(1);
+      package BS20 is new Ada.Strings.Wide_Bounded.Generic_Bounded_Length(20);
+      package BS40 is new Ada.Strings.Wide_Bounded.Generic_Bounded_Length(40);
+      package BS80 is new Ada.Strings.Wide_Bounded.Generic_Bounded_Length(80);
+
+      subtype LC_Characters is Wide_Character range 'a'..'z';
+
+      use Ada.Characters, Ada.Strings;
+      use type Wide_Maps.Wide_Character_Set; 
+      use type BS1.Bounded_Wide_String,  BS20.Bounded_Wide_String, 
+               BS40.Bounded_Wide_String, BS80.Bounded_Wide_String;
+
+      TC_String      : constant Wide_String := "A Standard String";
+
+      BString_1      : BS1.Bounded_Wide_String  :=
+                              BS1.Null_Bounded_Wide_String;
+      BString_20     : BS20.Bounded_Wide_String := 
+                              BS20.Null_Bounded_Wide_String;
+      BString_40     : BS40.Bounded_Wide_String := 
+                              BS40.Null_Bounded_Wide_String;
+      BString_80     : BS80.Bounded_Wide_String := 
+                              BS80.Null_Bounded_Wide_String;
+      String_20      : Wide_String(1..20)    := "ABCDEFGHIJKLMNOPQRST";
+      String_40      : Wide_String(1..40)    := "abcdefghijklmnopqrst" & 
+                                                String_20;
+      String_80      : Wide_String(1..80)    := String_40 & String_40;
+      TC_String_5    : Wide_String(1..5)     := "ABCDE";
+
+      -- The following strings are used in examination of the Translation
+      -- subprograms.
+      New_Character_String : Wide_String(1..10) :=
+        Handling.To_Wide_String( 
+          ACL1.LC_A_Grave          & ACL1.LC_A_Ring  & ACL1.LC_AE_Diphthong &
+          ACL1.LC_C_Cedilla        & ACL1.LC_E_Acute & ACL1.LC_I_Circumflex &
+          ACL1.LC_Icelandic_Eth    & ACL1.LC_N_Tilde & 
+          ACL1.LC_O_Oblique_Stroke & ACL1.LC_Icelandic_Thorn);  
+ 
+      TC_New_Character_String : Wide_String(1..10) :=
+        Handling.To_Wide_String(
+          ACL1.UC_A_Grave          & ACL1.UC_A_Ring  & ACL1.UC_AE_Diphthong &
+          ACL1.UC_C_Cedilla        & ACL1.UC_E_Acute & ACL1.UC_I_Circumflex &
+          ACL1.UC_Icelandic_Eth    & ACL1.UC_N_Tilde &
+          ACL1.UC_O_Oblique_Stroke & ACL1.UC_Icelandic_Thorn);  
+
+      -- Access objects that will be provided as parameters to the 
+      -- subprograms.
+      Map_To_Lower_Case_Ptr : Wide_Maps.Wide_Character_Mapping_Function :=
+                                CXA4029_0.Map_To_Lower_Case'Access;
+      Map_To_Upper_Case_Ptr : Wide_Maps.Wide_Character_Mapping_Function :=
+                                CXA4029_0.Map_To_Upper_Case'Access;
+
+   begin
+
+      -- Testing of functionality found in Package Ada.Strings.Wide_Bounded.
+      -- 
+      -- Function Index.
+
+      if BS80.Index(BS80.To_Bounded_Wide_String("CoMpLeTeLy MiXeD CaSe"),
+                    "MIXED CASE",
+                    Ada.Strings.Forward,
+                    Map_To_Upper_Case_Ptr)                /= 12  or
+         BS1.Index(BS1.Null_Bounded_Wide_String,
+                   "i",
+                   Mapping => Map_To_Lower_Case_Ptr)      /= 0   
+      then
+         Report.Failed("Incorrect results from BND Function Index, going " &
+                       "in Forward direction, using a Character Mapping "  &
+                       "Function parameter");
+      end if;
+
+      -- Function Count.
+      if BS40.Count(BS40.To_Bounded_Wide_String("This IS a MISmatched issue"),
+                    "is",
+                    Map_To_Lower_Case_Ptr)                   /=  4   or
+         BS80.Count(BS80.To_Bounded_Wide_String("ABABABA"), 
+                    "ABA", 
+                    Map_To_Upper_Case_Ptr)                   /=  2 
+      then
+         Report.Failed("Incorrect results from BND Function Count, using " &
+                       "a Character_Mapping_Function parameter");
+      end if;
+
+      -- Function Translate.
+      if BS40.Translate(BS40.To_Bounded_Wide_String("A Mixed Case String"),
+                        Mapping => Map_To_Lower_Case_Ptr)   /= 
+         BS40.To_Bounded_Wide_String("a mixed case string")   or
+         BS20."/="("end with lower case",
+                   BS20.Translate(
+                     BS20.To_Bounded_Wide_String("end with lower case"),
+                     Map_To_Lower_Case_Ptr))                  
+      then
+         Report.Failed("Incorrect results from BND Function Translate, " &
+                       "using a Character_Mapping_Function parameter");
+      end if;
+
+      -- Procedure Translate.
+      BString_20 := BS20.To_Bounded_Wide_String(String_20);
+      BS20.Translate(BString_20, Mapping => Map_To_Lower_Case_Ptr);
+      if BString_20 /= BS20.To_Bounded_Wide_String("abcdefghijklmnopqrst") 
+      then
+         Report.Failed("Incorrect result from BND Procedure Translate - 1");
+      end if;
+
+      BString_80 := BS80.Null_Bounded_Wide_String;
+      BS80.Translate(BString_80, Map_To_Upper_Case_Ptr);
+      if not (BString_80 = BS80.Null_Bounded_Wide_String) then
+         Report.Failed("Incorrect result from BND Procedure Translate - 2");
+      end if;
+
+      -- Procedure Append.
+      declare
+         use BS20;
+      begin
+         BString_20 := BS20.Null_Bounded_Wide_String;
+         Append(BString_20, 'T');                     
+         Append(BString_20, "his string");            
+         Append(BString_20, 
+                To_Bounded_Wide_String(" is complete."),
+                Drop => Ada.Strings.Right);            -- Drop 4 characters.
+         if BString_20 /= To_Bounded_Wide_String("This string is compl") then
+            Report.Failed("Incorrect results from BS20 versions of " &
+                          "procedure Append");
+         end if;
+      exception
+         when others => Report.Failed("Exception raised in block checking " &
+                                      "BND Procedure Append");
+      end;
+
+      -- Operator "=".
+      BString_40 := BS40.To_Bounded_Wide_String(String_40);
+      BString_80 := BS80.To_Bounded_Wide_String(
+                           BS40.To_Wide_String(BString_40) & 
+                           BS40.To_Wide_String(BString_40));
+      if not (BString_40 = String_40 and        
+              BS80."="(String_80, BString_80)) then
+         Report.Failed("Incorrect results from BND Function ""="" with " &
+                       "string - bounded string parameter combinations");
+      end if;
+
+      -- Operator "<". 
+      BString_1  := BS1.To_Bounded_Wide_String("cat",
+                                               Drop => Ada.Strings.Right);
+      BString_20 := BS20.To_Bounded_Wide_String("Santa Claus");
+      if BString_1 < "C"                or              
+         BS1."<"(BString_1,"c")         or              
+         BS1."<"("x", BString_1)        or              
+         BS20."<"(BString_20,"Santa ")  or              
+         BS20."<"("Santa and his Elves", BString_20)     
+      then
+         Report.Failed("Incorrect results from BND Function ""<"" with " &
+                       "string - bounded string parameter combinations");
+      end if;
+
+      -- Operator "<=". 
+      BString_20 := BS20.To_Bounded_Wide_String("Sample string");
+      if BS20."<="(BString_20,"Sample strin")  or
+         not(BS20."<="("Sample string",BString_20))       
+      then
+         Report.Failed("Incorrect results from BND Function ""<="" with " &
+                       "string - bounded string parameter combinations");
+      end if;
+
+      -- Operator ">". 
+      BString_40 := BS40.To_Bounded_Wide_String(
+                           "A MUCH LONGER SAMPLE STRING.");
+      if BString_40 > "A much longer sample string"          or 
+         BS40.To_Bounded_Wide_String("ABCDEFGH") > "abcdefgh"   
+      then
+         Report.Failed("Incorrect results from BND Function "">"" with " &
+                       "string - bounded string parameter combinations");
+      end if;
+
+      -- Operator ">=". 
+      BString_80 := BS80.To_Bounded_Wide_String(String_80);
+      if not (BString_80 >= String_80  and 
+              BS80.To_Bounded_Wide_String("Programming") >= "PROGRAMMING" and
+              BS80.">="("test", BS80.To_Bounded_Wide_String("tess")))
+      then
+         Report.Failed("Incorrect results from BND Function "">="" with " &
+                       "string - bounded string parameter combinations");
+      end if;
+
+      -- Procedure Trim
+      BString_20 := BS20.To_Bounded_Wide_String("   Both Sides      ");
+      BS20.Trim(BString_20, Ada.Strings.Both);
+      if BString_20 /= BS20.To_Bounded_Wide_String("Both Sides") then
+         Report.Failed("Incorrect results from BND Procedure Trim with " &
+                       "Side = Both");
+      end if;
+
+      -- Procedure Head
+      BString_40 := BS40.To_Bounded_Wide_String("Test String");
+      BS40.Head(Source => BString_40,
+                Count  => 4);                       -- Count < Source'Length
+      if BString_40 /= BS40.To_Bounded_Wide_String("Test") then
+         Report.Failed("Incorrect results from BND Procedure Head with " &
+                       "the Count parameter less than Source'Length");
+      end if;
+
+      BString_20 := BS20.To_Bounded_Wide_String("Short String");
+      BS20.Head(BString_20, 23, '-', Ada.Strings.Right);
+      if BS20.To_Bounded_Wide_String("Short String--------") /= BString_20 then
+         Report.Failed("Incorrect results from BND Procedure Head with "  &
+                       "the Count parameter greater than Source'Length, " &
+                       "and the Drop parameter = Right");
+      end if;
+
+      -- Procedure Tail
+      BString_40 := BS40.To_Bounded_Wide_String("Test String");
+      BS40.Tail(Source => BString_40,
+                Count  => 6);                       
+      if BString_40 /= BS40.To_Bounded_Wide_String("String") then
+         Report.Failed("Incorrect results from BND Procedure Tail with " &
+                       "the Count parameter less than Source'Length");
+      end if;
+
+      BString_20 := BS20.To_Bounded_Wide_String("Maximum Length Chars");
+      BS20.Tail(BString_20, 23, '-', Ada.Strings.Right);
+      if BS20.To_Bounded_Wide_String("---Maximum Length Ch") /= BString_20 then
+         Report.Failed("Incorrect results from BND Procedure Tail with "  &
+                       "the Count parameter greater than Source'Length, " &
+                       "and the Drop parameter = Right");
+      end if;
+
+   exception
+      when others => Report.Failed ("Exception raised in Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+end CXA4029;

@@ -1,0 +1,299 @@
+-- C392011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that if a function call with a controlling result is itself
+--     a controlling operand of an enclosing call on a dispatching operation,
+--     then its controlling tag value is determined by the controlling tag
+--     value of the enclosing call.
+--
+-- TEST DESCRIPTION:
+--      The test builds and traverses a "ragged" list; a linked list which
+--      contains data elements of three different types (all rooted at
+--      Level_0'Class).  The traversal of this list checks the objective
+--      by calling the dispatching operation "Check" using an item from the
+--      list, and calling the function create; thus causing the controlling
+--      result of the function to be determined by evaluating the value of
+--      the other controlling parameter to the two-parameter Check.
+--
+--
+-- CHANGE HISTORY:
+--      22 SEP 95   SAIC   Initial version
+--      23 APR 96   SAIC   Corrected commentary, differentiated integer.
+--
+--!
+
+----------------------------------------------------------------- C392011_0
+
+package C392011_0 is
+
+  type Level_0 is tagged record
+    Ch_Item : Character;
+  end record;
+
+  function Create return Level_0;
+    -- primitive dispatching function
+
+  procedure Check( Left, Right: in Level_0 );
+    -- has controlling parameters
+
+end C392011_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body C392011_0 is
+
+  The_Character : Character := 'A';
+
+  function Create return Level_0 is
+    Created_Item_0 : constant Level_0 := ( Ch_Item => The_Character );
+  begin
+    The_Character := Character'Succ(The_Character);
+    TCTouch.Touch('A'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- A
+    return Created_Item_0;
+  end Create;
+
+  procedure Check( Left, Right: in Level_0 ) is
+  begin
+    TCTouch.Touch('B'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- B
+  end Check;
+
+end C392011_0;
+
+----------------------------------------------------------------- C392011_1
+
+with C392011_0;
+package C392011_1 is
+
+  type Level_1 is new C392011_0.Level_0 with record
+    Int_Item : Integer;
+  end record;
+  
+  -- note that Create becomes abstract upon this derivation hence:
+
+  function Create return Level_1;
+
+  procedure Check( Left, Right: in Level_1 );
+
+end C392011_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C392011_1 is
+
+  Integer_1 : Integer := 0;
+
+  function Create return Level_1 is
+    Created_Item_1 : constant Level_1
+                   := ( C392011_0.Create with Int_Item => Integer_1 );
+    -- note call to     ^--------------^   -- A
+  begin
+    Integer_1 := Integer'Succ(Integer_1);
+    TCTouch.Touch('C'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- C
+    return Created_Item_1;
+  end Create;
+
+  procedure Check( Left, Right: in Level_1 ) is
+  begin
+    TCTouch.Touch('D'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- D
+  end Check;
+
+end C392011_1;
+
+----------------------------------------------------------------- C392011_2
+
+with C392011_1;
+package C392011_2 is
+
+  type Level_2 is new C392011_1.Level_1 with record
+    Another_Int_Item : Integer;
+  end record;
+  
+  -- note that Create becomes abstract upon this derivation hence:
+
+  function Create return Level_2;
+
+  procedure Check( Left, Right: in Level_2 );
+
+end C392011_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C392011_2 is
+
+  Integer_2 : Integer := 100;
+
+  function Create return Level_2 is
+    Created_Item_2 : constant Level_2
+                 := ( C392011_1.Create with Another_Int_Item => Integer_2 );
+    -- note call to   ^--------------^   -- AC
+  begin
+    Integer_2 := Integer'Succ(Integer_2);
+    TCTouch.Touch('E'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- E
+    return Created_Item_2;
+  end Create;
+
+  procedure Check( Left, Right: in Level_2 ) is
+  begin
+    TCTouch.Touch('F'); -- --- ---- ----- ---- --- -- --- ---- ----- ---- -- F
+  end Check;
+
+end C392011_2;
+
+------------------------------------------------------- C392011_2.C392011_3
+
+with C392011_0;
+package C392011_2.C392011_3 is
+
+  type Wide_Reference is access all C392011_0.Level_0'Class;
+
+  type Ragged_Element;
+
+  type List_Pointer is access Ragged_Element;
+
+  type Ragged_Element is record
+    Data : Wide_Reference;
+    Next : List_Pointer;
+  end record;
+
+  procedure Build_List;
+
+  procedure Traverse_List;
+
+end C392011_2.C392011_3;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C392011_2.C392011_3 is
+
+  The_List : List_Pointer;
+
+  procedure Build_List is
+  begin
+
+    -- build a list that looks like:
+    -- Level_2, Level_1, Level_2, Level_1, Level_0
+    --
+    -- the mechanism is to create each object, "pushing" the existing list
+    -- onto the end: cons( new_item, car, cdr )
+
+    The_List := 
+        new Ragged_Element'( new C392011_0.Level_0'(C392011_0.Create), null );
+    -- Level_0                                                            >> A
+
+    The_List := 
+    new Ragged_Element'( new C392011_1.Level_1'(C392011_1.Create), The_List );
+    -- Level_1 -> Level_0                                                >> AC
+
+    The_List := 
+    new Ragged_Element'( new C392011_2.Level_2'(C392011_2.Create), The_List );
+    -- Level_2 -> Level_1 -> Level_0                                    >> ACE
+
+    The_List := 
+    new Ragged_Element'( new C392011_1.Level_1'(C392011_1.Create), The_List );
+    -- Level_1 -> Level_2 -> Level_1 -> Level_0                          >> AC
+
+    The_List := 
+    new Ragged_Element'( new C392011_2.Level_2'(C392011_2.Create), The_List );
+    -- Level_2 -> Level_1 -> Level_2 -> Level_1 -> Level_0              >> ACE
+
+  end Build_List;
+
+  procedure Traverse_List is
+
+    Next_Item : List_Pointer := The_List;
+
+  -- Check that if a function call with a controlling result is itself
+  -- a controlling operand of an enclosing call on a dispatching operation,
+  -- then its controlling tag value is determined by the controlling tag
+  -- value of the enclosing call.
+
+  -- Level_2 -> Level_1 -> Level_2 -> Level_1 -> Level_0
+
+  begin
+
+    while Next_Item /= null loop  -- here we go!
+      -- these calls better dispatch according to the value in the particular
+      -- list item; causing the call to create to dispatch accordingly.
+      -- why do it twice?  To make sure order makes no difference
+
+      C392011_0.Check(Next_Item.Data.all, C392011_0.Create);
+      -- Create will touch first, then Check touches
+
+      C392011_0.Check(C392011_0.Create, Next_Item.Data.all); 
+
+      -- Here's what's s'pos'd to 'appen:
+      -- Check( Lev_2, Create ) >> ACEF
+      -- Check( Create, Lev_2 ) >> ACEF
+      -- Check( Lev_1, Create ) >> ACD
+      -- Check( Create, Lev_1 ) >> ACD
+      -- Check( Lev_2, Create ) >> ACEF
+      -- Check( Create, Lev_2 ) >> ACEF
+      -- Check( Lev_1, Create ) >> ACD
+      -- Check( Create, Lev_1 ) >> ACD
+      -- Check( Lev_0, Create ) >> AB
+      -- Check( Create, Lev_0 ) >> AB
+
+      Next_Item := Next_Item.Next;   
+    end loop;
+  end Traverse_List;
+
+end C392011_2.C392011_3;
+
+------------------------------------------------------------------- C392011
+
+with Report;
+with TCTouch;
+with C392011_2.C392011_3;
+
+procedure C392011 is
+
+begin  -- Main test procedure.
+
+  Report.Test ("C392011", "Check that if a function call with a " &
+                          "controlling result is itself a controlling " &
+                          "operand of an enclosing call on a dispatching " &
+                          "operation, then its controlling tag value is " &
+                          "determined by the controlling tag value of " &
+                          "the enclosing call" );
+
+  C392011_2.C392011_3.Build_List;
+  TCTouch.Validate( "A" & "AC" & "ACE" & "AC" & "ACE", "Build List" );
+
+  C392011_2.C392011_3.Traverse_List;
+  TCTouch.Validate( "ACEFACEF" & 
+                    "ACDACD" &  
+                    "ACEFACEF" &  
+                    "ACDACD" &  
+                    "ABAB",
+                    "Traverse List" );
+
+  Report.Result;
+
+end C392011;

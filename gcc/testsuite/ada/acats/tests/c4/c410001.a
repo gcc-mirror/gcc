@@ -1,0 +1,303 @@
+-- C410001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that evaluating an access to subprogram variable containing
+--      the value null causes the exception Constraint_Error.
+--      Check that the default value for objects of access to subprogram
+--      types is null.
+--
+-- TEST DESCRIPTION:
+--      This test defines a few simple access_to_subprogram types, and
+--      objects of those types.  It checks that the default values for
+--      these objects is null, and that an attempt to make a subprogram
+--      call via one of this objects containing a null value causes the
+--      predefined exception Constraint_Error.  The check is performed
+---     both with the default null value, and with an explicitly assigned
+--      null value, after the object has been used to successfully designate
+--      and call a subprogram.
+--
+--
+-- CHANGE HISTORY:
+--      05 APR 96   SAIC   Initial version
+--      04 NOV 96   SAIC   Revised for 2.1 release
+--      26 FEB 97   PWB.CTA Initialized variable before passing to function
+--!
+
+----------------------------------------------------------------- C410001_0
+
+package C410001_0 is
+
+  -- used to "switch state" in the software
+  Expect_Exception : Boolean;
+
+  -- define a minimal mixture of access_to_subprogram types
+
+  type Proc_Ref is access procedure;
+
+  type Func_Ref is access function(I:Integer) return Integer;
+
+  type Proc_Para_Ref is access procedure(P:Proc_Ref);
+
+  type Func_Para_Ref is access function(F:Func_Ref) return Integer;
+
+  type Prot_Proc_Ref is access protected procedure;
+
+  type Prot_Func_Ref is access protected function return Boolean;
+
+  -- define some subprograms for them to reference
+
+  procedure Proc;
+
+  function Func(I:Integer) return Integer;
+
+  procedure Proc_Para( Param : Proc_Ref );
+
+  function Func_Para( Param : Func_Ref ) return Integer;
+
+  protected Prot_Obj is
+    procedure Prot_Proc;
+    function Prot_Func return Boolean;
+  end Prot_Obj;
+
+end C410001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C410001_0 is
+
+  -- Note that some failing cases will cause duplicate failure messages;
+  -- rather than have the procedure/function bodies be null, the error
+  -- checking code makes for a reasonable anti-optimization feature.
+
+  procedure Proc is
+  begin
+    if Expect_Exception then
+      Report.Failed("Expected exception did not occur: Proc");
+    end if;
+  end Proc;
+
+  function Func(I:Integer) return Integer is
+  begin
+    if Expect_Exception then
+      Report.Failed("Expected exception did not occur: Func");
+    end if;
+    return Report.Ident_Int(I);
+  end Func;
+
+  procedure Proc_Para( Param : Proc_Ref ) is
+  begin
+
+    Param.all;        -- call by explicit dereference
+
+    if Expect_Exception then
+      Report.Failed("Expected exception did not occur: Proc_Para");
+    end if;
+
+  exception
+    when Constraint_Error =>
+      if not Expect_Exception then
+        Report.Failed("Unexpected Constraint_Error: Proc_Para");
+      end if;  -- else null; expected the exception
+    when others => Report.Failed("Unexpected exception: Proc_Para");
+  end Proc_Para;
+
+  function Func_Para( Param : Func_Ref ) return Integer is
+  begin
+
+    return Param(1);  -- call by implicit dereference
+
+    if Expect_Exception then
+      Report.Failed("Expected exception did not occur: Func_Para");
+    end if;
+    return 1;  -- really just to avoid warnings
+
+  exception
+    when Constraint_Error =>
+      if not Expect_Exception then
+        Report.Failed("Unexpected Constraint_Error: Func_Para");
+        return 0;
+      else
+        return 1995;  -- any value other than this is unexpected
+      end if;
+    when others => Report.Failed("Unexpected exception: Func_Para");
+                   return -42;
+  end Func_Para;
+
+  protected body Prot_Obj is
+
+    procedure Prot_Proc is
+    begin
+      if Expect_Exception then
+        Report.Failed("Expected exception did not occur: Prot_Proc");
+      end if;
+    end Prot_Proc;
+
+    function Prot_Func return Boolean is
+    begin
+      if Expect_Exception then
+        Report.Failed("Expected exception did not occur: Prot_Func");
+      end if;
+      return Report.Ident_Bool( True );
+    end Prot_Func;
+
+  end Prot_Obj;
+
+end C410001_0;
+
+------------------------------------------------------------------- C410001
+
+with Report;
+with TCTouch;
+with C410001_0;
+procedure C410001 is
+
+  Proc_Ref_Var : C410001_0.Proc_Ref;
+
+  Func_Ref_Var : C410001_0.Func_Ref;
+
+  Proc_Para_Ref_Var : C410001_0.Proc_Para_Ref;
+
+  Func_Para_Ref_Var : C410001_0.Func_Para_Ref;
+
+  type Enclosure is record
+    Prot_Proc_Ref_Var : C410001_0.Prot_Proc_Ref;
+    Prot_Func_Ref_Var : C410001_0.Prot_Func_Ref;
+  end record;
+
+  Enclosed : Enclosure;
+
+  Valid_Proc : C410001_0.Proc_Ref := C410001_0.Proc'Access;
+
+  Valid_Func : C410001_0.Func_Ref := C410001_0.Func'Access;
+
+  procedure Make_Calls( Expecting_Exceptions : Boolean ) is
+    type Case_Numbers is range 1..6;
+    Some_Integer : Integer := 0;
+  begin
+    for Cases in Case_Numbers loop
+      Catch_Exception : begin
+        case Cases is
+          when 1 => Proc_Ref_Var.all;
+          when 2 => Some_Integer := Func_Ref_Var.all( Some_Integer );
+          when 3 => Proc_Para_Ref_Var( Valid_Proc );
+          when 4 => Some_Integer := Func_Para_Ref_Var( Valid_Func );
+          when 5 => Enclosed.Prot_Proc_Ref_Var.all;
+          when 6 => TCTouch.Assert( Enclosed.Prot_Func_Ref_Var.all
+                                    /= Expecting_Exceptions,
+                                    "Case 6");
+        end case;
+        if Expecting_Exceptions then
+          Report.Failed("Exception expected: Case"
+                        & Case_Numbers'Image(Cases) );
+        end if;
+      exception
+        when Constraint_Error =>
+          if not Expecting_Exceptions then
+            Report.Failed("Constraint_Error not expected: Case"
+                          & Case_Numbers'Image(Cases) );
+          end if;
+        when others =>
+          Report.Failed("Wrong/Bad Exception: Case"
+                        & Case_Numbers'Image(Cases) );
+      end Catch_Exception;
+    end loop;
+  end Make_Calls;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C410001", "Check that evaluating an access to subprogram " &
+                          "variable containing the value null causes the " &
+                          "exception Constraint_Error. Check that the " &
+                          "default value for objects of access to " &
+                          "subprogram types is null" );
+   
+  -- check that the default values are null
+  declare
+    use C410001_0; -- make all "="'s visible for all types
+  begin
+    TCTouch.Assert( Proc_Ref_Var = null, "Proc_Ref_Var = null" );
+
+    TCTouch.Assert( Func_Ref_Var = null, "Func_Ref_Var = null" );
+
+    TCTouch.Assert( Proc_Para_Ref_Var = null, "Proc_Para_Ref_Var = null" );
+
+    TCTouch.Assert( Func_Para_Ref_Var = null, "Func_Para_Ref_Var = null" );
+
+    TCTouch.Assert( Enclosed.Prot_Proc_Ref_Var = null,
+                   "Enclosed.Prot_Proc_Ref_Var = null" );
+
+    TCTouch.Assert( Enclosed.Prot_Func_Ref_Var = null,
+                   "Enclosed.Prot_Func_Ref_Var = null" );
+  end;
+
+  -- check that calls via the default values cause Constraint_Error
+
+  C410001_0.Expect_Exception := True;
+
+  Make_Calls( Expecting_Exceptions => True );
+
+  -- assign non-null values to the objects
+
+  Proc_Ref_Var      := C410001_0.Proc'Access;
+  Func_Ref_Var      := C410001_0.Func'Access;
+  Proc_Para_Ref_Var := C410001_0.Proc_Para'Access;
+  Func_Para_Ref_Var := C410001_0.Func_Para'Access;
+  Enclosed          := (C410001_0.Prot_Obj.Prot_Proc'Access,
+                        C410001_0.Prot_Obj.Prot_Func'Access);
+
+  -- check that the calls perform normally
+
+  C410001_0.Expect_Exception := False;
+
+  Make_Calls( Expecting_Exceptions => False );
+
+  -- check that a passed null value causes Constraint_Error
+
+  C410001_0.Expect_Exception := True;
+
+  Proc_Para_Ref_Var( null );
+
+  TCTouch.Assert( Func_Para_Ref_Var( null ) = 1995,
+                 "Func_Para_Ref_Var( null )");
+
+  -- assign the null value to the objects
+
+  Proc_Ref_Var      := null;
+  Func_Ref_Var      := null;
+  Proc_Para_Ref_Var := null;
+  Func_Para_Ref_Var := null;
+  Enclosed          := (null,null);
+
+  -- check that calls now again cause Constraint_Error
+
+  C410001_0.Expect_Exception := True;
+
+  Make_Calls( Expecting_Exceptions => True );
+
+  Report.Result;
+
+end C410001;

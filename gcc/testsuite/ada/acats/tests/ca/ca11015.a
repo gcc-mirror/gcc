@@ -1,0 +1,312 @@
+-- CA11015.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a generic child of a non-generic package can use its 
+--      parent's declarations and operations.  Check that the instantiation
+--      of the generic child can correctly use the operations.
+--
+-- TEST DESCRIPTION:
+--      Declare a map abstraction in a package which manages basic physical
+--      maps.  Declare a generic child of this package which defines copies
+--      of maps of any discrete type, i.e., population, density, or weather.
+--
+--      In the main program, declare an instance of the child.  Check that
+--      the operations in the parent and instance of the child package 
+--      perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Simulates map of physical features, i.e., desert, forest, water, 
+-- or plains.
+
+package CA11015_0 is              
+   type Map_Type is private;
+   subtype Latitude is integer range 1 .. 9;
+   subtype Longitude is integer range 1 .. 7;
+
+   type Physical_Features is (Desert, Forest, Water, Plains, Unexplored);
+   type Page_Type is range 0 .. 80;
+   
+   Terra_Incognita : exception;
+
+   -- Use geographic database to initialize the basic map.
+
+   procedure Initialize_Basic_Map (Map  : in out Map_Type);
+
+   function Get_Physical_Feature (Lat  : Latitude;
+                                  Long : Longitude;
+                                  Map  : Map_Type) return Physical_Features;
+
+   function Next_Page return Page_Type;
+
+private
+   type Map_Type is array (Latitude, Longitude) of Physical_Features;
+   Basic_Map : Map_Type;
+   Page      : Page_Type := 0;       -- Location for each copy of Map.
+
+end CA11015_0;
+
+     --==================================================================--
+
+package body CA11015_0 is              
+
+   procedure Initialize_Basic_Map (Map : in out Map_Type) is
+   -- Not a real initialization.  Real application can use geographic
+   -- database to create the basic map.
+   begin
+      for I in Latitude'first .. Latitude'last loop
+         for J in 1 .. 2 loop
+            Map (I, J) := Unexplored;
+         end loop;
+         for J in 3 .. 4 loop
+            Map (I, J) := Desert;
+         end loop;
+         for J in 5 .. 7 loop
+            Map (I, J) := Plains;
+         end loop;
+      end loop;
+
+   end Initialize_Basic_Map;
+   ---------------------------------------------------
+   function Get_Physical_Feature (Lat  : Latitude;
+                                  Long : Longitude;
+                                  Map  : Map_Type) 
+     return Physical_Features is
+   begin
+     return (Map (Lat, Long));
+   end Get_Physical_Feature;
+   ---------------------------------------------------
+   function Next_Page return Page_Type is
+   begin
+      Page := Page + 1;
+      return (Page);
+   end Next_Page;
+
+   ---------------------------------------------------
+   begin -- CA11015_0
+      -- Initialize a basic map.
+      Initialize_Basic_Map (Basic_Map);
+
+end CA11015_0;
+
+     --==================================================================--
+
+-- Generic child package of physical map.  Instantiate this package to
+-- create map copy with a new geographic feature, i.e., population, density,
+-- or weather.
+
+generic               
+
+   type Generic_Feature is (<>);  -- Any geographic feature, i.e., population,
+                                  -- density, or weather that can be
+                                  -- characterized by a scalar value.
+
+package CA11015_0.CA11015_1 is              
+
+   type Feature_Map is private;
+
+   function Get_Feature_Val (Lat  : Latitude;
+                             Long : Longitude;
+                             Map  : Feature_Map) return Generic_Feature;
+
+   procedure Set_Feature_Val (Lat  : in     Latitude;
+                              Long : in     Longitude;
+                              Fea  : in     Generic_Feature;
+                              Map  : in out Feature_Map);
+
+   function Check_Page (Map     : Feature_Map;
+                        Page_No : Page_Type) return boolean;
+
+private
+   type Feature_Type is array (Latitude, Longitude) of Generic_Feature;
+
+   type Feature_Map is
+     record
+        Feature : Feature_Type;
+        Page    : Page_Type := Next_Page;    -- Operation from parent.
+     end record;
+
+end CA11015_0.CA11015_1;
+
+     --==================================================================--
+
+package body CA11015_0.CA11015_1 is              
+
+   function Get_Feature_Val (Lat  : Latitude;
+                             Long : Longitude;
+                             Map  : Feature_Map) return Generic_Feature is
+   begin
+     return (Map.Feature (Lat, Long));
+   end Get_Feature_Val;
+   ---------------------------------------------------
+   procedure Set_Feature_Val (Lat  : in     Latitude;
+                              Long : in     Longitude;
+                              Fea  : in     Generic_Feature;
+                              Map  : in out Feature_Map) is
+   begin
+      if Get_Physical_Feature (Lat, Long, Basic_Map) = Unexplored  
+                                                -- Parent's operation,
+                                                -- Parent's private object.
+      then
+         raise Terra_Incognita;                 -- Exception from parent.
+      else
+         Map.Feature (Lat, Long) := Fea;
+      end if;
+   end Set_Feature_Val;
+   ---------------------------------------------------
+   function Check_Page (Map     : Feature_Map;
+                        Page_No : Page_Type) return boolean is
+   begin
+      return (Map.Page = Page_No);
+   end Check_Page;
+
+end CA11015_0.CA11015_1;
+
+     --==================================================================--
+
+with CA11015_0.CA11015_1;              -- Generic map operation,
+                                       -- implicitly withs parent, basic map
+                                       -- application.
+with Report;
+
+procedure CA11015 is
+
+begin 
+
+   Report.Test ("CA11015", "Check that an instantiation of a child package " &
+                           "of a non-generic package can use its parent's "  &
+                           "declarations and operations");
+
+-- An application creates a population map using an integer type.
+
+           Population_Map_Subtest:
+           declare
+              type Population_Type is range 0 .. 10_000;         
+
+              -- Declare instance of the child generic map package for one 
+              -- particular integer type.            
+
+              package Population is new CA11015_0.CA11015_1 (Population_Type);
+
+              Population_Map_Latitude   : CA11015_0.Latitude := 1;  
+                                                   -- parent's type
+              Population_Map_Longitude : CA11015_0.Longitude := 5;
+                                                   -- parent's type
+              Pop_Map                   : Population.Feature_Map;
+              Pop                       : Population_Type := 1000;
+
+           begin
+              Population.Set_Feature_Val (Population_Map_Latitude, 
+                                          Population_Map_Longitude,
+                                          Pop, 
+                                          Pop_Map);
+
+              If not ( (Population.Get_Feature_Val (Population_Map_Latitude, 
+                Population_Map_Longitude, Pop_Map) = Pop) or  
+                  (Population.Check_Page (Pop_Map, 1)) ) then
+                    Report.Failed ("Population map contains incorrect values");
+              end if;
+
+           end Population_Map_Subtest;
+
+-- An application creates a weather map using an enumeration type.
+
+           Weather_Map_Subtest:
+           declare
+              type Weather_Type is (Hot, Cold, Mild);                    
+
+              -- Declare instance of the child generic map package for one 
+              -- particular enumeration type.            
+
+              package Weather_Pkg is new CA11015_0.CA11015_1 (Weather_Type);
+
+              Weather_Map_Latitude   : CA11015_0.Latitude := 2;
+                                                   -- parent's type
+              Weather_Map_Longitude : CA11015_0.Longitude := 6;
+                                                   -- parent's type
+              Weather_Map            : Weather_Pkg.Feature_Map;
+              Weather                : Weather_Type := Mild;
+
+           begin
+              Weather_Pkg.Set_Feature_Val (Weather_Map_Latitude, 
+                                           Weather_Map_Longitude,
+                                           Weather, 
+                                           Weather_Map);
+
+              if ( (Weather_Pkg.Get_Feature_Val (Weather_Map_Latitude, 
+                    Weather_Map_Longitude, Weather_Map) /= Weather) or
+                not (Weather_Pkg.Check_Page (Weather_Map, 2)) )
+              then
+                 Report.Failed ("Weather map contains incorrect values");
+              end if;
+
+           end Weather_Map_Subtest;
+
+-- During processing, the application may erroneously attempts to create 
+-- a density map on an unexplored area.  This would result in the raising 
+-- of an exception.
+
+           Density_Map_Subtest:
+           declare
+              type Density_Type is (High, Medium, Low);
+
+              -- Declare instance of the child generic map package for one 
+              -- particular enumeration type.            
+
+              package Density_Pkg is new CA11015_0.CA11015_1 (Density_Type);
+
+              Density_Map_Latitude   : CA11015_0.Latitude := 7;
+                                                   -- parent's type
+              Density_Map_Longitude : CA11015_0.Longitude := 2;
+                                                   -- parent's type
+              Density                : Density_Type := Low;
+              Density_Map            : Density_Pkg.Feature_Map;
+
+           begin
+              Density_Pkg.Set_Feature_Val (Density_Map_Latitude, 
+                                           Density_Map_Longitude,
+                                           Density, 
+                                           Density_Map);
+
+              Report.Failed ("Exception not raised in child generic package");
+
+           exception
+
+              when CA11015_0.Terra_Incognita =>   -- parent's exception,
+                  null;                           -- raised in child.
+
+              when others          =>         
+                  Report.Failed ("Others exception is raised");
+
+           end Density_Map_Subtest;
+
+   Report.Result;
+
+end CA11015;

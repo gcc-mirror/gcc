@@ -1,0 +1,349 @@
+-- C392002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the use of a class-wide formal parameter allows for the 
+--      proper dispatching of objects to the appropriate implementation of 
+--      a primitive operation.  Check this in the case where the root tagged
+--      type is defined in a generic package, and the type derived from it is
+--      defined in that same generic package.
+--
+-- TEST DESCRIPTION:
+--      Declare a root tagged type, and some associated primitive operations.
+--      Extend the root type, and override one or more primitive operations, 
+--      inheriting the other primitive operations from the root type.
+--      Derive from the extended type, again overriding some primitive
+--      operations and inheriting others (including some that the parent 
+--      inherited).
+--      Define a subprogram with a class-wide parameter, inside of which is a 
+--      call on a dispatching primitive operation.  These primitive operations
+--      modify global variables (the class-wide parameter has mode IN).
+--     
+--  The following hierarchy of tagged types and primitive operations is 
+--  utilized in this test:
+--
+--
+--    type Vehicle (root)
+--            |
+--    type Motorcycle
+--            |
+--            | Operations
+--            |   Engine_Size
+--            |   Catalytic_Converter
+--            |   Emissions_Produced
+--            |
+--    type Automobile (extended from Motorcycle)
+--            |
+--            | Operations
+--            |   (Engine_Size)       (inherited)
+--            |   Catalytic_Converter (overridden)
+--            |   Emissions_Produced  (overridden)
+--            |
+--    type Truck (extended from Automobile)
+--            |
+--            | Operations
+--            |   (Engine_Size)         (inherited twice - Motorcycle)
+--            |   (Catalytic_Converter) (inherited - Automobile)
+--            |   Emissions_Produced    (overridden)
+-- 
+--
+-- In this test, we are concerned with the following selection of dispatching
+-- calls, accomplished with the use of a Vehicle'Class IN procedure 
+-- parameter :
+--
+--                       \ Type
+--               Prim. Op \   Motorcycle      Automobile        Truck
+--                         \------------------------------------------------ 
+--             Engine_Size |      X               X               X
+--     Catalytic_Converter |      X               X               X
+--     Emissions_Produced  |      X               X               X
+--
+--
+--
+-- The location of the declaration and derivation of the root and extended
+-- types will be varied over a series of tests.  Locations of declaration
+-- and derivation for a particular test are marked with an asterisk (*).
+--
+-- Root type:
+--       
+--       Declared in package.                                          
+--    *  Declared in generic package.
+--
+-- Extended types:
+--
+--    *  Derived in parent location.
+--       Derived in a nested package.
+--       Derived in a nested subprogram.
+--       Derived in a nested generic package.
+--       Derived in a separate package.
+--       Derived in a separate visible child package.
+--       Derived in a separate private child package.
+--
+-- Primitive Operations:
+--
+--    *  Procedures with same parameter profile.
+--       Procedures with different parameter profile.
+--    *  Functions with same parameter profile.
+--       Functions with different parameter profile.
+--    *  Mixture of Procedures and Functions.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      09 May 96   SAIC    Made single-file for 2.1
+--
+--!
+
+------------------------------------------------------------------- C392002_0
+
+-- Declare the root and extended types, along with their primitive
+-- operations in a generic package.
+
+generic
+
+   type Cubic_Inches     is range <>;
+   type Emission_Measure is digits <>;
+   Emissions_per_Engine_Cubic_Inch : Emission_Measure;
+
+package C392002_0 is       -- package Vehicle_Simulation
+
+   --
+   -- Equipment types and their primitive operations.
+   --
+
+   -- Root type.
+
+   type Vehicle is abstract tagged 
+      record 
+         Weight : Integer;
+         Wheels : Positive;
+      end record;
+
+   -- Abstract operations of type Vehicle.
+   function Engine_Size         (V : in Vehicle) return Cubic_Inches
+            is abstract;
+   function Catalytic_Converter (V : in Vehicle) return Boolean
+            is abstract;
+   function Emissions_Produced  (V : in Vehicle) return Emission_Measure
+            is abstract;
+
+   --
+
+   type Motorcycle is new Vehicle with
+      record
+         Size_Of_Engine : Cubic_Inches;
+      end record;
+
+   -- Primitive operations of type Motorcycle.
+   function Engine_Size         (V : in Motorcycle) return Cubic_Inches;
+   function Catalytic_Converter (V : in Motorcycle) return Boolean;
+   function Emissions_Produced  (V : in Motorcycle) return Emission_Measure;
+
+   --
+                          
+   type Automobile is new Motorcycle with
+      record
+         Passenger_Capacity : Integer;
+      end record;
+
+   -- Function Engine_Size inherited from parent (Motorcycle).
+   -- Primitive operations (Overridden).
+   function Catalytic_Converter (V : in Automobile) return Boolean;
+   function Emissions_Produced  (V : in Automobile) return Emission_Measure;
+                          
+   --
+
+   type Truck is new Automobile with
+      record
+         Hauling_Capacity : Natural;
+      end record;
+
+   -- Function Engine_Size inherited twice.
+   -- Function Catalytic_Converter inherited from parent (Automobile).
+   -- Primitive operation (Overridden).
+   function Emissions_Produced  (V : in Truck) return Emission_Measure;
+
+end C392002_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body c392002_0 is
+
+   --
+   -- Primitive operations for Motorcycle.
+   --
+
+   function Engine_Size         (V : in Motorcycle) return Cubic_Inches is
+   begin
+      return (V.Size_Of_Engine);
+   end Engine_Size;
+
+
+   function Catalytic_Converter (V : in Motorcycle) return Boolean is
+   begin
+      return (False);
+   end Catalytic_Converter;
+
+
+   function Emissions_Produced  (V : in Motorcycle) return Emission_Measure is
+   begin
+      return 100.00;
+   end Emissions_Produced;
+
+   --
+   -- Overridden operations for Automobile type.
+   --
+
+   function Catalytic_Converter (V : in Automobile) return Boolean is
+   begin
+      return (True);
+   end Catalytic_Converter;
+
+
+   function Emissions_Produced  (V : in Automobile) return Emission_Measure is
+   begin
+      return 200.00;
+   end Emissions_Produced;
+
+   --
+   -- Overridden operation for Truck type.
+   --
+
+   function Emissions_Produced  (V : in Truck) return Emission_Measure is
+   begin
+      return 300.00;
+   end Emissions_Produced;
+                     
+end C392002_0;
+
+--------------------------------------------------------------------- C392002
+
+with C392002_0;        -- with Vehicle_Simulation;
+with Report;
+
+procedure C392002 is  
+
+   type Decade                     is (c1970, c1980, c1990);
+   type Vehicle_Emissions          is digits 6;
+   type Engine_Emissions_by_Decade is array (Decade) of Vehicle_Emissions;
+   subtype Engine_Size             is Integer range 100 .. 1000;
+
+   Five_Tons                  : constant Natural := 10000;
+   Catalytic_Converter_Offset : constant Vehicle_Emissions := 0.8;
+   Truck_Adjustment_Factor    : constant Vehicle_Emissions := 1.2;
+
+
+   Engine_Emission_Factor : Engine_Emissions_by_Decade := (c1970 => 10.00,
+                                                           c1980 =>  8.00,
+                                                           c1990 =>  5.00);
+
+   -- Instantiate generic package for 1970 simulation.
+
+   package Sim_1970 is new C392002_0
+     (Cubic_Inches                    => Engine_Size,
+      Emission_Measure                => Vehicle_Emissions,
+      Emissions_Per_Engine_Cubic_Inch => Engine_Emission_Factor (c1970));
+
+
+   -- Declare and initialize vehicle objects.
+
+   Cycle_1970 : Sim_1970.Motorcycle := (Weight         => 400, 
+                                        Wheels         =>   2,
+                                        Size_Of_Engine => 100);
+
+   Auto_1970  : Sim_1970.Automobile := (2000, 4, 500, 5);
+
+   Truck_1970 : Sim_1970.Truck      := (Weight             => 5000, 
+                                        Wheels             => 18, 
+                                        Size_Of_Engine     => 1000, 
+                                        Passenger_Capacity => 2, 
+                                        Hauling_Capacity   => Five_Tons);
+
+   -- Function Get_Engine_Size performs a dispatching call on a
+   -- primitive operation that has been defined for an ancestor type and 
+   -- inherited by each type derived from the ancestor.
+
+   function Get_Engine_Size (V : in Sim_1970.Vehicle'Class) 
+     return Engine_Size is
+   begin
+     return (Sim_1970.Engine_Size (V)); -- Dispatch according to tag.
+   end Get_Engine_Size;
+ 
+
+   -- Function Catalytic_Converter_Present performs a dispatching call on 
+   -- a primitive operation that has been defined for an ancestor type, 
+   -- overridden in the parent extended type, and inherited by the subsequent 
+   -- extended type.
+
+   function Catalytic_Converter_Present (V : in Sim_1970.Vehicle'Class)
+     return Boolean is
+   begin
+      return (Sim_1970.Catalytic_Converter (V)); -- Dispatch according to tag.
+   end Catalytic_Converter_Present;
+
+
+   -- Function Air_Quality_Measure performs a dispatching call on 
+   -- a primitive operation that has been defined for an ancestor type, and
+   -- overridden in each subsequent extended type.
+
+   function Air_Quality_Measure (V : in Sim_1970.Vehicle'Class)
+     return Vehicle_Emissions is
+   begin
+      return (Sim_1970.Emissions_Produced (V));  -- Dispatch according to tag.
+   end Air_Quality_Measure;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+begin  -- Main test procedure.
+
+   Report.Test ("C392002",  "Check that the use of a class-wide parameter "
+                          & "allows for proper dispatching where root type "
+                          & "and extended types are declared in the same "
+                          & "generic package" );
+
+   if (Get_Engine_Size (Cycle_1970) /=  100) or
+      (Get_Engine_Size (Auto_1970)  /=  500) or
+      (Get_Engine_Size (Truck_1970) /= 1000) 
+   then
+      Report.Failed ("Failed dispatch to Get_Engine_Size");
+   end if;
+
+   if Catalytic_Converter_Present (Cycle_1970)    or
+      not Catalytic_Converter_Present (Auto_1970) or
+      not Catalytic_Converter_Present (Truck_1970)
+   then
+      Report.Failed ("Failed dispatch to Catalytic_Converter_Present");
+   end if;
+
+   if ((Air_Quality_Measure (Cycle_1970) /= 100.00) or
+       (Air_Quality_Measure (Auto_1970)  /= 200.00) or
+       (Air_Quality_Measure (Truck_1970) /= 300.00)) 
+   then
+      Report.Failed ("Failed dispatch to Air_Quality_Measure");
+   end if;
+
+   Report.Result;
+
+end C392002;

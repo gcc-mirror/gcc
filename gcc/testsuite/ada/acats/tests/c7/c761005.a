@@ -1,0 +1,288 @@
+-- C761005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that deriving abstract types from the types in Ada.Finalization
+--      does not negatively impact the implicit operations.
+--      Check that an object of a controlled type is finalized when the
+--      enclosing master is complete.
+--      Check that finalization occurs in the case where the master is
+--      left by a transfer of control.
+--      Check this for controlled types where the derived type has a
+--      discriminant.
+--      Check this for cases where the type is defined as private,  
+--      and the full type is derived from the types in Ada.Finalization.
+--      
+--      Check that finalization of controlled objects is 
+--      performed in the correct order.  In particular, check that if 
+--      multiple objects of controlled types are declared immediately 
+--      within the same declarative part then type are finalized in the 
+--      reverse order of their creation.
+--
+-- TEST DESCRIPTION:
+--      This test checks these conditions for subprograms and 
+--      block statements; both variables and constants of controlled 
+--      types; cases of a controlled component of a record type, as 
+--      well as an array with controlled components.
+--
+--      The base controlled types used for the test are defined 
+--      with a character discriminant.  The initialize procedure for 
+--      the types will record the order of creation in a globally 
+--      accessible array, the finalize procedure for the types will call
+--      TCTouch with that tag character.  The test can then check that 
+--      the order of finalization is indeed the reverse of the order of 
+--      creation (assuming that the implementation calls Initialize in 
+--      the order that the objects are created).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      10 Oct 95   SAIC    Fixed bugs for ACVC 2.0.1
+--
+--!
+
+package C761005_Support is  
+  
+  function Pick_Char return Character;
+  procedure Validate(Initcount: Natural; Testnumber:Natural);
+
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+
+end C761005_Support;
+
+with Report;
+with TCTouch;
+package body C761005_Support is
+  type Pick_Rotation is mod 52;
+  type Pick_String is array(Pick_Rotation) of Character;
+
+  From : constant Pick_String  := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                & "abcdefghijklmnopqrstuvwxyz";
+  Recent_Pick : Pick_Rotation := Pick_Rotation'Last;
+
+  function Pick_Char return Character is
+  begin
+    Recent_Pick := Recent_Pick +1;
+    return From(Recent_Pick);
+  end Pick_Char;
+
+  function Invert(S:String) return String is
+    T: String(1..S'Length);
+    TI: Positive := 1;
+  begin
+    for SI in reverse S'Range loop
+      T(TI) := S(SI);
+      TI := TI +1;
+    end loop;
+    return T;
+  end Invert;
+
+  procedure Validate(Initcount: Natural; Testnumber:Natural) is
+    Number : constant String := Natural'Image(Testnumber);
+  begin
+    if Inits_Called /= Initcount then
+      Report.Failed("Wrong number of inits, Subtest " & Number);
+    else
+      TCTouch.Validate(
+        Invert(Inits_Order(1..Inits_Called)),
+               "Subtest " & Number, True);
+    end if;
+    Inits_Called := 0;
+  end Validate;
+
+end C761005_Support;
+
+-----------------------------------------------------------------------------
+with Ada.Finalization;
+package C761005_0 is
+  type Final_Root(Tag: Character) is private;
+
+  type Ltd_Final_Root(Tag: Character) is limited private; 
+  
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+private
+  type Final_Root(Tag: Character) is new Ada.Finalization.Controlled 
+    with null record;
+  procedure Initialize( It: in out Final_Root );
+  procedure Finalize  ( It: in out Final_Root );
+  
+  type Ltd_Final_Root(Tag: Character) is new
+Ada.Finalization.Limited_Controlled 
+    with null record;
+  procedure Initialize( It: in out Ltd_Final_Root );
+  procedure Finalize  ( It: in out Ltd_Final_Root );
+end C761005_0;
+
+-----------------------------------------------------------------------------
+with Ada.Finalization;
+package C761005_1 is
+  type Final_Abstract is abstract tagged private;
+
+  type Ltd_Final_Abstract_Child is abstract tagged limited private;
+  
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+
+private
+  type Final_Abstract is abstract new Ada.Finalization.Controlled with record
+    Tag: Character;
+  end record;
+  procedure Initialize( It: in out Final_Abstract );
+  procedure Finalize  ( It: in out Final_Abstract );
+
+  type Ltd_Final_Abstract_Child is
+       abstract new Ada.Finalization.Limited_Controlled with record
+    Tag: Character;
+  end record;
+  procedure Initialize( It: in out Ltd_Final_Abstract_Child );
+  procedure Finalize  ( It: in out Ltd_Final_Abstract_Child );
+
+end C761005_1;
+
+-----------------------------------------------------------------------------
+with C761005_1;
+package C761005_2 is
+  
+  type Final_Child is new C761005_1.Final_Abstract with null record;
+  type Ltd_Final_Child is
+       new C761005_1.Ltd_Final_Abstract_Child with null record;
+
+end C761005_2;
+
+-----------------------------------------------------------------------------
+with Report;        
+with TCTouch;
+with C761005_Support;
+package body C761005_0 is
+
+  package Sup renames C761005_Support;
+
+  procedure Initialize( It: in out Final_Root ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Final_Root ) is
+  begin
+    TCTouch.Touch(It.Tag);
+  end Finalize;
+
+  procedure Initialize( It: in out Ltd_Final_Root ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Ltd_Final_Root ) is
+  begin
+    TCTouch.Touch(It.Tag);
+  end Finalize;
+end C761005_0;
+
+-----------------------------------------------------------------------------
+with Report;        
+with TCTouch;
+with C761005_Support;
+package body C761005_1 is
+
+  package Sup renames C761005_Support;
+
+  procedure Initialize( It: in out Final_Abstract ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Final_Abstract ) is
+  begin
+    TCTouch.Touch(It.Tag);
+  end Finalize;
+
+  procedure Initialize( It: in out Ltd_Final_Abstract_Child ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Ltd_Final_Abstract_Child ) is
+  begin
+    TCTouch.Touch(It.Tag);
+  end Finalize;
+end C761005_1;
+
+-----------------------------------------------------------------------------
+with Report;
+with TCTouch;
+with C761005_0;
+with C761005_2;
+with C761005_Support;
+procedure C761005 is
+
+  package Sup renames C761005_Support;
+
+  Subtest_1_Inits_Expected : constant := 4;
+  procedure Subtest_1 is
+    Item_1 : C761005_0.Final_Root(Sup.Pick_Char);
+    Item_2, Item_3 : C761005_0.Final_Root(Sup.Pick_Char);
+    Item_4 : C761005_0.Ltd_Final_Root(Sup.Pick_Char);
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 1 body");
+  end Subtest_1;
+
+  -- These declarations should cause calls to initialize and
+  -- finalize.  The expected operations are the subprograms associated
+  -- with the abstract types.
+  Subtest_2_Inits_Expected : constant := 4;
+  procedure Subtest_2 is
+    Item_1 : C761005_2.Final_Child;
+    Item_2, Item_3 : C761005_2.Final_Child;
+    Item_4 : C761005_2.Ltd_Final_Child;
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 2 body");
+  end Subtest_2;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C761005", "Check that an object of a controlled type "
+                        & "is finalized when the enclosing master is "
+                        & "complete, left by a transfer of control, "
+                        & "and performed in the correct order" );
+
+  Subtest_1;
+  Sup.Validate(Subtest_1_Inits_Expected,1); 
+  
+  Subtest_2;
+  Sup.Validate(Subtest_2_Inits_Expected,2);
+
+  Report.Result;
+
+end C761005;

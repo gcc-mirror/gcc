@@ -1,0 +1,110 @@
+-- FA11B00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares parent types and operations that can
+--      be inherited by its children.  
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package FA11B00 is          -- Application_One_Widget
+-- This foundation simulates code that might be obtained as an already
+-- implemented set of objects and services, perhaps from a source code
+-- vendor.  It represents processing of widgets in a window system.  
+-- These widgets all have the same characteristics, but they are application 
+-- specific, so we do not allow assignment of an App_1_Widget to App_2_Widget.
+
+-- The dimension measurement is in pixels (dots on the screen).
+   type Pixels is range 0 .. 10_000;
+   type Widget_Id is new Integer;
+   type Widget_Color_Enum is (Amber, Green, White, None);
+   subtype Widget_Label_Str is string (1 .. 15);
+
+   type Widget_Location is 
+     record
+        X_Location, Y_Location : Pixels;
+     end record;
+
+   type Widget_Size is 
+     record
+        X_Length, Y_Length : Pixels;
+     end record;
+
+   -- NOTE : not a tagged record.    
+   type App1_Widget (Maximum_Size : Pixels := Pixels'Last) 
+      is record          -- Parent type
+         Size          : Widget_Size       := (Maximum_Size, Maximum_Size);
+         ID            : Widget_Id         := 1;
+         Location      : Widget_Location   := (0,0);
+         Color         : Widget_Color_Enum := None;
+         Label         : Widget_Label_Str  := "               ";
+      end record;
+
+   -- Primitive operation of type Widget.
+   -- To be inherited by its children derivatives.
+   procedure App1_Widget_Specific_Oper (The_Widget : in out App1_Widget; 
+                                        I          : in     Widget_Id;
+                                        C          : in     Widget_Color_Enum;
+                                        L          : in     Widget_Label_Str);
+                       
+end FA11B00;                -- Application_One_Widget
+
+--=======================================================================--
+
+package body FA11B00 is     -- Application_One_Widget
+
+   procedure Set_Color (The_Widget : in out App1_Widget; 
+                        C          : in     Widget_Color_Enum) is
+   begin
+      The_Widget.Color := C;
+   end Set_Color;
+   -------------------------------------------------------------
+   procedure Set_Label (The_Widget : in out App1_Widget; 
+                        L          : in     Widget_Label_Str) is
+   begin
+      The_Widget.Label := L;
+   end Set_Label;
+   -------------------------------------------------------------
+   procedure Set_Id (The_Widget : in out App1_Widget; 
+                     I          : in     Widget_Id) is
+   begin
+      The_Widget.Id := I;
+   end Set_Id;
+   -------------------------------------------------------------
+   procedure App1_Widget_Specific_Oper 
+     (The_Widget : in out App1_Widget; 
+      I          : in     Widget_Id;
+      C          : in     Widget_Color_Enum;
+      L          : in     Widget_Label_Str) is
+   begin
+      Set_Color    (The_Widget, C);
+      Set_Label    (The_Widget, L);
+      Set_Id       (The_Widget, I);
+   end App1_Widget_Specific_Oper;
+
+end FA11B00;                -- Application_One_Widget

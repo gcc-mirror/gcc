@@ -1,0 +1,343 @@
+-- CXH3002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check that pragma Inspection_Point is allowed whereever a declarative
+--     item or statement is allowed.  Check that pragma Inspection_Point may
+--     have zero or more arguments.  Check that the execution of pragma
+--     Inspection_Point has no effect.
+--
+-- TEST DESCRIPTION
+--     Check pragma Inspection_Point applied to:
+--       A no objects,
+--       B one object,
+--       C multiple objects.
+--     Check pragma Inspection_Point applied to:
+--       D Enumeration type objects,
+--       E Integer type objects (signed and unsigned),
+--       F access type objects,
+--       G Floating Point type objects,
+--       H Fixed point type objects,
+--       I array type objects,
+--       J record type objects,
+--       K tagged type objects,
+--       L protected type objects,
+--       M controlled type objects,
+--       N task type objects.
+--     Check pragma Inspection_Point applied in:
+--       O declarations (package, procedure)
+--       P statements (incl package elaboration)
+--       Q subprogram (procedure, function, finalization)
+--       R package
+--       S specification
+--       T body (PO entry, task body, loop body, accept body, select body)
+--       U task
+--       V protected object
+--
+--
+-- APPLICABILITY CRITERIA:
+--      This test is only applicable for a compiler attempting validation
+--      for the Safety and Security Annex.
+--
+--
+-- CHANGE HISTORY:
+--      26 OCT 95   SAIC   Initial version
+--      12 NOV 96   SAIC   Revised for 2.1
+--
+--!
+
+----------------------------------------------------------------- CXH3002_0
+
+package CXH3002_0 is
+
+  type Enum is (Item,Stuff,Things);
+
+  type Int  is range 0..256;
+
+  type Unt  is mod 256;
+
+  type Flt  is digits 5;
+
+  type Fix  is delta 0.5 range -1.0..1.0;
+
+  type Root(Disc: Enum) is record
+    I: Int;
+    U: Unt;
+  end record;
+
+  type List   is array(Unt) of Root(Stuff);
+
+  type A_List is access all List;
+  type A_Proc is access procedure(R:Root);
+
+  procedure Proc(R:Root);
+  function  Func return A_Proc;
+
+  protected type PT is
+    entry Prot_Entry(Switch: Boolean);
+  private
+    Toggle : Boolean := False;
+  end PT;
+
+  task type TT is
+    entry Task_Entry(Items: in A_List);
+  end TT;
+
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+  pragma Inspection_Point;                                          -- AORS
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+
+end CXH3002_0;
+
+----------------------------------------------------------------- CXH3002_1
+
+with Ada.Finalization;
+package CXH3002_0.CXH3002_1 is
+
+  type Final is new Ada.Finalization.Controlled with 
+    record
+      Value : Natural;
+    end record;
+
+  procedure Initialize( F: in out Final );
+  procedure Adjust( F: in out Final );
+  procedure Finalize( F: in out Final );
+
+end CXH3002_0.CXH3002_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- CXH3002_0
+
+package body CXH3002_0 is
+
+  Global_Variable : Character := 'A';
+
+  procedure Proc(R:Root) is
+  begin
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+    pragma Inspection_Point( Global_Variable );                     -- BDPQT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+    case R.Disc is
+      when Item   => Global_Variable := 'I';
+      when Stuff  => Global_Variable := 'S';
+      when Things => Global_Variable := 'T';
+    end case;
+ end Proc;
+
+  function Func return A_Proc is
+  begin
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    pragma Inspection_Point;                                        -- APQT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    return Proc'Access;
+  end Func;
+
+  protected body PT is
+    entry Prot_Entry(Switch: Boolean) when True is
+      begin
+        Toggle := Switch;
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+        pragma Inspection_Point;                                    -- APVT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+      end Prot_Entry;
+  end PT;
+
+  task body TT is
+    List_Copy : A_List;
+  begin
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    pragma Inspection_Point;                                        -- APUT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    loop
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+      pragma Inspection_Point;                                      -- APUT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+      select
+        accept Task_Entry(Items: in A_List) do
+          List_Copy := Items;
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+          pragma Inspection_Point( List_Copy );                     -- BFPUT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+        end Task_Entry;
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+        pragma Inspection_Point;                                    -- APUT
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+      or terminate;
+      end select;
+    end loop;
+  end TT;
+
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+  pragma Inspection_Point;                                           -- ARTO
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+
+end CXH3002_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- CXH3002_1
+
+with Report;
+package body CXH3002_0.CXH3002_1 is
+
+  Embedded_Final_Object : Final
+                        := (Ada.Finalization.Controlled with Value => 1);
+                        -- attempt to call Initialize here would P_E!
+
+  procedure Initialize( F: in out Final ) is
+  begin
+    F.Value := 1;
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+    pragma Inspection_Point( Embedded_Final_Object );                -- BKQP
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+  end Initialize;
+
+  procedure Adjust( F: in out Final ) is
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+    pragma Inspection_Point;                                          -- AQO
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+  begin
+    F.Value := 2;
+  end Adjust;
+
+  procedure Finalize( F: in out Final ) is
+  begin
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    pragma Inspection_Point;                                         -- AQP
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    if F.Value not in 1..10 then
+      Report.Failed("Bad value in controlled object at finalization");
+    end if;
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+    pragma Inspection_Point;                                         -- AQP
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---====
+  end Finalize;
+
+begin
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---======
+  pragma Inspection_Point( Embedded_Final_Object );                  -- BKRTP
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---======
+  null;
+end CXH3002_0.CXH3002_1;
+
+------------------------------------------------------------------- CXH3002
+
+with Report;
+with CXH3002_0.CXH3002_1;
+procedure CXH3002 is
+
+  use type CXH3002_0.Enum, CXH3002_0.Int, CXH3002_0.Unt, CXH3002_0.Flt,
+           CXH3002_0.Fix,  CXH3002_0.Root;
+
+  Main_Enum  : CXH3002_0.Enum := CXH3002_0.Item;
+  Main_Int   : CXH3002_0.Int;
+  Main_Unt   : CXH3002_0.Unt;
+  Main_Flt   : CXH3002_0.Flt;
+  Main_Fix   : CXH3002_0.Fix;
+  Main_Rec   : CXH3002_0.Root(CXH3002_0.Stuff) 
+               := (CXH3002_0.Stuff, I => 1, U => 2);
+
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+  pragma Inspection_Point( Main_Rec );                               -- BJQO
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---=====
+
+  Main_List   : CXH3002_0.List := ( others => Main_Rec );
+
+  Main_A_List : CXH3002_0.A_List := new CXH3002_0.List'( others => Main_Rec );
+  Main_A_Proc : CXH3002_0.A_Proc := CXH3002_0.Func;
+                                 -- CXH3002_0.Proc'Access
+  Main_PT     : CXH3002_0.PT;
+  Main_TT     : CXH3002_0.TT;
+
+  type Test_Range is (First, Second);
+
+  procedure Assert( Truth : Boolean; Message : String ) is
+  begin
+    if not Truth then
+      Report.Failed( "Unexpected value found in " & Message );
+    end if;
+  end Assert;
+
+begin  -- Main test procedure.
+
+  Report.Test ("CXH3002", "Check pragma Inspection_Point" );
+   
+ Enclosure:declare
+   Main_Final : CXH3002_0.CXH3002_1.Final;
+   Xtra_Final : CXH3002_0.CXH3002_1.Final;
+ begin
+  for Test_Case in Test_Range loop
+
+
+    case Test_Case is
+      when First  =>
+        Main_Final.Value := 5;
+        Xtra_Final := Main_Final; -- call Adjust
+        Main_Enum  := CXH3002_0.Things;
+        Main_Int   := CXH3002_0.Int'First;
+        Main_Unt   := CXH3002_0.Unt'Last;
+        Main_Flt   := 3.14;
+        Main_Fix   := 0.5;
+        Main_Rec   := (CXH3002_0.Stuff, I => 3, U => 4);
+        Main_List(Main_Unt) := Main_Rec;
+        Main_A_List(CXH3002_0.Unt'First) := (CXH3002_0.Stuff, I => 5, U => 6);
+        Main_A_Proc( Main_A_List(2) );
+        Main_PT.Prot_Entry(True);
+        Main_TT.Task_Entry( null );
+
+      when Second =>
+        Assert( Main_Final.Value = 5, "Main_Final" );
+        Assert( Xtra_Final.Value = 2, "Xtra_Final" );
+        Assert( Main_Enum = CXH3002_0.Things, "Main_Enum" );
+        Assert( Main_Int = CXH3002_0.Int'First, "Main_Int" );
+        Assert( Main_Unt = CXH3002_0.Unt'Last, "Main_Unt" );
+        Assert( Main_Flt in 3.0..3.5, "Main_Flt" );
+        Assert( Main_Fix = 0.5, "Main_Fix" );
+        Assert( Main_Rec = (CXH3002_0.Stuff, I => 3, U => 4), "Main_Rec" );
+        Assert( Main_List(Main_Unt) = Main_Rec, "Main_List" );
+        Assert( Main_A_List(CXH3002_0.Unt'First)
+                  = (CXH3002_0.Stuff, I => 5, U => 6), "Main_A_List" );
+
+   end case; 
+
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---==
+    pragma Inspection_Point(                                       -- CQP
+                      Main_Final,                                    -- M
+                      Main_Enum,                                     -- D
+                      Main_Int,                                      -- E
+                      Main_Unt,                                      -- E
+                      Main_Flt,                                      -- G
+                      Main_Fix,                                      -- H
+                      Main_Rec,                                      -- J
+                      Main_List,                                     -- I
+                      Main_A_List,                                   -- F
+                      Main_A_Proc,                                   -- F
+                      Main_PT,                                       -- L
+                      Main_TT );                                     -- N
+  -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- --- -- ---==
+
+  end loop;
+ end Enclosure;
+
+  Report.Result;
+
+end CXH3002;

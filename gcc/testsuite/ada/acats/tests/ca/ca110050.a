@@ -1,0 +1,99 @@
+-- CA110050.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See CA110051.AM
+--
+-- TEST DESCRIPTION:
+--      See CA110051.AM
+--
+-- TEST FILES:
+--      The test consists of the following files:
+--
+--      => CA110050.A
+--         CA110051.AM
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      21 Dec 94   SAIC    Modified discriminant type 
+--      26 Apr 96   SAIC    ACVC 2.1: Modified prologue; Added pragma 
+--                          Elaborate_Body.
+--
+--!
+  
+package CA110050_0 is                   -- Package Messages.
+   pragma Elaborate_Body (CA110050_0);
+
+   type Descriptor is new Integer;
+
+   Null_Descriptor_Value   : constant Descriptor := 0;
+   Null_Message_Descriptor : constant Descriptor := 0;
+
+   type Message_Type is tagged 
+      record
+         Number : Descriptor := Null_Message_Descriptor;
+      end record;
+
+   function Next_Available_Message return Descriptor;
+
+end CA110050_0;                         -- Package Messages.
+
+     --=================================================================--
+
+package body CA110050_0 is              -- Package body Messages.
+
+   Message_Count : Integer := 0;
+
+   function Next_Available_Message return Descriptor is
+   begin
+      Message_Count := Message_Count + 5;
+      return (Descriptor(Message_Count));
+   end Next_Available_Message;
+
+end CA110050_0;                         -- Package body Messages.
+
+     --=================================================================--
+
+package CA110050_0.CA110050_1 is        -- Child package Messages.Text
+
+   subtype Default_Length is Natural range 0 .. 80;
+
+   type Text_Type (Max_Length : Default_Length := 0) is
+      record
+         Length      : Default_Length := Max_Length;
+         Text_Field  : String (1 .. Max_Length);
+      end record;
+
+   type Text_Message_Type is new Message_Type with
+      record
+         Text : Text_Type;
+      end record;
+
+   Null_Text    : Text_Type (0);                     -- Null range for 
+                                                     -- Text_Field component.
+
+end CA110050_0.CA110050_1;              -- Child package Messages.Text
+--
+-- No package body needed for this specification.

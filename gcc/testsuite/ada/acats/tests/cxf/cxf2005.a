@@ -1,0 +1,293 @@
+-- CXF2005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the multiplying operators for a decimal fixed point type
+--      return values that are integral multiples of the small of the type.
+--      Check the case where one operand is of the predefined type Integer.
+--
+-- TEST DESCRIPTION:
+--      Two decimal fixed point types A and B are declared, one with a
+--      Machine_Radix value of 2, and one with a value of 10. A variable of
+--      each type is multiplied repeatedly by a series of different Integer
+--      values. A cumulative result is kept and compared to an expected
+--      final result. Similar checks are performed for division.
+--
+-- APPLICABILITY CRITERIA:
+--      This test is only applicable for a compiler attempting validation
+--      for the Information Systems Annex.
+--
+--
+-- CHANGE HISTORY:
+--      28 Mar 96   SAIC    Prerelease version for ACVC 2.1.
+--
+--!
+
+generic
+   type Decimal_Fixed  is delta <> digits <>;
+package CXF2005_0 is
+
+   function Multiply (Operand  : Decimal_Fixed;
+                      Interval : Integer) return Decimal_Fixed;
+
+   function Divide   (Operand  : Decimal_Fixed;
+                      Interval : Integer) return Decimal_Fixed;
+
+end CXF2005_0;
+
+
+     --==================================================================--
+
+
+package body CXF2005_0 is
+
+   function Multiply (Operand  : Decimal_Fixed;
+                      Interval : Integer) return Decimal_Fixed is
+   begin
+      return Operand * Interval;  -- Fixed-Integer multiplication.
+   end Multiply;
+
+
+   function Divide (Operand  : Decimal_Fixed;
+                    Interval : Integer) return Decimal_Fixed is
+   begin
+      return Operand / Interval;  -- Fixed-Integer division.
+   end Divide;
+
+end CXF2005_0;
+
+
+     --==================================================================--
+
+
+package CXF2005_1 is
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Interest_Rate is delta 0.001 range 0.0 .. 1_000.0;
+   for Interest_Rate'Small use 0.001;            -- Power of 10.
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Money_Radix2 is delta 0.01 digits 11;    -- range -999,999,999.99 ..
+   for Money_Radix2'Machine_Radix use 2;         --       +999,999,999.99
+
+   function Factor (Rate     : Interest_Rate;
+                    Interval : Integer) return Money_Radix2;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Money_Radix10 is delta 0.01 digits 11;   -- range -999,999,999.99 ..
+   for Money_Radix10'Machine_Radix use 10;       --       +999,999,999.99
+
+   function Factor (Rate   : Interest_Rate;
+                    Interval : Integer) return Money_Radix10;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+end CXF2005_1;
+
+
+     --==================================================================--
+
+
+package body CXF2005_1 is
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Factor (Rate   : Interest_Rate;
+                    Interval : Integer) return Money_Radix2 is
+   begin
+      return Money_Radix2( Rate / Interval );
+   end Factor;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Factor (Rate   : Interest_Rate;
+                    Interval : Integer) return Money_Radix10 is
+   begin
+      return Money_Radix10( Rate / Interval );
+   end Factor;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+end CXF2005_1;
+
+
+     --==================================================================--
+
+
+with CXF2005_0;
+with CXF2005_1;
+
+with Report;
+procedure CXF2005 is
+
+   Loop_Count : constant := 25_000;
+   type Loop_Range is range 1 .. Loop_Count;
+
+begin
+
+   Report.Test ("CXF2005", "Check decimal multiplication and division, " &
+                           "where one operand type is Integer");
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   RADIX_2_SUBTESTS:
+   declare
+      package Radix_2 is new CXF2005_0 (CXF2005_1.Money_Radix2);
+      use type CXF2005_1.Money_Radix2;
+   begin
+
+      RADIX_2_MULTIPLICATION:
+      declare
+         Rate           : constant CXF2005_1.Interest_Rate := 0.127;
+         Period         : constant Integer                 := 12;
+
+         Expected       : constant CXF2005_1.Money_Radix2  := 2_624.88;
+         Balance        :          CXF2005_1.Money_Radix2  := 1_000.00;
+
+         Operand        :          CXF2005_1.Money_Radix2;
+         Increment      :          CXF2005_1.Money_Radix2;
+         Interval       :          Integer;
+      begin
+
+         for I in Loop_Range loop
+            Interval  := (Integer(I) mod Period) + 1;  -- Range from 1 to 12.
+            Operand   := CXF2005_1.Factor (Rate, Period);
+            Increment := Radix_2.Multiply (Operand, Interval);
+            Balance   := Balance + Increment;
+         end loop;
+
+         if Balance /= Expected then
+            Report.Failed ("Error: Radix 2 multiply");
+         end if;
+
+      end RADIX_2_MULTIPLICATION;
+
+
+
+      RADIX_2_DIVISION:
+      declare
+         Rate           : constant CXF2005_1.Interest_Rate := 0.377;
+         Period         : constant Integer                 := 12;
+
+         Expected       : constant CXF2005_1.Money_Radix2  :=  36_215.58;
+         Balance        :          CXF2005_1.Money_Radix2  := 456_985.01;
+
+         Operand        :          CXF2005_1.Money_Radix2;
+         Increment      :          CXF2005_1.Money_Radix2;
+         Interval       :          Integer;
+      begin
+
+         for I in Loop_Range loop
+            Interval  := (Integer(I+1000) mod (200*Period)) + 1; -- 1 .. 2400.
+            Operand   := CXF2005_1.Factor (Rate, Period);
+            Increment := Radix_2.Divide (Balance, Interval);
+            Balance   := Balance - (Operand * Increment);
+         end loop;
+
+         if Balance /= Expected then
+            Report.Failed ("Error: Radix 2 divide");
+         end if;
+
+      end RADIX_2_DIVISION;
+
+   end RADIX_2_SUBTESTS;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   RADIX_10_SUBTESTS:
+   declare
+      package Radix_10 is new CXF2005_0 (CXF2005_1.Money_Radix10);
+      use type CXF2005_1.Money_Radix10;
+   begin
+
+      RADIX_10_MULTIPLICATION:
+      declare
+         Rate           : constant CXF2005_1.Interest_Rate := 0.721;
+         Period         : constant Integer                 := 12;
+
+         Expected       : constant CXF2005_1.Money_Radix10 := 9_875.62;
+         Balance        :          CXF2005_1.Money_Radix10 :=   126.34;
+
+         Operand        :          CXF2005_1.Money_Radix10;
+         Increment      :          CXF2005_1.Money_Radix10;
+         Interval       :          Integer;
+      begin
+
+         for I in Loop_Range loop
+            Interval  := (Integer(I) mod Period) + 1;  -- Range from 1 to 12.
+            Operand   := CXF2005_1.Factor (Rate, Period);
+            Increment := Radix_10.Multiply (Operand, Interval);
+            Balance   := Balance + Increment;
+         end loop;
+
+         if Balance /= Expected then
+            Report.Failed ("Error: Radix 10 multiply");
+         end if;
+
+      end RADIX_10_MULTIPLICATION;
+
+
+      RADIX_10_DIVISION:
+      declare
+         Rate           : constant CXF2005_1.Interest_Rate := 0.547;
+         Period         : constant Integer                 := 12;
+
+         Expected       : constant CXF2005_1.Money_Radix10 :=  26_116.37;
+         Balance        :          CXF2005_1.Money_Radix10 := 770_082.46;
+
+         Operand        :          CXF2005_1.Money_Radix10;
+         Increment      :          CXF2005_1.Money_Radix10;
+         Interval       :          Integer;
+      begin
+
+         for I in Loop_Range loop
+            Interval  := (Integer(I+1000) mod (200*Period)) + 1; -- 1 .. 2400.
+            Operand   := CXF2005_1.Factor (Rate, Period);
+            Increment := Radix_10.Divide (Balance, Interval);
+            Balance   := Balance - (Operand * Increment);
+         end loop;
+
+         if Balance /= Expected then
+            Report.Failed ("Error: Radix 10 divide");
+         end if;
+
+      end RADIX_10_DIVISION;
+
+   end RADIX_10_SUBTESTS;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Report.Result;
+
+end CXF2005;

@@ -1,0 +1,416 @@
+-- C940004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that a protected record can be used to control access to
+--      resources (data internal to the protected record).
+--
+-- TEST DESCRIPTION:
+--      Declare a resource descriptor tagged type.  Extend the type and
+--      use the extended type in a protected data structure.
+--      Implement a binary semaphore type.  Declare an entry for
+--      requesting a specific resource and an procedure for releasing the
+--      same resource.  Declare an object of this (protected) type.
+--      Declare and start three tasks each of which asks for a resource
+--      when directed to.  Verify that resources are properly allocated
+--      and deallocated.
+--
+--
+-- CHANGE HISTORY:
+--
+--      12 DEC 93   SAIC    Initial PreRelease version
+--      23 JUL 95   SAIC    Second PreRelease version
+--      16 OCT 95   SAIC    ACVC 2.1
+--      13 MAR 03   RLB     Fixed race condition in test.
+--
+--!
+
+package C940004_0 is
+-- Resource_Pkg
+
+   type ID_Type is new Integer range 0..10;
+   type User_Descriptor_Type is tagged record
+      Id : ID_Type := 0;
+   end record;
+
+end C940004_0; -- Resource_Pkg
+
+--============================--
+-- no body for C940004_0
+--=============================--
+
+with C940004_0; -- Resource_Pkg
+
+-- This generic package implements a semaphore to control a single resource
+
+generic
+
+  type Generic_Record_Type is new C940004_0.User_Descriptor_Type
+                                                         with private;
+
+package C940004_1 is
+-- Generic_Semaphore_Pkg
+                -- generic package extends the tagged formal generic
+                -- type with some implementation relevant details, and
+                -- it provides a semaphore with operations that work
+                -- on that type
+   type User_Rec_Type is new Generic_Record_Type with private;
+
+   protected type Semaphore_Type is
+      function  TC_Count return Integer;
+      entry     Request (R : in out User_Rec_Type);
+      procedure Release (R : in out User_Rec_Type);
+   private
+      In_Use : Boolean := false;
+   end Semaphore_Type;
+
+   function Has_Access (R : User_Rec_Type) return Boolean;
+
+private
+
+   type User_Rec_Type is new Generic_Record_Type with record
+      Access_To_Resource : boolean := false;
+   end record;
+
+end C940004_1;        -- Generic_Semaphore_Pkg
+
+--===================================================--
+
+package body C940004_1 is
+-- Generic_Semaphore_Pkg
+
+   protected body Semaphore_Type is
+
+      function TC_Count return Integer is
+      begin
+         return Request'Count;
+      end TC_Count;
+
+      entry Request (R : in out User_Rec_Type)
+                                               when not In_Use is
+      begin
+         In_Use := true;
+         R.Access_To_Resource := true;
+      end Request;
+
+      procedure Release (R : in out User_Rec_Type) is
+      begin
+         In_Use := false;
+         R.Access_To_Resource := false;
+      end Release;
+
+   end Semaphore_Type;
+
+   function Has_Access (R : User_Rec_Type) return Boolean is
+   begin
+      return R.Access_To_Resource;
+   end Has_Access;
+
+end C940004_1;       -- Generic_Semaphore_Pkg
+
+--=============================================--
+
+with Report;
+with C940004_0; -- Resource_Pkg,
+with C940004_1; -- Generic_Semaphore_Pkg;
+
+package C940004_2 is
+-- Printer_Mgr_Pkg
+
+   -- Instantiate the generic to get code to manage a single printer;
+   -- User processes contend for the printer, asking for it by a call
+   -- to Request, and relinquishing it by a call to Release
+
+   -- This package extends a tagged type to customize it for the printer
+   -- in question, then it uses the type to instantiate the generic and
+   -- declare a semaphore specific to the particular resource
+
+   package Resource_Pkg          renames C940004_0;
+
+   type User_Desc_Type is new Resource_Pkg.User_Descriptor_Type with record
+       New_Details : Integer := 0;    -- for example
+   end record;
+
+   package Instantiation is new C940004_1   -- Generic_Semaphore_Pkg
+                                   (Generic_Record_Type => User_Desc_Type);
+
+   Printer_Access_Mgr : Instantiation.Semaphore_Type;
+
+
+end C940004_2; -- Printer_Mgr_Pkg
+
+--============================--
+-- no body for C940004_2
+--============================--
+
+with C940004_0; -- Resource_Pkg,
+with C940004_2; -- Printer_Mgr_Pkg;
+
+package C940004_3 is
+-- User_Task_Pkg
+
+-- This package models user tasks  that will request and release
+-- the printer
+   package Resource_Pkg    renames C940004_0;
+   package Printer_Mgr_Pkg renames C940004_2;
+
+   task type User_Task_Type (ID : Resource_Pkg.ID_Type) is
+      entry Get_Printer;   -- instructs task to request resource
+
+      entry Release_Printer    -- instructs task to release printer
+          (Descriptor : in out Printer_Mgr_pkg.Instantiation.User_Rec_Type);
+
+      --==================--
+      -- Test management machinery
+      --==================--
+      entry TC_Get_Descriptor       -- returns descriptor
+            (Descriptor :  out Printer_Mgr_Pkg.Instantiation.User_Rec_Type);
+
+   end User_Task_Type;
+
+   --==================--
+   -- Test management machinery
+   --==================--
+   TC_Times_Obtained : Integer := 0;
+   TC_Times_Released : Integer := 0;
+
+end C940004_3; -- User_Task_Pkg;
+
+--==============================================--
+
+with Report;
+with C940004_0; -- Resource_Pkg,
+with C940004_2; -- Printer_Mgr_Pkg,
+
+package body C940004_3 is
+-- User_Task_Pkg
+
+   task body User_Task_Type is
+      D : Printer_Mgr_Pkg.Instantiation.User_Rec_Type;
+   begin
+      D.Id := ID;
+            -----------------------------------
+      Main:
+      loop
+         select
+            accept Get_Printer;
+            Printer_Mgr_Pkg.Printer_Access_Mgr.Request (D);
+                      -- request resource; if resource is not available,
+                      -- task will be queued to wait
+            --===================--
+            -- Test management machinery
+            --===================--
+            TC_Times_Obtained := TC_Times_Obtained + 1;
+                      -- when request granted, note it and post a message
+
+         or
+           accept Release_Printer  (Descriptor : in out
+                             Printer_Mgr_Pkg.Instantiation.User_Rec_Type) do
+
+              Printer_Mgr_Pkg.Printer_Access_Mgr.Release (D);
+                          -- release the resource, note its release
+              TC_Times_Released := TC_Times_Released + 1;
+              Descriptor := D;
+           end Release_Printer;
+           exit Main;
+
+         or
+           accept TC_Get_Descriptor  (Descriptor : out
+                            Printer_Mgr_Pkg.Instantiation.User_Rec_Type) do
+
+              Descriptor := D;
+           end TC_Get_Descriptor;
+
+         end select;
+      end loop main;
+
+   exception
+      when others => Report.Failed ("exception raised in User_Task");
+   end User_Task_Type;
+
+end C940004_3;   -- User_Task_Pkg;
+
+--==========================================================--
+
+with Report;
+with ImpDef;
+
+with C940004_0; -- Resource_Pkg,
+with C940004_2; -- Printer_Mgr_Pkg,
+with C940004_3; -- User_Task_Pkg;
+
+procedure C940004 is
+   Verbose : constant Boolean := False;
+   package Resource_Pkg    renames C940004_0;
+   package Printer_Mgr_Pkg renames C940004_2;
+   package User_Task_Pkg   renames C940004_3;
+
+   Task1 : User_Task_Pkg.User_Task_Type (1);
+   Task2 : User_Task_Pkg.User_Task_Type (2);
+   Task3 : User_Task_Pkg.User_Task_Type (3);
+
+   User_Rec_1,
+   User_Rec_2,
+   User_Rec_3 : Printer_Mgr_Pkg.Instantiation.User_Rec_Type;
+
+begin
+
+   Report.Test ("C940004", "Check that a protected record can be used to " &
+                           "control access to resources");
+
+   if    (User_Task_Pkg.TC_Times_Obtained /= 0)
+      or (User_Task_Pkg.TC_Times_Released /= 0)
+      or  Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_1)
+      or  Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_2)
+      or  Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_3) then
+         Report.Failed ("Wrong initial conditions");
+   end if;
+
+   Task1.Get_Printer;           -- ask for resource
+                                -- request for resource should be granted
+   Task1.TC_Get_Descriptor (User_Rec_1);-- wait here 'til task gets resource
+
+   if        (User_Task_Pkg.TC_Times_Obtained /= 1)
+      or     (User_Task_Pkg.TC_Times_Released /= 0)
+      or not Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_1) then
+         Report.Failed ("Resource not assigned to task 1");
+   end if;
+
+   Task2.Get_Printer;              -- ask for resource
+                                   -- request for resource should be denied
+                                   -- and task queued to wait
+
+   -- Task 1 still waiting to accept Release_Printer, still holds resource
+   -- Task 2 queued on Semaphore.Request
+
+   -- Ensure that Task2 is queued before continuing to make checks and queue
+   -- Task3. We use a for loop here to avoid hangs in broken implementations.
+   for TC_Cnt in 1 .. 20 loop
+      exit when Printer_Mgr_Pkg.Printer_Access_Mgr.TC_Count >= 1;
+      delay Impdef.Minimum_Task_Switch;
+   end loop;
+
+   if    (User_Task_Pkg.TC_Times_Obtained /= 1)
+      or (User_Task_Pkg.TC_Times_Released /= 0) then
+        Report.Failed ("Resource assigned to task 2");
+   end if;
+
+   Task3.Get_Printer;        -- ask for resource
+                             -- request for resource should be denied
+                             -- and task 3 queued on Semaphore.Request
+
+   Task1.Release_Printer (User_Rec_1);-- task 1 releases resource
+                                      -- released resource should be given to
+                                      -- queued task 2.
+
+   Task2.TC_Get_Descriptor (User_Rec_2);-- wait here for task 2
+
+   -- Task 1 has released resource and completed
+   -- Task 2 has seized the resource
+   -- Task 3 is queued on Semaphore.Request
+
+   if        (User_Task_Pkg.TC_Times_Obtained /= 2)
+      or     (User_Task_Pkg.TC_Times_Released /= 1)
+      or     Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_1)
+      or not Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_2) then
+          Report.Failed ("Resource not properly released/assigned" &
+                         " to task 2");
+          if Verbose then
+             Report.Comment ("TC_Times_Obtained: " &
+                 Integer'Image (User_Task_Pkg.TC_Times_Obtained));
+             Report.Comment ("TC_Times_Released: " &
+                 Integer'Image (User_Task_Pkg.TC_Times_Released));
+             Report.Comment ("User 1 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_1)));
+             Report.Comment ("User 2 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_2)));
+          end if;
+   end if;
+
+   Task2.Release_Printer (User_Rec_2);-- task 2 releases resource
+
+   -- task 3 is released from queue, and is given resource
+
+   Task3.TC_Get_Descriptor (User_Rec_3);-- wait for task 3
+
+   if        (User_Task_Pkg.TC_Times_Obtained /= 3)
+      or     (User_Task_Pkg.TC_Times_Released /= 2)
+      or     Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_2)
+      or not Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_3) then
+        Report.Failed ("Resource not properly released/assigned " &
+                       "to task 3");
+          if Verbose then
+             Report.Comment ("TC_Times_Obtained: " &
+                Integer'Image (User_Task_Pkg.TC_Times_Obtained));
+             Report.Comment ("TC_Times_Released: " &
+                Integer'Image (User_Task_Pkg.TC_Times_Released));
+             Report.Comment ("User 1 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_1)));
+             Report.Comment ("User 2 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_2)));
+             Report.Comment ("User 3 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_3)));
+          end if;
+   end if;
+
+   Task3.Release_Printer (User_Rec_3);-- task 3 releases resource
+
+   if    (User_Task_Pkg.TC_Times_Obtained /=3)
+      or (User_Task_Pkg.TC_Times_Released /=3)
+      or Printer_Mgr_Pkg.Instantiation.Has_Access (User_Rec_3) then
+         Report.Failed ("Resource not properly released by task 3");
+         if Verbose then
+             Report.Comment ("TC_Times_Obtained: " &
+                Integer'Image (User_Task_Pkg.TC_Times_Obtained));
+             Report.Comment ("TC_Times_Released: " &
+                Integer'Image (User_Task_Pkg.TC_Times_Released));
+             Report.Comment ("User 1 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_1)));
+             Report.Comment ("User 2 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_2)));
+             Report.Comment ("User 3 Has_Access:" &
+                Boolean'Image (Printer_Mgr_Pkg.Instantiation.
+                               Has_Access (User_Rec_3)));
+         end if;
+
+   end if;
+
+   -- Ensure that all tasks have terminated before reporting the result
+   while not (Task1'terminated
+              and Task2'terminated
+              and Task3'terminated) loop
+      delay ImpDef.Minimum_Task_Switch;
+   end loop;
+
+   Report.Result;
+
+end C940004;

@@ -1,0 +1,403 @@
+-- CC40001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that adjust is called on the value of a constant object created
+--      by the evaluation of a generic association for a formal object of
+--      mode in.
+--
+--      Check that those values are also subsequently finalized.
+--
+-- TEST DESCRIPTION:
+--      Create a backdrop of a controlled type sufficient to check that the
+--      correct operations get called at appropriate times.  Create a generic
+--      unit that takes a formal parameter of a formal type.  Create instances
+--      of this generic using various "levels" of the controlled type.  Check
+--      the same case for a generic child unit.
+--
+--      The cases tested are where the type of the formal object is:
+--        a visible classwide type  : CC40001_2
+--        a formal private type     : CC40001_3
+--        a formal tagged type      : CC40001_4
+--
+--      To more fully take advantage of the features of the language, and
+--      present a test which is "user oriented" this test utilizes multiple
+--      aspects of the language in combination.  Using Ada.Strings.Unbounded
+--      in combination with Ada.Finalization and Ada.Calendar to build layers
+--      of an object oriented system will likely be very common in actual
+--      practice.  A common paradigm in the language will also be the use of
+--      a parent package defining "basic" tagged types, and child packages
+--      will expand on those types via derivation.  The model used in this
+--      test is a simple type containing a character identity (used in the
+--      identity).  The next level of type add a timestamp.  Further levels
+--      might add location information, etc. however for the purposes of this
+--      test we stop at the second layer, as it is sufficient to test the
+--      stated objective.
+--
+--
+-- CHANGE HISTORY:
+--      06 FEB 96   SAIC   Initial version
+--      30 APR 96   SAIC   Added finalization checks for 2.1
+--      13 FEB 97   PWB.CTA  Moved global objects into bodies, after Initialize
+--                         body is elaborated; counted finalizations correctly.
+--!
+
+----------------------------------------------------------------- CC40001_0
+
+with Ada.Finalization;
+with Ada.Strings.Unbounded;
+package CC40001_0 is
+
+  type States is ( Erroneous, Defaulted, Initialized, Reset, Adjusted );
+
+  type Simple_Object(ID: Character) is
+    new Ada.Finalization.Controlled with
+      record
+        TC_Current_State : States := Defaulted;
+        Name : Ada.Strings.Unbounded.Unbounded_String;
+      end record;
+
+  procedure User_Operation( COB: in out Simple_Object; Name : String );
+  procedure Initialize( COB: in out Simple_Object );
+  procedure Adjust    ( COB: in out Simple_Object );
+  procedure Finalize  ( COB: in out Simple_Object );
+
+  Finalization_Count : Natural;
+
+end CC40001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body CC40001_0 is
+
+  procedure User_Operation( COB: in out Simple_Object; Name : String ) is
+  begin
+    COB.Name := Ada.Strings.Unbounded.To_Unbounded_String(Name);
+  end User_Operation;
+
+  procedure Initialize( COB: in out Simple_Object ) is
+  begin
+    COB.TC_Current_State := Initialized;
+  end Initialize;
+
+  procedure Adjust    ( COB: in out Simple_Object ) is
+  begin
+    COB.TC_Current_State := Adjusted;
+    TCTouch.Touch('A');  -------------------------------------------------- A
+    TCTouch.Touch(COB.ID); ------------------------------------------------ ID
+    -- note that the calls to touch will not be directly validated, it is
+    -- expected that some number > 0 of calls will be made to this procedure,
+    -- the subtests then clear (Flush) the Touch buffer and perform actions
+    -- where an incorrect implementation might call this procedure.  Such a
+    -- call will fail on the attempt to "Validate" the null string.
+  end Adjust;
+
+  procedure Finalize  ( COB: in out Simple_Object ) is
+  begin
+    COB.TC_Current_State := Erroneous;
+    Finalization_Count := Finalization_Count +1;
+  end Finalize;
+
+  TC_Global_Object : Simple_Object('G');
+
+end CC40001_0;
+
+----------------------------------------------------------------- CC40001_1
+
+with Ada.Calendar;
+package CC40001_0.CC40001_1 is
+
+  type Object_In_Time(ID: Character) is
+    new Simple_Object(ID) with
+      record
+        Birth : Ada.Calendar.Time;
+        Activity : Ada.Calendar.Time;
+      end record;
+
+  procedure User_Operation( COB: in out Object_In_Time;
+                           Name: String );
+
+  procedure Initialize( COB: in out Object_In_Time );
+  procedure Adjust    ( COB: in out Object_In_Time );
+  procedure Finalize  ( COB: in out Object_In_Time );
+
+end CC40001_0.CC40001_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body CC40001_0.CC40001_1 is
+
+  procedure Initialize( COB: in out Object_In_Time ) is
+  begin
+    COB.TC_Current_State := Initialized;
+    COB.Birth := Ada.Calendar.Clock;
+  end Initialize;
+
+  procedure Adjust    ( COB: in out Object_In_Time ) is
+  begin
+    COB.TC_Current_State := Adjusted;
+    TCTouch.Touch('a');    ------------------------------------------------ a
+    TCTouch.Touch(COB.ID); ------------------------------------------------ ID
+  end Adjust;
+
+  procedure Finalize  ( COB: in out Object_In_Time ) is
+  begin
+    COB.TC_Current_State := Erroneous;
+    Finalization_Count := Finalization_Count +1;
+  end Finalize;
+
+  procedure User_Operation( COB: in out Object_In_Time;
+                           Name: String ) is
+  begin
+    CC40001_0.User_Operation( Simple_Object(COB), Name );
+    COB.Activity := Ada.Calendar.Clock;
+    COB.TC_Current_State := Reset;
+  end User_Operation;
+
+  TC_Time_Object  : Object_In_Time('g');
+
+end CC40001_0.CC40001_1;
+
+----------------------------------------------------------------- CC40001_2
+
+generic
+  TC_Check_Object : in CC40001_0.Simple_Object'Class;
+package CC40001_0.CC40001_2 is
+  procedure TC_Verify_State;
+end CC40001_0.CC40001_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body CC40001_0.CC40001_2 is
+
+  procedure TC_Verify_State is
+  begin
+    if TC_Check_Object.TC_Current_State /= Adjusted then
+      Report.Failed( "CC40001_2 : Formal Object not adjusted" );
+    end if;
+  end TC_Verify_State;
+
+end CC40001_0.CC40001_2;
+
+----------------------------------------------------------------- CC40001_3
+
+generic
+  type Formal_Private(<>) is private;
+  TC_Check_Object : in Formal_Private;
+  with function Bad_Status( O: Formal_Private ) return Boolean;
+package CC40001_0.CC40001_3 is
+  procedure TC_Verify_State;
+end CC40001_0.CC40001_3;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body CC40001_0.CC40001_3 is
+
+  procedure TC_Verify_State is
+  begin
+    if Bad_Status( TC_Check_Object ) then
+      Report.Failed( "CC40001_3 : Formal Object not adjusted" );
+    end if;
+  end TC_Verify_State;
+
+end CC40001_0.CC40001_3;
+
+----------------------------------------------------------------- CC40001_4
+
+generic
+  type Formal_Tagged_Private(<>) is tagged private; 
+  TC_Check_Object : in Formal_Tagged_Private;
+  with function Bad_Status( O: Formal_Tagged_Private ) return Boolean;
+package CC40001_0.CC40001_4 is
+  procedure TC_Verify_State;
+end CC40001_0.CC40001_4;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body CC40001_0.CC40001_4 is
+
+  procedure TC_Verify_State is
+  begin
+    if Bad_Status( TC_Check_Object ) then
+      Report.Failed( "CC40001_4 : Formal Object not adjusted" );
+    end if;
+  end TC_Verify_State;
+
+end CC40001_0.CC40001_4;
+
+------------------------------------------------------------------- CC40001
+
+with Report;
+with TCTouch;
+with CC40001_0.CC40001_1;
+with CC40001_0.CC40001_2;
+with CC40001_0.CC40001_3;
+with CC40001_0.CC40001_4;
+procedure CC40001 is
+
+  function Not_Adjusted( CO : CC40001_0.Simple_Object )
+    return Boolean is
+     use type CC40001_0.States;
+  begin
+    return CO.TC_Current_State /= CC40001_0.Adjusted;
+  end Not_Adjusted;
+
+  function Not_Adjusted( CO : CC40001_0.CC40001_1.Object_In_Time )
+    return Boolean is
+     use type CC40001_0.States;
+  begin
+    return CO.TC_Current_State /= CC40001_0.Adjusted;
+  end Not_Adjusted;
+
+   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- Subtest 1
+
+  procedure Subtest_1 is
+    Object_0 : CC40001_0.Simple_Object('T');
+    Object_1 : CC40001_0.CC40001_1.Object_In_Time('t');
+
+    package Subtest_1_1 is
+      new CC40001_0.CC40001_2( Object_0 ); -- classwide generic formal object
+
+    package Subtest_1_2 is
+      new CC40001_0.CC40001_2( Object_1 ); -- classwide generic formal object
+  begin
+    TCTouch.Flush;  -- clear out all "A" and "T" entries, no further calls
+                    -- to Touch should occur before the call to Validate
+
+    -- set the objects TC_Current_State to "Reset"
+    CC40001_0.User_Operation( Object_0, "Subtest 1" );
+    CC40001_0.CC40001_1.User_Operation( Object_1, "Subtest 1" );
+
+    -- check that the objects TC_Current_State is "Adjusted"
+    Subtest_1_1.TC_Verify_State;
+    Subtest_1_2.TC_Verify_State;
+
+    TCTouch.Validate( "", "No actions should occur here, subtest 1" );
+
+  end Subtest_1;
+
+   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- Subtest 2
+
+  procedure Subtest_2 is
+    Object_0 : CC40001_0.Simple_Object('T');
+    Object_1 : CC40001_0.CC40001_1.Object_In_Time('t');
+
+    package Subtest_2_1 is -- generic formal object is discriminated private
+      new CC40001_0.CC40001_3( CC40001_0.Simple_Object,
+                               Object_0,
+                               Not_Adjusted );
+
+    package Subtest_2_2 is -- generic formal object is discriminated private
+      new CC40001_0.CC40001_3( CC40001_0.CC40001_1.Object_In_Time,
+                               Object_1,
+                               Not_Adjusted );
+
+  begin
+    TCTouch.Flush;  -- clear out all "A" and "T" entries
+
+    -- set the objects state to "Reset"
+    CC40001_0.User_Operation( Object_0, "Subtest 2" );
+    CC40001_0.CC40001_1.User_Operation( Object_1, "Subtest 2" );
+
+    Subtest_2_1.TC_Verify_State;
+    Subtest_2_2.TC_Verify_State;
+
+    TCTouch.Validate( "", "No actions should occur here, subtest 2" );
+
+  end Subtest_2;
+
+   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- Subtest 3
+
+  procedure Subtest_3 is
+    Object_0 : CC40001_0.Simple_Object('T');
+    Object_1 : CC40001_0.CC40001_1.Object_In_Time('t');
+
+    package Subtest_3_1 is -- generic formal object is discriminated tagged
+      new CC40001_0.CC40001_4( CC40001_0.Simple_Object,
+                               Object_0,
+                               Not_Adjusted );
+
+    package Subtest_3_2 is -- generic formal object is discriminated tagged
+      new CC40001_0.CC40001_4( CC40001_0.CC40001_1.Object_In_Time,
+                               Object_1,
+                               Not_Adjusted );
+  begin
+    TCTouch.Flush;  -- clear out all "A" and "T" entries
+
+    -- set the objects state to "Reset"
+    CC40001_0.User_Operation( Object_0, "Subtest 3" );
+    CC40001_0.CC40001_1.User_Operation( Object_1, "Subtest 3" );
+
+    Subtest_3_1.TC_Verify_State;
+    Subtest_3_2.TC_Verify_State;
+
+    TCTouch.Validate( "", "No actions should occur here, subtest 3" );
+
+  end Subtest_3;
+
+begin  -- Main test procedure.
+
+  Report.Test ("CC40001", "Check that adjust and finalize are called on " &
+                          "the constant object created by the " &
+                          "evaluation of a generic association for a " &
+                          "formal object of mode in" );
+
+  -- check that the created constant objects are properly adjusted
+  -- and subsequently finalized
+
+  CC40001_0.Finalization_Count := 0;
+
+  Subtest_1;
+
+  if CC40001_0.Finalization_Count < 4 then
+    Report.Failed("Insufficient Finalizations for Subtest 1");
+  end if;
+
+  CC40001_0.Finalization_Count := 0;
+
+  Subtest_2;
+
+  if CC40001_0.Finalization_Count < 4 then
+    Report.Failed("Insufficient Finalizations for Subtest 2");
+  end if;
+
+  CC40001_0.Finalization_Count := 0;
+
+  Subtest_3;
+
+  if CC40001_0.Finalization_Count < 4 then
+    Report.Failed("Insufficient Finalizations for Subtest 3");
+  end if;
+
+  Report.Result;
+
+end CC40001;

@@ -1,0 +1,250 @@
+-- C390011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that tagged types declared within generic package declarations
+--     generate distinct tags for each instance of the generic.
+--
+-- TEST DESCRIPTION:
+--     This test defines a very simple generic package (with the expectation
+--     that it should be easily be shared), and a few instances of that
+--     package.  In true user-like fashion, two of the instances are identical
+--     (to wit: IIO is new Integer_IO(Integer)).  The tags generated for each
+--     of them are placed into a list.  The last action of the test is to
+--     check that everything in the list is unique.
+--
+--     Almost as an aside, this test defines functions that return T'Base and
+--     T'Class, and then exercises these functions.
+--
+--     (JPR) persistent objects really need a function like:
+--        function Get_Object return T'class;
+--
+--
+-- CHANGE HISTORY:
+--      20 OCT 95   SAIC   Initial version
+--      23 APR 96   SAIC   Commentary Corrections 2.1
+--
+--!
+
+----------------------------------------------------------------- C390011_0
+
+with Ada.Tags;
+package C390011_0 is
+
+  procedure Add_Tag_To_List( T : Ada.Tags.Tag; X_Name, X_Tag: String );
+
+  procedure Check_List_For_Duplicates;
+
+end C390011_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C390011_0 is
+
+  use type Ada.Tags.Tag;
+  type SP is access String;
+
+  type List_Item;
+  type List_P is access List_Item;
+  type List_Item is record
+    The_Tag  : Ada.Tags.Tag;
+    Exp_Name : SP;
+    Ext_Tag  : SP;
+    Next : List_P;
+  end record;
+
+  The_List : List_P;
+
+  procedure Add_Tag_To_List ( T : Ada.Tags.Tag; X_Name, X_Tag: String ) is
+  begin  -- prepend the tag information to the list
+    The_List := new List_Item'( The_Tag  => T, 
+                                Exp_Name => new String'(X_Name), 
+                                Ext_Tag  => new String'(X_Tag),
+                                Next     => The_List );
+  end Add_Tag_To_List;
+
+  procedure Check_List_For_Duplicates is
+    Finger : List_P;
+    Thumb  : List_P := The_List;
+  begin  -- 
+    while Thumb /= null loop
+      Finger := Thumb.Next;
+      while Finger /= null loop
+        -- Check that the tag is unique
+        if Finger.The_Tag = Thumb.The_Tag then
+          Report.Failed("Duplicate Tag");
+        end if;
+
+        -- Check that the Expanded name is unique
+        if Finger.Exp_Name.all = Thumb.Exp_Name.all then
+          Report.Failed("Tag name " & Finger.Exp_Name.all & " repeats");
+        end if;
+
+        -- Check that the External Tag is unique
+
+        if Finger.Ext_Tag.all = Thumb.Ext_Tag.all then
+          Report.Failed("External Tag " & Finger.Ext_Tag.all & " repeats");
+        end if;
+        Finger := Finger.Next;
+      end loop;
+      Thumb  := Thumb.Next;
+   end loop;
+  end Check_List_For_Duplicates;
+
+begin
+  -- some things I just don't trust...
+  if The_List /= null then
+    Report.Failed("Implicit default for The_List not null");
+  end if;
+end C390011_0;
+
+----------------------------------------------------------------- C390011_1
+
+generic
+  type Index is (<>);
+  type Item is private;
+package C390011_1 is
+
+  type List is array(Index range <>) of Item;
+  type ListP is access all List;
+
+  type Table is tagged record
+    Data: ListP;
+  end record;
+
+  function Sort( T: in Table'Class ) return Table'Class;
+
+  function Stable_Table return Table'Class;
+
+  function Table_End( T: Table ) return Index'Base;
+
+end C390011_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C390011_1 is
+
+    -- In a user program this package would DO something
+
+  function Sort( T: in Table'Class ) return Table'Class is
+  begin
+   return T;
+  end Sort;
+
+  Empty : Table'Class := Table'( Data => null );
+
+  function Stable_Table return Table'Class is
+  begin
+    return Empty;
+  end Stable_Table;
+
+  function Table_End( T: Table ) return Index'Base is
+  begin
+    return Index'Base( T.Data.all'Last );
+  end Table_End;
+
+end C390011_1;
+
+----------------------------------------------------------------- C390011_2
+
+with C390011_1;
+package C390011_2 is new C390011_1( Index => Character, Item => Float );
+
+----------------------------------------------------------------- C390011_3
+
+with C390011_1;
+package C390011_3 is new C390011_1( Index => Character, Item => Float );
+
+----------------------------------------------------------------- C390011_4
+
+with C390011_1;
+package C390011_4 is new C390011_1( Index => Integer, Item => Character );
+
+----------------------------------------------------------------- C390011_5
+
+with C390011_3;
+with C390011_4;
+package C390011_5 is
+
+  type Table_3 is new C390011_3.Table with record
+    Serial_Number : Integer;
+  end record;
+
+  type Table_4 is new C390011_4.Table with record
+    Serial_Number : Integer;
+  end record;
+
+end C390011_5;
+
+-- no package body C390011_5 required
+
+------------------------------------------------------------------- C390011
+
+with Report;
+with C390011_0;
+with C390011_2;
+with C390011_3;
+with C390011_4;
+with C390011_5;
+with Ada.Tags;
+procedure C390011 is
+
+begin  -- Main test procedure.
+
+  Report.Test ("C390011", "Check that tagged types declared within " &
+                          "generic package declarations generate distinct " &
+                          "tags for each instance of the generic. " &
+                          "Check that 'Base may be used as a subtype mark. " &
+                          "Check that T'Base and T'Class are allowed as " &
+                          "the subtype mark in a function result" );
+
+  -- build the tag information table
+  C390011_0.Add_Tag_To_List(T => C390011_2.Table'Tag,
+                       X_Name => Ada.Tags.Expanded_Name(C390011_2.Table'Tag),
+                       X_Tag  => Ada.Tags.External_Tag(C390011_2.Table'Tag) );
+
+  C390011_0.Add_Tag_To_List(T => C390011_3.Table'Tag,
+                       X_Name => Ada.Tags.Expanded_Name(C390011_3.Table'Tag),
+                       X_Tag  => Ada.Tags.External_Tag(C390011_3.Table'Tag) );
+
+  C390011_0.Add_Tag_To_List(T => C390011_4.Table'Tag,
+                       X_Name => Ada.Tags.Expanded_Name(C390011_4.Table'Tag),
+                       X_Tag  => Ada.Tags.External_Tag(C390011_4.Table'Tag) );
+
+  C390011_0.Add_Tag_To_List(T => C390011_5.Table_3'Tag,
+                     X_Name => Ada.Tags.Expanded_Name(C390011_5.Table_3'Tag),
+                     X_Tag  => Ada.Tags.External_Tag(C390011_5.Table_3'Tag) );
+
+  C390011_0.Add_Tag_To_List(T => C390011_5.Table_4'Tag,
+                     X_Name => Ada.Tags.Expanded_Name(C390011_5.Table_4'Tag),
+                     X_Tag  => Ada.Tags.External_Tag(C390011_5.Table_4'Tag) );
+
+  -- preform the check for distinct tags
+  C390011_0.Check_List_For_Duplicates;
+
+  Report.Result;
+
+end C390011;

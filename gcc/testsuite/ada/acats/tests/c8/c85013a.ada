@@ -1,0 +1,150 @@
+-- C85013A.ADA
+
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+-- CHECK THAT:
+
+--   A) A SUBPROGRAM OR ENTRY CAN BE RENAMED WITH:
+--        A1) DIFFERENT PARAMETER NAMES;
+--        A2) DIFFERENT DEFAULT VALUES;
+--        A3) DIFFERENT PARAMETERS HAVING DEFAULT VALUES;
+--      AND THAT THE NEW NAMES/DEFAULTS ARE USED WHEN THE NEW NAME
+--      IS USED IN A CALL.
+
+--   B) FORMAL PARAMETER CONSTRAINTS FOR THE NEW NAME ARE IGNORED IN
+--      FAVOR OF THE CONSTRAINTS ASSOCIATED WITH THE RENAMED ENTITY.
+
+-- EG  02/22/84
+
+WITH REPORT;
+
+PROCEDURE C85013A IS
+
+     USE REPORT;
+
+BEGIN
+
+     TEST("C85013A","CHECK THAT A SUBPROGRAM CAN BE RENAMED AND " &
+                    "THAT THE NEW NAMES/DEFAULTS ARE USED WITH "  &
+                    "THE CONSTRAINTS ASSOCIATED WITH THE RENAMED" &
+                    " ENTITY");
+
+     DECLARE
+
+          TYPE TA IS ARRAY(1 .. 5) OF INTEGER;
+
+          FUNCTION PROC1 (A : INTEGER := 1;
+                          B : TA := (1 .. 5 => 1)) RETURN INTEGER;
+          FUNCTION PROCA (C : INTEGER := 1;
+                          D : TA := (1 .. 5 => 1)) RETURN INTEGER
+                          RENAMES PROC1;
+          FUNCTION PROCB (B : INTEGER := 1;
+                          A : TA := (1 .. 5 => 1)) RETURN INTEGER
+                          RENAMES PROC1;
+          FUNCTION PROCC (A : INTEGER := 2;
+                          B : TA := (1, 2, 3, 4, 5)) RETURN INTEGER
+                          RENAMES PROC1;
+          FUNCTION PROCD (C : INTEGER := 2;
+                          D : TA := (1, 2, 3, 4, 5))RETURN INTEGER
+                          RENAMES PROC1;
+
+          FUNCTION PROC1 (A : INTEGER := 1;
+                          B : TA := (1 .. 5 => 1)) RETURN INTEGER IS
+          BEGIN
+               FOR I IN 1 .. 5 LOOP
+                    IF A = B(I) THEN
+                         RETURN I;
+                    END IF;
+               END LOOP;
+               RETURN 0;
+          END PROC1;
+
+     BEGIN
+
+          IF PROC1 /= 1 THEN
+               FAILED ("CASE A : PARAMETERS NOT PROPERLY INITIALIZED");
+          END IF;
+          IF PROC1(A => 2) /= 0 THEN
+               FAILED ("CASE A : INCORRECT RESULT");
+          END IF;
+          IF PROCA /= 1 THEN
+               FAILED ("CASE A1 : INCORRECT RESULT (DEFAULT)");
+          END IF;
+          IF PROCA(D => (5, 4, 3, 2, 1)) /= 5 THEN
+               FAILED ("CASE A1 : INCORRECT RESULT");
+          END IF;
+          IF PROCB /= 1 THEN
+               FAILED ("CASE A1 : INCORRECT RESULT (DEFAULT)");
+          END IF;
+          IF PROCB(A => (5, 4, 3, 2, 1), B => 2) /= 4 THEN
+               FAILED ("CASE A1 : INCORRECT RESULT ");
+          END IF;
+          IF PROCC /= 2 THEN
+               FAILED ("CASE A2 : INCORRECT RESULT (DEFAULT)");
+          END IF;
+          IF PROCC(3) /= 3 THEN
+               FAILED ("CASE A2 : INCORRECT RESULT ");
+          END IF;
+          IF PROCD /= 2 THEN
+               FAILED ("CASE A2 : INCORRECT RESULT (DEFAULT)");
+          END IF;
+          IF PROCD(4) /= 4 THEN
+               FAILED ("CASE A2 : INCORRECT RESULT ");
+          END IF;
+
+     END;
+
+     DECLARE
+
+          TYPE TA IS ARRAY (INTEGER RANGE <>) OF INTEGER;
+          SUBTYPE STA1 IS TA(1 .. 5);
+          SUBTYPE STA2 IS TA(11 .. 15);
+
+          PROCEDURE PROC1 (A : STA1;
+                           ID : STRING);
+          PROCEDURE PROC2 (A : STA2;
+                           ID : STRING) RENAMES PROC1;
+
+          PROCEDURE PROC1 (A : STA1;
+                           ID : STRING) IS
+          BEGIN
+               IF A'FIRST /= IDENT_INT(1) THEN
+                    FAILED ("CASE B : INCORRECT LOWER BOUND " &
+                            "GENERATED BY " & ID);
+               END IF;
+               IF A'LAST /= IDENT_INT(5) THEN
+                    FAILED ("CASE B : INCORRECT UPPER BOUND " &
+                            "GENERATED BY " & ID);
+               END IF;
+          END PROC1;
+
+     BEGIN
+
+          PROC1 ((1, 2, 3, 4, 5),"PROC1");
+          PROC2 ((6, 7, 8, 9, 10),"PROC2");
+
+     END;
+
+     RESULT;
+
+END C85013A;

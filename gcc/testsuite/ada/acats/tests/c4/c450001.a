@@ -1,0 +1,434 @@
+-- C450001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that operations on modular types perform correctly.
+--
+--     Check that loops over the range of a modular type do not over or
+--     under run the loop.
+--
+-- TEST DESCRIPTION:
+--     Check logical and arithmetic operations.
+--     (Attributes are tested elsewhere)
+--     Checks to make sure that:
+--        for X in Mod_Type loop
+--     doesn't do something silly like infinite loop.
+--
+--
+-- CHANGE HISTORY:
+--      20 SEP 95   SAIC   Initial version
+--      20 FEB 96   SAIC   Added underrun cases for 2.1
+--
+--!
+
+----------------------------------------------------------------- C450001_0
+
+package C450001_0 is
+
+  type Unsigned_8_Bit is mod 2**8;
+
+  Shy_By_One : constant := 2**8-1;
+
+  Heavy_By_Two : constant := 2**8+2;
+
+  type Unsigned_Edge_8 is mod Shy_By_One;
+
+  type Unsigned_Over_8 is mod Heavy_By_Two;
+
+  procedure Loop_Check;
+
+ -- embed some calls to Report.Ident_Int:
+
+  function ID( U8B: Unsigned_8_Bit )  return Unsigned_8_Bit;
+  function ID( UEB: Unsigned_Edge_8 ) return Unsigned_Edge_8;
+  function ID( UOB: Unsigned_Over_8 ) return Unsigned_Over_8;
+
+end C450001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C450001_0 is
+
+  procedure Loop_Check is
+    Counter_Check : Natural := 0;
+  begin
+    for Ever in Unsigned_8_Bit loop
+      Counter_Check := Report.Ident_Int(Counter_Check) + 1;
+      if Counter_Check > 2**8 then
+        Report.Failed("Unsigned_8_Bit loop overrun");
+        exit;
+      end if;
+    end loop;
+
+    if Counter_Check < 2**8 then
+      Report.Failed("Unsigned_8_Bit loop underrun");
+    end if;
+
+    Counter_Check := 0;
+
+    for Never in Unsigned_Edge_8 loop
+      Counter_Check := Report.Ident_Int(Counter_Check) + 1;
+      if Counter_Check > Shy_By_One then
+        Report.Failed("Unsigned_Edge_8 loop overrun");
+        exit;
+      end if;
+    end loop;
+
+    if Counter_Check < Shy_By_One then
+      Report.Failed("Unsigned_Edge_8 loop underrun");
+    end if;
+
+    Counter_Check := 0;
+
+    for Getful in reverse Unsigned_Over_8 loop
+      Counter_Check := Report.Ident_Int(Counter_Check) + 1;
+      if Counter_Check > Heavy_By_Two then
+        Report.Failed("Unsigned_Over_8 loop overrun");
+        exit;
+      end if;
+    end loop;
+
+    if Counter_Check < Heavy_By_Two then
+      Report.Failed("Unsigned_Over_8 loop underrun");
+    end if;
+
+  end Loop_Check;
+
+  function ID( U8B: Unsigned_8_Bit )  return Unsigned_8_Bit is
+  begin
+    return Unsigned_8_Bit(Report.Ident_Int(Integer(U8B)));
+  end ID;
+
+  function ID( UEB: Unsigned_Edge_8 ) return Unsigned_Edge_8 is
+  begin
+    return Unsigned_Edge_8(Report.Ident_Int(Integer(UEB)));
+  end ID;
+
+  function ID( UOB: Unsigned_Over_8 ) return Unsigned_Over_8 is
+  begin
+    return Unsigned_Over_8(Report.Ident_Int(Integer(UOB)));
+  end ID;
+
+end C450001_0;
+
+------------------------------------------------------------------- C450001
+
+with Report;
+with C450001_0;
+with TCTouch;
+procedure C450001 is
+  use C450001_0;
+
+  BR : constant String := " produced the wrong result";
+
+  procedure Is_T(B:Boolean;S:String) renames TCTouch.Assert;
+  procedure Is_F(B:Boolean;S:String) renames TCTouch.Assert_Not;
+
+  Whole_8_A, Whole_8_B, Whole_8_C : C450001_0.Unsigned_8_Bit;
+
+  Short_8_A, Short_8_B, Short_8_C : C450001_0.Unsigned_Edge_8;
+
+  Over_8_A, Over_8_B, Over_8_C : C450001_0.Unsigned_Over_8;
+
+begin  -- Main test procedure. C450001
+
+  Report.Test ("C450001", "Check that operations on modular types " &
+                          "perform correctly." );
+
+
+  -- the cases for the whole 8 bit type are pretty simple
+
+  Whole_8_A :=                             2#00000000#;
+  Whole_8_B :=                             2#11111111#;
+
+  Is_T((ID(Whole_8_A) and ID(Whole_8_B)) = 2#00000000#,"8 bit and" & BR);
+  Is_T((ID(Whole_8_A)  or ID(Whole_8_B)) = 2#11111111#,"8 bit  or" & BR);
+  Is_T((ID(Whole_8_A) xor ID(Whole_8_B)) = 2#11111111#,"8 bit xor" & BR);
+
+  Whole_8_A :=                             2#00001111#;
+  Whole_8_B :=                             2#11111111#;
+
+  Is_T((ID(Whole_8_A) and ID(Whole_8_B)) = 2#00001111#,"8 bit and" & BR);
+  Is_T((ID(Whole_8_A)  or ID(Whole_8_B)) = 2#11111111#,"8 bit  or" & BR);
+  Is_T((ID(Whole_8_A) xor ID(Whole_8_B)) = 2#11110000#,"8 bit xor" & BR);
+
+  Whole_8_A :=                             2#10101010#;
+  Whole_8_B :=                             2#11110000#;
+
+  Is_T((ID(Whole_8_A) and ID(Whole_8_B)) = 2#10100000#,"8 bit and" & BR);
+  Is_T((ID(Whole_8_A)  or ID(Whole_8_B)) = 2#11111010#,"8 bit  or" & BR);
+  Is_T((ID(Whole_8_A) xor ID(Whole_8_B)) = 2#01011010#,"8 bit xor" & BR);
+
+  -- the cases for the partial 8 bit type involve subtracting the modulus
+  -- from results that exceed the modulus.
+  -- hence, any of the following operations that exceed 2#11111110# must
+  -- have 2#11111111# subtracted from the result; i.e. where you would
+  -- expect to see 2#11111111# as in the above operations, the correct
+  -- result will be 2#00000000#.  Note that 2#11111111# is not a legal
+  -- value of type C450001_0.Unsigned_Edge_8.
+
+  Short_8_A :=                             2#11100101#;
+  Short_8_B :=                             2#00011111#;
+
+  Is_T((ID(Short_8_A) and ID(Short_8_B)) = 2#00000101#,"8 short and 1" & BR);
+  Is_T((ID(Short_8_A)  or ID(Short_8_B)) = 2#00000000#,"8 short  or 1" & BR);
+  Is_T((ID(Short_8_A) xor ID(Short_8_B)) = 2#11111010#,"8 short xor 1" & BR);
+
+  Short_8_A :=                             2#11110000#;
+  Short_8_B :=                             2#11111110#;
+
+  Is_T((ID(Short_8_A) and ID(Short_8_B)) = 2#11110000#,"8 short and 2" & BR);
+  Is_T((ID(Short_8_A)  or ID(Short_8_B)) = 2#11111110#,"8 short  or 2" & BR);
+  Is_T((ID(Short_8_A) xor ID(Short_8_B)) = 2#00001110#,"8 short xor 2" & BR);
+
+  Short_8_A :=                             2#10101010#;
+  Short_8_B :=                             2#01010101#;
+
+  Is_T((ID(Short_8_A) and ID(Short_8_B)) = 2#00000000#,"8 short and 3" & BR);
+  Is_T((ID(Short_8_A)  or ID(Short_8_B)) = 2#00000000#,"8 short  or 3" & BR);
+  Is_T((ID(Short_8_A) xor ID(Short_8_B)) = 2#00000000#,"8 short xor 3" & BR);
+
+  Short_8_A :=                             2#10101010#;
+  Short_8_B :=                             2#11111110#;
+
+  Is_T((ID(Short_8_A) and ID(Short_8_B)) = 2#10101010#,"8 short and 4" & BR);
+  Is_T((ID(Short_8_A)  or ID(Short_8_B)) = 2#11111110#,"8 short  or 4" & BR);
+  Is_T((ID(Short_8_A) xor ID(Short_8_B)) = 2#01010100#,"8 short xor 4" & BR);
+
+  -- the cases for the over 8 bit type have similar issues to the short type
+  -- however the bit patterns are a little different.  The rule is to subtract
+  -- the modulus (258) from any resulting value equal or greater than the
+  -- modulus       -- note that 258 =    2#100000010#
+
+  Over_8_A :=                            2#100000000#;
+  Over_8_B :=                            2#011111111#;
+
+  Is_T((ID(Over_8_A) and ID(Over_8_B)) = 2#000000000#,"8 over and" & BR);
+  Is_T((ID(Over_8_A)  or ID(Over_8_B)) = 2#011111101#,"8 over  or" & BR);
+  Is_T((ID(Over_8_A) xor ID(Over_8_B)) = 2#011111101#,"8 over xor" & BR);
+
+  Over_8_A :=                            2#100000001#;
+  Over_8_B :=                            2#011111111#;
+
+  Is_T((ID(Over_8_A) and ID(Over_8_B)) = 2#000000001#,"8 over and" & BR);
+  Is_T((ID(Over_8_A)  or ID(Over_8_B)) = 2#011111101#,"8 over  or" & BR);
+  Is_T((ID(Over_8_A) xor ID(Over_8_B)) = 2#011111100#,"8 over xor" & BR);
+
+
+
+  Whole_8_A := 128;
+  Whole_8_B := 255;
+
+  Is_T(ID(Whole_8_A) /= ID(Whole_8_B), "8 /=" & BR);
+  Is_F(ID(Whole_8_A)  = ID(Whole_8_B), "8  =" & BR);
+
+  Is_T(ID(Whole_8_A) <= ID(Whole_8_B), "8 <=" & BR);
+  Is_T(ID(Whole_8_A) <  ID(Whole_8_B), "8 < " & BR);
+
+  Is_F(ID(Whole_8_A) >= ID(Whole_8_B), "8 >=" & BR);
+  Is_T(ID(Whole_8_A) >  ID(Whole_8_B + 7), "8 > " & BR);
+
+  Is_T(ID(Whole_8_A)     in ID(100)..ID(200), "8 in" & BR);
+  Is_F(ID(Whole_8_A) not in ID(100)..ID(200), "8 not in" & BR);
+
+  Is_F(ID(Whole_8_A)     in ID(200)..ID(250), "8 in" & BR);
+  Is_T(ID(Whole_8_A) not in ID(200)..ID(250), "8 not in" & BR);
+
+  Short_8_A := 127;
+  Short_8_B := 254;
+
+  Is_T(ID(Short_8_A) /= ID(Short_8_B), "short 8 /=" & BR);
+  Is_F(ID(Short_8_A)  = ID(Short_8_B), "short 8  =" & BR);
+
+  Is_T(ID(Short_8_A) <= ID(Short_8_B), "short 8 <=" & BR);
+  Is_T(ID(Short_8_A) <  ID(Short_8_B), "short 8 < " & BR);
+
+  Is_F(ID(Short_8_A) >= ID(Short_8_B), "short 8 >=" & BR);
+  Is_F(ID(Short_8_A) >  ID(Short_8_B), "short 8 > " & BR);
+
+  Is_T(ID(Short_8_A)     in ID(100)..ID(200), "8 in" & BR);
+  Is_F(ID(Short_8_A) not in ID(100)..ID(200), "8 not in" & BR);
+
+  Is_F(ID(Short_8_A)     in ID(200)..ID(250), "8 in" & BR);
+  Is_T(ID(Short_8_A) not in ID(200)..ID(250), "8 not in" & BR);
+
+
+  Whole_8_A := 1;
+  Whole_8_B := 254;
+  Short_8_A := 1;
+  Short_8_B := 2;
+
+  Whole_8_C := ID(Whole_8_A) + ID(Whole_8_B);
+  Is_T(Whole_8_C = C450001_0.Unsigned_8_Bit'Last, "8 binary + 1" & BR);
+
+  Whole_8_C := Whole_8_C + ID(Whole_8_A);
+  Is_T(Whole_8_C = C450001_0.Unsigned_8_Bit'First, "8 binary + 2" & BR);
+
+  Whole_8_C := ID(Whole_8_A) - ID(Whole_8_A);
+  Is_T(Whole_8_C = 0, "8 binary -" & BR);
+
+  Whole_8_C := Whole_8_C - ID(Whole_8_A);
+  Is_T(Whole_8_C = C450001_0.Unsigned_8_Bit'Last, "8 binary + 3" & BR);
+
+  Short_8_C := ID(Short_8_A) + ID(C450001_0.Unsigned_Edge_8'Last);
+  Is_T(Short_8_C = C450001_0.Unsigned_Edge_8'First, "Short binary + 1" & BR);
+
+  Short_8_C := Short_8_A + ID(Short_8_A);
+  Is_T(Short_8_C = ID(Short_8_B), "Short binary + 2" & BR);
+
+  Short_8_C := ID(Short_8_A) - ID(Short_8_A);
+  Is_T(Short_8_C = 0, "Short 8 binary -" & BR);
+
+  Short_8_C := Short_8_C - ID(Short_8_A);
+  Is_T(Short_8_C = C450001_0.Unsigned_Edge_8'Last, "Short binary + 3" & BR);
+
+
+  Whole_8_C := ( + ID(Whole_8_B) );
+  Is_T(Whole_8_C = 254, "8 unary +" & BR);
+
+  Whole_8_C := ( - ID(Whole_8_A) );
+  Is_T(Whole_8_C = C450001_0.Unsigned_8_Bit'Last, "8 unary -" & BR);
+
+  Whole_8_C := ( - ID(0) );
+  Is_T(Whole_8_C = 0, "8 unary -0" & BR);
+
+  Short_8_C := ( + ID(C450001_0.Unsigned_Edge_8'Last) );
+  Is_T(Short_8_C = 254, "Short 8 unary +" & BR);
+
+  Short_8_C := ( - ID(Short_8_A) );
+  Is_T(Short_8_C = C450001_0.Unsigned_Edge_8'Last, "Short 8 unary -" & BR);
+
+
+  Whole_8_A := 20;
+  Whole_8_B := 255;
+
+  Whole_8_C := ID(Whole_8_A) * ID(Whole_8_B); -- 5100 = 19*256 + 236 (256-20)
+  Is_T(Whole_8_C = 236, "8 *" & BR);
+
+  Short_8_A := 9;
+  Short_8_B := 254;
+
+  Short_8_C := ID(Short_8_A) * ID(Short_8_B); -- 2286 = 8*255 + 246 (255-9)
+  Is_T(Short_8_C = 246, "short 8 *" & BR);
+
+  Over_8_A := 12;
+  Over_8_B := 86;
+
+  Over_8_C := ID(Over_8_A) * ID(Over_8_B); -- 1032 = 4*258 + 0
+  Is_T(Over_8_C = 0, "over 8 *" & BR);
+
+
+  Whole_8_A := 255;
+  Whole_8_B := 4;
+
+  Whole_8_C := ID(Whole_8_A) / ID(Whole_8_B);
+  Is_T(Whole_8_C = 63, "8 /" & BR);
+
+  Short_8_A := 253;
+  Short_8_B := 127;
+
+  Short_8_C := ID(Short_8_A) / ID(Short_8_B);
+  Is_T(Short_8_C = 1, "short 8 / 1" & BR);
+
+  Short_8_C := ID(Short_8_A) / ID(126);
+  Is_T(Short_8_C = 2, "short 8 / 2" & BR);
+
+
+  Whole_8_A := 255;
+  Whole_8_B := 254;
+
+  Whole_8_C := ID(Whole_8_A) rem ID(Whole_8_B);
+  Is_T(Whole_8_C = 1, "8 rem" & BR);
+
+  Short_8_A := 222;
+  Short_8_B := 111;
+
+  Short_8_C := ID(Short_8_A) rem ID(Short_8_B);
+  Is_T(Short_8_C = 0, "short 8 rem" & BR);
+
+
+  Whole_8_A := 99;
+  Whole_8_B := 9;
+
+  Whole_8_C := ID(Whole_8_A) mod ID(Whole_8_B);
+  Is_T(Whole_8_C = 0, "8 mod" & BR);
+
+  Short_8_A := 254;
+  Short_8_B := 250;
+
+  Short_8_C := ID(Short_8_A) mod ID(Short_8_B);
+  Is_T(Short_8_C = 4, "short 8 mod" & BR);
+
+
+  Whole_8_A := 99;
+
+  Whole_8_C := abs Whole_8_A;
+  Is_T(Whole_8_C = ID(99), "8 abs" & BR);
+
+  Short_8_A := 254;
+
+  Short_8_C := ID( abs Short_8_A );
+  Is_T(Short_8_C = 254, "short 8 abs" & BR);
+
+
+  Whole_8_B :=        2#00001111#;
+
+  Whole_8_C := not Whole_8_B;
+  Is_T(Whole_8_C = ID(2#11110000#), "8 not" & BR);
+
+  Short_8_B :=     2#00001111#;                      -- 15
+
+  Short_8_C := ID( not Short_8_B );                  -- 254 - 15
+  Is_T(Short_8_C = 2#11101111#, "short 8 not" & BR); -- 239
+
+
+  Whole_8_A := 2;
+
+  Whole_8_C := Whole_8_A ** 7;
+  Is_T(Whole_8_C = ID(128), "2 ** 7, whole 8" & BR);
+
+  Whole_8_C := Whole_8_A ** 9;
+  Is_T(Whole_8_C = ID(0), "2 ** 9, whole 8" & BR);
+
+  Short_8_A := 4;
+
+  Short_8_C := ID( Short_8_A ) ** 4;
+  Is_T(Short_8_C = 1, "4 ** 4, short" & BR);
+
+  Over_8_A := 4;
+
+  Over_8_C := ID( Over_8_A ) ** 4;
+  Is_T(Over_8_C = 256, "4 ** 4, over" & BR);
+
+  Over_8_C := ID( Over_8_A ) ** 5; -- 1024 = 3*258 + 250
+  Is_T(Over_8_C = 250, "4 ** 5, over" & BR);
+
+
+  C450001_0.Loop_Check;
+
+  Report.Result;
+
+end C450001;

@@ -1,0 +1,110 @@
+-- LA140092.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a subunit package body depends
+--      on a unit that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a package, separate subunit package 
+--      body, and a procedure that withs the package.  Then, 
+--      a new version of the package is compiled (in a separate
+--      file, simulating and editing modification to the package).
+--      Unless automatic recompilation is supported, this 
+--      test should fail to link.  Otherwise, the test should 
+--      recompile and link the correct version of the withed package 
+--      and report "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140090 (and include the results in the
+--            program library).
+--         2) Compile the file LA140091 (and include the results in the
+--            program library).
+--         3) Compile the file LA140092 (and include the results in the
+--            program library).
+--         4) Compile the file LA140093 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140090.A
+--         LA140091.A
+--      -> LA140092.AM
+--         LA140093.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14009_0.LA14009_1 is missing or obsolete and no executable image
+--      results.  The test passes if an executable image is produced
+--      and reports "PASSED" (in case the implementation supports
+--      automatic recompilation).            
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5007N baseline version
+--     25 MAY 95   SAIC        Initial version
+--     12 DEC 96   SAIC        Reorganized to permit automatic recompilation.
+--
+--!
+
+separate (LA14009_0)
+
+package body LA14009_1 is
+
+     procedure P (TC_local : in out integer) is
+     begin 
+          TC_local := LA14009_0.TC_var;
+     end P;
+
+end LA14009_1;
+
+
+
+with Report; use Report;
+with LA14009_0;
+
+procedure LA140092 is
+     TC_val : integer := 0;
+begin
+     Test ("LA14009", "Check that a compilation unit may not depend " &
+                      "semantically on two different versions of the " &
+                      "same compilation unit.  Check the case where " &
+                      "a subunit package body depends on a unit that " &
+                      "is changed");
+ 
+     LA14009_0.LA14009_1.P(TC_Val);
+ 
+     if TC_val = 100 then
+          Failed ("Revised package body not used");
+     elsif TC_val /= -10 then
+          Failed ("Incorrect value returned");
+     end if;
+ 
+     Result;
+end LA140092;

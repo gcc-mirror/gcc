@@ -1,0 +1,134 @@
+-- F954A00.A
+--
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      This file contains foundation code for tests covering the requeue
+--      statement.
+--
+-- TEST DESCRIPTION:
+--      See prologues of specific tests.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package F954A00 is  -- Printer device abstraction.
+
+
+   -- Model a printer device driver as a protected type. A printer remains
+   -- unavailable while data is printing. The printer generates an interrupt
+   -- when printing is complete, after which the printer is again made
+   -- available.
+
+
+   type Printers_Info is tagged record
+      Some_Info : Integer;
+   end record;
+
+               --==============================================--
+
+   protected type Printers is   -- Device driver for printer.
+
+      procedure Start_Printing (File_Name : String);  -- Begin printing on
+                                                      -- printer.
+
+      procedure Handle_Interrupt;                     -- Handle interrupt from
+                                                      -- printer.
+
+      entry Done_Printing;                            -- Wait until printer is
+                                                      -- done.
+
+      function Available return Boolean;              -- Return value of Ready.
+      function Is_Done return Boolean;                -- Return value of Done.
+
+   private
+
+      Ready : Boolean := True;                        -- Entry barrier.
+      Done  : Boolean := True;                        -- Testing flag.
+
+   end Printers;
+
+               --==============================================--
+
+   Number_Of_Printers : constant := 2;
+
+   type Printer_ID is range 1 .. Number_Of_Printers;
+
+   type Printer_Array is array (Printer_ID) of Printers;
+   type Info_Array    is array (Printer_ID) of Printers_Info;
+
+   Printer       : Printer_Array;
+   Printer_Info  : constant Info_Array  := ( (Some_Info => 1),
+                                             (Some_Info => 2) ); 
+
+end F954A00;
+
+
+     --==================================================================--
+
+
+package body F954A00 is  -- Printer server abstraction.
+
+
+   protected body Printers is
+
+      procedure Start_Printing (File_Name : String) is
+      begin
+         Ready := False;                              -- Block other requests
+         Done  := False;                              -- for this printer
+         -- Send data to the printer...               -- and begin printing.
+      end Start_Printing;
+
+
+      -- Set the "not ready" one-shot
+      entry Done_Printing when Ready is               -- Callers wait here
+      begin                                           -- until printing is
+         Done := True;                                -- done (signaled by a
+      end Done_Printing;                              -- printer interrupt).
+
+
+      procedure Handle_Interrupt is                   -- Called when the 
+      begin                                           -- printer interrupts,
+         Ready := True;                               -- indicating that
+      end Handle_Interrupt;                           -- printing is done.
+
+
+      function Available return Boolean is            -- Artifice for test
+      begin                                           -- purposes: checks
+         return (Ready);                              -- whether printer is
+      end Available;                                  -- still printing.
+
+
+      function Is_Done return Boolean is              -- Artifice for test
+      begin                                           -- purposes: checks
+         return (Done);                               -- whether Done_Printing
+      end Is_Done;                                    -- entry was executed.
+
+   end Printers;
+
+
+end F954A00;

@@ -1,0 +1,242 @@
+-- CA11022.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that body of a child unit can instantiate its generic sibling.
+--      
+-- TEST DESCRIPTION:
+--      Declare a package that provides some types for the graphic 
+--      application.  Add a generic child package with a subprogram parameter
+--      to provide algorithms that can be used by different terminal types
+--      but that have to be customized to the specific terminal. Add child 
+--      packages to take advantage of the parent types and to provide a 
+--      customized operation for each of the different terminals.  The 
+--      customized operation will be passed as a generic subprogram parameter 
+--      to the child package's sibling.
+--
+--      The main program "with"s the child packages.  Check that the
+--      operations in child units perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CA11022_0 is    -- Graphic Manager
+ 
+   type Row is range 1 .. 66;
+   type Column is range 1 .. 80;
+   type Radius is range 1 .. 3;
+   type Length is range 5 .. 10;
+
+   -- Testing artifice.
+   TC_Screen : array (Row, Column) of boolean := (others => (others => false));
+   TC_Draw_Circle : boolean := false;
+   TC_Draw_Square : boolean := false;
+
+   -- ... and other complicated ones.
+
+end CA11022_0;
+
+-- No bodies required for CA11022_0.
+
+     --==================================================================--
+
+-- Child package to provide general graphic functionalities.
+
+generic               
+
+   with procedure Put_Dot (X : in Column;
+                           Y : in Row);
+
+package CA11022_0.CA11022_1 is     
+
+   procedure Draw_Square (At_Col : in Column;
+                          At_Row : in Row;
+                          Len    : in Length);
+
+   procedure Draw_Circle (At_Col : in Column;
+                          At_Row : in Row;
+                          Rad    : in Radius);
+
+   -- procedure Draw_Ellipse ...
+   -- and other drawings ...
+
+end CA11022_0.CA11022_1;
+
+     --==================================================================--
+
+package body CA11022_0.CA11022_1 is
+
+   procedure Draw_Square (At_Col : in Column;
+                          At_Row : in Row;
+                          Len    : in Length) is
+   begin
+      -- use square drawing algorithm 
+      -- call
+      Put_Dot (At_Col + Column (Len), At_Row + Row(Len));
+      -- as needed in the algorithm.
+      TC_Draw_Square := true;
+   end Draw_Square;
+
+   -------------------------------------------------------
+   procedure Draw_Circle (At_Col : in Column;
+                          At_Row : in Row;
+                          Rad    : in Radius) is
+   begin
+      -- use circle drawing algorithm 
+      -- call
+      for I in 1 .. Rad loop
+         Put_Dot (At_Col + Column(I), At_Row + Row(I));
+      end loop;
+      -- as needed in the algorithm.
+      TC_Draw_Circle := true;
+   end Draw_Circle;
+
+end CA11022_0.CA11022_1;
+
+     --==================================================================--
+
+with CA11022_0.CA11022_1;                -- Generic sibling.
+
+-- Child package to provide customized graphic functions for the
+-- VT100.
+package CA11022_0.CA11022_2 is           -- VT100 Graphic.
+
+   X : Column := 8;
+   Y : Row    := 3;
+   R : Radius := 2;
+   L : Length := 6;
+
+   procedure VT100_Graphic;
+
+end CA11022_0.CA11022_2;
+
+     --==================================================================--
+
+package body CA11022_0.CA11022_2 is    
+
+   procedure VT100_Graphic is
+      procedure VT100_Putdot (X : in Column;
+                              Y : in Row) is
+      begin   
+         -- Light a pixel at location (X, Y);
+         TC_Screen (Y, X) := true;
+      end VT100_Putdot;
+
+                  ------------------------------------
+
+      -- Declare instance of the generic sibling package to draw a circle, 
+      -- a square, or an ellipse customized for the VT100.
+      package VT100_Graphic is new CA11022_0.CA11022_1 (VT100_Putdot);
+   
+   begin  
+      VT100_Graphic.Draw_Circle (X, Y, R);
+      VT100_Graphic.Draw_Square (X, Y, L);
+   end VT100_Graphic;
+
+end CA11022_0.CA11022_2;
+
+     --==================================================================--
+
+with CA11022_0.CA11022_1;                -- Generic sibling.
+
+-- Child package to provide customized graphic functions for the
+-- IBM3270.
+package CA11022_0.CA11022_3 is           -- IBM3270 Graphic.
+
+   X : Column := 39;
+   Y : Row    := 11;
+   R : Radius := 3;
+   L : Length := 7;
+
+   procedure IBM3270_Graphic;
+
+end CA11022_0.CA11022_3;
+
+     --==================================================================--
+
+package body CA11022_0.CA11022_3 is    
+
+   procedure IBM3270_Graphic is
+      procedure IBM3270_Putdot (X : in Column;
+                             Y : in Row) is
+      begin   
+         -- Light a pixel at location (X + 2, Y);
+         TC_Screen (Y, X + Column(2)) := true;
+      end IBM3270_Putdot;
+
+                  ------------------------------------
+
+      -- Declare instance of the generic sibling package to draw a circle, 
+      -- a square, or an ellipse customized for the IBM3270.
+      package IBM3270_Graphic is new CA11022_0.CA11022_1 (IBM3270_Putdot);
+   
+   begin  
+      IBM3270_Graphic.Draw_Circle (X, Y, R);
+      IBM3270_Graphic.Draw_Square (X, Y, L);
+   end IBM3270_Graphic;
+
+end CA11022_0.CA11022_3;
+
+     --==================================================================--
+
+with CA11022_0.CA11022_2;              -- VT100 Graphic, implicitly with
+                                       -- CA11022_0, Graphic Manager.
+with CA11022_0.CA11022_3;              -- IBM3270 Graphic.
+with Report;
+
+procedure CA11022 is
+
+begin
+
+   Report.Test ("CA11022", "Check that body of a child unit can depend on " &
+                "its generic sibling");
+
+   -- Customized graphic functions for the VT100 terminal.
+   CA11022_0.CA11022_2.VT100_Graphic;
+
+   if not CA11022_0.TC_Screen (4,9) and not CA11022_0.TC_Screen (5,10) 
+     and not CA11022_0.TC_Screen (9,14) and not CA11022_0.TC_Draw_Circle 
+       and not CA11022_0.TC_Draw_Square then
+          Report.Failed ("Wrong results for the VT100");
+   end if;
+
+   CA11022_0.TC_Draw_Circle := false;
+   CA11022_0.TC_Draw_Square := false;
+
+   -- Customized graphic functions for the IBM3270 terminal.
+   CA11022_0.CA11022_3.IBM3270_Graphic;
+
+   if not CA11022_0.TC_Screen (12,42) and not CA11022_0.TC_Screen (13,43) 
+     and not CA11022_0.TC_Screen (14,44) and not CA11022_0.TC_Screen (46,18) 
+       and not CA11022_0.TC_Draw_Circle and not CA11022_0.TC_Draw_Square then
+          Report.Failed ("Wrong results for the IBM3270");
+   end if;
+
+   Report.Result;
+
+end CA11022;

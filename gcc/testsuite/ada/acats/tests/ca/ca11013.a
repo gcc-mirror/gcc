@@ -1,0 +1,201 @@
+-- CA11013.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a child function of a library level instantiation
+--      of a generic can be the instantiation of a child function of
+--      the generic. Check that the child instance can use its parent's
+--      declarations and operations, including a formal subprogram of the 
+--      parent.                                                           
+--      
+-- TEST DESCRIPTION:
+--      Declare a generic package which simulates a real complex
+--      abstraction.  Declare a generic child function of this package 
+--      which builds a random complex number.  Declare a second
+--      package which defines a random complex number generator.  This
+--      package provides actual parameters for the generic parent package.
+--
+--      Instantiate the first generic package, then instantiate the child 
+--      generic function as a child unit of the first instance.  In the main
+--      program, check that the operations in both instances perform as 
+--      expected.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--      19 Oct 96   SAIC    ACVC 2.1: Added pragma Elaborate to context
+--                          clause of CA11013_3.
+--      27 Feb 97   CTA.PWB Added elaboration pragma at package CA11013_3
+--!
+  
+generic               -- Complex number abstraction.
+   type Real_Type is digits <>;
+   with function Random_Generator (Seed : Real_Type) return Real_Type;
+
+package CA11013_0 is
+ 
+   -- Simulate a generic complex number support package. Complex numbers
+   -- are treated as coordinates in the Cartesian plane.
+
+   type Complex_Type is
+     record
+        Real : Real_Type;
+        Imag : Real_Type;
+     end record;
+
+   function Make (Real, Imag : Real_Type)           -- Create a complex
+     return Complex_Type;                           -- number.
+
+   procedure Components (Complex_No           : in Complex_Type;
+                         Real_Part, Imag_Part : out Real_Type);
+
+end CA11013_0;
+
+     --==================================================================--
+
+package body CA11013_0 is
+
+   function Make (Real, Imag : Real_Type) return Complex_Type is
+   begin
+      return (Real, Imag);
+   end Make;
+   -------------------------------------------------------------
+   procedure Components (Complex_No           : in Complex_Type;
+                         Real_Part, Imag_Part : out Real_Type) is
+   begin
+      Real_Part := Complex_No.Real;
+      Imag_Part := Complex_No.Imag;
+   end Components;
+
+end CA11013_0;
+
+     --==================================================================--
+
+-- Generic child of complex number package.  This child adds a layer of 
+-- functionality to the parent generic.
+
+generic               -- Random complex number operation.
+
+function CA11013_0.CA11013_1 (Seed : Real_Type) return Complex_Type;
+
+               --==============================================--
+
+function CA11013_0.CA11013_1 (Seed : Real_Type) return Complex_Type is
+
+   Random_Real_Part  :  Real_Type  := Random_Generator (Seed);
+                                      -- parent's formal subprogram
+   Random_Imag_Part  :  Real_Type  
+                     := Random_Generator (Random_Generator (Seed));
+                                      -- parent's formal subprogram
+   Random_Complex_No :  Complex_Type;
+
+begin -- CA11013_0.CA11013_1
+
+   Random_Complex_No := Make (Random_Real_Part, Random_Imag_Part);
+                                      -- operation from parent
+   return (Random_Complex_No); 
+
+end CA11013_0.CA11013_1;
+
+     --==================================================================--
+
+package CA11013_2 is
+ 
+   -- To be used as actual parameters for random number generator
+   -- in the parent package.
+
+   type My_Float is digits 6 range -10.0 .. 100.0;
+
+   function Random_Complex (Seed : My_float) return My_Float;
+
+end CA11013_2;
+
+     --==================================================================--
+
+package body CA11013_2 is
+
+   -- Not a real random number generator.
+   function Random_Complex (Seed : My_float) return My_Float is
+   begin
+      return (Seed + 3.0);    
+   end Random_Complex;
+
+end CA11013_2;
+
+     --==================================================================--
+
+-- Declare instances of the generic complex packages for real type.  
+-- The instance of the child must itself be declared as a child of the 
+-- instance of the parent.
+
+with CA11013_0;                       -- Complex number.
+with CA11013_2;                       -- Random number generator.
+pragma Elaborate (CA11013_0);
+package CA11013_3 is new 
+  CA11013_0 (Random_Generator => CA11013_2.Random_Complex,
+             Real_Type        => CA11013_2.My_Float);
+
+with CA11013_0.CA11013_1;             -- Random complex number operation.
+with CA11013_3;
+pragma Elaborate (CA11013_3);
+function CA11013_3.CA11013_4 is new CA11013_3.CA11013_1;
+  
+     --==================================================================--
+
+with Report;
+with CA11013_2;                       -- Random number generator.
+with CA11013_3.CA11013_4;             -- Complex abstraction + Random complex 
+                                      -- number operation.
+procedure CA11013 is
+
+   package My_Complex_Pkg renames CA11013_3;
+   use type CA11013_2.My_Float;
+
+   My_Complex                 : My_Complex_Pkg.Complex_Type;
+   My_Literal                 : CA11013_2.My_Float := 3.0;
+   My_Real_Part, My_Imag_Part : CA11013_2.My_Float;
+
+begin
+
+   Report.Test ("CA11013", "Check that child instance can use its parent's "  &
+                           "declarations and operations, including a formal " &
+                           "subprogram of the parent");
+
+   My_Complex := CA11013_3.CA11013_4 (My_Literal); 
+                 -- Operation from the generic child function.
+
+   My_Complex_Pkg.Components (My_Complex, My_Real_Part, My_Imag_Part);
+                 -- Operation from the generic parent package.
+
+   if My_Real_Part /= 6.0           -- Operation from the generic 
+     or My_Imag_Part /= 9.0         -- parent package.
+       then
+         Report.Failed ("Incorrect results from complex operation");
+   end if;
+
+   Report.Result;
+
+end CA11013;

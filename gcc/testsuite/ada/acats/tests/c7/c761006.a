@@ -1,0 +1,425 @@
+-- C761006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that Program_Error is raised when:
+--        * an exception is raised if Finalize invoked as part of an
+--          assignment operation; or
+--        * an exception is raised if Adjust invoked as part of an assignment
+--          operation, after any other adjustment due to be performed are
+--          performed; or
+--        * an exception is raised if Finalize invoked as part of a call on
+--          Unchecked_Deallocation, after any other finalizations to be
+--          performed are performed.
+--
+-- TEST DESCRIPTION:
+--      This test defines these four controlled types:
+--        Good
+--        Bad_Initialize
+--        Bad_Adjust
+--        Bad_Finalize
+--      The type name conveys the associated failure.  The operations in type
+--      good will "touch" the boolean array indicating correct path
+--      utilization for the purposes of checking "other <operations> are
+--      performed", where <operations> ::= initialization, adjusting, and
+--      finalization
+--
+--
+--
+-- CHANGE HISTORY:
+--      12 APR 94   SAIC   Initial version
+--      02 MAY 96   SAIC   Visibility fixed for 2.1
+--      13 FEB 97   PWB.CTA Corrected value of Events_Occurring at line 286
+--      01 DEC 97   EDS    Made correction wrt RM 7.6(21)
+--      16 MAR 01   RLB    Corrected Adjust cases to avoid problems with
+--                         RM 7.6.1(16/1) from Technical Corrigendum 1.
+--
+--!
+
+------------------------------------------------------------- C761006_Support
+
+package C761006_Support is
+
+  type Events is ( Good_Initialize, Good_Adjust, Good_Finalize );
+
+  type Event_Array is array(Events) of Boolean;
+
+  Events_Occurring : Event_Array := (others => False);
+
+  Propagating_Exception : exception;
+
+  procedure Raise_Propagating_Exception(Do_It: Boolean);
+
+  function Unique_Value return Natural;
+
+end C761006_Support;
+
+------------------------------------------------------------- C761006_Support
+
+with Report;
+package body C761006_Support is
+
+  procedure Raise_Propagating_Exception(Do_It: Boolean) is
+  begin
+     if Report.Ident_Bool(Do_It) then
+       raise Propagating_Exception;
+     end if;
+  end Raise_Propagating_Exception;
+
+  Seed : Natural := 0;
+
+  function Unique_Value return Natural is
+  begin
+    Seed := Seed +1;
+    return Seed;
+  end Unique_Value;
+
+end C761006_Support;
+
+------------------------------------------------------------------- C761006_0
+
+with Ada.Finalization;
+with C761006_Support;
+package C761006_0 is
+
+  type Good is new Ada.Finalization.Controlled
+    with record
+      Initialized : Boolean := False;
+      Adjusted    : Boolean := False;
+      Unique      : Natural := C761006_Support.Unique_Value;
+    end record;
+
+  procedure Initialize( It: in out Good );
+  procedure Adjust    ( It: in out Good );
+  procedure Finalize  ( It: in out Good );
+
+  type Bad_Initialize is private;
+
+  type Bad_Adjust     is private;
+
+  type Bad_Finalize   is private;
+
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+private
+  type Bad_Initialize is new Ada.Finalization.Controlled
+                                             with null record;
+  procedure Initialize( It: in out Bad_Initialize );
+
+  type Bad_Adjust is new Ada.Finalization.Controlled
+                                         with null record;
+  procedure Adjust    ( It: in out Bad_Adjust );
+
+  type Bad_Finalize is
+       new Ada.Finalization.Controlled with null record;
+  procedure Finalize  ( It: in out Bad_Finalize );
+end C761006_0;
+
+------------------------------------------------------------------- C761006_1
+
+with Ada.Finalization;
+with C761006_0;
+package C761006_1 is
+
+  type Init_Check_Root is new Ada.Finalization.Controlled with record
+    Good_Component : C761006_0.Good;
+    Init_Fails     : C761006_0.Bad_Initialize;
+  end record;
+
+  type Adj_Check_Root is new Ada.Finalization.Controlled with record
+    Good_Component : C761006_0.Good;
+    Adj_Fails      : C761006_0.Bad_Adjust;
+  end record;
+
+  type Fin_Check_Root is new Ada.Finalization.Controlled with record
+    Good_Component : C761006_0.Good;
+    Fin_Fails      : C761006_0.Bad_Finalize;
+  end record;
+
+end C761006_1;
+
+------------------------------------------------------------------- C761006_2
+
+with C761006_1;
+package C761006_2 is
+
+  type Init_Check is new C761006_1.Init_Check_Root with null record;
+  type Adj_Check is  new C761006_1.Adj_Check_Root  with null record;
+  type Fin_Check is  new C761006_1.Fin_Check_Root  with null record;
+
+end C761006_2;
+
+------------------------------------------------------------------- C761006_0
+
+with Report;
+with C761006_Support;
+package body C761006_0 is
+
+  package Sup renames C761006_Support;
+
+  procedure Initialize( It: in out Good ) is
+  begin
+    Sup.Events_Occurring( Sup.Good_Initialize ) := True;
+    It.Initialized := True;
+  end Initialize;
+
+  procedure Adjust    ( It: in out Good ) is
+  begin
+    Sup.Events_Occurring( Sup.Good_Adjust ) := True;
+    It.Adjusted := True;
+    It.Unique := C761006_Support.Unique_Value;
+  end Adjust;
+
+  procedure Finalize  ( It: in out Good ) is
+  begin
+    Sup.Events_Occurring( Sup.Good_Finalize ) := True;
+  end Finalize;
+
+  procedure Initialize( It: in out Bad_Initialize ) is
+  begin
+    Sup.Raise_Propagating_Exception(Report.Ident_Bool(True));
+  end Initialize;
+
+  procedure Adjust( It: in out Bad_Adjust ) is
+  begin
+    Sup.Raise_Propagating_Exception(Report.Ident_Bool(True));
+  end Adjust;
+
+  procedure Finalize( It: in out Bad_Finalize ) is
+  begin
+    Sup.Raise_Propagating_Exception(Report.Ident_Bool(True));
+  end Finalize;
+
+end C761006_0;
+
+--------------------------------------------------------------------- C761006
+
+with Report;
+with C761006_0;
+with C761006_2;
+with C761006_Support;
+with Ada.Exceptions;
+with Ada.Finalization;
+with Unchecked_Deallocation;
+procedure C761006 is
+
+  package Sup renames C761006_Support;
+  use type Sup.Event_Array;
+
+  type Procedure_Handle is access procedure;
+
+  type Test_ID is ( Simple, Initialize, Adjust, Finalize );
+
+  Sub_Tests : array(Test_ID) of Procedure_Handle;
+
+  procedure Simple_Test is
+    A_Good_Object : C761006_0.Good; -- should call Initialize
+  begin
+    if not A_Good_Object.Initialized then
+      Report.Failed("Good object not initialized");
+    end if;
+
+    -- should call Adjust
+    A_Good_Object := ( Ada.Finalization.Controlled
+                       with Unique => 0, others => False );
+    if not A_Good_Object.Adjusted then
+      Report.Failed("Good object not adjusted");
+    end if;
+
+    -- should call Finalize before end of scope
+  end Simple_Test;
+
+  procedure Initialize_Test is
+  begin
+    declare
+      This_Object_Fails_In_Initialize : C761006_2.Init_Check;
+    begin
+      Report.Failed("Exception in Initialize did not occur");
+    exception
+      when others =>
+        Report.Failed("Initialize caused exception at wrong lex");
+    end;
+
+    Report.Failed("Error in execution sequence");
+
+  exception
+    when Sup.Propagating_Exception => -- this is correct
+      if not Sup.Events_Occurring(Sup.Good_Initialize) then
+        Report.Failed("Initialization of Good Component did not occur");
+      end if;
+  end Initialize_Test;
+
+  procedure Adjust_Test is
+    This_Object_OK     : C761006_2.Adj_Check;
+    This_Object_Target : C761006_2.Adj_Check;
+  begin
+
+    Check_Adjust_Due_To_Assignment: begin
+      This_Object_Target := This_Object_OK;
+      Report.Failed("Adjust did not propagate any exception");
+    exception
+      when Program_Error =>  -- expected case
+             if not This_Object_Target.Good_Component.Adjusted then
+               Report.Failed("other adjustment not performed");
+             end if;
+      when others =>
+             Report.Failed("Adjust propagated wrong exception");
+    end Check_Adjust_Due_To_Assignment;
+
+    C761006_Support.Events_Occurring := (True, False, False);
+
+    Check_Adjust_Due_To_Initial_Assignment: declare
+      Another_Target : C761006_2.Adj_Check := This_Object_OK;
+    begin
+      Report.Failed("Adjust did not propagate any exception");
+    exception
+      when others => Report.Failed("Adjust caused exception at wrong lex");
+    end Check_Adjust_Due_To_Initial_Assignment;
+
+  exception
+    when Program_Error =>  -- expected case
+           if Sup.Events_Occurring(Sup.Good_Finalize) /=
+              Sup.Events_Occurring(Sup.Good_Adjust) then
+              -- RM 7.6.1(16/1) says that the good Adjust may or may not
+              -- be performed; but if it is, then the Finalize must be
+              -- performed; and if it is not, then the Finalize must not
+              -- performed.
+              if Sup.Events_Occurring(Sup.Good_Finalize) then
+                 Report.Failed("Good adjust not performed with bad adjust, " &
+                               "but good finalize was");
+              else
+                 Report.Failed("Good adjust performed with bad adjust, " &
+                               "but good finalize was not");
+              end if;
+           end if;
+    when others =>
+           Report.Failed("Adjust propagated wrong exception");
+  end Adjust_Test;
+
+  procedure Finalize_Test is
+
+    Fin_Not_Perf : constant String := "other finalizations not performed";
+
+    procedure Finalize_15 is
+      Item   : C761006_2.Fin_Check;
+      Target : C761006_2.Fin_Check;
+    begin
+
+      Item := Target;
+      -- finalization of Item should cause PE
+      -- ARM7.6:21 allows the implementation to omit the assignment of the
+      -- value into an anonymous object, which is the point at which Adjust
+      -- is normally called.  However, this would result in Program_Error's
+      -- being raised before the call to Adjust, with the consequence that
+      -- Adjust is never called.
+
+    exception
+      when Program_Error => -- expected case
+             if not Sup.Events_Occurring(Sup.Good_Finalize) then
+               Report.Failed("Assignment: " & Fin_Not_Perf);
+             end if;
+      when others =>
+             Report.Failed("Other exception in Finalize_15");
+
+    -- finalization of Item/Target should cause PE
+    end Finalize_15;
+
+  -- check failure in finalize due to Unchecked_Deallocation
+
+  type Shark is access C761006_2.Fin_Check;
+
+  procedure Catch is
+    new Unchecked_Deallocation( C761006_2.Fin_Check, Shark );
+
+  procedure Finalize_17 is
+    White : Shark := new C761006_2.Fin_Check;
+  begin
+    Catch( White );
+  exception
+    when Program_Error =>
+           if not Sup.Events_Occurring(Sup.Good_Finalize) then
+             Report.Failed("Unchecked_Deallocation: " & Fin_Not_Perf);
+           end if;
+  end Finalize_17;
+
+  begin
+
+    Exception_In_Finalization: begin
+      Finalize_15;
+    exception
+      when Program_Error => null; -- anticipated
+    end Exception_In_Finalization;
+
+    Use_Of_Unchecked_Deallocation: begin
+      Finalize_17;
+    exception
+      when others =>
+        Report.Failed("Unchecked_Deallocation check, unwanted exception");
+    end Use_Of_Unchecked_Deallocation;
+
+  end Finalize_Test;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C761006", "Check that exceptions raised in Initialize, " &
+                          "Adjust and Finalize are processed correctly" );
+
+  Sub_Tests := (Simple_Test'Access, Initialize_Test'Access,
+                Adjust_Test'Access, Finalize_Test'Access);
+
+  for Test in Sub_Tests'Range loop
+    begin
+
+      Sup.Events_Occurring := (others => False);
+
+      Sub_Tests(Test).all;
+
+      case Test is
+        when Simple | Adjust =>
+          if Sup.Events_Occurring /= Sup.Event_Array ' ( others => True ) then
+            Report.Failed ( "Other operation missing in " &
+                            Test_ID'Image ( Test ) );
+          end if;
+        when  Initialize =>
+          null;
+        when Finalize  =>
+          -- Note that for Good_Adjust, we may get either True or False
+          if Sup.Events_Occurring ( Sup.Good_Initialize ) = False or
+             Sup.Events_Occurring ( Sup.Good_Finalize ) = False
+          then
+            Report.Failed ( "Other operation missing in " &
+                            Test_ID'Image ( Test ) );
+          end if;
+      end case;
+
+    exception
+       when How: others => Report.Failed( Ada.Exceptions.Exception_Name( How )
+                                        & " from " & Test_ID'Image( Test ) );
+    end;
+  end loop;
+
+  Report.Result;
+
+end C761006;

@@ -1,0 +1,222 @@
+-- CC70B02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a formal package actual part may specify actual parameters
+--      for a generic formal package. Check that such an actual parameter may
+--      be a formal parameter of a previously declared formal package
+--      (with a (<>) actual part). Check that a use clause in the generic
+--      formal part provides direct visibility of declarations within the
+--      generic formal package, including formal parameters (if the formal
+--      package has a (<>) actual part). Check that the scope of such a use
+--      clause extends to the generic subprogram body. Check that the visible
+--      part of the generic formal package includes the first list of basic
+--      declarative items of the package specification.
+--
+--      Check the case where the formal package is declared in a generic
+--      package.
+--
+-- TEST DESCRIPTION:
+--      Declare a list abstraction in a generic package which manages lists of
+--      elements of any nonlimited type (foundation code). Declare a second
+--      generic package which declares operations on discrete types. Declare
+--      a third generic package which combines the abstractions of the first
+--      two generics and declares operations on lists of elements of discrete
+--      types. Provide the third generic package with two formal parameters:
+--      (1) a generic formal package with the discrete operation package as
+--      template, and (2) a generic formal package with the list abstraction
+--      package as template. Use the formal discrete type of the discrete
+--      operations generic as the generic formal actual part for the second
+--      formal package. Include a use clause for the first formal package in
+--      the third generic package formal part.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FC70B00.A
+--         CC70B02.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+generic
+   type Discrete_Type is (<>);  -- Discrete types only.
+package CC70B02_0 is            -- Discrete type operations.
+
+   procedure Double (Object : in out Discrete_Type);
+
+   -- ... Other operations on discrete objects.
+
+end CC70B02_0;
+
+
+     --==================================================================--
+
+
+package body CC70B02_0 is
+
+   procedure Double (Object : in out Discrete_Type) is
+      Doubled_Position : Integer := Discrete_Type'Pos (Object) * 2;
+   begin
+      -- ... Error-checking code omitted for brevity.
+      Object := Discrete_Type'Val (Doubled_Position);
+   end Double;
+
+end CC70B02_0;
+
+
+     --==================================================================--
+
+
+with CC70B02_0;                  -- Discrete type operations.
+with FC70B00;                    -- List abstraction.
+generic
+
+   -- Import both the discrete-operation and list abstractions. To ensure that
+   -- only list abstraction instances defining lists of *discrete* elements
+   -- will be accepted as actuals to this generic, pass the formal discrete
+   -- type from the discrete-operation abstraction as an actual parameter to
+   -- the list-abstraction formal package.
+   --
+   -- Only list instances declared for the same discrete type as that used
+   -- to instantiate the discrete-operation package will be accepted.
+
+   with package Discrete_Ops is new CC70B02_0 (<>);
+
+   use Discrete_Ops;             -- Discrete_Ops directly visible.
+
+   with package List_Mgr is new FC70B00 (Discrete_Type);  -- Discrete_Type is
+                                                          -- formal parameter
+                                                          -- of template for
+                                                          -- Discrete_Ops.
+package CC70B02_1 is             -- Discrete list operations.
+
+   procedure Double_List (L : in out List_Mgr.List_Type);
+
+   -- ... Other operations on lists of discrete objects.
+
+end CC70B02_1;
+
+
+     --==================================================================--
+
+
+package body CC70B02_1 is
+
+   procedure Double_List (L : in out List_Mgr.List_Type) is
+      Element : Discrete_Type;  -- Formal part of Discrete_Ops template
+   begin                        -- is directly visible here.
+      List_Mgr.Reset (L);
+      while not List_Mgr.End_Of_List (L) loop
+         List_Mgr.View_Element (L, Element);
+         Double (Element);
+         List_Mgr.Write_Element (L, Element);
+      end loop;
+   end Double_List;
+
+end CC70B02_1;
+
+
+     --==================================================================--
+
+
+with FC70B00;    -- Generic list abstraction.
+with CC70B02_0;  -- Generic discrete type operations.
+with CC70B02_1;  -- Generic discrete list operations.
+
+with Report;
+procedure CC70B02 is
+
+   type Points is range 0 .. 100;                   -- Discrete type.
+
+   package Points_Ops is new CC70B02_0 (Points);    -- Points-type operations.
+   package Lists_of_Points is new FC70B00 (Points); -- Points lists.
+   package Points_List_Ops is new                   -- Points-list operations.
+     CC70B02_1 (Points_Ops, Lists_Of_Points);
+      
+   Scores : Lists_of_Points.List_Type;              -- List of points.
+
+
+   -- Begin test code declarations: -----------------------
+
+   type TC_Score_Array is array (1 .. 3) of Points;
+
+   TC_Initial_Values : constant TC_Score_Array := (23, 15,  0);
+   TC_Final_Values   : constant TC_Score_Array := (46, 30,  0);
+
+   TC_Correct_Initial_Values : Boolean := False;
+   TC_Correct_Final_Values   : Boolean := False;
+
+
+   procedure TC_Initialize_List (L : in out Lists_Of_Points.List_Type) is
+   begin                                  -- Initial list contains 3 scores
+      for I in TC_Score_Array'Range loop  -- with the values 23, 15, and 0.
+         Lists_Of_Points.Add_Element (L, TC_Initial_Values(I));
+      end loop;
+   end TC_Initialize_List;
+
+
+   procedure TC_Verify_List (L        : in out Lists_Of_Points.List_Type;
+                             Expected : in     TC_Score_Array;
+                             OK       :    out Boolean) is
+      Actual : TC_Score_Array;
+   begin                                  -- Verify that all scores have been
+      Lists_Of_Points.Reset (L);          -- set to zero.
+      for I in TC_Score_Array'Range loop
+         Lists_Of_Points.Read_Element (L, Actual(I));
+      end loop;
+      OK := (Actual = Expected);
+   end TC_Verify_List;
+
+   -- End test code declarations. -------------------------
+
+
+begin
+   Report.Test ("CC70B02", "Check that a library-level generic package "      &
+                "may have a formal package as a formal parameter, and that "  &
+                "the generic formal actual part may specify explicit actual " &
+                "parameters (including a formal parameter of a previously "   &
+                "declared formal package). Check that a use clause is legal " &
+                "in the generic formal part");
+
+   TC_Initialize_List (Scores);
+   TC_Verify_List (Scores, TC_Initial_Values, TC_Correct_Initial_Values);
+
+   if not TC_Correct_Initial_Values then
+      Report.Failed ("List contains incorrect initial values");
+   end if;
+
+   Points_List_Ops.Double_List (Scores);
+   TC_Verify_List (Scores, TC_Final_Values, TC_Correct_Final_Values);
+
+   if not TC_Correct_Final_Values then
+      Report.Failed ("List contains incorrect final values");
+   end if;
+
+   Report.Result;
+end CC70B02;

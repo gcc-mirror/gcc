@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if [ "$testdir" = "" ]; then
+   echo You must use make check or make check-ada
+   exit 1
+fi
+
+# Set up environment to use the Ada compiler from the object tree
+
+host_gnatmake=`which gnatmake`
+host_gcc=`which gcc`
+ROOT=`pwd`
+BASE=`cd $ROOT/../../..; pwd`
+PATH=$BASE:$ROOT:$PATH
+ADA_INCLUDE_PATH=$BASE/ada/rts
+ADA_OBJECTS_PATH=$ADA_INCLUDE_PATH
+export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH
+
+echo '#!/bin/sh' > gcc
+echo exec $BASE/xgcc -B$BASE/ '"$@"' >> gcc
+
+echo '#!/bin/sh' > host_gnatmake
+echo PATH=`dirname $host_gnatmake`:'$PATH' >> host_gnatmake
+echo unset ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_EXEC_PREFIX >> host_gnatmake
+echo export PATH >> host_gnatmake
+echo exec $host_gnatmake '"$@"' >> host_gnatmake
+
+echo '#!/bin/sh' > host_gcc
+echo PATH=`dirname $host_gcc`:'$PATH' >> host_gcc
+echo export PATH >> host_gcc
+echo exec $host_gcc '"$@"' >> host_gcc
+
+chmod +x gcc host_gnatmake host_gcc
+
+exec $testdir/run_all.sh "$@"

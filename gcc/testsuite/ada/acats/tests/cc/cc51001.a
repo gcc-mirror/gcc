@@ -1,0 +1,186 @@
+-- CC51001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a formal parameter of a generic package may be a formal
+--      derived type. Check that the formal derived type may have an unknown
+--      discriminant part. Check that the ancestor type in a formal derived
+--      type definition may be a tagged type, and that the actual parameter
+--      may be a descendant of the ancestor type. Check that the formal derived
+--      type belongs to the derivation class rooted at the ancestor type;
+--      specifically, that components of the ancestor type may be referenced
+--      within the generic. Check that if a formal derived subtype is
+--      indefinite then the actual may be either definite or indefinite.
+--
+-- TEST DESCRIPTION:
+--      Define a class of tagged types with a definite root type. Extend the
+--      root type with a discriminated component. Since discriminants of
+--      tagged types may not have defaults, the type is indefinite.
+--
+--      Extend the extension with a second discriminated component, but with
+--      a new discriminant part. Declare a generic package with a formal
+--      derived type using the root type of the class as ancestor, and an
+--      unknown discriminant part. Declare an operation in the generic which
+--      accesses the common component of types in the class.
+--
+--      In the main program, instantiate the generic with each type in the
+--      class and verify that the operation correctly accesses the common
+--      component.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CC51001_0 is  -- Root type for message class.
+
+   subtype Msg_String is String (1 .. 20);
+
+   type Msg_Type is tagged record                          -- Root type of
+      Text : Msg_String := (others => ' ');                -- class (definite).
+   end record;
+
+end CC51001_0;
+
+
+-- No body for CC51001_0.
+
+
+     --==================================================================--
+
+
+with CC51001_0;       -- Root type for message class.
+package CC51001_1 is  -- Extensions to message class.
+
+   subtype Source_Length is Natural range 0 .. 10;
+
+   type From_Msg_Type (SLen : Source_Length) is            -- Direct derivative
+     new CC51001_0.Msg_Type with record                    -- of root type
+      From : String (1 .. SLen);                           -- (indefinite).
+   end record;
+
+   subtype Dest_Length is Natural range 0 .. 10;
+
+
+
+   type To_From_Msg_Type (DLen : Dest_Length) is           -- Indirect
+     new From_Msg_Type (SLen => 10) with record            -- derivative of
+      To : String (1 .. DLen);                             -- root type
+   end record;                                             -- (indefinite).
+
+end CC51001_1;
+
+
+-- No body for CC51001_1.
+
+
+     --==================================================================--
+
+
+with CC51001_0;       -- Root type for message class.
+generic               -- I/O operations for message class.
+   type Message_Type (<>) is new CC51001_0.Msg_Type with private;
+package CC51001_2 is
+
+   -- This subprogram contains an artificial result for testing purposes:
+   -- the function returns the text of the message to the caller as a string.
+
+   function Print_Message (M : in Message_Type) return String;
+
+   -- ... Other operations.
+
+end CC51001_2;
+
+
+     --==================================================================--
+
+
+package body CC51001_2 is
+
+   -- The implementations of the operations below are purely artificial; the
+   -- validity of their implementations in the context of the abstraction is
+   -- irrelevant to the feature being tested.
+
+   function Print_Message (M : in Message_Type) return String is
+   begin
+      return M.Text;
+   end Print_Message;
+
+end CC51001_2;
+
+
+     --==================================================================--
+
+
+with CC51001_0;  -- Root type for message class.
+with CC51001_1;  -- Extensions to message class.
+with CC51001_2;  -- I/O operations for message class.
+
+with Report;
+procedure CC51001 is
+
+   -- Instantiate for various types in the class:
+
+   package Msgs   is new CC51001_2 (CC51001_0.Msg_Type);         -- Definite.
+   package FMsgs  is new CC51001_2 (CC51001_1.From_Msg_Type);    -- Indefinite.
+   package TFMsgs is new CC51001_2 (CC51001_1.To_From_Msg_Type); -- Indefinite.
+
+
+
+   Msg   : CC51001_0.Msg_Type         := (Text => "This is message #001");
+   FMsg  : CC51001_1.From_Msg_Type    := (Text => "This is message #002",
+                                          SLen => 2,
+                                          From => "Me");
+   TFMsg : CC51001_1.To_From_Msg_Type := (Text => "This is message #003",
+                                          From => "You       ",
+                                          DLen => 4,
+                                          To   => "Them");
+
+   Expected_Msg   : constant String := "This is message #001";
+   Expected_FMsg  : constant String := "This is message #002";
+   Expected_TFMsg : constant String := "This is message #003";
+
+begin
+   Report.Test ("CC51001", "Check that the formal derived type may have " &
+                "an unknown discriminant part. Check that the ancestor " &
+                "type in a formal derived type definition may be a " &
+                "tagged type, and that the actual parameter may be any " &
+                "definite or indefinite descendant of the ancestor type");
+
+   if (Msgs.Print_Message (Msg) /= Expected_Msg) then
+      Report.Failed ("Wrong result for definite root type");
+   end if;
+
+   if (FMsgs.Print_Message (FMsg) /= Expected_FMsg) then
+      Report.Failed ("Wrong result for direct indefinite derivative");
+   end if;
+
+   if (TFMsgs.Print_Message (TFMsg) /= Expected_TFMsg) then
+      Report.Failed ("Wrong result for Indirect indefinite derivative");
+   end if;
+
+   Report.Result;
+end CC51001;

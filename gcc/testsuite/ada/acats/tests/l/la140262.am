@@ -1,0 +1,140 @@
+-- LA140262.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a generic instantiation depends on
+--      a generic package instantiation that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic package, a generic  
+--      instantiation of the generic package, another generic   
+--      package, a generic instantiation of the second generic  
+--      package that withs the first generic instantiation 
+--      packages, and a main procedure that withs the instantiated 
+--      generic package.  Then, a new version of the first generic  
+--      package is compiled (in a separate file, simulating 
+--      editing and modification to the unit).  Unless automatic 
+--      recompilation is supported, this test should fail to link.  
+--      Otherwise, the test should recompile and link the correct 
+--      version of the instantiation and report "PASSED" at 
+--      execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140260 (and include the results in the
+--            program library).
+--         2) Compile the file LA140261 (and include the results in the
+--            program library).
+--         3) Compile the file LA140262 (and include the results in the
+--            program library).
+--         4) Compile the file LA140263 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140260.A
+--         LA140261.A
+--      -> LA140262.AM
+--         LA140263.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA140260 is missing or obsolete, or that LA14026_5 is 
+--      missing or obsolete (optional) and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008W baseline version
+--     06 JUL 95   SAIC        Initial version
+--     18 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--     07 DEC 96   SAIC        Moved LA14026_3 to a separate file. Added
+--                             pragma Elaborate to context clause of LA14026_5.
+--
+--!
+
+with LA14026_0;
+generic
+     type rec is new LA14026_0.basic_rec with private;
+package LA14026_4 is
+     type extended_node;
+     type extended_node_ptr is access extended_node;
+     type extended_node is new rec with 
+          record
+               next : extended_node_ptr := null;
+          end record;
+     procedure add_next (node : in out extended_node; ptr : extended_node_ptr);
+end LA14026_4;
+
+---------------------------------------------------------
+ 
+package body LA14026_4 is
+     procedure add_next (node : in out extended_node; 
+                         ptr : extended_node_ptr) is
+     begin
+          node.next := ptr;
+     end add_next;
+end LA14026_4;
+
+---------------------------------------------------------
+
+with LA14026_3, LA14026_4;
+pragma Elaborate (LA14026_4);
+package LA14026_5 is new LA14026_4 (LA14026_3.node_type);
+
+---------------------------------------------------------
+
+with Report;
+use Report;
+with LA14026_5;
+
+procedure LA140262 is
+     root : LA14026_5.extended_node_ptr := new LA14026_5.extended_node;
+     next : LA14026_5.extended_node_ptr := new LA14026_5.extended_node;
+begin
+     Test ("LA14026","Check that a compilation unit may not depend " &
+                     "semantically on two different versions of " &
+                     "the same compilation unit.  Check the case " &
+                     "where a generic instantiation depends on " &
+                     "a generic package instantiation that is " &
+                     "changed");
+
+     
+     LA14026_5.add_next (root.all, next);
+
+     if root.all.next.serial_no = 2 then
+          Failed ("Old version of unit used");
+     elsif root.all.next.serial_no /= 5 then
+          Failed ("Wrong value returned");
+     end if;
+
+     Result;
+end LA140262;

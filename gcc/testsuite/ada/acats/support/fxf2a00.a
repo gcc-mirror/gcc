@@ -1,0 +1,96 @@
+-- FXF2A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares supporting objects, types and a generic
+--      function for testing decimal fixed point operations.
+--
+--      The generic function contains a loop which steps through two arrays:
+--      one of binary operations and one of operands. For each iteration, the
+--      current operation is performed on the current operand and a variable
+--      "Result" e.g.:
+--
+--                   Result := Operation(2)(Operand(3), Result);
+--
+--      The result of each operation is cumulated in Result and returned to
+--      the caller when the loop completes.
+--
+-- CHANGE HISTORY:
+--      12 Mar 96   SAIC    Prerelease version for ACVC 2.1.
+--
+--!
+
+package FXF2A00 is
+
+   Loop_Count : constant := 30000;             -- # test iterations.
+   Optr_Count : constant :=     6;             -- # operations in op sequence.
+   Opnd_Count : constant :=     5;             -- # different operands.
+
+   type Loop_Range is range 1 .. Loop_Count;   -- range 1 .. 30000.
+   type Optr_Range is mod Optr_Count;          -- range 0 .. 5.
+   type Opnd_Range is mod Opnd_Count;          -- range 0 .. 4.
+
+
+   generic
+
+      type Decimal_Fixed is delta <> digits <>;
+
+      type Operator_Ptr is access
+        function (L, R : Decimal_Fixed) return Decimal_Fixed;
+
+      type Operator_Table is array (Optr_Range) of Operator_Ptr;
+      type Operand_Table  is array (Opnd_Range) of Decimal_Fixed;
+
+   function Operations_Loop (Initial : Decimal_Fixed;
+                             Operator: Operator_Table;
+                             Operand : Operand_Table) return Decimal_Fixed;
+
+end FXF2A00;
+
+
+     --==================================================================--
+
+
+package body FXF2A00 is
+
+   function Operations_Loop (Initial : Decimal_Fixed;
+                             Operator: Operator_Table;
+                             Operand : Operand_Table) return Decimal_Fixed is
+
+      Result     : Decimal_Fixed := Initial;  -- Cumulator.
+      Optr_Index : Optr_Range := 0;           -- Index into operations table.
+      Opnd_Index : Opnd_Range := 0;           -- Index into operand table.
+
+   begin
+      for Count in Loop_Range loop
+         Result     := Operator(Optr_Index) (Result, Operand(Opnd_Index));
+         Optr_Index := Optr_Index + 1;        -- Modular addition.
+         Opnd_Index := Opnd_Index + 1;        -- Modular addition.
+      end loop;
+
+      return Result;
+   end Operations_Loop;
+
+end FXF2A00;

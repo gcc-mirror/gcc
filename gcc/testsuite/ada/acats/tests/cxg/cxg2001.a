@@ -1,0 +1,322 @@
+-- CXG2001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the floating point attributes Model_Mantissa,
+--      Machine_Mantissa, Machine_Radix, and Machine_Rounds
+--      are properly reported.
+--
+-- TEST DESCRIPTION:
+--      This test uses a generic package to compute and check the
+--      values of the Machine_  attributes listed above.  The
+--      generic package is instantiated with the standard FLOAT 
+--      type and a floating point type for the maximum number
+--      of digits of precision.
+--
+-- APPLICABILITY CRITERIA:
+--      This test applies only to implementations supporting the
+--      Numerics Annex.
+--
+--
+-- CHANGE HISTORY:
+--      26 JAN 96   SAIC    Initial Release for 2.1
+--
+--!
+
+-- References:
+--
+--    "Algorithms To Reveal Properties of Floating-Point Arithmetic"
+--    Michael A. Malcolm;  CACM November 1972;  pgs 949-951.
+--
+--    Software Manual for Elementary Functions; W. J. Cody and W. Waite;
+--    Prentice-Hall; 1980
+-----------------------------------------------------------------------
+-- 
+-- This test relies upon the fact that
+-- (A+2.0)-A is not necessarily 2.0.  If A is large enough then adding 
+-- a small value to A does not change the value of A.  Consider the case
+-- where we have a decimal based floating point representation with 4
+-- digits of precision.  A floating point number would logically be 
+-- represented as "DDDD * 10 ** exp" where D is a value in the range 0..9.
+-- The first loop of the test starts A at 2.0 and doubles it until
+-- ((A+1.0)-A)-1.0 is no longer zero.  For our decimal floating point
+-- number this will be 1638 * 10**1  (the value 16384 rounded or truncated
+-- to fit in 4 digits).
+-- The second loop starts B at 2.0 and keeps doubling B until (A+B)-A is
+-- no longer 0.  This will keep looping until B is 8.0 because that is
+-- the first value where rounding (assuming our machine rounds and addition
+-- employs a guard digit) will change the upper 4 digits of the result:
+--       1638_
+--     +     8
+--      -------
+--       1639_
+-- Without rounding the second loop will continue until
+-- B is 16:
+--       1638_
+--     +    16
+--      -------
+--       1639_
+-- 
+-- The radix is then determined by (A+B)-A which will give 10.
+-- 
+-- The use of Tmp and ITmp in the test is to force values to be 
+-- stored into memory in the event that register precision is greater
+-- than the stored precision of the floating point values.
+--      
+-- 
+-- The test for rounding is (ignoring the temporary variables used to 
+-- get the stored precision) is 
+--       Rounds := A + Radix/2.0 - A /= 0.0 ;
+-- where A is the value determined in the first step that is the smallest
+-- power of 2 such that A + 1.0 = A.  This means that the true value of
+-- A has one more digit in its value than 'Machine_Mantissa.
+-- This check will detect the case where a value is always rounded.
+-- There is an additional case where values are rounded to the nearest
+-- even value.  That is referred to as IEEE style rounding in the test.
+-- 
+-----------------------------------------------------------------------
+
+with System;
+with Report;
+with Ada.Numerics.Generic_Elementary_Functions;
+procedure CXG2001 is
+   Verbose : constant Boolean := False;
+
+   -- if one of the attribute computation loops exceeds Max_Iterations
+   -- it is most likely due to the compiler reordering an expression
+   -- that should not be reordered.
+   Illegal_Optimization : exception;
+   Max_Iterations : constant := 10_000;
+
+   generic
+      type Real is digits <>;
+   package Chk_Attrs is
+      procedure Do_Test;
+   end Chk_Attrs;
+
+   package body Chk_Attrs is
+      package EF is new Ada.Numerics.Generic_Elementary_Functions (Real);
+      function Log (X : Real) return Real renames EF.Log;
+
+
+                                   -- names used in paper
+      Radix : Integer;             -- Beta
+      Mantissa_Digits : Integer;   -- t
+      Rounds : Boolean;            -- RND
+
+      -- made global to Determine_Attributes to help thwart optimization
+      A, B : Real := 2.0;
+      Tmp, Tmpa, Tmp1 : Real;
+      ITmp : Integer;
+      Half_Radix : Real;
+
+      -- special constants - not declared as constants so that 
+      -- the "stored" precision will be used instead of a "register"
+      -- precision.
+      Zero : Real := 0.0;
+      One  : Real := 1.0;
+      Two  : Real := 2.0;
+
+
+      procedure Thwart_Optimization is
+      -- the purpose of this procedure is to reference the
+      -- global variables used by Determine_Attributes so
+      -- that the compiler is not likely to keep them in
+      -- a higher precision register for their entire lifetime.
+      begin
+	 if Report.Ident_Bool (False) then
+	    -- never executed
+	    A := A + 5.0;
+	    B := B + 6.0;
+	    Tmp := Tmp + 1.0;
+	    Tmp1 := Tmp1 + 2.0;
+	    Tmpa := Tmpa + 2.0;
+            One := 12.34;   Two := 56.78;  Zero := 90.12;
+	 end if;
+      end Thwart_Optimization;
+
+
+      -- determines values for Radix, Mantissa_Digits, and Rounds
+      -- This is mostly a straight translation of the C code.
+      -- The only significant addition is the iteration count
+      -- to prevent endless looping if things are really screwed up.
+      procedure Determine_Attributes is
+         Iterations : Integer;
+      begin
+         Rounds := True;
+
+         Iterations := 0;
+         Tmp := Real'Machine (((A + One) - A) - One);
+         while Tmp = Zero loop
+            A := Real'Machine(A + A);
+            Tmp := Real'Machine(A + One);
+            Tmp1 := Real'Machine(Tmp - A);
+	    Tmp := Real'Machine(Tmp1 - One);
+
+            Iterations := Iterations + 1;
+            if Iterations > Max_Iterations then
+               raise Illegal_Optimization;
+            end if;
+         end loop;
+
+         Iterations := 0;
+	 Tmp := Real'Machine(A + B);
+	 ITmp := Integer (Tmp - A);
+         while ITmp = 0 loop
+            B := Real'Machine(B + B);
+	    Tmp := Real'Machine(A + B);
+	    ITmp := Integer (Tmp - A);
+
+            Iterations := Iterations + 1;
+            if Iterations > Max_Iterations then
+               raise Illegal_Optimization;
+            end if;
+         end loop;
+
+         Radix := ITmp;
+
+         Mantissa_Digits := 0;
+         B := 1.0;
+	 Tmp := Real'Machine(((B + One) - B) - One);
+         Iterations := 0;
+         while (Tmp = Zero) loop
+            Mantissa_Digits := Mantissa_Digits + 1;
+            B := B * Real (Radix);
+	    Tmp := Real'Machine(B + One);
+	    Tmp1 := Real'Machine(Tmp - B);
+	    Tmp := Real'Machine(Tmp1 - One);
+
+            Iterations := Iterations + 1;
+            if Iterations > Max_Iterations then
+               raise Illegal_Optimization;
+            end if;
+         end loop;
+
+	 Rounds := False;
+	 Half_Radix := Real (Radix) / Two;
+	 Tmp := Real'Machine(A + Half_Radix);
+	 Tmp1 := Real'Machine(Tmp - A);
+	 if (Tmp1 /= Zero) then
+	    Rounds := True;
+	 end if;
+	 Tmpa := Real'Machine(A + Real (Radix));
+	 Tmp := Real'Machine(Tmpa + Half_Radix);
+	 if not Rounds and (Tmp - TmpA /= Zero) then
+	    Rounds := True;
+            if Verbose then
+	       Report.Comment ("IEEE style rounding");
+            end if;
+	 end if;
+
+      exception
+	 when others =>
+	    Thwart_Optimization;
+	    raise;
+      end Determine_Attributes;
+
+
+      procedure Do_Test is
+         Show_Results : Boolean := Verbose;
+         Min_Mantissa_Digits : Integer;
+      begin
+         -- compute the actual Machine_* attribute values
+         Determine_Attributes;
+
+         if Real'Machine_Radix /= Radix then
+            Report.Failed ("'Machine_Radix incorrectly reports" &
+                           Integer'Image (Real'Machine_Radix));
+            Show_Results := True;
+         end if;
+
+         if Real'Machine_Mantissa /= Mantissa_Digits then
+            Report.Failed ("'Machine_Mantissa incorrectly reports" &
+                           Integer'Image (Real'Machine_Mantissa));
+            Show_Results := True;
+         end if;
+
+         if Real'Machine_Rounds /= Rounds then
+            Report.Failed ("'Machine_Rounds incorrectly reports " &
+                           Boolean'Image (Real'Machine_Rounds));
+            Show_Results := True;
+         end if;
+
+         if Show_Results then
+            Report.Comment ("computed Machine_Mantissa is" & 
+                            Integer'Image (Mantissa_Digits));
+            Report.Comment ("computed Radix is" &
+                            Integer'Image (Radix));
+            Report.Comment ("computed Rounds is " &
+                            Boolean'Image (Rounds));
+         end if;
+
+         -- check the model attributes against the machine attributes
+	 -- G.2.2(3)/3;6.0
+         if Real'Model_Mantissa > Real'Machine_Mantissa then
+	    Report.Failed ("model mantissa > machine mantissa");
+	 end if;
+
+         -- G.2.2(3)/2;6.0
+         --  'Model_Mantissa >= ceiling(d*log(10)/log(radix))+1
+         Min_Mantissa_Digits := 
+           Integer (
+              Real'Ceiling (
+                 Real(Real'Digits) * Log(10.0) / Log(Real(Real'Machine_Radix))
+                   )       ) + 1;
+         if Real'Model_Mantissa < Min_Mantissa_Digits then
+            Report.Failed ("Model_Mantissa [" &
+                           Integer'Image (Real'Model_Mantissa) &
+                           "] < minimum mantissa digits [" &
+                           Integer'Image (Min_Mantissa_Digits) &
+                           "]");
+         end if;
+
+      exception
+         when Illegal_Optimization =>
+             Report.Failed ("illegal optimization of" &
+                            " floating point expression");
+      end Do_Test;
+   end Chk_Attrs;
+
+   package Chk_Float is new Chk_Attrs (Float);
+
+   -- check the floating point type with the most digits
+   type A_Long_Float is digits System.Max_Digits;
+   package Chk_A_Long_Float is new Chk_Attrs (A_Long_Float);
+begin
+   Report.Test ("CXG2001",
+                "Check the attributes Model_Mantissa," &
+                " Machine_Mantissa, Machine_Radix," &
+                " and Machine_Rounds");
+
+   Report.Comment ("checking Standard.Float");
+   Chk_Float.Do_Test;
+
+   Report.Comment ("checking a digits" & 
+                   Integer'Image (System.Max_Digits) &
+                   " floating point type");
+   Chk_A_Long_Float.Do_Test;
+
+   Report.Result;
+end CXG2001;

@@ -1,0 +1,257 @@
+-- C840001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for the type determined by the subtype mark of a use type
+--      clause, the declaration of each primitive operator is use-visible
+--      within the scope of the clause, even if explicit operators with the
+--      same names as the type's operators are declared for the subtype. Check
+--      that a call to such an operator executes the body of the type's
+--      operation.
+--
+-- TEST DESCRIPTION:
+--      A type may declare a primitive operator, and a subtype of that type
+--      may overload the operator. If a use type clause names the subtype,
+--      it is the primitive operator of the type (not the subtype) which
+--      is made directly visible, and the primitive operator may be called
+--      unambiguously. Such a call executes the body of the type's operation.
+--
+--      In a package, declare a type for which a predefined operator is
+--      overridden.  In another package, declare a subtype of the type in the
+--      previous package.  Declare another version of the predefined operator
+--      for the subtype.
+--
+--      The main program declares objects of both the type and the explicit
+--      subtype, and uses the "**" operator for both.  In all cases, the
+--      operator declared for the 1st subtype should be the one executed,
+--      since it is the primitive operators of the *type* that are made
+--      visible; the operators which were declared for the explicit subtype
+--      are not primitive operators of the type, since they were declared in
+--      a separate package from the original type.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      23 Sep 99   RLB     Added test case where operator made visible is
+--                          not visible by selection (as in AI-00122).
+--
+--!
+
+package C840001_0 is
+-- Usage scenario: the predefined operators for a floating point type
+-- are overridden in order to take advantage of improved algorithms.
+
+   type Precision_Float is new Float range -100.0 .. 100.0;
+   -- Implicit: function "**" (Left: Precision_Float; Right: Integer'Base)
+   -- return Precision_Float;
+
+   function "**" (Left: Precision_Float; Right: Integer'Base)
+     return Precision_Float;
+   -- Overrides predefined operator.
+
+   function "+" (Right: Precision_Float)
+     return Precision_Float;
+   -- Overrides predefined operator.
+
+   -- ... Other overridden operations.
+
+   TC_Expected : constant Precision_Float := 68.0;
+
+end C840001_0;
+
+
+     --==================================================================--
+
+package body C840001_0 is
+
+   function "**" (Left: Precision_Float; Right: Integer'Base)
+     return Precision_Float is
+   begin
+      -- ... Utilize desired algorithm.
+      return (TC_Expected);  -- Artificial for testing purposes.
+   end "**";
+
+   function "+" (Right: Precision_Float)
+     return Precision_Float is
+   -- Overrides predefined operator.
+   begin
+      return Right*2.0;
+   end "+";
+
+end C840001_0;
+
+
+     --==================================================================--
+
+-- Take advantage of some even better algorithms designed for positive
+-- floating point values.
+
+with C840001_0;
+package C840001_1 is
+
+   subtype Precision_Pos_Float is C840001_0.Precision_Float
+     range 0.0 .. 100.0;
+
+-- This is not a new type, so it has no primitives of it own. However, it
+-- can declare another version of the operator and call it as long as both it
+-- and the corresponding operator of the 1st subtype are not directly visible
+-- in the same place.
+
+   function "**" (Left: Precision_Pos_Float; Right: Natural'Base)
+     return Precision_Pos_Float;           -- Accepts only positive exponent.
+
+end C840001_1;
+
+
+     --==================================================================--
+
+package body C840001_1 is
+
+   function "**" (Left: Precision_Pos_Float; Right: Natural'Base)
+     return Precision_Pos_Float is
+   begin
+      -- ... Utilize some other algorithms.
+      return 57.0;           -- Artificial for testing purposes.
+   end "**";
+
+end C840001_1;
+
+
+     --==================================================================--
+
+with Report;
+with C840001_1;
+procedure C840001_2 is
+
+   -- Note that C840001_0 and it's contents is not visible in any form here.
+
+   TC_Operand   : C840001_1.Precision_Pos_Float := 41.0;
+
+   TC_Operand2  : C840001_1.Precision_Pos_Float;
+
+   use type C840001_1.Precision_Pos_Float;
+      -- Makes the operators of its parent type directly visible, even though
+      -- the parent type and operators are not otherwise visible at all.
+
+begin
+
+   TC_Operand2 := +TC_Operand; -- Overridden operator is visible and called.
+
+   if TC_Operand2 /= 82.0 then -- Predefined equality.
+      Report.Failed ("3rd test: type's overridden operation not called for " &
+                     "operand of 1st subtype");
+   end if;
+   if TC_Operand + 3.0 >= TC_Operand2 - 13.0 then -- Various predefined operators.
+      Report.Failed ("3rd test: wrong result from predefined operators");
+   end if;
+
+end C840001_2;
+
+     --==================================================================--
+
+
+with C840001_0;
+with C840001_1;
+with C840001_2;
+
+with Report;
+
+procedure C840001 is
+
+begin
+   Report.Test ("C840001", "Check that, for the type determined by the "   &
+                "subtype mark of a use type clause, the declaration of "   &
+                "each primitive operator is use-visible within the scope " &
+                "of the clause, even if explicit operators with the same " &
+                "names as the type's operators are declared for the subtype");
+
+
+   Use_Type_Precision_Pos_Float:
+   declare
+      TC_Operand          : C840001_0.Precision_Float
+                          := C840001_0.Precision_Float(-2.0);
+      TC_Positive_Operand : C840001_1.Precision_Pos_Float :=  6.0;
+
+      TC_Actual_Type      : C840001_0.Precision_Float;
+      TC_Actual_Subtype   : C840001_1.Precision_Pos_Float;
+
+      use type C840001_1.Precision_Pos_Float;
+      -- Both calls to "**" should return 68.0 (that is, Precision_Float's
+      -- operation should be called).
+
+   begin
+
+      TC_Actual_Type := TC_Operand**2;
+
+      if C840001_0."/="(TC_Actual_Type, C840001_0.TC_Expected) then
+         Report.Failed ("1st block: type's operation not called for " &
+                        "operand of 1st subtype");
+      end if;
+
+      TC_Actual_Subtype := TC_Positive_Operand**2;
+
+      if not (C840001_0."="
+             (TC_Actual_Subtype, C840001_0.TC_Expected)) then
+         Report.Failed ("1st block: type's operation not called for " &
+                        "operand of explicit subtype");
+      end if;
+
+   end Use_Type_Precision_Pos_Float;
+
+   Use_Type_Precision_Float:
+   declare
+      TC_Operand          : C840001_0.Precision_Float
+                          := C840001_0.Precision_Float(4.0);
+      TC_Positive_Operand : C840001_1.Precision_Pos_Float :=  7.0;
+
+      TC_Actual_Type      : C840001_0.Precision_Float;
+      TC_Actual_Subtype   : C840001_1.Precision_Pos_Float;
+
+      use type C840001_0.Precision_Float;
+      -- Again, both calls to "**" should return 68.0.
+
+  begin
+
+      TC_Actual_Type := TC_Operand**2;
+
+      if C840001_0."/="(TC_Actual_Type, C840001_0.TC_Expected) then
+         Report.Failed ("2nd block: type's operation not called for " &
+                        "operand of 1st subtype");
+      end if;
+
+      TC_Actual_Subtype := TC_Positive_Operand**2;
+
+      if not C840001_0."=" (TC_Actual_Subtype, C840001_0.TC_Expected) then
+         Report.Failed ("2nd block: type's operation not called for " &
+                        "operand of explicit subtype");
+      end if;
+
+   end Use_Type_Precision_Float;
+
+   C840001_2; -- 3rd test.
+
+   Report.Result;
+
+end C840001;

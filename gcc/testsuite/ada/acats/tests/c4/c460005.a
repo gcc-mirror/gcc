@@ -1,0 +1,260 @@
+-- C460005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for a view conversion of a tagged type that is the left 
+--      side of an assignment statement, the assignment assigns to the 
+--      corresponding part of the object denoted by the operand.
+--
+-- TEST DESCRIPTION:
+--      View conversions of class-wide operands to specific types are
+--      placed on the right and left sides of assignment statements, and
+--      conversions of class-wide operands to class-wide types are used
+--      as actual parameters to dispatching operations. In all cases, a
+--      check is made that Constraint_Error is raised if the tag of the
+--      operand does not identify a specific type covered by or descended
+--      from the target type, and not raised otherwise.
+--
+--      For the cases where the view conversion is the left side of an
+--      assignment statement, and Constraint_Error should not be raised,
+--      an additional check is made that only the corresponding portion
+--      of the operand is updated by the assignment. For example:
+--
+--         type T is tagged record
+--            C1 : Integer := 0;
+--         end record;
+--
+--         type DT is new T with record
+--            C2 : Integer := 0;
+--         end record;
+--
+--         A    : T       := (C1 => 5);
+--         B    : DT      := (C1 => 0, C2 => 10);
+--         CWDT : T'Class := B;
+--
+--         T(CWDT) := A;  -- Updates component C1; C2 remains unchanged.
+--                        -- Value of CWDT is (C1 => 5, C2 => 10).
+--
+--
+-- CHANGE HISTORY:
+--      31 Jul 95   SAIC    Initial prerelease version.
+--      22 Apr 96   SAIC    ACVC 2.1: Added a check for correct tag.
+--      08 Sep 96   SAIC    ACVC 2.1: Modified Report.Test. 
+--
+--!
+
+package C460005_0 is
+
+   type Tag_Type is tagged record
+      C1 : Natural;
+   end record;
+
+   procedure Proc (X : in out Tag_Type);
+
+
+   type DTag_Type is new Tag_Type with record
+      C2 : String (1 .. 5);
+   end record;
+
+   procedure Proc (X : in out DTag_Type);
+
+
+   type DDTag_Type is new DTag_Type with record
+      C3 : String (1 .. 5);
+   end record;
+
+   procedure Proc (X : in out DDTag_Type);
+
+end C460005_0;
+
+
+     --==================================================================--
+
+
+package body C460005_0 is
+
+   procedure Proc (X : in out Tag_Type) is
+   begin
+      X.C1 := 25;
+   end Proc;
+
+   -----------------------------------------
+   procedure Proc (X : in out DTag_Type) is
+   begin
+      Proc ( Tag_Type(X) );
+      X.C2 := "Earth";
+   end Proc;
+
+   -----------------------------------------
+   procedure Proc (X : in out DDTag_Type) is
+   begin
+      Proc ( DTag_Type(X) );
+      X.C3 := "Orbit";
+   end Proc;
+
+end C460005_0;
+
+
+     --==================================================================--
+
+
+with C460005_0;
+use  C460005_0;
+
+with Report;
+procedure C460005 is
+
+   Tag_Type_Init    :  constant Tag_Type   := (C1 => 0);
+   DTag_Type_Init   :  constant DTag_Type  := (Tag_Type_Init with "Hello");
+   DDTag_Type_Init  :  constant DDTag_Type := (DTag_Type_Init with "World");
+
+   Tag_Type_Value   :  constant Tag_Type   := (C1 => 25);
+   DTag_Type_Value  :  constant DTag_Type  := (Tag_Type_Value  with "Earth");
+   DDTag_Type_Value :  constant DDTag_Type := (DTag_Type_Value with "Orbit");
+
+   Tag_Type_Res     :  constant Tag_Type   := (C1 => 25);
+   DTag_Type_Res    :  constant DTag_Type  := (Tag_Type_Res  with "Hello");
+   DDTag_Type_Res   :  constant DDTag_Type := (DTag_Type_Res with "World");
+
+begin
+
+   Report.Test ("C460005", "Check that, for a view conversion of a tagged " &
+                "type that is the left side of an assignment statement, "   &
+                "the assignment assigns to the corresponding part of the "  &
+                "object denoted by the operand");
+
+
+   declare
+      procedure CW_Proc (P : Tag_Type'Class) is
+         Operand : Tag_Type'Class := P;               
+      begin
+         Tag_Type(Operand) := Tag_Type_Value;         
+
+         if (Operand /= Tag_Type'Class (Tag_Type_Value)) then
+            Report.Failed ("Operand has wrong value: #01");
+         end if;
+
+      exception
+         when Constraint_Error => 
+            Report.Failed ("Constraint_Error raised: #01");
+         when others           => 
+            Report.Failed ("Unexpected exception: #01");
+      end CW_Proc;
+
+   begin
+      CW_Proc (Tag_Type_Init);
+   end;
+
+   ----------------------------------------------------------------------
+
+   declare
+      procedure CW_Proc (P : Tag_Type'Class) is
+         Operand : Tag_Type'Class := P;               
+      begin
+         DTag_Type(Operand) := DTag_Type_Value;
+         Report.Failed ("Constraint_Error not raised: #02"); 
+
+      exception
+         when Constraint_Error => null;              -- expected exception
+         when others           => Report.Failed ("Unexpected exception: #02");
+      end CW_Proc;
+
+   begin
+      CW_Proc (Tag_Type_Init);
+   end;
+
+   ----------------------------------------------------------------------
+
+   declare
+      procedure CW_Proc (P : Tag_Type'Class) is
+         Operand : Tag_Type'Class := P;               
+      begin
+         DDTag_Type(Operand) := DDTag_Type_Value;
+         Report.Failed ("Constraint_Error not raised: #03"); 
+
+      exception
+         when Constraint_Error => null;              -- expected exception
+         when others           => Report.Failed ("Unexpected exception: #03");
+      end CW_Proc;
+
+   begin
+      CW_Proc (Tag_Type_Init);
+   end;
+
+   ----------------------------------------------------------------------
+
+   declare
+      procedure CW_Proc (P : Tag_Type'Class) is
+         Operand : Tag_Type'Class := P;
+      begin
+         Tag_Type(Operand) := Tag_Type_Value;  
+
+         if Operand not in DTag_Type then
+            Report.Failed ("Operand has wrong tag: #04");
+         elsif (Operand /= Tag_Type'Class (DTag_Type_Res)) 
+         then                                              -- Check to make 
+           Report.Failed ("Operand has wrong value: #04"); -- sure that C2 was
+         end if;                                           -- not modified.
+
+      exception
+         when Constraint_Error => 
+            Report.Failed ("Constraint_Error raised: #04");
+         when others           => 
+            Report.Failed ("Unexpected exception: #04");
+      end CW_Proc;
+
+   begin
+      CW_Proc (DTag_Type_Init);
+   end;
+
+   ----------------------------------------------------------------------
+
+   declare
+      procedure CW_Proc (P : Tag_Type'Class) is
+         Operand : Tag_Type'Class := P;
+      begin
+         Tag_Type(Operand) := Tag_Type_Value;         
+
+         if Operand not in DDTag_Type then
+            Report.Failed ("Operand has wrong tag: #05");
+         elsif (Operand /= Tag_Type'Class (DDTag_Type_Res)) 
+         then                                              -- Check to make 
+           Report.Failed ("Operand has wrong value: #05"); -- sure that C2, C3
+         end if;                                           -- were not changed.
+
+      exception
+         when Constraint_Error => 
+            Report.Failed ("Constraint_Error raised: #05");
+         when others           => 
+            Report.Failed ("Unexpected exception: #05");
+      end CW_Proc;
+
+   begin
+      CW_Proc (DDTag_Type_Init);
+   end;
+
+   Report.Result;
+
+end C460005;

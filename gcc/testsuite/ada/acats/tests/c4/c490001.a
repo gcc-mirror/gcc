@@ -1,0 +1,215 @@
+-- C490001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for a real static expression that is not part of a larger
+--      static expression, and whose expected type T is a floating point type
+--      that is not a descendant of a formal scalar type, the value is rounded
+--      to the nearest machine number of T if T'Machine_Rounds is true, and is
+--      truncated otherwise. Check that if rounding is performed, and the value
+--      is exactly halfway between two machine numbers, one of the two machine
+--      numbers is used.
+--
+-- TEST DESCRIPTION:
+--      The test obtains a machine number M1 for a floating point subtype S by
+--      passing a real literal to S'Machine. It then obtains an adjacent
+--      machine number M2 by using S'Succ (or S'Pred). It then constructs
+--      values which lie between these two machine numbers: one (A) which is
+--      closer to M1, one (B) which is exactly halfway between M1 and M2, and
+--      one (C) which is closer to M2. This is done for both positive and
+--      negative machine numbers.
+--
+--      Let M1 be closer to zero than M2. Then if S'Machine_Rounds is true,
+--      C must be rounded to M2, A must be rounded to M1, and B must be rounded
+--      to either M1 or M2. If S'Machine_Rounds is false, all the values must
+--      be truncated to M1.
+--
+--      A, B, and C are constructed using the following static expressions:
+--
+--         A: constant S := M1 + (M2 - M1)*Z; -- Z slightly less than 0.5.
+--         B: constant S := M1 + (M2 - M1)*Z; -- Z equals 0.5.
+--         C: constant S := M1 + (M2 - M1)*Z; -- Z slightly more than 0.5.
+--
+--      Since these are static expressions, they must be evaluated exactly,
+--      and no rounding may occur until the final result is calculated.
+--
+--      The checks for equality between the members of (A, B, C) and (M1, M2)
+--      are performed at run-time within the body of a subprogram.
+--
+--      The test performs additional checks that the rounding performed on
+--      real literals is consistent for a floating point subtype. A literal is
+--      assigned to a constant of a floating point subtype S. The same literal
+--      is then passed to a subprogram, along with the constant, and an
+--      equality check is performed within the body of the subprogram.
+--
+--
+-- CHANGE HISTORY:
+--      25 Sep 95   SAIC    Initial prerelease version.
+--      25 May 01   RLB     Repaired to work with the repeal of the round away
+--                          rule by AI-268.
+--
+--!
+
+with System;
+package C490001_0 is
+
+   type My_Flt is digits System.Max_Digits;
+
+   procedure Float_Subtest (A, B: in My_Flt; Msg: in String);
+
+   procedure Float_Subtest (A, B, C: in My_Flt; Msg: in String);
+
+
+--
+-- Positive cases:
+--
+
+   --  |----|-------------|-----------------|-------------------|-----------|
+   --  |    |             |                 |                   |           |
+   --  0   P_M1  Less_Pos_Than_Half  Pos_Exactly_Half  More_Pos_Than_Half  P_M2
+
+
+   Positive_Float : constant My_Flt := 12.440193950021943;
+
+   -- The literal value 12.440193950021943 is rounded up or down to the
+   -- nearest machine number of My_Flt when Positive_Float is initialized.
+   -- The value of Positive_Float should therefore be a machine number, and
+   -- the use of 'Machine in the initialization of P_M1 will be redundant for
+   -- a correct implementation. It's done anyway to make certain that P_M1 is
+   -- a machine number, independent of whether an implementation correctly
+   -- performs rounding.
+
+   P_M1 : constant My_Flt := My_Flt'Machine(Positive_Float);
+   P_M2 : constant My_Flt := My_Flt'Succ(P_M1);
+
+   -- P_M1 and P_M2 are adjacent machine numbers. Note that because it is not
+   -- certain whether 12.440193950021943 is a machine number, nor whether
+   -- 'Machine rounds it up or down, 12.440193950021943 may not lie between
+   -- P_M1 and P_M2. The test does not depend on this information, however;
+   -- the literal is only used as a "seed" to obtain the machine numbers.
+
+
+   -- The following entities are used to verify that rounding is performed
+   -- according to the value of 'Machine_Rounds. If language rules are
+   -- obeyed, the intermediate expressions in the following static
+   -- initialization expressions will not be rounded; all calculations will
+   -- be performed exactly. The final result, however, will be rounded to
+   -- a machine number (either P_M1 or P_M2, depending on the value of
+   -- My_Flt'Machine_Rounds). Thus, the value of each constant below will
+   -- equal that of P_M1 or P_M2.
+
+   Less_Pos_Than_Half : constant My_Flt := P_M1 + ((P_M2 - P_M1)*2.9/6.0);
+   Pos_Exactly_Half   : constant My_Flt := P_M1 + ((P_M2 - P_M1)/2.0);
+   More_Pos_Than_Half : constant My_Flt := P_M1 + ((P_M2 - P_M1)*4.6/9.0);
+
+
+--
+-- Negative cases:
+--
+
+   --  -|-------------|-----------------|-------------------|-----------|----|
+   --   |             |                 |                   |           |    |
+   --  N_M2  More_Neg_Than_Half  Neg_Exactly_Half  Less_Neg_Than_Half  N_M1  0
+
+
+   -- The descriptions for the positive cases above apply to the negative
+   -- cases below as well. Note that, for N_M2, 'Pred is used rather than
+   -- 'Succ. Thus, N_M2 is further from 0.0 (i.e. more negative) than N_M1.
+
+   Negative_Float : constant My_Flt := -0.692074550952117;
+
+
+   N_M1 : constant My_Flt := My_Flt'Machine(Negative_Float);
+   N_M2 : constant My_Flt := My_Flt'Pred(N_M1);
+
+   More_Neg_Than_Half : constant My_Flt := N_M1 + ((N_M2 - N_M1)*4.1/8.0);
+   Neg_Exactly_Half   : constant My_Flt := N_M1 + ((N_M2 - N_M1)/2.0);
+   Less_Neg_Than_Half : constant My_Flt := N_M1 + ((N_M2 - N_M1)*2.4/5.0);
+
+end C490001_0;
+
+
+     --==================================================================--
+
+
+with TCTouch;
+package body C490001_0 is
+
+   procedure Float_Subtest (A, B: in My_Flt; Msg: in String) is
+   begin
+       TCTouch.Assert (A = B, Msg);
+   end Float_Subtest;
+
+   procedure Float_Subtest (A, B, C: in My_Flt; Msg: in String) is
+   begin
+       TCTouch.Assert (A = B or A = C, Msg);
+   end Float_Subtest;
+
+end C490001_0;
+
+
+     --==================================================================--
+
+
+with C490001_0;  -- Floating point support.
+use  C490001_0;
+
+with Report;
+procedure C490001 is
+begin
+   Report.Test ("C490001", "Rounding of real static expressions: " &
+                "floating point subtypes");
+
+
+   -- Check that rounding direction is consistent for literals:
+
+   Float_Subtest (12.440193950021943, P_M1, "Positive Float: literal");
+   Float_Subtest (-0.692074550952117, N_M1, "Negative Float: literal");
+
+
+   -- Now check that rounding is performed correctly for values between
+   -- machine numbers, according to the value of 'Machine_Rounds:
+
+   if My_Flt'Machine_Rounds then
+      Float_Subtest (Pos_Exactly_Half,   P_M1, P_M2, "Positive Float: = half");
+      Float_Subtest (More_Pos_Than_Half, P_M2, "Positive Float: > half");
+      Float_Subtest (Less_Pos_Than_Half, P_M1, "Positive Float: < half");
+
+      Float_Subtest (Neg_Exactly_Half,   N_M1, N_M2, "Negative Float: = half");
+      Float_Subtest (More_Neg_Than_Half, N_M2, "Negative Float: > half");
+      Float_Subtest (Less_Neg_Than_Half, N_M1, "Negative Float: < half");
+   else
+      Float_Subtest (Pos_Exactly_Half,   P_M1, "Positive Float: = half");
+      Float_Subtest (More_Pos_Than_Half, P_M1, "Positive Float: > half");
+      Float_Subtest (Less_Pos_Than_Half, P_M1, "Positive Float: < half");
+
+      Float_Subtest (Neg_Exactly_Half,   N_M1, "Negative Float: = half");
+      Float_Subtest (More_Neg_Than_Half, N_M1, "Negative Float: > half");
+      Float_Subtest (Less_Neg_Than_Half, N_M1, "Negative Float: < half");
+   end if;
+
+
+   Report.Result;
+end C490001;

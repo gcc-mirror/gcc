@@ -1,0 +1,948 @@
+-- CXG2008.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the complex multiplication and division
+--      operations return results that are within the allowed
+--      error bound.
+--      Check that all the required pure Numerics packages are pure.
+--
+-- TEST DESCRIPTION:
+--      This test contains three test packages that are almost
+--      identical.  The first two packages differ only in the
+--      floating point type that is being tested.  The first
+--      and third package differ only in whether the generic
+--      complex types package or the pre-instantiated
+--      package is used.
+--      The test package is not generic so that the arguments
+--      and expected results for some of the test values
+--      can be expressed as universal real instead of being
+--      computed at runtime.
+--
+-- SPECIAL REQUIREMENTS
+--      The Strict Mode for the numerical accuracy must be
+--      selected.  The method by which this mode is selected
+--      is implementation dependent.
+--
+-- APPLICABILITY CRITERIA:
+--      This test applies only to implementations supporting the
+--      Numerics Annex.
+--      This test only applies to the Strict Mode for numerical
+--      accuracy.
+--
+--
+-- CHANGE HISTORY:
+--      24 FEB 96   SAIC    Initial release for 2.1
+--      03 JUN 98   EDS     Correct the test program's incorrect assumption
+--                          that Constraint_Error must be raised by complex
+--                          division by zero, which is contrary to the
+--                          allowance given by the Ada 95 standard G.1.1(40).
+--      13 MAR 01   RLB     Replaced commented out Pure check on non-generic
+--                          packages, as required by Defect Report
+--                          8652/0020 and as reflected in Technical
+--                          Corrigendum 1.
+--!
+
+------------------------------------------------------------------------------
+-- Check that the required pure packages are pure by withing them from a
+-- pure package. The non-generic versions of those packages are required to
+-- be pure by Defect Report 8652/0020, Technical Corrigendum 1 [A.5.1(9/1) and
+-- G.1.1(25/1)].
+with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Generic_Complex_Types;
+with Ada.Numerics.Complex_Types;
+with Ada.Numerics.Generic_Complex_Elementary_Functions;
+with Ada.Numerics.Complex_Elementary_Functions;
+package CXG2008_0 is
+  pragma Pure;
+   -- CRC Standard Mathematical Tables;  23rd Edition; pg 738
+   Sqrt2 : constant :=
+        1.41421_35623_73095_04880_16887_24209_69807_85696_71875_37695;
+   Sqrt3 : constant :=
+        1.73205_08075_68877_29352_74463_41505_87236_69428_05253_81039;
+end CXG2008_0;
+
+------------------------------------------------------------------------------
+
+with System;
+with Report;
+with Ada.Numerics.Generic_Complex_Types;
+with Ada.Numerics.Complex_Types;
+with CXG2008_0;  use CXG2008_0;
+procedure CXG2008 is
+   Verbose : constant Boolean := False;
+
+   package Float_Check is
+      subtype Real is Float;
+      procedure Do_Test;
+   end Float_Check;
+
+   package body Float_Check is
+      package Complex_Types is new
+           Ada.Numerics.Generic_Complex_Types (Real);
+      use Complex_Types;
+
+      -- keep track if an accuracy failure has occurred so the test
+      -- can be short-circuited to avoid thousands of error messages.
+      Failure_Detected : Boolean := False;
+
+      Mult_MBE : constant Real := 5.0;
+      Divide_MBE : constant Real := 13.0;
+
+
+      procedure Check (Actual, Expected : Complex;
+                       Test_Name : String;
+                       MBE : Real) is
+         Rel_Error : Real;
+         Abs_Error : Real;
+         Max_Error : Real;
+      begin
+         -- In the case where the expected result is very small or 0
+         -- we compute the maximum error as a multiple of Model_Epsilon instead
+         -- of Model_Epsilon and Expected.
+         Rel_Error := MBE * abs Expected.Re * Real'Model_Epsilon;
+         Abs_Error := MBE * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+
+         if abs (Actual.Re - Expected.Re) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.re: " & Real'Image (Actual.Re) &
+                           " expected.re: " & Real'Image (Expected.Re) &
+                           " difference.re " &
+                           Real'Image (Actual.Re - Expected.Re) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for real part");
+	    else
+	       Report.Comment (Test_Name & " passed for real part");
+	    end if;
+         end if;
+
+         Rel_Error := MBE * abs Expected.Im * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+         if abs (Actual.Im - Expected.Im) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.im: " & Real'Image (Actual.Im) &
+                           " expected.im: " & Real'Image (Expected.Im) &
+                           " difference.im " &
+                           Real'Image (Actual.Im - Expected.Im) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for imaginary part");
+	    else
+	       Report.Comment (Test_Name & " passed for imaginary part");
+	    end if;
+         end if;
+      end Check;
+
+
+      procedure Special_Values is
+      begin
+
+         --- test 1 ---
+         declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    Expected : Complex := (0.0, 0.0);
+            X : Complex := (0.0, 0.0);
+	    Y : Complex := (Big, Big);
+            Z : Complex;
+         begin
+            Z := X * Y;
+            Check (Z, Expected, "test 1a -- (0+0i) * (big+big*i)",
+                   Mult_MBE);
+            Z := Y * X;
+            Check (Z, Expected, "test 1b -- (big+big*i) * (0+0i)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 1");
+            when others =>
+               Report.Failed ("exception in test 1");
+         end;
+
+         --- test 2 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Expected : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            Z := U * X;
+            Check (Z, Expected, "test 2 -- (tiny,tiny) * (0,0)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 2");
+            when others =>
+               Report.Failed ("exception in test 2");
+         end;
+
+         --- test 3 ---
+	 declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    B : Complex := (Big, Big);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := B / X;
+               Report.Failed ("test 3 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 3");
+         end;
+
+         --- test 4 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := U / X;
+               Report.Failed ("test 4 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 4");
+         end;
+
+
+         --- test 5 ---
+	 declare
+	    X : Complex := (Sqrt2, Sqrt2);
+            Z : Complex;
+            Expected : constant Complex := (0.0, 4.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 5 -- (sqrt2,sqrt2) * (sqrt2,sqrt2)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 5");
+            when others =>
+               Report.Failed ("exception in test 5");
+         end;
+
+         --- test 6 ---
+	 declare
+	    X : Complex := Sqrt3 - Sqrt3 * i;
+            Z : Complex;
+            Expected : constant Complex := (0.0, -6.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 6 -- (sqrt3,-sqrt3) * (sqrt3,-sqrt3)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 6");
+            when others =>
+               Report.Failed ("exception in test 6");
+         end;
+
+         --- test 7 ---
+	 declare
+	    X : Complex := Sqrt2 + Sqrt2 * i;
+	    Y : Complex := Sqrt2 - Sqrt2 * i;
+            Z : Complex;
+            Expected : constant Complex := 0.0 + i;
+         begin
+            Z := X / Y;
+            Check (Z, Expected, "test 7 -- (sqrt2,sqrt2) / (sqrt2,-sqrt2)",
+                   Divide_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 7");
+            when others =>
+               Report.Failed ("exception in test 7");
+         end;
+      end Special_Values;
+
+
+      procedure Do_Mult_Div (X, Y : Complex) is
+	 Z : Complex;
+	 Args : constant String :=
+	   "X=(" & Real'Image (X.Re) & "," & Real'Image (X.Im) & ") " &
+	   "Y=(" & Real'Image (Y.Re) & "," & Real'Image (Y.Im) & ") " ;
+      begin
+	 Z := (X * X) / X;
+	 Check (Z, X, "X*X/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / X;
+	 Check (Z, Y, "X*Y/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / Y;
+	 Check (Z, X, "X*Y/Y " & Args, Mult_MBE + Divide_MBE);
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error in Do_Mult_Div for " & Args);
+         when others =>
+            Report.Failed ("exception in Do_Mult_Div for " & Args);
+      end Do_Mult_Div;
+
+      -- select complex values X and Y where the real and imaginary
+      -- parts are selected from the ranges (1/radix..1) and
+      -- (1..radix).  This translates into quite a few combinations.
+      procedure Mult_Div_Check is
+         Samples : constant := 17;
+	 Radix : constant Real := Real(Real'Machine_Radix);
+	 Inv_Radix : constant Real := 1.0 / Real(Real'Machine_Radix);
+	 Low_Sample : Real;  -- (1/radix .. 1)
+	 High_Sample : Real; -- (1 .. radix)
+	 Sample : array (1..2) of Real;
+	 X, Y : Complex;
+      begin
+         for I in 1 .. Samples loop
+            Low_Sample := (1.0 - Inv_Radix) / Real (Samples) * Real (I) +
+			  Inv_Radix;
+	    Sample (1) := Low_Sample;
+	    for J in 1 .. Samples loop
+               High_Sample := (Radix - 1.0) / Real (Samples) * Real (I) +
+			      Radix;
+	       Sample (2) := High_Sample;
+	       for K in 1 .. 2 loop
+		  for L in 1 .. 2 loop
+		     X := Complex'(Sample (K), Sample (L));
+		     Y := Complex'(Sample (L), Sample (K));
+		     Do_Mult_Div (X, Y);
+                     if Failure_Detected then
+                        return;   -- minimize flood of error messages
+                     end if;
+		  end loop;
+	       end loop;
+            end loop;  -- J
+         end loop;  -- I
+      end Mult_Div_Check;
+
+
+      procedure Do_Test is
+      begin
+         Special_Values;
+         Mult_Div_Check;
+      end Do_Test;
+   end Float_Check;
+
+   -----------------------------------------------------------------------
+   -----------------------------------------------------------------------
+   -- check the floating point type with the most digits
+
+   package A_Long_Float_Check is
+      type A_Long_Float is digits System.Max_Digits;
+      subtype Real is A_Long_Float;
+      procedure Do_Test;
+   end A_Long_Float_Check;
+
+   package body A_Long_Float_Check is
+
+      package Complex_Types is new
+           Ada.Numerics.Generic_Complex_Types (Real);
+      use Complex_Types;
+
+      -- keep track if an accuracy failure has occurred so the test
+      -- can be short-circuited to avoid thousands of error messages.
+      Failure_Detected : Boolean := False;
+
+      Mult_MBE : constant Real := 5.0;
+      Divide_MBE : constant Real := 13.0;
+
+
+      procedure Check (Actual, Expected : Complex;
+                       Test_Name : String;
+                       MBE : Real) is
+         Rel_Error : Real;
+         Abs_Error : Real;
+         Max_Error : Real;
+      begin
+         -- In the case where the expected result is very small or 0
+         -- we compute the maximum error as a multiple of Model_Epsilon instead
+         -- of Model_Epsilon and Expected.
+         Rel_Error := MBE * abs Expected.Re * Real'Model_Epsilon;
+         Abs_Error := MBE * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+
+         if abs (Actual.Re - Expected.Re) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.re: " & Real'Image (Actual.Re) &
+                           " expected.re: " & Real'Image (Expected.Re) &
+                           " difference.re " &
+                           Real'Image (Actual.Re - Expected.Re) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for real part");
+	    else
+	       Report.Comment (Test_Name & " passed for real part");
+	    end if;
+         end if;
+
+         Rel_Error := MBE * abs Expected.Im * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+         if abs (Actual.Im - Expected.Im) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.im: " & Real'Image (Actual.Im) &
+                           " expected.im: " & Real'Image (Expected.Im) &
+                           " difference.im " &
+                           Real'Image (Actual.Im - Expected.Im) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for imaginary part");
+	    else
+	       Report.Comment (Test_Name & " passed for imaginary part");
+	    end if;
+         end if;
+      end Check;
+
+
+      procedure Special_Values is
+      begin
+
+         --- test 1 ---
+         declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    Expected : Complex := (0.0, 0.0);
+            X : Complex := (0.0, 0.0);
+	    Y : Complex := (Big, Big);
+            Z : Complex;
+         begin
+            Z := X * Y;
+            Check (Z, Expected, "test 1a -- (0+0i) * (big+big*i)",
+                   Mult_MBE);
+            Z := Y * X;
+            Check (Z, Expected, "test 1b -- (big+big*i) * (0+0i)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 1");
+            when others =>
+               Report.Failed ("exception in test 1");
+         end;
+
+         --- test 2 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Expected : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            Z := U * X;
+            Check (Z, Expected, "test 2 -- (tiny,tiny) * (0,0)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 2");
+            when others =>
+               Report.Failed ("exception in test 2");
+         end;
+
+         --- test 3 ---
+	 declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    B : Complex := (Big, Big);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := B / X;
+               Report.Failed ("test 3 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 3");
+         end;
+
+         --- test 4 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := U / X;
+               Report.Failed ("test 4 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 4");
+         end;
+
+
+         --- test 5 ---
+	 declare
+	    X : Complex := (Sqrt2, Sqrt2);
+            Z : Complex;
+            Expected : constant Complex := (0.0, 4.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 5 -- (sqrt2,sqrt2) * (sqrt2,sqrt2)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 5");
+            when others =>
+               Report.Failed ("exception in test 5");
+         end;
+
+         --- test 6 ---
+	 declare
+	    X : Complex := Sqrt3 - Sqrt3 * i;
+            Z : Complex;
+            Expected : constant Complex := (0.0, -6.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 6 -- (sqrt3,-sqrt3) * (sqrt3,-sqrt3)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 6");
+            when others =>
+               Report.Failed ("exception in test 6");
+         end;
+
+         --- test 7 ---
+	 declare
+	    X : Complex := Sqrt2 + Sqrt2 * i;
+	    Y : Complex := Sqrt2 - Sqrt2 * i;
+            Z : Complex;
+            Expected : constant Complex := 0.0 + i;
+         begin
+            Z := X / Y;
+            Check (Z, Expected, "test 7 -- (sqrt2,sqrt2) / (sqrt2,-sqrt2)",
+                   Divide_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 7");
+            when others =>
+               Report.Failed ("exception in test 7");
+         end;
+      end Special_Values;
+
+
+      procedure Do_Mult_Div (X, Y : Complex) is
+	 Z : Complex;
+	 Args : constant String :=
+	   "X=(" & Real'Image (X.Re) & "," & Real'Image (X.Im) & ") " &
+	   "Y=(" & Real'Image (Y.Re) & "," & Real'Image (Y.Im) & ") " ;
+      begin
+	 Z := (X * X) / X;
+	 Check (Z, X, "X*X/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / X;
+	 Check (Z, Y, "X*Y/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / Y;
+	 Check (Z, X, "X*Y/Y " & Args, Mult_MBE + Divide_MBE);
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error in Do_Mult_Div for " & Args);
+         when others =>
+            Report.Failed ("exception in Do_Mult_Div for " & Args);
+      end Do_Mult_Div;
+
+      -- select complex values X and Y where the real and imaginary
+      -- parts are selected from the ranges (1/radix..1) and
+      -- (1..radix).  This translates into quite a few combinations.
+      procedure Mult_Div_Check is
+         Samples : constant := 17;
+	 Radix : constant Real := Real(Real'Machine_Radix);
+	 Inv_Radix : constant Real := 1.0 / Real(Real'Machine_Radix);
+	 Low_Sample : Real;  -- (1/radix .. 1)
+	 High_Sample : Real; -- (1 .. radix)
+	 Sample : array (1..2) of Real;
+	 X, Y : Complex;
+      begin
+         for I in 1 .. Samples loop
+            Low_Sample := (1.0 - Inv_Radix) / Real (Samples) * Real (I) +
+			  Inv_Radix;
+	    Sample (1) := Low_Sample;
+	    for J in 1 .. Samples loop
+               High_Sample := (Radix - 1.0) / Real (Samples) * Real (I) +
+			      Radix;
+	       Sample (2) := High_Sample;
+	       for K in 1 .. 2 loop
+		  for L in 1 .. 2 loop
+		     X := Complex'(Sample (K), Sample (L));
+		     Y := Complex'(Sample (L), Sample (K));
+		     Do_Mult_Div (X, Y);
+                     if Failure_Detected then
+                        return;   -- minimize flood of error messages
+                     end if;
+		  end loop;
+	       end loop;
+            end loop;  -- J
+         end loop;  -- I
+      end Mult_Div_Check;
+
+
+      procedure Do_Test is
+      begin
+         Special_Values;
+         Mult_Div_Check;
+      end Do_Test;
+   end A_Long_Float_Check;
+
+   -----------------------------------------------------------------------
+   -----------------------------------------------------------------------
+
+   package Non_Generic_Check is
+      subtype Real is Float;
+      procedure Do_Test;
+   end Non_Generic_Check;
+
+   package body Non_Generic_Check is
+
+      use Ada.Numerics.Complex_Types;
+
+      -- keep track if an accuracy failure has occurred so the test
+      -- can be short-circuited to avoid thousands of error messages.
+      Failure_Detected : Boolean := False;
+
+      Mult_MBE : constant Real := 5.0;
+      Divide_MBE : constant Real := 13.0;
+
+
+      procedure Check (Actual, Expected : Complex;
+                       Test_Name : String;
+                       MBE : Real) is
+         Rel_Error : Real;
+         Abs_Error : Real;
+         Max_Error : Real;
+      begin
+         -- In the case where the expected result is very small or 0
+         -- we compute the maximum error as a multiple of Model_Epsilon instead
+         -- of Model_Epsilon and Expected.
+         Rel_Error := MBE * abs Expected.Re * Real'Model_Epsilon;
+         Abs_Error := MBE * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+
+         if abs (Actual.Re - Expected.Re) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.re: " & Real'Image (Actual.Re) &
+                           " expected.re: " & Real'Image (Expected.Re) &
+                           " difference.re " &
+                           Real'Image (Actual.Re - Expected.Re) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for real part");
+	    else
+	       Report.Comment (Test_Name & " passed for real part");
+	    end if;
+         end if;
+
+         Rel_Error := MBE * abs Expected.Im * Real'Model_Epsilon;
+         if Rel_Error > Abs_Error then
+            Max_Error := Rel_Error;
+         else
+            Max_Error := Abs_Error;
+         end if;
+         if abs (Actual.Im - Expected.Im) > Max_Error then
+            Failure_Detected := True;
+            Report.Failed (Test_Name &
+                           " actual.im: " & Real'Image (Actual.Im) &
+                           " expected.im: " & Real'Image (Expected.Im) &
+                           " difference.im " &
+                           Real'Image (Actual.Im - Expected.Im) &
+                           " mre:" & Real'Image (Max_Error) );
+         elsif Verbose then
+	    if Actual = Expected then
+	       Report.Comment (Test_Name & " exact result for imaginary part");
+	    else
+	       Report.Comment (Test_Name & " passed for imaginary part");
+	    end if;
+         end if;
+      end Check;
+
+
+      procedure Special_Values is
+      begin
+
+         --- test 1 ---
+         declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    Expected : Complex := (0.0, 0.0);
+            X : Complex := (0.0, 0.0);
+	    Y : Complex := (Big, Big);
+            Z : Complex;
+         begin
+            Z := X * Y;
+            Check (Z, Expected, "test 1a -- (0+0i) * (big+big*i)",
+                   Mult_MBE);
+            Z := Y * X;
+            Check (Z, Expected, "test 1b -- (big+big*i) * (0+0i)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 1");
+            when others =>
+               Report.Failed ("exception in test 1");
+         end;
+
+         --- test 2 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Expected : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            Z := U * X;
+            Check (Z, Expected, "test 2 -- (tiny,tiny) * (0,0)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 2");
+            when others =>
+               Report.Failed ("exception in test 2");
+         end;
+
+         --- test 3 ---
+	 declare
+            T : constant := (Real'Machine_EMax - 1) / 2;
+            Big : constant := (1.0 * Real'Machine_Radix) ** (2 * T);
+	    B : Complex := (Big, Big);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := B / X;
+               Report.Failed ("test 3 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 3");
+         end;
+
+         --- test 4 ---
+	 declare
+            T : constant := Real'Model_EMin + 1;
+            Tiny : constant := (1.0 * Real'Machine_Radix) ** T;
+	    U : Complex := (Tiny, Tiny);
+            X : Complex := (0.0, 0.0);
+	    Z : Complex;
+         begin
+            if Real'Machine_Overflows then
+               Z := U / X;
+               Report.Failed ("test 4 - Constraint_Error not raised");
+               Check (Z, Z, "not executed - optimizer thwarting", 0.0);
+            end if;
+         exception
+            when Constraint_Error => null;  -- expected
+            when others =>
+               Report.Failed ("exception in test 4");
+         end;
+
+
+         --- test 5 ---
+	 declare
+	    X : Complex := (Sqrt2, Sqrt2);
+            Z : Complex;
+            Expected : constant Complex := (0.0, 4.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 5 -- (sqrt2,sqrt2) * (sqrt2,sqrt2)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 5");
+            when others =>
+               Report.Failed ("exception in test 5");
+         end;
+
+         --- test 6 ---
+	 declare
+	    X : Complex := Sqrt3 - Sqrt3 * i;
+            Z : Complex;
+            Expected : constant Complex := (0.0, -6.0);
+         begin
+            Z := X * X;
+            Check (Z, Expected, "test 6 -- (sqrt3,-sqrt3) * (sqrt3,-sqrt3)",
+                   Mult_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 6");
+            when others =>
+               Report.Failed ("exception in test 6");
+         end;
+
+         --- test 7 ---
+	 declare
+	    X : Complex := Sqrt2 + Sqrt2 * i;
+	    Y : Complex := Sqrt2 - Sqrt2 * i;
+            Z : Complex;
+            Expected : constant Complex := 0.0 + i;
+         begin
+            Z := X / Y;
+            Check (Z, Expected, "test 7 -- (sqrt2,sqrt2) / (sqrt2,-sqrt2)",
+                   Divide_MBE);
+         exception
+            when Constraint_Error =>
+               Report.Failed ("Constraint_Error raised in test 7");
+            when others =>
+               Report.Failed ("exception in test 7");
+         end;
+      end Special_Values;
+
+
+      procedure Do_Mult_Div (X, Y : Complex) is
+	 Z : Complex;
+	 Args : constant String :=
+	   "X=(" & Real'Image (X.Re) & "," & Real'Image (X.Im) & ") " &
+	   "Y=(" & Real'Image (Y.Re) & "," & Real'Image (Y.Im) & ") " ;
+      begin
+	 Z := (X * X) / X;
+	 Check (Z, X, "X*X/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / X;
+	 Check (Z, Y, "X*Y/X " & Args, Mult_MBE + Divide_MBE);
+	 Z := (X * Y) / Y;
+	 Check (Z, X, "X*Y/Y " & Args, Mult_MBE + Divide_MBE);
+      exception
+         when Constraint_Error =>
+            Report.Failed ("Constraint_Error in Do_Mult_Div for " & Args);
+         when others =>
+            Report.Failed ("exception in Do_Mult_Div for " & Args);
+      end Do_Mult_Div;
+
+      -- select complex values X and Y where the real and imaginary
+      -- parts are selected from the ranges (1/radix..1) and
+      -- (1..radix).  This translates into quite a few combinations.
+      procedure Mult_Div_Check is
+         Samples : constant := 17;
+	 Radix : constant Real := Real(Real'Machine_Radix);
+	 Inv_Radix : constant Real := 1.0 / Real(Real'Machine_Radix);
+	 Low_Sample : Real;  -- (1/radix .. 1)
+	 High_Sample : Real; -- (1 .. radix)
+	 Sample : array (1..2) of Real;
+	 X, Y : Complex;
+      begin
+         for I in 1 .. Samples loop
+            Low_Sample := (1.0 - Inv_Radix) / Real (Samples) * Real (I) +
+			  Inv_Radix;
+	    Sample (1) := Low_Sample;
+	    for J in 1 .. Samples loop
+               High_Sample := (Radix - 1.0) / Real (Samples) * Real (I) +
+			      Radix;
+	       Sample (2) := High_Sample;
+	       for K in 1 .. 2 loop
+		  for L in 1 .. 2 loop
+		     X := Complex'(Sample (K), Sample (L));
+		     Y := Complex'(Sample (L), Sample (K));
+		     Do_Mult_Div (X, Y);
+                     if Failure_Detected then
+                        return;   -- minimize flood of error messages
+                     end if;
+		  end loop;
+	       end loop;
+            end loop;  -- J
+         end loop;  -- I
+      end Mult_Div_Check;
+
+
+      procedure Do_Test is
+      begin
+         Special_Values;
+         Mult_Div_Check;
+      end Do_Test;
+   end Non_Generic_Check;
+
+   -----------------------------------------------------------------------
+   -----------------------------------------------------------------------
+
+begin
+   Report.Test ("CXG2008",
+                "Check the accuracy of the complex multiplication and" &
+                " division operators");
+
+   if Verbose then
+      Report.Comment ("checking Standard.Float");
+   end if;
+
+   Float_Check.Do_Test;
+
+   if Verbose then
+      Report.Comment ("checking a digits" &
+                      Integer'Image (System.Max_Digits) &
+                      " floating point type");
+   end if;
+
+   A_Long_Float_Check.Do_Test;
+
+   if Verbose then
+      Report.Comment ("checking non-generic package");
+   end if;
+
+   Non_Generic_Check.Do_Test;
+
+   Report.Result;
+end CXG2008;

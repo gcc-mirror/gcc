@@ -1,0 +1,161 @@
+-- CA15003.A
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check the requirements of 10.1.5(4) and the modified 10.1.5(5)
+--     from Technical Corrigendum 1. (Originally discussed as AI95-00136.)
+--     Specifically:
+--     Check that program unit pragma for a generic package are accepted
+--     when given at the beginning of the package specification.
+--     Check that a program unit pragma can be given for a generic
+--     instantiation by placing the pragma immediately after the instantation.
+--
+-- TEST DESCRIPTION
+--     This test checks the cases that are *not* forbidden by the RM,
+--     and makes sure such legal cases actually work.
+--
+-- CHANGE HISTORY:
+--      29 JUN 1999   RAD   Initial Version
+--      08 JUL 1999   RLB   Cleaned up and added to test suite.
+--      27 AUG 1999   RLB   Repaired errors introduced by me.
+--
+--!
+
+with System;
+package CA15003A is
+    pragma Pure;
+
+    type Big_Int is range -System.Max_Int .. System.Max_Int;
+    type Big_Positive is new Big_Int range 1..Big_Int'Last;
+end CA15003A;
+
+generic
+    type Int is new Big_Int;
+package CA15003A.Pure is
+    pragma Pure;
+    function F(X: access Int) return Int;
+end CA15003A.Pure;
+
+with CA15003A.Pure;
+package CA15003A.Pure_Instance is new CA15003A.Pure(Int => Big_Positive);
+    pragma Pure(CA15003A.Pure_Instance);
+
+package body CA15003A.Pure is
+    function F(X: access Int) return Int is
+    begin
+        X.all := X.all + 1;
+        return X.all;
+    end F;
+end CA15003A.Pure;
+
+generic
+package CA15003A.Pure.Preelaborate is
+    pragma Preelaborate;
+    One: Int := 1;
+    function F(X: access Int) return Int;
+end CA15003A.Pure.Preelaborate;
+
+package body CA15003A.Pure.Preelaborate is
+    function F(X: access Int) return Int is
+    begin
+        X.all := X.all + One;
+        return X.all;
+    end F;
+end CA15003A.Pure.Preelaborate;
+
+with CA15003A.Pure_Instance;
+with CA15003A.Pure.Preelaborate;
+package CA15003A.Pure_Preelaborate_Instance is
+    new CA15003A.Pure_Instance.Preelaborate;
+        pragma Preelaborate(CA15003A.Pure_Preelaborate_Instance);
+
+package CA15003A.Empty_Pure is
+    pragma Pure;
+    pragma Elaborate_Body;
+end CA15003A.Empty_Pure;
+
+package body CA15003A.Empty_Pure is
+end CA15003A.Empty_Pure;
+
+package CA15003A.Empty_Preelaborate is
+    pragma Preelaborate;
+    pragma Elaborate_Body;
+    One: Big_Int := 1;
+end CA15003A.Empty_Preelaborate;
+
+package body CA15003A.Empty_Preelaborate is
+    function F(X: access Big_Int) return Big_Int is
+    begin
+        X.all := X.all + One;
+        return X.all;
+    end F;
+end CA15003A.Empty_Preelaborate;
+
+package CA15003A.Empty_Elaborate_Body is
+    pragma Elaborate_Body;
+    Three: aliased Big_Positive := 1;
+    Two, Tres: Big_Positive'Base := 0;
+end CA15003A.Empty_Elaborate_Body;
+
+with Report; use Report; pragma Elaborate_All(Report);
+with CA15003A.Pure_Instance;
+with CA15003A.Pure_Preelaborate_Instance;
+use CA15003A;
+package body CA15003A.Empty_Elaborate_Body is
+begin
+    if Two /= Big_Positive'Base(Ident_Int(0)) then
+	Failed ("Two should be zero now");
+    end if;
+    if Tres /= Big_Positive'Base(Ident_Int(0)) then
+	Failed ("Tres should be zero now");
+    end if;
+    if Two /= Tres then
+	Failed ("Tres should be zero now");
+    end if;
+    Two := Pure_Instance.F(Three'Access);
+    Tres := Pure_Preelaborate_Instance.F(Three'Access);
+    if Two /= Big_Positive(Ident_Int(2)) then
+	Failed ("Two should be 2 now");
+    end if;
+    if Tres /= Big_Positive(Ident_Int(3)) then
+	Failed ("Tres should be 3 now");
+    end if;
+end CA15003A.Empty_Elaborate_Body;
+
+with Report; use Report;
+with CA15003A.Empty_Pure;
+with CA15003A.Empty_Preelaborate;
+with CA15003A.Empty_Elaborate_Body; use CA15003A.Empty_Elaborate_Body;
+use type CA15003A.Big_Positive'Base;
+procedure CA15003 is
+begin
+    Test("CA15003", "Placement of Program Unit Pragmas in Generic Packages");
+    if Two /= 2 then
+	Failed ("Two should be 2 now");
+    end if;
+    if Tres /= 3 then
+	Failed ("Tres should be 3 now");
+    end if;
+    Result;
+end CA15003;
