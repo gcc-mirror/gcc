@@ -193,7 +193,7 @@ jar_DATA = libgcj-@gcc_version@.jar
 secdir = $(libdir)/security
 propdir = $(libdir)
 
-@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij rmic rmiregistry
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij grmic grmiregistry
 
 bin_SCRIPTS = addr2name.awk
 
@@ -536,23 +536,23 @@ gij_LINK = $(GCJLINK)
 gij_LDADD = -L$(here)/.libs libgcj.la
 gij_DEPENDENCIES = libgcj.la libgcj.spec
 
-rmic_SOURCES = 
-EXTRA_rmic_SOURCES = $(rmi_java_source_files)
-rmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
+grmic_SOURCES = 
+EXTRA_grmic_SOURCES = $(rmi_java_source_files)
+grmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 
-rmic_LINK = $(GCJLINK)
-rmic_LDADD = -L$(here)/.libs libgcj.la
-rmic_DEPENDENCIES = libgcj.la libgcj.spec
+grmic_LINK = $(GCJLINK)
+grmic_LDADD = -L$(here)/.libs libgcj.la
+grmic_DEPENDENCIES = libgcj.la libgcj.spec
 
-rmiregistry_SOURCES = 
-EXTRA_rmiregistry_SOURCES = $(rmi_java_source_files)
-rmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
+grmiregistry_SOURCES = 
+EXTRA_grmiregistry_SOURCES = $(rmi_java_source_files)
+grmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 
-rmiregistry_LINK = $(GCJLINK)
-rmiregistry_LDADD = -L$(here)/.libs libgcj.la
-rmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
+grmiregistry_LINK = $(GCJLINK)
+grmiregistry_LDADD = -L$(here)/.libs libgcj.la
+grmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
 
 gen_from_JIS_SOURCES = 
 EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
@@ -3059,15 +3059,15 @@ gnu/gcj/xlib/natXConfigureEvent.lo gnu/gcj/xlib/natXException.lo \
 gnu/gcj/xlib/natXExposeEvent.lo gnu/gcj/xlib/natXImage.lo \
 gnu/gcj/xlib/natXUnmapEvent.lo
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT) \
-@NATIVE_TRUE@rmic$(EXEEXT) rmiregistry$(EXEEXT)
+@NATIVE_TRUE@grmic$(EXEEXT) grmiregistry$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 jv_convert_OBJECTS = 
 gij_OBJECTS =  gij.$(OBJEXT)
-rmic_OBJECTS = 
-rmiregistry_OBJECTS = 
+grmic_OBJECTS = 
+grmiregistry_OBJECTS = 
 gen_from_JIS_OBJECTS = 
 gen_from_JIS_LDFLAGS = 
 SCRIPTS =  $(bin_SCRIPTS)
@@ -4902,8 +4902,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/org/xml/sax/helpers/XMLReaderFactory.P .deps/posix-threads.P \
 .deps/posix.P .deps/prims.P .deps/resolve.P .deps/verify.P \
 .deps/win32-threads.P .deps/win32.P
-SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgij_la_SOURCES) $(lib_org_xml_sax_la_SOURCES) $(lib_org_w3c_dom_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(lib_gnu_awt_xlib_la_SOURCES) $(EXTRA_lib_gnu_awt_xlib_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(rmic_SOURCES) $(EXTRA_rmic_SOURCES) $(rmiregistry_SOURCES) $(EXTRA_rmiregistry_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcj_la_OBJECTS) $(libgij_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_w3c_dom_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_awt_xlib_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(rmic_OBJECTS) $(rmiregistry_OBJECTS) $(gen_from_JIS_OBJECTS)
+SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgij_la_SOURCES) $(lib_org_xml_sax_la_SOURCES) $(lib_org_w3c_dom_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(lib_gnu_awt_xlib_la_SOURCES) $(EXTRA_lib_gnu_awt_xlib_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(EXTRA_grmic_SOURCES) $(grmiregistry_SOURCES) $(EXTRA_grmiregistry_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcj_la_OBJECTS) $(libgij_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_w3c_dom_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_awt_xlib_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(grmic_OBJECTS) $(grmiregistry_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -5047,13 +5047,13 @@ gij$(EXEEXT): $(gij_OBJECTS) $(gij_DEPENDENCIES)
 	@rm -f gij$(EXEEXT)
 	$(gij_LINK) $(gij_LDFLAGS) $(gij_OBJECTS) $(gij_LDADD) $(LIBS)
 
-rmic$(EXEEXT): $(rmic_OBJECTS) $(rmic_DEPENDENCIES)
-	@rm -f rmic$(EXEEXT)
-	$(rmic_LINK) $(rmic_LDFLAGS) $(rmic_OBJECTS) $(rmic_LDADD) $(LIBS)
+grmic$(EXEEXT): $(grmic_OBJECTS) $(grmic_DEPENDENCIES)
+	@rm -f grmic$(EXEEXT)
+	$(grmic_LINK) $(grmic_LDFLAGS) $(grmic_OBJECTS) $(grmic_LDADD) $(LIBS)
 
-rmiregistry$(EXEEXT): $(rmiregistry_OBJECTS) $(rmiregistry_DEPENDENCIES)
-	@rm -f rmiregistry$(EXEEXT)
-	$(rmiregistry_LINK) $(rmiregistry_LDFLAGS) $(rmiregistry_OBJECTS) $(rmiregistry_LDADD) $(LIBS)
+grmiregistry$(EXEEXT): $(grmiregistry_OBJECTS) $(grmiregistry_DEPENDENCIES)
+	@rm -f grmiregistry$(EXEEXT)
+	$(grmiregistry_LINK) $(grmiregistry_LDFLAGS) $(grmiregistry_OBJECTS) $(grmiregistry_LDADD) $(LIBS)
 
 gen-from-JIS$(EXEEXT): $(gen_from_JIS_OBJECTS) $(gen_from_JIS_DEPENDENCIES)
 	@rm -f gen-from-JIS$(EXEEXT)

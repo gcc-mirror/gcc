@@ -1,3 +1,9 @@
+2004-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am: Rename jar binary to fastjar.
+	* Makefile.in: Regenerate.
+	* fastjar.texi: Rename references to jar binary with fastjar.
+
 2004-07-19  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* jartool.c (main): Ensure that only one of ftruncate and _chsize

@@ -1664,7 +1664,7 @@ else
   if { (eval echo configure:1665: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.$ac_ext | *.c | *.o | *.obj) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -7186,7 +7186,7 @@ case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
       GCJH='$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -7203,7 +7203,7 @@ case "${which_gcj}" in
       GCJ="gcj -B`${PWDCMD-pwd}`/"
       ## In this case, gcj is found outside the build tree.  However, zip is
       ## found in the build tree.
-      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
       GCJH=gcjh
    ;;
 esac
@@ -9272,7 +9272,7 @@ if test "$no_recursion" != yes; then
       fi
     fi
 
-    cd "$ac_popdir"
+    cd $ac_popdir
   done
 fi
 

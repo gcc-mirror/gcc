@@ -167,7 +167,7 @@ java.srcinfo: doc/gcj.info
 
 dvi:: doc/gcj.dvi
 JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
-                doc/jv-convert.1 doc/rmic.1 doc/rmiregistry.1
+                doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1
 
 java.man: $(JAVA_MANFILES)
 
@@ -247,8 +247,8 @@ java.maintainer-clean:
 	-rm -f $(docobjdir)/jv-scan.1 $(docobjdir)/jcf-dump.1
 	-rm -f $(docobjdir)/gij.1
 	-rm -f $(docobjdir)/jv-convert.1
-	-rm -f $(docobjdir)/rmic.1
-	-rm -f $(docobjdir)/rmiregistry.1
+	-rm -f $(docobjdir)/grmic.1
+	-rm -f $(docobjdir)/grmiregistry.1
 #
 # Stage hooks:
 # The main makefile has already created stage?/java.
@@ -378,7 +378,7 @@ doc/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
 .INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
-  jv-convert.pod rmic.pod rmiregistry.pod
+  jv-convert.pod grmic.pod grmiregistry.pod
 
 gcj.pod: java/gcj.texi
 	-$(TEXI2POD) -D gcj < $< > $@
@@ -392,18 +392,18 @@ gij.pod: java/gcj.texi
 	-$(TEXI2POD) -D gij < $< > $@
 jv-convert.pod: java/gcj.texi
 	-$(TEXI2POD) -D jv-convert < $< > $@
-rmic.pod: java/gcj.texi
-	-$(TEXI2POD) -D rmic < $< > $@
-rmiregistry.pod: java/gcj.texi
-	-$(TEXI2POD) -D rmiregistry < $< > $@
+grmic.pod: java/gcj.texi
+	-$(TEXI2POD) -D grmic < $< > $@
+grmiregistry.pod: java/gcj.texi
+	-$(TEXI2POD) -D grmiregistry < $< > $@
 
 # Install the man pages.
 java.install-man: installdirs \
                   $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext) \
 		  $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS:%=doc/%.1) \
-		  doc/gij.1 doc/jv-convert.1 doc/rmic.1 doc/rmiregistry.1
+		  doc/gij.1 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1
 	for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS) \
-		gij jv-convert rmic rmiregistry ; do \
+		gij jv-convert grmic grmiregistry ; do \
 	  tool_transformed_name=`echo $$tool|sed '$(program_transform_name)'`; \
 	  man_name=$(DESTDIR)$(man1dir)/$${tool_transformed_name}$(man1ext); \
 	  rm -f $$man_name ; \
