@@ -1,3 +1,11 @@
+2004-03-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/contrib.texi, doc/extend.texi, doc/gcov.texi,
+	doc/install.texi, doc/invoke.texi, doc/makefile.texi,
+	doc/sourcebuild.texi, doc/tm.texi, doc/trouble.texi: Capitalize
+	"gcc", "g++" and "g77" or mark up with appropriate markup.  Adjust
+	wording and grammar.
+
 2004-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/14114

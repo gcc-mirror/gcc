@@ -1116,7 +1116,7 @@ unspecified whether @samp{Base::operator=} is called more than once when
 the implicit copy-assignment for Derived objects is invoked (as it is
 inside @samp{func} in the example).
 
-g++ implements the ``intuitive'' algorithm for copy-assignment: assign all
+G++ implements the ``intuitive'' algorithm for copy-assignment: assign all
 direct bases, then assign all members.  In that algorithm, the virtual
 base subobject can be encountered more than once.  In the example, copying
 proceeds in the following order: @samp{val}, @samp{name} (via

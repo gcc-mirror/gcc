@@ -339,7 +339,7 @@ the execution counts for individual blocks that end on that line. After each
 block, the branch and call counts of the block will be shown, if the
 @option{-b} option is given.
 
-Because of the way gcc instruments calls, a call count can be shown
+Because of the way GCC instruments calls, a call count can be shown
 after a line with no individual blocks.
 As you can see, line 13 contains a basic block that was not executed.
 

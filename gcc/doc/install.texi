@@ -884,7 +884,7 @@ On some systems, this is the default.
 
 In general, the best (and, in many cases, the only known) threading
 model available will be configured for use.  Beware that on some
-systems, gcc has not been taught what threading models are generally
+systems, GCC has not been taught what threading models are generally
 available for the system.  In this case, @option{--enable-threads} is an
 alias for @option{--enable-threads=single}.
 
@@ -1165,7 +1165,7 @@ will be run on these files to make them compatible with GCC.
 
 @item --without-headers
 Tells GCC not use any target headers from a libc when building a cross
-compiler.  When crossing to GNU/Linux, you need the headers so gcc
+compiler.  When crossing to GNU/Linux, you need the headers so GCC
 can build the exception handling for libgcc.
 See @uref{http://www.objsw.com/CrossGCC/,,CrossGCC} for more information
 on this option.
@@ -1926,7 +1926,7 @@ Output from running @file{@var{srcdir}/config.guess}.  Do not send us
 that file itself, just the one-line output from running it.
 
 @item
-The output of @samp{gcc -v} for your newly installed gcc.
+The output of @samp{gcc -v} for your newly installed @command{gcc}.
 This tells us which version of GCC you built and the options you passed to
 configure.
 

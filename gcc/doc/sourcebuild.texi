@@ -1130,7 +1130,7 @@ about a specific optimization:
 
 @table @code
 @item tool
-tool being tested, e.g., gcc
+tool being tested, e.g., @command{gcc}
 
 @item profile_option
 options used to generate profile data

@@ -71,7 +71,7 @@ Note that running the testsuite may require additional tools be
 installed, such as TCL or dejagnu.
 
 @item bootstrap
-Builds gcc three times---once with the native compiler, once with the
+Builds GCC three times---once with the native compiler, once with the
 native-built compiler it just built, and once with the compiler it built
 the second time.  In theory, the last two should produce the same
 results, which @samp{make compare} can check.  Each step of this process

@@ -1858,7 +1858,7 @@ struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 If the same field is initialized multiple times, it will have value from
 the last initialization.  If any such overridden initialization has
 side-effect, it is unspecified whether the side-effect happens or not.
-Currently, gcc will discard them and issue a warning.
+Currently, GCC will discard them and issue a warning.
 
 @node Case Ranges
 @section Case Ranges
@@ -2412,11 +2412,11 @@ by another module.
 @item internal
 Internal visibility is like hidden visibility, but with additional
 processor specific semantics.  Unless otherwise specified by the psABI,
-gcc defines internal visibility to mean that the function is @emph{never}
+GCC defines internal visibility to mean that the function is @emph{never}
 called from another module.  Note that hidden symbols, while they cannot
 be referenced directly by other modules, can be referenced indirectly via
 function pointers.  By indicating that a symbol cannot be called from
-outside the module, gcc may for instance omit the load of a PIC register
+outside the module, GCC may for instance omit the load of a PIC register
 since it is known that the calling function loaded the correct value.
 @end table
 
@@ -4749,13 +4749,13 @@ A floating point value, as wide as a DI mode integer, usually 64 bits.
 @end table
 
 Specifying a combination that is not valid for the current architecture
-will cause gcc to synthesize the instructions using a narrower mode.
+will cause GCC to synthesize the instructions using a narrower mode.
 For example, if you specify a variable of type @code{V4SI} and your
-architecture does not allow for this specific SIMD type, gcc will
+architecture does not allow for this specific SIMD type, GCC will
 produce code that uses 4 @code{SIs}.
 
 The types defined in this manner can be used with a subset of normal C
-operations.  Currently, gcc will allow using the following operators
+operations.  Currently, GCC will allow using the following operators
 on these types: @code{+, -, *, /, unary minus, ^, |, &, ~}@.
 
 The operations behave like C++ @code{valarrays}.  Addition is defined as
@@ -7824,7 +7824,7 @@ an rvalue.
 @cindex restricted references
 @cindex restricted this pointer
 
-As with gcc, g++ understands the C99 feature of restricted pointers,
+As with the C front end, G++ understands the C99 feature of restricted pointers,
 specified with the @code{__restrict__}, or @code{__restrict} type
 qualifier.  Because you cannot compile C++ by specifying the @option{-std=c99}
 language flag, @code{restrict} is not a keyword in C++.
@@ -8104,11 +8104,11 @@ compiled separately.
 @end table
 
 When used with GNU ld version 2.8 or later on an ELF system such as
-GNU/Linux or Solaris 2, or on Microsoft Windows, g++ supports the
-Borland model.  On other systems, g++ implements neither automatic
+GNU/Linux or Solaris 2, or on Microsoft Windows, G++ supports the
+Borland model.  On other systems, G++ implements neither automatic
 model.
 
-A future version of g++ will support a hybrid model whereby the compiler
+A future version of G++ will support a hybrid model whereby the compiler
 will emit any instantiations for which the template definition is
 included in the compile, and store template definitions and
 instantiation context information into the object file for the rest.
@@ -8179,7 +8179,7 @@ compile it without @option{-fno-implicit-templates} so you get all of the
 instances required by your explicit instantiations (but not by any
 other files) without having to specify them as well.
 
-g++ has extended the template instantiation syntax given in the ISO
+G++ has extended the template instantiation syntax given in the ISO
 standard to allow forward declaration of explicit instantiations
 (with @code{extern}), instantiation of the compiler support data for a
 template class (i.e.@: the vtable) without instantiating any of its
@@ -8194,7 +8194,7 @@ static template class Foo<int>;
 @end smallexample
 
 @item
-Do nothing.  Pretend g++ does implement automatic instantiation
+Do nothing.  Pretend G++ does implement automatic instantiation
 management.  Code written for the Borland model will work fine, but
 each translation unit will contain instances of each of the templates it
 uses.  In a large program, this can lead to an unacceptable amount of code
@@ -8396,10 +8396,10 @@ that are now deprecated:
 @table @code
 @item -fexternal-templates
 @itemx -falt-external-templates
-These are two of the many ways for g++ to implement template
+These are two of the many ways for G++ to implement template
 instantiation.  @xref{Template Instantiation}.  The C++ standard clearly
 defines how template definitions have to be organized across
-implementation units.  g++ has an implicit instantiation mechanism that
+implementation units.  G++ has an implicit instantiation mechanism that
 should work just fine for standard-conforming code.
 
 @item -fstrict-prototype
@@ -8411,20 +8411,20 @@ it is required for backwards compatibility @xref{Backwards Compatibility}.
 @end table
 
 The named return value extension has been deprecated, and is now
-removed from g++.
+removed from G++.
 
 The use of initializer lists with new expressions has been deprecated,
-and is now removed from g++.
+and is now removed from G++.
 
 Floating and complex non-type template parameters have been deprecated,
-and are now removed from g++.
+and are now removed from G++.
 
 The implicit typename extension has been deprecated and is now
-removed from g++.
+removed from G++.
 
 The use of default arguments in function pointers, function typedefs and
 and other places where they are not permitted by the standard is
-deprecated and will be removed from a future version of g++.
+deprecated and will be removed from a future version of G++.
 
 @node Backwards Compatibility
 @section Backwards Compatibility

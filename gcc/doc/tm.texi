@@ -3302,7 +3302,7 @@ See the PowerPC's SPE target for an example.
 
 Define this macro if the target's representation for dwarf registers
 used in .eh_frame or .debug_frame is different from that used in other
-debug info sections.  Given a gcc hard register number, this macro
+debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
 @code{DBX_REGISTER_NUMBER (@var{regno})}.
 
@@ -3311,7 +3311,7 @@ should return the .eh_frame register number.  The default is
 @defmac DWARF2_FRAME_REG_OUT (@var{regno}, @var{for_eh})
 
 Define this macro to map register numbers held in the call frame info
-that gcc has collected using @code{DWARF_FRAME_REGNUM} to those that
+that GCC has collected using @code{DWARF_FRAME_REGNUM} to those that
 should be output in .debug_frame (@code{@var{for_eh}} is zero) and
 .eh_frame (@code{@var{for_eh}} is nonzero).  The default is to 
 return @code{@var{regno}}.
@@ -4685,7 +4685,7 @@ Here is an explanation of implicit calls to library routines.
 @defmac DECLARE_LIBRARY_RENAMES
 This macro, if defined, should expand to a piece of C code that will get
 expanded when compiling functions for libgcc.a.  It can be used to
-provide alternate names for gcc's internal library functions if there
+provide alternate names for GCC's internal library functions if there
 are ABI-mandated names that the compiler should provide.
 @end defmac
 
@@ -8398,7 +8398,7 @@ target specific attribute attached to it, it will not be inlined.
 @cindex MIPS coprocessor-definition macros
 
 The MIPS specification allows MIPS implementations to have as many as 4
-coprocessors, each with as many as 32 private registers.  gcc supports
+coprocessors, each with as many as 32 private registers.  GCC supports
 accessing these registers and transferring values between the registers
 and memory using asm-ized variables.  For example:
 

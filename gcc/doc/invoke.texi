@@ -2674,7 +2674,7 @@ constant suffixes.  (Traditional C does support the @samp{L} suffix on integer
 constants.)  Note, these suffixes appear in macros defined in the system
 headers of most modern systems, e.g.@: the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
 Use of these macros in user code might normally lead to spurious
-warnings, however gcc's integrated preprocessor has enough context to
+warnings, however GCC's integrated preprocessor has enough context to
 avoid warning in these cases.
 
 @item
@@ -2723,7 +2723,7 @@ Use of ISO C style function definitions.  This warning intentionally is
 because these ISO C features will appear in your code when using
 libiberty's traditional C compatibility macros, @code{PARAMS} and
 @code{VPARAMS}.  This warning is also bypassed for nested functions
-because that feature is already a gcc extension and thus not relevant to
+because that feature is already a GCC extension and thus not relevant to
 traditional C compatibility.
 @end itemize
 
@@ -3523,12 +3523,12 @@ gcc -nostdlib @var{files}@dots{} `gcc -print-libgcc-file-name`
 @item -print-search-dirs
 @opindex print-search-dirs
 Print the name of the configured installation directory and a list of
-program and library directories gcc will search---and don't do anything else.
+program and library directories @command{gcc} will search---and don't do anything else.
 
-This is useful when gcc prints the error message
+This is useful when @command{gcc} prints the error message
 @samp{installation problem, cannot exec cpp0: No such file or directory}.
 To resolve this you either need to put @file{cpp0} and the other compiler
-components where gcc expects to find them, or you can set the environment
+components where @command{gcc} expects to find them, or you can set the environment
 variable @env{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing '/'.
 @xref{Environment Variables}.
@@ -3763,7 +3763,7 @@ Enabled at level @option{-O3}.
 
 @item -finline-limit=@var{n}
 @opindex finline-limit
-By default, gcc limits the size of functions that can be inlined.  This flag
+By default, GCC limits the size of functions that can be inlined.  This flag
 allows the control of this limit for functions that are explicitly marked as
 inline (i.e., marked with the inline keyword or defined within the class
 definition in c++).  @var{n} is the size of functions that can be inlined in
@@ -4172,7 +4172,7 @@ other, a few use both.
 @opindex fno-guess-branch-probability
 Do not guess branch probabilities using a randomized model.
 
-Sometimes gcc will opt to use a randomized model to guess branch
+Sometimes GCC will opt to use a randomized model to guess branch
 probabilities, when none are available from either profiling feedback
 (@option{-fprofile-arcs}) or @samp{__builtin_expect}.  This means that
 different runs of the compiler on the same program may produce different
@@ -4471,7 +4471,7 @@ The default is @option{-fno-rounding-math}.
 
 This option is experimental and does not currently guarantee to
 disable all GCC optimizations that are affected by rounding mode.
-Future versions of gcc may provide finer control of this setting
+Future versions of GCC may provide finer control of this setting
 using C99's @code{FENV_ACCESS} pragma.  This command line option
 will be used to specify the default state for @code{FENV_ACCESS}.
 
@@ -4710,7 +4710,7 @@ needlessly consume memory and resources.
 
 @item max-inline-insns-single
 Several parameters control the tree inliner used in gcc.
-This number sets the maximum number of instructions (counted in gcc's
+This number sets the maximum number of instructions (counted in GCC's
 internal representation) in a single function that the tree inliner
 will consider for inlining.  This only affects functions declared
 inline and methods implemented in a class declaration (C++).
@@ -8080,7 +8080,7 @@ call any such function.  If called, the function must take the same
 arguments as the common @code{_flush_func()}, that is, the address of the
 memory range for which the cache is being flushed, the size of the
 memory range, and the number 3 (to flush both caches).  The default
-depends on the target gcc was configured for, but commonly is either
+depends on the target GCC was configured for, but commonly is either
 @samp{_flush_func} or @samp{__cpu_flush}.
 
 @item -mbranch-likely
@@ -8222,7 +8222,7 @@ This is the default choice for the x86-64 compiler.
 Attempt to utilize both instruction sets at once.  This effectively double the
 amount of available registers and on chips with separate execution units for
 387 and SSE the execution resources too.  Use this option with care, as it is
-still experimental, because the gcc register allocator does not model separate
+still experimental, because the GCC register allocator does not model separate
 functional units well resulting in instable performance.
 @end table
 
@@ -8448,7 +8448,7 @@ on thread-safe exception handling must compile and link all code with the
 @opindex mno-align-stringops
 Do not align destination of inlined string operations.  This switch reduces
 code size and improves performance in case the destination is already aligned,
-but gcc don't know about it.
+but GCC doesn't know about it.
 
 @item -minline-all-stringops
 @opindex minline-all-stringops
@@ -8653,7 +8653,7 @@ building a shared library.  It is the default when GCC is configured,
 explicitly or implicitly, with the GNU linker.  This option does not
 have any affect on which ld is called, it only changes what parameters
 are passed to that ld.  The ld that is called is determined by the
-@option{--with-ld} configure option, gcc's program search path, and
+@option{--with-ld} configure option, GCC's program search path, and
 finally by the user's @env{PATH}.  The linker used by GCC can be printed
 using @samp{which `gcc -print-prog-name=ld`}.
 
@@ -8665,7 +8665,7 @@ links.  It is the default when GCC is configured, explicitly or
 implicitly, with the HP linker.  This option does not have any affect on
 which ld is called, it only changes what parameters are passed to that
 ld.  The ld that is called is determined by the @option{--with-ld}
-configure option, gcc's program search path, and finally by the user's
+configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
 `gcc -print-prog-name=ld`}.
 
