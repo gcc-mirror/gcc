@@ -1,3 +1,9 @@
+2005-04-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/20524
+	* gcc.dg/alias-7.c: Prefix asm-declared name with
+	__USER_LABEL_PREFIX__.
+
 2005-03-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/18644
