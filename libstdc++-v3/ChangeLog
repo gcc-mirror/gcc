@@ -1,3 +1,31 @@
+2003-06-13  Nathan C. Myers <ncm-nospam@cantrip.org>
+
+	Avoid multi-processor bus contention on increment/decrement-and-
+	test of the reference count in the empty-string object, by comparing 
+        addresses first, and never touching the reference count of the empty-
+        string object.  
+	* include/bits/basic_string.h:
+	(_S_empty_rep_storage): Move into basic_string<>::_Rep for use by its
+	members.
+	(_Rep::_S_empty_rep()): New accessor. 
+	(_Rep::_M_length, _Rep::_M_capacity, _Rep::_M_references): Move to
+	a base class _Rep_base.
+	(_Rep::_M_dispose, _Rep::_M_refcopy): Check for the empty string.
+	(basic_string()): Change to use _M_refdata() in place of _M_refcopy(),
+	since no longer must increment its refcount.
+	* include/bits/basic_string.tcc:
+	(_Rep::_M_destroy, _M_leak_hard): Check for the empty string and 
+        return immediately.  The former might be unnecessary.  The latter 
+        prevents begin() and end() from cloning it unnecessarily.
+	(_S_construct(_InIterator, _InIterator, const _Alloc&,
+	input_iterator_tag), _S_construct(_InIterator, _InIterator,
+	const _Alloc&, forward_iterator_tag), _S_construct(size_type, _CharT,
+	const _Alloc&)): Change to use _M_refdata() in place of _M_refcopy().
+	(_M_mutate): Check for the empty string and treat it as shared.
+        This is necessary here because _M_mutate is sometimes called with
+        all-zero arguments; in all other uses of _M_is_shared, the test comes
+        out right anyhow.
+
 2003-06-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/allocator-inst.cc: Explicitly instantiate.

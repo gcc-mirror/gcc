@@ -48,7 +48,7 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     const typename basic_string<_CharT, _Traits, _Alloc>::size_type 
     basic_string<_CharT, _Traits, _Alloc>::
-    _Rep::_S_max_size = (((npos - sizeof(_Rep))/sizeof(_CharT)) - 1) / 4;
+    _Rep::_S_max_size = (((npos - sizeof(_Rep_base))/sizeof(_CharT)) - 1) / 4;
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     const _CharT 
@@ -63,8 +63,9 @@ namespace std
   // at static init time (before static ctors are run).
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
-    basic_string<_CharT, _Traits, _Alloc>::_S_empty_rep_storage[
-    (sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
+    basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_empty_rep_storage[
+    (sizeof(_Rep_base) + sizeof(_CharT) + sizeof(size_type) - 1) /
+      sizeof(size_type)];
 
   // NB: This is the special case for Input Iterators, used in
   // istreambuf_iterators, etc.
@@ -78,7 +79,7 @@ namespace std
 		   input_iterator_tag)
       {
 	if (__beg == __end && __a == _Alloc())
-	  return _S_empty_rep()._M_refcopy();
+	  return _S_empty_rep()._M_refdata();
 	// Avoid reallocation for common case.
 	_CharT __buf[100];
 	size_type __i = 0;
@@ -138,7 +139,7 @@ namespace std
 		   forward_iterator_tag)
       {
 	if (__beg == __end && __a == _Alloc())
-	  return _S_empty_rep()._M_refcopy();
+	  return _S_empty_rep()._M_refdata();
 
 	// NB: Not required, but considered best practice.
 	if (__builtin_expect(__beg == _InIterator(), 0))
@@ -167,7 +168,7 @@ namespace std
     _S_construct(size_type __n, _CharT __c, const _Alloc& __a)
     {
       if (__n == 0 && __a == _Alloc())
-	return _S_empty_rep()._M_refcopy();
+	return _S_empty_rep()._M_refdata();
 
       // Check for out_of_range and length_error exceptions.
       _Rep* __r = _Rep::_S_create(__n, __a);
@@ -242,7 +243,8 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::assign(const basic_string& __str)
+    basic_string<_CharT, _Traits, _Alloc>::
+    assign(const basic_string& __str)
     {
       if (_M_rep() != __str._M_rep())
 	{
@@ -371,7 +373,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
-      const size_type __size = sizeof(_Rep) + (_M_capacity + 1) * sizeof(_CharT);
+      if (this == &_S_empty_rep())
+        return;
+      const size_type __size = sizeof(_Rep_base) +
+	                       (this->_M_capacity + 1) * sizeof(_CharT);
       _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
     }
 
@@ -379,6 +384,8 @@ namespace std
     void
     basic_string<_CharT, _Traits, _Alloc>::_M_leak_hard()
     {
+      if (_M_rep() == &_S_empty_rep())
+        return;
       if (_M_rep()->_M_is_shared()) 
 	_M_mutate(0, 0, 0);
       _M_rep()->_M_set_leaked();
@@ -400,7 +407,8 @@ namespace std
       const _CharT*        __src = _M_data()  + __pos + __len1;
       const size_type __how_much = __old_size - __pos - __len1;
       
-      if (_M_rep()->_M_is_shared() || __new_size > capacity())
+      if (_M_rep() == &_S_empty_rep()
+	  || _M_rep()->_M_is_shared() || __new_size > capacity())
 	{
 	  // Must reallocate.
 	  allocator_type __a = get_allocator();
@@ -434,7 +442,7 @@ namespace std
 	    }
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__r->_M_refdata());
-      }
+	}
       else if (__how_much && __len1 != __len2)
 	{
 	  // Work in-place
@@ -443,7 +451,7 @@ namespace std
       _M_rep()->_M_set_sharable();
       _M_rep()->_M_length = __new_size;
       _M_data()[__new_size] = _Rep::_S_terminal; // grrr. (per 21.3.4)
-    // You cannot leave those LWG people alone for a second.
+      // You cannot leave those LWG people alone for a second.
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -505,7 +513,7 @@ namespace std
       // NB: Need an array of char_type[__capacity], plus a
       // terminating null char_type() element, plus enough for the
       // _Rep data structure. Whew. Seemingly so needy, yet so elemental.
-      size_t __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+      size_t __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
 
       // The standard places no restriction on allocating more memory
       // than is strictly needed within this layer at the moment or as
@@ -538,7 +546,7 @@ namespace std
 	    (__pagesize - ((__size + __malloc_header_size) % __pagesize))
 	    % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
-	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
 	}
       else if (__size > __subpagesize)
 	{
@@ -546,7 +554,7 @@ namespace std
 	    (__subpagesize - ((__size + __malloc_header_size) % __subpagesize))
 	    % __subpagesize;
 	  __capacity += __extra / sizeof(_CharT);
-	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep_base);
 	}
 
       // NB: Might throw, but no worries about a leak, mate: _Rep()
@@ -565,33 +573,37 @@ namespace std
     _M_clone(const _Alloc& __alloc, size_type __res)
     {
       // Requested capacity of the clone.
-      const size_type __requested_cap = _M_length + __res;
+      const size_type __requested_cap = this->_M_length + __res;
       // See above (_S_create) for the meaning and value of these constants.
       const size_type __pagesize = 4096;
       const size_type __malloc_header_size = 4 * sizeof (void*);
       // The biggest string which fits in a memory page.
       const size_type __page_capacity =
-        (__pagesize - __malloc_header_size - sizeof(_Rep) - sizeof(_CharT))
+        (__pagesize - __malloc_header_size - sizeof(_Rep_base) - sizeof(_CharT))
         / sizeof(_CharT);
       _Rep* __r;
-      if (__requested_cap > _M_capacity && __requested_cap > __page_capacity)
+      if (__requested_cap > this->_M_capacity
+	  && __requested_cap > __page_capacity)
         // Growing exponentially.
-        __r = _Rep::_S_create(__requested_cap > 2*_M_capacity ?
-                              __requested_cap : 2*_M_capacity, __alloc);
+        __r = _Rep::_S_create(__requested_cap > 2*this->_M_capacity ?
+                              __requested_cap : 2*this->_M_capacity, __alloc);
       else
         __r = _Rep::_S_create(__requested_cap, __alloc);
       
-      if (_M_length)
+      if (this->_M_length)
 	{
 	  try 
-	    { traits_type::copy(__r->_M_refdata(), _M_refdata(), _M_length); }
+	    {
+	      traits_type::copy(__r->_M_refdata(), _M_refdata(),
+				this->_M_length);
+	    }
 	  catch(...)  
 	    { 
 	      __r->_M_destroy(__alloc); 
 	      __throw_exception_again;
 	    }
 	}
-      __r->_M_length = _M_length;
+      __r->_M_length = this->_M_length;
       return __r->_M_refdata();
     }
   
