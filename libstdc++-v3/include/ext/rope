@@ -1540,7 +1540,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         rope(_CharT __c, const allocator_type& __a = allocator_type())
         : _Base(__a)
         {
-            _CharT* __buf = __a.allocate(_S_rounded_up_size(1));
+	    _CharT* __buf = this->_Data_allocate(_S_rounded_up_size(1));
 
             std::_Construct(__buf, __c);
             try {
