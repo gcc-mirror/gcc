@@ -57,6 +57,10 @@
 #      FLEX:    Gnu flex works.
 #      Other miscellaneous tools for obscure targets.
 
+# Tell GNU make 2.79 not to run this directory in parallel.
+# Not all of the required dependencies are present.
+.NOTPARALLEL:
+
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
