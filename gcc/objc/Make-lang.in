@@ -153,13 +153,13 @@ objc/misc.o: $(srcdir)/objc/misc.c $(GCC_PASSES)
 	-c $(srcdir)/objc/misc.c -o $@
 objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/NXConstStr.m -o $@
+	-fgnu-runtime -c $(srcdir)/objc/NXConstStr.m -o $@
 objc/Object.o: $(srcdir)/objc/Object.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/Object.m -o $@
+	-fgnu-runtime -c $(srcdir)/objc/Object.m -o $@
 objc/Protocol.o: $(srcdir)/objc/Protocol.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/Protocol.m -o $@
+	-fgnu-runtime -c $(srcdir)/objc/Protocol.m -o $@
 objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/thr.c -o $@
@@ -171,7 +171,7 @@ objc/nil_method.o: $(srcdir)/objc/nil_method.c $(GCC_PASSES)
 	-c $(srcdir)/objc/nil_method.c -o $@
 objc/linking.o: $(srcdir)/objc/linking.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-	-c $(srcdir)/objc/linking.m -o $@
+	-fgnu-runtime -c $(srcdir)/objc/linking.m -o $@
 
 $(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
