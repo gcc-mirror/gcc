@@ -1,3 +1,7 @@
+2000-07-18  Jeff Sturm  <jeff.sturm@appnet.com>
+
+	* lang-specs.h: Added %(jc1) to java compiler options.
+
 2000-07-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* .cvsignore: New file.

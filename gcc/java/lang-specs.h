@@ -31,6 +31,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
   {".jar",    "@java" },
   {"@java",
    "%{fjni:%{femit-class-file:%e-fjni and -femit-class-file are incompatible}}\
-    %{!E:jc1 %i %(cc1_options) %{+e*} %{I*} %{MD} %{MMD} %{M} %{MM}\
+    %{!E:jc1 %i %(jc1) %(cc1_options) %{+e*} %{I*} %{MD} %{MMD} %{M} %{MM}\
              %{!S:-o %{|!pipe:%g.s} |\n\
     as %(asm_options) %{!pipe:%g.s} %A }}"},
