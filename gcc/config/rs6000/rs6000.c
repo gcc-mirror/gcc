@@ -2187,7 +2187,7 @@ secondary_reload_class (class, mode, in)
   if (regno >= FIRST_PSEUDO_REGISTER)
     regno = -1;
 
-  /* We can not copy a symbolic operand directly into anyting other than
+  /* We can not copy a symbolic operand directly into anything other than
      BASE_REGS for TARGET_ELF.  So indicate that a register from BASE_REGS
      is needed as an intermediate register.  */
   if (TARGET_ELF
@@ -2695,12 +2695,13 @@ print_operand (file, x, code)
       else if (GET_CODE (x) == MEM)
 	{
 	  /* Handle possible auto-increment.  Since it is pre-increment and
-	     we have already done it, we can just use an offset of four.  */
+	     we have already done it, we can just use an offset of word.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0),
+					   UNITS_PER_WORD));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 4));
+	    output_address (plus_constant (XEXP (x, 0), UNITS_PER_WORD));
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
@@ -2789,7 +2790,7 @@ print_operand (file, x, code)
     case 'O':
       /* Similar, but subtract 1 first.  */
       if (GET_CODE (x) != PARALLEL)
-	output_operand_lossage ("invalid %%N value");
+	output_operand_lossage ("invalid %%O value");
 
       fprintf (file, "%d", (XVECLEN (x, 0) - 1) * 4);
       return;
@@ -2912,7 +2913,7 @@ print_operand (file, x, code)
       /* Opposite of 't': write 4 if this jump operation will branch if true,
 	 12 otherwise.   */
       if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%t value");
+	output_operand_lossage ("invalid %%T value");
 
       else if ((GET_MODE (XEXP (x, 0)) == CCFPmode
 		&& GET_CODE (x) != NE)
