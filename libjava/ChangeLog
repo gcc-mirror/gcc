@@ -1,3 +1,7 @@
+2000-04-28  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava/java/lang/String.java (toString): Remove `final' hack.
+
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
 	Runtime support for PR gcj/2:
