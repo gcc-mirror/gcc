@@ -1115,7 +1115,7 @@ coerce_template_parms (parms, arglist, in_decl)
 		  else if (TREE_CODE (a) != VAR_DECL
 			   && TREE_CODE (a) != FUNCTION_DECL)
 		    goto bad;
-		  else if (! DECL_PUBLIC (a))
+		  else if (! TREE_PUBLIC (a))
 		    {
 		      cp_error ("address of non-extern `%E' cannot be used as template argument", a);
 		      val = error_mark_node;

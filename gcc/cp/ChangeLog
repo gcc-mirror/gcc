@@ -1,3 +1,10 @@
+Mon Sep 29 08:57:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h, decl.c, decl2.c, pt.c:
+ 	Lose DECL_C_STATIC and DECL_PUBLIC.  Don't pretend statics are public.
+
+	* decl2.c (lang_decode_option): Add missing ;.
+
 Sat Sep 27 16:22:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* friend.c (do_friend): Disable injection for all template-derived

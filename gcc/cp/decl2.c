@@ -575,7 +575,7 @@ lang_decode_option (p)
 		}
 	    }
 	  name_mangling_version = atoi (p + 22);
-	mangling_version_lose:
+	mangling_version_lose: ;
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -2806,8 +2806,6 @@ import_export_decl (decl)
       else
 	comdat_linkage (decl);
     } 
-  else if (DECL_C_STATIC (decl))
-    TREE_PUBLIC (decl) = 0;
   else
     comdat_linkage (decl);
 
@@ -3283,14 +3281,6 @@ finish_file ()
 
   walk_vtables ((void (*) PROTO((tree, tree))) 0,
 		prune_vtable_vardecl);
-
-  for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
-    {
-      if (TREE_CODE (vars) == FUNCTION_DECL
-	  && ! DECL_INTERFACE_KNOWN (vars)
-	  && DECL_C_STATIC (vars))
-	TREE_PUBLIC (vars) = 0;
-    }
 
   if (write_virtuals == 2)
     {
