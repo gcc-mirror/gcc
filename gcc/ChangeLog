@@ -1,3 +1,8 @@
+2003-05-19  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-decl.c (finish_decl): When setting the DECL_ASSEMBLER_NAME
+	of a function using ASMSPEC, prepend a star.
+
 2003-05-19  Jason Merrill  <jason@redhat.com>
 
 	* tree-inline.c (copy_body_r): Avoid generating &* during inline
