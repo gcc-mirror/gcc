@@ -351,6 +351,7 @@ public class LogManager
   private synchronized Logger findAncestor(Logger child)
   {
     String childName = child.getName();
+    int    childNameLength = childName.length();
     Logger best = rootLogger;
     int    bestNameLength = 0;
 
@@ -366,9 +367,10 @@ public class LogManager
       candName = (String) iter.next();
       candNameLength = candName.length();
 
-      if ((candNameLength > bestNameLength)
+      if (candNameLength > bestNameLength
+	  && childNameLength > candNameLength
 	  && childName.startsWith(candName)
-	  && (childName.charAt(candNameLength) == '.'))
+	  && childName.charAt(candNameLength) == '.')
       {
         cand = (Logger) ((WeakReference) loggers.get(candName)).get();
 	if ((cand == null) || (cand == child))
