@@ -2818,9 +2818,10 @@ is applied to the standard system directories.
 @findex -lang-objc++
 Specify the source language.  @samp{-lang-c} is the default; it
 allows recognition of C++ comments (comments that begin with
-@samp{//} and end at end of line), since this is
-a common feature and it will most likely be in the next C standard.
-@samp{-lang-c89} disables recognition of C++ comments.  @samp{-lang-c++}
+@samp{//} and end at end of line) and hexadecimal floating-point constants,
+since these features will most likely appear in the next C standard.
+@samp{-lang-c89} disables recognition of C++ comments and
+hexadecimal floating-point constants.  @samp{-lang-c++}
 handles C++ comment syntax and includes extra default include
 directories for C++.  @samp{-lang-objc} enables the Objective C
 @samp{#import} directive.  @samp{-lang-objc++} enables both C++ and Objective C
