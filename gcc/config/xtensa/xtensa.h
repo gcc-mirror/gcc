@@ -822,7 +822,7 @@ typedef struct xtensa_args
 
 #define TRAMPOLINE_TEMPLATE(STREAM)					\
   do {									\
-    fprintf (STREAM, "\t.begin no-generics\n");				\
+    fprintf (STREAM, "\t.begin no-transform\n");			\
     fprintf (STREAM, "\tentry\tsp, %d\n", MIN_FRAME_SIZE);		\
 									\
     /* save the return address */					\
@@ -860,7 +860,7 @@ typedef struct xtensa_args
     /* jump to the instruction following the entry */			\
     fprintf (STREAM, "\taddi\ta8, a8, 3\n");				\
     fprintf (STREAM, "\tjx\ta8\n");					\
-    fprintf (STREAM, "\t.end no-generics\n");				\
+    fprintf (STREAM, "\t.end no-transform\n");				\
   } while (0)
 
 /* Size in bytes of the trampoline, as an integer.  */
