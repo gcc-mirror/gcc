@@ -231,6 +231,34 @@ java::lang::System::identityHashCode (jobject obj)
 #endif
 static char *default_file_encoding = DEFAULT_FILE_ENCODING;
 
+#if HAVE_GETPWUID_R
+/* Use overload resolution to find out the signature of getpwuid_r.  */
+
+  /* This is Posix getpwuid_r.  */
+template <typename T_uid, typename T_passwd, typename T_buf, typename T_len>
+static inline int
+getpwuid_adaptor(int (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
+				   T_buf *buf_r, T_len len_r,
+				   T_passwd **pwd_entry_ptr),
+		 uid_t user_id, struct passwd *pwd_r,
+		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
+{
+  return getpwuid_r(user_id, pwd_r, buf_r, len_r, pwd_entry);
+}
+
+/* This is used on IRIX 5.2.  */
+template <typename T_uid, typename T_passwd, typename T_buf, typename T_len>
+static inline int
+getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
+					  T_buf *buf_r, T_len len_r),
+		 uid_t user_id, struct passwd *pwd_r,
+		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
+{
+  *pwd_entry = getpwuid_r(user_id, pwd_r, buf_r, len_r);
+  return (*pwd_entry == NULL) ? errno : 0;
+}
+#endif
+
 void
 java::lang::System::init_properties (void)
 {
@@ -293,7 +321,8 @@ java::lang::System::init_properties (void)
 
   while (buf_r != NULL)
     {
-      int r = getpwuid_r (user_id, &pwd_r, buf_r, len_r, &pwd_entry);
+      int r = getpwuid_adaptor
+	(getpwuid_r, user_id, &pwd_r, buf_r, len_r, &pwd_entry);
       if (r == 0)
 	break;
       else if (r != ERANGE)
