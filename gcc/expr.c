@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move. */
 #include "expr.h"
 #include "recog.h"
+#include "reload.h"
 #include "output.h"
 #include "typeclass.h"
 #include "defaults.h"
@@ -1626,6 +1627,9 @@ emit_block_move (x, y, size, align)
       rtx opalign = GEN_INT (align / BITS_PER_UNIT);
       enum machine_mode mode;
 
+      /* Since this is a move insn, we don't care about volatility.  */
+      volatile_ok = 1;
+
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	{
@@ -1661,12 +1665,15 @@ emit_block_move (x, y, size, align)
 	      if (pat)
 		{
 		  emit_insn (pat);
+		  volatile_ok = 0;
 		  return 0;
 		}
 	      else
 		delete_insns_since (last);
 	    }
 	}
+
+      volatile_ok = 0;
 
       /* X, Y, or SIZE may have been passed through protect_from_queue.
 
@@ -2720,7 +2727,7 @@ emit_move_insn_1 (x, y)
   else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
-      rtx seq;
+      rtx seq, inner;
       int need_clobber;
       
 #ifdef PUSH_ROUNDING
@@ -2734,6 +2741,29 @@ emit_move_insn_1 (x, y)
 	}
 #endif
 			     
+      /* If we are in reload, see if either operand is a MEM whose address
+	 is scheduled for replacement.  */
+      if (reload_in_progress && GET_CODE (x) == MEM
+	  && (inner = find_replacement (&XEXP (x, 0))) != XEXP (x, 0))
+	{
+	  rtx new = gen_rtx_MEM (GET_MODE (x), inner);
+
+	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
+	  MEM_COPY_ATTRIBUTES (new, x);
+	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
+	  x = new;
+	}
+      if (reload_in_progress && GET_CODE (y) == MEM
+	  && (inner = find_replacement (&XEXP (y, 0))) != XEXP (y, 0))
+	{
+	  rtx new = gen_rtx_MEM (GET_MODE (y), inner);
+
+	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (y);
+	  MEM_COPY_ATTRIBUTES (new, y);
+	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (y);
+	  y = new;
+	}
+
       start_sequence ();
 
       need_clobber = 0;

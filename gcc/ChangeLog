@@ -1,5 +1,10 @@
 Fri Apr 14 18:07:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (reload.h): Now included.
+	(emit_block_move): Set volatile_ok when checking for movstr.
+	(emit_move_1): Check for replacements in addresses in multi-word case.
+	* Makefile.in (expr.o): Now includes reload.h.
+
 	* flow.c (count_basic_blocks): Remove unused var PREV_CALL.
 	Never have a LIBCALL end a basic block.
 	(find_basic_blocks_1): Likewise.
