@@ -1,2 +1,1 @@
 CLIB=-lPW
-INSTALL=cp
