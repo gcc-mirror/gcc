@@ -7488,7 +7488,7 @@ cse_insn (insn, libcall_insn)
 		 if NEXT_INSN (p) had INSN_DELETED_P set.  */
 	      if (GET_CODE (NEXT_INSN (p)) != NOTE
 		  || NOTE_LINE_NUMBER (NEXT_INSN (p)) == NOTE_INSN_DELETED)
-		p = delete_insn (NEXT_INSN (p));
+		p = PREV_INSN (delete_insn (NEXT_INSN (p)));
 	      else
 		p = NEXT_INSN (p);
 	    }
