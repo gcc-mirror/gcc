@@ -1,3 +1,8 @@
+1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Make-lang.in ($(GCJ)$(exeext)): Add intl.o to list of files to be
+	linked with.
+
 Sun Mar 21 08:30:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jcf-dump.o): Depend on $(CONFIG_H)
