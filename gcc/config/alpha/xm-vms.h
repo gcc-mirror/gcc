@@ -38,10 +38,16 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_WIDE_INT long long
 #define HOST_BITS_PER_WIDE_INT 64
 
+/* Override values in stdlib.h since gcc uses __posix_exit */
 #undef SUCCESS_EXIT_CODE
-#define SUCCESS_EXIT_CODE 1
+#define SUCCESS_EXIT_CODE 0
 #undef FATAL_EXIT_CODE
-#define FATAL_EXIT_CODE (44 | 0x10000000)  /* Abort, and no DCL message.  */
+#define FATAL_EXIT_CODE (1)
+#ifdef exit
+#undef exit
+#endif
+#define exit __posix_exit
+void __posix_exit (int);
 
 /* A couple of conditionals for execution machine are controlled here.  */
 #ifndef VMS
@@ -61,20 +67,7 @@ Boston, MA 02111-1307, USA.  */
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
 
-#define HAVE_VPRINTF
-#define HAVE_PUTENV
-#define HAVE_STRERROR
-#define HAVE_ATOLL
-
-#define HAVE_FCNTL_H 1
-#define HAVE_STDLIB_H 1
-#define HAVE_UNISTD_H 1
-#define HAVE_STRING_H 1
-#define HAVE_LIMITS_H 1
-#define HAVE_STDDEF_H 1
-#define HAVE_TIME_H 1
 #define STDC_HEADERS 1
-#define HAVE_STRINGIZE 1
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
 #define HOST_OBJECT_SUFFIX ".obj"

@@ -1,3 +1,9 @@
+Mon Nov 19 07:21:35 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/xm-vms.h: Don't define macros that autoconf handles.
+	(SUCCESS_EXIT_CODE, FATAL_EXIT_CODE): Define for posix compatibility.
+	* gcc.c (exit): Remove definition for VMS; moved to xm-vms.h.
+
 2001-11-19  Jason Merrill  <jason@redhat.com>
 
 	* cppmacro.c (_cpp_backup_tokens): Pop cur_run before decrementing
