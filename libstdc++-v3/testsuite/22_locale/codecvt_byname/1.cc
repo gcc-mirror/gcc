@@ -1,7 +1,7 @@
 // { dg-do compile }
-// 2001-08-15  Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-08-27  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,21 +19,22 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.4 The collate category
+// 22.2.1.5  Template class codecvt
 
 #include <locale>
 
 void test01()
 {
   // Check for required base class.
-  typedef std::collate<char> test_type;
-  typedef std::locale::facet base_type;
-  const test_type& obj = std::use_facet<test_type>(std::locale()); 
+  typedef std::codecvt_byname<char, char, mbstate_t> test_type;
+  typedef std::codecvt<char, char, mbstate_t> base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale::classic()); 
   const base_type* base __attribute__((unused)) = &obj;
-
+  
   // Check for required typedefs
-  typedef test_type::char_type char_type;
-  typedef test_type::string_type string_type;
+  typedef test_type::intern_type intern_type;
+  typedef test_type::extern_type extern_type;
+  typedef test_type::state_type state_type;
 }
 
 int main()

@@ -43,8 +43,11 @@ namespace std
     ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
     : ctype<char>(0, false, __refs) 
     { 	
-      _S_destroy_c_locale(_M_c_locale_ctype);
-      _S_create_c_locale(_M_c_locale_ctype, __s); 
+      if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	{
+	  _S_destroy_c_locale(_M_c_locale_ctype);
+	  _S_create_c_locale(_M_c_locale_ctype, __s); 
+	}
     }
 
 #ifdef _GLIBCXX_USE_WCHAR_T  

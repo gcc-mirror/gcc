@@ -1,7 +1,7 @@
 // { dg-do compile }
-// 1999-08-24 bkoz
+// 2001-08-15  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 1999, 2000, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,144 +19,26 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.1 The ctype category
-
-// 1: Test that the locale headers are picking up the correct declaration
-// of the internal type `ctype_base::mask'.
-int mask ();
+// 22.2.1.1 - Template class ctype
 
 #include <locale>
 
-// 2: Should be able to instantiate this for other types besides char, wchar_t
-typedef std::ctype<char> cctype;
-
-class gnu_ctype: public std::ctype<unsigned char> 
-{ 
-private:
-  const cctype& _M_cctype;
-
-public:
-  explicit 
-  gnu_ctype(size_t __refs = 0) 
-  : std::ctype<unsigned char>(__refs), 
-    _M_cctype(std::use_facet<cctype>(std::locale::classic())) 
-  { }
-
-  ~gnu_ctype();
-
-protected:
-  virtual bool 
-  do_is(mask __m, char_type __c) const
-  { return _M_cctype.is(__m, __c); }
-
-  virtual const char_type*
-  do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const
-  { 
-    const char* __c = _M_cctype.is(reinterpret_cast<const char*>(__lo), 
-				   reinterpret_cast<const char*>(__hi), __vec);
-    return reinterpret_cast<const char_type*>(__c);
-  }
-  
-  virtual const char_type*
-  do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
-  {
-    const char* __c = _M_cctype.scan_is(__m, 
-					reinterpret_cast<const char*>(__lo), 
-					reinterpret_cast<const char*>(__hi));
-    return reinterpret_cast<const char_type*>(__c);
-  }
-
-  virtual const char_type*
-  do_scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
-  {
-    const char* __c = _M_cctype.scan_is(__m, 
-					reinterpret_cast<const char*>(__lo), 
-					reinterpret_cast<const char*>(__hi));
-    return reinterpret_cast<const char_type*>(__c);
-  }
-
-  virtual char_type 
-  do_toupper(char_type __c) const
-  { return _M_cctype.toupper(__c); }
-
-  virtual const char_type*
-  do_toupper(char_type* __lo, const char_type* __hi) const
-  {
-    const char* __c = _M_cctype.toupper(reinterpret_cast<char*>(__lo), 
-					reinterpret_cast<const char*>(__hi));
-    return reinterpret_cast<const char_type*>(__c);
-  }
-
-  virtual char_type 
-  do_tolower(char_type __c) const
-  { return _M_cctype.tolower(__c); }
-
-  virtual const char_type*
-  do_tolower(char_type* __lo, const char_type* __hi) const
-  {
-    const char* __c = _M_cctype.toupper(reinterpret_cast<char*>(__lo), 
-					reinterpret_cast<const char*>(__hi));
-    return reinterpret_cast<const char_type*>(__c);
-  }
-
-  virtual char_type 
-  do_widen(char __c) const
-  { return _M_cctype.widen(__c); }
-
-  virtual const char*
-  do_widen(const char* __lo, const char* __hi, char_type* __dest) const
-  {
-    const char* __c = _M_cctype.widen(reinterpret_cast<const char*>(__lo), 
-				      reinterpret_cast<const char*>(__hi),
-				      reinterpret_cast<char*>(__dest));
-    return __c;
-  }
-
-  virtual char 
-  do_narrow(char_type __c, char __dfault) const
-  { return _M_cctype.narrow(__c, __dfault); }
-
-  virtual const char_type*
-  do_narrow(const char_type* __lo, const char_type* __hi, char __dfault, 
-	    char* __dest) const
-  {
-    const char* __c = _M_cctype.narrow(reinterpret_cast<const char*>(__lo), 
-				       reinterpret_cast<const char*>(__hi),
-				       __dfault,
-				       reinterpret_cast<char*>(__dest));
-    return reinterpret_cast<const char_type*>(__c);
-  }
-
-};
-
-gnu_ctype::~gnu_ctype() { }
-
-gnu_ctype facet01;
-
-// 3: Sanity check ctype_base::mask bitmask requirements
-void
-test01()
+void test01()
 {
-  using namespace std;
+  // Check for required base class.
+  typedef std::ctype<char> test_type;
+  typedef std::locale::facet base_type1;
+  typedef std::ctype_base base_type2;
+  const test_type& obj = std::use_facet<test_type>(std::locale::classic()); 
+  const base_type1* base1 __attribute__((unused)) = &obj;
+  const base_type2* base2 __attribute__((unused)) = &obj;
 
-  ctype_base::mask m01;
-  ctype_base::mask m02;
-  ctype_base::mask res;
-
-  m01 = ctype_base::space;
-  m02 = ctype_base::xdigit;
-
-  res = m01 & m02;
-  res = m01 | m02;
-  res = m01 ^ m02;
-  res = ~m01;
-  m01 &= m02;
-  m01 |= m02;
-  m01 ^= m02;
+  // Check for required typedefs
+  typedef test_type::char_type char_type;
 }
 
-int main() 
-{ 
+int main()
+{
   test01();
   return 0;
 }

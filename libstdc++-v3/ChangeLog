@@ -1,3 +1,32 @@
+2003-10-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h: Correct byname facets for "C"
+	locale.
+	* config/locale/generic/ctype_members.cc: Same.
+	* config/locale/generic/messages_members.h: Same.
+	* config/locale/gnu/ctype_members.cc: Same.
+	* config/locale/gnu/messages_members.h: Same.
+	* include/bits/codecvt.h: Same.
+	* src/ctype.cc: Same.
+	* testsuite/22_locale/codecvt_byname/1.cc: New.
+	* testsuite/22_locale/collate/1.cc: Edit.
+	* testsuite/22_locale/collate_byname/1.cc: Derivation tests, move to...
+	* testsuite/22_locale/collate_byname/named_equivalence.cc: ...here.
+	* testsuite/22_locale/ctype/1.cc: Derivation tests.
+	* testsuite/22_locale/ctype/11844.cc: Move...
+	* testsuite/22_locale/ctype_base/11844.cc: ...here.
+	* testsuite/22_locale/ctype_base/1.cc: Move mask bits here.
+	* testsuite/22_locale/ctype_byname/1.cc: Name.
+	* testsuite/22_locale/messages_byname/1.cc: New.
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: New.
+	* testsuite/22_locale/moneypunct_byname/1.cc: Derivation test.
+	* testsuite/22_locale/moneypunct_byname/named_equivalence.cc: New.
+	* testsuite/22_locale/numpunct/1.cc: Edit.
+	* testsuite/22_locale/numpunct_byname/2.cc: Move...
+	* testsuite/22_locale/numpunct/members/char/3.cc: ...here.
+	* testsuite/22_locale/numpunct_byname/1.cc: Derivation tests.
+	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: New.
+
 2003-10-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/8610

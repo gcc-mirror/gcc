@@ -1,7 +1,7 @@
 // { dg-do compile }
 // 2001-08-15  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,21 +19,20 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.4 The collate category
+// 22.2.1.1 - Template class ctype
 
 #include <locale>
 
 void test01()
 {
   // Check for required base class.
-  typedef std::collate<char> test_type;
-  typedef std::locale::facet base_type;
-  const test_type& obj = std::use_facet<test_type>(std::locale()); 
+  typedef std::ctype_byname<char> test_type;
+  typedef std::ctype<char> base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale::classic()); 
   const base_type* base __attribute__((unused)) = &obj;
 
   // Check for required typedefs
   typedef test_type::char_type char_type;
-  typedef test_type::string_type string_type;
 }
 
 int main()

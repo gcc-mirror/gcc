@@ -1,4 +1,5 @@
-// 2001-07-17 Benjamin Kosnik  <bkoz@redhat.com>
+// { dg-do compile }
+// 2001-07-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001, 2003 Free Software Foundation
 //
@@ -18,57 +19,21 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.7.2 Template class messages_byname
+// 22.2.7 The message retrieval category
 
 #include <locale>
-#include <testsuite_hooks.h>
 
 void test01()
 {
-  using namespace std;
-  typedef std::messages<char>::catalog catalog;
-  typedef std::messages<char>::string_type string_type;
+  // Check for required base class.
+  typedef std::messages_byname<char> test_type;
+  typedef std::messages<char> base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale::classic()); 
+  const base_type* base __attribute__((unused)) = &obj;
 
-  bool test __attribute__((unused)) = true;
-  string str;
-  // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
-  const char* dir = LOCALEDIR;
-  locale loc_c = locale::classic();
-
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  str = loc_de.name();
-
-  locale loc_byname(locale::classic(), new messages_byname<char>("de_DE"));
-  str = loc_byname.name();
-
-  VERIFY( loc_de != loc_byname );
-
-  // cache the messages facets
-  const messages<char>& mssg_byname = use_facet<messages<char> >(loc_byname); 
-  const messages<char>& mssg_de = use_facet<messages<char> >(loc_de); 
-
-  // catalog open(const string&, const locale&) const;
-  // string_type get(catalog, int, int, const string_type& ) const; 
-  // void close(catalog) const;
-
-  // Check German (de_DE) locale.
-  catalog cat_de = mssg_de.open("libstdc++", loc_c, dir);
-  string s01 = mssg_de.get(cat_de, 0, 0, "please");
-  string s02 = mssg_de.get(cat_de, 0, 0, "thank you");
-  VERIFY ( s01 == "bitte" );
-  VERIFY ( s02 == "danke" );
-  mssg_de.close(cat_de);
-
-  // Check byname locale.
-  catalog cat_byname = mssg_byname.open("libstdc++", loc_c, dir);
-  string s03 = mssg_byname.get(cat_de, 0, 0, "please");
-  string s04 = mssg_byname.get(cat_de, 0, 0, "thank you");
-  VERIFY ( s03 == "bitte" );
-  VERIFY ( s04 == "danke" );
-  mssg_byname.close(cat_byname);
-
-  VERIFY ( s01 == s03 );
-  VERIFY ( s02 == s04 );
+  // Check for required typedefs
+  typedef test_type::char_type char_type;
+  typedef test_type::string_type string_type;
 }
 
 int main()

@@ -1,6 +1,7 @@
-// 2001-01-24 Benjamin Kosnik  <bkoz@redhat.com>
+// { dg-do compile }
+// 2001-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003 Free Software Foundation
+// Copyright (C) 2001, 2003  Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,55 +19,21 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.3.2 Template class numpunct_byname
+// 22.2.3  The numeric punctuation facet
 
 #include <locale>
-#include <testsuite_hooks.h>
 
 void test01()
 {
-  using namespace std;
-  
-  bool test __attribute__((unused)) = true;
-  string str;
+  // Check for required base class.
+  typedef std::numpunct_byname<char> test_type;
+  typedef std::numpunct<char> base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale()); 
+  const base_type* base __attribute__((unused)) = &obj;
 
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  str = loc_de.name();
-
-  locale loc_byname(locale::classic(), new numpunct_byname<char>("de_DE"));
-  str = loc_byname.name();
-
-  locale loc_c = locale::classic();
-
-  VERIFY( loc_de != loc_byname );
-
-  // cache the numpunct facets
-  const numpunct<char>& nump_c = use_facet<numpunct<char> >(loc_c); 
-  const numpunct<char>& nump_byname = use_facet<numpunct<char> >(loc_byname); 
-  const numpunct<char>& nump_de = use_facet<numpunct<char> >(loc_de); 
-
-  // sanity check that the data match
-  char dp1 = nump_byname.decimal_point();
-  char th1 = nump_byname.thousands_sep();
-  string g1 = nump_byname.grouping();
-  string t1 = nump_byname.truename();
-  string f1 = nump_byname.falsename();
-
-  char dp2 = nump_de.decimal_point();
-  char th2 = nump_de.thousands_sep();
-  string g2 = nump_de.grouping();
-  string t2 = nump_de.truename();
-  string f2 = nump_de.falsename();
-
-  VERIFY( dp1 == dp2 );
-  VERIFY( th1 == th2 );
-  VERIFY( g1 == g2 );
-  VERIFY( t1 == t2 );
-  VERIFY( f1 == f2 );
-
-  // ...and don't match "C"
-  char dp3 = nump_c.decimal_point();
-  VERIFY( dp1 != dp3 );
+  // Check for required typedefs
+  typedef test_type::char_type char_type;
+  typedef test_type::string_type string_type;
 }
 
 int main()

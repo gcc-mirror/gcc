@@ -76,6 +76,9 @@
      messages_byname<_CharT>::messages_byname(const char* __s, size_t __refs)
      : messages<_CharT>(__refs) 
      { 
-       _S_destroy_c_locale(this->_M_c_locale_messages);
-       _S_create_c_locale(this->_M_c_locale_messages, __s); 
+	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	  {
+	    _S_destroy_c_locale(this->_M_c_locale_messages);
+	    _S_create_c_locale(this->_M_c_locale_messages, __s); 
+	  }
      }
