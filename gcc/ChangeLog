@@ -1,3 +1,8 @@
+2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* postreload.c (move2add_note_store): Only call
+	trunc_int_for_mode on scalar integers.
+
 2005-01-14  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-dce.c (visited_control_parents): New sbitmap to

@@ -1457,7 +1457,7 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno += REGNO (dst);
 
-  if (SCALAR_INT_MODE_P (mode)
+  if (SCALAR_INT_MODE_P (GET_MODE (dst))
       && hard_regno_nregs[regno][mode] == 1 && GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
