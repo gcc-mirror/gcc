@@ -1326,6 +1326,7 @@ struct lang_type
   unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
   unsigned is_partial_instantiation : 1;
+  unsigned java_interface : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1334,7 +1335,7 @@ struct lang_type
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 9;
+  unsigned dummy : 8;
 
   int vsize;
 
@@ -1555,6 +1556,10 @@ struct lang_type
 /* The alignment of NODE, without its virtual bases, in bytes.  */
 #define CLASSTYPE_ALIGN_UNIT(NODE) \
   (CLASSTYPE_ALIGN (NODE) / BITS_PER_UNIT)
+
+/* True if this a Java interface type, declared with 
+   '__attribute__ ((java_interface))'. */
+#define TYPE_JAVA_INTERFACE(NODE) (TYPE_LANG_SPECIFIC(NODE)->java_interface)
 
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived

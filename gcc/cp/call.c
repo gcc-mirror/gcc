@@ -45,6 +45,7 @@ static int equal_functions PARAMS ((tree, tree));
 static int joust PARAMS ((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PARAMS ((tree, tree));
 static tree build_over_call PARAMS ((struct z_candidate *, tree, int));
+static tree build_java_interface_fn_ref PARAMS ((tree, tree));
 #define convert_like(CONV, EXPR) convert_like_real (CONV, EXPR, NULL_TREE, 0, 0)
 #define convert_like_with_context(CONV, EXPR, FN, ARGNO) convert_like_real (CONV, EXPR, FN, ARGNO, 0)
 static tree convert_like_real PARAMS ((tree, tree, tree, int, int));
@@ -4271,7 +4272,10 @@ build_over_call (cand, args, flags)
       if (TREE_SIDE_EFFECTS (*p))
 	*p = save_expr (*p);
       t = build_pointer_type (TREE_TYPE (fn));
-      fn = build_vfn_ref (p, build_indirect_ref (*p, 0), DECL_VINDEX (fn));
+      if (DECL_CONTEXT (fn) && TYPE_JAVA_INTERFACE (DECL_CONTEXT (fn)))
+	fn = build_java_interface_fn_ref (fn, *p);
+      else
+	fn = build_vfn_ref (p, build_indirect_ref (*p, 0), DECL_VINDEX (fn));
       TREE_TYPE (fn) = t;
     }
   else if (DECL_INLINE (fn))
@@ -4304,6 +4308,72 @@ build_over_call (cand, args, flags)
   if (IS_AGGR_TYPE (TREE_TYPE (fn)))
     fn = build_cplus_new (TREE_TYPE (fn), fn);
   return convert_from_reference (fn);
+}
+
+static tree java_iface_lookup_fn;
+
+/* Make an expression which yields the address of the Java interface
+   method FN.  This is achieved by generating a call to libjava's
+   _Jv_LookupInterfaceMethodIdx().  */
+
+static tree
+build_java_interface_fn_ref (fn, instance)
+    tree fn, instance;
+{
+  tree lookup_args, lookup_fn, method, idx;
+  tree klass_ref, iface, iface_ref;
+  int i;
+  
+  if (!java_iface_lookup_fn)
+    {
+      tree endlink = build_void_list_node ();
+      tree t = tree_cons (NULL_TREE, ptr_type_node,
+			  tree_cons (NULL_TREE, ptr_type_node,
+				     tree_cons (NULL_TREE, java_int_type_node,
+						endlink)));
+      java_iface_lookup_fn 
+	= builtin_function ("_Jv_LookupInterfaceMethodIdx",
+			    build_function_type (ptr_type_node, t),
+			    0, NOT_BUILT_IN, NULL_PTR);
+      ggc_add_tree_root (&java_iface_lookup_fn, 1);
+    }
+
+  /* Look up the pointer to the runtime java.lang.Class object for `instance'. 
+     This is the first entry in the vtable. */
+  klass_ref = build_vtbl_ref (build_indirect_ref (instance, 0), 
+			      integer_zero_node);
+
+  /* Get the java.lang.Class pointer for the interface being called. */
+  iface = DECL_CONTEXT (fn);
+  iface_ref = lookup_field (iface, get_identifier ("class$"), 0, 0);
+  if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
+      || DECL_CONTEXT (iface_ref) != iface)
+    {
+      cp_error ("Could not find class$ field in java interface type `%T'", 
+		iface);
+      return error_mark_node;
+    }
+  iface_ref = build1 (ADDR_EXPR, build_pointer_type (iface), iface_ref);
+  
+  /* Determine the itable index of FN. */
+  i = 1;
+  for (method = TYPE_METHODS (iface); method; method = TREE_CHAIN (method))
+    {
+      if (!DECL_VIRTUAL_P (method))
+        continue;
+      if (fn == method)
+        break;
+      i++;
+    }
+  idx = build_int_2 (i, 0);
+
+  lookup_args = tree_cons (NULL_TREE, klass_ref, 
+			   tree_cons (NULL_TREE, iface_ref,
+				      build_tree_list (NULL_TREE, idx)));
+  lookup_fn = build1 (ADDR_EXPR, 
+		      build_pointer_type (TREE_TYPE (java_iface_lookup_fn)),
+		      java_iface_lookup_fn);
+  return build (CALL_EXPR, ptr_type_node, lookup_fn, lookup_args, NULL_TREE);
 }
 
 /* Returns the value to use for the in-charge parameter when making a

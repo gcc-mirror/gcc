@@ -2212,6 +2212,19 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
   tree decl ATTRIBUTE_UNUSED;
   tree type ATTRIBUTE_UNUSED;
 {
+  if (is_attribute_p ("java_interface", attr_name))
+    {
+      if (attr_args != NULL_TREE
+	  || decl != NULL_TREE
+	  || ! CLASS_TYPE_P (type)
+	  || ! TYPE_FOR_JAVA (type))
+	{
+	  error ("`java_interface' attribute can only be applied to Java class definitions");
+	  return 0;
+	}
+      TYPE_JAVA_INTERFACE (type) = 1;
+      return 1;
+    }
   if (is_attribute_p ("com_interface", attr_name))
     {
       if (! flag_vtable_thunks)
