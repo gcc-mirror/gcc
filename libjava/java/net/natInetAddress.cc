@@ -14,6 +14,17 @@ details.  */
 # define _REENTRANT 1
 #endif
 
+#ifdef USE_WINSOCK
+
+#include <windows.h>
+#include <winsock.h>
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN	64
+#endif /* MAXHOSTNAMELEN */
+
+#else
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -34,6 +45,8 @@ details.  */
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
+
+#endif /* USE_WINSOCK */
 
 #include <gcj/cni.h>
 #include <jvm.h>
