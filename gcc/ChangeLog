@@ -1,3 +1,8 @@
+2000-08-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* toplev.c (independent_decode_option): Always process -g.
+	Remove third argument, now unused.  Adjust caller to match.
+
 2000-08-18  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (make_compound_operation): Break after creating
