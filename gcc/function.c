@@ -918,7 +918,7 @@ assign_stack_temp (mode, size, keep)
     }
   return p->slot;
 }
-
+
 /* Assign a temporary of given TYPE.
    KEEP is as for assign_stack_temp.
    MEMORY_REQUIRED is 1 if the result must be addressable stack memory;
@@ -931,6 +931,8 @@ assign_temp (type, keep, memory_required)
      int memory_required;
 {
   enum machine_mode mode = TYPE_MODE (type);
+  int unsignedp = TREE_UNSIGNED (type);
+
   if (mode == BLKmode || memory_required)
     {
       int size = int_size_in_bytes (type);
@@ -949,16 +951,17 @@ assign_temp (type, keep, memory_required)
       MEM_IN_STRUCT_P (tmp) = AGGREGATE_TYPE_P (type);
       return tmp;
     }
+
   if (mode == VOIDmode)
     return const0_rtx;
+
 #ifndef PROMOTE_FOR_CALL_ONLY
-  { int unsignedp = TREE_UNSIGNED (type);
-    mode = promote_mode (type, mode, &unsignedp, 0);
-  }
+  mode = promote_mode (type, mode, &unsignedp, 0);
 #endif
+
   return gen_reg_rtx (mode);
 }
-
+
 /* Combine temporary stack slots which are adjacent on the stack.
 
    This allows for better use of already allocated stack space.  This is only
