@@ -11,8 +11,8 @@
 void* vp;
 char* cp;
 int* ip;
-enum {enum_value_1} * ep;
-struct { int member; } * sp;
+enum E {enum_value_1} * ep;
+struct S { int member; } * sp;
 void (*fp) (void);
 
 void global_function ()

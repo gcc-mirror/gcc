@@ -20,7 +20,7 @@ INT2 f4(void) { return 0; }		/* { dg-warning "`INT2' is deprecated" "" } */
 int f5(INT2 x);				/* { dg-warning "`INT2' is deprecated" "" } */
 int f6(INT2 x) __attribute__ ((__deprecated__));
 
-typedef enum {red, green, blue} Color __attribute__((deprecated));
+typedef enum Color {red, green, blue} Color __attribute__((deprecated));
 
 int g1;
 int g2 __attribute__ ((deprecated));

@@ -5544,8 +5544,7 @@ grokfndecl (tree ctype,
     }
 
   /* Members of anonymous types and local classes have no linkage; make
-     them internal.  */
-  /* FIXME what if it gets a name from typedef?  */
+     them internal.  If a typedef is made later, this will be changed.  */
   if (ctype && (TYPE_ANONYMOUS_P (ctype)
 		|| decl_function_context (TYPE_MAIN_DECL (ctype))))
     publicp = 0;
@@ -5880,7 +5879,19 @@ grokvardecl (tree type,
       if (t)
 	{
 	  if (TYPE_ANONYMOUS_P (t))
-	    /* Ignore for now; `enum { foo } e' is pretty common.  */;
+	    {
+	      if (DECL_EXTERN_C_P (decl))
+		/* Allow this; it's pretty common in C.  */;
+	      else
+		{
+		  pedwarn ("non-local variable `%#D' uses anonymous type",
+			   decl);
+		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+		    cp_pedwarn_at ("\
+`%#D' does not refer to the unqualified type, so it is not used for linkage",
+				   TYPE_NAME (t));
+		}
+	    }
 	  else
 	    pedwarn ("non-local variable `%#D' uses local type `%T'",
 			decl, t);
