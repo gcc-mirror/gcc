@@ -36,10 +36,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int target_flags;
 
-/* Global registers known to hold the value zero.  */
-extern struct rtx_def *zero_dreg;
-extern struct rtx_def *zero_areg;
-
 /* Macros used in the machine description to test the flags.  */
 
 /* Macro to define tables used to set the flags.

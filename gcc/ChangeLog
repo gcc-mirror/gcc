@@ -1,3 +1,8 @@
+Wed Aug 12 17:25:18 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c, mn10300.h, mn10300.md: Remove "global zero register"
+	optimizations.
+
 Wed Aug 12 12:39:16 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* mips/mips.h (ENCODE_SECTION_INFO): Set SYMBOL_REF_FLAG for
