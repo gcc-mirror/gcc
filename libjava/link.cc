@@ -665,12 +665,21 @@ _Jv_Linker::generate_itable (jclass klass, _Jv_ifaces *ifaces,
 
 // Format method name for use in error messages.
 jstring
-_Jv_GetMethodString (jclass klass, _Jv_Utf8Const *name)
+_Jv_GetMethodString (jclass klass, _Jv_Method *meth,
+		     jclass derived)
 {
-  jstring r = klass->name->toString();
-  r = r->concat (JvNewStringUTF ("."));
-  r = r->concat (name->toString());
-  return r;
+  using namespace java::lang;
+  StringBuffer *buf = new StringBuffer (klass->name->toString());
+  buf->append (jchar ('.'));
+  buf->append (meth->name->toString());
+  buf->append ((jchar) ' ');
+  buf->append (meth->signature->toString());
+  if (derived)
+    {
+      buf->append(JvNewStringLatin1(" in "));
+      buf->append(derived->name->toString());
+    }
+  return buf->toString();
 }
 
 void 
@@ -720,13 +729,13 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
         {
 	  if ((meth->accflags & Modifier::STATIC) != 0)
 	    throw new java::lang::IncompatibleClassChangeError
-	      (_Jv_GetMethodString (klass, meth->name));
+	      (_Jv_GetMethodString (klass, meth));
 	  if ((meth->accflags & Modifier::ABSTRACT) != 0)
 	    throw new java::lang::AbstractMethodError
-	      (_Jv_GetMethodString (klass, meth->name));
+	      (_Jv_GetMethodString (klass, meth));
 	  if ((meth->accflags & Modifier::PUBLIC) == 0)
 	    throw new java::lang::IllegalAccessError
-	      (_Jv_GetMethodString (klass, meth->name));
+	      (_Jv_GetMethodString (klass, meth));
 
 	  itable[pos] = meth->ncode;
 	}
@@ -1161,9 +1170,9 @@ _Jv_Linker::layout_vtable_methods (jclass klass)
 		  using namespace java::lang;
 		  StringBuffer *sb = new StringBuffer();
 		  sb->append(JvNewStringLatin1("method "));
-		  sb->append(_Jv_GetMethodString(klass, meth->name));
+		  sb->append(_Jv_GetMethodString(klass, meth));
 		  sb->append(JvNewStringLatin1(" overrides final method "));
-		  sb->append(_Jv_GetMethodString(declarer, super_meth->name));
+		  sb->append(_Jv_GetMethodString(declarer, super_meth));
 		  throw new VerifyError(sb->toString());
 		}
 	    }
@@ -1245,18 +1254,15 @@ _Jv_Linker::make_vtable (jclass klass)
 	if (vtable->get_method(i) == (void *) &_Jv_abstractMethodError)
 	  {
 	    using namespace java::lang;
+	    jclass orig = klass;
 	    while (klass != NULL)
 	      {
 		for (int j = 0; j < klass->method_count; ++j)
 		  {
 		    if (klass->methods[j].index == i)
-		      {
-			StringBuffer *buf = new StringBuffer ();
-			buf->append (_Jv_NewStringUtf8Const (klass->methods[j].name));
-			buf->append ((jchar) ' ');
-			buf->append (_Jv_NewStringUtf8Const (klass->methods[j].signature));
-			throw new AbstractMethodError (buf->toString ());
-		      }
+		      throw new AbstractMethodError(_Jv_GetMethodString(klass,
+									&klass->methods[j],
+									orig));
 		  }
 		klass = klass->getSuperclass ();
 	      }

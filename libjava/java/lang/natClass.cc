@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004  
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  
    Free Software Foundation
 
    This file is part of libgcj.
@@ -973,13 +973,13 @@ _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
 
       if (Modifier::isStatic(meth->accflags))
 	throw new java::lang::IncompatibleClassChangeError
-	  (_Jv_GetMethodString (klass, meth->name));
+	  (_Jv_GetMethodString (klass, meth));
       if (Modifier::isAbstract(meth->accflags))
 	throw new java::lang::AbstractMethodError
-	  (_Jv_GetMethodString (klass, meth->name));
+	  (_Jv_GetMethodString (klass, meth));
       if (! Modifier::isPublic(meth->accflags))
 	throw new java::lang::IllegalAccessError
-	  (_Jv_GetMethodString (klass, meth->name));
+	  (_Jv_GetMethodString (klass, meth));
 
       _Jv_AddMethodToCache (klass, meth);
 
