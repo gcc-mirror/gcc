@@ -41,8 +41,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    this file *will* make use of the .init section.  If that symbol is
    not defined however, then the .init section will not be used.
 
-   Currently, only ELF is actually supported.
-   The other formats probably need just alternative macro definitions.
+   Currently, only ELF and COFF are supported.  It is likely however that
+   ROSE could also be supported, if someone was willing to do the work to
+   make whatever (small?) adaptations are needed.  (Some work may be
+   needed on the ROSE assembler and linker also.)
 
    This file must be compiled with gcc.  */
 
