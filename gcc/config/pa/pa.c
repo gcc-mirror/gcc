@@ -1394,7 +1394,8 @@ emit_move_sequence (operands, mode, scratch_reg)
   else if (register_operand (operand0, mode))
     {
       if (register_operand (operand1, mode)
-	  || (GET_CODE (operand1) == CONST_INT && INT_14_BITS (operand1))
+	  || (GET_CODE (operand1) == CONST_INT
+	      && cint_ok_for_move (INTVAL (operand1)))
 	  || (operand1 == CONST0_RTX (mode))
 	  || (GET_CODE (operand1) == HIGH
 	      && !symbolic_operand (XEXP (operand1, 0), VOIDmode))
@@ -1596,8 +1597,8 @@ emit_move_sequence (operands, mode, scratch_reg)
       else if (GET_CODE (operand1) != CONST_INT
 	       || ! cint_ok_for_move (INTVAL (operand1)))
 	{
+	  rtx extend = NULL_RTX;
 	  rtx temp;
-	  int need_zero_extend = 0;
 
 	  if (TARGET_64BIT && GET_CODE (operand1) == CONST_INT
 	      && HOST_BITS_PER_WIDE_INT > 32
@@ -1606,15 +1607,18 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      HOST_WIDE_INT val = INTVAL (operand1);
 	      HOST_WIDE_INT nval;
 
-	      /* If the value is the same after a 32->64bit sign
-		 extension, then we can use it as-is.  Else we will
-		 need to sign extend the constant from 32->64bits
-		 then zero extend the result from 32->64bits.  */
+	      /* Extract the low order 32 bits of the value and sign extend.
+		 If the new value is the same as the original value, we can
+		 can use the original value as-is.  If the new value is
+		 different, we use it and insert the most-significant 32-bits
+		 of the original value into the final result.  */
 	      nval = ((val & (((HOST_WIDE_INT) 2 << 31) - 1))
 		      ^ ((HOST_WIDE_INT) 1 << 31)) - ((HOST_WIDE_INT) 1 << 31);
 	      if (val != nval)
 		{
-		  need_zero_extend = 1;
+#if HOST_BITS_PER_WIDE_INT > 32
+		  extend = GEN_INT (val >> 32);
+#endif
 		  operand1 = GEN_INT (nval);
 		}
 	    }
@@ -1624,18 +1628,43 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  else
 	    temp = gen_reg_rtx (mode);
 
-	  emit_insn (gen_rtx_SET (VOIDmode, temp,
-				  gen_rtx_HIGH (mode, operand1)));
-	  operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
+	  if (GET_CODE (operand1) == CONST_INT)
+	    {
+	      /* Directly break constant into low and high parts.  This
+		 provides better optimization opportunities because various
+		 passes recognize constants split with PLUS but not LO_SUM.
+		 We use a 14-bit signed low part except when the addition
+		 of 0x4000 to the high part might change the sign of the
+		 high part.  */
+	      HOST_WIDE_INT value = INTVAL (operand1);
+	      HOST_WIDE_INT low = value & 0x3fff;
+	      HOST_WIDE_INT high = value & ~ 0x3fff;
+
+	      if (low >= 0x2000)
+		{
+		  if (high == 0x7fffc000 || (mode == HImode && high == 0x4000))
+		    high += 0x2000;
+		  else
+		    high += 0x4000;
+		}
+
+	      low = value - high;
+
+	      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high)));
+	      operands[1] = gen_rtx_PLUS (mode, temp, GEN_INT (low));
+	    }
+	  else
+	    {
+	      emit_insn (gen_rtx_SET (VOIDmode, temp,
+				      gen_rtx_HIGH (mode, operand1)));
+	      operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
+	    }
+
 	  emit_move_insn (operands[0], operands[1]);
 
-	  if (need_zero_extend)
-	    {
-	      emit_insn (gen_zero_extendsidi2 (operands[0],
-					       gen_rtx_SUBREG (SImode,
-							       operands[0],
-							       4)));
-	    }
+	  if (extend != NULL_RTX)
+	    emit_insn (gen_insv (operands[0], GEN_INT (32), const0_rtx,
+				 extend));
 
 	  return 1;
 	}

@@ -1106,8 +1106,8 @@ extern int may_call_alloca;
    && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE)		\
    && !(TARGET_64BIT && GET_CODE (X) == CONST_INT		\
 	&& !(HOST_BITS_PER_WIDE_INT <= 32			\
-	     || (INTVAL (X) >= (HOST_WIDE_INT) -1 << 31		\
-		 && INTVAL (X) < (HOST_WIDE_INT) 1 << 32)	\
+	     || (INTVAL (X) >= (HOST_WIDE_INT) -32 << 31	\
+		 && INTVAL (X) < (HOST_WIDE_INT) 32 << 31)	\
 	     || cint_ok_for_move (INTVAL (X))))			\
    && !function_label_operand (X, VOIDmode))
 

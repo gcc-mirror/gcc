@@ -1,3 +1,15 @@
+2001-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (emit_move_sequence): Use cint_ok_for_move to check whether a
+	constant can be loaded in a single instruction to a register.  When
+	loading immediate constants, use PLUS instead of HIGH/LO_SUM.  Use
+	depdi for insertion of most significant 32-bits on 64-bit hosts.
+	* pa.h (LEGITIMATE_CONSTANT_P): Accept constants that can be built
+	with ldil/ldo/depdi instruction sequence on 64-bit hosts.
+	* pa.md: New addmove pattern for adding constant_int to HImode
+	register and moving result to HImode register.  Remove HImode HIGH
+	and LO_SUM patterns.
+
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update.
