@@ -384,10 +384,11 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 
     set expect_crash \
       [process-option $prog "crash test - " "a crash" CRASH $text]
-    if {$expect_crash == "XCRASH"} then {
-       set expect_crash 0
-    } else {
+    if {$expect_crash != "" 
+        && [lindex [lindex $expect_crash 0] 1] == "XCRASH"} then {
        set expect_crash 1
+    } else {
+       set expect_crash 0
     }
 
 #
