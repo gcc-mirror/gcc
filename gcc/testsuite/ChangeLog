@@ -1,5 +1,9 @@
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* g++.dg/opt/reg-stack4.C: New test.
+
+2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/builtin-apply2.c: New test.
 
 2003-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>

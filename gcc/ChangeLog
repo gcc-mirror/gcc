@@ -1,5 +1,18 @@
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/12900
+	* reg-stack (move_for_stack_reg): New prototype.  Return
+	whether a control flow insn was deleted.
+	(subst_stack_regs_pat): Likewise, using the information provided
+	by move_for_stack_reg.
+	(subst_stack_regs): Likewise, using the information provided
+	by subst_stack_regs_pat.
+	(convert_regs_1): Record whether a control flow insn was deleted,
+	using the information provided by subst_stack_regs.  Purge dead
+	edges only if a control flow insn was deleted.
+
+2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR middle-end/8028
 	PR middle-end/9890
 	PR middle-end/11151
