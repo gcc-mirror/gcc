@@ -5052,7 +5052,7 @@ fold (expr)
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
-	 one machine that have only two-operand insns or on which a
+	 on machines that have only two-operand insns or on which a
 	 constant cannot be the first operand.  */
       if (integer_zerop (arg1) && (code == EQ_EXPR || code == NE_EXPR)
 	  && TREE_CODE (arg0) == BIT_AND_EXPR)
@@ -5211,6 +5211,34 @@ fold (expr)
 	      break;
 	    }
 	}
+
+      /* An unsigned <= 0x7fffffff can be simplified.  */
+      {
+	int width = TYPE_PRECISION (TREE_TYPE (arg1));
+	if (TREE_CODE (arg1) == INTEGER_CST
+	    && ! TREE_CONSTANT_OVERFLOW (arg1)
+	    && width <= HOST_BITS_PER_WIDE_INT
+	    && TREE_INT_CST_LOW (arg1) == ((HOST_WIDE_INT) 1 << (width - 1)) - 1
+	    && TREE_INT_CST_HIGH (arg1) == 0
+	    && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+		|| TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE)
+	    && TREE_UNSIGNED (TREE_TYPE (arg1)))
+	  {
+	    switch (TREE_CODE (t))
+	      {
+	      case LE_EXPR:
+		return build (GE_EXPR, type,
+			      convert (signed_type (TREE_TYPE (arg0)), arg0),
+			      convert (signed_type (TREE_TYPE (arg1)),
+				       integer_zero_node));
+	      case GT_EXPR:
+		return build (LT_EXPR, type,
+			      convert (signed_type (TREE_TYPE (arg0)), arg0),
+			      convert (signed_type (TREE_TYPE (arg1)),
+				       integer_zero_node));
+	      }
+	  }
+      }
 
       /* If we are comparing an expression that just has comparisons
 	 of two integer values, arithmetic expressions of those comparisons,
