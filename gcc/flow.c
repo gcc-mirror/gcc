@@ -2796,7 +2796,7 @@ flush_reg_cond_reg (pbi, regno)
    For ior/and, the ADD flag determines whether we want to add the new
    condition X to the old one unconditionally.  If it is zero, we will
    only return a new expression if X allows us to simplify part of
-   OLD, otherwise we return OLD unchanged to the caller.
+   OLD, otherwise we return NULL to the caller.
    If ADD is nonzero, we will return a new condition in all cases.  The
    toplevel caller of one of these functions should always pass 1 for
    ADD.  */
@@ -2818,7 +2818,7 @@ ior_reg_cond (old, x, add)
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return old;
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_IOR (0, old, x);
     }
 
@@ -2827,51 +2827,63 @@ ior_reg_cond (old, x, add)
     case IOR:
       op0 = ior_reg_cond (XEXP (old, 0), x, 0);
       op1 = ior_reg_cond (XEXP (old, 1), x, 0);
-      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+      if (op0 != NULL || op1 != NULL)
 	{
 	  if (op0 == const0_rtx)
-	    return op1;
+	    return op1 ? op1 : gen_rtx_IOR (0, XEXP (old, 1), x);
 	  if (op1 == const0_rtx)
-	    return op0;
+	    return op0 ? op0 : gen_rtx_IOR (0, XEXP (old, 0), x);
 	  if (op0 == const1_rtx || op1 == const1_rtx)
 	    return const1_rtx;
-	  if (op0 == XEXP (old, 0))
-	    op0 = gen_rtx_IOR (0, op0, x);
-	  else
-	    op1 = gen_rtx_IOR (0, op1, x);
+	  if (op0 == NULL)
+	    op0 = gen_rtx_IOR (0, XEXP (old, 0), x);
+	  else if (rtx_equal_p (x, op0))
+	    /* (x | A) | x ~ (x | A).  */
+	    return old;
+	  if (op1 == NULL)
+	    op1 = gen_rtx_IOR (0, XEXP (old, 1), x);
+	  else if (rtx_equal_p (x, op1))
+	    /* (A | x) | x ~ (A | x).  */
+	    return old;
 	  return gen_rtx_IOR (0, op0, op1);
 	}
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_IOR (0, old, x);
 
     case AND:
       op0 = ior_reg_cond (XEXP (old, 0), x, 0);
       op1 = ior_reg_cond (XEXP (old, 1), x, 0);
-      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+      if (op0 != NULL || op1 != NULL)
 	{
 	  if (op0 == const1_rtx)
-	    return op1;
+	    return op1 ? op1 : gen_rtx_IOR (0, XEXP (old, 1), x);
 	  if (op1 == const1_rtx)
-	    return op0;
+	    return op0 ? op0 : gen_rtx_IOR (0, XEXP (old, 0), x);
 	  if (op0 == const0_rtx || op1 == const0_rtx)
 	    return const0_rtx;
-	  if (op0 == XEXP (old, 0))
-	    op0 = gen_rtx_IOR (0, op0, x);
-	  else
-	    op1 = gen_rtx_IOR (0, op1, x);
+	  if (op0 == NULL)
+	    op0 = gen_rtx_IOR (0, XEXP (old, 0), x);
+	  else if (rtx_equal_p (x, op0))
+	    /* (x & A) | x ~ x.  */
+	    return op0;
+	  if (op1 == NULL)
+	    op1 = gen_rtx_IOR (0, XEXP (old, 1), x);
+	  else if (rtx_equal_p (x, op1))
+	    /* (A & x) | x ~ x.  */
+	    return op1;
 	  return gen_rtx_AND (0, op0, op1);
 	}
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_IOR (0, old, x);
 
     case NOT:
       op0 = and_reg_cond (XEXP (old, 0), not_reg_cond (x), 0);
-      if (op0 != XEXP (old, 0))
+      if (op0 != NULL)
 	return not_reg_cond (op0);
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_IOR (0, old, x);
 
     default:
@@ -2921,7 +2933,7 @@ and_reg_cond (old, x, add)
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return old;
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_AND (0, old, x);
     }
 
@@ -2930,62 +2942,63 @@ and_reg_cond (old, x, add)
     case IOR:
       op0 = and_reg_cond (XEXP (old, 0), x, 0);
       op1 = and_reg_cond (XEXP (old, 1), x, 0);
-      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+      if (op0 != NULL || op1 != NULL)
 	{
 	  if (op0 == const0_rtx)
-	    return op1;
+	    return op1 ? op1 : gen_rtx_AND (0, XEXP (old, 1), x);
 	  if (op1 == const0_rtx)
-	    return op0;
+	    return op0 ? op0 : gen_rtx_AND (0, XEXP (old, 0), x);
 	  if (op0 == const1_rtx || op1 == const1_rtx)
 	    return const1_rtx;
-	  if (op0 == XEXP (old, 0))
-	    op0 = gen_rtx_AND (0, op0, x);
-	  else
-	    op1 = gen_rtx_AND (0, op1, x);
+	  if (op0 == NULL)
+	    op0 = gen_rtx_AND (0, XEXP (old, 0), x);
+	  else if (rtx_equal_p (x, op0))
+	    /* (x | A) & x ~ x.  */
+	    return op0;
+	  if (op1 == NULL)
+	    op1 = gen_rtx_AND (0, XEXP (old, 1), x);
+	  else if (rtx_equal_p (x, op1))
+	    /* (A | x) & x ~ x.  */
+	    return op1;
 	  return gen_rtx_IOR (0, op0, op1);
 	}
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_AND (0, old, x);
 
     case AND:
       op0 = and_reg_cond (XEXP (old, 0), x, 0);
       op1 = and_reg_cond (XEXP (old, 1), x, 0);
-      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+      if (op0 != NULL || op1 != NULL)
 	{
 	  if (op0 == const1_rtx)
-	    return op1;
+	    return op1 ? op1 : gen_rtx_AND (0, XEXP (old, 1), x);
 	  if (op1 == const1_rtx)
-	    return op0;
+	    return op0 ? op0 : gen_rtx_AND (0, XEXP (old, 0), x);
 	  if (op0 == const0_rtx || op1 == const0_rtx)
 	    return const0_rtx;
-	  if (op0 == XEXP (old, 0))
-	    op0 = gen_rtx_AND (0, op0, x);
-	  else
-	    op1 = gen_rtx_AND (0, op1, x);
+	  if (op0 == NULL)
+	    op0 = gen_rtx_AND (0, XEXP (old, 0), x);
+	  else if (rtx_equal_p (x, op0))
+	    /* (x & A) & x ~ (x & A).  */
+	    return old;
+	  if (op1 == NULL)
+	    op1 = gen_rtx_AND (0, XEXP (old, 1), x);
+	  else if (rtx_equal_p (x, op1))
+	    /* (A & x) & x ~ (A & x).  */
+	    return old;
 	  return gen_rtx_AND (0, op0, op1);
 	}
       if (! add)
-	return old;
-
-      /* If X is identical to one of the existing terms of the AND,
-	 then just return what we already have.  */
-      /* ??? There really should be some sort of recursive check here in
-	 case there are nested ANDs.  */
-      if ((GET_CODE (XEXP (old, 0)) == GET_CODE (x)
-	   && REGNO (XEXP (XEXP (old, 0), 0)) == REGNO (XEXP (x, 0)))
-	  || (GET_CODE (XEXP (old, 1)) == GET_CODE (x)
-	      && REGNO (XEXP (XEXP (old, 1), 0)) == REGNO (XEXP (x, 0))))
-	return old;
-
+	return NULL;
       return gen_rtx_AND (0, old, x);
 
     case NOT:
       op0 = ior_reg_cond (XEXP (old, 0), not_reg_cond (x), 0);
-      if (op0 != XEXP (old, 0))
+      if (op0 != NULL)
 	return not_reg_cond (op0);
       if (! add)
-	return old;
+	return NULL;
       return gen_rtx_AND (0, old, x);
 
     default:
