@@ -1255,16 +1255,20 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ $$ = finish_label_address_expr ($2); }
-	| SIZEOF unary_expr  %prec UNARY
-		{ $$ = finish_sizeof ($2); }
-	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
+	| sizeof unary_expr  %prec UNARY
+		{ $$ = finish_sizeof ($2);
+		  skip_evaluation--; }
+	| sizeof '(' type_id ')'  %prec HYPERUNARY
 		{ $$ = finish_sizeof (groktypename ($3.t));
-		  check_for_new_type ("sizeof", $3); }
-	| ALIGNOF unary_expr  %prec UNARY
-		{ $$ = finish_alignof ($2); }
-	| ALIGNOF '(' type_id ')'  %prec HYPERUNARY
+		  check_for_new_type ("sizeof", $3);
+		  skip_evaluation--; }
+	| alignof unary_expr  %prec UNARY
+		{ $$ = finish_alignof ($2);
+		  skip_evaluation--; }
+	| alignof '(' type_id ')'  %prec HYPERUNARY
 		{ $$ = finish_alignof (groktypename ($3.t)); 
-		  check_for_new_type ("alignof", $3); }
+		  check_for_new_type ("alignof", $3);
+		  skip_evaluation--; }
 
 	/* The %prec EMPTY's here are required by the = init initializer
 	   syntax extension; see below.  */
@@ -1989,6 +1993,18 @@ reserved_typespecquals:
 		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
+sizeof:
+	SIZEOF { skip_evaluation++; }
+	;
+
+alignof:
+	ALIGNOF { skip_evaluation++; }
+	;
+
+typeof:
+	TYPEOF { skip_evaluation++; }
+	;
+
 /* A typespec (but not a type qualifier).
    Once we have seen one of these in a declaration,
    if a typedef name appears then it is being redeclared.  */
@@ -2000,12 +2016,14 @@ typespec:
 		{ $$.t = $1; $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
 	| complete_type_name
 		{ $$.t = $1; $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
-	| TYPEOF '(' expr ')'
+	| typeof '(' expr ')'
 		{ $$.t = finish_typeof ($3);
-		  $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
-	| TYPEOF '(' type_id ')'
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
+		  skip_evaluation--; }
+	| typeof '(' type_id ')'
 		{ $$.t = groktypename ($3.t);
-		  $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
+		  skip_evaluation--; }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
 

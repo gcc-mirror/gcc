@@ -5186,7 +5186,8 @@ mark_used (decl)
   TREE_USED (decl) = 1;
   if (processing_template_decl)
     return;
-  assemble_external (decl);
+  if (!skip_evaluation)
+    assemble_external (decl);
 
   /* Is it a synthesized method that needs to be synthesized?  */
   if (TREE_CODE (decl) == FUNCTION_DECL
