@@ -1,3 +1,7 @@
+2003-03-20  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-6.c: New test case.
+
 2003-03-19  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/10073
