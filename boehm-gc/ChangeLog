@@ -1,3 +1,7 @@
+1999-07-19  Tom Tromey  <tromey@cygnus.com>
+
+	* config.h (MPROTECT_VDB): Don't define on Linux.
+
 1999-07-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.am (.s.lo): Avoid `#line' directives.
