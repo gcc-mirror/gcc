@@ -203,10 +203,9 @@ namespace std
       streamsize __ret = 0;
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
-      bool __testput = __sbout->_M_mode & ios_base::out;
       try 
 	{
-	  while (__testput && __bufsize != -1)
+	  while (__bufsize != -1)
   	    {
  	      if (__bufsize != 0 && __sbin->gptr() != NULL
 		  && __sbin->gptr() + __bufsize <= __sbin->egptr()) 
