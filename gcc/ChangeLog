@@ -1,3 +1,23 @@
+Sat Apr 28 21:02:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtl.h (simplify_gen_relational): Add cmp_mode parameter.
+	* simplify-rtx.c (simplify_gen_relational): Likewise.
+
+	* simplify-rtx.c (simplify_replace_rtx): Handle relationals and MEMs.
+
+	* i386.h (VALID_SSE_REG_MODE): Accept MMX modes if SSE2
+	* i386.md (movsi_1, movdi2, movdi_1_rex64): Handle SSE2 moves.
+
+	* i386.md (negsf2, negdf2, abssf2, absdf2): Force operands to
+	registers in SSE case; fix handling of the immediates.
+	(negsf2_ifs, abssf2_ifs): Tweak constraints; require
+	operands to be in regsiters before reload.
+	(negdf2_ifs, absdf2_ifs): Likewise; disable for 64bit
+	(negdf2_ifs_rex64, absdf2_ifs_rtx64): New.
+	(abstf,absxf,negtf,negxf splitters): Compute
+	properly the regnum for x86_64.
+	(avsdf2_if_rex64): New.
+
 Sat Apr 28 10:36:23 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (propagate_block_delete_insn): Handle deletion of ADDR_VEC

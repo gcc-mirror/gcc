@@ -861,7 +861,8 @@ extern int ix86_arch;
 
 #define VALID_SSE_REG_MODE(MODE) \
     ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode \
-     || (MODE) == SFmode || (TARGET_SSE2 && (MODE) == DFmode))
+     || (MODE) == SFmode \
+     || (TARGET_SSE2 && ((MODE) == DFmode || VALID_MMX_REG_MODE (MODE))))
 
 #define VALID_MMX_REG_MODE(MODE) \
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode \

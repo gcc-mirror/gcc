@@ -1318,6 +1318,7 @@ extern rtx simplify_gen_ternary		PARAMS ((enum rtx_code,
 						 rtx, rtx, rtx));
 extern rtx simplify_gen_relational	PARAMS ((enum rtx_code,
 						 enum machine_mode,
+						 enum machine_mode,
 						 rtx, rtx));
 extern rtx simplify_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern rtx simplify_rtx			PARAMS ((rtx));
