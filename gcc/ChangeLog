@@ -1,3 +1,8 @@
+Mon Nov  9 03:06:24 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (delete_output_reload_insn): If a pseudo is set multiple
+	times, then it can not be completely replaced.
+
 Mon Nov  9 00:39:02 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (call, call_value) [OSF]: Correct alt 3 insn length.
