@@ -186,6 +186,7 @@ do {									\
    1 byte alignment. Don't generate alignment for COMMON seems to be
    safer until we the assembler is fixed. */
 #undef ASM_OUTPUT_ALIGNED_COMMON
+/* Same problem with this one.  */
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 
 /* The `string' directive on m68k svr4 does not handle string with
