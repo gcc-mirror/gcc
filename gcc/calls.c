@@ -1425,7 +1425,7 @@ expand_call (exp, target, ignore)
 	mode = (GET_CODE (args[i].reg) == EXPR_LIST 
 		? GET_MODE (XEXP (args[i].reg, 0)) : GET_MODE (args[i].reg));
 
-	if (GET_MODE (args[i].value) != mode)
+	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != mode)
 	  args[i].value = convert_to_mode (mode, args[i].value,
 					   args[i].unsignedp);
       }
