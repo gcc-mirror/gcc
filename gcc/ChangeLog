@@ -1,3 +1,8 @@
+Mon Dec 20 15:00:04 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): New argument SIZE; pass to clear_storage.
+	(store_constructor_field, expand_expr): Pass new arg.
+
 1999-12-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (explow.o): Depend on function.h.
