@@ -1,3 +1,10 @@
+2005-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/19683
+	* reload1.c (choose_reload_regs): Pass the number of bits, not the
+	number of bytes, to smallest_int_for_mode.  Fix arguments to
+	REG_CANNOT_CHANGE_MODE_P.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.

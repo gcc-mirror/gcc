@@ -1,3 +1,7 @@
+2005-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/pr19683-1.c: New test.
+
 2005-03-06  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/g77/19990313-1.f: Replace tabs with spaces.
