@@ -2119,7 +2119,11 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 stmp-headers:
 	touch $@
 
-fixinc.sh: $(srcdir)/fixinc/mkfixinc.sh
+FIXINCSRCDIR=$(srcdir)/fixinc
+fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
+	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/regex.c \
+	$(FIXINCSRCDIR)/server.c $(FIXINCSRCDIR)/regex.h \
+	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def 
 	MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc; pwd` ; \
 	export MAKE srcdir ; \
 	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
