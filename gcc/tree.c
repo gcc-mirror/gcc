@@ -4109,23 +4109,22 @@ get_set_constructor_bits (init, buffer, bit_size)
 }
 
 /* Expand (the constant part of) a SET_TYPE CONTRUCTOR node.
-   The result is placed in BUFFER (which is an array of WD_SIZE
-   words).  TYPE_ALIGN bits are stored in each element of BUFFER.
+   The result is placed in BUFFER (which is an array of bytes).
    If the constructor is constant, NULL_TREE is returned.
    Otherwise, a TREE_LIST of the non-constant elements is emitted. */
 
 tree
-get_set_constructor_words (init, buffer, wd_size)
+get_set_constructor_bytes (init, buffer, wd_size)
      tree init;
-     HOST_WIDE_INT *buffer;
+     unsigned char *buffer;
      int wd_size;
 {
   int i;
   tree vals = TREE_OPERAND (init, 1);
-  int set_word_size = TYPE_ALIGN (TREE_TYPE (init));
+  int set_word_size = BITS_PER_UNIT;
   int bit_size = wd_size * set_word_size;
   int bit_pos = 0;
-  HOST_WIDE_INT *wordp = buffer;
+  unsigned char *bytep = buffer;
   char *bit_buffer = (char*)alloca(bit_size);
   tree non_const_bits = get_set_constructor_bits (init, bit_buffer, bit_size);
 
@@ -4137,13 +4136,13 @@ get_set_constructor_words (init, buffer, wd_size)
       if (bit_buffer[i])
 	{
 	  if (BITS_BIG_ENDIAN)
-	    *wordp |= (1 << (set_word_size - 1 - bit_pos));
+	    *bytep |= (1 << (set_word_size - 1 - bit_pos));
 	  else
-	    *wordp |= 1 << bit_pos;
+	    *bytep |= 1 << bit_pos;
 	}
       bit_pos++;
       if (bit_pos >= set_word_size)
-	bit_pos = 0, wordp++;
+	bit_pos = 0, bytep++;
     }
   return non_const_bits;
 }
