@@ -598,7 +598,8 @@ static const char *cpp_options =
  %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-M -MF %W{!o: %b.d}%W{o*:%.d%*}}\
  %{MMD:-MM -MF %W{!o: %b.d}%W{o*:%.d%*}}\
- %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*} %{M|MD|MM|MMD:%{o*:-MQ %*}}\
+ %{M} %{MM} %W{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
+ %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -610,7 +611,7 @@ static const char *cpp_options =
  %{fleading-underscore} %{fno-leading-underscore}\
  %{fno-operator-names} %{ftabstop=*} %{remap}\
  %{g3:-dD} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
- %{E:%{!M*:%W{o*}}}";
+ %{E|M|MM:%W{o*}}";
 
 /* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =

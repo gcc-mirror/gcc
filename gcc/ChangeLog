@@ -1,3 +1,11 @@
+2002-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	preprocessor/3951
+	* cppinit.c (init_dependency_output): Take deps output file
+	from -o if none given with -MF.  Suppress normal output.
+	* gcc.c (cpp_unique_options): Have -M and -MM imply -E.	
+	* doc/cpp.texi, doc/invoke.texi: Update.
+
 2002-03-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/cpp.texi: Clarify documentation of relationship between
