@@ -1,3 +1,21 @@
+2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* basic-block.h (OBSTACK_ALLOC_REG_SET): Rename to ...
+	(ALLOC_REG_SET): ... here.
+	(FREE_REG_SET): Adjust.
+	(XMALLOC_REG_SET, XFREE_REG_SET): Remove.
+	* bb-reorder.c (fix_crossing_conditional_branches): Adjust.
+	* cfglayout.c (cfg_layout_duplicate_bb): Adjust.
+	* cfgrtl.c (rtl_split_block, rtl_split_edge,
+	safe_insert_insn_on_edge, cfg_layout_split_edge): Adjust.
+	* flow.c (update_life_info, calculate_global_regs_live,
+	allocate_bb_life_data, init_propagate_block_info): Adjust.
+	* global.c (build_insn_chain): Adjust.
+	* ifcvt.c (dead_or_predicable): Adjust.
+	* loop-iv.c (simplify_using_initial_values): Adjust.
+	* recog.c (peephole2_optimize): Adjust.
+	* sched-deps.c (init_deps_global): Adjust.
+
 2004-11-25  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config.gcc (avr-*-rtems*): Fix typo.

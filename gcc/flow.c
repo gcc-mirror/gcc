@@ -575,7 +575,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
   int stabilized_prop_flags = prop_flags;
   basic_block bb;
 
-  tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  tmp = ALLOC_REG_SET (&reg_obstack);
   ndead = 0;
 
   if ((prop_flags & PROP_REG_INFO) && !reg_deaths)
@@ -1033,9 +1033,9 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
     gcc_assert (!bb->aux);
 #endif
 
-  tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-  new_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-  invalidated_by_call = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  tmp = ALLOC_REG_SET (&reg_obstack);
+  new_live_at_end = ALLOC_REG_SET (&reg_obstack);
+  invalidated_by_call = ALLOC_REG_SET (&reg_obstack);
 
   /* Inconveniently, this is only readily available in hard reg set form.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
@@ -1189,8 +1189,10 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
       if (local_sets[bb->index - (INVALID_BLOCK + 1)] == NULL)
 	{
-	  local_sets[bb->index - (INVALID_BLOCK + 1)] = XMALLOC_REG_SET ();
-	  cond_local_sets[bb->index - (INVALID_BLOCK + 1)] = XMALLOC_REG_SET ();
+	  local_sets[bb->index - (INVALID_BLOCK + 1)]
+	    = ALLOC_REG_SET (&reg_obstack);
+	  cond_local_sets[bb->index - (INVALID_BLOCK + 1)]
+	    = ALLOC_REG_SET (&reg_obstack);
 	  rescan = 1;
 	}
       else
@@ -1294,16 +1296,16 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  XFREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
-	  XFREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  FREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  FREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
 	});
     }
   else
     {
       FOR_EACH_BB (bb)
 	{
-	  XFREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
-	  XFREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  FREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
+	  FREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
 	}
     }
 
@@ -1436,11 +1438,11 @@ allocate_bb_life_data (void)
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      bb->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+      bb->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
     }
 
-  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  regs_live_at_setjmp = ALLOC_REG_SET (&reg_obstack);
 }
 
 void
@@ -1843,7 +1845,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   if (JUMP_P (BB_END (bb))
       && any_condjump_p (BB_END (bb)))
     {
-      regset diff = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      regset diff = ALLOC_REG_SET (&reg_obstack);
       basic_block bb_true, bb_false;
       unsigned i;
 

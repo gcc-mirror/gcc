@@ -1580,9 +1580,9 @@ free_dependency_caches (void)
 void
 init_deps_global (void)
 {
-  reg_pending_sets = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-  reg_pending_clobbers = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-  reg_pending_uses = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  reg_pending_sets = ALLOC_REG_SET (&reg_obstack);
+  reg_pending_clobbers = ALLOC_REG_SET (&reg_obstack);
+  reg_pending_uses = ALLOC_REG_SET (&reg_obstack);
   reg_pending_barrier = NOT_A_BARRIER;
 }
 

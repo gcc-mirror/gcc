@@ -2972,8 +2972,8 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-    peep2_insn_data[i].live_before = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-  live = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+    peep2_insn_data[i].live_before = ALLOC_REG_SET (&reg_obstack);
+  live = ALLOC_REG_SET (&reg_obstack);
 
 #ifdef HAVE_conditional_execution
   blocks = sbitmap_alloc (last_basic_block);

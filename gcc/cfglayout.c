@@ -1116,8 +1116,8 @@ cfg_layout_duplicate_bb (basic_block bb)
 
   if (bb->global_live_at_start)
     {
-      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
-      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      new_bb->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+      new_bb->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
       COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_start);
       COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
     }

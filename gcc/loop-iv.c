@@ -1778,7 +1778,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
   if (e->src == ENTRY_BLOCK_PTR)
     return;
 
-  altered = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  altered = ALLOC_REG_SET (&reg_obstack);
 
   while (1)
     {
