@@ -1,3 +1,9 @@
+2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* gcc_update (self): Set to `$0'.
+	(touch_files_reexec): Use `$self' instead of `$0'.
+	Reported by Albert Chin-A-Young <china@thewrittenword.com>
+
 2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* gcc_update (touch_files_reexec): New function, run after the
