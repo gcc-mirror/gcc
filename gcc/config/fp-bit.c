@@ -716,9 +716,9 @@ _fpmul_parts ( fp_number_type *  a,
 #else
     /* Doing a 64*64 to 128 */
     {
-      UDItype nl = a->fraction.ll;
+      UDItype nl = a->fraction.ll & 0xffffffff;
       UDItype nh = a->fraction.ll >> 32;
-      UDItype ml = b->fraction.ll;
+      UDItype ml = b->fraction.ll & 0xffffffff;
       UDItype mh = b->fraction.ll >>32;
       UDItype pp_ll = ml * nl;
       UDItype pp_hl = mh * nl;
