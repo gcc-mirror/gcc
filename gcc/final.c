@@ -1840,10 +1840,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
       if (prescan > 0)
 	break;
 
-#ifdef FINAL_PRESCAN_LABEL
-      FINAL_PRESCAN_INSN (insn, NULL, 0);
-#endif
-
       if (LABEL_NAME (insn))
 	(*debug_hooks->label) (insn);
 
