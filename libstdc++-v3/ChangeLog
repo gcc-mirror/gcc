@@ -1,5 +1,12 @@
 2003-03-06  Jerry Quinn  <jlquinn@optonline.net>
 
+	* testsuite/27_io/ios_base_storage.cc (test02): Set exception
+	mask.  Test setting small-numbered pword and iword slots.  Test
+	behavior at limit of numeric_limits::max.  Check that values are
+	still good after failures.
+
+2003-03-06  Jerry Quinn  <jlquinn@optonline.net>
+
 	* src/ios.cc (ios_base::_M_init): Remove _M_word_size.
 	(ios_base::ios_base): Set _M_word, _M_word_size.
 	(ios_base::~ios_base): Remove redundant test.
