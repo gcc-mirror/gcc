@@ -1,3 +1,8 @@
+1999-02-09  Brendan Kehoe  <brendan@cygnus.com>
+
+	* cpplib.c (special_symbol): Move IP to be declared in function
+	scope, rather than individual case statements.
+
 1999-02-09 16:42 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppfiles.c (finclude):  Handle pipes properly under old BSD
