@@ -4802,12 +4802,17 @@ mips_expand_prologue ()
 
   for (cur_arg = fnargs; cur_arg != (tree)0; cur_arg = next_arg)
     {
-      tree type = DECL_ARG_TYPE (cur_arg);
-      enum machine_mode passed_mode = TYPE_MODE (type);
-      rtx entry_parm = FUNCTION_ARG (args_so_far,
-				     passed_mode,
-				     DECL_ARG_TYPE (cur_arg),
-				     1);
+      tree passed_type = DECL_ARG_TYPE (cur_arg);
+      enum machine_mode passed_mode = TYPE_MODE (passed_type);
+      rtx entry_parm;
+
+      if (TYPE_NEEDS_CONSTRUCTING (passed_type))
+	{
+	  passed_type = build_pointer_type (passed_type);
+	  passed_mode = Pmode;
+	}
+
+      entry_parm = FUNCTION_ARG (args_so_far, passed_mode, passed_type, 1);
 
       if (entry_parm)
 	{
@@ -4815,7 +4820,7 @@ mips_expand_prologue ()
 
 	  /* passed in a register, so will get homed automatically */
 	  if (GET_MODE (entry_parm) == BLKmode)
-	    words = (int_size_in_bytes (type) + 3) / 4;
+	    words = (int_size_in_bytes (passed_type) + 3) / 4;
 	  else
 	    words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
 
@@ -4827,10 +4832,7 @@ mips_expand_prologue ()
 	  break;
 	}
 
-      FUNCTION_ARG_ADVANCE (args_so_far,
-			    passed_mode,
-			    DECL_ARG_TYPE (cur_arg),
-			    1);
+      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
 
       next_arg = TREE_CHAIN (cur_arg);
       if (next_arg == (tree)0)
