@@ -1,3 +1,8 @@
+Tue Aug 25 13:35:20 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/v850.c (movsi_source_operand): Treat CONSTANT_P_RTX
+	as an ordinary operand.
+
 Tue Aug 25 12:54:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (valid_machine_attribute): Don't apply attributes to both
