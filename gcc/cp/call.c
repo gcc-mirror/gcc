@@ -647,6 +647,12 @@ standard_conversion (tree to, tree from, tree expr)
   if ((tcode == POINTER_TYPE || TYPE_PTR_TO_MEMBER_P (to))
       && expr && null_ptr_cst_p (expr))
     conv = build_conv (STD_CONV, to, conv);
+  else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (to)) == VECTOR_TYPE
+	   && TREE_CODE (TREE_TYPE (from)) == VECTOR_TYPE
+	   && ((*targetm.vector_opaque_p) (TREE_TYPE (to))
+	       || (*targetm.vector_opaque_p) (TREE_TYPE (from))))
+    conv = build_conv (STD_CONV, to, conv);
   else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
 	   || (tcode == POINTER_TYPE && fcode == INTEGER_TYPE))
     {
