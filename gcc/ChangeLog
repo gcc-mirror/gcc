@@ -1,4 +1,18 @@
-2002-01-22  Nick Clifton  <nickc@cambridge.redhat.com>
+2002-01-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Move 'regno'
+	variable declaration to outer scope in order to simplify
+	future extensions.
+	(HARD_REGNO_MODE_OK): Replace macro body with a with a call to
+	arm_hard_regno_mode_ok.
+	* config/arm/arm-protos.h: Add a prototype for
+	arm_hard_regno_mode_ok.
+	* config/arm/arm.c (soft_df_operand): Remove now redundant
+	check for DImode values using IP_REGNUM.
+	(nonimmediate_soft_df_operand): Remove now redundant check for
+	DImode values using IP_REGNUM.
+	(arm_hard_regno_mode_ok): New function. New check: make sure
+	that DImode values are not stored in IP_REGNUM.
 
 	* config/arm/arm.c (arm_expand_prologue): Replace REG_MAYBE_DEAD
 	note with a USE.

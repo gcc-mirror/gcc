@@ -43,6 +43,7 @@ extern void   arm_encode_call_attribute	PARAMS ((tree, int));
 extern int    arm_function_ok_for_sibcall PARAMS ((tree));
 #endif
 #ifdef RTX_CODE
+extern int    arm_hard_regno_mode_ok	PARAMS ((unsigned int, enum machine_mode));
 extern int    const_ok_for_arm		PARAMS ((HOST_WIDE_INT));
 extern int    arm_split_constant	PARAMS ((RTX_CODE, enum machine_mode,
 						HOST_WIDE_INT, rtx, rtx, int));

@@ -3358,14 +3358,7 @@ soft_df_operand (op, mode)
      enum machine_mode mode;
 {
   if (s_register_operand (op, mode))
-    {
-      if (GET_CODE (op) == SUBREG)
-	op = SUBREG_REG (op);
-
-      /* The IP register must not be used, since its higher
-	 numbered counterpart is 13 - the stack pointer.  */
-      return REGNO (op) != IP_REGNUM;
-    }
+    return TRUE;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return FALSE;
@@ -3397,14 +3390,7 @@ nonimmediate_soft_df_operand (op, mode)
      enum machine_mode mode;
 {
   if (s_register_operand (op, mode))
-    {
-      if (GET_CODE (op) == SUBREG)
-	op = SUBREG_REG (op);
-
-      /* The IP register must not be used, since its higher
-	 numbered counterpart is 13 - the stack pointer.  */
-      return REGNO (op) != IP_REGNUM;
-    }
+    return TRUE;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return FALSE;
@@ -9131,6 +9117,44 @@ arm_final_prescan_insn (insn)
 	 call recog direct).  */
       recog (PATTERN (insn), insn, NULL);
     }
+}
+
+/* Returns true if REGNO is a valid register
+   for holding a quantity of tyoe MODE.  */
+
+int
+arm_hard_regno_mode_ok (regno, mode)
+     unsigned int regno;
+     enum machine_mode mode;
+{
+  if (GET_MODE_CLASS (mode) == MODE_CC)
+    return regno == CC_REGNUM;
+  
+  if (TARGET_THUMB)
+    /* For the Thumb we only allow values bigger than SImode in
+       registers 0 - 6, so that there is always a second low
+       register available to hold the upper part of the value.
+       We probably we ought to ensure that the register is the
+       start of an even numbered register pair.  */
+    return (NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
+
+  if (regno <= LAST_ARM_REGNUM)
+    /* If the register is a general purpose ARM register we allow
+       it only if it not a special register (SP, LR, PC) and only
+       if there will be enough (non-special) registers to hold the
+       entire value.  */
+    return regno < (SP_REGNUM - (unsigned) NUM_REGS (mode));
+
+  if (   regno == FRAME_POINTER_REGNUM
+      || regno == ARG_POINTER_REGNUM)
+    /* We only allow integers in the fake hard registers.  */
+    return GET_MODE_CLASS (mode) == MODE_INT;
+
+  /* The only registers left are the FPU registers
+     which we only allow to hold FP values.  */
+  return GET_MODE_CLASS (mode) == MODE_FLOAT
+    && regno >= FIRST_ARM_FP_REGNUM
+    && regno <= LAST_ARM_FP_REGNUM;
 }
 
 int

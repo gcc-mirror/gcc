@@ -847,9 +847,10 @@ extern const char * structure_size_string;
 
 #define CONDITIONAL_REGISTER_USAGE				\
 {								\
+  int regno;							\
+								\
   if (TARGET_SOFT_FLOAT || TARGET_THUMB)			\
     {								\
-      int regno;						\
       for (regno = FIRST_ARM_FP_REGNUM;				\
 	   regno <= LAST_ARM_FP_REGNUM; ++regno)		\
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
@@ -1004,23 +1005,9 @@ extern const char * structure_size_string;
     && REGNO != ARG_POINTER_REGNUM)	\
    ? 1 : NUM_REGS (MODE))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   This is TRUE for ARM regs since they can hold anything, and TRUE for FPU
-   regs holding FP.
-   For the Thumb we only allow values bigger than SImode in registers 0 - 6,
-   so that there is always a second lo register available to hold the upper
-   part of the value.  Probably we ought to ensure that the register is the
-   start of an even numbered register pair.  */
+/* Return true if REGNO is suitable for holding a quantity of type MODE.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  (TARGET_ARM ?								\
-   ((GET_MODE_CLASS (MODE) == MODE_CC) ? (REGNO == CC_REGNUM) :		\
-    (   REGNO <= LAST_ARM_REGNUM					\
-     || REGNO == FRAME_POINTER_REGNUM					\
-     || REGNO == ARG_POINTER_REGNUM					\
-     || GET_MODE_CLASS (MODE) == MODE_FLOAT))				\
-   :									\
-   ((GET_MODE_CLASS (MODE) == MODE_CC) ? (REGNO == CC_REGNUM) :		\
-    (NUM_REGS (MODE) < 2 || REGNO < LAST_LO_REGNUM)))
+  arm_hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -1092,7 +1079,7 @@ enum reg_class
   { 0x200FFFF }, /* GENERAL_REGS */	\
   { 0x2FFFFFF }  /* ALL_REGS */		\
 }
-  
+
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
@@ -1909,7 +1896,7 @@ typedef struct
         arm_encode_call_attribute (decl, LONG_CALL_FLAG_CHAR);		\
       else if (! TREE_PUBLIC (decl))        				\
         arm_encode_call_attribute (decl, SHORT_CALL_FLAG_CHAR);		\
-    }									\
+    }
 
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
