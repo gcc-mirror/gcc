@@ -1,5 +1,11 @@
 2004-05-18  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-phiopt.c (replace_phi_with_stmt): New function extracted
+	from conditional_replacement.
+	(candidate_bb_for_phi_optimization): Similarly.
+	(conditional_replacement): Use replace_phi_with_stmt and
+	candidate_bb_for_phi_optimization.
+
 	* tree-ssa-phiopt.c: Fix various formatting issues.
 
 2004-05-18  Steven Bosscher  <stevenb@suse.de>
