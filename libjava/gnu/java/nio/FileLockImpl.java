@@ -42,6 +42,7 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import gnu.classpath.Configuration;
 
 /**
  * @author Michael Koch
@@ -49,6 +50,15 @@ import java.nio.channels.FileLock;
  */
 public class FileLockImpl extends FileLock
 {
+  static
+  {
+    // load the shared library needed for native methods.
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanio");
+      }
+  }
+  
   private FileDescriptor fd;
   private boolean released;
   
