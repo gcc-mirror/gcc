@@ -1,3 +1,7 @@
+2002-12-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.c-torture/compile/20021220-1.c: New test.
+
 2002-12-19  Casper S. Hornstrup  <chorns@users.sourceforge.net>
 
 	* gcc.dg/i386-fastcall-1.c: New.
