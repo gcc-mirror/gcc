@@ -1,3 +1,8 @@
+2003-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/11420
+	* gcc.dg/20030708-1.c: New test.
+
 2003-07-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/compat/sdata-section.h: New file.

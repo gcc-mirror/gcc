@@ -1,3 +1,11 @@
+2003-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/11420
+	* config/i386/i386.c (ix86_check_movabs): New function.
+	* config/i386/i386-protos.h (ix86_check_movabs): New prototype.
+	* config/i386/i386.md (movabs[shqd]i_1_rex64): Kill broken alternative.
+	(movabs[shqd]i_[12]_rex64): Add ix86_check_movabs check to conditions.
+
 2003-07-08  Chris Demetriou  <cgd@broadcom.com>
 
 	* Makefile.in (install-po): Cope with empty CATALOGS.

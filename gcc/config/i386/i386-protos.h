@@ -149,6 +149,7 @@ extern void ix86_split_ashldi (rtx *, rtx);
 extern void ix86_split_ashrdi (rtx *, rtx);
 extern void ix86_split_lshrdi (rtx *, rtx);
 extern rtx ix86_find_base_term (rtx);
+extern int ix86_check_movabs (rtx, int);
 
 extern rtx assign_386_stack_local (enum machine_mode, int);
 extern int ix86_attr_length_immediate_default (rtx, int);
