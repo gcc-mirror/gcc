@@ -922,7 +922,7 @@ update_equiv_regs ()
 	  || reg_n_sets[regno] != 1)
 	continue;
 
-      note = find_reg_note (insn, REG_EQUAL, 0);
+      note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
       /* Record this insn as initializing this register.  */
       reg_equiv_init_insn[regno] = insn;
@@ -947,7 +947,7 @@ update_equiv_regs ()
 	 MEM remains unchanged for the life of the register, add a REG_EQUIV
 	 note.  */
 	 
-      note = find_reg_note (insn, REG_EQUIV, 0);
+      note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
       if (note == 0 && reg_basic_block[regno] >= 0
 	  && GET_CODE (SET_SRC (set)) == MEM
@@ -1155,11 +1155,12 @@ block_alloc (b)
 	  if (GET_CODE (PATTERN (insn)) == CLOBBER
 	      && (r0 = XEXP (PATTERN (insn), 0),
 		  GET_CODE (r0) == REG)
-	      && (link = find_reg_note (insn, REG_LIBCALL, 0)) != 0
+	      && (link = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0
 	      && GET_CODE (XEXP (link, 0)) == INSN
 	      && (set = single_set (XEXP (link, 0))) != 0
 	      && SET_DEST (set) == r0 && SET_SRC (set) == r0
-	      && (note = find_reg_note (XEXP (link, 0), REG_EQUAL, 0)) != 0)
+	      && (note = find_reg_note (XEXP (link, 0), REG_EQUAL,
+					NULL_RTX)) != 0)
 	    {
 	      if (r1 = XEXP (note, 0), GET_CODE (r1) == REG
 		  /* Check that we have such a sequence.  */
@@ -1245,7 +1246,7 @@ block_alloc (b)
 	  /* If this is an insn that has a REG_RETVAL note pointing at a 
 	     CLOBBER insn, we have reached the end of a REG_NO_CONFLICT
 	     block, so clear any register number that combined within it.  */
-	  if ((note = find_reg_note (insn, REG_RETVAL, 0)) != 0
+	  if ((note = find_reg_note (insn, REG_RETVAL, NULL_RTX)) != 0
 	      && GET_CODE (XEXP (note, 0)) == INSN
 	      && GET_CODE (PATTERN (XEXP (note, 0))) == CLOBBER)
 	    no_conflict_combined_regno = -1;
@@ -1988,7 +1989,7 @@ no_conflict_p (insn, r0, r1)
      rtx insn, r0, r1;
 {
   int ok = 0;
-  rtx note = find_reg_note (insn, REG_LIBCALL, 0);
+  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
   rtx p, last;
 
   /* If R1 is a hard register, return 0 since we handle this case

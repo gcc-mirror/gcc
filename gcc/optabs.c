@@ -402,8 +402,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      && ! add_equal_note (pat, temp, binoptab->code, xop0, xop1))
 	    {
 	      delete_insns_since (last);
-	      return expand_binop (mode, binoptab, op0, op1, 0, unsignedp,
-				   methods);
+	      return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
+				   unsignedp, methods);
 	    }
 
 	  emit_insn (pat);
@@ -454,7 +454,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    else
 	      xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
 
-	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, 0,
+	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				 unsignedp, OPTAB_DIRECT);
 	    if (temp)
 	      {
@@ -711,18 +711,18 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  && smul_widen_optab->handlers[(int) mode].insn_code
 	       != CODE_FOR_nothing)
 	{
-	  rtx wordm1 = gen_rtx (CONST_INT, VOIDmode, BITS_PER_WORD - 1);
+	  rtx wordm1 = GEN_INT (BITS_PER_WORD - 1);
 	  product = expand_binop (mode, smul_widen_optab, op0_low, op1_low,
 				  target, 1, OPTAB_DIRECT);
 	  op0_xhigh = expand_binop (word_mode, lshr_optab, op0_low, wordm1,
-				    0, 1, OPTAB_DIRECT);
+				    NULL_RTX, 1, OPTAB_DIRECT);
 	  if (op0_xhigh)
 	    op0_xhigh = expand_binop (word_mode, add_optab, op0_high,
 				      op0_xhigh, op0_xhigh, 0, OPTAB_DIRECT);
 	  else
 	    {
 	      op0_xhigh = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
-					0, 0, OPTAB_DIRECT);
+					NULL_RTX, 0, OPTAB_DIRECT);
 	      if (op0_xhigh)
 		op0_xhigh = expand_binop (word_mode, sub_optab, op0_high,
 					  op0_xhigh, op0_xhigh, 0,
@@ -730,14 +730,14 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    }
 
 	  op1_xhigh = expand_binop (word_mode, lshr_optab, op1_low, wordm1,
-				    0, 1, OPTAB_DIRECT);
+				    NULL_RTX, 1, OPTAB_DIRECT);
 	  if (op1_xhigh)
 	    op1_xhigh = expand_binop (word_mode, add_optab, op1_high,
 				      op1_xhigh, op1_xhigh, 0, OPTAB_DIRECT);
 	  else
 	    {
 	      op1_xhigh = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
-					0, 0, OPTAB_DIRECT);
+					NULL_RTX, 0, OPTAB_DIRECT);
 	      if (op1_xhigh)
 		op1_xhigh = expand_binop (word_mode, sub_optab, op1_high,
 					  op1_xhigh, op1_xhigh, 0,
@@ -759,8 +759,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	{
 	  rtx product_piece;
 	  rtx product_high = operand_subword (product, high, 1, mode);
-	  rtx temp = expand_binop (word_mode, binoptab, op0_low, op1_xhigh, 0,
-				   0, OPTAB_DIRECT);
+	  rtx temp = expand_binop (word_mode, binoptab, op0_low, op1_xhigh,
+				   NULL_RTX, 0, OPTAB_DIRECT);
 
 	  if (temp)
 	    {
@@ -770,8 +770,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      if (product_piece != product_high)
 		emit_move_insn (product_high, product_piece);
 
-	      temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh, 0,
-				   0, OPTAB_DIRECT);
+	      temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh, 
+				   NULL_RTX, 0, OPTAB_DIRECT);
 
 	      product_piece = expand_binop (word_mode, add_optab, temp,
 					    product_high, product_high,
@@ -879,7 +879,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      else
 		xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
 
-	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, 0,
+	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				   unsignedp, methods);
 	      if (temp)
 		{
@@ -1152,10 +1152,10 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       if (pat)
 	{
 	  if (GET_CODE (pat) == SEQUENCE
-	      && ! add_equal_note (pat, temp, unoptab->code, xop0, 0))
+	      && ! add_equal_note (pat, temp, unoptab->code, xop0, NULL_RTX))
 	    {
 	      delete_insns_since (last);
-	      return expand_unop (mode, unoptab, op0, 0, unsignedp);
+	      return expand_unop (mode, unoptab, op0, NULL_RTX, unsignedp);
 	    }
 
 	  emit_insn (pat);
@@ -1186,7 +1186,8 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	    else
 	      xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
 	      
-	    temp = expand_unop (wider_mode, unoptab, xop0, 0, unsignedp);
+	    temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
+				unsignedp);
 
 	    if (temp)
 	      {
@@ -1233,7 +1234,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       insns = get_insns ();
       end_sequence ();
 
-      emit_no_conflict_block (insns, target, op0, 0,
+      emit_no_conflict_block (insns, target, op0, NULL_RTX,
 			      gen_rtx (unoptab->code, mode, op0));
       return target;
     }
@@ -1282,7 +1283,8 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 	      else
 		xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
 	      
-	      temp = expand_unop (wider_mode, unoptab, xop0, 0, unsignedp);
+	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
+				  unsignedp);
 
 	      if (temp)
 		{
@@ -1341,7 +1343,7 @@ emit_unop_insn (icode, target, op0, code)
   pat = GEN_FCN (icode) (temp, op0);
 
   if (GET_CODE (pat) == SEQUENCE && code != UNKNOWN)
-    add_equal_note (pat, temp, code, op0, 0);
+    add_equal_note (pat, temp, code, op0, NULL_RTX);
   
   emit_insn (pat);
 
@@ -1645,9 +1647,9 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  enum machine_mode result_mode
 	    = insn_operand_mode[(int) CODE_FOR_cmpstrqi][0];
 	  rtx result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrqi (result, x, y, size,
-				   gen_rtx (CONST_INT, VOIDmode, align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, 0, result_mode, 0, 0);
+	  emit_insn (gen_cmpstrqi (result, x, y, size, GEN_INT (align)));
+	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
+			 result_mode, 0, 0);
 	}
       else
 #endif
@@ -1659,9 +1661,9 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  enum machine_mode result_mode
 	    = insn_operand_mode[(int) CODE_FOR_cmpstrhi][0];
 	  rtx result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrhi (result, x, y, size,
-				   gen_rtx (CONST_INT, VOIDmode, align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, 0, result_mode, 0, 0);
+	  emit_insn (gen_cmpstrhi (result, x, y, size, GEN_INT (align)));
+	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
+			 result_mode, 0, 0);
 	}
       else
 #endif
@@ -1673,8 +1675,9 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  rtx result = gen_reg_rtx (result_mode);
 	  emit_insn (gen_cmpstrsi (result, x, y,
 				   convert_to_mode (SImode, size, 1),
-				   gen_rtx (CONST_INT, VOIDmode, align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, 0, result_mode, 0, 0);
+				   GEN_INT (align)));
+	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
+			 result_mode, 0, 0);
 	}
       else
 #endif
@@ -1691,7 +1694,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 			     size, Pmode);
 #endif
 	  emit_cmp_insn (hard_libcall_value (TYPE_MODE (integer_type_node)),
-			 const0_rtx, comparison, 0,
+			 const0_rtx, comparison, NULL_RTX,
 			 TYPE_MODE (integer_type_node), 0, 0);
 	}
       return;
@@ -1752,7 +1755,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	    {
 	      x = convert_to_mode (wider_mode, x, unsignedp);
 	      y = convert_to_mode (wider_mode, y, unsignedp);
-	      emit_cmp_insn (x, y, comparison, 0,
+	      emit_cmp_insn (x, y, comparison, NULL_RTX,
 			     wider_mode, unsignedp, align);
 	      return;
 	    }
@@ -1778,7 +1781,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	 there is still a value that can represent the result "less than".  */
 
       emit_cmp_insn (hard_libcall_value (SImode), const1_rtx,
-		     comparison, 0, SImode, unsignedp, 0);
+		     comparison, NULL_RTX, SImode, unsignedp, 0);
       return;
     }
 
@@ -1949,7 +1952,7 @@ emit_float_lib_cmp (x, y, comparison)
 		     SImode, 2, x, mode, y, mode);
 
   emit_cmp_insn (hard_libcall_value (SImode), const0_rtx, comparison,
-		 0, SImode, 0, 0);
+		 NULL_RTX, SImode, 0, 0);
 }
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
@@ -2866,7 +2869,7 @@ expand_float (to, from, unsignedp)
 	 correct its value by 2**bitwidth.  */
 
       do_pending_stack_adjust ();
-      emit_cmp_insn (from, const0_rtx, GE, 0, GET_MODE (from), 0, 0);
+      emit_cmp_insn (from, const0_rtx, GE, NULL_RTX, GET_MODE (from), 0, 0);
       emit_jump_insn (gen_bge (label));
       /* On SCO 3.2.1, ldexp rejects values outside [0.5, 1).
 	 Rather than setting up a dconst_dot_5, let's hope SCO
@@ -3039,7 +3042,7 @@ expand_fix (to, from, unsignedp)
      We only need to check all real modes, since we know we didn't find
      anything with a wider integer mode.  */
 
-  if (unsignedp && GET_MODE_BITSIZE (GET_MODE (to)) <= HOST_BITS_PER_INT)
+  if (unsignedp && GET_MODE_BITSIZE (GET_MODE (to)) <= HOST_BITS_PER_WIDE_INT)
     for (fmode = GET_MODE (from); fmode != VOIDmode;
 	 fmode = GET_MODE_WIDER_MODE (fmode))
       /* Make sure we won't lose significant bits doing this.  */
@@ -3066,7 +3069,7 @@ expand_fix (to, from, unsignedp)
 
 	  /* See if we need to do the subtraction.  */
 	  do_pending_stack_adjust ();
-	  emit_cmp_insn (from, limit, GE, 0, GET_MODE (from), 0, 0);
+	  emit_cmp_insn (from, limit, GE, NULL_RTX, GET_MODE (from), 0, 0);
 	  emit_jump_insn (gen_bge (lab1));
 
 	  /* If not, do the signed "fix" and branch around fixup code.  */
@@ -3079,11 +3082,10 @@ expand_fix (to, from, unsignedp)
 	     will often generate better code.  */
 	  emit_label (lab1);
 	  target = expand_binop (GET_MODE (from), sub_optab, from, limit,
-				 0, 0, OPTAB_LIB_WIDEN);
+				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	  expand_fix (to, target, 0);
 	  target = expand_binop (GET_MODE (to), xor_optab, to,
-				 gen_rtx (CONST_INT, VOIDmode,
-					1 << (bitsize - 1)),
+				 GEN_INT ((HOST_WIDE_INT) 1 << (bitsize - 1)),
 				 to, 1, OPTAB_LIB_WIDEN);
 
 	  if (target != to)

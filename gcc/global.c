@@ -96,6 +96,13 @@ static int *allocno_size;
 
 static int *reg_may_share;
 
+/* Define the number of bits in each element of `conflicts' and what
+   type that element has.  We use the largest integer format on the
+   host machine.  */
+
+#define INT_BITS HOST_BITS_PER_WIDE_INT
+#define INT_TYPE HOST_WIDE_INT
+
 /* max_allocno by max_allocno array of bits,
    recording whether two allocno's conflict (can't go in the same
    hardware register).
@@ -103,7 +110,7 @@ static int *reg_may_share;
    `conflicts' is not symmetric; a conflict between allocno's i and j
    is recorded either in element i,j or in element j,i.  */
 
-static int *conflicts;
+static INT_TYPE *conflicts;
 
 /* Number of ints require to hold max_allocno bits.
    This is the length of a row in `conflicts'.  */
@@ -114,11 +121,11 @@ static int allocno_row_words;
 
 #define CONFLICTP(I, J) \
  (conflicts[(I) * allocno_row_words + (J) / INT_BITS]	\
-  & (1 << ((J) % INT_BITS)))
+  & ((INT_TYPE) 1 << ((J) % INT_BITS)))
 
 #define SET_CONFLICT(I, J) \
  (conflicts[(I) * allocno_row_words + (J) / INT_BITS]	\
-  |= (1 << ((J) % INT_BITS)))
+  |= ((INT_TYPE) 1 << ((J) % INT_BITS)))
 
 /* Set of hard regs currently live (during scan of all insns).  */
 
@@ -194,21 +201,19 @@ static int local_reg_live_length[FIRST_PSEUDO_REGISTER];
 
 /* Bit mask for allocnos live at current point in the scan.  */
 
-static int *allocnos_live;
-
-#define INT_BITS HOST_BITS_PER_INT
+static INT_TYPE *allocnos_live;
 
 /* Test, set or clear bit number I in allocnos_live,
    a bit vector indexed by allocno.  */
 
 #define ALLOCNO_LIVE_P(I) \
-  (allocnos_live[(I) / INT_BITS] & (1 << ((I) % INT_BITS)))
+  (allocnos_live[(I) / INT_BITS] & ((INT_TYPE) 1 << ((I) % INT_BITS)))
 
 #define SET_ALLOCNO_LIVE(I) \
-  (allocnos_live[(I) / INT_BITS] |= (1 << ((I) % INT_BITS)))
+  (allocnos_live[(I) / INT_BITS] |= ((INT_TYPE) 1 << ((I) % INT_BITS)))
 
 #define CLEAR_ALLOCNO_LIVE(I) \
-  (allocnos_live[(I) / INT_BITS] &= ~(1 << ((I) % INT_BITS)))
+  (allocnos_live[(I) / INT_BITS] &= ~((INT_TYPE) 1 << ((I) % INT_BITS)))
 
 /* This is turned off because it doesn't work right for DImode.
    (And it is only used for DImode, so the other cases are worthless.)
@@ -457,10 +462,12 @@ global_alloc (file)
 
   allocno_row_words = (max_allocno + INT_BITS - 1) / INT_BITS;
 
-  conflicts = (int *) alloca (max_allocno * allocno_row_words * sizeof (int));
-  bzero (conflicts, max_allocno * allocno_row_words * sizeof (int));
+  conflicts = (INT_TYPE *) alloca (max_allocno * allocno_row_words
+				   * sizeof (INT_TYPE));
+  bzero (conflicts, max_allocno * allocno_row_words
+	 * sizeof (INT_TYPE));
 
-  allocnos_live = (int *) alloca (allocno_row_words * sizeof (int));
+  allocnos_live = (INT_TYPE *) alloca (allocno_row_words * sizeof (INT_TYPE));
 
   /* If there is work to be done (at least one reg to allocate),
      perform global conflict analysis and allocate the regs.  */
@@ -534,7 +541,7 @@ global_alloc (file)
 		if (reg_renumber[allocno_reg[allocno_order[i]]] >= 0)
 		  continue;
 	      }
-	    if (!reg_preferred_or_nothing (allocno_reg[allocno_order[i]]))
+	    if (reg_alternate_class (allocno_reg[allocno_order[i]]) != NO_REGS)
 	      find_reg (allocno_order[i], HARD_CONST (0), 1, 0, 0);
 	  }
     }
@@ -593,7 +600,7 @@ global_conflicts ()
 
   for (b = 0; b < n_basic_blocks; b++)
     {
-      bzero (allocnos_live, allocno_row_words * sizeof (int));
+      bzero (allocnos_live, allocno_row_words * sizeof (INT_TYPE));
 
       /* Initialize table of registers currently live
 	 to the state at the beginning of this basic block.
@@ -609,7 +616,8 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	register int offset, bit;
+	register int offset;
+	REGSET_ELT_TYPE bit;
 	register regset old = basic_block_live_at_start[b];
 	int ax = 0;
 
@@ -620,7 +628,7 @@ global_conflicts ()
 #endif
 	for (offset = 0, i = 0; offset < regset_size; offset++)
 	  if (old[offset] == 0)
-	    i += HOST_BITS_PER_INT;
+	    i += REGSET_ELT_BITS;
 	  else
 	    for (bit = 1; bit; bit <<= 1, i++)
 	      {
@@ -699,7 +707,7 @@ global_conflicts ()
 #ifdef AUTO_INC_DEC
 	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_INC)
-		  mark_reg_store (XEXP (link, 0), 0);
+		  mark_reg_store (XEXP (link, 0), NULL_RTX);
 #endif
 
 	      /* If INSN has multiple outputs, then any reg that dies here
@@ -857,8 +865,8 @@ prune_preferences ()
    LOSERS, if non-zero, is a HARD_REG_SET indicating registers that cannot
    be used for this allocation.
 
-   If ALL_REGS_P is zero, consider only the preferred class of ALLOCNO's reg.
-   Otherwise ignore that preferred class.
+   If ALT_REGS_P is zero, consider only the preferred class of ALLOCNO's reg.
+   Otherwise ignore that preferred class and use the alternate class.
 
    If ACCEPT_CALL_CLOBBERED is nonzero, accept a call-clobbered hard reg that
    will have to be saved and restored at calls.
@@ -869,10 +877,10 @@ prune_preferences ()
    If not, do nothing.  */
 
 static void
-find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
+find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
      int allocno;
      HARD_REG_SET losers;
-     int all_regs_p;
+     int alt_regs_p;
      int accept_call_clobbered;
      int retrying;
 {
@@ -882,8 +890,9 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
 #endif
     HARD_REG_SET used, used1, used2;
 
-  enum reg_class class 
-    = all_regs_p ? ALL_REGS : reg_preferred_class (allocno_reg[allocno]);
+  enum reg_class class = (alt_regs_p
+			  ? reg_alternate_class (allocno_reg[allocno])
+			  : reg_preferred_class (allocno_reg[allocno]));
   enum machine_mode mode = PSEUDO_REGNO_MODE (allocno_reg[allocno]);
 
   if (accept_call_clobbered)
@@ -1042,7 +1051,7 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
 	  && CALLER_SAVE_PROFITABLE (allocno_n_refs[allocno],
 				     allocno_calls_crossed[allocno]))
 	{
-	  find_reg (allocno, losers, all_regs_p, 1, retrying);
+	  find_reg (allocno, losers, alt_regs_p, 1, retrying);
 	  if (reg_renumber[allocno_reg[allocno]] >= 0)
 	    {
 	      caller_save_needed = 1;
@@ -1146,7 +1155,7 @@ retry_global_alloc (regno, forbidden_regs)
       if (N_REG_CLASSES > 1)
 	find_reg (allocno, forbidden_regs, 0, 0, 1);
       if (reg_renumber[regno] < 0
-	  && !reg_preferred_or_nothing (regno))
+	  && reg_alternate_class (regno) != NO_REGS)
 	find_reg (allocno, forbidden_regs, 1, 0, 1);
 
       /* If we found a register, modify the RTL for the register to
@@ -1563,13 +1572,13 @@ mark_elimination (from, to)
   int i;
 
   for (i = 0; i < n_basic_blocks; i++)
-    if ((basic_block_live_at_start[i][from / HOST_BITS_PER_INT]
-	 & (1 << (from % HOST_BITS_PER_INT))) != 0)
+    if ((basic_block_live_at_start[i][from / REGSET_ELT_BITS]
+	 & ((REGSET_ELT_TYPE) 1 << (from % REGSET_ELT_BITS))) != 0)
       {
-	basic_block_live_at_start[i][from / HOST_BITS_PER_INT]
-	  &= ~ (1 << (from % HOST_BITS_PER_INT));
-	basic_block_live_at_start[i][to / HOST_BITS_PER_INT]
-	  |= (1 << (to % HOST_BITS_PER_INT));
+	basic_block_live_at_start[i][from / REGSET_ELT_BITS]
+	  &= ~ ((REGSET_ELT_TYPE) 1 << (from % REGSET_ELT_BITS));
+	basic_block_live_at_start[i][to / REGSET_ELT_BITS]
+	  |= ((REGSET_ELT_TYPE) 1 << (to % REGSET_ELT_BITS));
       }
 }
 
