@@ -1,3 +1,8 @@
+2004-11-27  Per Bothner  <per@bothner.com>
+
+	* expr.c (build_expr_wfl): Only declare last_file and last_filenode
+	local static variables if not USE_MAPPED_LOCATION.
+
 2004-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c, decl.c, expr.c: Fix comment typos.
