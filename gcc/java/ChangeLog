@@ -1,3 +1,8 @@
+2005-02-01  Tom Tromey  <tromey@redhat.com>
+
+	PR java/19742:
+	* gjavah.c (get_field_name): Don't override name for JNI header.
+
 2005-02-01  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-write.c (generate_bytecode_insns): Implement RSHIFT_EXPR

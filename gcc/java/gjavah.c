@@ -706,6 +706,8 @@ get_field_name (JCF *jcf, int name_index, JCF_u2 flags)
       memcpy (override, name, length);
       strcpy (override + length, "__");
     }
+  else if (flag_jni)
+    override = NULL;
   else
     override = cxx_keyword_subst (name, length);
 
