@@ -462,7 +462,7 @@ vax_address_cost (addr)
     case CONST_INT:
       /* byte offsets cost nothing (on a VAX 2, they cost 1 cycle) */
       if (offset == 0)
-	offset = (unsigned)(INTVAL(addr)+128) > 256;
+	offset = (unsigned HOST_WIDE_INT)(INTVAL(addr)+128) > 256;
       break;
     case CONST:
     case SYMBOL_REF:
@@ -595,13 +595,13 @@ vax_rtx_cost (x)
 	fmt = "e";	/* all constant rotate counts are short */
       break;
     case PLUS:
-      /* Check for small negative integer operand: subl2 can be used with
-	 a short positive constant instead.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	if ((unsigned)(INTVAL (XEXP (x, 1)) + 63) < 127)
-	  fmt = "e";
     case MINUS:
       c = (mode == DFmode) ? 13 : 8;	/* 6/8 on VAX 9000, 16/15 on VAX 2 */
+      /* Small integer operands can use subl2 and addl2.  */
+      if ((GET_CODE (XEXP (x, 1)) == CONST_INT)
+	  && (unsigned HOST_WIDE_INT)(INTVAL (XEXP (x, 1)) + 63) < 127)
+	fmt = "e";
+      break;
     case IOR:
     case XOR:
       c = 3;
@@ -611,7 +611,7 @@ vax_rtx_cost (x)
       c = 3;
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
-	  if ((unsigned)~INTVAL (XEXP (x, 0)) > 63)
+	  if ((unsigned HOST_WIDE_INT)~INTVAL (XEXP (x, 0)) > 63)
 	    c = 4;
 	  fmt = "e";
 	  i = 1;
@@ -665,7 +665,8 @@ vax_rtx_cost (x)
       switch (code)
 	{
 	case CONST_INT:
-	  if ((unsigned)INTVAL (op) > 63 && GET_MODE (x) != QImode)
+	  if ((unsigned HOST_WIDE_INT)INTVAL (op) > 63
+	      && GET_MODE (x) != QImode)
 	    c += 1;		/* 2 on VAX 2 */
 	  break;
 	case CONST:
