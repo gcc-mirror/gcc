@@ -5130,7 +5130,9 @@ move\\t%0,%z4\\n\\
       DONE;
     }
   /* FIXME: I don't know how to get a value into the HI register.  */
-  if (GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0])))
+  if (GET_CODE (operands[0]) == REG
+      && (TARGET_MIPS16 ? M16_REG_P (REGNO (operands[0]))
+	  : GP_REG_P (REGNO (operands[0]))))
     {
       emit_move_insn (operands[0], operands[1]);
       DONE;

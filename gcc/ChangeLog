@@ -1,3 +1,7 @@
+Tue Aug 11 12:27:03 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.md (reload_outsi): Use M16_REG_P when TARGET_MIPS16.
+
 Tue Aug 11 18:12:53 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* README.g77: Update from Craig.
