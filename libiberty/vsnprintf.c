@@ -78,9 +78,13 @@ vsnprintf (s, n, format, ap)
   result = strlen (buf);
   if (n > 0)
     {
-      strncpy (s, buf, n);
-      if (n - 1 < (size_t) result)
-	s[n - 1] = 0;
+      if ((long) n > result)
+	memcpy (s, buf, result+1);
+      else
+        {
+	  memcpy (s, buf, n-1);
+	  s[n - 1] = 0;
+	}
     }
   free (buf);
   return result;
@@ -114,35 +118,35 @@ main ()
   
   CLEAR (buf);
   status = checkit (buf, 10, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "foobar:9") == 0);
+  VERIFY (status==8 && memcmp (buf, "foobar:9\0XXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 9, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "foobar:9") == 0);
+  VERIFY (status==8 && memcmp (buf, "foobar:9\0XXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 8, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "foobar:") == 0);
+  VERIFY (status==8 && memcmp (buf, "foobar:\0XXXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 7, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "foobar") == 0);
+  VERIFY (status==8 && memcmp (buf, "foobar\0XXXXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 6, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "fooba") == 0);
+  VERIFY (status==8 && memcmp (buf, "fooba\0XXXXXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 2, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "f") == 0);
+  VERIFY (status==8 && memcmp (buf, "f\0XXXXXXXXXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 1, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "") == 0);
+  VERIFY (status==8 && memcmp (buf, "\0XXXXXXXXXXXXX\0", 15) == 0);
 
   CLEAR (buf);
   status = checkit (buf, 0, "%s:%d", "foobar", 9);
-  VERIFY (status==8 && strcmp (buf, "XXXXXXXXXXXXXX") == 0);
+  VERIFY (status==8 && memcmp (buf, "XXXXXXXXXXXXXX\0", 15) == 0);
 
   return 0;
 }
