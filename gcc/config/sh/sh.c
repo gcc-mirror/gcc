@@ -8547,7 +8547,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
 
-  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* Find the "this" pointer.  We have such a wide range of ABIs for the
      SH that it's best to do this completely machine independently.

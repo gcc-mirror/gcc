@@ -629,10 +629,8 @@ genrtl_scope_stmt (tree t)
     }
   else if (!SCOPE_NULLIFIED_P (t))
     {
-      rtx note = emit_note (NULL,
-			    (SCOPE_BEGIN_P (t)
-			     ? NOTE_INSN_BLOCK_BEG
-			     : NOTE_INSN_BLOCK_END));
+      rtx note = emit_note (SCOPE_BEGIN_P (t)
+			    ? NOTE_INSN_BLOCK_BEG : NOTE_INSN_BLOCK_END);
       NOTE_BLOCK (note) = block;
     }
 
@@ -858,7 +856,7 @@ expand_stmt (tree t)
 	      && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL
 	      && flag_guess_branch_prob)
 	    {
-	      rtx note = emit_note (NULL, NOTE_INSN_PREDICTION);
+	      rtx note = emit_note (NOTE_INSN_PREDICTION);
 
 	      NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_GOTO, NOT_TAKEN);
 	    }

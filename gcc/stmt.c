@@ -918,11 +918,11 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	  }
 
 	start_sequence ();
-	start = emit_note (NULL, NOTE_INSN_BLOCK_BEG);
+	start = emit_note (NOTE_INSN_BLOCK_BEG);
 	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (start) = block;
-	fixup->before_jump = emit_note (NULL, NOTE_INSN_DELETED);
-	end = emit_note (NULL, NOTE_INSN_BLOCK_END);
+	fixup->before_jump = emit_note (NOTE_INSN_DELETED);
+	end = emit_note (NOTE_INSN_BLOCK_END);
 	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (end) = block;
 	fixup->context = block;
@@ -2562,7 +2562,7 @@ expand_start_loop (exit_flag)
 
   do_pending_stack_adjust ();
   emit_queue ();
-  emit_note (NULL, NOTE_INSN_LOOP_BEG);
+  emit_note (NOTE_INSN_LOOP_BEG);
   emit_label (thisloop->data.loop.start_label);
 
   return thisloop;
@@ -2594,7 +2594,7 @@ expand_start_null_loop ()
   thisloop->next = loop_stack;
   thisloop->all = nesting_stack;
   thisloop->depth = ++nesting_depth;
-  thisloop->data.loop.start_label = emit_note (NULL, NOTE_INSN_DELETED);
+  thisloop->data.loop.start_label = emit_note (NOTE_INSN_DELETED);
   thisloop->data.loop.end_label = gen_label_rtx ();
   thisloop->data.loop.continue_label = thisloop->data.loop.end_label;
   thisloop->exit_label = thisloop->data.loop.end_label;
@@ -2613,7 +2613,7 @@ void
 expand_loop_continue_here ()
 {
   do_pending_stack_adjust ();
-  emit_note (NULL, NOTE_INSN_LOOP_CONT);
+  emit_note (NOTE_INSN_LOOP_CONT);
   emit_label (loop_stack->data.loop.continue_label);
 }
 
@@ -2765,7 +2765,7 @@ expand_end_loop ()
     }
 
   emit_jump (start_label);
-  emit_note (NULL, NOTE_INSN_LOOP_END);
+  emit_note (NOTE_INSN_LOOP_END);
   emit_label (loop_stack->data.loop.end_label);
 
   POPSTACK (loop_stack);
@@ -2800,7 +2800,7 @@ expand_continue_loop (whichloop)
 
   if (flag_guess_branch_prob)
     {
-      note = emit_note (NULL, NOTE_INSN_PREDICTION);
+      note = emit_note (NOTE_INSN_PREDICTION);
       NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_CONTINUE, IS_TAKEN);
     }
   clear_last_expr ();
@@ -2883,7 +2883,7 @@ expand_exit_loop_top_cond (whichloop, cond)
   if (! expand_exit_loop_if_false (whichloop, cond))
     return 0;
 
-  emit_note (NULL, NOTE_INSN_LOOP_END_TOP_COND);
+  emit_note (NOTE_INSN_LOOP_END_TOP_COND);
   return 1;
 }
 
@@ -3000,7 +3000,7 @@ expand_value_return (val)
       /* Emit information for branch prediction.  */
       rtx note;
 
-      note = emit_note (NULL, NOTE_INSN_PREDICTION);
+      note = emit_note (NOTE_INSN_PREDICTION);
 
       NOTE_PREDICTION (note) = NOTE_PREDICT (pred, NOT_TAKEN);
 
@@ -3420,11 +3420,11 @@ expand_start_bindings_and_block (flags, block)
   /* Create a note to mark the beginning of the block.  */
   if (block_flag)
     {
-      note = emit_note (NULL, NOTE_INSN_BLOCK_BEG);
+      note = emit_note (NOTE_INSN_BLOCK_BEG);
       NOTE_BLOCK (note) = block;
     }
   else
-    note = emit_note (NULL, NOTE_INSN_DELETED);
+    note = emit_note (NOTE_INSN_DELETED);
 
   /* Make an entry on block_stack for the block we are entering.  */
 
@@ -3445,7 +3445,7 @@ expand_start_bindings_and_block (flags, block)
      fix this is to just insert another instruction here, so that the
      instructions inserted after the last unconditional cleanup are
      never the last instruction.  */
-  emit_note (NULL, NOTE_INSN_DELETED);
+  emit_note (NOTE_INSN_DELETED);
 
   if (block_stack
       && !(block_stack->data.block.cleanups == NULL_TREE
@@ -3847,7 +3847,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   if (mark_ends)
     {
-      rtx note = emit_note (NULL, NOTE_INSN_BLOCK_END);
+      rtx note = emit_note (NOTE_INSN_BLOCK_END);
       NOTE_BLOCK (note) = NOTE_BLOCK (thisblock->data.block.first_insn);
     }
   else
@@ -4189,7 +4189,7 @@ expand_decl_cleanup (decl, cleanup)
 	     fix this is to just insert another instruction here, so that the
 	     instructions inserted after the last unconditional cleanup are
 	     never the last instruction.  */
-	  emit_note (NULL, NOTE_INSN_DELETED);
+	  emit_note (NOTE_INSN_DELETED);
 	}
     }
   return 1;
@@ -4446,7 +4446,7 @@ expand_start_case (exit_flag, expr, type, printname)
   /* Make sure case_stmt.start points to something that won't
      need any transformation before expand_end_case.  */
   if (GET_CODE (get_last_insn ()) != NOTE)
-    emit_note (NULL, NOTE_INSN_DELETED);
+    emit_note (NOTE_INSN_DELETED);
 
   thiscase->data.case_stmt.start = get_last_insn ();
 

@@ -719,7 +719,7 @@ record_code_position (gnat_node)
        addressable needs some fixups and also for above reason.  */
     save_gnu_tree (gnat_node,
 		   build (RTL_EXPR, void_type_node, NULL_TREE,
-			  (tree) emit_note (0, NOTE_INSN_DELETED)),
+			  (tree) emit_note (NOTE_INSN_DELETED)),
 		   1);
 }
 

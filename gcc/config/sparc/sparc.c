@@ -8593,7 +8593,7 @@ sparc_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
 
-  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* Find the "this" pointer.  Normally in %o0, but in ARCH64 if the function
      returns a structure, the structure return pointer is there instead.  */

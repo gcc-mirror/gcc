@@ -2274,7 +2274,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		       || (last_iteration
 			   && unroll_type != UNROLL_COMPLETELY)))
 	    {
-	      copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      copy = emit_note (NOTE_LINE_NUMBER (insn));
 	      NOTE_DATA (copy) = NOTE_DATA (insn);
 	    }
 	  else
@@ -2330,7 +2330,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
 		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
 	    {
-	      rtx copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      rtx copy = emit_note (NOTE_LINE_NUMBER (insn));
 	      NOTE_DATA (copy) = NOTE_DATA (insn);
 	    }
 	}

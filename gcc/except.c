@@ -510,7 +510,7 @@ expand_eh_region_start ()
 
   /* Create a note marking the start of this region.  */
   new_region->region_number = ++cfun->eh->last_region_number;
-  note = emit_note (NULL, NOTE_INSN_EH_REGION_BEG);
+  note = emit_note (NOTE_INSN_EH_REGION_BEG);
   NOTE_EH_HANDLER (note) = new_region->region_number;
 }
 
@@ -523,7 +523,7 @@ expand_eh_region_end ()
   rtx note;
 
   /* Create a note marking the end of this region.  */
-  note = emit_note (NULL, NOTE_INSN_EH_REGION_END);
+  note = emit_note (NOTE_INSN_EH_REGION_END);
   NOTE_EH_HANDLER (note) = cur_region->region_number;
 
   /* Pop.  */
@@ -2119,7 +2119,7 @@ sjlj_emit_function_enter (dispatch_label)
 				 plus_constant (XEXP (fc, 0),
 						sjlj_fc_jbuf_ofs), Pmode);
 
-    note = emit_note (NULL, NOTE_INSN_EXPECTED_VALUE);
+    note = emit_note (NOTE_INSN_EXPECTED_VALUE);
     NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, x, const0_rtx);
 
     emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
