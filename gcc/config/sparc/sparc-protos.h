@@ -1,7 +1,7 @@
-/* Prototypes of target machine for GCC, for Sun SPARC.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* Prototypes of target machine for SPARC.
+   Copyright (C) 1999, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
-   64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+   64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
 
 This file is part of GCC.
@@ -51,19 +51,15 @@ extern enum direction function_arg_padding (enum machine_mode, tree);
 
 extern void load_pic_register (void);
 extern void order_regs_for_local_alloc (void);
-extern int compute_frame_size (int, int);
+extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int);
 extern int check_pic (int);
 extern int short_branch (int, int);
 extern int sparc_flat_epilogue_delay_slots (void);
-extern unsigned long sparc_flat_compute_frame_size (int);
+extern HOST_WIDE_INT sparc_flat_compute_frame_size (HOST_WIDE_INT);
 extern void sparc_profile_hook (int);
 extern void sparc_override_options (void);
 extern int leaf_return_peephole_ok (void);
 extern void sparc_output_scratch_registers (FILE *);
-extern void sparc_flat_save_restore (FILE *, const char *,
-				     unsigned int, unsigned long,
-				     unsigned long, const char *,
-				     const char *, unsigned long);
 
 #ifdef RTX_CODE
 extern enum machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
