@@ -107,10 +107,6 @@ int mips_section_threshold = -1;
 /* Count the number of .file directives, so that .loc is up to date.  */
 int num_source_filenames = 0;
 
-/* Count of the number of functions created so far, in order to make
-   unique labels for omitting the frame pointer.  */
-int number_functions_processed = 0;
-
 /* Count the number of sdb related labels are generated (to find block
    start and end boundaries).  */
 int sdb_label_count = 0;
@@ -3085,11 +3081,14 @@ override_options ()
 
 
 /*
- * If the frame pointer has been eliminated, the offset for an auto
- * or argument will be based on the stack pointer.  But this is not
- * what the debugger expects--it needs to find an offset off of the
- * frame pointer (whether it exists or not).  So here we turn all
- * offsets into those based on the (possibly virtual) frame pointer.
+ * The MIPS debug format wants all automatic variables and arguments
+ * to be in terms of the virtual frame pointer (stack pointer before
+ * any adjustment in the function), while the MIPS 3.0 linker wants
+ * the frame pointer to be the stack pointer after the initial
+ * adjustment.  So, we do the adjustment here.  The arg pointer (which
+ * is eliminated) points to the virtual frame pointer, while the frame
+ * pointer (which may be eliminated) points to the stack pointer after
+ * the initial adjustments.
  */
 
 int
@@ -3103,7 +3102,7 @@ mips_debugger_offset (addr, offset)
   if (!offset)
     offset = INTVAL (offset2);
 
-  if (reg == stack_pointer_rtx)
+  if (reg == stack_pointer_rtx || reg == frame_pointer_rtx)
     {
       int frame_size = (!current_frame_info.initialized)
 				? compute_frame_size (get_frame_size ())
@@ -3111,13 +3110,8 @@ mips_debugger_offset (addr, offset)
 
       offset = offset - frame_size;
     }
-
-  /* Any other register is, we hope, either the frame pointer,
-     or a pseudo equivalent to the frame pointer.  (Assign_parms
-     copies the arg pointer to a pseudo if ARG_POINTER_REGNUM is
-     equal to FRAME_POINTER_REGNUM, so references off of the
-     arg pointer are all off a pseudo.)  Seems like all we can
-     do is to just return OFFSET and hope for the best.  */
+  else if (reg != arg_pointer_rtx)
+    abort_with_insn (addr, "mips_debugger_offset called with non stack/frame/arg pointer.");
 
   return offset;
 }
@@ -3415,6 +3409,9 @@ print_operand_address (file, addr)
 	break;
 
       case REG:
+	if (REGNO (addr) == ARG_POINTER_REGNUM)
+	  abort_with_insn (addr, "Arg pointer not eliminated.");
+
 	fprintf (file, "0(%s)", reg_names [REGNO (addr)]);
 	break;
 
@@ -3447,6 +3444,9 @@ print_operand_address (file, addr)
 
 	  if (!CONSTANT_P (offset))
 	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, illegal insn #2");
+
+	if (REGNO (reg) == ARG_POINTER_REGNUM)
+	  abort_with_insn (addr, "Arg pointer not eliminated.");
 
 	  output_addr_const (file, offset);
 	  fprintf (file, "(%s)", reg_names [REGNO (reg)]);
@@ -3861,10 +3861,6 @@ mips_output_float (stream, value)
 					|  GP save for V.4 abi	|
 					|			|
 					+-----------------------+
-					|			|
-					|  local variables	|
-					|			|
-					+-----------------------+
 					|		        |
                                         |  fp register save     |
 					|			|
@@ -3872,6 +3868,10 @@ mips_output_float (stream, value)
 					|		        |
                                         |  gp register save     |
                                         |       		|
+					+-----------------------+
+					|			|
+					|  local variables	|
+					|			|
 					+-----------------------+
 					|			|
                                         |  alloca allocations   |
@@ -3906,16 +3906,23 @@ compute_frame_size (size)
   int fp_inc;			/* 1 or 2 depending on the size of fp regs */
   int fp_bits;			/* bitmask to use for each fp register */
 
-  extra_size	 = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0)
-				     -STARTING_FRAME_OFFSET);
-
-  var_size	 = MIPS_STACK_ALIGN (size);
-  args_size	 = MIPS_STACK_ALIGN (current_function_outgoing_args_size);
-  total_size	 = var_size + args_size + extra_size;
   gp_reg_size	 = 0;
   fp_reg_size	 = 0;
   mask		 = 0;
   fmask		 = 0;
+  extra_size	 = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0));
+  var_size	 = MIPS_STACK_ALIGN (size);
+  args_size	 = MIPS_STACK_ALIGN (current_function_outgoing_args_size);
+
+  /* The MIPS 3.0 linker does not like functions that dynamically
+     allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
+     looks like we are trying to create a second frame pointer to the
+     function, so allocate some stack space to make it happy.  */
+
+  if (args_size == 0 && current_function_calls_alloca)
+	args_size = 4*UNITS_PER_WORD;
+
+  total_size = var_size + args_size + extra_size;
 
   /* Calculate space needed for gp registers.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
@@ -3969,14 +3976,14 @@ compute_frame_size (size)
 
   if (mask)
     {
-      unsigned long offset = args_size + gp_reg_size - UNITS_PER_WORD;
+      unsigned long offset = args_size + var_size + gp_reg_size - UNITS_PER_WORD;
       current_frame_info.gp_sp_offset = offset;
       current_frame_info.gp_save_offset = offset - total_size;
     }
 
   if (fmask)
     {
-      unsigned long offset = args_size + gp_reg_rounded + fp_reg_size - 2*UNITS_PER_WORD;
+      unsigned long offset = args_size + var_size + gp_reg_rounded + fp_reg_size - 2*UNITS_PER_WORD;
       current_frame_info.fp_sp_offset = offset;
       current_frame_info.fp_save_offset = offset - total_size + UNITS_PER_WORD;
     }
@@ -4152,8 +4159,6 @@ function_prologue (file, size)
      int size;
 {
   int tsize = current_frame_info.total_size;
-  int vframe;
-  int vreg;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
   ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
@@ -4174,20 +4179,9 @@ function_prologue (file, size)
   if (tsize > 0 && TARGET_ABICALLS)
     fprintf (file, "\t.cprestore %d\n", tsize + STARTING_FRAME_OFFSET);
 
-  if (frame_pointer_needed)
-    {
-      vframe = 0;
-      vreg   = FRAME_POINTER_REGNUM;
-    }
-  else
-    {
-      vframe = tsize;
-      vreg   = STACK_POINTER_REGNUM;
-    }
-
   fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args = %d, extra= %d\n",
-	   reg_names[ vreg ],
-	   vframe,
+	   reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
+	   tsize,
 	   reg_names[31 + GP_REG_FIRST],
 	   current_frame_info.var_size,
 	   current_frame_info.num_gp,
@@ -4209,7 +4203,6 @@ void
 mips_expand_prologue ()
 {
   int regno;
-  int size;
   int tsize;
   tree fndecl = current_function_decl; /* current... is tooo long */
   tree fntype = TREE_TYPE (fndecl);
@@ -4291,9 +4284,7 @@ mips_expand_prologue ()
 	}
     }
 
-  size  = MIPS_STACK_ALIGN (get_frame_size ());
-  tsize = compute_frame_size (size);
-
+  tsize = compute_frame_size (get_frame_size ());
   if (tsize > 0)
     {
       rtx tsize_rtx = GEN_INT (tsize);
@@ -4310,7 +4301,7 @@ mips_expand_prologue ()
       save_restore_insns (TRUE);
 
       if (frame_pointer_needed)
-	emit_insn (gen_addsi3 (frame_pointer_rtx, stack_pointer_rtx, tsize_rtx));
+	emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
     }
 }
 
@@ -4413,15 +4404,8 @@ function_epilogue (file, size)
 	fprintf (file, "\tli\t%s,%d\n", t1_str, tsize);
 
       if (frame_pointer_needed)
-	{
-	  char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-	  if (tsize > 32767)
-	    fprintf (file,"\tsubu\t%s,%s,%s\t\t# sp not trusted  here\n",
-		     sp_str, fp_str, t1_str);
-	  else
-	    fprintf (file,"\tsubu\t%s,%s,%d\t\t# sp not trusted  here\n",
-		     sp_str, fp_str, tsize);
-	}
+	fprintf (file, "\tmove\t%s,%s\t\t\t# sp not trusted here\n",
+		 sp_str, reg_names[FRAME_POINTER_REGNUM]);
 
       save_restore (file, "lw", "ld", "l.d");
 
@@ -4489,6 +4473,10 @@ function_epilogue (file, size)
       int num_gp_regs = current_frame_info.gp_reg_size / 4;
       int num_fp_regs = current_frame_info.fp_reg_size / 8;
       int num_regs    = num_gp_regs + num_fp_regs;
+      char *name      = current_function_name;
+
+      if (name[0] == '*')
+	name++;
 
       dslots_load_total += num_regs;
 
@@ -4511,7 +4499,7 @@ function_epilogue (file, size)
 
       fprintf (stderr,
 	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
-	       current_function_name,
+	       name,
 	       (frame_pointer_needed) ? 'y' : 'n',
 	       ((current_frame_info.mask & (1 << 31)) != 0) ? 'n' : 'y',
 	       (current_function_calls_alloca) ? 'y' : 'n',
@@ -4545,7 +4533,6 @@ function_epilogue (file, size)
   mips_load_reg      = (rtx)0;
   mips_load_reg2     = (rtx)0;
   current_frame_info = zero_frame_info;
-  number_functions_processed++;
 
   /* Restore the output file if optimizing the GP (optimizing the GP causes
      the text to be diverted to a tempfile, so that data decls come before
@@ -4574,7 +4561,7 @@ mips_expand_epilogue ()
   if (tsize > 0)
     {
       if (frame_pointer_needed)
-	emit_insn (gen_subsi3 (stack_pointer_rtx, frame_pointer_rtx, tsize_rtx));
+	emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
 
       save_restore_insns (FALSE);
 
