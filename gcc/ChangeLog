@@ -1,3 +1,9 @@
+2003-12-08  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/13132
+	* expmed.c (extract_bit_field): Only call mode_for_size for scalar
+	integer modes.
+
 2003-12-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Revert change of Dec 7; gcc is still a 2.13

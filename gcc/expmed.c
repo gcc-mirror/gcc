@@ -1079,13 +1079,18 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      If that's wrong, the solution is to test for it and set TARGET to 0
      if needed.  */
 
-  mode1  = (VECTOR_MODE_P (tmode)
-	    ? mode
-	    : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
+  /* Only scalar integer modes can be converted via subregs.  There is an
+     additional problem for FP modes here in that they can have a precision
+     which is different from the size.  mode_for_size uses precision, but
+     we want a mode based on the size, so we must avoid calling it for FP
+     modes.  */
+  mode1  = (SCALAR_INT_MODE_P (tmode)
+	    ? mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0)
+	    : mode);
 
   if (((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	&& bitpos % BITS_PER_WORD == 0)
-       || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
+       || (mode1 != BLKmode
 	   /* ??? The big endian test here is wrong.  This is correct
 	      if the value is in a register, and if mode_for_size is not
 	      the same mode as op0.  This causes us to get unnecessarily
