@@ -1,3 +1,7 @@
+2000-08-04  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* varasm.c (output_constructor): Add .align 0 for packed vars.
+
 2000-08-04  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* configure.in: Use default thread_file even when enable_threads is

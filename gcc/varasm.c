@@ -4472,6 +4472,15 @@ output_constructor (exp, size)
 	      assemble_zeros (bitpos - total_bytes);
 	      total_bytes = bitpos;
 	    }
+          else if (field != 0 && DECL_PACKED (field))
+            {
+               /* Some assemblers automaticallly align a datum according to
+                  its size if no align directive is specified.  The datum,
+                  however, may be declared with 'packed' attribute, so we
+                  have to disable such a feature.  */
+
+               ASM_OUTPUT_ALIGN (asm_out_file, 0);
+            }
 
 	  /* Determine size this element should occupy.  */
 	  if (field)
