@@ -2,7 +2,10 @@
 # being used.  -Hnocpp makes hc use its builtin preprocessor instead of
 # /lib/cpp.  gcc doesn't use <sys/ioctl.h>, so it doesn't matter whether
 # fixincludes has been run.
-CC=hc -Hnocpp
+#
+# hc's warnings do nothing but obscure the output, hence the -w.
+# 
+CC=hc -Hnocpp -w
 
 # The default `make' on the RT doesn't define MAKE, so do it here.
 MAKE=make
