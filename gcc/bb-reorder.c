@@ -1358,6 +1358,8 @@ reorder_basic_blocks ()
   for (i = 0; i < n_basic_blocks; i++)
     BASIC_BLOCK (i)->aux = xcalloc (1, sizeof (struct reorder_block_def));
 
+  EXIT_BLOCK_PTR->aux = xcalloc (1, sizeof (struct reorder_block_def));
+
   build_scope_forest (&forest);
   remove_scope_notes ();
 
@@ -1375,6 +1377,8 @@ reorder_basic_blocks ()
 
   for (i = 0; i < n_basic_blocks; i++)
     free (BASIC_BLOCK (i)->aux);
+
+  free (EXIT_BLOCK_PTR->aux);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
