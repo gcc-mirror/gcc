@@ -1,3 +1,8 @@
+2000-01-29  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Add argument to
+	build_vtable_entry call.
+
 2000-01-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (THUNK_DECL): Discuss vcall indices.
