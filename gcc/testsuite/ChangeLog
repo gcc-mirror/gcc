@@ -1,5 +1,8 @@
 2000-11-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.old-deja/g++.other/decl4.C: Tweak so that it fails with the
+	new ABI, too.
+
 	* g++.old-deja/g++.mike/p6610a.C: This test no longer fails.
 	* g++.old-deja/g++.robertl/eb55.C: Likewise.
 
