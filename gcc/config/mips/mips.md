@@ -6318,20 +6318,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (EQ, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (EQ, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 
@@ -6371,59 +6359,6 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
-(define_insn "seq_si"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(eq:SI (match_operand:SI 1 "register_operand" "%d,d")
-	       (match_operand:SI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "@
-   xor\t%0,%1,%2\;sltu\t%0,%0,1
-   xori\t%0,%1,%2\;sltu\t%0,%0,1"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(eq:SI (match_operand:SI 1 "register_operand")
-	       (match_operand:SI 2 "uns_arith_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16
-    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
-  [(set (match_dup 0)
-	(xor:SI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(ltu:SI (match_dup 0)
-		(const_int 1)))]
-  "")
-
-(define_insn "seq_di"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(eq:DI (match_operand:DI 1 "register_operand" "%d,d")
-	       (match_operand:DI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "@
-   xor\t%0,%1,%2\;sltu\t%0,%0,1
-   xori\t%0,%1,%2\;sltu\t%0,%0,1"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(eq:DI (match_operand:DI 1 "register_operand")
-	       (match_operand:DI 2 "uns_arith_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-    && !TARGET_MIPS16
-    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
-  [(set (match_dup 0)
-	(xor:DI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(ltu:DI (match_dup 0)
-		(const_int 1)))]
-  "")
-
 ;; On the mips16 the default code is better than using sltu.
 
 (define_expand "sne"
@@ -6435,20 +6370,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE)
-    {
-      gen_int_relational (NE, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (NE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sne_si_zero"
@@ -6469,59 +6392,6 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
-(define_insn "sne_si"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ne:SI (match_operand:SI 1 "register_operand" "%d,d")
-	       (match_operand:SI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "@
-    xor\t%0,%1,%2\;sltu\t%0,%.,%0
-    xori\t%0,%1,%x2\;sltu\t%0,%.,%0"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(ne:SI (match_operand:SI 1 "register_operand")
-	       (match_operand:SI 2 "uns_arith_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16
-    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
-  [(set (match_dup 0)
-	(xor:SI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(gtu:SI (match_dup 0)
-		(const_int 0)))]
-  "")
-
-(define_insn "sne_di"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(ne:DI (match_operand:DI 1 "register_operand" "%d,d")
-	       (match_operand:DI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "@
-    xor\t%0,%1,%2\;sltu\t%0,%.,%0
-    xori\t%0,%1,%x2\;sltu\t%0,%.,%0"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(ne:DI (match_operand:DI 1 "register_operand")
-	       (match_operand:DI 2 "uns_arith_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-    && !TARGET_MIPS16
-    && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
-  [(set (match_dup 0)
-	(xor:DI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(gtu:DI (match_dup 0)
-		(const_int 0)))]
-  "")
-
 (define_expand "sgt"
   [(set (match_operand:SI 0 "register_operand")
 	(gt:SI (match_dup 1)
@@ -6531,20 +6401,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (GT, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (GT, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sgt_si"
@@ -6592,65 +6450,9 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (GE, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (GE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
-
-(define_insn "sge_si"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ge:SI (match_operand:SI 1 "register_operand" "d")
-	       (match_operand:SI 2 "arith_operand" "dI")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "slt\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(ge:SI (match_operand:SI 1 "register_operand")
-	       (match_operand:SI 2 "arith_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(lt:SI (match_dup 1)
-	       (match_dup 2)))
-   (set (match_dup 0)
-	(xor:SI (match_dup 0)
-		(const_int 1)))]
-  "")
-
-(define_insn "sge_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(ge:DI (match_operand:DI 1 "register_operand" "d")
-	       (match_operand:DI 2 "arith_operand" "dI")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "slt\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(ge:DI (match_operand:DI 1 "register_operand")
-	       (match_operand:DI 2 "arith_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-   && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(lt:DI (match_dup 1)
-	       (match_dup 2)))
-   (set (match_dup 0)
-	(xor:DI (match_dup 0)
-		(const_int 1)))]
-  "")
 
 (define_expand "slt"
   [(set (match_operand:SI 0 "register_operand")
@@ -6661,17 +6463,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (LT, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (LT, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "slt_si"
@@ -6729,20 +6522,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (LE, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 32767)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (LE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sle_si_const"
@@ -6799,53 +6580,6 @@ dsrl\t%3,%3,1\n\
 				      (const_int 4)
 				      (const_int 8)))])
 
-(define_insn "sle_si_reg"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(le:SI (match_operand:SI 1 "register_operand" "d")
-	       (match_operand:SI 2 "register_operand" "d")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "slt\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(le:SI (match_operand:SI 1 "register_operand")
-	       (match_operand:SI 2 "register_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(lt:SI (match_dup 2)
-	       (match_dup 1)))
-   (set (match_dup 0)
-	(xor:SI (match_dup 0)
-		(const_int 1)))]
-  "")
-
-(define_insn "sle_di_reg"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(le:DI (match_operand:DI 1 "register_operand" "d")
-	       (match_operand:DI 2 "register_operand" "d")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "slt\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(le:DI (match_operand:DI 1 "register_operand")
-	       (match_operand:DI 2 "register_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-   && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(lt:DI (match_dup 2)
-	       (match_dup 1)))
-   (set (match_dup 0)
-	(xor:DI (match_dup 0)
-		(const_int 1)))]
-  "")
-
 (define_expand "sgtu"
   [(set (match_operand:SI 0 "register_operand")
 	(gtu:SI (match_dup 1)
@@ -6855,20 +6589,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (GTU, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (GTU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sgtu_si"
@@ -6916,65 +6638,9 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (GEU, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (GEU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
-
-(define_insn "sgeu_si"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(geu:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "arith_operand" "dI")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "sltu\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(geu:SI (match_operand:SI 1 "register_operand")
-		(match_operand:SI 2 "arith_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(ltu:SI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(xor:SI (match_dup 0)
-		(const_int 1)))]
-  "")
-
-(define_insn "sgeu_di"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(geu:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "arith_operand" "dI")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "sltu\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(geu:DI (match_operand:DI 1 "register_operand")
-		(match_operand:DI 2 "arith_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-   && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(ltu:DI (match_dup 1)
-		(match_dup 2)))
-   (set (match_dup 0)
-	(xor:DI (match_dup 0)
-		(const_int 1)))]
-  "")
 
 (define_expand "sltu"
   [(set (match_operand:SI 0 "register_operand")
@@ -6985,17 +6651,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (LTU, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (LTU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sltu_si"
@@ -7053,20 +6710,8 @@ dsrl\t%3,%3,1\n\
   if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
     FAIL;
 
-  /* Set up operands from compare.  */
-  operands[1] = branch_cmp[0];
-  operands[2] = branch_cmp[1];
-
-  if (TARGET_64BIT || !TARGET_DEBUG_C_MODE || TARGET_MIPS16)
-    {
-      gen_int_relational (LEU, operands[0], operands[1], operands[2], (int *)0);
-      DONE;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 32767)
-    operands[2] = force_reg (SImode, operands[2]);
-
-  /* Fall through and generate default code.  */
+  gen_int_relational (LEU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  DONE;
 })
 
 (define_insn "sleu_si_const"
@@ -7122,53 +6767,6 @@ dsrl\t%3,%3,1\n\
    (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])
-
-(define_insn "sleu_si_reg"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(leu:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "register_operand" "d")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "sltu\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(leu:SI (match_operand:SI 1 "register_operand")
-		(match_operand:SI 2 "register_operand")))]
-  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(ltu:SI (match_dup 2)
-		(match_dup 1)))
-   (set (match_dup 0)
-	(xor:SI (match_dup 0)
-		(const_int 1)))]
-  "")
-
-(define_insn "sleu_di_reg"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(leu:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
-  "sltu\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(leu:DI (match_operand:DI 1 "register_operand")
-		(match_operand:DI 2 "register_operand")))]
-  "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
-   && !TARGET_MIPS16"
-  [(set (match_dup 0)
-	(ltu:DI (match_dup 2)
-		(match_dup 1)))
-   (set (match_dup 0)
-	(xor:DI (match_dup 0)
-		(const_int 1)))]
-  "")
 
 ;;
 ;;  ....................

@@ -176,7 +176,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
-#define MASK_DEBUG_C	0		/* don't expand seq, etc.  */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
 
 					/* Dummy switches used only in specs */
@@ -197,7 +196,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 					/* Debug Modes */
 #define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
-#define TARGET_DEBUG_C_MODE	(target_flags & MASK_DEBUG_C)
 #define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
@@ -671,8 +669,6 @@ extern const struct mips_cpu_info *mips_tune_info;
   {"no-fp-exceptions", 	  -MASK_FP_EXCEPTIONS,				\
      N_("FP exceptions are not enabled") },				\
   {"debug",		  MASK_DEBUG,					\
-     NULL},								\
-  {"debugc",		  MASK_DEBUG_C,					\
      NULL},								\
   {"debugd",		  MASK_DEBUG_D,					\
      NULL},								\
