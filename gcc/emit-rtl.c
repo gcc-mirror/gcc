@@ -2681,6 +2681,48 @@ remove_unncessary_notes ()
 
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
 	remove_insn (insn);
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	{
+	  /* Scan back to see if there are any non-note instructions
+	     between INSN and the beginning of this block.  If not,
+	     then there is no PC range in the generated code that will
+	     actually be in this block, so there's no point in
+	     remembering the existence of the block.  */
+	  rtx prev;
+
+	  for (prev = PREV_INSN (insn); prev; prev = PREV_INSN (prev))
+	    {
+	      /* This block contains a real instruction.  Note that we
+		 don't include labels; if the only thing in the block
+		 is a label, then there are still no PC values that
+		 lie within the block.  */
+	      if (GET_RTX_CLASS (GET_CODE (prev)) == 'i')
+		break;
+
+	      /* We're only interested in NOTEs.  */
+	      if (GET_CODE (prev) != NOTE)
+		continue;
+
+	      if (NOTE_LINE_NUMBER (prev) == NOTE_INSN_BLOCK_BEG)
+		{
+		  /* If the BLOCKs referred to by these notes don't
+		     match, then something is wrong with our BLOCK
+		     nesting structure.  */
+		  if (NOTE_BLOCK (prev) != NOTE_BLOCK (insn))
+		    abort ();
+		  
+		  remove_insn (prev);
+		  remove_insn (insn);
+		  break;
+		}
+	      else if (NOTE_LINE_NUMBER (prev) == NOTE_INSN_BLOCK_END)
+		/* There's a nested block.  We need to leave the
+		   current block in place since otherwise the debugger
+		   wouldn't be able to show symbols from our block in
+		   the nested block.  */
+		break;
+	    }
+	}
     }
 }
 

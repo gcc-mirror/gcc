@@ -375,14 +375,11 @@ xcoffout_source_line (file, filename, note)
 }
 
 /* Output the symbols defined in block number DO_BLOCK.
-   Set NEXT_BLOCK_NUMBER to 0 before calling.
 
    This function works by walking the tree structure of blocks,
    counting blocks until it finds the desired block.  */
 
 static int do_block = 0;
-
-static int next_block_number;
 
 static void
 xcoffout_block (block, depth, args)
@@ -396,7 +393,7 @@ xcoffout_block (block, depth, args)
       if (TREE_USED (block))
 	{
 	  /* When we reach the specified block, output its symbols.  */
-	  if (next_block_number == do_block)
+	  if (BLOCK_NUMBER (block) == do_block)
 	    {
 	      /* Output the syms of the block.  */
 	      if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
@@ -408,10 +405,8 @@ xcoffout_block (block, depth, args)
 	      return;
 	    }
 	  /* If we are past the specified block, stop the scan.  */
-	  else if (next_block_number >= do_block)
+	  else if (BLOCK_NUMBER (block) >= do_block)
 	    return;
-
-	  next_block_number++;
 
 	  /* Output the subblocks.  */
 	  xcoffout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
@@ -443,7 +438,6 @@ xcoffout_begin_block (file, line, n)
     ASM_OUTPUT_LBB (file, line, n);
 
   do_block = n;
-  next_block_number = 0;
   xcoffout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
 }
 
@@ -513,8 +507,7 @@ xcoffout_begin_function (file, last_linenum)
      in sdbout_begin_block, but there is no guarantee that there will be any
      inner block 1, so we must do it here.  This gives a result similar to
      dbxout, so it does make some sense.  */
-  do_block = 0;
-  next_block_number = 0;
+  do_block = BLOCK_NUMBER (DECL_INITIAL (decl));
   xcoffout_block (DECL_INITIAL (current_function_decl), 0,
 		  DECL_ARGUMENTS (current_function_decl));
 

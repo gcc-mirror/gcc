@@ -2202,13 +2202,6 @@ static unsigned file_table_in_use;
    dwarf2out_init.  */
 static char *primary_filename;
 
-/* For Dwarf output, we must assign lexical-blocks id numbers in the order in
-   which their beginnings are encountered. We output Dwarf debugging info
-   that refers to the beginnings and ends of the ranges of code for each
-   lexical block.  The labels themselves are generated in final.c, which
-   assigns numbers to the blocks in the same way.  */
-static unsigned next_block_number = 2;
-
 /* A pointer to the base of a table of references to DIE's that describe
    declarations.  The table is indexed by DECL_UID() which is a unique
    number identifying each decl.  */
@@ -8534,9 +8527,10 @@ gen_lexical_block_die (stmt, context_die, depth)
   if (! BLOCK_ABSTRACT (stmt))
     {
       ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
-				   next_block_number);
+				   BLOCK_NUMBER (stmt));
       add_AT_lbl_id (stmt_die, DW_AT_low_pc, label);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
+				   BLOCK_NUMBER (stmt));
       add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
     }
 
@@ -8563,9 +8557,10 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
 
       add_abstract_origin_attribute (subr_die, decl);
       ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
-				   next_block_number);
+				   BLOCK_NUMBER (stmt));
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL, next_block_number);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
+				   BLOCK_NUMBER (stmt));
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
       decls_for_scope (stmt, subr_die, depth);
       current_function_has_inlines = 1;
@@ -9154,7 +9149,7 @@ gen_block_die (stmt, context_die, depth)
 
   /* Ignore blocks never really used to make RTL.  */
 
-  if (stmt == NULL_TREE || !TREE_USED (stmt))
+  if (stmt == NULL_TREE || !TREE_USED (stmt) || !TREE_ASM_WRITTEN (stmt))
     return;
 
   /* Determine the "ultimate origin" of this block.  This block may be an
@@ -9236,9 +9231,6 @@ decls_for_scope (stmt, context_die, depth)
   /* Ignore blocks never really used to make RTL.  */
   if (stmt == NULL_TREE || ! TREE_USED (stmt))
     return;
-
-  if (!BLOCK_ABSTRACT (stmt) && depth > 0)
-    next_block_number++;
 
   /* Output the DIEs to represent all of the data objects and typedefs
      declared directly within this block but not within any nested

@@ -1,3 +1,50 @@
+2000-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* emit-rtl.c (remove_unncessary_notes): Remove notes for empty
+	blocks.
+	* final.c (next_block_index): Remove.
+	(max_block_depth): Likewise.
+	(pending_blocks): Likewise.
+	(init_final): Don't initialize them.
+	(final_start_function): Don't set next_block_index.  Set up
+	BLOCK_NUMBER.
+	(final_scan_insn): Use BLOCK_NUMBER, not next_block_index.
+	* function.h (number_blocks): New function.
+	* function.c (get_block_vector): New function.
+	(identify_blocks): Use it.
+	(reorder_blocks): Set NOTE_BLOCK.
+	(number_blocks): New function.
+	* tree.def (BLOCK): Add documentation for TREE_ASM_WRITTEN flag.
+	* tree.h (BLOCK_NUMBER): New macro.
+	(tree_block): Add block_num field.
+	* dbxout.c (next_block_number): Remove.
+	(dbxout_init): Don't set it.
+	(dbxout_block): Only output blocks that have TREE_ASM_WRITTEN
+	set.  Use BLOCK_NUMBER, rather than next_block_num, to determine
+	block numbers.
+	* toplev.c (rest_of_compilation): Always call
+	find_loop_tree_blocks.  Fix indentation.
+	* dwarf2out.c (next_block_number): Remove.
+	(gen_lexical_block_die): Use BLOCK_NUMBER, not next_block_number,
+	to determine block numbers.
+	(gen_inlined_subroutine_die): Likewise.
+	(gen_block_die): Only output blocks that have TREE_ASM_WRITTEN set.
+	(decls_for_scope): Don't increment next_block_number.
+	* dwarfout.c (next_block_number): Remove.
+	(output_lexical_block_die): Use BLOCK_NUMBER, not next_block_number,
+	to determine block numbers. 
+	(output_inlined_subroutine_die): Likewise.
+	(output_block): Only output blocks that have TREE_ASM_WRITTEN set.
+	(output_decls_for_scope): Don't increment next_block_number.
+	* sdbout.c (next_block_number): Remove.
+	(sdbout_block): Use BLOCK_NUMBER.
+	(sdbout_begin_block): Simplify.
+	* xcoffout.c (next_block_number): Remove.
+	(xcoffout_block): Use BLOCK_NUMBER, not next_block_number.
+	(xcoffout_begin_block): Don't set next_block_number.
+	(xcoffout_begin_function): Likewise. Use BLOCK_NUMBER, not
+	next_block_number.
+	
 Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c (c_strlen): Use size_diffop and return ssizetype value.

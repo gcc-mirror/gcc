@@ -195,16 +195,6 @@ static char *primary_filename;
 
 static char *last_filename;
 
-/* For Dwarf output, we must assign lexical-blocks id numbers
-   in the order in which their beginnings are encountered.
-   We output Dwarf debugging info that refers to the beginnings
-   and ends of the ranges of code for each lexical block with
-   assembler labels ..Bn and ..Bn.e, where n is the block number.
-   The labels themselves are generated in final.c, which assigns
-   numbers to the blocks in the same way.  */
-
-static unsigned next_block_number = 2;
-
 /* Counter to generate unique names for DIEs.  */
 
 static unsigned next_unused_dienum = 1;
@@ -3601,9 +3591,9 @@ output_lexical_block_die (arg)
       char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
       char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-      sprintf (begin_label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
+      sprintf (begin_label, BLOCK_BEGIN_LABEL_FMT, BLOCK_NUMBER (stmt));
       low_pc_attribute (begin_label);
-      sprintf (end_label, BLOCK_END_LABEL_FMT, next_block_number);
+      sprintf (end_label, BLOCK_END_LABEL_FMT, BLOCK_NUMBER (stmt));
       high_pc_attribute (end_label);
     }
 }
@@ -3623,9 +3613,9 @@ output_inlined_subroutine_die (arg)
       char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
       char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-      sprintf (begin_label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
+      sprintf (begin_label, BLOCK_BEGIN_LABEL_FMT, BLOCK_NUMBER (stmt));
       low_pc_attribute (begin_label);
-      sprintf (end_label, BLOCK_END_LABEL_FMT, next_block_number);
+      sprintf (end_label, BLOCK_END_LABEL_FMT, BLOCK_NUMBER (stmt));
       high_pc_attribute (end_label);
     }
 }
@@ -4633,7 +4623,7 @@ output_block (stmt, depth)
 
   /* Ignore blocks never really used to make RTL.  */
 
-  if (! stmt || ! TREE_USED (stmt))
+  if (! stmt || ! TREE_USED (stmt) || !TREE_ASM_WRITTEN (stmt))
     return;
 
   /* Determine the "ultimate origin" of this block.  This block may be an
@@ -4724,9 +4714,6 @@ output_decls_for_scope (stmt, depth)
 
   if (! stmt || ! TREE_USED (stmt))
     return;
-
-  if (! BLOCK_ABSTRACT (stmt) && depth > 0)
-    next_block_number++;
 
   /* Output the DIEs to represent all of the data objects, functions,
      typedefs, and tagged types declared directly within this block

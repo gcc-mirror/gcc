@@ -2842,13 +2842,13 @@ rest_of_compilation (decl)
      collector to reclaim the memory used by the notes.  */
   remove_unncessary_notes ();
 
+  /* We need to make sure that NOTE_BLOCK is set correctly
+     for each NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
+  find_loop_tree_blocks ();
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
   if (cfun->x_whole_function_mode_p)
-    {
-      find_loop_tree_blocks ();
-      unroll_block_trees ();
-    }
+    unroll_block_trees ();
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -3705,8 +3705,8 @@ rest_of_compilation (decl)
 	     regset_release_memory ();
 	   });
 
-   if (ggc_p)
-     ggc_collect ();
+  if (ggc_p)
+    ggc_collect ();
 
   /* Write DBX symbols if requested */
 
