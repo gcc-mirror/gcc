@@ -1416,6 +1416,15 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			rtx range1after, range2after;
 			rtx range1before, range2before;
 
+			/* Include in each range any line number before it.  */
+			while (PREV_INSN (range1beg)
+			       && GET_CODE (PREV_INSN (range1beg)) == NOTE)
+			  range1beg = PREV_INSN (range1beg);
+
+			while (PREV_INSN (range2beg)
+			       && GET_CODE (PREV_INSN (range2beg)) == NOTE)
+			  range2beg = PREV_INSN (range2beg);
+
 			/* Don't move NOTEs for blocks or loops; shift them
 			   outside the ranges, where they'll stay put.  */
 			squeeze_notes (range1beg, range1end);
@@ -2666,7 +2675,7 @@ mark_jump_label (x, insn, cross_jump)
 	  {
 	    if (GET_CODE (insn) == JUMP_INSN)
 	      JUMP_LABEL (insn) = label;
-	    else if (! find_reg_note (insn, REG_LABEL, 0))
+	    else if (! find_reg_note (insn, REG_LABEL, label))
 	      {
 		rtx next = next_real_insn (label);
 		/* Don't record labels that refer to dispatch tables.
