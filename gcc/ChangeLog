@@ -1,3 +1,14 @@
+Mon Mar 30 13:11:05 1998  Stan Cox  <scox@cygnus.com>
+
+	* libgcc2.c: (__main, __do_global_dtors, __do_global_ctors):
+	For __CYGWIN32__ use the versions in winsup/dcrt0.cc.
+	
+	* gcc.c, cccp.c, cpplib.c, collect2.c (GET_ENVIRONMENT): Added.
+	cygwin32 can override this to allow both unix and win32 style PATHs.
+
+	* i386/xm-cygwin32.h (GET_ENVIRONMENT): Defined to allow win32
+	style environment paths.
+	
 Mon Mar 30 14:43:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (cppalloc.o, cpperror.o, cppexp.o, cpphash.o,

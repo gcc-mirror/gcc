@@ -83,6 +83,10 @@ extern char *rindex ();
 extern char *getenv ();
 #endif
 
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#endif
+
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif
@@ -1705,7 +1709,7 @@ main (argc, argv)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-  cp = getenv ("CPATH");
+  GET_ENVIRONMENT (cp, "CPATH");
   if (cp && ! no_standard_includes)
     path_include (cp);
 
@@ -1888,16 +1892,16 @@ main (argc, argv)
     switch ((objc << 1) + cplusplus)
       {
       case 0:
-	epath = getenv ("C_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "C_INCLUDE_PATH");
 	break;
       case 1:
-	epath = getenv ("CPLUS_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "CPLUS_INCLUDE_PATH");
 	break;
       case 2:
-	epath = getenv ("OBJC_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "OBJC_INCLUDE_PATH");
 	break;
       case 3:
-	epath = getenv ("OBJCPLUS_INCLUDE_PATH");
+	GET_ENVIRONMENT (epath, "OBJCPLUS_INCLUDE_PATH");
 	break;
       }
     /* If the environment var for this language is set,
