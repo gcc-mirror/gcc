@@ -3272,7 +3272,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	      /* Input reloads can be inherited more often than output
 		 reloads can be removed, so penalize output reloads.  */
-	      if (operand_type[i] != RELOAD_FOR_INPUT)
+	      if (operand_type[i] != RELOAD_FOR_INPUT
+		  && GET_CODE (operand) != SCRATCH)
 		reject++;
 	    }
 
