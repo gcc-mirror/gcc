@@ -1,3 +1,8 @@
+2003-09-04  Eric Christopher  <echristo@redhat.com>
+
+	* targhooks.c (default_return_in_memory): Fix default
+	definition.
+
 2003-09-04  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (m68k_coff_asm_named_section): Restore
