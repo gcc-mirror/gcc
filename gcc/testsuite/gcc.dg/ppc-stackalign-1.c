@@ -1,4 +1,5 @@
 /* { dg-do run { target powerpc-*-linux* powerpc-*-sysv* } } */
+/* { dg-options {} } */
 
 /* Test stack pointer alignment against variable alloca.  */
 /* Inspired by PR libgcj/10610.  */
