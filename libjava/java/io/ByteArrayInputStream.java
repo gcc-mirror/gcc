@@ -40,6 +40,9 @@ public class ByteArrayInputStream extends InputStream
 
   public ByteArrayInputStream(byte[] buffer, int offset, int length)
   {
+    if (offset < 0  || length < 0 || offset > buffer.length)
+      throw new IllegalArgumentException();
+
     buf = buffer;
 
     count = offset + length;
@@ -47,10 +50,6 @@ public class ByteArrayInputStream extends InputStream
       count = buf.length;
 
     pos = offset;
-    // TBD: What should we do if pos is neg. or > count?  E.g. throw exc. or:
-    // if (pos < 0 || pos > count)
-    //   pos = 0;
-
     mark = pos;
   }
 

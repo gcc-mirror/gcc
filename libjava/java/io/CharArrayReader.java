@@ -41,17 +41,16 @@ public class CharArrayReader extends Reader
   public CharArrayReader(char[] buffer, int offset, int length)
   {
     super();
+    if (offset < 0  || length < 0 || offset > buffer.length)
+      throw new IllegalArgumentException();
+    
     buf = buffer;
 
     count = offset + length;
     if (count > buf.length)
       count = buf.length;
-
+    
     pos = offset;
-    // TBD: What should we do if pos is neg. or > count?  E.g. throw exc. or:
-    // if (pos < 0 || pos > count)
-    //   pos = 0;
-
     markedPos = pos;
   }
 
@@ -116,12 +115,17 @@ public class CharArrayReader extends Reader
     }
   }
 
+  /** Return true if more characters are available to be read. 
+    *
+    * @specnote The JDK 1.3 API docs are wrong here. This method will
+    *           return false if there are no more characters available.
+    */
   public boolean ready() throws IOException
   {
     if (buf == null)
       throw new IOException("Stream closed");
 
-    return true;
+    return (pos < count);
   }
 
   public void reset() throws IOException
