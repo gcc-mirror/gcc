@@ -1,3 +1,17 @@
+2004-04-22  Richard Henderson  <rth@redhat.com>
+
+	* hashtab.c: Include limits.h, stdint.h, ansidecl.h.
+	(CHAR_BIT): Provide default.
+	(struct prime_ent, prime_tab): New.
+	(higher_prime_index): Rename from higher_prime_number, return index.
+	(htab_mod_1): New.
+	(htab_mod, htab_mod_m2): Use it.
+	(htab_create_alloc, htab_create_alloc_ex): Store prime index.
+	(htab_expand): Likewise.
+	* configure.ac: Check for stdint.h.
+	(UNSIGNED_64BIT_TYPE): New define and checks to fill it in.
+	* config.in, configure: Rebuild.
+
 2004-04-13  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* strerror.c: Include config.h, and redefine sys_nerr and
