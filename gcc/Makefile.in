@@ -1425,7 +1425,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h fixinc.ready
 	touch stmp-fixinc
 
 # copy objc header files into build directory
-objc-headers:
+objc-headers: stmp-fixinc
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
