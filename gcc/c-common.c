@@ -865,8 +865,9 @@ check_format_info (info, params)
 	  /* Don't warn about differences merely in signedness.  */
 	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
 	       && TREE_CODE (cur_type) == INTEGER_TYPE
-	       && (wanted_type == (TREE_UNSIGNED (wanted_type)
-				   ? unsigned_type : signed_type) (cur_type))))
+	       && (TREE_UNSIGNED (wanted_type)
+		   ? wanted_type == unsigned_type (cur_type)
+		   : wanted_type == signed_type (cur_type))))
 	{
 	  register char *this;
 	  register char *that;
