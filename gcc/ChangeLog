@@ -1,3 +1,11 @@
+2004-11-14  Richard Henderson  <rth@redhat.com>
+
+	PR 18480
+	* calls.c (struct arg_data): Add parallel_value.
+	(precompute_register_parameters): Set it.
+	(load_register_parameters): Use it.
+	(store_one_arg): Also set it here.
+
 2004-11-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18431
