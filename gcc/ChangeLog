@@ -1,3 +1,72 @@
+1999-07-19  Linas Vepstas  <linas@linas.org>
+
+	* config/i370/README: New file.
+	* config/i370/linux.h: New file.
+	* config/i370/mvs.h: New file.
+	* config/i370/oe.h: New file.
+	* config/i370/t-linux: New file.
+	* config/i370/t-mvs: New file.
+	* config/i370/t-oe: New file.
+	* config/i370/x-oe: New file.
+	* config/i370/xm-linux.h: New file.
+	* config/i370/xm-mvs.h: New file.
+	* config/i370/xm-oe.h: New file.
+
+	* i370.c (label_node_t): Add first_ref_page, label_addr, 
+	label_first_ref, label_last_ref members.
+	(mvs_need_base_reload): Renamed from mvs_label_emitted.
+	(MAX_MVS_LABEL_SIZE): Define.
+	(MAX_LONG_LABEL_SIZE): Define.
+	(alias_node_t, alias_anchor, alias_number): New.
+	(mvs_function_table): Reorder for EBCDIC.
+	(ascebc, ebcasc): Unconditionally define.
+	(i370_branch_dest, i370_branch_length): New functions.
+	(i370_short_branch, i370_label_scan): New functions.
+	(mvs_get_label): Renamed from mvs_add_label.  Search for
+	an existing label before creating a new one.
+	(mvs_add_label): New function.
+	(mvs_get_label_page): New function.
+	(mvs_free_label_list): Renamed from mvs_free_label.  Iterate
+	over the entire list.
+	(mvs_check_page) [TARGET_HLASM]: Use BASR not BALR.
+	(mvs_check_page) [TARGET_ELF_ABI]: New function.
+	(mvs_add_alias, mvs_need_alias): New functions.
+	(mvs_get_alias, mvs_check_alias): New functions.
+	(handle_pragma): New function.
+	(mvs_function_check): New function.
+	(unsigned_jump_follows_p): Search harder.
+	(i370_function_prolog) [TARGET_HLASM]: Handle LE370.  Scan labels.
+	(i370_function_prolog) [TARGET_ELF_ABI]: New function.
+	* i370.h (TARGET_VERSION): Delete.
+	(CPP_SPEC, CPP_PREDEFINES): Delete.
+	(mvs_label_emitted): Delete.
+	(TARGET_EBCDIC): Delete.
+	(MAP_CHARACTER): Define only if TARGET_EBCDIC.
+	(HANDLE_PRAGMA): Define.
+	(HARD_REGNO_NREGS): Handle complex modes.
+	(HARD_REGNO_MODE_OK): Likewise.
+	(CLASS_MAX_NREGS): Likewise.
+	(RET_REG): Likewise.
+	(EXTRA_CONSTRAINT): Define.
+	(RETURN_IN_MEMORY): True for DImode.
+	(TRAMPOLINE_TEMPLATE): Use gen_rtx instead of GEN_INT.
+	(FUNCTION_PROFILER): Delete.
+	(COUNT_REGS): Fail if REG_P but not REG_OK_FOR_BASE_P.
+	(NOTICE_UPDATE_CC): Correct handling of MULT, DIV, logicals and shifts.
+	(TARGET_ESC, TARGET_BELL): Conditionally define for TARGET_EBCDIC.
+	(TARGET_BS, TARGET_TAB, TARGET_NEWLINE): Likewise.
+	(TARGET_VT, TARGET_FF, TARGET_CR): Likewise.
+	(ASM_FILE_START): Add "RMODE ANY".
+	(ASM_OUTPUT_EXTERNAL): Check for aliases.
+	(ASM_GLOBALIZE_LABEL): Likewise.
+	(ASM_OUTPUT_LABELREF): Likewise.
+	(ASM_OUTPUT_COMMON): Likewise.
+	(PRINT_OPERAND): Handle 'K', 'W', default.
+	(PRINT_OPERAND_ADDRESS): New.
+	(Lots of defines): Add support for TARGET_ELF_ABI.
+	* i370.md (attr length): New.  Define for all patterns.
+	(*): Lots of tweeks to assembly output and constraints.
+
 Mon Jul 19 15:09:29 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (arithmetic, logical, and shift Rc combiner patterns):
