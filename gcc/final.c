@@ -200,10 +200,6 @@ static int app_on;
 
 rtx final_sequence;
 
-/* True if we are outputting insns in a delay slot.  This is used
-   to prettify the assembly.  */
-static bool output_in_slot;
-
 #ifdef ASSEMBLER_DIALECT
 
 /* Number of the assembler dialect to use, starting at 0.  */
@@ -1667,11 +1663,8 @@ scan_ahead_for_unlikely_executed_note (rtx insn)
    is the insn being scanned.
    Value returned is the next insn to be scanned.
 
-   NOPEEPHOLES is used to disallow peephole processing:
-    - 0: peepholes are allowed,
-    - 1: peepholes are not allowed,
-    - 2: peepholes are not allowed and we are in the
-         slot of a delayed branch.
+   NOPEEPHOLES is the flag to disallow peephole processing (currently
+   used for within delayed branch sequence output).
 
    SEEN is used to track the end of the prologue, for emitting
    debug information.  We force the emission of a line note after
@@ -1681,7 +1674,8 @@ scan_ahead_for_unlikely_executed_note (rtx insn)
 
 rtx
 final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
-		 int prescan, int nopeepholes, int *seen)
+		 int prescan, int nopeepholes ATTRIBUTE_UNUSED,
+		 int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
@@ -2201,7 +2195,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		/* We loop in case any instruction in a delay slot gets
 		   split.  */
 		do
-		  insn = final_scan_insn (insn, file, 0, prescan, 2, seen);
+		  insn = final_scan_insn (insn, file, 0, prescan, 1, seen);
 		while (insn != next);
 	      }
 #ifdef DBR_OUTPUT_SEQEND
@@ -2533,9 +2527,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 
 	/* Output assembler code from the template.  */
-	output_in_slot = (nopeepholes > 1);
 	output_asm_insn (template, recog_data.operand);
-	output_in_slot = false;
 
 	/* If necessary, report the effect that the instruction has on
 	   the unwind info.   We've already done this for delay slots
@@ -2996,8 +2988,6 @@ output_asm_insn (const char *template, rtx *operands)
   memset (opoutput, 0, sizeof opoutput);
   p = template;
   putc ('\t', asm_out_file);
-  if (output_in_slot)
-    putc (' ', asm_out_file);
 
 #ifdef ASM_OUTPUT_OPCODE
   ASM_OUTPUT_OPCODE (asm_out_file, p);
