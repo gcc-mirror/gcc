@@ -558,11 +558,9 @@ gen_split (split)
 {
   register int i;
   int operands;
-  const char *name = "split";
+  const char *const name =
+    ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
-
-  if (GET_CODE (split) == DEFINE_PEEPHOLE2)
-    name = "peephole2";
 
   if (XVEC (split, 0) == 0)
     fatal ("define_%s (definition %d) lacks a pattern", name,

@@ -313,7 +313,7 @@ const_section ()						\
       const char *name;						\
       char *string;						\
       const char *prefix;					\
-      static const char *prefixes[4][2] =			\
+      static const char *const prefixes[4][2] =			\
       {								\
 	{ ".text.",   ".gnu.linkonce.t." },			\
 	{ ".rodata.", ".gnu.linkonce.r." },			\

@@ -283,7 +283,7 @@ rtx arm_target_insn;
 int arm_target_label;
 
 /* The condition codes of the ARM, and the inverse function.  */
-const char * arm_condition_codes[] =
+const char *const arm_condition_codes[] =
 {
   "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
@@ -2834,7 +2834,7 @@ arm_adjust_cost (insn, link, dep, cost)
 
 static int fpa_consts_inited = 0;
 
-static const char * strings_fpa[8] =
+static const char *const strings_fpa[8] =
 {
   "0",   "1",   "2",   "3",
   "4",   "5",   "0.5", "10"
@@ -10609,7 +10609,7 @@ thumb_condition_code (x, invert)
      rtx x;
      int invert;
 {
-  static const char * conds[] =
+  static const char *const conds[] =
   {
     "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", 
     "hi", "ls", "ge", "lt", "gt", "le"

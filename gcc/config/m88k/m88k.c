@@ -1534,7 +1534,7 @@ output_option (file, sep, type, name, indent, pos, max)
   return pos + fprintf (file, "%s%s%s", sep, type, name);
 }
 
-static struct { const char *name; int value; } m_options[] = TARGET_SWITCHES;
+static struct { const char *const name; int value; } m_options[] = TARGET_SWITCHES;
 
 static void
 output_options (file, f_options, f_len, W_options, W_len,

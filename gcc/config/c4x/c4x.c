@@ -65,7 +65,7 @@ rtx floatunshihf2_libfunc;
 
 static int c4x_leaf_function;
 
-static const char *float_reg_names[] = FLOAT_REGISTER_NAMES;
+static const char *const float_reg_names[] = FLOAT_REGISTER_NAMES;
 
 /* Array of the smallest class containing reg number REGNO, indexed by
    REGNO.  Used by REGNO_REG_CLASS in c4x.h.  We assume that all these

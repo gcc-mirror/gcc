@@ -6701,8 +6701,8 @@ sparc_flat_function_prologue (file, size)
   if (size > 0)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
-      const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-      const char *t1_str = "%g1";
+      const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *const t1_str = "%g1";
 
       /* Things get a little tricky if local variables take up more than ~4096
 	 bytes and outgoing arguments take up more than ~4096 bytes.  When that
@@ -6885,9 +6885,9 @@ sparc_flat_function_epilogue (file, size)
     {
       unsigned HOST_WIDE_INT reg_offset = current_frame_info.reg_offset;
       unsigned HOST_WIDE_INT size1;
-      const char *sp_str = reg_names[STACK_POINTER_REGNUM];
-      const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-      const char *t1_str = "%g1";
+      const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
+      const char *const fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *const t1_str = "%g1";
 
       /* In the reload sequence, we don't need to fill the load delay
 	 slots for most of the loads, also see if we can fill the final
@@ -7380,7 +7380,7 @@ enum ultra_code { NONE=0, /* no insn at all				*/
 static enum ultra_code ultra_code_from_mask PARAMS ((int));
 static void ultra_schedule_insn PARAMS ((rtx *, rtx *, int, enum ultra_code));
 
-static const char *ultra_code_names[NUM_ULTRA_CODES] = {
+static const char *const ultra_code_names[NUM_ULTRA_CODES] = {
   "NONE", "IEU0", "IEU1", "IEUN", "LSU", "CTI",
   "FPM", "FPA", "SINGLE" };
 

@@ -400,7 +400,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
       {									\
 	if (flag_pic)							\
 	  {								\
-	    const char *pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";\
+	    const char *const pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";\
 	    warning ("%s and profiling conflict: disabling %s",		\
 		     pic_string, pic_string);				\
 	    flag_pic = 0;						\

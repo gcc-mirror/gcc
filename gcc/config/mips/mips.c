@@ -9445,9 +9445,9 @@ mips_output_conditional_branch (insn,
      operand.  */
   const char *op2 = (two_operands_p ? ",%z3" : ",%.");
   /* The operand-printing string for the comparison.  */
-  const char *comp = (float_p ? "%F0" : "%C0");
+  const char *const comp = (float_p ? "%F0" : "%C0");
   /* The operand-printing string for the inverted comparison.  */
-  const char *inverted_comp = (float_p ? "%W0" : "%N0");
+  const char *const inverted_comp = (float_p ? "%W0" : "%N0");
 
   /* The MIPS processors (for levels of the ISA at least two), have
      "likely" variants of each branch instruction.  These instructions
@@ -9801,7 +9801,7 @@ mips_unique_section (decl, reloc)
   int len, size, sec;
   const char *name, *prefix;
   char *string;
-  static const char *prefixes[4][2] = {
+  static const char *const prefixes[4][2] = {
     { ".text.", ".gnu.linkonce.t." },
     { ".rodata.", ".gnu.linkonce.r." },
     { ".data.", ".gnu.linkonce.d." },

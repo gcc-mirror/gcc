@@ -216,7 +216,7 @@ static struct pred_table
 
 #define NUM_KNOWN_PREDS ARRAY_SIZE (preds)
 
-static const char * special_mode_pred_table[] = {
+static const char *const special_mode_pred_table[] = {
 #ifdef SPECIAL_MODE_PREDICATES
   SPECIAL_MODE_PREDICATES
 #endif

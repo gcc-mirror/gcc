@@ -1280,20 +1280,20 @@ static const char *gcc_exec_prefix;
 #define STANDARD_BINDIR_PREFIX "/usr/local/bin"
 #endif
 
-static const char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
-static const char *standard_exec_prefix_1 = "/usr/lib/gcc/";
+static const char *const standard_exec_prefix = STANDARD_EXEC_PREFIX;
+static const char *const standard_exec_prefix_1 = "/usr/lib/gcc/";
 static const char *md_exec_prefix = MD_EXEC_PREFIX;
 
 static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
 static const char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
-static const char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
-static const char *standard_startfile_prefix_1 = "/lib/";
-static const char *standard_startfile_prefix_2 = "/usr/lib/";
+static const char *const standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
+static const char *const standard_startfile_prefix_1 = "/lib/";
+static const char *const standard_startfile_prefix_2 = "/usr/lib/";
 
-static const char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
+static const char *const tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 static const char *tooldir_prefix;
 
-static const char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
+static const char *const standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
 
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
@@ -2436,7 +2436,8 @@ find_a_file (pprefix, name, mode)
      int mode;
 {
   char *temp;
-  const char *file_suffix = ((mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "");
+  const char *const file_suffix =
+    ((mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "");
   struct prefix_list *pl;
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 

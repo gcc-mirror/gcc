@@ -164,7 +164,7 @@ emit_gnu_type ( text, rm )
 typedef __%s_TYPE__ %s_t;\n\
 #endif\n";
 
-    const char* pz_guard = (strcmp (z_type, "wchar") == 0)
+    const char *const pz_guard = (strcmp (z_type, "wchar") == 0)
                            ? " && ! defined(__cplusplus)" : "";
 
     printf (z_fmt, z_TYPE, pz_guard, z_TYPE, z_TYPE, z_type);

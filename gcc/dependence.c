@@ -61,11 +61,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 enum dependence_type {dt_flow, dt_anti, dt_output, dt_none};
 #if 0
-static const char * dependence_string [] = {"flow", "anti", "output", "none"};
+static const char *const dependence_string [] = {"flow", "anti", "output", "none"};
 #endif
 enum direction_type {lt, le, eq, gt, ge, star, independent, undef};
 #if 0
-static const char * direction_string [] = {"<", "<=", "=", ">", ">=", "*",
+static const char *const direction_string [] = {"<", "<=", "=", ">", ">=", "*",
 					   "INDEPENDENT", "UNDEFINED"};
 #endif
 enum def_use_type {def, use, init_def_use};

@@ -5079,7 +5079,7 @@ static struct ia64_packet packets[NR_PACKETS];
 
 /* Map attr_type to a string with the name.  */
 
-static const char *type_names[] =
+static const char *const type_names[] =
 {
   "UNKNOWN", "A", "I", "M", "F", "B", "L", "X", "S"
 };

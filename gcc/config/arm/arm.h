@@ -61,7 +61,7 @@ typedef enum arm_cond_code
 arm_cc;
 
 extern arm_cc arm_current_cc;
-extern const char * arm_condition_codes[];
+extern const char *const arm_condition_codes[];
 
 #define ARM_INVERSE_CONDITION_CODE(X)  ((arm_cc) (((int)X) ^ 1))
 
@@ -2800,7 +2800,7 @@ extern int making_const_table;
   do										\
     {										\
       int mi_delta = (DELTA);							\
-      const char * mi_op = mi_delta < 0 ? "sub" : "add";			\
+      const char *const mi_op = mi_delta < 0 ? "sub" : "add";			\
       int shift = 0;								\
       int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))	\
 		        ? 1 : 0);						\
