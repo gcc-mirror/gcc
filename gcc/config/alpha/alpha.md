@@ -72,17 +72,40 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; Define the operand size an insn operates on.  Used primarily by mul
 ;; and div operations that have size dependant timings.
 
-(define_attr "opsize" "si,di,udi" (const_string "di"))
+(define_attr "opsize" "si,di,udi"
+  (const_string "di"))
 
-;; The TRAP_TYPE attribute marks instructions that may generate traps
+;; The TRAP attribute marks instructions that may generate traps
 ;; (which are imprecise and may need a trapb if software completion
 ;; is desired).
 
-(define_attr "trap" "no,yes" (const_string "no"))
+(define_attr "trap" "no,yes"
+  (const_string "no"))
+
+;; The ROUND_SUFFIX attribute marks which instructions require a
+;; rounding-mode suffix.  The value NONE indicates no suffix,
+;; the value NORMAL indicates a suffix controled by alpha_fprm.
+
+(define_attr "round_suffix" "none,normal,c"
+  (const_string "none"))
+
+;; The TRAP_SUFFIX attribute marks instructions requiring a trap-mode suffix:
+;;   NONE	no suffix
+;;   SU		accepts only /su (cmpt et al)
+;;   SUI	accepts only /sui (cvtqt and cvtqs)
+;;   V_SV	accepts /v and /sv (cvtql only)
+;;   V_SV_SVI	accepts /v, /sv and /svi (cvttq only)
+;;   U_SU_SUI	accepts /u, /su and /sui (most fp instructions)
+;;
+;; The actual suffix emitted is controled by alpha_fptm.
+
+(define_attr "trap_suffix" "none,su,sui,v_sv,v_sv_svi,u_su_sui"
+  (const_string "none"))
 
 ;; The length of an instruction sequence in bytes.
 
-(define_attr "length" "" (const_int 4))
+(define_attr "length" ""
+  (const_int 4))
 
 ;; On EV4 there are two classes of resources to consider: resources needed
 ;; to issue, and resources needed to execute.  IBUS[01] are in the first
@@ -2006,36 +2029,44 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "add%,%)%& %R1,%R2,%0"
+  "add%,%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "addsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "add%,%)%& %R1,%R2,%0"
+  "add%,%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*adddf_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "add%-%)%& %R1,%R2,%0"
+  "add%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "adddf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "add%-%)%& %R1,%R2,%0"
+  "add%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*adddf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2043,9 +2074,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "add%-%)%& %R1,%R2,%0"
+  "add%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*adddf_ext2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2054,9 +2087,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "add%-%)%& %R1,%R2,%0"
+  "add%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "addtf3"
   [(use (match_operand 0 "register_operand" ""))
@@ -2079,9 +2114,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(unspec:SI [(match_operand:DI 1 "reg_or_fp0_operand" "fG")]
 		   UNSPEC_CVTQL))]
   "TARGET_FP"
-  "cvtql%` %R1,%0"
+  "cvtql%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "v_sv")])
 
 (define_insn_and_split "*fix_truncdfsi_ieee"
   [(set (match_operand:SI 0 "memory_operand" "=m")
@@ -2117,17 +2153,21 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-q%(c %R1,%0"
+  "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "c")
+   (set_attr "trap_suffix" "v_sv_svi")])
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvt%-q%(c %R1,%0"
+  "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "c")
+   (set_attr "trap_suffix" "v_sv_svi")])
 
 ;; Likewise between SFmode and SImode.
 
@@ -2168,18 +2208,22 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-q%(c %R1,%0"
+  "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "c")
+   (set_attr "trap_suffix" "v_sv_svi")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "cvt%-q%(c %R1,%0"
+  "cvt%-q%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "c")
+   (set_attr "trap_suffix" "v_sv_svi")])
 
 (define_expand "fix_trunctfdi2"
   [(use (match_operand:DI 0 "register_operand" ""))
@@ -2191,33 +2235,41 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvtq%,%+%& %1,%0"
+  "cvtq%,%/ %1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "sui")])
 
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
   "TARGET_FP"
-  "cvtq%,%+%& %1,%0"
+  "cvtq%,%/ %1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "sui")])
 
 (define_insn "*floatdidf_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(float:DF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvtq%-%+%& %1,%0"
+  "cvtq%-%/ %1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "sui")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "reg_no_subreg_operand" "f")))]
   "TARGET_FP"
-  "cvtq%-%+%& %1,%0"
+  "cvtq%-%/ %1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "sui")])
 
 (define_expand "floatditf2"
   [(use (match_operand:TF 0 "register_operand" ""))
@@ -2291,17 +2343,21 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cvt%-%,%)%& %R1,%0"
+  "cvt%-%,%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvt%-%,%)%& %R1,%0"
+  "cvt%-%,%/ %R1,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "trunctfdf2"
   [(use (match_operand:DF 0 "register_operand" ""))
@@ -2340,47 +2396,57 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "div%,%)%& %R1,%R2,%0"
+  "div%,%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
    (set_attr "opsize" "si")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "div%,%)%& %R1,%R2,%0"
+  "div%,%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
    (set_attr "opsize" "si")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*divdf3_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "div%-%)%& %R1,%R2,%0"
+  "div%-%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "div%-%)%& %R1,%R2,%0"
+  "div%-%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*divdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "div%-%)%& %R1,%R2,%0"
+  "div%-%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*divdf_ext2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2388,18 +2454,22 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		(float_extend:DF
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "div%-%)%& %R1,%R2,%0"
+  "div%-%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*divdf_ext3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "div%-%)%& %R1,%R2,%0"
+  "div%-%/ %R1,%R2,%0"
   [(set_attr "type" "fdiv")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "divtf3"
   [(use (match_operand 0 "register_operand" ""))
@@ -2413,36 +2483,44 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "mul%,%)%& %R1,%R2,%0"
+  "mul%,%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "mul%,%)%& %R1,%R2,%0"
+  "mul%,%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*muldf3_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "mul%-%)%& %R1,%R2,%0"
+  "mul%-%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "mul%-%)%& %R1,%R2,%0"
+  "mul%-%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*muldf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2450,9 +2528,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "mul%-%)%& %R1,%R2,%0"
+  "mul%-%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*muldf_ext2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2461,9 +2541,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "mul%-%)%& %R1,%R2,%0"
+  "mul%-%/ %R1,%R2,%0"
   [(set_attr "type" "fmul")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "multf3"
   [(use (match_operand 0 "register_operand" ""))
@@ -2477,36 +2559,44 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "sub%,%)%& %R1,%R2,%0"
+  "sub%,%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "sub%,%)%& %R1,%R2,%0"
+  "sub%,%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*subdf3_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "sub%-%)%& %R1,%R2,%0"
+  "sub%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "sub%-%)%& %R1,%R2,%0"
+  "sub%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*subdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2514,9 +2604,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "sub%-%)%& %R1,%R2,%0"
+  "sub%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*subdf_ext2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2524,9 +2616,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "sub%-%)%& %R1,%R2,%0"
+  "sub%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*subdf_ext3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2535,9 +2629,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "sub%-%)%& %R1,%R2,%0"
+  "sub%-%/ %R1,%R2,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_expand "subtf3"
   [(use (match_operand 0 "register_operand" ""))
@@ -2550,35 +2646,43 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_FIX && alpha_fptm >= ALPHA_FPTM_SU"
-  "sqrt%,%)%& %R1,%0"
+  "sqrt%,%/ %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "opsize" "si")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_FIX"
-  "sqrt%,%)%& %R1,%0"
+  "sqrt%,%/ %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "opsize" "si")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "*sqrtdf2_ieee"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_FIX && alpha_fptm >= ALPHA_FPTM_SU"
-  "sqrt%-%)%& %R1,%0"
+  "sqrt%-%/ %R1,%0"
   [(set_attr "type" "fsqrt")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_FIX"
-  "sqrt%-%)%& %1,%0"
+  "sqrt%-%/ %1,%0"
   [(set_attr "type" "fsqrt")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "round_suffix" "normal")
+   (set_attr "trap_suffix" "u_su_sui")])
 
 ;; Next are all the integer comparisons, and conditional moves and branches
 ;; and some of the related define_expand's and define_split's.
@@ -3135,9 +3239,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_internal"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -3145,9 +3250,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ieee_ext1"
   [(set (match_operand:DF 0 "register_operand" "=&f")
@@ -3156,9 +3262,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ext1"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -3167,9 +3274,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ieee_ext2"
   [(set (match_operand:DF 0 "register_operand" "=&f")
@@ -3178,9 +3286,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ext2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -3189,9 +3298,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ieee_ext3"
   [(set (match_operand:DF 0 "register_operand" "=&f")
@@ -3201,9 +3311,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*cmpdf_ext3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -3213,9 +3324,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
-  "cmp%-%C1%' %R2,%R3,%0"
+  "cmp%-%C1%/ %R2,%R3,%0"
   [(set_attr "type" "fadd")
-   (set_attr "trap" "yes")])
+   (set_attr "trap" "yes")
+   (set_attr "trap_suffix" "su")])
 
 (define_insn "*movdfcc_internal"
   [(set (match_operand:DF 0 "register_operand" "=f,f")

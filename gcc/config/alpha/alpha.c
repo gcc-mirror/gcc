@@ -119,6 +119,10 @@ static int alpha_does_function_need_gp
   PARAMS ((void));
 static int alpha_ra_ever_killed
   PARAMS ((void));
+static const char *get_trap_mode_suffix
+  PARAMS ((void));
+static const char *get_round_mode_suffix
+  PARAMS ((void));
 static rtx set_frame_related_p
   PARAMS ((void));
 static const char *alpha_lookup_xfloating_lib_func
@@ -3719,6 +3723,105 @@ alpha_ra_ever_killed ()
 }
 
 
+/* Return the trap mode suffix applicable to the current
+   instruction, or NULL.   */
+
+static const char *
+get_trap_mode_suffix ()
+{
+  enum attr_trap_suffix s = get_attr_trap_suffix (current_output_insn);
+
+  switch (s)
+    {
+    case TRAP_SUFFIX_NONE:
+      return NULL;
+
+    case TRAP_SUFFIX_SU:
+      if (alpha_fptm >= ALPHA_FPTM_SU)
+	return "su";
+      return NULL;
+
+    case TRAP_SUFFIX_SUI:
+      if (alpha_fptm >= ALPHA_FPTM_SUI)
+	return "sui";
+      return NULL;
+
+    case TRAP_SUFFIX_V_SV:
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  return NULL;
+	case ALPHA_FPTM_U:
+	  return "v";
+	case ALPHA_FPTM_SU:
+	case ALPHA_FPTM_SUI:
+	  return "sv";
+	}
+      break;
+
+    case TRAP_SUFFIX_V_SV_SVI:
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  return NULL;
+	case ALPHA_FPTM_U:
+	  return "v";
+	case ALPHA_FPTM_SU:
+	  return "sv";
+	case ALPHA_FPTM_SUI:
+	  return "svi";
+	}
+      break;
+
+    case TRAP_SUFFIX_U_SU_SUI:
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  return NULL;
+	case ALPHA_FPTM_U:
+	  return "u";
+	case ALPHA_FPTM_SU:
+	  return "su";
+	case ALPHA_FPTM_SUI:
+	  return "sui";
+	}
+      break;
+    }
+  abort ();
+}
+
+/* Return the rounding mode suffix applicable to the current
+   instruction, or NULL.   */
+
+static const char *
+get_round_mode_suffix ()
+{
+  enum attr_round_suffix s = get_attr_round_suffix (current_output_insn);
+
+  switch (s)
+    {
+    case ROUND_SUFFIX_NONE:
+      return NULL;
+    case ROUND_SUFFIX_NORMAL:
+      switch (alpha_fprm)
+	{
+	case ALPHA_FPRM_NORM:
+	  return NULL;
+	case ALPHA_FPRM_MINF: 
+	  return "m";
+	case ALPHA_FPRM_CHOP:
+	  return "c";
+	case ALPHA_FPRM_DYN:
+	  return "d";
+	}
+      break;
+
+    case ROUND_SUFFIX_C:
+      return "c";
+    }
+  abort ();
+}
+
 /* Print an operand.  Recognize special options, documented below.  */
 
 void
@@ -3736,115 +3839,25 @@ print_operand (file, x, code)
       assemble_name (file, alpha_fnname);
       break;
 
-    case '&':
-      /* Generates fp-rounding mode suffix: nothing for normal, 'c' for
-	 chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
-	 mode.  alpha_fprm controls which suffix is generated.  */
-      switch (alpha_fprm)
-	{
-	case ALPHA_FPRM_NORM:
-	  break;
-	case ALPHA_FPRM_MINF: 
-	  fputc ('m', file);
-	  break;
-	case ALPHA_FPRM_CHOP:
-	  fputc ('c', file);
-	  break;
-	case ALPHA_FPRM_DYN:
-	  fputc ('d', file);
-	  break;
-	default:
-	  abort ();
-	}
-      break;
+    case '/':
+      {
+	const char *trap = get_trap_mode_suffix ();
+	const char *round = get_round_mode_suffix ();
 
-    case '\'':
-      /* Generates trap-mode suffix for instructions that accept the su
-	 suffix only (cmpt et al).  */
-      if (alpha_fptm >= ALPHA_FPTM_SU)
-	fputs ("su", file);
-      break;
+	if (trap || round)
+	  fprintf (file, "/%s%s", (trap ? trap : ""), (round ? round : ""));
 
-    case '`':
-      /* Generates trap-mode suffix for instructions that accept the
-	 v and sv suffix.  The only instruction that needs this is cvtql.  */
-      switch (alpha_fptm)
-	{
-	case ALPHA_FPTM_N:
-	  break;
-	case ALPHA_FPTM_U:
-	  fputs ("v", file);
-	  break;
-	case ALPHA_FPTM_SU:
-	case ALPHA_FPTM_SUI:
-	  fputs ("sv", file);
-	  break;
-	}
-      break;
-
-    case '(':
-      /* Generates trap-mode suffix for instructions that accept the
-	 v, sv, and svi suffix.  The only instruction that needs this
-	 is cvttq.  */
-      switch (alpha_fptm)
-	{
-	case ALPHA_FPTM_N:
-	  break;
-	case ALPHA_FPTM_U:
-	  fputs ("v", file);
-	  break;
-	case ALPHA_FPTM_SU:
-	  fputs ("sv", file);
-	  break;
-	case ALPHA_FPTM_SUI:
-	  fputs ("svi", file);
-	  break;
-	}
-      break;
-
-    case ')':
-      /* Generates trap-mode suffix for instructions that accept the u, su,
-	 and sui suffix.  This is the bulk of the IEEE floating point
-	 instructions (addt et al).  */
-      switch (alpha_fptm)
-	{
-	case ALPHA_FPTM_N:
-	  break;
-	case ALPHA_FPTM_U:
-	  fputc ('u', file);
-	  break;
-	case ALPHA_FPTM_SU:
-	  fputs ("su", file);
-	  break;
-	case ALPHA_FPTM_SUI:
-	  fputs ("sui", file);
-	  break;
-	}
-      break;
-
-    case '+':
-      /* Generates trap-mode suffix for instructions that accept the sui
-	 suffix (cvtqt and cvtqs).  */
-      switch (alpha_fptm)
-	{
-	case ALPHA_FPTM_N:
-	case ALPHA_FPTM_U:
-	case ALPHA_FPTM_SU:	/* cvtqt/cvtqs can't cause underflow */
-	  break;
-	case ALPHA_FPTM_SUI:
-	  fputs ("sui", file);
-	  break;
-	}
-      break;
+	break;
+      }
 
     case ',':
       /* Generates single precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'f' : 's'));
+      fputc ((TARGET_FLOAT_VAX ? 'f' : 's'), file);
       break;
 
     case '-':
       /* Generates double precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'g' : 't'));
+      fputc ((TARGET_FLOAT_VAX ? 'g' : 't'), file);
       break;
 
     case 'r':

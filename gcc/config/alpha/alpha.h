@@ -2234,26 +2234,8 @@ do {									\
 
    ~    Generates the name of the current function.
 
-   &	Generates fp-rounding mode suffix: nothing for normal, 'c' for
-   	chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
-	mode.  alpha_fprm controls which suffix is generated.
-
-   '	Generates trap-mode suffix for instructions that accept the
-        su suffix only (cmpt et al).
-
-   `    Generates trap-mode suffix for instructions that accept the
-	v and sv suffix.  The only instruction that needs this is cvtql.
-
-   (	Generates trap-mode suffix for instructions that accept the
-	v, sv, and svi suffix.  The only instruction that needs this
-	is cvttq.
-
-   )    Generates trap-mode suffix for instructions that accept the
-	u, su, and sui suffix.  This is the bulk of the IEEE floating
-	point instructions (addt et al).
-
-   +    Generates trap-mode suffix for instructions that accept the
-	sui suffix (cvtqt and cvtqs).
+   /	Generates the instruction suffix.  The TRAP_SUFFIX and ROUND_SUFFIX
+	attributes are examined to determine what is appropriate.
 
    ,    Generates single precision suffix for floating point
 	instructions (s for IEEE, f for VAX)
@@ -2262,10 +2244,8 @@ do {									\
 	instructions (t for IEEE, g for VAX)
    */
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '&' || (CODE) == '`' || (CODE) == '\'' || (CODE) == '('	\
-   || (CODE) == ')' || (CODE) == '+' || (CODE) == ',' || (CODE) == '-'	\
-   || (CODE) == '~')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
+  ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
