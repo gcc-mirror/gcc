@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -748,6 +748,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 
 	    if (const_flag
+		&& !TREE_SIDE_EFFECTS (gnu_expr)
 		&& TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
 		&& TYPE_MODE (gnu_type) != BLKmode
 		&& Ekind (Etype (gnat_entity)) != E_Class_Wide_Type
@@ -757,8 +758,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* If this is a declaration or reference that we can stabilize,
 	       just use that declaration or reference as this entity unless
 	       the latter has to be materialized.  */
-	    else if ((DECL_P (gnu_expr)
-		      || (REFERENCE_CLASS_P (gnu_expr) == tcc_reference))
+	    else if ((DECL_P (gnu_expr) || REFERENCE_CLASS_P (gnu_expr))
 		     && !Materialize_Entity (gnat_entity)
 		     && (!global_bindings_p ()
 			 || (staticp (gnu_expr)
@@ -793,7 +793,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		if (!global_bindings_p ())
 		  {
+		    bool has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
+
 		    gnu_expr = gnat_stabilize_reference (gnu_expr, true);
+
+		    /* If the original expression had side effects, put a
+		       SAVE_EXPR around this whole thing.  */
+		    if (has_side_effects)
+		      gnu_expr = save_expr (gnu_expr);
+
 		    add_stmt (gnu_expr);
 		  }
 
@@ -2582,6 +2590,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      tree gnu_subst_list
 		= substitution_list (gnat_entity, gnat_base_type, NULL_TREE,
 				     definition);
+	      bool possibly_overlapping_fields = false;
 	      tree gnu_temp;
 
 	      /* If this is a derived type, we may be seeing fields from any
@@ -2598,12 +2607,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       BIGGEST_ALIGNMENT);
 
 		  if (Present (Parent_Subtype (gnat_root_type)))
-		    gnu_subst_list
-		      = substitution_list (Parent_Subtype (gnat_root_type),
-					   Empty, gnu_subst_list, definition);
+		    {
+		      gnu_subst_list
+			= substitution_list (Parent_Subtype (gnat_root_type),
+					     Empty, gnu_subst_list,
+					     definition);
+
+		      /* If there's a _Parent field, it may overlap the
+			 fields we have that appear to be in this record but
+			 actually are from the parent.  So make note of that
+			 fact and later we'll make a UNION_TYPE instead of
+			 a RECORD_TYPE, since the latter may not have
+			 overlapping fields.  */
+		      possibly_overlapping_fields = true;
+		    }
 		}
 
-	      gnu_type = make_node (RECORD_TYPE);
+	      gnu_type = make_node (possibly_overlapping_fields
+				    ? UNION_TYPE : RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_id;
 	      TYPE_STUB_DECL (gnu_type)
 		= create_type_decl (NULL_TREE, gnu_type, NULL, false, false,
@@ -3163,10 +3184,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      p->next = defer_incomplete_list;
 	      defer_incomplete_list = p;
 	    }
-          else if
-            (IN (Ekind (Base_Type (Directly_Designated_Type (gnat_entity))),
-              Incomplete_Or_Private_Kind))
-            { ;}
+          else if (IN (Ekind (Base_Type
+			      (Directly_Designated_Type (gnat_entity))),
+		       Incomplete_Or_Private_Kind))
+	    ;
 	  else
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, 0);
@@ -4372,9 +4393,13 @@ make_dummy_type (Entity_Id gnat_type)
 
   /* If this is a record, make this a RECORD_TYPE or UNION_TYPE; else make
      it a VOID_TYPE.  */
-  if (Is_Record_Type (gnat_underlying))
-    gnu_type = make_node (Is_Unchecked_Union (gnat_underlying)
-			  ? UNION_TYPE : RECORD_TYPE);
+  if (Is_Unchecked_Union (gnat_underlying))
+    {
+      gnu_type = make_node (UNION_TYPE);
+      TYPE_UNCHECKED_UNION_P (gnu_type) = 1;
+    }
+  else if (Is_Record_Type (gnat_underlying))
+    gnu_type = make_node (RECORD_TYPE);
   else
     gnu_type = make_node (ENUMERAL_TYPE);
 
@@ -5098,7 +5123,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       && TYPE_MODE (gnu_field_type) == BLKmode
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && compare_tree_int (TYPE_SIZE (gnu_field_type), BIGGEST_ALIGNMENT) <= 0
-      && (packed
+      && (packed == 1
 	  || (gnu_size && tree_int_cst_lt (gnu_size,
 					   TYPE_SIZE (gnu_field_type)))
 	  || Present (Component_Clause (gnat_field))))
@@ -5375,7 +5400,9 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 
   /* If this is an unchecked union, each variant must have exactly one
      component, each of which becomes one component of this union.  */
-  if (TREE_CODE (gnu_record_type) == UNION_TYPE && Present (variant_part))
+  if (TREE_CODE (gnu_record_type) == UNION_TYPE
+      && TYPE_UNCHECKED_UNION_P (gnu_record_type)
+      && Present (variant_part))
     for (variant = First_Non_Pragma (Variants (variant_part));
 	 Present (variant);
 	 variant = Next_Non_Pragma (variant))
