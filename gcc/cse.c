@@ -6447,6 +6447,7 @@ cse_insn (insn, in_libcall_block)
 		trial = gen_rtx (LABEL_REF, Pmode, get_label_after (trial));
 
 	      SET_SRC (sets[i].rtl) = trial;
+ 	      cse_jumps_altered = 1;
 	      break;
 	    }
 	   
