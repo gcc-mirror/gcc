@@ -49,7 +49,7 @@ main ()
 	printf ("{ %d, %d, %d, {", length (v->inputs),
 	       length (v->outputs), length (v->literals));
 	for (n = v->literals; n; n = n->next)
-	  printf ("%scode, ", n->text);
+	  printf ("(char) %scode, ", n->text);
 	if (v->literals == 0)
 	  printf ("0");
 	printf ("}},\n");
