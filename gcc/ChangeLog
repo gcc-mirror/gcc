@@ -1,3 +1,7 @@
+2003-06-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* except.c (call_site_base): Mark with GTY.
+
 2003-06-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm-proto.h: Convert to ISO C90 prototypes.
