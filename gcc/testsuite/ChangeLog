@@ -1,3 +1,10 @@
+2004-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16224
+	* g++.dg/template/spec17.C: New test.
+	* g++.old-deja/g++.ns/template13.C: Remove XFAIL.
+	* g++.old-deja/g++.pt/lookup10.C: Add dg-error marker.
+
 2004-08-02  David Billinghurst
 
 	PR fortran/16292
