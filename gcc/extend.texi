@@ -2166,6 +2166,16 @@ pid_t wait (wait_status_ptr_t p)
   return waitpid (-1, p.__ip, 0);
 @}
 @end example
+
+@item unused
+When attached to a type (including a @code{union} or a @code{struct}),
+this attribute means that variables of that type are meant to appear
+possibly unused.  GNU CC will not produce a warning for any variables of
+that type, even if the variable appears to do nothing.  This is often
+the case with lock or thread classes, which are usually defined and then
+not referenced, but contain constructors and destructors that have
+non-trivial bookeeping functions.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
