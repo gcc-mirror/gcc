@@ -1372,7 +1372,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif /* SETJMP_VIA_SAVE_AREA */
 
 #ifdef STACK_GROWS_DOWNWARD
-  emit_move_insn (target, virtual_stack_dynamic_rtx);
+      emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
     }
 
