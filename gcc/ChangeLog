@@ -1,3 +1,8 @@
+Tue Apr 14 09:02:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (simplify_rtx, case TRUNCATE): Respect value of
+	TRULY_NOOP_TRUNCATION.
+
 Mon Apr 13 11:31:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h (BINFO_OFFSET_ZEROP): Use integer_zerop.
