@@ -1833,6 +1833,7 @@ rs6000_va_start (stdarg_p, valist, nextarg)
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
 
+  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
@@ -1893,6 +1894,7 @@ rs6000_va_arg (valist, type)
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
 
+  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);

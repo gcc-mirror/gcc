@@ -1,3 +1,13 @@
+Tue Sep 28 01:11:05 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (stabilize_va_list): Stabilize array type va_list
+	to a pointer type, not the base record type.
+	(expand_builtin_va_copy): Dereference the pointers explicitly;
+	use the correct size for the copy.
+
+	* rs6000.c (rs6000_va_start): Dereference valist to get to the record.
+	(rs6000_va_arg): Likewise.
+
 Mon Sep 27 23:27:21 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.h (struct rtx_def): Move gc_mark to align mode field.
