@@ -2379,13 +2379,13 @@ Annotate the assembler output with miscellaneous debugging information.
 @item b
 Dump after computing branch probabilities, to @file{@var{file}.11.bp}.
 @item B
-Dump after block reordering, to @file{@var{file}.25.bbro}.
+Dump after block reordering, to @file{@var{file}.26.bbro}.
 @item c
 Dump after instruction combination, to the file @file{@var{file}.14.combine}.
 @item C
 Dump after the first if conversion, to the file @file{@var{file}.15.ce}.
 @item d
-Dump after delayed branch scheduling, to @file{@var{file}.28.dbr}.
+Dump after delayed branch scheduling, to @file{@var{file}.29.dbr}.
 @item D
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
@@ -2393,13 +2393,15 @@ normal output.
 Dump after SSA optimizations, to @file{@var{file}.05.ssa} and
 @file{@var{file}.06.ussa}.
 @item E
-Dump after the second if conversion, to @file{@var{file}.21.ce2}.
+Dump after the second if conversion, to @file{@var{file}.24.ce2}.
 @item f
 Dump after life analysis, to @file{@var{file}.13.life}.
 @item F
 Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.04.addressof}.
 @item g
 Dump after global register allocation, to @file{@var{file}.19.greg}.
+@item o
+Dump after post-reload CSE and other optimizations, to @file{@var{file}.20.postreload}.
 @item G      
 Dump after GCSE, to @file{@var{file}.08.gcse}.
 @item i
@@ -2407,7 +2409,7 @@ Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
 @item j
 Dump after the first jump optimization, to @file{@var{file}.02.jump}.
 @item J
-Dump after the last jump optimization, to @file{@var{file}.26.jump2}.
+Dump after the last jump optimization, to @file{@var{file}.27.jump2}.
 @item k
 Dump after conversion from registers to stack, to @file{@var{file}.29.stack}.
 @item l
@@ -2416,7 +2418,7 @@ Dump after local register allocation, to @file{@var{file}.18.lreg}.
 Dump after loop optimization, to @file{@var{file}.09.loop}.
 @item M
 Dump after performing the machine dependent reorganisation pass, to
-@file{@var{file}.27.mach}. 
+@file{@var{file}.28.mach}. 
 @item n
 Dump after register renumbering, to @file{@var{file}.23.rnreg}.
 @item N
@@ -2425,7 +2427,7 @@ Dump after the register move pass, to @file{@var{file}.16.regmove}.
 Dump after RTL generation, to @file{@var{file}.00.rtl}.
 @item R
 Dump after the second instruction scheduling pass, to
-@file{@var{file}.24.sched2}.
+@file{@var{file}.25.sched2}.
 @item s
 Dump after CSE (including the jump optimization that sometimes follows
 CSE), to @file{@var{file}.03.cse}. 
@@ -2436,7 +2438,7 @@ Dump after the first instruction scheduling pass, to
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.10.cse2}.
 @item w
-Dump after the second flow pass, to @file{@var{file}.20.flow2}.
+Dump after the second flow pass, to @file{@var{file}.21.flow2}.
 @item X
 Dump after dead code elimination, to @file{@var{file}.06.dce}.
 @item z

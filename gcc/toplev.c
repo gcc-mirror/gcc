@@ -276,6 +276,7 @@ enum dump_file_index
   DFI_sched,
   DFI_lreg,
   DFI_greg,
+  DFI_postreload,
   DFI_flow2,
   DFI_peephole2,
   DFI_rnreg,
@@ -320,6 +321,7 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "sched",	'S', 1, 0, 0 },
   { "lreg",	'l', 1, 0, 0 },
   { "greg",	'g', 1, 0, 0 },
+  { "postreload", 'o', 1, 0, 0 },
   { "flow2",	'w', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
   { "rnreg",	'n', 1, 0, 0 },
@@ -3428,10 +3430,22 @@ rest_of_compilation (decl)
 
   timevar_pop (TV_GLOBAL_ALLOC);
 
+  if (dump_file[DFI_greg].enabled)
+    {
+      timevar_push (TV_DUMP);
+
+      dump_global_regs (rtl_dump_file);
+
+      close_dump_file (DFI_greg, print_rtl_with_bb, insns);
+      timevar_pop (TV_DUMP);
+    }
+
   if (failure)
     goto exit_rest_of_compilation;
 
   ggc_collect ();
+
+  open_dump_file (DFI_postreload, decl);
 
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
@@ -3463,15 +3477,7 @@ rest_of_compilation (decl)
       timevar_pop (TV_JUMP);
     }
 
-  if (dump_file[DFI_greg].enabled)
-    {
-      timevar_push (TV_DUMP);
-
-      dump_global_regs (rtl_dump_file);
-
-      close_dump_file (DFI_greg, print_rtl_with_bb, insns);
-      timevar_pop (TV_DUMP);
-    }
+  close_dump_file (DFI_postreload, print_rtl_with_bb, insns);
 
   /* Re-create the death notes which were deleted during reload.  */
   timevar_push (TV_FLOW2);
