@@ -1,3 +1,8 @@
+2000-03-10  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_strlen): Revert last change.
+	Use emit_insn_before if we're at the beginning of a sequence.
+
 2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
 
 	* builtins.c (expand_builtin_strlen): Make sure that we have something
