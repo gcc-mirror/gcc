@@ -42,8 +42,8 @@
 	* testsuite/23_containers/list/check_construct_destroy.cc: New.
 	* testsuite/23_containers/set/check_construct_destroy.cc: New.	
 	* testsuite/23_containers/vector/check_construct_destroy.cc: New. 
-	* testsuite/ext/hash_check_construct_destroy.cc
-	* testsuite/ext/slist_check_construct_destroy.cc
+	* testsuite/ext/hash_check_construct_destroy.cc: New.
+	* testsuite/ext/slist_check_construct_destroy.cc: New.
 	
 2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
