@@ -1401,7 +1401,7 @@ extern int current_function_anonymous_args;
   ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
    || (GET_CODE (X) == SUBREG				\
        && GET_CODE (SUBREG_REG (X)) == REG		\
-       && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_WORD (X))))
+       && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_BYTE (X))))
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses

@@ -1083,7 +1083,7 @@ refers_to_regno_p (regno, endregno, x, loc)
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int inner_regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+	  unsigned int inner_regno = subreg_regno (x);
 	  unsigned int inner_endregno
 	    = inner_regno + (inner_regno < FIRST_PSEUDO_REGISTER
 			     ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
@@ -1170,7 +1170,7 @@ reg_overlap_mentioned_p (x, in)
     case SUBREG:
       regno = REGNO (SUBREG_REG (x));
       if (regno < FIRST_PSEUDO_REGISTER)
-	regno += SUBREG_WORD (x);
+	regno = subreg_regno (x);
       goto do_reg;
 
     case REG:
@@ -2229,18 +2229,32 @@ replace_regs (x, reg_map, nregs, replace_dest)
 	    return map_inner;
 	  else
 	    {
+	      int final_offset = SUBREG_BYTE (x) + SUBREG_BYTE (map_val);
+
+	      /* When working with REG SUBREGs the rule is that the byte
+		 offset must be a multiple of the SUBREG's mode.  */
+	      final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (x)));
+	      final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (x)));
+
 	      /* We cannot call gen_rtx here since we may be linked with
 		 genattrtab.c.  */
 	      /* Let's try clobbering the incoming SUBREG and see
 		 if this is really safe.  */
 	      SUBREG_REG (x) = map_inner;
-	      SUBREG_WORD (x) += SUBREG_WORD (map_val);
+	      SUBREG_BYTE (x) = final_offset;
 	      return x;
 #if 0
 	      rtx new = rtx_alloc (SUBREG);
+	      int final_offset = SUBREG_BYTE (x) + SUBREG_BYTE (map_val);
+
+	      /* When working with REG SUBREGs the rule is that the byte
+		 offset must be a multiple of the SUBREG's mode.  */
+	      final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (x)));
+	      final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (x)));
+
 	      PUT_MODE (new, GET_MODE (x));
 	      SUBREG_REG (new) = map_inner;
-	      SUBREG_WORD (new) = SUBREG_WORD (x) + SUBREG_WORD (map_val);
+	      SUBREG_BYTE (new) = final_offset;
 #endif
 	    }
 	}
@@ -2612,4 +2626,66 @@ loc_mentioned_in_p (loc, in)
 	    return 1;
     }
   return 0;
+}
+
+/* This function returns the regno offset of a subreg expression.
+   xregno - A regno of an inner hard subreg_reg (or what will become one).
+   xmode  - The mode of xregno.
+   offset - The byte offset.
+   ymode  - The mode of a top level SUBREG (or what may become one).
+   RETURN - The regno offset which would be used.  
+   This function can be overridden by defining SUBREG_REGNO_OFFSET,
+   taking the same parameters.  */
+unsigned int
+subreg_regno_offset (xregno, xmode, offset, ymode)
+     unsigned int xregno;
+     enum machine_mode xmode;
+     unsigned int offset;
+     enum machine_mode ymode;
+{
+  unsigned ret;
+  int nregs_xmode, nregs_ymode;
+  int mode_multiple, nregs_multiple;
+  int y_offset;
+
+/* Check for an override, and use it instead.  */
+#ifdef SUBREG_REGNO_OFFSET
+  ret = SUBREG_REGNO_OFFSET (xregno, xmode, offset, ymode)
+#else
+  if (xregno >= FIRST_PSEUDO_REGISTER)
+    abort ();
+
+  nregs_xmode = HARD_REGNO_NREGS (xregno, xmode);
+  nregs_ymode = HARD_REGNO_NREGS (xregno, ymode);
+  if (offset == 0 || nregs_xmode == nregs_ymode)
+    return 0;
+  
+  /* size of ymode must not be greater than the size of xmode.  */
+  mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
+  if (mode_multiple == 0)
+    abort ();
+
+  y_offset = offset / GET_MODE_SIZE (ymode);
+  nregs_multiple =  nregs_xmode / nregs_ymode;
+  ret = (y_offset / (mode_multiple / nregs_multiple)) * nregs_ymode;
+#endif
+
+  return ret;
+}
+
+/* Return the final regno that a subreg expression refers to. */
+unsigned int 
+subreg_regno (x)
+     rtx x;
+{
+  unsigned int ret;
+  rtx subreg = SUBREG_REG (x);
+  int regno = REGNO (subreg);
+
+  ret = regno + subreg_regno_offset (regno, 
+				     GET_MODE (subreg), 
+				     SUBREG_BYTE (x),
+				     GET_MODE (x));
+  return ret;
+
 }

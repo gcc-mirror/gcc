@@ -348,6 +348,55 @@ gen_rtx_MEM (mode, addr)
 
   return rt;
 }
+
+rtx
+gen_rtx_SUBREG (mode, reg, offset)
+     enum machine_mode mode;
+     rtx reg;
+     int offset;
+{
+  /* This is the most common failure type.
+     Catch it early so we can see who does it.  */
+  if ((offset % GET_MODE_SIZE (mode)) != 0)
+    abort ();
+
+  /* This check isn't usable right now because combine will
+     throw arbitrary crap like a CALL into a SUBREG in
+     gen_lowpart_for_combine so we must just eat it.  */
+#if 0
+  /* Check for this too.  */
+  if (offset >= GET_MODE_SIZE (GET_MODE (reg)))
+    abort ();
+#endif
+  return gen_rtx_fmt_ei (SUBREG, mode, reg, offset);
+}
+
+/* Generate a SUBREG representing the least-significant part
+ * of REG if MODE is smaller than mode of REG, otherwise
+ * paradoxical SUBREG. */
+rtx
+gen_lowpart_SUBREG (mode, reg)
+     enum machine_mode mode;
+     rtx reg;
+{
+  enum machine_mode inmode;
+  int offset;
+
+  inmode = GET_MODE (reg);
+  if (inmode == VOIDmode)
+    inmode = mode;
+  offset = 0;
+  if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (inmode)
+      && (WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN))
+    {
+      offset = GET_MODE_SIZE (inmode) - GET_MODE_SIZE (mode);
+      if (! BYTES_BIG_ENDIAN)
+	offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
+      else if (! WORDS_BIG_ENDIAN)
+	offset %= UNITS_PER_WORD;
+    }
+  return gen_rtx_SUBREG (mode, reg, offset);
+}
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
@@ -650,6 +699,38 @@ get_first_label_num ()
   return first_label_num;
 }
 
+/* Return the final regno of X, which is a SUBREG of a hard
+   register.  */
+int
+subreg_hard_regno (x, check_mode)
+     register rtx x;
+     int check_mode;
+{
+  enum machine_mode mode = GET_MODE (x);
+  unsigned int byte_offset, base_regno, final_regno;
+  rtx reg = SUBREG_REG (x);
+
+  /* This is where we attempt to catch illegal subregs
+     created by the compiler.  */
+  if (GET_CODE (x) != SUBREG
+      || GET_CODE (reg) != REG)
+    abort ();
+  base_regno = REGNO (reg);
+  if (base_regno >= FIRST_PSEUDO_REGISTER)
+    abort ();
+  if (! HARD_REGNO_MODE_OK (base_regno, GET_MODE (reg)))
+    abort ();
+
+  /* Catch non-congruent offsets too.  */
+  byte_offset = SUBREG_BYTE (x);
+  if ((byte_offset % GET_MODE_SIZE (mode)) != 0)
+    abort ();
+
+  final_regno = subreg_regno (x);
+
+  return final_regno;
+}
+
 /* Return a value representing some low-order bits of X, where the number
    of low-order bits is given by MODE.  Note that no conversion is done
    between floating-point and fixed-point values, rather, the bit 
@@ -666,22 +747,29 @@ gen_lowpart_common (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
-  int word = 0;
+  int msize = GET_MODE_SIZE (mode);
+  int xsize = GET_MODE_SIZE (GET_MODE (x));
+  int offset = 0;
 
   if (GET_MODE (x) == mode)
     return x;
 
   /* MODE must occupy no more words than the mode of X.  */
   if (GET_MODE (x) != VOIDmode
-      && ((GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD
-	  > ((GET_MODE_SIZE (GET_MODE (x)) + (UNITS_PER_WORD - 1))
-	     / UNITS_PER_WORD)))
+      && ((msize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD
+	  > ((xsize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
     return 0;
 
-  if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
-    word = ((GET_MODE_SIZE (GET_MODE (x))
-	     - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
-	    / UNITS_PER_WORD);
+  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+      && xsize > msize)
+    {
+      int difference = xsize - msize;
+
+      if (WORDS_BIG_ENDIAN)
+	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset += difference % UNITS_PER_WORD;
+    }
 
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
       && (GET_MODE_CLASS (mode) == MODE_INT
@@ -703,39 +791,40 @@ gen_lowpart_common (mode, x)
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG
-	   && (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-	       || GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || GET_MODE_SIZE (mode) == GET_MODE_UNIT_SIZE (GET_MODE (x))))
-    return (GET_MODE (SUBREG_REG (x)) == mode && SUBREG_WORD (x) == 0
-	    ? SUBREG_REG (x)
-	    : gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_WORD (x) + word));
+    {
+      int final_offset;
+
+      if (GET_MODE (SUBREG_REG (x)) == mode && subreg_lowpart_p (x))
+	return SUBREG_REG (x);
+
+      /* When working with SUBREGs the rule is that the byte
+	 offset must be a multiple of the SUBREG's mode.  */
+      final_offset = SUBREG_BYTE (x) + offset;
+      final_offset = (final_offset / GET_MODE_SIZE (mode));
+      final_offset = (final_offset * GET_MODE_SIZE (mode));
+      return gen_rtx_SUBREG (mode, SUBREG_REG (x), final_offset);   
+    }
   else if (GET_CODE (x) == REG)
     {
-      /* Let the backend decide how many registers to skip.  This is needed
-         in particular for Sparc64 where fp regs are smaller than a word.  */
-      /* ??? Note that subregs are now ambiguous, in that those against
-	 pseudos are sized by the Word Size, while those against hard
-	 regs are sized by the underlying register size.  Better would be
-	 to always interpret the subreg offset parameter as bytes or bits.  */
+      /* Hard registers are done specially in certain cases.  */  
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+        {
+	  int final_regno = REGNO (x) +
+			    subreg_regno_offset (REGNO (x), GET_MODE (x), 
+						 offset, mode);
 
-      if (WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
-	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
-		- HARD_REGNO_NREGS (REGNO (x), mode));
+	  /* If the final regno is not valid for MODE, punt.  */
+	  /* ??? We do allow it if the current REG is not valid for
+	     ??? it's mode.  It is a kludge to work around how float/complex
+	     ??? arguments are passed on 32-bit Sparc and should be fixed.  */
+	  if (! HARD_REGNO_MODE_OK (final_regno, mode)
+	      && HARD_REGNO_MODE_OK (REGNO (x), GET_MODE (x)))
+	    return 0;
 
-      /* If the register is not valid for MODE, return 0.  If we don't
-	 do this, there is no way to fix up the resulting REG later.  
-	 But we do do this if the current REG is not valid for its
-	 mode.  This latter is a kludge, but is required due to the
-	 way that parameters are passed on some machines, most
-	 notably Sparc.  */
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && ! HARD_REGNO_MODE_OK (REGNO (x) + word, mode)
-	  && HARD_REGNO_MODE_OK (REGNO (x), GET_MODE (x)))
-	return 0;
-      else if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	       /* integrate.c can't handle parts of a return value register. */
-	       && (! REG_FUNCTION_VALUE_P (x)
+	  if ((! REG_FUNCTION_VALUE_P (x)
 		   || ! rtx_equal_function_value_matters)
 #ifdef CLASS_CANNOT_CHANGE_MODE
 	       && ! (CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (x))
@@ -752,9 +841,9 @@ gen_lowpart_common (mode, x)
 	       && x != arg_pointer_rtx
 #endif
 	       && x != stack_pointer_rtx)
-	return gen_rtx_REG (mode, REGNO (x) + word);
-      else
-	return gen_rtx_SUBREG (mode, x, word);
+	    return gen_rtx_REG (mode, final_regno);
+	  }
+      return gen_rtx_SUBREG (mode, x, offset);
     }
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
@@ -847,7 +936,7 @@ gen_lowpart_common (mode, x)
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
-    return operand_subword (x, word, 0, GET_MODE (x));
+    return constant_subword (x, (offset / UNITS_PER_WORD), GET_MODE (x));
 
   /* Similarly, if this is converting a floating-point value into a
      two-word integer, we can do this one word at a time and make an
@@ -863,11 +952,14 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
     {
-      rtx lowpart
-	= operand_subword (x, word + WORDS_BIG_ENDIAN, 0, GET_MODE (x));
-      rtx highpart
-	= operand_subword (x, word + ! WORDS_BIG_ENDIAN, 0, GET_MODE (x));
+      rtx lowpart, highpart;
 
+      lowpart = constant_subword (x,
+				  (offset / UNITS_PER_WORD) + WORDS_BIG_ENDIAN,
+				  GET_MODE (x));
+      highpart = constant_subword (x,
+				   (offset / UNITS_PER_WORD) + (! WORDS_BIG_ENDIAN),
+				   GET_MODE (x));
       if (lowpart && GET_CODE (lowpart) == CONST_INT
 	  && highpart && GET_CODE (highpart) == CONST_INT)
 	return immed_double_const (INTVAL (lowpart), INTVAL (highpart), mode);
@@ -1021,7 +1113,7 @@ gen_imagpart (mode, x)
     return XEXP (x, 1);
   else if (WORDS_BIG_ENDIAN)
     return gen_lowpart (mode, x);
-  else if (!WORDS_BIG_ENDIAN
+  else if (! WORDS_BIG_ENDIAN
 	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
 	   && REG_P (x)
 	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
@@ -1043,7 +1135,7 @@ subreg_realpart_p (x)
   if (GET_CODE (x) != SUBREG)
     abort ();
 
-  return ((unsigned int) SUBREG_WORD (x) * UNITS_PER_WORD
+  return ((unsigned int) SUBREG_BYTE (x)
 	  < GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
 }
 
@@ -1101,10 +1193,13 @@ gen_highpart (mode, x)
      enum machine_mode mode;
      register rtx x;
 {
+  unsigned int msize = GET_MODE_SIZE (mode);
+  unsigned int xsize = GET_MODE_SIZE (GET_MODE (x));
+
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && GET_MODE_SIZE (mode) != GET_MODE_UNIT_SIZE (GET_MODE (x)))
+  if (msize > UNITS_PER_WORD
+      && msize != GET_MODE_UNIT_SIZE (GET_MODE (x)))
     abort ();
   if (GET_CODE (x) == CONST_DOUBLE
 #if !(TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT || defined (REAL_IS_NOT_DOUBLE))
@@ -1121,15 +1216,14 @@ gen_highpart (mode, x)
   else if (GET_CODE (x) == MEM)
     {
       register int offset = 0;
+
       if (! WORDS_BIG_ENDIAN)
-	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
-		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+	offset = (MAX (xsize, UNITS_PER_WORD)
+		  - MAX (msize, UNITS_PER_WORD));
 
       if (! BYTES_BIG_ENDIAN
-	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-	offset -= (GET_MODE_SIZE (mode)
-		   - MIN (UNITS_PER_WORD,
-			  GET_MODE_SIZE (GET_MODE (x))));
+	  && msize < UNITS_PER_WORD)
+	offset -= (msize - MIN (UNITS_PER_WORD, xsize));
 
       return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
     }
@@ -1138,46 +1232,47 @@ gen_highpart (mode, x)
       /* The only time this should occur is when we are looking at a
 	 multi-word item with a SUBREG whose mode is the same as that of the
 	 item.  It isn't clear what we would do if it wasn't.  */
-      if (SUBREG_WORD (x) != 0)
+      if (SUBREG_BYTE (x) != 0)
 	abort ();
       return gen_highpart (mode, SUBREG_REG (x));
     }
   else if (GET_CODE (x) == REG)
     {
-      int word;
-
-      /* Let the backend decide how many registers to skip.  This is needed
-         in particular for sparc64 where fp regs are smaller than a word.  */
-      /* ??? Note that subregs are now ambiguous, in that those against
-	 pseudos are sized by the word size, while those against hard
-	 regs are sized by the underlying register size.  Better would be
-	 to always interpret the subreg offset parameter as bytes or bits.  */
+      int offset = 0;
 
       if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
 	abort ();
-      else if (WORDS_BIG_ENDIAN)
-	word = 0;
-      else if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
-		- HARD_REGNO_NREGS (REGNO (x), mode));
-      else
-	word = ((GET_MODE_SIZE (GET_MODE (x))
-		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
-		/ UNITS_PER_WORD);
 
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER
-	  /* integrate.c can't handle parts of a return value register.  */
-	  && (! REG_FUNCTION_VALUE_P (x)
-	      || ! rtx_equal_function_value_matters)
+      if ((! WORDS_BIG_ENDIAN || ! BYTES_BIG_ENDIAN)
+	  && xsize > msize)
+	{
+	  int difference = xsize - msize;
+
+	  if (! WORDS_BIG_ENDIAN)
+	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  if (! BYTES_BIG_ENDIAN)
+	    offset += difference % UNITS_PER_WORD;
+	}
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+	{
+	  int final_regno = REGNO (x) +
+	    subreg_regno_offset (REGNO (x), GET_MODE (x), offset, mode);
+
+	  /* integrate.c can't handle parts of a return value register.
+	     ??? Then integrate.c should be fixed!
+	     ??? What about CLASS_CANNOT_CHANGE_SIZE?  */
+	  if ((! REG_FUNCTION_VALUE_P (x)
+	       || ! rtx_equal_function_value_matters)
 	  /* We want to keep the stack, frame, and arg pointers special.  */
-	  && x != frame_pointer_rtx
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	  && x != arg_pointer_rtx
+	      && x != frame_pointer_rtx
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM	
+	      && x != arg_pointer_rtx
 #endif
-	  && x != stack_pointer_rtx)
-	return gen_rtx_REG (mode, REGNO (x) + word);
-      else
-	return gen_rtx_SUBREG (mode, x, word);
+	      && x != stack_pointer_rtx)
+	    return gen_rtx_REG (mode, final_regno);
+	}
+      /* Just generate a normal SUBREG.  */
+      return gen_rtx_SUBREG (mode, x, offset); 
     }
   else
     abort ();
@@ -1191,154 +1286,44 @@ int
 subreg_lowpart_p (x)
      rtx x;
 {
+  unsigned int offset = 0;
+  int difference = (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+		    - GET_MODE_SIZE (GET_MODE (x)));
+
   if (GET_CODE (x) != SUBREG)
     return 1;
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)
     return 0;
 
-  if (WORDS_BIG_ENDIAN
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD)
-    return (SUBREG_WORD (x)
-	    == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-		 - MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD))
-		/ UNITS_PER_WORD));
+  if (difference > 0)
+    {
+      if (WORDS_BIG_ENDIAN)
+	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset += difference % UNITS_PER_WORD;
+    }
 
-  return SUBREG_WORD (x) == 0;
+  return SUBREG_BYTE (x) == offset;
 }
 
-/* Return subword I of operand OP.
-   The word number, I, is interpreted as the word number starting at the
-   low-order address.  Word 0 is the low-order word if not WORDS_BIG_ENDIAN,
-   otherwise it is the high-order word.
 
-   If we cannot extract the required word, we return zero.  Otherwise, an
-   rtx corresponding to the requested word will be returned.
-
-   VALIDATE_ADDRESS is nonzero if the address should be validated.  Before
-   reload has completed, a valid address will always be returned.  After
-   reload, if a valid address cannot be returned, we return zero.
-
-   If VALIDATE_ADDRESS is zero, we simply form the required address; validating
-   it is the responsibility of the caller.
-
-   MODE is the mode of OP in case it is a CONST_INT.  */
+/* Helper routine for all the constant cases of operand_subword.
+   Some places invoke this directly.  */
 
 rtx
-operand_subword (op, i, validate_address, mode)
+constant_subword (op, offset, mode)
      rtx op;
-     unsigned int i;
-     int validate_address;
+     int offset;
      enum machine_mode mode;
 {
-  HOST_WIDE_INT val;
   int size_ratio = HOST_BITS_PER_WIDE_INT / BITS_PER_WORD;
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (op);
-
-  if (mode == VOIDmode)
-    abort ();
-
-  /* If OP is narrower than a word, fail. */
-  if (mode != BLKmode
-      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
-    return 0;
-
-  /* If we want a word outside OP, return zero. */
-  if (mode != BLKmode
-      && (i + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
-    return const0_rtx;
+  HOST_WIDE_INT val;
 
   /* If OP is already an integer word, return it.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) == UNITS_PER_WORD)
     return op;
 
-  /* If OP is a REG or SUBREG, we can handle it very simply.  */
-  if (GET_CODE (op) == REG)
-    {
-      /* ??? There is a potential problem with this code.  It does not
-	 properly handle extractions of a subword from a hard register
-	 that is larger than word_mode.  Presumably the check for
-	 HARD_REGNO_MODE_OK catches these most of these cases.  */
-
-      /* If OP is a hard register, but OP + I is not a hard register,
-	 then extracting a subword is impossible.
-
-	 For example, consider if OP is the last hard register and it is
-	 larger than word_mode.  If we wanted word N (for N > 0) because a
-	 part of that hard register was known to contain a useful value,
-	 then OP + I would refer to a pseudo, not the hard register we
-	 actually wanted.  */
-      if (REGNO (op) < FIRST_PSEUDO_REGISTER
-	  && REGNO (op) + i >= FIRST_PSEUDO_REGISTER)
-	return 0;
-
-      /* If the register is not valid for MODE, return 0.  Note we
-	 have to check both OP and OP + I since they may refer to
-	 different parts of the register file.
-
-	 Consider if OP refers to the last 96bit FP register and we want
-	 subword 3 because that subword is known to contain a value we
-	 needed.  */
-      if (REGNO (op) < FIRST_PSEUDO_REGISTER
-	  && (! HARD_REGNO_MODE_OK (REGNO (op), word_mode)
-	      || ! HARD_REGNO_MODE_OK (REGNO (op) + i, word_mode)))
-	return 0;
-      else if (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	       || (REG_FUNCTION_VALUE_P (op)
-		   && rtx_equal_function_value_matters)
-	       /* We want to keep the stack, frame, and arg pointers
-		  special.  */
-	       || op == frame_pointer_rtx
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	       || op == arg_pointer_rtx
-#endif
-	       || op == stack_pointer_rtx)
-	return gen_rtx_SUBREG (word_mode, op, i);
-      else
-	return gen_rtx_REG (word_mode, REGNO (op) + i);
-    }
-  else if (GET_CODE (op) == SUBREG)
-    return gen_rtx_SUBREG (word_mode, SUBREG_REG (op), i + SUBREG_WORD (op));
-  else if (GET_CODE (op) == CONCAT)
-    {
-      unsigned int partwords
-	= GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
-
-      if (i < partwords)
-	return operand_subword (XEXP (op, 0), i, validate_address, mode);
-      return operand_subword (XEXP (op, 1), i - partwords,
-			      validate_address, mode);
-    }
-
-  /* Form a new MEM at the requested address.  */
-  if (GET_CODE (op) == MEM)
-    {
-      rtx addr = plus_constant (XEXP (op, 0), i * UNITS_PER_WORD);
-      rtx new;
-
-      if (validate_address)
-	{
-	  if (reload_completed)
-	    {
-	      if (! strict_memory_address_p (word_mode, addr))
-		return 0;
-	    }
-	  else
-	    addr = memory_address (word_mode, addr);
-	}
-
-      new = gen_rtx_MEM (word_mode, addr);
-      MEM_COPY_ATTRIBUTES (new, op);
-      return new;
-    }
-
-  /* The only remaining cases are when OP is a constant.  If the host and
-     target floating formats are the same, handling two-word floating
-     constants are easy.  Note that REAL_VALUE_TO_TARGET_{SINGLE,DOUBLE}
-     are defined as returning one or two 32 bit values, respectively,
-     and not values of BITS_PER_WORD bits.  */
 #ifdef REAL_ARITHMETIC
   /* The output is some bits, the width of the target machine's word.
      A wider-word host can surely hold them in a CONST_INT. A narrower-word
@@ -1365,12 +1350,12 @@ operand_subword (op, i, validate_address, mode)
 	 So we explicitly mask and sign-extend as necessary.  */
       if (BITS_PER_WORD == 32)
 	{
-	  val = k[i];
+	  val = k[offset];
 	  val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
 	  return GEN_INT (val);
 	}
 #if HOST_BITS_PER_WIDE_INT >= 64
-      else if (BITS_PER_WORD >= 64 && i == 0)
+      else if (BITS_PER_WORD >= 64 && offset == 0)
 	{
 	  val = k[! WORDS_BIG_ENDIAN];
 	  val = (((val & 0xffffffff) ^ 0x80000000) - 0x80000000) << 32;
@@ -1380,8 +1365,8 @@ operand_subword (op, i, validate_address, mode)
 #endif
       else if (BITS_PER_WORD == 16)
 	{
-	  val = k[i >> 1];
-	  if ((i & 1) == !WORDS_BIG_ENDIAN)
+	  val = k[offset >> 1];
+	  if ((offset & 1) == ! WORDS_BIG_ENDIAN)
 	    val >>= 16;
 	  val &= 0xffff;
 	  return GEN_INT (val);
@@ -1402,16 +1387,16 @@ operand_subword (op, i, validate_address, mode)
 
       if (BITS_PER_WORD == 32)
 	{
-	  val = k[i];
+	  val = k[offset];
 	  val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
 	  return GEN_INT (val);
 	}
 #if HOST_BITS_PER_WIDE_INT >= 64
-      else if (BITS_PER_WORD >= 64 && i <= 1)
+      else if (BITS_PER_WORD >= 64 && offset <= 1)
 	{
-	  val = k[i*2 + ! WORDS_BIG_ENDIAN];
+	  val = k[offset * 2 + ! WORDS_BIG_ENDIAN];
 	  val = (((val & 0xffffffff) ^ 0x80000000) - 0x80000000) << 32;
-	  val |= (HOST_WIDE_INT) k[i*2 + WORDS_BIG_ENDIAN] & 0xffffffff;
+	  val |= (HOST_WIDE_INT) k[offset * 2 + WORDS_BIG_ENDIAN] & 0xffffffff;
 	  return GEN_INT (val);
 	}
 #endif
@@ -1431,10 +1416,10 @@ operand_subword (op, i, validate_address, mode)
 	 compilers don't like a conditional inside macro args, so we have two
 	 copies of the return.  */
 #ifdef HOST_WORDS_BIG_ENDIAN
-      return GEN_INT (i == WORDS_BIG_ENDIAN
+      return GEN_INT (offset == WORDS_BIG_ENDIAN
 		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 #else
-      return GEN_INT (i != WORDS_BIG_ENDIAN
+      return GEN_INT (offset != WORDS_BIG_ENDIAN
 		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 #endif
     }
@@ -1460,7 +1445,7 @@ operand_subword (op, i, validate_address, mode)
 
       if (BITS_PER_WORD == 16)
 	{
-	  if ((i & 1) == !WORDS_BIG_ENDIAN)
+	  if ((offset & 1) == ! WORDS_BIG_ENDIAN)
 	    val >>= 16;
 	  val &= 0xffff;
 	}
@@ -1504,7 +1489,7 @@ operand_subword (op, i, validate_address, mode)
       
   /* The only remaining cases that we can handle are integers.
      Convert to proper endianness now since these cases need it.
-     At this point, i == 0 means the low-order word.  
+     At this point, offset == 0 means the low-order word.  
 
      We do not want to handle the case when BITS_PER_WORD <= HOST_BITS_PER_INT
      in general.  However, if OP is (const_int 0), we can just return
@@ -1519,39 +1504,184 @@ operand_subword (op, i, validate_address, mode)
     return 0;
 
   if (WORDS_BIG_ENDIAN)
-    i = GET_MODE_SIZE (mode) / UNITS_PER_WORD - 1 - i;
+    offset = GET_MODE_SIZE (mode) / UNITS_PER_WORD - 1 - offset;
 
   /* Find out which word on the host machine this value is in and get
      it from the constant.  */
-  val = (i / size_ratio == 0
+  val = (offset / size_ratio == 0
 	 ? (GET_CODE (op) == CONST_INT ? INTVAL (op) : CONST_DOUBLE_LOW (op))
 	 : (GET_CODE (op) == CONST_INT
 	    ? (INTVAL (op) < 0 ? ~0 : 0) : CONST_DOUBLE_HIGH (op)));
 
   /* Get the value we want into the low bits of val.  */
   if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT)
-    val = ((val >> ((i % size_ratio) * BITS_PER_WORD)));
+    val = ((val >> ((offset % size_ratio) * BITS_PER_WORD)));
 
   val = trunc_int_for_mode (val, word_mode);
 
   return GEN_INT (val);
 }
 
+/* Return subword OFFSET of operand OP.
+   The word number, OFFSET, is interpreted as the word number starting
+   at the low-order address.  OFFSET 0 is the low-order word if not
+   WORDS_BIG_ENDIAN, otherwise it is the high-order word.
+
+   If we cannot extract the required word, we return zero.  Otherwise,
+   an rtx corresponding to the requested word will be returned.
+
+   VALIDATE_ADDRESS is nonzero if the address should be validated.  Before
+   reload has completed, a valid address will always be returned.  After
+   reload, if a valid address cannot be returned, we return zero.
+
+   If VALIDATE_ADDRESS is zero, we simply form the required address; validating
+   it is the responsibility of the caller.
+
+   MODE is the mode of OP in case it is a CONST_INT.
+
+   ??? This is still rather broken for some cases.  The problem for the
+   moment is that all callers of this thing provide no 'goal mode' to
+   tell us to work with.  This exists because all callers were written
+   in a word based SUBREG world.  */
+
+rtx
+operand_subword (op, offset, validate_address, mode)
+     rtx op;
+     unsigned int offset;
+     int validate_address;
+     enum machine_mode mode;
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+
+  if (mode == VOIDmode)
+    abort ();
+
+  /* If OP is narrower than a word, fail. */
+  if (mode != BLKmode
+      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
+    return 0;
+
+  /* If we want a word outside OP, return zero. */
+  if (mode != BLKmode
+      && (offset + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
+    return const0_rtx;
+
+  switch (GET_CODE (op))
+    {
+    case REG:
+    case SUBREG:
+    case CONCAT:
+    case MEM:
+      break;
+
+    default:
+      /* The only remaining cases are when OP is a constant.  If the host and
+	 target floating formats are the same, handling two-word floating
+	 constants are easy.  Note that REAL_VALUE_TO_TARGET_{SINGLE,DOUBLE}
+	 are defined as returning one or two 32 bit values, respectively,
+	 and not values of BITS_PER_WORD bits.  */
+      return constant_subword (op, offset, mode);
+    }
+
+  /* If OP is already an integer word, return it.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) == UNITS_PER_WORD)
+    return op;
+
+  /* If OP is a REG or SUBREG, we can handle it very simply.  */
+  if (GET_CODE (op) == REG)
+    {
+      if (REGNO (op) < FIRST_PSEUDO_REGISTER)
+	{
+	  int final_regno = REGNO (op) +
+	    subreg_regno_offset (REGNO (op), GET_MODE (op),
+				offset * UNITS_PER_WORD,
+				word_mode);
+
+	  /* If the register is not valid for MODE, return 0.  If we don't
+	     do this, there is no way to fix up the resulting REG later.  */
+	  if (! HARD_REGNO_MODE_OK (final_regno, word_mode))
+	    return 0;
+
+	  /* integrate.c can't handle parts of a return value register.
+	     ??? Then integrate.c should be fixed!
+	     ??? What about CLASS_CANNOT_CHANGE_SIZE?  */
+	  if ((! REG_FUNCTION_VALUE_P (op)
+	       || ! rtx_equal_function_value_matters)
+	      /* ??? What about CLASS_CANNOT_CHANGE_SIZE?  */
+	      /* We want to keep the stack, frame, and arg pointers
+		 special.  */
+	      && op != frame_pointer_rtx
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	      && op != arg_pointer_rtx
+#endif
+	      && op != stack_pointer_rtx)
+	    return gen_rtx_REG (word_mode, final_regno);
+	}
+
+      /* Just return a normal SUBREG.  */
+      return gen_rtx_SUBREG (word_mode, op,
+			     (offset * UNITS_PER_WORD));
+    }
+  else if (GET_CODE (op) == SUBREG)
+    {
+      int final_offset = ((offset * UNITS_PER_WORD) + SUBREG_BYTE (op));
+
+      /* When working with SUBREGs the rule is that the byte
+	 offset must be a multiple of the SUBREG's mode.  */
+      final_offset = (final_offset / GET_MODE_SIZE (word_mode));
+      final_offset = (final_offset * GET_MODE_SIZE (word_mode));
+      return gen_rtx_SUBREG (word_mode, SUBREG_REG (op), final_offset);
+    }
+  else if (GET_CODE (op) == CONCAT)
+    {
+      unsigned int partwords = GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
+      if (offset < partwords)
+	return operand_subword (XEXP (op, 0), offset, validate_address, mode);
+      return operand_subword (XEXP (op, 1), offset - partwords,
+			      validate_address, mode);
+    }
+
+  /* Form a new MEM at the requested address.  */
+  if (GET_CODE (op) == MEM)
+    {
+      rtx addr = plus_constant (XEXP (op, 0), (offset * UNITS_PER_WORD));
+      rtx new;
+
+      if (validate_address)
+	{
+	  if (reload_completed)
+	    {
+	      if (! strict_memory_address_p (word_mode, addr))
+		return 0;
+	    }
+	  else
+	    addr = memory_address (word_mode, addr);
+	}
+
+      new = gen_rtx_MEM (word_mode, addr);
+      MEM_COPY_ATTRIBUTES (new, op);
+      return new;
+    }
+
+  /* Unreachable... (famous last words) */
+  abort ();
+}
+
 /* Similar to `operand_subword', but never return 0.  If we can't extract
    the required subword, put OP into a register and try again.  If that fails,
-   abort.  We always validate the address in this case.  It is not valid
-   to call this function after reload; it is mostly meant for RTL
-   generation. 
+   abort.  We always validate the address in this case.  
 
    MODE is the mode of OP, in case it is CONST_INT.  */
 
 rtx
-operand_subword_force (op, i, mode)
+operand_subword_force (op, offset, mode)
      rtx op;
-     unsigned int i;
+     unsigned int offset;
      enum machine_mode mode;
 {
-  rtx result = operand_subword (op, i, 1, mode);
+  rtx result = operand_subword (op, offset, 1, mode);
 
   if (result)
     return result;
@@ -1566,7 +1696,7 @@ operand_subword_force (op, i, mode)
 	op = force_reg (mode, op);
     }
 
-  result = operand_subword (op, i, 1, mode);
+  result = operand_subword (op, offset, 1, mode);
   if (result == 0)
     abort ();
 

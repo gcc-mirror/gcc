@@ -269,12 +269,7 @@ memory_offset_in_range_p (op, mode, low, high)
 
   while (GET_CODE (op) == SUBREG)
     {
-      offset += SUBREG_WORD (op) * UNITS_PER_WORD;
-#if BYTES_BIG_ENDIAN
-      offset -= (min (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (op)))
-		 - min (UNITS_PER_WORD,
-			GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))));
-#endif
+      offset += SUBREG_BYTE (op);
       op = SUBREG_REG (op);
     }
 

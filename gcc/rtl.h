@@ -789,10 +789,17 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define CONST_DOUBLE_MEM(r) XCEXP (r, 0, CONST_DOUBLE)
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
-   SUBREG_WORD extracts the word-number.  */
+   SUBREG_BYTE extracts the byte-number.  */
 
 #define SUBREG_REG(RTX) XCEXP(RTX, 0, SUBREG)
-#define SUBREG_WORD(RTX) XCUINT(RTX, 1, SUBREG)
+#define SUBREG_BYTE(RTX) XCUINT(RTX, 1, SUBREG)
+
+/* in rtlanal.c */
+extern unsigned int subreg_regno_offset 	PARAMS ((unsigned int, 
+							 enum machine_mode, 
+							 unsigned int, 
+							 enum machine_mode));
+extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 /* 1 if the REG contained in SUBREG_REG is already known to be
    sign- or zero-extended from the mode of the SUBREG to the mode of
@@ -1179,6 +1186,7 @@ extern int rtx_equal_p                  PARAMS ((rtx, rtx));
 extern rtvec gen_rtvec_v		PARAMS ((int, rtx *));
 extern rtx gen_reg_rtx			PARAMS ((enum machine_mode));
 extern rtx gen_label_rtx		PARAMS ((void));
+extern int subreg_hard_regno		PARAMS ((rtx, int));
 extern rtx gen_lowpart_common		PARAMS ((enum machine_mode, rtx));
 extern rtx gen_lowpart			PARAMS ((enum machine_mode, rtx));
 
@@ -1190,6 +1198,8 @@ extern rtx gen_highpart			PARAMS ((enum machine_mode, rtx));
 extern rtx gen_realpart			PARAMS ((enum machine_mode, rtx));
 extern rtx gen_imagpart			PARAMS ((enum machine_mode, rtx));
 extern rtx operand_subword		PARAMS ((rtx, unsigned int, int,
+						 enum machine_mode));
+extern rtx constant_subword		PARAMS ((rtx, int,
 						 enum machine_mode));
 
 /* In emit-rtl.c */
@@ -1569,7 +1579,10 @@ extern rtx gen_rtx_CONST_DOUBLE PARAMS ((enum machine_mode, rtx,
 extern rtx gen_rtx_CONST_INT PARAMS ((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_raw_REG PARAMS ((enum machine_mode, int));
 extern rtx gen_rtx_REG PARAMS ((enum machine_mode, int));
+extern rtx gen_rtx_SUBREG PARAMS ((enum machine_mode, rtx, int));
 extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
+
+extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 
 /* We need the cast here to ensure that we get the same result both with
    and without prototypes.  */

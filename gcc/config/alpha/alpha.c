@@ -4098,7 +4098,8 @@ print_operand_address (file, addr)
     basereg = REGNO (addr);
   else if (GET_CODE (addr) == SUBREG
 	   && GET_CODE (SUBREG_REG (addr)) == REG)
-    basereg = REGNO (SUBREG_REG (addr)) + SUBREG_WORD (addr);
+    basereg = REGNO (SUBREG_REG (addr))
+	      + SUBREG_BYTE (addr) / GET_MODE_SIZE (GET_MODE (addr));
   else if (GET_CODE (addr) == CONST_INT)
     offset = INTVAL (addr);
   else

@@ -2667,10 +2667,13 @@ d30v_split_double (value, p_high, p_low)
   switch (GET_CODE (value))
     {
     case SUBREG:
-      offset = SUBREG_WORD (value);
-      value = SUBREG_REG (value);
-      if (GET_CODE (value) != REG)
+      if (GET_CODE (SUBREG_REG (value)) != REG)
 	abort ();
+      offset = subreg_regno_offset (REGNO (SUBREG_REG (value)),
+				    GET_MODE (SUBREG_REG (value)),
+				    SUBREG_BYTE (value),
+				    GET_MODE (value));
+      value = SUBREG_REG (value);
 
       /* fall through */
 
@@ -2795,7 +2798,10 @@ d30v_print_operand_memory_reference (stream, x)
 
       if (GET_CODE (x0) == SUBREG)
 	{
-	  offset0 = SUBREG_WORD (x0);
+	  offset0 = subreg_regno_offset (REGNO (SUBREG_REG (x0)),
+					 GET_MODE (SUBREG_REG (x0)),
+					 SUBREG_BYTE (x0),
+					 GET_MODE (x0));
 	  x0 = SUBREG_REG (x0);
 	}
 
@@ -2828,7 +2834,10 @@ d30v_print_operand_memory_reference (stream, x)
       switch (GET_CODE (x1))
 	{
 	case SUBREG:
-	  offset1 = SUBREG_WORD (x1);
+	  offset1 = subreg_regno_offset (REGNO (SUBREG_REG (x1)),
+					 GET_MODE (SUBREG_REG (x1)),
+					 SUBREG_BYTE (x1),
+					 GET_MODE (x1));
 	  x1 = SUBREG_REG (x1);
 	  if (GET_CODE (x1) != REG)
 	    fatal_insn ("Bad insn to d30v_print_operand_memory_reference:", x);

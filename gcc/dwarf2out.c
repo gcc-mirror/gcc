@@ -3494,7 +3494,7 @@ is_pseudo_reg (rtl)
 {
   return ((GET_CODE (rtl) == REG && REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
 	  || (GET_CODE (rtl) == SUBREG
-	      && REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER));
+	      && REGNO (SUBREG_REG (rtl)) >= FIRST_PSEUDO_REGISTER));
 }
 
 /* Return a reference to a type, with its const and volatile qualifiers
@@ -7038,7 +7038,7 @@ mem_loc_descriptor (rtl, mode)
          up an entire register.  For now, just assume that it is
          legitimate to make the Dwarf info refer to the whole register which
          contains the given subreg.  */
-      rtl = XEXP (rtl, 0);
+      rtl = SUBREG_REG (rtl);
 
       /* Fall through.  */
 
@@ -7182,7 +7182,7 @@ loc_descriptor (rtl)
          up an entire register.  For now, just assume that it is
          legitimate to make the Dwarf info refer to the whole register which
          contains the given subreg.  */
-      rtl = XEXP (rtl, 0);
+      rtl = SUBREG_REG (rtl);
 
       /* Fall through.  */
 

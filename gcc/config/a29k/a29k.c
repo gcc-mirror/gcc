@@ -262,9 +262,10 @@ gpc_reg_operand (op, mode)
     regno = REGNO (op);
   else if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
     {
-      regno = REGNO (SUBREG_REG (op));
-      if (regno < FIRST_PSEUDO_REGISTER)
-	regno += SUBREG_WORD (op);
+      if (REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER)
+	regno = subreg_regno (op);
+      else
+	regno = REGNO (SUBREG_REG (op));
     }
   else
     return 0;
@@ -467,7 +468,7 @@ a29k_get_reloaded_address (op)
 {
   if (GET_CODE (op) == SUBREG)
     {
-      if (SUBREG_WORD (op) != 0)
+      if (SUBREG_BYTE (op) != 0)
 	abort ();
 
       op = SUBREG_REG (op);
@@ -1187,7 +1188,8 @@ print_operand (file, x, code)
       if (GET_MODE (SUBREG_REG (XEXP (x, 0))) == SFmode)
 	fprintf (file, "$float");
       else
-	fprintf (file, "$double%d", SUBREG_WORD (XEXP (x, 0)));
+	fprintf (file, "$double%d", 
+		 (SUBREG_BYTE (XEXP (x, 0)) / GET_MODE_SIZE (GET_MODE (x))));      
       memcpy ((char *) &u,
 	      (char *) &CONST_DOUBLE_LOW (SUBREG_REG (XEXP (x, 0))), sizeof u);
       fprintf (file, "(%.20e)", u.d);

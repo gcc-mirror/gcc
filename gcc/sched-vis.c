@@ -591,7 +591,7 @@ print_value (buf, x, verbose)
     case SUBREG:
       print_value (t, SUBREG_REG (x), verbose);
       cur = safe_concat (buf, cur, t);
-      sprintf (t, "#%d", SUBREG_WORD (x));
+      sprintf (t, "#%d", SUBREG_BYTE (x));
       cur = safe_concat (buf, cur, t);
       break;
     case SCRATCH:

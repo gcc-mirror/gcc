@@ -2509,7 +2509,7 @@ eliminate_regs (x, mem_mode, insn)
       return x;
 
     case SUBREG:
-      /* Similar to above processing, but preserve SUBREG_WORD.
+      /* Similar to above processing, but preserve SUBREG_BYTE.
 	 Convert (subreg (mem)) to (mem) if not paradoxical.
 	 Also, if we have a non-paradoxical (subreg (pseudo)) and the
 	 pseudo didn't get a hard reg, we must replace this with the
@@ -2526,7 +2526,7 @@ eliminate_regs (x, mem_mode, insn)
       else
 	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn);
 
-      if (new != XEXP (x, 0))
+      if (new != SUBREG_REG (x))
 	{
 	  int x_size = GET_MODE_SIZE (GET_MODE (x));
 	  int new_size = GET_MODE_SIZE (GET_MODE (new));
@@ -2547,20 +2547,15 @@ eliminate_regs (x, mem_mode, insn)
 		  || (x_size == new_size))
 	      )
 	    {
-	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
+	      int offset = SUBREG_BYTE (x);
 	      enum machine_mode mode = GET_MODE (x);
-
-	      if (BYTES_BIG_ENDIAN)
-		offset += (MIN (UNITS_PER_WORD,
-				GET_MODE_SIZE (GET_MODE (new)))
-			   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
 
 	      PUT_MODE (new, mode);
 	      XEXP (new, 0) = plus_constant (XEXP (new, 0), offset);
 	      return new;
 	    }
 	  else
-	    return gen_rtx_SUBREG (GET_MODE (x), new, SUBREG_WORD (x));
+	    return gen_rtx_SUBREG (GET_MODE (x), new, SUBREG_BYTE (x));
 	}
 
       return x;
@@ -4088,10 +4083,14 @@ forget_old_reloads_1 (x, ignored, data)
   unsigned int nr;
   int offset = 0;
 
-  /* note_stores does give us subregs of hard regs.  */
+  /* note_stores does give us subregs of hard regs,
+     subreg_regno_offset will abort if it is not a hard reg.  */
   while (GET_CODE (x) == SUBREG)
     {
-      offset += SUBREG_WORD (x);
+      offset += subreg_regno_offset (REGNO (SUBREG_REG (x)),
+				     GET_MODE (SUBREG_REG (x)),
+				     SUBREG_BYTE (x),
+				     GET_MODE (x));
       x = SUBREG_REG (x);
     }
 
@@ -5401,7 +5400,7 @@ choose_reload_regs (chain)
 
 	  if (inheritance)
 	    {
-	      int word = 0;
+	      int byte = 0;
 	      register int regno = -1;
 	      enum machine_mode mode = VOIDmode;
 
@@ -5420,10 +5419,10 @@ choose_reload_regs (chain)
 	      else if (GET_CODE (rld[r].in_reg) == SUBREG
 		       && GET_CODE (SUBREG_REG (rld[r].in_reg)) == REG)
 		{
-		  word = SUBREG_WORD (rld[r].in_reg);
+		  byte = SUBREG_BYTE (rld[r].in_reg);
 		  regno = REGNO (SUBREG_REG (rld[r].in_reg));
 		  if (regno < FIRST_PSEUDO_REGISTER)
-		    regno += word;
+		    regno = subreg_regno (rld[r].in_reg);
 		  mode = GET_MODE (rld[r].in_reg);
 		}
 #ifdef AUTO_INC_DEC
@@ -5444,7 +5443,7 @@ choose_reload_regs (chain)
 		 that can invalidate an inherited reload of part of a pseudoreg.  */
 	      else if (GET_CODE (rld[r].in) == SUBREG
 		       && GET_CODE (SUBREG_REG (rld[r].in)) == REG)
-		regno = REGNO (SUBREG_REG (rld[r].in)) + SUBREG_WORD (rld[r].in);
+		regno = subreg_regno (rld[r].in);
 #endif
 
 	      if (regno >= 0 && reg_last_reload_reg[regno] != 0)
@@ -5453,15 +5452,15 @@ choose_reload_regs (chain)
 		  rtx last_reg = reg_last_reload_reg[regno];
 		  enum machine_mode need_mode;
 
-		  i = REGNO (last_reg) + word;
+		  i = REGNO (last_reg);
+		  i += subreg_regno_offset (i, GET_MODE (last_reg), byte, mode);
 		  last_class = REGNO_REG_CLASS (i);
 
-		  if (word == 0)
+		  if (byte == 0)
 		    need_mode = mode;
 		  else
 		    need_mode
-		      = smallest_mode_for_size (GET_MODE_SIZE (mode)
-						+ word * UNITS_PER_WORD,
+		      = smallest_mode_for_size (GET_MODE_SIZE (mode) + byte,
 						GET_MODE_CLASS (mode));
 
 		  if (
@@ -5631,7 +5630,7 @@ choose_reload_regs (chain)
 			 Make a new REG since this might be used in an
 			 address and not all machines support SUBREGs
 			 there.  */
-		      regno = REGNO (SUBREG_REG (equiv)) + SUBREG_WORD (equiv);
+		      regno = subreg_regno (equiv);
 		      equiv = gen_rtx_REG (rld[r].mode, regno);
 		    }
 		  else
@@ -6261,7 +6260,7 @@ emit_input_reload_insns (chain, rl, old, j)
     oldequiv = SUBREG_REG (oldequiv);
   if (GET_MODE (oldequiv) != VOIDmode
       && mode != GET_MODE (oldequiv))
-    oldequiv = gen_rtx_SUBREG (mode, oldequiv, 0);
+    oldequiv = gen_lowpart_SUBREG (mode, oldequiv);
 
   /* Switch to the right place to emit the reload insns.  */
   switch (rl->when_needed)
@@ -8885,7 +8884,10 @@ reload_combine_note_store (dst, set, data)
 
   if (GET_CODE (dst) == SUBREG)
     {
-      regno = SUBREG_WORD (dst);
+      regno = subreg_regno_offset (REGNO (SUBREG_REG (dst)),
+				   GET_MODE (SUBREG_REG (dst)),
+				   SUBREG_BYTE (dst),
+				   GET_MODE (dst));
       dst = SUBREG_REG (dst);
     }
   if (GET_CODE (dst) != REG)
@@ -9276,7 +9278,10 @@ move2add_note_store (dst, set, data)
 
   if (GET_CODE (dst) == SUBREG)
     {
-      regno = SUBREG_WORD (dst);
+      regno = subreg_regno_offset (REGNO (SUBREG_REG (dst)),
+				   GET_MODE (SUBREG_REG (dst)),
+				   SUBREG_BYTE (dst),
+				   GET_MODE (dst));
       dst = SUBREG_REG (dst);
     }
 

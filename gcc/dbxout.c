@@ -2024,20 +2024,15 @@ dbxout_symbol_location (decl, type, suffix, home)
   else if (GET_CODE (home) == SUBREG)
     {
       rtx value = home;
-      int offset = 0;
+
       while (GET_CODE (value) == SUBREG)
-	{
-	  offset += SUBREG_WORD (value);
-	  value = SUBREG_REG (value);
-	}
+	value = SUBREG_REG (value);
       if (GET_CODE (value) == REG)
 	{
-	  regno = REGNO (value);
-	  if (regno >= FIRST_PSEUDO_REGISTER)
+	  if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 	    return 0;
-	  regno += offset;
 	}
-      alter_subreg (home);
+      regno = REGNO (alter_subreg (home));
     }
 
   /* The kind-of-variable letter depends on where

@@ -766,7 +766,7 @@
 (define_expand "zero_extendhisi2"
   [(set (subreg:HI 
           (match_dup 0)
-          1)
+          2)
         (match_operand:HI 1 "register_operand" "r"))
    (set (subreg:HI 
           (match_operand:SI 0 "register_operand" "=r")
@@ -1782,16 +1782,16 @@
   [(set_attr "length" "2")])
 
 (define_expand "modhi3"
-  [(set (subreg:HI (match_dup 1) 1)
+  [(set (subreg:HI (match_dup 1) 2)
 	(mod:HI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))
    (set (match_operand:HI 0 "general_operand" "=r")
-        (subreg:HI (match_dup 1) 1))]
+        (subreg:HI (match_dup 1) 2))]
   "TARGET_45"
   "")
 
 (define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 1)
+  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 4)
 	(mod:HI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_45"
@@ -1802,11 +1802,11 @@
 ;  [(parallel [(set (subreg:HI (match_dup 1) 0)
 ;	           (div:HI (match_operand:SI 1 "general_operand" "0")
 ;		           (match_operand:HI 2 "general_operand" "g")))
-;              (set (subreg:HI (match_dup 1) 1)
+;              (set (subreg:HI (match_dup 1) 2)
 ;	           (mod:HI (match_dup 1)
 ;		           (match_dup 2)))])
 ;   (set (match_operand:HI 3 "general_operand" "=r")
-;        (subreg:HI (match_dup 1) 1))
+;        (subreg:HI (match_dup 1) 2))
 ;   (set (match_operand:HI 0 "general_operand" "=r")
 ;        (subreg:HI (match_dup 1) 0))]
 ;  "TARGET_45"
@@ -1816,7 +1816,7 @@
 ;  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
 ;	           (div:HI (match_operand:SI 1 "general_operand" "0")
 ;		           (match_operand:HI 2 "general_operand" "g")))
-;   (set (subreg:HI (match_dup 0) 1)
+;   (set (subreg:HI (match_dup 0) 2)
 ;	           (mod:HI (match_dup 1)
 ;		           (match_dup 2)))]
 ;  "TARGET_45"

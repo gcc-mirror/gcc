@@ -790,12 +790,12 @@
 	(ltu:SI (subreg:SI (match_dup 0) 0)
 		(subreg:SI (match_dup 2) 0)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(plus:SI (subreg:SI (match_dup 1) 1)
-		 (subreg:SI (match_dup 2) 1)))
+   (set (subreg:SI (match_dup 0) 4)
+	(plus:SI (subreg:SI (match_dup 1) 4)
+		 (subreg:SI (match_dup 2) 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(plus:SI (subreg:SI (match_dup 0) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(plus:SI (subreg:SI (match_dup 0) 4)
 		 (match_dup 3)))]
   "")
 
@@ -812,13 +812,13 @@
    && (REGNO (operands[0]) != REGNO (operands[1])
        || REGNO (operands[0]) != REGNO (operands[2]))"
 
-  [(set (subreg:SI (match_dup 0) 1)
-	(plus:SI (subreg:SI (match_dup 1) 1)
-		 (subreg:SI (match_dup 2) 1)))
+  [(set (subreg:SI (match_dup 0) 4)
+	(plus:SI (subreg:SI (match_dup 1) 4)
+		 (subreg:SI (match_dup 2) 4)))
 
    (set (match_dup 3)
-	(ltu:SI (subreg:SI (match_dup 0) 1)
-		(subreg:SI (match_dup 2) 1)))
+	(ltu:SI (subreg:SI (match_dup 0) 4)
+		(subreg:SI (match_dup 2) 4)))
 
    (set (subreg:SI (match_dup 0) 0)
 	(plus:SI (subreg:SI (match_dup 1) 0)
@@ -865,8 +865,8 @@
 	(ltu:SI (subreg:SI (match_dup 0) 0)
 		(match_dup 2)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(plus:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(plus:SI (subreg:SI (match_dup 1) 4)
 		 (match_dup 3)))]
   "")
 
@@ -881,12 +881,12 @@
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
    && INTVAL (operands[2]) > 0"
 
-  [(set (subreg:SI (match_dup 0) 1)
-	(plus:SI (subreg:SI (match_dup 1) 1)
+  [(set (subreg:SI (match_dup 0) 4)
+	(plus:SI (subreg:SI (match_dup 1) 4)
 		 (match_dup 2)))
 
    (set (match_dup 3)
-	(ltu:SI (subreg:SI (match_dup 0) 1)
+	(ltu:SI (subreg:SI (match_dup 0) 4)
 		(match_dup 2)))
 
    (set (subreg:SI (match_dup 0) 0)
@@ -1307,12 +1307,12 @@
 	(minus:SI (subreg:SI (match_dup 1) 0)
 		  (subreg:SI (match_dup 2) 0)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(minus:SI (subreg:SI (match_dup 1) 1)
-		  (subreg:SI (match_dup 2) 1)))
+   (set (subreg:SI (match_dup 0) 4)
+	(minus:SI (subreg:SI (match_dup 1) 4)
+		  (subreg:SI (match_dup 2) 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(minus:SI (subreg:SI (match_dup 0) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(minus:SI (subreg:SI (match_dup 0) 4)
 		  (match_dup 3)))]
   "")
 
@@ -1328,12 +1328,12 @@
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
 
   [(set (match_dup 3)
-	(ltu:SI (subreg:SI (match_dup 1) 1)
-	        (subreg:SI (match_dup 2) 1)))
+	(ltu:SI (subreg:SI (match_dup 1) 4)
+	        (subreg:SI (match_dup 2) 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(minus:SI (subreg:SI (match_dup 1) 1)
-		  (subreg:SI (match_dup 2) 1)))
+   (set (subreg:SI (match_dup 0) 4)
+	(minus:SI (subreg:SI (match_dup 1) 4)
+		  (subreg:SI (match_dup 2) 4)))
 
    (set (subreg:SI (match_dup 0) 0)
 	(minus:SI (subreg:SI (match_dup 1) 0)
@@ -1378,8 +1378,8 @@
 	(minus:SI (subreg:SI (match_dup 1) 0)
 		  (match_dup 2)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(minus:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(minus:SI (subreg:SI (match_dup 1) 4)
 		  (match_dup 3)))]
   "")
 
@@ -1395,11 +1395,11 @@
    && INTVAL (operands[2]) > 0"
 
   [(set (match_dup 3)
-	(ltu:SI (subreg:SI (match_dup 1) 1)
+	(ltu:SI (subreg:SI (match_dup 1) 4)
 		(match_dup 2)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(minus:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(minus:SI (subreg:SI (match_dup 1) 4)
 		  (match_dup 2)))
 
    (set (subreg:SI (match_dup 0) 0)
@@ -3121,7 +3121,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
 
   [(set (subreg:SI (match_dup 0) 0) (not:SI (subreg:SI (match_dup 1) 0)))
-   (set (subreg:SI (match_dup 0) 1) (not:SI (subreg:SI (match_dup 1) 1)))]
+   (set (subreg:SI (match_dup 0) 4) (not:SI (subreg:SI (match_dup 1) 4)))]
   "")
 
 
@@ -3224,7 +3224,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
 
   [(set (subreg:SI (match_dup 0) 0) (and:SI (subreg:SI (match_dup 1) 0) (subreg:SI (match_dup 2) 0)))
-   (set (subreg:SI (match_dup 0) 1) (and:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1)))]
+   (set (subreg:SI (match_dup 0) 4) (and:SI (subreg:SI (match_dup 1) 4) (subreg:SI (match_dup 2) 4)))]
   "")
 
 (define_insn "anddi3_internal1"
@@ -3325,7 +3325,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
 
   [(set (subreg:SI (match_dup 0) 0) (ior:SI (subreg:SI (match_dup 1) 0) (subreg:SI (match_dup 2) 0)))
-   (set (subreg:SI (match_dup 0) 1) (ior:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1)))]
+   (set (subreg:SI (match_dup 0) 4) (ior:SI (subreg:SI (match_dup 1) 4) (subreg:SI (match_dup 2) 4)))]
   "")
 
 (define_expand "xorsi3"
@@ -3429,7 +3429,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
 
   [(set (subreg:SI (match_dup 0) 0) (xor:SI (subreg:SI (match_dup 1) 0) (subreg:SI (match_dup 2) 0)))
-   (set (subreg:SI (match_dup 0) 1) (xor:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1)))]
+   (set (subreg:SI (match_dup 0) 4) (xor:SI (subreg:SI (match_dup 1) 4) (subreg:SI (match_dup 2) 4)))]
   "")
 
 (define_insn "xordi3_immed"
@@ -3478,7 +3478,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
 
   [(set (subreg:SI (match_dup 0) 0) (and:SI (not:SI (subreg:SI (match_dup 1) 0)) (not:SI (subreg:SI (match_dup 2) 0))))
-   (set (subreg:SI (match_dup 0) 1) (and:SI (not:SI (subreg:SI (match_dup 1) 1)) (not:SI (subreg:SI (match_dup 2) 1))))]
+   (set (subreg:SI (match_dup 0) 4) (and:SI (not:SI (subreg:SI (match_dup 1) 4)) (not:SI (subreg:SI (match_dup 2) 4))))]
   "")
 
 ;;
@@ -4917,7 +4917,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
 
   [(set (subreg:SI (match_dup 0) 0) (subreg:SI (match_dup 1) 0))
-   (set (subreg:SI (match_dup 0) 1) (subreg:SI (match_dup 1) 1))]
+   (set (subreg:SI (match_dup 0) 4) (subreg:SI (match_dup 1) 4))]
   "")
 
 (define_insn "movdi_internal2"
@@ -6147,7 +6147,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))"
   [(set (subreg:SI (match_dup 0) 0) (subreg:SI (match_dup 1) 0))
-   (set (subreg:SI (match_dup 0) 1) (subreg:SI (match_dup 1) 1))]
+   (set (subreg:SI (match_dup 0) 4) (subreg:SI (match_dup 1) 4))]
   "")
 
 ;; Instructions to load the global pointer register.
@@ -6516,7 +6516,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1) (ashift:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
+  [(set (subreg:SI (match_dup 0) 4) (ashift:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
@@ -6533,8 +6533,8 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 0) (ashift:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
-   (set (subreg:SI (match_dup 0) 1) (const_int 0))]
+  [(set (subreg:SI (match_dup 0) 0) (ashift:SI (subreg:SI (match_dup 1) 4) (match_dup 2)))
+   (set (subreg:SI (match_dup 0) 4) (const_int 0))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
@@ -6574,16 +6574,16 @@ move\\t%0,%z4\\n\\
    && (INTVAL (operands[2]) & 63) < 32
    && (INTVAL (operands[2]) & 63) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1)
-	(ashift:SI (subreg:SI (match_dup 1) 1)
+  [(set (subreg:SI (match_dup 0) 4)
+	(ashift:SI (subreg:SI (match_dup 1) 4)
 		   (match_dup 2)))
 
    (set (match_dup 3)
 	(lshiftrt:SI (subreg:SI (match_dup 1) 0)
 		     (match_dup 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(ior:SI (subreg:SI (match_dup 0) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(ior:SI (subreg:SI (match_dup 0) 4)
 		(match_dup 3)))
 
    (set (subreg:SI (match_dup 0) 0)
@@ -6614,15 +6614,15 @@ move\\t%0,%z4\\n\\
 		   (match_dup 2)))
 
    (set (match_dup 3)
-	(lshiftrt:SI (subreg:SI (match_dup 1) 1)
+	(lshiftrt:SI (subreg:SI (match_dup 1) 4)
 		     (match_dup 4)))
 
    (set (subreg:SI (match_dup 0) 0)
 	(ior:SI (subreg:SI (match_dup 0) 0)
 		(match_dup 3)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(ashift:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(ashift:SI (subreg:SI (match_dup 1) 4)
 		   (match_dup 2)))]
   "
 {
@@ -6871,8 +6871,8 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
-   (set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (const_int 31)))]
+  [(set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 4) (match_dup 2)))
+   (set (subreg:SI (match_dup 0) 4) (ashiftrt:SI (subreg:SI (match_dup 1) 4) (const_int 31)))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
@@ -6887,7 +6887,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
+  [(set (subreg:SI (match_dup 0) 4) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (const_int 31)))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
@@ -6932,15 +6932,15 @@ move\\t%0,%z4\\n\\
 		     (match_dup 2)))
 
    (set (match_dup 3)
-	(ashift:SI (subreg:SI (match_dup 1) 1)
+	(ashift:SI (subreg:SI (match_dup 1) 4)
 		   (match_dup 4)))
 
    (set (subreg:SI (match_dup 0) 0)
 	(ior:SI (subreg:SI (match_dup 0) 0)
 		(match_dup 3)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(ashiftrt:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(ashiftrt:SI (subreg:SI (match_dup 1) 4)
 		     (match_dup 2)))]
   "
 {
@@ -6962,16 +6962,16 @@ move\\t%0,%z4\\n\\
    && (INTVAL (operands[2]) & 63) < 32
    && (INTVAL (operands[2]) & 63) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1)
-	(lshiftrt:SI (subreg:SI (match_dup 1) 1)
+  [(set (subreg:SI (match_dup 0) 4)
+	(lshiftrt:SI (subreg:SI (match_dup 1) 4)
 		     (match_dup 2)))
 
    (set (match_dup 3)
 	(ashift:SI (subreg:SI (match_dup 1) 0)
 		   (match_dup 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(ior:SI (subreg:SI (match_dup 0) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(ior:SI (subreg:SI (match_dup 0) 4)
 		(match_dup 3)))
 
    (set (subreg:SI (match_dup 0) 0)
@@ -7255,8 +7255,8 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 0) (lshiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
-   (set (subreg:SI (match_dup 0) 1) (const_int 0))]
+  [(set (subreg:SI (match_dup 0) 0) (lshiftrt:SI (subreg:SI (match_dup 1) 4) (match_dup 2)))
+   (set (subreg:SI (match_dup 0) 4) (const_int 0))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
 
@@ -7272,7 +7272,7 @@ move\\t%0,%z4\\n\\
    && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
    && (INTVAL (operands[2]) & 32) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1) (lshiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
+  [(set (subreg:SI (match_dup 0) 4) (lshiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
   "operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);")
@@ -7317,15 +7317,15 @@ move\\t%0,%z4\\n\\
 		     (match_dup 2)))
 
    (set (match_dup 3)
-	(ashift:SI (subreg:SI (match_dup 1) 1)
+	(ashift:SI (subreg:SI (match_dup 1) 4)
 		   (match_dup 4)))
 
    (set (subreg:SI (match_dup 0) 0)
 	(ior:SI (subreg:SI (match_dup 0) 0)
 		(match_dup 3)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(lshiftrt:SI (subreg:SI (match_dup 1) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(lshiftrt:SI (subreg:SI (match_dup 1) 4)
 		     (match_dup 2)))]
   "
 {
@@ -7347,16 +7347,16 @@ move\\t%0,%z4\\n\\
    && (INTVAL (operands[2]) & 63) < 32
    && (INTVAL (operands[2]) & 63) != 0"
 
-  [(set (subreg:SI (match_dup 0) 1)
-	(lshiftrt:SI (subreg:SI (match_dup 1) 1)
+  [(set (subreg:SI (match_dup 0) 4)
+	(lshiftrt:SI (subreg:SI (match_dup 1) 4)
 		     (match_dup 2)))
 
    (set (match_dup 3)
 	(ashift:SI (subreg:SI (match_dup 1) 0)
 		   (match_dup 4)))
 
-   (set (subreg:SI (match_dup 0) 1)
-	(ior:SI (subreg:SI (match_dup 0) 1)
+   (set (subreg:SI (match_dup 0) 4)
+	(ior:SI (subreg:SI (match_dup 0) 4)
 		(match_dup 3)))
 
    (set (subreg:SI (match_dup 0) 0)

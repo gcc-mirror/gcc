@@ -2591,7 +2591,7 @@
   if (GET_CODE (operands[0]) == REG)
     regno = REGNO (operands[0]);
   else if (GET_CODE (operands[0]) == SUBREG)
-    regno = REGNO (SUBREG_REG (operands[0])) + SUBREG_WORD (operands[0]);
+    regno = subreg_regno (operands[0]);
   else if (GET_CODE (operands[0]) == MEM)
     regno = -1;
 
@@ -2729,7 +2729,7 @@
       mem = operands[1];
       store_p = 0;
     }
-  if (GET_CODE (mem) == SUBREG && SUBREG_WORD (mem) == 0)
+  if (GET_CODE (mem) == SUBREG && SUBREG_BYTE (mem) == 0)
     mem = SUBREG_REG (mem);
   if (GET_CODE (mem) == MEM)
     {
@@ -2751,7 +2751,7 @@
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
 	  word0 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 0));
-	  word1 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 1));
+	  word1 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 4));
 	  if (store_p || ! refers_to_regno_p (REGNO (word0),
 					      REGNO (word0) + 1, addr, 0))
 	    {
@@ -2963,7 +2963,7 @@
   if (GET_CODE (operands[0]) == REG)
     regno = REGNO (operands[0]);
   else if (GET_CODE (operands[0]) == SUBREG)
-    regno = REGNO (SUBREG_REG (operands[0])) + SUBREG_WORD (operands[0]);
+    regno = subreg_regno (operands[0]);
   else if (GET_CODE (operands[0]) == MEM)
     regno = -1;
 

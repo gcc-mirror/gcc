@@ -1166,16 +1166,16 @@ This virtual register is replaced by the sum of the register given by
 @end table
 
 @findex subreg
-@item (subreg:@var{m} @var{reg} @var{wordnum})
+@item (subreg:@var{m} @var{reg} @var{bytenum})
 @code{subreg} expressions are used to refer to a register in a machine
 mode other than its natural one, or to refer to one register of
-a multi-word @code{reg} that actually refers to several registers.
+a multi-part @code{reg} that actually refers to several registers.
 
 Each pseudo-register has a natural mode.  If it is necessary to
 operate on it in a different mode---for example, to perform a fullword
 move instruction on a pseudo-register that contains a single
 byte---the pseudo-register must be enclosed in a @code{subreg}.  In
-such a case, @var{wordnum} is zero.
+such a case, @var{bytenum} is zero.
 
 Usually @var{m} is at least as narrow as the mode of @var{reg}, in which
 case it is restricting consideration to only the bits of @var{reg} that
@@ -1192,7 +1192,7 @@ a multi-register value.  Machine modes such as @code{DImode} and
 @code{TImode} can indicate values longer than a word, values which
 usually require two or more consecutive registers.  To access one of the
 registers, use a @code{subreg} with mode @code{SImode} and a
-@var{wordnum} that says which register.
+@var{bytenum} offset that says which register.
 
 Storing in a non-paradoxical @code{subreg} has undefined results for
 bits belonging to the same word as the @code{subreg}.  This laxity makes
@@ -1202,8 +1202,13 @@ the @code{subreg}, use @code{strict_low_part} around the @code{subreg}.
 
 @cindex @code{WORDS_BIG_ENDIAN}, effect on @code{subreg}
 The compilation parameter @code{WORDS_BIG_ENDIAN}, if set to 1, says
-that word number zero is the most significant part; otherwise, it is
-the least significant part.
+that byte number zero is part of the most significant word; otherwise,
+it is part of the least significant word.
+
+@cindex @code{BYTES_BIG_ENDIAN}, effect on @code{subreg}
+The compilation parameter @code{BYTES_BIG_ENDIAN}, if set to 1, says
+that byte number zero is the most significant byte within a word;
+otherwise, it is the least significant byte within a word.
 
 @cindex @code{FLOAT_WORDS_BIG_ENDIAN}, (lack of) effect on @code{subreg}
 On a few targets, @code{FLOAT_WORDS_BIG_ENDIAN} disagrees with
@@ -1239,10 +1244,10 @@ a single machine register.  The reload pass prevents @code{subreg}
 expressions such as these from being formed.
 
 @findex SUBREG_REG
-@findex SUBREG_WORD
+@findex SUBREG_BYTE
 The first operand of a @code{subreg} expression is customarily accessed 
 with the @code{SUBREG_REG} macro and the second operand is customarily
-accessed with the @code{SUBREG_WORD} macro.
+accessed with the @code{SUBREG_BYTE} macro.
 
 @findex scratch
 @cindex scratch operands

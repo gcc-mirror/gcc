@@ -2249,7 +2249,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	     be written as a ZERO_EXTEND.  */
 	  if (split_code == SUBREG && GET_CODE (SUBREG_REG (*split)) == MEM)
 	    SUBST (*split, gen_rtx_ZERO_EXTEND  (split_mode,
-						 XEXP (*split, 0)));
+						 SUBREG_REG (*split)));
 #endif
 
 	  newi2pat = gen_rtx_SET (VOIDmode, newdest, *split);
@@ -3773,27 +3773,17 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	{
 	  rtx inner = SUBREG_REG (x);
-	  int endian_offset = 0;
+	  int offset = SUBREG_BYTE (x);
 	  /* Don't change the mode of the MEM
 	     if that would change the meaning of the address.  */
 	  if (MEM_VOLATILE_P (SUBREG_REG (x))
 	      || mode_dependent_address_p (XEXP (inner, 0)))
 	    return gen_rtx_CLOBBER (mode, const0_rtx);
 
-	  if (BYTES_BIG_ENDIAN)
-	    {
-	      if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-		endian_offset += UNITS_PER_WORD - GET_MODE_SIZE (mode);
-	      if (GET_MODE_SIZE (GET_MODE (inner)) < UNITS_PER_WORD)
-		endian_offset -= (UNITS_PER_WORD
-				  - GET_MODE_SIZE (GET_MODE (inner)));
-	    }
 	  /* Note if the plus_constant doesn't make a valid address
 	     then this combination won't be accepted.  */
 	  x = gen_rtx_MEM (mode,
-			   plus_constant (XEXP (inner, 0),
-					  (SUBREG_WORD (x) * UNITS_PER_WORD
-					   + endian_offset)));
+			   plus_constant (XEXP (inner, 0), offset));
 	  MEM_COPY_ATTRIBUTES (x, inner);
 	  return x;
 	}
@@ -3806,12 +3796,58 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 or not at all if changing back to starting mode.  */
       if (GET_CODE (SUBREG_REG (x)) == SUBREG)
 	{
-	  if (mode == GET_MODE (SUBREG_REG (SUBREG_REG (x)))
-	      && SUBREG_WORD (x) == 0 && SUBREG_WORD (SUBREG_REG (x)) == 0)
-	    return SUBREG_REG (SUBREG_REG (x));
+	  int final_offset;
+	  enum machine_mode outer_mode, inner_mode;
 
-	  SUBST_INT (SUBREG_WORD (x),
-		     SUBREG_WORD (x) + SUBREG_WORD (SUBREG_REG (x)));
+	  /* If the innermost mode is the same as the goal mode,
+	     and the low word is being referenced in both SUBREGs,
+	     return the innermost element.  */
+	  if (mode == GET_MODE (SUBREG_REG (SUBREG_REG (x))))
+	    {
+	      int inner_word = SUBREG_BYTE (SUBREG_REG (x));
+	      int outer_word = SUBREG_BYTE (x);
+
+	      inner_word = (inner_word / UNITS_PER_WORD) * UNITS_PER_WORD;
+	      outer_word = (outer_word / UNITS_PER_WORD) * UNITS_PER_WORD;
+	      if (inner_word == 0
+		  && outer_word == 0)
+		return SUBREG_REG (SUBREG_REG (x));
+	    }
+
+	  outer_mode = GET_MODE (SUBREG_REG (x));
+	  inner_mode = GET_MODE (SUBREG_REG (SUBREG_REG (x)));
+	  final_offset = SUBREG_BYTE (x) + SUBREG_BYTE (SUBREG_REG(x));
+
+	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+	      && GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (mode)
+	      && GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
+	    {
+	      /* Inner SUBREG is paradoxical, outer is not.  On big endian
+		 we have to special case this.  */
+	      if (SUBREG_BYTE (SUBREG_REG (x)))
+		abort(); /* Can a paradoxical subreg have nonzero offset? */
+	      if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
+	        final_offset = SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
+			       + GET_MODE_SIZE (inner_mode);
+	      else if (WORDS_BIG_ENDIAN)
+		final_offset = (final_offset % UNITS_PER_WORD)
+			       + ((SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
+				   + GET_MODE_SIZE (inner_mode))
+				  * UNITS_PER_WORD) / UNITS_PER_WORD;
+	      else
+		final_offset = ((final_offset * UNITS_PER_WORD)
+				/ UNITS_PER_WORD)
+			       + ((SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
+				   + GET_MODE_SIZE (inner_mode))
+				  % UNITS_PER_WORD);
+	    }
+
+	  /* The SUBREG rules are that the byte offset must be
+	     some multiple of the toplevel SUBREG's mode.  */
+	  final_offset = (final_offset / GET_MODE_SIZE (mode));
+	  final_offset = (final_offset * GET_MODE_SIZE (mode));
+
+	  SUBST_INT (SUBREG_BYTE (x), final_offset);
 	  SUBST (SUBREG_REG (x), SUBREG_REG (SUBREG_REG (x)));
 	}
 
@@ -3831,10 +3867,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 #endif
 	  && REGNO (SUBREG_REG (x)) != STACK_POINTER_REGNUM)
 	{
-	  if (HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (x)) + SUBREG_WORD (x),
-				  mode))
-	    return gen_rtx_REG (mode,
-				REGNO (SUBREG_REG (x)) + SUBREG_WORD (x));
+	  int final_regno = subreg_hard_regno (x, 0);
+
+	  if (HARD_REGNO_MODE_OK (final_regno, mode))
+	    return gen_rtx_REG (mode, final_regno);
 	  else
 	    return gen_rtx_CLOBBER (mode, const0_rtx);
 	}
@@ -3849,7 +3885,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE_SIZE (op0_mode) > UNITS_PER_WORD
 	  && GET_MODE_CLASS (mode) == MODE_INT)
 	{
-	  temp = operand_subword (SUBREG_REG (x), SUBREG_WORD (x),
+	  temp = operand_subword (SUBREG_REG (x),
+				  (SUBREG_BYTE (x) / UNITS_PER_WORD),
 				  0, op0_mode);
 	  if (temp)
 	    return temp;
@@ -3863,11 +3900,9 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       if (CONSTANT_P (SUBREG_REG (x))
 	  && ((GET_MODE_SIZE (op0_mode) <= UNITS_PER_WORD
 	      || ! WORDS_BIG_ENDIAN)
-	      ? SUBREG_WORD (x) == 0
-	      : (SUBREG_WORD (x)
-		 == ((GET_MODE_SIZE (op0_mode)
-		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
-		     / UNITS_PER_WORD)))
+	      ? SUBREG_BYTE (x) == 0
+	      : (SUBREG_BYTE (x)
+		 == (GET_MODE_SIZE (op0_mode) - GET_MODE_SIZE (mode))))
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (op0_mode)
 	  && (! WORDS_BIG_ENDIAN
 	      || GET_MODE_BITSIZE (op0_mode) <= BITS_PER_WORD))
@@ -3879,8 +3914,9 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (op0_mode))
 	{
 	  if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
-	      && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
-	    return operand_subword (SUBREG_REG (x), SUBREG_WORD (x), 0, mode);
+	      && (WORDS_BIG_ENDIAN || SUBREG_BYTE (x) != 0))
+	    return constant_subword (SUBREG_REG (x), 
+				     SUBREG_BYTE (x) / UNITS_PER_WORD, mode);
 	  return SUBREG_REG (x);
 	}
 
@@ -5157,14 +5193,14 @@ simplify_set (x)
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
       && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))) != NIL
-      && SUBREG_WORD (src) == 0
+      && SUBREG_BYTE (src) == 0
       && (GET_MODE_SIZE (GET_MODE (src))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
       && GET_CODE (SUBREG_REG (src)) == MEM)
     {
       SUBST (SET_SRC (x),
 	     gen_rtx (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))),
-		      GET_MODE (src), XEXP (src, 0)));
+		      GET_MODE (src), SUBREG_REG (src)));
 
       src = SET_SRC (x);
     }
@@ -5756,9 +5792,11 @@ expand_field_assignment (x)
       if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
 	  && GET_CODE (XEXP (SET_DEST (x), 0)) == SUBREG)
 	{
+	  int byte_offset = SUBREG_BYTE (XEXP (SET_DEST (x), 0));
+
 	  inner = SUBREG_REG (XEXP (SET_DEST (x), 0));
 	  len = GET_MODE_BITSIZE (GET_MODE (XEXP (SET_DEST (x), 0)));
-	  pos = GEN_INT (BITS_PER_WORD * SUBREG_WORD (XEXP (SET_DEST (x), 0)));
+	  pos = GEN_INT (BITS_PER_WORD * (byte_offset / UNITS_PER_WORD));
 	}
       else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
 	       && GET_CODE (XEXP (SET_DEST (x), 1)) == CONST_INT)
@@ -5996,18 +6034,26 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  /* We can't call gen_lowpart_for_combine here since we always want
 	     a SUBREG and it would sometimes return a new hard register.  */
 	  if (tmode != inner_mode)
-	    new = gen_rtx_SUBREG (tmode, inner,
-				  (WORDS_BIG_ENDIAN
-				   && (GET_MODE_SIZE (inner_mode)
-				       > UNITS_PER_WORD)
-				   ? (((GET_MODE_SIZE (inner_mode)
-					- GET_MODE_SIZE (tmode))
-				       / UNITS_PER_WORD)
-				      - pos / BITS_PER_WORD)
-				   : pos / BITS_PER_WORD));
-	  else
-	    new = inner;
-	}
+	    {
+	      int final_word = pos / BITS_PER_WORD;
+
+	      if (WORDS_BIG_ENDIAN
+		  && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
+		final_word = ((GET_MODE_SIZE (inner_mode)
+			       - GET_MODE_SIZE (tmode))
+			      / UNITS_PER_WORD) - final_word;
+
+	      final_word *= UNITS_PER_WORD;
+	      if (BYTES_BIG_ENDIAN &&
+		  GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (tmode))
+		final_word += (GET_MODE_SIZE (inner_mode)
+			       - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
+
+	      new = gen_rtx_SUBREG (tmode, inner, final_word);
+	    }
+  	  else
+  	    new = inner;
+  	}
       else
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
@@ -7395,11 +7441,11 @@ if_then_else_cond (x, ptrue, pfalse)
 	   || GET_CODE (SUBREG_REG (x)) == MEM
 	   || CONSTANT_P (SUBREG_REG (x)))
 	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
-	  && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
+	  && (WORDS_BIG_ENDIAN || SUBREG_BYTE (x) >= UNITS_PER_WORD))
 	{
-	  true0 = operand_subword (true0, SUBREG_WORD (x), 0,
+	  true0 = operand_subword (true0, SUBREG_BYTE (x) / UNITS_PER_WORD, 0,
 				   GET_MODE (SUBREG_REG (x)));
-	  false0 = operand_subword (false0, SUBREG_WORD (x), 0,
+	  false0 = operand_subword (false0, SUBREG_BYTE (x) / UNITS_PER_WORD, 0,
 				    GET_MODE (SUBREG_REG (x)));
 	}
       *ptrue = force_to_mode (true0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
@@ -7772,7 +7818,7 @@ apply_distributive_law (x)
 
     case SUBREG:
       /* Non-paradoxical SUBREGs distributes over all operations, provided
-	 the inner modes and word numbers are the same, this is an extraction
+	 the inner modes and byte offsets are the same, this is an extraction
 	 of a low-order part, we don't convert an fp operation to int or
 	 vice versa, and we would not be converting a single-word
 	 operation into a multi-word operation.  The latter test is not
@@ -7783,7 +7829,7 @@ apply_distributive_law (x)
 	 We produce the result slightly differently in this case.  */
 
       if (GET_MODE (SUBREG_REG (lhs)) != GET_MODE (SUBREG_REG (rhs))
-	  || SUBREG_WORD (lhs) != SUBREG_WORD (rhs)
+	  || SUBREG_BYTE (lhs) != SUBREG_BYTE (rhs)
 	  || ! subreg_lowpart_p (lhs)
 	  || (GET_MODE_CLASS (GET_MODE (lhs))
 	      != GET_MODE_CLASS (GET_MODE (SUBREG_REG (lhs))))
@@ -9853,13 +9899,19 @@ gen_lowpart_for_combine (mode, x)
      include an explicit SUBREG or we may simplify it further in combine.  */
   else
     {
-      int word = 0;
+      int offset = 0;
 
-      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
-	word = ((GET_MODE_SIZE (GET_MODE (x))
-		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
-		/ UNITS_PER_WORD);
-      return gen_rtx_SUBREG (mode, x, word);
+      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+	  && GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
+	{
+	  int difference = (GET_MODE_SIZE (GET_MODE (x))
+			    - GET_MODE_SIZE (mode));
+	  if (WORDS_BIG_ENDIAN)
+	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += difference % UNITS_PER_WORD;
+	}
+      return gen_rtx_SUBREG (mode, x, offset);
     }
 }
 
@@ -11927,6 +11979,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 	 that accesses one word of a multi-word item, some
 	 piece of everything register in the expression is used by
 	 this insn, so remove any old death.  */
+      /* ??? So why do we test for equality of the sizes?  */
 
       if (GET_CODE (dest) == ZERO_EXTRACT
 	  || GET_CODE (dest) == STRICT_LOW_PART

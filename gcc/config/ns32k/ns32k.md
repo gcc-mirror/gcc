@@ -1275,7 +1275,7 @@
 ;; Retain this insn which *does* have a pattern indicating what it does,
 ;; just in case the compiler is smart enough to recognize a substitution.
 (define_insn "udivmoddisi4"
-  [(set (subreg:SI (match_operand:DI 0 "nonimmediate_operand" "=rm") 1)
+  [(set (subreg:SI (match_operand:DI 0 "nonimmediate_operand" "=rm") 4)
 	(truncate:SI (udiv:DI (match_operand:DI 1 "nonimmediate_operand" "0")
 		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "rm")))))
    (set (subreg:SI (match_operand:DI 3 "nonimmediate_operand" "=0") 0)
@@ -1338,7 +1338,7 @@
   "deiw %2,%0")
 
 (define_insn "udivmoddihi4"
-  [(set (subreg:HI (match_operand:DI 0 "register_operand" "=r") 1)
+  [(set (subreg:HI (match_operand:DI 0 "register_operand" "=r") 2)
 	(truncate:HI (udiv:DI (match_operand:DI 1 "register_operand" "0")
 		 (zero_extend:DI (match_operand:HI 2 "nonimmediate_operand" "rm")))))
    (set (subreg:HI (match_operand:DI 3 "register_operand" "=0") 0)

@@ -2221,7 +2221,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  dest = XEXP (dest, 0);
 
 	if (GET_CODE (src) == SUBREG)
-	  src = XEXP (src, 0);
+	  src = SUBREG_REG (src);
 
 	/* If VAR does not appear at the top level of the SET
 	   just scan the lower levels of the tree.  */
@@ -2505,7 +2505,7 @@ fixup_memory_subreg (x, insn, uncritical)
      rtx insn;
      int uncritical;
 {
-  int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
+  int offset = SUBREG_BYTE (x);
   rtx addr = XEXP (SUBREG_REG (x), 0);
   enum machine_mode mode = GET_MODE (x);
   rtx result;
@@ -2515,9 +2515,6 @@ fixup_memory_subreg (x, insn, uncritical)
       && ! uncritical)
     abort ();
 
-  if (BYTES_BIG_ENDIAN)
-    offset += (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
   addr = plus_constant (addr, offset);
   if (!flag_force_addr && memory_address_p (mode, addr))
     /* Shortcut if no insns need be emitted.  */
@@ -2711,7 +2708,8 @@ optimize_bit_field (body, insn, equiv_mem)
 	  offset /= BITS_PER_UNIT;
 	  if (GET_CODE (XEXP (bitfield, 0)) == SUBREG)
 	    {
-	      offset += SUBREG_WORD (XEXP (bitfield, 0)) * UNITS_PER_WORD;
+	      offset += (SUBREG_BYTE (XEXP (bitfield, 0))
+			 / UNITS_PER_WORD) * UNITS_PER_WORD;
 	      if (BYTES_BIG_ENDIAN)
 		offset -= (MIN (UNITS_PER_WORD,
 				GET_MODE_SIZE (GET_MODE (XEXP (bitfield, 0))))
@@ -2736,7 +2734,7 @@ optimize_bit_field (body, insn, equiv_mem)
 		{
 		  rtx src = SET_SRC (body);
 		  while (GET_CODE (src) == SUBREG
-			 && SUBREG_WORD (src) == 0)
+			 && SUBREG_BYTE (src) == 0)
 		    src = SUBREG_REG (src);
 		  if (GET_MODE (src) != GET_MODE (memref))
 		    src = gen_lowpart (GET_MODE (memref), SET_SRC (body));
@@ -2757,7 +2755,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	      rtx dest = SET_DEST (body);
 
 	      while (GET_CODE (dest) == SUBREG
-		     && SUBREG_WORD (dest) == 0
+		     && SUBREG_BYTE (dest) == 0
 		     && (GET_MODE_CLASS (GET_MODE (dest))
 			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest))))
 		     && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
@@ -3067,7 +3065,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		       code did.  This is especially true of
 		       REG_RETVAL.  */
 
-		    if (GET_CODE (z) == SUBREG && SUBREG_WORD (z) == 0)
+		    if (GET_CODE (z) == SUBREG && SUBREG_BYTE (z) == 0)
 		      z = SUBREG_REG (z);
 
 		    if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
@@ -3443,17 +3441,22 @@ purge_single_hard_subreg_set (pattern)
 {
   rtx reg = SET_DEST (pattern);
   enum machine_mode mode = GET_MODE (SET_DEST (pattern));
-  int word = 0;
-		  
-  while (GET_CODE (reg) == SUBREG)
+  int offset = 0;
+
+  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG
+      && REGNO (SUBREG_REG (reg)) < FIRST_PSEUDO_REGISTER)
     {
-      word += SUBREG_WORD (reg);
+      offset = subreg_regno_offset (REGNO (SUBREG_REG (reg)),
+				    GET_MODE (SUBREG_REG (reg)),
+				    SUBREG_BYTE (reg),
+				    GET_MODE (reg));
       reg = SUBREG_REG (reg);
     }
-	      
+
+		  
   if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
-      reg = gen_rtx_REG (mode, REGNO (reg) + word);
+      reg = gen_rtx_REG (mode, REGNO (reg) + offset);
       SET_DEST (pattern) = reg;
     }
 }
@@ -4736,6 +4739,20 @@ assign_parms (fndecl)
 
 	      push_to_sequence (conversion_insns);
 	      tempreg = convert_to_mode (nominal_mode, tempreg, unsignedp);
+
+	      if (GET_CODE (tempreg) == SUBREG
+		  && GET_MODE (tempreg) == nominal_mode
+		  && GET_CODE (SUBREG_REG (tempreg)) == REG
+		  && nominal_mode == passed_mode
+		  && GET_MODE (SUBREG_REG (tempreg)) == GET_MODE (entry_parm)
+		  && GET_MODE_SIZE (GET_MODE (tempreg))
+		     < GET_MODE_SIZE (GET_MODE (entry_parm)))
+		{
+		  /* The argument is already sign/zero extended, so note it
+		     into the subreg.  */
+		  SUBREG_PROMOTED_VAR_P (tempreg) = 1;
+		  SUBREG_PROMOTED_UNSIGNED_P (tempreg) = unsignedp;
+		}
 
 	      /* TREE_USED gets set erroneously during expand_assignment.  */
 	      save_tree_used = TREE_USED (parm);

@@ -1462,6 +1462,8 @@ precompute_arguments (flags, num_actuals, args)
     if ((flags & (ECF_CONST | ECF_PURE))
 	|| calls_function (args[i].tree_value, !ACCUMULATE_OUTGOING_ARGS))
       {
+	enum machine_mode mode;
+
 	/* If this is an addressable type, we cannot pre-evaluate it.  */
 	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
 	  abort ();
@@ -1481,11 +1483,11 @@ precompute_arguments (flags, num_actuals, args)
 	args[i].initial_value = args[i].value
 	  = protect_from_queue (args[i].value, 0);
 
-	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
+	mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
+	if (mode != args[i].mode)
 	  {
 	    args[i].value
-	      = convert_modes (args[i].mode,
-			       TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+	      = convert_modes (args[i].mode, mode,
 			       args[i].value, args[i].unsignedp);
 #ifdef PROMOTE_FOR_CALL_ONLY
 	    /* CSE will replace this only if it contains args[i].value
@@ -1495,8 +1497,7 @@ precompute_arguments (flags, num_actuals, args)
 		&& GET_MODE_CLASS (args[i].mode) == MODE_INT)
 	      {
 		args[i].initial_value
-		  = gen_rtx_SUBREG (TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-				    args[i].value, 0);
+		  = gen_lowpart_SUBREG (mode, args[i].value);
 		SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
 		SUBREG_PROMOTED_UNSIGNED_P (args[i].initial_value)
 		  = args[i].unsignedp;
@@ -3272,13 +3273,25 @@ expand_call (exp, target, ignore)
 	{
 	  tree type = TREE_TYPE (exp);
 	  int unsignedp = TREE_UNSIGNED (type);
+	  int offset = 0;
 
 	  /* If we don't promote as expected, something is wrong.  */
 	  if (GET_MODE (target)
 	      != promote_mode (type, TYPE_MODE (type), &unsignedp, 1))
 	    abort ();
 
-	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, 0);
+	if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+	    && GET_MODE_SIZE (GET_MODE (target))
+	       > GET_MODE_SIZE (TYPE_MODE (type)))
+	  {
+	    offset = GET_MODE_SIZE (GET_MODE (target))
+		     - GET_MODE_SIZE (TYPE_MODE (type));
+	    if (! BYTES_BIG_ENDIAN)
+	      offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
+	    else if (! WORDS_BIG_ENDIAN)
+	      offset %= UNITS_PER_WORD;
+	  }
+	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (target) = unsignedp;
 	}
