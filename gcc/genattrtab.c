@@ -417,6 +417,7 @@ static rtx evaluate_eq_attr	PARAMS ((rtx, rtx, int, int));
 static rtx simplify_and_tree	PARAMS ((rtx, rtx *, int, int));
 static rtx simplify_or_tree	PARAMS ((rtx, rtx *, int, int));
 static rtx simplify_test_exp	PARAMS ((rtx, int, int));
+static rtx simplify_test_exp_in_temp PARAMS ((rtx, int, int));
 static void optimize_attrs	PARAMS ((void));
 static void gen_attr		PARAMS ((rtx, int));
 static int count_alternatives	PARAMS ((rtx));
@@ -2593,7 +2594,7 @@ simplify_cond (exp, insn_code, insn_index)
       rtx newtest, newval;
 
       /* Simplify this test.  */
-      newtest = SIMPLIFY_TEST_EXP (tests[i], insn_code, insn_index);
+      newtest = simplify_test_exp_in_temp (tests[i], insn_code, insn_index);
       tests[i] = newtest;
 
       newval = tests[i + 1];
@@ -2782,7 +2783,7 @@ insert_right_side (code, exp, term, insn_code, insn_index)
       newexp = attr_rtx (code, exp, term);
     }
 
-  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+  return simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 }
 
 /* If we have an expression which AND's a bunch of
@@ -2910,8 +2911,8 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 
       for (i = 0; i < XVECLEN (value, 0); i += 2)
 	{
-	  rtx this = SIMPLIFY_TEST_EXP (XVECEXP (value, 0, i),
-					insn_code, insn_index);
+	  rtx this = simplify_test_exp_in_temp (XVECEXP (value, 0, i),
+						insn_code, insn_index);
 
 	  SIMPLIFY_ALTERNATIVE (this);
 
@@ -2992,7 +2993,7 @@ simplify_and_tree (exp, pterm, insn_code, insn_index)
 	{
 	  newexp = attr_rtx (GET_CODE (exp), left, right);
 
-	  exp = SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
     }
 
@@ -3015,7 +3016,7 @@ simplify_and_tree (exp, pterm, insn_code, insn_index)
 	{
 	  newexp = attr_rtx (GET_CODE (exp), left, right);
 
-	  exp = SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
     }
 
@@ -3111,7 +3112,7 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
 	{
 	  newexp = attr_rtx (GET_CODE (exp), left, right);
 
-	  exp = SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
     }
 
@@ -3134,7 +3135,7 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
 	{
 	  newexp = attr_rtx (GET_CODE (exp), left, right);
 
-	  exp = SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
+	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
     }
 
@@ -3207,6 +3208,29 @@ attr_rtx_cost (x)
   return cost;
 }
 
+
+/* Simplify test expression and use temporary obstack in order to avoid
+   memory bloat.  Use RTX_UNCHANGING_P to avoid unnecesary simplifications
+   and avoid unnecesary copying if possible.  */
+
+static rtx
+simplify_test_exp_in_temp (exp, insn_code, insn_index)
+  rtx exp;
+  int insn_code, insn_index;
+{
+  rtx x;
+  struct obstack *old;
+  if (RTX_UNCHANGING_P (exp))
+    return exp;
+  old = rtl_obstack;
+  rtl_obstack = temp_obstack;
+  x = simplify_test_exp (exp, insn_code, insn_index);
+  rtl_obstack = old;
+  if (x == exp || rtl_obstack == temp_obstack)
+    return x;
+  return attr_copy_rtx (x);
+}
+
 /* Given an expression, see if it can be simplified for a particular insn
    code based on the values of other attributes being tested.  This can
    eliminate nested get_attr_... calls.
@@ -3464,13 +3488,10 @@ simplify_test_exp (exp, insn_code, insn_index)
 	    if (ie->insn_code == insn_code)
 	      {
 		rtx x;
-		struct obstack *old = rtl_obstack;
-		rtl_obstack = temp_obstack;
 		x = evaluate_eq_attr (exp, av->value, insn_code, insn_index);
 		x = SIMPLIFY_TEST_EXP (x, insn_code, insn_index);
-		rtl_obstack = old;
 		if (attr_rtx_cost(x) < 20)
-		  return attr_copy_rtx (x);
+		  return x;
 	      }
       break;
 
@@ -3499,7 +3520,6 @@ optimize_attrs ()
   struct attr_value *av;
   struct insn_ent *ie;
   rtx newexp;
-  int something_changed = 1;
   int i;
   struct attr_value_list
   {
@@ -3556,42 +3576,42 @@ optimize_attrs ()
       for (iv = insn_code_values[i]; iv; iv = iv->next)
 	clear_struct_flag (iv->av->value);
 
-      /* Loop until nothing changes for one iteration.  */
-      something_changed = 1;
-      while (something_changed)
+      for (iv = insn_code_values[i]; iv; iv = iv->next)
 	{
-	  something_changed = 0;
-	  for (iv = insn_code_values[i]; iv; iv = iv->next)
-	    {
-	      struct obstack *old = rtl_obstack;
+	  struct obstack *old = rtl_obstack;
 
-	      attr = iv->attr;
-	      av = iv->av;
-	      ie = iv->ie;
-	      if (GET_CODE (av->value) != COND)
-		continue;
+	  attr = iv->attr;
+	  av = iv->av;
+	  ie = iv->ie;
+	  if (GET_CODE (av->value) != COND)
+	    continue;
 
-	      rtl_obstack = temp_obstack;
+	  rtl_obstack = temp_obstack;
 #if 0 /* This was intended as a speed up, but it was slower.  */
-	      if (insn_n_alternatives[ie->insn_code] > 6
-		  && count_sub_rtxs (av->value, 200) >= 200)
-		newexp = simplify_by_alternatives (av->value, ie->insn_code,
-						   ie->insn_index);
-	      else
+	  if (insn_n_alternatives[ie->insn_code] > 6
+	      && count_sub_rtxs (av->value, 200) >= 200)
+	    newexp = simplify_by_alternatives (av->value, ie->insn_code,
+					       ie->insn_index);
+	  else
 #endif
-		newexp = simplify_cond (av->value, ie->insn_code,
-					ie->insn_index);
+	  newexp = av->value;
+	  while (GET_CODE (newexp) == COND)
+	    {
+	      rtx newexp2 = simplify_cond (newexp, ie->insn_code,
+					   ie->insn_index);
+	      if (newexp2 == newexp)
+		break;
+	      newexp = newexp2;
+	    }
 
-	      rtl_obstack = old;
-	      if (newexp != av->value)
-		{
-		  newexp = attr_copy_rtx (newexp);
-		  remove_insn_ent (av, ie);
-		  av = get_attr_value (newexp, attr, ie->insn_code);
-		  iv->av = av;
-		  insert_insn_ent (av, ie);
-		  something_changed = 1;
-		}
+	  rtl_obstack = old;
+	  if (newexp != av->value)
+	    {
+	      newexp = attr_copy_rtx (newexp);
+	      remove_insn_ent (av, ie);
+	      av = get_attr_value (newexp, attr, ie->insn_code);
+	      iv->av = av;
+	      insert_insn_ent (av, ie);
 	    }
 	}
     }
