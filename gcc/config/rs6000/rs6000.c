@@ -6580,7 +6580,7 @@ rs6000_init_builtins (void)
   V4HI_type_node = build_vector_type (intHI_type_node, 4);
   V4SI_type_node = build_vector_type (intSI_type_node, 4);
   V4SF_type_node = build_vector_type (float_type_node, 4);
-  V8HI_type_node = build_vector_type (intQI_type_node, 8);
+  V8HI_type_node = build_vector_type (intHI_type_node, 8);
   V16QI_type_node = build_vector_type (intQI_type_node, 16);
 
   unsigned_V16QI_type_node = build_vector_type (unsigned_intQI_type_node, 16);

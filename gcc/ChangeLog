@@ -1,3 +1,7 @@
+2004-03-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Fix typo.
+
 2004-03-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* expmed.c (choose_mult_variant, expand_mult_const): New, split from...
