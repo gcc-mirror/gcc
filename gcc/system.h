@@ -134,7 +134,7 @@ extern int errno;
 #ifndef bcopy
 # ifdef HAVE_BCOPY
 #  ifdef NEED_DECLARATION_BCOPY
-void bcopy ();
+extern void bcopy ();
 #  endif
 # else /* ! HAVE_BCOPY */
 #  define bcopy(src,dst,len) memcpy ((dst),(src),(len))
@@ -144,7 +144,7 @@ void bcopy ();
 #ifndef bcmp
 # ifdef HAVE_BCMP
 #  ifdef NEED_DECLARATION_BCMP
-void bcmp ();
+extern int bcmp ();
 #  endif
 # else /* ! HAVE_BCMP */
 #  define bcmp(left,right,len) memcmp ((left),(right),(len))
@@ -154,7 +154,7 @@ void bcmp ();
 #ifndef bzero
 # ifdef HAVE_BZERO
 #  ifdef NEED_DECLARATION_BZERO
-void bzero ();
+extern void bzero ();
 #  endif
 # else /* ! HAVE_BZERO */
 #  define bzero(dst,len) memset ((dst),0,(len))
@@ -183,6 +183,10 @@ extern char *rindex ();
 
 #ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
+
+#ifdef NEED_DECLARATION_GETENV
+extern char *getenv ();
 #endif
 
 #endif /* __GCC_SYSTEM_H__ */
