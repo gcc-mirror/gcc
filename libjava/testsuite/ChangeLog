@@ -1,3 +1,20 @@
+2000-01-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* libjava.lang/anon.java, libjava.lang/anon2.java,
+	libjava.lang/anon3.java, libjava.lang/anon4.java,
+	libjava.lang/direct_read.java, libjava.lang/direct_write.java,
+	libjava.lang/indirect.java, libjava.lang/indirect_read.java,
+	libjava.lang/indirect_write.java, libjava.lang/inner1.java,
+	libjava.lang/inner2.java, libjava.lang/inner3.java,
+	libjava.lang/inner4.java, libjava.lang/inner_array.java,
+	libjava.lang/multiple_finit.java,
+	libjava.lang/private_direct_read.java,
+	libjava.lang/private_direct_write.java,
+	libjava.lang/private_indirect_read.java,
+	libjava.lang/private_indirect_write.java,
+	libjava.lang/search_outer.java, libjava.lang/tmi.java,
+	libjava.lang/tp.java, libjava.lang/update_outer.java: New files.
+
 2000-01-18  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/inner_pub.java: New file.
