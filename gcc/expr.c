@@ -2518,12 +2518,14 @@ store_constructor (exp, target)
     }
 #endif
 
-  if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE)
+  if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
+      || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       register tree elt;
 
       /* Inform later passes that the whole union value is dead.  */
-      if (TREE_CODE (type) == UNION_TYPE)
+      if (TREE_CODE (type) == UNION_TYPE
+	  || TREE_CODE (type) == QUAL_UNION_TYPE)
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
 
       /* If we are building a static constructor into a register,
@@ -3142,7 +3144,8 @@ safe_from_p (x, exp)
       switch (TREE_CODE (exp))
 	{
 	case ADDR_EXPR:
-	  return staticp (TREE_OPERAND (exp, 0));
+	  return (staticp (TREE_OPERAND (exp, 0))
+		  || safe_from_p (x, TREE_OPERAND (exp, 0)));
 
 	case INDIRECT_REF:
 	  if (GET_CODE (x) == MEM)
@@ -3337,13 +3340,14 @@ expand_expr (exp, target, tmode, modifier)
 	   the first. */
 	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
 			    VOIDmode, modifier);
-      /* If will do cse, generate all results into pseudo registers
-	 since 1) that allows cse to find more things
-	 and 2) otherwise cse could produce an insn the machine
-	 cannot support.  */
 
       target = 0, original_target = 0;
     }
+
+  /* If will do cse, generate all results into pseudo registers
+     since 1) that allows cse to find more things
+     and 2) otherwise cse could produce an insn the machine
+     cannot support.  */
 
   if (! cse_not_expected && mode != BLKmode && target
       && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER))
@@ -3389,9 +3393,15 @@ expand_expr (exp, target, tmode, modifier)
     case RESULT_DECL:
       if (DECL_RTL (exp) == 0)
 	abort ();
-      /* Ensure variable marked as used
-	 even if it doesn't go through a parser.  */
-      TREE_USED (exp) = 1;
+      /* Ensure variable marked as used even if it doesn't go through
+	 a parser.  If it hasn't be used yet, write out an external
+	 definition.  */
+      if (! TREE_USED (exp))
+	{
+	  assemble_external (exp);
+	  TREE_USED (exp) = 1;
+	}
+
       /* Handle variables inherited from containing functions.  */
       context = decl_function_context (exp);
 
@@ -3590,13 +3600,8 @@ expand_expr (exp, target, tmode, modifier)
       return SAVE_EXPR_RTL (exp);
 
     case EXIT_EXPR:
-      /* Exit the current loop if the body-expression is true.  */
-      {
-	rtx label = gen_label_rtx ();
-	do_jump (TREE_OPERAND (exp, 0), label, NULL_RTX);
-	expand_exit_loop (NULL_PTR);
-	emit_label (label);
-      }
+      expand_exit_loop_if_false (NULL_PTR,
+				 invert_truthvalue (TREE_OPERAND (exp, 0)));
       return const0_rtx;
 
     case LOOP_EXPR:
@@ -4781,18 +4786,25 @@ expand_expr (exp, target, tmode, modifier)
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      if (target == 0 || ! safe_from_p (target, exp)
-	  /* Make sure we don't have a hard reg (such as function's return
-	     value) live across basic blocks, if not optimizing.  */
-	  || (!optimize && GET_CODE (target) == REG
-	      && REGNO (target) < FIRST_PSEUDO_REGISTER))
+      if (! ignore
+	  && (target == 0 || ! safe_from_p (target, exp)
+	      /* Make sure we don't have a hard reg (such as function's return
+		 value) live across basic blocks, if not optimizing.  */
+	      || (!optimize && GET_CODE (target) == REG
+		  && REGNO (target) < FIRST_PSEUDO_REGISTER)))
 	target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-      emit_clr_insn (target);
+
+      if (target)
+	emit_clr_insn (target);
+
       op1 = gen_label_rtx ();
       jumpifnot (exp, op1);
-      emit_0_to_1_insn (target);
+
+      if (target)
+	emit_0_to_1_insn (target);
+
       emit_label (op1);
-      return target;
+      return ignore ? const0_rtx : target;
 
     case TRUTH_NOT_EXPR:
       op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, 0);
