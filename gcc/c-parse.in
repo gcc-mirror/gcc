@@ -1698,7 +1698,7 @@ stmt:
    ANSI C accepts labels only before statements, but we allow them
    also at the end of a compound statement.  */
 
-label:	  CASE expr ':'
+label:	  CASE expr_no_commas ':'
 		{ register tree value = check_case_value ($2);
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
@@ -1722,7 +1722,7 @@ label:	  CASE expr ':'
 			error ("case label within scope of cleanup or variable array");
 		    }
 		  position_after_white_space (); }
-	| CASE expr ELLIPSIS expr ':'
+	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
 		{ register tree value1 = check_case_value ($2);
 		  register tree value2 = check_case_value ($4);
 		  register tree label
