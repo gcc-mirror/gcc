@@ -2118,7 +2118,7 @@ loop_p ()
 	}
       else
 	{
-	  if (dest != EXIT_BLOCK_PTR
+	  if (dest != EXIT_BLOCK_PTR && src != ENTRY_BLOCK_PTR
 	      && pre[src->index] >= pre[dest->index]
 	      && post[dest->index] == 0)
 	    break;

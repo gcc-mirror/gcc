@@ -1,3 +1,16 @@
+Fri Jul 27 17:53:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (last_loop_beg_note): New function.
+	(redirect_edge_and_branch): Use it.
+	(split_edge): Likewise.
+
+	* alias.c (loop_p): Avoid uninitialized memory access.
+
+	* flow.c (try_forward_edges): Avoid accessing freed memory.
+
+	* flow.c (backward_edge_of_syntactic_loop_p): Avoid uninitialized
+	variable access.
+
 2001-07-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Properly link the host
