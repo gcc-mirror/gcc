@@ -1,3 +1,8 @@
+2003-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/sparc/sparc-protos.h: Don't use the PARAMS macro.
+	* config/sparc/sparc.c: Likewise.
+
 2003-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11512

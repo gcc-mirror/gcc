@@ -27,99 +27,95 @@ Boston, MA 02111-1307, USA.  */
 extern bool sparc_emitting_epilogue;
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_value PARAMS ((tree, enum machine_mode, int));
-extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *,
-					  enum machine_mode, tree, int));
-extern struct rtx_def *function_arg PARAMS ((const CUMULATIVE_ARGS *,
-					     enum machine_mode,
-					     tree, int, int));
-extern int function_arg_partial_nregs  PARAMS ((const CUMULATIVE_ARGS *,
-						enum machine_mode,
-						tree, int));
-extern int function_arg_pass_by_reference PARAMS ((const CUMULATIVE_ARGS *,
-						   enum machine_mode,
-						   tree, int));
-extern struct rtx_def *sparc_builtin_saveregs PARAMS ((void));
+extern struct rtx_def *function_value (tree, enum machine_mode, int);
+extern void function_arg_advance (CUMULATIVE_ARGS *,
+				  enum machine_mode, tree, int);
+extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
+				     enum machine_mode, tree, int, int);
+extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
+				       enum machine_mode, tree, int);
+extern int function_arg_pass_by_reference (const CUMULATIVE_ARGS *,
+					   enum machine_mode, tree, int);
+extern struct rtx_def *sparc_builtin_saveregs (void);
 #ifdef RTX_CODE
-extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx, tree));
-extern void sparc_va_start PARAMS ((tree, rtx));
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
+extern void sparc_va_start (tree, rtx);
 #endif
-extern struct rtx_def *sparc_va_arg PARAMS ((tree, tree));
-extern unsigned long sparc_type_code PARAMS ((tree));
+extern struct rtx_def *sparc_va_arg (tree, tree);
+extern unsigned long sparc_type_code (tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
+extern enum direction function_arg_padding (enum machine_mode, tree);
 #endif /* ARGS_SIZE_RTX */
 #endif /* TREE_CODE */
 
-extern void load_pic_register PARAMS ((void));
-extern void order_regs_for_local_alloc PARAMS ((void));
-extern int compute_frame_size PARAMS ((int, int));
-extern int check_pic PARAMS ((int));
-extern int short_branch PARAMS ((int, int));
-extern int sparc_flat_epilogue_delay_slots PARAMS ((void));
-extern unsigned long sparc_flat_compute_frame_size PARAMS ((int));
-extern void sparc_profile_hook PARAMS ((int));
-extern void sparc_override_options PARAMS ((void));
-extern int leaf_return_peephole_ok PARAMS ((void));
-extern void sparc_output_scratch_registers PARAMS ((FILE *));
-extern void sparc_flat_save_restore PARAMS ((FILE *, const char *,
-					     unsigned int, unsigned long,
-					     unsigned long, const char *,
-					     const char *, unsigned long));
+extern void load_pic_register (void);
+extern void order_regs_for_local_alloc (void);
+extern int compute_frame_size (int, int);
+extern int check_pic (int);
+extern int short_branch (int, int);
+extern int sparc_flat_epilogue_delay_slots (void);
+extern unsigned long sparc_flat_compute_frame_size (int);
+extern void sparc_profile_hook (int);
+extern void sparc_override_options (void);
+extern int leaf_return_peephole_ok (void);
+extern void sparc_output_scratch_registers (FILE *);
+extern void sparc_flat_save_restore (FILE *, const char *,
+				     unsigned int, unsigned long,
+				     unsigned long, const char *,
+				     const char *, unsigned long);
 
 #ifdef RTX_CODE
-extern enum machine_mode select_cc_mode PARAMS ((enum rtx_code, rtx, rtx));
+extern enum machine_mode select_cc_mode (enum rtx_code, rtx, rtx);
 /* Define the function that build the compare insn for scc and bcc.  */
-extern rtx gen_compare_reg PARAMS ((enum rtx_code code, rtx, rtx));
-extern void sparc_emit_float_lib_cmp PARAMS ((rtx, rtx, enum rtx_code));
-extern void sparc_emit_floatunsdi PARAMS ((rtx [2]));
-extern void emit_tfmode_binop PARAMS ((enum rtx_code, rtx *));
-extern void emit_tfmode_unop PARAMS ((enum rtx_code, rtx *));
-extern void emit_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
+extern rtx gen_compare_reg (enum rtx_code code, rtx, rtx);
+extern void sparc_emit_float_lib_cmp (rtx, rtx, enum rtx_code);
+extern void sparc_emit_floatunsdi (rtx [2]);
+extern void emit_tfmode_binop (enum rtx_code, rtx *);
+extern void emit_tfmode_unop (enum rtx_code, rtx *);
+extern void emit_tfmode_cvt (enum rtx_code, rtx *);
 /* This function handles all v9 scc insns */
-extern int gen_v9_scc PARAMS ((enum rtx_code, rtx *));
-extern void sparc_initialize_trampoline PARAMS ((rtx, rtx, rtx));
-extern void sparc64_initialize_trampoline PARAMS ((rtx, rtx, rtx));
-extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
-extern void sparc_defer_case_vector PARAMS ((rtx, rtx, int));
-extern void sparc_emit_set_const32 PARAMS ((rtx, rtx));
-extern void sparc_emit_set_const64 PARAMS ((rtx, rtx));
-extern void sparc_emit_set_symbolic_const64 PARAMS ((rtx, rtx, rtx));
-extern int sparc_splitdi_legitimate PARAMS ((rtx, rtx));
-extern int sparc_absnegfloat_split_legitimate PARAMS ((rtx, rtx));
-extern char *output_cbranch PARAMS ((rtx, rtx, int, int, int, int, rtx));
-extern const char *output_sibcall PARAMS ((rtx, rtx));
-extern char *output_v9branch PARAMS ((rtx, rtx, int, int, int, int, int,
-				      rtx));
-extern void emit_v9_brxx_insn PARAMS ((enum rtx_code, rtx, rtx));
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern int mems_ok_for_ldd_peep PARAMS ((rtx, rtx, rtx));
-extern int arith_double_4096_operand PARAMS ((rtx, enum machine_mode));
-extern int arith_4096_operand PARAMS ((rtx, enum machine_mode));
-extern int zero_operand PARAMS ((rtx, enum machine_mode));
-extern int fp_zero_operand PARAMS ((rtx, enum machine_mode));
-extern int reg_or_0_operand PARAMS ((rtx, enum machine_mode));
-extern int empty_delay_slot PARAMS ((rtx));
-extern int eligible_for_epilogue_delay PARAMS ((rtx, int));
-extern int eligible_for_sibcall_delay PARAMS ((rtx));
-extern int emit_move_sequence PARAMS ((rtx, enum machine_mode));
-extern int fp_sethi_p PARAMS ((rtx));
-extern int fp_mov_p PARAMS ((rtx));
-extern int fp_high_losum_p PARAMS ((rtx));
-extern int mem_min_alignment PARAMS ((rtx, int));
-extern int pic_address_needs_scratch PARAMS ((rtx));
-extern int reg_unused_after PARAMS ((rtx, rtx));
-extern int register_ok_for_ldd PARAMS ((rtx));
-extern int registers_ok_for_ldd_peep PARAMS ((rtx, rtx));
-extern int sparc_flat_eligible_for_epilogue_delay PARAMS ((rtx, int));
-extern int v9_regcmp_p PARAMS ((enum rtx_code));
-extern char *sparc_v8plus_shift PARAMS ((rtx *, rtx, const char *));
+extern int gen_v9_scc (enum rtx_code, rtx *);
+extern void sparc_initialize_trampoline (rtx, rtx, rtx);
+extern void sparc64_initialize_trampoline (rtx, rtx, rtx);
+extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern void sparc_defer_case_vector (rtx, rtx, int);
+extern void sparc_emit_set_const32 (rtx, rtx);
+extern void sparc_emit_set_const64 (rtx, rtx);
+extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
+extern int sparc_splitdi_legitimate (rtx, rtx);
+extern int sparc_absnegfloat_split_legitimate (rtx, rtx);
+extern char *output_cbranch (rtx, rtx, int, int, int, int, rtx);
+extern const char *output_sibcall (rtx, rtx);
+extern char *output_v9branch (rtx, rtx, int, int, int, int, int, rtx);
+extern void emit_v9_brxx_insn (enum rtx_code, rtx, rtx);
+extern void print_operand (FILE *, rtx, int);
+extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
+extern int arith_double_4096_operand (rtx, enum machine_mode);
+extern int arith_4096_operand (rtx, enum machine_mode);
+extern int zero_operand (rtx, enum machine_mode);
+extern int fp_zero_operand (rtx, enum machine_mode);
+extern int reg_or_0_operand (rtx, enum machine_mode);
+extern int empty_delay_slot (rtx);
+extern int eligible_for_epilogue_delay (rtx, int);
+extern int eligible_for_sibcall_delay (rtx);
+extern int emit_move_sequence (rtx, enum machine_mode);
+extern int fp_sethi_p (rtx);
+extern int fp_mov_p (rtx);
+extern int fp_high_losum_p (rtx);
+extern int mem_min_alignment (rtx, int);
+extern int pic_address_needs_scratch (rtx);
+extern int reg_unused_after (rtx, rtx);
+extern int register_ok_for_ldd (rtx);
+extern int registers_ok_for_ldd_peep (rtx, rtx);
+extern int sparc_flat_eligible_for_epilogue_delay (rtx, int);
+extern int v9_regcmp_p (enum rtx_code);
+extern char *sparc_v8plus_shift (rtx *, rtx, const char *);
 /* Function used for V8+ code generation.  Returns 1 if the high
    32 bits of REG are 0 before INSN.  */   
-extern int sparc_check_64 PARAMS ((rtx, rtx));
-extern rtx gen_df_reg PARAMS ((rtx, int));
-extern int sparc_extra_constraint_check PARAMS ((rtx, int, int));
+extern int sparc_check_64 (rtx, rtx);
+extern rtx gen_df_reg (rtx, int);
+extern int sparc_extra_constraint_check (rtx, int, int);
 #endif /* RTX_CODE */
 
 #endif /* __SPARC_PROTOS_H__ */
