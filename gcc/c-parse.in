@@ -1063,10 +1063,12 @@ attribute_list
 
 attrib
     : IDENTIFIER
-	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed"))
+	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed")
+	      && strcmp (IDENTIFIER_POINTER ($1), "noreturn"))
 	    warning ("`%s' attribute directive ignored",
 		     IDENTIFIER_POINTER ($1));
 	  $$ = $1; }
+    | TYPE_QUAL
     | IDENTIFIER '(' IDENTIFIER ')'
 	{ /* If not "mode (m)", then issue warning.  */
 	  if (strcmp (IDENTIFIER_POINTER ($1), "mode") != 0)
@@ -1643,6 +1645,11 @@ stmt:
 	| expr ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
+		  /* Call default_conversion to get an error
+		     on referring to a register array if pedantic.  */
+		  if (TREE_CODE (TREE_TYPE ($1)) == ARRAY_TYPE
+		      || TREE_CODE (TREE_TYPE ($1)) == FUNCTION_TYPE)
+		    $1 = default_conversion ($1);
 		  iterator_expand ($1);
 		  clear_momentary (); }
 	| simple_if ELSE
