@@ -1,3 +1,11 @@
+2001-08-27  Phil Edwards  <pme@sources.redhat.com>
+
+	PR libstdc++/4143
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO):  Handle enable/disable
+	correctly for version-specific-runtime-libs.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2001-08-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (install-data-local): Don't install Makefile.
