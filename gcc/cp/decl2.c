@@ -85,7 +85,7 @@ static void finish_static_initialization_or_destruction PARAMS ((tree));
 static void generate_ctor_or_dtor_function PARAMS ((int, int));
 static int generate_ctor_and_dtor_functions_for_priority
                                   PARAMS ((splay_tree_node, void *));
-static tree prune_vars_needing_no_initialization PARAMS ((tree));
+static tree prune_vars_needing_no_initialization PARAMS ((tree *));
 static void write_out_vars PARAMS ((tree));
 static void import_export_class	PARAMS ((tree));
 static tree key_method PARAMS ((tree));
@@ -2626,21 +2626,23 @@ do_static_destruction (decl)
 
 static tree
 prune_vars_needing_no_initialization (vars)
-     tree vars;
+     tree *vars;
 {
-  tree var;
-  tree result;
+  tree *var = vars;
+  tree result = NULL_TREE;
 
-  for (var = vars, result = NULL_TREE;
-       var;
-       var = TREE_CHAIN (var))
+  while (*var)
     {
-      tree decl = TREE_VALUE (var);
-      tree init = TREE_PURPOSE (var);
+      tree t = *var;
+      tree decl = TREE_VALUE (t);
+      tree init = TREE_PURPOSE (t);
 
       /* Deal gracefully with error.  */
       if (decl == error_mark_node)
-	continue;
+	{
+	  var = &TREE_CHAIN (t);
+	  continue;
+	}
 
       /* The only things that can be initialized are variables.  */
       my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 19990420);
@@ -2648,17 +2650,25 @@ prune_vars_needing_no_initialization (vars)
       /* If this object is not defined, we don't need to do anything
 	 here.  */
       if (DECL_EXTERNAL (decl))
-	continue;
+	{
+	  var = &TREE_CHAIN (t);
+	  continue;
+	}
 
       /* Also, if the initializer already contains errors, we can bail
 	 out now.  */
       if (init && TREE_CODE (init) == TREE_LIST 
 	  && value_member (error_mark_node, init))
-	continue;
+	{
+	  var = &TREE_CHAIN (t);
+	  continue;
+	}
 
       /* This variable is going to need initialization and/or
 	 finalization, so we add it to the list.  */
-      result = tree_cons (init, decl, result);
+      *var = TREE_CHAIN (t);
+      TREE_CHAIN (t) = result;
+      result = t;
     }
 
   return result;
@@ -2829,8 +2839,7 @@ finish_file ()
 	 aggregates added during the initialization of these will be
 	 initialized in the correct order when we next come around the
 	 loop.  */
-      vars = prune_vars_needing_no_initialization (static_aggregates);
-      static_aggregates = NULL_TREE;
+      vars = prune_vars_needing_no_initialization (&static_aggregates);
 
       if (vars)
 	{

@@ -10068,6 +10068,9 @@ instantiate_decl (d, defer_ok)
   my_friendly_assert (TREE_CODE (d) == FUNCTION_DECL
 		      || TREE_CODE (d) == VAR_DECL, 0);
 
+  if (TREE_CODE (d) == VAR_DECL)
+    defer_ok = 0;
+
   /* Don't instantiate cloned functions.  Instead, instantiate the
      functions they cloned.  */
   if (TREE_CODE (d) == FUNCTION_DECL && DECL_CLONED_FUNCTION_P (d))
