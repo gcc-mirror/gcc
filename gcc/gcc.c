@@ -3730,8 +3730,8 @@ main (argc, argv)
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefix,
 			concat (gcc_exec_prefix,
-				machine_suffix,
-				standard_startfile_prefix),
+				standard_startfile_prefix,
+				""),
 			0, 0, NULL_PTR);
 	  add_prefix (&startfile_prefix,
 		      concat (standard_exec_prefix,
