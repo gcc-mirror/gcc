@@ -1,6 +1,7 @@
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func \
 	_call_via_rX _interwork_call_via_rX \
+	_lshrdi3 _ashrdi3 _ashldi3 \
 	_negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi _fixunsdfsi \
 	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
 	_fixsfsi _fixunssfsi
