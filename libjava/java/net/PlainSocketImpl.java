@@ -32,7 +32,8 @@ class PlainSocketImpl extends SocketImpl
                    _Jv_SO_LINGER_ = SocketOptions.SO_LINGER,
                    _Jv_SO_TIMEOUT_ = SocketOptions.SO_TIMEOUT,
                    _Jv_SO_SNDBUF_ = SocketOptions.SO_SNDBUF,
-                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF;
+                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF,
+                   _Jv_SO_KEEPALIVE_ = SocketOptions.SO_KEEPALIVE;
 
   /**
    * The OS file handle representing the socket.
@@ -52,6 +53,10 @@ class PlainSocketImpl extends SocketImpl
   public native void setOption(int optID, Object value) throws SocketException;
 
   public native Object getOption(int optID) throws SocketException;
+
+  public native void shutdownInput () throws IOException;
+
+  public native void shutdownOutput () throws IOException;
 
   protected native void create (boolean stream)  throws IOException;
 

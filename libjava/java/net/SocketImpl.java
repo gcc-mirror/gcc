@@ -264,4 +264,20 @@ public abstract class SocketImpl implements SocketOptions
    * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
    */
   public abstract Object getOption(int option_id) throws SocketException;
+
+  /**
+   * Shut down the input side of this socket.  Subsequent reads will
+   * return end-of-file.
+   *
+   * @exception IOException if an error occurs
+   */
+  public abstract void shutdownInput () throws IOException;
+
+  /**
+   * Shut down the output side of this socket.  Subsequent writes will
+   * fail with an IOException.
+   *
+   * @exception IOException if an error occurs
+   */
+  public abstract void shutdownOutput () throws IOException;
 }

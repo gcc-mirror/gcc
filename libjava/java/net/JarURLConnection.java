@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,7 @@ import java.util.zip.*;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
+import java.security.cert.Certificate;
 
 /**
  * @author Kresten Krab Thorup <krab@gnu.org>
@@ -316,4 +317,16 @@ public abstract class JarURLConnection extends URLConnection
     hdrHash.put(key.toLowerCase(), Long.toString(len));
   }
 
+  /**
+   * Returns an array of Certificate objects for the jar file entry specified
+   * by this URL or null if there are none
+   *
+   * @return A Certificate array
+   *
+   * @exception IOException If an error occurs
+   */
+  public Certificate[] getCertificates() throws IOException
+  {
+    return getJarEntry().getCertificates();
+  }
 }

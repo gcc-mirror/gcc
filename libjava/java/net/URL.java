@@ -175,7 +175,8 @@ public final class URL implements Serializable
       this.handler = setURLStreamHandler(protocol);
 
     if (this.handler == null)
-      throw new MalformedURLException("Protocol handler not found: " + protocol);
+      throw new MalformedURLException("Protocol handler not found: "
+				      + protocol);
 
     // JDK 1.2 doc for parseURL specifically states that any '#' ref
     // is to be excluded by passing the 'limit' as the indexOf the '#'
@@ -245,6 +246,12 @@ public final class URL implements Serializable
     return ref;
   }
 
+  public String getUserInfo ()
+  {
+    int at = host.indexOf('@');
+    return at < 0 ? null : host.substring(0, at);
+  }
+
   public int hashCode()
   {
     // JCL book says this is computed using (only) the hashcodes of the 
@@ -295,6 +302,30 @@ public final class URL implements Serializable
     this.port = port;
     this.host = host;
     this.file = file;
+    this.ref = ref;
+    hashCode = hashCode();			// Used for serialization.
+  }
+
+  /** @since 1.3 */
+  protected void set(String protocol, String host, int port,
+		     String authority, String userInfo,
+		     String path, String query, String ref)
+  {
+    // TBD: Theoretically, a poorly written StreamHandler could pass an
+    // invalid protocol.  It will cause the handler to be set to null
+    // thus overriding a valid handler.  Callers of this method should
+    // be aware of this.
+    this.handler = setURLStreamHandler(protocol);
+    this.protocol = protocol;
+    if (userInfo == null)
+      this.host = host;
+    else
+      this.host = userInfo + "@" + host;
+    this.port = port;
+    if (query == null)
+      this.file = path;
+    else
+      this.file = path + "?" + query;
     this.ref = ref;
     hashCode = hashCode();			// Used for serialization.
   }
