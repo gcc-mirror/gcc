@@ -522,7 +522,8 @@ static char *multilib_exclusions;
 
 static const  char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
-struct user_specs {
+struct user_specs
+{
   struct user_specs *next;
   const char *filename;
 };
@@ -1123,8 +1124,9 @@ struct spec_list
 #define INIT_STATIC_SPEC(NAME,PTR) \
 { NAME, NULL_PTR, PTR, (struct spec_list *)0, sizeof (NAME)-1, 0 }
 
-/* List of statically defined specs */
-static struct spec_list static_specs[] = {
+/* List of statically defined specs.  */
+static struct spec_list static_specs[] =
+{
   INIT_STATIC_SPEC ("asm",			&asm_spec),
   INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
   INIT_STATIC_SPEC ("cpp",			&cpp_spec),
@@ -1150,7 +1152,7 @@ static struct spec_list static_specs[] = {
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
 /* Structure to keep track of just the first two args of a spec_list.
-   That is all that the EXTRA_SPECS macro gives us. */
+   That is all that the EXTRA_SPECS macro gives us.  */
 struct spec_list_1
 {
   char *name;
@@ -1176,7 +1178,7 @@ init_spec ()
   int i;
 
   if (specs)
-    return;			/* already initialized */
+    return;			/* Already initialized.  */
 
   if (verbose_flag)
     notice ("Using builtin specs.\n");
@@ -1223,7 +1225,7 @@ set_spec (name, spec)
   int name_len = strlen (name);
   int i;
 
-  /* If this is the first call, initialize the statically allocated specs */
+  /* If this is the first call, initialize the statically allocated specs.  */
   if (!specs)
     {
       struct spec_list *next = (struct spec_list *)0;
@@ -1237,14 +1239,14 @@ set_spec (name, spec)
       specs = sl;
     }
 
-  /* See if the spec already exists */
+  /* See if the spec already exists.  */
   for (sl = specs; sl; sl = sl->next)
     if (name_len == sl->name_len && !strcmp (sl->name, name))
       break;
 
   if (!sl)
     {
-      /* Not found - make it */
+      /* Not found - make it.  */
       sl = (struct spec_list *) xmalloc (sizeof (struct spec_list));
       sl->name = xstrdup (name);
       sl->name_len = name_len;
@@ -1265,7 +1267,7 @@ set_spec (name, spec)
     notice ("Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
 #endif
 
-  /* Free the old spec */
+  /* Free the old spec.  */
   if (old_spec && sl->alloc_p)
     free (old_spec);
 
@@ -2153,7 +2155,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
 
   prefix_dirs = split_directories (prefix, &prefix_num);
 
-  /* Find how many directories are in common between bin_prefix & prefix */
+  /* Find how many directories are in common between bin_prefix & prefix.  */
   n = (prefix_num < bin_num) ? prefix_num : bin_num;
   for (common = 0; common < n; common++)
     {
@@ -2454,7 +2456,7 @@ execute ()
   struct command
     {
       const char *prog;		/* program name.  */
-      char **argv;	/* vector of args.  */
+      char **argv;		/* vector of args.  */
       int pid;			/* pid of process for this command.  */
     };
 
@@ -3844,7 +3846,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		     and use them to search for dynamic linking.  */
 		  /* Relative directories always come from -B,
 		     and it is better not to use them for searching
-		     at run time.  In particular, stage1 loses  */
+		     at run time.  In particular, stage1 loses.  */
 		  if (!IS_DIR_SEPARATOR (pl->prefix[0]))
 		    continue;
 #endif
@@ -4266,7 +4268,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      char *y;
 
 	      /* Copy all of CPP_PREDEFINES into BUF,
-		 but force them all into the reserved name space if they			 aren't already there.  The reserved name space is all
+		 but force them all into the reserved name space if they
+		 aren't already there.  The reserved name space is all
 		 identifiers beginning with two underscores or with one
 		 underscore and a capital letter.  We do the forcing by
 		 adding up to two underscores to the beginning and end
@@ -4359,7 +4362,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  else if (*y == ' ' || *y == '\t')
 		    /* Copy whitespace to the result.  */
 		    *x++ = *y++;
-		  /* Don't copy -A options  */
+		  /* Don't copy -A options.  */
 		  else
 		    y++;
 		}
@@ -4408,8 +4411,16 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case '*':
-	    do_spec_1 (soft_matched_part, 1, NULL_PTR);
-	    do_spec_1 (" ", 0, NULL_PTR);
+	    if (soft_matched_part)
+	      {
+		do_spec_1 (soft_matched_part, 1, NULL_PTR);
+		do_spec_1 (" ", 0, NULL_PTR);
+	      }
+	    else
+	      /* Catch the case where a spec string contains something like
+		 '%{foo:%*}'.  ie there is no * in the pattern on the left
+		 hand side of the :.  */
+	      error ("Spec failure: '%%*' has not been initialised by pattern match");
 	    break;
 
 	    /* Process a string found as the value of a spec given by name.
@@ -4430,7 +4441,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      while (*p && *p != ')' && *p != ']')
 		p++;
 
-	      /* See if it's in the list */
+	      /* See if it's in the list.  */
 	      for (len = p - name, sl = specs; sl; sl = sl->next)
 		if (sl->name_len == len && !strncmp (sl->name, name, len))
 		  {
@@ -4458,7 +4469,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      int flag = 0;
 
 		      /* Copy all of NAME into BUF, but put __ after
-			 every -D and at the end of each arg,  */
+			 every -D and at the end of each arg.  */
 		      while (1)
 			{
 			  if (! strncmp (y, "-D", 2))
@@ -4560,7 +4571,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  default:
-	    abort ();
+	    error ("Spec failure: Unrecognised spec option '%c'", c);
+	    break;
 	  }
 	break;
 
@@ -5203,7 +5215,7 @@ main (argc, argv)
     init_spec ();
 
   /* We need to check standard_exec_prefix/just_machine_suffix/specs
-     for any override of as, ld and libraries. */
+     for any override of as, ld and libraries.  */
   specs_file = (char *) alloca (strlen (standard_exec_prefix)
 				+ strlen (just_machine_suffix)
 				+ sizeof ("specs"));
@@ -5556,7 +5568,7 @@ lookup_compiler (name, length, language)
 {
   struct compiler *cp;
 
-  /* If this was specified by the user to be a linker input, indicate that. */
+  /* If this was specified by the user to be a linker input, indicate that.  */
   if (language != 0 && language[0] == '*')
     return 0;
 
@@ -5756,7 +5768,7 @@ validate_all_switches ()
 	}
     }
 
-  /* look through the linked list of specs read from the specs file */
+  /* Look through the linked list of specs read from the specs file.  */
   for (spec = specs; spec ; spec = spec->next)
     {
       p = *(spec->ptr_spec);
@@ -5827,7 +5839,8 @@ used_arg (p, len)
      const char *p;
      int len;
 {
-  struct mswitchstr {
+  struct mswitchstr
+  {
     char *str;
     char *replace;
     int len;
@@ -5845,7 +5858,7 @@ used_arg (p, len)
       int cnt = 0;
 
       /* Break multilib_matches into the component strings of string and replacement
-         string */
+         string.  */
       for (q = multilib_matches; *q != '\0'; q++)
 	if (*q == ';')
 	  cnt++;
@@ -5953,7 +5966,7 @@ static void
 set_multilib_dir ()
 {
   char *p;
-  int this_path_len;
+  unsigned int this_path_len;
   char *this_path, *this_arg;
   int not_arg;
   int ok;
@@ -6006,9 +6019,7 @@ set_multilib_dir ()
         }
 
       if (ok)
-        {
-	  return;
-        }
+	return;
 
       ++p;
     }
@@ -6114,7 +6125,7 @@ print_multilib_info ()
   char *p = multilib_select;
   char *last_path = 0, *this_path;
   int skip;
-  int last_path_len = 0;
+  unsigned int last_path_len = 0;
 
   while (*p != '\0')
     {
@@ -6194,8 +6205,8 @@ print_multilib_info ()
 			    ++q;
 			}
 
-		      if (! strncmp(arg, this_arg, (len < q - arg) ? q - arg : len) ||
-			  default_arg(this_arg, e - this_arg))
+		      if (! strncmp (arg, this_arg, (len < q - arg) ? q - arg : len) ||
+			  default_arg (this_arg, e - this_arg))
 		        {
 			  mp = 1;
 			  break;
@@ -6203,7 +6214,6 @@ print_multilib_info ()
 
 		      if (*q == ' ')
 			++q;
-		      
 	    	    }
 
 		  if (! mp)
@@ -6212,6 +6222,7 @@ print_multilib_info ()
 	          if (*e == ' ')
 	            ++e;
 	        }
+	      
 	      if (m)
 	        {
 		  skip = 1;
@@ -6226,7 +6237,7 @@ print_multilib_info ()
       if (! skip)
         {
           /* If this is a duplicate, skip it.  */
-          skip = (last_path != 0 && p - this_path == last_path_len
+          skip = (last_path != 0 && (unsigned int)(p - this_path) == last_path_len
                   && ! strncmp (last_path, this_path, last_path_len));
 
           last_path = this_path;
@@ -6315,7 +6326,7 @@ print_multilib_info ()
 
       if (! skip)
 	{
-	  /* If there are extra options, print them now */
+	  /* If there are extra options, print them now.  */
 	  if (multilib_extra && *multilib_extra)
 	    {
 	      int print_at = TRUE;
@@ -6334,6 +6345,7 @@ print_multilib_info ()
 		    }
 		}
 	    }
+	  
 	  putchar ('\n');
 	}
 
