@@ -8883,9 +8883,10 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"1")])
 
 (define_expand "tablejump_internal3"
-  [(set (pc)
-	(plus:SI (match_operand:SI 0 "register_operand" "d")
-		 (label_ref:SI (match_operand:SI 1 "" ""))))]
+  [(parallel [(set (pc)
+		   (plus:SI (match_operand:SI 0 "register_operand" "d")
+			    (label_ref:SI (match_operand:SI 1 "" ""))))
+	      (use (label_ref:SI (match_dup 1)))])]
   ""
   "")
 
@@ -8942,7 +8943,8 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (pc)
 	(plus:SI (match_operand:SI 0 "register_operand" "d")
-		 (label_ref:SI (match_operand:SI 1 "" ""))))]
+		 (label_ref:SI (match_operand:SI 1 "" ""))))
+   (use (label_ref:SI (match_dup 1)))]
   "!(Pmode == DImode) && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
@@ -8958,9 +8960,10 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"2")])
 
 (define_expand "tablejump_internal4"
-  [(set (pc)
-	(plus:DI (match_operand:DI 0 "se_register_operand" "d")
-		 (label_ref:DI (match_operand:SI 1 "" ""))))]
+  [(parallel [(set (pc)
+		   (plus:DI (match_operand:DI 0 "se_register_operand" "d")
+			    (label_ref:DI (match_operand:SI 1 "" ""))))
+	      (use (label_ref:DI (match_dup 1)))])]
   ""
   "")
 
@@ -8970,7 +8973,8 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "se_register_operand" "d")
-		 (label_ref:DI (match_operand:SI 1 "" ""))))]
+		 (label_ref:DI (match_operand:SI 1 "" ""))))
+   (use (label_ref:DI (match_dup 1)))]
   "Pmode == DImode && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
