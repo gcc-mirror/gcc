@@ -1,3 +1,35 @@
+2002-04-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update.
+	* decl.c (push_c_function_context, pop_c_function_context,
+	mark_c_function_context): Rename for consistency.
+	* c-objc-common.c (c_objc_common_init): Langhooks set elsewhere.
+	* c-tree.h (push_c_function_context, pop_c_function_context,
+	mark_c_function_context): Rename for consistency.
+	* c-lang.c (LANG_HOOKS_FUNCTION_ENTER_NESTED,
+	LANG_HOOKS_FUNCTION_LEAVE_NESTED, LANG_HOOKS_FUNCTION_MARK): Redefine.
+	* function.c (init_lang_status, save_lang_status,
+	restore_lang_status, mark_lang_status, free_lang_status):
+	Move to langhooks.h.
+	(push_function_context_to, pop_function_context_from,
+	free_after_parsing, prepare_function_start, ggc_mark_struct_function):
+	Update.
+	* function.h (init_lang_status, save_lang_status,
+	restore_lang_status, mark_lang_status, free_lang_status):
+	Move to langhooks.h.
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_INIT,
+	LANG_HOOKS_FUNCTION_FREE, LANG_HOOKS_FUNCTION_ENTER_NESTED,
+	LANG_HOOKS_FUNCTION_LEAVE_NESTED, LANG_HOOKS_FUNCTION_MARK,
+	LANG_HOOKS_FUNCTION_INITIALIZER): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	(lhd_do_nothing_f): New.
+	* langhooks.h (struct lang_hooks_for_functions): New.
+	(struct lang_hooks): New hooks.
+	* langhooks.c (lhd_do_nothing_f): New.
+objc:
+	* objc-lang.c (LANG_HOOKS_FUNCTION_ENTER_NESTED,
+	LANG_HOOKS_FUNCTION_LEAVE_NESTED, LANG_HOOKS_FUNCTION_MARK): Redefine.
+
 2002-04-19  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Define.

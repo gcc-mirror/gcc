@@ -41,6 +41,7 @@ extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
 
 extern void lhd_do_nothing PARAMS ((void));
 extern void lhd_do_nothing_t PARAMS ((tree));
+extern void lhd_do_nothing_f PARAMS ((struct function *));
 extern int lhd_decode_option PARAMS ((int, char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
 extern tree lhd_return_tree PARAMS ((tree));
@@ -109,6 +110,12 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
 #define LANG_HOOKS_SET_YYDEBUG		lhd_set_yydebug
 
+#define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
+#define LANG_HOOKS_FUNCTION_FREE	lhd_do_nothing_f
+#define LANG_HOOKS_FUNCTION_ENTER_NESTED lhd_do_nothing_f
+#define LANG_HOOKS_FUNCTION_LEAVE_NESTED lhd_do_nothing_f
+#define LANG_HOOKS_FUNCTION_MARK	lhd_do_nothing_f
+
 /* Tree inlining hooks.  */
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES lhd_tree_inlining_walk_subtrees
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
@@ -145,6 +152,14 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
   LANG_HOOKS_TREE_INLINING_END_INLINING, \
   LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
 } \
+
+#define LANG_HOOKS_FUNCTION_INITIALIZER { \
+  LANG_HOOKS_FUNCTION_INIT, \
+  LANG_HOOKS_FUNCTION_FREE, \
+  LANG_HOOKS_FUNCTION_ENTER_NESTED, \
+  LANG_HOOKS_FUNCTION_LEAVE_NESTED, \
+  LANG_HOOKS_FUNCTION_MARK \
+}
 
 /* Tree dump hooks.  */
 int lhd_tree_dump_dump_tree 			PARAMS ((void *, tree));
@@ -231,6 +246,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
   LANG_HOOKS_PRINT_ERROR_FUNCTION, \
   LANG_HOOKS_SET_YYDEBUG, \
+  LANG_HOOKS_FUNCTION_INITIALIZER, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER, \
   LANG_HOOKS_DECLS, \

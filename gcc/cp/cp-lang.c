@@ -93,6 +93,13 @@ static bool cxx_warn_unused_global_decl PARAMS ((tree));
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
 
+#undef LANG_HOOKS_FUNCTION_INIT
+#define LANG_HOOKS_FUNCTION_INIT cxx_push_function_context
+#undef LANG_HOOKS_FUNCTION_FREE
+#define LANG_HOOKS_FUNCTION_FREE cxx_pop_function_context
+#undef LANG_HOOKS_FUNCTION_MARK
+#define LANG_HOOKS_FUNCTION_MARK cxx_mark_function_context
+
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
   cp_walk_subtrees

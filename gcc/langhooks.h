@@ -57,6 +57,26 @@ struct lang_hooks_for_tree_inlining
 							 union tree_node *));
 };
 
+/* Lang hooks for management of language-specific data or status
+   when entering / leaving functions etc.  */
+struct lang_hooks_for_functions
+{
+  /* Called when entering a function.  */
+  void (*init) PARAMS ((struct function *));
+
+  /* Called when leaving a function.  */
+  void (*free) PARAMS ((struct function *));
+
+  /* Called when entering a nested function.  */
+  void (*enter_nested) PARAMS ((struct function *));
+
+  /* Called when leaving a nested function.  */
+  void (*leave_nested) PARAMS ((struct function *));
+
+  /* Lang-specific function data marking for GC.  */
+  void (*mark) PARAMS ((struct function *));
+};
+
 /* The following hooks are used by tree-dump.c.  */
 
 struct lang_hooks_for_tree_dump
@@ -311,6 +331,9 @@ struct lang_hooks
      command line.  By default, if the parameter is non-zero, prints a
      warning that the front end does not use such a parser.  */
   void (*set_yydebug) PARAMS ((int));
+
+  /* Function-related language hooks.  */
+  struct lang_hooks_for_functions function;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
   

@@ -133,13 +133,6 @@ void (*free_machine_status) PARAMS ((struct function *));
    that will need garbage collection.  */
 void (*mark_machine_status) PARAMS ((struct function *));
 
-/* Likewise, but for language-specific data.  */
-void (*init_lang_status) PARAMS ((struct function *));
-void (*save_lang_status) PARAMS ((struct function *));
-void (*restore_lang_status) PARAMS ((struct function *));
-void (*mark_lang_status) PARAMS ((struct function *));
-void (*free_lang_status) PARAMS ((struct function *));
-
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 
@@ -328,7 +321,7 @@ find_function_data (decl)
 
 /* Save the current context for compilation of a nested function.
    This is called from language-specific code.  The caller should use
-   the save_lang_status callback to save any language-specific state,
+   the enter_nested langhook to save any language-specific state,
    since this function knows only about language-independent
    variables.  */
 
@@ -357,8 +350,7 @@ push_function_context_to (context)
   outer_function_chain = p;
   p->fixup_var_refs_queue = 0;
 
-  if (save_lang_status)
-    (*save_lang_status) (p);
+  (*lang_hooks.function.enter_nested) (p);
 
   cfun = 0;
 }
@@ -387,8 +379,7 @@ pop_function_context_from (context)
 
   restore_emit_status (p);
 
-  if (restore_lang_status)
-    (*restore_lang_status) (p);
+  (*lang_hooks.function.leave_nested) (p);
 
   /* Finish doing put_var_into_stack for any of our variables which became
      addressable during the nested function.  If only one entry has to be
@@ -441,8 +432,7 @@ free_after_parsing (f)
   /* f->varasm is used by code generation.  */
   /* f->eh->eh_return_stub_label is used by code generation.  */
 
-  if (free_lang_status)
-    (*free_lang_status) (f);
+  (*lang_hooks.function.free) (f);
   free_stmt_status (f);
 }
 
@@ -6301,8 +6291,7 @@ prepare_function_start ()
 
   current_function_outgoing_args_size = 0;
 
-  if (init_lang_status)
-    (*init_lang_status) (cfun);
+  (*lang_hooks.function.init) (cfun);
   if (init_machine_status)
     (*init_machine_status) (cfun);
 }
@@ -8025,8 +8014,7 @@ ggc_mark_struct_function (f)
 
   if (mark_machine_status)
     (*mark_machine_status) (f);
-  if (mark_lang_status)
-    (*mark_lang_status) (f);
+  (*lang_hooks.function.mark) (f);
 
   if (f->original_arg_vector)
     ggc_mark_rtvec ((rtvec) f->original_arg_vector);

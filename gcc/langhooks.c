@@ -39,11 +39,19 @@ lhd_do_nothing ()
 {
 }
 
-/* Do nothing.  */
+/* Do nothing (tree).  */
 
 void
 lhd_do_nothing_t (t)
      tree t ATTRIBUTE_UNUSED;
+{
+}
+
+/* Do nothing (function).  */
+
+void
+lhd_do_nothing_f (f)
+     struct function *f ATTRIBUTE_UNUSED;
 {
 }
 
