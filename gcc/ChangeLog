@@ -1,3 +1,9 @@
+Thu Apr  3 00:18:49 CEST 2003  Jan HUbicka  <jh@suse.cz>
+
+	* i386.c (override_options):  Disable red zone by default on i386.
+	(compute_frame_layout, ix86_force_to_memory, ix86_free_from_memory):  
+	Do not test TARGET_64BIT together with TARGET_RED_ZONE
+
 2003-04-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Tighten the condition.

@@ -1380,7 +1380,13 @@ override_options ()
       ix86_fpmath = FPMATH_SSE;
      }
   else
-    ix86_fpmath = FPMATH_387;
+    {
+      ix86_fpmath = FPMATH_387;
+      /* i386 ABI does not specify red zone.  It still makes sense to use it
+         when programmer takes care to stack from being destroyed.  */
+      if (!(target_flags_explicit & MASK_NO_RED_ZONE))
+        target_flags |= MASK_NO_RED_ZONE;
+    }
 
   if (ix86_fpmath_string != 0)
     {
@@ -5026,7 +5032,7 @@ ix86_compute_frame_layout (frame)
   if (!frame->to_allocate && frame->nregs <= 1)
     frame->save_regs_using_mov = false;
 
-  if (TARGET_64BIT && TARGET_RED_ZONE && current_function_sp_is_unchanging
+  if (TARGET_RED_ZONE && current_function_sp_is_unchanging
       && current_function_is_leaf)
     {
       frame->red_zone_size = frame->to_allocate;
@@ -6074,11 +6080,13 @@ legitimate_address_p (mode, addr, strict)
 	     that never results in lea, this seems to be easier and
 	     correct fix for crash to disable this test.  */
 	}
+#if 0
       else if (!CONSTANT_ADDRESS_P (disp))
 	{
 	  reason = "displacement is not constant";
 	  goto report_error;
 	}
+#endif
       else if (TARGET_64BIT && !x86_64_sign_extended_value (disp))
 	{
 	  reason = "displacement is out of range";
@@ -14572,7 +14580,7 @@ ix86_force_to_memory (mode, operand)
   rtx result;
   if (!reload_completed)
     abort ();
-  if (TARGET_64BIT && TARGET_RED_ZONE)
+  if (TARGET_RED_ZONE)
     {
       result = gen_rtx_MEM (mode,
 			    gen_rtx_PLUS (Pmode,
@@ -14580,7 +14588,7 @@ ix86_force_to_memory (mode, operand)
 					  GEN_INT (-RED_ZONE_SIZE)));
       emit_move_insn (result, operand);
     }
-  else if (TARGET_64BIT && !TARGET_RED_ZONE)
+  else if (!TARGET_RED_ZONE && TARGET_64BIT)
     {
       switch (mode)
 	{
@@ -14649,7 +14657,7 @@ void
 ix86_free_from_memory (mode)
      enum machine_mode mode;
 {
-  if (!TARGET_64BIT || !TARGET_RED_ZONE)
+  if (!TARGET_RED_ZONE)
     {
       int size;
 
