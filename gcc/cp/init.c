@@ -963,16 +963,50 @@ expand_member_init (tree name)
 
   if (basetype)
     {
-      tree binfo;
+      tree class_binfo;
+      tree direct_binfo;
+      tree virtual_binfo;
+      int i;
 
       if (current_template_parms)
 	return basetype;
 
-      binfo = lookup_base (current_class_type, basetype, 
-			   ba_ignore, NULL);
-      if (!binfo || (!TREE_VIA_VIRTUAL (binfo)
-		     && (BINFO_INHERITANCE_CHAIN (binfo)
-			 != TYPE_BINFO (current_class_type))))
+      class_binfo = TYPE_BINFO (current_class_type);
+      direct_binfo = NULL_TREE;
+      virtual_binfo = NULL_TREE;
+
+      /* Look for a direct base.  */
+      for (i = 0; i < BINFO_N_BASETYPES (class_binfo); ++i)
+	if (same_type_p (basetype, 
+			 TYPE_BINFO_BASETYPE (current_class_type, i)))
+	  {
+	    direct_binfo = BINFO_BASETYPE (class_binfo, i);
+	    break;
+	  }
+      /* Look for a virtual base -- unless the direct base is itself
+	 virtual.  */
+      if (!direct_binfo || !TREE_VIA_VIRTUAL (direct_binfo))
+	{
+	  virtual_binfo 
+	    = purpose_member (basetype,
+			      CLASSTYPE_VBASECLASSES (current_class_type));
+	  if (virtual_binfo)
+	    virtual_binfo = TREE_VALUE (virtual_binfo);
+	}
+
+      /* [class.base.init]
+	 
+         If a mem-initializer-id is ambiguous because it designates
+	 both a direct non-virtual base class and an inherited virtual
+	 base class, the mem-initializer is ill-formed.  */
+      if (direct_binfo && virtual_binfo)
+	{
+	  error ("'%D' is both a direct base and an indirect virtual base",
+		 basetype);
+	  return NULL_TREE;
+	}
+
+      if (!direct_binfo && !virtual_binfo)
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	    error ("type `%D' is not a direct or virtual base of `%T'",
@@ -982,7 +1016,8 @@ expand_member_init (tree name)
 		   name, current_class_type);
 	  return NULL_TREE;
 	}
-      return binfo;
+
+      return direct_binfo ? direct_binfo : virtual_binfo;
     }
   else
     {
