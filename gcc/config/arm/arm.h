@@ -425,9 +425,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"no-poke-function-name",    -ARM_FLAG_POKE, "" },			\
   {"fpe",			ARM_FLAG_FPE,  "" },			\
   {"apcs-32",			ARM_FLAG_APCS_32,			\
-   N_("Use the 32bit version of the APCS") },				\
+   N_("Use the 32-bit version of the APCS") },				\
   {"apcs-26",		       -ARM_FLAG_APCS_32,			\
-   N_("Use the 26bit version of the APCS") },				\
+   N_("Use the 26-bit version of the APCS") },				\
   {"apcs-stack-check",		ARM_FLAG_APCS_STACK, "" },		\
   {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK, "" },		\
   {"apcs-float",		ARM_FLAG_APCS_FLOAT,			\
@@ -454,14 +454,14 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"words-little-endian",       ARM_FLAG_LITTLE_WORDS,			\
    N_("Assume big endian bytes, little endian words") },		\
   {"thumb-interwork",		ARM_FLAG_INTERWORK,			\
-   N_("Support calls between THUMB and ARM instructions sets") },	\
+   N_("Support calls between Thumb and ARM instruction sets") },	\
   {"no-thumb-interwork",       -ARM_FLAG_INTERWORK, "" },		\
   {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,		\
    N_("Generate a call to abort if a noreturn function returns")},	\
   {"no-abort-on-noreturn",     -ARM_FLAG_ABORT_NORETURN, "" },		\
-  {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO,			\
+  {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO,			\
    N_("Do not move instructions into a function's prologue") },		\
-  {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO, "" },		\
+  {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO, "" },		\
   {"single-pic-base",		ARM_FLAG_SINGLE_PIC_BASE,		\
    N_("Do not load the PIC register in function prologues") },		\
   {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },		\
