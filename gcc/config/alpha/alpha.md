@@ -3553,9 +3553,12 @@
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
       extern char *savealloc ();
-      char *symbol = XSTR (operands[0], 0);
-      char *linksym = savealloc (strlen (symbol) + 6);
+      char *linksym, *symbol = XSTR (operands[0], 0);
       rtx linkage;
+
+      if (*symbol == '*')
+	symbol++;
+      linksym = savealloc (strlen (symbol) + 6);
 
       alpha_need_linkage (symbol, 0);
 
@@ -3658,9 +3661,12 @@
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
       extern char *savealloc ();
-      char *symbol = XSTR (operands[1], 0);
-      char *linksym = savealloc (strlen (symbol) + 6);
+      char *linksym, *symbol = XSTR (operands[1], 0);
       rtx linkage;
+
+      if (*symbol == '*')
+	symbol++;
+      linksym = savealloc (strlen (symbol) + 6);
 
       alpha_need_linkage (symbol, 0);
       linksym[0] = '$';
