@@ -770,14 +770,6 @@ extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));
 
 extern rtx assemble_static_space PARAMS ((int));
-
-/* Hook called by expand_expr for language-specific tree codes.
-   It is up to the language front end to install a hook
-   if it has any such codes that expand_expr needs to know about.  */
-extern rtx (*lang_expand_expr) PARAMS ((union tree_node *, rtx,
-					enum machine_mode,
-					enum expand_modifier modifier));
-
 extern int safe_from_p PARAMS ((rtx, tree, int));
 
 /* Call this once to initialize the contents of the optabs
