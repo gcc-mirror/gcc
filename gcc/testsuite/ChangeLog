@@ -1,3 +1,7 @@
+2001-11-14  Roger Sayle <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/string-opt-13.c: New testcase.
+
 2001-11-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/init/array2.C: New test.
