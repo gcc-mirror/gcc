@@ -1,3 +1,11 @@
+2002-09-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	Debian BTS Bug #157416
+	* cpphash.h (FIRST, LAST, CUR, RLIMIT): Fix definitions.
+	* cpplib.c (destringize_and_run): Kludge around getting
+	tokens from in-progress macros.
+	(_cpp_do__Pragma): Simplify.
+
 2002-09-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.h (EXTRA_SPECS): Remove cpp_cpu.
