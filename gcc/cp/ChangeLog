@@ -1,5 +1,7 @@
 Mon Dec  8 23:17:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* init.c (expand_vec_init): Don't fold a list of parameters.
+
 	* decl.c (copy_args_p): Handle copy elision for types with virtual
  	bases.
   	* call.c (build_over_call): Likewise.
@@ -5314,7 +5316,7 @@ Wed Mar 13 14:03:34 1996  Jason Merrill  <jason@yorick.cygnus.com>
 Tue Mar 12 14:36:02 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_new): Pedwarn about init and array new.
-	(expand_vec_init): Handle lists, use convert_for_initialization
+	(expand_vec_init): Handle lists, use convert_for_initialization.
 
 	* typeck.c (convert_for_initialization): Pass LOOKUP_NO_CONVERSION
 	when converting to an aggregate type.
