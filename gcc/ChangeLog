@@ -1,3 +1,8 @@
+2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-lex.c (yylex): Don't pedwarn for hexadecimal floating point
+	constants in C99 mode.
+
 2000-07-17  Kazu Hirata  <kazu@hxi.com>
 
 	* fold-const.c: Fix comment typos.
