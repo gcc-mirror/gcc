@@ -1,3 +1,9 @@
+1999-04-02  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/mkfixinc.sh:  added support for x86-interix
+	* fixinc/fixinc.interix:  fixincludes script, slight chages
+	from ./fixinc.interix.  Untested (needs interix box).
+
 Fri Apr  2 11:36:12 1999  Jan Hubicka  (hubicka@paru.cas.cz)
 
 	* i386.c (print_operand_address, case REG): Do not use ESI addressing
