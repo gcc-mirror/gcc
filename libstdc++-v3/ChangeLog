@@ -1,3 +1,8 @@
+2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/gen-num-limits.cc (signal_adapter): Overloaded to match
+	signal_func with an unspecified argument list.
+
 2001-03-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* tests_flags.in (CXXFLAGS): Link libstdc++ before libsupc++.

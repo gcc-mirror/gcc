@@ -114,8 +114,16 @@ template <typename signal_handler_type, typename signal_number_type>
 inline void (*signal_adapter (signal_handler_type
 			      (*signal_func)(signal_number_type,
 					     signal_handler_type),
-		       signal_number_type arg,
-		       void (*handler)(int)))(int)
+			      signal_number_type arg,
+			      void (*handler)(int)))(int)
+{
+  return (void (*)(int))(*signal_func)(arg, (signal_handler_type)handler);
+}
+
+template <typename signal_handler_type, typename signal_number_type>
+inline void (*signal_adapter (signal_handler_type (*signal_func)(...),
+			      signal_number_type arg,
+			      void (*handler)(int)))(int)
 {
   return (void (*)(int))(*signal_func)(arg, (signal_handler_type)handler);
 }
