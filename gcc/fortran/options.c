@@ -306,6 +306,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_J:
     case OPT_M:
       gfc_handle_module_path_options (arg);
+      break;
     
     case OPT_std_f95:
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F2003_OBS
