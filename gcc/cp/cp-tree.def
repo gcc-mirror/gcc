@@ -70,11 +70,6 @@ DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", 'e', 3)
    else it is NULL_TREE.  */
 DEFTREECODE (THROW_EXPR, "throw_expr", 'e', 1)
 
-/* Initialization of a vector, used in build_new.  Operand 0 is the target
-   of the initialization, operand 1 is the initializer, and operand 2 is
-   the number of elements.  */
-DEFTREECODE (VEC_INIT_EXPR, "vec_init_expr", 'e', 3)
-
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
    accessing this data.

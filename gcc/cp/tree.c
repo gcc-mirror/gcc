@@ -1617,7 +1617,6 @@ search_tree (tp, func)
     case TARGET_EXPR:
     case AGGR_INIT_EXPR:
     case NEW_EXPR:
-    case VEC_INIT_EXPR:
       TRY (TREE_OPERAND (t, 0));
       TRY (TREE_OPERAND (t, 1));
       TRY (TREE_OPERAND (t, 2));
@@ -1988,7 +1987,6 @@ mapcar (t, func)
       return t;
 
     case NEW_EXPR:
-    case VEC_INIT_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);

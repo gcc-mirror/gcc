@@ -9807,29 +9807,6 @@ tsubst_expr_values (t, argvec)
   return first;
 }
 
-void
-begin_tree ()
-{
-  if (current_function)
-    {
-      saved_trees = tree_cons (NULL_TREE, last_tree, saved_trees);
-      last_tree = NULL_TREE;
-    }
-  else
-    saved_trees = tree_cons (NULL_TREE, NULL_TREE, saved_trees);
-}
-
-
-void 
-end_tree ()
-{
-  my_friendly_assert (saved_trees != NULL_TREE, 0);
-
-  if (current_function)
-    last_tree = TREE_VALUE (saved_trees);
-  saved_trees = TREE_CHAIN (saved_trees);
-}
-
 /* D is an undefined function declaration in the presence of templates with
    the same name, listed in FNS.  If one of them can produce D as an
    instantiation, remember this so we can instantiate it at EOF if D has

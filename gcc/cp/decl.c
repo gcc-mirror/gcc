@@ -168,6 +168,7 @@ static void mark_binding_level PROTO((void *));
 static void mark_cp_function_context PROTO((struct function *));
 static void mark_saved_scope PROTO((void *));
 static void mark_lang_function PROTO((struct language_function *));
+static void mark_stmt_tree PROTO((struct stmt_tree *));
 static void save_function_data PROTO((tree));
 static void check_function_type PROTO((tree));
 static void destroy_local_static PROTO((tree));
@@ -2271,6 +2272,16 @@ pop_nested_namespace (ns)
    scope isn't enough, because more binding levels may be pushed.  */
 struct saved_scope *scope_chain;
 
+/* Mark ST for GC.  */
+
+static void
+mark_stmt_tree (st)
+     struct stmt_tree *st;
+{
+  ggc_mark_tree (st->x_last_stmt);
+  ggc_mark_tree (st->x_last_expr_type);
+}
+
 /* Mark ARG (which is really a struct saved_scope **) for GC.  */
 
 static void
@@ -2294,6 +2305,9 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->template_parms);
       ggc_mark_tree (t->x_previous_class_type);
       ggc_mark_tree (t->x_previous_class_values);
+      ggc_mark_tree (t->x_saved_tree);
+
+      mark_stmt_tree (&t->x_stmt_tree);
       mark_binding_level (&t->bindings);
       t = t->prev;
     }
@@ -12890,6 +12904,10 @@ start_function (declspecs, declarator, attrs, flags)
   immediate_size_expand = 0;
   current_function->x_dont_save_pending_sizes_p = 1;
 
+  /* If we're building a statement-tree, start the tree now.  */
+  if (processing_template_decl || !expanding_p)
+    begin_stmt_tree (&DECL_SAVED_TREE (decl1));
+
   /* Let the user know we're compiling this function.  */
   if (processing_template_decl || !building_stmt_tree ())
     announce_function (decl1);
@@ -13070,9 +13088,6 @@ start_function (declspecs, declarator, attrs, flags)
   /* Make sure that we always have a momntary obstack while we're in a
      function body.  */
   push_momentary ();
-
-  if (building_stmt_tree ())
-    begin_stmt_tree (decl1);
 
   ++function_depth;
 
@@ -13289,8 +13304,8 @@ save_function_data (decl)
   /* Clear out the bits we don't need.  */
   f->x_base_init_list = NULL_TREE;
   f->x_member_init_list = NULL_TREE;
-  f->x_last_tree = NULL_TREE;
-  f->x_last_expr_type = NULL_TREE;
+  f->x_stmt_tree.x_last_stmt = NULL_TREE;
+  f->x_stmt_tree.x_last_expr_type = NULL_TREE;
   f->x_last_dtor_insn = NULL_RTX;
   f->x_last_parm_cleanup_insn = NULL_RTX;
   f->x_result_rtx = NULL_RTX;
@@ -13630,7 +13645,7 @@ finish_function (lineno, flags)
   
   /* If we're saving up tree structure, tie off the function now.  */
   if (!expand_p)
-    finish_stmt_tree (fndecl);
+    finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -14229,8 +14244,6 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_member_init_list);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
-  ggc_mark_tree (p->x_last_tree);
-  ggc_mark_tree (p->x_last_expr_type);
   ggc_mark_tree (p->x_eh_spec_try_block);
   ggc_mark_tree (p->x_scope_stmt_stack);
 
@@ -14238,6 +14251,7 @@ mark_lang_function (p)
   ggc_mark_rtx (p->x_last_parm_cleanup_insn);
   ggc_mark_rtx (p->x_result_rtx);
 
+  mark_stmt_tree (&p->x_stmt_tree);
   mark_binding_level (&p->bindings);
 }
 

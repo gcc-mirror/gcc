@@ -2363,16 +2363,13 @@ build_new_1 (exp)
 	  rval = newrval;
 	  TREE_HAS_CONSTRUCTOR (rval) = 1;
 	}
-      else if (current_function_decl)
+      else
 	rval = (build_vec_init
 		(NULL_TREE, 
 		 save_expr (rval),
 		 build_binary_op (MINUS_EXPR, nelts, integer_one_node),
 		 init,
 		 /*from_array=*/0));
-      else
-	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
-		      save_expr (rval), init, nelts);
 
       /* If any part of the object initialization terminates by throwing an
 	 exception and a suitable deallocation function can be found, the
@@ -2697,15 +2694,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
   maxindex = cp_convert (ptrdiff_type_node, maxindex);
   if (maxindex == error_mark_node)
     return error_mark_node;
-
-  if (current_function_decl == NULL_TREE)
-    {
-      rval = make_tree_vec (3);
-      TREE_VEC_ELT (rval, 0) = base;
-      TREE_VEC_ELT (rval, 1) = maxindex;
-      TREE_VEC_ELT (rval, 2) = init;
-      return rval;
-    }
 
   type = TREE_TYPE (TREE_TYPE (base));
   ptype = build_pointer_type (type);

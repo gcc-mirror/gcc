@@ -45,6 +45,12 @@
 static tree expand_cond PROTO((tree));
 static tree maybe_convert_cond PROTO((tree));
 
+/* Record the fact that STMT was the last statement added to the
+   statement tree.  */
+
+#define SET_LAST_STMT(stmt) \
+  (current_stmt_tree->x_last_stmt = (stmt))
+
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
    but often need to be re-organized since the parse is performed
@@ -55,7 +61,7 @@ static tree maybe_convert_cond PROTO((tree));
   do {					\
     substmt = TREE_CHAIN (stmt);	\
     TREE_CHAIN (stmt) = NULL_TREE;	\
-    last_tree = stmt;			\
+    SET_LAST_STMT (stmt);		\
   } while (0)
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
@@ -82,7 +88,8 @@ add_tree (t)
      tree t;
 {
   /* Add T to the statement-tree.  */
-  last_tree = TREE_CHAIN (last_tree) = t;
+  TREE_CHAIN (last_tree) = t;
+  SET_LAST_STMT (t);
 
   /* When we expand a statement-tree, we must know whether or not the
      statements are full-expresions.  We record that fact here.  */
@@ -201,7 +208,7 @@ finish_then_clause (if_stmt)
   if (building_stmt_tree ())
     {
       RECHAIN_STMTS (if_stmt, THEN_CLAUSE (if_stmt));
-      last_tree = if_stmt;
+      SET_LAST_STMT (if_stmt);
       return if_stmt;
     }
   else
@@ -934,7 +941,8 @@ begin_compound_stmt (has_no_scope)
 
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (!current_function_name_declared 
+  if (current_function
+      && !current_function_name_declared 
       && !processing_template_decl
       && !has_no_scope)
     {
@@ -1322,6 +1330,12 @@ finish_parenthesized_expr (expr)
 tree 
 begin_stmt_expr ()
 {
+  /* If we're outside a function, we won't have a statement-tree to
+     work with.  But, if we see a statement-expression we need to
+     create one.  */
+  if (!current_function && !last_tree)
+    begin_stmt_tree (&scope_chain->x_saved_tree);
+
   keep_next_level (1);
   /* If we're building a statement tree, then the upcoming compound
      statement will be chained onto the tree structure, starting at
@@ -1359,11 +1373,17 @@ finish_stmt_expr (rtl_expr)
       
       /* Remove the compound statement from the tree structure; it is
 	 now saved in the STMT_EXPR.  */
-      last_tree = rtl_expr;
+      SET_LAST_STMT (rtl_expr);
       TREE_CHAIN (last_tree) = NULL_TREE;
     }
   else 
     result = rtl_expr;
+
+  /* If we created a statement-tree for this statement-expression,
+     remove it now.  */ 
+  if (!current_function 
+      && TREE_CHAIN (scope_chain->x_saved_tree) == NULL_TREE)
+    finish_stmt_tree (&scope_chain->x_saved_tree);
 
   return result;
 }
@@ -1840,11 +1860,6 @@ begin_class_definition (t)
 #endif
   reset_specialization();
   
-  /* In case this is a local class within a template
-     function, we save the current tree structure so
-     that we can get it back later.  */
-  begin_tree ();
-
   /* Make a declaration for this class in its own scope.  */
   build_self_reference ();
 
@@ -1997,9 +2012,6 @@ finish_inline_definitions ()
 {
   if (current_class_type == NULL_TREE)
     clear_inline_text_obstack (); 
-  
-  /* Undo the begin_tree in begin_class_definition.  */
-  end_tree ();
 }
 
 /* Finish processing the declaration of a member class template
@@ -2172,36 +2184,40 @@ finish_typeof (expr)
   return TREE_TYPE (expr);
 }
 
-/* Create an empty statement tree for FN.  */
+/* Create an empty statement tree rooted at T.  */
 
 void
-begin_stmt_tree (fn)
-     tree fn;
+begin_stmt_tree (t)
+     tree *t;
 {
   /* We create a trivial EXPR_STMT so that last_tree is never NULL in
      what follows.  We remove the extraneous statement in
      finish_stmt_tree.  */
-  DECL_SAVED_TREE (fn) = build_nt (EXPR_STMT, void_zero_node);
-  last_tree = DECL_SAVED_TREE (fn);
+  *t = build_nt (EXPR_STMT, void_zero_node);
+  SET_LAST_STMT (*t);
   last_expr_type = NULL_TREE;
 }
 
-/* Finish the statement tree for FN.  */
+/* Finish the statement tree rooted at T.  */
 
 void
-finish_stmt_tree (fn)
-     tree fn;
+finish_stmt_tree (t)
+     tree *t;
 {
   tree stmt;
   
   /* Remove the fake extra statement added in begin_stmt_tree.  */
-  stmt = TREE_CHAIN (DECL_SAVED_TREE (fn));
-  DECL_SAVED_TREE (fn) = stmt;
+  stmt = TREE_CHAIN (*t);
+  *t = stmt;
+  SET_LAST_STMT (NULL_TREE);
 
-  /* The line-number recorded in the outermost statement in a function
-     is the line number of the end of the function.  */
-  STMT_LINENO (stmt) = lineno;
-  STMT_LINENO_FOR_FN_P (stmt) = 1;
+  if (current_function)
+    {
+      /* The line-number recorded in the outermost statement in a function
+	 is the line number of the end of the function.  */
+      STMT_LINENO (stmt) = lineno;
+      STMT_LINENO_FOR_FN_P (stmt) = 1;
+    }
 }
 
 /* We're about to expand T, a statement.  Set up appropriate context

@@ -1,5 +1,52 @@
 1999-10-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (VEC_INIT_EXPR): Remove.
+	* cp-tree.h (struct stmt_tree): New type.
+	(struct saved_scope): Remove firstobj.  Add x_saved_tree,
+	x_stmt_tree.
+	(class_cache_firstobj): Remove.
+	(struct language_function): Remove stmts_are_full_exprs_p,
+	x_last_tree, and x_last_expr_type.  Add x_stmt_tree.
+	(current_stmt_tree): New macro.
+	(last_tree): Adjust.
+	(last_expr_type): Likewise.
+	(doing_semantic_analysis_p): Simplify.
+	(stmts_are_full_exprs_p): Adjust.
+	(begin_tree): Remove prototype.
+	(end_tree): Likewise.
+	(begin_stmt_tree): Change prototype.
+	(finish_stmt_tree): Likewise.
+	(building_stmt_tree): Simplify.
+	* decl.c (mark_stmt_tree): New function.
+	(mark_saved_scope): Use it.
+	(start_function): Rearrange slightly to call begin_stmt_tree 
+	earlier.
+	(save_function_data): Tweak.
+	(finish_function): Adjust call to finish_stmt_tree.
+	(mark_lang_function): Use mark_stmt_tree.
+	* expr.c (cplus_expand_expr): Don't handle VEC_INIT_EXPR.
+	* init.c (build_new_1): Remove creation of VEC_INIT_EXPR.
+	(build_vec_init): Remove creation of stand-in intializer.
+	* pt.c (begin_tree): Remove.
+	(end_tree): Likewise.
+	* semantics.c (SET_LAST_STMT): New macro.  Use it throughout.
+	(begin_compound_stmt): Handle a compound-statement outside of a
+	function.
+	(begin_stmt_expr): Handle a statement-expression outsidef of a
+	function.
+	(finish_stmt_expr): Likewise.
+	(begin_class_definition): Don't call begin_tree.
+	(finish_inline_definitions): Don't call end_tree.
+	(begin_stmt_tree): Take a pointer to tree, not a function as input.
+	(finish_stmt_tree): Likewise.
+	* tree.c (search_tree): Don't handle VEC_INIT_EXPR.
+	(mapcar): Likewise.
+	
+	* parse.y (simple_stmt): Don't call finish_stmt unnecessarily.
+	* parse.c: Regenerated.
+	
+	* dump.c (dqueue_and_dump): Dump bitfieldness.
+	
 	* tree.c (lvalue_p_1): Use DECL_C_BIT_FIELD to check for
 	bitfields, rather than DECL_BIT_FIELD.
 	* ir.texi: Document how to tell whether or not a field is a
