@@ -1,3 +1,7 @@
+2000-05-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* config/mips/elf64.h (CTOR_LISTS_DEFINED_EXTERNALLY): Define
+
 Tue May 23 06:50:29 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c: Remove #ifdef HAIFA since now only scheduler.
