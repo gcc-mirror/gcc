@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for VAX.
-   Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -521,13 +521,12 @@ vax_rtx_cost (x)
 	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
-	  /* Careful, init_expmed generates arbitrary rtx and
-	     computes costs, so we can't abort.  */
-	  c = 1000;
-	  break;
+	  return MAX_COST;	/* Mode is not supported.  */
 	}
       break;
     case UDIV:
+      if (mode != SImode)
+	return MAX_COST;	/* Mode is not supported.  */
       c = 17;
       break;
     case DIV:
@@ -543,6 +542,8 @@ vax_rtx_cost (x)
       c = 23;
       break;
     case UMOD:
+      if (mode != SImode)
+	return MAX_COST;	/* Mode is not supported.  */
       c = 29;
       break;
     case FLOAT:

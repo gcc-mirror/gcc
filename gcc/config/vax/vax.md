@@ -1,6 +1,6 @@
 ;; Machine description for GNU compiler, VAX Version
-;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001
-;; Free Software Foundation, Inc.
+;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001,
+;; 2002 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -896,9 +896,9 @@
 
 ;; Bit-and on the VAX is done with a clear-bits insn.
 (define_expand "andsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
-	(and:SI (not:SI (match_operand:SI 1 "general_operand" "g"))
-		(match_operand:SI 2 "general_operand" "g")))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "")
+	(and:SI (not:SI (match_operand:SI 1 "general_operand" ""))
+		(match_operand:SI 2 "general_operand" "")))]
   ""
   "
 {
@@ -919,9 +919,9 @@
 }")
 
 (define_expand "andhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
-	(and:HI (not:HI (match_operand:HI 1 "general_operand" "g"))
-		(match_operand:HI 2 "general_operand" "g")))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "")
+	(and:HI (not:HI (match_operand:HI 1 "general_operand" ""))
+		(match_operand:HI 2 "general_operand" "")))]
   ""
   "
 {
@@ -935,15 +935,15 @@
     }
 
   if (GET_CODE (op1) == CONST_INT)
-    operands[1] = GEN_INT (65535 & ~INTVAL (op1));
+    operands[1] = GEN_INT (~INTVAL (op1));
   else
     operands[1] = expand_unop (HImode, one_cmpl_optab, op1, 0, 1);
 }")
 
 (define_expand "andqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
-	(and:QI (not:QI (match_operand:QI 1 "general_operand" "g"))
-		(match_operand:QI 2 "general_operand" "g")))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "")
+	(and:QI (not:QI (match_operand:QI 1 "general_operand" ""))
+		(match_operand:QI 2 "general_operand" "")))]
   ""
   "
 {
@@ -957,7 +957,7 @@
    }
 
   if (GET_CODE (op1) == CONST_INT)
-    operands[1] = GEN_INT (255 & ~INTVAL (op1));
+    operands[1] = GEN_INT (~INTVAL (op1));
   else
     operands[1] = expand_unop (QImode, one_cmpl_optab, op1, 0, 1);
 }")

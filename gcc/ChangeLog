@@ -1,3 +1,16 @@
+2002-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.c (vax_rtx_cost): Return MAX_COST for unsupported MULT, UDIV
+	and UMOD modes.
+
+	* vax.h (INDEX_TERM_P): Restrict indexing to modes which have a size
+	less than or equal to eight bytes.
+
+	* vax.md (andsi3): Remove constraints and change SET destination
+	operand type to nonimmediate_operand.
+	(andhi3, andqi3): Likewise.  Don't clear high order bits of operand 1
+	when it is a CONST_INT.
+
 2002-01-15  Jason Merrill  <jason@redhat.com>
 
 	* c-common.def (FILE_STMT): New code.
