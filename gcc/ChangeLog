@@ -1,5 +1,8 @@
 Tue Oct 13 22:12:11 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* reload1.c (maybe_fix_stack_asms): New static function.
+	(reload): Call it.
+
 	* reload.h (compute_use_by_pseudos): Declare.
 
 	* reload1.c (spilled_pseudos, insns_need_reload): New variables.
