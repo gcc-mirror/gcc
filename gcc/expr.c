@@ -2638,6 +2638,9 @@ emit_move_insn_1 (x, y)
 	}
       else
 	{
+	  rtx realpart_x, realpart_y;
+	  rtx imagpart_x, imagpart_y;
+
 	  /* If this is a complex value with each part being smaller than a
 	     word, the usual calling sequence will likely pack the pieces into
 	     a single register.  Unfortunately, SUBREG of hard registers only
@@ -2687,19 +2690,27 @@ emit_move_insn_1 (x, y)
 		}
 	    }
 
-	  /* Show the output dies here.  This is necessary for pseudos;
+	  realpart_x = gen_realpart (submode, x);
+	  realpart_y = gen_realpart (submode, y);
+	  imagpart_x = gen_imagpart (submode, x);
+	  imagpart_y = gen_imagpart (submode, y);
+
+	  /* Show the output dies here.  This is necessary for SUBREGs
+	     of pseudos since we cannot track their lifetimes correctly;
 	     hard regs shouldn't appear here except as return values.
 	     We never want to emit such a clobber after reload.  */
 	  if (x != y
-	      && ! (reload_in_progress || reload_completed))
+	      && ! (reload_in_progress || reload_completed)
+	      && (GET_CODE (realpart_x) == SUBREG
+		  || GET_CODE (imagpart_x) == SUBREG))
 	    {
 	      emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 	    }
 
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_realpart (submode, x), gen_realpart (submode, y)));
+		     (realpart_x, realpart_y));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_imagpart (submode, x), gen_imagpart (submode, y)));
+		     (imagpart_x, imagpart_y));
 	}
 
       return get_last_insn ();
@@ -2711,6 +2722,8 @@ emit_move_insn_1 (x, y)
   else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
+      rtx seq;
+      int need_clobber;
       
 #ifdef PUSH_ROUNDING
 
@@ -2723,15 +2736,9 @@ emit_move_insn_1 (x, y)
 	}
 #endif
 			     
-      /* Show the output dies here.  This is necessary for pseudos;
-	 hard regs shouldn't appear here except as return values.
-	 We never want to emit such a clobber after reload.  */
-      if (x != y
-	  && ! (reload_in_progress || reload_completed))
-	{
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
-	}
+      start_sequence ();
 
+      need_clobber = 0;
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 	   i++)
@@ -2753,8 +2760,26 @@ emit_move_insn_1 (x, y)
 	  if (xpart == 0 || ypart == 0)
 	    abort ();
 
+	  need_clobber |= (GET_CODE (xpart) == SUBREG);
+
 	  last_insn = emit_move_insn (xpart, ypart);
 	}
+
+      seq = gen_sequence ();
+      end_sequence ();
+
+      /* Show the output dies here.  This is necessary for SUBREGs
+	 of pseudos since we cannot track their lifetimes correctly;
+	 hard regs shouldn't appear here except as return values.
+	 We never want to emit such a clobber after reload.  */
+      if (x != y
+	  && ! (reload_in_progress || reload_completed)
+	  && need_clobber != 0)
+	{
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	}
+
+      emit_insn (seq);
 
       return last_insn;
     }

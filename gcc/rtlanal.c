@@ -964,13 +964,6 @@ reg_overlap_mentioned_p (x, in)
 	  return 1;
       return 0;
     }
-  else if (GET_CODE (x) == CONCAT)
-    {
-      if (reg_overlap_mentioned_p (XEXP (x, 0), in)
-	  || reg_overlap_mentioned_p (XEXP (x, 1), in))
-	return 1;
-      return 0;
-    }
   else
     abort ();
 

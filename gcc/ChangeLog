@@ -1,3 +1,10 @@
+1999-12-16  David S. Miller  <davem@redhat.com>
+
+	* expr.c (emit_move_insn_1): Only emit clobbers if one of
+	the outputs is a SUBREG.
+	* rtlanal.c (reg_overlap_mentioned_p): Revert December 15th
+	change.
+
 Thu Dec 16 11:33:57 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* toplev.c (rest_of_compilation): Run branch shortening after
