@@ -1,3 +1,7 @@
+2003-07-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h: Undef all macros before defining them.
+
 2003-07-06  H.J. Lu <hongjiu.lu@intel.com>
 
 	* demangle.h: Support C++.
