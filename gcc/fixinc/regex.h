@@ -18,8 +18,6 @@
    Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* $Id: regex.h,v 1.3 1999/01/11 13:34:25 law Exp $ */
-
 #ifndef __REGEXP_LIBRARY_H__
 #define __REGEXP_LIBRARY_H__
 

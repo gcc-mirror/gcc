@@ -1,5 +1,5 @@
-# Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90-5, 1998 Free Software Foundation, Inc.
+# Makefile for GNU compilers.
+#   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -22,6 +22,7 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 CFLAGS = -g
+FIXINC_DEFS = @fixinc_defs@
 
 CC = @CC@
 SHELL = /bin/sh
@@ -39,11 +40,11 @@ default : gen
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order.
-INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)/../../include
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $<
+	$(CC) -c $(CFLAGS) $(FIXINC_DEFS) $(CPPFLAGS) $(INCLUDES) $<
 
 # The only suffixes we want for implicit rules are .c and .o.
 .SUFFIXES:
@@ -55,12 +56,11 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 ##
 ##  Makefile for constructing the "best" include fixer we can
 ##
-##  $Id: Makefile.in,v 1.2 1998/12/16 21:18:54 law Exp $
-##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 OBJ = fixincl.o server.o regex.o
 HDR = server.h regex.h
+LIBERTY = ../../libiberty/libiberty.a
 
 SH_TARGET  = inclhack.sh fixincl.sh
 BIN_TARGET = fixincl
@@ -75,13 +75,13 @@ gen : $(SH_TARGET) fixincl.x
 $(OBJ): $(HDR)
 
 fixincl: $(OBJ)
-	@echo $(CC) -o $@ $(OBJ) $(LIB) ; \
-	if $(CC) -o $@ $(OBJ) $(LIB) ; then : ; else \
+	@echo $(CC) -o $@ $(OBJ) $(LIBERTY) $(LIB) ; \
+	if $(CC) -o $@ $(OBJ) $(LIBERTY) $(LIB) ; then : ; else \
 	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
 	chmod 777 $@ ; fi
 
 regex.o: regex.c
-	-$(CC) $(CFLAGS) -DSTDC_HEADERS=1 -c regex.c
+	-$(CC) $(CFLAGS) $(FIXINC_DEFS) -DSTDC_HEADERS=1 -c $(srcdir)/regex.c
 
 fixincl.o : fixincl.x fixincl.c
 server.o : server.c server.h
@@ -92,21 +92,28 @@ fixincl.x: fixincl.tpl inclhack.def
 		autogen -T $(srcdir)/fixincl.tpl -b fixincl \
 			$(srcdir)/inclhack.def ; \
 	else echo You need to install autogen ; \
-		$(CP) $(srcdir)/$@ . ; fi
+		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
+			$(CP) $(srcdir)/$@ . ; \
+		else touch $@ ; fi ; fi
 
 inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
 	@if ( autogen --help > /dev/null 2>&1 ) ; then \
 		echo autogen inclhack.def ; \
-		autogen inclhack.def ; \
+		autogen -L$(srcdir) $(srcdir)/inclhack.def ; \
 	else echo You need to install autogen ; \
-		$(CP) $(srcdir)/$@ . ; fi
+		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
+			$(CP) $(srcdir)/$@ . ; \
+		else touch $@ ; fi ; fi
 
 fixincl.sh: inclhack.def inclhack.tpl
 	@if ( autogen --help > /dev/null 2>&1 ) ; then \
 		echo autogen -DPROGRAM=1 -b fixincl inclhack.def ; \
-		autogen -DPROGRAM=1 -b fixincl inclhack.def ; touch $@ ; \
+		autogen -DPROGRAM=1 -b fixincl -L$(srcdir) \
+			$(srcdir)/inclhack.def ; touch $@ ; \
 	else echo You need to install autogen ; \
-		$(CP) $(srcdir)/$@ . ; fi
+		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
+			$(CP) $(srcdir)/$@ . ; \
+		else touch $@ ; fi ; fi
 
 clean:
 	rm -f *.o $(TARGETS) fixincl.x
@@ -120,13 +127,19 @@ install: $(TARGETS)
 	@rm -f ../fixinc.sh ; \
 	if ( ./fixincl -v > /dev/null 2>&1 ) ; then \
 		echo cp fixincl.sh ../fixinc.sh ; \
-		cp fixincl.sh ../fixinc.sh ; \
+		if [ -f ./fixincl.sh ] ; \
+		then cp fixincl.sh ../fixinc.sh ; \
+		else cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi ; \
 		chmod 555 ../fixinc.sh ; \
 		rm -f ../fixincl ; \
 		echo cp fixincl .. ; \
 		cp fixincl .. ; \
 		chmod 555 ../fixincl ; \
 	else \
+		echo Could not install binary fixincludes.  ; \
+		echo Installing shell script instead. ; \
 		echo cp inclhack.sh ../fixinc.sh ; \
-		cp inclhack.sh ../fixinc.sh ; \
+		if [ -f ./inclhack.sh ] ; \
+		then cp inclhack.sh ../fixinc.sh ; \
+		else cp $(srcdir)/inclhack.sh ../fixinc.sh ; fi ; \
 	fi
