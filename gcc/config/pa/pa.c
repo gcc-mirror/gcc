@@ -767,19 +767,19 @@ hppa_legitimize_address (x, oldx, mode)
     {
       rtx regx1, regx2;
 
-      /* Add the two unscaled terms B and C; only force them into registers
-	 if it's absolutely necessary.  */
+      /* Add the two unscaled terms B and C; if either B or C isn't
+	 a register or small constant int, then fail.  */
       regx1 = XEXP (XEXP (x, 0), 1);
       if (! (GET_CODE (regx1) == REG
 	     || (GET_CODE (regx1) == CONST_INT
 		 && INT_14_BITS (regx1))))
-	regx1 = force_reg (Pmode, force_operand (XEXP (XEXP (x, 0), 1), 0));
+	return orig;
       
       regx2 = XEXP (x, 1);
       if (! (GET_CODE (regx2) == REG
 	     || (GET_CODE (regx2) == CONST_INT
 		 && INT_14_BITS (regx2))))
-	regx2 = force_reg (Pmode, force_operand (XEXP (x, 1), 0));
+	return orig;
       
       /* Add them, make sure the result is in canonical form.  */
       if (GET_CODE (regx1) == REG)
@@ -4941,6 +4941,12 @@ basereg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  /* cse will create some unscaled indexed addresses, however; it
+     generally isn't a win on the PA, so avoid creating unscaled
+     indexed addresses until after cse is finished.  */
+  if (!cse_not_expected)
+    return 0;
+
   /* Once reload has started everything is considered valid.  Reload should
      only create indexed addresses using the stack/frame pointer, and any
      others were checked for validity when created by the combine pass. 
@@ -4952,8 +4958,14 @@ basereg_operand (op, mode)
   if (TARGET_NO_SPACE_REGS || reload_in_progress || reload_completed)
     return (GET_CODE (op) == REG || GET_CODE (op) == CONST_INT);
 
-  /* Stack and frame pointers are always OK for indexing.  */
-  if (op == stack_pointer_rtx || op == frame_pointer_rtx)
+  /* Stack is always OK for indexing.  */
+  if (op == stack_pointer_rtx)
+    return 1;
+
+  /* While it's always safe to index off the frame pointer, it's not
+     always profitable, particularly when the frame pointer is being
+     eliminated.  */
+  if (! flag_omit_frame_pointer && op == frame_pointer_rtx)
     return 1;
 
   /* The only other valid OPs are pseudo registers with
