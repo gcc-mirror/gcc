@@ -1,5 +1,10 @@
 1999-09-21  Tom Tromey  <tromey@cygnus.com>
 
+	* include/posix-threads.h (_Jv_MutexDestroy): Use
+	_Jv_PthreadGetMutex.
+	(_Jv_MutexLock): Likewise.
+	(_Jv_MutexUnlock): Likewise.
+
 	* java/io/OutputStreamWriter.java (OutputStreamWriter): Reverted
 	previous patch; it too was incorrect.
 	* java/io/PrintStream.java (PrintStream): Likewise.

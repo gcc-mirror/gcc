@@ -194,7 +194,7 @@ void _Jv_MutexInit (_Jv_Mutex_t *mu);
 inline void
 _Jv_MutexDestroy (_Jv_Mutex_t *mu)
 {
-  pthread_mutex_destroy (mu);
+  pthread_mutex_destroy (_Jv_PthreadGetMutex (mu));
 }
 
 #else /* HAVE_RECURSIVE_MUTEX */
@@ -209,7 +209,7 @@ extern void _Jv_MutexDestroy (_Jv_Mutex_t *mu);
 inline int
 _Jv_MutexLock (_Jv_Mutex_t *mu)
 {
-  int r = pthread_mutex_lock (mu);
+  int r = pthread_mutex_lock (_Jv_PthreadGetMutex (mu));
 #ifdef PTHREAD_MUTEX_IS_STRUCT
   if (! r)
     ++mu->count;
@@ -220,7 +220,7 @@ _Jv_MutexLock (_Jv_Mutex_t *mu)
 inline int
 _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
-  int r = pthread_mutex_unlock (mu);
+  int r = pthread_mutex_unlock (_Jv_PthreadGetMutex (mu));
 #ifdef PTHREAD_MUTEX_IS_STRUCT
   if (! r)
     --mu->count;
