@@ -1,3 +1,8 @@
+2003-11-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* doc/contrib.texi: Add Giovanni Bajo, Dara Hazeghi, Falk Hueffner,
+	and Andrew Pinski.
+
 2003-11-03  Syd Polk  <spolk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Add G3, G4, and G5
