@@ -164,7 +164,7 @@ java::io::File::getCanonicalPath (void)
 	      // Found ".." component, lop off last part from existing
 	      // buffer.
 	      --out_idx;
-	      while (out_idx > 0 && buf[out_idx] != '/')
+	      while (out_idx > 0 && buf2[out_idx] != '/')
 		--out_idx;
 	      // Can't go up past "/".
 	      if (out_idx == 0)
@@ -179,7 +179,8 @@ java::io::File::getCanonicalPath (void)
 	      out_idx += len;
 	    }
 	}
-      buf[out_idx] = '\0';
+
+      buf2[out_idx] = '\0';
     }
 
   // FIXME: what encoding to assume for file names?  This affects many
