@@ -5,6 +5,15 @@
 
 	* config/ia64/ia64.md (cond_opsi2_internal, cond_opsi2_internal_b):
 	Turn into define_insn_and_split.
+	
+	* sched-deps.c: Include "cselib.h".
+	(add_insn_mem_dependence, sched_analyze_1, sched_analyze_2):
+	Use cselib to turn memory addresses into VALUEs.
+	(sched_analyze): Call cselib_init/cselib_finish if necessary.
+	* sched-int.h (struct sched_info): New member USE_CSELIB.
+	* sched-ebb.c (ebb_sched_info): Initialize it.
+	* sched-rgn.c (rgn_sched_info): Likewise.
+	* Makefile.in (sched-deps.o): Update dependencies.
 
 2001-08-08  Graham Stott  <grahams@redhat.com>
 

@@ -193,7 +193,7 @@ static struct sched_info ebb_sched_info =
 
   NULL, NULL,
   NULL, NULL,
-  0
+  0, 1
 };
 
 /* Schedule a single extended basic block, defined by the boundaries HEAD
