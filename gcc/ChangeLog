@@ -1,3 +1,7 @@
+Tue Dec  9 09:32:33 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (save_for_inline_copying): Make a new reg_parm_stack_loc.
+
 Tue Dec  9 01:16:06 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Partially cleaned up prototyping code from HJ.
