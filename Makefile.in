@@ -1689,7 +1689,7 @@ all-uudecode: all-libiberty
 all-zip:
 configure-target-zlib: $(ALL_GCC)
 all-target-zlib: configure-target-zlib
-configure-target-libiberty: $(ALL_GCC)
+configure-target-libiberty: $(ALL_GCC) configure-target-newlib
 all-target-libiberty: configure-target-libiberty all-gcc all-ld all-target-newlib
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
