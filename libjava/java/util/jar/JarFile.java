@@ -232,7 +232,7 @@ public class JarFile extends ZipFile {
     public ZipEntry getEntry(String name) {
         ZipEntry entry = super.getEntry(name);
         if (entry != null) {
-            JarEntry jarEntry = new JarEntry(super.getEntry(name));
+            JarEntry jarEntry = new JarEntry(entry);
             if (manifest != null) {
                 jarEntry.attr = manifest.getAttributes(name);
                 // XXX jarEntry.certs

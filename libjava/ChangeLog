@@ -1,3 +1,9 @@
+Sun Aug 20 12:33:43 2000  Anthony Green  <green@redhat.com>
+
+	* java/util/jar/JarFile.java: Don't call
+	java.util.zip.ZipFile.getEntry twice.  From Mark Wielaard
+	<mark@klomp.org>.
+	
 Sun Aug 20 09:51:48 2000  Anthony Green  <green@redhat.com>
 
 	* java/net/URLClassLoader.java: Find the JarEntry via the JarFile.
