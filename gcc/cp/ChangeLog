@@ -6,6 +6,8 @@
 	(tsubst_friend_function): Set lineno and input_filename so 
 	error messages will be useful.
 	(instantiate_template): Just return an error_mark_node.
+	(check_explicit_specialization): Don't mess with a returned
+	error_mark_node.
 
 	* pt.c (print_template_context): Add new argument.
 	(maybe_print_template_context): New fn.
