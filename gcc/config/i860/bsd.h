@@ -9,7 +9,7 @@
 
 #define ASCII_DATA_ASM_OP ".byte"
 #define	ASM_OUTPUT_ASCII(f, p, size)	\
-{ register unsigned i;			\
+do { register unsigned i;		\
   int inside;				\
   inside = FALSE;			\
   for (i = 0; i < (size); i++) {	\
@@ -43,4 +43,4 @@
   if (inside)				\
     putc('"', (f));			\
   putc('\n', (f));			\
-}
+} while (0)

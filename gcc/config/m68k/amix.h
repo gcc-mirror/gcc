@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Commodore Amiga A3000UX version.
 
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -98,9 +98,9 @@ do {									\
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
-{								\
+do {								\
   register int sp = 0, lp = 0, ch;				\
-  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);				\
+  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
   do {								\
     ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -124,7 +124,7 @@ do {									\
       }								\
   } while (sp < (LEN));						\
   putc ('\n', (FILE));						\
-}
+} while (0)
 
 /* The following should be unnecessary as a result of PIC_CASE_VECTOR_ADDRESS.
    But rhealey@aggregate.com says they are still needed.  */

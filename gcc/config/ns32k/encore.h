@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.  ENCORE NS32000 version.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
    Adapted by Robert Brown (brown@harvard.harvard.edu) from the Sequent
-     version by Michael Tiemann (tiemann@mcc.com).
+   version by Michael Tiemann (tiemann@mcc.com).
 
 This file is part of GNU CC.
 
@@ -149,7 +149,7 @@ do {									\
         }						\
     }							\
   fprintf ((file), "\"\n");				\
-}
+} while (0)
 
 /* Modify syntax of jsr instructions.  */
 #define CALL_MEMREF_IMPLICIT

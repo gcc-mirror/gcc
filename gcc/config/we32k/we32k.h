@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
+   Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
-   Copyright (C) 1991-1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -857,7 +857,7 @@ do { union { float f; long l;} tem;				\
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)  \
-{							\
+do {							\
   unsigned char *s;					\
   int i;						\
   for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
@@ -867,7 +867,7 @@ do { union { float f; long l;} tem;				\
       fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
     }							\
   fputs ("\n", (FILE));					\
-}
+} while (0)
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Harris tahoe version.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -65,7 +65,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   output_file_directive ((FILE), main_input_filename);
 
 #define ASM_OUTPUT_ASCII(FILE, PTR, SIZE)		\
-{							\
+do {							\
   unsigned char *_p = (PTR);				\
   int _thissize = (SIZE);				\
   fprintf ((FILE), "\t.ascii \"");			\
@@ -83,4 +83,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	}						\
     }							\
   fprintf ((FILE), "\"\n");				\
-}
+} while (0)

@@ -1,8 +1,6 @@
 /* Definitions of target machine for GNU compiler for m68k targets using
    assemblers derived from AT&T "SGS" releases.
-
    Copyright (C) 1991, 1993 Free Software Foundation, Inc.
-
    Written by Fred Fish (fnf@cygnus.com)
 
 This file is part of GNU CC.
@@ -164,7 +162,7 @@ do { long l;						\
    output the string one byte at a time. */
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
-{								\
+do {								\
   register int sp = 0, lp = 0, ch;				\
   fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
   do {								\
@@ -190,7 +188,7 @@ do { long l;						\
       }								\
   } while (sp < (LEN));						\
   putc ('\n', (FILE));						\
-}
+} while (0)
 
 
 /* SGS based assemblers don't understand #NO_APP and #APP, so just don't

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@ncd.com) and Fred Fish (fnf@cygnus.com).
 
@@ -201,7 +201,7 @@ do {									\
    seems to be safer. */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
-{								\
+do {								\
   register int sp = 0, lp = 0, ch;				\
   fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
   do {								\
@@ -227,7 +227,7 @@ do {									\
       }								\
   } while (sp < (LEN));						\
   putc ('\n', (FILE));						\
-}
+} while (0)
 
 /* SVR4 m68k assembler is bitching on the syntax `2.b'.
    So use the "LLDnnn-LLnnn" format.  Define LLDnnn after the table.  */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Alliant FX version.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
    Adapted from m68k.h by Paul Petersen (petersen@uicsrd.csrd.uiuc.edu)
    and Joe Weening (weening@gang-of-four.stanford.edu).
 
@@ -1117,14 +1117,14 @@ do { union { float f; long l;} tem;			\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,SIZE)               \
-{ int i; unsigned char *pp = (unsigned char *) (PTR);		\
+do { int i; unsigned char *pp = (unsigned char *) (PTR);	\
   fprintf((FILE), "\t.byte %d", (unsigned int)*pp++);		\
   for (i = 1; i < (SIZE); ++i, ++pp) {				\
     if ((i % 8) == 0)						\
       fprintf((FILE), "\n\t.byte %d", (unsigned int) *pp);	\
     else							\
       fprintf((FILE), ",%d", (unsigned int) *pp); }		\
-  fprintf ((FILE), "\n");       }
+  fprintf ((FILE), "\n");       } while (0)
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 

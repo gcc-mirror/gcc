@@ -1,9 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Charles River Data Systems UNiverse/32
-
-   Written by Gary E. Miller
-   bug reports to Gary_Edmunds_Miller@cup.portal.com
-
+   Written by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
    Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -209,7 +206,7 @@ do { long l[2];						\
 
 #undef  ASM_OUTPUT_ASCII
 #define  ASM_OUTPUT_ASCII(FILE, P , SIZE)				\
-{  int i;								\
+do {  int i;								\
 	  fprintf ((FILE), "\t.ascii \"");				\
 	  for (i = 0; i < (SIZE); i++)					\
 	    {								\
@@ -222,11 +219,11 @@ do { long l[2];						\
 		  continue;						\
 	        }							\
 	       }							\
-	       /* brain dead asm doesn't understand char escapes */  \
+	       /* brain dead asm doesn't understand char escapes */	\
 	       fprintf ((FILE), "\"\n\t.byte\t%d\n\t.ascii \"", c);	\
 	    }								\
 	  fprintf ((FILE), "\"\n");					\
- }
+ } while (0)
 
 
 /* Change all JBxx to Bxx.  Also change all DBRA to DBF.
