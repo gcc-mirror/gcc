@@ -1,3 +1,7 @@
+2004-05-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/pr15296.c: New test.
+
 2004-05-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-40.c: New test.
