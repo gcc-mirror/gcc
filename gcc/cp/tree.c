@@ -546,6 +546,29 @@ cp_build_type_variant (type, constp, volatilep)
     }
   return build_type_variant (type, constp, volatilep);
 }
+
+/* Returns the canonical version of TYPE.  In other words, if TYPE is
+   a typedef, returns the underlying type.  The cv-qualification of
+   the type returned matches the type input; they will always be
+   compatible types.  */
+
+tree
+canonical_type_variant (t)
+     tree t;
+{
+  int constp, volatilep;
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    {
+      constp = TYPE_READONLY (TREE_TYPE (t));
+      volatilep = TYPE_VOLATILE (TREE_TYPE (t));
+    }
+  else
+    {
+      constp = TYPE_READONLY (t);
+      volatilep = TYPE_VOLATILE (t);
+    }
+  return cp_build_type_variant (TYPE_MAIN_VARIANT (t), constp, volatilep);
+}
 
 /* Add OFFSET to all base types of T.
 
