@@ -25,8 +25,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    It should be straightforward to convert so for now we keep things simple
    while more important issues are dealt with.  */
 
-#define SBITMAP_ELT_BITS ((unsigned) HOST_BITS_PER_WIDE_INT)
-#define SBITMAP_ELT_TYPE unsigned HOST_WIDE_INT
+#define SBITMAP_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
+#define SBITMAP_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
 
 typedef struct simple_bitmap_def
 {

@@ -9281,6 +9281,14 @@ _ACEOF
 
 fi
 
+if test x$use_long_long_for_widest_fast_int = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define USE_LONG_LONG_FOR_WIDEST_FAST_INT 1
+_ACEOF
+
+fi
+
 count=a
 for f in $host_xm_file; do
 	count=${count}x
