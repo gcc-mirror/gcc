@@ -1,3 +1,9 @@
+2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* acinclude.m4: Don't AC_REPLACE_MATHFUNCS expf and atan2f.
+	* aclocal.m4: Regenerate.
+	* configure: Same.
+
 2001-07-09  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/configopts.html:  Fix thinko.
