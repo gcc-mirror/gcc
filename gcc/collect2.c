@@ -532,7 +532,7 @@ dump_file (name)
 	  if (no_demangle)
 	    result = 0;
 	  else
-	    result = cplus_demangle (p, DMGL_PARAMS | DMGL_ANSI);
+	    result = cplus_demangle (p, DMGL_PARAMS | DMGL_ANSI | DMGL_VERBOSE);
 
 	  if (result)
 	    {

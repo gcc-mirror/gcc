@@ -1,3 +1,21 @@
+2002-02-05  Jason Merrill  <jason@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Don't allow conversions
+	between pointers and references.  Only allow lvalues to convert to
+	reference.
+
+	* c-decl.c (finish_function): Warn about a non-void function with
+	no return statement and no abnormal exit.
+	(current_function_returns_abnormally): New variable.
+	(start_function): Clear it.
+	(struct c_language_function): Add returns_abnormally.
+	(push_c_function_context): Save it.
+	(pop_c_function_context): Restore it.
+	* c-tree.h: Declare current_function_returns_abnormally.
+	* c-typeck.c (build_function_call): Set it.
+
+	* collect2.c (dump_file): Pass DMGL_VERBOSE to cplus_demangle.
+
 2002-02-05  Andreas Jaeger  <aj@suse.de>
 
 	* crtstuff.c: Fix comments.
@@ -14,12 +32,12 @@
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_step_help): Rename to
-        __vec_step_help.
+	* config/rs6000/altivec.h (vec_step_help): Rename to
+	__vec_step_help.
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Fix typos.
+	* config/rs6000/altivec.h: Fix typos.
 
 2002-02-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
@@ -27,13 +45,13 @@
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (altivec_init_builtins): Fix typo
-        building void typed builtins.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Fix typo
+	building void typed builtins.
 
-        * config/rs6000/altivec.h (vec_ld*): Fix typos.
-        (vec_step): Implement for C++.
+	* config/rs6000/altivec.h (vec_ld*): Fix typos.
+	(vec_step): Implement for C++.
 
-Mon Feb  4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (final_scan_insn): Add case for NOTE_INSN_LOOP_END_TOP_COND.
 
@@ -44,20 +62,20 @@ Mon Feb  4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/extend.texi: Warn about unsupported usage of altivec
-        builtins.
+	* doc/extend.texi: Warn about unsupported usage of altivec
+	builtins.
 
-        * config/rs6000/rs6000.md (altivec_vcmp*_p): Remove.
-        (altivec_predicate_*): New.
+	* config/rs6000/rs6000.md (altivec_vcmp*_p): Remove.
+	(altivec_predicate_*): New.
 
-        * config/rs6000/altivec.h: Rewrite predicates to use new builtins.
-        Add C++ version of vec_*() functions.
+	* config/rs6000/altivec.h: Rewrite predicates to use new builtins.
+	Add C++ version of vec_*() functions.
 
-        * config/rs6000/rs6000.c (bdesc_altivec_preds): New.
-        (bdesc_2arg): Remove altivec predicates.
-        (altivec_expand_builtin): Handle predicates.
-        (altivec_init_builtins): Handle predicates.
-        (altivec_expand_predicate_builtin): New.
+	* config/rs6000/rs6000.c (bdesc_altivec_preds): New.
+	(bdesc_2arg): Remove altivec predicates.
+	(altivec_expand_builtin): Handle predicates.
+	(altivec_init_builtins): Handle predicates.
+	(altivec_expand_predicate_builtin): New.
 
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 

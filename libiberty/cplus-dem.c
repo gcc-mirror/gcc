@@ -478,9 +478,6 @@ do_hpacc_template_literal PARAMS ((struct work_stuff *, const char **, string *)
 static int
 snarf_numeric_literal PARAMS ((const char **, string *));
 
-static char* (*cplus_demangle_v3_p) PARAMS ((const char* mangled))
-  = cplus_demangle_v3;
-
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
@@ -914,7 +911,7 @@ cplus_demangle (mangled, options)
   /* The V3 ABI demangling is implemented elsewhere.  */
   if (GNU_V3_DEMANGLING || AUTO_DEMANGLING)
     {
-      ret = cplus_demangle_v3_p (mangled);
+      ret = cplus_demangle_v3 (mangled, work->options);
       if (ret || GNU_V3_DEMANGLING)
 	return ret;
     }
@@ -4877,7 +4874,7 @@ string_append_template_idx (s, idx)
 
 static const char *program_name;
 static const char *program_version = VERSION;
-static int flags = DMGL_PARAMS | DMGL_ANSI;
+static int flags = DMGL_PARAMS | DMGL_ANSI | DMGL_VERBOSE;
 
 static void demangle_it PARAMS ((char *));
 static void usage PARAMS ((FILE *, int)) ATTRIBUTE_NORETURN;
@@ -4890,7 +4887,8 @@ demangle_it (mangled_name)
 {
   char *result;
 
-  result = cplus_demangle (mangled_name, flags);
+  /* For command line args, also try to demangle type encodings.  */
+  result = cplus_demangle (mangled_name, flags | DMGL_TYPES);
   if (result == NULL)
     {
       printf ("%s\n", mangled_name);
@@ -5089,7 +5087,6 @@ main (argc, argv)
 
   if (optind < argc)
     {
-      cplus_demangle_v3_p = cplus_demangle_v3_type;
       for ( ; optind < argc; optind++)
 	{
 	  demangle_it (argv[optind]);

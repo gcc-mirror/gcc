@@ -940,8 +940,6 @@ static status_t cp_demangle
   PARAMS ((const char *, dyn_string_t, int));
 static status_t cp_demangle_type
   PARAMS ((const char*, dyn_string_t));
-static char* cplus_demangle_v3_all
-  PARAMS ((const char*, int));
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -3687,26 +3685,13 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
    If the demangling failes, returns NULL.  */
 
 char *
-cplus_demangle_v3 (mangled)
+cplus_demangle_v3 (mangled, options)
      const char* mangled;
-{
-  return cplus_demangle_v3_all (mangled, 0);
-}
-
-char *
-cplus_demangle_v3_type (mangled)
-     const char* mangled;
-{
-  return cplus_demangle_v3_all (mangled, 1);
-}
-
-static char *
-cplus_demangle_v3_all (mangled, type)
-     const char* mangled;
-     int type;
+     int options;
 {
   dyn_string_t demangled;
   status_t status;
+  int type = !!(options & DMGL_TYPES);
 
   if (mangled[0] == '_' && mangled[1] == 'Z')
     /* It is not a type.  */
@@ -3717,6 +3702,8 @@ cplus_demangle_v3_all (mangled, type)
       if (!type)
 	return NULL;
     }
+
+  flag_verbose = !!(options & DMGL_VERBOSE);
 
   /* Create a dyn_string to hold the demangled name.  */
   demangled = dyn_string_new (0);
