@@ -22,10 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include "machmode.h"
 #include "version.h"
 
-#ifndef RTX_CODE
-struct rtx_def;
-#endif
-
 /* Codes of tree nodes */
 
 #define DEFTREECODE(SYM, STRING, TYPE, NARGS)   SYM,
@@ -98,7 +94,7 @@ enum built_in_function
 extern const char *const built_in_names[(int) END_BUILTINS];
 
 /* An array of _DECL trees for the above.  */
-extern union tree_node *built_in_decls[(int) END_BUILTINS];
+extern tree built_in_decls[(int) END_BUILTINS];
 
 /* The definition of tree nodes fills the next several pages.  */
 
@@ -116,10 +112,6 @@ extern union tree_node *built_in_decls[(int) END_BUILTINS];
    fields as well.  The fields of a node are never accessed directly,
    always through accessor macros.  */
 
-/* This type is used everywhere to refer to a tree node.  */
-
-typedef union tree_node *tree;
-
 /* Every kind of tree node starts with this structure,
    so all nodes have these fields.
 
@@ -128,8 +120,8 @@ typedef union tree_node *tree;
 
 struct tree_common
 {
-  union tree_node *chain;
-  union tree_node *type;
+  tree chain;
+  tree type;
   void *aux;
   ENUM_BITFIELD(tree_code) code : 8;
   unsigned side_effects_flag : 1;
@@ -670,7 +662,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 struct tree_int_cst
 {
   struct tree_common common;
-  struct rtx_def *rtl;	/* acts as link to register transfer language
+  rtx rtl;	/* acts as link to register transfer language
 			   (rtl) info */
   /* A sub-struct is necessary here because the function `const_hash'
      wants to scan both words as a unit and taking the address of the
@@ -699,7 +691,7 @@ struct tree_int_cst
 struct tree_real_cst
 {
   struct tree_common common;
-  struct rtx_def *rtl;	/* acts as link to register transfer language
+  rtx rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   REAL_VALUE_TYPE real_cst;
 };
@@ -711,7 +703,7 @@ struct tree_real_cst
 struct tree_string
 {
   struct tree_common common;
-  struct rtx_def *rtl;	/* acts as link to register transfer language
+  rtx rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   int length;
   const char *pointer;
@@ -724,10 +716,10 @@ struct tree_string
 struct tree_complex
 {
   struct tree_common common;
-  struct rtx_def *rtl;	/* acts as link to register transfer language
+  rtx rtl;	/* acts as link to register transfer language
 				   (rtl) info */
-  union tree_node *real;
-  union tree_node *imag;
+  tree real;
+  tree imag;
 };
 
 #include "hashtable.h"
@@ -760,8 +752,8 @@ struct tree_identifier
 struct tree_list
 {
   struct tree_common common;
-  union tree_node *purpose;
-  union tree_node *value;
+  tree purpose;
+  tree value;
 };
 
 /* In a TREE_VEC node.  */
@@ -773,14 +765,14 @@ struct tree_vec
 {
   struct tree_common common;
   int length;
-  union tree_node *a[1];
+  tree a[1];
 };
 
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* In a SAVE_EXPR node.  */
 #define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(NODE, 1)
-#define SAVE_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[2])
+#define SAVE_EXPR_RTL(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[2])
 #define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (NODE)
 /* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
    both in normal code and in a handler.  (Normally, in a handler, all
@@ -789,12 +781,12 @@ struct tree_vec
 #define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (NODE)
 
 /* In a RTL_EXPR node.  */
-#define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[0])
-#define RTL_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[1])
+#define RTL_EXPR_SEQUENCE(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[0])
+#define RTL_EXPR_RTL(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[1])
 
 /* In a WITH_CLEANUP_EXPR node.  */
 #define WITH_CLEANUP_EXPR_RTL(NODE) \
-  (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[2])
+  (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[2])
 
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (NODE, 1)
@@ -830,7 +822,7 @@ struct tree_exp
 {
   struct tree_common common;
   int complexity;
-  union tree_node *operands[1];
+  tree operands[1];
 };
 
 /* In a BLOCK node.  */
@@ -887,12 +879,12 @@ struct tree_block
   unsigned abstract_flag : 1;
   unsigned block_num : 30;
 
-  union tree_node *vars;
-  union tree_node *subblocks;
-  union tree_node *supercontext;
-  union tree_node *abstract_origin;
-  union tree_node *fragment_origin;
-  union tree_node *fragment_chain;
+  tree vars;
+  tree subblocks;
+  tree supercontext;
+  tree abstract_origin;
+  tree fragment_origin;
+  tree fragment_chain;
 };
 
 /* Define fields and accessors for nodes representing data types.  */
@@ -1159,10 +1151,10 @@ struct tree_block
 struct tree_type
 {
   struct tree_common common;
-  union tree_node *values;
-  union tree_node *size;
-  union tree_node *size_unit;
-  union tree_node *attributes;
+  tree values;
+  tree size;
+  tree size_unit;
+  tree attributes;
   unsigned int uid;
 
   unsigned int precision : 9;
@@ -1186,17 +1178,17 @@ struct tree_type
   unsigned user_align : 1;
 
   unsigned int align;
-  union tree_node *pointer_to;
-  union tree_node *reference_to;
+  tree pointer_to;
+  tree reference_to;
   union {int address; char *pointer; } symtab;
-  union tree_node *name;
-  union tree_node *minval;
-  union tree_node *maxval;
-  union tree_node *next_variant;
-  union tree_node *main_variant;
-  union tree_node *binfo;
-  union tree_node *noncopied_parts;
-  union tree_node *context;
+  tree name;
+  tree minval;
+  tree maxval;
+  tree next_variant;
+  tree main_variant;
+  tree binfo;
+  tree noncopied_parts;
+  tree context;
   HOST_WIDE_INT alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
@@ -1692,7 +1684,7 @@ struct tree_decl
   const char *filename;
   int linenum;
   unsigned int uid;
-  union tree_node *size;
+  tree size;
   ENUM_BITFIELD(machine_mode) mode : 8;
 
   unsigned external_flag : 1;
@@ -1749,18 +1741,18 @@ struct tree_decl
     struct {unsigned int align : 24; unsigned int off_align : 8;} a;
   } u1;
 
-  union tree_node *size_unit;
-  union tree_node *name;
-  union tree_node *context;
-  union tree_node *arguments;	/* Also used for DECL_FIELD_OFFSET */
-  union tree_node *result;	/* Also used for DECL_BIT_FIELD_TYPE */
-  union tree_node *initial;	/* Also used for DECL_QUALIFIER */
-  union tree_node *abstract_origin;
-  union tree_node *assembler_name;
-  union tree_node *section_name;
-  union tree_node *machine_attributes;
-  struct rtx_def *rtl;	/* RTL representation for object.  */
-  struct rtx_def *live_range_rtl;
+  tree size_unit;
+  tree name;
+  tree context;
+  tree arguments;	/* Also used for DECL_FIELD_OFFSET */
+  tree result;	/* Also used for DECL_BIT_FIELD_TYPE */
+  tree initial;	/* Also used for DECL_QUALIFIER */
+  tree abstract_origin;
+  tree assembler_name;
+  tree section_name;
+  tree machine_attributes;
+  rtx rtl;	/* RTL representation for object.  */
+  rtx live_range_rtl;
 
   /* In FUNCTION_DECL, if it is inline, holds the saved insn chain.
      In FIELD_DECL, is DECL_FIELD_BIT_OFFSET.
@@ -1769,12 +1761,12 @@ struct tree_decl
      Used by Chill and Java in LABEL_DECL and by C++ and Java in VAR_DECL.  */
   union {
     struct function *f;
-    struct rtx_def *r;
-    union tree_node *t;
+    rtx r;
+    tree t;
     int i;
   } u2;
 
-  union tree_node *vindex;
+  tree vindex;
   HOST_WIDE_INT pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
@@ -2054,7 +2046,7 @@ extern HOST_WIDE_INT tree_low_cst	PARAMS ((tree, int));
 extern int tree_int_cst_msb		PARAMS ((tree));
 extern int tree_int_cst_sgn		PARAMS ((tree));
 extern int tree_expr_nonnegative_p	PARAMS ((tree));
-extern int rtl_expr_nonnegative_p	PARAMS ((struct rtx_def *));
+extern int rtl_expr_nonnegative_p	PARAMS ((rtx));
 extern int index_type_equal		PARAMS ((tree, tree));
 extern tree get_inner_array_type	PARAMS ((tree));
 
@@ -2062,7 +2054,7 @@ extern tree get_inner_array_type	PARAMS ((tree));
    put the prototype here.  Rtl.h does declare the prototype if
    tree.h had been included.  */
 
-extern tree make_tree			PARAMS ((tree, struct rtx_def *));
+extern tree make_tree			PARAMS ((tree, rtx));
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTES
    is ATTRIBUTE.
@@ -2575,7 +2567,7 @@ extern int type_num_arguments                   PARAMS ((tree));
 /* In stmt.c */
 
 extern int in_control_zone_p			PARAMS ((void));
-extern void expand_fixups			PARAMS ((struct rtx_def *));
+extern void expand_fixups			PARAMS ((rtx));
 extern tree expand_start_stmt_expr		PARAMS ((void));
 extern tree expand_end_stmt_expr		PARAMS ((tree));
 extern void expand_expr_stmt			PARAMS ((tree));
@@ -2602,7 +2594,7 @@ extern int expand_exit_loop_if_false		PARAMS ((struct nesting *,
 extern int expand_exit_something		PARAMS ((void));
 
 extern void expand_return			PARAMS ((tree));
-extern int optimize_tail_recursion		PARAMS ((tree, struct rtx_def *));
+extern int optimize_tail_recursion		PARAMS ((tree, rtx));
 extern void expand_start_bindings_and_block     PARAMS ((int, tree));
 #define expand_start_bindings(flags) \
   expand_start_bindings_and_block(flags, NULL_TREE)
@@ -2796,12 +2788,12 @@ extern void combine_temp_slots		PARAMS ((void));
 extern void free_temp_slots		PARAMS ((void));
 extern void pop_temp_slots		PARAMS ((void));
 extern void push_temp_slots		PARAMS ((void));
-extern void preserve_temp_slots		PARAMS ((struct rtx_def *));
+extern void preserve_temp_slots		PARAMS ((rtx));
 extern void preserve_rtl_expr_temps	PARAMS ((tree));
 extern int aggregate_value_p		PARAMS ((tree));
 extern void free_temps_for_rtl_expr	PARAMS ((tree));
-extern void instantiate_virtual_regs	PARAMS ((tree, struct rtx_def *));
-extern void unshare_all_rtl		PARAMS ((tree, struct rtx_def *));
+extern void instantiate_virtual_regs	PARAMS ((tree, rtx));
+extern void unshare_all_rtl		PARAMS ((tree, rtx));
 extern int max_parm_reg_num		PARAMS ((void));
 extern void push_function_context	PARAMS ((void));
 extern void pop_function_context	PARAMS ((void));
@@ -2810,7 +2802,7 @@ extern void pop_function_context_from	PARAMS ((tree));
 
 /* In print-rtl.c */
 #ifdef BUFSIZ
-extern void print_rtl			PARAMS ((FILE *, struct rtx_def *));
+extern void print_rtl			PARAMS ((FILE *, rtx));
 #endif
 
 /* In print-tree.c */
@@ -2825,13 +2817,13 @@ extern void indent_to			PARAMS ((FILE *, int));
 
 /* In expr.c */
 extern int apply_args_register_offset		PARAMS ((int));
-extern struct rtx_def *expand_builtin_return_addr
-	PARAMS ((enum built_in_function, int, struct rtx_def *));
+extern rtx expand_builtin_return_addr
+	PARAMS ((enum built_in_function, int, rtx));
 extern void check_max_integer_computation_mode	PARAMS ((tree));
 
 /* In emit-rtl.c */
 extern void start_sequence_for_rtl_expr		PARAMS ((tree));
-extern struct rtx_def *emit_line_note		PARAMS ((const char *, int));
+extern rtx emit_line_note		PARAMS ((const char *, int));
 
 /* In calls.c */
 

@@ -491,8 +491,8 @@ extern void abort PARAMS ((void));
 #endif
 
 /* Provide some sort of boolean type.  We use stdbool.h if it's
-  available.  This is dead last because various system headers might
-  mess us up.  */
+  available.  This must be after all inclusion of system headers,
+  as some of them will mess us up.  */
 #undef bool
 #undef true
 #undef false
@@ -512,6 +512,18 @@ typedef char _Bool;
 
 #define TRUE true
 #define FALSE false
+
+/* Provide three core typedefs used by everything, if we are compiling
+   GCC.  These used to be found in rtl.h and tree.h, but this is no
+   longer practical.  */
+#ifdef IN_GCC
+struct rtx_def;
+struct rtvec_def;
+union tree_node;
+typedef struct rtx_def *rtx;
+typedef struct rtvec_def *rtvec;
+typedef union tree_node *tree;
+#endif
 
 /* As the last action in this file, we poison the identifiers that
    shouldn't be used.  Note, luckily gcc-3.0's token-based integrated
