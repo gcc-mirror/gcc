@@ -1,3 +1,9 @@
+Fri Oct 24 15:54:57 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (call patterns): Revert Oct 16 change; if we are to elide
+	the callee's ldgp, we must do it ourselves, and we use the jsr tag
+	for more than scheduling.
+
 Fri Oct 24 13:23:04 1997  Doug Evans  <devans@canuck.cygnus.com>
 
 	* sparc/sparc.h (ASM_SPEC): Delete asm_arch.
