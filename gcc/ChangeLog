@@ -1,3 +1,9 @@
+Wed Sep  2 15:38:01 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* libgcc2.c (__floatdisf): Use signed comparison to test
+	whether u is close to zero; unsigned comparison is not what's
+	wanted here.
+
 Mon Aug 17 02:19:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* xcoffout.c (UNKNOWN_STAB): Fix typo in previous change; missing
