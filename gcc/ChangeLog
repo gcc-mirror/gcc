@@ -1,3 +1,10 @@
+2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/sh/lib1funcs.asm: Fix comment typos.
+	* config/sh/linux.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.md: Likewise.
+
 2003-01-30  Loren James Rittle  <ljrittle@acm.org>
 
 	* objc/Make-lang.in (objc-parse.y): Find c-parse.in in $(srcdir).
