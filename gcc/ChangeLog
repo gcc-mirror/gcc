@@ -1,5 +1,9 @@
 Mon Mar 23 07:27:19 1998  Philippe De Muyter  <phdm@macqel.be>
 
+	* m68k.md (ashldi_const): Allow shift count in range ]32,63].
+	(ashldi3): Allow constant shift count in range ]32,63].
+	(ashrdi_const, ashrid3, lshrdi_const, lshrdi3): Likewise.
+
 	* m68k.md (zero_extend[qh]idi2, iordi_zext): New patterns.
 	(zero_extendsidi2): Avoid useless copy.
 	(iorsi_zexthi_ashl16): Avoid "0" constraint for operand 2.
