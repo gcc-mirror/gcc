@@ -4182,6 +4182,8 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_NORMAL, NULL_PTR);
 #endif
 
+  main_identifier_node = get_identifier ("main");
+
   /* ??? Perhaps there's a better place to do this.  But it is related
      to __builtin_va_arg, so it isn't that off-the-wall.  */
   lang_type_promotes_to = simple_type_promotes_to;

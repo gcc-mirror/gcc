@@ -1745,6 +1745,8 @@ enum tree_index
   TI_V4HI_TYPE,
   TI_V2SI_TYPE,
 
+  TI_MAIN_IDENTIFIER,
+
   TI_MAX
 };
 
@@ -1790,6 +1792,9 @@ extern tree global_trees[TI_MAX];
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
+#define main_identifier_node		global_trees[TI_MAIN_IDENTIFIER]
+#define MAIN_NAME_P(NODE) (IDENTIFIER_NODE_CHECK (NODE) == main_identifier_node)
 
 #define V4SF_type_node			global_trees[TI_V4SF_TYPE]
 #define V4SI_type_node			global_trees[TI_V4SI_TYPE]

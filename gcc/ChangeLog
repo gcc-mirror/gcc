@@ -1,5 +1,17 @@
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
+	* tree.h (enum tree_index): New member `TI_MAIN_IDENTIFIER'.
+	(MAIN_NAME_P, main_identifier_node): New macros.
+	* c-common.c (c_common_nodes_and_builtins): Init main_identifier_node.
+	* c-decl.c (start_decl, grokdeclarator, start_function,
+	store_parm_decls, finish_function): Use MAIN_NAME_P.
+	* config/avr/avr.c (function_prologue, function_epilogue): Likewise.
+	* config/i386/cygwin.h (SUBTARGET_PROLOGUE): Likewise.
+	* config/i386/win32.h (SUBTARGET_PROLOGUE): Likewise.
+	* config/pdp11/pdp11.c (output_function_prologue): Likewise.
+
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
 	* cppfiles.c (actual_directory): Don't write beyond `dir'
 	when it contains "".
 	* real.c (asctoeg): Stay within bounds of etens[][].
