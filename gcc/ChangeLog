@@ -1,3 +1,8 @@
+2003-07-11  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	PR optimization/10877
+	* doc/install.tex: Update required binutils for i?86-*-linux*
+
 2003-07-11  Ben Elliston  <bje@redhat.com>
 
 	PR c++/1607
