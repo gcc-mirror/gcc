@@ -19,10 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.6 1991/11/29 20:02:01 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.7 1991/11/29 22:00:10 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/29 20:02:01 $
+  $Date: 1991/11/29 22:00:10 $
   $Log: ObjC.h,v $
+ * Revision 0.7  1991/11/29  22:00:10  dennisg
+ * modified to implement set functions.
+ *
  * Revision 0.6  1991/11/29  20:02:01  dennisg
  * fixed several const decls.  bozo.
  *
@@ -141,9 +144,6 @@ typedef id  ( *IMP )( id, SEL, ... );
                                                   first message sent to a
                                                   class.  It isn't guaranteed
                                                   to be sent only once. */
-#define CLS_POSING        0x8L                  /* Class is posing as 
-																									another. */
-#define CLS_MAPPED        0x10L                 /* Unknown. */
 
 
                                                 /* Set this variable to !0 to
