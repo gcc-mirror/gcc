@@ -1433,10 +1433,6 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 	         [char* tmp; strtof("gnu", &tmp);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>],
 	         [char* tmp; strtold("gnu", &tmp);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>],
-	         [char* tmp; strtoll("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
-  AC_TRY_COMPILE([#include <stdlib.h>],
-	         [char* tmp; strtoull("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [llabs(10);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [lldiv(10,1);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [atoll("10");],, [ac_c99_stdlib=no])
@@ -1478,7 +1474,8 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 
 dnl
 dnl Check for template specializations for the 'long long' type extension.
-dnl NB: Must check for C99 support before calling _GLIBCPP_ENABLE_LONG_LONG
+dnl The result determines only whether 'long long' I/O is enabled; things
+dnl like numeric_limits<> specializations are always available.
 dnl
 dnl GLIBCPP_ENABLE_LONG_LONG
 dnl --enable-long-long defines _GLIBCPP_USE_LONG_LONG
@@ -1503,15 +1500,15 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
 
-  # iostreams require strtoll, strtoull to compile. If the
-  # GLIBCPP_ENABLE_C99 tests found these, and if C99 support is enabled,
-  # go ahead and allow long long to be used.
-  if test x"$enable_c99" = x"no"; then
-    enable_long_long=no; 
-  fi
+  AC_MSG_CHECKING([for enabled long long I/O support])
+
+  # iostreams require strtoll, strtoull to compile
+  AC_TRY_COMPILE([#include <stdlib.h>],
+                 [char* tmp; strtoll("gnu", &tmp, 10);],,[enable_long_long=no])
+  AC_TRY_COMPILE([#include <stdlib.h>],
+                 [char* tmp; strtoull("gnu", &tmp, 10);],,[enable_long_long=no])
 
   # Option parsed, now set things appropriately
-  AC_MSG_CHECKING([for enabled long long support])
   if test x"$enable_long_long" = xyes; then
     AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
   fi

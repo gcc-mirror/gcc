@@ -1,5 +1,25 @@
 2001-11-02  Phil Edwards  <pme@gcc.gnu.org>
 
+	* acconfig.h:  Update comments.
+	* acinclude.m4 (GLIBCPP_ENABLE_C99):  Move strtoll, strtoull tests...
+	(GLIBCPP_ENABLE_LONG_LONG):  ...to here.  Don't check enable_c99.
+	* aclocal.m4:  Regenerate.
+	* config.h.in:  Regenerate.
+	* configure:  Regenerate.
+
+	* include/bits/boost_concept_check.h:  Unconditionally compile uses
+	of 'long long' which require only compiler support, not C lib support.
+	* include/bits/cpp_type_traits.h:  Likewise.
+	* include/bits/std_limits.h:  Likewise.
+	* include/bits/type_traits.h:  Likewise.
+	* src/concept-inst.cc:  Likewise.
+	* src/limits.cc:  Likewise.
+	* include/c_shadow/stdlib.h:  Compile conditionally on _GLIBCPP_USE_C99
+	instead of _GLIBCPP_USE_LONG_LONG.
+	* include/c_shadow/bits/std_cstdlib.h:  Likewise.
+
+2001-11-02  Phil Edwards  <pme@gcc.gnu.org>
+
 	* config/io/c_io_stdio.h:  Correct grammar in comments.
 	* docs/doxygen/Intro.3:  Expand "top-level" man page.
 	* docs/doxygen/doxygroups.cc:  New module definitions (comments).

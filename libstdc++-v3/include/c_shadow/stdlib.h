@@ -47,7 +47,7 @@
   // some names and types with the std:: C++ version.
   using std::div_t;
   using std::ldiv_t;
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCPP_USE_C99
   using std::lldiv_t;
 #endif
 

@@ -87,7 +87,7 @@ namespace _C_legacy {
 #  undef div
 #  undef labs
 #  undef ldiv
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCPP_USE_C99
 #  undef llabs
 #  undef lldiv
 #endif
@@ -101,7 +101,7 @@ namespace std {
   struct div_t : _C_legacy::_CPP_div_t_capture { };
   struct ldiv_t : _C_legacy::_CPP_ldiv_t_capture { };
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCPP_USE_C99
 # ifdef _GLIBCPP_HAVE_LLDIV_T
   struct lldiv_t : _C_legacy::_CPP_lldiv_t_capture { };
 # else
@@ -173,7 +173,7 @@ namespace std {
   div(long __n, long __d)
   { ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCPP_USE_C99
   inline long long 
   llabs(long long __x) { return __x >= 0 ? __x : -__x; }
 

@@ -6,16 +6,16 @@
 /* Define if you need to in order for stat and other things to work.  */
 #undef _POSIX_SOURCE
 
-// Define if GCC supports weak symbols
+// Define if GCC supports weak symbols.
 #undef _GLIBCPP_SUPPORTS_WEAK
 
-// Define if gthr-default.h exists (meaning that threading support is enabled)
+// Define if gthr-default.h exists (meaning that threading support is enabled).
 #undef HAVE_GTHR_DEFAULT
 
-// Include support for 'long long' and 'unsigned long long'.
+// Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
-// Define if code specialized for wchar_t should be used.
+// Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
 #undef _GLIBCPP_USE_C99
 
 // Include support for shadow headers, ie --enable-cshadow-headers.
