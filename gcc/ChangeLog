@@ -1,3 +1,11 @@
+Sun Apr 25 12:30:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (emit_call_1): New arg rounded_stack_size; update callers.
+	Update pending_stack_adjust based on this value.
+	(compute_argument_block_size): Include pending_stack_adjust in
+	PREFERRED_STACK_BOUNDARY alignment.
+	* function.c (assign_parms): Don't round to PREFERRED_STACK_BOUNDARY.
+
 Sun Apr 25 14:38:10 EDT 1999  John Wehle  (john@feith.com)
 
 	* stupid.c (stupid_mark_refs): Generate a REG_UNUSED note
