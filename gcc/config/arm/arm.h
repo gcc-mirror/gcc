@@ -1929,7 +1929,7 @@ typedef struct
    `assemble_name' uses this.  */
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
-  fprintf (FILE, "%s%s", USER_LABEL_PREFIX, arm_strip_name_encoding (NAME))
+  asm_fprintf (FILE, "%U%s", arm_strip_name_encoding (NAME))
 
 /* If we are referencing a function that is weak then encode a long call
    flag in the function name, otherwise if the function is static or
