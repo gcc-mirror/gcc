@@ -124,11 +124,21 @@ byte_reg (x, b)
 /* REGNO must be saved/restored across calls if this macro is true.  */
 
 #define WORD_REG_USED(regno)					\
-  (regno < 7 &&							\
-   (interrupt_handler						\
-    || pragma_saveall						\
-    || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
-    || (regs_ever_live[regno] && !call_used_regs[regno])))
+  (regno < 7							\
+   /* No need to save registers if this function will not return.*/\
+   && ! TREE_THIS_VOLATILE (current_function_decl)		\
+   && (pragma_saveall						\
+       /* Save any call saved register that was used.  */	\
+       || (regs_ever_live[regno] && !call_used_regs[regno])	\
+       /* Save the frame pointer if it was used.  */		\
+       || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])\
+       /* Save any register used in an interrupt handler.  */	\
+       || (interrupt_handler && regs_ever_live[regno])		\
+       /* Save call clobbered registers in non-leaf interrupt	\
+	  handlers.  */						\
+       || (interrupt_handler					\
+	   && call_used_regs[regno]				\
+	   && !current_function_is_leaf)))
 
 /* Output assembly language to FILE for the operation OP with operand size
    SIZE to adjust the stack pointer.  */
