@@ -139,7 +139,7 @@ variable_size (size)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  */
     ;
-  else
+  else if (TREE_CODE (size) == SAVE_EXPR)
     pending_sizes = tree_cons (NULL_TREE, size, pending_sizes);
 
   return size;
