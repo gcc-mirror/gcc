@@ -595,12 +595,12 @@ results freely.
 
 @code{builtin_assert} takes a string in the form you pass to the
 command-line option @option{-A}, such as @code{cpu=mips}, and creates
-the assertion.  @code{builtin_macro} takes a string in the form
+the assertion.  @code{builtin_define} takes a string in the form
 accepted by option @option{-D} and unconditionally defines the macro.
 
-@code{builtin_macro_std} takes a string representing the name of an
+@code{builtin_define_std} takes a string representing the name of an
 object-like macro.  If it doesn't lie in the user's namespace,
-@code{builtin_macro_std} defines it unconditionally.  Otherwise, it
+@code{builtin_define_std} defines it unconditionally.  Otherwise, it
 defines a version with two leading underscores, and another version
 with two leading and trailing underscores, and defines the original
 only if an ISO standard was not requested on the command line.  For
