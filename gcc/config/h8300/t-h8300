@@ -1,0 +1,5 @@
+LIBGCC1 = libgcc1.null
+T_CFLAGS = -DDONT_HAVE_STDIO -DDONT_HAVE_SETJMP 
+# we do not have DF or DI types, so fake out the libgcc2 compilation
+LIBGCC2_CFLAGS=-O -DDF=SF -DDI=SI $(GCC_CFLAGS) 
+LIB2FUNCS_EXTRA =
