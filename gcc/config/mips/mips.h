@@ -181,7 +181,6 @@ extern int		small_int ();
 extern void		trace();
 extern int		uns_arith_operand ();
 extern struct rtx_def *	embedded_pic_offset ();
-extern void		mips_finalize_pic ();
 
 /* Recognition functions that return if a condition is true.  */
 extern int		address_operand ();
@@ -1336,7 +1335,10 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 #define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
 
-#define FINALIZE_PIC mips_finalize_pic ()
+/* Initialize embedded_pic_fnaddr_rtx before RTL generation for
+   each function.  We used to do this in FINALIZE_PIC, but FINALIZE_PIC
+   isn't always called for static inline functions.  */
+#define INIT_EXPANDERS embedded_pic_fnaddr_rtx = NULL;
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
