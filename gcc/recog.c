@@ -579,145 +579,26 @@ validate_replace_rtx_1 (loc, from, to, object)
       /* In case we are replacing by constant, attempt to simplify it to
 	 non-SUBREG expression.  We can't do this later, since the information
 	 about inner mode may be lost.  */
-      if (CONSTANT_P (to) && rtx_equal_p (SUBREG_REG (x), from))
+      if (rtx_equal_p (SUBREG_REG (x), from))
         {
-	  int offset, part;
-	  unsigned HOST_WIDE_INT val;
-
-	  /* A paradoxical SUBREG of a VOIDmode constant is the same constant,
-	     since we are saying that the high bits don't matter.  */
-	  if (GET_MODE (to) == VOIDmode
-	      && (GET_MODE_SIZE (GET_MODE (x))
-		  >= GET_MODE_SIZE (GET_MODE (from))))
+	  rtx temp;
+	  temp = simplify_subreg (GET_MODE (x), to, GET_MODE (SUBREG_REG (x)),
+				  SUBREG_BYTE (x));
+	  if (temp)
 	    {
-	      rtx new = gen_lowpart_if_possible (GET_MODE (x), to);
-	      if (new)
-		{
-		  validate_change (object, loc, new, 1);
-		  return;
-		}
-	    }
-
-	  offset = SUBREG_BYTE (x) * BITS_PER_UNIT;
-	  switch (GET_CODE (to))
-	    {
-	    case CONST_DOUBLE:
-	      if (GET_MODE (to) != VOIDmode)
-		break;
-
-	      part = offset >= HOST_BITS_PER_WIDE_INT;
-	      if ((BITS_PER_WORD > HOST_BITS_PER_WIDE_INT
-		   && BYTES_BIG_ENDIAN)
-		  || (BITS_PER_WORD <= HOST_BITS_PER_WIDE_INT
-		      && WORDS_BIG_ENDIAN))
-		part = !part;
-	      val = part ? CONST_DOUBLE_HIGH (to) : CONST_DOUBLE_LOW (to);
-	      offset %= HOST_BITS_PER_WIDE_INT;
-
-	      /* FALLTHROUGH */
-	    case CONST_INT:
-	      if (GET_CODE (to) == CONST_INT)
-		val = INTVAL (to);
-
-	      {
-		/* Avoid creating bogus SUBREGs */
-		enum machine_mode mode = GET_MODE (x);
-		enum machine_mode inner_mode = GET_MODE (from);
-
-		/* We've already picked the word we want from a double, so 
-		   pretend this is actually an integer.  */
-		if (GET_CODE (to) == CONST_DOUBLE)
-		  inner_mode = SImode;
-
-		if (GET_MODE_CLASS (mode) != MODE_INT)
-		  {
-		    /* Substitute in something that we know won't be
-		       recognized.  */
-		    to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-		    validate_change (object, loc, to, 1);
-		    return;
-		  }
-
-		if (BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
-		  {
-		    if (WORDS_BIG_ENDIAN)
-		      offset = GET_MODE_BITSIZE (inner_mode)
-			       - GET_MODE_BITSIZE (mode) - offset;
-		    if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
-			&& GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-		      offset = offset + BITS_PER_WORD - GET_MODE_BITSIZE (mode)
-			       - 2 * (offset % BITS_PER_WORD);
-		  }
-
-		if (offset >= HOST_BITS_PER_WIDE_INT)
-		  to = ((HOST_WIDE_INT) val < 0) ? constm1_rtx : const0_rtx;
-		else
-		  {
-		    val >>= offset;
-		    if (GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
-		      val = trunc_int_for_mode (val, mode);
-		    to = GEN_INT (val);
-		  }
-
-		validate_change (object, loc, to, 1);
-		return;
-	      }
-
-	    default:
-	      break;
-	    }
-        }
-
-      /* Changing mode twice with SUBREG => just change it once,
-	 or not at all if changing back to starting mode.  */
-      if (GET_CODE (to) == SUBREG
-	  && rtx_equal_p (SUBREG_REG (x), from))
-	{
-	  if (GET_MODE (x) == GET_MODE (SUBREG_REG (to))
-	      && SUBREG_BYTE (x) == 0 && SUBREG_BYTE (to) == 0)
-	    {
-	      validate_change (object, loc, SUBREG_REG (to), 1);
+	      validate_change (object, loc, temp, 1);
 	      return;
 	    }
-
-	  /* Make sure the 2 byte counts added together are an even unit
-	     of x's mode, and combine them if so. Otherwise we run
-	     into problems with something like:
-		(subreg:HI (subreg:QI (SI:55) 3) 0)
-	     we end up with an odd offset into a HI which is invalid.  */
-
-	  if (SUBREG_BYTE (to) % GET_MODE_SIZE (GET_MODE (x)) == 0)
-	    validate_change (object, loc,
-			     gen_rtx_SUBREG (GET_MODE (x), SUBREG_REG (to),
-					     SUBREG_BYTE(x) + SUBREG_BYTE (to)),
-			     1);
-	  else
-	    validate_change (object, loc, to, 1);	
-
-	  return;
-	}
-
-      /* If we have a SUBREG of a register that we are replacing and we are
-	 replacing it with a MEM, make a new MEM and try replacing the
-	 SUBREG with it.  Don't do this if the MEM has a mode-dependent address
-	 or if we would be widening it.  */
-
-      if (GET_CODE (from) == REG
-	  && GET_CODE (to) == MEM
-	  && rtx_equal_p (SUBREG_REG (x), from)
-	  && ! mode_dependent_address_p (XEXP (to, 0))
-	  && ! MEM_VOLATILE_P (to)
-	  && GET_MODE_SIZE (GET_MODE (x)) <= GET_MODE_SIZE (GET_MODE (to)))
-	{
-	  int offset = SUBREG_BYTE (x);
-	  enum machine_mode mode = GET_MODE (x);
-	  rtx new;
-
-	  new = gen_rtx_MEM (mode, plus_constant (XEXP (to, 0), offset));
-	  MEM_COPY_ATTRIBUTES (new, to);
-	  validate_change (object, loc, new, 1);
-	  return;
-	}
+	  /* Avoid creating of invalid SUBREGS.  */
+	  if (GET_MODE (from) == VOIDmode)
+	    {
+	      /* Substitute in something that we know won't be
+		 recognized.  */
+	      to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	      validate_change (object, loc, to, 1);
+	      return;
+	    }
+        }
       break;
 
     case ZERO_EXTRACT:

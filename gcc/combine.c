@@ -3765,161 +3765,21 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       break;
 
     case SUBREG:
-      /* (subreg:A (mem:B X) N) becomes a modified MEM unless the SUBREG
-	 is paradoxical.  If we can't do that safely, then it becomes
-	 something nonsensical so that this combination won't take place.  */
+      if (op0_mode == VOIDmode)
+	op0_mode = GET_MODE (SUBREG_REG (x));
 
-      if (GET_CODE (SUBREG_REG (x)) == MEM
-	  && (GET_MODE_SIZE (mode)
-	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
-	{
-	  rtx inner = SUBREG_REG (x);
-	  int offset = SUBREG_BYTE (x);
-	  /* Don't change the mode of the MEM
-	     if that would change the meaning of the address.  */
-	  if (MEM_VOLATILE_P (SUBREG_REG (x))
-	      || mode_dependent_address_p (XEXP (inner, 0)))
-	    return gen_rtx_CLOBBER (mode, const0_rtx);
-
-	  /* Note if the plus_constant doesn't make a valid address
-	     then this combination won't be accepted.  */
-	  x = gen_rtx_MEM (mode,
-			   plus_constant (XEXP (inner, 0), offset));
-	  MEM_COPY_ATTRIBUTES (x, inner);
-	  return x;
-	}
-
-      /* If we are in a SET_DEST, these other cases can't apply.  */
-      if (in_dest)
-	return x;
-
-      /* Changing mode twice with SUBREG => just change it once,
-	 or not at all if changing back to starting mode.  */
-      if (GET_CODE (SUBREG_REG (x)) == SUBREG)
-	{
-	  int final_offset;
-	  enum machine_mode outer_mode, inner_mode;
-
-	  /* If the innermost mode is the same as the goal mode,
-	     and the low word is being referenced in both SUBREGs,
-	     return the innermost element.  */
-	  if (mode == GET_MODE (SUBREG_REG (SUBREG_REG (x))))
-	    {
-	      int inner_word = SUBREG_BYTE (SUBREG_REG (x));
-	      int outer_word = SUBREG_BYTE (x);
-
-	      inner_word = (inner_word / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      outer_word = (outer_word / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      if (inner_word == 0
-		  && outer_word == 0)
-		return SUBREG_REG (SUBREG_REG (x));
-	    }
-
-	  outer_mode = GET_MODE (SUBREG_REG (x));
-	  inner_mode = GET_MODE (SUBREG_REG (SUBREG_REG (x)));
-	  final_offset = SUBREG_BYTE (x) + SUBREG_BYTE (SUBREG_REG(x));
-
-	  if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	      && GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (mode)
-	      && GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
-	    {
-	      /* Inner SUBREG is paradoxical, outer is not.  On big endian
-		 we have to special case this.  */
-	      if (SUBREG_BYTE (SUBREG_REG (x)))
-		abort(); /* Can a paradoxical subreg have nonzero offset? */
-	      if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
-	        final_offset = SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
-			       + GET_MODE_SIZE (inner_mode);
-	      else if (WORDS_BIG_ENDIAN)
-		final_offset = (final_offset % UNITS_PER_WORD)
-			       + ((SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
-				   + GET_MODE_SIZE (inner_mode))
-				  * UNITS_PER_WORD) / UNITS_PER_WORD;
-	      else
-		final_offset = ((final_offset * UNITS_PER_WORD)
-				/ UNITS_PER_WORD)
-			       + ((SUBREG_BYTE (x) - GET_MODE_SIZE (outer_mode)
-				   + GET_MODE_SIZE (inner_mode))
-				  % UNITS_PER_WORD);
-	    }
-
-	  /* The SUBREG rules are that the byte offset must be
-	     some multiple of the toplevel SUBREG's mode.  */
-	  final_offset = (final_offset / GET_MODE_SIZE (mode));
-	  final_offset = (final_offset * GET_MODE_SIZE (mode));
-
-	  SUBST_INT (SUBREG_BYTE (x), final_offset);
-	  SUBST (SUBREG_REG (x), SUBREG_REG (SUBREG_REG (x)));
-	}
-
-      /* SUBREG of a hard register => just change the register number
-	 and/or mode.  If the hard register is not valid in that mode,
-	 suppress this combination.  If the hard register is the stack,
-	 frame, or argument pointer, leave this as a SUBREG.  */
-
-      if (GET_CODE (SUBREG_REG (x)) == REG
-	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
-	  && REGNO (SUBREG_REG (x)) != FRAME_POINTER_REGNUM
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	  && REGNO (SUBREG_REG (x)) != HARD_FRAME_POINTER_REGNUM
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	  && REGNO (SUBREG_REG (x)) != ARG_POINTER_REGNUM
-#endif
-	  && REGNO (SUBREG_REG (x)) != STACK_POINTER_REGNUM)
-	{
-	  int final_regno = subreg_hard_regno (x, 0);
-
-	  if (HARD_REGNO_MODE_OK (final_regno, mode))
-	    return gen_rtx_REG (mode, final_regno);
-	  else
-	    return gen_rtx_CLOBBER (mode, const0_rtx);
-	}
-
-      /* For a constant, try to pick up the part we want.  Handle a full
-	 word and low-order part.  Only do this if we are narrowing
-	 the constant; if it is being widened, we have no idea what
-	 the extra bits will have been set to.  */
-
-      if (CONSTANT_P (SUBREG_REG (x)) && op0_mode != VOIDmode
-	  && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-	  && GET_MODE_SIZE (op0_mode) > UNITS_PER_WORD
-	  && GET_MODE_CLASS (mode) == MODE_INT)
-	{
-	  temp = operand_subword (SUBREG_REG (x),
-				  (SUBREG_BYTE (x) / UNITS_PER_WORD),
-				  0, op0_mode);
-	  if (temp)
-	    return temp;
-	}
-
-      /* If we want a subreg of a constant, at offset 0,
-	 take the low bits.  On a little-endian machine, that's
-	 always valid.  On a big-endian machine, it's valid
-	 only if the constant's mode fits in one word.   Note that we
-	 cannot use subreg_lowpart_p since SUBREG_REG may be VOIDmode.  */
+      /* simplify_subreg can't use gen_lowpart_for_combine.  */
       if (CONSTANT_P (SUBREG_REG (x))
-	  && ((GET_MODE_SIZE (op0_mode) <= UNITS_PER_WORD
-	      || ! WORDS_BIG_ENDIAN)
-	      ? SUBREG_BYTE (x) == 0
-	      : (SUBREG_BYTE (x)
-		 == (GET_MODE_SIZE (op0_mode) - GET_MODE_SIZE (mode))))
-	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (op0_mode)
-	  && (! WORDS_BIG_ENDIAN
-	      || GET_MODE_BITSIZE (op0_mode) <= BITS_PER_WORD))
+	  && subreg_lowpart_parts_p (mode, op0_mode, SUBREG_BYTE (x)))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
-      /* A paradoxical SUBREG of a VOIDmode constant is the same constant,
-	 since we are saying that the high bits don't matter.  */
-      if (CONSTANT_P (SUBREG_REG (x)) && GET_MODE (SUBREG_REG (x)) == VOIDmode
-	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (op0_mode))
-	{
-	  if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
-	      && (WORDS_BIG_ENDIAN || SUBREG_BYTE (x) != 0))
-	    return constant_subword (SUBREG_REG (x), 
-				     SUBREG_BYTE (x) / UNITS_PER_WORD, mode);
-	  return SUBREG_REG (x);
-	}
+      {
+	rtx temp;
+	temp = simplify_subreg (mode, SUBREG_REG (x), op0_mode,
+		       		SUBREG_BYTE (x));
+	if (temp)
+	  return temp;
+      }
 
       /* Note that we cannot do any narrowing for non-constants since
 	 we might have been counting on using the fact that some bits were

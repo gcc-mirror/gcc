@@ -1,3 +1,12 @@
+Thu May 17 16:59:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_subreg): Break out from ...
+	* combine.c (combine_splify_rtx) ... here and ...
+	* recog.c (validate_replace_rtx_1): ... here;
+	* rtl.h (subreg_lowpart_parts_p, simplify_subreg): Declare.
+	* emit-rtl.c (subreg_lowpart_parts_p): Break out from ...
+	(subreg_lowpart_p): ... here.
+
 2001-05-17  Bernd Schmidt  <bernds@redhat.com>
 
 	* stmt.c (expand_asm_operands): For inout operands, make sure
