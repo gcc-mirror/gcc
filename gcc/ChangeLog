@@ -1,5 +1,11 @@
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/ip2k/ip2k-protos.h: Remove the prototype for
+	asm_output_section_name.
+	* config/ip2k/ip2k.c (asm_output_section_name): Remove.
+
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* alias.c: Fix comment formatting.
 	* alloc-pool.c: Likewise.
 	* bitmap.c: Likewise.
