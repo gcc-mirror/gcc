@@ -6259,6 +6259,16 @@ emit_reload_insns (insn)
 	      XEXP (note, 0) = reload_reg_rtx[j];
 	      continue;
 	    }
+	  /* Likewise for a SUBREG of an operand that dies.  */
+	  else if (GET_CODE (old) == SUBREG
+		   && GET_CODE (SUBREG_REG (old)) == REG
+		   && 0 != (note = find_reg_note (insn, REG_UNUSED,
+						  SUBREG_REG (old))))
+	    {
+	      XEXP (note, 0) = gen_lowpart_common (GET_MODE (old),
+						   reload_reg_rtx[j]);
+	      continue;
+	    }
 	  else if (GET_CODE (old) == SCRATCH)
 	    /* If we aren't optimizing, there won't be a REG_UNUSED note,
 	       but we don't want to make an output reload.  */
@@ -6344,10 +6354,22 @@ emit_reload_insns (insn)
 			{
 			  rtx third_reloadreg
 			    = reload_reg_rtx[reload_secondary_out_reload[secondary_reload]];
+			  rtx tem;
 
 			  /* Copy primary reload reg to secondary reload reg.
 			     (Note that these have been swapped above, then
 			     secondary reload reg to OLD using our insn.  */
+
+			  /* If REAL_OLD is a paradoxical SUBREG, remove it
+			     and try to put the opposite SUBREG on
+			     RELOADREG.  */
+			  if (GET_CODE (real_old) == SUBREG
+			      && (GET_MODE_SIZE (GET_MODE (real_old))
+				  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (real_old))))
+			      && 0 != (tem = gen_lowpart_common
+				       (GET_MODE (SUBREG_REG (real_old)),
+					reloadreg)))
+			    real_old = SUBREG_REG (real_old), reloadreg = tem;
 
 			  gen_reload (reloadreg, second_reloadreg,
 				      reload_opnum[j], reload_when_needed[j]);
