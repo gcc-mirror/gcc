@@ -209,7 +209,7 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
   jbyte *dbytes = elements (p->getData()) + p->getOffset();
-  jint maxlen = p->getData()->length - p->getOffset();
+  jint maxlen = p->maxlen - p->getOffset();
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
@@ -255,7 +255,7 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
 
   p->setAddress (new ::java::net::InetAddress (raddr, NULL));
   p->setPort (rport);
-  p->setLength ((jint) retlen);
+  p->length = (int) retlen;
   return rport;
 
  error:
@@ -329,7 +329,7 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
   jbyte *dbytes = elements (p->getData()) + p->getOffset();
-  jint maxlen = p->getData()->length - p->getOffset();
+  jint maxlen = p->maxlen - p->getOffset();
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
@@ -375,7 +375,7 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
 
   p->setAddress (new ::java::net::InetAddress (raddr, NULL));
   p->setPort (rport);
-  p->setLength ((jint) retlen);
+  p->length = (jint) retlen;
   return;
 
  error:

@@ -1,3 +1,20 @@
+2003-12-04  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramPacket.java
+	(length): Made packge-private to make it accessible via CNI.
+	(maxlen): New field.
+	(DatagramPacket): Cleaned up.
+	(setSocketAddress): Add message to exception.
+	(setData): Call other setData().
+	(setData): Call setLength().
+	(setLength): Initialize maxlen too.
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (peekData):
+	Get maximal length from maxlen field, set length field directly.
+	(receive): Likewise.
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc (peekData):
+	Get maximal length from maxlen field, set length field directly.
+	(receive): Likewise.
+
 2003-12-03  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/natSelectorImplPosix.cc
