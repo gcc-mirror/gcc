@@ -5835,7 +5835,7 @@ choose_reload_regs (insn, avoid_return_reg)
 			      /* If find_reloads chose reload_out as reload
 				 register, stay with it - that leaves the
 				 inherited register for subsequent reloads.  */
-			      || (reload_reg_rtx
+			      || (reload_out[r] && reload_reg_rtx
 				  && rtx_equal_p (reload_out[r],
 						  reload_reg_rtx[r])))
 			    reload_override_in[r] = reg_last_reload_reg[regno];
