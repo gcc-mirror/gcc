@@ -80,11 +80,22 @@ dnl Currently works only for Linux X86/ia64
 dnl Typically faster and more space-efficient
 AC_ARG_ENABLE(hash-synchronization,
 [  --enable-hash-synchronization
-                          Use global hash table for monitor locks])
+                          use global hash table for monitor locks])
 
 if test -z "$enable_hash_synchronization"; then
    enable_hash_synchronization=$enable_hash_synchronization_default
 fi
+
+# Do we allow intermodule optimizations (i.e. compiling many files at once)?
+AC_ARG_ENABLE(libgcj-multifile,
+[  --enable-libgcj-multifile
+                          allow compilation of several files at once],
+[case "${enableval}" in
+  yes) enable_libgcj_multifile=yes ;;
+  no)  enable_libgcj_multifile=no ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-libgcj-multifile) ;;
+esac],[enable_libgcj_multifile=no])
+AM_CONDITIONAL(ONESTEP, test "$enable_libgcj_multifile" = yes)
 
 dnl configure.host sets slow_pthread_self if the synchronization code should 
 dnl try to avoid pthread_self calls by caching thread IDs in a hashtable.

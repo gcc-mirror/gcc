@@ -4872,21 +4872,34 @@ $(gtk_c_headers): $(gtk_awt_peer_sources)
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 
-libgcj-@gcc_version@.jar: $(all_java_source_files)
-	-@rm -f libgcj-@gcc_version@.jar
-	@echo Compiling Java sourcefiles...
-	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
-	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
-	find java gnu javax org -type d -o -type f -name '*.class' | \
-	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-	  $(ZIP) cfM0E@ $@
+# Compile all classfiles in one go.
+
+@ONESTEP_TRUE@libgcj-@gcc_version@.jar: $(all_java_source_files)
+@ONESTEP_TRUE@	-@rm -f libgcj-@gcc_version@.jar
+@ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
+@ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
+@ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
+@ONESTEP_TRUE@	find java gnu javax org -type d -o -type f -name '*.class' | \
+@ONESTEP_TRUE@	  sed -e '/\/\./d' -e '/\/xlib/d' | \
+@ONESTEP_TRUE@	  $(ZIP) cfM0E@ $@
 
 # This next rule seems backward, but reflects the fact
 # that 1) all classfiles are compiled in one go when the
 # libgcj jarfile is built and 2) anything which depends
 # on a particular .class file must wait until the jarfile
 # is built.
-$(all_java_class_files): libgcj-@gcc_version@.jar
+@ONESTEP_TRUE@$(all_java_class_files): libgcj-@gcc_version@.jar
+
+# Compile each classfile individually.
+
+@ONESTEP_FALSE@.java.class:
+@ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $<
+
+@ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files)
+@ONESTEP_FALSE@	-@rm -f libgcj-@gcc_version@.jar
+@ONESTEP_FALSE@	find java gnu javax org -type d -o -type f -name '*.class' | \
+@ONESTEP_FALSE@	  sed -e '/\/\./d' -e '/\/xlib/d' | \
+@ONESTEP_FALSE@	  $(ZIP) cfM0E@ $@
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
