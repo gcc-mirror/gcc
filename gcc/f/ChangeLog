@@ -1,3 +1,7 @@
+2001-10-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (f/intdoc): Depend on safe-ctype.o.
+
 Sun Oct 21 17:28:17 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (ffebad_finish): Use safe-ctype macros and/or fold extra
