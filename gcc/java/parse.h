@@ -79,6 +79,7 @@ extern tree stabilize_reference PARAMS ((tree));
 #define METHOD_MODIFIERS ACC_PUBLIC|ACC_PROTECTED|ACC_PRIVATE|ACC_ABSTRACT| \
 			 ACC_STATIC|ACC_FINAL|ACC_SYNCHRONIZED|ACC_NATIVE
 #define INTERFACE_MODIFIERS ACC_PUBLIC|ACC_ABSTRACT
+#define INTERFACE_INNER_MODIFIERS ACC_PUBLIC|ACC_PROTECTED|ACC_PRIVATE|ACC_ABSTRACT|ACC_STATIC
 #define INTERFACE_METHOD_MODIFIERS ACC_PUBLIC|ACC_ABSTRACT
 #define INTERFACE_FIELD_MODIFIERS ACC_PUBLIC|ACC_STATIC|ACC_FINAL
 
@@ -827,10 +828,12 @@ struct parser_ctxt {
    context.  */
 #define INNER_ENCLOSING_SCOPE_CHECK(T)					\
   (INNER_CLASS_TYPE_P ((T)) && !ANONYMOUS_CLASS_P ((T))			\
-   /* We have a this and it's not the right one */			\
    && ((current_this							\
+	/* We have a this and it's not the right one */			\
 	&& (DECL_CONTEXT (TYPE_NAME ((T)))				\
-	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this)))))	\
+	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))	\
+	&& !inherits_from_p (TREE_TYPE (TREE_TYPE (current_this)),	\
+			     TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T)))))	\
        /* We don't have a this. */					\
        || !current_this))
 

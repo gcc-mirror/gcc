@@ -3348,7 +3348,7 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
 	sca = (GET_CPC_LIST () ? ACC_STATIC : 0);
     }
 
-  /* Inner classes and interfaces can be declared private or protected
+  /* Inner classes can be declared private or protected
      within their enclosing classes. */
   if (CPC_INNER_P ())
     {
@@ -3364,11 +3364,20 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
 	}
     }
 
-  if (is_interface)
-    check_modifiers ("Illegal modifier `%s' for interface declaration",
-		     flags, INTERFACE_MODIFIERS);
+  if (is_interface) 
+    {
+      if (CPC_INNER_P ())
+	uaaf = INTERFACE_INNER_MODIFIERS;
+      else
+	uaaf = INTERFACE_MODIFIERS;
+      
+      check_modifiers ("Illegal modifier `%s' for interface declaration", 
+		       flags, uaaf);
+    }
   else
-    check_modifiers ("Illegal modifier `%s' for class declaration",
+    check_modifiers ((current_function_decl ?
+		      "Illegal modifier `%s' for local class declaration" :
+		      "Illegal modifier `%s' for class declaration"),
 		     flags, uaaf|sca|icaf);
   return 0;
 }
@@ -3748,7 +3757,7 @@ create_anonymous_class (location, type_name)
   return class;
 }
 
-/* Create an class in pass1 and return its decl. Return class
+/* Create a class in pass1 and return its decl. Return class
    interface's decl in pass 2.  */
 
 static tree
@@ -5390,8 +5399,32 @@ do_resolve_class (enclosing, class_type, decl, cl)
   /* Maybe some code here should be added to load the class or
      something, at least if the class isn't an inner class and ended
      being loaded from class file. FIXME. */
-  if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
-    return new_class_decl;
+  while (enclosing)
+    {
+      tree name;
+
+      if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
+        return new_class_decl;
+
+      /* Now go to the upper classes, bail out if necessary. */
+      enclosing = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
+      if (!enclosing || enclosing == object_type_node)
+	break;
+      
+      if (TREE_CODE (enclosing) == RECORD_TYPE)
+	{
+	  enclosing = TYPE_NAME (enclosing);
+	  continue;
+	}
+
+      if (TREE_CODE (enclosing) == IDENTIFIER_NODE)
+	{
+	  BUILD_PTR_FROM_NAME (name, enclosing);
+	}
+      else
+	name = enclosing;
+      enclosing = do_resolve_class (NULL, name, NULL, NULL);
+    }
 
   /* 1- Check for the type in single imports */
   if (find_in_imports (class_type))

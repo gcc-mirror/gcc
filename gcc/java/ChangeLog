@@ -1,3 +1,17 @@
+Thu Apr 20 17:41:28 2000  Mo DeJong  <mdejong@cygnus.com>
+
+	* parse.h (INTERFACE_INNER_MODIFIERS): New macro.
+	* parse.y (check_class_interface_creation): Fixed comments. Select
+ 	permitted modifiers for (inner) interfaces. Changed error message
+ 	to report rejected modifiers used with local classes.
+
+2000-04-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (INNER_ENCLOSING_SCOPE_CHECK): Immediate inner classes
+	of directly inherited type considered in scope.
+	* parse.y (do_resolve_class): Search inherited classes for inner
+	classes.
+
 2000-04-20  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (not_accessible_p): Use member's class, not current
