@@ -3550,10 +3550,9 @@ init_emit_once (line_numbers)
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_CC); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    const_tiny_rtx[0][(int) mode] = const0_rtx;
-
+  for (mode = CCmode; mode < MAX_MACHINE_MODE; ++mode)
+    if (GET_MODE_CLASS (mode) == MODE_CC)
+      const_tiny_rtx[0][(int) mode] = const0_rtx;
 
   /* Assign register numbers to the globally defined register rtx.
      This must be done at runtime because the register number field
