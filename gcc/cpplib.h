@@ -190,9 +190,12 @@ struct cpp_token
   } val;
 };
 
-/* A standalone character.  It is unsigned for the same reason we use
-   unsigned char - to avoid signedness issues.  */
+/* A type wide enough to hold any multibyte source character.
+   cpplib's character constant interpreter uses shifts, and so
+   requires an unsigned type.  */
 typedef unsigned int cppchar_t;
+/* Its signed equivalent.  */
+typedef int cppchar_signed_t;
 
 /* Values for opts.dump_macros.
   dump_only means inhibit output of the preprocessed text
@@ -236,6 +239,10 @@ struct cpp_options
 
   /* -fleading_underscore sets this to "_".  */
   const char *user_label_prefix;
+
+  /* Precision for target CPP arithmetic, target characters and target
+     wide characters, respectively.  */
+  size_t precision, char_precision, wchar_precision;
 
   /* The language we're preprocessing.  */
   enum c_lang lang;
@@ -535,9 +542,9 @@ extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
 extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));
 
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
-extern HOST_WIDE_INT
+extern cppchar_t
 cpp_interpret_charconst PARAMS ((cpp_reader *, const cpp_token *,
-				 int, unsigned int *));
+				 int, unsigned int *, int *));
 
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));
@@ -600,10 +607,15 @@ extern int cpp_ideq			PARAMS ((const cpp_token *,
 extern void cpp_output_line		PARAMS ((cpp_reader *, FILE *));
 extern void cpp_output_token		PARAMS ((const cpp_token *, FILE *));
 extern const char *cpp_type2name	PARAMS ((enum cpp_ttype));
-extern unsigned int cpp_parse_escape	PARAMS ((cpp_reader *,
-						 const unsigned char **,
-						 const unsigned char *,
-						 unsigned HOST_WIDE_INT));
+/* Returns the value of an escape sequence, truncated to the correct
+   target precision.  PSTR points to the input pointer, which is just
+   after the backslash.  LIMIT is how much text we have.  WIDE is true
+   if the escape sequence is part of a wide character constant or
+   string literal.  Handles all relevant diagnostics.  */
+extern cppchar_t cpp_parse_escape	PARAMS ((cpp_reader *,
+						 const unsigned char ** pstr,
+						 const unsigned char *limit,
+						 int wide));
 
 /* In cpphash.c */
 

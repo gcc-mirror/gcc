@@ -1,3 +1,25 @@
+2002-05-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (lex_string): Let cpp_parse_escape handles truncation
+	and sign-extension.
+	(lex_charconst): Update for change in prototype of
+	cpp_interpret_charconst.  Extend from cppchar_t to HOST_WIDE_INT
+	appropriately.
+	* cpphash.h (BITS_PER_CPPCHAR_T): New.
+	* cppinit.c (cpp_create_reader): Initialize them for no
+	change in semantics.
+	(cpp_post_options): Add sanity checks.
+	* cpplex.c (cpp_parse_escape): Handle precision, sign-extension
+	and truncation issues.  Calculate in type cppchar_t.
+	(MAX_CHAR_TYPE_SIZE, MAX_WCHAR_TYPE_SIZE): Remove.
+	(cpp_interpret_charconst): Calculate in type cppchar_t.  Handle
+	run-time dependent precision correctly.  Return whether the
+	result is signed or not.
+	* cpplib.c (dequote_string): Use cppchar_t; update.
+	* cpplib.h (cppchar_signed_t): New.
+	struct cpp_options): New precision members.
+	(cpp_interpret_charconst, cpp_parse_escape): Update prototypes.
+
 2002-05-03  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc-protos.h (sparc_rtx_costs): New.

@@ -502,6 +502,18 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
+  /* CPP arithmetic done to existing rules for now.  */
+#define BITS_PER_HOST_WIDEST_INT (CHAR_BIT * sizeof (HOST_WIDEST_INT))
+  CPP_OPTION (pfile, precision) = BITS_PER_HOST_WIDEST_INT;
+#ifndef MAX_CHAR_TYPE_SIZE
+#define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
+#endif
+  CPP_OPTION (pfile, char_precision) = MAX_CHAR_TYPE_SIZE;
+#ifndef MAX_WCHAR_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+  CPP_OPTION (pfile, wchar_precision) = MAX_WCHAR_TYPE_SIZE;
+
   /* It's simplest to just create this struct whether or not it will
      be needed.  */
   pfile->deps = deps_init ();
@@ -1795,6 +1807,27 @@ cpp_post_options (pfile)
 #endif
       fputc ('\n', stderr);
     }
+
+#if ENABLE_CHECKING
+  /* Sanity checks for CPP arithmetic.  */
+  if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
+    cpp_error (pfile, DL_FATAL,
+	       "preprocessor arithmetic has maximum precision of %u bits; target requires %u bits",
+	       BITS_PER_HOST_WIDEST_INT, CPP_OPTION (pfile, precision));
+
+  if (CPP_OPTION (pfile, char_precision) > BITS_PER_CPPCHAR_T
+      || CPP_OPTION (pfile, wchar_precision) > BITS_PER_CPPCHAR_T)
+    cpp_error (pfile, DL_FATAL,
+	       "CPP cannot handle (wide) character constants over %u bits",
+	       BITS_PER_CPPCHAR_T);
+
+  {
+    cppchar_t test = 0;
+    test--;
+    if (test < 1)
+      cpp_error (pfile, DL_FATAL, "cppchar_t must be an unsigned type");
+  }
+#endif
 
   /* Canonicalize in_fname and out_fname.  We guarantee they are not
      NULL, and that the empty string represents stdin / stdout.  */

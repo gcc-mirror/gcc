@@ -1238,9 +1238,7 @@ lex_string (str, len, wide)
   char *buf = alloca ((len + 1) * (wide ? WCHAR_BYTES : 1));
   char *q = buf;
   const unsigned char *p = str, *limit = str + len;
-  unsigned int c;
-  unsigned width = wide ? WCHAR_TYPE_SIZE
-			: TYPE_PRECISION (char_type_node);
+  cppchar_t c;
 
 #ifdef MULTIBYTE_CHARS
   /* Reset multibyte conversion state.  */
@@ -1270,15 +1268,7 @@ lex_string (str, len, wide)
 #endif
 
       if (c == '\\' && !ignore_escape_flag)
-	{
-	  unsigned int mask;
-
-	  if (width < HOST_BITS_PER_INT)
-	    mask = ((unsigned int) 1 << width) - 1;
-	  else
-	    mask = ~0;
-	  c = cpp_parse_escape (parse_in, &p, limit, mask);
-	}
+	c = cpp_parse_escape (parse_in, &p, limit, wide);
 	
       /* Add this single character into the buffer either as a wchar_t,
 	 a multibyte sequence, or as a single byte.  */
@@ -1345,45 +1335,31 @@ static tree
 lex_charconst (token)
      const cpp_token *token;
 {
-  HOST_WIDE_INT result;
+  cppchar_t result;
   tree type, value;
   unsigned int chars_seen;
+  int unsignedp;
  
   result = cpp_interpret_charconst (parse_in, token, warn_multichar,
- 				    &chars_seen);
-  if (token->type == CPP_WCHAR)
-    {
-      value = build_int_2 (result, 0);
-      type = wchar_type_node;
-    }
+ 				    &chars_seen, &unsignedp);
+
+  /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
+     before possibly widening to HOST_WIDE_INT for build_int_2.  */
+  if (unsignedp || (cppchar_signed_t) result >= 0)
+    value = build_int_2 (result, 0);
   else
-    {
-      if (result < 0)
- 	value = build_int_2 (result, -1);
-      else
- 	value = build_int_2 (result, 0);
- 
-      /* In C, a character constant has type 'int'.
- 	 In C++ 'char', but multi-char charconsts have type 'int'.  */
-      if (c_language == clk_cplusplus && chars_seen <= 1)
-	type = char_type_node;
-      else
-	type = integer_type_node;
-    }
+    value = build_int_2 ((cppchar_signed_t) result, -1);
 
-  /* cpp_interpret_charconst issues a warning if the constant
-     overflows, but if the number fits in HOST_WIDE_INT anyway, it
-     will return it un-truncated, which may cause problems down the
-     line.  So set the type to widest_integer_literal_type, call
-     convert to truncate it to the proper type, then clear
-     TREE_OVERFLOW so we don't get a second warning.
+  if (token->type == CPP_WCHAR)
+    type = wchar_type_node;
+  /* In C, a character constant has type 'int'.
+     In C++ 'char', but multi-char charconsts have type 'int'.  */
+  else if ((c_language == clk_c || c_language == clk_objective_c)
+	   || chars_seen > 1)
+    type = integer_type_node;
+  else
+    type = char_type_node;
 
-     FIXME: cpplib's assessment of overflow may not be accurate on a
-     platform where the final type can change at (compiler's) runtime.  */
-
-  TREE_TYPE (value) = widest_integer_literal_type_node;
-  value = convert (type, value);
-  TREE_OVERFLOW (value) = 0;
-
+  TREE_TYPE (value) = type;
   return value;
 }

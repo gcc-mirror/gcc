@@ -29,6 +29,8 @@ struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
 
+#define BITS_PER_CPPCHAR_T (CHAR_BIT * sizeof (cppchar_t))
+
 /* Test if a sign is valid within a preprocessing number.  */
 #define VALID_SIGN(c, prevc) \
   (((c) == '+' || (c) == '-') && \
