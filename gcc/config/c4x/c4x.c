@@ -1236,10 +1236,11 @@ c4x_emit_move_sequence (rtx *operands, enum machine_mode mode)
       && dp_reg_operand (XEXP (op1, 0), mode))
     {
       /* expand_increment will sometimes create a LO_SUM immediate
-	 address.  */
+	 address.  Undo this sillyness.  */
       op1 = XEXP (op1, 1);
     }
-  else if (symbolic_address_operand (op1, mode))
+  
+  if (symbolic_address_operand (op1, mode))
     {
       if (TARGET_LOAD_ADDRESS)
 	{
@@ -3267,7 +3268,8 @@ src_operand (rtx op, enum machine_mode mode)
       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	   || GET_CODE (XEXP (op, 0)) == LABEL_REF
 	   || GET_CODE (XEXP (op, 0)) == CONST)))
-    return ! TARGET_LOAD_DIRECT_MEMS && GET_MODE (op) == mode;
+    return !TARGET_EXPOSE_LDP && 
+      ! TARGET_LOAD_DIRECT_MEMS && GET_MODE (op) == mode;
 
   return general_operand (op, mode);
 }
