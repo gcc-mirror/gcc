@@ -1,3 +1,8 @@
+2001-06-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* emit-rtl.c (gen_lowpart_common): Do not assume that SFmode and DFmode
+	are one and two words in size.
+
 2001-06-10  Richard Henderson  <rth@redhat.com>
 
 	* doc/invoke.texi (Optimization Options): Document -fpeephole2.

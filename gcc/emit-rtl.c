@@ -772,7 +772,8 @@ gen_lowpart_common (mode, x)
       else if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x)))
 	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
-  else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG || GET_CODE (x) == CONCAT)
+  else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG
+	   || GET_CODE (x) == CONCAT)
     return simplify_gen_subreg (mode, x, GET_MODE (x), offset);
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
@@ -900,17 +901,19 @@ gen_lowpart_common (mode, x)
      doesn't have to deal with constructs like (subreg:DI
      (const_double:SF ...)) or (subreg:DF (const_int ...)).  */
 
-  else if (mode == SFmode
+  else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
 	   && GET_CODE (x) == CONST_INT)
-    {
+  {
       REAL_VALUE_TYPE r;
       HOST_WIDE_INT i;
 
       i = INTVAL (x);
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-    }
-  else if (mode == DFmode
+  }
+  else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && GET_MODE (x) == VOIDmode)
     {
@@ -949,23 +952,21 @@ gen_lowpart_common (mode, x)
       int endian = WORDS_BIG_ENDIAN ? 1 : 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      switch (GET_MODE (x))
+      switch (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD)
 	{
-	case SFmode:
+	case 1:
 	  REAL_VALUE_TO_TARGET_SINGLE (r, i[endian]);
 	  i[1 - endian] = 0;
 	  break;
-	case DFmode:
+	case 2:
 	  REAL_VALUE_TO_TARGET_DOUBLE (r, i);
 	  break;
-#if LONG_DOUBLE_TYPE_SIZE == 96
-	case XFmode:
+	case 3:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i + endian);
 	  i[3-3*endian] = 0;
-#else
-	case TFmode:
+	  break;
+	case 4:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i);
-#endif
 	  break;
 	default:
 	  abort ();
@@ -985,19 +986,22 @@ gen_lowpart_common (mode, x)
 	for (c = 0; c < 4; c++)
 	  i[c] &= ~ (0L);
 
-	switch (GET_MODE (x))
+	switch (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD)
 	  {
-	  case SFmode:
-	  case DFmode:
+	  case 1:
+	  case 2:
 	    return immed_double_const (((unsigned long) i[endian]) |
 				       (((HOST_WIDE_INT) i[1-endian]) << 32),
 				       0, mode);
-	  default:
+	  case 3:
+	  case 4:
 	    return immed_double_const (((unsigned long) i[endian*3]) |
 				       (((HOST_WIDE_INT) i[1+endian]) << 32),
 				       ((unsigned long) i[2-endian]) |
 				       (((HOST_WIDE_INT) i[3-endian*3]) << 32),
 				       mode);
+	  default:
+	    abort ();
 	  }
       }
 #endif
