@@ -1933,8 +1933,15 @@ compile_file (name)
      (calling rest_of_compilation for each function).  */
 
   if (yyparse () != 0)
-    if (errorcount == 0)
-      fprintf (stderr, "Errors detected in input file (your bison.simple is out of date)");
+    {
+      if (errorcount == 0)
+	fprintf (stderr, "Errors detected in input file (your bison.simple is out of date)");
+
+      /* In case there were missing closebraces,
+	 get us back to the global binding level.  */
+      while (! global_bindings_p ())
+	poplevel (0, 0, 0);
+    }
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
