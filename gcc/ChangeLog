@@ -1,3 +1,8 @@
+2004-12-30  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (hfa_element_mode): Return false for 
+	zero-sized top-level aggregates.
+
 2004-12-30  Jan Hubicka  <jh@suse.cz>
 
 	PR target/18019
