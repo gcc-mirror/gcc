@@ -58,11 +58,11 @@ rtx legitimize_pic_address ();
 
 /* Alignment to use for loops and jumps */
 /* Specify power of two alignment used for loops. */
-char *m68k_align_loops_string;
+const char *m68k_align_loops_string;
 /* Specify power of two alignment used for non-loop jumps. */
-char *m68k_align_jumps_string;
+const char *m68k_align_jumps_string;
 /* Specify power of two alignment used for functions. */
-char *m68k_align_funcs_string;
+const char *m68k_align_funcs_string;
 
 /* Specify power of two alignment used for loops. */
 int m68k_align_loops;
