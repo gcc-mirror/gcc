@@ -99,8 +99,8 @@ static tree parse_jdk1_1_error PARAMS ((const char *));
 static void complete_class_report_errors PARAMS ((jdep *));
 static int process_imports PARAMS ((void));
 static void read_import_dir PARAMS ((tree));
-static int find_in_imports_on_demand PARAMS ((tree));
-static void find_in_imports PARAMS ((tree));
+static int find_in_imports_on_demand PARAMS ((tree, tree));
+static void find_in_imports PARAMS ((tree, tree));
 static void check_static_final_variable_assignment_flag PARAMS ((tree));
 static void reset_static_final_variable_assignment_flag PARAMS ((tree));
 static void check_final_variable_local_assignment_flag PARAMS ((tree, tree));
@@ -5564,6 +5564,13 @@ java_complete_class ()
        cclass = TREE_CHAIN (cclass), cclassd = CLASSD_CHAIN (cclassd))
     {
       jdep *dep;
+
+      /* We keep the compilation unit imports in the class so that
+	 they can be used later to resolve type dependencies that
+	 aren't necessary to solve now. */
+      TYPE_IMPORT_LIST (TREE_TYPE (cclass)) = ctxp->import_list;
+      TYPE_IMPORT_DEMAND_LIST (TREE_TYPE (cclass)) = ctxp->import_demand_list;
+
       for (dep = CLASSD_FIRST (cclassd); dep; dep = JDEP_CHAIN (dep))
 	{
 	  tree decl;
@@ -5750,6 +5757,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
      tree enclosing, class_type, decl, cl;
 {
   tree new_class_decl = NULL_TREE, super = NULL_TREE;
+  tree saved_enclosing_type = enclosing ? TREE_TYPE (enclosing) : NULL_TREE;
   struct hash_table _ht, *circularity_hash = &_ht;
 
   /* This hash table is used to register the classes we're going
@@ -5786,7 +5794,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
 
   /* 1- Check for the type in single imports. This will change
      TYPE_NAME() if something relevant is found */
-  find_in_imports (class_type);
+  find_in_imports (saved_enclosing_type, class_type);
 
   /* 2- And check for the type in the current compilation unit */
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
@@ -5808,7 +5816,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
   /* 4- Check the import on demands. Don't allow bar.baz to be
      imported from foo.* */
   if (!QUALIFIED_P (TYPE_NAME (class_type)))
-    if (find_in_imports_on_demand (class_type))
+    if (find_in_imports_on_demand (saved_enclosing_type, class_type))
       return NULL_TREE;
 
   /* If found in find_in_imports_on_demant, the type has already been
@@ -6710,17 +6718,22 @@ process_imports ()
    statement.  */
 
 static void
-find_in_imports (class_type)
+find_in_imports (enclosing_type, class_type)
+     tree enclosing_type;
      tree class_type;
 {
-  tree import;
-
-  for (import = ctxp->import_list; import; import = TREE_CHAIN (import))
-    if (TREE_VALUE (import) == TYPE_NAME (class_type))
-      {
-	TYPE_NAME (class_type) = EXPR_WFL_NODE (TREE_PURPOSE (import));
-	QUALIFIED_P (TYPE_NAME (class_type)) = 1;
-      }
+  tree import = (enclosing_type ? TYPE_IMPORT_LIST (enclosing_type) : 
+		 ctxp->import_list);
+  while (import)
+    {
+      if (TREE_VALUE (import) == TYPE_NAME (class_type))
+	{
+	  TYPE_NAME (class_type) = EXPR_WFL_NODE (TREE_PURPOSE (import));
+	  QUALIFIED_P (TYPE_NAME (class_type)) = 1;
+	  return;
+	}
+      import = TREE_CHAIN (import);
+    }
 }
 
 static int
@@ -6869,14 +6882,17 @@ read_import_dir (wfl)
    entire list, to detected potential double definitions.  */
 		 
 static int
-find_in_imports_on_demand (class_type)
+find_in_imports_on_demand (enclosing_type, class_type)
+     tree enclosing_type;
      tree class_type;
 {
-  tree node, import, node_to_use = NULL_TREE;
+  tree import = (enclosing_type ? TYPE_IMPORT_DEMAND_LIST (enclosing_type) :
+		  ctxp->import_demand_list);
+  tree node_to_use = NULL_TREE, cl = NULL_TREE;
+  tree node;
   int seen_once = -1;
-  tree cl = NULL_TREE;
 
-  for (import = ctxp->import_demand_list; import; import = TREE_CHAIN (import))
+  while (import)
     {
       const char *id_name;
       obstack_grow (&temporary_obstack, 
@@ -6907,6 +6923,7 @@ find_in_imports_on_demand (class_type)
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))));
 	    }
 	}
+      import = TREE_CHAIN (import);
     }
 
   if (seen_once == 1)
@@ -16129,8 +16146,14 @@ fold_constant_for_init (node, context)
 	    }
 	  else
 	    {
+	      /* Install the proper context for the field resolution.
+		 The prior context is restored once the name is
+		 properly qualified. */
+	      tree saved_current_class = current_class;
 	      /* Wait until the USE_COMPONENT_REF re-write.  FIXME. */
+	      current_class = DECL_CONTEXT (context);
 	      qualify_ambiguous_name (node);
+	      current_class = saved_current_class;
 	      if (resolve_field_access (node, &decl, NULL)
 		  && decl != NULL_TREE)
 		return fold_constant_for_init (decl, decl);
