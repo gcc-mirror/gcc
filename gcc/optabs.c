@@ -526,7 +526,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      no_extend = 1;
 
 	    xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
-	    xop1 = widen_operand (xop1, wider_mode, unsignedp, no_extend);
+
+	    /* The second operand of a shift must always be extended.  */
+	    xop1 = widen_operand (xop1, wider_mode, unsignedp,
+				  no_extend && binoptab != ashl_optab
+				  && binoptab != lshl_optab);
+
 	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				 unsignedp, OPTAB_DIRECT);
 	    if (temp)
@@ -1419,7 +1424,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		no_extend = 1;
 
 	      xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
-	      xop1 = widen_operand (xop1, wider_mode, unsignedp, no_extend);
+
+	      /* The second operand of a shift must always be extended.  */
+	      xop1 = widen_operand (xop1, wider_mode, unsignedp,
+				    no_extend && binoptab != ashl_optab
+				    && binoptab != lshl_optab);
 
 	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				   unsignedp, methods);
