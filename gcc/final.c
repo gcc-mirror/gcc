@@ -324,8 +324,8 @@ end_final (filename)
 
       data_section ();
 
-      /* Output the main header, of 10 words:
-	 0:  1 if this file's initialized, else 0.
+      /* Output the main header, of 11 words:
+	 0:  1 if this file is initialized, else 0.
 	 1:  address of file name (LPBX1).
 	 2:  address of table of counts (LPBX2).
 	 3:  number of counts in the table.
@@ -337,7 +337,8 @@ end_final (filename)
 	 6:  Number of bytes in this header.
 	 7:  address of table of function names (LPBX4).
 	 8:  address of table of line numbers (LPBX5) or 0.
-	 9:  address of table of file names (LPBX6) or 0.  */
+	 9:  address of table of file names (LPBX6) or 0.
+	10:  space reserved for basic block profiling. */
 
       ASM_OUTPUT_ALIGN (asm_out_file, align);
 
@@ -364,7 +365,7 @@ end_final (filename)
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
 
       /* byte count for extended structure.  */
-      assemble_integer (GEN_INT (10 * UNITS_PER_WORD), UNITS_PER_WORD, 1);
+      assemble_integer (GEN_INT (11 * UNITS_PER_WORD), UNITS_PER_WORD, 1);
 
       /* address of function name table */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
@@ -383,6 +384,9 @@ end_final (filename)
 	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
 	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
 	}
+
+      /* space for extension ptr (link field) */
+      assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
 
       /* Output the file name changing the suffix to .d for Sun tcov
 	 compatibility.  */
@@ -957,7 +961,7 @@ profile_after_prologue (file)
 #ifdef FUNCTION_BLOCK_PROFILER
   if (profile_block_flag)
     {
-      FUNCTION_BLOCK_PROFILER (file, profile_label_no);
+      FUNCTION_BLOCK_PROFILER (file, count_basic_blocks);
     }
 #endif /* FUNCTION_BLOCK_PROFILER */
 
