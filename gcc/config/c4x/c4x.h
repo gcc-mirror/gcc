@@ -28,6 +28,58 @@
 
 #define C4x   1
 
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      if (!TARGET_SMALL)			\
+	builtin_define ("_BIGMODEL");		\
+      if (!TARGET_MEMPARM)			\
+	builtin_define ("_REGPARM");		\
+      if (flag_inline_functions)		\
+	builtin_define ("_INLINE");		\
+      if (TARGET_C3X)				\
+	{					\
+	  builtin_define ("_TMS320C3x");	\
+	  builtin_define ("_C3x");		\
+	  if (TARGET_C30)			\
+	    {					\
+	      builtin_define ("_TMS320C30");	\
+	      builtin_define ("_C30");		\
+	    }					\
+	  else if (TARGET_C31)			\
+	    {					\
+	      builtin_define ("_TMS320C31");	\
+	      builtin_define ("_C31");		\
+	    }					\
+	  else if (TARGET_C32)			\
+	    {					\
+	      builtin_define ("_TMS320C32");	\
+	      builtin_define ("_C32");		\
+	    }					\
+	  else if (TARGET_C33)			\
+	    {					\
+	      builtin_define ("_TMS320C33");	\
+	      builtin_define ("_C33");		\
+	    }					\
+	}					\
+      else					\
+	{					\
+	  builtin_define ("_TMS320C4x");	\
+	  builtin_define ("_C4x");		\
+	  if (TARGET_C40)			\
+	    {					\
+	      builtin_define ("_TMS320C40");	\
+	      builtin_define ("_C40");		\
+	    }					\
+	  else if (TARGET_C44)			\
+	    {					\
+	      builtin_define ("_TMS320C44");	\
+	      builtin_define ("_C44");		\
+	    }					\
+	}					\
+    }						\
+  while (0)
+
 /* Name of the c4x assembler.  */
 
 #define ASM_PROG "c4x-as"
@@ -69,30 +121,6 @@
 %{mcpu=31:--architecture c3x} \
 %{mcpu=32:--architecture c3x} \
 %{mcpu=33:--architecture c3x}"
-
-/* Define C preprocessor options.  */
-
-#define CPP_SPEC "\
-%{!m30:%{!m31:%{!m32:%{!m33:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:\
-%{!mcpu=40:%{!mcpu=44:%{\
-!m40:%{!m44:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40}}}}}}}}}}}} \
-%{mcpu=30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
-%{m30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
-%{mcpu=31:-D_TMS320C3x -D_C3x -D_TMS320C31 -D_C31 } \
-%{m31:-D_TMS320C3x -D_C3x -D_TMS320C31 -D_C31 } \
-%{mcpu=32:-D_TMS320C3x -D_C3x -D_TMS320C32 -D_C32 } \
-%{m32:-D_TMS320C3x -D_C3x -D_TMS320C32 -D_C32 } \
-%{mcpu=33:-D_TMS320C3x -D_C3x -D_TMS320C33 -D_C33 } \
-%{m33:-D_TMS320C3x -D_C3x -D_TMS320C33 -D_C33 } \
-%{mcpu=40:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40 } \
-%{m40:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40 } \
-%{mcpu=44:-D_TMS320C4x -D_C4x -D_TMS320C44 -D_C44 } \
-%{m44:-D_TMS320C4x -D_C4x -D_TMS320C44 -D_C44 } \
-%{mmemparm:-U_REGPARM }%{mregparm:-D_REGPARM } \
-%{!mmemparm:%{!mregparm:-D_REGPARM }} \
-%{msmall:-U_BIGMODEL } %{mbig:-D_BIGMODEL } \
-%{!msmall:%{!mbig:-D_BIGMODEL }} \
-%{finline-functions:-D_INLINE }"
 
 /* Specify the end file to link with.  */
 
@@ -1854,8 +1882,6 @@ do {						\
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\t.ident \"%s\"\n", NAME);
-
-#define CPP_PREDEFINES ""
 
 /* Output of Uninitialized Variables.  */
 

@@ -21,5 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__rtems__ -Asystem=rtems -D__USE_INIT_FINI__"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__rtems__");		\
+	builtin_define ("__USE_INIT_FINI__");	\
+	builtin_assert ("system=rtems");	\
+    } while (0)
