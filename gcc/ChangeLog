@@ -1,3 +1,7 @@
+Thu Feb 26 00:13:21 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* choose-temp.c: Fix handling of sys/file.h to work in libiberty.
+
 Wed Feb 25 23:40:54 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.c (struct machine_function): Add new fields for PIC stuff.
