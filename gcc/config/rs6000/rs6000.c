@@ -7311,6 +7311,8 @@ rs6000_init_libfuncs (void)
 	  /* AIX library routines for float->int conversion.  */
 	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__itrunc");
 	  set_conv_libfunc (ufix_optab, SImode, DFmode, "__uitrunc");
+	  set_conv_libfunc (sfix_optab, SImode, TFmode, "_qitrunc");
+	  set_conv_libfunc (ufix_optab, SImode, TFmode, "_quitrunc");
 	}
 
       /* Standard AIX/Darwin/64-bit SVR4 quad floating point routines.  */

@@ -1,3 +1,8 @@
+2004-01-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Add AIX
+	TFmode to SImode libfuncs.
+
 2004-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11397
