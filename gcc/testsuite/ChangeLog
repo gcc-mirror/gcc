@@ -1,3 +1,8 @@
+2003-03-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.old-deja/g++.mike/eh33.C: Remove xfail for hppa*-*-*.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+
 2003-03-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6440
