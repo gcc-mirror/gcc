@@ -5,7 +5,6 @@
    Originator:	From the original ffitest.c  */
 
 /* { dg-do run } */
-/* { dg-options -mlong-double-128 { target powerpc64*-*-* } } */
 
 #include "ffitest.h"
 #include "float.h"

@@ -1,3 +1,10 @@
+2005-02-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/libffi.call/cls_align_longdouble.c: Remove dg-options.
+	* testsuite/libffi.call/float.c: Ditto.
+	* testsuite/libffi.call/float2.c: Ditto.
+	* testsuite/libffi.call/float3.c: Ditto.
+
 2005-02-08  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/frv/ffitarget.h: Remove PPC stuff which does not belong to frv.
