@@ -14,10 +14,11 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-02-14
+@set last-up-date 1999-02-17
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
+@set email-burley craig@@jcb-sc.com
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
 
@@ -99,7 +100,7 @@ translations approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-Contributed by James Craig Burley (@email{craig@@jcb-sc.com}).
+Contributed by James Craig Burley (@email{@value{email-burley}}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
@@ -117,7 +118,7 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @center for version @value{version-g77}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1995-1997 Free Software Foundation, Inc.
+Copyright @copyright{} 1995-1999 Free Software Foundation, Inc.
 @sp 2
 For GNU Fortran Version @value{version-g77}*
 @sp 1
@@ -775,7 +776,7 @@ without royalty; alteration is not permitted.
 @cindex improvements, funding
 
 Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{craig@@jcb-sc.com}), who is a volunteer
+James Craig Burley (@email{@value{email-burley}}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -2217,6 +2218,7 @@ Specify status of VXT intrinsics.
 @cindex lines, length
 @cindex length of source lines
 @cindex fixed form
+@cindex limits, lengths of source lines
 Set column after which characters are ignored in typical fixed-form
 lines in the source file, and through which spaces are assumed (as
 if padded to that length) after the ends of short fixed-form lines.
@@ -4657,6 +4659,7 @@ for the relevant aspects of GNU Fortran.)
 
 (Corresponds to Section 2.2 of ANSI X3.9-1978 FORTRAN 77.)
 
+@cindex limits, lengths of names
 In GNU Fortran, a symbolic name is at least one character long,
 and has no arbitrary upper limit on length.
 However, names of entities requiring external linkage (such as
@@ -7969,6 +7972,7 @@ of work!}
 
 @menu
 * Compiler Limits::
+* Run-time Environment Limits::
 * Compiler Types::
 * Compiler Constants::
 * Compiler Intrinsics::
@@ -7987,6 +7991,8 @@ symbols in a program, and so on.
 @cindex -Nl option
 @cindex options, -Nx
 @cindex -Nx option
+@cindex limits, continuation lines
+@cindex limits, lengths of names
 For example, some other Fortran compiler have an option
 (such as @samp{-Nl@var{x}}) to increase the limit on the
 number of continuation lines.
@@ -8002,9 +8008,202 @@ limits in these areas.
 @cindex maximum rank
 @cindex number of dimensions, maximum
 @cindex maximum number of dimensions
+@cindex limits, rank
+@cindex limits, array dimensions
 @code{g77} does currently limit the number of dimensions in an array
 to the same degree as do the Fortran standards---seven (7).
-This restriction might well be lifted in a future version.
+This restriction might be lifted in a future version.
+
+@node Run-time Environment Limits
+@section Run-time Environment Limits
+@cindex limits, run-time library
+@cindex wraparound
+
+As a portable Fortran implementation,
+@code{g77} offers its users direct access to,
+and otherwise depends upon,
+the underlying facilities of the system
+used to build @code{g77},
+the system on which @code{g77} itself is used to compile programs,
+and the system on which the @code{g77}-compiled program is actually run.
+(For most users, the three systems are of the same
+type---combination of operating environment and hardware---often
+the same physical system.)
+
+The run-time environment for a particular system
+inevitably imposes some limits on a program's use
+of various system facilities.
+These limits vary from system to system.
+
+Even when such limits might be well beyond the
+possibility of being encountered on a particular system,
+the @code{g77} run-time environment
+has certain built-in limits,
+usually, but not always, stemming from intrinsics
+with inherently limited interfaces.
+
+Currently, the @code{g77} run-time environment
+does not generally offer a less-limiting environment
+by augmenting the underlying system's own environment.
+
+Therefore, code written in the GNU Fortran language,
+while syntactically and semantically portable,
+might nevertheless make non-portable assumptions
+about the run-time environment---assumptions that
+prove to be false for some particular environments.
+
+The GNU Fortran language,
+the @code{g77} compiler and run-time environment,
+and the @code{g77} documentation
+do not yet offer comprehensive portable work-arounds for such limits,
+though programmers should be able to
+find their own in specific instances.
+
+Not all of the limitations are described in this document.
+Some of the known limitations include:
+
+@menu
+* Timer Wraparounds::
+* Year 2000 (Y2K) Problems::
+* Array Size::
+* Character-variable Length::
+* Year 10000 (Y10K) Problems::
+@end menu
+
+@node Timer Wraparounds
+@subsection Timer Wraparounds
+
+Intrinsics that return values computed from system timers,
+whether elapsed (wall-clock) timers,
+process CPU timers,
+or other kinds of timers,
+are prone to experiencing wrap-around errors
+(or returning wrapped-around values from successive calls)
+due to insufficient ranges
+offered by the underlying system's timers.
+
+@cindex negative time
+@cindex short time
+@cindex long time
+Some of the symptoms of such behaviors include
+apparently negative time being computed for a duration,
+an extremely short amount of time being computed for a long duration,
+and an extremely long amount of time being computed for a short duration.
+
+See the following for intrinsics
+known to have potential problems in these areas
+on at least some systems:
+@ref{CPU_Time Intrinsic},
+@ref{DTime Intrinsic (function)}, @ref{DTime Intrinsic (subroutine)},
+@ref{ETime Intrinsic (function)}, @ref{ETime Intrinsic (subroutine)},
+@ref{MClock Intrinsic}, @ref{MClock8 Intrinsic},
+@ref{Secnds Intrinsic},
+@ref{Second Intrinsic (function)}, @ref{Second Intrinsic (subroutine)},
+@ref{System_Clock Intrinsic},
+@ref{Time Intrinsic (UNIX)}, @ref{Time Intrinsic (VXT)},
+@ref{Time8 Intrinsic}.
+
+@node Year 2000 (Y2K) Problems
+@subsection Year 2000 (Y2K) Problems
+@cindex Y2K compliance
+@cindex Year 2000 compliance
+
+While the @code{g77} compiler itself is believed to
+be Year-2000 (Y2K) compliant,
+some intrinsics are not,
+and, potentially, some underlying systems are not,
+perhaps rendering some Y2K-compliant intrinsics
+non-compliant when used on those particular systems.
+
+Fortran code that uses non-Y2K-compliant intrinsics
+(listed below)
+is, itself, almost certainly not compliant,
+and should be modified to use Y2K-compliant intrinsics instead.
+
+Fortran code that uses no non-Y2K-compliant intrinsics,
+but which currently is running on a non-Y2K-compliant system,
+can be made more Y2K compliant by compiling and
+linking it for use on a new Y2K-compliant system,
+such as a new version of an old, non-Y2K-compliant, system.
+
+Currently, information on Y2K and related issues
+is being maintained at
+@uref{http://www.gnu.org/software/year2000-list.html}.
+
+See the following for intrinsics
+known to have potential problems in these areas
+on at least some systems:
+@ref{Date Intrinsic},
+@ref{IDate Intrinsic (VXT)}.
+
+@node Array Size
+@subsection Array Size
+@cindex limits, array size
+@cindex array size
+
+Currently, @code{g77} uses the default @code{INTEGER} type
+for array indexes,
+which limits the sizes of single-dimension arrays
+on systems offering a larger address space
+than can be addressed by that type.
+(That @code{g77} puts all arrays in memory
+could be considered another limitation---it
+could use large temporary files---but that decision
+is left to the programmer as an implementation choice
+by most Fortran implementations.)
+
+@c ??? Investigate this, to offer a more clear statement
+@c than the following paragraphs do.  -- burley 1999-02-17
+It is not yet clear whether this limitation
+never, sometimes, or always applies to the
+sizes of multiple-dimension arrays as a whole.
+
+For example, on a system with 64-bit addresses
+and 32-bit default @code{INTEGER},
+an array with a size greater than can be addressed
+by a 32-bit offset
+can be declared using multiple dimensions.
+Such an array is therefore larger
+than a single-dimension array can be,
+on the same system.
+
+@cindex limits, multi-dimension arrays
+@cindex multi-dimension arrays
+@cindex arrays, dimensioning
+Whether large multiple-dimension arrays are reliably supported
+depends mostly on the @code{gcc} back end (code generator)
+used by @code{g77}, and has not yet been fully investigated.
+
+@node Character-variable Length
+@subsection Character-variable Length
+@cindex limits, on character-variable length
+@cindex character-variable length
+
+Currently, @code{g77} uses the default @code{INTEGER} type
+for the lengths of @code{CHARACTER} variables
+and array elements.
+
+This means that, for example,
+a system with a 64-bit address space
+and a 32-bit default @code{INTEGER} type
+does not, under @code{g77},
+support a @code{CHARACTER*@var{n}} declaration
+where @var{n} is greater than 2147483647.
+
+@node Year 10000 (Y10K) Problems
+@subsection Year 10000 (Y10K) Problems
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+
+Most intrinsics returning, or computing values based on,
+date information are prone to Year-10000 (Y10K) problems,
+due to supporting only 4 digits for the year.
+
+See the following for examples:
+@ref{FDate Intrinsic (function)}, @ref{FDate Intrinsic (subroutine)},
+@ref{IDate Intrinsic (UNIX)},
+@ref{Time Intrinsic (VXT)},
+@ref{Date_and_Time Intrinsic}.
 
 @node Compiler Types
 @section Compiler Types
@@ -11487,7 +11686,7 @@ In the meantime, finding and fixing the programming
 bugs that lead to these behaviors is, ultimately, the user's
 responsibility, as difficult as that task can sometimes be.
 
-@cindex ``infinite spaces'' printed
+@cindex infinite spaces printed
 @cindex space, endless printing of
 @cindex libc, non-ANSI or non-default
 @cindex C library
