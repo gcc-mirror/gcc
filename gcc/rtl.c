@@ -1085,7 +1085,7 @@ read_rtx (infile)
 	    {
 	      char line_name[20];
 	      const char *fn = (read_rtx_filename ? read_rtx_filename : "rtx");
-	      char *slash;
+	      const char *slash;
 	      for (slash = fn; *slash; slash ++)
 		if (*slash == '/' || *slash == '\\' || *slash == ':')
 		  fn = slash + 1;
