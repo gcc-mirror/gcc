@@ -4046,10 +4046,8 @@ __ia64_personality_v1 (void *pc, old_exception_table *table)
 }
 
 static void
-ia64_throw_helper (throw_frame, caller, throw_bsp)
-     ia64_frame_state *throw_frame;
-     ia64_frame_state *caller;
-     void *throw_bsp;
+ia64_throw_helper (ia64_frame_state *throw_frame, ia64_frame_state *caller,
+		   void *throw_bsp, void *throw_sp)
 {
   void *throw_pc = __builtin_return_address (0);
   unwind_info_ptr *info;
@@ -4061,7 +4059,8 @@ ia64_throw_helper (throw_frame, caller, throw_bsp)
   __builtin_ia64_flushrs ();      /*  Make the local register stacks available.  */
 
   /* Start at our stack frame, get our state.  */
-  __build_ia64_frame_state (throw_pc, throw_frame, throw_bsp, &pc_base);
+  __build_ia64_frame_state (throw_pc, throw_frame, throw_bsp, throw_sp,
+			    &pc_base);
 
   /* Now we have to find the proper frame for pc, and see if there
      is a handler for it. if not, we keep going back frames until
@@ -4078,8 +4077,10 @@ ia64_throw_helper (throw_frame, caller, throw_bsp)
       /* We only care about the RP right now, so we dont need to keep
          any other information about a call frame right now.  */
       pc = __get_real_reg_value (&caller->rp) - 1;
-      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs), caller->my_bsp);
-      info = __build_ia64_frame_state (pc, caller, bsp, &pc_base);
+      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs),
+			       caller->my_bsp);
+      info = __build_ia64_frame_state (pc, caller, bsp, caller->my_psp,
+				       &pc_base);
 
       /* If we couldn't find the next frame, we lose.  */
       if (! info)
@@ -4099,7 +4100,7 @@ ia64_throw_helper (throw_frame, caller, throw_bsp)
     }
   
   if (!handler)
-   __terminate ();
+    __terminate ();
 
   /* Handler is a segment relative address, so we must adjust it here.  */
   handler += (long) pc_base;
@@ -4116,8 +4117,9 @@ ia64_throw_helper (throw_frame, caller, throw_bsp)
   for ( ; frame_count > 0; frame_count--)
     {
       pc = __get_real_reg_value (&caller->rp) - 1;
-      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs), caller->my_bsp);
-      __build_ia64_frame_state (pc, caller, bsp, &pc_base);
+      bsp = __calc_caller_bsp ((long)__get_real_reg_value (&caller->pfs),
+			       caller->my_bsp);
+      __build_ia64_frame_state (pc, caller, bsp, caller->my_psp, &pc_base);
       /* Any regs that were saved can be put in the throw frame now.  */
       /* We don't want to copy any saved register from the 
          target destination, but we do want to load up it's frame.  */
@@ -4130,12 +4132,13 @@ ia64_throw_helper (throw_frame, caller, throw_bsp)
 
   /* TODO, do we need to do anything to make the values we wrote 'stick'? */
   /* DO we need to go through the whole loadrs seqeunce?  */
-
 }
+
 
 void
 __throw ()
 {
+  register void *stack_pointer __asm__("r12");
   struct eh_context *eh = (*get_eh_context) ();
   ia64_frame_state my_frame;
   ia64_frame_state originator;	/* For the context handler is in.  */
@@ -4149,6 +4152,7 @@ __throw ()
     __terminate ();
 
   __builtin_unwind_init ();
+
   /* We have to call another routine to actually process the frame 
      information, which will force all of __throw's local registers into
      backing store.  */
@@ -4156,7 +4160,7 @@ __throw ()
   /* Get the value of ar.bsp while we're here.  */
 
   bsp = __builtin_ia64_bsp ();
-  ia64_throw_helper (&my_frame, &originator, bsp);
+  ia64_throw_helper (&my_frame, &originator, bsp, stack_pointer);
 
   /* Now we have to fudge the bsp by the amount in our (__throw)
      frame marker, since the return is going to adjust it by that much. */
@@ -4165,11 +4169,6 @@ __throw ()
 			     my_frame.my_bsp);
   offset = (char *)my_frame.my_bsp - (char *)tmp_bsp;
   tmp_bsp = (char *)originator.my_bsp + offset;
-
-  /* A throw handler is trated like a  non-local goto, which is architeched
-     to set the FP (or PSP) in r7 before branching.  gr[0-3] map to 
-     r4-r7, so we want gr[3].  */
-  __set_real_reg_value (&my_frame.gr[3], __get_real_reg_value (&originator.psp));
 
   __builtin_eh_return (tmp_bsp, offset, originator.my_sp);
 

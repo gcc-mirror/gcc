@@ -1,5 +1,25 @@
 2000-08-08  Richard Henderson  <rth@cygnus.com>
 
+	* frame.h (ia64_frame_state): Add my_psp.
+	* libgcc2.c (ia64_throw_helper): Add throw_sp argument.
+	(__throw): Pass it in.  Don't clobber r7.
+	* config/ia64/frame-ia64.c (init_ia64_reg_loc): Mark inline.
+	(execute_one_ia64_descriptor) [mem_stack_v]: Sets psp.when
+	and nothing to do with sp.
+	(normalize_reg_loc): Use frame->my_psp.
+	(frame_translate): Handle frame-pointer-less functions.  Set
+	spill_base correctly, in absence of being told.
+	(__build_ia64_frame_state): New sp argument.  Fill in frame->my_sp.
+	(__ia64_backtrace_helper): New sp argument.  Use
+	builtin_return_address instead of label addresses.
+	(print_record) [mem_stack_v]: No size member.
+
+2000-08-08  Richard Henderson  <rth@cygnus.com>
+
+	* regclass.c (choose_hard_reg_mode): Iterate over all CC modes.
+
+2000-08-08  Richard Henderson  <rth@cygnus.com>
+
 	* tm.texi (LOCAL_REGNO): Document.
 	* flow.c (LOCAL_REGNO, EPILOGUE_USES): Provide default.
 	(mark_regs_live_at_end): Don't mark LOCAL_REGNO registers.

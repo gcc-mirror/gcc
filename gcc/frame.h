@@ -248,6 +248,7 @@ typedef struct ia64_frame_state
   ia64_reg_loc sp;
   ia64_reg_loc psp;
   ia64_reg_loc spill_base;
+  void *my_psp;
   void *my_sp;
   void *my_bsp;
 } ia64_frame_state;
@@ -267,7 +268,8 @@ typedef struct unwind_info_ptr
 #define IA64_UNW_HDR_VERSION(x)	(((x) >> 48) & 0xffffUL)
 
 extern unwind_info_ptr *__build_ia64_frame_state (unsigned char *, 
-						  ia64_frame_state *, void *,
+						  ia64_frame_state *,
+						  void *, void *,
 						  void **);
 extern void *__get_real_reg_value (ia64_reg_loc *);
 extern void *__get_personality (unwind_info_ptr *);
