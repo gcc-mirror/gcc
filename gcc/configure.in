@@ -1507,7 +1507,7 @@ elif test x$gcc_cv_as != x; then
 	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
 	if echo "$ld_ver" | grep GNU > /dev/null; then
 changequote(,)dnl
-		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,;p'`
 changequote([,])dnl
 		if test 0"$ld_date" -lt 20020404; then
 			gcc_cv_as_hidden="no"
