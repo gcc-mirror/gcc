@@ -1,3 +1,9 @@
+2003-02-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/sql/Timestamp.java (compareTo(Object)): New method.
+	(compareTo(Timestamp)): Likewise.
+	(serialVersionUID): Updated.
+
 2003-02-07  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/jar/JarFile.java (JarFile(String, boolean)): Read manifest
