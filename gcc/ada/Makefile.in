@@ -1708,7 +1708,7 @@ install-gnatlib: ../stamp-gnatlib
 	-$(INSTALL_DATA) rts/g-trasym$(objext) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	-cd rts; for file in *$(arext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
-	    -$(RANLIB) $(RANLIB_FLAGS) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
+	    $(RANLIB) $(RANLIB_FLAGS) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
 	done
 	-$(foreach file, $(EXTRA_ADALIB_FILES), \
 	    $(INSTALL_DATA_DATE) rts/$(file) $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
