@@ -12569,11 +12569,8 @@ print_int_node (tree node)
 	     TREE_INT_CST_LOW (node));
   else if (TREE_INT_CST_HIGH (node) == -1
 	   && TREE_INT_CST_LOW (node) != 0)
-    {
-      buffer [0] = '-';
-      sprintf (&buffer [1], HOST_WIDE_INT_PRINT_UNSIGNED,
-	       -TREE_INT_CST_LOW (node));
-    }
+    sprintf (buffer, "-" HOST_WIDE_INT_PRINT_UNSIGNED,
+	     -TREE_INT_CST_LOW (node));
   else
     sprintf (buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 	     TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));

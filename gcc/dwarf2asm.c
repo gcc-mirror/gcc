@@ -514,8 +514,7 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
   VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.uleb128 ", asm_out_file);
-  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
+  fprintf (asm_out_file, "\t.uleb128 " HOST_WIDE_INT_PRINT_HEX , value);
 
   if (flag_debug_asm && comment)
     {
@@ -550,8 +549,8 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 
   if (flag_debug_asm)
     {
-      fprintf (asm_out_file, "\t%s uleb128 ", ASM_COMMENT_START);
-      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
+      fprintf (asm_out_file, "\t%s uleb128 " HOST_WIDE_INT_PRINT_HEX,
+	       ASM_COMMENT_START, value);
       if (comment)
 	{
 	  fputs ("; ", asm_out_file);
@@ -576,8 +575,7 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
   VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.sleb128 ", asm_out_file);
-  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, value);
+  fprintf (asm_out_file, "\t.sleb128 " HOST_WIDE_INT_PRINT_DEC, value);
 
   if (flag_debug_asm && comment)
     {
@@ -615,8 +613,8 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
 
   if (flag_debug_asm)
     {
-      fprintf (asm_out_file, "\t%s sleb128 ", ASM_COMMENT_START);
-      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, value);
+      fprintf (asm_out_file, "\t%s sleb128 " HOST_WIDE_INT_PRINT_DEC,
+	       ASM_COMMENT_START, value);
       if (comment)
 	{
 	  fputs ("; ", asm_out_file);

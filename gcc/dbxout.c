@@ -2253,10 +2253,9 @@ dbxout_symbol (decl, local)
 #ifdef DBX_OUTPUT_CONSTANT_SYMBOL
 		  DBX_OUTPUT_CONSTANT_SYMBOL (asmfile, name, ival);
 #else
-		  fprintf (asmfile, "%s\"%s:c=i", ASM_STABS_OP, name);
-
-		  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC, ival);
-		  fprintf (asmfile, "\",0x%x,0,0,0\n", N_LSYM);
+		  fprintf (asmfile, "%s\"%s:c=i" HOST_WIDE_INT_PRINT_DEC
+			   "\",0x%x,0,0,0\n",
+			   ASM_STABS_OP, name, ival, N_LSYM);
 #endif
 		  return 1;
 		}

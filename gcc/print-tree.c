@@ -111,11 +111,8 @@ print_node_brief (file, prefix, node, indent)
 	fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED, TREE_INT_CST_LOW (node));
       else if (TREE_INT_CST_HIGH (node) == -1
 	       && TREE_INT_CST_LOW (node) != 0)
-	{
-	  fprintf (file, "-");
-	  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
-		   -TREE_INT_CST_LOW (node));
-	}
+	fprintf (file, "-" HOST_WIDE_INT_PRINT_UNSIGNED,
+		 -TREE_INT_CST_LOW (node));
       else
 	fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		 TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));
@@ -400,11 +397,8 @@ print_node (file, prefix, node, indent)
 
 	  fprintf (file, " align %d", DECL_ALIGN (node));
 	  if (TREE_CODE (node) == FIELD_DECL)
-	    {
-	      fprintf (file, " offset_align ");
-	      fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
-		       DECL_OFFSET_ALIGN (node));
-	    }
+	    fprintf (file, " offset_align " HOST_WIDE_INT_PRINT_UNSIGNED,
+		     DECL_OFFSET_ALIGN (node));
 	}
       else if (DECL_BUILT_IN (node))
 	{
@@ -417,11 +411,8 @@ print_node (file, prefix, node, indent)
 	}
 
       if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
-	{
-	  fprintf (file, " alias set ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		   DECL_POINTER_ALIAS_SET (node));
-	}
+	fprintf (file, " alias set " HOST_WIDE_INT_PRINT_DEC,
+		 DECL_POINTER_ALIAS_SET (node));
 
       if (TREE_CODE (node) == FIELD_DECL)
 	{
@@ -538,10 +529,9 @@ print_node (file, prefix, node, indent)
       if (TYPE_USER_ALIGN (node))
 	fprintf (file, " user");
 
-      fprintf (file, " align %d", TYPE_ALIGN (node));
-      fprintf (file, " symtab %d", TYPE_SYMTAB_ADDRESS (node));
-      fprintf (file, " alias set ");
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, TYPE_ALIAS_SET (node));
+      fprintf (file, " align %d symtab %d alias set " HOST_WIDE_INT_PRINT_DEC,
+	       TYPE_ALIGN (node), TYPE_SYMTAB_ADDRESS (node),
+	       TYPE_ALIAS_SET (node));
 
       print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 
@@ -662,11 +652,8 @@ print_node (file, prefix, node, indent)
 		     TREE_INT_CST_LOW (node));
 	  else if (TREE_INT_CST_HIGH (node) == -1
 		   && TREE_INT_CST_LOW (node) != 0)
-	    {
-	      fprintf (file, "-");
-	      fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
-		       -TREE_INT_CST_LOW (node));
-	    }
+	    fprintf (file, "-" HOST_WIDE_INT_PRINT_UNSIGNED,
+		     -TREE_INT_CST_LOW (node));
 	  else
 	    fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		     TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));

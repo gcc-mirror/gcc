@@ -1954,17 +1954,17 @@ dump_cost (level)
      unsigned int level;
 {
   ra_debug_msg (level, "Instructions for spilling\n added:\n");
-  ra_debug_msg (level, "  loads =%d cost=", emitted_spill_loads);
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_load_cost);
-  ra_debug_msg (level, "\n  stores=%d cost=", emitted_spill_stores);
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_store_cost);
-  ra_debug_msg (level, "\n  remat =%d cost=", emitted_remat);
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_remat_cost);
-  ra_debug_msg (level, "\n removed:\n  moves =%d cost=", deleted_move_insns);
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, deleted_move_cost);
-  ra_debug_msg (level, "\n  others=%d cost=", deleted_def_insns);
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, deleted_def_cost);
-  ra_debug_msg (level, "\n");
+  ra_debug_msg (level, "  loads =%d cost=" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		emitted_spill_loads, spill_load_cost);
+  ra_debug_msg (level, "  stores=%d cost=" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		emitted_spill_stores, spill_store_cost);
+  ra_debug_msg (level, "  remat =%d cost=" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		emitted_remat, spill_remat_cost);
+  ra_debug_msg (level, " removed:\n  moves =%d cost="
+		HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		deleted_move_insns, deleted_move_cost);
+  ra_debug_msg (level, "  others=%d cost=" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		deleted_def_insns, deleted_def_cost);
 }
 
 /* Initialization of the rewrite phase.  */

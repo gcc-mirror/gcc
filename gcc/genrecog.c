@@ -2786,12 +2786,10 @@ debug_decision_2 (test)
       fprintf (stderr, "elt1_i=%d", (int) test->u.intval);
       break;
     case DT_elt_zero_wide:
-      fprintf (stderr, "elt0_w=");
-      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
+      fprintf (stderr, "elt0_w=" HOST_WIDE_INT_PRINT_DEC, test->u.intval);
       break;
     case DT_elt_zero_wide_safe:
-      fprintf (stderr, "elt0_ws=");
-      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
+      fprintf (stderr, "elt0_ws=" HOST_WIDE_INT_PRINT_DEC, test->u.intval);
       break;
     case DT_veclen_ge:
       fprintf (stderr, "veclen>=%d", test->u.veclen);

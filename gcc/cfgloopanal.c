@@ -648,9 +648,8 @@ test_for_iteration (desc, iter)
 
   if (rtl_dump_file)
     {
-      fprintf (rtl_dump_file, ";  Conditional to continue loop at ");
-      fprintf (rtl_dump_file, HOST_WIDE_INT_PRINT_UNSIGNED, iter);
-      fprintf (rtl_dump_file, "th iteration: ");
+      fprintf (rtl_dump_file, ";  Conditional to continue loop at "
+	       HOST_WIDE_INT_PRINT_UNSIGNED "th iteration: ", iter);
       print_simple_rtl (rtl_dump_file, exp);
       fprintf (rtl_dump_file, "\n");
     }

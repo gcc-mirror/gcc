@@ -4197,11 +4197,9 @@ emit_prefetch_instructions (loop)
 		   " density: %d%%; bytes_accessed: %u; total_bytes: %u\n",
 		   (int) (info[i].bytes_accessed * 100 / info[i].stride),
 		   info[i].bytes_accessed, info[i].total_bytes);
-	  fprintf (loop_dump_stream, " index: ");
-	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, info[i].index);
-	  fprintf (loop_dump_stream, "; stride: ");
-	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, info[i].stride);
-	  fprintf (loop_dump_stream, "; address: ");
+	  fprintf (loop_dump_stream, " index: " HOST_WIDE_INT_PRINT_DEC
+		   "; stride: " HOST_WIDE_INT_PRINT_DEC "; address: ",
+		   info[i].index, info[i].stride);
 	  print_rtl (loop_dump_stream, info[i].base_address);
 	  fprintf (loop_dump_stream, "\n");
 	}

@@ -1,3 +1,10 @@
+2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ptree.c (cxx_print_type, cxx_print_xnode): Use string
+	concatentation on HOST_WIDE_INT_PRINT_* format specifier to
+	collapse multiple function calls into one.
+	* tree.c (debug_binfo): Likewise.	
+
 2003-05-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5388

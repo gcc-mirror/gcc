@@ -213,9 +213,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
       HOST_WIDE_INT size_ = (SIZE);			\
       fputs (SIZE_ASM_OP, STREAM);			\
       assemble_name (STREAM, NAME);			\
-      fputs (", ", STREAM);				\
-      fprintf (STREAM, HOST_WIDE_INT_PRINT_DEC, size_);	\
-      putc ('\n', STREAM);				\
+      fprintf (STREAM, ", " HOST_WIDE_INT_PRINT_DEC "\n", size_); \
     }							\
   while (0)
 

@@ -69,15 +69,11 @@ dump_sreal (file, x)
      sreal *x;
 {
 #if SREAL_PART_BITS < 32
-  fprintf (file, "((");
-  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED, x->sig_hi);
-  fprintf (file, " * 2^16 + ");
-  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED, x->sig_lo);
-  fprintf (file, ") * 2^%d)", x->exp);
+  fprintf (file, "((" HOST_WIDE_INT_PRINT_UNSIGNED " * 2^16 + "
+	   HOST_WIDE_INT_PRINT_UNSIGNED ") * 2^%d)",
+	   x->sig_hi, x->sig_lo, x->exp);
 #else
-  fprintf (file, "(");
-  fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED, x->sig);
-  fprintf (file, " * 2^%d)", x->exp);
+  fprintf (file, "(" HOST_WIDE_INT_PRINT_UNSIGNED " * 2^%d)", x->sig, x->exp);
 #endif
 }
 
