@@ -998,6 +998,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   enum machine_mode int_mode;
   enum machine_mode extv_mode = mode_for_extraction (EP_extv, 0);
   enum machine_mode extzv_mode = mode_for_extraction (EP_extzv, 0);
+  enum machine_mode mode1;
+  int byte_offset;
 
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
@@ -1071,9 +1073,18 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
      So too extracting a subword value in
      the least significant part of the register.  */
 
+  byte_offset = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
+                + (offset * UNITS_PER_WORD);
+
+  mode1  = (VECTOR_MODE_P (tmode)
+           ? mode
+	   : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
+
   if (((GET_CODE (op0) != MEM
 	&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				  GET_MODE_BITSIZE (GET_MODE (op0))))
+				  GET_MODE_BITSIZE (GET_MODE (op0)))
+	&& GET_MODE_SIZE (mode1) != 0
+	&& byte_offset % GET_MODE_SIZE (mode1) == 0)
        || (GET_CODE (op0) == MEM
 	   && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
 	       || (offset * BITS_PER_UNIT % bitsize == 0
@@ -1089,10 +1100,6 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  ? bitpos + bitsize == BITS_PER_WORD
 		  : bitpos == 0))))
     {
-      enum machine_mode mode1
-	= (VECTOR_MODE_P (tmode) ? mode
-	   : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
-
       if (mode1 != GET_MODE (op0))
 	{
 	  if (GET_CODE (op0) == SUBREG)
@@ -1108,9 +1115,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		abort ();
 	    }
 	  if (GET_CODE (op0) == REG)
-	    op0 = gen_rtx_SUBREG (mode1, op0,
-				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-				  + (offset * UNITS_PER_WORD));
+	    op0 = gen_rtx_SUBREG (mode1, op0, byte_offset);
 	  else
 	    op0 = adjust_address (op0, mode1, offset);
 	}
