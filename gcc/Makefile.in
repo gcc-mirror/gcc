@@ -2021,7 +2021,8 @@ $(srcdir)/INSTALL: install1.texi install.texi
 # `clean' deletes everything made by running `make all'.
 # `distclean' also deletes the files made by config.
 # `maintainer-clean' also deletes everything that could be regenerated
-# automatically.  We remove as much from the language subdirectories as we can
+# automatically, except for `configure'.
+# We remove as much from the language subdirectories as we can
 # (less duplicated code).
 
 
@@ -2099,7 +2100,7 @@ clean: mostlyclean bytecode.clean lang.clean
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
 	-rm -f tm.h config.h tconfig.h hconfig.h md
-	-rm -f config.status config.run config.cache
+	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-host Make-target Make-lang Make-hooks
 	-rm -f Makefile specs.h options.h *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
@@ -2126,16 +2127,18 @@ extraclean: distclean lang.extraclean
 	-rm -f */*.tar */*.xtar */*diff */*.diff.* */*.tar.* */*.xtar.* */*diffs
 	-rm -f */*lose */*.s */*.s[0-9] */*.i
 
-# Get rid of every file that's generated from some other file.
+# Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
-maintainer-clean: distclean bytecode.maintainer-clean lang.maintainer-clean
+maintainer-clean:
+	@echo 'This command is intended for maintainers to use; it'
+	@echo 'deletes files that may need special tools to rebuild.'
+	$(MAKE) distclean bytecode.maintainer-clean lang.maintainer-clean
 	-rm -f c-parse.y c-gperf.h objc-parse.y
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
-	-rm -f configure
 
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
