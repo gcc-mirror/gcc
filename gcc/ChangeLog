@@ -1,3 +1,10 @@
+2003-06-05  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	PR optimization/4490
+	* config/i386/i386.md: Don't use XFMode if TARGET_128BIT_LONG_DOUBLE.
+	* doc/invoke.texi (m96bit-long-double, m128bit-long-double):  Reword
+	documentation to accurately reflect what these options do.
+
 2003-06-06  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (STARTFILE_SPEC): Handle -pie.  Simplify.
