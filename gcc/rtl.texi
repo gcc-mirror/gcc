@@ -20,6 +20,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 
 @menu
 * RTL Objects::       Expressions vs vectors vs strings vs integers.
+* RTL Classes::       Categories of RTL expresion objects, and their structure.
 * Accessors::         Macros to access expression operands or vector elts.
 * Flags::             Other flags in an RTL expression.
 * Machine Modes::     Describing the size and format of a datum.
@@ -39,7 +40,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Reading RTL::       Reading textual RTL from a file.
 @end menu
 
-@node RTL Objects, Accessors, RTL, RTL
+@node RTL Objects, RTL Classes, RTL, RTL
 @section RTL Object Types
 @cindex RTL object types
 
@@ -108,11 +109,68 @@ manual, they are shown as follows: @code{const_int}.
 In a few contexts a null pointer is valid where an expression is normally
 wanted.  The written form of this is @code{(nil)}.
 
-@node Accessors, Flags, RTL Objects, RTL
-@section Access to Operands
-@cindex accessors
-@cindex access to operands
-@cindex operand access
+@node RTL Classes, Accessors, RTL Objects, RTL
+@section RTL Classes and Formats
+@cindex RTL classes
+@cindex classes of RTX codes
+@cindex RTX codes, classes of
+@findex GET_RTX_CLASS
+
+The various expression codes are divided into several @dfn{classes},
+which are represented by single characters.  You can determine the class
+of an RTX code with the macro @code{GET_RTX_CLASS (@var{code})}.
+Currently, @file{rtx.def} defines these classes:
+
+@table @code
+@item o
+An RTX code that represents an actual object, such as a register
+(@code{REG}) or a memory location (@code{MEM}, @code{SYMBOL_REF}).
+Constants and basic transforms on objects (@code{ADDRESSOF},
+@code{HIGH}, @code{LO_SUM}) are also included.  Note that @code{SUBREG}
+and @code{STRICT_LOW_PART} are not in this class, but in class @code{x}.
+
+@item <
+An RTX code for a comparison, such as @code{NE} or @code{LT}.
+
+@item 1
+An RTX code for a unary arithmetic operation, such as @code{NEG},
+@code{NOT}, or @code{ABS}.  This category also includes value extension
+(sign or zero) and conversions between integer and floating point.
+
+@item c
+An RTX code for a commutative binary operation, such as @code{PLUS} or
+@code{AND}.  @code{NE} and @code{EQ} are comparisons, so they have class
+@code{<}.
+
+@item 2
+An RTX code for a non-commutative binary operation, such as @code{MINUS},
+@code{DIV}, or @code{ASHIFTRT}.
+
+@item b
+An RTX code for a bitfield operation.  Currently only
+@code{ZERO_EXTRACT} and @code{SIGN_EXTRACT}.  These have three inputs
+and are lvalues (so they can be used for insertion as well).  @xref{Bit
+Fields}.
+
+@item 3
+An RTX code for other three input operations.  Currently only
+@code{IF_THEN_ELSE}.
+
+@item i
+An RTX code for an entire instruction:  @code{INSN}, @code{JUMP_INSN}, and
+@code{CALL_INSN}. @xref{Insns}.
+
+@item m
+An RTX code for something that matches in insns, such as
+@code{MATCH_DUP}.  These only occur in machine descriptions.
+
+@item x
+All other RTX codes.  This category includes the remaining codes used
+only in machine descriptions (@code{DEFINE_*}, etc.).  It also includes
+all the codes describing side effects (@code{SET}, @code{USE},
+@code{CLOBBER}, etc.) and the non-insns that may appear on an insn
+chain, such as @code{NOTE}, @code{BARRIER}, and @code{CODE_LABEL}.
+@end table
 
 @cindex RTL format
 For each expression type @file{rtl.def} specifies the number of
@@ -120,7 +178,7 @@ contained objects and their kinds, with four possibilities: @samp{e} for
 expression (actually a pointer to an expression), @samp{i} for integer,
 @samp{w} for wide integer, @samp{s} for string, and @samp{E} for vector
 of expressions.  The sequence of letters for an expression code is
-called its @dfn{format}.  Thus, the format of @code{subreg} is
+called its @dfn{format}.  For example, the format of @code{subreg} is
 @samp{ei}.@refill
 
 @cindex RTL format characters
@@ -154,8 +212,8 @@ An omitted vector is effectively the same as a vector of no elements.
 special ways by small parts of the compiler.
 @end table
 
-There are macros to get the number of operands, the format, and the
-class of an expression code:
+There are macros to get the number of operands and the format
+of an expression code:
 
 @table @code
 @findex GET_RTX_LENGTH
@@ -165,53 +223,40 @@ Number of operands of an RTX of code @var{code}.
 @findex GET_RTX_FORMAT
 @item GET_RTX_FORMAT (@var{code})
 The format of an RTX of code @var{code}, as a C string.
+@end table
 
-@findex GET_RTX_CLASS
-@cindex classes of RTX codes
-@item GET_RTX_CLASS (@var{code})
-A single character representing the type of RTX operation that code
-@var{code} performs.
-
-The following classes are defined:
+Some classes of RTX codes always have the same format.  For example, it
+is safe to assume that all comparison operations have format @code{ee}.
 
 @table @code
-@item o
-An RTX code that represents an actual object, such as @code{reg} or
-@code{mem}.  @code{subreg} is not in this class.
+@item 1
+All codes of this class have format @code{e}.
 
 @item <
-An RTX code for a comparison.  The codes in this class are
-@code{NE}, @code{EQ}, @code{LE}, @code{LT}, @code{GE}, @code{GT},
-@code{LEU}, @code{LTU}, @code{GEU}, @code{GTU}.@refill
-
-@item 1
-An RTX code for a unary arithmetic operation, such as @code{neg}.
-
-@item c
-An RTX code for a commutative binary operation, other than @code{NE}
-and @code{EQ} (which have class @samp{<}).
-
-@item 2
-An RTX code for a noncommutative binary operation, such as @code{MINUS}.
+@itemx c
+@itemx 2
+All codes of these classes have format @code{ee}.
 
 @item b
-An RTX code for a bitfield operation, either @code{ZERO_EXTRACT} or
-@code{SIGN_EXTRACT}.
-
-@item 3
-An RTX code for other three input operations, such as @code{IF_THEN_ELSE}.
+@itemx 3
+All codes of these classes have format @code{eee}.
 
 @item i
-An RTX code for a machine insn (@code{INSN}, @code{JUMP_INSN}, and
-@code{CALL_INSN}).@refill
+All codes of this class have formats that begin with @code{iuueiee}.
+@xref{Insns}.  Note that not all RTL objects linked onto an insn chain
+are of class @code{i}.
 
-@item m
-An RTX code for something that matches in insns, such as @code{MATCH_DUP}.
+@item o
+@itemx m
+@itemx x
+You can make no assumptions about the format of these codes.
+@end table
 
-@item x
-All other RTX codes.
-@end table
-@end table
+@node Accessors, Flags, RTL Classes, RTL
+@section Access to Operands
+@cindex accessors
+@cindex access to operands
+@cindex operand access
 
 @findex XEXP
 @findex XINT
