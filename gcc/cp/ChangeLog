@@ -1,3 +1,9 @@
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/4884
+	* call.c (build_op_delete_call): Allow for the fact the placement
+	may be a COMPOUND_EXPR.
+	
 2002-03-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5682
@@ -12,7 +18,7 @@
 
 2002-03-26  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/4884.
+	PR c++/4884
 	* init.c (build_new_1): Allow for the fact the result of
 	build_function_call may be a COMPOUND_EXPR.
 

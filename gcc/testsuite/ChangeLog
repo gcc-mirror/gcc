@@ -1,9 +1,13 @@
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/new2.C: New test.
+	
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.brendan/crash52.C: Remove return warning marker.
 	* g++.old-deja/g++.jason/report.C: Likewise.
 
-2002-03-27  Richard Henderson  <rth@redhat.com>
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/new1.C: Fix size_t.
 
