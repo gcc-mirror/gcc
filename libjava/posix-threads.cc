@@ -46,6 +46,10 @@ struct starter
 // threads, so it is ok to make it a global here.
 pthread_key_t _Jv_ThreadKey;
 
+// This is the key used to map from the POSIX thread value back to the
+// _Jv_Thread_t* representing the thread.
+pthread_key_t _Jv_ThreadDataKey;
+
 // We keep a count of all non-daemon threads which are running.  When
 // this reaches zero, _Jv_ThreadWait returns.
 static pthread_mutex_t daemon_mutex;
@@ -68,6 +72,8 @@ static int non_daemon_count;
 #define FLAG_START   0x01
 // Thread is daemon.
 #define FLAG_DAEMON  0x02
+// Thread was interrupted by _Jv_ThreadInterrupt.
+#define FLAG_INTERRUPTED  0x04
 
 
 
@@ -80,20 +86,57 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 
   int r;
   pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
+  struct timespec ts; 
+  jlong m, m2, startTime;
+  bool done_sleeping = false;
 
   if (millis == 0 && nanos == 0)
     r = pthread_cond_wait (cv, pmu);
   else
     {
-      struct timespec ts; 
-      jlong m = millis + java::lang::System::currentTimeMillis (); 
-      ts.tv_sec = m / 1000; 
-      ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
-             
-      r = pthread_cond_timedwait (cv, pmu, &ts);
-      /* A timeout is a normal result.  */
-      if (r && errno == ETIMEDOUT)
-	r = 0;
+      startTime = java::lang::System::currentTimeMillis();
+      m = millis + startTime;
+
+      do
+	{  
+	  ts.tv_sec = m / 1000; 
+	  ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
+
+	  r = pthread_cond_timedwait (cv, pmu, &ts);
+
+	  if (r && errno == EINTR)
+	    {
+	      /* We were interrupted by a signal.  Either this is
+		 because we were interrupted intentionally (i.e. by
+		 Thread.interrupt()) or by the GC if it is
+		 signal-based.  */
+	      _Jv_Thread_t *current = _Jv_ThreadCurrentData();
+	      if (current->flags & FLAG_INTERRUPTED)
+		{
+                  current->flags &= ~(FLAG_INTERRUPTED);
+                  done_sleeping = true;
+                }
+	      else
+                {
+		  /* We were woken up by the GC or another signal.  */
+		  m2 = java::lang::System::currentTimeMillis ();
+		  if (m2 >= m)
+		    {
+		      r = 0;
+		      done_sleeping = true;
+		    }
+		}
+	    }
+	  else if (r && errno == ETIMEDOUT)
+	    {
+	      /* A timeout is a normal result.  */
+	      r = 0;
+	      done_sleeping = true;
+	    }
+	  else
+	    done_sleeping = true;
+	}
+      while (! done_sleeping);
     }
 
   return r;
@@ -215,6 +258,7 @@ void
 _Jv_InitThreads (void)
 {
   pthread_key_create (&_Jv_ThreadKey, NULL);
+  pthread_key_create (&_Jv_ThreadDataKey, NULL);
   pthread_mutex_init (&daemon_mutex, NULL);
   pthread_cond_init (&daemon_cond, 0);
   non_daemon_count = 0;
@@ -290,6 +334,7 @@ really_start (void *x)
 
   pthread_cleanup_push (throw_cleanup, info->data);
   pthread_setspecific (_Jv_ThreadKey, info->object);
+  pthread_setspecific (_Jv_ThreadDataKey, info->data);
   info->method (info->object);
   pthread_cleanup_pop (0);
 
@@ -359,5 +404,6 @@ _Jv_ThreadWait (void)
 void
 _Jv_ThreadInterrupt (_Jv_Thread_t *data)
 {
+  data->flags |= FLAG_INTERRUPTED; 
   pthread_kill (data->thread, INTR);
 }
