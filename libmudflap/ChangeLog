@@ -1,3 +1,8 @@
+2005-03-17  Frank Ch. Eigler  <fche@redhat.com>
+
+	* mf-runtime.c (__mfu_check): Respect ignore_reads configuration.
+	* testsuite/libmudflap.c/{pass56,fail39}-frag.c: New tests.
+
 2005-02-13  Frank Ch. Eigler  <fche@redhat.com>
 
 	PR mudflap/19319

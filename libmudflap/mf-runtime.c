@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
    Splay Tree code originally by Mark Mitchell <mark@markmitchell.com>,
@@ -813,6 +813,8 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
 
   if (UNLIKELY (__mf_opts.sigusr1_report))
     __mf_sigusr1_respond ();
+  if (UNLIKELY (__mf_opts.ignore_reads && type == 0))
+    return;
 
   TRACE ("check ptr=%p b=%u size=%lu %s location=`%s'\n",
          ptr, entry_idx, (unsigned long)sz,
