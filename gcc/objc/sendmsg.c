@@ -26,6 +26,7 @@ You should have received a copy of the GNU General Public License along with
 
 #include "runtime.h"
 #include "sarray.h"
+#include "encoding.h"
 
 /* The uninstalled dispatch table */
 struct sarray* __objc_uninstalled_dtable = 0;
@@ -87,20 +88,15 @@ objc_msg_lookup_super (Super_t super, SEL sel)
 }
 
 retval_t
-objc_msg_sendv(id object, SEL op, size_t frame_size, arglist_t arg_frame)
+objc_msg_sendv(id object, SEL op, arglist_t arg_frame)
 {
-#ifdef __objc_frame_receiver
-  __objc_frame_receiver(arg_frame) = object;
-  __objc_frame_selector(arg_frame) = op;
-  return __builtin_apply((apply_t)get_imp(object->class_pointer, op),
+  Method* m = class_get_instance_method(object->class_pointer, op);
+  const char *type;
+  *((id*)method_get_first_argument (m, arg_frame, &type)) = object;
+  *((SEL*)method_get_next_argument (arg_frame, &type)) = op;
+  return __builtin_apply((apply_t)m->method_imp, 
 			 arg_frame,
-			 frame_size);
-#else
-#warning performv:: will not work
-  va_list nothing;
-  (*_objc_error)(object, "objc_msg_sendv (performv::) not supported\n", nothing);
-  return 0;
-#endif
+			 method_get_sizeof_arguments (m));
 }
 
 void __objc_init_dispatch_tables()
@@ -247,9 +243,9 @@ __objc_install_dispatch_table_for_class (Class* class)
       while (counter >= 0)
         {
           Method_t method = &(mlist->method_list[counter]);
-	  sarray_at_put (class->dtable,
-			 (sidx) method->method_name,
-			 method->method_imp);
+	  sarray_at_put_safe (class->dtable,
+			      (sidx) method->method_name,
+			      method->method_imp);
           counter -= 1;
         }
     }
@@ -264,14 +260,14 @@ void __objc_update_dispatch_table_for_class (Class* class)
   if (class->dtable == __objc_uninstalled_dtable) 
     return;
 
-  save = class->dtable;
-  __objc_install_premature_dtable (class);
-  sarray_free (save);
-
+  sarray_free (class->dtable);	/* release memory */
+  __objc_install_premature_dtable (class); /* someone might require it... */
+  __objc_install_dispatch_table_for_class (class); /* could have been lazy... */
 
   if (class->subclass_list)	/* Traverse subclasses */
     for (next = class->subclass_list; next; next = next->sibling_class)
       __objc_update_dispatch_table_for_class (next);
+
 }
 
 
