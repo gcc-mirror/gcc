@@ -448,12 +448,18 @@ extern int ix86_arch;
 /* Minimum size in bits of the largest boundary to which any
    and all fundamental data types supported by the hardware
    might need to be aligned. No data type wants to be aligned
-   rounder than this.  The i386 supports 64-bit floating point
-   quantities, but these can be aligned on any 32-bit boundary.
-   The published ABIs say that doubles should be aligned on word
-   boundaries, but the Pentium gets better performance with them
-   aligned on 64 bit boundaries. */
-#define BIGGEST_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
+   rounder than this.
+   
+   Pentium+ preferrs DFmode values to be alignmed to 64 bit boundary
+   and Pentium Pro XFmode values at 128 bit boundaries.  */
+
+#define BIGGEST_ALIGNMENT 128
+
+/* The published ABIs say that doubles should be aligned on word
+   boundaries, so lower the aligmnet for structure fields unless
+   -malign_double is set.  */
+
+#define BIGGEST_FIELD_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
 
 /* If defined, a C expression to compute the alignment given to a
    constant that is being placed in memory.  CONSTANT is the constant
