@@ -1,3 +1,8 @@
+2002-03-12  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (qualify_ambiguous_name): Handle case where QUAL_WFL is
+	a call_expr wrapped in a convert.  Fixes PR java/5848.
+
 2002-03-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* jcf-write.c (write_classfile): Improve error strings.
