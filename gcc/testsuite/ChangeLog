@@ -1,3 +1,7 @@
+2003-04-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/warn/weak1.C: XFAIL on AIX4.
+
 2003-04-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-8.c: Don't perform cmpstr
