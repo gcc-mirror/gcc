@@ -1027,7 +1027,7 @@ ggc_marked_p (p)
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
   
-  return entry->in_use_p[word] & mask;
+  return (entry->in_use_p[word] & mask) != 0;
 }
 
 /* Return the size of the gc-able object P.  */

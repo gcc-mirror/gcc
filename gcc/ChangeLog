@@ -1,3 +1,7 @@
+Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ggc-page.c (ggc_marked_p): Properly convert return to boolean.
+
 2001-09-20  DJ Delorie  <dj@redhat.com>
 
 	* c-typeck.c (really_start_incremental_init): Discriminate
