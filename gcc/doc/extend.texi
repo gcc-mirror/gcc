@@ -2636,7 +2636,7 @@ found convenient to use @code{__attribute__} to achieve a natural
 attachment of attributes to their corresponding declarations, whereas
 @code{#pragma GCC} is of use for constructs that do not naturally form
 part of the grammar.  @xref{Other Directives,,Miscellaneous
-Preprocessing Directives, cpp, The C Preprocessor}.
+Preprocessing Directives, cpp, The GNU C Preprocessor}.
 
 @node Attribute Syntax
 @section Attribute Syntax
@@ -6895,8 +6895,8 @@ can also use most of the C language extensions in your C++ programs).  If you
 want to write code that checks whether these features are available, you can
 test for the GNU compiler the same way as for C programs: check for a
 predefined macro @code{__GNUC__}.  You can also use @code{__GNUG__} to
-test specifically for GNU C++ (@pxref{Standard Predefined,,Standard
-Predefined Macros,cpp.info,The C Preprocessor}).
+test specifically for GNU C++ (@pxref{Common Predefined Macros,,
+Predefined Macros,cpp,The GNU C Preprocessor}).
 
 @menu
 * Min and Max::		C++ Minimum and maximum operators.
