@@ -2079,7 +2079,7 @@ A port to the AT&T DSP1610 family of processors.
 
 The version of binutils installed in @file{/usr/bin} is known to work unless
 otherwise specified in any per-architecture notes.  However, binutils
-2.11 or greater is known to improve overall testsuite results.
+2.12.1 or greater is known to improve overall testsuite results.
 
 For FreeBSD 1, FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
 configuration support and files as shipped with GCC 2.95 are still in
@@ -2103,8 +2103,10 @@ results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4, 4.5-STABLE and 5-CURRENT@.
 
 In principle, @option{--enable-threads} is now compatible with
 @option{--enable-libgcj} on FreeBSD@.  However, it has only been built
-and tested on i386-*-freebsd4.5 and alpha-*-freebsd5.0 and important
-test suite failures remain.  Multi-threaded boehm-gc (required for
+and tested on i386-*-freebsd4.5 and alpha-*-freebsd5.0.  The static
+library may be incorrectly built (symbols are missing at link time).
+There is a rare timing-based startup hang (probably involves an
+assupmtion about the thread library).  Multi-threaded boehm-gc (required for
 libjava) exposes severe threaded signal-handling bugs on FreeBSD before
 4.5-RELEASE.  The alpha port may not fully bootstrap without some manual
 intervention: gcjh will crash with a floating-point exception while
