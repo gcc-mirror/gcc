@@ -7,6 +7,15 @@ Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 
 Wed May  6 16:46:01 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* toplev.c (-fsched-max): Delete flag.
+	(-fsched-interblock-max-blocks,-fsched-interblock-max-insns): Likewise.
+	* haifa-sched.c: Remove -fsched-max-N, -fsched-interblock-max-blocks-N
+	and -fsched-interblock-max-insns-N support.  Remove INTERBLOCK_DEBUG
+	conditionals.
+
+	* haifa-sched.c (find_rgns): Correctly handle reducible loops with
+	inner loops which are not reducible.
+
 	* loop.c (regs_match_p): Fix typo in prototype.
 
 	* regmove.c (try_auto_increment): Wrap declaration inside an

@@ -170,11 +170,6 @@ extern rtx *reg_known_value;
 
 #ifdef INSN_SCHEDULING
 
-/* enable interblock scheduling code */
-
-/* define INTERBLOCK_DEBUG for using the -fsched-max debugging facility */
-/* #define INTERBLOCK_DEBUG */
-
 /* target_units bitmask has 1 for each unit in the cpu.  It should be
    possible to compute this variable from the machine description.
    But currently it is computed by examinning the insn list.  Since
@@ -194,31 +189,20 @@ static int issue_rate;
 #define ISSUE_RATE 1
 #endif
 
-/* sched_debug_count is used for debugging the scheduler by limiting
-   the number of scheduled insns.  It is controlled by the option
-   -fsched-max-N (N is a number).
-
-   sched-verbose controls the amount of debugging output the
+/* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose-N:
    N>0 and no -DSR : the output is directed to stderr.
    N>=10 will direct the printouts to stderr (regardless of -dSR).
    N=1: same as -dSR.
    N=2: bb's probabilities, detailed ready list info, unit/insn info.
    N=3: rtl at abort point, control-flow, regions info.
-   N=5: dependences info.
-
-   max_rgn_blocks and max_region_insns limit region size for
-   interblock scheduling.  They are controlled by
-   -fsched-interblock-max-blocks-N, -fsched-interblock-max-insns-N */
+   N=5: dependences info.  */
 
 #define MAX_RGN_BLOCKS 10
 #define MAX_RGN_INSNS 100
 
-static int sched_debug_count = -1;
 static int sched_verbose_param = 0;
 static int sched_verbose = 0;
-static int max_rgn_blocks = MAX_RGN_BLOCKS;
-static int max_rgn_insns = MAX_RGN_INSNS;
 
 /* nr_inter/spec counts interblock/speculative motion for the function */
 static int nr_inter, nr_spec;
@@ -235,15 +219,8 @@ void
 fix_sched_param (param, val)
      char *param, *val;
 {
-  if (!strcmp (param, "max"))
-    sched_debug_count = ((sched_debug_count == -1) ?
-			 atoi (val) : sched_debug_count);
-  else if (!strcmp (param, "verbose"))
+  if (!strcmp (param, "verbose"))
     sched_verbose_param = atoi (val);
-  else if (!strcmp (param, "interblock-max-blocks"))
-    max_rgn_blocks = atoi (val);
-  else if (!strcmp (param, "interblock-max-insns"))
-    max_rgn_insns = atoi (val);
   else
     warning ("fix_sched_param: unknown param: %s", param);
 }
@@ -1424,7 +1401,7 @@ too_large (block, num_bbs, num_insns)
   (*num_bbs)++;
   (*num_insns) += (INSN_LUID (basic_block_end[block]) -
 		   INSN_LUID (basic_block_head[block]));
-  if ((*num_bbs > max_rgn_blocks) || (*num_insns > max_rgn_insns))
+  if ((*num_bbs > MAX_RGN_BLOCKS) || (*num_insns > MAX_RGN_INSNS))
     return 1;
   else
     return 0;
@@ -1507,6 +1484,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
   /* Note if a block is in the block queue. */
   sbitmap in_queue;
 
+  /* Note if a block is in the block queue. */
+  sbitmap in_stack;
+
   /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
      and a mapping from block to its loop header (if the block is contained
      in a loop, else -1).
@@ -1534,6 +1514,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
   in_queue = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (in_queue);
 
+  in_stack = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (in_stack);
+
   for (i = 0; i < n_basic_blocks; i++)
     max_hdr[i] = -1;
 
@@ -1545,7 +1528,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
       if (current_edge == 0 || TEST_BIT (passed, current_edge))
 	{
 	  /* We have reached a leaf node or a node that was already
-	     proc4essed.  Pop edges off the stack until we find
+	     processed.  Pop edges off the stack until we find
 	     an edge that has not yet been processed.  */
 	  while (sp >= 0
 		 && (current_edge == 0 || TEST_BIT (passed, current_edge)))
@@ -1554,7 +1537,8 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	      current_edge = stack[sp--];
 	      node = FROM_BLOCK (current_edge);
 	      child = TO_BLOCK (current_edge);
-	      if (max_hdr[child] >= 0 && TEST_BIT (dom[node], max_hdr[child]))
+	      RESET_BIT (in_stack, child);
+	      if (max_hdr[child] >= 0 && TEST_BIT (in_stack, max_hdr[child]))
 		UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
 	      current_edge = NEXT_OUT (current_edge);
 	    }
@@ -1570,12 +1554,13 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
       /* Process a node.  */
       node = FROM_BLOCK (current_edge);
       child = TO_BLOCK (current_edge);
+      SET_BIT (in_stack, node);
       dfs_nr[node] = ++count;
 
-      /* If the successor block dominates the current block, then
-	 we've found a natural loop, record the header block for
-	 future reference.  */
-      if (TEST_BIT (dom[node], child))
+      /* If the successor is in the stack, then we've found a loop.
+	 Mark the loop, if it is not a natural loop, then it will
+	 be rejected during the second traversal.  */
+      if (TEST_BIT (in_stack, child))
 	{
 	  no_loops = 0;
 	  SET_BIT (header, child);
@@ -1590,7 +1575,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	 with a new edge.  */
       if (dfs_nr[child])
 	{
-	  if (max_hdr[child] >= 0 && TEST_BIT (dom[node], max_hdr[child]))
+	  if (max_hdr[child] >= 0 && TEST_BIT (in_stack, max_hdr[child]))
 	    UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
 	  SET_BIT (passed, current_edge);
 	  current_edge = NEXT_OUT (current_edge);
@@ -1638,25 +1623,56 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 
       queue = (int *) alloca (n_basic_blocks * sizeof (int));
 
-      /* Find blocks which are inner loop headers.  */
+      /* Find blocks which are inner loop headers.  We still have non-reducible
+	 loops to consider at this point.  */
       for (i = 0; i < n_basic_blocks; i++)
 	{
 	  if (TEST_BIT (header, i) && TEST_BIT (inner, i))
 	    {
 	      int_list_ptr ps;
+	      int j;
 
-	      /* I is a header of a reducible inner loop, or block 0 in a
-		 subroutine with no loops at all.  */
+	      /* Now check that the loop is reducible.  We do this separate
+		 from finding inner loops so that we do not find a reducible
+		 loop which contains an inner  non-reducible loop.
+
+		 A simple way to find reducible/natrual loops is to verify
+		 that each block in the loop is dominated by the loop
+		 header.
+
+		 If there exists a block that is not dominated by the loop
+		 header, then the block is reachable from outside the loop
+		 and thus the loop is not a natural loop.  */
+	      for (j = 0; j < n_basic_blocks; j++)	
+		{
+		  /* First identify blocks in the loop, except for the loop
+		     entry block.  */
+		  if (i == max_hdr[j] && i != j)
+		    {
+		      /* Now verify that the block is dominated by the loop
+			 header.  */
+		      if (!TEST_BIT (dom[j], i))
+			break;
+		    }
+		}
+
+	      /* If we exited the loop early, then I is the header of a non
+		 reducible loop and we should quit processing it now.  */
+	      if (j != n_basic_blocks)
+		continue;
+
+	      /* I is a header of an inner loop, or block 0 in a subroutine
+		 with no loops at all.  */
 	      head = tail = -1;
 	      too_large_failure = 0;
 	      loop_head = max_hdr[i];
 
 	      /* Decrease degree of all I's successors for topological
-		 ordering.  */
+		 ordering.
 	      for (ps = s_succs[i]; ps; ps = ps->next)
 		if (INT_LIST_VAL (ps) != EXIT_BLOCK
 		    && INT_LIST_VAL (ps) != ENTRY_BLOCK)
-		  --degree[INT_LIST_VAL (ps)];
+		  --degree[INT_LIST_VAL(ps)];
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
@@ -1833,6 +1849,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
   free (header);
   free (inner);
   free (in_queue);
+  free (in_stack);
 }
 
 
@@ -6566,8 +6583,6 @@ schedule_block (bb, rgn_n_insns)
 	       INSN_UID (basic_block_end[b]),
 	       (reload_completed ? "after" : "before"));
       fprintf (dump, ";;   ======================================================\n");
-      if (sched_debug_count >= 0)
-	fprintf (dump, ";;\t -- sched_debug_count=%d\n", sched_debug_count);
       fprintf (dump, "\n");
 
       visual_tbl = (char *) alloca (get_visual_tbl_length ());
@@ -6704,10 +6719,6 @@ schedule_block (bb, rgn_n_insns)
     {
       int b1;
 
-#ifdef INTERBLOCK_DEBUG
-      if (sched_debug_count == 0)
-	break;
-#endif
       clock_var++;
 
       /* Add to the ready list all pending insns that can be issued now.
@@ -6750,11 +6761,6 @@ schedule_block (bb, rgn_n_insns)
 	    }
 	  else if (cost == 0)
 	    {
-#ifdef INTERBLOCK_DEBUG
-	      if (sched_debug_count == 0)
-		break;
-#endif
-
 	      /* an interblock motion? */
 	      if (INSN_BB (insn) != target_bb)
 		{
@@ -6823,11 +6829,6 @@ schedule_block (bb, rgn_n_insns)
 
 	      can_issue_more--;
 
-#ifdef INTERBLOCK_DEBUG
-	      if (sched_debug_count > 0)
-		sched_debug_count--;
-#endif
-
 	      n_ready = schedule_insn (insn, ready, n_ready, clock_var);
 
 	      /* remove insn from ready list */
@@ -6843,10 +6844,6 @@ schedule_block (bb, rgn_n_insns)
       if (sched_verbose)
 	{
 	  visualize_scheduled_insns (b, clock_var);
-#ifdef INTERBLOCK_DEBUG
-	  if (sched_debug_count == 0)
-	    fprintf (dump, "........   sched_debug_count == 0  .................\n");
-#endif
 	}
     }
 
@@ -6859,24 +6856,14 @@ schedule_block (bb, rgn_n_insns)
     }
 
   /* Sanity check -- queue must be empty now.  Meaningless if region has
-     multiple bbs, or if scheduling stopped by sched_debug_count.  */
+     multiple bbs.  */
   if (current_nr_blocks > 1)
-#ifdef INTERBLOCK_DEBUG
-    if (sched_debug_count != 0)
-#endif
-      if (!flag_schedule_interblock && q_size != 0)
-	abort ();
+    if (!flag_schedule_interblock && q_size != 0)
+      abort ();
 
   /* update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
   tail = last;
-
-#ifdef INTERBLOCK_DEBUG
-  if (sched_debug_count == 0)
-    /* compensate for stopping scheduling prematurely */
-    for (i = sched_target_n_insns; i < target_n_insns; i++)
-      tail = move_insn (group_leader (NEXT_INSN (tail)), tail);
-#endif
 
   /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
      previously found among the insns.  Insert them at the beginning
@@ -7562,12 +7549,9 @@ schedule_region (rgn)
 #endif
     }
 
-#ifdef INTERBLOCK_DEBUG
-  if (sched_debug_count != 0)
-#endif
-    /* sanity check: verify that all region insns were scheduled */
-    if (sched_rgn_n_insns != rgn_n_insns)
-      abort ();
+  /* sanity check: verify that all region insns were scheduled */
+  if (sched_rgn_n_insns != rgn_n_insns)
+    abort ();
 
   /* update register life and usage information */
   if (reload_completed == 0)
