@@ -1559,7 +1559,7 @@ ia64_split_call (retval, addr, retaddr, scratch_r, scratch_b,
       bool addr_dead_p;
 
       /* ??? We are currently constrained to *not* use peep2, because
-	 we can legitimiately change the global lifetime of the GP
+	 we can legitimately change the global lifetime of the GP
 	 (in the form of killing where previously live).  This is 
 	 because a call through a descriptor doesn't use the previous
 	 value of the GP, while a direct call does, and we do not

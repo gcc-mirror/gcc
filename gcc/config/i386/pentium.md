@@ -210,7 +210,7 @@
   "pentium-firstv")
 
 ;; Floating point instruction dispatch in U pipe, but continue
-;; in FP pipeline allowing other isntructions to be executed.
+;; in FP pipeline allowing other instructions to be executed.
 (define_insn_reservation "pent_fp" 3
   (and (eq_attr "cpu" "pentium")
        (eq_attr "type" "fop,fistp"))

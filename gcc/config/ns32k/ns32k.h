@@ -472,7 +472,7 @@ enum reg_class
 
 
 /* LONG_REGS are registers which can only hold double precision floats
- * and can only be accessable by long float instructions.
+ * and can only be accessible by long float instructions.
  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
@@ -885,7 +885,7 @@ __transfer_from_trampoline ()		\
 #endif
 
 /* SMALL_REGISTER_CLASSES is a run time option. This should no longer
-   be necessay and should go when we have confidence that we won't run
+   be necessary and should go when we have confidence that we won't run
    out of spill registers */
 #define SMALL_REGISTER_CLASSES (target_flags & MASK_SRC)
 

@@ -176,7 +176,7 @@
           first regular expression *and* the reservation described by
           the second regular expression *and* etc.
 
-       4. "*" is used for convinience and simply means sequence in
+       4. "*" is used for convenience and simply means sequence in
           which the regular expression are repeated NUMBER times with
           cycle advancing (see ",").
 
@@ -524,7 +524,7 @@
 (define_reservation "2_F" "2_F0|2_F1|2_F2")
 
 ;;; "Each B slot in MBB or BBB bundle disperses to the corresponding B
-;;; unit. That is, a B slot in 1st position is despersed to B0.  In the
+;;; unit. That is, a B slot in 1st position is dispersed to B0.  In the
 ;;; 2nd position it is dispersed to B2".
 (define_reservation "2_NB"
     "2_0b.bb+2_unb0|2_0bb.b+2_unb1|2_0bbb.+2_unb2\
@@ -1349,7 +1349,7 @@
     |2b_1mf.i+2_5+2b_uf1|2b_1mmf.+2_6+2b_uf1|2b_1mf.b+2_5+2b_uf1")
 
 ;;; "Each B slot in MBB or BBB bundle disperses to the corresponding B
-;;; unit. That is, a B slot in 1st position is despersed to B0.  In the
+;;; unit. That is, a B slot in 1st position is dispersed to B0.  In the
 ;;; 2nd position it is dispersed to B2".
 (define_reservation "2b_NB"
     "2b_0b.bb+2_1+2b_unb0|2b_0bb.b+2_2+2b_unb1|2b_0bbb.+2_3+2b_unb2\

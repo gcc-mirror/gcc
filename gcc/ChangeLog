@@ -1,3 +1,22 @@
+2003-07-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c: Fix comment typos.
+	* config/h8300/h8300.md: Likewise.
+	* config/i386/athlon.md: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/pentium.md: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/ia64/itanium1.md: Likewise.
+	* config/ia64/itanium2.md: Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/m68hc11/m68hc11.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mips/sr71k.md: Likewise.
+	* config/mips/t-iris5-as: Likewise.
+	* config/mmix/mmix.h: Likewise.
+	* config/ns32k/ns32k.h: Likewise.
+	* config/ns32k/NOTES: Fix a typo.
+
 2003-07-06  Andreas Jaeger  <aj@suse.de>
 
 	* stmt.c: Convert remaining prototypes to ISO C90.

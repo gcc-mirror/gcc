@@ -2608,7 +2608,7 @@ contains_128bit_aligned_vector_p (type)
 
   if (AGGREGATE_TYPE_P (type))
     {
-      /* Walk the agregates recursively.  */
+      /* Walk the aggregates recursively.  */
       if (TREE_CODE (type) == RECORD_TYPE
 	  || TREE_CODE (type) == UNION_TYPE
 	  || TREE_CODE (type) == QUAL_UNION_TYPE)

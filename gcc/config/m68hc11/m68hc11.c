@@ -5185,7 +5185,7 @@ m68hc11_reorg ()
   if (optimize)
     compute_bb_for_insn ();
 
-  /* After some splitting, there are some oportunities for CSE pass.
+  /* After some splitting, there are some opportunities for CSE pass.
      This happens quite often when 32-bit or above patterns are split.  */
   if (optimize > 0 && split_done)
     {

@@ -1920,7 +1920,7 @@ compute_mov_length (rtx *operands)
 	    return base_length - 2;
 	  else
 	    /* In SImode and SFmode, we use two mov.w instructions, so
-	       double the adustment.  */
+	       double the adjustment.  */
 	    return base_length - 4;
 	}
 
