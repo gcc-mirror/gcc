@@ -4183,7 +4183,7 @@ choose_reload_regs (insn, avoid_return_reg)
     if (reload_when_needed[j] == RELOAD_OTHER
 	&& ! reload_needed_for_multiple[j])
       {
-	if (reload_in[j] == 0)
+	if (reload_in[j] == 0 && reload_out[j] != 0)
 	  {
 	    /* But earlyclobber operands must stay as RELOAD_OTHER.  */
 	    for (i = 0; i < n_earlyclobbers; i++)
