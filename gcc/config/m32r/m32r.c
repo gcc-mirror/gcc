@@ -1902,6 +1902,29 @@ m32r_load_pic_register (void)
   emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 }
 
+static void
+m32r_reload_lr (rtx sp, int size)
+{
+  rtx lr = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+
+  if (size == 0)
+    emit_insn (gen_movsi (lr, gen_rtx_MEM (Pmode, sp)));
+  else if (size <= 32768)
+    emit_insn (gen_movsi (lr, gen_rtx_MEM (Pmode,
+					   gen_rtx_PLUS (Pmode, sp,
+							 GEN_INT (size)))));
+  else
+    {   
+      rtx tmp = gen_rtx_REG (Pmode, PROLOGUE_TMP_REGNUM);
+
+      emit_insn (gen_movsi (tmp, GEN_INT (size)));
+      emit_insn (gen_addsi3 (tmp, tmp, sp));
+      emit_insn (gen_movsi (lr, gen_rtx_MEM (Pmode, tmp)));
+    }
+
+  emit_insn (gen_rtx_USE (VOIDmode, lr));
+}
+
 /* Expand the m32r prologue as a series of insns.  */
 
 void
@@ -1978,7 +2001,11 @@ m32r_expand_prologue (void)
                                gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
                                                                                 
   if (pic_reg_used)
-    m32r_load_pic_register ();
+    {
+      m32r_load_pic_register ();
+      m32r_reload_lr (stack_pointer_rtx,
+                      (current_function_profile ? 0 : frame_size));
+    }
 
   if (current_function_profile && !pic_reg_used)
     emit_insn (gen_blockage ());
@@ -3036,4 +3063,13 @@ m32r_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
     return 0;
 
   return 1;
+}
+
+rtx
+m32r_return_addr (int count)
+{
+  if (count != 0)
+    return const0_rtx;
+  
+  return get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);
 }
