@@ -1,6 +1,7 @@
 2003-02-11  John Leuner  <jewel@debian.org>
 
-	* java/util/zip/ZipInputStream.java: idem
+	* java/util/zip/ZipInputStream.java: Fix problem with 0-length 
+	reads from end of file.
 
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
