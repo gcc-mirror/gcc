@@ -1,3 +1,10 @@
+2003-06-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* ggc-page.c (init_ggc): Give better diagnostics on failure to
+	open /dev/zero.
+	* toplev.c (crash_signal): Reset handling for received signal
+	to SIG_DFL.
+
 2003-06-02  Ben Elliston  <bje@wasabisystems.com>
 
 	* config/arm/arm.c (arm_use_dfa_pipeline_interface): Declare.
@@ -86,9 +93,9 @@
 
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
-        * toplev.c: Use ISO C90 prototypes.
+	* toplev.c: Use ISO C90 prototypes.
 
-        * toplev.h: Use ISO C90 prototypes.
+	* toplev.h: Use ISO C90 prototypes.
 
 	* genrecog.c: Use ISO C90 prototypes.
 	(nodes_identical): Correct declaration to match prototype.
@@ -160,53 +167,53 @@
 2003-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/9680
-        * config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Require
-        TARGET_SPE for SPE_VECTOR_MODE.
+	* config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Require
+	TARGET_SPE for SPE_VECTOR_MODE.
 
 2003-05-31  Aldy Hernandez  <aldyh@redhat.com>
 
-        * toplev.c (botch): Remove.
-        (do_abort): Remove.
-        (set_Wunused): Comment.
-        (set_Wextra): Comment.
-        Remove ^L's.
-        (rest_of_compilation): Factor out common code into functions.
-        (rest_of_handle_inlining): New.
-        (rest_of_handle_ssa): New.
-        (rest_of_handle_cse): New.
-        (rest_of_handle_gcse): New.
-        (rest_of_handle_loop_optimize): New.
-        (rest_of_handle_jump_bypass): New.
-        (rest_of_handle_sibling_calls): New.
-        (rest_of_handle_null_pointer): New.
-        (rest_of_handle_addresof): New.
-        (rest_of_handle_flow): New.
-        (rest_of_handle_branch_prob): New.
-        (rest_of_handle_if_conversion): New.
-        (rest_of_handle_tracer): New.
-        (rest_of_handle_loop2): New.
-        (rest_of_handle_cse2): New.
-        (rest_of_handle_life): New.
-        (rest_of_handle_combine): New.
-        (rest_of_handle_if_after_combine): New.
-        (rest_of_handle_regmove): New.
-        (rest_of_handle_sched): New.
-        (rest_of_handle_old_regalloc): New.
-        (rest_of_handle_new_regalloc): New.
-        (rest_of_handle_regrename): New.
-        (rest_of_handle_reorder_blocks): New.
-        (rest_of_handle_sched2): New.
-        (rest_of_handle_new_regalloc): New.
-        (rest_of_handle_old_regalloc): New.
-        (rest_of_handle_regrename): New.
-        (rest_of_handle_reorder_blocks): New.
-        (rest_of_handle_stack_regs): New.
-        (rest_of_handle_machine_reorg): New.
-        (rest_of_handle_delay_slots): New.
-        (rest_of_handle_final): New.
+	* toplev.c (botch): Remove.
+	(do_abort): Remove.
+	(set_Wunused): Comment.
+	(set_Wextra): Comment.
+	Remove ^L's.
+	(rest_of_compilation): Factor out common code into functions.
+	(rest_of_handle_inlining): New.
+	(rest_of_handle_ssa): New.
+	(rest_of_handle_cse): New.
+	(rest_of_handle_gcse): New.
+	(rest_of_handle_loop_optimize): New.
+	(rest_of_handle_jump_bypass): New.
+	(rest_of_handle_sibling_calls): New.
+	(rest_of_handle_null_pointer): New.
+	(rest_of_handle_addresof): New.
+	(rest_of_handle_flow): New.
+	(rest_of_handle_branch_prob): New.
+	(rest_of_handle_if_conversion): New.
+	(rest_of_handle_tracer): New.
+	(rest_of_handle_loop2): New.
+	(rest_of_handle_cse2): New.
+	(rest_of_handle_life): New.
+	(rest_of_handle_combine): New.
+	(rest_of_handle_if_after_combine): New.
+	(rest_of_handle_regmove): New.
+	(rest_of_handle_sched): New.
+	(rest_of_handle_old_regalloc): New.
+	(rest_of_handle_new_regalloc): New.
+	(rest_of_handle_regrename): New.
+	(rest_of_handle_reorder_blocks): New.
+	(rest_of_handle_sched2): New.
+	(rest_of_handle_new_regalloc): New.
+	(rest_of_handle_old_regalloc): New.
+	(rest_of_handle_regrename): New.
+	(rest_of_handle_reorder_blocks): New.
+	(rest_of_handle_stack_regs): New.
+	(rest_of_handle_machine_reorg): New.
+	(rest_of_handle_delay_slots): New.
+	(rest_of_handle_final): New.
 
-        * toplev.h (botch): Remove prototype.
-        (do_abort): Same.
+	* toplev.h (botch): Remove prototype.
+	(do_abort): Same.
 
 2003-05-31  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -453,8 +460,8 @@
 	-lthread to -lpthread.
 
 2003-05-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Bruce Korb  <bkorb@gnu.org>
-            Arno Klaassen  <arno@heho.snv.jussieu.fr>
+	    Bruce Korb  <bkorb@gnu.org>
+	    Arno Klaassen  <arno@heho.snv.jussieu.fr>
 
 	* fixinc/inclhack.def: Add missing declaration of getpagesize()
 	to unistd.h on Solaris 2.5.1.
