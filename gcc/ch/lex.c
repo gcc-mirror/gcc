@@ -1677,7 +1677,7 @@ check_newline ()
 	      && getlc (finput) == 't'
 	      && ((c = getlc (finput)) == ' ' || c == '\t'))
 	    {
-	      /* #ident.  The pedantic warning is now in cccp.c.  */
+	      /* #ident.  The pedantic warning is now in cpp.  */
 
 	      /* Here we have just seen `#ident '.
 		 A string constant should follow.  */

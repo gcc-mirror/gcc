@@ -619,9 +619,7 @@ const char *chill_tree_code_name[] = {
   };
 #undef DEFTREECODE
 
-/* Nonzero means `$' can be in an identifier.
-   See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
-
+/* Nonzero means `$' can be in an identifier. */
 #ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 0
 #endif

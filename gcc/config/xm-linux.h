@@ -25,6 +25,3 @@ Boston, MA 02111-1307, USA.  */
 /* We do have one, but I'd like to use the one come with gcc since
    we have been doing that for a long time with USG defined.  H.J. */
 #undef HAVE_STAB_H
-
-#undef BSTRING
-#define BSTRING

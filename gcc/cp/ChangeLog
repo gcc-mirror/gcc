@@ -1,3 +1,7 @@
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lex.c: Remove references to cccp.c.
+
 2000-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Remove const_memfunc and

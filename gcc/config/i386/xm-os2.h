@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __EMX__
 #define EMX
 #define USG
-#define BSTRING
 #define HAVE_PUTENV
 #define HAVE_VPRINTF
 #define HAVE_STRERROR

@@ -1992,7 +1992,7 @@ type these commands:
 
 @example
 sh# @kbd{cd gcc}
-sh# @kbd{touch bi-parser.c bi-parser.h c-parse.c c-parse.h cexp.c}
+sh# @kbd{touch bi-parser.c bi-parser.h c-parse.c c-parse.h}
 sh# @kbd{touch cp/parse.c cp/parse.h objc-parse.c}
 sh# @kbd{cd ..}
 sh#

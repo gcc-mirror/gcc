@@ -1,5 +1,27 @@
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cccp.c, cexp.y, cexp.c, cccp.1: Removed.
+
+	* configure.in: Delete --disable-cpplib option and all
+	references to cpp_main.
+	* configure: Regenerate.
+	* Makefile.in: Remove all references to CCCP, CCCP_OBJS,
+	@cpp_main@, cccp.c, cexp.c, cexp.y, cexp.output, cexp.o,
+	cccp.o, cccp, or cppmain.  Link cppmain.o straight to
+	cpp$(exeext).  Add --no-headers to makeinfo command line when
+	generating INSTALL.  Install and uninstall cpp.1 manpage, not
+	cccp.1.
+	* install.texi: Delete all references to cexp.y/cexp.c.
+	Delete ancient instructions for compiling GCC on 3b1.
+	* INSTALL: Regenerate.
+
+	* cppfiles.c, cpplib.h, jump.c, protoize.c, c-lex.c, mips/t-ecoff,
+	mips/t-elf, mips/t-r3900: Remove references to cccp.c.
+	* convex.h, fx80.h, m68k.h, pdp11.h: Remove references to
+	cexp.c/cexp.y.
+	* xm-linux.h, xm-os2.h, romp.h: Remove definition of BSTRING,
+	which is no longer tested anywhere.
+	
 	* cppinit.c (handle_option): Don't run error message through
 	gettext twice.
 

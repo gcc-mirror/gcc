@@ -1224,7 +1224,7 @@ ffelex_hash_ (FILE *finput)
 	      && getc (finput) == 't'
 	      && ((c = getc (finput)) == ' ' || c == '\t'))
 	    {
-	      /* #ident.  The pedantic warning is now in cccp.c.  */
+	      /* #ident.  The pedantic warning is now in cpp.  */
 
 	      /* Here we have just seen `#ident '.
 		 A string constant should follow.  */

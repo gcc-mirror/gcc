@@ -192,7 +192,7 @@ static const unexpansion unexpansions[] = {
 static const int hash_mask = (HASH_TABLE_SIZE - 1);
 
 /* Make a table of default system include directories
-   just as it is done in cccp.c.  */
+   just as it is done in cpp.  */
 
 #ifndef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/include"

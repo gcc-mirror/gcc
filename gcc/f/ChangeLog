@@ -1,6 +1,11 @@
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lex.c: Remove references to cccp.c.
+	* g77install.texi: Remove references to cexp.c/cexp.y.
+
 2000-04-15  David Edelsohn  <edelsohn@gnu.org>
 
-	* f/target.h (FFETARGET_32bit_longs): Define for 64-bit PowerPC
+	* target.h (FFETARGET_32bit_longs): Define for 64-bit PowerPC
 	as well.
 
 Wed Apr 12 15:15:26 2000  Mark Mitchell  <mark@codesourcery.com>
