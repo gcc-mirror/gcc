@@ -447,13 +447,17 @@ _Jv_CallAnyMethodA (jobject obj,
 {
   // FIXME: access checks.
 
-  if (parameter_types->length != args->length)
+  if (parameter_types->length == 0 && args == NULL)
+    {
+      // The JDK accepts this, so we do too.
+    }
+  else if (parameter_types->length != args->length)
     JvThrow (new java::lang::IllegalArgumentException);
 
   int param_count = parameter_types->length;
 
   jclass *paramelts = elements (parameter_types);
-  jobject *argelts = elements (args);
+  jobject *argelts = args == NULL ? NULL : elements (args);
   jvalue argvals[param_count];
 
 #define COPY(Where, What, Type) \
