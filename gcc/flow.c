@@ -1135,17 +1135,17 @@ life_analysis (f, nregs)
 		 reg that is live at the end now but was not live there before
 		 is one of the significant regs of this basic block).  */
 
-	      EXECUTE_IF_AND_COMPL_IN_REG_SET (basic_block_new_live_at_end[i],
-					       basic_block_live_at_end[i],
-					       0, j,
-					       {
-						 consider = 1;
-						 if (REGNO_REG_SET_P (basic_block_significant[i], j))
-						   {
-						     must_rescan = 1;
-						     goto done;
-						   }
-					       });
+	      EXECUTE_IF_AND_COMPL_IN_REG_SET
+		(basic_block_new_live_at_end[i],
+		 basic_block_live_at_end[i], 0, j,
+		 {
+		   consider = 1;
+		   if (REGNO_REG_SET_P (basic_block_significant[i], j))
+		     {
+		       must_rescan = 1;
+		       goto done;
+		     }
+		 });
 	    done:
 	      if (! consider)
 		continue;
@@ -1661,11 +1661,12 @@ propagate_block (old, first, last, final, significant, bnum)
 	      register int regno;
 	      register int *p;
 
-	      EXECUTE_IF_AND_COMPL_IN_REG_SET (live, maxlive, 0, regno,
-					       {
-						 regs_sometimes_live[sometimes_max++] = regno;
-						 SET_REGNO_REG_SET (maxlive, regno);
-					       });
+	      EXECUTE_IF_AND_COMPL_IN_REG_SET
+		(live, maxlive, 0, regno,
+		 {
+		   regs_sometimes_live[sometimes_max++] = regno;
+		   SET_REGNO_REG_SET (maxlive, regno);
+		 });
 
 	      p = regs_sometimes_live;
 	      for (i = 0; i < sometimes_max; i++)
