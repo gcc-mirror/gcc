@@ -305,6 +305,15 @@ public class ZipFile implements ZipConstants
   }
 
   /**
+   * Calls the <code>close()</code> method when this ZipFile has not yet
+   * been explicitly closed.
+   */
+  protected void finalize() throws IOException
+  {
+    if (!closed) close();
+  }
+
+  /**
    * Returns an enumeration of all Zip entries in this Zip file.
    */
   public Enumeration entries()
