@@ -2619,9 +2619,10 @@ verify_addresses (v, giv_inc, unroll_number)
       || ! validate_replace_rtx (*v->location, last_addr, v->insn))
     ret = 0;
 
-  /* Now put things back the way they were before.  This will always
+  /* Now put things back the way they were before.  This should always
    succeed.  */
-  validate_change (v->insn, v->location, orig_addr, 0);
+  if (! validate_replace_rtx (*v->location, orig_addr, v->insn))
+    abort ();
 
   return ret;
 }
