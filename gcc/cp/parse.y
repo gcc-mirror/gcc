@@ -962,7 +962,7 @@ identifier_defn:
 
 explicit_instantiation:
 	  TEMPLATE begin_explicit_instantiation typespec ';'
-		{ do_type_instantiation ($3.t, NULL_TREE);
+		{ do_type_instantiation ($3.t, NULL_TREE, 1);
 		  yyungetc (';', 1); }
           end_explicit_instantiation
 	| TEMPLATE begin_explicit_instantiation typed_declspecs declarator
@@ -976,7 +976,7 @@ explicit_instantiation:
 		{ do_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
           end_explicit_instantiation
 	| SCSPEC TEMPLATE begin_explicit_instantiation typespec ';'
-		{ do_type_instantiation ($4.t, $1);
+		{ do_type_instantiation ($4.t, $1, 1);
 		  yyungetc (';', 1); }
           end_explicit_instantiation
 	| SCSPEC TEMPLATE begin_explicit_instantiation typed_declspecs 
