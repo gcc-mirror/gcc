@@ -1,3 +1,9 @@
+Wed Jul 29 22:39:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* unroll.c (unroll_loop): Do not abort for an UNROLL_MODULO
+	or UNROLL_COMPLETELY loop that starts with a jump to its
+	exit code.
+
 Tue Jul 28 23:29:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Fix --without/--disable cases for local-prefix, 
