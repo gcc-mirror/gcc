@@ -446,8 +446,8 @@ DEF_GCC_BUILTIN(BUILT_IN_UNWIND_INIT,
 DEF_GCC_BUILTIN(BUILT_IN_DWARF_CFA,
 		"__builtin_dwarf_cfa",
 		BT_FN_PTR)
-DEF_GCC_BUILTIN(BUILT_IN_DWARF_FP_REGNUM,
-		"__builtin_dwarf_fp_regnum",
+DEF_GCC_BUILTIN(BUILT_IN_DWARF_SP_COLUMN,
+		"__builtin_dwarf_sp_column",
 		BT_FN_UNSIGNED)
 DEF_GCC_BUILTIN(BUILT_IN_INIT_DWARF_REG_SIZES,
 		"__builtin_init_dwarf_reg_size_table",
