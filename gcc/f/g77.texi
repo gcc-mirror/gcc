@@ -3,7 +3,7 @@
 @setfilename g77.info
 
 @set last-update 1999-06-06
-@set copyrights-g77 1995-1999
+@set copyrights-g77 1995-2000
 
 @include root.texi
 
@@ -1654,8 +1654,8 @@ and when the resulting commands compile Fortran source files.
 @cindex options, -fset-g77-defaults
 @item -fset-g77-defaults
 @emph{Version info:}
-This option is obsolete in @code{egcs}
-as of version 1.1.
+This option was obsolete as of @code{egcs}
+version 1.1.
 The effect is instead achieved
 by the @code{lang_init_options} routine
 in @file{gcc/gcc/f/com.c}.

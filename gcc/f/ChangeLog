@@ -1,3 +1,16 @@
+2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* RELEASE-PREP: Remove obsolete EGCS reference.
+	* g77.texi: Adjust reference to EGCS as something current.
+	* lang-options.h (FTNOPT): Remove macro and obsolete comment.
+	Include doc strings directly in option listing instead of through
+	this macro.
+	* root.texi: Remove support for multiple different (FSF and EGCS)
+	distributions of g77.
+	* g77install.texi: Remove conditioned out instructions applying
+	only to obsolete distributions of g77 not as part of GCC.  Change
+	"superceded" to the correct spelling "superseded".
+
 Sun Nov 26 19:25:56 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77spec.c (lang_specific_driver): Update copyright year to 2000.

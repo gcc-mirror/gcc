@@ -6,29 +6,13 @@
 @set version-g77 0.5.26
 @set version-gcc 2.97
 
-@c GCC-G77 indicates this is the GCC (2.95 or later) version of g77.
-@set GCC-G77
-
-@c EGCS-G77 indicates this is the EGCS (1.0 or 1.1) version of g77.
-@clear EGCS-G77
-
-@c FSF-G77 indicates this is the FSF (0.5.23 or earlier) version of g77.
-@clear FSF-G77
-
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 @set path-g77 gcc/gcc/f
 @set path-libf2c gcc/libf2c
 
-@ifset GCC-G77
 @set which-g77 GCC-@value{version-gcc}
 @set which-gcc GCC
-@end ifset
-
-@ifset FSF-G77
-@set which-g77 FSF-@value{version-g77}
-@set which-gcc GCC
-@end ifset
 
 @set email-burley craig@@jcb-sc.com
 @set www-burley http://world.std.com/%7Eburley
