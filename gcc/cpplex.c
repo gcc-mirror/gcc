@@ -102,7 +102,6 @@ static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, unsigned int *));
-static cpp_token *lex_token PARAMS ((cpp_reader *, cpp_token *));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
@@ -811,7 +810,7 @@ save_comment (pfile, token, from)
   memcpy (buffer + 1, from, len - 1);
 }
 
-/* Subroutine of lex_token to handle '%'.  A little tricky, since we
+/* Subroutine of _cpp_lex_direct to handle '%'.  A little tricky, since we
    want to avoid stepping back when lexing %:%X.  */
 static void
 lex_percent (pfile, result)
@@ -860,7 +859,7 @@ lex_percent (pfile, result)
     }
 }
 
-/* Subroutine of lex_token to handle '.'.  This is tricky, since we
+/* Subroutine of _cpp_lex_direct to handle '.'.  This is tricky, since we
    want to avoid stepping back when lexing '...' or '.123'.  In the
    latter case we should also set a flag for parse_number.  */
 static void
@@ -932,7 +931,9 @@ next_tokenrun (run)
   return run->next;
 }
 
-/* Lex a token into RESULT (external interface).  */
+/* Lex a token into RESULT (external interface).  Takes care of issues
+   like directive handling, token lookahead, multiple include
+   opimisation and skipping.  */
 const cpp_token *
 _cpp_lex_token (pfile)
      cpp_reader *pfile;
@@ -946,12 +947,14 @@ _cpp_lex_token (pfile)
 	  pfile->cur_run = next_tokenrun (pfile->cur_run);
 	  pfile->cur_token = pfile->cur_run->base;
 	}
-      result = pfile->cur_token++;
 
       if (pfile->lookaheads)
-	pfile->lookaheads--;
+	{
+	  pfile->lookaheads--;
+	  result = pfile->cur_token++;
+	}
       else
-	result = lex_token (pfile, result);
+	result = _cpp_lex_direct (pfile);
 
       if (result->flags & BOL)
 	{
@@ -970,7 +973,7 @@ _cpp_lex_token (pfile)
 	break;
 
       /* Outside a directive, invalidate controlling macros.  At file
-	 EOF, lex_token takes care of popping the buffer, so we never
+	 EOF, _cpp_lex_direct takes care of popping the buffer, so we never
 	 get here and MI optimisation works.  */
       pfile->mi_valid = false;
 
@@ -981,17 +984,25 @@ _cpp_lex_token (pfile)
   return result;
 }
 
-/* Lex a token into RESULT.  When meeting a newline, returns CPP_EOF
-   if parsing a directive, otherwise returns to the start of the token
-   buffer if permissible.  Returns the location of the lexed token.  */
-static cpp_token *
-lex_token (pfile, result)
+/* Lex a token into pfile->cur_token, which is also incremented, to
+   get diagnostics pointing to the correct location.
+
+   Does not handle issues such as token lookahead, multiple-include
+   optimisation, directives, skipping etc.  This function is only
+   suitable for use by _cpp_lex_token, and in special cases like
+   lex_expansion_token which doesn't care for any of these issues.
+
+   When meeting a newline, returns CPP_EOF if parsing a directive,
+   otherwise returns to the start of the token buffer if permissible.
+   Returns the location of the lexed token.  */
+cpp_token *
+_cpp_lex_direct (pfile)
      cpp_reader *pfile;
-     cpp_token *result;
 {
   cppchar_t c;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
+  cpp_token *result = pfile->cur_token++;
 
  fresh_line:
   buffer = pfile->buffer;

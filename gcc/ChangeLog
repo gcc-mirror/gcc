@@ -1,3 +1,13 @@
+2001-09-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (_cpp_lex_direct): New.
+	* cpplex.c (_cpp_lex_token): Update.
+	(lex_token): Rename _cpp_lex_direct; lex into pfile->cur_token,
+	and increment that pointer.
+	* cppmacro.c (alloc_expansion_token): New.
+	(lex_expansion_token): Lex macro expansion directly into
+	macro storage.
+
 2001-09-16  Brad Lucier  <lucier@math.purdue.edu>
 
 	* Makefile.in: Make rtl-error.o depend on $(CONFIG_H).
