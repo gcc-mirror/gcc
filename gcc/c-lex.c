@@ -479,6 +479,22 @@ extend_token_buffer (p)
   return token_buffer + offset;
 }
 
+#if defined HANDLE_PRAGMA 
+/* Local versions of these macros, that can be passed as function pointers.  */
+static int
+pragma_getc ()
+{
+  return GETC();
+}
+
+static void
+pragma_ungetc (arg)
+     int arg;
+{
+  UNGETC (arg);
+}
+#endif
+
 /* At the beginning of a line, increment the line number
    and process any #-directive on this line.
    If the line is a #-directive, read the entire line and return a newline.
@@ -530,34 +546,43 @@ check_newline ()
 		c = GETC ();
 	      if (c == '\n')
 		return c;
-#ifdef HANDLE_SYSV_PRAGMA
+
+#if defined HANDLE_PRAGMA || defined HANDLE_SYSV_PRAGMA	      
 	      UNGETC (c);
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
-	      return handle_sysv_pragma (token);
-#else /* !HANDLE_SYSV_PRAGMA */
+	      
 #ifdef HANDLE_PRAGMA
+	      /* We invoke HANDLE_PRAGMA before HANDLE_SYSV_PRAGMA
+		 (if both are defined), in order to give the back
+		 end a chance to override the interpretation of
+		 SYSV style pragmas.  */
 #if !USE_CPPLIB
-	      UNGETC (c);
-	      token = yylex ();
-	      if (token != IDENTIFIER)
-		goto skipline;
 	      if (nextchar >= 0)
-		c = nextchar, nextchar = -1;
-	      else
-		c = GETC ();
-	      ungetc (c, finput);
-	      if (HANDLE_PRAGMA (finput, yylval.ttype))
 		{
-		  c = GETC ();
-		  return c;
+		  c = nextchar, nextchar = -1;
+		  UNGETC (c);
 		}
-#else
-	      ??? do not know what to do ???;
-#endif /* !USE_CPPLIB */
+#endif
+	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc,
+				 IDENTIFIER_POINTER (yylval.ttype)))
+		return GETC ();
 #endif /* HANDLE_PRAGMA */
+	      
+#ifdef HANDLE_SYSV_PRAGMA
+	      if (handle_sysv_pragma (token))
+		return GETC ();
 #endif /* !HANDLE_SYSV_PRAGMA */
+#endif /* HANDLE_PRAGMA || HANDLE_SYSV_PRAGMA */
+	      
+	      /* Issue a warning message if we have been asked to do so.
+		 Ignoring unknown pragmas in system header file unless
+		 an explcit -Wunknown-pragmas has been given. */
+	      if (warn_unknown_pragmas > 1
+		  || (warn_unknown_pragmas && ! in_system_header))
+		warning ("ignoring pragma: %s", token_buffer);
+	      
 	      goto skipline;
 	    }
 	}
@@ -842,7 +867,7 @@ handle_sysv_pragma (token)
 	  handle_pragma_token (token_buffer, yylval.ttype);
 	  break;
 	default:
-	  handle_pragma_token (token_buffer, 0);
+	  handle_pragma_token (token_buffer, NULL);
 	}
 #if !USE_CPPLIB
       if (nextchar >= 0)
@@ -853,12 +878,11 @@ handle_sysv_pragma (token)
 
       while (c == ' ' || c == '\t')
 	c = GETC ();
-      if (c == '\n' || c == EOF)
-	{
-	  handle_pragma_token (0, 0);
-	  return c;
-	}
       UNGETC (c);
+      
+      if (c == '\n' || c == EOF)
+	return handle_pragma_token (NULL, NULL);
+
       token = yylex ();
     }
 }

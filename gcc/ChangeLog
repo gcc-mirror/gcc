@@ -1,3 +1,35 @@
+Wed Sep 2 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* c-lex.c (check_newline):  Call HANDLE_PRAGMA before
+	HANDLE_SYSV_PRAGMA if both are defined.  Generate warning messages
+	if unknown pragmas are encountered.
+	(handle_sysv_pragma): Interpret return code from
+	handle_pragma_token ().  Return success/failure indication rather
+	than next unprocessed character. 
+	(pragma_getc): New function: retrieves characters from the
+	input stream.  Defined when HANDLE_PRAGMA is enabled.
+	(pragma_ungetc): New function: replaces characters back into the
+	input stream.  Defined when HANDLE_PRAGMA is enabled.
+	
+	* c-pragma.c (handle_pragma_token): Return success/failure status
+	of the parse.
+	
+	* c-pragma.h: Change prototype of handle_pragma_token().
+
+	* varasm.c: (handle_pragma_weak): Only create this function if
+	HANDLE_PRAGMA_WEAK is defined.
+
+	* c-common,c (decl_attributes): If defined call the expression
+	contained within the INSERT_ATTRIBUTES macro before adding
+	attributes to a decl.
+
+	* tm.texi (HANDLE_PRAGMA): Document the new verion of
+	HANDLE_PRAGMA, which takes three arguments.
+	(INSERT_ATTRIBUTES): Document this new macro.  
+
+	* LANGUAGES: Document the new version of HANDLE_PRAGMA and the
+	new INSERT_ATTRIBUTES macro.
+
 Wed Sep  2 02:03:23 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movdf): Only generate special RTL for

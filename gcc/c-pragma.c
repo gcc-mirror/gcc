@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,13 +37,12 @@ Boston, MA 02111-1307, USA.  */
 
 extern int maximum_field_alignment;
 
-/* File used for outputting assembler code.  */
-extern FILE *asm_out_file;
-
 /* Handle one token of a pragma directive.  TOKEN is the
-   current token, and STRING is its printable form.  */
+   current token, and STRING is its printable form. 
+   Return zero if an entire pragma was parsed, but it was
+   flawed in some way.  Return non-zero in all other cases.  */
 
-void
+int
 handle_pragma_token (string, token)
      char *string;
      tree token;
@@ -53,26 +52,33 @@ handle_pragma_token (string, token)
   static char *value;
   static int align;
 
-  if (string == 0)
+  if (string == NULL)
     {
+      int ret_val = 1;
+      
       if (type == ps_pack)
 	{
 	  if (state == ps_right)
 	    maximum_field_alignment = align * 8;
 	  else
-	    warning ("malformed `#pragma pack'");
+	    {
+	      warning ("malformed `#pragma pack'");
+	      ret_val = 0;
+	    }
 	}
+      else if (type == ps_bad)
+	ret_val = 0;
       else if (type == ps_weak)
 	{
 #ifdef HANDLE_PRAGMA_WEAK
 	  if (HANDLE_PRAGMA_WEAK)
 	    handle_pragma_weak (state, name, value);
-
 #endif /* HANDLE_PRAGMA_WEAK */
 	}
 
       type = state = ps_start;
-      return;
+      
+      return ret_val;
     }
 
   switch (state)
@@ -82,24 +88,18 @@ handle_pragma_token (string, token)
 	{
 	  if (strcmp (IDENTIFIER_POINTER (token), "pack") == 0)
 	    type = state = ps_pack;
+#ifdef HANDLE_PRAGMA_WEAK
 	  else if (strcmp (IDENTIFIER_POINTER (token), "weak") == 0)
 	    type = state = ps_weak;
+#endif	  
 	  else
-	    {
-	      type = state = ps_done;
-
-	      /* Issue a warning message if we have been asked to do so.
-		 Ignoring unknown pragmas in system header file unless          
-		 an explcit -Wunknown-pragmas has been given. */                
-	      if (warn_unknown_pragmas > 1
-		  || (warn_unknown_pragmas && ! in_system_header))
-		warning ("ignoring pragma: %s", string);
-	    }
+	    type = state = ps_done;
 	}
       else
 	type = state = ps_done;
       break;
-
+      
+#ifdef HANDLE_PRAGMA_WEAK
     case ps_weak:
       if (token && TREE_CODE (token) == IDENTIFIER_NODE)
 	{
@@ -109,7 +109,8 @@ handle_pragma_token (string, token)
       else
 	state = ps_bad;
       break;
-
+#endif
+      
     case ps_name:
       state = (strcmp (string, "=") ? ps_bad : ps_equals);
       break;
@@ -177,5 +178,7 @@ handle_pragma_token (string, token)
     default:
       abort ();
     }
+
+  return 1;
 }
 #endif /* HANDLE_SYSV_PRAGMA */

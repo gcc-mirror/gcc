@@ -420,6 +420,10 @@ decl_attributes (node, attributes, prefix_attributes)
   else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't')
     type = node, is_type = 1;
 
+#ifdef INSERT_ATTRIBUTES
+  INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
+#endif
+  
   attributes = chainon (prefix_attributes, attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
@@ -644,7 +648,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	      = (args ? TREE_VALUE (args)
 		 : size_int (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 	    int align;
-
+	    
 	    /* Strip any NOPs of any kind.  */
 	    while (TREE_CODE (align_expr) == NOP_EXPR
 		   || TREE_CODE (align_expr) == CONVERT_EXPR
