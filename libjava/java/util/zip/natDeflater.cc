@@ -124,6 +124,7 @@ java::util::zip::Deflater::reset ()
   z_streamp s = (z_streamp) zstream;
   // Just ignore errors.
   deflateReset (s);
+  s->avail_in = 0;
   flush_flag = 0;
   is_finished = false;
 }

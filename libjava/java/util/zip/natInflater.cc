@@ -149,6 +149,7 @@ java::util::zip::Inflater::reset ()
   z_streamp s = (z_streamp) zstream;
   // Just ignore errors.
   inflateReset (s);
+  s->avail_in = 0;
   is_finished = false;
   dict_needed = false;
 }
