@@ -1,3 +1,8 @@
+2003-09-23  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* MAINTAINERS: Move myself from 'Write After Approval' to
+	'Various Maintainers' section as libffi testsuite maintainer.
+
 2003-09-21  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in: Pass a computed --program-transform-name
