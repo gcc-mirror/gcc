@@ -2751,7 +2751,9 @@ extern void expand_end_null_loop		PARAMS ((void));
 extern int expand_continue_loop			PARAMS ((struct nesting *));
 extern int expand_exit_loop			PARAMS ((struct nesting *));
 extern int expand_exit_loop_if_false		PARAMS ((struct nesting *,
-						       tree));
+						         tree));
+extern int expand_exit_loop_top_cond		PARAMS ((struct nesting *,
+							 tree));
 extern int expand_exit_something		PARAMS ((void));
 
 extern void expand_return			PARAMS ((tree));
