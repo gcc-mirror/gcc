@@ -1,6 +1,6 @@
 /* File format for coverage information
    Copyright (C) 1996, 1997, 1998, 2000, 2002,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -584,6 +584,9 @@ gcov_rewrite (void)
   fseek (gcov_var.file, 0L, SEEK_SET);
 }
 
+#ifdef __MINGW32__
+#define ftruncate _chsize
+#endif
 static inline void
 gcov_truncate (void)
 {
