@@ -1,3 +1,19 @@
+2004-03-18  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.md (type): Split move into arith and fmove.  Split
+	hilo into mthilo and mfhilo.  Add trap.  Delete icmp.  Fix all uses.
+	* config/mips/5400.md (ir_vr54_hilo, ir_vr54_arith, ir_vr54_fabs):
+	Likewise.
+	* config/mips/5500.md (ir_vr55_hilo, ir_vr55_arith, ir_vr55_fabs):
+	Likewise.
+	* config/mips/7000.md (rm7_int_other, rm7_mthilo, rm7_mfhilo,
+	rm7_fp_quick): Likewise.
+	* config/mips/9000.md (rm9k_int, rm9k_mfhilo, rm9k_mthilo,
+	rm9k_fquick): Likewise.
+	* config/mips/sr71k.md (ir_sr70_hilo, ir_sr70_arith, ir_sr70_fabs):
+	Likewise.
+	(ir_sr70_icmp): Delete.
+
 2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	
 	* tree.h (TREE_CHECK2, TREE_CHECK3, TREE_CHECK5): New macros.
