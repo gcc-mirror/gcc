@@ -653,7 +653,7 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
       size_t namelen;
       uchar *defn;
 
-      namelen = strcspn (data->defns[i], "( \n");
+      namelen = ustrcspn (data->defns[i], "( \n");
       h = cpp_lookup (r, data->defns[i], namelen);
       defn = data->defns[i] + namelen;
 

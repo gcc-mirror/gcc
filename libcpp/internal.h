@@ -585,6 +585,9 @@ static inline unsigned char *uxstrdup (const unsigned char *);
 static inline unsigned char *ustrchr (const unsigned char *, int);
 static inline int ufputs (const unsigned char *, FILE *);
 
+/* Use a const char for the second parameter since it is usually a literal.  */
+static inline int ustrcspn (const unsigned char *, const char *);
+
 static inline int
 ustrcmp (const unsigned char *s1, const unsigned char *s2)
 {
@@ -595,6 +598,12 @@ static inline int
 ustrncmp (const unsigned char *s1, const unsigned char *s2, size_t n)
 {
   return strncmp ((const char *)s1, (const char *)s2, n);
+}
+
+static inline int
+ustrcspn (const unsigned char *s1, const char *s2)
+{
+  return strcspn ((const char *)s1, s2);
 }
 
 static inline size_t
