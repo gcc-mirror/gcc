@@ -77,7 +77,9 @@
 #ifndef __glibcpp_char_bits
 #define __glibcpp_char_bits 8
 #endif
-#ifndef __glibcpp_plain_char_is_signed
+#ifndef __CHAR_UNSIGNED__
+#define __glibcpp_plain_char_is_signed false
+#else
 #define __glibcpp_plain_char_is_signed true
 #endif
 #ifndef __glibcpp_short_bits

@@ -1,3 +1,13 @@
+2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/std_limits.h(__glibcpp_char_is_signed): Use
+	__CHAR_UNSIGNED__.
+
+	* config/os/gnu-linux/bits/os_defines.h(__glibcpp_char_is_signed):
+	Likewise. 
+	* config/os/aix/bits/os_defines.h(__glibcpp_plain_char_is_signed): 
+	Remove.
+
 2001-08-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Add
@@ -8,7 +18,7 @@
 	colon in $(objdir).
 	* include/Makefile.in: Rebuilt.
 
-2001-08-10   Gunter Winkler gunter.winkler@mathematik.tu-chemnitz.de
+2001-08-10   Gunter Winkler <gunter.winkler@mathematik.tu-chemnitz.de>
 
 	* include/bits/std_complex.h (complex<long double>::operator*=,
  	complex<long double>::operator/=): Fix thinko.
