@@ -9,6 +9,8 @@
 	(define_split "*mov_sidesi_mem"+28, +29, +30): Use
 	replace_equiv_address, not gen_rtx_MEM.
 	* config/cris/cris.c (cris_mem_op): New match_operator function.
+	(cris_notice_update_cc): Use replace_equiv_address, not
+	gen_rtx_MEM.
 	* config/cris/cris.h (PREDICATE_CODES): Add cris_mem_op.
 
 2003-10-15  Bernardo Innocenti <bernie@develer.com>
