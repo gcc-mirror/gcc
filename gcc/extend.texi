@@ -3749,5 +3749,13 @@ typedef int (*fptr)(A *);
 fptr p = (fptr)(a.*fp);
 @end example
 
+For PMF constants (i.e. expressions of the form @samp{&Klasse::Member}),
+no object is needed to obtain the address of the function. They can be
+converted to function pointers directly:
+
+@example
+fptr p1 = (fptr)(&A::foo);
+@end example
+
 You must specify @samp{-Wno-pmf-conversions} to use this extension.
 
