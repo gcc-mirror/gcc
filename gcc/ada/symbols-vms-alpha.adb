@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package body Symbols is
    Symbol_Vector   : constant String := "SYMBOL_VECTOR=(";
    Equal_Data      : constant String := "=DATA)";
    Equal_Procedure : constant String := "=PROCEDURE)";
-   Gsmatch         : constant String := "gsmatch=equal,";
+   Gsmatch         : constant String := "gsmatch=lequal,";
 
    Symbol_File_Name : String_Access := null;
    --  Name of the symbol file
@@ -668,18 +668,15 @@ package body Symbols is
                   Success := False;
                   return;
 
-               elsif Soft_Minor_ID then
-                  Minor_ID := Minor_ID + 1;
+               elsif Soft_Major_ID then
+                  Major_ID := Major_ID + 1;
+                  Minor_ID := 0;
+                  Soft_Major_ID := False;
                   Soft_Minor_ID := False;
                end if;
 
                Original_Symbols.Table (Index_1).Present := False;
                Free (Original_Symbols.Table (Index_1).Name);
-
-               if Soft_Minor_ID then
-                  Minor_ID := Minor_ID + 1;
-                  Soft_Minor_ID := False;
-               end if;
             end if;
          end loop;
 
