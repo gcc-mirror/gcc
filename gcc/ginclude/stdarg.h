@@ -23,6 +23,10 @@
 #include "va-mips.h"
 #else
 
+#ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
+#undef _VA_LIST
+#endif
+
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
 #ifndef _VA_LIST_
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
