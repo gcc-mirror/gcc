@@ -7,6 +7,10 @@
 	* config/i386/freebsd64.h (LINK_SPEC): Mirror FreeBSD linker.
 	* config/rs6000/freebsd.h (LINK_SHLIB_SPEC): New macro.
 	(SIZE_TYPE): New macro.
+	* config/i386/freebsd-aout.h (NO_PROFILE_COUNTERS): New macro.
+	(SET_ASM_OP): New macro.
+	(HANDLE_SYSV_PRAGMA): New macro.
+	(ASM_WEAKEN_LABEL): New macro.
 
 2003-04-28  Mark Mitchell  <mark@codesourcery.com>
 
