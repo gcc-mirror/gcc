@@ -51,12 +51,10 @@ rtx m32r_compare_op0, m32r_compare_op1;
 char m32r_punct_chars[256];
 
 /* Selected code model.  */
-const char * m32r_model_string = M32R_MODEL_DEFAULT;
-enum m32r_model m32r_model;
+enum m32r_model m32r_model = M32R_MODEL_DEFAULT;
 
 /* Selected SDA support.  */
-const char * m32r_sdata_string = M32R_SDATA_DEFAULT;
-enum m32r_sdata m32r_sdata;
+enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_MODEL_SHIFT		SYMBOL_FLAG_MACH_DEP_SHIFT
@@ -69,17 +67,17 @@ enum m32r_sdata m32r_sdata;
 /* Cache-flush support. Cache-flush is used at trampoline.
    Default cache-flush is "trap 12".
     default cache-flush function is "_flush_cache"  (CACHE_FLUSH_FUNC)
-    default cache-flush trap-interrupt number is "12". (CACHE_FLUSH_TRAP)
+    default cache-flush trap-interrupt number is 12 (CACHE_FLUSH_TRAP)
    You can change how to generate code of cache-flush with following options.
-   -flush-func=FLUSH-FUNC-NAME
-   -no-flush-func
-   -fluch-trap=TRAP-NUMBER
-   -no-flush-trap.  */
+   -mflush-func=FLUSH-FUNC-NAME
+   -mno-flush-func              (sets m32r_cache_flush_func to NULL)
+   -mfluch-trap=TRAP-NUMBER
+   -mno-flush-trap.             (sets m32r_cache_flush_trap to -1).  */
 const char *m32r_cache_flush_func = CACHE_FLUSH_FUNC;
-const char *m32r_cache_flush_trap_string = CACHE_FLUSH_TRAP;
-int m32r_cache_flush_trap = 12;
+int m32r_cache_flush_trap = CACHE_FLUSH_TRAP;
 
 /* Forward declaration.  */
+static bool  m32r_handle_option (size_t, const char *, int);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
@@ -127,6 +125,11 @@ static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE m32r_issue_rate
 
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION m32r_handle_option
+
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
 #undef  TARGET_IN_SMALL_DATA_P
@@ -152,6 +155,60 @@ static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+m32r_handle_option (size_t code, const char *arg, int value)
+{
+  switch (code)
+    {
+    case OPT_m32r:
+      target_flags &= ~(MASK_M32R2 | MASK_M32RX);
+      return true;
+
+    case OPT_mmodel_:
+      if (strcmp (arg, "small") == 0)
+	m32r_model = M32R_MODEL_SMALL;
+      else if (strcmp (arg, "medium") == 0)
+	m32r_model = M32R_MODEL_MEDIUM;
+      else if (strcmp (arg, "large") == 0)
+	m32r_model = M32R_MODEL_LARGE;
+      else
+	return false;
+      return true;
+
+    case OPT_msdata_:
+      if (strcmp (arg, "none") == 0)
+	m32r_sdata = M32R_SDATA_NONE;
+      else if (strcmp (arg, "sdata") == 0)
+	m32r_sdata = M32R_SDATA_SDATA;
+      else if (strcmp (arg, "use") == 0)
+	m32r_sdata = M32R_SDATA_USE;
+      else
+	return false;
+      return true;
+
+    case OPT_mflush_func_:
+      m32r_cache_flush_func = arg;
+      return true;
+
+    case OPT_mno_flush_func:
+      m32r_cache_flush_func = NULL;
+      return true;
+
+    case OPT_mflush_trap_:
+      m32r_cache_flush_trap = value;
+      return m32r_cache_flush_trap <= 15;
+
+    case OPT_mno_flush_trap:
+      m32r_cache_flush_trap = -1;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
@@ -167,33 +224,6 @@ m32r_init (void)
   /* Provide default value if not specified.  */
   if (!g_switch_set)
     g_switch_value = SDATA_DEFAULT_SIZE;
-
-  if (strcmp (m32r_model_string, "small") == 0)
-    m32r_model = M32R_MODEL_SMALL;
-  else if (strcmp (m32r_model_string, "medium") == 0)
-    m32r_model = M32R_MODEL_MEDIUM;
-  else if (strcmp (m32r_model_string, "large") == 0)
-    m32r_model = M32R_MODEL_LARGE;
-  else
-    error ("bad value (%s) for -mmodel switch", m32r_model_string);
-
-  if (strcmp (m32r_sdata_string, "none") == 0)
-    m32r_sdata = M32R_SDATA_NONE;
-  else if (strcmp (m32r_sdata_string, "sdata") == 0)
-    m32r_sdata = M32R_SDATA_SDATA;
-  else if (strcmp (m32r_sdata_string, "use") == 0)
-    m32r_sdata = M32R_SDATA_USE;
-  else
-    error ("bad value (%s) for -msdata switch", m32r_sdata_string);
-
-  if (m32r_cache_flush_trap_string)
-    {
-      /* Change trap-number (12) for cache-flush to the others (0 - 15).  */
-      m32r_cache_flush_trap = atoi (m32r_cache_flush_trap_string);
-      if (m32r_cache_flush_trap < 0 || m32r_cache_flush_trap > 15)
-        error ("bad value (%s) for -flush-trap=n (0=<n<=15)",
-               m32r_cache_flush_trap_string);
-    }
 }
 
 /* Vectors to keep interesting information about registers where it can easily

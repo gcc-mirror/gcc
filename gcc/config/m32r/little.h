@@ -19,7 +19,7 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-#define TARGET_ENDIAN_DEFAULT	LITTLE_ENDIAN_BIT
+#define TARGET_LITTLE_ENDIAN 1
 
 #define CPP_ENDIAN_SPEC \
   " %{mbe:-D__BIG_ENDIAN__} %{mbig-endian:-D__BIG_ENDIAN__}" \
