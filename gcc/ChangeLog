@@ -1,3 +1,8 @@
+2002-05-10  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (build_range_check): Optimize (c>=1) && (c<=127)
+	into the equivalent (signed char)c > 0.
+
 2002-05-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* loop.c: (PREFETCH_EXTREME_DIFFERENCE, PREFETCH_BEFORE_LOOP): New.

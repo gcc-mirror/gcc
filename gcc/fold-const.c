@@ -3091,41 +3091,73 @@ build_range_check (type, exp, in_p, low, high)
      tree low, high;
 {
   tree etype = TREE_TYPE (exp);
-  tree utype, value;
+  tree value;
 
   if (! in_p
       && (0 != (value = build_range_check (type, exp, 1, low, high))))
     return invert_truthvalue (value);
 
-  else if (low == 0 && high == 0)
+  if (low == 0 && high == 0)
     return convert (type, integer_one_node);
 
-  else if (low == 0)
+  if (low == 0)
     return fold (build (LE_EXPR, type, exp, high));
 
-  else if (high == 0)
+  if (high == 0)
     return fold (build (GE_EXPR, type, exp, low));
 
-  else if (operand_equal_p (low, high, 0))
+  if (operand_equal_p (low, high, 0))
     return fold (build (EQ_EXPR, type, exp, low));
 
-  else if (TREE_UNSIGNED (etype) && integer_zerop (low))
-    return build_range_check (type, exp, 1, 0, high);
-
-  else if (integer_zerop (low))
+  if (integer_zerop (low))
     {
-      utype = (*lang_hooks.types.unsigned_type) (etype);
-      return build_range_check (type, convert (utype, exp), 1, 0,
-				convert (utype, high));
+      if (! TREE_UNSIGNED (etype))
+        {
+          etype = (*lang_hooks.types.unsigned_type) (etype);
+          high = convert (etype, high);
+          exp = convert (etype, exp);
+        }
+      return build_range_check (type, exp, 1, 0, high);
     }
 
-  else if (0 != (value = const_binop (MINUS_EXPR, high, low, 0))
-	   && ! TREE_OVERFLOW (value))
+  /* Optimize (c>=1) && (c<=127) into (signed char)c > 0.  */
+  if (integer_onep (low) && TREE_CODE (high) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT lo;
+      HOST_WIDE_INT hi;
+      int prec;
+
+      prec = TYPE_PRECISION (etype);
+      if (prec <= HOST_BITS_PER_WIDE_INT)
+        {
+          hi = 0;
+          lo = ((unsigned HOST_WIDE_INT) 1 << (prec - 1)) - 1;
+        }
+      else
+        {
+          hi = ((HOST_WIDE_INT) 1 << (prec - HOST_BITS_PER_WIDE_INT - 1)) - 1;
+          lo = (unsigned HOST_WIDE_INT) -1;
+        }
+
+      if (TREE_INT_CST_HIGH (high) == hi && TREE_INT_CST_LOW (high) == lo)
+        {
+          if (TREE_UNSIGNED (etype))
+            {
+              etype = (*lang_hooks.types.signed_type) (etype);
+              exp = convert (etype, exp);
+            }
+          return fold (build (GT_EXPR, type, exp,
+                              convert (etype, integer_zero_node)));
+        }
+    }
+
+  if (0 != (value = const_binop (MINUS_EXPR, high, low, 0))
+      && ! TREE_OVERFLOW (value))
     return build_range_check (type,
 			      fold (build (MINUS_EXPR, etype, exp, low)),
 			      1, convert (etype, integer_zero_node), value);
-  else
-    return 0;
+
+  return 0;
 }
 
 /* Given two ranges, see if we can merge them into one.  Return 1 if we
