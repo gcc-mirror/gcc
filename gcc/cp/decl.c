@@ -14731,7 +14731,9 @@ lang_mark_tree (t)
       if (ld)
 	{
 	  ggc_mark (ld);
-	  if (!DECL_GLOBAL_CTOR_P (t) && !DECL_GLOBAL_DTOR_P (t))
+	  if (!DECL_GLOBAL_CTOR_P (t) 
+	      && !DECL_GLOBAL_DTOR_P (t)
+	      && !DECL_THUNK_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.access);
 	  ggc_mark_tree (ld->decl_flags.context);
 	  if (TREE_CODE (t) != NAMESPACE_DECL)

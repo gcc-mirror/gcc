@@ -1,3 +1,16 @@
+2000-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DELTA_FROM_VTABLE_ENTRY): Remove.
+	(SET_FNADDR_FROM_VTABLE_ENTRY): Likewise.
+	(lang_decl_flags): Add vcall_offset.
+	(THUNK_VCALL_OFFSET): Use it.
+	* decl.c (lang_mark_tree): Don't mark DECL_ACCESS for a thunk.
+	* method.c (make_thunk): Create the lang_decl here, not in
+	emit_thunk.
+	(emit_thunk): Make generic thunks into ordinary functions once
+	they have been fed to expand_body.
+	* semantics.c (expand_body): Set current_function_is_thunk here.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (update_vtable_entry_for_fn): Prototype.
