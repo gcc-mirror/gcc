@@ -361,7 +361,7 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
     rm -f ${LIB}/types.c
     # Default to our preferred type.
     if [ "$foo" = __SIZE_TYPE__ ]; then foo="unsigned long int"; fi
-    sed -e "s/typedef[ 	a-z_]*[ 	]size_t/typedef $foo size_t/" ${LIB}/$file > ${LIB}/${file}.sed
+    sed -e "s/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef $foo size_t/" ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
       rm ${LIB}/$file
@@ -469,7 +469,8 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # Fix this file to avoid interfering with stddef.h, but don't mistakenly
-# match e.g. ssize_t present in AIX for the ps/2.
+# match ssize_t present in AIX for the ps/2, or typedefs which use (but do not
+# set) size_t.
 file=sys/types.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -479,10 +480,10 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-sed -e '/[ 	]size_t.*;/i\
+sed -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T' \
-    -e '/[ 	]size_t.*;/a\
+    -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/a\
 #endif' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
