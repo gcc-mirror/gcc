@@ -137,7 +137,8 @@
 ;; on decoder 0, and say that it takes a little while before the result
 ;; is available.
 (define_insn_reservation "ppro_complex_insn" 6
-			 (eq_attr "type" "other,multi,call,callv,str")
+			 (and (eq_attr "cpu" "pentiumpro")
+			      (eq_attr "type" "other,multi,call,callv,str"))
 			 "decoder0")
 
 ;; imov with memory operands does not use the integer units.

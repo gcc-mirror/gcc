@@ -1,3 +1,10 @@
+2004-08-22  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/ppro.md (ppro_complex_insn): Add missing check
+	for cpu==pentiumpro.
+
+	* combine.c (struct reg_stat): Fix comment typo.
+
 2004-08-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (c_sizeof_nowarn): Remove.
@@ -115,7 +122,7 @@
 
 2004-08-20  Dale Johannesen  <dalej@apple.com>
 
-        * config/rs6000/rs6000.c (rs6000_rtx_costs): Improve DIV/MOD.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Improve DIV/MOD.
 
 2004-08-20  Daniel Jacobowitz  <dan@debian.org>
 
@@ -139,10 +146,10 @@
 2004-08-20  Zack Weinberg  <zack@codesourcery.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        * config/pa/pa-protos.h (readonly_data, one_only_readonly_data_section,
+	* config/pa/pa-protos.h (readonly_data, one_only_readonly_data_section,
 	one_only_data_section): Rename to som_readonly_data_section,
 	som_one_only_readonly_data_section and som_one_only_data_section.
-        * config/pa/pa.c (ONE_ONLY_TEXT_SECTION_ASM_OP,
+	* config/pa/pa.c (ONE_ONLY_TEXT_SECTION_ASM_OP,
 	NEW_TEXT_SECTION_ASM_OP, DEFAULT_TEXT_SECTION_ASM_OP): Delete
 	conditional defines.
 	(som_text_section_asm_op): Replace ONE_ONLY_TEXT_SECTION_ASM_OP,
@@ -150,16 +157,16 @@
 	string values.
 	(pa_select_section): Use renamed section functions.
 	* config/pa/pa.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS,
-        SOM_READONLY_DATA_SECTION_FUNCTION,
+	SOM_READONLY_DATA_SECTION_FUNCTION,
 	SOM_ONE_ONLY_READONLY_DATA_SECTION_FUNCTION,
-        SOM_ONE_ONLY_DATA_SECTION_FUNCTION, FORGET_SECTION_FUNCTION):
-        Define here ...
-        * config/pa/som.h: ... not here.
-        (DEFAULT_TEXT_SECTION_ASM_OP, NEW_TEXT_SECTION_ASM_OP,
+	SOM_ONE_ONLY_DATA_SECTION_FUNCTION, FORGET_SECTION_FUNCTION):
+	Define here ...
+	* config/pa/som.h: ... not here.
+	(DEFAULT_TEXT_SECTION_ASM_OP, NEW_TEXT_SECTION_ASM_OP,
 	ONE_ONLY_TEXT_SECTION_ASM_OP, READONLY_DATA_ASM_OP,
 	ONE_ONLY_READONLY_DATA_SECTION_ASM_OP,
-        ONE_ONLY_DATA_SECTION_ASM_OP): Delete.
-        (READONLY_DATA_SECTION): Use som_readonly_data_section.
+	ONE_ONLY_DATA_SECTION_ASM_OP): Delete.
+	(READONLY_DATA_SECTION): Use som_readonly_data_section.
 
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -354,8 +361,8 @@
 
 2004-08-19  Caroline Tice  <ctice@apple.com>
 
-       * config/i386/cygming.h (switch_to_section):  Fix typo (change
-       in_unlikely_text_section to in_unlikely_executed_text).
+	* config/i386/cygming.h (switch_to_section):  Fix typo (change
+	in_unlikely_text_section to in_unlikely_executed_text).
 
 2004-08-19  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -524,7 +531,7 @@
 2004-08-18  Robert Bowdidge <bowdidge@apple.com>
 
 	* config/rs6000/x-darwin: Remove XCFLAGS -mdynamic-no-pic to
-        get regression tester working again.
+	get regression tester working again.
 
 2004-08-18  Zack Weinberg  <zack@codesourcery.com>
 
