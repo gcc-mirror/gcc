@@ -57,7 +57,7 @@ int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
 #elif defined CLK_TCK
     *count_rate = CLK_TCK;
 #elif defined HZ
-  *count_rate = HZ;
+    *count_rate = HZ;
 #else
 #error Dont know clock tick length
 #endif
