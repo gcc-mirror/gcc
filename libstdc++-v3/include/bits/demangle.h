@@ -378,6 +378,9 @@ namespace __gnu_cxx
 	int M_template_arg_pos_offset;
 	std::vector<substitution_st, subst_Allocator> M_substitutions_pos;
 	implementation_details const& M_implementation_details;
+	typedef typename Allocator::template
+	    rebind<qualifier_list<Allocator> >::other qualifier_list_Allocator;
+	qualifier_list_Allocator M_qualifier_list_alloc;
 #if _GLIBCXX_DEMANGLER_CWDEBUG
 	bool M_inside_add_substitution;
 #endif
@@ -1849,7 +1852,10 @@ namespace __gnu_cxx
 	++M_inside_type;
 	bool recursive_template_param_or_substitution_call;
 	if (!(recursive_template_param_or_substitution_call = qualifiers))
-	    qualifiers = new qualifier_list<Allocator>(*this);
+	{
+          qualifier_list<Allocator>* raw_qualifiers = M_qualifier_list_alloc.allocate(1);
+	  qualifiers = new (raw_qualifiers) qualifier_list<Allocator>(*this);
+	}
 	// First eat all qualifiers.
 	bool failure = false;
 	for(;;)		// So we can use 'continue' to eat the next qualifier.
@@ -2181,7 +2187,10 @@ namespace __gnu_cxx
     decode_type_exit:
 	--M_inside_type;
 	if (!recursive_template_param_or_substitution_call)
-	  delete qualifiers;
+	{
+	  qualifiers->~qualifier_list<Allocator>();
+	  M_qualifier_list_alloc.deallocate(qualifiers, 1);
+	}
 	if (failure)
 	  _GLIBCXX_DEMANGLER_FAILURE;
 	_GLIBCXX_DEMANGLER_RETURN2;
