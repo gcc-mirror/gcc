@@ -1,3 +1,12 @@
+2005-01-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
+	int_type)): Reset _M_gcount to numeric_limits<streamsize>::min().
+	* src/istream.cc (basic_istream<char>::ignore(streamsize, int_type),
+	basic_istream<wchar_t>::ignore(streamsize, int_type)): Likewise.
+	* src/istream.cc (basic_istream<char>::ignore(streamsize),
+	basic_istream<wchar_t>::ignore(streamsize)): Likewise; fix a typo.
+
 2005-01-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/istream.cc (basic_istream<char>::ignore(streamsize),
