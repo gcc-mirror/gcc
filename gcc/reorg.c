@@ -2204,8 +2204,12 @@ mark_target_live_regs (target, res)
   /* If we hit an unconditional branch, we have another way of finding out
      what is live: we can see what is live at the branch target and include
      anything used but not set before the branch.  The only things that are
-     live are those that are live using the above test and the test below.  */
-  if (jump_insn)
+     live are those that are live using the above test and the test below.
+
+     Don't try this if we expired our jump count above, since that would
+     mean there may be an infinite loop in the function being compiled.  */
+
+  if (jump_insn && jump_count < 10)
     {
       rtx jump_target = (GET_CODE (jump_insn) == INSN
 			 ? JUMP_LABEL (XVECEXP (PATTERN (jump_insn), 0, 0))

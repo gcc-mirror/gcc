@@ -23,9 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
 
-/* Provide required defaults for linker -e and -d switches.
-   Also, it is hard to debug with shared libraries,
-   so don't use them if going to debug.  */
+/* Provide required defaults for linker -e and -d switches.  */
 
 #define LINK_SPEC "%{!e*:-e start} -dc -dp %{static:-Bstatic} %{assert*}"
 
@@ -43,14 +41,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
 
-/* Omit frame pointer and enable caller-saves at high optimization levels.  */
-
+/* Omit frame pointer at high optimization levels.  */
+  
 #define OPTIMIZATION_OPTIONS(OPTIMIZE) \
 {  								\
   if (OPTIMIZE >= 2) 						\
     {								\
       flag_omit_frame_pointer = 1;				\
-      flag_caller_saves = 1;					\
     }								\
 }
 

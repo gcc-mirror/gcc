@@ -152,12 +152,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #endif
 
-/* Provide required defaults for linker -e and -d switches.
-   Also, it is hard to debug with shared libraries,
-   so don't use them if going to debug.  */
+/* Provide required defaults for linker -e and -d switches.  */
 
-#define LINK_SPEC "%{!e*:-e start} -dc -dp %{g:-Bstatic} %{static:-Bstatic} \
-  %{assert*}"
+#define LINK_SPEC "%{!e*:-e start} -dc -dp %{static:-Bstatic} %{assert*}"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
