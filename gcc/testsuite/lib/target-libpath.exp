@@ -17,6 +17,7 @@
 # This file was contributed by John David Anglin (dave.anglin@nrc-cnrc.gc.ca)
 
 set orig_environment_saved 0
+set orig_ld_library_path_saved 0
 set orig_ld_run_path_saved 0
 set orig_shlib_path_saved 0
 set orig_ld_libraryn32_path_saved 0
