@@ -1,3 +1,7 @@
+2003-10-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (cris-*-linux*): Revert mistaken commit.
+
 2003-10-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11753

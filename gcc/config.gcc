@@ -683,7 +683,7 @@ cris-*-elf | cris-*-none)
 	;;
 cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
-	tmake_file="cris/t-cris t-slibgcc-elf-ver t-linux"
+	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	;;
 d30v-*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
