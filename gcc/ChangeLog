@@ -1,3 +1,10 @@
+2003-11-05  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/10339
+	* builtins.c (expand_builtin_strcmp): Try to emit cmpstrsi insn
+	directly instead of unsafely transforming call into a memcmp.
+	(expand_builtin_strncmp): Likewise.
+
 2003-11-03  Alexander Kabaev  <ak03@gte.com>
 
 	* real.c (encode_ieee_single): Ensure proper promotion.
