@@ -215,7 +215,10 @@ static int nr_inter, nr_spec;
 
 /* Debugging file.  All printouts are sent to dump, which is always set,
    either to stderr, or to the dump listing file (-dRS).  */
-static FILE *dump = 0;
+static FILE *sched_dump = 0;
+
+/* Highest uid before scheduling.  */
+static int old_max_uid;
 
 /* fix_sched_param() is called from toplev.c upon detection
    of the -fsched-verbose=N option.  */
@@ -749,7 +752,7 @@ static int is_prisky PARAMS ((rtx, int, int));
 static int is_exception_free PARAMS ((rtx, int, int));
 
 static char find_insn_mem_list PARAMS ((rtx, rtx, rtx, rtx));
-static void compute_block_forward_dependences PARAMS ((int));
+static void compute_forward_dependences PARAMS ((rtx, rtx));
 static void add_branch_dependences PARAMS ((rtx, rtx));
 static void compute_block_backward_dependences PARAMS ((int));
 void debug_dependencies PARAMS ((void));
@@ -816,6 +819,11 @@ static rtx move_insn PARAMS ((rtx, rtx));
 static rtx group_leader PARAMS ((rtx));
 static int set_priorities PARAMS ((int));
 static void init_deps PARAMS ((struct deps *));
+static void free_deps PARAMS ((struct deps *));
+static void init_dependency_caches PARAMS ((int));
+static void free_dependency_caches PARAMS ((void));
+static void init_regions PARAMS ((void));
+static void sched_init PARAMS ((FILE *));
 static void schedule_region PARAMS ((int));
 static void propagate_deps PARAMS ((int, struct deps *, int));
 
@@ -1073,6 +1081,53 @@ set_sched_group_p (insn)
 
   for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
     add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
+}
+
+/* If it is profitable to use them, initialize caches for tracking
+   dependency informatino.  LUID is the number of insns to be scheduled,
+   it is used in the estimate of profitability.  */
+static void
+init_dependency_caches (luid)
+     int luid;
+{
+  /* ?!? We could save some memory by computing a per-region luid mapping
+     which could reduce both the number of vectors in the cache and the size
+     of each vector.  Instead we just avoid the cache entirely unless the
+     average number of instructions in a basic block is very high.  See
+     the comment before the declaration of true_dependency_cache for
+     what we consider "very high".  */
+  if (luid / n_basic_blocks > 100 * 5)
+    {
+      true_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (true_dependency_cache, luid);
+      anti_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (anti_dependency_cache, luid);
+      output_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (output_dependency_cache, luid);
+#ifdef ENABLE_CHECKING
+      forward_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (forward_dependency_cache, luid);
+#endif
+    }
+}
+
+/* Free the caches allocated in init_dependency_caches.  */
+static void
+free_dependency_caches ()
+{
+  if (true_dependency_cache)
+    {
+      free (true_dependency_cache);
+      true_dependency_cache = NULL;
+      free (anti_dependency_cache);
+      anti_dependency_cache = NULL;
+      free (output_dependency_cache);
+      output_dependency_cache = NULL;
+#ifdef ENABLE_CHECKING
+      free (forward_dependency_cache);
+      forward_dependency_cache = NULL;
+#endif
+    }
 }
 
 #ifndef INSN_SCHEDULING
@@ -1391,12 +1446,12 @@ debug_regions ()
 {
   int rgn, bb;
 
-  fprintf (dump, "\n;;   ------------ REGIONS ----------\n\n");
+  fprintf (sched_dump, "\n;;   ------------ REGIONS ----------\n\n");
   for (rgn = 0; rgn < nr_regions; rgn++)
     {
-      fprintf (dump, ";;\trgn %d nr_blocks %d:\n", rgn,
+      fprintf (sched_dump, ";;\trgn %d nr_blocks %d:\n", rgn,
 	       rgn_table[rgn].rgn_nr_blocks);
-      fprintf (dump, ";;\tbb/block: ");
+      fprintf (sched_dump, ";;\tbb/block: ");
 
       for (bb = 0; bb < rgn_table[rgn].rgn_nr_blocks; bb++)
 	{
@@ -1405,10 +1460,10 @@ debug_regions ()
 	  if (bb != BLOCK_TO_BB (BB_TO_BLOCK (bb)))
 	    abort ();
 
-	  fprintf (dump, " %d/%d ", bb, BB_TO_BLOCK (bb));
+	  fprintf (sched_dump, " %d/%d ", bb, BB_TO_BLOCK (bb));
 	}
 
-      fprintf (dump, "\n\n");
+      fprintf (sched_dump, "\n\n");
     }
 }
 
@@ -1992,7 +2047,7 @@ compute_dom_prob_ps (bb)
   BITSET_DIFFER (pot_split[bb], ancestor_edges[bb], edgeset_size);
 
   if (sched_verbose >= 2)
-    fprintf (dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb),
+    fprintf (sched_dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb),
 	     (int) (100.0 * prob[bb]));
 }
 
@@ -2130,29 +2185,29 @@ debug_candidate (i)
   if (candidate_table[i].is_speculative)
     {
       int j;
-      fprintf (dump, "src b %d bb %d speculative \n", BB_TO_BLOCK (i), i);
+      fprintf (sched_dump, "src b %d bb %d speculative \n", BB_TO_BLOCK (i), i);
 
-      fprintf (dump, "split path: ");
+      fprintf (sched_dump, "split path: ");
       for (j = 0; j < candidate_table[i].split_bbs.nr_members; j++)
 	{
 	  int b = candidate_table[i].split_bbs.first_member[j];
 
-	  fprintf (dump, " %d ", b);
+	  fprintf (sched_dump, " %d ", b);
 	}
-      fprintf (dump, "\n");
+      fprintf (sched_dump, "\n");
 
-      fprintf (dump, "update path: ");
+      fprintf (sched_dump, "update path: ");
       for (j = 0; j < candidate_table[i].update_bbs.nr_members; j++)
 	{
 	  int b = candidate_table[i].update_bbs.first_member[j];
 
-	  fprintf (dump, " %d ", b);
+	  fprintf (sched_dump, " %d ", b);
 	}
-      fprintf (dump, "\n");
+      fprintf (sched_dump, "\n");
     }
   else
     {
-      fprintf (dump, " src %d equivalent\n", BB_TO_BLOCK (i));
+      fprintf (sched_dump, " src %d equivalent\n", BB_TO_BLOCK (i));
     }
 }
 
@@ -2164,7 +2219,7 @@ debug_candidates (trg)
 {
   int i;
 
-  fprintf (dump, "----------- candidate table: target: b=%d bb=%d ---\n",
+  fprintf (sched_dump, "----------- candidate table: target: b=%d bb=%d ---\n",
 	   BB_TO_BLOCK (trg), trg);
   for (i = trg + 1; i < current_nr_blocks; i++)
     debug_candidate (i);
@@ -4229,12 +4284,12 @@ queue_insn (insn, n_cycles)
 
   if (sched_verbose >= 2)
     {
-      fprintf (dump, ";;\t\tReady-->Q: insn %d: ", INSN_UID (insn));
+      fprintf (sched_dump, ";;\t\tReady-->Q: insn %d: ", INSN_UID (insn));
 
       if (INSN_BB (insn) != target_bb)
-	fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
+	fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
 
-      fprintf (dump, "queued for %d cycles.\n", n_cycles);
+      fprintf (sched_dump, "queued for %d cycles.\n", n_cycles);
     }
 }
 
@@ -4339,10 +4394,10 @@ schedule_insn (insn, ready, clock)
 
   if (sched_verbose >= 2)
     {
-      fprintf (dump, ";;\t\t--> scheduling insn <<<%d>>> on unit ",
+      fprintf (sched_dump, ";;\t\t--> scheduling insn <<<%d>>> on unit ",
 	       INSN_UID (insn));
       insn_print_units (insn);
-      fprintf (dump, "\n");
+      fprintf (sched_dump, "\n");
     }
 
   if (sched_verbose && unit == -1)
@@ -4378,16 +4433,16 @@ schedule_insn (insn, ready, clock)
 
 	  if (sched_verbose >= 2)
 	    {
-	      fprintf (dump, ";;\t\tdependences resolved: insn %d ",
+	      fprintf (sched_dump, ";;\t\tdependences resolved: insn %d ",
 		       INSN_UID (next));
 
 	      if (current_nr_blocks > 1 && INSN_BB (next) != target_bb)
-		fprintf (dump, "/b%d ", BLOCK_NUM (next));
+		fprintf (sched_dump, "/b%d ", BLOCK_NUM (next));
 
 	      if (effective_cost < 1)
-		fprintf (dump, "into ready\n");
+		fprintf (sched_dump, "into ready\n");
 	      else
-		fprintf (dump, "into queue with cost=%d\n", effective_cost);
+		fprintf (sched_dump, "into queue with cost=%d\n", effective_cost);
 	    }
 
 	  /* Adjust the priority of NEXT and either put it on the ready
@@ -4660,7 +4715,7 @@ restore_line_notes (bb)
 	  }
       }
   if (sched_verbose && added_notes)
-    fprintf (dump, ";; added %d line-number notes\n", added_notes);
+    fprintf (sched_dump, ";; added %d line-number notes\n", added_notes);
 }
 
 /* After scheduling the function, delete redundant line notes from the
@@ -4709,7 +4764,7 @@ rm_redundant_line_notes ()
       active_insn++;
 
   if (sched_verbose && notes)
-    fprintf (dump, ";; deleted %d line-number notes\n", notes);
+    fprintf (sched_dump, ";; deleted %d line-number notes\n", notes);
 }
 
 /* Delete notes between head and tail and put them in the chain
@@ -4823,14 +4878,14 @@ queue_to_ready (ready)
       q_size -= 1;
 
       if (sched_verbose >= 2)
-	fprintf (dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
+	fprintf (sched_dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
 
       if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-	fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
+	fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
 
       ready_add (ready, insn);
       if (sched_verbose >= 2)
-	fprintf (dump, "moving to ready without stalls\n");
+	fprintf (sched_dump, "moving to ready without stalls\n");
     }
   insn_queue[q_ptr] = 0;
 
@@ -4850,15 +4905,15 @@ queue_to_ready (ready)
 		  q_size -= 1;
 
 		  if (sched_verbose >= 2)
-		    fprintf (dump, ";;\t\tQ-->Ready: insn %d: ",
+		    fprintf (sched_dump, ";;\t\tQ-->Ready: insn %d: ",
 			     INSN_UID (insn));
 
 		  if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-		    fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
+		    fprintf (sched_dump, "(b%d) ", BLOCK_NUM (insn));
 
 		  ready_add (ready, insn);
 		  if (sched_verbose >= 2)
-		    fprintf (dump, "moving to ready with %d stalls\n", stalls);
+		    fprintf (sched_dump, "moving to ready with %d stalls\n", stalls);
 		}
 	      insn_queue[NEXT_Q_AFTER (q_ptr, stalls)] = 0;
 
@@ -4889,11 +4944,11 @@ debug_ready_list (ready)
   p = ready_lastpos (ready);
   for (i = 0; i < ready->n_ready; i++)
     {
-      fprintf (dump, "  %d", INSN_UID (p[i]));
+      fprintf (sched_dump, "  %d", INSN_UID (p[i]));
       if (current_nr_blocks > 1 && INSN_BB (p[i]) != target_bb)
-	fprintf (dump, "/b%d", BLOCK_NUM (p[i]));
+	fprintf (sched_dump, "/b%d", BLOCK_NUM (p[i]));
     }
-  fprintf (dump, "\n");
+  fprintf (sched_dump, "\n");
 }
 
 /* Print names of units on which insn can/should execute, for debugging.  */
@@ -4906,20 +4961,20 @@ insn_print_units (insn)
   int unit = insn_unit (insn);
 
   if (unit == -1)
-    fprintf (dump, "none");
+    fprintf (sched_dump, "none");
   else if (unit >= 0)
-    fprintf (dump, "%s", function_units[unit].name);
+    fprintf (sched_dump, "%s", function_units[unit].name);
   else
     {
-      fprintf (dump, "[");
+      fprintf (sched_dump, "[");
       for (i = 0, unit = ~unit; unit; i++, unit >>= 1)
 	if (unit & 1)
 	  {
-	    fprintf (dump, "%s", function_units[i].name);
+	    fprintf (sched_dump, "%s", function_units[i].name);
 	    if (unit != 1)
-	      fprintf (dump, " ");
+	      fprintf (sched_dump, " ");
 	  }
-      fprintf (dump, "]");
+      fprintf (sched_dump, "]");
     }
 }
 
@@ -5663,25 +5718,25 @@ print_block_visualization (b, s)
   int unit, i;
 
   /* Print header.  */
-  fprintf (dump, "\n;;   ==================== scheduling visualization for block %d %s \n", b, s);
+  fprintf (sched_dump, "\n;;   ==================== scheduling visualization for block %d %s \n", b, s);
 
   /* Print names of units.  */
-  fprintf (dump, ";;   %-8s", "clock");
+  fprintf (sched_dump, ";;   %-8s", "clock");
   for (unit = 0; unit < FUNCTION_UNITS_SIZE; unit++)
     if (function_units[unit].bitmask & target_units)
       for (i = 0; i < function_units[unit].multiplicity; i++)
-	fprintf (dump, "  %-33s", function_units[unit].name);
-  fprintf (dump, "  %-8s\n", "no-unit");
+	fprintf (sched_dump, "  %-33s", function_units[unit].name);
+  fprintf (sched_dump, "  %-8s\n", "no-unit");
 
-  fprintf (dump, ";;   %-8s", "=====");
+  fprintf (sched_dump, ";;   %-8s", "=====");
   for (unit = 0; unit < FUNCTION_UNITS_SIZE; unit++)
     if (function_units[unit].bitmask & target_units)
       for (i = 0; i < function_units[unit].multiplicity; i++)
-	fprintf (dump, "  %-33s", "==============================");
-  fprintf (dump, "  %-8s\n", "=======");
+	fprintf (sched_dump, "  %-33s", "==============================");
+  fprintf (sched_dump, "  %-8s\n", "=======");
 
   /* Print insns in each cycle.  */
-  fprintf (dump, "%s\n", visual_tbl);
+  fprintf (sched_dump, "%s\n", visual_tbl);
 }
 
 /* Print insns in the 'no_unit' column of visualization.  */
@@ -5976,13 +6031,13 @@ schedule_block (bb, rgn_n_insns)
   /* Debug info.  */
   if (sched_verbose)
     {
-      fprintf (dump, ";;   ======================================================\n");
-      fprintf (dump,
+      fprintf (sched_dump, ";;   ======================================================\n");
+      fprintf (sched_dump,
 	       ";;   -- basic block %d from %d to %d -- %s reload\n",
 	       b, INSN_UID (BLOCK_HEAD (b)), INSN_UID (BLOCK_END (b)),
 	       (reload_completed ? "after" : "before"));
-      fprintf (dump, ";;   ======================================================\n");
-      fprintf (dump, "\n");
+      fprintf (sched_dump, ";;   ======================================================\n");
+      fprintf (sched_dump, "\n");
 
       visual_tbl = (char *) alloca (get_visual_tbl_length ());
       init_block_visualization ();
@@ -6090,7 +6145,7 @@ schedule_block (bb, rgn_n_insns)
       }
 
 #ifdef MD_SCHED_INIT
-  MD_SCHED_INIT (dump, sched_verbose);
+  MD_SCHED_INIT (sched_dump, sched_verbose);
 #endif
 
   /* No insns scheduled in this block yet.  */
@@ -6130,7 +6185,7 @@ schedule_block (bb, rgn_n_insns)
 
       if (sched_verbose >= 2)
 	{
-	  fprintf (dump, ";;\t\tReady list after queue_to_ready:  ");
+	  fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:  ");
 	  debug_ready_list (&ready);
 	}
 
@@ -6140,7 +6195,7 @@ schedule_block (bb, rgn_n_insns)
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
 #ifdef MD_SCHED_REORDER
-      MD_SCHED_REORDER (dump, sched_verbose, ready_lastpos (&ready),
+      MD_SCHED_REORDER (sched_dump, sched_verbose, ready_lastpos (&ready),
 			ready.n_ready, clock_var, can_issue_more);
 #else
       can_issue_more = issue_rate;
@@ -6148,7 +6203,7 @@ schedule_block (bb, rgn_n_insns)
 
       if (sched_verbose)
 	{
-	  fprintf (dump, "\n;;\tReady list (t =%3d):  ", clock_var);
+	  fprintf (sched_dump, "\n;;\tReady list (t =%3d):  ", clock_var);
 	  debug_ready_list (&ready);
 	}
 
@@ -6231,7 +6286,7 @@ schedule_block (bb, rgn_n_insns)
 	  sched_n_insns++;
 
 #ifdef MD_SCHED_VARIABLE_ISSUE
-	  MD_SCHED_VARIABLE_ISSUE (dump, sched_verbose, insn,
+	  MD_SCHED_VARIABLE_ISSUE (sched_dump, sched_verbose, insn,
 				   can_issue_more);
 #else
 	  can_issue_more--;
@@ -6252,7 +6307,7 @@ schedule_block (bb, rgn_n_insns)
   /* Debug info.  */
   if (sched_verbose)
     {
-      fprintf (dump, ";;\tReady list (final):  ");
+      fprintf (sched_dump, ";;\tReady list (final):  ");
       debug_ready_list (&ready);
       print_block_visualization (b, "");
     }
@@ -6296,9 +6351,9 @@ schedule_block (bb, rgn_n_insns)
   /* Debugging.  */
   if (sched_verbose)
     {
-      fprintf (dump, ";;   total time = %d\n;;   new basic block head = %d\n",
+      fprintf (sched_dump, ";;   total time = %d\n;;   new basic block head = %d\n",
 	       clock_var, INSN_UID (BLOCK_HEAD (b)));
-      fprintf (dump, ";;   new basic block end = %d\n\n",
+      fprintf (sched_dump, ";;   new basic block end = %d\n\n",
 	       INSN_UID (BLOCK_END (b)));
     }
 
@@ -6324,25 +6379,24 @@ debug_reg_vector (s)
 
   EXECUTE_IF_SET_IN_REG_SET (s, 0, regno,
 			     {
-			       fprintf (dump, " %d", regno);
+			       fprintf (sched_dump, " %d", regno);
 			     });
 
-  fprintf (dump, "\n");
+  fprintf (sched_dump, "\n");
 }
 
-/* Use the backward dependences from LOG_LINKS to build
-   forward dependences in INSN_DEPEND.  */
+/* Examine insns in the range [ HEAD, TAIL ] and Use the backward
+   dependences from LOG_LINKS to build forward dependences in
+   INSN_DEPEND.  */
 
 static void
-compute_block_forward_dependences (bb)
-     int bb;
+compute_forward_dependences (head, tail)
+     rtx head, tail;
 {
   rtx insn, link;
-  rtx tail, head;
   rtx next_tail;
   enum reg_note dep_type;
 
-  get_bb_head_tail (bb, &head, &tail);
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
@@ -6415,6 +6469,31 @@ init_deps (deps)
     = gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
 		    NULL_RTX, 0, NULL_RTX, NULL_RTX);
   LOG_LINKS (deps->sched_before_next_call) = 0;
+}
+
+/* Free insn lists found in DEPS.  */
+
+static void
+free_deps (deps)
+     struct deps *deps;
+{
+  int max_reg = max_reg_num ();
+  int i;
+
+  /* Note this loop is executed max_reg * nr_regions times.  It's first
+     implementation accounted for over 90% of the calls to free_INSN_LIST_list.
+     The list was empty for the vast majority of those calls.  On the PA, not
+     calling free_INSN_LIST_list in those cases improves -O2 compile times by
+     3-5% on average.  */
+  for (i = 0; i < max_reg; ++i)
+    {
+      if (deps->reg_last_clobbers[i])
+	free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
+      if (deps->reg_last_sets[i])
+	free_INSN_LIST_list (&deps->reg_last_sets[i]);
+      if (deps->reg_last_uses[i])
+	free_INSN_LIST_list (&deps->reg_last_uses[i]);
+    }
 }
 
 /* Add dependences so that branches are scheduled to run last in their
@@ -6668,7 +6747,6 @@ static void
 compute_block_backward_dependences (bb)
      int bb;
 {
-  int i;
   rtx head, tail;
   int max_reg = max_reg_num ();
   struct deps tmp_deps;
@@ -6683,22 +6761,8 @@ compute_block_backward_dependences (bb)
   if (current_nr_blocks > 1)
     propagate_deps (bb, &tmp_deps, max_reg);
 
-  /* Free up the INSN_LISTs.
-
-     Note this loop is executed max_reg * nr_regions times.  It's first
-     implementation accounted for over 90% of the calls to free_INSN_LIST_list.
-     The list was empty for the vast majority of those calls.  On the PA, not
-     calling free_INSN_LIST_list in those cases improves -O2 compile times by
-     3-5% on average.  */
-  for (i = 0; i < max_reg; ++i)
-    {
-      if (tmp_deps.reg_last_clobbers[i])
-	free_INSN_LIST_list (&tmp_deps.reg_last_clobbers[i]);
-      if (tmp_deps.reg_last_sets[i])
-	free_INSN_LIST_list (&tmp_deps.reg_last_sets[i]);
-      if (tmp_deps.reg_last_uses[i])
-	free_INSN_LIST_list (&tmp_deps.reg_last_uses[i]);
-    }
+  /* Free up the INSN_LISTs.  */
+  free_deps (&tmp_deps);
 
   /* Assert that we won't need bb_reg_last_* for this block anymore.  */
   free (bb_deps[bb].reg_last_uses);
@@ -6716,7 +6780,7 @@ debug_dependencies ()
 {
   int bb;
 
-  fprintf (dump, ";;   --------------- forward dependences: ------------ \n");
+  fprintf (sched_dump, ";;   --------------- forward dependences: ------------ \n");
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       if (1)
@@ -6727,12 +6791,12 @@ debug_dependencies ()
 
 	  get_bb_head_tail (bb, &head, &tail);
 	  next_tail = NEXT_INSN (tail);
-	  fprintf (dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
+	  fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
 		   BB_TO_BLOCK (bb), bb);
 
-	  fprintf (dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
+	  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
 	  "insn", "code", "bb", "dep", "prio", "cost", "blockage", "units");
-	  fprintf (dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
+	  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
 	  "----", "----", "--", "---", "----", "----", "--------", "-----");
 	  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
 	    {
@@ -6742,18 +6806,18 @@ debug_dependencies ()
 	      if (! INSN_P (insn))
 		{
 		  int n;
-		  fprintf (dump, ";;   %6d ", INSN_UID (insn));
+		  fprintf (sched_dump, ";;   %6d ", INSN_UID (insn));
 		  if (GET_CODE (insn) == NOTE)
 		    {
 		      n = NOTE_LINE_NUMBER (insn);
 		      if (n < 0)
-			fprintf (dump, "%s\n", GET_NOTE_INSN_NAME (n));
+			fprintf (sched_dump, "%s\n", GET_NOTE_INSN_NAME (n));
 		      else
-			fprintf (dump, "line %d, file %s\n", n,
+			fprintf (sched_dump, "line %d, file %s\n", n,
 				 NOTE_SOURCE_FILE (insn));
 		    }
 		  else
-		    fprintf (dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
+		    fprintf (sched_dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
 		  continue;
 		}
 
@@ -6761,7 +6825,7 @@ debug_dependencies ()
 	      range = (unit < 0
 		 || function_units[unit].blockage_range_function == 0) ? 0 :
 		function_units[unit].blockage_range_function (insn);
-	      fprintf (dump,
+	      fprintf (sched_dump,
 		       ";;   %s%5d%6d%6d%6d%6d%6d  %3d -%3d   ",
 		       (SCHED_GROUP_P (insn) ? "+" : " "),
 		       INSN_UID (insn),
@@ -6773,14 +6837,14 @@ debug_dependencies ()
 		       (int) MIN_BLOCKAGE_COST (range),
 		       (int) MAX_BLOCKAGE_COST (range));
 	      insn_print_units (insn);
-	      fprintf (dump, "\t: ");
+	      fprintf (sched_dump, "\t: ");
 	      for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
-		fprintf (dump, "%d ", INSN_UID (XEXP (link, 0)));
-	      fprintf (dump, "\n");
+		fprintf (sched_dump, "%d ", INSN_UID (XEXP (link, 0)));
+	      fprintf (sched_dump, "\n");
 	    }
 	}
     }
-  fprintf (dump, "\n");
+  fprintf (sched_dump, "\n");
 }
 
 /* Set_priorities: compute priority of each insn in the block.  */
@@ -6850,7 +6914,12 @@ schedule_region (rgn)
 
   /* Compute INSN_DEPEND.  */
   for (bb = current_nr_blocks - 1; bb >= 0; bb--)
-    compute_block_forward_dependences (bb);
+    {
+      rtx head, tail;
+      get_bb_head_tail (bb, &head, &tail);
+
+      compute_forward_dependences (head, tail);
+    }
 
   /* Delete line notes and set priorities.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
@@ -6950,31 +7019,20 @@ schedule_region (rgn)
     }
 }
 
-/* The one entry point in this file.  DUMP_FILE is the dump file for
-   this pass.  */
+/* Initialize some global state for the scheduler.  DUMP_FILE is to be used
+   for debugging output.  */
 
-void
-schedule_insns (dump_file)
+static void
+sched_init (dump_file)
      FILE *dump_file;
 {
-  int *deaths_in_region;
-  sbitmap blocks, large_region_blocks;
-  int max_uid;
-  int b;
+  int luid, b;
   rtx insn;
-  int rgn;
-  int luid;
-  int any_large_regions;
 
   /* Disable speculative loads in their presence if cc0 defined.  */
 #ifdef HAVE_cc0
   flag_schedule_speculative_load = 0;
 #endif
-
-  /* Taking care of this degenerate case makes the rest of
-     this code simpler.  */
-  if (n_basic_blocks == 0)
-    return;
 
   /* Set dump and sched_verbose for the desired debugging output.  If no
      dump-file was specified, but -fsched-verbose=N (any N), print to stderr.
@@ -6982,10 +7040,8 @@ schedule_insns (dump_file)
   sched_verbose = sched_verbose_param;
   if (sched_verbose_param == 0 && dump_file)
     sched_verbose = 1;
-  dump = ((sched_verbose_param >= 10 || !dump_file) ? stderr : dump_file);
-
-  nr_inter = 0;
-  nr_spec = 0;
+  sched_dump = ((sched_verbose_param >= 10 || !dump_file)
+		? stderr : dump_file);
 
   /* Initialize issue_rate.  */
   issue_rate = ISSUE_RATE;
@@ -6994,9 +7050,9 @@ schedule_insns (dump_file)
 
   /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
      pseudos which do not cross calls.  */
-  max_uid = get_max_uid () + 1;
+  old_max_uid = get_max_uid () + 1;
 
-  h_i_d = (struct haifa_insn_data *) xcalloc (max_uid, sizeof (*h_i_d));
+  h_i_d = (struct haifa_insn_data *) xcalloc (old_max_uid, sizeof (*h_i_d));
 
   h_i_d[0].luid = 0;
   luid = 1;
@@ -7017,25 +7073,67 @@ schedule_insns (dump_file)
 	  break;
       }
 
-  /* ?!? We could save some memory by computing a per-region luid mapping
-     which could reduce both the number of vectors in the cache and the size
-     of each vector.  Instead we just avoid the cache entirely unless the
-     average number of instructions in a basic block is very high.  See
-     the comment before the declaration of true_dependency_cache for
-     what we consider "very high".  */
-  if (luid / n_basic_blocks > 100 * 5)
+  init_dependency_caches (luid);
+
+  compute_bb_for_insn (old_max_uid);
+
+  init_alias_analysis ();
+
+  if (write_symbols != NO_DEBUG)
     {
-      true_dependency_cache = sbitmap_vector_alloc (luid, luid);
-      sbitmap_vector_zero (true_dependency_cache, luid);
-      anti_dependency_cache = sbitmap_vector_alloc (luid, luid);
-      sbitmap_vector_zero (anti_dependency_cache, luid);
-      output_dependency_cache = sbitmap_vector_alloc (luid, luid);
-      sbitmap_vector_zero (output_dependency_cache, luid);
-#ifdef ENABLE_CHECKING
-      forward_dependency_cache = sbitmap_vector_alloc (luid, luid);
-      sbitmap_vector_zero (forward_dependency_cache, luid);
-#endif
+      rtx line;
+
+      line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
+
+      /* Save-line-note-head:
+         Determine the line-number at the start of each basic block.
+         This must be computed and saved now, because after a basic block's
+         predecessor has been scheduled, it is impossible to accurately
+         determine the correct line number for the first insn of the block.  */
+
+      for (b = 0; b < n_basic_blocks; b++)
+	for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
+	  if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
+	    {
+	      line_note_head[b] = line;
+	      break;
+	    }
     }
+
+  /* Find units used in this fuction, for visualization.  */
+  if (sched_verbose)
+    init_target_units ();
+
+  /* ??? Add a NOTE after the last insn of the last basic block.  It is not
+     known why this is done.  */
+
+  insn = BLOCK_END (n_basic_blocks - 1);
+  if (NEXT_INSN (insn) == 0
+      || (GET_CODE (insn) != NOTE
+	  && GET_CODE (insn) != CODE_LABEL
+	  /* Don't emit a NOTE if it would end up between an unconditional
+	     jump and a BARRIER.  */
+	  && !(GET_CODE (insn) == JUMP_INSN
+	       && GET_CODE (NEXT_INSN (insn)) == BARRIER)))
+    emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
+
+  /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
+     removing death notes.  */
+  for (b = n_basic_blocks - 1; b >= 0; b--)
+    find_insn_reg_weight (b);
+}
+
+/* Indexed by region, holds the number of death notes found in that region.
+   Used for consistency checks.  */
+static int *deaths_in_region;
+
+/* Initialize data structures for region scheduling.  */
+
+static void
+init_regions ()
+{
+  sbitmap blocks;
+  int rgn;
 
   nr_regions = 0;
   rgn_table = (region *) xmalloc ((n_basic_blocks) * sizeof (region));
@@ -7044,9 +7142,6 @@ schedule_insns (dump_file)
   containing_rgn = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
 
   blocks = sbitmap_alloc (n_basic_blocks);
-  large_region_blocks = sbitmap_alloc (n_basic_blocks);
-
-  compute_bb_for_insn (max_uid);
 
   /* Compute regions for scheduling.  */
   if (reload_completed
@@ -7107,60 +7202,43 @@ schedule_insns (dump_file)
 
   deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
 
-  init_alias_analysis ();
-
-  if (write_symbols != NO_DEBUG)
-    {
-      rtx line;
-
-      line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
-
-      /* Save-line-note-head:
-         Determine the line-number at the start of each basic block.
-         This must be computed and saved now, because after a basic block's
-         predecessor has been scheduled, it is impossible to accurately
-         determine the correct line number for the first insn of the block.  */
-
-      for (b = 0; b < n_basic_blocks; b++)
-	for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
-	  if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
-	    {
-	      line_note_head[b] = line;
-	      break;
-	    }
-    }
-
-  /* Find units used in this fuction, for visualization.  */
-  if (sched_verbose)
-    init_target_units ();
-
-  /* ??? Add a NOTE after the last insn of the last basic block.  It is not
-     known why this is done.  */
-
-  insn = BLOCK_END (n_basic_blocks - 1);
-  if (NEXT_INSN (insn) == 0
-      || (GET_CODE (insn) != NOTE
-	  && GET_CODE (insn) != CODE_LABEL
-	  /* Don't emit a NOTE if it would end up between an unconditional
-	     jump and a BARRIER.  */
-	  && !(GET_CODE (insn) == JUMP_INSN
-	       && GET_CODE (NEXT_INSN (insn)) == BARRIER)))
-    emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
-
-  /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
-     removing death notes.  */
-  for (b = n_basic_blocks - 1; b >= 0; b--)
-    find_insn_reg_weight (b);
-
   /* Remove all death notes from the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     {
+      int b;
+
       sbitmap_zero (blocks);
       for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
 	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn) + b]);
 
       deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
     }
+
+  sbitmap_free (blocks);
+}
+
+/* The one entry point in this file.  DUMP_FILE is the dump file for
+   this pass.  */
+
+void
+schedule_insns (dump_file)
+     FILE *dump_file;
+{
+  sbitmap large_region_blocks, blocks;
+  int rgn;
+  int any_large_regions;
+
+  /* Taking care of this degenerate case makes the rest of
+     this code simpler.  */
+  if (n_basic_blocks == 0)
+    return;
+
+  nr_inter = 0;
+  nr_spec = 0;
+
+  sched_init (dump_file);
+
+  init_regions ();
 
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
@@ -7180,10 +7258,13 @@ schedule_insns (dump_file)
      best way to test for this kind of thing...  */
 
   allocate_reg_life_data ();
-  compute_bb_for_insn (max_uid);
+  compute_bb_for_insn (old_max_uid);
 
   any_large_regions = 0;
+  large_region_blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_ones (large_region_blocks);
+
+  blocks = sbitmap_alloc (n_basic_blocks);
 
   for (rgn = 0; rgn < nr_regions; rgn++)
     if (RGN_NR_BLOCKS (rgn) > 1)
@@ -7230,7 +7311,7 @@ schedule_insns (dump_file)
     {
       if (reload_completed == 0 && flag_schedule_interblock)
 	{
-	  fprintf (dump,
+	  fprintf (sched_dump,
 		   "\n;; Procedure interblock/speculative motions == %d/%d \n",
 		   nr_inter, nr_spec);
 	}
@@ -7239,25 +7320,13 @@ schedule_insns (dump_file)
 	  if (nr_inter > 0)
 	    abort ();
 	}
-      fprintf (dump, "\n\n");
+      fprintf (sched_dump, "\n\n");
     }
 
   /* Clean up.  */
   end_alias_analysis ();
 
-  if (true_dependency_cache)
-    {
-      free (true_dependency_cache);
-      true_dependency_cache = NULL;
-      free (anti_dependency_cache);
-      anti_dependency_cache = NULL;
-      free (output_dependency_cache);
-      output_dependency_cache = NULL;
-#ifdef ENABLE_CHECKING
-      free (forward_dependency_cache);
-      forward_dependency_cache = NULL;
-#endif
-    }
+  free_dependency_caches ();
   free (rgn_table);
   free (rgn_bb_table);
   free (block_to_bb);

@@ -1,3 +1,14 @@
+2000-12-02  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* haifa-sched.c (sched_dump): Renamed from dump.  All users changed.
+	(old_max_uid): New variable.
+	(compute_forward_dependences): Renamed from
+	compute_block_forward_dependences; changed to accept block head and
+	tail instead of block number.  Caller changed.
+	(free_deps, init_dependency_caches, free_dependency_caches,
+	init_regions, sched_init): New functions, split out from
+	schedule_insns and compute_block_backward_dependences.
+
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
         * cppexp.c (parse_number): Update diagnostic test.
