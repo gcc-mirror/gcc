@@ -1,3 +1,13 @@
+2002-07-09  Tim Josling  <tej@melbpc.org.au>
+
+	Support new attributes regime (Fix for PR c++/7099).
+	
+	* treetree.c (handle_format_attribute): Return NULL_TREE instead
+	of aborting.
+	(top level): Define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+	LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
+	LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES as the standard C routines.
+
 2002-06-21  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (treelang/tree1.o, treelang/treetree.o,

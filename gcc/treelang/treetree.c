@@ -119,6 +119,12 @@ int warn_format_zero_length = 0;
 #define LANG_HOOKS_TYPE_FOR_SIZE c_common_type_for_size
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE treelang_parse_file
+#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
+#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
+#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
+#undef LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES
+#define LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES c_insert_default_attributes
 
 /* Hook routines and data unique to treelang.  */
 
@@ -996,7 +1002,7 @@ cpp_errors (cpp_reader *pfile ATTRIBUTE_UNUSED)
   abort ();
 }
 
-/* Should not be called for treelang.   */
+/* Dummy called by C.   */
 
 tree
 handle_format_attribute (tree *node ATTRIBUTE_UNUSED,
@@ -1005,7 +1011,7 @@ handle_format_attribute (tree *node ATTRIBUTE_UNUSED,
                          int flags ATTRIBUTE_UNUSED,
                          bool *no_add_attrs ATTRIBUTE_UNUSED)
 {
-  abort ();
+  return NULL_TREE; 
 }
 
 /* Should not be called for treelang.   */
