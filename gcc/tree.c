@@ -2597,10 +2597,10 @@ substitute_in_expr (exp, f, r)
 	  op0 = (TREE_CHAIN (exp) == 0
 		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
 	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
-	  if (op0 == TREE_CHAIN (exp) || op1 == TREE_VALUE (exp))
+	  if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
 	    return exp;
 
-	  return tree_cons (TREE_PURPOSE (exp), op0, op1);
+	  return tree_cons (TREE_PURPOSE (exp), op1, op0);
 	}
 
       abort ();
