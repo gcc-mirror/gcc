@@ -1,5 +1,6 @@
 2004-08-18  James E Wilson  <wilson@specifixinc.com>
 
+	* config/mips/mips.h (ASM_SPEC): In comment, change -meabi= to -mabi=.
 	* config/mips/sb1.md (ir_sb1_divsf_1pipe): Renamed from ...1pipes.
 
 	* config/mips/mips.md (type): Add frdiv.
