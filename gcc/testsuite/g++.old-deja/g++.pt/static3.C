@@ -1,6 +1,6 @@
 // On targets that don't support weak symbols, we require an explicit
 // instantiation of arr.
-// excess errors test - XFAIL *-*-aout *-*-coff *-*-hpux* alpha*-dec-osf* *-*-hms
+// excess errors test - XFAIL *-*-aout *-*-coff *-*-hpux* *-*-hms
 
 template<class T>
 struct A {
