@@ -51,11 +51,11 @@
 # define _GLIBCXX_EXTERN_TEMPLATE 1
 #endif
 
-// Certain function definitions that are meant to be overridable
-// from user code are decorated with this macro.  For some targets,
-// this macro causes these definitions to be weak.
+// Certain function definitions that are meant to be overridable from
+// user code are decorated with this macro.  For some targets, this
+// macro causes these definitions to be weak.
 #ifndef _GLIBCXX_WEAK_DEFINITION
-#define _GLIBCXX_WEAK_DEFINITION
+# define _GLIBCXX_WEAK_DEFINITION
 #endif
 
 // Debug mode support. Debug mode basic_string is not allowed to be
