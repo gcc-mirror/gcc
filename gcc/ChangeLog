@@ -1,3 +1,11 @@
+2005-01-14  J. D. Johnston  <jjohnst@us.ibm.com>
+
+	* config/s390/tpf-unwind.h (s390_fallback_frame_state): Correct
+	end-of-stack check.
+	(__tpf_eh_return): Copy TPF private stack area from the module
+	boundary stack frame.  Add check for when module addresses are
+	equal, but no stub address is found.
+
 2005-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/7525

@@ -52,8 +52,8 @@ __isPATrange (void *addr)
     return 0;
 }
 
-/* TPF stack placeholder offset.  */
-#define TPF_LOC_DIFF_OFFSET 168
+/* TPF return address offset from start of stack frame.  */
+#define TPFRA_OFFSET 168
 
 /* Exceptions macro defined for TPF so that functions without 
    dwarf frame information can be used with exceptions.  */
@@ -67,12 +67,18 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
   unsigned long int new_cfa;
   int i;
 
-  if (context->cfa == NULL)
-    return _URC_END_OF_STACK;
+  regs = *((unsigned long int *)
+        (((unsigned long int) context->cfa) - STACK_POINTER_OFFSET));
 
   /* Are we going through special linkage code?  */
   if (__isPATrange (context->ra))
     {
+
+      /* Our return register isn't zero for end of stack, so
+         check backward stackpointer to see if it is zero.  */
+      if (regs == NULL)
+         return _URC_END_OF_STACK;
+
       /* No stack frame.  */
       fs->cfa_how = CFA_REG_OFFSET;
       fs->cfa_reg = 15;
@@ -88,7 +94,7 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
       /* ... except for %r14, which is stored at CFA-112
 	 and used as return address.  */
       fs->regs.reg[14].how = REG_SAVED_OFFSET;
-      fs->regs.reg[14].loc.offset = TPF_LOC_DIFF_OFFSET - STACK_POINTER_OFFSET;
+      fs->regs.reg[14].loc.offset = TPFRA_OFFSET - STACK_POINTER_OFFSET;
       fs->retaddr_column = 14;
 
       return _URC_NO_REASON;
@@ -136,9 +142,10 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
 #define PREVIOUS_STACK_PTR() \
   ((unsigned long int *)(*(CURRENT_STACK_PTR())))
 
-#define RA_OFFSET_FROM_START_OF_STACK_FRAME 112
-#define CURRENT_STACK_PTR_OFFSET 120
-#define TPFRA_OFFSET_FROM_START_OF_STACK_FRAME 168
+#define RA_OFFSET 112
+#define R15_OFFSET 120
+#define TPFAREA_OFFSET 160
+#define TPFAREA_SIZE STACK_POINTER_OFFSET-TPFAREA_OFFSET
 #define INVALID_RETURN 0
 
 void * __tpf_eh_return (void *target);
@@ -148,110 +155,107 @@ __tpf_eh_return (void *target)
 {
   Dl_info targetcodeInfo, currentcodeInfo;
   int retval;
-  void *current, *stackptr;
-  unsigned long int shifter;
+  void *current, *stackptr, *destination_frame;
+  unsigned long int shifter, is_a_stub;
+
+  is_a_stub = 0;
 
   /* Get code info for target return's address.  */
   retval = dladdr (target, &targetcodeInfo);
 
-  /* Get the return address of the stack frame to be replaced by
-     the exception unwinder.  So that the __cxa_throw return is
-     replaced by the target return.  */
-  current = (void *) *((unsigned long int *)
-                 ((*((unsigned long int *)*(PREVIOUS_STACK_PTR()))) 
-                             + RA_OFFSET_FROM_START_OF_STACK_FRAME));
-
   /* Ensure the code info is valid (for target).  */
-  if (retval != INVALID_RETURN) 
+  if (retval != INVALID_RETURN)
     {
-      /* Now check to see if the current RA is a PAT
-         stub return address.  */
-      if ( __isPATrange(current)) 
+
+      /* Get the stack pointer of the stack frame to be modified by
+         the exception unwinder.  So that we can begin our climb
+         there.  */
+      stackptr = (void *) *((unsigned long int *) (*(PREVIOUS_STACK_PTR())));
+
+      /* Begin looping through stack frames.  Stop if invalid
+         code information is retrieved or if a match between the
+         current stack frame iteration shared object's address 
+         matches that of the target, calculated above.  */
+      do
         {
-          /* It was!  Then go into the TPF private stack area and fetch
-             the real address.  */
+          /* Get return address based on our stackptr iterator.  */
           current = (void *) *((unsigned long int *) 
-                           ((unsigned long int)*((unsigned long int *)
-                           *(PREVIOUS_STACK_PTR())) 
-                           +TPFRA_OFFSET_FROM_START_OF_STACK_FRAME));
-        }
+                      (stackptr+RA_OFFSET));
 
-      /* Get code info for current return address.  */
-      retval = dladdr (current, &currentcodeInfo);
-
-      /* Ensure the code info is valid (for current frame).  */
-      if (retval != INVALID_RETURN) 
-        {
-          /* Get the stack pointer of the stack frame to be replaced by
-             the exception unwinder.  So that we can begin our climb
-             there.  */
-          stackptr = (void *) (*((unsigned long int *)
-                      (*((unsigned long int *)(*(PREVIOUS_STACK_PTR()))))));
-
-          /* Begin looping through stack frames.  Stop if invalid
-             code information is retrieved or if a match between the
-             current stack frame iteration shared object's address 
-             matches that of the target, calculated above.  */
-          while (retval != INVALID_RETURN
-                 && targetcodeInfo.dli_fbase != currentcodeInfo.dli_fbase)
+          /* Is it a Pat Stub?  */
+          if (__isPATrange (current)) 
             {
-              /* Get return address based on our stackptr iterator.  */
+              /* Yes it was, get real return address 
+                 in TPF stack area.  */
               current = (void *) *((unsigned long int *) 
-                     (stackptr+RA_OFFSET_FROM_START_OF_STACK_FRAME));
-
-              /* Is it a Pat Stub?  */
-              if (__isPATrange (current)) 
-                {
-                  /* Yes it was, get real return address 
-                     in TPF stack area.  */
-                  current = (void *) *((unsigned long int *) 
-                         (stackptr+TPFRA_OFFSET_FROM_START_OF_STACK_FRAME));
-                }
-
-              /* Get codeinfo on RA so that we can figure out
-                 the module address.  */
-              retval = dladdr (current, &currentcodeInfo);
-
-              /* Check that codeinfo for current stack frame is valid.
-                 Then compare the module address of current stack frame
-                 to target stack frame to determine if we have the pat
-                 stub address we want.  */
-              if (retval != INVALID_RETURN
-                  && targetcodeInfo.dli_fbase == currentcodeInfo.dli_fbase)
-                {
-                  /* Yes!  They are in the same module.  Now store the
-                     real target address into the TPF stack area of
-                     the target frame we are jumping to.  */
-                  *((unsigned long int *)(*((unsigned long int *) 
-                          (*PREVIOUS_STACK_PTR() + CURRENT_STACK_PTR_OFFSET))
-                          + TPFRA_OFFSET_FROM_START_OF_STACK_FRAME)) 
-                          = (unsigned long int) target;
-
-                  /* Before returning the desired pat stub address to
-                     the exception handling unwinder so that it can 
-                     actually do the "leap" shift out the low order 
-                     bit designated to determine if we are in 64BIT mode.
-                     This is necessary for CTOA stubs.
-                     Otherwise we leap one byte past where we want to 
-                     go to in the TPF pat stub linkage code.  */
-                  shifter = *((unsigned long int *) 
-                       (stackptr + RA_OFFSET_FROM_START_OF_STACK_FRAME));
-
-                  shifter &= ~1ul;
-
-                  return (void *) shifter;
-                }
-
-              /* Desired module pat stub not found ...
-                 Bump stack frame iterator.  */
-              stackptr = (void *) *(unsigned long int *) stackptr;
+                          (stackptr+TPFRA_OFFSET));
+              is_a_stub = 1;
             }
-        }
+
+          /* Get codeinfo on RA so that we can figure out
+             the module address.  */
+          retval = dladdr (current, &currentcodeInfo);
+
+          /* Check that codeinfo for current stack frame is valid.
+             Then compare the module address of current stack frame
+             to target stack frame to determine if we have the pat
+             stub address we want.  Also ensure we are dealing
+             with a module crossing, stub return address. */
+          if (is_a_stub && retval != INVALID_RETURN
+             && targetcodeInfo.dli_fbase == currentcodeInfo.dli_fbase)
+             {
+               /* Yes! They are in the same module.
+                  Force copy of TPF private stack area to
+                  destination stack frame TPF private area. */
+               destination_frame = (void *) *((unsigned long int *) 
+                   (*PREVIOUS_STACK_PTR() + R15_OFFSET));
+
+               /* Copy TPF linkage area from current frame to
+                  destination frame.  */
+               memcpy((void *) (destination_frame + TPFAREA_OFFSET),
+                 (void *) (stackptr + TPFAREA_OFFSET), TPFAREA_SIZE);
+
+               /* Now overlay the
+                  real target address into the TPF stack area of
+                  the target frame we are jumping to.  */
+               *((unsigned long int *) (destination_frame + 
+                   TPFRA_OFFSET)) = (unsigned long int) target;
+
+               /* Before returning the desired pat stub address to
+                  the exception handling unwinder so that it can 
+                  actually do the "leap" shift out the low order 
+                  bit designated to determine if we are in 64BIT mode.
+                  This is necessary for CTOA stubs.
+                  Otherwise we leap one byte past where we want to 
+                  go to in the TPF pat stub linkage code.  */
+               shifter = *((unsigned long int *) 
+                     (stackptr + RA_OFFSET));
+
+               shifter &= ~1ul;
+
+               /* Store Pat Stub Address in destination Stack Frame.  */
+               *((unsigned long int *) (destination_frame +
+                   RA_OFFSET)) = shifter;               
+
+               /* Re-adjust pat stub address to go to correct place
+                  in linkage.  */
+               shifter = shifter - 4;
+
+               return (void *) shifter;
+             }
+
+          /* Desired module pat stub not found ...
+             Bump stack frame iterator.  */
+          stackptr = (void *) *(unsigned long int *) stackptr;
+
+          is_a_stub = 0;
+
+        }  while (stackptr && retval != INVALID_RETURN
+                && targetcodeInfo.dli_fbase != currentcodeInfo.dli_fbase);
     }
 
   /* No pat stub found, could be a problem?  Simply return unmodified
      target address.  */
   return target;
 }
-
 
