@@ -1,3 +1,8 @@
+2003-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (stamp-std-precompile): Add rule.
+	* include/Makefile.in: Regenerated.
+	
 2003-02-11 Jerry Quinn  <jlquinn@optonline.net>
            Benjamin Kosnik  <benjamin@redhat.com>
 	
