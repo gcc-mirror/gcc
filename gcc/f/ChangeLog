@@ -1,3 +1,11 @@
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (f/com.o): Depend on langhooks.h.
+	* com.c: Include it.
+	(LANG_HOOKS_INIT, LANG_HOOKS_FINISH): New.
+	(LANG_HOOKS_INIT_OPTIONS, LANG_HOOKS_DECODE_OPTION): New.
+	(lang_hooks): Use LANG_HOOKS_INITIALIZER.
+
 Sun Oct  7 12:27:54 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (_ffebad_message_, ffebad_messages_): Const-ify.

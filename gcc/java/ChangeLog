@@ -1,3 +1,7 @@
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (java/lang.o): Depend on langhooks.h.
+
 2001-10-15  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* lang.c (langhooks.h): Included.
