@@ -3773,9 +3773,12 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* If we know that the value is already truncated, we can
-         replace the TRUNCATE with a SUBREG.  */
-      if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	  >= GET_MODE_BITSIZE (mode) + 1)
+         replace the TRUNCATE with a SUBREG if TRULY_NOOP_TRUNCATION is
+	 nonzero for the corresponding modes.  */
+      if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+				 GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
+	  && num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+	     >= GET_MODE_BITSIZE (mode) + 1)
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
