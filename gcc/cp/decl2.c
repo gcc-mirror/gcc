@@ -2860,7 +2860,7 @@ finish_objects (method_type, initp)
   expand_end_bindings (getdecls (), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
-  finish_function (lineno, 0, 0);
+  finish_function (lineno, 0);
 
   if (initp == DEFAULT_INIT_PRIORITY)
     {
@@ -3111,7 +3111,7 @@ finish_static_storage_duration_function ()
   expand_end_bindings (getdecls (), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
-  finish_function (lineno, 0, 0);
+  finish_function (lineno, 0);
 }
 
 /* Return the information about the indicated PRIORITY level.  If no
@@ -4950,10 +4950,9 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
      tree *newval, *newtype;
 {
   tree decls;
-  struct tree_binding _decls;
 
   *newval = *newtype = NULL_TREE;
-  decls = binding_init (&_decls);
+  decls = make_node (CPLUS_BINDING);
   if (!qualified_lookup_using_namespace (name, scope, decls, 0))
     /* Lookup error */
     return;

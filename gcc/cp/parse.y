@@ -90,7 +90,14 @@ empty_parms ()
 
 %start program
 
-%union {long itype; tree ttype; char *strtype; enum tree_code code; flagged_type_tree ftype; }
+%union {
+  long itype; 
+  tree ttype; 
+  char *strtype; 
+  enum tree_code code; 
+  flagged_type_tree ftype; 
+  struct pending_inline *pi;
+}
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -236,10 +243,12 @@ empty_parms ()
 
 /* C++ extensions */
 %token <ttype> PTYPENAME
-%token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
+%token <ttype> EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL DEFARG DEFARG_MARKER
+%token <pi> PRE_PARSED_FUNCTION_DECL 
 %type <ttype> component_constructor_declarator
-%type <ttype> fn.def2 return_id fn.defpen constructor_declarator
+%type <ttype> fn.def2 return_id constructor_declarator
+%type <pi> fn.defpen 
 %type <itype> ctor_initializer_opt function_try_block
 %type <ttype> named_class_head_sans_basetype
 %type <ftype> class_head named_class_head 
@@ -311,7 +320,7 @@ extern void yyprint			PROTO((FILE *, int, YYSTYPE));
 extern tree combine_strings		PROTO((tree));
 
 static int
-parse_decl(declarator, specs_attrs, attributes, initialized, decl)
+parse_decl (declarator, specs_attrs, attributes, initialized, decl)
   tree declarator;
   tree specs_attrs;
   tree attributes;
@@ -651,13 +660,9 @@ eat_saved_input:
 
 fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
-		{ finish_function (lineno, (int)$3, 0); }
+		{ finish_function (lineno, (int)$3); }
 	| fn.def1 maybe_return_init function_try_block
-		{ 
-		  int nested = (hack_decl_function_context
-				(current_function_decl) != NULL_TREE);
-		  finish_function (lineno, (int)$3, nested); 
-		}
+		{ finish_function (lineno, (int)$3); }
 	| fn.def1 maybe_return_init error
 		{ }
 	;
@@ -2059,23 +2064,18 @@ initlist:
 
 fn.defpen:
 	PRE_PARSED_FUNCTION_DECL
-		{ start_function (NULL_TREE, TREE_VALUE ($1),
-				  NULL_TREE, 2);
+		{ start_function (NULL_TREE, $1->fndecl, NULL_TREE, 2);
 		  reinit_parse_for_function (); }
 
 pending_inline:
 	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error
 		{
-		  int nested = (hack_decl_function_context
-				(current_function_decl) != NULL_TREE);
-		  finish_function (lineno, (int)$3 | 2, nested);
+		  finish_function (lineno, (int)$3 | 2);
 		  process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init function_try_block
 		{ 
-		  int nested = (hack_decl_function_context
-				(current_function_decl) != NULL_TREE);
-		  finish_function (lineno, (int)$3 | 2, nested); 
+		  finish_function (lineno, (int)$3 | 2); 
                   process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init error

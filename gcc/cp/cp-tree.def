@@ -32,7 +32,7 @@ DEFTREECODE (OFFSET_REF, "offset_ref", 'r', 2)
 /* A pointer-to-member constant.  For a pointer-to-member constant
    `X::Y' The PTRMEM_CST_CLASS is the RECORD_TYPE for `X' and the
    PTRMEM_CST_MEMBER is the _DECL for `Y'.  */
-DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 1)
+DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 2)
 
 /* For NEW_EXPR, operand 0 is the placement list.
    Operand 1 is the new-declarator.
@@ -130,7 +130,7 @@ DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x',
 		expression is to ensure against the case where
 		sizeof(char*) does not evenly divide
 		sizeof(HOST_WIDE_INT).  */
-	     2 + ((3 * sizeof (HOST_WIDE_INT) + sizeof(char*) - 1)
+	     1 + ((3 * sizeof (HOST_WIDE_INT) + sizeof(char*) - 1)
 		  / sizeof (char*)))
 
 /* Index into a template parameter list.  This parameter must be a type.

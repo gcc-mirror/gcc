@@ -1,4 +1,11 @@
-typedef union {long itype; tree ttype; char *strtype; enum tree_code code; flagged_type_tree ftype; } YYSTYPE;
+typedef union {
+  long itype; 
+  tree ttype; 
+  char *strtype; 
+  enum tree_code code; 
+  flagged_type_tree ftype; 
+  struct pending_inline *pi;
+} YYSTYPE;
 #define	IDENTIFIER	257
 #define	TYPENAME	258
 #define	SELFNAME	259
@@ -73,12 +80,12 @@ typedef union {long itype; tree ttype; char *strtype; enum tree_code code; flagg
 #define	POINTSAT	328
 #define	TRY	329
 #define	CATCH	330
-#define	PRE_PARSED_FUNCTION_DECL	331
-#define	EXTERN_LANG_STRING	332
-#define	ALL	333
-#define	PRE_PARSED_CLASS_DECL	334
-#define	DEFARG	335
-#define	DEFARG_MARKER	336
+#define	EXTERN_LANG_STRING	331
+#define	ALL	332
+#define	PRE_PARSED_CLASS_DECL	333
+#define	DEFARG	334
+#define	DEFARG_MARKER	335
+#define	PRE_PARSED_FUNCTION_DECL	336
 #define	TYPENAME_DEFN	337
 #define	IDENTIFIER_DEFN	338
 #define	PTYPENAME_DEFN	339

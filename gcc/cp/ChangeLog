@@ -1,3 +1,68 @@
+1999-09-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (tree.o): Depend on ggc.h.
+	* class.c (make_method_vec): Remove.
+	(free_method_vec): Likewise.
+	(free_method_vecs): Remove.
+	(add_method): Don't use them.
+	* cp-tree.def (PTRMEM_CST): Make it longer.
+	(TEMPLATE_PARM_INDEX): Make it shorter.
+	* cp-tree.h (BINDING_HAS_LEVEL_P): New macro.
+	(template_parm_index): Remove RTL field.
+	(ptrmem_cst): Add RTL field.
+	(finish_function): Removed parameter.
+	(process_next_inline): Change prototype.
+	(init_cplus_unsave): Rename to init_tree.
+	(binding_init): Remove.
+	* decl.c (free_binding_nodes): Remove.
+	(push_binding): Don't use them.  Set BINDING_HAS_LEVEL_P.
+	(pop_binding): Don't use free_binding_nodes.
+	(free_binding_vecs): Remove.
+	(store_bindings): Don't use them.
+	(pop_from_top_level): Likewise.
+	(lookup_namespace_name): Simplify.
+	(build_typename_type): Don't use obstack_free.
+	(unqualified_namespace_lookup): Simplify.
+	(lookup_name_real): Simplify.
+	(start_function): Remove comment about leaks.
+	(finish_function): Removed nested parameter.  Call
+	expand_end_bindings even when building_stmt_tree.
+	Call ggc_push_context and ggc_pop_context around
+	rest_of_compilation, if necessary.
+	(mark_cp_function_context): Handle a NULL language-context.
+	(lang_mark_false_label_stack): Fix typo.
+	(lang_mark_tree): Handle CPLUS_BINDING, OVERLOAD,
+	TEMPLATE_PARM_INDEX.  Handle the funny TYPE_LANG_SPECIFIC on
+	pointer to method types.
+	(lang_cleanup_tree): Use free to free TYPE_LANG_SPECIFIC.
+	* decl2.c (finish_objects): Adjust call to finish_function.
+	(finish_static_store_duration_function): Likewise.
+	(do_nonmember_using_decl): Remove call to binding_init.
+	* except.c (end_anon_func): Adjust call to finish_function.
+	* lex.c (mark_impl_file_chain): New function.
+	(init_parse): Call init_tree, not init_cplus_unsave.
+	Add GC roots.
+	(cp_pramga_interface): Use xmalloc, not permalloc.
+	(cp_pragma_implementation): Likewise.
+	(begin_definition_of_inclass_inline): Simplify.
+	(process_next_inline): Adjust prototype.
+	(do_scoped_id): Don't call binding_init.
+	(make_lang_type): Allocate TYPE_LANG_SPECIFIC with xmalloc.
+	(emit_thunk): Adjust call to finish_function.
+	(synthesize_method): Likewise.
+	* parse.y (%union): Add a new `pi' variant.
+	(PRE_PARSED_FUNCTION_DECL): Use it.
+	(fn.defpen): Likewise.
+	(fndef): Adjust call to finish_function.
+	(instantiate_decl): Likewise.
+	(rtti.c): Likewise.
+	(semantics.c): Likewise.
+	* tree.c: Include ggc.h.
+	(mark_list_hash): New function.
+	(binding_init): Remove.
+	(init_cplus_unsave): Rename to ...
+	(init_tree): This.  Add GC roots.
+	
 1999-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	Get ready for garbage collection.

@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "rtl.h"
 #include "toplev.h"
+#include "ggc.h"
 
 static tree bot_manip PROTO((tree));
 static tree perm_manip PROTO((tree));
@@ -39,6 +40,7 @@ static int avoid_overlap PROTO((tree, tree));
 static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
 static tree no_linkage_helper PROTO((tree));
 static tree build_srcloc PROTO((char *, int));
+static void mark_list_hash PROTO ((void *));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1297,25 +1299,6 @@ debug_binfo (elem)
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }
-}
-
-/* Initialize an CPLUS_BINDING node that does not live on an obstack. */
-
-tree
-binding_init (node)
-     struct tree_binding* node;
-{
-  static struct tree_binding* source;
-  if (!source)
-    {
-      extern struct obstack permanent_obstack;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      source = (struct tree_binding*)make_node (CPLUS_BINDING);
-      pop_obstacks ();
-    }
-  *node = *source;
-  TREE_PERMANENT ((tree)node) = 0;
-  return (tree)node;
 }
 
 int
@@ -2870,11 +2853,28 @@ make_ptrmem_cst (type, member)
   return ptrmem_cst;
 }
 
-/* Initialize unsave for C++. */
+/* Mark ARG (which is really a list_hash_table **) for GC.  */
+
+static void
+mark_list_hash (arg)
+     void *arg;
+{
+  struct list_hash *lh;
+
+  for (lh = * ((struct list_hash **) arg); lh; lh = lh->next)
+    ggc_mark_tree (lh->list);
+}
+
+/* Initialize tree.c.  */
+
 void
-init_cplus_unsave ()
+init_tree ()
 {
   lang_unsave_expr_now = cplus_unsave_expr_now;
+  ggc_add_root (list_hash_table, 
+		sizeof (list_hash_table) / sizeof (struct list_hash *),
+		sizeof (struct list_hash *),
+		mark_list_hash);
 }
 
 /* The C++ version of unsave_expr_now.

@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
       BINFO_FIELDS_MARKED.
       TYPE_VIRTUAL_P.
       ICS_THIS_FLAG (in _CONV)
+      BINDING_HAS_LEVEL_P (In CPLUS_BINDING)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -139,8 +140,6 @@ typedef struct
 typedef struct 
 {
   char common[sizeof (struct tree_common)];
-  struct rtx_def *rtl;	/* Unused, but required to match up with what
-			   the middle-end expects.  */
   HOST_WIDE_INT index;
   HOST_WIDE_INT level;
   HOST_WIDE_INT orig_level;
@@ -150,6 +149,9 @@ typedef struct
 typedef struct ptrmem_cst
 {
   char common[sizeof (struct tree_common)];
+  /* This isn't used, but the middle-end expects all constants to have 
+     this field.  */
+  struct rtx_def *rtl;
   tree member;
 }* ptrmem_cst_t;
 
@@ -167,6 +169,9 @@ typedef struct ptrmem_cst
    for namespace-level bindings; on the IDENTIFIER_BINDING list
    BINDING_LEVEL is used instead.  */
 #define BINDING_SCOPE(NODE) (((struct tree_binding*)NODE)->scope.scope)
+
+/* Nonzero if NODE has BINDING_LEVEL, rather than BINDING_SCOPE.  */
+#define BINDING_HAS_LEVEL_P(NODE) TREE_LANG_FLAG_2 ((NODE))
 
 /* This is the declaration bound to the name. Possible values:
    variable, overloaded function, namespace, template, enumerator.  */
@@ -3174,7 +3179,7 @@ extern int start_function			PROTO((tree, tree, tree, int));
 extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_parm_decls			PROTO((void));
 extern void store_return_init			PROTO((tree));
-extern void finish_function			PROTO((int, int, int));
+extern void finish_function			PROTO((int, int));
 extern tree start_method			PROTO((tree, tree, tree));
 extern tree finish_method			PROTO((tree));
 extern void hack_incomplete_structures		PROTO((tree));
@@ -3376,7 +3381,7 @@ extern void reinit_parse_for_function		PROTO((void));
 extern void print_parse_statistics		PROTO((void));
 extern void extract_interface_info		PROTO((void));
 extern void do_pending_inlines			PROTO((void));
-extern void process_next_inline			PROTO((tree));
+extern void process_next_inline			PROTO((struct pending_inline *));
 extern struct pending_input *save_pending_input PROTO((void));
 extern void restore_pending_input		PROTO((struct pending_input *));
 extern void yyungetc				PROTO((int, int));
@@ -3640,7 +3645,7 @@ extern int yylex				PROTO((void));
 extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 
 /* in tree.c */
-extern void init_cplus_unsave			PROTO((void));
+extern void init_tree			        PROTO((void));
 extern void cplus_unsave_expr_now               PROTO((tree));
 extern int pod_type_p				PROTO((tree));
 extern void unshare_base_binfos			PROTO((tree));
@@ -3670,7 +3675,6 @@ extern tree reverse_path			PROTO((tree));
 extern int count_functions			PROTO((tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));
-extern tree binding_init                        PROTO((struct tree_binding*));
 extern int bound_pmf_p				PROTO((tree));
 extern tree ovl_cons                            PROTO((tree, tree));
 extern tree scratch_ovl_cons                    PROTO((tree, tree));
