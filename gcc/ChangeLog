@@ -1,3 +1,7 @@
+2003-02-07  Segher Boessenkool  <segher@koffie.nl>
+ 
+        * genoutput.c (output_get_insn_name): Handle NOOP_MOVE_INSN_CODE.
+
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	* builtin-types.def (BT_FN_FLOAT_FLOAT_FLOAT): New built-in type.

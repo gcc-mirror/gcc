@@ -419,7 +419,10 @@ output_get_insn_name ()
   printf ("get_insn_name (code)\n");
   printf ("     int code;\n");
   printf ("{\n");
-  printf ("  return insn_data[code].name;\n");
+  printf ("  if (code == NOOP_MOVE_INSN_CODE)\n");
+  printf ("    return \"NOOP_MOVE\";\n");
+  printf ("  else\n");
+  printf ("    return insn_data[code].name;\n");
   printf ("}\n");
 }
 
