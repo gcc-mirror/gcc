@@ -61,7 +61,7 @@ struct diagnostic_context;
       ICS_ELLIPSIS_FLAG (in _CONV)
       BINFO_ACCESS (in BINFO)
    2: IDENTIFIER_OPNAME_P.
-      TYPE_POLYMORHPIC_P (in _TYPE)
+      TYPE_POLYMORPHIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
       BINFO_LOST_PRIMARY_P (in BINFO)
