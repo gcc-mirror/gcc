@@ -208,7 +208,7 @@ extern char * reg_names[];
 #define VERSION_INFO1	"88open OCS/BCS, "
 #define VERSION_INFO2	"08/05/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.4 08/05/92 11:17:26"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.5 08/05/92 13:10:08"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -2300,7 +2300,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #elif defined(USING_SVR3_H)
 
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_init, in_fini
+#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_ctors, in_dtors, \
+		       in_init, in_fini
 
 #else /* m88kluna or other not based on svr[34].h.  */
 
