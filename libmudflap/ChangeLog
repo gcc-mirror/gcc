@@ -1,3 +1,13 @@
+2004-06-04  Per Bothner  <per@bothner.com>
+
+	* configure.in (LIBMUDFLAPTH):  Fix thinko.
+
+	* configure.in:  Check for more headers.
+	* mf-hooks2.c:  Conditionalize on HAVE_SYS_SOCKET_H etc.
+
+	* mf-runtime.c:  In two places conditionalize on SIUSR1 rather than
+	HAVE_SIGNAL as mingw has signal.h but not SIUSR1.
+
 2004-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Handle multilibs, support

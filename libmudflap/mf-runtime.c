@@ -296,7 +296,7 @@ options [] =
     {"collect-stats", 
      "collect statistics on mudflap's operation",
      set_option, 1, &__mf_opts.collect_stats},
-#if HAVE_SIGNAL
+#ifdef SIGUSR1
     {"sigusr1-report",
      "print report upon SIGUSR1",
      set_option, 1, &__mf_opts.sigusr1_report},
@@ -2354,7 +2354,7 @@ __mf_sigusr1_respond ()
 {
   static int handler_installed;
 
-#if HAVE_SIGNAL
+#ifdef SIGUSR1
   /* Manage handler */
   if (__mf_opts.sigusr1_report && ! handler_installed)
     {

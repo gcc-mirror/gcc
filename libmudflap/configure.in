@@ -62,7 +62,8 @@ AC_TRY_COMPILE([
 [AC_MSG_RESULT(no)
 enable_shared=no])
 
-AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h)
+AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h \
+  netdb.h sys/ipc.h sys/sem.h sys/wait.h sys/socket.h)
 AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
 
 dnl Check for 64-bit stdio calls related to Large File Support
@@ -114,7 +115,7 @@ ac_have_pthread_h=yes
 ],[
 ac_have_pthread_h=
 ])
-AM_CONDITIONAL(LIBMUDFLAPTH, [test "x$ac_have_pthread_h" != ""])
+AM_CONDITIONAL(LIBMUDFLAPTH, [test "$ac_have_pthread_h" != ""])
 
 AC_CHECK_LIB(dl, dlsym)
 

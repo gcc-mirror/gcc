@@ -3574,7 +3574,13 @@ done
 
 
 
-for ac_header in stdint.h execinfo.h signal.h dlfcn.h
+
+
+
+
+
+for ac_header in stdint.h execinfo.h signal.h dlfcn.h \
+  netdb.h sys/ipc.h sys/sem.h sys/wait.h sys/socket.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -4790,7 +4796,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4793 "configure"' > conftest.$ac_ext
+  echo '#line 4799 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5424,7 +5430,7 @@ fi
 
 
 
-if test "x$ac_have_pthread_h" != ""; then
+if test "$ac_have_pthread_h" != ""; then
   LIBMUDFLAPTH_TRUE=
   LIBMUDFLAPTH_FALSE='#'
 else
