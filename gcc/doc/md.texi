@@ -5289,12 +5289,6 @@ Lengths are measured in addressable storage units (bytes).
 The following macros can be used to refine the length computation:
 
 @table @code
-@findex FIRST_INSN_ADDRESS
-@item FIRST_INSN_ADDRESS
-When the @code{length} insn attribute is used, this macro specifies the
-value to be assigned to the address of the first insn in a function.  If
-not specified, 0 is used.
-
 @findex ADJUST_INSN_LENGTH
 @item ADJUST_INSN_LENGTH (@var{insn}, @var{length})
 If defined, modifies the length assigned to instruction @var{insn} as a

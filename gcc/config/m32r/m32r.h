@@ -1510,12 +1510,6 @@ L2:     .word STATIC
    itself with an explicit address than to call an address kept in a
    register.  */
 #define NO_RECURSIVE_FUNCTION_CSE
-
-/* When the `length' insn attribute is used, this macro specifies the
-   value to be assigned to the address of the first insn in a
-   function.  If not specified, 0 is used.  */
-#define FIRST_INSN_ADDRESS m32r_first_insn_address ()
-
 
 /* Section selection.  */
 
