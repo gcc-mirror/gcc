@@ -4374,6 +4374,7 @@ assign_parms (tree fndecl)
       int in_regs;
       int partial = 0;
       int pretend_bytes = 0;
+      int loaded_in_reg = 0;
 
       /* Set LAST_NAMED if this is last named arg before last
 	 anonymous args.  */
@@ -4745,6 +4746,7 @@ assign_parms (tree fndecl)
 	      emit_group_store (parmreg, entry_parm, TREE_TYPE (parm),
 				int_size_in_bytes (TREE_TYPE (parm)));
 	      SET_DECL_RTL (parm, parmreg);
+	      loaded_in_reg = 1;
 
 	      if (regno >= max_parm_reg)
 		{
@@ -4776,7 +4778,8 @@ assign_parms (tree fndecl)
 	     Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
 	  if (GET_CODE (entry_parm) == REG
-	      || GET_CODE (entry_parm) == PARALLEL)
+	      || (GET_CODE (entry_parm) == PARALLEL
+		 && (!loaded_in_reg || !optimize)))
 	    {
 	      int size = int_size_in_bytes (TREE_TYPE (parm));
 	      int size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
