@@ -1,3 +1,12 @@
+2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.c (mips_output_conditional_branch): Support
+	PIC-safe out-of-range branch and branch-likely.
+	* config/mips/mips.md (attr length): PIC-safe out-of-range
+	branches are longer.
+	("jump"): Support PIC-safe out-of-range-for-branch jumps.  Remove
+	unused code to support indirect jumps.
+
 2002-12-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (BIGGEST_ALIGNMENT): Change 32-bit value to 64 bits.
