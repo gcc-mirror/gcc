@@ -1,3 +1,11 @@
+2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in, NXConstStr.m, Object.m, Protocol.m, archive.c,
+	class.c, encoding.c, gc.c, objc/NXConstStr.h, objc/Object.h,
+	objc/Protocol.h, objc/encoding.h, objc/hash.h, objc/objc-api.h,
+	objc/objc-list.h, objc/objc.h, ocjc/runtime.h, objc/sarray.h,
+	objc/thr.h, objc/typedstream.h: Replace "GNU CC" with "GCC".
+
 Tue May 13 14:56:03 2003  Richard Frith-Macdonald <rfm@gnu.org>
 	                  Nicola Pero  <n.pero@mi.flashnet.it>
 
