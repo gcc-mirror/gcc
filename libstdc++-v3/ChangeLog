@@ -1,3 +1,17 @@
+2001-09-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* testsuite_flags.in:  No longer need to search testsuite builddir.
+	* src/stl-inst.cc (__sink_unused_warning):  Unused, remove.
+	* Makefile.am:  The testsuite directory never needs to be made here.
+	* Makefile.in:  Regenerate.
+	* include/Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* libmath/Makefile.in:  Regenerate.
+	* libsupc++/Makefile.in:  Regenerate.
+	* po/Makefile.in:  Regenerate.
+	* src/Makefile.in:  Regenerate.
+	* testsuite/Makefile.in:  Regenerate.
+
 2001-09-04  Scott Johnston  <scott@accom.com>
 	    Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
@@ -616,7 +630,7 @@
 
 2001-07-19  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/bits/stl_algo.h : Fix typos.
+	* include/bits/stl_algo.h : Fix typos.
 	* testsuite/25_algorithms/unique.cc: New file.
 	
 2001-07-19  Phil Edwards  <pme@sources.redhat.com>
@@ -635,7 +649,7 @@
 	* src/locale.cc:  Likewise.
 
 2001-07-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
-	    Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
+            Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
 
 	* src/gen-num-limits.cc (set_signals_handler): New function.
 	Factor out signals setting.  Set signal handler for SIGILL.
@@ -649,9 +663,9 @@
 2001-07-18  Stephen M. Webb  <stephen@bregmasoft..com>
             Roman Sulzhyk  <roman_sulzhyk@yahoo.com>
 
-        libstdc++/3599
-        * include/bits/ostream.tcc (ostream::put): Fixed error condition check.
-        * testsuite/27_io/streambuf.cc (test07): Added new regression test.
+	libstdc++/3599
+	* include/bits/ostream.tcc (ostream::put): Fixed error condition check.
+	* testsuite/27_io/streambuf.cc (test07): Added new regression test.
 
 2001-07-17  Stephen M. Webb   <stephen@bregmasoft.com>r
 
@@ -818,21 +832,21 @@
 
 2001-07-06  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-        * libmath/Makefile.am (EXTRA_DIST): Remove atan2f.c and expf.c
-        * libmath/Makefile.in: Regenerate.
-        * libmath/expf.c: Remove.
-        * libmath/atan2f.c: Likewise.
+	* libmath/Makefile.am (EXTRA_DIST): Remove atan2f.c and expf.c
+	* libmath/Makefile.in: Regenerate.
+	* libmath/expf.c: Remove.
+	* libmath/atan2f.c: Likewise.
 
 2001-07-06  Daniel Jacobowitz  <drow@mvista.com>
 
-        * configure.in: Remove NATIVE, NULL_TARGET.
-        Set CANADIAN only for Canadian crosses.  Set xcompiling
-        for both Canadian crosses and host-x-host crosses.
-        * configure: Regenerated.
+	* configure.in: Remove NATIVE, NULL_TARGET.
+	Set CANADIAN only for Canadian crosses.  Set xcompiling
+	for both Canadian crosses and host-x-host crosses.
+	* configure: Regenerated.
 
 2001-07-06  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/bits/stl_vector.h (vector::_M_initialize_aux): Fix typo.
+	* include/bits/stl_vector.h (vector::_M_initialize_aux): Fix typo.
 
 2001-07-05  Jason Merrill  <jason_merrill@redhat.com>
 
@@ -910,11 +924,11 @@
 2001-07-01  Stephen M. Webb <stephen@bregmasoft.com>
 
 	* include/bits/stl_construct.h (construct): Remove.
-      	(destroy): Remove.
-      	(__destroy): Replaced by use of iterator_traits.
+	(destroy): Remove.
+	(__destroy): Replaced by use of iterator_traits.
 	* include/bits/stl_deque.h: replaced HP iterator functions with
 	iterator_traits.
-        (construct): changed to _Construct.
+	(construct): changed to _Construct.
 	(destroy): changed to _Destroy.
 	* include/bits/stl_tempbuf.h: Same.
 	* include/bits/stl_tree.h: Same.
@@ -1079,8 +1093,8 @@
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
             Alexandre Petit-Bianco  <apbianco@redhat.com>
 
-        * testsuite/21_strings/element_access.cc (test01): Chill Out Cafe
-        is on 41st, not 14th.
+	* testsuite/21_strings/element_access.cc (test01): Chill Out Cafe
+	is on 41st, not 14th.
 
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1267,9 +1281,9 @@
 	* include/bits/stl_raw_storage_iter.h: Format. Correct derivation.
 	* testsuite/20_util/raw_storage_iterator.cc: Same.
 	
-        * include/bits/stl_alloc.h (_S_chunk_alloc): Change malloc to
-        operator new.
-        (__mem_interface): New typedef for switching between malloc and new.
+	* include/bits/stl_alloc.h (_S_chunk_alloc): Change malloc to
+	operator new.
+	(__mem_interface): New typedef for switching between malloc and new.
 	* testsuite/20_util/allocator_members.cc: New file.	
 
 	* testsuite/20_util/comparisons.cc: New file.
@@ -1557,7 +1571,7 @@
 	* include/bits/c++config: Cleanup threading configuration macros.
 	In particular, define __STL_GTHREADS macro which controls...
 	* include/bits/stl_threads.h: ...a brand new gthr.h-based
-        configuration here.
+	configuration here.
 
 	* config/c_io_stdio.h: Include staged gthr.h instead of local
 	thread configuration file.  Always use __gthread_mutex_t
@@ -1740,8 +1754,8 @@
 
 2001-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
-        get_multilibs to find gcc.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
+	get_multilibs to find gcc.
 	
 2001-05-30  Phil Edwards  <pme@sources.redhat.com>
 
@@ -1751,14 +1765,14 @@
 
 2001-05-29  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
  
-       * include/c_std/bits/std_cstdlib.h:: Move C99 thingies to __gnu_cxx::. 
-       * include/c_std/bits/std_cwchar.h (__gnu_cxx): Likewise.
+	* include/c_std/bits/std_cstdlib.h:: Move C99 thingies to __gnu_cxx::. 
+	* include/c_std/bits/std_cwchar.h (__gnu_cxx): Likewise.
  
 2001-05-27  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-       * include/c_std/bits/std_cmath.h: Move C99 functions in __gnu_cxx::.
-       * include/c_std/bits/std_cstdlib.h: Same.
-       * include/c_std/bits/std_cwchar.h: Same.
+	* include/c_std/bits/std_cmath.h: Move C99 functions in __gnu_cxx::.
+	* include/c_std/bits/std_cstdlib.h: Same.
+	* include/c_std/bits/std_cwchar.h: Same.
 
 2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -1782,10 +1796,10 @@
 	
 2001-05-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
             Phil Edwards  <pme@sources.redhat.com>
-	    Alexandre Oliva  <aoliva@redhat.com>
+            Alexandre Oliva  <aoliva@redhat.com>
 
-        * acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
-        in an amd-safe manner. Revert glibcpp_prefixdir.
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
+	in an amd-safe manner. Revert glibcpp_prefixdir.
 
 2001-05-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -1913,9 +1927,9 @@
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set flags
-        appropriately for remote testing and testing installed files without
-        a build dir.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set flags
+	appropriately for remote testing and testing installed files without
+	a build dir.
 
 2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1927,9 +1941,9 @@
 
 2001-05-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * include/bits/std_valarray.h (valarray<>::operator[] const):
-        Return a const reference. 
-        * testsuite/26_numerics/valarray_const_bracket.cc: New test.
+	* include/bits/std_valarray.h (valarray<>::operator[] const):
+	Return a const reference. 
+	* testsuite/26_numerics/valarray_const_bracket.cc: New test.
 
 2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1938,13 +1952,13 @@
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-dg-test):  Set
-        output_file based on the name of the testcase.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-dg-test):  Set
+	output_file based on the name of the testcase.
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):  Build
-        gluefile and use it if needs_status_wrapper is set.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):  Build
+	gluefile and use it if needs_status_wrapper is set.
 
 2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1972,11 +1986,11 @@
 
 2001-05-15  Zack Weinberg  <zackw@stanford.edu>
 	
-        * testsuite/21_strings/inserters_extractors.cc,
-        testsuite/27_io/istream_unformatted.cc,
-        testsuite/27_io/stringstream.cc:
-        Replace multi-line string constants with C89-style
-        concatenated string constants.
+	* testsuite/21_strings/inserters_extractors.cc,
+	testsuite/27_io/istream_unformatted.cc,
+	testsuite/27_io/stringstream.cc:
+	Replace multi-line string constants with C89-style
+	concatenated string constants.
 	
 2001-05-14  Richard Henderson  <rth@redhat.com>
 
@@ -2168,7 +2182,7 @@
 	
 2001-04-24  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/ext/slist: Include required header files. 
+	* include/ext/slist: Include required header files. 
 
 2001-04-23  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -2338,8 +2352,8 @@
 
 2001-04-06  Joe Buck  <jbuck@welsh-buck.org>
 
-        * stl_algobase.h (std::equal): avoid use of possibly-undefined
-        operator != (one line patch).
+	* stl_algobase.h (std::equal): avoid use of possibly-undefined
+	operator != (one line patch).
 
 2001-04-06   Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -2352,8 +2366,8 @@
 
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
-        * testsuite/26_numerics/c99_macros.cc: Add test.
+	* include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
+	* testsuite/26_numerics/c99_macros.cc: Add test.
 
 2001-04-06  Phil Edwards  <pme@sources.redhat.com>
 
@@ -2431,7 +2445,7 @@
 2001-04-04  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/user.cfg.in:  Extract all non-private members;
-	  reduce confusing documentation output.
+	reduce confusing documentation output.
 
 2001-04-04  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -2453,8 +2467,8 @@
 
 2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/backward/fstream.h:  Expose streampos to global
-          namespace.
+	* include/backward/fstream.h:  Expose streampos to global
+	namespace.
 	
 2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
@@ -2727,7 +2741,7 @@
 
 2001-03-21  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
-    	* intclude/bits/basic_file.h: Fix typos in comments.
+	* intclude/bits/basic_file.h: Fix typos in comments.
 
 2001-03-20  Richard Henderson  <rth@redhat.com>
 
@@ -2900,7 +2914,7 @@
 	* testsuite/27_io/istream_manip.cc (test01): Fix.
 
 2001-03-06  Nathan Myers  <ncm@cantrip.org>
-	    Benjamin Kosnik  <bkoz@redhat.com>
+            Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_cerrno.h: Don't define errno in std::.
 	* testsuite/17_intro/header_cerrno.cc (test01): New file.
@@ -3307,7 +3321,7 @@
 
 2001-02-19  Andreas Jaeger  <aj@suse.de>
 
-     	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):
+	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):
 	Fix typo.
 
 2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
@@ -3494,7 +3508,7 @@
 	dejagnu/dg.exp.
 
 2001-02-13  Dirk Mueller <dmuell@gmx.net>
-	    Phil Edwards  <pme@sources.redhat.com>
+            Phil Edwards  <pme@sources.redhat.com>
 
 	* include/backward/function.h:  Do not use rel_ops for older
 	  headers either.
@@ -3628,7 +3642,7 @@
 	(_S_copy_streambufs): Likewise.
 
 2001-02-06  Hyman Rosen  <Hyman.Rosen@kbcfp.com>
-	    Phil Edwards  <pme@sources.redhat.com>
+            Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/std_istream.h (op>> signed,unsigned char):  Must
 	  use reinterpret_cast, not static_cast.

@@ -50,27 +50,5 @@ namespace std
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
-#ifdef _GLIBCPP_CONCEPT_CHECKS
-  template
-    void __sink_unused_warning<unsigned int>(unsigned int);
+} // namespace std
 
-  template
-    void __sink_unused_warning<locale::facet*>(locale::facet*);
-
-  template
-    void __sink_unused_warning<char>(char);
-
-  template
-    void __sink_unused_warning<ostreambuf_iterator<char> >
-    (ostreambuf_iterator<char>);
-
-# ifdef _GLIBCPP_USE_WCHAR_T
-  template
-    void __sink_unused_warning<wchar_t>(wchar_t);
-
-  template
-    void __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
-    (ostreambuf_iterator<wchar_t>);
-# endif
-#endif
-} //std
