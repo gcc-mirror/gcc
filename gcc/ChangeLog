@@ -1,3 +1,9 @@
+2001-08-09  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in: Partially revert my previous change:
+	put -DGENERATOR_FILE back in HOST_CFLAGS, take it out
+	of the hashtab.o and safe-ctype.o rules.
+
 2001-08-09  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (MAYBE_USE_COLLECT2): Remove; purge all uses.
