@@ -1,3 +1,8 @@
+2000-06-26  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (resolve_field_access): Pass decl, not DECL_INITIAL, to
+	java_complete_tree.
+
 2000-06-25  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (for_statement): Wrap expression in a WFL if it is a
