@@ -252,5 +252,9 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
+#ifndef BUILD_VA_LIST_TYPE
+#define BUILD_VA_LIST_TYPE(X) ((X) = ptr_type_node)
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 
