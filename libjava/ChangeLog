@@ -1,3 +1,8 @@
+2003-06-05  Scott Gilbertson  <scottg@mantatest.com>
+
+	* java/text/SimpleDateFormat.java (SimpleDateFormat): Added
+	numberFormat.setParseIntegerOnly(true).
+
 2003-06-05  Bert Deknuydt  <Bert.Deknuydt@esat.kuleuven.ac.be>
 
 	* include/posix-threads.h: Include <machine/pal.h> on OSF.
