@@ -92,7 +92,7 @@ cp $testdir/support/*.ada $testdir/support/*.a $testdir/support/*.tst $dir/suppo
 target_gnatmake $testdir/support/impbit.adb >> $dir/acats.log 2>&1
 target_run $dir/support/impbit > $dir/support/impbit.out 2>&1
 target_bit=`cat $dir/support/impbit.out`
-display target_bit="$target_bit"
+echo target_bit="$target_bit" >> $dir/acats.log
 
 # Find out a suitable asm statement
 # Adapted from configure.ac gcc_cv_as_dwarf2_debug_line
@@ -107,7 +107,7 @@ case "$target" in
     target_insn="nop"
     ;;
 esac
-display target_insn="$target_insn"
+echo target_insn="$target_insn" >> $dir/acats.log
 
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   < $testdir/support/impdef.a > $dir/support/impdef.a
