@@ -1175,15 +1175,15 @@ extern union tree_node *current_function_decl;
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
   {							\
-    fputs ("\tldw	36(0,%%r22),%%r21\n", FILE);	\
-    fputs ("\tbb,>=,n	%%r21,30,.+16\n", FILE);	\
-    fputs ("\tdepi	0,31,2,%%r21\n", FILE);		\
-    fputs ("\tldw	4(0,%%r21),%%r19\n", FILE);	\
-    fputs ("\tldw	0(0,%%r21),%%r21\n", FILE);	\
-    fputs ("\tldsid	(0,%%r21),%%r1\n", FILE);	\
-    fputs ("\tmtsp	%%r1,%%sr0\n", FILE);		\
-    fputs ("\tbe	0(%%sr0,%%r21)\n", FILE);	\
-    fputs ("\tldw	40(0,%%r22),%%r29\n", FILE);	\
+    fputs ("\tldw	36(0,%r22),%r21\n", FILE);	\
+    fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);	\
+    fputs ("\tdepi	0,31,2,%r21\n", FILE);		\
+    fputs ("\tldw	4(0,%r21),%r19\n", FILE);	\
+    fputs ("\tldw	0(0,%r21),%r21\n", FILE);	\
+    fputs ("\tldsid	(0,%r21),%r1\n", FILE);	\
+    fputs ("\tmtsp	%r1,%sr0\n", FILE);		\
+    fputs ("\tbe	0(%sr0,%r21)\n", FILE);	\
+    fputs ("\tldw	40(0,%r22),%r29\n", FILE);	\
     fputs ("\t.word	0\n", FILE);			\
     fputs ("\t.word	0\n", FILE);			\
   }
@@ -1989,7 +1989,7 @@ DTORS_SECTION_FUNCTION
 { fputs ("\t.word ", FILE);			\
   if (function_label_operand (VALUE, VOIDmode)	\
       && !TARGET_PORTABLE_RUNTIME)		\
-    fputs ("P%%", FILE);			\
+    fputs ("P%", FILE);			\
   output_addr_const (FILE, (VALUE));		\
   fputs ("\n", FILE);}
 
