@@ -131,6 +131,10 @@ extern int target_flags;
    that are not yet switchable via command line arguments.  */
 #define TARGET_FRW_COMPAT (target_flags & 512)
 
+/* Nonzero means use the registers that the Sparc ABI reserves for
+   application software.  This is the default.  */
+#define TARGET_APP_REGS (target_flags & 1024)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -162,10 +166,12 @@ extern int target_flags;
     {"f930", 128},		\
     {"f930", -1},		\
     {"f934", 128},		\
+    {"app-regs", 1024},		\
+    {"no-app-regs", -1024},	\
     SUBTARGET_SWITCHES		\
     { "", TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT 3
+#define TARGET_DEFAULT 1024+3
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
@@ -317,7 +323,9 @@ extern int target_flags;
    and are not available for the register allocator.
    g0 is used for the condition code and not to represent %g0, which is
    hardwired to 0, so reg 0 is *not* fixed.
-   g1 through g4 are free to use as temporaries.
+   g1 is free to use as temporary.
+   g2-g4 are reserved for applications.  Gcc normally uses them as
+   temporaries, but this can be disabled via the -mno-app-regs option.
    g5 through g7 are reserved for the operating system.  */
 #define FIXED_REGISTERS  \
  {0, 0, 0, 0, 0, 1, 1, 1,	\
@@ -358,6 +366,12 @@ do								\
 	int regno;						\
 	for (regno = 32; regno < 64; regno++)			\
 	  fixed_regs[regno] = 1;				\
+      }								\
+    if (! TARGET_APP_REGS)					\
+      {								\
+	fixed_regs[2] = 1;					\
+	fixed_regs[3] = 1;					\
+	fixed_regs[4] = 1;					\
       }								\
   }								\
 while (0)
