@@ -1,3 +1,13 @@
+1998-10-13  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (specializations_of_same_template_p): Remove.
+	* search.c (get_template_base): Don't use it.
+	(get_template_base_recursive): Likewise.
+	* pt.c (specializations_of_same_template_p): Remove.
+	(unify): Don't use it.
+	(lookup_template_class): Find the correct parent when setting
+	CLASSTYPE_TI_TEMPLATE.
+	
 1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tinfo.cc (operator==): Always compare names.

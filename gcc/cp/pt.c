@@ -756,22 +756,6 @@ is_specialization_of (decl, tmpl)
   return 0;
 }
 
-/* Returns nonzero if T1 and T2 are instances of the same template.
-   (They may have different template arguments.)  */
-
-int
-specializations_of_same_template_p (t1, t2)
-     tree t1;
-     tree t2;
-{
-  /* For now, we only deal with instances of class templates, since
-     that is the only way in which this function is used.  */
-
-  return (most_general_template (CLASSTYPE_TI_TEMPLATE (t1))
-	  == most_general_template (CLASSTYPE_TI_TEMPLATE (t2)));
-}
-
-
 /* Register the specialization SPEC as a specialization of TMPL with
    the indicated ARGS.  Returns SPEC, or an equivalent prior
    declaration, if available.  */
@@ -3201,22 +3185,26 @@ classtype_mangled_name (t)
   if (CLASSTYPE_TEMPLATE_INFO (t)
       /* Specializations have already had their names set up in
 	 lookup_template_class.  */
-      && !CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
+      && !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
+    {
+      tree tmpl = most_general_template (CLASSTYPE_TI_TEMPLATE (t));
+
       /* For non-primary templates, the template parameters are
 	 implicit from their surrounding context.  */
-      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
-    {
-      tree name = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
-      char *mangled_name = mangle_class_name_for_template
-	(IDENTIFIER_POINTER (name),
-	 DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (t)),
-	 CLASSTYPE_TI_ARGS (t));
-      tree id = get_identifier (mangled_name);
-      IDENTIFIER_TEMPLATE (id) = name;
-      return id;
+      if (PRIMARY_TEMPLATE_P (tmpl))
+	{
+	  tree name = DECL_NAME (tmpl);
+	  char *mangled_name = mangle_class_name_for_template
+	    (IDENTIFIER_POINTER (name), 
+	     DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
+	     CLASSTYPE_TI_ARGS (t));
+	  tree id = get_identifier (mangled_name);
+	  IDENTIFIER_TEMPLATE (id) = name;
+	  return id;
+	}
     }
-  else
-    return TYPE_IDENTIFIER (t);
+
+  return TYPE_IDENTIFIER (t);
 }
 
 static void
@@ -3603,10 +3591,59 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       else
 	type_decl = TYPE_NAME (t);
 
-      /* Set up the template information.  */
+      /* Set up the template information.  We have to figure out which
+	 template is the immediate parent if this is a full
+	 instantiation.  */
+      if (parm_depth == 1 || is_partial_instantiation
+	  || !PRIMARY_TEMPLATE_P (template))
+	/* This case is easy; there are no member templates involved.  */
+	found = template;
+      else
+	{
+	  /* This is a full instantiation of a member template.  There
+	     should be some partial instantiation of which this is an
+	     instance.  */
+
+	  for (found = DECL_TEMPLATE_INSTANTIATIONS (template);
+	       found; found = TREE_CHAIN (found))
+	    {
+	      int success;
+	      tree tmpl = CLASSTYPE_TI_TEMPLATE (TREE_VALUE (found));
+
+	      /* We only want partial instantiations, here, not
+		 specializations or full instantiations.  */
+	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_VALUE (found))
+		  || !uses_template_parms (TREE_VALUE (found)))
+		continue;
+
+	      /* Temporarily reduce by one the number of levels in the
+		 ARGLIST and in FOUND so as to avoid comparing the
+		 last set of arguments.  */
+	      TREE_VEC_LENGTH (arglist)--;
+	      TREE_VEC_LENGTH (TREE_PURPOSE (found)) --;
+
+	      /* See if the arguments match.  If they do, then TMPL is
+		 the partial instantiation we want.  */
+	      success = comp_template_args (TREE_PURPOSE (found), arglist);
+
+	      /* Restore the argument vectors to their full size.  */
+	      TREE_VEC_LENGTH (arglist)++;
+	      TREE_VEC_LENGTH (TREE_PURPOSE (found))++;
+
+	      if (success)
+		{
+		  found = tmpl;
+		  break;
+		}
+	    }
+
+	  if (!found)
+	    my_friendly_abort (0);
+	}
+
       arglist = copy_to_permanent (arglist);
       SET_TYPE_TEMPLATE_INFO (t,
-			      tree_cons (template, arglist, NULL_TREE));
+			      tree_cons (found, arglist, NULL_TREE));  
       DECL_TEMPLATE_INSTANTIATIONS (template) 
 	= tree_cons (arglist, t, 
 		     DECL_TEMPLATE_INSTANTIATIONS (template));
@@ -7363,7 +7400,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	       derivation is involved.  */
 	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
 	  else if (CLASSTYPE_TEMPLATE_INFO (arg) 
-		   && specializations_of_same_template_p (parm, arg))
+		   && (CLASSTYPE_TI_TEMPLATE (parm) 
+		       == CLASSTYPE_TI_TEMPLATE (arg)))
 	    /* Perhaps PARM is something like S<U> and ARG is S<int>.
 	       Then, we should unify `int' and `U'.  */
 	    t = arg;

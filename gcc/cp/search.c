@@ -3317,8 +3317,7 @@ get_template_base_recursive (binfo, rval, template, via_virtual)
   tree type = BINFO_TYPE (binfo);
 
   if (CLASSTYPE_TEMPLATE_INFO (type)
-      && specializations_of_same_template_p (TREE_TYPE (template), 
-					     type))
+      && CLASSTYPE_TI_TEMPLATE (type) == template)
     {
       if (rval == NULL_TREE || rval == type)
 	return type;
@@ -3376,8 +3375,7 @@ get_template_base (template, binfo)
     my_friendly_abort (92);
 
   if (CLASSTYPE_TEMPLATE_INFO (type)
-      && specializations_of_same_template_p (TREE_TYPE (template), 
-					     type))
+      && CLASSTYPE_TI_TEMPLATE (type) == template)
     return type;
 
   rval = get_template_base_recursive (binfo, NULL_TREE, template, 0);
