@@ -5242,7 +5242,7 @@ assign_parms (tree fndecl)
 		  imag = gen_lowpart_SUBREG (inner, imag);
 		}
 	      tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
-	      set_decl_incoming_rtl (parm, tmp);
+	      DECL_INCOMING_RTL (parm) = tmp;
 	      fnargs = TREE_CHAIN (fnargs);
 	    }
 	  else
