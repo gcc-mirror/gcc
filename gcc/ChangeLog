@@ -1,3 +1,11 @@
+Fri Aug  4 23:01:58 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* function.c (schedule_fixup_var_refs): New function, broken out
+	of put_reg_into_stack.
+	(put_reg_into_stack): Use it.
+	(put_var_into_stack): In CONCAT case, fixup up references for
+	components only after fixing up references to the whole concat.
+
 2000-08-04  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* alias.c (mark_constant_function): Use INSN_P.
