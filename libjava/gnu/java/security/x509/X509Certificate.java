@@ -41,9 +41,12 @@ package gnu.java.security.x509;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 import java.math.BigInteger;
+
+import java.net.InetAddress;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
@@ -421,7 +424,7 @@ public class X509Certificate extends java.security.cert.X509Certificate
     return subjectKey;
   }
 
-  public Object writeReplace() throws java.io.ObjectStreamException
+  public Object writeReplace() throws ObjectStreamException
   {
     return super.writeReplace();
   }
@@ -469,7 +472,7 @@ public class X509Certificate extends java.security.cert.X509Certificate
                   nameVal = new String((byte[]) name.getValue());
                   break;
                 case IP_ADDRESS:
-                  nameVal = java.net.InetAddress.getByAddress(
+                  nameVal = InetAddress.getByAddress(
                     (byte[]) name.getValue()).getHostAddress();
                   break;
                 case REGISTERED_ID:
