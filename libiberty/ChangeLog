@@ -1,3 +1,8 @@
+2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* dyn-string.c: Remove test of IN_LIBGCC2 and IN_GLIBCPP_V3 and
+	the associated #define of RETURN_ON_ALLOCATION_FAILURE.
+
 2004-02-16  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* regex.c: Include <ansidecl.h>.
