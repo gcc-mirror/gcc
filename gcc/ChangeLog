@@ -1,3 +1,9 @@
+2003-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/10602
+	* c-typeck.c (type_lists_compatible_p): Do not compare
+	arguments if one of them is an error_mark_node
+
 2003-07-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Save fp regs inline
