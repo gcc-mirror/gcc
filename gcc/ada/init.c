@@ -291,7 +291,7 @@ __gnat_set_globals (int main_priority,
    as the faulting instruction address in the corresponding signal context
    pushed by the kernel. Leaving this address untouched may loose, because if
    the triggering instruction happens to be the very first of a region, the
-   later adjustements performed by the unwinder would yield an address outside
+   later adjustments performed by the unwinder would yield an address outside
    that region. We need to compensate for those adjustments at some point,
    which we currently do in the GCC unwinding fallback macro.
 
@@ -1291,7 +1291,7 @@ extern Exception_Code Base_Code_In (Exception_Code);
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    Most of these are also defined in the header file ssdef.h which has not
-   yet been converted to be recoginized by Gnu C. Some, which couldn't be
+   yet been converted to be recognized by Gnu C. Some, which couldn't be
    located, are assigned names based on the DEC test suite tests which
    raise them. */
 
@@ -1337,7 +1337,7 @@ long __gnat_error_handler (int *, void *);
    ??? This is not a perfect solution to deal with the possible
    interactions between the GNAT and the DECAda exception handling
    models and better (more general) schemes are studied.  This is so
-   just provided as a conveniency workaround in the meantime, and
+   just provided as a convenient workaround in the meantime, and
    should be use with caution since the implementation has been kept
    very simple.  */
 
@@ -1761,7 +1761,7 @@ __gnat_init_float (void)
   asm ("mtfsb0 26");
 #endif
 
-  /* Similarily for sparc64. Achieved by masking bits in the Trap Enable Mask
+  /* Similarly for sparc64. Achieved by masking bits in the Trap Enable Mask
      field of the Floating-point Status Register (see the Sparc Architecture
      Manual Version 9, p 48).  */
 #if defined (sparc64)

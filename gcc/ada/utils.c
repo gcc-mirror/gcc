@@ -1554,7 +1554,7 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
 
 /* Given 2 consecutive field decls PREV_FIELD and CURR_FIELD, return true
    unless we can prove these 2 fields are laid out in such a way that no gap
-   exist between the end of PREV_FIELD and the begining of CURR_FIELD.  OFFSET
+   exist between the end of PREV_FIELD and the beginning of CURR_FIELD.  OFFSET
    is the distance in bits between the end of PREV_FIELD and the starting
    position of CURR_FIELD. It is ignored if null. */
 
@@ -1573,7 +1573,7 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
   if (TREE_CODE (TREE_TYPE (prev_field)) == QUAL_UNION_TYPE)
     return false;
 
-  /* If the distance between the end of prev_field and the begining of
+  /* If the distance between the end of prev_field and the beginning of
      curr_field is constant, then there is a gap if the value of this
      constant is not null. */
   if (offset && host_integerp (offset, 1))
@@ -2705,7 +2705,7 @@ convert (tree type, tree expr)
 
       /* If the result type is a padded type with a self-referentially-sized
 	 field and the expression type is a record, do this as an
-	 unchecked converstion.  */
+	 unchecked conversion.  */
       else if (TREE_CODE (etype) == RECORD_TYPE
 	       && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
 	return unchecked_convert (type, expr, false);
@@ -3075,7 +3075,7 @@ maybe_unconstrained_array (tree exp)
   return exp;
 }
 
-/* Return an expression that does an unchecked converstion of EXPR to TYPE.
+/* Return an expression that does an unchecked conversion of EXPR to TYPE.
    If NOTRUNC_P is true, truncation operations should be suppressed.  */
 
 tree

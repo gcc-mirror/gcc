@@ -31,7 +31,7 @@
  ****************************************************************************/
 
 /*  This file contains those routines named by Import pragmas in package    */
-/*  GNAT.Calendar. It is used to to Duration to timeval convertion.         */
+/*  GNAT.Calendar. It is used to do Duration to timeval conversion.         */
 /*  These are simple wrappers function to abstarct the fact that the C      */
 /*  struct timeval fields type are not normalized (they are generaly        */
 /*  defined as int or long values).                                         */
@@ -75,7 +75,7 @@ __gnat_timeval_to_duration (struct timeval *t, long *sec, long *usec)
 void
 __gnat_duration_to_timeval (long sec, long usec, struct timeval *t)
 {
-  /* here we are doing implicit convertion from a long to the struct timeval
+  /* here we are doing implicit conversion from a long to the struct timeval
      fields types. */
 
   t->tv_sec = sec;

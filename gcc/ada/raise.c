@@ -469,7 +469,7 @@ db_phases (int phases)
 
 /* This is an incomplete "proxy" of the structure of exception objects as
    built by the GNAT runtime library. Accesses to other fields than the common
-   header are performed through subprogram calls to aleviate the need of an
+   header are performed through subprogram calls to alleviate the need of an
    exact counterpart here and potential alignment/size issues for the common
    header. See a-exexpr.adb.  */
 
@@ -854,7 +854,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 
   /* Base matching rules: An exception data (id) matches itself, "when
      all_others" matches anything and "when others" matches anything unless
-     explicitely stated otherwise in the propagated occurrence.  */
+     explicitly stated otherwise in the propagated occurrence.  */
 
   bool is_handled =
     choice == E
@@ -970,7 +970,7 @@ get_action_description_for (_Unwind_Context *uw_context,
 
 /* Setup in UW_CONTEXT the eh return target IP and data registers, which will
    be restored with the others and retrieved by the landing pad once the jump
-   occured.  */
+   occurred.  */
 
 static void
 setup_to_install (_Unwind_Context *uw_context,

@@ -504,7 +504,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
     rhs = fold (build2 (MINUS_EXPR, type, modulus, rhs)), op_code = MINUS_EXPR;
 
   /* For the logical operations, we only need PRECISION bits.  For
-     addition and subraction, we need one more and for multiplication we
+     addition and subtraction, we need one more and for multiplication we
      need twice as many.  But we never want to make a size smaller than
      our size. */
   if (op_code == PLUS_EXPR || op_code == MINUS_EXPR)

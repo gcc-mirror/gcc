@@ -1,3 +1,9 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* adaint.c, cal.c, decl.c, gigi.h, gmem.c, init.c, link.c,
+	raise.c, tracebak.c, trans.c, utils2.c, utils.c: Fix comment
+	typos.
+
 2005-03-30  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (gnat_substitute_in_type): Don't handle FILE_TYPE.
