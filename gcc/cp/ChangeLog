@@ -1,3 +1,7 @@
+2004-11-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* parser.c: Fix comment typos.
+
 2004-11-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18368
