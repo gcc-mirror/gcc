@@ -73,8 +73,7 @@ namespace std
       use_facet(const locale&);
 
     template<typename _Cache>
-      friend const _Cache&
-      __use_cache(const locale& __loc);
+      friend struct __use_cache;
    
     // Category values:
     // NB: Order must match _S_facet_categories definition in locale.cc
@@ -298,8 +297,7 @@ namespace std
       use_facet(const locale&);
 
     template<typename _Cache>
-      friend const _Cache&
-      __use_cache(const locale& __loc);
+      friend struct __use_cache;
 
   private:
     // Data Members.
@@ -370,7 +368,7 @@ namespace std
       { _M_install_facet(&_Facet::id, __facet); }
 
     void
-    _M_install_cache(const facet* __cache, size_t __index)
+    _M_install_cache(const facet* __cache, size_t __index) throw()
     { 
       __cache->_M_add_reference();
       _M_caches[__index] = __cache; 

@@ -1,3 +1,24 @@
+2003-07-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc: Use function object for
+	__use_cache instead of template function. Partially specialize for 
+	__numpunct<_CharT>.
+	* include/bits/locale_classes.h: Update friend declaration for
+	__use_cache.
+	(_M_install_cache): No throw exception specs.
+	* src/locale.cc: Remove __use_cache specializations.
+	* include/ext/pod_char_traits.h (length): Tweak.
+	* include/bits/locale_facets.h (__numpunct_cache): Remove
+	char_type typedef.
+	* testsuite/testsuite_hooks.h (pod_unsigned_int): Remove.
+	(pod_long): Remove.
+	* testsuite/22_locale/numpunct/members/char/cache_1.cc: New.
+	* testsuite/22_locale/numpunct/members/char/cache_2.cc: New.
+	* testsuite/22_locale/numpunct/members/wchar_t/cache_1.cc: New.
+	* testsuite/22_locale/numpunct/members/wchar_t/cache_2.cc: New.
+	* testsuite/22_locale/numpunct/members/pod/1.cc: New.
+	* testsuite/22_locale/numpunct/members/pod/2.cc: New.
+	
 2003-07-09  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/ios.cc (_M_grow_words):  Fix spelling.
