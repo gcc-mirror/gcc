@@ -4674,3 +4674,31 @@ while (0)
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
+
+/* Since the bits of the _init and _fini function is spread across
+   many object files, each potentially with its own GP, we must assume
+   we need to load our GP.  We don't preserve $gp or $ra, since each
+   init/fini chunk is supposed to initialize $gp, and crti/crtn
+   already take care of preserving $ra and, when appropriate, $gp.  */
+#if _MIPS_SIM == _MIPS_SIM_ABI32
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n\
+	.set noreorder\n\
+	bal 1f\n\
+	nop\n\
+1:	.cpload $31\n\
+	.set reorder\n\
+	jal " USER_LABEL_PREFIX #FUNC "\n\
+	" TEXT_SECTION_ASM_OP);
+#elif (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
+   || (defined _ABI64 && _MIPS_SIM == _ABI64)
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n\
+	.set noreorder\n\
+	bal 1f\n\
+	nop\n\
+1:	.set reorder\n\
+	.cpsetup $31, $2, 1b\n\
+	jal " USER_LABEL_PREFIX #FUNC "\n\
+	" TEXT_SECTION_ASM_OP);
+#endif

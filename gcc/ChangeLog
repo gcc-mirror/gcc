@@ -1,3 +1,8 @@
+2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Define so as
+	to set $gp before the call.
+
 2003-01-14  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_mov): Use correct mode
