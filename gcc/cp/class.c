@@ -671,6 +671,9 @@ set_rtti_entry (virtuals, offset, type)
 {
   tree vfn;
 
+  if (CLASSTYPE_COM_INTERFACE (type))
+    return;
+
   if (flag_rtti)
     vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, get_tinfo_fn (type));
   else
@@ -1035,10 +1038,14 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
       CLASSTYPE_RTTI (t) = t;
 
       /* If we are using thunks, use two slots at the front, one
-	 for the offset pointer, one for the tdesc pointer.  */
-      if (*has_virtual == 0 && flag_vtable_thunks)
+	 for the offset pointer, one for the tdesc pointer.
+         For ARM-style vtables, use the same slot for both.  */
+      if (*has_virtual == 0 && ! CLASSTYPE_COM_INTERFACE (t))
 	{
-	  *has_virtual = 1;
+	  if (flag_vtable_thunks)
+	    *has_virtual = 2;
+	  else
+	    *has_virtual = 1;
 	}
 
       /* Build a new INT_CST for this DECL_VINDEX.  */
@@ -1046,7 +1053,7 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 	static tree index_table[256];
 	tree idx;
 	/* We skip a slot for the offset/tdesc entry.  */
-	int i = ++(*has_virtual);
+	int i = (*has_virtual)++;
 
 	if (i >= 256 || index_table[i] == 0)
 	  {
@@ -1633,6 +1640,21 @@ finish_base_struct (t, b)
       TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
+
+      if (CLASSTYPE_COM_INTERFACE (basetype))
+	{
+	  CLASSTYPE_COM_INTERFACE (t) = 1;
+	  if (i > 0)
+	    cp_error
+	      ("COM interface type `%T' must be the leftmost base class",
+	       basetype);
+	}
+      else if (CLASSTYPE_COM_INTERFACE (t))
+	{
+	  cp_error ("COM interface type `%T' with non-COM base class `%T'",
+		    t, basetype);
+	  CLASSTYPE_COM_INTERFACE (t) = 0;
+	}
 
       if (TYPE_VIRTUAL_P (basetype))
 	{
@@ -2285,10 +2307,13 @@ get_class_offset (context, t, binfo, fndecl)
 /* Skip RTTI information at the front of the virtual list.  */
 
 unsigned HOST_WIDE_INT
-skip_rtti_stuff (virtuals)
-     tree *virtuals;
+skip_rtti_stuff (virtuals, t)
+     tree *virtuals, t;
 {
   int n;
+
+  if (CLASSTYPE_COM_INTERFACE (t))
+    return 0;
 
   n = 0;
   if (*virtuals)
@@ -2331,7 +2356,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
   if (fndecl == NULL_TREE)
     return;
 
-  n = skip_rtti_stuff (&virtuals);
+  n = skip_rtti_stuff (&virtuals, t);
 
   while (virtuals)
     {
@@ -2425,7 +2450,7 @@ fixup_vtable_deltas1 (binfo, t)
   tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
   
-  n = skip_rtti_stuff (&virtuals);
+  n = skip_rtti_stuff (&virtuals, t);
 
   while (virtuals)
     {
@@ -2598,8 +2623,8 @@ override_one_vtable (binfo, old, t)
   if (BINFO_NEW_VTABLE_MARKED (binfo))
     choose = NEITHER;
 
-  skip_rtti_stuff (&virtuals);
-  skip_rtti_stuff (&old_virtuals);
+  skip_rtti_stuff (&virtuals, t);
+  skip_rtti_stuff (&old_virtuals, t);
 
   while (virtuals)
     {
@@ -3874,15 +3899,18 @@ finish_struct_1 (t, warn_anon)
       /* We must enter these virtuals into the table.  */
       if (first_vfn_base_index < 0)
 	{
-	  /* The second slot is for the tdesc pointer when thunks are used.  */
-	  if (flag_vtable_thunks)
-	    pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
+	  if (! CLASSTYPE_COM_INTERFACE (t))
+	    {
+	      /* The second slot is for the tdesc pointer when thunks are used.  */
+	      if (flag_vtable_thunks)
+		pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-	  /* The first slot is for the rtti offset.  */
-	  pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
+	      /* The first slot is for the rtti offset.  */
+	      pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-	  set_rtti_entry (pending_virtuals,
-			  convert (ssizetype, integer_zero_node), t);
+	      set_rtti_entry (pending_virtuals,
+			      convert (ssizetype, integer_zero_node), t);
+	    }
 	  build_vtable (NULL_TREE, t);
 	}
       else

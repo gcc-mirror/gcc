@@ -1,5 +1,18 @@
 1999-04-12  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (struct lang_type): Add com_interface.
+	(CLASSTYPE_COM_INTERFACE): New macro.
+	* class.c (set_rtti_entry): COM interface classes have no RTTI 
+	entries in their vtables; adjust.
+	(add_virtual_function, finish_base_struct, skip_rtti_stuff,
+	modify_one_vtable, fixup_vtable_deltas1, override_one_vtable, 
+	finish_struct_1): Likewise.
+	* decl2.c (mark_vtable_entries): Likewise.
+	* rtti.c (build_headof, get_tinfo_fn_dynamic): Likewise.
+	* search.c (get_abstract_virtuals_1, get_abstract_virtuals,
+	expand_upcast_fixups): Likewise.
+	* tree.c (debug_binfo): Likewise.
+
 	* cp-tree.h (COMPARE_NO_ATTRIBUTES): New macro.
 	* typeck.c (comptypes): If we get it, ignore attributes.
 	* class.c (instantiate_type): Use BASELINK_P.  Change complain

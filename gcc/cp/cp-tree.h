@@ -736,11 +736,12 @@ struct lang_type
       unsigned non_aggregate : 1;
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
+      unsigned com_interface : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 11;
+      unsigned dummy : 10;
     } type_flags;
 
   int vsize;
@@ -1009,6 +1010,10 @@ struct lang_type
 /* Nonzero means that this type contains a mutable member */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
+
+/* Nonzero means that this type is meant for communication via COM.  */
+#define CLASSTYPE_COM_INTERFACE(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->type_flags.com_interface)
 
 /* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
@@ -2724,7 +2729,7 @@ extern void pop_lang_context			PROTO((void));
 extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
 extern void maybe_push_cache_obstack		PROTO((void));
-extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
+extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *, tree));
 extern void build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
 extern tree get_enclosing_class			PROTO((tree));

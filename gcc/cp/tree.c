@@ -1169,7 +1169,7 @@ debug_binfo (elem)
   fprintf (stderr, "virtuals:\n");
   virtuals = BINFO_VIRTUALS (elem);
 
-  n = skip_rtti_stuff (&virtuals);
+  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (elem));
 
   while (virtuals)
     {
