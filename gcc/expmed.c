@@ -2652,7 +2652,7 @@ make_tree (type, x)
     {
     case CONST_INT:
       t = build_int_2 (INTVAL (x),
-		       ! TREE_UNSIGNED (type) && INTVAL (x) >= 0 ? 0 : -1);
+		       TREE_UNSIGNED (type) || INTVAL (x) >= 0 ? 0 : -1);
       TREE_TYPE (t) = type;
       return t;
 
