@@ -82,6 +82,8 @@ Target specific NEWS
          move instructions has been fixed and enabled.  Random changes
 	 throughout the port to make generated code more Pentium friendly.
          Improved support for 64bit integer operations.
+         Unixware 7, a System V Release 5 target is now supported.
+         SCO OpenServer targets can support GAS.  See gcc/INSTALL for details.
 
     RS6000/PowerPC: Includes AIX4.3 support as well as PowerPC64 support.  
                     Haifa instruction scheduling is enabled by default now.
