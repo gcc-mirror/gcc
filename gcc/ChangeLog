@@ -1,3 +1,13 @@
+2001-08-24  Zack Weinberg  <zackw@panix.com>
+
+	* expmed.c: Default-#define HAVE_insv, HAVE_extv, and HAVE_extzv
+	to zero.
+	(mode_for_extraction): No need for #ifdefs.  Add default-case abort
+	to switch.
+	(store_bit_field): Eliminate insv_bitsize variable.  Put HAVE_insv
+	in if controlling use of insv.
+	(extract_bit_field): Likewise, for extv and extzv.
+
 Fri Aug 24 17:27:46 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movcc peep2): Fix load of 0.
