@@ -1,4 +1,12 @@
-<<<<<<< ChangeLog
+2002-01-22  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (some_small_symbolic_mem_operand) Use
+	for_each_rtx instead of assuming we're already looking at the MEM.
+	(split_small_symbolic_mem_operand): Likewise.
+	* config/alpha/alpha.h (PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (small symbolic memory splitters): Update.
+
+2002-01-22  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (divmodsi_internal_er): Generate lituse
 	sequence number for the literal.

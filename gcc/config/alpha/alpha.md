@@ -5501,18 +5501,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "operands[2] = pic_offset_table_rtx;")
 
 (define_split
-  [(set (match_operand 0 "some_small_symbolic_mem_operand" "")
-	(match_operand 1 "" ""))]
+  [(match_operand 0 "some_small_symbolic_mem_operand" "")]
   "TARGET_EXPLICIT_RELOCS && reload_completed"
-  [(set (match_dup 0) (match_dup 1))]
+  [(match_dup 0)]
   "operands[0] = split_small_symbolic_mem_operand (operands[0]);")
-
-(define_split
-  [(set (match_operand 0 "" "")
-	(match_operand 1 "some_small_symbolic_mem_operand" ""))]
-  "TARGET_EXPLICIT_RELOCS && reload_completed"
-  [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = split_small_symbolic_mem_operand (operands[1]);")
 
 (define_insn "movdi_er_high_g"
   [(set (match_operand:DI 0 "register_operand" "=r")
