@@ -1248,7 +1248,7 @@ recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
 reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
    regs.h hard-reg-set.h flags.h insn-config.h
 
-$(out_object_file): $(out_file) $(CONFIG_H) \
+$(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)
