@@ -1,3 +1,8 @@
+2004-02-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in: Install man pages under the same names
+	(possibly transformed) as the program they document.
+
 2004-02-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gjavah.c: Include "intl.h".
