@@ -1,5 +1,21 @@
 2000-06-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (vcall_offset_data_s): Add last_init and fns.
+	(overrides): Rename to same_signature_p.
+	(dfs_find_final_overrider): Adjust accordingly.
+	(mark_overriders): Likewise.
+	(warn_hidden): Likewise.
+	(build_vtbl_initializer): Reorganize machinery for building things
+	at negative offsets.
+	(build_vcall_and_vbase_vtbl_entries): Likewise.
+	(build_vbase_offset_vtbl_entries): Likewise.
+	(dfs_build_vcall_offset_vtbl_entries): Correct order of vcall
+	offset entries.  Do not create two entries for functions with the
+	same signature.
+	(build_vcall_offset_vtbl_entries): Initialize vod->fns.
+	(build_rtti_vtbl_entries): Reorganize machinery for building things
+	at negative offsets.
+
 	* optimize.c (expand_call_inline): Don't recurse into the code
 	used to initialize the parameters more than once.
 
