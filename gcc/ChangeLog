@@ -1,3 +1,9 @@
+Fri Feb  7 22:26:51 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse2_nandv2di3):  Fix.
+
+	* i386.md (movdi_rex64_1): Fix mmx<->int move opcode.
+
 2003-02-07  Andrey Petrov <petrov@netbsd.org>
 
         * optabs.c (expand_float): Search wider integer modes first.
