@@ -1,3 +1,11 @@
+1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (comp_cv_target_types): Split out...
+	(comp_target_types): From here.  Don't allow cv-qual changes under
+	a pointer if nptrs == 0.  Fix OFFSET_TYPE handling.
+	(build_ptrmemfunc): Pass 1 to nptrs.
+	* cvt.c (perform_qualification_conversions): Use comp_ptr_ttypes.
+
 1998-08-25  Mark Mitchell  <mark@markmitchell.com>
 
 	* search.c (dependent_base_p): Don't compare a binfo to
