@@ -191,16 +191,13 @@ java.install-info:
 
 java.mostlyclean:
 	-rm -f java/*$(objext) $(DEMANGLER_PROG)
-# CYGNUS LOCAL - Delete these files here instead of in realclean because they
-# are now created in the build subdirectories.
-	-rm -f java/parse.c java/parse-scan.c java/parse.output java/y.tab.c
 java.clean:
 java.distclean:
 	-rm -f java/config.status java/Makefile
 	-rm -f java/parse.output
 java.extraclean:
 java.maintainer-clean:
-
+	-rm -f java/parse.c java/parse-scan.c java/parse.output java/y.tab.c
 
 # Stage hooks:
 # The main makefile has already created stage?/java.

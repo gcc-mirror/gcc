@@ -431,6 +431,8 @@ init_decl_processing ()
   TREE_TYPE (size_zero_node) = sizetype;
   size_one_node = build_int_2 (1, 0);
   TREE_TYPE (size_one_node) = sizetype;
+  /* Used by the parser to represent empty statements and blocks. */
+  CAN_COMPLETE_NORMALLY (size_zero_node) = 1;
 
   byte_type_node = make_signed_type (8);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("byte"), byte_type_node));
