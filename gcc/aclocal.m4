@@ -61,6 +61,38 @@ GCC_NEED_DECLARATION($ac_func, $2)
 done
 ])
 
+dnl Use <inttypes.h> only if it exists,
+dnl doesn't clash with <sys/types.h>, and declares intmax_t.
+AC_DEFUN(GCC_HEADER_INTTYPES,
+[AC_MSG_CHECKING(for inttypes.h)
+AC_CACHE_VAL(gcc_cv_header_inttypes_h,
+[AC_TRY_COMPILE(
+  [#include <sys/types.h>
+#include <inttypes.h>],
+  [intmax_t i = -1;],
+  gcc_cv_header_inttypes_h=yes,
+  gcc_cv_header_inttypes_h=no)])
+AC_MSG_RESULT($gcc_cv_header_inttypes_h)
+if test $gcc_cv_header_inttypes_h = yes; then
+  AC_DEFINE(HAVE_INTTYPES_H)
+fi
+])
+
+dnl See if the system preprocessor understands the ANSI C preprocessor
+dnl stringification operator.
+AC_DEFUN(GCC_CHECK_STRINGIFY,
+[AC_MSG_CHECKING(whether cpp understands the stringify operator)
+AC_CACHE_VAL(gcc_cv_c_have_stringify,
+[AC_TRY_COMPILE(,
+[#define S(x)   #x
+char *test = S(foo);],
+gcc_cv_c_have_stringify=yes, gcc_cv_c_have_stringify=no)])
+AC_MSG_RESULT($gcc_cv_c_have_stringify)
+if test $gcc_cv_c_have_stringify = yes; then
+  AC_DEFINE(HAVE_CPP_STRINGIFY)
+fi
+])
+
 dnl Check if we have vprintf and possibly _doprnt.
 dnl Note autoconf checks for vprintf even though we care about vfprintf.
 AC_DEFUN(GCC_FUNC_VFPRINTF_DOPRNT,
