@@ -477,6 +477,10 @@ proper position among the other output files.  */
 #endif
 #endif
 
+#ifndef LINKER_NAME
+#define LINKER_NAME "collect2"
+#endif
+
 static char *cpp_spec = CPP_SPEC;
 static char *cpp_predefines = CPP_PREDEFINES;
 static char *cc1_spec = CC1_SPEC;
@@ -490,6 +494,7 @@ static char *libgcc_spec = LIBGCC_SPEC;
 static char *endfile_spec = ENDFILE_SPEC;
 static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
+static char *linker_name_spec = LINKER_NAME;
 
 /* Some compilers have limits on line lengths, and the multilib_select
    and/or multilib_matches strings can be very long, so we build them at
@@ -708,7 +713,7 @@ static int n_default_compilers
 /* Don't generate -L options.  */
 static char *link_command_spec = "\
 %{!fsyntax-only: \
- %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+ %{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 			%{static:} %{L*} %o\
@@ -720,7 +725,7 @@ static char *link_command_spec = "\
 /* Use -L.  */
 static char *link_command_spec = "\
 %{!fsyntax-only: \
- %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+ %{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 			%{static:} %{L*} %D %o\
@@ -1093,6 +1098,7 @@ static struct spec_list static_specs[] = {
   INIT_STATIC_SPEC ("multilib_defaults",	&multilib_defaults),
   INIT_STATIC_SPEC ("multilib_extra",		&multilib_extra),
   INIT_STATIC_SPEC ("multilib_matches",		&multilib_matches),
+  INIT_STATIC_SPEC ("linker",			&linker_name_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -2130,6 +2136,7 @@ execute ()
   commands[0].prog = argbuf[0]; /* first command.  */
   commands[0].argv = &argbuf[0];
   string = find_a_file (&exec_prefixes, commands[0].prog, X_OK);
+
   if (string)
     commands[0].argv[0] = string;
 
@@ -4797,6 +4804,13 @@ main (argc, argv)
     {
       int tmp = execution_count;
 
+      /* We'll use ld if we can't find collect2. */
+      if (! strcmp (linker_name_spec, "collect2"))
+	{
+	  char *s = find_a_file (&exec_prefixes, "collect2", X_OK);
+	  if (s == NULL)
+	    linker_name_spec = "ld";
+	}
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
       putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH=");

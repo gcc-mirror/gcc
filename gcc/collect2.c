@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 #include "demangle.h"
 #include "obstack.h"
 #include "gansidecl.h"
+#ifdef __CYGWIN32__
+#include <process.h>
+#endif
 
 #ifndef HAVE_STRERROR
 extern char *sys_errlist[];
@@ -281,7 +284,6 @@ void collect_execute		PROTO((char *, char **, char *));
 void dump_file			PROTO((char *));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
-static int is_in_prefix_list	PROTO((struct path_prefix *, char *, int));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
 static void add_prefix		PROTO((struct path_prefix *, char *));
 static void prefix_from_env	PROTO((char *, struct path_prefix *));
@@ -733,48 +735,6 @@ static struct path_prefix cpath, path;
 static char *target_machine = TARGET_MACHINE;
 #endif
 
-/* Names under which we were executed.  Never return one of those files in our
-   searches.  */
-
-static struct path_prefix our_file_names;
-
-/* Determine if STRING is in PPREFIX.
-
-   This utility is currently only used to look up file names.  Prefix lists
-   record directory names.  This matters to us because the latter has a 
-   trailing slash, so I've added a flag to handle both.  */
-
-static int
-is_in_prefix_list (pprefix, string, filep)
-     struct path_prefix *pprefix;
-     char *string;
-     int filep;
-{
-  struct prefix_list *pl;
-
-  if (filep)
-    {
-      int len = strlen (string);
-
-      for (pl = pprefix->plist; pl; pl = pl->next)
-	{
-	  if (strncmp (pl->prefix, string, len) == 0
-	      && strcmp (pl->prefix + len, "/") == 0)
-	    return 1;
-	}
-    }
-  else
-    {
-      for (pl = pprefix->plist; pl; pl = pl->next)
-	{
-	  if (strcmp (pl->prefix, string) == 0)
-	    return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
    files. 
 
@@ -825,40 +785,18 @@ find_a_file (pprefix, name)
       {
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
-
-	if (debug)
-	  fprintf (stderr, "  - try: %s\n", temp);
 	
-	if (! is_in_prefix_list (&our_file_names, temp, 1)
-	    /* This is a kludge, but there seems no way around it.  */
-	    && strcmp (temp, "./ld") != 0
-	    && access (temp, X_OK) == 0)
-	  {
-	    if (debug)
-	      fprintf (stderr, "  - found!\n");
-	    
-	    return temp;
-	  }
+	if (access (temp, X_OK) == 0)
+	  return temp;
 
 #ifdef EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
 	
-	if (debug)
-	  fprintf (stderr, "  - try: %s\n", temp);
-	
-	if (! is_in_prefix_list (&our_file_names, temp, 1)
-	    && access (temp, X_OK) == 0)
-	  {
-	    if (debug)
-	      fprintf (stderr, "  - found!  (Uses executable suffix)\n");
-	    
-	    return temp;
-	  }
+	if (access (temp, X_OK) == 0)
+	  return temp;
 #endif
-	if (debug && pl->next == NULL)
-	  fprintf (stderr, "  - failed to locate using relative paths\n");
       }
 
   if (debug && pprefix->plist == NULL)
@@ -990,8 +928,6 @@ main (argc, argv)
   FILE *importf;
 #endif
   char *ld_file_name;
-  char *collect_name;
-  char *collect_names;
   char *p;
   char **c_argv;
   char **c_ptr;
@@ -1029,51 +965,8 @@ main (argc, argv)
   obstack_begin (&temporary_obstack, 0);
   obstack_begin (&permanent_obstack, 0);
   temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
+
   current_demangling_style = gnu_demangling;
-
-  /* We must check that we do not call ourselves in an infinite
-     recursion loop. We append the name used for us to the COLLECT_NAMES
-     environment variable.
-
-     In practice, collect will rarely invoke itself.  This can happen now
-     that we are no longer called gld.  A perfect example is when running
-     gcc in a build directory that has been installed.  When looking for
-     ld's, we will find our installed version and believe that's the real ld.  */
-
-  /* We must also append COLLECT_NAME to COLLECT_NAMES to watch for the
-     previous version of collect (the one that used COLLECT_NAME and only
-     handled two levels of recursion).  If we do not we may mutually recurse
-     forever.  This can happen (I think) when bootstrapping the old version
-     and a new one is installed (rare, but we should handle it).
-     ??? Hopefully references to COLLECT_NAME can be removed at some point.  */
-
-  GET_ENVIRONMENT (collect_name,  "COLLECT_NAME");
-  GET_ENVIRONMENT (collect_names, "COLLECT_NAMES");
-
-  p = (char *) xmalloc (strlen ("COLLECT_NAMES=")
-			+ (collect_name ? strlen (collect_name) + 1 : 0)
-			+ (collect_names ? strlen (collect_names) + 1 : 0)
-			+ strlen (argv[0]) + 1);
-  strcpy (p, "COLLECT_NAMES=");
-  if (collect_name != 0)
-    sprintf (p + strlen (p), "%s%c", collect_name, PATH_SEPARATOR);
-  if (collect_names != 0)
-    sprintf (p + strlen (p), "%s%c", collect_names, PATH_SEPARATOR);
-  strcat (p, argv[0]);
-  putenv (p);
-
-  prefix_from_env ("COLLECT_NAMES", &our_file_names);
-
-  /* Set environment variable COLLECT_NAME to our name so the previous version
-     of collect will not find us.  If it does we will mutually recurse forever.
-     This can happen when bootstrapping the new version and an old version is
-     installed.
-     ??? Hopefully this bit of code can be removed at some point.  */
-
-  p = xmalloc (strlen ("COLLECT_NAME=") + strlen (argv[0]) + 1);
-  sprintf (p, "COLLECT_NAME=%s", argv[0]);
-  putenv (p);
-
   p = getenv ("COLLECT_GCC_OPTIONS");
   while (p && *p)
     {
@@ -1187,18 +1080,6 @@ main (argc, argv)
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_ld_suffix);
-
-  /* If we've invoked ourselves, try again with LD_FILE_NAME.  */
-
-  if (collect_names != 0)
-    {
-      if (ld_file_name != 0)
-	{
-	  argv[0] = ld_file_name;
-	  execvp (argv[0], argv);
-	}
-      fatal ("cannot find `ld' (%s)", ld_file_name);
-    }
 
 #ifdef REAL_NM_FILE_NAME
   nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
@@ -1518,10 +1399,6 @@ main (argc, argv)
       fprintf (stderr, "o_file              = %s\n",
 	       (o_file ? o_file : "not found"));
 
-      ptr = getenv ("COLLECT_NAMES");
-      if (ptr)
-	fprintf (stderr, "COLLECT_NAMES       = %s\n", ptr);
-
       ptr = getenv ("COLLECT_GCC_OPTIONS");
       if (ptr)
 	fprintf (stderr, "COLLECT_GCC_OPTIONS = %s\n", ptr);
@@ -1773,6 +1650,7 @@ collect_execute (prog, argv, redir)
   if (argv[0] == 0)
     fatal ("cannot find `%s'", prog);
 
+#ifndef __CYGWIN32__
   pid = vfork ();
   if (pid == -1)
     {
@@ -1797,6 +1675,11 @@ collect_execute (prog, argv, redir)
       execvp (argv[0], argv);
       fatal_perror ("executing %s", prog);
     }
+#else
+  pid = _spawnvp (_P_NOWAIT, argv[0], argv);
+  if (pid == -1)
+    fatal ("spawnvp failed");
+#endif
 }
 
 static void
