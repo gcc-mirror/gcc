@@ -1117,6 +1117,23 @@ while (0)
    functions. */
 
 #define INIT_EXPANDERS clear_386_stack_locals ()
+
+/* The `FINALIZE_PIC' macro serves as a hook to emit these special
+   codes once the function is being compiled into assembly code, but
+   not before.  (It is not done before, because in the case of
+   compiling an inline function, it would lead to multiple PIC
+   prologues being included in functions which used inline functions
+   and were compiled to assembly language.)  */
+
+#define FINALIZE_PIC							\
+do									\
+  {									\
+    extern int current_function_uses_pic_offset_table;			\
+									\
+    current_function_uses_pic_offset_table |= profile_flag | profile_block_flag; \
+  }									\
+while (0)
+
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
