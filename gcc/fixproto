@@ -54,11 +54,26 @@
 #	Ron Guilmette (rfg@netcom.com) (original idea and code)
 #	Per Bothner (bothner@cygnus.com) (major re-write)
 
-progname=$0
-progname=`basename $progname`
+dirname=`echo "$0" | sed 's,^[^/]*$,.,;s,//*[^/]*$,,'`
+progname=`echo "$0" | sed 's,.*/,,'`
 original_dir=`pwd`
 FIX_HEADER=${FIX_HEADER-$original_dir/fix-header}
 DEFINES="-D__STDC__=0 -D__cplusplus ${FIXPROTO_DEFINES}"
+
+if mkdir -p . 2> /dev/null; then
+  # Great, mkdir accepts -p
+  mkinstalldirs="mkdir -p"
+else
+  # We expect mkinstalldirs to be passed in the environment.
+  # If it is not, assume it is in the directory that contains this script.
+  mkinstalldirs=${mkinstalldirs-"/bin/sh $dirname/mkinstalldirs"}
+  if $mkinstalldirs . 2> /dev/null; then
+    :
+  else
+    # But, in case of failure, fallback to plain mkdir, and hope it works
+    mkinstalldirs=mkdir
+  fi
+fi
 
 if [ `echo $1 | wc -w` = 0 ] ; then
   echo $progname\: usage\: $progname target-dir \[ source-dir \.\.\. \]
@@ -94,7 +109,7 @@ fi
 
 if [ \! -d $abs_target_dir ] ; then
   echo $progname\: creating directory $rel_target_dir
-  mkdir -p $abs_target_dir
+  $mkinstalldirs $abs_target_dir
 fi
 
 echo $progname\: populating \`$rel_target_dir\'
@@ -175,7 +190,7 @@ for code in ALL STD ; do
 
       abs_target_subdir=${abs_target_dir}/${rel_source_subdir}
       if [ \! -d $abs_target_subdir ] ; then
-	if mkdir -p $abs_target_subdir ; then
+	if $mkinstalldirs $abs_target_subdir ; then
 	  subdirs_made="$abs_target_subdir $subdirs_made"
 	fi
       fi
@@ -202,7 +217,7 @@ for code in ALL STD ; do
 	      # Create the dir where this file will go when fixed.
 	      xxdir=`echo ./$file | sed -e 's|/[^/]*$||'`
 	      if [ \! -d $abs_target_subdir/$xxdir ] ; then
-		if mkdir -p $abs_target_subdir/$xxdir ; then
+		if $mkinstalldirs $abs_target_subdir/$xxdir ; then
 		  subdirs_made="$abs_target_subdir/$xxdir $subdirs_made"
 		fi
 	      fi
