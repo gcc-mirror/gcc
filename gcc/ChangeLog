@@ -1,3 +1,8 @@
+Thu Mar  2 17:27:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* varasm.c (output_constant): Strip off a CONVERT_EXPR to
+	a UNION_TYPE.
+
 2000-03-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (cpp_read_file): New function.

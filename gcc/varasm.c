@@ -4207,12 +4207,18 @@ output_constant (exp, size)
 
   /* Eliminate the NON_LVALUE_EXPR_EXPR that makes a cast not be an lvalue.
      That way we get the constant (we hope) inside it.  Also, strip off any
-     NOP_EXPR that converts between two record, union, array, or set types.  */
+     NOP_EXPR that converts between two record, union, array, or set types
+     or a CONVERT_EXPR that converts to a union TYPE.  */
   while ((TREE_CODE (exp) == NOP_EXPR 
 	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
 	      || AGGREGATE_TYPE_P (TREE_TYPE (exp))))
+	 || (TREE_CODE (exp) == CONVERT_EXPR
+	     && code == UNION_TYPE)
 	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+    {
+      exp = TREE_OPERAND (exp, 0);
+      code = TREE_CODE (TREE_TYPE (exp));
+    }
 
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
