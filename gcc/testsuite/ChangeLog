@@ -1,5 +1,8 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/eh/simd-2.C: Check for AltiVec HW support at runtime.
+	* g++.dg/eh/check-vect.h: New.
+
 	* gcc.dg/vect/vect-77.c: Replace xfail selector with expression.
 	* gcc.dg/vect/vect-78.c: Ditto.
 	* gcc.dg/vect/vect.exp (check_effective_target_lp64_or_vect_no_align):
