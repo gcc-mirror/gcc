@@ -1393,6 +1393,9 @@ javax/naming/ldap/UnsolicitedNotification.java \
 javax/naming/ldap/UnsolicitedNotificationEvent.java \
 javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
+javax/print/attribute/Attribute.java \
+javax/print/attribute/AttributeSet.java \
+javax/print/attribute/PrintRequestAttributeSet.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
 javax/sql/ConnectionPoolDataSource.java \
@@ -3818,6 +3821,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/naming/spi/ObjectFactoryBuilder.P \
 .deps/javax/naming/spi/ResolveResult.P \
 .deps/javax/naming/spi/Resolver.P .deps/javax/naming/spi/StateFactory.P \
+.deps/javax/print/attribute/Attribute.P \
+.deps/javax/print/attribute/AttributeSet.P \
+.deps/javax/print/attribute/PrintRequestAttributeSet.P \
 .deps/javax/sql/ConnectionEvent.P \
 .deps/javax/sql/ConnectionEventListener.P \
 .deps/javax/sql/ConnectionPoolDataSource.P .deps/javax/sql/DataSource.P \
