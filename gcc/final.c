@@ -1402,7 +1402,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", next_block_index);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG && block_depth > 1)
+	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_begin_block (next_block_index);
 #endif
 
@@ -1438,7 +1438,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 			      pending_blocks[block_depth]);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG && block_depth >= 1)
+	  if (write_symbols == DWARF_DEBUG && block_depth >= 0)
 	    dwarfout_end_block (pending_blocks[block_depth]);
 #endif
 	}
