@@ -1,9 +1,9 @@
 2000-10-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* include/jvm.h: Enable __builtin_expect().
-	
-        * name-finder.cc (lookup): Don't trust dladdr() if the address is from 
-        the main program. Fix for PR libgcj/341.
+
+	* name-finder.cc (lookup): Don't trust dladdr() if the address is from 
+	the main program. Fix for PR libgcj/341.
 
 2000-10-07  Tom Tromey  <tromey@cygnus.com>
 
