@@ -11031,9 +11031,12 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	   || (tag_code != class_type
 	       && (TREE_PURPOSE (binfo) == access_default_node
 		   || TREE_PURPOSE (binfo) == access_default_virtual_node)));
-      int via_protected = TREE_PURPOSE (binfo) == access_protected_node;
+      int via_protected
+	= (TREE_PURPOSE (binfo) == access_protected_node
+	   || TREE_PURPOSE (binfo) == access_protected_virtual_node);
       int via_virtual
 	= (TREE_PURPOSE (binfo) == access_private_virtual_node
+	   || TREE_PURPOSE (binfo) == access_protected_virtual_node
 	   || TREE_PURPOSE (binfo) == access_public_virtual_node
 	   || TREE_PURPOSE (binfo) == access_default_virtual_node);
       tree basetype = TREE_VALUE (binfo);

@@ -51,7 +51,7 @@ CXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
 GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
 
 # The name to use for the demangler program.
-DEMANGLER_PROG = c++filt
+DEMANGLER_PROG = c++filt$(exeext)
 
 # Extra headers to install.
 CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
@@ -225,6 +225,8 @@ c++.install-common:
 	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	  fi ; \
+	  rm -f $(bindir)/$(DEMANGLER_PROG) ; \
+	  $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_PROG) ; \
 	fi
 
 c++.install-info:

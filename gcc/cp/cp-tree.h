@@ -1779,7 +1779,8 @@ extern tree access_protected_node; /* 2 */
 extern tree access_private_node; /* 3 */
 extern tree access_default_virtual_node; /* 4 */
 extern tree access_public_virtual_node; /* 5 */
-extern tree access_private_virtual_node; /* 6 */
+extern tree access_protected_virtual_node; /* 6 */
+extern tree access_private_virtual_node; /* 7 */
 
 /* Things for handling inline functions.  */
 

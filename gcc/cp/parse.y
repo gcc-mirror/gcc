@@ -2601,42 +2601,32 @@ base_class.1:
 base_class_access_list:
 	  VISSPEC see_typename
 	| SCSPEC see_typename
-		{ if ($<ttype>$ != ridpointers[(int)RID_VIRTUAL])
-		    sorry ("non-virtual access");
+		{ if ($1 != ridpointers[(int)RID_VIRTUAL])
+		    cp_error ("`%D' access", $1);
 		  $$ = access_default_virtual_node; }
 	| base_class_access_list VISSPEC see_typename
-		{ int err = 0;
-		  if ($2 == access_protected_node)
-		    {
-		      warning ("`protected' access not implemented");
-		      $2 = access_public_node;
-		      err++;
-		    }
+		{
+		  if ($1 != access_default_virtual_node)
+		    error ("multiple access specifiers");
 		  else if ($2 == access_public_node)
-		    {
-		      if ($1 == access_private_node)
-			{
-			mixed:
-			  error ("base class cannot be public and private");
-			}
-		      else if ($1 == access_default_virtual_node)
-			$$ = access_public_virtual_node;
-		    }
+		    $$ = access_public_virtual_node;
+		  else if ($2 == access_protected_node)
+		    $$ = access_protected_virtual_node;
 		  else /* $2 == access_private_node */
-		    {
-		      if ($1 == access_public_node)
-			goto mixed;
-		      else if ($1 == access_default_virtual_node)
-			$$ = access_private_virtual_node;
-		    }
+		    $$ = access_private_virtual_node;
 		}
 	| base_class_access_list SCSPEC see_typename
 		{ if ($2 != ridpointers[(int)RID_VIRTUAL])
-		    sorry ("non-virtual access");
-		  if ($$ == access_public_node)
+		    cp_error ("`%D' access", $2);
+		  else if ($$ == access_public_node)
 		    $$ = access_public_virtual_node;
+		  else if ($$ == access_protected_node)
+		    $$ = access_protected_virtual_node;
 		  else if ($$ == access_private_node)
-		    $$ = access_private_virtual_node; }
+		    $$ = access_private_virtual_node;
+		  else
+		    error ("multiple `virtual' specifiers");
+		}
 	;
 
 left_curly:
