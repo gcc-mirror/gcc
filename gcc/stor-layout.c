@@ -676,18 +676,11 @@ layout_type (type)
      they must last past the current statement.  */
   old = suspend_momentary ();
 
-  /* If we are processing a permanent type, make nodes permanent.
-     If processing a temporary type, make it saveable, since the
-     type node itself is.  This is important if the function is inline,
-     since its decls will get copied later.  */
-  push_obstacks_nochange ();
-  if (allocation_temporary_p ())
-    {
-      if (TREE_PERMANENT (type))
-	end_temporary_allocation ();
-      else
-	saveable_allocation ();
-    }
+  /* Put all our nodes into the same obstack as the type.  Also,
+     make expressions saveable (this is a no-op for permanent types).  */
+
+  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
+  saveable_allocation ();
 
   switch (TREE_CODE (type))
     {
