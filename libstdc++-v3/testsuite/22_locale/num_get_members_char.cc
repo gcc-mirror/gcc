@@ -1,6 +1,6 @@
 // 2001-11-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2002 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -242,27 +242,75 @@ void test02()
   using namespace std;
   bool test = true;
 
-  // Num_get works with other iterators besides streambuf output iterators
+  // Check num_get works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
   typedef string::const_iterator iter_type;
   typedef num_get<char, iter_type> num_get_type;
   const ios_base::iostate goodbit = ios_base::goodbit;
   const ios_base::iostate eofbit = ios_base::eofbit;
   ios_base::iostate err = ios_base::goodbit;
   const locale loc_c = locale::classic();
+  const string str("20000106 Elizabeth Durack");
+  const string str2("0 true 0xbffff74c Durack");
 
-  long i = 0;
-  const string str = "20000106 Elizabeth Durack";
   istringstream iss; // need an ios, add my num_get facet
   iss.imbue(locale(loc_c, new num_get_type));
 
   // Iterator advanced, state, output.
   const num_get_type& ng = use_facet<num_get_type>(iss.getloc());
-  iter_type end = ng.get(str.begin(), str.end(), iss, err, i);
-  string rem(end, str.end());
 
+  // 01 get(long)
+  // 02 get(long double)
+  // 03 get(bool)
+  // 04 get(void*)
+
+  // 01 get(long)
+  long i = 0;
+  err = goodbit;
+  iter_type end1 = ng.get(str.begin(), str.end(), iss, err, i);
+  string rem1(end1, str.end());
   VERIFY( err == goodbit );
   VERIFY( i == 20000106);
-  VERIFY( rem == " Elizabeth Durack" );
+  VERIFY( rem1 == " Elizabeth Durack" );
+
+  // 02 get(long double)
+  long double ld = 0;
+  err = goodbit;
+  iter_type end2 = ng.get(str.begin(), str.end(), iss, err, ld);
+  string rem2(end2, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( ld == 20000106);
+  VERIFY( rem2 == " Elizabeth Durack" );
+
+  // 03 get(bool)
+  bool b = 1;
+  iss.clear();
+  err = goodbit;
+  iter_type end3 = ng.get(str2.begin(), str2.end(), iss, err, b);
+  string rem3(end3, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == 0 );
+  VERIFY( rem3 == " true 0xbffff74c Durack" );
+
+  iss.clear();
+  err = goodbit;
+  iss.setf(ios_base::boolalpha);
+  iter_type end4 = ng.get(++end3, str2.end(), iss, err, b);
+  string rem4(end4, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == true );
+  VERIFY( rem4 == " 0xbffff74c Durack" );
+
+  // 04 get(void*)
+  void* v;
+  iss.clear();
+  err = goodbit;
+  iss.setf(ios_base::fixed, ios_base::floatfield);
+  iter_type end5 = ng.get(++end4, str2.end(), iss, err, v);
+  string rem5(end5, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == true );
+  VERIFY( rem5 == " Durack" );
 }
 
 int main()

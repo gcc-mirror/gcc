@@ -1,6 +1,6 @@
 // 2001-11-26 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -235,16 +235,100 @@ void test01()
   VERIFY( err == eofbit );
 #endif
 }
+
+// 2002-01-10  David Seymour  <seymour_dj@yahoo.com>
+// libstdc++/5331
+void test02()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check num_get works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
+  typedef wstring::const_iterator iter_type;
+  typedef num_get<wchar_t, iter_type> num_get_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = ios_base::goodbit;
+  const locale loc_c = locale::classic();
+  const wstring str(L"20000106 Elizabeth Durack");
+  const wstring str2(L"0 true 0xbffff74c Durack");
+
+  istringstream iss; // need an ios, add my num_get facet
+  iss.imbue(locale(loc_c, new num_get_type));
+
+  // Iterator advanced, state, output.
+  const num_get_type& ng = use_facet<num_get_type>(iss.getloc());
+
+  // 01 get(long)
+  // 02 get(long double)
+  // 03 get(bool)
+  // 04 get(void*)
+
+  // 01 get(long)
+  long i = 0;
+  err = goodbit;
+  iter_type end1 = ng.get(str.begin(), str.end(), iss, err, i);
+  wstring rem1(end1, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( i == 20000106);
+  VERIFY( rem1 == L" Elizabeth Durack" );
+
+  // 02 get(long double)
+  long double ld = 0;
+  err = goodbit;
+  iter_type end2 = ng.get(str.begin(), str.end(), iss, err, ld);
+  wstring rem2(end2, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( ld == 20000106);
+  VERIFY( rem2 == L" Elizabeth Durack" );
+
+  // 03 get(bool)
+  //  const string str2("0 true 0xbffff74c Durack");
+  bool b = 1;
+  iss.clear();
+  err = goodbit;
+  iter_type end3 = ng.get(str2.begin(), str2.end(), iss, err, b);
+  wstring rem3(end3, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == 0 );
+  VERIFY( rem3 == L" true 0xbffff74c Durack" );
+
+  iss.clear();
+  err = goodbit;
+  iss.setf(ios_base::boolalpha);
+  iter_type end4 = ng.get(++end3, str2.end(), iss, err, b);
+  wstring rem4(end4, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == true );
+  VERIFY( rem4 == L" 0xbffff74c Durack" );
+
+  // 04 get(void*)
+  void* v;
+  iss.clear();
+  err = goodbit;
+  iss.setf(ios_base::fixed, ios_base::floatfield);
+  iter_type end5 = ng.get(++end4, str2.end(), iss, err, v);
+  wstring rem5(end5, str2.end());
+  VERIFY( err == goodbit );
+  VERIFY( b == true );
+  VERIFY( rem5 == L" Durack" );
+}
 #endif
 
 int main()
 {
 #ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+  test02();
 #endif
   return 0;
 }
 
 
 // Kathleen Hannah, humanitarian, woman, art-thief
+
+
+
+
 
