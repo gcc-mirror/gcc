@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
    provide support for the special GCC option -static.  On ELF targets,
    we also add the crtbegin.o file which provides part of the support
    for getting C++ file-scope static objects constructed before entering
-   `main'.  We use the NetBSD crt0.  */
+   `main'.  We use the NetBSD crt0. */
 
 #undef STARTFILE_SPEC
 #define	STARTFILE_SPEC \
@@ -44,9 +44,9 @@ Boston, MA 02111-1307, USA.  */
         %{!p:crt0%O%s}}} \
    %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}"
 
-/* Provide an ENDFILE_SPEC appropriate for NetBSD ELF targets.  Here we
+/* Provide an ENDFILE_SPEC approrpiate for NetBSD ELF targets.  Here we
    add crtend.o, which provides part of the support for getting C++
-   file-scope static objects deconstructed after exiting `main'.  */
+   file-scope static objects deconstructed after exiting `main'. */
 
 #undef ENDFILE_SPEC
 #define	ENDFILE_SPEC \
@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/i386 ELF target.  Only
    the linker emulation is i386-specific.  The rest are
-   common to all ELF targets, except for the name of the start function.  */
+   common to all ELF targets, except for the name of the start function. */
 
 #undef LINK_SPEC
 #define LINK_SPEC \
@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
-/* This defines which switch letters take arguments.  */
+/* This defines which switch letters take arguments. */
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
   (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_MEM_FUNCTIONS
 
-/* Names to predefine in the preprocessor for this target machine.  */
+/* Names to predefine in the preprocessor for this target machine. */
 
 #define CPP_PREDEFINES "\
 -Di386 -D__NetBSD__ -D__ELF__ -Asystem(unix) -Asystem(NetBSD)"
@@ -124,7 +124,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under NetBSD/i386, the assembler does
-   nothing special with -pg.  */
+   nothing special with -pg. */
 
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
@@ -142,6 +142,9 @@ Boston, MA 02111-1307, USA.  */
 #define NO_PROFILE_COUNTERS
 
 #undef HAS_INIT_SECTION
+
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
 
 /* This is how we tell the assembler that two symbols have the same value.  */
 
@@ -164,6 +167,16 @@ Boston, MA 02111-1307, USA.  */
     else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
   }
 #endif
+
+/* This is how to output an element of a case-vector that is relative.
+   This is only used for PIC code.  */
+#undef ASM_OUTPUT_ADDR_DIFF_ELT
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
+  fprintf ((FILE), "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+
+/* Indicate that jump tables go in the text section.  This is
+   necessary when compiling PIC code.  */
+#define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
 /*
  * We always use gas here, so we don't worry about ECOFF assembler problems.

@@ -1134,6 +1134,13 @@ i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aou
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/att.h svr4.h ${fbsd_tm_file} i386/freebsd.h i386/perform.h"
 	;;
+i[34567]86-*-netbsdelf*)
+	xm_defines=POSIX
+	tm_file="${tm_file} i386/att.h svr4.h i386/netbsd-elf.h"
+	tmake_file=t-netbsd
+	gnu_ld=yes
+	float_format=i386
+	;;
 i[34567]86-*-netbsd*)
 	tm_file=i386/netbsd.h
 	tmake_file=t-netbsd

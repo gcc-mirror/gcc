@@ -1,3 +1,9 @@
+2002-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	PR target/5410
+	* config.gcc (i?86-*-netbsdelf*): New stanza.
+	* config/i386/netbsd-elf.h: New file (backport from mainline).
+
 2002-01-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 	
 	PR preprocessor/3571
