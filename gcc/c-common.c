@@ -1191,127 +1191,267 @@ strip_attrs (specs_attrs)
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
    a parameter list.  */
 
-#define T_I	&integer_type_node
-#define T_L	&long_integer_type_node
-#define T_LL	&long_long_integer_type_node
-#define T_S	&short_integer_type_node
-#define T_UI	&unsigned_type_node
-#define T_UL	&long_unsigned_type_node
-#define T_ULL	&long_long_unsigned_type_node
-#define T_US	&short_unsigned_type_node
-#define T_F	&float_type_node
-#define T_D	&double_type_node
-#define T_LD	&long_double_type_node
-#define T_C	&char_type_node
-#define T_SC	&signed_char_type_node
-#define T_UC	&unsigned_char_type_node
-#define T_V	&void_type_node
-#define T_W	&wchar_type_node
-#define T_WI	&wint_type_node
-#define T_ST    &sizetype
-#define T_SST   &signed_size_type_node
-#define T_PD    &ptrdiff_type_node
-#define T_UPD   &unsigned_ptrdiff_type_node
-#define T_IM    NULL /* intmax_t not yet implemented.  */
-#define T_UIM   NULL /* uintmax_t not yet implemented.  */
+/* The meaningfully distinct length modifiers for format checking recognised
+   by GCC.  */
+enum format_lengths
+{
+  FMT_LEN_none,
+  FMT_LEN_hh,
+  FMT_LEN_h,
+  FMT_LEN_l,
+  FMT_LEN_ll,
+  FMT_LEN_L,
+  FMT_LEN_z,
+  FMT_LEN_t,
+  FMT_LEN_j,
+  FMT_LEN_MAX
+};
 
-typedef struct {
+
+/* The standard versions in which various format features appeared.  */
+enum format_std_version
+{
+  STD_C89,
+  STD_C94,
+  STD_C99,
+  STD_EXT
+};
+
+
+/* Structure describing a length modifier supported in format checking, and
+   possibly a doubled version such as "hh".  */
+typedef struct
+{
+  /* Name of the single-character length modifier.  */
+  const char *name;
+  /* Index into a format_char_info.types array.  */
+  enum format_lengths index;
+  /* Standard version this length appears in.  */
+  enum format_std_version std;
+  /* Same, if the modifier can be repeated, or NULL if it can't.  */
+  const char *double_name;
+  enum format_lengths double_index;
+  enum format_std_version double_std;
+} format_length_info;
+
+
+/* Structure desribing the combination of a conversion specifier
+   (or a set of specifiers which act identically) and a length modifier.  */
+typedef struct
+{
+  /* The standard version this combination of length and type appeared in.
+     This is only relevant if greater than those for length and type
+     individually; otherwise it is ignored.  */
+  enum format_std_version std;
+  /* The name to use for the type, if different from that generated internally
+     (e.g., "signed size_t").  */
+  const char *name;
+  /* The type itself.  */
+  tree *type;
+} format_type_detail;
+
+
+/* Macros to fill out tables of these.  */
+#define BADLEN	{ 0, NULL, NULL }
+#define NOLENGTHS	{ BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
+
+
+/* Structure desribing a format conversion specifier (or a set of specifiers
+   which act identically), and the length modifiers used with it.  */
+typedef struct
+{
   const char *format_chars;
   int pointer_count;
-  /* Type of argument if no length modifier is used.  */
-  tree *nolen;
-  /* Type of argument if length modifier for shortening to byte is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *hhlen;
-  /* Type of argument if length modifier for shortening is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *hlen;
-  /* Type of argument if length modifier `l' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *llen;
-  /* Type of argument if length modifier `q' or `ll' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *qlen;
-  /* Type of argument if length modifier `L' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *bigllen;
-  /* Type of argument if length modifiers 'z' or `Z' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *zlen;
-  /* Type of argument if length modifier 't' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *tlen;
-  /* Type of argument if length modifier 'j' is used.
-     If NULL, then this modifier is not allowed.  */
-  tree *jlen;
-  /* List of other modifier characters allowed with these options.  */
+  enum format_std_version std;
+  /* Types accepted for each length modifier.  */
+  format_type_detail types[FMT_LEN_MAX];
+  /* List of other modifier characters allowed with these options.
+     This lists flags, and additionally "w" for width, "p" for precision,
+     "c" for generic character pointers being allowed, "a" for scanf
+     "a" allocation extension (not applicable in C99 mode), "*" for
+     scanf suppression, "2" for strftime two digit year formats, "3"
+     for strftime formats giving two digit years in some locales, "E"
+     and "O" for those strftime modifiers, and "o" if use of strftime "O"
+     is a GNU extension beyond C99.  */
   const char *flag_chars;
 } format_char_info;
 
-static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"-wp0 +'I"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"-wp0'I"		},
-/* A GNU extension.  */
-  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "fFgG",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#'"	},
-  { "eEaA",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#"	},
-  { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "C",	0,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wpc"		},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wc"		},
-  { "n",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	NULL,	T_SST,	T_PD,	T_IM,	""		},
-  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL		}
+
+/* Structure describing a particular kind of format processed by GCC.  */
+typedef struct
+{
+  /* The name of this kind of format, for use in diagnostics.  */
+  const char *name;
+  /* Specifications of the length modifiers accepted; possibly NULL.  */
+  const format_length_info *length_char_specs;
+  /* Details of the conversion specification characters accepted.  */
+  const format_char_info *conversion_specs;
+} format_kind_info;
+
+
+static const format_length_info printf_length_specs[] =
+{
+  { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C99 },
+  { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
+  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
+  { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
+  { "Z", FMT_LEN_z, STD_EXT, NULL, 0, 0 },
+  { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
+  { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
 };
 
-static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	T_LL,	T_SST,	T_PD,	T_IM,	"*w"	},
-  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_UPD,	T_UIM,	"*w"	},
-  { "efFgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"*w"	},
-  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*cw"	},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*acw"	},
-  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*acw"	},
-  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*w"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*aw"	},
-  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*w"	},
-  { "n",	1,	T_I,	T_SC,	T_S,	T_L,	T_LL,	NULL,	T_SST,	T_PD,	T_IM,	""	},
-  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
+
+/* This differs from printf_length_specs only in that "Z" is not accepted.  */
+static const format_length_info scanf_length_specs[] =
+{
+  { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C99 },
+  { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
+  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
+  { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
+  { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
+  { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
 };
 
-/* Handle format characters recognized by glibc's strftime.c.
-   '2' - MUST do years as only two digits
-   '3' - MAY do years as only two digits (depending on locale)
-   'E' - E modifier is acceptable
-   'O' - O modifier is acceptable to Standard C
-   'o' - O modifier is acceptable as a GNU extension
-   '9' - added to the C standard in C99
-   'G' - other GNU extensions  */
 
-static format_char_info time_char_table[] = {
-  { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
-  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "29" },
-  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2Oo-_0w9" },
-  { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
-  { "%",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
-  { "X",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "E" },
-  { "FRTnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "9" },
-  { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
-  { "HIMSUWdmw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
-  { "e",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow9" },
-  { "j",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
-  { "Vu",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow9" },
-  { "G",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow9" },
-  { "z",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "Oo9" },
-  { "kls",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
-  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
-  { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
-  { "b",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
-  { "h",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^9" },
-  { "Y",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow" },
-  { "C",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow9" },
-  { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+#define T_I	&integer_type_node
+#define T89_I	{ STD_C89, NULL, T_I }
+#define T99_I	{ STD_C99, NULL, T_I }
+#define T_L	&long_integer_type_node
+#define T89_L	{ STD_C89, NULL, T_L }
+#define T_LL	&long_long_integer_type_node
+#define T99_LL	{ STD_C99, NULL, T_LL }
+#define TEX_LL	{ STD_EXT, NULL, T_LL }
+#define T_S	&short_integer_type_node
+#define T89_S	{ STD_C89, NULL, T_S }
+#define T_UI	&unsigned_type_node
+#define T89_UI	{ STD_C89, NULL, T_UI }
+#define T99_UI	{ STD_C99, NULL, T_UI }
+#define T_UL	&long_unsigned_type_node
+#define T89_UL	{ STD_C89, NULL, T_UL }
+#define T_ULL	&long_long_unsigned_type_node
+#define T99_ULL	{ STD_C99, NULL, T_ULL }
+#define TEX_ULL	{ STD_EXT, NULL, T_ULL }
+#define T_US	&short_unsigned_type_node
+#define T89_US	{ STD_C89, NULL, T_US }
+#define T_F	&float_type_node
+#define T89_F	{ STD_C89, NULL, T_F }
+#define T99_F	{ STD_C99, NULL, T_F }
+#define T_D	&double_type_node
+#define T89_D	{ STD_C89, NULL, T_D }
+#define T99_D	{ STD_C99, NULL, T_D }
+#define T_LD	&long_double_type_node
+#define T89_LD	{ STD_C89, NULL, T_LD }
+#define T99_LD	{ STD_C99, NULL, T_LD }
+#define T_C	&char_type_node
+#define T89_C	{ STD_C89, NULL, T_C }
+#define T_SC	&signed_char_type_node
+#define T99_SC	{ STD_C99, NULL, T_SC }
+#define T_UC	&unsigned_char_type_node
+#define T99_UC	{ STD_C99, NULL, T_UC }
+#define T_V	&void_type_node
+#define T89_V	{ STD_C89, NULL, T_V }
+#define T_W	&wchar_type_node
+#define T94_W	{ STD_C94, "wchar_t", T_W }
+#define TEX_W	{ STD_EXT, "wchar_t", T_W }
+#define T_WI	&wint_type_node
+#define T94_WI	{ STD_C94, "wint_t", T_WI }
+#define TEX_WI	{ STD_EXT, "wint_t", T_WI }
+#define T_ST    &c_size_type_node
+#define T99_ST	{ STD_C99, "size_t", T_ST }
+#define T_SST   &signed_size_type_node
+#define T99_SST	{ STD_C99, "signed size_t", T_SST }
+#define T_PD    &ptrdiff_type_node
+#define T99_PD	{ STD_C99, "ptrdiff_t", T_PD }
+#define T_UPD   &unsigned_ptrdiff_type_node
+#define T99_UPD	{ STD_C99, "unsigned ptrdiff_t", T_UPD }
+#define T_IM    NULL /* intmax_t not yet implemented.  */
+#define T99_IM	{ STD_C99, "intmax_t", T_IM }
+#define T_UIM   NULL /* uintmax_t not yet implemented.  */
+#define T99_UIM	{ STD_C99, "uintmax_t", T_UIM }
+
+static const format_char_info print_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   T99_I,   T89_I,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I" },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#"    },
+  { "u",   0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I"   },
+  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'" },
+  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#"  },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w"       },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wpc"     },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wc"      },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, ""         },
+  /* C99 conversion specifiers.  */
+  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'" },
+  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#"  },
+  /* X/Open conversion specifiers.  */
+  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w"       },
+  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp"      },
+  /* GNU conversion specifiers.  */
+  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp"      },
+  { NULL,  0, 0, NOLENGTHS, NULL }
 };
+
+static const format_char_info scan_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w"   },
+  { "ouxX",  1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w"   },
+  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w"   },
+  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*cw"  },
+  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*acw" },
+  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*acw" },
+  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w"   },
+  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, ""     },
+  /* C99 conversion specifiers.  */
+  { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w"   },
+  /* X/Open conversion specifiers.  */
+  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w"   },
+  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw"  },
+  { NULL, 0, 0, NOLENGTHS, NULL }
+};
+
+static format_char_info time_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "ABZa",		0, STD_C89, NOLENGTHS, "^#" },
+  { "b",		0, STD_C89, NOLENGTHS, "^" },
+  { "cx", 		0, STD_C89, NOLENGTHS, "3E" },
+  { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow" },
+  { "j",		0, STD_C89, NOLENGTHS, "-_0Oow" },
+  { "p",		0, STD_C89, NOLENGTHS, "#" },
+  { "X",		0, STD_C89, NOLENGTHS, "E" },
+  { "y", 		0, STD_C89, NOLENGTHS, "2EO-_0w" },
+  { "Y",		0, STD_C89, NOLENGTHS, "-_0EOow" },
+  { "%",		0, STD_C89, NOLENGTHS, "" },
+  /* C99 conversion specifiers.  */
+  { "C",		0, STD_C99, NOLENGTHS, "-_0EOow" },
+  { "D", 		0, STD_C99, NOLENGTHS, "2" },
+  { "eVu",		0, STD_C99, NOLENGTHS, "-_0Ow" },
+  { "FRTnrt",		0, STD_C99, NOLENGTHS, "" },
+  { "g", 		0, STD_C99, NOLENGTHS, "2Oo-_0w" },
+  { "G",		0, STD_C99, NOLENGTHS, "-_0Oow" },
+  { "h",		0, STD_C99, NOLENGTHS, "^" },
+  { "z",		0, STD_C99, NOLENGTHS, "Oo" },
+  /* GNU conversion specifiers.  */
+  { "kls",		0, STD_EXT, NOLENGTHS, "-_0Ow" },
+  { "P",		0, STD_EXT, NOLENGTHS, "" },
+  { NULL,		0, 0, NOLENGTHS, NULL }
+};
+
+
+/* This must be in the same order as enum format_type.  */
+static const format_kind_info format_types[] =
+{
+  { "printf",   printf_length_specs, print_char_table },
+  { "scanf",    scanf_length_specs,  scan_char_table  },
+  { "strftime", NULL,                time_char_table  }
+};
+
 
 typedef struct function_format_info
 {
@@ -1694,16 +1834,22 @@ check_format_info (info, params)
   int i;
   int arg_num;
   int suppressed, wide, precise;
-  int length_char = 0;
+  const char *length_chars = NULL;
+  enum format_lengths length_chars_val = FMT_LEN_none;
+  enum format_std_version length_chars_std = STD_C89;
   int format_char;
   int format_length;
   tree format_tree;
   tree cur_param;
   tree cur_type;
   tree wanted_type;
+  enum format_std_version wanted_type_std;
+  const char *wanted_type_name;
   tree first_fillin_param;
   const char *format_chars;
-  format_char_info *fci = NULL;
+  const format_kind_info *fki = NULL;
+  const format_length_info *fli = NULL;
+  const format_char_info *fci = NULL;
   char flag_chars[8];
   /* -1 if no conversions taking an operand have been found; 0 if one has
      and it didn't use $; 1 if $ formats are in use.  */
@@ -1808,6 +1954,7 @@ check_format_info (info, params)
 
   first_fillin_param = params;
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
+  fki = &format_types[info->format_type];
   while (1)
     {
       int aflag;
@@ -2056,52 +2203,44 @@ check_format_info (info, params)
 
       aflag = 0;
 
-      if (info->format_type != strftime_format_type)
+      fli = fki->length_char_specs;
+      if (fli)
 	{
-	  if (*format_chars == 'h' || *format_chars == 'l')
-	    length_char = *format_chars++;
-	  else if (*format_chars == 'q' || *format_chars == 'L')
+	  while (fli->name != 0 && fli->name[0] != *format_chars)
+	    fli++;
+	  if (fli->name != 0)
 	    {
-	      length_char = *format_chars++;
-	      if (length_char == 'q' && pedantic)
-		warning ("ISO C does not support the `%c' length modifier",
-			 length_char);
-	    }
-	  else if (*format_chars == 'z'
-		   || (*format_chars == 'Z'
-		       && info->format_type == printf_format_type))
-	    {
-	      length_char = *format_chars++;
-	      if (pedantic)
+	      format_chars++;
+	      if (fli->double_name != 0 && fli->name[0] == *format_chars)
 		{
-		  if (length_char == 'Z')
-		    warning ("ISO C does not support the `%c' length modifier",
-			     length_char);
-		  else if (!flag_isoc99)
-		    warning ("ISO C89 does not support the `%c' length modifier",
-			     length_char);
+		  format_chars++;
+		  length_chars = fli->double_name;
+		  length_chars_val = fli->double_index;
+		  length_chars_std = fli->double_std;
+		}
+	      else
+		{
+		  length_chars = fli->name;
+		  length_chars_val = fli->index;
+		  length_chars_std = fli->std;
 		}
 	    }
-	  else if (*format_chars == 't' || *format_chars == 'j')
-	    {
-	      length_char = *format_chars++;
-	      if (pedantic && !flag_isoc99)
-		warning ("ISO C89 does not support the `%c' length modifier",
-			 length_char);
-	    }
 	  else
-	    length_char = 0;
-	  if (length_char == 'l' && *format_chars == 'l')
 	    {
-	      length_char = 'q', format_chars++;
-	      if (pedantic && !flag_isoc99)
-		warning ("ISO C89 does not support the `ll' length modifier");
+	      length_chars = NULL;
+	      length_chars_val = FMT_LEN_none;
+	      length_chars_std = STD_C89;
 	    }
-	  else if (length_char == 'h' && *format_chars == 'h')
+	  if (pedantic)
 	    {
-	      length_char = 'H', format_chars++;
-	      if (pedantic && !flag_isoc99)
-		warning ("ISO C89 does not support the `hh' length modifier");
+	      /* Warn if the length modifier is non-standard.  */
+	      if (length_chars_std == STD_EXT)
+		warning ("ISO C does not support the `%s' %s length modifier",
+			 length_chars, fki->name);
+	      else if ((length_chars_std == STD_C99 && !flag_isoc99)
+		       || (length_chars_std == STD_C94 && !flag_isoc94))
+		warning ("ISO C89 does not support the `%s' %s length modifier",
+			 length_chars, fki->name);
 	    }
 	  if (*format_chars == 'a' && info->format_type == scanf_format_type
 	      && !flag_isoc99)
@@ -2114,8 +2253,8 @@ check_format_info (info, params)
 		  format_chars++;
 		}
 	    }
-	  if (suppressed && length_char != 0)
-	    warning ("use of `*' and `%c' together in format", length_char);
+	  if (suppressed && length_chars_val != FMT_LEN_none)
+	    warning ("use of `*' and `%s' together in format", length_chars);
 	}
       format_char = *format_chars;
       if (format_char == 0
@@ -2124,30 +2263,8 @@ check_format_info (info, params)
 	  warning ("conversion lacks type at end of format");
 	  continue;
 	}
-      /* The m, C, and S formats are GNU extensions.  */
-      if (pedantic && info->format_type != strftime_format_type
-	  && (format_char == 'm' || format_char == 'C' || format_char == 'S'))
-	warning ("ISO C does not support the `%c' format", format_char);
-      /* The a, A and F formats are C99 extensions.  */
-      if (pedantic && info->format_type != strftime_format_type
-	  && (format_char == 'a' || format_char == 'A' || format_char == 'F')
-	  && !flag_isoc99)
-	warning ("ISO C89 does not support the `%c' format", format_char);
       format_chars++;
-      switch (info->format_type)
-	{
-	case printf_format_type:
-	  fci = print_char_table;
-	  break;
-	case scanf_format_type:
-	  fci = scan_char_table;
-	  break;
-	case strftime_format_type:
-	  fci = time_char_table;
-	  break;
-	default:
-	  abort ();
-	}
+      fci = fki->conversion_specs;
       while (fci->format_chars != 0
 	     && index (fci->format_chars, format_char) == 0)
 	  ++fci;
@@ -2163,10 +2280,13 @@ check_format_info (info, params)
 	}
       if (pedantic)
 	{
-	  if (index (fci->flag_chars, 'G') != 0)
-	    warning ("ISO C does not support `%%%c'", format_char);
-	  if (index (fci->flag_chars, '9') != 0 && !flag_isoc99)
-	    warning ("ISO C89 does not support `%%%c'", format_char);
+	  if (fci->std == STD_EXT)
+	    warning ("ISO C does not support the `%%%c' %s format",
+		     format_char, fki->name);
+	  else if ((fci->std == STD_C99 && !flag_isoc99)
+		   || (fci->std == STD_C94 && !flag_isoc94))
+	    warning ("ISO C89 does not support the `%%%c' %s format",
+		     format_char, fki->name);
 	  if (index (flag_chars, 'O') != 0)
 	    {
 	      if (index (fci->flag_chars, 'o') != 0)
@@ -2231,45 +2351,28 @@ check_format_info (info, params)
 	      || format_char == 'x' || format_char == 'X'))
 	warning ("`0' flag ignored with precision specifier and `%c' format",
 		 format_char);
-      switch (length_char)
-	{
-	default: wanted_type = fci->nolen ? *(fci->nolen) : 0; break;
-	case 'H': wanted_type = fci->hhlen ? *(fci->hhlen) : 0; break;
-	case 'h': wanted_type = fci->hlen ? *(fci->hlen) : 0; break;
-	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
-	case 'q': wanted_type = fci->qlen ? *(fci->qlen) : 0; break;
-	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
-	case 'z': case 'Z': wanted_type = (fci->zlen
-					   ? (TYPE_DOMAIN (*fci->zlen)
-					      ? TYPE_DOMAIN (*fci->zlen)
-					      : *fci->zlen)
-					   : 0); break;
-	case 't': wanted_type = fci->tlen ? *(fci->tlen) : 0; break;
-	case 'j': wanted_type = fci->jlen ? *(fci->jlen) : 0; break;
-	}
+      wanted_type = (fci->types[length_chars_val].type
+		     ? *fci->types[length_chars_val].type : 0);
+      wanted_type_name = fci->types[length_chars_val].name;
+      wanted_type_std = fci->types[length_chars_val].std;
       if (wanted_type == 0)
-	warning ("use of `%c' length character with `%c' type character",
-		 length_char, format_char);
-      else if (length_char == 'L' && pedantic
-	       && !(format_char == 'a' || format_char == 'A'
-		    || format_char == 'e' || format_char == 'E'
-		    || format_char == 'f' || format_char == 'F'
-		    || format_char == 'g' || format_char == 'G'))
-	warning ("ISO C does not support the `L' length modifier with the `%c' type character",
-		 format_char);
-      else if (length_char == 'l'
-	       && (format_char == 'c' || format_char == 's'
-		   || format_char == '[')
-	       && pedantic && !flag_isoc94)
-	warning ("ISO C89 does not support the `l' length modifier with the `%c' type character",
-		 format_char);
-      else if (info->format_type == printf_format_type && pedantic
-	       && !flag_isoc99 && length_char == 'l'
-	       && (format_char == 'f' || format_char == 'e'
-		   || format_char == 'E' || format_char == 'g'
-		   || format_char == 'G'))
-	warning ("ISO C89 does not support the `l' length modifier with the `%c' type character",
-		 format_char);
+	warning ("use of `%s' length modifier with `%c' type character",
+		 length_chars, format_char);
+      else if (pedantic
+	       /* Warn if non-standard, provided it is more non-standard
+		  than the length and type characters that may already
+		  have been warned for.  */
+	       && wanted_type_std > length_chars_std
+	       && wanted_type_std > fci->std)
+	{
+	  if (wanted_type_std == STD_EXT)
+	    warning ("ISO C does not support the `%%%s%c' %s format",
+		     length_chars, format_char, fki->name);
+	  else if ((wanted_type_std == STD_C99 && !flag_isoc99)
+		   || (wanted_type_std == STD_C94 && !flag_isoc94))
+	    warning ("ISO C89 does not support the `%%%s%c' %s format",
+		     length_chars, format_char, fki->name);
+	}
 
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
@@ -2424,7 +2527,16 @@ check_format_info (info, params)
 	    that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
 
 	  if (strcmp (this, that) != 0)
-	    warning ("%s format, %s arg (arg %d)", this, that, arg_num);
+	    {
+	      /* There may be a better name for the format, e.g. size_t,
+		 but we should allow for programs with a perverse typedef
+		 making size_t something other than what the compiler
+		 thinks.  */
+	      if (wanted_type_name != 0
+		  && strcmp (wanted_type_name, that) != 0)
+		this = wanted_type_name;
+	      warning ("%s format, %s arg (arg %d)", this, that, arg_num);
+	    }
 	}
     }
 }

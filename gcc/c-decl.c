@@ -3016,6 +3016,7 @@ init_decl_processing ()
   if (flag_traditional && TREE_UNSIGNED (t))
     t = signed_type (t);
 
+  c_size_type_node = t;
   set_sizetype (t);
 
   /* Create the widest literal types.  */
