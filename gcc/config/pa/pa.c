@@ -3729,24 +3729,7 @@ hppa_profile_hook (label_no)
     ASM_GENERATE_INTERNAL_LABEL (count_label_name, "LP", label_no);
     count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (count_label_name));
 
-    if (flag_pic)
-      {
-	rtx tmpreg;
-
-	current_function_uses_pic_offset_table = 1;
-	tmpreg = gen_rtx_REG (Pmode, 1);
-	emit_move_insn (tmpreg,
-			gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-				      gen_rtx_HIGH (Pmode, count_label_rtx)));
-	addr = gen_rtx_MEM (Pmode,
-			    gen_rtx_LO_SUM (Pmode, tmpreg, count_label_rtx));
-      }
-    else
-      {
-	rtx tmpreg = gen_rtx_REG (Pmode, 1);
-	emit_move_insn (tmpreg, gen_rtx_HIGH (Pmode, count_label_rtx));
-	addr = gen_rtx_LO_SUM (Pmode, tmpreg, count_label_rtx);
-      }
+    addr = force_reg (Pmode, count_label_rtx);
     r24 = gen_rtx_REG (Pmode, 24);
     emit_move_insn (r24, addr);
 
