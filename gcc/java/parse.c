@@ -5,13 +5,6 @@
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define yyparse java_parse
-#define yylex java_lex
-#define yyerror java_error
-#define yylval java_lval
-#define yychar java_char
-#define yydebug java_debug
-#define yynerrs java_nerrs
 #define	PLUS_TK	258
 #define	MINUS_TK	259
 #define	MULT_TK	260
@@ -275,7 +268,6 @@ static tree string_constant_concatenation PROTO ((tree, tree));
 static tree build_string_concatenation PROTO ((tree, tree));
 static tree patch_string_cst PROTO ((tree));
 static tree patch_string PROTO ((tree));
-static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
 static tree build_try_statement PROTO ((int, tree, tree));
 static tree build_try_finally_statement PROTO ((int, tree, tree));
 static tree patch_try_statement PROTO ((tree));
@@ -315,6 +307,7 @@ static char *purify_type_name PROTO ((char *));
 static tree patch_initialized_static_field PROTO ((tree));
 static tree fold_constant_for_init PROTO ((tree, tree));
 static tree strip_out_static_field_access_decl PROTO ((tree));
+static jdeplist *reverse_jdep_list PROTO ((struct parser_ctxt *));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -2217,7 +2210,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/misc/bison.simple"
+#line 3 "/usr/local/gnu/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2234,7 +2227,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2410,7 +2403,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/share/misc/bison.simple"
+#line 196 "/usr/local/gnu/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4675,7 +4668,7 @@ case 493:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/misc/bison.simple"
+#line 498 "/usr/local/gnu/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -13312,36 +13305,6 @@ patch_switch_statement (node)
 }
 
 /* 14.18 The try statement */
-
-/* Wrap BLOCK around a LABELED_BLOCK, set DECL to the newly generated
-   exit labeld and issue a jump to FINALLY_LABEL:
-     
-   LABELED_BLOCK
-     BLOCK
-       <orignal_statments>
-       DECL = &LABEL_DECL
-       GOTO_EXPR
-         FINALLY_LABEL
-     LABEL_DECL */
-
-static tree
-build_jump_to_finally (block, decl, finally_label, type)
-     tree block, decl, finally_label, type;
-{
-  tree stmt;
-  tree new_block = build (LABELED_BLOCK_EXPR, type,
-			  create_label_decl (generate_name ()), block);
-
-  stmt = build (MODIFY_EXPR, void_type_node, decl,
-		build_address_of (LABELED_BLOCK_LABEL (new_block)));
-  TREE_SIDE_EFFECTS (stmt) = 1;
-  CAN_COMPLETE_NORMALLY (stmt) = 1;
-  add_stmt_to_block (block, type, stmt);
-  stmt = build (GOTO_EXPR, void_type_node, finally_label);
-  TREE_SIDE_EFFECTS (stmt) = 1;
-  add_stmt_to_block (block, type, stmt);
-  return new_block;
-}
 
 static tree
 build_try_statement (location, try_block, catches)

@@ -1750,8 +1750,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
      enum expand_modifier modifier;
 {
   tree current;
-  int has_finally_p;
-  rtx op0;
 
   switch (TREE_CODE (exp))
     {

@@ -123,7 +123,7 @@ find_class_or_string_constant (cpool, tag, name)
   int i;
   for (i = cpool->count;  --i > 0; )
     {
-      if (cpool->tags[i] == tag && cpool->data[i] == j)
+      if (cpool->tags[i] == tag && cpool->data[i] == (jword) j)
 	return i;
     }
   i = cpool->count;

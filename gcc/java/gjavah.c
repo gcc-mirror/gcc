@@ -335,7 +335,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		num = JPOOL_INT (jcf, current_field_value);
 		/* We single out the most negative number to print
 		   specially.  This avoids later warnings from g++.  */
-		if (num == 0x80000000)
+		if (num == (jint) 0x80000000)
 		  {
 		    most_negative = 1;
 		    ++num;
@@ -354,7 +354,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		num = JPOOL_LONG (jcf, current_field_value);
 		/* We single out the most negative number to print
                    specially..  This avoids later warnings from g++.  */
-		if (num == 0x8000000000000000LL)
+		if (num == (jlong) 0x8000000000000000LL)
 		  {
 		    most_negative = 1;
 		    ++num;
@@ -920,11 +920,11 @@ add_namelet (name, name_limit, parent)
 #define JAVALANG "java/lang/"
 #define JAVAIO "java/io/"
 #define JAVAUTIL "java/util/"
-      if ((name_limit - name >= sizeof (JAVALANG) - 1
+      if ((name_limit - name >= (int) sizeof (JAVALANG) - 1
 	   && ! strncmp (name, JAVALANG, sizeof (JAVALANG) - 1))
-	  || (name_limit - name >= sizeof (JAVAUTIL) - 1
+	  || (name_limit - name >= (int) sizeof (JAVAUTIL) - 1
 	      && ! strncmp (name, JAVAUTIL, sizeof (JAVAUTIL) - 1))
-	  || (name_limit - name >= sizeof (JAVAIO) - 1
+	  || (name_limit - name >= (int) sizeof (JAVAIO) - 1
 	      && ! strncmp (name, JAVAIO, sizeof (JAVAIO) - 1)))
 	return;
     }

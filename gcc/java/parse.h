@@ -392,7 +392,6 @@ typedef struct _jdeplist {
   jdep *last;
   struct _jdeplist *next;
 } jdeplist;
-static jdeplist *reverse_jdep_list ();
 
 #endif /* JC1_LITE */
 
