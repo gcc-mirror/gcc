@@ -1,3 +1,9 @@
+2004-10-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR libstdc++/17850
+	* configure.ac: Newlib does not provide strtold.
+	* configure: Regenerate.
+
 2004-10-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/10975 (DR 453)
