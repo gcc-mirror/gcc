@@ -2038,8 +2038,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     }
 
   /* Make sure we free the things we explicitly allocated with xmalloc.  */
-  if (label_map)
-    free (label_map);
+  if (real_label_map)
+    free (real_label_map);
 
   return target;
 }
