@@ -286,7 +286,7 @@ make_alias_for_thunk (tree function)
   tree alias;
   char buf[256];
 
-#if defined (__CYGWIN__) || defined (__MINGW32__)
+#if defined (TARGET_IS_PE_COFF)
   if (DECL_ONE_ONLY (function))
     return function;
 #endif
@@ -404,7 +404,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   push_to_top_level ();
 
 #if defined (ASM_OUTPUT_DEF) \
-  && !(defined (__CYGWIN__) || defined (__MINGW32__))
+  && !defined (TARGET_IS_PE_COFF)
   if (targetm.have_named_sections)
     {
       resolve_unique_section (function, 0, flag_function_sections);

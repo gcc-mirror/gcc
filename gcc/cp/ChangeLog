@@ -1,3 +1,9 @@
+2004-06-07  Dan Kegel  <dank@kegel.com>
+
+	PR c++/14808
+	* method.c (make_alias_for_thunk, use_thunk): Use TARGET_IS_PE_COFF
+	instead of __CYWGIN__ and __MINGW32__.
+
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15815

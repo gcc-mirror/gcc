@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
+#define TARGET_IS_PE_COFF 1
+
 #include <stdio.h>
 
 /* Masks for subtarget switches used by other files.  */
