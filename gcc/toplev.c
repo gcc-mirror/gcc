@@ -505,9 +505,13 @@ int flag_fast_math = 0;
 
 int flag_volatile;
 
-/* Nonzero means treat all global and extern variables as global.  */
+/* Nonzero means treat all global and extern variables as volatile.  */
 
 int flag_volatile_global;
+
+/* Nonzero means treat all static variables as volatile.  */
+
+int flag_volatile_static;
 
 /* Nonzero means just do syntax checking; don't output anything.  */
 
@@ -651,6 +655,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"float-store", &flag_float_store, 1},
   {"volatile", &flag_volatile, 1},
   {"volatile-global", &flag_volatile_global, 1},
+  {"volatile-static", &flag_volatile_static, 1},
   {"defer-pop", &flag_defer_pop, 1},
   {"omit-frame-pointer", &flag_omit_frame_pointer, 1},
   {"cse-follow-jumps", &flag_cse_follow_jumps, 1},
