@@ -60,7 +60,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 
       // FIXME: this is insufficient if some other piece of code calls
       // this gethostbyname.
-      JvSynchronize sync (java::net::InetAddress::localhostAddress);
+      JvSynchronize sync (java::net::InetAddress::loopbackAddress);
       hptr = gethostbyname (hostname);
     }
   else
@@ -87,7 +87,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 
       // FIXME: this is insufficient if some other piece of code calls
       // this gethostbyaddr.
-      JvSynchronize sync (java::net::InetAddress::localhostAddress);
+      JvSynchronize sync (java::net::InetAddress::loopbackAddress);
       hptr = gethostbyaddr (val, len, type);
     }
   if (hptr != NULL)
