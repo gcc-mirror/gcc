@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 3.4.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-07-01 11:41-0700\n"
-"PO-Revision-Date: 2004-10-19 10:20+0100\n"
+"PO-Revision-Date: 2004-10-27 10:20+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -3556,17 +3556,17 @@ msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert werden."
 #: cfgrtl.c:1877
 #, c-format
 msgid "end insn %d for block %d not found in the insn stream"
-msgstr "Ende-insn %d für Block %d nicht im insn-Stream gefunden"
+msgstr "Ende-Befehl %d für Block %d nicht im Befehlsstrom gefunden"
 
 #: cfgrtl.c:1891
 #, c-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
-msgstr "insn %d ist in mehreren Basisblöcken (%d und %d)"
+msgstr "Befehl %d ist in mehreren Basisblöcken (%d und %d)"
 
 #: cfgrtl.c:1903
 #, c-format
 msgid "head insn %d for block %d not found in the insn stream"
-msgstr "Kopf-insn %d für Block %d nicht im insn-Stream gefunden"
+msgstr "Kopf-Befehl %d für Block %d nicht im Befehlsstrom gefunden"
 
 #: cfgrtl.c:1925
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %wi %i"
@@ -3595,7 +3595,7 @@ msgstr "Falsche Summe der Zweig-Kanten nach bedingtem Sprung %i"
 #: cfgrtl.c:1982
 #, c-format
 msgid "Call edges for non-call insn in bb %i"
-msgstr "Ruf-Kanten für Nicht-Aufruf-insn im bb %i"
+msgstr "Ruf-Kanten für Nicht-Aufruf-Befehl im bb %i"
 
 #: cfgrtl.c:1991
 #, c-format
@@ -3605,12 +3605,12 @@ msgstr "Abnormale Kanten ohne Grund in bb %i"
 #: cfgrtl.c:2001
 #, c-format
 msgid "insn %d inside basic block %d but block_for_insn is NULL"
-msgstr "insn %d innerhalb des Basis-Blockes %d, aber block_for_insn ist NULL"
+msgstr "Befehl %d innerhalb des Basis-Blockes %d, aber block_for_insn ist NULL"
 
 #: cfgrtl.c:2005
 #, c-format
 msgid "insn %d inside basic block %d but block_for_insn is %i"
-msgstr "insn %d innerhalb Basis-Blockes %d, aber block_for_insn ist %i"
+msgstr "Befehl %d innerhalb des Basis-Blockes %d, aber block_for_insn ist %i"
 
 #: cfgrtl.c:2019 cfgrtl.c:2029
 #, c-format
@@ -3629,7 +3629,7 @@ msgstr "im Basis-Block %d:"
 
 #: cfgrtl.c:2053
 msgid "flow control insn inside a basic block"
-msgstr "Flusskontroll-insn innerhalb eines Basis-Blockes"
+msgstr "Flusskontrollbefehl innerhalb eines Basis-Blockes"
 
 #: cfgrtl.c:2099
 #, c-format
@@ -3648,7 +3648,7 @@ msgstr "verify_flow_info: Falsches »fallthru« %i->%i"
 
 #: cfgrtl.c:2129
 msgid "wrong insn in the fallthru edge"
-msgstr "falsche insn in »fallthru«-Kante"
+msgstr "falscher Befehl in »fallthru«-Kante"
 
 #: cfgrtl.c:2146
 msgid "basic blocks not laid down consecutively"
@@ -3656,7 +3656,7 @@ msgstr "Basis-Blöcke sind nicht fortlaufend"
 
 #: cfgrtl.c:2171
 msgid "insn outside basic block"
-msgstr "insn außerhalb eines Basis-Blockes"
+msgstr "Befehl außerhalb eines Basis-Blockes"
 
 #: cfgrtl.c:2179
 msgid "return not followed by barrier"
@@ -3665,7 +3665,7 @@ msgstr "»return« nicht gefolgt von Sperre"
 #: cfgrtl.c:2186
 #, c-format
 msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
-msgstr "Anzahl der bb-Vermerke in insn-Kette (%d) != n_basic_blocks (%d)"
+msgstr "Anzahl der bb-Vermerke in Befehlskette (%d) != n_basic_blocks (%d)"
 
 #: cgraph.c:161
 msgid "function body not available"
@@ -4781,7 +4781,7 @@ msgstr "kann nicht auf Imaginärteil des komplexen Wertes im festen Register zug
 
 #: emit-rtl.c:2327
 msgid "Invalid rtl sharing found in the insn"
-msgstr "ungültige gemeinsame rtl-Benutzung in insn gefunden"
+msgstr "ungültige gemeinsame rtl-Benutzung in Befehl gefunden"
 
 #: emit-rtl.c:2329
 msgid "Shared rtx"
@@ -4831,11 +4831,11 @@ msgstr "die Adresse eines nicht ausgerichteten Elements kann nicht ermittelt wer
 
 #: final.c:1058
 msgid "negative insn length"
-msgstr "negative insn-Länge"
+msgstr "negative Befehlslänge"
 
 #: final.c:2429
 msgid "could not split insn"
-msgstr "insn kann nicht aufgeteilt werden"
+msgstr "Befehl kann nicht aufgeteilt werden"
 
 #: final.c:2771
 msgid "invalid `asm': "
@@ -4894,7 +4894,7 @@ msgstr "Kontrollfluss erreicht Ende einer Nicht-void-Funktion"
 
 #: flow.c:1582
 msgid "Attempt to delete prologue/epilogue insn:"
-msgstr "Versuch, Prolog/Epilog-insn zu löschen"
+msgstr "Versuch, Prolog/Epilog-Befehl zu löschen"
 
 #: fold-const.c:2878 fold-const.c:2891
 #, c-format
@@ -6488,7 +6488,7 @@ msgstr "in Klasse »%s« konnte kein Register für Überlauf gefunden werden"
 
 #: reload1.c:1884
 msgid "this is the insn:"
-msgstr "dies ist das insn:"
+msgstr "dies ist der Befehl:"
 
 #: reload1.c:3881
 msgid "`asm' operand requires impossible reload"
@@ -6514,11 +6514,11 @@ msgstr "Ausgabeoperand ist in »asm« konstant"
 
 #: rtl-error.c:124
 msgid "unrecognizable insn:"
-msgstr "unerkennbares insn:"
+msgstr "unerkennbarer Befehl:"
 
 #: rtl-error.c:126
 msgid "insn does not satisfy its constraints:"
-msgstr "insn erfüllt nicht seine Bedingungen:"
+msgstr "Befehl erfüllt nicht seine Bedingungen:"
 
 #: rtl.c:477
 #, c-format
@@ -7293,7 +7293,7 @@ msgstr "Die Höchstzahl der Iterationen zum Aufrollen in einzelner Schleife"
 
 #: params.def:160
 msgid "The maximum number of insns of a peeled loop"
-msgstr "Die Höchstzahl der insns einer geschälten Schleife"
+msgstr "Die Höchstzahl der Befehle einer geschälten Schleife"
 
 #: params.def:165
 msgid "The maximum number of peelings of a single loop"
@@ -7301,7 +7301,7 @@ msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife"
 
 #: params.def:170
 msgid "The maximum number of insns of a completely peeled loop"
-msgstr "Die Höchstzahl der insns einer vollständig geschälten Schleife"
+msgstr "Die Höchstzahl der Befehle einer vollständig geschälten Schleife"
 
 #: params.def:175
 msgid "The maximum number of peelings of a single loop that is peeled completely"
@@ -7309,11 +7309,11 @@ msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollst
 
 #: params.def:180
 msgid "The maximum number of insns of a peeled loop that rolls only once"
-msgstr "Die Höchstzahl der insns einer geschälten Schleife, die nur einmal rollt"
+msgstr "Die Höchstzahl der Befehle einer geschälten Schleife, die nur einmal rollt"
 
 #: params.def:186
 msgid "The maximum number of insns of an unswitched loop"
-msgstr "Die Höchstzahl der insns einer ungeschalteten Schleife"
+msgstr "Die Höchstzahl der Befehle einer ungeschalteten Schleife"
 
 #: params.def:191
 msgid "The maximum number of unswitchings in a single loop"
@@ -7321,158 +7321,158 @@ msgstr "Die Höchstzahl der Abschaltungen in einer einzelnen Schleife"
 
 #: params.def:196
 msgid "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot"
-msgstr ""
+msgstr "Auswahl des Anteils an der Anzahl der Wiederholungen des Basisblocks im Programm, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
 
 #: params.def:201
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
-msgstr ""
+msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks im Programm, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
 
 #: params.def:206
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
-msgstr ""
+msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungsfrequenz, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung verfügbar ist"
 
 #: params.def:211
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
-msgstr ""
+msgstr "Prozentsatz der Funktion, gewichtet nach Ausführungsfrequenz, die bei Verfolgungsentwurf abgedeckt werden muss. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist"
 
 #: params.def:216
 msgid "Maximal code growth caused by tail duplication (in percent)"
-msgstr ""
+msgstr "Maximaler Code-Zuwachs durch Ende-Vervielfältigung (in Prozent)"
 
 #: params.def:220
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
-msgstr ""
+msgstr "Umgekehrtes Wachstum anhalten, wenn die umgekehrte Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist (in Prozent)"
 
 #: params.def:225
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
-msgstr ""
+msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung verfügbar ist"
 
 #: params.def:230
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available"
-msgstr ""
+msgstr "Vorwärtswachstum anhalten, wenn die Wahrscheinlichkeit der besten Kante weniger als dieser Schwellwert ist. Verwendet, wenn Profil-Rückmeldung nicht verfügbar ist"
 
 #: params.def:237
 msgid "The maximum number of incoming edges to consider for crossjumping"
-msgstr ""
+msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
 
 #: params.def:243
 msgid "The maximum length of path considered in cse"
-msgstr ""
+msgstr "Größte Länge des betrachteten Pfades in cse"
 
 #: params.def:248
 msgid "The maximum memory locations recorded by cselib"
-msgstr ""
+msgstr "Höchstzahl der Speicherstellen, die von csellib aufgezeichnet werden"
 
 #: params.def:261
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
-msgstr ""
+msgstr "Minimale Heaperweiterung, die Speicherbereinigung anstößt, als Prozentsatz der Gesamtgröße des Heap"
 
 #: params.def:267
 msgid "Minimum heap size before we start collecting garbage, in kilobytes"
-msgstr ""
+msgstr "Kleinste Heapgröße vor Speicherbereinigungsbeginn, in Kilobytes"
 
 #: params.def:275
 msgid "The maximum number of instructions to search backward when looking for equivalent reload"
-msgstr ""
+msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquivalentem Neuladen gesucht wird"
 
 #: config/darwin-c.c:75
 msgid "too many #pragma options align=reset"
-msgstr ""
+msgstr "zu viele #pragma-Optionen align=reset"
 
 #: config/darwin-c.c:95 config/darwin-c.c:98 config/darwin-c.c:100
 #: config/darwin-c.c:102
 msgid "malformed '#pragma options', ignoring"
-msgstr ""
+msgstr "Falsch geformte '#pragma options', ignoriert"
 
 #: config/darwin-c.c:105
 msgid "junk at end of '#pragma options'"
-msgstr ""
+msgstr "Ausschuss am Ende von '#pragma options'"
 
 #: config/darwin-c.c:115
 msgid "malformed '#pragma options align={mac68k|power|reset}', ignoring"
-msgstr ""
+msgstr "Falsch geformte '#pragma options align={mac68k|power|reset}', ignoriert"
 
 #: config/darwin-c.c:127
 msgid "missing '(' after '#pragma unused', ignoring"
-msgstr ""
+msgstr "Fehlendes '(' hinter '#pragma unused', ignoriert"
 
 #: config/darwin-c.c:145
 msgid "missing ')' after '#pragma unused', ignoring"
-msgstr ""
+msgstr "Fehlendes ')' hinter '#pragma unused', ignoriert"
 
 #: config/darwin-c.c:148
 msgid "junk at end of '#pragma unused'"
-msgstr ""
+msgstr "Ausschuss am Ende von '#pragma unused'"
 
 #: config/darwin.c:1347
 msgid "internal and protected visibility attributes not supportedin this configuration; ignored"
-msgstr ""
+msgstr "interne und geschützte Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: config/lynx-ng.h:97 config/lynx.h:116 config/rs6000/lynx.h:73
 msgid "-msystem-v and -p are incompatible"
-msgstr ""
+msgstr "-msystem-v und -p sind unverträglich"
 
 #: config/lynx-ng.h:99 config/lynx.h:118 config/rs6000/lynx.h:75
 msgid "-msystem-v and -mthreads are incompatible"
-msgstr ""
+msgstr "-msystem-v und -mthreads sind unverträglich"
 
 #: config/windiss.h:37
 msgid "profiler support for WindISS"
-msgstr ""
+msgstr "Profilerunterstützung für WindISS"
 
 #: config/alpha/alpha.c:231
 #, c-format
 msgid "-f%s ignored for Unicos/Mk (not supported)"
-msgstr ""
+msgstr "-f%s für Unicos/Mk (nicht unterstützt) ignoriert"
 
 #: config/alpha/alpha.c:255
 msgid "-mieee not supported on Unicos/Mk"
-msgstr ""
+msgstr "-mieee für Unicos/Mk nicht unterstützt"
 
 #: config/alpha/alpha.c:266
 msgid "-mieee-with-inexact not supported on Unicos/Mk"
-msgstr ""
+msgstr "-mieee-with-inexact für Unicos/Mk nicht unterstützt"
 
 #: config/alpha/alpha.c:283
 #, c-format
 msgid "bad value `%s' for -mtrap-precision switch"
-msgstr ""
+msgstr "falscher Wert »%s« für Schalter -mtrap-precision"
 
 #: config/alpha/alpha.c:297
 #, c-format
 msgid "bad value `%s' for -mfp-rounding-mode switch"
-msgstr ""
+msgstr "Falscher Wert »%s« für Schalter -mfp-rounding-mode"
 
 #: config/alpha/alpha.c:312
 #, c-format
 msgid "bad value `%s' for -mfp-trap-mode switch"
-msgstr ""
+msgstr "Falscher Wert »%s« für Schalter -mfp-trap-mode"
 
 #: config/alpha/alpha.c:324 config/rs6000/rs6000.c:1088
 #, c-format
 msgid "bad value `%s' for -mtls-size switch"
-msgstr ""
+msgstr "Falscher Wert »%s« für Schalter -mtls-size"
 
 #: config/alpha/alpha.c:343 config/alpha/alpha.c:355
 #, c-format
 msgid "bad value `%s' for -mcpu switch"
-msgstr ""
+msgstr "Falscher Wert »%s für Schalter -mcpu«"
 
 #: config/alpha/alpha.c:362
 msgid "trap mode not supported on Unicos/Mk"
-msgstr ""
+msgstr "Trap-Modus für Unicos/Mk nicht unterstützt"
 
 #: config/alpha/alpha.c:369
 msgid "fp software completion requires -mtrap-precision=i"
-msgstr ""
+msgstr "FP-Software-Vervollständigung benötigt -mtrap-precision=i"
 
 #: config/alpha/alpha.c:385
 msgid "rounding mode not supported for VAX floats"
-msgstr ""
+msgstr "Rundungsmodus für VAX-Floats nicht unterstützt"
 
 #: config/alpha/alpha.c:390
 msgid "trap mode not supported for VAX floats"
-msgstr ""
+msgstr "Trap-Modus für VAX-Floats nicht unterstützt"
 
 #: config/alpha/alpha.c:394
 msgid "128-bit long double not supported for VAX floats"
@@ -7714,7 +7714,7 @@ msgstr "Bit-Breite des unmittelbaren TLS-Versatzes angeben"
 #: config/arc/arc.c:147
 #, c-format
 msgid "bad value (%s) for -mcpu switch"
-msgstr "Falscher Wert (%s) für -mcpu Schalter"
+msgstr "Falscher Wert (%s) für Schalter -mcpu"
 
 #: config/arc/arc.c:369
 #, c-format
@@ -7795,7 +7795,7 @@ msgstr "Das Aktivieren der Unterstützung der Aufrufer-Zusammenarbeit ist nur be
 
 #: config/arm/arm.c:718
 msgid "interworking forces APCS-32 to be used"
-msgstr "Zusammenarbeit erzingt die Verwendung von APCS-32"
+msgstr "Zusammenarbeit erzwingt die Verwendung von APCS-32"
 
 #: config/arm/arm.c:724
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
@@ -7807,7 +7807,7 @@ msgstr "-fpic und -mapcs-reent sind inkompatibel"
 
 #: config/arm/arm.c:735
 msgid "APCS reentrant code not supported.  Ignored"
-msgstr "APCS wieder einsprungsfähiger Code nicht unterstützt. Ignoriert."
+msgstr "wieder einsprungsfähiger APCS Code nicht unterstützt. Ignoriert."
 
 #: config/arm/arm.c:743
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
@@ -7837,7 +7837,7 @@ msgstr "-mpic-register= ist ohne -fpic nutzlos"
 #: config/arm/arm.c:841
 #, c-format
 msgid "unable to use '%s' for PIC register"
-msgstr ""
+msgstr "»%s« kann nicht für PIC-Register verwendet werden"
 
 #: config/arm/arm.c:2249 config/arm/arm.c:2267 config/avr/avr.c:4558
 #: config/c4x/c4x.c:4447 config/h8300/h8300.c:4260 config/i386/i386.c:1592
@@ -7848,242 +7848,242 @@ msgstr ""
 #: config/sh/sh.c:6929 config/stormy16/stormy16.c:2073 config/v850/v850.c:2173
 #, c-format
 msgid "`%s' attribute only applies to functions"
-msgstr ""
+msgstr "Attribut »%s« gilt nur für Funktionen"
 
 #: config/arm/arm.c:10576
 msgid "unable to compute real location of stacked parameter"
-msgstr ""
+msgstr "Wirkliche Stelle des gestapelten Parameters kann nicht berechnet werden"
 
 #. @@@ better error message
 #: config/arm/arm.c:11204 config/arm/arm.c:11241
 msgid "selector must be an immediate"
-msgstr ""
+msgstr "Wähler muss »immediate« sein"
 
 #. @@@ better error message
 #: config/arm/arm.c:11284 config/i386/i386.c:14317 config/i386/i386.c:14351
 msgid "mask must be an immediate"
-msgstr ""
+msgstr "Maske muss »immediate« sein"
 
 #: config/arm/arm.c:11979
 msgid "no low registers available for popping high registers"
-msgstr ""
+msgstr "keine unteren Register für das Hervorholen der hohen Register verfügbar"
 
 #: config/arm/arm.c:12229
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
-msgstr ""
+msgstr "Interrupt-Dienst-Routinen können nicht im »Thumb«-Modus codiert werden"
 
 #: config/arm/pe.c:170 config/mcore/mcore.c:3241
 msgid "%Jinitialized variable '%D' is marked dllimport"
-msgstr ""
+msgstr "%Jinitialisierte Variable »%D« ist als »dllimport« markiert"
 
 #: config/arm/pe.c:179
 msgid "%Jstatic variable '%D' is marked dllimport"
-msgstr ""
+msgstr "%Jstatische Variable »%D« ist als »dllimport« markiert"
 
 #: config/arm/arm.h:451
 msgid "Generate APCS conformant stack frames"
-msgstr ""
+msgstr "APCS-konforme Stapelrahmen erzeugen"
 
 #: config/arm/arm.h:454
 msgid "Store function names in object code"
-msgstr ""
+msgstr "Funktionsnamen im Objektcode speichern"
 
 #: config/arm/arm.h:458
 msgid "Use the 32-bit version of the APCS"
-msgstr ""
+msgstr "32-Bit-Version des APCS verwenden"
 
 #: config/arm/arm.h:463
 msgid "Pass FP arguments in FP registers"
-msgstr ""
+msgstr "FP-Argumente an FP-Register übergeben"
 
 #: config/arm/arm.h:466
 msgid "Generate re-entrant, PIC code"
-msgstr ""
+msgstr "Wiedereinsprungsfähigen PIC-Code erzeugen"
 
 #: config/arm/arm.h:469
 msgid "The MMU will trap on unaligned accesses"
-msgstr ""
+msgstr "Die MMU wird nicht ausgerichtete Zugriffe abfangen"
 
 #: config/arm/arm.h:472
 msgid "Use library calls to perform FP operations"
-msgstr ""
+msgstr "Bibliotheksaufrufe für die Ausführung von FP-Operationen verwenden"
 
 #: config/arm/arm.h:474 config/i960/i960.h:291
 msgid "Use hardware floating point instructions"
-msgstr ""
+msgstr "Hardware-Fließkommabefehle verwenden"
 
 #: config/arm/arm.h:476
 msgid "Assume target CPU is configured as big endian"
-msgstr ""
+msgstr "Ziel-CPU als »big endian«-konfiguriert annehmen"
 
 #: config/arm/arm.h:478
 msgid "Assume target CPU is configured as little endian"
-msgstr ""
+msgstr "Ziel-CPU als »little endian«-konfiguriert annehmen"
 
 #: config/arm/arm.h:480
 msgid "Assume big endian bytes, little endian words"
-msgstr ""
+msgstr "»big endian« Bytes und »little endian« Wörter annehmen"
 
 #: config/arm/arm.h:482
 msgid "Support calls between Thumb and ARM instruction sets"
-msgstr ""
+msgstr "Aufrufe zwischen Thumb- und ARM-Befehlssätzen unterstützen"
 
 #: config/arm/arm.h:485
 msgid "Generate a call to abort if a noreturn function returns"
-msgstr ""
+msgstr "Aufruf zum  Abbruch erzeugen, wenn eine »noreturn«-Funktion zurückkehrt"
 
 #: config/arm/arm.h:488
 msgid "Do not move instructions into a function's prologue"
-msgstr ""
+msgstr "Keine Anweisungen in einen Funktionsprolog verschieben"
 
 #: config/arm/arm.h:491
 msgid "Do not load the PIC register in function prologues"
-msgstr ""
+msgstr "PIC-Register nicht in Funktionsprolog verschieben"
 
 #: config/arm/arm.h:494
 msgid "Generate call insns as indirect calls, if necessary"
-msgstr ""
+msgstr "Falls nötig, Aufruf-Befehle als indirekte Aufrufe erzeugen"
 
 #: config/arm/arm.h:497
 msgid "Compile for the Thumb not the ARM"
-msgstr ""
+msgstr "Für Thumb statt ARM übersetzen"
 
 #: config/arm/arm.h:501
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb: Nicht-Blatt-Stapelrahmen erzeugen, auch wenn nicht erforderlich"
 
 #: config/arm/arm.h:504
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb: Blatt-Stapelrahmen erzeugen, auch wenn nicht erforderlich"
 
 #: config/arm/arm.h:507
 msgid "Thumb: Assume non-static functions may be called from ARM code"
-msgstr ""
+msgstr "Thumb: Annahme, dass nichtstatische Funktionen von ARM-Code aus aufgerufen werden können"
 
 #: config/arm/arm.h:511
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
-msgstr ""
+msgstr "Thumb: Annahme, dass Funktionszeiger an nicht Thumb unterstützenden Code übergeben werden können"
 
 #: config/arm/arm.h:515
 msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
-msgstr ""
+msgstr "Cirrus: NOPs einbauen, um ungültige Befehlskombinationen zu vermeiden"
 
 #: config/arm/arm.h:517
 msgid "Cirrus: Do not break up invalid instruction combinations with NOPs"
-msgstr ""
+msgstr "Cirrus: Keine ungültigen Befehlskombinationen mit NOPs aufbrechen"
 
 #: config/arm/arm.h:525
 msgid "Specify the name of the target CPU"
-msgstr ""
+msgstr "Namen der Ziel-CPU angeben"
 
 #: config/arm/arm.h:527
 msgid "Specify the name of the target architecture"
-msgstr ""
+msgstr "Namen der Ziel-Architektur angeben"
 
 #: config/arm/arm.h:531
 msgid "Specify the version of the floating point emulator"
-msgstr ""
+msgstr "Version des Fließkommaemulators angeben"
 
 #: config/arm/arm.h:533
 msgid "Specify the minimum bit alignment of structures"
-msgstr ""
+msgstr "Kleinste Bitausrichtung von Strukturen angeben"
 
 #: config/arm/arm.h:535
 msgid "Specify the register to be used for PIC addressing"
-msgstr ""
+msgstr "Für PIC-Adressierung zu verwendendes Register angeben"
 
 #: config/arm/pe.h:65
 msgid "Ignore dllimport attribute for functions"
-msgstr ""
+msgstr "Attribut dllimport für Funktionen ignorieren"
 
 #: config/avr/avr.c:514
 #, c-format
 msgid "large frame pointer change (%d) with -mtiny-stack"
-msgstr ""
+msgstr "Wechsel großer Rahmenzeiger (%d) mit -mtiny-stack"
 
 #: config/avr/avr.c:1101
 msgid "bad address, not (reg+disp):"
-msgstr ""
+msgstr "Falsche Adresse, nicht (reg+disp):"
 
 #: config/avr/avr.c:1109
 msgid "internal compiler error.  Bad address:"
-msgstr ""
+msgstr "Interner Compiler-Fehler. Falsche Adresse:"
 
 #: config/avr/avr.c:1122
 msgid "internal compiler error.  Unknown mode:"
-msgstr ""
+msgstr "Interner Compiler-Fehler. Unbekannter Modus:"
 
 #: config/avr/avr.c:1744 config/avr/avr.c:2405
 msgid "invalid insn:"
-msgstr ""
+msgstr "Ungültiger Befehl:"
 
 #: config/avr/avr.c:1778 config/avr/avr.c:1861 config/avr/avr.c:1910
 #: config/avr/avr.c:1919 config/avr/avr.c:2014 config/avr/avr.c:2183
 #: config/avr/avr.c:2439 config/avr/avr.c:2547
 msgid "incorrect insn:"
-msgstr ""
+msgstr "Falscher Befehl:"
 
 #: config/avr/avr.c:1938 config/avr/avr.c:2099 config/avr/avr.c:2254
 #: config/avr/avr.c:2591
 msgid "unknown move insn:"
-msgstr ""
+msgstr "Falscher Kopierbefehl:"
 
 #: config/avr/avr.c:2814
 msgid "bad shift insn:"
-msgstr ""
+msgstr "Falscher Schiebe-Befehl:"
 
 #: config/avr/avr.c:2927 config/avr/avr.c:3348 config/avr/avr.c:3719
 msgid "internal compiler error.  Incorrect shift:"
-msgstr ""
+msgstr "Interner Compiler-Fehler. Falsche Verschiebung:"
 
 #: config/avr/avr.c:4532 config/ip2k/ip2k.c:3144
 msgid "only initialized variables can be placed into program memory area"
-msgstr ""
+msgstr "Nur initialisierte Variablen können im Programmspeicherbereich platziert werden"
 
 #: config/avr/avr.c:4626
 msgid "only uninitialized variables can be placed in the .noinit section"
-msgstr ""
+msgstr "Nur uninitialisierte Variablen können im .noinit-Bereich platziert werden"
 
 #: config/avr/avr.c:4640
 #, c-format
 msgid "MCU `%s' supported for assembler only"
-msgstr ""
+msgstr "MCU »%s« nur für Assemblierung unterstützt"
 
 #: config/avr/avr.h:73
 msgid "Assume int to be 8 bit integer"
-msgstr ""
+msgstr "int als 8-Bit-Ganzzahl annehmen"
 
 #: config/avr/avr.h:75
 msgid "Change the stack pointer without disabling interrupts"
-msgstr ""
+msgstr "Stapel-Zeiger ändern, ohne Unterbrechung (Interrupt) auszuschalten"
 
 #: config/avr/avr.h:77
 msgid "Use subroutines for function prologue/epilogue"
-msgstr ""
+msgstr "Für Prolog/Epilog Unterprogramme verwenden"
 
 #: config/avr/avr.h:79
 msgid "Change only the low 8 bits of the stack pointer"
-msgstr ""
+msgstr "Nur die unteren 8 Bit des Stapelzeigers verändern"
 
 #: config/avr/avr.h:81
 msgid "Do not generate tablejump insns"
-msgstr ""
+msgstr "Keine tablejmp-Befehle erzeugen"
 
 #: config/avr/avr.h:83
 msgid "Use rjmp/rcall (limited range) on >8K devices"
-msgstr ""
+msgstr "rjmp/rcall (beschränkter Wertebereich) auf >8K-Geräten verwenden"
 
 #: config/avr/avr.h:85
 msgid "Output instruction sizes to the asm file"
-msgstr ""
+msgstr "Befehlsgrößen in die asm-Datei ausgeben"
 
 #: config/avr/avr.h:102
 msgid "Specify the initial stack address"
-msgstr ""
+msgstr "Anfängliche Stapeladresse angeben"
 
 #: config/avr/avr.h:103
 msgid "Specify the MCU name"
-msgstr ""
+msgstr "MCU-Namen angeben"
 
 #. `GIV_SORT_CRITERION(GIV1, GIV2)'
 #. In some cases, the strength reduction optimization pass can
@@ -8095,132 +8095,132 @@ msgstr ""
 #. the most combinations to be found.
 #: config/avr/avr.h:2268
 msgid "trampolines not supported"
-msgstr ""
+msgstr "Keine Trampoline unterstützt"
 
 #: config/c4x/c4x-c.c:71
 #, c-format
 msgid "missing '(' after '#pragma %s' - ignored"
-msgstr ""
+msgstr "»(« hinter »#pragma %s« fehlt - ignoriert"
 
 #: config/c4x/c4x-c.c:74
 #, c-format
 msgid "missing function name in '#pragma %s' - ignored"
-msgstr ""
+msgstr "in »#pragma %s« fehlt Funktionsname - ignoriert"
 
 #: config/c4x/c4x-c.c:79
 #, c-format
 msgid "malformed '#pragma %s' - ignored"
-msgstr ""
+msgstr "falsch geformtes »#pragma %s« - ignoriert"
 
 #: config/c4x/c4x-c.c:81
 #, c-format
 msgid "missing section name in '#pragma %s' - ignored"
-msgstr ""
+msgstr "fehlender Abschnittsname in »#pragma %s« - ignoriert"
 
 #: config/c4x/c4x-c.c:86
 #, c-format
 msgid "missing ')' for '#pragma %s' - ignored"
-msgstr ""
+msgstr "»)« für »#pragma %s« fehlt - ignoriert"
 
 #: config/c4x/c4x-c.c:89
 #, c-format
 msgid "junk at end of '#pragma %s'"
-msgstr ""
+msgstr "Ausschuss am Ende von »#pragma %s«"
 
 #: config/c4x/c4x.c:300
 #, c-format
 msgid "unknown CPU version %d, using 40.\n"
-msgstr ""
+msgstr "unbekannte CPU-Version %d, verwende 40.\n"
 
 #: config/c4x/c4x.c:850
 #, c-format
 msgid "ISR %s requires %d words of local vars, max is 32767"
-msgstr ""
+msgstr "ISR %s benötigt %d Wörter lokaler Variablen, höchstens 32767"
 
 #: config/c4x/c4x.c:1571
 msgid "using CONST_DOUBLE for address"
-msgstr ""
+msgstr "CONST_DOUBLE für Adresse verwendet"
 
 #: config/c4x/c4x.c:1709
 msgid "c4x_address_cost: Invalid addressing mode"
-msgstr ""
+msgstr "c4x_address_cost: Ungültiger Adressierungsmodus"
 
 #: config/c4x/c4x.c:1844
 #, c-format
 msgid "c4x_print_operand: %%L inconsistency"
-msgstr ""
+msgstr "c4x_print_operand: %%L-Inkonsistenz"
 
 #: config/c4x/c4x.c:1850
 #, c-format
 msgid "c4x_print_operand: %%N inconsistency"
-msgstr ""
+msgstr "c4x_print_operand: %%N-Inkonsistenz"
 
 #: config/c4x/c4x.c:1891
 #, c-format
 msgid "c4x_print_operand: %%O inconsistency"
-msgstr ""
+msgstr "c4x_print_operand: %%O-Inkonsistenz"
 
 #: config/c4x/c4x.c:1986
 msgid "c4x_print_operand: Bad operand case"
-msgstr ""
+msgstr "c4x_print_operand: Falscher Operandenfall"
 
 #: config/c4x/c4x.c:2027
 msgid "c4x_print_operand_address: Bad post_modify"
-msgstr ""
+msgstr "c4x_print_operand_address: Falsches post_modify"
 
 #: config/c4x/c4x.c:2049
 msgid "c4x_print_operand_address: Bad pre_modify"
-msgstr ""
+msgstr "c4x_print_operand_address: Falsches pre_modify"
 
 #: config/c4x/c4x.c:2097 config/c4x/c4x.c:2109 config/c4x/c4x.c:2124
 msgid "c4x_print_operand_address: Bad operand case"
-msgstr ""
+msgstr "c4x_print_operand_address: Falscher Operandenfall"
 
 #: config/c4x/c4x.c:2375
 msgid "c4x_rptb_insert: Cannot find start label"
-msgstr ""
+msgstr "c4x_rptb_insert: Anfangsmarke kann nicht gefunden werden"
 
 #: config/c4x/c4x.c:3292 config/c4x/c4x.c:3310
 msgid "mode not QImode"
-msgstr ""
+msgstr "Modus ist nicht QImode"
 
 #: config/c4x/c4x.c:3380
 msgid "invalid indirect memory address"
-msgstr ""
+msgstr "ungültige indirekte Speicheradresse"
 
 #: config/c4x/c4x.c:3469
 msgid "invalid indirect (S) memory address"
-msgstr ""
+msgstr "ungültige indirekte (S) Speicheradresse"
 
 #: config/c4x/c4x.c:3797
 msgid "c4x_valid_operands: Internal error"
-msgstr ""
+msgstr "c4x_valid_operands: Interner Fehler"
 
 #: config/c4x/c4x.c:4216
 msgid "c4x_operand_subword: invalid mode"
-msgstr ""
+msgstr "c4x_operand_subword: ungültiger Modus"
 
 #: config/c4x/c4x.c:4219
 msgid "c4x_operand_subword: invalid operand"
-msgstr ""
+msgstr "c4x_operand_subword: ungültiger Operand"
 
 #. We could handle these with some difficulty.
 #. e.g., *p-- => *(p-=2); *(p+1).
 #: config/c4x/c4x.c:4245
 msgid "c4x_operand_subword: invalid autoincrement"
-msgstr ""
+msgstr "c4x_operand_subword: ungültige automatische Erhöhung"
 
 #: config/c4x/c4x.c:4251
 msgid "c4x_operand_subword: invalid address"
-msgstr ""
+msgstr "c4x_operand_subword: ungültige Adresse"
 
 #: config/c4x/c4x.c:4262
 msgid "c4x_operand_subword: address not offsettable"
-msgstr ""
+msgstr "c4x_operand_subword: Adresse nicht versetzbar"
 
 #: config/c4x/c4x.c:4472
 msgid "c4x_rptb_rpts_p: Repeat block top label moved\n"
-msgstr ""
+msgstr "c4x_rptb_rpts_p: Anfangsmarke des Wiederholungsblocks bewegt\n"
 
 #. ??? HACK.  We shouldn't have flag_inline_trees at all.
 #. Name of the c4x assembler.
@@ -8264,564 +8264,564 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/c4x/c4x.h:168
 msgid "Small memory model"
-msgstr ""
+msgstr "Kleines Speichermodell"
 
 #: config/c4x/c4x.h:170
 msgid "Big memory model"
-msgstr ""
+msgstr "Großes Speichermodell"
 
 #: config/c4x/c4x.h:172
 msgid "Use MPYI instruction for C3x"
-msgstr ""
+msgstr "MPYI-Befehle für C3x verwenden"
 
 #: config/c4x/c4x.h:174
 msgid "Do not use MPYI instruction for C3x"
-msgstr ""
+msgstr "Keine MPYI-Befehle für C3x verwenden"
 
 #: config/c4x/c4x.h:176
 msgid "Use fast but approximate float to integer conversion"
-msgstr ""
+msgstr "Schnelle aber nur angenäherte Fließkomma-zu-Ganzzahl-Umwandlung verwenden"
 
 #: config/c4x/c4x.h:178
 msgid "Use slow but accurate float to integer conversion"
-msgstr ""
+msgstr "Langsame aber genaue Fließkomma-zu-Ganzzahl-Umwandlung verwenden"
 
 #: config/c4x/c4x.h:180
 msgid "Enable use of RTPS instruction"
-msgstr ""
+msgstr "Verwendung des RTPS-Befehls einschalten"
 
 #: config/c4x/c4x.h:182
 msgid "Disable use of RTPS instruction"
-msgstr ""
+msgstr "Verwendung des RTPS-Befehls ausschalten"
 
 #: config/c4x/c4x.h:184
 msgid "Enable use of RTPB instruction"
-msgstr ""
+msgstr "Verwendung des RTPB-Befehls einschalten"
 
 #: config/c4x/c4x.h:186
 msgid "Disable use of RTPB instruction"
-msgstr ""
+msgstr "Verwendung des RTPB-Befehls ausschalten"
 
 #: config/c4x/c4x.h:188
 msgid "Generate code for C30 CPU"
-msgstr ""
+msgstr "Code für C30-CPU erzeugen"
 
 #: config/c4x/c4x.h:190
 msgid "Generate code for C31 CPU"
-msgstr ""
+msgstr "Code für C31-CPU erzeugen"
 
 #: config/c4x/c4x.h:192
 msgid "Generate code for C32 CPU"
-msgstr ""
+msgstr "Code für C32-CPU erzeugen"
 
 #: config/c4x/c4x.h:194
 msgid "Generate code for C33 CPU"
-msgstr ""
+msgstr "Code für C33-CPU erzeugen"
 
 #: config/c4x/c4x.h:196
 msgid "Generate code for C40 CPU"
-msgstr ""
+msgstr "Code für C40-CPU erzeugen"
 
 #: config/c4x/c4x.h:198
 msgid "Generate code for C44 CPU"
-msgstr ""
+msgstr "Code für C44-CPU erzeugen"
 
 #: config/c4x/c4x.h:200
 msgid "Emit code compatible with TI tools"
-msgstr ""
+msgstr "Mit TI-Werkzeugen kompatiblen Code erzeugen"
 
 #: config/c4x/c4x.h:202
 msgid "Emit code to use GAS extensions"
-msgstr ""
+msgstr "GAS-Erweiterungen verwendenden Code erzeugen"
 
 #: config/c4x/c4x.h:204 config/c4x/c4x.h:208
 msgid "Save DP across ISR in small memory model"
-msgstr ""
+msgstr "DP während ISR im kleinen Speichermodell sichern"
 
 #: config/c4x/c4x.h:206 config/c4x/c4x.h:210
 msgid "Don't save DP across ISR in small memory model"
-msgstr ""
+msgstr "Nicht DP während ISR im kleinen Speichermodell sichern"
 
 #: config/c4x/c4x.h:212
 msgid "Pass arguments on the stack"
-msgstr ""
+msgstr "Argumente über den Stapel übergeben"
 
 #: config/c4x/c4x.h:214
 msgid "Pass arguments in registers"
-msgstr ""
+msgstr "Argumente über Register übergeben"
 
 #: config/c4x/c4x.h:216
 msgid "Enable new features under development"
-msgstr ""
+msgstr "In Entwicklung befindliche neue Eigenschaften einschalten"
 
 #: config/c4x/c4x.h:218
 msgid "Disable new features under development"
-msgstr ""
+msgstr "In Entwicklung befindliche neue Eigenschaften ausschalten"
 
 #: config/c4x/c4x.h:220
 msgid "Use the BK register as a general purpose register"
-msgstr ""
+msgstr "Das BK-Register als Mehrzweckregister verwenden"
 
 #: config/c4x/c4x.h:222
 msgid "Do not allocate BK register"
-msgstr ""
+msgstr "Nicht das BK-Register belegen"
 
 #: config/c4x/c4x.h:224
 msgid "Enable use of DB instruction"
-msgstr ""
+msgstr "Verwendung des DB-Befehls einschalten"
 
 #: config/c4x/c4x.h:226
 msgid "Disable use of DB instruction"
-msgstr ""
+msgstr "Verwendung des DB-Befehls ausschalten"
 
 #: config/c4x/c4x.h:228
 msgid "Enable debugging"
-msgstr ""
+msgstr "Modus für Fehlersuche einschalten"
 
 #: config/c4x/c4x.h:230
 msgid "Disable debugging"
-msgstr ""
+msgstr "Modus für Fehlersuche ausschalten"
 
 #: config/c4x/c4x.h:232
 msgid "Force constants into registers to improve hoisting"
-msgstr ""
+msgstr "Konstanten in Register zwingen, um das Setzen von Marken zu verbessern"
 
 #: config/c4x/c4x.h:234
 msgid "Don't force constants into registers"
-msgstr ""
+msgstr "Konstanten nicht in Register zwingen"
 
 #: config/c4x/c4x.h:236
 msgid "Force RTL generation to emit valid 3 operand insns"
-msgstr ""
+msgstr "RTL-Erzeugung zwingen, gültige 3-Operanden-Befehle zu generieren"
 
 #: config/c4x/c4x.h:238
 msgid "Allow RTL generation to emit invalid 3 operand insns"
-msgstr ""
+msgstr "RTL-Erzeugung mit ungültigen 3-Operanden-Befehlen erlauben"
 
 #: config/c4x/c4x.h:240
 msgid "Allow unsigned iteration counts for RPTB/DB"
-msgstr ""
+msgstr "Vorzeichenlose Wiederholungszähler für RPTB/DB erlauben"
 
 #: config/c4x/c4x.h:242
 msgid "Disallow unsigned iteration counts for RPTB/DB"
-msgstr ""
+msgstr "Vorzeichenlose Iterationszähler für RPTB/DB verbieten"
 
 #: config/c4x/c4x.h:244
 msgid "Preserve all 40 bits of FP reg across call"
-msgstr ""
+msgstr "Alle 40 Bit des FP-Registers über Aufrufe hinweg erhalten"
 
 #: config/c4x/c4x.h:246
 msgid "Only preserve 32 bits of FP reg across call"
-msgstr ""
+msgstr "Nur 32 Bit des FP-Registers über Aufrufe hinweg erhalten"
 
 #: config/c4x/c4x.h:248
 msgid "Enable parallel instructions"
-msgstr ""
+msgstr "Parallele Befehle einschalten"
 
 #: config/c4x/c4x.h:250
 msgid "Disable parallel instructions"
-msgstr ""
+msgstr "Parallele Befehle ausschalten"
 
 #: config/c4x/c4x.h:252
 msgid "Enable MPY||ADD and MPY||SUB instructions"
-msgstr ""
+msgstr "MPY||ADD- und MPY||SUB-Befehle einschalten"
 
 #: config/c4x/c4x.h:254
 msgid "Disable MPY||ADD and MPY||SUB instructions"
-msgstr ""
+msgstr "MPY||ADD- und MPY||SUB-Befehle ausschalten"
 
 #: config/c4x/c4x.h:256
 msgid "Assume that pointers may be aliased"
-msgstr ""
+msgstr "Annehmen, dass Zeiger mit anderem Namen verwendet werden können"
 
 #: config/c4x/c4x.h:258
 msgid "Assume that pointers not aliased"
-msgstr ""
+msgstr "Annehmen, dass Zeiger nicht mit anderem Namen verwendet werden können"
 
 #: config/c4x/c4x.h:331
 msgid "Specify maximum number of iterations for RPTS"
-msgstr ""
+msgstr "Höchstzahl der Iterationen für RPTS angeben"
 
 #: config/c4x/c4x.h:333
 msgid "Select CPU to generate code for"
-msgstr ""
+msgstr "CPU auswählen, für die Code erzeugt werden soll"
 
 #: config/cris/cris.c:604
 msgid "unexpected index-type in cris_print_index"
-msgstr ""
+msgstr "unerwarteter Indextyp in cris_print_index"
 
 #: config/cris/cris.c:618
 msgid "unexpected base-type in cris_print_base"
-msgstr ""
+msgstr "unerwarteter Basistyp in cris_print_index"
 
 #: config/cris/cris.c:911
 #, c-format
 msgid "stackframe too big: %d bytes"
-msgstr ""
+msgstr "Stapelrahmen zu groß: %d Bytes"
 
 #: config/cris/cris.c:1222
 msgid "allocated but unused delay list in epilogue"
-msgstr ""
+msgstr "zugewiesene aber unbenutzte Verzögerungsliste in Epilog"
 
 #: config/cris/cris.c:1232
 msgid "unexpected function type needing stack adjustment for __builtin_eh_return"
-msgstr ""
+msgstr "Unerwarteter Funktionstyp benötigt Stapelausrichtung für __builtin_eh_return"
 
 #: config/cris/cris.c:1308
 msgid "invalid operand for 'b' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »b«"
 
 #: config/cris/cris.c:1321
 msgid "invalid operand for 'v' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »v«"
 
 #: config/cris/cris.c:1331
 msgid "invalid operand for 'P' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »P«"
 
 #: config/cris/cris.c:1338
 msgid "invalid operand for 'p' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »p«"
 
 #: config/cris/cris.c:1377
 msgid "invalid operand for 'z' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »z«"
 
 #: config/cris/cris.c:1425 config/cris/cris.c:1455
 msgid "invalid operand for 'H' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »H«"
 
 #: config/cris/cris.c:1431
 msgid "bad register"
-msgstr ""
+msgstr "falsches Register"
 
 #: config/cris/cris.c:1469
 msgid "invalid operand for 'e' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »e«"
 
 #: config/cris/cris.c:1486
 msgid "invalid operand for 'm' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »m«"
 
 #: config/cris/cris.c:1511
 msgid "invalid operand for 'A' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »A«"
 
 #: config/cris/cris.c:1519
 msgid "invalid operand for 'D' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »D«"
 
 #: config/cris/cris.c:1533
 msgid "invalid operand for 'T' modifier"
-msgstr ""
+msgstr "ungültiger Operand für Modifizierer »T«"
 
 #: config/cris/cris.c:1542
 msgid "invalid operand modifier letter"
-msgstr ""
+msgstr "ungültiger Operand für Modifizier-Buchstaben"
 
 #: config/cris/cris.c:1550
 #, c-format
 msgid "internal error: bad register: %d"
-msgstr ""
+msgstr "interner Fehler: falsches Register: %d"
 
 #: config/cris/cris.c:1598
 msgid "unexpected multiplicative operand"
-msgstr ""
+msgstr "unerwarteter multiplikativer Operand"
 
 #: config/cris/cris.c:1618
 msgid "unexpected operand"
-msgstr ""
+msgstr "unerwarteter Operand"
 
 #: config/cris/cris.c:1651 config/cris/cris.c:1661
 msgid "unrecognized address"
-msgstr ""
+msgstr "unerkannte Adresse"
 
 #: config/cris/cris.c:2011
 msgid "internal error: sideeffect-insn affecting main effect"
-msgstr ""
+msgstr "interner Fehler: Seiteneffekt-Befehl wirkt sich auf Haupteffekt aus"
 
 #. If we get here, the caller got its initial tests wrong.
 #: config/cris/cris.c:2404
 msgid "internal error: cris_side_effect_mode_ok with bad operands"
-msgstr ""
+msgstr "interner Fehler: cris_side_effect_mode_ok mit falschen Operanden"
 
 #: config/cris/cris.c:2481 config/cris/cris.c:2543
 msgid "unrecognized supposed constant"
-msgstr ""
+msgstr "unerkannte vermutete Konstante"
 
 #: config/cris/cris.c:2588
 msgid "unrecognized supposed constant in cris_global_pic_symbol"
-msgstr ""
+msgstr "unerkannte vermutete Konstante in cris_global_pic_symbol"
 
 #: config/cris/cris.c:2607
 #, c-format
 msgid "-max-stackframe=%d is not usable, not between 0 and %d"
-msgstr ""
+msgstr "-max-stackframe=%d ist nicht verwendbar, nicht zwischen 0 und %d"
 
 #: config/cris/cris.c:2635
 #, c-format
 msgid "unknown CRIS version specification in -march= or -mcpu= : %s"
-msgstr ""
+msgstr "unbekannte CRIS-Versionsangabe in -march= oder -mcpu= : %s"
 
 #: config/cris/cris.c:2671
 #, c-format
 msgid "unknown CRIS cpu version specification in -mtune= : %s"
-msgstr ""
+msgstr "unbekannte CRIS-CPU-Versionsangabe in -mtune= : %s"
 
 #: config/cris/cris.c:2689
 msgid "-fPIC and -fpic are not supported in this configuration"
-msgstr ""
+msgstr "-fPIC und -fpic werden in dieser Konfiguration nicht unterstützt"
 
 #: config/cris/cris.c:2705
 msgid "that particular -g option is invalid with -maout and -melinux"
-msgstr ""
+msgstr "diese spezielle Option -g ist mit -maout und -melinux ungültig"
 
 #: config/cris/cris.c:2960 config/cris/cris.c:3005
 msgid "unexpected side-effects in address"
-msgstr ""
+msgstr "unerwartete Seiteneffekte in Adresse"
 
 #. Labels are never marked as global symbols.
 #: config/cris/cris.c:3100 config/cris/cris.c:3131
 msgid "unexpected PIC symbol"
-msgstr ""
+msgstr "unerwartetes PIC-Symbol"
 
 #: config/cris/cris.c:3104
 msgid "PIC register isn't set up"
-msgstr ""
+msgstr "PIC-Register ist nicht vorbereitet"
 
 #: config/cris/cris.c:3117 config/cris/cris.c:3200
 msgid "unexpected address expression"
-msgstr ""
+msgstr "unerwarteter Adressausdruck"
 
 #: config/cris/cris.c:3135
 msgid "emitting PIC operand, but PIC register isn't set up"
-msgstr ""
+msgstr "PIC-Operand wird ausgegeben, aber PIC-Register ist nicht vorbereitet"
 
 #: config/cris/cris.c:3144
 msgid "unexpected NOTE as addr_const:"
-msgstr ""
+msgstr "unerwartetes NOTE als addr_const:"
 
 #: config/cris/aout.h:108
 msgid "Compile for the MMU-less Etrax 100-based elinux system"
-msgstr ""
+msgstr "Für das MMU-lose Etrax 100-basierte elinux-System übersetzen"
 
 #: config/cris/aout.h:115
 msgid "For elinux, request a specified stack-size for this program"
-msgstr ""
+msgstr "Für elinux eine angegebene Stapelgröße für diese Programm anfordern"
 
 #: config/cris/cris.h:362
 msgid "Work around bug in multiplication instruction"
-msgstr ""
+msgstr "Fehler in Multiplikationsbefehl umgehen"
 
 #. No "no-etrax" as it does not really imply any model.		     On the other hand, "etrax" implies the common (and large)		     subset matching all models.
 #: config/cris/cris.h:368
 msgid "Compile for ETRAX 4 (CRIS v3)"
-msgstr ""
+msgstr "Für ETRAX 4 (CRIS v3) übersetzen"
 
 #: config/cris/cris.h:373
 msgid "Compile for ETRAX 100 (CRIS v8)"
-msgstr ""
+msgstr "Für ETRAX 100 (CRIS v8) übersetzen"
 
 #: config/cris/cris.h:377
 msgid "Emit verbose debug information in assembly code"
-msgstr ""
+msgstr "Ausführliche Informationen zur Fehlersuche im Assemblercode ausgeben"
 
 #: config/cris/cris.h:380
 msgid "Do not use condition codes from normal instructions"
-msgstr ""
+msgstr "Keine Bedingungscodes normaler Befehle verwenden"
 
 #: config/cris/cris.h:384
 msgid "Do not emit addressing modes with side-effect assignment"
-msgstr ""
+msgstr "Keine Adressierungsmodi mit Seiteneffektzuweisungen ausgeben"
 
 #: config/cris/cris.h:387
 msgid "Do not tune stack alignment"
-msgstr ""
+msgstr "Stapelausrichtung nicht optimieren"
 
 #: config/cris/cris.h:390
 msgid "Do not tune writable data alignment"
-msgstr ""
+msgstr "Ausrichtung der schreibbaren Daten nicht optimieren"
 
 #: config/cris/cris.h:393
 msgid "Do not tune code and read-only data alignment"
-msgstr ""
+msgstr "Ausrichtung von Code und der Nur-Lese-Daten nicht optimieren"
 
 #: config/cris/cris.h:402
 msgid "Align code and data to 32 bits"
-msgstr ""
+msgstr "Code und Daten auf 32 Bit ausrichten"
 
 #: config/cris/cris.h:415
 msgid "Don't align items in code or data"
-msgstr ""
+msgstr "Code- und Datenelemente nicht ausrichten"
 
 #: config/cris/cris.h:418
 msgid "Do not emit function prologue or epilogue"
-msgstr ""
+msgstr "Keinen Funktionsprolog oder -epilog ausgeben"
 
 #. We have to handle this m-option here since we can't wash it off in      both CC1_SPEC and CC1PLUS_SPEC.
 #: config/cris/cris.h:422
 msgid "Use the most feature-enabling options allowed by other options"
-msgstr ""
+msgstr "Die meisten Optionen verwenden, die spezielle Fähigkeiten einschalten, solange sie durch andere Optionen erlaubt sind"
 
 #. We must call it "override-" since calling it "no-" will cause	     gcc.c to forget it, if there's a "later" -mbest-lib-options.	     Kludgy, but needed for some multilibbed files.
 #: config/cris/cris.h:428
 msgid "Override -mbest-lib-options"
-msgstr ""
+msgstr "-mbest-lib-options überschreiben"
 
 #: config/cris/cris.h:460
 msgid "Generate code for the specified chip or CPU version"
-msgstr ""
+msgstr "Code für die angegebene Chip- oder CPU-Version erzeugen"
 
 #: config/cris/cris.h:462
 msgid "Tune alignment for the specified chip or CPU version"
-msgstr ""
+msgstr "Ausrichtung für den angegebenen Chip oder CPU optimieren"
 
 #: config/cris/cris.h:464
 msgid "Warn when a stackframe is larger than the specified size"
-msgstr ""
+msgstr "Warnen, wenn ein Stapelrahmen größer als die angegebene Größe ist"
 
 #. Node: Profiling
 #: config/cris/cris.h:1050
 msgid "no FUNCTION_PROFILER for CRIS"
-msgstr ""
+msgstr "kein FUNCTION_PROFILER for CRIS"
 
 #: config/cris/linux.h:69
 msgid "Together with -fpic and -fPIC, do not use GOTPLT references"
-msgstr ""
+msgstr "Keine GOTPLT-Referenzen zusammen mit -fpic und -fPIC verwenden"
 
 #: config/d30v/d30v.c:218
 #, c-format
 msgid "bad modes_tieable_p for register %s, mode1 %s, mode2 %s"
-msgstr ""
+msgstr "Falsches modes_tieable_p für Register %s, mode1 %s, mode2 %s"
 
 #: config/d30v/d30v.c:2678
 msgid "bad insn to d30v_print_operand_address:"
-msgstr ""
+msgstr "Falscher Befehl für d30v_print_operand_address:"
 
 #: config/d30v/d30v.c:2695 config/d30v/d30v.c:2756 config/d30v/d30v.c:2777
 #: config/d30v/d30v.c:2795
 msgid "bad insn to d30v_print_operand_memory_reference:"
-msgstr ""
+msgstr "Falscher Befehl für d30v_print_operand_memory_reference:"
 
 #: config/d30v/d30v.c:2863
 msgid "bad insn to d30v_print_operand, 'f' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für d30v_print_operand, Modifizierer »f«:"
 
 #: config/d30v/d30v.c:2872
 msgid "bad insn to d30v_print_operand, 'A' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für d30v_print_operand, Modifizierer »A«:"
 
 #: config/d30v/d30v.c:2879
 msgid "bad insn to d30v_print_operand, 'M' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für d30v_print_operand, Modifizierer »M«:"
 
 #: config/d30v/d30v.c:2933
 msgid "bad insn to print_operand, 'F' or 'T' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für print_operand, Modifizierer »F« oder »T«"
 
 #: config/d30v/d30v.c:2944
 msgid "bad insn to print_operand, 'B' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für print_operand, Modifizierer »B«:"
 
 #: config/d30v/d30v.c:2951
 msgid "bad insn to print_operand, 'E' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für print_operand, Modifizierer »E«:"
 
 #: config/d30v/d30v.c:2969
 msgid "bad insn to print_operand, 'R' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für print_operand, Modifizierer »R«:"
 
 #: config/d30v/d30v.c:2978 config/d30v/d30v.c:2986
 msgid "bad insn to print_operand, 's' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für print_operand, Modifizierer »s«:"
 
 #: config/d30v/d30v.c:3015
 msgid "bad insn in d30v_print_operand, 0 case"
-msgstr ""
+msgstr "Falscher Befehl in d30v_print_operand, Fall 0"
 
 #: config/d30v/d30v.c:3313
 msgid "d30v_emit_comparison"
-msgstr ""
+msgstr "d30v_emit_comparison"
 
 #: config/d30v/d30v.c:3357
 msgid "bad call to d30v_move_2words"
-msgstr ""
+msgstr "Falscher Aufruf von d30v_move_2words"
 
 #: config/d30v/d30v.h:111
 msgid "Enable use of conditional move instructions"
-msgstr ""
+msgstr "Verwendung bedingter Kopierbefehle einschalten"
 
 #: config/d30v/d30v.h:114
 msgid "Disable use of conditional move instructions"
-msgstr ""
+msgstr "Verwendung bedingter Kopierbefehle ausschalten"
 
 #: config/d30v/d30v.h:117
 msgid "Debug argument support in compiler"
-msgstr ""
+msgstr "Fehlersuche in Argumentunterstützung des Compilers"
 
 #: config/d30v/d30v.h:120
 msgid "Debug stack support in compiler"
-msgstr ""
+msgstr "Fehlersuche in Stapelunterstützung des Compilers"
 
 #: config/d30v/d30v.h:123
 msgid "Debug memory address support in compiler"
-msgstr ""
+msgstr "Fehlersuche in Speicheradressunterstützung des Compilers"
 
 #: config/d30v/d30v.h:126
 msgid "Make adjacent short instructions parallel if possible"
-msgstr ""
+msgstr "Aufeinanderfolgende kurze Befehle parallelisieren, wenn möglich"
 
 #: config/d30v/d30v.h:129
 msgid "Do not make adjacent short instructions parallel"
-msgstr ""
+msgstr "Aufeinanderfolgende kurze Befehle nicht parallelisieren"
 
 #: config/d30v/d30v.h:132 config/d30v/d30v.h:135
 msgid "Link programs/data to be in external memory by default"
-msgstr ""
+msgstr "Programme/Daten voreinstellen, in externen Speicher zu binden"
 
 #: config/d30v/d30v.h:138
 msgid "Link programs/data to be in onchip memory by default"
-msgstr ""
+msgstr "Programme/Daten voreinstellen, in Speicher auf dem Chip zu binden"
 
 #: config/d30v/d30v.h:146
 msgid "Change the branch costs within the compiler"
-msgstr ""
+msgstr "Verzweigungskosten innerhalb des Compilers ändern"
 
 #: config/d30v/d30v.h:149
 msgid "Change the threshold for conversion to conditional execution"
-msgstr ""
+msgstr "Schwellwert für Konvertierung in bedingte Ausführung ändern"
 
 #: config/dsp16xx/dsp16xx.c:1463 config/dsp16xx/dsp16xx.c:1486
 msgid "stack size > 32k"
-msgstr ""
+msgstr "Stapelgröße > 32k"
 
 #: config/dsp16xx/dsp16xx.c:1695
 msgid "invalid addressing mode"
-msgstr ""
+msgstr "ungültiger Adressierungsmodus"
 
 #: config/dsp16xx/dsp16xx.c:1838
 msgid "bad register extension code"
-msgstr ""
+msgstr "falscher Registererweiterungsmodus"
 
 #: config/dsp16xx/dsp16xx.c:1938
 msgid "invalid offset in ybase addressing"
-msgstr ""
+msgstr "ungültiger Versatz in ybase-Adressierung"
 
 #: config/dsp16xx/dsp16xx.c:1941
 msgid "invalid register in ybase addressing"
-msgstr ""
+msgstr "ungültiges Register in ybase-Adressierung"
 
 #: config/dsp16xx/dsp16xx.c:2116
 msgid "invalid shift operator in emit_1600_core_shift"
-msgstr ""
+msgstr "ungültiger Schiebeoperator in emit_1600_core_shift"
 
 #: config/dsp16xx/dsp16xx.c:2406
 msgid "invalid mode for gen_tst_reg"
-msgstr ""
+msgstr "ungültiger Modus für gen_tst_reg"
 
 #: config/dsp16xx/dsp16xx.c:2478
 msgid "invalid mode for integer comparison in gen_compare_reg"
-msgstr ""
+msgstr "ungültiger Modus für Ganzzahlvergleich in gen_compare_reg"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -8830,281 +8830,281 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/dsp16xx/dsp16xx.h:230
 msgid "Pass parameters in registers (default)"
-msgstr ""
+msgstr "Parameter über Register übergeben (Voreinstellung)"
 
 #: config/dsp16xx/dsp16xx.h:232
 msgid "Don't pass parameters in registers"
-msgstr ""
+msgstr "Parameter nicht über Register übergeben"
 
 #: config/dsp16xx/dsp16xx.h:234
 msgid "Generate code for near calls"
-msgstr ""
+msgstr "Code für nahe Aufrufe erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:236
 msgid "Don't generate code for near calls"
-msgstr ""
+msgstr "Keinen Code für nahe Aufrufe erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:238
 msgid "Generate code for near jumps"
-msgstr ""
+msgstr "Code für nahe Sprünge erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:240
 msgid "Don't generate code for near jumps"
-msgstr ""
+msgstr "Keinen Code für nahe Sprünge erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:242
 msgid "Generate code for a bit-manipulation unit"
-msgstr ""
+msgstr "Code für eine Bitverarbeitungseinheit erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:244
 msgid "Don't generate code for a bit-manipulation unit"
-msgstr ""
+msgstr "Keinen Code für eine Bitverarbeitungseinheit erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:246
 msgid "Generate code for memory map1"
-msgstr ""
+msgstr "Code für memory map1 erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:248
 msgid "Generate code for memory map2"
-msgstr ""
+msgstr "Code für memory map2 erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:250
 msgid "Generate code for memory map3"
-msgstr ""
+msgstr "Code für memory map3 erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:252
 msgid "Generate code for memory map4"
-msgstr ""
+msgstr "Code für memory map4 erzeugen"
 
 #: config/dsp16xx/dsp16xx.h:254
 msgid "Ouput extra code for initialized data"
-msgstr ""
+msgstr "Zusatzcode für vorbelegte Daten ausgeben"
 
 #: config/dsp16xx/dsp16xx.h:256
 msgid "Don't let reg. allocator use ybase registers"
-msgstr ""
+msgstr "Die Speicherzuteilung keine ybase-Register verwenden lassen"
 
 #: config/dsp16xx/dsp16xx.h:258
 msgid "Output extra debug info in Luxworks environment"
-msgstr ""
+msgstr "Zusätzliche Informationen zur Fehlersuche in Luxworks-Umgebung ausgeben"
 
 #: config/dsp16xx/dsp16xx.h:260
 msgid "Save temp. files in Luxworks environment"
-msgstr ""
+msgstr "Temporäre Dateien in Luxworks-Umgebung sichern"
 
 #: config/dsp16xx/dsp16xx.h:272
 msgid "Specify alternate name for text section"
-msgstr ""
+msgstr "Anderen Namen für Text-Abschnitt angeben"
 
 #: config/dsp16xx/dsp16xx.h:274
 msgid "Specify alternate name for data section"
-msgstr ""
+msgstr "Anderen Namen für Daten-Abschnitt angeben"
 
 #: config/dsp16xx/dsp16xx.h:276
 msgid "Specify alternate name for bss section"
-msgstr ""
+msgstr "Anderen Namen für bss-Abschnitt angeben"
 
 #: config/dsp16xx/dsp16xx.h:278
 msgid "Specify alternate name for constant section"
-msgstr ""
+msgstr "Anderen Namen für Konstanten-Abschnitt angeben"
 
 #: config/dsp16xx/dsp16xx.h:280
 msgid "Specify alternate name for dsp16xx chip"
-msgstr ""
+msgstr "Anderen Namen für dsp16xx-Chip angeben"
 
 #. Output assembler code to FILE to increment profiler label # LABELNO
 #. for profiling a function entry.
 #: config/dsp16xx/dsp16xx.h:1217 config/dsp16xx/dsp16xx.h:1668
 #: config/dsp16xx/dsp16xx.h:1673
 msgid "profiling not implemented yet"
-msgstr ""
+msgstr "Profiling noch nicht implementiert"
 
 #. Emit RTL insns to initialize the variable parts of a trampoline.
 #. FNADDR is an RTX for the address of the function's pure code.
 #. CXT is an RTX for the static chain value for the function.
 #: config/dsp16xx/dsp16xx.h:1227 config/dsp16xx/dsp16xx.h:1239
 msgid "trampolines not yet implemented"
-msgstr ""
+msgstr "Trampoline noch nicht implementiert"
 
 #: config/fr30/fr30.c:451
 msgid "fr30_print_operand_address: unhandled address"
-msgstr ""
+msgstr "fr30_print_operand_address: unbehandelte Adresse"
 
 #: config/fr30/fr30.c:475
 #, c-format
 msgid "fr30_print_operand: unrecognized %%p code"
-msgstr ""
+msgstr "fr30_print_operand: nicht erkannter Code %%p"
 
 #: config/fr30/fr30.c:495
 #, c-format
 msgid "fr30_print_operand: unrecognized %%b code"
-msgstr ""
+msgstr "fr30_print_operand: nicht erkannter Code %%b"
 
 #: config/fr30/fr30.c:516
 #, c-format
 msgid "fr30_print_operand: unrecognized %%B code"
-msgstr ""
+msgstr "fr30_print_operand: nicht erkannter Code %%B"
 
 #: config/fr30/fr30.c:524
 #, c-format
 msgid "fr30_print_operand: invalid operand to %%A code"
-msgstr ""
+msgstr "fr30_print_operand: ungültiger Operand für Code %%A"
 
 #: config/fr30/fr30.c:541
 #, c-format
 msgid "fr30_print_operand: invalid %%x code"
-msgstr ""
+msgstr "fr30_print_operand: ungültiger Code %%x"
 
 #: config/fr30/fr30.c:548
 #, c-format
 msgid "fr30_print_operand: invalid %%F code"
-msgstr ""
+msgstr "fr30_print_operand: ungültiger Code %%F"
 
 #: config/fr30/fr30.c:565
 msgid "fr30_print_operand: unknown code"
-msgstr ""
+msgstr "fr30_print_operand: unbekannter Code"
 
 #: config/fr30/fr30.c:594 config/fr30/fr30.c:603 config/fr30/fr30.c:614
 #: config/fr30/fr30.c:627
 msgid "fr30_print_operand: unhandled MEM"
-msgstr ""
+msgstr "fr30_print_operand: unbehandeltes MEM"
 
 #: config/fr30/fr30.h:63
 msgid "Assume small address space"
-msgstr ""
+msgstr "Kleinen Adressraum annehmen"
 
 #: config/frv/frv.c:392 config/frv/frv.c:410
 #, c-format
 msgid "Unknown cpu: -mcpu=%s"
-msgstr ""
+msgstr "Unbekannte CPU: -mcpu=%s"
 
 #: config/frv/frv.c:433
 msgid "-fpic and -gdwarf are incompatible (-fpic and -g/-gdwarf-2 are fine)"
-msgstr ""
+msgstr "-fpic und -gdwarf sind nicht verträglich (-fpic und -g/-gdwarf-2 sind in Ordnung)"
 
 #: config/frv/frv.c:2397
 msgid "Bad insn to frv_print_operand_address:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand_address:"
 
 #: config/frv/frv.c:2408
 msgid "Bad register to frv_print_operand_memory_reference_reg:"
-msgstr ""
+msgstr "Falsches Register für frv_print_operand_memory_reference_reg:"
 
 #: config/frv/frv.c:2446 config/frv/frv.c:2456 config/frv/frv.c:2465
 #: config/frv/frv.c:2493 config/frv/frv.c:2506 config/frv/frv.c:2510
 msgid "Bad insn to frv_print_operand_memory_reference:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand_memory_references"
 
 #: config/frv/frv.c:2648
 msgid "Bad insn in frv_print_operand, bad const_double"
-msgstr ""
+msgstr "Falscher Befehl in frv_print_operand, falsches const_double"
 
 #: config/frv/frv.c:2693
 msgid "Bad insn to frv_print_operand, 'C' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »C«:"
 
 #: config/frv/frv.c:2716
 msgid "Bad insn to frv_print_operand, 'c' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »c«: "
 
 #: config/frv/frv.c:2741
 msgid "Bad insn to frv_print_operand, 'e' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »e«:"
 
 #: config/frv/frv.c:2749
 msgid "Bad insn to frv_print_operand, 'F' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »F«:"
 
 #: config/frv/frv.c:2765
 msgid "Bad insn to frv_print_operand, 'f' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »f«:"
 
 #: config/frv/frv.c:2818
 msgid "Bad insn to frv_print_operand, 'L' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »L«:"
 
 #: config/frv/frv.c:2831
 msgid "Bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »M/N«:"
 
 #: config/frv/frv.c:2852
 msgid "Bad insn to frv_print_operand, 'O' modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »O«:"
 
 #: config/frv/frv.c:2870
 msgid "Bad insn to frv_print_operand, P modifier:"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Modifizierer »P«:"
 
 #: config/frv/frv.c:2890
 msgid "Bad insn in frv_print_operand, z case"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Fall »z«:"
 
 #: config/frv/frv.c:2918
 msgid "Bad insn in frv_print_operand, 0 case"
-msgstr ""
+msgstr "Falscher Befehl für frv_print_operand, Fall 0:"
 
 #: config/frv/frv.c:2923
 msgid "frv_print_operand: unknown code"
-msgstr ""
+msgstr "frv_print_operand: unbekannter Code"
 
 #: config/frv/frv.c:5474
 msgid "Bad output_move_single operand"
-msgstr ""
+msgstr "Falscher Operand für output_mode_single"
 
 #: config/frv/frv.c:5601
 msgid "Bad output_move_double operand"
-msgstr ""
+msgstr "Falscher Operand für output_move_double"
 
 #: config/frv/frv.c:5743
 msgid "Bad output_condmove_single operand"
-msgstr ""
+msgstr "Falscher Operand für output_condmove_single"
 
 #: config/frv/frv.c:8031
 msgid "frv_registers_update"
-msgstr ""
+msgstr "frv_registers_update"
 
 #: config/frv/frv.c:8188
 msgid "frv_registers_used_p"
-msgstr ""
+msgstr "frv_registers_used_p"
 
 #: config/frv/frv.c:8314
 msgid "frv_registers_set_p"
-msgstr ""
+msgstr "frv_registers_set_p"
 
 #: config/frv/frv.c:8910
 msgid "accumulator is not a constant integer"
-msgstr ""
+msgstr "Akkumulator ist keine Ganzzahlkonstante"
 
 #: config/frv/frv.c:8915
 msgid "accumulator number is out of bounds"
-msgstr ""
+msgstr "Akkumulatorzahl außerhalb der Grenzen"
 
 #: config/frv/frv.c:8926
 #, c-format
 msgid "inappropriate accumulator for `%s'"
-msgstr ""
+msgstr "unpassender Akkumulator für »%s«"
 
 #: config/frv/frv.c:8986
 #, c-format
 msgid "`%s' expects a constant argument"
-msgstr ""
+msgstr "»%s« erwartet ein konstantes Argument"
 
 #: config/frv/frv.c:8991
 #, c-format
 msgid "constant argument out of range for `%s'"
-msgstr ""
+msgstr "Konstantes Argument außerhalb des Wertebereiches für »%s«"
 
 #: config/frv/frv.c:9338
 msgid "media functions are not available unless -mmedia is used"
-msgstr ""
+msgstr "Medienfunktionen sind ohne -mmedia nicht verfügbar"
 
 #: config/frv/frv.c:9350
 msgid "this media function is only available on the fr500"
-msgstr ""
+msgstr "diese Medienfunktion ist nur auf dem fr500 verfügbar"
 
 #: config/frv/frv.c:9378
 msgid "this media function is only available on the fr400"
-msgstr ""
+msgstr "diese Medienfunktion ist nur auf dem fr400 verfügbar"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -9117,15 +9117,15 @@ msgstr ""
 #. #endif
 #: config/frv/frv.h:506
 msgid " (frv)"
-msgstr ""
+msgstr " (frv)"
 
 #: config/h8300/h8300.c:288
 msgid "-ms2600 is used without -ms"
-msgstr ""
+msgstr "-ms2600 ohne -ms verwendet"
 
 #: config/h8300/h8300.c:294
 msgid "-mn is used without -mh or -ms"
-msgstr ""
+msgstr "-mn ohne -mh oder -ms verwendet"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -9134,75 +9134,75 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/h8300/h8300.h:145
 msgid "Generate H8S code"
-msgstr ""
+msgstr "H8S-Code erzeugen"
 
 #: config/h8300/h8300.h:146
 msgid "Do not generate H8S code"
-msgstr ""
+msgstr "Keinen H8S-Code erzeugen"
 
 #: config/h8300/h8300.h:147
 msgid "Generate H8S/2600 code"
-msgstr ""
+msgstr "H8S/2600-Code erzeugen"
 
 #: config/h8300/h8300.h:148
 msgid "Do not generate H8S/2600 code"
-msgstr ""
+msgstr "Keinen H8S/2600-Code erzeugen"
 
 #: config/h8300/h8300.h:149
 msgid "Make integers 32 bits wide"
-msgstr ""
+msgstr "Ganzzahlen 32 Bit breit machen"
 
 #: config/h8300/h8300.h:152
 msgid "Use registers for argument passing"
-msgstr ""
+msgstr "Register zur Argumentübergabe verwenden"
 
 #: config/h8300/h8300.h:154
 msgid "Do not use registers for argument passing"
-msgstr ""
+msgstr "Keine Register zur Argumentübergabe verwenden"
 
 #: config/h8300/h8300.h:156
 msgid "Consider access to byte sized memory slow"
-msgstr ""
+msgstr "Zugriff auf Speicher in Bytegröße als langsam betrachten"
 
 #: config/h8300/h8300.h:157
 msgid "Enable linker relaxing"
-msgstr ""
+msgstr "Binderlockerung einschalten"
 
 #: config/h8300/h8300.h:158
 msgid "Generate H8/300H code"
-msgstr ""
+msgstr "H8/300H-Code erzeugen"
 
 #: config/h8300/h8300.h:159
 msgid "Enable the normal mode"
-msgstr ""
+msgstr "Normalen Modus einschalten"
 
 #: config/h8300/h8300.h:160
 msgid "Do not generate H8/300H code"
-msgstr ""
+msgstr "Keinen H8/300H-Code erzeugen"
 
 #: config/h8300/h8300.h:161
 msgid "Use H8/300 alignment rules"
-msgstr ""
+msgstr "H8/300-Ausrichtungsregeln verwenden"
 
 #: config/i370/i370-c.c:55
 msgid "junk at end of #pragma map"
-msgstr ""
+msgstr "Ausschuss am Ende von #pragma map"
 
 #: config/i370/i370-c.c:61
 msgid "malformed #pragma map, ignored"
-msgstr ""
+msgstr "Falsch geformtes #pragma map, ignoriert"
 
 #: config/i370/i370.c:784
 msgid "real name is too long - alias ignored"
-msgstr ""
+msgstr "Realname ist zu lang - Alias ignoriert"
 
 #: config/i370/i370.c:789
 msgid "alias name is too long - alias ignored"
-msgstr ""
+msgstr "Aliasname ist zu lang - Alias ignoriert"
 
 #: config/i370/i370.c:1060
 msgid "internal error--no jump follows compare:"
-msgstr ""
+msgstr "interner Fehler -- kein Sprung nach Vergleich:"
 
 #. Macro to define tables used to set the flags.  This is a list in braces
 #. of pairs in braces, each pair being { "NAME", VALUE }
@@ -9210,180 +9210,180 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/i370/i370.h:75
 msgid "Generate char instructions"
-msgstr ""
+msgstr "Zeichenbefehle erzeugen"
 
 #: config/i370/i370.h:76
 msgid "Do not generate char instructions"
-msgstr ""
+msgstr "Keine Zeichenbefehle erzeugen"
 
 #: config/i386/i386.c:1179
 #, c-format
 msgid "code model %s not supported in PIC mode"
-msgstr ""
+msgstr "Codemodell %s wird im PIC-Modus nicht unterstützt"
 
 #: config/i386/i386.c:1189 config/sparc/sparc.c:387
 #, c-format
 msgid "bad value (%s) for -mcmodel= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mcmodel="
 
 #: config/i386/i386.c:1204
 #, c-format
 msgid "bad value (%s) for -masm= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -masm="
 
 #: config/i386/i386.c:1207
 #, c-format
 msgid "code model `%s' not supported in the %s bit mode"
-msgstr ""
+msgstr "Codemodell »%s« wird im %s-Bit-Modus nicht unterstützt"
 
 #: config/i386/i386.c:1210
 msgid "code model `large' not supported yet"
-msgstr ""
+msgstr "Codemodell »large« wird noch nicht unterstützt"
 
 #: config/i386/i386.c:1212
 #, c-format
 msgid "%i-bit mode not compiled in"
-msgstr ""
+msgstr "%i-Bit-Modus nicht einkompiliert"
 
 #: config/i386/i386.c:1242 config/i386/i386.c:1254
 msgid "CPU you selected does not support x86-64 instruction set"
-msgstr ""
+msgstr "Die ausgewählte CPU unterstützt nicht den x86-64 Befehlssatz"
 
 #: config/i386/i386.c:1247 config/iq2000/iq2000.c:1840
 #, c-format
 msgid "bad value (%s) for -march= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -march="
 
 #: config/i386/i386.c:1260
 #, c-format
 msgid "bad value (%s) for -mtune= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mtune="
 
 #: config/i386/i386.c:1277
 #, c-format
 msgid "-mregparm=%d is not between 0 and %d"
-msgstr ""
+msgstr "-mregparm=%d ist nicht zwischen 0 und %d"
 
 #: config/i386/i386.c:1290
 msgid "-malign-loops is obsolete, use -falign-loops"
-msgstr ""
+msgstr "-malign-loops ist veraltet, Ersatz: -falign-loops"
 
 #: config/i386/i386.c:1295 config/i386/i386.c:1308 config/i386/i386.c:1321
 #, c-format
 msgid "-malign-loops=%d is not between 0 and %d"
-msgstr ""
+msgstr "-malign-loops=%d ist nicht zwischen 0 und %d"
 
 #: config/i386/i386.c:1303
 msgid "-malign-jumps is obsolete, use -falign-jumps"
-msgstr ""
+msgstr "-malign-jumps ist veraltet, Ersatz: -falign-jumps"
 
 #: config/i386/i386.c:1316
 msgid "-malign-functions is obsolete, use -falign-functions"
-msgstr ""
+msgstr "-malign-functions ist veraltet, Ersatz: -falign-functions"
 
 #: config/i386/i386.c:1354
 #, c-format
 msgid "-mpreferred-stack-boundary=%d is not between %d and 12"
-msgstr ""
+msgstr "-mpreferred-stack-boundary=%d ist nicht zwischen %d und 12"
 
 #: config/i386/i386.c:1366
 #, c-format
 msgid "-mbranch-cost=%d is not between 0 and 5"
-msgstr ""
+msgstr "-mbranch-cost=%d ist nicht zwischen 0 und 5"
 
 #: config/i386/i386.c:1378
 #, c-format
 msgid "bad value (%s) for -mtls-dialect= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mtls-dialect="
 
 #: config/i386/i386.c:1407
 msgid "-malign-double makes no sense in the 64bit mode"
-msgstr ""
+msgstr "-malign-double ist im 64-Bit-Modus sinnlos"
 
 #: config/i386/i386.c:1409
 msgid "-mrtd calling convention not supported in the 64bit mode"
-msgstr ""
+msgstr "Aufrufkonvention -mrtd wird im 64-Bit-Modus nicht unterstützt"
 
 #: config/i386/i386.c:1431 config/i386/i386.c:1442
 msgid "SSE instruction set disabled, using 387 arithmetics"
-msgstr ""
+msgstr "SSE-Befehlssatz ausgeschaltet, es wird 387-Arithmetik verwendet"
 
 #: config/i386/i386.c:1447
 msgid "387 instruction set disabled, using SSE arithmetics"
-msgstr ""
+msgstr "387-Befehlssatz ausgeschaltet, es wird SSE-Arithmetik verwendet"
 
 #: config/i386/i386.c:1454
 #, c-format
 msgid "bad value (%s) for -mfpmath= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mfpmath="
 
 #: config/i386/i386.c:1602 config/i386/i386.c:1613
 msgid "fastcall and stdcall attributes are not compatible"
-msgstr ""
+msgstr "Attribute fastcall und stdcall sind nicht verträglich"
 
 #: config/i386/i386.c:1606 config/i386/i386.c:1662
 msgid "fastcall and regparm attributes are not compatible"
-msgstr ""
+msgstr "Attribute fastcall und regparm sind nicht verträglich"
 
 #: config/i386/i386.c:1649
 #, c-format
 msgid "`%s' attribute requires an integer constant argument"
-msgstr ""
+msgstr "Attribut »%s« benötigt eine Ganzzahlkonstante als Argument"
 
 #: config/i386/i386.c:1655
 #, c-format
 msgid "argument to `%s' attribute larger than %d"
-msgstr ""
+msgstr "Argument für Attribut »%s« ist größer als %d"
 
 #: config/i386/i386.c:2621
 msgid "SSE vector argument without SSE enabled changes the ABI"
-msgstr ""
+msgstr "SSE-Vektorargument ohne eingeschaltetes SSE ändert das ABI"
 
 #: config/i386/i386.c:2637
 msgid "MMX vector argument without MMX enabled changes the ABI"
-msgstr ""
+msgstr "MMX-Vektorargument ohne eingeschaltetes MMX ändert das ABI"
 
 #: config/i386/i386.c:2865
 msgid "SSE vector return without SSE enabled changes the ABI"
-msgstr ""
+msgstr "SSE-Vektorrückgabe ohne eingeschaltetes SSE ändert das ABI"
 
 #: config/i386/i386.c:6840
 msgid "invalid UNSPEC as operand"
-msgstr ""
+msgstr "ungültiges UNSPEC als Operand"
 
 #: config/i386/i386.c:7098
 msgid "extended registers have no high halves"
-msgstr ""
+msgstr "erweiterte Register haben keine oberen Hälften"
 
 #: config/i386/i386.c:7113
 msgid "unsupported operand size for extended register"
-msgstr ""
+msgstr "nicht unterstützte Operandengröße für erweitertes Register"
 
 #: config/i386/i386.c:7428
 msgid "operand is neither a constant nor a condition code, invalid operand code 'c'"
-msgstr ""
+msgstr "Operand ist weder eine Konstante noch ein Bedingungscode, ungültiger Operandencode »c«"
 
 #: config/i386/i386.c:7474
 #, c-format
 msgid "invalid operand code `%c'"
-msgstr ""
+msgstr "ungültiger Operandencode »%c«"
 
 #: config/i386/i386.c:7517
 msgid "invalid constraints for operand"
-msgstr ""
+msgstr "ungültige Bedingungen für Operand"
 
 #: config/i386/i386.c:12031
 msgid "unknown insn mode"
-msgstr ""
+msgstr "unbekannter Befehlsmodus"
 
 #: config/i386/i386.c:14119 config/i386/i386.c:14155
 #, c-format
 msgid "selector must be an integer constant in the range 0..%i"
-msgstr ""
+msgstr "Wahl muss auf Ganzzahlkonstante im Bereich 0..%i fallen"
 
 #: config/i386/i386.c:14383
 msgid "shift must be an immediate"
-msgstr ""
+msgstr "Verschiebung muss direkt angegeben werden"
 
 #: config/i386/i386.c:15406
 #, c-format
@@ -9396,102 +9396,102 @@ msgstr "%JFunktionsdefinition von »%D« ist als »dllimport« markiert"
 
 #: config/i386/winnt.c:112
 msgid "%Jvariable `%D' definition is marked dllimport."
-msgstr ""
+msgstr "%JVariablendefinition von »%d« ist als dllimport markiert."
 
 #: config/i386/winnt.c:132
 msgid "%Jexternal linkage required for symbol '%D' because of '%s' attribute."
-msgstr ""
+msgstr "%Jfür Symbol »%D« wird wegen des Attributes »%s« externe Bindung benötigt"
 
 #: config/i386/winnt.c:149
 #, c-format
 msgid "`%s' attribute only applies to variables"
-msgstr ""
+msgstr "Attribut »%s« bezieht sich nur auf Variablen"
 
 #: config/i386/winnt.c:248
 msgid "%Jfunction '%D' is defined after prior declaration as dllimport: attribute ignored"
-msgstr ""
+msgstr "%JFunktion »%D« wurde nach vorheriger Deklaration als »dllimport« definiert: Attribut ignoriert"
 
 #: config/i386/winnt.c:259
 msgid "%Jinline function '%D' is declared as dllimport: attribute ignored."
-msgstr "%J»inline«-Funktion »%D« ist als »dllimport« deklariert: Attribute ignoriert."
+msgstr "%J»inline«-Funktion »%D« ist als »dllimport« deklariert: Attribut ignoriert."
 
 #: config/i386/winnt.c:271
 msgid "%Jdefinition of static data member '%D' of dllimport'd class."
-msgstr ""
+msgstr "%JDefinition des statischen Datenelementes »%D« einer »dllimport«-ierten Klasse."
 
 #: config/i386/winnt.c:330
 msgid "%Jinconsistent dll linkage for '%D', dllexport assumed."
-msgstr ""
+msgstr "%Jinkonsistente dll-Bindung für »%D«, dllexport angenommen."
 
 #: config/i386/winnt.c:372
 #, c-format
 msgid "`%s' declared as both exported to and imported from a DLL"
-msgstr ""
+msgstr "»%s« sowohl als »exportiert in« als auch als »importiert aus DLL« deklariert"
 
 #: config/i386/winnt.c:381
 msgid "%Jfailure in redeclaration of '%D': dllimport'd symbol lacks external linkage."
-msgstr ""
+msgstr "%JFehler in Redeklaration von »%D«: »dllimport«-iertem Symbol fehlt externe Bindung"
 
 #: config/i386/winnt.c:530
 msgid "%J'%D' defined locally after being referenced with dllimport linkage"
-msgstr ""
+msgstr "%J»%D« nach Referenzierung mit dllimport-Bindung lokal definiert"
 
 #: config/i386/winnt.c:533
 msgid "%J'%D' redeclared without dllimport attribute after being referenced with dllimport linkage"
-msgstr ""
+msgstr "%J»%D« ohne Attribut »dllimport« redeklariert, nachdem es mit dllimport-Bindung referenziert wurde"
 
 #: config/i386/winnt.c:702
 msgid "%J'%D' causes a section type conflict"
-msgstr ""
+msgstr "%J»%D« ruft Abschnittstypenkonflikt hervor"
 
 #: config/i386/cygming.h:42
 msgid "Use the Cygwin interface"
-msgstr ""
+msgstr "Cygwin-Schnittstelle verwenden"
 
 #: config/i386/cygming.h:43
 msgid "Use the Mingw32 interface"
-msgstr ""
+msgstr "Mingw32-Schnittstelle verwenden"
 
 #: config/i386/cygming.h:44
 msgid "Create GUI application"
-msgstr ""
+msgstr "GUI-Anwendung erzeugen"
 
 #: config/i386/cygming.h:45
 msgid "Don't set Windows defines"
-msgstr ""
+msgstr "Keine Windows-defines setzen"
 
 #: config/i386/cygming.h:46
 msgid "Set Windows defines"
-msgstr ""
+msgstr "Windows-defines setzen"
 
 #: config/i386/cygming.h:47
 msgid "Create console application"
-msgstr ""
+msgstr "Konsolenanwendung erzeugen"
 
 #: config/i386/cygming.h:48
 msgid "Generate code for a DLL"
-msgstr ""
+msgstr "Code für DLL erzeugen"
 
 #: config/i386/cygming.h:50
 msgid "Ignore dllimport for functions"
-msgstr ""
+msgstr "dllimport für Funktionen erzeugen"
 
 #: config/i386/cygming.h:52
 msgid "Use Mingw-specific thread support"
-msgstr ""
+msgstr "Mingw-spezifische Thread-Unterstützung verwenden"
 
 #: config/i386/cygming.h:171
 #, c-format
 msgid "-f%s ignored for target (all code is position independent)"
-msgstr ""
+msgstr "-f%s für Ziel ignoriert (der gesamte Code ist positionsunabhängig)"
 
 #: config/i386/djgpp.h:191
 msgid "-mbnu210 is ignored (option is obsolete)"
-msgstr ""
+msgstr "-mbnu210 wird ignoriert (veraltete Option)"
 
 #: config/i386/i386-interix.h:256
 msgid "ms-bitfields not supported for objc"
-msgstr "ms-Bitfelder nicht unterstützt für objc"
+msgstr "MS-Bitfelder nicht unterstützt für objc"
 
 #. Deprecated.
 #. Deprecated.
@@ -9503,167 +9503,167 @@ msgstr "ms-Bitfelder nicht unterstützt für objc"
 #. Deprecated.
 #: config/i386/i386.h:341
 msgid "Alternate calling convention"
-msgstr ""
+msgstr "Alternative Aufrufkonvention"
 
 #: config/i386/i386.h:343 config/m68k/m68k.h:344 config/ns32k/ns32k.h:144
 msgid "Use normal calling convention"
-msgstr ""
+msgstr "Normale Aufrufkonvention verwenden"
 
 #: config/i386/i386.h:345
 msgid "Align some doubles on dword boundary"
-msgstr ""
+msgstr "Mehrere Doubles auf DWord-Grenze ausrichten"
 
 #: config/i386/i386.h:347
 msgid "Align doubles on word boundary"
-msgstr ""
+msgstr "Doubles auf Wortgrenze ausrichten"
 
 #: config/i386/i386.h:349
 msgid "Uninitialized locals in .bss"
-msgstr ""
+msgstr "Nicht initialisierte lokale Symbole in .bss"
 
 #: config/i386/i386.h:351
 msgid "Uninitialized locals in .data"
-msgstr ""
+msgstr "Nicht initialisierte lokale Symbole in .data"
 
 #: config/i386/i386.h:353 config/m68k/linux.h:35 config/ns32k/ns32k.h:167
 msgid "Use IEEE math for fp comparisons"
-msgstr ""
+msgstr "IEEE-Arithmetik für Fließkommavergleiche verwenden"
 
 #: config/i386/i386.h:355 config/ns32k/ns32k.h:169
 msgid "Do not use IEEE math for fp comparisons"
-msgstr ""
+msgstr "Keine IEEE-Arithmetik für Fließkommavergleiche verwenden"
 
 #: config/i386/i386.h:357
 msgid "Return values of functions in FPU registers"
-msgstr ""
+msgstr "Funktionswerte über FPU-Register zurück geben"
 
 #: config/i386/i386.h:359
 msgid "Do not return values of functions in FPU registers"
-msgstr ""
+msgstr "Funktionswerte nicht über FPU-Register zurück geben"
 
 #: config/i386/i386.h:361
 msgid "Do not generate sin, cos, sqrt for FPU"
-msgstr ""
+msgstr "sin, cos und sqrt nicht für FPU erzeugen"
 
 #: config/i386/i386.h:363
 msgid "Generate sin, cos, sqrt for FPU"
-msgstr ""
+msgstr "sin, cos und sqrt für FPU erzeugen"
 
 #: config/i386/i386.h:365
 msgid "Omit the frame pointer in leaf functions"
-msgstr ""
+msgstr "Rahmenzeiger in Blattfunktionen auslassen"
 
 #: config/i386/i386.h:368
 msgid "Enable stack probing"
-msgstr ""
+msgstr "Stapelsondierung einschalten"
 
 #. undocumented
 #. undocumented
 #: config/i386/i386.h:373
 msgid "Align destination of the string operations"
-msgstr ""
+msgstr "Ziel der Zeichenkettenoperationen ausrichten"
 
 #: config/i386/i386.h:375
 msgid "Do not align destination of the string operations"
-msgstr ""
+msgstr "Ziel der Zeichenkettenoperationen nicht ausrichten"
 
 #: config/i386/i386.h:377
 msgid "Inline all known string operations"
-msgstr ""
+msgstr "Alle bekannten Zeichenkettenoperationen einbetten (inline)"
 
 #: config/i386/i386.h:379
 msgid "Do not inline all known string operations"
-msgstr ""
+msgstr "Bekannte Zeichenkettenoperationen nicht einbetten (inline)"
 
 #: config/i386/i386.h:381 config/i386/i386.h:385
 msgid "Use push instructions to save outgoing arguments"
-msgstr ""
+msgstr "push-Befehle verwenden, um ausgehende Argumente zu sichern"
 
 #: config/i386/i386.h:383 config/i386/i386.h:387
 msgid "Do not use push instructions to save outgoing arguments"
-msgstr ""
+msgstr "Keine push-Befehle verwenden, um ausgehende Argumente zu sichern"
 
 #: config/i386/i386.h:389
 msgid "Support MMX built-in functions"
-msgstr ""
+msgstr "Eingebaute MMX-Funktionen unterstützen"
 
 #: config/i386/i386.h:391
 msgid "Do not support MMX built-in functions"
-msgstr ""
+msgstr "Eingebaute MMX-Funktionen nicht unterstützen"
 
 #: config/i386/i386.h:393
 msgid "Support 3DNow! built-in functions"
-msgstr ""
+msgstr "Eingebaute 3DNow!-Funktionen unterstützen"
 
 #: config/i386/i386.h:395
 msgid "Do not support 3DNow! built-in functions"
-msgstr ""
+msgstr "Eingebaute 3DNow!-Funktionen nicht unterstützen"
 
 #: config/i386/i386.h:397
 msgid "Support MMX and SSE built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX- und SSE-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.h:399
 msgid "Do not support MMX and SSE built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX- und SSE-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.h:401
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX-, SSE- und SSE2-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.h:403
 msgid "Do not support MMX, SSE and SSE2 built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX-, SSE- und SSE2-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.h:405
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX-, SSE-, SSE2 und SSE3-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.h:407
 msgid "Do not support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr ""
+msgstr "Eingebaute MMX-, SSE-, SSE2 und SSE3-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.h:409
 msgid "sizeof(long double) is 16"
-msgstr ""
+msgstr "sizeof(long double) ist 16"
 
 #: config/i386/i386.h:411
 msgid "sizeof(long double) is 12"
-msgstr ""
+msgstr "sizeof(long double) ist 12"
 
 #: config/i386/i386.h:413
 msgid "Generate 64bit x86-64 code"
-msgstr ""
+msgstr "64-Bit-x86-64-Code erzeugen"
 
 #: config/i386/i386.h:415
 msgid "Generate 32bit i386 code"
-msgstr ""
+msgstr "32-Bit-i386-Code erzeugen"
 
 #: config/i386/i386.h:417
 msgid "Use native (MS) bitfield layout"
-msgstr ""
+msgstr "MS-Bitfeld-Anordnung verwenden"
 
 #: config/i386/i386.h:419
 msgid "Use gcc default bitfield layout"
-msgstr ""
+msgstr "Standard-GCC-Bitfeld-Anordnung verwenden"
 
 #: config/i386/i386.h:421
 msgid "Use red-zone in the x86-64 code"
-msgstr ""
+msgstr "Rote Zone in x86-64-Code verwenden"
 
 #: config/i386/i386.h:423
 msgid "Do not use red-zone in the x86-64 code"
-msgstr ""
+msgstr "Rote Zone in x86-64-Code nicht verwenden"
 
 #: config/i386/i386.h:425
 #, c-format
 msgid "Use direct references against %gs when accessing tls data"
-msgstr ""
+msgstr "Direkte Referenzen gegen %gs beim Zugriff auf TLS-Daten verwenden"
 
 #: config/i386/i386.h:427
 #, c-format
 msgid "Do not use direct references against %gs when accessing tls data"
-msgstr ""
+msgstr "Keine direkten Referenzen gegen %gs beim Zugriff auf TLS-Daten verwenden"
 
 #. This macro is similar to `TARGET_SWITCHES' but defines names of
 #. command options that have values.  Its definition is an
@@ -9677,19 +9677,19 @@ msgstr ""
 #: config/i386/i386.h:461 config/ia64/ia64.h:269 config/rs6000/rs6000.h:449
 #: config/s390/s390.h:146 config/sparc/sparc.h:656
 msgid "Schedule code for given CPU"
-msgstr ""
+msgstr "Code für die gegebene CPU planen"
 
 #: config/i386/i386.h:463
 msgid "Generate floating point mathematics using given instruction set"
-msgstr ""
+msgstr "Fließkommaarithmetik mit gegebenem Befehlssatz erzeugen"
 
 #: config/i386/i386.h:465 config/s390/s390.h:148
 msgid "Generate code for given CPU"
-msgstr ""
+msgstr "Code für die gegebene CPU erzeugen"
 
 #: config/i386/i386.h:467
 msgid "Number of registers used to pass integer arguments"
-msgstr ""
+msgstr "Anzahl der zur Übergabe von Ganzzahlargumenten verwendeten Register"
 
 #. TARGET_DEFAULT is defined in m68k-none.h, netbsd.h, etc.
 #. This macro is similar to `TARGET_SWITCHES' but defines names of
@@ -9703,57 +9703,57 @@ msgstr ""
 #. by appending `-m' to the specified name.
 #: config/i386/i386.h:469 config/m68k/m68k.h:360
 msgid "Loop code aligned to this power of 2"
-msgstr ""
+msgstr "Schleifen zu dieser Zweierpotenz ausrichten"
 
 #: config/i386/i386.h:471 config/m68k/m68k.h:362
 msgid "Jump targets are aligned to this power of 2"
-msgstr ""
+msgstr "Sprungziele werden zu dieser Zweierpotenz ausgerichtet"
 
 #: config/i386/i386.h:473 config/m68k/m68k.h:364
 msgid "Function starts are aligned to this power of 2"
-msgstr ""
+msgstr "Funktionsanfänge werden zu dieser Zweierpotenz ausgerichtet"
 
 #: config/i386/i386.h:476
 msgid "Attempt to keep stack aligned to this power of 2"
-msgstr ""
+msgstr "Versuch, den Stapel zu dieser Zweierpotenz auszurichten"
 
 #: config/i386/i386.h:478
 msgid "Branches are this expensive (1-5, arbitrary units)"
-msgstr ""
+msgstr "Verzweigungen sind so teuer wie hier angegeben (1-5, beliebige Einheit)"
 
 #: config/i386/i386.h:480
 msgid "Use given x86-64 code model"
-msgstr ""
+msgstr "Gegebenes x86-64-Codemodell verwenden"
 
 #. Undocumented.
 #. Undocumented.
 #: config/i386/i386.h:486
 msgid "Use given assembler dialect"
-msgstr ""
+msgstr "Gegebenen Assemblerdialekt verwenden"
 
 #: config/i386/i386.h:488
 msgid "Use given thread-local storage dialect"
-msgstr ""
+msgstr "Gegebenen Thread-lokalen Speicherdialekt verwenden"
 
 #: config/i386/sco5.h:292
 msgid "Generate ELF output"
-msgstr ""
+msgstr "ELF-Ausgabe erzeugen"
 
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
 #: config/i386/xm-djgpp.h:61
 msgid "environment variable DJGPP not defined"
-msgstr ""
+msgstr "Umgebungsvariable DJGPP nicht definiert"
 
 #: config/i386/xm-djgpp.h:63
 #, c-format
 msgid "environment variable DJGPP points to missing file '%s'"
-msgstr ""
+msgstr "Umgebungsvariable DJGPP zeigt auf fehlende Datei »%s«"
 
 #: config/i386/xm-djgpp.h:66
 #, c-format
 msgid "environment variable DJGPP points to corrupt file '%s'"
-msgstr ""
+msgstr "Umgebungsvariable DJGPP zeigt auf kaputte Datei »%s«"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -9762,39 +9762,39 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/i860/i860.h:60
 msgid "Generate code which uses the FPU"
-msgstr ""
+msgstr "FPU verwendenden Code erzeugen"
 
 #: config/i860/i860.h:61 config/i860/i860.h:62
 msgid "Do not generate code which uses the FPU"
-msgstr ""
+msgstr "Keinen FPU verwendenden Code erzeugen"
 
 #: config/i960/i960-c.c:68
 msgid "sorry, not implemented: #pragma align NAME=SIZE"
-msgstr ""
+msgstr "Entschuldigung, nicht implementiert: #pragma align NAME=SIZE"
 
 #: config/i960/i960-c.c:73
 msgid "malformed #pragma align - ignored"
-msgstr ""
+msgstr "Falsch geformtes #pragma align - ignoriert"
 
 #: config/i960/i960-c.c:111
 msgid "sorry, not implemented: #pragma noalign NAME"
-msgstr ""
+msgstr "Entschuldigung, nicht implementiert: #pragma noalign NAME"
 
 #: config/i960/i960.c:134 config/i960/i960.c:144
 msgid "conflicting architectures defined - using C series"
-msgstr ""
+msgstr "in Konflikt stehende Architekturen definiert - C-Serie wird verwendet"
 
 #: config/i960/i960.c:139
 msgid "conflicting architectures defined - using K series"
-msgstr ""
+msgstr "in Konflikt stehende Architekturen definiert - K-Serie wird verwendet"
 
 #: config/i960/i960.c:154
 msgid "iC2.0 and iC3.0 are incompatible - using iC3.0"
-msgstr ""
+msgstr "iC2.0 und iC3.0 sind unverträglich - iC3.0 wird verwendet"
 
 #: config/i960/i960.c:1456 config/m68k/m68k.c:600 config/rs6000/rs6000.c:11597
 msgid "stack limit expression is not supported"
-msgstr ""
+msgstr "Ausdruck der Stapelgrenze wird nicht unterstützt"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -9805,304 +9805,304 @@ msgstr ""
 #. am not sure which are real and which aren't.
 #: config/i960/i960.h:250
 msgid "Generate SA code"
-msgstr ""
+msgstr "SA-Code erzeugen"
 
 #: config/i960/i960.h:253
 msgid "Generate SB code"
-msgstr ""
+msgstr "SB-Code erzeugen"
 
 #. {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|						TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	       N_("Generate SC code")},
 #: config/i960/i960.h:258
 msgid "Generate KA code"
-msgstr ""
+msgstr "KA-Code erzeugen"
 
 #: config/i960/i960.h:261
 msgid "Generate KB code"
-msgstr ""
+msgstr "KB-Code erzeugen"
 
 #. {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|						TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	       N_("Generate KC code")},
 #: config/i960/i960.h:266
 msgid "Generate JA code"
-msgstr ""
+msgstr "JA-Code erzeugen"
 
 #: config/i960/i960.h:268
 msgid "Generate JD code"
-msgstr ""
+msgstr "JD-Code erzeugen"
 
 #: config/i960/i960.h:271
 msgid "Generate JF code"
-msgstr ""
+msgstr "JF-Code erzeugen"
 
 #: config/i960/i960.h:273
 msgid "generate RP code"
-msgstr ""
+msgstr "RP-Code erzeugen"
 
 #: config/i960/i960.h:276
 msgid "Generate MC code"
-msgstr ""
+msgstr "MC-Code erzeugen"
 
 #: config/i960/i960.h:279
 msgid "Generate CA code"
-msgstr ""
+msgstr "CA-Code erzeugen"
 
 #. {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|						TARGET_FLAG_BRANCH_PREDICT|TARGET_FLAG_CODE_ALIGN),       N_("Generate CB code")},						    {"cc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|						TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|			TARGET_FLAG_CODE_ALIGN),			       N_("Generate CC code")},
 #: config/i960/i960.h:289
 msgid "Generate CF code"
-msgstr ""
+msgstr "CF-Code erzeugen"
 
 #: config/i960/i960.h:293 config/mips/mips.h:552 config/pa/pa.h:266
 msgid "Use software floating point"
-msgstr ""
+msgstr "Software-Fließkomma verwenden"
 
 #: config/i960/i960.h:295
 msgid "Use alternate leaf function entries"
-msgstr ""
+msgstr "Alternative Blattfunktionseinträge verwenden"
 
 #: config/i960/i960.h:297
 msgid "Do not use alternate leaf function entries"
-msgstr ""
+msgstr "Keine alternativen Blattfunktionseinträge verwenden"
 
 #: config/i960/i960.h:299
 msgid "Perform tail call optimization"
-msgstr ""
+msgstr "End-Aufruf-Optimierung durchführen"
 
 #: config/i960/i960.h:301
 msgid "Do not perform tail call optimization"
-msgstr ""
+msgstr "Keine End-Aufruf-Optimierung durchführen"
 
 #: config/i960/i960.h:303
 msgid "Use complex addressing modes"
-msgstr ""
+msgstr "Komplexe Adressierungsmodi verwenden"
 
 #: config/i960/i960.h:305
 msgid "Do not use complex addressing modes"
-msgstr ""
+msgstr "Keine komplexen Adressierungsmodi verwenden"
 
 #: config/i960/i960.h:307
 msgid "Align code to 8 byte boundary"
-msgstr ""
+msgstr "Code auf 8-Byte-Grenzen ausrichten"
 
 #: config/i960/i960.h:309
 msgid "Do not align code to 8 byte boundary"
-msgstr ""
+msgstr "Code nicht auf 8-Byte-Grenzen ausrichten"
 
 #. {"clean-linkage", (TARGET_FLAG_CLEAN_LINKAGE),			       N_("Force use of prototypes")},					    {"no-clean-linkage", -(TARGET_FLAG_CLEAN_LINKAGE),			       N_("Do not force use of prototypes")},
 #: config/i960/i960.h:315 config/i960/i960.h:317
 msgid "Enable compatibility with iC960 v2.0"
-msgstr ""
+msgstr "Verträglichkeit mit iC960 v2.0 einschalten"
 
 #: config/i960/i960.h:319
 msgid "Enable compatibility with iC960 v3.0"
-msgstr ""
+msgstr "Verträglichkeit mit iC960 v3.0 einschalten"
 
 #: config/i960/i960.h:321 config/i960/i960.h:323
 msgid "Enable compatibility with ic960 assembler"
-msgstr ""
+msgstr "Verträglichkeit mit ic960-Assembler einschalten"
 
 #: config/i960/i960.h:325
 msgid "Do not permit unaligned accesses"
-msgstr ""
+msgstr "Keine unausgerichteten Zugriffe erlauben"
 
 #: config/i960/i960.h:327
 msgid "Permit unaligned accesses"
-msgstr ""
+msgstr "Unausgerichtete Zugriffe erlauben"
 
 #: config/i960/i960.h:329
 msgid "Layout types like Intel's v1.3 gcc"
-msgstr ""
+msgstr "Typen wie bei Intel's gcc v1.3 anordnen"
 
 #: config/i960/i960.h:331
 msgid "Do not layout types like Intel's v1.3 gcc"
-msgstr ""
+msgstr "Typen nicht wie bei Intel's gcc v1.3 anordnen"
 
 #: config/i960/i960.h:333 config/sparc/freebsd.h:81 config/sparc/linux.h:91
 #: config/sparc/linux64.h:106 config/sparc/netbsd-elf.h:215
 msgid "Use 64 bit long doubles"
-msgstr ""
+msgstr "64-Bit long doubles verwenden"
 
 #: config/i960/i960.h:335
 msgid "Enable linker relaxation"
-msgstr ""
+msgstr "Binderlockerung einschalten"
 
 #: config/i960/i960.h:337
 msgid "Do not enable linker relaxation"
-msgstr ""
+msgstr "Binderlockerung nicht einschalten"
 
 #: config/ia64/ia64-c.c:52
 msgid "malformed #pragma builtin"
-msgstr ""
+msgstr "Falsch geformtes #pragma builtin"
 
 #: config/ia64/ia64.c:1025 config/m32r/m32r.c:354
 #, c-format
 msgid "invalid argument of `%s' attribute"
-msgstr ""
+msgstr "ungültiges Argument für Attribut »%s«"
 
 #: config/ia64/ia64.c:1037
 msgid "%Jan address area attribute cannot be specified for local variables"
-msgstr "%Jfür lokale Variablen kann kein Adressabschnittsattribut angegeben werden"
+msgstr "%Jfür lokale Variablen kann kein Adressbereichsattribut angegeben werden"
 
 #: config/ia64/ia64.c:1044
 msgid "%Jaddress area of '%s' conflicts with previous declaration"
-msgstr "%JAdressabschnitt von »%s« in Konflikt mit vorheriger Deklaration"
+msgstr "%JAdressbereich von »%s« in Konflikt mit vorheriger Deklaration"
 
 #: config/ia64/ia64.c:1051
 msgid "%Jaddress area attribute cannot be specified for functions"
-msgstr "%JAdressabschnittsattribut kann nicht für Funktionen angegeben werden"
+msgstr "%JAdressbereichsattribut kann nicht für Funktionen angegeben werden"
 
 #: config/ia64/ia64.c:4308
 msgid "ia64_print_operand: unknown code"
-msgstr ""
+msgstr "ia64_print_operand: unbekannter Code"
 
 #: config/ia64/ia64.c:4648
 msgid "value of -mfixed-range must have form REG1-REG2"
-msgstr ""
+msgstr "Wert von -mfixed-range muss die Form REG1-REG2 haben"
 
 #: config/ia64/ia64.c:4675
 #, c-format
 msgid "%s-%s is an empty range"
-msgstr ""
+msgstr "%s-%s ist ein leerer Bereich"
 
 #: config/ia64/ia64.c:4723
 msgid "cannot optimize floating point division for both latency and throughput"
-msgstr ""
+msgstr "Fließkommadivision kann nicht gleichzeitig auf Wartezeit und Durchsatz optimiert werden"
 
 #: config/ia64/ia64.c:4729
 msgid "cannot optimize integer division for both latency and throughput"
-msgstr ""
+msgstr "Ganzzahldivision kann nicht gleichzeitig auf Wartezeit und Durchsatz optimiert werden"
 
 #: config/ia64/ia64.c:4735
 msgid "cannot optimize square root for both latency and throughput"
-msgstr ""
+msgstr "Quadratwurzel kann nicht gleichzeitig auf Wartezeit und Durchsatz optimiert werden"
 
 #: config/ia64/ia64.c:4741
 msgid "not yet implemented: latency-optimized inline square root"
-msgstr ""
+msgstr "noch nicht implementiert: Wartezeit-optimierte eingebettete Quadratwurzel"
 
 #: config/ia64/ia64.c:4753
 #, c-format
 msgid "bad value (%s) for -mtls-size= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mtls-size="
 
 #: config/ia64/ia64.c:4769
 #, c-format
 msgid "bad value (%s) for -tune= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -tune="
 
 #. This macro defines names of command options to set and clear bits in
 #. `target_flags'.  Its definition is an initializer with a subgrouping for
 #. each command option.
 #: config/ia64/ia64.h:172
 msgid "Generate big endian code"
-msgstr ""
+msgstr "Big-Endian-Code erzeugen"
 
 #: config/ia64/ia64.h:174 config/mcore/mcore.h:154
 msgid "Generate little endian code"
-msgstr ""
+msgstr "Little-Endian-Code erzeugen"
 
 #: config/ia64/ia64.h:176
 msgid "Generate code for GNU as"
-msgstr ""
+msgstr "Code für GNU as erzeugen"
 
 #: config/ia64/ia64.h:178
 msgid "Generate code for Intel as"
-msgstr ""
+msgstr "Code für Intel as erzeugen"
 
 #: config/ia64/ia64.h:180
 msgid "Generate code for GNU ld"
-msgstr ""
+msgstr "Code für GNU ld erzeugen"
 
 #: config/ia64/ia64.h:182
 msgid "Generate code for Intel ld"
-msgstr ""
+msgstr "Code für Intel ld erzeugen"
 
 #: config/ia64/ia64.h:184
 msgid "Generate code without GP reg"
-msgstr ""
+msgstr "Code ohne GP-Register erzeugen"
 
 #: config/ia64/ia64.h:186
 msgid "Emit stop bits before and after volatile extended asms"
-msgstr ""
+msgstr "Vor und nach flüchtig erweiterten asms Stop-Bits ausgeben"
 
 #: config/ia64/ia64.h:188
 msgid "Don't emit stop bits before and after volatile extended asms"
-msgstr ""
+msgstr "Keine Stop-Bits vor und nach flüchtig erweiterten asms ausgeben"
 
 #: config/ia64/ia64.h:190
 msgid "Emit code for Itanium (TM) processor B step"
-msgstr ""
+msgstr "Code für Itanium (TM) B step ausgeben"
 
 #: config/ia64/ia64.h:192
 msgid "Use in/loc/out register names"
-msgstr ""
+msgstr "in/loc/out-Registernamen ausgeben"
 
 #: config/ia64/ia64.h:194
 msgid "Disable use of sdata/scommon/sbss"
-msgstr ""
+msgstr "Verwendung von sdata/scommon/sbss ausschalten"
 
 #: config/ia64/ia64.h:196
 msgid "Enable use of sdata/scommon/sbss"
-msgstr ""
+msgstr "Verwendung von sdata/scommon/sbss einschalten"
 
 #: config/ia64/ia64.h:198
 msgid "gp is constant (but save/restore gp on indirect calls)"
-msgstr ""
+msgstr "gp ist konstant (aber gp wird bei indirekten Aufrufen gesichert/wiederhergestellt)"
 
 #: config/ia64/ia64.h:200
 msgid "Generate self-relocatable code"
-msgstr ""
+msgstr "Selbstverschiebbaren Code erzeugen"
 
 #: config/ia64/ia64.h:202
 msgid "Generate inline floating point division, optimize for latency"
-msgstr ""
+msgstr "Eingebettete Fließkommadivision erzeugen, auf Wartezeit optimieren"
 
 #: config/ia64/ia64.h:204
 msgid "Generate inline floating point division, optimize for throughput"
-msgstr ""
+msgstr "Eingebettete Fließkommadivision erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:206
 msgid "Generate inline integer division, optimize for latency"
-msgstr ""
+msgstr "Eingebettete Ganzzahldivision erzeugen, auf Wartezeit optimieren"
 
 #: config/ia64/ia64.h:208
 msgid "Generate inline integer division, optimize for throughput"
-msgstr ""
+msgstr "Eingebettete Ganzzahldivision erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:210
 msgid "Generate inline square root, optimize for latency"
-msgstr ""
+msgstr "Eingebettete Quadratwurzel erzeugen, auf Wartezeit optimieren"
 
 #: config/ia64/ia64.h:212
 msgid "Generate inline square root, optimize for throughput"
-msgstr ""
+msgstr "Eingebettete Quadratwurzel erzeugen, auf Durchsatz optimieren"
 
 #: config/ia64/ia64.h:214
 msgid "Enable Dwarf 2 line debug info via GNU as"
-msgstr ""
+msgstr "Dwarf 2 Zeilenfehlersuchinfo über GNU as einschalten"
 
 #: config/ia64/ia64.h:216
 msgid "Disable Dwarf 2 line debug info via GNU as"
-msgstr ""
+msgstr "Dwarf 2 Zeilenfehlersuchinfo über GNU as ausschalten"
 
 #: config/ia64/ia64.h:218
 msgid "Enable earlier placing stop bits for better scheduling"
-msgstr ""
+msgstr "Frühere Stop-Bit-Platzierung für bessere Planung einschalten"
 
 #: config/ia64/ia64.h:220
 msgid "Disable earlier placing stop bits"
-msgstr ""
+msgstr "Frühere Stop-Bit-Platzierung ausschalten"
 
 #: config/ia64/ia64.h:265
 msgid "Specify range of registers to make fixed"
-msgstr ""
+msgstr "Bereich der zu fixierenden Register angeben"
 
 #: config/ip2k/ip2k.c:1074
 msgid "bad operand"
-msgstr ""
+msgstr "Falscher Operand"
 
 #: config/iq2000/iq2000.c:1816
 #, c-format
 msgid "bad value (%s) for -mcpu= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mcpu="
 
 #: config/iq2000/iq2000.c:1845
 #, c-format
@@ -10112,7 +10112,7 @@ msgstr "Der Compiler unterstützt nicht -march=%s."
 #: config/iq2000/iq2000.c:2232
 #, c-format
 msgid "gp_offset (%ld) or end_offset (%ld) is less than zero."
-msgstr ""
+msgstr "gp_offset (%ld) oder end_offset (%ld) ist kleiner als null."
 
 #: config/iq2000/iq2000.c:3023
 #, c-format
@@ -10121,220 +10121,220 @@ msgstr "Argument »%d« ist keine Konstante"
 
 #: config/iq2000/iq2000.c:3314 config/xtensa/xtensa.c:2096
 msgid "PRINT_OPERAND_ADDRESS, null pointer"
-msgstr ""
+msgstr "PRINT_OPERAND_ADDRESS, Null-Zeiger"
 
 #: config/iq2000/iq2000.c:3469
 #, c-format
 msgid "PRINT_OPERAND: Unknown punctuation '%c'"
-msgstr ""
+msgstr "PRINT_OPERAND: Unbekanntes Zeichen '%c'"
 
 #: config/iq2000/iq2000.c:3478 config/mips/mips.c:5464
 #: config/xtensa/xtensa.c:1950
 msgid "PRINT_OPERAND null pointer"
-msgstr ""
+msgstr "PRINT_OPERAND Null-Zeiger"
 
 #: config/iq2000/iq2000.c:3547
 #, c-format
 msgid "invalid %%P operand"
-msgstr ""
+msgstr "unbekannter Operand für %%P"
 
 #: config/iq2000/iq2000.c:3555 config/rs6000/rs6000.c:9178
 #, c-format
 msgid "invalid %%p value"
-msgstr ""
+msgstr "unbekannter Wert für %%p"
 
 #: config/iq2000/iq2000.c:3619 config/mips/mips.c:5594
 #, c-format
 msgid "invalid use of %%d, %%x, or %%X"
-msgstr ""
+msgstr "ungültige Verwendung von %%d, %%x oder %%X"
 
 #: config/iq2000/iq2000.h:72 config/mn10300/mn10300.h:74
 msgid "No default crt0.o"
-msgstr ""
+msgstr "Kein voreingestelltes crt0.o"
 
 #: config/iq2000/iq2000.h:74
 msgid "Use GP relative sdata/sbss sections"
-msgstr ""
+msgstr "Relative GP sdata/sbss-Abschnitte verwenden"
 
 #: config/iq2000/iq2000.h:76
 msgid "Don't use GP relative sdata/sbss sections"
-msgstr ""
+msgstr "Relative GP sdata/sbss-Abschnitte nicht verwenden"
 
 #: config/iq2000/iq2000.h:78 config/mips/mips.h:576
 msgid "Use ROM instead of RAM"
-msgstr ""
+msgstr "ROM statt RAM verwenden"
 
 #: config/iq2000/iq2000.h:80 config/mips/mips.h:578
 msgid "Don't use ROM instead of RAM"
-msgstr ""
+msgstr "Nicht ROM statt RAM verwenden"
 
 #: config/iq2000/iq2000.h:82 config/mips/mips.h:580
 msgid "Put uninitialized constants in ROM (needs -membedded-data)"
-msgstr ""
+msgstr "Uninitialisierte Konstanten im ROM ablegen (benötigt -membedded-data)"
 
 #: config/iq2000/iq2000.h:84 config/mips/mips.h:582
 msgid "Don't put uninitialized constants in ROM"
-msgstr ""
+msgstr "Keine uninitialisierte Konstanten im ROM ablegen"
 
 #: config/iq2000/iq2000.h:106 config/mips/mips.h:744 config/pa/pa.h:310
 msgid "Specify CPU for scheduling purposes"
-msgstr ""
+msgstr "CPU für Planzwecke angeben"
 
 #: config/iq2000/iq2000.h:108 config/mips/mips.h:746
 msgid "Specify CPU for code generation purposes"
-msgstr ""
+msgstr "CPU für Codeerzeugungszwecke angeben"
 
 #: config/m32r/m32r.c:172
 #, c-format
 msgid "bad value (%s) for -mmodel switch"
-msgstr ""
+msgstr "falscher Wert (%s) für Schalter -mmodel"
 
 #: config/m32r/m32r.c:181
 #, c-format
 msgid "bad value (%s) for -msdata switch"
-msgstr ""
+msgstr "falscher Wert (%s) für Schalter -msdata"
 
 #: config/m32r/m32r.c:188
 #, c-format
 msgid "bad value (%s) for -flush-trap=n (0=<n<=15)"
-msgstr ""
+msgstr "falscher Wert (%s) für -flush-trap=n (0<=n<=15)"
 
 #: config/m32r/m32r.c:2322
 #, c-format
 msgid "invalid operand to %%s code"
-msgstr ""
+msgstr "ungültiger Operand für Code %%s"
 
 #: config/m32r/m32r.c:2329
 #, c-format
 msgid "invalid operand to %%p code"
-msgstr ""
+msgstr "ungültiger Operand für Code %%p"
 
 #: config/m32r/m32r.c:2384
 msgid "bad insn for 'A'"
-msgstr ""
+msgstr "falscher Befehl für 'A'"
 
 #: config/m32r/m32r.c:2431
 #, c-format
 msgid "invalid operand to %%T/%%B code"
-msgstr ""
+msgstr "ungültiger Operand für Code %%T/%%B"
 
 #: config/m32r/m32r.c:2454
 #, c-format
 msgid "invalid operand to %%N code"
-msgstr ""
+msgstr "ungültiger Operand für Code %%N"
 
 #: config/m32r/m32r.c:2487
 msgid "pre-increment address is not a register"
-msgstr ""
+msgstr "Pre-Increment-Adresse ist kein Register"
 
 #: config/m32r/m32r.c:2494
 msgid "pre-decrement address is not a register"
-msgstr ""
+msgstr "Pre-Decrement-Adresse ist kein Register"
 
 #: config/m32r/m32r.c:2501
 msgid "post-increment address is not a register"
-msgstr ""
+msgstr "Post-Increment-Adresse ist kein Register"
 
 #: config/m32r/m32r.c:2577 config/m32r/m32r.c:2593
 #: config/rs6000/rs6000.c:15063
 msgid "bad address"
-msgstr ""
+msgstr "Falsche Adresse"
 
 #: config/m32r/m32r.c:2598
 msgid "lo_sum not of register"
-msgstr ""
+msgstr "lo_sum nicht von einem Register"
 
 #. { "relax",			TARGET_RELAX_MASK, "" },		    { "no-relax",		-TARGET_RELAX_MASK, "" },
 #: config/m32r/m32r.h:284
 msgid "Display compile time statistics"
-msgstr ""
+msgstr "Übersetzungszeitstatistik anzeigen"
 
 #: config/m32r/m32r.h:286
 msgid "Align all loops to 32 byte boundary"
-msgstr ""
+msgstr "Alle Schleifen auf 32-Byte-Grenzen ausrichten"
 
 #: config/m32r/m32r.h:289
 msgid "Only issue one instruction per cycle"
-msgstr ""
+msgstr "Nur einen Befehl pro Durchgang ausgeben"
 
 #: config/m32r/m32r.h:292
 msgid "Prefer branches over conditional execution"
-msgstr ""
+msgstr "Zweige gegenüber bedingter Ausführung bevorzugen"
 
 #: config/m32r/m32r.h:313
 msgid "Code size: small, medium or large"
-msgstr ""
+msgstr "Code-Größe: klein, mittel, groß"
 
 #: config/m32r/m32r.h:315
 msgid "Small data area: none, sdata, use"
-msgstr ""
+msgstr "Kleiner Datenbereich: keiner, sdata, verwenden"
 
 #: config/m32r/m32r.h:317 config/mips/mips.h:752
 msgid "Don't call any cache flush functions"
-msgstr ""
+msgstr "Keine Funktionen zum Entleeren des Zwischenspeichers aufrufen"
 
 #: config/m32r/m32r.h:319 config/mips/mips.h:754
 msgid "Specify cache flush function"
-msgstr ""
+msgstr "Funktion zum Entleeren des Zwischenspeichers angeben"
 
 #: config/m32r/m32r.h:321
 msgid "Don't call any cache flush trap"
-msgstr ""
+msgstr "Keine Abfangfunktion zum Entleeren des Zwischenspeichers aufrufen"
 
 #: config/m32r/m32r.h:323
 msgid "Specify cache flush trap number"
-msgstr ""
+msgstr "Abfangfunktionsnummer zum Entleeren des Zwischenspeichers angeben"
 
 #: config/m68hc11/m68hc11.c:280
 #, c-format
 msgid "-f%s ignored for 68HC11/68HC12 (not supported)"
-msgstr ""
+msgstr "-f%s für 68HC11/68HC12 ignoriert (nicht unterstützt)"
 
 #: config/m68hc11/m68hc11.c:1344
 msgid "`trap' and `far' attributes are not compatible, ignoring `far'"
-msgstr ""
+msgstr "Attribute »trap« und »far« sind unverträglich, »far« wird ignoriert"
 
 #: config/m68hc11/m68hc11.c:1350
 msgid "`trap' attribute is already used"
-msgstr "»trap«-Attribut wird bereits verwendet"
+msgstr "Attribut »trap« wird bereits verwendet"
 
 #. !!!! SCz wrong here.
 #: config/m68hc11/m68hc11.c:3323 config/m68hc11/m68hc11.c:3707
 msgid "move insn not handled"
-msgstr ""
+msgstr "Kopierbefehl nicht behandelt"
 
 #: config/m68hc11/m68hc11.c:3555 config/m68hc11/m68hc11.c:3639
 #: config/m68hc11/m68hc11.c:3910
 msgid "invalid register in the move instruction"
-msgstr ""
+msgstr "ungültiges Register in Kopierbefehl"
 
 #: config/m68hc11/m68hc11.c:3589
 msgid "invalid operand in the instruction"
-msgstr ""
+msgstr "ungültiger Operand in Befehl"
 
 #: config/m68hc11/m68hc11.c:3884
 msgid "invalid register in the instruction"
-msgstr ""
+msgstr "ungültiges Register in Befehl"
 
 #: config/m68hc11/m68hc11.c:3917
 msgid "operand 1 must be a hard register"
-msgstr ""
+msgstr "erster Operand muss ein hartes Register sein"
 
 #: config/m68hc11/m68hc11.c:3931
 msgid "invalid rotate insn"
-msgstr ""
+msgstr "ungültiger Rotierbefehl"
 
 #: config/m68hc11/m68hc11.c:4355
 msgid "registers IX, IY and Z used in the same INSN"
-msgstr ""
+msgstr "Register IX, IY und Z im selben Befehl verwendet"
 
 #: config/m68hc11/m68hc11.c:4692 config/m68hc11/m68hc11.c:4992
 msgid "cannot do z-register replacement"
-msgstr ""
+msgstr "Z-Register kann nicht ausgetauscht werden"
 
 #: config/m68hc11/m68hc11.c:5055
 msgid "invalid Z register replacement for insn"
-msgstr ""
+msgstr "ungültiger Z-Register-Ersatz für Befehl"
 
 #. Macro to define tables used to set the flags. This is a list in braces of
 #. pairs in braces, each pair being { "NAME", VALUE } where VALUE is the bits
@@ -10342,55 +10342,55 @@ msgstr ""
 #. identify the default VALUE.
 #: config/m68hc11/m68hc11.h:180
 msgid "Compile with 16-bit integer mode"
-msgstr ""
+msgstr "Mit 16-Bit-Ganzzahlmodus übersetzen"
 
 #: config/m68hc11/m68hc11.h:182
 msgid "Compile with 32-bit integer mode"
-msgstr ""
+msgstr "Mit 32-Bit-Ganzzahlmodus übersetzen"
 
 #: config/m68hc11/m68hc11.h:184
 msgid "Auto pre/post decrement increment allowed"
-msgstr ""
+msgstr "Auto-Pre-/Post-Decrement-Increment erlaubt"
 
 #: config/m68hc11/m68hc11.h:186
 msgid "Auto pre/post decrement increment not allowed"
-msgstr ""
+msgstr "Auto-Pre-/Post-Decrement-Increment nicht erlaubt"
 
 #: config/m68hc11/m68hc11.h:188
 msgid "Min/max instructions allowed"
-msgstr ""
+msgstr "Min/Max-Befehle erlaubt"
 
 #: config/m68hc11/m68hc11.h:190
 msgid "Min/max instructions not allowed"
-msgstr ""
+msgstr "Min/Max-Befehle nicht erlaubt"
 
 #: config/m68hc11/m68hc11.h:192
 msgid "Use call and rtc for function calls and returns"
-msgstr ""
+msgstr "Aufruf und RTC für Funktionsaufrufe und Rückgaben verwenden"
 
 #: config/m68hc11/m68hc11.h:194
 msgid "Use jsr and rts for function calls and returns"
-msgstr ""
+msgstr "JSR und RTS für Funktionsaufrufe und Rückgaben verwenden"
 
 #: config/m68hc11/m68hc11.h:196
 msgid "Do not use direct addressing mode for soft registers"
-msgstr ""
+msgstr "Modus zur direkten Adressierung für Soft-Register nicht verwenden"
 
 #: config/m68hc11/m68hc11.h:198
 msgid "Use direct addressing mode for soft registers"
-msgstr ""
+msgstr "Modus zur direkten Adressierung für Soft-Register verwenden"
 
 #: config/m68hc11/m68hc11.h:200 config/m68hc11/m68hc11.h:206
 msgid "Compile for a 68HC11"
-msgstr ""
+msgstr "Für 68HC11 übersetzen"
 
 #: config/m68hc11/m68hc11.h:202 config/m68hc11/m68hc11.h:208
 msgid "Compile for a 68HC12"
-msgstr ""
+msgstr "Für 68HC12 übersetzen"
 
 #: config/m68hc11/m68hc11.h:204 config/m68hc11/m68hc11.h:210
 msgid "Compile for a 68HCS12"
-msgstr ""
+msgstr "Für 68HCS12 übersetzen"
 
 #. This macro is similar to `TARGET_SWITCHES' but defines names of
 #. command options that have values.  Its definition is an
@@ -10403,25 +10403,25 @@ msgstr ""
 #. by appending `-m' to the specified name.
 #: config/m68hc11/m68hc11.h:224
 msgid "Specify the register allocation order"
-msgstr ""
+msgstr "Reihenfolge der Registerbelegung angeben"
 
 #: config/m68hc11/m68hc11.h:226
 msgid "Indicate the number of soft registers available"
-msgstr ""
+msgstr "Anzahl der verfügbaren Soft-Register anzeigen"
 
 #: config/m68k/m68k.c:239
 #, c-format
 msgid "-malign-loops=%d is not between 1 and %d"
-msgstr ""
+msgstr "-malign-loops=%d ist nicht zwischen 1 und %d"
 
 #: config/m68k/m68k.c:250
 msgid "-mshared-library-id= specified without -mid-shared-library"
-msgstr ""
+msgstr "-mshared-library-id= ohne -mid-shared-library angegeben"
 
 #: config/m68k/m68k.c:253
 #, c-format
 msgid "-mshared-library-id=%d is not between 0 and %d"
-msgstr ""
+msgstr "-mshared-library-id=%d ist nicht zwischen 0 und %d"
 
 #: config/m68k/m68k.c:267
 msgid "cannot specify both -msep-data and -mid-shared-library"
@@ -10430,16 +10430,16 @@ msgstr "-msep-data und -mid-shared-library können nicht zusammen angegeben werd
 #: config/m68k/m68k.c:282
 #, c-format
 msgid "-malign-jumps=%d is not between 1 and %d"
-msgstr ""
+msgstr "-malign-jumps=%d ist nicht zwischen 1 und %d"
 
 #: config/m68k/m68k.c:293
 #, c-format
 msgid "-malign-functions=%d is not between 1 and %d"
-msgstr ""
+msgstr "-malign-functions=%d ist nicht zwischen 1 und %d"
 
 #: config/m68k/m68k.c:302
 msgid "-fPIC is not currently supported on the 68000 or 68010\n"
-msgstr ""
+msgstr "-fPIC wird derzeit nicht für 68000 oder 68010 unterstützt\n"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of pairs in braces,
@@ -10448,31 +10448,31 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/m68k/m68k.h:248 config/m68k/m68k.h:250
 msgid "Generate code for a 68020"
-msgstr ""
+msgstr "Code für 68020 erzeugen"
 
 #: config/m68k/m68k.h:255 config/m68k/m68k.h:258
 msgid "Generate code for a 68000"
-msgstr ""
+msgstr "Code für 68000 erzeugen"
 
 #: config/m68k/m68k.h:260
 msgid "Use the bit-field instructions"
-msgstr ""
+msgstr "Bit-Feld-Befehle verwenden"
 
 #: config/m68k/m68k.h:262
 msgid "Do not use the bit-field instructions"
-msgstr ""
+msgstr "Bit-Feld-Befehle nicht verwenden"
 
 #: config/m68k/m68k.h:264
 msgid "Consider type `int' to be 16 bits wide"
-msgstr ""
+msgstr "Typ »int« als 16 Bit breit ansehen"
 
 #: config/m68k/m68k.h:266
 msgid "Consider type `int' to be 32 bits wide"
-msgstr ""
+msgstr "Typ »int« als 32 Bit breit ansehen"
 
 #: config/m68k/m68k.h:269
 msgid "Generate code with library calls for floating point"
-msgstr ""
+msgstr "Code mit Funktionsaufrufen für Fließkommaarithmetik erzeugen"
 
 #: config/m68k/m68k.h:271
 msgid "Generate code for a 68040, without any new instructions"
@@ -10536,241 +10536,241 @@ msgstr "Code für eine cpu32 erzeugen"
 
 #: config/m68k/m68k.h:324
 msgid "Align variables on a 32-bit boundary"
-msgstr ""
+msgstr "Variablen auf 32-Bit-Grenzen ausrichten"
 
 #: config/m68k/m68k.h:326
 msgid "Align variables on a 16-bit boundary"
-msgstr ""
+msgstr "Variablen auf 16-Bit-Grenzen ausrichten"
 
 #: config/m68k/m68k.h:328
 msgid "Enable separate data segment"
-msgstr ""
+msgstr "Gesondertes Datensegment einschalten"
 
 #: config/m68k/m68k.h:330
 msgid "Disable separate data segment"
-msgstr ""
+msgstr "Gesondertes Datensegment ausschalten"
 
 #: config/m68k/m68k.h:332
 msgid "Enable ID based shared library"
-msgstr ""
+msgstr "ID-basierte Shared Library einschalten"
 
 #: config/m68k/m68k.h:334
 msgid "Disable ID based shared library"
-msgstr ""
+msgstr "ID-basierte Shared Library ausschalten"
 
 #: config/m68k/m68k.h:336
 msgid "Generate pc-relative code"
-msgstr ""
+msgstr "PC-relativen Code erzeugen"
 
 #: config/m68k/m68k.h:338
 msgid "Do not use unaligned memory references"
-msgstr ""
+msgstr "Keine unausgerichteten Speicherreferenzen verwenden"
 
 #: config/m68k/m68k.h:340
 msgid "Use unaligned memory references"
-msgstr ""
+msgstr "Unausgerichtete Speicherreferenzen verwenden"
 
 #: config/m68k/m68k.h:342
 msgid "Use different calling convention using 'rtd'"
-msgstr ""
+msgstr "Andere Aufrufkonvention mit 'RTD' verwenden"
 
 #: config/m68k/m68k.h:366
 msgid "ID of shared library to build"
-msgstr ""
+msgstr "ID der zu bauenden Shared Library"
 
 #: config/mcore/mcore.c:2973
 #, c-format
 msgid "invalid option `-mstack-increment=%s'"
-msgstr ""
+msgstr "ungültige Option »-mstack-increment=%s«"
 
 #: config/mcore/mcore.h:121
 msgid "Inline constants if it can be done in 2 insns or less"
-msgstr ""
+msgstr "Konstanten einbetten, wenn es mit 2 Befehlen oder weniger geht"
 
 #: config/mcore/mcore.h:123
 msgid "Inline constants if it only takes 1 instruction"
-msgstr ""
+msgstr "Konstanten einbetten, wenn es mit nur 1 Befehl geht"
 
 #: config/mcore/mcore.h:125
 msgid "Set maximum alignment to 4"
-msgstr ""
+msgstr "Höchste Ausrichtung auf 4 setzen"
 
 #: config/mcore/mcore.h:127
 msgid "Set maximum alignment to 8"
-msgstr ""
+msgstr "Höchste Ausrichtung auf 8 setzen"
 
 #: config/mcore/mcore.h:131
 msgid "Do not use the divide instruction"
-msgstr ""
+msgstr "Divisionsbefehl nicht verwenden"
 
 #: config/mcore/mcore.h:135
 msgid "Do not arbitrary sized immediates in bit operations"
-msgstr ""
+msgstr "Keine Direktwerte beliebiger Größen in Bit-Operationen zulassen"
 
 #: config/mcore/mcore.h:137
 msgid "Always treat bit-field as int-sized"
-msgstr ""
+msgstr "Bit-Feld immer mit int-Größe behandeln"
 
 #: config/mcore/mcore.h:141
 msgid "Force functions to be aligned to a 4 byte boundary"
-msgstr ""
+msgstr "Funktionen auf 4-Byte-Grenzen zwingen"
 
 #: config/mcore/mcore.h:143
 msgid "Force functions to be aligned to a 2 byte boundary"
-msgstr ""
+msgstr "Funktionen auf 2-Byte-Grenzen zwingen"
 
 #: config/mcore/mcore.h:145
 msgid "Emit call graph information"
-msgstr ""
+msgstr "Informationen zum Aufrufgraph ausgeben"
 
 #: config/mcore/mcore.h:149
 msgid "Prefer word accesses over byte accesses"
-msgstr ""
+msgstr "Wortzugriffe bevorzugen (statt Bytezugriffen)"
 
 #: config/mcore/mcore.h:160
 msgid "Generate code for the M*Core M340"
-msgstr ""
+msgstr "Code für M*Core M340 erzeugen"
 
 #: config/mcore/mcore.h:173
 msgid "Maximum amount for a single stack increment operation"
-msgstr ""
+msgstr "Größter Betrag für einzelne Stapelvergrößerungsoperation"
 
 #: config/mips/mips.c:3122 config/xtensa/xtensa.c:1001
 #: config/xtensa/xtensa.c:1033 config/xtensa/xtensa.c:1042
 msgid "bad test"
-msgstr ""
+msgstr "Falscher Test"
 
 #: config/mips/mips.c:4600
 #, c-format
 msgid "bad value (%s) for -mabi= switch"
-msgstr ""
+msgstr "Falscher Wert (%s) für Schalter -mabi="
 
 #: config/mips/mips.c:4623
 #, c-format
 msgid "-mips%s conflicts with the other architecture options, which specify a MIPS%d processor"
-msgstr ""
+msgstr "-mips%s steht in Konflikt mit den anderen Architekturoptionen, die einen MIPS%d-Prozessor angeben"
 
 #: config/mips/mips.c:4642
 #, c-format
 msgid "-march=%s is not compatible with the selected ABI"
-msgstr ""
+msgstr "-march=%s ist mit dem ausgewählten ABI unverträglich"
 
 #: config/mips/mips.c:4657
 msgid "-mgp64 used with a 32-bit processor"
-msgstr ""
+msgstr "-mgp64 mit einem 32-Bit-Prozessor verwendet"
 
 #: config/mips/mips.c:4659
 msgid "-mgp32 used with a 64-bit ABI"
-msgstr ""
+msgstr "-mgp32 mit einem 64-Bit-ABI verwendet"
 
 #: config/mips/mips.c:4661
 msgid "-mgp64 used with a 32-bit ABI"
-msgstr ""
+msgstr "-mgp64 mit einem 32-Bit-ABI verwendet"
 
 #: config/mips/mips.c:4679 config/mips/mips.c:4681 config/mips/mips.c:4683
 #: config/mips/mips.c:4811
 #, c-format
 msgid "unsupported combination: %s"
-msgstr ""
+msgstr "nicht unterstützte Kombination: %s"
 
 #: config/mips/mips.c:4775
 msgid "-g is only supported using GNU as,"
-msgstr ""
+msgstr "-g wird nur mit GNU as unterstützt,"
 
 #: config/mips/mips.c:4777
 msgid "-g is only supported using GNU as with -mabi=32,"
-msgstr ""
+msgstr "-g wird nur mit GNU as mit -mabi=32 unterstützt,"
 
 #: config/mips/mips.c:4778 config/pa/pa.c:353
 msgid "-g option disabled"
-msgstr ""
+msgstr "Option -g ausgeschaltet"
 
 #: config/mips/mips.c:4806
 msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
-msgstr ""
+msgstr "Erzeugung von »Branch Likely«-Befehlen eingeschaltet, aber nicht unterstützt durch Architektur"
 
 #: config/mips/mips.c:4823
 msgid "-G is incompatible with PIC code which is the default"
-msgstr ""
+msgstr "-G ist mit PIC-Code unverträglich, was Standard ist"
 
 #: config/mips/mips.c:4851
 msgid "-membedded-pic and -mabicalls are incompatible"
-msgstr ""
+msgstr "-membedded-pic und -mabicalls sind unverträglich"
 
 #: config/mips/mips.c:4854
 msgid "-G and -membedded-pic are incompatible"
-msgstr ""
+msgstr "-G und -membedded-pic sind unverträglich"
 
 #: config/mips/mips.c:4886
 msgid "non-PIC n64 with explicit relocations"
-msgstr ""
+msgstr "nicht-PIC n64 mit expliziten Auslagerungen"
 
 #: config/mips/mips.c:5274
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr ""
+msgstr "mips_debugger_offset mit nicht-Stapel/Rahmen/Argument-Zeiger aufgerufen"
 
 #: config/mips/mips.c:5401
 #, c-format
 msgid "internal error: %%) found without a %%( in assembler pattern"
-msgstr ""
+msgstr "interner Fehler: %%) ohne %%( in Assemblermuster gefunden"
 
 #: config/mips/mips.c:5415
 #, c-format
 msgid "internal error: %%] found without a %%[ in assembler pattern"
-msgstr ""
+msgstr "interner Fehler: %%] ohne %%[ in Assemblermuster gefunden"
 
 #: config/mips/mips.c:5428
 #, c-format
 msgid "internal error: %%> found without a %%< in assembler pattern"
-msgstr ""
+msgstr "interner Fehler: %%> ohne %%< in Assemblermuster gefunden"
 
 #: config/mips/mips.c:5441
 #, c-format
 msgid "internal error: %%} found without a %%{ in assembler pattern"
-msgstr ""
+msgstr "interner Fehler: %%} ohne %%{ in Assemblermuster gefunden"
 
 #: config/mips/mips.c:5455
 #, c-format
 msgid "PRINT_OPERAND: unknown punctuation '%c'"
-msgstr ""
+msgstr "PRINT_OPERAND: unbekanntes Zeichen '%c'"
 
 #: config/mips/mips.c:5484
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%C"
-msgstr ""
+msgstr "PRINT_OPERAND, ungültiger Befehl für %%C"
 
 #: config/mips/mips.c:5501
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%N"
-msgstr ""
+msgstr "PRINT_OPERAND, ungültiger Befehl für %%N"
 
 #: config/mips/mips.c:5510
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%F"
-msgstr ""
+msgstr "PRINT_OPERAND, ungültiger Befehl für %%F"
 
 #: config/mips/mips.c:5519
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%W"
-msgstr ""
+msgstr "PRINT_OPERAND, ungültiger Befehl für %%W"
 
 #: config/mips/mips.c:5625
 msgid "PRINT_OPERAND, invalid operand for relocation"
-msgstr ""
+msgstr "PRINT_OPERAND, ungültiger Operand für Auslagerung"
 
 #: config/mips/mips.c:8310
 #, c-format
 msgid "can not handle inconsistent calls to `%s'"
-msgstr ""
+msgstr "inkonsistente Aufrufe von »%s« nicht behandeln"
 
 #: config/mips/mips.c:9316
 msgid "the cpu name must be lower case"
-msgstr ""
+msgstr "CPU-Name muss klein geschrieben sein"
 
 #: config/mips/mips.c:9338
 #, c-format
 msgid "bad value (%s) for %s"
-msgstr ""
+msgstr "Falscher Wert (%s) für %s"
 
 #: config/mips/mips.c:9607
 #, c-format
@@ -10794,7 +10794,7 @@ msgstr "die temporäre Datei kann nicht geschlossen werden: %m"
 
 #: config/mips/linux64.h:39
 msgid "Same as -mabi=32, just trickier"
-msgstr ""
+msgstr "Wie -mabi=32, nur heikler"
 
 #. Target CPU builtins.
 #. We do this here because __mips is defined below		 and so we can't use builtin_define_std.
@@ -10808,71 +10808,71 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/mips/mips.h:514
 msgid "Use 64-bit int type"
-msgstr ""
+msgstr "64-Bit-»int«-Typ verwenden"
 
 #: config/mips/mips.h:516
 msgid "Use 64-bit long type"
-msgstr ""
+msgstr "64-Bit-»long«-Typ verwenden"
 
 #: config/mips/mips.h:518
 msgid "Use 32-bit long type"
-msgstr ""
+msgstr "32-Bit-»long«-Typ verwenden"
 
 #: config/mips/mips.h:520
 msgid "Optimize lui/addiu address loads"
-msgstr ""
+msgstr "lui/addiu-Adressladebefehle optimieren"
 
 #: config/mips/mips.h:522
 msgid "Don't optimize lui/addiu address loads"
-msgstr ""
+msgstr "lui/addiu-Adressladebefehle nicht optimieren"
 
 #: config/mips/mips.h:524
 msgid "Use MIPS as"
-msgstr ""
+msgstr "MIPS as verwenden"
 
 #: config/mips/mips.h:526
 msgid "Use GNU as"
-msgstr ""
+msgstr "GNU as verwenden"
 
 #: config/mips/mips.h:528
 msgid "Use symbolic register names"
-msgstr ""
+msgstr "Symbolische Registernamen verwenden"
 
 #: config/mips/mips.h:530
 msgid "Don't use symbolic register names"
-msgstr ""
+msgstr "Keine symbolischen Registernamen verwenden"
 
 #: config/mips/mips.h:532 config/mips/mips.h:534
 msgid "Use GP relative sdata/sbss sections (now ignored)"
-msgstr ""
+msgstr "GP-relative sdata/sbss-Abschnitte verwenden (jetzt ignoriert)"
 
 #: config/mips/mips.h:536 config/mips/mips.h:538
 msgid "Don't use GP relative sdata/sbss sections (now ignored)"
-msgstr ""
+msgstr "GP-relative sdata/sbss-Abschnitte nicht verwenden (jetzt ignoriert)"
 
 #: config/mips/mips.h:540
 msgid "Output compiler statistics (now ignored)"
-msgstr ""
+msgstr "Compiler-Statistik ausgeben (jetzt ignoriert)"
 
 #: config/mips/mips.h:542
 msgid "Don't output compiler statistics"
-msgstr ""
+msgstr "Compiler-Statistik nicht ausgeben"
 
 #: config/mips/mips.h:544
 msgid "Don't optimize block moves"
-msgstr ""
+msgstr "Blockkopierbefehle nicht optimieren"
 
 #: config/mips/mips.h:546
 msgid "Optimize block moves"
-msgstr ""
+msgstr "Blockkopierbefehle optimieren"
 
 #: config/mips/mips.h:548
 msgid "Use mips-tfile asm postpass"
-msgstr ""
+msgstr "mips-tfile asm Nachbearbeitung verwenden"
 
 #: config/mips/mips.h:550
 msgid "Don't use mips-tfile asm postpass"
-msgstr ""
+msgstr "mips-tfile asm Nachbearbeitung nicht verwenden"
 
 #. Macro to define tables used to set the flags.
 #. This is a list in braces of triplets in braces,
@@ -10882,123 +10882,123 @@ msgstr ""
 #. An empty string NAME is used to identify the default VALUE.
 #: config/mips/mips.h:554 config/pdp11/pdp11.h:61 config/rs6000/rs6000.h:325
 msgid "Use hardware floating point"
-msgstr ""
+msgstr "Hardware-Fließkomma verwenden"
 
 #: config/mips/mips.h:556
 msgid "Use 64-bit FP registers"
-msgstr ""
+msgstr "64-Bit-Fließkomma-Register verwenden"
 
 #: config/mips/mips.h:558
 msgid "Use 32-bit FP registers"
-msgstr ""
+msgstr "32-Bit-Fließkomma-Register verwenden"
 
 #: config/mips/mips.h:560
 msgid "Use 64-bit general registers"
-msgstr ""
+msgstr "Allgemeine Register in 64 Bit Breite verwenden"
 
 #: config/mips/mips.h:562
 msgid "Use 32-bit general registers"
-msgstr ""
+msgstr "Allgemeine Register in 32 Bit Breite verwenden"
 
 #: config/mips/mips.h:564
 msgid "Use Irix PIC"
-msgstr ""
+msgstr "Irix PIC verwenden"
 
 #: config/mips/mips.h:566
 msgid "Don't use Irix PIC"
-msgstr ""
+msgstr "Irix PIC nicht verwenden"
 
 #: config/mips/mips.h:568
 msgid "Use indirect calls"
-msgstr ""
+msgstr "Indirekte Aufrufe verwenden"
 
 #: config/mips/mips.h:570
 msgid "Don't use indirect calls"
-msgstr ""
+msgstr "Keine indirekten Aufrufe verwenden"
 
 #: config/mips/mips.h:572
 msgid "Use embedded PIC"
-msgstr ""
+msgstr "Eingebetteten PIC verwenden"
 
 #: config/mips/mips.h:574
 msgid "Don't use embedded PIC"
-msgstr ""
+msgstr "Keinen eingebetteten PIC verwenden"
 
 #: config/mips/mips.h:584
 msgid "Use big-endian byte order"
-msgstr ""
+msgstr "Big-Endian Byte-Reihenfolge verwenden"
 
 #: config/mips/mips.h:586
 msgid "Use little-endian byte order"
-msgstr ""
+msgstr "Little-Endian Byte-Reihenfolge verwenden"
 
 #: config/mips/mips.h:588
 msgid "Use single (32-bit) FP only"
-msgstr ""
+msgstr "Nur single (32-bit) Fließkomma verwenden"
 
 #: config/mips/mips.h:590
 msgid "Don't use single (32-bit) FP only"
-msgstr ""
+msgstr "Nicht nur single (32-bit) Fließkomma verwenden"
 
 #: config/mips/mips.h:592
 msgid "Use multiply accumulate"
-msgstr ""
+msgstr "Multiplizier-Zwischenspeicher verwenden"
 
 #: config/mips/mips.h:594
 msgid "Don't use multiply accumulate"
-msgstr ""
+msgstr "Keinen Multiplizier-Zwischenspeicher verwenden"
 
 #: config/mips/mips.h:596
 msgid "Don't generate fused multiply/add instructions"
-msgstr ""
+msgstr "Keine verschmolzenen Multiplizier-/Addier-Befehle erzeugen"
 
 #: config/mips/mips.h:598 config/rs6000/rs6000.h:341
 msgid "Generate fused multiply/add instructions"
-msgstr ""
+msgstr "Verschmolzene Multiplizier-/Addier-Befehle erzeugen"
 
 #: config/mips/mips.h:600
 msgid "Work around early 4300 hardware bug"
-msgstr ""
+msgstr "Frühen 4300-Hardware-Bug umgehen"
 
 #: config/mips/mips.h:602
 msgid "Don't work around early 4300 hardware bug"
-msgstr ""
+msgstr "Frühen 4300-Hardware-Bug nicht umgehen"
 
 #: config/mips/mips.h:604
 msgid "Work around errata for early SB-1 revision 2 cores"
-msgstr ""
+msgstr "Fehler früher SB-1 Revision 2 Kerne umgehen"
 
 #: config/mips/mips.h:606
 msgid "Don't work around errata for early SB-1 revision 2 cores"
-msgstr ""
+msgstr "Fehler früher SB-1 Revision 2 Kerne nicht umgehen"
 
 #: config/mips/mips.h:608
 msgid "Trap on integer divide by zero"
-msgstr ""
+msgstr "Ganzzahldivision durch Null abfangen"
 
 #: config/mips/mips.h:610
 msgid "Don't trap on integer divide by zero"
-msgstr ""
+msgstr "Ganzzahldivision durch Null nicht abfangen"
 
 #: config/mips/mips.h:612
 msgid "Use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "»Branch Likely«-Befehle verwenden, Standard für die Architektur aufheben"
 
 #: config/mips/mips.h:614
 msgid "Don't use Branch Likely instructions, overriding default for arch"
-msgstr ""
+msgstr "Nicht »Branch Likely«-Befehle verwenden, Standard für die Architektur aufheben"
 
 #: config/mips/mips.h:616
 msgid "Use NewABI-style %reloc() assembly operators"
-msgstr ""
+msgstr "%reloc()-Assebmleroperatoren im NewABI-Stil verwenden"
 
 #: config/mips/mips.h:618
 msgid "Use assembler macros instead of relocation operators"
-msgstr ""
+msgstr "Assemblermakros statt Auslagerungsoperatoren verwenden"
 
 #: config/mips/mips.h:620
 msgid "Generate mips16 code"
-msgstr ""
+msgstr "mips16-Code erzeugen"
 
 #: config/mips/mips.h:622
 msgid "Generate normal-mode code"
