@@ -1,3 +1,27 @@
+Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
+			  Frank Ch. Eigler  <fche@redhat.com>
+	                  Matthew Green  <mrg@redhat.com>
+			  Richard Henderson <rtl@redhat.com>
+			  Dave Hudson  <dave.hudson@ubicom.com>
+			  Jeff Johnston  <jjohnstn@redhat.com>
+			  Alan Lehotsky <apl@alum.mit.edu>
+			  Bernd Schmidt  <bernds@redhat.com>
+			  Graham Stott  <grahams@redhat.com>
+			  
+	* doc/extend.texi: Add ip2k port to description of attribute
+	naked.
+	* doc/install.texi (Specific): Add ip2k description.
+	* doc/install-old.texi (Configurations): Add ip2k to possible
+	cpu types.
+	* doc/md.texi: Document ip2k constraints.
+	* config/ip2k/crt0.S: New file.
+	* config/ip2k/ip2k-protos.h: New file.
+	* config/ip2k/ip2k.c: New file.
+	* config/ip2k/ip2k.h: New file.
+	* config/ip2k/ip2k.md: New file.
+	* config/ip2k/libgcc.S: New file.
+	* config/ip2k/t-ip2k: New file.
+
 2002-06-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("return"): New pattern.
