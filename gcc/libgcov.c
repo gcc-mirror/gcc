@@ -519,7 +519,7 @@ __gcov_merge_single (gcov_type *counters, unsigned n_counters)
   unsigned i, n_measures;
   gcov_type value, counter, all;
 
-  GCOV_CHECK (!(n_counters % 3));
+  gcc_assert (!(n_counters % 3));
   n_measures = n_counters / 3;
   for (i = 0; i < n_measures; i++, counters += 3)
     {
@@ -558,7 +558,7 @@ __gcov_merge_delta (gcov_type *counters, unsigned n_counters)
   unsigned i, n_measures;
   gcov_type last, value, counter, all;
 
-  GCOV_CHECK (!(n_counters % 4));
+  gcc_assert (!(n_counters % 4));
   n_measures = n_counters / 4;
   for (i = 0; i < n_measures; i++, counters += 4)
     {
