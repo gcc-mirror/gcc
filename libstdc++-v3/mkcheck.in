@@ -78,9 +78,6 @@ LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
 # the names of the specific test files to be run
 TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
 
-# the heap size and virtual mem limit for testsuite binaries
-# See http://gcc.gnu.org/ml/libstdc++/2000-10/msg00029.html
-MAX_MEM_USAGE=16384
 
 #
 # 2: clean, make files, append general test info
@@ -339,18 +336,12 @@ test_file()
         # printed by the executable will be lost and cannot be redirected,
         # because we need to capture the output of 'time'.  Bummer.
         TIMEFORMAT='timemark %R'
-        E_TIME_TEXT="$(exec 2>&1;                                        \
-                     ulimit -d $MAX_MEM_USAGE; ulimit -v $MAX_MEM_USAGE; \
-                     time $LTEXE $EXENAME)"
+        E_TIME_TEXT="$(exec 2>&1; time $LTEXE $EXENAME)"
         E_ABNORMAL_TERMINATION=$?
-        E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
-        # joining those two commands does not work due to quoting problems:
-        #E_TIME="$(exec 2>&1; time $EXENAME | awk '{print $2}')"
-        # this will work as a fallback on certain systems...?
-        #E_TIME=$(exec 2>&1; time $EXENAME | cut -d ' ' -f 2)
  
         if [ "$E_ABNORMAL_TERMINATION" -ne 0 ]; then
             RESULT='-r'
+	    E_TIME="0"
             rm -f ./*core
             # sometimes you want to save all core files for review:
             #mv ./core $EXENAME.core
@@ -359,10 +350,13 @@ test_file()
             #mv ./core* $EXENAME.core
         else
             test_for_output
+	    # XXX This doesn't always result in a number.
+	    # E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
+	    E_TIME="0"
         fi
 
         # sometimes you want to save all failing exe files for review:
-        if [ "$RESULT" = "+" ]; then
+        if [ "$RESULT" = '+' ]; then
             rm "$EXENAME"
         fi
     else
