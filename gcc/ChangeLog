@@ -1,5 +1,13 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/fr30/fr30.c (TARGET_PROMOTE_PROTOTYPES): New.
+	(fr30_setup_incoming_varargs): Don't use
+	STRICT_ARGUMENT_NAMING.
+	* config/fr30/fr30.h (PROMOTE_PROTOTYPES): Remove.
+	(STRICT_ARGUMENT_NAMING): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/frv/frv-protos.h: Remove the prototype for
 	frv_expand_builtin_saveregs.
 	* config/frv/frv.c (TARGET_STRUCT_VALUE_RTX): Likewise.

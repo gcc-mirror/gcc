@@ -1,5 +1,6 @@
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -147,6 +148,9 @@ static rtx fr30_pass_by_value (tree, tree);
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -417,11 +421,12 @@ fr30_setup_incoming_varargs (CUMULATIVE_ARGS arg_regs_used_so_far,
   if (mode == BLKmode)
     abort ();
 
-#if STRICT_ARGUMENT_NAMING
-  /* If STRICT_ARGUMENT_NAMING is true then the last named
-     arg must not be treated as an anonymous arg. */
-  arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
-#endif
+  /* ??? This run-time test as well as the code inside the if
+     statement is probably unnecessary.  */
+  if (targetm.calls.strict_argument_naming (&arg_regs_used_so_far))
+    /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
+       arg must not be treated as an anonymous arg. */
+    arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
   
   size = FR30_NUM_ARG_REGS - arg_regs_used_so_far;
 
