@@ -1,3 +1,12 @@
+2002-08-11  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* decl.c (duplicate_decls): Replace DECL_SOURCE_FILE +
+	DECL_SOURCE_LINE with DECL_SOURCE_LOCATION.
+	* optimize.c (maybe_clone_body): Likewise.
+	* pt.c (tsubst_enum): Likewise.
+	(lookup_template_class): Likewise.
+	* tree.c (cp_copy_res_decl_for_inlining): Likewise.
+
 2002-08-10  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-specs.h: Remove -ansi.

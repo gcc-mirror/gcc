@@ -3402,12 +3402,9 @@ duplicate_decls (newdecl, olddecl)
       if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE
 	  && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl)) != NULL_TREE)
 	{
-	  DECL_SOURCE_LINE (olddecl) 
-	    = DECL_SOURCE_LINE (DECL_TEMPLATE_RESULT (olddecl))
-	    = DECL_SOURCE_LINE (newdecl);
-	  DECL_SOURCE_FILE (olddecl) 
-	    = DECL_SOURCE_FILE (DECL_TEMPLATE_RESULT (olddecl))
-	    = DECL_SOURCE_FILE (newdecl);
+	  DECL_SOURCE_LOCATION (olddecl) 
+	    = DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (olddecl))
+	    = DECL_SOURCE_LOCATION (newdecl);
 	}
 
       return 1;
@@ -3478,8 +3475,7 @@ duplicate_decls (newdecl, olddecl)
 	  && DECL_INITIAL (olddecl) != NULL_TREE)
 	{
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
-	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
+	  DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 	  if (CAN_HAVE_FULL_LANG_DECL_P (newdecl)
 	      && DECL_LANG_SPECIFIC (newdecl)
 	      && DECL_LANG_SPECIFIC (olddecl))
