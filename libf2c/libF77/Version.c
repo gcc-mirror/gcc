@@ -3,7 +3,7 @@ static char junk[] = "\n@(#)LIBF77 VERSION 20000929\n";
 /*
 */
 
-char __G77_LIBF77_VERSION__[] = "3.2 20020308 (experimental)";
+char __G77_LIBF77_VERSION__[] = "3.2 20020309 (experimental)";
 
 /*
 2.00	11 June 1980.  File version.c added to library.
