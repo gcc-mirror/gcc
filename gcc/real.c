@@ -158,7 +158,6 @@ get_canonical_qnan (r, sign)
   memset (r, 0, sizeof (*r));
   r->class = rvc_nan;
   r->sign = sign;
-  r->sig[SIGSZ-1] = SIG_MSB >> 1;
 }
 
 static inline void
@@ -169,7 +168,7 @@ get_canonical_snan (r, sign)
   memset (r, 0, sizeof (*r));
   r->class = rvc_nan;
   r->sign = sign;
-  r->sig[SIGSZ-1] = SIG_MSB >> 2;
+  r->signalling = 1;
 }
 
 static inline void
@@ -1235,6 +1234,8 @@ real_identical (a, b)
  	return false;
       /* FALLTHRU */
     case rvc_nan:
+      if (a->signalling != b->signalling)
+	return false;
       for (i = 0; i < SIGSZ; ++i)
 	if (a->sig[i] != b->sig[i])
 	  return false;
@@ -2249,23 +2250,7 @@ real_nan (r, str, quiet, mode)
       r->sig[SIGSZ-1] &= ~SIG_MSB;
 
       /* Force quiet or signalling NaN.  */
-      if (quiet)
-	r->sig[SIGSZ-1] |= SIG_MSB >> 1;
-      else
-	r->sig[SIGSZ-1] &= ~(SIG_MSB >> 1);
-
-      /* Force at least one bit of the significand set.  */
-      for (d = 0; d < SIGSZ; ++d)
-	if (r->sig[d])
-	  break;
-      if (d == SIGSZ)
-	r->sig[SIGSZ-1] |= SIG_MSB >> 2;
-
-      /* Our intermediate format forces QNaNs to have MSB-1 set.
-	 If the target format has QNaNs with the top bit unset,
-	 mirror the output routines and invert the top two bits.  */
-      if (!fmt->qnan_msb_set)
-	r->sig[SIGSZ-1] ^= (SIG_MSB >> 1) | (SIG_MSB >> 2);
+      r->signalling = !quiet;
     }
 
   return true;
@@ -2325,14 +2310,6 @@ round_for_format (fmt, r)
 
     case rvc_nan:
       clear_significand_below (r, np2);
-
-      /* If we've cleared the entire significand, we need one bit
-	 set for this to continue to be a NaN.  */
-      for (i = 0; i < SIGSZ; ++i)
-	if (r->sig[i])
-	  break;
-      if (i == SIGSZ)
-	r->sig[SIGSZ-1] = SIG_MSB >> 2;
       return;
 
     case rvc_normal:
@@ -2642,10 +2619,15 @@ encode_ieee_single (fmt, buf, r)
     case rvc_nan:
       if (fmt->has_nans)
 	{
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig &= ~(1 << 22);
+	  else
+	    sig |= 1 << 22;
+	  if (sig == 0)
+	    sig = 1 << 21;
+
 	  image |= 255 << 23;
 	  image |= sig;
-	  if (!fmt->qnan_msb_set)
-	    image ^= 1 << 23 | 1 << 22;
 	}
       else
 	image |= 0x7fffffff;
@@ -2703,8 +2685,7 @@ decode_ieee_single (fmt, r, buf)
 	{
 	  r->class = rvc_nan;
 	  r->sign = sign;
-	  if (!fmt->qnan_msb_set)
-	    image ^= (SIG_MSB >> 1 | SIG_MSB >> 2);
+	  r->signalling = ((image >> 22) & 1) ^ fmt->qnan_msb_set;
 	  r->sig[SIGSZ-1] = image;
 	}
       else
@@ -2791,10 +2772,15 @@ encode_ieee_double (fmt, buf, r)
     case rvc_nan:
       if (fmt->has_nans)
 	{
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig_hi &= ~(1 << 19);
+	  else
+	    sig_hi |= 1 << 19;
+	  if (sig_hi == 0 && sig_lo == 0)
+	    sig_hi = 1 << 18;
+
 	  image_hi |= 2047 << 20;
 	  image_hi |= sig_hi;
-	  if (!fmt->qnan_msb_set)
-	    image_hi ^= 1 << 19 | 1 << 18;
 	  image_lo = sig_lo;
 	}
       else
@@ -2884,6 +2870,7 @@ decode_ieee_double (fmt, r, buf)
 	{
 	  r->class = rvc_nan;
 	  r->sign = sign;
+	  r->signalling = ((image_hi >> 30) & 1) ^ fmt->qnan_msb_set;
 	  if (HOST_BITS_PER_LONG == 32)
 	    {
 	      r->sig[SIGSZ-1] = image_hi;
@@ -2891,9 +2878,6 @@ decode_ieee_double (fmt, r, buf)
 	    }
 	  else
 	    r->sig[SIGSZ-1] = (image_hi << 31 << 1) | image_lo;
-
-	  if (!fmt->qnan_msb_set)
-	    r->sig[SIGSZ-1] ^= (SIG_MSB >> 1 | SIG_MSB >> 2);
 	}
       else
 	{
@@ -2999,8 +2983,12 @@ encode_ieee_extended (fmt, buf, r)
 	      sig_hi = sig_lo >> 31 >> 1;
 	      sig_lo &= 0xffffffff;
 	    }
-	  if (!fmt->qnan_msb_set)
-	    sig_hi ^= 1 << 30 | 1 << 29;
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig_hi &= ~(1 << 30);
+	  else
+	    sig_hi |= 1 << 30;
+	  if ((sig_hi & 0x7fffffff) == 0 && sig_lo == 0)
+	    sig_hi = 1 << 29;
 
 	  /* Intel requires the explicit integer bit to be set, otherwise
 	     it considers the value a "pseudo-nan".  Motorola docs say it
@@ -3131,6 +3119,7 @@ decode_ieee_extended (fmt, r, buf)
 	{
 	  r->class = rvc_nan;
 	  r->sign = sign;
+	  r->signalling = ((sig_hi >> 30) & 1) ^ fmt->qnan_msb_set;
 	  if (HOST_BITS_PER_LONG == 32)
 	    {
 	      r->sig[SIGSZ-1] = sig_hi;
@@ -3138,9 +3127,6 @@ decode_ieee_extended (fmt, r, buf)
 	    }
 	  else
 	    r->sig[SIGSZ-1] = (sig_hi << 31 << 1) | sig_lo;
-
-	  if (!fmt->qnan_msb_set)
-	    r->sig[SIGSZ-1] ^= (SIG_MSB >> 1 | SIG_MSB >> 2);
 	}
       else
 	{
@@ -3395,9 +3381,12 @@ encode_ieee_quad (fmt, buf, r)
 	      image0 &= 0xffffffff;
 	      image2 &= 0xffffffff;
 	    }
-
-	  if (!fmt->qnan_msb_set)
-	    image3 ^= 1 << 15 | 1 << 14;
+	  if (r->signalling == fmt->qnan_msb_set)
+	    image3 &= ~0x8000;
+	  else
+	    image3 |= 0x8000;
+	  if (((image3 & 0xffff) | image2 | image1 | image0) == 0)
+	    image3 |= 0x4000;
 	}
       else
 	{
@@ -3522,6 +3511,7 @@ decode_ieee_quad (fmt, r, buf)
 	{
 	  r->class = rvc_nan;
 	  r->sign = sign;
+	  r->signalling = ((image3 >> 15) & 1) ^ fmt->qnan_msb_set;
 
 	  if (HOST_BITS_PER_LONG == 32)
 	    {
@@ -3536,9 +3526,6 @@ decode_ieee_quad (fmt, r, buf)
 	      r->sig[1] = (image3 << 31 << 1) | image2;
 	    }
 	  lshift_significand (r, r, SIGNIFICAND_BITS - 113);
-
-	  if (!fmt->qnan_msb_set)
-	    r->sig[SIGSZ-1] ^= (SIG_MSB >> 1 | SIG_MSB >> 2);
 	}
       else
 	{

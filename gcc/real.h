@@ -35,7 +35,7 @@ enum real_value_class {
 };
 
 #define SIGNIFICAND_BITS	(128 + HOST_BITS_PER_LONG)
-#define EXP_BITS		(32 - 3)
+#define EXP_BITS		(32 - 4)
 #define MAX_EXP			((1 << (EXP_BITS - 1)) - 1)
 #define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
 #define SIG_MSB			((unsigned long)1 << (HOST_BITS_PER_LONG - 1))
@@ -44,6 +44,7 @@ struct real_value GTY(())
 {
   ENUM_BITFIELD (real_value_class) class : 2;
   unsigned int sign : 1;
+  unsigned int signalling : 1;
   signed int exp : EXP_BITS;
   unsigned long sig[SIGSZ];
 };

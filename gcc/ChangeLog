@@ -1,3 +1,17 @@
+2003-03-27  Richard Henderson  <rth@redhat.com>
+
+	* real.h (struct real_value): Add signalling.
+	(EXP_BITS): Decrement.
+	* real.c (get_canonical_qnan): Don't set MSB-1.
+	(get_canonical_snan): Likewise.  Set signalling.
+	(real_identical): Compare signalling.
+	(round_for_format): Remove force-one-bit on code.
+	(real_nan): Likewise.  Set signalling.
+	(encode_ieee_single): Add force-one-bit code; honor signalling.
+	(encode_ieee_double, encode_ieee_extended, encode_ieee_quad): Likewise.
+	(decode_ieee_single): Set signalling.
+	(decode_ieee_double, decode_ieee_extended, decode_ieee_quad): Likewise.
+
 2003-03-27  Olivier Hainque  <hainque@act-europe.fr>
 
 	PR ada/9953
