@@ -38,7 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int global_reg_mentioned_p_1 PARAMS ((rtx *, void *));
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
-static int subrtx_p_1		PARAMS ((rtx *, void *));
+static int rtx_referenced_p_1	PARAMS ((rtx *, void *));
 static int computed_jump_p_1	PARAMS ((rtx));
 static void parms_set 		PARAMS ((rtx, rtx, void *));
 static bool hoist_test_store		PARAMS ((rtx, rtx, regset));
@@ -2796,7 +2796,7 @@ replace_regs (x, reg_map, nregs, replace_dest)
 }
 
 /* Replace occurrences of the old label in *X with the new one.
-   DATA is an rtx_pair containing the old and new labels, respectively.  */
+   DATA is a REPLACE_LABEL_DATA containing the old and new labels.  */
 
 int
 replace_label (x, data)
@@ -2804,51 +2804,98 @@ replace_label (x, data)
      void *data;
 {
   rtx l = *x;
-  rtx old_label = ((rtx_pair *) data)->r1;
-  rtx new_label = ((rtx_pair *) data)->r2;
+  rtx tmp;
+  rtx old_label = ((replace_label_data *) data)->r1;
+  rtx new_label = ((replace_label_data *) data)->r2;
+  bool update_label_nuses = ((replace_label_data *) data)->update_label_nuses;
 
   if (l == NULL_RTX)
     return 0;
+
+  if (GET_CODE (l) == MEM
+      && (tmp = XEXP (l, 0)) != NULL_RTX
+      && GET_CODE (tmp) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (tmp))
+    {
+      rtx c = get_pool_constant (tmp);
+      if (rtx_referenced_p (old_label, c))
+	{
+	  rtx new_c, new_l;
+	  replace_label_data *d = (replace_label_data *) data;
+	  
+	  /* Create a copy of constant C; replace the label inside
+	     but do not update LABEL_NUSES because uses in constant pool
+	     are not counted.  */
+	  new_c = copy_rtx (c);
+	  d->update_label_nuses = false;
+	  for_each_rtx (&new_c, replace_label, data);
+	  d->update_label_nuses = update_label_nuses;
+
+	  /* Add the new constant NEW_C to constant pool and replace
+	     the old reference to constant by new reference.  */
+	  new_l = force_const_mem (get_pool_mode (tmp), new_c);
+	  *x = replace_rtx (l, l, new_l);
+	}
+      return 0;
+    }
 
   /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
      field.  This is not handled by for_each_rtx because it doesn't
      handle unprinted ('0') fields.  */
   if (GET_CODE (l) == JUMP_INSN && JUMP_LABEL (l) == old_label)
     JUMP_LABEL (l) = new_label;
-  
-  if (GET_CODE (l) != LABEL_REF)
-    return 0;
 
-  if (XEXP (l, 0) != old_label)
-    return 0;
-
-  XEXP (l, 0) = new_label;
-  ++LABEL_NUSES (new_label);
-  --LABEL_NUSES (old_label);
+  if ((GET_CODE (l) == LABEL_REF
+       || GET_CODE (l) == INSN_LIST)
+      && XEXP (l, 0) == old_label)
+    {
+      XEXP (l, 0) = new_label;
+      if (update_label_nuses)
+	{
+	  ++LABEL_NUSES (new_label);
+	  --LABEL_NUSES (old_label);
+	}
+      return 0;
+    }
 
   return 0;
 }
 
-/* Return RTX_EQUAL_P (*PX, SUBX).  If *PX and SUBX are not equal
-   FOR_EACH_RTX continues traversing, if they are equal FOR_EACH_RTX
-   stops traversing and returns the same value as this function.  */
+/* When *BODY is equal to X or X is directly referenced by *BODY
+   return nonzero, thus FOR_EACH_RTX stops traversing and returns nonzero
+   too, otherwise FOR_EACH_RTX continues traversing *BODY.  */
 
 static int
-subrtx_p_1 (px, subx)
-     rtx *px;
-     void *subx;
+rtx_referenced_p_1 (body, x)
+     rtx *body;
+     void *x;
 {
-  return rtx_equal_p (*px, (rtx) subx);
+  rtx y = (rtx) x;
+
+  if (*body == NULL_RTX)
+    return y == NULL_RTX;
+
+  /* Return true if a label_ref *BODY refers to label Y.  */
+  if (GET_CODE (*body) == LABEL_REF && GET_CODE (y) == CODE_LABEL)
+    return XEXP (*body, 0) == y;
+
+  /* If *BODY is a reference to pool constant traverse the constant.  */
+  if (GET_CODE (*body) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (*body))
+    return rtx_referenced_p (y, get_pool_constant (*body));
+
+  /* By default, compare the RTL expressions.  */
+  return rtx_equal_p (*body, y);
 }
 
-/* Return true if SUBX is equal to some subexpression of X.  */
+/* Return true if X is referenced in BODY.  */
 
 int
-subrtx_p (subx, x)
-     rtx subx;
+rtx_referenced_p (x, body)
      rtx x;
+     rtx body;
 {
-  return for_each_rtx (&x, subrtx_p_1, subx);
+  return for_each_rtx (&body, rtx_referenced_p_1, x);
 }
 
 /* If INSN is a jump to jumptable insn rturn true and store the label (which
