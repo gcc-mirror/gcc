@@ -1,3 +1,28 @@
+2005-04-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/m68hc11/m68hc11.h (target_flags, MASK_SHORT)
+	(MASK_AUTO_INC_DEC, MASK_M6811, MASK_M6812, MASK_M68S12)
+	(MASK_NO_DIRECT_MODE, MASK_MIN_MAX, MASK_LONG_CALLS)
+	(TARGET_SHORT, TARGET_M6811, TARGET_M6812, TARGET_M68S12)
+	(TARGET_AUTO_INC_DEC, TARGET_MIN_MAX, TARGET_NO_DIRECT_MODE)
+	(TARGET_LONG_CALLS, TARGET_SWITCHES, TARGET_OPTIONS)
+	(SUBTARGET_SWITCHES, SUBTARGET_OPTIONS, m68hc11_regparm_string)
+	(m68hc11_reg_alloc_order, m68hc11_soft_reg_count)
+	(TARGET_M68HC11): Delete.
+	(TARGET_DEFAULT): Change the default setting from MASK_M6811 to 0.
+	* config/m68hc11/m68hc12.h (TARGET_M68HC12): Delete.
+	* config/m68hc11/m68hc11.c (m68hc11_regparm_string)
+	(m68hc11_reg_alloc_order, m68hc11_soft_reg_count)
+	(nb_soft_regs): Delete.
+	(TARGET_DEFAULT_TARGET_FLAGS): Override default with TARGET_DEFAULT.
+	(m68hc11_override_options): Remove the code that caters for MASK_M6811
+	and MASK_M6812 being set simultaneously.  Change the code that sets
+	the default m68hc11_soft_reg_count to use integers instead of strings.
+	(m68hc11_conditional_register_usage, hard_regno_mode_ok): Use
+	m68hc11_soft_reg_count (which now has an int type) as the number
+	of soft registers.
+	* config/m68hc11/m68hc11.opt: New file.
+
 2005-04-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/fr30/fr30.h (PREDICATE_CODES): Remove

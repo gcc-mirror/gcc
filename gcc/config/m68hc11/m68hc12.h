@@ -44,5 +44,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Default target_flags if no switches specified.  */
 #define TARGET_DEFAULT		(MASK_M6812)
-
-#define TARGET_M68HC12

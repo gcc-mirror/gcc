@@ -118,44 +118,14 @@ typedef int enum_machine_mode;
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
-extern int target_flags;
-
 extern short *reg_renumber;	/* def in local_alloc.c */
 
-/* Macros used in the machine description to test the flags.  */
-
-/* 6811 specific options
- *
- * For 68HC12, the auto inc/dec mode is disabled by default. The reason
- * is that for most programs, the reload pass will fail because it needs
- * more registers to save the value of the indexed register after the
- * memory access.  For simple programs, you can enable this
- * with -mauto-incdec.
- */
-
-#define MASK_SHORT              0002	/* Compile with 16-bit `int' */
-#define MASK_AUTO_INC_DEC       0004
-#define MASK_M6811              0010
-#define MASK_M6812              0020
-#define MASK_M68S12             0040
-#define MASK_NO_DIRECT_MODE     0100
-#define MASK_MIN_MAX            0200
-#define MASK_LONG_CALLS         0400
-
 #define TARGET_OP_TIME		(optimize && optimize_size == 0)
-#define TARGET_SHORT            (target_flags & MASK_SHORT)
-#define TARGET_M6811            (target_flags & MASK_M6811)
-#define TARGET_M6812            (target_flags & MASK_M6812)
-#define TARGET_M68S12           (target_flags & MASK_M68S12)
-#define TARGET_AUTO_INC_DEC     (target_flags & MASK_AUTO_INC_DEC)
-#define TARGET_MIN_MAX          (target_flags & MASK_MIN_MAX)
-#define TARGET_NO_DIRECT_MODE   (target_flags & MASK_NO_DIRECT_MODE)
 #define TARGET_RELAX            (TARGET_NO_DIRECT_MODE)
-#define TARGET_LONG_CALLS       (target_flags & MASK_LONG_CALLS)
 
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
-# define TARGET_DEFAULT		(MASK_M6811)
+# define TARGET_DEFAULT		0
 #endif
 
 /* Define this macro as a C expression for the initializer of an
@@ -168,75 +138,6 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 # else
 #  define MULTILIB_DEFAULTS { "m68hc12" }
 # endif
-#endif
-
-/* Macro to define tables used to set the flags. This is a list in braces of
-   pairs in braces, each pair being { "NAME", VALUE } where VALUE is the bits
-   to set or minus the bits to clear. An empty string NAME is used to
-   identify the default VALUE.  */
-
-#define TARGET_SWITCHES						\
-{ { "short", MASK_SHORT,					\
-    N_("Compile with 16-bit integer mode")},			\
-  { "noshort", - MASK_SHORT,					\
-    N_("Compile with 32-bit integer mode")},			\
-  { "auto-incdec", MASK_AUTO_INC_DEC,				\
-    N_("Auto pre/post decrement increment allowed")},		\
-  { "noauto-incdec", - MASK_AUTO_INC_DEC,			\
-    N_("Auto pre/post decrement increment not allowed")},	\
-  { "inmax", MASK_MIN_MAX,                                      \
-    N_("Min/max instructions allowed")},                        \
-  { "nominmax", - MASK_MIN_MAX,                                 \
-    N_("Min/max instructions not allowed")},                    \
-  { "long-calls", MASK_LONG_CALLS,				\
-    N_("Use call and rtc for function calls and returns")},	\
-  { "nolong-calls", - MASK_LONG_CALLS,				\
-    N_("Use jsr and rts for function calls and returns")},	\
-  { "relax", MASK_NO_DIRECT_MODE,                               \
-    N_("Do not use direct addressing mode for soft registers")},\
-  { "norelax", -MASK_NO_DIRECT_MODE,                            \
-    N_("Use direct addressing mode for soft registers")},       \
-  { "68hc11", MASK_M6811,					\
-    N_("Compile for a 68HC11")},				\
-  { "68hc12", MASK_M6812,					\
-    N_("Compile for a 68HC12")},				\
-  { "68hcs12", MASK_M6812 | MASK_M68S12,			\
-    N_("Compile for a 68HCS12")},				\
-  { "6811",   MASK_M6811,					\
-    N_("Compile for a 68HC11")},				\
-  { "6812",   MASK_M6812,					\
-    N_("Compile for a 68HC12")},				\
-  { "68S12",  MASK_M6812 | MASK_M68S12,				\
-    N_("Compile for a 68HCS12")},				\
-  { "", TARGET_DEFAULT, 0 }}
-
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable.  The
-   variable, type `char *', is set to the variable part of the given
-   option if the fixed part matches.  The actual option name is made
-   by appending `-m' to the specified name.  */
-#define TARGET_OPTIONS							\
-{ { "reg-alloc=",	&m68hc11_reg_alloc_order,                       \
-    N_("Specify the register allocation order"), 0},			\
-  { "soft-reg-count=",	&m68hc11_soft_reg_count,                        \
-    N_("Indicate the number of soft registers available"), 0},		\
-  SUBTARGET_OPTIONS							\
-}
-
-/* These are meant to be redefined in the host dependent files */
-#define SUBTARGET_SWITCHES
-#define SUBTARGET_OPTIONS
-
-extern const char *m68hc11_regparm_string;
-extern const char *m68hc11_reg_alloc_order;
-extern const char *m68hc11_soft_reg_count;
-
-#ifndef TARGET_M68HC12
-# define TARGET_M68HC11 1
 #endif
 
 /* Print subsidiary information on the compiler version in use.  */
