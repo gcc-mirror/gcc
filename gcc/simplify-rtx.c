@@ -1844,9 +1844,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case AND:
 	  if (trueop1 == const0_rtx && ! side_effects_p (op0))
 	    return const0_rtx;
+	  /* If we are turning off bits already known off in OP0, we need
+	     not do an AND.  */
 	  if (GET_CODE (trueop1) == CONST_INT
-	      && ((INTVAL (trueop1) & GET_MODE_MASK (mode))
-		  == GET_MODE_MASK (mode)))
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && (nonzero_bits (trueop0, mode) & ~INTVAL (trueop1)) == 0)
 	    return op0;
 	  if (trueop0 == trueop1 && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
