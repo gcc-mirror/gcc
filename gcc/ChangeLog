@@ -1,3 +1,16 @@
+2003-06-28  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* opts.c: Include tm_p.h.
+	(handle_options): Make static.
+	(decode_options): Copied from toplev.c.
+	* opts.h (decode_options): New.
+	* toplev.c (parse_options_and_default_flags): Move most to opts.c,
+	some to...
+	(general_init): ...here.
+	(toplev_main): Use decode_options instead.
+	* toplev.h (save_argc, save_argv): New.
+
 2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* explow.c (find_next_ref): Remove.
