@@ -4764,6 +4764,7 @@ group_barrier_needed_p (insn)
 	  /* We play dependency tricks with the epilogue in order
 	     to get proper schedules.  Undo this for dv analysis.  */
 	case CODE_FOR_epilogue_deallocate_stack:
+	case CODE_FOR_prologue_allocate_stack:
 	  pat = XVECEXP (pat, 0, 0);
 	  break;
 
@@ -5235,21 +5236,22 @@ ia64_single_set (insn)
     x = COND_EXEC_CODE (x);
   if (GET_CODE (x) == SET)
     return x;
-  ret = single_set_2 (insn, x);
-  if (ret == NULL && GET_CODE (x) == PARALLEL)
+
+  /* Special case here prologue_allocate_stack and epilogue_deallocate_stack.
+     Although they are not classical single set, the second set is there just
+     to protect it from moving past FP-relative stack accesses.  */
+  switch (recog_memoized (insn))
     {
-      /* Special case here prologue_allocate_stack and
-	 epilogue_deallocate_stack.  Although it is not a classical
-	 single set, the second set is there just to protect it
-	 from moving past FP-relative stack accesses.  */
-      if (XVECLEN (x, 0) == 2
-	  && GET_CODE (XVECEXP (x, 0, 0)) == SET
-	  && GET_CODE (XVECEXP (x, 0, 1)) == SET
-	  && GET_CODE (SET_DEST (XVECEXP (x, 0, 1))) == REG
-	  && SET_DEST (XVECEXP (x, 0, 1)) == SET_SRC (XVECEXP (x, 0, 1))
-	  && ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IALU)
-	ret = XVECEXP (x, 0, 0);
+    case CODE_FOR_prologue_allocate_stack:
+    case CODE_FOR_epilogue_deallocate_stack:
+      ret = XVECEXP (x, 0, 0);
+      break;
+
+    default:
+      ret = single_set_2 (insn, x);
+      break;
     }
+
   return ret;
 }
 
