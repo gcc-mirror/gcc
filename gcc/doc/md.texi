@@ -5681,13 +5681,14 @@ single or double precision, but not both, the following could be specified:
 
 @strong{Note:} The scheduler attempts to avoid function unit conflicts
 and uses all the specifications in the @code{define_function_unit}
-expression.  It has recently come to our attention that these
+expression.  It has recently been discovered that these
 specifications may not allow modeling of some of the newer
 ``superscalar'' processors that have insns using multiple pipelined
 units.  These insns will cause a potential conflict for the second unit
 used during their execution and there is no way of representing that
-conflict.  We welcome any examples of how function unit conflicts work
-in such processors and suggestions for their representation.
+conflict.  Any examples of how function unit conflicts work
+in such processors and suggestions for their representation would be
+welcomed.
 
 @end ifset
 @ifset INTERNALS

@@ -2300,7 +2300,7 @@ future implementation may also work for C++ programs.
 The C standard is worded confusingly, therefore there is some debate
 over the precise meaning of the sequence point rules in subtle cases.
 Links to discussions of the problem, including proposed formal
-definitions, may be found on our readings page, at
+definitions, may be found on the GCC readings page, at
 @w{@uref{http://gcc.gnu.org/readings.html}}.
 
 @item -Wreturn-type
@@ -4150,11 +4150,10 @@ These two options are intended to be removed someday, once
 they have helped determine the efficacy of various
 approaches to improving loop optimizations.
 
-Please let us (@w{@email{gcc@@gcc.gnu.org}} and @w{@email{fortran@@gnu.org}})
-know how use of these options affects
-the performance of your production code.
-We're very interested in code that runs @emph{slower}
-when these options are @emph{enabled}.
+Please contact @w{@email{gcc@@gcc.gnu.org}}, and describe how use of
+these options affects the performance of your production code.
+Examples of code that runs @emph{slower} when these options are
+@emph{enabled} are very valuable.
 
 @item -fno-peephole
 @itemx -fno-peephole2
@@ -4334,7 +4333,7 @@ a ``home register''.
 @item -fweb
 @opindex fweb
 Constructs webs as commonly used for register allocation purposes and assign
-each web individual pseudo register.  This allows our register allocation pass
+each web individual pseudo register.  This allows the register allocation pass
 to operate on pseudos directly, but also strengthens several other optimization
 passes, such as CSE, loop optimizer and trivial dead code remover.  It can,
 however, make debugging impossible, since variables will no longer stay in a

@@ -1894,7 +1894,8 @@ or a C++ compiler.  This macro is similar to @code{__STDC_VERSION__}, in
 that it expands to a version number.  A fully conforming implementation
 of the 1998 C++ standard will define this macro to @code{199711L}.  The
 GNU C++ compiler is not yet fully conforming, so it uses @code{1}
-instead.  We hope to complete our implementation in the near future.
+instead.  It is hoped to complete the implementation of standard C++
+in the near future.
 
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in
@@ -2538,7 +2539,7 @@ definition.  Recall that all macro definitions are rescanned for more
 macros to replace.  If the self-reference were considered a use of the
 macro, it would produce an infinitely large expansion.  To prevent this,
 the self-reference is not considered a macro call.  It is passed into
-the preprocessor output unchanged.  Let's consider an example:
+the preprocessor output unchanged.  Consider an example:
 
 @smallexample
 #define foo (4 + foo)
@@ -3829,10 +3830,10 @@ pragmas.
 
 CPP has a small number of internal limits.  This section lists the
 limits which the C standard requires to be no lower than some minimum,
-and all the others we are aware of.  We intend there to be as few limits
+and all the others known.  It is intended that there should be as few limits
 as possible.  If you encounter an undocumented or inconvenient limit,
-please report that to us as a bug.  (See the section on reporting bugs in
-the GCC manual.)
+please report that as a bug.  @xref{Bugs, , Reporting Bugs, gcc, Using
+the GNU Compiler Collection (GCC)}.
 
 Where we say something is limited @dfn{only by available memory}, that
 means that internal data structures impose no intrinsic limit, and space
