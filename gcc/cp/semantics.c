@@ -1733,18 +1733,29 @@ begin_class_definition (t)
       cp_error ("definition of `%#T' inside template parameter list", t);
       return error_mark_node;
     }
-  if (t == error_mark_node
-      || ! IS_AGGR_TYPE (t))
+
+  /* In a definition of a member class template, we will get here with
+     an implicit typename.  */
+  if (IMPLICIT_TYPENAME_P (t))
+    t = TREE_TYPE (t);
+  /* A non-implicit typename comes from code like:
+
+       template <typename T> struct A {
+         template <typename U> struct A<T>::B ...
+
+     This is erroneous.  */
+  else if (TREE_CODE (t) == TYPENAME_TYPE)
+    {
+      cp_error ("invalid definition of qualified type `%T'", t);
+      t = error_mark_node;
+    }
+
+  if (t == error_mark_node || ! IS_AGGR_TYPE (t))
     {
       t = make_aggr_type (RECORD_TYPE);
       pushtag (make_anon_name (), t, 0);
     }
 
-  /* In a definition of a member class template, we will get here with an
-     implicit typename, a TYPENAME_TYPE with a type.  */
-  if (TREE_CODE (t) == TYPENAME_TYPE)
-    t = TREE_TYPE (t);
-  
   /* If we generated a partial instantiation of this type, but now
      we're seeing a real definition, we're actually looking at a
      partial specialization.  Consider:
