@@ -1,5 +1,9 @@
 Tue Oct 13 23:51:51 1998  Jeffrey A Law  (law@cygnus.com)
 
+        * mkstemp.c: Check HAVE_SYS_TIME_H before including sys/time.h
+        * configure.in (AC_CHECK_HEADERS): Check for sys/time.h too.
+        * config.in, configure: Rebuilt.
+
 	* getopt.c: Check HAVE_STRINGS_H before including strings.h.
 	* configure.in (AC_CHECK_HEADERS): Check for strings.h too.
 	* config.in, configure: Rebuilt.
