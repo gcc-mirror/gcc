@@ -140,9 +140,19 @@ __register_frame_table (void *begin)
 }
 
 /* Called from crtbegin.o to deregister the unwind info for an object.  */
+/* ??? Glibc has for a while now exported __register_frame_info and
+   __deregister_frame_info.  If we call __register_frame_info_bases
+   from crtbegin (wherein it is declared weak), and this object does
+   not get pulled from libgcc.a for other reasons, then the
+   invocation of __deregister_frame_info will be resolved from glibc.
+   Since the registration did not happen there, we'll abort.
+
+   Therefore, declare a new deregistration entry point that does the
+   exact same thing, but will resolve to the same library as 
+   implements __register_frame_info_bases.  */
 
 void *
-__deregister_frame_info (void *begin)
+__deregister_frame_info_bases (void *begin)
 {
   struct object **p;
   struct object *ob = 0;
@@ -186,6 +196,18 @@ __deregister_frame_info (void *begin)
   __gthread_mutex_unlock (&object_mutex);
   return (void *) ob;
 }
+
+#ifdef ASM_OUTPUT_DEF
+void *
+__deregister_frame_info (void *)
+ __attribute__((alias(__USER_LABEL_PREFIX__ "__deregister_frame_info_bases")));
+#else
+void *
+__deregister_frame_info (void *begin)
+{
+  return __deregister_frame_info_bases (begin);
+}
+#endif
 
 void
 __deregister_frame (void *begin)
