@@ -1,3 +1,10 @@
+2003-07-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR Fortran/11301
+	* com.c (ffecom_sym_transform_): Only install
+	FFEINFO_whereGLOBAL symbols in the global binding
+	level if not -fno-globals.
+
 2003-06-13  Richard Henderson  <rth@redhat.com>
 
         PR debug/9864
