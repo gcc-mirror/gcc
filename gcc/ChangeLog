@@ -1,3 +1,8 @@
+Wed May  6 06:44:28 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (simplify_rtx, case TRUNCATE): Reflect that it sign-extends
+	instead of zero-extending.
+
 Sat May  2 20:39:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold): When commutting COND_EXPR and binary operation,
