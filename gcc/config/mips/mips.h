@@ -1021,6 +1021,26 @@ extern int mips_abi;
 
 #ifndef SUBTARGET_CPP_SIZE_SPEC
 
+/* Rules for SIZE_TYPE and PTRDIFF_TYPE are:
+
+   both gp64 and long64 (not the options, but the corresponding flags,
+   so defaults came into play) are required in order to have `long' in
+   SIZE_TYPE and PTRDIFF_TYPE.
+
+   on eabi, -mips1, -mips2 and -mips32 disable gp64, whereas mips3,
+   -mips4, -mips5 and -mips64 enable it.
+
+   on other ABIs, -mips* options do not affect gp32/64, but the
+   default ISA affects the default gp size.
+
+   -mgp32 disables gp64, whereas -mgp64 enables it.
+
+   on eabi, gp64 implies long64.
+
+   -mlong64, and -mabi=64 are the only other ways to enable long64.
+
+*/
+
 #if MIPS_ISA_DEFAULT != 3 && MIPS_ISA_DEFAULT != 4 && MIPS_ISA_DEFAULT != 5 && MIPS_ISA_DEFAULT != 64
 
 /* 32-bit cases first.  */
@@ -1028,17 +1048,16 @@ extern int mips_abi;
 #if MIPS_ABI_DEFAULT == ABI_EABI
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi|!mabi=*:\
-  %{mips1|mips2|mips32|mlong32|mgp32:%{!mips3:%{!mips4:%{!mips5:%{!mips64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}} \
-  %{mlong64:\
-    %{mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-    %{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}\
-  %{mips3|mips4|mips5|mips64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+    %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mgp64: \
+      -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
+ %{!mgp64|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
@@ -1046,55 +1065,52 @@ extern int mips_abi;
 #if MIPS_ABI_DEFAULT == ABI_O64
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
-  %{mips1|mips2|mips32|mlong32|mgp32:%{!mips3:%{!mips4:%{!mips5:%{!mips64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}} \
-  %{mlong64:\
-    %{mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-    %{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}\
-  %{mips3|mips4|mips5|mips64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+    %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mgp64: \
+      -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}} \
 %{mabi=o64|!mabi=*:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
+ %{!mgp64|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_32
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
-  %{mips1|mips2|mips32|mlong32|mgp32:%{!mips3:%{!mips4:%{!mips5:%{!mips64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}} \
-  %{mlong64:\
-    %{mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-    %{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}\
-  %{mips3|mips4|mips5|mips64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+    %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mgp64: \
+      -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
+ %{!mgp64|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_MEABI
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
-  %{mips1|mips2|mips32|mlong32|mgp32:%{!mips3:%{!mips4:%{!mips5:%{!mips64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}} \
-  %{mlong64:\
-    %{mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-    %{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}\
-  %{mips3|mips4|mips5|mips64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+    %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mgp64: \
+      -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
-%{mabi=meabi|!mabi=*:\
+ %{!mgp64|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=meabi|!mabi=*: \
   %{mips3|mips4|mips5|mips64|mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
   %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}} \
 "
@@ -1103,22 +1119,16 @@ extern int mips_abi;
 #else
 
 /* 64-bit default ISA.  */
-
 #if MIPS_ABI_DEFAULT == ABI_EABI
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi|!mabi=*: \
-  %{mips1|mips2|mips32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-  %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mips3|mips4|mips5|mips64:%{!mips1:%{!mips2:%{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}\
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}}}}}}}\
-  %{mgp64:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
+ %{mgp32|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
@@ -1126,57 +1136,42 @@ extern int mips_abi;
 #if MIPS_ABI_DEFAULT == ABI_O64
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi: \
-  %{mips1|mips2|mips32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-  %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mips3|mips4|mips5|mips64:%{!mips1:%{!mips2:%{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}\
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}}}}}}}\
-  %{mgp64:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}} \
 %{mabi=o64|!mabi=*:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
+ %{mgp32|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_32
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
-  %{mips1|mips2|mips32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-  %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mips3|mips4|mips5|mips64:%{!mips1:%{!mips2:%{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}\
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}}}}}}}\
-  %{mgp64:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
+ %{mgp32|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_MEABI
 #define SUBTARGET_CPP_SIZE_SPEC "\
 %{mabi=eabi:\
-  %{mips1|mips2|mips32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-  %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-  %{mips3|mips4|mips5|mips64:%{!mips1:%{!mips2:%{!mips32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}\
-  %{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!mips5:%{!mips32:%{!mips64:%{!mlong32:%{!mlong64:%{!mgp32:%{!mgp64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}}}}}}}\
-  %{mgp64:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}\
+  %{mips1|mips2|mips32|mgp32|mlong32: \
+    -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}}} \
 %{mabi=o64:\
- %{mlong64:\
-   %{!mgp32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-   %{mgp32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
- %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}\
+ %{mgp32|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+ %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
+%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=meabi|!mabi=*:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
   %{!mips1:%{!mips2:%{!mips32:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}} \
