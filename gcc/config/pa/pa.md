@@ -3025,7 +3025,8 @@
   if (GET_CODE (op) == SYMBOL_REF)
     emit_call_insn (gen_call_internal_symref (op, operands[1]));
   else
-    emit_call_insn (gen_call_internal_reg (op, operands[1]));
+    emit_call_insn (gen_call_internal_reg (force_reg (SImode, op),
+					   operands[1]));
 
   if (flag_pic)
     {
@@ -3091,7 +3092,9 @@
     emit_call_insn (gen_call_value_internal_symref (operands[0], op,
 						    operands[2]));
   else
-    emit_call_insn (gen_call_value_internal_reg (operands[0], op, operands[2]));
+    emit_call_insn (gen_call_value_internal_reg (operands[0],
+						 force_reg (SImode, op),
+						 operands[2]));
 
   if (flag_pic)
     {
