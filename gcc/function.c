@@ -4821,7 +4821,7 @@ assign_parms (tree fndecl)
 		}
 	      else if (GET_CODE (entry_parm) == PARALLEL)
 		;
-	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
+	      else if (size != 0 && PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
 
 	      mem = validize_mem (stack_parm);

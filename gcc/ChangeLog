@@ -1,3 +1,8 @@
+2004-06-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* function.c (assign_parms): Don't abort with zero size stack
+	parm failing the PARM_BOUNDARY check.
+
 2004-06-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* common.opt (ftree-fre): New flag.
