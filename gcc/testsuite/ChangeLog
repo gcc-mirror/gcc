@@ -1,3 +1,8 @@
+2004-06-28  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
+
+	PR target/14041
+	* gcc.dg/h8300-bss-align-1.c : New.
+
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* PR C++/16174

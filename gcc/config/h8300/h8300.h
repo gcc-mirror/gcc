@@ -1100,6 +1100,9 @@ struct cum_arg
 #define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED)		\
   asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
 
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
