@@ -26,4 +26,7 @@ foo (SS_struct_mi128 st)
       || x.u [1] != 0xfedcba9876543210LL)
     abort ();
 }
+#else
+int dummy_y;
 #endif
+

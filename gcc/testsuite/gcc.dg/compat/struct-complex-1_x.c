@@ -26,4 +26,7 @@ struct_complex_1_x ()
   bar (st2);
   return 0;
 }
+#else
+int dummy_x;
 #endif
+

@@ -18,4 +18,7 @@ foo(struct stc x)
   if (x.s1 != 1 || x.s2 != 2 || x.x.r != 2 || x.x.i != 4)
     abort ();
 }
+#else
+int dummy_y;
 #endif
+
