@@ -1,3 +1,9 @@
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
+	PR c/10201
+	* expr.c (expand_expr): Move DECL_RTL frobbing ...
+	* stor-layout.c (layout_decl): ... here.
+
 2003-04-11  James A. Morrison <ja2morri@uwaterloo.ca>
 
 	* doc/invoke.texi: Eliminate extra white-space caused by
