@@ -100,7 +100,7 @@ struct induction
   struct induction *same;	/* If this giv has been combined with another
 				   giv, this points to the base giv.  The base
 				   giv will have COMBINED_WITH non-zero.  */
-  int const_adjust;		/* Used by loop unrolling, when an address giv
+  HOST_WIDE_INT const_adjust;	/* Used by loop unrolling, when an address giv
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
 				   for later use. */
@@ -141,7 +141,7 @@ extern int max_uid_for_loop;
 extern int *uid_loop_num;
 extern int *loop_outer_loop;
 extern rtx *loop_number_exit_labels;
-extern unsigned long loop_n_iterations;
+extern unsigned HOST_WIDE_INT loop_n_iterations;
 extern int max_reg_before_loop;
 
 extern FILE *loop_dump_stream;
@@ -169,7 +169,7 @@ void unroll_block_trees ();
 
 void unroll_loop ();
 rtx biv_total_increment ();
-unsigned long loop_iterations ();
+unsigned HOST_WIDE_INT loop_iterations ();
 rtx final_biv_value ();
 rtx final_giv_value ();
 void emit_unrolled_add ();

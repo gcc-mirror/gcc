@@ -153,10 +153,10 @@ struct args_size
 
 /* Convert the implicit sum in a `struct args_size' into an rtx.  */
 #define ARGS_SIZE_RTX(SIZE)						\
-((SIZE).var == 0 ? gen_rtx (CONST_INT, VOIDmode, (SIZE).constant)	\
+((SIZE).var == 0 ? GEN_INT ((SIZE).constant)	\
  : expand_expr (size_binop (PLUS_EXPR, (SIZE).var,			\
 			    size_int ((SIZE).constant)),		\
-		0, VOIDmode, 0))
+		NULL_RTX, VOIDmode, 0))
 
 /* Convert the implicit sum in a `struct args_size' into a tree.  */
 #define ARGS_SIZE_TREE(SIZE)						\
@@ -526,9 +526,6 @@ extern rtx force_operand ();
 
 /* Return an rtx for the size in bytes of the value of an expr.  */
 extern rtx expr_size ();
-
-/* Return an rtx for the sum of an rtx and an integer.  */
-extern rtx plus_constant ();
 
 extern rtx lookup_static_chain ();
 
