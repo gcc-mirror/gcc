@@ -1,3 +1,9 @@
+2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/4203
+	* g++.old-deja/g++.other/empty1.C: XFAIL. See PR c++/4222
+	* g++.dg/init/empty1.C: New test.
+
 2001-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20010903-1.c: New test.
