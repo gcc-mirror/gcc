@@ -1,3 +1,8 @@
+Tue May 21 10:51:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (gen_edge_profiler):  Set alias set before the memory is
+	used.
+
 2002-05-20  David S. Miller  <davem@redhat.com>
 
 	* cselib.c (max_value_regs): New.
