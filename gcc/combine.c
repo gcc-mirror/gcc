@@ -1602,6 +1602,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   int i3_subst_into_i2 = 0;
   /* Notes that I1, I2 or I3 is a MULT operation.  */
   int have_mult = 0;
+  int swap_i2i3 = 0;
 
   int maxreg;
   rtx temp;
@@ -2468,40 +2469,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
       if (insn_code_number >= 0)
-	{
-	  rtx insn;
-	  rtx link;
-
-	  /* If we will be able to accept this, we have made a change to the
-	     destination of I3.  This requires us to do a few adjustments.  */
-	  PATTERN (i3) = newpat;
-	  adjust_for_new_dest (i3);
-
-	  /* I3 now uses what used to be its destination and which is
-	     now I2's destination.  That means we need a LOG_LINK from
-	     I3 to I2.  But we used to have one, so we still will.
-
-	     However, some later insn might be using I2's dest and have
-	     a LOG_LINK pointing at I3.  We must remove this link.
-	     The simplest way to remove the link is to point it at I1,
-	     which we know will be a NOTE.  */
-
-	  for (insn = NEXT_INSN (i3);
-	       insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
-			|| insn != BB_HEAD (this_basic_block->next_bb));
-	       insn = NEXT_INSN (insn))
-	    {
-	      if (INSN_P (insn) && reg_referenced_p (ni2dest, PATTERN (insn)))
-		{
-		  for (link = LOG_LINKS (insn); link;
-		       link = XEXP (link, 1))
-		    if (XEXP (link, 0) == i3)
-		      XEXP (link, 0) = i1;
-
-		  break;
-		}
-	    }
-	}
+	swap_i2i3 = 1;
     }
 
   /* Similarly, check for a case where we have a PARALLEL of two independent
@@ -2630,6 +2598,43 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
   /* We now know that we can do this combination.  Merge the insns and
      update the status of registers and LOG_LINKS.  */
+
+  if (swap_i2i3)
+    {
+      rtx insn;
+      rtx link;
+      rtx ni2dest;
+
+      /* I3 now uses what used to be its destination and which is now
+         I2's destination.  This requires us to do a few adjustments.  */
+      PATTERN (i3) = newpat;
+      adjust_for_new_dest (i3);
+
+      /* We need a LOG_LINK from I3 to I2.  But we used to have one,
+         so we still will.
+
+	 However, some later insn might be using I2's dest and have
+	 a LOG_LINK pointing at I3.  We must remove this link.
+	 The simplest way to remove the link is to point it at I1,
+	 which we know will be a NOTE.  */
+
+      ni2dest = SET_DEST (newi2pat);
+      for (insn = NEXT_INSN (i3);
+	   insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
+		    || insn != BB_HEAD (this_basic_block->next_bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (INSN_P (insn) && reg_referenced_p (ni2dest, PATTERN (insn)))
+	    {
+	      for (link = LOG_LINKS (insn); link;
+		   link = XEXP (link, 1))
+		if (XEXP (link, 0) == i3)
+		  XEXP (link, 0) = i1;
+
+	      break;
+	    }
+	}
+    }
 
   {
     rtx i3notes, i2notes, i1notes = 0;
