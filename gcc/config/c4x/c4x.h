@@ -630,12 +630,16 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 #define CLASS_LIKELY_SPILLED_P(CLASS) ((CLASS) == INDEX_REGS)
 
-/* CCmode is wrongly defined in machmode.def  It should have a size
-   of UNITS_PER_WORD.  */
+/* CCmode is wrongly defined in machmode.def.  It should have a size
+   of UNITS_PER_WORD.  HFmode is 40-bits and thus fits within a single
+   extended precision register.  Similarly, HCmode fits within two
+   extended precision registers.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)				\
-(((MODE) == CCmode || (MODE) == CC_NOOVmode) ? 1 : ((MODE) == HFmode) ? 1 : \
-((GET_MODE_SIZE(MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+(((MODE) == CCmode || (MODE) == CC_NOOVmode) ? 1 : \
+ ((MODE) == HFmode) ? 1 : \
+ ((MODE) == HCmode) ? 2 : \
+ ((GET_MODE_SIZE(MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 
 /* A C expression that is nonzero if the hard register REGNO is preserved
