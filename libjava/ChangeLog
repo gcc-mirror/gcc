@@ -1,5 +1,10 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/awt/doc-files/BitwiseXORComposite-1.png:
+	New file.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Class.java,
 	java/lang/Object.java,
 	java/lang/Thread.java: Merged copyright with classpath.
