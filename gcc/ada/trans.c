@@ -1621,7 +1621,9 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
        gnat_formal = Next_Formal_With_Extras (gnat_formal),
        gnat_actual = Next_Actual (gnat_actual))
     {
-      tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
+      tree gnu_formal
+	= (present_gnu_tree (gnat_formal)
+	   ? get_gnu_tree (gnat_formal) : NULL_TREE);
       /* We treat a conversion between aggregate types as if it is an
 	 unchecked conversion.  */
       bool unchecked_convert_p
@@ -1632,10 +1634,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 			   ? Expression (gnat_actual) : gnat_actual);
       tree gnu_name = gnat_to_gnu (gnat_name);
       tree gnu_name_type = gnat_to_gnu_type (Etype (gnat_name));
-      tree gnu_formal
-	= (present_gnu_tree (gnat_formal)
-	   ? get_gnu_tree (gnat_formal) : NULL_TREE);
       tree gnu_actual;
+      tree gnu_formal_type;
 
       /* If it's possible we may need to use this expression twice, make sure
 	 than any side-effects are handled via SAVE_EXPRs. Likewise if we need
@@ -1738,9 +1738,6 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	   the parent is a procedure call.  So add the conversion here.  */
 	gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
 			      gnu_actual);
-
-      if (TREE_CODE (gnu_actual) != SAVE_EXPR)
-	gnu_actual = convert (gnu_formal_type, gnu_actual);
 
       /* If we have not saved a GCC object for the formal, it means it is an
 	 OUT parameter not passed by reference and that does not need to be
@@ -1856,9 +1853,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 					    integer_zero_node),
 				   false);
 	  else
-	    gnu_actual
-	      = convert (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (gnu_formal)),
-			 gnu_actual);
+	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
 
       gnu_actual_list = tree_cons (NULL_TREE, gnu_actual, gnu_actual_list);
@@ -2244,8 +2239,15 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
       else if (Nkind (gnat_temp) == N_Identifier
 	       || Nkind (gnat_temp) == N_Expanded_Name)
 	{
-	  tree gnu_expr
-	    = gnat_to_gnu_entity (Entity (gnat_temp), NULL_TREE, 0);
+	  Entity_Id gnat_ex_id = Entity (gnat_temp);
+	  tree gnu_expr;
+
+	  /* Exception may be a renaming. Recover original exception which is
+	     the one elaborated and registered.  */
+	  if (Present (Renamed_Object (gnat_ex_id)))
+	    gnat_ex_id = Renamed_Object (gnat_ex_id);
+
+	  gnu_expr = gnat_to_gnu_entity (gnat_ex_id, NULL_TREE, 0);
 
 	  this_choice
 	    = build_binary_op

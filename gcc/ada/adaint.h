@@ -78,6 +78,8 @@ extern OS_Time __gnat_file_time_fd                  (int);
 extern void   __gnat_set_file_time_name		   (char *, time_t);
 extern void   __gnat_get_env_value_ptr             (char *, int *,
 						    char **);
+extern int    __gnat_dup			   (int);
+extern int    __gnat_dup2			   (int, int);
 extern int    __gnat_file_exists		   (char *);
 extern int    __gnat_is_regular_file               (char *);
 extern int    __gnat_is_absolute_path              (char *,int);
