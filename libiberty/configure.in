@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.12.1)
+AC_PREREQ(2.13)
 AC_INIT(pexecute.c)
 
 dnl We use these options to decide which functions to include.
@@ -106,7 +106,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h stdlib.h string.h unistd.h strings.h sys/time.h sys/resource.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h stdlib.h string.h unistd.h strings.h sys/time.h sys/resource.h sys/stat.h)
 AC_HEADER_SYS_WAIT
 
 # This is the list of functions which libiberty will provide if they
