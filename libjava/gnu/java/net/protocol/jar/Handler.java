@@ -86,8 +86,7 @@ public class Handler extends URLStreamHandler
     // doing anything.
     String file = url.getFile();
     
-    if (file != null
-        && file != "")
+    if (!file.equals(""))
       { //has context url
 	url_string = url_string.substring (start, end);
         if (url_string.startsWith("/"))
