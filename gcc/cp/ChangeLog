@@ -1,3 +1,8 @@
+2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grokdeclarator): Diagnose qualifiers on non-member
+	function type, rather than ICE.
+
 2000-02-23  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (grokdeclarator): Call decl_type_access_control.

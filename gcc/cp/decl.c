@@ -10788,14 +10788,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       else if (quals)
 	{
-	  tree dummy = build_decl (TYPE_DECL, declarator, type);
 	  if (ctype == NULL_TREE)
 	    {
-	      my_friendly_assert (TREE_CODE (type) == METHOD_TYPE, 159);
-	      ctype = TYPE_METHOD_BASETYPE (type);
+	      if (TREE_CODE (type) != METHOD_TYPE)
+	        cp_error ("invalid qualifiers on non-member function type");
+	      else
+	        ctype = TYPE_METHOD_BASETYPE (type);
 	    }
-	  grok_method_quals (ctype, dummy, quals);
-	  type = TREE_TYPE (dummy);
+	  if (ctype)
+	    {
+	      tree dummy = build_decl (TYPE_DECL, declarator, type);
+	      grok_method_quals (ctype, dummy, quals);
+	      type = TREE_TYPE (dummy);
+	    }
 	}
 
       return type;
