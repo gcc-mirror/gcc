@@ -3395,8 +3395,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       else
 	{
 #ifdef POINTERS_EXTEND_UNSIGNED
-	  if (TREE_CODE (to) == REFERENCE_TYPE
-	     || TREE_CODE (to) == POINTER_TYPE)
+	  if (TREE_CODE (TREE_TYPE (to)) == REFERENCE_TYPE
+	     || TREE_CODE (TREE_TYPE (to)) == POINTER_TYPE)
 	    value = convert_memory_address (GET_MODE (to_rtx), value);
 #endif
 	  emit_move_insn (to_rtx, value);

@@ -1,3 +1,7 @@
+Mon Apr 26 01:30:59 1999 Donn Terry <donn@interix.com>
+
+	* expr.c (expand_assignment): Improve test for pointer type.
+
 Mon Apr 26 00:26:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (print_operand_address): Account for the subreg word.
