@@ -2,6 +2,7 @@
 
 	* fixinc/inclhack.def (struct_sockaddr): Avoid "fixing" sockaddr_in
 	(on OpenBSD).
+	* fixinc/fixincl.x: Regenerate.
 
 	* fixinc/inclhack.def (gnu_types): Improve comment.
 
