@@ -1,3 +1,9 @@
+2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* include/bits/sstream.tcc: Clean up bit ops.
+	* include/bits/fstream.tcc: Same.
+	
 2002-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/locale_facets.h (__num_base::_S_scale_hex): Remove.

@@ -121,8 +121,8 @@ namespace std
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
-      bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
+      bool __testin = (ios_base::in & _M_mode & __mode) != 0;
+      bool __testout = (ios_base::out & _M_mode & __mode) != 0;
       bool __testboth = __testin && __testout && __way != ios_base::cur;
       __testin &= !(__mode & ios_base::out);
       __testout &= !(__mode & ios_base::in);
@@ -187,8 +187,8 @@ namespace std
 	  off_type __pos = __sp._M_position();
 	  char_type* __beg = NULL;
 	  char_type* __end = NULL;
-	  bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
-	  bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
+	  bool __testin = (ios_base::in & _M_mode & __mode) != 0;
+	  bool __testout = (ios_base::out & _M_mode & __mode) != 0;
 	  bool __testboth = __testin && __testout;
 	  __testin &= !(__mode & ios_base::out);
 	  __testout &= !(__mode & ios_base::in);
