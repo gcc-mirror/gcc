@@ -7,6 +7,6 @@ public:
   int DoSomething();
 };
 
-int (Foo::*pA)() = { &Foo::DoSomething };	
+int (Foo::*pA)() = { &Foo::DoSomething };	// ERROR - 
 int (Foo::*X[1])(int) = { { &Foo::DoSomething } };		    // ERROR - 
 int (Foo::*Y[])(int) = { { &Foo::DoSomething, &Foo::DoSomething, 0 } }; // ERROR - 

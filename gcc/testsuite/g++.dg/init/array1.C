@@ -6,15 +6,15 @@
 typedef int iArr[];
 
 const iArr array4={
-  {1},{2},{3},{4}
+  1, 2, 3, 4
 };
 
 const iArr array3={
-  {1},{2},{3}
+  1, 2, 3
 };
 
 const iArr array5={
-  {1},{2},{3},{4},{5}
+  1, 2, 3, 4, 5
 };
 
 int main()

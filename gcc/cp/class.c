@@ -6994,6 +6994,7 @@ initialize_array (decl, inits)
   context = DECL_CONTEXT (decl);
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE, inits);
+  TREE_HAS_CONSTRUCTOR (DECL_INITIAL (decl)) = 1;
   cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
   DECL_CONTEXT (decl) = context;
 }
