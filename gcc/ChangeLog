@@ -1,3 +1,7 @@
+2000-06-03  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.md (untyped_call): Use GEN_CALL macro.
+
 2000-06-02  Pekka Nikander  <pnr@teldanex.tcm.hut.fi>
 
 	* Makefile.in: Use $(MAKE) not "make"
