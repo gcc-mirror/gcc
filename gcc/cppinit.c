@@ -958,18 +958,19 @@ cpp_start_read (pfile, fname)
 
       /* Scan -imacros files after command line defines, but before
 	 files given with -include.  */
-      for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
+      while ((p = CPP_OPTION (pfile, pending)->imacros_head) != NULL)
 	{
 	  if (push_include (pfile, p))
 	    {
 	      pfile->buffer->return_at_eof = true;
 	      cpp_scan_nooutput (pfile);
 	    }
+	  CPP_OPTION (pfile, pending)->imacros_head = p->next;
+	  free (p);
 	}
     }
 
   free_chain (CPP_OPTION (pfile, pending)->directive_head);
-  free_chain (CPP_OPTION (pfile, pending)->imacros_head);
   _cpp_push_next_buffer (pfile);
 
   return 1;
@@ -984,7 +985,12 @@ _cpp_push_next_buffer (pfile)
 {
   bool pushed = false;
 
-  if (CPP_OPTION (pfile, pending))
+  /* This is't pretty; we'd rather not be relying on this as a boolean
+     for reverting the line map.  Further, we only free the chains in
+     this conditional, so an early call to cpp_finish / cpp_destroy
+     will leak that memory.  */
+  if (CPP_OPTION (pfile, pending)
+      && CPP_OPTION (pfile, pending)->imacros_head == NULL)
     {
       while (!pushed)
 	{

@@ -1,3 +1,10 @@
+2001-09-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (cpp_start_read): Free the imacros list as we
+	traverse it.  Don't free the chains before returning.
+	(_cpp_push_next_buffer): Only try pushing buffers if we've
+	completed -imacros handling.
+
 2001-08-31  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.c (handle_braces): Add explaination for abort.
