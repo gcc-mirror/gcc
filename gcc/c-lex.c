@@ -126,9 +126,6 @@ init_c_lex (filename)
   parse_in->cb.change_file = cb_change_file;
   parse_in->cb.def_pragma = cb_def_pragma;
 
-  /* Make sure parse_in->digraphs matches flag_digraphs.  */
-  CPP_OPTION (parse_in, digraphs) = flag_digraphs;
-
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
 

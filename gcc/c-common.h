@@ -361,17 +361,13 @@ extern int warn_missing_format_attribute;
 
 extern int flag_traditional;
 
-/* Nonzero means enable C89 Amendment 1 features, other than digraphs.  */
+/* Nonzero means enable C89 Amendment 1 features.  */
 
 extern int flag_isoc94;
 
 /* Nonzero means use the ISO C99 dialect of C.  */
 
 extern int flag_isoc99;
-
-/* Nonzero means accept digraphs.  */
-
-extern int flag_digraphs;
 
 /* Nonzero means environment is hosted (i.e., not freestanding) */
 

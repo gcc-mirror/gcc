@@ -1,3 +1,10 @@
+2000-11-28  Neil Booth  <neilb@earthling.net>
+
+        * c-common.h: Remove flag_digraphs.
+        * c-decl.c: Remove flag_digraphs.  
+        (c_decode_option): Don't set it. 
+        * c-lex.c (init_c_lex): Don't do anything for digraphs.
+
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
 	* c-parse.in (finish_parse): Update for parse_in type change.
