@@ -1,3 +1,8 @@
+2005-02-22  Roman Kennke <roman@ontographics.com>
+
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
+	(initComponentDefaults): Fixed Button left and right margin.
+
 2005-02-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/Robot.java (waitForIdle): Call invokeAndWait on an
