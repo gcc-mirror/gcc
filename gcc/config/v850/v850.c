@@ -2368,7 +2368,7 @@ register_is_ok_for_epilogue (op, mode)
           && (((REGNO (op) >= 20) && REGNO (op) <= 31)));
 }
 
-/* Return non-zero if the given RTX is suitable for collapsing into
+/* Return nonzero if the given RTX is suitable for collapsing into
    jump to a function epilogue.  */
 int
 pattern_is_ok_for_epilogue (op, mode)
@@ -2547,7 +2547,7 @@ construct_restore_jr (op)
 }
 
 
-/* Return non-zero if the given RTX is suitable for collapsing into
+/* Return nonzero if the given RTX is suitable for collapsing into
    a jump to a function prologue.  */
 int
 pattern_is_ok_for_prologue (op, mode)
@@ -2947,7 +2947,7 @@ v850_insert_attributes (decl, attr_ptr)
     }
 }
 
-/* Return non-zero if the given RTX is suitable
+/* Return nonzero if the given RTX is suitable
    for collapsing into a DISPOSE instruction.  */
 
 int
@@ -3137,7 +3137,7 @@ construct_dispose_instruction (op)
   return buff;
 }
 
-/* Return non-zero if the given RTX is suitable
+/* Return nonzero if the given RTX is suitable
    for collapsing into a PREPARE instruction.  */
 
 int

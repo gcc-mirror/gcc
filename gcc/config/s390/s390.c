@@ -797,7 +797,7 @@ s390_extract_qi (op, mode, part)
    LEVEL is the optimization level specified; 2 if `-O2' is
    specified, 1 if `-O' is specified, and 0 if neither is specified.
 
-   SIZE is non-zero if `-Os' is specified and zero otherwise.  */
+   SIZE is nonzero if `-Os' is specified and zero otherwise.  */
 
 void
 optimization_options (level, size)

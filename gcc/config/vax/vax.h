@@ -630,7 +630,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    || GET_CODE (X) == CONST_INT)
 
 
-/* Non-zero if X is an address which can be indirected.  External symbols
+/* Nonzero if X is an address which can be indirected.  External symbols
    could be in a sharable image library, so we disallow those.  */
 
 #define INDIRECTABLE_ADDRESS_P(X)  \
@@ -645,7 +645,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define INDIRECTABLE_CONSTANT_ADDRESS_P(X) CONSTANT_ADDRESS_P(X)
 
-/* Non-zero if X is an address which can be indirected.  */
+/* Nonzero if X is an address which can be indirected.  */
 #define INDIRECTABLE_ADDRESS_P(X)  \
   (CONSTANT_ADDRESS_P (X)						\
    || (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\

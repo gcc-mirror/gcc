@@ -318,7 +318,7 @@ print_operand_address (file, addr)
       else
 	abort ();
 
-      /* If REG1 is non-zero, figure out if it is a base or index register.  */
+      /* If REG1 is nonzero, figure out if it is a base or index register.  */
       if (reg1)
 	{
 	  if (breg != 0 || (offset && GET_CODE (offset) == MEM))

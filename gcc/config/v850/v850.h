@@ -249,7 +249,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    LEVEL is the optimization level specified; 2 if `-O2' is
    specified, 1 if `-O' is specified, and 0 if neither is specified.
 
-   SIZE is non-zero if `-Os' is specified, 0 otherwise.  
+   SIZE is nonzero if `-Os' is specified, 0 otherwise.  
 
    You should not use this macro to change options that are not
    machine-specific.  These should uniformly selected by the same
@@ -664,7 +664,7 @@ enum reg_class
  { ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM },			\
  { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM }}			\
 
-/* A C expression that returns non-zero if the compiler is allowed to
+/* A C expression that returns nonzero if the compiler is allowed to
    try to replace register number FROM-REG with register number
    TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
    defined, and will usually be the constant 1, since most of the
