@@ -331,8 +331,6 @@ read_token (t)
 #undef YYCODE
 
     case CPP_EOF:
-      if (cpp_pop_buffer (parse_in) != 0)
-	goto retry;
       t->yychar = 0;
       break;
       

@@ -579,6 +579,7 @@ C_COMMON_H = c-common.h $(SPLAY_TREE_H)
 C_TREE_H = c-tree.h $(C_COMMON_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
+CPPLIB_H = cpplib.h line-map.h
 
 # sed inserts variable overrides after the following line.
 ####target overrides
@@ -1152,7 +1153,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) flags.h \
     diagnostic.h $(TM_P_H)
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
-    $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h cpplib.h \
+    $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h $(CPPLIB_H) \
     diagnostic.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 
@@ -1177,7 +1178,7 @@ c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) c-lex.h \
     debug.h $(C_TREE_H) \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
-    mbchar.h cpplib.h $(EXPR_H) $(TM_P_H)
+    mbchar.h $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h toplev.h
@@ -1937,7 +1938,7 @@ LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o \
 		hashtable.o line-map.o mkdeps.o prefix.o version.o mbchar.o
 
-LIBCPP_DEPS =	cpplib.h cpphash.h line-map.h hashtable.h intl.h \
+LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
 		$(OBSTACK_H) $(SYSTEM_H)
 
 # Most of the other archives built/used by this makefile are for
@@ -1951,7 +1952,7 @@ cpp0$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cpp0$(exeext) cppmain.o \
 	intl.o libcpp.a $(LIBS)
 
-cppmain.o:  cppmain.c  $(CONFIG_H) cpplib.h intl.h $(SYSTEM_H)
+cppmain.o:  cppmain.c  $(CONFIG_H) $(CPPLIB_H) intl.h $(SYSTEM_H)
 
 cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
@@ -2194,10 +2195,10 @@ fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
 	   scan-decls.o scan.o libcpp.a $(LIBS)
 
 fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
-	xsys-protos.h $(HCONFIG_H) $(SYSTEM_H) cpplib.h
+	xsys-protos.h $(HCONFIG_H) $(SYSTEM_H) $(CPPLIB_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
-scan-decls.o: scan-decls.c scan.h cpplib.h $(HCONFIG_H) $(SYSTEM_H)
+scan-decls.o: scan-decls.c scan.h $(CPPLIB_H) $(HCONFIG_H) $(SYSTEM_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.

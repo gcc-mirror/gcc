@@ -555,7 +555,7 @@ cpp_destroy (pfile)
   cpp_context *context, *contextn;
 
   while (CPP_BUFFER (pfile) != NULL)
-    cpp_pop_buffer (pfile);
+    _cpp_pop_buffer (pfile);
 
   if (pfile->macro_buffer)
     {
@@ -883,7 +883,10 @@ do_includes (pfile, p, scan)
 	  header.val.str.text = (const unsigned char *) p->arg;
 	  header.val.str.len = strlen (p->arg);
 	  if (_cpp_execute_include (pfile, &header, IT_CMDLINE) && scan)
-	    cpp_scan_buffer_nooutput (pfile, 0);
+	    {
+	      pfile->buffer->return_at_eof = true;
+	      cpp_scan_nooutput (pfile);
+	    }
 	}
       q = p->next;
       free (p);
@@ -1011,7 +1014,7 @@ cpp_finish (pfile)
     {
       cpp_ice (pfile, "buffers still stacked in cpp_finish");
       while (CPP_BUFFER (pfile))
-	cpp_pop_buffer (pfile);
+	_cpp_pop_buffer (pfile);
     }
 
   /* Don't write the deps file if preprocessing has failed.  */

@@ -111,13 +111,10 @@ scan_decls (pfile, argc, argv)
       brace_nesting++;
       goto new_statement;
     }
-  if (token.type == CPP_EOF)
-    {
-      if (cpp_pop_buffer (pfile) == 0)
-	return 0;
 
-      goto new_statement;
-    }
+  if (token.type == CPP_EOF)
+    return 0;
+
   if (token.type == CPP_SEMICOLON)
     goto new_statement;
   if (token.type != CPP_NAME)
@@ -148,9 +145,7 @@ scan_decls (pfile, argc, argv)
 	  goto new_statement;
 	  
 	case CPP_EOF:
-	  if (cpp_pop_buffer (pfile) == 0)
-	    return 0;
-	  break;
+	  return 0;
 
 	case CPP_OPEN_PAREN:
 	  /* Looks like this is the start of a formal parameter list.  */

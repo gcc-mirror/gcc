@@ -554,8 +554,7 @@ extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    const unsigned char *, size_t,
 					    enum cpp_buffer_type,
-					    const char *));
-extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
+					    const char *, int));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
 /* N.B. The error-message-printer prototypes have not been nicely
@@ -611,7 +610,7 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 						 cpp_cb, void *));
 
 /* In cppmacro.c */
-extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *, int));
+extern void cpp_scan_nooutput		PARAMS ((cpp_reader *));
 extern void cpp_start_lookahead		PARAMS ((cpp_reader *));
 extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 extern int  cpp_sys_macro_p		PARAMS ((cpp_reader *));

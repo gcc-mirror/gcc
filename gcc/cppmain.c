@@ -44,7 +44,7 @@ static void do_preprocessing PARAMS ((int, char **));
 static void setup_callbacks PARAMS ((void));
 
 /* General output routines.  */
-static void scan_buffer	PARAMS ((cpp_reader *));
+static void scan_translation_unit PARAMS ((cpp_reader *));
 static void check_multiline_token PARAMS ((cpp_string *));
 static int printer_init PARAMS ((cpp_reader *));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
@@ -151,11 +151,11 @@ do_preprocessing (argc, argv)
   if (cpp_start_read (pfile, options->in_fname))
     {
       /* A successful cpp_start_read guarantees that we can call
-	 cpp_scan_buffer_nooutput or cpp_get_token next.  */
+	 cpp_scan_nooutput or cpp_get_token next.  */
       if (options->no_output)
-	cpp_scan_buffer_nooutput (pfile, 1);
+	cpp_scan_nooutput (pfile);
       else
-	scan_buffer (pfile);
+	scan_translation_unit (pfile);
 
       /* -dM command line option.  Should this be in cpp_finish?  */
       if (options->dump_macros == dump_only)
@@ -200,60 +200,56 @@ setup_callbacks ()
 /* Writes out the preprocessed file.  Alternates between two tokens,
    so that we can avoid accidental token pasting.  */
 static void
-scan_buffer (pfile)
+scan_translation_unit (pfile)
      cpp_reader *pfile;
 {
   unsigned int index, line;
   cpp_token tokens[2], *token;
 
-  do
+  for (index = 0;; index = 1 - index)
     {
-      for (index = 0;; index = 1 - index)
+      token = &tokens[index];
+      cpp_get_token (pfile, token);
+
+      if (token->type == CPP_EOF)
+	break;
+
+      line = cpp_get_line (pfile)->output_line;
+      if (print.lineno != line)
 	{
-	  token = &tokens[index];
-	  cpp_get_token (pfile, token);
+	  unsigned int col = cpp_get_line (pfile)->col;
 
-	  if (token->type == CPP_EOF)
-	    break;
-
-	  line = cpp_get_line (pfile)->output_line;
-	  if (print.lineno != line)
+	  /* Supply enough whitespace to put this token in its original
+	     column.  Don't bother trying to reconstruct tabs; we can't
+	     get it right in general, and nothing ought to care.  (Yes,
+	     some things do care; the fault lies with them.)  */
+	  maybe_print_line (line);
+	  if (col > 1)
 	    {
-	      unsigned int col = cpp_get_line (pfile)->col;
-
-	      /* Supply enough whitespace to put this token in its original
-		 column.  Don't bother trying to reconstruct tabs; we can't
-		 get it right in general, and nothing ought to care.  (Yes,
-		 some things do care; the fault lies with them.)  */
-	      maybe_print_line (line);
-	      if (col > 1)
-		{
-		  if (token->flags & PREV_WHITE)
-		    col--;
-		  while (--col)
-		    putc (' ', print.outf);
-		}
+	      if (token->flags & PREV_WHITE)
+		col--;
+	      while (--col)
+		putc (' ', print.outf);
 	    }
-	  else if ((token->flags & (PREV_WHITE | AVOID_LPASTE))
-		       == AVOID_LPASTE
-		   && cpp_avoid_paste (pfile, &tokens[1 - index], token))
-	    token->flags |= PREV_WHITE;
-	  /* Special case '# <directive name>': insert a space between
-	     the # and the token.  This will prevent it from being
-	     treated as a directive when this code is re-preprocessed.
-	     XXX Should do this only at the beginning of a line, but how?  */
-	  else if (token->type == CPP_NAME && token->val.node->directive_index
-		   && tokens[1 - index].type == CPP_HASH)
-	    token->flags |= PREV_WHITE;
-
-	  cpp_output_token (token, print.outf);
-	  print.printed = 1;
-	  if (token->type == CPP_STRING || token->type == CPP_WSTRING
-	      || token->type == CPP_COMMENT)
-	    check_multiline_token (&token->val.str);
 	}
+      else if ((token->flags & (PREV_WHITE | AVOID_LPASTE))
+	       == AVOID_LPASTE
+	       && cpp_avoid_paste (pfile, &tokens[1 - index], token))
+	token->flags |= PREV_WHITE;
+      /* Special case '# <directive name>': insert a space between
+	 the # and the token.  This will prevent it from being
+	 treated as a directive when this code is re-preprocessed.
+	 XXX Should do this only at the beginning of a line, but how?  */
+      else if (token->type == CPP_NAME && token->val.node->directive_index
+	       && tokens[1 - index].type == CPP_HASH)
+	token->flags |= PREV_WHITE;
+
+      cpp_output_token (token, print.outf);
+      print.printed = 1;
+      if (token->type == CPP_STRING || token->type == CPP_WSTRING
+	  || token->type == CPP_COMMENT)
+	check_multiline_token (&token->val.str);
     }
-  while (cpp_pop_buffer (pfile) != 0);
 }
 
 /* Adjust print.lineno for newlines embedded in tokens.  */

@@ -397,7 +397,7 @@ run_directive (pfile, dir_no, type, buf, count)
   unsigned int output_line = pfile->lexer_pos.output_line;
   cpp_buffer *buffer;
 
-  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 0);
+  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 0, 1);
 
   if (dir_no == T_PRAGMA)
     {
@@ -414,8 +414,7 @@ run_directive (pfile, dir_no, type, buf, count)
   pfile->state.prevent_expansion--;
   check_eol (pfile);
   end_directive (pfile, 1);
-
-  cpp_pop_buffer (pfile);
+  _cpp_pop_buffer (pfile);
 }
 
 /* Checks for validity the macro name in #define, #undef, #ifdef and
@@ -770,7 +769,7 @@ do_line (pfile)
 	  if (reason == LC_ENTER)
 	    {
 	      /* Fake a buffer stack for diagnostics.  */
-	      cpp_push_buffer (pfile, 0, 0, BUF_FAKE, fname);
+	      cpp_push_buffer (pfile, 0, 0, BUF_FAKE, fname, 0);
 	      /* Fake an include for cpp_included.  */
 	      _cpp_fake_include (pfile, fname);
 	      buffer = pfile->buffer;
@@ -782,7 +781,7 @@ do_line (pfile)
 			     buffer->nominal_fname);
 	      else
 		{
-		  cpp_pop_buffer (pfile);
+		  _cpp_pop_buffer (pfile);
 		  buffer = pfile->buffer;
 #ifdef ENABLE_CHECKING
 		  if (strcmp (buffer->nominal_fname, fname))
@@ -1775,12 +1774,13 @@ cpp_set_callbacks (pfile, cb)
    doesn't fail.  It does not generate a file change call back; that
    is the responsibility of the caller.  */
 cpp_buffer *
-cpp_push_buffer (pfile, buffer, len, type, filename)
+cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
      cpp_reader *pfile;
      const U_CHAR *buffer;
      size_t len;
      enum cpp_buffer_type type;
      const char *filename;
+     int return_at_eof;
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
 
@@ -1826,6 +1826,7 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
   new->pfile = pfile;
   new->include_stack_listed = 0;
   new->lineno = 1;
+  new->return_at_eof = return_at_eof;
 
   pfile->state.next_bol = 1;
   pfile->buffer_stack_depth++;
@@ -1837,8 +1838,8 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
 /* If called from do_line, pops a single buffer.  Otherwise pops all
    buffers until a real file is reached.  Generates appropriate
    call-backs.  */
-cpp_buffer *
-cpp_pop_buffer (pfile)
+void
+_cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer;
@@ -1884,7 +1885,8 @@ cpp_pop_buffer (pfile)
     }
 
   obstack_free (&pfile->buffer_ob, buffer);
-  return pfile->buffer;
+
+  pfile->state.skipping = 0;	/* In case missing #endif.  */
 }
 
 void

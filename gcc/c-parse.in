@@ -3767,9 +3767,7 @@ _yylex ()
     case CPP_SEMICOLON:		OBJC_NEED_RAW_IDENTIFIER (0);	return ';';
 
     case CPP_EOF:
-      if (cpp_pop_buffer (parse_in) == 0)
-	return 0;
-      goto get_next;
+      return 0;
 
     case CPP_NAME:
       return yylexname ();
