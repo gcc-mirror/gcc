@@ -1,6 +1,6 @@
 /* WeakHashMap -- a hashtable that keeps only weak references
    to its keys, allowing the virtual machine to reclaim them
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -544,6 +544,8 @@ public class WeakHashMap extends AbstractMap implements Map
     // Check loadFactor for NaN as well.
     if (initialCapacity < 0 || ! (loadFactor > 0))
       throw new IllegalArgumentException();
+    if (initialCapacity == 0)
+      initialCapacity = 1;
     this.loadFactor = loadFactor;
     threshold = (int) (initialCapacity * loadFactor);
     theEntrySet = new WeakEntrySet();
