@@ -1,3 +1,10 @@
+1998-10-21  Mark Mitchell  <mark@markmitchell.com>
+
+	* splay-tree.c: New file.
+	* Makefile.in (CFILES): Add it.
+	(REQUIRED_OFILES): Likewise.
+	(splay-tree.o): Add dependencies.
+
 Tue Oct 20 12:29:02 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* cplus-dem.c (demangle_qualified): Fix off-by-one when checking
