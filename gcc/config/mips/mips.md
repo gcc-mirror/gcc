@@ -4043,17 +4043,41 @@ move\\t%0,%z4\\n\\
 (define_expand "call"
   [(parallel [(call (match_operand 0 "memory_operand" "m")
 		    (match_operand 1 "" "i"))
-	      (clobber (match_operand 2 "" ""))])]	;; overwrite op2 with $31
+	      (clobber (reg:SI 31))
+	      (use (match_operand 2 "" ""))		;; next_arg_reg
+	      (use (match_operand 3 "" ""))])]		;; struct_value_size_rtx
   ""
   "
 {
   rtx addr;
 
-  operands[2] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
+  if (operands[0])		/* eliminate unused code warnings */
+    {
+      addr = XEXP (operands[0], 0);
+      if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
+	XEXP (operands[0], 0) = force_reg (FUNCTION_MODE, addr);
 
-  addr = XEXP (operands[0], 0);
-  if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
-    XEXP (operands[0], 0) = force_reg (FUNCTION_MODE, addr);
+      /* In order to pass small structures by value in registers
+	 compatibly with the MIPS compiler, we need to shift the value
+	 into the high part of the register.  Function_arg has encoded
+	 a PARALLEL rtx, holding a vector of adjustments to be made
+	 as the next_arg_reg variable, so we split up the insns,
+	 and emit them separately.  */
+
+      if (operands[2] != (rtx)0 && GET_CODE (operands[2]) == PARALLEL)
+	{
+	  rtvec adjust = XVEC (operands[2], 0);
+	  int num = GET_NUM_ELEM (adjust);
+	  int i;
+
+	  for (i = 0; i < num; i++)
+	    emit_insn (RTVEC_ELT (adjust, i));
+	}
+
+      emit_call_insn (gen_call_internal (operands[0], operands[1],
+					 gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
+      DONE;
+    }
 }")
 
 (define_insn "call_internal"
@@ -4071,15 +4095,13 @@ move\\t%0,%z4\\n\\
   else if (GET_CODE (target) == CONST_INT)
     {
       operands[0] = target;
-      operands[1] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
-      return \"%*%[li\\t%@,%0\\n\\tjal\\t%1,%@%]\";
+      return \"%*%[li\\t%@,%0\\n\\tjal\\t%2,%@%]\";
     }
 
   else
     {
       operands[0] = target;
-      operands[1] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
-      return \"%*jal\\t%1,%0\";
+      return \"%*jal\\t%2,%0\";
     }
 }"
   [(set_attr "type"	"call")
@@ -4092,17 +4114,42 @@ move\\t%0,%z4\\n\\
   [(parallel [(set (match_operand 0 "register_operand" "=df")
 		   (call (match_operand 1 "memory_operand" "m")
 			 (match_operand 2 "" "i")))
-	      (clobber (match_operand 3 "" ""))])]	;; overwrite op3 with $31
+	      (clobber (reg:SI 31))
+	      (use (match_operand 3 "" ""))])]		;; next_arg_reg
   ""
   "
 {
   rtx addr;
 
-  operands[3] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
+  if (operands[0])		/* eliminate unused code warning */
+    {
+      addr = XEXP (operands[1], 0);
+      if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
+	XEXP (operands[1], 0) = force_reg (FUNCTION_MODE, addr);
 
-  addr = XEXP (operands[1], 0);
-  if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
-    XEXP (operands[1], 0) = force_reg (FUNCTION_MODE, addr);
+      /* In order to pass small structures by value in registers
+	 compatibly with the MIPS compiler, we need to shift the value
+	 into the high part of the register.  Function_arg has encoded
+	 a PARALLEL rtx, holding a vector of adjustments to be made
+	 as the next_arg_reg variable, so we split up the insns,
+	 and emit them separately.  */
+
+      if (operands[3] != (rtx)0 && GET_CODE (operands[3]) == PARALLEL)
+	{
+	  rtvec adjust = XVEC (operands[3], 0);
+	  int num = GET_NUM_ELEM (adjust);
+	  int i;
+
+	  for (i = 0; i < num; i++)
+	    emit_insn (RTVEC_ELT (adjust, i));
+	}
+
+      emit_call_insn (gen_call_value_internal (operands[0], operands[1], operands[2],
+					       gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
+
+      DONE;
+    }
+
 }")
 
 (define_insn "call_value_internal"
@@ -4121,15 +4168,13 @@ move\\t%0,%z4\\n\\
   else if (GET_CODE (target) == CONST_INT)
     {
       operands[1] = target;
-      operands[2] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
-      return \"%*%[li\\t%@,%1\\n\\tjal\\t%2,%@%]\";
+      return \"%*%[li\\t%@,%1\\n\\tjal\\t%3,%@%]\";
     }
 
   else
     {
       operands[1] = target;
-      operands[2] = gen_rtx (REG, SImode, GP_REG_FIRST + 31);
-      return \"%*jal\\t%2,%1\";
+      return \"%*jal\\t%3,%1\";
     }
 }"
   [(set_attr "type"	"call")
