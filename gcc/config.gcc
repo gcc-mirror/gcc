@@ -1497,10 +1497,10 @@ i[34567]86-*-mingw32*)
 	fi
 	exeext=.exe
 	case $machine in
-		*mingw32msv*)
-			;;
-		*minwg32crt* | *mingw32*)
+		*mingw32crt*)
 			tm_file="${tm_file} i386/crtdll.h"
+			;;
+		*minwg32msv* | *mingw32*)
 			;;
 	esac
 	;;
