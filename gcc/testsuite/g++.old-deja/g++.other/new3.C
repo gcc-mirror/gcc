@@ -6,6 +6,7 @@ struct A
   int size;
   A ()
     {
+      size = 20;
       T *p;
       p = new T[size];
       int foo;
