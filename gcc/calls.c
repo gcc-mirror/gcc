@@ -323,7 +323,8 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
       if (valreg)
 	emit_call_insn (gen_call_value (valreg,
 					gen_rtx (MEM, FUNCTION_MODE, funexp),
-					stack_size_rtx, next_arg_reg));
+					stack_size_rtx, next_arg_reg,
+					NULL_RTX));
       else
 	emit_call_insn (gen_call (gen_rtx (MEM, FUNCTION_MODE, funexp),
 				  stack_size_rtx, next_arg_reg,
