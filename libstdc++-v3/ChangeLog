@@ -1,3 +1,8 @@
+2002-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/os/hpux/bits/ctype_noninline.h: Use __SB_masks for address
+	of character to attribute mapping table.
+
 2002-01-15  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* testsuite/26_numerics/c99_classification_macros_c.cc
