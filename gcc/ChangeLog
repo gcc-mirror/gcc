@@ -1,3 +1,7 @@
+2001-01-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (digest_init): Handle boolean types as scalars.
+
 Sat Jan 20 12:46:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (expand_return): Don't return anything if size is zero.
