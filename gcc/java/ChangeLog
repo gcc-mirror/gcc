@@ -1,6 +1,7 @@
-2000-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* parse.y (generate_classfile): Exclude null strings.
+	* jcf-write.c (generate_classfile): Don't install ConstantValue
+	for null pointers.
 
 2000-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
