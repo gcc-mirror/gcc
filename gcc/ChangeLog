@@ -1,3 +1,7 @@
+2003-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (get_shift_alg): Fix a typo.
+
 2003-01-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.in (HAVE_AS_TLS): Add s390-*-* and s390x-*-* cases.
