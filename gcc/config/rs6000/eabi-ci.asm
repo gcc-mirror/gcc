@@ -39,7 +39,9 @@
 	.file	"crti.s"
 	.ident	"GNU C crti.s"
 
-	.section ".got","w"
+#include <ppc-asm.h>
+
+	.section ".got","aw"
 	.globl	__GOT_START__
 	.type	__GOT_START__,@object
 	.weak	_GLOBAL_OFFSET_TABLE_
@@ -102,3 +104,19 @@ __SBSS2_START__:
 	.globl	__EXCEPT_START__
 	.type	__EXCEPT_START__,@object
 __EXCEPT_START__:
+
+# Head of __init function used for static constructors in Solaris
+	.section ".init","ax"
+	.align 2
+FUNC_START(__init)
+	stwu 1,-8(1)
+	mflr 0
+	stw 0,12(1)
+
+# Head of __fini function used for static destructors in Solaris
+	.section ".fini","ax"
+	.align 2
+FUNC_START(__fini)
+	stwu 1,-8(1)
+	mflr 0
+	stw 0,12(1)

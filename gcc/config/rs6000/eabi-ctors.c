@@ -21,6 +21,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
 
 /*  Declare a pointer to void function type.  */
 
@@ -37,6 +44,14 @@ extern func_ptr __DTOR_END__ [];
 extern void __do_global_ctors (void);
 extern void __do_global_dtors (void);
 
+extern void __init (), __fini ();
+
+/* The Solaris linker seems to incorrectly relocate PC relative relocations
+   to a different section (ie, calls to __init, __fini), so avoid it by
+   using a function pointer.  */
+static void (*init_ptr) (void) = __init;
+static void (*fini_ptr) (void) = __fini;
+
 void (*__atexit)(func_ptr);
 
 /* Call all global constructors */
@@ -49,19 +64,28 @@ __do_global_ctors (void)
   if (__atexit)
     __atexit (__do_global_dtors);
 
+  /* Call the constructors collected in the .ctors section.  */
   for ( ; ptr != end; ptr++)
     if (*ptr)
       (*ptr)();
+
+  /* Call the initialization function in the .init section.  */
+  (*init_ptr) ();
 }
 
 /* Call all global destructors */
 void
 __do_global_dtors (void)
 {
-  func_ptr *ptr = &__DTOR_LIST__[0];
-  func_ptr *end = &__DTOR_END__[0];
+  func_ptr *ptr   = &__DTOR_END__[0] - 1;
+  func_ptr *start = &__DTOR_LIST__[0];
 
-  for ( ; ptr != end; ptr++)
+  /* Call the termination function in the .fini section.  */
+  (*fini_ptr) ();
+
+  /* Call the  destructors collected in the .dtors section.  Run
+     the destructors in reverse order.  */
+  for ( ; ptr >= start; ptr--)
     if (*ptr)
       (*ptr)();
 }

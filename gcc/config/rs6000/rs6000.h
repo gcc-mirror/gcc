@@ -93,6 +93,10 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_ENDIAN_SPEC ""
 #endif
 
+#ifndef CPP_ENDIAN_DEFAULT_SPEC
+#define CPP_ENDIAN_DEFAULT_SPEC ""
+#endif
+
 #ifndef CPP_SYSV_DEFAULT_SPEC
 #define CPP_SYSV_DEFAULT_SPEC ""
 #endif
@@ -144,24 +148,18 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_EXTRA_SPECS
 #endif
 
-#define EXTRA_SPECS					\
-  { "cpp_cpu",		CPP_CPU_SPEC },			\
-  { "cpp_default",	CPP_DEFAULT_SPEC },		\
-  { "cpp_sysv",		CPP_SYSV_SPEC },		\
-  { "cpp_sysv_default",	CPP_SYSV_DEFAULT_SPEC },	\
-  { "cpp_endian",	CPP_ENDIAN_SPEC },		\
-  { "asm_cpu",		ASM_CPU_SPEC },			\
-  { "asm_default",	ASM_DEFAULT_SPEC },		\
-  { "link_syscalls",	LINK_SYSCALLS_SPEC },		\
-  { "link_libg",	LINK_LIBG_SPEC },		\
-  { "link_path",	LINK_PATH_SPEC },		\
-  { "link_start",	LINK_START_SPEC },		\
+#define EXTRA_SPECS							\
+  { "cpp_cpu",			CPP_CPU_SPEC },				\
+  { "cpp_default",		CPP_DEFAULT_SPEC },			\
+  { "cpp_sysv",			CPP_SYSV_SPEC },			\
+  { "cpp_sysv_default",		CPP_SYSV_DEFAULT_SPEC },		\
+  { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },		\
+  { "cpp_endian",		CPP_ENDIAN_SPEC },			\
+  { "asm_cpu",			ASM_CPU_SPEC },				\
+  { "asm_default",		ASM_DEFAULT_SPEC },			\
+  { "link_syscalls",		LINK_SYSCALLS_SPEC },			\
+  { "link_libg",		LINK_LIBG_SPEC },			\
   SUBTARGET_EXTRA_SPECS
-
-/* Default paths to give linker under V.4 */
-#ifndef LINK_PATH_SPEC
-#define LINK_PATH_SPEC ""
-#endif
 
 /* Default location of syscalls.exp under AIX */
 #ifndef CROSS_COMPILE
@@ -175,11 +173,6 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_LIBG_SPEC "-bexport:/usr/lib/libg.exp"
 #else
 #define LINK_LIBG_SPEC ""
-#endif
-
-/* Default starting address if specified */
-#ifndef LINK_START_SPEC
-#define LINK_START_SPEC ""
 #endif
 
 /* Define the options for the binder: Start text at 512, align all segments
@@ -463,7 +456,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 #define REAL_ARITHMETIC
 
 /* Define this macro if it is advisable to hold scalars in registers
-   in a wider mode than that declared by the program.  In such cases, 
+   in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.  */
@@ -483,7 +476,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 #define BYTES_BIG_ENDIAN 1
 
 /* Define this if most significant word of a multiword number is lowest
-   numbered. 
+   numbered.
 
    For RS/6000 we can decide arbitrarily since there are no machine
    instructions for them.  Might as well be consistent with bits and bytes. */
@@ -632,7 +625,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
-   On RS/6000, r1 is used for the stack and r2 is used as the TOC pointer.  
+   On RS/6000, r1 is used for the stack and r2 is used as the TOC pointer.
 
    cr5 is not supposed to be used.
 
@@ -865,7 +858,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
-   
+
 /* The RS/6000 has three types of registers, fixed-point, floating-point,
    and condition registers, plus three special registers, MQ, CTR, and the
    link register.
@@ -982,7 +975,7 @@ enum reg_class
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-   `I' is signed 16-bit constants 
+   `I' is signed 16-bit constants
    `J' is a constant with only the high-order 16 bits non-zero
    `K' is a constant with only the low-order 16 bits non-zero
    `L' is a constant that can be placed into a mask operand
@@ -1028,13 +1021,14 @@ enum reg_class
    : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
    : (C) == 'S' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == SYMBOL_REF)\
    : (C) == 'T' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == LABEL_REF) \
-   : (C) == 'U' ? (DEFAULT_ABI == ABI_V4 && small_data_operand (OP, GET_MODE (OP))) \
+   : (C) == 'U' ? ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) \
+		   && small_data_operand (OP, GET_MODE (OP)))		\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class. 
+   in some cases it is preferable to use a more restrictive class.
 
    On the RS/6000, we have to return NO_REGS when we want to reload a
    floating-point CONST_DOUBLE to force it to be copied to memory.  */
@@ -1043,7 +1037,7 @@ enum reg_class
   ((GET_CODE (X) == CONST_DOUBLE			\
     && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
    ? NO_REGS : (CLASS))
-   
+
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
@@ -1080,7 +1074,8 @@ enum rs6000_abi {
   ABI_AIX,			/* IBM's AIX */
   ABI_AIX_NODESC,		/* AIX calling sequence minus function descriptors */
   ABI_V4,			/* System V.4/eabi */
-  ABI_NT			/* Windows/NT */
+  ABI_NT,			/* Windows/NT */
+  ABI_SOLARIS			/* Solaris */
 };
 
 extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
@@ -1169,7 +1164,7 @@ extern int rs6000_sysv_varargs_p;
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated. 
+   of the first local allocated.
 
    On the RS/6000, the frame pointer is the same as the stack pointer,
    except for dynamic allocations.  So we start after the fixed area and
@@ -1222,7 +1217,7 @@ extern int rs6000_sysv_varargs_p;
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.
 
-   On RS/6000 an integer value is in r3 and a floating-point value is in 
+   On RS/6000 an integer value is in r3 and a floating-point value is in
    fp1, unless -msoft-float.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
@@ -1238,10 +1233,12 @@ extern int rs6000_sysv_varargs_p;
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
 
-   For the RS/6000, any structure or union type is returned in memory.  */
+   For the RS/6000, any structure or union type is returned in memory, except for
+   Solaris, which returns structures <= 8 bytes in registers.  */
 
-#define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode)
+#define RETURN_IN_MEMORY(TYPE)						\
+  (TYPE_MODE (TYPE) == BLKmode						\
+   && (DEFAULT_ABI != ABI_SOLARIS || int_size_in_bytes (TYPE) > 8))
 
 /* Minimum and maximum general purpose registers used to hold arguments.  */
 #define GP_ARG_MIN_REG 3
@@ -1385,14 +1382,14 @@ typedef struct rs6000_args
   function_arg_pass_by_reference(&CUM, MODE, TYPE, NAMED)
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
-   of an argument with the specified mode and type.  If it is not defined, 
+   of an argument with the specified mode and type.  If it is not defined,
    PARM_BOUNDARY is used for all arguments.  */
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
   function_arg_boundary (MODE, TYPE)
 
 /* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
+   variable number of arguments.
 
    CUM is as above.
 
@@ -1522,7 +1519,8 @@ typedef struct rs6000_args
 #define RETURN_ADDRESS_OFFSET						\
  ((DEFAULT_ABI == ABI_AIX						\
    || DEFAULT_ABI == ABI_AIX_NODESC)	? 8 :				\
-  (DEFAULT_ABI == ABI_V4)		? (TARGET_32BIT ? 4 : 8) :	\
+  (DEFAULT_ABI == ABI_V4						\
+   || DEFAULT_ABI == ABI_SOLARIS)	? (TARGET_32BIT ? 4 : 8) :	\
   (DEFAULT_ABI == ABI_NT)		? -4 :				\
   (fatal ("RETURN_ADDRESS_OFFSET not supported"), 0))
 
@@ -1704,7 +1702,7 @@ typedef struct rs6000_args
        && LEGITIMATE_CONSTANT_POOL_BASE_P (XEXP (XEXP (X, 0), 0))))
 
 #define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
-  (DEFAULT_ABI == ABI_V4						\
+  ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
    && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
    && small_data_operand (X, MODE))
 
@@ -1787,7 +1785,7 @@ typedef struct rs6000_args
    integer that is out of range.  If so, generate code to add the
    constant with the low-order 16 bits masked to the register and force
    this result into another register (this can be done with `cau').
-   Then generate an address of REG+(CONST&0xffff), allowing for the 
+   Then generate an address of REG+(CONST&0xffff), allowing for the
    possibility of bit 16 being a one.
 
    Then check for the sum of a register and something not constant, try to
@@ -1969,7 +1967,7 @@ extern struct rtx_def *rs6000_pic_register;
 
 /* We don't have GAS for the RS/6000 yet, so don't write out special
    .stabs in cc1plus.  */
-   
+
 #define FASCIST_ASSEMBLER
 
 #ifndef ASM_OUTPUT_CONSTRUCTOR
@@ -2179,7 +2177,7 @@ extern int rs6000_trunc_used;
    [RW] section emitted.
 
    We then switch back to text to force the gcc2_compiled. label and the space
-   allocated after it (when profiling) into the text section.  
+   allocated after it (when profiling) into the text section.
 
    Finally, declare mcount when profiling to make the assembler happy.  */
 
@@ -2324,7 +2322,7 @@ toc_section ()						\
 
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and
-   output the function descriptor.  
+   output the function descriptor.
 
    The csect for the function will have already been created by the
    `text_section' call previously done.  We do have to go back to that
@@ -2467,7 +2465,7 @@ toc_section ()						\
   while (0)
 
 /* Output something to declare an external symbol to the assembler.  Most
-   assemblers don't need this.  
+   assemblers don't need this.
 
    If we haven't already, add "[RW]" (or "[DS]" for a function) to the
    name.  Normally we write this out along with the name.  In the few cases
@@ -2524,17 +2522,108 @@ toc_section ()						\
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#define REGISTER_NAMES \
- {"0", "1", "2", "3", "4", "5", "6", "7", 		\
-  "8", "9", "10", "11", "12", "13", "14", "15",		\
-  "16", "17", "18", "19", "20", "21", "22", "23",	\
-  "24", "25", "26", "27", "28", "29", "30", "31",	\
-  "0", "1", "2", "3", "4", "5", "6", "7",		\
-  "8", "9", "10", "11", "12", "13", "14", "15",		\
-  "16", "17", "18", "19", "20", "21", "22", "23",	\
-  "24", "25", "26", "27", "28", "29", "30", "31",	\
-  "mq", "lr", "ctr", "ap",				\
-  "0", "1", "2", "3", "4", "5", "6", "7" }
+extern char rs6000_reg_names[][8];	/* register names (a0 vs. $4). */
+
+#define REGISTER_NAMES							\
+{									\
+  &rs6000_reg_names[ 0][0],	/* r0   */				\
+  &rs6000_reg_names[ 1][0],	/* r1	*/				\
+  &rs6000_reg_names[ 2][0],     /* r2	*/				\
+  &rs6000_reg_names[ 3][0],	/* r3	*/				\
+  &rs6000_reg_names[ 4][0],	/* r4	*/				\
+  &rs6000_reg_names[ 5][0],	/* r5	*/				\
+  &rs6000_reg_names[ 6][0],	/* r6	*/				\
+  &rs6000_reg_names[ 7][0],	/* r7	*/				\
+  &rs6000_reg_names[ 8][0],	/* r8	*/				\
+  &rs6000_reg_names[ 9][0],	/* r9	*/				\
+  &rs6000_reg_names[10][0],	/* r10  */				\
+  &rs6000_reg_names[11][0],	/* r11  */				\
+  &rs6000_reg_names[12][0],	/* r12  */				\
+  &rs6000_reg_names[13][0],	/* r13  */				\
+  &rs6000_reg_names[14][0],	/* r14  */				\
+  &rs6000_reg_names[15][0],	/* r15  */				\
+  &rs6000_reg_names[16][0],	/* r16  */				\
+  &rs6000_reg_names[17][0],	/* r17  */				\
+  &rs6000_reg_names[18][0],	/* r18  */				\
+  &rs6000_reg_names[19][0],	/* r19  */				\
+  &rs6000_reg_names[20][0],	/* r20  */				\
+  &rs6000_reg_names[21][0],	/* r21  */				\
+  &rs6000_reg_names[22][0],	/* r22  */				\
+  &rs6000_reg_names[23][0],	/* r23  */				\
+  &rs6000_reg_names[24][0],	/* r24  */				\
+  &rs6000_reg_names[25][0],	/* r25  */				\
+  &rs6000_reg_names[26][0],	/* r26  */				\
+  &rs6000_reg_names[27][0],	/* r27  */				\
+  &rs6000_reg_names[28][0],	/* r28  */				\
+  &rs6000_reg_names[29][0],	/* r29  */				\
+  &rs6000_reg_names[30][0],	/* r30  */				\
+  &rs6000_reg_names[31][0],	/* r31  */				\
+									\
+  &rs6000_reg_names[32][0],     /* fr0  */				\
+  &rs6000_reg_names[33][0],	/* fr1  */				\
+  &rs6000_reg_names[34][0],	/* fr2  */				\
+  &rs6000_reg_names[35][0],	/* fr3  */				\
+  &rs6000_reg_names[36][0],	/* fr4  */				\
+  &rs6000_reg_names[37][0],	/* fr5  */				\
+  &rs6000_reg_names[38][0],	/* fr6  */				\
+  &rs6000_reg_names[39][0],	/* fr7  */				\
+  &rs6000_reg_names[40][0],	/* fr8  */				\
+  &rs6000_reg_names[41][0],	/* fr9  */				\
+  &rs6000_reg_names[42][0],	/* fr10 */				\
+  &rs6000_reg_names[43][0],	/* fr11 */				\
+  &rs6000_reg_names[44][0],	/* fr12 */				\
+  &rs6000_reg_names[45][0],	/* fr13 */				\
+  &rs6000_reg_names[46][0],	/* fr14 */				\
+  &rs6000_reg_names[47][0],	/* fr15 */				\
+  &rs6000_reg_names[48][0],	/* fr16 */				\
+  &rs6000_reg_names[49][0],	/* fr17 */				\
+  &rs6000_reg_names[50][0],	/* fr18 */				\
+  &rs6000_reg_names[51][0],	/* fr19 */				\
+  &rs6000_reg_names[52][0],	/* fr20 */				\
+  &rs6000_reg_names[53][0],	/* fr21 */				\
+  &rs6000_reg_names[54][0],	/* fr22 */				\
+  &rs6000_reg_names[55][0],	/* fr23 */				\
+  &rs6000_reg_names[56][0],	/* fr24 */				\
+  &rs6000_reg_names[57][0],	/* fr25 */				\
+  &rs6000_reg_names[58][0],	/* fr26 */				\
+  &rs6000_reg_names[59][0],	/* fr27 */				\
+  &rs6000_reg_names[60][0],	/* fr28 */				\
+  &rs6000_reg_names[61][0],	/* fr29 */				\
+  &rs6000_reg_names[62][0],	/* fr30 */				\
+  &rs6000_reg_names[63][0],	/* fr31 */				\
+									\
+  &rs6000_reg_names[64][0],     /* mq   */				\
+  &rs6000_reg_names[65][0],	/* lr   */				\
+  &rs6000_reg_names[66][0],	/* ctr  */				\
+  &rs6000_reg_names[67][0],	/* ap   */				\
+									\
+  &rs6000_reg_names[68][0],	/* cr0  */				\
+  &rs6000_reg_names[69][0],	/* cr1  */				\
+  &rs6000_reg_names[70][0],	/* cr2  */				\
+  &rs6000_reg_names[71][0],	/* cr3  */				\
+  &rs6000_reg_names[72][0],	/* cr4  */				\
+  &rs6000_reg_names[73][0],	/* cr5  */				\
+  &rs6000_reg_names[74][0],	/* cr6  */				\
+  &rs6000_reg_names[75][0],	/* cr7  */				\
+}
+
+/* print-rtl can't handle the above REGISTER_NAMES, so define the
+   following for it.  Switch to use the alternate names since
+   they are more mnemonic.  */
+
+#define DEBUG_REGISTER_NAMES						\
+{									\
+   "r0", "r1",   "r2",  "r3",  "r4",  "r5",  "r6",  "r7",		\
+   "r8", "r9",  "r10", "r11", "r12", "r13", "r14", "r15",		\
+  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",		\
+  "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",		\
+   "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",		\
+   "f8",  "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
+  "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
+  "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
+  "mq",   "lr", "ctr",  "ap",						\
+  "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7"		\
+}
 
 /* Table of additional register names to use in user input.  */
 
@@ -2558,7 +2647,7 @@ toc_section ()						\
   /* no additional names for: mq, lr, ctr, ap */	\
   "cr0",  68, "cr1",  69, "cr2",  70, "cr3",  71,	\
   "cr4",  72, "cr5",  73, "cr6",  74, "cr7",  75,	\
-  "cc",   68 }
+  "cc",   68, "sp",    1, "toc",   2 }
 
 /* How to renumber registers for dbx and gdb.  */
 
@@ -2722,7 +2811,7 @@ do {									\
 	       reg_names[1]);						\
 } while (0)
 
-/* This is how to output an element of a case-vector that is absolute. 
+/* This is how to output an element of a case-vector that is absolute.
    (RS/6000 does not use such vectors, but we must define this macro
    anyway.)   */
 
@@ -2810,7 +2899,8 @@ do {									\
 
 /* Define which CODE values are valid.  */
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  ((CODE) == '.' || (CODE) == '*')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  \
+  ((CODE) == '.' || (CODE) == '*' || (CODE) == '$')
 
 /* Print a memory address as an operand to reference that memory location.  */
 

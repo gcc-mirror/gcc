@@ -69,9 +69,9 @@ static int trunc_defined;
 
 /* Set to non-zero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
+
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
-
 rtx rs6000_compare_op0, rs6000_compare_op1;
 int rs6000_compare_fp_p;
 
@@ -79,6 +79,9 @@ int rs6000_compare_fp_p;
 /* Label number of label created for -mrelocatable, to call to so we can
    get the address of the GOT section */
 int rs6000_pic_labelno;
+
+/* Which abi to adhere to */
+char *rs6000_abi_name = RS6000_ABI_NAME;
 #endif
 
 /* Whether a System V.4 varargs area was created.  */
@@ -95,6 +98,39 @@ static rtx stack_temps[NUM_MACHINE_MODES];
 
 /* Current PIC register used by the V4 code */
 struct rtx_def *rs6000_pic_register = (struct rtx_def *)0;
+
+
+/* Default register names.  */
+char rs6000_reg_names[][8] =
+{
+   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+   "8",  "9", "10", "11", "12", "13", "14", "15",
+  "16", "17", "18", "19", "20", "21", "22", "23",
+  "24", "25", "26", "27", "28", "29", "30", "31",
+   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+   "8",  "9", "10", "11", "12", "13", "14", "15",
+  "16", "17", "18", "19", "20", "21", "22", "23",
+  "24", "25", "26", "27", "28", "29", "30", "31",
+  "mq", "lr", "ctr","ap",
+   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7"
+};
+
+#ifdef TARGET_REGNAMES
+static char alt_reg_names[][8] =
+{
+   "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
+   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+  "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
+  "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
+   "%f0",  "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
+   "%f8",  "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
+  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
+  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
+    "mq",   "lr",  "ctr",   "ap",
+  "%cr0", "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7"
+};
+#endif
+
 
 
 /* Print the options used in the assembly file.  */
@@ -337,6 +373,13 @@ rs6000_override_options (default_cpu)
 	    warning ("-mstring is not supported on little endian systems");
 	}
     }
+
+#ifdef TARGET_REGNAMES
+  /* If the user desires alternate register names, copy in the alternate names
+     now.  */
+  if (TARGET_REGNAMES)
+    bcopy ((char *)alt_reg_names, (char *)rs6000_reg_names, sizeof (rs6000_reg_names));
+#endif
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -956,7 +999,7 @@ input_operand (op, mode)
 
   /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
      to be valid.  */
-  if (DEFAULT_ABI == ABI_V4
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
       && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST)
       && small_data_operand (op, Pmode))
     return 1;
@@ -978,7 +1021,7 @@ small_data_operand (op, mode)
     return 0;
 #endif
 
-  if (DEFAULT_ABI != ABI_V4)
+  if (DEFAULT_ABI != ABI_V4 /* && DEFAULT_ABI != ABI_SOLARIS */)
     return 0;
 
   if (GET_CODE (op) == SYMBOL_REF)
@@ -1026,7 +1069,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
   if (incoming)
     {
       cum->nargs_prototype = 1000;		/* don't return an EXPR_LIST */
-      if (abi == ABI_V4)
+      if (abi == ABI_V4 || abi == ABI_SOLARIS)
 	cum->varargs_offset = RS6000_VARARGS_OFFSET;
     }
 
@@ -1060,7 +1103,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
 		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
 	}
 
-      if (abi == ABI_V4 && incoming)
+      if ((abi == ABI_V4 || abi == ABI_SOLARIS) && incoming)
 	fprintf (stderr, " varargs = %d, ", cum->varargs_offset);
 
       if (cum->call_cookie & CALL_NT_DLLIMPORT)
@@ -1087,7 +1130,7 @@ function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  if (DEFAULT_ABI == ABI_V4 && mode == DImode)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && mode == DImode)
     return 64;
 
   if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
@@ -1114,7 +1157,7 @@ function_arg_advance (cum, mode, type, named)
   cum->words += align;
   cum->nargs_prototype--;
 
-  if (DEFAULT_ABI == ABI_V4)
+  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
       /* Long longs must not be split between registers and stack */
       if ((GET_MODE_CLASS (mode) != MODE_FLOAT || TARGET_SOFT_FLOAT)
@@ -1198,7 +1241,7 @@ function_arg (cum, mode, type, named)
     {
       enum rs6000_abi abi = DEFAULT_ABI;
 
-      if (abi == ABI_V4
+      if ((abi == ABI_V4 || abi == ABI_SOLARIS)
 	  && TARGET_HARD_FLOAT
 	  && cum->nargs_prototype < 0
 	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
@@ -1214,7 +1257,7 @@ function_arg (cum, mode, type, named)
 
   if (!named)
     {
-      if (DEFAULT_ABI != ABI_V4)
+      if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
 	return NULL_RTX;
     }
 
@@ -1224,7 +1267,8 @@ function_arg (cum, mode, type, named)
   if (USE_FP_FOR_ARG_P (*cum, mode, type))
     {
       if ((cum->nargs_prototype > 0)
-	  || (DEFAULT_ABI == ABI_V4)	/* V.4 never passes FP values in GP registers */
+	  || DEFAULT_ABI == ABI_V4	/* V.4 never passes FP values in GP registers */
+	  || DEFAULT_ABI == ABI_SOLARIS
 	  || !type)
 	return gen_rtx (REG, mode, cum->fregno);
 
@@ -1236,7 +1280,7 @@ function_arg (cum, mode, type, named)
     }
 
   /* Long longs won't be split between register and stack */
-  else if (DEFAULT_ABI == ABI_V4 &&
+  else if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) &&
 	   align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
     {
       return NULL_RTX;
@@ -1262,7 +1306,7 @@ function_arg_partial_nregs (cum, mode, type, named)
   if (! named)
     return 0;
 
-  if (DEFAULT_ABI == ABI_V4)
+  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     return 0;
 
   if (USE_FP_FOR_ARG_P (*cum, mode, type))
@@ -1299,7 +1343,8 @@ function_arg_pass_by_reference (cum, mode, type, named)
      tree type;
      int named;
 {
-  if (DEFAULT_ABI == ABI_V4 && type && AGGREGATE_TYPE_P (type))
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      && type && AGGREGATE_TYPE_P (type))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: aggregate\n");
@@ -1342,7 +1387,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	     "setup_vararg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, no_rtl= %d\n",
 	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), no_rtl);
 
-  if (DEFAULT_ABI == ABI_V4 && !no_rtl)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && !no_rtl)
     {
       rs6000_sysv_varargs_p = 1;
       save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
@@ -1370,7 +1415,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     }
 
   /* Save FP registers if needed.  */
-  if (DEFAULT_ABI == ABI_V4 && TARGET_HARD_FLOAT && !no_rtl)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && TARGET_HARD_FLOAT && !no_rtl)
     {
       int fregno     = cum->fregno;
       int num_fp_reg = FP_ARG_V4_MAX_REG + 1 - fregno;
@@ -2065,6 +2110,12 @@ print_operand (file, x, code)
       fputs (TARGET_MINIMAL_TOC ? reg_names[30] : reg_names[2], file);
       return;
 
+    case '$':
+      /* Write out either a '.' or '$' for the current location, depending
+	 on whether this is Solaris or not.  */
+      putc ((DEFAULT_ABI == ABI_SOLARIS) ? '.' : '$', file);
+      return;
+
     case 'A':
       /* If X is a constant integer whose low-order 5 bits are zero,
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
@@ -2225,7 +2276,7 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 4));
 	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@sda21(%s)", reg_names[0]);
+	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
 	}
       return;
 			    
@@ -2437,7 +2488,7 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 8));
 	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@sda21(%s)", reg_names[0]);
+	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
 	}
       return;
 			    
@@ -2463,6 +2514,7 @@ print_operand (file, x, code)
 
 	    case ABI_V4:
 	    case ABI_AIX_NODESC:
+	    case ABI_SOLARIS:
 	      break;
 
 	    case ABI_NT:
@@ -2485,7 +2537,7 @@ print_operand (file, x, code)
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 12));
 	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@sda21(%s)", reg_names[0]);
+	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
 	}
       return;
 			    
@@ -2527,7 +2579,7 @@ print_operand_address (file, x)
     {
       output_addr_const (file, x);
       if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	fprintf (file, "@sda21(%s)", reg_names[0]);
+	fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
 
 #ifdef TARGET_NO_TOC
       else if (TARGET_NO_TOC)
@@ -2752,30 +2804,36 @@ rs6000_stack_info ()
 
   /* If this is main and we need to call a function to set things up,
      save main's arguments around the call.  */
-  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0)
+#ifdef TARGET_EABI
+  if (TARGET_EABI)
+#endif
     {
-      info_ptr->main_p = 1;
+      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0)
+	{
+	  info_ptr->main_p = 1;
 
 #ifdef NAME__MAIN
-      info_ptr->calls_p = 1;
+	  info_ptr->calls_p = 1;
 
-      if (DECL_ARGUMENTS (current_function_decl))
-	{
-	  int i;
-	  tree arg;
-
-	  info_ptr->main_save_p = 1;
-	  info_ptr->main_size = 0;
-
-	  for ((i = 0), (arg = DECL_ARGUMENTS (current_function_decl));
-	       arg != NULL_TREE && i < 8;
-	       (arg = TREE_CHAIN (arg)), i++)
+	  if (DECL_ARGUMENTS (current_function_decl))
 	    {
-	      info_ptr->main_size += reg_size;
+	      int i;
+	      tree arg;
+
+	      info_ptr->main_save_p = 1;
+	      info_ptr->main_size = 0;
+
+	      for ((i = 0), (arg = DECL_ARGUMENTS (current_function_decl));
+		   arg != NULL_TREE && i < 8;
+		   (arg = TREE_CHAIN (arg)), i++)
+		{
+		  info_ptr->main_size += reg_size;
+		}
 	    }
-	}
 #endif
+	}
     }
+
 
   /* Determine if we need to save the link register */
   if (regs_ever_live[65] || profile_flag
@@ -2785,6 +2843,7 @@ rs6000_stack_info ()
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || (abi == ABI_V4 && current_function_calls_alloca)
+      || (abi == ABI_SOLARIS && current_function_calls_alloca)
       || info_ptr->calls_p)
     {
       info_ptr->lr_save_p = 1;
@@ -2797,7 +2856,7 @@ rs6000_stack_info ()
   if (regs_ever_live[70] || regs_ever_live[71] || regs_ever_live[72])
     {
       info_ptr->cr_save_p = 1;
-      if (abi == ABI_V4 || abi == ABI_NT)
+      if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
 	info_ptr->cr_size = reg_size;
     }
 
@@ -2833,7 +2892,7 @@ rs6000_stack_info ()
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
 
-  else if (abi == ABI_V4 || abi == ABI_NT)
+  else if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
     info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
 			|| info_ptr->lr_save_p);
 
@@ -2859,6 +2918,7 @@ rs6000_stack_info ()
       break;
 
     case ABI_V4:
+    case ABI_SOLARIS:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->cr_save_offset   = info_ptr->gp_save_offset - reg_size;
@@ -2923,6 +2983,7 @@ debug_stack_info (info)
     case ABI_AIX:	 abi_string = "AIX";		break;
     case ABI_AIX_NODESC: abi_string = "AIX";		break;
     case ABI_V4:	 abi_string = "V.4";		break;
+    case ABI_SOLARIS:	 abi_string = "Solaris";	break;
     case ABI_NT:	 abi_string = "NT";		break;
     }
 
@@ -3074,7 +3135,7 @@ output_prolog (file, size)
     }
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
-  if (info->push_p && DEFAULT_ABI == ABI_V4)
+  if (info->push_p && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
       if (info->total_size < 32767)
 	{
@@ -3213,7 +3274,7 @@ output_prolog (file, size)
     }
 
   /* Update stack and set back pointer and we have already done so for V.4.  */
-  if (info->push_p && DEFAULT_ABI != ABI_V4)
+  if (info->push_p && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
     {
       if (info->total_size < 32767)
 	asm_fprintf (file,
@@ -3324,6 +3385,7 @@ output_prolog (file, size)
 	switch (DEFAULT_ABI)
 	  {
 	  case ABI_V4:
+	  case ABI_SOLARIS:
 	  case ABI_AIX_NODESC:
 	    if (TARGET_32BIT)
 	      {
@@ -3398,14 +3460,14 @@ output_epilog (file, size)
 	{
 	  /* Under V.4, don't reset the stack pointer until after we're done
 	     loading the saved registers.  */
-	  if (DEFAULT_ABI == ABI_V4)
+	  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
 	    sp_reg = 11;
 
 	  asm_fprintf (file, load_reg, reg_names[sp_reg], 0, reg_names[1]);
 	}
       else if (info->push_p)
 	{
-	  if (DEFAULT_ABI == ABI_V4)
+	  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
 	    sp_offset = info->total_size;
 	  else if (TARGET_NEW_MNEMONICS)
 	    asm_fprintf (file, "\taddi %s,%s,%d\n", reg_names[1], reg_names[1], info->total_size);
@@ -4161,6 +4223,7 @@ rs6000_trampoline_template (file)
     /* V.4/eabi function pointers are just a single pointer, so we need to
        do the full gory code to load up the static chain.  */
     case ABI_V4:
+    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)
 	abort ();
@@ -4238,6 +4301,7 @@ rs6000_trampoline_size ()
       break;
 
     case ABI_V4:
+    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       ret = (TARGET_32BIT) ? 40 : 48;
       break;
@@ -4289,6 +4353,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
     /* Under V.4/eabi, update the two words after the bl to have the real
        function address and the static chain.  */
     case ABI_V4:
+    case ABI_SOLARIS:
     case ABI_AIX_NODESC:
       {
 	rtx reg = gen_reg_rtx (pmode);
@@ -4546,7 +4611,12 @@ rs6000_select_section (decl, reloc)
       else
 	{
 	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
-	    sdata2_section ();
+	    {
+	      if (TARGET_EABI)
+		sdata2_section ();
+	      else
+		sdata_section ();	/* System V doesn't have .sdata2/.sbss2 */
+	    }
 	  else
 	    const_section ();
 	}

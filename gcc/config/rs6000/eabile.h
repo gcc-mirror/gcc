@@ -23,13 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rs6000/eabi.h"
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN)
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN | MASK_EABI)
 
-#undef	CPP_ENDIAN_SPEC
-#define	CPP_ENDIAN_SPEC \
-"%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{!mbig: %{!mbig-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)}}"
+#undef	CPP_ENDIAN_DEFAULT_SPEC
+#define	CPP_ENDIAN_DEFAULT_SPEC "-D_LITTLE_ENDIAN -Amachine(littleendian)"
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
@@ -41,4 +38,4 @@ Boston, MA 02111-1307, USA.  */
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-sysv", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-sysv-eabi", "mno-sdata" }

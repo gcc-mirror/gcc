@@ -48,6 +48,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include "xm-svr4.h"
 
+/* if not compiled with GNU C, use the C alloca and use only int bitfields. */
 #ifndef __GNUC__
+#define	USE_C_ALLOCA
+extern char *alloca ();
+#undef ONLY_INT_FIELDS
 #define ONLY_INT_FIELDS
 #endif
+
+/* Solaris has a different declaration of sys_siglist than collect uses.  */
+#define DONT_DECLARE_SYS_SIGLIST

@@ -29,19 +29,15 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -D__simulator__ -Asystem(embedded) -Asystem(simulator) -Acpu(powerpc) -Amachine(powerpc)"
 
-/* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
-#undef  STARTFILE_SPEC
-#define	STARTFILE_SPEC "\
-%{mmvme: mvme-crt0.o%s} \
-%{!mmvme: sim-crt0.o%s}"
+/* Make the simulator the default */
+#undef	LIB_DEFAULT_SPEC
+#define LIB_DEFAULT_SPEC LIB_SIM_SPEC
 
-#undef	LIB_SPEC
-#define	LIB_SPEC "\
-%{mmvme: -lmvme -lc -lmvme} \
-%{!mmvme: -lsim -lc -lsim}"
+#undef	STARTFILE_DEFAULT_SPEC
+#define STARTFILE_DEFAULT_SPEC STARTFILE_SIM_SPEC
 
-#undef	LIBGCC_SPEC
-#define	LIBGCC_SPEC "libgcc.a%s"
+#undef	ENDFILE_DEFAULT_SPEC
+#define ENDFILE_DEFAULT_SPEC ENDFILE_SIM_SPEC
 
-#undef	ENDFILE_SPEC
-#define	ENDFILE_SPEC ""
+#undef	LINK_START_DEFAULT_SPEC
+#define LINK_START_DEFAULT_SPEC LINK_START_SIM_SPEC

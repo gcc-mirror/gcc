@@ -1,4 +1,4 @@
-# crtn.s for eabi
+# crtn.s for solaris
 
 #   Copyright (C) 1996 Free Software Foundation, Inc.
 #   Written By Michael Meissner
@@ -36,74 +36,31 @@
 # This file just supplies labeled ending points for the .got* and other
 # special sections.  It is linked in last after other modules.
  
-	.file	"crtn.s"
-	.ident	"GNU C crtn.s"
+	.file	"scrtn.s"
+	.ident	"GNU C scrtn.s"
 
-	.section ".got","aw"
-	.globl	__GOT_END__
-	.type	__GOT_END__,@object
-__GOT_END__:
-
-	.section ".got1","aw"
-	.globl	__GOT1_END__
-	.type	__GOT1_END__,@object
-__GOT1_END__:
-
-	.section ".got2","aw"
-	.globl	__GOT2_END__
-	.type	__GOT2_END__,@object
-__GOT2_END__:
-
-	.section ".fixup","aw"
-	.globl	__FIXUP_END__
-	.type	__FIXUP_END__,@object
-__FIXUP_END__:
-
+# End list of C++ constructors
 	.section ".ctors","aw"
 	.globl	__CTOR_END__
 	.type	__CTOR_END__,@object
 __CTOR_END__:
 
+# End list of C++ destructors
 	.section ".dtors","aw"
 	.globl	__DTOR_END__
 	.type	__DTOR_END__,@object
 __DTOR_END__:
 
-	.section ".sdata","aw"
-	.globl	__SDATA_END__
-	.type	__SDATA_END__,@object
-__SDATA_END__:
-
-	.section ".sbss","aw",@nobits
-	.globl	__SBSS_END__
-	.type	__SBSS_END__,@object
-__SBSS_END__:
-
-	.section ".sdata2","a"
-	.globl	__SDATA2_END__
-	.type	__SDATA2_END__,@object
-__SDATA2_END__:
-
-	.section ".sbss2","a"
-	.globl	__SBSS2_END__
-	.type	__SBSS2_END__,@object
-__SBSS2_END__:
-
-	.section ".gcc_except_table","aw"
-	.globl	__EXCEPT_END__
-	.type	__EXCEPT_END__,@object
-__EXCEPT_END__:
-
 # Tail of __init used for static constructors in Solaris
 	.section ".init","ax"
-	lwz 0,12(1)
-	mtlr 0
-	addi 1,1,8
+	lwz %r0,12(%r1)
+	mtlr %r0
+	addi %r1,%r1,16
 	blr
 
 # Tail of __fini used for static destructors in Solaris
 	.section ".fini","ax"
-	lwz 0,12(1)
-	mtlr 0
-	addi 1,1,8
+	lwz %r0,12(%r1)
+	mtlr %r0
+	addi %r1,%r1,16
 	blr
