@@ -1077,7 +1077,7 @@ char **
 _cpp_save_pragma_names (cpp_reader *pfile)
 {
   int ct = count_registered_pragmas (pfile->pragmas);
-  char **result = xnewvec (char *, ct);
+  char **result = XNEWVEC (char *, ct);
   (void) save_registered_pragmas (pfile->pragmas, result);
   return result;
 }
@@ -1318,11 +1318,11 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
     cpp_token *saved_cur_token = pfile->cur_token;
     tokenrun *saved_cur_run = pfile->cur_run;
 
-    pfile->context = xnew (cpp_context);
+    pfile->context = XNEW (cpp_context);
     pfile->context->macro = 0;
     pfile->context->prev = 0;
     run_directive (pfile, T_PRAGMA, result, dest - result);
-    free (pfile->context);
+    XDELETE (pfile->context);
     pfile->context = saved_context;
     pfile->cur_token = saved_cur_token;
     pfile->cur_run = saved_cur_run;
@@ -1532,7 +1532,7 @@ push_conditional (cpp_reader *pfile, int skip, int type,
   struct if_stack *ifs;
   cpp_buffer *buffer = pfile->buffer;
 
-  ifs = xobnew (&pfile->buffer_ob, struct if_stack);
+  ifs = XOBNEW (&pfile->buffer_ob, struct if_stack);
   ifs->line = pfile->directive_line;
   ifs->next = buffer->if_stack;
   ifs->skip_elses = pfile->state.skipping || !skip;
@@ -1922,7 +1922,7 @@ cpp_buffer *
 cpp_push_buffer (cpp_reader *pfile, const uchar *buffer, size_t len,
 		 int from_stage3)
 {
-  cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
+  cpp_buffer *new = XOBNEW (&pfile->buffer_ob, cpp_buffer);
 
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));

@@ -919,7 +919,7 @@ next_context (cpp_reader *pfile)
 
   if (result == 0)
     {
-      result = xnew (cpp_context);
+      result = XNEW (cpp_context);
       result->prev = pfile->context;
       result->next = 0;
       pfile->context->next = result;
