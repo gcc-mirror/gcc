@@ -1,3 +1,8 @@
+Mon Feb  9 00:49:55 1998  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* lang-options.h: Add -fgnu-intrinsics-* and
+	-fbadu77-intrinsics-* options.
+
 Mon Dec 15 16:38:52 1997  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ffecom_type_vardesc_): Vardesc.dims is a `ftnlen*'.
