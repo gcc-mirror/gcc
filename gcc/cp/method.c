@@ -363,6 +363,8 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
       DECL_DESTRUCTOR_P (thunk) = 0;
       DECL_CONSTRUCTOR_P (thunk) = 0;
+      /* And neither is it a clone.  */
+      DECL_CLONED_FUNCTION (thunk) = NULL_TREE;
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
       /* Even if this thunk is a member of a local class, we don't
