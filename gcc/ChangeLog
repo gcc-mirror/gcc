@@ -1,5 +1,9 @@
 2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cppdefault.c, cppdefault.h, timevar.h: Update copyright.
+
+2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* bitmap.h, dbxout.c, tree-mudflap.c: Fix comment formatting.
 
 2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
