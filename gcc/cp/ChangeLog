@@ -1,3 +1,8 @@
+Thu Dec 18 14:51:50 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (duplicate_decls): Make the newdecl virtual if the
+	olddecl was, just as is done with other attributes of olddecl.
+
 Thu Dec 18 14:43:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (unary_complex_lvalue): Ignore op0 when taking the 

@@ -2692,6 +2692,7 @@ duplicate_decls (newdecl, olddecl)
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
       DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
       DECL_ABSTRACT_VIRTUAL_P (newdecl) |= DECL_ABSTRACT_VIRTUAL_P (olddecl);
+      DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
