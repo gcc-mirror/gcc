@@ -349,7 +349,7 @@ public class ComponentSampleModel extends SampleModel
     if (scanlineStride == rowSize)
       {
 	// Collapse scan lines:
-	scanlineStride = rowSize *= h;
+	rowSize *= h;
 	h = 1;
       }
 
