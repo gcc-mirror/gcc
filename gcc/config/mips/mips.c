@@ -1952,7 +1952,9 @@ output_block_move (insn, operands, num_regs)
   int num		= 0;
   int offset		= 0;
   int use_lwl_lwr	= FALSE;
+  int last_operand	= num_regs+4;
   int i;
+  int j;
   rtx xoperands[10];
 
   struct {
@@ -1962,6 +1964,25 @@ output_block_move (insn, operands, num_regs)
     int offset;			/* current offset */
     enum machine_mode mode;	/* mode to use on (MEM) */
   } load_store[4];
+
+  /* Work around a bug in GCC, where it can give us a register
+     the same as one of the addressing registers.  */
+  for (i = 4; i < last_operand; i++)
+    {
+      if (reg_mentioned_p (operands[i], operands[0])
+	  || reg_mentioned_p (operands[i], operands[1]))
+	{
+	  warning ("register $%d passed as address and temp register to block move",
+		   REGNO (operands[i]));
+
+	  for (j = i+1; j < last_operand; j++)
+	    operands[j-1] = operands[j];
+
+	  operands[--last_operand] = (rtx)0;
+	  if (--num_regs == 0)
+	    abort ();
+	}
+    }
 
   /* If we are given global or static addresses, and we would be
      emitting a few instructions, try to save time by using a
