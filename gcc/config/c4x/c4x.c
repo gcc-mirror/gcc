@@ -2417,7 +2417,7 @@ c4x_S_constraint (op)
 	if (REG_P (op1))
 	  return 1;
 
-	if (GET_CODE (op1) ! = CONST_INT)
+	if (GET_CODE (op1) != CONST_INT)
 	  return 0;
 	
 	/* HImode and HFmode must be offsettable.  */

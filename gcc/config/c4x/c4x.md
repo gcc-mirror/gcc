@@ -369,7 +369,7 @@
 
 (define_attr "in_annul_slot_3" "false,true"
   (if_then_else (and (eq_attr "cpu" "c4x")
-		     (eq_attr "type" "!jump,call,rets,jmpc,unarycc,binarycc,compare,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
+		     (eq_attr "type" "!jump,call,rets,jmpc,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
 		(const_string "true")
 		(const_string "false")))
 
@@ -2480,19 +2480,17 @@
 (define_insn "*lshrqi3_const_set"
   [(set (reg:CC 21)
         (compare:CC
-          (lshiftrt:QI (match_operand:QI 1 "src_operand" "0,0,r,r")
-                       (match_operand:QI 2 "const_int_operand" "n,n,J,J"))
+          (lshiftrt:QI (match_operand:QI 1 "src_operand" "0,r")
+                       (match_operand:QI 2 "const_int_operand" "n,J"))
           (const_int 0)))
-   (set (match_operand:QI 0 "reg_operand" "=?d,?c,d,c")
+   (set (match_operand:QI 0 "reg_operand" "=?d,d")
         (lshiftrt:QI (match_dup 1)
                      (match_dup 2)))]
   "valid_operands (LSHIFTRT, operands, QImode)"
   "@
    lsh\\t%n2,%0
-   lsh\\t%n2,%0
-   lsh3\\t%n2,%1,%0
    lsh3\\t%n2,%1,%0"
-  [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
+  [(set_attr "type" "binarycc,binarycc")])
 
 (define_insn "*lshrqi3_nonconst_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
@@ -6192,7 +6190,8 @@
                    (const_int -1)))
      (clobber (reg:CC_NOOV 21))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
-  "db%I3\\t%0,%l1\\n\\tb%3\\t%l2")
+  "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
+  [(set_attr "type" "multi")])
 
 (define_peephole
   [(set (pc) (if_then_else (match_operator 3 "comparison_operator"
@@ -6211,7 +6210,8 @@
                    (const_int -1)))
      (clobber (reg:CC_NOOV 21))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
-  "db%I3\\t%0,%l1\\n\\tb%3\\t%l2")
+  "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
+  [(set_attr "type" "multi")])
 
 ;
 ; Peepholes to convert 'call label; rets' into jump label
