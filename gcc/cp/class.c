@@ -1218,9 +1218,8 @@ add_method (type, method, error_p)
 	    new_len = len + 1;
 
 	  new_vec = make_tree_vec (new_len);
-	  bcopy ((PTR) &TREE_VEC_ELT (method_vec, 0),
-		 (PTR) &TREE_VEC_ELT (new_vec, 0),
-		 len * sizeof (tree));
+	  memcpy (&TREE_VEC_ELT (new_vec, 0), &TREE_VEC_ELT (method_vec, 0),
+		  len * sizeof (tree));
 	  len = new_len;
 	  method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
 	}
@@ -1257,9 +1256,9 @@ add_method (type, method, error_p)
 	      /* We know the last slot in the vector is empty
 		 because we know that at this point there's room
 		 for a new function.  */
-	      bcopy ((PTR) &TREE_VEC_ELT (method_vec, slot),
-		     (PTR) &TREE_VEC_ELT (method_vec, slot + 1),
-		     (len - slot - 1) * sizeof (tree));
+	      memmove (&TREE_VEC_ELT (method_vec, slot + 1),
+		       &TREE_VEC_ELT (method_vec, slot),
+		       (len - slot - 1) * sizeof (tree));
 	      TREE_VEC_ELT (method_vec, slot) = NULL_TREE;
 	    }
 	}

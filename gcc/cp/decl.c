@@ -3722,9 +3722,9 @@ duplicate_decls (newdecl, olddecl)
 
       function_size = sizeof (struct tree_decl);
 
-      bcopy ((char *) newdecl + sizeof (struct tree_common),
-	     (char *) olddecl + sizeof (struct tree_common),
-	     function_size - sizeof (struct tree_common));
+      memcpy ((char *) olddecl + sizeof (struct tree_common),
+	      (char *) newdecl + sizeof (struct tree_common),
+	      function_size - sizeof (struct tree_common));
 
       if (DECL_TEMPLATE_INSTANTIATION (newdecl))
 	{
@@ -3760,10 +3760,10 @@ duplicate_decls (newdecl, olddecl)
     }
   else
     {
-      bcopy ((char *) newdecl + sizeof (struct tree_common),
-	     (char *) olddecl + sizeof (struct tree_common),
-	     sizeof (struct tree_decl) - sizeof (struct tree_common)
-	     + tree_code_length [(int)TREE_CODE (newdecl)] * sizeof (char *));
+      memcpy ((char *) olddecl + sizeof (struct tree_common),
+	      (char *) newdecl + sizeof (struct tree_common),
+	      sizeof (struct tree_decl) - sizeof (struct tree_common)
+	      + tree_code_length [(int)TREE_CODE (newdecl)] * sizeof (char *));
     }
 
   DECL_UID (olddecl) = olddecl_uid;
