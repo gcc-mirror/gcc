@@ -1,3 +1,8 @@
+2005-03-28  Per Bothner  <per@bothner.com>
+
+	* boehm.cc (_Jv_MarkObj): Don't follow null pointer to static field,
+	which can happen if class is JV_STATE_LOADED but not JV_STATE_PREPARED.
+
 2005-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one): Add
