@@ -171,6 +171,17 @@ extern void dtors_section PARAMS ((void));
 extern void bss_section PARAMS ((void));
 #endif
 
+#ifdef CONST_SECTION_ASM_OP
+extern void const_section PARAMS ((void));
+#endif
+
+#ifdef INIT_SECTION_ASM_OP
+extern void init_section PARAMS ((void));
+#endif
+
+#ifdef FINI_SECTION_ASM_OP
+extern void fini_section PARAMS ((void));
+#endif
 
 #ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.
