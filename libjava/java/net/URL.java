@@ -262,7 +262,8 @@ public final class URL implements Serializable
   {
     if (protocol == null)
       throw new MalformedURLException("null protocol");
-    this.protocol = protocol.toLowerCase();
+    protocol = protocol.toLowerCase();
+    this.protocol = protocol;
 
     if (ph != null)
       {
@@ -512,7 +513,7 @@ public final class URL implements Serializable
    * Defined as <code>path[?query]</code>.
    * Returns the empty string if there is no file portion.
    *
-   * @return The filename specified in this URL.
+   * @return The filename specified in this URL, or an empty string if empty.
    */
   public String getFile()
   {
@@ -523,13 +524,15 @@ public final class URL implements Serializable
    * Returns the path of the URL. This is the part of the file before any '?'
    * character.
    *
-   * @return The path specified in this URL.
+   * @return The path specified in this URL, or null if empty.
    *
    * @since 1.3
    */
   public String getPath()
   {
-    int quest = (file == null) ? -1 : file.indexOf('?');
+    if (file == null)
+      return null;
+    int quest = file.indexOf('?');
     return quest < 0 ? getFile() : file.substring(0, quest);
   }
 
@@ -699,8 +702,12 @@ public final class URL implements Serializable
     // invalid protocol.  It will cause the handler to be set to null
     // thus overriding a valid handler.  Callers of this method should
     // be aware of this.
-    this.ph = getURLStreamHandler(protocol);
-    this.protocol = protocol.toLowerCase();
+    protocol = protocol.toLowerCase ();
+    if (! this.protocol.equals (protocol))
+      {
+	this.ph = getURLStreamHandler(protocol);
+	this.protocol = protocol;
+      }
     this.authority = "";
     this.port = port;
     this.host = host;
@@ -738,8 +745,12 @@ public final class URL implements Serializable
     // invalid protocol.  It will cause the handler to be set to null
     // thus overriding a valid handler.  Callers of this method should
     // be aware of this.
-    this.ph = getURLStreamHandler(protocol);
-    this.protocol = protocol.toLowerCase();
+    protocol = protocol.toLowerCase ();
+    if (! this.protocol.equals (protocol))
+      {
+	this.ph = getURLStreamHandler(protocol);
+	this.protocol = protocol;
+      }
     this.host = host;
     this.userInfo = userInfo;
     this.port = port;

@@ -1,3 +1,16 @@
+2004-07-03  Mark Wielaard  <mark@klomp.org>
+            Anthony Green  <green@redhat.com>
+
+	* java/net/URL.java (getFile): Clarify return value doc.
+	(getPath): Return null if file is empty - not empty String.
+	(set): Convert protocol to lower case before doing anything.
+	Only change the protocol handler if it's different.
+
+2004-07-03  Anthony Green  <green@redhat.com>
+
+	* java/net/URL.java (URL): Convert protocol to lower case before
+	doing anything, so we getURLStreamHandler() with the proper value.
+
 2004-07-02  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/util/Locale.java (hashcode): Made transient.
