@@ -2365,8 +2365,10 @@ expand_block_move (operands)
 #endif
 
   else if (constp && bytes <= 2*MAX_MOVE_BYTES)
-    emit_insn (gen_movstrsi_internal (gen_rtx (MEM, BLKmode, dest_reg),
-				      gen_rtx (MEM, BLKmode, src_reg),
+    emit_insn (gen_movstrsi_internal (change_address (operands[0],
+						      BLKmode, dest_reg),
+				      change_address (orig_src, BLKmode,
+						      src_reg),
 				      bytes_rtx, align_rtx));
 
   else if (constp && align >= UNITS_PER_WORD && optimize)
