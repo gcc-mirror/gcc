@@ -1,3 +1,9 @@
+1999-12-13  Don Bowman  <don@pixstream.com>
+
+	* mips/vxworks.h: Fix problem with comment termination.
+	(EXTRA_SECTIONS): Add in_sbss.
+	(EXTRA_SECTION_FUNCTIONS): Corresponding changes.
+
 1999-12-12  David S. Miller  <davem@redhat.com>
 
 	* cse.c (struct cse_reg_info): Add hash_next member,

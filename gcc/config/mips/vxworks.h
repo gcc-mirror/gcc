@@ -1,4 +1,4 @@
-/* Copyright (C) 1999 Free Software Foundation, Inc. */
+/* Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #undef DTORS_SECTION_ASM_OP
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata
+#define EXTRA_SECTIONS in_sdata, in_rdata, in_sbss
 
 #undef INVOKE__main
 #undef NAME__MAIN
@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
+  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP)
 
 #undef ASM_OUTPUT_CONSTRUCTOR
