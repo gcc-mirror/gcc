@@ -152,10 +152,17 @@ init_output_buffer (buffer, prefix, max_length)
      char *prefix;
      int max_length;
 {
+  int prefix_length = strlen (prefix);
+
   obstack_init (&buffer->obstack);
   buffer->prefix = prefix;
   buffer->line_length = 0;
-  buffer->max_length = max_length;
+  /* If the prefix is ridiculously too long, output at least
+     32 characters.  */
+  if (max_length - prefix_length < 32)
+    buffer->max_length = max_length + 32;
+  else
+    buffer->max_length = max_length;
 }
 
 /* Return BUFFER's prefix.  */

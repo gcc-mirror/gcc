@@ -1,3 +1,8 @@
+2000-02-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (init_output_buffer): Make it possible to output at
+	least 32 characters if we're given a too long prefix.
+
 2000-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (initializer_constant_valid_p): Call
