@@ -1,3 +1,9 @@
+2003-10-14  Jeff Bailey  <jbailey@nisa.net>
+	
+	PR libstdc++/12562
+	* crossconfig.m4: Share the config between *-linux* and *-gnu*.
+	* configure: Regenerate.
+
 2003-10-14  Carlo Wood  <carlo@alinoe.com>
 
 	PR libstdc++/12600
