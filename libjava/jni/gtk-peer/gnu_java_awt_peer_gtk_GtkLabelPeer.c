@@ -70,6 +70,44 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
 }
 
 JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkSetFont
+  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
+{
+  const char *font_name;
+  void *ptr;
+  GtkWidget *label;
+  PangoFontDescription *font_desc;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  label = gtk_bin_get_child (GTK_BIN(ptr));
+
+  if (!label)
+      return;
+
+  font_name = (*env)->GetStringUTFChars (env, name, NULL);
+
+  gdk_threads_enter();
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  if (style & AWT_STYLE_BOLD)
+    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+
+  if (style & AWT_STYLE_ITALIC)
+    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
+
+  gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
+
+  pango_font_description_free (font_desc);
+
+  gdk_threads_leave();
+
+  (*env)->ReleaseStringUTFChars (env, name, font_name);
+}
+
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText
   (JNIEnv *env, jobject obj, jstring text)
 {

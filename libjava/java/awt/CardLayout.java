@@ -103,6 +103,11 @@ public class CardLayout implements LayoutManager2, Serializable
   public void addLayoutComponent (String name, Component comp)
   {
     tab.put (name, comp);
+    // First component added is the default component.
+    if (tab.size() == 1)
+      comp.setVisible(true);
+    else
+      comp.setVisible(false);
   }
 
   /** Cause the first component in the container to be displayed.
@@ -243,6 +248,8 @@ public class CardLayout implements LayoutManager2, Serializable
 	if (tab.get (key) == comp)
 	  {
 	    tab.remove (key);
+	    Container parent = comp.getParent();
+	    next(parent);
 	    break;
 	  }
       }
@@ -311,6 +318,13 @@ public class CardLayout implements LayoutManager2, Serializable
 	int num = parent.ncomponents;
 	// This is more efficient than calling getComponents().
 	Component[] comps = parent.component;
+
+	if (num == 1)
+	  {
+	    comps[0].setVisible(true);
+	    return;
+	  }
+
 	int choice = -1;
 
 	if (what == FIRST)

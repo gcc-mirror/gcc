@@ -1,5 +1,5 @@
 /* JSlider.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,13 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
+import java.awt.ComponentOrientation;
+import java.awt.MenuContainer;
+import java.awt.Dimension;
+import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -50,652 +54,894 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import javax.swing.plaf.SliderUI;
 
+
 /**
- * JSlider
- * @author	Andrew Selkirk
- * @version	1.0
+ * <p>
+ * The JSlider is a Swing component that allows selection of a value within a
+ * range by adjusting a thumb in a track. The values for the minimum,
+ * maximum, extent and value are stored in a {@link
+ * DefaultBoundedRangeModel}.
+ * </p>
+ * 
+ * <p>
+ * JSliders have the following properties:
+ * </p>
+ * 
+ * <table>
+ * <tr><th> Property         </td><th> Stored in </td><th> Bound? </td></tr>
+ * <tr><td> extent           </td><td> model     </td><td> no     </td></tr>
+ * <tr><td> inverted         </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> labelTable       </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> majorTickSpacing </td><td> slider    </td><td> yes    </td></tr> 
+ * <tr><td> maximum          </td><td> model     </td><td> no     </td></tr>
+ * <tr><td> minimum          </td><td> model     </td><td> no     </td></tr>
+ * <tr><td> minorTickSpacing </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> model            </td><td> slider    </td><td> yes    </td></tr> 
+ * <tr><td> orientation      </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> paintLabels      </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> paintTicks       </td><td> slider    </td><td> yes    </td></tr>
+ * <tr><td> snapToTicks      </td><td> slider    </td><td> no     </td></tr>
+ * <tr><td> value            </td><td> model     </td><td> no     </td></tr>
+ * <tr><td> valueIsAdjusting </td><td> model     </td><td> no     </td></tr>
+ * </table>
+ * 
+ * <p>
+ * The various behavioral aspects of these properties follows:
+ * </p>
+ * 
+ * <ul>
+ * <li>
+ * When non-bound properties stored in the slider change, the slider fires
+ * ChangeEvents to its ChangeListeners.
+ * </li>
+ * <li>
+ * When bound properties stored in the slider change, the slider fires
+ * PropertyChangeEvents to its PropertyChangeListeners
+ * </li>
+ * <li>
+ * If any of the model's properties change, it fires a ChangeEvent to its
+ * ChangeListeners, which include the slider.
+ * </li>
+ * <li>
+ * If the slider receives a ChangeEvent from its model, it will propagate the
+ * ChangeEvent to its ChangeListeners, with the ChangeEvent's "source"
+ * property set to refer to the slider, rather than the model.
+ * </li>
+ * </ul>
  */
-public class JSlider
-  extends JComponent
-  implements SwingConstants, Accessible
+public class JSlider extends JComponent implements SwingConstants, Accessible,
+                                                   ImageObserver,
+                                                   MenuContainer, Serializable
 {
+  /** DOCUMENT ME! */
   static final long serialVersionUID = -1441275936141218479L;
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
-
-	/**
-	 * AccessibleJSlider
-	 */
-	protected class AccessibleJSlider extends JComponent.AccessibleJComponent implements AccessibleValue {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor AccessibleJSlider
-		 * @param value0 TODO
-		 */
-		protected AccessibleJSlider(JSlider value0) {
-			super(value0);
-			// TODO
-		} // AccessibleJSlider()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getAccessibleStateSet
-		 * @returns AccessibleStateSet
-		 */
-		public AccessibleStateSet getAccessibleStateSet() {
-			return null; // TODO
-		} // getAccessibleStateSet()
-
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return null; // TODO
-		} // getAccessibleRole()
-
-		/**
-		 * getAccessibleValue
-		 * @returns AccessibleValue
-		 */
-		public AccessibleValue getAccessibleValue() {
-			return null; // TODO
-		} // getAccessibleValue()
-
-		/**
-		 * getCurrentAccessibleValue
-		 * @returns Number
-		 */
-		public Number getCurrentAccessibleValue() {
-			return null; // TODO
-		} // getCurrentAccessibleValue()
-
-		/**
-		 * setCurrentAccessibleValue
-		 * @param value0 TODO
-		 * @returns boolean
-		 */
-		public boolean setCurrentAccessibleValue(Number value0) {
-			return false; // TODO
-		} // setCurrentAccessibleValue()
-
-		/**
-		 * getMinimumAccessibleValue
-		 * @returns Number
-		 */
-		public Number getMinimumAccessibleValue() {
-			return null; // TODO
-		} // getMinimumAccessibleValue()
-
-		/**
-		 * getMaximumAccessibleValue
-		 * @returns Number
-		 */
-		public Number getMaximumAccessibleValue() {
-			return null; // TODO
-		} // getMaximumAccessibleValue()
-
-
-	} // AccessibleJSlider
-
-	/**
-	 * ModelListener
-	 */
-	private class ModelListener implements ChangeListener, Serializable {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor ModelListener
-		 * @param value0 TODO
-		 */
-		private ModelListener(JSlider value0) {
-			// TODO
-		} // ModelListener()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * stateChanged
-		 * @param value0 TODO
-		 */
-		public void stateChanged(ChangeEvent value0) {
-			// TODO
-		} // stateChanged()
-
-
-	} // ModelListener
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "SliderUI";
-
-	/**
-	 * paintTicks
-	 */
-	private boolean paintTicks;
-
-	/**
-	 * paintTrack
-	 */
-	private boolean paintTrack;
-
-	/**
-	 * paintLabels
-	 */
-	private boolean paintLabels;
-
-	/**
-	 * isInverted
-	 */
-	private boolean isInverted;
-
-	/**
-	 * sliderModel
-	 */
-	protected BoundedRangeModel sliderModel;
-
-	/**
-	 * majorTickSpacing
-	 */
-	protected int majorTickSpacing;
-
-	/**
-	 * minorTickSpacing
-	 */
-	protected int minorTickSpacing;
-
-	/**
-	 * snapToTicks
-	 */
-	protected boolean snapToTicks;
-
-	/**
-	 * snapToValue
-	 */
-	boolean snapToValue;
-
-	/**
-	 * orientation
-	 */
-	protected int orientation;
-
-	/**
-	 * labelTable
-	 */
-	private Dictionary labelTable;
-
-	/**
-	 * changeListener
-	 */
-	protected ChangeListener changeListener;
-
-	/**
-	 * changeEvent
-	 */
-	protected transient ChangeEvent changeEvent;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor JSlider
-	 */
-	public JSlider() {
-		// TODO
-	} // JSlider()
-
-	/**
-	 * Constructor JSlider
-	 * @param value0 TODO
-	 */
-	public JSlider(int orientation) {
-		// TODO
-	} // JSlider()
-
-	/**
-	 * Constructor JSlider
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 */
-	public JSlider(int minimum, int maximum) {
-		// TODO
-	} // JSlider()
-
-	/**
-	 * Constructor JSlider
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 * @param value TODO
-	 */
-	public JSlider(int minimum, int maximum, int value) {
-		// TODO
-	} // JSlider()
-
-	/**
-	 * Constructor JSlider
-	 * @param orientation TODO
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 * @param value TODO
-	 */
-	public JSlider(int orientation, int minimum, int maximum, int value) {
-		// TODO
-	} // JSlider()
-
-	/**
-	 * Constructor JSlider
-	 * @param value0 TODO
-	 */
-	public JSlider(BoundedRangeModel model) {
-		// TODO
-	} // JSlider()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * getValue
-	 * @returns int
-	 */
-	public int getValue() {
-		return 0; // TODO
-	} // getValue()
-
-	/**
-	 * setValue
-	 * @param value0 TODO
-	 */
-	public void setValue(int value) {
-		// TODO
-	} // setValue()
-
-	/**
-	 * getUI
-	 * @returns SliderUI
-	 */
-	public SliderUI getUI() {
-		return (SliderUI) ui;
-	} // getUI()
-
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(SliderUI ui) {
-		super.setUI(ui);
-	} // setUI()
-
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((SliderUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
-
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
-
-	/**
-	 * createChangeListener
-	 * @returns ChangeListener
-	 */
-	protected ChangeListener createChangeListener() {
-		return null; // TODO
-	} // createChangeListener()
-
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	public void addChangeListener(ChangeListener listener) {
-		// TODO
-	} // addChangeListener()
-
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	public void removeChangeListener(ChangeListener listener) {
-		// TODO
-	} // removeChangeListener()
-
-	/**
-	 * fireStateChanged
-	 */
-	protected void fireStateChanged() {
-		// TODO
-	} // fireStateChanged()
-
-	/**
-	 * getModel
-	 * @returns BoundedRangeModel
-	 */
-	public BoundedRangeModel getModel() {
-		return null; // TODO
-	} // getModel()
-
-	/**
-	 * setModel
-	 * @param model TODO
-	 */
-	public void setModel(BoundedRangeModel model) {
-		// TODO
-	} // setModel()
-
-	/**
-	 * getMinimum
-	 * @returns int
-	 */
-	public int getMinimum() {
-		return 0; // TODO
-	} // getMinimum()
-
-	/**
-	 * setMinimum
-	 * @param minimum TODO
-	 */
-	public void setMinimum(int minimum) {
-		// TODO
-	} // setMinimum()
-
-	/**
-	 * getMaximum
-	 * @returns int
-	 */
-	public int getMaximum() {
-		return 0; // TODO
-	} // getMaximum()
-
-	/**
-	 * setMaximum
-	 * @param maximum TODO
-	 */
-	public void setMaximum(int maximum) {
-		// TODO
-	} // setMaximum()
-
-	/**
-	 * getValueIsAdjusting
-	 * @returns boolean
-	 */
-	public boolean getValueIsAdjusting() {
-		return false; // TODO
-	} // getValueIsAdjusting()
-
-	/**
-	 * setValueIsAdjusting
-	 * @param adjusting TODO
-	 */
-	public void setValueIsAdjusting(boolean adjusting) {
-		// TODO
-	} // setValueIsAdjusting()
-
-	/**
-	 * getExtent
-	 * @returns int
-	 */
-	public int getExtent() {
-		return 0; // TODO
-	} // getExtent()
-
-	/**
-	 * setExtent
-	 * @param vextent TODO
-	 */
-	public void setExtent(int extent) {
-		// TODO
-	} // setExtent()
-
-	/**
-	 * getOrientation
-	 * @returns int
-	 */
-	public int getOrientation() {
-		return 0; // TODO
-	} // getOrientation()
-
-	/**
-	 * setOrientation
-	 * @param orientation TODO
-	 */
-	public void setOrientation(int orientation) {
-		// TODO
-	} // setOrientation()
-
-	/**
-	 * getLabelTable
-	 * @returns Dictionary
-	 */
-	public Dictionary getLabelTable() {
-		return null; // TODO
-	} // getLabelTable()
-
-	/**
-	 * setLabelTable
-	 * @param table TODO
-	 */
-	public void setLabelTable(Dictionary table) {
-		// TODO
-	} // setLabelTable()
-
-	/**
-	 * updateLabelUIs
-	 */
-	protected void updateLabelUIs() {
-		// TODO
-	} // updateLabelUIs()
-
-	/**
-	 * createStandardLabels
-	 * @param increment TODO
-	 * @returns Hashtable
-	 */
-	public Hashtable createStandardLabels(int increment) {
-		return null; // TODO
-	} // createStandardLabels()
-
-	/**
-	 * createStandardLabels
-	 * @param increment TODO
-	 * @param start TODO
-	 * @returns Hashtable
-	 */
-	public Hashtable createStandardLabels(int increment, int start) {
-		return null; // TODO
-	} // createStandardLabels()
-
-	/**
-	 * getInverted
-	 * @returns boolean
-	 */
-	public boolean getInverted() {
-		return false; // TODO
-	} // getInverted()
-
-	/**
-	 * setInverted
-	 * @param inverted TODO
-	 */
-	public void setInverted(boolean inverted) {
-		// TODO
-	} // setInverted()
-
-	/**
-	 * getMajorTickSpacing
-	 * @returns int
-	 */
-	public int getMajorTickSpacing() {
-		return 0; // TODO
-	} // getMajorTickSpacing()
-
-	/**
-	 * setMajorTickSpacing
-	 * @param spacing TODO
-	 */
-	public void setMajorTickSpacing(int spacing) {
-		// TODO
-	} // setMajorTickSpacing()
-
-	/**
-	 * getMinorTickSpacing
-	 * @returns int
-	 */
-	public int getMinorTickSpacing() {
-		return 0; // TODO
-	} // getMinorTickSpacing()
-
-	/**
-	 * setMinorTickSpacing
-	 * @param spacing TODO
-	 */
-	public void setMinorTickSpacing(int spacing) {
-		// TODO
-	} // setMinorTickSpacing()
-
-	/**
-	 * getSnapToTicks
-	 * @returns boolean
-	 */
-	public boolean getSnapToTicks() {
-		return false; // TODO
-	} // getSnapToTicks()
-
-	/**
-	 * getSnapToValue
-	 * @returns boolean
-	 */
-	boolean getSnapToValue() {
-		return false; // TODO
-	} // getSnapToValue()
-
-	/**
-	 * setSnapToTicks
-	 * @param snap TODO
-	 */
-	public void setSnapToTicks(boolean snap) {
-		// TODO
-	} // setSnapToTicks()
-
-	/**
-	 * getPaintTicks
-	 * @returns boolean
-	 */
-	public boolean getPaintTicks() {
-		return false; // TODO
-	} // getPaintTicks()
-
-	/**
-	 * setPaintTicks
-	 * @param paint TODO
-	 */
-	public void setPaintTicks(boolean paint) {
-		// TODO
-	} // setPaintTicks()
-
-	/**
-	 * getPaintTrack
-	 * @returns boolean
-	 */
-	public boolean getPaintTrack() {
-		return false; // TODO
-	} // getPaintTrack()
-
-	/**
-	 * setPaintTrack
-	 * @param paint TODO
-	 */
-	public void setPaintTrack(boolean paint) {
-		// TODO
-	} // setPaintTrack()
-
-	/**
-	 * getPaintLabels
-	 * @returns boolean
-	 */
-	public boolean getPaintLabels() {
-		return false; // TODO
-	} // getPaintLabels()
-
-	/**
-	 * setPaintLabels
-	 * @param paint TODO
-	 */
-	public void setPaintLabels(boolean paint) {
-		// TODO
-	} // setPaintLabels()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
-
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJSlider(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
-
-
-} // JSlider
+  /**
+   * DOCUMENT ME!
+   */
+  protected class AccessibleJSlider extends JComponent.AccessibleJComponent
+    implements AccessibleValue
+  {
+    /**
+     * Creates a new AccessibleJSlider object.
+     *
+     * @param value0 DOCUMENT ME!
+     */
+    protected AccessibleJSlider(JSlider value0)
+    {
+      super(value0);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AccessibleStateSet getAccessibleStateSet()
+    {
+      return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AccessibleValue getAccessibleValue()
+    {
+      return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public Number getCurrentAccessibleValue()
+    {
+      return null;
+    }
+
+    /**
+     * setCurrentAccessibleValue
+     *
+     * @param value0 TODO
+     *
+     * @return boolean
+     */
+    public boolean setCurrentAccessibleValue(Number value0)
+    {
+      return false;
+    }
+
+    /**
+     * getMinimumAccessibleValue
+     *
+     * @return Number
+     */
+    public Number getMinimumAccessibleValue()
+    {
+      return null;
+    }
+
+    /**
+     * getMaximumAccessibleValue
+     *
+     * @return Number
+     */
+    public Number getMaximumAccessibleValue()
+    {
+      return null;
+    }
+  }
+
+  /** Fired in a PropertyChangeEvent when the "inverted" property changes. */
+  public static final String INVERTED_CHANGED_PROPERTY = "inverted";
+
+  /** Fired in a PropertyChangeEvent when the "labelTable" property changes. */
+  public static final String LABEL_TABLE_CHANGED_PROPERTY = "labelTable";
+
+  /**
+   * Fired in a PropertyChangeEvent when the "majorTickSpacing" property
+   * changes.
+   */
+  public static final String MAJOR_TICK_SPACING_CHANGED_PROPERTY = "majorTickSpacing";
+
+  /**
+   * Fired in a PropertyChangeEvent when the "minorTickSpacing" property
+   * changes.
+   */
+  public static final String MINOR_TICK_SPACING_CHANGED_PROPERTY = "minorTickSpacing";
+
+  /** Fired in a PropertyChangeEvent when the "model" property changes. */
+  public static final String MODEL_CHANGED_PROPERTY = "model";
+
+  /** Fired in a PropertyChangeEvent when the "orientation" property changes. */
+  public static final String ORIENTATION_CHANGED_PROPERTY = "orientation";
+
+  /** Fired in a PropertyChangeEvent when the "paintLabels" property changes. */
+  public static final String PAINT_LABELS_CHANGED_PROPERTY = "paintLabels";
+
+  /** Fired in a PropertyChangeEvent when the "paintTicks" property changes. */
+  public static final String PAINT_TICKS_CHANGED_PROPERTY = "paintTicks";
+  
+  /** Whether or not this slider paints its ticks. */
+  private transient boolean paintTicks = false;
+
+  /** Whether or not this slider paints its track. */
+  private transient boolean paintTrack = true;
+
+  /** Whether or not this slider paints its labels. */
+  private transient boolean paintLabels = false;
+
+  /**
+   * A dictionary of (Integer, Component) pairs where each Component is a
+   * JLabel and the Integer determines where the label will be painted.
+   */
+  private transient Dictionary labelTable;
+
+  /** A list of all ChangeListeners listening to this slider. */
+  private transient EventListenerList changeListenerList;
+
+  /** The model used to describe the slider. */
+  protected BoundedRangeModel sliderModel;
+
+  /** The space between major ticks. */
+  protected int majorTickSpacing;
+
+  /** The space between minor ticks. */
+  protected int minorTickSpacing;
+
+  /** Whether the slider snaps its values to ticks. */
+  protected boolean snapToTicks = true;
+
+  /** The orientation of the slider. */
+  protected int orientation = HORIZONTAL;
+
+  /** Whether the slider is inverted. */
+  private transient boolean isInverted;
+
+  /** The ChangeListener that listens to the model. */
+  protected ChangeListener changeListener;
+
+  /** The ChangeEvent that is passed to all listeners of this slider. */
+  protected transient ChangeEvent changeEvent;
+
+  /**
+   * Creates a new horizontal JSlider object with a minimum of 0, a maximum of
+   * 100, and a value of 50.
+   */
+  public JSlider()
+  {
+    this(HORIZONTAL, 0, 100, 50);
+  }
+
+  /**
+   * Creates a new JSlider object with the given orientation and a minimum of
+   * 0, a maximum of 100, and a value of 50.
+   *
+   * @param orientation The orientation of the slider.
+   */
+  public JSlider(int orientation)
+  {
+    this(orientation, 0, 100, 50);
+  }
+
+  /**
+   * Creates a new horizontal JSlider object with the given maximum and
+   * minimum and a value that is  halfway between the minimum and the
+   * maximum.
+   *
+   * @param minimum The minimum value of the JSlider.
+   * @param maximum The maximum value of the JSlider.
+   */
+  public JSlider(int minimum, int maximum)
+  {
+    this(HORIZONTAL, minimum, maximum, (maximum - minimum) / 2);
+  }
+
+  /**
+   * Creates a new horizontal JSlider object with the given minimum, maximum,
+   * and value.
+   *
+   * @param minimum The minimum value of the JSlider.
+   * @param maximum The maximum value of the JSlider.
+   * @param value The initial value of the JSlider.
+   */
+  public JSlider(int minimum, int maximum, int value)
+  {
+    this(HORIZONTAL, minimum, maximum, value);
+  }
+
+  /**
+   * Creates a new JSlider object with the given orientation, minimum,
+   * maximum, and value.
+   *
+   * @param orientation The orientation of the JSlider.
+   * @param minimum The minimum value of the JSlider.
+   * @param maximum The maximum value of the JSlider.
+   * @param value The initial value of the JSlider.
+   */
+  public JSlider(int orientation, int minimum, int maximum, int value)
+  {
+    sliderModel = new DefaultBoundedRangeModel(value, 0, minimum, maximum);
+    if (orientation != HORIZONTAL && orientation != VERTICAL)
+      throw new IllegalArgumentException(orientation + " is not a legal orientation");
+    this.orientation = orientation;
+    changeListener = createChangeListener();
+    changeListenerList = new EventListenerList();
+    sliderModel.addChangeListener(changeListener);
+    updateUI();
+  }
+
+  /**
+   * Creates a new horizontal JSlider object with the given model.
+   *
+   * @param model The model the slider will be created with.
+   */
+  public JSlider(BoundedRangeModel model)
+  {
+    if (model == null)
+      sliderModel = new DefaultBoundedRangeModel(50, 0, 0, 100);
+    else
+      sliderModel = model;
+    changeListener = createChangeListener();
+    changeListenerList = new EventListenerList();
+    sliderModel.addChangeListener(changeListener);
+    updateUI();
+  }
+
+  /**
+   * This method returns the current value of the slider.
+   *
+   * @return The value of the slider stored in the model.
+   */
+  public int getValue()
+  {
+    return sliderModel.getValue();
+  }
+
+  /**
+   * This method sets the value of the slider.
+   *
+   * @param value The slider's new value.
+   */
+  public void setValue(int value)
+  {
+    sliderModel.setValue(value);
+  }
+
+  /**
+   * This method returns the slider's UI delegate.
+   *
+   * @return The slider's UI delegate.
+   */
+  public SliderUI getUI()
+  {
+    return (SliderUI) ui;
+  }
+
+  /**
+   * This method sets the slider's UI delegate.
+   *
+   * @param ui A SliderUI object to use with this slider.
+   */
+  public void setUI(SliderUI ui)
+  {
+    super.setUI(ui);
+  }
+
+  /**
+   * This method sets this slider's UI to the UIManager's default for the
+   * current look and feel.
+   */
+  public void updateUI()
+  {
+    setUI((SliderUI) UIManager.getUI(this));
+    invalidate();
+    repaint();
+  }
+
+  /**
+   * This method returns a name to identify which look and feel class will be
+   * the UI delegate for the slider.
+   *
+   * @return The L&F classID. "SliderUI"
+   */
+  public String getUIClassID()
+  {
+    return "SliderUI";
+  }
+
+  /**
+   * Creates a ChangeListener for this Slider.
+   *
+   * @return A new ChangeListener.
+   */
+  protected ChangeListener createChangeListener()
+  {
+    return new ChangeListener()
+      {
+	public void stateChanged(ChangeEvent ce)
+	{
+	  // No need to trigger a repaint since the UI listens to the model
+	  // as well. All we need to do is pass on the stateChanged event 
+	  // to our listeners.
+	  fireStateChanged();
+	}
+      };
+  }
+
+  /**
+   * This method registers a listener to this slider. The listener will be
+   * informed of new ChangeEvents.
+   *
+   * @param listener The listener to register.
+   */
+  public void addChangeListener(ChangeListener listener)
+  {
+    changeListenerList.add(ChangeListener.class, listener);
+  }
+
+  /**
+   * This method removes a listener from this slider.
+   *
+   * @param listener The listener to remove.
+   */
+  public void removeChangeListener(ChangeListener listener)
+  {
+    changeListenerList.remove(ChangeListener.class, listener);
+  }
+
+  /**
+   * This method is called whenever the model fires a ChangeEvent. It should
+   * propagate the ChangeEvent to its listeners with a new ChangeEvent that
+   * identifies the slider as the source.
+   */
+  protected void fireStateChanged()
+  {
+    Object[] changeListeners = changeListenerList.getListenerList();
+    if (changeEvent == null)
+      changeEvent = new ChangeEvent(this);
+    for (int i = changeListeners.length - 2; i >= 0; i -= 2)
+      {
+	if (changeListeners[i] == ChangeListener.class)
+	  ((ChangeListener) changeListeners[i + 1]).stateChanged(changeEvent);
+      }
+  }
+
+  /**
+   * This method returns an array of all ChangeListeners listening to this
+   * slider.
+   *
+   * @return An array of ChangeListeners listening to this slider.
+   */
+  public ChangeListener[] getChangeListeners()
+  {
+    return (ChangeListener[]) changeListenerList.getListenerList();
+  }
+
+  /**
+   * This method returns the model of the slider.
+   *
+   * @return The slider's model.
+   */
+  public BoundedRangeModel getModel()
+  {
+    return sliderModel;
+  }
+
+  /**
+   * This method changes the "model" property. It also needs  to unregister
+   * any listeners to the old model and register any listeners to the new
+   * model.
+   *
+   * @param model The model to use with the slider.
+   */
+  public void setModel(BoundedRangeModel model)
+  {
+    // I didn't do the null pointer check on purpose.
+    // If you try it with Sun's, it'll go ahead and set it to null
+    // and bork the next time it tries to access the model.
+    if (model != sliderModel)
+      {
+	BoundedRangeModel oldModel = sliderModel;
+	sliderModel = model;
+	oldModel.removeChangeListener(changeListener);
+	sliderModel.addChangeListener(changeListener);
+	firePropertyChange(MODEL_CHANGED_PROPERTY, oldModel, sliderModel);
+      }
+  }
+
+  /**
+   * This method returns the minimum value of the slider.
+   *
+   * @return The minimum value of the slider.
+   */
+  public int getMinimum()
+  {
+    return sliderModel.getMinimum();
+  }
+
+  /**
+   * This method sets the minimum value of the slider.
+   *
+   * @param minimum The minimum value of the slider.
+   */
+  public void setMinimum(int minimum)
+  {
+    sliderModel.setMinimum(minimum);
+  }
+
+  /**
+   * This method returns the maximum value of the slider.
+   *
+   * @return The maximum value of the slider.
+   */
+  public int getMaximum()
+  {
+    return sliderModel.getMaximum();
+  }
+
+  /**
+   * This method sets the maximum value of the slider.
+   *
+   * @param maximum The maximum value of the slider.
+   */
+  public void setMaximum(int maximum)
+  {
+    sliderModel.setMaximum(maximum);
+  }
+
+  /**
+   * This method returns this slider's isAdjusting value which is true if the
+   * thumb is being dragged.
+   *
+   * @return The slider's isAdjusting value.
+   */
+  public boolean getValueIsAdjusting()
+  {
+    return sliderModel.getValueIsAdjusting();
+  }
+
+  /**
+   * This method sets the isAdjusting value for the slider.
+   *
+   * @param adjusting The slider's isAdjusting value.
+   */
+  public void setValueIsAdjusting(boolean adjusting)
+  {
+    sliderModel.setValueIsAdjusting(adjusting);
+  }
+
+  /**
+   * This method returns the extent value for this slider.
+   *
+   * @return The extent value for this slider.
+   */
+  public int getExtent()
+  {
+    return sliderModel.getExtent();
+  }
+
+  /**
+   * This method sets the extent value for this slider.
+   *
+   * @param extent The extent value for this slider.
+   */
+  public void setExtent(int extent)
+  {
+    sliderModel.setExtent(extent);
+  }
+
+  /**
+   * This method returns the slider orientation.
+   *
+   * @return The orientation of the slider.
+   */
+  public int getOrientation()
+  {
+    return orientation;
+  }
+
+  /**
+   * This method changes the "orientation" property of this slider. If the
+   * orientation is not VERTICAL or HORIZONTAL, this method does nothing.
+   *
+   * @param orientation The orientation of this slider.
+   */
+  public void setOrientation(int orientation)
+  {
+    if (orientation != VERTICAL && orientation != HORIZONTAL)
+      throw new IllegalArgumentException("orientation must be one of: VERTICAL, HORIZONTAL");
+    if (orientation != this.orientation)
+      {
+	int oldOrientation = this.orientation;
+	this.orientation = orientation;
+	firePropertyChange(ORIENTATION_CHANGED_PROPERTY, oldOrientation,
+	                   this.orientation);
+      }
+  }
+
+  /**
+   * This method returns the label table for this slider.
+   *
+   * @return The label table for this slider.
+   */
+  public Dictionary getLabelTable()
+  {
+    return labelTable;
+  }
+
+  /**
+   * This method changes the "labelTable" property of this slider.
+   *
+   * @param table The label table for this slider.
+   */
+  public void setLabelTable(Dictionary table)
+  {
+    if (table != labelTable)
+      {
+	Dictionary oldTable = labelTable;
+	labelTable = table;
+	firePropertyChange(LABEL_TABLE_CHANGED_PROPERTY, oldTable, labelTable);
+      }
+  }
+
+  /**
+   * This method is called to reset UI delegates for the labels in the
+   * labelTable to a default for the current look and feel.
+   */
+  protected void updateLabelUIs()
+  {
+    if (labelTable == null)
+      return;
+    for (Enumeration list = labelTable.elements(); list.hasMoreElements();)
+      {
+	JLabel label = (JLabel) list.nextElement();
+	label.updateUI();
+      }
+  }
+
+  /**
+   * Creates a hashtable of (Integer, JLabel) pairs that can be used as a
+   * label table for this slider. The labels will start from the sliders
+   * minimum and increase by the increment. Each  label will have a text
+   * string indicating their integer value.
+   *
+   * @param increment The increment to between labels.
+   *
+   * @return A hashtable with the labels and their keys.
+   */
+  public Hashtable createStandardLabels(int increment)
+  {
+    return createStandardLabels(increment, sliderModel.getMinimum());
+  }
+
+  /**
+   * Creates a hashtable of (Integer, JLabel) pairs that can be used as a
+   * label table for this slider. The labels will start from the given start
+   * value and increase by the increment. Each  label will have a text string
+   * indicating their integer value.
+   *
+   * @param increment The increment to between labels.
+   * @param start The value to start from.
+   *
+   * @return A hashtable with the labels and their keys.
+   */
+  public Hashtable createStandardLabels(int increment, int start)
+  {
+    Hashtable table = new Hashtable();
+    JLabel label;
+    Dimension dim;
+
+    int max = sliderModel.getMaximum();
+
+    for (int i = start; i <= max; i += increment)
+      {
+	label = new JLabel(String.valueOf(i));
+	label.setVerticalAlignment(CENTER);
+	label.setHorizontalAlignment(CENTER);
+	
+	// Make sure these labels have the width and height
+	// they want.
+	dim = label.getPreferredSize();
+	label.setBounds(label.getX(), label.getY(),
+	                (int) dim.getWidth(),
+			(int) dim.getHeight()); 
+	table.put(new Integer(i), label);
+      }
+    return table;
+  }
+
+  /**
+   * This method returns whether the slider is inverted. Horizontal sliders
+   * that are not inverted will have the minimums on the left. If they are
+   * inverted, the minimums will be  on the right. Vertical sliders that are
+   * not inverted will have the minimums at the bottom. If they are inverted,
+   * the minimums will be at the top.
+   *
+   * @return Whether this slider is inverted.
+   */
+  public boolean getInverted()
+  {
+    return isInverted;
+  }
+
+  /**
+   * This method changes the "inverted" property for this slider.Horizontal
+   * sliders  that are not inverted will have the minimums on the left. If
+   * they are inverted, the minimums will be  on the right. Vertical sliders
+   * that are not inverted will have the minimums at the bottom. If they are
+   * inverted, the minimums will be at the top. However, if the slider's
+   * componentOrientation is set to RIGHT_TO_LEFT, then everything gets
+   * reversed again.
+   *
+   * @param inverted Whether the slider should be inverted.
+   */
+  public void setInverted(boolean inverted)
+  {
+    if (isInverted != inverted)
+      {
+	boolean oldInverted = isInverted;
+	isInverted = inverted;
+	firePropertyChange(INVERTED_CHANGED_PROPERTY, oldInverted, isInverted);
+      }
+  }
+
+  /**
+   * This method returns the amount of units between each major tick mark.
+   *
+   * @return The amount of units between each major tick mark.
+   */
+  public int getMajorTickSpacing()
+  {
+    return majorTickSpacing;
+  }
+
+  /**
+   * This method changes the "majorTickSpacing" property for this slider. The
+   * major tick spacing is the amount of units between each major tick mark.
+   *
+   * @param spacing The amount of units between each major tick mark.
+   */
+  public void setMajorTickSpacing(int spacing)
+  {
+    if (majorTickSpacing != spacing)
+      {
+	int oldSpacing = majorTickSpacing;
+	majorTickSpacing = spacing;
+	firePropertyChange(MAJOR_TICK_SPACING_CHANGED_PROPERTY, oldSpacing,
+	                   majorTickSpacing);
+      }
+  }
+
+  /**
+   * This method returns the amount of units between each minor tick mark.
+   *
+   * @return The amount of units between each minor tick mark.
+   */
+  public int getMinorTickSpacing()
+  {
+    return minorTickSpacing;
+  }
+
+  /**
+   * This method changes the "minorTickSpacing" property for this slider. The
+   * minor tick spacing is the amount of units between each minor tick mark.
+   *
+   * @param spacing The amount of units between each minor tick mark.
+   */
+  public void setMinorTickSpacing(int spacing)
+  {
+    if (minorTickSpacing != spacing)
+      {
+	int oldSpacing = minorTickSpacing;
+	minorTickSpacing = spacing;
+	firePropertyChange(MINOR_TICK_SPACING_CHANGED_PROPERTY, oldSpacing,
+	                   minorTickSpacing);
+      }
+  }
+
+  /**
+   * This method returns whether this slider is snapping to ticks.  Sliders
+   * that snap to ticks will automatically move the thumb to the nearest tick
+   * mark.
+   *
+   * @return Whether this slider snaps to ticks.
+   */
+  public boolean getSnapToTicks()
+  {
+    return snapToTicks;
+  }
+
+  /**
+   * This method sets whether this slider will snap to ticks. Sliders that
+   * snap to ticks will automatically move the thumb to the nearest tick
+   * mark.
+   *
+   * @param snap Whether this slider snaps to ticks.
+   */
+  public void setSnapToTicks(boolean snap)
+  {
+    if (snap != snapToTicks)
+      {
+	snapToTicks = snap;
+	fireStateChanged();
+      }
+  }
+
+  /**
+   * This method returns whether the slider will paint its tick marks. In
+   * addition to setting this property to true, one of minor tick spacing  or
+   * major tick spacing must be set to a value greater than 0 in order for
+   * ticks to be painted.
+   *
+   * @return Whether ticks will be painted.
+   */
+  public boolean getPaintTicks()
+  {
+    return paintTicks;
+  }
+
+  /**
+   * This method changes the "paintTicks" property for this slider. In
+   * addition to setting this property to true, one of minor tick spacing  or
+   * major tick spacing must be set to a value greater than 0 in order for
+   * ticks to be painted.
+   *
+   * @param paint Whether ticks will be painted.
+   */
+  public void setPaintTicks(boolean paint)
+  {
+    if (paint != paintTicks)
+      {
+	boolean oldPaintTicks = paintTicks;
+	paintTicks = paint;
+	firePropertyChange(PAINT_TICKS_CHANGED_PROPERTY, oldPaintTicks,
+	                   paintTicks);
+      }
+  }
+
+  /**
+   * This method returns whether the track will be painted.
+   *
+   * @return Whether the track will be painted.
+   */
+  public boolean getPaintTrack()
+  {
+    return paintTrack;
+  }
+
+  /**
+   * This method sets whether the track will be painted.
+   *
+   * @param paint Whether the track will be painted.
+   */
+  public void setPaintTrack(boolean paint)
+  {
+    paintTrack = paint;
+  }
+
+  /**
+   * This method returns whether labels will be painted.
+   *
+   * @return Whether labels will be painted.
+   */
+  public boolean getPaintLabels()
+  {
+    return paintLabels;
+  }
+
+  /**
+   * This method changes the "paintLabels" property.
+   *
+   * @param paint Whether labels will be painted.
+   */
+  public void setPaintLabels(boolean paint)
+  {
+    if (paint != paintLabels)
+      {
+	boolean oldPaintLabels = paintLabels;
+	paintLabels = paint;
+	firePropertyChange(PAINT_LABELS_CHANGED_PROPERTY, oldPaintLabels,
+	                   paintLabels);
+      }
+  }
+
+  /**
+   * This method is used primarily for debugging purposes and returns a string
+   * that can be used to represent this slider.
+   *
+   * @return A string representing this slider.
+   */
+  protected String paramString()
+  {
+    return "JSlider";
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJSlider(this);
+    return accessibleContext;
+  }
+}

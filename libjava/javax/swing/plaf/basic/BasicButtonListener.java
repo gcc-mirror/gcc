@@ -87,15 +87,12 @@ public class BasicButtonListener
   }
   public void mouseMoved(MouseEvent e)
   {
-    System.err.println("button got mouse move");
   }
   public void mouseDragged(MouseEvent e)
   {
-    System.err.println("button got mouse drag");
   }
   public void mouseClicked(MouseEvent e)
   {
-    System.err.println("button got mouse click");
   }
 
   /**

@@ -1,3 +1,581 @@
+2004-03-12  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Clipping fixes.
+	* javax/swing/JComponent.java (paint): Use persistent double buffer. 
+	* javax/swing/JList.java (ListListener): Revalidate on changes.
+	* javax/swing/JScrollPane.java: Reimplement.
+	* javax/swing/JViewport.java: Reimplement.
+	* javax/swing/ScrollPaneLayout.java: Reimplement.
+	* javax/swing/ViewportLayout.java: Tidy up.
+	* javax/swing/plaf/basic/BasicButtonListener.java: Remove printlns.
+	* javax/swing/plaf/basic/BasicScrollPaneUI.java: Reimplement.
+	* javax/swing/plaf/basic/BasicSliderUI.java: Handle missing labels.
+	* javax/swing/plaf/basic/BasicViewportUI.java: Implement in terms of
+	backing store only.
+
+2004-03-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(window_wm_protocols_filter): New function.
+	(window_focus_in_cb): Remove function.
+	(window_focus_out_cb): Likewise.
+	(window_focus_or_active_state_change_cb): New function.
+	(create): Add filter that removes WM_TAKE_FOCUS client messages.
+	(connectSignals): Don't attach handlers to focus-in-event or
+	focus-out-event signals.  Handle notify signal.
+
+2004-03-11  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
+	(gtkSetLabel): New native method declaration.
+	(setLabel): Use gtkSetLabel.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetLabel): New method.
+
+2004-03-10  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics.java (setColor): Default to
+	black when color argument is null.
+
+2004-03-10  Kim Ho  <kho@redhat.com>
+
+	* java/awt/Container.java: Remove check
+	for drag events.
+
+2004-03-10  Kim Ho  <kho@redhat.com>
+
+	* java/awt/Container.java: (visitChild):
+	Remove candidate clip. Use the component
+	clip to intersect.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java:
+	(handleEvent): Use the PaintEvent's clip.
+
+2004-03-10  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java:
+	(handleEvent): Don't set the clip for the
+	Graphics object.
+
+2004-03-09  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c: 
+	Fix double <-> fixed macros, reset font transform.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c:
+	Likewise.
+
+2004-03-09  Kim Ho  <kho@redhat.com>
+
+	* java/awt/Container.java: (visitChild): Move
+	the x and y coordinate of the component rectangle
+	to correct position.
+	(handleEvent): Forward drag events to the pressed
+	component.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java:
+	Fix comments.
+	(ArrowButtonListener::mousePressed): Stop the
+	existing timer.
+	(mouseDragged): Implement.
+	(TrackListener::mousePressed): Only react if
+	the press doesn't occur on the thumb, otherwise
+	just set the offset.
+	(TrackListener::mouseReleased): Unset the isAdjusting
+	value.
+	(createIncreaseIcon): Switch icon.
+	(createDecreaseIcon): Switch icon.
+	(calculatePreferredSize): Use width.
+	(getThumbBounds): Use the top as the lower value.
+	(layoutVScrollBar): Switch the button locations.
+	(paintIncreaseHighlight): Paint correct side of thumb.
+	(paintDecreaseHighlight): ditto.
+	(valueForYPosition): Use top as the lower value.
+	* javax/swing/plaf/basic/BasicSliderUI.java:
+	Fix comments.
+	(mouseDragged): Implement.
+	(mousePressed): Only react when the thumb isn't
+	pressed, otherwise just set offset.
+	(mouseReleased): Handle a release of the thumb.
+	(scrollDueToClickInTrack): Stop the timer first.
+	* javax/swing/JProgressBar.java:
+	(setString): Fix change condition.
+	* javax/swing/JSeparator.java:
+	Remove println's.
+
+2004-03-08  David Jee  <djee@redhat.com>
+
+	* java/awt/image/AffineTransformOp.java:
+	(filter): Use Graphics2D interface instead of directly using the
+	GdkGraphics2D peer.
+
+2004-03-05  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java
+	(handleEvent): Action events are generated upon MOUSE_RELEASED.
+	* java/awt/Container.java
+	(acquireComponentForMouseEvent): Fixed.
+	(handleEvent): Fixed.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(state_to_awt_mods_with_button_states): New method.
+	(pre_event_handler): Fixed mouse event generation.
+
+2004-03-05  Olga Rodimina  <rodimina@redhat.com>
+
+	gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(GdkGraphics2D (BufferedImage)): Initialize
+	pixmap associated with specified BufferedImage.
+	(setPaint): Changed implementation of Texture
+	Paint to use AffineTransformOp.
+	* java/awt/image/AffineTransformOp.java
+	(createCompatibleDestRaster): Throw RasterFormatException 
+	if resulting width or height of raster is 0.
+
+2004-03-04  Olga Rodimina  <rodimina@redhat.com>
+
+	* java/awt/image/AffineTransformOp.java:
+	Removed unnecessary field interpolationType.
+	Formatted some of the lines to be consistent with 
+	the GNU style.
+	(AffineTransformOp): Create new RenderingHints 
+	containing specified interpolation type.
+	(createCompatibleDestImage): Implemented.
+	(createCompatibleDestRaster): Implemented.
+	(filter): Implemented.
+	(getBounds2D(BufferedImage)): Implemented.
+	(getBounds2D(Raster)): Implemented.
+	(getInterpolationType): Get interpolation value from 
+	rendering hints.
+
+2004-03-04  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java
+	(setFont): Check if child peers are null.
+
+2004-03-04  Graydon Hoare  <graydon@redhat.com>
+
+	* testsuite/lib/libjava.exp (libjava_find_lib): Don't include
+	.libs in -L option.
+	(libjava_arguments): Add new libraries to argument list.
+
+2004-03-04  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Added lib-java-awt.la,
+	lib-javax-swing.la, lib-java-applet.la, lib-java-beans.la.
+	(misc_java_source_files): New macro.
+	(swing_java_source_files): Likewise.
+	(awt_java_source_files): Pruned.
+	(applet_java_source_files): New macro.
+	(beans_java_source_files): Likewise.
+	(lib_java_applet_la_SOURCES): Likewise.
+	(lib_java_awt_la_SOURCES): Likewise.
+	(lib_javax_swing_la_SOURCES): Likewise.
+	(lib_java_beans_la_SOURCES): Likewise.
+	(all_java_object_files): Likewise.
+	(%.lo: %.java): Use all_java_object_files.
+	(all_java_source_files): Added new _SOURCES.
+	(ordinary_java_source_files): Removed awt_java_source_files.
+
+2004-03-02  Olga Rodimina  <rodimina@redhat.com>
+
+	* Makefile.am: Added java/awt/image/AffineTransformOp.java
+	* Makefile.in: Re-generated.
+	* java/awt/image/AffineTransformOp.java: New Class.
+
+2004-03-01  Olga Rodimina  <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(setPaint): Interpret correctly TexturePaint's
+	anchor rectangle.
+	(drawImage): Fixed scale factors of the affine
+	transform.
+
+2004-02-27  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
+	(GdkGraphics(Component)): Inherit font from component.
+	(drawString): Use font style.
+	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
+	(gtkSetFont): New native method declaration.
+	(setFont): New method.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(gtkSetFont): New native method declaration.
+	(setFont): Call new native method gtkSetFont.
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java
+	(setFont): For all child components who do not their fonts set,
+        set their peers' fonts with this container's font.
+	* gnu/java/awt/peer/gtk/GtkLabelPeer.java:
+	Move all native method declarations to the top for readability.
+	(gtkSetFont): New native method declaration.
+	(setFont): New method.
+	* java/awt/Component.java
+	(setFont): Invalidate after setting the font.
+	* java/awt/Container.java
+	(invalidateTree): New method.
+	(setFont): Invalidate the container tree after setting the font.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
+	(Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString): Use font style.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkSetFont): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkSetFont): New method.
+
+2004-02-27  Olga Rodimina <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(updateBufferedImage): New helper function.
+	Updates BufferedImage in memory if it was changed.
+	(draw): changed to update BufferedImage in memory after
+	this drawing operation
+	(fill): Ditto.
+	(draw3DRect): Ditto.
+	(fill3DRect): Ditto.
+	(clearRect): Ditto.
+	(drawRaster): Ditto.
+	(drawImage) : Ditto. Update only in case of GtkOffScreenImage with 
+	no affine transformation.
+	(drawGlyphVector): Ditto.
+
+2004-02-26  Olga Rodimina <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(isBufferedImageGraphics): New Helper function. 
+	Returns true if this graphics2d can be used to draw 
+	into buffered image and false otherwise.
+	(updateImagePixels): New Helper function. 
+	Updates pixels in the BufferedImage.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
+	(getImagePixels): New function. Returns pixels
+	of the buffered image associated with 
+	this Graphics2D.
+
+2004-02-26  David Jee  <djee@redhat.com>
+
+	* java/awt/BorderLayout.java
+	(layoutContainer): Fix width and height calculations to ensure
+	that they're non-negative.
+	* java/awt/Component.java
+	(setBackground): If c is null, inherit from closest ancestor whose
+	background color is set.
+
+2004-02-26  Kim Ho  <kho@redhat.com>
+
+	* Makefile.am: Add new files.
+	* Makefile.in: Re-generate.
+	* javax/swing/JProgressBar.java: 
+	(JProgressBar(int, int int)): Throw
+	IllegalArgumentException if orientation is
+	invalid.
+	(JProgressBar(BoundedRangeModel)): Create
+	ChangeListener and register it. UpdateUI.
+	(getChangeListeners): Implement.
+	(setModel): Reset ChangeListener.
+	* javax/swing/JScrollBar.java: Implement.
+	* javax/swing/JSeparator.java: Implement.
+	* javax/swing/JSlider.java:
+	(JSlider(int, int, int, int)): Throw 
+	IllegalArgumentException if orientation
+	is invalid.
+	(getChangeListeners): Fix method name.
+	* javax/swing/SwingUtilities.java:
+	(layoutCompoundLabel): If there is no text,
+	set the text rectangle dimensions to 0.
+	* javax/swing/plaf/basic/BasicButtonUI.java:
+	(paint): If there is no text, don't paint it.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java:
+	Implement.
+	* javax/swing/plaf/basic/BasicSeparatorUI.java:
+	Implement.
+	* javax/swing/plaf/basic/BasicSliderUI.java: 
+	(propertyChange): If the model changes, change
+	the listeners accordingly.
+
+2004-02-25  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/AbstractButton.java: Add "final" qualifiers.
+	* javax/swing/JList.java: Reimplement.
+	* javax/swing/DefaultListSelectionModel.java: Reimplement.
+	* javax/swing/plaf/basic/BasicListUI.java: Reimplement.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java: Add "purple" values.
+	* javax/swing/ListModel.java: Javadoc.
+	* javax/swing/ListSelectionModel.java: Add missing methods.
+	* javax/swing/AbstractListModel.java: Javadoc and corrections.
+	* javax/swing/DefaultListModel.java: Javadoc and corrections.
+	* javax/swing/ListModel.java: Javadoc and corrections.
+	* javax/swing/DefaultListCellRenderer.java: Minor tidying.
+
+2004-02-25  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFontPeer.java
+	(GtkFontPeer): Change default size to 12.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(getFontPeer): Change default size to 12.
+	(getClasspathFontPeer): Likewise. Set default name to "Default".
+	* java/awt/Font.java
+	(Font(Map)): Call Font(String,Map).
+	(Font(String,Map)): If attrs is null, initialize it as an empty
+	HashMap, which will ensure that the Font will get default attributes.
+
+2004-02-25  David Jee  <djee@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFontPeer.java
+	(GtkFontPeer(String,int)): Call the new constructor with size 1.
+	(GtkFontPeer(String,int,int)): New constructor with size attribute.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(getFontPeer(String,int)): Call the new overload method with size 1.
+	(getFontPeer(String,int,int)): New method. Overloaded with size
+	attribute.
+	(getClasspathFontPeer): Set the size of the font.
+
+2004-02-24  Olga Rodimina  <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(bimage): New field.
+	(GdkGraphics2D): New Constructor. Constructs Graphics
+	object that can be used to draw into the Buffered Image.
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java:
+	(GdkGraphicsEnvironment): Fixed to include public 
+	keyword.
+	(createGraphics): Implemented.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(getLocalGraphicsEnvironment): Implemented.
+	* java/awt/GraphicsEnvironment.java:
+	(getLocalGraphicsEnvironment): Implemented.
+	* java/awt/image/BufferedImage.java:
+	(createGraphics): Implemented.
+		
+2004-02-24  David Jee  <djee@redhat.com>
+
+	* java/awt/Component.java
+	(eventTypeEnabled): Add MOUSE_MOVED and MOUSE_DRAGGED event types.
+	* java/awt/Container.java
+	(addNotifyContainerChildren): Fix event enabling.
+
+2004-02-23  Olga Rodimina  <rodimina@redhat.com>
+
+	* Makefile.am: Added 
+	gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
+	* Makefile.in: Re-generated.
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java:
+	New Class. 
+	
+2004-02-19  Kim Ho  <kho@redhat.com>
+
+	* Makefile.am: Add BasicProgressBarUI
+	* Makefile.in: Regenerate.
+	* javax/swing/JProgressBar.java: 
+	Re-implement.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
+	Add constants for JProgressBar.
+	* javax/swing/plaf/basic/BasicProgressBarUI.java
+	Implement.
+	* javax/swing/plaf/basic/BasicSliderUI.java
+	Change comments.
+	(calculateGeometry): New method
+	(paint): Remove unnecessary size calculations.
+
+2004-02-18  Olga Rodimina  <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+	(drawRaster): Fixed small error that caused
+	imageToUser transformation to be set incorrectly.
+	(toString): Implemented.
+
+2004-02-18  David Jee  <djee@redhat.com>
+
+	* java/awt/CardLayout.java
+	(addLayoutComponent): Show the first component added as the default.
+	(removeLayoutComponent): After removing, show the next component.
+	(gotoComponent): If there is only one component, show it and return.
+
+2004-02-18  Kim Ho  <kho@redhat.com>
+
+	* javax/swing/JSlider.java: Re-order
+	modifiers.
+	* javax/swing/JLabel.java: Re-order
+	modifiers.
+	* javax/swing/JComponent.java: 
+	(addPropertyChangeListener):
+	Implement.
+	(removePropertyChangeListener):
+	ditto.
+	(firePropertyChangeEvent):
+	ditto.
+
+2004-02-17  David Jee  <djee@redhat.com>
+
+	* java/awt/Component.java
+	(show): Dispatch ComponentEvent via system event queue.
+	(hide): Likewise.
+	(move): Likewise.
+	(resize): Likewise.
+	(reshape): Likewise.
+	* java/awt/Window.java
+	(setBoundsCallback): Likewise.
+
+2004-02-17  David Jee  <djee@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBounds):
+	Use gtk_widget_set_size_request() instead of the deprecated
+	gtk_widget_set_usize().
+
+2004-02-17  Kim Ho  <kho@redhat.com>
+
+	* javax/swing/JSlider.java: Fix comments and
+	make property strings constants.
+	(createStandardLabels): Use the labels
+	preferred size as bounds.
+	* javax/swing/plaf/basic/BasicSliderUI.java
+	Fix comments.
+	(ScrollHandler::actionPerformed): Don't
+	calculate the timer stop value. Let the
+	MouseListeners find the stop location.
+	(getPreferredHorizontalSize): Re-implement.
+	(getPreferredVerticalSize): ditto.
+	(getMinimumHorizontalSize): ditto.
+	(getMinimumVerticalSize): ditto.
+	(getPreferredSize): ditto.
+	(getMinimumSize): ditto.
+	(getMaximumSize): ditto.
+	(paintTicks): Use doubles to find the
+	tick location.
+	(paintHorizontalLabel):  Use preferredSize
+	as initial width and height.
+	(paintVerticalLabel): ditto.
+
+2004-02-17  Kim Ho  <kho@redhat.com>
+
+	* javax/swing/JLabel.java: Changed 
+	property strings to constants.
+	(DISPLAYED_MNEMONIC_INDEX_CHANGED_PROPERTY):
+	New property.
+	(setText): Change mnemonic index if
+	text is too short.
+	(setDisplayedMnemonicIndex): Fire property
+	change event.
+	(getDisplayedMnemonicIndex): Remove check
+	against short text.
+
+2004-02-17 Olga Rodimina <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
+	(drawImage(img,xform,obs)): Invert xform before
+	passing the xform to cairo.
+	(drawImage(img,x,y,bgcolor,obs)): Implemented.
+	(drawImage (img,x,y,w,h,bgcolor,obs)): Partly
+	implemented.
+	(drawImage (img,x,y,w,h,obs)): Implemented.
+	(drawImage (img,dx1,dy1,dx2,dy2,sx1,sy1,sx2,sy2,
+	bgcolor,obs)): Partly implemented.
+	(drawImage (img,dx1,dy1,dx2,dy2,sx1,sy1,sx2,sy2,obs)):
+	Implemented.
+	* java/awt/image/BufferedImage.java:
+	(copyData): if dest is null, create raster with same
+	dimensions as the current image.
+
+2004-02-16  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/plaf/basic/BasicLabelUI.java 
+	(getPreferredSize): Use layoutCL.
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java 
+	(getPreferredButtonSize): Start with empty view rect, layout using
+	component's preferred alignment.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java: Add some Label and
+	List defaults.
+
+2004-02-16  David Jee  <djee@redhat.com>
+
+	* java/awt/Component.java
+	(show): Dispatch COMPONENT_SHOWN ComponentEvent.
+	(hide): Dispatch COMPONENT_HIDDEN ComponentEvent.
+	(move): Erase old bounds and repaint new bounds. Dispatch
+	COMPONENT_MOVED ComponentEvent.
+	(resize): Erase old bounds and repaint new bounds. Dispatch
+	COMPONENT_RESIZED ComponentEvent.
+	(reshape): Dispatch COMPONENT_RESIZED and COMPONENT_MOVED
+	ComponentEvents.
+	* java/awt/Window.java
+	(setBoundsCallback): Dispatch COMPONENT_RESIZED and COMPONENT_MOVED
+	ComponentEvents.
+
+2004-02-16  Olga Rodimina  <rodimina@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java:
+	(setRenderingHint): Added implementation of 
+	Interpolation rendering hints.
+	(setRenderingHints): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c:
+	(drawPixels): fixed to allow user to choose type 
+	of filtering that should be used when displaying images.
+	(cairoSurfaceSetFilter): New method. Sets filter type for 
+	interpolation of pixel values.
+
+2004-02-16  David Jee  <djee@redhat.com>
+
+	* java/awt/GridBagLayout.java
+	(calcCellSizes): Rows or columns with zero sizes should still be
+	considered for extra space distribution.
+
+2004-02-16  Kim Ho  <kho@redhat.com>
+
+	* javax/swing/JLabel.java: Re-implement.
+	* javax/swing/plaf/basic/BasicLabelUI.java
+	Re-implement.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java:
+	Added constant.
+
+2004-02-16  Kim Ho  <kho@redhat.com>
+
+	* javax/swing/JSlider.java: Fix indentation and comments.
+	(setModel): Remove null check to conform with Sun's.
+	(setOrientation): Throw exception if not
+	HORIZONTAL or VERTICAL.
+	(getInverted): Use private variable instead of 
+	ComponentOrientation.
+	(setInverted): ditto.
+	* javax/swing/plaf/basic/BasicSliderUI.java:
+	Fix indentation and comments.
+	(propertyChange): Remove check for inverted slider, handle
+	in main paint.
+	(getMinimumSize): Return preferred size.
+	(getMaximumSize): ditto.
+	(calculateFocusRect): Don't relocate rectangle.
+	(drawInverted): Return XOR of the slider's inversion and 
+	the component's orientation.
+	(paint): Update leftToRightCache
+
+2004-02-13  David Jee  <djee@redhat.com>
+
+	* java/awt/GridBagLayout.java
+	(GetLayoutInfo): Fix weight and size distribution. Relocate repeated
+	code to helper methods.
+	(sortBySpan): New helper method.
+	(distributeSizeAndWeight): Likewise.
+	(calcCellWeights): Likewise.
+	(calcCellSizes): Add comments.
+
+2004-02-13  David Jee  <djee@redhat.com>
+
+	* java/awt/Component.java
+        (show): Only do something if component is invisible at the moment.
+        (hide): Only do something if component is visible at the moment.
+        (reshape): If lightweight, erase old bounds and repaint new bounds.
+
+2004-02-13  Kim Ho  <kho@redhat.com>
+
+	* Makefile.am: Updated for new file.
+	* Makefile.in: Regenerated.
+	* javax/swing/JSlider.java: Reimplement.
+	* javax/swing/SwingUtilities.java
+	(layoutCompoundLabel): Use icon height
+	instead of width.
+	(paintComponent): Implement.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java:
+	Add JSlider defaults.
+	* javax/swing/plaf/basic/BasicSliderUI.java:
+	Implement. New file.
+
 2004-03-17  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/PlainDatagramSocketImpl.java

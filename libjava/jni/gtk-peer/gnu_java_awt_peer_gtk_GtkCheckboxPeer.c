@@ -164,6 +164,69 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeSetCheckboxGroup
     NSA_SET_PTR (env, group, native_group);
 }
 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont
+  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
+{
+  const char *font_name;
+  void *ptr;
+  GtkWidget *button;
+  GtkWidget *label;
+  PangoFontDescription *font_desc;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  button = GTK_WIDGET (ptr);
+  label = gtk_bin_get_child (GTK_BIN(button));
+
+  if (!label)
+      return;
+
+  font_name = (*env)->GetStringUTFChars (env, name, NULL);
+
+  gdk_threads_enter();
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  if (style & AWT_STYLE_BOLD)
+    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+
+  if (style & AWT_STYLE_ITALIC)
+    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
+  
+  gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
+  
+  pango_font_description_free (font_desc);
+  
+  gdk_threads_leave();
+  
+  (*env)->ReleaseStringUTFChars (env, name, font_name);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetLabel
+  (JNIEnv *env, jobject obj, jstring label)
+{
+  const char *str;
+  void *ptr;
+  GtkWidget *label_widget;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  label_widget = gtk_bin_get_child (GTK_BIN(ptr));
+
+  str = (*env)->GetStringUTFChars (env, label, 0);
+
+  gdk_threads_enter ();
+
+  gtk_label_set_label (GTK_LABEL (label_widget), str);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseStringUTFChars (env, label, str);
+}
+
 static void
 item_toggled (GtkToggleButton *item, jobject peer)
 {

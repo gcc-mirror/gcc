@@ -91,6 +91,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetSetCursor (int type);
   native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkWidgetSetForeground (int red, int green, int blue);
+  native void gtkSetFont (String name, int style, int size);
   native void gtkWidgetQueueDrawArea(int x, int y, int width, int height);
   native void addExposeFilter();
   native void removeExposeFilter();
@@ -234,7 +235,7 @@ public class GtkComponentPeer extends GtkGenericPeer
               // Some peers like GtkFileDialogPeer are repainted by Gtk itself
               if (g == null)
                 break;
-
+		
               g.setClip (((PaintEvent)event).getUpdateRect());
 
               if (id == PaintEvent.PAINT)
@@ -403,6 +404,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     // FIXME: This should really affect the widget tree below me.
     // Currently this is only handled if the call is made directly on
     // a text widget, which implements setFont() itself.
+    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
   }
 
   public void setForeground (Color c) 

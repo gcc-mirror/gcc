@@ -1,5 +1,5 @@
-/* ViewportLayout.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* GdkGraphicsEnvironment.java -- information about the graphics environment
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,43 +35,53 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package javax.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager;
-import java.io.Serializable;
+package gnu.java.awt.peer.gtk;
 
-/**
- * ViewportLayout
- * @author	Andrew Selkirk
- * @version	1.0
- */
-public class ViewportLayout implements LayoutManager, Serializable
+import java.awt.*;
+import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferedImage;
+import java.util.Locale;
+
+
+public class GdkGraphicsEnvironment extends GraphicsEnvironment
 {
-  static final long serialVersionUID = -788225906076097229L;
+  
+  public GdkGraphicsEnvironment ()
+  {
+  	super();
+  }
 
-	public ViewportLayout() {
-	}
-	public void addLayoutComponent(String name, Component c) {
-          // ignore
-	}
-	public void removeLayoutComponent(Component c) {
-          // ignore
-	}
-	public Dimension preferredLayoutSize(Container parent) {
-          return null;
-	}
-	public Dimension minimumLayoutSize(Container parent) {
-          return null;
-	}
-	public void layoutContainer(Container parent) {
-          if (parent.countComponents() == 1)
-            {
-              // This should usually be true, but if it's not it is
-              // probably nicer if we do not panic.
-              Component c = parent.getComponent(0);
-            }
-	}
-}
+  public GraphicsDevice[] getScreenDevices ()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public GraphicsDevice getDefaultScreenDevice ()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public Graphics2D createGraphics (BufferedImage image)
+  {
+    return new GdkGraphics2D (image);
+  }
+
+  public Font[] getAllFonts ()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public String[] getAvailableFontFamilyNames ()
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public String[] getAvailableFontFamilyNames (Locale l)
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+
+} // class GdkGraphicsEnvironment
+

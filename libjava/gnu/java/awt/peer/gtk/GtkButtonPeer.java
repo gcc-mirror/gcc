@@ -42,6 +42,7 @@ import java.awt.AWTEvent;
 import java.awt.Button;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 import java.awt.peer.ButtonPeer;
@@ -69,11 +70,15 @@ public class GtkButtonPeer extends GtkComponentPeer
 
   public void handleEvent (AWTEvent e)
   {
-    if (e.getID () == MouseEvent.MOUSE_CLICKED && isEnabled ())
+    if (e.getID () == MouseEvent.MOUSE_RELEASED && isEnabled ())
       {
 	MouseEvent me = (MouseEvent) e;
+	Point p = me.getPoint();
+	p.translate(((Component) me.getSource()).getX(),
+	            ((Component) me.getSource()).getY());
 	if (!me.isConsumed ()
-	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0)
+	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
+	    && awtComponent.getBounds().contains(p))
 	  postActionEvent (((Button)awtComponent).getActionCommand (), 
 			   me.getModifiers ());
       }

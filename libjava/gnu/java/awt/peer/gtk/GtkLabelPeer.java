@@ -39,28 +39,35 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Label;
 import java.awt.peer.LabelPeer;
 
 public class GtkLabelPeer extends GtkComponentPeer
     implements LabelPeer
 {
+  native void create (String text, float alignment);
+  native void gtkSetFont(String name, int style, int size);
+  native void nativeSetAlignment (float alignment);
+
+  native public void setText (String text);
+
   void create ()
   {
     Label label = (Label) awtComponent;
     create (label.getText (), getGtkAlignment (label.getAlignment ()));
   }
 
-  native void create (String text, float alignment);
-
   public GtkLabelPeer (Label l)
   {
     super (l);
   }
 
-  native public void setText (String text);
+  public void setFont (Font f)
+  {
+    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
+  }
 
-  native void nativeSetAlignment (float alignment);
   public void setAlignment (int alignment)
   {
     nativeSetAlignment (getGtkAlignment (alignment));

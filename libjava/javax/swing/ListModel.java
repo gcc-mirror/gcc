@@ -1,4 +1,4 @@
-/* ListModel.java -- 
+/* ListModel.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,13 +36,45 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package javax.swing;
-
 import javax.swing.event.ListDataListener;
 
+/**
+ * This is an interface to general list-like data, typically used as the
+ * model object of a {@link JList} component.
+ *
+ * @author Graydon Hoare (graydon&064;redhat.com)
+ */
 public interface ListModel
-{    
+{
+  /**
+   * Return the number of data elements in the list.
+   *
+   * @return The number of data elements in the list
+   */
   int getSize();
+
+  /**
+   * Retrieves a data element at a specified index.
+   *
+   * @param index The index of the element to retrieve
+   *
+   * @return The data element at the specified index
+   */
   Object getElementAt(int index);
+
+  /**
+   * Add a listener object to this model. The listener will be called
+   * any time the set of elements in the model is changed.
+   *
+   * @param l The listener to add
+   */
   void addListDataListener(ListDataListener l);
+
+  /**
+   * Add a listener object to this model. The listener will no longer be
+   * called when the set of elements in the model is changed.
+   *
+   * @param l The listener to remove
+   */
   void removeListDataListener(ListDataListener l);
 }

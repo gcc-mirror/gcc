@@ -35,500 +35,474 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
 /**
- * DefaultListModel
- * @author	Andrew Selkirk
- * @version	1.0
+ * This is a default subclass of the {@link AbstractListModel}, used by
+ * {@link javax.swing.JList} and similar objects as the model of a list of
+ * values. The implementation is based on an underlying {@link
+ * java.util.Vector}.
+ *
+ * @author Andrew Selkirk
+ * @author Graydon Hoare (graydon&064;redhat.com)
  */
+
 public class DefaultListModel extends AbstractListModel
 {
   private static final long serialVersionUID = 2315945659722172272L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * elements.  Note: Sun obviously implemented the storage as a
-	 * Vector according to the similar API on this class.  I choose
-	 * instead to implement the model with a proper collection object.
-	 * Is this a good choice?  Probably not (ya..I know there are
-	 * sync issues by doing this)
-	 */
-	private ArrayList elements = new ArrayList();
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor DefaultListModel
-	 */
-	public DefaultListModel() {
-		// TODO
-	} // DefaultListModel()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * elementAt
-	 * @param index TODO
-	 * @returns Object
-	 */
-	public Object elementAt(int index) {
-		return elements.get(index);
-	} // elementAt()
-
-	/**
-	 * toString
-	 * @returns String
-	 */
-	public String toString() {
-		return elements.toString();
-	} // toString()
-
-	/**
-	 * indexOf
-	 * @param element TODO
-	 * @returns int
-	 */
-	public int indexOf(Object element) {
-		return elements.indexOf(element);
-	} // indexOf()
-
-	/**
-	 * indexOf
-	 * @param element TODO
-	 * @param startIndex TODO
-	 * @returns int
-	 */
-	public int indexOf(Object element, int startIndex) {
-
-		// Variables
-		int		index;
-		Object	test;
-
-		// Process Elements
-		for (index = startIndex; index < elements.size(); index++) {
-			test = elements.get(index);
-			if (test.equals(element) == true) {
-				return index;
-			} // if
-		} // for
-		return -1;
-
-	} // indexOf()
-
-	/**
-	 * lastIndexOf
-	 * @param element TODO
-	 * @returns int
-	 */
-	public int lastIndexOf(Object element) {
-		return elements.lastIndexOf(element);
-	} // lastIndexOf()
-
-	/**
-	 * lastIndexOf
-	 * @param element TODO
-	 * @param endIndex TODO
-	 * @returns int
-	 */
-	public int lastIndexOf(Object element, int endIndex) {
-
-		// Variables
-		int		index;
-		Object	test;
-
-		// Process Elements
-		for (index = endIndex; index >= 0; index--) {
-			test = elements.get(index);
-			if (test.equals(element) == true) {
-				return index;
-			} // if
-		} // for
-		return -1;
-
-	} // lastIndexOf()
-
-	/**
-	 * get
-	 * @param index TODO
-	 * @returns Object
-	 */
-	public Object get(int index) {
-		return elements.get(index);
-	} // get()
-
-	/**
-	 * set
-	 * @param index TODO
-	 * @param element TODO
-	 * @returns Object
-	 */
-	public Object set(int index, Object element) {
-
-		// Variables
-		Object	result;
-
-		// Process Action
-		result = elements.set(index, element);
-
-		// Send event
-		fireContentsChanged(this, index, index);
-
-		return result;
-
-	} // set()
-
-	/**
-	 * add
-	 * @param index TODO
-	 * @param element TODO
-	 */
-	public void add(int index, Object element) {
-
-		// Process Action
-		elements.add(index, element);
-
-		// Send event
-		fireContentsChanged(this, index, index);
-
-	} // add()
-
-	/**
-	 * addElement
-	 * @param element TODO
-	 */
-	public void addElement(Object element) {
-
-		// Process Action
-		elements.add(element);
-
-		// Send event
-		fireIntervalAdded(this, elements.size(), elements.size());
-
-	} // addElement()
-
-	/**
-	 * size
-	 * @returns int
-	 */
-	public int size() {
-		return elements.size();
-	} // size()
-
-	/**
-	 * toArray
-	 * @returns Object[]
-	 */
-	public Object[] toArray() {
-		return elements.toArray();
-	} // toArray()
-
-	/**
-	 * contains
-	 * @param element TODO
-	 * @returns boolean
-	 */
-	public boolean contains(Object element) {
-		return elements.contains(element);
-	} // contains()
-
-	/**
-	 * copyInto
-	 * @param array TODO
-	 */
-	public void copyInto(Object[] array) {
-
-		// Variables
-		int		index;
-		int		size;
-		Object[]	srcArray;
-
-		// Initialize
-		size = size();
-		srcArray = toArray();
-
-		// Process Elements
-		for (index = 0; index < size; index++) {
-			array[index] = srcArray[index];
-		} // for
-
-	} // copyInto()
-
-	/**
-	 * clear
-	 */
-	public void clear() {
-
-		// Process Action
-		elements.clear();
-
-		// Send event
-		fireIntervalRemoved(this, 0, elements.size());
-
-	} // clear()
-
-	/**
-	 * remove
-	 * @param index TODO
-	 * @returns Object
-	 */
-	public Object remove(int index) {
-
-		// Variables
-		Object	result;
-
-		// Process Action
-		result = elements.remove(index);
-
-		// Send event
-		fireIntervalRemoved(this, index, index);
-
-		return result;
-
-	} // remove()
-
-	/**
-	 * isEmpty
-	 * @returns boolean
-	 */
-	public boolean isEmpty() {
-		return elements.isEmpty();
-	} // isEmpty()
-
-	/**
-	 * elements
-	 * @returns Enumeration
-	 */
-	public Enumeration elements() {
-
-		// TODO
-		// Note: This is a pathetic implementation.  If Vector
-		// was used for storage, this wouldn't be an issue.  I'll
-		// have to implement an Enumeration inner class sometime.
-
-		// Variables
-		Vector	vector;
-
-		// Get Enumeration
-		vector = new Vector(elements);
-		return vector.elements();
-
-	} // elements()
-
-	/**
-	 * trimToSize
-	 */
-	public void trimToSize() {
-		elements.trimToSize();
-	} // trimToSize()
-
-	/**
-	 * ensureCapacity
-	 * @param size TODO
-	 */
-	public void ensureCapacity(int size) {
-		elements.ensureCapacity(size);
-	} // ensureCapacity()
-
-	/**
-	 * setSize
-	 * @param size TODO
-	 */
-	public void setSize(int size) {
-		elements.ensureCapacity(size);
-	} // setSize()
-
-	/**
-	 * capacity
-	 * @returns int
-	 */
-	public int capacity() {
-		return elements.size();
-	} // capacity()
-
-	/**
-	 * firstElement
-	 * @returns Object
-	 */
-	public Object firstElement() {
-
-		// Variables
-		Object	element;
-
-		try {
-			element = elements.get(0);
-			return element;
-		} catch (IndexOutOfBoundsException e) {
-			throw new NoSuchElementException();
-		} // try
-
-	} // firstElement()
-
-	/**
-	 * lastElement
-	 * @returns Object
-	 */
-	public Object lastElement() {
-
-		// Variables
-		Object	element;
-
-		try {
-			element = elements.get(elements.size() - 1);
-			return element;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new NoSuchElementException();
-		} // try
-
-	} // lastElement()
-
-	/**
-	 * setElementAt
-	 * @param element TODO
-	 * @param index TODO
-	 */
-	public void setElementAt(Object element, int index) {
-
-		// Process Action
-		elements.set(index, element);
-
-		// Send event
-		fireContentsChanged(this, index, index);
-
-	} // setElementAt()
-
-	/**
-	 * removeElementAt
-	 * @param index TODO
-	 */
-	public void removeElementAt(int index) {
-
-		// Process Action
-		elements.remove(index);
-
-		// Send event
-		fireIntervalRemoved(this, index, index);
-
-	} // removeElementAt()
-
-	/**
-	 * insertElementAt
-	 * @param element TODO
-	 * @param index TODO
-	 */
-	public void insertElementAt(Object element, int index) {
-
-		// Process Action
-		elements.add(index, element);
-
-		// Send event
-		fireIntervalRemoved(this, index, index);
-
-	} // insertElementAt()
-
-	/**
-	 * removeElement
-	 * @param element TODO
-	 * @returns boolean
-	 */
-	public boolean removeElement(Object element) {
-
-		// Variables
-		int		index;
-
-		index = elements.indexOf(element);
-		if (index != -1) {
-			elements.remove(index);
-
-			// Send event
-			fireIntervalRemoved(this, index, index);
-
-			return true;
-
-		} // if
-
-		return false;
-
-	} // removeElement()
-
-	/**
-	 * removeAllElements
-	 */
-	public void removeAllElements() {
-
-		// Variables
-		int		size;
-
-		size = size();
-
-		if (size > 0) {
-
-			// Process Action
-			elements.clear();
-
-			// Send event
-			fireIntervalRemoved(this, 0, size - 1);
-
-		} // if
-
-	} // removeAllElements()
-
-	/**
-	 * removeRange
-	 * @param startIndex TODO
-	 * @param endIndex TODO
-	 */
-	public void removeRange(int startIndex, int endIndex) {
-
-		// Variables
-		int		index;
-
-		// Check Indices
-		if (startIndex > endIndex) {
-			throw new IllegalArgumentException();
-		} // if
-
-		// Process Elements
-		for (index = endIndex; index >= startIndex; index--) {
-			elements.remove(index);
-		} // for
-
-		// Send event
-		fireIntervalRemoved(this, startIndex, endIndex);
-
-	} // removeRange()
-
-	/**
-	 * getSize
-	 * @returns int
-	 */
-	public int getSize() {
-		return elements.size();
-	} // getSize()
-
-	/**
-	 * getElementAt
-	 * @param index TODO
-	 * @returns Object
-	 */
-	public Object getElementAt(int index) {
-		return elements.get(index);
-	} // getElementAt()
-
-
-} // DefaultListModel
+  /**
+   * The vector of elements in this list model.
+   */
+  private Vector elements = new Vector();
+
+  /**
+   * Gets an element of the list at the provided index.
+   *
+   * @param index The index of the element to get
+   *
+   * @return The object at the given index
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public Object elementAt(int index)
+  {
+    return elements.elementAt(index);
+  }
+
+  /**
+   * Convert the list to a string representation.
+   *
+   * @return A string representation of the list
+   */
+  public String toString()
+  {
+    return elements.toString();
+  }
+
+  /**
+   * Gets the first index of a particular element in the list.
+   *
+   * @param element The element to search for
+   *
+   * @return The first index in the list at which an object
+   * <code>obj</code> exists such that <code>obj.equals(element)</code> is
+   * <code>true</code>; if no such object exists, the method returns
+   * <code>-1</code>
+   */
+  public int indexOf(Object element)
+  {
+    return elements.indexOf(element);
+  }
+
+  /**
+   * Gets the first index of a particular element in a list which occurs
+   * <em>at or after</em> a particular index.
+   *
+   * @param element The element to search for
+   * @param startIndex The index to begin searching at
+   *
+   * @return The first index in the list, greater than or equal to
+   * <code>startIndex</code>, at which an object <code>obj</code> exists
+   * such that <code>obj.equals(element)</code> is <code>true</code>; if no
+   * such object exists, the method returns <code>-1</code>
+   */
+  public int indexOf(Object element, int startIndex)
+  {
+    return elements.indexOf(element, startIndex);
+  }
+
+  /**
+   * Gets the last index of a particular element in the list.
+   *
+   * @param element The element to search for
+   *
+   * @return The last index in the list at which an object
+   * <code>obj</code> exists such that <code>obj.equals(element)</code> is
+   * <code>true</code>; if no such object exists, the method returns
+   * <code>-1</code>
+   */
+  public int lastIndexOf(Object element)
+  {
+    return elements.lastIndexOf(element);
+  }
+
+  /**
+   * Gets the last index of a particular element in a list which occurs
+   * <em>at or before</em> a particular index.
+   *
+   * @param element The element to search for
+   * @param endIndex The index to finish searching at
+   *
+   * @return The last index in the list, less than to or equal to
+   * <code>endIndexIndex</code>, at which an object <code>obj</code> exists
+   * such that <code>obj.equals(element)</code> is <code>true</code>; if no
+   * such object exists, the method returns <code>-1</code>
+   */
+  public int lastIndexOf(Object element, int endIndex)
+  {
+    return elements.lastIndexOf(element, endIndex);
+  }
+
+  /**
+   * Gets the list element at a particular index.
+   *
+   * @param index The index to get the list value at
+   *
+   * @return The list value at the provided index
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public Object get(int index)
+  {
+    return elements.get(index);
+  }
+
+  /**
+   * Sets the list element at a particular index.
+   *
+   * @param index The list index at which to set a value 
+   * @param element The value to set at the specified index
+   *
+   * @return The value previously held at the specified index
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public Object set(int index, Object element)
+  {
+    Object result;
+    result = elements.set(index, element);
+    fireContentsChanged(this, index, index);
+    return result;
+  }
+
+  /**
+   * Inserts an element at a particular index in the list. Each element at
+   * index <code>i >= index</code> is shifted to position <code>i+1</code>.
+   * If <code>index</code> is equal to <code>size()</code>, this is
+   * equivalent to appending an element to the array. Any
+   * <code>index</code> greater than <code>size()</code> is illegal.
+   *
+   * @param index The index to insert the element at
+   * @param element The element to insert at the index
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds <code>[0, size()]</code>
+   */
+  public void add(int index, Object element)
+  {
+    elements.add(index, element);
+    fireContentsChanged(this, index, index);
+  }
+
+  /**
+   * Inserts an element at the end of the list. This is equivalent to
+   * calling <code>list.add(list.size(), element)</code>.
+   *
+   * @param element The element to add to the list
+   */
+  public void addElement(Object element)
+  {
+    elements.add(element);
+    fireIntervalAdded(this, elements.size(), elements.size());
+  }
+
+  /**
+   * Gets the number of elements in the list.
+   *
+   * @return The number of elements in the list
+   */
+  public int size()
+  {
+    return elements.size();
+  }
+
+  /**
+   * Gets an array containing the elements of the list.
+   *
+   * @return An array of the objects in the list, in the order they occur
+   * in the list
+   */
+  public Object[] toArray()
+  {
+    return elements.toArray();
+  }
+
+  /**
+   * Determines whether a particular element is a member of the list.
+   *
+   * @param element The element to search for
+   *
+   * @return <code>true</code> if <code>element</code> is a member of the
+   * list, otherwise <code>false</code>
+   */
+  public boolean contains(Object element)
+  {
+    return elements.contains(element);
+  }
+
+  /**
+   * Copies the list into a provided array. The provided array must be at
+   * least as large as the list.
+   *
+   * @param array The array to copy the list into
+   * 
+   * @throws IndexOutOfBoundsException if the array is too small to hold the
+   * elements of the list
+   */
+  public void copyInto(Object[] array)
+  {
+    elements.copyInto(array);
+  }
+
+  /**
+   * Erases all the elements of the list, setting the list's size to 0.
+   */
+  public void clear()
+  {
+    elements.clear();
+    fireIntervalRemoved(this, 0, elements.size());
+  }
+
+  /**
+   * Removes the element at a particular index from the list.
+   *
+   * @param index The index of the element to remove
+   *
+   * @return The value at the index, which has been removed from the list
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public Object remove(int index)
+  {
+    Object result;
+    result = elements.remove(index);
+    fireIntervalRemoved(this, index, index);
+    return result;
+  }
+
+  /**
+   * Determines whether the list is empty.
+   *
+   * @return <code>true</code> if the list is empty, otherwise
+   * <code>false</code>
+   */
+  public boolean isEmpty()
+  {
+    return elements.isEmpty();
+  }
+
+  /**
+   * Returns an {@link java.util.Enumeration} over the elements of the list.
+   *
+   * @return A new enumeration which iterates over the list
+   */
+  public Enumeration elements()
+  {
+    return elements.elements();
+  }
+
+  /**
+   * Sets the capacity of the list to be equal to its size. The list's capacity
+   * is the number of elements it can hold before it needs to be reallocated.
+   * The list's size is the number of elements it currently holds. 
+   */
+  public void trimToSize()
+  {
+    elements.trimToSize();
+  }
+
+  /**
+   * Ensures that the list's capacity is at least equal to
+   * <code>size</code>. The list's capacity is the number of elements it
+   * can hold before it needs to be reallocated.
+   *
+   * @param size The capacity to ensure the list can hold
+   */
+  public void ensureCapacity(int size)
+  {
+    elements.ensureCapacity(size);
+  }
+
+  /**
+   * Sets the size of the list to a particular value. If the specified size
+   * is greater than the current size, the values at the excess list
+   * indices are set to <code>null</code>.  If the specified size is less
+   * than the current size, the excess elements are removed from the list.
+   *
+   * @param size The new size to set the list to
+   */
+  public void setSize(int size)
+  {
+    elements.setSize(size);
+  }
+
+  /**
+   * Gets the capacity of the list. The list's capacity is the number of
+   * elements it can hold before it needs to be reallocated. 
+   *
+   * @return The capacity of the list
+   */
+  public int capacity()
+  {
+    return elements.capacity();
+  }
+
+  /**
+   * Gets the first element in the list.
+   *
+   * @return The first element in the list
+   */
+  public Object firstElement()
+  {
+    return elements.firstElement();
+  }
+
+  /**
+   * Gets the last element in the list.
+   *
+   * @return The last element in the list
+   */
+  public Object lastElement()
+  {
+    return elements.lastElement();
+  }
+
+  /**
+   * Sets the list element at a particular index.
+   *
+   * @param element The value to set at the specified index
+   * @param index The list index at which to set a value 
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public void setElementAt(Object element, int index)
+  {
+    elements.setElementAt(element, index);
+    fireContentsChanged(this, index, index);
+  }
+
+  /**
+   * Removes the element at a particular index from the list.
+   *
+   * @param index The index of the element to remove
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public void removeElementAt(int index)
+  {
+    elements.remove(index);
+    fireIntervalRemoved(this, index, index);
+  }
+
+  /**
+   * Inserts an element at a particular index in the list. Each element at
+   * index <code>i >= index</code> is shifted to position <code>i+1</code>.
+   * If <code>index</code> is equal to <code>size()</code>, this is
+   * equivalent to appending an element to the array. Any
+   * <code>index</code> greater than <code>size()</code> is illegal.
+   *
+   * @param element The element to insert at the index
+   * @param index The index to insert the element at
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds <code>[0, size()]</code>
+   */
+  public void insertElementAt(Object element, int index)
+  {
+    elements.insertElementAt(element, index);
+    fireIntervalAdded(this, index, index);
+  }
+
+  /**
+   * Removes the first occurrence of a particular element in the list. If the
+   * element does not exist in the list, nothing happens.
+   *
+   * @param element The element to remove
+   *
+   * @return <code>true</code> if the element existed in the list (and was
+   * removed), <code>false</code> otherwise
+   */
+  public boolean removeElement(Object element)
+  {
+    int index;
+    index = elements.indexOf(element);
+    if (index != -1)
+      {
+        elements.remove(index);
+        fireIntervalRemoved(this, index, index);
+        return true;
+      }
+    return false;
+  }
+
+  /**
+   * Remove all elements in the list.
+   */
+  public void removeAllElements()
+  {
+    int size;
+    size = size();
+    if (size > 0)
+      {
+        elements.clear();
+        fireIntervalRemoved(this, 0, size - 1);
+      }
+  }
+
+  /**
+   * Remove all elements between <code>startIndex</code> and
+   * <code>endIndex</code> inclusive.
+   *
+   * @param startIndex The first index in the range to remove
+   * @param endIndex The last index in the range to remove
+   *
+   * @throws ArrayIndexOutOfBoundsException if either index is outside the
+   * valid range of indices for this list <code>[0, size())</code>
+   * @throws IllegalArgumentException if <code>startIndex > endIndex</code>
+   */
+  public void removeRange(int startIndex, int endIndex)
+  {
+    int index;
+    if (startIndex > endIndex)
+      throw new IllegalArgumentException();
+    for (index = endIndex; index >= startIndex; index--)
+      elements.remove(index);
+    fireIntervalRemoved(this, startIndex, endIndex);
+  }
+
+  /**
+   * Gets the size of the list.
+   *
+   * @return The number of elements currently in the list
+   */
+  public int getSize()
+  {
+    return elements.size();
+  }
+
+  /**
+   * Gets the list element at a particular index.
+   *
+   * @param index The index to get the list value at
+   *
+   * @return The list value at the provided index
+   *
+   * @throws ArrayIndexOutOfBoundsException If the provided index is
+   * outside the bounds of the list <code>[0, size())</code>
+   */
+  public Object getElementAt(int index)
+  {
+    return elements.get(index);
+  }
+}

@@ -40,103 +40,240 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.ImageObserver;
 import javax.accessibility.Accessible;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ViewportUI;
+
+
+/**
+ *  
+ * <pre>
+ *                                                     _
+ *   +-------------------------------+    ...........Y1 \
+ *   |  view                         |                .  \
+ *   |  (this component's child)     |                .   > VY
+ *   |                               |                .  / = Y2-Y1
+ *   |         +------------------------------+  ....Y2_/
+ *   |         | viewport            |        |       .
+ *   |         | (this component)    |        |       .
+ *   |         |                     |        |       .
+ *   |         |                     |        |       .
+ *   |         |                     |        |       .
+ *   |         |                     |        |       .
+ *   |         +------------------------------+  ....Y3
+ *   |                               |                .
+ *   |         .                     |        .       .
+ *   |         .                     |        .       .
+ *   +---------.---------------------+    ...........Y4
+ *   .         .                     .        .
+ *   .         .                     .        .
+ *   .         .                     .        .
+ *   X1.......X2.....................X3.......X4
+ *   \____  ___/
+ *        \/
+ *        VX = X2-X1
+ *</pre>
+ *  
+ * <p>A viewport is, like all swing components, located at some position in
+ * the swing component tree; that location is exactly the same as any other
+ * components: the viewport's "bounds".</p>
+ *
+ * <p>But in terms of drawing its child, the viewport thinks of itself as
+ * covering a particular position <em>of the view's coordinate space</em>.
+ * For example, the {@link javax.JViewPort.getViewPosition} method returns
+ * the position <code>(VX,VY)</code> shown above, which is an position in
+ * "view space", even though this is <em>implemented</em> by positioning
+ * the underlying child at position <code>(-VX,-VY)</code></p>
+ *
+ */
 
 public class JViewport extends JComponent
 {
-    Component c;
+  public static int BACKINGSTORE_SCROLL_MODE = 1;
+  public static int BLIT_SCROLL_MODE = 2;
+  public static int SIMPLE_SCROLL_MODE = 3;
 
-    JViewport()
-    {
-	setOpaque(true);
-	updateUI();
-    }
+  ChangeEvent changeEvent = new ChangeEvent(this);
 
-    void setView(Component c)
-    {
-	if (this.c != null)
-	    remove(c);
+  int scrollMode;
 
-	this.c = c;
+  boolean scrollUnderway;
+  boolean isViewSizeSet;
 
-	add(c);
-    }
+  /** 
+   * The width and height of the Viewport's area in terms of view
+   * coordinates.  Typically this will be the same as the width and height
+   * of the viewport's bounds, unless the viewport transforms units of
+   * width and height, which it may do, for example if it magnifies or
+   * rotates its view.
+   *
+   * @see #toViewCoordinates
+   */
+  Dimension viewExtent;
 
-    public String getUIClassID()
-    {
-	return "ViewportUI";
-    }
+  Point lastPaintPosition;
 
-    public void updateUI()
-    {
-	ViewportUI vp = (ViewportUI) UIManager.getUI(this);
-	setUI(vp);
-    }
+  JViewport()
+  {
+    setOpaque(true);
+    updateUI();
+  }
 
-    Container GetHeavy(Container parent)
-    {
-	if (parent == null)
-	    return null;
+  public Dimension getViewSize()
+  {
+    if (viewExtent == null)
+      return getPreferredSize();
+    else
+      return viewExtent;
+  }
 
-	while (isLightweightComponent(parent))
-	    {
-		Container p = parent.getParent();
+  public void setViewSize(Dimension newSize)
+  {
+    viewExtent = newSize;
+    fireStateChanged();
+  }
 
-		if (p == null)
-		    {
-			System.out.println("GetHeavy FAILED, no heavy weight component found");
-			return parent;
-		    }
-		
-		parent = p;
-	    }
-	return parent;
-    }
+  public Point getViewPosition()
+  {
+    Component view = getView();
+    if (view == null)
+      return new Point(0,0);
+    else
+      {
+        Point p = view.getLocation();
+        p.x = -p.x;
+        p.y = -p.y;
+        return p;
+      }
+  }
+
+  public void setViewPosition(Point p)
+  {
+    Component view = getView();
+    if (view != null)
+      {
+        Point q = new Point(-p.x, -p.y);
+        view.setLocation(q);
+        fireStateChanged();
+      }
+  }
+
+  public Rectangle getViewRect()
+  {
+    return new Rectangle(getViewPosition(), 
+                         getViewSize());
+  }
+
+  public boolean isBackingStoreEnabled()
+  {
+    return scrollMode == BACKINGSTORE_SCROLL_MODE;
+  }
+
+  public void setBackingStoreEnabled(boolean b)
+  {
+    if (b && scrollMode != BACKINGSTORE_SCROLL_MODE)
+      {
+        scrollMode = BACKINGSTORE_SCROLL_MODE;
+        fireStateChanged();
+      }
+  }
+
+  public void setScrollMode(int mode)
+  {
+    scrollMode = mode;
+    fireStateChanged();
+  }
+
+  public int getScrollMode()
+  {
+    return scrollMode;
+  }
+
+  public Component getView()
+  {
+    if (ncomponents > 0)
+      return component[0];
+    else
+      return null;
+  }
+
+  public void setView(Component v)
+  {
+    add(v);
+    fireStateChanged();
+  }
     
     
-    public void paint(Graphics g)
-    {
-	paintChildren(g);
+  public void addImpl(Component comp, Object constraints, int index)
+  {
+    if (ncomponents > 0)
+      remove(component[0]);
+    super.addImpl(comp, constraints, index);
+  }
 
-	System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXX   JViewport -----> paint()");
+  public final Insets getInsets() 
+  {
+    return new Insets(0,0,0,0);
+  }
 
-	Container parent = GetHeavy(getParent());
-	
-	System.out.println("parent = " + parent + ", " + getParent());
+  public final Insets getInsets(Insets insets)
+  {
+    if (insets == null)
+      return getInsets();
+    insets.top = 0;
+    insets.bottom = 0;
+    insets.left = 0;
+    insets.right = 0;
+    return insets;
+  }
+    
+  public boolean isOptimizedDrawingEnabled()
+  {
+    return false;
+  }
 
-	//parent.paint();
+  public ChangeListener[] getChangeListeners() 
+  {
+    return (ChangeListener[]) getListeners(ChangeListener.class);
+  }
 
-	Graphics wg = parent.getGraphics();
-	
-	int x = 0;
-	int y = 0;
-	int w = getWidth();
-	int h = getHeight();
+  public void paint(Graphics g)
+  {
+    paintComponent(g);
+  }
 
-	Rectangle r = new Rectangle(x, y, w, h);
+  void fireStateChanged()
+  {
+    ChangeListener[] listeners = getChangeListeners();
+    for (int i = 0; i < listeners.length; ++i)
+      listeners[i].stateChanged(changeEvent);
+  }
 
-	int ox = 0;
-	int oy = 0;
+  public void addChangeListener(ChangeListener listener)
+  {
+    listenerList.add(ChangeListener.class, listener);
+  }
 
-	wg.copyArea(r.x,
-		    r.y,
-		    r.width,
-		    r.height,
-		    ox,
-		    oy);
+  public void removeChangeListener(ChangeListener listener)
+  {
+    listenerList.remove(ChangeListener.class, listener);
+  }
 
-	wg.dispose();
-    }
+  public String getUIClassID()
+  {
+    return "ViewportUI";
+  }
+
+  public void updateUI()
+  {
+    setUI((ViewportUI) UIManager.getUI(this));
+  }            
 }
-
-
-
-
-
-
-

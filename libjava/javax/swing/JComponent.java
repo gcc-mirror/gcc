@@ -75,6 +75,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
  * Every component in swing inherits from this class (JLabel, JButton, etc).
@@ -88,21 +89,26 @@ public abstract class JComponent extends Container implements Serializable
 {
   static final long serialVersionUID = -5242478962609715464L;
 
-  protected EventListenerList listenerList = new EventListenerList();
-
-        /**
-         * accessibleContext
-         */
-        protected AccessibleContext accessibleContext;
-
-	Dimension pref,min,max;
-	Border border;
-	JToolTip tooltip;
-	String tool_tip_text;
-	boolean use_double_buffer, opaque;
-	protected ComponentUI ui;
-
-	Hashtable prop_hash;
+  EventListenerList listenerList = new EventListenerList();
+  
+  /**
+   * accessibleContext
+   */
+  AccessibleContext accessibleContext;
+  
+  Dimension pref,min,max;
+  Border border;
+  JToolTip tooltip;
+  String tool_tip_text;
+  boolean use_double_buffer, opaque;
+  Image doubleBuffer;
+  int doubleBufferWidth = -1;
+  int doubleBufferHeight = -1;
+  ComponentUI ui;
+  private SwingPropertyChangeSupport changeSupport;
+  
+  Hashtable prop_hash;
+  
 
 	/**
 	 * AccessibleJComponent
@@ -195,7 +201,7 @@ public abstract class JComponent extends Container implements Serializable
 		 * addPropertyChangeListener
 		 * @param listener TODO
 		 */
-		public void addPropertyChangeListener(PropertyChangeListener listener) {
+		public void addPropertyChangeListener(PropertyChangeListener listener) { 
 			// TODO
 		} // addPropertyChangeListener()
 
@@ -318,7 +324,8 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void removePropertyChangeListener(PropertyChangeListener listener)
   {
-    listenerList.remove(PropertyChangeListener.class, listener);
+    if (changeSupport != null)
+      changeSupport.removePropertyChangeListener(listener);
   }
 
   /**
@@ -350,7 +357,9 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void addPropertyChangeListener(PropertyChangeListener listener)
   {
-    listenerList.add(PropertyChangeListener.class, listener);
+    if (changeSupport == null)
+      changeSupport = new SwingPropertyChangeSupport(this);
+    changeSupport.addPropertyChangeListener(listener);
   }
 
   /**
@@ -404,45 +413,68 @@ public abstract class JComponent extends Container implements Serializable
 		//Returns the Component's "visible rect rectangle" - the intersection of the visible rectangles for this component and all of its ancestors.
 		//super.computeVisibleRect(rect);
 	}
+	
+        public PropertyChangeListener[] getPropertyChangeListeners(String property)
+        {
+          return changeSupport == null ? new PropertyChangeListener[0]
+                 : changeSupport.getPropertyChangeListeners(property);
+        }	
 
 	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue)
 	{
-		//Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Boolean(oldValue), 
+	                                     new Boolean(newValue));
 	}
 	public void firePropertyChange(String propertyName, byte oldValue, byte newValue)
 	{
-		//    Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Byte(oldValue), 
+	                                     new Byte(newValue));
 	}
 	public void firePropertyChange(String propertyName, char oldValue, char newValue)
 	{
-		//Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Character(oldValue), 
+	                                     new Character(newValue));
 	}
 
 	public void firePropertyChange(String propertyName, double oldValue, double newValue)
 	{
-		//Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Double(oldValue), 
+	                                     new Double(newValue));
 	}
 
 	public void firePropertyChange(String propertyName, float oldValue, float newValue)
 	{
-		//       Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Float(oldValue), 
+	                                     new Float(newValue));
 	}
 	public void firePropertyChange(String propertyName, int oldValue, int newValue)
 	{
-		//       Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Integer(oldValue), 
+	                                     new Integer(newValue));
 	}
 	public void firePropertyChange(String propertyName, long oldValue, long newValue)
 	{
-		//Reports a bound property change. protected
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Long(oldValue), 
+	                                     new Long(newValue));
 	}
 
-  protected void firePropertyChange(String propertyName, Object oldValue, Object newValue)
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue)
 	{
-		//       Support for reporting bound property changes.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, oldValue, newValue);
 	}
 	public void firePropertyChange(String propertyName, short oldValue, short newValue)
 	{
-		//       Reports a bound property change.
+          if (changeSupport != null)
+            changeSupport.firePropertyChange(propertyName, new Short(oldValue), 
+	                                     new Short(newValue));
 	}
 
 	protected  void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
@@ -757,14 +789,21 @@ public abstract class JComponent extends Container implements Serializable
 	public void paint(Graphics g)
 	{
 		Graphics g2 = g;
-		Image im = null;
 		Rectangle r = getBounds ();
-		// System.err.println(this + ".paint(...), bounds = " + r);
 		
 		if (use_double_buffer)
 		{
-                  im = createImage (r.width, r.height);
-                  g2 = im.getGraphics ();
+
+                  if (doubleBuffer == null 
+                      || doubleBufferWidth != r.width 
+                      || doubleBufferHeight != r.height)
+                    {
+                      doubleBuffer = createImage(r.width, r.height);
+                      doubleBufferWidth = r.width;
+                      doubleBufferHeight = r.height;
+                    }
+
+                  g2 = doubleBuffer.getGraphics ();
                   if (this.getBackground() != null)
                     {
                       Color save = g2.getColor();
@@ -785,7 +824,7 @@ public abstract class JComponent extends Container implements Serializable
 			// always draw at 0,0, because regardless of your current bounds,
 			// the graphics object you were passed was positioned so the origin
 			// was at the upper left corner of your bounds.
-			g.drawImage (im, 0, 0, (ImageObserver)null);
+			g.drawImage (doubleBuffer, 0, 0, (ImageObserver)null);
 		}
 	}
 

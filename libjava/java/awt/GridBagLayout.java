@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.HashMap;
 
@@ -468,8 +469,15 @@ public class GridBagLayout
       HashMap lastInRow = new HashMap();
       HashMap lastInCol = new HashMap();
 
-      // STEP 1: first we figure out how many rows/columns
       Component[] components = parent.getComponents();
+
+      // Components sorted by gridwidths/heights,
+      // smallest to largest, with REMAINDER and RELATIVE at the end.
+      // These are useful when determining sizes and weights.
+      ArrayList sortedByWidth = new ArrayList(components.length);
+      ArrayList sortedByHeight = new ArrayList(components.length);
+
+      // STEP 1: first we figure out how many rows/columns
       for (int i = 0; i < components.length; i++)
 	{
           Component component = components [i];
@@ -578,6 +586,9 @@ public class GridBagLayout
           max_y = Math.max(max_y,
                            constraints.gridy + Math.max(1, constraints.gridheight));
 
+          sortBySpan(component, constraints.gridwidth, sortedByWidth, true);
+          sortBySpan(component, constraints.gridheight, sortedByHeight, false);
+
           // Update our reference points for RELATIVE gridx and gridy.
           if(constraints.gridwidth == GridBagConstraints.REMAINDER)
 	    {
@@ -621,85 +632,6 @@ public class GridBagLayout
 	    }
 	} // end of STEP 1
 	
-      boolean[] colIsOccupied = new boolean[max_x];
-      boolean[] rowIsOccupied = new boolean[max_y];
-
-      // STEP 2: Determine which cells the components occupy.
-      for (int i = 0; i < components.length; i++)
-        {
-          Component component = components [i];
-			
-          // If component is not visible we dont have to care about it.
-          if (!component.isVisible())
-            continue;
-			
-          GridBagConstraints constraints = lookupInternalConstraints (component);
-
-          // Fix up any REMAINDER and RELATIVE cells.
-          if(constraints.gridwidth == GridBagConstraints.REMAINDER)
-            {
-              for (int y = constraints.gridy; y < constraints.gridy + Math.max(1, constraints.gridheight); y++)
-                {
-                  if (lastInRow.containsKey(new Integer(y)))
-                    {
-                      Component lastComponent = (Component) lastInRow.get(new Integer(y));
-                      GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
-
-                      if (lastConstraints.gridwidth == GridBagConstraints.RELATIVE)
-                        {
-                          constraints.gridx = max_x - 1;
-                          break;
-                        }
-                      else
-                        {
-                          constraints.gridx = Math.max (constraints.gridx,
-                                                        lastConstraints.gridx + Math.max (1, lastConstraints.gridwidth));
-                        }
-                    }
-                }
-              constraints.gridwidth = max_x - constraints.gridx;
-            }
-          else if (constraints.gridwidth == GridBagConstraints.RELATIVE)
-            {
-              constraints.gridwidth = max_x - constraints.gridx - 1;
-            }
-
-          if(constraints.gridheight == GridBagConstraints.REMAINDER)
-            {
-              for (int x = constraints.gridx; x < constraints.gridx + Math.max(1, constraints.gridwidth); x++)
-                {
-                  if (lastInCol.containsKey(new Integer(x)))
-                    {
-                      Component lastComponent = (Component) lastInRow.get(new Integer(x));
-                      GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
-
-                      if (lastConstraints.gridheight == GridBagConstraints.RELATIVE)
-                        {
-                          constraints.gridy = max_y - 1;
-                          break;
-                        }
-                      else
-                        {
-                          constraints.gridy = Math.max (constraints.gridy,
-                                                        lastConstraints.gridy + Math.max (1, lastConstraints.gridheight));
-                        }
-                    }
-                }
-              constraints.gridheight = max_y - constraints.gridy;
-            }
-          else if (constraints.gridheight == GridBagConstraints.RELATIVE)
-            {
-              constraints.gridheight = max_y - constraints.gridy - 1;
-            }
-
-          // For now, a row or a column is "occupied" iff a component
-          // both begins and ends in that row or column.
-          if (constraints.gridwidth == 1)
-            colIsOccupied[constraints.gridx] = true;
-          if (constraints.gridheight == 1)
-            rowIsOccupied[constraints.gridy] = true;
-        } // end of STEP 2
-
       GridBagLayoutInfo info = new GridBagLayoutInfo(max_x, max_y);
 
       // Check if column widths and row heights are overridden.
@@ -720,7 +652,7 @@ public class GridBagLayout
             info.rowWeights[y] = rowWeights[y];
         }
 
-      // STEP 3: Distribute the weights and min sizes among rows/columns.
+      // STEP 2: Fix up any cells with width/height as REMAINDER/RELATIVE.
       for (int i = 0; i < components.length; i++)
         {
           Component component = components [i];
@@ -728,11 +660,90 @@ public class GridBagLayout
           // If component is not visible we dont have to care about it.
           if (!component.isVisible())
             continue;
+			
+          GridBagConstraints constraints = lookupInternalConstraints (component);
+
+          if(constraints.gridwidth == GridBagConstraints.REMAINDER || constraints.gridwidth == GridBagConstraints.RELATIVE)
+            {
+              if(constraints.gridwidth == GridBagConstraints.REMAINDER)
+                {
+                  for (int y = constraints.gridy; y < constraints.gridy + Math.max(1, constraints.gridheight); y++)
+                    {
+                      if (lastInRow.containsKey(new Integer(y)))
+                        {
+                          Component lastComponent = (Component) lastInRow.get(new Integer(y));
+                          GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
+
+                          if (lastConstraints.gridwidth == GridBagConstraints.RELATIVE)
+                            {
+                              constraints.gridx = max_x - 1;
+                              break;
+                            }
+                          else
+                            {
+                              constraints.gridx = Math.max (constraints.gridx,
+                                                            lastConstraints.gridx + Math.max (1, lastConstraints.gridwidth));
+                            }
+                        }
+                    }
+                  constraints.gridwidth = max_x - constraints.gridx;
+                }
+              else if (constraints.gridwidth == GridBagConstraints.RELATIVE)
+                {
+                  constraints.gridwidth = max_x - constraints.gridx - 1;
+                }
+
+              // Re-sort
+              sortedByWidth.remove(sortedByWidth.indexOf(component));
+              sortBySpan(component, constraints.gridwidth, sortedByWidth, true);
+            }
+
+          if(constraints.gridheight == GridBagConstraints.REMAINDER || constraints.gridheight == GridBagConstraints.RELATIVE)
+            {
+              if(constraints.gridheight == GridBagConstraints.REMAINDER)
+                {
+                  for (int x = constraints.gridx; x < constraints.gridx + Math.max(1, constraints.gridwidth); x++)
+                    {
+                      if (lastInCol.containsKey(new Integer(x)))
+                        {
+                          Component lastComponent = (Component) lastInRow.get(new Integer(x));
+                          GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
+
+                          if (lastConstraints.gridheight == GridBagConstraints.RELATIVE)
+                            {
+                              constraints.gridy = max_y - 1;
+                              break;
+                            }
+                          else
+                            {
+                              constraints.gridy = Math.max (constraints.gridy,
+                                                            lastConstraints.gridy + Math.max (1, lastConstraints.gridheight));
+                            }
+                        }
+                    }
+                  constraints.gridheight = max_y - constraints.gridy;
+                }
+              else if (constraints.gridheight == GridBagConstraints.RELATIVE)
+                {
+                  constraints.gridheight = max_y - constraints.gridy - 1;
+                }
+
+              // Re-sort
+              sortedByHeight.remove(sortedByHeight.indexOf(component));
+              sortBySpan(component, constraints.gridheight, sortedByHeight, false);
+            }
+        } // end of STEP 2
+
+      // STEP 3: Determine sizes and weights for columns.
+      for (int i = 0; i < sortedByWidth.size(); i++)
+        {
+          Component component = (Component) sortedByWidth.get(i);
+			
+          // If component is not visible we dont have to care about it.
+          if (!component.isVisible())
+            continue;
 
           GridBagConstraints constraints = lookupInternalConstraints (component);
-          GridBagConstraints originalConstraints = lookupConstraints (component);
-
-          // Distribute the width.
 
           int width = (sizeflag == PREFERREDSIZE) ?
                       component.getPreferredSize().width :
@@ -743,35 +754,24 @@ public class GridBagLayout
 
           width += constraints.ipadx;
 
-          int occupiedCols = constraints.gridwidth;
-          int lastOccupiedCol = -1;
+          distributeSizeAndWeight(width,
+                                  constraints.weightx, 
+                                  constraints.gridx,
+                                  constraints.gridwidth,
+                                  info.colWidths,
+                                  info.colWeights);
+        } // end of STEP 3
 
-          for(int w = constraints.gridx; w < constraints.gridx + constraints.gridwidth; w++)
-            {
-              if(colIsOccupied[w])
-                lastOccupiedCol = w;
-              else
-                occupiedCols--;
-            }
+      // STEP 4: Determine sizes and weights for rows.
+      for (int i = 0; i < sortedByHeight.size(); i++)
+        {
+          Component component = (Component) sortedByHeight.get(i);
+			
+          // If component is not visible we dont have to care about it.
+          if (!component.isVisible())
+            continue;
 
-          // A component needs to occupy at least one column.
-          if(occupiedCols == 0)
-            {
-              colIsOccupied[constraints.gridx + constraints.gridwidth - 1] = true;
-              lastOccupiedCol = constraints.gridx + constraints.gridwidth - 1;
-            }
-
-          for(int w = constraints.gridx; w < constraints.gridx + constraints.gridwidth - 1; w++)
-            {
-              if(colIsOccupied[w])
-                width -= info.colWidths[w];
-            }
-
-          info.colWidths[lastOccupiedCol] = Math.max(info.colWidths[lastOccupiedCol], width);
-          info.colWeights[lastOccupiedCol] = Math.max(info.colWeights[lastOccupiedCol], constraints.weightx);
-
-
-          // Distribute the height.
+          GridBagConstraints constraints = lookupInternalConstraints (component);
 
           int height = (sizeflag == PREFERREDSIZE) ?
                        component.getPreferredSize().height :
@@ -782,34 +782,13 @@ public class GridBagLayout
 
           height += constraints.ipady;
 
-          int occupiedRows = constraints.gridheight;
-          int lastOccupiedRow = -1;
-
-          for(int h = constraints.gridy; h < constraints.gridy + constraints.gridheight; h++)
-            {
-              if(rowIsOccupied[h])
-                lastOccupiedRow = h;
-              else
-                occupiedRows--;
-            }
-
-          // A component needs to occupy at least one row.
-          if(occupiedRows == 0)
-            {
-              rowIsOccupied[constraints.gridy + constraints.gridheight - 1] = true;
-              lastOccupiedRow = constraints.gridy + constraints.gridheight - 1;
-            }
-
-          for(int h = constraints.gridy; h < constraints.gridy + constraints.gridheight; h++)
-            {
-              if(rowIsOccupied[h])
-                height -= info.rowHeights[h];
-            }
-
-          info.rowHeights[lastOccupiedRow] = Math.max(info.rowHeights[lastOccupiedRow], height);
-          info.rowWeights[lastOccupiedRow] = Math.max(info.rowWeights[lastOccupiedRow], constraints.weighty);
-
-        } // end of STEP 3
+          distributeSizeAndWeight(height,
+                                  constraints.weighty, 
+                                  constraints.gridy,
+                                  constraints.gridheight,
+                                  info.rowHeights,
+                                  info.rowWeights);
+        } // end of STEP 4
 
       calcCellSizes (info.colWidths, info.colWeights, parentDim.width);
       calcCellSizes (info.rowHeights, info.rowWeights, parentDim.height);
@@ -847,17 +826,155 @@ public class GridBagLayout
       return GetMinSize (parent, info);
     }
 
+    /**
+     * Helper method used by GetLayoutInfo to keep components sorted, either
+     * by gridwidth or gridheight.
+     *
+     * @param component   Component to add to the sorted list.
+     * @param span        Either the component's gridwidth or gridheight.
+     * @param list        <code>ArrayList</code> of components, sorted by
+     *                    their span.
+     * @param sortByWidth Flag indicating sorting index. If true, sort by
+     *                    width. Otherwise, sort by height.
+     * FIXME: Use a better sorting algorithm.
+     */
+    private void sortBySpan (Component component, int span, ArrayList list, boolean sortByWidth)
+    {
+      if (span == GridBagConstraints.REMAINDER
+          || span == GridBagConstraints.RELATIVE)
+        {
+          // Put all RELATIVE and REMAINDER components at the end.
+          list.add(component);
+        }
+      else
+        {
+          int i = 0;
+          if (list.size() > 0)
+            {
+              GridBagConstraints gbc = lookupInternalConstraints((Component) list.get(i));
+              int otherspan = sortByWidth ?
+                              gbc.gridwidth :
+                              gbc.gridheight;
+              while (otherspan != GridBagConstraints.REMAINDER
+                     && otherspan != GridBagConstraints.RELATIVE
+                     && span >= otherspan)
+                {
+                  i++;
+                  if (i < list.size())
+                    {
+                      gbc = lookupInternalConstraints((Component) list.get(i));
+                      otherspan = sortByWidth ?
+                                  gbc.gridwidth :
+                                  gbc.gridheight;
+                    }
+                  else
+                    break;
+                }
+            }
+          list.add(i, component);
+        }
+    }
+
+    /**
+     * Helper method used by GetLayoutInfo to distribute a component's size
+     * and weight.
+     *
+     * @param size    Preferred size of component, with inset and padding
+     *                already added.
+     * @param weight  Weight of component.
+     * @param start   Starting position of component. Either
+     *                constraints.gridx or gridy.
+     * @param span    Span of component. either contraints.gridwidth or
+     *                gridheight.
+     * @param sizes   Sizes of rows or columns.
+     * @param weights Weights of rows or columns.
+     */
+    private void distributeSizeAndWeight (int size, double weight,
+                                          int start, int span,
+                                          int[] sizes, double[] weights)
+    {
+      if (span == 1)
+        {
+          sizes[start] = Math.max(sizes[start], size);
+          weights[start] = Math.max(weights[start], weight);
+        }
+      else
+        {
+          int numOccupied = span;
+          int lastOccupied = -1;
+
+          for(int i = start; i < start + span; i++)
+            {
+              if (sizes[i] == 0.0)
+                numOccupied--;
+              else
+                {
+                  size -= sizes[i];
+                  lastOccupied = i;
+                }
+            }
+
+          // A component needs to occupy at least one row.
+          if(numOccupied == 0)
+            sizes[start + span - 1] = size;
+          else if (size > 0)
+            sizes[lastOccupied] += size;
+
+          calcCellWeights(weight, weights, start, span);
+        }
+    }
+
+    /**
+     * Helper method used by GetLayoutInfo to calculate weight distribution.
+     * @param weight  Weight of component.
+     * @param weights Weights of rows/columns.
+     * @param start   Starting position of component in grid (gridx/gridy).
+     * @param span    Span of component (gridwidth/gridheight).
+     */
+    private void calcCellWeights (double weight, double[] weights, int start, int span)
+    {
+      double totalWeight = 0.0;
+      for(int k = start; k < start + span; k++)
+        totalWeight += weights[k];
+
+      if(weight > totalWeight)
+        {
+          if (totalWeight == 0.0)
+            {
+              weights[start + span - 1] += weight;
+            }
+          else
+            {
+              double diff = weight - totalWeight ;
+              double remaining = diff;
+
+              for(int k = start; k < start + span; k++)
+                {
+                  double extraWeight = diff * weights[k] / totalWeight;
+                  weights[k] += extraWeight;
+                  remaining -= extraWeight;
+                } 
+
+              if (remaining > 0.0 && weights[start + span - 1] != 0.0)
+                {
+                  weights[start + span - 1] += remaining;
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method used by GetLayoutInfo to distribute extra space
+     * based on weight distribution.
+     *
+     * @param sizes   Sizes of rows/columns.
+     * @param weights Weights of rows/columns.
+     * @param range   Dimension of container.
+     */
     private void calcCellSizes (int[] sizes, double[] weights, int range)
     {
       int totalSize = sumIntArray (sizes);
       double totalWeight = sumDoubleArray (weights);
-
-      // Rows or columns with size 0 should not be weighted in the calculation.
-      for (int i = 0; i < weights.length; i++)
-        {
-          if (sizes[i] == 0)
-            totalWeight -= weights[i];
-        }
 
       int diff = range - totalSize;
 
@@ -866,14 +983,10 @@ public class GridBagLayout
 
       for (int i = 0; i < sizes.length; i++)
         {
-          // A row or column with zero size cannot all of a sudden gain size.
-          if (sizes[i] != 0.0)
-            {
-              int newsize = (int) (sizes[i] + (((double) diff) * weights [i] / totalWeight ));
+          int newsize = (int) (sizes[i] + (((double) diff) * weights [i] / totalWeight ));
 
-              if (newsize > 0)
-                sizes[i] = newsize;
-            }
+          if (newsize > 0)
+            sizes[i] = newsize;
         }
     }
 
