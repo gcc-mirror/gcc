@@ -1,10 +1,9 @@
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
 
-
 #define index(s,c) strchr((s),(c))
 
-extern char *xmalloc ();
+extern char *malloc ();
 
 const char * const *
 fix_argv (argv)
@@ -20,9 +19,8 @@ fix_argv (argv)
     {
 
       len = strlen (argv[i]);
-      new_argv = xmalloc (2*len+3);
+      new_argv = malloc (2*len+3);
       ap = new_argv;
-      *ap++ = '"';
 
       for (p = argv[i]; *p != '\0'; ++p)
         {
@@ -30,15 +28,14 @@ fix_argv (argv)
             *ap++ = '\\';
           *ap++ = *p;
         }
-      *ap++ = '"';
       *ap = '\0';
       argv[i] = new_argv;
     }
 
-    return (const char * const *) argv;
+  return (const char * const *) argv;
 }
 
-int spawnv (mode, cmdname, argv)
+int __spawnv (mode, cmdname, argv)
   int mode;
   const char *cmdname;
   char **argv;
@@ -46,7 +43,7 @@ int spawnv (mode, cmdname, argv)
   _spawnv (mode, cmdname, fix_argv (argv));
 }
 
-int spawnvp (mode, cmdname, argv)
+int __spawnvp (mode, cmdname, argv)
   int mode;
   const char *cmdname;
   char **argv;
@@ -63,7 +60,7 @@ int spawnve (mode, cmdname, argv, envp)
   _spawnve (mode, cmdname, fix_argv (argv), envp);
 }
 
-int spawnvpe (mode, cmdname, argv, envp)
+int __spawnvpe (mode, cmdname, argv, envp)
   int mode;
   const char *cmdname;
   char **argv;
@@ -71,3 +68,4 @@ int spawnvpe (mode, cmdname, argv, envp)
 {
   _spawnvpe (mode, cmdname, fix_argv (argv), envp);
 }
+
