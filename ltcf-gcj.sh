@@ -1,7 +1,5 @@
 #### This script is meant to be sourced by ltconfig.
 
-# $Id: ltcf-gcj.sh,v 1.1.2.5 2000/07/20 02:29:15 oliva Exp $
-
 # ltcf-gcj.sh - Create a GCJ compiler specific configuration
 #
 # Copyright (C) 1996-1999,2000 Free Software Foundation, Inc.
@@ -95,7 +93,7 @@ EOF
       allow_undefined_flag=unsupported
       # Joseph Beckenbach <jrb3@best.com> says some releases of gcc
       # support --undefined.  This deserves some investigation.  FIXME
-      archive_cmds='$CC -nostart $libobjs $deplibs $linker_flags ${wl}-soname $wl$soname -o $lib'
+      archive_cmds='$CC -nostart $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
     else
       ld_shlibs=no
     fi
@@ -196,8 +194,8 @@ EOF
 
 EOF
     elif $LD --help 2>&1 | egrep ': supported targets:.* elf' > /dev/null; then
-      archive_cmds='$CC -shared $libobjs $deplibs $linker_flags ${wl}-soname $wl$soname -o $lib'
-      archive_expsym_cmds='$CC -shared $libobjs $deplibs $linker_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
+      archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
+      archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
     else
       ld_shlibs=no
     fi
@@ -222,8 +220,8 @@ EOF
 
   if test "$ld_shlibs" = yes; then
     runpath_var=LD_RUN_PATH
-    hardcode_libdir_flag_spec="$wlarc"'--rpath '"$wlarc"'$libdir'
-    export_dynamic_flag_spec="$wlarc"'--export-dynamic'
+    hardcode_libdir_flag_spec='${wl}--rpath ${wl}$libdir'
+    export_dynamic_flag_spec='${wl}--export-dynamic'
     case $host_os in
     cygwin* | mingw*)
       # dlltool doesn't understand --whole-archive et. al.
