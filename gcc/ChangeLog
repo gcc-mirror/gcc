@@ -1,3 +1,8 @@
+2002-03-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (RTL_CHECK1, RTL_CHECK2, RTL_CHECKC1, RTL_CHECKC2,
+	RTVEC_ELT): Const-ify.
+
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* diagnostic.c: Include langhooks-def.h.
