@@ -1,3 +1,9 @@
+Mon Jul 17 08:26:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* mips.c (mips_expand_prologue): Don't calculate the last               
+	argument register unless we need it.  When we are calculating 
+	this, make sure FUNCTION_ARG is giving us a REG.                        
+
 2000-07-17  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* flow.c (libcall_dead_p): Use single_set to verify the insn
@@ -5,6 +11,7 @@
 	(propagate_one_insn): Don't pass the PATTERN of the insn.
 
 2000-07-17  Mark Klein <mklein@dis.com>
+
 
          * pa.c (emit_hpdiv_const): Update to match new pattern for udivsi3.
 
