@@ -135,15 +135,15 @@ static struct globals
 
 /* Local function prototypes.  */
 
-static void tree_insert PROTO ((struct ggc_mem *));
-static int tree_lookup PROTO ((struct ggc_mem *));
-static void clear_marks PROTO ((struct ggc_mem *));
-static void sweep_objs PROTO ((struct ggc_mem **));
-static void ggc_pop_context_1 PROTO ((struct ggc_mem *, int));
+static void tree_insert PARAMS ((struct ggc_mem *));
+static int tree_lookup PARAMS ((struct ggc_mem *));
+static void clear_marks PARAMS ((struct ggc_mem *));
+static void sweep_objs PARAMS ((struct ggc_mem **));
+static void ggc_pop_context_1 PARAMS ((struct ggc_mem *, int));
 
 #ifdef GGC_BALANCE
-extern void debug_ggc_balance PROTO ((void));
-static void tally_leaves PROTO ((struct ggc_mem *, int, size_t *, size_t *));
+extern void debug_ggc_balance PARAMS ((void));
+static void tally_leaves PARAMS ((struct ggc_mem *, int, size_t *, size_t *));
 #endif
 
 /* Insert V into the search tree.  */

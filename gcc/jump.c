@@ -107,29 +107,29 @@ int can_reach_end;
 
 static int cross_jump_death_matters = 0;
 
-static int init_label_info		PROTO((rtx));
-static void delete_barrier_successors	PROTO((rtx));
-static void mark_all_labels		PROTO((rtx, int));
-static rtx delete_unreferenced_labels	PROTO((rtx));
-static void delete_noop_moves		PROTO((rtx));
-static int calculate_can_reach_end	PROTO((rtx, int, int));
-static int duplicate_loop_exit_test	PROTO((rtx));
-static void find_cross_jump		PROTO((rtx, rtx, int, rtx *, rtx *));
-static void do_cross_jump		PROTO((rtx, rtx, rtx));
-static int jump_back_p			PROTO((rtx, rtx));
-static int tension_vector_labels	PROTO((rtx, int));
-static void mark_jump_label		PROTO((rtx, rtx, int));
-static void delete_computation		PROTO((rtx));
-static void delete_from_jump_chain	PROTO((rtx));
-static int delete_labelref_insn		PROTO((rtx, rtx, int));
-static void mark_modified_reg		PROTO((rtx, rtx, void *));
-static void redirect_tablejump		PROTO((rtx, rtx));
-static void jump_optimize_1		PROTO ((rtx, int, int, int, int));
+static int init_label_info		PARAMS ((rtx));
+static void delete_barrier_successors	PARAMS ((rtx));
+static void mark_all_labels		PARAMS ((rtx, int));
+static rtx delete_unreferenced_labels	PARAMS ((rtx));
+static void delete_noop_moves		PARAMS ((rtx));
+static int calculate_can_reach_end	PARAMS ((rtx, int, int));
+static int duplicate_loop_exit_test	PARAMS ((rtx));
+static void find_cross_jump		PARAMS ((rtx, rtx, int, rtx *, rtx *));
+static void do_cross_jump		PARAMS ((rtx, rtx, rtx));
+static int jump_back_p			PARAMS ((rtx, rtx));
+static int tension_vector_labels	PARAMS ((rtx, int));
+static void mark_jump_label		PARAMS ((rtx, rtx, int));
+static void delete_computation		PARAMS ((rtx));
+static void delete_from_jump_chain	PARAMS ((rtx));
+static int delete_labelref_insn		PARAMS ((rtx, rtx, int));
+static void mark_modified_reg		PARAMS ((rtx, rtx, void *));
+static void redirect_tablejump		PARAMS ((rtx, rtx));
+static void jump_optimize_1		PARAMS ((rtx, int, int, int, int));
 #if ! defined(HAVE_cc0) && ! defined(HAVE_conditional_arithmetic)
-static rtx find_insert_position         PROTO((rtx, rtx));
+static rtx find_insert_position         PARAMS ((rtx, rtx));
 #endif
-static int returnjump_p_1	        PROTO((rtx *, void *));
-static void delete_prior_computation    PROTO((rtx, rtx));
+static int returnjump_p_1	        PARAMS ((rtx *, void *));
+static void delete_prior_computation    PARAMS ((rtx, rtx));
 
 /* Main external entry point into the jump optimizer.  See comments before
    jump_optimize_1 for descriptions of the arguments.  */

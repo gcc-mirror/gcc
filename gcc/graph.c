@@ -37,12 +37,12 @@ static const char *graph_ext[] =
   /* vcg */      ".vcg",
 };
 
-static void start_fct PROTO ((FILE *));
-static void start_bb PROTO ((FILE *, int));
-static void node_data PROTO ((FILE *, rtx));
-static void draw_edge PROTO ((FILE *, int, int, int, int));
-static void end_fct PROTO ((FILE *));
-static void end_bb PROTO ((FILE *));
+static void start_fct PARAMS ((FILE *));
+static void start_bb PARAMS ((FILE *, int));
+static void node_data PARAMS ((FILE *, rtx));
+static void draw_edge PARAMS ((FILE *, int, int, int, int));
+static void end_fct PARAMS ((FILE *));
+static void end_bb PARAMS ((FILE *));
 
 /* Output text for new basic block.  */
 static void

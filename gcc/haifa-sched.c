@@ -464,37 +464,37 @@ static int q_size = 0;
 #define NEXT_Q_AFTER(X, C) (((X)+C) & (INSN_QUEUE_SIZE-1))
 
 /* Forward declarations.  */
-static void add_dependence PROTO ((rtx, rtx, enum reg_note));
+static void add_dependence PARAMS ((rtx, rtx, enum reg_note));
 #ifdef HAVE_cc0
-static void remove_dependence PROTO ((rtx, rtx));
+static void remove_dependence PARAMS ((rtx, rtx));
 #endif
-static rtx find_insn_list PROTO ((rtx, rtx));
-static int insn_unit PROTO ((rtx));
-static unsigned int blockage_range PROTO ((int, rtx));
-static void clear_units PROTO ((void));
-static int actual_hazard_this_instance PROTO ((int, int, rtx, int, int));
-static void schedule_unit PROTO ((int, rtx, int));
-static int actual_hazard PROTO ((int, rtx, int, int));
-static int potential_hazard PROTO ((int, rtx, int));
-static int insn_cost PROTO ((rtx, rtx, rtx));
-static int priority PROTO ((rtx));
-static void free_pending_lists PROTO ((void));
-static void add_insn_mem_dependence PROTO ((struct deps *, rtx *, rtx *, rtx,
+static rtx find_insn_list PARAMS ((rtx, rtx));
+static int insn_unit PARAMS ((rtx));
+static unsigned int blockage_range PARAMS ((int, rtx));
+static void clear_units PARAMS ((void));
+static int actual_hazard_this_instance PARAMS ((int, int, rtx, int, int));
+static void schedule_unit PARAMS ((int, rtx, int));
+static int actual_hazard PARAMS ((int, rtx, int, int));
+static int potential_hazard PARAMS ((int, rtx, int));
+static int insn_cost PARAMS ((rtx, rtx, rtx));
+static int priority PARAMS ((rtx));
+static void free_pending_lists PARAMS ((void));
+static void add_insn_mem_dependence PARAMS ((struct deps *, rtx *, rtx *, rtx,
 					    rtx));
-static void flush_pending_lists PROTO ((struct deps *, rtx, int));
-static void sched_analyze_1 PROTO ((struct deps *, rtx, rtx));
-static void sched_analyze_2 PROTO ((struct deps *, rtx, rtx));
-static void sched_analyze_insn PROTO ((struct deps *, rtx, rtx, rtx));
-static void sched_analyze PROTO ((struct deps *, rtx, rtx));
-static int rank_for_schedule PROTO ((const PTR, const PTR));
-static void swap_sort PROTO ((rtx *, int));
-static void queue_insn PROTO ((rtx, int));
-static int schedule_insn PROTO ((rtx, rtx *, int, int));
-static void find_insn_reg_weight PROTO ((int));
-static int schedule_block PROTO ((int, int));
-static char *safe_concat PROTO ((char *, char *, const char *));
-static int insn_issue_delay PROTO ((rtx));
-static void adjust_priority PROTO ((rtx));
+static void flush_pending_lists PARAMS ((struct deps *, rtx, int));
+static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
+static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
+static void sched_analyze_insn PARAMS ((struct deps *, rtx, rtx, rtx));
+static void sched_analyze PARAMS ((struct deps *, rtx, rtx));
+static int rank_for_schedule PARAMS ((const PTR, const PTR));
+static void swap_sort PARAMS ((rtx *, int));
+static void queue_insn PARAMS ((rtx, int));
+static int schedule_insn PARAMS ((rtx, rtx *, int, int));
+static void find_insn_reg_weight PARAMS ((int));
+static int schedule_block PARAMS ((int, int));
+static char *safe_concat PARAMS ((char *, char *, const char *));
+static int insn_issue_delay PARAMS ((rtx));
+static void adjust_priority PARAMS ((rtx));
 
 /* Control flow graph edges are kept in circular lists.  */
 typedef struct
@@ -525,9 +525,9 @@ static int *out_edges;
 
 
 
-static int is_cfg_nonregular PROTO ((void));
-static int build_control_flow PROTO ((struct edge_list *));
-static void new_edge PROTO ((int, int));
+static int is_cfg_nonregular PARAMS ((void));
+static int build_control_flow PARAMS ((struct edge_list *));
+static void new_edge PARAMS ((int, int));
 
 
 /* A region is the main entity for interblock scheduling: insns
@@ -563,12 +563,12 @@ static int *containing_rgn;
 #define BLOCK_TO_BB(block) (block_to_bb[block])
 #define CONTAINING_RGN(block) (containing_rgn[block])
 
-void debug_regions PROTO ((void));
-static void find_single_block_region PROTO ((void));
-static void find_rgns PROTO ((struct edge_list *, sbitmap *));
-static int too_large PROTO ((int, int *, int *));
+void debug_regions PARAMS ((void));
+static void find_single_block_region PARAMS ((void));
+static void find_rgns PARAMS ((struct edge_list *, sbitmap *));
+static int too_large PARAMS ((int, int *, int *));
 
-extern void debug_live PROTO ((int, int));
+extern void debug_live PARAMS ((int, int));
 
 /* Blocks of the current region being scheduled.  */
 static int current_nr_blocks;
@@ -593,8 +593,8 @@ static int bitlst_table_last;
 static int bitlst_table_size;
 static int *bitlst_table;
 
-static char bitset_member PROTO ((bitset, int, int));
-static void extract_bitlst PROTO ((bitset, int, int, bitlst *));
+static char bitset_member PARAMS ((bitset, int, int));
+static void extract_bitlst PARAMS ((bitset, int, int, bitlst *));
 
 /* Target info declarations.
 
@@ -635,10 +635,10 @@ static int target_bb;
 typedef bitlst edgelst;
 
 /* Target info functions.  */
-static void split_edges PROTO ((int, int, edgelst *));
-static void compute_trg_info PROTO ((int));
-void debug_candidate PROTO ((int));
-void debug_candidates PROTO ((int));
+static void split_edges PARAMS ((int, int, edgelst *));
+static void compute_trg_info PARAMS ((int));
+void debug_candidate PARAMS ((int));
+void debug_candidates PARAMS ((int));
 
 
 /* Bit-set of bbs, where bit 'i' stands for bb 'i'.  */
@@ -698,7 +698,7 @@ static edgeset *pot_split;
 /* For every bb, a set of its ancestor edges.  */
 static edgeset *ancestor_edges;
 
-static void compute_dom_prob_ps PROTO ((int));
+static void compute_dom_prob_ps PARAMS ((int));
 
 #define ABS_VALUE(x) (((x)<0)?(-(x)):(x))
 #define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (BLOCK_NUM (INSN))))
@@ -711,24 +711,24 @@ static void compute_dom_prob_ps PROTO ((int));
 #define MIN_PROB_DIFF 10
 
 /* Speculative scheduling functions.  */
-static int check_live_1 PROTO ((int, rtx));
-static void update_live_1 PROTO ((int, rtx));
-static int check_live PROTO ((rtx, int));
-static void update_live PROTO ((rtx, int));
-static void set_spec_fed PROTO ((rtx));
-static int is_pfree PROTO ((rtx, int, int));
-static int find_conditional_protection PROTO ((rtx, int));
-static int is_conditionally_protected PROTO ((rtx, int, int));
-static int may_trap_exp PROTO ((rtx, int));
-static int haifa_classify_insn PROTO ((rtx));
-static int is_prisky PROTO ((rtx, int, int));
-static int is_exception_free PROTO ((rtx, int, int));
+static int check_live_1 PARAMS ((int, rtx));
+static void update_live_1 PARAMS ((int, rtx));
+static int check_live PARAMS ((rtx, int));
+static void update_live PARAMS ((rtx, int));
+static void set_spec_fed PARAMS ((rtx));
+static int is_pfree PARAMS ((rtx, int, int));
+static int find_conditional_protection PARAMS ((rtx, int));
+static int is_conditionally_protected PARAMS ((rtx, int, int));
+static int may_trap_exp PARAMS ((rtx, int));
+static int haifa_classify_insn PARAMS ((rtx));
+static int is_prisky PARAMS ((rtx, int, int));
+static int is_exception_free PARAMS ((rtx, int, int));
 
-static char find_insn_mem_list PROTO ((rtx, rtx, rtx, rtx));
-static void compute_block_forward_dependences PROTO ((int));
-static void add_branch_dependences PROTO ((rtx, rtx));
-static void compute_block_backward_dependences PROTO ((int));
-void debug_dependencies PROTO ((void));
+static char find_insn_mem_list PARAMS ((rtx, rtx, rtx, rtx));
+static void compute_block_forward_dependences PARAMS ((int));
+static void add_branch_dependences PARAMS ((rtx, rtx));
+static void compute_block_backward_dependences PARAMS ((int));
+void debug_dependencies PARAMS ((void));
 
 /* Notes handling mechanism:
    =========================
@@ -753,41 +753,41 @@ void debug_dependencies PROTO ((void));
    unlink_other_notes ()).  After scheduling the block, these notes are
    inserted at the beginning of the block (in schedule_block()).  */
 
-static rtx unlink_other_notes PROTO ((rtx, rtx));
-static rtx unlink_line_notes PROTO ((rtx, rtx));
-static void rm_line_notes PROTO ((int));
-static void save_line_notes PROTO ((int));
-static void restore_line_notes PROTO ((int));
-static void rm_redundant_line_notes PROTO ((void));
-static void rm_other_notes PROTO ((rtx, rtx));
-static rtx reemit_notes PROTO ((rtx, rtx));
+static rtx unlink_other_notes PARAMS ((rtx, rtx));
+static rtx unlink_line_notes PARAMS ((rtx, rtx));
+static void rm_line_notes PARAMS ((int));
+static void save_line_notes PARAMS ((int));
+static void restore_line_notes PARAMS ((int));
+static void rm_redundant_line_notes PARAMS ((void));
+static void rm_other_notes PARAMS ((rtx, rtx));
+static rtx reemit_notes PARAMS ((rtx, rtx));
 
-static void get_block_head_tail PROTO ((int, rtx *, rtx *));
-static void get_bb_head_tail PROTO ((int, rtx *, rtx *));
+static void get_block_head_tail PARAMS ((int, rtx *, rtx *));
+static void get_bb_head_tail PARAMS ((int, rtx *, rtx *));
 
-static int queue_to_ready PROTO ((rtx [], int));
+static int queue_to_ready PARAMS ((rtx [], int));
 
-static void debug_ready_list PROTO ((rtx[], int));
-static void init_target_units PROTO ((void));
-static void insn_print_units PROTO ((rtx));
-static int get_visual_tbl_length PROTO ((void));
-static void init_block_visualization PROTO ((void));
-static void print_block_visualization PROTO ((int, const char *));
-static void visualize_scheduled_insns PROTO ((int, int));
-static void visualize_no_unit PROTO ((rtx));
-static void visualize_stall_cycles PROTO ((int, int));
-static void print_exp PROTO ((char *, rtx, int));
-static void print_value PROTO ((char *, rtx, int));
-static void print_pattern PROTO ((char *, rtx, int));
-static void print_insn PROTO ((char *, rtx, int));
-void debug_reg_vector PROTO ((regset));
+static void debug_ready_list PARAMS ((rtx[], int));
+static void init_target_units PARAMS ((void));
+static void insn_print_units PARAMS ((rtx));
+static int get_visual_tbl_length PARAMS ((void));
+static void init_block_visualization PARAMS ((void));
+static void print_block_visualization PARAMS ((int, const char *));
+static void visualize_scheduled_insns PARAMS ((int, int));
+static void visualize_no_unit PARAMS ((rtx));
+static void visualize_stall_cycles PARAMS ((int, int));
+static void print_exp PARAMS ((char *, rtx, int));
+static void print_value PARAMS ((char *, rtx, int));
+static void print_pattern PARAMS ((char *, rtx, int));
+static void print_insn PARAMS ((char *, rtx, int));
+void debug_reg_vector PARAMS ((regset));
 
-static rtx move_insn1 PROTO ((rtx, rtx));
-static rtx move_insn PROTO ((rtx, rtx));
-static rtx group_leader PROTO ((rtx));
-static int set_priorities PROTO ((int));
-static void init_deps PROTO ((struct deps *));
-static void schedule_region PROTO ((int));
+static rtx move_insn1 PARAMS ((rtx, rtx));
+static rtx move_insn PARAMS ((rtx, rtx));
+static rtx group_leader PARAMS ((rtx));
+static int set_priorities PARAMS ((int));
+static void init_deps PARAMS ((struct deps *));
+static void schedule_region PARAMS ((int));
 
 #endif /* INSN_SCHEDULING */
 

@@ -39,12 +39,12 @@ int (*ptr_half_pic_address_p) ();	/* ptr to half_pic_address_p () */
 
 extern int  half_pic_number_ptrs;				/* # distinct pointers found */
 extern int  half_pic_number_refs;				/* # half-pic references */
-extern void half_pic_encode PROTO((union tree_node *));		/* encode whether half-pic */
-extern void half_pic_declare PROTO((char *));			/* declare object local */
-extern void half_pic_external PROTO((char *));			/* declare object external */
-extern void half_pic_init PROTO((void));			/* half_pic initialization */
-extern int  half_pic_address_p PROTO((struct rtx_def *));	/* true if an address is half-pic */
-extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for half-pic pointer */
+extern void half_pic_encode PARAMS ((union tree_node *));		/* encode whether half-pic */
+extern void half_pic_declare PARAMS ((char *));			/* declare object local */
+extern void half_pic_external PARAMS ((char *));			/* declare object external */
+extern void half_pic_init PARAMS ((void));			/* half_pic initialization */
+extern int  half_pic_address_p PARAMS ((struct rtx_def *));	/* true if an address is half-pic */
+extern struct rtx_def *half_pic_ptr PARAMS ((struct rtx_def *));	/* return RTX for half-pic pointer */
 /* Can't use prototype since FILE isn't defined yet.  */
 extern void half_pic_finish (/* FILE * */);		/* half_pic termination */
 

@@ -266,22 +266,22 @@ static struct globals
 #define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
 
-static int ggc_allocated_p PROTO ((const void *));
-static page_entry *lookup_page_table_entry PROTO ((const void *));
-static void set_page_table_entry PROTO ((void *, page_entry *));
-static char *alloc_anon PROTO ((char *, size_t));
-static struct page_entry * alloc_page PROTO ((unsigned));
-static void free_page PROTO ((struct page_entry *));
-static void release_pages PROTO ((void));
-static void clear_marks PROTO ((void));
-static void sweep_pages PROTO ((void));
-static void ggc_recalculate_in_use_p PROTO ((page_entry *));
+static int ggc_allocated_p PARAMS ((const void *));
+static page_entry *lookup_page_table_entry PARAMS ((const void *));
+static void set_page_table_entry PARAMS ((void *, page_entry *));
+static char *alloc_anon PARAMS ((char *, size_t));
+static struct page_entry * alloc_page PARAMS ((unsigned));
+static void free_page PARAMS ((struct page_entry *));
+static void release_pages PARAMS ((void));
+static void clear_marks PARAMS ((void));
+static void sweep_pages PARAMS ((void));
+static void ggc_recalculate_in_use_p PARAMS ((page_entry *));
 
 #ifdef GGC_POISON
-static void poison_pages PROTO ((void));
+static void poison_pages PARAMS ((void));
 #endif
 
-void debug_print_page_list PROTO ((int));
+void debug_print_page_list PARAMS ((int));
 
 /* Returns non-zero if P was allocated in GC'able memory.  */
 

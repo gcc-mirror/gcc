@@ -287,25 +287,25 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare	PROTO((const PTR, const PTR));
-static void global_conflicts	PROTO((void));
-static void mirror_conflicts	PROTO((void));
-static void expand_preferences	PROTO((void));
-static void prune_preferences	PROTO((void));
-static void find_reg		PROTO((int, HARD_REG_SET, int, int, int));
-static void record_one_conflict PROTO((int));
-static void record_conflicts	PROTO((int *, int));
-static void mark_reg_store	PROTO((rtx, rtx, void *));
-static void mark_reg_clobber	PROTO((rtx, rtx, void *));
-static void mark_reg_conflicts	PROTO((rtx));
-static void mark_reg_death	PROTO((rtx));
-static void mark_reg_live_nc	PROTO((int, enum machine_mode));
-static void set_preference	PROTO((rtx, rtx));
-static void dump_conflicts	PROTO((FILE *));
-static void reg_becomes_live	PROTO((rtx, rtx, void *));
-static void reg_dies		PROTO((int, enum machine_mode,
+static int allocno_compare	PARAMS ((const PTR, const PTR));
+static void global_conflicts	PARAMS ((void));
+static void mirror_conflicts	PARAMS ((void));
+static void expand_preferences	PARAMS ((void));
+static void prune_preferences	PARAMS ((void));
+static void find_reg		PARAMS ((int, HARD_REG_SET, int, int, int));
+static void record_one_conflict PARAMS ((int));
+static void record_conflicts	PARAMS ((int *, int));
+static void mark_reg_store	PARAMS ((rtx, rtx, void *));
+static void mark_reg_clobber	PARAMS ((rtx, rtx, void *));
+static void mark_reg_conflicts	PARAMS ((rtx));
+static void mark_reg_death	PARAMS ((rtx));
+static void mark_reg_live_nc	PARAMS ((int, enum machine_mode));
+static void set_preference	PARAMS ((rtx, rtx));
+static void dump_conflicts	PARAMS ((FILE *));
+static void reg_becomes_live	PARAMS ((rtx, rtx, void *));
+static void reg_dies		PARAMS ((int, enum machine_mode,
 				       struct insn_chain *));
-static void build_insn_chain	PROTO((rtx));
+static void build_insn_chain	PARAMS ((rtx));
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,

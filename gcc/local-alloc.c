@@ -250,31 +250,31 @@ static rtx *reg_equiv_init_insns;
 /* Nonzero if we recorded an equivalence for a LABEL_REF.  */
 static int recorded_label_ref;
 
-static void alloc_qty		PROTO((int, enum machine_mode, int, int));
-static void validate_equiv_mem_from_store PROTO((rtx, rtx, void *));
-static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
-static int contains_replace_regs PROTO((rtx, char *));
-static int memref_referenced_p	PROTO((rtx, rtx));
-static int memref_used_between_p PROTO((rtx, rtx, rtx));
-static void update_equiv_regs	PROTO((void));
-static void no_equiv		PROTO((rtx, rtx, void *));
-static void block_alloc		PROTO((int));
-static int qty_sugg_compare    	PROTO((int, int));
-static int qty_sugg_compare_1	PROTO((const PTR, const PTR));
-static int qty_compare    	PROTO((int, int));
-static int qty_compare_1	PROTO((const PTR, const PTR));
-static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
-static int reg_meets_class_p	PROTO((int, enum reg_class));
-static void update_qty_class	PROTO((int, int));
-static void reg_is_set		PROTO((rtx, rtx, void *));
-static void reg_is_born		PROTO((rtx, int));
-static void wipe_dead_reg	PROTO((rtx, int));
-static int find_free_reg	PROTO((enum reg_class, enum machine_mode,
+static void alloc_qty		PARAMS ((int, enum machine_mode, int, int));
+static void validate_equiv_mem_from_store PARAMS ((rtx, rtx, void *));
+static int validate_equiv_mem	PARAMS ((rtx, rtx, rtx));
+static int contains_replace_regs PARAMS ((rtx, char *));
+static int memref_referenced_p	PARAMS ((rtx, rtx));
+static int memref_used_between_p PARAMS ((rtx, rtx, rtx));
+static void update_equiv_regs	PARAMS ((void));
+static void no_equiv		PARAMS ((rtx, rtx, void *));
+static void block_alloc		PARAMS ((int));
+static int qty_sugg_compare    	PARAMS ((int, int));
+static int qty_sugg_compare_1	PARAMS ((const PTR, const PTR));
+static int qty_compare    	PARAMS ((int, int));
+static int qty_compare_1	PARAMS ((const PTR, const PTR));
+static int combine_regs		PARAMS ((rtx, rtx, int, int, rtx, int));
+static int reg_meets_class_p	PARAMS ((int, enum reg_class));
+static void update_qty_class	PARAMS ((int, int));
+static void reg_is_set		PARAMS ((rtx, rtx, void *));
+static void reg_is_born		PARAMS ((rtx, int));
+static void wipe_dead_reg	PARAMS ((rtx, int));
+static int find_free_reg	PARAMS ((enum reg_class, enum machine_mode,
 				       int, int, int, int, int));
-static void mark_life		PROTO((int, enum machine_mode, int));
-static void post_mark_life	PROTO((int, enum machine_mode, int, int, int));
-static int no_conflict_p	PROTO((rtx, rtx, rtx));
-static int requires_inout	PROTO((const char *));
+static void mark_life		PARAMS ((int, enum machine_mode, int));
+static void post_mark_life	PARAMS ((int, enum machine_mode, int, int, int));
+static int no_conflict_p	PARAMS ((rtx, rtx, rtx));
+static int requires_inout	PARAMS ((const char *));
 
 /* Allocate a new quantity (new within current basic block)
    for register number REGNO which is born at index BIRTH

@@ -51,7 +51,7 @@ struct ggc_root
   void *base;
   int nelt;
   int size;
-  void (*cb) PROTO ((void *));
+  void (*cb) PARAMS ((void *));
 };
 
 static struct ggc_root *roots;
@@ -117,7 +117,7 @@ void
 ggc_add_root (base, nelt, size, cb)
      void *base;
      int nelt, size;
-     void (*cb) PROTO ((void *));
+     void (*cb) PARAMS ((void *));
 {
   struct ggc_root *x = (struct ggc_root *) xmalloc (sizeof (*x));
 
@@ -217,7 +217,7 @@ ggc_mark_roots ()
     {
       char *elt = x->base;
       int s = x->size, n = x->nelt;
-      void (*cb) PROTO ((void *)) = x->cb;
+      void (*cb) PARAMS ((void *)) = x->cb;
       int i;
 
       for (i = 0; i < n; ++i, elt += s)
