@@ -5028,7 +5028,7 @@
   emit_insn (gen_movsi (shift_reg, operands[3]));
   addr_target = copy_addr_to_reg (plus_constant (orig_address, size - 1));
 
-  operands[0] = change_address (operands[0], QImode, addr_target);
+  operands[0] = replace_equiv_address (operands[0], addr_target);
   emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, shift_reg, 0)));
 
   while (size -= 1)

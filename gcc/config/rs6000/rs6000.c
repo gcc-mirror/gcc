@@ -1866,14 +1866,16 @@ rs6000_emit_move (dest, source, mode)
       if (GET_CODE (operands[0]) == MEM
 	  && GET_CODE (XEXP (operands[0], 0)) != REG
 	  && ! reload_in_progress)
-	operands[0] = change_address (operands[0], TImode,
-				      copy_addr_to_reg (XEXP (operands[0], 0)));
+	operands[0]
+	  = replace_equiv_address (operands[0],
+				   copy_addr_to_reg (XEXP (operands[0], 0)));
 
       if (GET_CODE (operands[1]) == MEM
 	  && GET_CODE (XEXP (operands[1], 0)) != REG
 	  && ! reload_in_progress)
-	operands[1] = change_address (operands[1], TImode,
-				      copy_addr_to_reg (XEXP (operands[1], 0)));
+	operands[1]
+	  = replace_equiv_address (operands[1],
+				   copy_addr_to_reg (XEXP (operands[1], 0)));
       break;
 
     default:

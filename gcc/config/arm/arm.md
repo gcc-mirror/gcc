@@ -4282,15 +4282,15 @@
   "TARGET_ARM"
   "
   {
-    rtx addr = XEXP (operands[1], 0);
+    rtx op1 = operands[1];
+    rtx addr = XEXP (op1, 0);
     enum rtx_code code = GET_CODE (addr);
 
     if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
 	|| code == MINUS)
-      addr = force_reg (SImode, addr);
+      op1 = replace_equiv_address (operands[1], force_reg (SImode, addr));
 
-    operands[4] = change_address (operands[1], QImode,
-				  plus_constant (addr, 1));
+    operands[4] = adjust_address (op1, QImode, 1);
     operands[1] = adjust_address (operands[1], QImode, 0);
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -4306,15 +4306,15 @@
   "TARGET_ARM"
   "
   {
-    rtx addr = XEXP (operands[1], 0);
+    rtx op1 = operands[1];
+    rtx addr = XEXP (op1, 0);
     enum rtx_code code = GET_CODE (addr);
 
     if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
 	|| code == MINUS)
-      addr = force_reg (SImode, addr);
+      op1 = replace_equiv_address (op1, force_reg (SImode, addr));
 
-    operands[4] = change_address (operands[1], QImode,
-				  plus_constant (addr, 1));
+    operands[4] = adjust_address (op1, QImode, 1);
     operands[1] = adjust_address (operands[1], QImode, 0);
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -4332,11 +4332,12 @@
   {
     HOST_WIDE_INT value = INTVAL (operands[1]);
     rtx addr = XEXP (operands[0], 0);
+    rtx op0 = operands[0];
     enum rtx_code code = GET_CODE (addr);
 
     if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
 	|| code == MINUS)
-      addr = force_reg (SImode, addr);
+      op0 = replace_equiv_address (op0, force_reg (SImode, addr));
 
     operands[1] = gen_reg_rtx (SImode);
     if (BYTES_BIG_ENDIAN)
@@ -4362,8 +4363,7 @@
 	  }
       }
 
-    operands[3] = change_address (operands[0], QImode,
-				  plus_constant (addr, 1));
+    operands[3] = adjust_address (op0, QImode, 1);
     operands[0] = adjust_address (operands[0], QImode, 0);
   }"
 )
@@ -4550,18 +4550,16 @@
           if (GET_CODE (operands[0]) == MEM
 	      && !memory_address_p (GET_MODE (operands[0]),
 				    XEXP (operands[0], 0)))
-	    {
-	      rtx temp = copy_to_reg (XEXP (operands[0], 0));
-	      operands[0] = change_address (operands[0], VOIDmode, temp);
-	    }
+	    operands[0]
+	      = replace_equiv_address (operands[0],
+				       copy_to_reg (XEXP (operands[0], 0)));
    
           if (GET_CODE (operands[1]) == MEM
 	      && !memory_address_p (GET_MODE (operands[1]),
 				    XEXP (operands[1], 0)))
-	    {
-	      rtx temp = copy_to_reg (XEXP (operands[1], 0));
-	      operands[1] = change_address (operands[1], VOIDmode, temp);
-	    }
+	    operands[1]
+	      = replace_equiv_address (operands[1],
+				       copy_to_reg (XEXP (operands[1], 0)));
         }
       /* Handle loading a large integer during reload */
       else if (GET_CODE (operands[1]) == CONST_INT
@@ -4850,17 +4848,15 @@
           if (GET_CODE (operands[0]) == MEM
 	      && !memory_address_p (GET_MODE (operands[0]),
 		  		     XEXP (operands[0], 0)))
-	    {
-	      rtx temp = copy_to_reg (XEXP (operands[0], 0));
-	      operands[0] = change_address (operands[0], VOIDmode, temp);
-	    }
+	    operands[0]
+	      = replace_equiv_address (operands[0],
+				       copy_to_reg (XEXP (operands[0], 0)));
           if (GET_CODE (operands[1]) == MEM
 	      && !memory_address_p (GET_MODE (operands[1]),
 				    XEXP (operands[1], 0)))
-	    {
-	       rtx temp = copy_to_reg (XEXP (operands[1], 0));
-	       operands[1] = change_address (operands[1], VOIDmode, temp);
-	    }
+	     operands[1]
+	       = replace_equiv_address (operands[1],
+					copy_to_reg (XEXP (operands[1], 0)));
         }
       /* Handle loading a large integer during reload */
       else if (GET_CODE (operands[1]) == CONST_INT

@@ -1,3 +1,20 @@
+Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (replace_equiv_address): New function.
+	* expr.h (replace_equiv_address): New declaration.
+	* explow.c (validize_mem): Call it instead of change_address and
+	also call if -fforce-addr and address is constant.
+	* expr.c: Replace more calls to change_address with adjust_address
+	and/or replace_equiv_address or to validize_mem.
+	* function.c, regmove.c, config/alpha/alpha.c: Likewise.
+	* config/arm/arm.md, config/clipper/clipper.md: Likewise.
+	* config/dsp16xx/dsp16xx.md, config/fr30/fr30.c: Likewise.
+	* config/i370/i370.md, config/i860/i860.md: Likewise.
+	* config/i960/i960.md, config/mips/mips.c: Likewise.
+	* config/mips/mips.md, config/pa/pa.md: Likewise.
+	* config/pdp11/pdp11.md, config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.md, config/sh/sh.md: Likewise.
+
 2001-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bitmap.c (bitmap_union_of_diff): Don't use BITMAP_ALLOCA.
