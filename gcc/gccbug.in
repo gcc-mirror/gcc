@@ -254,7 +254,7 @@ SEND-PR: -*- send-pr -*-
 SEND-PR: Lines starting with `SEND-PR' will be removed automatically, as
 SEND-PR: will all comments (text enclosed in `<' and `>').
 SEND-PR: 
-SEND-PR: Please consult the GCC manual manual if you are not sure how to
+SEND-PR: Please consult the GCC manual if you are not sure how to
 SEND-PR: fill out a problem report.
 SEND-PR: Note that the Synopsis field is mandatory.  The Subject (for
 SEND-PR: the mail) will be made the same as Synopsis unless explicitly
