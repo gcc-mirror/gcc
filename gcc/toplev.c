@@ -1366,7 +1366,7 @@ set_float_handler (handler)
 
 int
 push_float_handler (handler, old_handler)
-     jmp_buf handler;
+     jmp_buf handler, old_handler;
 {
   int was_handled = float_handled;
 
