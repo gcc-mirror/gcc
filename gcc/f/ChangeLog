@@ -1,3 +1,7 @@
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (LOG10): Fix typo.
+
 1999-02-17  Ulrich Drepper  <drepper@cygnus.com>
 
 	* intdoc.in: Fix typo.

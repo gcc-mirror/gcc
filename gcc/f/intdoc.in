@@ -298,7 +298,7 @@ DEFDOC (CDLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
 DEFDOC (LOG10, "Common logarithm.", "\
 Returns the common logarithm (base 10) of @var{@1@}, which must
-be greater than zero or.
+be greater than zero.
 
 The inverse of this function is @samp{10. ** LOG10(@var{@1@})}.
 
