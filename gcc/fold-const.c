@@ -774,6 +774,7 @@ div_and_round_double (code, uns,
   return overflow;
 }
 
+#ifndef REAL_ARITHMETIC
 /* Effectively truncate a real value to represent
    the nearest possible value in a narrower mode.
    The result is actually represented in the same data type as the argument,
@@ -950,6 +951,7 @@ target_negative (x)
   return x < 0;
 }
 #endif /* Target not IEEE */
+#endif /* no REAL_ARITHMETIC */
 
 /* Split a tree IN into a constant and a variable part
    that could be combined with CODE to make IN.
@@ -1300,9 +1302,9 @@ const_binop (code, arg1, arg2, notrunc)
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
   if (TREE_CODE (arg1) == REAL_CST)
     {
-      register REAL_VALUE_TYPE d1;
-      register REAL_VALUE_TYPE d2;
-      register REAL_VALUE_TYPE value;
+      REAL_VALUE_TYPE d1;
+      REAL_VALUE_TYPE d2;
+      REAL_VALUE_TYPE value;
       tree t;
 
       d1 = TREE_REAL_CST (arg1);
@@ -1524,10 +1526,12 @@ fold_convert (t, arg1)
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  REAL_VALUE_TYPE
-	    l = real_value_from_int_cst (TYPE_MIN_VALUE (type)),
-	    x = TREE_REAL_CST (arg1),
-	    u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
+	  REAL_VALUE_TYPE l, x, u;
+
+	  l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
+	  x = TREE_REAL_CST (arg1);
+	  u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
+
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
 	     but reject if X exactly equals the adjusted bounds.  */
@@ -1570,7 +1574,7 @@ fold_convert (t, arg1)
 #else
 	  {
 	    HOST_WIDE_INT low, high;
-	    REAL_VALUE_TO_INT (low, high, TREE_REAL_CST (arg1));
+	    REAL_VALUE_TO_INT (&low, &high, (TREE_REAL_CST (arg1)));
 	    t = build_int_2 (low, high);
 	  }
 #endif
