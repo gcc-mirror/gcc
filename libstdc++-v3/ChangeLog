@@ -1,3 +1,7 @@
+2001-06-24  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* libmath/stubs.c: Fix thinko.
+
 2001-06-24  David Edelsohn <dje@watson.ibm.com>
 
 	* libmath/stubs.c (sqrtf): Define.
