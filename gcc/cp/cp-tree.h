@@ -4242,7 +4242,6 @@ extern tree build_cplus_staticfn_type		(tree, tree, tree);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
-extern tree hash_chainon			(tree, tree);
 extern int count_functions			(tree);
 extern int is_overloaded_fn			(tree);
 extern tree get_first_fn			(tree);

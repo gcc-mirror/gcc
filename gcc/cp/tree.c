@@ -736,21 +736,6 @@ hash_tree_chain (tree value, tree chain)
 {
   return hash_tree_cons (NULL_TREE, value, chain);
 }
-
-/* Similar, but used for concatenating two lists.  */
-
-tree
-hash_chainon (tree list1, tree list2)
-{
-  if (list2 == 0)
-    return list1;
-  if (list1 == 0)
-    return list2;
-  if (TREE_CHAIN (list1) == NULL_TREE)
-    return hash_tree_chain (TREE_VALUE (list1), list2);
-  return hash_tree_chain (TREE_VALUE (list1),
-			  hash_chainon (TREE_CHAIN (list1), list2));
-}
 
 void
 debug_binfo (tree elem)
