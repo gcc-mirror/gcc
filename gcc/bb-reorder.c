@@ -1779,7 +1779,7 @@ add_reg_crossing_jump_notes (void)
 								  (e->src)));
 }
 
-/* Hot and cold basic blocks are partitioneed and put in separate
+/* Hot and cold basic blocks are partitioned and put in separate
    sections of the .o file, to reduce paging and improve cache
    performance (hopefully).  This can result in bits of code from the
    same function being widely separated in the .o file.  However this
