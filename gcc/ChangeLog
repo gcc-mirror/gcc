@@ -1,3 +1,7 @@
+2003-12-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (addsi3_carryin_shift): Add missing register constraints.
+
 2003-12-16  Loren James Rittle  <ljrittle@acm.org>
 
 	* testsuite/g++.old-deja/g++.eh/badalloc1.C: Tweak to

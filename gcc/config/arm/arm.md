@@ -792,13 +792,13 @@
 )
 
 (define_insn "*addsi3_carryin_shift"
-  [(set (match_operand:SI 0 "s_register_operand" "")
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 		 (plus:SI
 		   (match_operator:SI 2 "shift_operator"
-		      [(match_operand:SI 3 "s_register_operand" "")
-		       (match_operand:SI 4 "reg_or_int_operand" "")])
-		    (match_operand:SI 1 "s_register_operand" ""))))]
+		      [(match_operand:SI 3 "s_register_operand" "r")
+		       (match_operand:SI 4 "reg_or_int_operand" "rM")])
+		    (match_operand:SI 1 "s_register_operand" "r"))))]
   "TARGET_ARM"
   "adc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")]
