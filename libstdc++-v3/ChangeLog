@@ -1,3 +1,10 @@
+2001-06-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* libsupc++/Makefile.am (install-glibcppinstallHEADERS,
+	uninstall-glibcppinstallHEADERS): Have explicit rules catering to
+	SUN make VPATH peculiarities.
+	* libsupc++/Makefile.in: Regenerate.
+
 2001-06-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* src/Makefile.am (VPATH): Delimit with ":", not space.

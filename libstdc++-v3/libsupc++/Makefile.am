@@ -148,3 +148,22 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
 CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
           --mode=link $(CXX) \
           @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+
+# We have to have rules modified from the default to counteract SUN make
+# prepending each of $(glibcppinstall_HEADERS) with VPATH below.
+install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
+	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  q=`echo $$p | sed -e 's,.*/,,'`; \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	done
+
+uninstall-glibcppinstallHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  q=`echo $$p | sed -e 's,.*/,,'`; \
+	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	done
