@@ -1,3 +1,8 @@
+2004-06-17  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 14610
+	* gcc.dg/ia64-float80-1.c, gcc.dg/ia64-float80-2.c: New testcases.
+
 2004-06-15  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20001116-1.c: Move expected warning line.
@@ -91,7 +96,7 @@
 
 	PR fortran/14957
 	* gfortran.fortran-torture/execute/stack_varsize.f90: Correct
-        syntax errors in end statements of contained subroutines.
+	syntax errors in end statements of contained subroutines.
 
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -192,7 +197,7 @@
 
 2004-06-09  Bud Davis  <bdavis9659@comcast.net>
 
-        PR gfortran/15755
+	PR gfortran/15755
 	* gfortran.fortran-torture/execute/backspace.c : New test.
 
 2004-06-09  Paul Brook  <paul@codesourcery.com>

@@ -2912,20 +2912,14 @@ const struct real_format mips_double_format =
   };
 
 
-/* IEEE extended double precision format.  This comes in three
-   flavors: Intel's as a 12 byte image, Intel's as a 16 byte image,
-   and Motorola's.  */
+/* IEEE extended real format.  This comes in three flavors: Intel's as
+   a 12 byte image, Intel's as a 16 byte image, and Motorola's.  Intel
+   12- and 16-byte images may be big- or little endian; Motorola's is
+   always big endian.  */
 
-static void encode_ieee_extended (const struct real_format *fmt,
-				  long *, const REAL_VALUE_TYPE *);
-static void decode_ieee_extended (const struct real_format *,
-				  REAL_VALUE_TYPE *, const long *);
-
-static void encode_ieee_extended_128 (const struct real_format *fmt,
-				      long *, const REAL_VALUE_TYPE *);
-static void decode_ieee_extended_128 (const struct real_format *,
-				      REAL_VALUE_TYPE *, const long *);
-
+/* Helper subroutine which converts from the internal format to the
+   12-byte little-endian Intel format.  Functions below adjust this
+   for the other possible formats.  */
 static void
 encode_ieee_extended (const struct real_format *fmt, long *buf,
 		      const REAL_VALUE_TYPE *r)
@@ -3033,20 +3027,65 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
       abort ();
     }
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    buf[0] = image_hi << 16, buf[1] = sig_hi, buf[2] = sig_lo;
-  else
-    buf[0] = sig_lo, buf[1] = sig_hi, buf[2] = image_hi;
+  buf[0] = sig_lo, buf[1] = sig_hi, buf[2] = image_hi;
 }
 
+/* Convert from the internal format to the 12-byte Motorola format
+   for an IEEE extended real.  */
 static void
-encode_ieee_extended_128 (const struct real_format *fmt, long *buf,
-			  const REAL_VALUE_TYPE *r)
+encode_ieee_extended_motorola (const struct real_format *fmt, long *buf,
+			       const REAL_VALUE_TYPE *r)
 {
-  buf[3 * !FLOAT_WORDS_BIG_ENDIAN] = 0;
-  encode_ieee_extended (fmt, buf+!!FLOAT_WORDS_BIG_ENDIAN, r);
+  long intermed[3];
+  encode_ieee_extended (fmt, intermed, r);
+
+  /* Motorola chips are assumed always to be big-endian.  Also, the
+     padding in a Motorola extended real goes between the exponent and
+     the mantissa.  At this point the mantissa is entirely within
+     elements 0 and 1 of intermed, and the exponent entirely within
+     element 2, so all we have to do is swap the order around, and
+     shift element 2 left 16 bits.  */
+  buf[0] = intermed[2] << 16;
+  buf[1] = intermed[1];
+  buf[2] = intermed[0];
 }
 
+/* Convert from the internal format to the 12-byte Intel format for
+   an IEEE extended real.  */
+static void
+encode_ieee_extended_intel_96 (const struct real_format *fmt, long *buf,
+			       const REAL_VALUE_TYPE *r)
+{
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      /* All the padding in an Intel-format extended real goes at the high
+	 end, which in this case is after the mantissa, not the exponent.
+	 Therefore we must shift everything down 16 bits.  */
+      long intermed[3];
+      encode_ieee_extended (fmt, intermed, r);
+      buf[0] = ((intermed[2] << 16) | ((unsigned long)(intermed[1] & 0xFFFF0000) >> 16));
+      buf[1] = ((intermed[1] << 16) | ((unsigned long)(intermed[0] & 0xFFFF0000) >> 16));
+      buf[2] =  (intermed[0] << 16);
+    }
+  else
+    /* encode_ieee_extended produces what we want directly.  */
+    encode_ieee_extended (fmt, buf, r);
+}
+
+/* Convert from the internal format to the 16-byte Intel format for
+   an IEEE extended real.  */
+static void
+encode_ieee_extended_intel_128 (const struct real_format *fmt, long *buf,
+				const REAL_VALUE_TYPE *r)
+{
+  /* All the padding in an Intel-format extended real goes at the high end.  */
+  encode_ieee_extended_intel_96 (fmt, buf, r);
+  buf[3] = 0;
+}
+
+/* As above, we have a helper function which converts from 12-byte
+   little-endian Intel format to internal format.  Functions below
+   adjust for the other possible formats.  */
 static void
 decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 		      const long *buf)
@@ -3055,10 +3094,7 @@ decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
   bool sign;
   int exp;
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    image_hi = buf[0] >> 16, sig_hi = buf[1], sig_lo = buf[2];
-  else
-    sig_lo = buf[0], sig_hi = buf[1], image_hi = buf[2];
+  sig_lo = buf[0], sig_hi = buf[1], image_hi = buf[2];
   sig_lo &= 0xffffffff;
   sig_hi &= 0xffffffff;
   image_hi &= 0xffffffff;
@@ -3135,17 +3171,62 @@ decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     }
 }
 
+/* Convert from the internal format to the 12-byte Motorola format
+   for an IEEE extended real.  */
 static void
-decode_ieee_extended_128 (const struct real_format *fmt, REAL_VALUE_TYPE *r,
-			  const long *buf)
+decode_ieee_extended_motorola (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+			       const long *buf)
 {
-  decode_ieee_extended (fmt, r, buf+!!FLOAT_WORDS_BIG_ENDIAN);
+  long intermed[3];
+
+  /* Motorola chips are assumed always to be big-endian.  Also, the
+     padding in a Motorola extended real goes between the exponent and
+     the mantissa; remove it.  */
+  intermed[0] = buf[2];
+  intermed[1] = buf[1];
+  intermed[2] = (unsigned long)buf[0] >> 16;
+
+  decode_ieee_extended (fmt, r, intermed);
+}
+
+/* Convert from the internal format to the 12-byte Intel format for
+   an IEEE extended real.  */
+static void
+decode_ieee_extended_intel_96 (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+			       const long *buf)
+{
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      /* All the padding in an Intel-format extended real goes at the high
+	 end, which in this case is after the mantissa, not the exponent.
+	 Therefore we must shift everything up 16 bits.  */
+      long intermed[3];
+
+      intermed[0] = (((unsigned long)buf[2] >> 16) | (buf[1] << 16));
+      intermed[1] = (((unsigned long)buf[1] >> 16) | (buf[0] << 16));
+      intermed[2] =  ((unsigned long)buf[0] >> 16);
+
+      decode_ieee_extended (fmt, r, intermed);
+    }
+  else
+    /* decode_ieee_extended produces what we want directly.  */
+    decode_ieee_extended (fmt, r, buf);
+}
+
+/* Convert from the internal format to the 16-byte Intel format for
+   an IEEE extended real.  */
+static void
+decode_ieee_extended_intel_128 (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+				const long *buf)
+{
+  /* All the padding in an Intel-format extended real goes at the high end.  */
+  decode_ieee_extended_intel_96 (fmt, r, buf);
 }
 
 const struct real_format ieee_extended_motorola_format =
   {
-    encode_ieee_extended,
-    decode_ieee_extended,
+    encode_ieee_extended_motorola,
+    decode_ieee_extended_motorola,
     2,
     1,
     64,
@@ -3162,8 +3243,8 @@ const struct real_format ieee_extended_motorola_format =
 
 const struct real_format ieee_extended_intel_96_format =
   {
-    encode_ieee_extended,
-    decode_ieee_extended,
+    encode_ieee_extended_intel_96,
+    decode_ieee_extended_intel_96,
     2,
     1,
     64,
@@ -3180,8 +3261,8 @@ const struct real_format ieee_extended_intel_96_format =
 
 const struct real_format ieee_extended_intel_128_format =
   {
-    encode_ieee_extended_128,
-    decode_ieee_extended_128,
+    encode_ieee_extended_intel_128,
+    decode_ieee_extended_intel_128,
     2,
     1,
     64,
@@ -3200,8 +3281,8 @@ const struct real_format ieee_extended_intel_128_format =
    to 53 bits instead of 64, e.g. FreeBSD.  */
 const struct real_format ieee_extended_intel_96_round_53_format =
   {
-    encode_ieee_extended,
-    decode_ieee_extended,
+    encode_ieee_extended_intel_96,
+    decode_ieee_extended_intel_96,
     2,
     1,
     53,

@@ -1,5 +1,21 @@
 2004-06-17  Zack Weinberg  <zack@codesourcery.com>
 
+	Bug 14610
+	* Makefile.in (min-insn-modes.o): Correct dependencies.
+	* real.c (encode_ieee_extended, decode_ieee_extended): Always
+	produce/consume 12-byte little-endian Intel format.
+	(encode_ieee_extended_128, decode_ieee_extended_128): Delete.
+	(encode_ieee_extended_motorola, decode_ieee_extended_motorola)
+	(encode_ieee_extended_intel_96, decode_ieee_extended_intel_96)
+	(encode_ieee_extended_intel_128, decode_ieee_extended_intel_128):
+	New functions which convert between 12-byte little-endian Intel
+	format and the desired format.
+	(ieee_extended_motorola_format, ieee_extended_intel_96_round_53_format)
+	(ieee_extended_intel_96_format, ieee_extended_intel_128_format):
+	Update.
+
+2004-06-17  Zack Weinberg  <zack@codesourcery.com>
+
 	* expmed.c (expand_mult_const): In sanity check, compare only
 	the bits of val and val_so_far that are significant in the
 	result mode.
@@ -43,7 +59,7 @@
 	* tree-inline.c: Correct comment about this file's purpose.
 	* tree-optimize.c: Likewise.
 	* tree-tailcall.c: Likewise.
-	
+
 	* tree-alias-ander.h: Add standard top-of-file comment.
 	* tree-alias-common.h: Likewise.
 	* tree-alias-type.h: Likewise.
