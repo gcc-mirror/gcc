@@ -1365,8 +1365,6 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	 Other non-expressions need not be processed.  */
       if (cl == tcc_unary)
 	{
-	  if (TREE_CODE_LENGTH (code) == 0)
-	    return;
 	  x = TREE_OPERAND (x, 0);
 	  writer = 0;
 	  goto restart;

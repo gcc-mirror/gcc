@@ -158,7 +158,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   enum machine_mode mode;
   enum tree_code_class class;
   int len;
-  int first_rtl;
   int i;
   expanded_location xloc;
 
@@ -591,29 +590,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       len = TREE_CODE_LENGTH (TREE_CODE (node));
 
-      /* Some nodes contain rtx's, not trees,
-	 after a certain point.  Print the rtx's as rtx's.  */
-      first_rtl = TREE_CODE_LENGTH (TREE_CODE (node));
-
       for (i = 0; i < len; i++)
 	{
-	  if (i >= first_rtl)
-	    {
-	      indent_to (file, indent + 4);
-	      fprintf (file, "rtl %d ", i);
-	      if (TREE_OPERAND (node, i))
-		print_rtl (file, (rtx) TREE_OPERAND (node, i));
-	      else
-		fprintf (file, "(nil)");
-	      fprintf (file, "\n");
-	    }
-	  else
-	    {
-	      char temp[10];
+	  char temp[10];
 
-	      sprintf (temp, "arg %d", i);
-	      print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
-	    }
+	  sprintf (temp, "arg %d", i);
+	  print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
 	}
 
       print_node (file, "chain", TREE_CHAIN (node), indent + 4);
