@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001  Free Software Foundation, Inc.
+   2001, 2002  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -905,7 +905,7 @@ note_level_for_catch ()
 /* For a binding between a name and an entity at a block scope,
    this is the `struct binding_level' for the block.  */
 #define BINDING_LEVEL(NODE) \
-   (((struct tree_binding*)NODE)->scope.level)
+  (((struct tree_binding*)(NODE))->scope.level)
 
 /* A free list of CPLUS_BINDING nodes, connected by their
    TREE_CHAINs.  */
@@ -12278,12 +12278,12 @@ grok_op_properties (decl, friendp)
 #define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, ASSN_P)	\
 	if (ansi_opname (CODE) == name)				\
 	  {							\
-	    operator_code = CODE;				\
+	    operator_code = (CODE);				\
 	    break;						\
 	  }							\
 	else if (ansi_assopname (CODE) == name)			\
 	  {							\
-	    operator_code = CODE;				\
+	    operator_code = (CODE);				\
 	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;		\
 	    break;						\
 	  }
