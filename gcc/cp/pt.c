@@ -10121,6 +10121,11 @@ more_specialized_class (tree pat1, tree pat2, tree full_args)
   tree targs;
   int winner = 0;
 
+  /* Just like what happens for functions, if we are ordering between 
+     different class template specializations, we may encounter dependent
+     types in the arguments, and we need our dependency check functions
+     to behave correctly.  */
+  ++processing_template_decl;
   targs = get_class_bindings (TREE_VALUE (pat1), TREE_PURPOSE (pat1),
 			      add_outermost_template_args (full_args, TREE_PURPOSE (pat2)));
   if (targs)
@@ -10130,6 +10135,7 @@ more_specialized_class (tree pat1, tree pat2, tree full_args)
 			      add_outermost_template_args (full_args, TREE_PURPOSE (pat1)));
   if (targs)
     ++winner;
+  --processing_template_decl;
 
   return winner;
 }
