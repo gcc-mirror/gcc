@@ -244,12 +244,13 @@ static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
 						    struct resources *,
 						    int, int *, int *));
 static void try_merge_delay_insns PROTO((rtx, rtx));
-static int redundant_insn_p	PROTO((rtx, rtx, rtx));
+static rtx redundant_insn_p	PROTO((rtx, rtx, rtx));
 static int own_thread_p		PROTO((rtx, rtx, int));
 static int find_basic_block	PROTO((rtx));
 static void update_block	PROTO((rtx, rtx));
 static int reorg_redirect_jump PROTO((rtx, rtx));
 static void update_reg_dead_notes PROTO((rtx, rtx));
+static void update_reg_unused_notes PROTO((rtx, rtx));
 static void update_live_status	PROTO((rtx, rtx));
 static rtx next_insn_no_annul	PROTO((rtx));
 static void mark_target_live_regs PROTO((rtx, struct resources *));
@@ -1922,7 +1923,7 @@ try_merge_delay_insns (insn, thread)
    redundant insn, but the cost of splitting seems greater than the possible
    gain in rare cases.  */
 
-static int
+static rtx
 redundant_insn_p (insn, target, delay_list)
      rtx insn;
      rtx target;
@@ -2079,7 +2080,7 @@ redundant_insn_p (insn, target, delay_list)
 		{
 		  /* Show that this insn will be used in the sequel.  */
 		  INSN_FROM_TARGET_P (candidate) = 0;
-		  return 1;
+		  return candidate;
 		}
 
 	      /* Unless this is an annulled insn from the target of a branch,
@@ -2101,7 +2102,7 @@ redundant_insn_p (insn, target, delay_list)
 	  /* See if TRIAL is the same as INSN.  */
 	  pat = PATTERN (trial);
 	  if (rtx_equal_p (pat, ipat))
-	    return 1;
+	    return trial;
 
 	  /* Can't go any further if TRIAL conflicts with INSN.  */
 	  if (insn_sets_resource_p (trial, &needed, 1))
@@ -2275,6 +2276,33 @@ update_reg_dead_notes (insn, delayed_insn)
 	    REG_NOTES (insn) = link;
 	  }
       }
+}
+
+/* Delete any REG_UNUSED notes that exist on INSN but not on REDUNDANT_INSN.
+
+   This handles the case of udivmodXi4 instructions which optimize their
+   output depending on whether any REG_UNUSED notes are present.
+   we must make sure that INSN calculates as many results as REDUNDANT_INSN
+   does.  */
+
+static void
+update_reg_unused_notes (insn, redundant_insn)
+     rtx insn, redundant_insn;
+{
+  rtx p, link, next;
+
+  for (link = REG_NOTES (insn); link; link = next)
+    {
+      next = XEXP (link, 1);
+
+      if (REG_NOTE_KIND (link) != REG_UNUSED
+	  || GET_CODE (XEXP (link, 0)) != REG)
+	continue;
+
+      if (! find_regno_note (redundant_insn, REG_UNUSED,
+			     REGNO (XEXP (link, 0))))
+	remove_note (insn, link);
+    }
 }
 
 /* Marks registers possibly live at the current place being scanned by
@@ -3279,10 +3307,12 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 #endif
 	  )
 	{
+	  rtx prior_insn;
+
 	  /* If TRIAL is redundant with some insn before INSN, we don't
 	     actually need to add it to the delay list; we can merely pretend
 	     we did.  */
-	  if (redundant_insn_p (trial, insn, delay_list))
+	  if (prior_insn = redundant_insn_p (trial, insn, delay_list))
 	    {
 	      if (own_thread)
 		{
@@ -3297,7 +3327,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 		  delete_insn (trial);
 		}
 	      else
-		new_thread = next_active_insn (trial);
+		{
+		  update_reg_unused_notes (prior_insn, trial);
+		  new_thread = next_active_insn (trial);
+		}
 
 	      continue;
 	    }
