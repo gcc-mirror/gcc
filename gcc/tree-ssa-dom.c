@@ -455,8 +455,26 @@ tree_ssa_dominator_optimize (void)
       htab_empty (avail_exprs);
       htab_empty (vrp_data);
 
-      for (i = 0; i < num_referenced_vars; i++)
-	var_ann (referenced_var (i))->current_def = NULL;
+      /* Finally, remove everything except invariants in SSA_NAME_VALUE.
+
+	 This must be done before we iterate as we might have a
+	 reference to an SSA_NAME which was removed by the call to
+	 rewrite_ssa_into_ssa.
+
+	 Long term we will be able to let everything in SSA_NAME_VALUE
+	 persist.  However, for now, we know this is the safe thing to do.  */
+      for (i = 0; i < num_ssa_names; i++)
+	{
+	  tree name = ssa_name (i);
+	  tree value;
+
+	  if (!name)
+	    continue;
+
+	  value = SSA_NAME_VALUE (name);
+	  if (value && !is_gimple_min_invariant (value))
+	    SSA_NAME_VALUE (name) = NULL;
+	}
     }
   while (cfg_altered);
 
@@ -478,24 +496,6 @@ tree_ssa_dominator_optimize (void)
   /* Free nonzero_vars.  */
   BITMAP_XFREE (nonzero_vars);
   BITMAP_XFREE (need_eh_cleanup);
-
-  /* Finally, remove everything except invariants in SSA_NAME_VALUE.
-
-     Long term we will be able to let everything in SSA_NAME_VALUE
-     persist.  However, for now, we know this is the safe thing to
-     do.  */
-  for (i = 0; i < num_ssa_names; i++)
-    {
-      tree name = ssa_name (i);
-      tree value;
-
-      if (!name)
-	continue;
-
-      value = SSA_NAME_VALUE (name);
-      if (value && !is_gimple_min_invariant (value))
-	SSA_NAME_VALUE (name) = NULL;
-    }
   
   VEC_free (tree_on_heap, block_defs_stack);
   VEC_free (tree_on_heap, avail_exprs_stack);

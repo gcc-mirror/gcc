@@ -1,3 +1,8 @@
+2005-01-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Clear SSA_NAME_VALUE
+	at the end of the main DOM loop rather than just before DOM exits.
+
 2005-01-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19121
