@@ -3615,6 +3615,7 @@ reparse_absdcl_as_casts (decl, expr)
      tree decl, expr;
 {
   tree type;
+  int non_void_p = 0;
   
   if (TREE_CODE (expr) == CONSTRUCTOR
       && TREE_TYPE (expr) == 0)
@@ -3639,11 +3640,13 @@ reparse_absdcl_as_casts (decl, expr)
     {
       type = groktypename (TREE_VALUE (CALL_DECLARATOR_PARMS (decl)));
       decl = TREE_OPERAND (decl, 0);
+      if (!VOID_TYPE_P (type))
+	non_void_p = 1;
       expr = build_c_cast (type, expr);
     }
 
   if (warn_old_style_cast && ! in_system_header
-      && current_lang_name != lang_name_c)
+      && non_void_p && current_lang_name != lang_name_c)
     warning ("use of old-style cast");
 
   return expr;

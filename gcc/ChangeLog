@@ -1,3 +1,8 @@
+2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5089
+	* doc/invoke.texi (-Wold-style-cast): Only warn about non-void casts.
+
 2002-01-02  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/fixunssfsi.c: Update copyright.
