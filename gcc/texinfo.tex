@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{1998-10-31}%
+\def\texinfoversion{1998-11-06}%
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -5454,10 +5454,9 @@ width0pt\relax} \fi
 @rm
 
 @c Local variables:
+@c eval: (add-hook 'write-file-hooks 'time-stamp)
 @c page-delimiter: "^\\\\message"
-@c update-date-leading-regexp: "def\\texinfoversion{"
-@c update-date-date-regexp: "[-0-9.]+"
-@c update-date-format-string: "%Y-%m-%d"
-@c update-date-trailing-regexp: "}"
-@c eval: (and(load "update-date" t t)(add-hook 'write-file-hooks 'update-date))
+@c time-stamp-start: "def\\\\texinfoversion{"
+@c time-stamp-format: "%:y-%02m-%02d"
+@c time-stamp-end: "}"
 @c End:
