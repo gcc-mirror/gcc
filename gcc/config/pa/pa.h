@@ -138,6 +138,23 @@ extern int target_flags;
 #define ASM_STABS_OP "\t.stabs"
 #define ASM_STABN_OP "\t.stabn"
 
+/* GDB always assumes the current function's frame begins at the value
+   of the stack pointer upon entry to the current function.  Accessing
+   local variables is done using the base of the frame + an offset
+   provided by GCC.
+
+   For functions which have frame pointers this method works fine;
+   the (frame pointer) == (stack pointer at function entry) and GCC provides
+   an offset relative to the frame pointer.
+
+   This loses for functions without a frame pointer; GCC provides an offset
+   which is relative to the stack pointer after adjusting for the function's
+   frame size.  GDB would prefer the offset to be relative to the value of
+   the stack pointer at the function's entry.  Yuk!  */
+#define DEBUGGER_AUTO_OFFSET(X) \
+  ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) \
+    + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
+
 #if (TARGET_DEFAULT & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
