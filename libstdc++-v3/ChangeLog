@@ -1,3 +1,15 @@
+2004-02-11  Stefan Olsson  <stefan@xapa.se>
+
+	* docs/html/ext/mt_allocator.html: New.
+
+2004-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/20_util/allocator.html: New file, consolidate
+	allocator information here. Revamp.
+	* docs/html/documentation.html: Change links.
+	* docs/html/20_util/howto.html: Same.
+	* docs/html/ext/howto.html: Same.
+
 2004-02-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13731 (first part: write)
