@@ -2750,6 +2750,8 @@ goto_block_pat (insn, regstack, pat)
     abort ();
 
   /* First, see if in fact anything needs to be done to the stack at all. */
+  if (INSN_UID (label) <= 0)
+    return;
 
   label_stack = &block_stack_in[BLOCK_NUM (label)];
 
