@@ -1,3 +1,7 @@
+2002-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (arith_4096_operand): Fix error in last change.
+
 2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_va_arg): Fix alignment for
