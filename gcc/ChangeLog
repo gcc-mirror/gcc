@@ -1,3 +1,8 @@
+2004-07-11  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/15654
+	* tree-tailcall.c (eliminate_tail_call): Remove unreachable code.
+
 2004-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_fputs): Don't bother converting the

@@ -647,6 +647,7 @@ eliminate_tail_call (struct tailcall *t)
   stmt_ann_t ann;
   v_may_def_optype v_may_defs;
   unsigned i;
+  block_stmt_iterator bsi;
 
   stmt = bsi_stmt (t->call_bsi);
   get_stmt_operands (stmt);
@@ -665,6 +666,21 @@ eliminate_tail_call (struct tailcall *t)
     stmt = TREE_OPERAND (stmt, 1);
 
   first = ENTRY_BLOCK_PTR->succ->dest;
+
+  /* Remove the code after call_bsi that will become unreachable.  The
+     possibly unreachable code in other blocks is removed later in
+     cfg cleanup.  */
+  bsi = t->call_bsi;
+  bsi_next (&bsi);
+  while (!bsi_end_p (bsi))
+    {
+      /* Do not remove the return statement, so that redirect_edge_and_branch
+	 sees how the block ends.  */
+      if (TREE_CODE (bsi_stmt (bsi)) == RETURN_EXPR)
+	break;
+
+      bsi_remove (&bsi);
+    }
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (t->call_block->succ, first);
