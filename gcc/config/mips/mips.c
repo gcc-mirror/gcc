@@ -9930,6 +9930,7 @@ mips_use_dfa_pipeline_interface (void)
 {
   switch (mips_tune)
     {
+    case PROCESSOR_R3000:
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:
