@@ -601,7 +601,10 @@ regclass (f, nregs)
 					    insn);
 
 		      /* If this insn was the start of a basic block,
-			 include the new insn in that block.  */
+			 include the new insn in that block.
+			 We need not check for code_label here;
+			 while a basic block can start with a code_label,
+			 INSN could not be at the beginning of that block.  */
 		      if (previnsn == 0 || GET_CODE (previnsn) == JUMP_INSN)
 			{
 			  int b;
