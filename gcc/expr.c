@@ -9847,7 +9847,9 @@ expand_increment (exp, post, ignore)
 	}
       if (icode != (int) CODE_FOR_nothing && GET_CODE (op0) == MEM)
 	{
-	  rtx addr = force_reg (Pmode, XEXP (op0, 0));
+	  rtx addr = (general_operand (XEXP (op0, 0), mode)
+		      ? force_reg (Pmode, XEXP (op0, 0))
+		      : copy_to_reg (XEXP (op0, 0)));
 	  rtx temp, result;
 
 	  op0 = change_address (op0, VOIDmode, addr);
