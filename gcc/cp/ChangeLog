@@ -1,3 +1,7 @@
+2001-08-11  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* decl.c (grokdeclarator): Clarify diagnostic message.
+
 2001-08-13  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* decl2.c (do_nonmember_using_decl): Replace using directive
