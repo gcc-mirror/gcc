@@ -113,7 +113,7 @@ Boston, MA 02111-1307, USA.  */
  ((TARGET_ELF) ? FINI_SECTION_ASM_OP_ELF : FINI_SECTION_ASM_OP_COFF)
 
 #undef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP		"\t.bss"
+#define BSS_SECTION_ASM_OP		"\t.data"
 
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP		"\t.text"
@@ -270,8 +270,9 @@ do {									\
     else								\
       bss_section ();							\
     ASM_OUTPUT_ALIGN ((FILE), align == -1 ? 2 : align);			\
-    ASM_OUTPUT_LABEL ((FILE), (NAME));					\
-    fprintf ((FILE), "%s\t.,.+%u\n", SET_ASM_OP, (ALIGN));		\
+    fprintf ((FILE), "%s\t", "\t.lcomm");				\
+    assemble_name ((FILE), (NAME));					\
+    fprintf ((FILE), ",%u\n", (SIZE));					\
    }									\
 } while (0)
 
@@ -731,7 +732,7 @@ dtors_section ()							\
   && strcmp (STR, "Tbss"))
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 0201
+#define TARGET_DEFAULT 0301
 
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
@@ -817,7 +818,7 @@ dtors_section ()							\
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
+ "-Di386 -Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
 
 /* You are in a maze of GCC specs ... all alike */
 
