@@ -1,3 +1,17 @@
+2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (handle_aligned_attribute, check_function_sentinel,
+	get_nonnull_operand, handle_sentinel_attribute,
+	check_function_arguments_recurse): Do not strip NOPS from
+	INTEGER_CSTs.
+	* c-decl.c (check_bitfield_type_and_width, build_enumerator):
+	Likewise.
+	* c-format.c (get_constant): Likewise.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+	* c-typeck.c (set_init_index): Likewise.
+	(convert_arguments): Don't check for NOP_EXPR containing integer
+	constant.
+
 2005-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_fixed_mathfn, fold_builtin_trunc,

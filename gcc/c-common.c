@@ -4481,12 +4481,6 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TYPE_P (*node))
     type = node, is_type = 1;
 
-  /* Strip any NOPs of any kind.  */
-  while (TREE_CODE (align_expr) == NOP_EXPR
-	 || TREE_CODE (align_expr) == CONVERT_EXPR
-	 || TREE_CODE (align_expr) == NON_LVALUE_EXPR)
-    align_expr = TREE_OPERAND (align_expr, 0);
-
   if (TREE_CODE (align_expr) != INTEGER_CST)
     {
       error ("requested alignment is not a constant");
@@ -5119,7 +5113,6 @@ check_function_sentinel (tree attrs, tree params)
 	  if (TREE_VALUE (attr))
 	    {
 	      tree p = TREE_VALUE (TREE_VALUE (attr));
-	      STRIP_NOPS (p);
 	      pos = TREE_INT_CST_LOW (p);
 	    }
 
@@ -5199,13 +5192,7 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
 static bool
 get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 {
-  /* Strip any conversions from the arg number and verify they
-     are constants.  */
-  while (TREE_CODE (arg_num_expr) == NOP_EXPR
-	 || TREE_CODE (arg_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (arg_num_expr) == NON_LVALUE_EXPR)
-    arg_num_expr = TREE_OPERAND (arg_num_expr, 0);
-
+  /* Verify the arg number is a constant.  */
   if (TREE_CODE (arg_num_expr) != INTEGER_CST
       || TREE_INT_CST_HIGH (arg_num_expr) != 0)
     return false;
@@ -5324,7 +5311,6 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
     {
       tree position = TREE_VALUE (args);
 
-      STRIP_NOPS (position);
       if (TREE_CODE (position) != INTEGER_CST)
         {
 	  warning ("requested position is not an integer constant");
@@ -5402,10 +5388,6 @@ check_function_arguments_recurse (void (*callback)
 	    /* Extract the argument number, which was previously checked
 	       to be valid.  */
 	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
-	    while (TREE_CODE (format_num_expr) == NOP_EXPR
-		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
-		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
 
 	    gcc_assert (TREE_CODE (format_num_expr) == INTEGER_CST
 			&& !TREE_INT_CST_HIGH (format_num_expr));

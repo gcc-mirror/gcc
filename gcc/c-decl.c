@@ -3637,9 +3637,6 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
   unsigned HOST_WIDE_INT w;
   const char *name = orig_name ? orig_name: _("<anonymous>");
 
-  /* Necessary?  */
-  STRIP_NOPS (*width);
-
   /* Detect and ignore out of range field width and process valid
      field widths.  */
   if (!INTEGRAL_TYPE_P (TREE_TYPE (*width))
@@ -5623,10 +5620,6 @@ build_enumerator (tree name, tree value)
   tree decl, type;
 
   /* Validate and default VALUE.  */
-
-  /* Remove no-op casts from the value.  */
-  if (value)
-    STRIP_TYPE_NOPS (value);
 
   if (value != 0)
     {
