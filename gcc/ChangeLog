@@ -1,3 +1,14 @@
+2004-08-18  Ziemowit Laski  <zlaski@apple.com>
+
+	* gcc.c (default_compilers): Add info about ".mm", ".M" and ".mii"
+	Objective-C++ extensions.
+	* gengtype.c (get_file_basename): Match entire subdirectory name
+	('cp', 'objc', 'objcp') rather than just its suffix.
+	(get_base_file_bitmap): Allow for files to belong to more than one
+	language.
+	(get_output_file_with_visibility): Treat objc/objc-act.h as a header
+	used by more than one front-end.
+
 2004-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (addsi3, subsi3, andsi3, iorsi3, movsi, movhi): Rework to
@@ -211,7 +222,7 @@
 2004-08-16  Adam Nemet  <anemet@lnxw.com>
 
 	* Makefile.in (LIBS): Move $(LIBIBERTY) after $(BANSHEELIB).
-
+	
 2004-08-16  Andrew Pinski  <apinski@apple.com>
 
 	* target-def.h (TARGET_EH_RETURN_FILTER_MODE): Remove
