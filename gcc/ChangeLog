@@ -1,3 +1,7 @@
+2002-10-31  Eric Christopher  <echristo@redhat.com>
+
+        * explow.c (convert_memory_address): Use shallow_copy_rtx.
+
 2002-10-31  Steve Ellcey  <sje@cup.hp.com>
 
 	* expmed.c (store_bit_field): Check FUNCTION_ARG_REG_LITTLE_ENDIAN.

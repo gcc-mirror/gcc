@@ -405,10 +405,8 @@ convert_memory_address (to_mode, x)
       break;
 
     case SYMBOL_REF:
-      temp = gen_rtx_SYMBOL_REF (to_mode, XSTR (x, 0));
-      SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
-      CONSTANT_POOL_ADDRESS_P (temp) = CONSTANT_POOL_ADDRESS_P (x);
-      STRING_POOL_ADDRESS_P (temp) = STRING_POOL_ADDRESS_P (x);
+      temp = shallow_copy_rtx (x);
+      PUT_MODE (temp, to_mode);
       return temp;
       break;
 
@@ -1716,4 +1714,3 @@ rtx_to_tree_code (code)
 }
 
 #include "gt-explow.h"
-
