@@ -2342,15 +2342,11 @@ also printed.
 For each of the other indicated dump files (except for
 @file{@var{file}.00.rtl}), dump a representation of the control flow graph
 suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
-@item w
-Dump after the second flow pass to @file{@var{file}.20.flow2}. 
 @item x
 Just generate RTL for a function instead of compiling it.  Usually used
 with @samp{r}.
 @item y
 Dump debugging information during parsing, to standard error.
-@item z
-Dump after the peephole2 pass to @file{@var{file}.22.peephole2}.
 @end table
 
 @item -fdump-unnumbered
