@@ -22,9 +22,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i860.h"
 #include "svr3.h"
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (i860, System V Release 3)")
+
 /* Provide a set of pre-definitions and pre-assertions appropriate for
    the i860 running svr3.  */
-#define CPP_PREDEFINES "-Di860 -Dunix -DSVR3"
+#define CPP_PREDEFINES "-Di860 -Dunix -D__svr3__"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
