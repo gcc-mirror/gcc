@@ -1,3 +1,11 @@
+2001-07-16  Stephen M. Webb  <stephen@bregmasoft.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CHEADERS):  Use glibcpp_srcdir when
+	setting C_INCLUDE_DIR.
+	* configure.in:  Revert yesterday's LN_S change.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2001-07-15  Phil Edwards  <pme@sources.redhat.com>
 
 	* configure.in:  Temporarily force LN_S to copy instead of symlink.

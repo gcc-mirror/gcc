@@ -721,7 +721,7 @@ target_alias=${target_alias-$target}
 
 # Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
 # be 'cp -p' if linking isn't available.
-ac_cv_prog_LN_S='cp -p'
+#ac_cv_prog_LN_S='cp -p'
 echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
 echo "configure:727: checking whether ln -s works" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LN_S'+set}'`\" = set"; then
@@ -3614,7 +3614,7 @@ fi
     case "$enable_cheaders" in
     c_shadow) 
         CSHADOW_FLAGS="-fno-builtin"
-        C_INCLUDE_DIR='${top_srcdir}/include/c_shadow'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_shadow'
         cat >> confdefs.h <<\EOF
 #define _GLIBCPP_USE_SHADOW_HEADERS 1
 EOF
@@ -3622,11 +3622,11 @@ EOF
         ;;
     c_std)   
         CSHADOW_FLAGS=""
-        C_INCLUDE_DIR='${top_srcdir}/include/c_std'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_std'
         ;;
     c)   
         CSHADOW_FLAGS=""
-        C_INCLUDE_DIR='${top_srcdir}/include/c'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c'
         ;;
   esac
 

@@ -38,7 +38,7 @@ AC_SUBST(target_alias)
 
 # Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
 # be 'cp -p' if linking isn't available.
-ac_cv_prog_LN_S='cp -p'
+#ac_cv_prog_LN_S='cp -p'
 AC_PROG_LN_S
 
 # We use these options to decide which functions to include.
