@@ -1,3 +1,7 @@
+2002-10-23  Robert Lipe  <robertlipe@usa.net>
+
+	* config.gcc (i[34567]86-*-sco3.2v5*): Fix tm_file.
+
 2002-10-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/761
