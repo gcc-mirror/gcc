@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -4027,7 +4027,8 @@
 
 (define_insn "casesi0"
   [(set (pc) (plus:SI
-	       (mem:SI (plus:SI (pc) (match_operand 0 "register_operand" "r")))
+	       (mem:SI (plus:SI (pc)
+				(match_operand:SI 0 "register_operand" "r")))
 	       (label_ref (match_operand 1 "" ""))))]
   ""
   "blr %0,0\;nop"
