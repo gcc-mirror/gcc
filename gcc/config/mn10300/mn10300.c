@@ -39,7 +39,10 @@ Boston, MA 02111-1307, USA.  */
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
    speed standpoint, so we want to optimize this sooner or later.  */
-#define REG_SAVE_BYTES (16)
+#define REG_SAVE_BYTES (4 * regs_ever_live[2] \
+			+ 4 * regs_ever_live[3] \
+			+ 4 * regs_ever_live[6] \
+			+ 4 * regs_ever_live[7])
 
 void
 asm_file_start (file)
