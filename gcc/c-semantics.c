@@ -924,7 +924,8 @@ static tree
 find_reachable_label (tree exp)
 {
   location_t saved_loc = input_location;
-  tree ret = walk_tree (&exp, find_reachable_label_1, NULL, NULL);
+  tree ret = walk_tree_without_duplicates
+		(&exp, find_reachable_label_1, NULL);
   input_location = saved_loc;
   return ret;
 }

@@ -1,3 +1,12 @@
+2003-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/1687
+	* tree-inline.c (find_alloca_call): Use
+	walk_tree_without_duplicates, instead of walk_tree.
+	(find_builtin_longjmp_call): Likewise.
+	* c-objc-common.c (c_cannot_inline_fn): Likewise.
+	* c-semantics.c (find_reachable_label): Likewise.
+
 2003-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/11420

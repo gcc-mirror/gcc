@@ -898,7 +898,8 @@ static tree
 find_alloca_call (tree exp)
 {
   location_t saved_loc = input_location;
-  tree ret = walk_tree (&exp, find_alloca_call_1, NULL, NULL);
+  tree ret = walk_tree_without_duplicates
+		(&exp, find_alloca_call_1, NULL);
   input_location = saved_loc;
   return ret;
 }
@@ -924,7 +925,8 @@ static tree
 find_builtin_longjmp_call (tree exp)
 {
   location_t saved_loc = input_location;
-  tree ret = walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
+  tree ret = walk_tree_without_duplicates
+		(&exp, find_builtin_longjmp_call_1, NULL);
   input_location = saved_loc;
   return ret;
 }
