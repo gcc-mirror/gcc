@@ -1,3 +1,12 @@
+2001-01-07  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (count_loop_regs_set): Delete.
+	(load_mems_and_recount_loop_regs_set): Delete.
+	(loop_regs_scan): Merge common code from count_loop_regs_set,
+	scan_loop, and load_mems_and_recount_loop_regs_set.
+	(scan_loop): Call load_mems directly and loop_regs_scan
+	again if new registers created.
+
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * toplev.c (main): Call the front-end specific post_options
