@@ -1,6 +1,6 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6963,25 +6963,25 @@ emit_reload_insns (struct insn_chain *chain)
      reloads for the operand.  The RELOAD_OTHER output reloads are
      output in descending order by reload number.  */
 
-  emit_insn_before (other_input_address_reload_insns, insn);
-  emit_insn_before (other_input_reload_insns, insn);
+  emit_insn_before_sameloc (other_input_address_reload_insns, insn);
+  emit_insn_before_sameloc (other_input_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      emit_insn_before (inpaddr_address_reload_insns[j], insn);
-      emit_insn_before (input_address_reload_insns[j], insn);
-      emit_insn_before (input_reload_insns[j], insn);
+      emit_insn_before_sameloc (inpaddr_address_reload_insns[j], insn);
+      emit_insn_before_sameloc (input_address_reload_insns[j], insn);
+      emit_insn_before_sameloc (input_reload_insns[j], insn);
     }
 
-  emit_insn_before (other_operand_reload_insns, insn);
-  emit_insn_before (operand_reload_insns, insn);
+  emit_insn_before_sameloc (other_operand_reload_insns, insn);
+  emit_insn_before_sameloc (operand_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      rtx x = emit_insn_after (outaddr_address_reload_insns[j], insn);
-      x = emit_insn_after (output_address_reload_insns[j], x);
-      x = emit_insn_after (output_reload_insns[j], x);
-      emit_insn_after (other_output_reload_insns[j], x);
+      rtx x = emit_insn_after_sameloc (outaddr_address_reload_insns[j], insn);
+      x = emit_insn_after_sameloc (output_address_reload_insns[j], x);
+      x = emit_insn_after_sameloc (output_reload_insns[j], x);
+      emit_insn_after_sameloc (other_output_reload_insns[j], x);
     }
 
   /* For all the spill regs newly reloaded in this instruction,

@@ -4383,6 +4383,9 @@ emit_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   rtx last = emit_insn_after (pattern, after);
 
+  if (pattern == NULL_RTX)
+    return last;
+
   after = NEXT_INSN (after);
   while (1)
     {
@@ -4400,6 +4403,9 @@ rtx
 emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   rtx last = emit_jump_insn_after (pattern, after);
+
+  if (pattern == NULL_RTX)
+    return last;
 
   after = NEXT_INSN (after);
   while (1)
@@ -4419,6 +4425,9 @@ emit_call_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   rtx last = emit_call_insn_after (pattern, after);
 
+  if (pattern == NULL_RTX)
+    return last;
+
   after = NEXT_INSN (after);
   while (1)
     {
@@ -4437,6 +4446,9 @@ emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   rtx first = PREV_INSN (before);
   rtx last = emit_insn_before (pattern, before);
+
+  if (pattern == NULL_RTX)
+    return last;
 
   first = NEXT_INSN (first);
   while (1)
