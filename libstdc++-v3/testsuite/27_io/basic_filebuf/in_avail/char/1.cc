@@ -21,12 +21,6 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <locale>
 #include <testsuite_hooks.h>
 
 // @require@ %-*.tst %-*.txt
@@ -39,8 +33,6 @@
 const int buffer_size = 8192;
 //const int buffer_size = 40;
 
-const char carray_01[] = "santa cruz or sandiego?";
-const char carray_02[] = "memphis, new orleans, and savanah";
 const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create

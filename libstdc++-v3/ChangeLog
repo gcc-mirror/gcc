@@ -1,3 +1,9 @@
+2003-05-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/basic_filebuf/close/char/3.cc: Remove
+	unnecessary includes and unused string literals.
+	* testsuite/27_io/basic_filebuf/in_avail/char/1.cc: Likewise.
+
 2003-05-08  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (setg, setp): Don't touch _M_mode.
