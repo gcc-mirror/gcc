@@ -37,8 +37,14 @@
 #include <cstring>
 #include <cstdio>
 #include <cctype>
+#include <bits/concurrence.h>
 
 using namespace std;
+
+namespace __gnu_internal
+{
+  __glibcxx_mutex_define_initialized(iterator_base_mutex);
+} // namespace __gnu_internal
 
 namespace __gnu_debug
 {
@@ -188,6 +194,7 @@ namespace __gnu_debug
     // Attach to the new sequence (if there is one)
     if (__seq)
       {
+	__gnu_cxx::lock sentry(__gnu_internal::iterator_base_mutex);
 	_M_sequence = __seq;
 	_M_version = _M_sequence->_M_version;
 	_M_prior = 0;
@@ -212,6 +219,7 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_detach()
   {
+    __gnu_cxx::lock sentry(__gnu_internal::iterator_base_mutex);
     if (_M_sequence)
       {
 	// Remove us from this sequence's list
