@@ -213,9 +213,6 @@ struct lang_hooks
      valid and should not be treated as language-independent too.  */
   int (*handle_option) (size_t code, const char *arg, int value);
 
-  /* Handle a filename on the command line.  */
-  void (*handle_filename) (const char *filename);
-
   /* Return false to use the default complaint about a missing
      argument, otherwise output a complaint and return true.  */
   bool (*missing_argument) (const char *opt, size_t code);

@@ -45,8 +45,6 @@ enum c_language_kind c_language = clk_c;
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
-#undef LANG_HOOKS_HANDLE_FILENAME
-#define LANG_HOOKS_HANDLE_FILENAME c_common_handle_filename
 #undef LANG_HOOKS_MISSING_ARGUMENT
 #define LANG_HOOKS_MISSING_ARGUMENT c_common_missing_argument
 #undef LANG_HOOKS_POST_OPTIONS

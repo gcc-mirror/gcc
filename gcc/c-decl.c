@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cpplib.h"
 #include "target.h"
 #include "debug.h"
+#include "opts.h"
 #include "timevar.h"
 #include "c-common.h"
 #include "c-pragma.h"
