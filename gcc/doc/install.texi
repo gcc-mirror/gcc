@@ -288,12 +288,11 @@ If you obtained the sources via CVS, @var{srcdir} must refer to the top
 @file{gcc} directory, the one where the @file{MAINTAINERS} can be found,
 and not its @file{gcc} subdirectory, otherwise the build will fail.
 
-First, we @strong{highly} recommend that GCC be built into a
-separate directory than the sources which does @strong{not} reside
-within the source tree.  This is how we generally build GCC; building
-where @var{srcdir} == @var{objdir} should still work, but doesn't
-get extensive testing; building where @var{objdir} is a subdirectory
-of @var{srcdir} is unsupported.
+First, in general, GCC @strong{must} be built into a separate directory
+than the sources which does @strong{not} reside within the source tree.
+This is how almost all developers build GCC; building where @var{srcdir}
+== @var{objdir} is completely unsupported; building where @var{objdir}
+is a subdirectory of @var{srcdir} is completely unsupported.
 
 If you have previously built GCC in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
