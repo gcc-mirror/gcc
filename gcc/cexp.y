@@ -153,7 +153,7 @@ static int keyword_parsing = 0;
 static int skip_evaluation;
 
 /* some external tables of character types */
-extern unsigned char is_idstart[], is_idchar[], is_hor_space[];
+extern unsigned char is_idstart[], is_idchar[], is_space[];
 
 /* Flag for -pedantic.  */
 extern int pedantic;
@@ -846,7 +846,7 @@ yylex ()
 
   if (keyword_parsing) {
     for (namelen = 0;; namelen++) {
-      if (is_hor_space[tokstart[namelen]])
+      if (is_space[tokstart[namelen]])
 	break;
       if (tokstart[namelen] == '(' || tokstart[namelen] == ')')
 	break;
@@ -1108,9 +1108,8 @@ main (argc, argv)
 unsigned char is_idchar[256];
 /* table to tell if char can be first char of a c identifier. */
 unsigned char is_idstart[256];
-/* table to tell if c is horizontal space.  isspace () thinks that
-   newline is space; this is not a good idea for this program. */
-unsigned char is_hor_space[256];
+/* table to tell if c is horizontal or vertical space.  */
+unsigned char is_space[256];
 
 /*
  * initialize random junk in the hash table and maybe other places
@@ -1139,9 +1138,12 @@ initialize_random_junk ()
   ++is_idchar['$'];
   ++is_idstart['$'];
 
-  /* horizontal space table */
-  ++is_hor_space[' '];
-  ++is_hor_space['\t'];
+  ++is_space[' '];
+  ++is_space['\t'];
+  ++is_space['\v'];
+  ++is_space['\f'];
+  ++is_space['\n'];
+  ++is_space['\r'];
 }
 
 void
