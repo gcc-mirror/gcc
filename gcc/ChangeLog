@@ -1,3 +1,12 @@
+2003-12-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/13475
+	Backport from mainline:
+		2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
+
+		* expr.c (const_vector_from_tree): Initialize remaining elements
+		to 0.
+
 2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/11576

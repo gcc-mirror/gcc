@@ -11296,6 +11296,10 @@ const_vector_from_tree (exp)
 					       TREE_INT_CST_HIGH (elt),
 					       inner);
     }
+  
+  /* Initialize remaining elements to 0.  */
+  for (; i < units; ++i)
+    RTVEC_ELT (v, i) = CONST0_RTX (inner);
 
   return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
