@@ -1,3 +1,8 @@
+2005-02-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* symbol.c (gfc_use_ha_derived): Remove, fold functionality into ...
+	(gfc_use_derived): ... this function.
+
 2005-02-09  Richard Henderson  <rth@redhat.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Call

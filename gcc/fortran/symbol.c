@@ -1201,13 +1201,16 @@ switch_types (gfc_symtree * st, gfc_symbol * from, gfc_symbol * to)
    pointer to the translated node or NULL for an error.  Usually there
    is no translation and we return the node we were passed.  */
 
-static gfc_symtree *
-gfc_use_ha_derived (gfc_symbol * sym)
+gfc_symbol *
+gfc_use_derived (gfc_symbol * sym)
 {
   gfc_symbol *s, *p;
   gfc_typespec *t;
   gfc_symtree *st;
   int i;
+
+  if (sym->components != NULL)
+    return sym;               /* Already defined.  */
 
   if (sym->ns->parent == NULL)
     goto bad;
@@ -1251,28 +1254,12 @@ gfc_use_ha_derived (gfc_symbol * sym)
      namelists, common lists and interface lists.  */
   gfc_free_symbol (sym);
 
-  return st;
+  return s;
 
 bad:
   gfc_error ("Derived type '%s' at %C is being used before it is defined",
 	     sym->name);
   return NULL;
-}
-
-
-gfc_symbol *
-gfc_use_derived (gfc_symbol * sym)
-{
-  gfc_symtree *st;
-
-  if (sym->components != NULL)
-    return sym;			/* Already defined */
-
-  st = gfc_use_ha_derived (sym);
-  if (st)
-    return st->n.sym;
-  else
-    return NULL;
 }
 
 
