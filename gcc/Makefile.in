@@ -822,8 +822,8 @@ $(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
 	  $(srcdir)/c-parse.in > $(srcdir)/objc-parse.y
 
-objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h \
-   flags.h objc-act.h
+objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h c-lex.h \
+   flags.h objc-act.h input.h function.h $(srcdir)/c-parse.h
 
 # A file used by all variants of C.
 
@@ -1304,7 +1304,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 
 # Build the include directory except for float.h (which depends upon
 # enquire).
-stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h
+stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h objc-headers
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1364,6 +1364,17 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES)
 	else true; \
 	fi
 	touch stmp-fixinc
+
+# copy objc header files
+objc-headers: force
+	thisdir1=`pwd`; \
+	srcdir1=`cd $(srcdir); pwd`; \
+	cd objc; \
+	$(MAKE) -f $${srcdir1}/objc/Makefile copy-headers \
+	srcdir=$${srcdir1} tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
+	GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include
+  
 
 # Remake the info files.
 
