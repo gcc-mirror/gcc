@@ -865,6 +865,20 @@ do_member_init (s_id, name, init)
   expand_member_init (build_indirect_ref (base, NULL_PTR), name, init);
 }
 
+/* Find the context in which this FIELD can be initialized.  */
+static tree
+initializing_context (field)
+     tree field;
+{
+  tree t = DECL_CONTEXT (field);
+
+  /* Anonymous union members can be initialized in the first enclosing
+     non-anonymous union context.  */
+  while (t && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+    t = TYPE_CONTEXT (t);
+  return t;
+}
+
 /* Function to give error message if member initialization specification
    is erroneous.  FIELD is the member we decided to initialize.
    TYPE is the type for which the initialization is being performed.
@@ -880,7 +894,7 @@ member_init_ok_or_else (field, type, member_name)
 {
   if (field == error_mark_node)
     return 0;
-  if (field == NULL_TREE || DECL_CONTEXT (field) != type)
+  if (field == NULL_TREE || initializing_context (field) != type)
     {
       cp_error ("class `%T' does not have any field named `%s'", type,
 		member_name);
@@ -2204,7 +2218,14 @@ is_friend (type, supplicant)
     tree context;
 
     if (! declp)
-      context = DECL_CONTEXT (TYPE_NAME (supplicant));
+      {
+	/* Are we a nested or local class?  If so, we aren't friends
+           with the CONTEXT.  */
+	if (IS_AGGR_TYPE (supplicant))
+	  context = NULL_TREE;
+	else
+	  context = DECL_CONTEXT (TYPE_NAME (supplicant));
+      }
     else if (DECL_FUNCTION_MEMBER_P (supplicant))
       context = DECL_CLASS_CONTEXT (supplicant);
     else

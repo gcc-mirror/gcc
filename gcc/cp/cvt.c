@@ -565,12 +565,6 @@ build_up_reference (type, arg, flags, checkconst)
 		    build_up_reference (type, TREE_OPERAND (targ, 1),
 					LOOKUP_PROTECT, checkconst));
 
-    case WITH_CLEANUP_EXPR:
-      return build (WITH_CLEANUP_EXPR, type,
-		    build_up_reference (type, TREE_OPERAND (targ, 0),
-					LOOKUP_PROTECT, checkconst),
-		    0, TREE_OPERAND (targ, 2));
-
     case BIND_EXPR:
       arg = TREE_OPERAND (targ, 1);
       if (arg == NULL_TREE)
@@ -593,12 +587,7 @@ build_up_reference (type, arg, flags, checkconst)
       if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
 	  temp = build_cplus_new (argtype, targ, 1);
-	  if (TREE_CODE (temp) == WITH_CLEANUP_EXPR)
-	    rval = build (WITH_CLEANUP_EXPR, type,
-			  build1 (ADDR_EXPR, type, TREE_OPERAND (temp, 0)),
-			  0, TREE_OPERAND (temp, 2));
-	  else
-	    rval = build1 (ADDR_EXPR, type, temp);
+	  rval = build1 (ADDR_EXPR, type, temp);
 	  goto done;
 	}
       else if (flags&INDIRECT_BIND)

@@ -2753,6 +2753,77 @@ mark_overriders (fndecl, base_fndecls)
     }
 }
 
+/* If this declaration supersedes the declaration of
+   a method declared virtual in the base class, then
+   mark this field as being virtual as well.  */
+
+void
+fixup_virtual (decl, ctype)
+     tree decl, ctype;
+{
+  tree binfos = BINFO_BASETYPES (TYPE_BINFO (ctype));
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  int virtualp = DECL_VIRTUAL_P (decl);
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo))
+	  || flag_all_virtual == 1)
+	{
+	  tree tmp = get_matching_virtual
+	    (base_binfo, decl,
+	     DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)));
+	  if (tmp)
+	    {
+	      /* If this function overrides some virtual in some base
+		 class, then the function itself is also necessarily
+		 virtual, even if the user didn't explicitly say so.  */
+	      DECL_VIRTUAL_P (decl) = 1;
+
+	      /* The TMP we really want is the one from the deepest
+		 baseclass on this path, taking care not to
+		 duplicate if we have already found it (via another
+		 path to its virtual baseclass.  */
+	      if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
+		{
+		  cp_error_at ("method `%D' may not be declared static",
+			       decl);
+		  cp_error_at ("(since `%D' declared virtual in base class.)",
+			       tmp);
+		  break;
+		}
+	      virtualp = 1;
+
+	      {
+		/* The argument types may have changed... */
+		tree type = TREE_TYPE (decl);
+		tree argtypes = TYPE_ARG_TYPES (type);
+		tree base_variant = TREE_TYPE (TREE_VALUE (argtypes));
+		tree raises = TYPE_RAISES_EXCEPTIONS (type);
+
+		argtypes = commonparms (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (tmp))),
+					TREE_CHAIN (argtypes));
+		/* But the return type has not.  */
+		type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
+		if (raises)
+		  type = build_exception_variant (type, raises);
+		TREE_TYPE (decl) = type;
+		DECL_VINDEX (decl)
+		  = tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
+	      }
+	      break;
+	    }
+	}
+    }
+  if (virtualp)
+    {
+      if (DECL_VINDEX (decl) == NULL_TREE)
+	DECL_VINDEX (decl) = error_mark_node;
+      IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
+    }
+}
+
 /* Warn about hidden virtual functions that are not overridden in t.  */
 void
 warn_hidden (t)
@@ -2889,6 +2960,8 @@ extern int interface_only, interface_unknown;
    TREE_LIST elements, whose TREE_PURPOSE field tells what access
    the list has, and the TREE_VALUE slot gives the actual fields.
 
+   ATTRIBUTES is the set of decl attributes to be applied, if any.
+
    If flag_all_virtual == 1, then we lay all functions into
    the virtual function table, as though they were declared
    virtual.  Constructors do not lay down in the virtual function table.
@@ -2920,13 +2993,11 @@ extern int interface_only, interface_unknown;
    or otherwise in a type-consistent manner.  */
 
 tree
-finish_struct_1 (t, warn_anon)
-     tree t;
+finish_struct_1 (t, attributes, warn_anon)
+     tree t, attributes;
      int warn_anon;
 {
   int old;
-  int round_up_size = 1;
-
   tree name = TYPE_IDENTIFIER (t);
   enum tree_code code = TREE_CODE (t);
   tree fields = TYPE_FIELDS (t);
@@ -2985,6 +3056,8 @@ finish_struct_1 (t, warn_anon)
 
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
+
+  cplus_decl_attributes (t, attributes, NULL_TREE);
 
 #if 0
   /* This is in general too late to do this.  I moved the main case up to
@@ -3103,6 +3176,8 @@ finish_struct_1 (t, warn_anon)
 	 will end up with garbage in it.  */
       DECL_SAVED_INSNS (x) = NULL_RTX;
       DECL_FIELD_SIZE (x) = 0;
+
+      fixup_virtual (x, t);
 
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
@@ -3329,13 +3404,7 @@ finish_struct_1 (t, warn_anon)
 	      if (width == 0)
 		{
 #ifdef EMPTY_FIELD_BOUNDARY
-		  /* field size 0 => mark following field as "aligned" */
-		  if (TREE_CHAIN (x))
-		    DECL_ALIGN (TREE_CHAIN (x))
-		      = MAX (DECL_ALIGN (TREE_CHAIN (x)), EMPTY_FIELD_BOUNDARY);
-		  /* field of size 0 at the end => round up the size.  */
-		  else
-		    round_up_size = EMPTY_FIELD_BOUNDARY;
+		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
@@ -3715,10 +3784,6 @@ finish_struct_1 (t, warn_anon)
      then lay out the structure or union (including the fields).  */
 
   TYPE_FIELDS (t) = fields;
-
-  /* If there's a :0 field at the end, round the size to the
-     EMPTY_FIELD_BOUNDARY.  */
-  TYPE_ALIGN (t) = round_up_size;
 
   /* Pass layout information about base classes to layout_type, if any.  */
   if (n_baseclasses)
@@ -4168,9 +4233,8 @@ finish_struct_1 (t, warn_anon)
 }
 
 tree
-finish_struct (t, list_of_fieldlists, warn_anon)
-     tree t;
-     tree list_of_fieldlists;
+finish_struct (t, list_of_fieldlists, attributes, warn_anon)
+     tree t, list_of_fieldlists, attributes;
      int warn_anon;
 {
   tree fields = NULL_TREE;
@@ -4301,7 +4365,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       return t;
     }
   else
-    return finish_struct_1 (t, warn_anon);
+    return finish_struct_1 (t, attributes, warn_anon);
 }
 
 /* Return non-zero if the effective type of INSTANCE is static.
@@ -4374,10 +4438,6 @@ resolves_to_fixed_type_p (instance, nonnull)
     case COMPONENT_REF:
       return resolves_to_fixed_type_p (TREE_OPERAND (instance, 1), nonnull);
 
-    case WITH_CLEANUP_EXPR:
-      if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
-	return resolves_to_fixed_type_p (TREE_OPERAND (instance, 0), nonnull);
-      /* fall through... */
     case VAR_DECL:
     case FIELD_DECL:
       if (TREE_CODE (TREE_TYPE (instance)) == ARRAY_TYPE

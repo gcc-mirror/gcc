@@ -580,7 +580,8 @@ struct binding_level
     /* This is set for a namespace binding level.  */
     unsigned namespace_p : 1;
 
-    /* True if this level is that of a for-statement. */
+    /* True if this level is that of a for-statement where we need to
+       worry about ambiguous (traditional or ANSI) scope rules. */
     unsigned is_for_scope : 1;
 
     /* One bit left for this word.  */
@@ -1086,26 +1087,31 @@ poplevel (keep, reverse, functionbody)
 
   /* Clear out the meanings of the local variables of this level.  */
 
-  for (link = current_binding_level->dead_vars_from_for;
-       link != NULL_TREE; link = TREE_CHAIN (link))
-    {
-      if (DECL_DEAD_FOR_LOCAL (link))
-	{
-	  tree id = DECL_NAME (link);
-	  if (IDENTIFIER_LOCAL_VALUE (id) == link)
-	    IDENTIFIER_LOCAL_VALUE (id) = DECL_SHADOWED_FOR_VAR (link);
-	}
-    }
-
   if (current_binding_level->is_for_scope && flag_new_for_scope == 1)
     {
+      struct binding_level *outer = current_binding_level->level_chain;
       for (link = decls; link; link = TREE_CHAIN (link))
 	{
 	  if (TREE_CODE (link) == VAR_DECL)
 	    DECL_DEAD_FOR_LOCAL (link) = 1;
 	}
+
+      /* Save declarations made in a 'for' statement so we can support pre-ANSI
+	 'for' scoping semantics. */
+
+      for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
+	{
+	  tree id = TREE_PURPOSE (link);
+	  tree decl = IDENTIFIER_LOCAL_VALUE (id);
+
+	  /* In this case keep the dead for-decl visible,
+	     but remember what (if anything) it shadowed. */
+	  DECL_SHADOWED_FOR_VAR (decl) = TREE_VALUE (link);
+	  TREE_CHAIN (decl) = outer->dead_vars_from_for;
+	  outer->dead_vars_from_for = decl;
+	}
     }
-  else
+  else /* Not special for scope. */
     {
       for (link = decls; link; link = TREE_CHAIN (link))
 	{
@@ -1123,50 +1129,42 @@ poplevel (keep, reverse, functionbody)
 	      IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = NULL_TREE;
 	    }
 	}
-    }
 
-  /* Restore all name-meanings of the outer levels
-     that were shadowed by this level.  */
+      /* Restore all name-meanings of the outer levels
+	 that were shadowed by this level.  */
 
-  if (current_binding_level->is_for_scope && flag_new_for_scope == 1)
-    {
-      struct binding_level *outer = current_binding_level->level_chain;
-      for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
+      for (link = current_binding_level->shadowed;
+	   link; link = TREE_CHAIN (link))
+	IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+
+      /* We first restore the regular decls and *then* the dead_vars_from_for
+	 to handle this case:
+
+	 int i; // i#1
+	 {
+	   for (int i; ; ) { ...} // i#2
+           int i; // i#3
+	 } // we are here
+
+	 In this case, we want remove the binding for i#3, restoring
+	 that of i#2.  Then we want to remove the binding for i#2,
+	 and restore that of i#1. */
+
+      link = current_binding_level->dead_vars_from_for;
+      for (; link != NULL_TREE; link = TREE_CHAIN (link))
 	{
-	  tree id = TREE_PURPOSE (link);
-	  tree decl = IDENTIFIER_LOCAL_VALUE (id);
-	  if (DECL_DEAD_FOR_LOCAL (decl))
-	    DECL_SHADOWED_FOR_VAR (decl) = TREE_VALUE (link);
-	  else
-	    IDENTIFIER_LOCAL_VALUE (id) = TREE_VALUE (link);
+	  tree id = DECL_NAME (link);
+	  if (IDENTIFIER_LOCAL_VALUE (id) == link)
+	    IDENTIFIER_LOCAL_VALUE (id) = DECL_SHADOWED_FOR_VAR (link);
 	}
 
-      /* Save declarations made in a 'for' statement so we can support pre-ANSI
-	 'for' scoping semantics. */
-
-      /* We append the current names of for-variables to those from previous
-	 declarations, so that when we get around to do an poplevel
-	 on the OUTER level, we restore the any shadowed readl bindings.
-	 Note that the new names are put first on the combined list,
-	 so they get to be restored first.  This is important if there are
-	 two for-loops using the same for-variable in the same block.
-	 The binding we really want restored is whatever binding was shadowed
-	 by the *first* for-variable, not the binding shadowed by the
-	 second for-variable (which would be the first for-variable). */
-      outer->dead_vars_from_for
-	= chainon (current_binding_level->names, outer->dead_vars_from_for);
+      for (link = current_binding_level->class_shadowed;
+	   link; link = TREE_CHAIN (link))
+	IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+      for (link = current_binding_level->type_shadowed;
+	   link; link = TREE_CHAIN (link))
+	IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
     }
-  else
-    {
-      for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
-	IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-    }
-  for (link = current_binding_level->class_shadowed;
-       link; link = TREE_CHAIN (link))
-    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-  for (link = current_binding_level->type_shadowed;
-       link; link = TREE_CHAIN (link))
-    IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
 
   /* If the level being exited is the top level of a function,
      check over all the labels.  */
@@ -3003,9 +3001,7 @@ pushdecl (x)
 	{
 	  file = DECL_SOURCE_FILE (t);
 	  line = DECL_SOURCE_LINE (t);
-	  if (TREE_CODE (x) == VAR_DECL && DECL_DEAD_FOR_LOCAL (x))
-	    ; /* This is OK. */
-	  else if (TREE_CODE (t) == PARM_DECL)
+	  if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
 		fatal ("parse errors have confused me too much");
@@ -5821,7 +5817,8 @@ start_decl (declarator, declspecs, initialized, raises)
     tem = decl;
   else
     tem = pushdecl (decl);
-	     
+
+#if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   /* Tell the back-end to use or not use .common as appropriate.  If we say
      -fconserve-space, we want this to save space, at the expense of wrong
      semantics.  If we say -fno-conserve-space, we want this to produce
@@ -5830,6 +5827,7 @@ start_decl (declarator, declspecs, initialized, raises)
      the linker can't match it with storage from other files, and we may
      save some disk space.  */
   DECL_COMMON (tem) = flag_conserve_space || ! TREE_PUBLIC (tem);
+#endif
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
@@ -5957,23 +5955,15 @@ grok_reference_init (decl, type, init, cleanupp)
 	 don't get burned by "aggressive" cleanup policy.  */
       if (TYPE_NEEDS_DESTRUCTOR (subtype))
 	{
-	  if (TREE_CODE (init) == WITH_CLEANUP_EXPR)
+	  if (TREE_CODE (tmp) == ADDR_EXPR)
+	    tmp = TREE_OPERAND (tmp, 0);
+	  if (TREE_CODE (tmp) == TARGET_EXPR)
 	    {
-	      *cleanupp = TREE_OPERAND (init, 2);
-	      TREE_OPERAND (init, 2) = error_mark_node;
-	    }
-	  else
-	    {
-	      if (TREE_CODE (tmp) == ADDR_EXPR)
-		tmp = TREE_OPERAND (tmp, 0);
-	      if (TREE_CODE (tmp) == TARGET_EXPR)
-		{
-		  *cleanupp = build_delete
-		    (build_pointer_type (subtype),
-		     build_unary_op (ADDR_EXPR, TREE_OPERAND (tmp, 0), 0),
-		     integer_two_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
-		  TREE_OPERAND (tmp, 2) = error_mark_node;
-		}
+	      *cleanupp = build_delete
+		(build_pointer_type (subtype),
+		 build_unary_op (ADDR_EXPR, TREE_OPERAND (tmp, 0), 0),
+		 integer_two_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
+	      TREE_OPERAND (tmp, 2) = error_mark_node;
 	    }
 	}
 
@@ -6024,10 +6014,12 @@ obscure_complex_init (decl, init)
 	return NULL_TREE;
     }
 
+#if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   if (toplevel_bindings_p () && ! DECL_COMMON (decl))
     DECL_INITIAL (decl) = build (CONSTRUCTOR, TREE_TYPE (decl), NULL_TREE,
 				 NULL_TREE);
   else
+#endif
     DECL_INITIAL (decl) = error_mark_node;
 
   return init;
@@ -6346,18 +6338,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (!DECL_EXTERNAL (decl) && TYPE_NEEDS_DESTRUCTOR (type))
 	{
 	  int yes = suspend_momentary ();
-
-	  /* If INIT comes from a functional cast, use the cleanup
-	     we built for that.  Otherwise, make our own cleanup.  */
-	  if (init && TREE_CODE (init) == WITH_CLEANUP_EXPR
-	      && comptypes (TREE_TYPE (decl), TREE_TYPE (init), 1))
-	    {
-	      cleanup = TREE_OPERAND (init, 2);
-	      init = TREE_OPERAND (init, 0);
-	      current_binding_level->have_cleanups = 1;
-	    }
-	  else
-	    cleanup = maybe_build_cleanup (decl);
+	  cleanup = maybe_build_cleanup (decl);
 	  resume_momentary (yes);
 	}
     }
@@ -6529,6 +6510,52 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 			      decl);
 		  /* Cleanup used up here.  */
 		  cleanup = NULL_TREE;
+		}
+	    }
+
+	  if (current_binding_level->is_for_scope)
+	    {
+	      struct binding_level *outer = current_binding_level->level_chain;
+
+	      /* Check to see if the same name is already bound at
+		 the outer level, either because it was directly declared,
+		 or because a dead for-decl got preserved.  In either case,
+		 the code would not have been valid under the traditional
+		 scope rules, so clear is_for_scope for the
+		 current_binding_level.
+
+		 Otherwise, we need to preserve the temp slot for decl
+		 to last into the outer binding level. */
+
+	      int handling_dead_for_vars = 0;
+	      tree link = outer->names;
+	      for (; ; link = TREE_CHAIN (link))
+		{
+		  if (link == NULL && handling_dead_for_vars == 0)
+		    {
+		      link = outer->dead_vars_from_for;
+		      handling_dead_for_vars = 1;
+		    }
+		  if (link == NULL)
+		    {
+		      if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
+			preserve_temp_slots (DECL_RTL (decl));
+		      break;
+		    }
+		  if (DECL_NAME (link) == DECL_NAME (decl))
+		    {
+		      if (handling_dead_for_vars)
+			{
+			  tree shadowing
+			    = purpose_member (DECL_NAME (decl),
+					      current_binding_level->shadowed);
+			  if (shadowing && TREE_VALUE (shadowing) == link)
+			    TREE_VALUE (shadowing)
+			      = DECL_SHADOWED_FOR_VAR (link);
+			}
+		      current_binding_level->is_for_scope = 0;
+		      break;
+		    }
 		}
 	    }
 
@@ -7027,81 +7054,12 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 				   TREE_VALUE (attrlist));
 	  make_decl_rtl (decl, NULL_PTR, 1);
 	}
-
-      /* If this declaration supersedes the declaration of
-	 a method declared virtual in the base class, then
-	 mark this field as being virtual as well.  */
-      {
-	tree binfos = BINFO_BASETYPES (TYPE_BINFO (ctype));
-	int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-	for (i = 0; i < n_baselinks; i++)
-	  {
-	    tree base_binfo = TREE_VEC_ELT (binfos, i);
-	    if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo))
-		|| flag_all_virtual == 1)
-	      {
-		tmp = get_matching_virtual (base_binfo, decl,
-					    flags == DTOR_FLAG);
-		if (tmp)
-		  {
-		    /* If this function overrides some virtual in some base
-		       class, then the function itself is also necessarily
-		       virtual, even if the user didn't explicitly say so.  */
-		    DECL_VIRTUAL_P (decl) = 1;
-
-		    /* The TMP we really want is the one from the deepest
-		       baseclass on this path, taking care not to
-		       duplicate if we have already found it (via another
-		       path to its virtual baseclass.  */
-		    if (staticp)
-		      {
-			cp_error ("method `%D' may not be declared static",
-				  decl);
-			cp_error_at ("(since `%D' declared virtual in base class.)",
-				     tmp);
-			break;
-		      }
-		    virtualp = 1;
-
-		    {
-		      /* The argument types may have changed... */
-		      tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-		      tree base_variant = TREE_TYPE (TREE_VALUE (argtypes));
-
-		      argtypes = commonparms (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (tmp))),
-					      TREE_CHAIN (argtypes));
-		      /* But the return type has not.  */
-		      type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
-		      if (raises)
-			{
-			  type = build_exception_variant (type, raises);
-			  raises = TYPE_RAISES_EXCEPTIONS (type);
-			}
-		      TREE_TYPE (decl) = type;
-		      DECL_VINDEX (decl)
-			= tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
-		    }
-		    break;
-		  }
-	      }
-	  }
-      }
       if (virtualp)
 	{
+	  DECL_VIRTUAL_P (decl) = 1;
 	  if (DECL_VINDEX (decl) == NULL_TREE)
 	    DECL_VINDEX (decl) = error_mark_node;
 	  IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
-	  if (ctype && CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)
-	      /* If this function is derived from a template, don't
-		 make it public.  This shouldn't be here, but there's
-		 no good way to override the interface pragmas for one
-		 function or class only.  Bletch.  */
-	      && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (ctype)) == NULL_TREE
-	      && (write_virtuals == 2
-		  || (write_virtuals == 3
-		      && CLASSTYPE_INTERFACE_KNOWN (ctype))))
-	    TREE_PUBLIC (decl) = 1;
 	}
     }
   return decl;

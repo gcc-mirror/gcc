@@ -901,7 +901,7 @@ template_instantiate_once:
 		}
 	  left_curly opt.component_decl_list '}'
 		{
-		  tree t = finish_struct ($<ttype>3, $5, 0);
+		  tree t = finish_struct ($<ttype>3, $5, NULL_TREE, 0);
 
 		  pop_obstacks ();
 		  end_template_instantiation ($1);
@@ -2187,7 +2187,7 @@ structsp:
 	| TYPENAME_KEYWORD complex_type_name
 		{ $$ = $2; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
-	| class_head left_curly opt.component_decl_list '}'
+	| class_head left_curly opt.component_decl_list '}' maybe_attribute
 		{
 		  int semi;
 		  tree id;
@@ -2209,7 +2209,7 @@ structsp:
 		    /* $$ = $1 from default rule.  */;
 		  else
 		    {
-		      $$ = finish_struct ($$, $3, semi);
+		      $$ = finish_struct ($$, $3, $5, semi);
 		      if (semi) note_got_semicolon ($$);
 		    }
 

@@ -2283,8 +2283,7 @@ check_newline ()
                  tricks.  */
 	      else
 		{
-		  ungetc (c, finput);
-		  HANDLE_PRAGMA (finput);
+		  c = HANDLE_PRAGMA (finput, c);
 		}
 #endif
 #endif
@@ -2940,6 +2939,11 @@ do_identifier (token)
   if (TREE_CODE (id) == VAR_DECL && DECL_DEAD_FOR_LOCAL (id))
     {
       tree shadowed = DECL_SHADOWED_FOR_VAR (id);
+      while (shadowed != NULL_TREE && TREE_CODE (shadowed) == VAR_DECL
+	     && DECL_DEAD_FOR_LOCAL (shadowed))
+	shadowed = DECL_SHADOWED_FOR_VAR (shadowed);
+      if (!shadowed)
+	shadowed = IDENTIFIER_GLOBAL_VALUE (DECL_NAME (id));
       if (shadowed)
 	{
 	  if (!DECL_ERROR_REPORTED (id))

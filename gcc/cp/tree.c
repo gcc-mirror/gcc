@@ -74,9 +74,6 @@ real_lvalue_p (ref)
 	return 1;
       break;
 
-    case WITH_CLEANUP_EXPR:
-      return real_lvalue_p (TREE_OPERAND (ref, 0));
-
       /* A currently unresolved scope ref.  */
     case SCOPE_REF:
       my_friendly_abort (103);
@@ -147,9 +144,6 @@ lvalue_p (ref)
 	return 1;
       break;
 
-    case WITH_CLEANUP_EXPR:
-      return lvalue_p (TREE_OPERAND (ref, 0));
-
     case TARGET_EXPR:
       return 1;
 
@@ -206,12 +200,7 @@ lvalue_or_else (ref, string)
 
    Build an encapsulation of the initialization to perform
    and return it so that it can be processed by language-independent
-   and language-specific expression expanders.
-
-   If WITH_CLEANUP_P is nonzero, we build a cleanup for this expression.
-   Otherwise, cleanups are not built here.  For example, when building
-   an initialization for a stack slot, since the called function handles
-   the cleanup, we would not want to do it here.  */
+   and language-specific expression expanders.  */
 tree
 build_cplus_new (type, init, with_cleanup_p)
      tree type;
@@ -231,19 +220,6 @@ build_cplus_new (type, init, with_cleanup_p)
   TREE_SIDE_EFFECTS (rval) = 1;
   TREE_ADDRESSABLE (rval) = 1;
 
-#if 0
-  if (with_cleanup_p && TYPE_NEEDS_DESTRUCTOR (type))
-    {
-      TREE_OPERAND (rval, 2) = error_mark_node;
-      rval = build (WITH_CLEANUP_EXPR, type, rval, 0,
-		    build_delete (build_pointer_type (type),
-				  build_unary_op (ADDR_EXPR, slot, 0),
-				  integer_two_node,
-				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0));
-      TREE_SIDE_EFFECTS (rval) = 1;
-      TREE_ADDRESSABLE (rval) = 1;
-    }
-#endif
   return rval;
 }
 
@@ -1807,11 +1783,6 @@ unsave_expr_now (expr)
 	      exp = TREE_CHAIN (exp);
 	    }
 	}
-      break;
-      
-    case WITH_CLEANUP_EXPR:
-      warning ("WITH_CLEANUP_EXPR reused inside UNSAVE_EXPR");
-      RTL_EXPR_RTL (expr) = NULL_RTX;
       break;
     }
 
