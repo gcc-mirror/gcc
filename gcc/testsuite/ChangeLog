@@ -1,3 +1,8 @@
+2001-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/init16.C: Update the test so that it does
+	not need <string> and also tests the initialization at runtime.
+
 2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.c-torture/execute/longlong.c: New test.

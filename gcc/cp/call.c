@@ -3850,7 +3850,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	tree ref_type = totype;
 
 	/* If necessary, create a temporary.  */
-	if (NEED_TEMPORARY_P (convs))
+	if (NEED_TEMPORARY_P (convs) || !lvalue_p (expr))
 	  {
 	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
 	    expr = build_target_expr_with_type (expr, type);
