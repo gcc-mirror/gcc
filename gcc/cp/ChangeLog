@@ -96,12 +96,6 @@
 	* error.c (dump_function_name): If T's DECL_LANG_SPECIFIC
 	is null, just print the literal name and return.
 
-2004-03-25  Jason Merrill  <jason@redhat.com>
-
-	PR c++/13294
-	* pt.c (maybe_process_partial_specialization): Remember the
-	context of a specialization.
-
 2004-03-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cxx-pretty-print.c: Fix comment typos.
