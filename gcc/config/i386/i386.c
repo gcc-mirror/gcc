@@ -12312,3 +12312,47 @@ ix86_svr3_asm_out_constructor (symbol, priority)
   fputc ('\n', asm_out_file);
 }
 #endif
+
+/* Order the registers for register allocator.  */
+
+void
+x86_order_regs_for_local_alloc ()
+{
+   int pos = 0;
+   int i;
+
+   /* First allocate the local general purpose registers.  */
+   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+     if (GENERAL_REGNO_P (i) && call_used_regs[i])
+	reg_alloc_order [pos++] = i;
+
+   /* Global general purpose registers.  */
+   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+     if (GENERAL_REGNO_P (i) && !call_used_regs[i])
+	reg_alloc_order [pos++] = i;
+
+   /* x87 registers come first in case we are doing FP math
+      using them.  */
+   if (!TARGET_SSE_MATH)
+     for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+       reg_alloc_order [pos++] = i;
+   
+   /* SSE registers.  */
+   for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
+     reg_alloc_order [pos++] = i;
+   for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+     reg_alloc_order [pos++] = i;
+
+   /* x87 registerts.  */
+   if (TARGET_SSE_MATH)
+     for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+       reg_alloc_order [pos++] = i;
+
+   for (i = FIRST_MMX_REG; i <= LAST_MMX_REG; i++)
+     reg_alloc_order [pos++] = i;
+
+   /* Initialize the rest of array as we do not allocate some registers
+      at all.  */
+   while (pos < FIRST_PSEUDO_REGISTER)
+     reg_alloc_order [pos++] = 0;
+}

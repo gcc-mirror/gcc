@@ -169,6 +169,7 @@ extern int ix86_memory_move_cost PARAMS ((enum machine_mode, enum reg_class,
 extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
 extern void emit_i387_cw_initialization PARAMS ((rtx, rtx));
 extern bool ix86_fp_jump_nontrivial_p PARAMS ((enum rtx_code));
+extern void x86_order_regs_for_local_alloc PARAMS ((void));
 
 
 #ifdef TREE_CODE
