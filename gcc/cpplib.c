@@ -308,7 +308,6 @@ static int compare_token_lists ();
 static HOST_WIDE_INT eval_if_expression ();
 static int change_newlines ();
 extern int hashf ();
-static int file_size_and_mode ();
 static struct arglist *read_token_list ();
 static void free_token_list ();
 static int safe_read ();
@@ -5626,14 +5625,14 @@ finclude (pfile, f, fname, system_header_p, dirptr)
      int system_header_p;
      struct file_name_list *dirptr;
 {
-  int st_mode;
-  long st_size;
+  struct stat st;
+  size_t st_size;
   long i;
   int length;
   cpp_buffer *fp;			/* For input stack frame */
   int missing_newline = 0;
 
-  if (file_size_and_mode (f, &st_mode, &st_size) < 0)
+  if (fstat (f, &st) < 0)
     {
       cpp_perror_with_name (pfile, fname);
       close (f);
@@ -5652,7 +5651,13 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   fp->colno = 1;
   fp->cleanup = file_cleanup;
 
-  if (S_ISREG (st_mode)) {
+  if (S_ISREG (st.st_mode)) {
+    st_size = (size_t) st.st_size;
+    if (st_size != st.st_size || st_size + 2 < st_size) {
+      cpp_error (pfile, "file `%s' too large", fname);
+      close (f);
+      return 0;
+    }
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
     fp->alimit = fp->buf + st_size + 2;
     fp->cur = fp->buf;
@@ -5663,7 +5668,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
     fp->rlimit = fp->buf + length;
     if (length < 0) goto nope;
   }
-  else if (S_ISDIR (st_mode)) {
+  else if (S_ISDIR (st.st_mode)) {
     cpp_error (pfile, "directory `%s' specified in #include", fname);
     close (f);
     return 0;
@@ -7234,23 +7239,6 @@ free_token_list (tokens)
   }
 }
 
-/* Get the file-mode and data size of the file open on FD
-   and store them in *MODE_POINTER and *SIZE_POINTER.  */
-
-static int
-file_size_and_mode (fd, mode_pointer, size_pointer)
-     int fd;
-     int *mode_pointer;
-     long int *size_pointer;
-{
-  struct stat sbuf;
-
-  if (fstat (fd, &sbuf) < 0) return (-1);
-  if (mode_pointer) *mode_pointer = sbuf.st_mode;
-  if (size_pointer) *size_pointer = sbuf.st_size;
-  return 0;
-}
-
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
    retrying if necessary.  If MAX_READ_LEN is defined, read at most
    that bytes at a time.  Return a negative value if an error occurs,
