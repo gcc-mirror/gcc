@@ -4406,6 +4406,9 @@ output_cbranch (op, label, reversed, annul, noop)
     case LTU:
       strcpy (string, "blu");
       break;
+
+    default:
+      break;
     }
 
   /* Now add the annulling, the label, and a possible noop.  */
