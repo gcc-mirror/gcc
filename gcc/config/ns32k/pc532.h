@@ -63,9 +63,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define PC_RELATIVE
 
-/* This machine appears to use GAS syntax.  */
+/* Operand of bsr or jsr should be just the address.  */
 
-#define GAS_SYNTAX
+#define CALL_MEMREF_IMPLICIT
+
+/* movd insns may have floating point constant operands.  */
+
+#define MOVD_FLOAT_OK
 
 /* Every address needs to use a base reg.  */
 
