@@ -2834,6 +2834,8 @@ hppa_expand_prologue()
       hp_profile_label_rtx = gen_rtx_SYMBOL_REF (SImode, hp_profile_label_name);
       if (current_function_returns_struct)
 	store_reg (STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
+      if (current_function_needs_context)
+	store_reg (STATIC_CHAIN_REGNUM, - 16 - offsetadj, basereg);
 
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live [i])
@@ -2858,6 +2860,8 @@ hppa_expand_prologue()
       if (current_function_returns_struct)
 	load_reg (STRUCT_VALUE_REGNUM, -12 - offsetadj, basereg);
 
+      if (current_function_needs_context)
+	load_reg (STATIC_CHAIN_REGNUM, -16 - offsetadj, basereg);
     }
 
   /* Normal register save.
