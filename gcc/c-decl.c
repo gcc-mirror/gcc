@@ -6129,6 +6129,13 @@ finish_function ()
       && DECL_INLINE (fndecl))
     warning ("no return statement in function returning non-void");
 
+  /* With just -Wextra, complain only if function returns both with
+     and without a value.  */
+  if (extra_warnings
+      && current_function_returns_value
+      && current_function_returns_null)
+    warning ("this function may return with or without a value");
+
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_SAVED_INSNS, and we'll restore it in tree_rest_of_compilation.  */
   cfun = NULL;
@@ -6177,13 +6184,6 @@ c_expand_body_1 (tree fndecl, int nested_p)
     }
 
   tree_rest_of_compilation (fndecl);
-
-  /* With just -Wextra, complain only if function returns both with
-     and without a value.  */
-  if (extra_warnings
-      && current_function_returns_value
-      && current_function_returns_null)
-    warning ("this function may return with or without a value");
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
