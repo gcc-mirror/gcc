@@ -1,3 +1,8 @@
+2002-06-12  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.gcc: Revert rth's patch of 2002-05-18.  Instead,
+	include both darwin.o and rs6000-c.o.
+
 2002-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (compare_from_rtx): Call simplify_relational_operation
