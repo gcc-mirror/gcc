@@ -2211,7 +2211,7 @@ execute ()
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
     if (strcmp (argbuf[i], "|") == 0)
       {				/* each command.  */
-#if defined (__MSDOS__) || (defined (_WIN32) && defined (__CYGWIN__)) || defined (OS2) || defined (VMS)
+#if defined (__MSDOS__) || defined (OS2) || defined (VMS)
         fatal ("-pipe not supported");
 #endif
 	argbuf[i] = 0;	/* termination of command args.  */
