@@ -1,5 +1,11 @@
 2001-11-14  Kazu Hirata  <kazu@hxi.com>
 
+	* config/dsp16xx/dsp16xx.c: Fix comment formatting.
+	* config/dsp16xx/dsp16xx.h: Likewise.
+	* config/dsp16xx/dsp16xx.md: Likewise.
+
+2001-11-14  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (get_shift_alg): Reorganize the code
 	that deals with 7-bit shifts in HImode.
 

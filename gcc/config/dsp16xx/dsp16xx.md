@@ -1571,7 +1571,7 @@
 {
   /* Check for an overlap of operand 2 (an accumulator) with
      the msw of operand 0. If we have an overlap we must reverse
-     the order of the moves. */
+     the order of the moves.  */
 
   if (REGNO(operands[2]) == REGNO(operands[0]))
     {
@@ -1707,7 +1707,7 @@
 {
   /* Check for an overlap of operand 2 (an accumulator) with
      the msw of operand 0. If we have an overlap we must reverse
-     the order of the moves. */
+     the order of the moves.  */
 
   if (REGNO(operands[2]) == REGNO(operands[0]))
     {
@@ -2015,7 +2015,7 @@
   {
       /* If we are shifting by a constant we can do it in 1 or more
 	 1600 core shift instructions. The core instructions can
-	 shift by 1, 4, 8, or 16. */
+	 shift by 1, 4, 8, or 16.  */
       
       if (GET_CODE(operands[2]) == CONST_INT)
 	;
@@ -2141,7 +2141,7 @@
     {
       /* If we are shifting by a constant we can do it in 1 or more
 	 1600 core shift instructions. The core instructions can
-	 shift by 1, 4, 8, or 16. */
+	 shift by 1, 4, 8, or 16.  */
       
       if (GET_CODE(operands[2]) == CONST_INT)
 	emit_insn (gen_match_lshrhi3_nobmu (operands[0], operands[1], operands[2]));	
@@ -2276,7 +2276,7 @@
   {
       /* If we are shifting by a constant we can do it in 1 or more
 	 1600 core shift instructions. The core instructions can
-	 shift by 1, 4, 8, or 16. */
+	 shift by 1, 4, 8, or 16.  */
       
       if (GET_CODE(operands[2]) == CONST_INT)
 	;

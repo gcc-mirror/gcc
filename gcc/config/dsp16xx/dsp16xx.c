@@ -494,7 +494,7 @@ preferred_reload_class (x, class)
     }
 
   /* If x is not an accumulator or a ybase register, restrict the class of registers
-     we can copy the register into.   */
+     we can copy the register into.  */
 
   if (REG_P (x) && !IS_ACCUM_REG (REGNO (x)) && !IS_YBASE_REGISTER_WINDOW (REGNO (x)))
     {
