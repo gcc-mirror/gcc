@@ -1,5 +1,10 @@
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* dwarf.h, gthr-dce.h, gthr-single.h, gthr-solaris.h, gthr.h,
+	libfuncs.h, libgcc2.h, stab.def, tsystem.h: Update copyright.
+
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/ptx4.h, config/mcore/mcore-pe.h,
 	config/rs6000/eabi.h, config/vax/elf.h: Update copyright.
 
