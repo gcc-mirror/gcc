@@ -1098,14 +1098,14 @@ preserve_rtl_expr_result (x)
   if (x == 0 || GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
     return;
 
-  /* If we can find a match, move it to our level.  */
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && rtx_equal_p (x, p->slot))
-      {
-	p->level = temp_slot_level;
-	p->rtl_expr = 0;
-	return;
-      }
+  /* If we can find a match, move it to our level unless it is already at
+     an upper level.  */
+  p = find_temp_slot_from_address (XEXP (x, 0));
+  if (p != 0)
+    {
+      p->level = MIN (p->level, temp_slot_level);
+      p->rtl_expr = 0;
+    }
 
   return;
 }
