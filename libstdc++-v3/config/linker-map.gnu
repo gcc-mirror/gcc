@@ -95,8 +95,8 @@ GLIBCPP_3.4 {
     _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE20_S_empty_rep_storageE;
 
     # std::__pool_alloc
-    _ZNSt12__pool_allocILb1ELi0EE10deallocateEPvj*;
-    _ZNSt12__pool_allocILb1ELi0EE8allocateEj*;
+    _ZNSt12__pool_allocILb1ELi0EE10deallocateEPv[jm]*;
+    _ZNSt12__pool_allocILb1ELi0EE8allocateE[jm]*;
     _ZNSt12__pool_allocILb1ELi0EE5_Lock*;
     _ZNSt12__pool_allocILb1ELi0EE12_S_force_newE;
     _ZNSt12__pool_allocILb1ELi0EE12_S_free_listE;
