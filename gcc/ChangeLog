@@ -1,3 +1,19 @@
+2003-07-06  Andreas Jaeger  <aj@suse.de>
+
+	* basic-block.h: Convert prototypes to ISO C90.
+	* c-parse.in: Likewise.
+	* c-pragma.h: Likewise.
+	* c-typeck.c: Likewise.
+	* cfghooks.h: Likewise.
+	* cfgloopanal.c: Likewise.
+	* dbxout.h: Likewise.
+	* debug.h: Likewise.
+	* dwarf2asm.h: Likewise.
+	* gcov.c: Likewise.
+	* gengtype-lex.l: Likewise.
+	* sched-int.h: Likewise.
+	* timevar.c: Likewise.
+
 2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.h (c_comon_handle_filename,
