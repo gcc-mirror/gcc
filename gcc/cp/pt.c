@@ -1368,7 +1368,9 @@ lookup_nested_type_by_name (ctype, name)
 
   for (t = CLASSTYPE_TAGS (ctype); t; t = TREE_CHAIN (t))
     {
-      if (name == TREE_PURPOSE (t))
+      if (name == TREE_PURPOSE (t)
+	  /* this catches typedef enum { foo } bar; */
+	  || name == TYPE_IDENTIFIER (TREE_VALUE (t)))
 	return TREE_VALUE (t);
     }
   return NULL_TREE;

@@ -1,5 +1,9 @@
 Tue Aug 19 02:26:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (lookup_nested_type_by_name): Handle typedef wierdness.
+
+	* typeck2.c (my_friendly_abort): Report bugs to egcs-bugs@cygnus.com.
+
 	* pt.c (instantiate_class_template): Call repo_template_used
 	before finish_prevtable_vardecl.
 
