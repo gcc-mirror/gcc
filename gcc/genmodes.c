@@ -451,7 +451,7 @@ make_complex_modes (enum mode_class class,
 /* For all modes in class CLASS, construct vector modes of width
    WIDTH, having as many components as necessary.  */
 #define VECTOR_MODES(C, W) make_vector_modes(MODE_##C, W, __FILE__, __LINE__)
-static void
+static void ATTRIBUTE_UNUSED
 make_vector_modes (enum mode_class class, unsigned int width,
 		   const char *file, unsigned int line)
 {

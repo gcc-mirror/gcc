@@ -1,3 +1,7 @@
+2004-07-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c (make_vector_modes): Mark with ATTRIBUTE_UNUSED.
+
 2004-07-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.def (VIEW_CONVERT_EXPR): Change to class 'r'.
@@ -10,7 +14,7 @@
 	redundant setting of TREE_INVARIANT.
 	(gimplify_expr, case VIEW_CONVERT_EXPR): Call gimplify_compound_lval.
 	* tree-gimple.c (is_gimple_addr_expr_arg): Call handled_component_p.
-	
+
 2004-07-23  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16688
