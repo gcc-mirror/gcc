@@ -146,6 +146,8 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_THUMB      (1 << 6)        /* Thumb aware */
 #define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
+#define FL_ARCH5E     (1 << 9)        /* El Segundo extenstions to v5 */
+#define FL_XSCALE     (1 << 10)	      /* XScale */
 
 /* The bits in this mask specify which instructions we are
    allowed to generate.  */
@@ -174,6 +176,9 @@ int arm_ld_sched = 0;
 
 /* Nonzero if this chip is a StrongARM.  */
 int arm_is_strong = 0;
+
+/* Nonzero if this chip is an XScale.  */
+int arm_is_xscale = 0;
 
 /* Nonzero if this chip is a an ARM6 or an ARM7.  */
 int arm_is_6_or_7 = 0;
@@ -269,6 +274,7 @@ static struct processors all_cores[] =
   {"strongarm",	             FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm110",           FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1100",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
+  {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_ARCH5 },
   
   {NULL, 0}
 };
@@ -286,6 +292,8 @@ static struct processors all_architectures[] =
      implementations that support it, so we will leave it out for now.  */
   { "armv4t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB },
   { "armv5",     FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
+  { "armv5t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
+  { "armv5te",   FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 | FL_ARCH5E },
   { NULL, 0 }
 };
 
@@ -382,6 +390,7 @@ arm_override_options ()
 	{ TARGET_CPU_arm810,    "arm810" },
 	{ TARGET_CPU_arm9,      "arm9" },
 	{ TARGET_CPU_strongarm, "strongarm" },
+	{ TARGET_CPU_xscale,    "xscale" },
 	{ TARGET_CPU_generic,   "arm" },
 	{ 0, 0 }
       };
@@ -516,7 +525,13 @@ arm_override_options ()
       /* warning ("ignoring -mapcs-frame because -mthumb was used."); */
       target_flags &= ~ARM_FLAG_APCS_FRAME;
     }
-  
+
+  if (TARGET_HARD_FLOAT && (tune_flags & FL_XSCALE))
+    {
+      warning ("XScale does not support hardware FP instructions.");
+      target_flags |= ARM_FLAG_SOFT_FLOAT;
+    }
+
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
   if ((target_flags & (THUMB_FLAG_LEAF_BACKTRACE | THUMB_FLAG_BACKTRACE))
@@ -576,6 +591,7 @@ arm_override_options ()
   arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
   arm_is_strong     = (tune_flags & FL_STRONG) != 0;
   thumb_code	    = (TARGET_ARM == 0);
+  arm_is_xscale     = (tune_flags & FL_XSCALE) != 0;
   arm_is_6_or_7     = (((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4))) != 0;
   
@@ -651,6 +667,9 @@ arm_override_options ()
   if (optimize_size || (tune_flags & FL_LDSCHED))
     arm_constant_limit = 1;
   
+  if (arm_is_xscale)
+    arm_constant_limit = 2;
+
   /* If optimizing for size, bump the number of instructions that we
      are prepared to conditionally execute (even on a StrongARM). 
      Otherwise for the StrongARM, which has early execution of branches,
@@ -1718,7 +1737,7 @@ arm_encode_call_attribute (decl, flag)
 {
   const char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int          len = strlen (str);
-  const char * newstr;
+  char *       newstr;
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     return;
@@ -2001,7 +2020,7 @@ legitimize_pic_address (orig, mode, reg)
 	    emit_insn (gen_pic_load_addr_arm (address, orig));
 	  else
 	    emit_insn (gen_pic_load_addr_thumb (address, orig));
-	  
+
 	  pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
 	  
 	  emit_move_insn (address, pic_ref);
@@ -2474,6 +2493,47 @@ arm_adjust_cost (insn, link, dep, cost)
      int cost;
 {
   rtx i_pat, d_pat;
+
+  /* Some true dependencies can have a higher cost depending
+     on precisely how certain input operands are used.  */
+  if (arm_is_xscale
+      && REG_NOTE_KIND (link) == 0
+      && recog_memoized (insn) < 0
+      && recog_memoized (dep) < 0)
+    {
+      int shift_opnum = get_attr_shift (insn);
+      enum attr_type attr_type = get_attr_type (dep);
+
+      /* If nonzero, SHIFT_OPNUM contains the operand number of a shifted
+	 operand for INSN.  If we have a shifted input operand and the
+	 instruction we depend on is another ALU instruction, then we may
+	 have to account for an additional stall.  */
+      if (shift_opnum != 0 && attr_type == TYPE_NORMAL)
+	{
+	  rtx shifted_operand;
+	  int opno;
+	  
+	  /* Get the shifted operand.  */
+	  extract_insn (insn);
+	  shifted_operand = recog_data.operand[shift_opnum];
+
+	  /* Iterate over all the operands in DEP.  If we write an operand
+	     that overlaps with SHIFTED_OPERAND, then we have increase the
+	     cost of this dependency.  */
+	  extract_insn (dep);
+	  preprocess_constraints ();
+	  for (opno = 0; opno < recog_data.n_operands; opno++)
+	    {
+	      /* We can ignore strict inputs.  */
+	      if (recog_data.operand_type[opno] == OP_IN)
+		continue;
+
+	      if (reg_overlap_mentioned_p (recog_data.operand[opno],
+					   shifted_operand))
+		return 2;
+	    }
+	}
+    }
 
   /* XXX This is not strictly true for the FPA.  */
   if (REG_NOTE_KIND (link) == REG_DEP_ANTI
@@ -3822,7 +3882,7 @@ arm_valid_machine_decl_attribute (decl, attr, args)
 
   if (is_attribute_p ("naked", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
-  
+
 #ifdef ARM_PE
   if (is_attribute_p ("interfacearm", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
@@ -3862,6 +3922,58 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
   rtx result;
   int sign = up ? 1 : -1;
   rtx mem;
+
+  /* XScale has load-store double instructions, but they have stricter
+     alignment requirements than load-store multiple, so we can not
+     use them.
+
+     For XScale ldm requires 2 + NREGS cycles to complete and blocks
+     the pipeline until completion.
+
+	NREGS		CYCLES
+	  1		  3
+	  2		  4
+	  3		  5
+	  4		  6
+
+     An ldr instruction takes 1-3 cycles, but does not block the
+     pipeline.
+
+	NREGS		CYCLES
+	  1		 1-3
+	  2		 2-6
+	  3		 3-9
+	  4		 4-12
+
+     Best case ldr will always win.  However, the more ldr instructions
+     we issue, the less likely we are to be able to schedule them well.
+     Using ldr instructions also increases code size.
+
+     As a compromise, we use ldr for counts of 1 or 2 regs, and ldm
+     for counts of 3 or 4 regs.  */
+  if (arm_is_xscale && count <= 2 && ! optimize_size)
+    {
+      rtx seq;
+      
+      start_sequence ();
+      
+      for (i = 0; i < count; i++)
+	{
+	  mem = gen_rtx_MEM (SImode, plus_constant (from, i * 4 * sign));
+	  RTX_UNCHANGING_P (mem) = unchanging_p;
+	  MEM_IN_STRUCT_P (mem) = in_struct_p;
+	  MEM_SCALAR_P (mem) = scalar_p;
+	  emit_move_insn (gen_rtx_REG (SImode, base_regno + i), mem);
+	}
+
+      if (write_back)
+	emit_move_insn (from, plus_constant (from, count * 4 * sign));
+
+      seq = gen_sequence ();
+      end_sequence ();
+      
+      return seq;
+    }
 
   result = gen_rtx_PARALLEL (VOIDmode,
 			     rtvec_alloc (count + (write_back ? 1 : 0)));
@@ -3903,6 +4015,32 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
   rtx result;
   int sign = up ? 1 : -1;
   rtx mem;
+
+  /* See arm_gen_load_multiple for discussion of
+     the pros/cons of ldm/stm usage for XScale.  */
+  if (arm_is_xscale && count <= 2 && ! optimize_size)
+    {
+      rtx seq;
+      
+      start_sequence ();
+      
+      for (i = 0; i < count; i++)
+	{
+	  mem = gen_rtx_MEM (SImode, plus_constant (to, i * 4 * sign));
+	  RTX_UNCHANGING_P (mem) = unchanging_p;
+	  MEM_IN_STRUCT_P (mem) = in_struct_p;
+	  MEM_SCALAR_P (mem) = scalar_p;
+	  emit_move_insn (mem, gen_rtx_REG (SImode, base_regno + i));
+	}
+
+      if (write_back)
+	emit_move_insn (to, plus_constant (to, count * 4 * sign));
+
+      seq = gen_sequence ();
+      end_sequence ();
+      
+      return seq;
+    }
 
   result = gen_rtx_PARALLEL (VOIDmode,
 			     rtvec_alloc (count + (write_back ? 1 : 0)));
@@ -4145,6 +4283,7 @@ arm_gen_rotated_half_load (memref)
    If we are unable to support a dominance comparsison we return CC mode.  
    This will then fail to match for the RTL expressions that generate this
    call.  */
+
 static enum machine_mode
 select_dominance_cc_mode (x, y, cond_or)
      rtx x;
@@ -5583,7 +5722,6 @@ arm_reorg (first)
   /* Scan all the insns and record the operands that will need fixing.  */
   for (insn = next_nonnote_insn (first); insn; insn = next_nonnote_insn (insn))
     {
-
       if (GET_CODE (insn) == BARRIER)
 	push_minipool_barrier (insn, address);
       else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
@@ -7357,7 +7495,7 @@ arm_expand_prologue ()
   rtx insn;
   rtx ip_rtx;
   int fp_offset = 0;
-      
+
 
   /* Naked functions don't have prologues.  */
   if (arm_naked_function_p (current_function_decl))
@@ -8379,6 +8517,99 @@ arm_debugger_arg_offset (value, addr)
   return value;
 }
 
+#define def_builtin(NAME, TYPE, CODE) \
+  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL_PTR)
+
+void
+arm_init_builtins ()
+{
+  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+  tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
+  tree pchar_type_node = build_pointer_type (char_type_node);
+
+  tree int_ftype_int, void_ftype_pchar;
+
+  /* void func (void *) */
+  void_ftype_pchar
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, pchar_type_node, endlink));
+
+  /* int func (int) */
+  int_ftype_int
+    = build_function_type (integer_type_node, int_endlink);
+
+  /* Initialize arm V5 builtins.  */
+  if (arm_arch5)
+    {
+      def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
+      def_builtin ("__builtin_prefetch", void_ftype_pchar,
+		   ARM_BUILTIN_PREFETCH);
+    }
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+rtx
+arm_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+  enum insn_code icode;
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0;
+  rtx op0, pat;
+  enum machine_mode tmode, mode0;
+  int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    default:
+      break;
+      
+    case ARM_BUILTIN_CLZ:
+      icode = CODE_FOR_clz;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      tmode = insn_data[icode].operand[0].mode;
+      mode0 = insn_data[icode].operand[1].mode;
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+      if (target == 0
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+
+    case ARM_BUILTIN_PREFETCH:
+      icode = CODE_FOR_prefetch;
+      arg0 = TREE_VALUE (arglist);
+      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+
+      op0 = gen_rtx_MEM (SImode, copy_to_mode_reg (Pmode, op0));
+
+      pat = GEN_FCN (icode) (op0);
+      if (! pat)
+	return 0;
+      emit_insn (pat);
+      return target;
+    }
+  
+  /* @@@ Should really do something sensible here.  */
+  return NULL_RTX;
+}
 
 /* Recursively search through all of the blocks in a function
    checking to see if any of the variables created in that

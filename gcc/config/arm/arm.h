@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_strongarm1100 0x0040
 #define TARGET_CPU_arm9		0x0080
 #define TARGET_CPU_arm9tdmi	0x0080
+#define TARGET_CPU_xscale       0x0100
 /* Configure didn't specify.  */
 #define TARGET_CPU_generic	0x8000
 
@@ -115,7 +116,11 @@ extern int current_function_anonymous_args;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm110 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm1100 
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4__"
 #else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_xscale
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_5TE__ -D__XSCALE__"
+#else
 Unrecognized value in TARGET_CPU_DEFAULT.
+#endif
 #endif
 #endif
 #endif
@@ -161,6 +166,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=strongarm:-D__ARM_ARCH_4__} \
 %{march=strongarm110:-D__ARM_ARCH_4__} \
 %{march=strongarm1100:-D__ARM_ARCH_4__} \
+%{march=xscale:-D__ARM_ARCH_5TE__} \
+%{march=xscale:-D__XSCALE__} \
 %{march=armv2:-D__ARM_ARCH_2__} \
 %{march=armv2a:-D__ARM_ARCH_2__} \
 %{march=armv3:-D__ARM_ARCH_3__} \
@@ -198,6 +205,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=strongarm:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm1100:-D__ARM_ARCH_4__} \
+ %{mcpu=xscale:-D__ARM_ARCH_5TE__} \
+ %{mcpu=xscale:-D__XSCALE__} \
  %{!mcpu*:%(cpp_cpu_arch_default)}} \
 "
 
@@ -560,6 +569,9 @@ extern int thumb_code;
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_is_strong;
 
+/* Nonzero if this chip is an XScale.  */
+extern int arm_is_xscale;
+
 /* Nonzero if this chip is a an ARM6 or an ARM7.  */
 extern int arm_is_6_or_7;
 
@@ -696,9 +708,12 @@ extern int arm_is_6_or_7;
 #define BIGGEST_ALIGNMENT  32
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST        \
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_is_xscale ? 1 : 2)
+    
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
+  ((TREE_CODE (EXP) == STRING_CST				\
+    && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
+   ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
 /* Setting STRUCTURE_SIZE_BOUNDARY to 32 produces more efficient code, but the
    value set in previous versions of this toolchain was 8, which produces more
@@ -2050,63 +2065,63 @@ typedef struct
    floating SYMBOL_REF to the constant pool.  Allow REG-only and
    AUTINC-REG if handling TImode or HImode.  Other symbol refs must be
    forced though a static cell to ensure addressability.  */
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			 \
-{									 \
-  if (ARM_BASE_REGISTER_RTX_P (X))					 \
-    goto LABEL;								 \
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	 \
-	   && GET_CODE (XEXP (X, 0)) == REG				 \
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
-    goto LABEL;								 \
-  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		 \
-	   && (GET_CODE (X) == LABEL_REF				 \
-	       || (GET_CODE (X) == CONST				 \
-		   && GET_CODE (XEXP ((X), 0)) == PLUS			 \
-		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	 \
-		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT))) \
-    goto LABEL;								 \
-  else if ((MODE) == TImode)						 \
-    ;									 \
-  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	 \
-    {									 \
-      if (GET_CODE (X) == PLUS && ARM_BASE_REGISTER_RTX_P (XEXP (X, 0))	 \
-	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			 \
-	{								 \
-	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			 \
-          if (val == 4 || val == -4 || val == -8)			 \
-	    goto LABEL;							 \
-	}								 \
-    }									 \
-  else if (GET_CODE (X) == PLUS)					 \
-    {									 \
-      rtx xop0 = XEXP (X, 0);						 \
-      rtx xop1 = XEXP (X, 1);						 \
-									 \
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	 \
-      else if (ARM_BASE_REGISTER_RTX_P (xop1))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	 \
-    }									 \
-  /* Reload currently can't handle MINUS, so disable this for now */	 \
-  /* else if (GET_CODE (X) == MINUS)					 \
-    {									 \
-      rtx xop0 = XEXP (X,0);						 \
-      rtx xop1 = XEXP (X,1);						 \
-									 \
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);		 \
-    } */								 \
-  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				 \
-	   && GET_CODE (X) == SYMBOL_REF				 \
-	   && CONSTANT_POOL_ADDRESS_P (X)				 \
-	   && ! (flag_pic						 \
-		 && symbol_mentioned_p (get_pool_constant (X))))	 \
-    goto LABEL;								 \
-  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	 \
-	   && (GET_MODE_SIZE (MODE) <= 4)				 \
-	   && GET_CODE (XEXP (X, 0)) == REG				 \
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
-    goto LABEL;								 \
+#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
+{									\
+  if (ARM_BASE_REGISTER_RTX_P (X))					\
+    goto LABEL;								\
+  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	\
+	   && GET_CODE (XEXP (X, 0)) == REG				\
+	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
+    goto LABEL;								\
+  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
+	   && (GET_CODE (X) == LABEL_REF				\
+	       || (GET_CODE (X) == CONST				\
+		   && GET_CODE (XEXP ((X), 0)) == PLUS			\
+		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	\
+		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT)))\
+    goto LABEL;								\
+  else if ((MODE) == TImode)						\
+    ;									\
+  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	\
+    {									\
+      if (GET_CODE (X) == PLUS && ARM_BASE_REGISTER_RTX_P (XEXP (X, 0))	\
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
+	{								\
+	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			\
+          if (val == 4 || val == -4 || val == -8)			\
+	    goto LABEL;							\
+	}								\
+    }									\
+  else if (GET_CODE (X) == PLUS)					\
+    {									\
+      rtx xop0 = XEXP (X, 0);						\
+      rtx xop1 = XEXP (X, 1);						\
+									\
+      if (ARM_BASE_REGISTER_RTX_P (xop0))				\
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	\
+      else if (ARM_BASE_REGISTER_RTX_P (xop1))				\
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	\
+    }									\
+  /* Reload currently can't handle MINUS, so disable this for now */	\
+  /* else if (GET_CODE (X) == MINUS)					\
+    {									\
+      rtx xop0 = XEXP (X,0);						\
+      rtx xop1 = XEXP (X,1);						\
+									\
+      if (ARM_BASE_REGISTER_RTX_P (xop0))				\
+	ARM_GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);		\
+    } */								\
+  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
+	   && GET_CODE (X) == SYMBOL_REF				\
+	   && CONSTANT_POOL_ADDRESS_P (X)				\
+	   && ! (flag_pic						\
+		 && symbol_mentioned_p (get_pool_constant (X))))	\
+    goto LABEL;								\
+  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	\
+	   && (GET_MODE_SIZE (MODE) <= 4)				\
+	   && GET_CODE (XEXP (X, 0)) == REG				\
+	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
+    goto LABEL;								\
 }
      
 /* ---------------------thumb version----------------------------------*/     
@@ -2354,6 +2369,9 @@ typedef struct
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
+
+#undef  MOVE_RATIO
+#define MOVE_RATIO (arm_is_xscale ? 4 : 2)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
@@ -2924,4 +2942,20 @@ extern int making_const_table;
 #define SPECIAL_MODE_PREDICATES			\
  "cc_register", "dominant_cc_register",
 
+enum arm_builtins
+{
+  ARM_BUILTIN_CLZ,
+  ARM_BUILTIN_PREFETCH,
+  ARM_BUILTIN_MAX
+};
+
+#define MD_INIT_BUILTINS	\
+  do				\
+    {				\
+      arm_init_builtins ();	\
+    }				\
+  while (0)
+
+#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
+    arm_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
 #endif /* __ARM_H__ */
