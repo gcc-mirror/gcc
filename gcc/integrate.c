@@ -1300,7 +1300,7 @@ emit_initial_value_sets (void)
   seq = get_insns ();
   end_sequence ();
 
-  emit_insn_after (seq, get_insns ());
+  emit_insn_after (seq, entry_of_function ());
 }
 
 /* If the backend knows where to allocate pseudos for hard
