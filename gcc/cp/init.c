@@ -240,10 +240,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 			     inits);
       CONSTRUCTOR_ELTS (init) = nreverse (inits);
     }
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
-    ;
   else
-    abort ();
+    gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
 
   /* In all cases, the initializer is a constant.  */
   if (init)
@@ -1166,8 +1164,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
       && (flags & LOOKUP_ONLYCONVERTING))
     {
       /* Base subobjects should only get direct-initialization.  */
-      if (true_exp != exp)
-	abort ();
+      gcc_assert (true_exp == exp);
 
       if (flags & DIRECT_BIND)
 	/* Do nothing.  We hit this in two cases:  Reference initialization,
@@ -2073,9 +2070,9 @@ build_new_1 (tree exp)
 	  if (TREE_CODE (init) == TREE_LIST)
 	    init = build_x_compound_expr_from_list (init, "new initializer");
 
-	  else if (TREE_CODE (init) == CONSTRUCTOR
-		   && TREE_TYPE (init) == NULL_TREE)
-	    abort ();
+	  else
+	    gcc_assert (TREE_CODE (init) != CONSTRUCTOR
+			|| TREE_TYPE (init) != NULL_TREE);
 
 	  init_expr = build_modify_expr (init_expr, INIT_EXPR, init);
 	  stable = stabilize_init (init_expr, &init_preeval_expr);
@@ -2217,8 +2214,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   tree controller = NULL_TREE;
 
   /* We should only have 1-D arrays here.  */
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    abort ();
+  gcc_assert (TREE_CODE (type) != ARRAY_TYPE);
 
   if (! IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     goto no_destructor;
@@ -2560,7 +2556,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 	  else if (from)
 	    elt_init = build_modify_expr (to, NOP_EXPR, from);
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
@@ -2670,7 +2666,7 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   exp = convert_from_reference (exp);

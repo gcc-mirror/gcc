@@ -234,17 +234,18 @@ check_dtor_name (tree basetype, tree name)
       else
 	name = get_type_value (name);
     }
-  /* In the case of:
-      
-       template <class T> struct S { ~S(); };
-       int i;
-       i.~S();
-
-     NAME will be a class template.  */
-  else if (DECL_CLASS_TEMPLATE_P (name))
-    return false;
   else
-    abort ();
+    {
+      /* In the case of:
+      	  	
+      	 template <class T> struct S { ~S(); };
+      	 int i;
+       	 i.~S();
+	  
+     	 NAME will be a class template.  */
+      gcc_assert (DECL_CLASS_TEMPLATE_P (name));
+      return false;
+    }
 
   if (name && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (name))
     return true;
@@ -328,11 +329,10 @@ build_call (tree function, tree parms)
       /* We invoke build_call directly for several library functions.
 	 These may have been declared normally if we're building libgcc,
 	 so we can't just check DECL_ARTIFICIAL.  */
-      if (DECL_ARTIFICIAL (decl)
-	  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "__", 2))
-	mark_used (decl);
-      else
-	abort ();
+      gcc_assert (DECL_ARTIFICIAL (decl)
+		  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			       "__", 2));
+      mark_used (decl);
     }
 
   /* Don't pass empty class objects by value.  This is useful
@@ -1915,7 +1915,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  return;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       type1 = build_reference_type (type1);
       break;
@@ -1952,7 +1952,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If we're dealing with two pointer types or two enumeral types,
@@ -3600,7 +3600,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case VEC_DELETE_EXPR:
     case DELETE_EXPR:
       /* Use build_op_new_call and build_op_delete_call instead.  */
-      abort ();
+      gcc_unreachable ();
 
     case CALL_EXPR:
       return build_object_call (arg1, arg2);
@@ -3836,7 +3836,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
   if (result || result_valid_p)
     return result;
 
-builtin:
+ builtin:
   switch (code)
     {
     case MODIFY_EXPR:
@@ -3895,9 +3895,9 @@ builtin:
       return NULL_TREE;
 
     default:
-      abort ();
-      return NULL_TREE;
+      gcc_unreachable ();
     }
+  return NULL_TREE;
 }
 
 /* Build a call to operator delete.  This has to be handled very specially,
@@ -4180,11 +4180,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 				    0);
 
 	    args = build_tree_list (NULL_TREE, expr);
-	    if (DECL_HAS_IN_CHARGE_PARM_P (convfn)
-		|| DECL_HAS_VTT_PARM_P (convfn))
-	      /* We should never try to call the abstract or base constructor
-		 from here.  */
-	      abort ();
+	    /* We should never try to call the abstract or base constructor
+	       from here.  */
+	    gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (convfn)
+			&& !DECL_HAS_VTT_PARM_P (convfn));
 	    args = tree_cons (NULL_TREE, t, args);
 	  }
 	else
@@ -4649,9 +4648,9 @@ build_over_call (struct z_candidate *cand, int flags)
       converted_args = tree_cons (NULL_TREE, TREE_VALUE (arg), converted_args);
       arg = TREE_CHAIN (arg);
       parm = TREE_CHAIN (parm);
-      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
-	/* We should never try to call the abstract constructor.  */
-	abort ();
+      /* We should never try to call the abstract constructor.  */
+      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (fn));
+      
       if (DECL_HAS_VTT_PARM_P (fn))
 	{
 	  converted_args = tree_cons
@@ -4967,12 +4966,14 @@ build_java_interface_fn_ref (tree fn, tree instance)
 }
 
 /* Returns the value to use for the in-charge parameter when making a
-   call to a function with the indicated NAME.  */
+   call to a function with the indicated NAME.
+   
+   FIXME:Can't we find a neater way to do this mapping?  */
 
 tree
 in_charge_arg_for_name (tree name)
 {
-  if (name == base_ctor_identifier
+ if (name == base_ctor_identifier
       || name == base_dtor_identifier)
     return integer_zero_node;
   else if (name == complete_ctor_identifier)
@@ -4984,7 +4985,7 @@ in_charge_arg_for_name (tree name)
 
   /* This function should only be called with one of the names listed
      above.  */
-  abort ();
+  gcc_unreachable ();
   return NULL_TREE;
 }
 
@@ -5838,7 +5839,7 @@ source_type (conversion *t)
 	  || t->kind == ck_identity)
 	return t->type;
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Note a warning about preferring WINNER to LOSER.  We do this by storing
@@ -5899,17 +5900,18 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
   len = cand1->num_convs;
   if (len != cand2->num_convs)
     {
-      if (DECL_STATIC_FUNCTION_P (cand1->fn)
-	  && ! DECL_STATIC_FUNCTION_P (cand2->fn))
+      int static_1 = DECL_STATIC_FUNCTION_P (cand1->fn);
+      int static_2 = DECL_STATIC_FUNCTION_P (cand2->fn);
+
+      gcc_assert (static_1 != static_2);
+      
+      if (static_1)
 	off2 = 1;
-      else if (! DECL_STATIC_FUNCTION_P (cand1->fn)
-	       && DECL_STATIC_FUNCTION_P (cand2->fn))
+      else
 	{
 	  off1 = 1;
 	  --len;
 	}
-      else
-	abort ();
     }
 
   for (i = 0; i < len; ++i)

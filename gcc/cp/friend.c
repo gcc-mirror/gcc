@@ -337,8 +337,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	declarator = DECL_NAME (get_first_fn (declarator));
     }
 
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   if (ctype)
     {

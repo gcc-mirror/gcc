@@ -677,7 +677,7 @@ dump_global_iord (tree t)
   else if (DECL_GLOBAL_DTOR_P (t))
     p = "destructors";
   else
-    abort ();
+    gcc_unreachable ();
 
   pp_printf (pp_base (cxx_pp), "(static %s for %s)", p, input_filename);
 }
@@ -790,7 +790,7 @@ dump_decl (tree t, int flags)
       break;
 
     case TYPE_EXPR:
-      abort ();
+      gcc_unreachable ();
       break;
 
       /* These special cases are duplicated here so that other functions
@@ -954,20 +954,22 @@ dump_template_decl (tree t, int flags)
                 | (flags & TFF_DECL_SPECIFIERS ? TFF_CLASS_KEY_OR_ENUM : 0)));
   else if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == VAR_DECL)
     dump_decl (DECL_TEMPLATE_RESULT (t), flags | TFF_TEMPLATE_NAME);
-  else if (TREE_TYPE (t) == NULL_TREE)
-    abort ();
   else
-    switch (NEXT_CODE (t))
     {
-      case METHOD_TYPE:
-      case FUNCTION_TYPE:
-        dump_function_decl (t, flags | TFF_TEMPLATE_NAME);
-        break;
-      default:
-        /* This case can occur with some invalid code.  */
-        dump_type (TREE_TYPE (t),
-                   (flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
-                   | (flags & TFF_DECL_SPECIFIERS ? TFF_CLASS_KEY_OR_ENUM : 0));
+      gcc_assert (TREE_TYPE (t));
+      switch (NEXT_CODE (t))
+	{
+	case METHOD_TYPE:
+	case FUNCTION_TYPE:
+	  dump_function_decl (t, flags | TFF_TEMPLATE_NAME);
+	  break;
+	default:
+	  /* This case can occur with some invalid code.  */
+	  dump_type (TREE_TYPE (t),
+		     (flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
+		     | (flags & TFF_DECL_SPECIFIERS
+			? TFF_CLASS_KEY_OR_ENUM : 0));
+	}
     }
 }
 
@@ -2027,9 +2029,9 @@ language_to_string (enum languages c)
       return "Java";
 
     default:
-      abort ();
-      return 0;
+      gcc_unreachable ();
     }
+  return 0;
 }
 
 /* Return the proper printed version of a parameter to a C++ function.  */

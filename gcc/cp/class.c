@@ -418,8 +418,7 @@ build_simple_base_path (tree expr, tree binfo)
 
   if (d_binfo == NULL_TREE)
     {
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (expr)) != type)
-	abort ();
+      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (expr)) == type);
       return expr;
     }
 
@@ -436,7 +435,7 @@ build_simple_base_path (tree expr, tree binfo)
 					     NULL_TREE, false);
 
   /* Didn't find the base field?!?  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Convert OBJECT to the base TYPE.  If CHECK_ACCESS is true, an error
@@ -2007,9 +2006,7 @@ get_vcall_index (tree fn, tree type)
       return p->value;
 
   /* There should always be an appropriate index.  */
-  abort ();
-
-  return NULL_TREE;
+  gcc_unreachable ();
 }
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
@@ -4928,10 +4925,8 @@ finish_struct_1 (tree t)
 
   if (COMPLETE_TYPE_P (t))
     {
-      if (IS_AGGR_TYPE (t))
-	error ("redefinition of `%#T'", t);
-      else
-	abort ();
+      gcc_assert (IS_AGGR_TYPE (t));
+      error ("redefinition of `%#T'", t);
       popclass ();
       return;
     }
@@ -5942,8 +5937,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case CONVERT_EXPR:
     case SAVE_EXPR:
     case CONSTRUCTOR:
-      abort ();
-      return error_mark_node;
+      gcc_unreachable ();
 
     case INDIRECT_REF:
     case ARRAY_REF:
@@ -6014,8 +6008,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
     case CALL_EXPR:
       /* This is too hard for now.  */
-      abort ();
-      return error_mark_node;
+      gcc_unreachable ();
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -6124,9 +6117,9 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       return error_mark_node;
 
     default:
-      abort ();
-      return error_mark_node;
+      gcc_unreachable ();
     }
+  return error_mark_node;
 }
 
 /* Return the name of the virtual function pointer field
@@ -6273,7 +6266,7 @@ get_enclosing_class (tree type)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return NULL_TREE;
@@ -7604,8 +7597,7 @@ add_vcall_offset_vtbl_entries_1 (tree binfo, vtbl_init_data* vid)
 	     might be a lost primary, so just skip down to vid->binfo.  */
 	  if (BINFO_VIRTUAL_P (non_primary_binfo))
 	    {
-	      if (non_primary_binfo != vid->vbase)
-		abort ();
+	      gcc_assert (non_primary_binfo == vid->vbase);
 	      non_primary_binfo = vid->binfo;
 	      break;
 	    }
@@ -7794,8 +7786,8 @@ cp_fold_obj_type_ref (tree ref, tree known_type)
   fndecl = BV_FN (v);
 
 #ifdef ENABLE_CHECKING
-  if (!tree_int_cst_equal (OBJ_TYPE_REF_TOKEN (ref), DECL_VINDEX (fndecl)))
-    abort ();
+  gcc_assert (tree_int_cst_equal (OBJ_TYPE_REF_TOKEN (ref),
+				  DECL_VINDEX (fndecl)));
 #endif
 
   return build_address (fndecl);

@@ -1,5 +1,38 @@
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (check_dtor_name): Replace abort with gcc_assert or
+	gcc_unreachable.
+	(build_call, add_builtin_candidate, build_new_op,
+	convert_like_real, build_over_call, in_charge_arg_for_name,
+	source_type, joust): Likewise.
+	* class.c (build_simple_base_path, get_vcall_index,
+	finish_struct_1, instantiate_type, get_enclosing_class,
+	add_vcall_offset_vtbl_entries_1, cp_fold_obj_type_ref): Likewise.
+	* cp-gimplify.c (cp_genericize): Likewise.
+	* cp-lang.c (cp_expr_size, cp_tree_size): Likewise.
+	* cvt.c (cp_convert_to_pointer, ocp_convert): Likewise.
+	* decl.c (poplevel, make_unbound_class_template, reshape_init,
+	check_special_function_return_type, grokdeclarator,
+	grok_op_properties, tag_name, xref_tag, start_preparsed_function,
+	finish_function): Likewise.
+	* decl2.c (grokfield, maybe_emit_vtables):Likewise.
+	* error.c (dump_global_iord, dump_decl, dump_template_decl,
+	language_to_string): Likewise.
+	* except.c (choose_personality_routine): Likewise.
+	* friend.c (do_friend): Likewise.
+	* g++spec.c (lang_specific_driver): Likewise.
+	* init.c (build_zero_init, expand_default_init, build_new_1,
+	build_vec_delete_1, build_vec_init, build_dtor_call): Likewise.
+	* lex.c (retrofit_lang_decl, cp_type_qual_from_rid): Likewise.
+	* mangle.c (add_substitution, write_unscoped_name,
+	write_template_prefix, write_identifier,
+	write_special_name_destructor, write_type, write_builtin_type,
+	write_expression, write_template_param,
+	write_java_integer_type_codes): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+
+2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (BINFO_PRIMARY_P): Use a binfo flag.
 	(BINFO_INDIRECT_PRIMARY_P): Remove.
 	* class.c (determine_primary_base): Rename to ...

@@ -312,7 +312,7 @@ choose_personality_routine (enum languages lang)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return;
 
