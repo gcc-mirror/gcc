@@ -1,3 +1,7 @@
+2001-11-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (output_ascii): Cast `p' to unsigned char.
+
 2001-11-30  Daniel Berlin  <dan@cgsoftware.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_builtin): add 
