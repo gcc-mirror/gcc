@@ -1,3 +1,16 @@
+2003-05-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cp-tree.h (struct lang_id2): Remove.  Move fields from here...
+	(struct lang_identifier): ... to here.
+	(LANG_ID_FIELD): Remove.
+	(SET_LANG_ID): Remove.
+	(IDENTIFIER_LABEL_VALUE): Adjust for new lang_identifier.
+	(SET_IDENTIFIER_LABEL_VALUE): Likewise.
+	(IDENTIFIER_IMPLICIT_DECL): Likewise.
+	(SET_IDENTIFIERL_IMPLICIT_DECL): Likewise.
+	(IDENTIFIER_ERROR_LOCUS): Likewise.
+	(SET_IDENTIFIER_ERROR_LOCUS): Likewise.
+
 2003-05-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8772
