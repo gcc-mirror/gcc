@@ -39,10 +39,10 @@ static struct obstack call_obstack, normal_obstack;
 /* Max size of names encountered.  */
 static int max_id_len;
 
-static int num_operands PROTO((rtx));
-static void gen_proto PROTO((rtx));
-static void gen_nonproto PROTO((rtx));
-static void gen_insn PROTO((rtx));
+static int num_operands PARAMS ((rtx));
+static void gen_proto PARAMS ((rtx));
+static void gen_nonproto PARAMS ((rtx));
+static void gen_insn PARAMS ((rtx));
 
 
 /* Count the number of match_operand's found.  */
@@ -90,7 +90,7 @@ gen_proto (insn)
      rtx insn;
 {
   int num = num_operands (insn);
-  printf ("extern rtx gen_%-*s PROTO((", max_id_len, XSTR (insn, 0));
+  printf ("extern rtx gen_%-*s PARAMS ((", max_id_len, XSTR (insn, 0));
 
   if (num == 0)
     printf ("void");
@@ -195,7 +195,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

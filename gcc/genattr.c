@@ -54,11 +54,11 @@ struct function_unit
   struct range issue_delay;	/* Range of issue delay values.  */
 };
 
-static void extend_range PROTO((struct range *, int, int));
-static void init_range PROTO((struct range *));
-static void write_upcase PROTO((const char *));
-static void gen_attr PROTO((rtx));
-static void write_units PROTO((int, struct range *, struct range *,
+static void extend_range PARAMS ((struct range *, int, int));
+static void init_range PARAMS ((struct range *));
+static void write_upcase PARAMS ((const char *));
+static void gen_attr PARAMS ((rtx));
+static void write_units PARAMS ((int, struct range *, struct range *,
 			       struct range *, struct range *,
 			       struct range *));
 static void
@@ -98,7 +98,7 @@ gen_attr (attr)
 
   /* If numeric attribute, don't need to write an enum.  */
   if (*XSTR (attr, 1) == '\0')
-    printf ("extern int get_attr_%s PROTO((%s));\n", XSTR (attr, 0),
+    printf ("extern int get_attr_%s PARAMS ((%s));\n", XSTR (attr, 0),
 	    (is_const ? "void" : "rtx"));
   else
     {
@@ -119,7 +119,7 @@ gen_attr (attr)
 	}
 
       printf ("};\n");
-      printf ("extern enum attr_%s get_attr_%s PROTO((%s));\n\n",
+      printf ("extern enum attr_%s get_attr_%s PARAMS ((%s));\n\n",
 	      XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
     }
 
@@ -127,10 +127,10 @@ gen_attr (attr)
      variables used by `insn_current_length'.  */
   if (! strcmp (XSTR (attr, 0), "length"))
     {
-      printf ("extern void shorten_branches PROTO((rtx));\n");
-      printf ("extern int insn_default_length PROTO((rtx));\n");
-      printf ("extern int insn_variable_length_p PROTO((rtx));\n");
-      printf ("extern int insn_current_length PROTO((rtx));\n\n");
+      printf ("extern void shorten_branches PARAMS ((rtx));\n");
+      printf ("extern int insn_default_length PARAMS ((rtx));\n");
+      printf ("extern int insn_variable_length_p PARAMS ((rtx));\n");
+      printf ("extern int insn_current_length PARAMS ((rtx));\n\n");
       printf ("extern int *insn_addresses;\n");
       printf ("extern int insn_current_address;\n\n");
     }
@@ -149,8 +149,8 @@ write_units (num_units, multiplicity, simultaneity,
   int i, q_size;
 
   printf ("#define INSN_SCHEDULING\n\n");
-  printf ("extern int result_ready_cost PROTO((rtx));\n");
-  printf ("extern int function_units_used PROTO((rtx));\n\n");
+  printf ("extern int result_ready_cost PARAMS ((rtx));\n");
+  printf ("extern int function_units_used PARAMS ((rtx));\n\n");
   printf ("extern struct function_unit_desc\n");
   printf ("{\n");
   printf ("  const char *name;\n");
@@ -159,11 +159,11 @@ write_units (num_units, multiplicity, simultaneity,
   printf ("  int simultaneity;\n");
   printf ("  int default_cost;\n");
   printf ("  int max_issue_delay;\n");
-  printf ("  int (*ready_cost_function) PROTO ((rtx));\n");
-  printf ("  int (*conflict_cost_function) PROTO ((rtx, rtx));\n");
+  printf ("  int (*ready_cost_function) PARAMS ((rtx));\n");
+  printf ("  int (*conflict_cost_function) PARAMS ((rtx, rtx));\n");
   printf ("  int max_blockage;\n");
-  printf ("  unsigned int (*blockage_range_function) PROTO ((rtx));\n");
-  printf ("  int (*blockage_function) PROTO ((rtx, rtx));\n");
+  printf ("  unsigned int (*blockage_range_function) PARAMS ((rtx));\n");
+  printf ("  int (*blockage_function) PARAMS ((rtx, rtx));\n");
   printf ("} function_units[];\n\n");
   printf ("#define FUNCTION_UNITS_SIZE %d\n", num_units);
   printf ("#define MIN_MULTIPLICITY %d\n", multiplicity->min);
@@ -214,7 +214,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
@@ -280,9 +280,9 @@ from the machine description file `md'.  */\n\n");
 	  if (! have_delay)
 	    {
 	      printf ("#define DELAY_SLOTS\n");
-	      printf ("extern int num_delay_slots PROTO((rtx));\n");
-	      printf ("extern int eligible_for_delay PROTO((rtx, int, rtx, int));\n\n");
-	      printf ("extern int const_num_delay_slots PROTO((rtx));\n\n");
+	      printf ("extern int num_delay_slots PARAMS ((rtx));\n");
+	      printf ("extern int eligible_for_delay PARAMS ((rtx, int, rtx, int));\n\n");
+	      printf ("extern int const_num_delay_slots PARAMS ((rtx));\n\n");
 	      have_delay = 1;
 	    }
 
@@ -291,14 +291,14 @@ from the machine description file `md'.  */\n\n");
 	      if (XVECEXP (desc, 1, i + 1) && ! have_annul_true)
 		{
 		  printf ("#define ANNUL_IFTRUE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_true PROTO ((rtx, int, rtx, int));\n");
+		  printf ("extern int eligible_for_annul_true PARAMS ((rtx, int, rtx, int));\n");
 		  have_annul_true = 1;
 		}
 
 	      if (XVECEXP (desc, 1, i + 2) && ! have_annul_false)
 		{
 		  printf ("#define ANNUL_IFFALSE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_false PROTO ((rtx, int, rtx, int));\n");
+		  printf ("extern int eligible_for_annul_false PARAMS ((rtx, int, rtx, int));\n");
 		  have_annul_false = 1;
 		}
 	    }
