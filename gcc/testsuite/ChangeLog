@@ -1,3 +1,11 @@
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16716
+	* g++.dg/parse/crash17.C: New test.
+	
+	PR c++/17327
+	* g++.dg/template/enum3.C: New test.
+
 2004-09-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/gcc-defs.exp: Load wrapper.exp.

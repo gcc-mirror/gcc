@@ -2286,13 +2286,10 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
       cp_parser_abort_tentative_parse (parser);
       return false;
     }
-  if (!cp_parser_parse_definitely (parser))
+  if (!cp_parser_parse_definitely (parser)
+      || TREE_CODE (id) != IDENTIFIER_NODE)
     return false;
 
-  /* If we got here, this cannot be a valid variable declaration, thus
-     the cp_parser_id_expression must have resolved to a plain identifier
-     node (not a TYPE_DECL or TEMPLATE_ID_EXPR).  */
-  gcc_assert (TREE_CODE (id) == IDENTIFIER_NODE);
   /* Emit a diagnostic for the invalid type.  */
   cp_parser_diagnose_invalid_type_name (parser, parser->scope, id);
   /* Skip to the end of the declaration; there's no point in
