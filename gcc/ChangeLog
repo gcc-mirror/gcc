@@ -1,5 +1,10 @@
 2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	PR preprocessor/3571
+	* tradcpp.c (handle_directive): Skip non-vertical space.
+
+2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppmain.c (setup_callbacks): Set line callback only
 	if outputting preprocessed source.
 
