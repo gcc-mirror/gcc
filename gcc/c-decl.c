@@ -2620,14 +2620,14 @@ init_decl_processing ()
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
   builtin_function ("__builtin_return_address",
-		    build_function_type (integer_type_node, 
+		    build_function_type (ptr_type_node, 
 					 tree_cons (NULL_TREE,
 						    unsigned_type_node,
 						    endlink)),
 		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
 
   builtin_function ("__builtin_frame_address",
-		    build_function_type (integer_type_node, 
+		    build_function_type (ptr_type_node, 
 					 tree_cons (NULL_TREE,
 						    unsigned_type_node,
 						    endlink)),
@@ -2663,7 +2663,8 @@ init_decl_processing ()
   builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
 		    NULL_PTR);
   builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
-  builtin_function ("__builtin_saveregs", default_function_type,
+  builtin_function ("__builtin_saveregs",
+		    build_function_type (ptr_type_node, NULL_TREE),
 		    BUILT_IN_SAVEREGS, NULL_PTR);
 /* EXPAND_BUILTIN_VARARGS is obsolete.  */
 #if 0
