@@ -1,3 +1,7 @@
+2003-03-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("movti", "movhi", "movqi"): Add "type" attribute.
+
 Tue Mar 18 19:22:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (rtx_equal_for_memref_p): Assume that X and Y has been
