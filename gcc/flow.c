@@ -1907,10 +1907,13 @@ merge_blocks_move_successor_nojumps (e, a, b)
   end = b->end;
   insertpoint = a->end;
 
-  /* We want to delete the BARRIER before the start of the insns we are
+  /* We want to delete the BARRIER after the end of the insns we are
      going to move.  If we don't find a BARRIER, then do nothing.  This
-     can happen in some cases if we have labels we can not delete.  */
-  barrier = prev_nonnote_insn (start);
+     can happen in some cases if we have labels we can not delete. 
+
+     Similarly, do nothing if we can not delete the label at the start
+     of the target block.  */
+  barrier = next_nonnote_insn (end);
   if (GET_CODE (barrier) != BARRIER
       || (GET_CODE (b->head) == CODE_LABEL
 	  && ! can_delete_label_p (b->head)))
