@@ -3,7 +3,7 @@
    Changed by Michael Meissner,		meissner@osf.org
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 90, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -480,10 +480,7 @@ extern char	       *mktemp ();
 #endif
 
 #define SWITCH_TAKES_ARG(CHAR)						\
-  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
-   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
-   || (CHAR) == 'I' || (CHAR) == 'm'					\
-   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'G')
+  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
