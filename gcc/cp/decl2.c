@@ -983,10 +983,6 @@ grokclassfn (ctype, function, flags, quals)
       qual_type = cp_build_qualified_type (type, this_quals);
       parm = build_artificial_parm (this_identifier, qual_type);
       c_apply_type_quals_to_decl (this_quals, parm);
-
-      /* We can make this a register, so long as we don't
-	 accidentally complain if someone tries to take its address.  */
-      DECL_REGISTER (parm) = 1;
       TREE_CHAIN (parm) = last_function_parms;
       last_function_parms = parm;
     }
