@@ -7,6 +7,7 @@
 	* config/dsp16xx/dsp16xx.h: Update to new CPP macros.
 
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Zack Weinberg <zack@codesourcery.com>
 
 	* c-common.c (c_common_init): Override cpplib's default
 	warn_long_long setting.
