@@ -148,3 +148,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    RELATIVE relocations.  */
 
 /* #define DWARF_OFFSET_SIZE PTR_SIZE */
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  	"%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}" \
+	FBSD_ENDFILE_SPEC

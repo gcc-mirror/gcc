@@ -1,3 +1,16 @@
+2002-04-05  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/freebsd.h (ENDFILE_SPEC): Add crtfastmath bits.
+	* config.gcc (sparc64-wrs-vxworks, sparc-*-chorusos,
+	sparc-*-rtems*, sparclite-*-elf* sparc86x-*-elf*, sparc64-*-elf*,
+	{sparc64,ultrasparc}-*-freebsd*): Add sparc/t-crtfm to tmake_file.
+
+2002-04-05  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (sparc_nonflat_function_epilogue): If we
+	are not going to emit return instructions, emit at least a nop
+	for the sake of sane backtraces.
+
 2002-04-05  Richard Henderson  <rth@redhat.com>
 
 	* doc/rtl.texi (Regs and Memory): Document (mem:BLK (scratch)).
