@@ -1,3 +1,7 @@
+2002-12-30  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Updated class list.
+
 2002-12-30  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/URLStreamHandler.java (toExternalForm): Ignore port
