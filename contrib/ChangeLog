@@ -1,3 +1,7 @@
+2003-07-31  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* texi2pod.pl: Remove extra line.
+
 2003-07-15  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* texi2pod.pl: Default @itemize's parameter to @bullet.
