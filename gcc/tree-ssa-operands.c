@@ -859,9 +859,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	 of interest to some passes (e.g. alias resolution).  */
       add_stmt_operand (expr_p, stmt, 0, NULL);
 
-      /* If the address is constant (invariant is not sufficient), there will
-	 be no interesting variable references inside.  */
-      if (TREE_CONSTANT (expr))
+      /* If the address is invariant, there may be no interesting variable
+	 references inside.  */
+      if (is_gimple_min_invariant (expr))
 	return;
 
       /* There should be no VUSEs created, since the referenced objects are
