@@ -1,3 +1,8 @@
+2004-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18314
+	* gcc.dg/builtins-30.c: New testcase.
+
 2004-01-22  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc.dg/ppc64-abi-2.c: New test.

@@ -1,3 +1,10 @@
+2004-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18314
+	* c-decl.c (diagnose_mismatched_decls): Also discard a
+	built-in if we encounter an old-style definition with the
+	same name.
+
 2004-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc (powerpc*-*): Clear $with_cpu or $with_tune if it was
@@ -51,7 +58,7 @@
 2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/arm/arm.c: Include "debug.h".
-	(thumb_pushpop): Take two new arguments.  Add some commentary. 
+	(thumb_pushpop): Take two new arguments.  Add some commentary.
 	Output frame information when pushing.
 	(thumb_exit, thumb_unexpanded_epilogue): Update calls to
 	thumb_pushpop.
@@ -92,7 +99,7 @@
 
 2004-01-22  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (function_arg) Handle 
+	* gcc/config/rs6000/rs6000.c (function_arg) Handle
 	vector register special in function without prototype.
 	(function_arg_advance): Vector parameters get always
 	GPRs allocated for the linux64 target.
