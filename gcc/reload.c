@@ -3794,6 +3794,9 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
   return x;
 }
 
+/* Return a mem ref for the memory equivalent of reg REGNO.
+   This mem ref is not shared with anything.  */
+
 static rtx
 make_memloc (ad, regno)
      rtx ad;
@@ -3801,9 +3804,16 @@ make_memloc (ad, regno)
 {
   register int i;
   rtx tem = reg_equiv_address[regno];
+
+#if 0 /* We cannot safely reuse a memloc made here;
+	 if the pseudo appears twice, and its mem needs a reload,
+	 it gets two separate reloads assigned, but it only
+	 gets substituted with the second of them;
+	 then it can get used before that reload reg gets loaded up.  */
   for (i = 0; i < n_memlocs; i++)
     if (rtx_equal_p (tem, XEXP (memlocs[i], 0)))
       return memlocs[i];
+#endif
 
   /* If TEM might contain a pseudo, we must copy it to avoid
      modifying it when we do the substitution for the reload.  */
