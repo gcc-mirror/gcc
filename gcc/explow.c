@@ -659,7 +659,15 @@ set_mem_attributes (ref, t, objectp)
      tree t;
      int objectp;
 {
-  tree type = TYPE_P (t) ? t : TREE_TYPE (t);
+  tree type;
+
+  /* It can happen that type_for_mode was given a mode for which there
+     is no language-level type.  In which case it returns NULL, which
+     we can see here.  */
+  if (t == NULL_TREE)
+    return;
+
+  type = TYPE_P (t) ? t : TREE_TYPE (t);
 
   /* Get the alias set from the expression or type (perhaps using a
      front-end routine) and then copy bits from the type.  */
