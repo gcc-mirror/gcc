@@ -3196,17 +3196,7 @@ assign_parms (fndecl, second_time)
 
 #ifdef PROMOTE_FUNCTION_ARGS
       /* Compute the mode in which the arg is actually extended to.  */
-      if (TREE_CODE (passed_type) == INTEGER_TYPE
-	  || TREE_CODE (passed_type) == ENUMERAL_TYPE
-	  || TREE_CODE (passed_type) == BOOLEAN_TYPE
-	  || TREE_CODE (passed_type) == CHAR_TYPE
-	  || TREE_CODE (passed_type) == REAL_TYPE
-	  || TREE_CODE (passed_type) == POINTER_TYPE
-	  || TREE_CODE (passed_type) == OFFSET_TYPE)
-	{
-	  unsignedp = TREE_UNSIGNED (passed_type);
-	  PROMOTE_MODE (promoted_mode, unsignedp, passed_type);
-	}
+      promoted_mode = promote_mode (passed_type, promoted_mode, &unsignedp, 1);
 #endif
 
       /* Let machine desc say which reg (if any) the parm arrives in.
@@ -3486,16 +3476,8 @@ assign_parms (fndecl, second_time)
 	  int regno;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
-	  if (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == BOOLEAN_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == CHAR_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE
-	      || TREE_CODE (TREE_TYPE (parm)) == OFFSET_TYPE)
-	    {
-	      PROMOTE_MODE (nominal_mode, unsignedp, TREE_TYPE (parm));
-	    }
+	  nominal_mode = promote_mode (TREE_TYPE (parm), nominal_mode,
+				       &unsignedp, 1);
 
 	  parmreg = gen_reg_rtx (nominal_mode);
 	  REG_USERVAR_P (parmreg) = 1;
@@ -3820,19 +3802,12 @@ promoted_input_arg (regno, pmode, punsignedp)
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
        arg = TREE_CHAIN (arg))
     if (GET_CODE (DECL_INCOMING_RTL (arg)) == REG
-	&& REGNO (DECL_INCOMING_RTL (arg)) == regno
-	&& (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == ENUMERAL_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == CHAR_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
-	    || TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE))
+	&& REGNO (DECL_INCOMING_RTL (arg)) == regno)
       {
 	enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
 	int unsignedp = TREE_UNSIGNED (TREE_TYPE (arg));
 
-	PROMOTE_MODE (mode, unsignedp, TREE_TYPE (arg));
+	mode = promote_mode (TREE_TYPE (arg), mode, &unsignedp, 1);
 	if (mode == GET_MODE (DECL_INCOMING_RTL (arg))
 	    && mode != DECL_MODE (arg))
 	  {
@@ -4941,17 +4916,12 @@ expand_function_start (subr, parms_have_cleanups)
 	 after the cleanups are done.  */
 
       enum machine_mode mode = DECL_MODE (DECL_RESULT (subr));
+
 #ifdef PROMOTE_FUNCTION_RETURN
       tree type = TREE_TYPE (DECL_RESULT (subr));
       int unsignedp = TREE_UNSIGNED (type);
 
-      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
-	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
-	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
-	  || TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  PROMOTE_MODE (mode, unsignedp, type);
-	}
+      mode = promote_mode (type, mode, &unsignedp, 1);
 #endif
 
       DECL_RTL (DECL_RESULT (subr)) = gen_reg_rtx (mode);
