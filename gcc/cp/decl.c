@@ -8181,7 +8181,9 @@ expand_static_init (decl, init)
 	  || (init && TREE_CODE (init) == TREE_LIST))
 	assignment = build_aggr_init (decl, init, 0);
       else if (init)
-	assignment = build_modify_expr (decl, NOP_EXPR, init);
+	/* The initialization we're doing here is just a bitwise
+	   copy.  */
+	assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
       else
 	assignment = NULL_TREE;
 
