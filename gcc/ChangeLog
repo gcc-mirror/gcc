@@ -1,3 +1,10 @@
+2004-08-16  James E Wilson  <wilson@specifixinc.com>
+
+	* tree.h (VECTOR_FLOAT_TYPE_P): New.
+	(FLOAT_TYPE_P): Use it.
+	* c-typeck.c (build_binary_op): After convert calls, check for
+	check for ERROR_MARK operands.
+
 2004-08-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (BUILD_PREFIX, BUILD_PREFIX_1): Delete.
