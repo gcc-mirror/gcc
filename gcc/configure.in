@@ -2263,6 +2263,12 @@ changequote([,])dnl
       [AC_DEFINE(HAVE_GAS_FILDS_FISTS, 1,
         [Define if your assembler uses the new HImode fild and fist notation.])])
 
+    gcc_GAS_CHECK_FEATURE([cmov syntax],
+      gcc_cv_as_ix86_cmov_sun_syntax,,,
+      [cmovl.l %edx, %eax],,
+      [AC_DEFINE(HAVE_AS_IX86_CMOV_SUN_SYNTAX, 1,
+        [Define if your assembler supports the Sun syntax for cmov.])])
+
     # This one is used unconditionally by i386.[ch]; it is to be defined
     # to 1 if the feature is present, 0 otherwise.
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
