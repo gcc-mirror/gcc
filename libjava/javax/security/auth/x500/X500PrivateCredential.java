@@ -1,5 +1,5 @@
 /* X500PrivateCredential.java -- certificate and private key pair.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package javax.security.auth.x500;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+
 import javax.security.auth.Destroyable;
 
 /**

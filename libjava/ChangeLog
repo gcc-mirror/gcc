@@ -1,5 +1,16 @@
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/NetworkInterface.java,
+	java/text/Format.java,
+	javax/security/auth/x500/X500Principal.java,
+	javax/security/auth/x500/X500PrivateCredential.java,
+	javax/security/cert/X509CertBridge.java,
+	javax/security/sasl/Sasl.java,
+	javax/sql/XAConnection.java:
+	Import cleanup.
+
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/net/ssl/HandshakeCompletedEvent.java,
 	javax/net/ssl/KeyManagerFactory.java,
 	javax/net/ssl/SSLContext.java,

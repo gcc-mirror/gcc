@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package javax.security.sasl;
 
+import java.security.Provider;
+import java.security.Security;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import java.security.Security;
-import java.security.Provider;
 
 import javax.security.auth.callback.CallbackHandler;
 
