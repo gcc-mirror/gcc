@@ -1,3 +1,32 @@
+Thu Nov 26 18:05:04 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.h (struct loop_info): Define new structure.
+	(precondition_loop_p): Added prototype.
+	(unroll_loop): Added new argument loop_info to prototype.
+	(final_biv_value, final_giv_value): Added new argument n_iterations
+	to prototype.
+	* loop.c (strength_reduce): Declare new structure loop_iteration_info
+	and new pointer loop_info.
+	(loop_n_iterations): Replace global variable by element in 
+	loop_info structure.
+	(check_final_value): New argument n_iterations.
+	(insert_bct): New argument loop_info.
+	(loop_unroll_factor): Replace global array by element in 
+	loop_info structure.
+	(loop_optimize): Remove code to allocate and initialise 
+	loop_unroll_factor_array.
+	* unroll.c (precondition_loop_p):  No longer static since
+	used by branch on count optimization.
+	(precondition_loop_p, unroll_loop): New argument loop_info.
+	(final_biv_value, final_giv_value, find_splittable_regs): New
+	argument n_iterations.
+	(loop_iteration_var, loop_initial_value, loop_increment, 
+	loop_final_value, loop_comparison_code, loop_unroll_factor): 
+	Replaced global variables by loop_info structure.
+	(loop_unroll_factor): Replace global array by element in
+	loop_info structure.
+
+
 Thu Nov 26 17:49:29 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (check_dbra_loop): Update JUMP_LABEL field of jump insn
