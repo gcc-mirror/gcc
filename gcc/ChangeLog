@@ -1,5 +1,7 @@
 2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/cris/aout.h (ENDFILE_SPEC): Undef.
+
 	* optabs.c (gen_move_insn): Move logic for synthesizing MODE_CC
 	moves from here ...
 	* expr.c (emit_move_insn_1): ... to here.
