@@ -1242,27 +1242,51 @@ emit_move_sequence (operands, mode, scratch_reg)
 	}
       if (symbolic_operand (operand1, mode))
 	{
-	  rtx const_part = NULL;
-
 	  /* Argh.  The assembler and linker can't handle arithmetic
-	     involving plabels.  We'll have to split up operand1 here
-	     if it's a function label involved in an arithmetic
-	     expression.  Luckily, this only happens with addition
-	     of constants to plabels, which simplifies the test.
+	     involving plabels.
 
-	     We add the constant back in just before returning to
-	     our caller.  */
+	     So we force the plabel into memory, load operand0 from
+	     the memory location, then add in the constant part.  */
 	  if (GET_CODE (operand1) == CONST
 	      && GET_CODE (XEXP (operand1, 0)) == PLUS
 	      && function_label_operand (XEXP (XEXP (operand1, 0), 0), Pmode))
 	    {
+	      rtx scratch_reg, temp, const_part;
+
+	      /* Figure out what (if any) scratch register to use.  */
+	      if (reload_in_progress || reload_completed)
+		scratch_reg = scratch_reg ? scratch_reg : operand0;
+	      else if (flag_pic)
+		scratch_reg = gen_reg_rtx (Pmode);
+
 	      /* Save away the constant part of the expression.  */
 	      const_part = XEXP (XEXP (operand1, 0), 1);
 	      if (GET_CODE (const_part) != CONST_INT)
 		abort ();
 
-	      /* Set operand1 to just the SYMBOL_REF.  */
-	      operand1 = XEXP (XEXP (operand1, 0), 0);
+	      /* Force the function label into memory.  */
+	      temp = force_const_mem (mode, XEXP (XEXP (operand1, 0), 0));
+
+	      /* Get the address of the memory location.  PIC-ify it if
+		 necessary.  */
+	      temp = XEXP (temp, 0);
+	      if (flag_pic)
+		temp = legitimize_pic_address (temp, mode, scratch_reg);
+
+	      /* Put the address of the memory location into our destination
+		 register.  */
+	      operands[1] = temp;
+	      emit_move_sequence (operands, mode, scratch_reg);
+
+	      /* Now load from the memory location into our destination
+		 register.  */
+	      operands[1] = gen_rtx (MEM, Pmode, operands[0]);
+	      emit_move_sequence (operands, mode, scratch_reg);
+
+	      /* And add back in the constant part.  */
+	      expand_inc (operand0, const_part);
+
+	      return 1;
 	    }
 
 	  if (flag_pic)
@@ -1274,17 +1298,10 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      else
 		temp = gen_reg_rtx (Pmode);
 
-	      /* If operand1 is a function label, then we've got to
-		 force it to memory, then load op0 from memory.  */
-	      if (function_label_operand (operand1, mode))
-		{
-		  operands[1] = force_const_mem (mode, operand1);
-		  emit_move_sequence (operands, mode, temp);
-		}
-	      /* Likewise for (const (plus (symbol) (const_int))) when
-		 generating pic code during or after reload and const_int
-		 will not fit in 14 bits.  */
-	      else if (GET_CODE (operand1) == CONST
+	      /* (const (plus (symbol) (const_int))) must be forced to
+		 memory during/after reload if the const_int will not fit
+		 in 14 bits.  */
+	      if (GET_CODE (operand1) == CONST
 		       && GET_CODE (XEXP (operand1, 0)) == PLUS
 		       && GET_CODE (XEXP (XEXP (operand1, 0), 1)) == CONST_INT
 		       && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1))
@@ -1336,10 +1353,6 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      emit_insn (set);
 
 	    }
-
-	  /* Add back in the constant part if needed.  */
-	  if (const_part != NULL)
-	    expand_inc (operand0, const_part);
 	  return 1;
 	}
       else if (GET_CODE (operand1) != CONST_INT
