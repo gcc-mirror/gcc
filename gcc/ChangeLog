@@ -1,3 +1,10 @@
+Sat Feb 24 03:19:42 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (epilogue_done): Be ready for first basic block not
+	containing PROLOGUE_END note.
+	(reposition_prologue_and_epilogue_notes): Avoid placing
+	PROLOGUE_END note between BASIC_BLOCK.
+
 Sat Feb 24 03:17:09 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (canonicalize_condition): Move to reversed_comparison_code.
