@@ -817,7 +817,8 @@ typedef char * va_list;
 #endif /* __LINT__ */
 #endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
 #endif /*  #ifndef __INT_VARARGS_H  */
-_EOF_ ) < $infile > ${DESTDIR}/fixinc.tmp
+_EOF_
+ ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
     #  We interpret that to mean the file is not to be altered
@@ -847,8 +848,7 @@ _EOF_ ) < $infile > ${DESTDIR}/fixinc.tmp
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of selection 'if'
-
+    fi # if test
 
     #
     # Fix  19:  Ecd_Cursor
