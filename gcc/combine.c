@@ -11408,13 +11408,18 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	    }
 
 	  /* If the register is set or already dead at PLACE, we needn't do
-	     anything with this note if it is still a REG_DEAD note.  */
+	     anything with this note if it is still a REG_DEAD note.
+	     We can here if it is set at all, not if is it totally replace,
+	     which is what `dead_or_set_p' checks, so also check for it being
+	     set.  reg_bitfield_target_p only checks one of those cases.  */
+
 
 	  if (place && REG_NOTE_KIND (note) == REG_DEAD)
 	    {
 	      int regno = REGNO (XEXP (note, 0));
 
-	      if (dead_or_set_p (place, XEXP (note, 0)))
+	      if (dead_or_set_p (place, XEXP (note, 0))
+		  || reg_set_p (XEXP (note, 0), place))
 		{
 		  /* Unless the register previously died in PLACE, clear
 		     reg_last_death.  [I no longer understand why this is
