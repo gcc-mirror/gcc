@@ -1,3 +1,8 @@
+2001-05-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* decl2.c (finish_objects): Use the original SYMBOL_REF from the
+	function declaration to avoid stripping the symbol's attributes.
+
 2001-05-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (pushdecl): Adjust error string.
