@@ -5130,10 +5130,7 @@ sparc_type_code (type)
 	  /* If this is a range type, consider it to be the underlying
 	     type.  */
 	  if (TREE_TYPE (type) != 0)
-	    {
-	      type = TREE_TYPE (type);
-	      break;
-	    }
+	    break;
 
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  We do this by
@@ -5162,10 +5159,7 @@ sparc_type_code (type)
 	  /* If this is a range type, consider it to be the underlying
 	     type.  */
 	  if (TREE_TYPE (type) != 0)
-	    {
-	      type = TREE_TYPE (type);
-	      break;
-	    }
+	    break;
 
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  */
