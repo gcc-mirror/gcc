@@ -862,7 +862,7 @@ convert_move (to, from, unsignedp)
       end_sequence ();
 
       emit_no_conflict_block (insns, to, from, NULL_RTX,
-			      gen_rtx (equiv_code, to_mode, from));
+			      gen_rtx (equiv_code, to_mode, copy_rtx (from)));
       return;
     }
 
