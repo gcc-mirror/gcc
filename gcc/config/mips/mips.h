@@ -65,6 +65,7 @@ enum processor_type {
   PROCESSOR_R5000,
   PROCESSOR_R5400,
   PROCESSOR_R5500,
+  PROCESSOR_R7000,
   PROCESSOR_R8000,
   PROCESSOR_SB1,
   PROCESSOR_SR71000
@@ -329,6 +330,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_MIPS5KC              (mips_arch == PROCESSOR_5KC)
 #define TARGET_MIPS5400             (mips_arch == PROCESSOR_R5400)
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
+#define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
 
@@ -340,6 +342,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TUNE_MIPS5400               (mips_tune == PROCESSOR_R5400)
 #define TUNE_MIPS5500               (mips_tune == PROCESSOR_R5500)
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
+#define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 #define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
 
@@ -762,6 +765,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define GENERATE_MULT3_SI       ((TARGET_MIPS3900                       \
                                   || TARGET_MIPS5400                    \
                                   || TARGET_MIPS5500                    \
+                                  || TARGET_MIPS7000                    \
                                   || ISA_MIPS32	                        \
                                   || ISA_MIPS32R2                       \
                                   || ISA_MIPS64)                        \

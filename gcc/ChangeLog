@@ -1,3 +1,17 @@
+2003-07-15  Stan Cox  <scox@redhat.com>
+
+	* config/mips/mips.h (PROCESSOR_R7000): New processor_type.
+	(TARGET_MIPS7000, TUNE_MIPS7000): New macros.
+	(GENERATE_MULT3_SI): True for TARGET_MIPS7000.
+	* config/mips/mips.c (mips_cpu_info_table): Add rm7000 entry.
+	(mips_rtx_costs): Adjust integer multiplication costs for the rm7000.
+	(mips_issue_rate): Handle PROCESSOR_R7000.
+	(mips_use_dfa_pipeline_interface): Likewise.
+	* config/mips/7000.md: New file.
+	* config/mips/mips.md: Include it.
+	(define_attr cpu): Add r7000.
+	(mulsi3_mult3): Use "mul" for rm7000 code.
+
 2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (define_attr type): Add condmove.  Use it for

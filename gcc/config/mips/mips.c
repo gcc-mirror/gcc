@@ -807,6 +807,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "vr5000", PROCESSOR_R5000, 4 },
   { "vr5400", PROCESSOR_R5400, 4 },
   { "vr5500", PROCESSOR_R5500, 4 },
+  { "rm7000", PROCESSOR_R7000, 4 },
 
   /* MIPS32 */
   { "4kc", PROCESSOR_4KC, 32 },
@@ -2661,6 +2662,8 @@ mips_rtx_costs (x, code, outer_code, total)
         *total = COSTS_N_INSNS (2);
       else if (TUNE_MIPS5400 || TUNE_MIPS5500)
         *total = COSTS_N_INSNS ((mode == DImode) ? 4 : 3);
+      else if (TUNE_MIPS7000)
+        *total = COSTS_N_INSNS (mode == DImode ? 9 : 5);
       else if (TUNE_MIPS6000)
         *total = COSTS_N_INSNS (17);
       else if (TUNE_MIPS5000)
@@ -10261,6 +10264,7 @@ mips_issue_rate ()
     case PROCESSOR_R3000: return 1;
     case PROCESSOR_R5400: return 2;
     case PROCESSOR_R5500: return 2;
+    case PROCESSOR_R7000: return 2;
 
     default:
       return 1;
@@ -10280,6 +10284,7 @@ mips_use_dfa_pipeline_interface ()
     {
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:
+    case PROCESSOR_R7000:
     case PROCESSOR_SR71000:
       return true;
 
