@@ -6196,12 +6196,20 @@ compute_array_index_type (tree name, tree size)
     itype = build_min (MINUS_EXPR, sizetype, size, integer_one_node);
   else
     {
+      HOST_WIDE_INT saved_processing_template_decl;
+
       /* Compute the index of the largest element in the array.  It is
-     	 one less than the number of elements in the array.  */
-      itype
-	= fold (cp_build_binary_op (MINUS_EXPR,
-				    cp_convert (ssizetype, size),
-				    cp_convert (ssizetype, integer_one_node)));
+     	 one less than the number of elements in the array.  We save
+     	 and restore PROCESSING_TEMPLATE_DECL so that computations in
+     	 cp_build_binary_op will be appropriately folded.  */
+      saved_processing_template_decl = processing_template_decl;
+      processing_template_decl = 0;
+      itype = cp_build_binary_op (MINUS_EXPR,
+				  cp_convert (ssizetype, size),
+				  cp_convert (ssizetype, integer_one_node));
+      itype = fold (itype);
+      processing_template_decl = saved_processing_template_decl;
+
       if (!TREE_CONSTANT (itype))
 	/* A variable sized array.  */
 	itype = variable_size (itype);

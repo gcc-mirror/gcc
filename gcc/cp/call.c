@@ -3442,7 +3442,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     }
 
  valid_operands:
-  result = fold (build3 (COND_EXPR, result_type, arg1, arg2, arg3));
+  result = fold_if_not_in_template (build3 (COND_EXPR, result_type, arg1, 
+					    arg2, arg3));
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
@@ -4869,7 +4870,7 @@ build_cxx_call (tree fn, tree args)
 
   /* Some built-in function calls will be evaluated at compile-time in
      fold ().  */
-  fn = fold (fn);
+  fn = fold_if_not_in_template (fn);
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;

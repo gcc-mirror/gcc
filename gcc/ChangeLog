@@ -1,3 +1,16 @@
+2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17642
+	* stor-layout.c (layout_decl): Use fold_convert, not convert.
+	(bit_from_pos): Likewise.
+	(byte_from_pos): Likewise.
+	(pos_from_bit): Likewise.
+	(normalize_offset): Likewise.
+	(place_field): Likewise.
+	(finalize_type_size): Likewise.
+	(layout_type): Likewise.
+	* tree.c (build_index_type): Likewise.
+
 2004-09-27  Devang Patel  <dpatel@apple.com>
 
 	* expr.c (expand_expr_real_1): Handle VEC_COND_EXPR.

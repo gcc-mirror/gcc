@@ -10,6 +10,10 @@
 
 2004-09-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/template/crash23.C: New test.
+
+2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/17585
 	* g++.dg/template/static8.C: New test.
 

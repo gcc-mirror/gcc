@@ -643,7 +643,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       /* For complex data types, we need to perform componentwise
          conversion.  */
       else if (TREE_CODE (type) == COMPLEX_TYPE)
-        return fold (convert_to_complex (type, e));
+        return fold_if_not_in_template (convert_to_complex (type, e));
       else if (TREE_CODE (e) == TARGET_EXPR)
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
@@ -659,7 +659,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  /* We shouldn't be treating objects of ADDRESSABLE type as
 	     rvalues.  */
 	  gcc_assert (!TREE_ADDRESSABLE (type));
-	  return fold (build1 (NOP_EXPR, type, e));
+	  return fold_if_not_in_template (build_nop (type, e));
 	}
     }
 
@@ -696,10 +696,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       if (code == BOOLEAN_TYPE)
 	return cp_truthvalue_conversion (e);
 
-      return fold (convert_to_integer (type, e));
+      return fold_if_not_in_template (convert_to_integer (type, e));
     }
   if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))
-    return fold (cp_convert_to_pointer (type, e, false));
+    return fold_if_not_in_template (cp_convert_to_pointer (type, e, false));
   if (code == VECTOR_TYPE)
     {
       tree in_vtype = TREE_TYPE (e);
@@ -713,7 +713,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
             error ("`%#T' used where a `%T' was expected", in_vtype, type);
           return error_mark_node;
 	}
-      return fold (convert_to_vector (type, e));
+      return fold_if_not_in_template (convert_to_vector (type, e));
     }
   if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {
@@ -729,9 +729,9 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 			TREE_TYPE (e));
 	}
       if (code == REAL_TYPE)
-	return fold (convert_to_real (type, e));
+	return fold_if_not_in_template (convert_to_real (type, e));
       else if (code == COMPLEX_TYPE)
-	return fold (convert_to_complex (type, e));
+	return fold_if_not_in_template (convert_to_complex (type, e));
     }
 
   /* New C++ semantics:  since assignment is now based on
@@ -945,7 +945,7 @@ convert (tree type, tree expr)
   if (POINTER_TYPE_P (type) && POINTER_TYPE_P (intype))
     {
       expr = decl_constant_value (expr);
-      return fold (build1 (NOP_EXPR, type, expr));
+      return fold_if_not_in_template (build_nop (type, expr));
     }
 
   return ocp_convert (type, expr, CONV_OLD_CONVERT,
@@ -963,13 +963,14 @@ convert_force (tree type, tree expr, int convtype)
   enum tree_code code = TREE_CODE (type);
 
   if (code == REFERENCE_TYPE)
-    return fold (convert_to_reference (type, e, CONV_C_CAST, LOOKUP_COMPLAIN,
-				       NULL_TREE));
+    return (fold_if_not_in_template 
+	    (convert_to_reference (type, e, CONV_C_CAST, LOOKUP_COMPLAIN,
+				   NULL_TREE)));
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 
   if (code == POINTER_TYPE)
-    return fold (convert_to_pointer_force (type, e));
+    return fold_if_not_in_template (convert_to_pointer_force (type, e));
 
   /* From typeck.c convert_for_assignment */
   if (((TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE && TREE_CODE (e) == ADDR_EXPR

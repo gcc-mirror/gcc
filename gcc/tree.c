@@ -4218,7 +4218,7 @@ build_index_type (tree maxval)
   TREE_TYPE (itype) = sizetype;
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
   TYPE_MIN_VALUE (itype) = size_zero_node;
-  TYPE_MAX_VALUE (itype) = convert (sizetype, maxval);
+  TYPE_MAX_VALUE (itype) = fold_convert (sizetype, maxval);
   TYPE_MODE (itype) = TYPE_MODE (sizetype);
   TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (sizetype);
