@@ -2538,8 +2538,7 @@ alpha_emit_floatuns (operands)
   i1 = gen_reg_rtx (DImode);
   f0 = gen_reg_rtx (mode);
 
-  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, DImode, 0,
-			   8, neglab);
+  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, DImode, 0, neglab);
 
   emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
   emit_jump_insn (gen_jump (donelab));

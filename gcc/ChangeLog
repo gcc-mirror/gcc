@@ -29,18 +29,21 @@ Thu Nov 15 17:57:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* tree.h: Likewise.
 	* dwarf2out.c (loc_descriptor_from_tree): Remove ALIGN parameter
 	to get_inner_reference.
-	* except.c: Remove ALIGN parameter in call to emit_cmp_and_jump_insns.
-	* explow.c: Likewise.
-	* loop.c: Likewise.
+	* builtins.c: Remove ALIGN parm in call to emit_cmp_and_jump_insns.
+	* doloop.c, except.c, explow.c, loop.c, stmt.c, unroll.c: Likewise.
 	* optabs.c: Likewise.
 	(prepare_cmp_insn): Now static; remove ALIGN parm.  Callers changed.
 	(emit_cmp_and_jump_insns): Remove ALIGN parm; all callers changed.
+	* expmed.c: Remove ALIGN arg from calls to compare_from_rtx,
+	compare_rtx_and_jump, and emit_cmp_jump_insns.
 	* fold-const.c: Remove PALIGN in calls to get_inner_reference.
 	* function.c (assign_stack_temp_for_type): No longer static.
 	* optabs.h (emit_cmp_insn): Remove ALIGN parm.
 	(prepare_cmp_insn): Delete declaration.
 	* rtl.h (assign_stack_temp_for_type): Add declaration.
-	* config/d30v/d30v.c: Reflect above changes.
+	* config/alpha/alpha.c, config/d30v/d30v.c: Reflect above changes.
+	* config/clipper/clipper.c, config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c,config/mips/mips.c: Likewise.
 	* config/i860/i860.c, config/ia64/ia64.c: Likewise.
 	* config/rs6000/rs6000.c, config/sh/sh.c: Likewise.
 

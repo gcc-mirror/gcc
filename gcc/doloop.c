@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -628,7 +628,7 @@ doloop_modify_runtime (loop, iterations_max,
 	  limit = abs_inc * (loop_info->unroll_number - 1);
 	  emit_cmp_and_jump_insns (extra, GEN_INT (limit),
 				   limit == 0 ? EQ : LEU, NULL_RTX,
-				   GET_MODE (extra), 0, 0, label);
+				   GET_MODE (extra), 0, label);
 	  JUMP_LABEL (get_last_insn ()) = label;
 	  LABEL_NUSES (label)++;
 
@@ -671,7 +671,7 @@ doloop_modify_runtime (loop, iterations_max,
 	  label = gen_label_rtx();
 	  emit_cmp_and_jump_insns (copy_rtx (initial_value),
 				   copy_rtx (loop_info->comparison_value),
-				   comparison_code, NULL_RTX, mode, 0, 0,
+				   comparison_code, NULL_RTX, mode, 0,
 				   label);
 	  JUMP_LABEL (get_last_insn ()) = label;
 	  LABEL_NUSES (label)++;

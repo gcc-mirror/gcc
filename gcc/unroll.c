@@ -962,8 +962,9 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	    {
 	      emit_cmp_and_jump_insns (initial_value, final_value,
 				       neg_inc ? LE : GE,
-				       NULL_RTX, mode, 0, 0, labels[1]);
-	      predict_insn_def (get_last_insn (), PRED_LOOP_CONDITION, NOT_TAKEN);
+				       NULL_RTX, mode, 0, labels[1]);
+	      predict_insn_def (get_last_insn (), PRED_LOOP_CONDITION,
+				NOT_TAKEN);
 	      JUMP_LABEL (get_last_insn ()) = labels[1];
 	      LABEL_NUSES (labels[1])++;
 	    }
@@ -1005,8 +1006,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 		}
 
 	      emit_cmp_and_jump_insns (diff, GEN_INT (abs_inc * cmp_const),
-				       cmp_code, NULL_RTX, mode, 0, 0,
-				       labels[i]);
+				       cmp_code, NULL_RTX, mode, 0, labels[i]);
 	      JUMP_LABEL (get_last_insn ()) = labels[i];
 	      LABEL_NUSES (labels[i])++;
 	      predict_insn (get_last_insn (), PRED_LOOP_PRECONDITIONING,
@@ -1039,7 +1039,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 		}
 
 	      emit_cmp_and_jump_insns (diff, GEN_INT (cmp_const), cmp_code,
-				       NULL_RTX, mode, 0, 0, labels[0]);
+				       NULL_RTX, mode, 0, labels[0]);
 	      JUMP_LABEL (get_last_insn ()) = labels[0];
 	      LABEL_NUSES (labels[0])++;
 	    }

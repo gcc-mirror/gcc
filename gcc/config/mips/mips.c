@@ -4590,8 +4590,8 @@ mips_va_arg (valist, type)
 	  /* Emit code to branch if foff == 0.  */
           r = expand_expr (foff, NULL_RTX, TYPE_MODE (TREE_TYPE (foff)),
 	     	EXPAND_NORMAL);
-          emit_cmp_and_jump_insns (r, const0_rtx, EQ,
-		const1_rtx, GET_MODE (r), 1, 1, lab_false);
+          emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
+				   1, lab_false);
 
           /* Emit code for addr_rtx = ftop - foff */
           t = build (MINUS_EXPR, TREE_TYPE (ftop), ftop, foff );
@@ -4657,8 +4657,8 @@ mips_va_arg (valist, type)
 	  /* Emit code to branch if goff == 0.  */
           r = expand_expr (goff, NULL_RTX, TYPE_MODE (TREE_TYPE (goff)),
 	     	EXPAND_NORMAL);
-          emit_cmp_and_jump_insns (r, const0_rtx, EQ,
-		const1_rtx, GET_MODE (r), 1, 1, lab_false);
+          emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
+				   1, lab_false);
 
           /* Emit code for addr_rtx = gtop - goff.  */
           t = build (MINUS_EXPR, TREE_TYPE (gtop), gtop, goff);
