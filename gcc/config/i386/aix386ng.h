@@ -1,5 +1,5 @@
 /* Definitions for IBM PS2 running AIX/386.
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Minh Tran-Le <TRANLE@intellicorp.com>.
 
 This file is part of GNU CC.
