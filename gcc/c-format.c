@@ -34,8 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Set format warning options according to a -Wformat=n option.  */
 
 void
-set_Wformat (setting)
-     int setting;
+set_Wformat (int setting)
 {
   warn_format = setting;
   warn_format_y2k = setting;
@@ -67,9 +66,8 @@ typedef struct function_format_info
   unsigned HOST_WIDE_INT first_arg_num;	/* number of first arg (zero for varargs) */
 } function_format_info;
 
-static bool decode_format_attr		PARAMS ((tree,
-						 function_format_info *, int));
-static enum format_type decode_format_type	PARAMS ((const char *));
+static bool decode_format_attr (tree, function_format_info *, int);
+static enum format_type decode_format_type (const char *);
 
 static bool check_format_string (tree argument,
 				 unsigned HOST_WIDE_INT format_num,
@@ -81,12 +79,8 @@ static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
-     tree name ATTRIBUTE_UNUSED;
-     tree args;
-     int flags;
-     bool *no_add_attrs;
+handle_format_arg_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
+			     tree args, int flags, _Bool *no_add_attrs)
 {
   tree type = *node;
   tree format_num_expr = TREE_VALUE (args);
@@ -180,10 +174,7 @@ get_constant(tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
    successfully decoded, false otherwise.  */
 
 static bool
-decode_format_attr (args, info, validated_p)
-     tree args;
-     function_format_info *info;
-     int validated_p;
+decode_format_attr (tree args, function_format_info *info, int validated_p)
 {
   tree format_type_id = TREE_VALUE (args);
   tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
@@ -893,32 +884,30 @@ typedef struct
   int *status;
 } format_check_context;
 
-static void check_format_info	PARAMS ((int *, function_format_info *, tree));
-static void check_format_arg	PARAMS ((void *, tree, unsigned HOST_WIDE_INT));
-static void check_format_info_main PARAMS ((int *, format_check_results *,
-					    function_format_info *,
-					    const char *, int, tree,
-					    unsigned HOST_WIDE_INT));
-static void status_warning PARAMS ((int *, const char *, ...))
+static void check_format_info (int *, function_format_info *, tree);
+static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
+static void check_format_info_main (int *, format_check_results *,
+				    function_format_info *,
+				    const char *, int, tree,
+				    unsigned HOST_WIDE_INT);
+static void status_warning (int *, const char *, ...)
      ATTRIBUTE_PRINTF_2;
 
-static void init_dollar_format_checking		PARAMS ((int, tree));
-static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
-							 tree, tree *,
-							 const format_kind_info *));
-static void finish_dollar_format_checking	PARAMS ((int *, format_check_results *, int));
+static void init_dollar_format_checking (int, tree);
+static int maybe_read_dollar_number (int *, const char **, int,
+				     tree, tree *, const format_kind_info *);
+static void finish_dollar_format_checking (int *, format_check_results *, int);
 
-static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
-							 int, const char *));
+static const format_flag_spec *get_flag_spec (const format_flag_spec *,
+					      int, const char *);
 
-static void check_format_types	PARAMS ((int *, format_wanted_type *));
+static void check_format_types (int *, format_wanted_type *);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
    error message.  */
 static enum format_type
-decode_format_type (s)
-     const char *s;
+decode_format_type (const char *s)
 {
   int i;
   int slen;
@@ -945,10 +934,7 @@ decode_format_type (s)
    attribute themselves.  */
 
 void
-check_function_format (status, attrs, params)
-     int *status;
-     tree attrs;
-     tree params;
+check_function_format (int *status, tree attrs, tree params)
 {
   tree a;
 
@@ -1041,9 +1027,7 @@ static int dollar_format_warned;
    function; PARAMS is the list of arguments starting at this argument.  */
 
 static void
-init_dollar_format_checking (first_arg_num, params)
-     int first_arg_num;
-     tree params;
+init_dollar_format_checking (int first_arg_num, tree params)
 {
   tree oparams = params;
 
@@ -1098,14 +1082,9 @@ init_dollar_format_checking (first_arg_num, params)
    a $ format is found, *FORMAT is updated to point just after it.  */
 
 static int
-maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
-			  fki)
-     int *status;
-     const char **format;
-     int dollar_needed;
-     tree params;
-     tree *param_ptr;
-     const format_kind_info *fki;
+maybe_read_dollar_number (int *status, const char **format,
+			  int dollar_needed, tree params, tree *param_ptr,
+			  const format_kind_info *fki)
 {
   int argnum;
   int overflow_flag;
@@ -1210,10 +1189,7 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
    pointers.  */
 
 static void
-finish_dollar_format_checking (status, res, pointer_gap_ok)
-     int *status;
-     format_check_results *res;
-     int pointer_gap_ok;
+finish_dollar_format_checking (int *status, format_check_results *res, int pointer_gap_ok)
 {
   int i;
   bool found_pointer_gap = false;
@@ -1248,10 +1224,7 @@ finish_dollar_format_checking (status, res, pointer_gap_ok)
    of these is found, it is returned, otherwise NULL is returned.  */
 
 static const format_flag_spec *
-get_flag_spec (spec, flag, predicates)
-     const format_flag_spec *spec;
-     int flag;
-     const char *predicates;
+get_flag_spec (const format_flag_spec *spec, int flag, const char *predicates)
 {
   int i;
   for (i = 0; spec[i].flag_char != 0; i++)
@@ -1279,10 +1252,7 @@ get_flag_spec (spec, flag, predicates)
    PARAMS is the list of argument values.  */
 
 static void
-check_format_info (status, info, params)
-     int *status;
-     function_format_info *info;
-     tree params;
+check_format_info (int *status, function_format_info *info, tree params)
 {
   format_check_context format_ctx;
   unsigned HOST_WIDE_INT arg_num;
@@ -1380,10 +1350,8 @@ check_format_info (status, info, params)
    format_check_context.  */
 
 static void
-check_format_arg (ctx, format_tree, arg_num)
-     void *ctx;
-     tree format_tree;
-     unsigned HOST_WIDE_INT arg_num;
+check_format_arg (void *ctx, tree format_tree,
+		  unsigned HOST_WIDE_INT arg_num)
 {
   format_check_context *format_ctx = ctx;
   format_check_results *res = format_ctx->res;
@@ -1539,15 +1507,10 @@ check_format_arg (ctx, format_tree, arg_num)
    argument in the list of arguments.  */
 
 static void
-check_format_info_main (status, res, info, format_chars, format_length,
-			params, arg_num)
-     int *status;
-     format_check_results *res;
-     function_format_info *info;
-     const char *format_chars;
-     int format_length;
-     tree params;
-     unsigned HOST_WIDE_INT arg_num;
+check_format_info_main (int *status, format_check_results *res,
+			function_format_info *info, const char *format_chars,
+			int format_length, tree params,
+			unsigned HOST_WIDE_INT arg_num)
 {
   const char *orig_format_chars = format_chars;
   tree first_fillin_param = params;
@@ -2170,9 +2133,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 /* Check the argument types from a single format conversion (possibly
    including width and precision arguments).  */
 static void
-check_format_types (status, types)
-     int *status;
-     format_wanted_type *types;
+check_format_types (int *status, format_wanted_type *types)
 {
   for (; types != 0; types = types->next)
     {
@@ -2433,12 +2394,8 @@ init_dynamic_asm_fprintf_info (void)
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
-     tree name ATTRIBUTE_UNUSED;
-     tree args;
-     int flags;
-     bool *no_add_attrs;
+handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
+			 int flags, _Bool *no_add_attrs)
 {
   tree type = *node;
   function_format_info info;

@@ -1,3 +1,17 @@
+2003-06-19  Andreas Jaeger  <aj@suse.de>
+
+	* c-aux-info.c: Convert to ISO C99.
+	* c-pragma.c: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-convert.c: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-decl.c: Likewise
+	* c-format.c: Likewise.
+	* c-incpath.c: Likewise.
+	* c-incpath.h: Likewise.
+
 2003-06-19  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_errno_check): Assume that flag_errno_math
@@ -11,7 +25,7 @@
 	the args after the main switch, and don't modify the orginal exp.
 
 2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
- 
+
         * expr.c (const_vector_from_tree): Initialize remaining elements
         to 0.
 
@@ -143,7 +157,7 @@
         Support configuring with --with-cpu=iwmmxt.
 	* doc/invoke.texi: Document new value for -mcpu= ARM switch.
         * config/arm/aof.h (REGISTER_NAMES): Add iwmmxt register
-	names.  Fix formatting.        
+	names.  Fix formatting.
         * config/arm/aout.h (REGISTER_NAMES): Add iwmmxt register
 	names.
         * config/arm/arm-protos.h (arm_emit_vector_const): New
@@ -314,7 +328,7 @@
 
 2003-06-17  Ranjit Mathew  <rmathew@hotmail.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* doc/sourcebuild.texi (libgcj Tests): Simplify instructions on how
 	to run Java runtime tests separately.
 

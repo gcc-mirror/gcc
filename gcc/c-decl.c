@@ -263,32 +263,31 @@ tree static_ctors, static_dtors;
 
 /* Forward declarations.  */
 
-static struct binding_level *make_binding_level		PARAMS ((void));
-static void pop_binding_level		PARAMS ((struct binding_level **));
-static int duplicate_decls		PARAMS ((tree, tree, int));
-static int redeclaration_error_message	PARAMS ((tree, tree));
-static void implicit_decl_warning       PARAMS ((tree));
-static void storedecls			PARAMS ((tree));
-static void storetags			PARAMS ((tree));
-static tree lookup_tag			PARAMS ((enum tree_code, tree, int));
-static tree lookup_name_current_level	PARAMS ((tree));
-static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
-						 int));
-static tree grokparms			PARAMS ((tree, int));
-static void layout_array_type		PARAMS ((tree));
-static tree c_make_fname_decl           PARAMS ((tree, int));
-static void c_expand_body_1             PARAMS ((tree, int));
-static tree any_external_decl		PARAMS ((tree));
-static void record_external_decl	PARAMS ((tree));
-static void warn_if_shadowing		PARAMS ((tree, tree));
-static void clone_underlying_type	PARAMS ((tree));
-static bool flexible_array_type_p	PARAMS ((tree));
+static struct binding_level *make_binding_level (void);
+static void pop_binding_level (struct binding_level **);
+static int duplicate_decls (tree, tree, int);
+static int redeclaration_error_message (tree, tree);
+static void implicit_decl_warning (tree);
+static void storedecls (tree);
+static void storetags (tree);
+static tree lookup_tag (enum tree_code, tree, int);
+static tree lookup_name_current_level (tree);
+static tree grokdeclarator (tree, tree, enum decl_context, int);
+static tree grokparms (tree, int);
+static void layout_array_type (tree);
+static tree c_make_fname_decl (tree, int);
+static void c_expand_body_1 (tree, int);
+static tree any_external_decl (tree);
+static void record_external_decl (tree);
+static void warn_if_shadowing (tree, tree);
+static void clone_underlying_type (tree);
+static bool flexible_array_type_p (tree);
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
    __attribute__((deprecated)) suppresses warnings of uses of other
    deprecated items.  */
-   
+
 enum deprecated_states {
   DEPRECATED_NORMAL,
   DEPRECATED_SUPPRESS
@@ -297,10 +296,7 @@ enum deprecated_states {
 static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
 void
-c_print_identifier (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+c_print_identifier (FILE *file, tree node, int indent)
 {
   print_node (file, "symbol", IDENTIFIER_SYMBOL_VALUE (node), indent + 4);
   print_node (file, "tag", IDENTIFIER_TAG_VALUE (node), indent + 4);
@@ -319,8 +315,7 @@ c_print_identifier (file, node, indent)
    for a top-level tentative array defn that wasn't complete before.  */
 
 void
-c_finish_incomplete_decl (decl)
-     tree decl;
+c_finish_incomplete_decl (tree decl)
 {
   if (TREE_CODE (decl) == VAR_DECL)
     {
@@ -342,7 +337,7 @@ c_finish_incomplete_decl (decl)
 /* Reuse or create a struct for this binding level.  */
 
 static struct binding_level *
-make_binding_level ()
+make_binding_level (void)
 {
   struct binding_level *result;
   if (free_binding_level)
@@ -361,12 +356,11 @@ make_binding_level ()
 /* Remove a binding level from a list and add it to the level chain.  */
 
 static void
-pop_binding_level (lp)
-     struct binding_level **lp;
+pop_binding_level (struct binding_level **lp)
 {
   struct binding_level *l = *lp;
   *lp = l->level_chain;
-  
+
   memset (l, 0, sizeof (struct binding_level));
   l->level_chain = free_binding_level;
   free_binding_level = l;
@@ -375,13 +369,13 @@ pop_binding_level (lp)
 /* Nonzero if we are currently in the global binding level.  */
 
 int
-global_bindings_p ()
+global_bindings_p (void)
 {
   return current_binding_level == global_binding_level;
 }
 
 void
-keep_next_level ()
+keep_next_level (void)
 {
   keep_next_level_flag = 1;
 }
@@ -389,7 +383,7 @@ keep_next_level ()
 /* Nonzero if the current level needs to have a BLOCK made.  */
 
 int
-kept_level_p ()
+kept_level_p (void)
 {
   return ((current_binding_level->keep_if_subblocks
 	   && current_binding_level->blocks != 0)
@@ -404,8 +398,7 @@ kept_level_p ()
    DEFINITION_FLAG, so we ignore it.  */
 
 void
-declare_parm_level (definition_flag)
-     int definition_flag ATTRIBUTE_UNUSED;
+declare_parm_level (int definition_flag ATTRIBUTE_UNUSED)
 {
   current_binding_level->parm_flag = 1;
 }
@@ -413,7 +406,7 @@ declare_parm_level (definition_flag)
 /* Nonzero if currently making parm declarations.  */
 
 int
-in_parm_level_p ()
+in_parm_level_p (void)
 {
   return current_binding_level->parm_flag;
 }
@@ -421,8 +414,7 @@ in_parm_level_p ()
 /* Enter a new binding level.  */
 
 void
-pushlevel (dummy)
-     int dummy ATTRIBUTE_UNUSED;
+pushlevel (int dummy ATTRIBUTE_UNUSED)
 {
   /* If this is the top level of a function, make sure that
      NAMED_LABELS is 0.  */
@@ -475,10 +467,7 @@ pushlevel (dummy)
    them into the BLOCK.  */
 
 tree
-poplevel (keep, reverse, functionbody)
-     int keep;
-     int reverse;
-     int functionbody;
+poplevel (int keep, int reverse, int functionbody)
 {
   tree link;
   tree block;
@@ -659,8 +648,7 @@ poplevel (keep, reverse, functionbody)
    to handle the BLOCK node inside the BIND_EXPR.  */
 
 void
-insert_block (block)
-     tree block;
+insert_block (tree block)
 {
   TREE_USED (block) = 1;
   current_binding_level->blocks
@@ -672,13 +660,12 @@ insert_block (block)
    this hook, but it is not useful in function-at-a-time mode.  */
 
 void
-set_block (block)
-     tree block ATTRIBUTE_UNUSED;
+set_block (tree block ATTRIBUTE_UNUSED)
 {
 }
 
 void
-push_label_level ()
+push_label_level (void)
 {
   struct binding_level *newlevel;
 
@@ -696,7 +683,7 @@ push_label_level ()
 }
 
 void
-pop_label_level ()
+pop_label_level (void)
 {
   struct binding_level *level = label_level_chain;
   tree link, prev;
@@ -755,8 +742,7 @@ pop_label_level ()
    In that case, the TYPE_SIZE will be zero.  */
 
 void
-pushtag (name, type)
-     tree name, type;
+pushtag (tree name, tree type)
 {
   struct binding_level *b = current_binding_level;
 
@@ -801,9 +787,7 @@ pushtag (name, type)
    and OLDDECL is in an outer binding level and should thus not be changed.  */
 
 static int
-duplicate_decls (newdecl, olddecl, different_binding_level)
-     tree newdecl, olddecl;
-     int different_binding_level;
+duplicate_decls (tree newdecl, tree olddecl, int different_binding_level)
 {
   int types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
   int new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -1547,8 +1531,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
    currently in scope.  */
 
 static tree
-any_external_decl (id)
-     tree id;
+any_external_decl (tree id)
 {
   tree decl = IDENTIFIER_SYMBOL_VALUE (id);
   tree t;
@@ -1568,8 +1551,7 @@ any_external_decl (id)
 /* Record an external decl DECL.  This only does something if a
    shadowing decl already exists.  */
 static void
-record_external_decl (decl)
-     tree decl;
+record_external_decl (tree decl)
 {
   tree name = DECL_NAME (decl);
   if (!IDENTIFIER_SYMBOL_VALUE (name))
@@ -1582,8 +1564,7 @@ record_external_decl (decl)
    OLD is the old IDENTIFIER_SYMBOL_VALUE of the DECL_NAME of X,
    which might be a NULL_TREE.  */
 static void
-warn_if_shadowing (x, old)
-     tree x, old;
+warn_if_shadowing (tree x, tree old)
 {
   const char *name;
 
@@ -1660,8 +1641,7 @@ warn_if_shadowing (x, old)
     on a standard type by checking the current value of lineno.  */
 
 static void
-clone_underlying_type (x)
-     tree x;
+clone_underlying_type (tree x)
 {
   if (DECL_SOURCE_LINE (x) == 0)
     {
@@ -1689,8 +1669,7 @@ clone_underlying_type (x)
    to agree with what X says.  */
 
 tree
-pushdecl (x)
-     tree x;
+pushdecl (tree x)
 {
   tree name = DECL_NAME (x);
   struct binding_level *scope = current_binding_level;
@@ -1744,7 +1723,7 @@ pushdecl (x)
 	  else
 	    record_external_decl (x);
 	}
-	  
+
       if (TREE_CODE (x) == TYPE_DECL)
 	clone_underlying_type (x);
 
@@ -1797,8 +1776,7 @@ pushdecl (x)
    and is limited to its needs.  It will hork if there is _any_
    visible binding for X (not just a global one).  */
 tree
-pushdecl_top_level (x)
-     tree x;
+pushdecl_top_level (tree x)
 {
   tree name, old;
 
@@ -1834,9 +1812,7 @@ pushdecl_top_level (x)
    called; if there is any preexisting decl for this identifier, it is
    an ICE.  */
 tree
-pushdecl_function_level (x, name)
-     tree x;
-     tree name;
+pushdecl_function_level (tree x, tree name)
 {
   struct binding_level *scope;
 
@@ -1869,8 +1845,7 @@ pushdecl_function_level (x, name)
    function of type int ().  */
 
 tree
-implicitly_declare (functionid)
-     tree functionid;
+implicitly_declare (tree functionid)
 {
   tree decl = any_external_decl (functionid);
 
@@ -1922,8 +1897,7 @@ implicitly_declare (functionid)
 }
 
 static void
-implicit_decl_warning (id)
-     tree id;
+implicit_decl_warning (tree id)
 {
   const char *name = IDENTIFIER_POINTER (id);
   if (mesg_implicit_function_declaration == 2)
@@ -1939,8 +1913,7 @@ implicit_decl_warning (id)
    and 3 if it is a conflicting declaration.  */
 
 static int
-redeclaration_error_message (newdecl, olddecl)
-     tree newdecl, olddecl;
+redeclaration_error_message (tree newdecl, tree olddecl)
 {
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
@@ -2001,8 +1974,7 @@ redeclaration_error_message (newdecl, olddecl)
    This function is called for both label definitions and label references.  */
 
 tree
-lookup_label (id)
-     tree id;
+lookup_label (tree id)
 {
   tree decl = IDENTIFIER_LABEL_VALUE (id);
 
@@ -2050,8 +2022,7 @@ lookup_label (id)
    requires calling declare_nonlocal_label right away.  */
 
 tree
-shadow_label (name)
-     tree name;
+shadow_label (tree name)
 {
   tree decl = IDENTIFIER_LABEL_VALUE (name);
 
@@ -2124,7 +2095,7 @@ define_label (const char* filename, int line, tree name)
    store the result back using `storedecls' or you will lose.  */
 
 tree
-getdecls ()
+getdecls (void)
 {
   return current_binding_level->names;
 }
@@ -2132,7 +2103,7 @@ getdecls ()
 /* Return the list of type-tags (for structs, etc) of the current level.  */
 
 tree
-gettags ()
+gettags (void)
 {
   return current_binding_level->tags;
 }
@@ -2142,8 +2113,7 @@ gettags ()
    after they are modified in the light of any missing parameters.  */
 
 static void
-storedecls (decls)
-     tree decls;
+storedecls (tree decls)
 {
   current_binding_level->names = decls;
 }
@@ -2151,8 +2121,7 @@ storedecls (decls)
 /* Similarly, store the list of tags of the current level.  */
 
 static void
-storetags (tags)
-     tree tags;
+storetags (tree tags)
 {
   current_binding_level->tags = tags;
 }
@@ -2165,10 +2134,7 @@ storetags (tags)
    If the wrong kind of type is found, an error is reported.  */
 
 static tree
-lookup_tag (code, name, thislevel_only)
-     enum tree_code code;
-     tree name;
-     int thislevel_only;
+lookup_tag (enum tree_code code, tree name, int thislevel_only)
 {
   tree tag = IDENTIFIER_TAG_VALUE (name);
   int thislevel = 0;
@@ -2210,7 +2176,7 @@ lookup_tag (code, name, thislevel_only)
    when used in the `struct foo;' construct for shadowing.  */
 
 void
-pending_xref_error ()
+pending_xref_error (void)
 {
   if (pending_invalid_xref != 0)
     error ("%H`%s' defined as wrong kind of tag",
@@ -2226,8 +2192,7 @@ pending_xref_error ()
    or return 0 if it is undefined.  */
 
 tree
-lookup_name (name)
-     tree name;
+lookup_name (tree name)
 {
   tree decl = IDENTIFIER_SYMBOL_VALUE (name);
   if (decl == 0 || decl == error_mark_node)
@@ -2240,8 +2205,7 @@ lookup_name (name)
 /* Similar to `lookup_name' but look only at the current binding level.  */
 
 static tree
-lookup_name_current_level (name)
-     tree name;
+lookup_name_current_level (tree name)
 {
   tree decl = IDENTIFIER_SYMBOL_VALUE (name);
 
@@ -2264,7 +2228,7 @@ lookup_name_current_level (name)
    Make definitions for built-in primitive functions.  */
 
 void
-c_init_decl_processing ()
+c_init_decl_processing (void)
 {
   tree endlink;
   tree ptr_ftype_void, ptr_ftype_ptr;
@@ -2330,9 +2294,7 @@ c_init_decl_processing ()
    are string merging candidates, which is wrong for C99's __func__.  FIXME.  */
 
 static tree
-c_make_fname_decl (id, type_dep)
-     tree id;
-     int type_dep;
+c_make_fname_decl (tree id, int type_dep)
 {
   const char *name = fname_as_string (type_dep);
   tree decl, type, init;
@@ -2343,11 +2305,11 @@ c_make_fname_decl (id, type_dep)
 	   build_index_type (size_int (length)));
 
   decl = build_decl (VAR_DECL, id, type);
-  
+
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  
+
   init = build_string (length + 1, name);
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
@@ -2372,13 +2334,9 @@ c_make_fname_decl (id, type_dep)
    ATTRS is nonzero, use that for the function's attribute list.  */
 
 tree
-builtin_function (name, type, function_code, class, library_name, attrs)
-     const char *name;
-     tree type;
-     int function_code;
-     enum built_in_class class;
-     const char *library_name;
-     tree attrs;
+builtin_function (const char *name, tree type, int function_code,
+		  enum built_in_class class, const char *library_name,
+		  tree attrs)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -2408,8 +2366,7 @@ builtin_function (name, type, function_code, class, library_name, attrs)
    attributes.  */
 
 void
-c_insert_default_attributes (decl)
-     tree decl;
+c_insert_default_attributes (tree decl)
 {
   if (!TREE_PUBLIC (decl))
     return;
@@ -2425,16 +2382,15 @@ c_insert_default_attributes (decl)
    Otherwise, it is an error.  */
 
 void
-shadow_tag (declspecs)
-     tree declspecs;
+shadow_tag (tree declspecs)
 {
   shadow_tag_warned (declspecs, 0);
 }
 
 void
-shadow_tag_warned (declspecs, warned)
-     tree declspecs;
-     int warned;
+shadow_tag_warned (tree declspecs, int warned)
+
+
      /* 1 => we have done a pedwarn.  2 => we have done a warning, but
 	no pedwarn.  */
 {
@@ -2515,11 +2471,7 @@ shadow_tag_warned (declspecs, warned)
    which has TREE_STATIC set if "static" is used.  */
 
 tree
-build_array_declarator (expr, quals, static_p, vla_unspec_p)
-     tree expr;
-     tree quals;
-     int static_p;
-     int vla_unspec_p;
+build_array_declarator (tree expr, tree quals, int static_p, int vla_unspec_p)
 {
   tree decl;
   decl = build_nt (ARRAY_REF, NULL_TREE, expr);
@@ -2545,10 +2497,7 @@ build_array_declarator (expr, quals, static_p, vla_unspec_p)
    C99 grammar.  */
 
 tree
-set_array_declarator_type (decl, type, abstract_p)
-     tree decl;
-     tree type;
-     int abstract_p;
+set_array_declarator_type (tree decl, tree type, int abstract_p)
 {
   TREE_OPERAND (decl, 0) = type;
   if (abstract_p && (TREE_TYPE (decl) != NULL_TREE || TREE_STATIC (decl)))
@@ -2559,8 +2508,7 @@ set_array_declarator_type (decl, type, abstract_p)
 /* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
 
 tree
-groktypename (typename)
-     tree typename;
+groktypename (tree typename)
 {
   tree specs, attrs;
 
@@ -2580,8 +2528,7 @@ groktypename (typename)
 /* Return a PARM_DECL node for a given pair of specs and declarator.  */
 
 tree
-groktypename_in_parm_context (typename)
-     tree typename;
+groktypename_in_parm_context (tree typename)
 {
   if (TREE_CODE (typename) != TREE_LIST)
     return typename;
@@ -2606,14 +2553,11 @@ groktypename_in_parm_context (typename)
    grokfield and not through here.  */
 
 tree
-start_decl (declarator, declspecs, initialized, attributes)
-     tree declarator, declspecs;
-     int initialized;
-     tree attributes;
+start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 {
   tree decl;
   tree tem;
-  
+
   /* An object declared as __attribute__((deprecated)) suppresses
      warnings of uses of other deprecated items.  */
   if (lookup_attribute ("deprecated", attributes))
@@ -2621,7 +2565,7 @@ start_decl (declarator, declspecs, initialized, attributes)
 
   decl = grokdeclarator (declarator, declspecs,
 			 NORMAL, initialized);
-  
+
   deprecated_state = DEPRECATED_NORMAL;
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
@@ -2773,9 +2717,7 @@ start_decl (declarator, declspecs, initialized, attributes)
    it must be determined now, from the initial value, or it is an error.  */
 
 void
-finish_decl (decl, init, asmspec_tree)
-     tree decl, init;
-     tree asmspec_tree;
+finish_decl (tree decl, tree init, tree asmspec_tree)
 {
   tree type = TREE_TYPE (decl);
   int was_incomplete = (DECL_SIZE (decl) == 0);
@@ -2790,7 +2732,7 @@ finish_decl (decl, init, asmspec_tree)
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
   if (init != 0 && DECL_INITIAL (decl) == 0)
     init = 0;
-  
+
   /* Don't crash if parm is initialized.  */
   if (TREE_CODE (decl) == PARM_DECL)
     init = 0;
@@ -2953,7 +2895,7 @@ finish_decl (decl, init, asmspec_tree)
 		 ordinary, non-register local variable.  Historically,
 		 GCC has accepted -- but ignored -- the ASMSPEC in
 		 this case.  */
-	      if (TREE_CODE (decl) == VAR_DECL 
+	      if (TREE_CODE (decl) == VAR_DECL
 		  && !DECL_REGISTER (decl)
 		  && !TREE_STATIC (decl))
 		warning_with_decl (decl,
@@ -3038,8 +2980,7 @@ finish_decl (decl, init, asmspec_tree)
    record the given order of parms in `parm_order'.  */
 
 void
-push_parm_decl (parm)
-     tree parm;
+push_parm_decl (tree parm)
 {
   tree decl;
   int old_immediate_size_expand = immediate_size_expand;
@@ -3077,7 +3018,7 @@ push_parm_decl (parm)
    and also at semicolon terminating forward decls.  */
 
 void
-clear_parm_order ()
+clear_parm_order (void)
 {
   current_binding_level->parm_order = NULL_TREE;
 }
@@ -3090,9 +3031,7 @@ static GTY(()) int compound_literal_number;
    literal.  */
 
 tree
-build_compound_literal (type, init)
-     tree type;
-     tree init;
+build_compound_literal (tree type, tree init)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
@@ -3132,7 +3071,7 @@ build_compound_literal (type, init)
 	 a unique suffix to be added to the name.  */
       char *name;
 
-      ASM_FORMAT_PRIVATE_NAME (name, "__compound_literal", 
+      ASM_FORMAT_PRIVATE_NAME (name, "__compound_literal",
 			       compound_literal_number);
       compound_literal_number++;
       DECL_NAME (decl) = get_identifier (name);
@@ -3151,10 +3090,7 @@ build_compound_literal (type, init)
    2 if there was no information (in which case assume 1 if DO_DEFAULT).  */
 
 int
-complete_array_type (type, initial_value, do_default)
-     tree type;
-     tree initial_value;
-     int do_default;
+complete_array_type (tree type, tree initial_value, int do_default)
 {
   tree maxindex = NULL_TREE;
   int value = 0;
@@ -3220,8 +3156,7 @@ complete_array_type (type, initial_value, do_default)
    or a union containing such a structure (possibly recursively).  */
 
 static bool
-flexible_array_type_p (type)
-     tree type;
+flexible_array_type_p (tree type)
 {
   tree x;
   switch (TREE_CODE (type))
@@ -3280,11 +3215,8 @@ flexible_array_type_p (type)
    and `extern' are interpreted.  */
 
 static tree
-grokdeclarator (declarator, declspecs, decl_context, initialized)
-     tree declspecs;
-     tree declarator;
-     enum decl_context decl_context;
-     int initialized;
+grokdeclarator (tree declarator, tree declspecs,
+		enum decl_context decl_context, int initialized)
 {
   int specbits = 0;
   tree spec;
@@ -4301,7 +4233,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  }
 	else if (type_quals)
 	  type = c_build_qualified_type (type, type_quals);
-	  
+
 	type_as_written = type;
 
 	decl = build_decl (PARM_DECL, declarator, type);
@@ -4464,7 +4396,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    tree global_decl;
 
 	    global_decl = identifier_global_value (declarator);
-	    if (global_decl 
+	    if (global_decl
 		&& TREE_CODE (global_decl) == VAR_DECL
 		&& !TREE_PUBLIC (global_decl))
 	      error ("variable previously declared `static' redeclared "
@@ -4548,9 +4480,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
    when FUNCDEF_FLAG is zero.  */
 
 static tree
-grokparms (parms_info, funcdef_flag)
-     tree parms_info;
-     int funcdef_flag;
+grokparms (tree parms_info, int funcdef_flag)
 {
   tree first_parm = TREE_CHAIN (parms_info);
 
@@ -4645,8 +4575,7 @@ grokparms (parms_info, funcdef_flag)
    Zero means the parmlist ended with an ellipsis so don't append `void'.  */
 
 tree
-get_parm_info (void_at_end)
-     int void_at_end;
+get_parm_info (int void_at_end)
 {
   tree decl, t;
   tree types = 0;
@@ -4746,7 +4675,7 @@ get_parm_info (void_at_end)
    defined within.  Do so because these types cannot ever become complete.  */
 
 void
-parmlist_tags_warning ()
+parmlist_tags_warning (void)
 {
   tree elt;
   static int already;
@@ -4792,9 +4721,7 @@ parmlist_tags_warning ()
    Define the tag as a forward-reference if it is not defined.  */
 
 tree
-xref_tag (code, name)
-     enum tree_code code;
-     tree name;
+xref_tag (enum tree_code code, tree name)
 {
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
@@ -4843,9 +4770,7 @@ xref_tag (code, name)
    CODE says which kind of tag NAME ought to be.  */
 
 tree
-start_struct (code, name)
-     enum tree_code code;
-     tree name;
+start_struct (enum tree_code code, tree name)
 {
   /* If there is already a tag defined at this binding level
      (as a forward reference), just return it.  */
@@ -4862,7 +4787,7 @@ start_struct (code, name)
 	    error ("redefinition of `union %s'", IDENTIFIER_POINTER (name));
           else
 	    error ("redefinition of `struct %s'", IDENTIFIER_POINTER (name));
-	}  
+	}
     }
   else
     {
@@ -4871,7 +4796,7 @@ start_struct (code, name)
       ref = make_node (code);
       pushtag (name, ref);
     }
-  
+
   C_TYPE_BEING_DEFINED (ref) = 1;
   TYPE_PACKED (ref) = flag_pack_struct;
   return ref;
@@ -4886,10 +4811,8 @@ start_struct (code, name)
    are ultimately passed to `build_struct' to make the RECORD_TYPE node.  */
 
 tree
-grokfield (filename, line, declarator, declspecs, width)
-     const char *filename ATTRIBUTE_UNUSED;
-     int line ATTRIBUTE_UNUSED;
-     tree declarator, declspecs, width;
+grokfield (const char *filename ATTRIBUTE_UNUSED, int line ATTRIBUTE_UNUSED,
+	   tree declarator, tree declspecs, tree width)
 {
   tree value;
 
@@ -5009,10 +4932,7 @@ detect_field_duplicates (tree fieldlist)
    ATTRIBUTES are attributes to be applied to the structure.  */
 
 tree
-finish_struct (t, fieldlist, attributes)
-     tree t;
-     tree fieldlist;
-     tree attributes;
+finish_struct (tree t, tree fieldlist, tree attributes)
 {
   tree x;
   int toplevel = global_binding_level == current_binding_level;
@@ -5289,8 +5209,7 @@ finish_struct (t, fieldlist, attributes)
 /* Lay out the type T, and its element type, and so on.  */
 
 static void
-layout_array_type (t)
-     tree t;
+layout_array_type (tree t)
 {
   if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
     layout_array_type (TREE_TYPE (t));
@@ -5304,8 +5223,7 @@ layout_array_type (t)
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (name)
-     tree name;
+start_enum (tree name)
 {
   tree enumtype = 0;
 
@@ -5350,10 +5268,7 @@ start_enum (name)
    Returns ENUMTYPE.  */
 
 tree
-finish_enum (enumtype, values, attributes)
-     tree enumtype;
-     tree values;
-     tree attributes;
+finish_enum (tree enumtype, tree values, tree attributes)
 {
   tree pair, tem;
   tree minnode = 0, maxnode = 0, enum_value_type;
@@ -5478,8 +5393,7 @@ finish_enum (enumtype, values, attributes)
    Assignment of sequential values by default is handled here.  */
 
 tree
-build_enumerator (name, value)
-     tree name, value;
+build_enumerator (tree name, tree value)
 {
   tree decl, type;
 
@@ -5554,8 +5468,7 @@ build_enumerator (name, value)
    yyparse to report a parse error.  */
 
 int
-start_function (declspecs, declarator, attributes)
-     tree declarator, declspecs, attributes;
+start_function (tree declspecs, tree declarator, tree attributes)
 {
   tree decl1, old_decl;
   tree restype;
@@ -5768,7 +5681,7 @@ start_function (declspecs, declarator, attributes)
   immediate_size_expand = old_immediate_size_expand;
 
   start_fname_decls ();
-  
+
   return 1;
 }
 
@@ -5780,7 +5693,7 @@ start_function (declspecs, declarator, attributes)
    to specify at least the number of arguments.  */
 
 void
-store_parm_decls ()
+store_parm_decls (void)
 {
   tree fndecl = current_function_decl;
   tree parm;
@@ -6175,7 +6088,7 @@ store_parm_decls ()
     {
       tree t;
 
-      DECL_LANG_SPECIFIC (fndecl)->pending_sizes 
+      DECL_LANG_SPECIFIC (fndecl)->pending_sizes
 	= nreverse (get_pending_sizes ());
       for (t = DECL_LANG_SPECIFIC (fndecl)->pending_sizes;
 	   t;
@@ -6206,9 +6119,7 @@ store_parm_decls ()
    CAN_DEFER_P is nonzero if the function may be deferred.  */
 
 void
-finish_function (nested, can_defer_p)
-     int nested;
-     int can_defer_p;
+finish_function (int nested, int can_defer_p)
 {
   tree fndecl = current_function_decl;
 
@@ -6260,7 +6171,7 @@ finish_function (nested, can_defer_p)
 #endif
 	}
     }
-  
+
   finish_fname_decls ();
 
   /* Tie off the statement tree for this function.  */
@@ -6336,7 +6247,7 @@ finish_function (nested, can_defer_p)
 	      current_function_decl = NULL;
 	      return;
 	    }
-	  
+
 	  /* Then, inline any functions called in it.  */
 	  optimize_inline_calls (fndecl);
 	  timevar_pop (TV_INTEGRATION);
@@ -6361,8 +6272,7 @@ finish_function (nested, can_defer_p)
 /* Generate the RTL for a deferred function FNDECL.  */
 
 void
-c_expand_deferred_function (fndecl)
-     tree fndecl;
+c_expand_deferred_function (tree fndecl)
 {
   /* DECL_INLINE or DECL_RESULT might got cleared after the inline
      function was deferred, e.g. in duplicate_decls.  */
@@ -6384,7 +6294,7 @@ c_expand_deferred_function (fndecl)
    nested FUNCTION_DECL.  */
 
 static tree
-set_save_expr_context (tree *tp, 
+set_save_expr_context (tree *tp,
 		       int *walk_subtrees,
 		       void *data)
 {
@@ -6404,9 +6314,7 @@ set_save_expr_context (tree *tp,
    generation of RTL.  */
 
 static void
-c_expand_body_1 (fndecl, nested_p)
-     tree fndecl;
-     int nested_p;
+c_expand_body_1 (tree fndecl, int nested_p)
 {
   timevar_push (TV_EXPAND);
 
@@ -6445,7 +6353,7 @@ c_expand_body_1 (fndecl, nested_p)
       && variably_modified_type_p (TREE_TYPE (fndecl)))
     walk_tree (&TREE_TYPE (fndecl), set_save_expr_context, fndecl,
 	       NULL);
-	     
+
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
   if (DECL_NAME (fndecl)
@@ -6556,8 +6464,7 @@ c_expand_body_1 (fndecl, nested_p)
 /* Like c_expand_body_1 but only for unnested functions.  */
 
 void
-c_expand_body (fndecl)
-     tree fndecl;
+c_expand_body (tree fndecl)
 {
   c_expand_body_1 (fndecl, 0);
 }
@@ -6565,7 +6472,7 @@ c_expand_body (fndecl)
 /* Check the declarations given in a for-loop for satisfying the C99
    constraints.  */
 void
-check_for_loop_decls ()
+check_for_loop_decls (void)
 {
   tree t;
 
@@ -6596,7 +6503,7 @@ check_for_loop_decls ()
       if (TREE_PURPOSE (t) != 0)
         {
           enum tree_code code = TREE_CODE (TREE_VALUE (t));
-	  
+
           if (code == RECORD_TYPE)
             error ("`struct %s' declared in `for' loop initial declaration",
                    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
@@ -6641,8 +6548,7 @@ struct language_function GTY(())
    used during compilation of a C function.  */
 
 void
-c_push_function_context (f)
-     struct function *f;
+c_push_function_context (struct function *f)
 {
   struct language_function *p;
   p = ((struct language_function *)
@@ -6664,8 +6570,7 @@ c_push_function_context (f)
 /* Restore the variables used during compilation of a C function.  */
 
 void
-c_pop_function_context (f)
-     struct function *f;
+c_pop_function_context (struct function *f)
 {
   struct language_function *p = f->language;
   tree link;
@@ -6703,8 +6608,7 @@ c_pop_function_context (f)
 /* Copy the DECL_LANG_SPECIFIC data associated with DECL.  */
 
 void
-c_dup_lang_specific_decl (decl)
-     tree decl;
+c_dup_lang_specific_decl (tree decl)
 {
   struct lang_decl *ld;
 
@@ -6727,7 +6631,7 @@ c_dup_lang_specific_decl (decl)
    at the end of the statement.  */
 
 int
-stmts_are_full_exprs_p ()
+stmts_are_full_exprs_p (void)
 {
   return 0;
 }
@@ -6737,7 +6641,7 @@ stmts_are_full_exprs_p ()
    returned.  */
 
 stmt_tree
-current_stmt_tree ()
+current_stmt_tree (void)
 {
   return &c_stmt_tree;
 }
@@ -6745,7 +6649,7 @@ current_stmt_tree ()
 /* Returns the stack of SCOPE_STMTs for the current function.  */
 
 tree *
-current_scope_stmt_stack ()
+current_scope_stmt_stack (void)
 {
   return &c_scope_stmt_stack;
 }
@@ -6754,8 +6658,7 @@ current_scope_stmt_stack ()
    C.  */
 
 int
-anon_aggr_type_p (node)
-     tree node ATTRIBUTE_UNUSED;
+anon_aggr_type_p (tree node ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -6763,7 +6666,7 @@ anon_aggr_type_p (node)
 /* Dummy function in place of callback used by C++.  */
 
 void
-extract_interface_info ()
+extract_interface_info (void)
 {
 }
 
@@ -6771,7 +6674,7 @@ extract_interface_info ()
    statement tree.  */
 
 tree
-c_begin_compound_stmt ()
+c_begin_compound_stmt (void)
 {
   tree stmt;
 
@@ -6785,8 +6688,7 @@ c_begin_compound_stmt ()
    common code.  */
 
 void
-c_expand_decl_stmt (t)
-     tree t;
+c_expand_decl_stmt (tree t)
 {
   tree decl = DECL_STMT_DECL (t);
 
@@ -6800,8 +6702,7 @@ c_expand_decl_stmt (t)
 /* Return the global value of T as a symbol.  */
 
 tree
-identifier_global_value	(t)
-     tree t;
+identifier_global_value	(tree t)
 {
   tree decl = IDENTIFIER_SYMBOL_VALUE (t);
   if (decl == 0 || DECL_CONTEXT (decl) == 0)
@@ -6820,10 +6721,7 @@ identifier_global_value	(t)
    otherwise the name is found in ridpointers from RID_INDEX.  */
 
 void
-record_builtin_type (rid_index, name, type)
-     enum rid rid_index;
-     const char *name;
-     tree type;
+record_builtin_type (enum rid rid_index, const char *name, tree type)
 {
   tree id;
   if (name == 0)
@@ -6835,7 +6733,7 @@ record_builtin_type (rid_index, name, type)
 
 /* Build the void_list_node (void_type_node having been created).  */
 tree
-build_void_list_node ()
+build_void_list_node (void)
 {
   tree t = build_tree_list (NULL_TREE, void_type_node);
   return t;
@@ -6851,8 +6749,7 @@ build_void_list_node ()
    if attributes are present) and whose type is the modifier list.  */
 
 tree
-make_pointer_declarator (type_quals_attrs, target)
-     tree type_quals_attrs, target;
+make_pointer_declarator (tree type_quals_attrs, tree target)
 {
   tree quals, attrs;
   tree itarget = target;

@@ -43,13 +43,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
 #endif
 
-static void add_env_var_paths PARAMS ((const char *, int));
-static void add_standard_paths PARAMS ((const char *, const char *, int));
-static void free_path PARAMS ((struct cpp_path *, int));
-static void merge_include_chains PARAMS ((cpp_reader *, int));
-static struct cpp_path *
-  remove_duplicates PARAMS ((cpp_reader *, struct cpp_path *,
-			     struct cpp_path *, struct cpp_path *, int));
+static void add_env_var_paths (const char *, int);
+static void add_standard_paths (const char *, const char *, int);
+static void free_path (struct cpp_path *, int);
+static void merge_include_chains (cpp_reader *, int);
+static struct cpp_path *remove_duplicates (cpp_reader *, struct cpp_path *,
+					   struct cpp_path *,
+					   struct cpp_path *, int);
 
 /* Include chains heads and tails.  */
 static struct cpp_path *heads[4];
@@ -59,9 +59,7 @@ enum { REASON_QUIET = 0, REASON_NOENT, REASON_DUP, REASON_DUP_SYS };
 
 /* Free an element of the include chain, possibly giving a reason.  */
 static void
-free_path (path, reason)
-     struct cpp_path *path;
-     int reason;
+free_path (struct cpp_path *path, int reason)
 {
   switch (reason)
     {
@@ -90,9 +88,7 @@ free_path (path, reason)
 /* Read ENV_VAR for a PATH_SEPARATOR-separated list of file names; and
    append all the names to the search path CHAIN.  */
 static void
-add_env_var_paths (env_var, chain)
-     const char *env_var;
-     int chain;
+add_env_var_paths (const char *env_var, int chain)
 {
   char *p, *q, *path;
 
@@ -122,9 +118,7 @@ add_env_var_paths (env_var, chain)
 
 /* Append the standard include chain defined in cppdefault.c.  */
 static void
-add_standard_paths (sysroot, iprefix, cxx_stdinc)
-     const char *sysroot, *iprefix;
-     int cxx_stdinc;
+add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
 {
   const struct default_include *p;
   size_t len;
@@ -176,12 +170,9 @@ add_standard_paths (sysroot, iprefix, cxx_stdinc)
    removed.  Return the head of the resulting chain.  Any of HEAD,
    JOIN and SYSTEM can be NULL.  */
 static struct cpp_path *
-remove_duplicates (pfile, head, system, join, verbose)
-     cpp_reader *pfile;
-     struct cpp_path *head;
-     struct cpp_path *system;
-     struct cpp_path *join;
-     int verbose;
+remove_duplicates (cpp_reader *pfile, struct cpp_path *head,
+		   struct cpp_path *system, struct cpp_path *join,
+		   int verbose)
 {
   struct cpp_path **pcur, *tmp, *cur;
   struct stat st;
@@ -255,9 +246,7 @@ remove_duplicates (pfile, head, system, join, verbose)
    to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written -Ibar -I- -Ifoo
    -Iquux.  */
 static void
-merge_include_chains (pfile, verbose)
-     cpp_reader *pfile;
-     int verbose;
+merge_include_chains (cpp_reader *pfile, int verbose)
 {
   /* Join the SYSTEM and AFTER chains.  Remove duplicates in the
      resulting SYSTEM chain.  */
@@ -300,7 +289,7 @@ merge_include_chains (pfile, verbose)
    (Note that -I. -I- is not the same as the default setup; -I. uses
    the compiler's working dir.)  */
 void
-split_quote_chain ()
+split_quote_chain (void)
 {
   heads[QUOTE] = heads[BRACKET];
   tails[QUOTE] = tails[BRACKET];
@@ -313,10 +302,7 @@ split_quote_chain ()
 /* Add PATH to the include chain CHAIN. PATH must be malloc-ed and
    NUL-terminated.  */
 void
-add_path (path, chain, cxx_aware)
-     char *path;
-     int chain;
-     int cxx_aware;
+add_path (char *path, int chain, int cxx_aware)
 {
   struct cpp_path *p;
 
@@ -338,11 +324,9 @@ add_path (path, chain, cxx_aware)
 /* Exported function to handle include chain merging, duplicate
    removal, and registration with cpplib.  */
 void
-register_include_chains (pfile, sysroot, iprefix,
-			 stdinc, cxx_stdinc, verbose)
-     cpp_reader *pfile;
-     const char *sysroot, *iprefix;
-     int stdinc, cxx_stdinc, verbose;
+register_include_chains (cpp_reader *pfile, const char *sysroot,
+			 const char *iprefix, int stdinc, int cxx_stdinc,
+			 int verbose)
 {
   static const char *const lang_env_vars[] =
     { "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH",
