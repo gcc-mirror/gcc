@@ -2214,16 +2214,16 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # For C++, avoid any typedef or macro definition of bool, and use the
-# built in type instead.
-for files in curses.h; do
-  if [ -r $file ] && egrep bool $file >/dev/null 2>&1; then
-    if [ ! -r ${LIB}/$file ]; then
-      cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-      chmod +w ${LIB}/$file 2>/dev/null
-      chmod a+r ${LIB}/$file 2>/dev/null
-    fi
-
-    echo Fixing $file
+# built in type instead.  HP/UX 10.20, at least, also has it
+# in curses_colr/curses.h.
+for file in curses.h curses_colr/curses.h ; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+  if [ -r ${LIB}/$file ] && egrep bool ${LIB}/$file >/dev/null 2>&1; then
+    echo Fixing $file, typedef or macro for bool is invalid in C++
     sed -e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/i\
 #ifndef __cplusplus
 '\
