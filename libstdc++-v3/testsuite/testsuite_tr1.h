@@ -41,13 +41,13 @@ namespace __gnu_test
     {
       bool ret = true;
       ret &= Category<Type>::value == Tv;
-      ret &= Category<Type const>::value == Tv;
-      ret &= Category<Type volatile>::value == Tv;
-      ret &= Category<Type const volatile>::value == Tv;
+      ret &= Category<const Type>::value == Tv;
+      ret &= Category<volatile Type>::value == Tv;
+      ret &= Category<const volatile Type>::value == Tv;
       ret &= Category<Type>::type::value == Tv;
-      ret &= Category<Type const>::type::value == Tv;
-      ret &= Category<Type volatile>::type::value == Tv;
-      ret &= Category<Type const volatile>::type::value == Tv;
+      ret &= Category<const Type>::type::value == Tv;
+      ret &= Category<volatile Type>::type::value == Tv;
+      ret &= Category<const volatile Type>::type::value == Tv;
       return ret;
     }
 
@@ -62,11 +62,22 @@ namespace __gnu_test
       return ret;
     }
 
+  template<template<typename, typename> class Relationship,
+	   typename Type1, typename Type2, bool Tv>
+    bool
+    test_relationship()
+    {
+      bool ret = true;
+      ret &= Relationship<Type1, Type2>::value == Tv;
+      ret &= Relationship<Type1, Type2>::type::value == Tv;
+      return ret;
+    }
+
   // Test types.
   class ClassType { };
-  typedef ClassType const           cClassType;
-  typedef ClassType volatile        vClassType;
-  typedef ClassType const volatile  cvClassType;
+  typedef const ClassType           cClassType;
+  typedef volatile ClassType        vClassType;
+  typedef const volatile ClassType  cvClassType;
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

@@ -1,3 +1,22 @@
+2004-12-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_same, add_reference and
+	remove_reference.
+	* testsuite/testsuite_tr1.h (test_relationship): New.
+	* testsuite/tr1/4_metaprogramming/reference_modifications/
+	add_reference.cc: New.
+	* testsuite/tr1/4_metaprogramming/reference_modifications/
+	remove_reference.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/relationships_between_types/
+	is_same/is_same.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/relationships_between_types/
+	is_same/typedefs.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/type_properties/is_const/
+	is_const.cc: Minor tweaks.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_volatile/
+	is_volatile.cc: Likewise.
+
 2004-12-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.am (AM_MAKEFLAGS): Remove duplicate LIBCFLAGS and

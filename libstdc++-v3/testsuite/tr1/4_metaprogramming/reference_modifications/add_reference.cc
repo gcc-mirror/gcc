@@ -1,4 +1,4 @@
-// 2004-12-07  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-08  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.3 Type properties
+// 4.7.2 Reference modifications
 
 #include <tr1/type_traits>
 #include <testsuite_hooks.h>
@@ -27,20 +27,16 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_const;
+  using std::tr1::add_reference;
+  using std::tr1::is_same;
   using namespace __gnu_test;
 
-  // Positive tests.
-  VERIFY( (test_property<is_const, const int, true>()) );
-  VERIFY( (test_property<is_const, const volatile int, true>()) );
-  VERIFY( (test_property<is_const, cClassType, true>()) );
-  VERIFY( (test_property<is_const, cvClassType, true>()) );
-
-  // Negative tests.
-  VERIFY( (test_property<is_const, int, false>()) );
-  VERIFY( (test_property<is_const, volatile int, false>()) );
-  VERIFY( (test_property<is_const, ClassType, false>()) );
-  VERIFY( (test_property<is_const, vClassType, false>()) );
+  VERIFY( (is_same<add_reference<int>::type, int&>::value) );
+  VERIFY( (is_same<add_reference<int&>::type, int&>::value) );
+  VERIFY( (is_same<add_reference<const int>::type, const int&>::value) );
+  VERIFY( (is_same<add_reference<int*>::type, int*&>::value) );
+  VERIFY( (is_same<add_reference<ClassType&>::type, ClassType&>::value) );
+  VERIFY( (is_same<add_reference<ClassType>::type, ClassType&>::value) );
 }
 
 int main()
