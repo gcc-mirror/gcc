@@ -3955,7 +3955,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      error ("`long long long' is too long for GCC");
 		    else
 		      {
-			if (pedantic && ! in_system_header && warn_long_long)
+			if (pedantic && !flag_isoc99 && ! in_system_header
+			    && warn_long_long)
 			  pedwarn ("ANSI C does not support `long long'");
 			longlong = 1;
 		      }
@@ -4018,7 +4019,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
 	    warn_about_return_type = 1;
 	  else if (warn_implicit_int || flag_isoc99)
-	    warning ("type defaults to `int' in declaration of `%s'", name);
+	    pedwarn_c99 ("type defaults to `int' in declaration of `%s'", name);
 	}
 
       defaulted_int = 1;
@@ -4168,11 +4169,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   restrictp = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (type);
   volatilep = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (type);
   inlinep = !! (specbits & (1 << (int) RID_INLINE));
-  if (constp > 1)
+  if (constp > 1 && ! flag_isoc99)
     pedwarn ("duplicate `const'");
-  if (restrictp > 1)
+  if (restrictp > 1 && ! flag_isoc99)
     pedwarn ("duplicate `restrict'");
-  if (volatilep > 1)
+  if (volatilep > 1 && ! flag_isoc99)
     pedwarn ("duplicate `volatile'");
   if (! flag_gen_aux_info && (TYPE_QUALS (type)))
     type = TYPE_MAIN_VARIANT (type);
@@ -4526,11 +4527,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      error ("invalid type modifier within pointer declarator");
 		    }
 		}
-	      if (constp > 1)
+	      if (constp > 1 && ! flag_isoc99)
 		pedwarn ("duplicate `const'");
-	      if (volatilep > 1)
+	      if (volatilep > 1 && ! flag_isoc99)
 		pedwarn ("duplicate `volatile'");
-	      if (restrictp > 1)
+	      if (restrictp > 1 && ! flag_isoc99)
 		pedwarn ("duplicate `restrict'");
 
 	      type_quals = ((constp ? TYPE_QUAL_CONST : 0)
@@ -5743,7 +5744,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
 
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl1))))
     {
-      error ("return-type is an incomplete type");
+      error ("return type is an incomplete type");
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
 	= build_function_type (void_type_node,
@@ -5751,7 +5752,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
     }
 
   if (warn_about_return_type)
-    warning ("return-type defaults to `int'");
+    pedwarn_c99 ("return type defaults to `int'");
 
   /* Save the parm names or decls from this function's declarator
      where store_parm_decls will find them.  */

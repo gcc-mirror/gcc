@@ -1,3 +1,20 @@
+2000-06-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (grokdeclarator): Don't warn about `long long' in C99.
+	Make warnings about implicit int be pedwarns in C99.  Don't warn
+	about duplicate type qualifiers in C99.
+	(start_function): Make warning about implict int return type be a
+	pedwarn in C99.
+	* c-lex.c (yylex): Don't warn about `long long' in C99.
+	* c-typeck.c (c_expand_return): In C99, always pedwarn about
+	`return' with no value in function returning non-void.
+
+2000-06-26  Richard Henderson  <rth@cygnus.com>
+
+	* c-typeck.c (pedwarn_c99): New.
+	* diagnostic.c (verror, vwarning, vpedwarn): Export.
+	* toplev.h: Prototype them.
+
 2000-06-26  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* c-typeck.c (digest_init): Return error_mark_node node when
@@ -11,7 +28,7 @@
 
 2000-06-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
-        * gengenrtl.c (special_rtx): Fix typo in comment.
+	* gengenrtl.c (special_rtx): Fix typo in comment.
 
 2000-06-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -50,7 +67,7 @@
 	
 2000-06-25  John David Anglin  <dave.anglin@nrc.ca>
 
-        * config/vax/vax.h (TARGET_SWITCHES): Provide descriptions.
+	* config/vax/vax.h (TARGET_SWITCHES): Provide descriptions.
 
 2000-06-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 

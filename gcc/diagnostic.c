@@ -64,14 +64,11 @@ static void v_error_with_file_and_line PARAMS ((const char *, int,
 						const char *, va_list));
 static void v_error_with_decl PARAMS ((tree, const char *, va_list));
 static void v_error_for_asm PARAMS ((rtx, const char *, va_list));
-static void verror PARAMS ((const char *, va_list));
 static void vfatal PARAMS ((const char *, va_list)) ATTRIBUTE_NORETURN;
 static void v_warning_with_file_and_line PARAMS ((const char *, int,
 						  const char *, va_list));
 static void v_warning_with_decl PARAMS ((tree, const char *, va_list));
 static void v_warning_for_asm PARAMS ((rtx, const char *, va_list));
-static void vwarning PARAMS ((const char *, va_list));
-static void vpedwarn PARAMS ((const char *, va_list));
 static void v_pedwarn_with_decl PARAMS ((tree, const char *, va_list));
 static void v_pedwarn_with_file_and_line PARAMS ((const char *, int,
 						  const char *, va_list));
@@ -858,7 +855,7 @@ v_error_for_asm (insn, msgid, ap)
 
 /* Report an error at the current line number.  */
 
-static void
+void
 verror (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -946,7 +943,7 @@ v_warning_for_asm (insn, msgid, ap)
 
 /* Report a warning at the current line number.  */
 
-static void
+void
 vwarning (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -957,7 +954,7 @@ vwarning (msgid, ap)
 /* These functions issue either warnings or errors depending on
    -pedantic-errors.  */
 
-static void
+void
 vpedwarn (msgid, ap)
      const char *msgid;
      va_list ap;

@@ -297,6 +297,8 @@ extern void c_expand_asm_operands		PARAMS ((tree, tree, tree,
 							 const char *, int));
 extern void c_expand_return			PARAMS ((tree));
 extern tree c_expand_start_case                 PARAMS ((tree));
+extern void pedwarn_c99				PARAMS ((const char *, ...))
+							ATTRIBUTE_PRINTF_1;
 
 /* in c-iterate.c */
 extern void init_iterators			PARAMS ((void));
