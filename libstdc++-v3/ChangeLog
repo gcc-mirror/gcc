@@ -1,3 +1,12 @@
+2002-01-01  Roger Sayle <roger@eyesopen.com>
+
+	* libmath/stubs.c (sinf,cosf): Implement stubs to enable the
+	equivalent ___builtin__ versions.
+
+	* include/c_shadow/bits/std_cmath.h: All __builtin math functions
+	are available in libstdc++ as the necessary stub implementations
+	are provided by libmath/stubs.c.
+
 2002-01-01  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* configure.in: Add support for NetBSD cross compiles.
@@ -55,7 +64,7 @@
 
 	* include/backward/algo.h:  Include <ext/algorithm>,
 	tweak using declarations.
-	
+
 2001-12-29  Richard Henderson  <rth@redhat.com>
 
 	* config/os/hpux/bits/os_defines.h: Don't define __glibcpp_long_bits.
@@ -132,7 +141,7 @@
 	(back_insert_iterator): Uglify member container to _M_container.
 	(front_insert_iterator): Same.
 	(insert_iterator): Same.
-	
+
 2001-12-25  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_limits.h (__glibcpp_xxx_is_modulo): New
@@ -156,7 +165,7 @@
 	for strtoll and strtoull.
 
 2001-12-21  Jeffrey A Law  <law@redhat.com>
-	
+
 	* config/os/hpux/bits/os_defines.h: Include <sys/_inttypes.h.
 	Define strtoll and strtoull.  Provide prototypes for
 	__strtoll and __strtoull.  Define _GLIBCPP_USE_LONG_LONG
@@ -206,7 +215,7 @@
 2001-12-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	libstdc++-v3/5148
-	* testsuite/lib/libstdc++-v3-dg.exp:  Append .exe to 
+	* testsuite/lib/libstdc++-v3-dg.exp:  Append .exe to
 	executable filenames
 
 2001-12-18  Benjamin Kosnik  <bkoz@redhat.com>
@@ -222,10 +231,10 @@
 	enabling gnu model.
 	* aclocal.m4: Rebuild.
 	* configure: Rebuild.
-	
+
 2001-12-18  Paolo Carlini  <pcarlini@unitus.it>
 	    Nathan Myers  <ncm@cantrip.org>
-	
+
 	* include/bits/basic_string.h (assign(__str, __pos, __n)):
 	Call assign(__s, __n).
 	(assign(__s, __n)): Terminate the string with _S_terminal.
@@ -275,7 +284,7 @@
 	on linux by default.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2001-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Clean up initialization and simplfy caching of underlying "C"
@@ -297,11 +306,11 @@
 	* config/os/gnu-linux/bits/ctype_inline.h: Tweak.
 	* config/os/gnu-linux/bits/ctype_noninline.h: Adjust initializations.
 	* include/bits/locale_facets.h (ctype<char>::_M_c_locale_ctype): Add.
-	Adjust ctors, dtors. 
+	Adjust ctors, dtors.
 	(ctype<char>::_M_toupper): Remove const&.
 	(ctype<char>::_M_tolower): Remove const&.
-	(ctype<char>::_M_ctable): Remove const&.	
-	
+	(ctype<char>::_M_ctable): Remove const&.
+
 	* include/bits/locale_facets.h (collate): Clean up initialization
 	of _M_c_locale_collate in ctors and dtors.
 	* config/locale/collate_members_gnu.cc: Always use extended
@@ -316,7 +325,7 @@
 	* include/bits/localefwd.h: Clean. Move dtor definitions to
 	* src/locale.cc: Here.
 	* testsuite/22_locale/facet.cc: Fix spelling.
-	
+
 	Named locale support for ctype<wchar_t>.
 	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add variable
 	ctype_members_* bits.

@@ -1,6 +1,6 @@
 /* Stub definitions for libmath subpart of libstdc++. */
 
-/* Copyright (C) 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of the GNU ISO C++ Library.  This library is free
    software; you can redistribute it and/or modify it under the
@@ -51,7 +51,7 @@ atan2l(long double x, long double y)
 #endif
 
 
-#if !defined(HAVE_COSF) && !defined(HAVE___BUILTIN_COSF)
+#ifndef HAVE_COSF
 float
 cosf(float x)
 {
@@ -186,7 +186,7 @@ powl(long double x, long double y)
 #endif
 
 
-#if !defined(HAVE_SINF) && !defined(HAVE___BUILTIN_SINF)
+#ifndef HAVE_SINF
 float
 sinf(float x)
 {
