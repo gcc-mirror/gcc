@@ -1600,7 +1600,7 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 	     tree var, HOST_WIDE_INT var_alias_set)
 {
   tree mem;
-  var_ann_t v_ann, m_ann;
+  var_ann_t m_ann;
 
   alias_stats.alias_queries++;
   alias_stats.simple_queries++;
@@ -1614,7 +1614,6 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       return false;
     }
 
-  v_ann = var_ann (var);
   m_ann = var_ann (mem);
 
   gcc_assert (m_ann->mem_tag_kind == TYPE_TAG);

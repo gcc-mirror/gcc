@@ -30,6 +30,8 @@
 
 	* tree-sra.c (decide_block_copy): Remove inst_count.
 
+	* tree-ssa-alias.c (may_alias_p): Remove v_ann.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
