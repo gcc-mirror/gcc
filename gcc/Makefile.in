@@ -1867,8 +1867,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include/g++\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/in
-clude\" \
+	  -DTOOL_INCLUDE_DIR=\"$(libsubdir)/$(unlibsubdir)/../$(target_alias)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 cppmain$(exeext): cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
