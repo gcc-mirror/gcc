@@ -1,3 +1,9 @@
+2004-05-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR optimization/15100
+	* combine.c (distribute_notes): Don't create a dangling
+	REG_LIBCALL/REG_RETVAL note.
+
 2004-05-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md (spe_evneg): Rename to negv2si2.
