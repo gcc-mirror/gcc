@@ -169,7 +169,6 @@ static void pop_labels PROTO((tree));
 static void maybe_deduce_size_from_array_init PROTO((tree, tree));
 static tree layout_var_decl PROTO((tree, tree));
 static void maybe_commonize_var PROTO((tree));
-static tree build_cleanup_on_safe_obstack PROTO((tree));
 static tree check_initializer PROTO((tree, tree));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
 static void push_cp_function_context PROTO((struct function *));
@@ -7121,47 +7120,6 @@ layout_var_decl (decl, init)
   return init;
 }
 
-/* Return a cleanup for DECL, created on whatever obstack is
-   appropriate.  */
-
-static tree
-build_cleanup_on_safe_obstack (decl)
-     tree decl;
-{
-  tree cleanup;
-  tree type;
-  int need_pop;
-
-  type = TREE_TYPE (decl);
-
-  /* Only variables get cleaned up.  */
-  if (TREE_CODE (decl) != VAR_DECL)
-    return NULL_TREE;
-  
-  /* And only things with destructors need cleaning up.  */
-  if (!TYPE_NEEDS_DESTRUCTOR (type))
-    return NULL_TREE;
-
-  if (TREE_CODE (decl) == VAR_DECL &&
-      (DECL_EXTERNAL (decl) || TREE_STATIC (decl)))
-    /* We don't clean up things that aren't defined in this
-       translation unit, or that need a static cleanup.  The latter
-       are handled by finish_file.  */
-    return NULL_TREE;
-  
-  /* Switch to an obstack that will live until the point where the
-     cleanup code is actually expanded.  */
-  need_pop = suspend_momentary ();
-
-  /* Compute the cleanup.  */
-  cleanup = maybe_build_cleanup (decl);
-
-  /* Pop back to the obstack we were on before.  */
-  resume_momentary (need_pop);
-  
-  return cleanup;
-}
-
 /* If a local static variable is declared in an inline function, or if
    we have a weak definition, we must endeavor to create only one
    instance of the variable at link-time.  */
@@ -7557,7 +7515,26 @@ void
 destroy_local_var (decl)
      tree decl;
 {
-  tree cleanup = build_cleanup_on_safe_obstack (decl);
+  tree type = TREE_TYPE (decl);
+  tree cleanup;
+
+  /* Only variables get cleaned up.  */
+  if (TREE_CODE (decl) != VAR_DECL)
+    return;
+  
+  /* And only things with destructors need cleaning up.  */
+  if (!TYPE_NEEDS_DESTRUCTOR (type))
+    return;
+
+  if (TREE_CODE (decl) == VAR_DECL &&
+      (DECL_EXTERNAL (decl) || TREE_STATIC (decl)))
+    /* We don't clean up things that aren't defined in this
+       translation unit, or that need a static cleanup.  The latter
+       are handled by finish_file.  */
+    return;
+  
+  /* Compute the cleanup.  */
+  cleanup = maybe_build_cleanup (decl);
 
   /* Record the cleanup required for this declaration.  */
   if (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node
@@ -14141,6 +14118,17 @@ maybe_build_cleanup_1 (decl, auto_delete)
       return rval;
     }
   return 0;
+}
+
+/* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
+
+tree
+build_target_expr (decl, value)
+     tree decl;
+     tree value;
+{
+  return build (TARGET_EXPR, TREE_TYPE (decl), decl, value, 
+		maybe_build_cleanup (decl), NULL_TREE);
 }
 
 /* If DECL is of a type which needs a cleanup, build that cleanup

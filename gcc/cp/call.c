@@ -3080,8 +3080,7 @@ build_conditional_expr (arg1, arg2, arg3)
     {
       tree slot = build (VAR_DECL, result_type);
       layout_decl (slot, 0);
-      result = build (TARGET_EXPR, result_type,
-		      slot, result, NULL_TREE, NULL_TREE);
+      result = build_target_expr (slot, result);
     }
   
   /* If this expression is an rvalue, but might be mistaken for an
@@ -3749,8 +3748,7 @@ convert_like (convs, expr)
 	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
 	    tree slot = build_decl (VAR_DECL, NULL_TREE, type);
 	    DECL_ARTIFICIAL (slot) = 1;
-	    expr = build (TARGET_EXPR, type, slot, expr,
-			  NULL_TREE, NULL_TREE);
+	    expr = build_target_expr (slot, expr);
 	    TREE_SIDE_EFFECTS (expr) = 1;
 	  }
 
@@ -4039,7 +4037,7 @@ build_over_call (cand, args, flags)
 	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	    {
 	      val = build_decl (VAR_DECL, NULL_TREE, DECL_CONTEXT (fn));
-	      val = build (TARGET_EXPR, DECL_CONTEXT (fn), val, arg, 0, 0);
+	      val = build_target_expr (val, arg);
 	      TREE_SIDE_EFFECTS (val) = 1;
 	      return val;
 	    }
