@@ -938,16 +938,16 @@ c_alignof_expr (expr)
   else
     return c_alignof (TREE_TYPE (expr));
 }
+
 /* Return either DECL or its known constant value (if it has one).  */
 
 static tree
 decl_constant_value (decl)
      tree decl;
 {
-  if (! TREE_PUBLIC (decl)
-      /* Don't change a variable array bound or initial value to a constant
+  if (/* Don't change a variable array bound or initial value to a constant
 	 in a place where a variable is invalid.  */
-      && current_function_decl != 0
+      current_function_decl != 0
       && ! pedantic
       && ! TREE_THIS_VOLATILE (decl)
       && TREE_READONLY (decl) && ! ITERATOR_P (decl)
