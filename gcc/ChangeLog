@@ -1,3 +1,10 @@
+2002-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6496
+	* config/sparc/sparc.md (call + jump 32-bit peepholes): Disable jump
+	after call peepholes for UltraSPARC.
+	(call + jump 64-bit peepholes): Remove.
+
 2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR c/6497
