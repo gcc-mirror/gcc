@@ -81,14 +81,10 @@ enum ls {ls_none = 0,		/* Normal state.  */
 /* Lexing TODO: Maybe handle space in escaped newlines.  Stop cpplex.c
    from recognizing comments and directives during its lexing pass.  */
 
-static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
-static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
-						   const uchar *));
 static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *,
 					     int));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
 static const uchar *copy_comment PARAMS ((cpp_reader *, const uchar *, int));
-static void scan_out_logical_line PARAMS ((cpp_reader *pfile, cpp_macro *));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
 static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
 static bool scan_parameters PARAMS ((cpp_reader *, cpp_macro *));
@@ -125,43 +121,6 @@ check_output_buffer (pfile, n)
     }
 }
 
-/* To be called whenever a newline character is encountered in the
-   input file, at CUR.  Handles DOS, Mac and Unix ends of line, and
-   increments pfile->line.
-
-   Returns a pointer the character after the newline sequence.  */
-static const uchar *
-handle_newline (pfile, cur)
-     cpp_reader *pfile;
-     const uchar *cur;
-{
-  pfile->line++;
-  if (cur[0] + cur[1] == '\r' + '\n')
-    cur++;
-  return cur + 1;
-}
-
-/* CUR points to any character in the current context, not necessarily
-   a backslash.  Advances CUR until all escaped newlines are skipped,
-   and returns the new position without updating the context.
-
-   Warns if a file buffer ends in an escaped newline.  */
-static const uchar *
-skip_escaped_newlines (pfile, cur)
-     cpp_reader *pfile;
-     const uchar *cur;
-{
-  const uchar *orig_cur = cur;
-
-  while (*cur == '\\' && is_vspace (cur[1]))
-    cur = handle_newline (pfile, cur + 1);
-
-  if (cur != orig_cur && cur == RLIMIT (pfile->context) && pfile->buffer->inc)
-    cpp_error (pfile, DL_PEDWARN, "backslash-newline at end of file");
-
-  return cur;
-}
-
 /* CUR points to the asterisk introducing a comment in the current
    context.  IN_DEFINE is true if we are in the replacement text of a
    macro.
@@ -180,43 +139,16 @@ copy_comment (pfile, cur, in_define)
      const uchar *cur;
      int in_define;
 {
+  bool unterminated, copy = false;
   unsigned int from_line = pfile->line;
-  const uchar *limit = RLIMIT (pfile->context);
-  uchar *out = pfile->out.cur;
+  cpp_buffer *buffer = pfile->buffer;
 
-  do
-    {
-      unsigned int c = *cur++;
-      *out++ = c;
+  buffer->cur = cur;
+  unterminated = _cpp_skip_block_comment (pfile);
+  if (unterminated)
+    cpp_error_with_line (pfile, DL_ERROR, from_line, 0,
+			 "unterminated comment");
 
-      if (c == '/')
-	{
-	  /* An immediate slash does not terminate the comment.  */
-	  if (out[-2] == '*' && out - 2 > pfile->out.cur)
-	    goto done;
-
-	  if (*cur == '*' && cur[1] != '/'
-	      && CPP_OPTION (pfile, warn_comments))
-	    cpp_error_with_line (pfile, DL_WARNING, pfile->line, 0,
-				 "\"/*\" within comment");
-	}
-      else if (is_vspace (c))
-	{
-	  cur = handle_newline (pfile, cur - 1);
-	  /* Canonicalize newline sequences and skip escaped ones.  */
-	  if (out[-2] == '\\')
-	    out -= 2;
-	  else
-	    out[-1] = '\n';
-	}
-    }
-  while (cur < limit);
-
-  cpp_error_with_line (pfile, DL_ERROR, from_line, 0, "unterminated comment");
-  *out++ = '*';
-  *out++ = '/';
-
- done:
   /* Comments in directives become spaces so that tokens are properly
      separated when the ISO preprocessor re-lexes the line.  The
      exception is #define.  */
@@ -227,7 +159,7 @@ copy_comment (pfile, cur, in_define)
 	  if (CPP_OPTION (pfile, discard_comments_in_macro_exp))
 	    pfile->out.cur--;
 	  else
-	    pfile->out.cur = out;
+	    copy = true;
 	}
       else
 	pfile->out.cur[-1] = ' ';
@@ -235,9 +167,21 @@ copy_comment (pfile, cur, in_define)
   else if (CPP_OPTION (pfile, discard_comments))
     pfile->out.cur--;
   else
-    pfile->out.cur = out;
+    copy = true;
 
-  return cur;
+  if (copy)
+    {
+      size_t len = (size_t) (buffer->cur - cur);
+      memcpy (pfile->out.cur, cur, len);
+      pfile->out.cur += len;
+      if (unterminated)
+	{
+	  *pfile->out.cur++ = '*';
+	  *pfile->out.cur++ = '/';
+	}
+    }
+
+  return buffer->cur;
 }
 
 /* CUR points to any character in the input buffer.  Skips over all
@@ -265,31 +209,18 @@ skip_whitespace (pfile, cur, skip_comments)
       unsigned int c = *cur++;
       *out++ = c;
 
-      if (is_nvspace (c) && c)
+      if (is_nvspace (c))
 	continue;
 
-      if (!c && cur - 1 != RLIMIT (pfile->context))
-	continue;
-
-      if (c == '/' && skip_comments)
+      if (c == '/' && *cur == '*' && skip_comments)
 	{
-	  const uchar *tmp = skip_escaped_newlines (pfile, cur);
-	  if (*tmp == '*')
-	    {
-	      pfile->out.cur = out;
-	      cur = copy_comment (pfile, tmp, false /* in_define */);
-	      out = pfile->out.cur;
-	      continue;
-	    }
-	}
-
-      out--;
-      if (c == '\\' && is_vspace (*cur))
-	{
-	  cur = skip_escaped_newlines (pfile, cur - 1);
+	  pfile->out.cur = out;
+	  cur = copy_comment (pfile, cur, false /* in_define */);
+	  out = pfile->out.cur;
 	  continue;
 	}
 
+      out--;
       break;
     }
 
@@ -310,12 +241,7 @@ lex_identifier (pfile, cur)
   cpp_hashnode *result;
 
   do
-    {
-      do
-	*out++ = *cur++;
-      while (is_numchar (*cur));
-      cur = skip_escaped_newlines (pfile, cur);
-    }
+    *out++ = *cur++;
   while (is_numchar (*cur));
 
   CUR (pfile->context) = cur;
@@ -340,11 +266,12 @@ _cpp_overlay_buffer (pfile, start, len)
   pfile->overlaid_buffer = buffer;
   buffer->saved_cur = buffer->cur;
   buffer->saved_rlimit = buffer->rlimit;
+  /* Prevent the ISO lexer from scanning a fresh line.  */
+  pfile->saved_line = pfile->line--;
+  buffer->need_line = false;
 
   buffer->cur = start;
   buffer->rlimit = start + len;
-
-  pfile->saved_line = pfile->line;
 }
 
 /* Restores a buffer overlaid by _cpp_overlay_buffer().  */
@@ -356,7 +283,9 @@ _cpp_remove_overlay (pfile)
 
   buffer->cur = buffer->saved_cur;
   buffer->rlimit = buffer->saved_rlimit;
+  buffer->need_line = true;
 
+  pfile->overlaid_buffer = NULL;
   pfile->line = pfile->saved_line;
 }
 
@@ -368,24 +297,10 @@ _cpp_read_logical_line_trad (pfile)
 {
   do
     {
-      if (pfile->buffer->cur == pfile->buffer->rlimit)
-	{
-	  bool stop = true;
-
-	  /* Don't pop the last buffer.  */
-	  if (pfile->buffer->prev)
-	    {
-	      stop = pfile->buffer->return_at_eof;
-	      _cpp_pop_buffer (pfile);
-	    }
-
-	  if (stop)
-	    return false;
-	}
-
-      scan_out_logical_line (pfile, NULL);
+      if (pfile->buffer->need_line && !_cpp_get_fresh_line (pfile))
+	return false;
     }
-  while (pfile->state.skipping);
+  while (!scan_out_logical_line (pfile, NULL) || pfile->state.skipping);
 
   return true;
 }
@@ -428,11 +343,12 @@ save_argument (macro, offset)
    If MACRO is non-NULL, then we are scanning the replacement list of
    MACRO, and we call save_replacement_text() every time we meet an
    argument.  */
-static void
+bool
 scan_out_logical_line (pfile, macro)
      cpp_reader *pfile;
      cpp_macro *macro;
 {
+  bool result = true;
   cpp_context *context;
   const uchar *cur;
   uchar *out;
@@ -443,7 +359,6 @@ scan_out_logical_line (pfile, macro)
 
   fmacro.buff = NULL;
 
- start_logical_line:
   quote = 0;
   header_ok = pfile->state.angled_headers;
   CUR (pfile->context) = pfile->buffer->cur;
@@ -458,6 +373,12 @@ scan_out_logical_line (pfile, macro)
 
   for (;;)
     {
+      if (!context->prev
+	  && cur >= pfile->buffer->notes[pfile->buffer->cur_note].pos)
+	{
+	  pfile->buffer->cur = cur;
+	  _cpp_process_line_notes (pfile, false);
+	}
       c = *cur++;
       *out++ = c;
 
@@ -469,12 +390,10 @@ scan_out_logical_line (pfile, macro)
 	case '\t':
 	case '\f':
 	case '\v':
+	case '\0':
 	  continue;
 
-	case '\0':
-	  if (cur - 1 != RLIMIT (context))
-	    continue;
-
+	case '\n':
 	  /* If this is a macro's expansion, pop it.  */
 	  if (context->prev)
 	    {
@@ -483,22 +402,21 @@ scan_out_logical_line (pfile, macro)
 	      goto new_context;
 	    }
 
-	  /* Premature end of file.  Fake a new line.  */
-	  cur--;
-	  if (!pfile->buffer->from_stage3)
-	    cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
+	  /* Omit the newline from the output buffer.  */
+	  pfile->out.cur = out - 1;
+	  pfile->buffer->cur = cur;
+	  pfile->buffer->need_line = true;
 	  pfile->line++;
-	  goto done;
 
-	case '\r': case '\n':
-	  cur = handle_newline (pfile, cur - 1);
 	  if ((lex_state == ls_fun_open || lex_state == ls_fun_close)
-	      && !pfile->state.in_directive)
+	      && !pfile->state.in_directive
+	      && _cpp_get_fresh_line (pfile))
 	    {
 	      /* Newlines in arguments become a space, but we don't
 		 clear any in-progress quote.  */
 	      if (lex_state == ls_fun_close)
 		out[-1] = ' ';
+	      cur = pfile->buffer->cur;
 	      continue;
 	    }
 	  goto done;
@@ -521,35 +439,20 @@ scan_out_logical_line (pfile, macro)
 	  break;
 
 	case '\\':
-	  if (is_vspace (*cur))
-	    {
-	      out--;
-	      cur = skip_escaped_newlines (pfile, cur - 1);
-	      continue;
-	    }
-	  else
-	    {
-	      /* Skip escaped quotes here, it's easier than above, but
-		 take care to first skip escaped newlines.  */
-	      cur = skip_escaped_newlines (pfile, cur);
-	      if (*cur == '\\' || *cur == '"' || *cur == '\'')
-		*out++ = *cur++;
-	    }
+	  /* Skip escaped quotes here, it's easier than above.  */
+	  if (*cur == '\\' || *cur == '"' || *cur == '\'')
+	    *out++ = *cur++;
 	  break;
 
 	case '/':
 	  /* Traditional CPP does not recognize comments within
 	     literals.  */
-	  if (!quote)
+	  if (!quote && *cur == '*')
 	    {
-	      cur = skip_escaped_newlines (pfile, cur);
-	      if (*cur == '*')
-		{
-		  pfile->out.cur = out;
-		  cur = copy_comment (pfile, cur, macro != 0);
-		  out = pfile->out.cur;
-		  continue;
-		}
+	      pfile->out.cur = out;
+	      cur = copy_comment (pfile, cur, macro != 0);
+	      out = pfile->out.cur;
+	      continue;
 	    }
 	  break;
 
@@ -699,12 +602,14 @@ scan_out_logical_line (pfile, macro)
 	      cur = skip_whitespace (pfile, cur, true /* skip_comments */);
 	      out = pfile->out.cur;
 
-	      if (is_vspace (*cur))
+	      if (*cur == '\n')
 		{
 		  /* Null directive.  Ignore it and don't invalidate
 		     the MI optimization.  */
-		  out = pfile->out.base;
-		  continue;
+		  pfile->buffer->need_line = true;
+		  pfile->line++;
+		  result = false;
+		  goto done;
 		}
 	      else
 		{
@@ -724,9 +629,8 @@ scan_out_logical_line (pfile, macro)
 			 preprocessor lex the next token.  */
 		      pfile->buffer->cur = cur;
 		      _cpp_handle_directive (pfile, false /* indented */);
-		      /* #include changes pfile->buffer so we need to
-			 update the limits of the current context.  */
-		      goto start_logical_line;
+		      result = false;
+		      goto done;
 		    }
 		}
 	    }
@@ -765,9 +669,6 @@ scan_out_logical_line (pfile, macro)
     }
 
  done:
-  out[-1] = '\0';
-  pfile->buffer->cur = cur;
-  pfile->out.cur = out - 1;
   if (fmacro.buff)
     _cpp_release_buff (pfile, fmacro.buff);
 
@@ -775,6 +676,7 @@ scan_out_logical_line (pfile, macro)
     cpp_error_with_line (pfile, DL_ERROR, fmacro.line, 0,
 			 "unterminated argument list invoking macro \"%s\"",
 			 NODE_NAME (fmacro.node));
+  return result;
 }
 
 /* Push a context holding the replacement text of the macro NODE on
@@ -787,11 +689,16 @@ push_replacement_text (pfile, node)
 {
   size_t len;
   const uchar *text;
+  uchar *buf;
 
   if (node->flags & NODE_BUILTIN)
     {
       text = _cpp_builtin_macro_text (pfile, node);
       len = ustrlen (text);
+      buf = _cpp_unaligned_alloc (pfile, len + 1);
+      memcpy (buf, text, len);
+      buf[len]='\n';
+      text = buf;
     }
   else
     {
@@ -944,7 +851,7 @@ replace_args_and_push (pfile, fmacro)
 	  exp += BLOCK_LEN (b->text_len);
 	}
 
-      /* Allocate room for the expansion plus NUL.  */
+      /* Allocate room for the expansion plus \n.  */
       buff = _cpp_get_buff (pfile, len + 1);
 
       /* Copy the expansion and replace arguments.  */
@@ -966,8 +873,8 @@ replace_args_and_push (pfile, fmacro)
 	  exp += BLOCK_LEN (b->text_len);
 	}
 
-      /* NUL-terminate.  */
-      *p = '\0';
+      /* \n-terminate.  */
+      *p = '\n';
       _cpp_push_text_context (pfile, fmacro->node, BUFF_FRONT (buff), len);
 
       /* So we free buffer allocation when macro is left.  */
@@ -1034,10 +941,10 @@ save_replacement_text (pfile, macro, arg_index)
   if (macro->paramc == 0)
     {
       /* Object-like and function-like macros without parameters
-	 simply store their NUL-terminated replacement text.  */
+	 simply store their \n-terminated replacement text.  */
       exp = _cpp_unaligned_alloc (pfile, len + 1);
       memcpy (exp, pfile->out.base, len);
-      exp[len] = '\0';
+      exp[len] = '\n';
       macro->exp.text = exp;
       macro->count = len;
     }

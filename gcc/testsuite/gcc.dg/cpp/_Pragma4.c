@@ -7,6 +7,6 @@ a b c
 
 /*
    { dg-final { if ![file exists _Pragma4.i] { return }                   } }
-   { dg-final { if { [grep _Pragma4.i "#pragma bar "] != "" } { return }  } }
+   { dg-final { if { [grep _Pragma4.i "#pragma bar"] != "" }  { return }  } }
    { dg-final { fail "_Pragma4.c: #pragma appearing on its own line"      } }
 */

@@ -692,7 +692,7 @@ read_scan_file (in_fname, argc, argv)
   if (special_file_handling == stdio_h
       && (fn = lookup_std_proto ("_filbuf", 7)) != NULL)
     {
-      static const unsigned char getchar_call[] = "getchar();";
+      unsigned char getchar_call[] = "getchar();\n";
       int seen_filbuf = 0;
 
       /* Scan the macro expansion of "getchar();".  */

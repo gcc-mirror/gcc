@@ -125,8 +125,6 @@ init_library ()
 	 we were compiled with a compiler that supports C99 designated
 	 initializers.  */
       init_trigraph_map ();
-
-      _cpp_init_mbchar ();
     }
 }
 
@@ -167,7 +165,6 @@ cpp_create_reader (lang, table)
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   init_line_maps (&pfile->line_maps);
-  pfile->line = 1;
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -454,6 +451,7 @@ cpp_read_main_file (pfile, fname)
     }
 
   /* Open the main input file.  */
+  pfile->line = 1;
   if (!_cpp_read_file (pfile, fname))
     return NULL;
 
@@ -556,7 +554,11 @@ post_options (pfile)
       CPP_OPTION (pfile, traditional) = 0;
     }
 
-  /* Traditional CPP does not accurately track column information.  */
   if (CPP_OPTION (pfile, traditional))
-    CPP_OPTION (pfile, show_column) = 0;
+    {
+      /* Traditional CPP does not accurately track column information.  */
+      CPP_OPTION (pfile, show_column) = 0;
+      CPP_OPTION (pfile, trigraphs) = 0;
+      CPP_OPTION (pfile, warn_trigraphs) = 0;
+    }
 }

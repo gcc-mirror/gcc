@@ -265,6 +265,8 @@ builtin_macro (pfile, node)
      cpp_hashnode *node;
 {
   const uchar *buf;
+  size_t len;
+  char *nbuf;
 
   if (node->value.builtin == BT_PRAGMA)
     {
@@ -278,14 +280,13 @@ builtin_macro (pfile, node)
     }
 
   buf = _cpp_builtin_macro_text (pfile, node);
+  len = ustrlen (buf);
+  nbuf = alloca (len + 1);
+  memcpy (nbuf, buf, len);
+  nbuf[len]='\n';
 
-  cpp_push_buffer (pfile, buf, ustrlen (buf), /* from_stage3 */ true, 1);
-
-  /* Tweak the column number the lexer will report.  */
-  pfile->buffer->col_adjust = pfile->cur_token[-1].col - 1;
-
-  /* We don't want a leading # to be interpreted as a directive.  */
-  pfile->buffer->saved_flags = 0;
+  cpp_push_buffer (pfile, (uchar *) nbuf, len, /* from_stage3 */ true, 1);
+  _cpp_clean_line (pfile);
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
@@ -445,15 +446,10 @@ paste_tokens (pfile, plhs, rhs)
   if (lhs->type == CPP_DIV && rhs->type != CPP_EQ)
     *end++ = ' ';
   end = cpp_spell_token (pfile, rhs, end);
-  *end = '\0';
+  *end = '\n';
 
   cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true, 1);
-
-  /* Tweak the column number the lexer will report.  */
-  pfile->buffer->col_adjust = pfile->cur_token[-1].col - 1;
-
-  /* We don't want a leading # to be interpreted as a directive.  */
-  pfile->buffer->saved_flags = 0;
+  _cpp_clean_line (pfile);
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
