@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -4016,7 +4016,7 @@ ia64_safe_type (insn)
    WRITE_COUNT gets set to 2.
 
    The result of this is that whenever an insn attempts to write a register
-   whose WRITE_COUNT is two, we need to issue a insn group barrier first.
+   whose WRITE_COUNT is two, we need to issue an insn group barrier first.
 
    If a predicate register is written by a floating-point insn, we set
    WRITTEN_BY_FP to true.

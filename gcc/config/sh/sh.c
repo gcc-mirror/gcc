@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com). 
@@ -5142,7 +5142,7 @@ reg_unused_after (reg, insn)
 
       /* If this is a sequence, we must handle them all at once.
 	 We could have for instance a call that sets the target register,
-	 and a insn in a delay slot that uses the register.  In this case,
+	 and an insn in a delay slot that uses the register.  In this case,
 	 we must return 0.  */
       else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{

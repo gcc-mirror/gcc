@@ -1,5 +1,6 @@
 /* Xstormy16 target functions.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GNU CC.
@@ -440,7 +441,7 @@ xstormy16_output_cbranch_si (op, label, reversed, insn)
    registers can only be copied to memory and not to another class of
    registers.  In that case, secondary reload registers are not needed and
    would not be helpful.  Instead, a stack location must be used to perform the
-   copy and the `movM' pattern should use memory as a intermediate storage.
+   copy and the `movM' pattern should use memory as an intermediate storage.
    This case often occurs between floating-point and general registers.  */
 
 enum reg_class
@@ -1015,7 +1016,7 @@ direct_return ()
 }
 
 /* Called after register allocation to add any instructions needed for
-   the epilogue.  Using a epilogue insn is favored compared to putting
+   the epilogue.  Using an epilogue insn is favored compared to putting
    all of the instructions in the TARGET_ASM_FUNCTION_PROLOGUE macro,
    since it allows the scheduler to intermix instructions with the
    saves of the caller saved registers.  In some cases, it might be
@@ -1502,7 +1503,7 @@ xstormy16_print_operand_address (file, address)
   fputc (')', file);
 }
 
-/* Print an operand to a assembler instruction.  */
+/* Print an operand to an assembler instruction.  */
 void
 xstormy16_print_operand (file, x, code)
      FILE * file;

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1388,7 +1388,7 @@ do { \
  && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
 
 /* Local to this file.  */
-/* Is this a increment/decrement and store operation.  */
+/* Is this an increment/decrement and store operation.  */
 #define STORE_PREINC_PREDEC_P(MODE, X)					\
 (((MODE) == SImode || (MODE) == SFmode)					\
  && (GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC)		\

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@isisinc.net).
 
@@ -501,7 +501,7 @@ extern int target_flags;
 #define REG_YBASE30 56
 #define REG_YBASE31 57
 
-/* Do we have a accumulator register? */
+/* Do we have an accumulator register? */
 #define IS_ACCUM_REG(REGNO) IN_RANGE ((REGNO), REG_A0, REG_A1L)
 #define IS_ACCUM_LOW_REG(REGNO) ((REGNO) == REG_A0L || (REGNO) == REG_A1L)
 
@@ -1035,7 +1035,7 @@ enum reg_class
    'K' requires a constant 0 operand.
    'L' constant for use in add or sub from low 16-bits
    'M' 32-bit value -- low 16-bits zero
-   'N' constant for use incrementing or decrementing a address register
+   'N' constant for use incrementing or decrementing an address register
    'O' constant for use with and'ing only high 16-bit
    'P' constant for use with and'ing only low 16-bit
  */

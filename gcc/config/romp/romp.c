@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 1991, 1992, 1993, 1997, 1998, 1999, 2000
+   Copyright (C) 1990, 1991, 1992, 1993, 1997, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
@@ -1152,7 +1152,7 @@ romp_output_function_prologue (file, size)
    The last 6 bits of the first byte initialize the offset value. In many
    cases where procedures have small local storage, this is enough and, in
    this case, the high-order size field is zero so the byte can (almost) be
-   used as is (see below). Thus, the byte value of 0x0d is encodes a offset
+   used as is (see below). Thus, the byte value of 0x0d is encodes an offset
    size of 13 words, or 52 bytes.
 
    For procedures with a local space larger than 60 bytes, the 6 bits
@@ -2027,7 +2027,7 @@ romp_debugger_auto_correction(offset)
 }
 
 /* Return the offset value of an argument having
-   the given offset. Basically, we correct by going from a arg pointer to
+   the given offset. Basically, we correct by going from an arg pointer to
    stack pointer value.  */
 
 int

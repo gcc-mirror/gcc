@@ -1,3 +1,21 @@
+2002-01-03  Kazu Hirata  <kazu@hxi.com>
+
+	* config/avr/avr.c: Fix comment typos.
+	* config/c4x/c4x.md: Likewise.
+	* config/dsp16xx/dsp16xx.h: Likewise.
+	* config/dsp16xx/dsp16xx.md: Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m68hc11/m68hc11.md: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10200/mn10200.c: Likewise.
+	* config/romp/romp.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/stormy16/stormy16.md: Likewise.
+
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
 	* loop.h: Update copyright date.
