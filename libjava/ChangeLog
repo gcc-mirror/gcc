@@ -1,6 +1,41 @@
+2000-11-25  Anthony Green  <green@redhat.com>
+
+	* prims.cc (_Jv_NewObjectArray): Undo placement change.
+	(_Jv_NewPrimArray): Likewise.
+	* gcj/array.h (__JArray): Undo const change.  Removed constructor.
+	(class JArray): Removed constructor.
+
+	* java/lang/Thread.java (context_class_loader): New private data.
+	(getContextClassLoader): New method.
+	(setContextClassLoader): New method.
+	(Thread): Initialize context_class_loader.
+
+	* java/net/URLClassLoader.java: Import java.util.Enumeration.
+	(getResource): Rename to findResource.
+	(findResource): New method.  Used to be getResource.
+	(getResourceAsStream): Deleted.
+	(jarFileize): Extracted logic from URLClassLoader constructor into
+	this new private method.
+	(addURL): New protected method.
+	(URLClassLoader): Call jarFileize.  Use addElement instead of
+	insertElementAt.
+	(findResources): New method.
+	
+	* java/lang/ClassLoader.java: Import java.util.Enumeration.
+	(getResource): Implement correct logic.
+	(findResource): New method.
+	(getResources): New method.
+	(findClass): Create a ClassNotFoundException with the name of the
+	class rather than nothing at all.
+	(defineClass) Only throw ClassFormatError.
+	
+	* java/lang/Class.java (forName): New method.
+	* java/lang/Class.h (forName): New method.
+	* java/lang/natClass.cc (forName): New method.
+
 2000-11-24  Tom Tromey  <tromey@cygnus.com>
 
-	* prims.cc (_Jv_NewObjectArray): Use palcement new to create
+	* prims.cc (_Jv_NewObjectArray): Use placement new to create
 	array.
 	(_Jv_NewPrimArray): Likewise.
 	Include <new>.
