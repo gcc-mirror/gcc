@@ -1,3 +1,9 @@
+Wed Jan  6 02:23:36 1999  "Charles M. Hannum" <root@ihack.net>
+
+	* expr.c (store_expr): If the lhs is a memory location pointed
+	to be a postincremented (or postdecremented) pointer, always
+	force the rhs to be evaluated into a pseudo.
+
 Fri Jan  1 11:48:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (doubleword shifts): Fix dumb mistakes in previous change.

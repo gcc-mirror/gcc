@@ -3327,21 +3327,6 @@ store_expr (exp, target, want_value)
 
       return want_value ? target : NULL_RTX;
     }
-  else if (want_value && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
-	   && GET_MODE (target) != BLKmode)
-    /* If target is in memory and caller wants value in a register instead,
-       arrange that.  Pass TARGET as target for expand_expr so that,
-       if EXP is another assignment, WANT_VALUE will be nonzero for it.
-       We know expand_expr will not use the target in that case.
-       Don't do this if TARGET is volatile because we are supposed
-       to write it and then read it.  */
-    {
-      temp = expand_expr (exp, cse_not_expected ? NULL_RTX : target,
-			  GET_MODE (target), 0);
-      if (GET_MODE (temp) != BLKmode && GET_MODE (temp) != VOIDmode)
-	temp = copy_to_reg (temp);
-      dont_return_target = 1;
-    }
   else if (queued_subexp_p (target))
     /* If target contains a postincrement, let's not risk
        using it as the place to generate the rhs.  */
@@ -3360,6 +3345,21 @@ store_expr (exp, target, want_value)
 	 In no case return the target itself.  */
       if (! MEM_VOLATILE_P (target) && want_value)
 	dont_return_target = 1;
+    }
+  else if (want_value && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
+	   && GET_MODE (target) != BLKmode)
+    /* If target is in memory and caller wants value in a register instead,
+       arrange that.  Pass TARGET as target for expand_expr so that,
+       if EXP is another assignment, WANT_VALUE will be nonzero for it.
+       We know expand_expr will not use the target in that case.
+       Don't do this if TARGET is volatile because we are supposed
+       to write it and then read it.  */
+    {
+      temp = expand_expr (exp, cse_not_expected ? NULL_RTX : target,
+			  GET_MODE (target), 0);
+      if (GET_MODE (temp) != BLKmode && GET_MODE (temp) != VOIDmode)
+	temp = copy_to_reg (temp);
+      dont_return_target = 1;
     }
   else if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
     /* If this is an scalar in a register that is stored in a wider mode
