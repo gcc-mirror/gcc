@@ -215,7 +215,7 @@ static void vect_enhance_data_refs_alignment (loop_vec_info);
 /* Utility functions for the analyses.  */
 static bool vect_is_simple_use (tree , loop_vec_info, tree *);
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
-static bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *, bool);
+static bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *);
 static void vect_mark_relevant (varray_type *, tree);
 static bool vect_stmt_relevant_p (tree, loop_vec_info);
 static tree vect_get_loop_niters (struct loop *, tree *);
@@ -223,20 +223,21 @@ static bool vect_compute_data_ref_alignment (struct data_reference *);
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_force_dr_alignment_p (tree, unsigned int);
 static struct data_reference * vect_analyze_pointer_ref_access 
-  (tree, tree, bool, tree*);
+  (tree, tree, bool, tree, tree *, tree *);
 static bool vect_can_advance_ivs_p (loop_vec_info);
-static tree vect_get_base_and_offset (struct data_reference *, tree, tree, 
-				      loop_vec_info, tree *, tree *, tree *,
-				      bool*);
 static tree vect_get_ptr_offset (tree, tree, tree *);
-static tree vect_get_memtag_and_dr
-  (tree, tree, bool, loop_vec_info, tree, struct data_reference **);
 static bool vect_analyze_offset_expr (tree, struct loop *, tree, tree *, 
 				      tree *, tree *);
 static tree vect_strip_conversion (tree);
 static bool vect_base_addr_differ_p (struct data_reference *,
 				     struct data_reference *drb, bool *);
-
+static tree vect_object_analysis (tree, tree, bool, tree, 
+				  struct data_reference **, tree *, tree *, 
+				  tree *, bool *);
+static tree vect_address_analysis (tree, tree, bool, tree, 
+				   struct data_reference *, tree *, tree *, 
+				   tree *, bool *);
+static tree vect_get_memtag (tree, struct data_reference *);
 
 /* Utility functions for the code transformation.  */
 static tree vect_create_destination_var (tree, tree);
@@ -1618,209 +1619,6 @@ vect_analyze_offset_expr (tree expr,
 						left_offset, 
 						right_offset)));
   return true;
-}
-
-
-/* Function vect_get_base_and_offset
-
-   Return the BASE of the data reference EXPR.
-   If VECTYPE is given, also compute the INITIAL_OFFSET from BASE, MISALIGN and 
-   STEP.
-   E.g., for EXPR a.b[i] + 4B, BASE is a, and OFFSET is the overall offset  
-   'a.b[i] + 4B' from a (can be an expression), MISALIGN is an OFFSET 
-   instantiated with initial_conditions of access_functions of variables, 
-   modulo alignment, and STEP is the evolution of the DR_REF in this loop.
-
-   Function get_inner_reference is used for the above in case of ARRAY_REF and
-   COMPONENT_REF.
-
-   Input:
-   EXPR - the memory reference that is being analyzed
-   DR - the data_reference struct of the _original_ memory reference
-        (Note: DR_REF (DR) is not necessarily EXPR)
-   VECTYPE - the type that defines the alignment (i.e, we compute
-             alignment relative to TYPE_ALIGN(VECTYPE))
-   
-   Output:
-   BASE (returned value) - the base of the data reference EXPR.
-                           E.g, if EXPR is a.b[k].c[i][j] the returned
-			   base is a.
-   INITIAL_OFFSET - initial offset of EXPR from BASE (an expression)
-   MISALIGN - offset of EXPR from BASE in bytes (a constant) or NULL_TREE if the
-              computation is impossible
-   STEP - evolution of the DR_REF in the loop
-   BASE_ALIGNED_P - indicates if BASE is aligned
- 
-   If something unexpected is encountered (an unsupported form of data-ref),
-   then NULL_TREE is returned.  */
-
-static tree 
-vect_get_base_and_offset (struct data_reference *dr, 
-			  tree expr, 
-			  tree vectype, 
-			  loop_vec_info loop_vinfo,
-			  tree *initial_offset,
-			  tree *misalign,
-			  tree *step,
-			  bool *base_aligned_p)
-{
-  tree this_offset = ssize_int (0);
-  tree this_misalign = ssize_int (0);
-  tree this_step = ssize_int (0);
-  tree base = NULL_TREE;
-  tree next_ref;
-  tree oprnd0, oprnd1;
-  enum tree_code code = TREE_CODE (expr);
-  HOST_WIDE_INT pbitsize;
-  HOST_WIDE_INT pbitpos;
-  tree poffset;
-  enum machine_mode pmode;
-  int punsignedp, pvolatilep;
-  tree bit_pos_in_bytes;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-
-  *base_aligned_p = false;
-
-  switch (code)
-    {
-    /* These cases end the recursion:  */
-    case VAR_DECL:
-    case PARM_DECL:
-      *initial_offset = ssize_int (0);
-      *step = ssize_int (0);
-      *misalign = ssize_int (0);
-      if (DECL_ALIGN (expr) >= TYPE_ALIGN (vectype))
-	*base_aligned_p = true;
-      return build_fold_addr_expr (expr);
-
-    case SSA_NAME:
-      if (TREE_CODE (TREE_TYPE (expr)) != POINTER_TYPE)
-	return NULL_TREE;
-      
-      if (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (expr))) < TYPE_ALIGN (vectype)) 
-	{
-	  base = vect_get_ptr_offset (expr, vectype, misalign);
-	  if (base)
-	    *base_aligned_p = true;
-	}
-      else
-	{	  
-	  *base_aligned_p = true;
-	  *misalign = ssize_int (0);
-	}
-      *initial_offset = ssize_int (0);
-      *step = ssize_int (0);
-      return expr;
-      
-    case INTEGER_CST:      
-      *initial_offset = fold_convert (ssizetype, expr);
-      *misalign = fold_convert (ssizetype, expr);
-      *step = ssize_int (0);
-      return expr;
-
-    /* These cases continue the recursion:  */
-    case ADDR_EXPR:
-      oprnd0 = TREE_OPERAND (expr, 0);
-      next_ref = oprnd0;
-      break;
-
-    case INDIRECT_REF:
-      oprnd0 = TREE_OPERAND (expr, 0);
-      next_ref = oprnd0;
-      break;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      oprnd0 = TREE_OPERAND (expr, 0);
-      oprnd1 = TREE_OPERAND (expr, 1);
-
-      /* In case we have a PLUS_EXPR of the form
-	 (oprnd0 + oprnd1), we assume that only oprnd0 determines the base.  
-	 This is verified in vect_get_memtag_and_dr.  */
-      base = vect_get_base_and_offset (dr, oprnd1, vectype, loop_vinfo, 
-				       &this_offset, &this_misalign, 
-				       &this_step, base_aligned_p);  
-      /* Offset was already computed in vect_analyze_pointer_ref_access.  */
-      this_offset = ssize_int (0);
-
-      if (!base) 
-	this_misalign = NULL_TREE;
-      else
-	this_misalign = size_binop (TREE_CODE (expr), ssize_int (0),
-				    this_misalign);
-      next_ref = oprnd0;
-      break;
-
-    default:
-      if (!handled_component_p (expr))
-	/* Unsupported expression.  */
-	return NULL_TREE;
-
-      /* Find the base and the offset from it.  */
-      next_ref = get_inner_reference (expr, &pbitsize, &pbitpos, &poffset,
-				      &pmode, &punsignedp, &pvolatilep, false);
-      if (!next_ref)
-	return NULL_TREE;
-
-      if (poffset 
-	  && !vect_analyze_offset_expr (poffset, loop, TYPE_SIZE_UNIT (vectype), 
-					&this_offset, &this_misalign, 
-					&this_step))
-	{
-	  /* Failed to compute offset or step.  */
-	  *step = NULL_TREE;
-	  *initial_offset = NULL_TREE;
-	  *misalign = NULL_TREE;
-	  return NULL_TREE;
-	}
-
-      /* Add bit position to OFFSET and MISALIGN.  */
-
-      bit_pos_in_bytes = ssize_int (pbitpos/BITS_PER_UNIT);
-      /* Check that there is no remainder in bits.  */
-      if (pbitpos%BITS_PER_UNIT)
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	    fprintf (vect_dump, "bit offset alignment.");
-	  return NULL_TREE;
-	}
-      this_offset = size_binop (PLUS_EXPR, bit_pos_in_bytes, 
-				fold_convert (ssizetype, this_offset));     
-      if (this_misalign) 
-	this_misalign = size_binop (PLUS_EXPR, this_misalign, bit_pos_in_bytes); 
-
-      /* Continue the recursion to refine the base (get_inner_reference returns 
-	 &a for &a[i], and not a).  */
-      break;
-    }
-
-  base = vect_get_base_and_offset (dr, next_ref, vectype, loop_vinfo, 
-				   initial_offset, misalign, step, 
-				   base_aligned_p);  
-  if (base)
-    {
-      /* Combine the results.  */
-      if (this_misalign && *misalign)
-	*misalign = size_binop (PLUS_EXPR, *misalign, this_misalign);
-      else 
-	*misalign = NULL_TREE;
-
-      *step = size_binop (PLUS_EXPR, *step, this_step);
-
-      *initial_offset = size_binop (PLUS_EXPR, *initial_offset, this_offset);
-
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-        {
-          print_generic_expr (vect_dump, expr, TDF_SLIM);
-          fprintf (vect_dump, "\n --> total offset for ref: ");
-          print_generic_expr (vect_dump, *initial_offset, TDF_SLIM);
-          fprintf (vect_dump, "\n --> total misalign for ref: ");
-          print_generic_expr (vect_dump, *misalign, TDF_SLIM);
-          fprintf (vect_dump, "\n --> total step for ref: ");
-          print_generic_expr (vect_dump, *step, TDF_SLIM);
-        }
-    }    
-  return base;
 }
 
 
@@ -3929,7 +3727,7 @@ exist_non_indexing_operands_for_use_p (tree use, tree stmt)
 
 static bool
 vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init, 
-				tree * step, bool strict)
+			     tree * step)
 {
   tree init_expr;
   tree step_expr;
@@ -3967,14 +3765,6 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
         fprintf (vect_dump, "step unknown.");
       return false;
     }
-
-  if (strict)
-    if (!integer_onep (step_expr))
-      {
-        if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	  print_generic_expr (vect_dump, step_expr, TDF_SLIM);
-        return false;
-      }
 
   return true;
 }
@@ -4077,8 +3867,7 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
            print_generic_expr (vect_dump, access_fn, TDF_SLIM);
         }
 
-      if (!vect_is_simple_iv_evolution (loop->num, access_fn, &dummy, 
-					&dummy, false))
+      if (!vect_is_simple_iv_evolution (loop->num, access_fn, &dummy, &dummy))
 	{
 	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 				    LOOP_LOC (loop_vinfo)))
@@ -4710,54 +4499,44 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
 /* Function vect_analyze_pointer_ref_access.
 
    Input:
-   STMT - a stmt that contains a data-ref
+   STMT - a stmt that contains a data-ref.
    MEMREF - a data-ref in STMT, which is an INDIRECT_REF.
+   ACCESS_FN - the access function of MEMREF.
 
+   Output:
    If the data-ref access is vectorizable, return a data_reference structure
-   that represents it (DR). Otherwise - return NULL.  */
+   that represents it (DR). Otherwise - return NULL.  
+   STEP - the stride of MEMREF in the loop.
+   INIT - the initial condition of MEMREF in the loop.
+*/
 
 static struct data_reference *
 vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read, 
-				 tree *ptr_init)
+				 tree access_fn, tree *ptr_init, tree *ptr_step)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree access_fn = analyze_scalar_evolution (loop, TREE_OPERAND (memref, 0));
-  tree init, step;	
+  tree step, init;	
   tree reftype, innertype;
   tree indx_access_fn; 
   int loopnum = loop->num;
   struct data_reference *dr;
 
-  if (!access_fn)
+  if (!vect_is_simple_iv_evolution (loopnum, access_fn, &init, &step))
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
-        fprintf (vect_dump, "not vectorized: complicated pointer access.");	
-      return NULL;
-    }
-
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-    {
-      fprintf (vect_dump, "Access function of ptr: ");
-      print_generic_expr (vect_dump, access_fn, TDF_SLIM);
-    }
-
-  if (!vect_is_simple_iv_evolution (loopnum, access_fn, &init, &step, false))
-    {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS, 
+				LOOP_LOC (loop_vinfo))) 
 	fprintf (vect_dump, "not vectorized: pointer access is not simple.");	
       return NULL;
     }
-		
+
   STRIP_NOPS (init);
 
   if (!expr_invariant_in_loop_p (loop, init))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
+				LOOP_LOC (loop_vinfo))) 
 	fprintf (vect_dump, 
 		 "not vectorized: initial condition is not loop invariant.");	
       return NULL;
@@ -4766,7 +4545,7 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read,
   if (TREE_CODE (step) != INTEGER_CST)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
+				LOOP_LOC (loop_vinfo))) 
 	fprintf (vect_dump, 
 		"not vectorized: non constant step for pointer access.");	
       return NULL;
@@ -4785,30 +4564,23 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read,
   if (TREE_CODE (reftype) != POINTER_TYPE) 
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
+				LOOP_LOC (loop_vinfo))) 
 	fprintf (vect_dump, "not vectorized: unexpected pointer access form.");
       return NULL;
     }
 
+  *ptr_step = fold_convert (ssizetype, step);
   innertype = TREE_TYPE (reftype);
-  if (tree_int_cst_compare (TYPE_SIZE_UNIT (innertype), step))
+  /* Check that STEP is a multiple of type size.  */
+  if (!integer_zerop (size_binop (TRUNC_MOD_EXPR, *ptr_step, 
+ 		        fold_convert (ssizetype, TYPE_SIZE_UNIT (innertype)))))
     {
-      /* FORNOW: support only consecutive access */
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-				LOOP_LOC (loop_vinfo)))
+				LOOP_LOC (loop_vinfo))) 
 	fprintf (vect_dump, "not vectorized: non consecutive access.");	
       return NULL;
     }
-
-  STMT_VINFO_VECT_STEP (stmt_info) = fold_convert (ssizetype, step);
-  if (TREE_CODE (init) == PLUS_EXPR 
-      || TREE_CODE (init) == MINUS_EXPR)
-    STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = 
-      size_binop (TREE_CODE (init), ssize_int (0),  
-		  fold_convert (ssizetype, TREE_OPERAND (init, 1)));
-  else
-    STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = ssize_int (0);
-
+   
   indx_access_fn = 
 	build_polynomial_chrec (loopnum, integer_zero_node, integer_one_node);
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
@@ -4822,193 +4594,389 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read,
 }
 
 
-/* Function vect_get_memtag_and_dr.  
+/* Function vect_get_memtag.  
 
    The function returns the relevant variable for memory tag (for aliasing 
-   purposes). Also data reference structure DR is created.  
-
-   This function handles three kinds of MEMREF:
-
-   It is called from vect_analyze_data_refs with a MEMREF that is either an 
-   ARRAY_REF or an INDIRECT_REF (this is category 1 - "recursion begins"). 
-   It builds a DR for them using vect_get_base_and_offset, and calls itself 
-   recursively to retrieve the relevant memtag for the MEMREF, "peeling" the 
-   MEMREF along the way. During the recursive calls, the function may be called 
-   with a MEMREF for which the recursion has to continue - PLUS_EXPR, 
-   MINUS_EXPR, INDIRECT_REF (category 2 - "recursion continues"), 
-   and/or with a MEMREF for which a memtag can be trivially obtained - VAR_DECL 
-   and SSA_NAME (this is category 3 - "recursion stop condition"). 
-
-   When the MEMREF falls into category 1 there is still no data reference struct 
-   (DR) available. It is created by this function, and then, along the 
-   recursion, MEMREF will fall into category 2 or 3, in which case a DR will 
-   have already been created, but the analysis continues to retrieve the MEMTAG.
-
-   Input:
-   MEMREF - data reference in STMT
-   IS_READ - TRUE if STMT reads from MEMREF, FALSE if writes to MEMREF
-   
-   Output:
-   DR - data_reference struct for MEMREF
-   return value - the relevant variable for memory tag (for aliasing purposes).
-
-*/ 
+   purposes).  */
 
 static tree
-vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read, 
-			loop_vec_info loop_vinfo, 
-			tree vectype, struct data_reference **dr)
+vect_get_memtag (tree memref, struct data_reference *dr)
 {
-  tree symbl, oprnd0, oprnd1;
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  tree offset, misalign, step;
-  tree ref_to_be_analyzed, tag, dr_base;
-  struct data_reference *new_dr;
-  bool base_aligned_p;
-  tree ptr_init;
+  tree symbl, tag;
 
-  if (*dr)
+  switch (TREE_CODE (memref))
     {
-      /* Category 3: recursion stop condition.  */
-      /* (1) A DR already exists. We only need to get the relevant memtag for
-	 MEMREF, the rest of the data was already initialized.  */
-
-      switch (TREE_CODE (memref))
+    case SSA_NAME:
+      symbl = SSA_NAME_VAR (memref);
+      tag = get_var_ann (symbl)->type_mem_tag;
+      if (!tag)
 	{
-	  /* (1.1) Stop condition: find the relevant memtag and return.  */
-	case SSA_NAME:
-	  symbl = SSA_NAME_VAR (memref);
-	  tag = get_var_ann (symbl)->type_mem_tag;
-	  if (!tag)
-	    {
-	      tree ptr = TREE_OPERAND (DR_REF ((*dr)), 0);
-	      if (TREE_CODE (ptr) == SSA_NAME)
-		tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
-	    }
-	  if (!tag)
-	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                         UNKNOWN_LOC))
-		fprintf (vect_dump, "not vectorized: no memtag for ref.");
-	      return NULL_TREE;
-	    }
-	  return tag;
+	  tree ptr = TREE_OPERAND (DR_REF (dr), 0);
+	  if (TREE_CODE (ptr) == SSA_NAME)
+	    tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+	}
+      return tag;
 
-	case VAR_DECL:
-	case PARM_DECL:
-	  return memref;
+    case ADDR_EXPR:
+      return TREE_OPERAND (memref, 0);
 
-	  /* Category 2: recursion continues.  */
-	  /* (1.2) A recursive call to find the relevant memtag is required.  */
-	case INDIRECT_REF:
-	  symbl = TREE_OPERAND (memref, 0); 
-	  break; /* For recursive call.  */
+    default:
+      return NULL_TREE;
+    }  
+}
 
-	case COMPONENT_REF:
-	  /* Could have recorded more accurate information - 
-	     i.e, the actual FIELD_DECL that is being referenced -
-	     but later passes expect VAR_DECL as the nmt.  */
-	  /* Fall through.  */
-	
-	case ADDR_EXPR:
-	  symbl = build_fold_indirect_ref (
-		       STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
-	  break; /* For recursive call.  */
 
-	case PLUS_EXPR:
-	case MINUS_EXPR:
-	  /* Although DR exists, we have to call the function recursively to 
-	     build MEMTAG for such expression. This is handled below.  */
-	  oprnd0 = TREE_OPERAND (memref, 0);
-	  oprnd1 = TREE_OPERAND (memref, 1);
+/* Function vect_address_analysis
+
+   Return the BASE of the address expression EXPR.
+   Also compute the INITIAL_OFFSET from BASE, MISALIGN and STEP.
+
+   Input:
+   EXPR - the address expression that is being analyzed
+   STMT - the statement that contains EXPR or its original memory reference
+   IS_READ - TRUE if STMT reads from EXPR, FALSE if writes to EXPR
+   VECTYPE - the type that defines the alignment (i.e, we compute
+             alignment relative to TYPE_ALIGN(VECTYPE))
+   DR - data_reference struct for the original memory reference
+
+   Output:
+   BASE (returned value) - the base of the data reference EXPR.
+   INITIAL_OFFSET - initial offset of EXPR from BASE (an expression)
+   MISALIGN - offset of EXPR from BASE in bytes (a constant) or NULL_TREE if the
+              computation is impossible
+   STEP - evolution of EXPR in the loop
+   BASE_ALIGNED - indicates if BASE is aligned
+ 
+   If something unexpected is encountered (an unsupported form of data-ref),
+   then NULL_TREE is returned.  
+ */
+
+static tree
+vect_address_analysis (tree expr, tree stmt, bool is_read, tree vectype, 
+		       struct data_reference *dr, tree *offset, tree *misalign,
+		       tree *step, bool *base_aligned)
+{
+  tree oprnd0, oprnd1, base_address, offset_expr, base_addr0, base_addr1;
+  tree address_offset = ssize_int (0), address_misalign = ssize_int (0);
+
+  switch (TREE_CODE (expr))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* EXPR is of form {base +/- offset} (or {offset +/- base}).  */
+      oprnd0 = TREE_OPERAND (expr, 0);
+      oprnd1 = TREE_OPERAND (expr, 1);
+
+      STRIP_NOPS (oprnd0);
+      STRIP_NOPS (oprnd1);
       
-	  STRIP_NOPS (oprnd1); 
-	   /* Supported plus/minus expressions are of the form 
-	     {address_base + offset}, such that address_base is of type 
-	     POINTER/ARRAY, and offset is either an INTEGER_CST of type POINTER, 
-	     or it's not of type POINTER/ARRAY. 
-	     TODO: swap operands if {offset + address_base}.  */
-	  if ((TREE_CODE (TREE_TYPE (oprnd1)) == POINTER_TYPE 
-	       && TREE_CODE (oprnd1) != INTEGER_CST)
-	      || TREE_CODE (TREE_TYPE (oprnd1)) == ARRAY_TYPE)
-	    return NULL_TREE;
-      
-	  symbl = oprnd0;	 
-	  break; /* For recursive call.  */
+      /* Recursively try to find the base of the address contained in EXPR.
+	 For offset, the returned base will be NULL.  */
+      base_addr0 = vect_address_analysis (oprnd0, stmt, is_read, vectype, dr, 
+				     &address_offset, &address_misalign, step, 
+				     base_aligned);
 
-	default:
+      base_addr1 = vect_address_analysis (oprnd1, stmt, is_read, vectype, dr, 
+				     &address_offset, &address_misalign, step, 
+				     base_aligned);
+
+      /* We support cases where only one of the operands contains an 
+	 address.  */
+      if ((base_addr0 && base_addr1) || (!base_addr0 && !base_addr1))
+	return NULL_TREE;
+
+      /* To revert STRIP_NOPS.  */
+      oprnd0 = TREE_OPERAND (expr, 0);
+      oprnd1 = TREE_OPERAND (expr, 1);
+      
+      offset_expr = base_addr0 ? 
+	fold_convert (ssizetype, oprnd1) : fold_convert (ssizetype, oprnd0);
+
+      /* EXPR is of form {base +/- offset} (or {offset +/- base}). If offset is 
+	 a number, we can add it to the misalignment value calculated for base,
+	 otherwise, misalignment is NULL.  */
+      if (TREE_CODE (offset_expr) == INTEGER_CST && address_misalign)
+	*misalign = size_binop (TREE_CODE (expr), address_misalign, 
+				offset_expr);
+      else
+	*misalign = NULL_TREE;
+
+      /* Combine offset (from EXPR {base + offset}) with the offset calculated
+	 for base.  */
+      *offset = size_binop (TREE_CODE (expr), address_offset, offset_expr);
+      return base_addr0 ? base_addr0 : base_addr1;
+
+    case ADDR_EXPR:
+      base_address = vect_object_analysis (TREE_OPERAND (expr, 0), stmt, is_read, 
+				   vectype, &dr, offset, misalign, step, 
+				   base_aligned);
+      return base_address;
+
+    case SSA_NAME:
+      if (TREE_CODE (TREE_TYPE (expr)) != POINTER_TYPE)
+	return NULL_TREE;
+      
+      if (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (expr))) < TYPE_ALIGN (vectype)) 
+	{
+	  if (vect_get_ptr_offset (expr, vectype, misalign))
+	    *base_aligned = true;	  
+	  else
+	    *base_aligned = false;
+	}
+      else
+	{	  
+	  *base_aligned = true;
+	  *misalign = ssize_int (0);
+	}
+      *offset = ssize_int (0);
+      *step = ssize_int (0);
+      return expr;
+      
+    default:
+      return NULL_TREE;
+    }
+}
+
+
+/* Function vect_object_analysis
+
+   Return the BASE of the data reference MEMREF.
+   Also compute the INITIAL_OFFSET from BASE, MISALIGN and STEP.
+   E.g., for EXPR a.b[i] + 4B, BASE is a, and OFFSET is the overall offset  
+   'a.b[i] + 4B' from a (can be an expression), MISALIGN is an OFFSET 
+   instantiated with initial_conditions of access_functions of variables, 
+   modulo alignment, and STEP is the evolution of the DR_REF in this loop.
+
+   Function get_inner_reference is used for the above in case of ARRAY_REF and
+   COMPONENT_REF.
+
+   The structure of the function is as follows:
+   Part 1:
+   Case 1. For handled_component_p refs 
+          1.1 call get_inner_reference
+            1.1.1 analyze offset expr received from get_inner_reference
+	  1.2. build data-reference structure for MEMREF
+        (fall through with BASE)
+   Case 2. For declarations 
+          2.1 check alignment
+          2.2 update DR_BASE_NAME if necessary for alias
+   Case 3. For INDIRECT_REFs 
+          3.1 get the access function
+	  3.2 analyze evolution of MEMREF
+	  3.3 set data-reference structure for MEMREF
+          3.4 call vect_address_analysis to analyze INIT of the access function
+
+   Part 2:
+   Combine the results of object and address analysis to calculate 
+   INITIAL_OFFSET, STEP and misalignment info.   
+
+   Input:
+   MEMREF - the memory reference that is being analyzed
+   STMT - the statement that contains MEMREF
+   IS_READ - TRUE if STMT reads from MEMREF, FALSE if writes to MEMREF
+   VECTYPE - the type that defines the alignment (i.e, we compute
+             alignment relative to TYPE_ALIGN(VECTYPE))
+   
+   Output:
+   BASE_ADDRESS (returned value) - the base address of the data reference MEMREF
+                                   E.g, if MEMREF is a.b[k].c[i][j] the returned
+			           base is &a.
+   DR - data_reference struct for MEMREF
+   INITIAL_OFFSET - initial offset of MEMREF from BASE (an expression)
+   MISALIGN - offset of MEMREF from BASE in bytes (a constant) or NULL_TREE if 
+              the computation is impossible
+   STEP - evolution of the DR_REF in the loop
+   BASE_ALIGNED - indicates if BASE is aligned
+ 
+   If something unexpected is encountered (an unsupported form of data-ref),
+   then NULL_TREE is returned.  */
+
+static tree
+vect_object_analysis (tree memref, tree stmt, bool is_read,
+		      tree vectype, struct data_reference **dr,
+		      tree *offset, tree *misalign, tree *step,
+		      bool *base_aligned)
+{
+  tree base = NULL_TREE, base_address = NULL_TREE;
+  tree object_offset = ssize_int (0), object_misalign = ssize_int (0);
+  tree object_step = ssize_int (0), address_step = ssize_int (0);
+  bool object_base_aligned = true, address_base_aligned = true;
+  tree address_offset = ssize_int (0), address_misalign = ssize_int (0);
+  HOST_WIDE_INT pbitsize, pbitpos;
+  tree poffset, bit_pos_in_bytes;
+  enum machine_mode pmode;
+  int punsignedp, pvolatilep;
+  tree ptr_step = ssize_int (0), ptr_init = NULL_TREE;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct data_reference *ptr_dr = NULL;
+  tree access_fn, evolution_part, address_to_analyze;
+   
+  /* Part 1: */
+  /* Case 1. handled_component_p refs.  */
+  if (handled_component_p (memref))
+    {
+      /* 1.1 call get_inner_reference.  */
+      /* Find the base and the offset from it.  */
+      base = get_inner_reference (memref, &pbitsize, &pbitpos, &poffset,
+				  &pmode, &punsignedp, &pvolatilep, false);
+      if (!base)
+	return NULL_TREE;
+
+      /* 1.1.1 analyze offset expr received from get_inner_reference.  */
+      if (poffset 
+	  && !vect_analyze_offset_expr (poffset, loop, TYPE_SIZE_UNIT (vectype), 
+				&object_offset, &object_misalign, &object_step))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    {
+	      fprintf (vect_dump, "failed to compute offset or step for ");
+	      print_generic_expr (vect_dump, memref, TDF_SLIM);
+	    }
 	  return NULL_TREE;
 	}
-    }  
-  else
-    {
-      /* Category 1: recursion begins.  */
-      /* (2) A DR does not exist yet and must be built, followed by a
-	 recursive call to get the relevant memtag for MEMREF.  */
 
-      switch (TREE_CODE (memref))
-	{      
-	case INDIRECT_REF:
-	  new_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read, 
-						    &ptr_init);
-	  if (!new_dr)
-	    return NULL_TREE; 
-	  *dr = new_dr;
-	  symbl = ptr_init;
-	  ref_to_be_analyzed = ptr_init;
-	  break;
-      
-	case ARRAY_REF:
-	  new_dr = analyze_array (stmt, memref, is_read);
-	  *dr = new_dr;
-	  symbl = DR_BASE_NAME (new_dr);
-	  ref_to_be_analyzed = memref;
-	  break;
+      /* Add bit position to OFFSET and MISALIGN.  */
 
-	default:
-	  /* TODO: Support data-refs of form a[i].p for unions and single
-	     field structures.  */
+      bit_pos_in_bytes = ssize_int (pbitpos/BITS_PER_UNIT);
+      /* Check that there is no remainder in bits.  */
+      if (pbitpos%BITS_PER_UNIT)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    fprintf (vect_dump, "bit offset alignment.");
 	  return NULL_TREE;
-	}  
+	}
+      object_offset = size_binop (PLUS_EXPR, bit_pos_in_bytes, object_offset);     
+      if (object_misalign) 
+	object_misalign = size_binop (PLUS_EXPR, object_misalign, 
+				      bit_pos_in_bytes); 
 
-      offset = ssize_int (0);
-      misalign = ssize_int (0);
-      step = ssize_int (0);
+      /* Create data-reference for MEMREF. TODO: handle COMPONENT_REFs.  */
+      if (!(*dr))
+	{ 
+	  if (TREE_CODE (memref) == ARRAY_REF)
+	    *dr = analyze_array (stmt, memref, is_read);
+	  else
+	    /* FORNOW.  */
+	    return NULL_TREE;
+	}
+      memref = base; /* To continue analysis of BASE.  */
+      /* fall through  */
+    }
+  
+  /*  Part 1: Case 2. Declarations.  */ 
+  if (DECL_P (memref))
+    {
+      /* We expect to get a decl only if we already have a DR.  */
+      if (!(*dr))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    {
+	      fprintf (vect_dump, "unhandled decl ");
+	      print_generic_expr (vect_dump, memref, TDF_SLIM);
+	    }
+	  return NULL_TREE;
+	}
 
-      /* Analyze data-ref, find its base, initial offset from the base, step,
-	 and alignment.  */
-      dr_base = vect_get_base_and_offset (new_dr, ref_to_be_analyzed, 
-					  vectype, loop_vinfo, &offset, 
-					  &misalign, &step, &base_aligned_p);
-      if (!dr_base)
-	return NULL_TREE;
-    
-      /* Initialize information according to above analysis.  */
-      /* Since offset and step of a pointer can be also set in
-	 vect_analyze_pointer_ref_access, we combine the values here. */
-      if (STMT_VINFO_VECT_INIT_OFFSET (stmt_info))
-	STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = 
-	  size_binop (PLUS_EXPR, offset, 
-		      STMT_VINFO_VECT_INIT_OFFSET (stmt_info));		  
+      /* 2.1 check the alignment.  */
+      if (DECL_ALIGN (memref) >= TYPE_ALIGN (vectype))
+	object_base_aligned = true;
       else
-	STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = offset;
+	object_base_aligned = false;
 
-      if (step && STMT_VINFO_VECT_STEP (stmt_info))
-	STMT_VINFO_VECT_STEP (stmt_info) = 
-	  size_binop (PLUS_EXPR, step, STMT_VINFO_VECT_STEP (stmt_info));
-      else
-	STMT_VINFO_VECT_STEP (stmt_info) = step;
+      /* 2.2 update DR_BASE_NAME if necessary.  */
+      if (!DR_BASE_NAME ((*dr)))
+	/* For alias analysis.  In case the analysis of INDIRECT_REF brought 
+	   us to object.  */
+	DR_BASE_NAME ((*dr)) = memref;
 
-      STMT_VINFO_VECT_BASE_ALIGNED_P (stmt_info) = base_aligned_p;
-      STMT_VINFO_VECT_MISALIGNMENT (stmt_info) = misalign;
-      STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info) = dr_base;	     
+      base_address = build_fold_addr_expr (memref);
     }
 
-  if (!symbl)
+  /* Part 1:  Case 3. INDIRECT_REFs.  */
+  else if (TREE_CODE (memref) == INDIRECT_REF)
+    {      
+      /* 3.1 get the access function.  */
+      access_fn = analyze_scalar_evolution (loop, TREE_OPERAND (memref, 0));
+      if (!access_fn)
+	{
+	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+				    LOOP_LOC (loop_vinfo)))
+	    fprintf (vect_dump, "not vectorized: complicated pointer access.");	
+	  return NULL_TREE;
+	}
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	{
+	  fprintf (vect_dump, "Access function of ptr: ");
+	  print_generic_expr (vect_dump, access_fn, TDF_SLIM);
+	}
+
+      /* 3.2 analyze evolution of MEMREF.  */
+      evolution_part = evolution_part_in_loop_num (access_fn, loop->num);
+      if (evolution_part)
+	{
+	  ptr_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read, 
+				         access_fn, &ptr_init, &ptr_step);
+	  if (!(ptr_dr))
+	    return NULL_TREE; 
+	  
+	  object_step = size_binop (PLUS_EXPR, object_step, ptr_step);
+	  address_to_analyze = ptr_init;
+	}
+      else
+	{
+	  if (!(*dr))
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+					LOOP_LOC (loop_vinfo))) 
+		fprintf (vect_dump, "not vectorized: ptr is loop invariant.");	
+	      return NULL_TREE;
+	    }
+	  /* Since there exists DR for MEMREF, we are analyzing the base of
+	     handled component, which not necessary has evolution in the 
+	     loop.  */
+	  address_to_analyze = TREE_OPERAND (base, 0);
+	}
+      
+      /* 3.3 set data-reference structure for MEMREF.  */
+      *dr = (*dr) ? *dr : ptr_dr;
+
+      /* 3.4 call vect_address_analysis to analyze INIT of the access 
+	 function.  */
+      base_address = vect_address_analysis (address_to_analyze, stmt, is_read, 
+			       vectype, *dr, &address_offset, &address_misalign, 
+			       &address_step, &address_base_aligned);
+    }
+    	    
+  if (!base_address)
+    /* MEMREF cannot be analyzed.  */
     return NULL_TREE;
-  /* Recursive call to retrieve the relevant memtag.  */
-  tag = vect_get_memtag_and_dr (symbl, stmt, is_read, loop_vinfo, vectype, dr);
-  return tag;
+
+  /* Part 2: Combine the results of object and address analysis to calculate 
+     INITIAL_OFFSET, STEP and misalignment info. */
+  *offset = size_binop (PLUS_EXPR, object_offset, address_offset);
+  if (object_misalign && address_misalign)
+    *misalign = size_binop (PLUS_EXPR, object_misalign, address_misalign);
+  else
+    *misalign = NULL_TREE;
+  *step = size_binop (PLUS_EXPR, object_step, address_step); 
+  *base_aligned = object_base_aligned && address_base_aligned;
+
+  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+    {
+      fprintf (vect_dump, "Results of object analysis for: ");
+      print_generic_expr (vect_dump, memref, TDF_SLIM);
+      fprintf (vect_dump, "\n\tbase: ");
+      print_generic_expr (vect_dump, base, TDF_SLIM);
+      fprintf (vect_dump, "\n\toffset: ");
+      print_generic_expr (vect_dump, *offset, TDF_SLIM);
+      fprintf (vect_dump, "\n\tstep: ");
+      print_generic_expr (vect_dump, *step, TDF_SLIM);
+      fprintf (vect_dump, "\n\tbase aligned %d\n\tmisalign: ", *base_aligned);
+      print_generic_expr (vect_dump, *misalign, TDF_SLIM);
+    }
+  return base_address;
 }
 
 
@@ -5021,15 +4989,15 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
    1- vect_analyze_data_refs(loop): 
       Find and analyze all data-refs in the loop:
           foreach ref
-             ref_stmt.memtag =  vect_get_memtag_and_dr (ref)
-   1.1- vect_get_memtag_and_dr(ref): 
-      Analyze ref, and build a DR (data_referece struct) for it;
-      call vect_get_base_and_offset to compute base, initial_offset, 
-      step and alignment. Set ref_stmt.base, ref_stmt.initial_offset,
-      ref_stmt.alignment, and ref_stmt.step accordingly. 
-   1.1.1- vect_get_base_and_offset():
-      Calculate base, initial_offset, step and alignment.      
-      For ARRAY_REFs and COMPONENT_REFs use call get_inner_reference.
+	     base_address = vect_object_analysis(ref)
+             ref_stmt.memtag =  vect_get_memtag(base)
+      1.1- vect_object_analysis(ref): 
+           Analyze ref, and build a DR (data_referece struct) for it;
+           compute base, initial_offset, step and alignment. 
+           Call get_inner_reference for refs handled in this function.
+           Call vect_addr_analysis(addr) to analyze pointer type expressions.
+      Set ref_stmt.base, ref_stmt.initial_offset, ref_stmt.alignment, and 
+      ref_stmt.step accordingly. 
    2- vect_analyze_dependences(): apply dependence testing using ref_stmt.DR
    3- vect_analyze_drs_alignment(): check that ref_stmt.alignment is ok.
    4- vect_analyze_drs_access(): check that ref_stmt.step is ok.
@@ -5065,8 +5033,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  varray_type *datarefs = NULL;
 	  int nvuses, nv_may_defs, nv_must_defs;
 	  tree memref = NULL;
-	  tree symbl;
-	  tree scalar_type, vectype;
+	  tree scalar_type, vectype;	  
+	  tree base, offset, misalign, step, tag;
+	  bool base_aligned;
 
 	  /* Assumption: there exists a data-ref in stmt, if and only if 
              it has vuses/vdefs.  */
@@ -5125,12 +5094,13 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	      /* It is not possible to vectorize this data reference.  */
 	      return false;
 	    }
-	  /* Analyze MEMREF. If it is of a supported form, build data_reference
-	     struct for it (DR) and find memtag for aliasing purposes.  */
-	  dr = NULL;
-	  symbl = vect_get_memtag_and_dr (memref, stmt, is_read, loop_vinfo, 
-					  vectype, &dr);
-	  if (!symbl)
+	 /* Analyze MEMREF. If it is of a supported form, build data_reference
+	     struct for it (DR).  */
+	  dr = NULL; 
+	  base = vect_object_analysis (memref, stmt, is_read, vectype, &dr, 
+				       &offset, &misalign, &step, 
+				       &base_aligned);
+	  if (!base)
 	    {
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 					LOOP_LOC (loop_vinfo)))
@@ -5140,7 +5110,24 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 		}
 	      return false;
 	    }
-	  STMT_VINFO_MEMTAG (stmt_info) = symbl;
+	  /*  Find memtag for aliasing purposes.  */
+	  tag = vect_get_memtag (base, dr);
+	  if (!tag)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+					LOOP_LOC (loop_vinfo)))
+		{
+		  fprintf (vect_dump, "not vectorized: no memtag ref: "); 
+		  print_generic_expr (vect_dump, memref, TDF_SLIM);
+		}
+	      return false;
+	    }
+	  STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info) = base;
+	  STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = offset;
+	  STMT_VINFO_VECT_STEP (stmt_info) = step;
+	  STMT_VINFO_VECT_MISALIGNMENT (stmt_info) = misalign;
+	  STMT_VINFO_VECT_BASE_ALIGNED_P (stmt_info) = base_aligned;
+	  STMT_VINFO_MEMTAG (stmt_info) = tag;
 	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
 	  VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
 	  STMT_VINFO_DATA_REF (stmt_info) = dr;
