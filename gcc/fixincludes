@@ -317,7 +317,8 @@ while [ $# != 0 ]; do
 		#undef NULL
 	' $2/$file > $2/$file.
 	mv $2/$file. $2/$file
-	if cmp $file $2/$file >/dev/null 2>&1; then
+	if cmp $file $2/$file >/dev/null 2>&1 \
+	    || egrep 'This file is part of the GNU C Library' $2/$file >/dev/null 2>&1; then
 	   rm $2/$file
 	else
 	   echo Fixed $file
@@ -1191,8 +1192,12 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, use of va_list
   # Arrange for stdio.h to use stdarg.h to define __gnuc_va_list
-  (echo "#define __need___va_list"
-   echo "#include <stdarg.h>") > ${LIB}/${file}.sed
+  if egrep "__need___va_list" ${LIB}/$file >/dev/null 2>&1; then
+    touch ${LIB}/${file}.sed
+  else
+    (echo "#define __need___va_list"
+     echo "#include <stdarg.h>") > ${LIB}/${file}.sed
+  fi
   # Use __gnuc_va_list in arg types in place of va_list.
   # On 386BSD use __gnuc_va_list instead of _VA_LIST_. We're hoping the
   # trailing parentheses and semicolon save all other systems from this.
@@ -1204,9 +1209,10 @@ if [ -r ${LIB}/$file ]; then
       -e 's@ va_list@ __va_list__@' \
       -e 's@\*va_list@*__va_list__@' \
       -e 's@ __va_list)@ __gnuc_va_list)@' \
+      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \
       -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
       -e 's@VA_LIST@DUMMY_VA_LIST@' \
-      -e 's@_NEED___Va_LIST@_NEED___VA_LIST@' \
+      -e 's@_Va_LIST@_VA_LIST@' \
     ${LIB}/$file >> ${LIB}/${file}.sed
   
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
@@ -1633,7 +1639,8 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 
 if [ -r ${LIB}/$file ]; then
-  if egrep '"C"' ${LIB}/$file >/dev/null 2>/dev/null; then
+  if egrep '"C"' ${LIB}/$file >/dev/null 2>&1 \
+     || egrep '__BEGIN_DECLS' ${LIB}/$file >/dev/null 2>&1; then
     true
   else
     echo Fixing $file
@@ -1713,18 +1720,22 @@ fi
 # Put cpp wrappers around these include files to avoid redeclaration
 # errors during multiple inclusion on m88k-tektronix-sysv3.
 for file in time.h sys/time.h ; do
-  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-    chmod +w ${LIB}/$file 2>/dev/null
-  fi
-  if [ -r ${LIB}/$file ]; then
-    echo Fixing $file, to protect against multiple inclusion.
-    cpp_wrapper=`echo $file | sed -e 's,\.,_,g' -e 's,/,_,g'`
-    (echo "#ifndef __GCC_GOT_${cpp_wrapper}_"
-    echo "#define __GCC_GOT_${cpp_wrapper}_"
-    cat ${LIB}/${file}
-    echo '#endif /* !_GCC_GOT_'${cpp_wrapper}_' */')  > ${LIB}/${file}.new
-    rm -f ${LIB}/$file; mv ${LIB}/${file}.new ${LIB}/$file
+  if egrep '#ifndef' $file >/dev/null 2>&1; then
+    true
+  else
+    if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+      cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+      chmod +w ${LIB}/$file 2>/dev/null
+    fi
+    if [ -r ${LIB}/$file ]; then
+      echo Fixing $file, to protect against multiple inclusion.
+      cpp_wrapper=`echo $file | sed -e 's,\.,_,g' -e 's,/,_,g'`
+      (echo "#ifndef __GCC_GOT_${cpp_wrapper}_"
+      echo "#define __GCC_GOT_${cpp_wrapper}_"
+      cat ${LIB}/${file}
+      echo '#endif /* !_GCC_GOT_'${cpp_wrapper}_' */')  > ${LIB}/${file}.new
+      rm -f ${LIB}/$file; mv ${LIB}/${file}.new ${LIB}/$file
+    fi
   fi
 done
 
