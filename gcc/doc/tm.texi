@@ -3873,7 +3873,7 @@ known.
 
 @code{FUNCTION_VALUE} is not used for return vales with aggregate data
 types, because these are returned in another way.  See
-@code{STRUCT_VALUE_REGNUM} and related macros, below.
+@code{TARGET_STRUCT_VALUE_RTX} and related macros, below.
 @end defmac
 
 @defmac FUNCTION_OUTGOING_VALUE (@var{valtype}, @var{func})
@@ -3891,7 +3891,7 @@ If @code{FUNCTION_OUTGOING_VALUE} is not defined,
 
 @code{FUNCTION_OUTGOING_VALUE} is not used for return vales with
 aggregate data types, because these are returned in another way.  See
-@code{STRUCT_VALUE_REGNUM} and related macros, below.
+@code{TARGET_STRUCT_VALUE_RTX} and related macros, below.
 @end defmac
 
 @defmac LIBCALL_VALUE (@var{mode})

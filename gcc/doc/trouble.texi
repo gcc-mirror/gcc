@@ -615,8 +615,8 @@ The method used by GCC is as follows: a structure or union which is
 1, 2, 4 or 8 bytes long is returned like a scalar.  A structure or union
 with any other size is stored into an address supplied by the caller
 (usually in a special, fixed register, but on some machines it is passed
-on the stack).  The machine-description macros @code{STRUCT_VALUE} and
-@code{STRUCT_INCOMING_VALUE} tell GCC where to pass this address.
+on the stack).  The target hook @code{TARGET_STRUCT_VALUE_RTX}
+tells GCC where to pass this address.
 
 By contrast, PCC on most target machines returns structures and unions
 of any size by copying the data into an area of static storage, and then
