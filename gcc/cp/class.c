@@ -4574,7 +4574,10 @@ layout_virtual_bases (t, offsets)
 #endif
 
   /* DSIZE is the size of the class without the virtual bases.  */
-  dsize = TYPE_SIZE (t);
+  if (abi_version_at_least(2))
+    dsize = CLASSTYPE_SIZE (t);
+  else
+    dsize = TYPE_SIZE (t);
 
   /* Make every class have alignment of at least one.  */
   TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
@@ -4875,8 +4878,21 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
 	     field.  We have to back up by one to find the largest
 	     type that fits.  */
 	  integer_type = integer_types[itk - 1];
-	  padding = size_binop (MINUS_EXPR, DECL_SIZE (field), 
-				TYPE_SIZE (integer_type));
+
+	  if (abi_version_at_least (2) && TREE_CODE (t) == UNION_TYPE)
+	    /* In a union, the padding field must have the full width
+	       of the bit-field; all fields start at offset zero.  */
+	    padding = DECL_SIZE (field);
+	  else
+	    {
+	      if (warn_abi && TREE_CODE (t) == UNION_TYPE)
+		warning ("size assigned to `%T' may not be "
+			 "ABI-compliant and may change in a future "
+			 "version of GCC", 
+			 t);
+	      padding = size_binop (MINUS_EXPR, DECL_SIZE (field),
+				    TYPE_SIZE (integer_type));
+	    }
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
@@ -4944,8 +4960,14 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
 
       padding = build_decl (FIELD_DECL, NULL_TREE, char_type_node);
       place_field (rli, padding);
-    }
-
+    } 
+  else if (abi_version_at_least (2)
+	   && !integer_zerop (rli->bitpos))
+    /* Make sure that we are on a byte boundary so that the size of
+       the class without virtual bases will always be a round number
+       of bytes.  */
+    rli->bitpos = round_up (rli->bitpos, BITS_PER_UNIT);
+  
   /* Let the back-end lay out the type. Note that at this point we
      have only included non-virtual base-classes; we will lay out the
      virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after

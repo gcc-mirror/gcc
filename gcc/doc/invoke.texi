@@ -174,8 +174,8 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{
--fno-access-control  -fcheck-new  -fconserve-space @gol
--fno-const-strings  -fdollars-in-identifiers @gol
+-fabi-version=@var{n} -fno-access-control  -fcheck-new @gol
+-fconserve-space -fno-const-strings  -fdollars-in-identifiers @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs  -fexternal-templates @gol
 -falt-external-templates @gol
@@ -1249,6 +1249,15 @@ language supported by GCC@.
 Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @table @gcctabopt
+
+@item -fabi-version=@var{n}
+@opindex fabi-version
+Use version @var{n} of the C++ ABI.  Version 1 is the version of the C++
+ABI that first appeared in G++ 3.2.  Version 0 will always be the
+version that conforms most closely to the C++ ABI specification.
+Therefore, the ABI obtained using version 0 will change as ABI bugs are
+fixed.
+
 @item -fno-access-control
 @opindex fno-access-control
 Turn off all access checking.  This switch is mainly useful for working
@@ -1521,6 +1530,19 @@ In this case, G++ will not place @code{B} into the tail-padding for
 explicitly padding @code{A} so that its size is a multiple of its
 alignment (ignoring virtual base classes); that will cause G++ and other
 compilers to layout @code{C} identically.
+
+@item
+Incorrect handling of bit-fields with declared widths greater than that
+of their underlying types, when the bit-fields appear in a union.  For
+example:
+
+@smallexample
+union U @{ int i : 4096; @};
+@end smallexample
+
+@noindent
+Assuming that an @code{int} does not have 4096 bits, G++ will make the
+union too small by the number of bits in an @code{int}.
 
 @end itemize
 
