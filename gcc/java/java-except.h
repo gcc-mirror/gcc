@@ -47,6 +47,9 @@ struct eh_range
 
     /* The next child of outer, in address order. */
     struct eh_range *next_sibling;
+
+    /* True if this range has already been expanded. */
+    int expanded;
   };
 
 /* A dummy range that represents the entire method. */
@@ -60,9 +63,9 @@ extern void method_init_exceptions PARAMS ((void));
 
 extern void emit_handlers PARAMS ((void));
 
-extern void maybe_start_try PARAMS ((int));
+extern void maybe_start_try PARAMS ((int, int));
 
-extern void maybe_end_try PARAMS ((int));
+extern void maybe_end_try PARAMS ((int, int));
 
 extern void add_handler PARAMS ((int, int, tree, tree));
 

@@ -1,3 +1,43 @@
+2000-01-25  Andrew Haley  <aph@cygnus.com>
+
+        * java-except.h (struct eh_range): Add `expanded' field.
+        (maybe_start_try): Add end_pc arg.
+        (maybe_end_try): Ditto.
+	* java-tree.h (force_poplevels): new function.
+        * expr.c (expand_byte_code): Don't call maybe_start_try or
+        maybe_end_try.
+        * except.c (add_handler): Reset expanded.
+        (expand_start_java_handler): Set expanded.
+        (check_start_handlers): Don't expand a start handler that's
+        already been expanded.
+        (maybe_start_try): Add end_pc arg.  Only expand a handler which
+        ends after end_pc.
+	(expand_end_java_handler): call force_poplevels.
+	(force_poplevels): new function.
+        * decl.c (binding_level): Add start_pc of binding level.
+        (maybe_pushlevels): Call maybe_start_try when pushing binding
+        levels.
+        (maybe_poplevels): Call maybe_end_try when popping binding levels.
+        (LARGEST_PC): Define.
+        (clear_binding_level): Use LARGEST_PC.
+
+	* java-tree.h (DEBUG_JAVA_BINDING_LEVELS): new define.
+	* decl.c (DEBUG_JAVA_BINDING_LEVELS): new define.
+	(binding_depth, is_class_level, current_pc): new variables.
+        (struct binding_level): ditto.
+	(indent): new function.
+	(push_jvm_slot): add debugging info.
+	(maybe_pushlevels): ditto.
+	(maybe_poplevels): ditto.
+	(pushlevel): ditto.
+	(poplevel): ditto.
+	(start_java_method): ditto.
+	(give_name_to_locals): comment only.
+	* except.c (binding_depth, is_class_level, current_pc): 
+	new variables.
+	(expand_start_java_handler): add debugging info.
+	(expand_end_java_handler): ditto.
+	
 2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (overloaded_jni_method_exists_p): Add prototype.

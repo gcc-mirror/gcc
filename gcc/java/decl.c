@@ -29,12 +29,19 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "toplev.h"
+#include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
 #include "function.h"
 #include "except.h"
 #include "defaults.h"
+#include "java-except.h"
+
+#if defined (DEBUG_JAVA_BINDING_LEVELS)
+extern void indent PROTO((void));
+#endif
 
 static tree push_jvm_slot PARAMS ((int, tree));
 static tree lookup_name_current_level PARAMS ((tree));
@@ -62,6 +69,21 @@ tree pending_local_decls = NULL_TREE;
 
 /* Push a local variable or stack slot into the decl_map,
    and assign it an rtl. */
+
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+int binding_depth = 0;
+int is_class_level = 0;
+int current_pc;
+
+void
+indent ()
+{
+  register unsigned i;
+
+  for (i = 0; i < binding_depth*2; i++)
+    putc (' ', stderr);
+}
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
 static tree
 push_jvm_slot (index, decl)
@@ -199,6 +221,12 @@ struct binding_level
 
     /* The bytecode PC that marks the end of this level. */
     int end_pc;
+    int start_pc;
+
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+    /* Binding depth at which this level began.  */
+    unsigned binding_depth;
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
   };
 
 #define NULL_BINDING_LEVEL (struct binding_level *) NULL
@@ -217,11 +245,15 @@ static struct binding_level *free_binding_level;
 
 static struct binding_level *global_binding_level;
 
+/* A PC value bigger than any PC value we may ever may encounter. */
+
+#define LARGEST_PC (( (unsigned int)1 << (HOST_BITS_PER_INT - 1)) - 1)
+
 /* Binding level structures are initialized by copying this one.  */
 
 static struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-       NULL_BINDING_LEVEL, 0, 0, 0, 0, 1000000000};
+       NULL_BINDING_LEVEL, 0, 0, 0, 0, LARGEST_PC, 0, 0};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -1123,6 +1155,14 @@ pushlevel (unused)
   keep_next_level_flag = 0;
   newlevel->keep_if_subblocks = keep_next_if_subblocks;
   keep_next_if_subblocks = 0;
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  newlevel->binding_depth = binding_depth;
+  indent ();
+  fprintf (stderr, "push %s level 0x%08x pc %d\n",
+	   (is_class_level) ? "class" : "block", newlevel, current_pc);
+  is_class_level = 0;
+  binding_depth++;
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 }
 
 /* Exit a binding level.
@@ -1154,6 +1194,26 @@ poplevel (keep, reverse, functionbody)
   tree block = 0;
   tree decl;
   int block_previously_created;
+
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  binding_depth--;
+  indent ();
+  if (current_binding_level->end_pc != LARGEST_PC)
+    fprintf (stderr, "pop  %s level 0x%08x pc %d (end pc %d)\n",
+	     (is_class_level) ? "class" : "block", current_binding_level, current_pc,
+	     current_binding_level->end_pc);
+  else
+    fprintf (stderr, "pop  %s level 0x%08x pc %d\n",
+	     (is_class_level) ? "class" : "block", current_binding_level, current_pc);
+#if 0
+  if (is_class_level != (current_binding_level == class_binding_level))
+    {
+      indent ();
+      fprintf (stderr, "XXX is_class_level != (current_binding_level == class_binding_level)\n");
+    }
+  is_class_level = 0;
+#endif
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
   keep |= current_binding_level->keep;
 
@@ -1334,6 +1394,10 @@ void
 maybe_pushlevels (pc)
      int pc;
 {
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  current_pc = pc;
+#endif
+
   while (pending_local_decls != NULL_TREE &&
 	 DECL_LOCAL_START_PC (pending_local_decls) <= pc)
     {
@@ -1352,24 +1416,57 @@ maybe_pushlevels (pc)
       if (end_pc > current_binding_level->end_pc)
 	end_pc = current_binding_level->end_pc;
 
+      maybe_start_try (pc, end_pc);
+      
       pushlevel (1);
       expand_start_bindings (0);
+
       current_binding_level->end_pc = end_pc;
-      
+      current_binding_level->start_pc = pc;      
       current_binding_level->names = decl;
       for ( ; decl != NULL_TREE;  decl = TREE_CHAIN (decl))
 	{
 	  push_jvm_slot (DECL_LOCAL_SLOT_NUMBER (decl), decl);
 	}
-    }
+    }      
+
+  maybe_start_try (pc, 0);
 }
 
 void
 maybe_poplevels (pc)
      int pc;
 {
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  current_pc = pc;
+#endif
+
   while (current_binding_level->end_pc <= pc)
     {
+      tree decls = getdecls ();	
+      expand_end_bindings (getdecls (), 1, 0);
+      maybe_end_try (current_binding_level->start_pc, pc);
+      poplevel (1, 0, 0);
+    }
+  maybe_end_try (0, pc);
+}
+
+/* Terminate any binding which began during the range beginning at
+   start_pc.  This tidies up improperly nested local variable ranges
+   and exception handlers; a variable declared within an exception
+   range is forcibly terminated when that exception ends. */
+
+void
+force_poplevels (start_pc)
+     int start_pc;
+{
+  while (current_binding_level->start_pc > start_pc)
+    {
+      tree decls = getdecls ();	
+      if (pedantic && current_binding_level->start_pc > start_pc)
+	warning_with_decl (current_function_decl, 
+			   "In %s: overlapped variable and exception ranges at %d",
+			   current_binding_level->start_pc);
       expand_end_bindings (getdecls (), 1, 0);
       poplevel (1, 0, 0);
     }
@@ -1468,6 +1565,14 @@ give_name_to_locals (jcf)
 	    = (struct lang_decl *) permalloc (sizeof (struct lang_decl_var));
 	  DECL_LOCAL_SLOT_NUMBER (decl) = slot;
 	  DECL_LOCAL_START_PC (decl) = start_pc;
+#if 0
+	  /* FIXME: The range used internally for exceptions and local
+	     variable ranges, is a half-open interval: 
+	     start_pc <= pc < end_pc.  However, the range used in the
+	     Java VM spec is inclusive at both ends: 
+	     start_pc <= pc <= end_pc. */
+	  end_pc++;
+#endif
 	  DECL_LOCAL_END_PC (decl) = end_pc;
 
 	  /* Now insert the new decl in the proper place in
@@ -1612,6 +1717,10 @@ start_java_method (fndecl)
   decl_map = make_tree_vec (i);
   type_map = (tree *) oballoc (i * sizeof (tree));
 
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+  fprintf (stderr, "%s:\n", (*decl_printable_name) (fndecl, 2));
+  current_pc = 0;
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
   pushlevel (1);  /* Push parameters. */
 
   ptr = &DECL_ARGUMENTS (fndecl);

@@ -2289,13 +2289,9 @@ expand_byte_code (jcf, method)
 		}
 	    }
 	}
-      maybe_start_try (PC);
       maybe_pushlevels (PC);
-
       PC = process_jvm_instruction (PC, byte_ops, length);
-
       maybe_poplevels (PC);
-      maybe_end_try (PC);
     } /* for */
   
   if (dead_code_index != -1)

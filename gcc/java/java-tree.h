@@ -592,6 +592,7 @@ extern int class_depth PARAMS ((tree));
 extern int verify_jvm_instructions PARAMS ((struct JCF *, const unsigned char *, long));
 extern void maybe_pushlevels PARAMS ((int));
 extern void maybe_poplevels PARAMS ((int));
+extern void force_poplevels PARAMS ((int));
 extern int process_jvm_instruction PARAMS ((int, const unsigned char *, long));
 extern void set_local_type PARAMS ((int, tree));
 extern int merge_type_state PARAMS ((tree));
@@ -944,3 +945,5 @@ extern int java_error_count;					\
      if (java_error_count > save_error_count)				\
        return;								\
    }
+
+#undef DEBUG_JAVA_BINDING_LEVELS
