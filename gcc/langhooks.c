@@ -456,6 +456,14 @@ lhd_decl_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Return the COMDAT group into which DECL should be placed.  */
+
+const char *
+lhd_comdat_group (tree decl)
+{
+  return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+}
+
 /* lang_hooks.decls.final_write_globals: perform final processing on
    global variables.  */
 void

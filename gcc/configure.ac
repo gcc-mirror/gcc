@@ -2218,9 +2218,28 @@ fi
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
  [.section .rodata.str, "aMS", @progbits, 1])
+if test $gcc_cv_as_shf_merge = no; then
+  gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
+    [elf,2,12,0], [--fatal-warnings],
+    [.section .rodata.str, "aMS", %progbits, 1])
+fi
 AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
+
+gcc_GAS_CHECK_FEATURE(COMDAT group support, gcc_cv_as_comdat_group,
+ [elf,2,15,91], [--fatal-warnings],
+ [.section .text,"axG",@progbits,.foo,comdat])
+if test $gcc_cv_as_comdat_group = yes; then
+  gcc_cv_as_comdat_group_percent=no
+else
+ gcc_GAS_CHECK_FEATURE(COMDAT group support, gcc_cv_as_comdat_group_percent,
+   [elf,2,15,91], [--fatal-warnings],
+   [.section .text,"axG",%progbits,.foo,comdat])
+fi
+AC_DEFINE_UNQUOTED(HAVE_GAS_COMDAT_GROUP,
+  [`if test $gcc_cv_as_comdat_group = yes || test $gcc_cv_as_comdat_group_percent = yes; then echo 1; else echo 0; fi`],
+[Define 0/1 if your assembler supports COMDAT group.])
 
 # Thread-local storage - the check is heavily parametrized.
 conftest_s=

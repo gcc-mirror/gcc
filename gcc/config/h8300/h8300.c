@@ -114,7 +114,7 @@ static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_eightbit_data_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
 #ifndef OBJECT_FORMAT_ELF
-static void h8300_asm_named_section (const char *, unsigned int);
+static void h8300_asm_named_section (const char *, unsigned int, tree);
 #endif
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
@@ -5889,7 +5889,8 @@ h8300_reorg (void)
 
 #ifndef OBJECT_FORMAT_ELF
 static void
-h8300_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
+h8300_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED,
+			 tree decl)
 {
   /* ??? Perhaps we should be using default_coff_asm_named_section.  */
   fprintf (asm_out_file, "\t.section %s\n", name);

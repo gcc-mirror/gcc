@@ -284,6 +284,9 @@
 /* Define if your assembler supports .balign and .p2align. */
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
 
+/* Define 0/1 if your assembler supports COMDAT group. */
+#undef HAVE_GAS_COMDAT_GROUP
+
 /* Define if your assembler uses the new HImode fild and fist notation. */
 #undef HAVE_GAS_FILDS_FISTS
 

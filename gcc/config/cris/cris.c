@@ -2450,12 +2450,13 @@ cris_reg_overlap_mentioned_p (rtx x, rtx in)
    We just dispatch to the functions for ELF and a.out.  */
 
 void
-cris_target_asm_named_section (const char *name, unsigned int flags)
+cris_target_asm_named_section (const char *name, unsigned int flags,
+			       tree decl)
 {
   if (! TARGET_ELF)
-    default_no_named_section (name, flags);
+    default_no_named_section (name, flags, decl);
   else
-    default_elf_asm_named_section (name, flags);
+    default_elf_asm_named_section (name, flags, decl);
 }
 
 /* The LEGITIMATE_PIC_OPERAND_P worker.  */

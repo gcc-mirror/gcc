@@ -622,7 +622,8 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
 }
 
 void
-i386_pe_asm_named_section (const char *name, unsigned int flags)
+i386_pe_asm_named_section (const char *name, unsigned int flags, 
+			   tree decl ATTRIBUTE_UNUSED)
 {
   char flagchars[8], *f = flagchars;
 

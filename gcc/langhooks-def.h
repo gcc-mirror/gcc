@@ -65,6 +65,7 @@ extern void lhd_incomplete_type_error (tree, tree);
 extern tree lhd_type_promotes_to (tree);
 extern void lhd_register_builtin_type (tree, const char *);
 extern bool lhd_decl_ok_for_sibcall (tree);
+extern const char *lhd_comdat_group (tree);
 extern tree lhd_expr_size (tree);
 extern bool lhd_decl_uninit (tree);
 extern tree lhd_get_callee_fndecl (tree);
@@ -234,6 +235,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
 #define LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
+#define LANG_HOOKS_COMDAT_GROUP lhd_comdat_group
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
@@ -244,6 +246,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_WRITE_GLOBALS, \
   LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
+  LANG_HOOKS_COMDAT_GROUP \
 }
 
 /* The whole thing.  The structure is defined in langhooks.h.  */

@@ -107,9 +107,10 @@ struct gcc_target
     /* Output the assembler code for function exit.  */
     void (* function_epilogue) (FILE *, HOST_WIDE_INT);
 
-    /* Switch to an arbitrary section NAME with attributes as
-       specified by FLAGS.  */
-    void (* named_section) (const char *, unsigned int);
+    /* Tell assembler to change to section NAME with attributes FLAGS.
+       If DECL is non-NULL, it is the VAR_DECL or FUNCTION_DECL with
+       which this section is associated.  */
+    void (* named_section) (const char *name, unsigned int flags, tree decl);
 
     /* Switch to the section that holds the exception table.  */
     void (* exception_section) (void);
