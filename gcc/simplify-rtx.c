@@ -528,8 +528,10 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case ZERO_EXTEND:
+	  /* When zero-extending a CONST_INT, we need to know its
+             original mode.  */
 	  if (op_mode == VOIDmode)
-	    op_mode = mode;
+	    abort ();
 	  if (GET_MODE_BITSIZE (op_mode) == HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* If we were really extending the mode,
@@ -587,7 +589,8 @@ simplify_unary_operation (code, mode, op, op_mode)
 
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
      for a DImode operation on a CONST_INT.  */
-  else if (GET_MODE (trueop) == VOIDmode && width <= HOST_BITS_PER_INT * 2
+  else if (GET_MODE (trueop) == VOIDmode
+	   && width <= HOST_BITS_PER_WIDE_INT * 2
 	   && (GET_CODE (trueop) == CONST_DOUBLE
 	       || GET_CODE (trueop) == CONST_INT))
     {
@@ -631,8 +634,10 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case ZERO_EXTEND:
-	  if (op_mode == VOIDmode
-	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT)
+	  if (op_mode == VOIDmode)
+	    abort ();
+
+	  if (GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT)
 	    return 0;
 
 	  hv = 0;

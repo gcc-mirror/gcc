@@ -1,5 +1,16 @@
 2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
+	* combine.c (do_SUBST): Sanity check substitutions of
+	CONST_INTs, and reject them in SUBREGs and ZERO_EXTENDs.
+	(subst): Simplify SUBREG or ZERO_EXTEND instead of SUBSTing a
+	CONST_INT into its operand.
+	(known_cond): Likewise, for ZERO_EXTEND.
+	* simplify-rtx.c (simplify_unary_operation): Fix condition to
+	allow for simplification of wide modes.  Reject CONST_INTs in
+	ZERO_EXTEND when their actual mode is not given.
+
+2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
 	* c-decl.c (pushdecl): If no global declaration is found for an
 	extern declaration in block scope, try a limbo one.
 
