@@ -1,3 +1,7 @@
+2001-01-10  Tom Tromey  <tromey@redhat.com>
+
+	* jvspec.c (jvgenmain_spec): Omit -fencoding from cc1 invocation.
+
 2001-01-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (lang_printable_name_wls): New prototype.

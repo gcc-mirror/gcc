@@ -57,7 +57,7 @@ const char jvgenmain_spec[] =
 		   %{v:-version} %{pg:-p} %{p}\
 		   %{<fbounds-check} %{<fno-bounds-check}\
 		   %{<fassume-compiled} %{<fno-assume-compiled}\
-		   %{<femit-class-file} %{<femit-class-files}\
+		   %{<femit-class-file} %{<femit-class-files} %{<fencoding*}\
 		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
 		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
 		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
