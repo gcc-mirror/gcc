@@ -1645,7 +1645,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {
-      rtx copy, pattern;
+      rtx copy, pattern, set;
 
       map->orig_asm_operands_vector = 0;
 
@@ -1653,6 +1653,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	{
 	case INSN:
 	  pattern = PATTERN (insn);
+	  set = single_set (insn);
 	  copy = 0;
 	  if (GET_CODE (pattern) == USE
 	      && GET_CODE (XEXP (pattern, 0)) == REG
@@ -1664,33 +1665,47 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
 	  /* Ignore setting a function value that we don't want to use.  */
 	  if (map->inline_target == 0
-	      && GET_CODE (pattern) == SET
-	      && GET_CODE (SET_DEST (pattern)) == REG
-	      && REG_FUNCTION_VALUE_P (SET_DEST (pattern)))
+	      && set != 0
+	      && GET_CODE (SET_DEST (set)) == REG
+	      && REG_FUNCTION_VALUE_P (SET_DEST (set)))
 	    {
-	      if (volatile_refs_p (SET_SRC (pattern)))
+	      if (volatile_refs_p (SET_SRC (set)))
 		{
+		  rtx new_set;
+
 		  /* If we must not delete the source,
 		     load it into a new temporary.  */
 		  copy = emit_insn (copy_rtx_and_substitute (pattern, map));
-		  SET_DEST (PATTERN (copy)) 
-		    = gen_reg_rtx (GET_MODE (SET_DEST (PATTERN (copy))));
+
+		  new_set = single_set (copy);
+		  if (new_set == 0)
+		    abort ();
+
+		  SET_DEST (new_set)
+		    = gen_reg_rtx (GET_MODE (SET_DEST (new_set)));
 		}
 	      else
 		break;
 	    }
+
+	  /* If this is setting the static chain rtx, omit it.  */
+	  else if (static_chain_value != 0
+		   && set != 0
+		   && GET_CODE (SET_DEST (set)) == REG
+		   && rtx_equal_p (SET_DEST (set),
+				   static_chain_incoming_rtx))
+	    break;
+
 	  /* If this is setting the static chain pseudo, set it from
 	     the value we want to give it instead.  */
 	  else if (static_chain_value != 0
-		   && GET_CODE (pattern) == SET
-		   && rtx_equal_p (SET_SRC (pattern),
+		   && set != 0
+		   && rtx_equal_p (SET_SRC (set),
 				   static_chain_incoming_rtx))
 	    {
-	      rtx newdest = copy_rtx_and_substitute (SET_DEST (pattern), map);
+	      rtx newdest = copy_rtx_and_substitute (SET_DEST (set), map);
 
-	      copy = emit_insn (gen_rtx (SET, VOIDmode, newdest,
-					 static_chain_value));
-
+	      copy = emit_move_insn (newdest, static_chain_value);
 	      static_chain_value = 0;
 	    }
 	  else
@@ -2590,6 +2605,9 @@ subst_constants (loc, insn, map)
 	/* If storing a recognizable value save it for later recording.  */
 	if ((map->num_sets < MAX_RECOG_OPERANDS)
 	    && (CONSTANT_P (src)
+		|| (GET_CODE (src) == REG
+		    && REGNO (src) >= FIRST_VIRTUAL_REGISTER
+		    && REGNO (src) <= LAST_VIRTUAL_REGISTER)
 		|| (GET_CODE (src) == PLUS
 		    && GET_CODE (XEXP (src, 0)) == REG
 		    && REGNO (XEXP (src, 0)) >= FIRST_VIRTUAL_REGISTER
