@@ -62,64 +62,60 @@ static output_buffer *scratch_buffer = &scratch_buffer_rec;
 #define reinit_global_formatting_buffer() \
    output_clear_message_text (scratch_buffer)
 
-static const char *args_to_string		PARAMS ((tree, int));
-static const char *assop_to_string		PARAMS ((enum tree_code, int));
-static const char *code_to_string		PARAMS ((enum tree_code, int));
-static const char *cv_to_string			PARAMS ((tree, int));
-static const char *decl_to_string		PARAMS ((tree, int));
-static const char *expr_to_string		PARAMS ((tree, int));
-static const char *fndecl_to_string		PARAMS ((tree, int));
-static const char *op_to_string			PARAMS ((enum tree_code, int));
-static const char *parm_to_string		PARAMS ((int, int));
-static const char *type_to_string		PARAMS ((tree, int));
+static const char *args_to_string (tree, int);
+static const char *assop_to_string (enum tree_code, int);
+static const char *code_to_string (enum tree_code, int);
+static const char *cv_to_string (tree, int);
+static const char *decl_to_string (tree, int);
+static const char *expr_to_string (tree, int);
+static const char *fndecl_to_string (tree, int);
+static const char *op_to_string	(enum tree_code, int);
+static const char *parm_to_string (int, int);
+static const char *type_to_string (tree, int);
 
-static void dump_type PARAMS ((tree, int));
-static void dump_typename PARAMS ((tree, int));
-static void dump_simple_decl PARAMS ((tree, tree, int));
-static void dump_decl PARAMS ((tree, int));
-static void dump_template_decl PARAMS ((tree, int));
-static void dump_function_decl PARAMS ((tree, int));
-static void dump_expr PARAMS ((tree, int));
-static void dump_unary_op PARAMS ((const char *, tree, int));
-static void dump_binary_op PARAMS ((const char *, tree, int));
-static void dump_aggr_type PARAMS ((tree, int));
-static enum pad dump_type_prefix PARAMS ((tree, int));
-static void dump_type_suffix PARAMS ((tree, int));
-static void dump_function_name PARAMS ((tree, int));
-static void dump_expr_list PARAMS ((tree, int));
-static void dump_global_iord PARAMS ((tree));
-static enum pad dump_qualifiers PARAMS ((tree, enum pad));
-static void dump_char PARAMS ((int));
-static void dump_parameters PARAMS ((tree, int));
-static void dump_exception_spec PARAMS ((tree, int));
-static const char *class_key_or_enum PARAMS ((tree));
-static void dump_template_argument PARAMS ((tree, int));
-static void dump_template_argument_list PARAMS ((tree, int));
-static void dump_template_parameter PARAMS ((tree, int));
-static void dump_template_bindings PARAMS ((tree, tree));
-static void dump_scope PARAMS ((tree, int));
-static void dump_template_parms PARAMS ((tree, int, int));
+static void dump_type (tree, int);
+static void dump_typename (tree, int);
+static void dump_simple_decl (tree, tree, int);
+static void dump_decl (tree, int);
+static void dump_template_decl (tree, int);
+static void dump_function_decl (tree, int);
+static void dump_expr (tree, int);
+static void dump_unary_op (const char *, tree, int);
+static void dump_binary_op (const char *, tree, int);
+static void dump_aggr_type (tree, int);
+static enum pad dump_type_prefix (tree, int);
+static void dump_type_suffix (tree, int);
+static void dump_function_name (tree, int);
+static void dump_expr_list (tree, int);
+static void dump_global_iord (tree);
+static enum pad dump_qualifiers (tree, enum pad);
+static void dump_char (int);
+static void dump_parameters (tree, int);
+static void dump_exception_spec (tree, int);
+static const char *class_key_or_enum (tree);
+static void dump_template_argument (tree, int);
+static void dump_template_argument_list (tree, int);
+static void dump_template_parameter (tree, int);
+static void dump_template_bindings (tree, tree);
+static void dump_scope (tree, int);
+static void dump_template_parms (tree, int, int);
 
-static const char *function_category PARAMS ((tree));
-static void maybe_print_instantiation_context PARAMS ((diagnostic_context *));
-static void print_instantiation_full_context PARAMS ((diagnostic_context *));
-static void print_instantiation_partial_context PARAMS ((diagnostic_context *,
-                                                         tree,
-                                                         const char *, int));
-static void cp_diagnostic_starter PARAMS ((diagnostic_context *,
-                                           diagnostic_info *));
-static void cp_diagnostic_finalizer PARAMS ((diagnostic_context *,
-                                             diagnostic_info *));
-static void cp_print_error_function PARAMS ((diagnostic_context *,
-                                             diagnostic_info *));
+static const char *function_category (tree);
+static void maybe_print_instantiation_context (diagnostic_context *);
+static void print_instantiation_full_context (diagnostic_context *);
+static void print_instantiation_partial_context (diagnostic_context *,
+                                                 tree, const char *, int);
+static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
+static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
+static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
-static bool cp_printer PARAMS ((output_buffer *, text_info *));
-static void print_non_consecutive_character PARAMS ((output_buffer *, int));
-static void print_integer PARAMS ((output_buffer *, HOST_WIDE_INT));
-static tree locate_error PARAMS ((const char *, va_list));
+static bool cp_printer (output_buffer *, text_info *);
+static void print_non_consecutive_character (output_buffer *, int);
+static void print_integer (output_buffer *, HOST_WIDE_INT);
+static tree locate_error (const char *, va_list);
 
 void
-init_error ()
+init_error (void)
 {
   diagnostic_starter (global_dc) = cp_diagnostic_starter;
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
@@ -131,9 +127,7 @@ init_error ()
 /* Dump a scope, if deemed necessary.  */
 
 static void
-dump_scope (scope, flags)
-     tree scope;
-     int flags;
+dump_scope (tree scope, int flags)
 {
   int f = ~TFF_RETURN_TYPE & (flags & (TFF_SCOPE | TFF_CHASE_TYPEDEF));
 
@@ -164,9 +158,7 @@ dump_scope (scope, flags)
    indication of whether we dumped something.  */
 
 static enum pad
-dump_qualifiers (t, p)
-     tree t;
-     enum pad p;
+dump_qualifiers (tree t, enum pad p)
 {
   static const int masks[] =
     {TYPE_QUAL_CONST, TYPE_QUAL_VOLATILE, TYPE_QUAL_RESTRICT};
@@ -201,9 +193,7 @@ static char digit_buffer[128];
 /* Dump the template ARGument under control of FLAGS.  */
 
 static void
-dump_template_argument (arg, flags)
-     tree arg;
-     int flags;
+dump_template_argument (tree arg, int flags)
 {
   if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
     dump_type (arg, flags & ~TFF_CLASS_KEY_OR_ENUM);
@@ -215,9 +205,7 @@ dump_template_argument (arg, flags)
    of FLAGS.  */
 
 static void
-dump_template_argument_list (args, flags)
-     tree args;
-     int flags;
+dump_template_argument_list (tree args, int flags)
 {
   int n = TREE_VEC_LENGTH (args);
   int need_comma = 0;
@@ -235,9 +223,7 @@ dump_template_argument_list (args, flags)
 /* Dump a template parameter PARM (a TREE_LIST) under control of FLAGS.  */
 
 static void
-dump_template_parameter (parm, flags)
-     tree parm;
-     int flags;
+dump_template_parameter (tree parm, int flags)
 {
   tree p = TREE_VALUE (parm);
   tree a = TREE_PURPOSE (parm);
@@ -276,8 +262,7 @@ dump_template_parameter (parm, flags)
    TREE_VEC.  */
 
 static void
-dump_template_bindings (parms, args)
-     tree parms, args;
+dump_template_bindings (tree parms, tree args)
 {
   int need_comma = 0;
 
@@ -321,9 +306,7 @@ dump_template_bindings (parms, args)
    format.  */
 
 static void
-dump_type (t, flags)
-     tree t;
-     int flags;
+dump_type (tree t, int flags)
 {
   if (t == NULL_TREE)
     return;
@@ -486,9 +469,7 @@ dump_type (t, flags)
    a TYPENAME_TYPE.  */
 
 static void
-dump_typename (t, flags)
-     tree t;
-     int flags;
+dump_typename (tree t, int flags)
 {
   tree ctx = TYPE_CONTEXT (t);
 
@@ -503,8 +484,7 @@ dump_typename (t, flags)
 /* Return the name of the supplied aggregate, or enumeral type.  */
 
 static const char *
-class_key_or_enum (t)
-     tree t;
+class_key_or_enum (tree t)
 {
   if (TREE_CODE (t) == ENUMERAL_TYPE)
     return "enum";
@@ -520,9 +500,7 @@ class_key_or_enum (t)
    in the form `class foo'.  */
 
 static void
-dump_aggr_type (t, flags)
-     tree t;
-     int flags;
+dump_aggr_type (tree t, int flags)
 {
   tree name;
   const char *variety = class_key_or_enum (t);
@@ -595,9 +573,7 @@ dump_aggr_type (t, flags)
    want to pad non-*, non-& cores, but not pad * or & types.  */
 
 static enum pad
-dump_type_prefix (t, flags)
-     tree t;
-     int flags;
+dump_type_prefix (tree t, int flags)
 {
   enum pad padding = before;
 
@@ -706,9 +682,7 @@ dump_type_prefix (t, flags)
    which appears after the identifier (or function parms).  */
 
 static void
-dump_type_suffix (t, flags)
-     tree t;
-     int flags;
+dump_type_suffix (tree t, int flags)
 {
   if (TYPE_PTRMEMFUNC_P (t))
     t = TYPE_PTRMEMFUNC_FN_TYPE (t);
@@ -797,8 +771,7 @@ dump_type_suffix (t, flags)
 }
 
 static void
-dump_global_iord (t)
-     tree t;
+dump_global_iord (tree t)
 {
   const char *p = NULL;
 
@@ -813,10 +786,7 @@ dump_global_iord (t)
 }
 
 static void
-dump_simple_decl (t, type, flags)
-     tree t;
-     tree type;
-     int flags;
+dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
@@ -836,9 +806,7 @@ dump_simple_decl (t, type, flags)
 /* Dump a human readable string for the decl T under control of FLAGS.  */
 
 static void
-dump_decl (t, flags)
-     tree t;
-     int flags;
+dump_decl (tree t, int flags)
 {
   if (t == NULL_TREE)
     return;
@@ -1031,9 +999,7 @@ dump_decl (t, flags)
    'template <...> leaders plus the 'class X' or 'void fn(...)' part.  */
 
 static void
-dump_template_decl (t, flags)
-     tree t;
-     int flags;
+dump_template_decl (tree t, int flags)
 {
   tree orig_parms = DECL_TEMPLATE_PARMS (t);
   tree parms;
@@ -1099,9 +1065,7 @@ dump_template_decl (t, flags)
    is %D which doesn't print the throw specs, and %F which does.  */
 
 static void
-dump_function_decl (t, flags)
-     tree t;
-     int flags;
+dump_function_decl (tree t, int flags)
 {
   tree fntype;
   tree parmtypes;
@@ -1193,9 +1157,7 @@ dump_function_decl (t, flags)
    already been removed.  */
 
 static void
-dump_parameters (parmtypes, flags)
-     tree parmtypes;
-     int flags;
+dump_parameters (tree parmtypes, int flags)
 {
   int first;
 
@@ -1227,9 +1189,7 @@ dump_parameters (parmtypes, flags)
 /* Print an exception specification. T is the exception specification.  */
 
 static void
-dump_exception_spec (t, flags)
-     tree t;
-     int flags;
+dump_exception_spec (tree t, int flags)
 {
   if (t)
     {
@@ -1251,9 +1211,7 @@ dump_exception_spec (t, flags)
    and destructors properly.  */
 
 static void
-dump_function_name (t, flags)
-     tree t;
-     int flags;
+dump_function_name (tree t, int flags)
 {
   tree name = DECL_NAME (t);
 
@@ -1302,10 +1260,7 @@ dump_function_name (t, flags)
    decoration.  */
 
 static void
-dump_template_parms (info, primary, flags)
-     tree info;
-     int primary;
-     int flags;
+dump_template_parms (tree info, int primary, int flags)
 {
   tree args = info ? TI_ARGS (info) : NULL_TREE;
 
@@ -1378,8 +1333,7 @@ dump_template_parms (info, primary, flags)
 }
 
 static void
-dump_char (c)
-     int c;
+dump_char (int c)
 {
   switch (c)
     {
@@ -1427,9 +1381,7 @@ dump_char (c)
 /* Print out a list of initializers (subr of dump_expr) */
 
 static void
-dump_expr_list (l, flags)
-     tree l;
-     int flags;
+dump_expr_list (tree l, int flags)
 {
   while (l)
     {
@@ -1443,9 +1395,7 @@ dump_expr_list (l, flags)
 /* Print out an expression E under control of FLAGS.  */
 
 static void
-dump_expr (t, flags)
-     tree t;
-     int flags;
+dump_expr (tree t, int flags)
 {
   if (t == 0)
     return;
@@ -2068,10 +2018,7 @@ dump_expr (t, flags)
 }
 
 static void
-dump_binary_op (opstring, t, flags)
-     const char *opstring;
-     tree t;
-     int flags;
+dump_binary_op (const char *opstring, tree t, int flags)
 {
   print_left_paren (scratch_buffer);
   dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
@@ -2086,10 +2033,7 @@ dump_binary_op (opstring, t, flags)
 }
 
 static void
-dump_unary_op (opstring, t, flags)
-     const char *opstring;
-     tree t;
-     int flags;
+dump_unary_op (const char *opstring, tree t, int flags)
 {
   if (flags & TFF_EXPR_IN_PARENS)
     print_left_paren (scratch_buffer);
@@ -2103,9 +2047,7 @@ dump_unary_op (opstring, t, flags)
    control.  */
 
 const char *
-type_as_string (typ, flags)
-     tree typ;
-     int flags;
+type_as_string (tree typ, int flags)
 {
   reinit_global_formatting_buffer ();
 
@@ -2115,9 +2057,7 @@ type_as_string (typ, flags)
 }
 
 const char *
-expr_as_string (decl, flags)
-     tree decl;
-     int flags;
+expr_as_string (tree decl, int flags)
 {
   reinit_global_formatting_buffer ();
 
@@ -2127,9 +2067,7 @@ expr_as_string (decl, flags)
 }
 
 const char *
-decl_as_string (decl, flags)
-     tree decl;
-     int flags;
+decl_as_string (tree decl, int flags)
 {
   reinit_global_formatting_buffer ();
 
@@ -2139,9 +2077,7 @@ decl_as_string (decl, flags)
 }
 
 const char *
-context_as_string (context, flags)
-     tree context;
-     int flags;
+context_as_string (tree context, int flags)
 {
   reinit_global_formatting_buffer ();
 
@@ -2153,9 +2089,7 @@ context_as_string (context, flags)
 /* Generate the three forms of printable names for cxx_printable_name.  */
 
 const char *
-lang_decl_name (decl, v)
-     tree decl;
-     int v;
+lang_decl_name (tree decl, int v)
 {
   if (v >= 2)
     return decl_as_string (decl, TFF_DECL_SPECIFIERS);
@@ -2177,8 +2111,7 @@ lang_decl_name (decl, v)
 }
 
 const char *
-cp_file_of (t)
-     tree t;
+cp_file_of (tree t)
 {
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
     return DECL_SOURCE_FILE (DECL_CONTEXT (t));
@@ -2191,8 +2124,7 @@ cp_file_of (t)
 }
 
 int
-cp_line_of (t)
-     tree t;
+cp_line_of (tree t)
 {
   int line = 0;
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
@@ -2219,9 +2151,7 @@ cp_line_of (t)
    function.  */
 
 static const char *
-decl_to_string (decl, verbose)
-     tree decl;
-     int verbose;
+decl_to_string (tree decl, int verbose)
 {
   int flags = 0;
 
@@ -2242,9 +2172,7 @@ decl_to_string (decl, verbose)
 }
 
 static const char *
-expr_to_string (decl, verbose)
-     tree decl;
-     int verbose ATTRIBUTE_UNUSED;
+expr_to_string (tree decl, int verbose ATTRIBUTE_UNUSED)
 {
   reinit_global_formatting_buffer ();
 
@@ -2254,9 +2182,7 @@ expr_to_string (decl, verbose)
 }
 
 static const char *
-fndecl_to_string (fndecl, verbose)
-     tree fndecl;
-     int verbose;
+fndecl_to_string (tree fndecl, int verbose)
 {
   int flags;
 
@@ -2272,17 +2198,13 @@ fndecl_to_string (fndecl, verbose)
 
 
 static const char *
-code_to_string (c, v)
-     enum tree_code c;
-     int v ATTRIBUTE_UNUSED;
+code_to_string (enum tree_code c, int v ATTRIBUTE_UNUSED)
 {
   return tree_code_name [c];
 }
 
 const char *
-language_to_string (c, v)
-     enum languages c;
-     int v ATTRIBUTE_UNUSED;
+language_to_string (enum languages c, int v ATTRIBUTE_UNUSED)
 {
   switch (c)
     {
@@ -2304,9 +2226,7 @@ language_to_string (c, v)
 /* Return the proper printed version of a parameter to a C++ function.  */
 
 static const char *
-parm_to_string (p, v)
-     int p;
-     int v ATTRIBUTE_UNUSED;
+parm_to_string (int p, int v ATTRIBUTE_UNUSED)
 {
   if (p < 0)
     return "`this'";
@@ -2316,9 +2236,7 @@ parm_to_string (p, v)
 }
 
 static const char *
-op_to_string (p, v)
-     enum tree_code p;
-     int v ATTRIBUTE_UNUSED;
+op_to_string (enum tree_code p, int v ATTRIBUTE_UNUSED)
 {
   tree id;
 
@@ -2327,9 +2245,7 @@ op_to_string (p, v)
 }
 
 static const char *
-type_to_string (typ, verbose)
-     tree typ;
-     int verbose;
+type_to_string (tree typ, int verbose)
 {
   int flags;
 
@@ -2346,9 +2262,7 @@ type_to_string (typ, verbose)
 }
 
 static const char *
-assop_to_string (p, v)
-     enum tree_code p;
-     int v ATTRIBUTE_UNUSED;
+assop_to_string (enum tree_code p, int v ATTRIBUTE_UNUSED)
 {
   tree id;
 
@@ -2357,9 +2271,7 @@ assop_to_string (p, v)
 }
 
 static const char *
-args_to_string (p, verbose)
-     tree p;
-     int verbose;
+args_to_string (tree p, int verbose)
 {
   int flags = 0;
   if (verbose)
@@ -2385,9 +2297,7 @@ args_to_string (p, verbose)
 }
 
 static const char *
-cv_to_string (p, v)
-     tree p;
-     int v;
+cv_to_string (tree p, int v)
 {
   reinit_global_formatting_buffer ();
 
@@ -2398,9 +2308,7 @@ cv_to_string (p, v)
 
 /* Langhook for print_error_function.  */
 void
-cxx_print_error_function (context, file)
-     diagnostic_context *context;
-     const char *file;
+cxx_print_error_function (diagnostic_context *context, const char *file)
 {
   lhd_print_error_function (context, file);
   output_set_prefix (&context->buffer, file);
@@ -2408,9 +2316,8 @@ cxx_print_error_function (context, file)
 }
 
 static void
-cp_diagnostic_starter (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
+cp_diagnostic_starter (diagnostic_context *context,
+                       diagnostic_info *diagnostic)
 {
   diagnostic_report_current_module (context);
   cp_print_error_function (context, diagnostic);
@@ -2419,9 +2326,8 @@ cp_diagnostic_starter (context, diagnostic)
 }
 
 static void
-cp_diagnostic_finalizer (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic __attribute__((unused));
+cp_diagnostic_finalizer (diagnostic_context *context,
+                         diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
   output_destroy_prefix (&context->buffer);
 }
@@ -2429,9 +2335,8 @@ cp_diagnostic_finalizer (context, diagnostic)
 /* Print current function onto BUFFER, in the process of reporting
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
-cp_print_error_function (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
+cp_print_error_function (diagnostic_context *context,
+                         diagnostic_info *diagnostic)
 {
   if (diagnostic_last_function_changed (context))
     {
@@ -2458,8 +2363,7 @@ cp_print_error_function (context, diagnostic)
 
 /* Returns a description of FUNCTION using standard terminology.  */
 static const char *
-function_category (fn)
-     tree fn;
+function_category (tree fn)
 {
   if (DECL_FUNCTION_MEMBER_P (fn))
     {
@@ -2481,8 +2385,7 @@ function_category (fn)
 /* Report the full context of a current template instantiation,
    onto BUFFER.  */
 static void
-print_instantiation_full_context (context)
-     diagnostic_context *context;
+print_instantiation_full_context (diagnostic_context *context)
 {
   tree p = current_instantiation ();
   int line = lineno;
@@ -2517,11 +2420,8 @@ print_instantiation_full_context (context)
 
 /* Same as above but less verbose.  */
 static void
-print_instantiation_partial_context (context, t, file, line)
-     diagnostic_context *context;
-     tree t;
-     const char *file;
-     int line;
+print_instantiation_partial_context (diagnostic_context *context,
+                                     tree t, const char *file, int line)
 {
   for (; t; t = TREE_CHAIN (t))
     {
@@ -2536,8 +2436,7 @@ print_instantiation_partial_context (context, t, file, line)
 
 /* Called from cp_thing to print the template context for an error.  */
 static void
-maybe_print_instantiation_context (context)
-     diagnostic_context *context;
+maybe_print_instantiation_context (diagnostic_context *context)
 {
   if (!problematic_instantiation_changed () || current_instantiation () == 0)
     return;
@@ -2548,7 +2447,7 @@ maybe_print_instantiation_context (context)
 
 /* Report the bare minimum context of a template instantiation.  */
 void
-print_instantiation_context ()
+print_instantiation_context (void)
 {
   print_instantiation_partial_context
     (global_dc, current_instantiation (), input_filename, lineno);
@@ -2569,9 +2468,7 @@ print_instantiation_context ()
    %T   type.
    %V   cv-qualifier.  */
 static bool
-cp_printer (buffer, text)
-     output_buffer *buffer;
-     text_info *text;
+cp_printer (output_buffer *buffer, text_info *text)
 {
   int verbose = 0;
   const char *result;
@@ -2615,18 +2512,14 @@ cp_printer (buffer, text)
 }
 
 static void
-print_integer (buffer, i)
-     output_buffer *buffer;
-     HOST_WIDE_INT i;
+print_integer (output_buffer *buffer, HOST_WIDE_INT i)
 {
   sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) i);
   output_add_string (buffer, digit_buffer);
 }
 
 static void
-print_non_consecutive_character (buffer, c)
-     output_buffer *buffer;
-     int c;
+print_non_consecutive_character (output_buffer *buffer, int c)
 {
   const char *p = output_last_position (buffer);
 
@@ -2639,9 +2532,7 @@ print_non_consecutive_character (buffer, c)
    behavior of cp_*_at.  */
 
 static tree
-locate_error (msgid, ap)
-     const char *msgid;
-     va_list ap;
+locate_error (const char *msgid, va_list ap)
 {
   tree here = 0, t;
   int plus = 0;
