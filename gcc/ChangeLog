@@ -1,3 +1,12 @@
+Fri Sep  3 01:16:18 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
+
+	* i386.md (movsf_1): Check REG_P before use of REGNO.
+	(movdf_1): Likewise.
+	(movxf_1): Likewise.
+	(extendsfdf2): Likewise.
+	(extendsfxf2): Likewise.
+	(extenddfxf2): Likewise.
+
 Sat Sep  4 11:37:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_emit_move_sequence): Do not force large
