@@ -1,3 +1,9 @@
+2001-11-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-typeck.c (default_conversion): Retain the original expression
+	codes.
+	* gcc.dg/Wparentheses.c: New tests.
+
 2001-11-01  David S. Miller  <davem@redhat.com>
 
 	* doc/install.texi (Specific, sparc-sun-solaris2*): Bring

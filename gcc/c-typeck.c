@@ -847,6 +847,7 @@ tree
 default_conversion (exp)
      tree exp;
 {
+  tree orig_exp;
   tree type = TREE_TYPE (exp);
   enum tree_code code = TREE_CODE (type);
 
@@ -868,10 +869,15 @@ default_conversion (exp)
 
      Do not use STRIP_NOPS here!  It will remove conversions from pointer
      to integer and cause infinite recursion.  */
+  orig_exp = exp;
   while (TREE_CODE (exp) == NON_LVALUE_EXPR
 	 || (TREE_CODE (exp) == NOP_EXPR
 	     && TREE_TYPE (TREE_OPERAND (exp, 0)) == TREE_TYPE (exp)))
     exp = TREE_OPERAND (exp, 0);
+
+  /* Preserve the original expression code.  */
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (exp))))
+    C_SET_EXP_ORIGINAL_CODE (exp, C_EXP_ORIGINAL_CODE (orig_exp));
 
   /* Normally convert enums to int,
      but convert wide enums to something wider.  */
