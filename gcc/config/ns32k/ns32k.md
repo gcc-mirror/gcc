@@ -2607,32 +2607,33 @@
 
 ;; ffs instructions
 
-(define_insn "ffsqi2"
-  [(set (match_operand:QI 0 "general_operand" "=g")
-	(ffs:QI (match_operand:SI 1 "general_operand" "g")))]
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "ro")
+	(minus:SI 
+		(plus:SI (ffs:SI (zero_extract:SI 
+				(match_operand:SI 1 "general_operand" "g") 
+				(minus:SI (const_int 32) (match_dup 0))
+				(match_dup 0)))
+			(match_dup 0)) 
+		(const_int 1)))]
   ""
-  "*
-{
-  return \"movqb 0,%0; ffsd %1,%0; bfs 1f; addqb 1,%0; 1:\";
-}")
+  "ffsd %1,%0; bfc 1f; addqd %$-1,%0; 1:")
 
-(define_insn "ffshi2"
-  [(set (match_operand:HI 0 "general_operand" "=g")
-	(ffs:HI (match_operand:SI 1 "general_operand" "g")))]
+(define_expand "ffssi2"
+  [(set (match_operand:SI 0 "general_operand" "=g") (const_int 0))
+   (set (match_dup 0)
+	(minus:SI 
+		(plus:SI (ffs:SI (zero_extract:SI 
+				(match_operand:SI 1 "general_operand" "g") 
+				(minus:SI (const_int 32) (match_dup 0))
+				(match_dup 0)))
+			(match_dup 0)) 
+		(const_int 1)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (const_int 1)))]
   ""
-  "*
-{
-  return \"movqw 0,%0; ffsd %1,%0; bfs 1f; addqw 1,%0; 1:\";
-}")
-
-(define_insn "ffssi2"
-  [(set (match_operand:SI 0 "general_operand" "=g")
-	(ffs:SI (match_operand:SI 1 "general_operand" "g")))]
-  ""
-  "*
-{
-  return \"movqd 0,%0; ffsd %1,%0; bfs 1f; addqd 1,%0; 1:\";
-}")
+  "operands[1] = make_safe_from(operands[1], operands[0]);")
 
 ;; Speed up stack adjust followed by a HI fixedpoint push.
 
