@@ -177,7 +177,7 @@ gfc_init_types (void)
   boolean_false_node = build_int_cst (boolean_type_node, 0, 0);
 }
 
-/* Get a type node for an integer kind */
+/* Get a type node for an integer kind.  */
 
 tree
 gfc_get_int_type (int kind)
@@ -201,7 +201,7 @@ gfc_get_int_type (int kind)
     }
 }
 
-/* Get a type node for a real kind */
+/* Get a type node for a real kind.  */
 
 tree
 gfc_get_real_type (int kind)
@@ -221,11 +221,12 @@ gfc_get_real_type (int kind)
     }
 }
 
-/* Get a type node for a complex kind */
+/* Get a type node for a complex kind.  */
 
 tree
 gfc_get_complex_type (int kind)
 {
+
   switch (kind)
     {
     case 4:
@@ -241,7 +242,7 @@ gfc_get_complex_type (int kind)
     }
 }
 
-/* Get a type node for a logical kind */
+/* Get a type node for a logical kind.  */
 
 tree
 gfc_get_logical_type (int kind)
@@ -445,8 +446,7 @@ gfc_get_element_type (tree type)
    dimension.  This requires extra fields in the descriptor (both real_ubound
    and fake_ubound).  In tree.def there is mention of TYPE_SEP, which
    may allow us to do this.  However I can't find mention of this anywhere
-   else.
- */
+   else.  */
 
 
 /* Returns true if the array sym does not require a descriptor.  */
@@ -903,7 +903,8 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 static tree
 gfc_build_pointer_type (gfc_symbol * sym, tree type)
 {
-  /* Array pointer types aren't actualy pointers.  */
+
+  /* Array pointer types aren't actually pointers.  */
   if (sym->attr.dimension)
     return type;
   else
@@ -1036,10 +1037,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   assert (derived && derived->attr.flavor == FL_DERIVED);
 
   /* derived->backend_decl != 0 means we saw it before, but its
-  component's backend_decl may have not been built.  */
+     components' backend_decl may have not been built.  */
   if (derived->backend_decl)
     {
-      /* Its component's backend_decl has been built.  */
+      /* Its components' backend_decl have been built.  */
       if (TYPE_FIELDS (derived->backend_decl))
         return derived->backend_decl;
       else
@@ -1144,7 +1145,6 @@ gfc_return_by_reference (gfc_symbol * sym)
   return 0;
 }
 
-
 tree
 gfc_get_function_type (gfc_symbol * sym)
 {
@@ -1193,7 +1193,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	typelist = gfc_chainon_list (typelist, gfc_strlen_type_node);
     }
 
-  /* Build the argument types for the function */
+  /* Build the argument types for the function.  */
   for (f = sym->formal; f; f = f->next)
     {
       arg = f->sym;
@@ -1255,7 +1255,7 @@ gfc_get_function_type (gfc_symbol * sym)
   return type;
 }
 
-/* Routines for getting integer type nodes */
+/* Routines for getting integer type nodes.  */
 
 
 /* Return an integer type with BITS bits of precision,
