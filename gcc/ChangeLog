@@ -4,6 +4,9 @@
 
 2000-07-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-typeck.c (c_expand_start_case): Change -Wtraditional pedwarn
+	for `long' switch expression into a plain warning.
+
 	* c-lex.c (init_lex): Keep the "inline" keyword in C99 mode.
 	(yylex): Don't pedwarn for "inline" in C99 mode.
 
