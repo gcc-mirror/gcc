@@ -1,3 +1,7 @@
+2003-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipFile.java (finalize): New method.
+
 2003-02-21  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/natSocketChannelImpl.cc:
