@@ -1,3 +1,10 @@
+2002-10-02  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/20020919-1.c, gcc.dg/inline-2.c, gcc.dg/980211-1.c,
+	gcc.dg/20020103-1.c, gcc.dg/20000614-2.c,
+	g++.old-deja/g++.pt/asm1.C, g++.old-deja/g++.other/asm3.C: Enable
+	on x86-64.
+
 2002-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/empty1.C: Fix typo.

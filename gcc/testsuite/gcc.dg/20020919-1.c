@@ -8,7 +8,7 @@
    You must be this tall ---> fit two long longs in asm-declared registers
    to enter this amusement.  */
 
-/* { dg-do compile { target alpha-*-* cris-*-* i?86-*-* mmix-*-* powerpc-*-* rs6000-*-* } } */
+/* { dg-do compile { target alpha-*-* cris-*-* i?86-*-* mmix-*-* powerpc-*-* rs6000-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
 
 /* Constructed examples; input/output (same register), output, input, and
@@ -42,6 +42,9 @@
 # define REG2 "7"
 # define REG3 "8"
 # define REG4 "9"
+#elif defined (__x86_64__)
+# define REG1 "rax"
+# define REG2 "rdx"
 #endif
 
 /* For readability of the tests.  */

@@ -15,5 +15,5 @@ int bar(void)
 }
 
 /* { dg-final { scan-assembler "bsr" { target alpha*-*-* } } } */
-/* { dg-final { scan-assembler-not "PLT" { target i?86-*-* } } } */
+/* { dg-final { scan-assembler-not "PLT" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-assembler-not "plt" { target powerpc*-*-* } } } */
