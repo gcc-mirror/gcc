@@ -1,3 +1,7 @@
+2002-09-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/20020312-2.c: Update for darwin.
+
 2002-09-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash32.C: Mark ICE.
