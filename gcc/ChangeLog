@@ -1,5 +1,10 @@
 2002-03-28  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): TFmode NE
+	comparison should be done vs !=0 not >0 return code.  Tidy cases.
+
+2002-03-28  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (finish_function): New arg can_defer_p.  Pass it
 	on to c_expand_body.
 	* c-tree.h (finish_function): Update decl.
