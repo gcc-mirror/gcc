@@ -1,6 +1,6 @@
 /* Definitions for parsing and type checking for the GNU compiler for
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -892,6 +892,7 @@ struct lang_decl_var
 /* The decl of the synthetic method `class$' used to handle `.class'
    for non primitive types when compiling to bytecode. */
 #define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC(T)->dot_class)
+#define TYPE_PACKAGE_LIST(T)     (TYPE_LANG_SPECIFIC(T)->package_list)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
 #define TYPE_HAS_FINAL_VARIABLE(T) (TYPE_LANG_SPECIFIC(T)->afv)
@@ -909,6 +910,7 @@ struct lang_type
 				   needs to be invoked and generated when
 				   compiling to bytecode to implement
 				   <non_primitive_type>.class */
+  tree package_list;		/* List of package names, progressive */
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
   unsigned afv:1;		/* Has final variables */
@@ -1042,7 +1044,6 @@ extern void check_for_initialization PARAMS ((tree));
 
 extern tree pushdecl_top_level PARAMS ((tree));
 extern int alloc_class_constant PARAMS ((tree));
-extern int unicode_mangling_length PARAMS ((const char *, int));
 extern void init_expr_processing PARAMS ((void));
 extern void push_super_field PARAMS ((tree, tree));
 extern void init_class_processing PARAMS ((void));
@@ -1060,9 +1061,6 @@ extern int push_type_0 PARAMS ((tree));
 extern void push_type PARAMS ((tree));
 extern void load_type_state PARAMS ((tree));
 extern void add_interface PARAMS ((tree, tree));
-extern void append_gpp_mangled_name PARAMS ((struct obstack *, const char *, int));
-extern void append_gpp_mangled_classtype PARAMS ((struct obstack *, const char *));
-extern void emit_unicode_mangled_name PARAMS ((struct obstack *, const char *, int));
 extern tree force_evaluation_order PARAMS ((tree));
 extern int verify_constant_pool PARAMS ((struct JCF *));
 extern void start_java_method PARAMS ((tree));
@@ -1111,6 +1109,12 @@ extern boolean java_hash_compare_tree_node PARAMS ((hash_table_key,
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));
+
+extern int cxx_keyword_p PARAMS ((const char *, int));
+extern tree java_mangle_decl PARAMS ((struct obstack *, tree));
+extern tree java_mangle_class_field PARAMS ((struct obstack *, tree));
+extern tree java_mangle_class_field_from_string PARAMS ((struct obstack *, char *));
+extern tree java_mangle_vtable PARAMS ((struct obstack *, tree));
 extern const char *lang_printable_name_wls PARAMS ((tree, int));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included

@@ -37,25 +37,18 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "ggc.h"
 
-static tree mangle_class_field PARAMS ((tree class));
 static tree make_method_value PARAMS ((tree));
 static tree build_java_method_type PARAMS ((tree, tree, int));
 static int32 hashUtf8String PARAMS ((const char *, int));
 static tree make_field_value PARAMS ((tree));
 static tree get_dispatch_vector PARAMS ((tree));
 static tree get_dispatch_table PARAMS ((tree, tree));
-static void append_gpp_mangled_type PARAMS ((struct obstack *, tree));
-static tree mangle_static_field PARAMS ((tree));
 static void add_interface_do PARAMS ((tree, tree, int));
 static tree maybe_layout_super_class PARAMS ((tree, tree));
 static int assume_compiled PARAMS ((const char *));
 static struct hash_entry *init_test_hash_newfunc PARAMS ((struct hash_entry *,
 							  struct hash_table *,
 							  hash_table_key));
-static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
-static int cxx_keyword_p PARAMS ((const char *, int));
-static tree mangle_field PARAMS ((tree, tree));
-
 static rtx registerClass_libfunc;
 
 extern struct obstack permanent_obstack;
@@ -890,7 +883,8 @@ build_class_ref (type)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_IGNORED_P (decl) = 1;
 	      DECL_ARTIFICIAL (decl) = 1;
-	      DECL_ASSEMBLER_NAME (decl) = mangle_class_field (type);
+	      DECL_ASSEMBLER_NAME (decl) = 
+		java_mangle_class_field (&temporary_obstack, type);
 	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
@@ -1545,147 +1539,13 @@ is_compiled_class (class)
   return 0;
 }
 
-/* Append the mangled name of TYPE onto OBSTACK. */
-
-static void
-append_gpp_mangled_type (obstack, type)
-     struct obstack *obstack;
-     tree type;
-{
-  switch (TREE_CODE (type))
-    {
-      char code;
-    case BOOLEAN_TYPE: code = 'b';  goto primitive;
-    case CHAR_TYPE:    code = 'w';  goto primitive;
-    case VOID_TYPE:    code = 'v';  goto primitive;
-    case INTEGER_TYPE:
-      /* Get the original type instead of the arguments promoted type.
-	 Avoid symbol name clashes. Should call a function to do that.
-	 FIXME.  */
-      if (type == promoted_short_type_node)
-	type = short_type_node;
-      if (type == promoted_byte_type_node)
-        type = byte_type_node;
-      switch (TYPE_PRECISION (type))
-	{
-	case  8:       code = 'c';  goto primitive;
-	case 16:       code = 's';  goto primitive;
-	case 32:       code = 'i';  goto primitive;
-	case 64:       code = 'x';  goto primitive;
-	default:  goto bad_type;
-	}
-    primitive:
-      obstack_1grow (obstack, code);
-      break;
-    case REAL_TYPE:
-      switch (TYPE_PRECISION (type))
-	{
-	case 32:       code = 'f';  goto primitive;
-	case 64:       code = 'd';  goto primitive;
-	default:  goto bad_type;
-	}
-    case POINTER_TYPE:
-      type = TREE_TYPE (type);
-      obstack_1grow (obstack, 'P');
-    case RECORD_TYPE:
-      if (TYPE_ARRAY_P (type))
-	{
-	  obstack_grow (obstack, "t6JArray1Z", sizeof("t6JArray1Z")-1);
-	  append_gpp_mangled_type (obstack, TYPE_ARRAY_ELEMENT (type));
-	}
-      else
-	{
-	  const char *class_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-	  append_gpp_mangled_classtype (obstack, class_name);
-	}
-      break;
-    bad_type:
-    default:
-      fatal ("internal error - trying to mangle unknown type");
-    }
-}
-
-/* Build the mangled name of a field, given the class name and the
-   field name.  */
-
-static tree
-mangle_field (class, name)
-     tree class, name;
-{
-  int encoded_len;
-#if ! defined (NO_DOLLAR_IN_LABEL) || ! defined (NO_DOT_IN_LABEL)
-  obstack_1grow (&temporary_obstack, '_');
-#else
-  obstack_grow (&temporary_obstack, "__static_", 9);
-#endif
-  append_gpp_mangled_type (&temporary_obstack, class);
-  encoded_len = unicode_mangling_length (IDENTIFIER_POINTER (name),
-					 IDENTIFIER_LENGTH (name));
-  if (encoded_len > 0)
-    {
-      obstack_1grow (&temporary_obstack, 'U');
-    }
-#ifndef NO_DOLLAR_IN_LABEL
-  obstack_1grow (&temporary_obstack, '$');
-#else /* NO_DOLLAR_IN_LABEL */
-#ifndef NO_DOT_IN_LABEL
-  obstack_1grow (&temporary_obstack, '.');
-#else /* NO_DOT_IN_LABEL */
-  obstack_1grow (&temporary_obstack, '_');
-#endif  /* NO_DOT_IN_LABEL */
-#endif  /* NO_DOLLAR_IN_LABEL */
-  if (encoded_len > 0)
-    {
-      emit_unicode_mangled_name (&temporary_obstack,
-				 IDENTIFIER_POINTER (name), 
-				 IDENTIFIER_LENGTH (name));
-    }
-  else
-    {
-      obstack_grow (&temporary_obstack,
-		    IDENTIFIER_POINTER (name),
-		    IDENTIFIER_LENGTH (name));
-    }
-
-  /* Mangle C++ keywords by appending a `$'.  */
-  /* FIXME: NO_DOLLAR_IN_LABEL */
-  if (cxx_keyword_p (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
-    obstack_grow (&temporary_obstack, "$", 1);
-
-  obstack_1grow (&temporary_obstack, '\0');
-  name = get_identifier (obstack_base (&temporary_obstack));
-  obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
-  return name;
-}
-
-/* Build the mangled name of the `class' field.  */
-
-static tree
-mangle_class_field (class)
-     tree class;
-{
-  /* We know that we can use `class$' to mangle the class object,
-     because `class' is a reserved word in Java and thus can't appear
-     as a field or method name.  */
-  return mangle_field (class, get_identifier ("class$"));
-}
-
-/* Build the mangled (assembly-level) name of the static field FIELD. */
-
-static tree
-mangle_static_field (field)
-     tree field;
-{
-  return mangle_field (DECL_CONTEXT (field), DECL_NAME (field));
-}
-
 /* Build a VAR_DECL for the dispatch table (vtable) for class TYPE. */
 
 tree
 build_dtable_decl (type)
      tree type;
 {
-  tree name, dtype;
+  tree dtype;
 
   /* We need to build a new dtable type so that its size is uniquely
      computed when we're dealing with the class for real and not just
@@ -1706,12 +1566,8 @@ build_dtable_decl (type)
   else
     dtype = dtable_type;
 
-  obstack_grow (&temporary_obstack, "__vt_", 5);
-  append_gpp_mangled_type (&temporary_obstack, type);
-  obstack_1grow (&temporary_obstack, '\0');
-  name = get_identifier (obstack_base (&temporary_obstack));
-  obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
-  return build_decl (VAR_DECL, name, dtype);
+  return build_decl (VAR_DECL, 
+		     java_mangle_vtable (&temporary_obstack, type), dtype);
 }
 
 /* Pre-pend the TYPE_FIELDS of THIS_CLASS with a dummy FIELD_DECL for the
@@ -1836,7 +1692,8 @@ layout_class (this_class)
       if (FIELD_STATIC (field))
 	{
 	  /* Set DECL_ASSEMBLER_NAME to something suitably mangled. */
-	  DECL_ASSEMBLER_NAME (field) = mangle_static_field (field);
+	  DECL_ASSEMBLER_NAME (field) = 
+	    java_mangle_decl (&temporary_obstack, field);
 	}
     }
 
@@ -1916,218 +1773,38 @@ layout_class_methods (this_class)
 #endif
 }
 
-/* A sorted list of all C++ keywords.  */
-
-static const char *cxx_keywords[] =
-{
-  "asm",
-  "auto",
-  "bool",
-  "const_cast",
-  "delete",
-  "dynamic_cast",
-  "enum",
-  "explicit",
-  "extern",
-  "friend",
-  "inline",
-  "mutable",
-  "namespace",
-  "overload",
-  "register",
-  "reinterpret_cast",
-  "signed",
-  "sizeof",
-  "static_cast",
-  "struct",
-  "template",
-  "typedef",
-  "typeid",
-  "typename",
-  "typenameopt",
-  "union",
-  "unsigned",
-  "using",
-  "virtual",
-  "volatile",
-  "wchar_t"
-};
-
 /* Return 0 if NAME is equal to STR, -1 if STR is "less" than NAME,
    and 1 if STR is "greater" than NAME.  */
 
-static int
-utf8_cmp (str, length, name)
-     const unsigned char *str;
-     int length;
-     const char *name;
-{
-  const unsigned char *limit = str + length;
-  int i;
-
-  for (i = 0; name[i]; ++i)
-    {
-      int ch = UTF8_GET (str, limit);
-      if (ch != name[i])
-	return ch - name[i];
-    }
-
-  return str == limit ? 0 : 1;
-}
-
-/* Return true if NAME is a C++ keyword.  */
-
-static int
-cxx_keyword_p (name, length)
-     const char *name;
-     int length;
-{
-  int last = ARRAY_SIZE (cxx_keywords);
-  int first = 0;
-  int mid = (last + first) / 2;
-  int old = -1;
-
-  for (mid = (last + first) / 2;
-       mid != old;
-       old = mid, mid = (last + first) / 2)
-    {
-      int kwl = strlen (cxx_keywords[mid]);
-      int min_length = kwl > length ? length : kwl;
-      int r = utf8_cmp (name, min_length, cxx_keywords[mid]);
-
-      if (r == 0)
-	{
-	  int i;
-	  /* We've found a match if all the remaining characters are
-	     `$'.  */
-	  for (i = min_length; i < length && name[i] == '$'; ++i)
-	    ;
-	  if (i == length)
-	    return 1;
-	  r = 1;
-	}
-
-      if (r < 0)
-	last = mid;
-      else
-	first = mid;
-    }
-  return 0;
-}
-
 /* Lay METHOD_DECL out, returning a possibly new value of
-   DTABLE_COUNT.  */
+   DTABLE_COUNT. Also mangle the method's name. */
 
 tree
 layout_class_method (this_class, super_class, method_decl, dtable_count)
      tree this_class, super_class, method_decl, dtable_count;
 {
-  const char *ptr;
-  char *asm_name;
-  tree arg, arglist, t;
-  int method_name_needs_escapes = 0;
   tree method_name = DECL_NAME (method_decl);
   int method_name_is_wfl = 
     (TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION);
   if (method_name_is_wfl)
     method_name = java_get_real_method_name (method_decl);
 
-  if (!ID_INIT_P (method_name) && !ID_FINIT_P (method_name))
-    {
-      int encoded_len
-	= unicode_mangling_length (IDENTIFIER_POINTER (method_name), 
-				   IDENTIFIER_LENGTH (method_name));
-      if (encoded_len > 0)
-	{
-	  method_name_needs_escapes = 1;
-	  emit_unicode_mangled_name (&temporary_obstack,
-				     IDENTIFIER_POINTER (method_name), 
-				     IDENTIFIER_LENGTH (method_name));
-	}
-      else
-	{
-	  obstack_grow (&temporary_obstack,
-			IDENTIFIER_POINTER (method_name),
-			IDENTIFIER_LENGTH (method_name));
-	}
-
-      /* Mangle C++ keywords by appending a `$'.  */
-      /* FIXME: NO_DOLLAR_IN_LABEL */
-      if (cxx_keyword_p (IDENTIFIER_POINTER (method_name),
-			 IDENTIFIER_LENGTH (method_name)))
-	obstack_grow (&temporary_obstack, "$", 1);
-    }
-
-  obstack_grow (&temporary_obstack, "__", 2);
-  if (ID_FINIT_P (method_name))
-    obstack_grow (&temporary_obstack, "finit", 5);
-  append_gpp_mangled_type (&temporary_obstack, this_class);
   TREE_PUBLIC (method_decl) = 1;
 
-  t = TREE_TYPE (method_decl);
-  arglist = TYPE_ARG_TYPES (t);
-  if (TREE_CODE (t) == METHOD_TYPE)
-    arglist = TREE_CHAIN (arglist);
-  for (arg = arglist; arg != end_params_node;  )
-    {
-      tree a = arglist;
-      tree argtype = TREE_VALUE (arg);
-      int tindex = 1;
-      if (TREE_CODE (argtype) == POINTER_TYPE)
-	{
-	  /* This is O(N**2).  Do we care?  Cfr gcc/cp/method.c. */
-	  while (a != arg && argtype != TREE_VALUE (a))
-	    a = TREE_CHAIN (a), tindex++;
-	}
-      else
-	a = arg;
-      if (a != arg)
-	{
-	  char buf[12];
-	  int nrepeats = 0;
-	  do
-	    {
-	      arg = TREE_CHAIN (arg); nrepeats++;
-	    }
-	  while (arg != end_params_node && argtype == TREE_VALUE (arg));
-	  if (nrepeats > 1)
-	    {
-	      obstack_1grow (&temporary_obstack, 'N');
-	      sprintf (buf, "%d", nrepeats);
-	      obstack_grow (&temporary_obstack, buf, strlen (buf));
-	      if (nrepeats > 9)
-		obstack_1grow (&temporary_obstack, '_');
-	    }
-	  else
-	    obstack_1grow (&temporary_obstack, 'T');
-	  sprintf (buf, "%d", tindex);
-	  obstack_grow (&temporary_obstack, buf, strlen (buf));
-	  if (tindex > 9)
-	    obstack_1grow (&temporary_obstack, '_');
-	}
-      else
-	{
-	  append_gpp_mangled_type (&temporary_obstack, argtype);
-	  arg = TREE_CHAIN (arg);
-	}
-    }
-  if (method_name_needs_escapes)
-    obstack_1grow (&temporary_obstack, 'U');
-
-  obstack_1grow (&temporary_obstack, '\0');
-  asm_name = obstack_finish (&temporary_obstack);
-  DECL_ASSEMBLER_NAME (method_decl) = get_identifier (asm_name);
+  /* This is a good occasion to mangle the method's name */
+  DECL_ASSEMBLER_NAME (method_decl) = 
+    java_mangle_decl (&temporary_obstack, method_decl);
   /* We don't generate a RTL for the method if it's abstract, or if
      it's an interface method that isn't clinit. */
   if (! METHOD_ABSTRACT (method_decl) 
       || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
 	  && (DECL_CLINIT_P (method_decl))))
     make_decl_rtl (method_decl, NULL);
-  obstack_free (&temporary_obstack, asm_name);
 
   if (ID_INIT_P (method_name))
     {
       const char *p = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class)));
+      const char *ptr;
       for (ptr = p; *ptr; )
 	{
 	  if (*ptr++ == '.')
@@ -2153,16 +1830,6 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 	      && !CLASS_FROM_SOURCE_P (this_class))
 	    error_with_decl (method_decl,
 			     "non-static method '%s' overrides static method");
-#if 0
-	  else if (TREE_TYPE (TREE_TYPE (method_decl))
-		   != TREE_TYPE (TREE_TYPE (super_method)))
-	    {
-	      error_with_decl (method_decl,
-			       "Method `%s' redefined with different return type");  
-	      error_with_decl (super_method,
-			       "Overridden decl is here");
-	    }
-#endif
 	}
       else if (! METHOD_FINAL (method_decl)
 	       && ! METHOD_PRIVATE (method_decl)

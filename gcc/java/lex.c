@@ -1,5 +1,5 @@
 /* Language lexer for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -61,6 +61,10 @@ static int java_read_char PARAMS ((java_lexer *));
 static void java_allocate_new_line PARAMS ((void));
 static void java_unget_unicode PARAMS ((void));
 static unicode_t java_sneak_unicode PARAMS ((void));
+#ifndef JC1_LITE
+static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
+#endif
+
 java_lexer *java_new_lexer PARAMS ((FILE *, const char *));
 
 /* This is nonzero if we have initialized `need_byteswap'.  */
@@ -1763,3 +1767,101 @@ java_get_line_col (filename, line, col)
   return obstack_finish (&temporary_obstack);
 #endif
 }
+
+#ifndef JC1_LITE
+static int
+utf8_cmp (str, length, name)
+     const unsigned char *str;
+     int length;
+     const char *name;
+{
+  const unsigned char *limit = str + length;
+  int i;
+
+  for (i = 0; name[i]; ++i)
+    {
+      int ch = UTF8_GET (str, limit);
+      if (ch != name[i])
+	return ch - name[i];
+    }
+
+  return str == limit ? 0 : 1;
+}
+
+/* A sorted list of all C++ keywords.  */
+
+static const char *cxx_keywords[] =
+{
+  "asm",
+  "auto",
+  "bool",
+  "const_cast",
+  "delete",
+  "dynamic_cast",
+  "enum",
+  "explicit",
+  "extern",
+  "friend",
+  "inline",
+  "mutable",
+  "namespace",
+  "overload",
+  "register",
+  "reinterpret_cast",
+  "signed",
+  "sizeof",
+  "static_cast",
+  "struct",
+  "template",
+  "typedef",
+  "typeid",
+  "typename",
+  "typenameopt",
+  "union",
+  "unsigned",
+  "using",
+  "virtual",
+  "volatile",
+  "wchar_t"
+};
+
+/* Return true if NAME is a C++ keyword.  */
+
+int
+cxx_keyword_p (name, length)
+     const char *name;
+     int length;
+{
+  int last = ARRAY_SIZE (cxx_keywords);
+  int first = 0;
+  int mid = (last + first) / 2;
+  int old = -1;
+
+  for (mid = (last + first) / 2;
+       mid != old;
+       old = mid, mid = (last + first) / 2)
+    {
+      int kwl = strlen (cxx_keywords[mid]);
+      int min_length = kwl > length ? length : kwl;
+      int r = utf8_cmp (name, min_length, cxx_keywords[mid]);
+
+      if (r == 0)
+	{
+	  int i;
+	  /* We've found a match if all the remaining characters are
+	     `$'.  */
+	  for (i = min_length; i < length && name[i] == '$'; ++i)
+	    ;
+	  if (i == length)
+	    return 1;
+	  r = 1;
+	}
+
+      if (r < 0)
+	last = mid;
+      else
+	first = mid;
+    }
+  return 0;
+}
+#endif /* JC1_LITE */
