@@ -1,3 +1,7 @@
+2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* g++.old-deja/g++.other/eh4.C: New test.
+	
 2001-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/regstack.C: New test.
