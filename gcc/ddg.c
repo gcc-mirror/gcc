@@ -383,7 +383,7 @@ build_intra_loop_deps (ddg_ptr g)
   get_block_head_tail (g->bb->index, &head, &tail);
   sched_analyze (&tmp_deps, head, tail);
 
-  /* Build intra-loop data dependecies using the scheduler dependecy
+  /* Build intra-loop data dependencies using the scheduler dependency
      analysis.  */
   for (i = 0; i < g->num_nodes; i++)
     {
@@ -509,7 +509,7 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
   if (!g->closing_branch)
     abort ();  /* Found no branch in DDG.  */
 
-  /* Build the data dependecy graph.  */
+  /* Build the data dependency graph.  */
   build_intra_loop_deps (g);
   build_inter_loop_deps (g, df);
   return g;

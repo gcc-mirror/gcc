@@ -85,7 +85,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   else if (TREE_CODE (*tp) == RETURN_EXPR)
     TREE_OPERAND (*tp, 0) = dp->result;
 
-  /* Othewise replace all occurrences of VAR with RESULT.  */
+  /* Otherwise replace all occurrences of VAR with RESULT.  */
   else if (*tp == dp->var)
     *tp = dp->result;
 

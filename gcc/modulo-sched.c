@@ -217,7 +217,7 @@ typedef struct node_sched_params
 
 
 /* The following three functions are copied from the current scheduler
-   code in order to use sched_analyze() for computing the dependecies.
+   code in order to use sched_analyze() for computing the dependencies.
    They are used when initializing the sched_info structure.  */
 static const char *
 sms_print_insn (rtx insn, int aligned ATTRIBUTE_UNUSED)
@@ -386,7 +386,7 @@ set_node_sched_params (ddg_ptr g)
 				sizeof (struct node_sched_params));
 
   /* Set the pointer of the general data of the node to point to the
-     appropriate sched_params strcture.  */
+     appropriate sched_params structure.  */
   for (i = 0; i < g->num_nodes; i++)
     {
       /* Watch out for aliasing problems?  */
@@ -447,7 +447,7 @@ calculate_maxii (ddg_ptr g)
    of the register live range is more than ii; the number of moves is
    determined according to the following equation:
 		SCHED_TIME (use) - SCHED_TIME (def)   { 1 broken loop-carried
-   nreg_moves = ----------------------------------- - {   dependecnce.
+   nreg_moves = ----------------------------------- - {   dependence.
 			      ii		      { 0 if not.
    This handles the modulo-variable-expansions (mve's) needed for the ps.  */
 static void
@@ -832,7 +832,7 @@ sms_schedule (FILE *dump_file)
   else
     issue_rate = 1;
 
-  /* Initilize the scheduler.  */
+  /* Initialize the scheduler.  */
   current_sched_info = &sms_sched_info;
   sched_init (NULL);
 
@@ -1526,7 +1526,7 @@ calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
   node_order_params_arr = (nopa) xcalloc (num_nodes,
 					  sizeof (struct node_order_params));
 
-  /* Set the aux pointer of each node to point to its order_params strcture.  */
+  /* Set the aux pointer of each node to point to its order_params structure.  */
   for (u = 0; u < num_nodes; u++)
     g->nodes[u].aux.info = &node_order_params_arr[u];
 

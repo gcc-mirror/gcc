@@ -210,7 +210,7 @@ independent_of_stmt_p (tree expr, tree at, block_stmt_iterator bsi)
       at = SSA_NAME_DEF_STMT (expr);
       bb = bb_for_stmt (at);
 
-      /* The default defininition or defined before the chain.  */
+      /* The default definition or defined before the chain.  */
       if (!bb || !bb->aux)
 	break;
 

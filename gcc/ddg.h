@@ -92,7 +92,7 @@ struct ddg_edge
   /* REG or MEM dependency.  */
   dep_data_type data_type;
 
-  /* Latency of the depedency.  */
+  /* Latency of the dependency.  */
   int latency;
 
   /* The distance: number of loop iterations the dependency crosses.  */

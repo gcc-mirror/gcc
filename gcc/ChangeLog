@@ -1,3 +1,12 @@
+2004-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-typeck.c, cfgexpand.c, ddg.c, ddg.h, df.c, fold-const.c,
+	gcov.c, gimplify.c, modulo-sched.c, passes.c, tree-cfg.c,
+	tree-mudflap.c, tree-nrv.c, tree-outof-ssa.c, tree-ssa-dom.c,
+	tree-ssa-dse.c, tree-ssa-operands.c, tree-ssa-pre.c,
+	tree-tailcall.c: Fix comment typos.  Follow spelling
+	conventions.
+
 2004-06-25  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.md: Add back scheduling exclusion info.

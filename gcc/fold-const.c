@@ -3717,7 +3717,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 
 
 	  /* If we're converting arg0 from an unsigned type, to exp,
-	     a signed type,  we will be doing the compairson as unsigned.
+	     a signed type,  we will be doing the comparison as unsigned.
 	     The tests above have already verified that LOW and HIGH
 	     are both positive.
 

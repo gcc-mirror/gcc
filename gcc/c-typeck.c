@@ -6490,7 +6490,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
     {
       tree inner_if = then_block;
 
-      /* We know from the grammer productions that there is an IF nested
+      /* We know from the grammar productions that there is an IF nested
 	 within THEN_BLOCK.  Due to labels and c99 conditional declarations,
 	 it might not be exactly THEN_BLOCK, but should be the last
 	 non-container statement within.  */
@@ -6547,7 +6547,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 /* Emit a general-purpose loop construct.  START_LOCUS is the location of
    the beginning of the loop.  COND is the loop condition.  COND_IS_FIRST
    is false for DO loops.  INCR is the FOR increment expression.  BODY is
-   the statement controled by the loop.  BLAB is the break label.  CLAB is
+   the statement controlled by the loop.  BLAB is the break label.  CLAB is
    the continue label.  Everything is allowed to be NULL.  */
 
 void
