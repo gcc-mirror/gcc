@@ -312,11 +312,13 @@ build_target_expr_with_type (tree init, tree type)
     return init;
   else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_INIT_REF (type)
 	   && TREE_CODE (init) != COND_EXPR
-	   && TREE_CODE (init) != CONSTRUCTOR)
+	   && TREE_CODE (init) != CONSTRUCTOR
+	   && TREE_CODE (init) != VA_ARG_EXPR)
     /* We need to build up a copy constructor call.  COND_EXPR is a special
        case because we already have copies on the arms and we don't want
        another one here.  A CONSTRUCTOR is aggregate initialization, which
-       is handled separately.  */
+       is handled separately.  A VA_ARG_EXPR is magic creation of an
+       aggregate; there's no additional work to be done.  */
     return force_rvalue (init);
 
   slot = build_decl (VAR_DECL, NULL_TREE, type);
