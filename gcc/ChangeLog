@@ -1,3 +1,14 @@
+Mon Jun  7 22:05:03 1999  Mark Kettenis  <kettenis@gnu.org>
+
+	* config/i386/gnu.h: Include <gnu.h> right after <i386/linux.h>,
+	such that we can override its definitions if necessary.
+	(CPP_SPEC): New define.  Support processor specific predefines via
+	%(cpp_cpu).
+	(CC1_SPEC): New define.  Support processor specific compiler
+	options via %(cc1_cpu).
+	(STARTFILE_SPEC): New define.  Use crt0.o instead of crt1.o for
+	-static.
+
 1999-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (math_gcc_ifndefs): Insert whitespace
