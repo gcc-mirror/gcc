@@ -68,13 +68,13 @@ vfy_string_length (vfy_string str)
 }
 
 vfy_string
-vfy_init_name ()
+vfy_init_name (void)
 {
   return init_identifier_node;
 }
 
 vfy_string
-vfy_clinit_name ()
+vfy_clinit_name (void)
 {
   return clinit_identifier_node;
 }
@@ -344,7 +344,7 @@ vfy_find_class (vfy_jclass ignore ATTRIBUTE_UNUSED, vfy_string name)
 }
 
 vfy_jclass
-vfy_object_type ()
+vfy_object_type (void)
 {
   vfy_jclass k;
   k = object_type_node;
@@ -352,7 +352,7 @@ vfy_object_type ()
 }
 
 vfy_jclass
-vfy_string_type ()
+vfy_string_type (void)
 {
   vfy_jclass k;
   k = string_type_node;
@@ -360,7 +360,7 @@ vfy_string_type ()
 }
 
 vfy_jclass
-vfy_throwable_type ()
+vfy_throwable_type (void)
 {
   vfy_jclass k;
   k = throwable_type_node;

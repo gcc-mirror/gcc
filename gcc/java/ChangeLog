@@ -1,3 +1,8 @@
+2004-11-24  Richard Henderson  <rth@redhat.com>
+
+	* verify-glue.c (vfy_init_name, vfy_clinit_name, vfy_object_type,
+	vfy_string_type, vfy_throwable_type): Use ANSI declaration form.
+
 2004-11-24  Tom Tromey  <tromey@redhat.com>
 
 	* verify.c (defer_merging): Don't use C++-style comment.
