@@ -52,6 +52,8 @@ static const char * cond_string    PARAMS ((enum rtx_code));
 static int    avr_num_arg_regs     PARAMS ((enum machine_mode, tree));
 static int    out_adj_frame_ptr    PARAMS ((FILE *, int));
 static int    out_set_stack_ptr    PARAMS ((FILE *, int, int));
+static RTX_CODE compare_condition  PARAMS ((rtx insn));
+static int    compare_sign_p       PARAMS ((rtx insn));
 static int    reg_was_0            PARAMS ((rtx insn, rtx op));
 static int    io_address_p         PARAMS ((rtx x, int size));
 void          debug_hard_reg_set   PARAMS ((HARD_REG_SET set));
@@ -2606,39 +2608,52 @@ frame_pointer_required_p ()
   	  || get_frame_size () > 0);
 }
 
-/* Return 1 if the next insn is a JUMP_INSN with condition (GT,LE,GTU,LTU)  */
+/* Returns the condition of compare insn INSN, or UNKNOWN.  */
+
+static RTX_CODE
+compare_condition (insn)
+     rtx insn;
+{
+  rtx next = next_real_insn (insn);
+  RTX_CODE cond = UNKNOWN;
+  if (next && GET_CODE (next) == JUMP_INSN)
+    {
+      rtx pat = PATTERN (next);
+      rtx src = SET_SRC (pat);
+      rtx t = XEXP (src, 0);
+      cond = GET_CODE (t);
+    }
+  return cond;
+}
+
+/* Returns nonzero if INSN is a tst insn that only tests the sign.  */
+
+static int
+compare_sign_p (insn)
+     rtx insn;
+{
+  RTX_CODE cond = compare_condition (insn);
+  return (cond == GE || cond == LT);
+}
+
+/* Returns nonzero if the next insn is a JUMP_INSN with a condition
+   that needs to be swapped (GT, GTU, LE, LEU).  */
 
 int
 compare_diff_p (insn)
      rtx insn;
 {
-  rtx next = next_real_insn (insn);
-  RTX_CODE cond = UNKNOWN;
-  if (GET_CODE (next) == JUMP_INSN)
-    {
-      rtx pat = PATTERN (next);
-      rtx src = SET_SRC (pat);
-      rtx t = XEXP (src,0);
-      cond = GET_CODE (t);
-    }
+  RTX_CODE cond = compare_condition (insn);
   return (cond == GT || cond == GTU || cond == LE || cond == LEU) ? cond : 0;
 }
 
-/* Returns nonzero if INSN is a compare insn with the EQ or NE condition */
+/* Returns nonzero if INSN is a compare insn with the EQ or NE condition.  */
 
 int
 compare_eq_p (insn)
      rtx insn;
 {
-  rtx next = next_real_insn (insn);
-  RTX_CODE cond = UNKNOWN;
-  if (GET_CODE (next) == JUMP_INSN)
-    {
-      rtx pat = PATTERN (next);
-      rtx src = SET_SRC (pat);
-      rtx t = XEXP (src,0);
-      cond = GET_CODE (t);
-    }
+  RTX_CODE cond = compare_condition (insn);
   return (cond == EQ || cond == NE);
 }
 
@@ -2650,12 +2665,13 @@ out_tsthi (insn, l)
      rtx insn;
      int *l;
 {
-  if (!compare_eq_p (insn) && !compare_diff_p (insn))
+  if (compare_sign_p (insn))
     {
       if (l) *l = 1;
       return AS1 (tst,%B0);
     }
-  if (reg_unused_after (insn, SET_SRC (PATTERN (insn))))
+  if (reg_unused_after (insn, SET_SRC (PATTERN (insn)))
+      && compare_eq_p (insn))
     {
       /* faster than sbiw if we can clobber the operand */
       if (l) *l = 1;
@@ -2679,7 +2695,7 @@ out_tstsi (insn, l)
      rtx insn;
      int *l;
 {
-  if (!compare_eq_p (insn) && !compare_diff_p(insn))
+  if (compare_sign_p (insn))
     {
       if (l) *l = 1;
       return AS1 (tst,%D0);
@@ -4654,6 +4670,9 @@ avr_progmem_p (decl)
   do
     a = TREE_TYPE(a);
   while (TREE_CODE (a) == ARRAY_TYPE);
+
+  if (a == error_mark_node)
+    return 0;
 
   if (NULL_TREE != lookup_attribute ("progmem", TYPE_ATTRIBUTES (a)))
     return 1;

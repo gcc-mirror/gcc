@@ -1,3 +1,10 @@
+2000-12-05  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (compare_condition, compare_sign_p): New functions.
+	(compare_diff_p, compare_eq_p): Call compare_condition.
+	(out_tsthi, out_tstsi): Call compare_sign_p.
+	(avr_progmem_p): Check for error_mark_node.
+
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
         * cpperror.c (print_location): New function.
