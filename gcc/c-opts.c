@@ -496,12 +496,14 @@ c_common_init_options (lang)
   qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
 #endif
 #if ENABLE_CHECKING
+ {
   size_t i;
 
   for (i = 1; i < N_OPTS; i++)
     if (strcmp (cl_options[i - 1].opt_text, cl_options[i].opt_text) >= 0)
       error ("options array incorrectly sorted: %s is before %s",
 	     cl_options[i - 1].opt_text, cl_options[i].opt_text);
+ }
 #endif
 
   c_language = lang;
