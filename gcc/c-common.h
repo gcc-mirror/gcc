@@ -346,22 +346,6 @@ extern void shadow_warning (enum sw_kind, const char *, tree);
 extern int field_decl_cmp (const void *, const void *);
 extern void resort_sorted_fields (void *, void *, gt_pointer_operator, 
                                   void *);
-
-/* Extra information associated with a DECL.  Other C dialects extend
-   this structure in various ways.  The C front-end only uses this
-   structure for FUNCTION_DECLs; all other DECLs have a NULL
-   DECL_LANG_SPECIFIC field.  */
-
-struct c_lang_decl GTY(()) {
-  unsigned declared_inline : 1;
-};
-
-/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
-     the approximate number of statements in this function.  There is
-     no need for this number to be exact; it is only used in various
-     heuristics regarding optimization.  */
-#define DECL_ESTIMATED_INSNS(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 
 /* Switches common to the C front ends.  */
 

@@ -906,12 +906,6 @@ union lang_tree_node
 /* The original WFL of a final variable. */
 #define DECL_FIELD_FINAL_WFL(NODE) \
   (DECL_LANG_SPECIFIC(NODE)->u.v.wfl)
-/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
-     the approximate number of instructions in this function.  There is
-     no need for this number to be exact; it is only used in various
-     heuristics regarding optimization.  */
-#define DECL_ESTIMATED_INSNS(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 /* True if NODE is a local variable final. */
 #define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && DECL_FINAL (NODE))
 /* True if NODE is a final field. */

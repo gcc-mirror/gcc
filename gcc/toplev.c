@@ -2532,16 +2532,8 @@ rest_of_handle_inlining (tree decl)
 	      return true;
 	    }
 	}
-      else {
-	/* ??? Note that we used to just make it look like if
-	   the "inline" keyword was specified when we decide
-	   to inline it (because of -finline-functions).
-	   garloff@suse.de, 2002-04-24: Add another flag to
-	   actually record this piece of information.  */
-	if (!DECL_INLINE (decl))
-	  DID_INLINE_FUNC (decl) = 1;
+      else
 	inlinable = DECL_INLINE (decl) = 1;
-      }
     }
 
   insns = get_insns ();

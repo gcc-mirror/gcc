@@ -1,3 +1,13 @@
+2003-08-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cp-tree.h (struct lang_decl): Don't include c_lang_decl.
+	(DECL_DECLARED_INLINE_P): Remove.
+	* decl2.c (import_export_decl): Only look at DECL_DECLARED_INLINE_P
+	if decl is a FUNCTION_DECL.  This never made sense, but now it is
+	required to avoid a tree check failure.
+	* decl.c (grokfndecl): Don't touch DID_INLINE_FUNC.
+	* optimize.c (maybe_clone_body): Likewise.
+
 2003-08-04  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (cxx_insert_default_attributes): Delete.

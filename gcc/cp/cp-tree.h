@@ -1637,8 +1637,6 @@ struct lang_type GTY(())
 
 struct lang_decl_flags GTY(())
 {
-  struct c_lang_decl base;
-
   ENUM_BITFIELD(languages) language : 8;
 
   unsigned operator_attr : 1;
@@ -2848,12 +2846,6 @@ struct lang_decl GTY(())
 
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
-
-/* This function was declared inline.  This flag controls the linkage
-   semantics of 'inline'; whether or not the function is inlined is
-   controlled by DECL_INLINE.  */
-#define DECL_DECLARED_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.base.declared_inline)
 
 /* DECL_EXTERNAL must be set on a decl until the decl is actually emitted,
    so that assemble_external will work properly.  So we have this flag to

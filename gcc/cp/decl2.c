@@ -1743,7 +1743,8 @@ import_export_decl (tree decl)
       if ((DECL_IMPLICIT_INSTANTIATION (decl)
 	   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
 	  && (flag_implicit_templates
-	      || (flag_implicit_inline_templates 
+	      || (flag_implicit_inline_templates
+		  && TREE_CODE (decl) == FUNCTION_DECL 
 		  && DECL_DECLARED_INLINE_P (decl))))
 	{
 	  if (!TREE_PUBLIC (decl))

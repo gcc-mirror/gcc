@@ -33,10 +33,10 @@ struct cgraph_local_info GTY(())
   /* Set once it has been finalized so we consider it to be output.  */
   bool finalized;
 
-  /* False when there is something making inlining impossible (such as va_arg) */
+  /* False when there something makes inlining impossible (such as va_arg).  */
   bool inlinable;
   /* True when function should be inlined independently on it's size.  */
-  bool disgread_inline_limits;
+  bool disregard_inline_limits;
   /* Size of the function before inlining.  */
   int self_insns;
 };

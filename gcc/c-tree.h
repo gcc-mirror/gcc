@@ -58,7 +58,6 @@ union lang_tree_node
 
 struct lang_decl GTY(())
 {
-  struct c_lang_decl base;
   /* The return types and parameter types may have variable size.
      This is a list of any SAVE_EXPRs that need to be evaluated to
      compute those sizes.  */
@@ -99,12 +98,6 @@ struct lang_decl GTY(())
    keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
    and C_RID_YYCODE is the token number wanted by Yacc.  */
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
-
-/* This function was declared inline.  This flag controls the linkage
-   semantics of 'inline'; whether or not the function is inlined is
-   controlled by DECL_INLINE.  */
-#define DECL_DECLARED_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->base.declared_inline)
 
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type GTY(())
