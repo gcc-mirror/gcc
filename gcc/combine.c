@@ -6067,6 +6067,11 @@ if_then_else_cond (x, ptrue, pfalse)
       return cond0;
     }
 
+  /* If this is a COMPARE, do nothing, since the IF_THEN_ELSE we would
+     make can't possibly match and would supress other optimizations.  */
+  else if (code == COMPARE)
+    ;
+
   /* If this is a binary operation, see if either side has only one of two
      values.  If either one does or if both do and they are conditional on
      the same value, compute the new true and false values.  */
@@ -8414,23 +8419,53 @@ simplify_comparison (code, pop0, pop1)
   /* Try a few ways of applying the same transformation to both operands.  */
   while (1)
     {
+#ifndef WORD_REGISTER_OPERATIONS
+      /* The test below this one won't handle SIGN_EXTENDs on these machines,
+	 so check specially.  */
+      if (code != GTU && code != GEU && code != LTU && code != LEU
+	  && GET_CODE (op0) == ASHIFTRT && GET_CODE (op1) == ASHIFTRT
+	  && GET_CODE (XEXP (op0, 0)) == ASHIFT
+	  && GET_CODE (XEXP (op1, 0)) == ASHIFT
+	  && GET_CODE (XEXP (XEXP (op0, 0), 0)) == SUBREG
+	  && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SUBREG
+	  && (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0)))
+	      == GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))))
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  && GET_CODE (XEXP (op1, 1)) == CONST_INT
+	  && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
+	  && GET_CODE (XEXP (XEXP (op1, 0), 1)) == CONST_INT
+	  && INTVAL (XEXP (op0, 1)) == INTVAL (XEXP (op1, 1))
+	  && INTVAL (XEXP (op0, 1)) == INTVAL (XEXP (XEXP (op0, 0), 1))
+	  && INTVAL (XEXP (op0, 1)) == INTVAL (XEXP (XEXP (op1, 0), 1))
+	  && (INTVAL (XEXP (op0, 1))
+	      == (GET_MODE_BITSIZE (GET_MODE (op0))
+		  - (GET_MODE_BITSIZE
+		     (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))))))))
+	{
+	  op0 = SUBREG_REG (XEXP (XEXP (op0, 0), 0));
+	  op1 = SUBREG_REG (XEXP (XEXP (op1, 0), 0));
+	}
+#endif
+
       /* If both operands are the same constant shift, see if we can ignore the
 	 shift.  We can if the shift is a rotate or if the bits shifted out of
 	 this shift are known to be zero for both inputs and if the type of
 	 comparison is compatible with the shift.  */
-      if (GET_CODE (op0) == GET_CODE (op1)
-	  && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
-	  && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
-	      || ((GET_CODE (op0) == LSHIFTRT
-		   || GET_CODE (op0) == ASHIFT || GET_CODE (op0) == LSHIFT)
-		  && (code != GT && code != LT && code != GE && code != LE))
-	      || (GET_CODE (op0) == ASHIFTRT
-		  && (code != GTU && code != LTU
-		      && code != GEU && code != GEU)))
-	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	  && INTVAL (XEXP (op0, 1)) >= 0
-	  && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT
-	  && XEXP (op0, 1) == XEXP (op1, 1))
+      else if (GET_CODE (op0) == GET_CODE (op1)
+	       && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
+	       && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
+		   || ((GET_CODE (op0) == LSHIFTRT
+			|| GET_CODE (op0) == ASHIFT
+			|| GET_CODE (op0) == LSHIFT)
+		       && (code != GT && code != LT
+			   && code != GE && code != LE))
+		   || (GET_CODE (op0) == ASHIFTRT
+		       && (code != GTU && code != LTU
+			   && code != GEU && code != GEU)))
+	       && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	       && INTVAL (XEXP (op0, 1)) >= 0
+	       && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT
+	       && XEXP (op0, 1) == XEXP (op1, 1))
 	{
 	  enum machine_mode mode = GET_MODE (op0);
 	  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
@@ -8482,6 +8517,14 @@ simplify_comparison (code, pop0, pop1)
 	     the original sign bit. */
 	  code = unsigned_condition (code);
 	}
+
+      /* If both operands are NOT or both are NEG, we can strip off the
+	 outer operation if this is just an equality comparison.  */
+      else if ((code == EQ || code == NE)
+	       && ((GET_CODE (op0) == NOT && GET_CODE (op1) == NOT)
+		   || (GET_CODE (op0) == NEG && GET_CODE (op1) == NEG)))
+	op0 = XEXP (op0, 0), op1 = XEXP (op1, 0);
+
       else
 	break;
     }
