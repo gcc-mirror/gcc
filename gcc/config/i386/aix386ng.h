@@ -71,12 +71,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-#if 0
+#ifndef USE_GAS
 /* Don't write a `.optim' pseudo; this assembler
    is said to have a bug when .optim is used.  */
 
 #undef ASM_FILE_START_1
-#define ASM_FILE_START_1(FILE) fprintf (FILE, "\t.noopt\n");
+#define ASM_FILE_START_1(FILE) fprintf (FILE, "\t.noopt\n")
 #endif
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -94,3 +94,47 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (bss_section (),					\
    ASM_OUTPUT_LABEL ((FILE), (NAME)),			\
    fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED)))
+
+
+/* Undef all the .init and .fini section stuff if we are not using gas and
+ * gnu ld so that we can use collect because the standard /bin/as and /bin/ld
+ * cannot handle those.
+ */
+#ifndef USE_GAS
+# undef INIT_SECTION_ASM_OP
+# undef FINI_SECTION_ASM_OP
+# undef CTORS_SECTION_ASM_OP
+# undef DTORS_SECTION_ASM_OP
+# undef ASM_OUTPUT_CONSTRUCTOR
+# undef ASM_OUTPUT_DESTRUCTOR
+# undef DO_GLOBAL_CTORS_BODY
+
+# undef CTOR_LIST_BEGIN
+# define CTOR_LIST_BEGIN
+# undef CTOR_LIST_END
+# define CTOR_LIST_END
+# undef DTOR_LIST_BEGIN
+# define DTOR_LIST_BEGIN
+# undef DTOR_LIST_END
+# define DTOR_LIST_END
+
+# undef CONST_SECTION_FUNCTION
+# define CONST_SECTION_FUNCTION						\
+void									\
+const_section ()							\
+{									\
+  extern void text_section();						\
+  text_section();							\
+}
+
+# undef EXTRA_SECTION_FUNCTIONS
+# define EXTRA_SECTION_FUNCTIONS				\
+  CONST_SECTION_FUNCTION					\
+  BSS_SECTION_FUNCTION
+
+/* for collect2 */
+# define OBJECT_FORMAT_COFF
+# define MY_ISCOFF(magic) \
+  ((magic) == I386MAGIC || (magic) == I386SVMAGIC)
+
+#endif /* !USE_GAS */
