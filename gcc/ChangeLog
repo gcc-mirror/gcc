@@ -1,3 +1,7 @@
+2003-04-16  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+        * gcc/config.gcc Add support multilib parts for m32rx processor.
+
 2003-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (c-options.c): Pass in $(AWK) to opts.sh.
