@@ -26,6 +26,7 @@ Questions and comments to Benjamin Kosnik @code{<bkoz@@cygnus.com>}.
 * Exception Handling::          
 * Free Store::                  
 * Mangling::  Function name mangling for C++ and Java
+* Vtables:: Two ways to do virtual functions
 * Concept Index::               
 @end menu
 
@@ -190,7 +191,9 @@ accessed by the BINFO_ accessor macros.
 The virtual function table holds information used in virtual function
 dispatching.  In the compiler, they are usually referred to as vtables,
 or vtbls.  The first index is not used in the normal way, I believe it
-is probably used for the virtual destructor.
+is probably used for the virtual destructor. There are two forms of
+virtual tables, one that has offsets in addition to pointers, and one
+using thunks. @xref{Vtables}.
 
 @item vfield
 
@@ -1455,7 +1458,7 @@ To meet the first goal, we defer emission of inlines and vtables until
 the end of the translation unit, where we can decide whether or not they
 are needed, and how to emit them if they are.
         
-@node Mangling, Concept Index, Free Store, Top
+@node Mangling, Vtables, Free Store, Top
 @section Function name mangling for C++ and Java
 
 Both C++ and Jave provide overloaded function and methods,
@@ -1839,7 +1842,231 @@ Used for template type parameters.
 The letters @samp{G}, @samp{M}, @samp{O}, and @samp{p}
 also seem to be used for obscure purposes ...
 
-@node Concept Index,  , Mangling, Top
+@node Vtables, Concept Index, Mangling, Top
+@section Virtual Tables
+
+In order to invoke virtual functions, GNU C++ uses virtual tables. Each
+virtual function gets an index, and the table entry points to the
+overridden function to call. Sometimes, and adjustment to the this
+pointer has to be made before calling a virtual function:
+
+@example
+struct A@{
+  int i;
+  virtual void foo();
+@};
+
+struct B@{
+  int j;
+  virtual void bar();
+@};
+
+struct C:A,B@{
+  virtual void bar();
+@};
+
+void C::bar()
+@{
+  i++;
+@}
+
+int main()
+@{
+  C *c = new C;
+  B *b = c;
+  c->bar();
+@}
+@end example
+
+Here, casting from @samp{c} to @samp{b} adds an offset. When @samp{bar}
+is called, this offset needs to be subtracted, so that @samp{C::bar} can
+properly access @samp{i}. One approach of achieving this is to use
+@emph{thunks}, which are small half-functions put into the virtual
+table. The modify the first argument (the @samp{this} pointer), and then
+jump into the real function. 
+
+The other (traditional) approach is to have an additional integer in the
+virtual table which is added to this. This is an additional overhead
+both at the function call, and in the size of virtual tables: In the
+case of single inheritance (or for the first base class), these integers
+will always be zero.
+
+@subsection Virtual Base Classes with Virtual Tables
+
+In case of virtual bases, the code is even more
+complicated. Constructors and destructors need to know whether they are
+"in charge" of the virtual bases, and an implicit integer
+@samp{__in_chrg} for that purpose.
+
+@example
+struct A@{
+  int i;
+  virtual void bar();
+  void call_bar()@{bar();@}
+@};
+
+struct B:virtual A@{
+  B();
+  int j;
+  virtual void bar();
+@};
+
+B::B()@{
+  call_bar();
+@}
+
+struct C@{
+  int k;
+@};
+
+struct D:C,B@{
+  int l;
+  virtual void bar();
+@};
+
+@end example
+
+When constructing an instance of B, it will have the following layout:
+@samp{vbase pointer to A}, @samp{j}, @samp{A virtual table}, @samp{i}.
+On a 32-bit machine, downcasting from @samp{A*} to @samp{B*} would need
+to subtract 8, which would be the thunk executed when calling
+@samp{B::bar} inside @samp{call_bar}.
+
+When constructing an instance of D, it will have a different layout:
+@samp{k}, @samp{vbase pointer to A}, @samp{j}, @samp{l}, @samp{A virtual
+table}, @samp{i}. So, when downcasting from @samp{A*} to @samp{B*} in a
+@samp{D} object, the offset would be @samp{12}.
+
+This means that during construction of the @samp{B} base of a @samp{D}
+object, a virtual table is needed which has a @samp{-12} thunk to
+@samp{B::bar}. This is @emph{only} needed during construction and
+destruction, as the full object will use a @samp{-16} thunk to
+@samp{D::bar}.
+
+In order to implement this, the compiler generates an implicit argument
+(in addition to @code{__in_chrg}): the virtual list argument
+@code{__vlist}. This is a list of virtual tables needed during
+construction and destruction. The virtual pointers are ordered in the
+way they are used during construction; the destructors will process the
+array in reverse order. The ordering is as follows:
+@itemize @bullet
+@item
+If the class is in charge, the vlist starts with virtual table pointers
+for the virtual bases that have virtual bases themselves. Here, only
+@emph{polymorphic} virtual bases (pvbases) are interesting: if a vbase
+has no virtual functions, it doesn't have a virtual table.
+
+@item
+Next, the vlist has virtual tables for the initialization of the
+non-virtual bases. These bases are not in charge, so the layout is
+recursive, but ignores virtual bases during recursion.
+
+@item
+Next, there is a number of virtual tables for each virtual base. These
+are sorted in the order in which virtual bases are constructed. Each
+virtual base may have more than one @code{vfield}, and therefore require
+more than one @code{vtable}. The order of vtables is the same as used
+when initializing vfields of non-virtual bases in a constructor.
+@end itemize
+
+The compiler emits a virtual table list in a variable mangled as
+@code{__vl.classname}.
+
+Class with virtual bases, but without pvbases, only have the
+@code{__in_chrg} argument to their ctors and dtors: they don't have any
+vfields in the vbases to initialize.
+
+A further problem arises with virtual destructors: A destructor
+typically has only the @code{__in_chrg} argument, which also indicates
+whether the destructor should call @code{operator delete}. A dtor of a
+class with pvbases has an additional argument. Unfortunately, a caller
+of a virtual dtor might not know whether to pass that argument or not.
+Therefore, the dtor processes the @code{__vlist} argument in an
+automatic variable, which is initialized from the class' vlist if the
+__in_chrg flag has a zero value in bit 2 (bit mask 4), or from the
+argument @code{__vlist1} if bit 2 of the __in_chrg parameter is set to
+one.
+
+@subsection Specification of non-thunked vtables
+
+In the traditional implementation of vtables, each slot contains three
+fields: The offset to be added to the this pointer before invoking a
+virtual function, an unused field that is always zero, and the pointer
+to the virtual function. The first two fields are typically 16 bits
+wide. The unused field is called `index'; it may be non-zero in
+pointer-to-member-functions, which use the same layout.
+
+The virtual table then is an array of vtable slots. The first slot is
+always the virtual type info function, the other slots are in the order
+in which the virtual functions appear in the class declaration. 
+
+If a class has base classes, it may inherit other bases' vfields. Each
+class may have a primary vfield; the primary vfield of the derived class
+is the primary vfield of the left-most non-virtual base class. If a
+class inherits a primary vfield, any new virtual functions in the
+derived class are appended to the virtual table of the primary
+vfield. If there are new virtual functions in the derived class, and no
+primary vfield is inherited, a new vfield is introduced which becomes
+primary. The redefined virtual functions fill the vtable slots inherited
+from the base; new virtual functions are put into the primary vtable in
+the order of declaration. If no new virtual functions are introduced, no
+primary vfield is allocated.
+
+In a base class that has pvbases, virtual tables are needed which are
+used only in the constructor (see example above). At run-time, the
+virtual tables of the base class are adjusted, to reflect the new offset
+of the pvbase. The compiler knows statically what offset the pvbase has
+for a complete object. At run-time, the offset of the pvbase can be
+extracted from the vbase pointer, which is set in the constructor of the
+complete object. These two offsets result in a delta, which is used to
+adjust the deltas in the vtable (the adjustment might be different for
+different vtable slots). To adjust the vtables, the compiler emits code
+that creates a vtable on the stack. This vtable is initialized with the
+vtable for the complete base type, and then adjusted.
+
+In order to call a virtual function, the compiler gets the offset field
+from the vtable entry, and adds it to the this pointer. It then
+indirectly calls the virtual function pointer, passing the adjusted this
+pointer, and any arguments the virtual function may have.
+
+To implement dynamic casting, the dynamic_cast function needs typeinfos
+for the complete type, and the pointer to the complete type. The
+typeinfo pointer is obtained by calling the virtual typeinfo function
+(which doesn't take a this parameter). The pointer to the complete
+object is obtained by adding the offset of the virtual typeinfo vtable
+slot, since this virtual function is always implemented in the complete
+object.
+
+@subsection Specification of thunked vtables
+
+For vtable thunks, each slot only consists of a pointer to the virtual
+function, which might be a thunk function. The first slot in the vtable
+is an offset of the this pointer to the complete object, which is needed
+as a parameter to __dynamic_cast. The second slot is the virtual
+typeinfo function. All other slots are allocated with the same procedure
+as in the non-thunked case. Allocation of vfields also uses the same
+procedure as described above.
+
+If the virtual function needs an adjusted this pointer, a thunk function
+is emitted. If supported by the target architecture, this is only a
+half-function. Such a thunk has no stack frame; it merely adjusts the
+first argument of the function, and then directly branches into the
+implementation of the virtual function. If the architecture does not
+support half-functions (i.e. if ASM_OUTPUT_MI_THUNK is not defined), the
+compiler emits a wrapper function, which copies all arguments, adjust
+the this pointer, and then calls the original function. Since objects of
+non-aggregate type are passed by invisible reference, this copies only
+POD arguments. The approach fails for virtual functions with a variable
+number of arguments.
+
+In order to support the vtables needed in base constructors with
+pvbases, the compiler passes an implicit __vlist argument as described
+above, if the version 2 thunks are used. For version 1 thunks, the base
+class constructor will fill in the vtables for the complete base class,
+which will incorrectly adjust the this pointer, leading to a dynamic
+error.
+
+@node Concept Index,  , Vtables, Top
 
 @section Concept Index
 

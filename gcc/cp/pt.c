@@ -161,6 +161,7 @@ static int coerce_template_template_parms PROTO((tree, tree, int,
 static tree determine_specialization PROTO((tree, tree, tree *, int));
 static int template_args_equal PROTO((tree, tree));
 static void print_template_context PROTO((int));
+static int has_pvbases_p PROTO((tree, tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -4685,6 +4686,23 @@ tsubst_friend_class (friend_tmpl, args)
   return friend_type;
 }
 
+static int
+has_pvbases_p (t, pattern)
+     tree t, pattern;
+{
+  if (!TYPE_USES_VIRTUAL_BASECLASSES (t))
+    return 0;
+
+  if (TYPE_USES_PVBASES (pattern))
+    return 1;
+
+  for (t = CLASSTYPE_VBASECLASSES (t); t; t = TREE_CHAIN (t))
+    if (TYPE_VIRTUAL_P (BINFO_TYPE (t)))
+      return 1;
+
+  return 0;
+}
+
 tree
 instantiate_class_template (type)
      tree type;
@@ -5034,6 +5052,13 @@ instantiate_class_template (type)
 	    finish_member_declaration (r);
 	  }
       }
+
+  /* After we have calculated the bases, we can now compute whether we
+     have polymorphic vbases. This needs to happen before we
+     instantiate the methods, because the constructors may take
+     additional arguments.  */
+  if (flag_vtable_thunks >= 2)
+    TYPE_USES_PVBASES (type) = has_pvbases_p (type, pattern);
 
   /* Set up the list (TYPE_METHODS) and vector (CLASSTYPE_METHOD_VEC)
      for this instantiation.  */
@@ -5716,9 +5741,17 @@ tsubst_decl (t, args, type, in_decl)
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	    register_specialization (r, gen_tmpl, argvec);
 
+
+	    if (DECL_CONSTRUCTOR_P (r) || DECL_DESTRUCTOR_P (r))
+	      {
+		maybe_retrofit_in_chrg (r);
+		grok_ctor_properties (ctx, r);
+	      }
+
 	    /* Set the mangled name for R.  */
 	    if (DECL_DESTRUCTOR_P (t))
-	      DECL_ASSEMBLER_NAME (r) = build_destructor_name (ctx);
+	      DECL_ASSEMBLER_NAME (r) = 
+		build_destructor_name (ctx, DECL_DESTRUCTOR_FOR_PVBASE_P (r));
 	    else 
 	      {
 		/* Instantiations of template functions must be mangled
@@ -5761,11 +5794,14 @@ tsubst_decl (t, args, type, in_decl)
 					    in_decl);
 	  }
 
+#if 0
+	/* This has now moved further up. */
 	if (DECL_CONSTRUCTOR_P (r))
 	  {
 	    maybe_retrofit_in_chrg (r);
 	    grok_ctor_properties (ctx, r);
 	  }
+#endif
 	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
       }

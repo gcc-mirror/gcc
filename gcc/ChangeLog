@@ -1,3 +1,24 @@
+Wed Apr 12 00:42:19 2000  Jeffrey A Law  (law@cygnus.com)
+
+	Wed Apr 12 00:44:31 2000  Jeffrey A Law  (law@cygnus.com)
+	* config/i386/freebsd-elf.h (DEFAULT_VTABLE_THUNKS): Changed to 2.
+
+	Tue Nov  9 17:14:40 1999  H.J. Lu  <hjl@gnu.org>
+        * invoke.texi (-fvtable-thunks): Document that Linux/GNU uses
+        version 2 as default.
+
+	Tue Nov  9 10:16:55 1999  H.J. Lu  <hjl@gnu.org>
+        * alpha/linux-elf.h (DEFAULT_VTABLE_THUNKS): Changed to 2.
+        * arm/linux-elf.h: Likewise.
+        * rs6000/linux.h: Likewise.
+        * sparc/linux.h: Likewise.
+
+	Mon Nov  8 14:41:34 1999  H.J. Lu  <hjl@gnu.org>
+        * config/linux.h (DEFAULT_VTABLE_THUNKS): Changed to 2.
+
+	Sun May  2 08:49:27 1999  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+        * invoke.texi (-fvtable-thunks): Document numeric argument.
+
 2000-04-11  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/elfos.h (SELECT_SECTION): Decide whether to use a data or

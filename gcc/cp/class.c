@@ -102,8 +102,15 @@ static tree get_basefndecls PROTO((tree, tree));
 static void set_rtti_entry PROTO((tree, tree, tree));
 static tree build_vtable PROTO((tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
+static tree prepare_ctor_vtable PROTO((tree, tree, tree));
 static void fixup_vtable_deltas1 PROTO((tree, tree));
 static void fixup_vtable_deltas PROTO((tree, int, tree));
+static tree finish_one_ctor_vtable PROTO((tree, tree, tree, tree));
+static tree prepend_ctor_vfields_for_vbase PROTO((tree, tree, tree, tree, int, tree));
+static tree finish_ctor_vtables_for_vbases PROTO((tree, tree, tree));
+static tree finish_ctor_vtables_1 PROTO((tree, tree));
+static tree prepend_vbase_vfields PROTO((tree, int, tree));
+static void finish_ctor_vtables PROTO((tree));
 static void finish_vtbls PROTO((tree, int, tree));
 static void modify_vtable_entry PROTO((tree, tree, tree));
 static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
@@ -920,6 +927,43 @@ prepare_fresh_vtable (binfo, for_type)
 				   CLASSTYPE_VBASECLASSES (current_class_type)),
 			170);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
+}
+
+/* Return a new vtable for use in initialization of the BASE subobject
+   of COMPLETE_TYPE. The vtable there goes into the vfield of the
+   VBASEBASE virtual subobject.  */
+
+static tree
+prepare_ctor_vtable (complete_type, base, vbasebase)
+     tree complete_type, base, vbasebase;
+{
+  tree orig_decl = BINFO_VTABLE (vbasebase);
+  tree name = get_vlist_vtable_id (base, vbasebase);
+  tree new_decl;
+
+  new_decl = build_lang_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
+  /* Remember which class this vtable is really for.  */
+  DECL_CONTEXT (new_decl) = complete_type;
+
+  DECL_ARTIFICIAL (new_decl) = 1;
+  TREE_STATIC (new_decl) = 1;
+  new_decl = pushdecl_top_level (new_decl);
+  DECL_VIRTUAL_P (new_decl) = 1;
+#ifndef WRITABLE_VTABLES
+  /* Make them READONLY by default. (mrs) */
+  TREE_READONLY (new_decl) = 1;
+#endif
+  DECL_ALIGN (new_decl) = DECL_ALIGN (orig_decl);
+
+#ifdef GATHER_STATISTICS
+  n_vtables += 1;
+  n_vtable_elems += list_length (BINFO_VIRTUALS (binfo));
+#endif
+
+  /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
+  import_export_vtable (new_decl, complete_type, 0);
+
+  return new_decl;
 }
 
 #if 0
@@ -1798,6 +1842,7 @@ finish_struct_bits (t, max_has_virtual)
       TYPE_USES_COMPLEX_INHERITANCE (variants) = TYPE_USES_COMPLEX_INHERITANCE (t);
       TYPE_VIRTUAL_P (variants) = TYPE_VIRTUAL_P (t);
       TYPE_USES_VIRTUAL_BASECLASSES (variants) = TYPE_USES_VIRTUAL_BASECLASSES (t);
+      TYPE_USES_PVBASES (variants) = TYPE_USES_PVBASES (t);
       /* Copy whatever these are holding today.  */
       TYPE_MIN_VALUE (variants) = TYPE_MIN_VALUE (t);
       TYPE_MAX_VALUE (variants) = TYPE_MAX_VALUE (t);
@@ -2932,6 +2977,309 @@ warn_hidden (t)
 	}
     }
 }
+
+/* Generate one vtable for use in constructors or destructors of BASE
+   subobjects of COMPLETE_TYPE objects. The vtable belongs to the
+   vfield of the VBASEVASE subobject of the VBASE virtual base of
+   COMPLETE_TYPE (and BASE).  */
+
+static tree
+finish_one_ctor_vtable (complete_type, base, vbase, vbasebase)
+     tree complete_type, base, vbase, vbasebase;
+{
+  tree virtuals;
+  tree newtable;
+  tree newvirtuals;
+  tree offset;
+  tree newvbase = binfo_member (BINFO_TYPE (vbase),
+				CLASSTYPE_VBASECLASSES (complete_type));
+
+  newtable = prepare_ctor_vtable (complete_type, base, vbasebase);
+  newvirtuals = copy_list (BINFO_VIRTUALS (vbasebase));
+
+  virtuals = newvirtuals;
+  /* Change the offset entry. First, delta between base an vbase. */
+  offset = ssize_binop (MINUS_EXPR, BINFO_OFFSET (newvbase),
+			BINFO_OFFSET (base));
+  /* Add delta between vbase and vbasebase. */
+  offset = ssize_binop (PLUS_EXPR, offset, BINFO_OFFSET (vbasebase));
+  offset = ssize_binop (MINUS_EXPR, offset, BINFO_OFFSET (vbase));
+  /* Finally, negate. */
+  offset = ssize_binop (MINUS_EXPR, integer_zero_node, offset);
+  offset = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
+  TREE_CONSTANT (offset) = 1;
+  TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, offset);
+  virtuals = TREE_CHAIN (virtuals);
+
+  /* Skip the typeinfo function. */
+  virtuals = TREE_CHAIN (virtuals);
+
+  /* Iterate over all methods of this virtual base. */
+  for (; virtuals; virtuals = TREE_CHAIN (virtuals))
+    {
+      tree fndecl = TREE_VALUE (virtuals);
+      tree pfn = FNADDR_FROM_VTABLE_ENTRY (fndecl);
+      fndecl = TREE_OPERAND (pfn, 0);
+      if (fndecl)
+	{
+	  tree delta, newdelta, binfo_context;
+	  tree context = DECL_CLASS_CONTEXT (fndecl);
+
+	  /* If this method is implemented in a base of the vbase, the
+             thunk we have is correct. */
+	  if (DERIVED_FROM_P (context, vbase))
+	    continue;
+	  
+	  binfo_context = binfo_value (context, base);
+	  if (TREE_VIA_VIRTUAL (binfo_context))
+	    binfo_context = binfo_member 
+	      (context, CLASSTYPE_VBASECLASSES (complete_type));
+	  /* This is the delta from a complete C to a B subobject, or
+	     more generally to the base subobject that implements the
+	     virtual function for B. BASE already has the offset to
+	     the complete type. */
+	  delta = BINFO_OFFSET (binfo_context);
+	  /* This is the delta from the A to the complete C. */
+	  newdelta = BINFO_OFFSET (newvbase);
+	  /* This is the delta from the A to the B subobject. */
+	  newdelta = size_binop (MINUS_EXPR, newdelta, delta);
+	  newdelta = ssize_binop (MINUS_EXPR, integer_zero_node,
+				  newdelta);
+
+	  modify_vtable_entry (virtuals, 	
+			       build_vtable_entry (newdelta, pfn),
+			       fndecl);
+	}
+    }
+  DECL_INITIAL (newtable) = build_nt (CONSTRUCTOR, NULL_TREE,
+				      newvirtuals);
+  DECL_CONTEXT (newtable) = NULL_TREE;
+  cp_finish_decl (newtable, DECL_INITIAL (newtable), NULL_TREE, 0, 0);
+  DECL_CONTEXT (newtable) = complete_type;
+  return newtable;
+}
+
+/* Add all vtables into LIST for the VBASEBASE subobject and its bases
+   of VBASE virtual BASE of COMPLETE_TYPE for use in BASE
+   constructors. DO_SELF indicates whether this is the VBASEBASE that
+   has 'primary' vfield. Return the new LIST.  */
+
+static tree
+prepend_ctor_vfields_for_vbase (complete_type, base, vbase, vbasebase,
+				do_self, list)
+     tree complete_type, base, vbase, vbasebase;
+     int do_self;
+     tree list;
+{
+  int i;
+  tree vtbl;
+  tree bases = BINFO_BASETYPES (vbasebase);
+  int vfp = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (vbasebase));
+
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (vbasebase)))
+    {
+      vtbl = finish_one_ctor_vtable (complete_type, base, vbase, vbasebase);
+      vtbl = build1 (ADDR_EXPR, vtbl_ptr_type_node, vtbl);
+      TREE_READONLY (vtbl) = 1;
+      TREE_CONSTANT (vtbl) = 1;
+      list = tree_cons (NULL_TREE, vtbl, list);
+    }
+
+  if (!bases)
+    return list;
+
+  for (i = 0; i < TREE_VEC_LENGTH (bases); i++)
+    {
+      tree vbasebase = TREE_VEC_ELT (bases, i);
+      if (TREE_VIA_VIRTUAL (vbasebase))
+	continue;
+      list = prepend_ctor_vfields_for_vbase 
+	(complete_type, base, vbase, vbasebase, (i != vfp), list);
+    }
+
+  return list;
+}
+
+/* Iterate over all virtual bases of the BASE subobject of
+   COMPLETE_TYPE. This list is given in VBASES. Return the list of
+   vtables generated in the process.  */
+
+static tree
+finish_ctor_vtables_for_vbases (vbases, base, complete_type) 
+     tree vbases, base, complete_type;
+{
+  tree result = NULL_TREE;
+
+  for (; vbases; vbases = TREE_CHAIN (vbases))
+    result = prepend_ctor_vfields_for_vbase 
+      (complete_type, base, vbases, vbases, 1, result);
+  return result;
+}
+
+/* Generate special vtables for virtual bases for use inside base
+   class ctors and dtors. Inside this function, we assume the
+   following scenario:
+   class A{virtual void foo();};
+   class B:virtual A{int member1;}
+   class C:B{int member2;}
+
+   BINFO is a base subject (e.g. B) of COMPLETE_TYPE. Returns the list
+   of virtual tables.  */
+
+static tree
+finish_ctor_vtables_1 (binfo, complete_type)
+     tree binfo;
+     tree complete_type;
+{
+  int i;
+  tree binfos;
+  tree result = NULL_TREE;
+
+  binfos = BINFO_BASETYPES (binfo);
+  if (!binfos)
+    return result;
+
+  /* Iterate over all bases (i.e. B). */
+  for (i = 0; i < TREE_VEC_LENGTH (binfos); i++)
+    {
+      tree base = TREE_VEC_ELT (binfos, i);
+      tree vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (base));
+      if (!vbases)
+	/* This base class does not have virtual bases. */
+	continue;
+      if (TREE_VIA_VIRTUAL (base))
+	/* A virtual base class is initialized on in the most-derived
+	   constructor. */
+	continue;
+      if (!TYPE_USES_PVBASES (BINFO_TYPE (base)))
+	/* Class has no polymorphic vbases. */
+	continue;
+      /* Prepend vtable list for base class. */
+      result = chainon (finish_ctor_vtables_1 (base, complete_type),
+			result);
+      /* Prepend our own vtable list. */
+      result = chainon 
+	(finish_ctor_vtables_for_vbases (vbases, base, complete_type),
+	 result);
+    }
+  return result;
+}
+
+/* Add the vtables of a virtual base BINFO in front of LIST, returning
+   the new list. DO_SELF indicates whether we have to return the
+   vtable of a vfield borrowed in a derived class.  */
+
+static tree
+prepend_vbase_vfields (binfo, do_self, list)
+     tree binfo;
+     int do_self;
+     tree list;
+{
+  int i;
+  tree vtbl;
+  tree bases = BINFO_BASETYPES (binfo);
+  int vfp = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      vtbl = BINFO_VTABLE (binfo);
+      vtbl = build1 (ADDR_EXPR, vtbl_ptr_type_node, vtbl);
+      TREE_READONLY (vtbl) = 1;
+      TREE_CONSTANT (vtbl) = 1;
+      list = tree_cons (NULL_TREE, vtbl, list);
+    }
+
+  if (!bases)
+    return list;
+
+  for (i = 0; i < TREE_VEC_LENGTH (bases); i++)
+    {
+      tree base = TREE_VEC_ELT (bases, i);
+      if (TREE_VIA_VIRTUAL (base))
+	continue;
+      list = prepend_vbase_vfields (base, (i != vfp), list);
+    }
+
+  return list;
+}
+
+/* Wrapper around finish_ctor_vtables_1. Compute the vtable list for
+   type T.  */
+
+static void
+finish_ctor_vtables (t)
+     tree t;
+{
+  tree veclist = NULL_TREE;
+  tree decl, type;
+  char *name;
+  tree vbase;
+  int len;
+
+  /* This is only good for vtable thunks. */
+  my_friendly_assert (flag_vtable_thunks, 990307);
+
+  /* Start with the list of most-derived vtables. */
+
+  for (vbase = CLASSTYPE_VBASECLASSES (t); vbase;
+       vbase = TREE_CHAIN (vbase))
+    veclist = prepend_vbase_vfields (vbase, 1, veclist);
+
+  /* Compute the list of vtables for the bases. */
+  veclist = chainon (veclist, finish_ctor_vtables_1 (TYPE_BINFO (t), t));
+
+  /* Finally, we initialize the virtual bases first. */
+  for (vbase = CLASSTYPE_VBASECLASSES (t); vbase;
+       vbase = TREE_CHAIN (vbase))
+    {
+      tree vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (vbase));
+      if (!vbases)
+	continue;
+      veclist = chainon (veclist,
+			 finish_ctor_vtables_for_vbases (vbases, vbase, t));
+      veclist = chainon (veclist,
+			 finish_ctor_vtables_1 (vbase, t));
+    }
+
+  veclist = nreverse (veclist);
+
+  /* Generate the name for the vtable list. */
+  name = alloca (strlen (VLIST_NAME_FORMAT) 
+		 + TYPE_ASSEMBLER_NAME_LENGTH (t) + 2);
+  sprintf (name, VLIST_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (t));
+
+  /* Build the type of the list. */
+  len = list_length (veclist) - 1;
+  if (len < 0)
+    /* If this class has virtual bases without virtual methods, make a
+       single zero-entry in the array. This avoids zero-sized objects.  */
+    len++;
+  type = build_cplus_array_type (vtbl_ptr_type_node, 
+				 build_index_type (size_int (len)));
+
+
+  /* Produce a new decl holding the list. */
+  decl = build_lang_decl (VAR_DECL, get_identifier (name), type);
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  decl = pushdecl_top_level (decl);
+  import_export_vtable (decl, t, 0);
+  DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE, veclist);
+
+  DECL_ARTIFICIAL (decl) = 1;
+  /* This tells finish_file et.al. that this is related to virtual
+     tables. There is currently no way to distinguish between vtables
+     and vlists, other than the name of the decl.  */
+  DECL_VIRTUAL_P (decl) = 1;
+
+  /* Output the array. */
+  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+
+  /* Set the class context after finishing, so that finish thinks this
+     is an unrelated global, and then finish_vtable_vardecl knows what
+     class this is related to.  */
+  DECL_CONTEXT (decl) = t;
+} 
 
 /* Check for things that are invalid.  There are probably plenty of other
    things we should check for also.  */
@@ -4069,6 +4417,10 @@ finish_struct_1 (t, warn_anon)
   /* Make the rtl for any new vtables we have created, and unmark
      the base types we marked.  */
   finish_vtbls (TYPE_BINFO (t), 1, t);
+  /* If we use thunks, and have virtual bases, we might need to emit
+     additional vtables.  */
+  if (flag_vtable_thunks && TYPE_USES_PVBASES (t))
+    finish_ctor_vtables (t);  
   hack_incomplete_structures (t);
 
 #if 0

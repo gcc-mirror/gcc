@@ -224,13 +224,20 @@ int warn_long_long = 1;
 
 int warn_ctor_dtor_privacy = 1;
 
-/* True if we want to implement vtables using "thunks".
-   The default is off.  */
+/* 1 or 2 if we want to implement vtables using "thunks".
+   The default is off. Version 1 indicates "old" implementation;
+   Version 2 passes the __vlist argument in pvbase cases.  */
 
 #ifndef DEFAULT_VTABLE_THUNKS
 #define DEFAULT_VTABLE_THUNKS 0
 #endif
 int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
+
+#if DEFAULT_VTABLE_THUNKS == 2
+int flag_vtable_thunks_compat = 1;
+#else
+int flag_vtable_thunks_compat = 0;
+#endif
 
 /* True if we want to deal with repository information.  */
 
@@ -633,6 +640,31 @@ lang_decode_option (argc, argv)
           found = 1;
           cp_deprecated ("-fexternal-templates");
         }
+      else if (!strncmp (p, "vtable-thunks", 13))
+	{
+	  if (p[13] == '=')
+	    {
+	      flag_vtable_thunks = 
+		read_integral_parameter (p+14, p, 1);
+	    }
+	  else
+	    {
+	      /* If the machine file has a default setting, use that
+		 for -fvtable-thunks. Otherwise, set it to version
+		 2. */
+#if DEFAULT_VTABLE_THUNKS
+	      flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
+#else
+	      flag_vtable_thunks = 1;
+#endif
+	    }
+          if (flag_vtable_thunks == 2)
+            /* v2 is a compatibility mode between v1 and v3.  */
+            flag_vtable_thunks_compat = 1;
+          else if(flag_vtable_thunks == 3)
+            flag_vtable_thunks_compat = 0;
+	  found = 1;
+	}
       else if (!strcmp (p, "handle-signatures"))
         {
           flag_handle_signatures = 1;
@@ -644,7 +676,7 @@ lang_decode_option (argc, argv)
 	  flag_new_abi = 1;
 	  flag_do_squangling = 1;
 	  flag_honor_std = 1;
-	  flag_vtable_thunks = 1;
+	  flag_vtable_thunks = 2;
 	}
       else if (!strcmp (p, "no-new-abi"))
 	{
@@ -917,17 +949,27 @@ grok_x_components (specs)
 
    This function adds the "in-charge" flag to member function FN if
    appropriate.  It is called from grokclassfn and tsubst.
-   FN must be either a constructor or destructor.  */
+   FN must be either a constructor or destructor.
+
+   For vtable thunks, types with polymorphic virtual bases need an
+   additional "vlist" argument which is an array of virtual tables.
+   In addition, if backwards-compatibility to v1 thunks is requested,
+   a wrapper constructor may be needed as well.  */
 
 void
 maybe_retrofit_in_chrg (fn)
      tree fn;
 {
   tree basetype, arg_types, parms, parm, fntype;
+  tree wrapper;
+
+  if (CLASSTYPE_IS_TEMPLATE (DECL_CLASS_CONTEXT (fn)))
+    /* Never retrofit arguments on template methods. */
+    return;
 
   if (DECL_CONSTRUCTOR_P (fn)
       && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CLASS_CONTEXT (fn))
-      && ! DECL_CONSTRUCTOR_FOR_VBASE_P (fn))
+      && DECL_CONSTRUCTOR_FOR_VBASE (fn) == 0)
     /* OK */;
   else if (! DECL_CONSTRUCTOR_P (fn)
 	   && TREE_CHAIN (DECL_ARGUMENTS (fn)) == NULL_TREE)
@@ -936,7 +978,37 @@ maybe_retrofit_in_chrg (fn)
     return;
 
   if (DECL_CONSTRUCTOR_P (fn))
-    DECL_CONSTRUCTOR_FOR_VBASE_P (fn) = 1;
+    {
+      if (TYPE_USES_PVBASES (DECL_CLASS_CONTEXT (fn)))
+	DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_PVBASE;
+      else
+	DECL_CONSTRUCTOR_FOR_VBASE (fn) = CONSTRUCTOR_FOR_VBASE;
+    }
+  else if (TYPE_USES_PVBASES (DECL_CLASS_CONTEXT (fn)))
+    DECL_CONSTRUCTOR_FOR_VBASE (fn) = DESTRUCTOR_FOR_PVBASE;
+
+  /* Retrieve the arguments, because it is potentially modified twice.  */
+  arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  basetype = TREE_TYPE (TREE_VALUE (arg_types));
+  arg_types = TREE_CHAIN (arg_types);
+
+  if (DECL_CONSTRUCTOR_FOR_PVBASE_P (fn)
+      || DECL_DESTRUCTOR_FOR_PVBASE_P (fn))
+    {
+      /* Add the __vlist argument first. See __in_chrg below.  */
+      tree id = vlist_identifier;
+      if (DECL_DESTRUCTOR_FOR_PVBASE_P (fn))
+	id = get_identifier (VLIST1_NAME);
+      parm = build_decl (PARM_DECL, id, vlist_type_node);
+      SET_DECL_ARTIFICIAL (parm);
+      DECL_ARG_TYPE (parm) = vlist_type_node;
+      parms = DECL_ARGUMENTS (fn);
+      /* Add it after 'this'. */
+      TREE_CHAIN (parm) = TREE_CHAIN (parms);
+      TREE_CHAIN (parms) = parm;
+
+      arg_types = hash_tree_chain (vlist_type_node, arg_types);
+    }
 
   /* First add it to DECL_ARGUMENTS...  */
   parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
@@ -949,15 +1021,17 @@ maybe_retrofit_in_chrg (fn)
   TREE_CHAIN (parms) = parm;
 
   /* ...and then to TYPE_ARG_TYPES.  */
-  arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
-  basetype = TREE_TYPE (TREE_VALUE (arg_types));
-  arg_types = hash_tree_chain (integer_type_node, TREE_CHAIN (arg_types));
+  arg_types = hash_tree_chain (integer_type_node, arg_types);
   fntype = build_cplus_method_type (basetype, TREE_TYPE (TREE_TYPE (fn)),
 				    arg_types);
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
     fntype = build_exception_variant (fntype,
 				      TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)));
   TREE_TYPE (fn) = fntype;
+
+  if (flag_vtable_thunks_compat
+      && DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
+    make_vlist_ctor_wrapper (fn);
 }
 
 /* Classes overload their constituent function names automatically.
@@ -1042,7 +1116,8 @@ grokclassfn (ctype, function, flags, quals)
 
   if (flags == DTOR_FLAG)
     {
-      DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
+      DECL_ASSEMBLER_NAME (function) = 
+	build_destructor_name (ctype, DECL_DESTRUCTOR_FOR_PVBASE_P (function));
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
   else

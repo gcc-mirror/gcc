@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef USE_GNULIBC_1
 #undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
+#define DEFAULT_VTABLE_THUNKS 2
 #endif
 
 /* Use stabs instead of DWARF debug format.  */

@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
-   5: Not used.
+   5: TYPE_USES_PVBASES (in a class TYPE).
    6: Not used.
 
    Usage of TYPE_LANG_FLAG_?:
@@ -503,8 +503,9 @@ extern int write_virtuals;
 
 /* True for more efficient but incompatible (not fully tested)
    vtable implementation (using thunks).
-   0 is old behavior; 1 is new behavior.  */
-extern int flag_vtable_thunks;
+   0 is old behavior; 1 is new behavior; 3 adds vlist arguments;
+   2 is 3 plus backwards-compatibility to 1.  */
+extern int flag_vtable_thunks, flag_vtable_thunks_compat;
 
 /* INTERFACE_ONLY nonzero means that we are in an "interface"
    section of the compiler.  INTERFACE_UNKNOWN nonzero means
@@ -889,6 +890,10 @@ struct lang_type
    hierarchy, then we can use more efficient search techniques.  */
 #define TYPE_USES_VIRTUAL_BASECLASSES(NODE) (TREE_LANG_FLAG_3(NODE))
 
+/* Nonzero means that this _CLASSTYPE uses polymorphic virtual bases.
+   This flag is set only when we use vtable thunks.  */
+#define TYPE_USES_PVBASES(NODE) (TREE_LANG_FLAG_5(NODE))
+
 /* Vector member functions defined in this class.  Each element is
    either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
    functions with the same name end up in the same slot.  The first
@@ -965,7 +970,7 @@ struct lang_type
 /* The number of virtual functions defined for this
    _CLASSTYPE node.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
-/* The virtual base classes that this type uses.  */
+/* The list of binfos of virtual base classes that this type uses.  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 /* The virtual function pointer fields that this type contains.  */
 #define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC(NODE)->vfields)
@@ -1165,22 +1170,21 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned const_memfunc : 1;
   unsigned volatile_memfunc : 1;
-
   unsigned abstract_virtual : 1;
   unsigned permanent_attr : 1 ;
-  unsigned constructor_for_vbase_attr : 1;
+
   unsigned mutable_flag : 1;
   unsigned is_default_implementation : 1;
   unsigned saved_inline : 1;
   unsigned use_template : 2;
-
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
-  unsigned dummy : 4;
+  unsigned constructor_for_vbase_attr : 2;
+  unsigned dummy : 3;
 
   tree access;
   tree context;
@@ -1226,9 +1230,35 @@ struct lang_decl
 #define DECL_CONV_FN_P(NODE)						     \
   (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)) && TREE_TYPE (DECL_NAME (NODE)))
 
-/* For FUNCTION_DECLs: nonzero means that this function is a constructor
+#define CONSTRUCTOR_FOR_VBASE   1
+#define CONSTRUCTOR_FOR_PVBASE  2
+#define DESTRUCTOR_FOR_PVBASE   3
+
+/* For FUNCTION_DECLs: nonzero means that this function is a con/destructor
    for an object with virtual baseclasses.  */
-#define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
+#define DECL_CONSTRUCTOR_FOR_VBASE(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
+
+/* Nonzero means that this function is a constructor for an object
+   with virtual baseclasses.  */
+#define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) \
+  (DECL_CONSTRUCTOR_FOR_VBASE (NODE) == CONSTRUCTOR_FOR_VBASE)
+
+/* Nonzero means that this function is a constructor for an object
+   with virtual baseclasses which have virtual functions.  */
+#define DECL_CONSTRUCTOR_FOR_PVBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr == CONSTRUCTOR_FOR_PVBASE)
+
+/* Nonzero means that this function is a destructor for an object
+   with virtual baseclasses which have virtual functions.  */
+#define DECL_DESTRUCTOR_FOR_PVBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr == DESTRUCTOR_FOR_PVBASE)
+
+/* Nonzero means that this function is a wrapper around a PVBASE ctor.  */
+#define DECL_VLIST_CTOR_WRAPPER_P(NODE) \
+  (DECL_CONSTRUCTOR_FOR_VBASE_P (NODE) && DECL_VLIST_CTOR_WRAPPED (NODE)\
+   && TREE_CODE (DECL_VLIST_CTOR_WRAPPED (NODE)) == FUNCTION_DECL \
+   && DECL_CONSTRUCTOR_FOR_PVBASE_P (DECL_VLIST_CTOR_WRAPPED (NODE)))
+
+/* Refers to original function that NODE wraps.  */
+#define DECL_VLIST_CTOR_WRAPPED(NODE)  DECL_MEMFUNC_POINTER_TO (NODE)
 
 /* Non-zero for a FUNCTION_DECL that declares a type-info function.  */
 #define DECL_TINFO_FN_P(NODE) 					\
@@ -2168,6 +2198,7 @@ extern tree delta2_identifier;
 extern tree pfn_or_delta2_identifier;
 extern tree tag_identifier;
 extern tree vt_off_identifier;
+extern tree in_charge_identifier;
 
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
@@ -2176,6 +2207,8 @@ extern tree ptr_type_node;
 extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
 extern tree unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
+
+extern tree vlist_identifier, vlist_type_node, vlist_zero_node;
 
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
@@ -2292,6 +2325,8 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
 #define VTABLE_BASE "$vb"
 #define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt$%s")
+#define VCTABLE_NAME "__vc$"
+#define VLIST_NAME_FORMAT "__vl$%s"
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
@@ -2314,6 +2349,8 @@ extern int current_function_parms_stored;
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
 #define VTABLE_BASE ".vb"
 #define VTABLE_NAME_FORMAT (flag_vtable_thunks ? "__vt_%s" : "_vt.%s")
+#define VCTABLE_NAME  "__vc."
+#define VLIST_NAME_FORMAT "__vl.%s"
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
@@ -2346,6 +2383,8 @@ extern int current_function_parms_stored;
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))
+#define VCTABLE_NAME  "__vc_"
+#define VLIST_NAME_FORMAT "__vl_%s"
 #define VFIELD_BASE "__vfb"
 #define VFIELD_NAME "__vptr_"
 #define VFIELD_NAME_P(ID_NODE) \
@@ -2379,6 +2418,9 @@ extern int current_function_parms_stored;
 #define DTOR_NAME "__dt"
 
 #define IN_CHARGE_NAME "__in_chrg"
+#define VLIST_NAME "__vlist"
+#define VLIST1_NAME "__vlist1"
+#define VLIST_TYPE_NAME "6_Vlist"
 
 #define VTBL_PTR_TYPE		"__vtbl_ptr_type"
 #define VTABLE_DELTA_NAME	"__delta"
@@ -2556,6 +2598,8 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
      as well as the space of member functions.
    LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
      in the parameter list.
+   LOOKUP_HAS_VLIST means that the "vlist" variable is already in 
+     the parameter list.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
    DIRECT_BIND means that if a temporary is created, it should be created so
      that it lives as long as the current variable bindings; otherwise it
@@ -2594,6 +2638,7 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 #define LOOKUP_PREFER_NAMESPACES (4096)
 #define LOOKUP_PREFER_BOTH (6144)
 #define LOOKUP_TEMPLATES_EXPECTED (8192)
+#define LOOKUP_HAS_VLIST (16384)
 
 #define LOOKUP_NAMESPACES_ONLY(f)  \
   (((f) & LOOKUP_PREFER_NAMESPACES) && !((f) & LOOKUP_PREFER_TYPES))
@@ -3051,6 +3096,8 @@ extern tree build_x_delete			PROTO((tree, int, tree));
 extern tree build_delete			PROTO((tree, tree, tree, int, int));
 extern tree build_vbase_delete			PROTO((tree, tree));
 extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
+extern tree build_base_dtor_call		PROTO((tree, tree, tree));
+extern void init_vlist				PROTO((tree));
 
 /* in input.c */
 
@@ -3117,13 +3164,15 @@ extern tree build_decl_overload_real            PROTO((tree, tree, tree, tree,
 extern void set_mangled_name_for_decl           PROTO((tree));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
-extern tree build_destructor_name		PROTO((tree));
+extern tree build_destructor_name		PROTO((tree, int));
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PROTO((tree, tree));
 extern tree make_thunk				PROTO((tree, int));
 extern void emit_thunk				PROTO((tree));
 extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
+extern tree get_vlist_vtable_id			PROTO((tree, tree));
+
 
 /* in pt.c */
 extern void check_template_shadow		PROTO ((tree));

@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use more efficient ``thunks'' to implement C++ vtables. */
 #undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
+#define DEFAULT_VTABLE_THUNKS 2
 
 /* Override the default comment-starter of "/".  */
 #undef ASM_COMMENT_START

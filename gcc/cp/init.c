@@ -59,7 +59,8 @@ static tree initializing_context PROTO((tree));
 static void expand_vec_init_try_block PROTO((tree));
 static void expand_vec_init_catch_clause PROTO((tree, tree, tree, tree));
 static tree build_java_class_ref PROTO((tree));
-static void expand_cleanup_for_base PROTO((tree, tree));
+static void expand_cleanup_for_base PROTO((tree, tree, tree));
+static int  pvbasecount PROTO((tree, int));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -478,6 +479,93 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
   *vbase_ptr = vbases;
 }
 
+/* Invoke a base-class destructor. REF is the object being destroyed,
+   BINFO is the base class, and DTOR_ARG indicates whether the base
+   class should invoke delete.  */
+
+tree
+build_base_dtor_call (ref, binfo, dtor_arg)
+     tree ref, binfo, dtor_arg;
+{
+  tree args = NULL_TREE;
+  tree vlist = lookup_name (vlist_identifier, 0);
+  tree call, decr;
+
+  if (TYPE_USES_PVBASES (BINFO_TYPE (binfo)))
+    {
+      args = expr_tree_cons (NULL_TREE, vlist, args);
+      dtor_arg = build (BIT_IOR_EXPR, integer_type_node,
+			dtor_arg, build_int_2 (4, 0));
+      dtor_arg = fold (dtor_arg);
+    }
+  args = expr_tree_cons (NULL_TREE, dtor_arg, args);
+  call = build_scoped_method_call (ref, binfo, dtor_identifier, args);
+
+  if (!TYPE_USES_PVBASES (BINFO_TYPE (binfo)))
+    /* For plain inheritance, do not try to adjust __vlist. */
+    return call;
+
+  /* Now decrement __vlist by the number of slots consumed by the base
+     dtor. */
+  decr = build_int_2 (pvbasecount (BINFO_TYPE (binfo), 0), 0);
+  decr = build_binary_op (MINUS_EXPR, vlist, decr);
+  decr = build_modify_expr (vlist, NOP_EXPR, decr);
+
+  return build (COMPOUND_EXPR, void_type_node, call, decr);
+}
+
+/* Return the number of vlist entries needed to initialize TYPE,
+   depending on whether it is IN_CHARGE. */
+
+static int
+pvbasecount (type, in_charge)
+     tree type;
+     int in_charge;
+{
+  int i;
+  int result = 0;
+  tree vbase;
+
+  for (vbase = (CLASSTYPE_VBASECLASSES (type)); vbase;
+       vbase = TREE_CHAIN (vbase))
+    {
+      result += list_length (CLASSTYPE_VFIELDS (BINFO_TYPE (vbase)));
+      if (in_charge)
+	result += pvbasecount (BINFO_TYPE (vbase), 0);
+    }
+
+  for (i=0; i < CLASSTYPE_N_BASECLASSES (type); i++)
+    {
+      tree base = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), i);
+      if (TREE_VIA_VIRTUAL (base))
+	continue;
+      result += pvbasecount (BINFO_TYPE (base), 0);
+    }
+  return result;
+}
+
+void
+init_vlist (t)
+     tree t;
+{
+  char *name;
+  tree expr;
+  tree vlist = lookup_name (vlist_identifier, 0);
+
+  name = alloca (strlen (VLIST_NAME_FORMAT) 
+		 + TYPE_ASSEMBLER_NAME_LENGTH (t) + 2);
+  sprintf (name, VLIST_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (t));
+
+  expr = get_identifier (name);
+  expr = lookup_name (expr, 0);
+  expr = build1 (ADDR_EXPR, TREE_TYPE (vlist), expr);
+  if (DECL_DESTRUCTOR_FOR_PVBASE_P (current_function_decl))
+    /* Move to the end of the vlist. */
+    expr = build_binary_op (PLUS_EXPR, expr, 
+			    build_int_2 (pvbasecount (t, 1), 0));
+  expand_expr_stmt (build_modify_expr (vlist, NOP_EXPR, expr));
+}
+
 /* Perform whatever initializations have yet to be done on the base
    class of the class variable.  These actions are in the global
    variable CURRENT_BASE_INIT_LIST.  Such an action could be
@@ -510,6 +598,7 @@ emit_base_init (t, immediately)
   tree binfos = BINFO_BASETYPES (t_binfo);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   tree expr = NULL_TREE;
+  tree vlist = lookup_name (vlist_identifier, 0);
 
   if (! immediately)
     {
@@ -581,7 +670,7 @@ emit_base_init (t, immediately)
 	  free_temp_slots ();
 	}
 
-      expand_cleanup_for_base (base_binfo, NULL_TREE);
+      expand_cleanup_for_base (base_binfo, vlist, NULL_TREE);
       rbase_init_list = TREE_CHAIN (rbase_init_list);
     }
 
@@ -750,30 +839,39 @@ expand_virtual_init (binfo, decl)
    destroyed.  */
 
 static void
-expand_cleanup_for_base (binfo, flag)
+expand_cleanup_for_base (binfo, vlist, flag)
      tree binfo;
+     tree vlist;
      tree flag;
 {
   tree expr;
 
-  if (!TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
-    return;
+  if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
+    {
+      /* All cleanups must be on the function_obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
 
-  /* All cleanups must be on the function_obstack.  */
-  push_obstacks_nochange ();
-  resume_temporary_allocation ();
+      /* Call the destructor.  */
+      expr = build_base_dtor_call (current_class_ref, binfo,
+      				   integer_zero_node);
+      if (flag)
+	expr = fold (build (COND_EXPR, void_type_node,
+			    truthvalue_conversion (flag),
+			    expr, integer_zero_node));
 
-  /* Call the destructor.  */
-  expr = (build_scoped_method_call
-	  (current_class_ref, binfo, dtor_identifier,
-	   build_expr_list (NULL_TREE, integer_zero_node)));
-  if (flag)
-    expr = fold (build (COND_EXPR, void_type_node,
-			truthvalue_conversion (flag),
-			expr, integer_zero_node));
+      pop_obstacks ();
+      add_partial_entry (expr);
+    }
 
-  pop_obstacks ();
-  add_partial_entry (expr);
+  if (TYPE_USES_PVBASES (BINFO_TYPE (binfo)))
+    {
+      /* Increment vlist by number of base's vbase classes. */
+      expr = build_int_2 (pvbasecount (BINFO_TYPE (binfo), 0), 0);
+      expr = build_binary_op (PLUS_EXPR, vlist, expr);
+      expr = build_modify_expr (vlist, NOP_EXPR, expr);
+      expand_expr_stmt (expr);
+    }
 }
 
 /* Subroutine of `expand_aggr_vbase_init'.
@@ -813,6 +911,7 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 {
   tree vbases;
   tree result;
+  tree vlist = NULL_TREE;
 
   /* If there are no virtual baseclasses, we shouldn't even be here.  */
   my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
@@ -820,6 +919,11 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
   /* First set the pointers in our object that tell us where to find
      our virtual baseclasses.  */
   expand_start_cond (flag, 0);
+  if (TYPE_USES_PVBASES (type))
+    {
+      init_vlist (type);
+      vlist = lookup_name (vlist_identifier, 0);
+    }
   result = init_vbase_pointers (type, this_ptr);
   if (result)
     expand_expr_stmt (build_compound_expr (result));
@@ -851,7 +955,7 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 				init_list);
       expand_end_cond ();
       
-      expand_cleanup_for_base (vbases, flag);
+      expand_cleanup_for_base (vbases, vlist, flag);
     }
 }
 
@@ -1146,6 +1250,44 @@ expand_aggr_init (exp, init, flags)
   TREE_THIS_VOLATILE (exp) = was_volatile;
 }
 
+static tree
+no_vlist_base_init (rval, exp, init, binfo, flags)
+     tree rval, exp, init, binfo;
+     int flags;
+{
+  tree nrval, func, parms;
+
+  /* Obtain the vlist-expecting ctor.  */
+  func = rval;
+  my_friendly_assert (TREE_CODE (func) == CALL_EXPR, 20000131);
+  func = TREE_OPERAND (func, 0);
+  my_friendly_assert (TREE_CODE (func) == ADDR_EXPR, 20000132);
+
+  if (init == NULL_TREE
+      || (TREE_CODE (init) == TREE_LIST && ! TREE_TYPE (init)))
+    {
+      parms = init;
+      if (parms)
+	init = TREE_VALUE (parms);
+    }
+  else
+    parms = build_expr_list (NULL_TREE, init);
+
+  flags &= ~LOOKUP_HAS_VLIST;
+
+  parms = expr_tree_cons (NULL_TREE, integer_zero_node, parms);
+  flags |= LOOKUP_HAS_IN_CHARGE;
+  
+  nrval = build_method_call (exp, ctor_identifier,
+			     parms, binfo, flags);
+
+  func = build (NE_EXPR, boolean_type_node,
+		func, null_pointer_node);
+  nrval = build (COND_EXPR, void_type_node,
+		 func, rval, nrval);
+  return nrval;
+} 
+
 static void
 expand_default_init (binfo, true_exp, exp, init, flags)
      tree binfo;
@@ -1163,6 +1305,8 @@ expand_default_init (binfo, true_exp, exp, init, flags)
      out, then look hard.  */
   tree rval;
   tree parms;
+  tree vlist = NULL_TREE;
+  tree orig_init = init;
 
   if (init && TREE_CODE (init) != TREE_LIST
       && (flags & LOOKUP_ONLYCONVERTING))
@@ -1206,6 +1350,21 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
+      if (TYPE_USES_PVBASES (type))
+	{
+	  /* In compatibility mode, when not calling a base ctor,
+	     we do not pass the vlist argument.  */
+	  if (true_exp == exp)
+	    vlist = flag_vtable_thunks_compat? NULL_TREE : vlist_zero_node;
+	  else
+	    vlist = lookup_name (vlist_identifier, 0);
+	      
+	  if (vlist)
+	    {
+	      parms = expr_tree_cons (NULL_TREE, vlist, parms);
+	      flags |= LOOKUP_HAS_VLIST;
+	    }
+	}
       if (true_exp == exp)
 	parms = expr_tree_cons (NULL_TREE, integer_one_node, parms);
       else
@@ -1215,6 +1374,10 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 
   rval = build_method_call (exp, ctor_identifier,
 			    parms, binfo, flags);
+  if (vlist && true_exp != exp && flag_vtable_thunks_compat)
+    {
+      rval = no_vlist_base_init (rval, exp, orig_init, binfo, flags);
+    }
   if (TREE_SIDE_EFFECTS (rval))
     expand_expr_stmt (rval);
 }
@@ -2408,6 +2571,12 @@ build_new_1 (exp)
 
 	  if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
 	    {
+	      if (TYPE_USES_PVBASES (true_type)
+                  && !flag_vtable_thunks_compat)
+		{
+		  init = expr_tree_cons (NULL_TREE, vlist_zero_node, init);
+		  flags |= LOOKUP_HAS_VLIST;
+		}
 	      init = expr_tree_cons (NULL_TREE, integer_one_node, init);
 	      flags |= LOOKUP_HAS_IN_CHARGE;
 	    }
@@ -3123,9 +3292,21 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else
 	passed_auto_delete = auto_delete;
 
-      expr = build_method_call
-	(ref, dtor_identifier, build_expr_list (NULL_TREE, passed_auto_delete),
-	 NULL_TREE, flags);
+      /* Maybe pass vlist pointer to destructor.  */
+      if (TYPE_USES_PVBASES (type))
+	{
+	  /* Pass vlist_zero even if in backwards compatibility mode,
+	     as the extra argument should not hurt if it is not used.  */
+	  expr = build_expr_list (NULL_TREE, vlist_zero_node);
+	  flags |= LOOKUP_HAS_VLIST;
+	}
+      else
+	expr = NULL_TREE;
+
+      expr = expr_tree_cons (NULL_TREE, passed_auto_delete, expr);
+
+      expr = build_method_call (ref, dtor_identifier, expr,
+				NULL_TREE, flags);
 
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
@@ -3181,14 +3362,13 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  tree this_auto_delete;
 
+	  /* Should the base invoke delete? */
 	  if (BINFO_OFFSET_ZEROP (base_binfo))
 	    this_auto_delete = parent_auto_delete;
 	  else
 	    this_auto_delete = integer_zero_node;
 
-	  expr = build_scoped_method_call
-	    (ref, base_binfo, dtor_identifier,
-	     build_expr_list (NULL_TREE, this_auto_delete));
+	  expr = build_base_dtor_call (ref, base_binfo, this_auto_delete);
 	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
@@ -3200,9 +3380,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	      || TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
-	  expr = build_scoped_method_call
-	    (ref, base_binfo, dtor_identifier,
-	     build_expr_list (NULL_TREE, integer_zero_node));
+	  expr = build_base_dtor_call (ref, base_binfo, integer_zero_node);
 
 	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
 	}

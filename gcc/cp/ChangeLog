@@ -1,3 +1,108 @@
+Wed Apr 12 00:45:49 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-02-03    <loewis@informatik.hu-berlin.de>
+	* call.c (add_function_candidate): Do not add vlist ctor into
+	candidates in compatibility mode.
+	(build_user_type_conversion_1): Add LOOKUP_HAS_VLIST when adding
+	vlist.
+	(convert_like): Likewise.
+	(build_over_call): Skip vlist only if it is mentioned in flags.
+	(build_new_method_call): Do not add vlist in compatibility mode,
+	except for dtors.
+	* cp-tree.h (flag_vtable_thunks): Has now four possible values.
+	(DECL_VLIST_CTOR_WRAPPER_P, DECL_VLIST_CTOR_WRAPPED): New macros.
+	(in_charge_identifier): Declare external.
+	* decl.c (xref_basetypes): Check for vtable_thunks >=2.
+	(finish_dtor): Use bit 2 of in_chrg.
+	(finish_function): Do not finish vlist ctor wrappers.
+	* decl2.c (flag_vtable_thunks_compat): New variable.
+	(lang_decode_option): Set it accordingly.
+	(maybe_retrofit_in_chrg): Call make_vlist_ctor_wrapper.
+	* init.c (build_base_dtor_call): Pass 4 in in_chrg.
+	(no_vlist_base_init): New function.
+	(expand_default_init): Do not pass vlist in compatibility mode.
+	Try to call old base ctor if new one was not generated.
+	(build_new_1): Do not pass vlist in compatibility mode.
+	* method.c (get_id_2): Do not put _Vlist into dtor name in
+	compatibility mode.
+	(make_vlist_ctor_wrapper, emit_vlist_ctor_wrapper): New functions.
+	(synthesize_method): Call emit_vlist_ctor_wrapper.
+	* pt.c (instantiate_class_template): Check for vtable_thunks >=2.
+
+	Sat Nov 13 15:48:59 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (finish_dtor): Call mark_all_temps_used () before
+	declaring vlist.
+
+	Tue Nov  9 15:01:57 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (construct_virtual_bases): Update.
+	(expand_cleanup_for_base): Update.
+
+	Tue Nov  9 08:25:04 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (construct_virtual_bases): Update.
+	(expand_cleanup_for_base): Take vlist parameter.
+	(emit_base_init): Pass vlist to expand_cleanup_for_base.
+	(construct_virtual_bases): Likewise.
+
+	1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+        * class.c (prepare_ctor_vtable, finish_one_ctor_vtable,
+        prepend_ctor_vfields_for_vbase, finish_ctor_vtables_for_vbases,
+        finish_ctor_vtables_1, prepend_vbase_vfields,
+        finish_ctor_vtables): New functions.
+        (finish_struct_1): Call finish_ctor_vtables.
+        * cp-tree.h (TYPE_USES_PVBASES): New macro.
+        (constructor_for_vbase_attr): Widen to two bits.
+        (CONSTRUCTOR_FOR_VBASE, CONSTRUCTOR_FOR_PVBASE,
+        DESTRUCTOR_FOR_PVBASE): New macros.
+        (DECL_CONSTRUCTOR_FOR_VBASE_P): Adopt to new enumeration.
+        (DECL_CONSTRUCTOR_FOR_VBASE): New macro.
+        (DECL_CONSTRUCTOR_FOR_PVBASE_P, DECL_DESTRUCTOR_FOR_PVBASE_P): New
+        macros.
+        (vlist_identifier, vlist_type_node, vlist_zero_node): Declare.
+        (VCTABLE_NAME, VLIST_NAME_FORMAT, VLIST_NAME, VLIST1_NAME,
+        VLIST_TYPE_NAME): New macros.
+        (LOOKUP_HAS_VLIST): New macro.
+        (build_base_dtor_call, init_vlist): Declare.
+        (build_destructor_name): Add int argument.
+        * decl.c (vlist_identifier, vlist_type_node, vlist_zero_node):
+        Define.
+        (init_decl_processing): Initialize them.
+        (grokdeclarator): Handle vlist argument.
+        (copy_args_p): Likewise.
+        (grok_ctor_properties): Don't try to skip initial int for
+        templates.  Skip vlist if available.
+        (xref_basetypes): Set TYPE_USES_PVBASES.
+        (finish_dtor, finish_ctor): New functions, moved out of ...
+        (finish_function): ... here.
+        * decl2.c (lang_decode_option): Set flag_vtable_thunks explicitly.
+        (maybe_retrofit_in_chrg): Retrofit __vlist parameter.
+        (grokclassfn): Pass pvbase flag into mangled name.
+        * init.c (build_base_dtor_call): New function.
+        (build_partial_cleanup_for): Call it.
+        (pvbasecount, init_vlist, ): New functions.
+        (emit_base_init): Process vlist argument.
+        (expand_aggr_vbase_init_1): Likewise.
+        (expand_aggr_vbase_init): Likewise.
+        (expand_default_init): Likewise.
+        (build_new_1): Pass null vlist argument.
+        (build_delete): Likewise. Call build_base_dtor_call.
+        * method.c (process_overload_item): Mangle _Vlist specially.
+        (build_base_path, get_vlist_vtable_id): New functions.
+        (build_destructor_name): Potentially mangle _Vlist into it.
+        (do_build_copy_constructor): Skip vlist argument.
+        (synthesize_method): Likewise.
+        * pt.c (has_pvbases_p): New function.
+        (instantiate_class_template): Call it.
+        (tsubst_decl): Retrofit before mangling. Pass pvbase_p to
+        destructor mangling.
+        * search.c (expand_direct_vtbls_init_thunks): New function.
+        (expand_indirect_vtbls_init_thunks): New function.
+        (expand_indirect_vtbls_init): Call it.
+        * call.c (add_function_candidate): Process vlist argument.
+        (build_user_type_conversion_1): Add vlist argument.
+        (convert_like): Likewise.
+        (build_over_call): Likewise.
+        (build_new_method_call): Likewise.
+
 2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* typeck2.c (my_friendly_abort): Use GCCBUGURL.

@@ -1065,8 +1065,8 @@ add_function_candidate (candidates, fn, arglist, flags)
   tree parmnode, argnode;
   int viable = 1;
 
-  /* The `this' and `in_chrg' arguments to constructors are not considered
-     in overload resolution.  */
+  /* The `this', `in_chrg', and `vlist' arguments to constructors are
+     not considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
     {
       parmlist = TREE_CHAIN (parmlist);
@@ -1075,6 +1075,22 @@ add_function_candidate (candidates, fn, arglist, flags)
 	{
 	  parmlist = TREE_CHAIN (parmlist);
 	  arglist = TREE_CHAIN (arglist);
+	}
+      if ((flags & LOOKUP_HAS_VLIST)
+	  && DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
+	{
+	  parmlist = TREE_CHAIN (parmlist);
+	  arglist = TREE_CHAIN (arglist);
+	}
+      else if (!(flags & LOOKUP_HAS_VLIST)
+	       && !DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
+	/* Ok */;
+      else
+	{
+	  /* The ctor expects a vlist and the arguments don't have
+	     one, or vice versa, so fn is not even a candidate, since
+	     the corresponding ctor would be the candidate.  */
+	  return candidates;
 	}
     }
 
@@ -2071,6 +2087,11 @@ build_user_type_conversion_1 (totype, expr, flags)
       tree t = build_int_2 (0, 0);
       TREE_TYPE (t) = build_pointer_type (totype);
       args = build_scratch_list (NULL_TREE, expr);
+      if (TYPE_USES_PVBASES (totype) && !flag_vtable_thunks_compat)
+	{
+	  args = scratch_tree_cons (NULL_TREE, vlist_zero_node, args);
+	  flags |= LOOKUP_HAS_VLIST;
+	}
       if (TYPE_USES_VIRTUAL_BASECLASSES (totype))
 	args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
       args = scratch_tree_cons (NULL_TREE, t, args);
@@ -3038,6 +3059,7 @@ convert_like (convs, expr)
 	  = WRAPPER_PTR (TREE_OPERAND (convs, 1));
 	tree fn = cand->fn;
 	tree args;
+	int flags = LOOKUP_NORMAL;
 
 	if (DECL_CONSTRUCTOR_P (fn))
 	  {
@@ -3045,13 +3067,19 @@ convert_like (convs, expr)
 	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (fn));
 
 	    args = build_scratch_list (NULL_TREE, expr);
+	    if (TYPE_USES_PVBASES (DECL_CONTEXT (fn))
+                && !flag_vtable_thunks_compat)
+	      {
+		args = scratch_tree_cons (NULL_TREE, vlist_zero_node, args);
+		flags != LOOKUP_HAS_VLIST;
+	      }
 	    if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
 	      args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
 	    args = scratch_tree_cons (NULL_TREE, t, args);
 	  }
 	else
 	  args = build_this (expr);
-	expr = build_over_call (cand, args, LOOKUP_NORMAL);
+	expr = build_over_call (cand, args, flags);
 
 	/* If this is a constructor or a function returning an aggr type,
 	   we need to build up a TARGET_EXPR.  */
@@ -3260,6 +3288,13 @@ build_over_call (cand, args, flags)
 	  arg = TREE_CHAIN (arg);
 	  parm = TREE_CHAIN (parm);
 	}
+      if (flags & LOOKUP_HAS_VLIST)
+	{
+	  converted_args = expr_tree_cons
+	    (NULL_TREE, TREE_VALUE (arg), converted_args);
+	  arg = TREE_CHAIN (arg);
+	  parm = TREE_CHAIN (parm);
+	}
     }      
   /* Bypass access control for 'this' parameter.  */
   else if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
@@ -3368,6 +3403,8 @@ build_over_call (cand, args, flags)
       tree targ;
       arg = TREE_CHAIN (converted_args);
       if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+	arg = TREE_CHAIN (arg);
+      if (flags & LOOKUP_HAS_VLIST)
 	arg = TREE_CHAIN (arg);
       arg = TREE_VALUE (arg);
 
@@ -3544,6 +3581,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
      remove it for error reporting.  */
   if (flags & LOOKUP_HAS_IN_CHARGE)
     user_args = TREE_CHAIN (args);
+  if (flags & LOOKUP_HAS_VLIST)
+    user_args = TREE_CHAIN (user_args);
 
   args = resolve_args (args);
 
@@ -3616,6 +3655,12 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       if (name == ctor_identifier && TYPE_USES_VIRTUAL_BASECLASSES (basetype)
 	  && ! (flags & LOOKUP_HAS_IN_CHARGE))
 	{
+	  if (TYPE_USES_PVBASES(basetype)
+              && (!flag_vtable_thunks_compat || (name == dtor_identifier)))
+	    {
+	      args = scratch_tree_cons (NULL_TREE, vlist_zero_node, args);
+	      flags |= LOOKUP_HAS_VLIST;
+	    }
 	  flags |= LOOKUP_HAS_IN_CHARGE;
 	  args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
 	}
