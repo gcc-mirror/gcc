@@ -35,19 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.lang;
+
 
 /**
  * Void is a placeholder class so that the variable <code>Void.TYPE</code>
  * (also available as <code>void.class</code>) can be supported for
  * reflection return types.
  *
- * <p>This class could be Serializable, but that is up to Sun.
+ * <p>This class could be Serializable, but that is up to Sun.</p>
  *
  * @author Paul Fisher
  * @author John Keiser
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  * @status updated to 1.4
  */
@@ -62,5 +62,7 @@ public final class Void
   /**
    * Void is non-instantiable.
    */
-  private Void() { }
+  private Void()
+  {
+  }
 }

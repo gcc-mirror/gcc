@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+
 /**
  * ThreadLocal objects have a different state associated with every
  * Thread that accesses them. Every access to the ThreadLocal object
@@ -51,8 +52,11 @@ import java.util.WeakHashMap;
  * <p>The first time a ThreadLocal object is accessed on a particular
  * Thread, the state for that Thread's copy of the local variable is set by
  * executing the method <code>initialValue()</code>.
+ * </p>
  *
  * <p>An example how you can use this:
+ * </p>
+ *
  * <pre>
  * class Connection
  * {
@@ -65,20 +69,22 @@ import java.util.WeakHashMap;
  *     };
  * ...
  * }
- * </pre></br>
+ * </pre>
  *
- * Now all instances of connection can see who the owner of the currently
+ * <p>Now all instances of connection can see who the owner of the currently
  * executing Thread is by calling <code>owner.get()</code>. By default any
  * Thread would be associated with 'nobody'. But the Connection object could
  * offer a method that changes the owner associated with the Thread on
  * which the method was called by calling <code>owner.put("somebody")</code>.
  * (Such an owner changing method should then be guarded by security checks.)
+ * </p>
  *
  * <p>When a Thread is garbage collected all references to values of
  * the ThreadLocal objects associated with that Thread are removed.
+ * </p>
  *
- * @author Mark Wielaard <mark@klomp.org>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Mark Wielaard (mark@klomp.org)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

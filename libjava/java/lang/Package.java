@@ -41,6 +41,7 @@ import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+
 /**
  * Everything you ever wanted to know about a package. This class makes it
  * possible to attach specification and implementation information to a
@@ -63,7 +64,7 @@ import java.util.StringTokenizer;
  * then the other version, etc. (If a version has no minor, micro, etc numbers
  * then they are considered the be 0.)
  *
- * @author Mark Wielaard <mark@klomp.org>
+ * @author Mark Wielaard (mark@klomp.org)
  * @see ClassLoader#definePackage(String, String, String, String, String,
  *      String, String, URL)
  * @since 1.2
@@ -72,28 +73,28 @@ import java.util.StringTokenizer;
 public class Package
 {
   /** The name of the Package */
-  final private String name;
+  private final String name;
 
   /** The name if the implementation */
-  final private String implTitle;
+  private final String implTitle;
 
   /** The vendor that wrote this implementation */
-  final private String implVendor;
+  private final String implVendor;
 
   /** The version of this implementation */
-  final private String implVersion;
+  private final String implVersion;
 
   /** The name of the specification */
-  final private String specTitle;
+  private final String specTitle;
 
   /** The name of the specification designer */
-  final private String specVendor;
+  private final String specVendor;
 
   /** The version of this specification */
-  final private String specVersion;
+  private final String specVersion;
 
   /** If sealed the origin of the package classes, otherwise null */
-  final private URL sealed;
+  private final URL sealed;
 
   /**
    * A package local constructor for the Package class. All parameters except
