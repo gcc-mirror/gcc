@@ -77,16 +77,20 @@ timevar_id_t;
 #undef DEFTIMEVAR
 
 /* Execute the sequence: timevar_pop (TV), return (E);  */
-#define POP_TIMEVAR_AND_RETURN(TV, E)  return (timevar_pop (TV), (E))
+#define POP_TIMEVAR_AND_RETURN(TV, E)  do { timevar_pop (TV); return (E); }while(0)
+#define timevar_pop(TV) do { if (timevar_enable) timevar_pop_1 (TV); }while(0)
+#define timevar_push(TV) do { if (timevar_enable) timevar_push_1 (TV); }while(0)
 
 extern void timevar_init (void);
-extern void timevar_push (timevar_id_t);
-extern void timevar_pop (timevar_id_t);
+extern void timevar_push_1 (timevar_id_t);
+extern void timevar_pop_1 (timevar_id_t);
 extern void timevar_start (timevar_id_t);
 extern void timevar_stop (timevar_id_t);
 extern void timevar_print (FILE *);
 
 /* Provided for backward compatibility.  */
 extern void print_time (const char *, long);
+
+extern bool timevar_enable;
 
 #endif /* ! GCC_TIMEVAR_H */

@@ -1,5 +1,20 @@
 2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* timevar.c (timevar_enable): Change from
+	static.
+	(timevar_push): Rename to ...
+	(timevar_push_1): this and remove the
+	enabled check.
+	(timevar_pop): Rename to ...
+	(timevar_pop_1): this and remove the
+	enabled check.
+	* timevar.h (POP_TIMEVAR_AND_RETURN): Use do/while loops.
+	(timevar_pop): New macro.
+	(timevar_push): New macro.
+	(timevar_enable): Declare.
+
+2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* config/darwin.h (REAL_LIBGCC_SPEC): Define to use shared
 	libgcc for shared libraries.
 
