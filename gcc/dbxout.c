@@ -321,6 +321,7 @@ static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
 static void dbxout_global_decl		PARAMS ((tree));
+static void dbxout_handle_pch		PARAMS ((unsigned));
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
@@ -332,7 +333,6 @@ static void dbxout_begin_function	PARAMS ((tree));
 static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
 static void dbxout_end_block		PARAMS ((unsigned, unsigned));
 static void dbxout_function_decl	PARAMS ((tree));
-static void dbxout_handle_pch		PARAMS ((unsigned));
 
 const struct gcc_debug_hooks dbx_debug_hooks =
 {
