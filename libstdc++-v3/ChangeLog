@@ -1,3 +1,9 @@
+2004-02-29  Phil Edwards  <phil@codesourcery.com>
+
+	* testsuite/Makefile.am (check-abi, check-abi-verbose):  Copy
+	the summary file to the logfile.
+	* testsuite/Makefile.in:  Regenerate.
+
 2004-02-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/cpu/hppa/atomicity.h (__atomic_add): Make first argument
