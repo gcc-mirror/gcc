@@ -3667,6 +3667,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
 	     be viewed as just an efficiency improvement.  */
 	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_USE (VOIDmode, slot),
+					   call_fusage);
 	  emit_move_insn (slot, val);
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	  mode = Pmode;
