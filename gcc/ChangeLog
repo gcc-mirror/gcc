@@ -1,3 +1,9 @@
+2005-03-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK
+	from being used for symbols with vague linkage when
+	HAVE_GAS_COMDAT_GROUP is true.
+
 2005-03-08  J"orn Rennecke <joern.rennecke@st.com>
 
 	* jump.c (invert_jump_1): Don't call redirect_jump_1 with
