@@ -1,5 +1,10 @@
 2001-06-02  Anthony Green  <green@redhat.com>
 
+	* java/lang/natRuntime.cc (_Jv_FindSymbolInExecutable): Provide an
+	alternate when USE_LTDL not defined.
+
+2001-06-02  Anthony Green  <green@redhat.com>
+
 	* configure: Rebuild.
 	* configure.in: Remove data_start hack.
 	* libgcj.spec.in: Ditto.

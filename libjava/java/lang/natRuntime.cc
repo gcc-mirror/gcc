@@ -72,6 +72,14 @@ _Jv_FindSymbolInExecutable (const char *symname)
   return lt_dlsym (NULL, symname);
 }
 
+#else
+
+void *
+_Jv_FindSymbolInExecutable (const char *symname)
+{
+  return NULL;
+}
+
 #endif /* USE_LTDL */
 
 void
