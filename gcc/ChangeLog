@@ -1,5 +1,8 @@
 2003-05-02  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_attribute_table): Add 'extern'
+	to tentative declaration.
+	
 	* config/rs6000/sysv4.h (SYMBOL_FLAG_SMALL_V4): Delete.
 	(SYMBOL_FLAG_SMALL_V4): Delete.
 	* config/rs6000/rs6000.c (small_data_operand): Use SYMBOL_REF_SMALL_P.
