@@ -4351,6 +4351,7 @@ simplify_set (x)
 #ifdef HAVE_conditional_move
       && ! HAVE_conditional_move
 #endif
+      && GET_MODE_CLASS (GET_MODE (src)) == MODE_INT
       && (GET_CODE (XEXP (src, 0)) == EQ || GET_CODE (XEXP (src, 0)) == NE)
       && XEXP (XEXP (src, 0), 1) == const0_rtx
       && (num_sign_bit_copies (XEXP (XEXP (src, 0), 0),
