@@ -116,7 +116,7 @@ fi
 
 # In general, the C++ compiler should always link C++ objects.
 case $target in
-*aix3* | *aix4*)
+*aix3* | *aix4* | *aix5*)
   # AIX just has to be different, doesn't it? :-\
   LD=makeC++SharedLib_r
   LDFLAGS="$LDFLAGS -p 0"
@@ -134,7 +134,7 @@ case "$host_os" in
     # FIXME: insert proper C++ library support
     ld_shlibs=no
     ;;
-  aix4*)
+  aix4* | aix5*)
     archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}-bE:$export_symbols ${wl}-bnoentry${allow_undefined_flag}~$AR $AR_FLAGS $output_objdir/$libname$release.a $output_objdir/$soname'
     # -bexpall does not export symbols beginning with underscore (_)
     always_export_symbols=yes
@@ -621,7 +621,7 @@ if test "$with_gcc" = yes; then
   esac
 else
   case "$host_os" in
-    aix4*)
+    aix4* | aix5*)
       # All AIX code is PIC.
       ;;
     chorus*)

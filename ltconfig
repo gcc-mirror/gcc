@@ -942,7 +942,7 @@ aix3*)
   soname_spec='${libname}${release}.so$major'
   ;;
 
-aix4*)
+aix4* | aix5*)
   version_type=linux
   # AIX has no versioning support, so currently we can not hardcode correct
   # soname into executable. Probably we can add versioning support to
@@ -1432,7 +1432,7 @@ aix3*)
   fi
   ;;
 
-aix4*)
+aix4* | aix5*)
   test "$enable_shared" = yes && enable_static=no
   ;;
 esac
