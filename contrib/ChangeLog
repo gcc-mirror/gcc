@@ -1,3 +1,8 @@
+2003-04-12  Matthias Klose  <doko@debian.org>
+ 
+	* test_installed: Add options to run objc tests.
+	In generated site.exp, initialize rootme, CFLAGS, CXXFLAGS.
+
 2003-01-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc_update (files_and_dependencies): Add gcc/cp/cfns.h depends
