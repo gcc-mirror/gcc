@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA. */
 #include "expr.h"
 #include "toplev.h"
 #include "basic-block.h"
+#include "ggc.h"
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
@@ -248,6 +249,7 @@ static void ix86_reorder_insn PROTO ((rtx *, rtx *));
 static rtx * ix86_pent_find_pair PROTO ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
 static void ix86_init_machine_status PROTO ((struct function *));
+static void ix86_mark_machine_status PROTO ((struct function *));
 
 struct ix86_address
 {
@@ -353,6 +355,7 @@ override_options ()
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
+  mark_machine_status = ix86_mark_machine_status;
 
   /* Validate registers in register allocation order.  */
   if (ix86_reg_alloc_order)
@@ -4962,7 +4965,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 
 static void
 ix86_init_machine_status (p)
-    struct function *p;
+     struct function *p;
 {
   enum machine_mode mode;
   int n;
@@ -4973,6 +4976,20 @@ ix86_init_machine_status (p)
        mode = (enum machine_mode) ((int) mode + 1))
     for (n = 0; n < MAX_386_STACK_LOCALS; n++)
       ix86_stack_locals[(int) mode][n] = NULL_RTX;
+}
+
+/* Mark machine specific bits of P for GC.  */
+static void
+ix86_mark_machine_status (p)
+     struct function *p;
+{
+  enum machine_mode mode;
+  int n;
+
+  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
+       mode = (enum machine_mode) ((int) mode + 1))
+    for (n = 0; n < MAX_386_STACK_LOCALS; n++)
+      ggc_mark_rtx (p->machine->stack_locals[(int) mode][n]);
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.

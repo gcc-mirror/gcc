@@ -659,7 +659,7 @@ SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
-  c-aux-info.o c-common.o c-iterate.o ggc-callbacks.o @extra_c_objs@
+  c-aux-info.o c-common.o c-iterate.o @extra_c_objs@
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1312,7 +1312,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 # C language specific files.
 
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
+c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h ggc.h \
     $(srcdir)/c-parse.h c-tree.h c-common.h input.h flags.h system.h toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.h: $(srcdir)/c-parse.c
@@ -1330,15 +1330,15 @@ $(srcdir)/c-gperf.h: c-parse.gperf
 	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
-c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h ggc.h \
     c-lex.h flags.h function.h output.h toplev.h defaults.h
 c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
     flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
-c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h ggc.h \
     c-lex.h toplev.h output.h function.h
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
     c-common.h $(srcdir)/c-parse.h $(srcdir)/c-gperf.h c-pragma.h input.h \
-    intl.h flags.h toplev.h output.h mbchar.h
+    intl.h flags.h toplev.h output.h mbchar.h ggc.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
     c-common.h flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
@@ -1395,7 +1395,7 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
-	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H)
+	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) ggc.h
 
 # Language-independent files.
 
@@ -1602,7 +1602,7 @@ reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) recog.h \
 dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h
 lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H)
 
-$(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
+$(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h system.h toplev.h function.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)

@@ -174,6 +174,9 @@ extern tree maybe_objc_method_name		PROTO((tree));
 extern int recognize_objc_keyword		PROTO((void));
 extern tree build_objc_string			PROTO((int, const char *));
 
+/* in c-parse.in */
+extern void c_parse_init			PROTO((void));
+
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PROTO((tree, int, int, int));
 
@@ -222,6 +225,7 @@ extern tree lookup_name_current_level_global	PROTO((tree));
 extern tree maybe_build_cleanup                 PROTO((tree));
 extern void parmlist_tags_warning               PROTO((void));
 extern void pending_xref_error                  PROTO((void));
+extern void mark_c_function_context             PROTO((struct function *));
 extern void push_c_function_context             PROTO((struct function *));
 extern void pop_c_function_context              PROTO((struct function *));
 extern void pop_label_level                     PROTO((void));

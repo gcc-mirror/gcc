@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "toplev.h"
 #include "output.h"
+#include "ggc.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -72,6 +73,9 @@ lang_init ()
 
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;
+  mark_lang_status = &mark_c_function_context;
+
+  c_parse_init ();
 }
 
 void

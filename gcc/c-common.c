@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "c-pragma.h"
 #include "rtl.h"
+#include "ggc.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -347,7 +348,7 @@ combine_strings (strings)
       if (wide_flag)
 	length = length * wchar_bytes + wide_length;
 
-      p = savealloc (length);
+      p = ggc_p ? ggc_alloc_string (NULL, length) : savealloc (length);
 
       /* Copy the individual strings into the new combined string.
 	 If the combined string is wide, convert the chars to ints
