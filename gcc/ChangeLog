@@ -1,3 +1,28 @@
+2001-12-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* rtl.def (PREFETCH): New rtx code.
+	* doc/rtl.texi (PREFETCH): Add documentation.
+	* function.c (instantiate_virtual_regs_1): Handle PREFETCH rtx.
+	* rtlanal.c (reg_referenced_p): Ditto.
+	* sched-vis.c (print_exp):  Ditto.
+	* ssa-dce.c (find_inherently_necessary):  Ditto.
+
+	* config/ia64/ia64.h (SIMULTANEOUS PREFETCHES): Define.
+	  (PREFETCH_BLOCK): Define.
+	* config/ia64/ia64.md (itanium_class): Add lfetch.
+	  (prefetch, prefetch_internal): New.
+
+	* builtin-types.def (BT_FN_VOID_PTR_INT_INT): New.
+	* builtins.def (BUILT_IN_PREFETCH): New.
+	* builtins.c (expand_builtin_expect): New.
+	  (expand_builtin): Call it.
+	* doc/extend.texi: Document __builtin_expect.
+
+	* config/i386/i386.md (prefetch): Rename as prefetch_sse to avoid
+	  conflicts with new generic prefetch functionality.
+	* config/i386/i386.c (ix86_expand_builtin): Use new name for
+	  prefetch_sse.
+
 2001-12-02  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/Make-lang.in: Update copyright.
