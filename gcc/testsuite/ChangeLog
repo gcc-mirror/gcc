@@ -1,3 +1,8 @@
+1999-04-20  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/19990419-0.f: New test.
+	* g77.f-torture/execute/19990419-1.f: New test.
+
 Sat Apr 17 16:56:48 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/uninit-9.c (func): Use __builtin_alloca instead of alloca
