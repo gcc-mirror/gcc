@@ -1,3 +1,8 @@
+2003-05-13  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (build_modify_expr): Don't always stabilize the lhs and
+	rhs.  Do stabilize the lhs of a MODIFY_EXPR used on the lhs.
+
 2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* method.c (synthesize_method): Call push/pop_deferring_access_checks.
