@@ -34,26 +34,25 @@ extern "C" {
 #endif
 
 #include  "record.h"
-
+
+/* This duplicates the beginning of object.h.
+   Except that we use Class_t for a pointer, whereas it uses Class.  */
 
 #define nil (id)0                               /* id of Nil instance */
 #define Nil (Class_t)0                          /* id of Nil class */
-typedef char* STR;                              /* String alias */
+typedef char *STR;                              /* String alias */
 
                                                 /* Boolean typedefs */
 typedef char  BOOL;
 #define YES   (BOOL)1
 #define NO    (BOOL)0
 
+
 /* Definition of a selector.  Selectors are really of type char*. The
    run-time hashes the string's address to locate the method.  If the
    method isn't in the hash table then a search is made through the
    class hierarchy using strcmp to locate the method.  */
-#if 0
-typedef struct objc_selector*   SEL;
-#else
-typedef void* SEL;
-#endif
+typedef void *SEL;
 
 /* ObjC uses this typedef for untyped instances.  */
 
@@ -62,8 +61,8 @@ typedef struct objc_object {
 } *id;
 
 /* Prototype for method functions. */
-typedef id  (*IMP)(id, SEL, ...); 
-
+typedef id (*IMP)(id, SEL, ...); 
+
 /* Filer types used to describe Ivars and Methods.  */
 #define _C_ID       '@'
 #define _C_CLASS    '#'
