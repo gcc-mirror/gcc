@@ -1227,7 +1227,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
       /* This is better than explicit arithmetic, since it avoids overflow.  */
       size_tree = size_binop (CEIL_DIV_EXPR,
-			  DECL_SIZE (decl), size_int (BITS_PER_UNIT));
+			      DECL_SIZE (decl), size_int (BITS_PER_UNIT));
 
       if (TREE_INT_CST_HIGH (size_tree) != 0)
 	{
