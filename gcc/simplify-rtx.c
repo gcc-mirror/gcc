@@ -2319,7 +2319,8 @@ simplify_subreg (outermode, op, innermode, byte)
 	  else
 	    return NULL_RTX;
 	}
-      else
+      else if (GET_MODE_CLASS (outermode) != MODE_VECTOR_INT
+	       && GET_MODE_CLASS (outermode) != MODE_VECTOR_FLOAT)
         /* This shouldn't happen, but let's not do anything stupid.  */
 	return NULL_RTX;
     }
@@ -2329,6 +2330,22 @@ simplify_subreg (outermode, op, innermode, byte)
     {
       int offset, part;
       unsigned HOST_WIDE_INT val = 0;
+
+      if (GET_MODE_CLASS (outermode) == MODE_VECTOR_INT
+	  || GET_MODE_CLASS (outermode) == MODE_VECTOR_FLOAT)
+	{
+	  /* Construct a CONST_VECTOR from individual subregs.  */
+	  enum machine_mode submode = GET_MODE_INNER (outermode);
+	  int subsize = GET_MODE_UNIT_SIZE (outermode);
+	  int i, elts = GET_MODE_NUNITS (outermode);
+	  rtvec v = rtvec_alloc (elts);
+
+	  for (i = 0; i < elts; i++, byte += subsize)
+	    {
+	      RTVEC_ELT (v, i) = simplify_subreg (submode, op, innermode, byte);
+	    }
+	  return gen_rtx_CONST_VECTOR (outermode, v);
+	}
 
       /* ??? This code is partly redundant with code below, but can handle
 	 the subregs of floats and similar corner cases.

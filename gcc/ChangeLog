@@ -1,3 +1,13 @@
+Thu Jul  4 07:36:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* simplify-rtx.c (simplify_subreg): Reduce problem of finding
+	vector mode subregs of constants to finding integer mode
+	subregs of constants.
+	* cse.c (cse_insn): Use simplify_gen_subreg.
+	* convert.c (convert_to_integer): Don't strip a NOP_EXPR
+	From a vector mode expression of different size than the
+	target mode.
+
 2002-07-03  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/linux.h: Add #undef for SUBTARGET_CPP_SPEC.
