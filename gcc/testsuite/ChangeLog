@@ -1,3 +1,8 @@
+2004-10-30  Matt Austern  <austern@apple.com>
+
+	PR c++/17542
+	* g++.dg/ext/attrib18.C: New test.
+	
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18096

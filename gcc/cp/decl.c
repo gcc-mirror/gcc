@@ -3596,6 +3596,15 @@ shadow_tag (cp_decl_specifier_seq *declspecs)
   if (!t)
     return NULL_TREE;
 
+  if (declspecs->attributes)
+    {
+      cp_warning_at ("attribute ignored in declaration of %q#T", t);
+      cp_warning_at ("attribute for %q#T must follow the %qs keyword",
+		     t,
+		     class_key_or_enum_as_string (t));
+
+    }
+
   maybe_process_partial_specialization (t);
 
   /* This is where the variables in an anonymous union are

@@ -1,3 +1,12 @@
+1004-10-28  Matt Austern  <austern@apple.com>
+
+	PR c++/17542
+	* cp-tree.h (class_key_or_enum_as_string): Declare.
+	* error.c (class_key_or_enum): Rename to class_key_or_enum_as_string
+	and remove static qualifier.
+	* decl.c (shadow_tag): Warn about ignored attributes in class/struct/
+	union/enum declaration.
+	
 2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* pt.c: Fix a comment typo.
