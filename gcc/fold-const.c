@@ -6336,25 +6336,11 @@ fold_complex_add (tree type, tree ac, tree bc, enum tree_code code)
 /* Perform some simplifications of complex multiplication when one or more
    of the components are constants or zeros.  Return non-null if successful.  */
 
-static tree
-fold_complex_mult (tree type, tree ac, tree bc)
+tree
+fold_complex_mult_parts (tree type, tree ar, tree ai, tree br, tree bi)
 {
-  tree ar, ai, br, bi, rr, ri, inner_type, zero;
+  tree rr, ri, inner_type, zero;
   bool ar0, ai0, br0, bi0, bi1;
-
-  if (TREE_CODE (ac) == COMPLEX_EXPR)
-    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
-  else if (TREE_CODE (ac) == COMPLEX_CST)
-    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
-  else
-    return NULL;
-
-  if (TREE_CODE (bc) == COMPLEX_EXPR)
-    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
-  else if (TREE_CODE (bc) == COMPLEX_CST)
-    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
-  else
-    return NULL;
 
   inner_type = TREE_TYPE (type);
   zero = NULL;
@@ -6432,7 +6418,7 @@ fold_complex_mult (tree type, tree ac, tree bc)
     }
   else if (ar0 && br0)
     {
-      rr = fold (build2 (MULT_EXPR, inner_type, ai, br));
+      rr = fold (build2 (MULT_EXPR, inner_type, ai, bi));
       rr = fold (build1 (NEGATE_EXPR, inner_type, rr));
       ri = zero;
     }
@@ -6462,6 +6448,152 @@ fold_complex_mult (tree type, tree ac, tree bc)
     return NULL;
 
   return fold (build2 (COMPLEX_EXPR, type, rr, ri));
+}
+
+static tree
+fold_complex_mult (tree type, tree ac, tree bc)
+{
+  tree ar, ai, br, bi;
+
+  if (TREE_CODE (ac) == COMPLEX_EXPR)
+    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
+  else if (TREE_CODE (ac) == COMPLEX_CST)
+    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
+  else
+    return NULL;
+
+  if (TREE_CODE (bc) == COMPLEX_EXPR)
+    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
+  else if (TREE_CODE (bc) == COMPLEX_CST)
+    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
+  else
+    return NULL;
+
+  return fold_complex_mult_parts (type, ar, ai, br, bi);
+}
+
+/* Perform some simplifications of complex division when one or more of
+   the components are constants or zeros.  Return non-null if successful.  */
+
+tree
+fold_complex_div_parts (tree type, tree ar, tree ai, tree br, tree bi,
+			enum tree_code code)
+{
+  tree rr, ri, inner_type, zero;
+  bool ar0, ai0, br0, bi0, bi1;
+
+  inner_type = TREE_TYPE (type);
+  zero = NULL;
+
+  if (SCALAR_FLOAT_TYPE_P (inner_type))
+    {
+      ar0 = ai0 = br0 = bi0 = bi1 = false;
+
+      /* We're only interested in +0.0 here, thus we don't use real_zerop.  */
+
+      if (TREE_CODE (ar) == REAL_CST
+	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ar), dconst0))
+	ar0 = true, zero = ar;
+
+      if (TREE_CODE (ai) == REAL_CST
+	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ai), dconst0))
+	ai0 = true, zero = ai;
+
+      if (TREE_CODE (br) == REAL_CST
+	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (br), dconst0))
+	br0 = true, zero = br;
+
+      if (TREE_CODE (bi) == REAL_CST)
+	{
+	  if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst0))
+	    bi0 = true, zero = bi;
+	  else if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst1))
+	    bi1 = true;
+	}
+    }
+  else
+    {
+      ar0 = integer_zerop (ar);
+      if (ar0)
+	zero = ar;
+      ai0 = integer_zerop (ai);
+      if (ai0)
+	zero = ai;
+      br0 = integer_zerop (br);
+      if (br0)
+	zero = br;
+      bi0 = integer_zerop (bi);
+      if (bi0)
+	{
+	  zero = bi;
+	  bi1 = false;
+	}
+      else
+	bi1 = integer_onep (bi);
+    }
+
+  /* We won't optimize anything below unless something is zero.  */
+  if (zero == NULL)
+    return NULL;
+
+  if (ai0 && bi0)
+    {
+      rr = fold (build2 (code, inner_type, ar, br));
+      ri = zero;
+    }
+  else if (ai0 && br0)
+    {
+      rr = zero;
+      ri = fold (build2 (code, inner_type, ar, bi));
+      ri = fold (build1 (NEGATE_EXPR, inner_type, ri));
+    }
+  else if (ar0 && bi0)
+    {
+      rr = zero;
+      ri = fold (build2 (code, inner_type, ai, br));
+    }
+  else if (ar0 && br0)
+    {
+      rr = fold (build2 (code, inner_type, ai, bi));
+      ri = zero;
+    }
+  else if (bi0)
+    {
+      rr = fold (build2 (code, inner_type, ar, br));
+      ri = fold (build2 (code, inner_type, ai, br));
+    }
+  else if (br0)
+    {
+      rr = fold (build2 (code, inner_type, ai, bi));
+      ri = fold (build2 (code, inner_type, ar, bi));
+      ri = fold (build1 (NEGATE_EXPR, inner_type, ri));
+    }
+  else
+    return NULL;
+
+  return fold (build2 (COMPLEX_EXPR, type, rr, ri));
+}
+
+static tree
+fold_complex_div (tree type, tree ac, tree bc, enum tree_code code)
+{
+  tree ar, ai, br, bi;
+
+  if (TREE_CODE (ac) == COMPLEX_EXPR)
+    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
+  else if (TREE_CODE (ac) == COMPLEX_CST)
+    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
+  else
+    return NULL;
+
+  if (TREE_CODE (bc) == COMPLEX_EXPR)
+    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
+  else if (TREE_CODE (bc) == COMPLEX_CST)
+    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
+  else
+    return NULL;
+
+  return fold_complex_div_parts (type, ar, ai, br, bi, code);
 }
 
 /* Perform constant folding and related simplification of EXPR.
@@ -8042,6 +8174,13 @@ fold (tree expr)
 				 TREE_OPERAND (arg1, 0)));
 	}
 
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	{
+	  tem = fold_complex_div (type, arg0, arg1, code);
+	  if (tem)
+	    return tem;
+	}
+
       if (flag_unsafe_math_optimizations)
 	{
 	  enum built_in_function fcode = builtin_mathfn_code (arg1);
@@ -8166,6 +8305,12 @@ fold (tree expr)
 					 code, NULL_TREE)))
 	return fold_convert (type, tem);
 
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	{
+	  tem = fold_complex_div (type, arg0, arg1, code);
+	  if (tem)
+	    return tem;
+	}
       goto binary;
 
     case CEIL_MOD_EXPR:

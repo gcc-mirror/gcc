@@ -7843,6 +7843,44 @@ fold_builtin_unordered_cmp (tree exp,
 		       fold (build2 (code, type, arg0, arg1))));
 }
 
+/* Fold a call to one of the external complex multiply libcalls.  */
+
+static tree
+fold_builtin_complex_mul (tree type, tree arglist)
+{
+  tree ar, ai, br, bi;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, REAL_TYPE,
+			 REAL_TYPE, VOID_TYPE))
+    return NULL;
+
+  ar = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  ai = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  br = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  bi = TREE_VALUE (arglist);
+
+  return fold_complex_mult_parts (type, ar, ai, br, bi);
+}
+
+/* Fold a call to one of the external complex division libcalls.  */
+
+static tree
+fold_builtin_complex_div (tree type, tree arglist)
+{
+  tree ar, ai, br, bi;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, REAL_TYPE,
+			 REAL_TYPE, VOID_TYPE))
+    return NULL;
+
+  ar = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  ai = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  br = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+  bi = TREE_VALUE (arglist);
+
+  return fold_complex_div_parts (type, ar, ai, br, bi, RDIV_EXPR);
+}
+
 /* Used by constant folding to simplify calls to builtin functions.  EXP is
    the CALL_EXPR of a call to a builtin function.  IGNORE is true if the
    result of the function call is ignored.  This function returns NULL_TREE
@@ -7854,11 +7892,13 @@ fold_builtin_1 (tree exp, bool ignore)
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
+  enum built_in_function fcode;
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return targetm.fold_builtin (exp, ignore);
 
-  switch (DECL_FUNCTION_CODE (fndecl))
+  fcode = DECL_FUNCTION_CODE (fndecl);
+  switch (fcode)
     {
     case BUILT_IN_FPUTS:
       return fold_builtin_fputs (arglist, ignore, false, NULL_TREE);
@@ -8188,6 +8228,12 @@ fold_builtin_1 (tree exp, bool ignore)
       break;
 
     default:
+      if (fcode >= BUILT_IN_COMPLEX_MUL_MIN
+	  && fcode <= BUILT_IN_COMPLEX_MUL_MAX)
+	return fold_builtin_complex_mul (type, arglist);
+      if (fcode >= BUILT_IN_COMPLEX_DIV_MIN
+	  && fcode <= BUILT_IN_COMPLEX_DIV_MAX)
+	return fold_builtin_complex_div (type, arglist);
       break;
     }
 
