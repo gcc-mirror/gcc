@@ -224,6 +224,44 @@ const_section ()							\
     const_section ();							\
 }
 
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+#define UNIQUE_SECTION_P(DECL)   (DECL_ONE_ONLY (DECL))
+
+#define UNIQUE_SECTION(DECL, RELOC)				\
+  do								\
+    {								\
+      int len;							\
+      char * name;						\
+      char * string;						\
+      char * prefix;						\
+								\
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+      								\
+      if (! DECL_ONE_ONLY (DECL))				\
+	{							\
+	  prefix = ".";                                         \
+	  if (TREE_CODE (DECL) == FUNCTION_DECL)		\
+	    prefix = ".text.";					\
+	  else if (DECL_READONLY_SECTION (DECL, RELOC))		\
+	    prefix = ".rodata.";				\
+	  else							\
+	    prefix = ".data.";					\
+	}							\
+      else if (TREE_CODE (DECL) == FUNCTION_DECL)		\
+	prefix = ".gnu.linkonce.t.";				\
+      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
+	prefix = ".gnu.linkonce.r.";				\
+      else							\
+	prefix = ".gnu.linkonce.d.";				\
+      								\
+      len = strlen (name) + strlen (prefix);			\
+      string = alloca (len + 1);				\
+      sprintf (string, "%s%s", prefix, name);			\
+      								\
+      DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+    }								\
+  while (0)
+
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind
    of constant in RTL.  The argument MODE is redundant except
@@ -267,3 +305,13 @@ const_section ()							\
 /* NWFPE always understands FPA instructions.  */
 #undef  FP_DEFAULT
 #define FP_DEFAULT FP_SOFT3
+
+/* Call the function profiler with a given profile label.  */
+#undef  FUNCTION_PROFILER
+#define FUNCTION_PROFILER(STREAM, LABELNO)  				\
+{									\
+  fprintf (STREAM, "\tbl\tmcount%s\n", NEED_PLT_RELOC ? "(PLT)" : "");	\
+}
+
+#undef  CC1_SPEC
+#define CC1_SPEC "%{profile:-p}"

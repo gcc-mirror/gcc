@@ -1,3 +1,11 @@
+Wed Sep 15 15:23:28 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/linux-elf.h (MAKE_DECL_ONE_ONLY): Copy definition
+	from config/svr4.h.
+	(UNIQUE_SECTION_P, UNIQUE_SECTION): Likewise.
+	(FUNCTION_PROFILER): Redefine appropriately for Linux.
+	(CC1_SPEC): Likewise.
+
 Wed Sep 15 10:09:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattr.c (main): Add extern prototype.  Call return, not exit.
