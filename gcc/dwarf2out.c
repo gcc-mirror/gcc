@@ -280,35 +280,8 @@ extern char *language_string;
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
-#ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * 2)
-#endif
-#ifndef INT_TYPE_SIZE
-#define INT_TYPE_SIZE BITS_PER_WORD
-#endif
-#ifndef LONG_TYPE_SIZE
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#endif
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-#ifndef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
-#endif
-#ifndef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-#endif
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
 #ifndef PTR_SIZE
-#define PTR_SIZE (POINTER_SIZE / 8)
+#define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
 /* The size in bytes of a DWARF field indicating an offset or length
@@ -562,58 +535,6 @@ static long int current_funcdef_frame_size = 0;
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
 static int comp_unit_has_inlines;
-
-/* DWARF requires that the compiler's primary datatypes
-   are mapped into a reference to a DIE that defines that
-   primary (base) type.  The base_type_info structure is used
-   to track the correspondence between the name of a
-   base type used by GCC, and its corresponding type
-   characteristics.  Note, that the bt_size field below
-   is the size in bits.  */
-typedef struct base_type_struct *base_type_ref;
-typedef struct base_type_struct
-  {
-    char *bt_name;
-    enum dwarf_type bt_type;
-    int bt_is_signed;
-    int bt_size;
-  }
-base_type_info;
-
-/* Characteristics of base types used by the compiler.  */
-static base_type_info base_type_table[] =
-{
-  {"void", DW_ATE_unsigned, 0, 0},
-  /* TODO: on some architectures, "char" may be signed. */
-  {"char", DW_ATE_unsigned_char, 0, CHAR_TYPE_SIZE},
-  {"unsigned char", DW_ATE_unsigned_char, 0, CHAR_TYPE_SIZE},
-  {"signed char", DW_ATE_signed_char, 1, CHAR_TYPE_SIZE},
-  {"int", DW_ATE_signed, 1, /* INT_TYPE_SIZE */ 4*8},
-  {"unsigned int", DW_ATE_unsigned, 0, /* INT_TYPE_SIZE */ 4*8},
-  {"short", DW_ATE_signed, 1, SHORT_TYPE_SIZE},
-  {"short int", DW_ATE_signed, 1, SHORT_TYPE_SIZE},
-  {"short unsigned int", DW_ATE_unsigned, 0, SHORT_TYPE_SIZE},
-  {"long", DW_ATE_signed, 1, /* LONG_TYPE_SIZE */ 4*8},
-  {"long int", DW_ATE_signed, 1, /* LONG_TYPE_SIZE */ 4*8},
-  {"long unsigned int", DW_ATE_unsigned, 0, /* LONG_TYPE_SIZE */ 4*8},
-  {"long long int", DW_ATE_signed, 1, LONG_LONG_TYPE_SIZE},
-  {"long long unsigned int", DW_ATE_unsigned, 0, LONG_LONG_TYPE_SIZE},
-  {"float", DW_ATE_float, 1, /* FLOAT_TYPE_SIZE */ 4*8},
-  {"double", DW_ATE_float, 1, DOUBLE_TYPE_SIZE},
-  {"long double", DW_ATE_float, 1, LONG_DOUBLE_TYPE_SIZE},
-  {"complex", DW_ATE_complex_float, 1, 2 * /* FLOAT_TYPE_SIZE */ 4*8},
-  {"double complex", DW_ATE_complex_float, 1, 2 * DOUBLE_TYPE_SIZE},
-  {"long double complex", DW_ATE_complex_float, 1, 2 * LONG_DOUBLE_TYPE_SIZE}
-};
-#define NUM_BASE_TYPES (sizeof(base_type_table)/sizeof(base_type_info))
-
-/* Record the DIE associated with a given base type  This table is
-   parallel to the base_type_table, and records the DIE genereated
-   to describe base type that has been previously referenced.  */
-static dw_die_ref base_type_die_table[NUM_BASE_TYPES];
-
-/* This predefined base type is used to create certain anonymous types */
-static dw_die_ref int_base_type_die;
 
 /* A pointer to the ..._DECL node which we have most recently been working
    on.  We keep this around just in case something about it looks screwy and
@@ -2284,6 +2205,21 @@ get_AT_unsigned (die, attr_kind)
     return a->dw_attr_val.v.val_unsigned;
   return 0;
 }
+
+inline int
+is_c_family ()
+{
+  register unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  return (lang == DW_LANG_C || lang == DW_LANG_C89
+	  || lang == DW_LANG_C_plus_plus);
+} 
+
+inline int
+is_fortran ()
+{
+  register unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  return (lang == DW_LANG_Fortran77 || lang == DW_LANG_Fortran90);
+} 
 
 /* Remove the specified attribute if present.  */
 inline void
@@ -4660,37 +4596,6 @@ is_body_block (stmt)
   return 0;
 }
 
-/* Reset the base type to DIE table, and build a special predefined
-   base type entry for the "int" signed integer base type.  The
-   "int" base type is used to construct subscript index range
-   definitions, in situations where an anonymous integer type
-   is required.  */
-inline void
-init_base_type_table ()
-{
-  register int i;
-  register base_type_ref bt;
-  for (i = 0; i < NUM_BASE_TYPES; ++i)
-    {
-      base_type_die_table[i] = NULL;
-    }
-  assert (comp_unit_die != 0);
-  for (i = 0; i < NUM_BASE_TYPES; ++i)
-    {
-      bt = &base_type_table[i];
-      if (strcmp (bt->bt_name, "int") == 0)
-	{
-	  int_base_type_die = new_die (DW_TAG_base_type, comp_unit_die);
-	  base_type_die_table[i] = int_base_type_die;
-	  add_AT_string (int_base_type_die, DW_AT_name, bt->bt_name);
-	  add_AT_unsigned (int_base_type_die,
-			   DW_AT_byte_size, bt->bt_size / 8);
-	  add_AT_unsigned (int_base_type_die, DW_AT_encoding, bt->bt_type);
-	  break;
-	}
-    }
-}
-
 /* Given a pointer to a tree node for some base type, return a pointer to
    a DIE that describes the given type.
 
@@ -4700,144 +4605,71 @@ static dw_die_ref
 base_type_die (type)
      register tree type;
 {
-  register dw_die_ref base_type_result = NULL;
-  register char *type_name = NULL;
-  register int type_index = 0;
-  register base_type_ref bt;
-  register int i;
+  register dw_die_ref base_type_result;
+  register char *type_name;
+  register enum dwarf_type encoding;
 
-  if (TREE_CODE (type) == ERROR_MARK)
+  if (TREE_CODE (type) == ERROR_MARK
+      || TREE_CODE (type) == VOID_TYPE)
     return 0;
+
+  {
+    register tree name = TYPE_NAME (type);
+    if (TREE_CODE (name) == TYPE_DECL)
+      name = DECL_NAME (name);
+    type_name = IDENTIFIER_POINTER (name);
+  }
 
   switch (TREE_CODE (type))
     {
-    case VOID_TYPE:
-    case ERROR_MARK:
-      break;
-
     case INTEGER_TYPE:
-      /* Carefully distinguish all the standard types of C, without messing
+      /* Carefully distinguish the C character types, without messing
          up if the language is not C. Note that we check only for the names
          that contain spaces; other names might occur by coincidence in other 
          languages.  */
-      if (TYPE_NAME (type) != 0
-	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_NAME (TYPE_NAME (type)) != 0
-	  && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
+      if (! (TYPE_PRECISION (type) == CHAR_TYPE_SIZE
+	     && (type == char_type_node
+		 || ! strcmp (type_name, "signed char")
+		 || ! strcmp (type_name, "unsigned char"))))
 	{
-	  type_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-	  for (i = 0; i < NUM_BASE_TYPES; ++i)
-	    {
-	      bt = &base_type_table[i];
-	      if (strcmp (type_name, bt->bt_name) == 0)
-		{
-		  type_index = i;
-		  break;
-		}
-	    }
+	  if (TREE_UNSIGNED (type))
+	    encoding = DW_ATE_unsigned;
+	  else
+	    encoding = DW_ATE_signed;
+	  break;
 	}
-
-      /* Most integer types will be sorted out above, however, for the sake
-         of special `array index' integer types, the following code is also
-         provided.  */
-      if (type_index == 0)
-	{
-	  for (i = 0; i < NUM_BASE_TYPES; ++i)
-	    {
-	      bt = &base_type_table[i];
-	      if (bt->bt_size == TYPE_PRECISION (type)
-		  && (TREE_UNSIGNED (type) == 0) == bt->bt_is_signed)
-		{
-		  type_index = i;
-		  break;
-		}
-	    }
-	}
-      break;
-
-    case REAL_TYPE:
-      /* Carefully distinguish all the standard types of C, without messing
-         up if the language is not C.  */
-      for (i = 0; i < NUM_BASE_TYPES; ++i)
-	{
-	  bt = &base_type_table[i];
-	  if ((bt->bt_type == DW_ATE_float)
-	      && (bt->bt_size == TYPE_PRECISION (type)))
-	    {
-	      type_index = i;
-	      break;
-	    }
-	}
-      break;
-
-    case COMPLEX_TYPE:
-      for (i = 0; i < NUM_BASE_TYPES; ++i)
-	{
-	  bt = &base_type_table[i];
-	  if ((bt->bt_type == DW_ATE_complex_float)
-	      && (bt->bt_size == TYPE_PRECISION (type)))
-	    {
-	      type_index = i;
-	      break;
-	    }
-	}
-      break;
+      /* else fall through */
 
     case CHAR_TYPE:
       /* GNU Pascal/Ada CHAR type.  Not used in C.  */
-      for (i = 0; i < NUM_BASE_TYPES; ++i)
-	{
-	  bt = &base_type_table[i];
-	  if (bt->bt_type == DW_ATE_signed_char
-	      || bt->bt_type == DW_ATE_unsigned_char)
-	    {
-	      if (bt->bt_size == TYPE_PRECISION (type)
-		  && ((TREE_UNSIGNED (type) == 0) == bt->bt_is_signed))
-		{
-		  type_index = i;
-		  break;
-		}
-	    }
-	}
+      if (TREE_UNSIGNED (type))
+	encoding = DW_ATE_unsigned_char;
+      else
+	encoding = DW_ATE_signed_char;
+      break;
+
+    case REAL_TYPE:
+      encoding = DW_ATE_float;
+      break;
+
+    case COMPLEX_TYPE:
+      encoding = DW_ATE_complex_float;
       break;
 
     case BOOLEAN_TYPE:
-      /* GNU FORTRAN/Ada BOOLEAN type.  */
-      for (i = 0; i < NUM_BASE_TYPES; ++i)
-	{
-	  bt = &base_type_table[i];
-	  if (bt->bt_type == DW_ATE_boolean
-	      && bt->bt_size == TYPE_PRECISION (type))
-	    {
-	      type_index = i;
-	      break;
-	    }
-	}
+      /* GNU FORTRAN/Ada/C++ BOOLEAN type.  */
+      encoding = DW_ATE_boolean;
       break;
 
     default:
-      abort ();			/* No other TREE_CODEs are Dwarf fundamental
-				   types.  */
+      abort (); /* No other TREE_CODEs are Dwarf fundamental types.  */
     }
 
-  if (type_index == 0)
-    {
-      base_type_result = NULL;
-    }
-  else
-    {
-      base_type_result = base_type_die_table[type_index];
-      if (base_type_result == NULL)
-	{
-	  bt = &base_type_table[type_index];
-	  base_type_result = new_die (DW_TAG_base_type, comp_unit_die);
-	  base_type_die_table[type_index] = base_type_result;
-	  add_AT_string (base_type_result, DW_AT_name, bt->bt_name);
-	  add_AT_unsigned (base_type_result, DW_AT_byte_size, bt->bt_size / 8);
-	  add_AT_unsigned (base_type_result, DW_AT_encoding, bt->bt_type);
-	}
-
-    }
+  base_type_result = new_die (DW_TAG_base_type, comp_unit_die);
+  add_AT_string (base_type_result, DW_AT_name, type_name);
+  add_AT_unsigned (base_type_result, DW_AT_byte_size,
+		   TYPE_PRECISION (type) / BITS_PER_UNIT);
+  add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
 
   return base_type_result;
 }
@@ -4925,7 +4757,9 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 
   if (code != ERROR_MARK)
     {
-      type = build_type_variant (type, is_const_type, is_volatile_type);
+      /* Take the MAIN_VARIANT here to avoid C typedef types. */
+      type = build_type_variant (TYPE_MAIN_VARIANT (type),
+				 is_const_type, is_volatile_type);
 
       mod_type_die = lookup_type_die (type);
       if (mod_type_die)
@@ -4934,15 +4768,12 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
       if (is_const_type)
 	{
 	  mod_type_die = new_die (DW_TAG_const_type, comp_unit_die);
-	  sub_die = modified_type_die
-	    (build_type_variant (type, 0, is_volatile_type),
-	     0, is_volatile_type, context_die);
+	  sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
 	}
       else if (is_volatile_type)
 	{
 	  mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die);
-	  sub_die = modified_type_die
-	    (TYPE_MAIN_VARIANT (type), 0, 0, context_die);
+	  sub_die = modified_type_die (type, 0, 0, context_die);
 	}
       else if (code == POINTER_TYPE)
 	{
@@ -5703,7 +5534,10 @@ add_name_attribute (die, name_string)
 }
 
 /* Given a tree node describing an array bound (either lower or upper) output
-   a representation for that bound.  */
+   a representation for that bound.
+
+   FIXME: This uses location descriptions for variable bounds, whereas the
+   DWARF-2 spec only allowes for constants or DIE references.  */
 static void
 add_bound_info (subrange_die, bound_attr, bound)
      register dw_die_ref subrange_die;
@@ -5811,27 +5645,20 @@ add_subscript_info (type_die, type)
 	  lower = TYPE_MIN_VALUE (domain);
 	  upper = TYPE_MAX_VALUE (domain);
 
-	  /* TODO: establish DW_AT_type for the basis type a byte_size
-	     attribute if the byte size is non-standard */
-	  add_bound_info (subrange_die, DW_AT_lower_bound, lower);
+	  /* define the index type.  */
+	  if (TREE_TYPE (domain))
+	    add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
+				type_die);
+
+	  if (! is_c_family () && ! is_fortran ())
+	    add_bound_info (subrange_die, DW_AT_lower_bound, lower);
 	  add_bound_info (subrange_die, DW_AT_upper_bound, upper);
 	}
       else
 	{
-	  /* We have an array type with an unspecified length. For C and C++
-	     we can assume that this really means that (a) the index type is
-	     an integral type, and (b) the lower bound is zero. Note that
-	     Dwarf defines the representation of an unspecified (upper) bound 
-	     as being a zero-length location description.  */
-
-	  /* define the (assumed) index type.  */
-	  add_AT_die_ref (subrange_die, DW_AT_type, int_base_type_die);
-
-	  /* Add the (assumed) lower bound (constant) value.   */
-	  add_AT_unsigned (subrange_die, DW_AT_lower_bound, 0);
-
-	  /* Add the (empty) location description for the upper bound.  */
-	  add_AT_loc (subrange_die, DW_AT_upper_bound, NULL);
+	  /* We have an array type with an unspecified length.  The DWARF-2
+	     spec does not say how to handle this; let's just leave out the
+	     bounds.  */
 	}
 #ifndef MIPS_DEBUGGING_INFO
     }
@@ -6204,8 +6031,17 @@ gen_array_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register dw_die_ref scope_die = scope_die_for (type, context_die);
-  register dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die);
+  register dw_die_ref array_die;
   register tree element_type;
+
+  /* ??? The SGI dwarf reader fails for array of array of enum types unless
+     the inner array type comes before the outer array type.  Thus we must
+     call gen_type_die before we call new_die.  See below also.  */
+#ifdef MIPS_DEBUGGING_INFO
+  gen_type_die (TREE_TYPE (type), context_die);
+#endif
+
+  array_die = new_die (DW_TAG_array_type, scope_die);
 
 #if 0
   /* We default the array ordering.  SDB will probably do
@@ -6218,7 +6054,12 @@ gen_array_type_die (type, context_die)
   add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_row_major);
 #endif
 
-  add_subscript_info (array_die, type);
+#ifdef MIPS_DEBUGGING_INFO
+  if (! TYPE_DOMAIN (type))
+    add_AT_unsigned (array_die, DW_AT_declaration, 1);
+  else
+#endif
+    add_subscript_info (array_die, type);
 
   equate_type_number_to_die (type, array_die);
 
@@ -6233,8 +6074,8 @@ gen_array_type_die (type, context_die)
     {
       element_type = TREE_TYPE (element_type);
     }
-#endif
   gen_type_die (element_type, context_die);
+#endif
 
   add_type_attribute (array_die, element_type, 0, 0, context_die);
 }
@@ -6430,21 +6271,6 @@ gen_unspecified_parameters_die (decl_or_type, context_die)
 {
   register dw_die_ref parm_die = new_die (DW_TAG_unspecified_parameters,
 					  context_die);
-  /* This kludge is here only for the sake of being compatible with what the
-     USL CI5 C compiler does.  The specification of Dwarf Version 1 doesn't
-     say that DW_TAG_unspecified_parameters DIEs should contain any
-     attributes other than the DW_AT_sibling attribute, but they are
-     certainly allowed to contain additional attributes, and the CI5 compiler 
-     generates DW_AT_name, DW_AT_base_type, and DW_AT_location attributes
-     within DW_TAG_unspecified_parameters DIEs which appear in the child
-     lists for DIEs representing function definitions, so we do likewise
-     here.  */
-  if (TREE_CODE (decl_or_type) == FUNCTION_DECL
-      && DECL_INITIAL (decl_or_type))
-    {
-      add_name_attribute (parm_die, "...");
-      add_AT_die_ref (parm_die, DW_AT_type, int_base_type_die);
-    }
 }
 
 /* Generate a list of nameless DW_TAG_formal_parameter DIEs (and perhaps a
@@ -7005,26 +6831,22 @@ gen_compile_unit_die (main_input_filename)
 #endif
 
   add_AT_string (comp_unit_die, DW_AT_producer, producer);
+
   if (strcmp (language_string, "GNU C++") == 0)
-    {
-      add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C_plus_plus);
-    }
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C_plus_plus);
   else if (strcmp (language_string, "GNU Ada") == 0)
-    {
-      add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_Ada83);
-    }
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_Ada83);
+  else if (strcmp (language_string, "GNU F77") == 0)
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_Fortran77);
   else if (flag_traditional)
-    {
-      add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C);
-    }
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C);
   else
-    {
-      add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C89);
-    }
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C89);
+
+#if 0 /* unimplemented */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-    {
-      add_AT_unsigned (comp_unit_die, DW_AT_macro_info, 0);
-    }
+    add_AT_unsigned (comp_unit_die, DW_AT_macro_info, 0);
+#endif
 }
 
 /* Generate a DIE for a string type.  */
@@ -7717,19 +7539,9 @@ dwarf2out_file_scope_decl (decl, set_finalizing)
 
     case TYPE_DECL:
       /* Don't bother trying to generate any DIEs to represent any of the
-         normal built-in types for the language we are compiling, except in
-         cases where the types in question are *not* DWARF fundamental types. 
-         We make an exception in the case of non-fundamental types for the
-         sake of objective C (and perhaps C++) because the GNU front-ends for 
-         these languages may in fact create certain "built-in" types which
-         are (for example) RECORD_TYPEs.  In such cases, we really need to
-         output these (non-fundamental) types because other DIEs may contain
-         references to them.  */
-      if (DECL_SOURCE_LINE (decl) == 0
-	  && is_base_type (TREE_TYPE (decl)))
-	{
-	  return;
-	}
+         normal built-in types for the language we are compiling.  */
+      if (DECL_SOURCE_LINE (decl) == 0)
+	return;
 
       /* If we are in terse mode, don't generate any DIEs to represent any
          actual typedefs.  */
@@ -8172,10 +7984,6 @@ dwarf2out_init (asm_out_file, main_input_filename)
      taken as being relative to the directory from which the compiler was
      invoked when the given (base) source file was compiled.  */
   gen_compile_unit_die (main_input_filename);
-
-  /* clear the association between base types and their DIE's */
-  if (debug_info_level > DINFO_LEVEL_TERSE)
-    init_base_type_table ();
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
 }
