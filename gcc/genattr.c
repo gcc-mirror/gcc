@@ -448,6 +448,12 @@ main (argc, argv)
       printf ("extern void dfa_start PARAMS ((void));\n");
       printf ("extern void dfa_finish PARAMS ((void));\n");
     }
+  else
+    {
+      /* Otherwise we do no scheduling, but we need these typedefs
+	 in order to avoid uglifying other code with more ifdefs.  */
+      printf ("typedef void *state_t;\n\n");
+    }
 
   /* Output flag masks for use by reorg.  
 
