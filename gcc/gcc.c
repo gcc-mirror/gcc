@@ -283,11 +283,11 @@ or with constant text in a single argument.
 	chosen in a way that is hard to predict even when previously
 	chosen file names are known.  For example, `%g.s ... %g.o ... %g.s'
 	might turn into `ccUVUUAU.s ccXYAXZ12.o ccUVUUAU.s'.  SUFFIX matches
-	the regexp "[.A-Za-z]*" or the special string "%O", which is
-	treated exactly as if %O had been pre-processed.  Previously, %g
-	was simply substituted with a file name chosen once per compilation,
-	without regard to any appended suffix (which was therefore treated
-	just like ordinary text), making such attacks more likely to succeed.
+	the regexp "[.A-Za-z]*%O"; "%O" is treated exactly as if it
+	had been pre-processed.  Previously, %g was simply substituted
+	with a file name chosen once per compilation, without regard
+	to any appended suffix (which was therefore treated just like
+	ordinary text), making such attacks more likely to succeed.
  %uSUFFIX
 	like %g, but generates a new temporary file name even if %uSUFFIX
 	was already seen.
@@ -317,12 +317,13 @@ or with constant text in a single argument.
 	at all, but they are included among the output files, so they will
 	be linked.
  %O	substitutes the suffix for object files.  Note that this is
-	handled specially when it immediately follows %g, %u, or %U,
-	because of the need for those to form complete file names.  The
-	handling is such that %O is treated exactly as if it had already
-	been substituted, except that %g, %u, and %U do not currently
-	support additional SUFFIX characters following %O as they would
-	following, for example, `.o'.
+        handled specially when it immediately follows %g, %u, or %U
+	(with or without a suffix argument) because of the need for
+	those to form complete file names.  The handling is such that
+	%O is treated exactly as if it had already been substituted,
+	except that %g, %u, and %U do not currently support additional
+	SUFFIX characters following %O as they would following, for
+	example, `.o'.
  %p	substitutes the standard macro predefinitions for the
 	current target machine.  Use this when running cpp.
  %P	like %p, but puts `__' before and after the name of each macro.
@@ -3980,21 +3981,29 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		struct temp_name *t;
 		int suffix_length;
 		const char *suffix = p;
+		char *saved_suffix = NULL;
 
+		while (*p == '.' || ISALPHA ((unsigned char)*p))
+		  p++;
+		suffix_length = p - suffix;
 		if (p[0] == '%' && p[1] == 'O')
 		  {
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
 		    if (*p == '.' || ISALPHA ((unsigned char)*p))
 		      abort ();
-		    suffix = OBJECT_SUFFIX;
-		    suffix_length = strlen (OBJECT_SUFFIX);
-		  }
-		else
-		  {
-		    while (*p == '.' || ISALPHA ((unsigned char)*p))
-		      p++;
-		    suffix_length = p - suffix;
+		    if (suffix_length == 0)
+		      suffix = OBJECT_SUFFIX;
+		    else
+		      {
+			saved_suffix
+			  = (char *) xmalloc (suffix_length
+					      + strlen (OBJECT_SUFFIX));
+			strncpy (saved_suffix, suffix, suffix_length);
+			strcpy (saved_suffix + suffix_length,
+				OBJECT_SUFFIX);
+		      }
+		    suffix_length += strlen (OBJECT_SUFFIX);
 		  }
 
 		/* See if we already have an association of %g/%u/%U and
@@ -4022,6 +4031,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;
 		  }
+
+		if (saved_suffix)
+		  free (saved_suffix);
 
 		obstack_grow (&obstack, t->filename, t->filename_length);
 		delete_this_arg = 1;
