@@ -103,6 +103,7 @@ struct _global_rtl global_rtl =
   {REG},				/* virtual_stack_vars_rtx */
   {REG},				/* virtual_stack_dynamic_rtx */
   {REG},				/* virtual_outgoing_args_rtx */
+  {REG},				/* virtual_cfa_rtx */
 };
 
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
@@ -3342,6 +3343,7 @@ init_emit ()
   regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
   regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
   regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+  regno_reg_rtx[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
@@ -3354,6 +3356,7 @@ init_emit ()
   REGNO_POINTER_FLAG (VIRTUAL_STACK_VARS_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_STACK_DYNAMIC_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_OUTGOING_ARGS_REGNUM) = 1;
+  REGNO_POINTER_FLAG (VIRTUAL_CFA_REGNUM) = 1;
 
 #ifdef STACK_BOUNDARY
   REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = STACK_BOUNDARY / BITS_PER_UNIT;
@@ -3370,6 +3373,7 @@ init_emit ()
     = STACK_BOUNDARY / BITS_PER_UNIT;
   REGNO_POINTER_ALIGN (VIRTUAL_OUTGOING_ARGS_REGNUM)
     = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (VIRTUAL_CFA_REGNUM) = UNITS_PER_WORD;
 #endif
 
 #ifdef INIT_EXPANDERS
@@ -3504,6 +3508,8 @@ init_emit_once (line_numbers)
   PUT_MODE (virtual_stack_dynamic_rtx, Pmode);
   REGNO (virtual_outgoing_args_rtx) = VIRTUAL_OUTGOING_ARGS_REGNUM;
   PUT_MODE (virtual_outgoing_args_rtx, Pmode);
+  REGNO (virtual_cfa_rtx) = VIRTUAL_CFA_REGNUM;
+  PUT_MODE (virtual_cfa_rtx, Pmode);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx

@@ -5891,10 +5891,6 @@ init_decl_processing ()
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
 		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
 
-  ptr_ftype_void = build_function_type (ptr_type_node, endlink);
-  builtin_function ("__builtin_fp", ptr_ftype_void, BUILT_IN_FP, NULL_PTR);
-  builtin_function ("__builtin_sp", ptr_ftype_void, BUILT_IN_SP, NULL_PTR);
-
   builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
 		    BUILT_IN_ALLOCA, "alloca");
   builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);

@@ -2277,6 +2277,17 @@ previous frame, just before the call instruction.
 
 You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
+
+@findex ARG_POINTER_CFA_OFFSET
+@item ARG_POINTER_CFA_OFFSET
+A C expression whose value is an integer giving the offset, in bytes,
+from the argument pointer to the canonical frame address (cfa).  The
+final value should coincide with that calculated by 
+@code{INCOMING_FRAME_SP_OFFSET}.  Which is unfortunately not usable
+during virtual register instantiation.
+
+You only need to define this macro if you want to support call frame
+debugging information like that provided by DWARF 2.
 @end table
 
 @node Stack Checking

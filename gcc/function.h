@@ -142,8 +142,6 @@ struct function
   rtx catch_clauses;
   struct label_node *false_label_stack;
   struct label_node *caught_return_label_stack;
-  rtx eh_stub_label;
-  rtx eh_old_stub_label;
   tree protect_list;
   rtx ehc;
 

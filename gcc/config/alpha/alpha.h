@@ -1180,6 +1180,10 @@ extern struct rtx_def *alpha_builtin_saveregs ();
 extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
 
+/* Define the information needed to modify the epilogue for EH.  */
+
+extern struct rtx_def *alpha_eh_epilogue_sp_ofs;
+
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 extern void alpha_need_linkage ();

@@ -9370,10 +9370,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_UNWIND_INIT:
       expand_builtin_unwind_init ();
       return const0_rtx;
-    case BUILT_IN_FP:
-      return frame_pointer_rtx;
-    case BUILT_IN_SP:
-      return stack_pointer_rtx;
+    case BUILT_IN_DWARF_CFA:
+      return virtual_cfa_rtx;
 #ifdef DWARF2_UNWIND_INFO
     case BUILT_IN_DWARF_FP_REGNUM:
       return expand_builtin_dwarf_fp_regnum ();
@@ -9384,16 +9382,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return expand_builtin_frob_return_addr (TREE_VALUE (arglist));
     case BUILT_IN_EXTRACT_RETURN_ADDR:
       return expand_builtin_extract_return_addr (TREE_VALUE (arglist));
-    case BUILT_IN_SET_RETURN_ADDR_REG:
-      expand_builtin_set_return_addr_reg (TREE_VALUE (arglist));
-      return const0_rtx;
-    case BUILT_IN_EH_STUB_OLD:
-      return expand_builtin_eh_stub_old ();
-    case BUILT_IN_EH_STUB:
-      return expand_builtin_eh_stub ();
-    case BUILT_IN_SET_EH_REGS:
-      expand_builtin_set_eh_regs (TREE_VALUE (arglist),
-				  TREE_VALUE (TREE_CHAIN (arglist)));
+    case BUILT_IN_EH_RETURN:
+      expand_builtin_eh_return (TREE_VALUE (arglist),
+				TREE_VALUE (TREE_CHAIN (arglist)),
+				TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))));
       return const0_rtx;
 
     default:			/* just do library call, if unknown builtin */

@@ -3291,8 +3291,8 @@ init_decl_processing ()
   builtin_function ("__builtin_unwind_init",
 		    build_function_type (void_type_node, endlink),
 		    BUILT_IN_UNWIND_INIT, NULL_PTR);
-  builtin_function ("__builtin_fp", ptr_ftype_void, BUILT_IN_FP, NULL_PTR);
-  builtin_function ("__builtin_sp", ptr_ftype_void, BUILT_IN_SP, NULL_PTR);
+  builtin_function ("__builtin_dwarf_cfa", ptr_ftype_void,
+		    BUILT_IN_DWARF_CFA, NULL_PTR);
   builtin_function ("__builtin_dwarf_fp_regnum",
 		    build_function_type (unsigned_type_node, endlink),
 		    BUILT_IN_DWARF_FP_REGNUM, NULL_PTR);
@@ -3302,24 +3302,16 @@ init_decl_processing ()
 		    BUILT_IN_FROB_RETURN_ADDR, NULL_PTR);
   builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
 		    BUILT_IN_EXTRACT_RETURN_ADDR, NULL_PTR);
-  builtin_function ("__builtin_set_return_addr_reg",
-		    build_function_type (void_type_node, 
-					 tree_cons (NULL_TREE,
-						    ptr_type_node,
-						    endlink)),
-		    BUILT_IN_SET_RETURN_ADDR_REG, NULL_PTR);
-  builtin_function ("__builtin_eh_stub_old", ptr_ftype_void,
-		    BUILT_IN_EH_STUB_OLD, NULL_PTR);
-  builtin_function ("__builtin_eh_stub", ptr_ftype_void,
-		    BUILT_IN_EH_STUB, NULL_PTR);
   builtin_function
-    ("__builtin_set_eh_regs",
+    ("__builtin_eh_return",
      build_function_type (void_type_node,
 			  tree_cons (NULL_TREE, ptr_type_node,
 				     tree_cons (NULL_TREE,
 						type_for_mode (ptr_mode, 0),
-						endlink))),
-     BUILT_IN_SET_EH_REGS, NULL_PTR);
+					        tree_cons (NULL_TREE,
+							   ptr_type_node,
+							   endlink)))),
+     BUILT_IN_EH_RETURN, NULL_PTR);
 
   builtin_function ("__builtin_alloca",
 		    build_function_type (ptr_type_node,

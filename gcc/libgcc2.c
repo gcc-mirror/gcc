@@ -3492,31 +3492,71 @@ find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
 
 typedef int ptr_type __attribute__ ((mode (pointer)));
 
-/* Get the value of register REG as saved in UDATA, where SUB_UDATA is a
+#ifdef INCOMING_REGNO
+/* Is the saved value for register REG in frame UDATA stored in a register
+   window in the previous frame?  */
+
+/* ??? The Sparc INCOMING_REGNO references TARGET_FLAT.  This allows us
+   to use the macro here.  One wonders, though, that perhaps TARGET_FLAT
+   compiled functions won't work with the frame-unwind stuff here.  
+   Perhaps the entireity of in_reg_window should be conditional on having
+   seen a DW_CFA_GNU_window_save?  */
+#define target_flags 0
+
+static int
+in_reg_window (int reg, frame_state *udata)
+{
+  if (udata->saved[reg] == REG_SAVED_REG)
+    return INCOMING_REGNO (reg) == reg;
+  if (udata->saved[reg] != REG_SAVED_OFFSET)
+    return 0;
+
+#ifdef STACK_GROWS_DOWNWARD
+  return udata->reg_or_offset[reg] > 0;
+#else
+  return udata->reg_or_offset[reg] < 0;
+#endif
+}
+#else
+static inline int in_reg_window (int reg, frame_state *udata) { return 0; }
+#endif /* INCOMING_REGNO */
+
+/* Get the address of register REG as saved in UDATA, where SUB_UDATA is a
    frame called by UDATA or 0.  */
 
-static void*
-get_reg (unsigned reg, frame_state *udata, frame_state *sub_udata)
+static word_type *
+get_reg_addr (unsigned reg, frame_state *udata, frame_state *sub_udata)
 {
+  while (udata->saved[reg] == REG_SAVED_REG)
+    {
+      reg = udata->reg_or_offset[reg];
+      if (in_reg_window (reg, udata))
+	{
+          udata = sub_udata;
+	  sub_udata = NULL;
+	}
+    }
   if (udata->saved[reg] == REG_SAVED_OFFSET)
-    return (void *)(ptr_type)
-      *(word_type *)(udata->cfa + udata->reg_or_offset[reg]);
-  else if (udata->saved[reg] == REG_SAVED_REG && sub_udata)
-    return get_reg (udata->reg_or_offset[reg], sub_udata, 0);
+    return (word_type *)(udata->cfa + udata->reg_or_offset[reg]);
   else
     abort ();
 }
 
+/* Get the value of register REG as saved in UDATA, where SUB_UDATA is a
+   frame called by UDATA or 0.  */
+
+static inline void *
+get_reg (unsigned reg, frame_state *udata, frame_state *sub_udata)
+{
+  return (void *)(ptr_type) *get_reg_addr (reg, udata, sub_udata);
+}
+
 /* Overwrite the saved value for register REG in frame UDATA with VAL.  */
 
-static void
+static inline void
 put_reg (unsigned reg, void *val, frame_state *udata)
 {
-  if (udata->saved[reg] == REG_SAVED_OFFSET)
-    *(word_type *)(udata->cfa + udata->reg_or_offset[reg])
-      = (word_type)(ptr_type) val;
-  else
-    abort ();
+  *get_reg_addr (reg, udata, NULL) = (word_type)(ptr_type) val;
 }
 
 /* Copy the saved value for register REG from frame UDATA to frame
@@ -3526,17 +3566,13 @@ put_reg (unsigned reg, void *val, frame_state *udata)
 static void
 copy_reg (unsigned reg, frame_state *udata, frame_state *target_udata)
 {
-  if (udata->saved[reg] == REG_SAVED_OFFSET
-      && target_udata->saved[reg] == REG_SAVED_OFFSET)
-    memcpy (target_udata->cfa + target_udata->reg_or_offset[reg],
-	    udata->cfa + udata->reg_or_offset[reg],
-	    __builtin_dwarf_reg_size (reg));
-  else
-    abort ();
+  word_type *preg = get_reg_addr (reg, udata, NULL);
+  word_type *ptreg = get_reg_addr (reg, target_udata, NULL);
+
+  memcpy (ptreg, preg, __builtin_dwarf_reg_size (reg));
 }
 
-/* Retrieve the return address for frame UDATA, where SUB_UDATA is a
-   frame called by UDATA or 0.  */
+/* Retrieve the return address for frame UDATA.  */
 
 static inline void *
 get_return_addr (frame_state *udata, frame_state *sub_udata)
@@ -3576,24 +3612,6 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
   return caller_udata;
 }
 
-#ifdef INCOMING_REGNO
-/* Is the saved value for register REG in frame UDATA stored in a register
-   window in the previous frame?  */
-
-static int
-in_reg_window (int reg, frame_state *udata)
-{
-  if (udata->saved[reg] != REG_SAVED_OFFSET)
-    return 0;
-
-#ifdef STACK_GROWS_DOWNWARD
-  return udata->reg_or_offset[reg] > 0;
-#else
-  return udata->reg_or_offset[reg] < 0;
-#endif
-}
-#endif /* INCOMING_REGNO */
-
 /* We first search for an exception handler, and if we don't find
    it, we call __terminate on the current stack frame so that we may
    use the debugger to walk the stack and understand why no handler
@@ -3606,7 +3624,7 @@ void
 __throw ()
 {
   struct eh_context *eh = (*get_eh_context) ();
-  void *saved_pc, *pc, *handler, *retaddr;
+  void *saved_pc, *pc, *handler;
   frame_state ustruct, ustruct2;
   frame_state *udata = &ustruct;
   frame_state *sub_udata = &ustruct2;
@@ -3626,14 +3644,8 @@ label:
   if (! udata)
     __terminate ();
 
-  /* We need to get the value from the CFA register.  At this point in
-     compiling __throw we don't know whether or not we will use the frame
-     pointer register for the CFA, so we check our unwind info.  */
-  if (udata->cfa_reg == __builtin_dwarf_fp_regnum ())
-    udata->cfa = __builtin_fp ();
-  else
-    udata->cfa = __builtin_sp ();
-  udata->cfa += udata->cfa_offset;
+  /* We need to get the value from the CFA register. */
+  udata->cfa = __builtin_dwarf_cfa ();
 
   memcpy (my_udata, udata, sizeof (*udata));
 
@@ -3712,7 +3724,6 @@ label:
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
 	    if (i != udata->retaddr_column && udata->saved[i])
 	      {
-#ifdef INCOMING_REGNO
 		/* If you modify the saved value of the return address
 		   register on the SPARC, you modify the return address for
 		   your caller's frame.  Don't do that here, as it will
@@ -3721,14 +3732,12 @@ label:
 		    && udata->saved[udata->retaddr_column] == REG_SAVED_REG
 		    && udata->reg_or_offset[udata->retaddr_column] == i)
 		  continue;
-#endif
 		copy_reg (i, udata, my_udata);
 	      }
 
 	  pc = get_return_addr (udata, sub_udata) - 1;
 	}
 
-#ifdef INCOMING_REGNO
       /* But we do need to update the saved return address register from
 	 the last frame we unwind, or the handler frame will have the wrong
 	 return address.  */
@@ -3738,42 +3747,17 @@ label:
 	  if (in_reg_window (i, udata))
 	    copy_reg (i, udata, my_udata);
 	}
-#endif
     }
-  /* udata now refers to the frame called by the handler frame.  */
 
-  /* Emit the stub to adjust sp and jump to the handler.  */
-  if (new_exception_model)
-    retaddr = __builtin_eh_stub ();
-  else
-    retaddr =  __builtin_eh_stub_old ();
+  /* Now go!  */
 
-  /* And then set our return address to point to the stub.  */
-  if (my_udata->saved[my_udata->retaddr_column] == REG_SAVED_OFFSET)
-    put_return_addr (retaddr, my_udata);
-  else
-    __builtin_set_return_addr_reg (retaddr);
-
-  /* Set up the registers we use to communicate with the stub.
-     We check STACK_GROWS_DOWNWARD so the stub can use adjust_stack.  */
-
-  if (new_exception_model)
-    __builtin_set_eh_regs ((void *)eh,
+  __builtin_eh_return ((void *)eh,
 #ifdef STACK_GROWS_DOWNWARD
-			 udata->cfa - my_udata->cfa
+		       udata->cfa - my_udata->cfa,
 #else
-			 my_udata->cfa - udata->cfa
+		       my_udata->cfa - udata->cfa,
 #endif
-			 + args_size);
-  else
-    __builtin_set_eh_regs (handler,
-
-#ifdef STACK_GROWS_DOWNWARD
-			 udata->cfa - my_udata->cfa
-#else
-			 my_udata->cfa - udata->cfa
-#endif
-			 + args_size);
+		       handler);
 
   /* Epilogue:  restore the handler frame's register values and return
      to the stub.  */
