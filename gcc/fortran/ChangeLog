@@ -1,3 +1,9 @@
+2004-01-16  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/17675
+	* trans-common.c (translate_common): Remove duplicate function call.
+	(finish_equivalences): Preserve alignment when biasing offsets.
+
 2005-01-15  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de
 
 	* primary.c (check_digit): Call 'ISXDIGIT' instead of assuming

@@ -803,7 +803,6 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 		       common->name, &common->where);
 
 	  offset = align_segment (&align);
-	  apply_segment_offset (current_segment, offset);
 
 	  if (offset & (max_align - 1))
 	    {
@@ -851,7 +850,8 @@ finish_equivalences (gfc_namespace *ns)
 {
   gfc_equiv *z, *y;
   gfc_symbol *sym;
-  HOST_WIDE_INT min_offset;
+  HOST_WIDE_INT offset;
+  unsigned HOST_WIDE_INT align;
 
   for (z = ns->equiv; z; z = z->next)
     for (y = z->eq; y; y = y->eq)
@@ -864,13 +864,13 @@ finish_equivalences (gfc_namespace *ns)
         /* All objects directly or indirectly equivalenced with this symbol.  */
         add_equivalences ();
 
-        /* Bias the offsets to to start at zero.  */
-        min_offset = -current_segment->offset;
+	/* Align the block.  */
+	offset = align_segment (&align);
 
-	/* Ensure the block is properly aligned.  */
-	min_offset += align_segment (NULL);
+	/* Ensure all offsets are positive.  */
+	offset -= current_segment->offset & ~(align - 1);
 
-	apply_segment_offset (current_segment, min_offset);
+	apply_segment_offset (current_segment, offset);
 
 	/* Create the decl.  */
         create_common (NULL, current_segment);
