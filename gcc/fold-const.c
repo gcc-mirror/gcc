@@ -4058,6 +4058,13 @@ fold (expr)
 	      && ! final_ptr)
 	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
+	  /* If we have a sign-extension of a zero-extended value, we can
+	     replace that by a single zero-extension.  */
+	  if (inside_int && inter_int && final_int
+	      && inside_prec < inter_prec && inter_prec < final_prec
+	      && inside_unsignedp && !inter_unsignedp)
+	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+
 	  /* Two conversions in a row are not needed unless:
 	     - some conversion is floating-point (overstrict for now), or
 	     - the intermediate type is narrower than both initial and
