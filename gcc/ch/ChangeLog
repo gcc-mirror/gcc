@@ -1,3 +1,7 @@
+Sun Jan 17 21:53:23 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Do not put ^Ls at the start of a line.
+
 Wed Jan  6 02:53:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Add some missing $(exeext).  Remove some obsolete

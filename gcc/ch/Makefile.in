@@ -1,5 +1,5 @@
 # Makefile for GNU CHILL compiler.
-#   Copyright (C) 1987, 88, 90-94, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-94, 1998, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -124,7 +124,7 @@ all: all.indirect
 ####cross overrides
 ####build overrides
 ####site overrides
-
+#
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../chill ../cc1chill$(exeext)
@@ -188,7 +188,7 @@ FLAGS_TO_PASS = \
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
-
+#
 # Lists of files for various purposes.
 
 # Language-specific object files for CHILL
@@ -235,12 +235,12 @@ mostlyclean:
 
 clean:  mostlyclean
 
-
+#
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
 native: config.status ../cc1chill$(exeext) ../chill
-
+#
 # Compiling object files from source files.
 
 # Note that dependencies on obstack.h are not written

@@ -133,7 +133,7 @@ all: all.indirect
 ####build overrides
 @build_overrides@
 ####site overrides
-
+#
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../jc1$(exeext) ../jcf-dump$(exeext) \
@@ -166,7 +166,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-
+#
 # Lists of files for various purposes.
 
 # Language-specific object files for Gcc/Java:
@@ -214,7 +214,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
 native: config.status ../jc1$(exeext)
-
+#
 # Compiling object files from source files.
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
         $(srcdir)/../machmode.h $(srcdir)/../machmode.def
