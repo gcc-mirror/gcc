@@ -8466,7 +8466,7 @@ mark_ultrasparc_pipeline_state (arg)
   size_t i;
 
   ups = (struct ultrasparc_pipeline_state *) arg;
-  for (i = 0; i < sizeof (ups->group) / sizeof (rtx); ++i)
+  for (i = 0; i < ARRAY_SIZE (ups->group); ++i)
     ggc_mark_rtx (ups->group[i]);
 }
 

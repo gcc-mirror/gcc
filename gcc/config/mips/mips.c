@@ -9847,7 +9847,7 @@ mips_add_gc_roots ()
   ggc_add_rtx_root (&mips_load_reg2, 1);
   ggc_add_rtx_root (&mips_load_reg3, 1);
   ggc_add_rtx_root (&mips_load_reg4, 1);
-  ggc_add_rtx_root (branch_cmp, sizeof (branch_cmp) / sizeof (rtx));
+  ggc_add_rtx_root (branch_cmp, ARRAY_SIZE (branch_cmp));
   ggc_add_rtx_root (&embedded_pic_fnaddr_rtx, 1);
   ggc_add_rtx_root (&mips16_gp_pseudo_rtx, 1);
 }

@@ -1,3 +1,11 @@
+2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (init_class_processing): Use ARRAY_SIZE in lieu of
+	explicit sizeof/sizeof.
+	* decl.c (java_init_decl_processing): Likewise.
+	* jcf-parse.c (init_jcf_parse): Likewise.
+	* parse.y (init_src_parse): Likewise.
+
 2002-03-02  Per Bothner  <per@bothner.com>
 
 	Make --CLASSPATH by a synonym for --classpath and -classpath.

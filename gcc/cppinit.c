@@ -690,8 +690,7 @@ static const struct builtin builtin_array[] =
 #undef C
 #undef X
 #undef O
-#define builtin_array_end \
- builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
+#define builtin_array_end (builtin_array + ARRAY_SIZE (builtin_array))
 
 /* Subroutine of cpp_read_main_file; reads the builtins table above and
    enters them, and language-specific macros, into the hash table.  */

@@ -903,7 +903,7 @@ override_options ()
 				      | PTA_3DNOW_A | PTA_SSE},
     };
 
-  int const pta_size = sizeof (processor_alias_table) / sizeof (struct pta);
+  int const pta_size = ARRAY_SIZE (processor_alias_table);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -11181,7 +11181,7 @@ ix86_init_mmx_sse_builtins ()
 
   /* Add all builtins that are more or less simple operations on two
      operands.  */
-  for (i = 0, d = bdesc_2arg; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     {
       /* Use one of the operands; the target can have a different mode for
 	 mask-generating compares.  */
@@ -11244,7 +11244,7 @@ ix86_init_mmx_sse_builtins ()
   def_builtin (MASK_MMX, "__builtin_ia32_pmaddwd", v2si_ftype_v4hi_v4hi, IX86_BUILTIN_PMADDWD);
 
   /* comi/ucomi insns.  */
-  for (i = 0, d = bdesc_comi; i < sizeof (bdesc_comi) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     def_builtin (d->mask, d->name, int_ftype_v4sf_v4sf, d->code);
 
   def_builtin (MASK_MMX, "__builtin_ia32_packsswb", v8qi_ftype_v4hi_v4hi, IX86_BUILTIN_PACKSSWB);
@@ -12025,7 +12025,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       break;
     }
 
-  for (i = 0, d = bdesc_2arg; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       {
 	/* Compares are treated specially.  */
@@ -12038,11 +12038,11 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 	return ix86_expand_binop_builtin (d->icode, arglist, target);
       }
 
-  for (i = 0, d = bdesc_1arg; i < sizeof (bdesc_1arg) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
       return ix86_expand_unop_builtin (d->icode, arglist, target, 0);
 
-  for (i = 0, d = bdesc_comi; i < sizeof (bdesc_comi) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     if (d->code == fcode)
       return ix86_expand_sse_comi (d, arglist, target);
 

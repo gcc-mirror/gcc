@@ -6608,8 +6608,8 @@ cxx_init_decl_processing ()
     flag_const_strings = 0;
 
   /* Add GC roots for all of our global variables.  */
-  ggc_add_tree_root (c_global_trees, sizeof c_global_trees / sizeof(tree));
-  ggc_add_tree_root (cp_global_trees, sizeof cp_global_trees / sizeof(tree));
+  ggc_add_tree_root (c_global_trees, ARRAY_SIZE (c_global_trees));
+  ggc_add_tree_root (cp_global_trees, ARRAY_SIZE (cp_global_trees));
   ggc_add_tree_root (&integer_three_node, 1);
   ggc_add_tree_root (&integer_two_node, 1);
   ggc_add_tree_root (&signed_size_zero_node, 1);

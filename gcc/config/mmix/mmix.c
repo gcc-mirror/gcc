@@ -3087,13 +3087,13 @@ mmix_output_condition (stream, x, reversed)
        {CCmode, cc_signed_convs},
        {DImode, cc_di_convs}};
 
-  unsigned int i;
+  size_t i;
   int j;
 
   enum machine_mode mode = GET_MODE (XEXP (x, 0));
   RTX_CODE cc = GET_CODE (x);
 
-  for (i = 0; i < sizeof (cc_convs)/sizeof(*cc_convs); i++)
+  for (i = 0; i < ARRAY_SIZE (cc_convs); i++)
     {
       if (mode == cc_convs[i].cc_mode)
 	{

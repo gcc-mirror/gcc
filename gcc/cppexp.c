@@ -83,7 +83,6 @@ static const struct suffix vsuf_3[] = {
   { "ull", 1, 2 }, { "ULL", 1, 2 }, { "uLL", 1, 2 }, { "Ull", 1, 2 },
   { "llu", 1, 2 }, { "LLU", 1, 2 }, { "LLu", 1, 2 }, { "llU", 1, 2 }
 };
-#define Nsuff(tab) (sizeof tab / sizeof (struct suffix))
 
 /* Parse and convert what is presumably an integer in TOK.  Accepts
    decimal, hex, or octal with or without size suffixes.  Returned op
@@ -157,9 +156,9 @@ parse_number (pfile, tok)
 	 See the suffix tables, above.  */
       switch (end - p)
 	{
-	case 1: sufftab = vsuf_1; nsuff = Nsuff(vsuf_1); break;
-	case 2: sufftab = vsuf_2; nsuff = Nsuff(vsuf_2); break;
-	case 3: sufftab = vsuf_3; nsuff = Nsuff(vsuf_3); break;
+	case 1: sufftab = vsuf_1; nsuff = ARRAY_SIZE (vsuf_1); break;
+	case 2: sufftab = vsuf_2; nsuff = ARRAY_SIZE (vsuf_2); break;
+	case 3: sufftab = vsuf_3; nsuff = ARRAY_SIZE (vsuf_3); break;
 	default: goto invalid_suffix;
 	}
 

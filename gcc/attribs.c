@@ -177,7 +177,7 @@ static void
 init_attributes ()
 {
 #ifdef ENABLE_CHECKING
-  int i;
+  size_t i;
 #endif
 
   attribute_tables[0]
@@ -188,9 +188,7 @@ init_attributes ()
 
 #ifdef ENABLE_CHECKING
   /* Make some sanity checks on the attribute tables.  */
-  for (i = 0;
-       i < (int) (sizeof (attribute_tables) / sizeof (attribute_tables[0]));
-       i++)
+  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
     {
       int j;
 
@@ -222,9 +220,7 @@ init_attributes ()
     }
 
   /* Check that each name occurs just once in each table.  */
-  for (i = 0;
-       i < (int) (sizeof (attribute_tables) / sizeof (attribute_tables[0]));
-       i++)
+  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
     {
       int j, k;
       for (j = 0; attribute_tables[i][j].name != NULL; j++)
@@ -234,16 +230,11 @@ init_attributes ()
 	    abort ();
     }
   /* Check that no name occurs in more than one table.  */
-  for (i = 0;
-       i < (int) (sizeof (attribute_tables) / sizeof (attribute_tables[0]));
-       i++)
+  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
     {
-      int j, k, l;
+      size_t j, k, l;
 
-      for (j = i + 1;
-	   j < ((int) (sizeof (attribute_tables)
-		       / sizeof (attribute_tables[0])));
-	   j++)
+      for (j = i + 1; j < ARRAY_SIZE (attribute_tables); j++)
 	for (k = 0; attribute_tables[i][k].name != NULL; k++)
 	  for (l = 0; attribute_tables[j][l].name != NULL; l++)
 	    if (!strcmp (attribute_tables[i][k].name,
@@ -294,10 +285,7 @@ decl_attributes (node, attributes, flags)
       bool no_add_attrs = 0;
       int i;
 
-      for (i = 0;
-	   i < ((int) (sizeof (attribute_tables)
-		       / sizeof (attribute_tables[0])));
-	   i++)
+      for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
 	{
 	  int j;
 
