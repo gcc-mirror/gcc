@@ -914,10 +914,10 @@ else
 	echo 'void f(){}' > conftest.c
 	if test -z "`${CC} -g -c conftest.c 2>&1`"; then
 	  CFLAGS=${CFLAGS-"-g -O2"}
-	  CXXFLAGS=${CFLAGS-"-g -O2"}
+	  CXXFLAGS=${CXXFLAGS-"-g -O2"}
 	else
 	  CFLAGS=${CFLAGS-"-O2"}
-	  CXXFLAGS=${CFLAGS-"-O2"}
+	  CXXFLAGS=${CXXFLAGS-"-O2"}
 	fi
 	rm -f conftest*
 	break
