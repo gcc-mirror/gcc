@@ -771,6 +771,8 @@ extern struct rtx_def *legitimize_address ();
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) \
+  case UMOD:		\
+  case UDIV:		\
   case MOD:		\
   case DIV:		\
     return 8;		\
