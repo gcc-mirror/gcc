@@ -189,8 +189,7 @@ cat 27_io/objects/char/3_xin.in | a.out
       specific file name. This indicates a test that is used to
       analyze runtime performance, for performance regression testing,
       or for other optimization related analysis. At the moment, these
-      test cases are not run by default, and instead assumed to be run
-      manually.
+      test cases are not run by default.
    </p>
 </li>
 </ul>
@@ -250,6 +249,19 @@ cat 27_io/objects/char/3_xin.in | a.out
          <li>pod_char, pod_int and associated char_traits specializations</li>
        </ul>
        <p></p>
+     </li>
+     <li>
+       <em>testsuite_performance.h</em>
+       <p>
+       A number of class abstractions for performance counters, and
+       reporting functions including:
+       </p>
+      <ul>
+         <li>time_counter</li>
+         <li>resource_counter</li>
+         <li>report_performance</li>
+      </ul>	
+       <p></p> 
      </li>
      <li>
        <em>printnow.c</em>
@@ -476,7 +488,7 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
    <p> In addition, there are some testing options that are mostly of
    interest to library maintainers and system integrators. As such,
    these tests may not work on all cpu and host combinations, and must
-   be executed in the <em>libbuilddir</em> directory.  These options
+   be executed in the <em>libbuilddir/testsuite</em> directory.  These options
    include, but are not necessarily limited to, the following:
    </p>
 
@@ -508,7 +520,17 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
    <pre>
    make check-abi</pre>
    <p>The library ABI can be tested. This involves testing the shared
-   library against an ABI-defining previous version.</p>
+   library against an ABI-defining previous version. </p>
+
+   <pre>
+   make check-performance</pre>
+   <p>This rule runs through the <em>testsuite_files_performance</em>
+   test cases and collects information for performance analysis and
+   can be used to spot performance regressions. Various timing
+   information is collected, as well as number of hard page faults,
+   and memory used. This is not run by default, and the implementation
+   is in flux.
+</p>
 
    <p>
       We are interested in any strange failures of the
