@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -9,6 +9,19 @@
    across many lines.
 
    Neil Booth, 1 Dec 2000, 23 Sep 2001.  */
+
+/* The actual location of the expansion of a multi-line macro
+   invocation is not defined: we might consider them to be in the same
+   line as the initial token of the invocation, or as the final token
+   of the invocation, or even anything in between.  We choose to make
+   it the final token, but we might as well collapse the invocation
+   and the rest of the line into the initial line, such that `g
+   ... bam baz' below were all in a single line in the preprocessor
+   output.  We used to do this at some point, but it disagreed with
+   the way we numbered lines with the integrated preprocessor, so we
+   had to pick one of them to change.
+
+   Alexandre Oliva, Aug 5, 2003.  */
 
 #define str(x) #x
 #define f(x) x
@@ -28,8 +41,12 @@
 B Q B Q A Q A:
 f
 bar
-g "1 2" bam baz
+g
 
+
+
+ "1 2"
+ bam baz
 */
 
 glue (EMPTY 4, 4) EMPTY;
@@ -49,7 +66,9 @@ f (g) str
    { dg-final { if \{ [grep spacing1.i "B Q B Q A Q A:"] != "" \}     \{  } }
    { dg-final { if \{ [grep spacing1.i "f.*bar"] == "" \} \{              } }
    { dg-final { if \{ [grep spacing1.i "^bar"] != "" \}   \{              } }
-   { dg-final { if \{ [grep spacing1.i "g \"1 2\" bam baz"] != "" \} \{   } }
+   { dg-final { if \{ [grep spacing1.i "g] != "" \} \{   } }
+   { dg-final { if \{ [grep spacing1.i " \"1 2\""] != "" \} \{   } }
+   { dg-final { if \{ [grep spacing1.i " bam baz"] != "" \} \{   } }
    { dg-final { return \} \} \} \} \}                                     } }
    { dg-final { fail "spacing1.c: spacing and new-line preservation"      } }
 */
