@@ -1,3 +1,10 @@
+2000-08-27  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (duplicate_decls): Don't set TREE_STATIC or clear
+	DECL_EXTERNAL on a local extern.  Don't set DECL_IGNORED_P or
+	TREE_ASM_WRITTEN, either.
+	(finish_decl): Adjust.
+
 2000-08-28  Philipp Thomas  <pthomas@suse.de>
 
 	* ABOUT-GCC-NLS: Remove gettext patches from Paul Eggert as

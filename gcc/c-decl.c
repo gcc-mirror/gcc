@@ -1947,8 +1947,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
     }
   if (DECL_EXTERNAL (newdecl))
     {
-      TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
-      DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
+      if (! different_binding_level)
+	{
+	  /* Don't mess with these flags on local externs; they remain
+	     external even if there's a declaration at file scope which
+	     isn't.  */
+	  TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
+	  DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
+	}
       /* An extern decl does not override previous storage class.  */
       TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
       if (! DECL_EXTERNAL (newdecl))
@@ -2007,19 +2013,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	}
     }
   if (different_binding_level)
-    {
-      /* Don't output a duplicate symbol or debugging information for this
-	 declaration.
-
-	 Do not set TREE_ASM_WRITTEN for a FUNCTION_DECL since we may actually
-	 just have two declarations without a definition.  VAR_DECLs may need
-	 the same treatment, I'm not sure.  */
-      if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	DECL_IGNORED_P (newdecl) = 1;
-      else
-	TREE_ASM_WRITTEN (newdecl) = DECL_IGNORED_P (newdecl) = 1;
-      return 0;
-    }
+    return 0;
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID.  */
@@ -2370,7 +2364,8 @@ pushdecl (x)
 		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
 		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
 		      TREE_ASM_WRITTEN (x) = TREE_ASM_WRITTEN (oldglobal);
-		      DECL_ABSTRACT_ORIGIN (x) = DECL_ORIGIN (oldglobal);
+		      DECL_ABSTRACT_ORIGIN (x)
+			= DECL_ABSTRACT_ORIGIN (oldglobal);
 		    }
 		  /* Inner extern decl is built-in if global one is.  */
 		  if (DECL_BUILT_IN (oldglobal))
@@ -3648,11 +3643,8 @@ finish_decl (decl, init, asmspec_tree)
 		   Also if it is not file scope.
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
-	      /* A duplicate_decls call could have changed an extern
-		 declaration into a file scope one.  This can be detected
-		 by TREE_ASM_WRITTEN being set.  */
 		(DECL_INITIAL (decl) != 0
-		 || (DECL_CONTEXT (decl) != 0 && ! TREE_ASM_WRITTEN (decl)))
+		 || DECL_CONTEXT (decl) != 0)
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
