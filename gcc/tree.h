@@ -3469,7 +3469,7 @@ extern int objects_must_conflict_p (tree, tree);
 /* In tree.c */
 extern int really_constant_p (tree);
 extern int int_fits_type_p (tree, tree);
-extern bool variably_modified_type_p (tree);
+extern bool variably_modified_type_p (tree, tree);
 extern int tree_log2 (tree);
 extern int tree_floor_log2 (tree);
 extern int simple_cst_equal (tree, tree);

@@ -1,3 +1,9 @@
+2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cp-lang.c (cp_var_mod_type_p): Add extra arg.
+	* decl.c (grokdeclarator): Extra arg to variably_modified_type_p.
+	* pt.c (check_instantiated_args, unify): Likewise.
+
 2004-07-05  Phil Edwards  <phil@codesourcery.com>
 
 	* Make-lang.in (check-c++, lang_checks):  Add some comments.

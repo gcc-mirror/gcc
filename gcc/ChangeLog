@@ -1,3 +1,27 @@
+2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P): Extra arg.
+	* langhooks.h (var_mod_type_p): Likewise.
+	* c-decl.c (finish_decl): Add extra arg to variably_modified_type_p.
+	* expr.c (count_type_elements): Properly handle return from
+	array_type_nelts and properly test for overflow.
+	* gimplify.c (gimplify_init_constructor): Properly handle return
+	from array_type_nelts.
+	(gimplify_addr_expr): Remove redundant clear of TREE_SIDE_EFFECTS.
+	* integrate.c (copy_decl_for_inlining): Correct comments.
+	* tree-inline.c (remap_decl): Update comments, remove dead code,
+	and copy DECL_FIELD_OFFSET and DECL_QUALIFIER, if they exist.
+	(remap_type): Only remap if variably modified by vars in function
+	being inlined.
+	(copy_body_r): Use compatible_type langhooks to see when can fold.
+	(setup_one_parameter): Don't remap type.
+	(inline_forbidden_p_1): Add arg to variably_modified_type_p.
+	* tree.c (recompute_tree_invarant_for_addr_expr): Properly
+	compute TREE_INVARIANT for decl case.
+	(find_var_from_fn): New function.
+	(variably_modified_type_p): Add arg and call new function.
+	* tree.h (variably_modified_type_p): Add extra arg.
+	
 2004-07-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (nonlocal_goto): Remove disabled code.

@@ -2514,7 +2514,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	      {
 		tree nelts = array_type_nelts (type);
 		if (!host_integerp (nelts, 1)
-		    || tree_low_cst (nelts, 1) != len)
+		    || tree_low_cst (nelts, 1) + 1 != len)
 		  cleared = 1;;
 	      }
 	    else if (len != fields_length (type))
@@ -3050,12 +3050,8 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 			   is_gimple_addr_expr_arg, fb_either);
       if (ret != GS_ERROR)
 	{
-	  /* At this point, the argument of the ADDR_EXPR should be
-	     sufficiently simple that there are never side effects.  */
-	  /* ??? Could split out the decision code from build1 to verify.  */
-	  TREE_SIDE_EFFECTS (expr) = 0;
-
-	  /* Make sure TREE_INVARIANT/TREE_CONSTANT is set properly.  */
+	  /* Make sure TREE_INVARIANT, TREE_CONSTANT, and TREE_SIDE_EFFECTS
+	     is set properly.  */
 	  recompute_tree_invarant_for_addr_expr (expr);
 
 	  /* Mark the RHS addressable.  */

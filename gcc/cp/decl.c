@@ -7329,7 +7329,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   if ((decl_context == FIELD || decl_context == PARM)
       && !processing_template_decl 
-      && variably_modified_type_p (type))
+      && variably_modified_type_p (type, NULL_TREE))
     {
       if (decl_context == FIELD)
 	error ("data member may not have variably modified type `%T'", type);

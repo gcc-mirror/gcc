@@ -8557,7 +8557,7 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 	    }
 	  /* In order to avoid all sorts of complications, we do not
 	     allow variably-modified types as template arguments.  */
-	  else if (variably_modified_type_p (t))
+	  else if (variably_modified_type_p (t, NULL_TREE))
 	    {
 	      if (complain & tf_error)
 		error ("`%T' is a variably modified type", t);
@@ -9732,7 +9732,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	     the bound of the array will not be computable in an
 	     instantiation.  Besides, such types are not allowed in
 	     ISO C++, so we can do as we please here.  */
-	  if (variably_modified_type_p (arg))
+	  if (variably_modified_type_p (arg, NULL_TREE))
 	    return 1;
 	}
 

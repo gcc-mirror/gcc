@@ -38,7 +38,7 @@ static HOST_WIDE_INT cxx_get_alias_set (tree);
 static bool cxx_warn_unused_global_decl (tree);
 static tree cp_expr_size (tree);
 static size_t cp_tree_size (enum tree_code);
-static bool cp_var_mod_type_p (tree);
+static bool cp_var_mod_type_p (tree, tree);
 static int cxx_types_compatible_p (tree, tree);
 static void cxx_initialize_diagnostics (diagnostic_context *);
 
@@ -307,17 +307,19 @@ cp_tree_size (enum tree_code code)
 }
 
 /* Returns true if T is a variably modified type, in the sense of C99.
+   FN is as passed to variably_modified_p.
    This routine needs only check cases that cannot be handled by the
-   language-independent logic in tree-inline.c.  */
+   language-independent logic in tree.c.  */
 
 static bool
-cp_var_mod_type_p (tree type)
+cp_var_mod_type_p (tree type, tree fn)
 {
   /* If TYPE is a pointer-to-member, it is variably modified if either
      the class or the member are variably modified.  */
   if (TYPE_PTR_TO_MEMBER_P (type))
-    return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
-	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type)));
+    return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type), fn)
+	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type),
+					 fn));
 
   /* All other types are not variably modified.  */
   return false;
