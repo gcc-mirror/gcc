@@ -949,24 +949,13 @@ allocate_dynamic_stack_space (size, target, known_align)
      If we have to align, we must leave space in SIZE for the hole
      that might result from the alignment operation.  */
 
-#if defined (STACK_DYNAMIC_OFFSET) || defined(STACK_POINTER_OFFSET) || defined (ALLOCATE_OUTGOING_ARGS)
-#define MUST_ALIGN
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || defined (ALLOCATE_OUTGOING_ARGS) || ! defined (STACK_BOUNDARY)
+#define MUST_ALIGN 1
+#else
+#define MUST_ALIGN (STACK_BOUNDARY < BIGGEST_ALIGNMENT)
 #endif
 
-#if ! defined (MUST_ALIGN) && (!defined(STACK_BOUNDARY) || STACK_BOUNDARY < BIGGEST_ALIGNMENT)
-#define MUST_ALIGN
-#endif
-
-#ifdef MUST_ALIGN
-
-#if 0 /* It turns out we must always make extra space, if MUST_ALIGN
-	 because we must always round the address up at the end,
-	 because we don't know whether the dynamic offset
-	 will mess up the desired alignment.  */
-  /* If we have to round the address up regardless of known_align,
-     make extra space regardless, also.  */
-  if (known_align % BIGGEST_ALIGNMENT != 0)
-#endif
+  if (MUST_ALIGN)
     {
       if (GET_CODE (size) == CONST_INT)
 	size = GEN_INT (INTVAL (size)
@@ -976,8 +965,6 @@ allocate_dynamic_stack_space (size, target, known_align)
 			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
-
-#endif
 
 #ifdef SETJMP_VIA_SAVE_AREA
   /* If setjmp restores regs from a save area in the stack frame,
@@ -1011,8 +998,8 @@ allocate_dynamic_stack_space (size, target, known_align)
 #ifdef STACK_BOUNDARY
   /* If we added a variable amount to SIZE,
      we can no longer assume it is aligned.  */
-#if !defined (SETJMP_VIA_SAVE_AREA) && !defined (MUST_ALIGN)
-  if (known_align % STACK_BOUNDARY != 0)
+#if !defined (SETJMP_VIA_SAVE_AREA)
+  if (! MUST_ALIGN && known_align % STACK_BOUNDARY != 0)
 #endif
     size = round_push (size);
 #endif
@@ -1054,12 +1041,7 @@ allocate_dynamic_stack_space (size, target, known_align)
   emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
 
-#ifdef MUST_ALIGN
-#if 0  /* Even if we know the stack pointer has enough alignment,
-	  there's no way to tell whether virtual_stack_dynamic_rtx shares that
-	  alignment, so we still need to round the address up.  */
-  if (known_align % BIGGEST_ALIGNMENT != 0)
-#endif
+  if (MUST_ALIGN)
     {
       /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
 	 but we know it can't.  So add ourselves and then do TRUNC_DIV_EXPR. */
@@ -1073,7 +1055,6 @@ allocate_dynamic_stack_space (size, target, known_align)
 			    GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
 			    NULL_RTX, 1);
     }
-#endif
   
   /* Some systems require a particular insn to refer to the stack
      to make the pages exist.  */
