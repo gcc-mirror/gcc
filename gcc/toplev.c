@@ -745,7 +745,14 @@ int warn_cast_align;
    characters.  The value N is in `id_clash_len'.  */
 
 int warn_id_clash;
-int id_clash_len;
+unsigned id_clash_len;
+
+/* Nonzero means warn about any objects definitions whose size is larger
+   than N bytes.  Also want about function definitions whose returned
+   values are larger than N bytes. The value N is in `larger_than_size'.  */
+ 
+int warn_larger_than;
+unsigned larger_than_size;
 
 /* Nonzero means warn if inline function is too large.  */
 
@@ -3546,6 +3553,24 @@ main (argc, argv, envp)
 		  warn_id_clash = 1;
 		  id_clash_len = atoi (str + 10);
 		id_clash_lose: ;
+		}
+	      else if (!strncmp (p, "larger-than-", 12))
+		{
+		  char *endp = p + 12;
+
+		  while (*endp)
+		    {
+		      if (*endp >= '0' && *endp <= '9')
+			endp++;
+		      else
+			{
+			  error ("Invalid option `%s'", argv[i]);
+			  goto larger_than_lose;
+			}
+		    }
+		  warn_larger_than = 1;
+		  larger_than_size = atoi (str + 13);
+		larger_than_lose: ;
 		}
 	      else
 		error ("Invalid option `%s'", argv[i]);
