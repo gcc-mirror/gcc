@@ -1,3 +1,12 @@
+2003-05-12  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/basic_filebuf/sgetc/char/1.cc: Remove
+	unnecessary includes and unused string literals.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1.cc: Likewise.
+
 2003-05-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/fstream.tcc (_M_overflow): Remove unbuffered bits.
