@@ -2972,7 +2972,7 @@ print_rtl_with_bb (outf, rtx_first)
 	    {
 	      in_bb_p[ INSN_UID(x)]
 		= (in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
-		 ? IN_ONE_BB : IN_MULTIPLE_BB);
+		 ? IN_ONE_BB : IN_MULTIPLE_BB;
 	      if (x == basic_block_end[i])
 		break;
 	    }
