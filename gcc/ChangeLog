@@ -1,5 +1,6 @@
 2002-11-16  David Edelsohn  <edelsohn@gnu.org>
 
+	PR 8362
 	* config/rs6000/rs6000.c (rs6000_outout_load_multiple): New function.
 	* config/rs6000/rs6000.md (movti_string): Remove output modifier
 	when scratch register never needed.
