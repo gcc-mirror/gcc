@@ -5,6 +5,9 @@
 	* rtlanal.c (reg_overlap_mentioned_p): Revert December 15th
 	change.
 
+	* config/sparc/sparc.c (epilogue_renumber): Add default case
+	to switch stmt.
+
 Thu Dec 16 11:33:57 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* toplev.c (rest_of_compilation): Run branch shortening after

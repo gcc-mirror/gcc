@@ -4974,6 +4974,9 @@ epilogue_renumber (where, test)
     case CONST_INT:
     case CONST_DOUBLE:
       return 0;
+
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
