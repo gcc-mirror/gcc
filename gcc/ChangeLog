@@ -1,3 +1,20 @@
+2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (truthvalue_conversion): Rename, update.
+	* c-common.h (c_common_truthvalue_conversion): New.
+	* c-convert.c (convert): Update.
+	* c-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+	* c-parse.in (expr_no_commas, if_prefix, select_or_iter_stmt): Update.
+	* c-typeck.c (build_binary_op, build_unary_op,
+	build_conditional_expr): Update.
+	* fold-const.c (constant_boolean_node, fold): Use langhook.
+	* langhooks-def.h (LANGHOOK_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New hook.
+	* stmt.c (expand_decl_cleanup): Use langhook.
+	* tree.h (truthvalue_conversion): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+
 2002-04-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtsavres.o
