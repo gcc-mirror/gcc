@@ -1873,7 +1873,6 @@ gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/nio/DatagramChannelImpl.java \
-gnu/java/nio/FileChannelImpl.java \
 gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
@@ -2034,6 +2033,7 @@ java/nio/channels/ClosedSelectorException.java \
 java/nio/channels/ConnectionPendingException.java \
 java/nio/channels/DatagramChannel.java \
 java/nio/channels/FileChannel.java \
+java/nio/channels/FileChannelImpl.java \
 java/nio/channels/FileLock.java \
 java/nio/channels/FileLockInterruptionException.java \
 java/nio/channels/GatheringByteChannel.java \
@@ -2339,7 +2339,6 @@ gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/awt/natEmbeddedWindow.cc \
-gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 java/io/natFile.cc \
@@ -2371,6 +2370,7 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/nio/natDirectByteBufferImpl.cc \
+java/nio/channels/natFileChannelImpl.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natTimeZone.cc \
@@ -2515,14 +2515,13 @@ gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
 gnu/gcj/runtime/natVMClassLoader.lo gnu/java/awt/natEmbeddedWindow.lo \
-gnu/java/nio/natFileChannelImpl.lo gnu/java/nio/natFileLockImpl.lo \
-gnu/java/nio/natSelectorImpl.lo java/io/natFile.lo \
-java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
-java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
-java/lang/natClass.lo java/lang/natClassLoader.lo \
-java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
-java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
-java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
+java/io/natFile.lo java/io/natFileDescriptor.lo \
+java/io/natObjectInputStream.lo java/io/natVMObjectStreamClass.lo \
+java/lang/natCharacter.lo java/lang/natClass.lo \
+java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
+java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
+java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -2530,7 +2529,8 @@ java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
 java/lang/reflect/natMethod.lo java/lang/reflect/natProxy.lo \
 java/net/natNetworkInterface.lo java/net/natInetAddress.lo \
 java/net/natPlainDatagramSocketImpl.lo java/net/natPlainSocketImpl.lo \
-java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
+java/nio/natDirectByteBufferImpl.lo \
+java/nio/channels/natFileChannelImpl.lo java/text/natCollator.lo \
 java/util/natResourceBundle.lo java/util/natTimeZone.lo \
 java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
 lib_org_xml_sax_la_LDFLAGS = 
@@ -2981,9 +2981,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/locale/LocaleInformation_zh_SG.P \
 .deps/gnu/java/locale/LocaleInformation_zh_TW.P \
 .deps/gnu/java/math/MPN.P .deps/gnu/java/nio/DatagramChannelImpl.P \
-.deps/gnu/java/nio/FileChannelImpl.P .deps/gnu/java/nio/FileLockImpl.P \
-.deps/gnu/java/nio/PipeImpl.P .deps/gnu/java/nio/SelectionKeyImpl.P \
-.deps/gnu/java/nio/SelectorImpl.P \
+.deps/gnu/java/nio/FileLockImpl.P .deps/gnu/java/nio/PipeImpl.P \
+.deps/gnu/java/nio/SelectionKeyImpl.P .deps/gnu/java/nio/SelectorImpl.P \
 .deps/gnu/java/nio/SelectorProviderImpl.P \
 .deps/gnu/java/nio/ServerSocketChannelImpl.P \
 .deps/gnu/java/nio/SocketChannelImpl.P \
@@ -2995,9 +2994,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16Decoder.P \
 .deps/gnu/java/nio/charset/UTF_16Encoder.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
-.deps/gnu/java/nio/charset/UTF_8.P \
-.deps/gnu/java/nio/natFileChannelImpl.P \
-.deps/gnu/java/nio/natFileLockImpl.P \
+.deps/gnu/java/nio/charset/UTF_8.P .deps/gnu/java/nio/natFileLockImpl.P \
 .deps/gnu/java/nio/natSelectorImpl.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
@@ -3527,6 +3524,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/ConnectionPendingException.P \
 .deps/java/nio/channels/DatagramChannel.P \
 .deps/java/nio/channels/FileChannel.P \
+.deps/java/nio/channels/FileChannelImpl.P \
 .deps/java/nio/channels/FileLock.P \
 .deps/java/nio/channels/FileLockInterruptionException.P \
 .deps/java/nio/channels/GatheringByteChannel.P \
@@ -3550,6 +3548,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/UnresolvedAddressException.P \
 .deps/java/nio/channels/UnsupportedAddressTypeException.P \
 .deps/java/nio/channels/WritableByteChannel.P \
+.deps/java/nio/channels/natFileChannelImpl.P \
 .deps/java/nio/channels/spi/AbstractInterruptibleChannel.P \
 .deps/java/nio/channels/spi/AbstractSelectableChannel.P \
 .deps/java/nio/channels/spi/AbstractSelectionKey.P \

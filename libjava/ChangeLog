@@ -1,5 +1,27 @@
 2003-07-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java,
+	gnu/java/nio/natFileChannelImpl.cc: Removed.
+	* java/io/FileInputStream.java,
+	java/io/FileOutputStream.java,
+	java/io/RandomAccessFile.java,
+	java/nio/MappedByteBufferImpl.java:
+	Import java.nio.channels.FileChannelImpl instead of
+	gnu.java.nio.FileChannelImpl.
+	* java/nio/channels/FileChannelImpl.java,
+	java/nio/channels/natFileChannelImpl.cc:
+	New files.
+	* Makefile.am
+	(ordinary_java_source_files):
+	Removed gnu/java/nio/FileChannelImpl.java and added
+	java/nio/channels/FileChannelImpl.java.
+	(nat source_files):
+	Removed gnu/java/nio/natFileChannelImpl.cc and added
+	java/nio/channels/natFileChannelImpl.cc.
+	* Makefile.in: Regenerated.
+
+2003-07-13  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/plaf/basic/BasicBorders.java,
 	javax/swing/plaf/basic/BasicLabelUI.java,
 	javax/swing/plaf/basic/BasicLookAndFeel.java,
