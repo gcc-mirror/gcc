@@ -1340,7 +1340,7 @@ changequote([,])dnl
 		else
 			tmake_file=i386/t-sco5
 		fi
-		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+		extra_parts="crti.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		;;
 changequote(,)dnl
 	i[34567]86-*-sco3.2v4*) 	# 80386 running SCO 3.2v4 system
