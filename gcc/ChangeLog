@@ -1,3 +1,8 @@
+2003-09-10  Jerry Quinn  <jlquinn@optonline.net>
+
+	* real.c: Update URL to VAX floating point docs.
+	(decode_vax_d): Extract 8 exponent bits instead of 7.
+
 2003-09-10  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* combine.c (force_to_mode): Set fuller_mask based only on mask,
