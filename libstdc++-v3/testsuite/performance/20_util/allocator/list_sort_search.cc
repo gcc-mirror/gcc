@@ -33,6 +33,7 @@
 #include <typeinfo>
 #include <sstream>
 #include <ext/mt_allocator.h>
+#include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/pool_allocator.h>

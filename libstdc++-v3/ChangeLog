@@ -1,3 +1,9 @@
+2004-10-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/performance/20_util/allocator/list_sort_search.cc:
+	Include <ext/new_allocator.h>.
+	* testsuite/performance/20_util/allocator/map_mt_find.cc: Likewise.
+
 2004-10-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (_M_mutate): Do not reallocate
