@@ -1,3 +1,8 @@
+2002-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* cppexp.c (cpp_classify_number): Cast precission to int for
+	correct printf format.
+
 2002-06-01  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_mcu_types): Remove devices that were once
@@ -54,10 +59,10 @@ Sat Jun  1 11:23:22 CEST 2002  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	infrastructure.
 
 2002-06-01  Alan Lehotsky  <apl@alum.mit.edu>
-	
+
 	* except.c (nothrow_function_p): Walk epilogue delay list
 	checking the insn, not the chain for potential throws.
-	
+
 2002-05-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INSTALL_CPP, UNINSTALL_CPP): Remove.
@@ -186,7 +191,7 @@ Sat Jun  1 11:23:22 CEST 2002  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Define.
 
 2002-05-31  Alan Lehotsky <apl@alum.mit.edu>
-	
+
 	* varasm.c (mark_constant_pool): Walk epilogue delay list
 	checking the insn, not the chain for potential constants.
 
