@@ -1623,6 +1623,48 @@ fi
 AC_MSG_RESULT($gcc_cv_as_shf_merge)
 
 case "$target" in
+  # All TARGET_ABI_OSF targets.
+  alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
+    AC_CACHE_CHECK([assembler supports explicit relocations],
+	gcc_cv_as_explicit_relocs, [
+	gcc_cv_as_explicit_relocs=unknown
+	if test x$gcc_cv_gas_major_version != x \
+		-a x$gcc_cv_gas_minor_version != x
+	then
+	   if test "$gcc_cv_gas_major_version" -eq 2 \
+	           -a "$gcc_cv_gas_minor_version" -ge 12 \
+	           -o "$gcc_cv_gas_major_version" -gt 2; then
+	      gcc_cv_as_explicit_relocs=yes
+	   fi
+	elif test x$gcc_cv_as != x; then
+	    cat > conftest.s << 'EOF'
+	.set nomacro
+	.text
+	extbl	$3, $2, $3	!lituse_bytoff!1
+	ldq	$2, a($29)	!literal!1
+	ldq	$4, b($29)	!literal!2
+	ldq_u	$3, 0($2)	!lituse_base!1
+	ldq	$27, f($29)	!literal!5
+	jsr	$26, ($27), f	!lituse_jsr!5
+	ldah	$29, 0($26)	!gpdisp!3
+	lda	$0, c($29)	!gprel
+	ldah	$1, d($29)	!gprelhigh
+	lda	$1, d($1)	!gprellow
+	lda	$29, 0($29)	!gpdisp!3
+EOF
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_explicit_relocs=yes
+	    else
+		gcc_cv_as_explicit_relocs=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    ])
+    if test "x$gcc_cv_as_explicit_relocs" = xyes; then
+	AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
+		[Define if your assembler supports explicit relocations.])
+    fi
+    ;;
   sparc*-*-*)
     AC_CACHE_CHECK([assembler .register pseudo-op support],
 	gcc_cv_as_register_pseudo_op, [
