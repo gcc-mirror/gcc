@@ -1165,7 +1165,7 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
 }
 
 // this is the external interface to the dynamic cast machinery
-extern "C++" void *
+extern "C" void *
 __dynamic_cast (const void *src_ptr,    // object started from
                 const __class_type_info *src_type, // type of the starting object
                 const __class_type_info *dst_type, // desired target type

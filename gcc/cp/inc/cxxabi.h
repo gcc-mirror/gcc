@@ -414,7 +414,7 @@ protected:
 };
 
 /* dynamic cast runtime */
-extern "C++"
+extern "C"
 void *__dynamic_cast (const void *__src_ptr,    /* object started from */
                       const __class_type_info *__src_type, /* static type of object */
                       const __class_type_info *__dst_type, /* desired target type */

@@ -846,11 +846,7 @@ build_dynamic_cast_1 (type, expr)
 	                  (NULL_TREE, ptrdiff_type_node, void_list_node))));
 	        }
 	      tmp = build_function_type (ptr_type_node, tmp);
-	      if (new_abi_rtti_p ())
-		/* We want its name mangling.  */
-		dcast_fn = build_cp_library_fn_ptr (name, tmp);
-	      else
-		dcast_fn = build_library_fn_ptr (name, tmp);
+	      dcast_fn = build_library_fn_ptr (name, tmp);
               pop_nested_namespace (ns);
               dynamic_cast_node = dcast_fn;
 	    }
