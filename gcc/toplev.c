@@ -61,7 +61,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "ggc.h"
 #include "graph.h"
-#include "loop.h"
 #include "regs.h"
 #include "timevar.h"
 #include "diagnostic.h"
@@ -1684,24 +1683,7 @@ process_options (void)
   if (flag_unroll_all_loops)
     flag_unroll_loops = 1;
 
-  if (flag_unroll_loops)
-    {
-      flag_old_unroll_loops = 0;
-      flag_old_unroll_all_loops = 0;
-    }
-
-  if (flag_old_unroll_all_loops)
-    flag_old_unroll_loops = 1;
-
-  /* Old loop unrolling requires that strength_reduction be on also.  Silently
-     turn on strength reduction here if it isn't already on.  Also, the loop
-     unrolling code assumes that cse will be run after loop, so that must
-     be turned on also.  */
-  if (flag_old_unroll_loops)
-    {
-      flag_strength_reduce = 1;
-      flag_rerun_cse_after_loop = 1;
-    }
+  /* The loop unrolling code assumes that cse will be run after loop.  */
   if (flag_unroll_loops || flag_peel_loops)
     flag_rerun_cse_after_loop = 1;
 

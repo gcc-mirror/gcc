@@ -60,7 +60,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "ggc.h"
 #include "graph.h"
-#include "loop.h"
 #include "regs.h"
 #include "timevar.h"
 #include "diagnostic.h"
@@ -1130,7 +1129,7 @@ rest_of_handle_gcse (void)
 static void
 rest_of_handle_loop_optimize (void)
 {
-  int do_unroll, do_prefetch;
+  int do_prefetch;
 
   timevar_push (TV_LOOP);
   delete_dead_jumptables ();
@@ -1140,10 +1139,6 @@ rest_of_handle_loop_optimize (void)
   /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
 
-  if (flag_unroll_loops)
-    do_unroll = LOOP_AUTO_UNROLL;	/* Having two unrollers is useless.  */
-  else
-    do_unroll = flag_old_unroll_loops ? LOOP_UNROLL : LOOP_AUTO_UNROLL;
   do_prefetch = flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0;
 
   if (flag_rerun_loop_opt)
@@ -1151,8 +1146,7 @@ rest_of_handle_loop_optimize (void)
       cleanup_barriers ();
 
       /* We only want to perform unrolling once.  */
-      loop_optimize (get_insns (), dump_file, do_unroll);
-      do_unroll = 0;
+      loop_optimize (get_insns (), dump_file, 0);
 
       /* The first call to loop_optimize makes some instructions
 	 trivially dead.  We delete those instructions now in the
@@ -1165,7 +1159,7 @@ rest_of_handle_loop_optimize (void)
       reg_scan (get_insns (), max_reg_num (), 1);
     }
   cleanup_barriers ();
-  loop_optimize (get_insns (), dump_file, do_unroll | do_prefetch);
+  loop_optimize (get_insns (), dump_file, do_prefetch);
 
   /* Loop can create trivially dead instructions.  */
   delete_trivially_dead_insns (get_insns (), max_reg_num ());

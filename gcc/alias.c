@@ -2763,11 +2763,6 @@ init_alias_analysis (void)
 
   new_reg_base_value = xmalloc (maxreg * sizeof (rtx));
   reg_seen = xmalloc (maxreg);
-  if (! reload_completed && flag_old_unroll_loops)
-    {
-      alias_invariant = ggc_calloc (maxreg, sizeof (rtx));
-      alias_invariant_size = maxreg;
-    }
 
   /* The basic idea is that each pass through this loop will use the
      "constant" information from the previous pass to propagate alias

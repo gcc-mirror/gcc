@@ -1,3 +1,49 @@
+2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* unroll.c: Removed.
+	* loop.h: Removed.
+	* Makefile.in (LOOP_H, unroll.o): Removed.
+	(toplev.o, passes.o, stmt.o, integrate.o, loop.o): Remove LOOP_H
+	dependency.
+	* alias.c (init_alias_analysis): Remove flag_old_unroll_loops
+	reference.
+	* cfgloop.h (LOOP_PREFETCH, loop_optimize): Moved from loop.h.
+	* common.opt (fold-unroll-loops, fold-unroll-all-loops): Removed.
+	* loop.c: Do not include loop.h.
+	(LOOP_INFO, LOOP_MOVABLES, LOOP_REGS, LOOP_IVS, INSN_LUID,
+	REGNO_FIRST_LUID, REGNO_LAST_LUID, enum g_types, struct induction,
+	struct iv_class, enum iv_mode, struct iv, REG_IV_TYPE, REG_IV_INFO,
+	REG_IV_CLASS, struct loop_ivs, struct loop_mem_info, struct loop_reg,
+	struct loop_regs, struct loop_movables, struct loop_info): Moved
+	from loop.h.
+	(back_branch_in_range_p, fold_rtx_mult_add, biv_total_increment,
+	reg_dead_after_loop, final_biv_value, loop_find_equiv_value,
+	find_common_reg_term, loop_iterations, final_giv_value): Moved
+	from unroll.c.
+	(uid_luid, uid_loop, max_uid_for_loop, max_reg_before_loop,
+	loop_dump_stream, for_each_insn_in_loop, express_from,
+	extend_value_for_giv, loop_iv_add_mult_emit_before,
+	loop_iv_add_mult_sink, loop_iv_add_mult_hoist,
+	loop_insn_first_p, get_condition_for_loop,
+	loop_insn_emit_before, loop_insn_hoist,
+	loop_insn_sink): Made static.
+	(loop_invariant_p): Made static.  Removed flag_old_unroll_loops
+	reference.
+	(strength_reduce): Do not call unroller.
+	(record_giv): Do not initialize unrolled field.
+	(prescan_loop): Do not set loop_info->preconditioned.
+	* passes.c: Do not include loop.h.
+	(rest_of_handle_loop_optimize): Do not call unroller.
+	* predict.c: Do not include loop.h.
+	* rtl.h (NOTE_PRECONDITIONED): Removed.
+	* stmt.c: Do not include loop.h.
+	* toplev.c: Do not include loop.h.
+	(process_options): Do not handle flag_old_unroll_loops.
+
+	* doc/invoke.texi (fold-unroll-loops, fold-unroll-all-loops):
+	Documentation removed.
+	* doc/passes.texi (unroll.c, loop.h): Documentation removed.
+
 2004-09-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (STAGE1_CHECKING): New variable.

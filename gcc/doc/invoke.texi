@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsignaling-nans -fsingle-precision-constant  -fspeculative-prefetching @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
--funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
+-funswitch-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
@@ -4423,8 +4423,7 @@ redundant spilling.
 @item -floop-optimize
 @opindex floop-optimize
 Perform loop optimizations: move constant expressions out of loops, simplify
-exit test conditions and optionally do strength-reduction and loop unrolling as
-well.
+exit test conditions and optionally do strength-reduction as well.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -5221,22 +5220,6 @@ at level @option{-O1}
 @opindex funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
-
-@item -fold-unroll-loops
-@opindex fold-unroll-loops
-Unroll loops whose number of iterations can be determined at compile
-time or upon entry to the loop, using the old loop unroller whose loop
-recognition is based on notes from frontend.  @option{-fold-unroll-loops} implies
-both @option{-fstrength-reduce} and @option{-frerun-cse-after-loop}.  This
-option makes code larger, and may or may not make it run faster.
-
-@item -fold-unroll-all-loops
-@opindex fold-unroll-all-loops
-Unroll all loops, even if their number of iterations is uncertain when
-the loop is entered. This is done using the old loop unroller whose loop
-recognition is based on notes from frontend.  This usually makes programs run more slowly.
-@option{-fold-unroll-all-loops} implies the same options as
-@option{-fold-unroll-loops}.
 
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays

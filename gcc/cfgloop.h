@@ -458,4 +458,11 @@ extern void unroll_and_peel_loops (struct loops *, int);
 extern void doloop_optimize_loops (struct loops *);
 extern void move_loop_invariants (struct loops *);
 
+/* Old loop optimizer interface.  */
+
+/* Flags passed to loop_optimize.  */
+#define LOOP_PREFETCH 1
+
+extern void loop_optimize (rtx, FILE *, int);
+
 #endif /* GCC_CFGLOOP_H */
