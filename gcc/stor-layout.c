@@ -801,7 +801,7 @@ place_field (rli, field)
       && ! DECL_PACKED (field)
       && ! integer_zerop (DECL_SIZE (field))
       && host_integerp (DECL_SIZE (field), 1)
-      && host_integerp (rli->size, 1)
+      && host_integerp (rli->offset, 1)
       && host_integerp (TYPE_SIZE (type), 1))
     {
       unsigned int type_align = TYPE_ALIGN (type);
