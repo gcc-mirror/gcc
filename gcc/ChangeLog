@@ -1,3 +1,8 @@
+2002-04-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/invoke.texi: Remove Chill references.
+	* doc/gcc.texi: Update last modified date.
+
 2002-04-20  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/lib1funcs.asm (___mulsi3): Remove unnecessary
