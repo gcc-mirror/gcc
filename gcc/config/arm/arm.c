@@ -6104,7 +6104,7 @@ arm_print_operand (stream, x, code)
     case 'M':
       asm_fprintf (stream, "{%R%s-%R%s}",
 		   reg_names[REGNO (x)],
-		   reg_names[REGNO (x) + NUM_INTS (GET_MODE (x)) - 1]);
+		   reg_names[REGNO (x) + NUM_REGS (GET_MODE (x)) - 1]);
       return;
 
     case 'd':

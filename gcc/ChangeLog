@@ -1,3 +1,8 @@
+Thu Jul 22 14:34:59 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* config/arm/arm.c (arm_print_operand): Fix typo in 'M' case
+	(use NUM_REGS instead of NUM_INTS).
+
 Thu Jul 22 11:25:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* builtins.c: New file.
