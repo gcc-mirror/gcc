@@ -622,7 +622,7 @@ alter_output_for_insn (ce_elem, insn_elem, alt, max_op)
   /* ??? Could coordinate with genoutput to not duplicate code here.  */
 
   ce_out = XSTR (ce_elem->data, 2);
-  insn_out = XSTR (insn_elem->data, 3);
+  insn_out = XTMPL (insn_elem->data, 3);
   if (!ce_out || *ce_out == '\0')
     return insn_out;
 
@@ -724,7 +724,7 @@ process_one_cond_exec (ce_elem)
 	}
 
       XSTR (insn, 2) = alter_test_for_insn (ce_elem, insn_elem);
-      XSTR (insn, 3) = alter_output_for_insn (ce_elem, insn_elem,
+      XTMPL (insn, 3) = alter_output_for_insn (ce_elem, insn_elem,
 					      alternatives, max_operand);
 
       /* ??? Set `predicable' to false.  Not crucial since it's really
