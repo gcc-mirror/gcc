@@ -1,3 +1,12 @@
+2004-03-02  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips16.S: Change fixsfsi and fixdfsi to
+	fix_trunc.
+	* config/mips/mips.c (mips_init_libfuncs): Change accordingly.
+	* config/mips/t-elf (LIB1ASMFUNCS): Ditto.
+	* config/mips/t-isa3264 (LIB1ASMFUNCS): Ditto.
+	* config/mips/t-r3900 (LIB1ASMFUNCS): Ditto.
+
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
         PR middle-end/11767
@@ -216,13 +225,13 @@
 	* fold-const.c (fold): An equality comparison of a non-weak object
 	against zero has a known result.  Similarly an equality comparison
 	of the address of two non-weak, unaliased symbols has a known result.
- 
+
 	* ggc-page.c (struct page_entry): New field PREV.
 	(ggc_alloc): Update PREV field appropriately.
 	(sweep_pages): Likewise.
 	(ggc_free): Likewise.  Use PREV field rather than loop to
 	improve ggc_free performance.
- 
+
 2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_output_division): Use the division
@@ -313,7 +322,7 @@
 	* config/sh/sh.c: Convert to ISO-C.
 
 2004-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
-	
+
 	* c-typeck.c (tagged_types_tu_compatible_p): Fix pasto in
 	my previous patch.
 
@@ -339,7 +348,7 @@
 
 2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
-	* config/mips/mips.c (override_options): Remove an obsolete 
+	* config/mips/mips.c (override_options): Remove an obsolete
 	duplicate definition of the "e" constraint.
 	* config/mips/mips.h: Update a comment accordingly.
 
@@ -455,27 +464,27 @@
 	* Makefile.in (OBJS-common): Add it.
 	* diagnostic.c (rtl_dump_and_exit): Move decl ...
 	* flags.h (rtl_dump_and_exit): ... here.
-	* output.h (size_directive_output, last_assemble_variable_decl): 
+	* output.h (size_directive_output, last_assemble_variable_decl):
 	Move from toplev.c.
 	* rtl.h (reg_alloc): Move from toplev.c.
 	* toplev.c (HAVE_conditional_execution, DUMPFILE_FORMAT,
 	struct dump_file_info, enum dump_file_index, dump_file_tbl,
 	open_dump_file, close_dump_file, rest_of_decl_compilation,
 	rest_of_type_compilation, rest_of_handle_final,
-	rest_of_handle_delay_slots, rest_of_handle_stack_regs, 
+	rest_of_handle_delay_slots, rest_of_handle_stack_regs,
 	rest_of_handle_variable_tracking, rest_of_handle_machine_reorg,
 	rest_of_handle_new_regalloc, rest_of_handle_old_regalloc,
 	rest_of_handle_regrename, rest_of_handle_reorder_blocks,
 	rest_of_handle_sched, rest_of_handle_sched2, rest_of_handle_regmove,
-	rest_of_handle_tracer, rest_of_handle_if_conversion, 
+	rest_of_handle_tracer, rest_of_handle_if_conversion,
 	rest_of_handle_if_after_combine, rest_of_handle_web,
 	rest_of_handle_branch_prob,
 	rest_of_handle_value_profile_transformations, rest_of_handle_cfg,
-	rest_of_handle_addressof, rest_of_handle_sibling_calls, 
+	rest_of_handle_addressof, rest_of_handle_sibling_calls,
 	rest_of_handle_jump_bypass, rest_of_handle_inlining,
 	rest_of_handle_null_pointer, rest_of_handle_combine,
 	rest_of_handle_life, rest_of_handle_cse, rest_of_handle_cse2,
-	rest_of_handle_gcse, rest_of_handle_loop_optimize, 
+	rest_of_handle_gcse, rest_of_handle_loop_optimize,
 	rest_of_handle_loop2, rest_of_compilation): Move to passes.c.
 	(decode_d_option): Use enable_rtl_dump_file.
 	(compile_file, finalize, do_compile): Move profile+combine+graph
@@ -506,7 +515,7 @@
 	* config/rs6000/spe.md: Delete spe_efsctuiz.
 	Add spe_fixuns_truncsfsi2.
 	Add spe_fix_truncsfsi2.
- 
+
 2004-02-26  Eric Christopher  <echristo@redhat.com>
 
 	* c-lex.c (c_lex_string_translate): New variable.
