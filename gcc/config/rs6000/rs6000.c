@@ -3984,6 +3984,7 @@ print_operand (file, x, code)
 	   mask begins at 63 - i from left */
 	  if (i > 63)
 	    output_operand_lossage ("%%S computed all 1's mask");
+
 	  fprintf (file, "%d", 63 - i);
 	  return;
 	}
@@ -4010,9 +4011,22 @@ print_operand (file, x, code)
 	   mask ends at 62 - i from left */
 	  if (i > 62)
 	    output_operand_lossage ("%%S computed all 0's mask");
+
 	  fprintf (file, "%d", 62 - i);
 	  return;
 	}
+
+    case 'T':
+      /* Print the symbolic name of a branch target register.  */
+      if (GET_CODE (x) != REG || (REGNO (x) != LINK_REGISTER_REGNUM
+				  && REGNO (x) != COUNT_REGISTER_REGNUM))
+	output_operand_lossage ("invalid %%T value");
+
+      if (REGNO (x) == LINK_REGISTER_REGNUM)
+	fputs (TARGET_NEW_MNEMONICS ? "lr" : "r", file);
+      else
+	fputs ("ctr", file);
+      return;
 
     case 'u':
       /* High-order 16 bits of constant for use in unsigned operand.  */

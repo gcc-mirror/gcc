@@ -1,3 +1,27 @@
+2000-07-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (print_operand, case 'T'): New case.
+
+	* rs6000.md (call_indirect_aix32): Convert to expander of
+	scheduled instructions.
+	(call_indirect_aix64): Likewise.
+	(call_value_indirect_aix{32,64}): Likewise.
+	(call, call_value): Invoke expanders for AIX.  Fall through to
+	matchers for SysV.
+	(call_indirect_nonlocal_aix{32,64}): New patterns (ctr and lr).
+	(call_value_indirect_nonlocal_aix{32,64}): New patterns.
+	(call_nonlocal_aix32): Remove CALL_LONG alternative.  Operand 1
+	only "g" constraint.
+	(call_nonlocal_aix64): Likewise.
+	(call_value_nonlocal_aix{32,64}): Likewise.
+	(call_nonlocal_sysv): New pattern for ctr, lr, and symbolic
+	operands.
+	(call_value_nonlocal_sysv): New pattern.
+	(indirect_jump{si,di}): Use new 'T' modifier.
+	(tablejump{si,di} matchers): Likewise.
+	(return_internal_{si,di}): Likewise.
+	(return_eh_{si,di}): Likewise.
+
 2000-07-24  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_print_operand): Handle "%,".
