@@ -1,3 +1,12 @@
+2003-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/12340
+	* loop.h (struct induction): Document the new semantics
+	of the 'same' field for bivs.
+	* unroll.c (biv_total_increment): Don't count the same
+	biv increment several times.
+	(loop_iterations) [GENERAL_INDUCT]: Likewise.
+
 2003-09-27  Graham Stott  <graham.stott@btinternet.com>
 
 	* unroll.c (loop_interations)[GT]: Add missing break.
