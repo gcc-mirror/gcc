@@ -340,10 +340,11 @@ static void invalidate_mems_from_autoinc	PROTO ((rtx));
    numbers in use.  */
 
 void
-find_basic_blocks (f, nregs, file)
+find_basic_blocks (f, nregs, file, do_cleanup)
      rtx f;
      int nregs ATTRIBUTE_UNUSED;
      FILE *file ATTRIBUTE_UNUSED;
+     int do_cleanup;
 {
   rtx *bb_eh_end;
   int max_uid;
@@ -402,9 +403,9 @@ find_basic_blocks (f, nregs, file)
   make_edges (label_value_list, bb_eh_end);
 
   /* Delete unreachable blocks.  */
-  /* ??? Do this conditionally, or make this another entry point?  */
 
-  delete_unreachable_blocks ();
+  if (do_cleanup)
+    delete_unreachable_blocks ();
 
   /* Mark critical edges.  */
 
@@ -2097,6 +2098,11 @@ free_basic_block_vars (keep_head_end_p)
       clear_edges ();
       VARRAY_FREE (basic_block_info);
       n_basic_blocks = 0;
+
+      ENTRY_BLOCK_PTR->aux = NULL;
+      ENTRY_BLOCK_PTR->global_live_at_end = NULL;
+      EXIT_BLOCK_PTR->aux = NULL;
+      EXIT_BLOCK_PTR->global_live_at_start = NULL;
     }
 }
 
@@ -2298,7 +2304,8 @@ life_analysis_1 (f, nregs)
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */
 
-  allocate_for_life_analysis ();
+  allocate_reg_life_data ();
+  allocate_bb_life_data ();
 
   reg_next_use = (rtx *) alloca (nregs * sizeof (rtx));
   memset (reg_next_use, 0, nregs * sizeof (rtx));
@@ -2511,20 +2518,9 @@ life_analysis_1 (f, nregs)
    of life analysis.  Not static since used also for stupid life analysis.  */
 
 void
-allocate_for_life_analysis ()
+allocate_bb_life_data ()
 {
   register int i;
-
-  /* Recalculate the register space, in case it has grown.  Old style
-     vector oriented regsets would set regset_{size,bytes} here also.  */
-  allocate_reg_info (max_regno, FALSE, FALSE);
-
-  /* Because both reg_scan and flow_analysis want to set up the REG_N_SETS
-     information, explicitly reset it here.  The allocation should have
-     already happened on the previous reg_scan pass.  Make sure in case
-     some more registers were allocated.  */
-  for (i = 0; i < max_regno; i++)
-    REG_N_SETS (i) = 0;
 
   for (i = 0; i < n_basic_blocks; i++)
     {
@@ -2541,7 +2537,23 @@ allocate_for_life_analysis ()
     = OBSTACK_ALLOC_REG_SET (function_obstack);
 
   regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (function_obstack);
-  CLEAR_REG_SET (regs_live_at_setjmp);
+}
+
+void
+allocate_reg_life_data ()
+{
+  int i;
+
+  /* Recalculate the register space, in case it has grown.  Old style
+     vector oriented regsets would set regset_{size,bytes} here also.  */
+  allocate_reg_info (max_regno, FALSE, FALSE);
+
+  /* Because both reg_scan and flow_analysis want to set up the REG_N_SETS
+     information, explicitly reset it here.  The allocation should have
+     already happened on the previous reg_scan pass.  Make sure in case
+     some more registers were allocated.  */
+  for (i = 0; i < max_regno; i++)
+    REG_N_SETS (i) = 0;
 }
 
 /* Make each element of VECTOR point at a regset.  The vector has

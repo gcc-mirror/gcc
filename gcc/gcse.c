@@ -644,7 +644,7 @@ gcse_main (f, file)
   /* Identify the basic block information for this function, including
      successors and predecessors.  */
   max_gcse_regno = max_reg_num ();
-  find_basic_blocks (f, max_gcse_regno, file);
+  find_basic_blocks (f, max_gcse_regno, file, 1);
 
   /* Return if there's nothing to do.  */
   if (n_basic_blocks <= 1)

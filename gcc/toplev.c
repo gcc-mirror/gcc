@@ -3978,7 +3978,7 @@ rest_of_compilation (decl)
       TIMEVAR
 	(flow_time,
 	 {
-	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
 	   life_analysis (insns, max_reg_num (), rtl_dump_file);
 	 });
 
@@ -4152,7 +4152,7 @@ rest_of_compilation (decl)
       TIMEVAR
 	(flow2_time,
 	 {
-	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
 	   life_analysis (insns, max_reg_num (), rtl_dump_file);
 	 });
     }

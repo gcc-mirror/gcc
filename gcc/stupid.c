@@ -253,7 +253,8 @@ stupid_life_analysis (f, nregs, file)
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */
 
-  allocate_for_life_analysis ();
+  allocate_reg_life_data ();
+  allocate_bb_life_data ();
 
   for (i = 0; i < max_regno; i++)
     REG_N_DEATHS (i) = 1;
