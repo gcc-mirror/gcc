@@ -2230,7 +2230,7 @@ demangle_fund_type (work, mangled, result)
 	case 'J':
 	  (*mangled)++;
 	  APPEND_BLANK (result);
-	  string_append (result, "complex");
+	  string_append (result, "__complex");
 	  break;
 	default:
 	  done = 1;
