@@ -474,6 +474,87 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
     }
 }
 
+/* Replace the comparison OP0 CODE OP1 by a semantically equivalent one
+   that we can implement more efficiently.  */
+
+void
+s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
+{
+  /* Convert ZERO_EXTRACT back to AND to enable TM patterns.  */
+  if ((*code == EQ || *code == NE)
+      && *op1 == const0_rtx
+      && GET_CODE (*op0) == ZERO_EXTRACT
+      && GET_CODE (XEXP (*op0, 1)) == CONST_INT
+      && GET_CODE (XEXP (*op0, 2)) == CONST_INT
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (*op0, 0))))
+    {
+      rtx inner = XEXP (*op0, 0);
+      HOST_WIDE_INT modesize = GET_MODE_BITSIZE (GET_MODE (inner));
+      HOST_WIDE_INT len = INTVAL (XEXP (*op0, 1));
+      HOST_WIDE_INT pos = INTVAL (XEXP (*op0, 2));
+
+      if (len > 0 && len < modesize
+	  && pos >= 0 && pos + len <= modesize
+	  && modesize <= HOST_BITS_PER_WIDE_INT)
+	{
+	  unsigned HOST_WIDE_INT block;
+	  block = ((unsigned HOST_WIDE_INT) 1 << len) - 1;
+	  block <<= modesize - pos - len;
+
+	  *op0 = gen_rtx_AND (GET_MODE (inner), inner,
+			      gen_int_mode (block, GET_MODE (inner)));
+	}
+    }
+
+  /* Narrow AND of memory against immediate to enable TM.  */
+  if ((*code == EQ || *code == NE)
+      && *op1 == const0_rtx
+      && GET_CODE (*op0) == AND
+      && GET_CODE (XEXP (*op0, 1)) == CONST_INT
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (*op0, 0))))
+    {
+      rtx inner = XEXP (*op0, 0);
+      rtx mask = XEXP (*op0, 1);
+
+      /* Ignore paradoxical SUBREGs if all extra bits are masked out.  */
+      if (GET_CODE (inner) == SUBREG
+	  && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (inner)))
+	  && (GET_MODE_SIZE (GET_MODE (inner))
+	      >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (inner))))
+	  && ((INTVAL (mask)
+               & GET_MODE_MASK (GET_MODE (inner))
+               & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (inner))))
+	      == 0))
+	inner = SUBREG_REG (inner);
+
+      /* Do not change volatile MEMs.  */
+      if (MEM_P (inner) && !MEM_VOLATILE_P (inner))
+	{
+	  int part = s390_single_part (XEXP (*op0, 1),
+				       GET_MODE (inner), QImode, 0);
+	  if (part >= 0)
+	    {
+	      mask = gen_int_mode (s390_extract_part (mask, QImode, 0), QImode);
+	      inner = adjust_address_nv (inner, QImode, part);
+	      *op0 = gen_rtx_AND (QImode, inner, mask);
+	    }
+	}
+    }
+
+  /* Narrow comparisons against 0xffff to HImode if possible.  */
+
+  if ((*code == EQ || *code == NE)
+      && GET_CODE (*op1) == CONST_INT
+      && INTVAL (*op1) == 0xffff
+      && SCALAR_INT_MODE_P (GET_MODE (*op0))
+      && (nonzero_bits (*op0, GET_MODE (*op0)) 
+	  & ~(unsigned HOST_WIDE_INT) 0xffff) == 0)
+    {
+      *op0 = gen_lowpart (HImode, *op0);
+      *op1 = constm1_rtx;
+    }
+}
+
 /* Emit a compare instruction suitable to implement the comparison
    OP0 CODE OP1.  Return the correct condition RTL to be placed in
    the IF_THEN_ELSE of the conditional branch testing the result.  */
