@@ -1,3 +1,11 @@
+2000-06-21  Alex Samuel  <samuel@codesourcery.com>
+
+	* Make-lang.in (CXX_LIB2FUNCS): Add cp-demangle.o and dyn-string.o.
+	(CXX_LIB2SRCS): Add cp-demangle.c and dyn-string.c.
+	(cp-demangle.o): New rule.
+	(dyn-string.o): Likewise.
+	* inc/cxxabi.h (__cxa_demangle): New declaration.
+
 2000-06-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (BV_USE_VCALL_INDEX_P): New macro.

@@ -27,8 +27,6 @@
 #include "config.h"
 #endif
 
-#include <ctype.h>
-
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -47,12 +45,19 @@
 /* If CP_DEMANGLE_DEBUG is defined, a trace of the grammar evaluation,
    and other debugging output, will be generated. */
 #ifdef CP_DEMANGLE_DEBUG
-#define DEMANGLE_TRACE(PRODUCTION, DM) \
-  fprintf (stderr, " -> %-24s at position %3d\n", \
+#define DEMANGLE_TRACE(PRODUCTION, DM)                                  \
+  fprintf (stderr, " -> %-24s at position %3d\n",                       \
            (PRODUCTION), current_position (DM));
 #else
 #define DEMANGLE_TRACE(PRODUCTION, DM)
 #endif
+
+/* Don't include <ctype.h>, to prevent additional unresolved symbols
+   from being dragged into the C++ runtime library.  */
+#define IS_DIGIT(CHAR) ((CHAR) >= '0' && (CHAR) <= '9')
+#define IS_ALPHA(CHAR)                                                  \
+  (((CHAR) >= 'a' && (CHAR) <= 'z')                                     \
+   || ((CHAR) >= 'A' && (CHAR) <= 'Z'))
 
 /* If flag_verbose is zero, some simplifications will be made to the
    output to make it easier to read and supress details that are
@@ -118,10 +123,10 @@ typedef struct template_arg_list_def *template_arg_list_t;
 struct demangling_def
 {
   /* The full mangled name being mangled.  */
-  char *name;
+  const char *name;
 
   /* Pointer into name at the current position.  */
-  char *next;
+  const char *next;
 
   /* Stack for strings containing demangled result generated so far.
      Text is emitted to the topmost (first) string.  */
@@ -159,26 +164,45 @@ typedef struct demangling_def *demangling_t;
 typedef const char *status_t;
 
 /* Special values that can be used as a status_t.  */
-#define STATUS_OK             NULL
-#define STATUS_ERROR          "Error."
-#define STATUS_UNIMPLEMENTED  "Unimplemented."
-#define STATUS_INTERNAL_ERROR "Internal error."
+#define STATUS_OK                       NULL
+#define STATUS_ERROR                    "Error."
+#define STATUS_UNIMPLEMENTED            "Unimplemented."
+#define STATUS_INTERNAL_ERROR           "Internal error."
 
-static void int_to_dyn_string 
+/* This status code indicates a failure in malloc or realloc.  */
+static const char* const status_allocation_failed = "Allocation failed.";
+#define STATUS_ALLOCATION_FAILED        status_allocation_failed
+
+/* Non-zero if STATUS indicates that no error has occurred.  */
+#define STATUS_NO_ERROR(STATUS)         ((STATUS) == STATUS_OK)
+
+/* Evaluate EXPR, which must produce a status_t.  If the status code
+   indicates an error, return from the current function with that
+   status code.  */
+#define RETURN_IF_ERROR(EXPR)                                           \
+  do                                                                    \
+    {                                                                   \
+      status_t s = EXPR;                                                \
+      if (!STATUS_NO_ERROR (s))                                         \
+	return s;                                                       \
+    }                                                                   \
+  while (0)
+
+static status_t int_to_dyn_string 
   PARAMS ((int, dyn_string_t));
 static string_list_t string_list_new
   PARAMS ((int));
 static void string_list_delete
   PARAMS ((string_list_t));
-static void result_close_template_list 
+static status_t result_close_template_list 
   PARAMS ((demangling_t));
-static void result_push
+static status_t result_push
   PARAMS ((demangling_t));
 static string_list_t result_pop
   PARAMS ((demangling_t));
 static int substitution_start
   PARAMS ((demangling_t));
-static void substitution_add
+static status_t substitution_add
   PARAMS ((demangling_t, int, int, int));
 static dyn_string_t substitution_get
   PARAMS ((demangling_t, int, int *));
@@ -205,7 +229,7 @@ static void template_arg_list_print
 static template_arg_list_t current_template_arg_list
   PARAMS ((demangling_t));
 static demangling_t demangling_new
-  PARAMS ((char *));
+  PARAMS ((const char *));
 static void demangling_delete 
   PARAMS ((demangling_t));
 
@@ -214,15 +238,12 @@ static void demangling_delete
   (dyn_string_buf (DS)[dyn_string_length (DS) - 1])
 
 /* Append a space character (` ') to DS if it does not already end
-   with one.  */
+   with one.  Evaluates to 1 on success, or 0 on allocation failure.  */
 #define dyn_string_append_space(DS)                                     \
-  do                                                                    \
-    {                                                                   \
-      if (dyn_string_length (DS) > 0                                    \
-          && dyn_string_last_char (DS) != ' ')                          \
-	dyn_string_append_char ((DS), ' ');                             \
-    }                                                                   \
-  while (0)
+      ((dyn_string_length (DS) > 0                                      \
+        && dyn_string_last_char (DS) != ' ')                            \
+       ? dyn_string_append_char ((DS), ' ')                             \
+       : 1)
 
 /* Returns the index of the current position in the mangled name.  */
 #define current_position(DM)    ((DM)->next - (DM)->name)
@@ -251,15 +272,18 @@ static void demangling_delete
 
 /* Appends a dyn_string_t to the demangled result.  */
 #define result_append_string(DM, STRING)                                \
-  dyn_string_append (&(DM)->result->string, (STRING))
+  (dyn_string_append (&(DM)->result->string, (STRING))                  \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* Appends NUL-terminated string CSTR to the demangled result.  */
 #define result_append(DM, CSTR)                                         \
-  dyn_string_append_cstr (&(DM)->result->string, (CSTR))
+  (dyn_string_append_cstr (&(DM)->result->string, (CSTR))               \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* Appends character CHAR to the demangled result.  */
 #define result_append_char(DM, CHAR)                                    \
-  dyn_string_append_char (&(DM)->result->string, (CHAR))
+  (dyn_string_append_char (&(DM)->result->string, (CHAR))               \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* The length of the current demangled result.  */
 #define result_length(DM)                                               \
@@ -268,23 +292,13 @@ static void demangling_delete
 /* Appends a space to the demangled result if the last character is
    not a space.  */
 #define result_append_space(DM)                                         \
-  dyn_string_append_space (&(DM)->result->string)
+  (dyn_string_append_space (&(DM)->result->string)                      \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
-/* Evaluate EXPR, which must produce a status_t.  If the status code
-   indicates an error, return from the current function with that
-   status code.  */
-#define RETURN_IF_ERROR(EXPR)                                           \
-  do                                                                    \
-    {                                                                   \
-      status_t s = EXPR;                                                \
-      if (s != STATUS_OK)                                               \
-	return s;                                                       \
-    }                                                                   \
-  while (0)
+/* Appends a base 10 representation of VALUE to DS.  STATUS_OK on
+   success.  On failure, deletes DS and returns an error code.  */
 
-/* Appends a base 10 representation of VALUE to DS.  */
-
-static void 
+static status_t
 int_to_dyn_string (value, ds)
      int value;
      dyn_string_t ds;
@@ -295,14 +309,16 @@ int_to_dyn_string (value, ds)
   /* Handle zero up front.  */
   if (value == 0)
     {
-      dyn_string_append_char (ds, '0');
-      return;
+      if (!dyn_string_append_char (ds, '0'))
+	return STATUS_ALLOCATION_FAILED;
+      return STATUS_OK;
     }
 
   /* For negative numbers, emit a minus sign.  */
   if (value < 0)
     {
-      dyn_string_append_char (ds, '-');
+      if (!dyn_string_append_char (ds, '-'))
+	return STATUS_ALLOCATION_FAILED;
       value = -value;
     }
   
@@ -318,23 +334,31 @@ int_to_dyn_string (value, ds)
   while (mask > 0)
     {
       int digit = value / mask;
-      dyn_string_append_char (ds, '0' + digit);
+
+      if (!dyn_string_append_char (ds, '0' + digit))
+	return STATUS_ALLOCATION_FAILED;
+
       value -= digit * mask;
       mask /= 10;
     }
+
+  return STATUS_OK;
 }
 
 /* Creates a new string list node.  The contents of the string are
    empty, but the initial buffer allocation is LENGTH.  The string
-   list node should be deleted with string_list_delete.  */
+   list node should be deleted with string_list_delete.  Returns NULL
+   if allocation fails.  */
 
 static string_list_t 
 string_list_new (length)
      int length;
 {
-  string_list_t s = 
-    (string_list_t) xmalloc (sizeof (struct string_list_def));
-  dyn_string_init ((dyn_string_t) s, length);
+  string_list_t s = (string_list_t) malloc (sizeof (struct string_list_def));
+  if (s == NULL)
+    return NULL;
+  if (!dyn_string_init ((dyn_string_t) s, length))
+    return NULL;
   return s;
 }  
 
@@ -357,26 +381,46 @@ string_list_delete (node)
    first, so that the two greater-than characters don't look like a
    right shift token.  */
 
-static void
+static status_t
 result_close_template_list (dm)
      demangling_t dm;
 {
   dyn_string_t s = &dm->result->string;
+
+  /* Add a space if the last character is already a closing angle
+     bracket, so that a nested template arg list doesn't look like
+     it's closed with a right-shift operator.  */
   if (dyn_string_last_char (s) == '>')
-    dyn_string_append_char (s, ' ');
-  dyn_string_append_char (s, '>');
+    {
+      if (!dyn_string_append_char (s, ' '))
+	return STATUS_ALLOCATION_FAILED;
+    }
+
+  /* Add closing angle brackets.  */
+  if (!dyn_string_append_char (s, '>'))
+    return STATUS_ALLOCATION_FAILED;
+
+  return STATUS_OK;
 }
 
 /* Allocates and pushes a new string onto the demangled results stack
-   for DM.  Subsequent demangling with DM will emit to the new string.  */
+   for DM.  Subsequent demangling with DM will emit to the new string.
+   Returns STATUS_OK on success, STATUS_ALLOCATION_FAILED on
+   allocation failure.  */
 
-static void
+static status_t
 result_push (dm)
      demangling_t dm;
 {
   string_list_t new_string = string_list_new (0);
+  if (new_string == NULL)
+    /* Allocation failed.  */
+    return STATUS_ALLOCATION_FAILED;
+
+  /* Link the new string to the front of the list of result strings.  */
   new_string->next = (string_list_t) dm->result;
   dm->result = new_string;
+  return STATUS_OK;
 }
 
 /* Removes and returns the topmost element on the demangled results
@@ -412,7 +456,7 @@ substitution_start (dm)
    otherwise-identical types and other <template-param>s with
    different indices.  */
 
-static void
+static status_t
 substitution_add (dm, start_position, template_p, template_parm_number)
      demangling_t dm;
      int start_position;
@@ -423,8 +467,17 @@ substitution_add (dm, start_position, template_p, template_parm_number)
   dyn_string_t substitution = dyn_string_new (0);
   int i;
 
-  dyn_string_substring (substitution, 
-			result, start_position, result_length (dm));
+  if (substitution == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
+  /* Extract the substring of the current demangling result that
+     represents the subsitution candidate.  */
+  if (!dyn_string_substring (substitution, 
+			     result, start_position, result_length (dm)))
+    {
+      dyn_string_delete (substitution);
+      return STATUS_ALLOCATION_FAILED;
+    }
 
   /* Check whether SUBSTITUTION already occurs.  */
   for (i = 0; i < dm->num_substitutions; ++i)
@@ -435,17 +488,25 @@ substitution_add (dm, start_position, template_p, template_parm_number)
 	/* Callers expect this function to take ownership of
 	   SUBSTITUTION, so delete it.  */
 	dyn_string_delete (substitution);
-	return;
+	return STATUS_OK;
       }
 
   /* If there's no room for the new entry, grow the array.  */
   if (dm->substitutions_allocated == dm->num_substitutions)
     {
+      size_t new_array_size;
       dm->substitutions_allocated *= 2;
-      dm->substitutions = (struct substitution_def *) 
-	xrealloc (dm->substitutions,
-		  sizeof (struct substitution_def) 
-		  * dm->substitutions_allocated);
+      new_array_size = 
+	sizeof (struct substitution_def) * dm->substitutions_allocated;
+
+      dm->substitutions = (struct substitution_def *)
+	realloc (dm->substitutions, new_array_size);
+      if (dm->substitutions == NULL)
+	/* Realloc failed.  */
+	{
+	  dyn_string_delete (substitution);
+	  return STATUS_ALLOCATION_FAILED;
+	}
     }
 
   /* Add the substitution to the array.  */
@@ -457,6 +518,8 @@ substitution_add (dm, start_position, template_p, template_parm_number)
 #ifdef CP_DEMANGLE_DEBUG
   substitutions_print (dm, stderr);
 #endif
+
+  return STATUS_OK;
 }
 
 /* Returns the Nth-most-recent substitution.  Sets *TEMPLATE_P to
@@ -509,13 +572,16 @@ substitutions_print (dm, fp)
 
 #endif /* CP_DEMANGLE_DEBUG */
 
-/* Creates a new template argument list.  */
+/* Creates a new template argument list.  Returns NULL if allocation
+   fails.  */
 
 static template_arg_list_t
 template_arg_list_new ()
 {
-  template_arg_list_t new_list 
-    = (template_arg_list_t) xmalloc (sizeof (struct template_arg_list_def));
+  template_arg_list_t new_list =
+    (template_arg_list_t) malloc (sizeof (struct template_arg_list_def));
+  if (new_list == NULL)
+    return NULL;
   /* Initialize the new list to have no arguments.  */
   new_list->first_argument = NULL;
   new_list->last_argument = NULL;
@@ -652,24 +718,34 @@ current_template_arg_list (dm)
 }
 
 /* Allocates a demangling_t object for demangling mangled NAME.  A new
-   result must be pushed before the returned object can be used.  */
+   result must be pushed before the returned object can be used.
+   Returns NULL if allocation fails.  */
 
 static demangling_t
 demangling_new (name)
-     char *name;
+     const char *name;
 {
-  demangling_t dm = (demangling_t) 
-    xmalloc (sizeof (struct demangling_def));
+  demangling_t dm;
+  dm = (demangling_t) malloc (sizeof (struct demangling_def));
+  if (dm == NULL)
+    return NULL;
 
   dm->name = name;
   dm->next = name;
   dm->result = NULL;
-  dm->last_source_name = dyn_string_new (0);
   dm->num_substitutions = 0;
   dm->substitutions_allocated = 10;
-  dm->substitutions = (struct substitution_def *) 
-    xmalloc (dm->substitutions_allocated * sizeof (struct substitution_def));
   dm->template_arg_lists = NULL;
+  dm->last_source_name = dyn_string_new (0);
+  if (dm->last_source_name == NULL)
+    return NULL;
+  dm->substitutions = (struct substitution_def *)
+    malloc (dm->substitutions_allocated * sizeof (struct substitution_def));
+  if (dm->substitutions == NULL)
+    {
+      dyn_string_delete (dm->last_source_name);
+      return NULL;
+    }
 
   return dm;
 }
@@ -775,7 +851,9 @@ static status_t demangle_local_name
 static status_t demangle_discriminator 
   PARAMS ((demangling_t, int));
 static status_t cp_demangle
-  PARAMS ((char *, dyn_string_t));
+  PARAMS ((const char *, dyn_string_t));
+static status_t cp_demangle_type
+  PARAMS ((const char*, dyn_string_t));
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -850,7 +928,7 @@ demangle_encoding (dm)
       if (special_std_substitution)
 	{
 	  /* This was the magic `std::' substitution.  */
-	  result_append (dm, "::");
+	  RETURN_IF_ERROR (result_append (dm, "::"));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	}
     }
@@ -878,7 +956,8 @@ demangle_encoding (dm)
 	      (demangle_bare_function_type (dm, BFT_NO_RETURN_TYPE)); 
 	}
 
-      substitution_add (dm, start, template_p, NOT_TEMPLATE_PARM);
+      RETURN_IF_ERROR (substitution_add (dm, start, template_p, 
+					 NOT_TEMPLATE_PARM));
     }
 
   /* Pop off template argument lists that were built during the
@@ -931,7 +1010,7 @@ demangle_name (dm, template_p)
 	{
 	  (void) next_char (dm);
 	  (void) next_char (dm);
-	  result_append (dm, "std::");
+	  RETURN_IF_ERROR (result_append (dm, "std::"));
 	  RETURN_IF_ERROR (demangle_unqualified_name (dm));
 	}
       else
@@ -943,7 +1022,7 @@ demangle_name (dm, template_p)
 	      /* This was the magic `std::' substitution.  We can have
 		 a <nested-name> or one of the unscoped names
 		 following.  */
-	      result_append (dm, "::");
+	      RETURN_IF_ERROR (result_append (dm, "::"));
 	      RETURN_IF_ERROR (demangle_name (dm, template_p));
 	    }
 	}
@@ -958,7 +1037,8 @@ demangle_name (dm, template_p)
       if (peek_char (dm) == 'I')
 	{
 	  /* Add a substitution for the unqualified template name.  */
-	  substitution_add (dm, start, 0, NOT_TEMPLATE_PARM);
+	  RETURN_IF_ERROR (substitution_add (dm, start, 0, 
+					     NOT_TEMPLATE_PARM));
 
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 	  *template_p = 1;
@@ -990,12 +1070,18 @@ demangle_nested_name (dm, template_p)
   peek = peek_char (dm);
   if (peek == 'r' || peek == 'V' || peek == 'K')
     {
+      status_t status;
+
       /* Snarf up and emit CV qualifiers.  */
       dyn_string_t cv_qualifiers = dyn_string_new (24);
+      if (cv_qualifiers == NULL)
+	return STATUS_ALLOCATION_FAILED;
+
       demangle_CV_qualifiers (dm, cv_qualifiers);
-      result_append_string (dm, cv_qualifiers);
+      status = result_append_string (dm, cv_qualifiers);
       dyn_string_delete (cv_qualifiers);
-      result_append_space (dm);
+      RETURN_IF_ERROR (status);
+      RETURN_IF_ERROR (result_append_space (dm));
     }
   
   RETURN_IF_ERROR (demangle_prefix (dm, template_p));
@@ -1043,14 +1129,14 @@ demangle_prefix (dm, template_p)
 
       peek = peek_char (dm);
       
-      if (isdigit ((unsigned char) peek)
+      if (IS_DIGIT ((unsigned char) peek)
 	  || (peek >= 'a' && peek <= 'z')
 	  || peek == 'C' || peek == 'D'
 	  || peek == 'S')
 	{
 	  /* We have another level of scope qualification.  */
 	  if (nested)
-	    result_append (dm, "::");
+	    RETURN_IF_ERROR (result_append (dm, "::"));
 	  else
 	    nested = 1;
 
@@ -1072,7 +1158,7 @@ demangle_prefix (dm, template_p)
 	  if (*template_p)
 	    return STATUS_INTERNAL_ERROR;
 	  /* The template name is a substitution candidate.  */
-	  substitution_add (dm, start, 0, NOT_TEMPLATE_PARM);
+	  RETURN_IF_ERROR (substitution_add (dm, start, 0, NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 	  *template_p = 1;
 	}
@@ -1083,7 +1169,8 @@ demangle_prefix (dm, template_p)
 	return "Unexpected character in <compound-name>.";
 
       /* Add a new substitution for the prefix thus far.  */
-      substitution_add (dm, start, *template_p, NOT_TEMPLATE_PARM);
+      RETURN_IF_ERROR (substitution_add (dm, start, *template_p, 
+					 NOT_TEMPLATE_PARM));
     }
 }
 
@@ -1104,7 +1191,7 @@ demangle_unqualified_name (dm)
 
   DEMANGLE_TRACE ("unqualified-name", dm);
 
-  if (isdigit ((unsigned char) peek))
+  if (IS_DIGIT ((unsigned char) peek))
     RETURN_IF_ERROR (demangle_source_name (dm));
   else if (peek >= 'a' && peek <= 'z')
     {
@@ -1142,7 +1229,7 @@ demangle_source_name (dm)
 					dm->last_source_name));
 
   /* Emit it.  */
-  result_append_string (dm, dm->last_source_name);
+  RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
 
   return STATUS_OK;
 }
@@ -1167,6 +1254,9 @@ demangle_number (dm, value, base, is_signed)
   dyn_string_t number = dyn_string_new (10);
 
   DEMANGLE_TRACE ("number", dm);
+
+  if (number == NULL)
+    return STATUS_ALLOCATION_FAILED;
 
   demangle_number_literally (dm, number, base, is_signed);
   *value = strtol (dyn_string_buf (number), NULL, base);
@@ -1201,17 +1291,21 @@ demangle_number_literally (dm, str, base, is_signed)
       advance_char (dm);
       /* The normal way to write a negative number is with a minus
 	 sign.  */
-      dyn_string_append_char (str, '-');
+      if (!dyn_string_append_char (str, '-'))
+	return STATUS_ALLOCATION_FAILED;
     }
 
   /* Loop until we hit a non-digit.  */
   while (1)
     {
       char peek = peek_char (dm);
-      if (isdigit ((unsigned char) peek)
+      if (IS_DIGIT ((unsigned char) peek)
 	  || (base == 36 && peek >= 'A' && peek <= 'Z'))
-	/* Accumulate digits.  */
-	dyn_string_append_char (str, next_char (dm));
+	{
+	  /* Accumulate digits.  */
+	  if (!dyn_string_append_char (str, next_char (dm)))
+	    return STATUS_ALLOCATION_FAILED;
+	}
       else
 	/* Not a digit?  All done.  */
 	break;
@@ -1232,12 +1326,15 @@ demangle_identifier (dm, length, identifier)
   DEMANGLE_TRACE ("identifier", dm);
 
   dyn_string_clear (identifier);
-  dyn_string_resize (identifier, length);
+  if (!dyn_string_resize (identifier, length))
+    return STATUS_ALLOCATION_FAILED;
+
   while (length-- > 0)
     {
       if (end_of_name_p (dm))
 	return "Unexpected end of name in <identifier>.";
-      dyn_string_append_char (identifier, next_char (dm));
+      if (!dyn_string_append_char (identifier, next_char (dm)))
+	return STATUS_ALLOCATION_FAILED;
     }
 
   return STATUS_OK;
@@ -1380,7 +1477,7 @@ demangle_operator_name (dm, short_name, num_args)
   /* Is this a vendor extended operator?  */
   if (c0 == 'v' && c1 == 'x')
     {
-      result_append (dm, "operator");
+      RETURN_IF_ERROR (result_append (dm, "operator"));
       RETURN_IF_ERROR (demangle_source_name (dm));
       *num_args = 0;
       return STATUS_OK;
@@ -1389,7 +1486,7 @@ demangle_operator_name (dm, short_name, num_args)
   /* Is this a conversion operator?  */
   if (c0 == 'c' && c1 == 'v')
     {
-      result_append (dm, "operator ");
+      RETURN_IF_ERROR (result_append (dm, "operator "));
       /* Demangle the converted-to type.  */
       RETURN_IF_ERROR (demangle_type (dm));
       *num_args = 0;
@@ -1407,8 +1504,8 @@ demangle_operator_name (dm, short_name, num_args)
 	/* Found it.  */
 	{
 	  if (!short_name)
-	    result_append (dm, "operator");
-	  result_append (dm, p->name);
+	    RETURN_IF_ERROR (result_append (dm, "operator"));
+	  RETURN_IF_ERROR (result_append (dm, p->name));
 	  *num_args = p->num_args;
 
 	  return STATUS_OK;
@@ -1461,11 +1558,13 @@ demangle_special_name (dm)
       /* A guard variable name.  Consume the G.  */
       advance_char (dm);
       RETURN_IF_ERROR (demangle_char (dm, 'V'));
-      result_append (dm, "guard variable for ");
+      RETURN_IF_ERROR (result_append (dm, "guard variable for "));
       RETURN_IF_ERROR (demangle_name (dm, &unused));
     }
   else if (peek == 'T')
     {
+      status_t status = STATUS_OK;
+
       /* Other C++ implementation miscellania.  Consume the T.  */
       advance_char (dm);
 
@@ -1474,96 +1573,108 @@ demangle_special_name (dm)
 	case 'V':
 	  /* Virtual table.  */
 	  advance_char (dm);
-	  result_append (dm, "vtable for ");
+	  RETURN_IF_ERROR (result_append (dm, "vtable for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'T':
 	  /* VTT structure.  */
 	  advance_char (dm);
-	  result_append (dm, "VTT for ");
+	  RETURN_IF_ERROR (result_append (dm, "VTT for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'I':
 	  /* Typeinfo structure.  */
 	  advance_char (dm);
-	  result_append (dm, "typeinfo for ");
+	  RETURN_IF_ERROR (result_append (dm, "typeinfo for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'F':
 	  /* Typeinfo function.  Used only in old ABI with new mangling.  */
 	  advance_char (dm);
-	  result_append (dm, "typeinfo fn for ");
+	  RETURN_IF_ERROR (result_append (dm, "typeinfo fn for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'S':
 	  /* Character string containing type name, used in typeinfo. */
 	  advance_char (dm);
-	  result_append (dm, "typeinfo name for ");
+	  RETURN_IF_ERROR (result_append (dm, "typeinfo name for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'J':
 	  /* The java Class variable corresponding to a C++ class.  */
 	  advance_char (dm);
-	  result_append (dm, "java Class for ");
+	  RETURN_IF_ERROR (result_append (dm, "java Class for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'h':
 	  /* Non-virtual thunk.  */
 	  advance_char (dm);
-	  result_append (dm, "non-virtual thunk");
+	  RETURN_IF_ERROR (result_append (dm, "non-virtual thunk"));
 	  /* Demangle and emit the offset.  */
 	  number = dyn_string_new (4);
+	  if (number == NULL)
+	    return STATUS_ALLOCATION_FAILED;
 	  demangle_number_literally (dm, number, 10, 1);
 	  /* Don't display the offset unless in verbose mode.  */
 	  if (flag_verbose)
 	    {
-	      result_append_char (dm, ' ');
-	      result_append_string (dm, number);
+	      status = result_append_char (dm, ' ');
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_string (dm, number);
 	    }
 	  dyn_string_delete (number);
+	  RETURN_IF_ERROR (status);
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target name and function type.  */
-	  result_append (dm, " to ");
+	  RETURN_IF_ERROR (result_append (dm, " to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 
 	case 'v':
 	  /* Virtual thunk.  */
 	  advance_char (dm);
-	  result_append (dm, "virtual thunk ");
+	  RETURN_IF_ERROR (result_append (dm, "virtual thunk "));
 	  /* Demangle and emit the offset.  */
 	  number = dyn_string_new (4);
+	  if (number == NULL)
+	    return STATUS_ALLOCATION_FAILED;
 	  demangle_number_literally (dm, number, 10, 1);
 	  /* Don't display the offset unless in verbose mode.  */
 	  if (flag_verbose)
 	    {
-	      result_append_string (dm, number);
-	      result_append_char (dm, ' ');
+	      status = result_append_string (dm, number);
+	      if (STATUS_NO_ERROR (status))
+		result_append_char (dm, ' ');
 	    }
 	  dyn_string_delete (number);
+	  RETURN_IF_ERROR (status);
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the vcall offset.  */
 	  number = dyn_string_new (4);
+	  if (number == NULL)
+	    return STATUS_ALLOCATION_FAILED;
 	  demangle_number_literally (dm, number, 10, 1);
 	  /* Don't display the vcall offset unless in verbose mode.  */
 	  if (flag_verbose)
 	    {
-	      result_append_string (dm, number);
-	      result_append_char (dm, ' ');
+	      status = result_append_string (dm, number);
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_char (dm, ' ');
 	    }
 	  dyn_string_delete (number);
+	  RETURN_IF_ERROR (status);
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target function.  */
-	  result_append (dm, "to ");
+	  RETURN_IF_ERROR (result_append (dm, "to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 
@@ -1572,23 +1683,27 @@ demangle_special_name (dm)
 	  if (!flag_strict)
 	    {
 	      advance_char (dm);
-	      result_append (dm, "construction vtable for ");
+	      RETURN_IF_ERROR (result_append (dm, "construction vtable for "));
 	      RETURN_IF_ERROR (demangle_type (dm));
 	      /* Demangle the offset.  */
 	      number = dyn_string_new (4);
+	      if (number == NULL)
+		return STATUS_ALLOCATION_FAILED;
 	      demangle_number_literally (dm, number, 10, 1);
 	      /* Demangle the underscore separator.  */
 	      RETURN_IF_ERROR (demangle_char (dm, '_'));
 	      /* Demangle the base type.  */
-	      result_append (dm, "-in-");
+	      RETURN_IF_ERROR (result_append (dm, "-in-"));
 	      RETURN_IF_ERROR (demangle_type (dm));
 	      /* Don't display the offset unless in verbose mode.  */
 	      if (flag_verbose)
 		{
-		  result_append_char (dm, ' ');
-		  result_append_string (dm, number);
+		  status = result_append_char (dm, ' ');
+		  if (STATUS_NO_ERROR (status))
+		    result_append_string (dm, number);
 		}
 	      dyn_string_delete (number);
+	      RETURN_IF_ERROR (status);
 	      break;
 	    }
 	  /* If flag_strict, fall through.  */
@@ -1643,14 +1758,14 @@ demangle_ctor_dtor_name (dm)
       advance_char (dm);
       if (peek_char (dm) < '1' || peek_char (dm) > '4')
 	return "Unrecognized constructor.";
-      result_append_string (dm, dm->last_source_name);
+      RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
       /* Print the flavor of the constructor if in verbose mode.  */
       flavor = next_char (dm) - '1';
       if (flag_verbose)
 	{
-	  result_append (dm, "[");
-	  result_append (dm, ctor_flavors[flavor]);
-	  result_append_char (dm, ']');
+	  RETURN_IF_ERROR (result_append (dm, "["));
+	  RETURN_IF_ERROR (result_append (dm, ctor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_append_char (dm, ']'));
 	}
     }
   else if (peek == 'D')
@@ -1659,15 +1774,15 @@ demangle_ctor_dtor_name (dm)
       advance_char (dm);
       if (peek_char (dm) < '0' || peek_char (dm) > '2')
 	return "Unrecognized destructor.";
-      result_append_char (dm, '~');
-      result_append_string (dm, dm->last_source_name);
+      RETURN_IF_ERROR (result_append_char (dm, '~'));
+      RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
       /* Print the flavor of the destructor if in verbose mode.  */
       flavor = next_char (dm) - '0';
       if (flag_verbose)
 	{
-	  result_append (dm, " [");
-	  result_append (dm, dtor_flavors[flavor]);
-	  result_append_char (dm, ']');
+	  RETURN_IF_ERROR (result_append (dm, " ["));
+	  RETURN_IF_ERROR (result_append (dm, dtor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_append_char (dm, ']'));
 	}
     }
   else
@@ -1701,6 +1816,9 @@ demangle_type_ptr (dm)
 
   DEMANGLE_TRACE ("type*", dm);
 
+  if (symbols == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
   /* Scan forward, collecting pointers and references into symbols,
      until we hit something else.  Then emit the type.  */
   while (1)
@@ -1708,12 +1826,14 @@ demangle_type_ptr (dm)
       next = peek_char (dm);
       if (next == 'P')
 	{
-	  dyn_string_append_char (symbols, '*');
+	  if (!dyn_string_append_char (symbols, '*'))
+	    return STATUS_ALLOCATION_FAILED;
 	  advance_char (dm);
 	}
       else if (next == 'R')
 	{
-	  dyn_string_append_char (symbols, '&');
+	  if (!dyn_string_append_char (symbols, '&'))
+	    return STATUS_ALLOCATION_FAILED;
 	  advance_char (dm);
 	}
       else if (next == 'M')
@@ -1725,14 +1845,16 @@ demangle_type_ptr (dm)
 	  advance_char (dm);
 
 	  /* Capture the type of which this is a pointer-to-member.  */
-	  result_push (dm);
+	  RETURN_IF_ERROR (result_push (dm));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  class_type = (dyn_string_t) result_pop (dm);
 
 	  /* Build the pointer-to-member notation.  It comes before
 	     other pointer and reference qualifiers -- */
-	  dyn_string_prepend_cstr (symbols, "::*");
-	  dyn_string_prepend (symbols, class_type);
+	  if (!dyn_string_prepend_cstr (symbols, "::*"))
+	    return STATUS_ALLOCATION_FAILED;
+	  if (!dyn_string_prepend (symbols, class_type))
+	    return STATUS_ALLOCATION_FAILED;
 	  dyn_string_delete (class_type);
 
 	  if (peek_char (dm) == 'F')
@@ -1741,10 +1863,12 @@ demangle_type_ptr (dm)
 	  /* Demangle the type of the pointed-to member.  */
 	  status = demangle_type (dm);
 	  /* Make it pretty.  */
-	  result_append_space (dm);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_space (dm);
 	  /* Add the pointer-to-member syntax, and other pointer and
 	     reference symbols.  */
-	  result_append_string (dm, symbols);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_string (dm, symbols);
 	  /* Clean up.  */
 	  dyn_string_delete (symbols);
 
@@ -1755,10 +1879,13 @@ demangle_type_ptr (dm)
 	{
 	  /* Ooh, tricky, a pointer-to-function.  */
 	  int position = result_length (dm);
-	  result_append_char (dm, '(');
-	  result_append_string (dm, symbols);
-	  result_append_char (dm, ')');
+	  status = result_append_char (dm, '(');
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_string (dm, symbols);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_char (dm, ')');
 	  dyn_string_delete (symbols);
+	  RETURN_IF_ERROR (status);
 
 	  RETURN_IF_ERROR (demangle_function_type (dm, position));
 	  return STATUS_OK;
@@ -1768,8 +1895,10 @@ demangle_type_ptr (dm)
 	  /* No more pointe or reference tokens.  Finish up.  */
 	  status = demangle_type (dm);
 
-	  result_append_string (dm, symbols);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_string (dm, symbols);
 	  dyn_string_delete (symbols);
+	  RETURN_IF_ERROR (status);
 
 	  RETURN_IF_ERROR (status);
 	  return STATUS_OK;
@@ -1809,7 +1938,7 @@ demangle_type (dm)
 
   /* A <class-enum-type> can start with a digit (a <source-name>), an
      N (a <nested-name>), or a Z (a <local-name>).  */
-  if (isdigit ((unsigned char) peek) || peek == 'N' || peek == 'Z')
+  if (IS_DIGIT ((unsigned char) peek) || peek == 'N' || peek == 'Z')
     RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
   else if (peek >= 'a' && peek <= 'z')
     {
@@ -1825,6 +1954,10 @@ demangle_type (dm)
 	{
 	  status_t status;
 	  dyn_string_t cv_qualifiers = dyn_string_new (24);
+
+	  if (cv_qualifiers == NULL)
+	    return STATUS_ALLOCATION_FAILED;
+
 	  demangle_CV_qualifiers (dm, cv_qualifiers);
 
 	  /* If the qualifiers apply to a pointer or reference, they
@@ -1832,15 +1965,19 @@ demangle_type (dm)
 	  if (peek_char (dm) == 'P' || peek_char (dm) == 'R')
 	    {
 	      status = demangle_type (dm);
-	      result_append_space (dm);
-	      result_append_string (dm, cv_qualifiers);
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_space (dm);
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_string (dm, cv_qualifiers);
 	    }
 	  /* Otherwise, the qualifiers come first.  */
 	  else
 	    {
-	      result_append_string (dm, cv_qualifiers);
-	      result_append_space (dm);
-	      status = demangle_type (dm);
+	      status = result_append_string (dm, cv_qualifiers);
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_space (dm);
+	      if (STATUS_NO_ERROR (status))
+		status = demangle_type (dm);
 	    }
 
 	  dyn_string_delete (cv_qualifiers);
@@ -1866,7 +2003,7 @@ demangle_type (dm)
 	  {
 	    /* This was the magic `std::' substitution.  What follows
 	       must be a class name in that namespace.  */
-	    result_append (dm, "::");
+	    RETURN_IF_ERROR (result_append (dm, "::"));
 	    RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
 	  }
 	break;
@@ -1879,14 +2016,14 @@ demangle_type (dm)
 
       case 'C':
 	/* A C99 complex type.  */
-	result_append (dm, "complex ");
+	RETURN_IF_ERROR (result_append (dm, "complex "));
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
 
       case 'G':
 	/* A C99 imaginary type.  */
-	result_append (dm, "imaginary ");
+	RETURN_IF_ERROR (result_append (dm, "imaginary "));
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
@@ -1895,7 +2032,7 @@ demangle_type (dm)
 	/* Vendor extended type qualifier.  */
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_source_name (dm));
-	result_append_char (dm, ' ');
+	RETURN_IF_ERROR (result_append_char (dm, ' '));
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
 
@@ -1909,7 +2046,7 @@ demangle_type (dm)
        <template-param>, pass its index since from the point of
        substitutions, a <template-param> token is a substitution
        candidate distinct from the type that is substituted for it.  */
-    substitution_add (dm, start, template_p, template_parm);
+    RETURN_IF_ERROR (substitution_add (dm, start, template_p, template_parm));
 
   /* Pop off template argument lists added during mangling of this
      type.  */
@@ -1996,7 +2133,7 @@ demangle_builtin_type (dm)
       if (type_name == NULL)
 	return "Unrecognized <builtin-type> code.";
 
-      result_append (dm, type_name);
+      RETURN_IF_ERROR (result_append (dm, type_name));
       advance_char (dm);
       return STATUS_OK;
     }
@@ -2020,18 +2157,24 @@ demangle_CV_qualifiers (dm, qualifiers)
       switch (peek_char (dm))
 	{
 	case 'r':
-	  dyn_string_append_space (qualifiers);
-	  dyn_string_append_cstr (qualifiers, "restrict");
+	  if (!dyn_string_append_space (qualifiers))
+	    return STATUS_ALLOCATION_FAILED;
+	  if (!dyn_string_append_cstr (qualifiers, "restrict"))
+	    return STATUS_ALLOCATION_FAILED;
 	  break;
 
 	case 'V':
-	  dyn_string_append_space (qualifiers);
-	  dyn_string_append_cstr (qualifiers, "volatile");
+	  if (!dyn_string_append_space (qualifiers))
+	    return STATUS_ALLOCATION_FAILED;
+	  if (!dyn_string_append_cstr (qualifiers, "volatile"))
+	    return STATUS_ALLOCATION_FAILED;
 	  break;
 
 	case 'K':
-	  dyn_string_append_space (qualifiers);
-	  dyn_string_append_cstr (qualifiers, "const");
+	  if (!dyn_string_append_space (qualifiers))
+	    return STATUS_ALLOCATION_FAILED;
+	  if (!dyn_string_append_cstr (qualifiers, "const"))
+	    return STATUS_ALLOCATION_FAILED;
 	  break;
 
 	default:
@@ -2059,7 +2202,7 @@ demangle_function_type (dm, function_name_pos)
     {
       /* Indicate this function has C linkage if in verbose mode.  */
       if (flag_verbose)
-	result_append (dm, " [extern \"C\"] ");
+	RETURN_IF_ERROR (result_append (dm, " [extern \"C\"] "));
       advance_char (dm);
     }
   RETURN_IF_ERROR (demangle_bare_function_type (dm, function_name_pos));
@@ -2086,26 +2229,29 @@ demangle_bare_function_type (dm, return_type_pos)
 
   DEMANGLE_TRACE ("bare-function-type", dm);
 
-  result_append_char (dm, '(');
+  RETURN_IF_ERROR (result_append_char (dm, '('));
   while (!end_of_name_p (dm) && peek_char (dm) != 'E')
     {
       if (sequence == -1)
 	/* We're decoding the function's return type.  */
 	{
 	  dyn_string_t return_type;
+	  status_t status = STATUS_OK;
 
 	  /* Decode the return type off to the side.  */
-	  result_push (dm);
+	  RETURN_IF_ERROR (result_push (dm));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  return_type = (dyn_string_t) result_pop (dm);
 
-	  /* Add a space to the end of the type.  */
-	  dyn_string_append_space (return_type);
+	  /* Add a space to the end of the type.  Insert the return
+             type where we've been asked to. */
+	  if (!dyn_string_append_space (return_type) 
+	      || !dyn_string_insert (result_string (dm), return_type_pos, 
+				     return_type))
+	    status = STATUS_ALLOCATION_FAILED;
 
-	  /* Insert the return type where we've been asked to.  */
-	  dyn_string_insert (result_string (dm), return_type_pos, 
-			 return_type);
 	  dyn_string_delete (return_type);
+	  RETURN_IF_ERROR (status);
 	}
       else 
 	{
@@ -2120,14 +2266,14 @@ demangle_bare_function_type (dm, return_type_pos)
 	    }
 	  /* Separate parameter types by commas.  */
 	  if (sequence > 0)
-	    result_append (dm, ", ");
+	    RETURN_IF_ERROR (result_append (dm, ", "));
 	  /* Demangle the type.  */
 	  RETURN_IF_ERROR (demangle_type (dm));
 	}
 
       ++sequence;
     }
-  result_append_char (dm, ')');
+  RETURN_IF_ERROR (result_append_char (dm, ')'));
 
   return STATUS_OK;
 }
@@ -2156,23 +2302,35 @@ static status_t
 demangle_array_type (dm)
      demangling_t dm;
 {
+  status_t status;
   dyn_string_t array_size = dyn_string_new (10);
 
-  RETURN_IF_ERROR (demangle_char (dm, 'A'));
+  if (array_size == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
+  status = demangle_char (dm, 'A');
 
   /* Demangle the array size into array_size.  */
-  RETURN_IF_ERROR (demangle_number_literally (dm, array_size, 10, 0));
+  if (STATUS_NO_ERROR (status))
+    status = demangle_number_literally (dm, array_size, 10, 0);
 
   /* Demangle the base type of the array.  */
-  RETURN_IF_ERROR (demangle_char (dm, '_'));
-  RETURN_IF_ERROR (demangle_type (dm));
+  if (STATUS_NO_ERROR (status))
+    status = demangle_char (dm, '_');
+  if (STATUS_NO_ERROR (status))
+    status = demangle_type (dm);
 
   /* Emit the array dimension syntax.  */
-  result_append_char (dm, '[');
-  result_append_string (dm, array_size);
-  result_append_char (dm, ']');
+  if (STATUS_NO_ERROR (status))
+    status = result_append_char (dm, '[');
+  if (STATUS_NO_ERROR (status))
+    status = result_append_string (dm, array_size);
+  if (STATUS_NO_ERROR (status))
+    status = result_append_char (dm, ']');
   dyn_string_delete (array_size);
   
+  RETURN_IF_ERROR (status);
+
   return STATUS_OK;
 }
 
@@ -2213,7 +2371,7 @@ demangle_template_param (dm, template_parm_number)
     /* parm_number exceeded the number of arguments in the current
        template argument list.  */
     return "Template parameter number out of bounds.";
-  result_append_string (dm, (dyn_string_t) arg);
+  RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
 
   if (peek_char (dm) == 'I')
     RETURN_IF_ERROR (demangle_template_args (dm));
@@ -2231,16 +2389,23 @@ demangle_template_args (dm)
      demangling_t dm;
 {
   int first = 1;
+  dyn_string_t old_last_source_name;
   template_arg_list_t arg_list = template_arg_list_new ();
 
+  if (arg_list == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
   /* Preserve the most recently demangled source name.  */
-  dyn_string_t old_last_source_name = dm->last_source_name;
+  old_last_source_name = dm->last_source_name;
   dm->last_source_name = dyn_string_new (0);
 
   DEMANGLE_TRACE ("template-args", dm);
 
+  if (dm->last_source_name == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
   RETURN_IF_ERROR (demangle_char (dm, 'I'));
-  result_append_char (dm, '<');
+  RETURN_IF_ERROR (result_append_char (dm, '<'));
   do
     {
       string_list_t arg;
@@ -2248,22 +2413,22 @@ demangle_template_args (dm)
       if (first)
 	first = 0;
       else
-	result_append (dm, ", ");
+	RETURN_IF_ERROR (result_append (dm, ", "));
 
       /* Capture the template arg.  */
-      result_push (dm);
+      RETURN_IF_ERROR (result_push (dm));
       RETURN_IF_ERROR (demangle_template_arg (dm));
       arg = result_pop (dm);
 
       /* Emit it in the demangled name.  */
-      result_append_string (dm, (dyn_string_t) arg);
+      RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
 
       /* Save it for use in expanding <template-param>s.  */
       template_arg_list_add_arg (arg_list, arg);
     }
   while (peek_char (dm) != 'E');
   /* Append the '>'.  */
-  result_close_template_list (dm);
+  RETURN_IF_ERROR (result_close_template_list (dm));
 
   /* Consume the 'E'.  */
   advance_char (dm);
@@ -2293,8 +2458,9 @@ static status_t
 demangle_literal (dm)
      demangling_t dm;
 {
-  dyn_string_t value = dyn_string_new (0);
   char peek = peek_char (dm);
+  dyn_string_t value_string;
+  status_t status;
 
   DEMANGLE_TRACE ("literal", dm);
 
@@ -2331,9 +2497,9 @@ demangle_literal (dm)
 	     corresponding to false or true, respectively.  */
 	  value = peek_char (dm);
 	  if (value == '0')
-	    result_append (dm, "false");
+	    RETURN_IF_ERROR (result_append (dm, "false"));
 	  else if (value == '1')
-	    result_append (dm, "true");
+	    RETURN_IF_ERROR (result_append (dm, "true"));
 	  else
 	    return "Unrecognized bool constant.";
 	  /* Consume the 0 or 1.  */
@@ -2346,25 +2512,37 @@ demangle_literal (dm)
 
 	  /* Consume the type character.  */
 	  advance_char (dm);
+
 	  /* Demangle the number and write it out.  */
-	  RETURN_IF_ERROR (demangle_number_literally (dm, value, 10, 1));
-	  result_append_string (dm, value);
+	  value_string = dyn_string_new (0);
+	  status = demangle_number_literally (dm, value_string, 10, 1);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_string (dm, value_string);
 	  /* For long integers, append an l.  */
-	  if (code == 'l')
-	    result_append_char (dm, code);
+	  if (code == 'l' && STATUS_NO_ERROR (status))
+	    status = result_append_char (dm, code);
+	  dyn_string_delete (value_string);
+
+	  RETURN_IF_ERROR (status);
 	  return STATUS_OK;
 	}
       /* ...else code == ' ', so fall through to represent this
 	 literal's type explicitly using cast syntax.  */
     }
 
-  result_append_char (dm, '(');
+  RETURN_IF_ERROR (result_append_char (dm, '('));
   RETURN_IF_ERROR (demangle_type (dm));
-  result_append_char (dm, ')');
+  RETURN_IF_ERROR (result_append_char (dm, ')'));
 
-  RETURN_IF_ERROR (demangle_number_literally (dm, value, 10, 1));
-  result_append_string (dm, value);
-  dyn_string_delete (value);
+  value_string = dyn_string_new (0);
+  if (value_string == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
+  status = demangle_number_literally (dm, value_string, 10, 1);
+  if (STATUS_NO_ERROR (status))
+    status = result_append_string (dm, value_string);
+  dyn_string_delete (value_string);
+  RETURN_IF_ERROR (status);
 
   return STATUS_OK;
 }
@@ -2436,37 +2614,43 @@ demangle_expression (dm)
     /* An operator expression.  */
     {
       int num_args;
+      status_t status = STATUS_OK;
       dyn_string_t operator_name;
 
       /* We have an operator name.  Since we want to output binary
 	 operations in infix notation, capture the operator name
 	 first.  */
-      result_push (dm);
+      RETURN_IF_ERROR (result_push (dm));
       RETURN_IF_ERROR (demangle_operator_name (dm, 1, &num_args));
       operator_name = (dyn_string_t) result_pop (dm);
 
       /* If it's binary, do an operand first.  */
       if (num_args > 1)
 	{
-	  result_append_char (dm, '(');
-	  RETURN_IF_ERROR (demangle_expression (dm));
-	  result_append_char (dm, ')');
+	  status = result_append_char (dm, '(');
+	  if (STATUS_NO_ERROR (status))
+	    status = demangle_expression (dm);
+	  if (STATUS_NO_ERROR (status))
+	    status = result_append_char (dm, ')');
 	}
 
-      /* Now emit the operator, followed by its second (if binary) or
-	 only (if unary) operand.  */
-      result_append_string (dm, operator_name);
+      /* Emit the operator.  */  
+      if (STATUS_NO_ERROR (status))
+	status = result_append_string (dm, operator_name);
       dyn_string_delete (operator_name);
-      result_append_char (dm, '(');
+      RETURN_IF_ERROR (status);
+      
+      /* Emit its second (if binary) or only (if unary) operand.  */
+      RETURN_IF_ERROR (result_append_char (dm, '('));
       RETURN_IF_ERROR (demangle_expression (dm));
-      result_append_char (dm, ')');
+      RETURN_IF_ERROR (result_append_char (dm, ')'));
 
       /* The ternary operator takes a third operand.  */
       if (num_args == 3)
 	{
-	  result_append (dm, ":(");
+	  RETURN_IF_ERROR (result_append (dm, ":("));
 	  RETURN_IF_ERROR (demangle_expression (dm));
-	  result_append_char (dm, ')');
+	  RETURN_IF_ERROR (result_append_char (dm, ')'));
 	}
     }
 
@@ -2485,7 +2669,7 @@ demangle_scope_expression (dm)
   RETURN_IF_ERROR (demangle_char (dm, 's'));
   RETURN_IF_ERROR (demangle_char (dm, 'r'));
   RETURN_IF_ERROR (demangle_type (dm));
-  result_append (dm, "::");
+  RETURN_IF_ERROR (result_append (dm, "::"));
   RETURN_IF_ERROR (demangle_encoding (dm));
   return STATUS_OK;
 }
@@ -2572,77 +2756,79 @@ demangle_substitution (dm, template_p, special_std_substitution)
   /* If the following character is 0-9 or a capital letter, interpret
      the sequence up to the next underscore as a base-36 substitution
      index.  */
-  else if (isdigit ((unsigned char) peek) 
+  else if (IS_DIGIT ((unsigned char) peek) 
 	   || (peek >= 'A' && peek <= 'Z'))
     RETURN_IF_ERROR (demangle_number (dm, &seq_id, 36, 0));
   else 
     {
+      const char *new_last_source_name = NULL;
+
       switch (peek)
 	{
 	case 't':
-	  result_append (dm, "std");
+	  RETURN_IF_ERROR (result_append (dm, "std"));
 	  *special_std_substitution = 1;
 	  break;
 
 	case 'a':
-	  result_append (dm, "std::allocator");
-	  dyn_string_copy_cstr (dm->last_source_name, "allocator");
+	  RETURN_IF_ERROR (result_append (dm, "std::allocator"));
+	  new_last_source_name = "allocator";
 	  break;
 
 	case 'b':
-	  result_append (dm, "std::basic_string");
-	  dyn_string_copy_cstr (dm->last_source_name, "basic_string");
+	  RETURN_IF_ERROR (result_append (dm, "std::basic_string"));
+	  new_last_source_name = "basic_string";
 	  break;
 	  
 	case 's':
 	  if (!flag_verbose)
 	    {
-	      result_append (dm, "std::string");
-	      dyn_string_copy_cstr (dm->last_source_name, "string");
+	      RETURN_IF_ERROR (result_append (dm, "std::string"));
+	      new_last_source_name = "string";
 	    }
 	  else
 	    {
-	      result_append (dm, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >");
-	      dyn_string_copy_cstr (dm->last_source_name, "basic_string");
+	      RETURN_IF_ERROR (result_append (dm, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >"));
+	      new_last_source_name = "basic_string";
 	    }
 	  break;
 
 	case 'i':
 	  if (!flag_verbose)
 	    {
-	      result_append (dm, "std::istream");
-	      dyn_string_copy_cstr (dm->last_source_name, "istream");
+	      RETURN_IF_ERROR (result_append (dm, "std::istream"));
+	      new_last_source_name = "istream";
 	    }
 	  else
 	    {
-	      result_append (dm, "std::basic_istream<char, std::char_traints<char> >");
-	      dyn_string_copy_cstr (dm->last_source_name, "basic_istream");
+	      RETURN_IF_ERROR (result_append (dm, "std::basic_istream<char, std::char_traints<char> >"));
+	      new_last_source_name = "basic_istream";
 	    }
 	  break;
 
 	case 'o':
 	  if (!flag_verbose)
 	    {
-	      result_append (dm, "std::ostream");
-	      dyn_string_copy_cstr (dm->last_source_name, "ostream");
+	      RETURN_IF_ERROR (result_append (dm, "std::ostream"));
+	      new_last_source_name = "ostream";
 	    }
 	  else
 	    {
-	      result_append (dm, "std::basic_ostream<char, std::char_traits<char> >");
-	      dyn_string_copy_cstr (dm->last_source_name, "basic_ostream");
+	      RETURN_IF_ERROR (result_append (dm, "std::basic_ostream<char, std::char_traits<char> >"));
+	      new_last_source_name = "basic_ostream";
 	    }
 	  break;
 
 	case 'd':
 	  if (!flag_verbose) 
 	    {
-	      result_append (dm, "std::iostream");
-	      dyn_string_copy_cstr (dm->last_source_name, "iostream");
+	      RETURN_IF_ERROR (result_append (dm, "std::iostream"));
+	      new_last_source_name = "iostream";
 	    }
 	  else
 	    {
-	      result_append (dm, "std::basic_iostream<char, std::char_traits<char> >");
-	      dyn_string_copy_cstr (dm->last_source_name, "basic_iostream");
+	      RETURN_IF_ERROR (result_append (dm, "std::basic_iostream<char, std::char_traits<char> >"));
+	      new_last_source_name = "basic_iostream";
 	    }
 	  break;
 
@@ -2650,7 +2836,16 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	  return "Unrecognized <substitution>.";
 	}
       
+      /* Consume the character we just processed.  */
       advance_char (dm);
+
+      if (new_last_source_name != NULL)
+	{
+	  if (!dyn_string_copy_cstr (dm->last_source_name, 
+				     new_last_source_name))
+	    return STATUS_ALLOCATION_FAILED;
+	}
+
       return STATUS_OK;
     }
 
@@ -2662,7 +2857,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
     return "Substitution number out of range.";
 
   /* Emit the substitution text.  */
-  result_append_string (dm, text);
+  RETURN_IF_ERROR (result_append_string (dm, text));
 
   RETURN_IF_ERROR (demangle_char (dm, '_'));
   return STATUS_OK;
@@ -2682,12 +2877,12 @@ demangle_local_name (dm)
   RETURN_IF_ERROR (demangle_char (dm, 'Z'));
   RETURN_IF_ERROR (demangle_encoding (dm));
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
-  result_append (dm, "'s ");
+  RETURN_IF_ERROR (result_append (dm, "'s "));
 
   if (peek_char (dm) == 's')
     {
       /* Local character string literal.  */
-      result_append (dm, "string literal");
+      RETURN_IF_ERROR (result_append (dm, "string literal"));
       /* Consume the s.  */
       advance_char (dm);
       RETURN_IF_ERROR (demangle_discriminator (dm, 0));
@@ -2695,7 +2890,7 @@ demangle_local_name (dm)
   else
     {
       int unused;
-      result_append (dm, "local ");
+      RETURN_IF_ERROR (result_append (dm, "local "));
       /* Local name for some other entity.  Demangle its name.  */
       RETURN_IF_ERROR (demangle_name (dm, &unused));
       RETURN_IF_ERROR (demangle_discriminator (dm, 1));
@@ -2725,9 +2920,9 @@ demangle_discriminator (dm, suppress_first)
       /* Consume the underscore.  */
       advance_char (dm);
       if (flag_verbose)
-	result_append (dm, " [#");
+	RETURN_IF_ERROR (result_append (dm, " [#"));
       /* Check if there's a number following the underscore.  */
-      if (isdigit ((unsigned char) peek_char (dm)))
+      if (IS_DIGIT ((unsigned char) peek_char (dm)))
 	{
 	  int discriminator;
 	  /* Demangle the number.  */
@@ -2736,22 +2931,22 @@ demangle_discriminator (dm, suppress_first)
 	    /* Write the discriminator.  The mangled number is two
 	       less than the discriminator ordinal, counting from
 	       zero.  */
-	    int_to_dyn_string (discriminator + 2, 
-			       (dyn_string_t) dm->result);
+	    RETURN_IF_ERROR (int_to_dyn_string (discriminator + 2, 
+						(dyn_string_t) dm->result));
 	}
       else
 	{
 	  if (flag_verbose)
 	    /* A missing digit correspond to one.  */
-	    result_append_char (dm, '1');
+	    RETURN_IF_ERROR (result_append_char (dm, '1'));
 	}
       if (flag_verbose)
-	result_append_char (dm, ']');
+	RETURN_IF_ERROR (result_append_char (dm, ']'));
     }
   else if (!suppress_first)
     {
       if (flag_verbose)
-	result_append (dm, " [#0]");
+	RETURN_IF_ERROR (result_append (dm, " [#0]"));
     }
 
   return STATUS_OK;
@@ -2763,7 +2958,7 @@ demangle_discriminator (dm, suppress_first)
 
 static status_t
 cp_demangle (name, result)
-     char *name;
+     const char *name;
      dyn_string_t result;
 {
   status_t status;
@@ -2772,14 +2967,22 @@ cp_demangle (name, result)
   if (length > 2 && name[0] == '_' && name[1] == 'Z')
     {
       demangling_t dm = demangling_new (name);
+      if (dm == NULL)
+	return STATUS_ALLOCATION_FAILED;
 
-      result_push (dm);
+      status = result_push (dm);
+      if (status != STATUS_OK)
+	{
+	  demangling_delete (dm);
+	  return status;
+	}
+
       status = demangle_mangled_name (dm);
-
-      if (status == STATUS_OK)
+      if (STATUS_NO_ERROR (status))
 	{
 	  dyn_string_t demangled = (dyn_string_t) result_pop (dm);
-	  dyn_string_copy (result, demangled);
+	  if (!dyn_string_copy (result, demangled))
+	    return STATUS_ALLOCATION_FAILED;
 	  dyn_string_delete (demangled);
 	}
       
@@ -2790,12 +2993,166 @@ cp_demangle (name, result)
       /* It's evidently not a mangled C++ name.  It could be the name
 	 of something with C linkage, though, so just copy NAME into
 	 RESULT.  */
-      dyn_string_copy_cstr (result, name);
+      if (!dyn_string_copy_cstr (result, name))
+	return STATUS_ALLOCATION_FAILED;
       status = STATUS_OK;
     }
 
+  return status; 
+}
+
+/* Demangle TYPE_NAME into RESULT, which must be an initialized
+   dyn_string_t.  On success, returns STATUS_OK.  On failiure, returns
+   an error message, and the contents of RESULT are unchanged.  */
+
+static status_t
+cp_demangle_type (type_name, result)
+     const char* type_name;
+     dyn_string_t result;
+{
+  status_t status;
+  demangling_t dm = demangling_new (type_name);
+  
+  if (dm == NULL)
+    return STATUS_ALLOCATION_FAILED;
+
+  /* Demangle the type name.  The demangled name is stored in dm.  */
+  status = result_push (dm);
+  if (status != STATUS_OK)
+    {
+      demangling_delete (dm);
+      return status;
+    }
+
+  status = demangle_type (dm);
+
+  if (STATUS_NO_ERROR (status))
+    {
+      /* The demangling succeeded.  Pop the result out of dm and copy
+	 it into RESULT.  */
+      dyn_string_t demangled = (dyn_string_t) result_pop (dm);
+      if (!dyn_string_copy (result, demangled))
+	return STATUS_ALLOCATION_FAILED;
+      dyn_string_delete (demangled);
+    }
+
+  /* Clean up.  */
+  demangling_delete (dm);
+
   return status;
 }
+
+
+#ifdef IN_LIBGCC2
+
+extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
+
+/* ABI-mandated entry point in the C++ runtime library for performing
+   demangling.  MANGLED_NAME is a NUL-terminated character string
+   containing the name to be demangled.  
+
+   OUTPUT_BUFFER is a region of memory, allocated with malloc, of
+   *LENGTH bytes, into which the demangled name is stored.  If
+   OUTPUT_BUFFER is not long enough, it is expanded using realloc.
+   OUTPUT_BUFFER may instead be NULL; in that case, the demangled name
+   is placed in a region of memory allocated with malloc.  
+
+   If LENGTH is non-NULL, the length of the buffer conaining the
+   demangled name, is placed in *LENGTH.  
+
+   The return value is a pointer to the start of the NUL-terminated
+   demangled name, or NULL if the demangling fails.  The caller is
+   responsible for deallocating this memory using free.  
+
+   *STATUS is set to one of the following values:
+      0: The demangling operation succeeded.
+     -1: A memory allocation failiure occurred.
+     -2: MANGLED_NAME is not a valid name under the C++ ABI mangling rules.
+     -3: One of the arguments is invalid.
+
+   The demagling is performed using the C++ ABI mangling rules, with
+   GNU extensions.  */
+
+char *
+__cxa_demangle (mangled_name, output_buffer, length, status)
+     const char *mangled_name;
+     char *output_buffer;
+     size_t *length;
+     int *status;
+{
+  struct dyn_string demangled_name;
+  status_t result;
+
+  if (status == NULL)
+    return NULL;
+
+  if (mangled_name == NULL) {
+    *status = -3;
+    return NULL;
+  }
+
+  /* Did the caller provide a buffer for the demangled name?  */
+  if (output_buffer == NULL) {
+    /* No; dyn_string will malloc a buffer for us.  */
+    if (!dyn_string_init (&demangled_name, 0)) 
+      {
+	*status = -1;
+	return NULL;
+      }
+  }
+  else {
+    /* Yes.  Check that the length was provided.  */
+    if (length == NULL) {
+      *status = -3;
+      return NULL;
+    }
+    /* Install the buffer into a dyn_string.  */
+    demangled_name.allocated = *length;
+    demangled_name.length = 0;
+    demangled_name.s = output_buffer;
+  }
+
+  if (mangled_name[0] == '_' && mangled_name[1] == 'Z')
+    /* MANGLED_NAME apprears to be a function or variable name.
+       Demangle it accordingly.  */
+    result = cp_demangle (mangled_name, &demangled_name);
+  else
+    /* Try to demangled MANGLED_NAME as the name of a type.  */
+    result = cp_demangle_type (mangled_name, &demangled_name);
+
+  if (result == STATUS_OK) 
+    /* The demangling succeeded.  */
+    {
+      /* If LENGTH isn't NULL, store the allocated buffer length
+	 there; the buffer may have been realloced by dyn_string
+	 functions.  */
+      if (length != NULL)
+	*length = demangled_name.allocated;
+      /* The operation was a success.  */
+      *status = 0;
+      return dyn_string_buf (&demangled_name);
+    }
+  else if (result == STATUS_ALLOCATION_FAILED)
+    /* A call to malloc or realloc failed during the demangling
+       operation.  */
+    {
+      *status = -1;
+      return NULL;
+    }
+  else
+    /* The demangling failed for another reason, most probably because
+       MANGLED_NAME isn't a valid mangled name.  */
+    {
+      /* If the buffer containing the demangled name wasn't provided
+	 by the caller, free it.  */
+      if (output_buffer == NULL)
+	free (dyn_string_buf (&demangled_name));
+      *status = -2;
+      return NULL;
+    }
+}
+
+#else /* !IN_LIBGCC2 */
 
 /* Variant entry point for integration with the existing cplus-dem
    demangler.  Attempts to demangle MANGLED.  If the demangling
@@ -2811,16 +3168,19 @@ cplus_demangle_new_abi (mangled)
   dyn_string_t demangled = dyn_string_new (0);
   /* Attempt the demangling.  */
   status_t status = cp_demangle ((char *) mangled, demangled);
-  if (status == STATUS_OK)
+  if (STATUS_NO_ERROR (status))
     /* Demangling succeeded.  */
     {
       /* Grab the demangled result from the dyn_string.  It was
 	 allocated with malloc, so we can return it directly.  */
       char *return_value = dyn_string_release (demangled);
-      /* The dyn_string can go away.  */
-      dyn_string_delete (demangled);
       /* Hand back the demangled name.  */
       return return_value;
+    }
+  else if (status == STATUS_ALLOCATION_FAILED)
+    {
+      fprintf (stderr, "Memory allocation failed.\n");
+      abort ();
     }
   else
     /* Demangling failed.  */
@@ -2829,6 +3189,8 @@ cplus_demangle_new_abi (mangled)
       return NULL;
     }
 }
+
+#endif /* IN_LIBGCC2 */
 
 #ifdef STANDALONE_DEMANGLER
 
@@ -2839,7 +3201,7 @@ static void print_usage
 
 /* Non-zero if CHAR is a character than can occur in a mangled name.  */
 #define is_mangled_char(CHAR)                                           \
-  (isalnum ((unsigned char) (CHAR)) || (CHAR) == '_')
+  (IS_ALPHA (CHAR) || IS_DIGIT (CHAR) || (CHAR) == '_')
 
 /* The name of this program, as invoked.  */
 const char* program_name;
@@ -2968,8 +3330,14 @@ main (argc, argv)
 
 	  /* If the demangling succeeded, great!  Print out the
 	     demangled version.  */
-	  if (status == STATUS_OK)
+	  if (STATUS_NO_ERROR (status))
 	    fputs (dyn_string_buf (demangled), stdout);
+	  /* Abort on allocation failures.  */
+	  else if (status == STATUS_ALLOCATION_FAILED)
+	    {
+	      fprintf (stderr, "Memory allocation failed.\n");
+	      abort ();
+	    }
 	  /* Otherwise, it might not have been a mangled name.  Just
 	     print out the original text.  */
 	  else
@@ -3000,8 +3368,14 @@ main (argc, argv)
 	  status = cp_demangle (argv[i], result);
 
 	  /* If it worked, print the demangled name.  */
-	  if (status == STATUS_OK)
+	  if (STATUS_NO_ERROR (status))
 	    printf ("%s\n", dyn_string_buf (result));
+	  /* Abort on allocaiton failures.  */
+	  if (status == STATUS_ALLOCATION_FAILED)
+	    {
+	      fprintf (stderr, "Memory allocaiton failed.\n");
+	      abort ():
+	    }
 	  /* If not, print the error message to stderr instead.  */
 	  else 
 	    fprintf (stderr, "%s\n", status);

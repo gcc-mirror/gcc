@@ -40,25 +40,53 @@ typedef struct dyn_string
   (strcmp ((DS1)->s, (DS2)->s))
 
 
-extern void dyn_string_init             PARAMS ((struct dyn_string *, int));
+/* dyn_string functions are used in the demangling implementation
+   included in the G++ runtime library.  To prevent collisions with
+   names in user programs, the functions that are used in the
+   demangler are given implementation-reserved names.  */
+
+#ifdef IN_LIBGCC2
+
+#define dyn_string_init                 __cxa_dyn_string_init
+#define dyn_string_new                  __cxa_dyn_string_new
+#define dyn_string_delete               __cxa_dyn_string_delete
+#define dyn_string_release              __cxa_dyn_string_release
+#define dyn_string_resize               __cxa_dyn_string_resize
+#define dyn_string_clear                __cxa_dyn_string_clear
+#define dyn_string_copy                 __cxa_dyn_string_copy
+#define dyn_string_copy_cstr            __cxa_dyn_string_copy_cstr
+#define dyn_string_prepend              __cxa_dyn_string_prepend
+#define dyn_string_prepend_cstr         __cxa_dyn_string_prepend_cstr
+#define dyn_string_insert               __cxa_dyn_string_insert
+#define dyn_string_insert_cstr          __cxa_dyn_string_insert_cstr
+#define dyn_string_append               __cxa_dyn_string_append
+#define dyn_string_append_cstr          __cxa_dyn_string_append_cstr
+#define dyn_string_append_char          __cxa_dyn_string_append_char
+#define dyn_string_substring            __cxa_dyn_string_substring
+#define dyn_string_eq                   __cxa_dyn_string_eq
+
+#endif /* IN_LIBGCC2 */
+
+
+extern int dyn_string_init              PARAMS ((struct dyn_string *, int));
 extern dyn_string_t dyn_string_new      PARAMS ((int));
 extern void dyn_string_delete           PARAMS ((dyn_string_t));
 extern char *dyn_string_release         PARAMS ((dyn_string_t));
 extern dyn_string_t dyn_string_resize   PARAMS ((dyn_string_t, int));
 extern void dyn_string_clear            PARAMS ((dyn_string_t));
-extern void dyn_string_copy             PARAMS ((dyn_string_t, dyn_string_t));
-extern void dyn_string_copy_cstr        PARAMS ((dyn_string_t, const char *));
-extern void dyn_string_prepend          PARAMS ((dyn_string_t, dyn_string_t));
-extern void dyn_string_prepend_cstr     PARAMS ((dyn_string_t, const char *));
-extern void dyn_string_insert           PARAMS ((dyn_string_t, int,
+extern int dyn_string_copy              PARAMS ((dyn_string_t, dyn_string_t));
+extern int dyn_string_copy_cstr         PARAMS ((dyn_string_t, const char *));
+extern int dyn_string_prepend           PARAMS ((dyn_string_t, dyn_string_t));
+extern int dyn_string_prepend_cstr      PARAMS ((dyn_string_t, const char *));
+extern int dyn_string_insert            PARAMS ((dyn_string_t, int,
 						 dyn_string_t));
-extern void dyn_string_insert_cstr      PARAMS ((dyn_string_t, int,
+extern int dyn_string_insert_cstr       PARAMS ((dyn_string_t, int,
 						 const char *));
-extern dyn_string_t dyn_string_append   PARAMS ((dyn_string_t, dyn_string_t));
-extern dyn_string_t dyn_string_append_cstr   
+extern int dyn_string_append            PARAMS ((dyn_string_t, dyn_string_t));
+extern int dyn_string_append_cstr   
                                         PARAMS ((dyn_string_t, const char *));
-extern dyn_string_t dyn_string_append_char
+extern int dyn_string_append_char
                                         PARAMS ((dyn_string_t, int));
-extern void dyn_string_substring        PARAMS ((dyn_string_t, 
+extern int dyn_string_substring         PARAMS ((dyn_string_t, 
 						 dyn_string_t, int, int));
 extern int dyn_string_eq                PARAMS ((dyn_string_t, dyn_string_t));

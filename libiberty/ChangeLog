@@ -1,3 +1,56 @@
+2000-06-21  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c: Don't include ctype.h.
+	(IS_DIGIT): New macro.
+	(IS_ALPHA): Likewise.  Use IS_DIGIT and IS_ALPHA throughout
+	instead of isdigit and isalpanum.
+	(demangling_def): Make name and next const pointers.
+	(STATUS_ALLOCATION_FAILED): New status code.
+	(dyn_string_append_space): Handle failure in
+	dyn_string_append_char.
+	(int_to_dyn_string): Likewise.  Change return value to status_t.
+	(string_list_new): Handle failure of dyn_string_init.
+	(result_close_template_list): Change return type to status_t.
+	Handle failure in dyn_string_append.
+	(result_push): Change return value to status_t.  Handle failure in
+	string_list_new.  Handle failure of result_push throughout.
+	(substitution_add): Change return value to status_t.  Handle
+	dyn_string failures.  Handle failure of substitution_add
+	throughout.
+	(template_arg_list_new): Return NULL on allocation failure.
+	(result_append_string): Return STATUS_ALLOCATION_FAILED on error.
+	Handle error result throughout.
+	(result_append): Likewise.
+	(result_append_char): Likewise.
+	(result_append_space): Likewise.
+	(demangling_new): Make argument a const pointer.  Handle
+	allocation failures.
+	(demangle_template_args): Handle failure in template_arg_list_new
+	and result_close_template_list.
+	(demangle_discriminator): Return if int_to_dyn_string fails.
+	(cp_demangle): Likewise.
+	(cp_demangle_type): New function.
+	(cplus_demangle_new_abi): Don't call dyn_string_delete.  Abort on
+	memory allocation failure.
+	(main): Likewise.
+	* dyn-string.c (RETURN_ON_ALLOCATION_FAILURE): Define if
+	IN_LIBGCC2.
+	(dyn_string_init): Change return value to int.  Handle
+	RETURN_ON_ALLOCATION_FAILURE case.
+	(dyn_string_new): Handle RETURN_ON_ALLOCATION_FAILURE case.
+	(dyn_string_release): Delete the dyn_string.
+	(dyn_string_resize): Handle RETURN_ON_ALLOCATION_FAILURE case.
+	(dyn_string_copy): Change return type to int.
+	(dyn_string_copy_cstr): Likewise.
+	(dyn_string_prepend): Likewise.
+	(dyn_string_prepend_cstr): Likewise.
+	(dyn_string_insert): Likewise.
+	(dyn_string_insert_cstr): Likewise.
+	(dyn_string_append): Likewise.
+	(dyn_string_append_cstr): Likewise.
+	(dyn_string_append_char): Likewise.
+	(dyn_string_substring): Likewise.
+	
 2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-demangle.c (demangle_operator_name): Add spaces before

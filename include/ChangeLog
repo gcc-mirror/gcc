@@ -1,3 +1,18 @@
+2000-06-21  Alex Samuel  <samuel@codesourcery.com>
+
+	* dyn-string.h (dyn_string_init, dyn_string_new,
+	dyn_string_delete, dyn_string_release, dyn_string_resize,
+	dyn_string_clear, dyn_string_copy, dyn_string_copy_cstr,
+	dyn_string_prepend, dyn_string_prepend_cstr, dyn_string_insert,
+	dyn_string_insert_cstr, dyn_string_append, dyn_string_append_cstr,
+	dyn_string_append_char, dyn_string_substring_dyn_string_eq):
+	Define as same name with __cxa_ prepended, if IN_LIBGCC2.
+	(dyn_string_init, dyn_string_copy, dyn_string_copy_cstr,
+	dyn_string_prepend, dyn_string_prepend_cstr, dyn_string_insert,
+	dyn_string_insert_cstr, dyn_string_append, dyn_string_append_cstr,
+	dyn_string_append_char, dyn_string_substring): Change return type
+	to int.
+	
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h (demangling_styles): Remove trailing comma in enum.
