@@ -1,3 +1,8 @@
+2000-06-25  Kazu Hirata  <kazu@hxi.com>
+
+	* config/arm.c: Fix a comment typo.
+	* config/arm.h: Likewise.
+
 2000-06-25  Philipp Thomas  <pthomas@suse.de>
 
 	* aclocal.m4 (AM_WITH_NLS): Set create_catalogs=no if no catalog

@@ -1839,7 +1839,7 @@ typedef struct
   SUBTARGET_NAME_ENCODING_LENGTHS		
 
 /* This has to be handled by a function because more than part of the
-   ARM backend uses funciton name prefixes to encode attributes.  */
+   ARM backend uses function name prefixes to encode attributes.  */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)	\
   (VAR) = arm_strip_name_encoding (SYMBOL_NAME)
