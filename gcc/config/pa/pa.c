@@ -2453,7 +2453,7 @@ remove_useless_addtr_insns (insns, check_notes)
 */
 
 /* Emit RTL to store REG at the memory location specified by BASE+DISP.
-   Handle case where DISP > 8k by using the add_high_const pattern.
+   Handle case where DISP > 8k by using the add_high_const patterns.
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
@@ -2471,9 +2471,9 @@ store_reg (reg, disp, base)
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
-				     gen_rtx_REG (Pmode, base),
-				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx_REG (Pmode, 1),
+		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
+				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
       emit_move_insn (gen_rtx_MEM (word_mode,
 				   gen_rtx_LO_SUM (Pmode,
 						   gen_rtx_REG (Pmode, 1),
@@ -2483,7 +2483,7 @@ store_reg (reg, disp, base)
 }
 
 /* Emit RTL to load REG from the memory location specified by BASE+DISP.
-   Handle case where DISP > 8k by using the add_high_const pattern.
+   Handle case where DISP > 8k by using the add_high_const patterns.
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
@@ -2501,9 +2501,9 @@ load_reg (reg, disp, base)
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
-				     gen_rtx_REG (Pmode, base),
-				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx_REG (Pmode, 1),
+		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
+				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
       emit_move_insn (gen_rtx_REG (word_mode, reg),
 		      gen_rtx_MEM (word_mode,
 				   gen_rtx_LO_SUM (Pmode,
@@ -2513,7 +2513,7 @@ load_reg (reg, disp, base)
 }
 
 /* Emit RTL to set REG to the value specified by BASE+DISP.
-   Handle case where DISP > 8k by using the add_high_const pattern.
+   Handle case where DISP > 8k by using the add_high_const patterns.
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
@@ -2530,9 +2530,9 @@ set_reg_plus_d(reg, base, disp)
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
-				     gen_rtx_REG (Pmode, base),
-				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx_REG (Pmode, 1),
+		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
+				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
       emit_move_insn (gen_rtx_REG (Pmode, reg),
 		      gen_rtx_LO_SUM (Pmode,
 				      gen_rtx_REG (Pmode, 1),

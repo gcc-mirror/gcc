@@ -1668,7 +1668,7 @@
 ;; Because of the additional %r1 pressure, we probably do not
 ;; want to use this in general code, so make it available
 ;; only after reload.
-(define_insn "add_high_const"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=!a,*r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "const_int_operand" ""))))]
