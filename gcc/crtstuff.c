@@ -128,6 +128,11 @@ static void
 __do_global_dtors_aux ()
 {
   static func_ptr *p = __DTOR_LIST__ + 1;
+  static int completed = 0;
+
+  if (completed)
+    return;
+
   while (*p)
     {
       p++;
@@ -137,7 +142,9 @@ __do_global_dtors_aux ()
 #ifdef EH_FRAME_SECTION_ASM_OP
   __deregister_frame (__EH_FRAME_BEGIN__);
 #endif
+  completed = 1;
 }
+
 
 /* Stick a call to __do_global_dtors_aux into the .fini section.  */
 
