@@ -1327,6 +1327,9 @@ free_deps (deps)
       if (deps->reg_last_uses[i])
 	free_INSN_LIST_list (&deps->reg_last_uses[i]);
     }
+  free (deps->reg_last_clobbers);
+  free (deps->reg_last_sets);
+  free (deps->reg_last_uses);
 }
 
 /* If it is profitable to use them, initialize caches for tracking
