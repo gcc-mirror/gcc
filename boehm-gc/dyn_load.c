@@ -32,7 +32,7 @@
 #include "gc_priv.h"
 
 /* BTL: avoid circular redefinition of dlopen if SOLARIS_THREADS defined */
-# if defined(SOLARIS_THREADS) && defined(dlopen)
+# if (defined(SOLARIS_THREADS) || defined(LINUX_THREADS)) && defined(dlopen)
     /* To support threads in Solaris, gc.h interposes on dlopen by       */
     /* defining "dlopen" to be "GC_dlopen", which is implemented below.  */
     /* However, both GC_FirstDLOpenedLinkMap() and GC_dlopen() use the   */
@@ -190,11 +190,6 @@ void * GC_dlopen(const char *path, int mode)
 }
 # endif  /* SOLARIS_THREADS */
 
-/* BTL: added to fix circular dlopen definition if SOLARIS_THREADS defined */
-# if defined(GC_must_restore_redefined_dlopen)
-#   define dlopen GC_dlopen
-# endif
-
 # ifndef USE_PROC_FOR_LIBRARIES
 void GC_register_dynamic_libraries()
 {
@@ -259,6 +254,25 @@ void GC_register_dynamic_libraries()
 
 # endif /* !USE_PROC ... */
 # endif /* SUNOS */
+
+#ifdef LINUX_THREADS
+#include <dlfcn.h>
+
+void * GC_dlopen(const char *path, int mode)
+{
+    void * result;
+    
+    LOCK();
+    result = dlopen(path, mode);
+    UNLOCK();
+    return(result);
+}
+#endif  /* LINUX_THREADS */
+
+/* BTL: added to fix circular dlopen definition if SOLARIS_THREADS defined */
+#if defined(GC_must_restore_redefined_dlopen)
+# define dlopen GC_dlopen
+#endif
 
 #if defined(LINUX) && defined(__ELF__) || defined(SCO_ELF)
 

@@ -1,3 +1,9 @@
+2000-02-14  Tom Tromey  <tromey@cygnus.com>
+
+	* gc.h (dlopen): Define as GC_dlopen on Linux.
+	(GC_dlopen): Declare on Linux.
+	* dyn_load.c (GC_dlopen): Define for Linux.
+
 Fri Jan 28 17:13:20 2000  Anthony Green  <green@cygnus.com>
 
 	* gcconfig.h (DATASTART): Add missing extern declaration
