@@ -561,10 +561,7 @@ static unsigned lookup_filename ();
    output operations.
 
    If necessary, these may be overridden from within your tm.h file,
-   but typically, you shouldn't need to override these.  One known
-   exception is ASM_OUTPUT_DEF which has to be different for stock
-   sparc/svr4 assemblers.
-*/
+   but typically, you shouldn't need to override these.  */
 
 #ifndef ASM_OUTPUT_PUSH_SECTION
 #define ASM_OUTPUT_PUSH_SECTION(FILE, SECTION) \
@@ -581,16 +578,6 @@ static unsigned lookup_filename ();
   do {	fprintf (FILE, "\t%s\t", FILE_ASM_OP);				\
 	output_quoted_string (FILE, NAME);				\
 	fputc ('\n', FILE);						\
-  } while (0)
-#endif
-
-#ifndef ASM_OUTPUT_DEF
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, ",");						\
-	assemble_name (FILE, LABEL2);					\
-	fprintf (FILE, "\n");						\
   } while (0)
 #endif
 
