@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -240,6 +240,23 @@ proc libstdc++-v3-list-sourcefiles { } {
 	cd $where_we_were
     }
     close $f
-    return $sfiles
-}
 
+    # Disable wchar_t tests if library not configured to support
+    # wchar_t testing. 
+    set wchar_file "${outdir}/testsuite_wchar_t"    
+    if { [file exists $wchar_file] } {
+	return $sfiles
+    } else {
+	# Remove wchar_t tests files from list.
+	set res {}
+	foreach w $sfiles {
+	    if [regexp "wchar_t" $w] {
+		verbose "element out list is $w"
+	    } else {
+		verbose "element in list is $w"
+		lappend res $w
+	    }
+	}
+	return $res
+    }
+}
