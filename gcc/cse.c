@@ -2271,6 +2271,8 @@ canon_hash (x, mode)
     case PRE_INC:
     case POST_DEC:
     case POST_INC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
     case PC:
     case CC0:
     case CALL:
@@ -5472,8 +5474,7 @@ cse_insn (insn, libcall_insn)
 #ifdef PUSH_ROUNDING
 	  /* Stack pushes invalidate the stack pointer.  */
 	  rtx addr = XEXP (dest, 0);
-	  if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
-	       || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
+	  if (GET_RTX_CLASS (GET_CODE (addr)) == 'a'
 	      && XEXP (addr, 0) == stack_pointer_rtx)
 	    invalidate (stack_pointer_rtx, Pmode);
 #endif
@@ -6085,8 +6086,7 @@ static int
 addr_affects_sp_p (addr)
      register rtx addr;
 {
-  if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
-       || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
+  if (GET_RTX_CLASS (GET_CODE (addr)) == 'a'
       && GET_CODE (XEXP (addr, 0)) == REG
       && REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
     {

@@ -892,6 +892,22 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define HAVE_POST_DECREMENT 0
 #endif
 
+#ifndef HAVE_POST_MODIFY_DISP
+#define HAVE_POST_MODIFY_DISP 0
+#endif
+
+#ifndef HAVE_POST_MODIFY_REG
+#define HAVE_POST_MODIFY_REG 0
+#endif
+
+#ifndef HAVE_PRE_MODIFY_DISP
+#define HAVE_PRE_MODIFY_DISP 0
+#endif
+
+#ifndef HAVE_PRE_MODIFY_REG
+#define HAVE_PRE_MODIFY_REG 0
+#endif
+
 
 /* Some architectures do not have complete pre/post increment/decrement
    instruction sets, or only move some modes efficiently.  These macros
@@ -1260,6 +1276,7 @@ extern int rtx_addr_varies_p		PARAMS ((rtx));
 extern HOST_WIDE_INT get_integer_term	PARAMS ((rtx));
 extern rtx get_related_value		PARAMS ((rtx));
 extern int reg_mentioned_p		PARAMS ((rtx, rtx));
+extern int count_occurrences		PARAMS ((rtx, rtx, int));
 extern int reg_referenced_p		PARAMS ((rtx, rtx));
 extern int reg_used_between_p		PARAMS ((rtx, rtx, rtx));
 extern int reg_referenced_between_p	PARAMS ((rtx, rtx, rtx));

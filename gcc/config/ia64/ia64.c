@@ -469,6 +469,23 @@ reg_or_fp01_operand (op, mode)
 	  || register_operand (op, mode));
 }
 
+/* Like nonimmediate_operand, but don't allow MEMs that try to use a
+   POST_MODIFY with a REG as displacement.  */
+
+int
+destination_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! nonimmediate_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == MEM
+      && GET_CODE (XEXP (op, 0)) == POST_MODIFY
+      && GET_CODE (XEXP (XEXP (XEXP (op, 0), 1), 1)) == REG)
+    return 0;
+  return 1;
+}
+
 /* Return 1 if this is a comparison operator, which accepts an normal 8-bit
    signed immediate operand.  */
 
@@ -1971,28 +1988,47 @@ ia64_print_operand (file, x, code)
 
     case 'P':
       {
-	int value;
+	HOST_WIDE_INT value;
 
-	if (GET_CODE (XEXP (x, 0)) != POST_INC
-	    && GET_CODE (XEXP (x, 0)) != POST_DEC)
-	  return;
+	switch (GET_CODE (XEXP (x, 0)))
+	  {
+	  default:
+	    return;
 
-	fputs (", ", file);
+	  case POST_MODIFY:
+	    x = XEXP (XEXP (XEXP (x, 0), 1), 1);
+	    if (GET_CODE (x) == CONST_INT)
+	      value = INTVAL (y);
+	    else if (GET_CODE (x) == REG)
+	      {
+		fprintf (file, ", %s", reg_names[REGNO (y)]);
+		return;
+	      }
+	    else
+	      abort ();
+	    break;
 
-	value = GET_MODE_SIZE (GET_MODE (x));
+	  case POST_INC:
+	    value = GET_MODE_SIZE (GET_MODE (x));
 
-	/* ??? This is for ldf.fill and stf.spill which use XFmode, but which
-	   actually need 16 bytes increments.  Perhaps we can change them
-	   to use TFmode instead.  Or don't use POST_DEC/POST_INC for them.
-	   Currently, there are no other uses of XFmode, so hacking it here
-	   is no problem.  */
-	if (value == 12)
-	  value = 16;
+	    /* ??? This is for ldf.fill and stf.spill which use XFmode,
+	       but which actually need 16 bytes increments.  Perhaps we
+	       can change them to use TFmode instead.  Or don't use
+	       POST_DEC/POST_INC for them.  */
+	    if (value == 12)
+	      value = 16;
+	    break;
 
-	if (GET_CODE (XEXP (x, 0)) == POST_DEC)
-	  value = -value;
+	  case POST_DEC:
+	    value = - GET_MODE_SIZE (GET_MODE (x));
+	    if (value == -12)
+	      value = -16;
+	    break;
+	  }
 
-	fprintf (file, "%d", value);
+	putc (',', file);
+	putc (' ', file);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, value);
 	return;
       }
 
@@ -2074,8 +2110,6 @@ ia64_print_operand (file, x, code)
 	  unsigned int regno = REGNO (XEXP (x, 0));
 	  if (GET_CODE (x) == EQ)
 	    regno += 1;
-	  if (code == 'j')
-	    regno ^= 1;
           fprintf (file, "(%s) ", reg_names [regno]);
 	}
       return;
@@ -2089,6 +2123,8 @@ ia64_print_operand (file, x, code)
     {
       /* This happens for the spill/restore instructions.  */
     case POST_INC:
+    case POST_DEC:
+    case POST_MODIFY:
       x = XEXP (x, 0);
       /* ... fall through ... */
 
@@ -2099,7 +2135,7 @@ ia64_print_operand (file, x, code)
     case MEM:
       {
 	rtx addr = XEXP (x, 0);
-	if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == POST_DEC)
+	if (GET_RTX_CLASS (GET_CODE (addr)) == 'a')
 	  addr = XEXP (addr, 0);
 	fprintf (file, "[%s]", reg_names [REGNO (addr)]);
 	break;
@@ -2745,6 +2781,17 @@ rtx_needs_barrier (x, flags, pred)
 
       new_flags.is_write = 0;
       need_barrier  = rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      new_flags.is_write = 1;
+      need_barrier |= rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      break;
+
+    case POST_MODIFY:
+      if (GET_CODE (XEXP (x, 0)) != REG)
+	abort ();
+
+      new_flags.is_write = 0;
+      need_barrier  = rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
+      need_barrier |= rtx_needs_barrier (XEXP (x, 1), new_flags, pred);
       new_flags.is_write = 1;
       need_barrier |= rws_access_reg (REGNO (XEXP (x, 0)), new_flags, pred);
       break;

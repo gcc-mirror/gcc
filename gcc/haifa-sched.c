@@ -3625,6 +3625,14 @@ sched_analyze_2 (deps, x, insn)
       sched_analyze_1 (deps, x, insn);
       return;
 
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      /* op0 = op0 + op1 */
+      sched_analyze_2 (deps, XEXP (x, 0), insn);
+      sched_analyze_2 (deps, XEXP (x, 1), insn);
+      sched_analyze_1 (deps, x, insn);
+      return;
+
     default:
       break;
     }

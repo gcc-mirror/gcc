@@ -344,8 +344,6 @@ int earlyclobber_operand_p PARAMS ((rtx));
 
 extern int reloads_conflict		PARAMS ((int, int));
 
-int count_occurrences            PARAMS ((rtx, rtx));
-
 /* Initialize the reload pass once per compilation.  */
 extern void init_reload PARAMS ((void));
 

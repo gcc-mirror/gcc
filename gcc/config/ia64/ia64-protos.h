@@ -49,6 +49,15 @@ extern int reg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
+extern int destination_operand PARAMS((rtx, enum machine_mode));
+extern int ia64_rap_fp_offset PARAMS((void));
+extern unsigned int ia64_compute_frame_size PARAMS((int));
+extern void save_restore_insns PARAMS((int));
+extern void ia64_expand_prologue PARAMS((void));
+extern void ia64_expand_epilogue PARAMS((void));
+extern void ia64_function_prologue PARAMS((FILE *, int));
+extern void ia64_funtion_epilogue PARAMS((FILE *, int));
+extern int ia64_direct_return PARAMS((void));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ia64_move_ok PARAMS((rtx, rtx));
 

@@ -1250,6 +1250,8 @@ oprs_unchanged_p (x, insn, avail_p)
     case PRE_INC:
     case POST_DEC:
     case POST_INC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
       return 0;
 
     case PC:
