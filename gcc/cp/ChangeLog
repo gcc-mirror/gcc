@@ -1,3 +1,12 @@
+2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9881
+	* typeck.c (build_unary_op): Fold all COMPONENT_REF addr
+	expressions. Reverts my 2002-08-08 patch.
+	
+	* typeck.c (comp_ptr_ttypes_real): Swap final && operands for
+	cheaper early exit.
+
 2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp/decl2.c (start_static_storage_duration_function): Take count

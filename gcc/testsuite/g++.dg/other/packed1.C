@@ -1,4 +1,7 @@
-// { dg-do run }
+// { dg-do run { xfail arm-*-* } { xfail mips-*-* } { xfail powerpc-*-* } { xfail sh-*-* } { xfail sparc-*-* }
+
+// NMS:2003-04-21 this fails on strict aligned architectures again,
+// the patch was reverted because it broke something more important.
 
 // Copyright (C) 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 8 Aug 2002 <nathan@codesourcery.com>
