@@ -1,3 +1,10 @@
+2003-12-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* arm.c (ARM_ADDRESS_COST, THUMB_ADDRESS_COST): Convert macros
+	to inline functions: arm_arm_address_cost, arm_thumb_address_cost
+	respectively.
+	(arm_address_cost): Use 'em.
+
 2003-12-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Define
@@ -99,7 +106,7 @@
 
 	PR c/13134
 	* c-decl.c (duplicate_decls): Copy visibility flag when appropriate.
-	
+
 2003-12-09  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h: Add support for m32r2 processor.  Including
@@ -132,7 +139,7 @@
 2003-12-08  Stuart Hastings  <stuart@apple.com>
 
 	* config/i386/i386.md: Typo in split of fp-valued if_then_else.
-	
+
 2003-12-08  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/13132
@@ -197,7 +204,7 @@
 2003-12-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/13324, PR ada/12614
-        * doc/install.texi: Update requirements for building Ada.
+	* doc/install.texi: Update requirements for building Ada.
 
 2003-12-07  David Edelsohn  <edelsohn@gnu.org>
 	    Graham Reed <greed@pobox.com>
@@ -256,7 +263,7 @@
 
 2003-12-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* config/rs6000/rs6000.c (macho_branch_islands): Use 
+	* config/rs6000/rs6000.c (macho_branch_islands): Use
 	HOST_WIDE_INT_PRINT_UNSIGNED.
 
 2003-12-06  Richard Sandiford  <rsandifo@redhat.com>
@@ -329,7 +336,7 @@
 	* config/rs6000/rs6000.md: Correct macro test of TARGET_MACHO.
 
 2003-12-05  Stuart Menefy <stuart.menefy@st.com>
-            J"orn Rennecke <joern.rennecke@superh.com>
+	    J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR target/13302
 	* sh.c (sh_build_builtin_va_list): Use (*lang_hooks.types.make_type).
@@ -376,7 +383,7 @@
 
 2003-12-05  Peter Gerwinski <peter@gerwinski.de>
 
-        * tree.def (PLACEHOLDER_EXPR): Clarify commentary.
+	* tree.def (PLACEHOLDER_EXPR): Clarify commentary.
 
 2003-12-05  Steven Bosscher  <stevenb@suse.de>
 
@@ -419,14 +426,14 @@
 
 2003-12-04  Stuart Hastings  <stuart@apple.com>
 
-        * rs6000.c (output_call, macho_branch_islands,
-        add_compiler_branch_island, no_previous_def, get_previous_label)
-        Revisions of xx_stub functions for branch islands,
-        add -fPIC support for Darwin.
-        * rs6000-protos.h (output_call) Prototype.
-        * rs6000.md Use output_call.
-        * invoke.texi Explain Darwin semantics of -longcall.
-        * testsuite/gcc.dg/darwin-abi-1.c Revise testcase for -longcall/jbsr.
+	* rs6000.c (output_call, macho_branch_islands,
+	add_compiler_branch_island, no_previous_def, get_previous_label)
+	Revisions of xx_stub functions for branch islands,
+	add -fPIC support for Darwin.
+	* rs6000-protos.h (output_call) Prototype.
+	* rs6000.md Use output_call.
+	* invoke.texi Explain Darwin semantics of -longcall.
+	* testsuite/gcc.dg/darwin-abi-1.c Revise testcase for -longcall/jbsr.
 
 2003-12-04  Richard Henderson  <rth@redhat.com>
 
@@ -533,8 +540,8 @@
 2003-12-03  Eric Christopher  <echristo@redhat.com>
 
 	* c-parse.in (c_in_iteration_stmt, c_in_case_stmt): Move
-        from here...
-        * c-tree.h: to here.
+	from here...
+	* c-tree.h: to here.
 
 2003-12-03  Jan Hubicka  <jh@suse.cz>
 
