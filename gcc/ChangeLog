@@ -1,3 +1,9 @@
+Thu Aug 20 13:15:11 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* stor-layout.c (layout_type): Compute TYPE_SIZE_UNIT correctly for
+	arrays of bits.
+	* cpplib.c (cpp_define): Handle macros with parameters.
+
 Wed Aug 19 21:33:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (rs6000_output_load_toc_table): Use ld for 64-bit.
