@@ -1985,7 +1985,15 @@ build_class_member_access_expr (tree object, tree member,
 	 OBJECT so that it refers to the class containing the
 	 anonymous union.  Generate a reference to the anonymous union
 	 itself, and recur to find MEMBER.  */
-      if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member)))
+      if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member))
+	  /* When this code is called from build_field_call, the
+	     object already has the type of the anonymous union.
+	     That is because the COMPONENT_REF was already
+	     constructed, and was then disassembled before calling
+	     build_field_call.  After the function-call code is
+	     cleaned up, this waste can be eliminated.  */
+	  && (!same_type_ignoring_top_level_qualifiers_p 
+	      (TREE_TYPE (object), DECL_CONTEXT (member))))
 	{
 	  tree anonymous_union;
 
