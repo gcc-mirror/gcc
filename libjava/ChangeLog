@@ -1,5 +1,7 @@
 2000-02-16  Tom Tromey  <tromey@cygnus.com>
 
+	* jni.cc (_Jv_JNI_CallStaticMethodV): Added some assertions.
+
 	* jni.cc (_Jv_JNI_NewObjectV): Corrected assertion.
 	(_Jv_JNI_NewObject): Likewise.
 	(_Jv_JNI_NewObjectA): Likewise.
