@@ -6029,17 +6029,32 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
 			   ":\n\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 			   size);
     }
-  else if (TARGET_SGI_O32_AS)
+  else
+    /* The SGI o32 assembler doesn't accept an alignment.  */
+    mips_declare_common_object (stream, name, "\n\t.comm\t",
+				size, align, !TARGET_SGI_O32_AS);
+}
+
+/* Declare a common object of SIZE bytes using asm directive INIT_STRING.
+   NAME is the name of the object and ALIGN is the required alignment
+   in bytes.  TAKES_ALIGNMENT_P is true if the directive takes a third
+   alignment argument.  */
+
+void
+mips_declare_common_object (FILE *stream, const char *name,
+			    const char *init_string,
+			    unsigned HOST_WIDE_INT size,
+			    unsigned int align, bool takes_alignment_p)
+{
+  if (!takes_alignment_p)
     {
-      /* The SGI o32 assembler doesn't accept an alignment, so round up
-	 the size instead.  */
       size += (align / BITS_PER_UNIT) - 1;
       size -= size % (align / BITS_PER_UNIT);
-      mips_declare_object (stream, name, "\n\t.comm\t",
+      mips_declare_object (stream, name, init_string,
 			   "," HOST_WIDE_INT_PRINT_UNSIGNED "\n", size);
     }
   else
-    mips_declare_object (stream, name, "\n\t.comm\t",
+    mips_declare_object (stream, name, init_string,
 			 "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
 			 size, align / BITS_PER_UNIT);
 }

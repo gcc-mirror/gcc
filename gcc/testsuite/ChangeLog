@@ -1,5 +1,9 @@
 2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.c-torture/execute/20040707-1.c: New test.
+
+2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.c-torture/compile/20040705-1.c: New test.
 
 2004-07-01  Release Manager

@@ -1,3 +1,15 @@
+2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16407
+	* config/mips/mips-protos.h (mips_declare_common_object): Declare.
+	* config/mips/mips.c (mips_declare_common_object): New function,
+	mostly split out from...
+	(mips_output_aligned_decl_common): ...here.
+	* config/mips/mips.h (ASM_OUTPUT_LOCAL): Remove in favor of...
+	(ASM_OUTPUT_ALIGNED_LOCAL): ...this new definition.
+	* config/mips/iris6.h (ASM_OUTPUT_ALIGNED_LOCAL): Undefine this
+	rather than ASM_OUTPUT_LOCAL.  Call mips_declare_common_object.
+
 2004-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15815
