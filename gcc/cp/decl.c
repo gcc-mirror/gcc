@@ -7871,9 +7871,13 @@ emit_local_var (decl)
     }
 
   /* Actually do the initialization.  */
-  expand_start_target_temps ();
+  if (stmts_are_full_exprs_p)
+    expand_start_target_temps ();
+
   expand_decl_init (decl);
-  expand_end_target_temps ();
+
+  if (stmts_are_full_exprs_p)
+    expand_end_target_temps ();
 }
 
 /* Finish processing of a declaration;

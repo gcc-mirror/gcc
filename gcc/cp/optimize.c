@@ -429,21 +429,30 @@ initialize_inlined_parameters (id, args, fn)
       splay_tree_insert (id->decl_map, 
 			 (splay_tree_key) p,
 			 (splay_tree_value) var);
+
+      /* Declare this new variable.  */
+      init_stmt = build_min_nt (DECL_STMT, var);
+      TREE_CHAIN (init_stmt) = init_stmts;
+      init_stmts = init_stmt;
+
       /* Initialize this VAR_DECL from the equivalent argument.  If
 	 the argument is an object, created via a constructor or copy,
 	 this will not result in an extra copy: the TARGET_EXPR
 	 representing the argument will be bound to VAR, and the
 	 object will be constructed in VAR.  */
-      init_stmt = build_min_nt (EXPR_STMT,
-				build (INIT_EXPR, TREE_TYPE (p),
-				       var, value));
-      /* Declare this new variable.  Note that we do this *after* the
-	 initialization because we are going to reverse all the
-	 initialization statements below.  */
-      TREE_CHAIN (init_stmt) = build_min_nt (DECL_STMT, var);
-      /* Add this initialization to the list.  */
-      TREE_CHAIN (TREE_CHAIN (init_stmt)) = init_stmts;
-      init_stmts = init_stmt;
+      if (! TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (p)))
+	DECL_INITIAL (var) = value;
+      else
+	{
+	  init_stmt = build_min_nt (EXPR_STMT,
+				    build (INIT_EXPR, TREE_TYPE (p),
+					   var, value));
+	  /* Add this initialization to the list.  Note that we want the
+	     declaration *after* the initialization because we are going
+	     to reverse all the initialization statements below.  */
+	  TREE_CHAIN (init_stmt) = init_stmts;
+	  init_stmts = init_stmt;
+	}
     }
 
   /* The initialization statements have been built up in reverse

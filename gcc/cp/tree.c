@@ -294,6 +294,9 @@ build_target_expr_with_type (init, type)
   tree slot;
   tree rval;
 
+  if (TREE_CODE (init) == TARGET_EXPR)
+    return init;
+
   slot = build (VAR_DECL, type);
   DECL_ARTIFICIAL (slot) = 1;
   DECL_CONTEXT (slot) = current_function_decl;

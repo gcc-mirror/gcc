@@ -1,3 +1,13 @@
+2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tree.c (build_target_expr_with_type): If we already have a
+	TARGET_EXPR, just return it.
+
+	* optimize.c (initialize_inlined_parameters): Don't generate an
+	EXPR_STMT if we can just use DECL_INITIAL.
+	* decl.c (emit_local_var): Only make the initialization a
+	full-expression if stmts_are_full_exprs_p.
+
 2000-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (same_type_ignoring_top_level_qualifiers_p): New
