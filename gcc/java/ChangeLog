@@ -1,3 +1,15 @@
+2001-02-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (classdollar_identifier_node): Initialize.
+	* java-tree.h (enum java_tree_index): New entry 
+	`JTI_CLASSDOLLAR_IDENTIFIER_NODE.'
+	(classdollar_identifier_node): New macro.
+	(ID_CLASSDOLLAR_P): Likewise.
+	* parse.y (build_dot_class_method): Use `classdollar_identifier_node.'
+	(build_dot_class_method_invocation): Likewise.
+	(find_applicable_accessible_methods_list): `class$' can't be
+	inherited.
+
 2001-02-09  Raja R Harinath  <harinath@cs.umn.edu>
 
 	* Make-lang.in (java/mangle_name.o): Add 'make' prereqs.

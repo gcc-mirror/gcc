@@ -602,6 +602,7 @@ init_decl_processing ()
   super_identifier_node = get_identifier ("super");
   continue_identifier_node = get_identifier ("continue");
   access0_identifier_node = get_identifier ("access$0");
+  classdollar_identifier_node = get_identifier ("class$");
 
   /* for lack of a better place to put this stub call */
   init_expr_processing();
