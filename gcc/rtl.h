@@ -1310,6 +1310,7 @@ extern void add_insn_after			PROTO ((rtx, rtx));
 extern void reorder_insns_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern void emit_insn_after_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern enum rtx_code classify_insn		PROTO ((rtx));
+extern void init_virtual_regs                   PROTO ((void));
 extern rtx emit					PROTO ((rtx));
 /* Query and clear/ restore no_line_numbers.  This is used by the
    switch / case handling in stmt.c to give proper line numbers in

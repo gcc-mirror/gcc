@@ -3297,6 +3297,18 @@ gen_sequence ()
   return result;
 }
 
+/* Put the various virtual registers into REGNO_REG_RTX.  */
+
+void
+init_virtual_regs ()
+{
+  regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
+  regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+  regno_reg_rtx[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
+}
+
 /* Initialize data structures and variables in this file
    before generating rtl for each function.  */
 
@@ -3339,11 +3351,7 @@ init_emit ()
   bzero ((char *) regno_reg_rtx, regno_pointer_flag_length * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
-  regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
-  regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
-  regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
-  regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
-  regno_reg_rtx[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
+  init_virtual_regs ();
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
