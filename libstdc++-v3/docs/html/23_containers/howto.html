@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2001/05/31 02:45:02 ljrittle Exp $ -->
+<!-- $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $ -->
 </HEAD>
 <BODY>
 
@@ -25,6 +25,7 @@
    <LI><A HREF="#1">Making code unaware of the container/array difference</A>
    <LI><A HREF="#2">Variable-sized bitmasks</A>
    <LI><A HREF="#3">Containers and multithreading</A>
+   <LI><A HREF="#4">&quot;Hinting&quot; during insertion</A>
 </UL>
 
 <HR>
@@ -245,12 +246,85 @@
       a catch-all general template solution would probably be more trouble
       than it's worth.
    </P>
-
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
-
+<HR>
+<H2><A NAME="4">&quot;Hinting&quot; during insertion</A></H2>
+   <P>Section [23.1.2], Table 69, of the C++ standard lists this function
+      for all of the associative containers (map, set, etc):
+      <PRE>
+      a.insert(p,t);</PRE>
+      where 'p' is an iterator into the container 'a', and 't' is the item
+      to insert.  The standard says that &quot;iterator p is a hint
+      pointing to where the insert should start to search,&quot; but
+      specifies nothing more.  (LWG Issue #233, currently in review,
+      addresses this topic, but I will ignore it here because it is not yet
+      finalized.)
+   </P>
+   <P>Here we'll describe how the hinting works in the libstdc++-v3
+      implementation, and what you need to do in order to take advantage of
+      it.  (Insertions can change from logarithmic complexity to amortized
+      constant time, if the hint is properly used.)  Also, since the current
+      implementation is based on the SGI STL one, these points may hold true
+      for other library implementations also, since the HP/SGI code is used
+      in a lot of places.
+   </P>
+   <P>In the following text, the phrases <EM>greater than</EM> and <EM>less
+      than</EM> refer to the results of the strict weak ordering imposed on
+      the container by its comparison object, which defaults to (basically)
+      &quot;&lt;&quot;.  Using those phrases is semantically sloppy, but I
+      didn't want to get bogged down in syntax.  I assume that if you are
+      intelligent enough to use your own comparison objects, you are also
+      intelligent enough to assign &quot;greater&quot; and &quot;lesser&quot;
+      their new meanings in the next paragraph.  *grin*
+   </P>
+   <P>If the <TT>hint</TT> parameter ('p' above) is equivalent to:
+     <UL>
+      <LI><TT>begin()</TT>, then the item being inserted should have a key
+          less than all the other keys in the container.  The item will
+          be inserted at the beginning of the container, becoming the new
+          entry at <TT>begin()</TT>.
+      <LI><TT>end()</TT>, then the item being inserted should have a key
+          greater than all the other keys in the container.  The item will
+          be inserted at the end of the container, becoming the new entry
+          at <TT>end()</TT>.
+      <LI>neither <TT>begin()</TT> nor <TT>end()</TT>, then:  Let <TT>h</TT>
+          be the entry in the container pointed to by <TT>hint</TT>, that
+          is, <TT>h = *hint</TT>.  Then the item being inserted should have
+          a key less than that of <TT>h</TT>, and greater than that of the
+          item preceeding <TT>h</TT>.  The new item will be inserted
+          between <TT>h</TT> and <TT>h</TT>'s predecessor.
+     </UL>
+   </P>
+   <P>If the conditions are not met, then the hint is not used, and the
+      insertion proceeds as if you had called <TT> a.insert(t) </TT>
+      instead.  (<STRONG>Note </STRONG> that GCC releases prior to 3.0.2
+      had a bug in the case with <TT>hint == begin()</TT>.  You should not
+      use a hint argument in those releases.)
+(Was it just with map or with all the rbtree-using containers?  Still need
+to check that.)
+   </P>
+   <P>This behavior goes well with other container's <TT>insert()</TT>
+      functions which take an iterator:  if used, the new item will be
+      inserted before the iterator passed as an argument, same as the other
+      containers.  The exception
+      (in a sense) is with a hint of <TT>end()</TT>:  the new item will
+      actually be inserted after <TT>end()</TT>, but it also becomes the
+      new <TT>end()</TT>.
+   </P>
+   <P><STRONG>Note </STRONG> also that the hint in this implementation is a
+      one-shot.  The insertion-with-hint routines check the immediately
+      surrounding entries to ensure that the new item would in fact belong
+      there.  If the hint does not point to the correct place, then no
+      further local searching is done; the search begins from scratch in
+      logarithmic time.  (Further local searching would only increase the
+      time required when the hint is too far off.)
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
 
 
 <!-- ####################################################### -->
@@ -259,7 +333,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.5 2001/05/31 02:45:02 ljrittle Exp $
+<BR> $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $
 </EM></P>
 
 
