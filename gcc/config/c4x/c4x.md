@@ -68,6 +68,8 @@
 ; src_operand           general operand                            [rfHmI]
 ; par_ind_operand       indirect S mode (ARx + 0, 1, IRx)          [S<>]
 ; parallel_operand      par_ind_operand or ext_low_reg_operand
+; symbolic_address_operand
+; call_address_operand
 
 ; ADDI src2, src1, dst  three operand op
 ; ADDI src, dst         two operand op
@@ -1141,7 +1143,6 @@
    operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
 }")
 
-; This pattern is required to handle the case where a register that clobbers
 ; CC has been selected to load a symbolic address.  We force the address
 ; into memory and then generate LDP and LDIU insns.
 ; This is also required for the C30 if we pretend that we can 
