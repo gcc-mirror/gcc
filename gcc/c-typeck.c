@@ -1716,6 +1716,21 @@ check_format (info, params)
 		   format_char);
 	  warning (message);
 	}
+      if (info->is_scan && format_char == '[')
+	{
+	  /* Skip over scan set, in case it happens to have '%' in it.  */
+	  if (*format_chars == '^')
+	    ++format_chars;
+	  /* Find closing bracket; if one is hit immediately, then
+	     it's part of the scan set rather than a terminator.  */
+	  if (*format_chars == ']')
+	    ++format_chars;
+	  while (*format_chars && *format_chars != ']')
+	    ++format_chars;
+	  if (*format_chars != ']')
+	      /* The end of the format string was reached.  */
+	      warning ("no closing `]' for `%%[' format");
+	}
       if (suppressed)
 	{
 	  if (index (fci->flag_chars, '*') == 0)
