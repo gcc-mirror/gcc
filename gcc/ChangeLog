@@ -1,3 +1,7 @@
+2000-03-21  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/rtems.h: Include config/rtems.h.
+
 Tue Mar 21 09:24:00 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (encode_section_info): sets SYMBOL_REF_FLAG if
