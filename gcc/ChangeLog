@@ -1,3 +1,8 @@
+Wed Oct  6 10:21:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genconfig.c (main): Disable HAVE_conditional_arithmetic.
+	* jump.c (jump_optimize_1): Document why.
+
 Wed Oct  6 10:41:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (scan_prog_file, scan_libraries): Prototype function

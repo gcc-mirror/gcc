@@ -348,8 +348,11 @@ from the machine description file `md'.  */\n\n");
   if (have_cmove_flag)
     printf ("#define HAVE_conditional_move\n");
 
+#if 0
+  /* Disabled.  See the discussion in jump.c.  */
   if (have_cond_arith_flag)
     printf ("#define HAVE_conditional_arithmetic\n");
+#endif
 
   if (have_lo_sum_flag)
     printf ("#define HAVE_lo_sum\n");
