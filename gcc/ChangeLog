@@ -1,3 +1,7 @@
+2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
+ 
+	* combine.c (distribute_notes): Don't add REG_LABEL to jump insn.
+
 2004-09-02  Eric Christopher  <echristo@redhat.com>
 
 	* builtins.c (expand_builtin_cabs): Delete.

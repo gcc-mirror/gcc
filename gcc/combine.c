@@ -11839,21 +11839,25 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		place = i2;
 	    }
 
-	  /* Don't attach REG_LABEL note to a JUMP_INSN which has
-	     JUMP_LABEL already.  Instead, decrement LABEL_NUSES.  */
-	  if (place && JUMP_P (place) && JUMP_LABEL (place))
+	  /* Don't attach REG_LABEL note to a JUMP_INSN.  Add
+	     a JUMP_LABEL instead or decrement LABEL_NUSES.  */
+	  if (place && JUMP_P (place))
 	    {
-	      if (JUMP_LABEL (place) != XEXP (note, 0))
+	      if (!JUMP_LABEL (place))
+		JUMP_LABEL (place) = XEXP (note, 0);
+	      else if (JUMP_LABEL (place) != XEXP (note, 0))
 		abort ();
-	      if (LABEL_P (JUMP_LABEL (place)))
+	      else if (LABEL_P (JUMP_LABEL (place)))
 		LABEL_NUSES (JUMP_LABEL (place))--;
 	      place = 0;
 	    }
-	  if (place2 && JUMP_P (place2) && JUMP_LABEL (place2))
+	  if (place2 && JUMP_P (place2))
 	    {
-	      if (JUMP_LABEL (place2) != XEXP (note, 0))
+	      if (!JUMP_LABEL (place2))
+		JUMP_LABEL (place2) = XEXP (note, 0);
+	      else if (JUMP_LABEL (place2) != XEXP (note, 0))
 		abort ();
-	      if (LABEL_P (JUMP_LABEL (place2)))
+	      else if (LABEL_P (JUMP_LABEL (place2)))
 		LABEL_NUSES (JUMP_LABEL (place2))--;
 	      place2 = 0;
 	    }
