@@ -1,3 +1,8 @@
+Mon Aug 31 17:25:41 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movsf_const_intreg): Kill warning.
+	(movtf_insn_sp64, movtf_no_e_insn_sp64): Reorder alternatives.
+
 Mon Aug 31 13:57:55 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/va_list.h: New file.
