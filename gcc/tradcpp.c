@@ -28,8 +28,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "version.h"
 #include "cppdefault.h"
 
-#include <signal.h>
-
 typedef unsigned char U_CHAR;
 
 /* Name under which this program was invoked.  */
@@ -387,7 +385,6 @@ U_CHAR *skip_to_end_of_comment PARAMS ((FILE_BUF *, int *));
 U_CHAR *skip_quoted_string     PARAMS ((U_CHAR *, U_CHAR *, int,
 					int *, int *, int *));
 
-void pipe_closed	PARAMS ((int));
 int main		PARAMS ((int, char **));
 
 /* Convenience.  Write U"string" to get an unsigned string constant.  */
@@ -457,15 +454,6 @@ int deps_column;
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 int ignore_srcdir;
-
-/* Handler for SIGPIPE.  */
-
-void
-pipe_closed (dummy)
-     int dummy ATTRIBUTE_UNUSED;
-{
-  exit (FATAL_EXIT_CODE);
-}
 
 int
 main (argc, argv)
@@ -514,8 +502,6 @@ main (argc, argv)
   no_line_commands = 0;
   dump_macros = 0;
   no_output = 0;
-
-  signal (SIGPIPE, pipe_closed);
 
   max_include_len = cpp_GCC_INCLUDE_DIR_len + 7;  /* ??? */
 

@@ -2653,22 +2653,35 @@ execute ()
 	  if (commands[j].pid == pid)
 	    {
 	      i++;
-	      if (status != 0)
+	      if (WIFSIGNALED (status))
 		{
-		  if (WIFSIGNALED (status))
-		    {
-		      fatal ("Internal compiler error: program %s got fatal signal %d",
-			     commands[j].prog, WTERMSIG (status));
-		      signal_count++;
-		      ret_code = -1;
-		    }
-		  else if (WIFEXITED (status)
-			   && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-		    {
-		      if (WEXITSTATUS (status) > greatest_status)
-			greatest_status = WEXITSTATUS (status);
-		      ret_code = -1;
-		    }
+#ifdef SIGPIPE
+		  /* SIGPIPE is a special case.  It happens in -pipe mode
+		     when the compiler dies before the preprocessor is
+		     done, or the assembler dies before the compiler is
+		     done.  There's generally been an error already, and
+		     this is just fallout.  So don't generate another error
+		     unless we would otherwise have succeeded.  */
+		  if (WTERMSIG (status) == SIGPIPE
+		      && (signal_count || greatest_status >= MIN_FATAL_STATUS))
+		    ;
+		  else
+#endif
+		    fatal ("\
+Internal error: %s (program %s)\n\
+Please submit a full bug report.\n\
+See %s for instructions.",
+			   strsignal (WTERMSIG (status)), commands[j].prog,
+			   GCCBUGURL);
+		  signal_count++;
+		  ret_code = -1;
+		}
+	      else if (WIFEXITED (status)
+		       && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
+		{
+		  if (WEXITSTATUS (status) > greatest_status)
+		    greatest_status = WEXITSTATUS (status);
+		  ret_code = -1;
 		}
 #ifdef HAVE_GETRUSAGE
 	      if (report_times && ut + st != 0)
