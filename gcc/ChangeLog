@@ -1,5 +1,9 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* i370.c (ascebc, ebcasc): Wrap in macros controlling usage.
+	(i370_output_function_prologue): Fix format specifier warnings.
+	* i370.h (PRINT_OPERAND): Likewise.
+
 	* fr30.c (fr30_print_operand): Fix format specifier warnings.
 
 	* dsp16xx.c (print_operand_address): Fix format specifier warning.
