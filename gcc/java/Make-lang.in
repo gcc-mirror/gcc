@@ -350,59 +350,59 @@ java/gcj.dvi: $(srcdir)/java/gcj.texi $(srcdir)/doc/include/fdl.texi \
 
 $(srcdir)/java/gcj.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D gcj < $(srcdir)/java/gcj.texi > java/gcj.pod
-	($(POD2MAN) --section=1 java/gcj.pod > java/gcj.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/gcj.pod > java/gcj.1.T$$$$ && \
 		mv -f java/gcj.1.T$$$$ $(srcdir)/java/gcj.1) || \
 		(rm -f java/gcj.1.T$$$$ && exit 1)
-	rm -f java/gcj.pod
+	-rm -f java/gcj.pod
 
 $(srcdir)/java/gcjh.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D gcjh < $(srcdir)/java/gcj.texi > java/gcjh.pod
-	($(POD2MAN) --section=1 java/gcjh.pod > java/gcjh.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/gcjh.pod > java/gcjh.1.T$$$$ && \
 		mv -f java/gcjh.1.T$$$$ $(srcdir)/java/gcjh.1) || \
 		(rm -f java/gcjh.1.T$$$$ && exit 1)
-	rm -f java/gcjh.pod
+	-rm -f java/gcjh.pod
 
 $(srcdir)/java/jv-scan.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D jv-scan < $(srcdir)/java/gcj.texi > java/jv-scan.pod
-	($(POD2MAN) --section=1 java/jv-scan.pod > java/jv-scan.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/jv-scan.pod > java/jv-scan.1.T$$$$ && \
 		mv -f java/jv-scan.1.T$$$$ $(srcdir)/java/jv-scan.1) || \
 		(rm -f java/jv-scan.1.T$$$$ && exit 1)
-	rm -f java/jv-scan.pod
+	-rm -f java/jv-scan.pod
 
 $(srcdir)/java/jcf-dump.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D jcf-dump < $(srcdir)/java/gcj.texi > java/jcf-dump.pod
-	($(POD2MAN) --section=1 java/jcf-dump.pod > java/jcf-dump.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/jcf-dump.pod > java/jcf-dump.1.T$$$$ && \
 		mv -f java/jcf-dump.1.T$$$$ $(srcdir)/java/jcf-dump.1) || \
 		(rm -f java/jcf-dump.1.T$$$$ && exit 1)
-	rm -f java/jcf-dump.pod
+	-rm -f java/jcf-dump.pod
 
 $(srcdir)/java/gij.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D gij < $(srcdir)/java/gcj.texi > java/gij.pod
-	($(POD2MAN) --section=1 java/gij.pod > java/gij.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/gij.pod > java/gij.1.T$$$$ && \
 		mv -f java/gij.1.T$$$$ $(srcdir)/java/gij.1) || \
 		(rm -f java/gij.1.T$$$$ && exit 1)
-	rm -f java/gij.pod
+	-rm -f java/gij.pod
 
 $(srcdir)/java/jv-convert.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D jv-convert < $(srcdir)/java/gcj.texi > java/jv-convert.pod
-	($(POD2MAN) --section=1 java/jv-convert.pod > java/jv-convert.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/jv-convert.pod > java/jv-convert.1.T$$$$ && \
 		mv -f java/jv-convert.1.T$$$$ $(srcdir)/java/jv-convert.1) || \
 		(rm -f java/jv-convert.1.T$$$$ && exit 1)
-	rm -f java/jv-convert.pod
+	-rm -f java/jv-convert.pod
 
 $(srcdir)/java/rmic.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D rmic < $(srcdir)/java/gcj.texi > java/rmic.pod
-	($(POD2MAN) --section=1 java/rmic.pod > java/rmic.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/rmic.pod > java/rmic.1.T$$$$ && \
 		mv -f java/rmic.1.T$$$$ $(srcdir)/java/rmic.1) || \
 		(rm -f java/rmic.1.T$$$$ && exit 1)
-	rm -f java/rmic.pod
+	-rm -f java/rmic.pod
 
 $(srcdir)/java/rmiregistry.1: $(srcdir)/java/gcj.texi
 	-$(TEXI2POD) -D rmiregistry < $(srcdir)/java/gcj.texi > java/rmiregistry.pod
-	($(POD2MAN) --section=1 java/rmiregistry.pod > java/rmiregistry.1.T$$$$ && \
+	-($(POD2MAN) --section=1 java/rmiregistry.pod > java/rmiregistry.1.T$$$$ && \
 		mv -f java/rmiregistry.1.T$$$$ $(srcdir)/java/rmiregistry.1) || \
 		(rm -f java/rmiregistry.1.T$$$$ && exit 1)
-	rm -f java/rmiregistry.pod
+	-rm -f java/rmiregistry.pod
 
 # Install the man pages.
 java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
