@@ -1,3 +1,8 @@
+2004-02-09  Fariborz Jahanian <fjahanian@apple.com>
+
+	* expr.c (emit_group_load): split constant
+	correctly into register components of PARALLEL insn.
+
 2004-02-09  DJ Delorie  <dj@redhat.com>
 
 	* config/i386/xm-djgpp.h (GCC_DRIVER_HOST_INITIALIZATION): No
