@@ -25,6 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 #include "intl.h"
+#include "mkdeps.h"
 
 #define SKIP_WHITE_SPACE(p) do { while (is_hspace(*p)) p++; } while (0)
 
@@ -1212,7 +1213,7 @@ do_include (pfile, keyword)
 				       (pfile->system_include_depth > 0)))
         {
 	  if (!angle_brackets)
-	    deps_output (pfile, ftok, ' ');
+	    deps_add_dep (pfile->deps, ftok);
 	  else
 	    {
 	      char *p;
@@ -1232,7 +1233,7 @@ do_include (pfile, keyword)
 		  strcat (p, "/");
 	        }
 	      strcat (p, ftok);
-	      deps_output (pfile, p, ' ');
+	      deps_add_dep (pfile->deps, p);
 	    }
 	}
       /* If -M was specified, and this header file won't be added to
@@ -1254,7 +1255,7 @@ do_include (pfile, keyword)
   /* For -M, add the file to the dependencies on its first inclusion. */
   if (!before && (CPP_PRINT_DEPS (pfile)
 		  > (angle_brackets || (pfile->system_include_depth > 0))))
-    deps_output (pfile, ihash->name, ' ');
+    deps_add_dep (pfile->deps, ihash->name);
 
   /* Handle -H option.  */
   if (CPP_OPTIONS(pfile)->print_include_names)

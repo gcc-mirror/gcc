@@ -29,10 +29,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "intl.h"
 
-/* The entry points to this file are: find_include_file, finclude,
-   include_hash, append_include_chain, deps_output, and file_cleanup.
-   file_cleanup is only called through CPP_BUFFER(pfile)->cleanup,
-   so it's static anyway. */
+/* The entry points to this file are: find_include_file,
+   cpp_read_file, finclude, include_hash, append_include_chain, and
+   file_cleanup.  file_cleanup is only called through
+   CPP_BUFFER(pfile)->cleanup, so it's static anyway. */
 
 static struct include_hash *redundant_include_p
 					PARAMS ((cpp_reader *,
@@ -1228,58 +1228,6 @@ initialize_input_buffer (pfile, fd, st)
   tmp = (U_CHAR *) xmalloc (pipe_buf + 2 + 2);
   pfile->input_buffer = tmp;
   pfile->input_buffer_len = pipe_buf;
-}
-
-/* Add output to `deps_buffer' for the -M switch.
-   STRING points to the text to be output.
-   SPACER is ':' for targets, ' ' for dependencies, zero for text
-   to be inserted literally.  */
-
-void
-deps_output (pfile, string, spacer)
-     cpp_reader *pfile;
-     const char *string;
-     int spacer;
-{
-  int size;
-  int cr = 0;
-
-  if (!*string)
-    return;
-
-  size = strlen (string);
-
-#ifndef MAX_OUTPUT_COLUMNS
-#define MAX_OUTPUT_COLUMNS 72
-#endif
-  if (pfile->deps_column > 0
-      && (pfile->deps_column + size) > MAX_OUTPUT_COLUMNS)
-    {
-      cr = 5;
-      pfile->deps_column = 0;
-    }
-
-  if (pfile->deps_size + size + cr + 8 > pfile->deps_allocated_size)
-    {
-      pfile->deps_allocated_size = (pfile->deps_size + size + 50) * 2;
-      pfile->deps_buffer = (char *) xrealloc (pfile->deps_buffer,
-					      pfile->deps_allocated_size);
-    }
-
-  if (cr)
-    {
-      bcopy (" \\\n  ", &pfile->deps_buffer[pfile->deps_size], 5);
-      pfile->deps_size += 5;
-    }
-  
-  if (spacer == ' ' && pfile->deps_column > 0)
-    pfile->deps_buffer[pfile->deps_size++] = ' ';
-  bcopy (string, &pfile->deps_buffer[pfile->deps_size], size);
-  pfile->deps_size += size;
-  pfile->deps_column += size + 1;  /* count spacer too */
-  if (spacer == ':')
-    pfile->deps_buffer[pfile->deps_size++] = ':';
-  pfile->deps_buffer[pfile->deps_size] = 0;
 }
 
 /* Simplify a path name in place, deleting redundant components.  This

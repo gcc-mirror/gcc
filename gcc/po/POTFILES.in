@@ -707,6 +707,8 @@ loop.h
 machmode.h
 mbchar.c
 mbchar.h
+mkdeps.c
+mkdeps.h
 #mips-tdump.c is not yet internationalized
 #mips-tfile.c is not yet internationalized
 objc/objc-act.c

@@ -228,16 +228,7 @@ struct cpp_reader
   struct tm *timebuf;
 
   /* Buffer of -M output.  */
-  char *deps_buffer;
-
-  /* Number of bytes allocated in above.  */
-  int deps_allocated_size;
-
-  /* Number of bytes used.  */
-  int deps_size;
-
-  /* Number of bytes since the last newline.  */
-  int deps_column;
+  struct deps *deps;
 
   /* A buffer and a table, used only by read_and_prescan (in cppfiles.c)
      which are allocated once per cpp_reader object to keep them off the
@@ -712,8 +703,6 @@ extern int find_include_file		PARAMS ((cpp_reader *, const char *,
 extern int finclude			PARAMS ((cpp_reader *, int,
 					        struct include_hash *));
 extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern void deps_output			PARAMS ((cpp_reader *,
-						const char *, int));
 extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, int));
 
 #ifdef __cplusplus
