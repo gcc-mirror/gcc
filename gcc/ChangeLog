@@ -1,3 +1,8 @@
+2003-01-08  Dale Johannesen  <dalej@apple.com>
+
+        * config/rs6000/rs6000.md:  Replace *store_multiple_string
+        with *stmsi[3-8].
+
 2003-01-08  Jeff Sturm  <jsturm@one-point.com>
 
 	PR target/9210
