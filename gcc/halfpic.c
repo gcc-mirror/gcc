@@ -73,11 +73,12 @@ half_pic_address_p (addr)
   switch (GET_CODE (addr))
     {
     case CONST:
-      rtx offset = const0_rtx;
-      addr = eliminate_constant_term (addr, &offset);
-      if (GET_CODE (addr) != SYMBOL_REF)
-	return FALSE;
-	
+      {
+	rtx offset = const0_rtx;
+	addr = eliminate_constant_term (addr, &offset);
+	if (GET_CODE (addr) != SYMBOL_REF)
+	  return FALSE;
+      }
       /* fall through */
 
     case SYMBOL_REF:
