@@ -170,9 +170,8 @@ find_local_variable (index, type, pc)
 	   && in_range)
 	{
 	  if (best == NULL_TREE
-	      || (TREE_TYPE (decl) == type && TREE_TYPE (best) != type)
-	      || DECL_LOCAL_START_PC (decl) > DECL_LOCAL_START_PC (best)
-	      || DECL_LOCAL_END_PC (decl) < DECL_LOCAL_START_PC (decl))
+              || (DECL_LOCAL_START_PC (decl) > DECL_LOCAL_START_PC (best)
+                  && DECL_LOCAL_END_PC (decl) < DECL_LOCAL_START_PC (best)))
 	    best = decl;
 	}
       decl = DECL_LOCAL_SLOT_CHAIN (decl);
@@ -1517,6 +1516,7 @@ give_name_to_locals (jcf)
      JCF *jcf;
 {
   int i, n = DECL_LOCALVARIABLES_OFFSET (current_function_decl);
+  int code_offset = DECL_CODE_OFFSET (current_function_decl);
   tree parm;
   pending_local_decls = NULL_TREE;
   if (n == 0)
@@ -1553,6 +1553,13 @@ give_name_to_locals (jcf)
 			 "bad PC range for debug info for local `%s'");
 	      end_pc = DECL_CODE_LENGTH (current_function_decl);
 	    }
+
+	  /* Adjust start_pc if necessary so that the local's first
+	     store operation will use the relevant DECL as a
+	     destination. Fore more information, read the leading
+	     comments for expr.c:maybe_adjust_start_pc. */
+	  start_pc = maybe_adjust_start_pc (jcf, code_offset, start_pc, slot);
+
 	  DECL_LANG_SPECIFIC (decl)
 	    = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl_var));
 	  DECL_LOCAL_SLOT_NUMBER (decl) = slot;
