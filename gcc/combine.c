@@ -10015,10 +10015,10 @@ mark_used_regs_combine (x)
 	   the address.  */
 	register rtx testreg = SET_DEST (x);
 
-	while (GET_CODE (x) == SUBREG
-	       || GET_CODE (x) == ZERO_EXTRACT
-	       || GET_CODE (x) == SIGN_EXTRACT
-	       || GET_CODE (x) == STRICT_LOW_PART)
+	while (GET_CODE (testreg) == SUBREG
+	       || GET_CODE (testreg) == ZERO_EXTRACT
+	       || GET_CODE (testreg) == SIGN_EXTRACT
+	       || GET_CODE (testreg) == STRICT_LOW_PART)
 	  testreg = XEXP (testreg, 0);
 
 	if (GET_CODE (testreg) == MEM)
