@@ -1,3 +1,14 @@
+2003-12-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.c: Convert to ISO-C
+
+2003-12-12  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* doc/invoke.texi: Replace Mitsubishi with Renesas.
+	* config/m32r/m32r.h: Ditto.
+	* config/m32r/m32r.c: Ditto.
+	* config/m32r/m32r.md: Ditto.
+
 2003-12-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* basic-block.h (BLOCK_HEAD, BLOCK_END): Remove.

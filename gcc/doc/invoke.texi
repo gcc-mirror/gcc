@@ -6837,7 +6837,7 @@ This option makes symbolic debugging impossible.
 @subsection M32R/D Options
 @cindex M32R/D options
 
-These @option{-m} options are defined for Mitsubishi M32R/D architectures:
+These @option{-m} options are defined for Renesas M32R/D architectures:
 
 @table @gcctabopt
 @item -m32r2
