@@ -64,6 +64,7 @@ ffi_closure_LINUX64:
 
 	# make the call
 	bl .ffi_closure_helper_LINUX64
+.Lret:
 
 	# now r3 contains the return type
 	# so use it to look up in a table
@@ -71,10 +72,10 @@ ffi_closure_LINUX64:
 
 	# look up the proper starting point in table 
 	# by using return type as offset
-	addi %r5, %r1, 112	# get pointer to results area
-	bl .Lget_ret_type0_addr # get pointer to .Lret_type0 into LR
-	mflr %r4		# move to r4
+	mflr %r4		# move address of .Lret to r4
 	sldi %r3, %r3, 4	# now multiply return type by 16
+	addi %r4, %r4, .Lret_type0 - .Lret
+	ld %r0, 224+16(%r1)
 	add %r3, %r3, %r4	# add contents of table to table address
 	mtctr %r3
 	bctr			# jump to it
@@ -84,94 +85,84 @@ ffi_closure_LINUX64:
 # first.
 	.align 4
 
-	nop
-	nop
-	nop
-.Lget_ret_type0_addr:
-	blrl
-
 .Lret_type0:
 # case FFI_TYPE_VOID
-	b .Lfinish
-	nop
-	nop
-	nop
-# case FFI_TYPE_INT
-	lwa %r3, 4(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_FLOAT
-	lfs %f1, 4(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_DOUBLE
-	lfd %f1, 0(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_LONGDOUBLE
-	lfd %f1, 0(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_UINT8
-	lbz %r3, 7(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_SINT8
-	lbz %r3, 7(%r5)
-	extsb %r3,%r3
-	b .Lfinish
-	nop
-# case FFI_TYPE_UINT16
-	lhz %r3, 6(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_SINT16
-	lha %r3, 6(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_UINT32
-	lwz %r3, 4(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_SINT32
-	lwa %r3, 4(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_UINT64
-	ld %r3, 0(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_SINT64
-	ld %r3, 0(%r5)
-	b .Lfinish
-	nop
-	nop
-# case FFI_TYPE_STRUCT
-	b .Lfinish
-	nop
-	nop
-	nop
-# case FFI_TYPE_POINTER
-	ld %r3, 0(%r5)
-	b .Lfinish
-	nop
-	nop
-# esac
-.Lfinish:
-	ld %r0, 224+16(%r1)
 	mtlr %r0
 	addi %r1, %r1, 224
 	blr
+	nop
+# case FFI_TYPE_INT
+	lwa %r3, 112+4(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_FLOAT
+	lfs %f1, 112+4(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_DOUBLE
+	lfd %f1, 112+0(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_LONGDOUBLE
+	lfd %f1, 112+0(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_UINT8
+	lbz %r3, 112+7(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_SINT8
+	lbz %r3, 112+7(%r1)
+	extsb %r3,%r3
+	mtlr %r0
+	b .Lfinish
+# case FFI_TYPE_UINT16
+	lhz %r3, 112+6(%r1)
+	mtlr %r0
+.Lfinish:
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_SINT16
+	lha %r3, 112+6(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_UINT32
+	lwz %r3, 112+4(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_SINT32
+	lwa %r3, 112+4(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_UINT64
+	ld %r3, 112+0(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_SINT64
+	ld %r3, 112+0(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# case FFI_TYPE_STRUCT
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+	nop
+# case FFI_TYPE_POINTER
+	ld %r3, 112+0(%r1)
+	mtlr %r0
+	addi %r1, %r1, 224
+	blr
+# esac
 .LFE1:
 	.long	0
 	.byte	0,12,0,1,128,0,0,0
