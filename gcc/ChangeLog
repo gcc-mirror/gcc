@@ -1,3 +1,10 @@
+Thu Feb 26 08:04:05 1998  Tristan Gingold  <gingold@messiaen.enst.fr>
+
+	* function.c (assign_parms): Call 'chkr_set_right' when DECL_RTL
+	is stack_parm.
+	* expr.c (get_memory_usage_from_modifier): Convert
+	EXPAND_{SUM, CONST_ADDRESS, INITIALIZER} to MEMORY_USE_RO.
+
 Thu Feb 26 07:33:53 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* c-lex.c (yylex): Don't munge errno before using it.
