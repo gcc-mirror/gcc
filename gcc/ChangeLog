@@ -1,5 +1,15 @@
 2000-04-22  Richard Henderson  <rth@cygnus.com>
 
+	* diagnostic.c (init_output_buffer): Don't initialize format_args.
+	(output_clear): Likewise.
+	(output_printf): Use va_copy.
+	(vline_wrapper_message_with_location): Likewise.
+	(v_message_with_decl): Likewise.
+	(line_wrapper_printf): VA_START infor buffer.format_args directly.
+	* system.h (va_copy): Provide default implementation.
+
+2000-04-22  Richard Henderson  <rth@cygnus.com>
+
 	* predict.c (expected_value_to_br_prob): Don't bomb if op1 of
 	the collected condition is not a constant.
 

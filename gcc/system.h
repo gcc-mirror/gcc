@@ -35,6 +35,14 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 
+#ifndef va_copy
+# ifdef __va_copy
+#   define va_copy(d,s)  __va_copy((d),(s))
+# else
+#   define va_copy(d,s)  ((d) = (s))
+# endif
+#endif
+
 #include <stdio.h>
 
 /* Define a generic NULL if one hasn't already been defined.  */
