@@ -60,7 +60,21 @@ static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
 static int reg_is_remote_constant_p PROTO((rtx, rtx, rtx));
 static int stable_but_for_p PROTO((rtx, rtx, rtx));
+static int regclass_compatible_p PROTO((int, int));
 static int loop_depth;
+
+/* Return non-zero if registers with CLASS1 and CLASS2 can be merged without
+   causing too much register allocation problems.  */
+static int
+regclass_compatible_p (class0, class1)
+     int class0, class1;
+{
+  return (class0 == class1
+	  || (reg_class_subset_p (class0, class1)
+	      && ! CLASS_LIKELY_SPILLED_P (class0))
+	  || (reg_class_subset_p (class1, class0)
+	      && ! CLASS_LIKELY_SPILLED_P (class1)));
+}
 
 /* Generate and return an insn body to add r1 and c,
    storing the result in r0.  */
@@ -894,11 +908,11 @@ regmove_optimize (f, nregs, regmove_dump_file)
   rtx insn;
   struct match match;
   int pass;
-  int maxregnum = max_reg_num (), i;
+  int i;
   rtx copy_src, copy_dst;
 
-  regno_src_regno = (int *)alloca (sizeof *regno_src_regno * maxregnum);
-  for (i = maxregnum; --i >= 0; ) regno_src_regno[i] = -1;
+  regno_src_regno = (int *)alloca (sizeof *regno_src_regno * nregs);
+  for (i = nregs; --i >= 0; ) regno_src_regno[i] = -1;
 
   regmove_bb_head = (int *)alloca (sizeof (int) * (get_max_uid () + 1));
   for (i = get_max_uid (); i >= 0; i--) regmove_bb_head[i] = -1;
@@ -1052,11 +1066,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	      src_class = reg_preferred_class (REGNO (src));
 	      dst_class = reg_preferred_class (REGNO (dst));
-	      if (src_class != dst_class
-		  && (! reg_class_subset_p (src_class, dst_class)
-		      || CLASS_LIKELY_SPILLED_P (src_class))
-		  && (! reg_class_subset_p (dst_class, src_class)
-		      || CLASS_LIKELY_SPILLED_P (dst_class)))
+	      if (! regclass_compatible_p (src_class, dst_class))
 		continue;
 	  
 	      if (fixup_match_1 (insn, set, src, src_subreg, dst, pass,
@@ -1164,11 +1174,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		}
 	      src_class = reg_preferred_class (REGNO (src));
 	      dst_class = reg_preferred_class (REGNO (dst));
-	      if (src_class != dst_class
-		  && (! reg_class_subset_p (src_class, dst_class)
-		      || CLASS_LIKELY_SPILLED_P (src_class))
-		  && (! reg_class_subset_p (dst_class, src_class)
-		      || CLASS_LIKELY_SPILLED_P (dst_class)))
+	      if (! regclass_compatible_p (src_class, dst_class))
 		{
 		  if (!copy_src)
 		    {
@@ -1604,6 +1610,14 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		     This also gives opportunities for subsequent
 		     optimizations in the backward pass, so do it there.  */
 		  if (code == PLUS && backward
+		      /* Don't do this if we can likely tie DST to SET_DEST
+			 of P later; we can't do this tying here if we got a
+			 hard register.  */
+		      && ! (dst_note && ! REG_N_CALLS_CROSSED (REGNO (dst))
+			    && single_set (p)
+			    && GET_CODE (SET_DEST (single_set (p))) == REG
+			    && (REGNO (SET_DEST (single_set (p)))
+				< FIRST_PSEUDO_REGISTER))
 #ifdef HAVE_cc0
 		      /* We may not emit an insn directly
 			 after P if the latter sets CC0.  */
