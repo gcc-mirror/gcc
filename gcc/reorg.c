@@ -3103,7 +3103,9 @@ fill_simple_delay_slots (first, non_jumps_p)
 
 	  /* If there are slots left to fill and our search was stopped by an
 	     unconditional branch, try the insn at the branch target.  We can
-	     redirect the branch if it works.  */
+	     redirect the branch if it works. 
+
+	     Don't do this if the insn at the branch target is a branch.  */
 	  if (slots_to_fill != slots_filled
 	      && trial
 	      && GET_CODE (trial) == JUMP_INSN
@@ -3112,6 +3114,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      && (next_trial = next_active_insn (JUMP_LABEL (trial))) != 0
 	      && ! (GET_CODE (next_trial) == INSN
 		    && GET_CODE (PATTERN (next_trial)) == SEQUENCE)
+	      && GET_CODE (next_trial) != JUMP_INSN
 	      && ! insn_references_resource_p (next_trial, &set, 1)
 	      && ! insn_sets_resource_p (next_trial, &set, 1)
 	      && ! insn_sets_resource_p (next_trial, &needed, 1)
