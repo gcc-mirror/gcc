@@ -1,3 +1,44 @@
+Sun Sep  6 08:54:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (toplev.o): Depend on $(EXPR_H).
+	(insn-extract.o, insn-attrtab.o): Depend on toplev.h.
+
+	* gansidecl.h: Define ATTRIBUTE_NORETURN.
+
+	* genattrtab.c: Have insn-attrtab.c include toplev.h.
+
+	* genextract.c: Have insn-extract.c include toplev.h.
+
+	* rtl.h: Don't prototype `fatal_insn_not_found' and `fatal_insn'.
+
+	* toplev.c: Include expr.h.
+  	(really_sorry, fancy_abort): Remove prototypes.
+	(set_target_switch): Add argument in prototype.
+	(vfatal): Mark prototype with ATTRIBUTE_NORETURN.
+	(v_really_sorry): Likewise.
+	(print_version, print_single_switch, print_switch_values): Make
+	static and add prototype arguments.
+	(decl_printable_name): Add prototype arguments.
+	(lang_expand_expr_t): New typedef.
+	(lang_expand_expr): Declare as a lang_expand_expr_t.
+	(incomplete_decl_finalize_hook): Add prototype argument.
+	(decl_name): Mark variable `verbosity' with ATTRIBUTE_UNUSED.
+	(botch): Likewise for variable `s'.
+	(rest_of_type_compilation): Mark variables `type' and `toplev'
+	with ATTRIBUTE_UNUSED if none of DBX_DEBUGGING_INFO,
+	XCOFF_DEBUGGING_INFO or SDB_DEBUGGING_INFO are defined.
+	(display_help): Make variable `i' an `unsigned long'.
+	(main): Remove unused parameter `envp'.
+	Cast assignment to `lang_expand_expr' to a `lang_expand_expr_t'.
+	Cast -1 when comparing it with a `size_t'.
+
+	* toplev.h (fatal, fatal_io_error, pfatal_with_name): Mark
+	prototype with ATTRIBUTE_NORETURN.
+	(fatal_insn_not_found, fatal_insn, really_sorry,
+	push_float_handler, pop_float_handler): Add prototypes.
+	(fancy_abort): Mark prototype with ATTRIBUTE_NORETURN.
+	(do_abort, botch): Add prototypes.
+	
 Sat Sep  6 12:05:18 1998  John Carr  <jfc@mit.edu>
 
 	* final.c (final): If a label is reached only from a single jump,
