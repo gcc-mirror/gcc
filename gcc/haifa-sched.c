@@ -827,6 +827,13 @@ add_dependence (insn, elem, dep_type)
 
   /* Insn dependency, not data dependency.  */
   PUT_REG_NOTE_KIND (link, dep_type);
+
+#ifdef INSN_SCHEDULING
+  /* If we are adding a true dependency to INSN's LOG_LINKs, then
+     note that in the bitmap cache of true dependency information.  */
+  if ((int)dep_type == 0 && true_dependency_cache)
+    SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+#endif
 }
 
 #ifdef HAVE_cc0
