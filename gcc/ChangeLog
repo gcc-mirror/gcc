@@ -1,3 +1,10 @@
+2004-03-13  Dean Ferreyra <dferreyra@igc.org>
+
+	PR target/14047
+	* config/avr/avr.c (avr_progmem_p): Add "attributes" parameter.
+	(avr_insert_attributes): Pass "attributes" to avr_progmem_p.
+	* config/avr/avr-protos.h (avr_progmem_p): Change prototype.
+
 2004-03-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Document assembler and achiver
