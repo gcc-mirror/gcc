@@ -4651,23 +4651,30 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
   int not_dead = 0;
   int i;
 
-  /* Some targets place small structures in registers for
-     return values of functions.  We have to detect this
-     case specially here to get correct flow information.  */
-  if (GET_CODE (reg) == PARALLEL
-      && GET_MODE (reg) == BLKmode)
-    {
-      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	mark_set_1 (pbi, code, XVECEXP (reg, 0, i), cond, insn, flags);
-      return;
-    }
-
   /* Modifying just one hardware register of a multi-reg value or just a
      byte field of a register does not mean the value from before this insn
      is now dead.  Of course, if it was dead after it's unused now.  */
 
   switch (GET_CODE (reg))
     {
+    case PARALLEL:
+      /* Some targets place small structures in registers for return values of
+	 functions.  We have to detect this case specially here to get correct
+	 flow information.  Note that each element might be either a REG
+	 or an EXPR_LIST whose first operand is a REG.  */
+      if (GET_MODE (reg) != BLKmode)
+	abort ();
+
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	{
+	  rtx elmt = XVECEXP (reg, 0, i);
+
+	  mark_set_1 (pbi, code,
+		      GET_CODE (elmt) == EXPR_LIST ? XEXP (elmt, 0) : elmt,
+		      cond, insn, flags);
+	}
+      return;
+
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
     case STRICT_LOW_PART:
@@ -5964,8 +5971,8 @@ mark_used_regs (pbi, x, cond, insn)
 	    testreg = XEXP (testreg, 0);
 	  }
 
-	/* If this is a store into a register, recursively scan the
-	   value being stored.  */
+	/* If this is a store into a register or group of registers,
+	   recursively scan the value being stored.  */
 
 	if ((GET_CODE (testreg) == PARALLEL
 	     && GET_MODE (testreg) == BLKmode)

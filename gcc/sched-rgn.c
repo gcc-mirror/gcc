@@ -1396,13 +1396,21 @@ check_live_1 (src, x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
-  if (GET_CODE (reg) == PARALLEL
-      && GET_MODE (reg) == BLKmode)
+  if (GET_CODE (reg) == PARALLEL && GET_MODE (reg) == BLKmode)
     {
       register int i;
+
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	if (check_live_1 (src, XVECEXP (reg, 0, i)))
-	  return 1;
+	{
+	  rtx dest = XVECEXP (reg, 0, i);
+
+	  if (GET_CODE (dest) == EXPR_LIST)
+	    dest = XEXP (dest, 0);
+
+	  if (check_live_1 (src, dest))
+	    return 1;
+	}
+
       return 0;
     }
 
@@ -1474,12 +1482,20 @@ update_live_1 (src, x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
-  if (GET_CODE (reg) == PARALLEL
-      && GET_MODE (reg) == BLKmode)
+  if (GET_CODE (reg) == PARALLEL && GET_MODE (reg) == BLKmode)
     {
       register int i;
+
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	update_live_1 (src, XVECEXP (reg, 0, i));
+	{
+	  rtx dest = XVECEXP (reg, 0, i);
+
+	  if (GET_CODE (dest) == EXPR_LIST)
+	    dest = XEXP (dest, 0);
+
+	  update_live_1 (src, dest);
+	}
+
       return;
     }
 
@@ -1915,15 +1931,17 @@ haifa_classify_insn (insn)
 	      if (tmp_class == TRAP_RISKY)
 		break;
 	      /* Test if it is a load.  */
-	      tmp_class =
-		WORST_CLASS (tmp_class,
-			     may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)), 0));
+	      tmp_class
+		= WORST_CLASS (tmp_class,
+			       may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)),
+					     0));
 	      break;
 	    case COND_EXEC:
 	    case TRAP_IF:
 	      tmp_class = TRAP_RISKY;
 	      break;
-	    default:;
+	    default:
+	      ;
 	    }
 	  insn_class = WORST_CLASS (insn_class, tmp_class);
 	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)

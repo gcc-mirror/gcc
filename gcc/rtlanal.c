@@ -1182,20 +1182,21 @@ reg_overlap_mentioned_p (x, in)
 
     case PARALLEL:
       {
-	int i, n;
-
-	/* Check for a NULL entry, used to indicate that the parameter goes
-	   both on the stack and in registers.  */
-	if (XEXP (XVECEXP (x, 0, 0), 0))
-	  i = 0;
-	else
-	  i = 1;
+	int i;
 
 	/* If any register in here refers to it we return true.  */
-	for (n = XVECLEN (x, 0); i < n; ++i)
-	  if (reg_overlap_mentioned_p (XEXP (XVECEXP (x, 0, i), 0), in))
-	    return 1;
-	return 0;
+	for (i = XVECLEN (x, 0); i >= 0; i--)
+	  {
+	    rtx reg = XVECEXP (x, 0, i);
+
+	    if (GET_CODE (reg) == EXPR_LIST)
+	      reg = XEXP (reg, 0);
+
+	    if (reg_overlap_mentioned_p (reg, in))
+	      return 1;
+	    return 0;
+	  
+	  }
       }
 
     default:
@@ -1270,11 +1271,15 @@ note_stores (x, fun, data)
      void (*fun) PARAMS ((rtx, rtx, void *));
      void *data;
 {
+  int i;
+
   if (GET_CODE (x) == COND_EXEC)
     x = COND_EXEC_CODE (x);
+
   if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
     {
       register rtx dest = SET_DEST (x);
+
       while ((GET_CODE (dest) == SUBREG
 	      && (GET_CODE (SUBREG_REG (dest)) != REG
 		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER))
@@ -1283,48 +1288,27 @@ note_stores (x, fun, data)
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
 
-      if (GET_CODE (dest) == PARALLEL
-	  && GET_MODE (dest) == BLKmode)
-	{
-	  register int i;
-	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), x, data);
-	}
+      /* If we have a PARALLEL, SET_DEST is a list of registers or
+	 EXPR_LIST expressions, each of whose first operand is a register.
+	 We can't know what precisely is being set in these cases, so
+	 make up a CLOBBER to pass to the function.  */
+      if (GET_CODE (dest) == PARALLEL && GET_MODE (dest) == BLKmode)
+	for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	  {
+	    rtx reg = XVECEXP (dest, 0, i);
+
+	    if (GET_CODE (reg) == EXPR_LIST)
+	      reg = XEXP (reg, 0);
+
+	    (*fun) (reg, gen_rtx_CLOBBER (VOIDmode, reg), data);
+	  }
       else
 	(*fun) (dest, x, data);
     }
-  else if (GET_CODE (x) == PARALLEL)
-    {
-      register int i;
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	{
-	  register rtx y = XVECEXP (x, 0, i);
-	  if (GET_CODE (y) == COND_EXEC)
-	    y = COND_EXEC_CODE (y);
-	  if (GET_CODE (y) == SET || GET_CODE (y) == CLOBBER)
-	    {
-	      register rtx dest = SET_DEST (y);
-	      while ((GET_CODE (dest) == SUBREG
-		      && (GET_CODE (SUBREG_REG (dest)) != REG
-			  || (REGNO (SUBREG_REG (dest))
-			      >= FIRST_PSEUDO_REGISTER)))
-		     || GET_CODE (dest) == ZERO_EXTRACT
-		     || GET_CODE (dest) == SIGN_EXTRACT
-		     || GET_CODE (dest) == STRICT_LOW_PART)
-		dest = XEXP (dest, 0);
-	      if (GET_CODE (dest) == PARALLEL
-		  && GET_MODE (dest) == BLKmode)
-		{
-		  register int i;
 
-		  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-		    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), y, data);
-		}
-	      else
-		(*fun) (dest, y, data);
-	    }
-	}
-    }
+  else if (GET_CODE (x) == PARALLEL)
+    for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+      note_stores (XVECEXP (x, 0, i), fun, data);
 }
 
 /* Return nonzero if X's old contents don't survive after INSN.
