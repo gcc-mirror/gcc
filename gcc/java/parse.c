@@ -9996,7 +9996,8 @@ java_complete_expand_methods (class_decl)
   for (decl = first_decl; decl; decl = TREE_CHAIN (decl))
     {
       /* Skip abstract or native methods */
-      if (METHOD_ABSTRACT (decl) || METHOD_NATIVE (decl))
+      if (METHOD_ABSTRACT (decl) || METHOD_NATIVE (decl)
+	  || DECL_CONSTRUCTOR_P (decl) || DECL_CLINIT_P (decl))
 	continue;
       java_complete_expand_method (decl);
     }
