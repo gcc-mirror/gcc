@@ -1,3 +1,10 @@
+2001-03-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+            based on an idea from Joe Buck <jbuck@synopsys.com>
+
+	* parse.y (bad_decl, template_arg_list_ignore, arg_list_ignore):
+	New nonterminals.
+	(data_def, component_decl): Add reductions to bad_decl.
+
 2001-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (mangle_decl_string): Mangle the names of overloaded
