@@ -65,34 +65,6 @@ static bool xstormy16_return_in_memory (tree, tree);
 struct rtx_def * xstormy16_compare_op0;
 struct rtx_def * xstormy16_compare_op1;
 
-/* Return 1 if this is a LT, GE, LTU, or GEU operator.  */
-
-int
-xstormy16_ineqsi_operator (register rtx op, enum machine_mode mode)
-{
-  enum rtx_code code = GET_CODE (op);
-  
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && (code == LT || code == GE || code == LTU || code == GEU));
-}
-
-/* Return 1 if this is an EQ or NE operator.  */
-
-int
-equality_operator (register rtx op, enum machine_mode mode)
-{
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && (GET_CODE (op) == EQ || GET_CODE (op) == NE));
-}
-
-/* Return 1 if this is a comparison operator but not an EQ or NE operator.  */
-
-int
-inequality_operator (register rtx op, enum machine_mode mode)
-{
-  return comparison_operator (op, mode) && ! equality_operator (op, mode);
-}
-
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -576,28 +548,6 @@ xstormy16_below100_symbol (rtx x,
   return 0;
 }
 
-/* Predicate for MEMs that can use special 8-bit addressing.  */
-int
-xstormy16_below100_operand (rtx x, enum machine_mode mode)
-{
-  if (GET_MODE (x) != mode)
-    return 0;
-  if (GET_CODE (x) == MEM)
-    x = XEXP (x, 0);
-  else if (GET_CODE (x) == SUBREG
-	   && GET_CODE (XEXP (x, 0)) == MEM
-	   && !MEM_VOLATILE_P (XEXP (x, 0)))
-    x = XEXP (XEXP (x, 0), 0);
-  else
-    return 0;
-  if (GET_CODE (x) == CONST_INT)
-    {
-      HOST_WIDE_INT i = INTVAL (x);
-      return (i >= 0x7f00 && i < 0x7fff);
-    }
-  return xstormy16_below100_symbol (x, HImode);
-}
-
 /* Likewise, but only for non-volatile MEMs, for patterns where the
    MEM will get split into smaller sized accesses.  */
 int
@@ -606,52 +556,6 @@ xstormy16_splittable_below100_operand (rtx x, enum machine_mode mode)
   if (GET_CODE (x) == MEM && MEM_VOLATILE_P (x))
     return 0;
   return xstormy16_below100_operand (x, mode);
-}
-
-int
-xstormy16_below100_or_register (rtx x, enum machine_mode mode)
-{
-  return (xstormy16_below100_operand (x, mode)
-	  || register_operand (x, mode));
-}
-
-int
-xstormy16_splittable_below100_or_register (rtx x, enum machine_mode mode)
-{
-  if (GET_CODE (x) == MEM && MEM_VOLATILE_P (x))
-    return 0;
-  return (xstormy16_below100_operand (x, mode)
-	  || register_operand (x, mode));
-}
-
-/* Predicate for constants with exactly one bit set.  */
-int
-xstormy16_onebit_set_operand (rtx x, enum machine_mode mode)
-{
-  HOST_WIDE_INT i;
-  if (GET_CODE (x) != CONST_INT)
-    return 0;
-  i = INTVAL (x);
-  if (mode == QImode)
-    i &= 0xff;
-  if (mode == HImode)
-    i &= 0xffff;
-  return exact_log2 (i) != -1;
-}
-
-/* Predicate for constants with exactly one bit not set.  */
-int
-xstormy16_onebit_clr_operand (rtx x, enum machine_mode mode)
-{
-  HOST_WIDE_INT i;
-  if (GET_CODE (x) != CONST_INT)
-    return 0;
-  i = ~ INTVAL (x);
-  if (mode == QImode)
-    i &= 0xff;
-  if (mode == HImode)
-    i &= 0xffff;
-  return exact_log2 (i) != -1;
 }
 
 /* Expand an 8-bit IOR.  This either detects the one case we can
@@ -873,15 +777,6 @@ short_memory_operand (rtx x, enum machine_mode mode)
   if (! memory_operand (x, mode))
     return 0;
   return (GET_CODE (XEXP (x, 0)) != PLUS);
-}
-
-int
-nonimmediate_nonstack_operand (rtx op, enum machine_mode mode)
-{
-  /* 'Q' is for pushes, 'R' for pops.  */
-  return (nonimmediate_operand (op, mode) 
-	  && ! xstormy16_extra_constraint_p (op, 'Q')
-	  && ! xstormy16_extra_constraint_p (op, 'R'));
 }
 
 /* Splitter for the 'move' patterns, for modes not directly implemented
@@ -2236,18 +2131,6 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
      something that does nothing and can be optimized away.  */
   if (firstloop)
     emit (gen_nop ());
-}
-
-/* Return 1 if OP is a shift operator.  */
-
-int
-shift_operator (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (op);
-
-  return (code == ASHIFT
-	  || code == ASHIFTRT
-	  || code == LSHIFTRT);
 }
 
 /* The shift operations are split at output time for constant values;

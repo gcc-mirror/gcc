@@ -1,5 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004
+;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
@@ -91,6 +91,7 @@
 (define_asm_attributes [(set_attr "length" "4")
 			(set_attr "psw_operand" "clobber")])
 
+(include "predicates.md")
 
 ;; ::::::::::::::::::::
 ;; ::
