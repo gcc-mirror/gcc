@@ -662,10 +662,10 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 $(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
 
-config.in: stamp-h.in
-stamp-h.in: configure.in acconfig.h
+$(srcdir)/config.in: $(srcdir)/stamp-h.in
+$(srcdir)/stamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
-	touch stamp-h.in
+	touch $(srcdir)/stamp-h.in
 config.h: stamp-h ; @true
 stamp-h: config.in config.status
 	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
