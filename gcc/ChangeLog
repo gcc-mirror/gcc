@@ -1,3 +1,8 @@
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (modified_type_die): Don't assign the qualified die
+	to the unqualified type.
+
 Sun Jun 16 22:16:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (x86_field_alignment): Declare.

@@ -7603,11 +7603,11 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	}
 
       /* We want to equate the qualified type to the die below.  */
-      if (qualified_type)
-	type = qualified_type;
+      type = qualified_type;
     }
 
-  equate_type_number_to_die (type, mod_type_die);
+  if (type)
+    equate_type_number_to_die (type, mod_type_die);
   if (item_type)
     /* We must do this after the equate_type_number_to_die call, in case
        this is a recursive type.  This ensures that the modified_type_die
