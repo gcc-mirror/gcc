@@ -95,16 +95,19 @@ find_base_value (src)
       return src;
 
     case REG:
-      /* If this REG is related to a known base value, return it.  */
-      if (reg_base_value[REGNO (src)])
-	return reg_base_value[REGNO (src)];
-
       /* At the start of a function argument registers have known base
 	 values which may be lost later.  Returning an ADDRESS
 	 expression here allows optimization based on argument values
 	 even when the argument registers are used for other purposes.  */
       if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
 	return new_reg_base_value[REGNO (src)];
+
+      /* If this REG is related to a known base value, return it.
+	 This must happen after the arg register check above to avoid
+	 circular set chains.  */
+      if (reg_base_value[REGNO (src)])
+	return reg_base_value[REGNO (src)];
+
       return src;
 
     case MEM:
