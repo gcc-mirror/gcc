@@ -1,3 +1,7 @@
+2000-05-24  Lars Brinkhoff  <lars@nocrew.org>
+
+	* pdp11.h (STACK_BOUNDARY): Define.
+
 2000-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* ifcvt.c (if_convert): Update life info globally.
