@@ -533,7 +533,7 @@ cast_expr:
 		  else
 		    name = "";
 		  $$ = result;
-		  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_SIZE (type) == 0)
+		  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
 		    {
 		      int failure = complete_array_type (type, $$, 1);
 		      if (failure)
