@@ -1270,6 +1270,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	  LANGUAGES="c c++" all
 
 .PHONY: check-gcc
+maybe-check-gcc:
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
 	  r=`${PWD}`; export r; \
