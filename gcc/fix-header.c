@@ -662,7 +662,7 @@ read_scan_file (in_fname, argc, argv)
       /* Scan the macro expansion of "getchar();".  */
       for (;;)
 	{
-	  enum cpp_token token = cpp_get_token (&scan_in);
+	  enum cpp_ttype token = cpp_get_token (&scan_in);
 	  int length = CPP_WRITTEN (&scan_in) - old_written;
 	  CPP_SET_WRITTEN (&scan_in, old_written);
 	  if (token == CPP_EOF) /* Should not happen ...  */

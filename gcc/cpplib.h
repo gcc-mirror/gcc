@@ -32,7 +32,7 @@ typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
 
-enum cpp_token
+enum cpp_ttype
 {
   CPP_EOF = -1,
   CPP_OTHER = 0,
@@ -83,7 +83,6 @@ struct cpp_buffer
      to record control macros. */
   struct ihash *ihash;
 
-  long lineno; /* Line number at CPP_LINE_BASE. */
   parse_cleanup_t cleanup;
 
   /* If the buffer is the expansion of a macro, this points to the
@@ -93,6 +92,9 @@ struct cpp_buffer
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
   struct if_stack *if_stack;
+
+  /* Line number at line_base (above). */
+  unsigned int lineno;
 
   /* True if this is a header file included using <FILENAME>.  */
   char system_header_p;
@@ -322,16 +324,16 @@ struct cpp_reader
   unsigned char *limit;
 
   /* Error counter for exit code */
-  int errors;
+  unsigned int errors;
 
   /* Line where a newline was first seen in a string constant.  */
-  int multiline_string_line;
+  unsigned int multiline_string_line;
 
   /* Current depth in #include directives that use <...>.  */
-  int system_include_depth;
+  unsigned int system_include_depth;
 
   /* Current depth of buffer stack. */
-  int buffer_stack_depth;
+  unsigned int buffer_stack_depth;
 
   /* Hash table of macros and assertions.  See cpphash.c */
   struct htab *hashtab;
@@ -350,7 +352,7 @@ struct cpp_reader
   struct if_stack *if_stack;
   const unsigned char *potential_control_macro;
 
-  long lineno;
+  unsigned int lineno;
 
   /* Buffer of -M output.  */
   struct deps *deps;
@@ -414,20 +416,21 @@ struct cpp_reader
 
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
+#define CPP_BUF_LINE(BUF) ((BUF)->lineno)
+#define CPP_BUF_COL(BUF) ((BUF)->cur - (BUF)->line_base)
 
 /* Name under which this program was invoked.  */
 extern const char *progname;
 
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
-extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
+extern enum cpp_ttype cpp_get_token PARAMS ((cpp_reader *));
+extern enum cpp_ttype cpp_get_non_space_token PARAMS ((cpp_reader *));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
-extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));

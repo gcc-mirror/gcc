@@ -157,7 +157,7 @@ _cpp_handle_directive (pfile)
   unsigned int len;
   U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
-  enum cpp_token tok;
+  enum cpp_ttype tok;
 
   if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
     {
@@ -347,7 +347,7 @@ do_define (pfile)
   int len;
   int funlike = 0, empty = 0;
   U_CHAR *sym;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
   pfile->no_macro_expand++;
   pfile->parsing_define_directive++;
@@ -467,7 +467,7 @@ _cpp_output_line_command (pfile, file_change)
      cpp_reader *pfile;
      enum file_change_code file_change;
 {
-  long line;
+  unsigned int line;
   cpp_buffer *ip;
 
   if (CPP_OPTION (pfile, no_line_commands)
@@ -475,7 +475,7 @@ _cpp_output_line_command (pfile, file_change)
     return;
 
   ip = cpp_file_buffer (pfile);
-  cpp_buf_line_and_col (ip, &line, NULL);
+  line = ip->lineno;
 
   /* If the current file has not changed, we omit the #line if it would
      appear to be a no-op, and we output a few newlines instead
@@ -505,7 +505,7 @@ _cpp_output_line_command (pfile, file_change)
   CPP_RESERVE (pfile, 4 * strlen (ip->nominal_fname) + 50);
   CPP_PUTS_Q (pfile, "# ", 2);
 
-  sprintf ((char *) CPP_PWRITTEN (pfile), "%ld ", line);
+  sprintf ((char *) CPP_PWRITTEN (pfile), "%u ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   _cpp_quote_string (pfile, ip->nominal_fname); 
@@ -540,7 +540,7 @@ parse_include (pfile, name)
      const char *name;
 {
   long old_written = CPP_WRITTEN (pfile);
-  enum cpp_token token;
+  enum cpp_ttype token;
   int len;
 
   pfile->parsing_include_directive++;
@@ -687,7 +687,7 @@ read_line_number (pfile, num)
 {
   long save_written = CPP_WRITTEN (pfile);
   U_CHAR *p;
-  enum cpp_token token = _cpp_get_directive_token (pfile);
+  enum cpp_ttype token = _cpp_get_directive_token (pfile);
   CPP_SET_WRITTEN (pfile, save_written);
   p = pfile->token_buffer + save_written;
 
@@ -716,7 +716,7 @@ do_line (pfile)
   int new_lineno;
   long old_written = CPP_WRITTEN (pfile);
   enum file_change_code file_change = same_file;
-  enum cpp_token token;
+  enum cpp_ttype token;
   char *x;
 
   token = _cpp_get_directive_token (pfile);
@@ -834,7 +834,7 @@ do_undef (pfile)
   HASHNODE **slot;
   U_CHAR *name;
   long here = CPP_WRITTEN (pfile);
-  enum cpp_token token;
+  enum cpp_ttype token;
 
   pfile->no_macro_expand++;
   token = _cpp_get_directive_token (pfile);
@@ -971,7 +971,7 @@ do_pragma (pfile)
   long here, key;
   U_CHAR *buf;
   int pop;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
   here = CPP_WRITTEN (pfile);
   CPP_PUTS (pfile, "#pragma ", 8);
@@ -1052,7 +1052,7 @@ do_pragma_implementation (pfile)
 {
   /* Be quiet about `#pragma implementation' for a file only if it hasn't
      been included yet.  */
-  enum cpp_token token;
+  enum cpp_ttype token;
   long written = CPP_WRITTEN (pfile);
   U_CHAR *name;
   U_CHAR *copy;
@@ -1091,7 +1091,7 @@ do_pragma_poison (pfile)
   HASHNODE **slot;
   long written;
   size_t len;
-  enum cpp_token token;
+  enum cpp_ttype token;
   int writeit;
   unsigned long hash;
 
@@ -1168,7 +1168,7 @@ detect_if_not_defined (pfile)
   if (pfile->only_seen_white == 2)
     {
       U_CHAR *ident;
-      enum cpp_token token;
+      enum cpp_ttype token;
       int base_offset;
       int token_offset;
       int need_rparen = 0;
@@ -1288,7 +1288,7 @@ parse_ifdef (pfile, name)
 {
   U_CHAR *ident;
   unsigned int len;
-  enum cpp_token token;
+  enum cpp_ttype token;
   long old_written = CPP_WRITTEN (pfile);
   int defined;
 
@@ -1496,7 +1496,7 @@ static int
 skip_if_group (pfile)
     cpp_reader *pfile;
 {
-  enum cpp_token token;
+  enum cpp_ttype token;
   IF_STACK *save_if_stack = pfile->if_stack; /* don't pop past here */
   long old_written;
   int ret = 0;

@@ -30,9 +30,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "intl.h"
 
 static void print_containing_files	PARAMS ((cpp_reader *, cpp_buffer *));
-static void print_file_and_line		PARAMS ((const char *, long, long));
+static void print_file_and_line		PARAMS ((const char *, unsigned int,
+						 unsigned int));
 static void v_message			PARAMS ((cpp_reader *, int,
-						 const char *, long, long,
+						 const char *,
+						 unsigned int, unsigned int,
 						 const char *, va_list));
 
 /* Print the file names and line numbers of the #include
@@ -53,13 +55,11 @@ print_containing_files (pfile, ip)
   /* Find the other, outer source files.  */
   for (ip = CPP_PREV_BUFFER (ip); ip != NULL; ip = CPP_PREV_BUFFER (ip))
     {
-      long line;
-      cpp_buf_line_and_col (ip, &line, NULL);
       if (first)
 	{
 	  first = 0;
-	  fprintf (stderr,  _("In file included from %s:%ld"),
-		   ip->nominal_fname, line);
+	  fprintf (stderr,  _("In file included from %s:%u"),
+		   ip->nominal_fname, CPP_BUF_LINE (ip));
 	}
       else
 	/* Translators note: this message is used in conjunction
@@ -73,8 +73,8 @@ print_containing_files (pfile, ip)
 
 	   The trailing comma is at the beginning of this message,
 	   and the trailing colon is not translated.  */
-	fprintf (stderr, _(",\n                 from %s:%ld"),
-		 ip->nominal_fname, line);
+	fprintf (stderr, _(",\n                 from %s:%u"),
+		 ip->nominal_fname, CPP_BUF_LINE (ip));
     }
   if (first == 0)
     fputs (":\n", stderr);
@@ -86,16 +86,16 @@ print_containing_files (pfile, ip)
 static void
 print_file_and_line (filename, line, column)
      const char *filename;
-     long line, column;
+     unsigned int line, column;
 {
   if (filename == 0 || *filename == '\0')
     filename = "<stdin>";
-  if (line <= 0)
+  if (line == 0)
     fputs (_("<command line>: "), stderr);
   else if (column > 0)
-    fprintf (stderr, "%s:%ld:%ld: ", filename, line, column);
+    fprintf (stderr, "%s:%u:%u: ", filename, line, column);
   else
-    fprintf (stderr, "%s:%ld: ", filename, line);
+    fprintf (stderr, "%s:%u: ", filename, line);
 }
 
 /* IS_ERROR is 3 for ICE, 2 for merely "fatal" error,
@@ -106,8 +106,8 @@ v_message (pfile, is_error, file, line, col, msg, ap)
      cpp_reader *pfile;
      int is_error;
      const char *file;
-     long line;
-     long col;
+     unsigned int line;
+     unsigned int col;
      const char *msg;
      va_list ap;
 {
@@ -117,9 +117,11 @@ v_message (pfile, is_error, file, line, col, msg, ap)
     {
       if (file == NULL)
 	file = ip->nominal_fname;
-      if (line == -1)
-	cpp_buf_line_and_col (ip, &line, &col);
-
+      if (line == 0)
+	{
+	  line = CPP_BUF_LINE (ip);
+	  col = CPP_BUF_COL (ip);
+	}
       print_containing_files (pfile, ip);
       print_file_and_line (file, line,
 			   CPP_OPTION (pfile, show_column) ? col : 0);
@@ -172,7 +174,7 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_message (pfile, 3, NULL, -1, -1, msgid, ap);
+  v_message (pfile, 3, NULL, 0, 0, msgid, ap);
   va_end(ap);
 }
 
@@ -198,7 +200,7 @@ cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_message (pfile, 2, NULL, -1, -1, msgid, ap);
+  v_message (pfile, 2, NULL, 0, 0, msgid, ap);
   va_end(ap);
 }
 
@@ -221,7 +223,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   if (CPP_OPTION (pfile, inhibit_errors))
     return;
 
-  v_message (pfile, 1, NULL, -1, -1, msgid, ap);
+  v_message (pfile, 1, NULL, 0, 0, msgid, ap);
   va_end(ap);
 }
 
@@ -281,7 +283,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   if (CPP_OPTION (pfile, inhibit_warnings))
     return;
 
-  v_message (pfile, 0, NULL, -1, -1, msgid, ap);
+  v_message (pfile, 0, NULL, 0, 0, msgid, ap);
   va_end(ap);
 }
 
@@ -335,7 +337,7 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
     return;
 
   v_message (pfile, CPP_OPTION (pfile, pedantic_errors),
-		 NULL, -1, -1, msgid, ap);
+		 NULL, 0, 0, msgid, ap);
   va_end(ap);
 }
 

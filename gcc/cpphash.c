@@ -41,7 +41,7 @@ static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
 static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
-static enum cpp_token macarg	 PARAMS ((cpp_reader *, int));
+static enum cpp_ttype macarg	 PARAMS ((cpp_reader *, int));
 static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
@@ -287,7 +287,7 @@ collect_expansion (pfile, arglist)
 {
   DEFINITION *defn;
   struct reflist *pat = 0, *endpat = 0;
-  enum cpp_token token;
+  enum cpp_ttype token;
   long start, here, last;
   int i;
   int argc;
@@ -569,7 +569,7 @@ collect_formal_parameters (pfile)
   int len;
   int argc = 0;
   int i;
-  enum cpp_token token;
+  enum cpp_ttype token;
   long old_written;
 
   old_written = CPP_WRITTEN (pfile);
@@ -718,11 +718,12 @@ _cpp_create_definition (pfile, funlike)
      int funlike;
 {
   struct arglist *args = 0;
-  long line, col;
+  unsigned int line, col;
   const char *file;
   DEFINITION *defn;
 
-  cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
+  line = CPP_BUF_LINE (CPP_BUFFER (pfile));
+  col = CPP_BUF_COL (CPP_BUFFER (pfile));
   file = CPP_BUFFER (pfile)->nominal_fname;
 
   if (funlike)
@@ -748,13 +749,13 @@ _cpp_create_definition (pfile, funlike)
  * Return nonzero to indicate a syntax error.
  */
 
-static enum cpp_token
+static enum cpp_ttype
 macarg (pfile, rest_args)
      cpp_reader *pfile;
      int rest_args;
 {
   int paren = 0;
-  enum cpp_token token;
+  enum cpp_ttype token;
 
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
@@ -908,15 +909,11 @@ special_symbol (hp, pfile)
       return;
 
     case T_SPECLINE:
-      {
-	long line;
-	cpp_buf_line_and_col (cpp_file_buffer (pfile), &line, NULL);
-
-	CPP_RESERVE (pfile, 10);
-	sprintf (CPP_PWRITTEN (pfile), "%ld", line);
-	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
-	return;
-      }
+      ip = cpp_file_buffer (pfile);
+      CPP_RESERVE (pfile, 10);
+      sprintf (CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (pfile));
+      CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+      return;
 
     case T_DATE:
     case T_TIME:
@@ -977,14 +974,17 @@ _cpp_macroexpand (pfile, hp)
   int nargs;
   DEFINITION *defn;
   register U_CHAR *xbuf;
-  long start_line, start_column;
+  unsigned int start_line, start_column;
+  cpp_buffer *ip;
   int xbuf_len;
   struct argdata *args = 0;
   long old_written = CPP_WRITTEN (pfile);
   int rest_args, rest_zero = 0;
   register int i;
 
-  cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
+  ip = cpp_file_buffer (pfile);
+  start_line = CPP_BUF_LINE (ip);
+  start_column = CPP_BUF_COL (ip);
 
   /* Check for and handle special symbols. */
   if (hp->type != T_MACRO)
@@ -1005,7 +1005,7 @@ _cpp_macroexpand (pfile, hp)
 
   if (nargs >= 0)
     {
-      enum cpp_token token;
+      enum cpp_ttype token;
 
       args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
 

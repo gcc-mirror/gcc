@@ -1,3 +1,17 @@
+2000-04-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c, cpphash.c, cpphash.h, cpplex.c, cpplib.c,
+	cpplib.h, cppmain.c, fix-header.c, scan-decls.c: Replace
+	cpp_token with cpp_ttype everywhere.
+	* cpperror.c, cpphash.c, cpplex.c, cpplib.c, scan-decls.c:
+	Replace cpp_buf_line_and_col with CPP_BUF_LINE and/or
+	CPP_BUF_COL.  Line and column numbers are unsigned int, not
+	long.
+	* cpplex.c (cpp_buf_line_and_col): Delete.
+	* cpplib.h (struct cpp_buffer, struct cpp_reader): Change
+	'long lineno' to 'unsigned int lineno'.
+	(CPP_BUF_LINE, CPP_BUF_COL): New macros.
+
 2000-04-11  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* extend.texi: ISO C99 is not a draft anymore.

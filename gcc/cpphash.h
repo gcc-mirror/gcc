@@ -302,14 +302,14 @@ extern void _cpp_parse_name		PARAMS ((cpp_reader *, int));
 extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
 extern void _cpp_skip_hspace		PARAMS ((cpp_reader *));
 extern int _cpp_parse_assertion		PARAMS ((cpp_reader *));
-extern enum cpp_token _cpp_lex_token	PARAMS ((cpp_reader *));
+extern enum cpp_ttype _cpp_lex_token	PARAMS ((cpp_reader *));
 extern long _cpp_read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
 						 int, size_t));
 extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
 extern void _cpp_grow_token_buffer	PARAMS ((cpp_reader *, long));
-extern enum cpp_token _cpp_get_directive_token
+extern enum cpp_ttype _cpp_get_directive_token
 					PARAMS ((cpp_reader *));
-extern enum cpp_token _cpp_get_define_token
+extern enum cpp_ttype _cpp_get_define_token
 					PARAMS ((cpp_reader *));
 
 /* In cpplib.c */
