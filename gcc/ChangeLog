@@ -1,5 +1,13 @@
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.md (addqi3_noclobber): Move up pecking order.
+	(floatunsqihf2): Remove operand 6.
+	(fixhfqi_set, fix_trunchfqi2, fixuns_trunchfqi2): Group with other
+	fix patterns.
+	(ldi_conditional, ldf_conditional): Validate operands.
+
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.h (BCT_CHECK_LOOP_ITERATIONS): Remove.
 	(HAVE_GAS_HIDDEN): Undefine as interim measure.
 	
