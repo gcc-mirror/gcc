@@ -2,6 +2,7 @@
 
 	* parse.y (build_assertion):  Re-do 02-25 change following Jeff Sturm
 	suggestion:  Use build_incomplete_class_ref.
+	This fixes PR java/13508, java/11714.
 
 2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
 
