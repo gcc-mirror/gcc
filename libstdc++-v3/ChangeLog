@@ -1,3 +1,17 @@
+2000-10-05  Brent Verner  <brent@rcfile.org>
+
+        * bits/istream.tcc [basic_istream::get(basic_streambuf&)]: Removed
+	test for _M_gcount < in_avail(), as in_avail() only reports info
+	for current buffer, causing method to return at end of buffer.
+	* testsuite/27_io/istream_unformatted.cc [test07()]: New test.
+	* testsuite/27_io/istream_unformatted-3.txt: New file.
+	* testsuite/27_io/istream_unformatted-3.tst: New file.
+
+2000-10-05  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+
+	* README (file): Adjust directory structures.
+	* mkcheck.in (INC_PATH): Adjust for header changes.
+
 2000-10-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE):  Tweaks to message texts

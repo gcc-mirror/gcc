@@ -1,4 +1,4 @@
-file: isolib/README
+file: libstdc++-v3/README
 
 New users may wish to point their web browsers to the file index.html
 in the 'docs' subdirectory.  It contains brief building instructions
@@ -13,12 +13,16 @@ subset of] an ISO Standard C++ Library.
 
 It has subdirectories:
 
-  bits
+  docs
+     Files in HTML and text format that document usage, quirks of the
+     implementation, and contributor checklists.
+
+  include/bits
      Files included by standard headers and by other files in
      the bits directory.  Includes a set of files bits/std_xxxx.h
      that implement the standard headers <xxxx>.
 
-  std
+  include/std
      Files meant to be found by #include <name> directives in
      standard-conforming user programs.  These headers are not
      referred to by other headers, because such dependencies
@@ -26,11 +30,11 @@ It has subdirectories:
      Installations may substitute symbolic links in place of
      these files.
 
-  ext
+  include/ext
      Headers that define extensions to the standard library.  No
      standard header refers to any of them.
 
-  backward
+  include/backward
      Headers provided for backward compatibility, such as <iostream.h>.
      They are not used in this library.
 
@@ -51,8 +55,8 @@ It has subdirectories:
      Headers intended to shadow standard C headers provided by an
      underlying OS or C library, and other headers depended on directly
      by C++ headers (e.g. unistd.h).  These are meant to wrap the names
-     defined there into the _CSwamp namespace.
-     [NB: this is still experimental, and is not currently used.]
+     defined there into the _C_legacy namespace.
+     [NB: this can be enabled via --enable-cshadow-headers.]
 
   cshadow
      The contents of this directory are constructed by scripts which 
@@ -64,7 +68,9 @@ Other subdirectories contain variant versions of certain files
 that are meant to be copied or linked by the configure script.
 Currently these are:
 
-  amm1 generic glibc math
+  math
+  config/cpu
+  config/os
 
 Files needed only to construct the library, but not installed,
 are in src/.  Files to be copied as part of an installation are
@@ -76,7 +82,7 @@ under the std/ directory, and arranged to be searched only
 when an include directive specifies a filename of "bits/..."
 or <bits/...>.  When building the library, we use
 
-  -Istd -I. -Iconfig/* -Iconfig/cpu/*
+  -I. -Iinclude/std -Iinclude -Iconfig/os/* -Iconfig/cpu/*
 
 to get the same effect.
 
@@ -90,5 +96,4 @@ any other make.
 In files throughout the system, lines marked with an "XXX" indicate
 a bug or incompletely-implemented feature.  Lines marked "XXX MT"
 indicate a place that may require attention for multi-thread safety.
-(Warning: places that need an atomic read are not so marked yet.)
 
