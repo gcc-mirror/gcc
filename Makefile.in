@@ -186,14 +186,19 @@ SET_LIB_PATH =
 # the libraries.  This may be changed by configure.in.
 RPATH_ENVVAR = LD_LIBRARY_PATH
 
+# This is the list of directories that may be needed in RPATH_ENVVAR
+# so that programs built for the host machine work.
+HOST_LIB_PATH = $$r/bfd:$$r/opcodes
+
+# This is the list of directories that may be needed in RPATH_ENVVAR
+# so that prorgams built for the target machine work.
+TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:$$r/$(TARGET_SUBDIR)/libstdc++
+
 # configure.in sets SET_LIB_PATH to this if --enable-shared was used.
+# Some platforms don't like blank entries, so we remove duplicate,
+# leading and trailing colons.
 REALLY_SET_LIB_PATH = \
-  if [ x"$$$(RPATH_ENVVAR)" != x ]; then \
-    $(RPATH_ENVVAR)=$$r/bfd:$$r/opcodes:$$$(RPATH_ENVVAR); \
-  else \
-    $(RPATH_ENVVAR)=$$r/bfd:$$r/opcodes; \
-  fi; \
-  export $(RPATH_ENVVAR);
+  $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 ALL = all.normal
 INSTALL_TARGET = installdirs \
