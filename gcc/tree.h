@@ -1304,11 +1304,22 @@ struct tree_exp GTY(())
 #define SSA_NAME_OCCURS_IN_ABNORMAL_PHI(NODE) \
     SSA_NAME_CHECK (NODE)->common.asm_written_flag
 
+
 /* Nonzero if this SSA_NAME expression is currently on the free list of
    SSA_NAMES.  Using NOTHROW_FLAG seems reasonably safe since throwing
    has no meaning for an SSA_NAME.  */
 #define SSA_NAME_IN_FREE_LIST(NODE) \
     SSA_NAME_CHECK (NODE)->common.nothrow_flag
+
+#define SSA_NAME_EQUIV(NAME) __extension__ \
+  ({  tree equiv = SSA_NAME_CHECK (NAME)->ssa_name.equiv; \
+      if (equiv && TREE_CODE (equiv) == SSA_NAME) \
+	equiv = ssa_name (SSA_NAME_VERSION (equiv)); \
+      equiv; \
+   })
+
+#define SET_SSA_NAME_EQUIV(NAME, EQUIV)\
+   SSA_NAME_CHECK (NAME)->ssa_name.equiv = (EQUIV);
 
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
@@ -1332,6 +1343,8 @@ struct tree_ssa_name GTY(())
 
   /* _DECL wrapped by this SSA name.  */
   tree var;
+
+  tree equiv;
 
   /* SSA version number.  */
   unsigned int version;
