@@ -1,3 +1,18 @@
+2000-07-12  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.h: (TOKEN_SPELL) Pulled from cpplex.c.
+	* cpplex.c (TOKEN_SPELL) Move to cpphash.h.
+
+	* cpphash.c: (struct macro_info, alloc_macro, free_macro,
+	struct toklist_dummy): New.
+	(cpp_free_definition): Free macros with free_macro.
+	(count_params): Don't save paramter spellings.  Save macro
+	information in a struct macro_info.
+	(parse_define): Don't allocate a token list.
+	(save_expansion): Allocate the macro's token list, and
+	save parameter spellings if necessary.  Use TOKEN_SPELL.
+	(cpp_create_definition): Make list const.
+
 2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* c-typeck.c (pedwarn_c99): Move to

@@ -40,6 +40,14 @@ struct hashdummy
   unsigned short length;
 };
 
+/* Stores basic information about a macro, before it is allocated.  */
+struct macro_info
+{
+  unsigned int paramlen;
+  signed short paramc;
+  unsigned char flags;
+};
+
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
 #define HASHSIZE 500
 
@@ -51,15 +59,21 @@ static void dump_funlike_macro	PARAMS ((cpp_reader *, cpp_hashnode *));
 
 static const cpp_token *count_params PARAMS ((cpp_reader *,
 					      const cpp_token *,
-					      cpp_toklist *));
+					      struct macro_info *));
 static int is__va_args__ PARAMS ((cpp_reader *, const cpp_token *));
-static cpp_toklist *parse_define PARAMS((cpp_reader *));
+static const cpp_toklist * parse_define PARAMS((cpp_reader *));
 static int check_macro_redefinition PARAMS((cpp_reader *, cpp_hashnode *hp,
 					     const cpp_toklist *));
-static int save_expansion PARAMS((cpp_reader *, cpp_toklist *,
-				  const cpp_token *, const cpp_token *));
+static const cpp_toklist * save_expansion PARAMS((cpp_reader *,
+						  const cpp_token *,
+						  const cpp_token *,
+						  struct macro_info *));
 static unsigned int find_param PARAMS ((const cpp_token *,
 					const cpp_token *));
+static cpp_toklist * alloc_macro PARAMS ((cpp_reader *,
+					  struct macro_info *,
+					  unsigned int, unsigned int));
+static void free_macro PARAMS((const cpp_toklist *));
 
 /* Calculate hash of a string of length LEN.  */
 unsigned int
@@ -170,7 +184,7 @@ _cpp_free_definition (h)
      cpp_hashnode *h;
 {
   if (h->type == T_MACRO)
-    _cpp_free_toklist (h->value.expansion);
+    free_macro (h->value.expansion);
   h->value.expansion = NULL;
 }
 
@@ -212,20 +226,23 @@ is__va_args__ (pfile, token)
   return 1;
 }
 
-/* Counts the parameters to a function like macro, and saves their
-   spellings if necessary.  Returns the token that we stopped scanning
-   at; if it's type isn't CPP_CLOSE_PAREN there was an error, which
-   has been reported.  */
+/* Counts the parameters to a function-like macro, the length of their
+   null-terminated names, and whether the macro is a variable-argument
+   one.  FIRST is the token immediately after the open parenthesis,
+   INFO stores the data, and should have paramlen and flags zero.
+
+   Returns the token that we stopped scanning at; if it's type isn't
+   CPP_CLOSE_PAREN there was an error, which has been reported.  */
 static const cpp_token *
-count_params (pfile, first, list)
+count_params (pfile, first, info)
      cpp_reader *pfile;
      const cpp_token *first;
-     cpp_toklist *list;
+     struct macro_info *info;
 {
-  unsigned int params_len = 0, prev_ident = 0;
-  const cpp_token *token, *temp;
+  unsigned int prev_ident = 0;
+  const cpp_token *token;
 
-  list->paramc = 0;
+  info->paramc = 0;
   for (token = first;; token++)
     {
       switch (token->type)
@@ -251,10 +268,6 @@ count_params (pfile, first, list)
 	  if (is__va_args__ (pfile, token))
 	    goto out;
 
-	  params_len += token->val.node->length + 1;
-	  prev_ident = 1;
-	  list->paramc++;
-
 	  /* Constraint 6.10.3.6 - duplicate parameter names.  */
 	  if (find_param (first, token))
 	    {
@@ -263,6 +276,11 @@ count_params (pfile, first, list)
 				   token->val.node->name);
 	      goto out;
 	    }
+
+	  prev_ident = 1;
+	  info->paramc++;
+	  if (pfile->save_parameter_spellings)
+	    info->paramlen += token->val.node->length + 1;
 	  break;
 
 	default:
@@ -271,8 +289,8 @@ count_params (pfile, first, list)
 	  goto out;
 
 	case CPP_CLOSE_PAREN:
-	  if (prev_ident || list->paramc == 0)
-	    goto scanned;
+	  if (prev_ident || info->paramc == 0)
+	    goto out;
 
 	  /* Fall through to pick up the error.  */
 	case CPP_COMMA:
@@ -297,8 +315,10 @@ count_params (pfile, first, list)
 
 	      tok->type = CPP_NAME;
 	      tok->val.node = pfile->spec_nodes->n__VA_ARGS__;
-	      list->paramc++;
-	      params_len += tok->val.node->length + 1;
+
+	      info->paramc++;
+	      if (pfile->save_parameter_spellings)
+		info->paramlen += tok->val.node->length + 1;
 
 	      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 		cpp_pedwarn (pfile,
@@ -306,38 +326,18 @@ count_params (pfile, first, list)
 	    }
 	  else
 	    {
-	      list->flags |= GNU_REST_ARGS;
+	      info->flags |= GNU_REST_ARGS;
 	      if (CPP_PEDANTIC (pfile))
 		cpp_pedwarn (pfile,
 			     "ISO C does not permit named varargs parameters");
 	    }
 
-	  list->flags |= VAR_ARGS;
+	  info->flags |= VAR_ARGS;
 	  token++;
 	  if (token->type == CPP_CLOSE_PAREN)
-	    goto scanned;
+	    goto out;
 	  goto missing_paren;
 	}
-    }
-
- scanned:
-  /* Store the null-terminated parameter spellings of a function, to
-     provide pedantic warnings to satisfy 6.10.3.2, or for use when
-     dumping macro definitions.  */
-  if (list->paramc > 0 && pfile->save_parameter_spellings)
-    {
-      U_CHAR *buf;
-
-      _cpp_reserve_name_space (list, params_len);
-      list->params_len = list->name_used = params_len;
-      buf = list->namebuf;
-      for (temp = first; temp <= token; temp++)
-	if (temp->type == CPP_NAME)
-	  {
-	    /* copy null too */
-	    memcpy (buf, temp->val.node->name, temp->val.node->length + 1);
-	    buf += temp->val.node->length + 1;
-	  }
     }
 
  out:
@@ -345,12 +345,12 @@ count_params (pfile, first, list)
 }
 
 /* Parses a #define directive.  Returns null pointer on error.  */
-static cpp_toklist *
+static const cpp_toklist *
 parse_define (pfile)
      cpp_reader *pfile;
 {
   const cpp_token *token, *first_param;
-  cpp_toklist *list;
+  struct macro_info info;
   int prev_white = 0;
 
   /* The first token after the macro's name.  */
@@ -362,20 +362,20 @@ parse_define (pfile)
 
   while (token->type == CPP_COMMENT)
     token++, prev_white = 1;
-
-  /* Allocate the expansion's list.  It will go in the hash table.  */
-  list = (cpp_toklist *) xmalloc (sizeof (cpp_toklist));
-  _cpp_init_toklist (list, 0);
   first_param = token + 1;
-  list->paramc = -1;		/* Object-like macro.  */
+
+  /* Assume object-like macro.  */
+  info.paramc = -1;
+  info.paramlen = 0;
+  info.flags = 0;
 
   if (!prev_white && !(token->flags & PREV_WHITE))
     {
       if (token->type == CPP_OPEN_PAREN)
 	{
-	  token = count_params (pfile, first_param, list);
+	  token = count_params (pfile, first_param, &info);
 	  if (token->type != CPP_CLOSE_PAREN)
-	    goto error;
+	    return 0;
 	  token++;
 	}
       else if (token->type != CPP_EOF)
@@ -383,14 +383,7 @@ parse_define (pfile)
 		     "ISO C requires whitespace after the macro name");
     }
 
-  if (save_expansion (pfile, list, token, first_param))
-    {
-    error:
-      _cpp_free_toklist (list);
-      list = 0;
-    }
-
-  return list;
+  return save_expansion (pfile, token, first_param, &info);
 }
 
 static int
@@ -422,19 +415,82 @@ check_macro_redefinition (pfile, hp, list2)
   return 1;
 }
 
-/* Copy the tokens of the expansion.  Change the type of macro
-   arguments from CPP_NAME to CPP_MACRO_ARG.  Remove #'s that
-   represent stringification, flagging the CPP_MACRO_ARG it operates
-   on STRINGIFY.  Remove ##'s, flagging the token on its immediate
-   left PASTE_LEFT.  Returns non-zero on error.  */
-static int
-save_expansion (pfile, list, first, first_param)
+/* This is a dummy structure whose only purpose is getting alignment
+   correct.  */
+struct toklist_dummy
+{
+  cpp_toklist list;
+  cpp_token first_token;
+};
+
+
+/* Allocate space to hold the token list, its tokens, their text, and
+   the parameter names if needed.  Empty expansions are stored as a
+   single placemarker token.
+
+   These are all allocated in a block together for performance
+   reasons.  Therefore, this token list cannot be expanded like a
+   normal token list.  Try to do so, and you lose.  */
+static cpp_toklist *
+alloc_macro (pfile, info, ntokens, len)
      cpp_reader *pfile;
-     cpp_toklist *list;
+     struct macro_info *info;
+     unsigned int ntokens, len;
+{
+  unsigned int size;
+  struct toklist_dummy *dummy;
+  cpp_toklist *list;
+
+  size = sizeof (struct toklist_dummy);
+  size += (ntokens - 1) * sizeof(cpp_token);
+  size += len + info->paramlen;
+
+  dummy = (struct toklist_dummy *) xmalloc (size);
+  list = (cpp_toklist *) dummy;
+  
+  /* Initialize the monster.  */
+  list->tokens = &dummy->first_token;
+  list->tokens_used = list->tokens_cap = ntokens;
+
+  list->namebuf = (unsigned char *) &list->tokens[ntokens];
+  list->name_used = list->name_cap = len + info->paramlen;
+
+  list->directive = 0;
+  list->line = pfile->token_list.line;
+  list->file = pfile->token_list.file;
+  list->params_len = info->paramlen;
+  list->paramc = info->paramc;
+  list->flags = info->flags;
+
+  return list;
+}
+
+/* Free a macro allocated by allocate_macro.  */
+static void
+free_macro (list)
+     const cpp_toklist *list;
+{
+  free ((PTR) list);
+}
+
+/* Copy the tokens of the expansion, beginning with FIRST until
+   CPP_EOF.  For a function-like macro, FIRST_PARAM points to the
+   first parameter.  INFO contains information about the macro.
+
+   Change the type of macro arguments in the expansion from CPP_NAME
+   to CPP_MACRO_ARG.  Remove #'s that represent stringification,
+   flagging the CPP_MACRO_ARG it operates on STRINGIFY.  Remove ##'s,
+   flagging the token on its immediate left PASTE_LEFT.  Returns the
+   token list for the macro expansion, or 0 on error.  */
+static const cpp_toklist *
+save_expansion (pfile, first, first_param, info)
+     cpp_reader *pfile;
      const cpp_token *first;
      const cpp_token *first_param;
+     struct macro_info *info;
 {
   const cpp_token *token;
+  cpp_toklist *list;
   cpp_token *dest;
   unsigned int len, ntokens;
   unsigned char *buf;
@@ -462,7 +518,7 @@ save_expansion (pfile, list, first, first_param)
 	{
 	  /* Stringifying #, but is a normal character if traditional,
 	     or in object-like macros.  Constraint 6.10.3.2.1.  */
-	  if (list->paramc >= 0 && ! CPP_TRADITIONAL (pfile))
+	  if (info->paramc >= 0 && ! CPP_TRADITIONAL (pfile))
 	    {
 	      if (token[1].type == CPP_NAME
 		  && find_param (first_param, token + 1))
@@ -472,31 +528,42 @@ save_expansion (pfile, list, first, first_param)
 		  msg = "'#' is not followed by a macro parameter";
 		error:
 		  cpp_error_with_line (pfile, token->line, token->col, msg);
-		  return 1;
+		  return 0;
 		}
 	    }
 	}
       else if (token->type == CPP_NAME)
 	{
 	  /* Constraint 6.10.3.5  */
-	  if (!(list->flags & VAR_ARGS) && is__va_args__ (pfile, token))
-	    return 1;
+	  if (!(info->flags & VAR_ARGS) && is__va_args__ (pfile, token))
+	    return 0;
+	  /* It might be worth doing a check here that we aren't a
+	     macro argument, since we don't store the text of macro
+	     arguments.  This would reduce "len" and save space.  */
 	}
       ntokens++;
-      if (token_spellings[token->type].type == SPELL_STRING)
+      if (TOKEN_SPELL (token) == SPELL_STRING)
 	len += token->val.str.len;
     }
 
-  /* Allocate space to hold the tokens.  Empty expansions are stored
-     as a single placemarker token.  */
   if (ntokens == 0)
     ntokens++;
-  _cpp_expand_token_space (list, ntokens);
-  if (len > 0)
-    _cpp_expand_name_space (list, len);
+  list = alloc_macro (pfile, info, ntokens, len);
+  buf = list->namebuf;
+
+  /* Store the null-terminated parameter spellings of a macro, to
+     provide pedantic warnings to satisfy 6.10.3.2, or for use when
+     dumping macro definitions.  They must go first.  */
+  if (list->params_len)
+    for (token = first_param; token < first; token++)
+      if (token->type == CPP_NAME)
+	{
+	  /* Copy null too.  */
+	  memcpy (buf, token->val.node->name, token->val.node->length + 1);
+	  buf += token->val.node->length + 1;
+	}
 
   dest = list->tokens;
-  buf = list->namebuf + list->name_used;
   for (token = first; token->type != CPP_EOF; token++)
     {
       unsigned int param_no;
@@ -543,7 +610,7 @@ save_expansion (pfile, list, first, first_param)
 
       /* Copy the token.  */
       *dest = *token;
-      if (token_spellings[token->type].type == SPELL_STRING)
+      if (TOKEN_SPELL (token) == SPELL_STRING)
 	{
 	  memcpy (buf, token->val.str.text, token->val.str.len);
 	  dest->val.str.text = buf;
@@ -558,12 +625,7 @@ save_expansion (pfile, list, first, first_param)
       dest->flags = 0;
     }
 
-  list->tokens_used = ntokens;
-  list->line = pfile->token_list.line;
-  list->file = pfile->token_list.file;
-  list->name_used = len;
-
-  return 0;
+  return list;
 }
 
 int
@@ -571,7 +633,7 @@ _cpp_create_definition (pfile, hp)
      cpp_reader *pfile;
      cpp_hashnode *hp;
 {
-  cpp_toklist *list;
+  const cpp_toklist *list;
 
   list = parse_define (pfile);
   if (!list)
