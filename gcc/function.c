@@ -5558,7 +5558,7 @@ identify_blocks (block, insns)
   block_vector = (tree *) xmalloc (n_blocks * sizeof (tree));
   all_blocks (block, block_vector);
 
-  block_stack = (tree *) alloca (n_blocks * sizeof (tree));
+  block_stack = (tree *) xmalloc (n_blocks * sizeof (tree));
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
@@ -5594,6 +5594,7 @@ identify_blocks (block, insns)
     abort ();
 
   free (block_vector);
+  free (block_stack);
 }
 
 /* Given a revised instruction chain, rebuild the tree structure of

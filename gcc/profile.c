@@ -160,6 +160,7 @@ static void output_arc_profiler PROTO((int, rtx));
 static void instrument_arcs PROTO((rtx, int, FILE *));
 static void output_gcov_string PROTO((const char *, long));
 static int tablejump_entry_p PROTO((rtx, rtx));
+static void compute_branch_probabilities PROTO((int, FILE *));
 
 #ifndef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE BITS_PER_WORD
@@ -437,6 +438,293 @@ tablejump_entry_p (insn, label)
   return 0;
 }
 
+/* Compute the branch probabilities for the various branches.
+   Annotate them accordingly.  */
+
+static void
+compute_branch_probabilities (num_blocks, dump_file)
+     int num_blocks;
+     FILE *dump_file;
+{
+  int i;
+  int bad_counts = 0;
+  int num_arcs;
+  int changes;
+  int passes;
+  int prob;
+  int total;
+  int num_branches;
+  int num_never_executed;
+  int hist_br_prob[20];
+  struct adj_list *arcptr;
+
+  /* For each arc not on the spanning tree, set its execution count from
+     the .da file.  */
+
+  /* The first count in the .da file is the number of times that the function
+     was entered.  This is the exec_count for block zero.  */
+
+  num_arcs = 0;
+  for (i = 0; i < num_blocks; i++)
+    for (arcptr = bb_graph[i].succ; arcptr; arcptr = arcptr->succ_next)
+      if (! arcptr->on_tree)
+	{
+	  num_arcs++;
+	  if (da_file)
+	    {
+	      long value;
+	      __read_long (&value, da_file, 8);
+	      ARC_COUNT (arcptr) = value;
+	    }
+	  else
+	    ARC_COUNT (arcptr) = 0;
+	  arcptr->count_valid = 1;
+	  bb_graph[i].succ_count--;
+	  bb_graph[ARC_TARGET (arcptr)].pred_count--;
+	}
+
+  if (dump_file)
+    fprintf (dump_file, "%d arc counts read\n", num_arcs);
+
+  /* For every block in the file,
+     - if every exit/entrance arc has a known count, then set the block count
+     - if the block count is known, and every exit/entrance arc but one has
+       a known execution count, then set the count of the remaining arc
+
+     As arc counts are set, decrement the succ/pred count, but don't delete
+     the arc, that way we can easily tell when all arcs are known, or only
+     one arc is unknown.  */
+
+  /* The order that the basic blocks are iterated through is important.
+     Since the code that finds spanning trees starts with block 0, low numbered
+     arcs are put on the spanning tree in preference to high numbered arcs.
+     Hence, most instrumented arcs are at the end.  Graph solving works much
+     faster if we propagate numbers from the end to the start.
+     
+     This takes an average of slightly more than 3 passes.  */
+
+  changes = 1;
+  passes = 0;
+  while (changes)
+    {
+      passes++;
+      changes = 0;
+
+      for (i = num_blocks - 1; i >= 0; i--)
+	{
+	  struct bb_info *binfo = &bb_graph[i];
+	  if (! binfo->count_valid)
+	    {
+	      if (binfo->succ_count == 0)
+		{
+		  total = 0;
+		  for (arcptr = binfo->succ; arcptr;
+		       arcptr = arcptr->succ_next)
+		    total += ARC_COUNT (arcptr);
+		  binfo->exec_count = total;
+		  binfo->count_valid = 1;
+		  changes = 1;
+		}
+	      else if (binfo->pred_count == 0)
+		{
+		  total = 0;
+		  for (arcptr = binfo->pred; arcptr;
+		       arcptr = arcptr->pred_next)
+		    total += ARC_COUNT (arcptr);
+		  binfo->exec_count = total;
+		  binfo->count_valid = 1;
+		  changes = 1;
+		}
+	    }
+	  if (binfo->count_valid)
+	    {
+	      if (binfo->succ_count == 1)
+		{
+		  total = 0;
+		  /* One of the counts will be invalid, but it is zero,
+		     so adding it in also doesn't hurt.  */
+		  for (arcptr = binfo->succ; arcptr;
+		       arcptr = arcptr->succ_next)
+		    total += ARC_COUNT (arcptr);
+		  /* Calculate count for remaining arc by conservation.  */
+		  total = binfo->exec_count - total;
+		  /* Search for the invalid arc, and set its count.  */
+		  for (arcptr = binfo->succ; arcptr;
+		       arcptr = arcptr->succ_next)
+		    if (! arcptr->count_valid)
+		      break;
+		  if (! arcptr)
+		    abort ();
+		  arcptr->count_valid = 1;
+		  ARC_COUNT (arcptr) = total;
+		  binfo->succ_count--;
+		  
+		  bb_graph[ARC_TARGET (arcptr)].pred_count--;
+		  changes = 1;
+		}
+	      if (binfo->pred_count == 1)
+		{
+		  total = 0;
+		  /* One of the counts will be invalid, but it is zero,
+		     so adding it in also doesn't hurt.  */
+		  for (arcptr = binfo->pred; arcptr;
+		       arcptr = arcptr->pred_next)
+		    total += ARC_COUNT (arcptr);
+		  /* Calculate count for remaining arc by conservation.  */
+		  total = binfo->exec_count - total;
+		  /* Search for the invalid arc, and set its count.  */
+		  for (arcptr = binfo->pred; arcptr;
+		       arcptr = arcptr->pred_next)
+		    if (! arcptr->count_valid)
+		      break;
+		  if (! arcptr)
+		    abort ();
+		  arcptr->count_valid = 1;
+		  ARC_COUNT (arcptr) = total;
+		  binfo->pred_count--;
+		  
+		  bb_graph[ARC_SOURCE (arcptr)].succ_count--;
+		  changes = 1;
+		}
+	    }
+	}
+    }
+
+  total_num_passes += passes;
+  if (dump_file)
+    fprintf (dump_file, "Graph solving took %d passes.\n\n", passes);
+
+  /* If the graph has been correctly solved, every block will have a
+     succ and pred count of zero.  */
+  for (i = 0; i < num_blocks; i++)
+    {
+      struct bb_info *binfo = &bb_graph[i];
+      if (binfo->succ_count || binfo->pred_count)
+	abort ();
+    }
+
+  /* For every arc, calculate its branch probability and add a reg_note
+     to the branch insn to indicate this.  */
+
+  for (i = 0; i < 20; i++)
+    hist_br_prob[i] = 0;
+  num_never_executed = 0;
+  num_branches = 0;
+
+  for (i = 0; i < num_blocks; i++)
+    {
+      struct bb_info *binfo = &bb_graph[i];
+
+      total = binfo->exec_count;
+      for (arcptr = binfo->succ; arcptr; arcptr = arcptr->succ_next)
+	{
+	  if (arcptr->branch_insn)
+	    {
+	      /* This calculates the branch probability as an integer between
+		 0 and REG_BR_PROB_BASE, properly rounded to the nearest
+		 integer.  Perform the arithmetic in double to avoid
+		 overflowing the range of ints.  */
+
+	      if (total == 0)
+		prob = -1;
+	      else
+		{
+		  rtx pat = PATTERN (arcptr->branch_insn);
+		  
+		  prob = (((double)ARC_COUNT (arcptr) * REG_BR_PROB_BASE)
+			  + (total >> 1)) / total;
+		  if (prob < 0 || prob > REG_BR_PROB_BASE)
+		    {
+		      if (dump_file)
+			fprintf (dump_file, "bad count: prob for %d-%d thought to be %d (forcibly normalized)\n",
+				 ARC_SOURCE (arcptr), ARC_TARGET (arcptr),
+				 prob);
+
+		      bad_counts = 1;
+		      prob = REG_BR_PROB_BASE / 2;
+		    }
+		  
+		  /* Match up probability with JUMP pattern.  */
+
+		  if (GET_CODE (pat) == SET
+		      && GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
+		    {
+		      if (ARC_TARGET (arcptr) == ARC_SOURCE (arcptr) + 1)
+			{
+			  /* A fall through arc should never have a
+			     branch insn.  */
+			  abort ();
+			}
+		      else
+			{
+			  /* This is the arc for the taken branch.  */
+			  if (GET_CODE (XEXP (SET_SRC (pat), 2)) != PC)
+			    prob = REG_BR_PROB_BASE - prob;
+			}
+		    }
+		}
+	      
+	      if (prob == -1)
+		num_never_executed++;
+	      else
+		{
+		  int index = prob * 20 / REG_BR_PROB_BASE;
+		  if (index == 20)
+		    index = 19;
+		  hist_br_prob[index]++;
+		}
+	      num_branches++;
+	      
+	      REG_NOTES (arcptr->branch_insn)
+		= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
+				     REG_NOTES (arcptr->branch_insn));
+	    }
+	}
+
+      /* Add a REG_EXEC_COUNT note to the first instruction of this block.  */
+      if (! binfo->first_insn 
+	  || GET_RTX_CLASS (GET_CODE (binfo->first_insn)) != 'i')
+	{
+	  /* Block 0 is a fake block representing function entry, and does
+	     not have a real first insn.  The second last block might not
+	     begin with a real insn.  */
+	  if (i == num_blocks - 1)
+	    return_label_execution_count = total;
+	  else if (i != 0 && i != num_blocks - 2)
+	    abort ();
+	}
+      else
+	{
+	  REG_NOTES (binfo->first_insn)
+	    = gen_rtx_EXPR_LIST (REG_EXEC_COUNT, GEN_INT (total),
+				 REG_NOTES (binfo->first_insn));
+	  if (i == num_blocks - 1)
+	    return_label_execution_count = total;
+	}
+    }
+  
+  /* This should never happen.  */
+  if (bad_counts)
+    warning ("Arc profiling: some arc counts were bad.");
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "%d branches\n", num_branches);
+      fprintf (dump_file, "%d branches never executed\n",
+	       num_never_executed);
+      if (num_branches)
+	for (i = 0; i < 10; i++)
+	  fprintf (dump_file, "%d%% branches in range %d-%d%%\n",
+		   (hist_br_prob[i]+hist_br_prob[19-i])*100/num_branches,
+		   5*i, 5*i+5);
+
+      total_num_branches += num_branches;
+      total_num_never_executed += num_never_executed;
+      for (i = 0; i < 20; i++)
+	total_hist_br_prob[i] += hist_br_prob[i];
+    }
+}
+
 /* Instrument and/or analyze program behavior based on program flow graph.
    In either case, this function builds a flow graph for the function being
    compiled.  The flow graph is stored in BB_GRAPH.
@@ -460,11 +748,7 @@ branch_prob (f, dump_file)
 {
   int i, num_blocks;
   struct adj_list *arcptr;
-  int num_arcs, changes, passes;
-  int total, prob;
-  int hist_br_prob[20], num_never_executed, num_branches;
-  /* Set to non-zero if we got bad count information.  */
-  int bad_counts = 0;
+  int num_arcs;
 
   /* start of a function.  */
   if (flag_test_coverage)
@@ -620,8 +904,8 @@ branch_prob (f, dump_file)
   /* Create and initialize the arrays that will hold bb_graph
      and execution count info.  */
 
-  bb_graph = (struct bb_info *) alloca (num_blocks * sizeof (struct bb_info));
-  bzero ((char *) bb_graph, (sizeof (struct bb_info) * num_blocks));
+  bb_graph = (struct bb_info *) xcalloc (num_blocks, 
+					 sizeof (struct bb_info));
 
   {
     /* Scan the insns again:
@@ -965,275 +1249,11 @@ branch_prob (f, dump_file)
     }
 
   /* Execute the rest only if doing branch probabilities.  */
-  if (! flag_branch_probabilities)
-    return;
+  if (flag_branch_probabilities)
+    compute_branch_probabilities (num_blocks, dump_file);
 
-  /* For each arc not on the spanning tree, set its execution count from
-     the .da file.  */
-
-  /* The first count in the .da file is the number of times that the function
-     was entered.  This is the exec_count for block zero.  */
-
-  num_arcs = 0;
-  for (i = 0; i < num_blocks; i++)
-    for (arcptr = bb_graph[i].succ; arcptr; arcptr = arcptr->succ_next)
-      if (! arcptr->on_tree)
-	{
-	  num_arcs++;
-	  if (da_file)
-	    {
-	      long value;
-	      __read_long (&value, da_file, 8);
-	      ARC_COUNT (arcptr) = value;
-	    }
-	  else
-	    ARC_COUNT (arcptr) = 0;
-	  arcptr->count_valid = 1;
-	  bb_graph[i].succ_count--;
-	  bb_graph[ARC_TARGET (arcptr)].pred_count--;
-	}
-
-  if (dump_file)
-    fprintf (dump_file, "%d arc counts read\n", num_arcs);
-
-  /* For every block in the file,
-     - if every exit/entrance arc has a known count, then set the block count
-     - if the block count is known, and every exit/entrance arc but one has
-       a known execution count, then set the count of the remaining arc
-
-     As arc counts are set, decrement the succ/pred count, but don't delete
-     the arc, that way we can easily tell when all arcs are known, or only
-     one arc is unknown.  */
-
-  /* The order that the basic blocks are iterated through is important.
-     Since the code that finds spanning trees starts with block 0, low numbered
-     arcs are put on the spanning tree in preference to high numbered arcs.
-     Hence, most instrumented arcs are at the end.  Graph solving works much
-     faster if we propagate numbers from the end to the start.
-     
-     This takes an average of slightly more than 3 passes.  */
-
-  changes = 1;
-  passes = 0;
-  while (changes)
-    {
-      passes++;
-      changes = 0;
-
-      for (i = num_blocks - 1; i >= 0; i--)
-	{
-	  struct bb_info *binfo = &bb_graph[i];
-	  if (! binfo->count_valid)
-	    {
-	      if (binfo->succ_count == 0)
-		{
-		  total = 0;
-		  for (arcptr = binfo->succ; arcptr;
-		       arcptr = arcptr->succ_next)
-		    total += ARC_COUNT (arcptr);
-		  binfo->exec_count = total;
-		  binfo->count_valid = 1;
-		  changes = 1;
-		}
-	      else if (binfo->pred_count == 0)
-		{
-		  total = 0;
-		  for (arcptr = binfo->pred; arcptr;
-		       arcptr = arcptr->pred_next)
-		    total += ARC_COUNT (arcptr);
-		  binfo->exec_count = total;
-		  binfo->count_valid = 1;
-		  changes = 1;
-		}
-	    }
-	  if (binfo->count_valid)
-	    {
-	      if (binfo->succ_count == 1)
-		{
-		  total = 0;
-		  /* One of the counts will be invalid, but it is zero,
-		     so adding it in also doesn't hurt.  */
-		  for (arcptr = binfo->succ; arcptr;
-		       arcptr = arcptr->succ_next)
-		    total += ARC_COUNT (arcptr);
-		  /* Calculate count for remaining arc by conservation.  */
-		  total = binfo->exec_count - total;
-		  /* Search for the invalid arc, and set its count.  */
-		  for (arcptr = binfo->succ; arcptr;
-		       arcptr = arcptr->succ_next)
-		    if (! arcptr->count_valid)
-		      break;
-		  if (! arcptr)
-		    abort ();
-		  arcptr->count_valid = 1;
-		  ARC_COUNT (arcptr) = total;
-		  binfo->succ_count--;
-		  
-		  bb_graph[ARC_TARGET (arcptr)].pred_count--;
-		  changes = 1;
-		}
-	      if (binfo->pred_count == 1)
-		{
-		  total = 0;
-		  /* One of the counts will be invalid, but it is zero,
-		     so adding it in also doesn't hurt.  */
-		  for (arcptr = binfo->pred; arcptr;
-		       arcptr = arcptr->pred_next)
-		    total += ARC_COUNT (arcptr);
-		  /* Calculate count for remaining arc by conservation.  */
-		  total = binfo->exec_count - total;
-		  /* Search for the invalid arc, and set its count.  */
-		  for (arcptr = binfo->pred; arcptr;
-		       arcptr = arcptr->pred_next)
-		    if (! arcptr->count_valid)
-		      break;
-		  if (! arcptr)
-		    abort ();
-		  arcptr->count_valid = 1;
-		  ARC_COUNT (arcptr) = total;
-		  binfo->pred_count--;
-		  
-		  bb_graph[ARC_SOURCE (arcptr)].succ_count--;
-		  changes = 1;
-		}
-	    }
-	}
-    }
-
-  total_num_passes += passes;
-  if (dump_file)
-    fprintf (dump_file, "Graph solving took %d passes.\n\n", passes);
-
-  /* If the graph has been correctly solved, every block will have a
-     succ and pred count of zero.  */
-  for (i = 0; i < num_blocks; i++)
-    {
-      struct bb_info *binfo = &bb_graph[i];
-      if (binfo->succ_count || binfo->pred_count)
-	abort ();
-    }
-
-  /* For every arc, calculate its branch probability and add a reg_note
-     to the branch insn to indicate this.  */
-
-  for (i = 0; i < 20; i++)
-    hist_br_prob[i] = 0;
-  num_never_executed = 0;
-  num_branches = 0;
-
-  for (i = 0; i < num_blocks; i++)
-    {
-      struct bb_info *binfo = &bb_graph[i];
-
-      total = binfo->exec_count;
-      for (arcptr = binfo->succ; arcptr; arcptr = arcptr->succ_next)
-	{
-	  if (arcptr->branch_insn)
-	    {
-	      /* This calculates the branch probability as an integer between
-		 0 and REG_BR_PROB_BASE, properly rounded to the nearest
-		 integer.  Perform the arithmetic in double to avoid
-		 overflowing the range of ints.  */
-
-	      if (total == 0)
-		prob = -1;
-	      else
-		{
-		  rtx pat = PATTERN (arcptr->branch_insn);
-		  
-		  prob = (((double)ARC_COUNT (arcptr) * REG_BR_PROB_BASE)
-			  + (total >> 1)) / total;
-		  if (prob < 0 || prob > REG_BR_PROB_BASE)
-		    {
-		      if (dump_file)
-			fprintf (dump_file, "bad count: prob for %d-%d thought to be %d (forcibly normalized)\n",
-				 ARC_SOURCE (arcptr), ARC_TARGET (arcptr),
-				 prob);
-
-		      bad_counts = 1;
-		      prob = REG_BR_PROB_BASE / 2;
-		    }
-		  
-		  /* Match up probability with JUMP pattern.  */
-
-		  if (GET_CODE (pat) == SET
-		      && GET_CODE (SET_SRC (pat)) == IF_THEN_ELSE)
-		    {
-		      if (ARC_TARGET (arcptr) == ARC_SOURCE (arcptr) + 1)
-			{
-			  /* A fall through arc should never have a
-			     branch insn.  */
-			  abort ();
-			}
-		      else
-			{
-			  /* This is the arc for the taken branch.  */
-			  if (GET_CODE (XEXP (SET_SRC (pat), 2)) != PC)
-			    prob = REG_BR_PROB_BASE - prob;
-			}
-		    }
-		}
-	      
-	      if (prob == -1)
-		num_never_executed++;
-	      else
-		{
-		  int index = prob * 20 / REG_BR_PROB_BASE;
-		  if (index == 20)
-		    index = 19;
-		  hist_br_prob[index]++;
-		}
-	      num_branches++;
-	      
-	      REG_NOTES (arcptr->branch_insn)
-		= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-				     REG_NOTES (arcptr->branch_insn));
-	    }
-	}
-
-      /* Add a REG_EXEC_COUNT note to the first instruction of this block.  */
-      if (! binfo->first_insn 
-	  || GET_RTX_CLASS (GET_CODE (binfo->first_insn)) != 'i')
-	{
-	  /* Block 0 is a fake block representing function entry, and does
-	     not have a real first insn.  The second last block might not
-	     begin with a real insn.  */
-	  if (i == num_blocks - 1)
-	    return_label_execution_count = total;
-	  else if (i != 0 && i != num_blocks - 2)
-	    abort ();
-	}
-      else
-	{
-	  REG_NOTES (binfo->first_insn)
-	    = gen_rtx_EXPR_LIST (REG_EXEC_COUNT, GEN_INT (total),
-				 REG_NOTES (binfo->first_insn));
-	  if (i == num_blocks - 1)
-	    return_label_execution_count = total;
-	}
-    }
-  
-  /* This should never happen.  */
-  if (bad_counts)
-    warning ("Arc profiling: some arc counts were bad.");
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "%d branches\n", num_branches);
-      fprintf (dump_file, "%d branches never executed\n",
-	       num_never_executed);
-      if (num_branches)
-	for (i = 0; i < 10; i++)
-	  fprintf (dump_file, "%d%% branches in range %d-%d%%\n",
-		   (hist_br_prob[i]+hist_br_prob[19-i])*100/num_branches,
-		   5*i, 5*i+5);
-
-      total_num_branches += num_branches;
-      total_num_never_executed += num_never_executed;
-      for (i = 0; i < 20; i++)
-	total_hist_br_prob[i] += hist_br_prob[i];
-    }
-
+  /* Clean up.  */
+  free (bb_graph);
 }
 
 /* Initialize a new arc.

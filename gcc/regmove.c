@@ -1099,10 +1099,10 @@ regmove_optimize (f, nregs, regmove_dump_file)
      can supress some optimizations in those zones.  */
   mark_flags_life_zones (discover_flags_reg ());
 
-  regno_src_regno = (int *)alloca (sizeof *regno_src_regno * nregs);
+  regno_src_regno = (int *) xmalloc (sizeof *regno_src_regno * nregs);
   for (i = nregs; --i >= 0; ) regno_src_regno[i] = -1;
 
-  regmove_bb_head = (int *)alloca (sizeof (int) * (old_max_uid + 1));
+  regmove_bb_head = (int *) xmalloc (sizeof (int) * (old_max_uid + 1));
   for (i = old_max_uid; i >= 0; i--) regmove_bb_head[i] = -1;
   for (i = 0; i < n_basic_blocks; i++)
     regmove_bb_head[INSN_UID (BLOCK_HEAD (i))] = i;
@@ -1114,7 +1114,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
   for (pass = 0; pass <= 2; pass++)
     {
       if (! flag_regmove && pass >= flag_expensive_optimizations)
-	return;
+	goto done;
 
       if (regmove_dump_file)
 	fprintf (regmove_dump_file, "Starting %s pass...\n",
@@ -1574,6 +1574,11 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	new = next, next = NEXT_INSN (new);
       BLOCK_END (i) = new;
     }
+
+ done:
+  /* Clean up.  */
+  free (regno_src_regno);
+  free (regmove_bb_head);
 }
 
 /* Returns nonzero if INSN's pattern has matching constraints for any operand.

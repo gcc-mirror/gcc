@@ -284,10 +284,10 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      int *start = (int *) alloca (max_uid * sizeof (int));
-      int *end = (int *) alloca (max_uid * sizeof (int));
+      int *start = (int *) xmalloc (max_uid * sizeof (int));
+      int *end = (int *) xmalloc (max_uid * sizeof (int));
       enum bb_state *in_bb_p = (enum bb_state *)
-	alloca (max_uid * sizeof (enum bb_state));
+	xmalloc (max_uid * sizeof (enum bb_state));
       basic_block bb;
 
       for (i = 0; i < max_uid; ++i)
@@ -410,6 +410,11 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       dump_for_graph = 0;
 
       end_fct (fp);
+
+      /* Clean up.  */
+      free (start);
+      free (end);
+      free (in_bb_p);
     }
 
   fclose (fp);

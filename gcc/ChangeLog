@@ -1,3 +1,24 @@
+Sun Nov  7 20:55:14 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* cse.c (delete_trivially_dead_insns): Replace alloca with
+	xmalloc/xcalloc.
+	* except.c (update_rethrow_references): Likewise.
+	(init_eh_nesting_info): Likewise.
+	* function.c (identify_blocks): Likewise.
+	* gcse.c (dump_hash_table): Likewise.
+	* graph.c (print_rtl_graph_with_bb): Likewise.
+	* loop.c (combine_movables): Likewise.
+	(move_movables): Likewise.
+	(count_loop_regs_set): Likewise.
+	(strength_reduce): Likewise.
+	* profile.c (compute_branch_probabilities): New function, split
+	out from ...
+	(branch_prob): Here.  Replace alloca with xmalloc/xcalloc.
+	* regclass.c (regclass): Likewise.
+	* regmove.c (regmove_optimize): Likewise.
+	* toplev.c (compile_file): Likewise.
+	(main): Don't mess with the stack rlimit.
+	
 Sun Nov  7 19:41:17 1999  Catherine Moore  <clm@cygnus.com>
 
         * config/elfos.h (ASM_DECLARE_FUNCTION_NAME): Conditionally define.

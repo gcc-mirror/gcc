@@ -2067,10 +2067,13 @@ dump_hash_table (file, name, table, table_size, total_size)
 {
   int i;
   /* Flattened out table, so it's printed in proper order.  */
-  struct expr **flat_table = (struct expr **) alloca (total_size * sizeof (struct expr *));
-  unsigned int *hash_val = (unsigned int *) alloca (total_size * sizeof (unsigned int));
+  struct expr **flat_table;
+  unsigned int *hash_val;
 
-  bzero ((char *) flat_table, total_size * sizeof (struct expr *));
+  flat_table 
+    = (struct expr **) xcalloc (total_size, sizeof (struct expr *));
+  hash_val = (unsigned int *) xmalloc (total_size * sizeof (unsigned int));
+
   for (i = 0; i < table_size; i++)
     {
       struct expr *expr;
@@ -2096,6 +2099,10 @@ dump_hash_table (file, name, table, table_size, total_size)
     }
 
   fprintf (file, "\n");
+
+  /* Clean up.  */
+  free (flat_table);
+  free (hash_val);
 }
 
 /* Record register first/last/block set information for REGNO in INSN.
