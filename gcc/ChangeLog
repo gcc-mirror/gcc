@@ -1,3 +1,7 @@
+2003-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*iorsi3_w): New.
+
 2003-02-20  Josef Zlomek  <zlomekj@suse.cz>
 
 	* combine.c (distribute_notes): Kill REG_EXEC_COUNT.
