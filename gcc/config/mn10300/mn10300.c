@@ -874,13 +874,12 @@ mn10300_builtin_saveregs ()
 }
 
 void
-mn10300_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+mn10300_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
   nextarg = expand_builtin_saveregs ();
-  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+  std_expand_builtin_va_start (valist, nextarg);
 }
 
 rtx

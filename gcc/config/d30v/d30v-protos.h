@@ -105,7 +105,7 @@ extern void d30v_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS *,
 						 tree, int *, int));
 extern tree d30v_build_va_list		PARAMS ((void));
 #ifdef RTX_CODE
-extern void d30v_expand_builtin_va_start PARAMS ((int, tree, rtx));
+extern void d30v_expand_builtin_va_start PARAMS ((tree, rtx));
 extern rtx d30v_expand_builtin_va_arg	PARAMS ((tree, tree));
 #endif	/* RTX_CODE */
 #endif	/* TREE_CODE */

@@ -78,7 +78,7 @@ extern int		mips16_constant_after_function_p PARAMS ((tree));
 extern int		mips_output_external PARAMS ((FILE *, tree,
 						      const char *));
 extern tree		mips_build_va_list PARAMS ((void));
-extern void		mips_va_start PARAMS ((int, tree, rtx));
+extern void		mips_va_start PARAMS ((tree, rtx));
 extern struct rtx_def  *mips_va_arg PARAMS ((tree, tree));
 
 extern void		expand_block_move PARAMS ((rtx *));

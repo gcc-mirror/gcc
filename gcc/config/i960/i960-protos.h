@@ -73,7 +73,7 @@ extern struct rtx_def *i960_function_arg PARAMS ((CUMULATIVE_ARGS *,
 						  enum machine_mode,
 						  tree, int));
 extern rtx i960_va_arg PARAMS ((tree, tree));
-extern void i960_va_start PARAMS ((int, tree, rtx));
+extern void i960_va_start PARAMS ((tree, rtx));
 #endif /* TREE_CODE */
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class, enum machine_mode, rtx));
 #endif /* RTX_CODE */

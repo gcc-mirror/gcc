@@ -77,7 +77,7 @@ extern char * xtensa_emit_call PARAMS ((int, rtx *));
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
-extern void xtensa_va_start PARAMS ((int, tree, rtx));
+extern void xtensa_va_start PARAMS ((tree, rtx));
 extern rtx xtensa_va_arg PARAMS ((tree, tree));
 #endif /* TREE_CODE */
 

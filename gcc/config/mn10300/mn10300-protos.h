@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef RTX_CODE
 
 #ifdef TREE_CODE
-extern void mn10300_va_start PARAMS ((int, tree, rtx));
+extern void mn10300_va_start PARAMS ((tree, rtx));
 #endif /* TREE_CODE */
 
 extern struct rtx_def *legitimize_address PARAMS ((rtx, rtx, enum machine_mode));

@@ -41,7 +41,7 @@ extern tree    xstormy16_build_va_list PARAMS ((void));
 #endif
 
 #if defined (TREE_CODE) && defined (RTX_CODE)
-extern void    xstormy16_expand_builtin_va_start PARAMS ((int, tree, rtx));
+extern void    xstormy16_expand_builtin_va_start PARAMS ((tree, rtx));
 extern rtx     xstormy16_expand_builtin_va_arg PARAMS ((tree, tree));
 extern void    xstormy16_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx     xstormy16_function_value PARAMS ((tree, tree));

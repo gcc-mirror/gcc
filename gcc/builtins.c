@@ -2989,8 +2989,7 @@ stabilize_va_list (valist, needs_lvalue)
    the variable.  */
 
 void
-std_expand_builtin_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+std_expand_builtin_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
@@ -3021,9 +3020,9 @@ expand_builtin_va_start (arglist)
   valist = stabilize_va_list (TREE_VALUE (arglist), 1);
 
 #ifdef EXPAND_BUILTIN_VA_START
-  EXPAND_BUILTIN_VA_START (1, valist, nextarg);
+  EXPAND_BUILTIN_VA_START (valist, nextarg);
 #else
-  std_expand_builtin_va_start (1, valist, nextarg);
+  std_expand_builtin_va_start (valist, nextarg);
 #endif
 
   return const0_rtx;

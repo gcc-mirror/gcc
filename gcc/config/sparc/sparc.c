@@ -5244,13 +5244,12 @@ sparc_builtin_saveregs ()
 /* Implement `va_start' for varargs and stdarg.  */
 
 void
-sparc_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+sparc_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
   nextarg = expand_builtin_saveregs ();
-  std_expand_builtin_va_start (1, valist, nextarg);
+  std_expand_builtin_va_start (valist, nextarg);
 }
 
 /* Implement `va_arg'.  */

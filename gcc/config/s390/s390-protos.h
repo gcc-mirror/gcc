@@ -78,7 +78,7 @@ extern void s390_function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_m
 extern tree s390_build_va_list PARAMS ((void));
 #ifdef RTX_CODE
 extern rtx s390_function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
-extern void s390_va_start PARAMS ((int, tree, rtx));
+extern void s390_va_start PARAMS ((tree, rtx));
 extern rtx s390_va_arg PARAMS ((tree, tree));
 #endif /* RTX_CODE */
 #endif /* TREE_CODE */

@@ -1175,8 +1175,7 @@ xstormy16_build_va_list ()
    variable to initialize.  NEXTARG is the machine independent notion of the
    'next' argument after the variable arguments.  */
 void
-xstormy16_expand_builtin_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+xstormy16_expand_builtin_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {

@@ -42,7 +42,7 @@ extern int function_arg_pass_by_reference PARAMS ((const CUMULATIVE_ARGS *,
 extern struct rtx_def *sparc_builtin_saveregs PARAMS ((void));
 #ifdef RTX_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx, int));
-extern void sparc_va_start PARAMS ((int, tree, rtx));
+extern void sparc_va_start PARAMS ((tree, rtx));
 #endif
 extern struct rtx_def *sparc_va_arg PARAMS ((tree, tree));
 extern unsigned long sparc_type_code PARAMS ((tree));

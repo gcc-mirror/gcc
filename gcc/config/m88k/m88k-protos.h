@@ -67,7 +67,7 @@ extern int equality_op PARAMS ((rtx, enum machine_mode));
 extern int pc_or_label_ref PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 #ifdef TREE_CODE
-extern void m88k_va_start PARAMS ((int, tree, rtx));
+extern void m88k_va_start PARAMS ((tree, rtx));
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx, int));
-extern void rs6000_va_start PARAMS ((int, tree, rtx));
+extern void rs6000_va_start PARAMS ((tree, rtx));
 #endif /* TREE_CODE */
 
 extern struct rtx_def *rs6000_got_register PARAMS ((rtx));

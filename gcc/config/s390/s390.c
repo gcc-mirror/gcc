@@ -3962,8 +3962,7 @@ s390_build_va_list ()
        (relative to the virtual arg pointer).  */
 
 void
-s390_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+s390_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {

@@ -1695,8 +1695,8 @@ typedef struct ix86_args {
   ((VALIST) = ix86_build_va_list ())
 
 /* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(STDARG, VALIST, NEXTARG) \
-  ix86_va_start ((STDARG), (VALIST), (NEXTARG))
+#define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG) \
+  ix86_va_start (VALIST, NEXTARG)
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
