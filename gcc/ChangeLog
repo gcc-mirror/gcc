@@ -1,3 +1,9 @@
+2003-06-25  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_strcpy): Construct new argument list
+	manually instead of using chainon to modify the original arglist.
+	(expand_builtin_strcmp): Likewise.
+
 2003-06-25  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/i386/i386.h (builtin_define): Remove duplicate __amd64
