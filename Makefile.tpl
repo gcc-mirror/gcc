@@ -627,8 +627,9 @@ info: do-info
 installcheck: do-installcheck
 dvi: do-dvi
 
-# Make sure makeinfo is built before we do a `make info'.
-do-info: all-texinfo
+# Make sure makeinfo is built before we do a `make info', if we're
+# in fact building texinfo.
+do-info: maybe-all-texinfo
 
 install-info: do-install-info dir.info
 	s=`cd $(srcdir); ${PWD}`; export s; \
