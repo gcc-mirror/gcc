@@ -131,44 +131,48 @@ convert_to_real (tree type, tree expr)
      present in runtime.  */
   /* Convert (float)sqrt((double)x) where x is float into sqrtf(x) */
   if (optimize
-      && (fcode == BUILT_IN_SQRT
-	  || fcode == BUILT_IN_SQRTL
-	  || fcode == BUILT_IN_SIN
-	  || fcode == BUILT_IN_SINL
-	  || fcode == BUILT_IN_COS
-	  || fcode == BUILT_IN_COSL
-	  || fcode == BUILT_IN_EXP
-	  || fcode == BUILT_IN_EXPL
-	  || fcode == BUILT_IN_LOG
-	  || fcode == BUILT_IN_LOGL)
       && (TYPE_MODE (type) == TYPE_MODE (double_type_node)
           || TYPE_MODE (type) == TYPE_MODE (float_type_node)))
     {
-      tree arg0 = strip_float_extensions (TREE_VALUE (TREE_OPERAND (expr, 1)));
-      tree newtype = type;
-
-      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode from
-	 the both as the safe type for operation.  */
-      if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
-	newtype = TREE_TYPE (arg0);
-
-      /* Be careful about integer to fp conversions.
-	 These may overflow still.  */
-      if (FLOAT_TYPE_P (TREE_TYPE (arg0))
-	  && TYPE_PRECISION (newtype) < TYPE_PRECISION (itype)
-	  && (TYPE_MODE (newtype) == TYPE_MODE (double_type_node)
-	      || TYPE_MODE (newtype) == TYPE_MODE (float_type_node)))
-	{
-	  tree arglist;
-	  tree fn = mathfn_built_in (newtype, fcode);
-
-	  if (fn)
+      switch (fcode)
+        {
+#define CASE_MATHFN(FN) case BUILT_IN_##FN: case BUILT_IN_##FN##L:
+	  CASE_MATHFN (SQRT)
+	  CASE_MATHFN (SIN)
+	  CASE_MATHFN (COS)
+	  CASE_MATHFN (EXP)
+	  CASE_MATHFN (LOG)
+#undef CASE_MATHFN
 	    {
-	      arglist = build_tree_list (NULL_TREE, fold (convert_to_real (newtype, arg0)));
-	      expr = build_function_call_expr (fn, arglist);
-	      if (newtype == type)
-		return expr;
+	      tree arg0 = strip_float_extensions (TREE_VALUE (TREE_OPERAND (expr, 1)));
+	      tree newtype = type;
+
+	      /* We have (outertype)sqrt((innertype)x).  Choose the wider mode from
+		 the both as the safe type for operation.  */
+	      if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
+		newtype = TREE_TYPE (arg0);
+
+	      /* Be careful about integer to fp conversions.
+		 These may overflow still.  */
+	      if (FLOAT_TYPE_P (TREE_TYPE (arg0))
+		  && TYPE_PRECISION (newtype) < TYPE_PRECISION (itype)
+		  && (TYPE_MODE (newtype) == TYPE_MODE (double_type_node)
+		      || TYPE_MODE (newtype) == TYPE_MODE (float_type_node)))
+	        {
+		  tree arglist;
+		  tree fn = mathfn_built_in (newtype, fcode);
+
+		  if (fn)
+		  {
+		    arglist = build_tree_list (NULL_TREE, fold (convert_to_real (newtype, arg0)));
+		    expr = build_function_call_expr (fn, arglist);
+		    if (newtype == type)
+		      return expr;
+		  }
+		}
 	    }
+	default:
+	  break;
 	}
     }
   if (optimize
