@@ -2668,12 +2668,6 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
     {
       rtx giv_inc, value;
 
-      
-      /* If this is a new register, can't handle it since it does not have
-	 an entry in reg_n_info.  */
-      if (REGNO (v->dest_reg) >= max_reg_before_loop)
-	continue;
-
       /* Only split the giv if it has already been reduced, or if the loop is
 	 being completely unrolled.  */
       if (unroll_type != UNROLL_COMPLETELY && v->ignore)
@@ -2711,13 +2705,17 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
 	      || unroll_type == UNROLL_NAIVE)
 	  && v->giv_type != DEST_ADDR
-	  && ((REGNO_FIRST_UID (REGNO (v->dest_reg)) != INSN_UID (v->insn)
-	       /* Check for the case where the pseudo is set by a shift/add
-		  sequence, in which case the first insn setting the pseudo
-		  is the first insn of the shift/add sequence.  */
-	       && (! (tem = find_reg_note (v->insn, REG_RETVAL, NULL_RTX))
-		   || (REGNO_FIRST_UID (REGNO (v->dest_reg))
-		       != INSN_UID (XEXP (tem, 0)))))
+	  /* The next part is true if the pseudo is used outside the loop.
+	     We assume that this is true for any pseudo created after loop
+	     starts, because we don't have a reg_n_info entry for them.  */
+	  && (REGNO (v->dest_reg) >= max_reg_before_loop
+	      || (REGNO_FIRST_UID (REGNO (v->dest_reg)) != INSN_UID (v->insn)
+		  /* Check for the case where the pseudo is set by a shift/add
+		     sequence, in which case the first insn setting the pseudo
+		     is the first insn of the shift/add sequence.  */
+		  && (! (tem = find_reg_note (v->insn, REG_RETVAL, NULL_RTX))
+		      || (REGNO_FIRST_UID (REGNO (v->dest_reg))
+			  != INSN_UID (XEXP (tem, 0)))))
 	      /* Line above always fails if INSN was moved by loop opt.  */
 	      || (uid_luid[REGNO_LAST_UID (REGNO (v->dest_reg))]
 		  >= INSN_LUID (loop_end)))

@@ -1,3 +1,8 @@
+Tue Dec  2 12:54:33 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (find_splittable_givs):  Remove last change.  Handle givs
+	with a dest_reg that was created by loop.
+
 Fri Nov 28 10:00:27 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Fix NCR entries.
