@@ -100,22 +100,22 @@ static size_t deferred_count, deferred_size;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
-static void missing_arg PARAMS ((enum opt_code));
-static void set_Wimplicit PARAMS ((int));
-static void complain_wrong_lang PARAMS ((size_t, int));
-static void write_langs PARAMS ((char *, int));
-static void print_help PARAMS ((void));
-static void handle_OPT_d PARAMS ((const char *));
-static void set_std_cxx98 PARAMS ((int));
-static void set_std_c89 PARAMS ((int, int));
-static void set_std_c99 PARAMS ((int));
-static void check_deps_environment_vars PARAMS ((void));
-static void handle_deferred_opts PARAMS ((void));
-static void sanitize_cpp_opts PARAMS ((void));
-static void add_prefixed_path PARAMS ((const char *, size_t));
-static void push_command_line_include PARAMS ((void));
-static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
-static void finish_options PARAMS ((void));
+static void missing_arg (enum opt_code);
+static void set_Wimplicit (int);
+static void complain_wrong_lang (size_t, int);
+static void write_langs (char *, int);
+static void print_help (void);
+static void handle_OPT_d (const char *);
+static void set_std_cxx98 (int);
+static void set_std_c89 (int, int);
+static void set_std_c99 (int);
+static void check_deps_environment_vars (void);
+static void handle_deferred_opts (void);
+static void sanitize_cpp_opts (void);
+static void add_prefixed_path (const char *, size_t);
+static void push_command_line_include (void);
+static void cb_file_change (cpp_reader *, const struct line_map *);
+static void finish_options (void);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -123,7 +123,7 @@ static void finish_options PARAMS ((void));
 
 /* Holds switches parsed by c_common_handle_option (), but whose
    handling is deferred to c_common_post_options ().  */
-static void defer_opt PARAMS ((enum opt_code, const char *));
+static void defer_opt (enum opt_code, const char *);
 static struct deferred_opt
 {
   enum opt_code code;
@@ -193,9 +193,7 @@ missing_arg (enum opt_code code)
 
 /* Defer option CODE with argument ARG.  */
 static void
-defer_opt (code, arg)
-     enum opt_code code;
-     const char *arg;
+defer_opt (enum opt_code code, const char *arg)
 {
   /* FIXME: this should be in c_common_init_options, which should take
      argc and argv.  */
@@ -217,8 +215,7 @@ defer_opt (code, arg)
 
 /* Common initialization before parsing options.  */
 int
-c_common_init_options (lang)
-     enum c_language_kind lang;
+c_common_init_options (enum c_language_kind lang)
 {
   c_language = lang;
   parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89 : CLK_GNUCXX,
@@ -388,9 +385,9 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	warn_sign_compare = value;
       warn_switch = value;
       warn_strict_aliasing = value;
-      
+
       /* Only warn about unknown pragmas that are not in system
-	 headers.  */                                        
+	 headers.  */
       warn_unknown_pragmas = value;
 
       /* We save the value of warn_uninitialized, since if they put
@@ -653,7 +650,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wunknown_pragmas:
       /* Set to greater than 1, so that even unknown pragmas in
-	 system headers will be warned about.  */  
+	 system headers will be warned about.  */
       warn_unknown_pragmas = value * 2;
       break;
 
@@ -667,7 +664,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       else
 	warn_write_strings = value;
       break;
-      
+
     case OPT_ansi:
       if (c_language == clk_c)
 	set_std_c89 (false, true);
@@ -1054,8 +1051,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
 /* Post-switch processing.  */
 bool
-c_common_post_options (pfilename)
-     const char **pfilename;
+c_common_post_options (const char **pfilename)
 {
   /* Canonicalize the input and output filenames.  */
   if (in_fname == NULL || !strcmp (in_fname, "-"))
@@ -1153,7 +1149,7 @@ c_common_post_options (pfilename)
 
 /* Front end initialization common to C, ObjC and C++.  */
 bool
-c_common_init ()
+c_common_init (void)
 {
   input_line = saved_lineno;
 
@@ -1179,13 +1175,12 @@ c_common_init ()
   return true;
 }
 
-/* A thin wrapper around the real parser that initializes the 
+/* A thin wrapper around the real parser that initializes the
    integrated preprocessor after debug output has been initialized.
    Also, make sure the start_source_file debug hook gets called for
    the primary source file.  */
 void
-c_common_parse_file (set_yydebug)
-     int set_yydebug ATTRIBUTE_UNUSED;
+c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
 #if YYDEBUG != 0
   yydebug = set_yydebug;
@@ -1202,7 +1197,7 @@ c_common_parse_file (set_yydebug)
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */
 void
-c_common_finish ()
+c_common_finish (void)
 {
   FILE *deps_stream = NULL;
 
@@ -1240,7 +1235,7 @@ c_common_finish ()
    rather than overwriting it, and like Sun's compiler
    SUNPRO_DEPENDENCIES suppresses the dependency on the main file.  */
 static void
-check_deps_environment_vars ()
+check_deps_environment_vars (void)
 {
   char *spec;
 
@@ -1278,7 +1273,7 @@ check_deps_environment_vars ()
 
 /* Handle deferred command line switches.  */
 static void
-handle_deferred_opts ()
+handle_deferred_opts (void)
 {
   size_t i;
 
@@ -1294,7 +1289,7 @@ handle_deferred_opts ()
 /* These settings are appropriate for GCC, but not necessarily so for
    cpplib as a library.  */
 static void
-sanitize_cpp_opts ()
+sanitize_cpp_opts (void)
 {
   /* If we don't know what style of dependencies to output, complain
      if any other dependency switches have been given.  */
@@ -1326,9 +1321,7 @@ sanitize_cpp_opts ()
 
 /* Add include path with a prefix at the front of its name.  */
 static void
-add_prefixed_path (suffix, chain)
-     const char *suffix;
-     size_t chain;
+add_prefixed_path (const char *suffix, size_t chain)
 {
   char *path;
   const char *prefix;
@@ -1348,7 +1341,7 @@ add_prefixed_path (suffix, chain)
 
 /* Handle -D, -U, -A, -imacros, and the first -include.  */
 static void
-finish_options ()
+finish_options (void)
 {
   if (!cpp_opts->preprocessed)
     {
@@ -1403,15 +1396,15 @@ finish_options ()
 
 /* Give CPP the next file given by -include, if any.  */
 static void
-push_command_line_include ()
+push_command_line_include (void)
 {
   if (cpp_opts->preprocessed)
     return;
-    
+
   while (include_cursor < deferred_count)
     {
       struct deferred_opt *opt = &deferred_opts[include_cursor++];
-      
+
       if (opt->code == OPT_include && cpp_push_include (parse_in, opt->arg))
 	return;
     }
@@ -1428,9 +1421,8 @@ push_command_line_include ()
 
 /* File change callback.  Has to handle -include files.  */
 static void
-cb_file_change (pfile, new_map)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const struct line_map *new_map;
+cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		const struct line_map *new_map)
 {
   if (flag_preprocess_only)
     pp_file_change (new_map);
@@ -1444,8 +1436,7 @@ cb_file_change (pfile, new_map)
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU
    extensions if ISO).  There is no concept of gnu94.  */
 static void
-set_std_c89 (c94, iso)
-     int c94, iso;
+set_std_c89 (int c94, int iso)
 {
   cpp_set_lang (parse_in, c94 ? CLK_STDC94: iso ? CLK_STDC89: CLK_GNUC89);
   flag_iso = iso;
@@ -1460,8 +1451,7 @@ set_std_c89 (c94, iso)
 
 /* Set the C 99 standard (without GNU extensions if ISO).  */
 static void
-set_std_c99 (iso)
-     int iso;
+set_std_c99 (int iso)
 {
   cpp_set_lang (parse_in, iso ? CLK_STDC99: CLK_GNUC99);
   flag_no_asm = iso;
@@ -1475,8 +1465,7 @@ set_std_c99 (iso)
 
 /* Set the C++ 98 standard (without GNU extensions if ISO).  */
 static void
-set_std_cxx98 (iso)
-     int iso;
+set_std_cxx98 (int iso)
 {
   cpp_set_lang (parse_in, iso ? CLK_CXX98: CLK_GNUCXX);
   flag_no_gnu_keywords = iso;
@@ -1487,8 +1476,7 @@ set_std_cxx98 (iso)
 
 /* Handle setting implicit to ON.  */
 static void
-set_Wimplicit (on)
-     int on;
+set_Wimplicit (int on)
 {
   warn_implicit = on;
   warn_implicit_int = on;
@@ -1504,8 +1492,7 @@ set_Wimplicit (on)
 /* Args to -d specify what to dump.  Silently ignore
    unrecognized options; they may be aimed at toplev.c.  */
 static void
-handle_OPT_d (arg)
-     const char *arg;
+handle_OPT_d (const char *arg)
 {
   char c;
 
@@ -1526,9 +1513,7 @@ handle_OPT_d (arg)
 
 /* Write a slash-separated list of languages in FLAGS to BUF.  */
 static void
-write_langs (buf, flags)
-     char *buf;
-     int flags;
+write_langs (char *buf, int flags)
 {
   *buf = '\0';
   if (flags & CL_C)
@@ -1549,9 +1534,7 @@ write_langs (buf, flags)
 
 /* Complain that switch OPT_INDEX does not apply to this front end.  */
 static void
-complain_wrong_lang (opt_index, on)
-     size_t opt_index;
-     int on;
+complain_wrong_lang (size_t opt_index, int on)
 {
   char ok_langs[60], bad_langs[60];
   int ok_flags = cl_options[opt_index].flags;
@@ -1566,7 +1549,7 @@ complain_wrong_lang (opt_index, on)
 
 /* Handle --help output.  */
 static void
-print_help ()
+print_help (void)
 {
   /* To keep the lines from getting too long for some compilers, limit
      to about 500 characters (6 lines) per chunk.  */

@@ -64,27 +64,24 @@ int c_header_level;	 /* depth in C headers - C++ only */
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag;
 
-static tree interpret_integer	PARAMS ((const cpp_token *, unsigned int));
-static tree interpret_float	PARAMS ((const cpp_token *, unsigned int));
+static tree interpret_integer (const cpp_token *, unsigned int);
+static tree interpret_float (const cpp_token *, unsigned int);
 static enum integer_type_kind
-  narrowest_unsigned_type	PARAMS ((tree, unsigned int));
+  narrowest_unsigned_type (tree, unsigned int);
 static enum integer_type_kind
-  narrowest_signed_type		PARAMS ((tree, unsigned int));
-static tree lex_string		PARAMS ((const cpp_string *));
-static tree lex_charconst	PARAMS ((const cpp_token *));
-static void update_header_times	PARAMS ((const char *));
-static int dump_one_header	PARAMS ((splay_tree_node, void *));
-static void cb_line_change     PARAMS ((cpp_reader *, const cpp_token *, int));
-static void cb_ident		PARAMS ((cpp_reader *, unsigned int,
-					 const cpp_string *));
-static void cb_def_pragma	PARAMS ((cpp_reader *, unsigned int));
-static void cb_define		PARAMS ((cpp_reader *, unsigned int,
-					 cpp_hashnode *));
-static void cb_undef		PARAMS ((cpp_reader *, unsigned int,
-					 cpp_hashnode *));
+  narrowest_signed_type (tree, unsigned int);
+static tree lex_string (const cpp_string *);
+static tree lex_charconst (const cpp_token *);
+static void update_header_times (const char *);
+static int dump_one_header (splay_tree_node, void *);
+static void cb_line_change (cpp_reader *, const cpp_token *, int);
+static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, unsigned int);
+static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
+static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
 
 void
-init_c_lex ()
+init_c_lex (void)
 {
   struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
@@ -100,7 +97,7 @@ init_c_lex ()
       body_time = get_run_time ();
       toplevel->time = body_time;
     }
-  
+
   cb = cpp_get_callbacks (parse_in);
 
   cb->line_change = cb_line_change;
@@ -120,8 +117,7 @@ init_c_lex ()
 }
 
 struct c_fileinfo *
-get_fileinfo (name)
-     const char *name;
+get_fileinfo (const char *name)
 {
   splay_tree_node n;
   struct c_fileinfo *fi;
@@ -140,8 +136,7 @@ get_fileinfo (name)
 }
 
 static void
-update_header_times (name)
-     const char *name;
+update_header_times (const char *name)
 {
   /* Changing files again.  This means currently collected time
      is charged against header time, and body time starts back at 0.  */
@@ -156,9 +151,7 @@ update_header_times (name)
 }
 
 static int
-dump_one_header (n, dummy)
-     splay_tree_node n;
-     void *dummy ATTRIBUTE_UNUSED;
+dump_one_header (splay_tree_node n, void *dummy ATTRIBUTE_UNUSED)
 {
   print_time ((const char *) n->key,
 	      ((struct c_fileinfo *) n->value)->time);
@@ -166,7 +159,7 @@ dump_one_header (n, dummy)
 }
 
 void
-dump_time_statistics ()
+dump_time_statistics (void)
 {
   struct c_fileinfo *file = get_fileinfo (input_filename);
   int this_time = get_run_time ();
@@ -183,10 +176,9 @@ dump_time_statistics ()
 }
 
 static void
-cb_ident (pfile, line, str)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line ATTRIBUTE_UNUSED;
-     const cpp_string *str ATTRIBUTE_UNUSED;
+cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED,
+	  unsigned int line ATTRIBUTE_UNUSED,
+	  const cpp_string *str ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_IDENT
   if (! flag_no_ident)
@@ -201,17 +193,14 @@ cb_ident (pfile, line, str)
 /* Called at the start of every non-empty line.  TOKEN is the first
    lexed token on the line.  Used for diagnostic line numbers.  */
 static void
-cb_line_change (pfile, token, parsing_args)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const cpp_token *token;
-     int parsing_args ATTRIBUTE_UNUSED;
+cb_line_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const cpp_token *token,
+		int parsing_args ATTRIBUTE_UNUSED)
 {
   src_lineno = SOURCE_LINE (map, token->line);
 }
 
 void
-fe_file_change (new_map)
-     const struct line_map *new_map;
+fe_file_change (const struct line_map *new_map)
 {
   unsigned int to_line = SOURCE_LINE (new_map, new_map->to_line);
 
@@ -250,7 +239,7 @@ fe_file_change (new_map)
 	}
 #endif
       pop_srcloc ();
-      
+
       (*debug_hooks->end_source_file) (to_line);
     }
 
@@ -265,9 +254,7 @@ fe_file_change (new_map)
 }
 
 static void
-cb_def_pragma (pfile, line)
-     cpp_reader *pfile;
-     unsigned int line;
+cb_def_pragma (cpp_reader *pfile, unsigned int line)
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -294,10 +281,7 @@ cb_def_pragma (pfile, line)
 
 /* #define callback for DWARF and DWARF2 debug info.  */
 static void
-cb_define (pfile, line, node)
-     cpp_reader *pfile;
-     unsigned int line;
-     cpp_hashnode *node;
+cb_define (cpp_reader *pfile, unsigned int line, cpp_hashnode *node)
 {
   (*debug_hooks->define) (SOURCE_LINE (map, line),
 			  (const char *) cpp_macro_definition (pfile, node));
@@ -305,18 +289,15 @@ cb_define (pfile, line, node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (pfile, line, node)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     unsigned int line;
-     cpp_hashnode *node;
+cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
+	  cpp_hashnode *node)
 {
   (*debug_hooks->undef) (SOURCE_LINE (map, line),
 			 (const char *) NODE_NAME (node));
 }
 
 int
-c_lex (value)
-     tree *value;
+c_lex (tree *value)
 {
   const cpp_token *tok;
 
@@ -403,9 +384,7 @@ c_lex (value)
    minimum specified by FLAGS, that can fit VALUE, or itk_none if
    there isn't one.  */
 static enum integer_type_kind
-narrowest_unsigned_type (value, flags)
-     tree value;
-     unsigned int flags;
+narrowest_unsigned_type (tree value, unsigned int flags)
 {
   enum integer_type_kind itk;
 
@@ -429,9 +408,7 @@ narrowest_unsigned_type (value, flags)
 
 /* Ditto, but narrowest signed type.  */
 static enum integer_type_kind
-narrowest_signed_type (value, flags)
-     tree value;
-     unsigned int flags;
+narrowest_signed_type (tree value, unsigned int flags)
 {
   enum integer_type_kind itk;
 
@@ -455,9 +432,7 @@ narrowest_signed_type (value, flags)
 
 /* Interpret TOKEN, an integer with FLAGS as classified by cpplib.  */
 static tree
-interpret_integer (token, flags)
-     const cpp_token *token;
-     unsigned int flags;
+interpret_integer (const cpp_token *token, unsigned int flags)
 {
   tree value, type;
   enum integer_type_kind itk;
@@ -535,9 +510,7 @@ interpret_integer (token, flags)
 /* Interpret TOKEN, a floating point number with FLAGS as classified
    by cpplib.  */
 static tree
-interpret_float (token, flags)
-     const cpp_token *token;
-     unsigned int flags;
+interpret_float (const cpp_token *token, unsigned int flags)
 {
   tree type;
   tree value;
@@ -599,15 +572,14 @@ interpret_float (token, flags)
 }
 
 static tree
-lex_string (str)
-     const cpp_string *str;
+lex_string (const cpp_string *str)
 {
   bool wide;
   tree value;
   char *buf, *q;
   cppchar_t c;
   const unsigned char *p, *limit;
-  
+
   wide = str->text[0] == 'L';
   p = str->text + 1 + wide;
   limit = str->text + str->len - 1;
@@ -619,7 +591,7 @@ lex_string (str)
 
       if (c == '\\' && !ignore_escape_flag)
 	c = cpp_parse_escape (parse_in, &p, limit, wide);
-	
+
       /* Add this single character into the buffer either as a wchar_t,
 	 a multibyte sequence, or as a single byte.  */
       if (wide)
@@ -672,8 +644,7 @@ lex_string (str)
 
 /* Converts a (possibly wide) character constant token into a tree.  */
 static tree
-lex_charconst (token)
-     const cpp_token *token;
+lex_charconst (const cpp_token *token)
 {
   cppchar_t result;
   tree type, value;
@@ -681,7 +652,7 @@ lex_charconst (token)
   int unsignedp;
 
   result = cpp_interpret_charconst (parse_in, token,
- 				    &chars_seen, &unsignedp);
+				    &chars_seen, &unsignedp);
 
   /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
      before possibly widening to HOST_WIDE_INT for build_int_2.  */

@@ -1,5 +1,17 @@
 2003-06-22  Andreas Jaeger  <aj@suse.de>
 
+	* c-lex.c: Convert to ISO C90.
+	* c-objc-common.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* c-semantics.c: Likewise.
+	* c-tree.h: Likewise.
+	* c-typeck.c: Likewise.
+
 	* c-lang.c: Convert to ISO C90.
 
 2003-06-22  Neil Booth  <neil@daikokuya.co.uk>

@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,17 +39,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "cgraph.h"
 
-static bool c_tree_printer PARAMS ((output_buffer *, text_info *));
-static tree inline_forbidden_p PARAMS ((tree *, int *, void *));
-static void expand_deferred_fns PARAMS ((void));
-static tree start_cdtor	PARAMS ((int));
-static void finish_cdtor PARAMS ((tree));
+static bool c_tree_printer (output_buffer *, text_info *);
+static tree inline_forbidden_p (tree *, int *, void *);
+static void expand_deferred_fns (void);
+static tree start_cdtor (int);
+static void finish_cdtor (tree);
 
 static GTY(()) varray_type deferred_fns;
 
 int
-c_missing_noreturn_ok_p (decl)
-     tree decl;
+c_missing_noreturn_ok_p (tree decl)
 {
   /* A missing noreturn is not ok for freestanding implementations and
      ok for the `main' function in hosted implementations.  */
@@ -61,8 +60,7 @@ c_missing_noreturn_ok_p (decl)
    such functions always being inlined when optimizing.  */
 
 int
-c_disregard_inline_limits (fn)
-     tree fn;
+c_disregard_inline_limits (tree fn)
 {
   if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
     return 1;
@@ -71,10 +69,8 @@ c_disregard_inline_limits (fn)
 }
 
 static tree
-inline_forbidden_p (nodep, walk_subtrees, fn)
-     tree *nodep;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *fn;
+inline_forbidden_p (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *fn)
 {
   tree node = *nodep;
   tree t;
@@ -160,8 +156,7 @@ inline_forbidden_p (nodep, walk_subtrees, fn)
 }
 
 int
-c_cannot_inline_tree_fn (fnp)
-     tree *fnp;
+c_cannot_inline_tree_fn (tree *fnp)
 {
   tree fn = *fnp;
   tree t;
@@ -170,7 +165,7 @@ c_cannot_inline_tree_fn (fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     return 1;
 
-  /* Don't auto-inline anything that might not be bound within 
+  /* Don't auto-inline anything that might not be bound within
      this unit of translation.  */
   if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn))
     goto cannot_inline;
@@ -215,7 +210,7 @@ c_cannot_inline_tree_fn (fnp)
       if (! t)
 	return 0;
     }
-    
+
   if (walk_tree (&DECL_SAVED_TREE (fn), inline_forbidden_p, fn, NULL))
     goto cannot_inline;
 
@@ -229,8 +224,7 @@ c_cannot_inline_tree_fn (fnp)
 /* Called from check_global_declarations.  */
 
 bool
-c_warn_unused_global_decl (decl)
-     tree decl;
+c_warn_unused_global_decl (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
@@ -242,7 +236,7 @@ c_warn_unused_global_decl (decl)
 
 /* Initialization common to C and Objective-C front ends.  */
 bool
-c_objc_common_init ()
+c_objc_common_init (void)
 {
   static const enum tree_code stmt_codes[] = {
     c_common_stmt_codes
@@ -282,8 +276,7 @@ c_objc_common_init ()
    to RTL is only done at the end of the compilation.  */
 
 int
-defer_fn (fn)
-     tree fn;
+defer_fn (tree fn)
 {
   VARRAY_PUSH_TREE (deferred_fns, fn);
 
@@ -293,7 +286,7 @@ defer_fn (fn)
 /* Expand deferred functions for C and ObjC.  */
 
 static void
-expand_deferred_fns ()
+expand_deferred_fns (void)
 {
   unsigned int i;
 
@@ -315,8 +308,7 @@ expand_deferred_fns ()
 }
 
 static tree
-start_cdtor (method_type)
-     int method_type;
+start_cdtor (int method_type)
 {
   tree fnname = get_file_function_name (method_type);
   tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
@@ -342,8 +334,7 @@ start_cdtor (method_type)
 }
 
 static void
-finish_cdtor (body)
-     tree body;
+finish_cdtor (tree body)
 {
   tree scope;
   tree block;
@@ -361,7 +352,7 @@ finish_cdtor (body)
 /* Called at end of parsing, but before end-of-file processing.  */
 
 void
-c_objc_common_finish_file ()
+c_objc_common_finish_file (void)
 {
   if (pch_file)
     c_common_write_pch ();
@@ -420,9 +411,7 @@ c_objc_common_finish_file ()
    Please notice when called, the `%' part was already skipped by the
    diagnostic machinery.  */
 static bool
-c_tree_printer (buffer, text)
-     output_buffer *buffer;
-     text_info *text;
+c_tree_printer (output_buffer *buffer, text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree);
 
