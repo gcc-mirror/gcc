@@ -498,7 +498,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
 	    {
 	      if (TREE_CODE (decl) == VAR_DECL 
-		  && current_function_decl != NULL_TREE)
+		  && current_function_decl != NULL_TREE
+		  && ! TREE_STATIC (decl))
 		error_with_decl (decl,
 		  "section attribute cannot be specified for local variables");
 	      /* The decl may have already been given a section attribute from
