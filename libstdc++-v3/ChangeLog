@@ -1,5 +1,9 @@
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
 
+	* libsupc++/vterminate.cc (writestr):  Use __builtin_strlen.
+
+2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
+
 	* libsupc++/eh_term_handler.cc:  Add comment about embedded systems.
 	* docs/html/debug.html:  Cosmetic and HTML changes.  Point to
 	verb-term notes.
