@@ -1,3 +1,8 @@
+2003-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Remove check for whether ${ADAC} accepts -Wno-long-long.
+	* configure: Regenerate.
+
 2003-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Olivier Hainque  <hainque@act-europe.fr>
 
