@@ -102,9 +102,8 @@ do {									\
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
-			  %{pg:crt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
-			  %{pg:gmon.o%s}}} \
-			%{pg:crti.o%s}%{!pg:crti.o%s} \
+			  %{p:mcrt1.o%s}%{!p:crt1.o%s} %{pg:gmon.o%s}}} \
+			crti.o%s \
 			%{ansi:values-Xc.o%s} \
 			%{!ansi: \
 			 %{traditional:values-Xt.o%s} \
@@ -120,7 +119,7 @@ do {									\
   "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} %{!shared:%{!symbolic:-lc}}"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
+#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
@@ -135,11 +134,13 @@ do {									\
    %{R*} \
    %{compat-bsd: \
      %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
+       %{pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:%{!pg:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
      -R /usr/ucblib} \
    %{!compat-bsd: \
      %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+       %{pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:%{!pg:-Y P,/usr/ccs/lib:/usr/lib}}}} \
    %{Qy:} %{!Qn:-Qy}"
 
 /* This defines which switch letters take arguments.
