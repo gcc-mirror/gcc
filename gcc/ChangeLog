@@ -1,3 +1,10 @@
+Sun Apr 12 21:08:28 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (loop_optimize): Reset max_uid_for_loop after
+	find_and_verify_loops call.
+	(strength_reduce): In auto_inc_opt code, verify v->insn has valid
+	INSN_LUID.
+
 Sun Apr 12 20:54:59 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* configure.in (sparc-*-solaris2*): Add xm-siglist.h to xm_file.
