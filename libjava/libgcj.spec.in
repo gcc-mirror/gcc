@@ -6,4 +6,4 @@
 %rename lib liborig
 *lib: -lgcj -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
-*jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@
+*jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@ -fkeep-inline-functions
