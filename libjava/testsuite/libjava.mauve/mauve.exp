@@ -99,7 +99,7 @@ proc test_mauve {} {
 
   # Compute flags to use to do the build.
   set compile_args [libjava_arguments]
-  set link_args [concat $compile_args \
+  set link_args [concat [libjava_arguments link] \
 		   [list "additional_flags=--main=DejaGNUTestHarness"]]
 
   set ok 1
@@ -229,7 +229,7 @@ proc test_mauve_sim {} {
 
   # Compute flags to use to do the build.
   set compile_args [libjava_arguments]
-  set link_args [concat $compile_args \
+  set link_args [concat [libjava_arguments link] \
 		   [list "additional_flags=--main=DejaGNUTestHarness"]]
 
   set ok 1
