@@ -108,6 +108,22 @@ struct old_i386_kernel_sigaction {
 	void (*sa_restorer) (void);
 };
 
+#define RESTORE(name, syscall) RESTORE2 (name, syscall)
+# define RESTORE2(name, syscall) \
+asm						\
+  (						\
+   ".text\n"					\
+   ".byte 0  # Yes, this really is necessary\n" \
+   "	.align 8\n"				\
+   "__" #name ":\n"				\
+   "	popl %eax\n"				\
+   "	movl $" #syscall ", %eax\n"		\
+   "	int  $0x80"				\
+   );
+
+RESTORE (restore, __NR_sigreturn)
+static void restore (void) asm ("__restore");
+
 #define INIT_SEGV					\
 do							\
   {							\
@@ -115,7 +131,8 @@ do							\
     struct old_i386_kernel_sigaction kact;		\
     kact.k_sa_handler = catch_segv;			\
     kact.k_sa_mask = 0;					\
-    kact.k_sa_flags = 0;				\
+    kact.k_sa_flags = 0x4000000;			\
+    kact.sa_restorer = restore;				\
     syscall (SYS_sigaction, SIGSEGV, &kact, NULL);	\
   }							\
 while (0)  
@@ -128,7 +145,8 @@ do								\
     struct old_i386_kernel_sigaction kact;			\
     kact.k_sa_handler = catch_fpe;				\
     kact.k_sa_mask = 0;						\
-    kact.k_sa_flags = 0;					\
+    kact.k_sa_flags = 0x4000000;				\
+    kact.sa_restorer = restore;					\
     syscall (SYS_sigaction, SIGFPE, &kact, NULL);		\
   }								\
 while (0)  
@@ -147,10 +165,7 @@ while (0)
 
  * Also, there is at the present time no unwind info in the
  * linuxthreads library's signal handlers and so we can't unwind
- * through them anyway.  
-
- * Finally, the code that glibc uses to return from a signal handler
- * is subject to change.  */
+ * through them anyway.  */
 
 #endif /* JAVA_SIGNAL_H */
   

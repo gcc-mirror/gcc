@@ -122,6 +122,20 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
+/* Unblock a signal.  Unless we do this, the signal may only be sent
+   once.  */
+static void 
+unblock_signal (int signum)
+{
+#ifdef _POSIX_VERSION
+  sigset_t sigs;
+
+  sigemptyset (&sigs);
+  sigaddset (&sigs, signum);
+  sigprocmask (SIG_UNBLOCK, &sigs, NULL);
+#endif
+}
+
 extern "C" void _Jv_ThrowSignal (jthrowable) __attribute ((noreturn));
 
 // Just like _Jv_Throw, but fill in the stack trace first.  Although
@@ -139,6 +153,7 @@ static java::lang::NullPointerException *nullp;
 
 SIGNAL_HANDLER (catch_segv)
 {
+  unblock_signal (SIGFPE);
   MAKE_THROW_FRAME (nullp);
   _Jv_ThrowSignal (nullp);
 }
@@ -149,6 +164,7 @@ static java::lang::ArithmeticException *arithexception;
 #ifdef HANDLE_FPE
 SIGNAL_HANDLER (catch_fpe)
 {
+  unblock_signal (SIGSEGV);
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else

@@ -1,3 +1,13 @@
+2003-08-20  Andrew Haley  <aph@redhat.com>
+
+	* prims.cc (unblock_signal): New function.
+	(catch_segv): Use it.
+	(catch_fpe): Likewise.
+
+	* include/i386-signal.h (RESTORE): New.
+	(INIT_SEGV): Set restorer.
+	(INIT_FPE): Likewise.
+
 2003-08-08  Kean Johnston  <jkj@sco.com>
 
 	* java/io/natFilePosix.cc: HAVE_READDIR_R is broken on SCO. Undefine.
@@ -91,6 +101,7 @@
 
 	* mauve-libgcj: Don't ignore java.lang.String.surrogate.
 
+>>>>>>> 1.1594.2.151
 2003-05-13  Release Manager
 
 	* GCC 3.3 Released.
