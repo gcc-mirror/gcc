@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,11 +47,11 @@ package body System.OS_Primitives is
    pragma Convention (C, struct_timezone);
    type struct_timezone_ptr is access all struct_timezone;
 
-   type time_t is new Integer;
+   type time_t is new Long_Integer;
 
    type struct_timeval is record
       tv_sec       : time_t;
-      tv_usec      : Integer;
+      tv_usec      : Long_Integer;
    end record;
    pragma Convention (C, struct_timeval);
 
