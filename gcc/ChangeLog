@@ -1,3 +1,12 @@
+Tue Nov  4 20:36:50 1997  Richard Henderson  (rth@cygnus.com)
+
+	* alpha.c (summarize_insn): Handle ASM_OPERANDS.  Don't recurse
+	for SUBREG, just fall through.
+
+	* alpha.c (alpha_handle_trap_shadows): Init sum.defd to zero.
+
+	* alpha.md (attr trap): Make TRAP_YES non-zero for sanity's sake.
+
 Tue Nov  4 18:49:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* fixincludes: Fix "hypot" prototype in NeXT math.h.
