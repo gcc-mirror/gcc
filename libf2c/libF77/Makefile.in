@@ -36,6 +36,8 @@ G2C_H_DIR = ..
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
+AR = @AR@
+ARFLAGS = rc
 @SET_MAKE@
 
 SHELL = /bin/sh
@@ -76,7 +78,7 @@ F90BIT = lbitbits.lo lbitshft.lo qbitbits.lo qbitshft.lo
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
-all: ../s-libf77 ../frtbegin.o
+all: ../s-libf77 ../libfrtbegin.a
 
 ../s-libf77: $(OBJS)
 	echo timestamp > ../s-libf77
@@ -93,7 +95,7 @@ Makefile: Makefile.in config.status
 
 config.status: configure
 	rm -f config.cache
-	CONFIG_SITE=no-such-file CC='$(CC)' CFLAGS='$(CFLAGS)' \
+	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
 	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
 ${srcdir}/configure: configure.in
@@ -103,8 +105,12 @@ ${srcdir}/configure: configure.in
 VersionF.lo: Version.c
 	@LIBTOOL@ --mode=compile $(CC) -c $(ALL_CFLAGS) $(srcdir)/Version.c -o $@
 
-../frtbegin.o : main.c
+frtbegin.o : main.c
 	$(CC) -c $(ALL_CFLAGS) $(srcdir)/main.c -o $@
+
+../libfrtbegin.a: frtbegin.o
+	$(AR) $(ARFLAGS) $@ $<
+	$(RANLIB) $@
 
 F77_aloc.lo: F77_aloc.c
 s_rnge.lo: s_rnge.c
@@ -234,7 +240,7 @@ $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) $(EFL) \
 check install uninstall install-strip dist installcheck installdirs:
 
 mostlyclean:
-	rm -f *.o *.lo ../frtbegin.o
+	rm -f *.o *.lo ../libfrtbegin.a
 	rm -rf .libs
 
 clean: mostlyclean

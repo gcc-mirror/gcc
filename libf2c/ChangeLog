@@ -1,3 +1,9 @@
+2001-10-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: Add "AR" reference, change
+	from frtbegin.o to libfrtbegin.a.
+	* libF77/Makefile.in: Ditto.
+
 2001-10-02  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libF77/Makefile.in: Make .lo the target of compilation.

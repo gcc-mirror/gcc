@@ -1,3 +1,8 @@
+2001-10-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Remove reference to FORTRAN_INIT.
+	* g77spec.c: Add reference to FORTRAN_INIT.
+
 2001-09-29  Juergen Pfeifer  <juergen.pfeifer@gmx.net>
 
 	Make libf2c a shared library.
