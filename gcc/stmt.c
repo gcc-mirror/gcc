@@ -610,6 +610,10 @@ expand_computed_goto (exp)
     {
       rtx x = expand_expr (exp, NULL_RTX, VOIDmode, 0);
       emit_queue ();
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      x = convert_memory_address (Pmode, x);
+#endif
       emit_indirect_jump (x);
     }
 }
