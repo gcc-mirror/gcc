@@ -1,3 +1,9 @@
+2000-10-03  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/float-c4x.h: New.
+	* configure.in (c4x-*): Set float_format to c4x.
+	* configure: Regenerate.	
+
 2000-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (sparc-*-solaris2*): Disable 32-to-64 cross
