@@ -591,7 +591,7 @@ java_peek_unicode (void)
 }
 
 /* Move forward one Unicode character (post-Unicode-escape-handling).
-   Only allowed after java_peek_unicode.  The combination java_peek_uncode
+   Only allowed after java_peek_unicode.  The combination java_peek_unicode
    followed by java_next_unicode is equivalent to java_get_unicode.  */
 
 static void java_next_unicode (void)
