@@ -246,10 +246,10 @@ static int loop_depth;
 
 static int cc0_live;
 
-/* During propagate_block, this contains the last MEM stored into.  It
-   is used to eliminate consecutive stores to the same location.  */
+/* During propagate_block, this contains a list of all the MEMs we are
+   tracking for dead store elimination.  */
 
-static rtx last_mem_set;
+static rtx mem_set_list;
 
 /* Set of registers that may be eliminable.  These are handled specially
    in updating regs_ever_live.  */
@@ -1147,7 +1147,11 @@ life_analysis (f, nregs, file)
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
 #endif
 
+  /* We want alias analysis information for local dead store elimination.  */
+  init_alias_analysis ();
   life_analysis_1 (f, nregs);
+  end_alias_analysis ();
+
   if (file)
     dump_flow_info (file);
 
@@ -1739,7 +1743,7 @@ propagate_block (old, first, last, final, significant, bnum)
   live = ALLOCA_REG_SET ();
 
   cc0_live = 0;
-  last_mem_set = 0;
+  mem_set_list = NULL_RTX;
 
   /* Include any notes at the end of the block in the scan.
      This is in case the block ends with a call to setjmp.  */
@@ -1963,7 +1967,7 @@ propagate_block (old, first, last, final, significant, bnum)
 				      final, insn);
 
 		  /* Calls also clobber memory.  */
-		  last_mem_set = 0;
+		  mem_set_list = NULL_RTX;
 		}
 
 	      /* Update OLD for the registers used or set.  */
@@ -2041,9 +2045,21 @@ insn_dead_p (x, needed, call_ok, notes)
 	return ! cc0_live;
 #endif
       
-      if (GET_CODE (r) == MEM && last_mem_set && ! MEM_VOLATILE_P (r)
-	  && rtx_equal_p (r, last_mem_set))
-	return 1;
+      if (GET_CODE (r) == MEM && ! MEM_VOLATILE_P (r))
+	{
+	  rtx temp;
+	  /* Walk the set of memory locations we are currently tracking
+	     and see if one is an identical match to this memory location.
+	     If so, this memory write is dead (remember, we're walking
+	     backwards from the end of the block to the start.  */
+	  temp = mem_set_list;
+	  while (temp)
+	    {
+	      if (rtx_equal_p (XEXP (temp, 0), r))
+		return 1;
+	      temp = XEXP (temp, 1);
+	    }
+	}
 
       while (GET_CODE (r) == SUBREG || GET_CODE (r) == STRICT_LOW_PART
 	     || GET_CODE (r) == ZERO_EXTRACT)
@@ -2290,21 +2306,39 @@ mark_set_1 (needed, dead, x, insn, significant)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
-  /* If we are writing into memory or into a register mentioned in the
-     address of the last thing stored into memory, show we don't know
-     what the last store was.  If we are writing memory, save the address
-     unless it is volatile.  */
+  /* If this set is a MEM, then it kills any aliased writes. 
+     If this set is a REG, then it kills any MEMs which use the reg.  */
   if (GET_CODE (reg) == MEM
-      || (GET_CODE (reg) == REG
-	  && last_mem_set != 0 && reg_overlap_mentioned_p (reg, last_mem_set)))
-    last_mem_set = 0;
+      || GET_CODE (reg) == REG)
+    {
+      rtx temp = mem_set_list;
+      rtx prev = NULL_RTX;
+
+      while (temp)
+	{
+	  if ((GET_CODE (reg) == MEM
+	       && output_dependence (XEXP (temp, 0), reg))
+	      || (GET_CODE (reg) == REG
+		  && reg_overlap_mentioned_p (reg, XEXP (temp, 0))))
+	    {
+	      /* Splice this entry out of the list.  */
+	      if (prev)
+		XEXP (prev, 1) = XEXP (temp, 1);
+	      else
+		mem_set_list = XEXP (temp, 1);
+	    }
+	  else
+	    prev = temp;
+	  temp = XEXP (temp, 1);
+	}
+    }
     
   if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
       /* There are no REG_INC notes for SP, so we can't assume we'll see 
 	 everything that invalidates it.  To be safe, don't eliminate any
 	 stores though SP; none of them should be redundant anyway.  */
       && ! reg_mentioned_p (stack_pointer_rtx, reg))
-    last_mem_set = reg;
+    mem_set_list = gen_rtx_EXPR_LIST (VOIDmode, reg, mem_set_list);
 
   if (GET_CODE (reg) == REG
       && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
@@ -2699,9 +2733,28 @@ mark_used_regs (needed, live, x, final, insn)
 	 something that can be stored into.  */
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
-	; /* needn't clear last_mem_set */
+	; /* needn't clear the memory set list */
       else
-	last_mem_set = 0;
+	{
+	  rtx temp = mem_set_list;
+	  rtx prev = NULL_RTX;
+
+	  while (temp)
+	    {
+	      if (anti_dependence (XEXP (temp, 0), GET_MODE (x),
+				   x, rtx_addr_varies_p))
+		{
+		  /* Splice temp out of the list.  */
+		  if (prev)
+		    XEXP (prev, 1) = XEXP (temp, 1);
+		  else
+		    mem_set_list = XEXP (temp, 1);
+		}
+	      else
+		prev = temp;
+	      temp = XEXP (temp, 1);
+	    }
+	}
 
 #ifdef AUTO_INC_DEC
       if (final)
