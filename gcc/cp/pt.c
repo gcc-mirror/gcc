@@ -2170,6 +2170,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
       && DECL_REAL_CONTEXT (decl) == current_class_type
+      && DECL_LANG_SPECIFIC (decl)
       && DECL_DEFINED_IN_CLASS_P (decl)) 
     /* We already checked these parameters when the template was
        declared, so there's no need to do it again now.  This is an
@@ -2495,10 +2496,17 @@ redeclare_class_template (type, parms)
      tree type;
      tree parms;
 {
-  tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
+  tree tmpl;
   tree tmpl_parms;
   int i;
 
+  if (!TYPE_TEMPLATE_INFO (type))
+    {
+      cp_error ("`%T' is not a template type", type);
+      return;
+    }
+
+  tmpl = TYPE_TI_TEMPLATE (type);
   if (!PRIMARY_TEMPLATE_P (tmpl))
     /* The type is nested in some template class.  Nothing to worry
        about here; there are no new template parameters for the nested
@@ -4816,6 +4824,8 @@ instantiate_class_template (type)
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
+  if (ANON_UNION_TYPE_P (pattern))
+    SET_ANON_UNION_TYPE_P (type);
 
   /* We must copy the arguments to the permanent obstack since
      during the tsubst'ing below they may wind up in the

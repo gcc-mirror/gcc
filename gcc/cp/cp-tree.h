@@ -737,6 +737,9 @@ struct lang_type
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
       unsigned com_interface : 1;
+      /* When adding a flag here, consider whether or not it ought to
+	 apply to a template instance if it applies to the template.
+	 If so, make sure to copy it in instantiate_class_template!  */
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a

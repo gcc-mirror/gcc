@@ -5040,23 +5040,41 @@ mark_used (decl)
     instantiate_decl (decl);
 }
 
-/* Helper function for named_class_head_sans_basetype nonterminal.  */
+/* Helper function for named_class_head_sans_basetype nonterminal.  We
+   have just seen something of the form `AGGR SCOPE::ID'.  Return a
+   TYPE_DECL for the type declared by ID in SCOPE.  */
 
 tree
 handle_class_head (aggr, scope, id)
      tree aggr, scope, id;
 {
+  tree decl;
+
   if (TREE_CODE (id) == TYPE_DECL)
-    return id;
-  if (DECL_CLASS_TEMPLATE_P (id))
-    return DECL_TEMPLATE_RESULT (id);
+    decl = id;
+  else if (DECL_CLASS_TEMPLATE_P (id))
+    decl = DECL_TEMPLATE_RESULT (id);
+  else 
+    {
+      if (scope)
+	cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+      else
+	cp_error ("no file-scope type named `%D'", id);
+      
+      decl = TYPE_MAIN_DECL (xref_tag (aggr, make_anon_name (), 1));
+    }
 
-  if (scope)
-    cp_error ("`%T' does not have a nested type named `%D'", scope, id);
-  else
-    cp_error ("no file-scope type named `%D'", id);
+  /* This syntax is only allowed when we're defining a type, so we
+     enter the SCOPE.  */
+  push_scope (CP_DECL_CONTEXT (decl));
 
-  id = xref_tag
-    (aggr, make_anon_name (), 1);
-  return TYPE_MAIN_DECL (id);
+  /* If we see something like:
+
+       template <typename T> struct S::I ....
+       
+     we must create a TEMPLATE_DECL for the nested type.  */
+  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+    decl = push_template_decl (decl);
+
+  return decl;
 }
