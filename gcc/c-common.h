@@ -569,6 +569,10 @@ extern int warn_bad_function_cast;
 
 extern int warn_traditional;
 
+/* Nonzero means warn for a declaration found after a statement.  */
+
+extern int warn_declaration_after_statement;
+
 /* Nonzero means warn for non-prototype function decls
    or non-prototyped defs without previous prototype.  */
 

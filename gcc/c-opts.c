@@ -412,6 +412,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_ctor_dtor_privacy = value;
       break;
 
+    case OPT_Wdeclaration_after_statement:
+      warn_declaration_after_statement = value;
+      break;
+
     case OPT_Wdeprecated:
       warn_deprecated = value;
       cpp_opts->warn_deprecated = value;
