@@ -49,3 +49,5 @@ int main (int argc, char * argv[])
   ACE_UINT32 const mc_isoValue = 10000;
   ResourceBalanceType2 rbResourceBalanceType2(3, mc_isoValue, "ATM", "M");
 }
+
+// { dg-final { cleanup-coverage-files } }
