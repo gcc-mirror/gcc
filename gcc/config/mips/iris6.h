@@ -207,7 +207,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Irix assembler does not support the init_priority C++ attribute.  */
 #undef SUPPORTS_INIT_PRIORITY
-#define SUPPORTS_INIT_PRIORITY 0
+#define SUPPORTS_INIT_PRIORITY (!flag_gnu_linker)
 
 #define POPSECTION_ASM_OP	"\t.popsection"
 
