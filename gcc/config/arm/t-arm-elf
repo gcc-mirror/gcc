@@ -25,8 +25,9 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 
 # MULTILIB_OPTIONS  = mlittle-endian/mbig-endian mhard-float/msoft-float mapcs-32/mapcs-26 fno-leading-underscore/fleading-underscore
 # MULTILIB_DIRNAMES = le be fpu soft 32bit 26bit elf under
+# MULTILIB_EXCEPTIONS = 
 # MULTILIB_MATCHES  = 
-
+# EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 # LIBGCC = stmp-multilib
 # INSTALL_LIBGCC = install-multilib
 
