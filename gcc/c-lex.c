@@ -56,9 +56,6 @@ Boston, MA 02111-1307, USA.  */
 /* The original file name, before changing "-" to "stdin".  */
 static const char *orig_filename;
 
-/* Private idea of the line number.  See discussion in c_lex().  */
-static int lex_lineno;
-
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
 static splay_tree file_info_tree;
@@ -129,9 +126,8 @@ init_c_lex (filename)
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
 
-  /* Start it at 0, because check_newline is called at the very beginning
-     and will increment it to 1.  */
-  lineno = lex_lineno = 0;
+  /* Start it at 0.  */
+  lineno = 0;
 
   return filename;
 }
@@ -240,7 +236,7 @@ cb_change_file (pfile, fc)
       /* Don't stack the main buffer on the input stack.  */
       if (fc->from.filename)
 	{
-	  lineno = lex_lineno;
+	  lineno = fc->from.lineno;
 	  push_srcloc (fc->to.filename, 1);
 	  input_file_stack->indent_level = indent_level;
 	  debug_start_source_file (fc->to.filename);
@@ -290,7 +286,7 @@ cb_change_file (pfile, fc)
   update_header_times (fc->to.filename);
   in_system_header = fc->sysp;
   input_filename = fc->to.filename;
-  lex_lineno = fc->to.lineno;
+  lineno = fc->to.lineno;	/* Do we need this?  */
 
   /* Hook for C++.  */
   extract_interface_info ();
@@ -314,6 +310,7 @@ cb_def_pragma (pfile)
       if (s.type == CPP_NAME)
 	name = cpp_token_as_text (pfile, &s);
 
+      lineno = cpp_get_line (parse_in)->line;
       if (name)
 	warning ("ignoring #pragma %s %s", space, name);
       else
@@ -950,10 +947,9 @@ c_lex (value)
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
      every time we return a token.  */
-  lex_lineno = cpp_get_line (parse_in)->line;
+  lineno = cpp_get_line (parse_in)->line;
 
   *value = NULL_TREE;
-  lineno = lex_lineno;
   type = tok.type;
   switch (type)
     {
