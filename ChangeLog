@@ -1,5 +1,8 @@
 2002-12-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Don't let real targets depend on phony targets.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl (do-info): Depend on maybe-all-texinfo, not all-texinfo.
 	* Makefile.in: Regenerate.
 
