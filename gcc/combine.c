@@ -3997,7 +3997,7 @@ subst (x, from, to, in_dest, unique_copy)
 	 means that we only care about the low bits of the result.
 
 	 However, on most machines (those with neither BYTE_LOADS_ZERO_EXTEND
-	 nor BYTES_LOADS_SIGN_EXTEND defined), we cannot perform a
+	 nor BYTE_LOADS_SIGN_EXTEND defined), we cannot perform a
 	 narrower operation that requested since the high-order bits will
 	 be undefined.  On machine where BYTE_LOADS_*_EXTEND is defined,
 	 however, this transformation is safe as long as M1 and M2 have
