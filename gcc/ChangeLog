@@ -1,3 +1,57 @@
+2000-03-12  Zack Weinberg  <zack@wolery.cumb.org>
+
+	Convert cpplib to use libiberty/hashtab.c.
+
+	* cpplib.h (struct cpp_reader): Make hashtab and
+	all_include_files of type 'struct htab *'.  Delete HASHSIZE
+	and ALL_INCLUDE_HASHSIZE macros.
+
+	* cpphash.h: Update prototypes.
+	(struct hashnode): Remove next, prev, and bucket_hdr members.
+	Make length a size_t.  Add hash member.
+	(struct ihash): Remove next member.  Add hash member.  Make
+	name a flexible array member.
+
+	* cppfiles.c: Include hashtab.h.
+	(include_hash): Delete.
+	(IHASHSIZE): New macro.
+	(hash_IHASH, eq_IHASH, _cpp_init_include_hash): New functions.
+	(cpp_included): Do the hash lookup here.
+	(_cpp_find_include_file): Rewrite.
+	(cpp_read_file): Put the "fake" hash entry into the hash
+	table.  Honor the control_macro, if it turns out we've seen
+	the file before.  Don't push the buffer here.
+	(_cpp_read_include_file): Push the buffer here.
+	(OMODES): New macro.  Use it whenever we call open(2).
+
+	* cpphash.c: Include hashtab.h.
+	(hash_HASHNODE, eq_HASHNODE, del_HASHNODE, dump_hash_helper,
+	_cpp_init_macro_hash, _cpp_dump_macro_hash, _cpp_make_hashnode,
+	_cpp_lookup_slot): New functions.
+	(HASHSIZE): new macro.
+	(hashf, _cpp_install, _cpp_delete_macro): Delete.
+	(_cpp_lookup): Use hashtab.h routines.
+
+	* cppinit.c: Include hashtab.h.
+	(cpp_reader_init): Call _cpp_init_macro_hash and
+	_cpp_init_include_hash.  Don't allocate hashtab directly.
+	(cpp_cleanup): Just call htab_delete on pfile->hashtab and
+	pfile->all_include_files.
+	(initialize_builtins): Use _cpp_make_hashnode and
+	htab_find_slot to add hash entries.
+	(cpp_finish): Just call _cpp_dump_macro_hash.
+	* cpplib.c: Include hashtab.h.
+	(do_define): Use _cpp_lookup_slot and _cpp_make_hashnode to
+	create hash entries.
+	(do_pragma_poison, do_assert): Likewise.
+	(do_include): Don't push the buffer here.  Don't increment
+	system_include_depth unless _cpp_read_include_file succeeds.
+	(do_undef, do_unassert): Use _cpp_lookup_slot and htab_clear_slot
+	or htab_remove_elt.
+	(do_pragma_implementation): Use alloca to create copy.
+
+	* Makefile.in: Update dependencies.
+
 2000-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppinit.c (cl_directive_handler): More K&R fixing.

@@ -27,10 +27,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#include "hashtab.h"
 #include "version.h"
 #undef abort
 
-static unsigned int hashf	  PARAMS ((const U_CHAR *, int));
+static unsigned int hash_HASHNODE PARAMS ((const void *));
+static int eq_HASHNODE		  PARAMS ((const void *, const void *));
+static void del_HASHNODE	  PARAMS ((void *));
+static int dump_hash_helper	  PARAMS ((void *, void *));
+
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
@@ -44,6 +49,9 @@ static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 #define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
 #define PEEKC() CPP_BUF_PEEK (CPP_BUFFER (pfile))
+
+/* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
+#define HASHSIZE 500
 
 /* The arglist structure is built by create_definition to tell
    collect_expansion where the argument names begin.  That
@@ -92,28 +100,81 @@ struct argdata
   int stringified_length;
 };
 
-
-/* Calculate hash function on a string.  */
-
+/* Calculate hash of a HASHNODE structure.  */
 static unsigned int
-hashf (s, len)
-     register const U_CHAR *s;
-     register int len;
+hash_HASHNODE (x)
+     const void *x;
 {
-  unsigned int n = len;
-  unsigned int r = 0;
+  HASHNODE *h = (HASHNODE *)x;
+  const U_CHAR *s = h->name;
+  unsigned int len = h->length;
+  unsigned int n = len, r = 0;
 
+  if (h->hash != (unsigned long)-1)
+    return h->hash;
+  
   do
     r = r * 67 + (*s++ - 113);
   while (--n);
+  h->hash = r + len;
   return r + len;
 }
 
-/* Find the most recent hash node for name "name" (ending with first
-   non-identifier char) installed by cpp_install
+/* Compare two HASHNODE structures.  */
+static int
+eq_HASHNODE (x, y)
+     const void *x;
+     const void *y;
+{
+  const HASHNODE *a = (const HASHNODE *)x;
+  const HASHNODE *b = (const HASHNODE *)y;
+
+  return (a->length == b->length
+	  && !strncmp (a->name, b->name, a->length));
+}
+
+/* Destroy a HASHNODE.  */
+static void
+del_HASHNODE (x)
+     void *x;
+{
+  HASHNODE *h = (HASHNODE *)x;
+  
+  if (h->type == T_MACRO)
+    _cpp_free_definition (h->value.defn);
+  free ((void *) h->name);
+  free (h);
+}
+
+/* Allocate and initialize a HASHNODE structure.
+   Caller must fill in the value field.  */
+
+HASHNODE *
+_cpp_make_hashnode (name, len, type, hash)
+     const U_CHAR *name;
+     size_t len;
+     enum node_type type;
+     unsigned long hash;
+{
+  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE));
+  U_CHAR *p = xmalloc (len + 1);
+
+  hp->type = type;
+  hp->length = len;
+  hp->name = p;
+  hp->hash = hash;
+
+  memcpy (p, name, len);
+  p[len] = 0;
+
+  return hp;
+}
+
+/* Find the hash node for name "name", which ends at the first
+   non-identifier char.
 
    If LEN is >= 0, it is the length of the name.
-   Otherwise, compute the length by scanning the entire name.  */
+   Otherwise, compute the length now.  */
 
 HASHNODE *
 _cpp_lookup (pfile, name, len)
@@ -121,9 +182,8 @@ _cpp_lookup (pfile, name, len)
      const U_CHAR *name;
      int len;
 {
-  register const U_CHAR *bp;
-  register HASHNODE *bucket;
-  register unsigned int hash;
+  const U_CHAR *bp;
+  HASHNODE dummy;
 
   if (len < 0)
     {
@@ -131,16 +191,49 @@ _cpp_lookup (pfile, name, len)
       len = bp - name;
     }
 
-  hash = hashf (name, len) % HASHSIZE;
+  dummy.name = name;
+  dummy.length = len;
+  dummy.hash = -1;
 
-  bucket = pfile->hashtab[hash];
-  while (bucket)
+  return (HASHNODE *) htab_find (pfile->hashtab, (void *)&dummy);
+}
+
+/* Find the hashtable slot for name "name".  Used to insert or delete.  */
+HASHNODE **
+_cpp_lookup_slot (pfile, name, len, insert, hash)
+     cpp_reader *pfile;
+     const U_CHAR *name;
+     int len;
+     int insert;
+     unsigned long *hash;
+{
+  const U_CHAR *bp;
+  HASHNODE dummy;
+  HASHNODE **slot;
+
+  if (len < 0)
     {
-      if (bucket->length == len && strncmp (bucket->name, name, len) == 0)
-	return bucket;
-      bucket = bucket->next;
+      for (bp = name; is_idchar (*bp); bp++);
+      len = bp - name;
     }
-  return (HASHNODE *) 0;
+
+  dummy.name = name;
+  dummy.length = len;
+  dummy.hash = -1;
+
+  slot = (HASHNODE **) htab_find_slot (pfile->hashtab, (void *)&dummy, insert);
+  if (insert)
+    *hash = dummy.hash;
+  return slot;
+}
+
+/* Init the hash table.  In here so it can see the hash and eq functions.  */
+void
+_cpp_init_macro_hash (pfile)
+     cpp_reader *pfile;
+{
+  pfile->hashtab = htab_create (HASHSIZE, hash_HASHNODE,
+				eq_HASHNODE, del_HASHNODE);
 }
 
 /* Free a DEFINITION structure.  Used by delete_macro, and by
@@ -162,86 +255,6 @@ _cpp_free_definition (d)
   free (d);
 }
 
-/*
- * Delete a hash node.  Some weirdness to free junk from macros.
- * More such weirdness will have to be added if you define more hash
- * types that need it.
- */
-
-void
-_cpp_delete_macro (hp)
-     HASHNODE *hp;
-{
-  if (hp->prev != NULL)
-    hp->prev->next = hp->next;
-  if (hp->next != NULL)
-    hp->next->prev = hp->prev;
-
-  /* make sure that the bucket chain header that
-     the deleted guy was on points to the right thing afterwards.  */
-  if (hp == *hp->bucket_hdr)
-    *hp->bucket_hdr = hp->next;
-
-  if (hp->type == T_MACRO)
-    _cpp_free_definition (hp->value.defn);
-
-  free (hp);
-}
-
-/* Install a name in the main hash table, even if it is already there.
-   Name stops with first non alphanumeric, except leading '#'.
-   Caller must check against redefinition if that is desired.
-   delete_macro () removes things installed by cpp_install () in fifo order.
-   this is important because of the `defined' special symbol used
-   in #if, and also if pushdef/popdef directives are ever implemented.
-
-   If LEN is >= 0, it is the length of the name.
-   Otherwise, compute the length by scanning the entire name.
-
-   If HASH is >= 0, it is the precomputed hash code.
-   Otherwise, compute the hash code.  */
-
-HASHNODE *
-_cpp_install (pfile, name, len, type, value)
-     cpp_reader *pfile;
-     const U_CHAR *name;
-     int len;
-     enum node_type type;
-     const char *value;
-{
-  register HASHNODE *hp;
-  register int i, bucket;
-  register const U_CHAR *p;
-  unsigned int hash;
-
-  if (len < 0)
-    {
-      p = name;
-      while (is_idchar(*p))
-	p++;
-      len = p - name;
-    }
-
-  hash = hashf (name, len) % HASHSIZE;
-
-  i = sizeof (HASHNODE) + len + 1;
-  hp = (HASHNODE *) xmalloc (i);
-  bucket = hash;
-  hp->bucket_hdr = &pfile->hashtab[bucket];
-  hp->next = pfile->hashtab[bucket];
-  pfile->hashtab[bucket] = hp;
-  hp->prev = NULL;
-  if (hp->next != NULL)
-    hp->next->prev = hp;
-  hp->type = type;
-  hp->length = len;
-  hp->value.cpval = value;
-  hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
-  memcpy (hp->name, name, len);
-  hp->name[len] = 0;
-  return hp;
-}
-
 static int
 macro_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
@@ -254,7 +267,6 @@ macro_cleanup (pbuf, pfile)
     free ((PTR) pbuf->buf);
   return 0;
 }
-
 
 /* Read a replacement list for a macro, and build the DEFINITION
    structure.  ARGLIST specifies the formal parameters to look for in
@@ -503,7 +515,6 @@ collect_expansion (pfile, arglist)
       while (here > last && is_hspace (pfile->token_buffer [here-1]))
 	here--;
       CPP_SET_WRITTEN (pfile, here);
-  
       CPP_NUL_TERMINATE (pfile);
       len = CPP_WRITTEN (pfile) - start + 1;
       /* space for no-concat markers at either end */
@@ -1666,8 +1677,27 @@ _cpp_dump_definition (pfile, sym, len, defn)
       if (*x == '\r') x += 2, i -= 2;
       if (i > 0) CPP_PUTS (pfile, x, i);
     }
-
   if (pfile->lineno == 0)
     CPP_PUTC (pfile, '\n');
   CPP_NUL_TERMINATE (pfile);
+}
+
+/* Dump out the hash table.  */
+static int
+dump_hash_helper (h, p)
+     void *h;
+     void *p;
+{
+  HASHNODE *hp = (HASHNODE *)h;
+  cpp_reader *pfile = (cpp_reader *)p;
+
+  _cpp_dump_definition (pfile, hp->name, hp->length, hp->value.defn);
+  return 1;
+}
+
+void
+_cpp_dump_macro_hash (pfile)
+     cpp_reader *pfile;
+{
+  htab_traverse (pfile->hashtab, dump_hash_helper, pfile);
 }

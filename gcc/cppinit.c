@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "prefix.h"
 #include "intl.h"
 #include "version.h"
+#include "hashtab.h"
 #include "mkdeps.h"
 
 /* Predefined symbols, built-in macros, and the default include path. */
@@ -554,7 +555,8 @@ cpp_reader_init (pfile)
   pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, 0);
 
-  pfile->hashtab = (HASHNODE **) xcalloc (HASHSIZE, sizeof (HASHNODE *));
+  _cpp_init_macro_hash (pfile);
+  _cpp_init_include_hash (pfile);
 }
 
 /* Free resources used by PFILE.
@@ -563,7 +565,6 @@ void
 cpp_cleanup (pfile)
      cpp_reader *pfile;
 {
-  int i;
   while (CPP_BUFFER (pfile) != NULL)
     cpp_pop_buffer (pfile);
 
@@ -584,25 +585,8 @@ cpp_cleanup (pfile)
   if (pfile->deps)
     deps_free (pfile->deps);
 
-  for (i = ALL_INCLUDE_HASHSIZE; --i >= 0; )
-    {
-      IHASH *imp, *next;
-      for (imp = pfile->all_include_files[i]; imp; imp = next)
-	{
-	  next = imp->next;
-	  free ((PTR) imp->name);
-	  free ((PTR) imp->nshort);
-	  free (imp);
-	}
-      pfile->all_include_files[i] = 0;
-    }
-
-  for (i = HASHSIZE; --i >= 0;)
-    {
-      while (pfile->hashtab[i])
-	_cpp_delete_macro (pfile->hashtab[i]);
-    }
-  free (pfile->hashtab);
+  htab_delete (pfile->hashtab);
+  htab_delete (pfile->all_include_files);
 }
 
 
@@ -654,7 +638,6 @@ static const struct builtin builtin_array[] =
 
 /* Subroutine of cpp_start_read; reads the builtins table above and
    enters the macros into the hash table.  */
-
 static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
@@ -662,6 +645,7 @@ initialize_builtins (pfile)
   int len;
   const struct builtin *b;
   const char *val;
+  HASHNODE *hp;
   for(b = builtin_array; b->name; b++)
     {
       if ((b->flags & STDC) && CPP_TRADITIONAL (pfile))
@@ -670,7 +654,10 @@ initialize_builtins (pfile)
       val = (b->flags & ULP) ? user_label_prefix : b->value;
       len = strlen (b->name);
 
-      _cpp_install (pfile, b->name, len, b->type, val);
+      hp = _cpp_make_hashnode (b->name, len, b->type, -1);
+      hp->value.cpval = val;
+      *(htab_find_slot (pfile->hashtab, (void *)hp, 1)) = hp;
+
       if ((b->flags & DUMP) && CPP_OPTIONS (pfile)->debug_output)
 	dump_special_to_buffer (pfile, b->name);
     }
@@ -1015,20 +1002,7 @@ cpp_finish (pfile)
     }
 
   if (opts->dump_macros == dump_only)
-    {
-      int i;
-      HASHNODE *h;
-      for (i = HASHSIZE; --i >= 0;)
-	{
-	  for (h = pfile->hashtab[i]; h; h = h->next)
-	    if (h->type == T_MACRO)
-	      {
-		_cpp_dump_definition (pfile, h->name, h->length,
-				      h->value.defn);
-		CPP_PUTC (pfile, '\n');
-	      }
-	}
-    }
+    _cpp_dump_macro_hash (pfile);
 }
 
 static void

@@ -2029,6 +2029,7 @@ LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
 		prefix.o version.o mbchar.o @extra_cpp_objs@
 
 LIBCPP_DEPS = cpplib.h cpphash.h intl.h system.h
+HASHTAB_H   = $(srcdir)/../include/hashtab.h
 
 # All the other archives built/used by this makefile are for targets.  This
 # one is strictly for the host.
@@ -2042,17 +2043,17 @@ cppmain$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
 	intl.o libcpp.a $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
+cppmain.o:  cppmain.c  $(CONFIG_H) cpplib.h intl.h system.h
 
-cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
-cpplib.o:  cpplib.c  $(CONFIG_H) $(LIBCPP_DEPS) mkdeps.h
-cpphash.o: cpphash.c $(CONFIG_H) $(LIBCPP_DEPS) version.h
+cppulp.o:   cppulp.c   $(CONFIG_H) system.h output.h
 cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
-cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS)
+cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
+cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) version.h
+cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h
 
-cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
-		cpphash.h prefix.h output.h Makefile version.h mkdeps.h
+cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h \
+		prefix.h output.h Makefile version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
