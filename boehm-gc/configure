@@ -933,7 +933,7 @@ echo "$ac_t""$host" 1>&6
 
 PACKAGE=boehm-gc
 
-VERSION=4.13a2
+VERSION=5.0a4
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }

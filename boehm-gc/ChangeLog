@@ -1,3 +1,10 @@
+1999-12-13  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4: Changed version to 5.0a4.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcjgc_la_LDFLAGS): Changed version to 1:1:0.
+
 1999-12-12  Anthony Green  <green@cygnus.com>
 
 	* gcconfig.h (DATASTART): Define as (&data_start) for PowerPC

@@ -118,7 +118,7 @@ solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
 
 libgcjgc_la_LIBADD = @addobjs@
 libgcjgc_la_DEPENDENCIES = @addobjs@
-libgcjgc_la_LDFLAGS = -version-info 0:0:0 -rpath $(toolexeclibdir)
+libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
 EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s mips_sgi_mach_dep.s \
 mips_ultrix_mach_dep.s rs6000_mach_dep.s sparc_mach_dep.s \
