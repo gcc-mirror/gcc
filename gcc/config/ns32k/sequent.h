@@ -58,3 +58,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define IMMEDIATE_PREFIX 0
 
 #define SEQUENT_ASM
+
+/* Operand of bsr or jsr should be just the address.  */
+
+#define CALL_MEMREF_IMPLICIT
+
+/* Output a reg as an index rather than a base if we have the choice.  */
+
+#define INDEX_RATHER_THAN_BASE
