@@ -35,14 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilterInputStream;
 import java.io.FilePermission;
 import java.io.InputStream;
 import java.io.IOException;
@@ -60,7 +59,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.zip.ZipException;
 
 /**
  * A secure class loader that can load classes and resources from

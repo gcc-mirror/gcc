@@ -92,15 +92,15 @@ public class InetAddress implements Serializable
     // FIXME: implement this
   }
 	  
-  private void readObject(ObjectInputStream ois)
+  private void readObject (ObjectInputStream ois)
     throws IOException, ClassNotFoundException
   {
-    ois.defaultReadObject();
-    addr = new byte[4];
-    addr[3] = (byte) address;
+    ois.defaultReadObject ();
+    addr = new byte [4];
+    addr [3] = (byte) address;
     
     for (int i = 2; i >= 0; --i)
-      addr[i] = (byte) (address >>= 8);
+      addr [i] = (byte) (address >>= 8);
     
     // Ignore family from serialized data.  Since the saved address is 32 bits
     // the deserialized object will have an IPv4 address i.e. AF_INET family.
@@ -110,7 +110,7 @@ public class InetAddress implements Serializable
     family = getFamily (addr);
   }
 
-  private void writeObject(ObjectOutputStream oos) throws IOException
+  private void writeObject (ObjectOutputStream oos) throws IOException
   {
     // Build a 32 bit address from the last 4 bytes of a 4 byte IPv4 address
     // or a 16 byte IPv6 address.
@@ -118,9 +118,9 @@ public class InetAddress implements Serializable
     int i = len - 4;
     
     for (; i < len; i++)
-      address = address << 8 | (((int) addr[i]) & 0xFF);
+      address = address << 8 | (((int) addr [i]) & 0xFF);
     
-    oos.defaultWriteObject();
+    oos.defaultWriteObject ();
   }
 
   private static native int getFamily (byte[] address);
@@ -144,10 +144,10 @@ public class InetAddress implements Serializable
     int len = addr.length;
     
     if (len == 4)
-      return (addr[0] & 0xF0) == 0xE0;
+      return (addr [0] & 0xF0) == 0xE0;
     
     if (len == 16)
-      return addr[0] == (byte) 0xFF;
+      return addr [0] == (byte) 0xFF;
     
     return false;
   }
@@ -174,7 +174,7 @@ public class InetAddress implements Serializable
     // This is the IPv4 implementation.
     // Any class derived from InetAddress should override this.
     
-    return addr[0] == 0x7F;
+    return addr [0] == 0x7F;
   }
 
   /**
@@ -202,7 +202,7 @@ public class InetAddress implements Serializable
     // Any class derived from InetAddress should override this.
 
     // 10.0.0.0/8
-    if (addr[0] == 0x0A)
+    if (addr [0] == 0x0A)
       return true;
 
     // XXX: Suns JDK 1.4.1 (on Linux) seems to have a bug here:
@@ -263,9 +263,9 @@ public class InetAddress implements Serializable
     if (!isMulticastAddress ())
       return false;
 
-    return (addr[0] == 0xE0
-	    && addr[1] == 0x00
-	    && addr[2] == 0x00);
+    return (addr [0] == 0xE0
+	    && addr [1] == 0x00
+	    && addr [2] == 0x00);
   }
 
   /**
@@ -340,26 +340,26 @@ public class InetAddress implements Serializable
   {
     // An experiment shows that JDK1.2 returns a different byte array each
     // time.  This makes sense, in terms of security.
-    return (byte[]) addr.clone();
+    return (byte[]) addr.clone ();
   }
 
   /* Helper function due to a CNI limitation.  */
   private static InetAddress[] allocArray (int count)
   {
-    return new InetAddress[count];
+    return new InetAddress [count];
   }
 
   /* Helper function due to a CNI limitation.  */
   private static SecurityException checkConnect (String hostname)
   {
-    SecurityManager s = System.getSecurityManager();
+    SecurityManager s = System.getSecurityManager ();
     
     if (s == null)
       return null;
     
     try
       {
-	s.checkConnect(hostname, -1);
+	s.checkConnect (hostname, -1);
 	return null;
       }
     catch (SecurityException ex)
@@ -375,7 +375,7 @@ public class InetAddress implements Serializable
    */
   public String getHostAddress ()
   {
-    StringBuffer sbuf = new StringBuffer(40);
+    StringBuffer sbuf = new StringBuffer (40);
     int len = addr.length;
     int i = 0;
     if (len == 16)
@@ -383,37 +383,37 @@ public class InetAddress implements Serializable
 	for (;  ;  i += 2)
 	  {
 	    if (i >= 16)
-	      return sbuf.toString();
-	    int x = ((addr[i] & 0xFF) << 8) | (addr[i+1] & 0xFF);
-	    boolean empty = sbuf.length() == 0;
+	      return sbuf.toString ();
+	    int x = ((addr [i] & 0xFF) << 8) | (addr [i + 1] & 0xFF);
+	    boolean empty = sbuf.length () == 0;
 	    if (empty)
 	      {
 		if (i == 10 && x == 0xFFFF)
 		  { // IPv4-mapped IPv6 address.
-		    sbuf.append(":FFFF:");
+		    sbuf.append (":FFFF:");
 		    break;  // Continue as IPv4 address;
 		  }
 		else if (i == 12)
 		  { // IPv4-compatible IPv6 address.
-		    sbuf.append(':');
+		    sbuf.append (':');
 		    break;  // Continue as IPv4 address.
 		  }
 		else if (i > 0)
-		  sbuf.append("::");
+		  sbuf.append ("::");
 	      }
 	    else
-	      sbuf.append(':');
+	      sbuf.append (':');
 	    if (x != 0 || i >= 14)
-	      sbuf.append(Integer.toHexString(x).toUpperCase());
+	      sbuf.append (Integer.toHexString (x).toUpperCase ());
 	  }
       }
     for ( ;  ; )
       {
-	sbuf.append(addr[i] & 0xFF);
+	sbuf.append (addr[i] & 0xFF);
 	i++;
 	if (i == len)
 	  break;
-	sbuf.append('.');
+	sbuf.append ('.');
       }
     
     return sbuf.toString();
@@ -422,7 +422,7 @@ public class InetAddress implements Serializable
   /**
    * Returns a hashcode of the InetAddress
    */
-  public int hashCode()
+  public int hashCode ()
   {
     // There hashing algorithm is not specified, but a simple experiment
     // shows that it is equal to the address, as a 32-bit big-endian integer.
@@ -467,10 +467,10 @@ public class InetAddress implements Serializable
   /**
    * Returns then <code>InetAddress</code> as string
    */
-  public String toString()
+  public String toString ()
   {
     String result;
-    String address = getHostAddress();
+    String address = getHostAddress ();
     
     if (hostName != null)
       result = hostName + "/" + address;
@@ -492,16 +492,10 @@ public class InetAddress implements Serializable
    *
    * @since 1.4
    */
-  public static InetAddress getByAddress(byte[] addr)
+  public static InetAddress getByAddress (byte[] addr)
     throws UnknownHostException
   {
-    if (addr.length != 4 && addr.length != 16)
-      throw new UnknownHostException ("IP address has illegal length");
-
-    if (addr.length == 4)
-      return new Inet4Address (addr, null);
-      
-    return new Inet6Address (addr, null);
+    return getByAddress (null, addr);
   }
 
   /**
@@ -553,7 +547,7 @@ public class InetAddress implements Serializable
    
     // Default to current host if necessary
     if (hostname == null)
-      return getLocalHost();
+      return getLocalHost ();
 
     // Assume that the host string is an IP address
     byte[] address = aton (hostname);
@@ -563,13 +557,13 @@ public class InetAddress implements Serializable
           return new Inet4Address (address, null);
         else if (address.length == 16)
           {
-	    if ((address[10] == 0xFF) && (address[11] == 0xFF))
+	    if ((address [10] == 0xFF) && (address [11] == 0xFF))
 	      {
-		byte[] ip4addr = new byte[4];
-		ip4addr[0] = address[12];
-		ip4addr[1] = address[13];
-		ip4addr[2] = address[14];
-		ip4addr[3] = address[15];
+		byte[] ip4addr = new byte [4];
+		ip4addr [0] = address [12];
+		ip4addr [1] = address [13];
+		ip4addr [2] = address [14];
+		ip4addr [3] = address [15];
 		return new Inet4Address (ip4addr, null);
 	      }
             return new Inet6Address (address, null);
@@ -580,7 +574,7 @@ public class InetAddress implements Serializable
    
     // Try to resolve the host by DNS
     InetAddress[] addresses = getAllByName (hostname);
-    return addresses[0];
+    return addresses [0];
   }
 
   /**
@@ -603,8 +597,8 @@ public class InetAddress implements Serializable
     byte[] address = aton (hostname);
     if (address != null)
       {
-	InetAddress[] result = new InetAddress[1];
-	result[0] = new InetAddress(address, null);
+	InetAddress[] result = new InetAddress [1];
+	result [0] = new InetAddress (address, null);
 	return result;
       }
    
@@ -612,10 +606,10 @@ public class InetAddress implements Serializable
     return lookup (hostname, null, true);
   }
 
-  static final byte[] zeros = {0,0,0,0};
+  static final byte[] zeros = { 0, 0, 0, 0 };
   
   /* dummy InetAddress, used to bind socket to any (all) network interfaces */
-  static final InetAddress ANY_IF = new InetAddress(zeros, null);
+  static final InetAddress ANY_IF = new InetAddress (zeros, null);
     
   private static final byte[] localhostAddress = { 127, 0, 0, 1 };
 
@@ -629,28 +623,28 @@ public class InetAddress implements Serializable
    * @exception UnknownHostException If no IP address for the host could
    * be found
    */
-  public static InetAddress getLocalHost() throws UnknownHostException
+  public static InetAddress getLocalHost () throws UnknownHostException
   {
-    SecurityManager s = System.getSecurityManager();
+    SecurityManager s = System.getSecurityManager ();
     
     // Experimentation shows that JDK1.2 does cache the result.
     // However, if there is a security manager, and the cached result
     // is other than "localhost", we need to check again.
     if (localhost == null
 	|| (s != null && localhost.addr != localhostAddress))
-      getLocalHost(s);
+      getLocalHost (s);
     
     return localhost;
   }
 
-  private static synchronized void getLocalHost(SecurityManager s)
+  private static synchronized void getLocalHost (SecurityManager s)
     throws UnknownHostException
   {
     // Check the localhost cache again, now that we've synchronized.
     if (s == null && localhost != null)
       return;
     
-    String hostname = getLocalHostname();
+    String hostname = getLocalHostname ();
     
     if (s != null)
       {
@@ -664,7 +658,7 @@ public class InetAddress implements Serializable
 	  {
 	    // This is wrong, if the name returned from getLocalHostname()
 	    // is not a fully qualified name.  FIXME.
-	    s.checkConnect(hostname, -1);
+	    s.checkConnect (hostname, -1);
 	  }
 	catch (SecurityException ex)
 	  {
@@ -676,8 +670,8 @@ public class InetAddress implements Serializable
       {
 	try
 	  {
-	    localhost = new InetAddress(null, null);
-	    lookup(hostname, localhost, false);
+	    localhost = new InetAddress (null, null);
+	    lookup (hostname, localhost, false);
 	  }
 	catch (Exception ex)
 	  {

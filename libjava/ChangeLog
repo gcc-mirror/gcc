@@ -1,5 +1,23 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/HttpURLConnection.java,
+	java/net/Inet4Address.java,
+	java/net/Inet6Address.java,
+	java/net/SocketImpl.java,
+	java/net/URLClassLoader.java:
+	Reworked import statements.
+	* java/net/InetAddress.java
+	(getByAddress): Simplified.
+	* java/net/ServerSocket.java
+	(ServerSocket): Moved special handling during bind operation to
+	bind().
+	(bind): Handle different cases when trying to bind a socket.
+	* java/net/URLConnection.java
+	(getHeaderFieldDate): Merged with classpath.
+	(getHeaderFieldInt): Likewise.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/InflaterInputStream.java
 	(InflaterInputStream): Throw NullPointerException if in is null (as
 	JDK does).
