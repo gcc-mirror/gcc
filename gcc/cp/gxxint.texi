@@ -3,6 +3,12 @@
 @setfilename g++int.info
 @settitle G++ internals
 @setchapternewpage odd
+@ifinfo
+@dircategory Programming
+@direntry
+* G++ internals: (g++int).     G++ Internals.
+@end direntry
+@end ifinfo
 @c %**end of header
      
 @node Top, Limitations of g++, (dir), (dir)
@@ -10,7 +16,7 @@
 
 This is meant to describe the C++ front-end for gcc in detail.
 Questions and comments to Jason Merrill @email{jason@@redhat.com} and
-Mark Mitchell @email{mark@codesourcery.com}.
+Mark Mitchell @email{mark@@codesourcery.com}.
 
 @menu
 * Limitations of g++::          

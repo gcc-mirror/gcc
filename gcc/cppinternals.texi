@@ -5,7 +5,7 @@
 @ifinfo
 @dircategory Programming
 @direntry
-* Cpplib:		       Cpplib internals.
+* Cpplib: (cppinternals).      Cpplib internals.
 @end direntry
 @end ifinfo
 
@@ -16,7 +16,7 @@
 @ifinfo
 This file documents the internals of the GNU C Preprocessor.
 
-Copyright 2000 Free Software Foundation, Inc.
+Copyright 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -41,13 +41,13 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title Cpplib Internals
-@subtitle Last revised Dec 2000
+@subtitle Last revised Jan 2001
 @subtitle for GCC version 3.0
 @author Neil Booth
 @page
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 2000
+Copyright @copyright{} 2000, 2001
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of

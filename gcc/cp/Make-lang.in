@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001
 #   Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
@@ -126,8 +126,15 @@ c++.all.cross: g++-cross$(exeext) $(DEMANGLER_PROG)
 c++.start.encap: g++$(exeext)
 c++.rest.encap: $(DEMANGLER_PROG)
 
-c++.info:
+c++.info: $(srcdir)/cp/g++int.info
 c++.dvi:
+
+$(srcdir)/cp/g++int.info: $(srcdir)/cp/gxxint.texi
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+	  rm -f $(srcdir)/cp/g++int.info*; \
+	  cd $(srcdir)/cp && $(MAKEINFO) -o g++int.info gxxint.texi; \
+	else true; fi
+
 #
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
@@ -175,7 +182,22 @@ c++.install-common:
 	  fi ; \
 	fi
 
-c++.install-info:
+c++.install-info: c++.info
+	if [ -f cc1plus$(exeext) ] ; then \
+	  if [ -f $(srcdir)/cp/g++int.info ]; then \
+	    rm -f $(infodir)/g++int.info*; \
+	    for f in $(srcdir)/cp/g++int.info*; do \
+	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	      $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	    done; \
+	    chmod a-x $(infodir)/g++int.info*; \
+	  else true; fi; \
+	else true; fi
+	-if [ -f cc1plus$(exeext) ] && [ -f $(infodir)/g++int.info ]; then \
+	  if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+	    install-info --dir-file=$(infodir)/dir $(infodir)/g++int.info; \
+	  else true; fi; \
+	else true; fi
 
 c++.install-man: $(srcdir)/cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
@@ -199,6 +221,7 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
 	-rm -rf $(man1dir)/$(GXX_INSTALL_NAME)$(manext)
 	-rm -rf $(man1dir)/$(GXX_CROSS_NAME)$(manext)
+	-rm -rf $(infodir)/g++int.info*
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
@@ -213,6 +236,7 @@ c++.distclean:
 c++.extraclean:
 c++.maintainer-clean:
 	-rm -f $(srcdir)/cp/parse.c $(srcdir)/cp/parse.h
+	-rm -f $(srcdir)/cp/g++int.info*
 #
 # Stage hooks:
 # The main makefile has already created stage?/cp.
