@@ -1,3 +1,12 @@
+2004-02-16  Matthias Klose  <doko@debian.org>
+
+        * config/t-slibgcc-elf-ver: Define SHLIB_NAME and SHLIB_SONAME
+        in terms of SHLIB_SOVERSION.
+        * config/m68k/t-slibgcc-elf-ver: New file.
+        * config/pa/t-slibgcc-elf-ver: New file.
+        * config.gcc (m68k-linux, parisc-linux): Use them when not 
+        sjlj exceptions are not configured.
+
 2004-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (get_pc_symbol_name): Mark with GTY(()).
