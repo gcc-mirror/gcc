@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -28,7 +27,7 @@ You should have received a copy of the GNU General Public License along with
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c) */
-#define OBJC_VERSION 6
+#define OBJC_VERSION 7
 #define PROTOCOL_VERSION 2
 
 /* This list contains all modules currently loaded into the runtime */
@@ -37,14 +36,17 @@ static struct objc_list* __objc_module_list = 0;
 /* This list contains all proto_list's not yet assigned class links */
 static struct objc_list* unclaimed_proto_list = 0;
 
+/* List of unresolved static instances.  */
+static struct objc_list *uninitialized_statics;
+
 /* Check compiler vs runtime version */
-static void init_check_module_version(Module_t);
+static void init_check_module_version (Module_t);
 
 /* Assign isa links to protos */
 static void __objc_init_protocols (struct objc_protocol_list* protos);
 
 /* Add protocol to class */
-static void __objc_class_add_protocols (Class*, struct objc_protocol_list*);
+static void __objc_class_add_protocols (Class, struct objc_protocol_list*);
 
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;
@@ -53,6 +55,60 @@ extern SEL
 __sel_register_typed_name (const char *name, const char *types, 
 			   struct objc_selector *orig);
 
+/* Run through the statics list, removing modules as soon as all its statics
+   have been initialized.  */
+static void
+objc_init_statics ()
+{
+  struct objc_list **cell = &uninitialized_statics;
+  struct objc_static_instances **statics_in_module;
+
+  while (*cell)
+    {
+      int module_initialized = 1;
+
+      for (statics_in_module = (*cell)->head;
+	   *statics_in_module; statics_in_module++)
+	{
+	  struct objc_static_instances *statics = *statics_in_module;
+	  Class *class = objc_lookup_class (statics->class_name);
+
+	  if (!class)
+	    module_initialized = 0;
+	  /* Actually, the static's class_pointer will be NULL when we
+             haven't been here before.  However, the comparison is to be
+             reminded of taking into account class posing and to think about
+             possible semantics...  */
+	  else if (class != statics->instances[0]->class_pointer)
+	    {
+	      id *inst;
+
+	      for (inst = &statics->instances[0]; *inst; inst++)
+		{
+		  (*inst)->class_pointer = class;
+
+		  /* ??? Make sure the object will not be freed.  With
+                     refcounting, invoke `-retain'.  Without refcounting, do
+                     nothing and hope that `-free' will never be invoked.  */
+
+		  /* ??? Send the object an `-initStatic' or something to
+                     that effect now or later on?  What are the semantics of
+                     statically allocated instances, besides the trivial
+                     NXConstantString, anyway?  */
+		}
+	    }
+	}
+      if (module_initialized)
+	{
+	  /* Remove this module from the uninitialized list.  */
+	  struct objc_list *this = *cell;
+	  *cell = this->tail;
+	  free (this);
+	}
+      else
+	cell = &(*cell)->tail;
+    }
+} /* objc_init_statics */
 
 /* This function is called by constructor functions generated for each
    module compiled.  (_GLOBAL_$I$...) The purpose of this function is to
@@ -62,13 +118,13 @@ __sel_register_typed_name (const char *name, const char *types,
 void
 __objc_exec_class (Module_t module)
 {
-  /* Has we processed any constructors previously?  This flag used to 
-     indicate that some global data structures need to be built.  */ 
+  /* Have we processed any constructors previously?  This flag is used to
+     indicate that some global data structures need to be built.  */
   static BOOL previous_constructors = 0;
 
   static struct objc_list* unclaimed_categories = 0;
 
-  /* The symbol table (defined in objc.h) generated by gcc */
+  /* The symbol table (defined in objc-api.h) generated by gcc */
   Symtab_t symtab = module->symtab;
 
   /* Entry used to traverse hash lists */
@@ -81,6 +137,7 @@ __objc_exec_class (Module_t module)
   int i;
 
   DEBUG_PRINTF ("received module: %s\n", module->name);
+
   /* check gcc version */
   init_check_module_version(module);
 
@@ -113,7 +170,7 @@ __objc_exec_class (Module_t module)
   DEBUG_PRINTF ("gathering selectors from module: %s\n", module->name);
   for (i = 0; i < symtab->cls_def_cnt; ++i)
     {
-      Class* class = (Class*) symtab->defs[i];
+      Class class = (Class) symtab->defs[i];
 
       /* Make sure we have what we think.  */
       assert (CLS_ISCLASS(class));
@@ -125,7 +182,7 @@ __objc_exec_class (Module_t module)
 
       /* Register all of the selectors in the class and meta class.  */
       __objc_register_selectors_from_class (class);
-      __objc_register_selectors_from_class ((Class*) class->class_pointer);
+      __objc_register_selectors_from_class ((Class) class->class_pointer);
 
       /* Install the fake dispatch tables */
       __objc_install_premature_dtable(class);
@@ -139,7 +196,7 @@ __objc_exec_class (Module_t module)
   for (i = 0; i < symtab->cat_def_cnt; ++i)
     {
       Category_t category = symtab->defs[i + symtab->cls_def_cnt];
-      Class* class = objc_lookup_class (category->class_name);
+      Class class = objc_lookup_class (category->class_name);
       
       /* If the class for the category exists then append its methods.  */
       if (class)
@@ -155,7 +212,7 @@ __objc_exec_class (Module_t module)
 
 	  /* Do class methods.  */
 	  if (category->class_methods)
-	    class_add_method_list ((Class*) class->class_pointer, 
+	    class_add_method_list ((Class) class->class_pointer, 
 				   category->class_methods);
 
 	  if (category->protocols)
@@ -173,6 +230,11 @@ __objc_exec_class (Module_t module)
 	}
     }
 
+  if (module->statics)
+    uninitialized_statics = list_cons (module->statics, uninitialized_statics);
+  if (uninitialized_statics)
+    objc_init_statics ();
+
   /* Scan the unclaimed category hash.  Attempt to attach any unclaimed
      categories to objects.  */
   for (cell = &unclaimed_categories;
@@ -180,7 +242,7 @@ __objc_exec_class (Module_t module)
        ({ if (*cell) cell = &(*cell)->tail; }))
     {
       Category_t category = (*cell)->head;
-      Class* class = objc_lookup_class (category->class_name);
+      Class class = objc_lookup_class (category->class_name);
       
       if (class)
 	{
@@ -193,7 +255,7 @@ __objc_exec_class (Module_t module)
 	    class_add_method_list (class, category->instance_methods);
 	  
 	  if (category->class_methods)
-	    class_add_method_list ((Class*) class->class_pointer,
+	    class_add_method_list ((Class) class->class_pointer,
 				   category->class_methods);
 	  
 	  if (category->protocols)
@@ -235,7 +297,7 @@ static void
 __objc_init_protocols (struct objc_protocol_list* protos)
 {
   int i;
-  static Class* proto_class = 0;
+  static Class proto_class = 0;
 
   if (! protos)
     return;
@@ -275,7 +337,7 @@ __objc_init_protocols (struct objc_protocol_list* protos)
     }
 }
 
-static void __objc_class_add_protocols (Class* class,
+static void __objc_class_add_protocols (Class class,
 					struct objc_protocol_list* protos)
 {
   /* Well... */
