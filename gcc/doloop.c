@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
@@ -475,7 +475,7 @@ doloop_modify (const struct loop *loop, rtx iterations, rtx iterations_max,
 	count = GEN_INT (INTVAL (count) - 1);
       else
 	count = expand_simple_binop (GET_MODE (counter_reg), MINUS,
-				     count, GEN_INT (1),
+				     count, const1_rtx,
 				     0, 0, OPTAB_LIB_WIDEN);
     }
 

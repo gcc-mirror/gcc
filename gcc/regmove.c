@@ -167,7 +167,7 @@ discover_flags_reg (void)
 {
   rtx tmp;
   tmp = gen_rtx_REG (word_mode, 10000);
-  tmp = gen_add3_insn (tmp, tmp, GEN_INT (2));
+  tmp = gen_add3_insn (tmp, tmp, const2_rtx);
 
   /* If we get something that isn't a simple set, or a
      [(set ..) (clobber ..)], this whole function will go wrong.  */

@@ -1,5 +1,12 @@
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doloop.c, optabs.c, regmove.c, sched-deps.c,
+	config/i386/i386.c, config/i386/i386.md: Use const0_rtx
+	instead of GEN_INT (0).  Do the same for other constants that
+	are readily available.
+
+2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* combine.c (simplify_set): Use gen_rtx_fmt_e instead of
 	gen_rtx.
 	* emit-rtl.c (init_emit_once): Use gen_rtx_PC and gen_rtx_CC0

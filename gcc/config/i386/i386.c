@@ -11632,9 +11632,9 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
 	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
 				   Pmode, 1, align_4_label);
-	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), EQ, NULL,
+	  emit_cmp_and_jump_insns (align_rtx, const2_rtx, EQ, NULL,
 				   Pmode, 1, align_2_label);
-	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), GTU, NULL,
+	  emit_cmp_and_jump_insns (align_rtx, const2_rtx, GTU, NULL,
 				   Pmode, 1, align_3_label);
 	}
       else
@@ -11642,7 +11642,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 	  /* Since the alignment is 2, we have to check 2 or 0 bytes;
 	     check if is aligned to 4 - byte.  */
 
-	  align_rtx = expand_binop (Pmode, and_optab, scratch1, GEN_INT (2),
+	  align_rtx = expand_binop (Pmode, and_optab, scratch1, const2_rtx,
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
 	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
@@ -11728,7 +11728,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 						     tmpreg)));
        /* Emit lea manually to avoid clobbering of flags.  */
        emit_insn (gen_rtx_SET (SImode, reg2,
-			       gen_rtx_PLUS (Pmode, out, GEN_INT (2))));
+			       gen_rtx_PLUS (Pmode, out, const2_rtx)));
 
        tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
@@ -11755,9 +11755,9 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
        /* Not in the first two.  Move two bytes forward.  */
        emit_insn (gen_lshrsi3 (tmpreg, tmpreg, GEN_INT (16)));
        if (TARGET_64BIT)
-	 emit_insn (gen_adddi3 (out, out, GEN_INT (2)));
+	 emit_insn (gen_adddi3 (out, out, const2_rtx));
        else
-	 emit_insn (gen_addsi3 (out, out, GEN_INT (2)));
+	 emit_insn (gen_addsi3 (out, out, const2_rtx));
 
        emit_label (end_2_label);
 
@@ -14487,7 +14487,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		      expand_expr (arg0, NULL_RTX, VOIDmode, 0));
       op0 = gen_reg_rtx (V2DFmode);
       emit_insn (gen_sse2_loadsd (op0, adjust_address (target, V2DFmode, 0)));
-      emit_insn (gen_sse2_shufpd (op0, op0, op0, GEN_INT (0)));
+      emit_insn (gen_sse2_shufpd (op0, op0, op0, const0_rtx));
       return op0;
 
     case IX86_BUILTIN_SETPD:
@@ -14505,7 +14505,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_LOADRPD:
       target = ix86_expand_unop_builtin (CODE_FOR_sse2_movapd, arglist,
 					 gen_reg_rtx (V2DFmode), 1);
-      emit_insn (gen_sse2_shufpd (target, target, target, GEN_INT (1)));
+      emit_insn (gen_sse2_shufpd (target, target, target, const1_rtx));
       return target;
 
     case IX86_BUILTIN_LOADPD1:
