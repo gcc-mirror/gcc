@@ -2958,7 +2958,8 @@ schedule_insns (dump_file)
 
   if (CHECK_DEAD_NOTES)
     {
-      /* Remove all death notes from the subroutine.  */
+      /* Verify the counts of basic block notes in single the basic block
+         regions.  */
       for (rgn = 0; rgn < nr_regions; rgn++)
 	if (RGN_NR_BLOCKS (rgn) == 1)
 	  {
