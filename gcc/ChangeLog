@@ -1,5 +1,10 @@
 2003-12-05  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_expand_call): Don't allow laziy binding
+	for n32 & n64 abicalls.
+
+2003-12-05  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR bootstrap/13145
 	* config/mips/mips.h (FIRST_PSEUDO_REGISTER): Adjust comment.
 	* config/mips/mips.c (mips_reg_names, mips_sw_reg_names): Add $fcall.

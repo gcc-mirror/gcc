@@ -3187,7 +3187,13 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 {
   if (!call_insn_operand (addr, VOIDmode))
     {
-      if (TARGET_EXPLICIT_RELOCS && global_got_operand (addr, VOIDmode))
+      /* If we're generating PIC, and this call is to a global function,
+	 try to allow its address to be resolved lazily.  This isn't
+	 possible for NewABI sibcalls since the value of $gp on entry
+	 to the stub would be our caller's gp, not ours.  */
+      if (TARGET_EXPLICIT_RELOCS
+	  && !(sibcall_p && TARGET_NEWABI)
+	  && global_got_operand (addr, VOIDmode))
 	{
 	  rtx high, lo_sum_symbol;
 
