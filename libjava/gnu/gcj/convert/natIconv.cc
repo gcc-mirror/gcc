@@ -1,6 +1,6 @@
-// Input_iconv.java -- Java side of iconv() reader.
+// natIconv.cc -- Java side of iconv() reader.
 
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -201,25 +201,39 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
       inbuf = (char *) temp_buffer;
     }
 
-  // If the conversion fails on the very first character, then we
-  // assume that the character can't be represented in the output
-  // encoding.  There's nothing useful we can do here, so we simply
-  // omit that character.  Note that we can't check `errno' because
-  // glibc 2.1.3 doesn't set it correctly.  We could check it if we
-  // really needed to, but we'd have to disable support for 2.1.3.
   size_t loop_old_in = old_in;
   while (1)
     {
       size_t r = iconv_adapter (iconv, (iconv_t) handle,
 				&inbuf, &inavail,
 				&outbuf, &outavail);
-      if (r == (size_t) -1 && inavail == loop_old_in)
+      if (r == (size_t) -1)
 	{
-	  inavail -= 2;
-	  if (inavail == 0)
-	    break;
-	  loop_old_in -= 2;
-	  inbuf += 2;
+	  if (errno == EINVAL)
+	    {
+	      // Incomplete byte sequence at the end of the input
+	      // buffer.  This shouldn't be able to happen here.
+	      break;
+	    }
+	  else if (errno == E2BIG)
+	    {
+	      // Output buffer is too small.
+	      break;
+	    }
+	  else if (errno == EILSEQ || inavail == loop_old_in)
+	    {
+	      // Untranslatable sequence.  Since glibc 2.1.3 doesn't
+	      // properly set errno, we also assume that this is what
+	      // is happening if no conversions took place.  (This can
+	      // be a bogus assumption if in fact the output buffer is
+	      // too small.)  We skip the first character and try
+	      // again.
+	      inavail -= 2;
+	      if (inavail == 0)
+		break;
+	      loop_old_in -= 2;
+	      inbuf += 2;
+	    }
 	}
       else
 	break;
