@@ -17,8 +17,18 @@
 #along with GNU CC; see the file COPYING.  If not, write to
 #the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# The targets for external use include:
-# all, doc, TAGS, mostlyclean, clean, distclean, realclean,
+# The makefile built from this file lives in the language subdirectory.
+# It's purpose is to provide support for:
+#
+# 1) recursion where necessary, and only then (building .o's), and
+# 2) building and debugging cc1 from the language subdirectory, and
+# 3) nothing else.
+#
+# The parent makefile handles all other chores, with help from the
+# language makefile fragment, of course.
+#
+# The targets for external use are:
+# all, TAGS, ???mostlyclean, ???clean.
 
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
@@ -47,7 +57,7 @@ CC = cc
 BISON = bison
 BISONFLAGS =
 LEX = flex
-LEXFLAGS=
+LEXFLAGS =
 AR = ar
 OLDAR_FLAGS = qc
 AR_FLAGS = rc
@@ -247,68 +257,16 @@ info:
 dvi:
 
 
-# Deletion of files made during compilation.
-# There are four levels of this:
-#   `mostlyclean', `clean', `distclean' and `realclean'.
-# `mostlyclean' is useful while working on a particular type of machine.
-# It deletes most, but not all, of the files made by compilation.
-# It does not delete libgcc.a or its parts, so it won't have to be recompiled.
-# `clean' deletes everything made by running `make all'.
-# `distclean' also deletes the files made by config.
-# `realclean' also deletes everything that could be regenerated automatically.
-
-
-mostlyclean: 
-# Delete the stamp files.
-	-rm -f stamp-* tmp-*
-# Delete debugging dump files.
-	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
-	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
-# Delete unwanted output files from TeX.
-	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
-# Delete sorted indices we don't actually use.
-	-rm -f gcc.vrs gcc.kys gcc.tps gcc.pgs gcc.fns
-	-rm -f *.o ../cc1plus
-
-# Delete all files made by compilation
-# that don't exist in the distribution.
-clean: mostlyclean
-	-rm -f *.dvi
-
-# Delete all files that users would normally create
-# while building and installing GCC.
-distclean: clean
-	-rm -f config.status Makefile *.oaux
-	-rm -f parse.output
-
-# Delete anything likely to be found in the source directory
-# that shouldn't be in the distribution.
-extraclean: distclean
-	-rm -rf =* ./"#"* *~*
-	-rm -f patch* *.orig *.rej
-	-rm -f *.dvi *.oaux *.d *.[zZ] *.gz
-	-rm -f *.s *.s[0-9] *.i
-
-# Get rid of every file that's generated from some other file.
-# Most of these files ARE PRESENT in the GCC distribution.
-realclean: distclean
-	-rm -f TAGS
-	-rm -f parse.c parse.h parse.output
-
 # These exist for maintenance purposes.
-
-# This target creates the files that can be rebuilt, but go in the
-# distribution anyway.
-distdir: parse.c hash.h
 
 # Update the tags table.
 TAGS: force
-	cd $(srcdir) ;							\
-	etags *.c *.h ;							\
-	echo 'l' | tr 'l' '\f' >> TAGS ;				\
-	echo 'parse.y,0' >> TAGS ; 					\
+	cd $(srcdir) ;				\
+	etags *.c *.h ;				\
+	echo 'l' | tr 'l' '\f' >> TAGS ;	\
+	echo 'parse.y,0' >> TAGS ; 		\
 	etags -a ../*.h ../*.c;
 
-.PHONY: clean realclean TAGS
+.PHONY: TAGS
 
 force:
