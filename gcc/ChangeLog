@@ -1,5 +1,32 @@
 2004-03-10  Richard Henderson  <rth@redhat.com>
 
+	* c-pch.c (c_common_no_more_pch): Update for gt_pch_use_address
+	extra arguments.
+	* config.host (*-*-solaris2*, *-*-linux*): Add out_host_hook_obj
+	and host_xmake_file fragments.
+	* ggc-common.c (gt_pch_save): Update for gt_pch_get_address change.
+	(gt_pch_restore): Similarly for gt_pch_use_address.
+	(default_gt_pch_get_address): New.
+	(mmap_gt_pch_get_address): Split out of gt_pch_save.
+	(default_gt_pch_use_address): Split out of gt_pch_restore.
+	(mmap_gt_pch_use_address): Likewise.
+	* hooks.c (hook_voidp_size_t_null): Remove.
+	(hook_bool_voidp_size_t_false): Remove.
+	* hooks.h: Likewise.
+	* hosthooks-def.h (HOST_HOOKS_GT_PCH_GET_ADDRESS): Use one of the
+	default_ or mmap_ definitions.
+	(HOST_HOOKS_GT_PCH_USE_ADDRESS): Likewise.
+	* hosthooks.h (struct host_hooks): Update gt_pch_get_address
+	and gt_pch_use_address.
+	* config/host-linux.c, config/host-solaris.c: New files.
+	* config/x-linux, config/x-solaris: New files.
+	* config/rs6000/host-darwin.c darwin_rs6000_gt_pch_get_address): 
+	Update for changed definition.
+	(darwin_rs6000_gt_pch_use_address): Likewise.
+	* doc/hostconfig.texi: Update docs.
+
+2004-03-10  Richard Henderson  <rth@redhat.com>
+
 	PR c/14517
 	* c-decl.c (grokdeclarator): Don't warn for duplicate qualifiers
 	except for pedantic c90 mode.

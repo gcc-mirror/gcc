@@ -137,14 +137,10 @@ darwin_rs6000_extra_signals (void)
     fatal_error ("While setting up signal handler: %m");
 }
 
-static void * darwin_rs6000_gt_pch_get_address (size_t);
-static bool darwin_rs6000_gt_pch_use_address (void *, size_t);
-
 #undef HOST_HOOKS_GT_PCH_GET_ADDRESS
 #define HOST_HOOKS_GT_PCH_GET_ADDRESS darwin_rs6000_gt_pch_get_address
 #undef HOST_HOOKS_GT_PCH_USE_ADDRESS
 #define HOST_HOOKS_GT_PCH_USE_ADDRESS darwin_rs6000_gt_pch_use_address
-
 
 /* Yes, this is really supposed to work.  */
 static char pch_address_space[1024*1024*1024] __attribute__((aligned (4096)));
@@ -152,7 +148,7 @@ static char pch_address_space[1024*1024*1024] __attribute__((aligned (4096)));
 /* Return the address of the PCH address space, if the PCH will fit in it.  */
 
 static void *
-darwin_rs6000_gt_pch_get_address (size_t sz)
+darwin_rs6000_gt_pch_get_address (size_t sz, int fd ATTRIBUTE_UNUSED)
 {
   if (sz <= sizeof (pch_address_space))
     return pch_address_space;
@@ -163,11 +159,12 @@ darwin_rs6000_gt_pch_get_address (size_t sz)
 /* Check ADDR and SZ for validity, and deallocate (using munmap) that part of
    pch_address_space beyond SZ.  */
 
-static bool
-darwin_rs6000_gt_pch_use_address (void *addr, size_t sz)
+static int
+darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
 {
   const size_t pagesize = getpagesize();
-  bool result;
+  void *mmap_result;
+  int ret;
 
   if ((size_t)pch_address_space % pagesize != 0
       || sizeof (pch_address_space) % pagesize != 0)
@@ -183,7 +180,19 @@ darwin_rs6000_gt_pch_use_address (void *addr, size_t sz)
   if (munmap (pch_address_space + sz, sizeof (pch_address_space) - sz) != 0)
     fatal_error ("couldn't unmap pch_address_space: %m\n");
 
-  return result;
+  mmap_result = mmap (addr, sz,
+		      PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+		      fd, off);
+
+  /* The file might not be mmap-able.  */
+  ret = mmap_result == (void *) MAP_FAILED;
+
+  /* Sanity check for broken MAP_FIXED.  */
+  if (ret && mmap_result != base)
+    abort ();
+
+  return ret;
 }
+
 
 const struct host_hooks host_hooks = HOST_HOOKS_INITIALIZER;
