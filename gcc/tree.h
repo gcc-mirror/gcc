@@ -219,8 +219,6 @@ struct tree_common
 
        TREE_READONLY in
            all expressions
-       ITERATOR_BOUND_P in
-           VAR_DECL if iterator (C)
        TYPE_READONLY in
            ..._TYPE
 

@@ -41,8 +41,6 @@ __imag, IMAGPART, NORID
 __imag__, IMAGPART, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
-__iterator, SCSPEC, RID_ITERATOR
-__iterator__, SCSPEC, RID_ITERATOR
 __label__, LABEL, NORID
 __ptrbase, PTR_BASE, NORID
 __ptrbase__, PTR_BASE, NORID

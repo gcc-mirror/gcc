@@ -126,12 +126,6 @@ struct lang_type
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
 #define DECL_C_BIT_FIELD(NODE) DECL_LANG_FLAG_4 (NODE)
 
-/* In a VAR_DECL, means the variable is really an iterator.  */
-#define ITERATOR_P(D) (DECL_LANG_FLAG_4(D))
-
-/* In a VAR_DECL for an iterator, means we are within
-   an explicit loop over that iterator.  */
-#define ITERATOR_BOUND_P(NODE) ((NODE)->common.readonly_flag)
 
 /* in c-lang.c and objc-act.c */
 extern tree lookup_interface			PARAMS ((tree));
@@ -261,15 +255,6 @@ extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
 extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
-
-/* in c-iterate.c */
-extern void init_iterators			PARAMS ((void));
-extern void iterator_expand			PARAMS ((tree));
-extern void iterator_for_loop_start		PARAMS ((tree));
-extern void iterator_for_loop_end		PARAMS ((tree));
-extern void iterator_for_loop_record		PARAMS ((tree));
-extern void push_iterator_stack			PARAMS ((void));
-extern void pop_iterator_stack			PARAMS ((void));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

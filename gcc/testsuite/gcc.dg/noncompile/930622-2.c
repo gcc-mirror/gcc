@@ -1,6 +1,6 @@
 f ()
 {
   int i;
-  for (i--)	/* { dg-error "syntax" } */
+  for (i--)	/* { dg-error "parse" } */
     ;
 }

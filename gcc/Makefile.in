@@ -678,7 +678,7 @@ LANG_FLAGS_TO_PASS = $(SUBDIR_FLAGS_TO_PASS) \
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-common.o c-iterate.o c-semantics.o @extra_c_objs@
+  c-convert.o c-aux-info.o c-common.o c-semantics.o @extra_c_objs@
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1111,8 +1111,6 @@ c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) function.h \
     defaults.h c-pragma.h toplev.h $(GGC_H)
-c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
-    c-common.h flags.h toplev.h $(EXPR_H)
 mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
 graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
