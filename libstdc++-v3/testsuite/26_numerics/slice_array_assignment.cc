@@ -1,6 +1,6 @@
 // 20010613 gdr
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,15 +30,21 @@
 
 // This is DR-253.  Test for accessible assignment-operators.
 #include <valarray>
+#include <testsuite_hooks.h>
 
 int main()
 {
-  std::valarray<double> v(10), w(10);
-  std::slice s(0, 0, 0);
+  using std::valarray;
+  using std::slice;
+  valarray<int> v(1, 10), w(2, 10);
 
-  v[s] = w[s];                  // dg-do compile
+  w[slice(0, 3, 3)] = v[slice(2, 3, 3)];
 
-  std::slice_array<double> t = v[s];
+  VERIFY(v[0] == 1 && w[0] == 1);
+  VERIFY(v[3] == 1 && w[3] == 1);
+  VERIFY(v[6] == 1 && w[6] == 1);
+
+  std::slice_array<int> t = v[slice(0, 10, 1)];
   
   return 0;
 }
