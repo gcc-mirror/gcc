@@ -3,7 +3,7 @@
 /*
 */
 
-char __G77_LIBF77_VERSION__[] = "0.5.26 20030313 (prerelease)";
+char __G77_LIBF77_VERSION__[] = "0.5.26 20030314 (prerelease)";
 
 /*
 2.00	11 June 1980.  File version.c added to library.
