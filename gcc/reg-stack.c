@@ -229,9 +229,23 @@ static rtx
 /* Get the basic block number of an insn.  See note at block_number
    definition are validity of this information.  */
 
-#define BLOCK_NUM(INSN)  \
-  ((INSN_UID (INSN) > max_uid)	\
-   ? (abort() , -1) : block_number[INSN_UID (INSN)])
+static int BLOCK_NUM PROTO((rtx));
+
+#ifdef __GNUC__
+__inline__
+#endif
+static int
+BLOCK_NUM(insn)
+     rtx insn;
+{
+  int tmp = INSN_UID (insn);
+  if (tmp > max_uid)
+    abort ();
+  tmp = block_number[tmp];
+  if (tmp < 0)
+    abort ();
+  return tmp;
+}
 
 extern rtx forced_labels;
 
@@ -502,6 +516,7 @@ reg_to_stack (first, file)
   bzero ((char *) block_out_reg_set, blocks * sizeof (HARD_REG_SET));
 
   block_number = (int *) alloca ((max_uid + 1) * sizeof (int));
+  memset (block_number, -1, (max_uid + 1) * sizeof (int));
 
   find_blocks (first);
   stack_reg_life_analysis (first, &stackentry);

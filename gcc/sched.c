@@ -2879,7 +2879,7 @@ schedule_block (b, file)
 
   if (reload_completed == 0)
     {
-      COPY_REG_SET (bb_live_regs, basic_block_live_at_start[b]);
+      COPY_REG_SET (bb_live_regs, BASIC_BLOCK (b)->global_live_at_start);
       CLEAR_REG_SET (bb_dead_regs);
 
       if (b == 0)

@@ -91,6 +91,7 @@ typedef union rtunion_def
   addr_diff_vec_flags rt_addr_diff_vec_flags;
   struct bitmap_head_def *rtbit;
   union tree_node *rttree;
+  struct basic_block_def *bb;
 } rtunion;
 
 /* RTL expression ("rtx").  */
@@ -404,6 +405,7 @@ extern char *reg_note_name[];
 #define NOTE_BLOCK_NUMBER(INSN) ((INSN)->fld[3].rtint)
 #define NOTE_RANGE_INFO(INSN)   ((INSN)->fld[3].rtx)
 #define NOTE_LIVE_INFO(INSN)    ((INSN)->fld[3].rtx)
+#define NOTE_BASIC_BLOCK(INSN)	((INSN)->fld[3].bb)
 
 /* If the NOTE_BLOCK_NUMBER field gets a -1, it means create a new
    block node for a live range block.  */
@@ -469,6 +471,8 @@ extern char *reg_note_name[];
 #define NOTE_INSN_RANGE_END -18
 /* Record which registers are currently live.  */
 #define NOTE_INSN_LIVE -19
+/* Record the struct for the following basic block.  */
+#define NOTE_INSN_BASIC_BLOCK -20
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)
@@ -932,6 +936,7 @@ extern rtx emit_insn_before		PROTO((rtx, rtx));
 extern rtx emit_jump_insn_before	PROTO((rtx, rtx));
 extern rtx emit_call_insn_before	PROTO((rtx, rtx));
 extern rtx emit_barrier_before		PROTO((rtx));
+extern rtx emit_label_before		PROTO((rtx, rtx));
 extern rtx emit_note_before		PROTO((int, rtx));
 extern rtx emit_insn_after		PROTO((rtx, rtx));
 extern rtx emit_jump_insn_after		PROTO((rtx, rtx));
@@ -982,7 +987,6 @@ extern rtx simplify_unary_operation	PROTO((enum rtx_code, enum machine_mode, rtx
 extern rtx simplify_binary_operation	PROTO((enum rtx_code, enum machine_mode, rtx, rtx));
 extern rtx simplify_ternary_operation	PROTO((enum rtx_code, enum machine_mode, enum machine_mode, rtx, rtx, rtx));
 extern rtx simplify_relational_operation PROTO((enum rtx_code, enum machine_mode, rtx, rtx));
-extern rtx nonlocal_label_rtx_list	PROTO((void));
 extern rtx gen_move_insn		PROTO((rtx, rtx));
 extern rtx gen_jump			PROTO((rtx));
 extern rtx gen_beq			PROTO((rtx));
@@ -1300,6 +1304,7 @@ extern int comparison_dominates_p	PROTO ((enum rtx_code, enum rtx_code));
 extern int condjump_p			PROTO ((rtx));
 extern rtx condjump_label		PROTO ((rtx));
 extern int simplejump_p			PROTO ((rtx));
+extern int returnjump_p			PROTO ((rtx));
 extern int sets_cc0_p			PROTO ((rtx));
 extern int invert_jump			PROTO ((rtx, rtx));
 extern int rtx_renumbered_equal_p	PROTO ((rtx, rtx));
@@ -1414,6 +1419,10 @@ extern int safe_from_earlyclobber	PROTO ((rtx, rtx));
 extern void expand_null_return		PROTO((void));
 extern void emit_jump			PROTO ((rtx));
 extern int preserve_subexpressions_p	PROTO ((void));
+
+/* List (chain of EXPR_LIST) of labels heading the current handlers for
+   nonlocal gotos.  */
+extern rtx nonlocal_goto_handler_labels;
 
 /* In expr.c */
 extern void init_expr_once		PROTO ((void));

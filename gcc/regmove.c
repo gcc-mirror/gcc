@@ -267,7 +267,7 @@ mark_flags_life_zones (flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-          live |= REGNO_REG_SET_P (basic_block_live_at_start[block],
+          live |= REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start,
 				   flags_regno + i);
       }
 #endif

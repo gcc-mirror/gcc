@@ -428,7 +428,7 @@ static int using_eh_for_cleanups_p = 0;
 static int n_occurrences		PROTO((int, char *));
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static int expand_fixup			PROTO((tree, rtx, rtx));
-static void expand_nl_handler_label	PROTO((rtx, rtx));
+static rtx expand_nl_handler_label	PROTO((rtx, rtx));
 static void expand_nl_goto_receiver	PROTO((void));
 static void expand_nl_goto_receivers	PROTO((struct nesting *));
 static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
@@ -3169,7 +3169,7 @@ remember_end_note (block)
 /* Emit a handler label for a nonlocal goto handler.
    Also emit code to store the handler label in SLOT before BEFORE_INSN.  */
 
-static void
+static rtx
 expand_nl_handler_label (slot, before_insn)
      rtx slot, before_insn;
 {
@@ -3186,6 +3186,8 @@ expand_nl_handler_label (slot, before_insn)
   emit_insns_before (insns, before_insn);
 
   emit_label (handler_label);
+
+  return handler_label;
 }
 
 /* Emit code to restore vital registers at the beginning of a nonlocal goto
@@ -3260,6 +3262,7 @@ expand_nl_goto_receivers (thisblock)
   tree link;
   rtx afterward = gen_label_rtx ();
   rtx insns, slot;
+  rtx label_list;
   int any_invalid;
 
   /* Record the handler address in the stack slot for that purpose,
@@ -3283,14 +3286,18 @@ expand_nl_goto_receivers (thisblock)
   /* Make a separate handler for each label.  */
   link = nonlocal_labels;
   slot = nonlocal_goto_handler_slots;
+  label_list = NULL_RTX;
   for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
     /* Skip any labels we shouldn't be able to jump to from here,
        we generate one special handler for all of them below which just calls
        abort.  */
     if (! DECL_TOO_LATE (TREE_VALUE (link)))
       {
-	expand_nl_handler_label (XEXP (slot, 0),
-				 thisblock->data.block.first_insn);
+	rtx lab;
+	lab = expand_nl_handler_label (XEXP (slot, 0),
+				       thisblock->data.block.first_insn);
+	label_list = gen_rtx_EXPR_LIST (VOIDmode, lab, label_list);
+
 	expand_nl_goto_receiver ();
 
 	/* Jump to the "real" nonlocal label.  */
@@ -3305,8 +3312,10 @@ expand_nl_goto_receivers (thisblock)
   for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
     if (DECL_TOO_LATE (TREE_VALUE (link)))
       {
-	expand_nl_handler_label (XEXP (slot, 0),
-				 thisblock->data.block.first_insn);
+	rtx lab;
+	lab = expand_nl_handler_label (XEXP (slot, 0),
+				       thisblock->data.block.first_insn);
+	label_list = gen_rtx_EXPR_LIST (VOIDmode, lab, label_list);
 	any_invalid = 1;
       }
 
@@ -3318,6 +3327,7 @@ expand_nl_goto_receivers (thisblock)
       emit_barrier ();
     }
 
+  nonlocal_goto_handler_labels = label_list;
   emit_label (afterward);
 }
 

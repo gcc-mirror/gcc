@@ -744,7 +744,7 @@ set_nonzero_bits_and_sign_copies (x, set)
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
       /* If this register is undefined at the start of the file, we can't
 	 say what its contents were.  */
-      && ! REGNO_REG_SET_P (basic_block_live_at_start[0], REGNO (x))
+      && ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, REGNO (x))
       && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT)
     {
       if (set == 0 || GET_CODE (set) == CLOBBER)
@@ -2490,7 +2490,8 @@ try_combine (i3, i2, i1)
 	    regno = REGNO (i2dest);
 	    REG_N_SETS (regno)--;
 	    if (REG_N_SETS (regno) == 0
-		&& ! REGNO_REG_SET_P (basic_block_live_at_start[0], regno))
+		&& ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
+				      regno))
 	      REG_N_REFS (regno) = 0;
 	  }
       }
@@ -2512,7 +2513,8 @@ try_combine (i3, i2, i1)
 	  {
 	    REG_N_SETS (regno)--;
 	    if (REG_N_SETS (regno) == 0
-		&& ! REGNO_REG_SET_P (basic_block_live_at_start[0], regno))
+		&& ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
+				      regno))
 	      REG_N_REFS (regno) = 0;
 	  }
       }
@@ -11038,7 +11040,7 @@ reg_dead_at_p (reg, insn)
     }
 
   for (i = reg_dead_regno; i < reg_dead_endregno; i++)
-    if (REGNO_REG_SET_P (basic_block_live_at_start[block], i))
+    if (REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start, i))
       return 0;
 
   return 1;

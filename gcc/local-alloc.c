@@ -966,7 +966,8 @@ update_equiv_regs ()
 		    BLOCK_HEAD (block) = PREV_INSN (insn);
 
 		  for (l = 0; l < n_basic_blocks; l++)
-		    CLEAR_REGNO_REG_SET (basic_block_live_at_start[l], regno);
+		    CLEAR_REGNO_REG_SET (BASIC_BLOCK (l)->global_live_at_start,
+					 regno);
 		}
 	    }
 	}
@@ -1039,7 +1040,7 @@ block_alloc (b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  REG_SET_TO_HARD_REG_SET (regs_live, basic_block_live_at_start[b]);
+  REG_SET_TO_HARD_REG_SET (regs_live, BASIC_BLOCK (b)->global_live_at_start);
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.

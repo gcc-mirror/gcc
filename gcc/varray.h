@@ -75,6 +75,7 @@ typedef union varray_data_tag {
   struct sched_info_tag	 *sched[1];
   struct reg_info_def	 *reg[1];
   struct const_equiv_data const_equiv[1];
+  struct basic_block_def *bb[1];
 } varray_data;
 
 /* Virtual array of pointers header.  */
@@ -146,6 +147,9 @@ extern varray_type varray_init	PROTO ((size_t, size_t, const char *));
 #define VARRAY_CONST_EQUIV_INIT(va, num, name) \
   va = varray_init (num, sizeof (struct const_equiv_data), name)
 
+#define VARRAY_BB_INIT(va, num, name) \
+  va = varray_init (num, sizeof (struct basic_block_def *), name)
+
 /* Free up memory allocated by the virtual array, but do not free any of the
    elements involved.  */
 #define VARRAY_FREE(vp) \
@@ -189,6 +193,7 @@ extern varray_type varray_grow	PROTO((varray_type, size_t));
 #define VARRAY_BITMAP(VA, N)	((VA)->data.bitmap[ VARRAY_CHECK (VA, N) ])
 #define VARRAY_SCHED(VA, N)	((VA)->data.sched[ VARRAY_CHECK (VA, N) ])
 #define VARRAY_REG(VA, N)	((VA)->data.reg[ VARRAY_CHECK (VA, N) ])
-#define VARRAY_CONST_EQUIV(VA, N) ((VA)->data.const_equiv[ VARRAY_CHECK (VA, N) ])
+#define VARRAY_CONST_EQUIV(VA, N) ((VA)->data.const_equiv[VARRAY_CHECK (VA, N)])
+#define VARRAY_BB(VA, N)	((VA)->data.bb[ VARRAY_CHECK (VA, N) ])
 
 #endif /* _VARRAY_H_ */

@@ -1,3 +1,156 @@
+Thu Feb 25 23:43:59 1999  Richard Henderson  <rth@cygnus.com>
+
+	Flow rewrite to use basic block structures and edge lists:
+
+	* basic-block.h (x_basic_block_head, x_basic_block_end): Kill.
+	(basic_block_computed_jump_target, basic_block_live_at_start): Kill.
+	(struct edge_def): New.
+	(struct basic_block_def): New.
+	(basic_block_info): New.
+	(BLOCK_HEAD, BLOCK_END): Update.
+	(ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR): New.
+	(uid_block_number): Kill.
+	(basic_block_for_insn, BLOCK_FOR_INSN): New.
+	(BLOCK_NUM): Update.
+	* flow.c (XNMALLOC): Kill.
+	(max_uid_for_flow): Kill.
+	(uid_block_number): Kill.
+	(uid_volatile): Turn into a bitmap.
+	(SET_INSN_VOLATILE): New.
+	(basic_block_info): New.
+	(entry_exit_blocks): New.
+	(x_basic_block_head, x_basic_block_end): Kill.
+	(basic_block_computed_jump_target, basic_block_live_at_start): Kill.
+	(flow_int_list_blocks, basic_block_succ, basic_block_pred): Kill.
+	(basic_block_loop_depth): Kill.
+	(basic_block_for_insn): New.
+	(find_basic_blocks): Split out initial block counting into 
+	count_basic_blocks.  Call functions split out of find_basic_blocks_1.
+	(count_basic_blocks): New.
+	(find_basic_blocks_1): Split out edge recognition, unreachable
+	block deletion.
+	(create_basic_block): New.
+	(compute_bb_for_insn): New.
+	(clear_edges): New.
+	(free_bb_memory): Kill.
+	(add_edge, add_edge_to_label): Kill.
+	(mark_label_ref): Kill.
+	(make_edges): Rewrite to use edge lists.
+	(make_edge, make_label_edge): New.
+	(mark_critical_edges): New.
+	(split_edge, insert_insn_on_edge): New.
+	(commit_one_edge_insertion, commit_edge_insertions): New.
+	(delete_unreachable_blocks): Rewrite to use edge lists.  
+	Split out EH region manipulation into delete_eh_regions.
+	Call tidy_fallthru_edge and merge_blocks.
+	(delete_eh_regions): New.
+	(delete_note_p): New.
+	(delete_insn_chain): New.
+	(delete_block): Split out code into delete_insn_chain and
+	tidy_fallthru_edge.  Update edge lists.
+	(expunge_block): New.
+	(flow_delete_insn): New?
+	(can_delete_label_p): New?
+	(merge_blocks_nomove, merge_blocks): New.
+	(tidy_fallthru_edge): New.
+	(calculate_loop_depth): New.
+	(life_analysis): Allocate and free uid_volatile.
+	(free_basic_block_vars): Update for new structures.
+	(record_volatile_insns): Use SET_INSN_VOLATILE.
+	(mark_regs_live_at_end): Tidy EXIT_IGNORE_STACK usage.
+	(mark_used_regs): Likewise.
+	(life_analysis_1): Use bb global_live_at_start, global_live_at_end, 
+	local_set regsets.  Use bb->aux to store new_live_at_end.  Begin
+	life propagation from EXIT_BLOCK rather than last block.  Clear
+	regs_ever_live after mark_regs_live_at_end.
+	(allocate_for_life_analysis): Update for new structures.
+	(propagate_block): Split out loop depth calculation to
+	calculate_loop_depth.
+	(regno_uninitialized): Use bb->global_live_at_start.
+	(regno_clobbered_at_setjmp): Likewise.
+	(dump_bb_data): Likewise.
+	(find_auto_inc): Use BLOCK_FOR_INSN instead of BLOCK_NUM.
+	(dump_flow_info): Update for new structures.
+	(dump_edge_info): New.
+	(print_rtl_with_bb): Update for new structues.
+	(compute_preds_succs): Do no work -- convert edge lists.
+	(set_block_for_insn): From corpse of old set_block_num.
+	(set_block_num): Call it.
+
+	* rtl.c (note_insn_name): Add NOTE_INSN_BASIC_BLOCK.
+	* rtl.h (rtunion_def): Add bb entry.
+	(NOTE_BASIC_BLOCK): New.
+	(NOTE_INSN_BASIC_BLOCK): New.
+
+	* varray.h (varray_data_tag): Add bb entry.
+	(VARRAY_BB_INIT, VARRAY_BB): New.
+
+	* emit-rtl.c (emit_label_before): New.
+
+	* except.c (expand_rethrow): Delete insns following the call to
+	rethrow.  Put the REG_EH_RETHROW on the call.
+
+	* jump.c (returnjump_p, returnjump_p_1): New.
+
+	* expr.h (nonlocal_goto_handler_labels): New declaration.
+	* function.c (nonlocal_goto_handler_labels): Define it.
+	(push_function_context_to): Save it.
+	(pop_function_context_from): Restore it.
+	(init_function_start): Clear it.
+	(nonlocal_label_rtx_list): Kill.
+	* function.h (struct function): Add storage space for it.
+	* stmt.c (expand_nl_handler_label): Return the new label.
+	(expand_nl_goto_receivers): Collect a list of them in
+	nonlocal_goto_handler_labels.
+
+	* Makefile.in (print-rtl.o): Depend on basic-block.h.
+	(flow.o): Depend on tree.h and insn-flags.h.
+	(sched.o): Depend on tree.h and expr.h.
+
+	* function.c (thread_prologue_and_epilogue_insns): Do not
+	half-heartedly update bb structures.
+
+	* toplev.c: Add flow2 dump as -dw.
+	(rest_of_compilation): Finish .greg before flow2.
+
+	* graph.c (draw_edge): Handle class 3.
+	(print_rtl_graph_with_bb): Make abnormal edges red class 2, 
+	change non-fall-thru but adjacent to green class 3.  Update 
+	to use new structures.
+
+	* print-rtl.c (print_rtx): Handle NOTE_INSN_BASIC_BLOCK.
+
+	* reg-stack.c (BLOCK_NUM): Convert to function.  Abort if
+	block_number is -1.
+	(reg_to_stack): Initialize block_num to -1.
+
+	* combine.c (set_nonzero_bits_and_sign_copies): Update reference
+	to basic_block_live_at_start to bb->global_live_at_start.
+	(try_combine): Likewise.
+	(reg_dead_at_p): Likewise.
+	* global.c (global_conflicts): Likewise.
+	Handle stack regs on all abnormal edges, not just computed jumps.
+	(mark_elimination): Update reference to basic_block_live_at_start.
+	(build_insn_chain): Likewise.
+	* haifa-sched.c (haifa_edge): Rename from edge for conflict.
+	(is_cfg_nonregular): Look at nonlocal_goto_handler_labels instead
+	of nonlocal_label_rtx_list.
+	(check_live_1): Update reference to basic_block_live_at_start.
+	(update_live_1): Likewise.
+	(find_pre_sched_live): Likewise.
+	(find_post_sched_live): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	(block_alloc): Likewise.
+	* reload1.c (reload, reload_combine): Likewise.
+	* regmove.c (mark_flags_life_zones): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+	* sched.c (schedule_block): Likewise.
+
+	* regclass.c (regset_release_memory): Don't free
+	basic_block_live_at_start.
+
+	* unroll.c (copy_loop_body): Don't duplicate NOTE_INSN_BASIC_BLOCK.
+
 Thu Feb 25 21:32:34 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* fixinc.wrap: Also handle struct queue in sys/stream.h.

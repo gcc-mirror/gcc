@@ -19,14 +19,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* This file contains the data flow analysis pass of the compiler.
-   It computes data flow information
-   which tells combine_instructions which insns to consider combining
-   and controls register allocation.
+/* This file contains the data flow analysis pass of the compiler.  It
+   computes data flow information which tells combine_instructions
+   which insns to consider combining and controls register allocation.
 
-   Additional data flow information that is too bulky to record
-   is generated during the analysis, and is used at that time to
-   create autoincrement and autodecrement addressing.
+   Additional data flow information that is too bulky to record is
+   generated during the analysis, and is used at that time to create
+   autoincrement and autodecrement addressing.
 
    The first step is dividing the function into basic blocks.
    find_basic_blocks does this.  Then life_analysis determines
@@ -34,13 +33,12 @@ Boston, MA 02111-1307, USA.  */
 
    ** find_basic_blocks **
 
-   find_basic_blocks divides the current function's rtl
-   into basic blocks.  It records the beginnings and ends of the
-   basic blocks in the vectors basic_block_head and basic_block_end,
-   and the number of blocks in n_basic_blocks.
+   find_basic_blocks divides the current function's rtl into basic
+   blocks and constructs the CFG.  The blocks are recorded in the
+   basic_block_info array; the CFG exists in the edge structures
+   referenced by the blocks.
 
-   find_basic_blocks also finds any unreachable loops
-   and deletes them.
+   find_basic_blocks also finds any unreachable loops and deletes them.
 
    ** life_analysis **
 
@@ -51,12 +49,12 @@ Boston, MA 02111-1307, USA.  */
    ** live-register info **
 
    The information about where each register is live is in two parts:
-   the REG_NOTES of insns, and the vector basic_block_live_at_start.
+   the REG_NOTES of insns, and the vector basic_block->global_live_at_start.
 
-   basic_block_live_at_start has an element for each basic block,
-   and the element is a bit-vector with a bit for each hard or pseudo
-   register.  The bit is 1 if the register is live at the beginning
-   of the basic block.
+   basic_block->global_live_at_start has an element for each basic
+   block, and the element is a bit-vector with a bit for each hard or
+   pseudo register.  The bit is 1 if the register is live at the
+   beginning of the basic block.
 
    Two types of elements can be added to an insn's REG_NOTES.  
    A REG_DEAD note is added to an insn's REG_NOTES for any register
@@ -110,6 +108,15 @@ Boston, MA 02111-1307, USA.  */
 
    life_analysis sets current_function_sp_is_unchanging if the function
    doesn't modify the stack pointer.  */
+
+/* TODO: 
+
+   Split out from life_analysis:
+	- local property discovery (bb->local_live, bb->local_set)
+	- global property computation
+	- log links creation
+	- pre/post modify transformation
+*/
 
 #include "config.h"
 #include "system.h"
@@ -123,12 +130,21 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
+#include "insn-flags.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#define XNMALLOC(TYPE, COUNT) ((TYPE *) xmalloc ((COUNT) * sizeof (TYPE)))
+
+/* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
+   the stack pointer does not matter.  The value is tested only in
+   functions that have frame pointers.
+   No definition is equivalent to always zero.  */
+#ifndef EXIT_IGNORE_STACK
+#define EXIT_IGNORE_STACK 0
+#endif
+
 
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.
@@ -140,33 +156,46 @@ extern struct obstack *function_obstack;
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
 
-/* Get the basic block number of an insn.
-   This info should not be expected to remain available
-   after the end of life_analysis.  */
-
-/* This is the limit of the allocated space in the following two arrays.  */
-
-static int max_uid_for_flow;
-
-#define BLOCK_NUM(INSN)  uid_block_number[INSN_UID (INSN)]
-
-/* This is where the BLOCK_NUM values are really stored.
-   This is set up by find_basic_blocks and used there and in life_analysis,
-   and then freed.  */
-
-int *uid_block_number;
-
-/* INSN_VOLATILE (insn) is 1 if the insn refers to anything volatile.  */
-
-#define INSN_VOLATILE(INSN) uid_volatile[INSN_UID (INSN)]
-static char *uid_volatile;
-
-/* Nonzero if the second flow pass has completed.  */
-int flow2_completed;
-
 /* Number of basic blocks in the current function.  */
 
 int n_basic_blocks;
+
+/* The basic block array.  */
+
+varray_type basic_block_info;
+
+/* The special entry and exit blocks.  */
+
+struct basic_block_def entry_exit_blocks[2] = 
+{
+  {
+    NULL,			/* head */
+    NULL,			/* end */
+    NULL,			/* pred */
+    NULL,			/* succ */
+    NULL,			/* local_set */
+    NULL,			/* global_live_at_start */
+    NULL,			/* global_live_at_end */
+    NULL,			/* aux */
+    ENTRY_BLOCK,		/* index */
+    0				/* loop_depth */
+  },
+  {
+    NULL,			/* head */
+    NULL,			/* end */
+    NULL,			/* pred */
+    NULL,			/* succ */
+    NULL,			/* local_set */
+    NULL,			/* global_live_at_start */
+    NULL,			/* global_live_at_end */
+    NULL,			/* aux */
+    EXIT_BLOCK,			/* index */
+    0				/* loop_depth */
+  }
+};
+
+/* Nonzero if the second flow pass has completed.  */
+int flow2_completed;
 
 /* Maximum register number used in this function, plus one.  */
 
@@ -192,28 +221,8 @@ static rtx *reg_next_use;
 int regset_bytes;
 int regset_size;
 
-/* Element N is first insn in basic block N.
-   This info lasts until we finish compiling the function.  */
-
-rtx *x_basic_block_head;
-
-/* Element N is last insn in basic block N.
-   This info lasts until we finish compiling the function.  */
-
-rtx *x_basic_block_end;
-
-/* Element N indicates whether basic block N can be reached through a
-   computed jump.  */
-
-char *basic_block_computed_jump_target;
-
-/* Element N is a regset describing the registers live
-   at the start of basic block N.
-   This info lasts until we finish compiling the function.  */
-
-regset *basic_block_live_at_start;
-
 /* Regset of regs live when calls to `setjmp'-like functions happen.  */
+/* ??? Does this exist only for the setjmp-clobbered warning message?  */
 
 regset regs_live_at_setjmp;
 
@@ -222,20 +231,6 @@ regset regs_live_at_setjmp;
    The first two regs in the list are a pair, and the next two
    are another pair, etc.  */
 rtx regs_may_share;
-
-/* Pointer to head of predecessor/successor block list.  */
-static int_list_block *flow_int_list_blocks;
-
-/* Element N is the list of successors of basic block N.  */
-static int_list_ptr *basic_block_succ;
-
-/* Element N is the list of predecessors of basic block N.  */
-static int_list_ptr *basic_block_pred;
-
-/* Element N is depth within loops of the last insn in basic block number N.
-   Freed after life_analysis.  */
-
-static short *basic_block_loop_depth;
 
 /* Depth within loops of basic block being scanned for lifetime analysis,
    plus one.  This is the weight attached to references to registers.  */
@@ -256,21 +251,57 @@ static rtx mem_set_list;
 
 static HARD_REG_SET elim_reg_set;
 
+/* The basic block structure for every insn, indexed by uid.  */
+
+varray_type basic_block_for_insn;
+
+/* The labels mentioned in non-jump rtl.  Valid during find_basic_blocks.  */
+/* ??? Should probably be using LABEL_NUSES instead.  It would take a 
+   bit of surgery to be able to use or co-opt the routines in jump.  */
+
+static rtx label_value_list;
+
+/* INSN_VOLATILE (insn) is 1 if the insn refers to anything volatile.  */
+
+#define INSN_VOLATILE(INSN) bitmap_bit_p (uid_volatile, INSN_UID (INSN))
+#define SET_INSN_VOLATILE(INSN) bitmap_set_bit (uid_volatile, INSN_UID (INSN))
+static bitmap uid_volatile;
+
 /* Forward declarations */
-static void find_basic_blocks_1		PROTO((rtx, rtx));
-static void add_edge			PROTO((int, int));
-static void add_edge_to_label		PROTO((int, rtx));
-static void make_edges			PROTO((int));
-static void mark_label_ref		PROTO((int, rtx));
+static int count_basic_blocks		PROTO((rtx));
+static rtx find_basic_blocks_1		PROTO((rtx, rtx*));
+static void create_basic_block		PROTO((int, rtx, rtx, rtx));
+static void compute_bb_for_insn		PROTO((varray_type, int));
+static void clear_edges			PROTO((void));
+static void make_edges			PROTO((rtx, rtx*));
+static void make_edge			PROTO((basic_block, basic_block, int));
+static void make_label_edge		PROTO((basic_block, rtx, int));
+static void mark_critical_edges		PROTO((void));
+
+static void commit_one_edge_insertion	PROTO((edge));
+
 static void delete_unreachable_blocks	PROTO((void));
-static int delete_block			PROTO((int));
-static void life_analysis_1		PROTO((rtx, int));
-static void propagate_block		PROTO((regset, rtx, rtx, int, 
-					       regset, int));
+static void delete_eh_regions		PROTO((void));
+static void delete_insn_chain		PROTO((rtx, rtx));
+static int delete_block			PROTO((basic_block));
+static void expunge_block		PROTO((basic_block));
+static rtx flow_delete_insn		PROTO((rtx));
+static int can_delete_label_p		PROTO((rtx));
+static void merge_blocks_nomove		PROTO((basic_block, basic_block));
+static int merge_blocks			PROTO((edge,basic_block,basic_block));
+static void tidy_fallthru_edge		PROTO((edge,basic_block,basic_block));
+static void calculate_loop_depth	PROTO((rtx));
+
 static int set_noop_p			PROTO((rtx));
 static int noop_move_p			PROTO((rtx));
+static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void record_volatile_insns	PROTO((rtx));
 static void mark_regs_live_at_end	PROTO((regset));
+static void life_analysis_1		PROTO((rtx, int));
+static void init_regset_vector		PROTO ((regset *, int,
+						struct obstack *));
+static void propagate_block		PROTO((regset, rtx, rtx, int, 
+					       regset, int));
 static int insn_dead_p			PROTO((rtx, regset, int, rtx));
 static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
 static void mark_set_regs		PROTO((regset, regset, rtx,
@@ -284,13 +315,15 @@ static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
 #endif
 static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 void dump_flow_info			PROTO((FILE *));
-static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
-						int_list_ptr *, int *, int *));
+static void dump_edge_info		PROTO((FILE *, edge, int));
+
 static int_list_ptr alloc_int_list_node PROTO ((int_list_block **));
 static int_list_ptr add_int_list_node   PROTO ((int_list_block **,
 						int_list **, int));
-static void init_regset_vector		PROTO ((regset *, int,
-						struct obstack *));
+
+static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
+						int_list_ptr *, int *, int *));
+
 static void count_reg_sets_1		PROTO ((rtx));
 static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
@@ -298,560 +331,665 @@ static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void invalidate_mems_from_autoinc	PROTO ((rtx));
 
 /* Find basic blocks of the current function.
-   F is the first insn of the function and NREGS the number of register numbers
-   in use.  */
+   F is the first insn of the function and NREGS the number of register
+   numbers in use.  */
 
 void
 find_basic_blocks (f, nregs, file)
      rtx f;
-     int nregs;
-     FILE *file;
+     int nregs ATTRIBUTE_UNUSED;
+     FILE *file ATTRIBUTE_UNUSED;
 {
-  register rtx insn;
-  register int i;
-  rtx nonlocal_label_list = nonlocal_label_rtx_list ();
+  rtx *bb_eh_end;
+  int max_uid;
 
-  /* Avoid leaking memory if this is called multiple times per compiled
-     function.  */
-  free_bb_memory ();
+  /* Flush out existing data.  */
+  if (basic_block_info != NULL)
+    {
+      int i;
 
-  /* Count the basic blocks.  Also find maximum insn uid value used.  */
+      clear_edges ();
 
-  {
-    rtx prev_call = 0;
-    register RTX_CODE prev_code = JUMP_INSN;
-    register RTX_CODE code;
-    int eh_region = 0;
-    int call_had_abnormal_edge = 0;
+      /* Clear bb->aux on all extant basic blocks.  We'll use this as a 
+	 tag for reuse during create_basic_block, just in case some pass
+	 copies around basic block notes improperly.  */
+      for (i = 0; i < n_basic_blocks; ++i)
+	BASIC_BLOCK (i)->aux = NULL;
 
-    for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-      {
-	code = GET_CODE (insn);
+      VARRAY_FREE (basic_block_info);
+    }
 
-	/* A basic block starts at label, or after something that can jump.  */
-	if (code == CODE_LABEL
-	    || (GET_RTX_CLASS (code) == 'i'
-		&& (prev_code == JUMP_INSN
-		    || (prev_code == CALL_INSN && call_had_abnormal_edge)
-		    || prev_code == BARRIER)))
-	  {
-	    i++;
+  n_basic_blocks = count_basic_blocks (f);
 
-	    /* If the previous insn was a call that did not create an
-	       abnormal edge, we want to add a nop so that the CALL_INSN
-	       itself is not at basic block end.  This allows us to easily
-	       distinguish between normal calls and those which create
-	       abnormal edges in the flow graph.  */
+  /* Size the basic block table.  The actual structures will be allocated
+     by find_basic_blocks_1, since we want to keep the structure pointers
+     stable across calls to find_basic_blocks.  */
+  /* ??? This whole issue would be much simpler if we called find_basic_blocks
+     exactly once, and thereafter we don't have a single long chain of 
+     instructions at all until close to the end of compilation when we
+     actually lay them out.  */
 
-	    if (i > 0 && !call_had_abnormal_edge && prev_call != 0)
-	      {
-		rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
-		emit_insn_after (nop, prev_call);
-	      }
-	  }
+  VARRAY_BB_INIT (basic_block_info, n_basic_blocks, "basic_block_info");
 
-	if (code == CALL_INSN)
-          {
-            rtx note = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
+  /* An array to record the active exception region at the end of each
+     basic block.  It is filled in by find_basic_blocks_1 for make_edges.  */
+  bb_eh_end = (rtx *) alloca (n_basic_blocks * sizeof (rtx));
 
-            /* We change the code of the CALL_INSN, so that it won't start a
-               new block.  */
-            if (note && XINT (XEXP (note, 0), 0) == 0)
-              code = INSN;
-            else
-              {
-                prev_call = insn;
-                call_had_abnormal_edge = (nonlocal_label_list != 0
-                                          || eh_region);
-              }
-          }
+  label_value_list = find_basic_blocks_1 (f, bb_eh_end);
 
-	else if (code != NOTE && code != BARRIER)
-	  prev_call = 0;
+  /* Record the block to which an insn belongs.  */
+  /* ??? This should be done another way, by which (perhaps) a label is
+     tagged directly with the basic block that it starts.  It is used for
+     more than that currently, but IMO that is the only valid use.  */
 
-	if (code != NOTE)
-	  prev_code = code;
-	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	  ++eh_region;
-	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	  --eh_region;
-      }
-  }
-
-  n_basic_blocks = i;
-
-  max_uid_for_flow = get_max_uid ();
+  max_uid = get_max_uid ();
 #ifdef AUTO_INC_DEC
   /* Leave space for insns life_analysis makes in some cases for auto-inc.
      These cases are rare, so we don't need too much space.  */
-  max_uid_for_flow += max_uid_for_flow / 10;
+  max_uid += max_uid / 10;
 #endif
 
-  /* Allocate some tables that last till end of compiling this function
-     and some needed only in find_basic_blocks and life_analysis.  */
+  VARRAY_BB_INIT (basic_block_for_insn, max_uid, "basic_block_for_insn");
+  compute_bb_for_insn (basic_block_for_insn, max_uid);
 
-  x_basic_block_head = XNMALLOC (rtx, n_basic_blocks);
-  x_basic_block_end = XNMALLOC (rtx, n_basic_blocks);
-  basic_block_succ = XNMALLOC (int_list_ptr, n_basic_blocks);
-  basic_block_pred = XNMALLOC (int_list_ptr, n_basic_blocks);
-  bzero ((char *)basic_block_succ, n_basic_blocks * sizeof (int_list_ptr));
-  bzero ((char *)basic_block_pred, n_basic_blocks * sizeof (int_list_ptr));
+  /* Discover the edges of our cfg.  */
 
-  basic_block_computed_jump_target = (char *) oballoc (n_basic_blocks);
-  basic_block_loop_depth = XNMALLOC (short, n_basic_blocks);
-  uid_block_number = XNMALLOC (int, (max_uid_for_flow + 1));
-  uid_volatile = XNMALLOC (char, (max_uid_for_flow + 1));
-  bzero (uid_volatile, max_uid_for_flow + 1);
+  make_edges (label_value_list, bb_eh_end);
 
-  find_basic_blocks_1 (f, nonlocal_label_list);
+  /* Delete unreachable blocks.  */
+  /* ??? Do this conditionally, or make this another entry point?  */
+
+  delete_unreachable_blocks ();
+
+  /* Mark critical edges.  */
+
+  mark_critical_edges ();
+
+  /* Discover the loop depth at the start of each basic block to aid
+     register allocation.  */
+  calculate_loop_depth (f);
+
+  /* Kill the data we won't maintain.  */
+  label_value_list = 0;
 }
 
-/* For communication between find_basic_blocks_1 and its subroutines.  */
+/* Count the basic blocks of the function.  */
 
-/* An array of CODE_LABELs, indexed by UID for the start of the active
-   EH handler for each insn in F.  */
-static int *active_eh_region;
-static int *nested_eh_region;
+static int 
+count_basic_blocks (f)
+     rtx f;
+{
+  register rtx insn;
+  register RTX_CODE prev_code;
+  register int count = 0;
+  int eh_region = 0;
+  int in_libcall_block = 0;
+  int call_had_abnormal_edge = 0;
+  rtx prev_call = NULL_RTX;
 
-/* Element N nonzero if basic block N can actually be reached.  */
+  prev_code = JUMP_INSN;
+  for (insn = f; insn; insn = NEXT_INSN (insn))
+    {
+      register RTX_CODE code = GET_CODE (insn);
 
-static char *block_live_static;
+      /* Track when we are inside in LIBCALL block.  */
+      if (GET_RTX_CLASS (code) == 'i'
+	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	in_libcall_block = 1;
 
-/* List of label_refs to all labels whose addresses are taken
-   and used as data.  */
-static rtx label_value_list;
+      if (code == CODE_LABEL
+	  || (GET_RTX_CLASS (code) == 'i'
+	      && (prev_code == JUMP_INSN
+		  || prev_code == BARRIER
+		  || (prev_code == CALL_INSN && call_had_abnormal_edge))))
+	{
+	  count++;
 
-/* a list of non-local labels in the function.  */
-static rtx nonlocal_label_list;
+	  /* If the previous insn was a call that did not create an
+	     abnormal edge, we want to add a nop so that the CALL_INSN
+	     itself is not at basic_block_end.  This allows us to
+	     easily distinguish between normal calls and those which
+	     create abnormal edges in the flow graph.  */
+
+	  if (count > 0 && prev_call != 0 && !call_had_abnormal_edge)
+	    {
+	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
+	      emit_insn_after (nop, prev_call);
+	    }
+	}
+
+      /* Record whether this call created an edge.  */
+      if (code == CALL_INSN)
+	{
+	  prev_call = insn;
+	  call_had_abnormal_edge = 0;
+	  if (nonlocal_goto_handler_labels)
+	    call_had_abnormal_edge = !in_libcall_block;
+	  else if (eh_region)
+	    {
+	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (!note || XINT (XEXP (note, 0), 0) != 0)
+		call_had_abnormal_edge = 1;
+	    }
+	}
+      else if (code != NOTE)
+	prev_call = NULL_RTX;
+
+      if (code != NOTE)
+	prev_code = code;
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	++eh_region;
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+	--eh_region;
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	in_libcall_block = 0;
+    }
+
+  /* The rest of the compiler works a bit smoother when we don't have to
+     check for the edge case of do-nothing functions with no basic blocks.  */
+  if (count == 0)
+    {
+      emit_insn (gen_rtx_USE (VOIDmode, const0_rtx));
+      count = 1;
+    }
+
+  return count;
+}
 
 /* Find all basic blocks of the function whose first insn is F.
    Store the correct data in the tables that describe the basic blocks,
    set up the chains of references for each CODE_LABEL, and
    delete any entire basic blocks that cannot be reached.
 
-   NONLOCAL_LABELS is a list of non-local labels in the function.
-   Blocks that are otherwise unreachable may be reachable with a non-local
-   goto.  */
+   NONLOCAL_LABEL_LIST is a list of non-local labels in the function.  Blocks
+   that are otherwise unreachable may be reachable with a non-local goto.
 
-static void
-find_basic_blocks_1 (f, nonlocal_labels)
-     rtx f, nonlocal_labels;
+   BB_EH_END is an array in which we record the list of exception regions
+   active at the end of every basic block.  */
+
+static rtx
+find_basic_blocks_1 (f, bb_eh_end)
+     rtx f;
+     rtx *bb_eh_end;
 {
-  register rtx insn;
-  register int i;
-  register char *block_live = (char *) alloca (n_basic_blocks);
-  register char *block_marked = (char *) alloca (n_basic_blocks);
-  rtx note, eh_note;
-  enum rtx_code prev_code, code;
-  int depth;
-  int call_had_abnormal_edge = 0;
+  register rtx insn, next;
+  int in_libcall_block = 0;
+  int call_has_abnormal_edge = 0;
+  int i = 0;
+  rtx bb_note = NULL_RTX;
+  rtx eh_list = NULL_RTX;
+  rtx label_value_list = NULL_RTX;
+  rtx head = NULL_RTX;
+  rtx end = NULL_RTX;
+  
+  /* We process the instructions in a slightly different way than we did
+     previously.  This is so that we see a NOTE_BASIC_BLOCK after we have
+     closed out the previous block, so that it gets attached at the proper
+     place.  Since this form should be equivalent to the previous,
+     find_basic_blocks_0 continues to use the old form as a check.  */
 
-  active_eh_region = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
-  nested_eh_region = (int *) alloca ((max_label_num () + 1) * sizeof (int));
-  nonlocal_label_list = nonlocal_labels;
-
-  label_value_list = 0;
-  block_live_static = block_live;
-  bzero (block_live, n_basic_blocks);
-  bzero (block_marked, n_basic_blocks);
-  bzero (basic_block_computed_jump_target, n_basic_blocks);
-  bzero ((char *) active_eh_region, (max_uid_for_flow + 1) * sizeof (int));
-  bzero ((char *) nested_eh_region, (max_label_num () + 1) * sizeof (int));
-  current_function_has_computed_jump = 0;
-
-  /* Initialize with just block 0 reachable and no blocks marked.  */
-  if (n_basic_blocks > 0)
-    block_live[0] = 1;
-
-  /* Initialize the ref chain of each label to 0.  Record where all the
-     blocks start and end and their depth in loops.  For each insn, record
-     the block it is in.   Also mark as reachable any blocks headed by labels
-     that must not be deleted.  */
-
-  for (eh_note = NULL_RTX, insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
-       insn; insn = NEXT_INSN (insn))
+  for (insn = f; insn; insn = next)
     {
-      code = GET_CODE (insn);
-      if (code == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    depth++;
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    depth--;
-	}
+      enum rtx_code code = GET_CODE (insn);
 
-      /* A basic block starts at label, or after something that can jump.  */
-      else if (code == CODE_LABEL
-	       || (GET_RTX_CLASS (code) == 'i'
-		   && (prev_code == JUMP_INSN
-		       || (prev_code == CALL_INSN && call_had_abnormal_edge)
-		       || prev_code == BARRIER)))
-	{
-	  BLOCK_HEAD (++i) = insn;
-	  BLOCK_END (i) = insn;
-	  basic_block_loop_depth[i] = depth;
+      next = NEXT_INSN (insn);
 
-	  if (code == CODE_LABEL)
+      /* Track when we are inside in LIBCALL block.  */
+      if (GET_RTX_CLASS (code) == 'i'
+	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	in_libcall_block = 1;
+
+      if (code == CALL_INSN)
+	{
+	  /* Record whether this call created an edge.  */
+	  call_has_abnormal_edge = 0;
+	  if (nonlocal_goto_handler_labels)
+	    call_has_abnormal_edge = !in_libcall_block;
+	  else if (eh_list)
 	    {
-	      LABEL_REFS (insn) = insn;
-	      /* Any label that cannot be deleted
-		 is considered to start a reachable block.  */
-	      if (LABEL_PRESERVE_P (insn))
-		block_live[i] = 1;
+	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (!note || XINT (XEXP (note, 0), 0) != 0)
+		call_has_abnormal_edge = 1;
 	    }
 	}
 
-      else if (GET_RTX_CLASS (code) == 'i')
+      switch (code)
 	{
-	  BLOCK_END (i) = insn;
-	  basic_block_loop_depth[i] = depth;
+	case NOTE:
+	  {
+	    int kind = NOTE_LINE_NUMBER (insn);
+
+	    /* Keep a LIFO list of the currently active exception notes.  */
+	    if (kind == NOTE_INSN_EH_REGION_BEG)
+	      eh_list = gen_rtx_INSN_LIST (VOIDmode, insn, eh_list);
+	    else if (kind == NOTE_INSN_EH_REGION_END)
+	      eh_list = XEXP (eh_list, 1);
+
+	    /* Look for basic block notes with which to keep the 
+	       basic_block_info pointers stable.  Unthread the note now;
+	       we'll put it back at the right place in create_basic_block.
+	       Or not at all if we've already found a note in this block.  */
+	    else if (kind == NOTE_INSN_BASIC_BLOCK)
+	      {
+		if (bb_note == NULL_RTX)
+		  bb_note = insn;
+		next = flow_delete_insn (insn);
+	      }
+
+	    break;
+	  }
+
+	case CODE_LABEL:
+	  /* A basic block starts at a label.  If we've closed one off due 
+	     to a barrier or some such, no need to do it again.  */
+	  if (head != NULL_RTX)
+	    {
+	      /* While we now have edge lists with which other portions of
+		 the compiler might determine a call ending a basic block
+		 does not imply an abnormal edge, it will be a bit before
+		 everything can be updated.  So continue to emit a noop at
+		 the end of such a block.  */
+	      if (GET_CODE (end) == CALL_INSN)
+		{
+		  rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
+		  end = emit_insn_after (nop, end);
+		}
+
+	      bb_eh_end[i] = eh_list;
+	      create_basic_block (i++, head, end, bb_note);
+	      bb_note = NULL_RTX;
+	    }
+	  head = end = insn;
+	  break;
+
+	case JUMP_INSN:
+	  /* A basic block ends at a jump.  */
+	  if (head == NULL_RTX)
+	    head = insn;
+	  else
+	    {
+	      /* ??? Make a special check for table jumps.  The way this 
+		 happens is truely and amazingly gross.  We are about to
+		 create a basic block that contains just a code label and
+		 an addr*vec jump insn.  Worse, an addr_diff_vec creates
+		 its own natural loop.
+
+		 Prevent this bit of brain damage, pasting things together
+		 correctly in make_edges.  
+
+		 The correct solution involves emitting the table directly
+		 on the tablejump instruction as a note, or JUMP_LABEL.  */
+
+	      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
+		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+		{
+		  head = end = NULL;
+		  n_basic_blocks--;
+		  break;
+		}
+	    }
+	  end = insn;
+	  goto new_bb_inclusive;
+
+	case BARRIER:
+	  /* A basic block ends at a barrier.  It may be that an unconditional
+	     jump already closed the basic block -- no need to do it again.  */
+	  if (head == NULL_RTX)
+	    break;
+
+	  /* While we now have edge lists with which other portions of the
+	     compiler might determine a call ending a basic block does not
+	     imply an abnormal edge, it will be a bit before everything can
+	     be updated.  So continue to emit a noop at the end of such a
+	     block.  */
+	  if (GET_CODE (end) == CALL_INSN)
+	    {
+	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
+	      end = emit_insn_after (nop, end);
+	    }
+	  goto new_bb_exclusive;
+
+	case CALL_INSN:
+	  /* A basic block ends at a call that can either throw or
+	     do a non-local goto.  */
+	  if (call_has_abnormal_edge)
+	    {
+	    new_bb_inclusive:
+	      if (head == NULL_RTX)
+		head = insn;
+	      end = insn;
+
+	    new_bb_exclusive:
+	      bb_eh_end[i] = eh_list;
+	      create_basic_block (i++, head, end, bb_note);
+	      head = end = NULL_RTX;
+	      bb_note = NULL_RTX;
+	      break;
+	    }
+	  /* FALLTHRU */
+
+	default:
+	  if (GET_RTX_CLASS (code) == 'i')
+	    {
+	      if (head == NULL_RTX)
+		head = insn;
+	      end = insn;
+	    }
+	  break;
 	}
 
       if (GET_RTX_CLASS (code) == 'i')
 	{
-	  /* Make a list of all labels referred to other than by jumps.  */
+	  rtx note;
+
+	  /* Make a list of all labels referred to other than by jumps
+	     (which just don't have the REG_LABEL notes). 
+
+	     Make a special exception for labels followed by an ADDR*VEC,
+	     as this would be a part of the tablejump setup code. 
+
+	     Make a special exception for the eh_return_stub_label, which
+	     we know isn't part of any otherwise visible control flow.  */
+	     
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_LABEL
-		&& XEXP (note, 0) != eh_return_stub_label)
-	      label_value_list = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
-						    label_value_list);
+	    if (REG_NOTE_KIND (note) == REG_LABEL)
+	      {
+	        rtx lab = XEXP (note, 0), next;
+
+		if (lab == eh_return_stub_label)
+		  ;
+		else if ((next = next_nonnote_insn (lab)) != NULL
+			 && GET_CODE (next) == JUMP_INSN
+			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+		  ;
+		else
+		  label_value_list
+		    = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
+				         label_value_list);
+	      }
+
+	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	    in_libcall_block = 0;
 	}
-
-      /* Keep a lifo list of the currently active exception notes.  */
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	    {
-              if (eh_note)
-                nested_eh_region [NOTE_BLOCK_NUMBER (insn)] = 
-                                     NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
-              else
-                nested_eh_region [NOTE_BLOCK_NUMBER (insn)] = 0;
-	      eh_note = gen_rtx_EXPR_LIST (VOIDmode,
-						 insn, eh_note);
-	    }
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	    eh_note = XEXP (eh_note, 1);
-	}
-      /* If we encounter a CALL_INSN, note which exception handler it
-	 might pass control to.
-
-	 If doing asynchronous exceptions, record the active EH handler
-	 for every insn, since most insns can throw.  */
-      else if (eh_note
-	       && (asynchronous_exceptions
-		   || (GET_CODE (insn) == CALL_INSN)))
-	active_eh_region[INSN_UID (insn)] =
-                                        NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
-      BLOCK_NUM (insn) = i;
-
-      /* We change the code of the CALL_INSN, so that it won't start a
-	 new block if it doesn't throw.  */
-      if (code == CALL_INSN)
-        {
-          rtx rnote = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
-          if (rnote && XINT (XEXP (rnote, 0), 0) == 0)
-            code = INSN;
-        }
-
-      /* Record whether this call created an edge.  */
-      if (code == CALL_INSN)
-	call_had_abnormal_edge = (nonlocal_label_list != 0 || eh_note);
-
-      if (code != NOTE)
-	prev_code = code;
-
     }
 
-  if (i + 1 != n_basic_blocks)
+  if (head != NULL_RTX)
+    {
+      bb_eh_end[i] = eh_list;
+      create_basic_block (i++, head, end, bb_note);
+    }
+
+  if (i != n_basic_blocks)
     abort ();
 
-  /* Now find which basic blocks can actually be reached
-     and put all jump insns' LABEL_REFS onto the ref-chains
-     of their target labels.  */
-
-  if (n_basic_blocks > 0)
-    {
-      int something_marked = 1;
-
-      /* Pass over all blocks, marking each block that is reachable
-	 and has not yet been marked.
-	 Keep doing this until, in one pass, no blocks have been marked.
-	 Then blocks_live and blocks_marked are identical and correct.
-	 In addition, all jumps actually reachable have been marked.  */
-
-      while (something_marked)
-	{
-	  something_marked = 0;
-	  for (i = 0; i < n_basic_blocks; i++)
-	    if (block_live[i] && !block_marked[i])
-	      {
-		int_list_ptr p;
-
-		block_marked[i] = 1;
-		something_marked = 1;
-
-		make_edges (i);
-
-		for (p = basic_block_succ[i]; p; p = p->next)
-		  block_live[INT_LIST_VAL (p)] = 1;
-	      }
-	}
-
-      /* This should never happen.  If it does that means we've computed an
-	 incorrect flow graph, which can lead to aborts/crashes later in the
-	 compiler or incorrect code generation.
-
-	 We used to try and continue here, but that's just asking for trouble
-	 later during the compile or at runtime.  It's easier to debug the
-	 problem here than later!  */
-      for (i = 1; i < n_basic_blocks; i++)
-	if (block_live[i] && basic_block_pred[i] == 0)
-	  abort ();
-
-      if (! reload_completed)
-	delete_unreachable_blocks ();
-    }
+  return label_value_list;
 }
 
-/* Record INSN's block number as BB.  */
+/* Create a new basic block consisting of the instructions between
+   HEAD and END inclusive.  Reuses the note and basic block struct
+   in BB_NOTE, if any.  */
 
-void
-set_block_num (insn, bb)
-     rtx insn;
-     int bb;
+static void
+create_basic_block (index, head, end, bb_note)
+     int index;
+     rtx head, end, bb_note;
 {
-  if (INSN_UID (insn) >= max_uid_for_flow)
+  basic_block bb;
+
+  if (bb_note
+      && (bb = NOTE_BASIC_BLOCK (bb_note)) != NULL
+      && bb->aux == NULL)
     {
-      /* Add one-eighth the size so we don't keep calling xrealloc.  */
-      max_uid_for_flow = INSN_UID (insn) + (INSN_UID (insn) + 7) / 8;
-      uid_block_number = (int *)
-	xrealloc (uid_block_number, (max_uid_for_flow + 1) * sizeof (int));
+      /* If we found an existing note, thread it back onto the chain.  */
+
+      if (GET_CODE (head) == CODE_LABEL)
+	add_insn_after (bb_note, head);
+      else
+	{
+	  add_insn_before (bb_note, head);
+	  head = bb_note;
+	}
     }
-  BLOCK_NUM (insn) = bb;
+  else
+    {
+      /* Otherwise we must create a note and a basic block structure.
+	 Since we allow basic block structs in rtl, give the struct
+	 the same lifetime by allocating it off the function obstack
+	 rather than using malloc.  */
+
+      bb = (basic_block) obstack_alloc (function_obstack, sizeof (*bb));
+      memset (bb, 0, sizeof (*bb));
+
+      if (GET_CODE (head) == CODE_LABEL)
+	bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, head);
+      else
+	{
+	  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, head);
+	  head = bb_note;
+	}
+      NOTE_BASIC_BLOCK (bb_note) = bb;
+    }
+
+  bb->head = head;
+  bb->end = end;
+  bb->index = index;
+  BASIC_BLOCK (index) = bb;
+
+  /* Tag the block so that we know it has been used when considering
+     other basic block notes.  */
+  bb->aux = bb;
 }
 
-/* Subroutines of find_basic_blocks.  */
-
-void
-free_bb_memory ()
-{
-  free_int_list (&flow_int_list_blocks);
-}
-
-/* Make an edge in the cfg from block PRED to block SUCC.  */
-static void
-add_edge (pred, succ)
-     int pred, succ;
-{
-  add_int_list_node (&flow_int_list_blocks, basic_block_pred + succ, pred);
-  add_int_list_node (&flow_int_list_blocks, basic_block_succ + pred, succ);
-}
-
-/* Make an edge in the cfg from block PRED to the block starting with
-   label LABEL.  */
-static void
-add_edge_to_label (pred, label)
-     int pred;
-     rtx label;
-{
-  /* If the label was never emitted, this insn is junk,
-     but avoid a crash trying to refer to BLOCK_NUM (label).
-     This can happen as a result of a syntax error
-     and a diagnostic has already been printed.  */
-  if (INSN_UID (label) == 0)
-    return;
-
-  add_edge (pred, BLOCK_NUM (label));
-}
-
-/* Check expression X for label references.  If one is found, add an edge
-   from basic block PRED to the block beginning with the label.  */
+/* Records the basic block struct in BB_FOR_INSN, for every instruction
+   indexed by INSN_UID.  MAX is the size of the array.  */
 
 static void
-mark_label_ref (pred, x)
-     int pred;
-     rtx x;
+compute_bb_for_insn (bb_for_insn, max)
+     varray_type bb_for_insn;
+     int max;
 {
-  register RTX_CODE code;
-  register int i;
-  register char *fmt;
+  int i;
 
-  code = GET_CODE (x);
-  if (code == LABEL_REF)
+  for (i = 0; i < n_basic_blocks; ++i)
     {
-      add_edge_to_label (pred, XEXP (x, 0));
-      return;
-    }
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn, end;
 
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	mark_label_ref (pred, XEXP (x, i));
-      if (fmt[i] == 'E')
+      end = bb->end;
+      insn = bb->head;
+      while (1)
 	{
-	  register int j;
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    mark_label_ref (pred, XVECEXP (x, i, j));
+	  int uid = INSN_UID (insn);
+	  if (uid < max)
+	    VARRAY_BB (bb_for_insn, uid) = bb;
+	  if (insn == end)
+	    break;
+	  insn = NEXT_INSN (insn);
 	}
     }
 }
 
-/* For basic block I, make edges and mark live all blocks which are reachable
-   from it.  */
+/* Free the memory associated with the edge structures.  */
+
 static void
-make_edges (i)
-     int i;
+clear_edges ()
 {
-  rtx insn, x;
-  rtx pending_eh_region = NULL_RTX;
+  int i;
+  edge n, e;
 
-  /* See if control drops into the next block.  */
-  if (i + 1 < n_basic_blocks)
+  for (i = 0; i < n_basic_blocks; ++i)
     {
-      for (insn = PREV_INSN (BLOCK_HEAD (i + 1));
-	   insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
-	;
+      basic_block bb = BASIC_BLOCK (i);
 
-      if (insn && GET_CODE (insn) != BARRIER)
-	add_edge (i, i + 1);
+      for (e = bb->succ; e ; e = n)
+	{
+	  n = e->succ_next;
+	  free (e);
+	}
+
+      bb->succ = 0;
+      bb->pred = 0;
     }
 
-  insn = BLOCK_END (i);
-  if (GET_CODE (insn) == JUMP_INSN)
-    mark_label_ref (i, PATTERN (insn));
-
-  /* If we have any forced labels, mark them as potentially reachable from
-     this block.  */
-  for (x = forced_labels; x; x = XEXP (x, 1))
-    if (! LABEL_REF_NONLOCAL_P (x))
-      add_edge_to_label (i, XEXP (x, 0));
-
-  /* Now scan the insns for this block, we may need to make edges for some of
-     them to various non-obvious locations (exception handlers, nonlocal
-     labels, etc).  */
-  for (insn = BLOCK_HEAD (i);
-       insn != NEXT_INSN (BLOCK_END (i));
-       insn = NEXT_INSN (insn))
+  for (e = ENTRY_BLOCK_PTR->succ; e ; e = n)
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      n = e->succ_next;
+      free (e);
+    }
+
+  ENTRY_BLOCK_PTR->succ = 0;
+  EXIT_BLOCK_PTR->pred = 0;
+}
+
+/* Identify the edges between basic blocks.
+
+   NONLOCAL_LABEL_LIST is a list of non-local labels in the function.  Blocks
+   that are otherwise unreachable may be reachable with a non-local goto.
+
+   BB_EH_END is an array indexed by basic block number in which we record 
+   the list of exception regions active at the end of the basic block.  */
+
+static void
+make_edges (label_value_list, bb_eh_end)
+     rtx label_value_list;
+     rtx *bb_eh_end;
+{
+  int i;
+
+  /* Assume no computed jump; revise as we create edges.  */
+  current_function_has_computed_jump = 0;
+
+  /* By nature of the way these get numbered, block 0 is always the entry.  */
+  make_edge (ENTRY_BLOCK_PTR, BASIC_BLOCK (0), EDGE_FALLTHRU);
+
+  for (i = 0; i < n_basic_blocks; ++i)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn, x, eh_list;
+      enum rtx_code code;
+
+      /* If we have asynchronous exceptions, scan the notes for all exception
+	 regions active in the block.  In the normal case, we only need the
+	 one active at the end of the block, which is bb_eh_end[i].  */
+
+      eh_list = bb_eh_end[i];
+      if (asynchronous_exceptions)
 	{
-	  rtx note;
-	  /* References to labels in non-jumping insns have REG_LABEL notes
-	     attached to them.
-
-	     This can happen for computed gotos; we don't care about them
-	     here since the values are also on the label_value_list and will
-	     be marked live if we find a live computed goto.
-
-	     This can also happen when we take the address of a label to pass
-	     as an argument to __throw.  Note throw only uses the value to
-	     determine what handler should be called -- ie the label is not
-	     used as a jump target, it just marks regions in the code.
-
-	     In theory we should be able to ignore the REG_LABEL notes, but
-	     we have to make sure that the label and associated insns aren't
-	     marked dead, so we make the block in question live and create an
-	     edge from this insn to the label.  This is not strictly correct,
-	     but it is close enough for now.  
-
-	     See below for code that handles the eh_stub label specially.  */
-	  for (note = REG_NOTES (insn);
-	       note;
-	       note = XEXP (note, 1))
+	  for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
 	    {
-	      if (REG_NOTE_KIND (note) == REG_LABEL
-		  && XEXP (note, 0) != eh_return_stub_label)
-		add_edge_to_label (i, XEXP (note, 0));
+	      if (GET_CODE (insn) == NOTE
+		  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+		eh_list = gen_rtx_INSN_LIST (VOIDmode, insn, eh_list);
+	    }
+	}
+
+      /* Now examine the last instruction of the block, and discover the
+	 ways we can leave the block.  */
+
+      insn = bb->end;
+      code = GET_CODE (insn);
+
+      /* A branch.  */
+      if (code == JUMP_INSN)
+	{
+	  rtx tmp;
+
+	  /* ??? Recognize a tablejump and do the right thing.  */
+	  if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
+	      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+	      && GET_CODE (tmp) == JUMP_INSN
+	      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+		  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	    {
+	      rtvec vec;
+	      int j;
+
+	      if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
+		vec = XVEC (PATTERN (tmp), 0);
+	      else
+		vec = XVEC (PATTERN (tmp), 1);
+
+	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+		make_label_edge (bb, XEXP (RTVEC_ELT (vec, j), 0), 0);
 	    }
 
-	  /* If this is a computed jump, then mark it as reaching everything
-	     on the label_value_list and forced_labels list.  */
-	  if (computed_jump_p (insn))
+	  /* If this is a computed jump, then mark it as reaching
+	     everything on the label_value_list and forced_labels list.  */
+	  else if (computed_jump_p (insn))
 	    {
 	      current_function_has_computed_jump = 1;
-	      for (x = label_value_list; x; x = XEXP (x, 1))
-		{
-		  int b = BLOCK_NUM (XEXP (x, 0));
-		  basic_block_computed_jump_target[b] = 1;
-		  add_edge (i, b);
-		}
 
+	      for (x = label_value_list; x; x = XEXP (x, 1))
+		make_label_edge (bb, XEXP (x, 0), EDGE_ABNORMAL);
+	      
 	      for (x = forced_labels; x; x = XEXP (x, 1))
+		make_label_edge (bb, XEXP (x, 0), EDGE_ABNORMAL);
+	    }
+
+	  /* Returns create an exit out.  */
+	  else if (returnjump_p (insn))
+	    make_edge (bb, EXIT_BLOCK_PTR, 0);
+
+	  /* Otherwise, we have a plain conditional or unconditional jump.  */
+	  else
+	    {
+	      if (! JUMP_LABEL (insn))
+		abort ();
+	      make_label_edge (bb, JUMP_LABEL (insn), 0);
+	    }
+	}
+
+      /* If this is a CALL_INSN, then mark it as reaching the active EH
+	 handler for this CALL_INSN.  If we're handling asynchronous
+	 exceptions then any insn can reach any of the active handlers.
+
+	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
+
+      else if (code == CALL_INSN || asynchronous_exceptions)
+	{
+	  int is_call = (code == CALL_INSN ? EDGE_ABNORMAL_CALL : 0);
+	  handler_info *ptr;
+
+	  /* Use REG_EH_RETHROW and REG_EH_REGION if available.  */
+	  /* ??? REG_EH_REGION is not generated presently.  Is it
+	     inteded that there be multiple notes for the regions?
+	     or is my eh_list collection redundant with handler linking?  */
+
+	  x = find_reg_note (insn, REG_EH_RETHROW, 0);
+	  if (!x)
+	    x = find_reg_note (insn, REG_EH_REGION, 0);
+	  if (x)
+	    {
+	      if (XINT (XEXP (x, 0), 0) != 0)
 		{
-		  int b = BLOCK_NUM (XEXP (x, 0));
-		  basic_block_computed_jump_target[b] = 1;
-		  add_edge (i, b);
+		  ptr = get_first_handler (XINT (XEXP (x, 0), 0));
+		  while (ptr)
+		    {
+		      make_label_edge (bb, ptr->handler_label,
+				       EDGE_ABNORMAL | EDGE_EH | is_call);
+		      ptr = ptr->next;
+		    }
+		}
+	    }
+	  else
+	    {
+	      for (x = eh_list; x; x = XEXP (x, 1))
+		{
+		  ptr = get_first_handler (NOTE_BLOCK_NUMBER (XEXP (x, 0)));
+		  while (ptr)
+		    {
+		      make_label_edge (bb, ptr->handler_label,
+				       EDGE_ABNORMAL | EDGE_EH | is_call);
+		      ptr = ptr->next;
+		    }
 		}
 	    }
 
-          /* If this is a call with an EH_RETHROW note, then we 
-             know its a rethrow call, and we know exactly where
-             this call can end up going. */
-          else if (GET_CODE (insn) == CALL_INSN
-                    && (note = find_reg_note (insn, REG_EH_RETHROW, NULL_RTX)))
-            {
-              int region = XINT (XEXP (note, 0), 0);
-              /* if nested region is not 0, we know for sure it has been 
-                 processed. If it is zero, we dont know whether its an
-                 outer region, or hasn't been seen yet, so defer it */
-              if (nested_eh_region[region] != 0) 
-                {
-                  /* start with the first region OUTSIDE the one specified 
-                     in the rethrow parameter. (since a rethrow behaves
-                     as if a handler in the region didn't handle the 
-                     exception, so the handlers for the next outer region
-                     are going to get a shot at it.*/
-		  for ( region = nested_eh_region[region]; region; 
-			region = nested_eh_region[region]) 
-		    {
-		      handler_info *ptr = get_first_handler (region);
-		      for ( ; ptr ; ptr = ptr->next)
-                        add_edge_to_label (i, ptr->handler_label);
-		    }
-                }
-              else 
-                {
-                  /* Push this region onto a list, and after we've done the
-                     whole procedure, we'll process everything on the list */
-                  pending_eh_region = gen_rtx_EXPR_LIST (VOIDmode, insn, 
-                                                         pending_eh_region);
-                }
-            }
-
-	  /* If this is a CALL_INSN, then mark it as reaching the active EH
-	     handler for this CALL_INSN.  If we're handling asynchronous
-	     exceptions mark every insn as reaching the active EH handler.
-
-	     Also mark the CALL_INSN as reaching any nonlocal goto sites.  */
-	  else if (asynchronous_exceptions
-		   || (GET_CODE (insn) == CALL_INSN
-		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
+	  if (code == CALL_INSN && nonlocal_goto_handler_labels)
 	    {
-              int region = active_eh_region[INSN_UID (insn)];
-              note = find_reg_note(insn, REG_EH_REGION, NULL_RTX);
-
-              /* Override region if we see a REG_EH_REGION note. */
-              if (note)
-                region = XINT (XEXP (note, 0), 0);
-
-	      if (region)
-		{
-		  handler_info *ptr;
-		  region = active_eh_region[INSN_UID (insn)];
-		  for ( ; region; region = nested_eh_region[region])
-		    {
-		      ptr = get_first_handler (region);
-		      for ( ; ptr ; ptr = ptr->next)
-			add_edge_to_label (i, ptr->handler_label);
-		    }
-		}
-	      if (! asynchronous_exceptions)
-		{
-		  for (x = nonlocal_label_list; x; x = XEXP (x, 1))
-		    add_edge_to_label (i, XEXP (x, 0));
-		}
 	      /* ??? This could be made smarter: in some cases it's possible
 		 to tell that certain calls will not do a nonlocal goto.
 
@@ -859,147 +997,636 @@ make_edges (i)
 		 gotos do not have their addresses taken, then only calls to
 		 those functions or to other nested functions that use them
 		 could possibly do nonlocal gotos.  */
+
+	      for (x = nonlocal_goto_handler_labels; x ; x = XEXP (x, 1))
+	        make_label_edge (bb, XEXP (x, 0),
+			         EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 	    }
+	}
+
+      /* We know something about the structure of the function __throw in
+	 libgcc2.c.  It is the only function that ever contains eh_stub
+	 labels.  It modifies its return address so that the last block
+	 returns to one of the eh_stub labels within it.  So we have to
+	 make additional edges in the flow graph.  */
+      if (i + 1 == n_basic_blocks && eh_return_stub_label != 0)
+	make_label_edge (bb, eh_return_stub_label, EDGE_EH);
+
+      /* Find out if we can drop through to the next block.  */
+      insn = next_nonnote_insn (insn);
+      if (!insn)
+	make_edge (bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+      else if (i + 1 < n_basic_blocks)
+	{
+	  rtx tmp = BLOCK_HEAD (i + 1);
+	  if (GET_CODE (tmp) == NOTE)
+	    tmp = next_nonnote_insn (tmp);
+	  if (insn == tmp)
+	    make_edge (bb, BASIC_BLOCK (i + 1), EDGE_FALLTHRU);
+	}
+    }
+}
+
+/* Create an edge between two basic blocks.  FLAGS are auxiliary information
+   about the edge that is accumulated between calls.  */
+
+static void
+make_edge (src, dst, flags)
+     basic_block src, dst;
+     int flags;
+{
+  edge e;
+
+  /* Make sure we don't add duplicate edges.  */
+
+  for (e = src->succ; e ; e = e->succ_next)
+    if (e->dest == dst)
+      {
+	e->flags |= flags;
+	return;
+      }
+
+  e = (edge) xcalloc (1, sizeof (*e));
+
+  e->succ_next = src->succ;
+  e->pred_next = dst->pred;
+  e->src = src;
+  e->dest = dst;
+  e->flags = flags;
+
+  src->succ = e;
+  dst->pred = e;
+}
+
+/* Create an edge from a basic block to a label.  */
+
+static void
+make_label_edge (src, label, flags)
+     basic_block src;
+     rtx label;
+     int flags;
+{
+  if (GET_CODE (label) != CODE_LABEL)
+    abort ();
+
+  /* If the label was never emitted, this insn is junk, but avoid a
+     crash trying to refer to BLOCK_FOR_INSN (label).  This can happen
+     as a result of a syntax error and a diagnostic has already been
+     printed.  */
+
+  if (INSN_UID (label) == 0)
+    return;
+
+  make_edge (src, BLOCK_FOR_INSN (label), flags);
+}
+
+/* Identify critical edges and set the bits appropriately.  */
+static void
+mark_critical_edges ()
+{
+  int i, n = n_basic_blocks;
+  basic_block bb;
+
+  /* We begin with the entry block.  This is not terribly important now,
+     but could be if a front end (Fortran) implemented alternate entry
+     points.  */
+  bb = ENTRY_BLOCK_PTR;
+  i = -1;
+
+  while (1)
+    {
+      edge e;
+
+      /* (1) Critical edges must have a source with multiple successors.  */
+      if (bb->succ && bb->succ->succ_next)
+	{
+	  for (e = bb->succ; e ; e = e->succ_next)
+	    {
+	      /* (2) Critical edges must have a destination with multiple
+		 predecessors.  Note that we know there is at least one
+		 predecessor -- the edge we followed to get here.  */
+	      if (e->dest->pred->pred_next)
+		e->flags |= EDGE_CRITICAL;
+	      else
+		e->flags &= ~EDGE_CRITICAL;
+	    }
+	}
+      else
+	{
+	  for (e = bb->succ; e ; e = e->succ_next)
+	    e->flags &= ~EDGE_CRITICAL;
+	}
+
+      if (++i >= n)
+	break;
+      bb = BASIC_BLOCK (i);
+    }
+}
+
+/* Split a (typically critical) edge.  Return the new block.
+   Abort on abnormal edges. 
+
+   ??? The code generally expects to be called on critical edges.
+   The case of a block ending in an unconditional jump to a 
+   block with multiple predecessors is not handled optimally.  */
+
+basic_block
+split_edge (edge_in)
+     edge edge_in;
+{
+  basic_block old_pred, bb, old_succ;
+  edge edge_out;
+  rtx bb_note;
+  int i;
+ 
+  /* Abnormal edges cannot be split.  */
+  if ((edge_in->flags & EDGE_ABNORMAL) != 0)
+    abort ();
+
+  old_pred = edge_in->src;
+  old_succ = edge_in->dest;
+
+  /* Remove the existing edge from the destination's pred list.  */
+  {
+    edge *pp;
+    for (pp = &old_succ->pred; *pp != edge_in; pp = &(*pp)->pred_next)
+      continue;
+    *pp = edge_in->pred_next;
+  }
+
+  /* Create the new structures.  */
+  bb = (basic_block) obstack_alloc (function_obstack, sizeof (*bb));
+  edge_out = (edge) xcalloc (1, sizeof (*edge_out));
+
+  memset (bb, 0, sizeof (*bb));
+  bb->local_set = OBSTACK_ALLOC_REG_SET (function_obstack);
+  bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
+  bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+
+  /* ??? This info is likely going to be out of date very soon.  */
+  CLEAR_REG_SET (bb->local_set);
+  if (old_succ->global_live_at_start)
+    {
+      COPY_REG_SET (bb->global_live_at_start, old_succ->global_live_at_start);
+      COPY_REG_SET (bb->global_live_at_end, old_succ->global_live_at_start);
+    }
+  else
+    {
+      CLEAR_REG_SET (bb->global_live_at_start);
+      CLEAR_REG_SET (bb->global_live_at_end);
+    }
+
+  /* Wire them up.  */
+  bb->pred = edge_in;
+  bb->succ = edge_out;
+  edge_in->dest = bb;
+  edge_out->src = bb;
+  edge_out->dest = old_succ;
+
+  /* Tricky case -- if there existed a fallthru into the successor
+     (and we're not it) we must add a new unconditional jump around
+     the new block we're actually interested in. 
+
+     Further, if that edge is critical, this means a second new basic
+     block must be created to hold it.  In order to simplify correct
+     insn placement, do this before we touch the existing basic block
+     ordering for the block we were really wanting.  */
+  if ((edge_in->flags & EDGE_FALLTHRU) == 0)
+    {
+      edge e;
+      for (e = old_succ->pred; e ; e = e->pred_next)
+	if (e->flags & EDGE_FALLTHRU)
+	  break;
+
+      if (e)
+	{
+	  basic_block jump_block;
+	  rtx pos;
+
+	  if ((e->flags & EDGE_CRITICAL) == 0)
+	    {
+	      /* Non critical -- we can simply add a jump to the end
+		 of the existing predecessor.  */
+	      jump_block = e->src;
+	      pos = jump_block->end;
+	    }
+	  else
+	    {
+	      /* We need a new block to hold the jump.  The simplest
+	         way to do the bulk of the work here is to recursively
+	         call ourselves.  */
+	      jump_block = split_edge (e);
+	      e = jump_block->succ;
+	      pos = jump_block->head;
+	    }
+
+	  /* Now add the jump insn...  */
+	  pos = emit_jump_insn_after (gen_jump (old_succ->head), pos);
+	  jump_block->end = pos;
+	  emit_barrier_after (pos);
+
+	  /* ... and clear fallthru on the outgoing edge.  */
+	  e->flags &= ~EDGE_FALLTHRU;
+
+	  /* Continue splitting the interesting edge.  */
 	}
     }
 
-  while (pending_eh_region != NULL_RTX)
+  /* Place the new block just in front of the successor.  */
+  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+  for (i = n_basic_blocks - 1; i > old_succ->index; --i)
     {
-      rtx insn = XEXP (pending_eh_region, 0);
-      rtx note = find_reg_note (insn, REG_EH_RETHROW, NULL_RTX);
-      int region = XINT (XEXP (note, 0), 0);
-      /* start with the first region OUTSIDE the one specified 
-         in the rethrow parameter */
-      for ( region = nested_eh_region[region]; region; 
-            region = nested_eh_region[region]) 
-        {
-          handler_info *ptr = get_first_handler (region);
-          for ( ; ptr ; ptr = ptr->next)
-            add_edge_to_label (BLOCK_NUM (insn), ptr->handler_label);
-        }
-      pending_eh_region = XEXP (pending_eh_region, 1);
+      basic_block tmp = BASIC_BLOCK (i - 1);
+      BASIC_BLOCK (i) = tmp;
+      tmp->index = i;
+    }
+  BASIC_BLOCK (i) = bb;
+  bb->index = i;
+
+  /* Create the basic block note.  */
+  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, old_succ->head);
+  NOTE_BASIC_BLOCK (bb_note) = bb;
+  bb->head = bb->end = bb_note;
+
+  /* Not quite simple -- for non-fallthru edges, we must adjust the
+     predecessor's jump instruction to target our new block.  */
+  if ((edge_in->flags & EDGE_FALLTHRU) == 0)
+    {
+      rtx tmp, insn = old_pred->end;
+      rtx old_label = old_succ->head;
+      rtx new_label = gen_label_rtx ();
+
+      if (GET_CODE (insn) != JUMP_INSN)
+	abort ();
+
+      /* ??? Recognize a tablejump and adjust all matching cases.  */
+      if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
+	  && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+	  && GET_CODE (tmp) == JUMP_INSN
+	  && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	      || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	{
+	  rtvec vec;
+	  int j;
+
+	  if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
+	    vec = XVEC (PATTERN (tmp), 0);
+	  else
+	    vec = XVEC (PATTERN (tmp), 1);
+
+	  for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+	    if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
+	      {
+	        RTVEC_ELT (vec, j) = gen_rtx_LABEL_REF (VOIDmode, new_label);
+		--LABEL_NUSES (old_label);
+		++LABEL_NUSES (new_label);
+	      }
+	}
+      else
+	{
+	  /* This would have indicated an abnormal edge.  */
+	  if (computed_jump_p (insn))
+	    abort ();
+
+	  /* A return instruction can't be redirected.  */
+	  if (returnjump_p (insn))
+	    abort ();
+
+	  /* If the insn doesn't go where we think, we're confused.  */
+	  if (JUMP_LABEL (insn) != old_label)
+	    abort ();
+
+	  redirect_jump (insn, new_label);
+	}
+
+      emit_label_before (new_label, bb_note);
+      bb->head = new_label;
     }
 
-  /* We know something about the structure of the function __throw in
-     libgcc2.c.  It is the only function that ever contains eh_stub labels.
-     It modifies its return address so that the last block returns to one of
-     the eh_stub labels within it.  So we have to make additional edges in
-     the flow graph.  */
-  if (i + 1 == n_basic_blocks && eh_return_stub_label != 0)
-    add_edge_to_label (i, eh_return_stub_label);
+  /* In all cases, the new block falls through to the successor.  */
+  edge_out->flags = EDGE_FALLTHRU;
+
+  return bb;
 }
 
-/* Now delete the code for any basic blocks that can't be reached.
-   They can occur because jump_optimize does not recognize unreachable loops
-   as unreachable.  */
+/* Queue instructions for insertion on an edge between two basic blocks.
+   The new instructions and basic blocks (if any) will not appear in the
+   CFG until commit_edge_insertions is called.  */
+
+void
+insert_insn_on_edge (pattern, e)
+     rtx pattern;
+     edge e;
+{
+  /* We cannot insert instructions on an abnormal critical edge.
+     It will be easier to find the culprit if we die now.  */
+  if ((e->flags & (EDGE_ABNORMAL|EDGE_CRITICAL))
+      == (EDGE_ABNORMAL|EDGE_CRITICAL))
+    abort ();
+
+  if (e->insns == NULL_RTX)
+    start_sequence ();
+  else
+    push_to_sequence (e->insns);
+
+  emit_insn (pattern);
+
+  e->insns = get_insns ();
+  end_sequence();
+}
+
+/* Update the CFG for the instructions queued on edge E.  */
+
+static void
+commit_one_edge_insertion (e)
+     edge e;
+{
+  rtx before = NULL_RTX, after = NULL_RTX, tmp;
+  basic_block bb;
+
+  /* Figure out where to put these things.  If the destination has
+     one predecessor, insert there.  Except for the exit block.  */
+  if (e->dest->pred->pred_next == NULL
+      && e->dest != EXIT_BLOCK_PTR)
+    {
+      bb = e->dest;
+
+      /* Get the location correct wrt a code label, and "nice" wrt
+	 a basic block note, and before everything else.  */
+      tmp = bb->head;
+      if (GET_CODE (tmp) == CODE_LABEL)
+	tmp = NEXT_INSN (tmp);
+      if (GET_CODE (tmp) == NOTE
+	  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BASIC_BLOCK)
+	tmp = NEXT_INSN (tmp);
+      if (tmp == bb->head)
+	before = tmp;
+      else
+	after = PREV_INSN (tmp);
+    }
+  
+  /* If the source has one successor and the edge is not abnormal,
+     insert there.  Except for the entry block.  */
+  else if ((e->flags & EDGE_ABNORMAL) == 0
+	   && e->src->succ->succ_next == NULL
+	   && e->src != ENTRY_BLOCK_PTR)
+    {
+      bb = e->src;
+      if (GET_CODE (bb->end) == JUMP_INSN)
+	{
+	  /* ??? Is it possible to wind up with non-simple jumps?  Perhaps
+	     a jump with delay slots already filled?  */
+	  if (! simplejump_p (bb->end))
+	    abort ();
+
+	  before = bb->end;
+	}
+      else
+	{
+	  /* We'd better be fallthru, or we've lost track of what's what.  */
+	  if ((e->flags & EDGE_FALLTHRU) == 0)
+	    abort ();
+
+	  after = bb->end;
+	}
+    }
+
+  /* Otherwise we must split the edge.  */
+  else
+    {
+      bb = split_edge (e);
+      after = bb->end;
+    }
+
+  /* Now that we've found the spot, do the insertion.  */
+  tmp = e->insns;
+  e->insns = NULL_RTX;
+  if (before)
+    {
+      emit_insns_before (tmp, before);
+      if (before == bb->head)
+	bb->head = before;
+    }
+  else
+    {
+      tmp = emit_insns_after (tmp, after);
+      if (after == bb->end)
+	bb->end = tmp;
+    }
+}
+
+/* Update the CFG for all queued instructions.  */
+
+void
+commit_edge_insertions ()
+{
+  int i;
+  basic_block bb;
+
+  i = -1;
+  bb = ENTRY_BLOCK_PTR;
+  while (1)
+    {
+      edge e, next;
+
+      for (e = bb->succ; e ; e = next)
+	{
+	  next = e->succ_next;
+	  if (e->insns)
+	    commit_one_edge_insertion (e);
+	}
+
+      if (++i >= n_basic_blocks)
+	break;
+      bb = BASIC_BLOCK (i);
+    }
+}
+
+/* Delete all unreachable basic blocks.   */
+
 static void
 delete_unreachable_blocks ()
 {
-  int deleted_handler = 0;
-  int deleted = 0;
-  int i, j;
-  rtx insn;
-  int *block_num_map = XNMALLOC (int, n_basic_blocks);
+  basic_block *worklist, *tos;
+  int deleted_handler;
+  edge e;
+  int i, n;
 
-  for (i = n_basic_blocks - 1; i >= 0; i--)
-    if (! block_live_static[i])
-      deleted_handler |= delete_block (i);
+  n = n_basic_blocks;
+  tos = worklist = (basic_block *) alloca (sizeof (basic_block) * n);
 
-  for (i = 0; i < n_basic_blocks; i++)
-    if (block_live_static[i])
-      block_num_map[i] = i - deleted;
-    else
-      {
-	deleted++;
-	block_num_map[i] = -1;
-      }
+  /* Use basic_block->aux as a marker.  Clear them all.  */
 
-  /* Eliminate all traces of the deleted blocks by renumbering the remaining
-     ones.  */
-  for (i = j = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < n; ++i)
+    BASIC_BLOCK (i)->aux = NULL;
+
+  /* Add our starting points to the worklist.  Almost always there will
+     be only one.  It isn't inconcievable that we might one day directly
+     support Fortran alternate entry points.  */
+
+  for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
+    *tos++ = e->dest;
+      
+  /* Iterate: find everything reachable from what we've already seen.  */
+
+  while (tos != worklist)
     {
-      int_list_ptr p;
+      basic_block b = *--tos;
 
-      if (block_num_map[i] == -1)
+      /* Mark the block with a handy non-null value.  */
+      b->aux = b;
+
+      for (e = b->succ; e ; e = e->succ_next)
+	if (!e->dest->aux)
+	  *tos++ = e->dest;
+    }
+
+  /* Delete all unreachable basic blocks.  Count down so that we don't
+     interfere with the block renumbering that happens in delete_block.  */
+
+  deleted_handler = 0;
+
+  for (i = n - 1; i >= 0; --i)
+    {
+      basic_block b = BASIC_BLOCK (i);
+
+      if (b->aux != NULL)
+	/* This block was found.  Tidy up the mark.  */
+	b->aux = NULL;
+      else
+	deleted_handler |= delete_block (b);
+    }
+
+  /* Fix up edges that now fall through, or rather should now fall through
+     but previously required a jump around now deleted blocks.  Simplify
+     the search by only examining blocks numerically adjacent, since this
+     is how find_basic_blocks created them.  */
+
+  for (i = 1; i < n_basic_blocks; ++i)
+    {
+      basic_block b = BASIC_BLOCK (i - 1);
+      basic_block c = BASIC_BLOCK (i);
+      edge s;
+
+      /* We only need care for simple unconditional jumps, which implies
+	 a single successor.  */
+      if ((s = b->succ) != NULL
+	  && s->succ_next == NULL
+	  && s->dest == c
+	  && ! (s->flags & EDGE_FALLTHRU))
+	tidy_fallthru_edge (s, b, c);
+    }
+
+  /* Attempt to merge blocks as made possible by edge removal.  If a block
+     has only one successor, and the successor has only one predecessor, 
+     they may be combined.  */
+
+  for (i = 0; i < n_basic_blocks; )
+    {
+      basic_block c, b = BASIC_BLOCK (i);
+      edge s;
+
+      /* A loop because chains of blocks might be combineable.  */
+      while ((s = b->succ) != NULL
+	     && s->succ_next == NULL
+	     && (c = s->dest) != EXIT_BLOCK_PTR
+	     && c->pred->pred_next == NULL
+	     && merge_blocks (s, b, c))
 	continue;
 
-      for (p = basic_block_pred[i]; p; p = p->next)
-	INT_LIST_VAL (p) = block_num_map[INT_LIST_VAL (p)];
-      for (p = basic_block_succ[i]; p; p = p->next)
-	INT_LIST_VAL (p) = block_num_map[INT_LIST_VAL (p)];
-
-      if (i != j)
-	{
-	  rtx tmp = BLOCK_HEAD (i);
-	  for (;;)
-	    {
-	      BLOCK_NUM (tmp) = j;
-	      if (tmp == BLOCK_END (i))
-		break;
-	      tmp = NEXT_INSN (tmp);
-	    }
-	  BLOCK_HEAD (j) = BLOCK_HEAD (i);
-	  BLOCK_END (j) = BLOCK_END (i);
-	  basic_block_pred[j] = basic_block_pred[i];
-	  basic_block_succ[j] = basic_block_succ[i];
-	  basic_block_loop_depth[j] = basic_block_loop_depth[i];
-	  basic_block_computed_jump_target[j]
-	    = basic_block_computed_jump_target[i];
-	}
-      j++;
+      /* Don't get confused by the index shift caused by deleting blocks.  */
+      i = b->index + 1;
     }
-  n_basic_blocks -= deleted;
-  free (block_num_map);
 
-  /* If we deleted an exception handler, we may have EH region
-     begin/end blocks to remove as well. */
+  /* If we deleted an exception handler, we may have EH region begin/end
+     blocks to remove as well. */
   if (deleted_handler)
-    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG ||
-	      NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	    {
-	      int num = CODE_LABEL_NUMBER (insn);
-	      /* A NULL handler indicates a region is no longer needed,
-                 unless its the target of a rethrow. */
-	      if (get_first_handler (num) == NULL && !rethrow_used (num))
-		{
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
-		}
-	    }
-	}
+    delete_eh_regions ();
+}
+
+/* Find EH regions for which there is no longer a handler, and delete them.  */
+
+static void
+delete_eh_regions ()
+{
+  rtx insn;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE)
+      {
+	if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG) ||
+	    (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
+	  {
+	    int num = CODE_LABEL_NUMBER (insn);
+	    /* A NULL handler indicates a region is no longer needed */
+	    if (get_first_handler (num) == NULL)
+	      {
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+	      }
+	  }
+      }
+}
+
+/* Return true if NOTE is not one of the ones that must be kept paired,
+   so that we may simply delete them.  */
+
+static int
+delete_note_p (note)
+     rtx note;
+{
+  return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
+	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK);
+}
+
+/* Unlink a chain of insns between START and FINISH, leaving notes
+   that must be paired.  */
+
+static void
+delete_insn_chain (start, finish)
+     rtx start, finish;
+{
+  /* Unchain the insns one by one.  It would be quicker to delete all
+     of these with a single unchaining, rather than one at a time, but
+     we need to keep the NOTE's.  */
+
+  rtx next;
+
+  while (1)
+    {
+      next = NEXT_INSN (start);
+      if (GET_CODE (start) != NOTE || delete_note_p (start))
+	next = flow_delete_insn (start);
+
+      if (start == finish)
+	break;
+      start = next;
+    }
 }
 
 /* Delete the insns in a (non-live) block.  We physically delete every
-   non-note insn except the start and end (so BLOCK_HEAD/END needn't
-   be updated), we turn the latter into NOTE_INSN_DELETED notes.
-
-   We use to "delete" the insns by turning them into notes, but we may be
-   deleting lots of insns that subsequent passes would otherwise have to
-   process.  Secondly, lots of deleted blocks in a row can really slow down
-   propagate_block since it will otherwise process insn-turned-notes multiple
-   times when it looks for loop begin/end notes.
+   non-deleted-note insn, and update the flow graph appropriately.
 
    Return nonzero if we deleted an exception handler.  */
+
+/* ??? Preserving all such notes strikes me as wrong.  It would be nice
+   to post-process the stream to remove empty blocks, loops, ranges, etc.  */
+
 static int
-delete_block (i)
-     int i;
+delete_block (b)
+     basic_block b;
 {
   int deleted_handler = 0;
-  rtx insn;
-  rtx kept_head = 0;
-  rtx kept_tail = 0;
+  rtx insn, end;
 
-  /* If the head of this block is a CODE_LABEL, then it might
-     be the label for an exception handler which can't be
-     reached.
+  /* If the head of this block is a CODE_LABEL, then it might be the
+     label for an exception handler which can't be reached.
 
-     We need to remove the label from the exception_handler_label
-     list and remove the associated NOTE_EH_REGION_BEG and
-     NOTE_EH_REGION_END notes.  */
-  insn = BLOCK_HEAD (i);
+     We need to remove the label from the exception_handler_label list
+     and remove the associated NOTE_EH_REGION_BEG and NOTE_EH_REGION_END
+     notes.  */
+
+  insn = b->head;
   if (GET_CODE (insn) == CODE_LABEL)
     {
       rtx x, *prev = &exception_handler_labels;
@@ -1008,8 +1635,7 @@ delete_block (i)
 	{
 	  if (XEXP (x, 0) == insn)
 	    {
-	      /* Found a match, splice this label out of the
-		 EH label list.  */
+	      /* Found a match, splice this label out of the EH label list.  */
 	      *prev = XEXP (x, 1);
 	      XEXP (x, 1) = NULL_RTX;
 	      XEXP (x, 0) = NULL_RTX;
@@ -1021,99 +1647,336 @@ delete_block (i)
 	    }
 	  prev = &XEXP (x, 1);
 	}
-    }
 
-  /* Walk the insns of the block, building a chain of NOTEs that need to be
-     kept.  */
-  insn = BLOCK_HEAD (i);
-  for (;;)
-    {
-      if (GET_CODE (insn) == BARRIER)
-	abort ();
-      else if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
+      /* This label may be referenced by code solely for its value, or
+	 referenced by static data, or something.  We have determined
+	 that it is not reachable, but cannot delete the label itself.
+	 Save code space and continue to delete the balance of the block,
+	 along with properly updating the cfg.  */
+      if (!can_delete_label_p (insn))
 	{
-	  if (kept_head == 0)
-	    kept_head = kept_tail = insn;
-	  else
-	    {
-	      NEXT_INSN (kept_tail) = insn;
-	      PREV_INSN (insn) = kept_tail;
-	      kept_tail = insn;
-	    }
+	  /* If we've only got one of these, skip the whole deleting
+	     insns thing.  */
+	  if (insn == b->end)
+	    goto no_delete_insns;
+	  insn = NEXT_INSN (insn);
 	}
-      if (insn == BLOCK_END (i))
-	break;
-      insn = NEXT_INSN (insn);
-    }
-  insn = NEXT_INSN (insn);
-
-  /* BARRIERs are between basic blocks, not part of one.
-     Delete a BARRIER if the preceding jump is deleted.
-     We cannot alter a BARRIER into a NOTE
-     because it is too short; but we can really delete
-     it because it is not part of a basic block.  */
-  if (insn != 0 && GET_CODE (insn) == BARRIER)
-    insn = NEXT_INSN (insn);
-
-  /* Now unchain all of the block, and put the chain of kept notes in its
-     place.  */
-  if (kept_head == 0)
-    {
-      NEXT_INSN (PREV_INSN (BLOCK_HEAD (i))) = insn;
-      if (insn != 0)
-	PREV_INSN (insn) = PREV_INSN (BLOCK_HEAD (i));
-      else
-	set_last_insn (PREV_INSN (BLOCK_HEAD(i)));
-    }
-  else
-    {
-      NEXT_INSN (PREV_INSN (BLOCK_HEAD (i))) = kept_head;
-      if (insn != 0)
-	PREV_INSN (insn) = kept_tail;
-
-      PREV_INSN (kept_head) = PREV_INSN (BLOCK_HEAD (i));
-      NEXT_INSN (kept_tail) = insn;
-
-      /* This must happen after NEXT_INSN (kept_tail) has been reinitialized
-	 since set_last_insn will abort if it detects a non-NULL NEXT_INSN
-	 field in its argument.  */
-      if (insn == NULL_RTX)
-	set_last_insn (kept_tail);
     }
 
-  /* Each time we delete some basic blocks,
-     see if there is a jump around them that is
-     being turned into a no-op.  If so, delete it.  */
+  /* Selectively unlink the insn chain.  Include any BARRIER that may
+     follow the basic block.  */
+  end = next_nonnote_insn (b->end);
+  if (!end || GET_CODE (end) != BARRIER)
+    end = b->end;
+  delete_insn_chain (insn, end);
 
-  if (block_live_static[i - 1])
-    {
-      register int j;
-      for (j = i + 1; j < n_basic_blocks; j++)
-	if (block_live_static[j])
-	  {
-	    rtx label;
-	    insn = BLOCK_END (i - 1);
-	    if (GET_CODE (insn) == JUMP_INSN
-		/* An unconditional jump is the only possibility
-		   we must check for, since a conditional one
-		   would make these blocks live.  */
-		&& simplejump_p (insn)
-		&& (label = XEXP (SET_SRC (PATTERN (insn)), 0), 1)
-		&& INSN_UID (label) != 0
-		&& BLOCK_NUM (label) == j)
-	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
-		if (GET_CODE (NEXT_INSN (insn)) != BARRIER)
-		  abort ();
-		delete_insn (NEXT_INSN (insn));
-	      }
-	    break;
-	  }
-    }
+no_delete_insns:
+
+  /* Remove the edges into and out of this block.  Note that there may 
+     indeed be edges in, if we are removing an unreachable loop.  */
+  {
+    edge e, next, *q;
+
+    for (e = b->pred; e ; e = next)
+      {
+	for (q = &e->src->succ; *q != e; q = &(*q)->succ_next)
+	  continue;
+	*q = e->succ_next;
+	next = e->pred_next;
+	free (e);
+      }
+    for (e = b->succ; e ; e = next)
+      {
+	for (q = &e->dest->pred; *q != e; q = &(*q)->pred_next)
+	  continue;
+	*q = e->pred_next;
+	next = e->succ_next;
+	free (e);
+      }
+
+    b->pred = NULL;
+    b->succ = NULL;
+  }
+
+  /* Remove the basic block from the array, and compact behind it.  */
+  expunge_block (b);
 
   return deleted_handler;
+}
+
+/* Remove block B from the basic block array and compact behind it.  */
+
+static void
+expunge_block (b)
+     basic_block b;
+{
+  int i, n = n_basic_blocks;
+
+  for (i = b->index; i + 1 < n; ++i)
+    {
+      basic_block x = BASIC_BLOCK (i + 1);
+      BASIC_BLOCK (i) = x;
+      x->index = i;
+    }
+
+  basic_block_info->num_elements--;
+  n_basic_blocks--;
+}
+
+/* Delete INSN by patching it out.  Return the next insn.  */
+
+static rtx
+flow_delete_insn (insn)
+     rtx insn;
+{
+  rtx prev = PREV_INSN (insn);
+  rtx next = NEXT_INSN (insn);
+
+  PREV_INSN (insn) = NULL_RTX;
+  NEXT_INSN (insn) = NULL_RTX;
+
+  if (prev)
+    NEXT_INSN (prev) = next;
+  if (next)
+    PREV_INSN (next) = prev;
+  else
+    set_last_insn (prev);
+
+  /* If deleting a jump, decrement the use count of the label.  Deleting
+     the label itself should happen in the normal course of block merging.  */
+  if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
+    LABEL_NUSES (JUMP_LABEL (insn))--;
+
+  return next;
+}
+
+/* True if a given label can be deleted.  */
+
+static int 
+can_delete_label_p (label)
+     rtx label;
+{
+  rtx x;
+
+  if (LABEL_PRESERVE_P (label))
+    return 0;
+
+  for (x = forced_labels; x ; x = XEXP (x, 1))
+    if (label == XEXP (x, 0))
+      return 0;
+  for (x = label_value_list; x ; x = XEXP (x, 1))
+    if (label == XEXP (x, 0))
+      return 0;
+  for (x = exception_handler_labels; x ; x = XEXP (x, 1))
+    if (label == XEXP (x, 0))
+      return 0;
+
+  return 1;
+}
+
+/* Blocks A and B are to be merged into a single block.  The insns
+   are already contiguous, hence `nomove'.  */
+
+static void
+merge_blocks_nomove (a, b)
+     basic_block a, b;
+{
+  edge e;
+  rtx insn;
+  int done = 0;
+
+  /* If there was a jump out of A, delete it.  */
+  if (GET_CODE (a->end) == JUMP_INSN)
+    {
+      /* If the jump was the only insn in A, turn the jump into a deleted
+	 note, since we may yet not be able to merge the blocks.  */
+      if (a->end == a->head)
+	{
+	  PUT_CODE (a->head, NOTE);
+	  NOTE_LINE_NUMBER (a->head) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (a->head) = 0;
+	}
+      else
+	{
+	  rtx tmp = a->end;
+	  a->end = prev_nonnote_insn (tmp);
+	  flow_delete_insn (tmp);
+	}
+    }
+
+  /* By definition, there should only be one successor of A, and that is
+     B.  Free that edge struct.  */
+  free (a->succ);
+
+  /* Adjust the edges out of B for the new owner.  */
+  for (e = b->succ; e ; e = e->succ_next)
+    e->src = a;
+  a->succ = b->succ;
+
+  /* If there was a CODE_LABEL beginning B, delete it.  */
+  insn = b->head;
+  if (GET_CODE (insn) == CODE_LABEL)
+    {
+      /* Detect basic blocks with nothing but a label.  This can happen
+	 in particular at the end of a function.  */
+      if (insn == b->end)
+	done = 1;
+      insn = flow_delete_insn (insn);
+    }
+
+  /* Delete the basic block note.  */
+  if (GET_CODE (insn) == NOTE 
+      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+    {
+      if (insn == b->end)
+	done = 1;
+      insn = flow_delete_insn (insn);
+    }
+
+  /* Reassociate the insns of B with A.  */
+  if (!done)
+    {
+      BLOCK_FOR_INSN (insn) = a;
+      while (insn != b->end)
+	{
+	  insn = NEXT_INSN (insn);
+	  BLOCK_FOR_INSN (insn) = a;
+	}
+      a->end = insn;
+    }
+  
+  /* Compact the basic block array.  */
+  expunge_block (b);
+}
+
+/* Attempt to merge basic blocks that are potentially non-adjacent.  
+   Return true iff the attempt succeeded.  */
+
+static int
+merge_blocks (e, b, c)
+     edge e;
+     basic_block b, c;
+{
+  /* If B has a fallthru edge to C, no need to move anything.  */
+  if (!(e->flags & EDGE_FALLTHRU))
+    {
+      /* ??? From here on out we must make sure to not munge nesting
+	 of exception regions and lexical blocks.  Need to think about
+	 these cases before this gets implemented.  */
+      return 0;
+
+      /* If C has an outgoing fallthru, and B does not have an incoming
+	 fallthru, move B before C.  The later clause is somewhat arbitrary,
+	 but avoids modifying blocks other than the two we've been given.  */
+
+      /* Otherwise, move C after B.  If C had a fallthru, which doesn't
+	 happen to be the physical successor to B, insert an unconditional
+	 branch.  If C already ended with a conditional branch, the new
+	 jump must go in a new basic block D.  */
+    }
+
+  /* If a label still appears somewhere, we cannot delete the label, which
+     means we cannot merge the blocks.  We have still won a tad by tidying
+     the interface between the two blocks.  */
+  if (GET_CODE (c->head) == CODE_LABEL
+      && ! can_delete_label_p (c->head))
+    {
+      tidy_fallthru_edge (e, b, c);
+      return 0;
+    }
+
+  merge_blocks_nomove (b, c);
+  return 1;
+}
+
+/* The given edge should potentially a fallthru edge.  If that is in
+   fact true, delete the unconditional jump and barriers that are in
+   the way.  */
+
+static void
+tidy_fallthru_edge (e, b, c)
+     edge e;
+     basic_block b, c;
+{
+  rtx p, q, h;
+
+  /* ??? In a late-running flow pass, other folks may have deleted basic
+     blocks by nopping out blocks, leaving multiple BARRIERs between here
+     and the target label. They ought to be chastized and fixed.
+
+     In the mean time, search for the last barrier in a sequence of
+     barriers and notes.  */
+
+  q = NEXT_INSN (b->end);
+  do
+    {
+      p = q;
+      q = next_nonnote_insn (q);
+    }
+  while (GET_CODE (q) == BARRIER);
+
+  /* Assert that we now actually do fall through.  */
+  h = c->head;
+  if (GET_CODE (h) == NOTE)
+    h = next_nonnote_insn (h);
+  if (q != h)
+    return;
+
+  /* Remove what will soon cease being the jump insn from the source block.
+     If block B consisted only of this single jump, turn it into a deleted
+     note.  */
+  q = b->end;
+  if (GET_CODE (q) == JUMP_INSN)
+    {
+      if (b->head == q)
+	{
+	  PUT_CODE (q, NOTE);
+	  NOTE_LINE_NUMBER (q) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (q) = 0;
+	}
+      else
+	b->end = q = PREV_INSN (q);
+    }
+
+  /* Selectively unlink the sequence.  */
+  delete_insn_chain (NEXT_INSN (q), p);
+
+  e->flags |= EDGE_FALLTHRU;
+}
+
+/* Discover and record the loop depth at the head of each basic block.  */
+
+static void
+calculate_loop_depth (insns)
+     rtx insns;
+{
+  basic_block bb;
+  rtx insn;
+  int i = 0, depth = 1;
+
+  bb = BASIC_BLOCK (i);
+  for (insn = insns; insn ; insn = NEXT_INSN (insn))
+    {
+      if (insn == bb->head)
+	{
+	  bb->loop_depth = depth;
+	  if (++i >= n_basic_blocks)
+	    break;
+	  bb = BASIC_BLOCK (i);
+	}
+
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	    depth++;
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	    depth--;
+
+	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. */
+	  if (depth == 0)
+	    abort ();
+	}
+    }
 }
 
 /* Perform data flow analysis.
@@ -1143,6 +2006,9 @@ life_analysis (f, nregs, file)
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
 #endif
 
+  /* Allocate a bitmap to be filled in by record_volatile_insns.  */
+  uid_volatile = BITMAP_ALLOCA ();
+
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
   life_analysis_1 (f, nregs);
@@ -1151,40 +2017,29 @@ life_analysis (f, nregs, file)
   if (file)
     dump_flow_info (file);
 
+  BITMAP_FREE (uid_volatile);
   free_basic_block_vars (1);
 }
 
 /* Free the variables allocated by find_basic_blocks.
 
-   KEEP_HEAD_END_P is non-zero if BLOCK_HEAD and BLOCK_END
-   are not to be freed.  */
+   KEEP_HEAD_END_P is non-zero if basic_block_info is not to be freed.  */
 
 void
 free_basic_block_vars (keep_head_end_p)
      int keep_head_end_p;
 {
-  if (basic_block_loop_depth)
+  if (basic_block_for_insn)
     {
-      free (basic_block_loop_depth);
-      basic_block_loop_depth = 0;
-    }
-  if (uid_block_number)
-    {
-      free (uid_block_number);
-      uid_block_number = 0;
-    }
-  if (uid_volatile)
-    {
-      free (uid_volatile);
-      uid_volatile = 0;
+      VARRAY_FREE (basic_block_for_insn);
+      basic_block_for_insn = NULL;
     }
 
-  if (! keep_head_end_p && x_basic_block_head)
+  if (! keep_head_end_p)
     {
-      free (x_basic_block_head);
-      x_basic_block_head = 0;
-      free (x_basic_block_end);
-      x_basic_block_end = 0;
+      clear_edges ();
+      VARRAY_FREE (basic_block_info);
+      n_basic_blocks = 0;
     }
 }
 
@@ -1277,12 +2132,12 @@ record_volatile_insns (f)
     {
       enum rtx_code code1 = GET_CODE (insn);
       if (code1 == CALL_INSN)
-	INSN_VOLATILE (insn) = 1;
+	SET_INSN_VOLATILE (insn);
       else if (code1 == INSN || code1 == JUMP_INSN)
 	{
 	  if (GET_CODE (PATTERN (insn)) != USE
 	      && volatile_refs_p (PATTERN (insn)))
-	    INSN_VOLATILE (insn) = 1;
+	    SET_INSN_VOLATILE (insn);
 
 	  /* A SET that makes space on the stack cannot be dead.
 	     (Such SETs occur only for allocating variable-size data,
@@ -1298,7 +2153,7 @@ record_volatile_insns (f)
 		   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
 #endif
 		   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx)
-	    INSN_VOLATILE (insn) = 1;
+	    SET_INSN_VOLATILE (insn);
 
 	  /* Delete (in effect) any obvious no-op moves.  */
 	  else if (noop_move_p (insn))
@@ -1324,18 +2179,18 @@ mark_regs_live_at_end (set)
 {
   int i;
   
-#ifdef EXIT_IGNORE_STACK
+  /* If exiting needs the right stack value, consider the stack pointer
+     live at the end of the function.  */
   if (! EXIT_IGNORE_STACK
       || (! FRAME_POINTER_REQUIRED
 	  && ! current_function_calls_alloca
 	  && flag_omit_frame_pointer)
       || current_function_sp_is_unchanging)
-#endif
-    /* If exiting needs the right stack value,
-       consider the stack pointer live at the end of the function.  */
-    SET_REGNO_REG_SET (set, STACK_POINTER_REGNUM);
+    {
+      SET_REGNO_REG_SET (set, STACK_POINTER_REGNUM);
+    }
 
-  /* Mark the frame pointer is needed at the end of the function.  If
+  /* Mark the frame pointer if needed at the end of the function.  If
      we end up eliminating it, it will be removed from the live list
      of each basic block by reload.  */
 
@@ -1345,8 +2200,7 @@ mark_regs_live_at_end (set)
   SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
 #endif      
 
-
-  /* Mark all global registers and all registers used by the epilogue
+  /* Mark all global registers, and all registers used by the epilogue
      as being live at the end of the function since they may be
      referenced by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1356,6 +2210,8 @@ mark_regs_live_at_end (set)
 #endif
 	)
       SET_REGNO_REG_SET (set, i);
+
+  /* ??? Mark function return value here rather than as uses.  */
 }
 
 /* Determine which registers are live at the start of each
@@ -1372,22 +2228,9 @@ life_analysis_1 (f, nregs)
 {
   int first_pass;
   int changed;
-  /* For each basic block, a bitmask of regs
-     live on exit from the block.  */
-  regset *basic_block_live_at_end;
-  /* For each basic block, a bitmask of regs
-     live on entry to a successor-block of this block.
-     If this does not match basic_block_live_at_end,
-     that must be updated, and the block must be rescanned.  */
-  regset *basic_block_new_live_at_end;
-  /* For each basic block, a bitmask of regs
-     whose liveness at the end of the basic block
-     can make a difference in which regs are live on entry to the block.
-     These are the regs that are set within the basic block,
-     possibly excluding those that are used after they are set.  */
-  regset *basic_block_significant;
   register int i;
   char save_regs_ever_live[FIRST_PSEUDO_REGISTER];
+  regset *new_live_at_end;
 
   struct obstack flow_obstack;
 
@@ -1395,46 +2238,26 @@ life_analysis_1 (f, nregs)
 
   max_regno = nregs;
 
-  /* The post-reload life analysis have (on a global basis) the same registers
-     live as was computed by reload itself.
-
-     Otherwise elimination offsets and such may be incorrect.
-
-     Reload will make some registers as live even though they do not appear
-     in the rtl.  */
-  if (reload_completed)
-    bcopy (regs_ever_live, save_regs_ever_live, (sizeof (regs_ever_live)));
-
-  bzero (regs_ever_live, sizeof regs_ever_live);
-
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */
 
   allocate_for_life_analysis ();
 
   reg_next_use = (rtx *) alloca (nregs * sizeof (rtx));
-  bzero ((char *) reg_next_use, nregs * sizeof (rtx));
+  memset (reg_next_use, 0, nregs * sizeof (rtx));
 
-  /* Set up several regset-vectors used internally within this function.
+  /* Set up regset-vectors used internally within this function.
      Their meanings are documented above, with their declarations.  */
 
-  basic_block_live_at_end
-    = (regset *) alloca (n_basic_blocks * sizeof (regset));
+  new_live_at_end = (regset *) alloca ((n_basic_blocks + 1) * sizeof (regset));
+  init_regset_vector (new_live_at_end, n_basic_blocks + 1, &flow_obstack);
 
-  /* Don't use alloca since that leads to a crash rather than an error message
-     if there isn't enough space.
-     Don't use oballoc since we may need to allocate other things during
-     this function on the temporary obstack.  */
-  init_regset_vector (basic_block_live_at_end, n_basic_blocks, &flow_obstack);
+  /* Stick these vectors into the AUX field of the basic block, so that
+     we don't have to keep going through the index.  */
 
-  basic_block_new_live_at_end
-    = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_new_live_at_end, n_basic_blocks,
-		      &flow_obstack);
-
-  basic_block_significant
-    = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_significant, n_basic_blocks, &flow_obstack);
+  for (i = 0; i < n_basic_blocks; ++i)
+    BASIC_BLOCK (i)->aux = new_live_at_end[i];
+  ENTRY_BLOCK_PTR->aux = new_live_at_end[i];
 
   /* Assume that the stack pointer is unchanging if alloca hasn't been used.
      This will be cleared by record_volatile_insns if it encounters an insn
@@ -1445,10 +2268,30 @@ life_analysis_1 (f, nregs)
 
   if (n_basic_blocks > 0)
     {
-      mark_regs_live_at_end (basic_block_live_at_end[n_basic_blocks - 1]);
-      COPY_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1],
-		    basic_block_live_at_end[n_basic_blocks - 1]);
+      regset theend;
+      register edge e;
+
+      theend = EXIT_BLOCK_PTR->global_live_at_start;
+      mark_regs_live_at_end (theend);
+
+      /* Propogate this exit data to each of EXIT's predecessors.  */
+      for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+	{
+	  COPY_REG_SET (e->src->global_live_at_end, theend);
+	  COPY_REG_SET ((regset) e->src->aux, theend);
+	}
     }
+
+  /* The post-reload life analysis have (on a global basis) the same registers
+     live as was computed by reload itself.
+
+     Otherwise elimination offsets and such may be incorrect.
+
+     Reload will make some registers as live even though they do not appear
+     in the rtl.  */
+  if (reload_completed)
+    memcpy (save_regs_ever_live, regs_ever_live, sizeof (regs_ever_live));
+  memset (regs_ever_live, 0, sizeof regs_ever_live);
 
   /* Propagate life info through the basic blocks
      around the graph of basic blocks.
@@ -1467,6 +2310,7 @@ life_analysis_1 (f, nregs)
       changed = 0;
       for (i = n_basic_blocks - 1; i >= 0; i--)
 	{
+	  basic_block bb = BASIC_BLOCK (i);
 	  int consider = first_pass;
 	  int must_rescan = first_pass;
 	  register int j;
@@ -1483,11 +2327,10 @@ life_analysis_1 (f, nregs)
 		 is one of the significant regs of this basic block).  */
 
 	      EXECUTE_IF_AND_COMPL_IN_REG_SET
-		(basic_block_new_live_at_end[i],
-		 basic_block_live_at_end[i], 0, j,
+		((regset) bb->aux, bb->global_live_at_end, 0, j,
 		 {
 		   consider = 1;
-		   if (REGNO_REG_SET_P (basic_block_significant[i], j))
+		   if (REGNO_REG_SET_P (bb->local_set, j))
 		     {
 		       must_rescan = 1;
 		       goto done;
@@ -1507,41 +2350,35 @@ life_analysis_1 (f, nregs)
 	      /* No complete rescan needed;
 		 just record those variables newly known live at end
 		 as live at start as well.  */
-	      IOR_AND_COMPL_REG_SET (basic_block_live_at_start[i],
-				     basic_block_new_live_at_end[i],
-				     basic_block_live_at_end[i]);
+	      IOR_AND_COMPL_REG_SET (bb->global_live_at_start,
+				     (regset) bb->aux,
+				     bb->global_live_at_end);
 
-	      IOR_AND_COMPL_REG_SET (basic_block_live_at_end[i],
-				     basic_block_new_live_at_end[i],
-				     basic_block_live_at_end[i]);
+	      IOR_AND_COMPL_REG_SET (bb->global_live_at_end,
+				     (regset) bb->aux,
+				     bb->global_live_at_end);
 	    }
 	  else
 	    {
 	      /* Update the basic_block_live_at_start
 		 by propagation backwards through the block.  */
-	      COPY_REG_SET (basic_block_live_at_end[i],
-			    basic_block_new_live_at_end[i]);
-	      COPY_REG_SET (basic_block_live_at_start[i],
-			    basic_block_live_at_end[i]);
-	      propagate_block (basic_block_live_at_start[i],
-			       BLOCK_HEAD (i), BLOCK_END (i), 0,
-			       first_pass ? basic_block_significant[i]
-			       : (regset) 0,
+	      COPY_REG_SET (bb->global_live_at_end, (regset) bb->aux);
+	      COPY_REG_SET (bb->global_live_at_start,
+			    bb->global_live_at_end);
+	      propagate_block (bb->global_live_at_start,
+			       bb->head, bb->end, 0,
+			       first_pass ? bb->local_set : (regset) 0,
 			       i);
 	    }
 
+	  /* Update the new_live_at_end's of the block's predecessors.  */
 	  {
-	    int_list_ptr p;
+	    register edge e;
 
-	    /* Update the basic_block_new_live_at_end's of
-	       all the blocks that reach this one.  */
-	    for (p = basic_block_pred[i]; p; p = p->next)
-	      {
-		register int from_block = INT_LIST_VAL (p);
-		IOR_REG_SET (basic_block_new_live_at_end[from_block],
-			     basic_block_live_at_start[i]);
-	      }
+	    for (e = bb->pred; e ; e = e->pred_next)
+	      IOR_REG_SET ((regset) e->src->aux, bb->global_live_at_start);
 	  }
+
 #ifdef USE_C_ALLOCA
 	  alloca (0);
 #endif
@@ -1555,57 +2392,36 @@ life_analysis_1 (f, nregs)
      one basic block.  */
 
   if (n_basic_blocks > 0)
-    EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[0],
+    EXECUTE_IF_SET_IN_REG_SET (BASIC_BLOCK (0)->global_live_at_start,
 			       FIRST_PSEUDO_REGISTER, i,
 			       {
 				 REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
 			       });
 
-  /* Now the life information is accurate.
-     Make one more pass over each basic block
-     to delete dead stores, create autoincrement addressing
-     and record how many times each register is used, is set, or dies.
-
-     To save time, we operate directly in basic_block_live_at_end[i],
-     thus destroying it (in fact, converting it into a copy of
-     basic_block_live_at_start[i]).  This is ok now because
-     basic_block_live_at_end[i] is no longer used past this point.  */
+  /* Now the life information is accurate.  Make one more pass over each
+     basic block to delete dead stores, create autoincrement addressing
+     and record how many times each register is used, is set, or dies.  */
 
   for (i = 0; i < n_basic_blocks; i++)
     {
-      propagate_block (basic_block_live_at_end[i],
-		       BLOCK_HEAD (i), BLOCK_END (i), 1,
-		       (regset) 0, i);
+      basic_block bb = BASIC_BLOCK (i);
+
+      /* We start with global_live_at_end to determine which stores are
+	 dead.  This process is destructive, and we wish to preserve the
+	 contents of global_live_at_end for posterity.  Fortunately,
+	 new_live_at_end, due to the way we converged on a solution,
+	 contains a duplicate of global_live_at_end that we can kill.  */
+      propagate_block ((regset) bb->aux, bb->head, bb->end, 1, (regset) 0, i);
+
 #ifdef USE_C_ALLOCA
       alloca (0);
 #endif
     }
 
-#if 0
-  /* Something live during a setjmp should not be put in a register
-     on certain machines which restore regs from stack frames
-     rather than from the jmpbuf.
-     But we don't need to do this for the user's variables, since
-     ANSI says only volatile variables need this.  */
-#ifdef LONGJMP_RESTORE_FROM_STACK
-  EXECUTE_IF_SET_IN_REG_SET (regs_live_at_setjmp,
-			     FIRST_PSEUDO_REGISTER, i,
-			     {
-			       if (regno_reg_rtx[i] != 0
-				   && ! REG_USERVAR_P (regno_reg_rtx[i]))
-				 {
-				   REG_LIVE_LENGTH (i) = -1;
-				   REG_BASIC_BLOCK (i) = -1;
-				 }
-			     });
-#endif
-#endif
-
-  /* We have a problem with any pseudoreg that
-     lives across the setjmp.  ANSI says that if a
-     user variable does not change in value
-     between the setjmp and the longjmp, then the longjmp preserves it.
-     This includes longjmp from a place where the pseudo appears dead.
+  /* We have a problem with any pseudoreg that lives across the setjmp. 
+     ANSI says that if a user variable does not change in value between
+     the setjmp and the longjmp, then the longjmp preserves it.  This
+     includes longjmp from a place where the pseudo appears dead.
      (In principle, the value still exists if it is in scope.)
      If the pseudo goes in a hard reg, some other value may occupy
      that hard reg where this pseudo is dead, thus clobbering the pseudo.
@@ -1622,16 +2438,14 @@ life_analysis_1 (f, nregs)
 
   /* Restore regs_ever_live that was provided by reload.  */
   if (reload_completed)
-    bcopy (save_regs_ever_live, regs_ever_live, (sizeof (regs_ever_live)));
+    memcpy (regs_ever_live, save_regs_ever_live, sizeof (regs_ever_live));
 
-  free_regset_vector (basic_block_live_at_end, n_basic_blocks);
-  free_regset_vector (basic_block_new_live_at_end, n_basic_blocks);
-  free_regset_vector (basic_block_significant, n_basic_blocks);
-  basic_block_live_at_end = (regset *)0;
-  basic_block_new_live_at_end = (regset *)0;
-  basic_block_significant = (regset *)0;
-
+  free_regset_vector (new_live_at_end, n_basic_blocks);
   obstack_free (&flow_obstack, NULL_PTR);
+
+  for (i = 0; i < n_basic_blocks; ++i)
+    BASIC_BLOCK (i)->aux = NULL;
+  ENTRY_BLOCK_PTR->aux = NULL;
 }
 
 /* Subroutines of life analysis.  */
@@ -1655,10 +2469,19 @@ allocate_for_life_analysis ()
   for (i = 0; i < max_regno; i++)
     REG_N_SETS (i) = 0;
 
-  basic_block_live_at_start
-    = (regset *) oballoc (n_basic_blocks * sizeof (regset));
-  init_regset_vector (basic_block_live_at_start, n_basic_blocks,
-		      function_obstack);
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      bb->local_set = OBSTACK_ALLOC_REG_SET (function_obstack);
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+    }
+
+  ENTRY_BLOCK_PTR->global_live_at_end
+    = OBSTACK_ALLOC_REG_SET (function_obstack);
+  EXIT_BLOCK_PTR->global_live_at_start
+    = OBSTACK_ALLOC_REG_SET (function_obstack);
 
   regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (function_obstack);
   CLEAR_REG_SET (regs_live_at_setjmp);
@@ -1730,29 +2553,17 @@ propagate_block (old, first, last, final, significant, bnum)
   regset live;
   regset dead;
 
-  /* The loop depth may change in the middle of a basic block.  Since we
-     scan from end to beginning, we start with the depth at the end of the
-     current basic block, and adjust as we pass ends and starts of loops.  */
-  loop_depth = basic_block_loop_depth[bnum];
+  /* Find the loop depth for this block.  Ignore loop level changes in the
+     middle of the basic block -- for register allocation purposes, the 
+     important uses will be in the blocks wholely contained within the loop
+     not in the loop pre-header or post-trailer.  */
+  loop_depth = BASIC_BLOCK (bnum)->loop_depth;
 
   dead = ALLOCA_REG_SET ();
   live = ALLOCA_REG_SET ();
 
   cc0_live = 0;
   mem_set_list = NULL_RTX;
-
-  /* Include any notes at the end of the block in the scan.
-     This is in case the block ends with a call to setjmp.  */
-
-  while (NEXT_INSN (last) != 0 && GET_CODE (NEXT_INSN (last)) == NOTE)
-    {
-      /* Look for loop boundaries, we are going forward here.  */
-      last = NEXT_INSN (last);
-      if (NOTE_LINE_NUMBER (last) == NOTE_INSN_LOOP_BEG)
-	loop_depth++;
-      else if (NOTE_LINE_NUMBER (last) == NOTE_INSN_LOOP_END)
-	loop_depth--;
-    }
 
   if (final)
     {
@@ -1774,18 +2585,6 @@ propagate_block (old, first, last, final, significant, bnum)
 
       if (GET_CODE (insn) == NOTE)
 	{
-	  /* Look for loop boundaries, remembering that we are going
-	     backwards.  */
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    loop_depth++;
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    loop_depth--;
-
-	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
-	     Abort now rather than setting register status incorrectly.  */
-	  if (loop_depth == 0)
-	    abort ();
-
 	  /* If this is a call to `setjmp' et al,
 	     warn if any non-volatile datum is live.  */
 
@@ -2207,7 +3006,7 @@ regno_uninitialized (regno)
 	      || FUNCTION_ARG_REGNO_P (regno))))
     return 0;
 
-  return REGNO_REG_SET_P (basic_block_live_at_start[0], regno);
+  return REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno);
 }
 
 /* 1 if register REGNO was alive at a place where `setjmp' was called
@@ -2222,7 +3021,7 @@ regno_clobbered_at_setjmp (regno)
     return 0;
 
   return ((REG_N_SETS (regno) > 1
-	   || REGNO_REG_SET_P (basic_block_live_at_start[0], regno))
+	   || REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno))
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 
@@ -2611,21 +3410,16 @@ find_auto_inc (needed, x, insn)
 		 Change it to q = p, ...*q..., q = q+size.
 		 Then fall into the usual case.  */
 	      rtx insns, temp;
+	      basic_block bb;
 
 	      start_sequence ();
 	      emit_move_insn (q, addr);
 	      insns = get_insns ();
 	      end_sequence ();
 
-	      /* If anything in INSNS have UID's that don't fit within the
-		 extra space we allocate earlier, we can't make this auto-inc.
-		 This should never happen.  */
+	      bb = BLOCK_FOR_INSN (insn);
 	      for (temp = insns; temp; temp = NEXT_INSN (temp))
-		{
-		  if (INSN_UID (temp) > max_uid_for_flow)
-		    return;
-		  BLOCK_NUM (temp) = BLOCK_NUM (insn);
-		}
+		set_block_for_insn (temp, bb);
 
 	      /* If we can't make the auto-inc, or can't make the
 		 replacement into Y, exit.  There's no point in making
@@ -2643,8 +3437,8 @@ find_auto_inc (needed, x, insn)
 		 new insn(s) and do the updates.  */
 	      emit_insns_before (insns, insn);
 
-	      if (BLOCK_HEAD (BLOCK_NUM (insn)) == insn)
-		BLOCK_HEAD (BLOCK_NUM (insn)) = insns;
+	      if (BLOCK_FOR_INSN (insn)->head == insn)
+		BLOCK_FOR_INSN (insn)->head = insns;
 
 	      /* INCR will become a NOTE and INSN won't contain a
 		 use of ADDR.  If a use of ADDR was just placed in
@@ -3046,14 +3840,11 @@ mark_used_regs (needed, live, x, final, insn)
       /* If exiting needs the right stack value, consider this insn as
 	 using the stack pointer.  In any event, consider it as using
 	 all global registers and all registers used by return.  */
-
-#ifdef EXIT_IGNORE_STACK
       if (! EXIT_IGNORE_STACK
 	  || (! FRAME_POINTER_REQUIRED
 	      && ! current_function_calls_alloca
 	      && flag_omit_frame_pointer)
 	  || current_function_sp_is_unchanging)
-#endif
 	SET_REGNO_REG_SET (live, STACK_POINTER_REGNUM);
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -3293,7 +4084,6 @@ dump_flow_info (file)
   static char *reg_class_names[] = REG_CLASS_NAMES;
 
   fprintf (file, "%d registers.\n", max_regno);
-
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (REG_N_REFS (i))
       {
@@ -3332,8 +4122,91 @@ dump_flow_info (file)
 	  fprintf (file, "; pointer");
 	fprintf (file, ".\n");
       }
+
   fprintf (file, "\n%d basic blocks.\n", n_basic_blocks);
-  dump_bb_data (file, basic_block_pred, basic_block_succ, 1);
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      register basic_block bb = BASIC_BLOCK (i);
+      register int regno;
+      register edge e;
+
+      fprintf (file, "\nBasic block %d: first insn %d, last %d.\n",
+	       i, INSN_UID (bb->head), INSN_UID (bb->end));
+
+      fprintf (file, "Predecessors: ");
+      for (e = bb->pred; e ; e = e->pred_next)
+	dump_edge_info (file, e, 0);
+
+      fprintf (file, "\nSuccessors: ");
+      for (e = bb->succ; e ; e = e->succ_next)
+	dump_edge_info (file, e, 1);
+
+      fprintf (file, "\nRegisters live at start:");
+      if (bb->global_live_at_start)
+	{
+          for (regno = 0; regno < max_regno; regno++)
+	    if (REGNO_REG_SET_P (bb->global_live_at_start, regno))
+	      fprintf (file, " %d", regno);
+	}
+      else
+	fprintf (file, " n/a");
+
+      fprintf (file, "\nRegisters live at end:");
+      if (bb->global_live_at_end)
+	{
+          for (regno = 0; regno < max_regno; regno++)
+	    if (REGNO_REG_SET_P (bb->global_live_at_end, regno))
+	      fprintf (file, " %d", regno);
+	}
+      else
+	fprintf (file, " n/a");
+
+      putc('\n', file);
+    }
+
+  putc('\n', file);
+}
+
+static void
+dump_edge_info (file, e, do_succ)
+     FILE *file;
+     edge e;
+     int do_succ;
+{
+  basic_block side = (do_succ ? e->dest : e->src);
+
+  if (side == ENTRY_BLOCK_PTR)
+    fputs (" ENTRY", file);
+  else if (side == EXIT_BLOCK_PTR)
+    fputs (" EXIT", file);
+  else
+    fprintf (file, " %d", side->index);
+
+  if (e->flags)
+    {
+      static char * bitnames[] = {
+	"fallthru", "crit", "ab", "abcall", "eh", "fake"
+      };
+      int comma = 0;
+      int i, flags = e->flags;
+
+      fputc (' ', file);
+      fputc ('(', file);
+      for (i = 0; flags; i++)
+	if (flags & (1 << i))
+	  {
+	    flags &= ~(1 << i);
+
+	    if (comma)
+	      fputc (',', file);
+	    if (i < (int)(sizeof (bitnames) / sizeof (*bitnames)))
+	      fputs (bitnames[i], file);
+	    else
+	      fprintf (file, "%d", i);
+	    comma = 1;
+	  }
+      fputc (')', file);
+    }
 }
 
 
@@ -3349,34 +4222,35 @@ print_rtl_with_bb (outf, rtx_first)
 
   if (rtx_first == 0)
     fprintf (outf, "(nil)\n");
-
   else
     {
-      int i, bb;
+      int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      int *start = (int *) alloca (max_uid * sizeof (int));
-      int *end = (int *) alloca (max_uid * sizeof (int));
+      basic_block *start = alloca (max_uid * sizeof (basic_block));
+      basic_block *end = alloca (max_uid * sizeof (basic_block));
       enum bb_state *in_bb_p = (enum bb_state *)
 	alloca (max_uid * sizeof (enum bb_state));
 
-      for (i = 0; i < max_uid; i++)
-	{
-	  start[i] = end[i] = -1;
-	  in_bb_p[i] = NOT_IN_BB;
-	}
+      memset (start, 0, max_uid * sizeof (basic_block));
+      memset (end, 0, max_uid * sizeof (basic_block));
+      memset (in_bb_p, 0, max_uid * sizeof (enum bb_state));
 
-      for (i = n_basic_blocks-1; i >= 0; i--)
+      for (i = n_basic_blocks - 1; i >= 0; i--)
 	{
+	  basic_block bb = BASIC_BLOCK (i);
 	  rtx x;
-	  start[INSN_UID (BLOCK_HEAD (i))] = i;
-	  end[INSN_UID (BLOCK_END (i))] = i;
-	  for (x = BLOCK_HEAD (i); x != NULL_RTX; x = NEXT_INSN (x))
+
+	  start[INSN_UID (bb->head)] = bb;
+	  end[INSN_UID (bb->end)] = bb;
+	  for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
 	    {
-	      in_bb_p[ INSN_UID(x)]
-		= (in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
-		 ? IN_ONE_BB : IN_MULTIPLE_BB;
-	      if (x == BLOCK_END (i))
+	      enum bb_state state = IN_MULTIPLE_BB;
+	      if (in_bb_p[INSN_UID(x)] == NOT_IN_BB)
+		state = IN_ONE_BB;
+	      in_bb_p[INSN_UID(x)] = state;
+
+	      if (x == bb->end)
 		break;
 	    }
 	}
@@ -3384,13 +4258,14 @@ print_rtl_with_bb (outf, rtx_first)
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
 	  int did_output;
+	  basic_block bb;
 
-	  if ((bb = start[INSN_UID (tmp_rtx)]) >= 0)
+	  if ((bb = start[INSN_UID (tmp_rtx)]) != NULL)
 	    {
 	      fprintf (outf, ";; Start of basic block %d, registers live:",
-		       bb);
+		       bb->index);
 
-	      EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[bb], 0, i,
+	      EXECUTE_IF_SET_IN_REG_SET (bb->global_live_at_start, 0, i,
 					 {
 					   fprintf (outf, " %d", i);
 					   if (i < FIRST_PSEUDO_REGISTER)
@@ -3405,13 +4280,13 @@ print_rtl_with_bb (outf, rtx_first)
 	      && GET_CODE (tmp_rtx) != BARRIER
 	      && ! obey_regdecls)
 	    fprintf (outf, ";; Insn is not within a basic block\n");
-	  else if (in_bb_p[ INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
+	  else if (in_bb_p[INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
 	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
 
 	  did_output = print_rtl_single (outf, tmp_rtx);
 
-	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
-	    fprintf (outf, ";; End of basic block %d\n", bb);
+	  if ((bb = end[INSN_UID (tmp_rtx)]) != NULL)
+	    fprintf (outf, ";; End of basic block %d\n", bb->index);
 
 	  if (did_output)
 	    putc ('\n', outf);
@@ -3509,7 +4384,8 @@ add_pred_succ (pred_bb, succ_bb, s_preds, s_succs, num_preds, num_succs)
     }
 }
 
-/* Compute the predecessors and successors for each block.  */
+/* Convert edge lists into pred/succ lists for backward compatibility.  */
+
 void
 compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
      int_list_ptr *s_preds;
@@ -3517,38 +4393,26 @@ compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
      int *num_preds;
      int *num_succs;
 {
-  int bb;
+  int i, n = n_basic_blocks;
+  edge e;
 
-  bzero ((char *) s_preds, n_basic_blocks * sizeof (int_list_ptr));
-  bzero ((char *) s_succs, n_basic_blocks * sizeof (int_list_ptr));
-  bzero ((char *) num_preds, n_basic_blocks * sizeof (int));
-  bzero ((char *) num_succs, n_basic_blocks * sizeof (int));
+  memset (s_preds, 0, n_basic_blocks * sizeof (int_list_ptr));
+  memset (s_succs, 0, n_basic_blocks * sizeof (int_list_ptr));
+  memset (num_preds, 0, n_basic_blocks * sizeof (int));
+  memset (num_succs, 0, n_basic_blocks * sizeof (int));
 
-  /* It's somewhat stupid to simply copy the information.  The passes
-     which use this function ought to be changed to refer directly to
-     basic_block_succ and its relatives.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  for (i = 0; i < n; ++i)
     {
-      rtx jump = BLOCK_END (bb);
-      enum rtx_code code = GET_CODE (jump);
-      int_list_ptr p;
-
-      for (p = basic_block_succ[bb]; p; p = p->next)
-	add_pred_succ (bb, INT_LIST_VAL (p), s_preds, s_succs, num_preds,
-		       num_succs);
-
-      /* If this is a RETURN insn or a conditional jump in the last
-	 basic block, or a non-jump insn in the last basic block, then
-	 this block reaches the exit block.  */
-      if ((code == JUMP_INSN && GET_CODE (PATTERN (jump)) == RETURN)
-	  || (((code == JUMP_INSN
-	        && condjump_p (jump) && !simplejump_p (jump))
-	       || code != JUMP_INSN)
- 	      && bb == n_basic_blocks - 1))
-	add_pred_succ (bb, EXIT_BLOCK, s_preds, s_succs, num_preds, num_succs);
+      basic_block bb = BASIC_BLOCK (i);
+      
+      for (e = bb->succ; e ; e = e->succ_next)
+	add_pred_succ (i, e->dest->index, s_preds, s_succs,
+		       num_preds, num_succs);
     }
 
-  add_pred_succ (ENTRY_BLOCK, 0, s_preds, s_succs, num_preds, num_succs);
+  for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
+    add_pred_succ (ENTRY_BLOCK, e->dest->index, s_preds, s_succs,
+		   num_preds, num_succs);
 }
 
 void
@@ -3590,7 +4454,7 @@ dump_bb_data (file, preds, succs, live_info)
 	  int regno;
 	  fprintf (file, "\nRegisters live at start:");
 	  for (regno = 0; regno < max_regno; regno++)
-	    if (REGNO_REG_SET_P (basic_block_live_at_start[bb], regno))
+	    if (REGNO_REG_SET_P (BASIC_BLOCK (bb)->global_live_at_start, regno))
 	      fprintf (file, " %d", regno);
 	  fprintf (file, "\n");
 	}
@@ -3626,8 +4490,8 @@ compute_dominators (dominators, post_dominators, s_preds, s_succs)
   sbitmap_zero (dominators[0]);
   SET_BIT (dominators[0], 0);
 
-  sbitmap_zero (post_dominators[n_basic_blocks-1]);
-  SET_BIT (post_dominators[n_basic_blocks-1], 0);
+  sbitmap_zero (post_dominators[n_basic_blocks - 1]);
+  SET_BIT (post_dominators[n_basic_blocks - 1], 0);
 
   passes = 0;
   changed = 1;
@@ -3946,4 +4810,35 @@ recompute_reg_usage (f, loop_step)
 	    }
 	}
     }
+}
+
+/* Record INSN's block as BB.  */
+
+void
+set_block_for_insn (insn, bb)
+     rtx insn;
+     basic_block bb;
+{
+  size_t uid = INSN_UID (insn);
+  if (uid >= basic_block_for_insn->num_elements)
+    {
+      int new_size;
+      
+      /* Add one-eighth the size so we don't keep calling xrealloc.  */
+      new_size = uid + (uid + 7) / 8;
+
+      VARRAY_GROW (basic_block_for_insn, new_size);
+    }
+  VARRAY_BB (basic_block_for_insn, uid) = bb;
+}
+
+/* Record INSN's block number as BB.  */
+/* ??? This has got to go.  */
+
+void
+set_block_num (insn, bb)
+     rtx insn;
+     int bb;
+{
+  set_block_for_insn (insn, BASIC_BLOCK (bb));
 }

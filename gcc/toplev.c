@@ -292,6 +292,7 @@ int regmove_dump = 0;
 int sched_dump = 0;
 int local_reg_dump = 0;
 int global_reg_dump = 0;
+int flow2_dump = 0;
 int sched2_dump = 0;
 int jump2_opt_dump = 0;
 #ifdef DELAY_SLOTS
@@ -1286,6 +1287,7 @@ int regmove_time;
 int sched_time;
 int local_alloc_time;
 int global_alloc_time;
+int flow2_time;
 int sched2_time;
 #ifdef DELAY_SLOTS
 int dbr_sched_time;
@@ -2642,6 +2644,7 @@ compile_file (name)
   sched_time = 0;
   local_alloc_time = 0;
   global_alloc_time = 0;
+  flow2_time = 0;
   sched2_time = 0;
 #ifdef DELAY_SLOTS
   dbr_sched_time = 0;
@@ -2758,6 +2761,12 @@ compile_file (name)
       clean_dump_file (".greg");
       if (graph_dump_format != no_graph)
 	clean_graph_dump_file (dump_base_name, ".greg");
+    }
+  if (flow2_dump)
+    {
+      clean_dump_file (".flow2");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".flow2");
     }
   if (sched2_dump)
     {
@@ -3303,6 +3312,8 @@ compile_file (name)
 	finish_graph_dump_file (dump_base_name, ".lreg");
       if (global_reg_dump)
 	finish_graph_dump_file (dump_base_name, ".greg");
+      if (flow_dump)
+	finish_graph_dump_file (dump_base_name, ".flow2");
       if (sched2_dump)
 	finish_graph_dump_file (dump_base_name, ".sched2");
       if (jump2_opt_dump)
@@ -3346,6 +3357,7 @@ compile_file (name)
       print_time ("sched", sched_time);
       print_time ("local-alloc", local_alloc_time);
       print_time ("global-alloc", global_alloc_time);
+      print_time ("flow2", flow2_time);
       print_time ("sched2", sched2_time);
 #ifdef DELAY_SLOTS
       print_time ("dbranch", dbr_sched_time);
@@ -4079,14 +4091,27 @@ rest_of_compilation (decl)
 	}
     }
 
+  if (global_reg_dump)
+    {
+      TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
+      close_dump_file (print_rtl_with_bb, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".greg", insns);
+    }
+
   /* Re-create the death notes which were deleted during reload.  */
+  if (flow2_dump)
+    open_dump_file (".flow2", decl_printable_name (decl, 2));
+  
   if (optimize)
-    TIMEVAR
-      (flow_time,
-       {
-	 find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	 life_analysis (insns, max_reg_num (), rtl_dump_file);
-       });
+    {
+      TIMEVAR
+	(flow2_time,
+	 {
+	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	   life_analysis (insns, max_reg_num (), rtl_dump_file);
+	 });
+    }
 
   flow2_completed = 1;
 
@@ -4097,13 +4122,13 @@ rest_of_compilation (decl)
 
   thread_prologue_and_epilogue_insns (insns);
 
-  if (global_reg_dump)
+  if (flow2_dump)
     {
-      TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
       close_dump_file (print_rtl_with_bb, insns);
       if (graph_dump_format != no_graph)
-	print_rtl_graph_with_bb (dump_base_name, ".greg", insns);
+	print_rtl_graph_with_bb (dump_base_name, ".flow2", insns);
     }
+
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       if (sched2_dump)
@@ -4227,6 +4252,9 @@ rest_of_compilation (decl)
 	     if (! quiet_flag)
 	       fflush (asm_out_file);
 
+	     /* Release all memory allocated by flow.  */
+	     free_basic_block_vars (0);
+
 	     /* Release all memory held by regsets now */
 	     regset_release_memory ();
 	   });
@@ -4258,7 +4286,7 @@ rest_of_compilation (decl)
 
  exit_rest_of_compilation:
 
-  free_bb_memory ();
+  free_bb_mem ();
 
   /* In case the function was not output,
      don't leave any temporary anonymous types
@@ -4770,6 +4798,7 @@ main (argc, argv)
  		    dbr_sched_dump = 1;
 #endif
  		    flow_dump = 1;
+ 		    flow2_dump = 1;
  		    global_reg_dump = 1;
  		    jump_opt_dump = 1;
  		    addressof_dump = 1;
@@ -4863,6 +4892,9 @@ main (argc, argv)
 		    break;
 		  case 'v':
 		    graph_dump_format = vcg;
+		    break;
+		  case 'w':
+		    flow2_dump = 1;
 		    break;
 		  case 'y':
 		    set_yydebug (1);

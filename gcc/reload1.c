@@ -538,9 +538,9 @@ compute_use_by_pseudos (to, from)
        if (r < 0)
 	 {
 	   /* reload_combine uses the information from
-	      basic_block_live_at_start, which might still contain registers
-	      that have not actually been allocated since they have an
-	      equivalence.  */
+	      BASIC_BLOCK->global_live_at_start, which might still
+	      contain registers that have not actually been allocated
+	      since they have an equivalence.  */
 	   if (! reload_completed)
 	     abort ();
 	 }
@@ -1060,7 +1060,7 @@ reload (first, global, dumpfile)
 
   if (! frame_pointer_needed)
     for (i = 0; i < n_basic_blocks; i++)
-      CLEAR_REGNO_REG_SET (basic_block_live_at_start[i],
+      CLEAR_REGNO_REG_SET (BASIC_BLOCK (i)->global_live_at_start,
 			   HARD_FRAME_POINTER_REGNUM);
 
   /* Come here (with failure set nonzero) if we can't get enough spill regs
@@ -9494,8 +9494,8 @@ reload_combine ()
 	{
 	  HARD_REG_SET live;
 
-	  REG_SET_TO_HARD_REG_SET (live, basic_block_live_at_start[i]);
-	  compute_use_by_pseudos (&live, basic_block_live_at_start[i]);
+	  REG_SET_TO_HARD_REG_SET (live, BASIC_BLOCK (i)->global_live_at_start);
+	  compute_use_by_pseudos (&live, BASIC_BLOCK (i)->global_live_at_start);
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}

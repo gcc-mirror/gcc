@@ -3429,6 +3429,24 @@ condjump_label (insn)
   return NULL_RTX;
 }
 
+/* Return true if INSN is a (possibly conditional) return insn.  */
+
+static int
+returnjump_p_1 (loc, data)
+     rtx *loc;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *loc;
+  return GET_CODE (x) == RETURN;
+}
+
+int
+returnjump_p (insn)
+     rtx insn;
+{
+  return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
+}
+
 #ifdef HAVE_cc0
 
 /* Return 1 if X is an RTX that does nothing but set the condition codes

@@ -160,7 +160,8 @@ darkgrey\n  shape: ellipse" : "white",
 	"repeated_line_number",
 	"range_start",
 	"range_end",
-	"live"
+	"live",
+	"basic_block"
       };
 
       fprintf (fp, " %s",
@@ -191,14 +192,21 @@ draw_edge (fp, from, to, bb_edge, class)
      int bb_edge;
      int class;
 {
+  char * color;
   switch (graph_dump_format)
     {
     case vcg:
+      color = "";
+      if (class == 2)
+	color = "color: red ";
+      else if (bb_edge)
+	color = "color: blue ";
+      else if (class == 3)
+	color = "color: green ";
       fprintf (fp,
 	       "edge: { sourcename: \"%s.%d\" targetname: \"%s.%d\" %s",
 	       current_function_name, from,
-	       current_function_name, to,
-	       bb_edge ? "color: blue " : class ? "color: red " : "");
+	       current_function_name, to, color);
       if (class)
 	fprintf (fp, "class: %d ", class);
       fputs ("}\n", fp);
@@ -253,8 +261,8 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
   char *buf = (char *) alloca (namelen + suffixlen + extlen);
   FILE *fp;
 
-  /* Regenerate the basic block information.  */
-  find_basic_blocks (rtx_first, max_reg_num (), NULL);
+  if (basic_block_info == NULL)
+    return;
 
   memcpy (buf, base, namelen);
   memcpy (buf + namelen, suffix, suffixlen);
@@ -268,20 +276,14 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
     fprintf (fp, "(nil)\n");
   else
     {
-      int i, bb;
+      int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
       int *start = (int *) alloca (max_uid * sizeof (int));
       int *end = (int *) alloca (max_uid * sizeof (int));
       enum bb_state *in_bb_p = (enum bb_state *)
 	alloca (max_uid * sizeof (enum bb_state));
-      /* Element I is a list of I's predecessors/successors.  */
-      int_list_ptr *s_preds;
-      int_list_ptr *s_succs;
-      /* Element I is the number of predecessors/successors of basic
-        block I.  */
-      int *num_preds;
-      int *num_succs;
+      basic_block bb;
 
       for (i = 0; i < max_uid; ++i)
 	{
@@ -292,27 +294,18 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       for (i = n_basic_blocks - 1; i >= 0; --i)
 	{
 	  rtx x;
-	  start[INSN_UID (BLOCK_HEAD (i))] = i;
-	  end[INSN_UID (BLOCK_END (i))] = i;
-	  for (x = BLOCK_HEAD (i); x != NULL_RTX; x = NEXT_INSN (x))
+	  bb = BASIC_BLOCK (i);
+	  start[INSN_UID (bb->head)] = i;
+	  end[INSN_UID (bb->end)] = i;
+	  for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[INSN_UID (x)]
 		= (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
 		 ? IN_ONE_BB : IN_MULTIPLE_BB;
-	      if (x == BLOCK_END (i))
+	      if (x == bb->end)
 		break;
 	    }
 	}
-
-      /* Get the information about the basic blocks predecessors and
-	 successors.  */
-      s_preds = (int_list_ptr *) alloca (n_basic_blocks
-					 * sizeof (int_list_ptr));
-      s_succs = (int_list_ptr *) alloca (n_basic_blocks
-					 * sizeof (int_list_ptr));
-      num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
-      num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
-      compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
       /* Tell print-rtl that we want graph output.  */
       dump_for_graph = 1;
@@ -336,12 +329,12 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 		continue;
 	    }
 
-	  if ((bb = start[INSN_UID (tmp_rtx)]) >= 0)
+	  if ((i = start[INSN_UID (tmp_rtx)]) >= 0)
 	    {
 	      /* We start a subgraph for each basic block.  */
-	      start_bb (fp, bb);
+	      start_bb (fp, i);
 
-	      if (bb == 0)
+	      if (i == 0)
 		draw_edge (fp, 0, INSN_UID (tmp_rtx), 1, 0);
 	    }
 
@@ -349,40 +342,40 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 	  did_output = node_data (fp, tmp_rtx);
 	  next_insn = next_nonnote_insn (tmp_rtx);
 
-	  if ((bb = end[INSN_UID (tmp_rtx)]) >= 0)
+	  if ((i = end[INSN_UID (tmp_rtx)]) >= 0)
 	    {
-	      int_list_ptr p;
+	      edge e;
+
+	      bb = BASIC_BLOCK (i);
 
 	      /* End of the basic block.  */
 	      end_bb (fp, bb);
 
 	      /* Now specify the edges to all the successors of this
 		 basic block.  */
-	      for (p = s_succs[bb]; p != NULL; p = p->next)
+	      for (e = bb->succ; e ; e = e->succ_next)
 		{
-		  int bb_succ = INT_LIST_VAL (p);
-
-		  if (bb_succ >= 0)
+		  if (e->dest != EXIT_BLOCK_PTR)
 		    {
-		      rtx block_head = BLOCK_HEAD (bb_succ);
+		      rtx block_head = e->dest->head;
 
 		      draw_edge (fp, INSN_UID (tmp_rtx),
 				 INSN_UID (block_head),
-				 next_insn != block_head, 0);
+				 next_insn != block_head,
+				 (e->flags & EDGE_ABNORMAL ? 2 : 0));
 
-		      if (BLOCK_HEAD (bb_succ) == next_insn)
+		      if (block_head == next_insn)
 			edge_printed = 1;
 		    }
-		  else if (bb_succ == EXIT_BLOCK)
+		  else
 		    {
 		      draw_edge (fp, INSN_UID (tmp_rtx), 999999,
-				 next_insn != 0, 0);
+				 next_insn != 0,
+				 (e->flags & EDGE_ABNORMAL ? 2 : 0));
 
 		      if (next_insn == 0)
 			edge_printed = 1;
 		    }
-		  else
-		    abort ();
 		}
 	    }
 
@@ -395,8 +388,8 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 			   next_insn ? INSN_UID (next_insn) : 999999, 0, 0);
 	      else
 		{
-		  /* We draw the remaining edges in class 2.  We have
-		     to skip oevr the barrier since these nodes are
+		  /* We draw the remaining edges in class 3.  We have
+		     to skip over the barrier since these nodes are
 		     not printed at all.  */
 		  do
 		    next_insn = NEXT_INSN (next_insn);
@@ -405,7 +398,7 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 			     || GET_CODE (next_insn) == BARRIER));
 
 		  draw_edge (fp, XINT (tmp_rtx, 0),
-			     next_insn ? INSN_UID (next_insn) : 999999, 0, 2);
+			     next_insn ? INSN_UID (next_insn) : 999999, 0, 3);
 		}
 	    }
 	}
