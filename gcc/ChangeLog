@@ -1,5 +1,8 @@
 Thu Dec  9 11:36:24 MET 1999 Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.md (neg??, abs?f, one_cmpl?i): Use nonimmediate_operand
+	in expander.
+
 	* flow.c (recompute_reg_usage): Use basic block info to get loop_depth.
 
 	* combine.c (try_combine, distribute_notes): Remove REG_N_REFS
