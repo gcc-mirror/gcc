@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001  Free Software Foundation.
+/* Copyright (C) 2000, 2001, 2003  Free Software Foundation.
 
    Ensure all expected transformations of builtin strncmp occur and
    perform correctly.
