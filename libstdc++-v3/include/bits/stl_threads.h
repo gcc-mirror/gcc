@@ -202,6 +202,28 @@ struct _Refcount_Base
 // later, if required.  You can start by cloning the __STL_PTHREADS
 // path while making the obvious changes.  Later it could be optimized
 // to use the atomicity.h abstraction layer from libstdc++-v3.
+// vyzo: simple _Atomic_swap implementation following the guidelines above
+       // We use a template here only to get a unique initialized instance.
+    template<int __dummy>
+    struct _Swap_lock_struct {
+        static __gthread_mutex_t _S_swap_lock;
+    };
+
+    template<int __dummy>
+    __gthread_mutex_t
+    _Swap_lock_struct<__dummy>::_S_swap_lock = __GTHREAD_MUTEX_INIT;
+
+    // This should be portable, but performance is expected
+    // to be quite awful.  This really needs platform specific
+    // code.
+    inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
+        __gthread_mutex_lock(&_Swap_lock_struct<0>::_S_swap_lock);
+        unsigned long __result = *__p;
+        *__p = __q;
+        __gthread_mutex_unlock(&_Swap_lock_struct<0>::_S_swap_lock);
+        return __result;
+    }
+
 #else
 // GCC extension end
 # ifdef __STL_SGI_THREADS

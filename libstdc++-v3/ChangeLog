@@ -1,3 +1,9 @@
+2001-10-03  Dimitris Vyzovitis  <vyzo@media.mit.edu>
+
+	    * include/bits/stl_threads.h (_Atomic_swap): New function.
+	    (_Swap_lock_struct<__dummy>::_S_swap_lock): New data.
+	    * testsuite/ext/rope.cc: New file.
+
 2001-10-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/time_members_gnu.h: Remove.
