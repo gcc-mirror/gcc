@@ -99,6 +99,50 @@ static struct objc_list *__objc_class_tree_list = NULL;
    should not be destroyed during the execution of the program.  */
 static cache_ptr __objc_load_methods = NULL;
 
+/* This function is used when building the class tree used to send
+   ordinately the +load message to all classes needing it.  The tree
+   is really needed so that superclasses will get the message before
+   subclasses.
+
+   This tree will contain classes which are being loaded (or have just
+   being loaded), and whose super_class pointers have not yet been
+   resolved.  This implies that their super_class pointers point to a
+   string with the name of the superclass; when the first message is
+   sent to the class (/an object of that class) the class links will
+   be resolved, which will replace the super_class pointers with
+   pointers to the actual superclasses.
+
+   Unfortunately, the tree might also contain classes which had been
+   loaded previously, and whose class links have already been
+   resolved.
+
+   This function returns the superclass of a class in both cases, and
+   can be used to build the determine the class relationships while
+   building the tree.
+*/
+static Class  class_superclass_of_class (Class class)
+{
+  char *super_class_name;
+
+  /* If the class links have been resolved, use the resolved
+   * links.  */
+  if (CLS_ISRESOLV (class))
+    return class->super_class;
+  
+  /* Else, 'class' has not yet been resolved.  This means that its
+   * super_class pointer is really the name of the super class (rather
+   * than a pointer to the actual superclass).  */
+  super_class_name = (char *)class->super_class;
+
+  /* Return Nil for a root class.  */
+  if (super_class_name == NULL)
+    return Nil;
+
+  /* Lookup the superclass of non-root classes.  */
+  return objc_lookup_class (super_class_name);
+}
+
+
 /* Creates a tree of classes whose topmost class is directly inherited
    from `upper' and the bottom class in this tree is
    `bottom_class'. The classes in this tree are super classes of
@@ -127,9 +171,7 @@ create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
       tree = objc_calloc (1, sizeof (objc_class_tree));
       tree->class = superclass;
       tree->subclasses = list_cons (prev, tree->subclasses);
-      superclass = (superclass->super_class ?
-			objc_lookup_class ((char *) superclass->super_class)
-		      : Nil);
+      superclass = class_superclass_of_class (superclass);
       prev = tree;
     }
 
@@ -157,10 +199,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
       DEBUG_PRINTF ("1. class %s was previously inserted\n", class->name);
       return tree;
     }
-  else if ((class->super_class ?
-		    objc_lookup_class ((char *) class->super_class)
-		  : Nil)
-	    == tree->class)
+  else if (class_superclass_of_class (class) == tree->class)
     {
       /* If class is a direct subclass of tree->class then add class to the
 	 list of subclasses. First check to see if it wasn't already
@@ -370,9 +409,7 @@ class_is_subclass_of_class (Class class, Class superclass)
     {
       if (class == superclass)
 	return YES;
-      class = (class->super_class ?
-		  objc_lookup_class ((char *) class->super_class)
-		: Nil);
+      class = class_superclass_of_class (class);
     }
 
   return NO;

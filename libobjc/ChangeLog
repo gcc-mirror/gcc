@@ -1,3 +1,12 @@
+Tue May 13 14:56:03 2003  Richard Frith-Macdonald <rfm@gnu.org>
+	                  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	libobjc/10742
+	* init.c (class_superclass_of_class): New function.
+	(create_tree_of_subclasses_inherited_from): Use it.
+	(__objc_tree_insert_class): Likewise.
+	(class_is_subclass_of_class): Likewise.
+	
 2003-04-11  David Chad  <davidc@freebsd.org>
 	    Loren J. Rittle  <ljrittle@acm.org>
 
