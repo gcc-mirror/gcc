@@ -113,7 +113,7 @@ void test_class_with_superclass (const char *class_name,
 
   /* We need at least a method call before playing with the internals, 
      so that the runtime will call __objc_resolve_class_links () */
-  [Object initialize];
+  [Object class];
 
   /* class_name must be an existing class */
   class = objc_lookup_class (class_name);
