@@ -21,7 +21,7 @@ if [ ! -d $DESTDIR ]; then
     mkdir -p $DESTDIR
 fi
 
-for x in index.html specific.html download.html configure.html \
+for x in index.html specific.html prerequisites.html download.html configure.html \
          build.html test.html finalinstall.html binaries.html old.html \
          gfdl.html
 do

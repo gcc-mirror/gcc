@@ -1,3 +1,10 @@
+2003-06-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi (Prerequisites): New section documenting
+	tools and packages necessary prior to building and/or
+	modifying GCC.
+	* doc/install.texi2html: Also generate prerequisites.html.
+
 2003-06-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/11052
