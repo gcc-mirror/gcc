@@ -603,11 +603,3 @@ extern void init_virtual_regs		PARAMS ((struct emit_status *));
 
 /* Called once, at initialization, to initialize function.c.  */
 extern void init_function_once          PARAMS ((void));
-
-#ifdef rtx
-#undef rtx
-#endif
-
-#ifdef tree
-#undef tree
-#endif
