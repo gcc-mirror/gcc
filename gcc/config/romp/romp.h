@@ -421,7 +421,7 @@ enum reg_class { NO_REGS, R0_REGS, R15_REGS, BASE_REGS, GENERAL_REGS,
      && REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
      && reg_renumber != 0				\
      && reg_renumber[REGNO (OP)] < 0)			\
-    || (memory_operand (OP, VOIDmode)			\
+    || (GET_CODE (OP) == MEM				\
         && ! symbolic_memory_operand (OP, VOIDmode)))	\
    : (C) == 'R' ? current_function_operand (OP, VOIDmode) \
    : (C) == 'S' ? constant_pool_address_operand (OP, VOIDmode) \
@@ -1226,8 +1226,12 @@ struct rt_cargs {int gregs, fregs; };
 #define NO_FUNCTION_CSE
 
 /* Define this if shift instructions ignore all but the low-order
-   few bits. */
-#define SHIFT_COUNT_TRUNCATED
+   few bits.
+
+   This is not true on the RT since it uses the low-order 6, not 5, bits.
+   At some point, this should be extended to see how to express that.  */
+
+/* #define SHIFT_COUNT_TRUNCATED */
 
 /* Compute the cost of computing a constant rtl expression RTX whose
    rtx-code is CODE, contained within an expression of code OUTER_CODE.
