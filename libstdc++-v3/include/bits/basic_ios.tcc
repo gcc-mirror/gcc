@@ -171,10 +171,18 @@ namespace std
     {
       if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
 	_M_ctype = &use_facet<__ctype_type>(__loc);
+      else
+	_M_ctype = 0;
+
       if (__builtin_expect(has_facet<__num_put_type>(__loc), true))
 	_M_num_put = &use_facet<__num_put_type>(__loc);
+      else
+	_M_num_put = 0;
+
       if (__builtin_expect(has_facet<__num_get_type>(__loc), true))
 	_M_num_get = &use_facet<__num_get_type>(__loc);
+      else
+	_M_num_get = 0;
     }
 
   // Inhibit implicit instantiations for required instantiations,

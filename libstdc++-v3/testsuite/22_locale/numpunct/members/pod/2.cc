@@ -74,7 +74,7 @@ void test01()
   VERIFY( test );
 
   // 3: fail, no numpunct
-  const locale 	loc3(loc, new ctype<pod_type>);
+  const locale 	loc3(loc2, new ctype<pod_type>);
   os.clear();
   os.imbue(loc3);
   try
