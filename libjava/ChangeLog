@@ -1,3 +1,10 @@
+2003-04-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natString.cc (_Jv_AllocString): Initialize
+	cachedHashCode.
+	(init): Likewise.
+	(_Jv_NewStringUtf8Const): Likewise.
+
 2003-03-29  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* include/jvm.h: (_Jv_GetNbArgs) added
