@@ -1,3 +1,9 @@
+2001-10-16  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (gcc_cv_as_bfd_srcdir): New.  Use it to find gas
+	version in single tree build.
+	* configure: Regenerate.
+
 2001-10-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (cr_logical): Swap order of CODE and
