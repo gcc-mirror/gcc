@@ -23,6 +23,10 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "cpplib.h"
 #include <stdio.h>
 
+#ifndef EMACS
+#include "config.h"
+#endif /* not EMACS */
+
 extern char *getenv ();
 
 cpp_reader parse_in;
@@ -89,6 +93,6 @@ main (argc, argv)
   cpp_finish (&parse_in);
 
   if (parse_in.errors)
-    exit (FAILURE_EXIT_CODE);
+    exit (FATAL_EXIT_CODE);
   exit (SUCCESS_EXIT_CODE);
 }
