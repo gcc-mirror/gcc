@@ -35,6 +35,12 @@
 # .init sections.  Users may put any desired instructions in those
 # sections.
 
+#ifdef __ELF__
+#define TYPE(x) .type x,function
+#else
+#define TYPE(x)
+#endif
+
 	# Note - this macro is complemented by the FUNC_END macro
 	# in crtn.asm.  If you change this macro you must also change
 	# that macro match.
@@ -60,6 +66,7 @@
 #ifdef __thumb__
 	.thumb_func
 #endif
+	TYPE(_init)
 _init:
 	FUNC_START
 	
@@ -70,6 +77,7 @@ _init:
 #ifdef __thumb__
 	.thumb_func
 #endif
+	TYPE(_fini)
 _fini:
 	FUNC_START
 	
