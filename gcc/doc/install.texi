@@ -1097,12 +1097,17 @@ compiler and may only work properly if you are building the compiler
 with GCC@.  This is on by default when building from CVS or snapshots,
 but off for releases.  More control over the checks may be had by
 specifying @var{list}; the categories of checks available are
-@samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl}, @samp{rtlflag},
-@samp{fold}, @samp{gcac} and @samp{valgrind}.  The check @samp{valgrind}
-requires the external @command{valgrind} simulator, available from
-@uref{http://valgrind.kde.org/}.  The default when @var{list} is
-not specified is @samp{misc,tree,gc,rtlflag}; the checks @samp{rtl},
-@samp{gcac} and @samp{valgrind} are very expensive.
+@samp{assert}, @samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl},
+@samp{rtlflag}, @samp{fold}, @samp{gcac} and @samp{valgrind}.  The check
+@samp{valgrind} requires the external @command{valgrind} simulator,
+available from @uref{http://valgrind.kde.org/}.  The default when
+@var{list} is not specified is @samp{assert,misc,tree,gc,rtlflag}; the
+checks @samp{rtl}, @samp{gcac} and @samp{valgrind} are very expensive.
+When checking is neither explicitly enabled nor disabled, assertion
+checks are still done.  To disable all checking,
+@samp{--disable-checking} must be explicitly requested.  Disabling
+assertions will make the compiler slightly faster but increase the risk
+undetected internal errors causing wrong code to be generated.
 
 @item --enable-coverage
 @itemx --enable-coverage=@var{level}

@@ -30,6 +30,9 @@ AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
+#Set to 1 on a release branch
+is_release=
+
 # Determine the host, build, and target systems
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -370,10 +373,15 @@ fi
 AC_SUBST(warn_cflags)
 
 # Enable -Werror in bootstrap stage2 and later.
-# Change the default to "no" on release branches.
 AC_ARG_ENABLE(werror, 
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
-[enable_werror=yes])
+[if test x$is_release = x ; then
+  # Default to "yes" on development branches.
+  enable_werror=yes
+else
+  # Default to "no" on release branches.
+  enable_werror=no
+fi])
 if test x$enable_werror = xyes ; then
   WERROR=-Werror
 fi
@@ -384,8 +392,9 @@ AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: fold,gc,gcac,misc,rtlflag,rtl,
-			  tree,valgrind; default is gc,misc,rtlflag,tree],
+			  Categories are: none,assert,fold,gc,gcac,misc,
+			  rtlflag,rtl,tree,valgrind;
+			  default is assert,gc,misc,rtlflag,tree],
 [ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
@@ -393,16 +402,19 @@ ac_rtlflag_checking=
 ac_gc_checking=
 ac_gc_always_collect=
 ac_fold_checking=
+ac_assert_checking=
 case "${enableval}" in
 yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;
-	ac_rtlflag_checking=1 ;;
+	ac_rtlflag_checking=1 ; ac_assert_checking=1 ;;
 no)	;;
 *)	IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 	set fnord $enableval; shift
 	IFS="$ac_save_IFS"
+	ac_assert_checking=1
 	for check
 	do
 		case $check in
+		assert) ac_assert_checking=1 ;;
 		fold)	ac_fold_checking=1 ;;
 		gc)	ac_gc_checking=1 ;;
 		gcac)	ac_gc_always_collect=1 ;;
@@ -416,9 +428,16 @@ no)	;;
 	done
 	;;
 esac
-], 
-# Enable some checks by default for development versions of GCC
-[ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;])
+], [
+# Determine the default checks.
+if test x$is_release = x ; then
+  # Enable some checks for development versions of GCC
+  ac_assert_checking=1;
+  ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;
+else
+  # Disable all but assertions for release versions of GCC.
+  ac_assert_checking=1;
+fi])
 nocommon_flag=""
 if test x$ac_checking != x ; then
   AC_DEFINE(ENABLE_CHECKING, 1,
@@ -427,6 +446,10 @@ if test x$ac_checking != x ; then
   nocommon_flag=-fno-common
 fi
 AC_SUBST(nocommon_flag)
+if test x$ac_assert_checking != x ; then
+  AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
+[Define if you want assertions enabled.  This is a cheap check.])
+fi
 if test x$ac_tree_checking != x ; then
   AC_DEFINE(ENABLE_TREE_CHECKING, 1,
 [Define if you want all operations on trees (the basic data
