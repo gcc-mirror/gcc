@@ -8429,6 +8429,7 @@ macarg (argptr, rest_args)
   int paren = 0;
   int newlines = 0;
   int comments = 0;
+  char *result = 0;
 
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
@@ -8461,8 +8462,8 @@ macarg (argptr, rest_args)
 
     while (bp == ip->buf + ip->length) {
       if (instack[indepth].macro == 0) {
-	free (buffer);
-	return "unterminated macro call";
+	result = "unterminated macro call";
+	break;
       }
       ip->macro->type = T_MACRO;
       if (ip->free_ptr)
@@ -8538,7 +8539,7 @@ macarg (argptr, rest_args)
     }
     argptr->stringified_length = totlen;
   }
-  return 0;
+  return result;
 }
 
 /* Scan text from START (inclusive) up to LIMIT (exclusive),
