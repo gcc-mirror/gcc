@@ -1,5 +1,8 @@
 2003-01-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9165
+	* decl2.c (build_cleanup): Mark the object as used.
+
 	* pt.c (retrieve_local_specialization): Revert 2003-01-05 change.
 	(hash_local_specialization): New function.
 	(register_local_specialization): Revert 2003-01-05 change.
