@@ -1,3 +1,7 @@
+Sun Mar 22 00:21:46 1998  R. Ganesan  <rganesan@novell.com>
+
+	* configure.in: Handle with-PACKAGE=no correctly
+
 Fri Mar 20 17:36:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (alias.o, bitmap.o, c-aux-info.o, c-common.o,
