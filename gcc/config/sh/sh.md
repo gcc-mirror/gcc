@@ -783,6 +783,15 @@
 	add	%0,%0
 	shll%O2	%0")
 
+(define_insn "ashlhi3_k"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0,0")
+		   (match_operand:HI 2 "const_int_operand" "M,K")))]
+  "CONST_OK_FOR_K (INTVAL (operands[2]))"
+  "@
+	add	%0,%0
+	shll%O2	%0")
+
 (define_insn "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -830,6 +839,34 @@
     FAIL;
 }")
 
+(define_insn "ashlhi3"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		   (match_operand:HI 2 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  ""
+  "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shift_insns_rtx (insn)") (const_int 1))
+	       (const_string "2")
+	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
+	       (const_string "4")]
+	      (const_string "6")))
+   (set_attr "type" "arith")])
+
+(define_split
+  [(set (match_operand:HI 0 "arith_reg_operand" "")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
+		   (match_operand:HI 2 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  ""
+  [(use (reg:SI 0))]
+  "
+{
+  gen_shifty_hi_op (ASHIFT, operands);
+  DONE;
+}")
+
 ;
 ; arithmetic shift right
 ;
@@ -838,6 +875,15 @@
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "const_int_operand" "M")))
+   (clobber (reg:SI 18))]
+  "INTVAL (operands[2]) == 1"
+  "shar	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "ashrhi3_k"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(ashiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		     (match_operand:HI 2 "const_int_operand" "M")))
    (clobber (reg:SI 18))]
   "INTVAL (operands[2]) == 1"
   "shar	%0"
@@ -919,6 +965,22 @@
    && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
   "shlr%O2	%0")
 
+(define_insn "lshrhi3_m"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		     (match_operand:HI 2 "const_int_operand" "M")))
+   (clobber (reg:SI 18))]
+  "CONST_OK_FOR_M (INTVAL (operands[2]))"
+  "shlr	%0")
+
+(define_insn "lshrhi3_k"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		     (match_operand:HI 2 "const_int_operand" "K")))]
+  "CONST_OK_FOR_K (INTVAL (operands[2]))
+   && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
+  "shlr%O2	%0")
+
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -966,6 +1028,35 @@
     }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
     FAIL;
+}")
+
+(define_insn "lshrhi3"
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		     (match_operand:HI 2 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  ""
+  "#"
+;; ??? length attribute is sometimes six instead of four.
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shift_insns_rtx (insn)") (const_int 1))
+	       (const_string "2")
+	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
+	       (const_string "4")]
+	      (const_string "6")))
+   (set_attr "type" "arith")])
+
+(define_split
+  [(set (match_operand:HI 0 "arith_reg_operand" "")
+	(lshiftrt:HI (match_operand:HI 1 "arith_reg_operand" "")
+		     (match_operand:HI 2 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  ""
+  [(use (reg:SI 0))]
+  "
+{
+  gen_shifty_hi_op (LSHIFTRT, operands);
+  DONE;
 }")
 
 ;; ??? This should be a define expand.
@@ -1027,6 +1118,193 @@
   ""
   "{ if (GET_CODE (operands[2]) != CONST_INT
 	 || INTVAL (operands[2]) != 1) FAIL; } ")
+
+;; combined left/right shift
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
+			   (match_operand:SI 2 "const_int_operand" "n"))
+		(match_operand:SI 3 "const_int_operand" "n")))]
+  "(unsigned)INTVAL (operands[2]) < 32"
+  [(use (reg:SI 0))]
+  "if (gen_shl_and (operands[0], operands[2], operands[3], operands[1])) FAIL;
+   DONE;")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
+			   (match_operand:SI 2 "const_int_operand" "n"))
+		(match_operand:SI 3 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  "(unsigned)INTVAL (operands[2]) < 32"
+  [(use (reg:SI 0))]
+  "if (gen_shl_and (operands[0], operands[2], operands[3], operands[1])) FAIL;
+   DONE;")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "0")
+			   (match_operand:SI 2 "const_int_operand" "n"))
+		(match_operand:SI 3 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  "shl_and_kind (operands[2], operands[3], 0) == 1"
+ "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shl_and_length (insn)") (const_int 2))
+	       (const_string "4")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 3))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 4))
+	       (const_string "8")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 5))
+	       (const_string "10")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 6))
+	       (const_string "12")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 7))
+	       (const_string "14")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 8))
+	       (const_string "16")]
+	      (const_string "18")))
+   (set_attr "type" "arith")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=z")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "0")
+			   (match_operand:SI 2 "const_int_operand" "n"))
+		(match_operand:SI 3 "const_int_operand" "n")))
+   (clobber (reg:SI 18))]
+  "shl_and_kind (operands[2], operands[3], 0) == 2"
+ "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shl_and_length (insn)") (const_int 2))
+	       (const_string "4")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 3))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_and_length (insn)") (const_int 4))
+	       (const_string "8")]
+	      (const_string "10")))
+   (set_attr "type" "arith")])
+
+;; shift left / and combination with a scratch register: The combine pass
+;; does not accept the individual instructions, even though they are
+;; cheap.  But it needs a precise description so that it is usable after
+;; reload.
+(define_insn "and_shl_scratch"
+  [(set (match_operand:SI 0 "register_operand" "=r,&r")
+	(lshiftrt:SI (ashift:SI (and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r,0")
+						     (match_operand:SI 2 "const_int_operand" "N,n"))
+					(match_operand:SI 3 "" "0,r"))
+				(match_operand:SI 4 "const_int_operand" "n,n"))
+		     (match_operand:SI 5 "const_int_operand" "n,n")))
+   (clobber (reg:SI 18))]
+  ""
+  "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shl_and_scr_length (insn)") (const_int 2))
+	       (const_string "4")
+	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 3))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 4))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 5))
+	       (const_string "10")]
+	      (const_string "12")))
+   (set_attr "type" "arith")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "=r,&r")
+	(lshiftrt:SI (ashift:SI (and:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r,0")
+						     (match_operand:SI 2 "const_int_operand" "N,n"))
+					(match_operand:SI 3 "register_operand" "0,r"))
+				(match_operand:SI 4 "const_int_operand" "n,n"))
+		     (match_operand:SI 5 "const_int_operand" "n,n")))
+   (clobber (reg:SI 18))]
+  ""
+  [(use (reg:SI 0))]
+  "
+{
+  rtx and_source = operands[1];
+
+  if (INTVAL (operands[2]))
+    {
+      gen_shifty_op (LSHIFTRT, operands);
+      and_source = operands[3];
+    }
+  emit_insn (gen_andsi3 (operands[0], operands[0], and_source));
+  operands[2] = operands[4];
+  gen_shifty_op (ASHIFT, operands);
+  if (INTVAL (operands[5]))
+    {
+      operands[2] = operands[5];
+      gen_shifty_op (LSHIFTRT, operands);
+    }
+  DONE;
+}")
+
+;; signed left/right shift combination.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extract:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+				    (match_operand:SI 2 "const_int_operand" "n"))
+			 (match_operand:SI 3 "const_int_operand" "n")
+			 (const_int 0)))
+   (clobber (reg:SI 18))]
+  ""
+  [(use (reg:SI 0))]
+  "if (gen_shl_sext (operands[0], operands[2], operands[3], operands[1])) FAIL;
+   DONE;")
+
+(define_insn "shl_sext_ext"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extract:SI (ashift:SI (match_operand:SI 1 "register_operand" "0")
+				    (match_operand:SI 2 "const_int_operand" "n"))
+			 (match_operand:SI 3 "const_int_operand" "n")
+			 (const_int 0)))
+   (clobber (reg:SI 18))]
+  "shl_sext_kind (operands[2], operands[3], 0) <= 5"
+  "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shl_sext_length (insn)") (const_int 1))
+	       (const_string "2")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 2))
+	       (const_string "4")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 3))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 4))
+	       (const_string "8")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 5))
+	       (const_string "10")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 6))
+	       (const_string "12")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 7))
+	       (const_string "14")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 8))
+	       (const_string "16")]
+	      (const_string "18")))
+    (set_attr "type" "arith")])
+
+(define_insn "shl_sext_sub"
+  [(set (match_operand:SI 0 "register_operand" "=z")
+        (sign_extract:SI (ashift:SI (match_operand:SI 1 "register_operand" "0")
+				    (match_operand:SI 2 "const_int_operand" "n"))
+			 (match_operand:SI 3 "const_int_operand" "n")
+			 (const_int 0)))
+   (clobber (reg:SI 18))]
+  "(shl_sext_kind (operands[2], operands[3], 0) & ~1) == 6"
+  "#"
+  [(set (attr "length")
+	(cond [(eq (symbol_ref "shl_sext_length (insn)") (const_int 3))
+	       (const_string "6")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 4))
+	       (const_string "8")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 5))
+	       (const_string "10")
+	       (eq (symbol_ref "shl_sext_length (insn)") (const_int 6))
+	       (const_string "12")]
+	      (const_string "14")))
+    (set_attr "type" "arith")])
+
 
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic
