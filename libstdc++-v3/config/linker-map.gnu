@@ -130,9 +130,6 @@ GLIBCXX_3.4 {
     _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_;
     _ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_;
 
-    # std::__codecvt_abstract_base*
-    _ZNStSt23__codecvt_abstract_base*;
-
     # std::__basic_file
     _ZNKSt12__basic_fileIcE7is_openEv;
     _ZNSt12__basic_fileIcE2fdEv;
@@ -259,6 +256,10 @@ GLIBCXX_3.4.2 {
     _ZN9__gnu_cxx11__pool_base9_M_refillE[jm];
     _ZN9__gnu_cxx11__pool_base16_M_get_free_listE[jm];
     _ZN9__gnu_cxx11__pool_base12_M_get_mutexEv;
+
+    # destructors for abstract base classes
+    _ZNSt23__codecvt_abstract_baseI[cw]c11__mbstate_tED[01]Ev;
+    _ZNSt21__ctype_abstract_baseI[cw]ED[01]Ev;
 
 } GLIBCXX_3.4.1;
 
