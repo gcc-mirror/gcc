@@ -1,3 +1,9 @@
+2003-06-23  Andreas Schwab  <schwab@suse.de>
+
+	PR debug/9905
+	* dwarf2out.c (loc_descriptor_from_tree): Handle MODIFY_EXPR by
+	recursing through first argument.
+
 2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog.1: Fix a typo.
