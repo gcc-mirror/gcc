@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"02 Jul 1992"
+#define VERSION_INFO2	"04 Jul 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.5 02 Jul 1992 06:21:15"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.6.7 04 Jul 1992 08:35:55"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1577,6 +1577,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	SET_ASM_OP
 #undef	SKIP_ASM_OP
 #undef	COMMON_ASM_OP
+#undef	ALIGN_ASM_OP
+#undef	IDENT_ASM_OP
 
 /* These are used in varasm.c as well.  */
 #define TEXT_SECTION_ASM_OP	"text"
@@ -1950,6 +1952,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)
+
+/* Override svr4.h.  */
+#undef	ASM_OUTPUT_CASE_LABEL
 
 /* Epilogue for case labels.  This jump instruction is called by casesi
    to transfer to the appropriate branch instruction within the table.
