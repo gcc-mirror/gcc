@@ -1,3 +1,7 @@
+2002-11-22  Dale Johannesen  <dalej@apple.com>
+
+        * toplev.c (rest_of_compilation):  Fix comments.
+
 2002-11-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* aclocal.m4 (ac_cv_func_mmap_dev_zero): Darwin does not

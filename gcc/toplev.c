@@ -2479,10 +2479,11 @@ rest_of_compilation (decl)
       convert_from_eh_region_ranges ();
 
       /* If function is inline, and we don't yet know whether to
-	 compile it by itself, defer decision till end of compilation.
-	 finish_compilation will call rest_of_compilation again
-	 for those functions that need to be output.  Also defer those
-	 functions that we are supposed to defer.  */
+         compile it by itself, defer decision till end of compilation.
+         wrapup_global_declarations will (indirectly) call
+         rest_of_compilation again for those functions that need to
+         be output.  Also defer those functions that we are supposed
+         to defer.  */
 
       if (inlinable
 	  || (DECL_INLINE (decl)
@@ -3607,9 +3608,10 @@ rest_of_compilation (decl)
      know for certain that we will be generating an out-of-line copy,
      the first invocation of this routine (rest_of_compilation) will
      skip over this code by doing a `goto exit_rest_of_compilation;'.
-     Later on, finish_compilation will call rest_of_compilation again
-     for those inline functions that need to have out-of-line copies
-     generated.  During that call, we *will* be routed past here.  */
+     Later on, wrapup_global_declarations will (indirectly) call
+     rest_of_compilation again for those inline functions that need
+     to have out-of-line copies generated.  During that call, we
+     *will* be routed past here.  */
 
   timevar_push (TV_SYMOUT);
   (*debug_hooks->function_decl) (decl);
