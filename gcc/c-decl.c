@@ -3064,7 +3064,8 @@ init_decl_processing ()
 
   start_identifier_warnings ();
 
-  init_format_info_table ();
+  /* Prepare to check format strings against argument lists.  */
+  init_function_format_info ();
 
   init_iterators ();
 
