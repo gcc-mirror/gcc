@@ -394,6 +394,9 @@ EXTRA_HEADERS =@extra_headers_list@
 
 # Set this to `collect2' to enable use of collect2.
 USE_COLLECT2 = @will_use_collect2@
+# If we might be using collect2, then this variable will be set to
+# -DUSE_COLLECT2.  toplev.c, collect2.c and libgcc2.c all need to
+# if we may be using collect2.
 MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
@@ -1068,7 +1071,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	do \
 	  echo $${name}; \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
-	      $(srcdir)/libgcc2.c -o $${name}$(objext); \
+	      $(MAYBE_USE_COLLECT2) $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \

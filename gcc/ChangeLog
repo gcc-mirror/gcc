@@ -1,5 +1,9 @@
 Fri Jun 11 03:17:51 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (libgcc2): Pass MAYBE_USE_COLLECT2 as an argument.
+	* libgcc2.c (__CTOR_LIST, __DTOR_LIST); Do not provide
+	initializers is some circumstances.
+
 	* fixinc/inclhack.def (endif_label): Add additional selector for
 	more bogus stuff after #endif statements.
 	* fixinc/inclhack.sh, fixinc/fixincl.x: Rebuilt.
