@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002, 2003
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,2003,2004
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2355,9 +2355,14 @@ and linker.
 @item malloc
 @cindex @code{malloc} attribute
 The @code{malloc} attribute is used to tell the compiler that a function
-may be treated as if it were the malloc function.  The compiler assumes
-that calls to malloc result in pointers that cannot alias anything.
+may be treated as if any non-@code{NULL} pointer it returns cannot
+alias any other pointer valid when the function returns.
 This will often improve optimization.
+Standard functions with this property include @code{malloc} and
+@code{calloc}.  @code{realloc}-like functions have this property as
+long as the old pointer is never referred to (including comparing it
+to the new pointer) after the function returns a non-@code{NULL}
+value.
 
 @item alias ("@var{target}")
 @cindex @code{alias} attribute
