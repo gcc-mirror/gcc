@@ -1,3 +1,8 @@
+2004-02-17  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Make-lang.in (stamp-sdefault): Do not depend on
+	move-if-change.
+
 2004-02-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* config-lang.in: Disable Ada by default until probe logic for

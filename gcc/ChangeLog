@@ -1,3 +1,10 @@
+2004-02-17  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Makefile.in (s-check, s-config, s-conditions, s-flags)
+	(s-codes, s-constants, s-emit, s-recog, s-opinit, s-extract)
+	(s-peep, s-attr, s-attrtab, s-output, s-genrtl, s-modes)
+	(s-preds, s-iov): Do not depend on move-if-change.
+
 2004-02-17  James E Wilson  <wilson@specifixinc.com>
 
 	* caller-save.c (insert_restore): Pass mem through copy_rtx.
