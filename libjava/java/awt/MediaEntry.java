@@ -1,5 +1,5 @@
-/* Panel.java -- Simple container object.
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+/* MediaEntry.java -- An entry in a MediaTracker
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -27,62 +27,80 @@ executable file might be covered by the GNU General Public License. */
 
 package java.awt;
 
-import java.awt.peer.PanelPeer;
-import java.awt.peer.ContainerPeer;
-import java.awt.peer.ComponentPeer;
-
 /**
-  * A panel is a simple container class. 
+  * This is an entry in the media tracker
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Panel extends Container implements java.io.Serializable
+abstract class MediaEntry implements java.io.Serializable
 {
 
-/*
- * Constructors
- */
+protected static final int LOADING = 1;
+protected static final int ABORTED = 2;
+protected static final int ERRORED = 4;
+protected static final int COMPLETE = 8;
+protected static final int LOADSTARTED = 16;
+protected static final int DONE = 32;
 
-/**
-  * Initializes a new instance of <code>Panel</code> that has a default
-  * layout manager of <code>FlowLayout</code>.
-  */
-public
-Panel()
+private MediaTracker tracker;
+private int ID;
+private int status;
+private boolean cancelled;
+private MediaEntry next;
+
+static MediaEntry
+insert(MediaEntry a, MediaEntry b)
 {
-  this(new FlowLayout());
+  while (a.next != null)
+    a = a.next;
+
+  a.next = b;
+  return(b);
 }
 
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>Panel</code> with the specified
-  * layout manager.
-  *
-  * @param layoutManager The layout manager for this object.
-  */
-public
-Panel(LayoutManager layoutManager)
+MediaEntry(MediaTracker tracker, int ID)
 {
-  setLayout(layoutManager);
+  this.tracker = tracker;
+  this.ID = ID;
 }
 
-/*************************************************************************/
+public int
+getID()
+{
+  return(ID);
+}
 
-/*
- * Instance Methods
- */
+public int
+getStatus()
+{
+  return(status);
+}
 
-/**
-  * Notifies this object to create its native peer.
-  */
 public void
-addNotify()
+setStatus(int status)
 {
-  if (peer == null)
-    peer = getToolkit().createPanel(this);
-  super.addNotify();
+  this.status = status;
 }
 
-} // class Panel 
+public MediaEntry
+getNext()
+{
+  return(next);
+}
+
+public void
+cancel()
+{
+  cancelled = true;
+  if ((status == LOADING) || (status == LOADSTARTED))
+    setStatus(ABORTED);
+}
+
+abstract void
+startLoad();
+
+abstract Object
+getMedia();
+
+} // class MediaEntry 
 

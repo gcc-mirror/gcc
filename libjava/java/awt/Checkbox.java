@@ -362,8 +362,8 @@ processItemEvent(ItemEvent event)
 protected String
 paramString()
 {
-  return(getClass().getName() + "[label=" + label + ",state=" + state
-	 + ",group=" + group + "]");
+  return ("label=" + label + ",state=" + state + ",group=" + group
+	  + "," + super.paramString());
 }
 
 } // class Checkbox 

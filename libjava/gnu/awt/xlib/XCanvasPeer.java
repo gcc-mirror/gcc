@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -230,6 +230,11 @@ public class XCanvasPeer implements CanvasPeer
     throw new UnsupportedOperationException("FIXME, not implemented");
   }
 
+  public ColorModel getColorModel ()
+  {
+    return null;
+  }
+
   public Graphics getGraphics()
   {
     DirectRasterGraphics gfxDevice = new XGraphics(window, config);
@@ -251,9 +256,19 @@ public class XCanvasPeer implements CanvasPeer
     return MIN_SIZE;
   }
 
+  public Dimension minimumSize ()
+  {
+    return getMinimumSize ();
+  }
+
   public Dimension getPreferredSize ()
   {
     return component.getSize();
+  }
+    
+  public Dimension preferredSize ()
+  {
+    return getPreferredSize();
   }
     
   public Toolkit getToolkit()
@@ -318,6 +333,11 @@ public class XCanvasPeer implements CanvasPeer
     ensureFlush();	    
   }
     
+  public void reshape (int x, int y, int width, int height)
+  {
+    setBounds (x, y, width, height);
+  }
+
   public void setCursor(Cursor cursor)
   {
     throw new UnsupportedOperationException("FIXME, not implemented");
@@ -326,6 +346,16 @@ public class XCanvasPeer implements CanvasPeer
   public void setEnabled(boolean enabled)
   {
     throw new UnsupportedOperationException("FIXME, not implemented");
+  }
+
+  public void enable ()
+  {
+    setEnabled (true);
+  }
+
+  public void disable ()
+  {
+    setEnabled (false);
   }
 
   public void setEventMask(long eventMask)
@@ -371,6 +401,16 @@ public class XCanvasPeer implements CanvasPeer
       }
   }
 	
+  public void show ()
+  {
+    setVisible (true);
+  }
+
+  public void hide ()
+  {
+    setVisible (false);
+  }
+
   static class DoMap implements Runnable 
   {
     Window window;

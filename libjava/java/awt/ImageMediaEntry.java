@@ -1,4 +1,4 @@
-/* TextComponentPeer.java -- Superclass interface for text components
+/* ImageMediaEntry.java -- A media entry type for images.
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -25,19 +25,51 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-package java.awt.peer;
+package java.awt;
 
-public interface TextComponentPeer extends ComponentPeer
+import java.awt.image.ImageObserver;
+import java.io.Serializable;
+
+/**
+  * A concrete MediaEntry subtype for images.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  */
+class ImageMediaEntry extends MediaEntry implements ImageObserver,
+                                                                 Serializable
 {
 
-public abstract int getSelectionEnd();
-public abstract int getSelectionStart();
-public abstract String getText();
-public abstract void setText(String text);
-public abstract void select(int start_pos, int end_pos);
-public abstract void setEditable(boolean editable);
-public abstract int getCaretPosition();
-public abstract void setCaretPosition(int pos);
+private Image image;
+private int width;
+private int height;
 
-} // interface TextComponentPeer 
+ImageMediaEntry(MediaTracker tracker, Image image, int ID, int width, int height)
+{
+  super(tracker, ID);
+  this.image = image;
+  this.width = width;
+  this.height = height; 
+}
+
+public Object
+getMedia()
+{
+  return(image.getSource()); // FIXME: Is this really right?
+}
+
+public void
+startLoad()
+{
+  int status = getStatus();
+//  status |= MediaEntry.LOADSTARTED;
+}
+
+public boolean
+imageUpdate(Image image, int flags, int x, int y, int width, int height)
+{
+  // implement me
+  return true;
+}
+
+} // class ImageMediaEntry
 

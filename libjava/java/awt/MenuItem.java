@@ -437,8 +437,8 @@ processActionEvent(ActionEvent event)
 public String
 paramString()
 {
-  return(getClass().getName() + "(label+" + label + ",enabled=" + enabled +
-         ",actionCommand=" + actionCommand + ")");
+  return ("label=" + label + ",enabled=" + enabled +
+	  ",actionCommand=" + actionCommand + "," + super.paramString());
 }
 
 // Accessibility API not yet implemented.

@@ -225,8 +225,8 @@ addNotify()
 protected String
 paramString()
 {
-  return(getClass().getName() + "(text=" + getText() + ",alignment=" +
-         getAlignment() + ")");
+  return ("text=" + getText() + ",alignment=" +
+	  getAlignment() + "," + super.paramString());
 }
 
 } // class Label

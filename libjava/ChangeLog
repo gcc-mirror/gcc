@@ -1,3 +1,72 @@
+2002-01-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/peer/ButtonPeer.java: Replace with Classpath version.
+	* java/awt/peer/CanvasPeer.java: Replace with Classpath version.
+	* java/awt/peer/CheckboxMenuItemPeer.java: Replace with Classpath
+	version.
+	* java/awt/peer/CheckboxPeer.java: Replace with Classpath version.
+	* java/awt/peer/ChoicePeer.java: Replace with Classpath version.
+	* java/awt/peer/ComponentPeer.java: Replace with Classpath version.
+	* java/awt/peer/ContainerPeer.java: Replace with Classpath version.
+	* java/awt/peer/DialogPeer.java: Replace with Classpath version.
+	* java/awt/peer/FileDialogPeer.java: Replace with Classpath version.
+	* java/awt/peer/FontPeer.java: Replace with Classpath version.
+	* java/awt/peer/FramePeer.java: Replace with Classpath version.
+	* java/awt/peer/LabelPeer.java: Replace with Classpath version.
+	* java/awt/peer/LightweightPeer.java: Replace with Classpath version.
+	* java/awt/peer/ListPeer.java: Replace with Classpath version.
+	* java/awt/peer/MenuBarPeer.java: Replace with Classpath version.
+	* java/awt/peer/MenuComponentPeer.java: Replace with Classpath version.
+	* java/awt/peer/MenuItemPeer.java: Replace with Classpath version.
+	* java/awt/peer/MenuPeer.java: Replace with Classpath version.
+	* java/awt/peer/PanelPeer.java: Replace with Classpath version.
+	* java/awt/peer/PopupMenuPeer.java: Replace with Classpath version.
+	* java/awt/peer/ScrollPanePeer.java: Replace with Classpath version.
+	* java/awt/peer/ScrollbarPeer.java: Replace with Classpath version.
+	* java/awt/peer/TextAreaPeer.java: Replace with Classpath version.
+	* java/awt/peer/TextComponentPeer.java: Replace with Classpath version.
+	* java/awt/peer/TextFieldPeer.java: Replace with Classpath version.
+	* java/awt/peer/WindowPeer.java: Replace with Classpath version.
+	* gnu/awt/xlib/XPanelPeer.java (insets): New method.
+	* gnu/awt/xlib/XCanvasPeer.java (show, hide): New methods.
+	(minimumSize, preferredSize, reshape): Likewise.
+	* gnu/awt/xlib/XFramePeer.java (insets, enable, disable,
+	getColorModel): New methods.
+	* java/awt/PopupMenu.java: Merged with Classpath.
+	* java/awt/MenuBar.java: Merged with Classpath.
+	* java/awt/SystemColor.java: Replace with Classpath version.
+	* java/awt/Panel.java: Merged with Classpath.
+	* java/awt/PaintContext.java: Updated copyright.
+	* java/awt/MenuShortcut.java: Merged with Classpath.
+	* java/awt/MenuContainer.java: Merged with Classpath.
+	* java/awt/Menu.java: Merged with Classpath.
+	* java/awt/MediaEntry.java: New file from Classpath.
+	* java/awt/MediaTracker.java: New file from Classpath.
+	* java/awt/List.java: Merged with Classpath version.
+	* java/awt/Insets.java: Merged with Classpath version.
+	* java/awt/ImageMediaEntry.java: New file from Classpath.
+	* java/awt/Image.java: Replaced with Classpath version.
+	* java/awt/FontMetrics.java: Merged with Classpath version.
+	* java/awt/Cursor.java (getDefaultCursor): Use DEFAULT_CURSOR
+	constant.
+	* java/awt/Font.java: Merged with Classpath version.
+	* java/awt/Dialog.java: Merged with Classpath version.
+	* java/awt/Color.java: Merged with Classpath version.
+	* java/awt/Choice.java: Merged with Classpath version.
+	* java/awt/CheckboxMenuItem.java: Merged with Classpath version.
+	* java/awt/Adjustable.java: Replace with Classpath version.
+	* java/awt/MenuItem.java (paramString): Don't include class name
+	or brackets.  Call superclass paramString.
+	* java/awt/MenuComponent.java (toString): Call paramString.
+	(paramString): Compute string; don't call toString.
+	* java/awt/Label.java (paramString): Don't include class name
+	or brackets.  Call superclass paramString.
+	* java/awt/Checkbox.java (paramString): Don't include class name
+	or brackets.  Call superclass paramString.
+	* java/awt/Button.java (paramString): Don't include class name or
+	brackets.  Call superclass paramString.
+	* java/awt/MenuComponent.java (getTreeLock): Now protected.
+
 2002-01-20  Andreas Schwab  <schwab@suse.de>
 
 	* java/net/natPlainSocketImpl.cc (_Jv_recv): Change return type of
