@@ -1,5 +1,14 @@
 2003-03-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java,
+	java/net/JarURLConnection.java,
+	java/net/PlainDatagramSocketImpl.java,
+	java/net/PlainSocketImpl.java,
+	java/net/URLConnection.java:
+	Merged copyright statements with classpath for easier merging.
+
+2003-03-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileInputStream.java
 	(getChannel): New implementation.
 	* java/io/FileOutputStream.java
