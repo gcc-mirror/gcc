@@ -4646,7 +4646,7 @@ lookup_namespace_name (namespace, name)
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
   val = binding_init (&_b);
-  if (!qualified_lookup_using_namespace (name, namespace, val))
+  if (!qualified_lookup_using_namespace (name, namespace, val, 0))
     return error_mark_node;
 
   if (BINDING_VALUE (val))
@@ -4736,13 +4736,13 @@ make_typename_type (context, name)
 /* Select the right _DECL from multiple choices. */
 
 static tree
-select_decl (binding, prefer_type, namespaces_only)
+select_decl (binding, flags)
      tree binding;
-     int prefer_type, namespaces_only;
+     int flags;
 {
   tree val;
   val = BINDING_VALUE (binding);
-  if (namespaces_only)
+  if (LOOKUP_NAMESPACES_ONLY (flags))
     {
       /* We are not interested in types. */
       if (val && TREE_CODE (val) == NAMESPACE_DECL)
@@ -4753,10 +4753,11 @@ select_decl (binding, prefer_type, namespaces_only)
   /* If we could have a type and
      we have nothing or we need a type and have none.  */
   if (BINDING_TYPE (binding)
-      && (!val || (prefer_type && TREE_CODE (val) != TYPE_DECL)))
+      && (!val || ((flags & LOOKUP_PREFER_TYPES)
+                   && TREE_CODE (val) != TYPE_DECL)))
     val = TYPE_STUB_DECL (BINDING_TYPE (binding));
   /* Don't return non-types if we really prefer types. */
-  else if (val && prefer_type > 1  && TREE_CODE (val) != TYPE_DECL
+  else if (val && LOOKUP_TYPES_ONLY (flags)  && TREE_CODE (val) != TYPE_DECL
 	   && (!looking_for_template || TREE_CODE (val) != TEMPLATE_DECL))
     val = NULL_TREE;
   return val;
@@ -4766,10 +4767,9 @@ select_decl (binding, prefer_type, namespaces_only)
    using namespace statements. */
 
 static tree
-unqualified_namespace_lookup (name, prefer_type, namespaces_only)
+unqualified_namespace_lookup (name, flags)
      tree name;
-     int prefer_type;
-     int namespaces_only;
+     int flags;
 {
   struct tree_binding _binding;
   tree b = binding_init (&_binding);
@@ -4791,7 +4791,8 @@ unqualified_namespace_lookup (name, prefer_type, namespaces_only)
       for (level = current_binding_level; 
 	   !level->namespace_p;
 	   level = level->level_chain)
-	if (!lookup_using_namespace (name, b, level->using_directives, scope))
+	if (!lookup_using_namespace (name, b, level->using_directives,
+                                     scope, flags))
 	  /* Give up because of error. */
 	  return NULL_TREE;
 
@@ -4801,20 +4802,52 @@ unqualified_namespace_lookup (name, prefer_type, namespaces_only)
       while (1)
 	{
 	  if (!lookup_using_namespace (name, b, DECL_NAMESPACE_USING (siter), 
-				       scope))
+				       scope, flags))
 	    /* Give up because of error. */
 	    return NULL_TREE;
 	  if (siter == scope) break;
 	  siter = CP_DECL_CONTEXT (siter);
 	}
 
-      val = select_decl (b, prefer_type, namespaces_only);
+      val = select_decl (b, flags);
       if (scope == global_namespace)
 	break;
       scope = DECL_CONTEXT (scope);
       if (scope == NULL_TREE)
 	scope = global_namespace;
     }
+  return val;
+}
+
+/* Combine prefer_type and namespaces_only into flags.  */
+
+static int
+lookup_flags (prefer_type, namespaces_only)
+  int prefer_type, namespaces_only;
+{
+  if (namespaces_only)
+    return LOOKUP_PREFER_NAMESPACES;
+  if (prefer_type > 1)
+    return LOOKUP_PREFER_TYPES;
+  if (prefer_type > 0)
+    return LOOKUP_PREFER_BOTH;
+  return 0;
+}
+
+/* Given a lookup that returned VAL, use FLAGS to decide if we want to
+   ignore it or not.  Subroutine of lookup_name_real.  */
+
+static tree
+qualify_lookup (val, flags)
+     tree val;
+     int flags;
+{
+  if (val == NULL_TREE)
+    return val;
+  if (LOOKUP_NAMESPACES_ONLY (flags) && TREE_CODE (val) != NAMESPACE_DECL)
+    return NULL_TREE;
+  if (LOOKUP_TYPES_ONLY (flags) && TREE_CODE (val) != TYPE_DECL)
+    return NULL_TREE;
   return val;
 }
 
@@ -4841,11 +4874,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   int yylex = 0;
   tree from_obj = NULL_TREE;
   tree locval, classval;
+  int flags;
 
   /* Hack: copy flag set by parser, if set. */
   if (only_namespace_names)
     namespaces_only = 1;
-  
+
   if (prefer_type == -2)
     {
       extern int looking_for_typename;
@@ -4853,6 +4887,13 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 
       yylex = 1;
       prefer_type = looking_for_typename;
+
+      flags = lookup_flags (prefer_type, namespaces_only);
+      /* During parsing, we need to complain. */
+      flags |= LOOKUP_COMPLAIN;
+      /* If the next thing is '<', class templates are types. */
+      if (looking_for_template)
+        flags |= LOOKUP_TEMPLATES_EXPECTED;
 
       /* std:: becomes :: for now.  */
       if (got_scope == std_node)
@@ -4879,9 +4920,9 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    {
 	      struct tree_binding b;
 	      val = binding_init (&b);
-	      if (!qualified_lookup_using_namespace (name, type, val))
+	      if (!qualified_lookup_using_namespace (name, type, val, flags))
 		return NULL_TREE;
-	      val = select_decl (val, prefer_type, namespaces_only);
+	      val = select_decl (val, flags);
 	    }
 	  else if (! IS_AGGR_TYPE (type)
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
@@ -4922,29 +4963,13 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       else if (got_object && val)
 	from_obj = val;
     }
+  else
+    flags = lookup_flags (prefer_type, namespaces_only);
 
   locval = classval = NULL_TREE;
 
-  if (!current_binding_level->namespace_p
-      && IDENTIFIER_LOCAL_VALUE (name))
-    switch (TREE_CODE (IDENTIFIER_LOCAL_VALUE (name)))
-      {
-      case NAMESPACE_DECL:
-        /* A namespace is rejected only if we strictly require types. */
-        if (prefer_type <= 1)
-          locval = IDENTIFIER_LOCAL_VALUE (name);
-        break;
-      case TYPE_DECL:
-        /* A type is rejected only if we strictly require namespaces. */
-        if (!namespaces_only)
-          locval = IDENTIFIER_LOCAL_VALUE (name);
-        break;
-      default:
-        /* We require neither types or namespaces. */
-        if (!namespaces_only && prefer_type <= 0)
-          locval = IDENTIFIER_LOCAL_VALUE (name);
-        break;
-      }
+  if (! namespace_bindings_p ())
+    locval = qualify_lookup (IDENTIFIER_LOCAL_VALUE (name), flags);
 
   /* In C++ class fields are between local and global scope,
      just before the global scope.  */
@@ -4972,6 +4997,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	 created the COMPONENT_REF or anything like that.  */
       if (classval == NULL_TREE)
 	classval = lookup_nested_field (name, ! yylex);
+
+      classval = qualify_lookup (classval, flags);
     }
 
   if (locval && classval)
@@ -5003,7 +5030,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   else if (classval)
     val = classval;
   else
-    val = unqualified_namespace_lookup (name, prefer_type, namespaces_only);
+    val = unqualified_namespace_lookup (name, flags);
 
  done:
   if (val)
