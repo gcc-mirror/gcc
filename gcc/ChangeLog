@@ -1,3 +1,8 @@
+2003-06-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/sh/coff.h: Don't include dbxcoff.h.
+	* config.gcc: List it here.
+
 2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* postreload.c (reload_cse_simplify_set): Call cselib_lookup

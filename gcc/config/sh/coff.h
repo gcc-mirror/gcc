@@ -23,10 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO 1
 
-/* Output DBX (stabs) debugging information if doing -gstabs.  */
-
-#include "dbxcoff.h"
-
 #define SDB_DELIM ";"
 
 #ifndef MAX_OFILE_ALIGNMENT
