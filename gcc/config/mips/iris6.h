@@ -505,6 +505,6 @@ do {									 \
 %{call_shared} %{no_archive} %{exact_version} %{w} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
-%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__,__frame_dummy} \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_ctors_1,__do_global_dtors} \
 -_SYSTYPE_SVR4 -woff 131 \
 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64}%{!mabi*: -n32}"
