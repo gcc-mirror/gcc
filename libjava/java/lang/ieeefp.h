@@ -120,7 +120,7 @@
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
-#if defined (__PPC__) || defined (__ppc__)
+#if defined (__PPC__) || defined (__ppc__) || defined (__ppc64__)
 #if (defined(_BIG_ENDIAN) && _BIG_ENDIAN) || (defined(_AIX) && _AIX) \
     || defined (__APPLE__)
 #define __IEEE_BIG_ENDIAN

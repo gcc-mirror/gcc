@@ -1,3 +1,8 @@
+2005-03-22  Mike Stump  <mrs@apple.com>
+
+	* include/posix.h: .dylib is used on all Apple MACH platforms.
+	* java/lang/ieeefp.h: ppc64 is also __IEEE_BIG_ENDIAN.
+
 2005-03-22  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (usage): Fixed output.
