@@ -1,3 +1,37 @@
+Sat Jun  1 11:23:22 CEST 2002  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* basic-block.h (struct basic_block_def): New field loop_father.
+	(BB_VISITED): New flag.
+	(struct loop): New field pred, removed field shared.
+	(struct loops): New field parray.
+	(LOOP_EXITS_DOMS): Removed.
+	(flow_loop_tree_node_add, flow_loop_tree_node_remove,
+	flow_loop_nested_p, flow_bb_inside_loop_p, get_loop_body,
+	dfs_enumerate_from, loop_preheader_edge, loop_latch_edge,
+	add_bb_to_loop, remove_bb_from_loops, find_common_loop,
+	verify_loop_structure): Declare.
+	* cfg.c (entry_exit_blocks): Initialize loop_father field.
+	* cfganal.c (dfs_enumerate_from): New function.
+	* cfgloop.c (HEAVY_EDGE_RATIO): New constant.
+	(flow_loop_entry_edges_find, flow_loop_exit_edges_find,
+	flow_loop_nodes_find, flow_loop_level_compute, flow_loop_nested_p,
+	flow_loop_dump, flow_loops_dump, flow_loops_free,
+	flow_loop_tree_node_add, flow_loop_level_compute,
+	flow_loops_level_compute, flow_loop_scan, flow_loops_update,
+	flow_loop_outside_edge_p): Modified for new infrastructure.
+	(make_forwarder_block, canonicalize_loop_headers, glb_enum_p,
+	redirect_edge_with_latch_update, flow_loop_free): New static functions.
+	(flow_loop_tree_node_remove, flow_bb_inside_loop_p,
+	get_loop_body, add_bb_to_loop, remove_bb_from_loops,
+	find_common_loop, verify_loop_structure, loop_latch_edge,
+	loop_preheader_edge): New functions.
+	(flow_loops_cfg_dump): Do not show dominators, as this information
+	does not remain up to date long.
+	(flow_loops_find): Store results in new format.
+	* predict.c (propagate_freq, estimate_probability,
+	estimate_loops_at_level, estimate_bb_frequencies): Use new loop
+	infrastructure.
+
 2002-06-01  Alan Lehotsky  <apl@alum.mit.edu>
 	
 	* except.c (nothrow_function_p): Walk epilogue delay list

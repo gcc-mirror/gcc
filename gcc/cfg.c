@@ -100,6 +100,7 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* prev_bb */
     EXIT_BLOCK_PTR,		/* next_bb */
     0,				/* loop_depth */
+    NULL,                       /* loop_father */
     0,				/* count */
     0,				/* frequency */
     0				/* flags */
@@ -120,6 +121,7 @@ struct basic_block_def entry_exit_blocks[2]
     ENTRY_BLOCK_PTR,		/* prev_bb */
     NULL,			/* next_bb */
     0,				/* loop_depth */
+    NULL,                       /* loop_father */
     0,				/* count */
     0,				/* frequency */
     0				/* flags */

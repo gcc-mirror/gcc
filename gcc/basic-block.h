@@ -212,6 +212,9 @@ typedef struct basic_block_def {
   /* The loop depth of this block.  */
   int loop_depth;
 
+  /* Outermost loop containing the block.  */
+  struct loop *loop_father;
+
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
 
@@ -228,6 +231,7 @@ typedef struct basic_block_def {
 #define BB_DIRTY		1
 #define BB_NEW			2
 #define BB_REACHABLE		4
+#define BB_VISITED		8
 
 /* Number of basic blocks in the current function.  */
 
@@ -403,6 +407,9 @@ struct loop
   /* The loop nesting depth.  */
   int depth;
 
+  /* Superloops of the loop.  */
+  struct loop **pred;
+
   /* The height of the loop (enclosed loop levels) within the loop
      hierarchy tree.  */
   int level;
@@ -415,9 +422,6 @@ struct loop
 
   /* Link to the next (sibling) loop.  */
   struct loop *next;
-
-  /* Non-zero if the loop shares a header with another loop.  */
-  int shared;
 
   /* Non-zero if the loop is invalid (e.g., contains setjmp.).  */
   int invalid;
@@ -484,6 +488,11 @@ struct loops
      will find the inner loops before their enclosing outer loops).  */
   struct loop *array;
 
+  /* The above array is unused in new loop infrastructure and is kept only for
+     purposes of the old loop optimizer.  Instead we store just pointers to
+     loops here.  */
+  struct loop **parray;
+
   /* Pointer to root of loop heirachy tree.  */
   struct loop *tree_root;
 
@@ -515,6 +524,8 @@ extern void flow_loop_dump PARAMS ((const struct loop *, FILE *,
 				    void (*)(const struct loop *,
 					     FILE *, int), int));
 extern int flow_loop_scan PARAMS ((struct loops *, struct loop *, int));
+extern void flow_loop_tree_node_add PARAMS ((struct loop *, struct loop *));
+extern void flow_loop_tree_node_remove PARAMS ((struct loop *));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list
@@ -613,8 +624,7 @@ enum update_life_extent
 #define LOOP_ENTRY_EDGES	4	/* Find entry edges.  */
 #define LOOP_EXIT_EDGES		8	/* Find exit edges.  */
 #define LOOP_EDGES		(LOOP_ENTRY_EDGES | LOOP_EXIT_EDGES)
-#define LOOP_EXITS_DOMS	       16	/* Find nodes that dom. all exits.  */
-#define LOOP_ALL	       31	/* All of the above  */
+#define LOOP_ALL	       15	/* All of the above  */
 
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern int update_life_info	PARAMS ((sbitmap, enum update_life_extent,
@@ -701,7 +711,24 @@ extern void free_aux_for_edges		PARAMS ((void));
    debugger, and it is declared extern so we don't get warnings about
    it being unused.  */
 extern void verify_flow_info		PARAMS ((void));
-extern int flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
+extern bool flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
+extern bool flow_loop_nested_p PARAMS ((const struct loop *, const struct loop *));
+extern bool flow_bb_inside_loop_p       PARAMS ((const struct loop *, basic_block));
+extern basic_block *get_loop_body       PARAMS ((const struct loop *));
+extern int dfs_enumerate_from           PARAMS ((basic_block, int,
+				         bool (*)(basic_block, void *),
+					 basic_block *, int, void *));
+
+extern edge loop_preheader_edge PARAMS ((struct loop *));
+extern edge loop_latch_edge PARAMS ((struct loop *));
+
+extern void add_bb_to_loop PARAMS ((basic_block, struct loop *));
+extern void remove_bb_from_loops PARAMS ((basic_block));
+extern struct loop * find_common_loop PARAMS ((struct loop *, struct loop *));
+
+extern void verify_loop_structure PARAMS ((struct loops *, int));
+#define VLS_EXPECT_PREHEADERS 1
+#define VLS_EXPECT_SIMPLE_LATCHES 2
 
 typedef struct conflict_graph_def *conflict_graph;
 
