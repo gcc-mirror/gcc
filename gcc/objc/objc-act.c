@@ -8438,20 +8438,16 @@ handle_class_ref (chain)
   pushdecl (decl);
   rest_of_decl_compilation (decl, 0, 0, 0);
 
-  /* Make following constant read-only, but only for GNU runtime.  */
-  if (!flag_next_runtime)
-    readonly_data_section ();
-
+  /* Make a decl for the address.  */
+  sprintf (string, "%sobjc_class_ref_%s",
+	   (flag_next_runtime ? "." : "__"), name);
   exp = build1 (ADDR_EXPR, string_type_node, decl);
+  decl = build_decl (VAR_DECL, get_identifier (string), string_type_node);
+  DECL_INITIAL (decl) = exp;
+  TREE_STATIC (decl) = 1;
 
-  /* Align the section properly.  */
-  assemble_constant_align (exp);
-
-  /* Inform the assembler about this new external thing.  */
-  assemble_external (decl);
-
-  /* Output a constant to reference this address.  */
-  output_constant (exp, int_size_in_bytes (string_type_node));
+  pushdecl (decl);
+  rest_of_decl_compilation (decl, 0, 0, 0);
 }
 
 static void
