@@ -700,6 +700,14 @@ typedef struct jdeplist_s jdeplist;
       java_check_regular_methods ((CLASS));	\
   }
 
+#define CLEAR_DEPRECATED  ctxp->deprecated = 0
+
+#define CHECK_DEPRECATED_NO_RESET(DECL)		\
+  {						\
+    if (ctxp->deprecated)			\
+      DECL_DEPRECATED (DECL) = 1;		\
+  }
+
 /* Using and reseting the @deprecated tag flag */
 #define CHECK_DEPRECATED(DECL)			\
   {						\

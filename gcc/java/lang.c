@@ -168,6 +168,9 @@ const char *current_encoding = NULL;
 /* When nonzero, report the now deprecated empty statements.  */
 int flag_extraneous_semicolon;
 
+/* When nonzero, report use of deprecated classes, methods, or fields.  */
+int flag_deprecated = 1;
+
 /* When nonzero, always check for a non gcj generated classes archive.  */
 int flag_force_classes_archive_check;
 
@@ -218,7 +221,8 @@ lang_W_options[] =
 {
   { "redundant-modifiers", &flag_redundant, 1 },
   { "extraneous-semicolon", &flag_extraneous_semicolon, 1 },
-  { "out-of-date", &flag_newer, 1 }
+  { "out-of-date", &flag_newer, 1 },
+  { "deprecated", &flag_deprecated, 1 }
 };
 
 JCF *current_jcf;

@@ -221,6 +221,13 @@ get_attribute (JCF *jcf)
     }
   else
 #endif
+#ifdef HANDLE_DEPRECATED_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("Deprecated"))
+    {
+      HANDLE_DEPRECATED_ATTRIBUTE ();
+    }
+  else
+#endif
     {
 #ifdef PROCESS_OTHER_ATTRIBUTE
       PROCESS_OTHER_ATTRIBUTE(jcf, attribute_name, attribute_length);

@@ -341,6 +341,9 @@ This option will cause @command{gcj} not to warn when a source file is
 newer than its matching class file.  By default @command{gcj} will warn
 about this.
 
+@item -Wno-deprecated
+Warn if a deprecated class, method, or field is referred to.
+
 @item -Wunused
 This is the same as @command{gcc}'s @code{-Wunused}.
 

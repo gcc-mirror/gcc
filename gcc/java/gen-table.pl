@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-#    Copyright (C) 2000, 2001 Free Software Foundation
+#    Copyright (C) 2000, 2001, 2003 Free Software Foundation
 
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ sub process_one
 {
     my ($code, @fields) = @_;
 
-    my $value = '';
+    my @value = ();
     my $type = $fields[$CATEGORY];
 
     # See if the character is a valid identifier start.
@@ -138,7 +138,7 @@ sub process_one
 	|| $type eq 'Pc'	# Connecting punctuation
 	|| $type eq 'Sc')	# Currency symbol
     {
-	$value = 'LETTER_START';
+	push (@value, 'LETTER_START');
     }
 
     # See if the character is a valid identifier member.
@@ -159,23 +159,29 @@ sub process_one
 	    && $code <= 0x206f)
 	|| $code == 0xfeff)	# ZWNBSP
     {
-	if ($value eq '')
-	{
-	    $value = 'LETTER_PART';
-	}
-	else
-	{
-	    $value = 'LETTER_PART | ' . $value;
-	}
+	push (@value, 'LETTER_PART');
     }
 
-    if ($value eq '')
+    if (($type =~ /Z./
+	 # Java treats some values specially as non-spaces.
+	 && $code != 0x00a0
+	 && $code != 0x2007
+	 && $code != 0x202f)
+	# And for our purposes there are some that should be specially
+	# treated as spaces.
+	|| $code == 0x000b
+	|| ($code >= 0x001c && $code <= 0x001f))
+    {
+	push (@value, 'LETTER_SPACE');
+    }
+
+    if (! @value)
     {
 	$value = '0';
     }
     else
     {
-	$value = '(' . $value . ')';
+	$value = '(' . join (' | ', @value) . ')';
     }
 
     $map[$code] = $value;
@@ -196,7 +202,9 @@ sub print_tables
     print OUT "#define GCC_CHARTABLES_H\n\n";
 
     print OUT "#define LETTER_START 1\n";
-    print OUT "#define LETTER_PART  2\n\n";
+    print OUT "#define LETTER_PART  2\n";
+    print OUT "#define LETTER_SPACE 4\n\n";
+    print OUT "#define LETTER_MASK  7\n\n";
 
     for ($count = 0; $count <= $last; $count += 256)
     {
