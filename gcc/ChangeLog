@@ -1,3 +1,9 @@
+2001-01-23  Nick Clifton  <nickc@redhat.com>
+
+	* invoke.texi: Replace , with \, inside @gccoptlist macros.
+	(Spec Files): Document %B and %j and %.	and %v3 and %M and
+	%{S*&T} spec switches.
+
 2001-01-24  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.c (c4x_r11_set_p): Calculate rtx code correctly.

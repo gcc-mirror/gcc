@@ -267,12 +267,12 @@ in the following sections.
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
 -iwithprefixbefore @var{dir}  -isystem @var{dir} -isystem-c++ @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap @gol
--trigraphs  -undef  -U@var{macro}  -Wp,@var{option}}
+-trigraphs  -undef  -U@var{macro}  -Wp\,@var{option}}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
 @gccoptlist{
--Wa,@var{option}}
+-Wa\,@var{option}}
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
@@ -280,7 +280,7 @@ in the following sections.
 @var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib @gol
 -s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
--Wl,@var{option}  -Xlinker @var{option} @gol
+-Wl\,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
 
 @item Directory Options
@@ -519,7 +519,7 @@ in the following sections.
 
 @emph{System V Options}
 @gccoptlist{
--Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
+-Qy  -Qn  -YP\,@var{paths}  -Ym\,@var{dir}}
 
 @emph{ARC Options}
 @gccoptlist{
@@ -554,7 +554,7 @@ in the following sections.
 
 @emph{MCore Options}
 @gccoptlist{
--mhardlit, -mno-hardlit -mdiv -mno-div -mrelax-immediates  @gol
+-mhardlit -mno-hardlit -mdiv -mno-div -mrelax-immediates  @gol
 -mno-relax-immediates -mwide-bitfields -mno-wide-bitfields @gol
 -m4byte-functions -mno-4byte-functions -mcallgraph-data @gol
 -mno-callgraph-data -mslow-bytes -mno-slow-bytes -mno-lsim @gol
@@ -3535,7 +3535,7 @@ Trigraph support is not popular, so many compilers do not implement it
 properly.  Portable code should not rely on trigraphs being either
 converted or ignored.
 
-@item -Wp,@var{option}
+@item -Wp\,@var{option}
 Pass @var{option} as an option to the preprocessor.  If @var{option}
 contains commas, it is split into multiple options at the commas.
 @end table
@@ -3547,7 +3547,7 @@ contains commas, it is split into multiple options at the commas.
 You can pass options to the assembler.
 
 @table @gcctabopt
-@item -Wa,@var{option}
+@item -Wa\,@var{option}
 Pass @var{option} as an option to the assembler.  If @var{option}
 contains commas, it is split into multiple options at the commas.
 @end table
@@ -3712,7 +3712,7 @@ For example, to pass @samp{-assert definitions}, you must write
 @samp{-Xlinker "-assert definitions"}, because this passes the entire
 string as a single argument, which is not what the linker expects.
 
-@item -Wl,@var{option}
+@item -Wl\,@var{option}
 Pass @var{option} as an option to the linker.  If @var{option} contains
 commas, it is split into multiple options at the commas.
 
@@ -3967,6 +3967,10 @@ Substitute the basename of the input file being processed.
 This is the substring up to (and not including) the last period
 and not including the directory.
 
+@item %B
+This is the same as @samp{%b}, but include the file suffix (text after
+the last period).
+
 @item %d
 Marks the argument containing or following the @samp{%d} as a
 temporary file name, so that that file will be deleted if GCC exits
@@ -3999,6 +4003,18 @@ would involve the generation of two distinct file names, one
 for each @samp{%g.s} and another for each @samp{%U.s}.  Previously, @samp{%U} was
 simply substituted with a file name chosen for the previous @samp{%u},
 without regard to any appended suffix.
+
+@item %j@var{SUFFIX}
+Substitutes the name of the HOST_BIT_BUCKET, if any, and if it is 
+writable, and if save-temps is off; otherwise, substitute the name
+of a temporary file, just like @samp{%u}.  This temporary file is not
+meant for communication between processes, but rather as a junk
+disposal mechanism.
+
+@item %.@var{SUFFIX}
+Substitutes @var{.SUFFIX} for the suffixes of a matched switch's args
+when it is subsequently output with @samp{%*}. @var{SUFFIX} is
+terminated by the next space or %.
 
 @item %w
 Marks the argument containing or following the @samp{%w} as the
@@ -4075,6 +4091,10 @@ Substitute the major version number of GCC.
 Substitute the minor version number of GCC.
 (For version 2.9.5, this is 9.)
 
+@item %v3
+Substitute the patch level number of GCC.
+(For version 2.9.5, this is 5.)
+
 @item %a
 Process the @code{asm} spec.  This is used to compute the
 switches to be passed to the assembler.
@@ -4093,6 +4113,11 @@ command line passed to the linker.  Typically it will make use of the
 Dump out a @samp{-L} option for each directory that GCC believes might
 contain startup files.  If the target supports multilibs then the
 current multilib directory will be prepended to each of these paths. 
+
+@item %M
+Output the multilib directory with directory seperators replaced with
+"_".  If multilib directories are not set, or the multilib directory is
+"." then this option emits nothing.
 
 @item %L
 Process the @code{lib} spec.  This is a spec string for deciding which
@@ -4157,6 +4182,12 @@ text, including the space.  Thus two arguments would be generated.
 @item %@{^@code{S}*@}
 Like %@{@code{S}*@}, but don't put a blank between a switch and its
 argument.  Thus %@{^o*@} would only generate one argument, not two.
+
+@item %@{@code{S}*&@code{T}*@}
+Like %@{@code{S}*@}, but preserve order of @code{S} and @code{T} options
+(the order of @code{S} and @code{T} in the spec is not significant).
+There can be any number of ampersand-separated variables; for each the
+wild card is optional.  Useful for CPP as @samp{%@{D*&U*&A*@}}.
 
 @item %@{<@code{S}@}
 Remove all occurrences of @code{-S} from the command line.  Note - this
@@ -7269,11 +7300,11 @@ Identify the versions of each tool used by the compiler, in a
 Refrain from adding @code{.ident} directives to the output file (this is
 the default).
 
-@item -YP,@var{dirs}
+@item -YP\,@var{dirs}
 Search the directories @var{dirs}, and no others, for libraries
 specified with @samp{-l}.
 
-@item -Ym,@var{dir}
+@item -Ym\,@var{dir}
 Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
