@@ -1,5 +1,34 @@
 2003-05-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/Deflater.java
+	(FILTERED): Merged documentation from classpath.
+	* java/util/zip/DeflaterOutputStream.java
+	(DeflaterOutputStream): Merged documentation and argument validity
+	check from classpath.
+	(deflate): Merged documentation from classpath.
+	(finish): Likewise.
+	* java/util/zip/Inflater.java
+	(Inflater): Merged class documentation from classpath.
+	(zstream): Reordered.
+	(is_finished): Reordered.
+	(dict_needed): Reordered.
+	(Inflater): Reordered, merged documentation from classpath.
+	(end): Likewise.
+	(finalize): Merged documentation from classpath.
+	(finished): Likewise.
+	(getAdler): Likewise.
+	(getRemaining): Likewise.
+	(getTotalIn): Likewise.
+	(getTotalOut): Likewise.
+	(inflate): Likewise.
+	(needsDictionary): Likewise.
+	(needsInput): Likewise.
+	(reset): Likewise.
+	(setDictionary): Likewise.
+	(setInput): Likewise.
+
+2003-05-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URLConnection.java
 	(getHeaderFieldInt): Merged with classpath.
 
