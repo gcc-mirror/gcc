@@ -1,3 +1,8 @@
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (apply_distributive_law): Enable "distributive" floating
+	point optimizations with -funsafe-math-optimizations.
+
 2003-10-11  Andrew Pinski <pinskia@physics.uc.edu>
 	
 	* genmodes.c (emit_mode_mask) Change MASK to MODE_MASK.
