@@ -4660,14 +4660,12 @@ while (0)
 
 #ifndef SIZE_TYPE
 #define NO_BUILTIN_SIZE_TYPE
-#define SIZE_TYPE (Pmode == DImode || !TARGET_64BIT		\
-		   ? "long unsigned int" : "unsigned int")
+#define SIZE_TYPE (Pmode == DImode ? "long unsigned int" : "unsigned int")
 #endif
 
 #ifndef PTRDIFF_TYPE
 #define NO_BUILTIN_PTRDIFF_TYPE
-#define PTRDIFF_TYPE (Pmode == DImode || !TARGET_64BIT 	\
- 		      ? "long int" : "int")
+#define PTRDIFF_TYPE (Pmode == DImode ? "long int" : "int")
 #endif
 
 /* See mips_expand_prologue's use of loadgp for when this should be
