@@ -1,5 +1,7 @@
 2001-03-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_clone): Clear DECL_ASSEMBLER_NAME.
+
 	* mangle.c (mangle_decl_string): Mangle the names of overloaded
 	operators, even when they have `extern "C"' linkage.
 
