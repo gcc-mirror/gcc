@@ -1,3 +1,7 @@
+Wed Dec  8 23:44:08 1999  Nathan Sidwell <nathan@acm.org>
+
+	* gcc.c-torture/compile/991208-1.c: New test.
+
 1999-12-06  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/ultrasp2.c: New test.
