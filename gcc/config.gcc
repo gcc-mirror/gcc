@@ -2424,7 +2424,7 @@ then
 			eval "val=\$with_$which"
 			case x$val in
 			x \
-			| xsparc | xsparcv9 | xsparc86x \
+			| xsparc | xsparcv9 | xsparc64 | xsparc86x \
 			| xv7 | xcypress | xv8 | xsupersparc | xsparclite | xf930 \
 			| xf934 | xhypersparc | xsparclite86x | xsparclet | tsc701 \
 			| xv9 | xultrasparc | xultrasparc3)
