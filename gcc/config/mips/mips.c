@@ -5767,6 +5767,9 @@ override_options ()
   for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
     mips_dbx_regno[i] = i + start;
 
+  mips_dbx_regno[HI_REGNUM] = MD_DBX_FIRST + 0;
+  mips_dbx_regno[LO_REGNUM] = MD_DBX_FIRST + 1;
+
   /* Set up array giving whether a given register can hold a given mode.
      At present, restrict ints from being in FP registers, because reload
      is a little enthusiastic about storing extra values in FP registers,
