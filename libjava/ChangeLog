@@ -2,8 +2,10 @@
 
 	* Makefile.am: Added MPN.java and BigInteger.java.
 	* Makefile.in: Rebuilt.
-	* gnu/gcj/math/MPN.java: New file.
-	* java/math/BigInteger.java: New file.
+	* gnu/gcj/math/MPN.java: New file.  From Kawa by Per Bothner
+	<per@bothner.com>.
+	* java/math/BigInteger.java: New file.  Based primarily on
+	Kawa's IntNum.java by Per Bothner <per@bothner.com>.
 
 2000-02-04  Tom Tromey  <tromey@cygnus.com>
 
