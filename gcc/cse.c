@@ -6724,6 +6724,14 @@ cse_insn (insn, in_libcall_block)
       elt->in_memory = src_eqv_in_memory;
       elt->in_struct = src_eqv_in_struct;
       src_eqv_elt = elt;
+
+      /* Check to see if src_eqv_elt is the same as a set source which
+	 does not yet have an elt, and if so set the elt of the set source
+	 to src_eqv_elt.  */
+      for (i = 0; i < n_sets; i++)
+	if (sets[i].rtl && sets[i].src_elt == 0
+	    && rtx_equal_p (SET_SRC (sets[i].rtl), src_eqv))
+	  sets[i].src_elt = src_eqv_elt;
     }
 
   for (i = 0; i < n_sets; i++)
