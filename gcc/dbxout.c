@@ -1348,25 +1348,46 @@ dbxout_symbol (decl, local)
 
       if (DECL_NAME (decl))
 	{
+	  /* Nonzero means we must output a tag as well as a typedef.  */
+	  int tag_also = ((TREE_CODE (type) == RECORD_TYPE
+			   || TREE_CODE (type) == UNION_TYPE)
+			  && TYPE_NAME (type) == decl);
+
 	  /* Output typedef name.  */
 	  fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
 		   IDENTIFIER_POINTER (DECL_NAME (decl)));
 
-	  /* If there is a typedecl for this type with the same name
-	     as the tag, output an abbreviated form for that typedecl.  */
-	  if (use_gdb_dbx_extensions && have_used_extensions
-	      && (TREE_CODE (type) == RECORD_TYPE
-		  || TREE_CODE (type) == UNION_TYPE)
-	      && (TYPE_NAME (type) == decl))
-	    {
-	      putc ('T', asmfile);
-	      TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
-	    }
+	  /* Short cut way to output a tag also.  */
+	  if (tag_also && use_gdb_dbx_extensions && have_used_extensions)
+	    putc ('T', asmfile);
+
 	  putc ('t', asmfile);
 	  current_sym_code = DBX_DECL_STABS_CODE;
 
 	  dbxout_type (type, 1, 0);
 	  dbxout_finish_symbol (decl);
+
+	  /* Long way to output a tag also.  */
+	  if (tag_also && ! (use_gdb_dbx_extensions && have_used_extensions))
+	    {
+	      /* Output the tag for the type, not using GDB extensions.
+		 This represents `struct foo' as opposed to `typedef foo'.  */
+	      /* In C++, the name of a type is the corresponding typedef.
+		 In C, it is an IDENTIFIER_NODE.  */
+	      tree name = TYPE_NAME (type);
+	      if (TREE_CODE (name) == TYPE_DECL)
+		name = DECL_NAME (name);
+
+	      current_sym_code = DBX_DECL_STABS_CODE;
+	      current_sym_value = 0;
+	      current_sym_addr = 0;
+	      current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
+
+	      fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
+		       IDENTIFIER_POINTER (name));
+	      dbxout_type (type, 1, 0);
+	      dbxout_finish_symbol (0);
+	    }
 	}
       else if (TYPE_NAME (type) != 0 && !TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	{
