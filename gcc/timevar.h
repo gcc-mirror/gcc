@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -88,7 +88,6 @@ extern void timevar_get PARAMS ((timevar_id_t, struct timevar_time_def *));
 extern void timevar_print PARAMS ((FILE *));
 
 /* Provided for backward compatibility.  */
-extern long get_run_time PARAMS ((void));
 extern void print_time PARAMS ((const char *, long));
 
 #endif /* ! GCC_TIMEVAR_H */
