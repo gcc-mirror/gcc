@@ -89,8 +89,7 @@ static tree next_baselink PARAMS ((tree));
 static tree get_vbase_1 PARAMS ((tree, tree, unsigned int *));
 static tree lookup_field_1 PARAMS ((tree, tree));
 static int lookup_fnfields_here PARAMS ((tree, tree));
-static int is_subobject_of_p PARAMS ((tree, tree));
-static int hides PARAMS ((tree, tree));
+static int is_subobject_of_p PARAMS ((tree, tree, tree));
 static tree virtual_context PARAMS ((tree, tree, tree));
 static tree dfs_check_overlap PARAMS ((tree, void *));
 static tree dfs_no_overlap_yet PARAMS ((tree, void *));
@@ -1223,30 +1222,23 @@ accessible_p (type, decl)
 
 /* Routine to see if the sub-object denoted by the binfo PARENT can be
    found as a base class and sub-object of the object denoted by
-   BINFO.  This routine relies upon binfos not being shared, except
-   for binfos for virtual bases.  */
+   BINFO.  MOST_DERIVED is the most derived type of the hierarchy being
+   searched.  */
 
 static int
-is_subobject_of_p (parent, binfo)
-     tree parent, binfo;
+is_subobject_of_p (parent, binfo, most_derived)
+     tree parent, binfo, most_derived;
 {
   tree binfos;
   int i, n_baselinks;
 
-  /* We want to canonicalize for comparison purposes.  But, when we
-     iterate through basetypes later, we want the binfos from the
-     original hierarchy.  That's why we have to calculate BINFOS
-     first, and then canonicalize.  */
-  binfos = BINFO_BASETYPES (binfo);
-  parent = canonical_binfo (parent);
-  binfo = canonical_binfo (binfo);
-
   if (parent == binfo)
     return 1;
 
+  binfos = BINFO_BASETYPES (binfo);
   n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-  /* Process and/or queue base types.  */
+  /* Iterate the base types.  */
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
@@ -1255,29 +1247,12 @@ is_subobject_of_p (parent, binfo)
 	   class there's no way to descend into it.  */
 	continue;
 
-      if (is_subobject_of_p (parent, base_binfo))
+      if (is_subobject_of_p (parent, 
+                             CANONICAL_BINFO (base_binfo, most_derived),
+                             most_derived))
 	return 1;
     }
   return 0;
-}
-
-/* See if a one FIELD_DECL hides another.  This routine is meant to
-   correspond to ANSI working paper Sept 17, 1992 10p4.  The two
-   binfos given are the binfos corresponding to the particular places
-   the FIELD_DECLs are found.  This routine relies upon binfos not
-   being shared, except for virtual bases.  */
-
-static int
-hides (hider_binfo, hidee_binfo)
-     tree hider_binfo, hidee_binfo;
-{
-  /* hider hides hidee, if hider has hidee as a base class and
-     the instance of hidee is a sub-object of hider.  The first
-     part is always true is the second part is true.
-
-     When hider and hidee are the same (two ways to get to the exact
-     same member) we consider either one as hiding the other.  */
-  return is_subobject_of_p (hidee_binfo, hider_binfo);
 }
 
 /* Very similar to lookup_fnfields_1 but it ensures that at least one
@@ -1344,7 +1319,7 @@ lookup_field_queue_p (binfo, data)
   /* If this base class is hidden by the best-known value so far, we
      don't need to look.  */
   if (!lfi->from_dep_base_p && lfi->rval_binfo
-      && hides (lfi->rval_binfo, binfo))
+      && is_subobject_of_p (binfo, lfi->rval_binfo, lfi->type))
     return NULL_TREE;
 
   return CANONICAL_BINFO (binfo, lfi->type);
@@ -1448,12 +1423,12 @@ lookup_field_r (binfo, data)
 
   /* If the lookup already found a match, and the new value doesn't
      hide the old one, we might have an ambiguity.  */
-  if (lfi->rval_binfo && !hides (binfo, lfi->rval_binfo))
+  if (lfi->rval_binfo && !is_subobject_of_p (lfi->rval_binfo, binfo, lfi->type))
     {
       if (nval == lfi->rval && SHARED_MEMBER_P (nval))
 	/* The two things are really the same.  */
 	;
-      else if (hides (lfi->rval_binfo, binfo))
+      else if (is_subobject_of_p (binfo, lfi->rval_binfo, lfi->type))
 	/* The previous value hides the new one.  */
 	;
       else
