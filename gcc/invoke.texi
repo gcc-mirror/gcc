@@ -1831,6 +1831,13 @@ Initialization of automatic aggregates.
 @item
 Identifier conflicts with labels.  Traditional C lacks a separate
 namespace for labels.
+
+@item
+Initialization of unions.  If the initializer is zero, the warning is
+omitted.  This is done under the assumption that the zero initializer in
+user code appears conditioned on e.g. @code{__STDC__} to avoid missing
+initializer warnings and relies on default initialization to zero in the
+traditional C case.
 @end itemize
 
 @item -Wundef
