@@ -470,7 +470,7 @@ static int all_blocks		PROTO((tree, tree *));
 static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
 static void put_addressof_into_stack PROTO((rtx));
-static void purge_addressof_1	PROTO((rtx *, rtx, int));
+static void purge_addressof_1	PROTO((rtx *, rtx, int, int));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -2800,13 +2800,14 @@ put_addressof_into_stack (r)
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
    in INSN needs to be changed.  If FORCE, always put any ADDRESSOFs into
-   the stack.  */
+   the stack.  IN_DEST is nonzero if we are in the destination of a SET.  */
 
 static void
-purge_addressof_1 (loc, insn, force)
+purge_addressof_1 (loc, insn, force, in_dest)
      rtx *loc;
      rtx insn;
      int force;
+     int in_dest;
 {
   rtx x;
   RTX_CODE code;
@@ -2822,12 +2823,22 @@ purge_addressof_1 (loc, insn, force)
 
   code = GET_CODE (x);
 
-  if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+  /* If we don't return in any of the cases below, we will recurse inside
+     the RTX, which will normally result in any ADDRESSOF being forced into
+     memory.  */
+  if (code == SET)
     {
-      rtx insns;
+      purge_addressof_1 (&SET_DEST (x), insn, force, 1);
+      purge_addressof_1 (&SET_SRC (x), insn, force, 0);
+      return;
+    }
+
+  else if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+    {
       /* We must create a copy of the rtx because it was created by
 	 overwriting a REG rtx which is always shared.  */
       rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
+      rtx insns;
 
       if (validate_change (insn, loc, sub, 0))
 	return;
@@ -2843,6 +2854,7 @@ purge_addressof_1 (loc, insn, force)
       emit_insns_before (insns, insn);
       return;
     }
+
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
@@ -2856,25 +2868,27 @@ purge_addressof_1 (loc, insn, force)
 	  sub = sub2;
 	}
 
-      if (GET_CODE (sub) == REG
-	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
-	{
-	  put_addressof_into_stack (XEXP (x, 0));
-	  return;
-	}
+      else if (GET_CODE (sub) == REG
+	       && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
+	;
       else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
 	    {
 	      sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
+	      if (in_dest && GET_MODE_SIZE (GET_MODE (x)) < UNITS_PER_WORD)
+		sub2 = gen_rtx (STRICT_LOW_PART, GET_MODE (sub2), sub2);
+
 	      if (validate_change (insn, loc, sub2, 0))
 		goto restart;
 	    }
 	}
+
       else if (validate_change (insn, loc, sub, 0))
 	goto restart;
-      /* else give up and put it into the stack */
+
     }
+
   else if (code == ADDRESSOF)
     {
       put_addressof_into_stack (x);
@@ -2886,10 +2900,10 @@ purge_addressof_1 (loc, insn, force)
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
-	purge_addressof_1 (&XEXP (x, i), insn, force);
+	purge_addressof_1 (&XEXP (x, i), insn, force, in_dest);
       else if (*fmt == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force);
+	  purge_addressof_1 (&XVECEXP (x, i, j), insn, force, in_dest);
     }
 }
 
@@ -2907,8 +2921,8 @@ purge_addressof (insns)
 	|| GET_CODE (insn) == CALL_INSN)
       {
 	purge_addressof_1 (&PATTERN (insn), insn,
-			   asm_noperands (PATTERN (insn)) > 0);
-	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0);
+			   asm_noperands (PATTERN (insn)) > 0, 0);
+	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0);
       }
 }
 
