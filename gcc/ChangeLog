@@ -1,3 +1,9 @@
+2004-12-31  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18701
+	* combine.c (gen_lowpart_for_combine): When stripping SUBREG of
+	MEM, adjust imode and isize.
+
 2004-12-30  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (hfa_element_mode): Return false for 

@@ -9355,8 +9355,16 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
   if (GET_CODE (x) == SUBREG && MEM_P (SUBREG_REG (x)))
     {
       x = SUBREG_REG (x);
-      if (GET_MODE (x) == omode)
+
+      /* For use in case we fall down into the address adjustments
+	 further below, we need to adjust the known mode and size of
+	 x; imode and isize, since we just adjusted x.  */
+      imode = GET_MODE (x);
+
+      if (imode == omode)
 	return x;
+
+      isize = GET_MODE_SIZE (imode);
     }
 
   result = gen_lowpart_common (omode, x);
