@@ -8935,12 +8935,9 @@ gen_struct_or_union_type_die (type, context_die)
 	{
 	  tree vtype = DECL_FCONTEXT (TYPE_VFIELD (type));
 
-	  if (vtype != type)
-	    {
-	      gen_type_die (vtype, context_die);
-	      add_AT_die_ref (type_die, DW_AT_containing_type,
-			      lookup_type_die (vtype));
-	    }
+	  gen_type_die (vtype, context_die);
+	  add_AT_die_ref (type_die, DW_AT_containing_type,
+			  lookup_type_die (vtype));
 	}
     }
   else
