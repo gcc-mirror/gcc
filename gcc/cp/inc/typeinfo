@@ -56,14 +56,14 @@ public:
     { return !operator== (__arg); }
 
 #else
-  // In new abi we can rely on type_info's being unique,
+  // In new abi we can rely on type_info's NTBS being unique,
   // and therefore address comparisons are sufficient.
   bool before (const type_info& __arg) const
-    { return this < &__arg; }
+    { return __name < __arg.__name; }
   const char* name () const
     { return __name; }
   bool operator== (const type_info& __arg) const
-    { return &__arg == this; }
+    { return __name == __arg.__name; }
   bool operator!= (const type_info& __arg) const
     { return !operator== (__arg); }
 #endif

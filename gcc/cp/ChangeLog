@@ -1,3 +1,20 @@
+2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (init_rtti_processing): Set tinfo_var_id in new-abi.
+	(target_incomplete_p): New function.
+	(tinfo_base_init): Create comdat NTBS name variable.
+	(ptr_initializer): Add non_public parameter. Calculate it.
+	(ptmd_initializer): Likewise.
+	(synthesize_tinfo_var): Adjust. Emit incomplete class tinfo.
+	(create_real_tinfo_var): Add non_public parameter. Use it.
+	Push proxy into global namespace.
+	* inc/cxxabi.h (__pointer_type_info::incomplete_class_mask):
+	New enumeration.
+	* inc/typeinfo (type_info::before, type_info::operator==):
+	Compare __name addresses.
+	
+	* tinfo2.cc: Remove new-abi builtins comment.
+
 2000-04-20  Jason Merrill  <jason@casey.cygnus.com>
 
 	* typeck.c (build_x_function_call): Resolve an OFFSET_REF.
