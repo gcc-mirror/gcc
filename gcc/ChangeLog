@@ -1,3 +1,10 @@
+2003-08-11  James E Wilson  <wilson@tuliptree.org>
+
+	PR optimization/11319
+	PR target/10021
+	* alias.c (find_base_value, case REG): Return 0 not src if no base
+	found.
+
 2003-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcse.c (gmalloc): Fix last change.
