@@ -58,4 +58,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MD_STARTFILE_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
 #define MD_EXEC_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
 
+/* Some RISCOS assemblers misassemble \n in a .ascii,
+   so we use \X0A instead.  */
+#define ASM_OUTPUT_NEWLINE(STREAM) \
+  fputs ("\\X0A", (STREAM));
+
 #include "mips/mips.h"
