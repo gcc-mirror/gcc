@@ -6290,7 +6290,7 @@ emit_reload_insns (insn)
 	    abort ();
 
 	  if (reload_when_needed[j] == RELOAD_OTHER)
-	    push_to_sequence (other_output_reload_insns);
+	    start_sequence ();
 	  else
 	    push_to_sequence (output_reload_insns[reload_opnum[j]]);
 
@@ -6437,7 +6437,11 @@ emit_reload_insns (insn)
 	      }
 
 	  if (reload_when_needed[j] == RELOAD_OTHER)
-	    other_output_reload_insns = get_insns ();
+	    {
+	      if (other_output_reload_insns)
+		emit_insns (other_output_reload_insns);
+	      other_output_reload_insns = get_insns ();
+	    }
 	  else
 	    output_reload_insns[reload_opnum[j]] = get_insns ();
 
@@ -6451,7 +6455,7 @@ emit_reload_insns (insn)
 
      RELOAD_FOR_OTHER_ADDRESS reloads for input addresses.
 
-     RELOAD_OTHER reloads.
+     RELOAD_OTHER reloads, output in ascending order by reload number.
 
      For each operand, any RELOAD_FOR_INPUT_ADDRESS reloads followed by
      the RELOAD_FOR_INPUT reload for the operand.
@@ -6465,7 +6469,8 @@ emit_reload_insns (insn)
      For each operand, any RELOAD_FOR_OUTPUT_ADDRESS reload followed by
      the RELOAD_FOR_OUTPUT reload for that operand.
 
-     Any RELOAD_OTHER output reloads.  */
+     Any RELOAD_OTHER output reloads, output in descending order by
+     reload number.  */
 
   emit_insns_before (other_input_address_reload_insns, before_insn);
   emit_insns_before (other_input_reload_insns, before_insn);
