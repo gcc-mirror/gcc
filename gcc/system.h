@@ -22,6 +22,18 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_SYSTEM_H__
 #define __GCC_SYSTEM_H__
 
+/* Autoconf will possibly define the `inline' or `const' keywords as
+   macros, however this is only valid for the stage1 compiler.  If we
+   detect a modern version of gcc, unconditionally reset the values.
+   This makes sure the right thing happens in stage2 and later.  We
+   need to do this before any header files in case they use these
+   keywords or conflicts might occur. */
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+# undef const
+# undef inline
+# define inline __inline__  /* Modern gcc can use `__inline__' freely. */
+#endif /* GCC >= 2.7 */
+
 /* We must include stdarg.h/varargs.h before stdio.h. */
 #ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
@@ -391,7 +403,6 @@ extern void abort ();
 #  define STRINGIFY(STRING) "STRING"
 # endif
 #endif /* ! STRINGIFY */
-
 
 /* These macros are here in preparation for the use of gettext in egcs.  */
 #define _(String) String

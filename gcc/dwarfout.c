@@ -63,10 +63,6 @@ extern char *getpwd PROTO((void));
 /* Note that the implementation of C++ support herein is (as yet) unfinished.
    If you want to try to complete it, more power to you.  */
 
-#if !defined(__GNUC__) || (NDEBUG != 1)
-#define inline
-#endif
-
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"

@@ -1,3 +1,11 @@
+Mon Feb  1 09:40:25 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (inline, const): Handle these for stage2 (and later) gcc.
+
+	* dwarf2out.c (inline): Don't define.
+
+	* dwarfout.c (inline): Likewise.
+
 Sun Jan 31 22:04:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (recombine_givs): Dump recombination and derivation data.

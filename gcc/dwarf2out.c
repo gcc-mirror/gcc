@@ -72,10 +72,6 @@ dwarf2out_do_frame ()
 
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
-#ifndef __GNUC__
-#define inline
-#endif
-
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"
