@@ -25,6 +25,24 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files include this one and then override
    whatever definitions are necessary.  */
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__sparc__");		\
+	if (TARGET_64BIT)			\
+	  { 					\
+	    builtin_assert ("cpu=sparc");	\
+	    builtin_assert ("machine=sparc");	\
+	  }					\
+	else					\
+	  { 					\
+	    builtin_assert ("cpu=sparc64");	\
+	    builtin_assert ("machine=sparc64");	\
+	  }					\
+    }						\
+  while (0)
+
 /* Specify this in a cover file to provide bi-architecture (32/64) support.  */
 /* #define SPARC_BI_ARCH */
 
@@ -239,15 +257,8 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=ultrasparc3:-D__sparc_v9__} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
-
-/* ??? The GCC_NEW_VARARGS macro is now obsolete, because gcc always uses
-   the right varags.h file when bootstrapping.  */
-/* ??? It's not clear what value we want to use for -Acpu/machine for
-   sparc64 in 32 bit environments, so for now we only use `sparc64' in
-   64 bit environments.  */
-
-#define CPP_ARCH32_SPEC "-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
-#define CPP_ARCH64_SPEC "-D__arch64__ -Acpu=sparc64 -Amachine=sparc64"
+#define CPP_ARCH32_SPEC ""
+#define CPP_ARCH64_SPEC "-D__arch64__"
 
 #define CPP_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? CPP_ARCH32_SPEC : CPP_ARCH64_SPEC)

@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc"
-
 /* This is here rather than in sparc.h because it's not known what
    other assemblers will accept.  */
 

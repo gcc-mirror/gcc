@@ -98,11 +98,9 @@
 #define WINT_TYPE_SIZE 32
 
 #undef CPP_ARCH32_SPEC
-#define CPP_ARCH32_SPEC "\
--D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
+#define CPP_ARCH32_SPEC ""
 #undef CPP_ARCH64_SPEC
-#define CPP_ARCH64_SPEC "\
--D__arch64__ -Acpu=sparc64 -Amachine=sparcv9 -D__sparcv9"
+#define CPP_ARCH64_SPEC "-D__arch64__ -D__sparcv9"
 
 #undef CPP_ARCH_SPEC
 #define CPP_ARCH_SPEC "\

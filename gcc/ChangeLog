@@ -1,3 +1,14 @@
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config.gcc (sparc-*-sysv4*): Add sparc/sysv4-only.h.
+	* sparc/aout.h, sparc/elf.h, sparc/freebsd.h, sparc/linux.h,
+	sparc/linux64.h, sparc/lite.h, sparc/litecoff.h, sparc/liteelf.h,
+	sparc/netbsd-elf.h, sparc/openbsd.h, sparc/openbsd64.h,
+	sparc/pbd.h, sparc/rtemself.h, sparc/sol2-64.h, sparc/sol2-bi.h,
+	sparc/sol2.h, sparc/sp64-elf.h, sparc/sp86-elf.h, sparc/sparc.h,
+	sparc/sysv4.h,
+	* sparc/sysv4-only.h: New.
+
 2003-05-17  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Check for zero size args.

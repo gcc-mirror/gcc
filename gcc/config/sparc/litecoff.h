@@ -21,8 +21,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu=sparc -Amachine=sparc"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("sparc");		\
+	builtin_define_std ("sparclite");	\
+    }						\
+  while (0)
 
 /* Default to stabs in COFF.  */
 

@@ -19,8 +19,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu=sparc -Amachine=sparc"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__sparclite86x__");	\
+	builtin_define ("__ELF__");		\
+    }						\
+  while (0)
 
 /* Default to dwarf2 in ELF.  */
 

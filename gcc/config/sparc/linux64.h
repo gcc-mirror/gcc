@@ -19,6 +19,19 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("linux");		\
+	builtin_define ("_LONGLONG");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=posix");	\
+    }						\
+  while (0)
+
 #define LINUX_DEFAULT_ELF
 
 /* Don't assume anything about the header files.  */
@@ -43,8 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef SPARC_BI_ARCH
 
 #undef CPP_ARCH32_SPEC
-#define CPP_ARCH32_SPEC "%{mlong-double-128:-D__LONG_DOUBLE_128__} \
--D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
+#define CPP_ARCH32_SPEC "%{mlong-double-128:-D__LONG_DOUBLE_128__}"
 
 #endif
 
@@ -110,9 +122,6 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #endif
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

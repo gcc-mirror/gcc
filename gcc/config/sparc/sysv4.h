@@ -48,13 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SKIP_ASM_OP
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
-/* Provide a set of pre-definitions and pre-assertions appropriate for
-   the SPARC running svr4.  __svr4__ is our extension.  */
-
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES \
-"-Dsparc -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4"
-
 /* The native assembler can't compute differences between symbols in different
    sections when generating pic code, so we must put jump tables in the
    text section.  */

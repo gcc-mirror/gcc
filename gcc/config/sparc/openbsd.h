@@ -22,8 +22,16 @@ Boston, MA 02111-1307, USA.  */
 #define OBSD_OLD_GAS
 #include <openbsd.h>
 
-/* Run-time target specifications.  */
-#define CPP_PREDEFINES "-D__unix__ -D__sparc__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=sparc -Amachine=sparc"
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__unix__");		\
+	builtin_define ("__OpenBSD__");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=OpenBSD");	\
+    }						\
+  while (0)
 
 /* Layout of source language data types */
 
