@@ -1,5 +1,9 @@
 2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa.md: Remove hack from all index insns to reverse the operand
+	order of frame and stack pointer references incorrectly created
+	in the reload pass.
+
 	* function.h (emit_status): Delete member regno_pointer_flag and
 	rename regno_pointer_flag_length to regno_pointer_align_length.
 	Delete define for REGNO_POINTER_FLAG.
