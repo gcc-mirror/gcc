@@ -1,3 +1,7 @@
+2005-03-21  Stuart Hastings  <stuart@apple.com>
+
+	* gcc.target/i386/sse-2.c: New.
+	
 2005-03-21  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-46.c: Also check lrint* and llrint*.
