@@ -3470,7 +3470,7 @@ fold_range_test (exp)
 		      TREE_OPERAND (exp, 1));
 
       else if ((*lang_hooks.decls.global_bindings_p) () == 0
-	       && ! contains_placeholder_p (lhs))
+	       && ! CONTAINS_PLACEHOLDER_P (lhs))
 	{
 	  tree common = save_expr (lhs);
 
@@ -4768,7 +4768,7 @@ fold_mathfn_compare (fcode, code, type, arg0, arg1)
 
 	      /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
 	      if ((*lang_hooks.decls.global_bindings_p) () != 0
-		  || contains_placeholder_p (arg))
+		  || CONTAINS_PLACEHOLDER_P (arg))
 		return NULL_TREE;
 
 	      arg = save_expr (arg);
@@ -4788,7 +4788,7 @@ fold_mathfn_compare (fcode, code, type, arg0, arg1)
 
 	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
 	  if ((*lang_hooks.decls.global_bindings_p) () == 0
-	      && ! contains_placeholder_p (arg))
+	      && ! CONTAINS_PLACEHOLDER_P (arg))
 	    {
 	      arg = save_expr (arg);
 	      return fold (build (TRUTH_ANDIF_EXPR, type,
@@ -4851,7 +4851,7 @@ fold_inf_compare (code, type, arg0, arg1)
 
       /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
       if ((*lang_hooks.decls.global_bindings_p) () == 0
-	  && ! contains_placeholder_p (arg0))
+	  && ! CONTAINS_PLACEHOLDER_P (arg0))
 	{
 	  arg0 = save_expr (arg0);
 	  return fold (build (EQ_EXPR, type, arg0, arg0));
@@ -5119,7 +5119,7 @@ fold (expr)
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
 		   || ((*lang_hooks.decls.global_bindings_p) () == 0
-		       && ! contains_placeholder_p (arg0))))
+		       && ! CONTAINS_PLACEHOLDER_P (arg0))))
 	return
 	  fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
 					       /*cond_first_p=*/0);
@@ -5133,7 +5133,7 @@ fold (expr)
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
 		   || ((*lang_hooks.decls.global_bindings_p) () == 0
-		       && ! contains_placeholder_p (arg1))))
+		       && ! CONTAINS_PLACEHOLDER_P (arg1))))
 	return
 	  fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
 					       /*cond_first_p=*/1);
@@ -5313,7 +5313,8 @@ fold (expr)
       return t;
 
     case COMPONENT_REF:
-      if (TREE_CODE (arg0) == CONSTRUCTOR)
+      if (TREE_CODE (arg0) == CONSTRUCTOR
+	  && ! type_contains_placeholder_p (TREE_TYPE (arg0)))
 	{
 	  tree m = purpose_member (arg1, CONSTRUCTOR_ELTS (arg0));
 	  if (m)
@@ -5883,7 +5884,7 @@ fold (expr)
 	  /* x*2 is x+x */
 	  if (! wins && real_twop (arg1)
 	      && (*lang_hooks.decls.global_bindings_p) () == 0
-	      && ! contains_placeholder_p (arg0))
+	      && ! CONTAINS_PLACEHOLDER_P (arg0))
 	    {
 	      tree arg = save_expr (arg0);
 	      return fold (build (PLUS_EXPR, type, arg, arg));

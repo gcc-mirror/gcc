@@ -5242,7 +5242,7 @@ fold_builtin (exp)
 	      /* Optimize pow(x,2.0) = x*x.  */
 	      if (REAL_VALUES_EQUAL (c, dconst2)
 		  && (*lang_hooks.decls.global_bindings_p) () == 0
-		  && ! contains_placeholder_p (arg0))
+		  && ! CONTAINS_PLACEHOLDER_P (arg0))
 		{
 		  arg0 = save_expr (arg0);
 		  return fold (build (MULT_EXPR, type, arg0, arg0));
@@ -5252,7 +5252,7 @@ fold_builtin (exp)
 	      if (flag_unsafe_math_optimizations
 		  && REAL_VALUES_EQUAL (c, dconstm2)
 		  && (*lang_hooks.decls.global_bindings_p) () == 0
-		  && ! contains_placeholder_p (arg0))
+		  && ! CONTAINS_PLACEHOLDER_P (arg0))
 		{
 		  arg0 = save_expr (arg0);
 		  return fold (build (RDIV_EXPR, type,

@@ -1,3 +1,24 @@
+2003-05027  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (contains_placeholder_p): Now returns bool.
+	(CONTAINS_PLACEHOLDER_P): New macro.
+	(type_contains_placeholder_p): New function.
+	* tree.c (save_expr): Remove code avoiding folding COMPONENT_REF.
+	(contains_placeholder_p): Now returns bool.
+	Rework to use CONTAINS_PLACEHOLDER_P macro.
+	(type_contains_placeholder_p): New function.
+	* fold-const.c (fold, case COMPONENT_REF): Don't fold if
+	type_contains_placeholder_p.
+	(fold_range_test, fold_mathfn_compare, fold_inf_compare, fold): 
+	Use CONTAINS_PLACEHOLDER_P macro.
+	* builtins.c (fold_builtin): Likewise.
+	* calls.c (initialize_argument_information): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* explow.c (expr_size): Likewise.
+	* expr.c (store_constructor, get_inner_reference): Likewise.
+	* function.c (assign_parms): Likewise.
+	* stor-layout.c (variable_size): Likewise.
+
 2003-05-25  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* diagnostic.h (output_verbatim, verbatim):  Remove  printf

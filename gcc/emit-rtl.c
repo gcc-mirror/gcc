@@ -1986,11 +1986,9 @@ set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
 	      /* If the index has a self-referential type, pass it to a
 		 WITH_RECORD_EXPR; if the component size is, pass our
 		 component to one.  */
-	      if (! TREE_CONSTANT (index)
-		  && contains_placeholder_p (index))
+	      if (CONTAINS_PLACEHOLDER_P (index))
 		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t);
-	      if (! TREE_CONSTANT (unit_size)
-		  && contains_placeholder_p (unit_size))
+	      if (CONTAINS_PLACEHOLDER_P (unit_size))
 		unit_size = build (WITH_RECORD_EXPR, sizetype,
 				   unit_size, array);
 

@@ -2523,7 +2523,19 @@ extern int unsafe_for_reeval		PARAMS ((tree));
    Note that we only allow such expressions within simple arithmetic
    or a COND_EXPR.  */
 
-extern int contains_placeholder_p	PARAMS ((tree));
+extern bool contains_placeholder_p	PARAMS ((tree));
+
+/* This macro calls the above function but short-circuits the common
+   case of a constant to save time.  Also check for null.  */
+
+#define CONTAINS_PLACEHOLDER_P(EXP) \
+  ((EXP) != 0 && ! TREE_CONSTANT (EXP) && contains_placeholder_p (EXP))
+
+/* Return 1 if any part of the computation of TYPE involves a PLACEHOLDER_EXPR.
+   This includes size, bounds, qualifiers (for QUAL_UNION_TYPE) and field
+   positions.  */
+
+extern bool type_contains_placeholder_p	PARAMS ((tree));
 
 /* Return 1 if EXP contains any expressions that produce cleanups for an
    outer scope to deal with.  Used by fold.  */
