@@ -1,3 +1,7 @@
+2004-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release (build_sources): Do not use "-F" to tag sources.
+
 2004-04-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release (build_sources): Do not use "-r" and "-D" at the
