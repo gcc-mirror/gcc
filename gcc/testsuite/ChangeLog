@@ -1,3 +1,20 @@
+2004-08-09  Falk Hueffner  <falk@debian.org>
+
+	PR tree-optimization/12517
+	* gcc.c-torture/compile/pr12517.c: New test.
+
+	PR tree-optimization/12578
+	* gcc.c-torture/compile/pr12578.c: New test.
+
+	PR tree-optimization/12899
+	* gcc.c-torture/compile/pr12899.c: New test.
+
+	PR rtl-optimization/14692
+	* gcc.c-torture/compile/pr14692.c: New test.
+
+	PR tree-optimization/16461
+	* gcc.c-torture/compile/pr16461.c: New test.
+
 2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* gfortran.dg/getenv_1.f90: New test.
