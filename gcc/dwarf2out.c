@@ -9844,6 +9844,8 @@ dwarf2out_line (filename, line)
 	  register dw_separate_line_info_ref line_info;
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, SEPARATE_LINE_CODE_LABEL,
 				     separate_line_info_table_in_use);
+	  if (flag_debug_asm)
+	    fprintf (asm_out_file, "\t%s line %d", ASM_COMMENT_START, line);
 	  fputc ('\n', asm_out_file);
 
 	  /* expand the line info table if necessary */
@@ -9871,6 +9873,8 @@ dwarf2out_line (filename, line)
 
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, LINE_CODE_LABEL,
 				     line_info_table_in_use);
+	  if (flag_debug_asm)
+	    fprintf (asm_out_file, "\t%s line %d", ASM_COMMENT_START, line);
 	  fputc ('\n', asm_out_file);
 
 	  /* Expand the line info table if necessary.  */
