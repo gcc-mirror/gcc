@@ -39,6 +39,7 @@ pragma Style_Checks (All_Checks);
 --  bodies) and the C file a-atree.c (for remaining non-inlined bodies).
 
 with Debug;   use Debug;
+with Namet;   use Namet;
 with Nlists;  use Nlists;
 with Elists;  use Elists;
 with Output;  use Output;
@@ -809,6 +810,7 @@ package body Atree is
 
       procedure Debug_Extend_Node;
       --  Debug routine for debug flag N
+      pragma Inline (Debug_Extend_Node);
 
       procedure Debug_Extend_Node is
       begin
@@ -826,8 +828,6 @@ package body Atree is
             --  Write_Eol;
          end if;
       end Debug_Extend_Node;
-
-      pragma Inline (Debug_Extend_Node);
 
    begin
       pragma Assert (not (Has_Extension (Node)));
@@ -1584,6 +1584,16 @@ package body Atree is
          end if;
 
          New_Itype := New_Copy (Old_Itype);
+
+         --  The new Itype has all the attributes of the old one, and
+         --  we just copy the contents of the entity. However, the back-end
+         --  needs different names for debugging purposes, so we create a
+         --  new internal name by appending the letter 'c' (copy) to the
+         --  name of the original.
+
+         Get_Name_String (Chars (Old_Itype));
+         Add_Char_To_Name_Buffer ('c');
+         Set_Chars (New_Itype, Name_Enter);
 
          --  If our associated node is an entity that has already been copied,
          --  then set the associated node of the copy to point to the right
