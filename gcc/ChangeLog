@@ -1,3 +1,11 @@
+2002-10-18  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/i386/i386.c (x86_initialize_trampoline): Emit a call
+	to __enable_execute_stack with the address of the trampoline
+	if TRANSFER_FROM_TRAMPOLINE is defined.
+	* config/i386/i386.h (TARGET_64BIT): Expand to a compile-time
+	constant if building libgcc2.
+
 2002-10-17  Roger Sayle  <roger@eyesopen.com>
 
 	* doc/c-tree.texi: Update description of COND_EXPR tree nodes.
