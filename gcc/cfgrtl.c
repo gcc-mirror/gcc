@@ -2711,6 +2711,18 @@ cfg_layout_split_edge (edge e)
   new_bb->count = e->count;
   new_bb->frequency = EDGE_FREQUENCY (e);
 
+  /* ??? This info is likely going to be out of date very soon, but we must
+     create it to avoid getting an ICE later.  */
+  if (e->dest->global_live_at_start)
+    {
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      COPY_REG_SET (new_bb->global_live_at_start,
+		    e->dest->global_live_at_start);
+      COPY_REG_SET (new_bb->global_live_at_end,
+		    e->dest->global_live_at_start);
+    }
+
   new_e = make_edge (new_bb, e->dest, EDGE_FALLTHRU);
   new_e->probability = REG_BR_PROB_BASE;
   new_e->count = e->count;

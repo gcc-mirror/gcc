@@ -1,3 +1,9 @@
+2004-08-11  James E Wilson  <wilson@specifixinc.com>
+
+	PR rtl-optimization/16490
+	* cfgrtl.c (cfg_layout_split_edge): Set global_live_at_start and
+	global_live_at_end for new basic block if already set for other blocks.
+
 2004-08-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/16790
