@@ -85,6 +85,7 @@ extern int errno;
 #endif
 
 #ifndef HAVE_STRERROR
+extern int sys_nerr;
 #if defined(bsd4_4)
 extern const char *const sys_errlist[];
 #else
