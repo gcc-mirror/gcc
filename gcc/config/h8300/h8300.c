@@ -270,7 +270,7 @@ pop (file, rn)
   fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[rn]);
 }
 
-/* This is what the stack looks like after the prolog of 
+/* This is what the stack looks like after the prolog of
    a function with a frame has been set up:
 
    <args>
@@ -1842,7 +1842,7 @@ compute_logical_op_cc (mode, operands)
    Below, a trailing '*' after the shift count indicates the "best"
    mode isn't implemented.  We only describe SHIFT_SPECIAL cases to
    simplify the table.  For other cases, refer to shift_alg_[qhs]i.
-   
+
    H8/300 QImode shifts
    7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
 
@@ -2588,7 +2588,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
       else if (TARGET_H8300 && 24 <= count && count <= 28)
 	{
 	  info->remainder = count - 24;
- 
+
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:

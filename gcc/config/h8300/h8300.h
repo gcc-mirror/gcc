@@ -1,5 +1,5 @@
-/* Definitions of target machine for GNU compiler. 
-   Hitachi H8/300 version generating coff 
+/* Definitions of target machine for GNU compiler.
+   Hitachi H8/300 version generating coff
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
    2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
@@ -171,7 +171,7 @@ extern int target_flags;
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
-   but a CALL with constant address is cheap. 
+   but a CALL with constant address is cheap.
 
    Calls through a register are cheaper than calls to named
    functions; however, the register pressure this causes makes
@@ -194,7 +194,7 @@ extern int target_flags;
 #define BYTES_BIG_ENDIAN 1
 
 /* Define this if most significant word of a multiword number is lowest
-   numbered.  
+   numbered.
    This is true on an H8/300 (actually we can make it up, but we choose to
    be consistent).  */
 #define WORDS_BIG_ENDIAN 1
@@ -263,7 +263,7 @@ extern int target_flags;
    from 0 to just below FIRST_PSEUDO_REGISTER.
 
    All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers.  
+   even those that are not normally considered general registers.
 
    Reg 9 does not correspond to any hardware register, but instead
    appears in the RTL as an argument pointer prior to reload, and is
@@ -284,7 +284,7 @@ extern int target_flags;
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you
-   like.  
+   like.
 
    H8 destroys r0,r1,r2,r3.  */
 
@@ -304,7 +304,7 @@ extern int target_flags;
    to hold something of mode MODE.
 
    This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers. 
+   but can be less for certain modes in special long registers.
 
    We pretend the MAC register is 32bits -- we don't have any data
    types on the H8 series to handle more than 32bits.  */
@@ -424,7 +424,7 @@ enum reg_class {
 #define INDEX_REG_CLASS NO_REGS
 #define BASE_REG_CLASS  GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine description. 
+/* Get reg_class from a letter such as appears in the machine description.
 
    'a' is the MAC register.  */
 
@@ -463,8 +463,8 @@ enum reg_class {
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself. 
-     
+   Here VALUE is the CONST_DOUBLE rtx itself.
+
   `G' is a floating-point zero.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
@@ -486,7 +486,7 @@ enum reg_class {
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Any SI register-to-register move may need to be reloaded, 
+/* Any SI register-to-register move may need to be reloaded,
    so define REGISTER_MOVE_COST to be > 2 so that reload never
    shortcuts.  */
 
@@ -586,8 +586,8 @@ enum reg_class {
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0. 
-   
+   otherwise, FUNC is 0.
+
    On the H8 the return value is in R0/R1.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
@@ -728,7 +728,7 @@ struct cum_arg
 #define EXIT_IGNORE_STACK 0
 
 /* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  
+   of a trampoline, leaving space for the variable parts.
 
    H8/300
 	      vvvv context
@@ -900,7 +900,7 @@ struct cum_arg
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
    except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.  
+   machine-independent.
 
    On the H8/300, a legitimate address has the form
    REG, REG+CONSTANT_ADDRESS or CONSTANT_ADDRESS.  */
@@ -930,7 +930,7 @@ struct cum_arg
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output. 
+   opportunities to optimize the output.
 
    For the H8/300, don't do anything.  */
 

@@ -1,5 +1,11 @@
 2002-03-01  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300-protos.h: Fix formatting.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+
+2002-03-01  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (print_operand): Support 16-bit
 	constant addresses.
 	* config/h8300/h8300.h (TINY_CONSTANT_ADDRESS_P): New.
