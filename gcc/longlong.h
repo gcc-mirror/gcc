@@ -70,6 +70,8 @@
    for the CPUs below!
    (E.g. WE32100, i960, IBM360.)  */
 
+#if defined (__GNUC__) && !defined (NO_ASM)
+
 /* We sometimes need to clobber "cc" with gcc2, but that would not be
    understood by gcc1.  Use cpp to avoid major code duplication.  */
 #if __GNUC__ < 2
@@ -79,8 +81,6 @@
 #define __CLOBBER_CC : "cc"
 #define __AND_CLOBBER_CC , "cc"
 #endif /* __GNUC__ < 2 */
-
-#if defined (__GNUC__) && !defined (NO_ASM)
 
 #if defined (__a29k__) || defined (___AM29K__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
