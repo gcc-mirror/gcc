@@ -59,17 +59,18 @@ Boston, MA 02111-1307, USA. */
    ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 \
-  -ladvapi32 -lshell32"
+#define LIB_SPEC "%{pg:-lgmon} -lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32}\
+   -lkernel32 -ladvapi32 -lshell32"
 
 #define LINK_SPEC "%{mwindows:--subsystem windows}"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
-   GCC without making a new CYGWIN.DLL, so we leave it.  */
+   GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
+   by calling the init function from the prologue. */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0%O%s"
+#define STARTFILE_SPEC "%{pg:gcrt0%O%s} crt0%O%s"
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
@@ -388,6 +389,20 @@ do {								\
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
+
+#define SUBTARGET_PROLOGUE						\
+  if (profile_flag 							\
+      && strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),\
+		 "main") == 0)						\
+     {									\
+      rtx xops[1];							\
+      xops[0] = gen_rtx_MEM (FUNCTION_MODE,				\
+			 gen_rtx (SYMBOL_REF, Pmode, "_monstartup"));	\
+      if (do_rtl)							\
+	emit_call_insn (gen_rtx (CALL, VOIDmode, xops[0], const0_rtx));	\
+      else								\
+	output_asm_insn (AS1 (call,%P1), xops);			\
+     }
 
 /* External function declarations.  */
 

@@ -732,6 +732,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
+	      | -win32* | -mingw32* | -linux-gnu* | -uxpv* | -beos* )
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;

@@ -1,3 +1,16 @@
+Mon Jul 27 11:43:54 1998  Stan Cox  <scox@cygnus.com>
+
+	* longlong.h (count_leading_zeros): Sparclite scan instruction was
+	being invoked incorrectly.
+
+	* i386.c (ix86_prologue): Added SUBTARGET_PROLOGUE invocation.
+	* i386/cygwin32.h (STARTFILE_SPEC, LIB_SPEC, SUBTARGET_PROLOGUE): 
+	Add -pg support. 
+	* i386/win32.h: New file.  Hybrid mingw32.h/cygwin32.h configuration.
+	* configure.in: Added i[34567]86-*-win32
+	* config.sub: Ditto.
+	* configure: Rebuilt.
+	
 Sun Jul 26 01:11:12 1998  H.J. Lu  (hjl@gnu.org)
 
 	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Return 0 when eliminating
