@@ -55,28 +55,53 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 /* The compiler is not a multi-threaded application and therefore we
-   do not have to use the locking functions.
+   do not have to use the locking functions.  In fact, using the locking
+   functions can cause the compiler to be significantly slower under
+   I/O bound conditions (such as -g -O0 on very large source files).
 
-   HAVE_DECL_PUTC_UNLOCKED actually indicates whether or not the IO
+   HAVE_DECL_PUTC_UNLOCKED actually indicates whether or not the stdio
    code is multi-thread safe by default.  If it is set to 0, then do
    not worry about using the _unlocked functions.
    
-   fputs_unlocked is an extension and needs to be prototyped specially.  */
+   fputs_unlocked, fwrite_unlocked, and fprintf_unlocked are
+   extensions and need to be prototyped by hand (since we do not
+   define _GNU_SOURCE).  */
 
-#if defined HAVE_PUTC_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
-# undef putc
-# define putc(C, Stream) putc_unlocked (C, Stream)
-#endif
-#if defined HAVE_FPUTC_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
-# undef fputc
-# define fputc(C, Stream) fputc_unlocked (C, Stream)
-#endif
-#if defined HAVE_FPUTS_UNLOCKED && (defined (HAVE_DECL_PUTC_UNLOCKED) && HAVE_DECL_PUTC_UNLOCKED)
-# undef fputs
-# define fputs(String, Stream) fputs_unlocked (String, Stream)
-# if defined (HAVE_DECL_FPUTS_UNLOCKED) && !HAVE_DECL_FPUTS_UNLOCKED
-extern int fputs_unlocked PARAMS ((const char *, FILE *));
+#if defined HAVE_DECL_PUTC_UNLOCKED && HAVE_DECL_PUTC_UNLOCKED
+
+# ifdef HAVE_PUTC_UNLOCKED
+#  undef putc
+#  define putc(C, Stream) putc_unlocked (C, Stream)
 # endif
+# ifdef HAVE_FPUTC_UNLOCKED
+#  undef fputc
+#  define fputc(C, Stream) fputc_unlocked (C, Stream)
+# endif
+
+# ifdef HAVE_FPUTS_UNLOCKED
+#  undef fputs
+#  define fputs(String, Stream) fputs_unlocked (String, Stream)
+#  if defined (HAVE_DECL_FPUTS_UNLOCKED) && !HAVE_DECL_FPUTS_UNLOCKED
+extern int fputs_unlocked PARAMS ((const char *, FILE *));
+#  endif
+# endif
+# ifdef HAVE_FWRITE_UNLOCKED
+#  undef fwrite
+#  define fwrite(Ptr, Size, N, Stream) fwrite_unlocked (Ptr, Size, N, Stream)
+#  if defined (HAVE_DECL_FWRITE_UNLOCKED) && !HAVE_DECL_FWRITE_UNLOCKED
+extern int fwrite_unlocked PARAMS ((const PTR, size_t, size_t, FILE *));
+#  endif
+# endif
+# ifdef HAVE_FPRINTF_UNLOCKED
+#  undef fprintf
+/* We can't use a function-like macro here because we don't know if
+   we have varargs macros.  */
+#  define fprintf fprintf_unlocked
+#  if defined (HAVE_DECL_FPRINTF_UNLOCKED) && !HAVE_DECL_FPRINTF_UNLOCKED
+extern int fprintf_unlocked PARAMS ((FILE *, const char *, ...));
+#  endif
+# endif
+
 #endif
 
 /* There are an extraordinary number of issues with <ctype.h>.

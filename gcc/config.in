@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -104,11 +104,17 @@
 /* Define if you have the dcgettext function.  */
 #undef HAVE_DCGETTEXT
 
+/* Define if you have the fprintf_unlocked function.  */
+#undef HAVE_FPRINTF_UNLOCKED
+
 /* Define if you have the fputc_unlocked function.  */
 #undef HAVE_FPUTC_UNLOCKED
 
 /* Define if you have the fputs_unlocked function.  */
 #undef HAVE_FPUTS_UNLOCKED
+
+/* Define if you have the fwrite_unlocked function.  */
+#undef HAVE_FWRITE_UNLOCKED
 
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
@@ -394,6 +400,12 @@
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_FPUTS_UNLOCKED
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_FWRITE_UNLOCKED
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_FPRINTF_UNLOCKED
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_STRSTR
