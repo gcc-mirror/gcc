@@ -130,7 +130,7 @@ static cselib_val dummy_val;
    May or may not contain the useless values - the list is compacted
    each time memory is invalidated.  */
 static cselib_val *first_containing_mem = &dummy_val;
-static alloc_pool elt_loc_list_pool, elt_list_pool, cselib_val_pool;
+static alloc_pool elt_loc_list_pool, elt_list_pool, cselib_val_pool, value_pool;
 
 
 /* Allocate a struct elt_list and fill in its two elements with the
@@ -694,7 +694,12 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
 #endif
 
   e->value = value;
-  e->u.val_rtx = gen_rtx_VALUE (mode);
+  /* We use custom method to allocate this RTL construct because it accounts
+     about 8% of overall memory usage.  */
+  e->u.val_rtx = pool_alloc (value_pool);
+  memset (e->u.val_rtx, 0, RTX_HDR_SIZE);
+  PUT_CODE (e->u.val_rtx, VALUE);
+  PUT_MODE (e->u.val_rtx, mode);
   CSELIB_VAL_PTR (e->u.val_rtx) = e;
   e->addr_list = 0;
   e->locs = 0;
@@ -1392,6 +1397,8 @@ cselib_init (void)
 				         sizeof (struct elt_loc_list), 10);
   cselib_val_pool = create_alloc_pool ("cselib_val_list", 
 				       sizeof (cselib_val), 10);
+  value_pool = create_alloc_pool ("value", 
+				  RTX_SIZE (VALUE), 100);
   /* This is only created once.  */
   if (! callmem)
     callmem = gen_rtx_MEM (BLKmode, const0_rtx);
@@ -1420,6 +1427,7 @@ cselib_finish (void)
   free_alloc_pool (elt_list_pool);
   free_alloc_pool (elt_loc_list_pool);
   free_alloc_pool (cselib_val_pool);
+  free_alloc_pool (value_pool);
   clear_table ();
   reg_values_old = reg_values;
   reg_values = 0;
