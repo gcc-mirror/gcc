@@ -51,6 +51,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Invoke an initializer function to set up the GOT */
 #define NAME__MAIN "__eabi"
+#define INVOKE__main 1
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");
