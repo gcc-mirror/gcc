@@ -1,5 +1,10 @@
 2003-07-07  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Use gen_int_mode instead of
+	GEN_INT (trunc_int_for_mode (...)).
+
+2003-07-07  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (pushqi1_h8300hs): Optimize by pushing
 	2 bytes and then subtract 2 from the stack pointer.
 	(pushhi1_h8300hs): Likewise.
