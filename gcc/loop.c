@@ -6877,7 +6877,7 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
   update_reg_last_use (m, insert_before);
 
   start_sequence ();
-  result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 0);
+  result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 1);
   if (reg != result)
     emit_move_insn (reg, result);
   seq = gen_sequence ();
@@ -6961,7 +6961,7 @@ product_cheap_p (a, b)
      of insns is generated.  */
 
   start_sequence ();
-  expand_mult (GET_MODE (a), a, b, NULL_RTX, 0);
+  expand_mult (GET_MODE (a), a, b, NULL_RTX, 1);
   tmp = gen_sequence ();
   end_sequence ();
 

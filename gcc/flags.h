@@ -555,6 +555,10 @@ extern int frame_pointer_needed;
 
 extern int flag_check_memory_usage;
 
+/* Nonzero if the generated code should trap on signed overflow
+   for PLUS / SUB / MULT.  */
+extern int flag_trapv;
+
 /* Nonzero if GCC must prefix function names (used with
    flag_check_memory_usage).  */
 

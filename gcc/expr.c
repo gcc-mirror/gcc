@@ -5307,7 +5307,7 @@ force_operand (value, target)
       tmp = force_operand (XEXP (value, 0), subtarget);
       return expand_mult (GET_MODE (value), tmp,
 			  force_operand (op2, NULL_RTX),
-			  target, 0);
+			  target, 1);
     }
 
   if (binoptab)
@@ -7248,7 +7248,9 @@ expand_expr (exp, target, tmode, modifier)
       /* We come here from MINUS_EXPR when the second operand is a
          constant.  */
     plus_expr:
-      this_optab = add_optab;
+      this_optab = ! unsignedp && flag_trapv
+                   && (GET_MODE_CLASS(mode) == MODE_INT)
+                   ? addv_optab : add_optab;
 
       /* If we are adding a constant, an RTL_EXPR that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
@@ -7283,7 +7285,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	 If this is an EXPAND_SUM call, always return the sum.  */
       if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
-	  || mode == ptr_mode)
+          || (mode == ptr_mode && (unsignedp || ! flag_trapv)))
 	{
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
@@ -7441,7 +7443,9 @@ expand_expr (exp, target, tmode, modifier)
 	      goto plus_expr;
 	    }
 	}
-      this_optab = sub_optab;
+      this_optab = ! unsignedp && flag_trapv
+                   && (GET_MODE_CLASS(mode) == MODE_INT)
+                   ? subv_optab : sub_optab;
       goto binop;
 
     case MULT_EXPR:
@@ -7624,7 +7628,10 @@ expand_expr (exp, target, tmode, modifier)
 
     case NEGATE_EXPR:
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      temp = expand_unop (mode, neg_optab, op0, target, 0);
+      temp = expand_unop (mode,
+                          ! unsignedp && flag_trapv
+                          && (GET_MODE_CLASS(mode) == MODE_INT)
+                          ? negv_optab : neg_optab, op0, target, 0);
       if (temp == 0)
 	abort ();
       return temp;
@@ -7642,7 +7649,7 @@ expand_expr (exp, target, tmode, modifier)
       if (TREE_UNSIGNED (type))
 	return op0;
 
-      return expand_abs (mode, op0, target,
+      return expand_abs (mode, op0, target, unsignedp,
 			 safe_from_p (target, TREE_OPERAND (exp, 0), 1));
 
     case MAX_EXPR:
@@ -7964,10 +7971,14 @@ expand_expr (exp, target, tmode, modifier)
 	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
 	  {
 	    rtx result;
-	    optab boptab = (TREE_CODE (binary_op) == PLUS_EXPR ? add_optab
-			    : TREE_CODE (binary_op) == MINUS_EXPR ? sub_optab
-			    : TREE_CODE (binary_op) == BIT_IOR_EXPR ? ior_optab
-			    : xor_optab);
+	    optab boptab = (TREE_CODE (binary_op) == PLUS_EXPR
+                            ? (TYPE_TRAP_SIGNED (TREE_TYPE (binary_op))
+                               ? addv_optab : add_optab)
+                            : TREE_CODE (binary_op) == MINUS_EXPR
+                              ? (TYPE_TRAP_SIGNED (TREE_TYPE (binary_op))
+                                 ? subv_optab : sub_optab)
+                            : TREE_CODE (binary_op) == BIT_IOR_EXPR ? ior_optab
+                            : xor_optab);
 
 	    /* If we had X ? A : A + 1, do this as A + (X == 0).
 
@@ -8491,7 +8502,10 @@ expand_expr (exp, target, tmode, modifier)
 			gen_realpart (partmode, op0));
 
 	imag_t = gen_imagpart (partmode, target);
-	temp = expand_unop (partmode, neg_optab,
+	temp = expand_unop (partmode,
+                            ! unsignedp && flag_trapv
+                            && (GET_MODE_CLASS(partmode) == MODE_INT)
+                            ? negv_optab : neg_optab,
 			    gen_imagpart (partmode, op0), imag_t, 0);
 	if (temp != imag_t)
 	  emit_move_insn (imag_t, temp);
@@ -9044,6 +9058,9 @@ expand_increment (exp, post, ignore)
       op1 = GEN_INT (-INTVAL (op1));
       this_optab = add_optab;
     }
+
+  if (TYPE_TRAP_SIGNED (TREE_TYPE (exp)))
+     this_optab = this_optab == add_optab ? addv_optab : subv_optab;
 
   /* For a preincrement, see if we can do this with a single instruction.  */
   if (!post)

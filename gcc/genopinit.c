@@ -46,8 +46,11 @@ Boston, MA 02111-1307, USA.  */
 
    If $N is present in the pattern, it means the two modes must be consecutive
    widths in the same mode class (e.g, QImode and HImode).  $I means that
-   only integer modes should be considered for the next mode, and $F means
-   that only float modes should be considered.
+   only full integer modes should be considered for the next mode, and $F
+   means that only float modes should be considered.
+   $P means that both full and partial integer modes should be considered.
+
+   $V means to emit 'v' if the first mode is a MODE_FLOAT mode.
 
    For some optabs, we store the operation by RTL codes.  These are only
    used for comparisons.  In that case, $c and $C are the lower-case and
@@ -62,14 +65,24 @@ const char * const optabs[] =
   "fixtrunctab[$A][$B][1] = CODE_FOR_$(fixuns_trunc$F$a$I$b2$)",
   "floattab[$B][$A][0] = CODE_FOR_$(float$I$a$F$b2$)",
   "floattab[$B][$A][1] = CODE_FOR_$(floatuns$I$a$F$b2$)",
-  "add_optab->handlers[$A].insn_code = CODE_FOR_$(add$a3$)",
-  "sub_optab->handlers[$A].insn_code = CODE_FOR_$(sub$a3$)",
-  "smul_optab->handlers[$A].insn_code = CODE_FOR_$(mul$a3$)",
+  "add_optab->handlers[$A].insn_code = CODE_FOR_$(add$P$a3$)",
+  "addv_optab->handlers[(int) $A].insn_code =\n\
+    add_optab->handlers[(int) $A].insn_code = CODE_FOR_$(add$F$a3$)",
+  "addv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(addv$I$a3$)",
+  "sub_optab->handlers[$A].insn_code = CODE_FOR_$(sub$P$a3$)",
+  "subv_optab->handlers[(int) $A].insn_code =\n\
+    sub_optab->handlers[(int) $A].insn_code = CODE_FOR_$(sub$F$a3$)",
+  "subv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(subv$I$a3$)",
+  "smul_optab->handlers[$A].insn_code = CODE_FOR_$(mul$P$a3$)",
+  "smulv_optab->handlers[(int) $A].insn_code =\n\
+    smul_optab->handlers[(int) $A].insn_code = CODE_FOR_$(mul$F$a3$)",
+  "smulv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(mulv$I$a3$)",
   "umul_highpart_optab->handlers[$A].insn_code = CODE_FOR_$(umul$a3_highpart$)",
   "smul_highpart_optab->handlers[$A].insn_code = CODE_FOR_$(smul$a3_highpart$)",
   "smul_widen_optab->handlers[$B].insn_code = CODE_FOR_$(mul$a$b3$)$N",
   "umul_widen_optab->handlers[$B].insn_code = CODE_FOR_$(umul$a$b3$)$N",
   "sdiv_optab->handlers[$A].insn_code = CODE_FOR_$(div$I$a3$)",
+  "sdivv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(div$V$I$a3$)",
   "udiv_optab->handlers[$A].insn_code = CODE_FOR_$(udiv$I$a3$)",
   "sdivmod_optab->handlers[$A].insn_code = CODE_FOR_$(divmod$a4$)",
   "udivmod_optab->handlers[$A].insn_code = CODE_FOR_$(udivmod$a4$)",
@@ -91,8 +104,14 @@ const char * const optabs[] =
   "smax_optab->handlers[$A].insn_code = CODE_FOR_$(max$F$a3$)",
   "umin_optab->handlers[$A].insn_code = CODE_FOR_$(umin$I$a3$)",
   "umax_optab->handlers[$A].insn_code = CODE_FOR_$(umax$I$a3$)",
-  "neg_optab->handlers[$A].insn_code = CODE_FOR_$(neg$a2$)",
-  "abs_optab->handlers[$A].insn_code = CODE_FOR_$(abs$a2$)",
+  "neg_optab->handlers[$A].insn_code = CODE_FOR_$(neg$P$a2$)",
+  "negv_optab->handlers[(int) $A].insn_code =\n\
+    neg_optab->handlers[(int) $A].insn_code = CODE_FOR_$(neg$F$a2$)",
+  "negv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(negv$I$a2$)",
+  "abs_optab->handlers[$A].insn_code = CODE_FOR_$(abs$P$a2$)",
+  "absv_optab->handlers[(int) $A].insn_code =\n\
+    abs_optab->handlers[(int) $A].insn_code = CODE_FOR_$(abs$F$a2$)",
+  "absv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(absv$I$a2$)",
   "sqrt_optab->handlers[$A].insn_code = CODE_FOR_$(sqrt$a2$)",
   "sin_optab->handlers[$A].insn_code = CODE_FOR_$(sin$a2$)",
   "cos_optab->handlers[$A].insn_code = CODE_FOR_$(cos$a2$)",
@@ -136,7 +155,7 @@ gen_insn (insn)
 
   for (pindex = 0; pindex < ARRAY_SIZE (optabs); pindex++)
     {
-      int force_float = 0, force_int = 0;
+      int force_float = 0, force_int = 0, force_partial_int = 0;
       int force_consec = 0;
       int matches = 1;
 
@@ -160,9 +179,14 @@ gen_insn (insn)
 	      case 'I':
 		force_int = 1;
 		break;
+	      case 'P':
+                force_partial_int = 1;
+                break;
 	      case 'F':
 		force_float = 1;
 		break;
+	      case 'V':
+                break;
 	      case 'c':
 		for (op = 0; op < NUM_RTX_CODE; op++)
 		  {
@@ -196,6 +220,9 @@ gen_insn (insn)
 
 		    if (*p == 0
 			&& (! force_int || mode_class[i] == MODE_INT)
+		        && (! force_partial_int
+                            || mode_class[i] == MODE_INT
+                            || mode_class[i] == MODE_PARTIAL_INT)
 			&& (! force_float || mode_class[i] == MODE_FLOAT))
 		      break;
 		  }
@@ -207,7 +234,7 @@ gen_insn (insn)
 		else
 		  m2 = i, np += strlen (GET_MODE_NAME(i));
 
-		force_int = force_float = 0;
+		force_int = force_partial_int = force_float = 0;
 		break;
 
 	      default:
@@ -243,6 +270,10 @@ gen_insn (insn)
 	  case '(':  case ')':
 	  case 'I':  case 'F':  case 'N':
 	    break;
+	  case 'V':
+            if (GET_MODE_CLASS (m1) == MODE_FLOAT)
+              printf ("v");
+            break;
 	  case 'a':
 	    for (np = GET_MODE_NAME(m1); *np; np++)
 	      putchar (TOLOWER (*np));

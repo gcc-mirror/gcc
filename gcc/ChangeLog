@@ -1,3 +1,47 @@
+2000-10-18  Chandrakala Chavva  <cchavva@redhat.com>
+
+        * expmed.c (expand_mult): Don't do synth_mult optimization for -ftrapv.
+        Use smulv_optab for -ftrapv.
+        (expand_mult_highpart): Use unsigned multiply.
+        (expand_divmod): Special-case division by -1.
+        For EXACT_DIV_EXPR, do right shift first, then the multiply.
+        For complex divide, use abs with unsigned result.
+        * expr.c (force_operand): Use unsigned multiply.
+        (expand_expr): Use overflow-trapping optabs for signed types if
+        flag_trapv.
+        If flag_trapv, don't generate a recursive call with EXPAND_SUM
+        if the type is signed and the original call wasn't EXPAND_SUM or
+        EXPAND_INITIALIZER.
+        * expr.h (addv_optab, subv_optab, smulv_optab, sdivv_optab): Declare.
+        (negv_optab, absv_optab): Declare.
+        * flags.h (flag_trapv): Declare.
+        * genopinit.c (optabs): Add entries for addv_optab, subv_optab,
+        smulv_optab, sdivv_optab, negv_optab and absv_optab.
+	(gen_insn): Interpret '$P' as requiring an integer mode,
+        including partial integer modes.
+        * loop.c (emit_iv_add_mult): Use unsigned expand_mult_add.
+        (product_cheap_p): Use unsigned expand_mult.
+        * optabs.c (addv_optab, subv_optab, smulv_optab, sdivv_optab): Define.
+        (negv_optab, absv_optab): Define.
+        (expand_binop): Use overflow-trapping optabs for signed types if
+        flag_trapv.
+        Handle negv_optab libe neg_optab.
+        (expand_abs): Take result_unsignedp argument instead of unsignedp one.
+        Use overflow-trapping optabs for signed result if flag_trapv.
+        (expand_complex_abs): Use overflow-trapping optabs for signed types if
+        flag_trapv.
+        Don't open-code complex absolute-value operation for flag_trapv.
+        (init_optabs): Initialize addv_optab, subv_optab, smulv_optab,
+        sdivv_optab, negv_optab and absv_optab.
+        * toplev.c (flag_trapv): Define.
+        (lang_independent_options f_options): Include flag_trapv.
+        * tree.h (TYPE_TRAP_SIGNED): Define.
+        * libgcc2.c (__addvsi3, __addvdi3, __subvsi3,__subvsi3, __subvdi3,
+        __mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
+        New functions.
+        * Makefile.in: add _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3
+        _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2.
+
 2000-10-18  Geoffrey Keating  <geoffk@cygnus.com>
 	    David V. Henkel-Wallace  <gumby@cygnus.com>
 

@@ -173,7 +173,7 @@ in the following sections.
 -fdata-sections  -ffunction-sections  -fgcse 
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop
--fno-function-cse  -fno-inline  -fno-peephole
+-fno-function-cse  -fno-inline  -fno-peephole -ftrapv
 -fomit-frame-pointer  -foptimize-register-moves -foptimize-sibling-calls
 -fregmove -frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
 -fschedule-insns  -fschedule-insns2  -fssa -fstrength-reduce
@@ -2663,6 +2663,10 @@ Usage, gcc.info, Using and Porting GCC}.@refill
 
 @item -foptimize-sibling-calls
 Optimize sibling and tail recursive calls.
+
+@item -ftrapv
+This option generates traps for signed overflow on addition, subtraction,
+multiplication operations.
 
 @item -fno-inline
 Don't pay attention to the @code{inline} keyword.  Normally this option

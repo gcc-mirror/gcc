@@ -50,6 +50,176 @@ Boston, MA 02111-1307, USA.  */
 #if defined (L_divdi3) || defined (L_moddi3)
 static inline
 #endif
+
+#ifdef L_addvsi3
+SItype
+__addvsi3 (SItype a, SItype b)
+{
+  SItype w, w1;
+
+  w = a + b;
+
+  if (b >= 0 ? w < a : w > a)
+    abort ();
+
+  return w;
+} 
+
+#ifdef L_addvdi3
+DItype
+__addvdi3 (DItype a, DItype b)
+{
+  DItype w;
+
+  w = a + b;
+
+  if (b >= 0 ? w < a : w > a)
+    abort ();
+
+  return w;
+}
+#endif
+
+#ifdef L_subvsi3
+SItype
+__subvsi3 (SItype a, SItype b)
+{
+#ifdef L_addvsi3
+  return __addvsi3 (a, (-b));
+#else
+  DItype w;
+
+  w = a - b;
+
+  if (b >= 0 ? w > a : w < a)
+    abort ();
+
+  return w;
+#endif
+}
+#endif
+
+#ifdef L_subvdi3
+DItype
+__subvdi3 (DItype a, DItype b)
+{
+#ifdef L_addvdi3
+  return (a, (-b));
+#else
+  DItype w;
+
+  w = a - b;
+
+  if (b >= 0 ? w > a : w < a)
+    abort ();
+
+  return w;
+#endif
+}
+#endif
+
+#ifdef L_mulvsi3
+SItype
+__mulvsi3 (SItype a, SItype b)
+{
+  DItype w;
+
+  w = a * b;
+
+  if ((a >= 0 && b >= 0) ? w < 0
+                         : (a >= 0 || b >= 0) ? w > 0 : w < 0)
+    abort ();
+
+  return w;
+}
+#endif
+
+#ifdef L_negvsi2
+SItype
+__negvsi2 (SItype a)
+{
+   SItype w;
+
+   w  = -a;
+
+  if (a >= 0 ? w > 0 : w < 0)
+    abort ();
+
+   return w;
+}
+#endif
+
+#ifdef L_negvdi2
+DItype
+__negvdi2 (DItype a)
+{
+   DItype w;
+
+   w  = -a;
+
+  if (a >= 0 ? w > 0 : w < 0)
+    abort ();
+
+   return w;
+}
+#endif
+
+#ifdef L_absvsi2
+SItype
+__absvsi2 (SItype a)
+{
+   SItype w = a;
+
+   if (a < 0)
+#ifdef L_negvsi2
+     w = __negvsi2 (a);
+#else
+     w = -a;
+
+   if (w < 0)
+     abort ();
+#endif
+
+   return w;
+}
+#endif
+
+#ifdef L_absvdi2
+DItype
+__absvdi2 (DItype a)
+{
+   DItype w = a;
+
+   if (a < 0)
+#ifdef L_negvsi2
+     w = __negvsi2 (a);
+#else
+     w = -a;
+
+   if (w < 0)
+     abort ();
+#endif
+
+   return w;
+}
+#endif
+
+#ifdef L_mulvdi3
+DItype
+__mulvdi3 (DItype u, DItype v)
+{
+   DItype w;
+
+  w = u * v;
+
+  if ((u >= 0 && v >= 0) ? w < 0
+                         : (u >= 0 || v >= 0) ? w > 0 : w < 0)
+    abort ();
+
+  return w;
+}
+#endif
+
 DWtype
 __negdi2 (DWtype u)
 {
