@@ -455,6 +455,9 @@ tree_ssa_dominator_optimize (void)
       htab_empty (avail_exprs);
       htab_empty (vrp_data);
 
+      for (i = 0; i < num_referenced_vars; i++)
+	var_ann (referenced_var (i))->current_def = NULL;
+
       /* Finally, remove everything except invariants in SSA_NAME_VALUE.
 
 	 This must be done before we iterate as we might have a
