@@ -1682,7 +1682,7 @@ fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp)
       rtx insn = XEXP (insn_list, 0);
 	
       if (INSN_P (insn))
-	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, 0);
+	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, 1);
 
       insn_list = XEXP (insn_list, 1);
     }

@@ -5067,18 +5067,16 @@ cse_insn (insn, libcall_insn)
       sets[i].src_in_memory = hash_arg_in_memory;
 
       /* If SRC is a MEM, there is a REG_EQUIV note for SRC, and DEST is
-	 a pseudo that is set more than once, do not record SRC.  Using
-	 SRC as a replacement for anything else will be incorrect in that
-	 situation.  Note that this usually occurs only for stack slots,
-	 in which case all the RTL would be referring to SRC, so we don't
-	 lose any optimization opportunities by not having SRC in the
-	 hash table.  */
+	 a pseudo, do not record SRC.  Using SRC as a replacement for
+	 anything else will be incorrect in that situation.  Note that
+	 this usually occurs only for stack slots, in which case all the
+	 RTL would be referring to SRC, so we don't lose any optimization
+	 opportunities by not having SRC in the hash table.  */
 
       if (GET_CODE (src) == MEM
-	  && find_reg_note (insn, REG_EQUIV, src) != 0
+	  && find_reg_note (insn, REG_EQUIV, NULL_RTX) != 0
 	  && GET_CODE (dest) == REG
-	  && REGNO (dest) >= FIRST_PSEUDO_REGISTER
-	  && REG_N_SETS (REGNO (dest)) != 1)
+	  && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
 	sets[i].src_volatile = 1;
 
 #if 0
