@@ -30,29 +30,29 @@
   [(UNSPEC_LOAD_DF_LOW		 0)
    (UNSPEC_LOAD_DF_HIGH		 1)
    (UNSPEC_STORE_DF_HIGH	 2)
-   (UNSPEC_GET_FNADDR		 4)
-   (UNSPEC_BLOCKAGE		 6)
-   (UNSPEC_CPRESTORE		 8)
-   (UNSPEC_EH_RECEIVER		10)
-   (UNSPEC_EH_RETURN		11)
-   (UNSPEC_CONSTTABLE_QI	12)
-   (UNSPEC_CONSTTABLE_HI	13)
-   (UNSPEC_CONSTTABLE_SI	14)
-   (UNSPEC_CONSTTABLE_DI	15)
-   (UNSPEC_CONSTTABLE_SF	16)
-   (UNSPEC_CONSTTABLE_DF	17)
-   (UNSPEC_ALIGN_2		18)
-   (UNSPEC_ALIGN_4		19)
-   (UNSPEC_ALIGN_8		20)
-   (UNSPEC_HIGH			22)
-   (UNSPEC_LWL			23)
-   (UNSPEC_LWR			24)
-   (UNSPEC_SWL			25)
-   (UNSPEC_SWR			26)
-   (UNSPEC_LDL			27)
-   (UNSPEC_LDR			28)
-   (UNSPEC_SDL			29)
-   (UNSPEC_SDR			30)
+   (UNSPEC_GET_FNADDR		 3)
+   (UNSPEC_BLOCKAGE		 4)
+   (UNSPEC_CPRESTORE		 5)
+   (UNSPEC_EH_RECEIVER		 6)
+   (UNSPEC_EH_RETURN		 7)
+   (UNSPEC_CONSTTABLE_QI	 8)
+   (UNSPEC_CONSTTABLE_HI	 9)
+   (UNSPEC_CONSTTABLE_SI	10)
+   (UNSPEC_CONSTTABLE_DI	11)
+   (UNSPEC_CONSTTABLE_SF	12)
+   (UNSPEC_CONSTTABLE_DF	13)
+   (UNSPEC_ALIGN_2		14)
+   (UNSPEC_ALIGN_4		15)
+   (UNSPEC_ALIGN_8		16)
+   (UNSPEC_HIGH			17)
+   (UNSPEC_LWL			18)
+   (UNSPEC_LWR			19)
+   (UNSPEC_SWL			20)
+   (UNSPEC_SWR			21)
+   (UNSPEC_LDL			22)
+   (UNSPEC_LDR			23)
+   (UNSPEC_SDL			24)
+   (UNSPEC_SDR			25)
 
    ;; Constants used in relocation unspecs.  RELOC_GOT_PAGE and RELOC_GOT_DISP
    ;; are really only available for n32 and n64.  However, it is convenient
@@ -69,7 +69,6 @@
    (RELOC_LOADGP_HI		108)
    (RELOC_LOADGP_LO		109)])
 
-
 ;; ....................
 ;;
 ;;	Attributes
@@ -81,10 +80,12 @@
 (define_attr "jal" "unset,direct,indirect"
   (const_string "unset"))
 
-;; True for multi-instruction jal macros.  jal is always a macro
-;; in SVR4 PIC since it includes an instruction to restore $gp.
-;; Direct jals are also macros in NewABI PIC since they load the
-;; target address into $25.
+;; This attribute is YES if the instruction is a jal macro (not a
+;; real jal instruction).
+;;
+;; jal is always a macro in SVR4 PIC since it includes an instruction to
+;; restore $gp.  Direct jals are also macros in NewABI PIC since they
+;; load the target address into $25.
 (define_attr "jal_macro" "no,yes"
   (cond [(eq_attr "jal" "direct")
 	 (symbol_ref "TARGET_ABICALLS != 0")
@@ -129,24 +130,47 @@
 	(const_string "unknown")))
 
 ;; Main data type used by the insn
-(define_attr "mode" "unknown,none,QI,HI,SI,DI,SF,DF,FPSW" (const_string "unknown"))
+(define_attr "mode" "unknown,none,QI,HI,SI,DI,SF,DF,FPSW"
+  (const_string "unknown"))
 
 ;; Is this an extended instruction in mips16 mode?
 (define_attr "extended_mips16" "no,yes"
   (const_string "no"))
 
-;; Length (in # of bytes).  A conditional branch is allowed only to a
-;; location within a signed 18-bit offset of the delay slot.  If that
-;; provides too smal a range, we use the `j' instruction.  This
-;; instruction takes a 28-bit value, but that value is not an offset.
-;; Instead, it's bitwise-ored with the high-order four bits of the
-;; instruction in the delay slot, which means it cannot be used to
-;; cross a 256MB boundary.  We could fall back back on the jr,
-;; instruction which allows full access to the entire address space,
-;; but we do not do so at present.
-
+;; Length of instruction in bytes.
 (define_attr "length" ""
-   (cond [(eq_attr "type" "branch")
+   (cond [;; Direct branch instructions have a range of [-0x40000,0x3fffc].
+	  ;; If a branch is outside this range, we have a choice of two
+	  ;; sequences.  For PIC, an out-of-range branch like:
+	  ;;
+	  ;;	bne	r1,r2,target
+	  ;;	dslot
+	  ;;
+	  ;; becomes the equivalent of:
+	  ;;
+	  ;;	beq	r1,r2,1f
+	  ;;	dslot
+	  ;;	la	$at,target
+	  ;;	jr	$at
+	  ;;	nop
+	  ;; 1:
+	  ;;
+	  ;; where the load address can be up to three instructions long
+	  ;; (lw, nop, addiu).
+	  ;;
+	  ;; The non-PIC case is similar except that we use a direct
+	  ;; jump instead of an la/jr pair.  Since the target of this
+	  ;; jump is an absolute 28-bit bit address (the other bits
+	  ;; coming from the address of the delay slot) this form cannot
+	  ;; cross a 256MB boundary.  We could provide the option of
+	  ;; using la/jr in this case too, but we do not do so at
+	  ;; present.
+	  ;;
+	  ;; Note that this value does not account for the delay slot
+	  ;; instruction, whose length is added separately.  If the RTL
+	  ;; pattern has no explicit delay slot, mips_adjust_insn_length
+	  ;; will add the length of the implicit nop.
+	  (eq_attr "type" "branch")
           (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 4))))
                      (const_int 131072))
                  (const_int 4)
@@ -154,12 +178,14 @@
 		     (const_int 0))
 		 (const_int 24)
 		 ] (const_int 12))
+
 	  (eq_attr "type" "const")
 	  (symbol_ref "mips_const_insns (operands[1]) * 4")
 	  (eq_attr "type" "load")
 	  (symbol_ref "mips_fetch_insns (operands[1]) * 4")
 	  (eq_attr "type" "store")
 	  (symbol_ref "mips_fetch_insns (operands[0]) * 4")
+
 	  ;; In the worst case, a call macro will take 8 instructions:
 	  ;;
 	  ;;	 lui $25,%call_hi(FOO)
@@ -172,9 +198,11 @@
 	  ;;	 nop
 	  (eq_attr "jal_macro" "yes")
 	  (const_int 32)
+
 	  (and (eq_attr "extended_mips16" "yes")
 	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
 	  (const_int 8)
+
 	  (and (eq_attr "type" "idiv")
 	       (ne (symbol_ref "TARGET_CHECK_ZERO_DIV") (const_int 0)))
 	  (cond [(ne (symbol_ref "TARGET_MIPS16") (const_int 0))
@@ -184,16 +212,6 @@
 
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
-
-;; Attribute describing the processor
-;; (define_attr "cpu" "default,r3000,r6000,r4000"
-;;   (const
-;;    (cond [(eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R3000"))   (const_string "r3000")
-;;           (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R4000"))   (const_string "r4000")
-;;           (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R6000"))   (const_string "r6000")]
-;;          (const_string "default"))))
-
-;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
   "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sr71000"
   (const (symbol_ref "mips_tune")))
@@ -239,23 +257,19 @@
 		(const_string "no")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
-
 (define_attr "branch_likely" "no,yes"
   (const
    (if_then_else (ne (symbol_ref "GENERATE_BRANCHLIKELY") (const_int 0))
 		 (const_string "yes")
 		 (const_string "no"))))
 
-
 ;; Describe a user's asm statement.
 (define_asm_attributes
   [(set_attr "type" "multi")])
-
 
-
 ;; .........................
 ;;
-;;	Delay slots, can't describe load/fcmp/xfer delay slots here
+;;	Branch, call and jump delay slots
 ;;
 ;; .........................
 
@@ -276,9 +290,7 @@
   [(eq_attr "can_delay" "yes")
    (nil)
    (nil)])
-
 
-
 ;; .........................
 ;;
 ;;	Functional units
@@ -593,32 +605,6 @@
        (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
   58 58)
 
-;; The following functional units do not use the cpu type, and use
-;; much less memory in genattrtab.c.
-
-;; (define_function_unit "memory"   1 0 (eq_attr "type" "load")                                3 0)
-;; (define_function_unit "memory"   1 0 (eq_attr "type" "store")                               1 0)
-;;
-;; (define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")                                2 0)
-;;
-;; (define_function_unit "transfer" 1 0 (eq_attr "type" "xfer")                                2 0)
-;; (define_function_unit "transfer" 1 0 (eq_attr "type" "hilo")                                3 0)
-;;
-;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "imul")                               17 0)
-;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "idiv")                               38 0)
-;;
-;; (define_function_unit "adder"    1 1 (eq_attr "type" "fadd")                                4 0)
-;; (define_function_unit "adder"    1 1 (eq_attr "type" "fabs,fneg")                           2 0)
-;;
-;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "SF"))    7 0)
-;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "DF"))    8 0)
-;;
-;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "SF"))   23 0)
-;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "DF"))   36 0)
-;;
-;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 0)
-;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 0)
-
 ;; Include scheduling descriptions.
 
 (include "5400.md")
@@ -626,8 +612,7 @@
 (include "7000.md")
 (include "9000.md")
 (include "sr71k.md")
-
-
+
 ;;
 ;;  ....................
 ;;
@@ -660,10 +645,6 @@
   mips_gen_conditional_trap (operands);
   DONE;
 }")
-
-;; Match a TRAP_IF with 2nd arg of 0.  The div_trap_* insns match a
-;; 2nd arg of any CONST_INT, so this insn must appear first.
-;; gen_div_trap always generates TRAP_IF with 2nd arg of 6 or 7.
 
 (define_insn ""
   [(trap_if (match_operator 0 "trap_cmp_op"
@@ -1224,7 +1205,6 @@
 			       (const_int 4)
 			       (const_int 8))
 		 (const_int 4)])])
-
 
 ;;
 ;;  ....................
@@ -2504,6 +2484,7 @@
   { return mips_output_division ("ddivu\\t$0,%1,%2", operands); }
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")])
+
 ;;
 ;;  ....................
 ;;
@@ -2544,7 +2525,6 @@
   "rsqrt.s\\t%0,%2"
   [(set_attr "type"	"frsqrt")
    (set_attr "mode"	"SF")])
-
 
 ;;
 ;;  ....................
@@ -2616,7 +2596,6 @@
   "abs.s\\t%0,%1"
   [(set_attr "type"	"fabs")
    (set_attr "mode"	"SF")])
-
 
 ;;
 ;;  ....................
@@ -2693,9 +2672,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"28")])
-
 
-
 ;;
 ;;  ...................
 ;;
@@ -2719,7 +2696,7 @@ move\\t%0,%z4\\n\\
   "dclz\\t%0,%1"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
-
+
 ;;
 ;;  ....................
 ;;
@@ -2834,7 +2811,7 @@ move\\t%0,%z4\\n\\
 ;;  ....................
 ;;
 
-;; Many of these instructions uses trivial define_expands, because we
+;; Many of these instructions use trivial define_expands, because we
 ;; want to use a different set of constraints when TARGET_MIPS16.
 
 (define_expand "andsi3"
@@ -3216,7 +3193,6 @@ move\\t%0,%z4\\n\\
   "andi\\t%0,%1,0xff"
   [(set_attr "type"     "darith")
    (set_attr "mode"     "HI")])
-
 
 ;;
 ;;  ....................
@@ -3657,9 +3633,7 @@ move\\t%0,%z4\\n\\
   "cvt.d.s\\t%0,%1"
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")])
-
 
-
 ;;
 ;;  ....................
 ;;
@@ -3737,14 +3711,6 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"DF")
    (set_attr "length"	"36")])
 
-;;; ??? trunc.l.d is mentioned in the appendix of the 1993 r4000/r4600 manuals
-;;; but not in the chapter that describes the FPU.  It is not mentioned at all
-;;; in the 1991 manuals.  The r4000 at Cygnus does not have this instruction.
-
-;;; Deleting this means that we now need two libgcc2.a libraries.  One for
-;;; the 32 bit calling convention and one for the 64 bit calling convention.
-
-;;; If this is disabled, then fixuns_truncdfdi2 must be disabled also.
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
@@ -3756,9 +3722,6 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"4")])
 
 
-;;; ??? trunc.l.s is mentioned in the appendix of the 1993 r4000/r4600 manuals
-;;; but not in the chapter that describes the FPU.  It is not mentioned at all
-;;; in the 1991 manuals.  The r4000 at Cygnus does not have this instruction.
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (match_operand:SF 1 "register_operand" "f")))]
@@ -3991,7 +3954,6 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
-
 
 ;;
 ;;  ....................
@@ -4659,7 +4621,7 @@ move\\t%0,%z4\\n\\
 ;; Unlike most other insns, the move insns can't be split with
 ;; different predicates, because register spilling and other parts of
 ;; the compiler, have memoized the insn number already.
-;; Unsigned loads are used because BYTE_LOADS_ZERO_EXTEND is defined
+;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "")
@@ -4679,9 +4641,6 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
-
-;; The difference between these two is whether or not ints are allowed
-;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
@@ -4784,7 +4743,7 @@ move\\t%0,%z4\\n\\
 ;; Unlike most other insns, the move insns can't be split with
 ;; different predicates, because register spilling and other parts of
 ;; the compiler, have memoized the insn number already.
-;; Unsigned loads are used because BYTE_LOADS_ZERO_EXTEND is defined
+;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "nonimmediate_operand" "")
@@ -4804,9 +4763,6 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
-
-;; The difference between these two is whether or not ints are allowed
-;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movqi_internal"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
@@ -5105,7 +5061,7 @@ move\\t%0,%z4\\n\\
 ;;
 ;;  ....................
 
-;; Many of these instructions uses trivial define_expands, because we
+;; Many of these instructions use trivial define_expands, because we
 ;; want to use a different set of constraints when TARGET_MIPS16.
 
 (define_expand "ashlsi3"
@@ -6257,7 +6213,6 @@ move\\t%0,%z4\\n\\
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) - 8);
 }")
-
 
 ;;
 ;;  ....................
@@ -6277,7 +6232,7 @@ move\\t%0,%z4\\n\\
 ;;	Different CC modes are used, based on what type of branch is
 ;;	done, so that we can constrain things appropriately.  There
 ;;	are assumptions in the rest of GCC that break if we fold the
-;;	operands into the branchs for integer operations, and use cc0
+;;	operands into the branches for integer operations, and use cc0
 ;;	for floating point, so we use the fp status register instead.
 ;;	If needed, an appropriate temporary is created to hold the
 ;;	of the integer compare.
@@ -6375,7 +6330,6 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
-
 
 ;;
 ;;  ....................
@@ -6939,7 +6893,6 @@ move\\t%0,%z4\\n\\
       DONE;
     }
 }")
-
 
 ;;
 ;;  ....................
@@ -7826,7 +7779,6 @@ move\\t%0,%z4\\n\\
 	(xor:DI (match_dup 0)
 		(const_int 1)))]
   "")
-
 
 ;;
 ;;  ....................
@@ -7996,7 +7948,6 @@ move\\t%0,%z4\\n\\
   "c.le.s\t%Z0%2,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
-
 
 ;;
 ;;  ....................
@@ -8292,8 +8243,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
     DONE;
   })
 
-;; Restore the gp that we saved above.  Despite the comment, it seems that
-;; older code did recalculate the gp from $25.  Continue to jump through
+;; Restore the gp that we saved above.  Despite the earlier comment, it seems
+;; that older code did recalculate the gp from $25.  Continue to jump through
 ;; $25 for compatibility (we lose nothing by doing so).
 
 (define_expand "builtin_longjmp"
@@ -8375,7 +8326,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
 })
 
 ;; Trivial return.  Make it look like a normal return insn as that
-;; allows jump optimizations to work better .
+;; allows jump optimizations to work better.
+
 (define_insn "return"
   [(return)]
   "mips_can_use_return_insn ()"
@@ -8466,11 +8418,12 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
 ;;
 ;;  ....................
 
-;; Sibling calls.  All these patterns use direct jumps.
+;; Sibling calls.  All these patterns use jump instructions.
 
-;; call_insn_operand will only accepts constant addresses if a direct
-;; jump is acceptable.  Since the 'S' constraint is defined in terms of
-;; call_insn_operand, the same is true of the constraints.
+;; If TARGET_SIBCALLS, call_insn_operand will only accept constant
+;; addresses if a direct jump is acceptable.  Since the 'S' constraint
+;; is defined in terms of call_insn_operand, the same is true of the
+;; constraints.
 
 ;; When we use an indirect jump, we need a register that will be
 ;; preserved by the epilogue.  Since TARGET_ABICALLS forces us to
@@ -8737,24 +8690,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
       return "#nop";
   }
   [(set_attr "type"	"arith")])
-
-;; The MIPS chip does not seem to require stack probes.
-;;
-;; (define_expand "probe"
-;;   [(set (match_dup 0)
-;; 	(match_dup 1))]
-;;   ""
-;;   "
-;; {
-;;   operands[0] = gen_reg_rtx (SImode);
-;;   operands[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
-;;   MEM_VOLATILE_P (operands[1]) = TRUE;
-;;
-;;   /* fall through and generate default code */
-;; }")
-;;
 
-;;
 ;; MIPS4 Conditional move instructions.
 
 (define_insn ""
