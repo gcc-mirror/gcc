@@ -1,3 +1,9 @@
+Wed Dec 15 01:23:29 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* regclass.c (record_reg_classes): Update comment for merging
+	register class preferences in reg->reg copies.  Tighten conditions
+	for merging register class preferences in reg->reg copies.
+
 Wed Dec 15 02:19:32 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (tablejumpdi): Generate DImode LABEL_REF.

@@ -1622,11 +1622,18 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
     }
 
   /* If this insn is a single set copying operand 1 to operand 0
-     and one is a pseudo with the other a hard reg that is in its
-     own register class, set the cost of that register class to -1.
-     Do this only when source dies to avoid stressing of register
-     allocator by preferrencing two coliding registers into single
-     place.  */
+     and one operand is a pseudo with the other a hard reg or a pseudo
+     that prefers a register that is in its own register class then
+     we may want to adjust the cost of that register class to -1.
+ 
+     Avoid the adjustment if the source does not die to avoid stressing of
+     register allocator by preferrencing two coliding registers into single
+     class.
+
+     Also avoid the adjustment if a copy between registers of the class
+     is expensive (ten times the cost of a default copy is considered
+     arbitrarily expensive).  This avoids losing when the preferred class
+     is very expensive as the source of a copy instruction.  */
 
   if ((set = single_set (insn)) != 0
       && ops[0] == SET_DEST (set) && ops[1] == SET_SRC (set)
@@ -1640,10 +1647,15 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	  int class;
 	  int nr;
 
-	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0
-	      && (reg_class_size[(unsigned char) reg_pref[regno].prefclass]
-		  == CLASS_MAX_NREGS (reg_pref[regno].prefclass, mode)))
-	    op_costs[i].cost[(unsigned char) reg_pref[regno].prefclass] = -1;
+	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0)
+	    {
+	      enum reg_class pref = reg_pref[regno].prefclass;
+
+	      if ((reg_class_size[(unsigned char) pref]
+		   == CLASS_MAX_NREGS (pref, mode))
+		  && REGISTER_MOVE_COST (pref, pref) < 10 * 2)
+		op_costs[i].cost[(unsigned char) pref] = -1;
+	    }
 	  else if (regno < FIRST_PSEUDO_REGISTER)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
