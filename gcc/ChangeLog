@@ -1,3 +1,12 @@
+Wed Mar 10 08:01:52 1999  Bruce Korb <korb@datadesign.com>
+
+	* fixinc/fixinc.*: Resync-ed with the files in this
+	directory.
+
+	* fixinc/mkfixinc.sh: the machine case elements were
+	out-of-order.  (the ix86-*-linux-gnu* entry needed to
+	be earlier).
+
 Wed Mar 10 00:01:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine_note_store): Fix calculation of number
