@@ -9689,34 +9689,16 @@ instantiate_decl (d)
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
-      extern struct obstack *saveable_obstack;
-      extern struct obstack *rtl_obstack;
-
       /* Set up context.  */
       start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
       store_parm_decls ();
 
-      /* Anything we might
-	 want to save is going to have to be saved forever.  Note that
-	 we don't want to save all kinds of temporary clutter that
-	 might end up on the temporary obstack so we don't want to
-	 call push_permanent_obstack.  */
-      push_obstacks_nochange ();
-      saveable_obstack = &permanent_obstack;
-      /* We only need this because of the cases where we generate
-	 RTL_EXPRs.  We should really be generating RTL_EXPRs until
-	 final expansion time; when that is fixed, this can go.  */
-      rtl_obstack = &permanent_obstack;
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
 		   /*complain=*/1, tmpl);
 
-      /* Clean up.  */
-      pop_obstacks ();
-      finish_function (lineno, 0);
-
-      /* Now, generate RTL for the function.  */
-      expand_body (d);
+      /* Finish the function.  */
+      expand_body (finish_function (lineno, 0));
     }
 
 out:

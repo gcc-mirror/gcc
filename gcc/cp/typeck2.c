@@ -496,6 +496,10 @@ store_init_value (decl, init)
 	}
     }
 #endif
+  
+  /* Store the VALUE in DECL_INITIAL.  If we're building a
+     statement-tree we will actually expand the initialization later
+     when we output this function.  */
   DECL_INITIAL (decl) = value;
   return NULL_TREE;
 }

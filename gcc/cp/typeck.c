@@ -64,7 +64,7 @@ static int comp_cv_target_types PROTO((tree, tree, int));
 static void casts_away_constness_r PROTO((tree *, tree *));
 static int casts_away_constness PROTO ((tree, tree));
 
-/* Return the target type of TYPE, which meas return T for:
+/* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
 
 tree
