@@ -623,7 +623,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  type = unsigned_type (type);
 	}
 
-      if (max_lt && !unsignedp0)
+      if (!max_gt && !unsignedp0)
 	{
 	  /* This is the case of (char)x >?< 0x80, which people used to use
 	     expecting old C compilers to change the 0x80 into -0x80.  */
@@ -633,9 +633,9 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	    warning ("comparison is always 1 due to limited range of data type");
 	}
 
-      if (min_gt && unsignedp0)
+      if (!min_lt && unsignedp0)
 	{
-	  /* This is the case of (unsigned char)x >?< -1.  */
+	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
 	  if (val == integer_zero_node)
 	    warning ("comparison is always 0 due to limited range of data type");
 	  if (val == integer_one_node)
