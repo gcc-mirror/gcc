@@ -2140,12 +2140,12 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
   dispatch = copy_to_reg (mem);
 
   mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs);
-  if (word_mode != Pmode)
+  if (word_mode != ptr_mode)
     {
 #ifdef POINTERS_EXTEND_UNSIGNED
-      mem = convert_memory_address (Pmode, mem);
+      mem = convert_memory_address (ptr_mode, mem);
 #else
-      mem = convert_to_mode (Pmode, mem, 0);
+      mem = convert_to_mode (ptr_mode, mem, 0);
 #endif
     }
   emit_move_insn (cfun->eh->exc_ptr, mem);
