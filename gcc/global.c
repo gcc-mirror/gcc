@@ -114,8 +114,7 @@ static int *reg_may_share;
    recording whether two allocno's conflict (can't go in the same
    hardware register).
 
-   `conflicts' is not symmetric; a conflict between allocno's i and j
-   is recorded either in element i,j or in element j,i.  */
+   `conflicts' is symmetric after the call to mirror_conflicts.  */
 
 static INT_TYPE *conflicts;
 
@@ -127,12 +126,18 @@ static int allocno_row_words;
 /* Two macros to test or store 1 in an element of `conflicts'.  */
 
 #define CONFLICTP(I, J) \
- (conflicts[(I) * allocno_row_words + (J) / INT_BITS]	\
-  & ((INT_TYPE) 1 << ((J) % INT_BITS)))
+ (conflicts[(I) * allocno_row_words + (unsigned)(J) / INT_BITS]	\
+  & ((INT_TYPE) 1 << ((unsigned)(J) % INT_BITS)))
 
 #define SET_CONFLICT(I, J) \
- (conflicts[(I) * allocno_row_words + (J) / INT_BITS]	\
-  |= ((INT_TYPE) 1 << ((J) % INT_BITS)))
+ (conflicts[(I) * allocno_row_words + (unsigned)(J) / INT_BITS]	\
+  |= ((INT_TYPE) 1 << ((unsigned)(J) % INT_BITS)))
+
+/* CYGNUS LOCAL LRS */
+#define CLEAR_CONFLICT(I, J) \
+ (conflicts[(I) * allocno_row_words + (J) / INT_BITS]   \
+  &= ~ ((INT_TYPE) 1 << ((J) % INT_BITS)))
+/* END CYGNUS LOCAL */
 
 /* Set of hard regs currently live (during scan of all insns).  */
 
@@ -259,6 +264,7 @@ static HARD_REG_SET eliminable_regset;
 
 static int allocno_compare	PROTO((const PTR, const PTR));
 static void global_conflicts	PROTO((void));
+static void mirror_conflicts	PROTO((void));
 static void expand_preferences	PROTO((void));
 static void prune_preferences	PROTO((void));
 static void find_reg		PROTO((int, HARD_REG_SET, int, int, int));
@@ -485,6 +491,8 @@ global_alloc (file)
 	 and between allocnos and hard regs.  */
 
       global_conflicts ();
+
+      mirror_conflicts ();
 
       /* Eliminate conflicts between pseudos and eliminable registers.  If
 	 the register is not eliminated, the pseudo won't really be able to
@@ -818,9 +826,7 @@ expand_preferences ()
 	    && GET_CODE (XEXP (link, 0)) == REG
 	    && reg_allocno[REGNO (XEXP (link, 0))] >= 0
 	    && ! CONFLICTP (reg_allocno[REGNO (SET_DEST (set))],
-			    reg_allocno[REGNO (XEXP (link, 0))])
-	    && ! CONFLICTP (reg_allocno[REGNO (XEXP (link, 0))],
-			    reg_allocno[REGNO (SET_DEST (set))]))
+			    reg_allocno[REGNO (XEXP (link, 0))]))
 	  {
 	    int a1 = reg_allocno[REGNO (SET_DEST (set))];
 	    int a2 = reg_allocno[REGNO (XEXP (link, 0))];
@@ -856,6 +862,7 @@ prune_preferences ()
 {
   int i, j;
   int allocno;
+  int *allocno_to_order = (int *) xmalloc (max_allocno * sizeof (int));
   
   /* Scan least most important to most important.
      For each allocno, remove from preferences registers that cannot be used,
@@ -864,9 +871,10 @@ prune_preferences ()
 
   for (i = max_allocno - 1; i >= 0; i--)
     {
-      HARD_REG_SET temp, temp2;
+      HARD_REG_SET temp;
 
       allocno = allocno_order[i];
+      allocno_to_order[allocno] = i;
       COPY_HARD_REG_SET (temp, hard_reg_conflicts[allocno]);
 
       if (allocno_calls_crossed[allocno] == 0)
@@ -881,29 +889,49 @@ prune_preferences ()
       AND_COMPL_HARD_REG_SET (hard_reg_preferences[allocno], temp);
       AND_COMPL_HARD_REG_SET (hard_reg_copy_preferences[allocno], temp);
       AND_COMPL_HARD_REG_SET (hard_reg_full_preferences[allocno], temp);
+    }
 
+  for (i = max_allocno - 1; i >= 0; i--)
+    {
       /* Merge in the preferences of lower-priority registers (they have
 	 already been pruned).  If we also prefer some of those registers,
 	 don't exclude them unless we are of a smaller size (in which case
 	 we want to give the lower-priority allocno the first chance for
 	 these registers).  */
+      HARD_REG_SET temp, temp2;
+      INT_TYPE *p;
+      int allocno2, allocno3;
+
+      allocno = allocno_order[i];
+      p = conflicts + allocno * allocno_row_words;
+
       CLEAR_HARD_REG_SET (temp);
       CLEAR_HARD_REG_SET (temp2);
-      for (j = i + 1; j < max_allocno; j++)
-	if (CONFLICTP (allocno, allocno_order[j])
-	    || CONFLICTP (allocno_order[j], allocno))
-	  {
-	    if (allocno_size[allocno_order[j]] <= allocno_size[allocno])
-	      IOR_HARD_REG_SET (temp,
-				hard_reg_full_preferences[allocno_order[j]]);
-	    else
-	      IOR_HARD_REG_SET (temp2,
-				hard_reg_full_preferences[allocno_order[j]]);
-	  }
+
+      for (j = allocno_row_words - 1, allocno2 = 0; j >= 0;
+	   j--, allocno2 += INT_BITS)
+	{
+	  unsigned INT_TYPE word = (unsigned INT_TYPE) *p++;
+
+	  for (allocno3 = allocno2; word; word >>= 1, allocno3++)
+	    {
+	      if ((word & 1) && allocno_to_order[allocno3] > i)
+		{
+		  if (allocno_size[allocno3] <= allocno_size[allocno])
+		    IOR_HARD_REG_SET (temp,
+				      hard_reg_full_preferences[allocno3]);
+		  else
+		    IOR_HARD_REG_SET (temp2,
+				      hard_reg_full_preferences[allocno3]);
+		}
+	    }
+	}
+
       AND_COMPL_HARD_REG_SET (temp, hard_reg_full_preferences[allocno]);
       IOR_HARD_REG_SET (temp, temp2);
       COPY_HARD_REG_SET (regs_someone_prefers[allocno], temp);
     }
+  free (allocno_to_order);
 }
 
 /* Assign a hard register to ALLOCNO; look for one that is the beginning
@@ -1219,7 +1247,7 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
 	 mark it as conflicting with the hard regs this one occupies.  */
       lim = allocno;
       for (j = 0; j < max_allocno; j++)
-	if (CONFLICTP (lim, j) || CONFLICTP (j, lim))
+	if (CONFLICTP (j, lim))
 	  {
 	    IOR_HARD_REG_SET (hard_reg_conflicts[j], this_reg);
 	  }
@@ -1325,6 +1353,38 @@ record_conflicts (allocno_vec, len)
       IOR_HARD_REG_SET (hard_reg_conflicts[allocno], hard_regs_live);
       for (j = allocno_row_words - 1; j >= 0; j--)
 	conflicts[ialloc_prod + j] |= allocnos_live[j];
+    }
+}
+
+/* If CONFLICTP (i, j) is true, make sure CONFLICTP (j, i) is also true.  */
+static void
+mirror_conflicts ()
+{
+  register int i, j;
+  int rw = allocno_row_words;
+  int rwb = rw * INT_BITS;
+  INT_TYPE *p = conflicts;
+  INT_TYPE *q0 = conflicts, *q1, *q2;
+  unsigned INT_TYPE mask;
+
+  for (i = max_allocno - 1, mask = 1; i >= 0; i--, mask <<= 1)
+    {
+      if (! mask)
+	{
+	  mask = 1;
+	  q0++;
+	}
+      for (j = allocno_row_words - 1, q1 = q0; j >= 0; j--, q1 += rwb)
+	{
+	  unsigned INT_TYPE word;
+
+	  for (word = (unsigned INT_TYPE) *p++, q2 = q1; word;
+	       word >>= 1, q2 += rw)
+	    {
+	      if (word & 1)
+		*q2 |= mask;
+	    }
+	}
     }
 }
 
@@ -1689,17 +1749,18 @@ build_insn_chain (first)
       if (first == BLOCK_HEAD (b))
 	{
 	  int i;
-	  CLEAR_REG_SET (live_relevant_regs);
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i)
-		&& ! TEST_HARD_REG_BIT (eliminable_regset, i))
-	      SET_REGNO_REG_SET (live_relevant_regs, i);
 
-	  for (; i < max_regno; i++)
-	    if (reg_renumber[i] >= 0
-		&& REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i))
-	      SET_REGNO_REG_SET (live_relevant_regs, i);
-	}
+	  CLEAR_REG_SET (live_relevant_regs);
+
+	  EXECUTE_IF_SET_IN_BITMAP
+	    (BASIC_BLOCK (b)->global_live_at_start, 0, i,
+	     {
+	       if (i < FIRST_PSEUDO_REGISTER
+		   ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
+		   : reg_renumber[i] >= 0)
+		 SET_REGNO_REG_SET (live_relevant_regs, i);
+	     });
+ 	}
 
       if (GET_CODE (first) != NOTE && GET_CODE (first) != BARRIER)
 	{
@@ -1805,7 +1866,7 @@ dump_conflicts (file)
       register int j;
       fprintf (file, ";; %d conflicts:", allocno_reg[i]);
       for (j = 0; j < max_allocno; j++)
-	if (CONFLICTP (i, j) || CONFLICTP (j, i))
+	if (CONFLICTP (j, i))
 	  fprintf (file, " %d", allocno_reg[j]);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	if (TEST_HARD_REG_BIT (hard_reg_conflicts[i], j))
