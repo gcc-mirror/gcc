@@ -3508,17 +3508,25 @@ same column as it did in the original source file.
 
 @item The numeric value of character constants in preprocessor expressions.
 
-The preprocessor and compiler interpret character constants in the same
-way; escape sequences such as @samp{\a} are given the values they would
-have on the target machine.
+The preprocessor and compiler interpret character constants in the
+same way; i.e.@: escape sequences such as @samp{\a} are given the
+values they would have on the target machine.
 
 Multi-character character constants are interpreted a character at a
 time, shifting the previous result left by the number of bits per
-character on the host, and adding the new character.  For example, 'ab'
-on an 8-bit host would be interpreted as @w{'a' * 256 + 'b'}.  If there
-are more characters in the constant than can fit in the widest native
-integer type on the host, usually a @code{long}, the excess characters
-are ignored and a diagnostic is given.
+target character and adding the sign-extended value of the new
+character.  They have type @code{int}, and are treated as signed
+regardless of whether single characters are signed or not.  If there
+are more characters in the constant than would fit in the target
+@code{int}, a diagnostic is given, and the excess leading characters
+are ignored.  This methodology is not fully compatible with versions
+3.1 and earlier of GCC, which used a confusing and inconsistent
+valuation technique.
+
+For example, 'ab' for a target with an 8-bit @code{char} would be
+interpreted as @w{'a' * 256 + 'b'}, and 'a\234' as @w{'a' * 256 +
+'\234'}.  GCC 3.1 and earlier would give a different value for the
+latter example, probably @w{'a' * 256 + (unsigned char) '\234'}.
 
 @item Source file inclusion.
 
