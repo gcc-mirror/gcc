@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 /* Name to predefine in the preprocessor for processor variations.  */
 #define	CPP_SPEC "%{mic*:-D__i960\
 			%{mka:-D__i960KA}%{mkb:-D__i960KB}\
+			%{mja:-D__i960JA}%{mjd:-D__i960JD}%{mjf:-D__i960JF}\
+			%{mrp:-D__i960RP}\
 			%{msa:-D__i960SA}%{msb:-D__i960SB}\
 			%{mmc:-D__i960MC}\
 			%{mca:-D__i960CA}%{mcc:-D__i960CC}\
@@ -58,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
    If the user gives an explicit -gstabs or -gcoff option, then do not
    try to add an implicit one, as this will fail.  */
 #define CC1_SPEC \
-	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mkb}}}}}}}}\
+	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:%{!mja:%{!mjd:%{!mjf:%{!mrp:-mka}}}}}}}}}}}}\
 	 %{!gs*:%{!gc*:%{mbout:%{g*:-gstabs}}\
 		       %{mcoff:%{g*:-gcoff}}\
 		       %{!mbout:%{!mcoff:%{g*:-gstabs}}}}}"
@@ -69,7 +71,8 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC \
 	"%{mka:-AKA}%{mkb:-AKB}%{msa:-ASA}%{msb:-ASB}\
 	%{mmc:-AMC}%{mca:-ACA}%{mcc:-ACC}%{mcf:-ACF}\
-	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-AKB}}}}}}}}\
+        %{mja:-AJX}%{mjd:-AJX}%{mjf:-AJX}%{mrp:-AJX}\
+	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:%{!mja:%{!mjd:%{!mjf:%{!mrp:-AKB}}}}}}}}}}}}\
 	%{mlink-relax:-linkrelax}"
 
 /* Specs for the linker, to handle processor variations.
@@ -133,7 +136,8 @@ Boston, MA 02111-1307, USA.  */
 #define	TARGET_PROTECTED	(target_flags & TARGET_FLAG_PROTECTED)
 
 /* The following three are mainly used to provide a little sanity checking
-   against the -mARCH flags given.  */
+   against the -mARCH flags given. The Jx series, for the purposes of
+   gcc, is a Kx with a data cache. */
 
 /* Nonzero if we should generate code for the KA and similar processors.
    No FPU, no microcode instructions.  */
@@ -226,6 +230,11 @@ extern int target_flags;
 			TARGET_FLAG_COMPLEX_ADDR)},\
 /*  {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},*/ \
+    {"ja", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
+    {"jd", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
+    {"jf", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
+			TARGET_FLAG_COMPLEX_ADDR)},\
+    {"rp", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
     {"mc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},\
     {"ca", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
@@ -302,7 +311,7 @@ extern int target_flags;
 }
 
 /* Don't enable anything by default.  The user is expected to supply a -mARCH
-   option.  If none is given, then -mkb is added by CC1_SPEC.  */
+   option.  If none is given, then -mka is added by CC1_SPEC.  */
 #define TARGET_DEFAULT 0
 
 /* Target machine storage layout.  */
