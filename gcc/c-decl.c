@@ -507,9 +507,7 @@ c_decode_option (argc, argv)
 
   strings_processed = cpp_handle_option (parse_in, argc, argv);
 
-  if (!strcmp (p, "-lang-objc"))
-    c_language = clk_objective_c;
-  else if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
+  if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     {
       flag_traditional = 1;
       flag_writable_strings = 1;

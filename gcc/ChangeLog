@@ -1,3 +1,10 @@
+2000-11-29  Neil Booth  <neilb@earthling.net>
+
+        * c-decl.c (c_decode_option): Don't handle -lang-objc.
+        * objc/lang-options.h: Remove -lang-objc.
+        * objc/lang-specs.h: Don't pass -lang-objc to cc1obj.
+        * objc/objc-act.c (lang_init_options): Set c_language.
+
 2000-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (can_store_by_pieces): Reinitialize max_size for reverse

@@ -27,7 +27,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 DEFINE_LANG_NAME ("Objective C")
   
-  { "-lang-objc", "" },
   { "-gen-decls", "Dump decls to a .decl file" },
   { "-fgnu-runtime", "Generate code for GNU runtime environment" },
   { "-fno-gnu-runtime", "" },

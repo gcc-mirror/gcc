@@ -29,15 +29,15 @@ Boston, MA 02111-1307, USA.  */
       %{!E:%{!M:%{!MM:\
 	%{save-temps:%(trad_capable_cpp) -lang-objc %{ansi:-std=c89}\
 	  %(cpp_options) %b.mi \n\
-	    cc1obj -fpreprocessed %b.mi -lang-objc %(cc1_options) %{gen-decls}}\
+	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{gen-decls}}\
 	%{!save-temps:\
 	  %{traditional|ftraditional|traditional-cpp:\
 	    tradcpp0 -lang-objc %{ansi:-std=c89} %(cpp_options) %{!pipe:%g.mi} |\n\
-	    cc1obj -fpreprocessed %{!pipe:%g.mi} -lang-objc %(cc1_options) %{gen-decls}}\
+	    cc1obj -fpreprocessed %{!pipe:%g.mi} %(cc1_options) %{gen-decls}}\
 	  %{!traditional:%{!ftraditional:%{!traditional-cpp:\
-	    cc1obj -lang-objc %{ansi:-std=c89} %(cpp_options) %(cc1_options) %{gen-decls}}}}}\
+	    cc1obj %{ansi:-std=c89} %(cpp_options) %(cc1_options) %{gen-decls}}}}}\
         %{!fsyntax-only:%(invoke_as)}}}}"},
   {".mi", "@objc-cpp-output"},
   {"@objc-cpp-output",
-     "%{!M:%{!MM:%{!E:cc1obj -lang-objc %i %(cc1_options) %{gen-decls}\
+     "%{!M:%{!MM:%{!E:cc1obj -fpreprocessed %i %(cc1_options) %{gen-decls}\
 			     %{!fsyntax-only:%(invoke_as)}}}}"},
