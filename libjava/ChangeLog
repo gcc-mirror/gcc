@@ -1,5 +1,9 @@
 2002-01-08  Tom Tromey  <tromey@redhat.com>
 
+	For PR libgcj/5031:
+	* java/lang/natSystem.cc (init_properties): Use LC_MESSAGES to
+	choose default locale.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (jv_convert_LDADD): Removed convert_source_files.
 

@@ -415,7 +415,12 @@ java::lang::System::init_properties (void)
 
   // Set user locale properties based on setlocale()
 #ifdef HAVE_SETLOCALE
-  char *locale = setlocale (LC_ALL, "");
+  // We let the user choose the locale.  However, since Java differs
+  // from POSIX, we arbitrarily pick LC_MESSAGES as determining the
+  // Java locale.  We can't use LC_ALL because it might return a full
+  // list of all the settings.
+  setlocale (LC_ALL, "");
+  char *locale = setlocale (LC_MESSAGES, "");
   if (locale && strlen (locale) >= 2)
     {
       char buf[3];
