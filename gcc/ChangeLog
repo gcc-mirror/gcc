@@ -1,3 +1,16 @@
+2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-lex.c (GET_ENVIRONMENT): Remove.
+	* collect2.c (GET_ENV_PATH_LIST): Remove.
+	(prefix_from_env): Use GET_ENVIRONMENT.
+	* cppinit.c (GET_ENV_PATH_LIST): Remove.
+	(init_standard_includes): Use GET_ENVIRONMENT.
+	* defaults.h (GET_ENVIRONMENT): Define here if not already.
+	* gcc.c (GET_ENV_PATH_LIST): Remove.
+	(make_relative_prefix, process_command): Update.
+	* protoize.c (GET_ENV_PATH_LIST): Remove.
+	(do_processing): Update.
+
 2002-07-21  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* c-decl.c (build_array_declarator): Say 'ISO C90', not 'ISO C89'.

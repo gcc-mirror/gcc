@@ -30,12 +30,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "jcf.h"
 
-/* Some boilerplate that really belongs in a header.  */
-
-#ifndef GET_ENV_PATH_LIST
-#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
-#endif
-
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
@@ -244,7 +238,7 @@ jcf_path_init ()
   sep[0] = DIR_SEPARATOR;
   sep[1] = '\0';
 
-  GET_ENV_PATH_LIST (cp, "GCC_EXEC_PREFIX");
+  GET_ENVIRONMENT (cp, "GCC_EXEC_PREFIX");
   if (cp)
     {
       try = alloca (strlen (cp) + 50);
@@ -315,7 +309,7 @@ jcf_path_init ()
 	jcf_path_extdirs_arg (extdirs);
     }
 
-  GET_ENV_PATH_LIST (cp, "CLASSPATH");
+  GET_ENVIRONMENT (cp, "CLASSPATH");
   add_path (&classpath_env, cp, 0);
 }
 

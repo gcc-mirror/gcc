@@ -44,9 +44,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "mbchar.h"
 #include <locale.h>
 #endif /* MULTIBYTE_CHARS */
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
-#endif
 
 /* The current line map.  */
 static const struct line_map *map;

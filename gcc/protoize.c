@@ -128,10 +128,6 @@ static const char * const standard_exec_prefix = STANDARD_EXEC_PREFIX;
 static const char * const target_machine = DEFAULT_TARGET_MACHINE;
 static const char * const target_version = DEFAULT_TARGET_VERSION;
 
-#ifndef GET_ENV_PATH_LIST
-#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
-#endif
-
 #endif /* !defined (UNPROTOIZE) */
 
 /* Suffix of aux_info files.  */
@@ -4415,7 +4411,7 @@ do_processing ()
     }
   else
     {
-      GET_ENV_PATH_LIST (default_syscalls_dir, "GCC_EXEC_PREFIX");
+      GET_ENVIRONMENT (default_syscalls_dir, "GCC_EXEC_PREFIX");
       if (!default_syscalls_dir)
 	{
 	  default_syscalls_dir = standard_exec_prefix;
