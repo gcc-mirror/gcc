@@ -6,7 +6,7 @@
 --                                                                          --
 --                                S p e c                                   --
 --                                                                          --
---           Copyright (C) 2004 Free Software Foundation, Inc.              --
+--         Copyright (C) 2004,2005 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package provides the low level interface to the C Run Time Library
---  on 64 bit VMS
+--  on 64 bit VMS.  Note that routines that allocate memory remain 32bit.
 
 with System.Parameters;
 package System.CRTL is
@@ -40,6 +40,9 @@ pragma Preelaborate (CRTL);
 
    subtype chars is System.Address;
    --  Pointer to null-terminated array of characters
+
+   subtype DIRs is System.Address;
+   --  Corresponds to the C type DIR*
 
    subtype FILEs is System.Address;
    --  Corresponds to the C type FILE*
@@ -59,6 +62,15 @@ pragma Preelaborate (CRTL);
    procedure clearerr (stream : FILEs);
    pragma Import (C, clearerr, "decc$clearerr");
 
+   function closedir (directory : DIRs) return Integer;
+   pragma Import (C, closedir, "decc$closedir");
+
+   function dup  (handle : int) return int;
+   pragma Import (C, dup, "decc$dup");
+
+   function dup2 (from, to : int) return int;
+   pragma Import (C, dup2, "decc$dup2");
+
    function fclose (stream : FILEs) return int;
    pragma Import (C, fclose, "decc$fclose");
 
@@ -72,7 +84,7 @@ pragma Preelaborate (CRTL);
    pragma Import (C, fgetc, "decc$fgetc");
 
    function fgets (strng : chars; n : int; stream : FILEs) return chars;
-   pragma Import (C, fgets, "decc$fgets");
+   pragma Import (C, fgets, "decc$_fgets64");
 
    function fopen (filename : chars; Mode : chars) return FILEs;
    pragma Import (C, fopen, "decc$fopen");
@@ -113,7 +125,7 @@ pragma Preelaborate (CRTL);
    pragma Import (C, lseek, "decc$lseek");
 
    function malloc (Size : size_t) return System.Address;
-   pragma Import (C, malloc, "decc$_malloc64");
+   pragma Import (C, malloc, "decc$malloc");
 
    procedure memcpy (S1 : System.Address; S2 : System.Address; N : size_t);
    pragma Import (C, memcpy, "decc$_memcpy64");
@@ -124,15 +136,27 @@ pragma Preelaborate (CRTL);
    procedure mktemp (template : chars);
    pragma Import (C, mktemp, "decc$_mktemp64");
 
+   function opendir (file_name : String) return DIRs;
+   pragma Import (C, opendir, "decc$opendir");
+
+   function pclose (stream : System.Address) return int;
+   pragma Import (C, pclose, "decc$pclose");
+
+   function popen (command, mode : System.Address) return System.Address;
+   pragma Import (C, popen, "decc$popen");
+
    function read (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, read, "decc$read");
 
    function realloc
      (Ptr : System.Address; Size : size_t) return System.Address;
-   pragma Import (C, realloc, "decc$_realloc64");
+   pragma Import (C, realloc, "decc$realloc");
 
    procedure rewind (stream : FILEs);
    pragma Import (C, rewind, "decc$rewind");
+
+   procedure rmdir (dir_name : String);
+   pragma Import (C, rmdir, "decc$rmdir");
 
    function setvbuf
      (stream : FILEs;
