@@ -1,3 +1,8 @@
+2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* dwarf2out.c (dwarf2out_init, dwarf2out_finish): Change parameter
+	name from input_filename.
+
 2003-04-30  Eric Christopher  <echristo@redhat.com>
 	    Richard Sandiford <rsandifo@redhat.com>
 
