@@ -157,44 +157,46 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
-REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./cp-demint.o ./md5.o		\
-	./alloca.o ./argv.o							\
-	./choose-temp.o ./concat.o						\
+REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o	\
+	./alloca.o ./argv.o						\
+	./choose-temp.o ./concat.o ./cp-demint.o			\
 	./dyn-string.o							\
-	./fdmatch.o ./fibheap.o ./floatformat.o ./fnmatch.o			\
-	./getopt.o ./getopt1.o ./getpwd.o ./getruntime.o			\
-	./hashtab.o ./hex.o							\
-	./lbasename.o							\
-	./lrealpath.o							\
-	./make-relative-prefix.o						\
-	./make-temp-file.o						\
-	./objalloc.o ./obstack.o						\
-	./partition.o ./physmem.o @pexecute@						\
-	./safe-ctype.o ./sort.o ./spaces.o ./splay-tree.o ./strerror.o		\
+	./fdmatch.o ./fibheap.o ./floatformat.o ./fnmatch.o		\
+	./getopt.o ./getopt1.o ./getpwd.o ./getruntime.o		\
+	./hashtab.o ./hex.o						\
+	./lbasename.o ./lrealpath.o					\
+	./make-relative-prefix.o ./make-temp-file.o			\
+	./objalloc.o ./obstack.o					\
+	./partition.o ./physmem.o @pexecute@				\
+	./safe-ctype.o ./sort.o ./spaces.o ./splay-tree.o ./strerror.o	\
 	 ./strsignal.o							\
 	./ternary.o							\
-	./xatexit.o ./xexit.o ./xmalloc.o ./xmemdup.o ./xstrdup.o ./xstrerror.o
+	./xatexit.o ./xexit.o ./xmalloc.o ./xmemdup.o ./xstrdup.o	\
+	 ./xstrerror.o
 
 # These are all the objects that configure may add to the library via
 # $funcs or EXTRA_OFILES.  This list exists here only for "make
 # maint-missing" and "make check".
-CONFIGURED_OFILES = ./asprintf.o ./atexit.o					\
-	./basename.o ./bcmp.o ./bcopy.o ./bsearch.o ./bzero.o			\
-	./calloc.o ./clock.o ./copysign.o					\
+CONFIGURED_OFILES = ./asprintf.o ./atexit.o				\
+	./basename.o ./bcmp.o ./bcopy.o ./bsearch.o ./bzero.o		\
+	./calloc.o ./clock.o ./copysign.o				\
 	./_doprnt.o							\
 	./ffs.o								\
-	./getcwd.o ./getpagesize.o						\
+	./getcwd.o ./getpagesize.o					\
 	./index.o ./insque.o						\
-	./memchr.o ./memcmp.o ./memcpy.o ./memmove.o ./mempcpy.o ./memset.o ./mkstemps.o \
-	./pex-djgpp.o ./pex-mpw.o ./pex-msdos.o ./pex-os2.o			\
-	 ./pex-unix.o ./pex-win32.o						\
+	./memchr.o ./memcmp.o ./memcpy.o ./memmove.o ./mempcpy.o	\
+	 ./memset.o ./mkstemps.o					\
+	./pex-djgpp.o ./pex-mpw.o ./pex-msdos.o ./pex-os2.o		\
+	 ./pex-unix.o ./pex-win32.o					\
 	 ./putenv.o							\
-	./random.o ./rename.o ./rindex.o					\
-	./setenv.o ./sigsetmask.o ./snprintf.o ./stpcpy.o ./stpncpy.o ./strcasecmp.o \
-	 ./strchr.o ./strdup.o ./strncasecmp.o ./strncmp.o ./strrchr.o ./strstr.o	\
-	 ./strtod.o ./strtol.o ./strtoul.o					\
+	./random.o ./rename.o ./rindex.o				\
+	./setenv.o ./sigsetmask.o ./snprintf.o ./stpcpy.o ./stpncpy.o	\
+	 ./strcasecmp.o ./strchr.o ./strdup.o ./strncasecmp.o		\
+	 ./strncmp.o ./strrchr.o ./strstr.o				\
+	 ./strtod.o ./strtol.o ./strtoul.o				\
 	./tmpnam.o							\
-	./vasprintf.o ./vfork.o ./vfprintf.o ./vprintf.o ./vsnprintf.o ./vsprintf.o	\
+	./vasprintf.o ./vfork.o ./vfprintf.o ./vprintf.o ./vsnprintf.o	\
+	 ./vsprintf.o							\
 	./waitpid.o
 
 # These files are installed if the library has been configured to do so.
@@ -807,7 +809,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/random.c $(OUTPUT_OPTION)
 
-./regex.o: $(srcdir)/regex.c config.h $(INCDIR)/xregex.h $(INCDIR)/xregex2.h
+./regex.o: $(srcdir)/regex.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/xregex.h \
+	$(INCDIR)/xregex2.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/regex.c -o pic/$@; \
 	else true; fi
