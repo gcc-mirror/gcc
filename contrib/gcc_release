@@ -224,7 +224,7 @@ build_tarfiles() {
     bzfile=${f%.gz}.bz2
     zcat $f | ${BZIP2} > ${bzfile}
     FILE_LIST="${FILE_LIST} ${bzfile}"
-  fi
+  done
 }
 
 # Build diffs against an old release.
