@@ -1,5 +1,14 @@
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
+        * cppinit.c (cpp_reader_init): Remove handling of warn_paste   
+        command line options.
+        (cpp_handle_option): Similarly.
+        * cpplib.h (struct cpp_options): Remove warn_paste.
+        * cppmacro.c (paste_tokens): Apart from assembler, make
+        unpasteable token warning mandatory.
+
+2000-11-27  Neil Booth  <neilb@earthling.net>
+
         * tradcpp.c (enum pending_dir_t, struct pending_dir): New.
         (main): Allocate a pending directive set of these.  Use it.
         Merge handling of -D and -U.  Update handling of pending

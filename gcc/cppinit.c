@@ -536,7 +536,6 @@ cpp_reader_init (pfile, lang)
     }
 
   CPP_OPTION (pfile, warn_import) = 1;
-  CPP_OPTION (pfile, warn_paste) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
@@ -971,10 +970,6 @@ cpp_start_read (pfile, fname)
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
-
-  /* Do not warn about invalid token pasting if -lang-asm.  */
-  if (CPP_OPTION (pfile, lang) == CLK_ASM)
-    CPP_OPTION (pfile, warn_paste) = 0;
 
   /* Set this if it hasn't been set already. */
   if (CPP_OPTION (pfile, user_label_prefix) == NULL)
@@ -1690,8 +1685,6 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_undef) = 1;
 	  else if (!strcmp (argv[i], "-Wimport"))
 	    CPP_OPTION (pfile, warn_import) = 1;
-	  else if (!strcmp (argv[i], "-Wpaste"))
-	    CPP_OPTION (pfile, warn_paste) = 1;
 	  else if (!strcmp (argv[i], "-Werror"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 1;
 	  else if (!strcmp (argv[i], "-Wsystem-headers"))
@@ -1708,8 +1701,6 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_undef) = 0;
 	  else if (!strcmp (argv[i], "-Wno-import"))
 	    CPP_OPTION (pfile, warn_import) = 0;
-	  else if (!strcmp (argv[i], "-Wno-paste"))
-	    CPP_OPTION (pfile, warn_paste) = 0;
 	  else if (!strcmp (argv[i], "-Wno-error"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 0;
 	  else if (!strcmp (argv[i], "-Wno-system-headers"))
