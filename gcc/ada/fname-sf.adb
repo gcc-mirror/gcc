@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,11 @@ package body Fname.SF is
    -- Local Procedures --
    ----------------------
 
-   procedure Set_File_Name (Typ : Character; U : String; F : String);
+   procedure Set_File_Name
+     (Typ   : Character;
+      U     : String;
+      F     : String;
+      Index : Natural);
    --  This is a transfer function that is called from Scan_SFN_Pragmas,
    --  and reformats its parameters appropriately for the version of
    --  Set_File_Name found in Fname.SF.
@@ -89,10 +93,14 @@ package body Fname.SF is
    -- Set_File_Name --
    -------------------
 
-   procedure Set_File_Name (Typ : Character; U : String; F : String) is
+   procedure Set_File_Name
+     (Typ   : Character;
+      U     : String;
+      F     : String;
+      Index : Natural)
+   is
       Unm : Unit_Name_Type;
       Fnm : File_Name_Type;
-
    begin
       Name_Buffer (1 .. U'Length) := U;
       Name_Len := U'Length;
@@ -104,7 +112,7 @@ package body Fname.SF is
       Name_Buffer (1 .. F'Length) := F;
       Name_Len := F'Length;
       Fnm := Name_Find;
-      Fname.UF.Set_File_Name (Unm, Fnm);
+      Fname.UF.Set_File_Name (Unm, Fnm, Nat (Index));
    end Set_File_Name;
 
    ---------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,14 +54,14 @@ package Sinput.L is
    --  The file is never preprocessed.
 
    function Load_Definition_File
-     (N    : File_Name_Type)
-      return Source_File_Index;
-   --  Needs comments ???
+     (N : File_Name_Type) return Source_File_Index;
+   --  Loads preprocessing definition file. Similar to Load_Source_File
+   --  except that this file is not itself preprocessed.
 
    function Load_Preprocessing_Data_File
-     (N    : File_Name_Type)
-      return Source_File_Index;
-   --  Similar to Load_Source_File, except that the file is never preprocessed.
+     (N : File_Name_Type) return Source_File_Index;
+   --  Loads preprocessing data file. Similar to Load_Source_File except
+   --  that this file is not itself preprocessed.
 
    procedure Complete_Source_File_Entry;
    --  Called on completing the parsing of a source file. This call completes

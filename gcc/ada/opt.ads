@@ -659,6 +659,14 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested.
 
+   Multiple_Unit_Index : Int;
+   --  GNAT
+   --  This is set non-zero if the current unit is being compiled in multiple
+   --  unit per file mode, meaning that the current unit is selected from the
+   --  sequence of units in the current source file, using the value stored
+   --  in this variable (e.g. 2 = select second unit in file). A value of
+   --  zero indicates that we are in normal (one unit per file) mode.
+
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
    --  Set to True if compilation/binding of a program without main

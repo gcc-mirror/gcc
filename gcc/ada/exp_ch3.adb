@@ -1052,7 +1052,7 @@ package body Exp_Ch3 is
       Controller_Typ : Entity_Id;
 
    begin
-      --  Nothing to do if the Init_Proc is null, unless Initialize_Sclalars
+      --  Nothing to do if the Init_Proc is null, unless Initialize_Scalars
       --  is active (in which case we make the call anyway, since in the
       --  actual compiled client it may be non null).
 
@@ -1489,6 +1489,19 @@ package body Exp_Ch3 is
            and then Nkind (Original_Node (Exp)) = N_Aggregate
          then
             Exp := New_Copy_Tree (Original_Node (Exp));
+         end if;
+
+         --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+         --  type to force the corresponding run-time check
+
+         if Extensions_Allowed
+           and then Can_Never_Be_Null (Etype (Id))  -- Lhs
+           and then (Present (Etype (Exp))
+                       and then not Can_Never_Be_Null (Etype (Exp)))
+         then
+            Rewrite (Exp, Convert_To (Etype (Id),
+                                      Relocate_Node (Exp)));
+            Analyze_And_Resolve (Exp, Etype (Id));
          end if;
 
          Res := New_List (
@@ -3421,17 +3434,30 @@ package body Exp_Ch3 is
             then
                Set_Is_Known_Valid (Def_Id);
 
-            --  For access types set the Is_Known_Non_Null flag if the
-            --  initializing value is known to be non-null. We can also
-            --  set Can_Never_Be_Null if this is a constant.
+            elsif Is_Access_Type (Typ) then
 
-            elsif Is_Access_Type (Typ)
-              and then Known_Non_Null (Expr)
-            then
-               Set_Is_Known_Non_Null (Def_Id);
+               --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+               --  type to force the corresponding run-time check
 
-               if Constant_Present (N) then
-                  Set_Can_Never_Be_Null (Def_Id);
+               if Extensions_Allowed
+                 and then (Can_Never_Be_Null (Def_Id)
+                           or else Can_Never_Be_Null (Typ))
+               then
+                  Rewrite (Expr_Q, Convert_To (Etype (Def_Id),
+                                               Relocate_Node (Expr_Q)));
+                  Analyze_And_Resolve (Expr_Q, Etype (Def_Id));
+               end if;
+
+               --  For access types set the Is_Known_Non_Null flag if the
+               --  initializing value is known to be non-null. We can also
+               --  set Can_Never_Be_Null if this is a constant.
+
+               if Known_Non_Null (Expr) then
+                  Set_Is_Known_Non_Null (Def_Id);
+
+                  if Constant_Present (N) then
+                     Set_Can_Never_Be_Null (Def_Id);
+                  end if;
                end if;
             end if;
 

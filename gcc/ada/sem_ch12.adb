@@ -6670,7 +6670,10 @@ package body Sem_Ch12 is
       Decl_Node :=
         Make_Subprogram_Renaming_Declaration (Loc,
           Specification => New_Spec,
-          Name => Nam);
+          Name          => Nam);
+
+      --  If we do not have an actual and the formal specified <> then
+      --  set to get proper default.
 
       if No (Actual) and then Box_Present (Formal) then
          Set_From_Default (Decl_Node);

@@ -180,8 +180,7 @@ package body Prj.Part is
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
-      Directory         : String)
-      return              String;
+      Directory         : String) return String;
    --  Returns the path name of a project file. Returns an empty string
    --  if project file cannot be found.
 
@@ -863,10 +862,12 @@ package body Prj.Part is
       Extends_All := False;
 
       declare
-         Normed_Path : constant String := Normalize_Pathname
-                  (Path_Name, Resolve_Links => False, Case_Sensitive => True);
+         Normed_Path    : constant String := Normalize_Pathname
+                            (Path_Name, Resolve_Links => False,
+                             Case_Sensitive           => True);
          Canonical_Path : constant String := Normalize_Pathname
-           (Normed_Path, Resolve_Links => True, Case_Sensitive => False);
+                            (Normed_Path, Resolve_Links => True,
+                             Case_Sensitive             => False);
 
       begin
          Name_Len := Normed_Path'Length;
@@ -1585,8 +1586,7 @@ package body Prj.Part is
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
-      Directory         : String)
-      return              String
+      Directory         : String) return String
    is
       Result : String_Access;
 

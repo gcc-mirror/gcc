@@ -970,8 +970,15 @@ package body Sem_Ch6 is
               Make_Subprogram_Declaration (Loc,
                 Specification => New_Spec);
             Insert_Before (N, Decl);
-            Analyze (Decl);
             Spec_Id := Defining_Unit_Name (New_Spec);
+
+            --  Indicate that the entity comes from source, to ensure that
+            --  cross-reference information is properly generated.
+            --  The body itself is rewritten during expansion, and the
+            --  body entity will not appear in calls to the operation.
+
+            Set_Comes_From_Source (Spec_Id, True);
+            Analyze (Decl);
             Set_Has_Completion (Spec_Id);
             Set_Convention (Spec_Id, Convention_Protected);
          end;
@@ -1724,6 +1731,8 @@ package body Sem_Ch6 is
 
       --  Functions that return unconstrained composite types will require
       --  secondary stack handling, and cannot currently be inlined.
+      --  Ditto for functions that return controlled types, where controlled
+      --  actions interfere in complex ways with inlining.
 
       elsif Ekind (Subp) = E_Function
         and then not Is_Scalar_Type (Etype (Subp))
@@ -1732,6 +1741,13 @@ package body Sem_Ch6 is
       then
          Cannot_Inline
            ("cannot inline & (unconstrained return type)?", N, Subp);
+         return;
+
+      elsif Ekind (Subp) = E_Function
+        and then Controlled_Type (Etype (Subp))
+      then
+         Cannot_Inline
+           ("cannot inline & (controlled return type)?", N, Subp);
          return;
       end if;
 
@@ -4845,7 +4861,7 @@ package body Sem_Ch6 is
                         and then Ekind (Root_Type (Formal_Type)) =
                                                          E_Incomplete_Type)
             then
-               --  Ada0Y (AI-50217): Incomplete tagged types that are made
+               --  Ada 0Y (AI-50217): Incomplete tagged types that are made
                --  visible through a limited with_clause are valid formal
                --  types.
 
@@ -4934,6 +4950,18 @@ package body Sem_Ch6 is
                end if;
 
             end if;
+
+            --  Ada 0Y (AI-231): Static checks
+
+            Ptype := Parameter_Type (Param_Spec);
+
+            if Extensions_Allowed
+              and then Nkind (Ptype) /= N_Access_Definition
+              and then (Null_Exclusion_Present (Parent (Formal))
+                        or else Can_Never_Be_Null (Entity (Ptype)))
+            then
+               Null_Exclusion_Static_Checks (Param_Spec);
+            end if;
          end if;
 
          Next (Param_Spec);
@@ -4976,12 +5004,13 @@ package body Sem_Ch6 is
    -------------------------
 
    procedure Set_Actual_Subtypes (N : Node_Id; Subp : Entity_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Decl       : Node_Id;
-      Formal     : Entity_Id;
-      T          : Entity_Id;
-      First_Stmt : Node_Id := Empty;
-      AS_Needed  : Boolean;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Decl           : Node_Id;
+      Formal         : Entity_Id;
+      T              : Entity_Id;
+      First_Stmt     : Node_Id := Empty;
+      AS_Needed      : Boolean;
+      Null_Exclusion : Boolean := False;
 
    begin
       --  If this is an emtpy initialization procedure, no need to create
@@ -5036,6 +5065,17 @@ package body Sem_Ch6 is
          then
             AS_Needed := True;
 
+         --  Ada 0Y (AI-231)
+
+         elsif Extensions_Allowed
+           and then Is_Access_Type (T)
+           and then Null_Exclusion_Present (Parent (Formal))
+           and then Nkind (Parameter_Type (Parent (Formal)))
+                    /= N_Access_Definition
+         then
+            AS_Needed      := True;
+            Null_Exclusion := True;
+
          --  All other cases do not need an actual subtype
 
          else
@@ -5047,7 +5087,39 @@ package body Sem_Ch6 is
 
          if AS_Needed then
 
-            if Nkind (N) = N_Accept_Statement then
+            --  Ada 0Y (AI-231): Generate actual null-excluding subtype
+
+            if Extensions_Allowed
+              and then Null_Exclusion
+            then
+               declare
+                  Loc      : constant Source_Ptr := Sloc (Formal);
+                  Anon     : constant Entity_Id :=
+                               Make_Defining_Identifier (Loc,
+                                 New_Internal_Name ('S'));
+                  Ptype    : constant Node_Id
+                               := Parameter_Type (Parent (Formal));
+               begin
+                  --  T == Etype (Formal)
+                  Set_Is_Internal (Anon);
+                  Decl :=
+                    Make_Subtype_Declaration (Loc,
+                      Defining_Identifier      => Anon,
+                        Null_Exclusion_Present => True,
+                        Subtype_Indication     =>
+                          New_Occurrence_Of (Etype (Ptype), Loc));
+                  Mark_Rewrite_Insertion (Decl);
+                  Prepend (Decl, Declarations (Parent (N)));
+
+                  Rewrite (Ptype, New_Occurrence_Of (Anon, Loc));
+                  Mark_Rewrite_Insertion (Ptype);
+                  --   Set_Scope (Anon, Scope (Scope (Formal)));
+
+                  Set_Etype (Formal, Anon);
+                  Set_Null_Exclusion_Present (Parent (Formal), False);
+               end;
+
+            elsif Nkind (N) = N_Accept_Statement then
 
                --  If expansion is active, The formal is replaced by a local
                --  variable that renames the corresponding entry of the
@@ -5080,6 +5152,16 @@ package body Sem_Ch6 is
             end if;
 
             Analyze (Decl);
+
+            --  Ada 0Y (AI-231): Previous analysis leaves the entity of the
+            --  null-excluding subtype declaration associated with the internal
+            --  scope; because this declaration has been inserted before the
+            --  subprogram we associate it now with the enclosing scope.
+
+            if Null_Exclusion then
+               Set_Scope (Defining_Identifier (Decl),
+                          Scope (Scope (Formal)));
+            end if;
 
             --  We need to freeze manually the generated type when it is
             --  inserted anywhere else than in a declarative part.
@@ -5141,8 +5223,16 @@ package body Sem_Ch6 is
       --  set Can_Never_Be_Null, since there is no way to change the value.
 
       if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
-         Set_Is_Known_Non_Null (Formal_Id);
-         Set_Can_Never_Be_Null (Formal_Id);
+
+         --  Ada 0Y (AI-231): This behaviour has been modified in Ada 0Y.
+         --  It is only forced if the null_exclusion appears.
+
+         if not Extensions_Allowed
+           or else Null_Exclusion_Present (Spec)
+         then
+            Set_Is_Known_Non_Null (Formal_Id);
+            Set_Can_Never_Be_Null (Formal_Id);
+         end if;
       end if;
 
       Set_Mechanism (Formal_Id, Default_Mechanism);

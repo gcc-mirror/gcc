@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -437,6 +438,13 @@ package body Sem_Ch4 is
             Set_Directly_Designated_Type (Acc_Type, Type_Id);
             Check_Fully_Declared (Type_Id, N);
 
+            --  Ada 0Y (AI-231)
+
+            if Can_Never_Be_Null (Type_Id) then
+               Error_Msg_N ("(Ada 0Y) qualified expression required",
+                            Expression (N));
+            end if;
+
             --  Check restriction against dynamically allocated protected
             --  objects. Note that when limited aggregates are supported,
             --  a similar test should be applied to an allocator with a
@@ -478,6 +486,15 @@ package body Sem_Ch4 is
 
       if not Is_Library_Level_Entity (Acc_Type) then
          Check_Restriction (No_Local_Allocators, N);
+      end if;
+
+      --  Ada 0Y (AI-231): Static checks
+
+      if Extensions_Allowed
+        and then (Null_Exclusion_Present (N)
+                    or else Can_Never_Be_Null (Etype (N)))
+      then
+         Null_Exclusion_Static_Checks (N);
       end if;
 
       if Serious_Errors_Detected > Sav_Errs then

@@ -1382,7 +1382,7 @@ package body Exp_Ch6 is
 
                --  When passing an access parameter as the actual to another
                --  access parameter we need to pass along the actual's own
-               --  associated access level parameter. This is done is we are
+               --  associated access level parameter. This is done if we are
                --  in the scope of the formal access parameter (if this is an
                --  inlined body the extra formal is irrelevant).
 
@@ -1516,7 +1516,12 @@ package body Exp_Ch6 is
          elsif Convention (Subp) = Convention_Java then
             null;
 
-         else
+         --  Ada 0Y (AI-231): do not force the check in case of Ada 0Y unless
+         --  it is a null-excluding type
+
+         elsif not Extensions_Allowed
+           or else Can_Never_Be_Null (Etype (Prev))
+         then
             Cond :=
               Make_Op_Eq (Loc,
                 Left_Opnd => Duplicate_Subexpr_No_Checks (Prev),
@@ -1999,10 +2004,16 @@ package body Exp_Ch6 is
                   --  temporaries are generated when compiling the body by
                   --  itself. Otherwise link errors can occur.
 
+                  --  If the function being called is itself in the main unit,
+                  --  we cannot inline, because there is a risk of double
+                  --  elaboration and/or circularity: the inlining can make
+                  --  visible a private entity in the body of the main unit,
+                  --  that gigi will see before its sees its proper definition.
+
                   elsif not (In_Extended_Main_Code_Unit (N))
                     and then In_Package_Body
                   then
-                     Must_Inline := True;
+                     Must_Inline := not In_Extended_Main_Source_Unit (Subp);
                   end if;
                end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,7 @@ package Exp_Util is
    --
    --  Implementation limitation: Assoc_Node must be a statement. We can
    --  generalize to expressions if there is a need but this is tricky to
-   --  implement because of short-ciruits (among other things).???
+   --  implement because of short-circuits (among other things).???
 
    procedure Insert_Library_Level_Action (N : Node_Id);
    --  This procedure inserts and analyzes the node N as an action at the

@@ -1883,6 +1883,7 @@ package Sinfo is
       --  N_Subtype_Declaration
       --  Sloc points to SUBTYPE
       --  Defining_Identifier (Node1)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Subtype_Indication (Node5)
       --  Generic_Parent_Type (Node4-Sem) (set for an actual derived type).
       --  Exception_Junk (Flag11-Sem)
@@ -1989,6 +1990,7 @@ package Sinfo is
       --  Defining_Identifier (Node1)
       --  Aliased_Present (Flag4) set if ALIASED appears
       --  Constant_Present (Flag17) set if CONSTANT appears
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Object_Definition (Node4) subtype indication/array type definition
       --  Expression (Node3) (set to Empty if not present)
       --  Handler_List_Entry (Node2-Sem)
@@ -2044,6 +2046,7 @@ package Sinfo is
       --  N_Derived_Type_Definition
       --  Sloc points to NEW
       --  Abstract_Present (Flag4)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Subtype_Indication (Node5)
       --  Record_Extension_Part (Node3) (set to Empty if not present)
 
@@ -2338,6 +2341,7 @@ package Sinfo is
       --  N_Component_Definition
       --  Sloc points to ALIASED, ACCESS or to first token of subtype mark
       --  Aliased_Present (Flag4)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Subtype_Indication (Node5) (set to Empty if not present)
       --  Access_Definition (Node3) (set to Empty if not present)
 
@@ -2410,6 +2414,7 @@ package Sinfo is
       --  N_Discriminant_Specification
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Discriminant_Type (Node5) subtype mark or
       --    access parameter definition
       --  Expression (Node3) (set to Empty if no default expression)
@@ -2641,6 +2646,7 @@ package Sinfo is
       --  N_Access_To_Object_Definition
       --  Sloc points to ACCESS
       --  All_Present (Flag15)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Subtype_Indication (Node5)
       --  Constant_Present (Flag17)
 
@@ -2668,12 +2674,14 @@ package Sinfo is
 
       --  N_Access_Function_Definition
       --  Sloc points to ACCESS
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Protected_Present (Flag15)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Subtype_Mark (Node4) result subtype
 
       --  N_Access_Procedure_Definition
       --  Sloc points to ACCESS
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Protected_Present (Flag15)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
 
@@ -2685,6 +2693,9 @@ package Sinfo is
 
       --  N_Access_Definition
       --  Sloc points to ACCESS
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
+      --  All_Present (Flag15)
+      --  Constant_Present (Flag17)
       --  Subtype_Mark (Node4)
 
       -----------------------------------------
@@ -3482,6 +3493,7 @@ package Sinfo is
       --  N_Allocator
       --  Sloc points to NEW
       --  Expression (Node3) subtype indication or qualified expression
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node4-Sem)
       --  No_Initialization (Flag13-Sem)
@@ -3996,6 +4008,7 @@ package Sinfo is
       --  Defining_Identifier (Node1)
       --  In_Present (Flag15)
       --  Out_Present (Flag17)
+      --  Null_Exclusion_Present (Flag9) (set to False if not present)
       --  Parameter_Type (Node2) subtype mark or access definition
       --  Expression (Node3) (set to Empty if no default expression present)
       --  Do_Accessibility_Check (Flag13-Sem)
@@ -7444,6 +7457,9 @@ package Sinfo is
    function Null_Present
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Null_Exclusion_Present
+     (N : Node_Id) return Boolean;    -- Flag9
+
    function Null_Record_Present
      (N : Node_Id) return Boolean;    -- Flag17
 
@@ -8230,6 +8246,9 @@ package Sinfo is
    procedure Set_Null_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
+   procedure Set_Null_Exclusion_Present
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
+
    procedure Set_Null_Record_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag17
 
@@ -8661,6 +8680,7 @@ package Sinfo is
    pragma Inline (No_Initialization);
    pragma Inline (No_Truncation);
    pragma Inline (Null_Present);
+   pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Record_Present);
    pragma Inline (Object_Definition);
    pragma Inline (OK_For_Stream);
@@ -8919,6 +8939,7 @@ package Sinfo is
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Truncation);
    pragma Inline (Set_Null_Present);
+   pragma Inline (Set_Null_Exclusion_Present);
    pragma Inline (Set_Null_Record_Present);
    pragma Inline (Set_Object_Definition);
    pragma Inline (Set_OK_For_Stream);

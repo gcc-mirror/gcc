@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,17 +64,6 @@ package Fname is
    -- Subprograms --
    -----------------
 
-   type Expected_Unit_Type is (Expect_Body, Expect_Spec, Unknown);
-   --  Return value from Get_Expected_Unit_Type
-
-   function Get_Expected_Unit_Type
-     (Fname : File_Name_Type)
-      return  Expected_Unit_Type;
-   --  If possible, determine whether the given file name corresponds to a unit
-   --  that is a spec or body (e.g. by examining the extension). If this cannot
-   --  be determined with the file naming conventions in use, then the returned
-   --  value is set to Unknown.
-
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean;
@@ -92,8 +81,7 @@ package Fname is
 
    function Is_Internal_File_Name
      (Fname              : File_Name_Type;
-      Renamings_Included : Boolean := True)
-      return               Boolean;
+      Renamings_Included : Boolean := True) return Boolean;
    --  Similar to Is_Predefined_File_Name. The internal file set is a
    --  superset of the predefined file set including children of GNAT,
    --  and also children of DEC for the VMS case.

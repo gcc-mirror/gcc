@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version contains allocation tracking capability.
+--  This version contains allocation tracking capability
 
 --  The object file corresponding to this instrumented version is to be found
 --  in libgmem.
@@ -313,7 +313,6 @@ package body System.Memory is
       Lock_Task.all;
 
       if First_Call then
-
          First_Call := False;
 
          --  We first log deallocation call

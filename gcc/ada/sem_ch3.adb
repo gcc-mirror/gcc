@@ -686,6 +686,18 @@ package body Sem_Ch3 is
       Init_Size_Align        (Anon_Type);
       Set_Depends_On_Private (Anon_Type, Has_Private_Component (Anon_Type));
 
+      --  Ada 0Y (AI-231): Ada 0Y semantics for anonymous access differs from
+      --  Ada 95 semantics. In Ada 0Y, anonymous access must specify if the
+      --  null value is allowed; in Ada 95 the null value is not allowed
+
+      if Extensions_Allowed
+        and then Null_Exclusion_Present (N)
+      then
+         Set_Can_Never_Be_Null (Anon_Type);
+      else
+         Set_Can_Never_Be_Null (Anon_Type);
+      end if;
+
       --  The anonymous access type is as public as the discriminated type or
       --  subprogram that defines it. It is imported (for back-end purposes)
       --  if the designated type is.
@@ -696,6 +708,10 @@ package body Sem_Ch3 is
       --  designated type comes from the limited view (for back-end purposes).
 
       Set_From_With_Type     (Anon_Type, From_With_Type (Desig_Type));
+
+      --  Ada 0Y (AI-231): Propagate the access-constant attribute
+
+      Set_Is_Access_Constant (Anon_Type, Constant_Present (N));
 
       --  The context is either a subprogram declaration or an access
       --  discriminant, in a private or a full type declaration. In
@@ -800,6 +816,10 @@ package body Sem_Ch3 is
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
+      --  Ada 0Y (AI-231): Propagate the null-excluding attribute
+
+      Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
+
       Check_Restriction (No_Access_Subprograms, T_Def);
    end Access_Subprogram_Declaration;
 
@@ -893,6 +913,12 @@ package body Sem_Ch3 is
 
       Set_Has_Task (T, False);
       Set_Has_Controlled_Component (T, False);
+
+      --  Ada 0Y (AI-231): Propagate the null-excluding and access-constant
+      --  attributes
+
+      Set_Can_Never_Be_Null  (T, Null_Exclusion_Present (Def));
+      Set_Is_Access_Constant (T, Constant_Present (Def));
    end Access_Type_Declaration;
 
    -----------------------------------
@@ -979,6 +1005,17 @@ package body Sem_Ch3 is
 
       Set_Etype (Id, T);
       Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
+
+      --  Ada 0Y (AI-231): Propagate the null-excluding attribute and carry
+      --  out some static checks
+
+      if Extensions_Allowed
+        and then (Null_Exclusion_Present (Component_Definition (N))
+                    or else Can_Never_Be_Null (T))
+      then
+         Set_Can_Never_Be_Null (Id);
+         Null_Exclusion_Static_Checks (N);
+      end if;
 
       --  If this component is private (or depends on a private type),
       --  flag the record type to indicate that some operations are not
@@ -1526,6 +1563,17 @@ package body Sem_Ch3 is
             Set_Ekind (Id, E_Variable);
             return;
          end if;
+      end if;
+
+      --  Ada 0Y (AI-231): Propagate the null-excluding attribute and carry
+      --  out some static checks
+
+      if Extensions_Allowed
+        and then (Null_Exclusion_Present (N)
+                    or else Can_Never_Be_Null (T))
+      then
+         Set_Can_Never_Be_Null (Id);
+         Null_Exclusion_Static_Checks (N);
       end if;
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -2359,6 +2407,23 @@ package body Sem_Ch3 is
                Set_Directly_Designated_Type
                                      (Id, Designated_Type       (T));
 
+               --  Ada 0Y (AI-231): Propagate the null-excluding attribute and
+               --  carry out some static checks
+
+               if Null_Exclusion_Present (N)
+                 or else Can_Never_Be_Null (T)
+               then
+                  Set_Can_Never_Be_Null (Id);
+
+                  if Null_Exclusion_Present (N)
+                    and then Can_Never_Be_Null (T)
+                  then
+                     Error_Msg_N
+                       ("(Ada 0Y) null exclusion not allowed if parent "
+                        & "is already non-null", Subtype_Indication (N));
+                  end if;
+               end if;
+
                --  A Pure library_item must not contain the declaration of a
                --  named access type, except within a subprogram, generic
                --  subprogram, task unit, or protected unit (RM 10.2.1(16)).
@@ -2942,6 +3007,24 @@ package body Sem_Ch3 is
          Set_Has_Aliased_Components (Etype (T));
       end if;
 
+      --  Ada 0Y (AI-231): Propagate the null-excluding attribute to the array
+      --  to ensure that objects of this type are initialized
+
+      if Extensions_Allowed
+        and then (Null_Exclusion_Present (Component_Definition (Def))
+                    or else Can_Never_Be_Null (Element_Type))
+      then
+         Set_Can_Never_Be_Null (T);
+
+         if Null_Exclusion_Present (Component_Definition (Def))
+           and then Can_Never_Be_Null (Element_Type)
+         then
+            Error_Msg_N
+              ("(Ada 0Y) already a null-excluding type",
+               Subtype_Indication (Component_Definition (Def)));
+         end if;
+      end if;
+
       Priv := Private_Component (Element_Type);
 
       if Present (Priv) then
@@ -3061,6 +3144,14 @@ package body Sem_Ch3 is
       Set_Depends_On_Private (Derived_Type,
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
+
+      --  Ada 0Y (AI-231). Set the null-exclusion attribute
+
+      if Null_Exclusion_Present (Type_Definition (N))
+        or else Can_Never_Be_Null (Parent_Type)
+      then
+         Set_Can_Never_Be_Null (Derived_Type);
+      end if;
 
       --  Note: we do not copy the Storage_Size_Variable, since
       --  we always go to the root type for this information.
@@ -5682,10 +5773,10 @@ package body Sem_Ch3 is
       end loop;
 
       --  Build an element list consisting of the expressions given in the
-      --  discriminant constraint and apply the appropriate range
-      --  checks. The list is constructed after resolving any named
-      --  discriminant associations and therefore the expressions appear in
-      --  the textual order of the discriminants.
+      --  discriminant constraint and apply the appropriate checks. The list
+      --  is constructed after resolving any named discriminant associations
+      --  and therefore the expressions appear in the textual order of the
+      --  discriminants.
 
       Discr := First_Discriminant (T);
       for J in Discr_Expr'Range loop
@@ -5722,6 +5813,9 @@ package body Sem_Ch3 is
                      (Defining_Identifier (Parent (Parent (Def))))
                then
                   null;
+
+               elsif Is_Access_Type (Etype (Discr)) then
+                  Apply_Constraint_Check (Discr_Expr (J), Etype (Discr));
 
                else
                   Apply_Range_Check (Discr_Expr (J), Etype (Discr));
@@ -9180,6 +9274,15 @@ package body Sem_Ch3 is
 
       elsif Is_Unchecked_Union (Parent_Type) then
          Error_Msg_N ("cannot derive from Unchecked_Union type", N);
+
+      --  Ada 0Y (AI-231)
+
+      elsif Is_Access_Type (Parent_Type)
+        and then Null_Exclusion_Present (Type_Definition (N))
+        and then Can_Never_Be_Null (Parent_Type)
+      then
+         Error_Msg_N ("(Ada 0Y) null exclusion not allowed if parent is "
+                      & "already non-null", Type_Definition (N));
       end if;
 
       --  Only composite types other than array types are allowed to have
@@ -11425,6 +11528,17 @@ package body Sem_Ch3 is
             Default_Not_Present := True;
          end if;
 
+         --  Ada 0Y (AI-231): Set the null-excluding attribute and carry out
+         --  some static checks
+
+         if Extensions_Allowed
+           and then (Null_Exclusion_Present (Discr)
+                       or else Can_Never_Be_Null (Discr_Type))
+         then
+            Set_Can_Never_Be_Null (Defining_Identifier (Discr));
+            Null_Exclusion_Static_Checks (Discr);
+         end if;
+
          Next (Discr);
       end loop;
 
@@ -12189,6 +12303,18 @@ package body Sem_Ch3 is
 
          Find_Type (S);
          Check_Incomplete (S);
+
+         --  Ada 0Y (AI-231)
+
+         if Extensions_Allowed
+           and then Present (Parent (S))
+           and then Null_Exclusion_Present (Parent (S))
+           and then Nkind (Parent (S)) /= N_Access_To_Object_Definition
+           and then not Is_Access_Type (Entity (S))
+         then
+            Error_Msg_N
+              ("(Ada 0Y) null-exclusion part requires an access type", S);
+         end if;
          return Entity (S);
 
       --  Case of constraint present, so that we have an N_Subtype_Indication

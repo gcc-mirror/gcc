@@ -153,6 +153,7 @@ package body Lib.Load is
         Ident_String    => Empty,
         Loading         => False,
         Main_Priority   => Default_Main_Priority,
+        Munit_Index     => 0,
         Serial_Number   => 0,
         Source_Index    => No_Source_File,
         Unit_File_Name  => Get_File_Name (Spec_Name, Subunit => False),
@@ -221,9 +222,10 @@ package body Lib.Load is
            Fatal_Error     => False,
            Generate_Code   => False,
            Has_RACW        => False,
-           Loading         => True,
            Ident_String    => Empty,
+           Loading         => True,
            Main_Priority   => Default_Main_Priority,
+           Munit_Index     => 0,
            Serial_Number   => 0,
            Source_Index    => Main_Source_File,
            Unit_File_Name  => Fname,
@@ -462,7 +464,10 @@ package body Lib.Load is
       --  then we have the problem that the file does not contain the unit that
       --  is needed. We simply treat this as a file not found condition.
 
-      if Unum > Units.Last then
+      --  We skip this test in multiple unit per file mode since in this
+      --  case we can have multiple units from the same source file.
+
+      if Unum > Units.Last and then Multiple_Unit_Index = 0 then
          for J in Units.First .. Units.Last loop
             if Fname = Units.Table (J).Unit_File_Name then
                if Debug_Flag_L then
@@ -473,7 +478,6 @@ package body Lib.Load is
                end if;
 
                if Present (Error_Node) then
-
                   if Is_Predefined_File_Name (Fname) then
                      Error_Msg_Name_1 := Uname_Actual;
                      Error_Msg
@@ -546,7 +550,7 @@ package body Lib.Load is
          Set_Load_Unit_Dependency (Unum);
          return Unum;
 
-      --  File is not already in table, so try to open it
+      --  Unit is not already in table, so try to open the file
 
       else
          if Debug_Flag_L then
@@ -580,6 +584,7 @@ package body Lib.Load is
               Ident_String    => Empty,
               Loading         => True,
               Main_Priority   => Default_Main_Priority,
+              Munit_Index     => 0,
               Serial_Number   => 0,
               Source_Index    => Src_Ind,
               Unit_File_Name  => Fname,
@@ -588,9 +593,16 @@ package body Lib.Load is
 
             --  Parse the new unit
 
-            Initialize_Scanner (Unum, Source_Index (Unum));
-            Discard_List (Par (Configuration_Pragmas => False));
-            Set_Loading (Unum, False);
+            declare
+               Save_Index : constant Nat := Multiple_Unit_Index;
+            begin
+               Multiple_Unit_Index := Get_Unit_Index (Uname_Actual);
+               Units.Table (Unum).Munit_Index := Multiple_Unit_Index;
+               Initialize_Scanner (Unum, Source_Index (Unum));
+               Discard_List (Par (Configuration_Pragmas => False));
+               Multiple_Unit_Index := Save_Index;
+               Set_Loading (Unum, False);
+            end;
 
             --  If spec is irrelevant, then post errors and quit
 

@@ -43,6 +43,16 @@ package Fname.UF is
    -- Subprograms --
    -----------------
 
+   type Expected_Unit_Type is (Expect_Body, Expect_Spec, Unknown);
+   --  Return value from Get_Expected_Unit_Type
+
+   function Get_Expected_Unit_Type
+     (Fname : File_Name_Type) return Expected_Unit_Type;
+   --  If possible, determine whether the given file name corresponds to a unit
+   --  that is a spec or body (e.g. by examining the extension). If this cannot
+   --  be determined with the file naming conventions in use, then the returned
+   --  value is set to Unknown.
+
    function Get_File_Name
      (Uname    : Unit_Name_Type;
       Subunit  : Boolean;
@@ -52,10 +62,15 @@ package Fname.UF is
    --  false for all other kinds of units. The caller is responsible for
    --  ensuring that the unit name meets the requirements given in package
    --  Uname and described above.
+   --
    --  When May_Fail is True, if the file cannot be found, this function
    --  returns No_File. When it is False, if the file cannot be found,
    --  a file name compatible with one pattern Source_File_Name pragma is
    --  returned.
+
+   function Get_Unit_Index (Uname : Unit_Name_Type) return Nat;
+   --  If there is a specific Source_File_Name pragma for this unit, then
+   --  return the corresponding unit index value. Return 0 if no index given.
 
    procedure Initialize;
    --  Initialize internal tables. This is called automatically when the
@@ -76,9 +91,14 @@ package Fname.UF is
    --  name. The unit name here is not encoded as a Unit_Name_Type, but is
    --  rather just a normal form name in lower case, e.g. "xyz.def".
 
-   procedure Set_File_Name (U : Unit_Name_Type; F : File_Name_Type);
+   procedure Set_File_Name
+     (U     : Unit_Name_Type;
+      F     : File_Name_Type;
+      Index : Nat);
    --  Make association between given unit name, U, and the given file name,
    --  F. This is the routine called to process a Source_File_Name pragma.
+   --  Index is the value from the index parameter of the pragma if present
+   --  and zero if no index parameter is present.
 
    procedure Set_File_Name_Pattern
      (Pat : String_Ptr;

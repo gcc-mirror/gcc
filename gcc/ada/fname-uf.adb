@@ -32,6 +32,7 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Table;
+with Uname;    use Uname;
 with Widechar; use Widechar;
 
 with GNAT.HTable;
@@ -43,8 +44,9 @@ package body Fname.UF is
    --------------------------------------------------------
 
    type SFN_Entry is record
-      U : Unit_Name_Type; -- Unit name
-      F : File_Name_Type; -- Spec/Body file name
+      U     : Unit_Name_Type; -- Unit name
+      F     : File_Name_Type; -- Spec/Body file name
+      Index : Nat;            -- Index from SFN pragma (0 if none)
    end record;
    --  Record single Unit_Name type call to Set_File_Name
 
@@ -117,6 +119,53 @@ package body Fname.UF is
       Name_Len := Name_Len + 2;
       return Get_File_Name (Name_Enter, Subunit => False);
    end File_Name_Of_Spec;
+
+   ----------------------------
+   -- Get_Expected_Unit_Type --
+   ----------------------------
+
+   function Get_Expected_Unit_Type
+     (Fname : File_Name_Type) return Expected_Unit_Type
+   is
+   begin
+      --  In syntax checking only mode or in multiple unit per file mode,
+      --  there can be more than one unit in a file, so the file name is
+      --  not a useful guide to the nature of the unit.
+
+      if Operating_Mode = Check_Syntax
+        or else Multiple_Unit_Index /= 0
+      then
+         return Unknown;
+      end if;
+
+      --  Search the file mapping table, if we find an entry for this
+      --  file we know whether it is a spec or a body.
+
+      for J in SFN_Table.First .. SFN_Table.Last loop
+         if Fname = SFN_Table.Table (J).F then
+            if Is_Body_Name (SFN_Table.Table (J).U) then
+               return Expect_Body;
+            else
+               return Expect_Spec;
+            end if;
+         end if;
+      end loop;
+
+      --  If no entry in file naming table, assume .ads/.adb for spec/body
+      --  and return unknown if we have neither of these two cases.
+
+      Get_Name_String (Fname);
+
+      if Name_Len > 4 then
+         if Name_Buffer (Name_Len - 3 .. Name_Len) = ".ads" then
+            return Expect_Spec;
+         elsif Name_Buffer (Name_Len - 3 .. Name_Len) = ".adb" then
+            return Expect_Body;
+         end if;
+      end if;
+
+      return Unknown;
+   end Get_Expected_Unit_Type;
 
    -------------------
    -- Get_File_Name --
@@ -457,6 +506,20 @@ package body Fname.UF is
       end;
    end Get_File_Name;
 
+   --------------------
+   -- Get_Unit_Index --
+   --------------------
+
+   function Get_Unit_Index (Uname : Unit_Name_Type) return Nat is
+      N : constant Int := SFN_HTable.Get (Uname);
+   begin
+      if N /= No_Entry then
+         return SFN_Table.Table (N).Index;
+      else
+         return 0;
+      end if;
+   end Get_Unit_Index;
+
    ----------------
    -- Initialize --
    ----------------
@@ -496,10 +559,14 @@ package body Fname.UF is
    -- Set_File_Name --
    -------------------
 
-   procedure Set_File_Name (U : Unit_Name_Type; F : File_Name_Type) is
+   procedure Set_File_Name
+     (U     : Unit_Name_Type;
+      F     : File_Name_Type;
+      Index : Nat)
+   is
    begin
       SFN_Table.Increment_Last;
-      SFN_Table.Table (SFN_Table.Last) := (U, F);
+      SFN_Table.Table (SFN_Table.Last) := (U, F, Index);
       SFN_HTable.Set (U, SFN_Table.Last);
    end Set_File_Name;
 
@@ -514,6 +581,7 @@ package body Fname.UF is
       Cas : Casing_Type)
    is
       L : constant Nat := SFN_Patterns.Last;
+
    begin
       SFN_Patterns.Increment_Last;
 

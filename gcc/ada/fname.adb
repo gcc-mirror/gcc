@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,31 +59,6 @@ package body Fname is
      Table_Initial        => Alloc.SFN_Table_Initial,
      Table_Increment      => Alloc.SFN_Table_Increment,
      Table_Name           => "Fname_Dummy_Table");
-   ----------------------------
-   -- Get_Expected_Unit_Type --
-   ----------------------------
-
-   --  We assume that a file name whose last character is a lower case b is
-   --  a body and a file name whose last character is a lower case s is a
-   --  spec. If any other character is found (e.g. when we are in syntax
-   --  checking only mode, where the file name conventions are not set),
-   --  then we return Unknown.
-
-   function Get_Expected_Unit_Type
-     (Fname : File_Name_Type)
-      return  Expected_Unit_Type
-   is
-   begin
-      Get_Name_String (Fname);
-
-      if Name_Buffer (Name_Len) = 'b' then
-         return Expect_Body;
-      elsif Name_Buffer (Name_Len) = 's' then
-         return Expect_Spec;
-      else
-         return Unknown;
-      end if;
-   end Get_Expected_Unit_Type;
 
    ---------------------------
    -- Is_Internal_File_Name --
@@ -91,8 +66,7 @@ package body Fname is
 
    function Is_Internal_File_Name
      (Fname              : File_Name_Type;
-      Renamings_Included : Boolean := True)
-      return               Boolean
+      Renamings_Included : Boolean := True) return Boolean
    is
    begin
       if Is_Predefined_File_Name (Fname, Renamings_Included) then
@@ -132,8 +106,7 @@ package body Fname is
 
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
-      Renamings_Included : Boolean := True)
-      return               Boolean
+      Renamings_Included : Boolean := True) return Boolean
    is
    begin
       Get_Name_String (Fname);
@@ -141,8 +114,7 @@ package body Fname is
    end Is_Predefined_File_Name;
 
    function Is_Predefined_File_Name
-     (Renamings_Included : Boolean := True)
-      return               Boolean
+     (Renamings_Included : Boolean := True) return Boolean
    is
       subtype Str8 is String (1 .. 8);
 

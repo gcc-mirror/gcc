@@ -76,6 +76,7 @@ package body Lib.Writ is
          Ident_String    => Empty,
          Loading         => False,
          Main_Priority   => -1,
+         Munit_Index     => 0,
          Serial_Number   => 0,
          Version         => 0,
          Error_Location  => No_Location);
@@ -91,8 +92,6 @@ package body Lib.Writ is
 
       System_Fname : File_Name_Type;
       --  File name for system spec if needed for dummy entry
-
-      Save_Style : constant Boolean := Style_Check;
 
    begin
       --  Nothing to do if we already compiled System
@@ -131,6 +130,7 @@ package body Lib.Writ is
         Ident_String    => Empty,
         Loading         => False,
         Main_Priority   => -1,
+        Munit_Index     => 0,
         Serial_Number   => 0,
         Version         => 0,
         Error_Location  => No_Location);
@@ -138,10 +138,17 @@ package body Lib.Writ is
       --  Parse system.ads so that the checksum is set right
       --  Style checks are not applied.
 
-      Style_Check := False;
-      Initialize_Scanner (Units.Last, System_Source_File_Index);
-      Discard_List (Par (Configuration_Pragmas => False));
-      Style_Check := Save_Style;
+      declare
+         Save_Mindex : constant Nat := Multiple_Unit_Index;
+         Save_Style  : constant Boolean := Style_Check;
+      begin
+         Multiple_Unit_Index := 0;
+         Style_Check := False;
+         Initialize_Scanner (Units.Last, System_Source_File_Index);
+         Discard_List (Par (Configuration_Pragmas => False));
+         Style_Check := Save_Style;
+         Multiple_Unit_Index := Save_Mindex;
+      end;
    end Ensure_System_Dependency;
 
    ---------------
@@ -667,11 +674,13 @@ package body Lib.Writ is
                then
                   Write_Info_Name (Body_Fname);
                   Write_Info_Tab (49);
-                  Write_Info_Name (Lib_File_Name (Body_Fname));
+                  Write_Info_Name
+                    (Lib_File_Name (Body_Fname, Munit_Index (Unum)));
                else
                   Write_Info_Name (Fname);
                   Write_Info_Tab (49);
-                  Write_Info_Name (Lib_File_Name (Fname));
+                  Write_Info_Name
+                    (Lib_File_Name (Fname, Munit_Index (Unum)));
                end if;
 
                if Elab_Flags (Unum) then
