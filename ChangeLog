@@ -1,3 +1,8 @@
+1999-12-14  Richard Henderson  <rth@cygnus.com>
+
+	* config.guess (alpha-osf, alpha-linux): Detect ev67.
+	* config.sub: Accept alphaev[78], alphaev8.
+
 1999-12-03  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config.guess, config.sub: Update from autoconf.
