@@ -1,3 +1,7 @@
+2002-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/linux64.h (STARTFILE_SPEC32): Fix a typo.
+
 2002-09-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-modes.def (CCAPmode, CCANmode): New CC modes.
