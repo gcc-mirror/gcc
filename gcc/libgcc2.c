@@ -2060,12 +2060,12 @@ found:        ;
 static void
 __bb_init_prg ()
 {
-
   FILE *file;
   char buf[BBINBUFSIZE];
   const char *p;
   const char *pos;
   enum bb_func_mode m;
+  int i;
 
 #ifdef ON_EXIT
   /* Initialize destructor.  */
@@ -2147,8 +2147,10 @@ __bb_init_prg ()
       bb_hashbuckets = (struct bb_edge **) 
                    malloc (BB_BUCKETS * sizeof (struct bb_edge *));
       if (bb_hashbuckets)
-        bzero ((char *) bb_hashbuckets,
-	       BB_BUCKETS * sizeof (struct bb_edge *));
+	/* Use a loop here rather than calling bzero to avoid having to
+	   conditionalize its existance.  */
+	for (i = 0; i < BB_BUCKETS; i++)
+	  bb_hashbuckets[i] = 0;
     }
 
   if (bb_mode & 12)
