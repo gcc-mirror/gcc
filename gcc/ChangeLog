@@ -2,6 +2,9 @@
 
 	* c-decl.c (duplicate_decls): Test DECL for ERROR_MARK.
 
+	* expr.c (expand_expr, case CONSTRUCTOR): Put into memory if
+	constant and EXPAND_CONST_ADDRESS, not just EXPAND_INITIALIZER.
+
 2003-05-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68hc11.c: Don't use the `0' flag for asm_fprintf specifiers.
