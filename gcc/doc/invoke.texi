@@ -366,7 +366,8 @@ in the following sections.
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mcypress  -mf930  -mf934 @gol
--msparclite  -msupersparc  -mv8}
+-msparclite  -msupersparc  -mv8
+-threads -pthreads}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -6430,6 +6431,24 @@ With @option{-mstack-bias}, GCC assumes that the stack pointer, and
 frame pointer if present, are offset by @minus{}2047 which must be added back
 when making stack frame references.  This is the default in 64-bit mode.
 Otherwise, assume no such offset is present.
+@end table
+
+These switches are supported in addition to the above on Solaris:
+
+@table @gcctabopt
+@item -threads
+@opindex threads
+Add support for multithreading using the Solaris threads library.  This
+option sets flags for both the preprocessor and linker.  This option does
+not affect the thread safety of object code produced by the compiler or
+that of libraries supplied with it.
+
+@item -pthreads
+@opindex pthreads
+Add support for multithreading using the POSIX threads library.  This
+option sets flags for both the preprocessor and linker.  This option does
+not affect the thread safety of object code produced  by the compiler or
+that of libraries supplied with it.
 @end table
 
 @node ARM Options
