@@ -2,6 +2,9 @@
 
 	* ggc-zone.c: Fix comment typos.
 
+	* alloc-pool.c, except.h, ggc-common.c, ggc-zone.c, ggc.h,
+	stringpool.c, config/mips/mips-protos.h: Update copyright.
+
 2005-03-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000-protos.h: Replace "struct rtx_def *"
