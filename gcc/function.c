@@ -5511,6 +5511,7 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 {
   tree save_var = NULL_TREE;
   HOST_WIDE_INT save_constant = 0;
+  int boundary_in_bytes = boundary / BITS_PER_UNIT;
   HOST_WIDE_INT sp_offset = STACK_POINTER_OFFSET;
 
 #ifdef SPARC_STACK_BOUNDARY_HACK
@@ -5521,8 +5522,6 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
   if (SPARC_STACK_BOUNDARY_HACK)
     sp_offset = 0;
 #endif
-
-  int boundary_in_bytes = boundary / BITS_PER_UNIT;
 
   if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
     {
