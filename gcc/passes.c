@@ -502,6 +502,7 @@ rest_of_handle_old_regalloc (void)
 
       rebuild_jump_labels (get_insns ());
       purge_all_dead_edges (0);
+      delete_unreachable_blocks ();
 
       timevar_pop (TV_JUMP);
     }
