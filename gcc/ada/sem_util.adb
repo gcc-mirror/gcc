@@ -1103,7 +1103,8 @@ package body Sem_Util is
    ---------------------
 
    function Defining_Entity (N : Node_Id) return Entity_Id is
-      K : constant Node_Kind := Nkind (N);
+      K   : constant Node_Kind := Nkind (N);
+      Err : Entity_Id := Empty;
 
    begin
       case K is
@@ -1178,13 +1179,16 @@ package body Sem_Util is
                if Nkind (Nam) in N_Entity then
                   return Nam;
 
-               --  For Error, make up a name so we can continue
+               --  For Error, make up a name and attach to declaration
+               --  so we can continue semantic analysis
 
                elsif Nam = Error then
-                  return
+                  Err :=
                     Make_Defining_Identifier (Sloc (N),
                       Chars => New_Internal_Name ('T'));
+                  Set_Defining_Unit_Name (N, Err);
 
+                  return Err;
                --  If not an entity, get defining identifier
 
                else
