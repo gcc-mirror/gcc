@@ -1,3 +1,4 @@
+// Build don't link:
 void f ()
 {
   struct A {
