@@ -1544,11 +1544,12 @@ void (*print_error_function) PROTO((const char *)) =
   default_print_error_function;
 
 /* Prints out, if necessary, the name of the current function
-  that caused an error.  Called from all error and warning functions.  */
+  that caused an error.  Called from all error and warning functions.
+  We ignore the FILE parameter, as it cannot be relied upon.  */
 
 void
 report_error_function (file)
-  const char *file;
+  const char *file ATTRIBUTE_UNUSED;
 {
   struct file_stack *p;
 
@@ -1558,11 +1559,8 @@ report_error_function (file)
       need_error_newline = 0;
     }
 
-  (*print_error_function) (file);
-
   if (input_file_stack && input_file_stack->next != 0
-      && input_file_stack_tick != last_error_tick
-      && file == input_filename)
+      && input_file_stack_tick != last_error_tick)
     {
       for (p = input_file_stack->next; p; p = p->next)
 	notice ((p == input_file_stack->next
@@ -1572,6 +1570,8 @@ report_error_function (file)
       fprintf (stderr, ":\n");
       last_error_tick = input_file_stack_tick;
     }
+
+  (*print_error_function) (input_filename);
 }
 
 /* Print a message.  */

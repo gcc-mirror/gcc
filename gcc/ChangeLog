@@ -1,3 +1,8 @@
+Mon Apr 26 01:02:34 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* toplev.c (report_error_function): Reorder file stack and
+	function name printing.  Ignore FILE parameter.
+
 Mon Apr 26 00:58:54 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 	* pa/pa-hpux.h, pa/pa-hpux10.h, pa/pa-hpux9.h, pa/pa-osf.h, pa.h,
