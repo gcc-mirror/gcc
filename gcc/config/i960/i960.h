@@ -651,8 +651,9 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  				\
   ((C) == 'I' ? (((unsigned) (VALUE)) <= 31)				\
    : (C) == 'J' ? ((VALUE) == 0)					\
-      : (C) == 'K' ? ((VALUE) > -32 && (VALUE) <= 0)			\
-	: 0)
+   : (C) == 'K' ? ((VALUE) >= -31 && (VALUE) <= 0)			\
+   : (C) == 'M' ? ((VALUE) >= -32 && (VALUE) <= 0)			\
+   : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.
@@ -1104,7 +1105,7 @@ extern struct rtx_def *legitimize_address ();
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits. */
-#define SHIFT_COUNT_TRUNCATED 1
+#define SHIFT_COUNT_TRUNCATED 0
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
@@ -1502,6 +1503,7 @@ extern enum insn_types i960_last_insn_type;
   {"fpmove_src_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
 			  LABEL_REF, SUBREG, REG, MEM}},		\
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
+  {"logic_operand", {SUBREG, REG, CONST_INT}},				\
   {"fp_arith_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"signed_arith_operand", {SUBREG, REG, CONST_INT}},			\
   {"literal", {CONST_INT}},						\
