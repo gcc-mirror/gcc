@@ -3085,8 +3085,6 @@ extern GTY(()) tree error_mark_list;
 extern GTY(()) tree integer_two_node;
 extern GTY(()) tree integer_three_node;
 
-extern GTY(()) tree anonymous_namespace_name;
-
 /* The number of function bodies which we are currently processing.
    (Zero if we are at namespace scope, one inside the body of a
    function, two inside the body of a function in a local class, etc.)  */

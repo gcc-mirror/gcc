@@ -48,6 +48,10 @@ static tree push_using_directive (tree);
 
 tree global_namespace;
 
+/* The name of the anonymous namespace, throughout this translation
+   unit.  */
+GTY(()) tree anonymous_namespace_name;
+
 
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
@@ -2990,6 +2994,7 @@ push_namespace (tree name)
   tree d = NULL_TREE;
   int need_new = 1;
   int implicit_use = 0;
+  bool anon = !name;
 
   timevar_push (TV_NAME_LOOKUP);
   
@@ -2999,7 +3004,7 @@ push_namespace (tree name)
   my_friendly_assert (global_namespace != NULL && name != global_scope_name,
                       20030531);
 
-  if (!name)
+  if (anon)
     {
       /* The name of anonymous namespace is unique for the translation
          unit.  */
@@ -3034,6 +3039,12 @@ push_namespace (tree name)
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
       d = pushdecl (d);
+      if (anon)
+	{
+	  /* Clear DECL_NAME for the benefit of debugging back ends.  */
+	  SET_DECL_ASSEMBLER_NAME (d, name);
+	  DECL_NAME (d) = NULL_TREE;
+	}
       begin_scope (sk_namespace, d);
     }
   else

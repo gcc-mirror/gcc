@@ -805,7 +805,7 @@ dump_decl (tree t, int flags)
       else
         {
           dump_scope (CP_DECL_CONTEXT (t), flags);
-          if (DECL_NAME (t) == anonymous_namespace_name)
+          if (DECL_NAME (t) == NULL_TREE)
             pp_identifier (cxx_pp, "<unnamed>");
           else
             pp_tree_identifier (cxx_pp, DECL_NAME (t));

@@ -230,11 +230,6 @@ cp_dump_tree (void* dump_info, tree t)
 	  dump_child ("tynm", TREE_TYPE (t));
 	  return true;
 	}
-      else if (t == anonymous_namespace_name)
-	{
-	  dump_string (di, "unnamed");
-	  return true;
-	}
       break;
 
     case OFFSET_TYPE:
