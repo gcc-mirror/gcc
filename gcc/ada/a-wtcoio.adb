@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Text_IO.Complex_Aux;
+
 with System.WCh_Con; use System.WCh_Con;
 with System.WCh_WtS; use System.WCh_WtS;
 
@@ -44,9 +45,6 @@ package body Ada.Wide_Text_IO.Complex_IO is
    subtype LLF is Long_Long_Float;
    --  Type used for calls to routines in Aux
 
---   subtype TFT is Ada.Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
-
    function TFT is new
      Ada.Unchecked_Conversion (File_Type, Ada.Wide_Text_IO.File_Type);
    --  This unchecked conversion is to get around a visibility bug in
@@ -58,12 +56,12 @@ package body Ada.Wide_Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (File  : in  File_Type;
+     (File  :  File_Type;
       Item  : out Complex;
-      Width : in  Field := 0)
+      Width :  Field := 0)
    is
-      Real_Item  : Real'Base;
-      Imag_Item  : Real'Base;
+      Real_Item : Real'Base;
+      Imag_Item : Real'Base;
 
    begin
       Aux.Get (TFT (File), LLF (Real_Item), LLF (Imag_Item), Width);
@@ -79,7 +77,7 @@ package body Ada.Wide_Text_IO.Complex_IO is
 
    procedure Get
      (Item  : out Complex;
-      Width : in  Field := 0)
+      Width : Field := 0)
    is
    begin
       Get (Current_Input, Item, Width);
@@ -90,7 +88,7 @@ package body Ada.Wide_Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (From : in  Wide_String;
+     (From : Wide_String;
       Item : out Complex;
       Last : out Positive)
    is
@@ -116,11 +114,11 @@ package body Ada.Wide_Text_IO.Complex_IO is
    ---------
 
    procedure Put
-     (File : in File_Type;
-      Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (File : File_Type;
+      Item : Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
    begin
       Aux.Put (TFT (File), LLF (Re (Item)), LLF (Im (Item)), Fore, Aft, Exp);
@@ -131,10 +129,10 @@ package body Ada.Wide_Text_IO.Complex_IO is
    ---------
 
    procedure Put
-     (Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp)
+     (Item : Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
    begin
       Put (Current_Output, Item, Fore, Aft, Exp);
@@ -146,9 +144,9 @@ package body Ada.Wide_Text_IO.Complex_IO is
 
    procedure Put
      (To   : out Wide_String;
-      Item : in  Complex;
-      Aft  : in  Field := Default_Aft;
-      Exp  : in  Field := Default_Exp)
+      Item : Complex;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp)
    is
       S : String (To'First .. To'Last);
 

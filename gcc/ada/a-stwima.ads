@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,16 +63,13 @@ package Ada.Strings.Wide_Maps is
      array (Positive range <>) of Wide_Character_Range;
 
    function To_Set
-     (Ranges : in Wide_Character_Ranges)
-      return   Wide_Character_Set;
+     (Ranges : Wide_Character_Ranges) return Wide_Character_Set;
 
    function To_Set
-     (Span : in Wide_Character_Range)
-      return Wide_Character_Set;
+     (Span : Wide_Character_Range) return Wide_Character_Set;
 
    function To_Ranges
-     (Set :  in Wide_Character_Set)
-      return Wide_Character_Ranges;
+     (Set :  in Wide_Character_Set) return Wide_Character_Ranges;
 
    ---------------------------------------
    -- Operations on Wide Character Sets --
@@ -81,55 +78,44 @@ package Ada.Strings.Wide_Maps is
    function "=" (Left, Right : in Wide_Character_Set) return Boolean;
 
    function "not"
-     (Right  : in Wide_Character_Set)
-      return Wide_Character_Set;
+     (Right : Wide_Character_Set) return Wide_Character_Set;
 
    function "and"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set;
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set;
 
    function "or"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set;
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set;
 
    function "xor"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set;
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set;
 
    function "-"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set;
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set;
 
    function Is_In
-     (Element : in Wide_Character;
-      Set     : in Wide_Character_Set)
-      return    Boolean;
+     (Element : Wide_Character;
+      Set     : Wide_Character_Set) return Boolean;
 
    function Is_Subset
-     (Elements : in Wide_Character_Set;
-      Set      : in Wide_Character_Set)
-      return     Boolean;
+     (Elements : Wide_Character_Set;
+      Set      : Wide_Character_Set) return Boolean;
 
    function "<="
-     (Left  : in Wide_Character_Set;
-      Right : in Wide_Character_Set)
-      return  Boolean
+     (Left  : Wide_Character_Set;
+      Right : Wide_Character_Set) return Boolean
    renames Is_Subset;
 
    subtype Wide_Character_Sequence is Wide_String;
    --  Alternative representation for a set of character values
 
    function To_Set
-     (Sequence  : in Wide_Character_Sequence)
-      return      Wide_Character_Set;
+     (Sequence : Wide_Character_Sequence) return Wide_Character_Set;
 
    function To_Set
-     (Singleton : in Wide_Character)
-      return      Wide_Character_Set;
+     (Singleton : Wide_Character) return Wide_Character_Set;
 
    function To_Sequence
-     (Set  : in Wide_Character_Set)
-      return Wide_Character_Sequence;
+     (Set : Wide_Character_Set) return Wide_Character_Sequence;
 
    -----------------------------------------
    -- Wide Character Mapping Declarations --
@@ -139,9 +125,8 @@ package Ada.Strings.Wide_Maps is
    --  Representation for a wide character to wide character mapping:
 
    function Value
-     (Map     : in Wide_Character_Mapping;
-      Element : in Wide_Character)
-      return    Wide_Character;
+     (Map     : Wide_Character_Mapping;
+      Element : Wide_Character) return Wide_Character;
 
    Identity : constant Wide_Character_Mapping;
 
@@ -150,19 +135,16 @@ package Ada.Strings.Wide_Maps is
    ---------------------------------
 
    function To_Mapping
-     (From, To : in Wide_Character_Sequence)
-      return     Wide_Character_Mapping;
+     (From, To : Wide_Character_Sequence) return Wide_Character_Mapping;
 
    function To_Domain
-     (Map  : in Wide_Character_Mapping)
-      return Wide_Character_Sequence;
+     (Map : Wide_Character_Mapping) return Wide_Character_Sequence;
 
    function To_Range
-     (Map  : in Wide_Character_Mapping)
-      return Wide_Character_Sequence;
+     (Map : Wide_Character_Mapping) return Wide_Character_Sequence;
 
    type Wide_Character_Mapping_Function is
-      access function (From : in Wide_Character) return Wide_Character;
+      access function (From : Wide_Character) return Wide_Character;
 
 private
    package AF renames Ada.Finalization;

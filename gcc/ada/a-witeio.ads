@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -89,34 +89,34 @@ package Ada.Wide_Text_IO is
 
    procedure Create
      (File : in out File_Type;
-      Mode : in File_Mode := Out_File;
-      Name : in String := "";
-      Form : in String := "");
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "");
 
    procedure Open
      (File : in out File_Type;
-      Mode : in File_Mode;
-      Name : in String;
-      Form : in String := "");
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "");
 
    procedure Close  (File : in out File_Type);
    procedure Delete (File : in out File_Type);
-   procedure Reset  (File : in out File_Type; Mode : in File_Mode);
+   procedure Reset  (File : in out File_Type; Mode : File_Mode);
    procedure Reset  (File : in out File_Type);
 
-   function Mode (File : in File_Type) return File_Mode;
-   function Name (File : in File_Type) return String;
-   function Form (File : in File_Type) return String;
+   function Mode (File : File_Type) return File_Mode;
+   function Name (File : File_Type) return String;
+   function Form (File : File_Type) return String;
 
-   function Is_Open (File : in File_Type) return Boolean;
+   function Is_Open (File : File_Type) return Boolean;
 
    ------------------------------------------------------
    -- Control of default input, output and error files --
    ------------------------------------------------------
 
-   procedure Set_Input  (File : in File_Type);
-   procedure Set_Output (File : in File_Type);
-   procedure Set_Error  (File : in File_Type);
+   procedure Set_Input  (File : File_Type);
+   procedure Set_Output (File : File_Type);
+   procedure Set_Error  (File : File_Type);
 
    function Standard_Input  return File_Type;
    function Standard_Output return File_Type;
@@ -143,76 +143,76 @@ package Ada.Wide_Text_IO is
    --  Note: The paramter file is in out in the RM, but as pointed out
    --  in <<95-5166.a Tucker Taft 95-6-23>> this is clearly an oversight.
 
-   procedure Flush (File : in File_Type);
+   procedure Flush (File : File_Type);
    procedure Flush;
 
    --------------------------------------------
    -- Specification of line and page lengths --
    --------------------------------------------
 
-   procedure Set_Line_Length (File : in File_Type; To : in Count);
-   procedure Set_Line_Length (To : in Count);
+   procedure Set_Line_Length (File : File_Type; To : Count);
+   procedure Set_Line_Length (To : Count);
 
-   procedure Set_Page_Length (File : in File_Type; To : in Count);
-   procedure Set_Page_Length (To : in Count);
+   procedure Set_Page_Length (File : File_Type; To : Count);
+   procedure Set_Page_Length (To : Count);
 
-   function Line_Length (File : in File_Type) return Count;
+   function Line_Length (File : File_Type) return Count;
    function Line_Length return Count;
 
-   function Page_Length (File : in File_Type) return Count;
+   function Page_Length (File : File_Type) return Count;
    function Page_Length return Count;
 
    ------------------------------------
    -- Column, Line, and Page Control --
    ------------------------------------
 
-   procedure New_Line (File : in File_Type; Spacing : in Positive_Count := 1);
-   procedure New_Line (Spacing : in Positive_Count := 1);
+   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure New_Line (Spacing : Positive_Count := 1);
 
-   procedure Skip_Line (File : in File_Type; Spacing : in Positive_Count := 1);
-   procedure Skip_Line (Spacing : in Positive_Count := 1);
+   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure Skip_Line (Spacing : Positive_Count := 1);
 
-   function End_Of_Line (File : in File_Type) return Boolean;
+   function End_Of_Line (File : File_Type) return Boolean;
    function End_Of_Line return Boolean;
 
-   procedure New_Page (File : in File_Type);
+   procedure New_Page (File : File_Type);
    procedure New_Page;
 
-   procedure Skip_Page (File : in File_Type);
+   procedure Skip_Page (File : File_Type);
    procedure Skip_Page;
 
-   function End_Of_Page (File : in File_Type) return Boolean;
+   function End_Of_Page (File : File_Type) return Boolean;
    function End_Of_Page return Boolean;
 
-   function End_Of_File (File : in File_Type) return Boolean;
+   function End_Of_File (File : File_Type) return Boolean;
    function End_Of_File return Boolean;
 
-   procedure Set_Col (File : in File_Type;  To : in Positive_Count);
-   procedure Set_Col (To : in Positive_Count);
+   procedure Set_Col (File : File_Type;  To : Positive_Count);
+   procedure Set_Col (To : Positive_Count);
 
-   procedure Set_Line (File : in File_Type; To : in Positive_Count);
-   procedure Set_Line (To : in Positive_Count);
+   procedure Set_Line (File : File_Type; To : Positive_Count);
+   procedure Set_Line (To : Positive_Count);
 
-   function Col (File : in File_Type) return Positive_Count;
+   function Col (File : File_Type) return Positive_Count;
    function Col return Positive_Count;
 
-   function Line (File : in File_Type) return Positive_Count;
+   function Line (File : File_Type) return Positive_Count;
    function Line return Positive_Count;
 
-   function Page (File : in File_Type) return Positive_Count;
+   function Page (File : File_Type) return Positive_Count;
    function Page return Positive_Count;
 
    ----------------------------
    -- Character Input-Output --
    ----------------------------
 
-   procedure Get (File : in File_Type; Item : out Wide_Character);
+   procedure Get (File : File_Type; Item : out Wide_Character);
    procedure Get (Item : out Wide_Character);
-   procedure Put (File : in File_Type; Item : in Wide_Character);
-   procedure Put (Item : in Wide_Character);
+   procedure Put (File : File_Type; Item : Wide_Character);
+   procedure Put (Item : Wide_Character);
 
    procedure Look_Ahead
-     (File        : in File_Type;
+     (File        : File_Type;
       Item        : out Wide_Character;
       End_Of_Line : out Boolean);
 
@@ -221,14 +221,14 @@ package Ada.Wide_Text_IO is
       End_Of_Line : out Boolean);
 
    procedure Get_Immediate
-     (File : in File_Type;
+     (File : File_Type;
       Item : out Wide_Character);
 
    procedure Get_Immediate
      (Item : out Wide_Character);
 
    procedure Get_Immediate
-     (File      : in File_Type;
+     (File      : File_Type;
       Item      : out Wide_Character;
       Available : out Boolean);
 
@@ -240,13 +240,13 @@ package Ada.Wide_Text_IO is
    -- String Input-Output --
    -------------------------
 
-   procedure Get (File : in File_Type; Item : out Wide_String);
+   procedure Get (File : File_Type; Item : out Wide_String);
    procedure Get (Item : out Wide_String);
-   procedure Put (File : in File_Type; Item : in Wide_String);
-   procedure Put (Item : in Wide_String);
+   procedure Put (File : File_Type; Item : Wide_String);
+   procedure Put (Item : Wide_String);
 
    procedure Get_Line
-     (File : in File_Type;
+     (File : File_Type;
       Item : out Wide_String;
       Last : out Natural);
 
@@ -254,12 +254,18 @@ package Ada.Wide_Text_IO is
      (Item : out Wide_String;
       Last : out Natural);
 
-   procedure Put_Line
-     (File : in File_Type;
-      Item : in Wide_String);
+   function Get_Line (File : File_Type) return Wide_String;
+   pragma Ada_05 (Get_Line);
+
+   function Get_Line return Wide_String;
+   pragma Ada_05 (Get_Line);
 
    procedure Put_Line
-     (Item : in Wide_String);
+     (File : File_Type;
+      Item : Wide_String);
+
+   procedure Put_Line
+     (Item : Wide_String);
 
    ---------------------------------------
    -- Generic packages for Input-Output --
@@ -398,7 +404,7 @@ private
 
    procedure Write
      (File : in out Wide_Text_AFCB;
-      Item : in Ada.Streams.Stream_Element_Array);
+      Item : Ada.Streams.Stream_Element_Array);
    --  Write operation used when Wide_Text_IO file is treated as a Stream
 
    ------------------------
@@ -440,7 +446,7 @@ private
    --  occurs. The result is EOF if the end of file was read.
 
    procedure Get_Character
-     (File : in File_Type;
+     (File : File_Type;
       Item : out Character);
    --  This is essentially a copy of the normal Get routine from Text_IO. It
    --  obtains a single character from the input file File, and places it in
@@ -449,8 +455,7 @@ private
 
    function Get_Wide_Char
      (C    : Character;
-      File : File_Type)
-      return Wide_Character;
+      File : File_Type) return Wide_Character;
    --  This function is shared by Get and Get_Immediate to extract a wide
    --  character value from the given File. The first byte has already been
    --  read and is passed in C. The wide character value is returned as the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package body Ada.Wide_Text_IO.Text_Streams is
    -- Stream --
    ------------
 
-   function Stream (File : in File_Type) return Stream_Access is
+   function Stream (File : File_Type) return Stream_Access is
    begin
       System.File_IO.Check_File_Open (FCB.AFCB_Ptr (File));
       return Stream_Access (File);

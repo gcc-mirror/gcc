@@ -24,63 +24,89 @@ pragma Preelaborate (Wide_Fixed);
    -------------------------------------------------------------------
 
    procedure Move
-     (Source  : in  Wide_String;
+     (Source  : Wide_String;
       Target  : out Wide_String;
-      Drop    : in  Truncation := Error;
-      Justify : in  Alignment  := Left;
-      Pad     : in  Wide_Character  := Ada.Strings.Wide_Space);
+      Drop    : Truncation := Error;
+      Justify : Alignment  := Left;
+      Pad     : Wide_Character  := Ada.Strings.Wide_Space);
 
    ------------------------
    -- Search Subprograms --
    ------------------------
 
    function Index
-     (Source  : in Wide_String;
-      Pattern : in Wide_String;
-      Going   : in Direction := Forward;
-      Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return    Natural;
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural;
 
    function Index
-     (Source  : in Wide_String;
-      Pattern : in Wide_String;
-      Going   : in Direction := Forward;
-      Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-      return    Natural;
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
 
    function Index
-     (Source : in Wide_String;
-      Set    : in Wide_Maps.Wide_Character_Set;
-      Test   : in Membership := Inside;
-      Going  : in Direction  := Forward)
-      return   Natural;
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership := Inside;
+      Going  : Direction  := Forward) return Natural;
+
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural;
+   pragma Ada_05 (Index);
+
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
+   pragma Ada_05 (Index);
+
+   function Index
+     (Source  : Wide_String;
+      Set     : Wide_Maps.Wide_Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural;
+   pragma Ada_05 (Index);
 
    function Index_Non_Blank
-     (Source : in Wide_String;
-      Going  : in Direction := Forward)
-      return   Natural;
+     (Source : Wide_String;
+      Going  : Direction := Forward) return Natural;
+
+   function Index_Non_Blank
+     (Source : Wide_String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural;
+   pragma Ada_05 (Index_Non_Blank);
 
    function Count
-     (Source  : in Wide_String;
-      Pattern : in Wide_String;
-      Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return    Natural;
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural;
 
    function Count
-     (Source   : in Wide_String;
-      Pattern  : in Wide_String;
-      Mapping  : in Wide_Maps.Wide_Character_Mapping_Function)
-      return     Natural;
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
 
    function Count
-     (Source : in Wide_String;
-      Set    : in Wide_Maps.Wide_Character_Set)
-      return   Natural;
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set) return Natural;
 
    procedure Find_Token
-     (Source : in Wide_String;
-      Set    : in Wide_Maps.Wide_Character_Set;
-      Test   : in Membership;
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership;
       First  : out Positive;
       Last   : out Natural);
 
@@ -89,144 +115,132 @@ pragma Preelaborate (Wide_Fixed);
    -----------------------------------------
 
    function Translate
-     (Source  : in Wide_String;
-      Mapping : in Wide_Maps.Wide_Character_Mapping)
-      return    Wide_String;
+     (Source  : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping) return Wide_String;
 
    procedure Translate
      (Source  : in out Wide_String;
-      Mapping : in Wide_Maps.Wide_Character_Mapping);
+      Mapping : Wide_Maps.Wide_Character_Mapping);
 
    function Translate
-     (Source  : in Wide_String;
-      Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-      return    Wide_String;
+     (Source  : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Wide_String;
 
    procedure Translate
      (Source  : in out Wide_String;
-      Mapping : in Wide_Maps.Wide_Character_Mapping_Function);
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function);
 
    --------------------------------------------
    -- Wide_String Transformation Subprograms --
    --------------------------------------------
 
    function Replace_Slice
-     (Source : in Wide_String;
-      Low    : in Positive;
-      High   : in Natural;
-      By     : in Wide_String)
-      return   Wide_String;
+     (Source : Wide_String;
+      Low    : Positive;
+      High   : Natural;
+      By     : Wide_String) return Wide_String;
 
    procedure Replace_Slice
      (Source  : in out Wide_String;
-      Low     : in Positive;
-      High    : in Natural;
-      By      : in Wide_String;
-      Drop    : in Truncation := Error;
-      Justify : in Alignment  := Left;
-      Pad     : in Wide_Character  := Ada.Strings.Wide_Space);
+      Low     : Positive;
+      High    : Natural;
+      By      : Wide_String;
+      Drop    : Truncation := Error;
+      Justify : Alignment  := Left;
+      Pad     : Wide_Character  := Ada.Strings.Wide_Space);
 
    function Insert
-     (Source   : in Wide_String;
-      Before   : in Positive;
-      New_Item : in Wide_String)
-      return     Wide_String;
+     (Source   : Wide_String;
+      Before   : Positive;
+      New_Item : Wide_String) return Wide_String;
 
    procedure Insert
      (Source   : in out Wide_String;
-      Before   : in Positive;
-      New_Item : in Wide_String;
-      Drop     : in Truncation := Error);
+      Before   : Positive;
+      New_Item : Wide_String;
+      Drop     : Truncation := Error);
 
    function Overwrite
-     (Source   : in Wide_String;
-      Position : in Positive;
-      New_Item : in Wide_String)
-      return     Wide_String;
+     (Source   : Wide_String;
+      Position : Positive;
+      New_Item : Wide_String) return Wide_String;
 
    procedure Overwrite
      (Source   : in out Wide_String;
-      Position : in Positive;
-      New_Item : in Wide_String;
-      Drop     : in Truncation := Right);
+      Position : Positive;
+      New_Item : Wide_String;
+      Drop     : Truncation := Right);
 
    function Delete
-     (Source  : in Wide_String;
-      From    : in Positive;
-      Through : in Natural)
-      return    Wide_String;
+     (Source  : Wide_String;
+      From    : Positive;
+      Through : Natural) return Wide_String;
 
    procedure Delete
      (Source  : in out Wide_String;
-      From    : in Positive;
-      Through : in Natural;
-      Justify : in Alignment := Left;
-      Pad     : in Wide_Character := Ada.Strings.Wide_Space);
+      From    : Positive;
+      Through : Natural;
+      Justify : Alignment := Left;
+      Pad     : Wide_Character := Ada.Strings.Wide_Space);
 
    --------------------------------------
    -- Wide_String Selector Subprograms --
    --------------------------------------
 
    function Trim
-     (Source : in Wide_String;
-      Side   : in Trim_End)
-      return   Wide_String;
+     (Source : Wide_String;
+      Side   : Trim_End) return Wide_String;
 
    procedure Trim
      (Source  : in out Wide_String;
-      Side    : in Trim_End;
-      Justify : in Alignment      := Left;
-      Pad     : in Wide_Character := Wide_Space);
+      Side    : Trim_End;
+      Justify : Alignment      := Left;
+      Pad     : Wide_Character := Wide_Space);
 
    function Trim
-     (Source : in Wide_String;
-      Left   : in Wide_Maps.Wide_Character_Set;
-      Right  : in Wide_Maps.Wide_Character_Set)
-      return   Wide_String;
+     (Source : Wide_String;
+      Left   : Wide_Maps.Wide_Character_Set;
+      Right  : Wide_Maps.Wide_Character_Set) return Wide_String;
 
    procedure Trim
      (Source  : in out Wide_String;
-      Left    : in Wide_Maps.Wide_Character_Set;
-      Right   : in Wide_Maps.Wide_Character_Set;
-      Justify : in Alignment := Ada.Strings.Left;
-      Pad     : in Wide_Character := Ada.Strings.Wide_Space);
+      Left    : Wide_Maps.Wide_Character_Set;
+      Right   : Wide_Maps.Wide_Character_Set;
+      Justify : Alignment := Ada.Strings.Left;
+      Pad     : Wide_Character := Ada.Strings.Wide_Space);
 
    function Head
-     (Source : in Wide_String;
-      Count  : in Natural;
-      Pad    : in Wide_Character := Ada.Strings.Wide_Space)
-      return   Wide_String;
+     (Source : Wide_String;
+      Count  : Natural;
+      Pad    : Wide_Character := Ada.Strings.Wide_Space) return Wide_String;
 
    procedure Head
      (Source  : in out Wide_String;
-      Count   : in Natural;
-      Justify : in Alignment := Left;
-      Pad     : in Wide_Character := Ada.Strings.Wide_Space);
+      Count   : Natural;
+      Justify : Alignment := Left;
+      Pad     : Wide_Character := Ada.Strings.Wide_Space);
 
    function Tail
-     (Source : in Wide_String;
-      Count  : in Natural;
-      Pad    : in Wide_Character := Ada.Strings.Wide_Space)
-      return   Wide_String;
+     (Source : Wide_String;
+      Count  : Natural;
+      Pad    : Wide_Character := Ada.Strings.Wide_Space) return Wide_String;
 
    procedure Tail
      (Source : in out Wide_String;
-      Count  : in Natural;
-      Justify : in Alignment := Left;
-      Pad    : in Wide_Character := Ada.Strings.Wide_Space);
+      Count  : Natural;
+      Justify : Alignment := Left;
+      Pad    : Wide_Character := Ada.Strings.Wide_Space);
 
    ---------------------------------------
    -- Wide_String Constructor Functions --
    ---------------------------------------
 
    function "*"
-     (Left  : in Natural;
-      Right : in Wide_Character)
-      return  Wide_String;
+     (Left  : Natural;
+      Right : Wide_Character) return Wide_String;
 
    function "*"
-     (Left  : in Natural;
-      Right : in Wide_String)
-      return Wide_String;
+     (Left  : Natural;
+      Right : Wide_String) return Wide_String;
 
 end Ada.Strings.Wide_Fixed;

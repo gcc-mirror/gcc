@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@
 package Ada.Wide_Text_IO.Complex_Aux is
 
    procedure Get
-     (File  : in  File_Type;
+     (File  : File_Type;
       ItemR : out Long_Long_Float;
       ItemI : out Long_Long_Float;
       Width : Field);
