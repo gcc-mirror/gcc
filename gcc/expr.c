@@ -2894,7 +2894,7 @@ store_constructor (exp, target)
 	  else
 	    {
 	      if (index != 0)
-		bitpos = (TREE_INT_CST_LOW (index)
+		bitpos = ((TREE_INT_CST_LOW (index) - minelt)
 			  * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
 	      else
 		bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
