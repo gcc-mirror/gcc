@@ -2761,19 +2761,32 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
     case VECTOR_TYPE:
       /* Go ahead and simplify constant constructors to VECTOR_CST.  */
       if (TREE_CONSTANT (ctor))
-	TREE_OPERAND (*expr_p, 1) = build_vector (type, elt_list);
-      else
 	{
-	  /* Vector types use CONSTRUCTOR all the way through gimple
-	     compilation as a general initializer.  */
-	  for (; elt_list; elt_list = TREE_CHAIN (elt_list))
+	  tree tem;
+
+	  /* Even when ctor is constant, it might contain non-*_CST
+	     elements (e.g. { 1.0/0.0 - 1.0/0.0, 0.0 }) and those don't
+	     belong into VECTOR_CST nodes.  */
+	  for (tem = elt_list; tem; tem = TREE_CHAIN (tem))
+	    if (! CONSTANT_CLASS_P (TREE_VALUE (tem)))
+	      break;
+
+	  if (! tem)
 	    {
-	      enum gimplify_status tret;
-	      tret = gimplify_expr (&TREE_VALUE (elt_list), pre_p, post_p,
-				    is_gimple_val, fb_rvalue);
-	      if (tret == GS_ERROR)
-		ret = GS_ERROR;
+	      TREE_OPERAND (*expr_p, 1) = build_vector (type, elt_list);
+	      break;
 	    }
+	}
+
+      /* Vector types use CONSTRUCTOR all the way through gimple
+	 compilation as a general initializer.  */
+      for (; elt_list; elt_list = TREE_CHAIN (elt_list))
+	{
+	  enum gimplify_status tret;
+	  tret = gimplify_expr (&TREE_VALUE (elt_list), pre_p, post_p,
+				is_gimple_val, fb_rvalue);
+	  if (tret == GS_ERROR)
+	    ret = GS_ERROR;
 	}
       break;
 

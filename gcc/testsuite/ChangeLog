@@ -1,3 +1,11 @@
+2005-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/17297
+	* gcc.c-torture/compile/20050113-1.c: New testcase.
+
+	PR middle-end/19164
+	* gcc.dg/20050113-1.c: New testcase.
+
 2005-01-19  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-85.c: Add comment.
