@@ -1251,7 +1251,7 @@ optimize_mode_switching (file)
 		     the case of EH edges, EH entry points also start
 		     in normal mode, so a similar reasoning applies.  */
 		  else if (GET_CODE (src_bb->end) == INSN)
-		    src_bb->end = emit_insn_after (mode_set, src_bb->end);
+		    emit_insn_after (mode_set, src_bb->end);
 		  else
 		    abort ();
 		  bb_info[j][src_bb->index].computing = mode;
@@ -1313,7 +1313,7 @@ optimize_mode_switching (file)
 		  if (GET_CODE (eg->src->end) == JUMP_INSN)
 		    emit_insn_before (mode_set, eg->src->end);
 		  else if (GET_CODE (eg->src->end) == INSN)
-		    eg->src->end = emit_insn_after (mode_set, eg->src->end);
+		    emit_insn_after (mode_set, eg->src->end);
 		  else
 		    abort ();
 		}
@@ -1345,11 +1345,9 @@ optimize_mode_switching (file)
 		  if (GET_CODE (ptr->insn_ptr) == NOTE
 		      && (NOTE_LINE_NUMBER (ptr->insn_ptr)
 			  == NOTE_INSN_BASIC_BLOCK))
-		    emit_block_insn_after (mode_set, ptr->insn_ptr,
-		                           BASIC_BLOCK (ptr->bbnum));
+		    emit_insn_after (mode_set, ptr->insn_ptr);
 		  else
-		    emit_block_insn_before (mode_set, ptr->insn_ptr,
-					    BASIC_BLOCK (ptr->bbnum));
+		    emit_insn_before (mode_set, ptr->insn_ptr);
 		}
 
 	      free (ptr);

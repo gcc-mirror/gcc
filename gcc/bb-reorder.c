@@ -180,7 +180,6 @@ static void record_effective_endpoints	PARAMS ((void));
 static void make_reorder_chain		PARAMS ((void));
 static basic_block make_reorder_chain_1	PARAMS ((basic_block, basic_block));
 static rtx label_for_bb			PARAMS ((basic_block));
-static rtx emit_jump_to_block_after	PARAMS ((basic_block, rtx));
 static void fixup_reorder_chain		PARAMS ((void));
 static void relate_bbs_with_scopes	PARAMS ((scope));
 static scope make_new_scope		PARAMS ((int, rtx));
@@ -505,57 +504,12 @@ label_for_bb (bb)
 	fprintf (rtl_dump_file, "Emitting label for block %d\n",
 		 bb->index);
 
-      label = emit_label_before (gen_label_rtx (), label);
-      if (bb->head == RBI (bb)->eff_head)
+      label = block_label (bb);
+      if (bb->head == PREV_INSN (RBI (bb)->eff_head))
 	RBI (bb)->eff_head = label;
-      bb->head = label;
-      if (basic_block_for_insn)
-	set_block_for_insn (label, bb);
     }
 
   return label;
-}
-
-
-/* Emit a jump to BB after insn AFTER.  */
-
-static rtx
-emit_jump_to_block_after (bb, after)
-     basic_block bb;
-     rtx after;
-{
-  rtx jump;
-
-  if (bb != EXIT_BLOCK_PTR)
-    {
-      rtx label = label_for_bb (bb);
-      jump = emit_jump_insn_after (gen_jump (label), after);
-      JUMP_LABEL (jump) = label;
-      LABEL_NUSES (label) += 1;
-      if (basic_block_for_insn)
-	set_block_for_new_insns (jump, bb);
-
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Emitting jump to block %d\n",
-		 bb->index);
-    }
-  else
-    {
-#ifdef HAVE_return
-      if (! HAVE_return)
-	abort ();
-      jump = emit_jump_insn_after (gen_return (), after);
-      if (basic_block_for_insn)
-	set_block_for_new_insns (jump, bb);
-
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Emitting return\n");
-#else
-      abort ();
-#endif
-    }
-
-  return jump;
 }
 
 
@@ -1122,8 +1076,6 @@ insert_intra_1 (s, ip, bb)
     {  
       *ip = emit_note_after (NOTE_INSN_BLOCK_BEG, *ip);
       NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_beg);
-      if (basic_block_for_insn)
-	set_block_for_insn (*ip, bb);
     } 
 
   for (p = s->inner; p; p = p->next)
@@ -1133,8 +1085,6 @@ insert_intra_1 (s, ip, bb)
     {  
       *ip = emit_note_after (NOTE_INSN_BLOCK_END, *ip);
       NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_end);
-      if (basic_block_for_insn)
-	set_block_for_insn (*ip, bb);
     }
 }
 
@@ -1220,6 +1170,8 @@ insert_inter_bb_scope_notes (bb1, bb2)
   /* Close scopes.  */
   if (bb1)
     {
+      rtx end = bb1->end;
+
       scope s = RBI (bb1)->scope;
       ip = RBI (bb1)->eff_end;
       while (s != com)
@@ -1228,11 +1180,11 @@ insert_inter_bb_scope_notes (bb1, bb2)
 	    {  
 	      ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
 	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
-	      if (basic_block_for_insn)
-		set_block_for_insn (ip, bb1);
 	    }
 	  s = s->outer;
 	}
+      /* Emitting note may move the end of basic block to unwanted place.  */
+      bb1->end = end;
     }
 
   /* Open scopes.  */
@@ -1246,8 +1198,6 @@ insert_inter_bb_scope_notes (bb1, bb2)
 	    {  
 	      ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
 	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
-	      if (basic_block_for_insn)
-		set_block_for_insn (ip, bb2);
 	    }
 	  s = s->outer;
 	}

@@ -2121,7 +2121,7 @@ rename_equivalent_regs (reg_partition)
 
 		  PATTERN (insn) = XVECEXP (s, 0, slen-1);
 		  for (i = 0; i < slen - 1; i++)
-		    emit_block_insn_before (XVECEXP (s, 0, i), insn, b);
+		    emit_insn_before (XVECEXP (s, 0, i), insn);
 		}
 	    }
 

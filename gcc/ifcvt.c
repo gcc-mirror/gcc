@@ -1796,7 +1796,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
       insn_b = gen_sequence ();
       end_sequence ();
 
-      test_bb->end = emit_insn_after (insn_b, test_bb->end);
+      emit_insn_after (insn_b, test_bb->end);
     }
 
   /* Merge the blocks!  */
@@ -2722,9 +2722,6 @@ if_convert (x_life_data_ok)
 
   if (rtl_dump_file)
     fflush (rtl_dump_file);
-
-  /* Rebuild basic_block_for_insn for update_life_info and for gcse.  */
-  compute_bb_for_insn (get_max_uid ());
 
   /* Rebuild life info for basic blocks that require it.  */
   if (num_removed_blocks && life_data_ok)

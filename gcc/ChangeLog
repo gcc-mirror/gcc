@@ -1,3 +1,66 @@
+Sun Sep 16 21:59:46 CEST 2001  Jan hubicka  <jh@suse.cz>
+
+	* basic-block.h (free_bb_for_insn): Declare.
+	* bb-reorder.c (label_for_bb): Use block_label.
+	(emit_jump_to_block_after): Remove.
+	(insert_intra_1): Do not update block_for_insn.
+	(insert_inter_bb_scope_notes): Likewise; update bb->end
+	* cfg.c (free_bb_for_insn): New.
+	(try_rediret_by_replacing_jump): Avoid set_block_for_new_insns call.
+	(force_nonfallthru_and_redirect): Likewise; do not update BB boundaries.
+	(commit_one_edge_insertion): Likewise.
+	(commit_one_edge_insertion): Do not update BB boundary.
+	(commit_edge_insertions): Do not call compute_bb_for_insn.
+	* cfgbuild.c (find_basic_blocks): Do not free basic_block_for_insn.
+	* cfgcleanup.c (merge_blocks_move_predecessor): Use reorder_insns_nobb.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(try_crossjump_to_edge): Do not update block_for_insn.
+	* combine.c (combine_instructions): Remove compute_bb_for_insn call.
+	* df.c (df_pattern_emit_later): Do not update BB boundary.
+	(df_jump_pattern_emit_after): Likewise.
+	(df_insn_move_before): Use emit_insn_before.
+	* emit-rtl.c (try_split): Emit after trial to get bb boundary updated
+	 properly.
+	(add_insn_after, add_insn_before, emit_insns_after): Update BB
+	boundaries and basic_block_for_insn.
+	(reorder_insns_nobb): Rename from reorder_insns.
+	(reorder_insns): New.
+	(emit_block_insn_before, emit_block_insn_after): Kill.
+	* flow.c (check_function_return_warnings): Do not call
+	compute_bb_for_insn; Do not free basic_block_for_insn.
+	(attempt_auto_inc): Do not update basic_block_for_insn.
+	* function.c (emit_return_into_block): Likewise;
+	do not update BB boundaries.
+	* gcse.c (handle_avail_expr): Do not update basic_block_for_insn.
+	(insert_insn_end_bb): Use emit_insn_before; Likewise.
+	(pre_insert_copy_insn): Likewise.
+	(update_ld_motion_notes): Likewise.
+	(insert_insn_start_bb): Likewise.
+	(replace_store_insn): Likewise.
+	* ifcvt.c (noce_process_if_block): Likewise.
+	(if_convert): Do not call compute_bb_for_insn.
+	* lcm.c (optimize_mode_switching): Do not update BB boundaries.
+	Use emit_insn_before and emit_insn_after.
+	* recog.c (split_all_insns): Do not update BB boundaries;
+	Do not call compute_bb_for_insn.
+	(peephole2_optimize): Do not update BB boundaries.
+	* reg-stack.c (emit_pop_insn): Use emit_insn_after and
+	emit_insn_before.
+	(emit_swap_insn): Likewise.
+	(convert_regs_1): Likewise.
+	* reload1.c (reload): Call compute_bb_for_insn.
+	* rtl.h (reorder_insns_nobb): Declare.
+	* ssa.c (rename_equivalent_regs): Use emit_insn_before.
+	* toplev.c (rest_of_compilation): Call free_bb_for_insn
+	at places CFG is invalidated; do not call compute_bb_for_insn.
+
+	* cfg.c (expunge_block): Invalidate BB structure.
+
+	* (merge_blocks_nomove): Update properly BLOCK_FOR_INSN
+	array.
+
+	* cfg.c (verify_flow_info): Verify the basic_block_for_insn array.
+
 2001-09-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_lex_token): Update prototype.

@@ -7118,16 +7118,7 @@ emit_return_into_block (bb, line_note)
   end = emit_jump_insn_after (gen_return (), bb->end);
   if (line_note)
     emit_line_note_after (NOTE_SOURCE_FILE (line_note),
-			  NOTE_LINE_NUMBER (line_note), bb->end);
-
-  while (1)
-    {
-      set_block_for_insn (p, bb);
-      if (p == bb->end)
-	break;
-      p = PREV_INSN (p);
-    }
-  bb->end = end;
+			  NOTE_LINE_NUMBER (line_note), PREV_INSN (bb->end));
 }
 #endif /* HAVE_return */
 
@@ -7417,10 +7408,6 @@ epilogue_done:
 
       i = PREV_INSN (insn);
       newinsn = emit_insn_before (seq, insn);
-
-      /* Update the UID to basic block map.  */
-      for (i = NEXT_INSN (i); i != insn; i = NEXT_INSN (i))
-	set_block_for_insn (i, bb);
 
       /* Retain a map of the epilogue insns.  Used in life analysis to
 	 avoid getting rid of sibcall epilogue insns.  */

@@ -2742,10 +2742,14 @@ split_all_insns (upd_life)
 	  last = split_insn (insn);
 	  if (last)
 	    {
+	      /* The split sequence may include barrier, but the
+		 BB boundary we are interested in will be set to previous
+		 one.  */
+
+	      while (GET_CODE (last) == BARRIER)
+		last = PREV_INSN (last);
 	      SET_BIT (blocks, i);
 	      changed = 1;
-	      if (insn == bb->end)
-		bb->end = last;
 	      insn = last;
 	    }
 
@@ -2759,7 +2763,6 @@ split_all_insns (upd_life)
 
   if (changed)
     {
-      compute_bb_for_insn (get_max_uid ());
       for (i = 0; i < n_basic_blocks; i++)
 	find_sub_basic_blocks (BASIC_BLOCK (i));
     }
@@ -3061,14 +3064,8 @@ peephole2_optimize (dump_file)
 		    i -= MAX_INSNS_PER_PEEP2 + 1;
 
 		  /* Replace the old sequence with the new.  */
+		  try = emit_insn_after (try, peep2_insn_data[i].insn);
 		  flow_delete_insn_chain (insn, peep2_insn_data[i].insn);
-		  try = emit_insn_after (try, prev);
-
-		  /* Adjust the basic block boundaries.  */
-		  if (peep2_insn_data[i].insn == bb->end)
-		    bb->end = try;
-		  if (insn == bb->head)
-		    bb->head = NEXT_INSN (prev);
 
 #ifdef HAVE_conditional_execution
 		  /* With conditional execution, we cannot back up the

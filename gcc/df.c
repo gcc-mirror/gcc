@@ -2959,9 +2959,6 @@ df_pattern_emit_after (df, pattern, bb, insn)
   if (ret_insn == insn)
     return ret_insn;
 
-  if (bb->end == insn)
-    bb->end = ret_insn;
-
   df_insns_modify (df, bb, NEXT_INSN (insn), ret_insn);
   return ret_insn;
 }
@@ -2980,9 +2977,6 @@ df_jump_pattern_emit_after (df, pattern, bb, insn)
   ret_insn = emit_jump_insn_after (pattern, insn);
   if (ret_insn == insn)
     return ret_insn;
-
-  if (bb->end == insn)
-    bb->end = ret_insn;
 
   df_insns_modify (df, bb, NEXT_INSN (insn), ret_insn);
   return ret_insn;
@@ -3023,7 +3017,7 @@ df_insn_move_before (df, bb, insn, before_bb, before_insn)
   /* ???? Perhaps all the insns moved should be stored on a list
      which df_analyse removes when it recalculates data flow.  */
 
-  return emit_block_insn_before (insn, before_insn, before_bb);
+  return emit_insn_before (insn, before_insn);
 }
 
 /* Functions to query dataflow information.  */

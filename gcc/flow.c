@@ -377,8 +377,6 @@ check_function_return_warnings ()
 	{
 	  /* Recompute insn->block mapping, since the initial mapping is
 	     set before we delete unreachable blocks.  */
-	  compute_bb_for_insn (max_uid);
-
 	  if (BLOCK_FOR_INSN (cfun->x_clobber_return_insn) != NULL)
 	    warning ("control reaches end of non-void function");
 	}
@@ -739,12 +737,6 @@ void
 free_basic_block_vars (keep_head_end_p)
      int keep_head_end_p;
 {
-  if (basic_block_for_insn)
-    {
-      VARRAY_FREE (basic_block_for_insn);
-      basic_block_for_insn = NULL;
-    }
-
   if (! keep_head_end_p)
     {
       if (basic_block_info)
@@ -3098,10 +3090,6 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       emit_move_insn (q, incr_reg);
       insns = get_insns ();
       end_sequence ();
-
-      if (basic_block_for_insn)
-	for (temp = insns; temp; temp = NEXT_INSN (temp))
-	  set_block_for_insn (temp, pbi->bb);
 
       /* If we can't make the auto-inc, or can't make the
 	 replacement into Y, exit.  There's no point in making

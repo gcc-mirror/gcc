@@ -1266,6 +1266,7 @@ reload (first, global)
   /* Free all the insn_chain structures at once.  */
   obstack_free (&reload_obstack, reload_startobj);
   unused_insn_chains = 0;
+  compute_bb_for_insn (get_max_uid ());
   fixup_abnormal_edges ();
 
   return failure;

@@ -3508,9 +3508,6 @@ handle_avail_expr (insn, expr)
 					SET_DEST (expr_set)),
 			   insn_computes_expr);
 
-      /* Keep block number table up to date.  */
-      set_block_for_new_insns (new_insn, BLOCK_FOR_INSN (insn_computes_expr));
-
       /* Keep register set table up to date.  */
       record_one_set (REGNO (to), new_insn);
 
@@ -4636,7 +4633,7 @@ insert_insn_end_bb (expr, bb, pre)
 	}
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
-      new_insn = emit_block_insn_before (pat, insn, bb);
+      new_insn = emit_insn_before (pat, insn);
     }
 
   /* Likewise if the last insn is a call, as will happen in the presence
@@ -4674,13 +4671,10 @@ insert_insn_end_bb (expr, bb, pre)
 	     || NOTE_INSN_BASIC_BLOCK_P (insn))
 	insn = NEXT_INSN (insn);
 
-      new_insn = emit_block_insn_before (pat, insn, bb);
+      new_insn = emit_insn_before (pat, insn);
     }
   else
-    {
-      new_insn = emit_insn_after (pat, insn);
-      bb->end = new_insn;
-    }
+    new_insn = emit_insn_after (pat, insn);
 
   /* Keep block number table up to date.
      Note, PAT could be a multiple insn sequence, we have to make
@@ -4690,8 +4684,6 @@ insert_insn_end_bb (expr, bb, pre)
       for (i = 0; i < XVECLEN (pat, 0); i++)
 	{
 	  rtx insn = XVECEXP (pat, 0, i);
-
-	  set_block_for_insn (insn, bb);
 	  if (INSN_P (insn))
 	    add_label_notes (PATTERN (insn), new_insn);
 
@@ -4701,7 +4693,6 @@ insert_insn_end_bb (expr, bb, pre)
   else
     {
       add_label_notes (SET_SRC (pat), new_insn);
-      set_block_for_new_insns (new_insn, bb);
 
       /* Keep register set table up to date.  */
       record_one_set (regno, new_insn);
@@ -4815,20 +4806,14 @@ pre_insert_copy_insn (expr, insn)
   int indx = expr->bitmap_index;
   rtx set = single_set (insn);
   rtx new_insn;
-  basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (!set)
     abort ();
 
   new_insn = emit_insn_after (gen_move_insn (reg, SET_DEST (set)), insn);
 
-  /* Keep block number table up to date.  */
-  set_block_for_new_insns (new_insn, bb);
-
   /* Keep register set table up to date.  */
   record_one_set (regno, new_insn);
-  if (insn == bb->end)
-    bb->end = new_insn;
 
   gcse_create_count++;
 
@@ -6254,7 +6239,6 @@ update_ld_motion_stores (expr)
 	  copy = gen_move_insn ( reg, SET_SRC (pat));
 	  new = emit_insn_before (copy, insn);
 	  record_one_set (REGNO (reg), new);
-	  set_block_for_new_insns (new, BLOCK_FOR_INSN (insn));
 	  SET_SRC (pat) = reg;
 
 	  /* un-recognize this pattern since it's probably different now.  */
@@ -6753,11 +6737,6 @@ insert_insn_start_bb (insn, bb)
 
   insn = emit_insn_after (insn, prev);
 
-  if (prev == bb->end)
-    bb->end = insn;
-
-  set_block_for_new_insns (insn, bb);
-
   if (gcse_file)
     {
       fprintf (gcse_file, "STORE_MOTION  insert store at start of BB %d:\n",
@@ -6846,7 +6825,6 @@ replace_store_insn (reg, del, bb)
   
   insn = gen_move_insn (reg, SET_SRC (PATTERN (del)));
   insn = emit_insn_after (insn, del);
-  set_block_for_new_insns (insn, bb);
   
   if (gcse_file)
     {
@@ -6857,12 +6835,6 @@ replace_store_insn (reg, del, bb)
       print_inline_rtx (gcse_file, insn, 6);
       fprintf(gcse_file, "\n");
     }
-  
-  if (bb->end == del)
-    bb->end = insn;
-  
-  if (bb->head == del)
-    bb->head = insn;
   
   delete_insn (del);
 }

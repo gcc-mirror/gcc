@@ -288,6 +288,7 @@ extern varray_type basic_block_for_insn;
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 
 extern void compute_bb_for_insn		PARAMS ((int));
+extern void free_bb_for_insn		PARAMS ((void));
 extern void update_bb_for_insn		PARAMS ((basic_block));
 extern void set_block_for_insn		PARAMS ((rtx, basic_block));
 extern void set_block_for_new_insns	PARAMS ((rtx, basic_block));
