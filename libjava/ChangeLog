@@ -1,3 +1,14 @@
+2003-12-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkFontMetrics.java (GdkFontMetrics):
+	Pass font name, not XLFD, to initState.
+	(stringWidth(String, int, String)): New method.
+	(stringWidth(String)): Call new stringWidth.
+	(getLeading): Always return 0.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c
+	(initState): New Pango implementation.
+	(stringWidth): Likewise.
+
 2003-12-01  Olga Rodimina <rodimina@redhat.com>
 
 	* java/awt/TextComponent.java:
