@@ -1,3 +1,8 @@
+1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* typeck.c (comptypes): when comparing pointer types, check
+	whether referred types match even in strictest modes
+
 1998-09-15  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h: Revert previous change.

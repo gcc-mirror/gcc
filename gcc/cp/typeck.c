@@ -853,11 +853,12 @@ comptypes (type1, type2, strict)
     case REFERENCE_TYPE:
       t1 = TREE_TYPE (t1);
       t2 = TREE_TYPE (t2);
-      if (t1 == t2)
-	{
-	  val = 1;
-	  break;
-	}
+      /* first, check whether the referred types match with the
+         required level of strictness */
+      val = comptypes (t1, t2, strict);
+      if (val)
+	break;
+      /* if they do not, try more relaxed alternatives */
       if (strict <= 0)
 	{
 	  if (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE)
@@ -879,8 +880,6 @@ comptypes (type1, type2, strict)
 	    }
 	  return 0;
 	}
-      else
-	val = comptypes (t1, t2, strict);
       break;
 
     case FUNCTION_TYPE:
