@@ -4,6 +4,9 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 
 ACLOCAL_AMFLAGS = -I . -I ../config
 
+# May be used by various substitution variables.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 ## Garbage collector conditionals.
 if USING_BOEHMGC
 BOEHMGC_SRC = boehm.cc
@@ -116,7 +119,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 
 jardir = $(datadir)/java
-jar_DATA = libgcj-@gcc_version@.jar
+jar_DATA = libgcj-$(gcc_version).jar
 
 ## FIXME: Using libdir violates GNU coding standards.
 secdir = $(libdir)/security
@@ -124,7 +127,7 @@ secdir = $(libdir)/security
 propdir = $(libdir)
 
 ## Where the standard .db file is found.
-dbexecdir = $(libdir)/gcj-@gcc_version@
+dbexecdir = $(libdir)/gcj-$(gcc_version)
 ## Name of the default .db.
 db_name = classmap.db
 
@@ -255,7 +258,7 @@ libgcj_la_LIBADD = \
 	external/w3c_dom/libw3c_convenience.la \
 	libgcj0_convenience.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
-libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
+libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
@@ -474,7 +477,7 @@ lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	$(X_CFLAGS) $(CAIRO_CFLAGS) $(PANGOFT2_CFLAGS)
 lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
 lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
@@ -492,7 +495,7 @@ libjawt_la_LINK = $(LIBLINK)
 lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
 	$(xlib_nat_source_files)
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar libgcj.la libgcj.spec
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
 ## We require libstdc++-v3 to be in the same build tree.
 lib_gnu_awt_xlib_la_CPPFLAGS = \
@@ -557,8 +560,8 @@ classes.stamp: $(all_java_class_files) $(all_property_files)
 
 endif
 
-libgcj-@gcc_version@.jar: classes.stamp
-	-@rm -f libgcj-@gcc_version@.jar
+libgcj-$(gcc_version).jar: classes.stamp
+	-@rm -f libgcj-$(gcc_version).jar
 ## Note that we explicitly want to include directory information.
 	(find java gnu javax org -type d -o -type f -name '*.class'; \
 ## Ugly code to avoid "echo -C".  Must separate each entry by a newline
@@ -581,7 +584,7 @@ libgcj-@gcc_version@.jar: classes.stamp
 	  $(ZIP) -ufM0E@ $@; \
 	done
 
-CLEANFILES = libgcj-@gcc_version@.jar classes.stamp
+CLEANFILES = libgcj-$(gcc_version).jar classes.stamp
 
 mostlyclean-local:
 ## Use libtool rm to remove each libtool object
@@ -856,7 +859,7 @@ maintainer-check: libgcj.la
 
 ## This rule can be used to see if the headers are more or less
 ## correct.
-header-check: libgcj-@gcc_version@.jar $(nat_headers)
+header-check: libgcj-$(gcc_version).jar $(nat_headers)
 	rm -f htest.cc; \
 	for h in $(nat_headers); do \
 	  echo "#include \"$$h\"" >> htest.cc; \
@@ -865,7 +868,7 @@ header-check: libgcj-@gcc_version@.jar $(nat_headers)
 
 ## This rule can be used to see if all the .class files verify
 ## correctly.
-class-check: libgcj-@gcc_version@.jar
+class-check: libgcj-$(gcc_version).jar
 	@ok=0; find . -name '*.class' -print | fgrep -v testsuite | \
 	while read f; do \
 	  echo "$(GCJ_WITH_FLAGS) --syntax-only $$f"; \
@@ -3866,7 +3869,7 @@ src.zip:
 sourcesdir = $(jardir)
 
 install-src.zip: src.zip
-	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-@gcc_version@.zip
+	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-$(gcc_version).zip
 
 
 ## ################################################################

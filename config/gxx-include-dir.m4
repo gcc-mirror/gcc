@@ -14,10 +14,10 @@ case "${with_gxx_include_dir}" in
     ;;
   no | "")
     case "${enable_version_specific_runtime_libs}" in
-      yes) gxx_include_dir='${libsubdir}/include/c++' ;;
+      yes) gxx_include_dir='$(libsubdir)/include/c++' ;;
       *)
-	libstdcxx_incdir=c++/${gcc_version}
-	gxx_include_dir='${prefix}/include/'${libstdcxx_incdir} ;;
+	libstdcxx_incdir='c++/$(gcc_version)'
+	gxx_include_dir='$(prefix)/include/$(libstdcxx_incdir)' ;;
     esac ;;
   *) gxx_include_dir=${with_gxx_include_dir} ;;
 esac

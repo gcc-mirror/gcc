@@ -59,16 +59,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	ChangeLog NEWS THANKS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/pkg.m4 \
-	$(top_srcdir)/../config/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
 	$(top_srcdir)/../config/acx.m4 \
-	$(top_srcdir)/../config/gcc-version.m4 \
 	$(top_srcdir)/../config/gxx-include-dir.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lcmessage.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
-	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
 	$(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
@@ -5016,9 +5014,6 @@ build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
-gcc_version = @gcc_version@
-gcc_version_full = @gcc_version_full@
-gcc_version_trigger = @gcc_version_trigger@
 gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
@@ -5054,12 +5049,14 @@ target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_subdir = @target_subdir@
 target_vendor = @target_vendor@
-tool_include_dir = @tool_include_dir@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I . -I ../config
+
+# May be used by various substitution variables.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 @USING_BOEHMGC_FALSE@BOEHMGC_SRC = 
 @USING_BOEHMGC_TRUE@BOEHMGC_SRC = boehm.cc
 @USING_NOGC_FALSE@NOGC_SRC = 
@@ -5104,10 +5101,10 @@ toolexecmainlib_DATA = libgcj.spec
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
-jar_DATA = libgcj-@gcc_version@.jar
+jar_DATA = libgcj-$(gcc_version).jar
 secdir = $(libdir)/security
 propdir = $(libdir)
-dbexecdir = $(libdir)/gcj-@gcc_version@
+dbexecdir = $(libdir)/gcj-$(gcc_version)
 db_name = classmap.db
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk
@@ -5187,7 +5184,7 @@ libgcj_la_LIBADD = \
 	libgcj0_convenience.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
-libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
+libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 
@@ -5302,7 +5299,7 @@ lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 
 lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
 lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 
@@ -5319,7 +5316,7 @@ lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
 	$(xlib_nat_source_files)
 
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar libgcj.la libgcj.spec
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
 lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -5350,7 +5347,7 @@ gnu/regexp/MessagesBundle_fr.properties \
 org/ietf/jgss/MessagesBundle.properties
 
 propertyo_files = $(property_files:.properties=.properties.lo) 
-CLEANFILES = libgcj-@gcc_version@.jar classes.stamp
+CLEANFILES = libgcj-$(gcc_version).jar classes.stamp
 SUFFIXES = .class .java .h .properties
 ordinary_nat_headers = \
     $(ordinary_java_source_files:.java=.h) \
@@ -26614,8 +26611,8 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 @ONESTEP_FALSE@classes.stamp: $(all_java_class_files) $(all_property_files)
 @ONESTEP_FALSE@	echo > classes.stamp
 
-libgcj-@gcc_version@.jar: classes.stamp
-	-@rm -f libgcj-@gcc_version@.jar
+libgcj-$(gcc_version).jar: classes.stamp
+	-@rm -f libgcj-$(gcc_version).jar
 	(find java gnu javax org -type d -o -type f -name '*.class'; \
 	for file in $(all_property_files); do \
 	  echo "x-C" | sed -e 's/^.//'; \
@@ -26840,14 +26837,14 @@ maintainer-check: libgcj.la
 	  | grep -v 'Jv' \
 	  | grep -v 'terminate__Fv' | grep -v 'unexpected__Fv'
 
-header-check: libgcj-@gcc_version@.jar $(nat_headers)
+header-check: libgcj-$(gcc_version).jar $(nat_headers)
 	rm -f htest.cc; \
 	for h in $(nat_headers); do \
 	  echo "#include \"$$h\"" >> htest.cc; \
 	done; \
 	$(CXXCOMPILE) -fsyntax-only htest.cc
 
-class-check: libgcj-@gcc_version@.jar
+class-check: libgcj-$(gcc_version).jar
 	@ok=0; find . -name '*.class' -print | fgrep -v testsuite | \
 	while read f; do \
 	  echo "$(GCJ_WITH_FLAGS) --syntax-only $$f"; \
@@ -26956,7 +26953,7 @@ src.zip:
 	done
 
 install-src.zip: src.zip
-	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-@gcc_version@.zip
+	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-$(gcc_version).zip
 
 all-recursive: classes.stamp $(nat_headers) $(xlib_nat_headers)
 

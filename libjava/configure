@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ONESTEP_TRUE ONESTEP_FALSE LIBGCJDEBUG INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_ECOS_PLATFORM_TRUE USING_ECOS_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE gcc_version_trigger gcc_version_full gcc_version tool_include_dir LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE GCJH ZIP CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL BACKTRACESPEC SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ONESTEP_TRUE ONESTEP_FALSE LIBGCJDEBUG INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_ECOS_PLATFORM_TRUE USING_ECOS_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE GCJH ZIP CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL BACKTRACESPEC SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -8471,7 +8471,6 @@ fi
 
 
 
-
 if test "$GCC" = yes; then
   USING_GCC_TRUE=
   USING_GCC_FALSE='#'
@@ -8483,27 +8482,6 @@ fi
 
 # We're in the tree with gcc, and need to include some of its headers.
 GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
-
-
-if test "${with_gcc_version_trigger+set}" = set; then
-  gcc_version_trigger=$with_gcc_version_trigger
-else
-  gcc_version_trigger=$srcdir/../gcc/version.c
-fi
-if test -f "${gcc_version_trigger}"; then
-  gcc_version_full=`grep version_string "${gcc_version_trigger}" | sed -e 's/.*"\([^"]*\)".*/\1/'`
-else
-  gcc_version_full=`$CC -v 2>&1 | sed -n 's/^gcc version //p'`
-fi
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
-
-
-
-
-
-# Figure out where generated headers like libgcj-config.h get installed.
-tool_include_dir='$(libdir)/gcc/$(target_noncanonical)/'${gcc_version}/include
-
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -13814,9 +13792,9 @@ case ${version_specific_libs} in
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
-    includedir='${libdir}/gcc/${target_noncanonical}/'$gcc_version/include/
+    includedir='$(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include/'
     toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
-    toolexecmainlibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+    toolexecmainlibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
     toolexeclibdir=$toolexecmainlibdir
     ;;
   no)
@@ -13859,10 +13837,10 @@ echo "$as_me: error: --with-gxx-include-dir=[dir] requires a directory" >&2;}
     ;;
   no | "")
     case "${enable_version_specific_runtime_libs}" in
-      yes) gxx_include_dir='${libsubdir}/include/c++' ;;
+      yes) gxx_include_dir='$(libsubdir)/include/c++' ;;
       *)
-	libstdcxx_incdir=c++/${gcc_version}
-	gxx_include_dir='${prefix}/include/'${libstdcxx_incdir} ;;
+	libstdcxx_incdir='c++/$(gcc_version)'
+	gxx_include_dir='$(prefix)/include/$(libstdcxx_incdir)' ;;
     esac ;;
   *) gxx_include_dir=${with_gxx_include_dir} ;;
 esac
@@ -16728,10 +16706,6 @@ s,@USING_NO_THREADS_FALSE@,$USING_NO_THREADS_FALSE,;t t
 s,@HASH_SYNC_SPEC@,$HASH_SYNC_SPEC,;t t
 s,@USING_GCC_TRUE@,$USING_GCC_TRUE,;t t
 s,@USING_GCC_FALSE@,$USING_GCC_FALSE,;t t
-s,@gcc_version_trigger@,$gcc_version_trigger,;t t
-s,@gcc_version_full@,$gcc_version_full,;t t
-s,@gcc_version@,$gcc_version,;t t
-s,@tool_include_dir@,$tool_include_dir,;t t
 s,@LIBICONV@,$LIBICONV,;t t
 s,@LTLIBICONV@,$LTLIBICONV,;t t
 s,@GTK_CFLAGS@,$GTK_CFLAGS,;t t

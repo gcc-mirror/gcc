@@ -2,6 +2,9 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
+# May be used by various substitution variables.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated -fbootclasspath=$(BOOTCLASSPATH)

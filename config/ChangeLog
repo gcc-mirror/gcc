@@ -1,3 +1,8 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gxx-include-dir.m4: In all substitutions, leave $(gcc_version)
+	to be expanded by the Makefile.
+
 2005-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc-version.m4: Delete.

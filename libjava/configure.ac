@@ -720,17 +720,10 @@ if test "$enable_hash_synchronization" = yes && test "$THREADS" != "none"; then
 fi
 AC_SUBST(HASH_SYNC_SPEC)
 
-
 AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
 # We're in the tree with gcc, and need to include some of its headers.
 GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
-
-TL_AC_GCC_VERSION([$srcdir/..])
-
-# Figure out where generated headers like libgcj-config.h get installed.
-tool_include_dir='$(libdir)/gcc/$(target_noncanonical)/'${gcc_version}/include
-AC_SUBST(tool_include_dir)
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -1171,9 +1164,9 @@ case ${version_specific_libs} in
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
-    includedir='${libdir}/gcc/${target_noncanonical}/'$gcc_version/include/
+    includedir='$(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include/'
     toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
-    toolexecmainlibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+    toolexecmainlibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
     toolexeclibdir=$toolexecmainlibdir
     ;;
   no)
