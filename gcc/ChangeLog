@@ -1,3 +1,8 @@
+Thu Sep 24 18:53:20 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* sdbout.c (sdbout_field_types): Don't emit the types of fields we
+	won't be emitting.
+
 Thu Sep 24 17:05:30 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.md (insv): Add comment.  In CONST_INT case, and
