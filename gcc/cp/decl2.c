@@ -362,7 +362,11 @@ int flag_operator_names;
 int flag_check_new;
 
 /* Nonzero if we want the new ANSI rules for pushing a new scope for `for'
-   initialization variables.  Default to on.  */
+   initialization variables.
+   0: Old rules, set by -fno-for-scope.
+   2: New ANSI rules, set by -ffor-scope.
+   1: Try to implement new ANSI rules, but with backup compatility
+   (and warnings).  This is the default, for now.  */
 
 int flag_new_for_scope = 1;
 
@@ -413,7 +417,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"operator-names", &flag_operator_names, 1},
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
-  {"for-scope", &flag_new_for_scope, 1}
+  {"for-scope", &flag_new_for_scope, 2}
 };
 
 /* Decode the string P as a language-specific option.
