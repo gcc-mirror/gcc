@@ -1,3 +1,10 @@
+2003-01-29  Laurent Guerby <guerby@acm.org>
+
+        PR ada/8344
+        * final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
+        * Makefile.in: match previous change. 
+        * Make-lang.in: match previous change. 
+
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
 	* 5rosinte.ads: Add SIGXCPU.
