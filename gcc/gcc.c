@@ -132,7 +132,7 @@ extern void free ();
 extern char *getenv ();
 
 extern int errno, sys_nerr;
-#if defined(bsd4_4)
+#if defined(bsd4_4) || defined(__NetBSD__)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
