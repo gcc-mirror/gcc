@@ -1,3 +1,9 @@
+2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* concatstr.c, exh.c: Include stdlib.h and string.h.
+	* delaycase.c, eqstr.c, memmove.c, printbuffer.c,
+	printevent.c, sendbuffer.c, waitbuffer.c: Include string.h.
+
 Mon Apr  3 01:20:50 2000  George France <france@crl.dec.com>
 
 	* basicio.c (PATH_MAX): Always provide a definition.
