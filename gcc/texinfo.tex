@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.208 1997/06/27 19:09:14 karl Exp $
+%% $Id: texinfo.tex,v 2.209 1997/07/03 20:52:37 karl Exp rms $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.208 $
+\deftexinfoversion$Revision: 2.209 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1356,12 +1356,25 @@ where each line of input produces a line of output.}
 
 % @kbd is like @code, except that if the argument is just one @key command,
 % then @kbd has no effect.
-%
+
+% Font to use for @kbd, ordinarily.
+\let\kbdfont\t
+% Font to use for @kbd, when inside @example.
+\let\kbdexamplefont\t
+
+% If you use @setkbdinputdistinct, then @kbd produces slanted tty font.
+\def\setkbdinputdistinct{\let\kbdfont\ttsl
+\let\kbdexamplefont\ttsl}
+
+% If you use @setkbdinputexample, then @kbd produces slanted tty font
+% only inside of @example and friends.
+\def\setkbdinputexample{\gdef\kbdexamplefont\ttsl}
+
 \def\xkey{\key}
 \def\kbdfoo#1#2#3\par{\def\one{#1}\def\three{#3}\def\threex{??}%
 \ifx\one\xkey\ifx\threex\three \key{#2}%
-\else{\tclose{\ttsl\look}}\fi
-\else{\tclose{\ttsl\look}}\fi}
+\else{\tclose{\kbdfont\look}}\fi
+\else{\tclose{\kbdfont\look}}\fi}
 
 % @url, @email.  Quotes do not seem necessary.
 \let\url=\code % perhaps include a hypertex \special eventually
@@ -3614,11 +3627,12 @@ width0pt\relax} \fi
 %
 \def\nonfillfinish{\afterenvbreak\endgroup}%
 
-% This macro is
 \def\lisp{\begingroup
   \nonfillstart
   \let\Elisp = \nonfillfinish
   \tt
+  % Make @kbd do something special, if requested.
+  \let\kbdfont\kbdexamplefont
   \rawbackslash % have \ input char produce \ char from current font
   \gobble
 }
@@ -4365,7 +4379,7 @@ width0pt\relax} \fi
   \catcode`\=\other
   \catcode`\^^L=\other
   \catcode`\=\other
-  \catcode`\=\other
+  \catcode`\=\other
   \catcode`\=\other
   \catcode`\=\other
   \catcode`\=\other
