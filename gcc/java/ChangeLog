@@ -1,3 +1,8 @@
+2000-03-30  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (D_NAN_MASK): Only define as word-reversed when
+	HOST_FLOAT_WORDS_BIG_ENDIAN and HOST_WORDS_BIG_ENDIAN disagree.
+
 2000-03-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse-scan.y (pop_class_context): Reset `inner_qualifier_length'
