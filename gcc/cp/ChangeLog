@@ -1,3 +1,7 @@
+2001-10-31  Zack Weinberg  <zack@codesourcery.com>
+
+	*  Make-lang.in: Replace $(INTL_TARGETS) with po-generated.
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog.1, ChangeLog.2, ChangeLog, class.c, decl2.c, search.c,

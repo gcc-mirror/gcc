@@ -1,3 +1,7 @@
+2001-10-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in: Replace $(INTL_TARGETS) with po-generated.
+
 2001-10-29  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* mangle.c (find_compression_record_match): Don't match compression

@@ -1,3 +1,25 @@
+2001-10-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (INTL_TARGETS, POSUB): Delete all references.
+	(INTL_SUBDIRS): Just intl.
+	(.SUFFIXES): Add .gmo .po .pox.
+	(native): Also depend on build-@POSUB@.
+	(intl.all, intl.install): Depend on config.h and things it includes.
+	(po-generated): New target; depend on c-parse.c and tradcif.c.
+	(install-normal): Also depend on install-@POSUB@.
+	(XGETTEXT, GMSGFMT, MSGMERGE, PACKAGE, CATALOGS): New variables.
+	(build-, install-, build-po, update-po, install-po,
+	.po.gmo, .po.pox, $(PACKAGE).pot, po/$(PACKAGE).pot): New rules.
+
+	* aclocal.m4: Prefix each entry in CATALOGS with "po/"
+	* configure.in: Don't munge XGETTEXT.  Don't generate
+	po/Makefile.in.
+	* configure: Regenerate.
+
+	* exgettext: Delete.
+	* config/m68k/m68k.h: Add doc strings for -msky and -mnosky.
+	* objc/Make-lang.in: Replace $(INTL_TARGETS) with po-generated.
+
 2001-10-31  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (two anonymous patterns): New.
@@ -207,7 +229,7 @@ Tue Oct 30 11:02:31 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* configure.in: Do not assume that gas's version number is the
 	last thing on the first line of as --version output.
 	* configure: Regenerate.
-	
+
 	* tradcpp.c: Include intl.h.  Rename WARNING, ERROR, FATAL to
 	MT_WARNING, MT_ERROR, MT_FATAL.
 	(main): Call gcc_init_libintl.
@@ -257,7 +279,7 @@ Mon Oct 29 19:22:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Undo assemble_name change in earlier patch.
 
 Mon Oct 29 21:11:40 2001  Nicola Pero  <n.pero@mi.flashnet.it>
-	
+
 	* objc/objc-act.c (finish_message_expr): For the GNU runtime: when
 	determining the type of the receiver, do not check that TREE_CODE
 	of receiver is CALL_EXPR before calling receiver_is_class_object().
@@ -407,7 +429,7 @@ Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/mips/mips.c (mips_output_function_prologue): TSIZE
 	is now HOST_WIDE_INT; delete unneeded casts.
 	* config/mips/mips.h: Don't use #elif.
-	
+
 	* expr.c (stor_constructor_field): Always call adjust_address.
 	Copy TARGET before changing its alias set.
 	(store_field): Likewise, for TO_RTX.
@@ -467,24 +489,24 @@ Sat Oct 27 12:12:09 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-10-27  Daniel Berlin  <dan@cgsoftware.com>
 
-        * sched-rgn.c: Remove bitset typedef.
-        Change bitset to sbitmap in prototypes / variable types.
-        Remove bbset_size.
-        Remove edgeset_bits.
-        Remove edgeset_size.
-        s/BITSET_ADD/SET_BIT/g
-        s/BITSET_INVERT/sbitmap_ones/g
-        s/BITSET_INTER/sbitmap_a_and_b/g
-        s/BITSET_UNION/sbitmap_a_or_b/g
-        s/BITSET_DIFFER/sbitmap_difference/g
-        s/bitset_member/TEST_BIT/g
-        (BITSET_*): Removed.
-        (bitset_member): Removed.
-        (extract_bitlst): Rewrite, now that we have sbitmaps, we can use
-        EXECUTE_IF_SET_IN_SBITMAP.
-        (split_edges): Rewrite, use sbitmap functions instead of bitset
-        operations.
-        (schedule_region): Allocate/free sbitmaps, rather than bitsets.
+	* sched-rgn.c: Remove bitset typedef.
+	Change bitset to sbitmap in prototypes / variable types.
+	Remove bbset_size.
+	Remove edgeset_bits.
+	Remove edgeset_size.
+	s/BITSET_ADD/SET_BIT/g
+	s/BITSET_INVERT/sbitmap_ones/g
+	s/BITSET_INTER/sbitmap_a_and_b/g
+	s/BITSET_UNION/sbitmap_a_or_b/g
+	s/BITSET_DIFFER/sbitmap_difference/g
+	s/bitset_member/TEST_BIT/g
+	(BITSET_*): Removed.
+	(bitset_member): Removed.
+	(extract_bitlst): Rewrite, now that we have sbitmaps, we can use
+	EXECUTE_IF_SET_IN_SBITMAP.
+	(split_edges): Rewrite, use sbitmap functions instead of bitset
+	operations.
+	(schedule_region): Allocate/free sbitmaps, rather than bitsets.
 
 2001-10-26  Andreas Schwab  <schwab@suse.de>
 

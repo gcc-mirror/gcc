@@ -178,11 +178,11 @@ extern int target_flags;
     { "nofpa", - MASK_FPA,						\
       N_("Do not generate code for a Sun FPA") },			\
     { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881),			\
-      N_("") },								\
+      N_("Generate code for a Sun Sky board") },			\
     { "sky", MASK_SKY,							\
-      N_("") },								\
+      N_("Generate code for a Sun Sky board") },			\
     { "nosky", - MASK_SKY,						\
-      N_("") },								\
+      N_("Do not use Sky linkage convention") },			\
     { "68881", - (MASK_FPA|MASK_SKY),					\
       N_("Generate code for a 68881") },				\
     { "68881", MASK_68881, "" },					\

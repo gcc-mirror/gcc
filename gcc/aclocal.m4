@@ -1691,8 +1691,9 @@ strdup strtoul tsearch __argz_count __argz_stringify __argz_next])
      fi
 
      dnl Construct list of names of catalog files to be constructed.
+     dnl GCC LOCAL: Tweak for non-recursive po directory build.
      if test -n "$LINGUAS"; then
-       for lang in $LINGUAS; do CATALOGS="$CATALOGS $lang$CATOBJEXT"; done
+       for lang in $LINGUAS; do CATALOGS="$CATALOGS po/$lang$CATOBJEXT"; done
      fi
    fi
 
