@@ -59,6 +59,7 @@ fi
 AM_ICONV
 
 # More defines and substitutions.
+PACKAGE="$PACKAGE_TARNAME"
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define to the name of this package.])
 AC_SUBST(PACKAGE)
 
