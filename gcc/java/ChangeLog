@@ -1,3 +1,9 @@
+1999-04-29  Anthony Green  <green@cygnus.com>
+
+	* expr.c (generate_name): Use ASM_GENERATE_INTERNAL_LABEL to
+	create internal labels.
+	(lookup_label): Ditto.
+
 Sat Apr 24 16:50:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (layout_class_method): Generate <clinit>'s rtl for
