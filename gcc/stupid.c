@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -423,10 +423,19 @@ stupid_mark_refs (x, insn)
 
   if (code == SET || code == CLOBBER)
     {
-      if (SET_DEST (x) != 0 && GET_CODE (SET_DEST (x)) == REG)
+      if (SET_DEST (x) != 0
+	  && (GET_CODE (SET_DEST (x)) == REG
+	      || (GET_CODE (SET_DEST (x)) == SUBREG
+		  && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG
+		  && (REGNO (SUBREG_REG (SET_DEST (x)))
+		      >= FIRST_PSEUDO_REGISTER))))
 	{
 	  /* Register is being assigned.  */
-	  regno = REGNO (SET_DEST (x));
+	  /* If setting a SUBREG, we treat the entire reg as being set.  */
+	  if (GET_CODE (SET_DEST (x)) == SUBREG)
+	    regno = REGNO (SUBREG_REG (SET_DEST (x)));
+	  else
+	    regno = REGNO (SET_DEST (x));
 
 	  /* For hard regs, update the where-live info.  */
 	  if (regno < FIRST_PSEUDO_REGISTER)
