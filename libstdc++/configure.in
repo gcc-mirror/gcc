@@ -89,6 +89,8 @@ fi
 
 # Make sure the right flags are defined for multi-threading.
 case "${target}" in
+  *-*-aix*)	
+	frags="${frags} aix.mt" ;;
   *-*-linux*)
 	case "x${enable_threads}" in
 		xyes|xposix)	frags="${frags} linux.mt" ;;
