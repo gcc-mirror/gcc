@@ -1,5 +1,4 @@
-!/usr/bin/env bash
-
+#!/usr/bin/env bash
 
 # Script to do automated testing and data collection for various test
 # files, so that we don't have to do this by hand on every test file.
