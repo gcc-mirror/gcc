@@ -97,6 +97,9 @@ extern cxx_binding *cxx_binding_make (tree, tree);
 extern void cxx_binding_free (cxx_binding *);
 extern bool supplement_binding (cxx_binding *, tree);
 
+/* The tree node representing the global scope.  */
+extern GTY(()) tree global_namespace;
+
 /* True if SCOPE designates the global scope binding contour.  */
 #define global_scope_p(SCOPE) \
   ((SCOPE) == NAMESPACE_LEVEL (global_namespace))
@@ -106,5 +109,29 @@ extern cxx_binding *binding_for_name (cxx_scope *, tree);
 
 extern tree namespace_binding (tree, tree);
 extern void set_namespace_binding (tree, tree, tree);
+
+
+/* Set *DECL to the (non-hidden) declaration for ID at global scope,
+   if present and return true; otherwise return false.  */
+
+static inline bool
+get_global_value_if_present (tree id, tree *decl)
+{
+  tree global_value = namespace_binding (id, global_namespace);
+
+  if (global_value)
+    *decl = global_value;
+  return global_value != NULL;
+}
+
+/* True is the binding of IDENTIFIER at global scope names a type.  */
+
+static inline bool
+is_typename_at_global_scope (tree id)
+{
+  tree global_value = namespace_binding (id, global_namespace);
+
+  return global_value && TREE_CODE (global_value) == TYPE_DECL;
+}
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

@@ -1,3 +1,20 @@
+2003-09-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* name-lookup.h (get_global_value_if_present): New function.
+	(is_typename_at_global_scope): Likewise.
+	* except.c (do_begin_catch): Use get_global_value_if_present.
+	(do_end_catch): Likewise.
+	(do_allocate_exception): Likewise.
+	(do_free_exception): Likewise.
+	(build_throw): Likewise.
+	* parser.c (cp_parser_member_declaration): Likewise.
+	* rtti.c (throw_bad_cast): Likewise.
+	(throw_bad_typeid): Likewise.
+	* decl.c (check_tag_decl): Use is_typename_at_global_scope.
+	(grokdeclarator): Likewise.
+	* cp-tree.h (global_namespace): Move to name-lookup.h
+	* call.c (call_builtin_trap): Tidy.
+
 2003-09-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11415

@@ -172,9 +172,7 @@ static tree
 throw_bad_cast (void)
 {
   tree fn = get_identifier ("__cxa_bad_cast");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     fn = push_throw_library_fn (fn, build_function_type (ptr_type_node,
 							 void_list_node));
   
@@ -188,9 +186,7 @@ static tree
 throw_bad_typeid (void)
 {
   tree fn = get_identifier ("__cxa_bad_typeid");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     {
       tree t = build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
       t = build_function_type (build_reference_type (t), void_list_node);

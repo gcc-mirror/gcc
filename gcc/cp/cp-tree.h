@@ -870,8 +870,6 @@ struct language_function GTY(())
 #define current_function_return_value \
   (cp_function_chain->x_return_value)
 
-extern GTY(()) tree global_namespace;
-
 #define ansi_opname(CODE) \
   (operator_name_info[(int) (CODE)].identifier)
 #define ansi_assopname(CODE) \

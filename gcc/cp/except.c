@@ -161,9 +161,7 @@ do_begin_catch (void)
   tree fn;
 
   fn = get_identifier ("__cxa_begin_catch");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     {
       /* Declare void* __cxa_begin_catch (void *).  */
       tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
@@ -198,9 +196,7 @@ do_end_catch (tree type)
   tree fn, cleanup;
 
   fn = get_identifier ("__cxa_end_catch");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     {
       /* Declare void __cxa_end_catch ().  */
       fn = push_void_library_fn (fn, void_list_node);
@@ -498,9 +494,7 @@ do_allocate_exception (tree type)
   tree fn;
 
   fn = get_identifier ("__cxa_allocate_exception");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     {
       /* Declare void *__cxa_allocate_exception(size_t).  */
       tree tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
@@ -521,9 +515,7 @@ do_free_exception (tree ptr)
   tree fn;
 
   fn = get_identifier ("__cxa_free_exception");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
-  else
+  if (!get_global_value_if_present (fn, &fn))
     {
       /* Declare void __cxa_free_exception (void *).  */
       fn = push_void_library_fn (fn, tree_cons (NULL_TREE, ptr_type_node,
@@ -644,9 +636,7 @@ build_throw (tree exp)
   if (exp && decl_is_java_type (TREE_TYPE (exp), 1))
     {
       tree fn = get_identifier ("_Jv_Throw");
-      if (IDENTIFIER_GLOBAL_VALUE (fn))
-	fn = IDENTIFIER_GLOBAL_VALUE (fn);
-      else
+      if (!get_global_value_if_present (fn, &fn))
 	{
 	  /* Declare void _Jv_Throw (void *).  */
 	  tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
@@ -665,9 +655,7 @@ build_throw (tree exp)
       tree temp_expr, allocate_expr;
 
       fn = get_identifier ("__cxa_throw");
-      if (IDENTIFIER_GLOBAL_VALUE (fn))
-	fn = IDENTIFIER_GLOBAL_VALUE (fn);
-      else
+      if (!get_global_value_if_present (fn, &fn))
 	{
 	  /* The CLEANUP_TYPE is the internal type of a destructor.  */
 	  if (cleanup_type == NULL_TREE)
@@ -772,9 +760,7 @@ build_throw (tree exp)
       /* Rethrow current exception.  */
 
       tree fn = get_identifier ("__cxa_rethrow");
-      if (IDENTIFIER_GLOBAL_VALUE (fn))
-	fn = IDENTIFIER_GLOBAL_VALUE (fn);
-      else
+      if (!get_global_value_if_present (fn, &fn))
 	{
 	  /* Declare void __cxa_rethrow (void).  */
 	  fn = push_throw_library_fn

@@ -6589,11 +6589,9 @@ check_tag_decl (tree declspecs)
     {
       tree value = TREE_VALUE (link);
 
-      if (TYPE_P (value)
-	  || TREE_CODE (value) == TYPE_DECL
+      if (TYPE_P (value) || TREE_CODE (value) == TYPE_DECL
 	  || (TREE_CODE (value) == IDENTIFIER_NODE
-	      && IDENTIFIER_GLOBAL_VALUE (value)
-	      && TREE_CODE (IDENTIFIER_GLOBAL_VALUE (value)) == TYPE_DECL))
+	      && is_typename_at_global_scope (value)))
 	{
 	  ++found_type;
 
@@ -9674,9 +9672,7 @@ grokdeclarator (tree declarator,
 		flags = TYPENAME_FLAG;
 		ctor_return_type = TREE_TYPE (dname);
 		sfk = sfk_conversion;
-		if (IDENTIFIER_GLOBAL_VALUE (dname)
-		    && (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (dname))
-			== TYPE_DECL))
+		if (is_typename_at_global_scope (dname))
 		  name = IDENTIFIER_POINTER (dname);
 		else
 		  name = "<invalid operator>";
@@ -10309,9 +10305,7 @@ grokdeclarator (tree declarator,
 		  op = IDENTIFIER_OPNAME_P (tmp);
 		  if (IDENTIFIER_TYPENAME_P (tmp))
 		    {
-		      if (IDENTIFIER_GLOBAL_VALUE (tmp)
-			  && (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (tmp))
-			      == TYPE_DECL))
+		      if (is_typename_at_global_scope (tmp))
 			name = IDENTIFIER_POINTER (tmp);
 		      else
 			name = "<invalid operator>";
