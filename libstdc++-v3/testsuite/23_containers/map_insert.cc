@@ -1,6 +1,6 @@
 // 2001-08-23 pme & Sylvain.Pion@sophia.inria.fr
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@
 // http://gcc.gnu.org/ml/gcc-patches/2001-08/msg01375.html
 void test01()
 {
+  bool test = true;
   typedef std::map<int, int>   Map;
   Map             M;
   Map::iterator   hint;

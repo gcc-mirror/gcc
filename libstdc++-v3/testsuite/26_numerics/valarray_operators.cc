@@ -24,6 +24,7 @@
 
 void test01() // check unary operators
 {
+  bool test = true;
   std::valarray<int> u(1);
   u[0]=1;
 
@@ -35,6 +36,7 @@ void test01() // check unary operators
 
 void test02() // check binary operators
 {
+  bool test = true;
   std::valarray<int> u(1), v(1);
   u[0]=1;
   v[0]=3;

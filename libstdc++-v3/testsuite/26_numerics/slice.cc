@@ -1,6 +1,6 @@
 // 20020717 gdr
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,6 +51,7 @@ assignment(int start, int size, int stride)
 
 int main()
 {
+  bool test = true;
   std::srand(20020717);         using std::rand;
   VERIFY(construction(rand(), rand(), rand()));
 

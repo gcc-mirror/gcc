@@ -99,6 +99,9 @@ fi
 
 # Make a list of the files we're going to run, or use an old one if it exists.
 if [ ! -f "$TESTS_FILE" ]; then
+  if [ -f "$TEST_DIR/testsuite_files" ]; then
+      cp $TEST_DIR/testsuite_files $TESTS_FILE
+  else
     echo "making file $TESTS_FILE"
     for LONG_NAME in $SRC_DIR/testsuite/*/*.cc
     do
@@ -106,6 +109,7 @@ if [ ! -f "$TESTS_FILE" ]; then
         SHORT_NAME="`basename $DIR_NAME`/`basename $LONG_NAME`"
         echo "$SHORT_NAME" >> $TESTS_FILE
     done
+  fi
 fi
 
 # Nasty solution to replace GNU date(1)'s %s time_t output function.

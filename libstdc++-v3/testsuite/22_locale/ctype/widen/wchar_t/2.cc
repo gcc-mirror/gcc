@@ -1,4 +1,4 @@
-// 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
+// 2003-03-12  Petur Runolfsson  <peturr02@ru.is>
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
@@ -18,52 +18,37 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <istream>
-#include <streambuf>
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+// 22.2.1.3.2 ctype<wchar_t> members
+
+#include <locale>
 #include <testsuite_hooks.h>
 
-// libstdc++/9561
-struct foobar: std::exception { };
-
-struct buf: std::streambuf
-{
-    virtual int_type underflow () {
-        throw foobar ();
-        return -1;
-    }
-    virtual int_type uflow () {
-        throw foobar ();
-        return -1;
-    }
-};
-
-void test01()
+// libstdc++/9870
+void test02()
 {
   using namespace std;
   bool test = true;
 
-  buf b;
-  std::istream strm (&b);
-  strm.exceptions (std::ios::badbit);
-  int i = 0;
+  locale loc ("en_US.ISO-8859-1");
+  const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);
 
-  try {
-    i = strm.get();
-  }
-  catch (foobar) {
-    // strm should throw foobar and not do anything else
-    VERIFY(strm.bad());
-  }
-  catch (...) {
-    VERIFY(false);
-  }
+  char c = 0xff;
+  wchar_t wc = wct.widen(c);
 
-  VERIFY(i == 0);
+  VERIFY( wc == static_cast<wchar_t>(0xff) );
 }
 
-
-int main()
+int main() 
 {
-  test01();
+  test02();
   return 0;
 }
