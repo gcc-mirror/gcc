@@ -1,3 +1,15 @@
+2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
+	
+       	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
+	option for S/390 and zSeries.
+        * config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
+        s390_arch_string): New variables.
+        (override_options): Checking for options and setting of 
+	appropriate target_flags, cpu and arch flags.
+        * config/s390/s390.h: (processor_type): New enum.
+        (TARGET_SWITCHES): New switches -mesa/zarch.
+        * config/s390/s390.md: New attribute 'cpu'.
+
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-pretty-print.h: Fix comment typos.
