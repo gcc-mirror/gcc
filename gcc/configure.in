@@ -941,7 +941,11 @@ AC_ARG_ENABLE(sjlj-exceptions,
 AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
   [Define 0/1 to force the choice for exception handling model.])])
 
-AC_CHECK_LIB(unwind, main, use_libunwind_default=yes, use_libunwind_default=no)
+if test x$host = x$target; then
+   AC_CHECK_LIB(unwind, main, use_libunwind_default=yes, use_libunwind_default=no)
+else
+   use_libunwind_default=no
+fi
 # Use libunwind based exception handling.
 AC_ARG_ENABLE(libunwind-exceptions,
 [  --enable-libunwind-exceptions  force use libunwind for exceptions],
