@@ -166,11 +166,6 @@ MULTICLEAN = true
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
-noinst_PROGRAMS = ffitest
-
-ffitest_LDADD = libffi.la
-ffitest_LDFLAGS = -shared-libgcc
-
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_LINUX = src/mips/ffi.c src/mips/o32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
@@ -368,12 +363,6 @@ libffi_la_LIBADD =
 @M68K_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @M68K_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @M68K_TRUE@src/m68k/ffi.lo src/m68k/sysv.lo
-noinst_PROGRAMS =  ffitest$(EXEEXT)
-PROGRAMS =  $(noinst_PROGRAMS)
-
-ffitest_SOURCES = ffitest.c
-ffitest_OBJECTS =  ffitest.$(OBJEXT)
-ffitest_DEPENDENCIES =  libffi.la
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -388,8 +377,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gnutar
 GZIP_ENV = --best
-SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES) ffitest.c
-OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS) ffitest.$(OBJEXT)
+SOURCES = $(libffi_convenience_la_SOURCES) $(libffi_la_SOURCES)
+OBJECTS = $(libffi_convenience_la_OBJECTS) $(libffi_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -502,19 +491,6 @@ libffi_convenience.la: $(libffi_convenience_la_OBJECTS) $(libffi_convenience_la_
 
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES)
 	$(LINK) -rpath $(toolexeclibdir) $(libffi_la_LDFLAGS) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
-
-mostlyclean-noinstPROGRAMS:
-
-clean-noinstPROGRAMS:
-	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
-
-distclean-noinstPROGRAMS:
-
-maintainer-clean-noinstPROGRAMS:
-
-ffitest$(EXEEXT): $(ffitest_OBJECTS) $(ffitest_DEPENDENCIES)
-	@rm -f ffitest$(EXEEXT)
-	$(LINK) $(ffitest_LDFLAGS) $(ffitest_OBJECTS) $(ffitest_LDADD) $(LIBS)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -691,7 +667,7 @@ install-am: all-am
 install: install-recursive
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
 uninstall: uninstall-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) fficonfig.h
+all-am: Makefile $(LTLIBRARIES) fficonfig.h
 all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -712,22 +688,21 @@ distclean-generic:
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLTLIBRARIES \
 		mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-noinstPROGRAMS \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-hdr clean-noinstLTLIBRARIES \
 		clean-toolexeclibLTLIBRARIES clean-compile \
-		clean-libtool clean-noinstPROGRAMS clean-tags \
-		clean-generic mostlyclean-am
+		clean-libtool clean-tags clean-generic mostlyclean-am
 
 clean: clean-recursive
 
 distclean-am:  distclean-hdr distclean-noinstLTLIBRARIES \
 		distclean-toolexeclibLTLIBRARIES distclean-compile \
-		distclean-libtool distclean-noinstPROGRAMS \
-		distclean-tags distclean-generic clean-am
+		distclean-libtool distclean-tags distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
@@ -737,8 +712,8 @@ maintainer-clean-am:  maintainer-clean-hdr \
 		maintainer-clean-noinstLTLIBRARIES \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-tags maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -753,9 +728,7 @@ clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool mostlyclean-noinstPROGRAMS \
-distclean-noinstPROGRAMS clean-noinstPROGRAMS \
-maintainer-clean-noinstPROGRAMS install-data-recursive \
+clean-libtool maintainer-clean-libtool install-data-recursive \
 uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \

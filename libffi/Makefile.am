@@ -83,10 +83,7 @@ MULTICLEAN = true
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
-noinst_PROGRAMS = ffitest
 
-ffitest_LDADD = libffi.la
-ffitest_LDFLAGS = -shared-libgcc
 
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_LINUX = src/mips/ffi.c src/mips/o32.S
