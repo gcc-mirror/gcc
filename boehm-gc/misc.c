@@ -443,8 +443,7 @@ void GC_init_inner()
 #   ifdef MSWIN32
  	GC_init_win32();
 #   endif
-#   if defined(LINUX) && \
-	(defined(ALPHA) || defined(SPARC) || defined(IA64))
+#   if defined(LINUX) && (defined(SPARC) || defined(IA64))
 	GC_init_linux_data_start();
 #   endif
 #   ifdef SOLARIS_THREADS

@@ -1,3 +1,10 @@
+1999-12-19  Anthony Green  <green@cygnus.com>
+
+	* gcconfig.h: Use libgcj hack for Alpha Linux.  
+	Undefine MPROTEXT_VDB (from Jeff Sturm).
+	* os_dep.c: Remove Alpha Linux hacks.
+	* misc.c: Ditto.
+
 1999-12-13  Tom Tromey  <tromey@cygnus.com>
 
 	* aclocal.m4, configure: Rebuilt.
