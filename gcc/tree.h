@@ -1666,6 +1666,7 @@ extern int attribute_list_equal		PARAMS ((tree, tree));
 extern int attribute_list_contained	PARAMS ((tree, tree));
 extern int tree_int_cst_equal		PARAMS ((tree, tree));
 extern int tree_int_cst_lt		PARAMS ((tree, tree));
+extern int tree_int_cst_msb		PARAMS ((tree));
 extern int tree_int_cst_sgn		PARAMS ((tree));
 extern int index_type_equal		PARAMS ((tree, tree));
 extern tree get_inner_array_type	PARAMS ((tree));

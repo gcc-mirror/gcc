@@ -8995,32 +8995,34 @@ update_reg_last_use (x, insn)
     }
 }
 
-/* Given a jump insn JUMP, return the condition that will cause it to branch
-   to its JUMP_LABEL.  If the condition cannot be understood, or is an
-   inequality floating-point comparison which needs to be reversed, 0 will
-   be returned.
-
-   If EARLIEST is non-zero, it is a pointer to a place where the earliest
-   insn used in locating the condition was found.  If a replacement test
-   of the condition is desired, it should be placed in front of that
-   insn and we will be sure that the inputs are still valid.
-
-   The condition will be returned in a canonical form to simplify testing by
-   callers.  Specifically:
+/* Given an insn INSN and condition COND, return the condition in a
+   canonical form to simplify testing by callers.  Specifically:
 
    (1) The code will always be a comparison operation (EQ, NE, GT, etc.).
    (2) Both operands will be machine operands; (cc0) will have been replaced.
    (3) If an operand is a constant, it will be the second operand.
    (4) (LE x const) will be replaced with (LT x <const+1>) and similarly
-       for GE, GEU, and LEU.  */
+       for GE, GEU, and LEU.
+
+   If the condition cannot be understood, or is an inequality floating-point
+   comparison which needs to be reversed, 0 will be returned.
+
+   If REVERSE is non-zero, then reverse the condition prior to canonizing it.
+
+   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   insn used in locating the condition was found.  If a replacement test
+   of the condition is desired, it should be placed in front of that
+   insn and we will be sure that the inputs are still valid.  */
 
 rtx
-get_condition (jump, earliest)
-     rtx jump;
+canonicalize_condition (insn, cond, reverse, earliest)
+     rtx insn;
+     rtx cond;
+     int reverse;
      rtx *earliest;
 {
   enum rtx_code code;
-  rtx prev = jump;
+  rtx prev = insn;
   rtx set;
   rtx tem;
   rtx op0, op1;
@@ -9028,24 +9030,19 @@ get_condition (jump, earliest)
   int did_reverse_condition = 0;
   enum machine_mode mode;
 
-  /* If this is not a standard conditional jump, we can't parse it.  */
-  if (GET_CODE (jump) != JUMP_INSN
-      || ! condjump_p (jump) || simplejump_p (jump))
-    return 0;
+  code = GET_CODE (cond);
+  mode = GET_MODE (cond);
+  op0 = XEXP (cond, 0);
+  op1 = XEXP (cond, 1);
 
-  code = GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 0));
-  mode = GET_MODE (XEXP (SET_SRC (PATTERN (jump)), 0));
-  op0 = XEXP (XEXP (SET_SRC (PATTERN (jump)), 0), 0);
-  op1 = XEXP (XEXP (SET_SRC (PATTERN (jump)), 0), 1);
+  if (reverse)
+    {
+      code = reverse_condition (code);
+      did_reverse_condition ^= 1;
+    }
 
   if (earliest)
-    *earliest = jump;
-
-  /* If this branches to JUMP_LABEL when the condition is false, reverse
-     the condition.  */
-  if (GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
-      && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump))
-    code = reverse_condition (code), did_reverse_condition ^= 1;
+    *earliest = insn;
 
   /* If we are comparing a register with zero, see if the register is set
      in the previous insn to a COMPARE or a comparison operation.  Perform
@@ -9260,6 +9257,40 @@ get_condition (jump, earliest)
 #endif
 
   return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
+}
+
+/* Given a jump insn JUMP, return the condition that will cause it to branch
+   to its JUMP_LABEL.  If the condition cannot be understood, or is an
+   inequality floating-point comparison which needs to be reversed, 0 will
+   be returned.
+
+   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   insn used in locating the condition was found.  If a replacement test
+   of the condition is desired, it should be placed in front of that
+   insn and we will be sure that the inputs are still valid.  */
+
+rtx
+get_condition (jump, earliest)
+     rtx jump;
+     rtx *earliest;
+{
+  rtx cond;
+  int reverse;
+
+  /* If this is not a standard conditional jump, we can't parse it.  */
+  if (GET_CODE (jump) != JUMP_INSN
+      || ! condjump_p (jump) || simplejump_p (jump))
+    return 0;
+
+  cond = XEXP (SET_SRC (PATTERN (jump)), 0);
+
+  /* If this branches to JUMP_LABEL when the condition is false, reverse
+     the condition.  */
+  reverse
+    = GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
+      && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump);
+
+  return canonicalize_condition (jump, cond, reverse, earliest);
 }
 
 /* Similar to above routine, except that we also put an invariant last
