@@ -1158,6 +1158,34 @@ output_move_const_into_data_reg (operands)
     }
 }
 
+char *
+output_move_simode_const (operands)
+     rtx *operands;
+{
+  if (operands[1] == const0_rtx
+      && (DATA_REG_P (operands[0])
+	  || GET_CODE (operands[0]) == MEM)
+      /* clr insns on 68000 read before writing.
+	 This isn't so on the 68010, but we have no alternative for it.  */
+      && (TARGET_68020
+	  || !(GET_CODE (operands[0]) == MEM
+	       && MEM_VOLATILE_P (operands[0]))))
+    return "clr%.l %0";
+  else if (DATA_REG_P (operands[0]))
+    return output_move_const_into_data_reg (operands);
+  else if (ADDRESS_REG_P (operands[0])
+	   && INTVAL (operands[1]) < 0x8000
+	   && INTVAL (operands[1]) >= -0x8000)
+    return "move%.w %1,%0";
+  else if (GET_CODE (operands[0]) == MEM
+      && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
+      && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
+	   && INTVAL (operands[1]) < 0x8000
+	   && INTVAL (operands[1]) >= -0x8000)
+    return "pea %a1";
+  return "move%.l %1,%0";
+}
+
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
@@ -1169,14 +1197,9 @@ singlemove_string (operands)
   if (FPA_REG_P (operands[0]) || FPA_REG_P (operands[1]))
     return "fpmoves %1,%0";
 #endif
-  if (DATA_REG_P (operands[0])
-      && GET_CODE (operands[1]) == CONST_INT)
-      return output_move_const_into_data_reg (operands);
-  if (operands[1] != const0_rtx)
-    return "move%.l %1,%0";
-  if (! ADDRESS_REG_P (operands[0]))
-    return "clr%.l %0";
-  return "sub%.l %0,%0";
+  if (GET_CODE (operands[1]) == CONST_INT)
+    return output_move_simode_const (operands);
+  return "move%.l %1,%0";
 }
 
 
