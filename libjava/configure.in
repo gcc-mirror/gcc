@@ -29,7 +29,7 @@ if test -z "${with_cross_host}"; then
    # Sigh.  Libtool's macro doesn't do the right thing.
    INCLTDL="-I\$(top_srcdir)/libltdl $INCLTDL"
    # FIXME: this is a hack.
-   sub_auxdir="`cd $ac_aux_dir && pwd`"
+   sub_auxdir="`cd $ac_aux_dir && ${PWDCMD-pwd}`"
    ac_configure_args="$ac_configure_args --with-auxdir=$sub_auxdir"
 fi
 AC_SUBST(INCLTDL)
@@ -273,7 +273,7 @@ case "${host}" in
 esac
 AC_SUBST(SYSTEMSPEC)
 
-LIBGCJTESTSPEC="-L`pwd`/.libs -rpath `pwd`/.libs"
+LIBGCJTESTSPEC="-L`${PWDCMD-pwd}`/.libs -rpath `${PWDCMD-pwd}`/.libs"
 AC_SUBST(LIBGCJTESTSPEC)
 
 AC_ARG_WITH(system-zlib,
@@ -307,7 +307,7 @@ case "$GC" in
     GCLIBS=../boehm-gc/libgcjgc_convenience.la
     GCINCS='-I$(top_srcdir)/../boehm-gc/include'
     JC1GCSPEC='-fuse-boehm-gc'
-    GCTESTSPEC="-L`pwd`/../boehm-gc/.libs -rpath `pwd`/../boehm-gc/.libs"
+    GCTESTSPEC="-L`${PWDCMD-pwd}`/../boehm-gc/.libs -rpath `${PWDCMD-pwd}`/../boehm-gc/.libs"
 
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
@@ -710,12 +710,12 @@ changequote(<<,>>)
 changequote([,])
    fi
    if test -x "${builddotdot}/../../gcc/gcj"; then
-      dir="`cd ${builddotdot}/../../gcc && pwd`"
-      GCJ="$dir/gcj -B`pwd`/ -B$dir/"
+      dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
+      GCJ="$dir/gcj -B`${PWDCMD-pwd}`/ -B$dir/"
    else
       CANADIAN=yes
       NULL_TARGET=yes
-      GCJ="gcj -B`pwd`/"
+      GCJ="gcj -B`${PWDCMD-pwd}`/"
    fi
 fi
 
@@ -725,7 +725,7 @@ test -f libgcj.spec || touch libgcj.spec
 # We must search the source tree for java.lang, since we still don't
 # have libgcj.jar nor java/lang/*.class
 GCJ_SAVE_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS -I`pwd` -I`cd $srcdir && pwd`"
+CPPFLAGS="$CPPFLAGS -I`${PWDCMD-pwd}` -I`cd $srcdir && ${PWDCMD-pwd}`"
 
 # Since some classes depend on this one, we need its source available
 # before we can do any GCJ compilation test :-(
@@ -960,7 +960,7 @@ AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
 AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
 
 
-here=`pwd`
+here=`${PWDCMD-pwd}`
 AC_SUBST(here)
 
 # We get this from the environment.
@@ -977,7 +977,7 @@ esac
 
 # Make subdirectories and `.d' files.  Look in both srcdir and
 # builddir for the .java files.
-h=`pwd`
+h=`${PWDCMD-pwd}`
 : > deps.mk
 ( (cd $srcdir && find . \( -name '*.java' -o -name '*.cc' \) -print) ;
   find . \( -name '*.java' -o -name '*.cc' \) -print) | \

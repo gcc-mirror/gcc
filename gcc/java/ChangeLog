@@ -1,3 +1,7 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
+
 2002-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* jcf-write.c (write_classfile): Unlink the temporary file if it

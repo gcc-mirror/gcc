@@ -1,3 +1,15 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in: Allow for PWDCMD to override hardcoded pwd.
+	* configure.in: Likewise.
+	* fixinc/check.tpl: Likewise.
+	* fixinc/fixinc.dgux: Likewise.
+	* fixinc/fixinc.svr4: Likewise.
+	* fixinc/fixinc.winnt: Likewise.
+	* fixinc/fixincl.sh: Likewise.
+	* fixproto: Likewise.
+	* configure: Regenerate.
+
 2002-05-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	Basic block renumbering removal:

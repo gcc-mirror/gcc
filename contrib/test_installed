@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998, 2000 Free Software Foundation
+# (C) 1998, 2000, 2002 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -96,11 +96,11 @@ if test x"${testsuite+set}" != x"set" && test x"${srcdir+set}" != x"set"; then
   while [ -h $file ]; do
     file=`ls -l $file | sed s/'.* -> '//`
   done
-  srcdir=`CDPATH=. && cd \`echo "$file" | sed 's,/*[^/]*$,,;s,^$,.,'\`/.. >/dev/null && pwd`
+  srcdir=`CDPATH=. && cd \`echo "$file" | sed 's,/*[^/]*$,,;s,^$,.,'\`/.. >/dev/null && ${PWDCMD-pwd}`
 fi
 
 cat >site.exp <<EOF
-set tmpdir "${tmpdir-`pwd`}"
+set tmpdir "${tmpdir-`${PWDCMD-pwd}`}"
 set srcdir "${testsuite-${srcdir}/gcc/testsuite}"
 set GCC_UNDER_TEST "${GCC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 set GXX_UNDER_TEST "${GXX_UNDER_TEST-${prefix}${prefix+/bin/}g++}"

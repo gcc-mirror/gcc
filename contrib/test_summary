@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998, 1999, 2000 Free Software Foundation
+# (C) 1998, 1999, 2000, 2002 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -135,7 +135,7 @@ END { if (lang != "") {
 ' | sed "s/\([\`\$\\\\]\)/\\\\\\1/g" &&
 if $move; then
     for file in $files `ls -1 $files | sed s/sum$/log/`; do
-      [ -f $file ] && echo "mv `pwd`/$file `pwd`/$file.sent &&"
+      [ -f $file ] && echo "mv `${PWDCMD-pwd}`/$file `${PWDCMD-pwd}`/$file.sent &&"
     done
 fi &&
 echo true

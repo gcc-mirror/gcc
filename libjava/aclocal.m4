@@ -80,7 +80,7 @@ if :; then :; else
 fi
 
 # This works around an automake problem.
-mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
+mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
 AC_CANONICAL_SYSTEM

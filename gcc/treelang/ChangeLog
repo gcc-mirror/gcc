@@ -1,3 +1,7 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
+
 2002-05-11  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c: (cpp_define) Add.

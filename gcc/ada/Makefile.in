@@ -115,6 +115,7 @@ RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 SHELL = /bin/sh
+PWD = $${PWDCMD-pwd}
 # How to copy preserving the date
 INSTALL_DATA_DATE = cp -p
 MAKEINFO = makeinfo
@@ -192,10 +193,10 @@ TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 	$(MACHMODE_H) $(srcdir)/../tree-check.h $(srdir)/../version.h \
 	$(srcdir)/../builtins.def
 
-fsrcdir := $(shell cd $(srcdir);pwd)
-fsrcpfx := $(shell cd $(srcdir);pwd)/
-fcurdir := $(shell pwd)
-fcurpfx := $(shell pwd)/
+fsrcdir := $(shell cd $(srcdir);${PWD})
+fsrcpfx := $(shell cd $(srcdir);${PWD})/
+fcurdir := $(shell ${PWD})
+fcurpfx := $(shell ${PWD})/
 
 # Top build directory, relative to here.
 top_builddir = ..

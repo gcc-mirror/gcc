@@ -4,7 +4,7 @@
 #	fixproto TARGET-DIR SOURCE-DIR-ALL SOURCE-DIR-STD
 #
 # COPYRIGHT
-#	Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+#	Copyright (C) 1993, 1994, 1997, 1998, 2002 Free Software Foundation, Inc.
 #	This file is part of GCC.
 #
 #	GCC is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@
 
 dirname=`echo "$0" | sed 's,^[^/]*$,.,;s,//*[^/]*$,,'`
 progname=`echo "$0" | sed 's,.*/,,'`
-original_dir=`pwd`
+original_dir=`${PWDCMD-pwd}`
 FIX_HEADER=${FIX_HEADER-$original_dir/fix-header}
 DEFINES="-D__STDC__=0 -D__cplusplus ${FIXPROTO_DEFINES}"
 

@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native System V Release 4 system include files.
-# Copyright (C) 1994, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997, 1998, 2000, 2002 Free Software Foundation, Inc.
 # Contributed by Ron Guilmette (rfg@monkeys.com).
 #
 # This file is part of GNU CC.
@@ -103,18 +103,18 @@ if $LINKS; then
   for file in $files; do
     dest=`ls -ld $file | sed -n 's/.*-> //p'`
     if [ "$dest" ]; then    
-      cwd=`pwd`
+      cwd=`${PWDCMD-pwd}`
       # In case $dest is relative, get to $file's dir first.
       cd ${INPUT}
       cd `echo ./$file | sed -n 's&[^/]*$&&p'`
-      rwd=`pwd`
+      rwd=`${PWDCMD-pwd}`
       # Check that the target directory exists.
       # Redirections changed to avoid bug in sh on Ultrix.
       (cd $dest) > /dev/null 2>&1
       if [ $? = 0 ]; then
 	cd $dest
 	# X gets the dir that the link actually leads to.
-	x=`pwd`
+	x=`${PWDCMD-pwd}`
 	# If link leads back into ${INPUT},
 	# make a similar link here.
         if expr "$dest" : '[^/][^/]*' >/dev/null && [ ! -h $dest ]; then

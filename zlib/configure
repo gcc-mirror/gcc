@@ -709,7 +709,7 @@ test "$host_alias" != "$target_alias" &&
 
 
 # This works around an automake problem.
-mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
+mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 
 
 # Find a good install program.  We prefer a C program (faster),

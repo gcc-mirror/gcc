@@ -35,7 +35,7 @@
 #
 #	See README-fixinc for more information.
 
-ORIG_DIR=`pwd`
+ORIG_DIR=`${PWDCMD-pwd}`
 
 # Directory containing the original header files.
 cd $2; SEDFILE=`${PWDCMD-pwd}`/fixinc-nt.sed
@@ -65,7 +65,7 @@ if [ ! -d $LIB ]; then
   mkdir $LIB || exit 1
 fi
 
-ORIG_DIR=`pwd`
+ORIG_DIR=`${PWDCMD-pwd}`
 
 # Make LIB absolute if it is relative.
 # Don't do this if not necessary, since may screw up automounters.

@@ -8,7 +8,7 @@
 #
 # See README-fixinc for more information.
 #
-#  fixincludes copyright (c) 1998, 1999, 2000
+#  fixincludes copyright (c) 1998, 1999, 2000, 2002
 #  The Free Software Foundation, Inc.
 #
 # fixincludes is free software.
@@ -84,7 +84,7 @@ export target_canonical
 #
 # Define PWDCMD as a command to use to get the working dir
 # in the form that we want.
-PWDCMD=pwd
+PWDCMD=${PWDCMD-pwd}
 
 case "`$PWDCMD`" in
 //*)

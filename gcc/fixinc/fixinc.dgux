@@ -95,7 +95,7 @@ if $LINKS; then
   for file in $files; do
     dest=`ls -ld $file | sed -n 's/.*-> //p'`
     if [ "$dest" ]; then    
-      cwd=`pwd`
+      cwd=`${PWDCMD-pwd}`
       # In case $dest is relative, get to $file's dir first.
       cd ${INPUT}
       cd `echo ./$file | sed -n 's&[^/]*$&&p'`
@@ -105,7 +105,7 @@ if $LINKS; then
       if [ $? = 0 ]; then
 	cd $dest
 	# X gets the dir that the link actually leads to.
-	x=`pwd`
+	x=`${PWDCMD-pwd}`
 	# If link leads back into ${INPUT},
 	# make a similar link here.
 	if expr $x : "${INPUT}/.*" > /dev/null; then

@@ -20,6 +20,7 @@
 #02111-1307, USA.
 
 SHELL = /bin/sh
+PWD = $${PWDCMD-pwd}
 MAKEOVERRIDES=
 .NOEXPORTS:
 
@@ -255,8 +256,8 @@ rebuilt: configure
         installcheck installdirs all-unilib
 
 subdir_do:
-	@rootpre=`pwd`/; export rootpre; \
-	srcrootpre=`cd $(srcdir); pwd`/; export srcrootpre; \
+	@rootpre=`${PWD}`/; export rootpre; \
+	srcrootpre=`cd $(srcdir); ${PWD}`/; export srcrootpre; \
 	for i in .. $(DODIRS); do \
 	  if [ x$$i != x.. ]; then \
 	    if [ -f ./$$i/Makefile ]; then \
