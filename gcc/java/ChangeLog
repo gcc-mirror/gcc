@@ -1,3 +1,7 @@
+2000-10-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* except.c (free_eh_ranges): Don't free `whole_range.'
+
 2000-10-15  Anthony Green  <green@redhat.com>
 
 	* decl.c (init_decl_processing): Call init_class_processing before

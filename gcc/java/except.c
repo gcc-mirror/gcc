@@ -232,7 +232,8 @@ free_eh_ranges (range)
     {
       struct eh_range *next = range->next_sibling;
       free_eh_ranges (range->first_child);
-      free (range);
+      if (range != &whole_range)
+	free (range);
       range = next;
     }
 }
