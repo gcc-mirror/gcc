@@ -1,3 +1,19 @@
+2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* src/java_raw_api.c (ffi_java_raw_to_ptrarray): Interpret
+	raw data as _Jv_word values, not ffi_raw.
+	(ffi_java_ptrarray_to_raw): Likewise.
+	(ffi_java_rvalue_to_raw): New function.
+	(ffi_java_raw_call): Call it.
+	(ffi_java_raw_to_rvalue): New function.
+	(ffi_java_translate_args): Call it.
+	* src/ffitest.c (closure_test_fn): Interpret return value
+	as ffi_arg, not int.
+	* src/s390/ffi.c (ffi_prep_cif_machdep): Add missing
+	FFI_TYPE_POINTER case.
+	(ffi_closure_helper_SYSV): Likewise.  Also, assume return
+	values extended to word size.
+
 2002-10-02  Andreas Jaeger  <aj@suse.de>
 
 	* src/x86/ffi64.c (ffi_prep_cif_machdep): Remove debug output.

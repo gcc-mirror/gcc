@@ -262,7 +262,7 @@ static test_structure_9 struct9 (test_structure_9 ts)
 static void
 closure_test_fn(ffi_cif* cif,void* resp,void** args, void* userdata)
 {
-  *(int*)resp = *(int*)args[0] + (int)(*(float*)args[1]) + (int)(long)userdata;
+  *(ffi_arg*)resp = *(int*)args[0] + (int)(*(float*)args[1]) + (int)(long)userdata;
 }
 
 typedef int (*closure_test_type)(int, float);
