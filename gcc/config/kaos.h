@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.
+/* Definitions of target machine for GCC.
    common kaOS definitions for all architectures.
    Copyright (C) 2003 Free Software Foundation, Inc.
 
