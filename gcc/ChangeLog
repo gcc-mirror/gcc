@@ -1,3 +1,7 @@
+2002-10-30  Aldy Hernandez  <aldyh@redhat.com>
+
+        * c-common.c: Add GTY to vector_type_node_list.
+
 2002-10-30  John David Anglin  <dave@hiauly.hia.nrc.ca>
 
 	* pa-linux.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Define.
