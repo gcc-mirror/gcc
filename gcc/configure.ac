@@ -1053,10 +1053,16 @@ AC_TRY_COMPILE([
 ],[rlim_t l = 0;],,[AC_DEFINE([rlim_t],[long],
 [Define to \`long' if <sys/resource.h> doesn't define.])])
 
+# On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
+# FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname
+# in collect2.c, <fcntl.h> isn't visible, but the configure test below needs
+# to undef these macros to get the correct value for HAVE_DECL_LDGETNAME.
 gcc_AC_CHECK_DECLS(ldgetname, , ,[
 #include "ansidecl.h"
 #include "system.h"
 #ifdef HAVE_LDFCN_H
+#undef FREAD
+#undef FWRITE
 #include <ldfcn.h>
 #endif
 ])
