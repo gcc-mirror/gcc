@@ -2376,7 +2376,7 @@ if test "${with_sysroot+set}" = set; then
 else
   
  TARGET_SYSTEM_ROOT=
- TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=0'
+ TARGET_SYSTEM_ROOT_DEFINE=
  CROSS_SYSTEM_HEADER_DIR='$(gcc_tooldir)/sys-include'
 
 fi

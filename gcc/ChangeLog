@@ -1,3 +1,9 @@
+2003-03-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Don't always define TARGET_SYSTEM_ROOT.
+	* configure: Regenerated.
+	* gcc.c: Check whether TARGET_SYSTEM_ROOT is defined.
+
 2003-03-04  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Check for <memcheck.h>.
