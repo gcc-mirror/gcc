@@ -2893,7 +2893,10 @@ enum ia64_builtins
 
   IA64_BUILTIN_LOCK_TEST_AND_SET_DI,
 
-  IA64_BUILTIN_LOCK_RELEASE_DI
+  IA64_BUILTIN_LOCK_RELEASE_DI,
+
+  IA64_BUILTIN_BSP,
+  IA64_BUILTIN_FLUSHRS
 };
 
 /* Codes for expand_compare_and_swap and expand_swap_and_compare. */

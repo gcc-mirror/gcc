@@ -2336,8 +2336,11 @@ compile_file (name)
     /* Now that all possible functions have been output, we can dump
        the exception table.  */
 
+#ifndef IA64_UNWIND_INFO
     output_exception_table ();
-
+#endif
+    free_exception_table ();
+    
     check_global_declarations (vec, len);
 
     /* Clean up.  */
@@ -4605,9 +4608,21 @@ main (argc, argv)
 #ifdef DWARF2_UNWIND_INFO
       exceptions_via_longjmp = ! DWARF2_UNWIND_INFO;
 #else
+#ifdef IA64_UNWIND_INFO
+      exceptions_via_longjmp = ! IA64_UNWIND_INFO;
+#else
       exceptions_via_longjmp = 1;
 #endif
+#endif
     }
+
+  /* Since each function gets its own handler data, we can't support the
+     new model currently, since it depend on a specific rethrow label
+     which is declared at the front of the table, and we can only
+     have one such symbol in a file.  */
+#ifdef IA64_UNWIND_INFO
+  flag_new_exceptions = 0;
+#endif
 
   /* Set up the align_*_log variables, defaulting them to 1 if they
      were still unset.  */

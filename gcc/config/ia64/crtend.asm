@@ -110,3 +110,25 @@ __do_global_ctors_aux:
 	  ;;
 	}
 	.endp __do_global_ctors_aux#
+
+.section .init,"ax","progbits"
+	{ .mlx
+	  // __do_frame_setup_aux is in crtbegin.asm
+	  movl r2 = @gprel(__do_frame_setup_aux#)
+	  ;;
+	}
+	{ .mii
+	  nop.m 0
+	  add r2 = r2, gp
+	  ;;
+	  mov b6 = r2
+	}
+	{ .mib
+	  // __do_frame_setup_aux needs the address of __EH_FRAME_END__,
+	  // so we pass it in r16.  This is rather evil, but we have no
+	  // output registers.
+          addl r16 = @ltoff(__EH_FRAME_END__#), gp
+	  br.call.sptk.many b0 = b6
+	  ;;
+        }
+

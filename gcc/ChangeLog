@@ -1,3 +1,119 @@
+2000-05-25  Andrew MacLeod  <amacleod@cygnus.com>
+            Andrew Haley  <aph@cygnus.com>
+
+	* except.c  (func_eh_entry): Add emitted field.
+	(new_eh_region_entry): Set emitted field to 0;
+	(output_exception_table_entry): Only emit previously un-emitted data,
+	and send it to the eh_data section.
+	(output_exception_table): Break out common parts. Output
+	exception table for entire compilation unit to eh_data section.
+	(output_exception_table_data): Common parts of output_exception_table.
+	Send output to eh_data section.
+	(output_function_exception_table): Output exception table data for
+	a single function to eh_data section.
+	(free_exception_table): New external to free the table.
+	* except.h (free_exception_table): Add prototype.
+	(output_function_exception_table): Add prototype.
+	* final.c (final_end_function): Output function exception table
+	for IA64_UNWIND_INFO.
+	(final_scan_insn): Emit any unwind directives for an insn.
+
+	* frame-dwarf2.c: New file containing all DWARF 2 specific code
+	from frame.c.
+	* frame.c: Remove all DWARF 2 specific code.
+	* config/ia64/frame-ia64.c: New file.
+	(gthread_stuff): Make all gthread available with 
+	IA64_UNWIND_INFO.
+	(dwarf_fde): Define an IA64 struct for dwarf_fde.
+	(__register_frame_info, __register_frame): Move to common area of file.
+	(__register_frame_info_table, __register_frame_table): Move to common i
+	area.
+	(__deregister_frame_info, __deregister_frame): Move to common area.
+	(__frame_init, find_fde): New versions for IA64_UNWIND_INFO.
+	(read_uleb128): New version for ia64.
+	(get_unwind_record): Read the next IA-64 unwind record.
+	(read_R_record): Read a region header record.
+	(process_a_b_reg_code): X record helper.
+	(read_X_record): Read an X format record.
+	(read_B_record): Read a B format record.
+	(P3_record_types): List of record types matching the P3 format.
+	(P7_record_types): List of record types matching the P7 format.
+	(P8_record_types): List of record types matching the P8 format.
+	(read_P_record): Read a P format record.
+	(init_ia64_reg_loc): Set default fields for a register.
+	(init_ia64_unwind_frame): Set defaults for all register records.
+	(execute_one_ia64_descriptor): Execute one descriptor record.
+	(rse_address_add): Calculate the position of a local reg in memory.
+	(normalize_reg_loc): Turn a location descriptor into a memory address.
+	(maybe_normalize_reg_loc): Only normalize a descriptor if it falls 
+	within a specified PC offset range.
+	(get_real_reg_value): Given a register location, retrieve its value.
+	(set_real_reg_value): Change the value of a register location.
+	(copy_reg_value): Copy reg values, if needed.
+	(copy_saved_reg_state): Copy all registers that need to be copied.
+	(process_state_between): Normalize all frame register records that
+	fall within the specified PC range.
+	(frame_translate): Take a processed frame description, and turn 
+	everything into addresses.
+	(build_ia64_frame_state ): Find and create frame state record for a PC.
+	(get_personality): Get the personality routine for a given frame.
+	(get_except_table): Get the exception table for a given frame.
+	(record_name): Unwind record names for debugging.
+	(print_record): Print and unwind record.
+	(print_all_records): Print an entire unwind image.
+	(__ia64_backtrace): Print a backtrace.
+	(ia64_backtrace_helper): New function.
+	(__register_frame_info_aux): New function.
+	* config/ia64/crtend.asm (__do_frame_setup_aux): New function.
+
+	* frame.h (enum unw_record_type): New unwind record types.
+	(struct unw_p_record, unw_b_record, unw_x_record) : New unwind records.
+	(struct unw_r_record, unwind_record): New unwind record structs.
+	(struct unwind_info_ptr): Unwind information layout.
+	(IA64_UNW_LOC_TYPE_*): Macros for different types for location 
+	descriptors.
+	(struct ia64_reg_loc): Register location description.
+	(struct ia64_frame_state): Location of all registers in a frame.
+	(struct object): Add pc_base and fde_end for IA64_UNWIND_INFO.
+	* libgcc2.c (__ia64_personality_v1): Personality routine.
+	(__calc_caller_bsp): Calculate the bsp register for the caller's
+	frame.
+	(ia64_throw_helper): Figure out who to return to and set up the 
+	registers.
+	(__throw): Throw routine.
+
+	* output.h (assemble_eh_align, assemble_eh_label): New functions
+	to generate EH info where we want it.	
+	(assemble_eh_integer): New function.
+	* toplev.c (compile_file): Output module level exception table for
+	non-ia64 targets.
+	(main): Set exceptions_via_longjump and flag_new_exceptions based 
+	on IA64_UNWIND_INFO too.
+
+	* varasm.c (assemble_eh_label): Generate a label via
+	ASM_OUTPUT_EH_LABEL if it has been specified.
+	(assemble_eh_align): Generate an alignment directive via 
+	ASM_OUTPUT_EH_ALIGN if it has been specified.
+	(assemble_eh_label): Generate an integer value via
+	ASM_OUTPUT_EH_type if they have been specified.
+	* config/ia64/ia64.c (rtx_needs_barrier): Add flushrs.
+	(ia64_init_builtins): Add __builtin_ia64_bsp
+	and __builtin_ia64_flushrs.	
+	(ia64_expand_builtin): Add IA64_BUILTIN_BSP and
+	IA64_BUILTIN_FLUSHRS.
+	* config/ia64/ia64.h (ia64_builtins): Add IA64_BUILTIN_BSP and
+	IA64_BUILTIN_FLUSHRS.
+
+	* config/ia64/ia64.md (flushrs): New insn to flush the register
+	stack.  Add to unspec list.
+
+	* config/ia64/crtbegin.asm (frame_object): Change size.
+	(__do_frame_setup_aux): New function.
+	* config/ia64/crtend.asm: call __do_frame_setup_aux.
+	* config/ia64/t-ia64 (LIB2ADDEH): Add.
+	* Makefile.in (LIB2ADDEH): Add.
+	(LIB2ADD): Use LIB2ADDEH.
+	
 2000-05-24  Richard Henderson  <rth@cygnus.com>
 
 	* recog.c (offsettable_address_p): If mode size is zero, assume

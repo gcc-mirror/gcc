@@ -39,3 +39,5 @@ crtendS.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -DSHARED -c -o crtendS.o -x assembler-with-cpp $(srcdir)/config/ia64/crtend.asm
 
 EXTRA_HEADERS = $(srcdir)/config/ia64/ia64intrin.h
+LIB2ADDEH = $(srcdir)/config/ia64/frame-ia64.c
+

@@ -2606,6 +2606,8 @@ rtx_needs_barrier (x, flags, pred)
           break;
 	case 20: /* mov = ar.bsp */
           break;
+	case 21: /* flushrs */
+          break;
 
 	default:
 	  abort ();
@@ -3329,6 +3331,12 @@ ia64_init_builtins ()
 
   def_builtin ("__sync_lock_release_di", void_ftype_pdi, IA64_BUILTIN_LOCK_RELEASE_DI);
 
+  def_builtin ("__builtin_ia64_bsp", build_function_type (ptr_type_node, endlink), IA64_BUILTIN_BSP);
+
+  def_builtin ("__builtin_ia64_flushrs", 
+	       build_function_type (void_type_node, endlink), 
+	       IA64_BUILTIN_FLUSHRS);
+
   /* Add all builtins that are operations on two args. */
   for (i=0, d = bdesc_2argsi; i < sizeof(bdesc_2argsi) / sizeof *d; i++, d++)
     def_builtin (d->name, si_ftype_psi_si, d->code);
@@ -3742,6 +3750,19 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       MEM_VOLATILE_P (op0) = 1;
       emit_insn (gen_movdi (op0, GEN_INT(0)));
       return 0;
+
+    case IA64_BUILTIN_BSP:
+      {
+	rtx reg = gen_reg_rtx (DImode);
+	emit_insn (gen_bsp_value (reg));
+	return reg;
+      }
+
+    case IA64_BUILTIN_FLUSHRS:
+      {
+	emit_insn (gen_flushrs ());
+	return 0;
+      }
 
     default:
       break;

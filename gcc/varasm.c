@@ -4836,3 +4836,74 @@ init_varasm_once ()
 		mark_const_hash_entry);
   ggc_add_string_root (&in_named_name, 1);
 }
+
+/* Extra support for EH values.  */
+void
+assemble_eh_label (name)
+     const char *name;
+{
+#ifdef ASM_OUTPUT_EH_LABEL
+  ASM_OUTPUT_EH_LABEL (asm_out_file, name);
+#else
+  assemble_label (name);
+#endif
+}
+
+/* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
+
+void
+assemble_eh_align (align)
+     int align;
+{
+#ifdef ASM_OUTPUT_EH_ALIGN
+  if (align > BITS_PER_UNIT)
+    ASM_OUTPUT_EH_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+#else
+  assemble_align (align);
+#endif
+}
+
+
+/* On some platforms, we may want to specify a special mechansim to
+   output EH data when generating with a function..  */
+int
+assemble_eh_integer (x, size, force)
+     rtx x;
+     int size;
+     int force;
+{
+
+  switch (size)
+    {
+#ifdef ASM_OUTPUT_EH_CHAR
+    case 1:
+      ASM_OUTPUT_EH_CHAR (asm_out_file, x);
+      return 1;
+#endif
+
+#ifdef ASM_OUTPUT_EH_SHORT
+    case 2:
+      ASM_OUTPUT_EH_SHORT (asm_out_file, x);
+      return 1;
+#endif
+
+#ifdef ASM_OUTPUT_EH_INT
+    case 4:
+      ASM_OUTPUT_EH_INT (asm_out_file, x);
+      return 1;
+#endif
+
+#ifdef ASM_OUTPUT_EH_DOUBLE_INT
+    case 8:
+      ASM_OUTPUT_EH_DOUBLE_INT (asm_out_file, x);
+      return 1;
+#endif
+
+    default:
+      break;
+    }
+  return (assemble_integer (x, size, force));
+}
+
+
+
