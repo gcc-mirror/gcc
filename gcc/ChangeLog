@@ -1,3 +1,8 @@
+2004-01-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (diagnose_arglist_conflict): Add missing space to
+	diagnostic messages.
+
 2004-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/13392

@@ -818,14 +818,14 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
       if (TREE_CHAIN (t) == 0
 	  && TYPE_MAIN_VARIANT (type) != void_type_node)
 	{
-	  inform ("a parameter list with an ellipsis can't match"
+	  inform ("a parameter list with an ellipsis can't match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
 
       if (c_type_promotes_to (type) != type)
 	{
-	  inform ("an argument type that has a default promotion can't match"
+	  inform ("an argument type that has a default promotion can't match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
