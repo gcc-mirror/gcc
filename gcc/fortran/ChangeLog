@@ -1,4 +1,8 @@
-2005-03-34  Steven G. Kargl  <kargls@comcast.net>
+2005-03-25  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: Fix "make dvi"
+
+2005-03-24  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: New file.
 	* gfortran.texi: Include it; white space change; fix typo.
