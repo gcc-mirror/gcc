@@ -1,3 +1,7 @@
+Mon Aug 17 00:12:42 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* reorg.c (check_annul_list_true_false): Fix typo in Jul 17 change.
+
 Sun Aug  2 01:10:15 1998  Paul Eggert  <eggert@twinsun.com>
 
 	Add Native Language Support.
