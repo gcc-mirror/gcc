@@ -1,3 +1,14 @@
+2001-01-16  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* prims.cc (init_prim_class): Deleted.
+	(DECLARE_PRIM_TYPE): Rewritten.
+	* java/lang/Class.h (stdio.h): Include removed.
+	(stddef.h): Included.
+	(java/lang/reflect/Modifier.h): Likewise.
+	(Class): Contructor now takes arguments, initializes fields.
+	(initializePrim): Prototype deleted.
+	* java/lang/natClass.cc (initializePrim): Deleted.
+
 2001-01-16  Warren Levy  <warrenl@redhat.com>
 
 	* java/math/BigInteger.java: Update Copyright year.

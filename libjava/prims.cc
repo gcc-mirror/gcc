@@ -510,21 +510,11 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
 
 
 
-// Initialize Class object for primitive types. The `return' statement
-// does the actuall job.
-static java::lang::Class
-init_prim_class (jobject cname, jbyte sig, jint len, jobject array_vtable)
-{
-  static java::lang::Class iclass;
-  iclass.initializePrim (cname, sig, len, array_vtable);
-  return iclass;
-}
-  
 #define DECLARE_PRIM_TYPE(NAME, SIG, LEN)				\
   _Jv_ArrayVTable _Jv_##NAME##VTable;					\
-  java::lang::Class _Jv_##NAME##Class = 				\
-    init_prim_class ((jobject) #NAME, (jbyte) SIG,			\
-                     (jint) LEN, (jobject) &_Jv_##NAME##VTable);
+  java::lang::Class _Jv_##NAME##Class ((jobject) #NAME,			\
+				       (jbyte) SIG, (jint) LEN,		\
+				       (jobject) &_Jv_##NAME##VTable);
 
 DECLARE_PRIM_TYPE(byte, 'B', 1);
 DECLARE_PRIM_TYPE(short, 'S', 2);
