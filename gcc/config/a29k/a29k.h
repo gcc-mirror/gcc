@@ -1630,6 +1630,7 @@ extern int a29k_debug_reg_map[];
   {"spec_reg_operand", {REG}},					\
   {"accum_reg_operand", {REG}},					\
   {"srcb_operand", {SUBREG, REG, CONST_INT}},			\
+  {"cmplsrcb_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_immediate_operand", {SUBREG, REG, CONST_INT, CONST,	\
 				CONST_DOUBLE, CONST, SYMBOL_REF, LABEL_REF}}, \
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},		\
