@@ -45,6 +45,10 @@
 
 #include <cwchar> // For mbstate_t
 
+#ifdef _GLIBCXX_HAVE_STDINT_H
+#include <stdint.h> // For int64_t
+#endif
+
 namespace std
 {
   // The types streamoff, streampos and wstreampos and the class
@@ -52,8 +56,14 @@ namespace std
   // 27.2, 27.4.1, 27.4.3 and D.6. Despite all this verbage, the
   // behaviour of these types is mostly implementation defined or
   // unspecified. The behaviour in this implementation is as noted
-  // below.  
-  typedef long  	__streamoff_base_type;
+  // below.
+
+#ifdef _GLIBCXX_HAVE_INT64_T
+  typedef int64_t       __streamoff_base_type;
+#else
+  typedef long long     __streamoff_base_type;
+#endif
+
   typedef ptrdiff_t	streamsize; // Signed integral type
 
   template<typename _StateT>
