@@ -945,7 +945,9 @@ main (argc, argv)
   /* Do not use LC_ALL, because LC_NUMERIC screws up the scanf parsing
      of the argument to @multicolumn.  */
   setlocale (LC_TIME, "");
+#ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
+#endif
 #endif
 
   /* Set the text message domain.  */
