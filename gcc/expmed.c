@@ -591,16 +591,18 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       offset = 0;
     }
 
-  /* If VALUE is a floating-point mode, access it as an integer of the
-     corresponding size.  This can occur on a machine with 64 bit registers
-     that uses SFmode for float.  This can also occur for unaligned float
-     structure fields.  */
+  /* If VALUE has a floating-point or complex mode, access it as an
+     integer of the corresponding size.  This can occur on a machine
+     with 64 bit registers that uses SFmode for float.  It can also
+     occur for unaligned float or complex fields.  */
   orig_value = value;
-  if (GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
+  if (GET_MODE (value) != VOIDmode
+      && GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
       && GET_MODE_CLASS (GET_MODE (value)) != MODE_PARTIAL_INT)
-    value = gen_lowpart ((GET_MODE (value) == VOIDmode
-			  ? word_mode : int_mode_for_mode (GET_MODE (value))),
-			 value);
+    {
+      value = gen_reg_rtx (int_mode_for_mode (GET_MODE (value)));
+      emit_move_insn (gen_lowpart (GET_MODE (orig_value), value), orig_value);
+    }
 
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */

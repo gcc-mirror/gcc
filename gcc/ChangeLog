@@ -1,3 +1,12 @@
+2004-12-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* simplify-rtx.c (simplify_subreg): In the CONCAT case, check whether
+	the request subreg is entirely contained in the requested component.
+	(simplify_gen_subreg): Return null for CONCATs that are rejected
+	by simplify_subreg.
+	* expmed.c (store_bit_field): Create a temporary when changing the
+	value to an integer mode.
+
 2004-12-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* real.c (ibm_extended): Correct comment.
