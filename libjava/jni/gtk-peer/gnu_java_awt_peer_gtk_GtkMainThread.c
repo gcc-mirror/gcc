@@ -185,7 +185,8 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
  * Run gtk_main and block.
  */ 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkMain (JNIEnv *env, jobject obj)
+Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkMain
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
 {
   gdk_threads_enter ();
   gtk_main ();

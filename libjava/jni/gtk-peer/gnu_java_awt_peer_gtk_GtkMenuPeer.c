@@ -40,13 +40,14 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkMenuPeer.h"
 
 static void
-accel_attach (GtkMenuItem *menu_item, gpointer *user_data)
+accel_attach (GtkMenuItem *menu_item,
+	      gpointer *user_data __attribute__((unused)))
 {
   GtkAccelGroup *accel;
 
   accel = gtk_menu_get_accel_group (GTK_MENU (menu_item->submenu));
-  gtk_accel_group_attach (accel, 
-    GTK_OBJECT (gtk_widget_get_toplevel (GTK_WIDGET(menu_item))));
+  _gtk_accel_group_attach (accel, 
+    G_OBJECT (gtk_widget_get_toplevel (GTK_WIDGET(menu_item))));
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup

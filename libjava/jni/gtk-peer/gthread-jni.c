@@ -189,7 +189,7 @@ static GMutex *g_mutex_new_jni_impl (void) {
 }
 
 /* Lock a mutex. */
-static void g_mutex_lock_jni_impl (GMutex *mutex) {
+static void g_mutex_lock_jni_impl (GMutex *mutex __attribute__((unused))) {
   JNIEnv *gdk_env;
 
   (*gdk_vm)->GetEnv(gdk_vm, (void **)&gdk_env, JNI_VERSION_1_1);
@@ -201,7 +201,9 @@ static void g_mutex_lock_jni_impl (GMutex *mutex) {
  * do not provide such an interface.  To be at least minimally correct,
  * pretend we tried and failed.
  */
-static gboolean g_mutex_trylock_jni_impl (GMutex *mutex) {
+static gboolean g_mutex_trylock_jni_impl
+  (GMutex *mutex __attribute__((unused)))
+{
   // Shall we implement this in a JikesRVM-specific way under a flag?
   return FALSE;
 }
@@ -285,7 +287,9 @@ static void g_cond_broadcast_jni_impl (GCond *cond) {
 /*  Wait on a condition variable.  For us, this simply means call
  * Object.wait.
  */
-static void g_cond_wait_jni_impl (GCond *cond, GMutex *mutex) {
+static void g_cond_wait_jni_impl
+  (GCond *cond, GMutex *mutex __attribute__((unused)))
+{
   jclass lcl_class;
   jmethodID wait_mth;
   JNIEnv *gdk_env;
@@ -313,7 +317,10 @@ static void g_cond_wait_jni_impl (GCond *cond, GMutex *mutex) {
  * so, that is Java-speak for wait timing out.
  */
 static gboolean
-g_cond_timed_wait_jni_impl (GCond *cond, GMutex *mutex, GTimeVal *end_time) {
+g_cond_timed_wait_jni_impl
+  (GCond *cond, GMutex *mutex __attribute__((unused)),
+   GTimeVal *end_time)
+{
   jclass lcl_class;
   jmethodID wait_mth;
   JNIEnv *gdk_env;
@@ -364,7 +371,9 @@ static void g_cond_free_jni_impl (GCond *cond) {
 /*  Create a new thread-local key.  We use java.lang.ThreadLocal objects
  * for this.
  */
-static GPrivate *g_private_new_jni_impl (GDestroyNotify notify) {
+static GPrivate *g_private_new_jni_impl
+  (GDestroyNotify notify __attribute__((unused)))
+{
   jclass lcl_class;
   jobject *local;
   JNIEnv *gdk_env;
@@ -474,7 +483,14 @@ GThreadFunctions g_thread_jni_functions =
   g_cond_free_jni_impl,       /* cond_free */
   g_private_new_jni_impl,     /* private_new */
   g_private_get_jni_impl,     /* private_get */
-  g_private_set_jni_impl      /* private_set */
+  g_private_set_jni_impl,     /* private_set */
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 /* ??? */

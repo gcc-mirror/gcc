@@ -322,7 +322,9 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_setMultipleMode
 }
 
 static void
-item_select (GtkCList *list, int row, int col, GdkEventButton *event, 
+item_select (GtkCList *list __attribute__((unused)),
+	     int row, int col __attribute__((unused)),
+	     GdkEventButton *event __attribute__((unused)), 
 	     jobject *peer_obj)
 {
   (*gdk_env)->CallVoidMethod (gdk_env, *peer_obj,
@@ -332,8 +334,11 @@ item_select (GtkCList *list, int row, int col, GdkEventButton *event,
 }
 
 static void
-item_unselect (GtkCList *list, int row, int col, GdkEventButton *event, 
-	     jobject *peer_obj)
+item_unselect (GtkCList *list __attribute__((unused)),
+	       int row,
+	       int col __attribute__((unused)),
+	       GdkEventButton *event __attribute__((unused)),
+	       jobject *peer_obj)
 {
   (*gdk_env)->CallVoidMethod (gdk_env, *peer_obj,
 			      postListItemEventID,

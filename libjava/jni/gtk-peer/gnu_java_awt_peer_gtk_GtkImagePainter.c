@@ -44,9 +44,10 @@ exception statement from your version. */
   (((w) << 24) | (((w) & 0xff00) << 8) | (((w) >> 8) & 0xff00) | ((w) >> 24))
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImagePainter_drawPixels
-(JNIEnv *env, jobject obj, jobject gc_obj, jint bg_red, jint bg_green, 
- jint bg_blue, jint x, jint y, jint width, jint height, jintArray jpixels, 
- jint offset, jint scansize, jdoubleArray jaffine)
+(JNIEnv *env, jobject obj __attribute__((unused)), jobject gc_obj,
+ jint bg_red, jint bg_green, jint bg_blue, jint x, jint y, jint width,
+ jint height, jintArray jpixels, jint offset, jint scansize,
+ jdoubleArray jaffine)
 {
   struct graphics *g;
   jint *pixels, *elems;
@@ -114,8 +115,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImagePainter_drawPixels
       ArtAlphaGamma *alphagamma = NULL;
       art_u8 *dst;
       int new_width, new_height;
-      int i;
-      
+
       affine = (*env)->GetDoubleArrayElements (env, jaffine, NULL);
 
       new_width = abs (width * affine[0]);

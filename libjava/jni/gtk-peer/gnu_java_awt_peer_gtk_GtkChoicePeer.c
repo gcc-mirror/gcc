@@ -177,7 +177,8 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_select
 
 
 static void
-item_activate (GtkItem *item, struct item_event_hook_info *ie)
+item_activate (GtkItem *item __attribute__((unused)),
+	       struct item_event_hook_info *ie)
 {
   gdk_threads_leave ();
   (*gdk_env)->CallVoidMethod (gdk_env, ie->peer_obj,

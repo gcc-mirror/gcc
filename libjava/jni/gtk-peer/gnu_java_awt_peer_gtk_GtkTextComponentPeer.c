@@ -450,7 +450,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
 }
 
 static void
-textcomponent_commit_cb (GtkIMContext *context,
+textcomponent_commit_cb (GtkIMContext *context __attribute__((unused)),
                          const gchar  *str,
                          jobject peer)
 {
@@ -472,7 +472,7 @@ textcomponent_commit_cb (GtkIMContext *context,
 }
 
 static void
-textcomponent_changed_cb (GtkEditable *editable,
+textcomponent_changed_cb (GtkEditable *editable __attribute__((unused)),
 			  jobject peer)
 {
   (*gdk_env)->CallVoidMethod (gdk_env, peer, postTextEventID);

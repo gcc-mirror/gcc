@@ -82,7 +82,7 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
 		      GTK_SIGNAL_FUNC (selection_clear), NULL);
 
   gtk_selection_add_target (clipboard, GDK_SELECTION_PRIMARY, 
-			    GDK_TARGET_STRING, GDK_TARGET_STRING);
+			    GDK_TARGET_STRING, 0);
 
   gtk_signal_connect (GTK_OBJECT(clipboard), "selection_get",
                       GTK_SIGNAL_FUNC (selection_get), NULL);
@@ -91,8 +91,8 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkClipboard_requestStringConversion (JNIEnv *env, 
-								 jclass clazz)
+Java_gnu_java_awt_peer_gtk_GtkClipboard_requestStringConversion
+  (JNIEnv *env __attribute__((unused)), jclass clazz __attribute__((unused)))
 {
   gdk_threads_enter ();
   gtk_selection_convert (clipboard, GDK_SELECTION_PRIMARY, 
@@ -101,8 +101,10 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_requestStringConversion (JNIEnv *env,
 }
 
 void
-selection_received (GtkWidget *widget, GtkSelectionData *selection_data, 
-		    guint time, gpointer data)
+selection_received (GtkWidget *widget __attribute__((unused)),
+		    GtkSelectionData *selection_data __attribute__((unused)),
+		    guint time __attribute__((unused)),
+		    gpointer data __attribute__((unused)))
 {
   /* Check to see if retrieval succeeded  */
   if (selection_data->length < 0
@@ -123,11 +125,11 @@ selection_received (GtkWidget *widget, GtkSelectionData *selection_data,
 }
 
 void
-selection_get (GtkWidget *widget, 
+selection_get (GtkWidget *widget __attribute__((unused)), 
                GtkSelectionData *selection_data,
-               guint      info,
-               guint      time,
-               gpointer   data)
+               guint      info __attribute__((unused)),
+               guint      time __attribute__((unused)),
+               gpointer   data __attribute__((unused)))
 {
   jstring jstr;
   const char *utf;
@@ -153,8 +155,8 @@ selection_get (GtkWidget *widget,
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkClipboard_selectionGet (JNIEnv *env, 
-						      jclass clazz)
+Java_gnu_java_awt_peer_gtk_GtkClipboard_selectionGet
+  (JNIEnv *env, jclass clazz __attribute__((unused)))
 {
   GdkWindow *owner;
 
@@ -172,7 +174,8 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_selectionGet (JNIEnv *env,
 }
 
 gint
-selection_clear (GtkWidget *widget, GdkEventSelection *event)
+selection_clear (GtkWidget *widget __attribute__((unused)),
+		 GdkEventSelection *event __attribute__((unused)))
 {
   (*gdk_env)->CallVoidMethod (gdk_env, cb_obj, selectionClearID);
 

@@ -54,6 +54,10 @@ exception statement from your version. */
 #ifndef __GTKPEER_H__
 #define __GTKPEER_H__
 
+#ifndef __GNUC__
+#define __attribute__(x) /* nothing */
+#endif
+
 #ifdef JVM_SUN
 
 extern struct state_table *native_state_table;

@@ -44,7 +44,6 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create
   (JNIEnv *env, jobject obj)
 {
   gpointer window;
-  GtkWidget *layout;
 
   gdk_threads_enter ();
   window = gtk_scrolled_window_new (NULL, NULL);

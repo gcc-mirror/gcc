@@ -1142,6 +1142,7 @@ awt_event_handler (GdkEvent *event)
 				      JNI_FALSE);
 	  break;
         default:
+	  break;
 	}
       g_free (obj_ptr);
     }

@@ -67,7 +67,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
      window will snap to its default requisition of 0x0.  If we omit
      this call, Frames and Dialogs shrink to degenerate 1x1 windows
      when their resizable property changes. */
-  gtk_widget_set_size_request (window, width, height);
+  gtk_widget_set_size_request (window_widget, width, height);
 
   /* Keep this window in front of its parent, if it has one. */
   if (parent)
@@ -235,8 +235,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toFront (JNIEnv *env,
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setBoundsCallback
-  (JNIEnv *env, jobject obj, jobject window,
-   jint x, jint y, jint width, jint height)
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+   jobject window, jint x, jint y, jint width, jint height)
 {
   /* Circumvent package-private access to call Window's
      setBoundsCallback method. */
