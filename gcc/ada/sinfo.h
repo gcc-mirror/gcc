@@ -511,6 +511,8 @@
       { return Uint5 (N); }
    INLINE Node_Id   Entity                         (Node_Id N)
       { return Node4 (N); }
+   INLINE Node_Id   Entity_Or_Associated_Node      (Node_Id N)
+      { return Node4 (N); }
    INLINE Node_Id   Entry_Body_Formal_Part         (Node_Id N)
       { return Node5 (N); }
    INLINE Node_Id   Entry_Call_Alternative         (Node_Id N)

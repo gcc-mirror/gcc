@@ -1,6 +1,6 @@
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
-	* nmake.ads, nmake.adb: Regenerated.
+	* nmake.ads, nmake.adb, sinfo.h, treeprs.ads: Regenerated.
 
 2003-11-13  Vincent Celier  <celier@gnat.com>
 
