@@ -1,3 +1,10 @@
+2002-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	Suggested by Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
+	* Makefile.am (jv_convert_LDADD): Bring -L.libs to the front.
+	(gij_LDADD, rmic_LDADD, rmiregistry_LDADD): Likewise.
+	* Makefile.in: Rebuilt.
+
 2002-05-02  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* include/dwarf2-signal.h (INIT_SEGV, INIT_FPE for ia64):

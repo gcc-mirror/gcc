@@ -434,12 +434,14 @@ EXTRA_jv_convert_SOURCES = $(convert_source_files)
 jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 jv_convert_LINK = $(GCJLINK)
-## We explicitly link in the libraries we need.  This way we don't
-## need -nodefaultlibs, so we can still rely on gcj picking up the
-## system libraries we need (via the specs file).
-## We need the -L so that gcj can find libgcj with `-lgcj'.
-## FIXME: should be _libs on some systems.
-jv_convert_LDADD = libgcj.la -L$(here)/.libs
+## We don't explicitly link in the libraries we need; libgcj.la brings
+## in all dependencies.  We need the -L so that gcj can find libgcj
+## with `-lgcj', but it must come first, otherwise the -L flags
+## brought in from libgcj.la would cause the install directories to be
+## searched before the build-tree ones, and we'd get errors because of
+## different libraries with the same SONAME from picky linkers such as
+## Solaris'.  FIXME: should be _libs on some systems.
+jv_convert_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
@@ -451,12 +453,8 @@ gij_SOURCES = gij.cc
 ## `.la' file.
 gij_LDFLAGS = -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 gij_LINK = $(GCJLINK)
-## We explicitly link in the libraries we need.  This way we don't
-## need -nodefaultlibs, so we can still rely on gcj picking up the
-## system libraries we need (via the specs file).
-## We need the -L so that gcj can find libgcj with `-lgcj'.
-## FIXME: should be _libs on some systems.
-gij_LDADD = libgcj.la -L$(here)/.libs
+## See jv_convert_LDADD.
+gij_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 gij_DEPENDENCIES = libgcj.la libgcj.spec
@@ -467,12 +465,8 @@ EXTRA_rmic_SOURCES = $(rmi_java_source_files)
 rmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 rmic_LINK = $(GCJLINK)
-## We explicitly link in the libraries we need.  This way we don't
-## need -nodefaultlibs, so we can still rely on gcj picking up the
-## system libraries we need (via the specs file).
-## We need the -L so that gcj can find libgcj with `-lgcj'.
-## FIXME: should be _libs on some systems.
-rmic_LDADD = libgcj.la -L$(here)/.libs
+## See jv_convert_LDADD.
+rmic_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 rmic_DEPENDENCIES = libgcj.la libgcj.spec
@@ -483,12 +477,8 @@ EXTRA_rmiregistry_SOURCES = $(rmi_java_source_files)
 rmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
 rmiregistry_LINK = $(GCJLINK)
-## We explicitly link in the libraries we need.  This way we don't
-## need -nodefaultlibs, so we can still rely on gcj picking up the
-## system libraries we need (via the specs file).
-## We need the -L so that gcj can find libgcj with `-lgcj'.
-## FIXME: should be _libs on some systems.
-rmiregistry_LDADD = libgcj.la -L$(here)/.libs
+## See jv_convert_LDADD.
+rmiregistry_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 rmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
