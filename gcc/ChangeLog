@@ -1,5 +1,14 @@
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
+	* cfgcleanup.c: Include params.h.
+	(try_crossjump_bb): Use PARAM_MAX_CROSSJUMP_EDGES.  Fix test for
+	too many outgoing edges from a block.
+	* Makefile.in (cfgcleanup.o): Depend on PARAMS_H.
+	* params.def (max-crossjump-edges): New.
+	* doc/invoke.texi: Document it.
+
+2003-02-15  Richard Henderson  <rth@redhat.com>
+
         * recog.c (split_all_insns): Include new blocks in life update;
         do a global life update.
 
