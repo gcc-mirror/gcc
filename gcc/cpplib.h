@@ -510,6 +510,27 @@ struct cpp_options {
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
 
+struct file_name_list
+  {
+    struct file_name_list *next;
+    char *fname;
+    /* If the following is nonzero, it is a macro name.
+       Don't include the file again if that macro is defined.  */
+    U_CHAR *control_macro;
+    /* If the following is nonzero, it is a C-language system include
+       directory.  */
+    int c_system_include_path;
+    /* Mapping of file names for this directory.  */
+    struct file_name_map *name_map;
+    /* Non-zero if name_map is valid.  */
+    int got_name_map;
+  };
+
+/* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
+   via the same directory as the file that #included it.  */
+#define SELF_DIR_DUMMY ((struct file_name_list *) (~0))
+
+    
 /* Name under which this program was invoked.  */
 
 extern char *progname;
@@ -623,6 +644,8 @@ struct definition {
 };
 
 extern unsigned char is_idchar[256];
+extern unsigned char is_hor_space[256];
+extern unsigned char is_space[256];
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -685,6 +708,25 @@ extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *));
 extern void cpp_file_line_for_message PROTO ((cpp_reader *, char *, int, int));
 extern void cpp_print_containing_files PROTO ((cpp_reader *));
 
+/* In cppfiles.c */
+extern void append_include_chain	PROTO ((cpp_reader *,
+						struct file_name_list *,
+						struct file_name_list *));
+extern int finclude			PROTO ((cpp_reader *, int, char *,
+						int, struct file_name_list *));
+extern int find_include_file		PROTO ((cpp_reader *, char *,
+						unsigned long, char *, int,
+						struct file_name_list *,
+						struct file_name_list **));
+extern void deps_output			PROTO ((cpp_reader *, char *, int));
+
+/* Bleargh. */
+extern char *savestring			PROTO ((char *));
+#ifndef INCLUDE_LEN_FUDGE
+#define INCLUDE_LEN_FUDGE 0
+#endif
+
+    
 #ifdef __cplusplus
 }
 #endif

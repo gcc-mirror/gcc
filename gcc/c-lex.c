@@ -194,12 +194,14 @@ init_parse (filename)
   init_lex ();
 
 #if USE_CPPLIB
-  yy_cur = "\n";
-  yy_lim = yy_cur+1;
-
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();
+
+  /* cpp_start_read always puts at least one line directive into the
+     token buffer.  We must arrange to read it out here. */
+  yy_cur = parse_in.token_buffer;
+  yy_lim = CPP_PWRITTEN (&parse_in);
 #endif
 
   return filename;

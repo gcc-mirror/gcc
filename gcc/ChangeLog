@@ -86,6 +86,44 @@ Wed Oct 28 16:46:07 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(purge_addressof_replacements): New variable.
 	(purge_addressof): Clear it at end.
 
+1998-10-28 16:10 -0500	Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	 * c-lang.c: Declare extern char *yy_cur if USE_CPPLIB.
+	   (lang_init): Call check_newline always.
+	 * c-lex.c (init_parse) [USE_CPPLIB=1]: After calling
+	   cpp_start_read, set yy_cur and yy_lim to read from
+	   parse_in.token_buffer, so that we'll see the first #line
+	   directive.
+	 * cpplib.c (cpp_start_read): finclude the main input file
+	   before processing -include/-imacros.	 Process -imacros and
+	   -include separately, and handle -include by stacking a
+	   buffer for the file in question as if it'd been #included.
+	 * toplev.c (documented_lang_options) Recognize -H when
+	   USE_CPPLIB is on.
+
+1998-10-28 16:09 -0500	Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	 * cpplib.c: Merge do_once into do_pragma.  Break file handling
+	   code out of do_include.
+	   Move append_include_chain, deps_output,
+	   file_cleanup, redundant_include_p, import_hash,
+	   lookup_import, add_import, read_filename_string, read_name_map,
+	   open_include_file, finclude, safe_read to cppfiles.c.
+	   Move prototypes for deps_output, append_include_chain,
+	   finclude to cpplib.h.  Move definition of struct
+	   file_name_list there also.
+
+	 * cppfiles.c: New file.  Contains all the above functions
+	   broken out of cpplib.c; also hack_vms_include_specification
+	   from cccp.c and find_include_file, a new function broken out of
+	   do_include.
+
+	 * Makefile.in (cppmain): Depend on cppfiles.o.
+	   (fix-header): Likewise.
+	   (cppfiles.o): New target.
+	 * configure.in (--enable-c-cpplib): Add cppfiles.o to
+	   extra_c_objs.  Add ../cppfiles.o to extra_cxx_objs.
+
 Wed Oct 28 14:06:49 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarfout.c (dwarfout_file_scope_decl): If DECL_CONTEXT, don't abort

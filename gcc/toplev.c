@@ -1058,6 +1058,7 @@ documented_lang_options[] =
   { "-D", "" },
   { "-I", "" },
   { "-U", "" },
+  { "-H", "" },
   { "-idirafter", "" },
   { "-imacros", "" },
   { "-include", "" },

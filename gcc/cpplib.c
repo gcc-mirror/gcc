@@ -89,9 +89,6 @@ extern char *update_path PARAMS ((char *, char *));
 #ifndef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
-#ifndef INCLUDE_LEN_FUDGE
-#define INCLUDE_LEN_FUDGE 0
-#endif
 
 /* Symbols to predefine.  */
 
@@ -200,10 +197,6 @@ char *xmalloc ();
 extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
 
 static char *my_strerror		PROTO ((int));
-static void add_import			PROTO ((cpp_reader *, int, char *));
-static void append_include_chain	PROTO ((cpp_reader *,
-						struct file_name_list *,
-						struct file_name_list *));
 static void make_assertion		PROTO ((cpp_reader *, char *, U_CHAR *));
 static void path_include		PROTO ((cpp_reader *, char *));
 static void initialize_builtins		PROTO ((cpp_reader *));
@@ -211,38 +204,27 @@ static void initialize_char_syntax	PROTO ((struct cpp_options *));
 #if 0
 static void trigraph_pcp ();
 #endif
-static int finclude			PROTO ((cpp_reader *, int, char *,
-						int, struct file_name_list *));
 static void validate_else		PROTO ((cpp_reader *, char *));
 static int comp_def_part		PROTO ((int, U_CHAR *, int, U_CHAR *,
 						int, int));
 #ifdef abort
 extern void fancy_abort ();
 #endif
-static int lookup_import		PROTO ((cpp_reader *, char *,
-						struct file_name_list *));
-static int redundant_include_p		PROTO ((cpp_reader *, char *));
-static int is_system_include		PROTO ((cpp_reader *, char *));
-static struct file_name_map *read_name_map	PROTO ((cpp_reader *, char *));
-static char *read_filename_string	PROTO ((int, FILE *));
-static int open_include_file		PROTO ((cpp_reader *, char *,
-						struct file_name_list *));
 static int check_macro_name		PROTO ((cpp_reader *, U_CHAR *, char *));
 static int compare_defs			PROTO ((cpp_reader *,
 						DEFINITION *, DEFINITION *));
 static int compare_token_lists		PROTO ((struct arglist *,
 						struct arglist *));
+static int is_system_include		PROTO ((cpp_reader *, char *));
 static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *, U_CHAR *, int));
 static int change_newlines		PROTO ((U_CHAR *, int));
 static struct arglist *read_token_list	PROTO ((cpp_reader *, int *));
 static void free_token_list		PROTO ((struct arglist *));
-static int safe_read			PROTO ((int, char *, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
 extern char *xrealloc ();
 static char *xcalloc			PROTO ((unsigned, unsigned));
-static char *savestring			PROTO ((char *));
 
 static void conditional_skip		PROTO ((cpp_reader *, int,
 					       enum node_type, U_CHAR *));
@@ -260,25 +242,6 @@ extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
 extern char *version_string;
 extern struct tm *localtime ();
 
-struct file_name_list
-  {
-    struct file_name_list *next;
-    char *fname;
-    /* If the following is nonzero, it is a macro name.
-       Don't include the file again if that macro is defined.  */
-    U_CHAR *control_macro;
-    /* If the following is nonzero, it is a C-language system include
-       directory.  */
-    int c_system_include_path;
-    /* Mapping of file names for this directory.  */
-    struct file_name_map *name_map;
-    /* Non-zero if name_map is valid.  */
-    int got_name_map;
-  };
-
-/* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
-   via the same directory as the file that #included it.  */
-#define SELF_DIR_DUMMY ((struct file_name_list *) (~0))
 
 /* #include "file" looks in source file dir, then stack.  */
 /* #include <file> just looks in the stack.  */
@@ -366,7 +329,6 @@ static int do_endif PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR 
 #ifdef SCCS_DIRECTIVE
 static int do_sccs PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
 #endif
-static int do_once PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
 static int do_assert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
 static int do_unassert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
 static int do_warning PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
@@ -403,13 +365,13 @@ static struct directive directive_table[] = {
 };
 
 /* table to tell if char can be part of a C identifier.  */
-U_CHAR is_idchar[256];
+U_CHAR is_idchar[256] = { 0 };
 /* table to tell if char can be first char of a c identifier.  */
-U_CHAR is_idstart[256];
+U_CHAR is_idstart[256] = { 0 };
 /* table to tell if c is horizontal space.  */
-U_CHAR is_hor_space[256];
+U_CHAR is_hor_space[256] = { 0 };
 /* table to tell if c is horizontal or vertical space.  */
-static U_CHAR is_space[256];
+U_CHAR is_space[256] = { 0 };
 
 /* Initialize syntactic classifications of characters.  */
 
@@ -615,85 +577,7 @@ make_assertion (pfile, option, str)
       cpp_pop_buffer (pfile);
     }
 }
-
-/* Append a chain of `struct file_name_list's
-   to the end of the main include chain.
-   FIRST is the beginning of the chain to append, and LAST is the end.  */
 
-static void
-append_include_chain (pfile, first, last)
-     cpp_reader *pfile;
-     struct file_name_list *first, *last;
-{
-  struct cpp_options *opts = CPP_OPTIONS (pfile);
-  struct file_name_list *dir;
-
-  if (!first || !last)
-    return;
-
-  if (opts->include == 0)
-    opts->include = first;
-  else
-    opts->last_include->next = first;
-
-  if (opts->first_bracket_include == 0)
-    opts->first_bracket_include = first;
-
-  for (dir = first; ; dir = dir->next) {
-    int len = strlen (dir->fname) + INCLUDE_LEN_FUDGE;
-    if (len > pfile->max_include_len)
-      pfile->max_include_len = len;
-    if (dir == last)
-      break;
-  }
-
-  last->next = NULL;
-  opts->last_include = last;
-}
-
-/* Add output to `deps_buffer' for the -M switch.
-   STRING points to the text to be output.
-   SPACER is ':' for targets, ' ' for dependencies, zero for text
-   to be inserted literally.  */
-
-static void
-deps_output (pfile, string, spacer)
-     cpp_reader *pfile;
-     char *string;
-     int spacer;
-{
-  int size = strlen (string);
-
-  if (size == 0)
-    return;
-
-#ifndef MAX_OUTPUT_COLUMNS
-#define MAX_OUTPUT_COLUMNS 72
-#endif
-  if (spacer
-      && pfile->deps_column > 0
-      && (pfile->deps_column + size) > MAX_OUTPUT_COLUMNS)
-    {
-      deps_output (pfile, " \\\n  ", 0);
-      pfile->deps_column = 0;
-    }
-
-  if (pfile->deps_size + size + 8 > pfile->deps_allocated_size)
-    {
-      pfile->deps_allocated_size = (pfile->deps_size + size + 50) * 2;
-      pfile->deps_buffer = (char *) xrealloc (pfile->deps_buffer,
-					      pfile->deps_allocated_size);
-    }
-  if (spacer == ' ' && pfile->deps_column > 0)
-    pfile->deps_buffer[pfile->deps_size++] = ' ';
-  bcopy (string, &pfile->deps_buffer[pfile->deps_size], size);
-  pfile->deps_size += size;
-  pfile->deps_column += size;
-  if (spacer == ':')
-    pfile->deps_buffer[pfile->deps_size++] = ':';
-  pfile->deps_buffer[pfile->deps_size] = 0;
-}
-
 /* Given a colon-separated list of file names PATH,
    add all the names to the search path for include files.  */
 
@@ -803,19 +687,6 @@ macro_cleanup (pbuf, pfile)
     macro->type = T_MACRO;
   if (macro->type != T_MACRO || pbuf->buf != macro->value.defn->expansion)
     free (pbuf->buf);
-  return 0;
-}
-
-int
-file_cleanup (pbuf, pfile)
-     cpp_buffer *pbuf;
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  if (pbuf->buf)
-    {
-      free (pbuf->buf);
-      pbuf->buf = 0;
-    }
   return 0;
 }
 
@@ -3077,29 +2948,21 @@ do_include (pfile, keyword, unused1, unused2)
 {
   int importing = (keyword->type == T_IMPORT);
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
+  int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   char *fname;		/* Dynamically allocated fname buffer */
-  char *pcftry;
-  U_CHAR *fbeg, *fend;		/* Beginning and end of fname */
+  char *fbeg, *fend;		/* Beginning and end of fname */
+  long flen;
+
   enum cpp_token token;
 
   /* Chain of dirs to search */
   struct file_name_list *search_start = CPP_OPTIONS (pfile)->include;
-  struct file_name_list dsp[1];	/* First in chain, if #include "..." */
-  struct file_name_list *searchptr = 0;
+  struct file_name_list dsp;	/* First in chain, if #include "..." */
+  struct file_name_list *foundhere, *ptr;
+  
   long old_written = CPP_WRITTEN (pfile);
 
-  int flen;
-
-  int f;			/* file number */
-
-  int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
-  char *pcfbuf;
-#if 0
-  int pcf = -1;
-  char *pcfbuflimit;
-#endif
-  int pcfnum;
-  f= -1;			/* JF we iz paranoid! */
+  int fd;
 
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     {
@@ -3133,9 +2996,9 @@ do_include (pfile, keyword, unused1, unused2)
 
   if (token == CPP_STRING)
     {
-      /* FIXME - check no trailing garbage */
       fbeg = pfile->token_buffer + old_written + 1;
       fend = CPP_PWRITTEN (pfile) - 1;
+      *fend = '\0';
       if (fbeg[-1] == '<')
 	{
 	  angle_brackets = 1;
@@ -3159,8 +3022,8 @@ do_include (pfile, keyword, unused1, unused2)
 		{
 		  /* Found a named file.  Figure out dir of the file,
 		     and put it in front of the search list.  */
-		  dsp[0].next = search_start;
-		  search_start = dsp;
+		  dsp.next = search_start;
+		  search_start = &dsp;
 #ifndef VMS
 		  ep = rindex (nam, '/');
 #else				/* VMS */
@@ -3172,17 +3035,17 @@ do_include (pfile, keyword, unused1, unused2)
 		  if (ep != NULL)
 		    {
 		      n = ep - nam;
-		      dsp[0].fname = (char *) alloca (n + 1);
-		      strncpy (dsp[0].fname, nam, n);
-		      dsp[0].fname[n] = '\0';
+		      dsp.fname = (char *) alloca (n + 1);
+		      strncpy (dsp.fname, nam, n);
+		      dsp.fname[n] = '\0';
 		      if (n + INCLUDE_LEN_FUDGE > pfile->max_include_len)
 			pfile->max_include_len = n + INCLUDE_LEN_FUDGE;
 		    }
 		  else
 		    {
-		      dsp[0].fname = 0; /* Current directory */
+		      dsp.fname = 0; /* Current directory */
 		    }
-		  dsp[0].got_name_map = 0;
+		  dsp.got_name_map = 0;
 		  break;
 		}
 	    }
@@ -3202,6 +3065,11 @@ do_include (pfile, keyword, unused1, unused2)
       /* If -I-, start with the first -I dir after the -I-.  */
       if (CPP_OPTIONS (pfile)->first_bracket_include)
 	search_start = CPP_OPTIONS (pfile)->first_bracket_include;
+
+      /* Append the missing `.h' to the name. */
+      CPP_PUTS (pfile, ".h", 3)
+      CPP_NUL_TERMINATE_Q (pfile);
+
       fbeg = pfile->token_buffer + old_written;
       fend = CPP_PWRITTEN (pfile);
     }
@@ -3215,14 +3083,11 @@ do_include (pfile, keyword, unused1, unused2)
       return 0;
     }
 
-  *fend = 0;
-
   token = get_directive_token (pfile);
   if (token != CPP_VSPACE)
     {
       cpp_error (pfile, "junk at end of `#include'");
-      while (token != CPP_VSPACE && token != CPP_EOF && token != CPP_POP)
-	token = get_directive_token (pfile);
+      skip_rest_of_line (pfile);
     }
 
   /* For #include_next, skip in the search path
@@ -3255,127 +3120,57 @@ do_include (pfile, keyword, unused1, unused2)
 
   /* Allocate this permanently, because it gets stored in the definitions
      of macros.  */
-  fname = (char *) xmalloc (pfile->max_include_len + flen + 4);
   /* + 2 above for slash and terminating null.  */
-  /* + 2 added for '.h' on VMS (to support '#include filename') */
+  fname = (char *) xmalloc (pfile->max_include_len + flen + 2);
 
-  /* If specified file name is absolute, just open it.  */
+  fd = find_include_file (pfile, fbeg, flen, fname,
+			  importing, search_start, &foundhere);
 
-  if (*fbeg == '/') {
-    strncpy (fname, fbeg, flen);
-    fname[flen] = 0;
-    if (redundant_include_p (pfile, fname))
-      return 0;
-    if (importing)
-      f = lookup_import (pfile, fname, NULL_PTR);
-    else
-      f = open_include_file (pfile, fname, NULL_PTR);
-    if (f == -2)
-      return 0;		/* Already included this file */
-  } else {
-    /* Search directory path, trying to open the file.
-       Copy each filename tried into FNAME.  */
-
-    for (searchptr = search_start; searchptr; searchptr = searchptr->next) {
-      if (searchptr->fname) {
-	/* The empty string in a search path is ignored.
-	   This makes it possible to turn off entirely
-	   a standard piece of the list.  */
-	if (searchptr->fname[0] == 0)
-	  continue;
-	strcpy (fname, searchptr->fname);
-	strcat (fname, "/");
-	fname[strlen (fname) + flen] = 0;
-      } else {
-	fname[0] = 0;
-      }
-      strncat (fname, fbeg, flen);
-#ifdef VMS
-      /* Change this 1/2 Unix 1/2 VMS file specification into a
-         full VMS file specification */
-      if (searchptr->fname && (searchptr->fname[0] != 0)) {
-	/* Fix up the filename */
-	hack_vms_include_specification (fname);
-      } else {
-      	/* This is a normal VMS filespec, so use it unchanged.  */
-	strncpy (fname, fbeg, flen);
-	fname[flen] = 0;
-	/* if it's '#include filename', add the missing .h */
-	if (index(fname,'.')==NULL) {
-	  strcat (fname, ".h");
-	}
-      }
-#endif /* VMS */
-      /* ??? There are currently 3 separate mechanisms for avoiding processing
-	 of redundant include files: #import, #pragma once, and
-	 redundant_include_p.  It would be nice if they were unified.  */
-      if (redundant_include_p (pfile, fname))
-	return 0;
-      if (importing)
-	f = lookup_import (pfile, fname, searchptr);
-      else
-	f = open_include_file (pfile, fname, searchptr);
-      if (f == -2)
-	return 0;			/* Already included this file */
-#ifdef EACCES
-      else if (f == -1 && errno == EACCES)
-	cpp_warning (pfile, "Header file %s exists, but is not readable",
-		     fname);
-#endif
-      if (f >= 0)
-	break;
-    }
-  }
-
-  if (f < 0)
+  if (fd == -2)
     {
-      /* A file that was not found.  */
-      strncpy (fname, fbeg, flen);
-      fname[flen] = 0;
-      /* If generating dependencies and -MG was specified, we assume missing
-	 files are leaf files, living in the same directory as the source file
-	 or other similar place; these missing files may be generated from
-	 other files and may not exist yet (eg: y.tab.h).  */
-
-      if (CPP_OPTIONS(pfile)->print_deps_missing_files
-	  && CPP_PRINT_DEPS (pfile)
-	  > (angle_brackets || (pfile->system_include_depth > 0)))
-	{
-	  /* If it was requested as a system header file,
-	     then assume it belongs in the first place to look for such.  */
-	  if (angle_brackets)
+      free (fname);
+      return 0;
+    }
+  
+  if (fd == -1)
+    {
+      if (CPP_OPTIONS (pfile)->print_deps_missing_files
+	  && CPP_PRINT_DEPS (pfile) > (angle_brackets ||
+				       (pfile->system_include_depth > 0)))
+        {
+	  if (!angle_brackets)
+	    deps_output (pfile, fbeg, ' ');
+	  else
 	    {
-	      for (searchptr = search_start; searchptr;
-		   searchptr = searchptr->next)
-		{
-		  if (searchptr->fname)
+	      /* If requested as a system header, assume it belongs in
+		 the first system header directory. */
+	      if (CPP_OPTIONS (pfile)->first_bracket_include)
+	        ptr = CPP_OPTIONS (pfile)->first_bracket_include;
+	      else
+		ptr = CPP_OPTIONS (pfile)->include;
+	      for (; ptr; ptr = ptr->next)
+		  if (ptr->fname)
 		    {
 		      char *p;
 
-		      if (searchptr->fname[0] == 0)
+		      if (ptr->fname[0] == 0)
 			continue;
-		      p = (char *) alloca (strlen (searchptr->fname)
+		      p = (char *) alloca (strlen (ptr->fname)
 					   + strlen (fname) + 2);
-		      strcpy (p, searchptr->fname);
+		      strcpy (p, ptr->fname);
 		      strcat (p, "/");
 		      strcat (p, fname);
 		      deps_output (pfile, p, ' ');
 		      break;
 		    }
-		}
-	    }
-	  else
-	    {
-	      /* Otherwise, omit the directory, as if the file existed
-		 in the directory with the source.  */
-	      deps_output (pfile, fname, ' ');
 	    }
 	}
-      /* If -M was specified, and this header file won't be added to the
-	 dependency list, then don't count this as an error, because we can
-	 still produce correct output.  Otherwise, we can't produce correct
-	 output, because there may be dependencies we need inside the missing
-	 file, and we don't know what directory this missing file exists in.*/
+      /* If -M was specified, and this header file won't be added to
+	 the dependency list, then don't count this as an error,
+	 because we can still produce correct output.  Otherwise, we
+	 can't produce correct output, because there may be
+	 dependencies we need inside the missing file, and we don't
+	 know what directory this missing file exists in. */
       else if (CPP_PRINT_DEPS (pfile)
 	       && (CPP_PRINT_DEPS (pfile)
 		   <= (angle_brackets || (pfile->system_include_depth > 0))))
@@ -3384,26 +3179,19 @@ do_include (pfile, keyword, unused1, unused2)
 	cpp_error_from_errno (pfile, fname);
       else
 	cpp_error (pfile, "No include path in which to find %s", fname);
-    }
-  else {
-    /* Check to see if this include file is a once-only include file.
-       If so, give up.  */
 
-    struct file_name_list *ptr;
-
-    for (ptr = pfile->dont_repeat_files; ptr; ptr = ptr->next) {
-      if (!strcmp (ptr->fname, fname)) {
-	close (f);
-        return 0;				/* This file was once'd.  */
-      }
+      free (fname);
+      return 0;
     }
 
-    for (ptr = pfile->all_include_files; ptr; ptr = ptr->next) {
-      if (!strcmp (ptr->fname, fname))
-        break;				/* This file was included before.  */
-    }
+  /* If we get here, we have a file to process. */
 
-    if (ptr == 0) {
+  for (ptr = pfile->all_include_files; ptr; ptr = ptr->next)
+    if (!strcmp (ptr->fname, fname))
+      break;				/* This file was included before.  */
+
+  if (ptr == 0)
+    {
       /* This is the first time for this file.  */
       /* Add it to list of files included.  */
 
@@ -3419,95 +3207,38 @@ do_include (pfile, keyword, unused1, unused2)
       if (CPP_PRINT_DEPS (pfile)
 	  > (angle_brackets || (pfile->system_include_depth > 0)))
 	deps_output (pfile, fname, ' ');
-    }   
+    }
 
-    /* Handle -H option.  */
-    if (CPP_OPTIONS(pfile)->print_include_names)
-      {
-	cpp_buffer *buf = CPP_BUFFER (pfile);
-	while ((buf = CPP_PREV_BUFFER (buf)) != CPP_NULL_BUFFER (pfile))
-	  putc ('.', stderr);
-	fprintf (stderr, "%s\n", fname);
-      }
+  /* Handle -H option.  */
+  if (CPP_OPTIONS(pfile)->print_include_names)
+    {
+      cpp_buffer *buf = CPP_BUFFER (pfile);
+      while ((buf = CPP_PREV_BUFFER (buf)) != CPP_NULL_BUFFER (pfile))
+	putc ('.', stderr);
+      fprintf (stderr, "%s\n", fname);
+    }
 
-    if (angle_brackets)
-      pfile->system_include_depth++;
-
-    /* Actually process the file.  */
-
-    /* Record file on "seen" list for #import.  */
-    add_import (pfile, f, fname);
-
-    pcftry = (char *) alloca (strlen (fname) + 30);
-    pcfbuf = 0;
-    pcfnum = 0;
-
-#if 0
-    if (!no_precomp)
-      {
-	struct stat stat_f;
-
-	fstat (f, &stat_f);
-
-	do {
-	  sprintf (pcftry, "%s%d", fname, pcfnum++);
-
-	  pcf = open (pcftry, O_RDONLY, 0666);
-	  if (pcf != -1)
-	    {
-	      struct stat s;
-
-	      fstat (pcf, &s);
-	      if (bcmp ((char *) &stat_f.st_ino, (char *) &s.st_ino,
-			sizeof (s.st_ino))
-		  || stat_f.st_dev != s.st_dev)
-		{
-		  pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
-		  /* Don't need it any more.  */
-		  close (pcf);
-		}
-	      else
-		{
-		  /* Don't need it at all.  */
-		  close (pcf);
-		  break;
-		}
-	    }
-	} while (pcf != -1 && !pcfbuf);
-      }
-#endif
-    
-    /* Actually process the file */
-    if (cpp_push_buffer (pfile, NULL, 0) == NULL)
+  /* Actually process the file */
+  if (cpp_push_buffer (pfile, NULL, 0) == NULL)
+    {
+      close (fd);
+      free (fname);
       return 0;
-    if (finclude (pfile, f, fname, is_system_include (pfile, fname),
-		  searchptr != dsp ? searchptr : SELF_DIR_DUMMY))
-      {
-	output_line_command (pfile, 0, enter_file);
-	pfile->only_seen_white = 2;
-      }
+    }
 
-    if (angle_brackets)
-      pfile->system_include_depth--;
-  }
-  return 0;
-}
+  if (angle_brackets)
+    pfile->system_include_depth++;
 
-/* Return nonzero if there is no need to include file NAME
-   because it has already been included and it contains a conditional
-   to make a repeated include do nothing.  */
+  if (finclude (pfile, fd, fname, is_system_include (pfile, fname),
+		foundhere != &dsp ? foundhere : SELF_DIR_DUMMY))
+    {
+      output_line_command (pfile, 0, enter_file);
+      pfile->only_seen_white = 2;
+    }
+  
+  if (angle_brackets)
+    pfile->system_include_depth--;
 
-static int
-redundant_include_p (pfile, name)
-     cpp_reader *pfile;
-     char *name;
-{
-  struct file_name_list *l = pfile->all_include_files;
-  for (; l; l = l->next)
-    if (! strcmp (name, l->fname)
-	&& l->control_macro
-	&& cpp_lookup (pfile, l->control_macro, -1, -1))
-      return 1;
   return 0;
 }
 
@@ -3546,7 +3277,6 @@ is_system_include (pfile, filename)
   return 0;
 }
 
-
 /*
  * Install a name in the assertion hash table.
  *
@@ -3911,38 +3641,6 @@ do_warning (pfile, keyword, buf, limit)
   return 0;
 }
 
-/* Remember the name of the current file being read from so that we can
-   avoid ever including it again.  */
-
-static int
-do_once (pfile, keyword, unused1, unused2)
-     cpp_reader *pfile;
-     struct directive *keyword ATTRIBUTE_UNUSED;
-     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
-{
-  cpp_buffer *ip = NULL;
-  struct file_name_list *new;
-
-  for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
-    {
-      if (ip == CPP_NULL_BUFFER (pfile))
-	return 0;
-      if (ip->fname != NULL)
-	break;
-    }
-
-    
-  new = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-  new->next = pfile->dont_repeat_files;
-  pfile->dont_repeat_files = new;
-  new->fname = savestring (ip->fname);
-  new->control_macro = 0;
-  new->got_name_map = 0;
-  new->c_system_include_path = 0;
-
-  return 0;
-}
-
 /* Report program identification.  */
 
 static int
@@ -3973,13 +3671,32 @@ do_pragma (pfile, keyword, buf, limit)
 {
   while (*buf == ' ' || *buf == '\t')
     buf++;
-  if (!strncmp (buf, "once", 4)) {
-    /* Allow #pragma once in system headers, since that's not the user's
-       fault.  */
-    if (!CPP_BUFFER (pfile)->system_header_p)
-      cpp_warning (pfile, "`#pragma once' is obsolete");
-    do_once (pfile, NULL, NULL, NULL);
-  }
+  if (!strncmp (buf, "once", 4))
+    {
+      cpp_buffer *ip = NULL;
+      struct file_name_list *new;
+
+      /* Allow #pragma once in system headers, since that's not the user's
+	 fault.  */
+      if (!CPP_BUFFER (pfile)->system_header_p)
+	cpp_warning (pfile, "`#pragma once' is obsolete");
+      
+      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
+        {
+	  if (ip == CPP_NULL_BUFFER (pfile))
+	    return 0;
+	  if (ip->fname != NULL)
+	    break;
+	}
+      
+      new = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
+      new->next = pfile->dont_repeat_files;
+      new->fname = savestring (ip->fname);
+      new->control_macro = 0;
+      new->got_name_map = 0;
+      new->c_system_include_path = 0;
+      pfile->dont_repeat_files = new;
+    }
 
   if (!strncmp (buf, "implementation", 14)) {
     /* Be quiet about `#pragma implementation' for a file only if it hasn't
@@ -5271,444 +4988,6 @@ parse_name (pfile, c)
   return 1;
 }
 
-
-/* Maintain and search list of included files, for #import.  */
-
-/* Hash a file name for import_hash_table.  */
-
-static int 
-import_hash (f)
-     char *f;
-{
-  int val = 0;
-
-  while (*f) val += *f++;
-  return (val%IMPORT_HASH_SIZE);
-}
-
-/* Search for file FILENAME in import_hash_table.
-   Return -2 if found, either a matching name or a matching inode.
-   Otherwise, open the file and return a file descriptor if successful
-   or -1 if unsuccessful.  */
-
-static int
-lookup_import (pfile, filename, searchptr)
-     cpp_reader *pfile;
-     char *filename;
-     struct file_name_list *searchptr;
-{
-  struct import_file *i;
-  int h;
-  int hashval;
-  struct stat sb;
-  int fd;
-
-  hashval = import_hash (filename);
-
-  /* Attempt to find file in list of already included files */
-  i = pfile->import_hash_table[hashval];
-
-  while (i) {
-    if (!strcmp (filename, i->name))
-      return -2;		/* return found */
-    i = i->next;
-  }
-  /* Open it and try a match on inode/dev */
-  fd = open_include_file (pfile, filename, searchptr);
-  if (fd < 0)
-    return fd;
-  fstat (fd, &sb);
-  for (h = 0; h < IMPORT_HASH_SIZE; h++) {
-    i = pfile->import_hash_table[h];
-    while (i) {
-      /* Compare the inode and the device.
-	 Supposedly on some systems the inode is not a scalar.  */
-      if (!bcmp ((char *) &i->inode, (char *) &sb.st_ino, sizeof (sb.st_ino))
-	  && i->dev == sb.st_dev) {
-        close (fd);
-        return -2;		/* return found */
-      }
-      i = i->next;
-    }
-  }
-  return fd;			/* Not found, return open file */
-}
-
-/* Add the file FNAME, open on descriptor FD, to import_hash_table.  */
-
-static void
-add_import (pfile, fd, fname)
-     cpp_reader *pfile;
-     int fd;
-     char *fname;
-{
-  struct import_file *i;
-  int hashval;
-  struct stat sb;
-
-  hashval = import_hash (fname);
-  fstat (fd, &sb);
-  i = (struct import_file *)xmalloc (sizeof (struct import_file));
-  i->name = (char *)xmalloc (strlen (fname)+1);
-  strcpy (i->name, fname);
-  bcopy ((char *) &sb.st_ino, (char *) &i->inode, sizeof (sb.st_ino));
-  i->dev = sb.st_dev;
-  i->next = pfile->import_hash_table[hashval];
-  pfile->import_hash_table[hashval] = i;
-}
-
-/* The file_name_map structure holds a mapping of file names for a
-   particular directory.  This mapping is read from the file named
-   FILE_NAME_MAP_FILE in that directory.  Such a file can be used to
-   map filenames on a file system with severe filename restrictions,
-   such as DOS.  The format of the file name map file is just a series
-   of lines with two tokens on each line.  The first token is the name
-   to map, and the second token is the actual name to use.  */
-
-struct file_name_map
-{
-  struct file_name_map *map_next;
-  char *map_from;
-  char *map_to;
-};
-
-#define FILE_NAME_MAP_FILE "header.gcc"
-
-/* Read a space delimited string of unlimited length from a stdio
-   file.  */
-
-static char *
-read_filename_string (ch, f)
-     int ch;
-     FILE *f;
-{
-  char *alloc, *set;
-  int len;
-
-  len = 20;
-  set = alloc = xmalloc (len + 1);
-  if (! is_space[ch])
-    {
-      *set++ = ch;
-      while ((ch = getc (f)) != EOF && ! is_space[ch])
-	{
-	  if (set - alloc == len)
-	    {
-	      len *= 2;
-	      alloc = xrealloc (alloc, len + 1);
-	      set = alloc + len / 2;
-	    }
-	  *set++ = ch;
-	}
-    }
-  *set = '\0';
-  ungetc (ch, f);
-  return alloc;
-}
-
-/* This structure holds a linked list of file name maps, one per directory.  */
-
-struct file_name_map_list
-{
-  struct file_name_map_list *map_list_next;
-  char *map_list_name;
-  struct file_name_map *map_list_map;
-};
-
-/* Read the file name map file for DIRNAME.  */
-
-static struct file_name_map *
-read_name_map (pfile, dirname)
-     cpp_reader *pfile;
-     char *dirname;
-{
-  register struct file_name_map_list *map_list_ptr;
-  char *name;
-  FILE *f;
-
-  for (map_list_ptr = CPP_OPTIONS (pfile)->map_list; map_list_ptr;
-       map_list_ptr = map_list_ptr->map_list_next)
-    if (! strcmp (map_list_ptr->map_list_name, dirname))
-      return map_list_ptr->map_list_map;
-
-  map_list_ptr = ((struct file_name_map_list *)
-		  xmalloc (sizeof (struct file_name_map_list)));
-  map_list_ptr->map_list_name = savestring (dirname);
-  map_list_ptr->map_list_map = NULL;
-
-  name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
-  strcpy (name, dirname);
-  if (*dirname)
-    strcat (name, "/");
-  strcat (name, FILE_NAME_MAP_FILE);
-  f = fopen (name, "r");
-  if (!f)
-    map_list_ptr->map_list_map = NULL;
-  else
-    {
-      int ch;
-      int dirlen = strlen (dirname);
-
-      while ((ch = getc (f)) != EOF)
-	{
-	  char *from, *to;
-	  struct file_name_map *ptr;
-
-	  if (is_space[ch])
-	    continue;
-	  from = read_filename_string (ch, f);
-	  while ((ch = getc (f)) != EOF && is_hor_space[ch])
-	    ;
-	  to = read_filename_string (ch, f);
-
-	  ptr = ((struct file_name_map *)
-		 xmalloc (sizeof (struct file_name_map)));
-	  ptr->map_from = from;
-
-	  /* Make the real filename absolute.  */
-	  if (*to == '/')
-	    ptr->map_to = to;
-	  else
-	    {
-	      ptr->map_to = xmalloc (dirlen + strlen (to) + 2);
-	      strcpy (ptr->map_to, dirname);
-	      ptr->map_to[dirlen] = '/';
-	      strcpy (ptr->map_to + dirlen + 1, to);
-	      free (to);
-	    }	      
-
-	  ptr->map_next = map_list_ptr->map_list_map;
-	  map_list_ptr->map_list_map = ptr;
-
-	  while ((ch = getc (f)) != '\n')
-	    if (ch == EOF)
-	      break;
-	}
-      fclose (f);
-    }
-  
-  map_list_ptr->map_list_next = CPP_OPTIONS (pfile)->map_list;
-  CPP_OPTIONS (pfile)->map_list = map_list_ptr;
-
-  return map_list_ptr->map_list_map;
-}  
-
-/* Try to open include file FILENAME.  SEARCHPTR is the directory
-   being tried from the include file search path.  This function maps
-   filenames on file systems based on information read by
-   read_name_map.  */
-
-static int
-open_include_file (pfile, filename, searchptr)
-     cpp_reader *pfile;
-     char *filename;
-     struct file_name_list *searchptr;
-{
-  if (CPP_OPTIONS (pfile)->remap)
-    {
-      register struct file_name_map *map;
-      register char *from;
-      char *p, *dir;
-
-      if (searchptr && ! searchptr->got_name_map)
-	{
-	  searchptr->name_map = read_name_map (pfile,
-					       searchptr->fname
-					       ? searchptr->fname : ".");
-	  searchptr->got_name_map = 1;
-	}
-
-      /* First check the mapping for the directory we are using.  */
-      if (searchptr && searchptr->name_map)
-	{
-	  from = filename;
-	  if (searchptr->fname)
-	    from += strlen (searchptr->fname) + 1;
-	  for (map = searchptr->name_map; map; map = map->map_next)
-	    {
-	      if (! strcmp (map->map_from, from))
-		{
-		  /* Found a match.  */
-		  return open (map->map_to, O_RDONLY, 0666);
-		}
-	    }
-	}
-
-      /* Try to find a mapping file for the particular directory we are
-	 looking in.  Thus #include <sys/types.h> will look up sys/types.h
-	 in /usr/include/header.gcc and look up types.h in
-	 /usr/include/sys/header.gcc.  */
-      p = rindex (filename, '/');
-      if (! p)
-	p = filename;
-      if (searchptr
-	  && searchptr->fname
-	  && strlen (searchptr->fname) == (size_t) (p - filename)
-	  && ! strncmp (searchptr->fname, filename, p - filename))
-	{
-	  /* FILENAME is in SEARCHPTR, which we've already checked.  */
-	  return open (filename, O_RDONLY, 0666);
-	}
-
-      if (p == filename)
-	{
-	  dir = ".";
-	  from = filename;
-	}
-      else
-	{
-	  dir = (char *) alloca (p - filename + 1);
-	  bcopy (filename, dir, p - filename);
-	  dir[p - filename] = '\0';
-	  from = p + 1;
-	}
-      for (map = read_name_map (pfile, dir); map; map = map->map_next)
-	if (! strcmp (map->map_from, from))
-	  return open (map->map_to, O_RDONLY, 0666);
-    }
-
-  return open (filename, O_RDONLY, 0666);
-}
-
-/* Process the contents of include file FNAME, already open on descriptor F,
-   with output to OP.
-   SYSTEM_HEADER_P is 1 if this file resides in any one of the known
-   "system" include directories (as decided by the `is_system_include'
-   function above).
-   DIRPTR is the link in the dir path through which this file was found,
-   or 0 if the file name was absolute or via the current directory.
-   Return 1 on success, 0 on failure.
-
-   The caller is responsible for the cpp_push_buffer.  */
-
-static int
-finclude (pfile, f, fname, system_header_p, dirptr)
-     cpp_reader *pfile;
-     int f;
-     char *fname;
-     int system_header_p;
-     struct file_name_list *dirptr;
-{
-  struct stat st;
-  size_t st_size;
-  long i;
-  int length;
-  cpp_buffer *fp;			/* For input stack frame */
-#if 0
-  int missing_newline = 0;
-#endif
-
-  if (fstat (f, &st) < 0)
-    {
-      cpp_perror_with_name (pfile, fname);
-      close (f);
-      cpp_pop_buffer (pfile);
-      return 0;
-    }
-
-  fp = CPP_BUFFER (pfile);
-  fp->nominal_fname = fp->fname = fname;
-#if 0
-  fp->length = 0;
-#endif
-  fp->dir = dirptr;
-  fp->system_header_p = system_header_p;
-  fp->lineno = 1;
-  fp->colno = 1;
-  fp->cleanup = file_cleanup;
-
-  if (S_ISREG (st.st_mode)) {
-    st_size = (size_t) st.st_size;
-    if (st_size != st.st_size || st_size + 2 < st_size) {
-      cpp_error (pfile, "file `%s' too large", fname);
-      close (f);
-      return 0;
-    }
-    fp->buf = (U_CHAR *) xmalloc (st_size + 2);
-    fp->alimit = fp->buf + st_size + 2;
-    fp->cur = fp->buf;
-
-    /* Read the file contents, knowing that st_size is an upper bound
-       on the number of bytes we can read.  */
-    length = safe_read (f, fp->buf, st_size);
-    fp->rlimit = fp->buf + length;
-    if (length < 0) goto nope;
-  }
-  else if (S_ISDIR (st.st_mode)) {
-    cpp_error (pfile, "directory `%s' specified in #include", fname);
-    close (f);
-    return 0;
-  } else {
-    /* Cannot count its file size before reading.
-       First read the entire file into heap and
-       copy them into buffer on stack.  */
-
-    size_t bsize = 2000;
-
-    st_size = 0;
-    fp->buf = (U_CHAR *) xmalloc (bsize + 2);
-
-    for (;;) {
-      i = safe_read (f, fp->buf + st_size, bsize - st_size);
-      if (i < 0)
-	goto nope;      /* error! */
-      st_size += i;
-      if (st_size != bsize)
-	break;	/* End of file */
-      bsize *= 2;
-      fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
-    }
-    fp->cur = fp->buf;
-    length = st_size;
-  }
-
-  if ((length > 0 && fp->buf[length - 1] != '\n')
-      /* Backslash-newline at end is not good enough.  */
-      || (length > 1 && fp->buf[length - 2] == '\\')) {
-    fp->buf[length++] = '\n';
-#if 0
-    missing_newline = 1;
-#endif
-  }
-  fp->buf[length] = '\0';
-  fp->rlimit = fp->buf + length;
-
-  /* Close descriptor now, so nesting does not use lots of descriptors.  */
-  close (f);
-
-  /* Must do this before calling trigraph_pcp, so that the correct file name
-     will be printed in warning messages.  */
-
-  pfile->input_stack_listing_current = 0;
-
-#if 0
-  if (!no_trigraphs)
-    trigraph_pcp (fp);
-#endif
-
-#if 0
-  rescan (op, 0);
-
-  if (missing_newline)
-    fp->lineno--;
-
-  if (CPP_PEDANTIC (pfile) && missing_newline)
-    pedwarn ("file does not end in newline");
-
-  indepth--;
-  input_file_stack_tick++;
-  free (fp->buf);
-#endif
-  return 1;
-
- nope:
-
-  cpp_perror_with_name (pfile, fname);
-  close (f);
-  free (fp->buf);
-  return 1;
-}
-
 /* This is called after options have been processed.
  * Check options for consistency, and setup for processing input
  * from the file named FNAME.  (Use standard input if FNAME==NULL.)
@@ -6143,14 +5422,45 @@ cpp_start_read (pfile, fname)
     trigraph_pcp (fp);
 #endif
 
-  /* Avoid a #line 0 if -include files are present. */
-  CPP_BUFFER (pfile)->lineno = 1;
+  /* Must call finclude() on the main input before processing
+     -include switches; otherwise the -included text winds up
+     after the main input. */
+  if (!finclude (pfile, f, fname, 0, NULL_PTR))
+    return 0;
   output_line_command (pfile, 0, same_file);
-  
-  /* Scan the -include and -imacros files before the main input. */
+  pfile->only_seen_white = 2;
 
+  /* The -imacros files can be scanned now, but the -include files
+     have to be pushed onto the include stack and processed later,
+     in the main loop calling cpp_get_token.  That means the -include
+     files have to be processed in reverse order of the pending list,
+     which means the pending list has to be reversed again, which
+     means the -imacros files have to be done separately and first. */
+  
   pfile->no_record_file++;
-  for (pend = opts->pending;  pend;  pend = pend->next)
+  for (pend = opts->pending; pend; pend = pend->next)
+    {
+      if (pend->cmd != NULL)
+        {
+	  if (strcmp (pend->cmd, "-imacros") == 0)
+	    {
+	      int fd = open (pend->arg, O_RDONLY, 0666);
+	      if (fd < 0)
+	        {
+	          cpp_perror_with_name (pfile, pend->arg);
+	          return 0;
+	        }
+	      if (!cpp_push_buffer (pfile, NULL, 0))
+	        return 0;
+	      opts->no_output++;
+	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
+		cpp_scan_buffer (pfile);
+	      opts->no_output--;
+	    }
+	}
+    }
+  opts->pending = nreverse_pending (opts->pending);
+  for (pend = opts->pending; pend; pend = pend->next)
     {
       if (pend->cmd != NULL)
         {
@@ -6165,25 +5475,7 @@ cpp_start_read (pfile, fname)
 	      if (!cpp_push_buffer (pfile, NULL, 0))
 	        return 0;
 	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
-	        {
-		  output_line_command (pfile, 0, enter_file);
-		  cpp_scan_buffer (pfile);
-		}
-	    }
-	  else if (strcmp (pend->cmd, "-imacros") == 0)
-	    {
-	      int fd = open (pend->arg, O_RDONLY, 0666);
-	      if (fd < 0)
-	        {
-	          cpp_perror_with_name (pfile, pend->arg);
-	          return 0;
-	        }
-	      opts->no_output++;
-	      if (!cpp_push_buffer (pfile, NULL, 0))
-	        return 0;
-	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
-		cpp_scan_buffer (pfile);
-	      opts->no_output--;
+	        output_line_command (pfile, 0, enter_file);
 	    }
 	}
     }
@@ -6198,19 +5490,6 @@ cpp_start_read (pfile, fname)
     }
   opts->pending = NULL;
 
-#if 0
-  /* Scan the input, processing macros and directives.  */
-
-  rescan (&outbuf, 0);
-
-  if (missing_newline)
-    fp->lineno--;
-
-  if (CPP_PEDANTIC (pfile) && missing_newline)
-    pedwarn ("file does not end in newline");
-
-#endif
-  finclude (pfile, f, fname, 0, NULL_PTR);
   return 1;
 }
 
@@ -7309,45 +6588,11 @@ free_token_list (tokens)
     tokens = next;
   }
 }
-
-/* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
-   retrying if necessary.  If MAX_READ_LEN is defined, read at most
-   that bytes at a time.  Return a negative value if an error occurs,
-   otherwise return the actual number of bytes read,
-   which must be LEN unless end-of-file was reached.  */
 
-static int
-safe_read (desc, ptr, len)
-     int desc;
-     char *ptr;
-     int len;
-{
-  int left, rcount, nchars;
-
-  left = len;
-  while (left > 0) {
-    rcount = left;
-#ifdef MAX_READ_LEN
-    if (rcount > MAX_READ_LEN)
-      rcount = MAX_READ_LEN;
-#endif
-    nchars = read (desc, ptr, rcount);
-    if (nchars < 0)
-      {
-#ifdef EINTR
-	if (errno == EINTR)
-	  continue;
-#endif
-	return nchars;
-      }
-    if (nchars == 0)
-      break;
-    ptr += nchars;
-    left -= nchars;
-  }
-  return len - left;
-}
-
+/* FIXME: savestring() should be renamed strdup() and both should
+   be moved into cppalloc.c.  We can't do that right now because
+   then we'd get multiple-symbol clashes with toplev.c and several
+   other people. */
 static char *
 xcalloc (number, size)
      unsigned number, size;
@@ -7358,7 +6603,7 @@ xcalloc (number, size)
   return ptr;
 }
 
-static char *
+char *
 savestring (input)
      char *input;
 {
