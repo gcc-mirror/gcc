@@ -160,11 +160,14 @@ struct cpp_buffer {
   /* True if buffer contains escape sequences.
      Currently there are are only two kind:
      "@-" means following identifier should not be macro-expanded.
+     "@ " means a token-separator.  This turns into " " in final output
+          if not stringizing and needed to separate tokens; otherwise nothing.
      "@@" means a normal '@'. */
   char has_escapes;
 };
 
 struct cpp_pending;  /* Forward declaration - for C++. */
+struct file_name_map_list;
 
 typedef struct assertion_hashnode ASSERTION_HASHNODE;
 #define ASSERTION_HASHSIZE 37
@@ -313,6 +316,8 @@ struct cpp_options {
 
   /* Name of output file, for error messages.  */
   char *out_fname;
+
+  struct file_name_map_list *map_list;
 
   /* Non-0 means -v, so print the full set of include dirs.  */
   char verbose;
@@ -495,8 +500,6 @@ struct cpp_options {
 #define CPP_TRADITIONAL(PFILE) (CPP_OPTIONS(PFILE)-> traditional)
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
-
-#define PARSE_GETC(IN) ((IN)-> cur < (IN)->limit || ((IN)->cur = (IN)->token_buffer, (IN)->underflow (IN) != EOF_TOKEN) ? *(IN)->cur++ : EOF)
 
 /* Name under which this program was invoked.  */
 
