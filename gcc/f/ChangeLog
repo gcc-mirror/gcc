@@ -1,3 +1,3235 @@
+2003-01-03  Bud Davis <bdavis11@directvinternet.com>
+
+	* stc.c (ffestc_R810): Allow any kind integer in
+	case statements.
+	* ste.c (ffeste_R810): Give error message when
+	case selector exceeds its valid values.
+
+2003-01-01  Andreas Jaeger  <aj@suse.de>
+
+	* f/Make-lang.in ($(srcdir)/f/BUGS): Add include path for
+	gcc-common.texi.
+	($(srcdir)/f/NEWS): Likewise.
+
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g77.texi: Use @copying.
+
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* root.texi: Include gcc-common.texi.
+	* bugs.texi, news.texi: Don't include root.texi as part of full
+	manual.
+	* g77.texi: Update for use of gcc-common.texi.
+	* Make-lang.in ($(srcdir)/f/g77.info, f/g77.dvi): Depend on
+	$(srcdir)/doc/include/gcc-common.texi.
+
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* intdoc.in: Fix typos.
+
+2002-12-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* g77.texi: Fix typos.
+	* intdoc.texi: Likewise.
+	* news.texi: Follow spelling conventions.
+
+Mon Dec 16 13:53:18 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* root.texi: Change version number to 3.4.
+
+2002-12-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* target.h: Don't define HOST_WIDE_INT.
+
+2002-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in, ansify.c, intdoc.c, proj.h: Replace hconfig.h with
+	bconfig.h.
+	* fini.c, proj.h: Replace USE_HCONFIG with USE_BCONFIG
+
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* proj.h, ansify.c, g77spec.c, intdoc.c:
+	Include coretypes.h and tm.h.
+	* Make-lang.in: Update dependencies.
+
+2002-11-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* invoke.texi: Explain the purpose of -fmove-all-movables,
+	-freduce-all-givs and -frerun-loop-opts better.
+
+2002-11-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Correct BUILD/HOST confusion.
+
+2002-11-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/8587
+	* news.texi: Show PR fortran/8587 fixed.
+
+2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* g77spec.c (lang_specific_spec_functions): New.
+
+2002-11-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Correct documentation on generating C++ prototypes
+	of Fortran routines with f2c.
+	* news.texi: Document fixes in GCC-3.3, 3.2 and 3.1.
+
+2002-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	* com.c (ffecom_subscript_check_): Cast the failure branch
+	of the bounds check COND_EXPR to void, to indicate noreturn.
+	(ffe_truthvalue_conversion): Only apply truth value conversion
+	to the non-void branches of a COND_EXPR.
+
+2002-10-26  Andris Pavenis  <pavenis@latnet.lv>
+
+	* lang-specs.h: Fix ratfor specs.
+
+2002-10-15  Richard Henderson  <rth@redhat.com>
+
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use
+	real_to_decimal directly, and with the new arguments.
+
+2002-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (g77spec.o): Don't depend on f/version.h.
+	(f/parse.o): Depend on version.h not f/version.h.
+	(g77version.o, f/version.o): Delete all references.
+
+	* com.c (ffecom_init_0): Fix transposed array indices in bsearch test.
+	* g77spec.c: Don't include f/version.h or refer to ffe_version_string.
+	* parse.c: Use version_string, not ffe_version_string.
+	* version.c, version.h: Delete files.
+
+2002-09-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* com.c: Likewise.
+	* ffe.texi: Likewise.
+	* g77.texi: Likewise.
+	* intdoc.in: Likewise.
+	* invoke.texi: Likewise.
+	* news.texi: Likewise.
+	* intdoc.texi: Regenerate.
+
+2002-09-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* com.c (union lang_tree_node): Add chain_next option.
+
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* target.c (ffetarget_real1): Don't pass FFETARGET_ATOF_
+	directly to ffetarget_make_real1.
+	(ffetarget_real2): Similarly.
+	* target.h (ffetarget_cvt_r1_to_rv_, ffetarget_cvt_rv_to_r2_,
+	ffetarget_cvt_r2_to_rv_): Use new real.h interface and simplify.
+
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* intdoc.texi: Regenerate.
+
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* intdoc.in: Likewise.
+
+2002-09-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	Fix PR web/7596:
+	* ffe.texi (Front End): Fix broken links.
+	* bugs.texi (Known Bugs): Refer to gcc.gnu.org instead of
+	www.gnu.org for onlinedocs.
+	* news.texi (News): Ditto.
+
+2002-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* com.c (ffe_type_for_mode): Handle long double.
+
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* target.h (ffetarget_print_real1, ffetarget_print_real2): Update
+	call to REAL_VALUE_TO_DECIMAL.
+
+2002-08-31  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c: Don't set flag_finite_math_only by default.
+	* invoke.texi: Reverse the documentation of option
+	-ffinite-math-only to reflect the new default.
+
+2002-08-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* target.c (ffetarget_memcpy_): Don't test nonexistent
+	HOST_BYTES_BIG_ENDIAN, HOST_BITS_BIG_ENDIAN.  Check
+	HOST_WORDS_BIG_ENDIAN against both WORDS_BIG_ENDIAN and
+	BYTES_BIG_ENDIAN.
+
+2002-08-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* target.h (FFETARGET_32bit_longs): Don't define for powerpc64 or
+	mmix.
+
+2002-08-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* bugs.texi, news.texi: Update URLs for online news and bugs
+	lists.
+
+2002-08-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* where.h (struct _ffewhere_file_): Mark GTY.
+	(ffewhere_file_kill): Remove prototype.
+	* where.c: Include ggc.h.
+	(struct _ffewhere_ll_, struct _ffewhere_root_ll_): Mark GTY.
+	(ffewhere_root_ll_): Ditto.  Change type from struct
+	_ffewhere_root_ll_ to struct _ffewhere_root_ll_*.  All uses
+	changed.
+	(ffewhere_file_kill): Remove.
+	(ffewhere_file_new): Use GC to allocate ffewhereFile objects.
+	(ffewhere_file_set): Use GC to allocate ffewhereLL_ objects.
+	(ffewhere_init_1): Use GC to allocate ffewhere_root_ll_ sentinel.
+	Include gt-f-where.h.
+	* lex.c (ffelex_current_wf_, ffelex_include_wherefile_): Mark GTY.
+	Include gt-f-lex.h.
+	* std.c (ffestd_S3P4): Don't call ffewhere_file_kill.
+	* config-lang.in (gtfiles): Add f/where.h f/where.c and f/lex.c.
+	* Make-lang.in (gt-f-lex.h gt-f-where.h): Add to dependents of
+	s-gtype.
+	(f/lex.o): Depend on gt-f-lex.h.
+	(f/where.o): Depend on gt-f-where.h.
+
+Tue Aug 20 16:49:40 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* where.c (ffewhere_track): Remove impossible if-then clause.
+
+Thu Aug  8 10:06:14 2002  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* f/Make-lang.in (f.mostlyclean): Remove coverage files.
+
+2002-08-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g77.texi (Top): Rename Index to Keyword Index.
+
+2002-08-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* invoke.texi: Improve description of
+	-fno-finite-math-only flag.
+
+Sun Aug  4 16:45:49 2002  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* root.texi (version-gcc): Increase to 3.3.
+
+2002-07-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffe_init_options): Set
+	flag_finite_math_only.
+	* invoke.texi: Document -fno-finite-math-only.
+
+Mon Jul 29 22:05:35 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (read_name_map): Use concat in lieu of xmalloc/strcpy.
+
+2002-07-25  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document better handling of (no-)alias
+	information of dummy arguments and induction variables
+	on loop unrolling.
+
+2002-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	* f/com.c (builtin_function): Accept additional parameter.
+	(ffe_com_init_0): Pass an additional NULL_TREE argument to
+	builtin_function.
+
+2002-06-28  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Mention 2 Gbyte limit on 32-bit targets
+	for arrays explicitly in news on g77-3.1.
+
+Thu Jun 20 21:56:34 2002  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-specs.h: Use cc1 for traditional preprocessing.
+
+2002-06-20  Andreas Jaeger  <aj@suse.de>
+
+	* com.c (ffecom_prepare_expr_,ffecom_expr_power_integer_):
+	Remove #ifdefed HAHA sections.
+
+2002-06-20  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* com.c: Remove #ifdef HOHO sections.
+
+2002-06-17  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* bit.c: Don't include glimits.h.
+	* target.c: Likewise.
+	* where.h: Likewise.
+
+2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* bad.c (ffebad_start_): Adjust calls to diagnostic_count_error.
+
+2002-06-04  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* bad.c (ffebad_start_): Adjust call to count_error.
+	* Make-lang.in (f/bad.o): Depend on diagnostic.h
+	* bad.c: #include diagnostic.h
+
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Make-lang.in (f/com.o): Depend on debug.h.
+	* com.c: Include debug.h.
+	(LANG_HOOKS_MARK_TREE): Delete.
+	(struct lang_identifier): Use gengtype.
+	(union lang_tree_node): New.
+	(struct lang_decl): New dummy definition.
+	(struct lang_type): New dummy definition.
+	(ffe_mark_tree): Delete.
+
+	* com.c (struct language_function): New dummy structure.
+
+	* Make-lang.in: Add rules to generate gt-f-ste.h gtype-f.h; allow
+	for filename changes.
+	(com.o): Allow for filename changes; add gtype-f.h as dependency.
+	(ste.o): Add gt-f-ste.h as dependency.
+	* config-lang.in (gtfiles): Add com.h, ste.c.
+	* com.c: Replace uses of ggc_add_* with GTY markers.  Include
+	gtype-f.h.
+	(mark_binding_level): Delete.
+	* com.h: Replace uses of ggc_add_* with GTY markers.
+	* ste.c: Replace uses of ggc_add_* with GTY markers.  Include
+	gt-f-ste.h.
+
+	* Make-lang.in (f/gt-com.h): Build using gengtype.
+	(com.o): Depend on f/gt-com.h.
+	* com.c: Rename struct binding_level to f_binding_level.
+	(struct f_binding_level): Use gengtype.
+	(struct tree_ggc_tracker): Use gengtype.
+	(mark_tracker_head): Use gt_ggc_m_tree_ggc_tracker.
+	(make_binding_level): Use GGC.
+	(mark_binding_level): Use gt_ggc_m_f_binding_level.
+	(ffecom_init_decl_processing): Change free_binding_level
+	to a deletable root.
+	* config-lang.in (gtfiles): Define.
+	* where.c: Strings need no longer be allocated in GCable memory;
+	remove my change of 30 Dec 1999.
+
+2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
+
+	* lang-specs.h: Use cpp_debug_options.
+
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* bld.c, com.c, expr.c, target.c: Include real.h.
+	* Make-lang.in: Update dependency lists.
+
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
+
+2002-05-09  Hassan Aurag  <aurag@cae.com>
+
+	* expr.c (ffeexpr_reduced_ugly2log_): Allow logicals-as-integers
+	under -fugly-logint as arguments of .and., .or., .xor.
+
+2002-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* target.h (FFETARGET_32bit_longs): Undefine for x86-64.
+
+2002-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Use @gol at ends of lines inside @gccoptlist.
+	* g77.texi: Update last update date.
+
+Thu Apr 25 07:44:44 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.h (ffe_parse_file): Update.
+	* lex.c (ffe_parse_file): Update.
+
+2002-04-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi: Remove variable version-g77.
+	* g77.texi: Remove the single use of that variable.
+
+Thu Apr 18 19:10:44 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (incomplete_type_error): Remove.
+
+Tue Apr 16 14:55:47 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_expr_power_integer): Add has_scope argument to
+	call to expand_start_stmt_expr.
+
+Mon Apr 15 10:59:14 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* g77.texi: Remove Chill reference.
+
+2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Deprecate frontend version number;
+	update list of fixed bugs.
+
+2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* Make-lang.in (f/target.o): Depend on diagnostic.h.
+	* target.c: Include diagnostic.h.
+	(ffetarget_memcpy_): Call sorry if host and target endians are
+	not matching.
+
+Thu Apr  4 23:29:48 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+	(truthvalue_conversion): Rename.  Update.  Make static.
+	(ffecom_truth_value): Update.
+
+Mon Apr  1 21:39:36 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_MARK_ADDRESSABLE): Redefine.
+	(mark_addressable): Rename.
+	(ffecom_arrayref_, ffecom_1): Update.
+
+Mon Apr  1 09:59:53 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	(unsigned_type, signed_type, signed_or_unsigned_type): Rename.
+
+Sun Mar 31 23:50:22 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (lang_print_error_function): Rename.
+	(LANG_HOOKS_PRINT_ERROR_FUNCTION): Redefine.
+	(ffe_init): Don't set hook.
+
+Fri Mar 29 21:59:15 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIZE):
+	Redefine.
+	(type_for_mode, type_for_size): Rename.
+	(signed_or_unsigned_type, signed_type, truthvalue_conversion,
+	unsigned_type):	Use new hooks.
+
+Tue Mar 26 10:30:05 2002  Andrew Cagney  <ac131313@redhat.com>
+
+	* invoke.texi (Warning Options): Mention -Wswitch-enum.
+	Fix PR c/5044.
+
+Tue Mar 26 07:30:51 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_MARK_TREE): Redefine.
+	(lang_mark_tree): Rename ffe_mark_tree, make static.
+
+Mon Mar 25 19:27:11 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (maybe_build_cleanup): Remove.
+
+2002-03-23  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_check_size_overflow_): Add a test
+	so that arrays too large for 32-bit byte-offset
+	addressing get caught.
+	* news.texi: Document the fixing of this problem.
+
+Sat Mar 23 11:18:17 2002  Andrew Cagney  <ac131313@redhat.com>
+
+	* invoke.texi (Warning Options): Mention -Wswitch-default.
+
+Thu Mar 21 18:55:41 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (pushdecl, pushlevel, poplevel, set_block,
+	insert_block, getdecls, global_bindings_p): New.
+
+Wed Mar 20 08:03:42 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (lang_printable_name): Rename.
+	(LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	(ffe_init): Don't use old hook.
+
+Sun Mar 17 18:50:15 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.h (ffe_parse_file): Prototype.
+
+Sun Mar 17 20:57:30 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_PARSE_FILE): Redefine.
+	* com.h (ffe_parse_file): New.
+	* parse.c (NAME_OF_STDIN): Remove.
+	(yyparse): Rename ffe_parse_file.
+
+Tue Mar 12 20:23:18 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (tree_code_type, tree_code_length, tree_code_name):
+	Define.
+
+Sun Mar 10 12:37:42 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* target.c (ffetarget_print_hex): Const-ify.
+
+2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* version.c:  Fix misplaced leading blanks on first line.
+
+2002-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c, target.h: Remove all #ifndef REAL_ARITHMETIC
+	blocks, make all #ifdef REAL_ARITHMETIC blocks unconditional.
+	Delete some further #ifdef blocks predicated on REAL_ARITHMETIC.
+
+Thu Feb 28 07:53:46 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (copy_lang_decl): Delete.
+
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c, lex.c, top.c: Delete traditional-mode-related code
+	copied from the C front end but not used, or used only to
+	permit the compiler to link.
+
+2002-02-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: List Problem Reports fixed in 3.1.
+
+2002-02-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* data.c (ffedata_eval_offset_): Only convert index,
+	low and high bound in data statements to default integer
+	if they are constants.  Use a copy of the data structure.
+
+2002-02-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* data.c (ffedata_eval_offset_): Convert non-default integer
+	constants to default integer kind if necessary.
+
+2002-02-09  Toon Moene  <toon@moene.indiv.nlug.nl>
+
+	* invoke.texi: Add a short debugging session
+	as an example to the documentation of -g.
+
+2002-02-06  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/4730 fortran/5473
+	* com.c (ffecom_expr_): Deal with %VAL constructs.
+	* intrin.c (ffeintrin_check_): Handle 'N' constraints for intrinsics,
+	to indicate "no larger than default kind" integers and logicals.
+	* intrin.def: Use 'N' constraints in table of intrinsics.
+	* intdoc.c: Document this constraint.
+	* intdoc.texi: Regenerated.
+
+2002-02-04  Philipp Thomas  <pthomas@suse.de>
+
+	* implic.c lex.c stb.c ste.c stu.c: Update copyright dates.
+
+2002-02-04  Philipp Thomas  <pthomas@suse.de>
+
+	* bad.def com.c expr.c implic.c lex.c stb.c ste.c stu.c:
+	Insert comments to mark messages as not being printf style
+	where appropriate.
+
+2002-02-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* expr.c (ffeexpr_sym_impdoitem_): Allow other than
+	default INTEGER implied-do loop counts.
+
+2002-02-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* bad.def: Remove non-historical reference to version 0.6.
+	* bugs.texi: Ditto.
+	* com.c: Ditto.
+	* ffe.texi: Ditto.
+	* proj.h: Ditto.
+	* g77.texi: Ditto.
+
+2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Follow GNU Coding Standards
+	for --version.
+
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
+	* ste.c (ffeste_begin_iterdo_): Use expand_exit_loop_top_cond.
+	(ffeste_R819B): Likewise.
+
+2002-01-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* intrin.c (upcasecmp_): New function.
+	(ffeintrin_cmp_name_): Use it to correctly compare name
+	and table entry for bsearch.
+
+2002-01-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* intrin.c (ffeintrin_cmp_name_): Correct comparison
+	for intrinsics in intrinsic table (intrin.def).
+
+2002-01-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* bad.c: Include intl.h.
+	(FFEBAD_MSGS1, FFEBAD_MSGS2): Replace by FFEBAD_MSG, SHORT,
+	LONG.  Adjust definitions to work with exgettext.
+	(ffebad_start_): Translate all error messages.
+	(ffebad_finish): Mark constant strings for translation.
+	* bad.h: Use FFEBAD_MSG.  Adjust prototype of ffebad_start_
+	and definitions of ffebad_start_msg, ffebad_start_msg_lex to
+	work with exgettext.
+	* bad.def: Use FFEBAD_MSG, SHORT, LONG throughout.
+
+	* com.c: Include intl.h.
+	(lang_print_error_function): Always use ffeinfo_kind_message
+	to get the kind label for a non-nested construct.  Translate
+	it.  Translate constant strings.
+	* info.c (FFEINFO_KIND): Adjust definition to work with exgettext.
+	* info-k.def: Block xgettext from slurping copyright notice
+	into gcc.pot.  Adjust strings for their sole use, in com.c.
+
+	* Make-lang.in (f/bad.o, f/com.o): Depend on intl.h.
+
+2002-01-14  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR fortran/3807
+	* f/intrin.c (ffeintrin_check_):  Allow for case of intrinsic
+	control string have COL-spec an integer > 0.
+
+2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lookup_option): Handle -fversion.
+	(lang_specific_driver): Update copyright date in --version output.
+
+Mon Jan  7 00:03:42 2002  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* invoke.texi: Markup g77 as @command.  Remove reference to
+	http://gcc.gnu.org/thanks.html.
+
+Wed Jan  2 18:13:11 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (clear_binding_level): Const-ify.
+	(ffecom_arglist_expr_): Likewise.
+	* info.c (ffeinfo_types_): Don't needlessly zero init.
+	* lex.c (ffelex_hash_kludge): Const-ify.
+
+Sun Dec 23 10:45:09 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_gfrt_volatile_, ffecom_gfrt_complex_,
+	ffecom_gfrt_const_, ffecom_gfrt_type_): Const-ify.
+
+Sat Dec 22 16:01:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bld.c (ffebld_arity_op_): Declare array size explicitly.
+	* bld.h (ffebld_arity_op_): Likewise.
+
+2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config-lang.in (diff_excludes): Remove.
+
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi, invoke.texi: Update links to GCC manual.
+
+Sun Dec 16 16:08:57 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* news.texi: Fix spelling errors.
+
+Sun Dec 16 10:36:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (f/version.o): Depend on f/version.h.
+	* version.c: Include ansidecl.h and f/version.h.
+
+Sun Dec 16 08:52:48 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c (ffelex_backslash_, ffelex_cfebackslash_): Use hex_value.
+	* target.c (ffetarget_integerhex, ffetarget_typeless_hex): Use
+	hex_p/hex_value.
+
+2001-12-14  Roger Sayle <roger@eyesopen.com>
+
+	* com-rt.def: Use __builtin_sqrt instead of __builtin_fsqrt.
+	* com.c (ffecom_init_0): Same, and fixed enumeration usage.
+
+2001-12-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Don't condition menus on @ifinfo.
+
+Wed Dec  5 06:49:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_1): Properly handle TREE_READONLY for INDIRECT_REF.
+
+Mon Dec  3 18:56:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c: Remove leading capital from diagnostic messages, as
+	per GNU coding standards.
+	* g77spec.c: Similarly.
+	* lex.c: Similarly.
+
+2001-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* f/fini.c: Use xmalloc.
+
+Fri Nov 30 20:54:02 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Delete references to proj.[co], proj-h.[co].
+	* proj.c: Delete file.
+
+2001-11-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (f/fini, f/intdoc): Depend on $(HOST_LIBDEPS)
+	and link with $(HOST_LIBS), not safe-ctype.o.
+
+2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (f77.generated-manpages): New target.
+	($(srcdir)/f/g77.1): Don't check $(GENERATED_MANPAGES).  Allow
+	manpage generation to fail.
+	(f77.info): Don't depend on $(srcdir)/f/g77.1.
+	(f77.install-man): Depend on $(GENERATED_MANPAGES) rather than
+	directly on $(srcdir)/g77.1.
+
+2001-11-24  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/3957
+	* lang-specs.h: Correct !pipe conditional in tradcpp0 invocation.
+
+2001-11-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: egcs was not a `@command'.
+	* invoke.texi: Ditto.
+	* news.texi: Substitute `@command' for `@code'
+	and `@option' for `@samp' where appropriate.
+
+2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Make-lang.in: Complete ``Build g77.1 in $(srcdir)''.
+
+2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g77spec.c (lang_specific_driver) [ENABLE_SHARED_LIBGCC]: Add
+	libgcc_s.so if libf2c is used.
+	* Make-lang.in (g77spec.o): Use DRIVER_DEFINES.
+
+2001-11-19  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* .cvsignore: Ignore g77.1
+	* g77.texi: Substitute `@command' for `@code'
+	where appropriate.
+	* invoke.texi: Ditto.
+
+2001-11-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Remove all references to LANGUAGES
+	and the stamp files that depend on its value.
+
+Sun Nov 18 11:13:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (finish_parse): Remove.
+	(ffe_finish): Move body of finish_parse.
+
+Thu Nov 15 10:06:38 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (ffecom_init_decl_processing): Renamed from
+	init_decl_processing.
+	(init_parse): Move contents to ffe_init.
+	(ffe_init): Update prototype.
+
+2001-11-14  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Update to use `@command', `@option.
+	* invoke.texi: Ditto
+
+2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in: Change all uses of $(manext) to $(man1ext).
+
+2001-11-14  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.1: Remove from CVS.
+	* Make-lang.in: Build g77.1 in $(srcdir).
+	Add --section=1 to POD2MAN command line.
+	* invoke.texi: Correct copyright years.
+	Add more sections to man page.  Add GFDL.
+
+Fri Nov  9 23:16:45 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (ffe_print_identifier): Rename.
+	(LANG_HOOKS_PRINT_IDENTIFIER): Override.
+	(lang_print_xnode, print_lang_decl, print_lang_statistics,
+	print_lang_type, set_yydebug): Remove.
+
+2001-11-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* g77spec.c (lang_specific_driver): Adjust behavior of -v and
+	--version for consistency with other front ends.  Remove large
+	#if 0 block.  Do not add libraries to argv if there are no
+	input files.
+	(add_version_magic): Delete all references and dependent code.
+	* lang-options.h: Delete -fnull-version.
+	* lang-specs.h: Delete f77-version spec.
+
+	* lex.c: Delete logic conditional on ffe_is_null_version() and
+	now-unused label.
+	* top.c: Delete ffe_is_null_version_ variable.
+	(ffe_decode_option): Delete -fnull-version case.
+	* top.h: Delete declaration of ffe_is_null_version_ and
+	ffe_is_null_version(), ffe_set_is_null_version() macros.
+
+Fri Nov  9 07:14:47 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (language_string, lang_identify): Remove.
+	(struct lang_hooks): Constify.
+	(LANG_HOOKS_NAME): Override.
+	(init_parse): Update.
+
+2001-11-08  Andreas Franck  <afranck@gmx.de>
+
+	* Make-lang.in (G77_INSTALL_NAME, G77_CROSS_NAME): Handle
+	program_transform_name the way suggested by autoconf.
+
+2001-11-08  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Add rules for building g77.1.
+	* invoke.texi: Add man page stuff.  Move indexing
+	from g77.texi to here.
+	* g77.texi: Remove indexing specific to invoke.texi.
+	* news.texi: Document that g77.1 is now a generated
+	file.
+
+Tue Nov  6 21:17:47 2001  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* com.c: Include langhooks-def.h.
+	* Make-lang.in: Update.
+
+2001-11-04  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Split off invoke.texi (preliminary to using it
+	to generate a man page).
+	* Make-lang.in: Reflect in build rules.
+
+Fri Nov  2 10:51:34 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_initialize_char_syntax_, U_CHAR, is_idchar,
+	is_idstart, is_hor_space, is_space, SKIP_WHITE_SPACE,
+	SKIP_ALL_WHITE_SPACE): Delete.
+	(read_filename_string, read_name_map): Don't use is_space or
+	is_hor_space.
+
+2001-10-29  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document new ability to compile programs with
+	arrays larger than 512 Mbyte on 32-bit targets.
+
+2001-10-24  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_check_size_overflow_): Only check for TREE_OVERFLOW.
+
+Tue Oct 23 14:01:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (LANG_HOOKS_GET_ALIAS_SET): New macro.
+	(lang_get_alias_set): Delete.
+
+2001-10-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi (Sending Patches): Remove.
+
+2001-10-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (f/intdoc): Depend on safe-ctype.o.
+
+Sun Oct 21 17:28:17 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Use safe-ctype macros and/or fold extra
+	calls into fewer ones.
+	* implic.c (ffeimplic_lookup_): Likewise.
+	* intdoc.c (dumpimp): Likewise.
+	* intrin.c (ffeintrin_init_0): Likewise.
+	* lex.c (ffelex_backslash_, ffelex_cfebackslash_, ffelex_hash_):
+	Likewise.
+	* lex.h (ffelex_is_firstnamechar): Likewise.
+	* target.c (ffetarget_integerhex): Likewise.
+
+2001-10-21  Craig Prescott  <prescott@phys.ufl.edu>
+
+	* target.h (FFETARGET_32bit_longs): Don't define
+	for 64-bit hppa.
+
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* std.c (ffestd_labeldef_format): Fix variable/stmt ordering.
+	(ffestd_R737A): Likewise.
+
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* com.h: Remove FFECOM_targetCURRENT, FFECOM_ONEPASS, BUILT_FOR_270,
+	BUILT_FOR_280, FFECOM_GCC_INCLUDE, all derivitive defines, and all
+	related conditional compilation directives.
+	* bad.c, bld.c, bld.h, com.c, equiv.c, equiv.h, global.h, intdoc.c,
+	intrin.c, intrin.h, lex.c, parse.c, sta.c, std.c, ste.c, ste.h, stt.c,
+	stt.h, stw.h, symbol.c, symbol.h, target.h, top.c: Likewise.
+
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (f/com.o): Depend on langhooks.h.
+	* com.c: Include it.
+	(LANG_HOOKS_INIT, LANG_HOOKS_FINISH): New.
+	(LANG_HOOKS_INIT_OPTIONS, LANG_HOOKS_DECODE_OPTION): New.
+	(lang_hooks): Use LANG_HOOKS_INITIALIZER.
+
+Sun Oct  7 12:27:54 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (_ffebad_message_, ffebad_messages_): Const-ify.
+	* bld.c (ffebld_arity_op_): Likewise.
+	* bld.h (ffebld_arity_op_): Likewise.
+	* com.c (ffecom_init_0): Likewise.
+	* intdoc.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, names, gens, imps, specs, cc_pair,
+	cc_descriptions, cc_summaries): Likewise.
+	* intrin.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, ffeintrin_names_, ffeintrin_gens_,
+	ffeintrin_imps_, ffeintrin_specs_): Likewise.
+
+2001-10-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document libf2c being built as a shared library.
+	Use of array elements in bounds of adjustable arrays ditto.
+
+2001-10-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Remove reference to FORTRAN_INIT.
+	* g77spec.c: Add reference to FORTRAN_INIT.
+
+2001-09-29  Juergen Pfeifer  <juergen.pfeifer@gmx.net>
+
+	Make libf2c a shared library.
+
+	* Make-lang.in: Pass define of frtbegin.o to compilation of g77spec.c.
+	* g77spec.c (lang_specific_driver): Treat linking in of frtbegin.o.
+
+2001-09-28  Robert Anderson  <rwa@alumni.princeton.edu>
+
+	* expr.c (ffeexpr_sym_rhs_dimlist_): Allow array elements
+	as bounds of adjustable arrays.
+
+Thu Sep 20 15:05:20 JST 2001  George Helffrich  <george@geo.titech.ac.jp>
+
+	* com.c (ffecom_subscript_check_): Loosen subscript checking rules
+	for character strings, to permit substring expressions like
+	string(1:0).
+	* news.texi: Document this as a new feature.
+
+Thu Sep 13 10:33:27 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Const-ification and/or static-ization.
+	* intrin.c (ffeintrin_cmp_name_): Likewise.
+	* stc.c (ffestc_R904): Likewise.
+
+Wed Sep 12 12:09:04 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bld.c (ffebld_op_string_): Const-ification.
+	* com.c (ffecom_gfrt_name_, ffecom_gfrt_argstring_): Likewise.
+	* fini.c (xspaces): Likewise.
+	* global.c (ffeglobal_type_string_): Likewise.
+	* info.c (ffeinfo_basictype_string_, ffeinfo_kind_message_,
+	ffeinfo_kind_string_, ffeinfo_kindtype_string_,
+	ffeinfo_where_string_): Likewise.
+	* lex.c (ffelex_type_string_): Likewise.
+	* malloc.c (malloc_types_): Likewise.
+	* stc.c (ffestc_subr_binsrch_, ffestc_R904, ffestc_R904,
+	ffestc_R907): Likewise.
+	* symbol.c (ffesymbol_state_name_, ffesymbol_attr_name_):
+	Likewise.
+	* version.c (ffe_version_string): Likewise.
+	* version.h (ffe_version_string): Likewise.
+
+2001-09-11  Richard Henderson  <rth@redhat.com>
+
+	* parse.c (finput): Mark extern.
+
+2001-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* com.c (ffe_init_options): Default to -fmerge-all-constants
+	if optimizing.
+
+2000-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* target.h (FFETARGET_32bit_longs): Don't define
+	for 64-bit S/390.
+
+2001-07-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_expr_intrinsic_):
+	case FFEINTRIN_impIBITS: Remove TREE_SHIFT_FULLWIDTH define.
+	case FFEINTRIN_impISHFT: Ditto. Change LT_EXPR to NE_EXPR.
+	case FFEINTRIN_impISHFTC: Ditto.
+	case FFEINTRIN_impMVBITS: Ditto.
+
+2001-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* top.c (ffe_decode_option): Disallow lang-independent processing
+	for -ffixed-form.
+
+2001-07-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* f/com.c (ffecom_expr_intrinsic_): Deal (correctly) with
+	{L|R}SHIFT_EXPR not working when shift > size of type.
+
+2001-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (lang_print_error_function): Argument context
+	is unused.
+
+2001-07-14  Tim Josling  <tej@melbpc.org.au>
+
+	* com.c (ffecom_overlap_): Remove references to EXPON_EXPR.
+	(ffecom_tree_canonize_ref_): Likewise.
+
+2001-07-10  James Smaby  <jsmaby@virgo.umeche.maine.edu>
+
+	* intdoc.in: Fix the definition of COMPLEX ABS.
+	Remove `the' where inappropriate.
+	* intdoc.texi: Rebuilt.
+
+2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Use gpl.texi and funding.texi.  Remove Look and Feel
+	section.  Add Funding Free Software to invariant sections.
+	* Make-lang.in ($(srcdir)/f/g77.info, f/g77.dvi): Update
+	dependencies and use doc/include in search path.
+
+2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Make-lang.in (f/com.o): Depend on diagnostic.h
+	* com.c: #include diagnostic.h
+	(lang_print_error_function): Take a 'diagnostic_context *'.
+
+Wed Jun 13 11:22:39 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* BUGS: Remove.
+	* NEWS: Likewise.
+
+2001-06-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77install.texi: Remove.
+	* Make-lang.in: Remove all mention of g77install.texi.
+	* g77.texi: Add documentation on how to get output always
+	flushed and how to increase the maximum unit number.
+	Remove all mention of g77install.texi.
+	* bugs.texi: Add documentation on how to change the threshold
+	for putting local arrays on the stack.
+
+2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi: Fix typo in patches e-mail address.
+
+2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+	    Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* root.texi: Define `help' and `patches' mailing list
+	addresses.
+	* news.texi: Remove `prerelease' from 0.5.26
+	* g77.texi: Use two spaces between command options, eliminate
+	some 'overfull hboxes'.  Use help and patches mailing list
+	addresses where appropriate.
+
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Move contents to just after title page.
+
+2001-06-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_init_0): Make CHARACTER*1 unsigned.
+
+2001-05-23  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* Make-lang.in ($(srcdir)/f/g77.info): Added dependencies on
+	fdl.texi.
+	(f/g77.dvi): Use TEXI2DVI instead of custom tex calls.  Create the
+	dvi file in the f directory.
+
+2001-05-25  Sam TH  <sam@uchicago.edu>
+
+	* bad.h: Fix header include guards.
+	* bit.h bld.h com.h data.h equiv.h expr.h global.h
+	implic.h info.h intrin.h lab.h lex.h malloc.h name.h
+	proj.h src.h st.h sta.h stb.h stc.h std.h ste.h
+	storag.h stp.h str.h sts.h stt.h stu.h stv.h stw.h
+	symbol.h target.h top.h type.h version.h
+	where.h: Likewise.
+
+2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Update last-changed date.
+	* news.texi: Update copyright years, last-changed date.
+	* bugs.texi: Update copyright years, last-changed date.
+
+2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Update maintenance information for
+	GNU Fortran.  Remove all mention of -fdebug-kludge.
+	* news.texi: Make more news in 0.5.26 `user visible
+	changes'. Acknowledge work by important contributors.
+	* bugs.texi: Remove all mention of -fdebug-kludge.
+
+2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (f/g77.dvi): Include $(srcdir) in TEXINPUTS.
+
+2001-05-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Make-lang.in: Have $(MAKEINFO) look into the parent
+	directory for includes.
+	* g77.texi: Use the GFDL.
+
+Sun May 13 12:25:06 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in: Replace all uses of `touch' with $(STAMP).
+
+Wed May  2 10:20:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c: NULL_PTR -> NULL.
+
+Sun Apr 22 20:18:01 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_subscript_check_): Use concat in lieu of
+	xmalloc/sprintf.
+
+2001-04-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Update release information for 0.5.27.
+
+Thu Apr 19 12:49:24 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* top.c (ffe_decode_option): Do not permit language-independent
+	processing for -ffixed-line-length.
+
+Thu Apr 12 17:57:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (inhibit_warnings): Delete redundant declaration.
+
+	* com.c (skip_redundant_dir_prefix): Likewise.
+
+	* com.h (mark_addressable): Likewise.
+
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.c (ffelex_hash_): Avoid eating one whole line after
+	#line.
+
+Mon Apr  2 22:38:09 2001  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* com.c (duplicate_decls): Fix thinko in lazy DECL_RTL patch
+	of 2001-03-04.
+
+Tue Mar 27 17:40:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
+
+Mon Mar 26 18:13:30 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (duplicate_decls): Don't copy DECL_FRAME_SIZE.
+
+Mon Mar 19 15:05:39 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (builtin_function): Use SET_DECL_ASSEMBLER_NAME.
+
+Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_member_phase_2): Use COPY_DECL_RTL,
+	DECL_RTL_SET_P, etc.
+	(duplicate_decls): Likewise.
+	(start_decl): Likewise.
+
+Fri Mar  9 22:52:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c (main): Use really_call_malloc, not malloc.
+
+Thu Mar  8 13:27:47 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c: Don't rely on the POSIX macro to define autoconf stuff.
+
+2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
+
+	* g77.texi: Document new options -funsafe-math-optimizations
+	and -fno-trapping-math.  Revise documentation for -ffast-math.
+
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* proj.h: Delete 'bool' type.  Don't include stddef.h here.
+	* com.c: Rename variables named 'true' and/or 'false'.
+	* intdoc.c: Delete 'bool' type.
+
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to all
+	array elements.
+
+2001-02-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* com.c: Don't define STDC_HEADERS, autoconf handles it.
+
+Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (set_block): Set NAMES and BLOCKS from BLOCK.
+
+2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* version.c, root.texi: Update GCC version number to 3.1.  Update
+	G77 version number to 0.5.27.
+	* BUGS, NEWS: Regenerate.
+
+Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_init_0): Call fatal_error instead of fatal.
+	* com.c (init_parse): Call fatal_io_error instead of
+	pfatal_with_name.
+	(ffecom_decode_include_option_): Make errors non-fatal.
+	* lex.c (ffelex_cfelex_, ffelex_get_directive_line_): Likewise.
+	(ffelex_hash_): Likewise.
+
+Sat Jan 27 20:52:18 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Remove all dependencies on defaults.h.
+	* com.c: Don't include defaults.h.
+
+2001-01-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* com.c: Don't explicitly include any time headers, the right ones are
+	already included by proj.h.
+
+2001-01-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_lookup_label): Set DECL_CONTEXT for FORMAT
+	label to current_function_decl.
+
+Fri Jan 12 17:21:33 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Update copyright year to 2001.
+
+Wed Jan 10 14:39:45 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_init_zero_):  Remove last argument in call to
+	make_decl_rtl; use make_function_rtl instead of make_decl_rtl.
+	(ffecom_lookup_label_): Likewise.
+	(builtin_function): Likewise.
+	(start_function): Likewise.
+
+Thu Dec 21 21:19:42 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77install.texi, g77.texi: Update last-updated dates for
+	installation information and the manual as a whole.
+	* bugs.texi, news.texi: Update copyright years in the comments at
+	the top of the file.
+
+2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77install.texi: Adjust wording of an EGCS reference.
+
+Thu Dec 21 20:00:48 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* BUGS, NEWS: Regenerate.
+
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* com.c [VMS]: Remove definition of BSTRING.
+
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Update GPL copy not to refer to years 19@var{yy}.
+
+2000-12-18  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* bugs.texi: Correct copyright years.
+	* g77.texi: Likewise.
+	* news.texi: Likewise.
+
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77install.texi: Remove obsolete parts only used for INSTALL,
+	and DOC-G77 conditionals.  Update last-update-install date.
+
+Sat Dec  9 10:20:11 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* .cvsignore: New file; add info files.
+
+2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (f77.info): Depend on info files in source
+	directory.
+	(f/g77.info): Build info files in source directory; don't build
+	them unless BUILD_INFO is "info".
+	(f77.install-info): Install info files from source directory.
+
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Make-lang.in: Link f/fini with safe-ctype.o.
+	* bad.c: Don't test ISUPPER(c) || ISLOWER(c) before calling TOUPPER(c).
+	* com.c: Use TOUPPER, not ffesrc_toupper.
+	* fini.c: Don't test ISALPHA(c) before calling TOUPPER(c)/TOLOWER(c).
+	* intrin.c: Don't test IN_CTYPE_DOMAIN(c).
+	* src.c: Delete ffesrc_toupper_ and ffesrc_tolower_ and their
+	initializing code; use TOUPPER and TOLOWER instead of
+	ffesrc_toupper and ffesrc_tolower.
+	* src.h: Don't declare ffesrc_toupper_ or ffesrc_tolower_.
+	Don't define ffesrc_toupper or ffesrc_tolower.
+
+2000-11-28  Richard Henderson  <rth@redhat.com>
+
+	* com.c (ffecom_member_phase2_): Set TREE_USED on the debugging decl.
+
+2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* RELEASE-PREP: Remove obsolete EGCS reference.
+	* g77.texi: Adjust reference to EGCS as something current.
+	* lang-options.h (FTNOPT): Remove macro and obsolete comment.
+	Include doc strings directly in option listing instead of through
+	this macro.
+	* root.texi: Remove support for multiple different (FSF and EGCS)
+	distributions of g77.
+	* g77install.texi: Remove conditioned out instructions applying
+	only to obsolete distributions of g77 not as part of GCC.  Change
+	"superceded" to the correct spelling "superseded".
+
+Sun Nov 26 19:25:56 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Update copyright year to 2000.
+
+Thu Nov 23 02:18:57 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* Make-lang.in (g77spec.o): Depend on $(CONFIG_H).
+
+2000-11-21  David Billinghurst  <David.Billinghurst@riotinto.com)
+
+	* Make-lang.in:  Add $(build_exeext) to f/fini target
+
+2000-11-21  Andreas Jaeger  <aj@suse.de>
+
+	* g77.texi (Floating-point Exception Handling): Use feenableexcept
+	in example.
+	(Floating-point precision): Change to match above change.
+
+Sun Nov 19 17:29:22 2000  Matthias Klose  <doko@marvin.itso-berlin.de>
+
+	* g77.texi (Floating-point precision): Adjust example
+	to work with glibc (>= 2.1).
+
+Sat Nov 18 13:54:49 2000  Matthias Klose  <doko@cs.tu-berlin.de>
+
+	* g77.texi (Floating-point Exception Handling): Adjust
+	example to work with glibc (>= 2.1).
+
+2000-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Make-lang.in (INTDOC_DEPS): New macro.
+	(f/intdoc.texi): Depend on $(INTDOC_DEPS).  Build f/intdoc.
+	(f/intdoc): Likewise.  Add $(build_exeext).
+
+2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* lex.c (ffelex_hash_): Change ggc_alloc_string (var, -1) to
+	ggc_strdup (var).
+
+Thu Nov 16 23:14:07 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* malloc.c (malloc_init): Call xmalloc, not malloc.
+
+2000-11-10  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* Make-lang.in: Remove OUTPUT_OPTION from g77version.o target.
+
+2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi: Remove non-historical EGCS reference.
+	Set current g77 version to 0.5.26.
+
+2000-11-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_stabilize_aggregate_) case RTL_EXPR: Abort.
+
+2000-11-10  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Make-lang.in (f/fini.o, f/proj-h.o): Remove pointless sed
+	munging of source file name.
+	($(srcdir)/f/intdoc.texi): Break up into several rules each of
+	which builds just one thing.  Don't mess with $(LANGUAGES).
+	(f/ansify.o, f/intdoc.o): Remove unnecessary rules.
+
+2000-11-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi, news.texi, g77install.texi, g77.texi, bugs.texi:
+	Remove non-historical references to egcs/EGCS.
+
+2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in: Remove f77.distdir and f/INSTALL.
+	* INSTALL, install0.texi: Remove.
+
+2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* com.c (open_include_file, ffecom_open_include_): Use strchr ()
+	and strrchr () instead of index () and rindex ().
+
+2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Make-lang.in: Move all build rules here from Makefile.in,
+	adapt to new context.  Wrap all rules that change the current
+	directory in parentheses.  Expunge all references to $(P).
+	When one command depends on another and they're run all at
+	once, use && to separate them, not ;.  Add OUTPUT_OPTION to
+	all object-file generation rules.  Delete obsolete variables.
+
+	* Makefile.in: Delete.
+	* config-lang.in: Delete outputs= line.
+
+Sat Oct 21 18:07:48 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in, g77spec.c: Remove EGCS references in comments.
+
+Thu Oct 12 22:28:51 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_do_entry_): Don't mess with obstacks.
+	(ffecom_finish_global_): Likewise.
+	(ffecom_finish_symbol_transform_): Likewise.
+	(ffecom_gen_sfuncdef_): Likewise.
+	(ffecom_init_zero_): Likewise.
+	(ffecom_start_progunit_): Likewise.
+	(ffecom_sym_transform_): Likewise.
+	(ffecom_sym_transform_assign_): Likewise.
+	(ffecom_transform_equiv_): Likewise.
+	(ffecom_transform_namelist_): Likewise.
+	(ffecom_vardesc_): Likewise.
+	(ffecom_vardesc_array_): Likewise.
+	(ffecom_vardesc_dims_): Likewise.
+	(ffecom_end_transition): Likewise.
+	(ffecom_make_tempvar): Likewise.
+	(bison_rule_pushlevel_): Likewise.
+	(bison_rule_compstmt_): Likewise.
+	(finish_decl): Likewise.
+	(finish_function): Likewise.
+	(push_parm_decl): Likewise.
+	(start_decl): Likewise.
+	(start_function): Likewise.
+	(ggc_p): Don't define.
+	* std.c (ffestd_stmt_pass_): Likewise.
+	* ste.c (ffeste_end_block_): Likewise.
+	(ffeste_end_stmt_): Likewise.
+	(ffeste_begin_iterdo_): Likewise.
+	(ffeste_io_ialist_): Likewise.
+	(ffeste_io_cilist_): Likewise.
+	(ffeste_io_inlist_): Likewise.
+	(ffeste_io_olist_): Likewise.
+	(ffeste_R810): Likewise.
+	(ffeste_R838): Likewise.
+	(ffeste_R839): Likewise.
+	(ffeste_R842): Likewise.
+	(ffeste_R843): Likewise.
+	(ffeste_R1001): Likewise.
+
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (finish_function): Don't init can_reach_end.
+
+Sun Oct  1 11:43:44 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (lang_mark_false_label_stack): Remove.
+
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c: Include defaults.h.
+	* com.h: Don't define the *_TYPE_SIZE macros.
+	* Makefile.in: Update dependencies.
+
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* ansify.c: Use #line, not # <number>.
+
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
+	* intdoc.c (ARRAY_SIZE): Remove macro.
+	* proj.h (ARRAY_SIZE): Remove macro.
+	* com.c (init_decl_processing): Use ARRAY_SIZE.
+
+2000-08-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com-rt.def: Adapt macro DEFGFRT to accept CONST boolean.
+	* com.c (macro DEFGFRT): Use CONST boolean.
+	(ffecom_call_binop_): Choose between call by value
+	and call by reference.
+	(ffecom_expr_): Use direct calls to (g)libc functions for
+	POW_DD, LOG10, (float) MOD.
+	(ffecom_make_gfrt_): Add const indication to table of
+	intrinsics.
+	* com.h (macro DEFGFRT): Use CONST boolean.
+	* intrin.def: Adjust DEFIMP definition of LOG10, (float) MOD.
+
+2000-08-21  Nix  <nix@esperi.demon.co.uk>
+
+	* lang-specs.h: Do not process -o or run the assembler if
+	-fsyntax-only.  Use %j instead of /dev/null.
+
+2000-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang-specs.h: Pass -I* options to f771.
+
+2000-08-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* top.c (ffe_decode_option): Disable -fdebug-kludge
+	and warn about it.
+	* lang-options.h: Document the fact.
+	* g77.texi: Ditto.
+
+2000-08-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* bugs.texi: Describe new ability to emit debug info
+	for EQUIVALENCE members.
+	* news.texi: Ditto.
+
+2000-08-11  G. Helffrich  <george@gly.bris.ac.uk>
+	    Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_transform_equiv_): Make EQUIVALENCEs addressable
+	so that debug info can be attached to their storage.
+	Unconditionally list the storage set aside for them.
+
+2000-08-07  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77spec.c (lang_specific_driver): Clearer g77 version message.
+
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in (f771): Depend on $(BACKEND), not stamp-objlist.
+	* Makefile.in: Add BACKEND; delete OBJS, OBJDEPS.
+	(f771): Link with $(BACKEND).
+
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* g77spec.c: Adjust type of second argument to
+	lang_specific_driver, and update code as necessary.
+
+	* expr.c (ffeexpr_finished_): Cast signed side of ?:
+	expression to bool.
+
+2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Rename cpp to cpp0 and/or tradcpp to tradcpp0.
+
+Thu Jul 27 11:50:08 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c (main): Avoid automatic aggregate initialization.
+
+	* proj.h: Indent #error directive.
+
+2000-07-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* lang-specs.h: Remove one /dev/null from tradcpp invocation.
+
+Sun Jul 23 15:47:30 2000  Billinghurst, David <David.Billinghurst@riotinto.com>
+
+	* Make-lang.in: Put $(build_exeext) suffix on programs which run
+	on the build machine.
+
+2000-07-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_expr_intrinsic_): case FFEINTRIN_impFGETC_subr,
+	FFEINTRIN_impFPUTC_subr: Check for arg3 being NULL.
+
+2000-07-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Use the new named specs.  Remove unnecessary braces.
+
+2000-07-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* version.c: Bump version number.
+
+2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in (F77_SRCS): Remove all .j files.
+	* Makefile.in (ASSERT_H, CONFIG_H, CONVERT_H, FLAGS_H, GGC_H,
+	GLIMITS_H, HCONFIG_H, INPUT_H, OUTPUT_H, RTL_H, SYSTEM_H,
+	TOPLEV_H, TREE_H): Remove references to .j files.
+	(TCONFIG_H, TM_H): Remove entirely.
+	(deps-kinda): Delete rule.
+	Correct commentary.
+
+	* assert.j, config.j, convert.j. flags.j, ggc.j, glimits.j,
+	hconfig.j, input.j, output.j, rtl.j, system.j, toplev.j,
+	tree.j, tconfig.j, tree.j: Delete.
+
+	* ansify.c, bad.c, bit.c, com.c, com.h, intdoc.c, lex.c,
+	parse.c, proj.c, proj.h, ste.c, target.c, target.h, top.c,
+	where.c, where.h: Include parent-directory headers directly.
+	* lex.c: Don't include tree.h twice.
+
+2000-05-17  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in: Use a unique stamp for each target to support
+	parallel make.
+
+Thu Jun 15 14:03:14 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ste.c (gbe_block): Constify.
+
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* com.c (ffecom_transform_common_): Set DECL_USER_ALIGN.
+	(ffecom_transform_equiv_, ffecom_decl_field): Likewise.
+	(ffecom_init_0): Set DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	(duplicate_decls): Set DECL_USER_ALIGN.
+
+Sun Jun 11 00:03:00 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.
+
+2000-06-04  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in(INTLLIBS): New macro.
+	(LIBS): Add INTLLIBS.
+	(DEPLIBS): Likewise.
+
+2000-06-02  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (lang_get_alias_set): New.
+
+2000-05-28  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* bugs.texi: Note that debugging information for
+	common block items is emitted now.
+	* news.texi: Ditto.
+
+2000-05-18  Chris Demetriou  <cgd@sibyte.com>
+
+	* com.h (FFECOM_f2cINTEGER, FFECOM_f2cLONGINT): Note that
+	these types correspond to built-in types now defined in
+	the C front end (for libf2c).
+
+Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* top.c (ffe_decode_option): Update -Wall unused flags by calling
+	set_Wunused.
+
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c (ffecom_subscript_check_): Constify array_name
+	parameter. Clean up string bashing.
+	(ffecom_arrayref_, ffecom_char_args_x_): Constify array_name
+	parameter.
+	(ffecom_do_entry_, ffecom_gen_sfuncdef_, ffecom_start_progunit_,
+	ffecom_sym_transform_, ffecom_sym_transform_assign_): Constify
+	local char *.
+	(init_parse): Constify parameter and return value.
+	* lex.c: Include dwarfout.h instead of prototyping dwarfout_*
+	functions here.
+	(ffelex_file_pop_, ffelex_file_push_): Constify filename parameter.
+	(ffelex_hash_, ffelex_include_): Constify local char *.
+	* std.c (ffestd_exec_end): Constify local char *.
+	* where.c (ffewhere_file_new): Constify filename parameter.
+	* where.h: Update prototypes.
+
+2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c (ffecom_overlap_): Set source_offset to
+	bitsize_zero_node.
+	(ffecom_tree_canonize_ptr_): Use size_binop.  Convert to
+	bitsizetype before multiplying by TYPE_SIZE.
+	(ffecom_tree_canonize_ref_) [case ARRAY_REF]: Break up offset
+	calculation.  Convert to bitsizetype before multiplying by
+	TYPE_SIZE.
+
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lex.c: Remove references to cccp.c.
+	* g77install.texi: Remove references to cexp.c/cexp.y.
+
+2000-04-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* target.h (FFETARGET_32bit_longs): Define for 64-bit PowerPC
+	as well.
+
+Wed Apr 12 15:15:26 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.h (FFECOM_f2cINTEGER): Avoid using LONG_TYPE_SIZE as a
+	preprocessor constant.
+	(FFECOM_f2cLOGICAL): Likewise.
+	(FFECOM_f2cLONGINT): Likewise.
+
+Wed Apr  5 17:46:39 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (GGC_H): Add varray.h.
+
+2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Pass -fno-show-column to the preprocessor.
+
+2000-03-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* com.c (ffecom_decl_field): Use DECL_ALIGN for a FIELD_DECL.
+	(ffecom_init_0): Likewise.
+
+Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_tree_canonize_ptr_): Use bitsize_zero_node.
+	(ffecom_tree_canonize_ref_): Likewise.
+
+Mon Mar 20 15:49:40 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* f/target.h (FFETARGET_32bit_longs): New.  Define for alpha, sparc64,
+	and ia64.
+	(ffetargetInteger1, ffetargetLogical1, ffetargetReal1, ffetargetReal2,
+	ffetarget_integerdefault_is_magical): Use FFETARGET_32bit_longs.
+
+Fri Mar 10 00:43:55 2000  Jason Merrill  <jason@casey.cygnus.com>
+
+	* com.c (ffecom_stabilize_aggregate_): Don't refer to TREE_RAISES.
+
+Mon Mar  6 18:05:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_f2c_set_lio_code_): Use compare_tree_int.
+	(ffecom_sym_transform_, ffecom_transform_common_): Likewise.
+	(ffecom_transform_equiv_): Likewise.
+
+Mon Mar  6 13:01:19 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansify.c (die_unless): Don't use ANSI string concatenation.
+	(die): Mark with ATTRIBUTE_NORETURN.
+
+Wed Mar  1 00:31:44 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* com.c (current_function_decl): Move to toplev.c.
+
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_arrayref_): Convert args to size_binop to proper type.
+	(ffecom_tree_canonize_ptr_): Don't use size_binop for non-sizes.
+	(ffecom_tree_canonize_ref_): Likewise.
+	(type_for_mode): Handle TImode.
+	* ste.c (ffeste_io_dofio_, ffeste_io_douio_): Use TYPE_SIZE_UNIT.
+	(ffeste_io_ciclist_): Likewise.
+
+2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c (ffecom_type_permanent_copy_): Delete unused function.
+	(finish_decl): Don't change TREE_PERMANENT (DECL_INITIAL (decl)).
+
+Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_sym_transform): Use DECL_SIZE_UNIT.
+	(ffecom_transform_common_, ffecom_transform_equiv_): Likewise.
+	(duplicate_decls): Likewise.
+	(ffecom_tree_canonize_ptr_): Delete extra arg to bitsize_int.
+	(finish_decl): Delete -Wlarger-than processing.
+
+Fri Feb 18 13:19:34 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* g77spec.c (lang_specific_driver): Use GCCBUGURL.
+
+2000-02-17  Andy Vaught  <andy@maxwell.la.asu.edu>
+
+	* com.c (ffecom_member_phase2_): Re-enable COMMON debug code.
+	(ffecom_finish_symbol_transform_): Likewise.
+	(ffecom_transform_common_): Call ffestorag_set_hook.
+
+Wed Feb 16 11:09:38 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (g77spec.o): Depend on $(GCC_H), not gcc.h.
+
+2000-02-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* lang-specs.h: Add new __GNUC_PATCHLEVEL__ define to default spec.
+
+Tue Feb 15 11:14:17 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g77spec.c: Don't declare `version_string'.
+
+Sat Feb  5 23:27:25 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (mark_tracker_head, mark_binding_level): Protoize.
+
+	* where.c (mark_ffewhere_head): Likewise.
+
+Wed Jan 12 09:32:59 2000  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Pass -lang-fortran to preprocessor.
+
+Thu Dec 30 13:14:31 1999  Richard Henderson  <rth@cygnus.com>
+
+	* stw.h (struct _ffestw_): Change type of uses_ to int.
+
+Thu Dec 30 11:42:05 1999  Geoff Keating  <geoffk@cygnus.com>
+
+	* com.c (ffecom_init_0): Make double_ftype_double,
+	float_ftype_float, ldouble_ftype_ldouble,
+	ffecom_tree_ptr_to_fun_type_void local.
+	(tracker_head): New static variable.
+	(mark_tracker_head): New, marker procedure for tracker_head.
+	(ffecom_save_tree_forever): New procedure.
+	(ffecom_init_zero_): Remove obstack use.
+	(ffecom_make_gfrt_): Remove obstack use.
+	(ffecom_sym_transform_): Remove obstack use, save appropriate trees.
+	(ffecom_transform_common_): Remove obstack use, save appropriate
+	trees.
+	(ffecom_type_namelist_): Remove obstack use, save appropriate
+	trees.
+	(ffecom_type_vardesc_): Remove obstack use, save appropriate trees.
+	(ffecom_lookup_label): Remove obstack use, save appropriate trees.
+	(duplicate_decls): Remove obstack use.
+	(finish_function): push & pop ggc context around
+	rest_of_compilation when building nested function.
+	(mark_binding_level): New function.
+	(init_decl_processing): Mark all the GC roots.
+	(ggc_p): Set to 1.
+	(lang_mark_tree): New function.
+	(lang_mark_false_label_stack): New trivial function.
+	* com.h (ffecom_save_tree_forever): Declare as external.
+	* lex.c (ffelex_hash_): Use GC to allocate the filename string
+	even when ffelex_kludge_flag_.
+	* ste.c (ffeste_io_ialist_): Register a static root.
+	(ffeste_io_inlist_): Likewise.
+	(ffeste_io_icilist_): Likewise.
+	(ffeste_io_cllist_): Likewise.
+	(ffeste_io_cilist_): Likewise.
+	(ffeste_io_olist_): Likewise.
+	* Makefile.in (OBJS): Don't use ggc-callbacks.o.
+	(OBJDEPS): Likewise.
+	(GGC_H): New variable.
+	Update dependencies.
+	* where.c (ffewhere_head): New global.
+	(mark_ffewhere_head): New marker procedure for ffewhere_head.
+	(ffewhere_file_kill): Use GC to do memory management.
+	(ffewhere_file_new): Use GC to do memory management.
+	* ggc.j: New file.
+
+Wed Dec 29 19:29:26 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g77.texi (C Interfacing Tools): Fix an incorrect link.
+
+1999-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.h: Handle sparc64 the same way as alpha.
+
+Sun Nov 28 21:39:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_file_, ffecom_file, file_buf,
+	ffecom_open_include_): Constify a char*.
+	(ffecom_possible_partial_overlap_): Mark parameter `expr2' with
+	ATTRIBUTE_UNUSED.
+	(ffecom_init_0): Use a fully prototyped cast in call to bsearch.
+	(lang_print_error_function): ANSI-fy.
+
+	* com.h (ffecom_file): Constify a char*.
+
+	* fini.c (main): Call return, not exit.
+
+	* g77spec.c (lang_specific_driver): Use non-const *in_argv in
+	assignment.
+
+	* intrin.c (ffeintrin_cmp_name_): Don't needlessly cast away
+	const-ness.
+
+Sun Nov 28 21:15:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_get_invented_identifier): Rewrite to take an ellipses.
+
+	(ffecom_char_enhance_arg_, ffecom_do_entry_,
+	ffecom_f2c_make_type_, ffecom_gen_sfuncdef_,
+	ffecom_start_progunit_, ffecom_start_progunit_,
+	ffecom_start_progunit_, ffecom_sym_transform_assign_,
+	ffecom_transform_equiv_, ffecom_transform_namelist_,
+	ffecom_vardesc_, ffecom_vardesc_array_, ffecom_vardesc_dims_,
+	ffecom_end_transition, ffecom_lookup_label, ffecom_temp_label):
+	Adjust accordingly.
+
+	* com.h (ffecom_get_invented_identifier): Likewise.
+
+	* sts.c (ffests_printf): New function taking ellipses.
+	(ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+	ffests_printf_2Us): Delete.
+
+	* sts.h: Likewise.
+
+	* std.c (ffestd_R1001dump_, ffestd_R1001dump_1005_1_,
+	ffestd_R1001dump_1005_2_, ffestd_R1001dump_1005_3_,
+	ffestd_R1001dump_1005_4_, ffestd_R1001dump_1005_5_,
+	ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+	ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_,
+	ffestd_R1001rtexpr_): Call `ffests_printf', not `ffests_printf_*'.
+
+	* ste.c (ffeste_io_ialist_, ffeste_io_cilist_, ffeste_io_cllist_,
+	ffeste_io_icilist_, ffeste_io_inlist_, ffeste_io_olist_): Likewise.
+
+Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
+			  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* proj.h: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
+
+Tue Oct 26 01:32:19 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (poplevel): Don't call remember_end_note.
+
+Fri Oct 15 15:18:12 1999  Greg McGary  <gkm@gnu.org>
+
+	* top.h (ffe_is_subscript_check_): Remove extern decl.
+	(ffe_is_subscript_check, ffe_set_is_subscript_check): Remove macros.
+	* top.c (ffe_is_subscript_check_): Remove global variable.
+	(ffe_decode_option): Remove "(no-)bounds-check" flag handling.
+	Set flag_bounds_check for "(no-)fortran-bounds-check".
+	* com.c
+	(ffecom_arrayref_): s/ffe_is_subscript_check ()/flag_bounds_check/
+	(ffecom_char_args_x_): Ditto.
+
+Sun Oct 10 08:40:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* proj.h: Use HAVE_GCC_VERSION instead of explicitly testing
+	__GNUC__ and __GNUC_MINOR__.  Don't define BUILT_WITH_270.  Define
+	macro UNUSED in terms of ATTRIBUTE_UNUSED.
+
+Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* com.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than
+	DECL_BUILT_IN.
+	(builtin_function): No longer static.  New arg CLASS.  Arg
+	FUNCTION_CODE now of type int.  All callers changed.
+	Set the builtin's DECL_BUILT_IN_CLASS.
+
+Tue Sep 21 09:08:30 1999  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77spec.c (lang_specific_driver): Initialize return value.
+
+Thu Sep 16 18:07:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Use uppercase ctype macro from system.h.
+
+	* fini.c (main): Likewise.
+
+	* intrin.c (ffeintrin_init_0): Likewise.
+
+	* lex.c (ffelex_hash_): Likewise.
+
+	* src.c (ffesrc_init_1): Likewise.
+
+Tue Sep 14 12:14:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g77spec.c (lang_specific_driver): Remove unnecessary argument in
+	call to function `fatal'.
+
+Sun Sep 12 23:29:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (g77spec.o): Depend on system.h and gcc.h.
+
+	* g77spec.c: Include gcc.h.
+	(g77_xargv): Constify.
+	(g77_fn): Add parameter prototypes.
+	(lookup_option, append_arg): Add static prototypes.
+	(g77_newargv): Constify.
+	(lookup_option, append_arg, lang_specific_driver): Constify a char*.
+	(lang_specific_driver): All calls to the function pointer
+	parameter now explicitly call `fatal'.
+
+Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* com.h: Delete declarations for all tree nodes now moved to
+	global_trees.
+	* com.c: Delete their definitions.
+	(ffecom_init_0): Call build_common_tree_nodes and
+	build_common_tree_nodes_2 instead of building their nodes here.
+	Override their decisions for complex nodes.
+
+Sat Sep  4 13:46:27 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (f771): Depend on ggc-callbacks.o.
+	* Makefile.in (OBJS): Add ggc-callbacks.o.
+	(OBJDEPS): Likewise.
+
+Mon Aug 30 22:05:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (language_string): Constify.
+
+Mon Aug 30 20:29:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (LIBS, LIBDEPS): Link with & depend on libiberty.a.
+	Remove hacks for stuff which now comes from libiberty.
+
+Sun Aug 29 09:47:45 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (lang_printable_name): Constify a char*.
+
+Wed Aug 25 01:21:06 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lang-specs.h: Pass cc1 spec to f771.
+
+Mon Aug  9 19:44:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (lang_print_error_function): Constify a char*.
+	(init_parse): Remove redundant prototype for `print_error_function'.
+	(lang_identify): Constify a char*.
+
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g77spec.c: Update URLS and mail addresses.
+	* root.texi: Update URLS and mail addresses.
+
+1999-07-25  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ptr_type_node, va_list_type_node): New.
+	(ffecom_init_0): Init and use ptr_type_node.
+
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* root.texi: Update e-mail addresses to gcc.gnu.org.
+	* g77spec.c (lang_specific_driver): Updated URL with bug reporting
+	instructions to gcc.gnu.org.  Removed e-mail address.
+
+Sat Jul 17 11:28:43 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* root.texi, g77install.texi: Switchover to GCC terminology.
+	Also, FSF-G77 had been mistakenly set at some point.
+
+Thu Jul  8 15:38:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Describe DATE intrinsic fix.
+
+Mon Jun 28 21:44:19 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* version.c: Denote experimental version.
+
+Mon Jun 28 10:43:11 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_prepare_expr_): A COMPLEX intrinsic needs
+	a temp even if -fno-f2c.
+
+	* version.c: Bump version.
+
+Mon Jun 28 21:31:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Doc upgrade to netlib libf2c as of today.
+	Explain that this fixes the NAMELIST-read bug.
+
+Fri Jun 25 11:06:32 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi: Describe K(5)=10*3 NAMELIST-read bug.
+
+Mon Jun 21 12:40:17 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* g77.texi: Update links.
+
+Mon Jun 21 05:33:51 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* news.texi: Add missing @end ifclear.
+
+Fri Jun 18 11:43:46 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Doc TtyNam fix.
+
+Fri Jun 18 11:26:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: New heading for development version.
+	Doc upgrade to netlib libf2c as of today.
+
+Wed Jun 16 11:43:02 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Mention BACKSPACE fix to libg2c.
+
+Mon Jun  7 08:42:40 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in: Any target using libsubdir must depend
+	on installdirs.
+
+Sat Jun  5 23:50:36 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Describe a few more missing features people
+	have emailed me about.
+
+Sat Jun  5 17:03:23 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
+	* g77.texi: Clean up fossil text vis-a-vis Intel CPUs.
+
+Fri Jun  4 13:56:56 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in: Use libsubdir, not prefix, to store
+	temporary lang-f77 `flag' file.
+
+Fri Jun  4 10:26:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi (News): Mention GCC 2.95 in favor of EGCS 1.2.
+	Mention that libg2c is multilibbed.
+
+Fri Jun  4 10:09:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Missing Features): Add `Better Warnings'
+	item.
+
+Fri May 28 16:51:41 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix thinko.
+
+Wed May 26 14:43:27 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Document Tue May 18 03:52:04 1999 patch.
+	Fix a grammo.
+
+Wed May 26 14:25:07 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi, news.texi, root.texi, version.c: Start renaming
+	EGCS 1.2 to GCC 2.95, and start using 0.5.25 to designate
+	the version of g77 within GCC 2.95.
+
+Wed May 26 11:45:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Rename -fsubscript-check to -fbounds-check and
+	-ff2c-subscript-check to -ffortran-bounds-check:
+	* g77.texi: Rename options in docs, clarify usage.
+	* lang-options.h: Rename options, clarify doclets.
+	* news.texi: Rename options, don't bother with fortran-specific
+	option.
+	* top.c (ffe_decode_option): Rename recognized strings.
+
+Tue May 25 18:21:09 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (FFECOM_FASTER_ARRAY_REFS): Delete this vestige,
+	now that -fflatten-arrays exists.
+
+Tue May 25 17:48:34 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990525-0.f:
+	* com.c (ffecom_arg_ptr_to_expr): Strip off parens around
+	CHARACTER expression.
+	(ffecom_prepare_expr_): Ditto.
+
+Tue May 18 03:52:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Support use of back end's improved open-coding of complex divide:
+	* com.c (ffecom_tree_divide_): Use RDIV_EXPR for complex divide,
+	instead of run-time call to [cz]_div, if `-Os' option specified.
+	(lang_init_options): Tell back end we want support for wide range
+	of inputs to complex divide.
+
+	* Bump version.
+
+Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
+	was not given.
+
+Thu May 13 12:23:20 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix INTEGER*8 subscripts in array references:
+	* com.c (ffecom_subscript_check_): Convert low, high, and
+	element as necessary to make comparison work.
+	(ffecom_arrayref_): Do more of the work.
+	Properly handle subscript expr that's wider than int,
+	if pointers are wider than int.
+	(ffecom_expr_): Leave more work to ffecom_arrayref_.
+	(ffecom_init_0): Record sizes of pointers and ints for
+	convenience.
+	Use set_sizetype etc. as done by gcc front end.
+	(ffecom_ptr_to_expr): Leave more work to ffecom_arrayref_.
+	* expr.c (ffeexpr_finished_): Don't convert INTEGER subscript
+	expressions in run-time contexts.
+	(ffeexpr_token_elements_, ffeexpr_token_substring_1_): Cope with
+	non-default INTEGER subscript expressions.
+	* news.texi: Announce.
+
+	Finish accepting -fflatten-arrays option:
+	* com.c (ffecom_arrayref_): Flatten references if requested.
+	* g77.texi: Describe.
+	* lang-options.h: Allow.
+	* news.texi: Announce.
+	* top.c, top.h: Recognize.
+
+	* version.c: Bump version.
+
+Wed May 12 07:30:05 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (lang_init_options): Disable back end's maintenance
+	of errno.
+	* news.texi: Document dropping of errno.
+
+1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Pass -$ to the preprocessor.
+
+Mon May 10 18:14:28 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix various @xref's per proper style.
+	Go ahead and use nested braces in @xref's, with care.
+	* g77install.texi: Fix @xref per proper style.
+
+Mon May 10 17:38:39 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Doc upgrade to netlib libf2c as of today.
+
+Sun May  9 18:52:13 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* f/g77spec.c (lang_specific_driver): Correct bug-report address
+	and point to the FAQ.
+
+Thu May  6 12:40:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Arbitrary Concatenation): Put this under
+	"Missing Features" instead of "Projects".
+	(Internals Documentation): Point to new "Front End" chapter.
+
+Thu May  6 08:23:52 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Automatic arrays reportedly working
+	on HP-UX systems.
+
+Thu May  6 08:19:31 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Advantages Over f2c): Expand on this topic.
+
+Mon May  3 19:41:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_expr_intrinsic_): Fix test of CTIME_subr.
+
+Mon May  3 18:11:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Reverse order of two arguments to CTIME_subr, DTIME_subr,
+	ETIME_subr, and TTYNAM_subr:
+	* com.c (ffecom_expr_intrinsic_): Reverse the arguments.
+	While at it, set TREE_SIDE_EFFECTS for CTIME_subr and
+	TTYNAM_subr.
+	* intdoc.in: Document the new calling sequences.
+	* intrin.def: Reverse the arguments.
+	* news.texi: Document the fact that they changed.
+	* version.c: Bump version.
+
+Mon May  3 11:28:14 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Doc upgrade to netlib libf2c as of today.
+
+Sun May  2 17:04:28 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* version.c: Bump version.
+
+Sun May  2 16:53:01 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix compile/19990502-1.f:
+	* ste.c (ffeste_R819B): Don't overwrite tree for temp
+	variable when expanding the assignment into it.
+
+Sun Apr 25 20:55:10 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990325-0.f and 19990325-1.f:
+	* com.c (ffecom_possible_partial_overlap_): New function.
+	(ffecom_expand_let_stmt): Use it to determine whether to assign
+	to a COMPLEX operand through a temp.
+	* news.texi: Document fix.
+
+	* version.c: Bump version.
+
+Sat Apr 24 12:19:53 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* expr.c (ffeexpr_finished_): Convert DATA implied-do
+	start/end/incr expressions to default INTEGER.
+	Fix some broken conditionals.
+	Clean up some code in the region.
+	* news.c: Document the fix.
+
+	* version.c: Bump version.
+
+Fri Apr 23 02:08:32 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Compiler Prototypes): Replace "missing" subscript-
+	checking option with something else.
+
+Fri Apr 23 01:48:28 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Support new -fsubscript-check and -ff2c-subscript-check options:
+	* com-rt.def (FFECOM_gfrtRANGE): Describe s_rnge, in libf2c/libF77.
+	* com.c (ffecom_subscript_check_, ffecom_arrayref_): New functions.
+	(ffecom_char_args_x_): Use new ffecom_arrayref_ function for
+	FFEBLD_opARRAYREF case.
+	Compute character name, array type, and	use new
+	ffecom_subscript_check_ function for FFEBLD_opSUBSTRING case.
+	(ffecom_expr_): Use new ffecom_arrayref_ function.
+	(ffecom_ptr_to_expr): Use new ffecom_arrayref_ function.
+	* g77.texi, news.texi: Document new options.
+	* top.c, top.h: Support new options.
+
+	* news.texi: Fix up some items to not be in "User-Visible Changes".
+
+	* ste.c (ffeste_R819B): Fix type for loop variable, to avoid
+	warnings.
+
+	* version.c: Bump version.
+
+Tue Apr 20 01:38:57 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Clarify -malign-double situation.
+
+Tue Apr 20 01:15:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* stb.c (ffestb_R5282_): Convert DATA repeat count
+	to default INTEGER, to avoid problems downstream.
+
+	* version.c: Bump version.
+
+Mon Apr 19 21:36:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* ste.c (ffeste_R819B): Start the loop before expanding
+	the termination expression.
+
+	* version.c: Bump version.
+
+Sun Apr 18 21:53:58 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_sym_transform_): COMMON and EQUIVALENCE
+	variables have constant addresses (EQUIVALENCE only if
+	containing aggregate is static).
+
+Sat Apr 17 16:55:59 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, ffe.texi, g77.texi, g77install.texi, news.texi:
+	Clean up @code{} vs. @samp{}.
+	Clean up dashes (`--') vs. @minus{} vs. `---'.
+
+	* ffe.texi: Add copyright header.
+
+	* g77.texi, lang-options.h, news.texi, top.c (ffe_decode_option):
+	Remove support for -fugly option.
+	Clarify that -fugly-logint is needed instead of -fugly
+	to work around using .EQ./.NE. on LOGICAL operands.
+	Explain more about why -fugly-logint is bad juju.
+
+	* g77.texi (Missing Features): Describe READONLY as a missing
+	feature.  Describe AUTOMATIC better.
+
+	* news.texi: Mention libf2c upgrade.
+
+Sat Apr 17 14:05:53 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Make a place for front-end internals documentation:
+	* Make-lang.in (f/g77.info, f/g77.dvi): Depend on f/ffe.texi.
+	* ffe.texi: New file, containing docs on front-end internals.
+	* g77.texi: New chapter for, and inclusion of, ffe.texi.
+
+	* g77.texi: Fix an index entry.
+
+Sat Apr 17 13:53:43 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Rewrite to use block/scope structure of GBE and to ensure
+	variables (especially those going on stack/reg) are declared
+	before executable code generated:
+	* bld.c (ffebld_new_item, ffebld_new_one, ffebld_new_two):
+	Support new hooks.
+	* bld.h (ffebld_item_hook, ffebld_item_set_hook,
+	ffebld_nonter_hook, ffebld_nonter_set_hook): Ditto.
+	* bld.h (ffebld_basictype, ffebld_kind, ffebld_kindtype,
+	ffebld_rank, ffebld_where): New convenience macros (used
+	by rest of this patch).
+	* com.c, com.h (ffecom_push_calltemps, ffecom_pop_calltemps,
+	ffecom_push_tempvar, ffecom_pop_tempvar): Remove temp-var-
+	handling mechanism.
+	* com.c (ffecom_call_, ffecom_call_binop_, ffecom_tree_divide_,
+	ffecom_call_gfrt): Support passing hooks for temp-var info.
+	(ffecom_expr_power_integer_): Takes opPOWER expression, instead
+	of its left and right operands, so it can get at the hook.
+	(ffecom_prepare_let_char_, ffecom_prepare_arg_ptr_to_expr,
+	ffecom_prepare_end, ffecom_prepare_expr_, ffecom_prepare_expr_rw,
+	ffecom_prepare_expr_w, ffecom_prepare_return_expr,
+	ffecom_prepare_ptr_to_expr): New functions supporting expression
+	pre-scanning.
+	(bison_rule_compstmt_): Return the tree, as in the CFE.
+	(delete_block): New function, from CFE.
+	(kept_level_p): New function, from CFE, modified.
+	(ffecom_start_compstmt, ffecom_end_compstmt): New functions,
+	replacing ffecom_start_compstmt_ and ffecom_end_compstmt_ macros,
+	and they do real work.
+	(struct binding_level): Add prep_state member.  Initialize to 0.
+	(ffecom_get_invented_identifier): Now takes either or both a
+	string and an integer, using -1 to denote no integer.
+	(ffecom_do_entry_): Disallow temp-var generation via expressions
+	in body of function, since the exprs aren't prescanned.
+	(ffecom_expr_rw): Now takes destination tree.
+	(ffecom_expr_w): New function, now used in some places
+	ffecom_expr_rw had been used.
+	(ffecom_expr_intrinsic_): Move huge f2c-related comment to bottom
+	of source file, to avoid annoying problems editing com.c using
+	Emacs C-mode.
+	(ffecom_expr_power_integer_): Make a temp var for division, if
+	necessary.
+	Handle expanded statement expression as does CFE.
+	(ffecom_start_progunit_): Disallow temp-var generation in body
+	of function, since expressions are not prescanned at this level.
+	(ffecom_sym_transform_): Transform ASSIGN variables as well,
+	so these are all transformed up front, before code-generation
+	begins.
+	(ffecom_arg_ptr_to_const_expr, ffecom_const_expr,
+	ffecom_ptr_to_const_expr): New functions to transform expressions
+	only if the results will surely be constants.
+	(ffecom_arg_ptr_to_expr): Precompute size, for convenience
+	obtaining temp vars.
+	(ffecom_expand_let_stmt): Guess at usability of destination
+	pre-expansion, to provide better prescan preparation (fewer
+	spurious temp vars).
+	(ffecom_init_0): Disallow temp-var generation in global scope.
+	(ffecom_type_expr): New function, returns just the type tree
+	for the expression.
+	(start_function): Disallow temp-var generation in parm scope.
+	(incomplete_type_error): Fix introductory comment.
+	(poplevel): Update (somewhat) from CFE.
+	(pushlevel): Update (somewhat) from CFE.
+	* stc.c (ffestc_R838): Mark ASSIGNed variable as so.
+	* std.c (ffestd_stmt_pass_, ffestd_R803, ffestd_R804, ffestd_R805,
+	ffestd_R806): Remember and pass through the ffestw block info
+	for these (IFTHEN, ELSEIF, ELSE, and ENDIF) statements.
+	* ste.c (ffeste_end_iterdo_): Now takes ffestw block argument.
+	(ffeste_io_inlist_): Add prototype.
+	(ffeste_f2c_*): Macros rewritten, new ones added.
+	(ffeste_start_block_, ffeste_end_block_, ffeste_start_stmt_,
+	ffeste_end_stmt_): New macros/functions, depending on whether
+	checking is enabled, to keep track of symmetry of other ste.c code.
+	(ffeste_begin_iterdo_, ffeste_end_iterdo_, ffeste_io_impdo_,
+	ffeste_io_dofio_, ffeste_io_dolio_, ffeste_io_douio_,
+	ffeste_io_ialist_, ffeste_io_cilist_, ffeste_io_cllist_,
+	ffeste_icilist_, ffeste_io_inlist_, ffeste_io_olist_,
+	ffeste_subr_beru_, ffeste_do, ffeste_end_R807, ffeste_R737A,
+	ffeste_R803, ffeste_R804, ffeste_R805, ffeste_R806, ffeste_R807,
+	ffeste_R809, ffeste_R810, ffeste_R811, ffeste_R819A, ffeste_R819B,
+	ffeste_R837, ffeste_R838, ffeste_R839, ffeste_R840, ffeste_R904,
+	ffeste_R907, ffeste_R909_start, ffeste_R909_item, ffeste_R909_finish,
+	ffeste_R910_start, ffeste_R910_item, ffeste_R910_finish,
+	ffeste_R911_start, ffeste_R911_item, ffeste_R911_finish,
+	ffeste_R923A, ffeste_R1212, ffeste_R1227): Prescan/prepare
+	all pertinent expressions, update to new com.c interface, etc.
+	(ffeste_io_impdo_): Relocate.
+	(ffeste_R834, ffeste_R835, ffeste_R836, ffeste_R1226): Don't
+	bother calling clear_momentary, nothing was generated.
+	(ffeste_R842, ffeste_R843): Update to new com.c interface.
+	(ffeste_R1226): Don't try to stuff error_mark_node's DECL_INITIAL.
+	(ffeste_terminate_2): When checking enabled, make sure all blocks
+	and statements have been ended.
+	* ste.h (ffeste_R803, ffeste_R804, ffeste_R805, ffeste_R806):
+	These now take ffestw block argument.
+	(ffeste_terminate_2): When checking enabled, it's a function, not
+	a macro.
+	* stw.h (struct _ffestw_): New variable for IFTHEN.
+	(ffestw_ifthen_fake_else, ffestw_set_ifthen_fake_else): New
+	accessor macros.
+	* symbol.c, symbol.h: Support new ASSIGN'ed-to info.
+
+	* com.c: Clean up commentary per GNU coding standards.
+
+	* bld.h (ffebld_size, ffebld_size_known): Canonize.
+
+	* version.c: Bump version.
+
+Sun Apr 11 21:33:33 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* g77spec.c (lang_specific_driver): Check whether MATH_LIBRARY is
+	null to decide whether to use it.
+
+Wed Apr  7 09:47:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansify.c (die): Specify void argument.
+
+	* intdoc.c (family_name, dumpgen, dumpspec, dumpimp,
+	argument_info_ptr, argument_info_string, argument_name_ptr,
+	argument_name_string, elaborate_if_complex,
+	elaborate_if_maybe_complex, elaborate_if_real, print_type_string):
+	Const-ify a char*.
+	(main): Mark parameter `argv' with ATTRIBUTE_UNUSED.
+	(_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, cc_pair, descriptions, summaries): Const-ify a char*.
+
+Mon Apr  5 11:57:54 1999  Donn Terry (donn@interix.com)
+
+	* Make-lang.in (HOST_CFLAGS): compute dynamically.
+
+Mon Apr  5 02:11:23 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix bugs exposed by configuring with --enable-checking:
+	* com.c (ffecom_do_entry_, ffecom_expr_, ffecom_arg_ptr_to_expr,
+	ffecom_list_expr, ffecom_list_ptr_to_expr, finish_function,
+	pop_f_function_context, store_parm_decls, poplevel): Handle
+	error_mark_node properly.
+	* ste.c (ffeste_begin_iterdo_, ffeste_end_iterdo_): Ditto.
+	* version.c: Bump version.
+
+Sat Apr  3 23:57:56 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix up docs for -fset-g77-defaults, and
+	describe how internal consistency checking now happens.
+	(Should have been done for EGCS version 1.1.)
+
+Sat Apr  3 23:29:33 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, g77.texi, lang-options.h, news.texi, top.c:
+	Make -fno-emulate-complex the default, as COMPLEX support
+	in the back end is now believed to be working.
+
+	* version.c: Bump version.
+
+Fri Apr  2 13:33:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: -malign-double now works.
+	Give URL for alignment-testing package.
+	* news.texi: -malign-double now works.
+
+Fri Apr  2 12:49:12 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Funding GNU Fortran): Dude's got a web page.
+	* root.texi: Ditto.
+
+Tue Mar 30 12:04:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sta.c (ffesta_ffebad_1sp, ffesta_ffebad_1st, ffesta_ffebad_2st):
+	Const-ify a char*.
+
+	* sta.h (ffesta_ffebad_1sp, ffesta_ffebad_1st, ffesta_ffebad_2st):
+	Likewise.
+
+	* stb.c (ffestb_local_u_): Likewise.
+	(ffestb_do, ffestb_dowhile, ffestb_else, ffestb_elsexyz,
+	ffestb_else3_, ffestb_endxyz, ffestb_goto, ffestb_let,
+	ffestb_type, ffestb_type1_, ffestb_varlist, ffestb_R423B,
+	ffestb_R522, ffestb_R528, ffestb_R542, ffestb_R834, ffestb_R835,
+	ffestb_R838, ffestb_R841, ffestb_R1102, ffestb_blockdata,
+	ffestb_R1212, ffestb_R1228, ffestb_V009, ffestb_module,
+	ffestb_R809, ffestb_R810, ffestb_R10014_, ffestb_R10015_,
+	ffestb_R10018_, ffestb_R1107, ffestb_R1202, ffestb_R12026_,
+	ffestb_S3P4, ffestb_V012, ffestb_V014, ffestb_V025, ffestb_V0255_,
+	ffestb_V020, ffestb_dimlist, ffestb_dummy, ffestb_R524,
+	ffestb_R547, ffestb_decl_chartype, ffestb_decl_dbltype,
+	ffestb_decl_gentype, ffestb_decl_recursive, ffestb_decl_entsp_2_,
+	ffestb_decl_func_, ffestb_V003, ffestb_V016, ffestb_V027,
+	ffestb_decl_R539): Likewise.
+
+	* stb.h (_ffestb_args_): Likewise.
+
+	* stc.c (ffestc_subr_binsrch_, ffestc_subr_is_present_,
+	ffestc_subr_speccmp_, ffestc_R904, ffestc_R907): Likewise.
+
+	* std.c (ffestd_R1001dump_1005_1_, ffestd_R1001dump_1005_2_,
+	ffestd_R1001dump_1005_3_, ffestd_R1001dump_1005_4_,
+	ffestd_R1001dump_1005_5_, ffestd_R1001dump_1010_1_,
+	ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+	ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_): Likewise.
+
+	* ste.c (ffeste_begin_iterdo_, ffeste_subr_file_): Likewise.
+
+	* sts.c (ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+	ffests_printf_2Us, ffests_puts, ffests_puttext): Likewise.
+
+	* sts.h (ffests_printf_1D, ffests_printf_1U, ffests_printf_1s,
+	ffests_printf_2Us, ffests_puts, ffests_puttext): Likewise.
+
+	* stt.c (ffestt_exprlist_drive, ffestt_implist_drive,
+	ffestt_tokenlist_drive): Add prototype arguments.
+
+	* stt.h (ffestt_exprlist_drive, ffestt_implist_drive,
+	ffestt_tokenlist_drive): Likewise.
+
+	* stu.c (ffestu_dummies_transition_): Likewise.
+	(ffestu_sym_end_transition): Const-ify a char*.
+
+	* stw.c (ffestw_display_state, ffestw_new, ffestw_pop): Add
+	prototype arguments.
+
+	* stw.h (ffestw_display_state, ffestw_new, ffestw_pop): Likewise.
+
+	* version.c (ffe_version_string): Const-ify a char*.
+
+	* version.h (ffe_version_string): Likewise.
+
+Sat Mar 27 13:00:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (_ffebad_message_, ffebad_string_, ffebad_message_,
+	ffebad_bufputs_, ffebad_bufputs_, ffebad_start_, ffebad_string,
+	ffebad_finish): Const-ify a char*.
+
+	* bld.c (ffebld_op_string_, ffebld_op_string): Likewise.
+
+	* bld.h (ffebld_op_string): Likewise.
+
+	* com.c (ffecom_arglist_expr_, ffecom_build_f2c_string_,
+	ffecom_debug_kludge_, ffecom_f2c_make_type_,
+	ffecom_get_appended_identifier_, ffecom_get_identifier_,
+	ffecom_gfrt_args_): Likewise.
+	(ffecom_convert_narrow_, ffecom_convert_widen_): Add prototype.
+	(builtin_function, ffecom_gfrt_name_, ffecom_gfrt_argstring_,
+	ffecom_arglist_expr_, ffecom_build_f2c_string_,
+	ffecom_debug_kludge_, ffecom_f2c_make_type_,
+	ffecom_get_appended_identifier_, ffecom_get_external_identifier_,
+	ffecom_get_identifier_, ffecom_decl_field,
+	ffecom_get_invented_identifier, lang_print_error_function,
+	skip_redundant_dir_prefix, read_name_map, print_containing_files):
+	Const-ify a char*.
+	(savestring): Remove, use `xstrdup' instead.
+
+	* com.h (ffecom_decl_field, ffecom_get_invented_identifier):
+	Const-ify a char*.
+
+	* data.c (ffebld, ffedata_gather_): Make explicitly static.
+
+	* expr.c (ffeexpr_isdigits_, ffeexpr_percent_,
+	ffeexpr_reduced_concatenate_, ffeexpr_nil_real_,
+	ffeexpr_nil_number_, ffeexpr_nil_number_period_,
+	ffeexpr_nil_number_real_, ffeexpr_token_real_,
+	ffeexpr_token_number_, ffeexpr_token_number_period_,
+	ffeexpr_token_number_real_): Const-ify a char*.
+
+	* fini.c (xspaces): Likewise.
+
+	* global.c (ffeglobal_type_string_): Likewise.
+	(ffeglobal_drive): Protoize.
+	(ffeglobal_proc_def_arg): Const-ify a char*.
+
+	* global.h (ffeglobal_drive): Protoize.
+	(ffeglobal_proc_def_arg): Const-ify a char*.
+
+	* implic.c (ffeimplic_none, ffeimplic_peek_symbol_type):
+	Likewise.
+
+	* implic.h (ffeimplic_peek_symbol_type): Likewise.
+
+	* info.c (ffeinfo_basictype_string_, ffeinfo_kind_message_,
+	ffeinfo_kind_string_, ffeinfo_kindtype_string_,
+	ffeinfo_where_string_, ffeinfo_basictype_string,
+	ffeinfo_kind_message, ffeinfo_kind_string,
+	ffeinfo_kindtype_string, ffeinfo_where_string): Likewise.
+
+	* info.h (ffeinfo_basictype_string, ffeinfo_kind_message,
+	ffeinfo_kind_string, ffeinfo_kindtype_string,
+	ffeinfo_where_string): Likewise.
+
+	* intrin.c (_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, ffeintrin_check_, ffeintrin_cmp_name_,
+	ffeintrin_fulfill_specific, ffeintrin_init_0,
+	ffeintrin_is_actualarg, ffeintrin_is_intrinsic,
+	ffeintrin_name_generic, ffeintrin_name_implementation,
+	ffeintrin_name_specific): Likewise.
+
+	* intrin.h (ffeintrin_is_intrinsic, ffeintrin_name_generic,
+	ffeintrin_name_implementation, ffeintrin_name_specific): Likewise.
+
+	* lex.c (ffelex_type_string_, ffelex_token_new_character,
+	ffelex_token_new_name, ffelex_token_new_names,
+	ffelex_token_new_number): Likewise.
+
+	* lex.h (ffelex_token_new_character, ffelex_token_new_name,
+	ffelex_token_new_names, ffelex_token_new_number): Likewise.
+
+	* malloc.c (malloc_types_, malloc_pool_new, malloc_new_inpool_,
+	malloc_new_zinpool_): Likewise.
+
+	* malloc.h (malloc_new_inpool_, malloc_new_zinpool_,
+	malloc_pool_new): Likewise.
+
+	* name.c (ffename_space_drive_global, ffename_space_drive_symbol):
+	Protoize.
+
+	* name.h (ffename_space_drive_global, ffename_space_drive_symbol):
+	Likewise.
+
+	* symbol.c (ffesymbol_state_name_, ffesymbol_attr_name_,
+	ffesymbol_attrs_string): Const-ify a char*.
+	(ffesymbol_drive, ffesymbol_drive_sfnames): Protoize.
+	(ffesymbol_state_string): Const-ify a char*.
+
+	* symbol.h (ffesymbol_attrs_string): Likewise.
+	(ffesymbol_drive, ffesymbol_drive_sfnames): Protoize.
+	(ffesymbol_state_string): Const-ify a char*.
+
+	* target.c (ffetarget_layout): Likewise.
+
+	* target.h (ffetarget_layout): Likewise.
+
+1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Make-lang.in: Remove all references to g77.o/g77.c.
+	Link g77 from gcc.o.
+
+1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (g77$(exeext)): Depend on intl.o.  Link in intl.o.
+
+Wed Mar 17 11:39:44 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Editorial fix.
+
+Mon Mar 15 17:12:07 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, g77.texi, news.texi: Editorial fixes.
+
+Sat Mar 13 17:51:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990313-0.f, 19990313-1.f, 19990313-2.f, 19990313-3.f:
+	* bad.def (FFEBAD_NOCANDO): New error code for internal use only.
+	* expr.c (ffeexpr_collapse_convert): If FFEBAD_NOCANDO returned
+	by convertor, just return original expr.
+	* target.h: Return FFEBAD_NOCANDO for (usually) 64-bit
+	conversions that aren't yet working properly.
+	* news.texi: Explain.
+
+	* version.c: Bump version.
+
+Sat Mar 13 14:26:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* RELEASE-PREP: New file, lists things to do for a release.
+
+	* Make-lang.in, bugs.texi, bugs0.texi, g77.texi, g77install.texi,
+	install0.texi, news.texi, news0.texi: Accommodate new doc
+	architecture.
+	Consolidate news items.  Don't describe old news items in
+	various generated docs.
+	Don't describe FSF-g77 installation stuff in various EGCS-g77
+	generated docs.
+	Move description of AUTOMATIC to more suitable location.
+	* root.texi: New file for new doc architecture.
+
+Thu Mar 11 17:32:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Add AUTOMATIC to list of unsupported extensions.
+
+Sat Mar  6 02:28:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Warn about non-Y2K-compliant intrinsics:
+	* bad.def (FFEBAD_INTRINSIC_Y2KBAD): New diagnostic.
+	* intrin.def (FFEINTRIN_impDATE, FFEINTRIN_impIDATE_vxt):
+	Use new DEFIMPY macro to flag these as non-Y2K-compliant.
+	* intdoc.c (DEFIMPY): Support new Y2K macro.
+	* intrin.h (DEFIMPY): Ditto.
+	* intrin.c (DEFIMPY): Ditto.
+	(ffeintrin_fulfill_generic, ffeintrin_fulfill_specific):
+	Warn about invocation of non-Y2K-compliant intrinsic.
+	* com-rt.def (FFECOM_gfrtDATE, FFECOM_gfrtVXTIDATE):
+	Rename external procedure names, to keep previously-
+	compiled (sans-new-warnings) code from linking to
+	new library.
+	* g77.texi: Document all this stuff.
+	* news.texi: Spread the joy.
+	* version.c: Bump version.
+
+Fri Mar  5 13:22:44 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Relocate IDATE (VXT) fix: we put it in 1.1.2
+	so describe it there, instead of under 1.2.
+
+Wed Mar  3 00:57:56 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: IDATE (VXT) fixed to return year as 0..99.
+
+Wed Mar  3 00:43:49 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Add remaining changes pending from Dave Love.
+
+Wed Mar  3 00:38:42 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Conditionalize cross-references
+	on non-html processing, providing temporary HTML "links".
+
+	* g77.texi: Fix up a reference.
+
+Wed Mar  3 00:12:31 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi, bugs.texi: Delete fixed bugs, make one
+	of them into the appropriate news item.
+
+Wed Mar  3 00:05:52 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Copy over 1.1.2 news.
+
+1999-03-02  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Bug Reporting): Clarify whether to use -E.
+	Clarify other instructions.
+
+1999-02-27  Craig Burley  <craig@jcb-sc.com>
+
+	* lang-specs.h: Fix specs to pass `-ax' as well as `-a' option.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (STAT_func, STAT_subr,
+	FSTAT_func, FSTAT_subr, LSTAT_func, LSTAT_subr):
+	Properly order array elements.  Specify N/A return values.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (DATE_AND_TIME): Explain that VALUES(7) holds
+	seconds, and VALUES(8), therefore, milliseconds.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Clarify IOSTAT= fix.
+
+1999-02-25  Richard Henderson  <rth@cygnus.com>
+
+	* lang-specs.h: Define __FAST_MATH__ when appropriate.
+
+1999-02-25  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Clarify/index lack of run-time allocation for
+	concatenation.
+
+1999-02-25  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* f/intdoc.in: Add missing `,' after cross references.
+
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in (f77.install-common, f77.install-info,
+	f77.install-man, f77.uninstall): Use `$(prefix)/lang-f77'
+	instead of `lang-f77' for flag file, to be sure of a
+	writable directory, and remove the flag file after each
+	operation to keep things clean.
+
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Properly attribute Priest document; clarify
+	that it is in the .ps version of the Goldberg document.
+
+1999-02-19  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs0.texi, bugs.texi, install0.texi, g77install.texi,
+	news0.texi, news.texi: Update copyright dates.
+	Clarify which files are source, which are derived,
+	and remind maintainers where copyright dates are sourced.
+	* BUGS, INSTALL, NEWS: Regenerated.
+
+1999-02-19  Craig Burley  <craig@jcb-sc.com>
+
+	* global.c (ffeglobal_ref_progunit_): Warn about a function
+	definition that disagrees with the type of a previous reference.
+	Improve commentary.  Fix a couple of minor bugs.  Clean up
+	some code.
+	* news.texi: Spread the joy.
+
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
+	* expr.c (ffeexpr_finished_): Disallow non-default INTEGER
+	as argument for FILEINT and FILEASSOC as lhs.
+	* news.texi: Document fix.
+	* version.c: Bump.
+
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Clarify -fno-globals vs. -Wno-globals.
+
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (LOG10): Fix typo.
+
+1999-02-17  Ulrich Drepper  <drepper@cygnus.com>
+
+	* intdoc.in: Fix typo.
+
+1999-02-17  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi, intdoc.in: Document Y2K and some other known
+	limitations.
+	* intrin.def (DTIME, FDATE): Fix capitalization of
+	case-sensitive forms of these intrinsics' names.
+
+1999-02-17  Dave Love  <fx@gnu.org>
+
+	* intdoc.in: Say `common' logarithm for log10.
+
+1999-02-16  Ulrich Drepper  <drepper@cygnus.com>
+
+	* g77.texi: Add missing @ in email addresses.
+
+1999-02-15  Craig Burley  <craig@jcb-sc.com>
+
+	* *.*: Delete my (old) email address in most places, change it
+	in a few.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* version.c: Bump.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* version.c: Bump for 1998-10-02 change (forgot to do this
+	before).
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* lang-specs.h, g77.1, g77.texi, news.texi: Recognize `.FOR'
+	and `.FPP' as well as `.for' and `.fpp'.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (LOG10): Fix description.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Mention fix for SIGNAL invocation circa egcs-1.1.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi, g77install.texi, bugs.texi, g77install.texi: Clean
+	up and improve indexing, and some other areas of docs.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (MCLOCK8, TIME8): Warn about lower range on
+	32-bit systems.
+
+Sat Feb  6 18:02:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.texi: Update email addresses.
+
+Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+	* Make-lang.in (g77$(exeext)): Get choose-temp.o, pexecute.o and
+	mkstemp.o from libiberty.
+
+1999-02-01  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* top.c: Don't define ffe_is_ident_.  Don't process
+	-f(no-)ident here.
+	* top.h: Remove declaration of ffe_is_ident_ and macros
+	ffe_is_ident() and ffe_set_is_ident().
+	* lex.c: Use flag_no_ident instead of ffe_is_ident().
+
+Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* lang-specs.h: Map -Qn to -fno-ident.
+
+Tue Jan  5 22:12:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (g77.o): Depend on prefix.h.
+
+Fri Nov 27 13:10:32 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c: Rename variable `spaces' to `xspaces' to avoid
+	conflicting with function `spaces' from libiberty.
+
+	* g77spec.c: Don't prototype libiberty functions.
+	* malloc.c: Likewise.
+
+1998-11-20  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Assorted minor changes.
+
+1998-11-19  Dave Love  <d.love@dl.ac.uk>
+
+	* bugs.texi: Formatting changes from Craig.
+
+	* intdoc.in: Terminate some @xrefs with `,'.
+
+1998-11-19  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Make-lang.in (mandir): Replace all uses of $(mandir) by $(man1dir).
+
+Mon Nov  9 23:15:39 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.texi, news.texi: Updates from Craig.
+
+Sun Nov  8 17:47:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (INCLUDES): Add "-I$(srcdir)/../../include".
+
+Sat Nov  7 15:58:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g77spec.c: Don't include gansidecl.h.
+	* output.j: Likewise.
+
+1998-11-04  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Small formatting/indexing fixes.
+
+Mon Oct 12 20:41:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Change type of variable `c' to unsigned
+	char, change type of variable `s' to unsigned char *.
+
+	* com.c (ffecom_symbol_null_): Add missing initializers.
+
+	* fini.c (MAXNAMELEN): Undef it before defining.
+
+	* implic.c (ffeimplic_lookup_): Change type of parameter `c' to
+	unsigned char.
+
+	* intrin.c (ffeintrin_init_0): Cast the argument of ctype macros
+	to (unsigned char).
+
+	* lex.c (ffelex_splice_tokens): Change type of variable `p' to
+	unsigned char *.
+	(ffelex_token_name_from_names): Cast the argument of
+	`ffelex_is_firstnamechar' to (unsigned char).
+	(ffelex_token_names_from_names): Likewise.
+	(ffelex_token_new_name): Likewise.
+	(ffelex_token_new_names): Likewise.
+
+	* malloc.c (malloc_root_): Add missing initializer.
+
+	* stb.c (ffestb_do): Change type of variable `p' to unsigned char *.
+	(ffestb_else) Likewise.
+	(ffestb_else3_) Likewise.
+	(ffestb_endxyz) Likewise.
+	(ffestb_goto) Likewise.
+	(ffestb_let) Likewise.
+	(ffestb_varlist) Likewise.
+	(ffestb_R522) Likewise.
+	(ffestb_R528) Likewise.
+	(ffestb_R834) Likewise.
+	(ffestb_R835) Likewise.
+	(ffestb_R838) Likewise.
+	(ffestb_R1102) Likewise.
+	(ffestb_blockdata) Likewise.
+	(ffestb_R1212) Likewise.
+	(ffestb_R810) Likewise.
+	(ffestb_R10014_): Cast the argument of `ffelex_is_firstnamechar'
+	to (unsigned char).
+	(ffestb_V014): Change type of variable `p' to unsigned char *.
+	(ffestb_dummy) Likewise.
+	(ffestb_R524) Likewise.
+	(ffestb_R547) Likewise.
+	(ffestb_decl_chartype) Likewise.
+	(ffestb_decl_dbltype) Likewise.
+	(ffestb_decl_gentype) Likewise.
+	(ffestb_decl_entsp_2_) Likewise.
+	(ffestb_V027) Likewise.
+	(ffestb_decl_R539) Likewise.
+
+	* top.c (ffe_decode_option): Mark parameter `argc' with
+	ATTRIBUTE_UNUSED.
+
+	* where.c (ffewhere_unknown_line_): Add missing initializers.
+
+1998-10-02  Dave Love  <d.love@dl.ac.uk>
+
+	* com.c (ffecom_expr_intrinsic_): Fix return type for RAND.
+
+Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	HANDLE_GENERIC_PRAGMAS.
+
+Mon Sep 28 04:22:00 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* news.texi: Update from Craig.
+
+1998-09-23  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Additions about `/*', trailing comments and cpp.
+
+1998-09-18  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Various additions and some small fixes.
+
+Thu Sep 10 14:55:44 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* Make-lang.in (f77.install-common): Add missing "else true;".
+
+1998-09-07  Dave Love  <d.love@dl.ac.uk>
+
+	* ChangeLog.egcs: Deleted.  Entries merged here.
+
+1998-09-05  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (LDFLAGS): Set from BOOT_LDFLAGS.
+	(F771_LDFLAGS): Variable dispensed with.
+
+Fri Sep  4 19:53:34 1998  Craig Burley  <burley@gnu.org>
+
+	* intdoc.in: Minor editorial tweaks.
+
+Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
+
+	* lang-options.h: Convert to wrap option and doc string
+	in a new macro invocation, FTNOPT, so the nearly identical
+	list can be used in FSF-g77.
+
+Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
+
+	* Makefile.in (fini.o): Don't define USE_HCONFIG here.
+	* fini.c: Define USE_HCONFIG here instead, so deps-kinda
+	picks up correct dependency.
+
+	* Makefile.in (proj-h.o): Fix dependencies list.
+
+Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c (ffe_lex_hash):  Change how HANDLE_PRAGMA and
+	HANDLE_SYSV_PRAGMA would be called if they pragma parsing was
+	enabled in this code.
+	Generate warning messages if unknown pragmas are encountered.
+	(pragma_getc): New function: retrieves characters from the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+	(pragma_ungetc): New function: replaces characters back into the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+
+Tue Sep  1 10:00:21 1998  Craig Burley  <burley@gnu.org>
+
+	* bugs.texi, g77.1, g77.texi, intdoc.in, news.texi: Doc updates
+	from Craig.
+
+1998-08-23  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Increment `version-g77' and fix a few typos.
+
+Tue Aug 18 21:41:31 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in: Add several "else true" clauses to deal with lame
+	systems.
+
+Tue Aug 11 08:12:14 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in (g77.o): Touch lang-f77 before checking it.
+
+1998-08-09  Dave Love  <d.love@dl.ac.uk>
+
+	* Make-lang.in (f/g77.dvi): Replace non-working use of texi2dvi
+	with explicit use of tex.
+	(f77.mostlyclean): Remove TeX index files.
+
+	* g77install.texi (Prerequisites): Kluge round TeX lossage with
+	hyphen in @value in @code.
+
+Tue Aug  4 16:59:39 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_):
+	Allow conversion from pointer to same-sized integer,
+	to fix invoking SIGNAL as a function.
+
+1998-07-26  Dave Love  <d.love@dl.ac.uk>
+
+	* BUGS, INSTALL, NEWS: Rebuilt.
+
+Sat Jul 25 17:23:55 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980615-0.f:
+	* stc.c (ffestc_R1229_start): Set info to ANY as well.
+
+Tue Jul 21 04:33:37 1998  Craig Burley  <burley@gnu.org>
+
+	* g77spec.c (lang_specific_driver): Return unmolested
+	command line when --help seen.
+	Comment out code that printed g77-specific --help info.
+
+Sat Jul 18 19:16:48 1998  Craig Burley  <burley@gnu.org>
+
+	* lang-options.h: Fix up doc strings.
+	Remove the unimplemented -fdcp-intrinsics-* options.
+
+	* str-1t.fin: Change mixed-case spelling of `GoTo' from
+	`Goto'.
+
+Thu Jul 16 13:26:36 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_finish_symbol_transform_): Revert change
+	of 1998-05-23, as it was too aggressive, in that it
+	prevented transformation of (used) functions before
+	primary code generation.
+
+1998-07-15  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.texi: Regenerated.
+
+Mon Jul 13 18:45:06 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f77.rebuilt): Fix to depend on
+	build-dir-based, not source-based, g77.info.
+
+	* g77.texi: Merge docs with 0.5.24.
+	* g77install.texi: Ditto.
+
+Mon Jul 13 18:02:29 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis g77-0.5.24:
+	* g77spec.c (lang_specific_driver): Tabify source.
+	* top.c (ffe_decode_option): Use fixed macro to set
+	internal-checking flag.
+	* top.h (ffe_set_is_do_internal_checks): Fix macro.
+
+Mon Jul 13 17:33:44 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis system.h cutover and g77-0.5.24:
+	* Makefile.in (fini.o): Define USE_HCONFIG macro
+	so source code doesn't have to.
+	* fini.c: Don't define USE_HCONFIG here, since
+	source code usually shouldn't care about this.
+	* ansify.c: Include stddef.h only if we have it.
+	* intdoc.c: Ditto.
+	* proj.h: Ditto.
+
+Mon Jul 13 17:30:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lang-options.h: Format changed to work with --help support added
+	to gcc/toplev.c
+
+Mon Jul 13 11:54:03 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_push_tempvar): Replace kludge that
+	munged back-end globals directly with proper calls
+	to push_topmost_sequence and pop_topmost_sequence.
+
+1998-07-12  Dave Love  <d.love@dl.ac.uk>
+
+	* version.c: Bump version.
+
+Sat Jul 11 19:24:32 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980616-0.f:
+	* equiv.c (ffeequiv_offset_): Don't crash on various
+	possible ANY operands.
+
+Sat Jul 11 18:24:37 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_expr_) [FFEBLD_opCONTER]: Die if padding
+	for constant is nonzero.
+
+	* com.c (__eprintf): Delete this function, it is obsolete.
+
+1998-07-09  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in (HOSTNM_func, HOSTNM_subr): Update last change.
+
+Thu Jul  9 00:45:59 1998  Craig Burley  <burley@gnu.org>
+
+	Fix debugging of CHARACTER*(*), etc., which requires
+	emitting debug info on types like `ftnlen':
+	* com.c (ffecom_start_progunit_): Don't bother
+	resetting "invented" flag for identifier.
+	(ffecom_transform_equiv_): Don't bother zeroing
+	"ignored" flag for decl.
+	(pushdecl): No longer set "ignored", "used", or
+	"suppressed debug" flags for decls having "invented"
+	identifiers.
+
+1998-07-06  Mike Stump  <mrs@wrs.com>
+
+	* Make-lang.in (f77.stage?): Use mv -f instead of just mv so that
+	we can move g77.c.
+
+1998-07-06  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in (HOSTNM_func, HOSTNM_subr): Note possible need for
+	-lsocket.
+
+1998-07-05  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in: Add entry for DATE_AND_TIME.
+
+	* intrin.def: Add implementation for DATE_AND_TIME.  Make second
+	and third args of SYSTEM_CLOCK optional.
+
+	* com.c (ffecom_expr_intrinsic_): New case for DATE_AND_TIME.
+
+	* com-rt.def (FFECOM_gfrtSYSTEM_CLOCK): Call G77_system_clock_0,
+	not system_clock_.
+	(FFECOM_gfrtDATE_AND_TIME): New DEFGFRT.
+
+Wed Jul  1 11:19:13 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980701-1.f (which was producing "unaligned trap"
+	on an Alpha running GNU/Linux, as predicted):
+	* equiv.c (ffeequiv_layout_local_): Don't bother
+	coping with pre-padding of entire area while building
+	it; do that instead after the building is done, and
+	do it by modifying only the modulo field.  This covers
+	the case of alignment stringency being increased without
+	lowering the starting offset, unlike the previous changes,
+	and even more elegantly than those.
+
+	* target.c (ffetarget_align): Make sure alignments
+	are nonzero, just in case.
+
+See ChangeLog.0 for earlier changes.
+
+Local Variables:
+add-log-time-format: current-time-string
+End:
 2003-01-01  Andreas Jaeger  <aj@suse.de>
 
 	* f/Make-lang.in ($(srcdir)/f/BUGS): Add include path for
