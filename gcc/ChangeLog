@@ -1,3 +1,8 @@
+Thu Aug 27 16:34:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (check_dbra_loop): Enable code for reversal
+	of some loops without a known constant loop end.
+
 Wed Aug 26 18:38:15 1998  Richard Henderson  <rth@cygnus.com>
 
         * haifa-sched.c (last_clock_var): New.
