@@ -1,5 +1,12 @@
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/frontends.texi: Update copyright.
+	* doc/gcov.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/coff.h: Update copyright.
 	* config/h8300/elf.h: Likewise.
 	* config/h8300/h8300-protos.h: Likewise.
