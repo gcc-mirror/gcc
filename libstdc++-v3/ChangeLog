@@ -1,3 +1,7 @@
+2001-02-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* testsuite/Makefile.am: New file.
+
 2001-02-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* include/c_shadow/bits/std_cstdlib.h (lldiv_t): Fix typo.
