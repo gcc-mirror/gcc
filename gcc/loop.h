@@ -75,6 +75,9 @@ struct induction
 				   Both this and the above can be zero.  */
   unsigned ignore : 1;		/* 1 prohibits further processing of giv */
   unsigned always_computable : 1;/* 1 if this set occurs each iteration */
+  unsigned maybe_multiple : 1;	/* Only used for a biv and  1 if this biv
+				   update may be done multiple times per
+				   iteration. */
   unsigned cant_derive : 1;	/* For giv's, 1 if this giv cannot derive
 				   another giv.  This occurs in many cases
 				   where a giv's lifetime spans an update to
