@@ -2333,7 +2333,11 @@
  ""
  "
 {
-  operands[0] = gen_rtx (MEM, SImode, XEXP (operands[0], 0));
+  if (TARGET_LONG_CALLS) 
+    operands[0] = gen_rtx (MEM, SImode, 
+		  force_reg (SImode, XEXP (operands[0], 0)));
+  else
+    operands[0] = gen_rtx (MEM, SImode, XEXP (operands[0], 0));
 }")
 
 (define_insn ""
@@ -2365,7 +2369,11 @@
   ""
   "
 {
-  operands[1] = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
+  if (TARGET_LONG_CALLS) 
+    operands[1] = gen_rtx (MEM, SImode, 
+			   force_reg (SImode, XEXP (operands[1], 0)));
+  else
+    operands[1] = gen_rtx (MEM, SImode, XEXP (operands[1], 0));
 }")
 
 (define_insn ""
