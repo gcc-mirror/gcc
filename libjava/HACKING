@@ -18,8 +18,12 @@ efficient, cleanest) implementation of each method/class/package, resolve
 any conflicts created by the merge, and test the final result.
 
 The merged files can be recognized by the standard Classpath copyright
-comments at the top of the file. If you make changes to these files then
-you should also send a patch to the classpath mailinglist.
+comments at the top of the file. If you make changes to these files
+then you should also check in the fix to Classpath.  For small changes
+it may be easier to send a patch to the classpath mailinglist.  For
+large changes, if you have direct write access to the libgcj tree,
+then you will also need to get a Classpath account and do the work
+yourself.
 <http://mail.gnu.org/mailman/listinfo/classpath/>
 <mailto:classpath@gnu.org>
 
