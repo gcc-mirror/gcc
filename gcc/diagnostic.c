@@ -1,4 +1,4 @@
-/* Top level of GNU C compiler
+/* Language-independent diagnostic subroutines for the GNU C compiler
    Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -37,38 +37,19 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "toplev.h"
 #include "intl.h"
-#include "obstack.h"
+#include "diagnostic.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free  free
 
-struct output_buffer
-{
-  struct obstack obstack;       /* where we build the text to output */
-  char *prefix;                 /* prefix of every new line  */
-  int line_length;              /* current line length (in characters) */
-  int max_length;               /* maximum characters per line */
-};
-
 /* Prototypes. */
 static int doing_line_wrapping PARAMS ((void));
-static void init_output_buffer PARAMS ((struct output_buffer*, char *, int));
-static char *get_output_prefix PARAMS ((const struct output_buffer *));
-static int output_space_left PARAMS ((const struct output_buffer *));
-static void emit_output_prefix PARAMS ((struct output_buffer *));
-static void output_newline PARAMS ((struct output_buffer *));
-static void output_append PARAMS ((struct output_buffer *, const char *,
-				   const char *));
-static void output_puts PARAMS ((struct output_buffer *, const char *));
-static void dump_output PARAMS ((struct output_buffer *, FILE *));
-static char *vbuild_message_string PARAMS ((const char *, va_list));
-static char *build_message_string PARAMS ((const char *, ...))
+
+static const char *vbuild_message_string PARAMS ((const char *, va_list));
+static const char *build_message_string PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1;
-static char *build_location_prefix PARAMS ((const char *, int, int));
-static void voutput_notice PARAMS ((struct output_buffer *, const char *,
-				    va_list));
-static void output_printf PARAMS ((struct output_buffer *, const char *, ...))
-     ATTRIBUTE_PRINTF_2;
+static const char *build_location_prefix PARAMS ((const char *, int, int));
+static void output_notice PARAMS ((output_buffer *, const char *));
 static void line_wrapper_printf PARAMS ((FILE *, const char *, ...))
      ATTRIBUTE_PRINTF_2;
 static void vline_wrapper_message_with_location PARAMS ((const char *, int,
@@ -98,12 +79,14 @@ static void vsorry PARAMS ((const char *, va_list));
 static void report_file_and_line PARAMS ((const char *, int, int));
 static void vnotice PARAMS ((FILE *, const char *, va_list));
 
-
 extern int rtl_dump_and_exit;
 extern int inhibit_warnings;
 extern int warnings_are_errors;
 extern int warningcount;
 extern int errorcount;
+
+/* Front-end specific tree formatter, if non-NULL.  */
+printer_fn lang_printer = NULL;
 
 static int need_error_newline;
 
@@ -143,52 +126,115 @@ set_message_length (n)
     output_maximum_width = n;
 }
 
-/* Construct an output BUFFER with PREFIX and of MAX_LENGTH characters
-   per line.  */
-
-static void
-init_output_buffer (buffer, prefix, max_length)
-     struct output_buffer *buffer;
-     char *prefix;
-     int max_length;
+/* Returns true if BUFFER is in line-wrappind mode.  */
+int
+output_is_line_wrapping (buffer)
+     output_buffer *buffer;
 {
-  int prefix_length = prefix == 0 ? 0 : strlen (prefix);
-
-  obstack_init (&buffer->obstack);
-  buffer->prefix = prefix;
-  buffer->line_length = 0;
-  /* If the prefix is ridiculously too long, output at least
-     32 characters.  */
-  if (max_length - prefix_length < 32)
-    buffer->max_length = max_length + 32;
-  else
-    buffer->max_length = max_length;
+  return buffer->ideal_maximum_length > 0;
 }
 
 /* Return BUFFER's prefix.  */
-
-static char *
-get_output_prefix (buffer)
-     const struct output_buffer *buffer;
+const char *
+output_get_prefix (buffer)
+     const output_buffer *buffer;
 {
   return buffer->prefix;
 }
 
-/* Return the amount of characters BUFFER can accept to
-   make a full line.  */
-
-static int
-output_space_left (buffer)
-     const struct output_buffer *buffer;
+/* Subroutine of output_set_maximum_length.  Set up BUFFER's
+   internal maximum characters per line.  */
+static void
+set_real_maximum_length (buffer)
+     output_buffer *buffer;
 {
-  return buffer->max_length - buffer->line_length;
+  /* If we're told not to wrap lines then do the obvious thing.  */
+  if (! output_is_line_wrapping (buffer))
+    buffer->maximum_length = buffer->ideal_maximum_length;
+  else
+    {
+      int prefix_length = buffer->prefix ? strlen (buffer->prefix) : 0;
+      /* If the prefix is ridiculously too long, output at least
+         32 characters.  */
+      if (buffer->ideal_maximum_length - prefix_length < 32)
+        buffer->maximum_length = buffer->ideal_maximum_length + 32;
+      else
+        buffer->maximum_length = buffer->ideal_maximum_length;
+    }
 }
 
-/* Dump BUFFER's prefix.  */
+/* Sets the number of maximum characters per line BUFFER can output
+   in line-wrapping mode.  A LENGTH value 0 suppresses line-wrapping.  */
+void
+output_set_maximum_length (buffer, length)
+     output_buffer *buffer;
+     int length;
+{
+  buffer->ideal_maximum_length = length;
+  set_real_maximum_length (buffer);
+}
 
-static void
-emit_output_prefix (buffer)
-     struct output_buffer *buffer;
+/* Sets BUFFER's PREFIX.  */
+void
+output_set_prefix (buffer, prefix)
+     output_buffer *buffer;
+     const char *prefix;
+{
+  buffer->prefix = prefix;
+  set_real_maximum_length (buffer);
+}
+
+/* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
+   characters per line.  */
+void
+init_output_buffer (buffer, prefix, maximum_length)
+     output_buffer *buffer;
+     const char *prefix;
+     int maximum_length;
+{
+  obstack_init (&buffer->obstack);
+  buffer->ideal_maximum_length = maximum_length;
+  buffer->line_length = 0;
+  output_set_prefix (buffer, prefix);
+  
+  buffer->cursor = NULL;
+  buffer->format_args = NULL;
+}
+
+/* Reinitialize BUFFER.  */
+void
+output_clear (buffer)
+     output_buffer *buffer;
+{
+  obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
+  buffer->line_length = 0;
+  buffer->cursor = NULL;
+  buffer->format_args = NULL;
+}
+
+/* Finishes to construct a NULL-terminated character string representing
+   the BUFFERed message.  */
+const char *
+output_finish (buffer)
+     output_buffer *buffer;
+{
+  obstack_1grow (&buffer->obstack, '\0');
+  return (const char *) obstack_finish (&buffer->obstack);
+}
+
+/* Return the amount of characters BUFFER can accept to
+   make a full line.  */
+int
+output_space_left (buffer)
+     const output_buffer *buffer;
+{
+  return buffer->maximum_length - buffer->line_length;
+}
+
+/* Write out BUFFER's prefix.  */
+void
+output_emit_prefix (buffer)
+     output_buffer *buffer;
 {
   if (buffer->prefix)
     {
@@ -198,21 +244,60 @@ emit_output_prefix (buffer)
 }
 
 /* Have BUFFER start a new line.  */
-
-static void
-output_newline (buffer)
-     struct output_buffer *buffer;
+void
+output_add_newline (buffer)
+     output_buffer *buffer;
 {
   obstack_1grow (&buffer->obstack, '\n');
   buffer->line_length = 0;
 }
 
+/* Appends a character to BUFFER.  */
+void
+output_add_character (buffer, c)
+     output_buffer *buffer;
+     int c;
+{
+  if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
+    output_add_newline (buffer);
+  obstack_1grow (&buffer->obstack, c);
+  ++buffer->line_length;
+}
+
+/* Adds a space to BUFFER.  */
+void
+output_add_space (buffer)
+     output_buffer *buffer;
+{
+  if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
+    {
+      output_add_newline (buffer);
+      return;
+    }
+  obstack_1grow (&buffer->obstack, ' ');
+  ++buffer->line_length;
+}
+
+/* Add the stringified version of an integer to BUFFER.  */
+void
+output_add_integer (buffer, i)
+     output_buffer *buffer;
+     HOST_WIDE_INT i;
+{
+  /* This must be large enough to hold any printed integer or
+     floating-point value.  */
+  static char digit_buffer[128];
+
+  sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DEC, i);
+  output_add_string (buffer, digit_buffer);
+}
+
 /* Append a string deliminated by START and END to BUFFER.  No wrapping is
    done.  The caller must ensure that it is safe to do so.  */
 
-static void
+void
 output_append (buffer, start, end)
-     struct output_buffer *buffer;
+     output_buffer *buffer;
      const char *start;
      const char *end;
 {
@@ -221,7 +306,7 @@ output_append (buffer, start, end)
   /* Emit prefix and skip whitespace if we're starting a new line.  */
   if (buffer->line_length == 0)
     {
-      emit_output_prefix (buffer);
+      output_emit_prefix (buffer);
       while (start != end && *start == ' ')
         ++start;
     }
@@ -232,14 +317,16 @@ output_append (buffer, start, end)
 
 /* Wrap a STRing into BUFFER.  */
 
-static void
-output_puts (buffer, str)
-     struct output_buffer *buffer;
+void
+output_add_string (buffer, str)
+     output_buffer *buffer;
      const char *str;
 {
   const char *p = str;
-  
-  while (*str)
+
+  if (!output_is_line_wrapping (buffer))
+    output_append (buffer, str, str + strlen (str));
+  else while (*str)
     {
       while (*p && *p != ' ' && *p != '\n')
         ++p;
@@ -248,13 +335,13 @@ output_puts (buffer, str)
         output_append (buffer, str, p);
       else
         {
-          output_newline (buffer);
+          output_add_newline (buffer);
           output_append (buffer, str, p);
         }
       
       while (*p && *p == '\n')
         {
-          output_newline (buffer);
+          output_add_newline (buffer);
           ++p;
         }
 
@@ -262,23 +349,57 @@ output_puts (buffer, str)
     }
 }
 
-/* Dump the content of BUFFER into FILE.  */
+/* Flush the content of BUFFER onto FILE and reinitialize BUFFER.  */
 
-static void
-dump_output (buffer, file)
-     struct output_buffer *buffer;
+void
+output_flush_on (buffer, file)
+     output_buffer *buffer;
      FILE *file;
 {
-  char *text;
-  
-  obstack_1grow (&buffer->obstack, '\0');
-  text = obstack_finish (&buffer->obstack);
+  const char *text = output_finish (buffer);
   fputs (text, file);
-  obstack_free (&buffer->obstack, text);
-  buffer->line_length = 0;
+  output_clear (buffer);
 }
 
-static char *
+/* Format MESSAGE into BUFFER.  */
+void
+output_format (buffer, msg)
+     output_buffer *buffer;
+     const char *msg;
+{
+  for (buffer->cursor = msg; *buffer->cursor; ++buffer->cursor)
+    {
+      /* Ignore text.  */
+      if (*buffer->cursor != '%')
+        {
+          output_add_character (buffer, *buffer->cursor);
+          continue;
+        }
+
+      /* We got a '%'.  Let's see what happens.  */
+      ++buffer->cursor;
+
+      /* Let's handle the traditional cases.  */
+      if (*buffer->cursor == 's')
+        output_add_string (buffer, va_arg (buffer->format_args, const char *));
+      else if (*buffer->cursor == 'd')
+        output_add_integer (buffer, va_arg (buffer->format_args, int));
+      else if (*buffer->cursor == '%')
+        /* It was a '%%'.  Just output a '%'.  */
+        output_add_character (buffer, '%');
+      else if (lang_printer)
+        (*lang_printer) (buffer);
+      else
+        {
+          /* Hmmm.  The front-end failed to install a format translator
+             but called us with an unrecognized format.  Sorry.  */
+          abort();
+        }
+    }
+  output_finish (buffer);
+}
+
+static const char *
 vbuild_message_string (msgid, ap)
      const char *msgid;
      va_list ap;
@@ -292,14 +413,14 @@ vbuild_message_string (msgid, ap)
 /*  Return a malloc'd string containing MSGID formatted a la
     printf.  The caller is reponsible for freeing the memory.  */
 
-static char *
+static const char *
 build_message_string VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
 #endif
   va_list ap;
-  char *str;
+  const char *str;
 
   VA_START (ap, msgid);
 
@@ -318,7 +439,7 @@ build_message_string VPARAMS ((const char *msgid, ...))
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 
-static char *
+static const char *
 build_location_prefix (file, line, warn)
      const char *file;
      int line;
@@ -343,21 +464,20 @@ build_location_prefix (file, line, warn)
 /* Format a MESSAGE into BUFFER.  Automatically wrap lines.  */
 
 static void
-voutput_notice (buffer, msgid, ap)
-     struct output_buffer *buffer;
+output_notice (buffer, msgid)
+     output_buffer *buffer;
      const char *msgid;
-     va_list ap;
 {
-  char *message = vbuild_message_string (msgid, ap);
+  const char *message = vbuild_message_string (msgid, buffer->format_args);
 
-  output_puts (buffer, message);
-  free (message);
+  output_add_string (buffer, message);
+  free ((char *) message);
 }
 
 
 /* Format a message into BUFFER a la printf.  */
 
-static void
+void
 output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -373,8 +493,9 @@ output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  voutput_notice (buffer, msgid, ap);
-  va_end (ap);
+  buffer->format_args = ap;
+  output_notice (buffer, msgid);
+  va_end (buffer->format_args);
 }
 
 
@@ -388,7 +509,7 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
   FILE *file;
   const char *msgid;
 #endif
-  struct output_buffer buffer;
+  output_buffer buffer;
   va_list ap;
   
   VA_START (ap, msgid);
@@ -399,10 +520,11 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
 #endif  
 
   init_output_buffer (&buffer, NULL, output_maximum_width);
-  voutput_notice (&buffer, msgid, ap);
-  dump_output (&buffer, file);
+  buffer.format_args = ap;
+  output_notice (&buffer, msgid);
+  output_flush_on (&buffer, file);
 
-  va_end (ap);
+  va_end (buffer.format_args);
 }
 
 
@@ -414,13 +536,15 @@ vline_wrapper_message_with_location (file, line, warn, msgid, ap)
      const char *msgid;
      va_list ap;
 {
-  struct output_buffer buffer;
+  output_buffer buffer;
   
   init_output_buffer
     (&buffer, build_location_prefix (file, line, warn), output_maximum_width);
-  voutput_notice (&buffer, msgid, ap);
-  dump_output (&buffer, stderr);
-  free ((char*)get_output_prefix (&buffer));
+  buffer.format_args = ap;
+  output_notice (&buffer, msgid);
+  output_flush_on (&buffer, stderr);
+
+  free ((char*) output_get_prefix (&buffer));
   fputc ('\n', stderr);
 }
 
@@ -498,14 +622,15 @@ v_message_with_decl (decl, warn, msgid, ap)
      va_list ap;
 {
   const char *p;
-  struct output_buffer buffer;
+  output_buffer buffer;
 
   if (doing_line_wrapping ())
-    init_output_buffer
-      (&buffer,
-       build_location_prefix (DECL_SOURCE_FILE (decl),
-                              DECL_SOURCE_LINE (decl), warn),
-       output_maximum_width);
+    {
+      init_output_buffer
+        (&buffer, build_location_prefix
+         (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn),
+         output_maximum_width);
+    }
   else
     report_file_and_line (DECL_SOURCE_FILE (decl),
                           DECL_SOURCE_LINE (decl), warn);
@@ -541,7 +666,7 @@ v_message_with_decl (decl, warn, msgid, ap)
 		 ? (*decl_printable_name) (decl, 2)
 		 : "((anonymous))");
       if (doing_line_wrapping ())
-        output_puts (&buffer, n);
+        output_add_string (&buffer, n);
       else
         fputs (n, stderr);
       while (*p)
@@ -555,15 +680,19 @@ v_message_with_decl (decl, warn, msgid, ap)
   if (*p)			/* Print the rest of the message.  */
     {
       if (doing_line_wrapping ())
-        voutput_notice (&buffer, p, ap);
+        {
+          buffer.format_args = ap;
+          output_notice (&buffer, p);
+          ap = buffer.format_args;
+        }
       else
         vfprintf (stderr, p, ap);
     }
 
   if (doing_line_wrapping())
     {
-      dump_output (&buffer, stderr);
-      free ((char *)get_output_prefix (&buffer));
+      output_flush_on (&buffer, stderr);
+      free ((char *) output_get_prefix (&buffer));
     }
   
   fputc ('\n', stderr);
@@ -1012,8 +1141,8 @@ default_print_error_function (file)
 {
   if (last_error_function != current_function_decl)
     {
-      char *prefix = NULL;
-      struct output_buffer buffer;
+      const char *prefix = NULL;
+      output_buffer buffer;
       
       if (file)
         prefix = build_message_string ("%s: ", file);
@@ -1060,9 +1189,9 @@ default_print_error_function (file)
       last_error_function = current_function_decl;
 
       if (doing_line_wrapping ())
-        dump_output (&buffer, stderr);
+        output_flush_on (&buffer, stderr);
       
-      free (prefix);
+      free ((char*) prefix);
     }
 }
 

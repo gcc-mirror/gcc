@@ -1,3 +1,35 @@
+2000-04-22  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h: New file.
+
+	* Makefile.in (diagnostic.o): Depends on diagnostic.h
+
+        * diagnostic.c: Tweak.  Rationalize the output logic.  Adjust
+	various function prototypes.
+        (diagnostic.h): #include.
+        (struct output_buffer): Move into diagnostic.h.
+        (get_output_prefix): Rename to output_get_prefix.  Export.
+        (init_output_buffer): Export. Break out.  Ajust intialization.
+        (output_space_left, output_append): Export.
+        (output_newline): Rename to output_add_newline.  Export.
+	(output_clear): Nullify additional output_buffer fields.
+        (output_puts): Rename to output_add_string.  Export.
+        (dump_output): Rename to output_flush_on.  Export.
+        (build_location_prefix): Constify return-type.
+        (emit_output_prefix): Rename to output_emit_prefix. Export.
+        (set_real_maximum_length): New function.
+        (output_set_maximum_length): Ditto
+        (output_clear): Ditto.
+        (output_add_character): Ditto.
+        (output_add_integer): Ditto.
+        (output_add_space): Ditto.
+        (output_format): Ditto.
+        (output_printf): Adjust buffer initialization.
+        (vline_wrapper_message_with_location): Ditto.
+        (v_message_with_decl): Ditto.  Adjust call to output_puts
+	and get_output_prefix.
+        (default_print_error_function): Adjust buffer intialization.
+
 Sat Apr 22 06:45:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (preexpand_calls, case CALL_EXPR): Don't look at TYPE_SIZE
