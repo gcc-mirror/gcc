@@ -157,20 +157,22 @@ EOF
   fi
 
   # Tag the sources.
+  EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
     ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
       error "Could not tag sources"
     EXPORTTAG="-r${TAG}"
-    EXPORTDATE=""
   else
     if [ ${CVSBRANCH} != "HEAD" ]; then
       EXPORTTAG="-r${CVSBRANCH}"
+      # It does not work to use both "-r" and "-D" with
+      # "cvs export" so EXPORTDATE is not set here.
     else
       # HEAD is the default branch, no need to specify it.
       EXPORTTAG=""
+      EXPORTDATE="-D`date -u +"%Y-%m-%d %H:%M"` UTC"
     fi
-    EXPORTDATE="-D`date -u +"%Y-%m-%d %H:%M"` UTC"
   fi
 
   # Export the current sources.

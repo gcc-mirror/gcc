@@ -1,3 +1,8 @@
+2004-04-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release (build_sources): Do not use "-r" and "-D" at the
+	same time with "cvs export".
+
 2004-03-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (announce_snapshot): Use changedir instead of
