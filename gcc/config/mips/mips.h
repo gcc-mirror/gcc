@@ -139,7 +139,7 @@ extern int file_in_function_warning;	/* warning given about .file in func */
 extern int sdb_label_count;		/* block start/end next label # */
 extern int sdb_begin_function_line;     /* Starting Line of current function */
 extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
-extern int g_switch_value;		/* value of the -G xx switch */
+/* extern unsigned HOST_WIDE_INT  g_switch_value; */ /* value of the -G xx switch */
 extern int g_switch_set;		/* whether -G xx was passed.  */
 extern int sym_lineno;			/* sgi next label # for each stmt */
 extern int set_noreorder;		/* # of nested .set noreorder's  */
