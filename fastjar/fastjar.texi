@@ -24,9 +24,9 @@
 
 @dircategory Individual utilities
 @direntry
-* jar: Invoking jar.
+* jar: (fastjar)Invoking jar.
                             An archive tool for Java archives
-* grepjar: Invoking grepjar.
+* grepjar: (fastjar)Invoking grepjar.
                             Search files in a jar file for a pattern
 @end direntry
 @end format
