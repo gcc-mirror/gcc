@@ -1783,6 +1783,22 @@ m32r_print_operand (file, x, code)
 
   switch (code)
     {
+      /* The 's' and 'p' codes are used by output_block_move() to
+	 indicate post-increment 's'tores and 'p're-increment loads.  */
+    case 's':
+      if (GET_CODE (x) == REG)
+	fprintf (file, "@+%s", reg_names [REGNO (x)]);
+      else
+	output_operand_lossage ("invalid operand to %s code");
+      return;
+      
+    case 'p':
+      if (GET_CODE (x) == REG)
+	fprintf (file, "@%s+", reg_names [REGNO (x)]);
+      else
+	output_operand_lossage ("invalid operand to %p code");
+      return;
+
     case 'R' :
       /* Write second word of DImode or DFmode reference,
 	 register or memory.  */
@@ -1822,7 +1838,7 @@ m32r_print_operand (file, x, code)
 	  rtx first, second;
 
 	  split_double (x, &first, &second);
-	  fprintf (file, "0x%08lx",
+	  fprintf (file, "0x%08x",
 		   code == 'L' ? INTVAL (first) : INTVAL (second));
 	}
       else
@@ -2209,3 +2225,250 @@ emit_cond_move (operands, insn)
   return buffer;
 }
 
+
+
+/* Use a library function to move some bytes.  */
+static void
+block_move_call (dest_reg, src_reg, bytes_rtx)
+     rtx dest_reg;
+     rtx src_reg;
+     rtx bytes_rtx;
+{
+  /* We want to pass the size as Pmode, which will normally be SImode
+     but will be DImode if we are using 64 bit longs and pointers.  */
+  if (GET_MODE (bytes_rtx) != VOIDmode
+      && GET_MODE (bytes_rtx) != Pmode)
+    bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
+
+#ifdef TARGET_MEM_FUNCTIONS
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
+		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
+				      TREE_UNSIGNED (sizetype)),
+		     TYPE_MODE (sizetype));
+#else
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
+		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
+		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
+				      TREE_UNSIGNED (integer_type_node)),
+		     TYPE_MODE (integer_type_node));
+#endif
+}
+
+/* The maximum number of bytes to copy using pairs of load/store instructions.
+   If a block is larger than this then a loop will be generated to copy
+   MAX_MOVE_BYTES chunks at a time.  The value of 32 is a semi-arbitary choice.
+   A customer uses Dhrystome as their benchmark, and Dhrystone has a 31 byte
+   string copy in it.  */
+#define MAX_MOVE_BYTES 32
+
+/* Expand string/block move operations.
+
+   operands[0] is the pointer to the destination.
+   operands[1] is the pointer to the source.
+   operands[2] is the number of bytes to move.
+   operands[3] is the alignment.  */
+
+void
+m32r_expand_block_move (operands)
+     rtx operands[];
+{
+  rtx           orig_dst  = operands[0];
+  rtx           orig_src  = operands[1];
+  rtx           bytes_rtx = operands[2];
+  rtx           align_rtx = operands[3];
+  int           constp    = GET_CODE (bytes_rtx) == CONST_INT;
+  HOST_WIDE_INT bytes     = constp ? INTVAL (bytes_rtx) : 0;
+  int           align     = INTVAL (align_rtx);
+  int           leftover;
+  rtx           src_reg;
+  rtx           dst_reg;
+
+  if (constp && bytes <= 0)
+    return;
+
+  /* Move the address into scratch registers.  */
+  dst_reg = copy_addr_to_reg (XEXP (orig_dst, 0));
+  src_reg = copy_addr_to_reg (XEXP (orig_src, 0));
+
+  if (align > UNITS_PER_WORD)
+    align = UNITS_PER_WORD;
+
+  /* If we prefer size over speed, always use a function call.
+     If we do not know the size, use a function call.
+     If the blocks are not word aligned, use a function call.  */
+  if (optimize_size || ! constp || align != UNITS_PER_WORD)
+    {
+      block_move_call (dst_reg, src_reg, bytes_rtx);
+      return;
+    }
+
+  leftover = bytes % MAX_MOVE_BYTES;
+  bytes   -= leftover;
+  
+  /* If necessary, generate a loop to handle the bulk of the copy.  */
+  if (bytes)
+    {
+      rtx label;
+      rtx final_src;
+      
+      bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
+
+      /* If we are going to have to perform this loop more than
+	 once, then generate a label and compute the address the
+	 source register will contain upon completion of the final
+	 itteration.  */
+      if (bytes > MAX_MOVE_BYTES)
+	{
+	  final_src = gen_reg_rtx (Pmode);
+
+	  if (INT16_P(bytes))
+	    emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
+	  else
+	    {
+	      emit_insn (gen_movsi (final_src, bytes_rtx));
+	      emit_insn (gen_addsi3 (final_src, final_src, src_reg));
+	    }
+
+	  label = gen_label_rtx ();
+	  emit_label (label);
+	}
+
+      /* It is known that output_block_move() will update src_reg to point
+	 to the word after the end of the source block, and dst_reg to point
+	 to the last word of the destination block, provided that the block
+	 is MAX_MOVE_BYTES long.  */
+      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, bytes_rtx));
+      emit_insn (gen_addsi3 (dst_reg, dst_reg, GEN_INT (4)));
+      
+      if (bytes > MAX_MOVE_BYTES)
+	{
+	  emit_insn (gen_cmpsi (src_reg, final_src));
+	  emit_jump_insn (gen_bne (label));
+	}
+    }
+
+  if (leftover)
+    emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (leftover)));
+}
+
+
+/* Emit load/stores for a small constant word aligned block_move. 
+
+   operands[0] is the memory address of the destination.
+   operands[1] is the memory address of the source.
+   operands[2] is the number of bytes to move.
+   operands[3] is a temp register.
+   operands[4] is a temp register.  */
+
+char *
+m32r_output_block_move (insn, operands)
+     rtx insn;
+     rtx operands[];
+{
+  HOST_WIDE_INT bytes = INTVAL (operands[2]);
+  int		first_time;
+  int		got_extra = 0;
+  
+  if (bytes < 1 || bytes > MAX_MOVE_BYTES)
+    abort ();
+  
+  /* We do not have a post-increment store available, so the first set of
+     stores are done without any increment, then the remaining ones can use
+     the pre-increment addressing mode.
+     
+     Note: expand_block_move() also relies upon this behaviour when building
+     loops to copy large blocks.  */
+  first_time = 1;
+  
+  while (bytes > 0)
+    {
+      if (bytes >= 8)
+	{
+	  if (first_time)
+	    {
+	      output_asm_insn ("ld\t%3, %p1", operands);
+	      output_asm_insn ("ld\t%4, %p1", operands);
+	      output_asm_insn ("st\t%3, @%0", operands);
+	      output_asm_insn ("st\t%4, %s0", operands);
+	    }
+	  else
+	    {
+	      output_asm_insn ("ld\t%3, %p1", operands);
+	      output_asm_insn ("ld\t%4, %p1", operands);
+	      output_asm_insn ("st\t%3, %s0", operands);
+	      output_asm_insn ("st\t%4, %s0", operands);
+	    }
+
+	  bytes -= 8;
+	}
+      else if (bytes >= 4)
+	{
+	  if (bytes > 4)
+	    got_extra = 1;
+	  
+	  output_asm_insn ("ld\t%3, %p1", operands);
+	  
+	  if (got_extra)
+	    output_asm_insn ("ld\t%4, %p1", operands);
+		
+	  if (first_time)
+	    output_asm_insn ("st\t%3, @%0", operands);
+	  else
+	    output_asm_insn ("st\t%3, %s0", operands);
+
+	  bytes -= 4;
+	}
+      else 
+	{
+	  /* Get the entire next word, even though we do not want all of it.
+	     The saves us from doing several smaller loads, and we assume that
+	     we cannot cause a page fault when at least part of the word is in
+	     valid memory.  If got_extra is true then we have already loaded
+	     the next word as part of loading and storing the previous word.  */
+	  if (! got_extra)
+	    output_asm_insn ("ld\t%4, @%1", operands);
+
+	  if (bytes >= 2)
+	    {
+	      bytes -= 2;
+
+	      output_asm_insn ("sth\t%4, @%0", operands);
+	      
+	      /* If there is a byte left to store then increment the
+		 destination address and shift the contents of the source
+		 register down by 16 bits.  We could not do the address
+		 increment in the store half word instruction, because it does
+		 not have an auto increment mode.  */
+	      if (bytes > 0)  /* assert (bytes == 1) */
+		{
+		  output_asm_insn ("srai\t%4, #16", operands);
+		  output_asm_insn ("addi\t%0, #2", operands);
+		}
+	    }
+	  
+	  output_asm_insn ("stb\t%4, @%0", operands);
+	  
+	  bytes = 0;
+	}
+
+      first_time = 0;
+    }
+
+  return "";
+}
+
+/* Return true if op is an integer constant, less than or equal to
+   MAX_MOVE_BYTES.  */
+int
+m32r_block_immediate_operand (op, mode)
+     rtx op;
+     int mode;
+{
+  if (GET_CODE (op) != CONST_INT
+      || INTVAL (op) > MAX_MOVE_BYTES
+      || INTVAL (op) <= 0)
+    return 0;
+
+  return 1;
+}

@@ -1,3 +1,22 @@
+Fri Sep 18 09:44:55 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.h (m32r_block_immediate_operand): Add to
+	PREDICATE_CODES.
+
+	* config/m32r/m32r.md: Add "movstrsi" and "movstrsi_internal"
+	patterns.
+
+	* config/m32r/m32r.c (m32r_print_operand): Add 's' and 'p'
+	operators.
+	(block_move_call): New function: Call a library routine to copy a
+	block of memory.
+	(m32r_expand_block_move): New function: Expand a "movstrsi"
+	pattern into a sequence of insns.
+	(m32r_output_block_move): New function: Expand a
+	"movstrsi_internal" pattern into a sequence of assembler opcodes.
+	(m32r_block_immediate_operand): New function: Return true if the
+	RTL is an integer constant, less than or equal to MAX_MOVE_BYTES.
+	
 Thu Sep 17 16:42:16 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (start_catch_handler): Issue 'fatal' instead of 'error' and

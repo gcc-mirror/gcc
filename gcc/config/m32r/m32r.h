@@ -1987,6 +1987,7 @@ enum m32r_function_type
 { "cmp_int16_operand",		{ CONST_INT }},				\
 { "call_address_operand",	{ SYMBOL_REF, LABEL_REF, CONST }},	\
 { "small_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
+{ "m32r_block_immediate_operand",{ CONST_INT }},			\
 { "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},
 
 /* Functions declared in m32r.c */
@@ -2078,3 +2079,7 @@ extern char *emit_cond_move			PROTO((Rtx *, Rtx));
 
 /* Needed by a peephole optimisation.  */
 #define PRESERVE_DEATH_INFO_REGNO_P(regno) (regno < FIRST_PSEUDO_REGISTER)
+
+extern char * m32r_output_block_move PROTO((Rtx, Rtx *));
+extern int    m32r_block_immediate_operand PROTO((Rtx, int));
+extern void   m32r_expand_block_move PROTO((Rtx *));
