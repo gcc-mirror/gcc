@@ -1,3 +1,7 @@
+Sat Jan 30 03:24:37 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Size reg_map according to reg_iv_type.
+
 Fri Jan 29 18:26:07 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* emit-rtl.c (remove_insn): New function.
