@@ -1548,8 +1548,18 @@ changequote([,])dnl
 		tmake_file=i386/t-sol2
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
- 		if test x$enable_threads = xyes; then
+		if test x${enable_threads} = x; then
+		    enable_threads=$have_pthread_h
+		    if test x${enable_threads} = x; then
+			enable_threads=$have_thread_h
+		    fi
+		fi
+		if test x${enable_threads} = xyes; then
+		    if test x${have_pthread_h} = xyes; then
+			thread_file='posix'
+		    else
 			thread_file='solaris'
+		    fi
 		fi
 		;;
 changequote(,)dnl
