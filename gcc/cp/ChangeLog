@@ -1,3 +1,44 @@
+Fri Mar 24 12:11:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Propagate DECL_ABSTRACT_VIRTUAL_P.
+
+	* pt.c (push_tinst_level): Complain if template instantiation depth
+	is greater than max_tinst_depth.
+
+	* typeck.c (common_type): Assume that we can call common_type to
+	unify the target type of a pointer.
+
+Thu Mar 23 00:48:44 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (finish_file): Don't synthesize methods at
+	finish_vtable_prevardecl time.  Do synthesize methods that are not
+	used, but are public and not external.
+
+	* cvt.c (build_type_conversion): Only give an error if for_sure.
+
+	* typeck.c (comp_target_types): Only support pointer conversions if
+	nptrs > 0.
+
+Wed Mar 22 19:30:15 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* init.c (build_new): Catch use of an initializer list where it
+	shouldn't be.
+
+Wed Mar 22 16:21:07 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* init.c (build_new): Wrap alloc_expr in an RTL_EXPR if nelts is
+	non-constant.
+
+	* decl2.c: temp_name_counter is now public.
+
+	* decl.c (struct cp_function): Add temp_name_counter field.
+	(push_cp_function_context): Save it.
+	(pop_cp_function_context): Restore it.
+
+	* typeck.c (common_type): Handle unifying function types, and unify
+	unmatched things to void* with a compiler_error, rather than
+	silently like before.
+
 Wed Mar 22 15:10:34 1995  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (finish_prevtable_vardecl, finish_vtable_vardecl): Revert

@@ -3091,6 +3091,11 @@ build_new (placement, decl, init, use_global_new)
 
 	  if (TREE_CHAIN (init) != NULL_TREE)
 	    pedwarn ("initializer list being treated as compound expression");
+	  else if (TREE_CODE (init) == CONSTRUCTOR)
+	    {
+	      pedwarn ("initializer list appears where operand should be used");
+	      init = TREE_OPERAND (init, 1);
+	    }
 	  init = build_compound_expr (init);
 
 	  init = convert_for_initialization (deref, type, init, LOOKUP_NORMAL,
@@ -3149,6 +3154,29 @@ build_new (placement, decl, init, use_global_new)
 	     are a branch of a ?: operator.  Since we
 	     can't easily know the latter, just do it always.  */
 	  tree xval = make_node (RTL_EXPR);
+
+	  /* If we want to check the value of the allocation expression,
+             and the number of elements in the array is not a constant, we
+             *must* expand the SAVE_EXPR for nelts in alloc_expr before we
+             expand it in the actual initalization.  So we need to build up
+             an RTL_EXPR for alloc_expr.  Sigh.  */
+	  if (alloc_expr && ! TREE_CONSTANT (nelts))
+	    {
+	      tree xval = make_node (RTL_EXPR);
+	      rtx rtxval;
+	      TREE_TYPE (xval) = TREE_TYPE (alloc_expr);
+	      do_pending_stack_adjust ();
+	      start_sequence_for_rtl_expr (xval);
+	      emit_note (0, -1);
+	      rtxval = expand_expr (alloc_expr, NULL, VOIDmode, 0);
+	      do_pending_stack_adjust ();
+	      TREE_SIDE_EFFECTS (xval) = 1;
+	      RTL_EXPR_SEQUENCE (xval) = get_insns ();
+	      end_sequence ();
+	      RTL_EXPR_RTL (xval) = rtxval;
+	      TREE_TYPE (xval) = TREE_TYPE (alloc_expr);
+	      alloc_expr = xval;
+	    }
 
 	  TREE_TYPE (xval) = TREE_TYPE (rval);
 	  do_pending_stack_adjust ();

@@ -924,15 +924,25 @@ instantiate_member_templates (classname)
     }
 }
 
-struct tinst_level *current_tinst_level = 0;
-struct tinst_level *free_tinst_level = 0;
+static struct tinst_level *current_tinst_level = 0;
+static struct tinst_level *free_tinst_level = 0;
+static int tinst_depth = 0;
+int max_tinst_depth = 17;
 
-void
+int
 push_tinst_level (name)
      tree name;
 {
   struct tinst_level *new;
   tree global = IDENTIFIER_GLOBAL_VALUE (name);
+
+  if (tinst_depth >= max_tinst_depth)
+    {
+      error ("template instantiation depth exceeds maximum of %d",
+	     max_tinst_depth);
+      cp_error ("  instantiating `%D'", name);
+      return 0;
+    }
 
   if (free_tinst_level)
     {
@@ -955,6 +965,8 @@ push_tinst_level (name)
     }
   new->next = current_tinst_level;
   current_tinst_level = new;
+  ++tinst_depth;
+  return 1;
 }
 
 void
@@ -965,6 +977,7 @@ pop_tinst_level ()
   current_tinst_level = old->next;
   old->next = free_tinst_level;
   free_tinst_level = old;
+  --tinst_depth;
 }
 
 struct tinst_level *
@@ -1040,9 +1053,8 @@ instantiate_class_template (classname, setup_parse)
 
   push_to_top_level ();
   template_info = DECL_TEMPLATE_INFO (t1);
-  if (setup_parse)
+  if (setup_parse && push_tinst_level (classname))
     {
-      push_tinst_level (classname);
       push_template_decls (DECL_TEMPLATE_PARMS (TREE_PURPOSE (template)),
 			   TREE_VALUE (template), 0);
       set_current_level_tags_transparency (1);

@@ -55,7 +55,7 @@ static tree saved_inlines;
 /* Used to help generate temporary names which are unique within
    a function.  Reset to 0 by start_function.  */
 
-static int temp_name_counter;
+int temp_name_counter;
 
 /* Same, but not reset.  Local temp variables and global temp variables
    can have the same name.  */
@@ -2861,16 +2861,6 @@ finish_file ()
   /* Walk to mark the inline functions we need, then output them so
      that we can pick up any other tdecls that those routines need. */
   walk_vtables ((void (*)())0, finish_prevtable_vardecl);
-  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-
-      if (DECL_ARTIFICIAL (decl)
-	  && ! DECL_INITIAL (decl)
-	  && (TREE_USED (decl) || ! DECL_EXTERNAL (decl)))
-	synthesize_method (decl);
-    }
-  walk_vtables ((void (*)())0, finish_prevtable_vardecl);
 
   if (needs_cleaning == 0)
     goto mess_up;
@@ -3103,7 +3093,8 @@ finish_file ()
 
 	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
 	      {
-		if (TREE_USED (decl))
+		if (TREE_USED (decl)
+		    || (TREE_PUBLIC (decl) && ! DECL_EXTERNAL (decl)))
 		  synthesize_method (decl);
 		else
 		  {
