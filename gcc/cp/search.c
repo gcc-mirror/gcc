@@ -1839,7 +1839,7 @@ check_final_overrider (overrider, basefn)
       return 0;
     }
   
-  /* Check throw specifier is subset.  */
+  /* Check throw specifier is at least as strict.  */
   if (!comp_except_specs (base_throw, over_throw, 0))
     {
       cp_error_at ("looser throw specifier for `%#F'", overrider);
@@ -2390,14 +2390,14 @@ setup_class_bindings (name, type_binding_p)
 
   if (type_binding_p
       && (TREE_CODE (value_binding) == TYPE_DECL
+	  || DECL_CLASS_TEMPLATE_P (value_binding)
 	  || (TREE_CODE (value_binding) == TREE_LIST
 	      && TREE_TYPE (value_binding) == error_mark_node
 	      && (TREE_CODE (TREE_VALUE (value_binding))
 		  == TYPE_DECL))))
     /* We found a type-binding, even when looking for a non-type
        binding.  This means that we already processed this binding
-       above.  */
-    my_friendly_assert (type_binding_p, 19990401);
+       above.  */;
   else if (value_binding)
     {
       if (TREE_CODE (value_binding) == TREE_LIST 

@@ -1,3 +1,9 @@
+2002-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5658
+	* search.c (setup_class_bindings): A class template qualifies as a
+	type binding.
+
 2002-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/6316
