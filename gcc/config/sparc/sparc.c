@@ -128,60 +128,55 @@ char sparc_leaf_regs[] =
 static const char *frame_base_name;
 static int frame_base_offset;
 
-static void sparc_init_modes	PARAMS ((void));
-static int save_regs		PARAMS ((FILE *, int, int, const char *,
-				       int, int, int));
-static int restore_regs		PARAMS ((FILE *, int, int, const char *, int, int));
-static void build_big_number	PARAMS ((FILE *, int, const char *));
-static int function_arg_slotno	PARAMS ((const CUMULATIVE_ARGS *,
-				       enum machine_mode, tree, int, int,
-				       int *, int *));
+static void sparc_init_modes (void);
+static int save_regs (FILE *, int, int, const char *, int, int, int);
+static int restore_regs (FILE *, int, int, const char *, int, int);
+static void build_big_number (FILE *, int, const char *);
+static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
+				tree, int, int, int *, int *);
 
-static int supersparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static int hypersparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int supersparc_adjust_cost (rtx, rtx, rtx, int);
+static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
 
-static void sparc_output_addr_vec PARAMS ((rtx));
-static void sparc_output_addr_diff_vec PARAMS ((rtx));
-static void sparc_output_deferred_case_vectors PARAMS ((void));
-static int check_return_regs PARAMS ((rtx));
-static int epilogue_renumber PARAMS ((rtx *, int));
-static bool sparc_assemble_integer PARAMS ((rtx, unsigned int, int));
-static int set_extends PARAMS ((rtx));
-static void output_restore_regs PARAMS ((FILE *, int));
-static void sparc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void sparc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void sparc_flat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void sparc_flat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
-						     int));
-static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
-						     int));
+static void sparc_output_addr_vec (rtx);
+static void sparc_output_addr_diff_vec (rtx);
+static void sparc_output_deferred_case_vectors (void);
+static int check_return_regs (rtx);
+static int epilogue_renumber (rtx *, int);
+static bool sparc_assemble_integer (rtx, unsigned int, int);
+static int set_extends (rtx);
+static void output_restore_regs (FILE *, int);
+static void sparc_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void sparc_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void sparc_flat_function_epilogue (FILE *, HOST_WIDE_INT);
+static void sparc_flat_function_prologue (FILE *, HOST_WIDE_INT);
+static void sparc_nonflat_function_epilogue (FILE *, HOST_WIDE_INT, int);
+static void sparc_nonflat_function_prologue (FILE *, HOST_WIDE_INT, int);
 #ifdef OBJECT_FORMAT_ELF
-static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
+static void sparc_elf_asm_named_section (const char *, unsigned int);
 #endif
-static void sparc_aout_select_section PARAMS ((tree, int,
-					       unsigned HOST_WIDE_INT))
+static void sparc_aout_select_section (tree, int, unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
-static void sparc_aout_select_rtx_section PARAMS ((enum machine_mode, rtx,
-						   unsigned HOST_WIDE_INT))
+static void sparc_aout_select_rtx_section (enum machine_mode, rtx,
+					   unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 
-static int sparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static int sparc_issue_rate PARAMS ((void));
-static void sparc_sched_init PARAMS ((FILE *, int, int));
-static int sparc_use_dfa_pipeline_interface PARAMS ((void));
-static int sparc_use_sched_lookahead PARAMS ((void));
+static int sparc_adjust_cost (rtx, rtx, rtx, int);
+static int sparc_issue_rate (void);
+static void sparc_sched_init (FILE *, int, int);
+static int sparc_use_dfa_pipeline_interface (void);
+static int sparc_use_sched_lookahead (void);
 
-static void emit_soft_tfmode_libcall PARAMS ((const char *, int, rtx *));
-static void emit_soft_tfmode_binop PARAMS ((enum rtx_code, rtx *));
-static void emit_soft_tfmode_unop PARAMS ((enum rtx_code, rtx *));
-static void emit_soft_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
-static void emit_hard_tfmode_operation PARAMS ((enum rtx_code, rtx *));
+static void emit_soft_tfmode_libcall (const char *, int, rtx *);
+static void emit_soft_tfmode_binop (enum rtx_code, rtx *);
+static void emit_soft_tfmode_unop (enum rtx_code, rtx *);
+static void emit_soft_tfmode_cvt (enum rtx_code, rtx *);
+static void emit_hard_tfmode_operation (enum rtx_code, rtx *);
 
-static bool sparc_function_ok_for_sibcall PARAMS ((tree, tree));
-static void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-					   HOST_WIDE_INT, tree));
-static bool sparc_rtx_costs PARAMS ((rtx, int, int, int *));
+static bool sparc_function_ok_for_sibcall (tree, tree);
+static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
+				   HOST_WIDE_INT, tree);
+static bool sparc_rtx_costs (rtx, int, int, int *);
 
 /* Option handling.  */
 
@@ -1571,10 +1566,10 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 /* These avoid problems when cross compiling.  If we do not
    go through all this hair then the optimizer will see
    invalid REG_EQUAL notes or in some cases none at all.  */
-static void sparc_emit_set_safe_HIGH64 PARAMS ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_SET64 PARAMS ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_OR64 PARAMS ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_XOR64 PARAMS ((rtx, HOST_WIDE_INT));
+static void sparc_emit_set_safe_HIGH64 (rtx, HOST_WIDE_INT);
+static rtx gen_safe_SET64 (rtx, HOST_WIDE_INT);
+static rtx gen_safe_OR64 (rtx, HOST_WIDE_INT);
+static rtx gen_safe_XOR64 (rtx, HOST_WIDE_INT);
 
 #if HOST_BITS_PER_WIDE_INT == 64
 #define GEN_HIGHINT64(__x)		GEN_INT ((__x) & ~(HOST_WIDE_INT)0x3ff)
@@ -1632,8 +1627,8 @@ gen_safe_XOR64 (src, val)
    Without doing this, the optimizer cannot see such
    opportunities.  */
 
-static void sparc_emit_set_const64_quick1
-	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT, int));
+static void sparc_emit_set_const64_quick1 (rtx, rtx,
+					   unsigned HOST_WIDE_INT, int);
 
 static void
 sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
@@ -1675,9 +1670,8 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
     }
 }
 
-static void sparc_emit_set_const64_quick2
-	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT,
-	       unsigned HOST_WIDE_INT, int));
+static void sparc_emit_set_const64_quick2 (rtx, rtx, unsigned HOST_WIDE_INT,
+					   unsigned HOST_WIDE_INT, int);
 
 static void
 sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
@@ -1716,8 +1710,8 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
 			    gen_safe_OR64 (op0, low_immediate)));
 }
 
-static void sparc_emit_set_const64_longway
-	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+static void sparc_emit_set_const64_longway (rtx, rtx, unsigned HOST_WIDE_INT,
+					    unsigned HOST_WIDE_INT);
 
 /* Full 64-bit constant decomposition.  Even though this is the
    'worst' case, we still optimize a few things away.  */
@@ -1824,10 +1818,9 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 }
 
 /* Analyze a 64-bit constant for certain properties.  */
-static void analyze_64bit_constant
-	PARAMS ((unsigned HOST_WIDE_INT,
-	       unsigned HOST_WIDE_INT,
-	       int *, int *, int *));
+static void analyze_64bit_constant (unsigned HOST_WIDE_INT,
+				    unsigned HOST_WIDE_INT,
+				    int *, int *, int *);
 
 static void
 analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
@@ -1893,8 +1886,7 @@ analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
   *abbasp = all_bits_between_are_set;
 }
 
-static int const64_is_2insns
-	PARAMS ((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+static int const64_is_2insns (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT);
 
 static int
 const64_is_2insns (high_bits, low_bits)
@@ -1921,9 +1913,9 @@ const64_is_2insns (high_bits, low_bits)
   return 0;
 }
 
-static unsigned HOST_WIDE_INT create_simple_focus_bits
-	PARAMS ((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-	       int, int));
+static unsigned HOST_WIDE_INT create_simple_focus_bits (unsigned HOST_WIDE_INT,
+							unsigned HOST_WIDE_INT,
+							int, int);
 
 static unsigned HOST_WIDE_INT
 create_simple_focus_bits (high_bits, low_bits, lowest_bit_set, shift)
@@ -4549,15 +4541,12 @@ struct function_arg_record_value_parms
 };
 
 static void function_arg_record_value_3
-	PARAMS ((HOST_WIDE_INT, struct function_arg_record_value_parms *));
+ (HOST_WIDE_INT, struct function_arg_record_value_parms *);
 static void function_arg_record_value_2
-	PARAMS ((tree, HOST_WIDE_INT,
-		 struct function_arg_record_value_parms *));
+ (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *);
 static void function_arg_record_value_1
-        PARAMS ((tree, HOST_WIDE_INT,
-		 struct function_arg_record_value_parms *));
-static rtx function_arg_record_value
-	PARAMS ((tree, enum machine_mode, int, int, int));
+ (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *);
+static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
    recursively and determine how many registers will be required.  */
