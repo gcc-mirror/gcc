@@ -1,3 +1,8 @@
+1998-09-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/bitfld1.C: built-in operator!= should be
+	preferred over template operator!= for enum bitfields
+
 1998-09-18  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/nested2.C: different virtual base classes
