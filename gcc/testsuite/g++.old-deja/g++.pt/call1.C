@@ -11,3 +11,5 @@ for_each(const Field& p, IsCompressed, C)
 {
   return p.IsCompressed();
 }
+
+template bool for_each<int>(const Field& p, IsCompressed, int);
