@@ -57,3 +57,4 @@ DEFINE_LANG_NAME ("Java")
     "Warn if modifiers are specified when not necessary"},
   { "-Wunsupported-jdk11", "Warn if `final' local variables are specified"},
   { "-Wextraneous-semicolon", "Warn if deprecated empty statements are found"},
+  { "-Wout-of-date", "Warn if .class files are out of date" },

@@ -47,6 +47,10 @@ static int found_error = 0;
 /* Nonzero if we're generating JNI output.  */
 static int flag_jni = 0;
 
+/* When non zero, warn when source file is newer than matching class
+   file.  */
+int flag_newer = 1;
+
 /* Directory to place resulting files in. Set by -d option. */
 const char *output_directory = "";
 
