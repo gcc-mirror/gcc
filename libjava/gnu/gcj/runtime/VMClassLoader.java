@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -12,6 +12,7 @@ package gnu.gcj.runtime;
 
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.HashSet;
 import java.net.URL;
 
 public final class VMClassLoader extends java.net.URLClassLoader
@@ -19,6 +20,20 @@ public final class VMClassLoader extends java.net.URLClassLoader
   private VMClassLoader ()
   {	
     super (init());
+    String p
+      = System.getProperty ("gnu.gcj.runtime.VMClassLoader.library_control",
+			    "");
+    if ("never".equals(p))
+      lib_control = LIB_NEVER;
+    else if ("cache".equals(p))
+      lib_control = LIB_CACHE;
+    else if ("full".equals(p))
+      {
+	// In case we ever want to change the default.
+	lib_control = LIB_FULL;
+      }
+    else
+      lib_control = LIB_FULL;
   }
 
   private static URL[] init() 
@@ -67,6 +82,17 @@ public final class VMClassLoader extends java.net.URLClassLoader
   protected native Class findClass(String name) 
     throws java.lang.ClassNotFoundException;
 
+  // This keeps track of shared libraries we've already tried to load.
+  private HashSet tried_libraries = new HashSet();
+
+  // Holds one of the LIB_* constants; used to determine how shared
+  // library loads are done.
+  private int lib_control;
+
   // The only VMClassLoader that can exist.
-  public static VMClassLoader instance = new VMClassLoader ();
+  public static VMClassLoader instance = new VMClassLoader();
+
+  private static final int LIB_FULL = 0;
+  private static final int LIB_CACHE = 1;
+  private static final int LIB_NEVER = 2;
 }
