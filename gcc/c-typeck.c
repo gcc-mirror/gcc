@@ -1859,7 +1859,7 @@ c_expr_sizeof_expr (struct c_expr expr)
    name passed to sizeof (rather than the type itself).  */
 
 struct c_expr
-c_expr_sizeof_type (tree t)
+c_expr_sizeof_type (struct c_type_name *t)
 {
   tree type;
   struct c_expr ret;
@@ -3217,15 +3217,16 @@ build_c_cast (tree type, tree expr)
 
 /* Interpret a cast of expression EXPR to type TYPE.  */
 tree
-c_cast_expr (tree type, tree expr)
+c_cast_expr (struct c_type_name *type_name, tree expr)
 {
+  tree type;
   int saved_wsp = warn_strict_prototypes;
 
   /* This avoids warnings about unprototyped casts on
      integers.  E.g. "#define SIG_DFL (void(*)())0".  */
   if (TREE_CODE (expr) == INTEGER_CST)
     warn_strict_prototypes = 0;
-  type = groktypename (type);
+  type = groktypename (type_name);
   warn_strict_prototypes = saved_wsp;
 
   return build_c_cast (type, expr);

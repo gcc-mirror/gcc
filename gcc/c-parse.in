@@ -100,6 +100,8 @@ do {									\
 %start program
 
 %union {long itype; tree ttype; void *otype; struct c_expr exprtype;
+	struct c_arg_info *arginfotype; struct c_declarator *dtrtype;
+	struct c_type_name *typenametype; struct c_parm *parmtype;
 	enum tree_code code; location_t location; }
 
 /* All identifiers that are not reserved words
@@ -217,11 +219,11 @@ do {									\
 
 %type <ttype> c99_block_start c99_block_lineno_labeled_stmt
 %type <ttype> if_statement_1 if_statement_2
-%type <ttype> declarator
-%type <ttype> notype_declarator after_type_declarator
-%type <ttype> parm_declarator
-%type <ttype> parm_declarator_starttypename parm_declarator_nostarttypename
-%type <ttype> array_declarator
+%type <dtrtype> declarator
+%type <dtrtype> notype_declarator after_type_declarator
+%type <dtrtype> parm_declarator
+%type <dtrtype> parm_declarator_starttypename parm_declarator_nostarttypename
+%type <dtrtype> array_declarator
 
 %type <ttype> structsp_attr structsp_nonattr
 %type <ttype> component_decl_list component_decl_list2
@@ -229,13 +231,15 @@ do {									\
 %type <ttype> component_notype_declarator
 %type <ttype> enumlist enumerator
 %type <ttype> struct_head union_head enum_head
-%type <ttype> typename absdcl absdcl1 absdcl1_ea absdcl1_noea
-%type <ttype> direct_absdcl1 absdcl_maybe_attribute
+%type <typenametype> typename
+%type <dtrtype> absdcl absdcl1 absdcl1_ea absdcl1_noea direct_absdcl1
+%type <parmtype> absdcl_maybe_attribute
 %type <ttype> condition xexpr for_cond_expr for_incr_expr
-%type <ttype> parms parm firstparm identifiers
+%type <parmtype> parm firstparm
+%type <ttype> identifiers
 
-%type <ttype> parmlist parmlist_1 parmlist_2
-%type <ttype> parmlist_or_identifiers parmlist_or_identifiers_1
+%type <arginfotype> parms parmlist parmlist_1 parmlist_2
+%type <arginfotype> parmlist_or_identifiers parmlist_or_identifiers_1
 %type <ttype> identifiers_or_typenames
 
 %type <itype> setspecs setspecs_fp extension
@@ -655,12 +659,12 @@ primary:
 		  $$.original_code = ERROR_MARK; }
 	| '(' typename ')' '{'
 		{ start_init (NULL_TREE, NULL, 0);
-		  $2 = groktypename ($2);
-		  really_start_incremental_init ($2); }
+		  $<ttype>$ = groktypename ($2);
+		  really_start_incremental_init ($<ttype>$); }
 	  initlist_maybe_comma '}'  %prec UNARY
 		{ struct c_expr init = pop_init_level (0);
 		  tree constructor = init.value;
-		  tree type = $2;
+		  tree type = $<ttype>5;
 		  finish_init ();
 		  maybe_warn_string_init (type, init);
 
@@ -1653,8 +1657,10 @@ after_type_declarator:
 	| '*' maybe_type_quals_attrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
+		{ $$ = build_id_declarator ($1); }
 @@ifobjc
 	| OBJECTNAME
+		{ $$ = build_id_declarator ($1); }
 @@end_ifobjc
 	;
 
@@ -1673,8 +1679,10 @@ parm_declarator_starttypename:
 	| parm_declarator_starttypename array_declarator  %prec '.'
 		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| TYPENAME
+		{ $$ = build_id_declarator ($1); }
 @@ifobjc
 	| OBJECTNAME
+		{ $$ = build_id_declarator ($1); }
 @@end_ifobjc
 	;
 
@@ -1704,6 +1712,7 @@ notype_declarator:
 	| notype_declarator array_declarator  %prec '.'
 		{ $$ = set_array_declarator_inner ($2, $1, false); }
 	| IDENTIFIER
+		{ $$ = build_id_declarator ($1); }
 	;
 
 struct_head:
@@ -1837,7 +1846,8 @@ component_decl:
 		  if (pedantic)
 		    pedwarn ("ISO C doesn't support unnamed structs/unions");
 
-		  $$ = grokfield(NULL, current_declspecs, NULL_TREE);
+		  $$ = grokfield (build_id_declarator (NULL_TREE),
+				  current_declspecs, NULL_TREE);
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_nots setspecs components_notype
 		{ $$ = $3;
@@ -1876,7 +1886,8 @@ component_declarator:
 		  decl_attributes (&$$,
 				   chainon ($4, all_prefix_attributes), 0); }
 	| ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield (NULL_TREE, current_declspecs, $2.value);
+		{ $$ = grokfield (build_id_declarator (NULL_TREE),
+				  current_declspecs, $2.value);
 		  decl_attributes (&$$,
 				   chainon ($3, all_prefix_attributes), 0); }
 	;
@@ -1891,7 +1902,8 @@ component_notype_declarator:
 		  decl_attributes (&$$,
 				   chainon ($4, all_prefix_attributes), 0); }
 	| ':' expr_no_commas maybe_attribute
-		{ $$ = grokfield (NULL_TREE, current_declspecs, $2.value);
+		{ $$ = grokfield (build_id_declarator (NULL_TREE),
+				  current_declspecs, $2.value);
 		  decl_attributes (&$$,
 				   chainon ($3, all_prefix_attributes), 0); }
 	;
@@ -1923,19 +1935,21 @@ typename:
 		{ pending_xref_error ();
 		  $<ttype>$ = $1; }
 	  absdcl
-		{ $$ = build_tree_list ($<ttype>2, $3); }
+		{ $$ = XOBNEW (&parser_obstack, struct c_type_name);
+		  $$->specs = $<ttype>2;
+		  $$->declarator = $3; }
 	;
 
 absdcl:   /* an absolute declarator */
 	/* empty */
-		{ $$ = NULL_TREE; }
+		{ $$ = build_id_declarator (NULL_TREE); }
 	| absdcl1
 	;
 
 absdcl_maybe_attribute:   /* absdcl maybe_attribute, but not just attributes */
 	/* empty */
 		{ $$ = build_c_parm (current_declspecs, all_prefix_attributes,
-				     NULL_TREE); }
+				     build_id_declarator (NULL_TREE)); }
 	| absdcl1
 		{ $$ = build_c_parm (current_declspecs, all_prefix_attributes,
 				     $1); }
@@ -1958,7 +1972,8 @@ absdcl1_noea:
 
 absdcl1_ea:
 	  '*' maybe_type_quals_attrs
-		{ $$ = make_pointer_declarator ($2, NULL_TREE); }
+		{ $$ = make_pointer_declarator
+		    ($2, build_id_declarator (NULL_TREE)); }
 	| '*' maybe_type_quals_attrs absdcl1_ea
 		{ $$ = make_pointer_declarator ($2, $3); }
 	;
@@ -1971,9 +1986,11 @@ direct_absdcl1:
 	| direct_absdcl1 array_declarator
 		{ $$ = set_array_declarator_inner ($2, $1, true); }
 	| '(' parmlist
-		{ $$ = build_function_declarator ($2, NULL_TREE); }
+		{ $$ = build_function_declarator
+		    ($2, build_id_declarator (NULL_TREE)); }
 	| array_declarator
-		{ $$ = set_array_declarator_inner ($1, NULL_TREE, true); }
+		{ $$ = set_array_declarator_inner
+		    ($1, build_id_declarator (NULL_TREE), true); }
 	;
 
 /* The [...] part of a declarator for an array type.  */
@@ -2519,17 +2536,28 @@ parmlist_1:
 	  parmlist_1
 		{ $$ = $6; }
 	| error ')'
-		{ $$ = make_node (TREE_LIST); }
+		{ $$ = XOBNEW (&parser_obstack, struct c_arg_info);
+		  $$->parms = 0;
+		  $$->tags = 0;
+		  $$->types = 0;
+		  $$->others = 0; }
 	;
 
 /* This is what appears inside the parens in a function declarator.
-   Is value is represented in the format that grokdeclarator expects.  */
+   Its value is represented in the format that grokdeclarator expects.  */
 parmlist_2:  /* empty */
-		{ $$ = make_node (TREE_LIST); }
+		{ $$ = XOBNEW (&parser_obstack, struct c_arg_info);
+		  $$->parms = 0;
+		  $$->tags = 0;
+		  $$->types = 0;
+		  $$->others = 0; }
 	| ELLIPSIS
-		{ $$ = make_node (TREE_LIST); 
+		{ $$ = XOBNEW (&parser_obstack, struct c_arg_info);
+		  $$->parms = 0;
+		  $$->tags = 0;
+		  $$->others = 0;
 		  /* Suppress -Wold-style-definition for this case.  */
-		  TREE_CHAIN ($$) = error_mark_node;
+		  $$->types = error_mark_node;
 		  error ("ISO C requires a named argument before `...'");
 		}
 	| parms
@@ -2614,7 +2642,11 @@ parmlist_or_identifiers:
 parmlist_or_identifiers_1:
 	  parmlist_1
 	| identifiers ')'
-		{ $$ = tree_cons (NULL_TREE, NULL_TREE, $1);
+		{ $$ = XOBNEW (&parser_obstack, struct c_arg_info);
+		  $$->parms = 0;
+		  $$->tags = 0;
+		  $$->types = $1;
+		  $$->others = 0;
 
 		  /* Make sure we have a parmlist after attributes.  */
 		  if ($<ttype>-1 != 0)

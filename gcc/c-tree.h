@@ -131,6 +131,81 @@ struct c_expr
   enum tree_code original_code;
 };
 
+/* The various kinds of declarators in C.  */
+enum c_declarator_kind {
+  /* An identifier.  */
+  cdk_id,
+  /* A function.  */
+  cdk_function,
+  /* An array.  */
+  cdk_array,
+  /* A pointer.  */
+  cdk_pointer,
+  /* Parenthesized declarator with nested attributes.  */
+  cdk_attrs
+};
+
+/* Information about the parameters in a function declarator.  */
+struct c_arg_info {
+  /* A list of parameter decls.  */
+  tree parms;
+  /* A list of structure, union and enum tags defined.  */
+  tree tags;
+  /* A list of argument types to go in the FUNCTION_TYPE.  */
+  tree types;
+  /* A list of non-parameter decls (notably enumeration constants)
+     defined with the parameters.  */
+  tree others;
+};
+
+/* A declarator.  */
+struct c_declarator {
+  /* The kind of declarator.  */
+  enum c_declarator_kind kind;
+  /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
+  struct c_declarator *declarator;
+  union {
+    /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
+       declarator.  */
+    tree id;
+    /* For functions.  */
+    struct c_arg_info *arg_info;
+    /* For arrays.  */
+    struct {
+      /* The array dimension, or NULL for [] and [*].  */
+      tree dimen;
+      /* The qualifiers (and attributes, currently ignored) inside [].  */
+      tree quals;
+      /* Whether [static] was used.  */
+      BOOL_BITFIELD static_p : 1;
+      /* Whether [*] was used.  */
+      BOOL_BITFIELD vla_unspec_p : 1;
+    } array;
+    /* For pointers, the qualifiers on the pointer type.  */
+    tree pointer_quals;
+    /* For attributes.  */
+    tree attrs;
+  } u;
+};
+
+/* A type name.  */
+struct c_type_name {
+  /* The declaration specifiers.  */
+  tree specs;
+  /* The declarator.  */
+  struct c_declarator *declarator;
+};
+
+/* A parameter.  */
+struct c_parm {
+  /* The declaration specifiers, minus any prefix attributes.  */
+  tree specs;
+  /* The attributes.  */
+  tree attrs;
+  /* The declarator.  */
+  struct c_declarator *declarator;
+};
+
 /* Save and restore the variables in this file and elsewhere
    that keep track of the progress of compilation of the current function.
    Used for nested functions.  */
@@ -141,7 +216,7 @@ struct language_function GTY(())
   tree x_break_label;
   tree x_cont_label;
   struct c_switch * GTY((skip)) x_switch_stack;
-  tree arg_info;
+  struct c_arg_info * GTY((skip)) arg_info;
   int returns_value;
   int returns_null;
   int returns_abnormally;
@@ -171,7 +246,7 @@ extern void c_expand_body (tree);
 extern void c_init_decl_processing (void);
 extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
-extern tree build_array_declarator (tree, tree, bool, bool);
+extern struct c_declarator *build_array_declarator (tree, tree, bool, bool);
 extern tree build_enumerator (tree, tree);
 extern void check_for_loop_decls (void);
 extern void mark_forward_parm_decls (void);
@@ -184,36 +259,42 @@ extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
 extern tree finish_struct (tree, tree, tree);
-extern tree get_parm_info (bool);
-extern tree grokfield (tree, tree, tree);
+extern struct c_arg_info *get_parm_info (bool);
+extern tree grokfield (struct c_declarator *, tree, tree);
 extern void split_specs_attrs (tree, tree *, tree *);
-extern tree groktypename (tree);
-extern tree grokparm (tree);
+extern tree groktypename (struct c_type_name *);
+extern tree grokparm (const struct c_parm *);
 extern tree implicitly_declare (tree);
 extern void keep_next_level (void);
 extern tree lookup_name (tree);
 extern void pending_xref_error (void);
 extern void c_push_function_context (struct function *);
 extern void c_pop_function_context (struct function *);
-extern void push_parm_decl (tree);
+extern void push_parm_decl (const struct c_parm *);
 extern tree pushdecl_top_level (tree);
-extern tree set_array_declarator_inner (tree, tree, bool);
+extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
+							struct c_declarator *,
+							bool);
 extern tree builtin_function (const char *, tree, int, enum built_in_class,
 			      const char *, tree);
 extern void shadow_tag (tree);
 extern void shadow_tag_warned (tree, int);
 extern tree start_enum (tree);
-extern int  start_function (tree, tree, tree);
-extern tree start_decl (tree, tree, bool, tree);
+extern int  start_function (tree, struct c_declarator *, tree);
+extern tree start_decl (struct c_declarator *, tree, bool, tree);
 extern tree start_struct (enum tree_code, tree);
 extern void store_parm_decls (void);
-extern void store_parm_decls_from (tree);
+extern void store_parm_decls_from (struct c_arg_info *);
 extern tree xref_tag (enum tree_code, tree);
 extern int c_expand_decl (tree);
-extern tree build_c_parm (tree, tree, tree);
-extern tree build_attrs_declarator (tree, tree);
-extern tree build_function_declarator (tree, tree);
-extern tree make_pointer_declarator (tree, tree);
+extern struct c_parm *build_c_parm (tree, tree, struct c_declarator *);
+extern struct c_declarator *build_attrs_declarator (tree,
+						    struct c_declarator *);
+extern struct c_declarator *build_function_declarator (struct c_arg_info *,
+						       struct c_declarator *);
+extern struct c_declarator *build_id_declarator (tree);
+extern struct c_declarator *make_pointer_declarator (tree,
+						     struct c_declarator *);
 
 /* in c-objc-common.c */
 extern int c_disregard_inline_limits (tree);
@@ -252,13 +333,13 @@ extern tree build_external_ref (tree, int);
 extern void record_maybe_used_decl (tree);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (struct c_expr);
-extern struct c_expr c_expr_sizeof_type (tree);
+extern struct c_expr c_expr_sizeof_type (struct c_type_name *);
 extern struct c_expr parser_build_binary_op (enum tree_code, struct c_expr,
 					     struct c_expr);
 extern void readonly_error (tree, const char *);
 extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree, tree);
-extern tree c_cast_expr (tree, tree);
+extern tree c_cast_expr (struct c_type_name *, tree);
 extern tree build_c_cast (tree, tree);
 extern tree build_modify_expr (tree, enum tree_code, tree);
 extern void store_init_value (tree, tree);

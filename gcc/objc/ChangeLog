@@ -1,3 +1,9 @@
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* objc-act.c (objc_start_function, really_start_method,
+	objc_get_parm_info, start_method_def): Update to new arg_info
+	structures.
+
 2004-09-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* Make-lang.in (objc/objc-parse.o): Depend on $(C_COMMON_H) instead of
