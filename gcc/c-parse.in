@@ -197,6 +197,7 @@ end ifc
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
 %type <ttype> parm_declarator
+%type <ttype> parm_declarator_starttypename parm_declarator_nostarttypename
 
 %type <ttype> structsp_attr structsp_nonattr
 %type <ttype> component_decl_list component_decl_list2
@@ -1683,27 +1684,54 @@ end ifobjc
    in addition to notype_declarator.  This is like after_type_declarator
    but does not allow a typedef name in parentheses as an identifier
    (because it would conflict with a function with that typedef as arg).  */
-
 parm_declarator:
-	  parm_declarator '(' parmlist_or_identifiers  %prec '.'
+	  parm_declarator_starttypename
+	| parm_declarator_nostarttypename
+	;
+
+parm_declarator_starttypename:
+	  parm_declarator_starttypename '(' parmlist_or_identifiers  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
-/*	| parm_declarator '(' error ')'  %prec '.'
+/*	| parm_declarator_starttypename '(' error ')'  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
 		  poplevel (0, 0, 0); }  */
 ifc
-	| parm_declarator '[' '*' ']'  %prec '.'
+	| parm_declarator_starttypename '[' '*' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
 		  if (! flag_isoc99)
 		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
 		}
 end ifc
-	| parm_declarator '[' expr ']'  %prec '.'
+	| parm_declarator_starttypename '[' expr ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| parm_declarator '[' ']'  %prec '.'
+	| parm_declarator_starttypename '[' ']'  %prec '.'
 		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
-	| '*' maybe_type_quals_setattrs parm_declarator  %prec UNARY
-		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
+	;
+
+parm_declarator_nostarttypename:
+	  parm_declarator_nostarttypename '(' parmlist_or_identifiers  %prec '.'
+		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
+/*	| parm_declarator_nostarttypename '(' error ')'  %prec '.'
+		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
+		  poplevel (0, 0, 0); }  */
+ifc
+	| parm_declarator_nostarttypename '[' '*' ']'  %prec '.'
+		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
+		  if (! flag_isoc99)
+		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
+		}
+end ifc
+	| parm_declarator_nostarttypename '[' expr ']'  %prec '.'
+		{ $$ = build_nt (ARRAY_REF, $1, $3); }
+	| parm_declarator_nostarttypename '[' ']'  %prec '.'
+		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| '*' maybe_type_quals_setattrs parm_declarator_starttypename  %prec UNARY
+		{ $$ = make_pointer_declarator ($2, $3); }
+	| '*' maybe_type_quals_setattrs parm_declarator_nostarttypename  %prec UNARY
+		{ $$ = make_pointer_declarator ($2, $3); }
+	| '(' maybe_setattrs parm_declarator_nostarttypename ')'
+		{ $$ = $3; }
 	;
 
 /* A declarator allowed whether or not there has been
