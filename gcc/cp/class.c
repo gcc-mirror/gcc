@@ -4292,7 +4292,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
       /* This code assumes that zero-sized classes have one-byte
 	 alignment.  There might someday be a system where that's not
 	 true.  */
-      my_friendly_assert (DECL_ALIGN (basetype) == BITS_PER_UNIT, 
+      my_friendly_assert (TYPE_ALIGN (basetype) == BITS_PER_UNIT, 
 			  20000314);
 
       /* This is an empty base class.  We first try to put it at
@@ -6519,7 +6519,7 @@ note_name_declared_in_class (name, decl)
 	 S.  */
       cp_error ("declaration of `%#D'", decl);
       cp_error_at ("changes meaning of `%s' from `%+#D'", 
-		   IDENTIFIER_POINTER (DECL_NAME (decl)),
+		   IDENTIFIER_POINTER (DECL_NAME (OVL_CURRENT (decl))),
 		   (tree) n->value);
     }
 }
