@@ -1,3 +1,8 @@
+1998-06-30  Benjamin Kosnik  <bkoz@bliss.nabi.net>
+
+        * decl2.c (lang_decode_option): Remove warn_template_debugging.
+        * lang-options.h: Ditto.
+
 Mon Jun 29 20:17:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* except.c (build_eh_type_type_ref): Remove unused variable `susp'.
