@@ -1,3 +1,9 @@
+Wed Feb 28 17:17:29 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (reversed_comparison_code_parts): Allow reversal of
+	unordered compares in -ffast-math mode; reverse ordered compares
+	for FP even w/o -ffast-math.
+
 2001-02-27  Richard Henderson  <rth@redhat.com>
 
 	* print-rtl.c (print_rtx) [i]: Don't print field five on
