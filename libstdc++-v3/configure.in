@@ -2,7 +2,7 @@
 # aclocal, autoconf, autoheader, automake
 
 AC_PREREQ(2.13)
-AC_INIT(src/complex.cc)
+AC_INIT(src/ios.cc)
 AC_CONFIG_AUX_DIR(..)
 
 # Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.

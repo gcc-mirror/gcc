@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.58 2000/12/15 00:55:02 bkoz Exp $
+## $Id: Makefile.am,v 1.59 2000/12/18 18:03:08 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -174,7 +174,7 @@ build_headers = \
 
 sources = \
 	limitsMEMBERS.cc \
-	complex.cc complexf.cc complexl.cc complex_io.cc \
+	complex_io.cc \
 	stdexcept.cc bitset.cc \
 	c++io.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc codecvt.cc \

@@ -1,3 +1,32 @@
+2000-12-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* src/Makefile.am (sources): Remove complex.cc, complexf.cc and
+	complexl.cc from list.
+	* src/Makefile.in: Regenerate.
+	* src/complex.cc: Remove.
+	* src/complexf.cc: Likewise.
+	* src/complexl.cc: Likewise.
+
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove csqrtl.c
+	(EXTRA_DIST): Remove csqrt.c and csqrtf.c.
+	* libmath/Makefile.in: Regenerate.
+	* libmath/complex-stub.h: Remove.
+	* libmath/csqrt.c: Likewise.
+	* libmath/sqrtf.c: Likewise.
+	* libmath/sqrtl.c: Likewise.
+	* libmath/mathconf.h: Remove <complex.h> and "complex-stub.h"
+	#inclusion. 
+	
+	* include/bits/std_complex.h (sqrt<>): Define primary template.
+	(complex<>): Remove sqrt friend declarations.
+
+	* configure.in: Initialize with src/ios.cc.
+	* configure: Regenerate.
+	* acinclude.m4: Remove check for csqrt* and <complex.h>
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2000-12-20  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (SECTION_FLAGS, OPT_LDFLAGS):  Fix minor thinko.

@@ -451,6 +451,28 @@ namespace std
     }
 
   template<typename _Tp>
+    complex<_Tp>
+    sqrt(const complex<_Tp>& __z)
+    {
+      _Tp __x = __z.real();
+      _Tp __y = __z.imag();
+
+      if (__x == _Tp())
+        {
+          _Tp __t = sqrt(abs(__y) / 2);
+          return complex<_Tp>(__t, __y < _Tp() ? -__t : __t);
+        }
+      else
+        {
+          _Tp __t = sqrt( 2 * abs(__z) + abs(__x));
+          _Tp __u = __t / 2;
+          return __x > _Tp()
+            ? complex<_Tp>(__u, __y / __t)
+            : complex<_Tp>(abs(__y) / __t, __y < _Tp() ? -__u : __u);
+        }
+    }
+
+  template<typename _Tp>
     inline complex<_Tp>
     tan(const complex<_Tp>& __z)
     {
@@ -537,8 +559,6 @@ namespace std
         
     friend class complex<double>;
     friend class complex<long double>;
-
-    friend complex<float> sqrt<>(const complex<float>&);
   };
 
   inline float
@@ -685,8 +705,6 @@ namespace std
         
     friend class complex<float>;
     friend class complex<long double>;
-
-    friend complex<double> sqrt<>(const complex<double>&);
   };
 
   inline double
@@ -833,8 +851,6 @@ namespace std
 
     friend class complex<float>;
     friend class complex<double>;
-
-    friend complex<long double> sqrt<>(const complex<long double>&);
   };
 
   inline

@@ -227,12 +227,6 @@ double nan (void);
 extern "C" {
 #endif
 
-#ifdef _GLIBCPP_HAVE_COMPLEX_H
-# include <complex.h>
-#else
-# include "complex-stub.h"
-#endif
-
 /* signbit is a macro in ISO C99.  */
 #ifndef signbit
 extern int __signbitf (float);
