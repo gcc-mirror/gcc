@@ -3021,11 +3021,15 @@ static const struct builtin_description bdesc_3arg[] =
     { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshm, "__builtin_altivec_vmsumshm", ALTIVEC_BUILTIN_VMSUMSHM },
     { MASK_ALTIVEC, CODE_FOR_altivec_vmsumuhs, "__builtin_altivec_vmsumuhs", ALTIVEC_BUILTIN_VMSUMUHS },
     { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshs, "__builtin_altivec_vmsumshs", ALTIVEC_BUILTIN_VMSUMSHS },
-    { MASK_ALTIVEC, CODE_FOR_altivec_vnmsubfp, "__builtin_altivec_vnmsubfp", ALTIVEC_BUILTIN_VNMSUBFP },
+    { MASK_ALTIVEC, CODE_FOR_altivec_vnmsubfp, "__builtin_altivec_vnmsubfp", ALTIVEC_BUILTIN_VNMSUBFP }, 
     { MASK_ALTIVEC, CODE_FOR_altivec_vperm_4sf, "__builtin_altivec_vperm_4sf", ALTIVEC_BUILTIN_VPERM_4SF },
     { MASK_ALTIVEC, CODE_FOR_altivec_vperm_4si, "__builtin_altivec_vperm_4si", ALTIVEC_BUILTIN_VPERM_4SI },
     { MASK_ALTIVEC, CODE_FOR_altivec_vperm_8hi, "__builtin_altivec_vperm_8hi", ALTIVEC_BUILTIN_VPERM_8HI },
     { MASK_ALTIVEC, CODE_FOR_altivec_vperm_16qi, "__builtin_altivec_vperm_16qi", ALTIVEC_BUILTIN_VPERM_16QI },
+    { MASK_ALTIVEC, CODE_FOR_altivec_vsel_4sf, "__builtin_altivec_vsel_4sf", ALTIVEC_BUILTIN_VSEL_4SF },
+    { MASK_ALTIVEC, CODE_FOR_altivec_vsel_4si, "__builtin_altivec_vsel_4si", ALTIVEC_BUILTIN_VSEL_4SI },
+    { MASK_ALTIVEC, CODE_FOR_altivec_vsel_8hi, "__builtin_altivec_vsel_8hi", ALTIVEC_BUILTIN_VSEL_8HI },
+    { MASK_ALTIVEC, CODE_FOR_altivec_vsel_16qi, "__builtin_altivec_vsel_16qi", ALTIVEC_BUILTIN_VSEL_16QI },
   };
 
 /* Simple binary operations: VECc = foo (VECa, VECb).  */
@@ -3050,6 +3054,8 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vavgsh, "__builtin_altivec_vavgsh", ALTIVEC_BUILTIN_VAVGSH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vavguw, "__builtin_altivec_vavguw", ALTIVEC_BUILTIN_VAVGUW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vavgsw, "__builtin_altivec_vavgsw", ALTIVEC_BUILTIN_VAVGSW },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vcfux, "__builtin_altivec_vcfux", ALTIVEC_BUILTIN_VCFUX },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vcfsx, "__builtin_altivec_vcfsx", ALTIVEC_BUILTIN_VCFSX },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpbfp, "__builtin_altivec_vcmpbfp", ALTIVEC_BUILTIN_VCMPBFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpequb, "__builtin_altivec_vcmpequb", ALTIVEC_BUILTIN_VCMPEQUB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpequh, "__builtin_altivec_vcmpequh", ALTIVEC_BUILTIN_VCMPEQUH },
@@ -3063,6 +3069,8 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtuw, "__builtin_altivec_vcmpgtuw", ALTIVEC_BUILTIN_VCMPGTUW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtsw, "__builtin_altivec_vcmpgtsw", ALTIVEC_BUILTIN_VCMPGTSW },
   { MASK_ALTIVEC, CODE_FOR_altivec_vcmpgtfp, "__builtin_altivec_vcmpgtfp", ALTIVEC_BUILTIN_VCMPGTFP },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vctsxs, "__builtin_altivec_vctsxs", ALTIVEC_BUILTIN_VCTSXS },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vctuxs, "__builtin_altivec_vctuxs", ALTIVEC_BUILTIN_VCTUXS },
   { MASK_ALTIVEC, CODE_FOR_umaxv16qi3, "__builtin_altivec_vmaxub", ALTIVEC_BUILTIN_VMAXUB },
   { MASK_ALTIVEC, CODE_FOR_smaxv16qi3, "__builtin_altivec_vmaxsb", ALTIVEC_BUILTIN_VMAXSB },
   { MASK_ALTIVEC, CODE_FOR_uminv8hi3, "__builtin_altivec_vmaxuh", ALTIVEC_BUILTIN_VMAXUH },
@@ -3141,9 +3149,18 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vsumsws, "__builtin_altivec_vsumsws", ALTIVEC_BUILTIN_VSUMSWS },
   { MASK_ALTIVEC, CODE_FOR_xorv4si3, "__builtin_altivec_vxor", ALTIVEC_BUILTIN_VXOR },
 };
-/* Simple unary operations: VECb = foo (unsigned literal).  */
+/* Simple unary operations: VECb = foo (unsigned literal) or VECb =
+   foo (VECa).  */
 static const struct builtin_description bdesc_1arg[] =
 {
+  { MASK_ALTIVEC, CODE_FOR_altivec_vexptefp, "__builtin_altivec_vexptefp", ALTIVEC_BUILTIN_VEXPTEFP },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vlogefp, "__builtin_altivec_vlogefp", ALTIVEC_BUILTIN_VLOGEFP },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vrefp, "__builtin_altivec_vrefp", ALTIVEC_BUILTIN_VREFP },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vrfim, "__builtin_altivec_vrfim", ALTIVEC_BUILTIN_VRFIM },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vrfin, "__builtin_altivec_vrfin", ALTIVEC_BUILTIN_VRFIN },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vrfip, "__builtin_altivec_vrfip", ALTIVEC_BUILTIN_VRFIP },
+  { MASK_ALTIVEC, CODE_FOR_ftruncv4sf2, "__builtin_altivec_vrfiz", ALTIVEC_BUILTIN_VRFIZ },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vrsqrtefp, "__builtin_altivec_vrsqrtefp", ALTIVEC_BUILTIN_VRSQRTEFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltisb, "__builtin_altivec_vspltisb", ALTIVEC_BUILTIN_VSPLTISB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltish, "__builtin_altivec_vspltish", ALTIVEC_BUILTIN_VSPLTISH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltisw, "__builtin_altivec_vspltisw", ALTIVEC_BUILTIN_VSPLTISW },
@@ -3524,6 +3541,10 @@ altivec_init_builtins (void)
   tree v16qi_ftype_char
     = build_function_type (V16QI_type_node,
 		           tree_cons (NULL_TREE, char_type_node, endlink));
+  /* V4SF foo (V4SF) */
+  tree v4sf_ftype_v4sf
+    = build_function_type (V4SF_type_node,
+			   tree_cons (NULL_TREE, V4SF_type_node, endlink));
 
   /* V4SI foo (int *).  */
   tree v4si_ftype_pint
@@ -3573,6 +3594,16 @@ altivec_init_builtins (void)
 				      tree_cons (NULL_TREE, V4SI_type_node,
 						 endlink)));
  /* These are really for the unsigned 5 bit literals */ 
+  tree v4sf_ftype_v4si_char
+    = build_function_type (V4SF_type_node,
+			   tree_cons (NULL_TREE, V4SI_type_node,
+				      tree_cons (NULL_TREE, char_type_node,
+						 endlink)));
+  tree v4si_ftype_v4sf_char
+    = build_function_type (V4SI_type_node,
+			   tree_cons (NULL_TREE, V4SF_type_node,
+				      tree_cons (NULL_TREE, char_type_node,
+						 endlink)));
   tree v4si_ftype_v4si_char
     = build_function_type (V4SI_type_node,
 			   tree_cons (NULL_TREE, V4SI_type_node,
@@ -3594,13 +3625,26 @@ altivec_init_builtins (void)
 			   tree_cons (NULL_TREE, V4SF_type_node,
 				      tree_cons (NULL_TREE, V4SF_type_node,
 						 endlink)));
-
+  tree v4sf_ftype_v4sf_v4sf_v4si
+    = build_function_type (V4SF_type_node,
+			   tree_cons (NULL_TREE, V4SF_type_node,
+				      tree_cons (NULL_TREE, V4SF_type_node,
+						 tree_cons (NULL_TREE,
+							    V4SI_type_node,
+							    endlink))));
   tree v4sf_ftype_v4sf_v4sf_v4sf
     = build_function_type (V4SF_type_node,
 			   tree_cons (NULL_TREE, V4SF_type_node,
 				      tree_cons (NULL_TREE, V4SF_type_node,
 						 tree_cons (NULL_TREE, 
 							    V4SF_type_node,
+							    endlink))));
+  tree v4si_ftype_v4si_v4si_v4si 
+    = build_function_type (V4SI_type_node,
+			   tree_cons (NULL_TREE, V4SI_type_node,
+				      tree_cons (NULL_TREE, V4SI_type_node,
+						 tree_cons (NULL_TREE,
+							    V4SI_type_node,
 							    endlink))));
 
   tree v8hi_ftype_v8hi_v8hi
@@ -3732,6 +3776,9 @@ altivec_init_builtins (void)
 	{
 	  switch (mode0)
 	    {
+	    case V4SImode:
+	      type = v4si_ftype_v4si_v4si_v4si;
+	      break;
 	    case V4SFmode:
 	      type = v4sf_ftype_v4sf_v4sf_v4sf;
 	      break;
@@ -3767,15 +3814,13 @@ altivec_init_builtins (void)
 	}
       else if (mode0 == V4SImode && mode1 == V16QImode && mode2 == V16QImode 
 	       && mode3 == V4SImode)
-	{
 	  type = v4si_ftype_v16qi_v16qi_v4si;
-	}
       else if (mode0 == V4SImode && mode1 == V8HImode && mode2 == V8HImode 
 	       && mode3 == V4SImode)
-	{
 	  type = v4si_ftype_v8hi_v8hi_v4si;
-	}
-      
+      else if (mode0 == V4SFmode && mode1 == V4SFmode && mode2 == V4SFmode 
+	       && mode3 == V4SImode)
+	  type = v4sf_ftype_v4sf_v4sf_v4si;
       else
 	abort ();
 
@@ -3860,6 +3905,14 @@ altivec_init_builtins (void)
       else if (mode0 == V16QImode && mode1 == V16QImode && mode2 == QImode)
 	type = v16qi_ftype_v16qi_char;
 
+      /* vfloat, vint, 5 bit literal.  */
+      else if (mode0 == V4SFmode && mode1 == V4SImode && mode2 == QImode)
+	type = v4sf_ftype_v4si_char;
+      
+      /* vint, vfloat, 5 bit literal.  */
+      else if (mode0 == V4SImode && mode1 == V4SFmode && mode2 == QImode)
+	type = v4si_ftype_v4sf_char;
+
       /* fixme: aldyh */
       /* int, x, x.  */
       else if (mode0 == SImode)
@@ -3907,6 +3960,8 @@ altivec_init_builtins (void)
         type = v8hi_ftype_char;
       else if (mode0 == V16QImode && mode1 == QImode)
         type = v16qi_ftype_char;
+      else if (mode0 == V4SFmode && mode1 == V4SFmode)
+	type = v4sf_ftype_v4sf;
       else
 	abort ();
 

@@ -1,3 +1,12 @@
+2001-12-09  Daniel Berlin  <dan@cgsoftware.com>
+
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Add remaining
+	altivec builtins (VCF?X, VCT?XS, VSEL, V*EFP, VRFI*).
+
+	* config/rs6000/rs6000.c: Ditto.
+
+	* config/rs6000/rs6000.md: Ditto.
+
 2001-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a.md: Add default case in switch.
