@@ -4,6 +4,8 @@ JDK1.1
 JDK1.2
 JDK1.3
 JDK1.4
+JLS1.0
+JLS1.1
 JLS1.2
 JDBC2.0
 
@@ -21,3 +23,7 @@ JDBC2.0
 !java.util.ResourceBundle.getBundle
 !java.util.zip.GZIPInputStream.basic
 !java.net.DatagramSocket.DatagramSocketTest2
+
+# Character.unicode seems to be very broken (the test)
+# Does not give meaningfull test results at the moment.
+!java.lang.Character.unicode
