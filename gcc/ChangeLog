@@ -1,3 +1,24 @@
+2002-07-16  Steve Ellcey  <sje@cup.hp.com>
+	* gcc/explow.c (convert_memory_address): Remove special handling
+	when POINTERS_EXTEND_UNSIGNED < 0.
+	* gcc/config/ia64.md (movsi_symbolic): New instruction for ILP32
+	mode.
+	(movedi_symbolic): Fix typo.
+	(load_fptr): Remove mode restriction so it works for SI and DI.
+	(load_fptr_internal1): Ditto.
+	(load_gprel): Ditto.
+	(load_symptr_internal1): Ditto.
+	(call_pic): Ditto.
+	* gcc/config/ia64.c (call_operand): Modify mode check.
+	(ia64_expand_load_address): Handle DI and SI addresses and symbols.
+	(ia64_expand_move): Ditto.
+	(ia64_assemble_integer): Handle SImode function pointers.
+	(ia64_expand_fetch_and_op): Handle SImode mem addresses.
+	(ia64_expand_op_and_fetch): Ditto.
+	(ia64_expand_compare_and_swap): Ditto.
+	(ia64_expand_lock_test_and_set): Ditto.
+	(ia64_expand_lock_release): Ditto.
+
 2002-07-16  Jeroen Dobbelaere <jeroen.dobbelaere@acunia.com>
 
 	* arm.c (emit_sfm): Don't set RTX_FRAME_RELATED_P on DWARF.
