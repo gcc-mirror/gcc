@@ -1,5 +1,11 @@
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps_from_bb): Speed up by extracting
+	edge information when we commit ourselves to threading a
+	particular jump.
+
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (thread_jumps): Speed up by putting basic blocks
 	into worklist instead of their indexes.
 
