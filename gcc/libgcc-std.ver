@@ -111,6 +111,7 @@ GCC_3.0 {
 
   # EH symbols
   _Unwind_DeleteException
+  _Unwind_Find_FDE
   _Unwind_ForcedUnwind
   _Unwind_GetGR
   _Unwind_GetIP
@@ -126,7 +127,9 @@ GCC_3.0 {
   __deregister_frame_info
   __register_frame
   __register_frame_info
+  __register_frame_info_bases
   __register_frame_info_table
+  __register_frame_info_table_bases
   __register_frame_table
 
   # SjLj EH symbols
