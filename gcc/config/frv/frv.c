@@ -8921,6 +8921,10 @@ frv_sort_insn_group (enum frv_insn_group group)
   size_t dfa_size;
 
   packet_group = &frv_packet.groups[group];
+
+  /* Assume no nop is needed.  */
+  packet_group->nop = 0;
+
   if (packet_group->num_insns == 0)
     return;
 
