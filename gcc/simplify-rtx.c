@@ -2381,10 +2381,21 @@ simplify_relational_operation (code, mode, op0, op1)
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
 	      if (GET_CODE (tem) == ABS)
-		return const1_rtx;
+		return const_true_rtx;
 	    }
 	  break;
 
+	case UNGE:
+	  /* Optimize ! (abs(x) < 0.0).  */
+	  if (trueop1 == CONST0_RTX (mode))
+	    {
+	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
+						       : trueop0;
+	      if (GET_CODE (tem) == ABS)
+		return const_true_rtx;
+	    }
+	  break;
+	  
 	default:
 	  break;
 	}
