@@ -1717,9 +1717,21 @@ move_block_from_reg (regno, x, nregs, size)
 {
   int i;
   rtx pat, last;
+  enum machine_mode mode;
 
+  /* If SIZE is that of a mode no bigger than a word, just use that
+     mode's store operation.  */
+  if (size <= UNITS_PER_WORD
+      && (mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0)) != BLKmode)
+    {
+      emit_move_insn (change_address (x, mode, NULL),
+		      gen_rtx (REG, mode, regno));
+      return;
+    }
+    
   /* Blocks smaller than a word on a BYTES_BIG_ENDIAN machine must be aligned
-     to the left before storing to memory.  */
+     to the left before storing to memory.  Note that the previous test
+     doesn't handle all cases (e.g. SIZE == 3).  */
   if (size < UNITS_PER_WORD && BYTES_BIG_ENDIAN)
     {
       rtx tem = operand_subword (x, 0, 1, BLKmode);
