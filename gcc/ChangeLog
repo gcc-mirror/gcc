@@ -1,3 +1,13 @@
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+            Richard Henderson  <rth@redhat.com>
+	
+	* extend.texi: Improve documentation of volatile asms.
+	
+2001-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-tree.texi: Fix thinko.
+	* gcc.texi: Likewise.
+
 2001-04-30  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_promoting_integer_type_p): New function, from the

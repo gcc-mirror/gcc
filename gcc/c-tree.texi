@@ -32,11 +32,10 @@ Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
+any later version published by the Free Software Foundation; with no
+invariant sections, the Front-Cover texts being (a) (see below), and
+with the Back-Cover Texts being (b) (see below).  A copy of the license
+is included in the section entitled ``GNU Free Documentation License''.
 
 (a) The FSF's Front-Cover Text is:
 
