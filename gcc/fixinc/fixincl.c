@@ -184,7 +184,7 @@ Altering  %5d of them\n";
 # ifdef SEPARATE_FIX_PROC
   unlink( pz_temp_file );
 # endif
-  return EXIT_SUCCESS;
+  exit (EXIT_SUCCESS);
 }
 
 
