@@ -296,3 +296,9 @@ c_initialize_diagnostics (diagnostic_context *context)
   /* It is safe to free this object because it was previously XNEW()'d.  */
   XDELETE (base);
 }
+
+int
+c_types_compatible_p (tree x, tree y)
+{
+    return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
+}
