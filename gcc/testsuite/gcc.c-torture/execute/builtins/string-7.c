@@ -9,6 +9,7 @@ typedef __SIZE_TYPE__ size_t;
 extern void *mempcpy (void *, const void *, size_t);
 extern int memcmp (const void *, const void *, size_t);
 extern char *stpcpy (char *, const char *);
+extern int inside_main;
 
 long buf1[64];
 char *buf2 = (char *) (buf1 + 32);
@@ -157,10 +158,12 @@ test (long *buf3, char *buf4, char *buf6, int n)
   return 0;
 }
 
-int
-main ()
+void
+main_test (void)
 {
+  /* All these tests are allowed to call mempcpy/stpcpy.  */
+  inside_main = 0;
   __builtin_memcpy (buf5, "RSTUVWXYZ0123456789", 20);
   __builtin_memcpy (buf7, "RSTUVWXYZ0123456789", 20);
-  return test (buf1, buf2, "rstuvwxyz", 0);
+  test (buf1, buf2, "rstuvwxyz", 0);
 }

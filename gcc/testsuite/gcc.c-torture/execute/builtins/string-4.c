@@ -12,6 +12,7 @@ extern size_t strlen(const char *);
 extern void *memcpy (void *, const void *, size_t);
 extern void *mempcpy (void *, const void *, size_t);
 extern int memcmp (const void *, const void *, size_t);
+extern int inside_main;
 
 const char s1[] = "123";
 char p[32] = "";
@@ -23,6 +24,13 @@ void
 main_test (void)
 {
   int i;
+
+#if !defined __i386__ && !defined __x86_64__
+  /* The functions below might not be optimized into direct stores on all
+     arches.  It depends on how many instructions would be generated and
+     what limits the architecture chooses in STORE_BY_PIECES_P.  */
+  inside_main = 0;
+#endif
 
   if (stpcpy (p, "abcde") != p + 5 || memcmp (p, "abcde", 6))
     abort ();
@@ -63,7 +71,9 @@ main_test (void)
     abort ();
 
   /* If the result of stpcpy/mempcpy is ignored, gcc should use
-     strcpy/memcpy.  */
+     strcpy/memcpy.  This should be optimized always, so set inside_main
+     again.  */
+  inside_main = 1;
   stpcpy (p + 3, s2);
   if (memcmp (p, "ABCdefg", 8))
     abort ();

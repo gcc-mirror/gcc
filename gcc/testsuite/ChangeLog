@@ -1,3 +1,11 @@
+2003-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/string-4.c (main_test): Allow some
+	mempcpy/stpcpy calls not to be optimized into something else.
+	* gcc.c-torture/execute/string-opt-3.c: Moved to...
+	* gcc.c-torture/execute/builtins/string-7.c: ...here.
+	* gcc.c-torture/execute/builtins/string-7-lib.c: New.
+
 2003-06-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/format/asm_fprintf-1.c: New test.
