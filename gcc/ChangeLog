@@ -1,3 +1,7 @@
+Thu Jun  6 21:06:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gengtype-lex.l (INITIAL): New rule for "'"("\\".|[^\\])"'".
+
 2002-06-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (TEXI_GCCINSTALL_FILES): Define.

@@ -263,6 +263,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "/*"			{ BEGIN(in_comment); }
 \n			{ lexer_line.line++; }
 {ID}			|
+"'"("\\".|[^\\])"'"	|
 [^"/\n]			/* do nothing */
 \"([^"\\]|\\.|\\\n)*\"	{ update_lineno (yytext, yyleng); }
 "/"/[^*]		/* do nothing */
