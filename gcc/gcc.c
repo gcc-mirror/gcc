@@ -51,6 +51,16 @@ compilation is specified by a string called a "spec".  */
 #define X_OK 1
 #endif
 
+#ifndef VPROTO
+#ifdef __STDC__
+#define VPROTO(ARGS)		ARGS
+#define VA_START(va_list,var)	va_start(va_list,var)
+#else
+#define VPROTO(ARGS)		(va_alist) va_dcl
+#define VA_START(va_list,var)	va_start(va_list)
+#endif
+#endif
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
