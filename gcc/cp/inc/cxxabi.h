@@ -24,6 +24,8 @@
 #ifdef __cplusplus
 
 #include <typeinfo>
+// This should really be cstddef, but that currently is not available when
+// building the runtime.
 #include <stddef.h>
 
 namespace __cxxabiv1
@@ -179,7 +181,11 @@ public:
   bool __is_public_p () const
     { return vmi_offset_flags & public_mask; }
   std::ptrdiff_t __offset () const
-    { return std::ptrdiff_t (vmi_offset_flags) >> offset_shift; }
+    { 
+      // This shift, being of a signed type, is implementation defined. GCC
+      // implements such shifts as arithmetic, which is what we want.
+      return std::ptrdiff_t (vmi_offset_flags) >> offset_shift;
+    }
 };
 
 /* type information for a class */

@@ -3668,9 +3668,9 @@ layout_empty_base (binfo, eoc, binfo_offsets)
 }
 
 /* Build a FIELD_DECL for the base given by BINFO in the class
-   *indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
+   indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
    *BASE_ALIGN is a running maximum of the alignments of any base
-   *class.  */
+   class.  */
 
 static void
 build_base_field (rli, binfo, empty_p, base_align, v)
