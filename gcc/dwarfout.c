@@ -28,6 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "flags.h"
 #include "rtl.h"
+#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
@@ -78,6 +79,12 @@ extern char *rindex ();
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"
+#endif
+
+/* How to print out a register name.  */
+#ifndef PRINT_REG
+#define PRINT_REG(RTX, CODE, FILE) \
+  fprintf ((FILE), "%s", reg_names[REGNO (RTX)])
 #endif
 
 /* Define a macro which returns non-zero for any tagged type which is
@@ -276,6 +283,13 @@ static tree fake_containing_scope;
    contained within various function definitions.  */
 
 static unsigned current_funcdef_number = 1;
+
+/* A pointer to the ..._DECL node which we have most recently been working
+   on.  We keep this around just in case something about it looks screwy
+   and we want to tell the user what the source coordinates for the actual
+   declaration are.  */
+
+static tree dwarf_last_decl;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -1438,6 +1452,28 @@ equate_type_number_to_die_number (type)
   ASM_OUTPUT_DEF (asm_out_file, type_label, die_label);
 }
 
+static void
+output_reg_number (rtl)
+     register rtx rtl;
+{
+  register unsigned regno = REGNO (rtl);
+
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      warning_with_decl (dwarf_last_decl, "internal regno botch: regno = %d\n",
+			 regno);
+      regno = 0;
+    }
+  fprintf (asm_out_file, "\t%s\t0x%x",
+	   UNALIGNED_INT_ASM_OP, DBX_REGISTER_NUMBER (regno));
+  if (flag_verbose_asm)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      PRINT_REG (rtl, 0, asm_out_file);
+    }
+  fputc ('\n', asm_out_file);
+}
+
 /* The following routine is a nice and simple transducer.  It converts the
    RTL for a variable or parameter (resident in memory) into an equivalent
    Dwarf representation of a mechanism for getting the address of that same
@@ -1492,18 +1528,7 @@ output_mem_loc_descriptor (rtl)
 	   distinction between OP_REG and OP_BASEREG.  */
 
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_BASEREG);
-	{
-	  register unsigned regno = REGNO (rtl);
-
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    {
-	      fprintf (stderr, "%s: regno botch detected: dwarfout.c:%u\n",
-		       language_string, __LINE__);
-	      debug_rtx(rtl);
-	      regno = 0;
-	    }
-	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DBX_REGISTER_NUMBER (regno));
-	}
+	output_reg_number (rtl);
 	break;
 
       case MEM:
@@ -1558,18 +1583,7 @@ output_loc_descriptor (rtl)
 
     case REG:
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_REG);
-	{
-	  register unsigned regno = REGNO (rtl);
-
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    {
-	      fprintf (stderr, "%s: regno botch detected: dwarfout.c:%u\n",
-		       language_string, __LINE__);
-	      debug_rtx(rtl);
-	      regno = 0;
-	    }
-	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DBX_REGISTER_NUMBER (regno));
-	}
+	output_reg_number (rtl);
 	break;
 
     case MEM:
@@ -4212,6 +4226,12 @@ output_decl (decl, containing_scope)
      register tree decl;
      register tree containing_scope;
 {
+  /* Make a note of the decl node we are going to be working on.  We may
+     need to give the user the source coordinates of where it appeared in
+     case we notice (later on) that something about it looks screwy.  */
+
+  dwarf_last_decl = decl;
+
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
