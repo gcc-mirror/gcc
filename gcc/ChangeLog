@@ -1,3 +1,8 @@
+Tue Sep  2 13:42:38 1997  Paul N. Hilfinger  <hilfingr@CS.Berkeley.EDU>
+
+	* fixincludes: Permits spaces between # and define.  Discard C++
+	comments in sys/pci.h on HP/UX 10.20.
+
 Mon Sep  1 22:13:18 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
