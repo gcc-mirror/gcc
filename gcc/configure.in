@@ -183,6 +183,20 @@ no)	;;
 *)	AC_MSG_ERROR(bad value ${enableval} given for checking option) ;;
 esac])
 
+AC_ARG_ENABLE(cpp,
+[  --disable-cpp           don't provide a user-visible C preprocessor.],
+[], [enable_cpp=yes])
+
+AC_ARG_WITH(cpp_install_dir,
+[  --with-cpp-install-dir=DIR
+                          install the user visible C preprocessor in DIR
+                          (relative to PREFIX) as well as PREFIX/bin.],
+[if test x$withval = xyes; then
+  AC_MSG_ERROR([option --with-cpp-install-dir requires an argument])
+elif test x$withval != xno; then
+  cpp_install_dir=$withval
+fi])
+
 # Use cpplib+cppmain for the preprocessor, but don't link it with the compiler.
 cpp_main=cccp
 AC_ARG_ENABLE(cpplib,
@@ -194,7 +208,7 @@ fi)
 # Link cpplib into the compiler proper, for C/C++/ObjC.
 AC_ARG_ENABLE(c-cpplib,
 [  --enable-c-cpplib       link cpplib directly into C and C++ compilers
-                          (implies --enable-cpplib).],
+                          (EXPERIMENTAL) (implies --enable-cpplib).],
 if test x$enable_c_cpplib != xno; then
   extra_c_objs="${extra_c_objs} libcpp.a"
   extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
@@ -421,9 +435,6 @@ host_xm_defines=
 host_xmake_file=
 host_truncate_target=
 host_exeext=
-
-# It is relative to $prefix.
-cpp_install_dir=
 
 # Decode the host machine, then the target machine.
 # For the host machine, we save the xm_file variable as host_xm_file;
@@ -3528,7 +3539,7 @@ then
 fi
 
 # Handle cpp installation.
-if [[ x$enable_cpp != x ]]
+if test x$enable_cpp != xno
 then
   tmake_file="$tmake_file t-install-cpp"
 fi
