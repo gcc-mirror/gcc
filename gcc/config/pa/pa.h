@@ -1869,6 +1869,9 @@ readonly_data ()							\
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
+/* All HP assemblers use "!" to separate logical lines.  */
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '!')
+
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
 #define TARGET_BS 010
