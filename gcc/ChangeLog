@@ -1,3 +1,14 @@
+2005-02-24  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/19953
+	* builtins.c (fold_builtin_complex_mul, fold_builtin_complex_div): New.
+	(fold_builtin_1): Call them.
+	* fold-const.c (fold_complex_mult_parts): Split out from ...
+	(fold_complex_mult): ... here.  Fix typo in both imaginary case.
+	(fold_complex_div_parts, fold_complex_div): New.
+	(fold): Use them.
+	* tree.h (fold_complex_mult_parts, fold_complex_div_parts): Declare.
+
 2005-02-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-ssa-ccp.c (visit_assignment): Verify that result of
