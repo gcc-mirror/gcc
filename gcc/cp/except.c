@@ -692,8 +692,9 @@ expand_end_eh_spec (raises, try_block)
 	{
 	  tmp = build_function_type (void_type_node, void_list_node);
 	  fn = push_throw_library_fn (fn, tmp);
-	  /* Since the spec doesn't allow any exceptions, this call
-	     will never throw.  */
+	  /* Since the spec doesn't allow any exceptions, this call will
+	     never throw.  We use push_throw_library_fn because we do want
+	     TREE_THIS_VOLATILE to be set.  */
 	  TREE_NOTHROW (fn) = 1;
 	}
       tmp = NULL_TREE;
@@ -837,9 +838,7 @@ expand_throw (exp)
 	     exception.cc.  */
 	  tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
 	  tmp = build_function_type (ptr_type_node, tmp);
-	  fn = push_library_fn (fn, tmp);
-	  TREE_THIS_VOLATILE (fn) = 1;
-	  TREE_NOTHROW (fn) = 0;
+	  fn = push_throw_library_fn (fn, tmp);
 	}
 
       exp = build_function_call (fn, args);
@@ -886,17 +885,18 @@ expand_throw (exp)
 	     user function that exits via an uncaught exception.
 
 	     So we have to protect the actual initialization of the
-	     exception object with terminate(), but evaluate the expression
-	     first.  We also expand the call to __eh_alloc
-	     first.  Since there could be temps in the expression, we need
-	     to handle that, too.  */
+	     exception object with terminate(), but evaluate the
+	     expression first.  Since there could be temps in the
+	     expression, we need to handle that, too.  We also expand
+	     the call to __eh_alloc first (which doesn't matter, since
+	     it can't throw).  */
 
 	  my_friendly_assert (stmts_are_full_exprs_p () == 1, 19990926);
 
 	  /* Store the throw expression into a temp.  This can be less
 	     efficient than storing it into the allocated space directly, but
-	     oh well.  To do this efficiently we would need to insinuate
-	     ourselves into expand_call.  */
+	     if we allocated the space first we would have to deal with
+	     cleaning it up if evaluating this expression throws.  */
 	  if (TREE_SIDE_EFFECTS (exp))
 	    {
 	      tree temp = create_temporary_var (TREE_TYPE (exp));

@@ -2425,6 +2425,8 @@ store_bindings (names, old_bindings)
      tree names, old_bindings;
 {
   tree t;
+  tree search_bindings = old_bindings;
+
   for (t = names; t; t = TREE_CHAIN (t))
     {
       tree binding, t1, id;
@@ -2441,7 +2443,7 @@ store_bindings (names, old_bindings)
 	  || !(IDENTIFIER_BINDING (id) || IDENTIFIER_CLASS_VALUE (id)))
 	continue;
 
-      for (t1 = old_bindings; t1; t1 = TREE_CHAIN (t1))
+      for (t1 = search_bindings; t1; t1 = TREE_CHAIN (t1))
 	if (TREE_VEC_ELT (t1, 0) == id)
 	  goto skip_it;
 
@@ -11235,7 +11237,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 
 	  /* Until core issue 180 is resolved, allow 'friend typename A::B'.
-	     But don't allow implicit typenames.  */
+	     But don't allow implicit typenames except with a class-key.  */
 	  if (!current_aggr && (TREE_CODE (type) != TYPENAME_TYPE
 				|| IMPLICIT_TYPENAME_P (type)))
 	    {
@@ -13570,7 +13572,8 @@ start_function (declspecs, declarator, attrs, flags)
   /* Initialize RTL machinery.  We cannot do this until
      CURRENT_FUNCTION_DECL and DECL_RESULT are set up.  We do this
      even when processing a template; this is how we get
-     CFUN set up, and our per-function variables initialized.  */
+     CFUN set up, and our per-function variables initialized.
+     FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
   init_function_start (decl1, input_filename, lineno);
   current_binding_level = bl;

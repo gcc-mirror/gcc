@@ -1,3 +1,30 @@
+2000-12-04  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_type): Mangle VECTOR_TYPE with "U8__vector".
+	(write_builtin_type): Pass intSI_type_node and the like through 
+	type_for_mode.
+	* method.c (process_overload_item): Mangle VECTOR_TYPEs with 'o'.
+	Pass intSI_type_node and the like through type_for_mode.
+	* decl2.c (arg_assoc_type): Handle VECTOR_TYPE like COMPLEX_TYPE.
+	* pt.c (tsubst, unify): Likewise.
+	* tree.c (walk_tree): Likewise.
+	* error.c (dump_type): Likewise.
+	(dump_type_prefix, dump_type_suffix): Don't bother with VECTOR_TYPE.
+	
+	* Make-lang.in: Tweak top comment for emacs.
+	(cp/TAGS): Restore.
+
+	* except.c (expand_throw): Use push_throw_library_fn for _Jv_Throw.
+
+	* pt.c (tsubst_decl): Call clone_function_decl here.
+	(do_decl_instantiation): Not here.
+	* class.c (clone_function_decl): Robustify.
+
+2000-12-04  Michael Matz  <matzmich@cs.tu-berlin.de>
+
+	* decl.c (store_bindings): Only search in the non modified
+	old_bindings for duplicates.
+
 2000-12-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* error.c (dump_function_decl): Use DECL_VIRTUAL_P, not

@@ -5786,6 +5786,7 @@ tsubst_decl (t, args, type, in_decl)
 	    maybe_retrofit_in_chrg (r);
 	    if (DECL_CONSTRUCTOR_P (r))
 	      grok_ctor_properties (ctx, r);
+	    clone_function_decl(r, /*update_method_vec_p=*/0);
 	  }
 	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
@@ -6164,6 +6165,7 @@ tsubst (t, args, complain, in_decl)
     case VOID_TYPE:
     case REAL_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
     case BOOLEAN_TYPE:
     case INTEGER_CST:
     case REAL_CST:
@@ -8532,6 +8534,7 @@ unify (tparms, targs, parm, arg, strict)
 
     case REAL_TYPE:
     case COMPLEX_TYPE:
+    case VECTOR_TYPE:
     case INTEGER_TYPE:
     case BOOLEAN_TYPE:
     case VOID_TYPE:
@@ -9222,15 +9225,6 @@ do_decl_instantiation (declspecs, declarator, storage)
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
 
-  /* Under the new ABI, we need to make sure to instantiate all the
-     cloned versions of constructors or destructors.  */
-  if (flag_new_abi &&
-      (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (result) || 
-       DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (result)) &&
-      !(TREE_CHAIN (result) && 
-	DECL_CLONED_FUNCTION (TREE_CHAIN (result))))
-    clone_function_decl(result, /*update_method_vec_p=*/0);
-      
   SET_DECL_EXPLICIT_INSTANTIATION (result);
   mark_decl_instantiated (result, extern_p);
   repo_template_instantiated (result, extern_p);

@@ -4316,6 +4316,12 @@ clone_function_decl (fn, update_method_vec_p)
 {
   tree clone;
 
+  /* Avoid inappropriate cloning.  */
+  if (! flag_new_abi
+      || (TREE_CHAIN (fn)
+	  && DECL_CLONED_FUNCTION (TREE_CHAIN (fn))))
+    return;
+
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
     {
       /* For each constructor, we need two variants: an in-charge version
