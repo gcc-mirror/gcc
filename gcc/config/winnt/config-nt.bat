@@ -1,10 +1,17 @@
 echo Configuring GCC for Windows NT on %2
 rem This batch file assumes a unix-type "sed" program
 
-echo #include "%2/xm-winnt.h" >config.h
-echo #include "%2/xm-winnt.h" >hconfig.h
-echo #include "%2/xm-winnt.h" >tconfig.h
-echo #include "%2/win-nt.h" >tm.h
+if %2.==alpha. echo #include "alpha/xm-alpha.h" >config.h
+if %2.==alpha. echo #include "winnt/xm-winnt.h" >>config.h
+if %2.==alpha. echo #include "alpha/xm-winnt.h" >>config.h
+if not %2.==alpha.  echo #include "%2/xm-winnt.h" >config.h
+copy config.h hconfig.h
+copy config.h tconfig.h
+
+if %2.==alpha. echo #define TARGET_CPU_DEFAULT 64 >tm.h
+if %2.==alpha. echo #include "alpha/alpha.h" >>tm.h
+if %2.==alpha. echo #include "alpha/win-nt.h" >>tm.h
+if not %2.==alpha. echo #include "%2/win-nt.h" >tm.h
 
 rem This batch file assumes a unix-type "sed" program
 
