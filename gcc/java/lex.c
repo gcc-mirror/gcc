@@ -494,8 +494,8 @@ java_read_char (lex)
 						 + (c2 & 0x3f));
 		      /* Check for valid 3-byte characters.
 			 Don't allow surrogate, \ufffe or \uffff.  */
-		      if (r >= 0x800 && r <= 0xffff
-			  && ! (r >= 0xd800 && r <= 0xdfff)
+		      if (IN_RANGE (r, 0x800, 0xffff)
+			  && ! IN_RANGE (r, 0xd800, 0xdfff)
 			  && r != 0xfffe && r != 0xffff)
 			return r;
 		    }
