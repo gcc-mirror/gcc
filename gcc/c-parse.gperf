@@ -9,10 +9,14 @@ __asm, ASM_KEYWORD, NORID
 __asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
+__cimag, IMAGPART, NORID
+__cimag__, IMAGPART, NORID
 __complex, TYPESPEC, RID_COMPLEX
 __complex__, TYPESPEC, RID_COMPLEX
 __const, TYPE_QUAL, RID_CONST
 __const__, TYPE_QUAL, RID_CONST
+__creal, REALPART, NORID
+__creal__, REALPART, NORID
 __extension__, EXTENSION, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
