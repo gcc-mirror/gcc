@@ -720,8 +720,6 @@ struct tree_type
 /* This is the name of the object as written by the user.
    It is an IDENTIFIER_NODE.  */
 #define DECL_NAME(NODE) ((NODE)->decl.name)
-/* This macro is marked for death.  */
-#define DECL_PRINT_NAME(NODE) ((NODE)->decl.print_name)
 /* This is the name of the object as the assembler will see it
    (but before any translations made by ASM_OUTPUT_LABELREF).
    Often this is the same as DECL_NAME.
@@ -944,8 +942,6 @@ struct tree_decl
   union tree_node *result;
   union tree_node *initial;
   union tree_node *abstract_origin;
-  /* The PRINT_NAME field is marked for death.  */
-  char *print_name;
   union tree_node *assembler_name;
   union tree_node *section_name;
   struct rtx_def *rtl;	/* acts as link to register transfer language
