@@ -6306,7 +6306,7 @@ cse_insn (insn, libcall_insn)
       && (tem = single_set (prev_insn)) != 0
       && SET_DEST (tem) == cc0_rtx
       && ! reg_mentioned_p (cc0_rtx, x))
-    delete-insn (prev_insn);
+    delete_insn (prev_insn);
 
   prev_insn_cc0 = this_insn_cc0;
   prev_insn_cc0_mode = this_insn_cc0_mode;
