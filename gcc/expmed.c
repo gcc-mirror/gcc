@@ -1749,99 +1749,10 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 			       shifted, op1, target, unsignedp, methods1);
 	}
 
-#ifdef HAVE_extzv
-      /* We can do a logical (unsigned) right shift with a bit-field
-	 extract insn.  But first check if one of the above methods worked.  */
-      if (temp != 0)
-	return temp;
-
-      if (unsignedp && code == RSHIFT_EXPR && ! BITS_BIG_ENDIAN && HAVE_extzv)
-	{
-	  enum machine_mode output_mode
-	    = insn_operand_mode[(int) CODE_FOR_extzv][0];
-
-	  if ((methods == OPTAB_DIRECT && mode == output_mode)
-	      || (methods == OPTAB_WIDEN
-		  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (output_mode)))
-	    {
-	      rtx shifted1 = convert_modes (output_mode, mode,
-					    protect_from_queue (shifted, 0),
-					    1);
-	      enum machine_mode length_mode
-		= insn_operand_mode[(int) CODE_FOR_extzv][2];
-	      enum machine_mode pos_mode
-		= insn_operand_mode[(int) CODE_FOR_extzv][3];
-	      rtx target1 = 0;
-	      rtx last = get_last_insn ();
-	      rtx width;
-	      rtx xop1 = op1;
-	      rtx pat;
-
-	      if (target != 0)
-		target1 = protect_from_queue (target, 1);
-
-	      /* We define extract insns as having OUTPUT_MODE in a register
-		 and the mode of operand 1 in memory.  Since we want
-		 OUTPUT_MODE, we will always force the operand into a
-		 register.  At some point we might want to support MEM
-		 directly. */
-	      shifted1 = force_reg (output_mode, shifted1);
-
-	      /* If we don't have or cannot use a suggested target,
-		 make a place for the result, in the proper mode.  */
-	      if (methods == OPTAB_WIDEN || target1 == 0
-		  || ! ((*insn_operand_predicate[(int) CODE_FOR_extzv][0])
-			(target1, output_mode)))
-		target1 = gen_reg_rtx (output_mode);
-
-	      xop1 = protect_from_queue (xop1, 0);
-	      xop1 = convert_modes (pos_mode, TYPE_MODE (TREE_TYPE (amount)),
-				    xop1, TREE_UNSIGNED (TREE_TYPE (amount)));
-
-	      /* If this machine's extzv insists on a register for
-		 operand 3 (position), arrange for that.  */
-	      if (! ((*insn_operand_predicate[(int) CODE_FOR_extzv][3])
-		     (xop1, pos_mode)))
-		xop1 = force_reg (pos_mode, xop1);
-
-	      /* WIDTH gets the width of the bit field to extract:
-		 wordsize minus # bits to shift by.  */
-	      if (GET_CODE (xop1) == CONST_INT)
-		width = GEN_INT (GET_MODE_BITSIZE (mode) - INTVAL (op1));
-	      else
-		{
-		  /* Now get the width in the proper mode.  */
-		  op1 = protect_from_queue (op1, 0);
-		  width = convert_to_mode (length_mode, op1,
-					   TREE_UNSIGNED (TREE_TYPE (amount)));
-
-		  width = expand_binop (length_mode, sub_optab,
-					GEN_INT (GET_MODE_BITSIZE (mode)),
-					width, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-		}
-
-	      /* If this machine's extzv insists on a register for
-		 operand 2 (length), arrange for that.  */
-	      if (! ((*insn_operand_predicate[(int) CODE_FOR_extzv][2])
-		     (width, length_mode)))
-		width = force_reg (length_mode, width);
-
-	      /* Now extract with WIDTH, omitting OP1 least sig bits.  */
-	      pat = gen_extzv (target1, shifted1, width, xop1);
-	      if (pat)
-		{
-		  emit_insn (pat);
-		  temp = convert_to_mode (mode, target1, 1);
-		}
-	      else
-		delete_insns_since (last);
-	    }
-
-	  /* Can also do logical shift with signed bit-field extract
-	     followed by inserting the bit-field at a different position.
-	     That strategy is not yet implemented.  */
-	}
-#endif /* HAVE_extzv */
+      /* We used to try extzv here for logical right shifts, but that was
+	 only useful for one machine, the VAX, and caused poor code 
+	 generation there for lshrdi3, so the code was deleted and a
+	 define_expand for lshrsi3 was added to vax.md.  */
     }
 
   if (temp == 0)
