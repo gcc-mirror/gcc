@@ -96,7 +96,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/ppc_closure.S src/powerpc/asm.h \
 		src/powerpc/ffi_darwin.c \
 		src/powerpc/darwin.S src/powerpc/aix.S \
-		src/powerpc/darwin_closure.S src/powerpc/aix_closures.S \
+		src/powerpc/darwin_closure.S src/powerpc/aix_closure.S \
 		src/arm/ffi.c src/arm/sysv.S \
 		src/s390/ffi.c src/s390/sysv.S \
 		src/sh/ffi.c src/sh/sysv.S
@@ -175,7 +175,7 @@ TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
 TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
-TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closures.S
+TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
 TARGET_SRC_S390 = src/s390/sysv.S src/s390/ffi.c
@@ -243,7 +243,7 @@ libffi_convenience_la_LIBADD =
 @POWERPC_AIX_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo \
 @POWERPC_AIX_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @POWERPC_AIX_TRUE@src/java_raw_api.lo src/powerpc/ffi_darwin.lo \
-@POWERPC_AIX_TRUE@src/powerpc/aix.lo src/powerpc/aix_closures.lo
+@POWERPC_AIX_TRUE@src/powerpc/aix.lo src/powerpc/aix_closure.lo
 @ALPHA_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo \
 @ALPHA_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @ALPHA_TRUE@src/java_raw_api.lo src/alpha/ffi.lo src/alpha/osf.lo
@@ -295,7 +295,7 @@ libffi_la_LIBADD =
 @POWERPC_AIX_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @POWERPC_AIX_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @POWERPC_AIX_TRUE@src/powerpc/ffi_darwin.lo src/powerpc/aix.lo \
-@POWERPC_AIX_TRUE@src/powerpc/aix_closures.lo
+@POWERPC_AIX_TRUE@src/powerpc/aix_closure.lo
 @ALPHA_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
