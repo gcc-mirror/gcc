@@ -1041,12 +1041,10 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		  return decl;
 		}
 
-	      fns = TREE_VEC_ELT(CLASSTYPE_METHOD_VEC (ctype),
-				 is_constructor ? 0 : 1);
+	      name = is_constructor ? ctor_identifier : dtor_identifier;
 	    }
-	  else 
-	    fns = lookup_fnfields (TYPE_BINFO (ctype), name,
-				   1);
+
+	  fns = lookup_fnfields (TYPE_BINFO (ctype), name, 1);
 	  
 	  if (fns == NULL_TREE) 
 	    {
