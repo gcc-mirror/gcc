@@ -1,3 +1,28 @@
+2004-11-23  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_analyze_operations): Don't vectorize if
+	the vectorization factor is greater than the iteration count.
+	(vect_gen_niters_for_prolog_loop): No need to calculate min if the
+	iteration count is known.
+
+	(vect_build_symbol_bound): Removed. Its functionality moved to
+	vect_generate_tmps_on_preheader.
+	(vect_generate_tmps_on_preheader): Moved content of
+	vect_build_symbol_bound here instead of calling it.  Changed some
+	variables names.
+
+	(vect_build_loop_niters): We don't expect a new_bb to be generated -
+	use gcc_assert.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+	(vect_gen_niters_for_prolog_loo): Likewise.
+
+	(slpeel_make_loop_iterate_ntimes): Use buildN instead of build.
+	(slpeel_add_loop_guard): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+
+	(vect_get_first_index): Missing space.
+
 2004-11-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*iordi3"): Mark commutative.
