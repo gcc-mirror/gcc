@@ -2370,15 +2370,29 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements, no_share)
 	  {
 	    rtx pat, last;
 
-	    replacement = find_fixup_replacement (replacements, SET_SRC (x));
-	    if (replacement->new)
-	      SET_SRC (x) = replacement->new;
-	    else if (GET_CODE (SET_SRC (x)) == SUBREG)
-	      SET_SRC (x) = replacement->new
-		= fixup_memory_subreg (SET_SRC (x), insn, 0);
+	    if (GET_CODE (SET_SRC (x)) == SUBREG
+		&& (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
+		    > GET_MODE_SIZE (GET_MODE (var))))
+	      {
+		/* This (subreg VAR) is now a paradoxical subreg.  We need
+		   to replace VAR instead of the subreg.  */
+		replacement = find_fixup_replacement (replacements, var);
+		if (replacement->new == NULL_RTX)
+		  replacement->new = gen_reg_rtx (GET_MODE (var));
+		SUBREG_REG (SET_SRC (x)) = replacement->new;
+	      }
 	    else
-	      SET_SRC (x) = replacement->new
-		= fixup_stack_1 (SET_SRC (x), insn);
+	      {
+		replacement = find_fixup_replacement (replacements, SET_SRC (x));
+		if (replacement->new)
+		  SET_SRC (x) = replacement->new;
+		else if (GET_CODE (SET_SRC (x)) == SUBREG)
+		  SET_SRC (x) = replacement->new
+		    = fixup_memory_subreg (SET_SRC (x), insn, 0);
+		else
+		  SET_SRC (x) = replacement->new
+		    = fixup_stack_1 (SET_SRC (x), insn);
+	      }
 
 	    if (recog_memoized (insn) >= 0)
 	      return;
