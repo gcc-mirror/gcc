@@ -1,3 +1,7 @@
+2001-09-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format/builtin-1.c, gcc.dg/format/ext-6.c: New tests.
+
 2001-09-22  George Helffrich  <george@geo.titech.ac.jp>
 
 	* g77.dg/strlen0.f: New test.
