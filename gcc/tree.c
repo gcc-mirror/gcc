@@ -1675,7 +1675,8 @@ int_size_in_bytes (type)
 }
 
 /* Return, as an INTEGER_CST node, the number of elements for
-   TYPE (which is an ARRAY_TYPE).  */
+   TYPE (which is an ARRAY_TYPE) minus one. 
+   This counts only elements of the top array.  */
 
 tree
 array_type_nelts (type)
