@@ -1981,6 +1981,7 @@ while (0)
    will never return.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL) \
   (DECL \
+   && ! TARGET_PORTABLE_RUNTIME \
    && ! TARGET_64BIT \
    && ! TREE_PUBLIC (DECL))
 
