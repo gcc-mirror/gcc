@@ -1,3 +1,8 @@
+2003-01-27  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/consthrow.java: New file.
+	* libjava.compile/consthrow.xfail: New file.
+
 2003-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libjava.lang/pr8823.xfail: New file, add "xfail-byte".
