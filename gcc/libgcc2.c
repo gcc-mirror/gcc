@@ -1497,7 +1497,8 @@ __bb_exit_func (void)
 	 use of rationale standards here.  */
 
       time ((void *) &time_value);
-      fprintf (file, "Basic block profiling finished on %s\n", ctime ((void *) &time_value));
+      fprintf (file, "Basic block profiling finished on %s\n",
+	       ctime ((void *) &time_value));
 
       /* We check the length field explicitly in order to allow compatibility
 	 with older GCC's which did not provide it.  */
@@ -1842,7 +1843,9 @@ __bb_exit_trace_func (void)
 
           if (!printed_something)
             {
-              fprintf (file, "Functions in `bb.in' not executed during basic block profiling on %s\n", ctime ((void *) &time_value));
+              fprintf (file,
+      "Functions in `bb.in' not executed during basic block profiling on %s\n",
+		       ctime ((void *) &time_value));
               printed_something = 1;
             }
 

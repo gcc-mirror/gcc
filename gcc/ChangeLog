@@ -1,3 +1,7 @@
+Sun Dec  2 07:12:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* libgcc2.c (__bb_exit_func): Fix line wrap problems.
+
 2001-12-02  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Simplify.
