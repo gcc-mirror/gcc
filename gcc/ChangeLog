@@ -1,3 +1,8 @@
+2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (x86_64-*-freebsd*): Disable fixproto (accidentally
+	missed in last pass).
+
 2003-09-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.md (andsi3): Fix cut&pasto in 0xfffffffe
