@@ -117,7 +117,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 #ifndef CROSS_COMPILE
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
-   %{static:-bnso -bI:/lib/syscalls.exp} %{g*:-bexport:/usr/lib/libg.exp}\
+   %{static:-bnso -bI:/lib/syscalls.exp} %{!shared: %{g*:-bexport:/usr/lib/libg.exp}}\
    %{shared:-bM:SRE}"
 #else
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
