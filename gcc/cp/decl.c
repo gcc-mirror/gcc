@@ -6816,6 +6816,33 @@ fixup_anonymous_aggr (t)
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
     cp_error_at ("an anonymous union cannot have function members", t);
+
+  /* Anonymous aggregates cannot have fields with ctors, dtors or complex
+     assignment operators (because they cannot have these methods themselves).
+     For anonymous unions this is already checked because they are not allowed
+     in any union, otherwise we have to check it.  */
+  if (TREE_CODE (t) != UNION_TYPE)
+    {
+      tree field, type;
+
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL)
+	  {
+	    type = TREE_TYPE (field);
+	    if (CLASS_TYPE_P (type))
+	      {
+	        if (TYPE_NEEDS_CONSTRUCTING (type))
+		  cp_error_at ("member %#D' with constructor not allowed in anonymous aggregate",
+			       field);
+		if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+		  cp_error_at ("member %#D' with destructor not allowed in anonymous aggregate",
+			       field);
+		if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
+		  cp_error_at ("member %#D' with copy assignment operator not allowed in anonymous aggregate",
+			       field);
+	      }
+	  }
+    }
 }
 
 /* Make sure that a declaration with no declarator is well-formed, i.e.

@@ -703,7 +703,11 @@ do_build_assign_ref (fndecl)
 	                build_qualified_type (TREE_TYPE (field), cvquals),
 	                init, field);
 
-	  finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
+	  if (DECL_NAME (field))
+	    finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
+	  else
+	    finish_expr_stmt (build (MODIFY_EXPR, TREE_TYPE (comp), comp,
+				     init));
 	}
     }
   finish_return_stmt (current_class_ref);

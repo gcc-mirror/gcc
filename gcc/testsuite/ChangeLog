@@ -1,3 +1,7 @@
+2001-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/anon8.C: New test.
+
 2001-03-17  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.other/eh4.C: Add expected error text.
