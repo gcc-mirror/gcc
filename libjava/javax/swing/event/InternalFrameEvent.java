@@ -81,7 +81,7 @@ public class InternalFrameEvent extends AWTEvent
   /**
    * Internal frame iconified event
    */
-  public static final int INTERNAL_FRAME_ICONIFIED = 2552;
+  public static final int INTERNAL_FRAME_ICONIFIED = 25552;
 
   /**
    * Internal frame last event
@@ -91,7 +91,7 @@ public class InternalFrameEvent extends AWTEvent
   /**
    * Internal frame opened event
    */
-  public static final int INTERNAL_FRAME_OPENED = 25550;
+  public static final int INTERNAL_FRAME_OPENED = 25549;
 
   /**
    * Creates a <code>JInternalFrameEvent</code> object.

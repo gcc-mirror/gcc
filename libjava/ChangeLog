@@ -1,3 +1,19 @@
+2003-07-14  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/image/MemoryImageSource.java,
+	java/beans/PropertyEditorManager.java,
+	javax/naming/CompoundName.java,
+	javax/naming/spi/NamingManager.java,
+	javax/swing/AbstractButton.java,
+	javax/swing/ButtonModel.java,
+	javax/swing/SwingUtilities.java,
+	javax/swing/UIManager.java,
+	javax/swing/colorchooser/DefaultColorSelectionModel.java,
+	javax/swing/event/AncestorEvent.java,
+	javax/swing/event/InternalFrameEvent.java,
+	java/util/zip/ZipFile.java:
+	New versions from classpath.
+
 2003-07-13  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/FileChannelImpl.java,

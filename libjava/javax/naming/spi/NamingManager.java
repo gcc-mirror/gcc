@@ -83,13 +83,17 @@ public class NamingManager
 
 	try
 	  {
-	    icf = (InitialContextFactory) Class.forName (java_naming_factory_initial).newInstance ();
+	    icf = (InitialContextFactory)Class.forName
+		(java_naming_factory_initial, true,
+		 Thread.currentThread().getContextClassLoader())
+		.newInstance ();
 	  }
 	catch (Exception exception)
 	  {
 	    NoInitialContextException e
-	      = new NoInitialContextException ("Can't load InitialContextFactory class: "
-					       + java_naming_factory_initial);
+	      = new NoInitialContextException
+	      ("Can't load InitialContextFactory class: "
+	       + java_naming_factory_initial);
 	    e.setRootCause(exception);
 	    throw e;
 	  }

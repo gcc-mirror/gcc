@@ -142,13 +142,17 @@ public class CompoundName implements Name, Cloneable, Serializable
 	    // Otherwise, fall through.
 	  }
 	// Quotes are only special at the start of a component.
-	else if (new_element.length () == 0 && special == beginQuote)
+	else if (new_element.length () == 0
+		 && special == beginQuote
+		 && beginQuote != null)
 	  {
 	    quote = endQuote;
 	    i += special.length ();
 	    continue;
 	  }
-	else if (new_element.length () == 0 && special == beginQuote2)
+	else if (new_element.length () == 0
+		 && special == beginQuote2
+		 && beginQuote2 != null)
 	  {
 	    quote = endQuote2;
 	    i += special.length ();

@@ -52,90 +52,90 @@ import javax.swing.event.EventListenerList;
 public class DefaultColorSelectionModel 
   implements ColorSelectionModel, Serializable
 {
-  static final long serialVersionUID = 580150227676302096L;
+  private static final long serialVersionUID = -8117143602864778804L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  private Color selectedColor;
 
-	/**
-	 * changeEvent
-	 */
-	protected transient ChangeEvent changeEvent;
+  protected transient ChangeEvent changeEvent = new ChangeEvent (this);
+  protected EventListenerList listenerList = new EventListenerList ();
 
-	/**
-	 * listenerList
-	 */
-	protected EventListenerList listenerList;
+  /**
+   * Creates a new color selection model.
+   */
+  public DefaultColorSelectionModel()
+  {
+    this (Color.white);
+  }
 
-	/**
-	 * selectedColor
-	 */
-	private Color selectedColor;
+  /**
+   * Creates a new color selection model with a given selected color.
+   * 
+   * @param color The selected color.
+   */
+  public DefaultColorSelectionModel (Color color)
+  {
+    super();
+    this.selectedColor = color;
+  }
 
+  /**
+   * Returns the selected color.
+   * 
+   * @return The selected color.
+   */
+  public Color getSelectedColor()
+  {
+    return selectedColor;
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * @param color The color to set.
+   */
+  public void setSelectedColor (Color color)
+  {
+    this.selectedColor = color;
+  }
 
-	/**
-	 * Constructor DefaultColorSelectionModel
-	 */
-	public DefaultColorSelectionModel() {
-		// TODO
-	} // DefaultColorSelectionModel()
+  /**
+   * Adds a listener to this model.
+   * 
+   * @param listener The listener to add.
+   */
+  public void addChangeListener (ChangeListener listener)
+  {
+    listenerList.add (ChangeListener.class, listener);
+  }
 
-	/**
-	 * Constructor DefaultColorSelectionModel
-	 * @param color TODO
-	 */
-	public DefaultColorSelectionModel(Color color) {
-		// TODO
-	} // DefaultColorSelectionModel()
+  /**
+   * Removes a listener from this model.
+   * 
+   * @param listener The listener to remove.
+   */
+  public void removeChangeListener (ChangeListener listener)
+  {
+    listenerList.remove (ChangeListener.class, listener);
+  }
 
+  /**
+   * Returns all currently added <code>ChangeListener</code> objects.
+   *
+   * @return Array of <code>ChangeListener</code> objects.
+   */
+  public ChangeListener[] getChangeListeners()
+  {
+    return (ChangeListener[]) listenerList.getListeners (ChangeListener.class);
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Calls all the <code>stateChanged()</code> method of all added
+   * <code>ChangeListener</code> objects with <code>changeEvent</code>
+   * as argument.
+   */
+  protected void fireStateChanged()
+  {
+    ChangeListener[] listeners = getChangeListeners();
 
-	/**
-	 * getSelectedColor
-	 * @returns Color
-	 */
-	public Color getSelectedColor() {
-		return null; // TODO
-	} // getSelectedColor()
-
-	/**
-	 * setSelectedColor
-	 * @param color TODO
-	 */
-	public void setSelectedColor(Color color) {
-		// TODO
-	} // setSelectedColor()
-
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	public void addChangeListener(ChangeListener listener) {
-		// TODO
-	} // addChangeListener()
-
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	public void removeChangeListener(ChangeListener listener) {
-		// TODO
-	} // removeChangeListener()
-
-	/**
-	 * fireStateChanged
-	 */
-	protected void fireStateChanged() {
-		// TODO
-	} // fireStateChanged()
-
-
-} // DefaultColorSelectionModel
+    for (int i = 0; i < listeners.length; i++)
+      listeners [i].stateChanged (changeEvent);
+  }
+}

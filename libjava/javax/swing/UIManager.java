@@ -50,131 +50,137 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 public class UIManager implements Serializable
 {
-  static final long serialVersionUID = -5547433830339189365L;
-
-    static class LookAndFeelInfo
-    {
-	String name, clazz;
+  public static class LookAndFeelInfo
+  {
+    String name, clazz;
 	
-	LookAndFeelInfo(String name, 
-			String clazz)
-	{
-	    this.name  = name;
-	    this.clazz = clazz;
-	}
-	String getName()      { return name;  }
-	String getClassName() { return clazz; }
+    LookAndFeelInfo(String name, 
+                    String clazz)
+    {
+      this.name  = name;
+      this.clazz = clazz;
     }
 
-    
-    static LookAndFeelInfo [] installed = {
-	new LookAndFeelInfo("Metal",
-			    "javax.swing.plaf.metal.MetalLookAndFeel")
-    };
+    String getName()      { return name;  }
+    String getClassName() { return clazz; }
+  }
 
-    
-    static LookAndFeel[] aux_installed;
-    
-    static LookAndFeel look_and_feel  = new MetalLookAndFeel();
-    
+  private static final long serialVersionUID = -5547433830339189365L;
 
-    UIManager()
-    {
-    }
+  static LookAndFeelInfo [] installed = {
+    new LookAndFeelInfo ("Metal", "javax.swing.plaf.metal.MetalLookAndFeel")
+  };
 
-    public static  void addPropertyChangeListener(PropertyChangeListener listener)
-    {
-	//      Add a PropertyChangeListener to the listener list. 
-    }
+  static LookAndFeel[] aux_installed;
+  
+  static LookAndFeel look_and_feel = new MetalLookAndFeel();
+    
+  public UIManager()
+  {
+    // Do nothing here.
+  }
 
-    public static  void addAuxiliaryLookAndFeel(LookAndFeel l)
-    {
-	//          Add a LookAndFeel to the list of auxiliary look and feels. 
-	if (aux_installed == null)
-	    {
-		aux_installed = new LookAndFeel[1];
-		aux_installed[0] = l;
-		return;
-	    }
+  public static void addPropertyChangeListener (PropertyChangeListener listener)
+  {
+    // FIXME
+  }
+
+  public static void removePropertyChangeListener (PropertyChangeListener listener)
+    // Remove a PropertyChangeListener from the listener list. 
+  {
+    // FIXME
+  }
+
+  /**
+   * @since 1.4
+   */
+  public static PropertyChangeListener[] getPropertyChangeListeners ()
+  {
+    // FIXME
+    throw new Error ("Not implemented");
+  }
+
+  public static void addAuxiliaryLookAndFeel (LookAndFeel l)
+  {
+    // Add a LookAndFeel to the list of auxiliary look and feels. 
+    if (aux_installed == null)
+      {
+        aux_installed = new LookAndFeel[1];
+        aux_installed[0] = l;
+        return;
+      }
 	
-	LookAndFeel[] T = new LookAndFeel[ aux_installed.length+1 ];
-	System.arraycopy(aux_installed, 0,
-			 T,             0,
-			 aux_installed.length);			 
-	aux_installed = T;
-	aux_installed[aux_installed.length-1] = l;
-    }
+    LookAndFeel[] T = new LookAndFeel[ aux_installed.length+1 ];
+    System.arraycopy(aux_installed, 0, T, 0, aux_installed.length);			 
+    aux_installed = T;
+    aux_installed[aux_installed.length-1] = l;
+  }
     
-    public static  boolean removeAuxiliaryLookAndFeel(LookAndFeel laf)
-    {
-	if (aux_installed == null)
-	    return false;
+  public static boolean removeAuxiliaryLookAndFeel(LookAndFeel laf)
+  {
+    if (aux_installed == null)
+      return false;
 
-	for (int i=0;i<aux_installed.length;i++)
-	    {
-		if (aux_installed[i] == laf)
-		    {
-			aux_installed[ i ] = aux_installed[aux_installed.length-1];
-			
-			LookAndFeel[] T = new LookAndFeel[ aux_installed.length-1 ];
-			System.arraycopy(aux_installed, 0,
-					 T,             0,
-					 aux_installed.length-1);			 
-			aux_installed = T;
-			return true;
-		    }		
-	    }
-	return false;
-    }
+    for (int i=0;i<aux_installed.length;i++)
+      {
+        if (aux_installed[i] == laf)
+          {
+            aux_installed[ i ] = aux_installed[aux_installed.length-1];
+            LookAndFeel[] T = new LookAndFeel[ aux_installed.length-1 ];
+            System.arraycopy (aux_installed, 0, T, 0, aux_installed.length-1);
+            aux_installed = T;
+            return true;
+          }		
+      }
+    return false;
+  }
 
-    public static  LookAndFeel[] getAuxiliaryLookAndFeels()
-    {	return aux_installed;    }
+  public static  LookAndFeel[] getAuxiliaryLookAndFeels()
+  {	return aux_installed;    }
 
-
-    public static  Object get(Object key)
-    {	return getLookAndFeel().getDefaults().get(key);    }
+  public static  Object get(Object key)
+  {	return getLookAndFeel().getDefaults().get(key);    }
     
-    /**
-     * Returns a border from the defaults table. 
-     */
-    public static  Border getBorder(Object key)
-    {
-	return (Border) getLookAndFeel().getDefaults().get(key);
-    }
+  /**
+   * Returns a border from the defaults table. 
+   */
+  public static Border getBorder(Object key)
+  {
+    return (Border) getLookAndFeel().getDefaults().get(key);
+  }
     
-    /**
-     * Returns a drawing color from the defaults table. 
-     */
-    public static  Color getColor(Object key)
-    {
-	return (Color) getLookAndFeel().getDefaults().get(key);
-    }
+  /**
+   * Returns a drawing color from the defaults table. 
+   */
+  public static  Color getColor(Object key)
+  {
+    return (Color) getLookAndFeel().getDefaults().get(key);
+  }
 
-    /**
-     * this string can be passed to Class.forName()
-     */
-    public static  String getCrossPlatformLookAndFeelClassName()
-    {	
-	return "javax.swing.plaf.metal.MetalLookAndFeel";
-    }
+  /**
+   * this string can be passed to Class.forName()
+   */
+  public static  String getCrossPlatformLookAndFeelClassName()
+  {	
+    return "javax.swing.plaf.metal.MetalLookAndFeel";
+  }
 
-    /**
-     * Returns the default values for this look and feel. 
-     */
-    static  UIDefaults getDefaults()
-    {
-	return getLookAndFeel().getDefaults();
-    }
+  /**
+   * Returns the default values for this look and feel. 
+   */
+  static  UIDefaults getDefaults()
+  {
+    return getLookAndFeel().getDefaults();
+  }
 
-    /**
-     * Returns a dimension from the defaults table. 
-     */
-    static  Dimension getDimension(Object key)
-    {
-	System.out.println("UIManager.getDim");
-	return new Dimension(200,100);
-    }
-
+  /**
+   * Returns a dimension from the defaults table. 
+   */
+  static  Dimension getDimension(Object key)
+  {
+    System.out.println("UIManager.getDim");
+    return new Dimension(200,100);
+  }
 
   /**
    * Retrieves a font from the defaults table of the current
@@ -189,34 +195,35 @@ public class UIManager implements Serializable
     return (Font) getLookAndFeel().getDefaults().get(key);
   }
 
-    static  Icon getIcon(Object key)
-    //      Returns an Icon from the defaults table. 
-    {
-	return (Icon) getLookAndFeel().getDefaults().get(key);
-    }
-    static  Insets getInsets(Object key)
-    //      Returns an Insets object from the defaults table. 
-    {
-	return (Insets) getLookAndFeel().getDefaults().getInsets(key);
-    }
+  static Icon getIcon(Object key)
+    // Returns an Icon from the defaults table. 
+  {
+    return (Icon) getLookAndFeel().getDefaults().get(key);
+  }
+  
+  static Insets getInsets(Object key)
+    // Returns an Insets object from the defaults table. 
+  {
+    return (Insets) getLookAndFeel().getDefaults().getInsets(key);
+  }
 
-    static LookAndFeelInfo[] getInstalledLookAndFeels()
-    {
-	return installed;
-    }
+  static LookAndFeelInfo[] getInstalledLookAndFeels()
+  {
+    return installed;
+  }
 
-    static  int getInt(Object key)
-    {
-	Integer x = (Integer) getLookAndFeel().getDefaults().get(key);
-	if (x == null)
-	    return 0;
-	return x.intValue();
-    }
-    static  LookAndFeel getLookAndFeel()
-    {
-	return look_and_feel;
-    }
+  static  int getInt(Object key)
+  {
+    Integer x = (Integer) getLookAndFeel().getDefaults().get(key);
+    if (x == null)
+      return 0;
+    return x.intValue();
+  }
 
+  static  LookAndFeel getLookAndFeel()
+  {
+    return look_and_feel;
+  }
 
   /**
    * Returns the <code>UIDefaults</code> table of the currently active
@@ -227,73 +234,67 @@ public class UIManager implements Serializable
     return getLookAndFeel().getDefaults();
   }
 
+  static String getString(Object key)
+    // Returns a string from the defaults table. 
+  {
+    return (String) getLookAndFeel().getDefaults().get(key);
+  }
+  
+  static String getSystemLookAndFeelClassName()
+    // Returns the name of the LookAndFeel class that implements the native systems look and feel if there is one, otherwise the name of the default cross platform LookAndFeel class. 
+  {
+    return getCrossPlatformLookAndFeelClassName();
+  }
 
-    static  String getString(Object key)
-    //      Returns a string from the defaults table. 
-    {
-	return (String) getLookAndFeel().getDefaults().get(key);
-    }
-    static  String getSystemLookAndFeelClassName()
-    //      Returns the name of the LookAndFeel class that implements the native systems look and feel if there is one, otherwise the name of the default cross platform LookAndFeel class. 
-    {
-	return getCrossPlatformLookAndFeelClassName();
-    }
+  public static ComponentUI getUI(JComponent target)
+    // Returns the L&F object that renders the target component. 
+  {
+    ComponentUI ui = getDefaults().getUI(target);
+    //System.out.println("GET-UI-> " + ui + ", for " + target);
+    return ui;
+  }
 
+  public static void installLookAndFeel(String name, String className)
+    // Creates a new look and feel and adds it to the current array. 
+  {
+  }
 
-    public static  ComponentUI getUI(JComponent target)
-    //      Returns the L&F object that renders the target component. 
-    {
-	ComponentUI ui = getDefaults().getUI(target);
-	//System.out.println("GET-UI-> " + ui + ", for " + target);
-	return ui;
-    }
+  public static void installLookAndFeel(LookAndFeelInfo info)
+    // Adds the specified look and feel to the current array and then calls setInstalledLookAndFeels(javax.swing.UIManager.LookAndFeelInfo[]). 
+  {
+  }
 
+  public static Object put(Object key, Object value)
+    // Stores an object in the defaults table. 
+  {
+    return getLookAndFeel().getDefaults().put(key,value);
+  }
 
-    public static  void installLookAndFeel(String name, String className)
-    //      Creates a new look and feel and adds it to the current array. 
-    {
-    }
-    public static  void installLookAndFeel(LookAndFeelInfo info)
-    //      Adds the specified look and feel to the current array and then calls setInstalledLookAndFeels(javax.swing.UIManager.LookAndFeelInfo[]). 
-    {
-    }
-    public static  Object put(Object key, Object value)
-    //      Stores an object in the defaults table. 
-    {
-	return getLookAndFeel().getDefaults().put(key,value);
-    }
-    public static  void removePropertyChangeListener(PropertyChangeListener listener)
-    //      Remove a PropertyChangeListener from the listener list. 
-    {
-    }
-    public static  void setInstalledLookAndFeels(UIManager.LookAndFeelInfo[] infos)
-    //      Replaces the current array of installed LookAndFeelInfos. 
-    {
-    }
-    public static  void setLookAndFeel(LookAndFeel newLookAndFeel)
-    {
-	if (look_and_feel != null)
-	    look_and_feel.uninitialize();
+  public static void setInstalledLookAndFeels(UIManager.LookAndFeelInfo[] infos)
+    // Replaces the current array of installed LookAndFeelInfos. 
+  {
+  }
+  
+  public static void setLookAndFeel(LookAndFeel newLookAndFeel)
+  {
+    if (look_and_feel != null)
+      look_and_feel.uninitialize();
 
-	//      Set the current default look and feel using a LookAndFeel object. 
-	look_and_feel = newLookAndFeel;
-	look_and_feel.initialize();
+    // Set the current default look and feel using a LookAndFeel object. 
+    look_and_feel = newLookAndFeel;
+    look_and_feel.initialize();
 	
-	//	revalidate();
-	//	repaint();
-    }
+    //revalidate();
+    //repaint();
+  }
 
-    public static  void setLookAndFeel(String className)
-        throws ClassNotFoundException, 
-               InstantiationException, 
-               IllegalAccessException,
-	       UnsupportedLookAndFeelException
-    {
-	//          Set the current default look and feel using a class name.
-	Class c = Class.forName(className);
-	LookAndFeel a = (LookAndFeel) c.newInstance(); // throws class-cast-exception
-	setLookAndFeel(a);
-    }
-
-
+  public static void setLookAndFeel (String className)
+    throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+    UnsupportedLookAndFeelException
+  {
+    //          Set the current default look and feel using a class name.
+    Class c = Class.forName(className);
+    LookAndFeel a = (LookAndFeel) c.newInstance(); // throws class-cast-exception
+    setLookAndFeel(a);
+  }
 }
