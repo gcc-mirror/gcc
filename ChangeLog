@@ -1,3 +1,8 @@
+2002-11-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* MAINTAINERS: Remove from write-after-approval-list, uniformize
+	email. 
+
 2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* MAINTAINERS: Fix email address.
