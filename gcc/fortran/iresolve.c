@@ -619,8 +619,18 @@ gfc_resolve_getuid (gfc_expr * f)
 }
 
 void
-gfc_resolve_iand (gfc_expr * f, gfc_expr * i, gfc_expr * j ATTRIBUTE_UNUSED)
+gfc_resolve_iand (gfc_expr * f, gfc_expr * i, gfc_expr * j)
 {
+  /* If the kind of i and j are different, then g77 cross-promoted the
+     kinds to the largest value.  The Fortran 95 standard requires the 
+     kinds to match.  */
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
 
   f->ts = i->ts;
   f->value.function.name = gfc_get_string ("__iand_%d", i->ts.kind);
@@ -676,9 +686,18 @@ gfc_resolve_idnint (gfc_expr * f, gfc_expr * a)
 
 
 void
-gfc_resolve_ieor (gfc_expr * f, gfc_expr * i,
-		  gfc_expr * j ATTRIBUTE_UNUSED)
+gfc_resolve_ieor (gfc_expr * f, gfc_expr * i, gfc_expr * j)
 {
+  /* If the kind of i and j are different, then g77 cross-promoted the
+     kinds to the largest value.  The Fortran 95 standard requires the 
+     kinds to match.  */
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
 
   f->ts = i->ts;
   f->value.function.name = gfc_get_string ("__ieor_%d", i->ts.kind);
@@ -686,9 +705,18 @@ gfc_resolve_ieor (gfc_expr * f, gfc_expr * i,
 
 
 void
-gfc_resolve_ior (gfc_expr * f, gfc_expr * i,
-		 gfc_expr * j ATTRIBUTE_UNUSED)
+gfc_resolve_ior (gfc_expr * f, gfc_expr * i, gfc_expr * j)
 {
+  /* If the kind of i and j are different, then g77 cross-promoted the
+     kinds to the largest value.  The Fortran 95 standard requires the 
+     kinds to match.  */
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
 
   f->ts = i->ts;
   f->value.function.name = gfc_get_string ("__ior_%d", i->ts.kind);

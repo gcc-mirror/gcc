@@ -1,4 +1,15 @@
 2004-12-12  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/16581
+	* check.c (gfc_check_iand, gfc_check_ibclr, gfc_check_ibits,
+	gfc_check_ibset, gfc_check_ieor, gfc_check_ior): Remove default
+	integer kind check; Issue error for -std=f95 when needed.
+	* intrinsic.c (add_functions): Change ieor from GFC_STD_GNU to
+	GFC_STD_F95.
+	* iresolve.c (gfc_resolve_iand, gfc_resolve_ieor, gfc_resolve_ior):
+	Promote arguments to same kind.
+
+2004-12-12  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/16222

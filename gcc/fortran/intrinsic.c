@@ -1375,11 +1375,11 @@ add_functions (void)
 
   make_generic ("ichar", GFC_ISYM_ICHAR, GFC_STD_F77);
 
-  add_sym_2 ("ieor", 1, 1, BT_INTEGER, di, GFC_STD_GNU,
+  add_sym_2 ("ieor", 1, 1, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_ieor, gfc_simplify_ieor, gfc_resolve_ieor,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
 
-  make_generic ("ieor", GFC_ISYM_IEOR, GFC_STD_GNU);
+  make_generic ("ieor", GFC_ISYM_IEOR, GFC_STD_F95);
 
   add_sym_3 ("index", 1, 1, BT_INTEGER, di, GFC_STD_F77,
 	     gfc_check_index, gfc_simplify_index, NULL,
