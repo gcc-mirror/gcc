@@ -1,3 +1,11 @@
+Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* com.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than
+	DECL_BUILT_IN.
+	(builtin_function): No longer static.  New arg CLASS.  Arg
+	FUNCTION_CODE now of type int.  All callers changed.
+	Set the builtin's DECL_BUILT_IN_CLASS.
+
 Tue Sep 21 09:08:30 1999  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77spec.c (lang_specific_driver): Initialise return value.

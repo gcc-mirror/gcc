@@ -550,7 +550,7 @@ initialize_exceptions ()
   setjmp_fndecl = builtin_function ("setjmp",
 				    build_function_type (integer_type_node,
 							 parmtypes),
-				    NOT_BUILT_IN,
+				    0, NOT_BUILT_IN,
 				    SETJMP_LIBRARY_NAME);
   BISJ = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (setjmp_fndecl)),
 		 setjmp_fndecl);
@@ -601,9 +601,9 @@ initialize_exceptions ()
 					       handler_link_pointer_type,
 					       void_list_node));
   link_handler_decl = builtin_function ("__ch_link_handler", link_ftype,
-					NOT_BUILT_IN, NULL_PTR);
+					0, NOT_BUILT_IN, NULL_PTR);
   unlink_handler_decl = builtin_function ("__ch_unlink_handler", link_ftype,
-					  NOT_BUILT_IN, NULL_PTR);
+					  0, NOT_BUILT_IN, NULL_PTR);
 
   exceptions_initialized = 1;
 }

@@ -1,3 +1,10 @@
+Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* ch-tree.h (builtin_function): Don't declare.
+	* decl.c (builtin_function): New arg CLASS.  Arg FUNCTION_CODE now of
+ 	type int.  All callers changed.
+	Set the builtin's DECL_BUILT_IN_CLASS.
+
 1999-09-20  Nick Clifton  <nickc@cygnus.com>
 
 	* lang.c (lang_decode_option): Extend comment.

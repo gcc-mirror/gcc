@@ -1111,88 +1111,88 @@ inout_init ()
 
   builtin_function ((ignore_case || ! special_UC) ? "associate" : "ASSOCIATE",
 		    chill_predefined_function_type,
-		    BUILT_IN_ASSOCIATE, NULL_PTR);
+		    BUILT_IN_ASSOCIATE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "connect" : "CONNECT",
 		    chill_predefined_function_type,
-		    BUILT_IN_CONNECT, NULL_PTR);
+		    BUILT_IN_CONNECT, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "create" : "CREATE",
 		    chill_predefined_function_type,
-		    BUILT_IN_CREATE, NULL_PTR);
+		    BUILT_IN_CREATE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "delete" : "DELETE",
 		    chill_predefined_function_type,
-		    BUILT_IN_CH_DELETE, NULL_PTR);
+		    BUILT_IN_CH_DELETE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "disconnect" : "DISCONNECT",
 		    chill_predefined_function_type,
-		    BUILT_IN_DISCONNECT, NULL_PTR);
+		    BUILT_IN_DISCONNECT, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "dissociate" : "DISSOCIATE",
 		    chill_predefined_function_type,
-		    BUILT_IN_DISSOCIATE, NULL_PTR);
+		    BUILT_IN_DISSOCIATE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "eoln" : "EOLN",
 		    chill_predefined_function_type,
-		    BUILT_IN_EOLN, NULL_PTR);
+		    BUILT_IN_EOLN, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "existing" : "EXISTING",
 		    chill_predefined_function_type,
-		    BUILT_IN_EXISTING, NULL_PTR);
+		    BUILT_IN_EXISTING, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "getassociation" : "GETASSOCIATION",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETASSOCIATION, NULL_PTR);
+		    BUILT_IN_GETASSOCIATION, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gettextaccess" : "GETTEXTASSCESS",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETTEXTACCESS, NULL_PTR);
+		    BUILT_IN_GETTEXTACCESS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gettextindex" : "GETTEXTINDEX",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETTEXTINDEX, NULL_PTR);
+		    BUILT_IN_GETTEXTINDEX, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "gettextrecord" : "GETTEXTRECORD",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETTEXTRECORD, NULL_PTR);
+		    BUILT_IN_GETTEXTRECORD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "getusage" : "GETUSAGE",
 		    chill_predefined_function_type,
-		    BUILT_IN_GETUSAGE, NULL_PTR);
+		    BUILT_IN_GETUSAGE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "indexable" : "INDEXABLE",
 		    chill_predefined_function_type,
-		    BUILT_IN_INDEXABLE, NULL_PTR);
+		    BUILT_IN_INDEXABLE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "isassociated" : "ISASSOCIATED",
 		    chill_predefined_function_type,
-		    BUILT_IN_ISASSOCIATED, NULL_PTR);
+		    BUILT_IN_ISASSOCIATED, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "modify" : "MODIFY",
 		    chill_predefined_function_type,
-		    BUILT_IN_MODIFY, NULL_PTR);
+		    BUILT_IN_MODIFY, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "outoffile" : "OUTOFFILE",
 		    chill_predefined_function_type,
-		    BUILT_IN_OUTOFFILE, NULL_PTR);
+		    BUILT_IN_OUTOFFILE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "readable" : "READABLE",
 		    chill_predefined_function_type,
-		    BUILT_IN_READABLE, NULL_PTR);
+		    BUILT_IN_READABLE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "readrecord" : "READRECORD",
 		    chill_predefined_function_type,
-		    BUILT_IN_READRECORD, NULL_PTR);
+		    BUILT_IN_READRECORD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "readtext" : "READTEXT",
 		    chill_predefined_function_type,
-		    BUILT_IN_READTEXT, NULL_PTR);
+		    BUILT_IN_READTEXT, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "sequencible" : "SEQUENCIBLE",
 		    chill_predefined_function_type,
-		    BUILT_IN_SEQUENCIBLE, NULL_PTR);
+		    BUILT_IN_SEQUENCIBLE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "settextaccess" : "SETTEXTACCESS",
 		    chill_predefined_function_type,
-		    BUILT_IN_SETTEXTACCESS, NULL_PTR);
+		    BUILT_IN_SETTEXTACCESS, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "settextindex" : "SETTEXTINDEX",
 		    chill_predefined_function_type,
-		    BUILT_IN_SETTEXTINDEX, NULL_PTR);
+		    BUILT_IN_SETTEXTINDEX, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "settextrecord" : "SETTEXTRECORD",
 		    chill_predefined_function_type,
-		    BUILT_IN_SETTEXTRECORD, NULL_PTR);
+		    BUILT_IN_SETTEXTRECORD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "variable" : "VARIABLE",
 		    chill_predefined_function_type,
-		    BUILT_IN_VARIABLE, NULL_PTR);
+		    BUILT_IN_VARIABLE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "writeable" : "WRITEABLE",
 		    chill_predefined_function_type,
-		    BUILT_IN_WRITEABLE, NULL_PTR);
+		    BUILT_IN_WRITEABLE, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "writerecord" : "WRITERECORD",
 		    chill_predefined_function_type,
-		    BUILT_IN_WRITERECORD, NULL_PTR);
+		    BUILT_IN_WRITERECORD, BUILT_IN_NORMAL, NULL_PTR);
   builtin_function ((ignore_case || ! special_UC) ? "writetext" : "WRITETEXT",
 		    chill_predefined_function_type,
-		    BUILT_IN_WRITETEXT, NULL_PTR);
+		    BUILT_IN_WRITETEXT, BUILT_IN_NORMAL, NULL_PTR);
 
   /* build function prototypes */
   bool_ftype_ptr_ptr_int = 
@@ -1300,65 +1300,65 @@ inout_init ()
                       endlink)))))))));
 
   builtin_function ("__associate", ptr_ftype_ptr_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__connect", void_ftype_ptr_ptr_int_int_int_long_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__create", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__delete", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__disconnect", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__dissociate", void_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__eoln", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__existing", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__getassociation", ptr_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__gettextaccess", ptr_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__gettextindex", luns_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__gettextrecord", ptr_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__getusage", int_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__indexable", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__isassociated", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__modify", void_ftype_ptr_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__outoffile", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__readable", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__readrecord", ptr_ftype_ptr_int_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__readtext_f", void_ftype_ptr_int_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__readtext_s", void_ftype_ptr_int_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__sequencible", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__settextaccess", void_ftype_ptr_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__settextindex", void_ftype_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__settextrecord", void_ftype_ptr_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__variable", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__writeable", bool_ftype_ptr_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__writerecord", void_ftype_ptr_int_ptr_luns_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__writetext_f", void_ftype_ptr_int_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
   builtin_function ("__writetext_s", void_ftype_ptr_int_ptr_int_ptr_int_ptr_int,
-		    NOT_BUILT_IN, NULL_PTR);
+		    0, NOT_BUILT_IN, NULL_PTR);
 
   /* declare ASSOCIATION, ACCESS, and TEXT modes */
   build_io_types ();

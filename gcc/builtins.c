@@ -2222,6 +2222,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
+#ifdef MD_EXPAND_BUILTIN
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return MD_EXPAND_BUILTIN (exp, target, subtarget, mode, ignore);
+#endif
+  
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
   if (! optimize && ! CALLED_AS_BUILT_IN (fndecl)

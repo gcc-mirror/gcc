@@ -113,10 +113,6 @@ extern tree truthvalue_conversion		PROTO((tree));
 extern tree type_for_mode			PROTO((enum machine_mode, int));
 extern tree type_for_size			PROTO((unsigned, int));
 
-/* Declare a predefined function.  Return the declaration.  This function is
-   provided by each language frontend.  */
-extern tree builtin_function			PROTO((const char *, tree, enum built_in_function, const char *));
-
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 extern void c_common_nodes_and_builtins		PROTO((int, int, int));

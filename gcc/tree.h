@@ -65,12 +65,20 @@ extern int tree_code_length[MAX_TREE_CODES];
 
 extern const char *tree_code_name[MAX_TREE_CODES];
 
+/* Classify which part of the compiler has defined a given builtin
+   function.  */
+enum built_in_class
+{
+  NOT_BUILT_IN = 0,
+  BUILT_IN_FRONTEND,
+  BUILT_IN_MD,
+  BUILT_IN_NORMAL
+};
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
 enum built_in_function
 {
-  NOT_BUILT_IN,
   BUILT_IN_ALLOCA,
   BUILT_IN_ABS,
   BUILT_IN_FABS,
@@ -1126,8 +1134,8 @@ struct tree_type
 #define DECL_FRAME_SIZE(NODE) (DECL_CHECK (NODE)->decl.frame_size.i)
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
-#define DECL_FUNCTION_CODE(NODE) (DECL_CHECK (NODE)->decl.frame_size.f)
-#define DECL_SET_FUNCTION_CODE(NODE,VAL) (DECL_CHECK (NODE)->decl.frame_size.f = (VAL))
+#define DECL_FUNCTION_CODE(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.code)
+#define DECL_SET_FUNCTION_CODE(NODE,VAL) (DECL_CHECK (NODE)->decl.frame_size.f.code = (VAL))
 /* For a FIELD_DECL, holds the size of the member as an integer.  */
 #define DECL_FIELD_SIZE(NODE) (DECL_CHECK (NODE)->decl.saved_insns.i)
 
@@ -1241,8 +1249,12 @@ struct tree_type
 /* In a LABEL_DECL, nonzero means label was defined inside a binding
    contour that restored a stack level and which is now exited.  */
 #define DECL_TOO_LATE(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
-#define DECL_BUILT_IN(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+#define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
+/* For a builtin function, identify which part of the compiler defined it.  */
+#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.frame_size.f.class)
+
 /* In a VAR_DECL that's static,
    nonzero if the space is in the text section.  */
 #define DECL_IN_TEXT_SECTION(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
@@ -1370,7 +1382,11 @@ struct tree_decl
   union {
     int i;
     unsigned int u;
-    enum built_in_function f;
+    struct
+      {
+	unsigned int code:24;
+	unsigned int class:8;
+      } f;
   } frame_size;
 
   union tree_node *name;
@@ -2009,7 +2025,13 @@ extern void (*incomplete_decl_finalize_hook)	PROTO((tree));
 extern char *init_parse				PROTO((char *));
 extern void finish_parse			PROTO((void));
 
-extern const char * const language_string;  
+extern const char * const language_string;
+
+/* Declare a predefined function.  Return the declaration.  This function is
+   provided by each language frontend.  */
+extern tree builtin_function			PROTO((const char *, tree, int,
+						       enum built_in_class,
+						       const char *));
 
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));

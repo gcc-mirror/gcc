@@ -1,3 +1,26 @@
+Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* builtins.c (expand_builtin): Use MD_EXPAND_BUILTIN if defined.
+	* c-common.h (builtin_function): Don't declare.
+
+	* c-decl.c (duplicate_decls): Use DECL_BUILT_IN_CLASS rather than
+	DECL_BUILT_IN.
+	(pushdecl): Likewise.
+	(finish_decl): Likewise.
+	(builtin_function): New arg CLASS.  Arg FUNCTION_CODE now of type
+	int.  All callers changed.
+	Set the builtin's DECL_BUILT_IN_CLASS.
+	* tree.h (enum built_in_class): New.
+	(enum built_in_function): Delete NOT_BUILT_IN.
+	(DECL_FUNCTION_CODE): The corresponding field in tree_decl is now
+	in a union.
+	(DECL_SET_FUNCTION_CODE): Likewise.
+	(DECL_BUILT_IN_CLASS): New macro.
+	(DECL_BUILT_IN): Use DECL_BUILT_IN_CLASS.
+	(struct tree_decl): Split builtin function code field into a
+	struct.
+	(builtin_function): Declare.
+
 Fri Sep 24 01:45:05 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* optabs.c (init_traps): Fix typo in last change.
