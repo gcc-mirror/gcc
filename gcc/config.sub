@@ -113,6 +113,18 @@ case $basic_machine in
 		basic_machine=i386-unknown
 		os=-isc
 		;;
+	i486v32)
+		basic_machine=i486-unknown
+		os=-sysv32
+		;;
+	i486-sco* | i486sco | sco)
+		basic_machine=i486-unknown
+		os=-sco3.2v2
+		;;
+	i486-isc* | isc)
+		basic_machine=i486-unknown
+		os=-isc
+		;;
 	i386v4*)
 		basic_machine=i386-unknown
 		os=-sysv4
@@ -123,6 +135,10 @@ case $basic_machine in
 		;;
 	i386v)
 		basic_machine=i386-unknown
+		os=-sysv
+		;;
+	i486v)
+		basic_machine=i486-unknown
 		os=-sysv
 		;;
 	spur)
@@ -545,7 +561,7 @@ case $basic_machine in
 	*-ns)
 		os=-genix
 		;;
-	i386-*)
+	i[34]86-*)
 		os=-sco3.2v2
 		;;
 	*)
