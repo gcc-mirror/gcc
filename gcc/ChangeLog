@@ -1,3 +1,8 @@
+Sun Jul 25 15:04:37 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (compute_frame_size): Scan all the used callee saved registers,
+	not just the first one.
+
 Fri Jul 23 14:09:58 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/arm.h (TARGET_SWITCHES): Add 

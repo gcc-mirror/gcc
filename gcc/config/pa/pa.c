@@ -2558,10 +2558,7 @@ compute_frame_size (size, fregs_live)
 
   for (i = 18; i >= 3; i--)
     if (regs_ever_live[i])
-      {
-	fsize += UNITS_PER_WORD;
-	break;
-      }
+      fsize += UNITS_PER_WORD;
 
   /* Round the stack.  */
   fsize = (fsize + 7) & ~7;
@@ -2573,7 +2570,6 @@ compute_frame_size (size, fregs_live)
 	  *fregs_live = 1;
 
 	fsize += 8;
-	break;
       }
 
   fsize += current_function_outgoing_args_size;
