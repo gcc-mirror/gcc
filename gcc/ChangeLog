@@ -1,3 +1,10 @@
+2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* aclocal.m4 (gcc_AC_PROG_GNAT): Check if ${CC} produces object
+	file for Ada compilation.
+	Fix gcc_cv_cc_supports_ada spelling.
+	* configure: Regenerate.
+
 2004-04-14  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 14936

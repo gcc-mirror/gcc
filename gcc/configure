@@ -3700,8 +3700,11 @@ gcc_cv_cc_supports_ada=no
 # has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
 # Therefore we must check for the error message as well as an
 # unsuccessful exit.
+# Other compilers, like HP Tru64 UNIX cc, exit successfully when
+# given a .adb file, but produce no object file.  So we must check
+# if an object file was really produced to guard against this.
 errors=`(${CC} -c conftest.adb) 2>&1 || echo failure`
-if test x"$errors" = x; then
+if test x"$errors" = x && test -f conftest.$ac_objext; then
   gcc_cv_cc_supports_ada=yes
   break
 fi
@@ -3710,7 +3713,7 @@ fi
 echo "$as_me:$LINENO: result: $gcc_cv_cc_supports_ada" >&5
 echo "${ECHO_T}$gcc_cv_cc_supports_ada" >&6
 
-if test x$GNATBIND != xno && test x$gcc_cv_supports_ada != xno; then
+if test x$GNATBIND != xno && test x$gcc_cv_cc_supports_ada != xno; then
   have_gnat=yes
 else
   have_gnat=no
@@ -5006,7 +5009,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5009: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5012: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
