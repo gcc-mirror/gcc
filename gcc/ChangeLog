@@ -1,3 +1,7 @@
+2003-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcse.c (gmalloc): Fix last change.
+
 2003-08-11  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Replace calls to

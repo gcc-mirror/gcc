@@ -952,7 +952,7 @@ can_copy_p (enum machine_mode mode)
 /* Cover function to xmalloc to record bytes allocated.  */
 
 static void *
-gmalloc (unsigned int size)
+gmalloc (size_t size)
 {
   bytes_used += size;
   return xmalloc (size);
