@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler "andps.*\[bs\]p" } } */
 /* { dg-final { scan-assembler "andnps.*\[bs\]p" } } */
 /* { dg-final { scan-assembler "xorps.*\[bs\]p" } } */
-/* { dg-final { scan-assembler "orps.\*[bs\]p" } } */
+/* { dg-final { scan-assembler "orps.*\[bs\]p" } } */
 /* { dg-final { scan-assembler-not "movdqa" } } */
 /* { dg-final { scan-assembler "movaps.*\[bs\]p" } } */
 
