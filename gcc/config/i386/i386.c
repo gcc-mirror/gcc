@@ -571,7 +571,11 @@ const int x86_sse_typeless_stores = m_ATHLON_K8;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
 const int x86_use_ffreep = m_ATHLON_K8;
 const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6;
-const int x86_inter_unit_moves = ~(m_ATHLON_K8);
+
+/* ??? Allowing interunit moves makes it all too easy for the compiler to put
+   integer data in xmm registers.  Which results in pretty abysmal code.  */
+const int x86_inter_unit_moves = 0 /* ~(m_ATHLON_K8) */;
+
 const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_NOCONA | m_PPRO;
 /* Some CPU cores are not able to predict more than 4 branch instructions in
    the 16 byte window.  */
@@ -14666,36 +14670,65 @@ ix86_free_from_memory (enum machine_mode mode)
 enum reg_class
 ix86_preferred_reload_class (rtx x, enum reg_class class)
 {
+  /* We're only allowed to return a subclass of CLASS.  Many of the 
+     following checks fail for NO_REGS, so eliminate that early.  */
   if (class == NO_REGS)
     return NO_REGS;
-  if (GET_CODE (x) == CONST_VECTOR && x != CONST0_RTX (GET_MODE (x)))
-    return NO_REGS;
+
+  /* All classes can load zeros.  */
+  if (x == CONST0_RTX (GET_MODE (x)))
+    return class;
+
+  /* Floating-point constants need more complex checks.  */
   if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
-      /* SSE can't load any constant directly yet.  */
-      if (SSE_CLASS_P (class))
-	return NO_REGS;
-      /* Floats can load 0 and 1.  */
-      if (MAYBE_FLOAT_CLASS_P (class) && standard_80387_constant_p (x))
-	{
-	  /* Limit class to non-SSE.  Use GENERAL_REGS if possible.  */
-	  if (MAYBE_SSE_CLASS_P (class))
-	    return (reg_class_subset_p (class, GENERAL_REGS)
-		    ? GENERAL_REGS : FLOAT_REGS);
-	  else
-	    return class;
-	}
       /* General regs can load everything.  */
       if (reg_class_subset_p (class, GENERAL_REGS))
-	return class;
-      /* In case we haven't resolved FLOAT or SSE yet, give up.  */
-      if (MAYBE_FLOAT_CLASS_P (class) || MAYBE_SSE_CLASS_P (class))
-	return NO_REGS;
+        return class;
+
+      /* Floats can load 0 and 1 plus some others.  Note that we eliminated
+	 zero above.  We only want to wind up preferring 80387 registers if
+	 we plan on doing computation with them.  */
+      if (TARGET_80387
+	  && (TARGET_MIX_SSE_I387 
+	      || !(TARGET_SSE_MATH && SSE_FLOAT_MODE_P (GET_MODE (x))))
+	  && standard_80387_constant_p (x))
+	{
+	  /* Limit class to non-sse.  */
+	  if (class == FLOAT_SSE_REGS)
+	    return FLOAT_REGS;
+	  if (class == FP_TOP_SSE_REGS)
+	    return FP_TOP_REG;
+	  if (class == FP_SECOND_SSE_REGS)
+	    return FP_SECOND_REG;
+	  if (class == FLOAT_INT_REGS || class == FLOAT_REGS)
+	    return class;
+	}
+
+      return NO_REGS;
     }
   if (MAYBE_MMX_CLASS_P (class) && CONSTANT_P (x))
     return NO_REGS;
-  if (GET_MODE (x) == QImode && ! reg_class_subset_p (class, Q_REGS))
-    return Q_REGS;
+  if (MAYBE_SSE_CLASS_P (class) && CONSTANT_P (x))
+    return NO_REGS;
+
+  /* Generally when we see PLUS here, it's the function invariant
+     (plus soft-fp const_int).  Which can only be computed into general
+     regs.  */
+  if (GET_CODE (x) == PLUS)
+    return reg_class_subset_p (class, GENERAL_REGS) ? class : NO_REGS;
+
+  /* QImode constants are easy to load, but non-constant QImode data
+     must go into Q_REGS.  */
+  if (GET_MODE (x) == QImode && !CONSTANT_P (x))
+    {
+      if (reg_class_subset_p (class, Q_REGS))
+	return class;
+      if (reg_class_subset_p (Q_REGS, class))
+	return Q_REGS;
+      return NO_REGS;
+    }
+
   return class;
 }
 
