@@ -385,7 +385,7 @@ may_trap_exp (rtx x, int is_store)
    moved speculatively, by examining it's patterns, returning:
    TRAP_RISKY: store, or risky non-load insn (e.g. division by variable).
    TRAP_FREE: non-load insn.
-   IFREE: load from a globaly safe location.
+   IFREE: load from a globally safe location.
    IRISKY: volatile load.
    PFREE_CANDIDATE, PRISKY_CANDIDATE: load that need to be checked for
    being either PFREE or PRISKY.  */

@@ -40,7 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    insn_values_to_profile function.  This function is called from branch_prob
    in profile.c and the requested values are instrumented by it in the first
    compilation with -fprofile-arcs.  The optimization may then read the
-   gathered data in the second compilation with -fbranch-probablities.
+   gathered data in the second compilation with -fbranch-probabilities.
    The measured data is appended as REG_VALUE_PROFILE note to the instrumented
    insn.  The argument to the note consists of an EXPR_LIST where its
    members have the following meaning (from the first to the last):

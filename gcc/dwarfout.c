@@ -942,7 +942,7 @@ static void retry_incomplete_types (void);
 #endif
 
 /* Pseudo-ops for pushing the current section onto the section stack (and
-   simultaneously changing to a new section) and for poping back to the
+   simultaneously changing to a new section) and for popping back to the
    section we were in immediately before this one.  Note that most svr4
    assemblers only maintain a one level stack... you can push all the
    sections you want, but you can only pop out one level.  (The sparc

@@ -6393,7 +6393,7 @@ highest_pow2_factor (tree exp)
       /* We can find the lowest bit that's a one.  If the low
 	 HOST_BITS_PER_WIDE_INT bits are zero, return BIGGEST_ALIGNMENT.
 	 We need to handle this case since we can find it in a COND_EXPR,
-	 a MIN_EXPR, or a MAX_EXPR.  If the constant overlows, we have an
+	 a MIN_EXPR, or a MAX_EXPR.  If the constant overflows, we have an
 	 erroneous program, so return BIGGEST_ALIGNMENT to avoid any
 	 later ICE.  */
       if (TREE_CONSTANT_OVERFLOW (exp))

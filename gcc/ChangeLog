@@ -1,5 +1,27 @@
 2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* builtins.c: Fix comment typos.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* cppfiles.c: Likewise.
+	* dwarfout.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* gcse.c: Likewise.
+	* ggc-page.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* pretty-print.c: Likewise.
+	* tree.c: Likewise.
+	* tree.h: Likewise.
+	* value-prof.c: Likewise.
+
+2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-decl.c: Follow spelling conventions.
 	* cppfiles.c: Likewise.
 

@@ -781,7 +781,7 @@ cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
 	  || !cgraph_default_inline_p (node))
 	continue;
 
-      /* Rule out always_inline functions we dealt with earler.  */
+      /* Rule out always_inline functions we dealt with earlier.  */
       for (e = node->callers; e; e = e->next_caller)
 	if (e->inline_call)
 	  break;
@@ -1015,7 +1015,7 @@ cgraph_inline_p (tree caller_decl, tree callee_decl)
     if (e->callee == callee)
       return e->inline_call;
   /* We do not record builtins in the callgraph.  Perhaps it would make more
-     sense to do so and then prune out those not overwriten by explicit
+     sense to do so and then prune out those not overwritten by explicit
      function body.  */
   return false;
 }
@@ -1023,7 +1023,7 @@ cgraph_inline_p (tree caller_decl, tree callee_decl)
 
    Attempt to topologically sort the nodes so function is output when
    all called functions are already assembled to allow data to be
-   propagated accross the callgraph.  Use a stack to get smaller distance
+   propagated across the callgraph.  Use a stack to get smaller distance
    between a function and it's callees (later we may choose to use a more
    sophisticated algorithm for function reordering; we will likely want
    to use subsections to make the output functions appear in top-down
@@ -1058,8 +1058,8 @@ cgraph_expand_functions (void)
 
 /* Mark all local functions.
 
-   Local function is function whose calls can occur only in the
-   current compilation unit so we change it's calling convetion.
+   A local function is one whose calls can occur only in the
+   current compilation unit, so we change its calling convention.
    We simply mark all static functions whose address is not taken
    as local.  */
 
