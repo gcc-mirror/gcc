@@ -68,4 +68,86 @@ public class Handler extends URLStreamHandler
   {
     return new Connection(url);
   }
+
+  /**
+   * This method overrides URLStreamHandler's for parsing url of protocol "jar"
+   *
+   * @param url The URL object in which to store the results
+   * @param url_string The String-ized URL to parse
+   * @param start The position in the string to start scanning from
+   * @param end The position in the string to stop scanning
+   */
+  protected void parseURL (URL url, String url_string, int start, int end)
+  {
+    // This method does not throw an exception or return a value.  Thus our
+    // strategy when we encounter an error in parsing is to return without
+    // doing anything.
+    String file = url.getFile();
+    
+    if (file != null
+        && file != "")
+      { //has context url
+	url_string = url_string.substring (start, end);
+        if (url_string.startsWith("/"))
+          { //url string is an absolute path
+            int idx = file.lastIndexOf ("!/");
+            if (idx == -1) //context path is weird
+                file = file + "!" + url_string; 
+            else
+                file = file.substring (0, idx + 1) + url_string;
+          }
+        else
+          {
+            int idx = file.lastIndexOf ("/");
+            if (idx == -1) //context path is weird
+              file = "/" + url_string; 
+            else if (idx == (file.length() - 1))
+              //just concatenate two parts
+              file = file + url_string;
+            else
+              // according to Java API Documentation, here is a little different 
+              // with URLStreamHandler.parseURL
+              // but JDK seems doesn't handle it well
+              file = file + "/" + url_string;
+          }
+        
+        setURL (url, "jar", url.getHost(), url.getPort(), file, null);
+        return;
+      }
+
+    // Bunches of things should be true.  Make sure.
+    if (end < start)
+      return;
+    if (end - start < 2)
+      return;
+    if (start > url_string.length())
+      return;
+    
+    // Skip remains of protocol
+    url_string = url_string.substring (start, end);
+    
+    if (!url.getProtocol().equals ("jar") )
+      return;
+        
+    setURL (url, "jar", url.getHost(), url.getPort(), url_string, null);
+  }
+
+  /**
+   * This method converts a Jar URL object into a String.
+   *
+   * @param url The URL object to convert
+   */
+  protected String toExternalForm (URL url)
+  {
+    String file = url.getFile();
+
+    // return "jar:" + file;
+    // Performance!!: 
+    //  Do the concatenation manually to avoid resize StringBuffer's 
+    //  internal buffer.
+    StringBuffer sb = new StringBuffer (file.length() + 5);
+    sb.append ("jar:");
+    sb.append (file);
+    return sb.toString();
+  }
 }

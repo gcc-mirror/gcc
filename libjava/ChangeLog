@@ -1,3 +1,9 @@
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/jar/Handler.java
+	(parseURL): New method.
+	(toExternalForm): New method.
+
 2003-12-18  Fernando Nasser  <fnasser@redhat.com>
 
 	* java/awt/List.java (replaceItem): Prevent selection to move with
