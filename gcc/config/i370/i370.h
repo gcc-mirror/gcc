@@ -281,12 +281,6 @@ extern int mvs_function_name_length;
   (((MODE1) == SFmode || (MODE1) == DFmode)				\
    == ((MODE2) == SFmode || (MODE2) == DFmode))
 
-/* Mark external references.  */
-
-#define ENCODE_SECTION_INFO(decl, first)  				\
-  if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)) 			\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

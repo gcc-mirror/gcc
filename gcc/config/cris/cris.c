@@ -97,6 +97,7 @@ static void cris_target_asm_function_prologue
 static void cris_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 
+static void cris_encode_section_info PARAMS ((tree, int));
 static void cris_operand_lossage PARAMS ((const char *, rtx));
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
@@ -147,6 +148,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE cris_target_asm_function_epilogue
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO cris_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3033,12 +3037,11 @@ restart:
     }
 }
 
-/* The ENCODE_SECTION_INFO worker.  Code-in whether we can get away
-   without a GOT entry (needed for externally visible objects but not for
-   functions) into SYMBOL_REF_FLAG and add the PLT suffix for global
-   functions.  */
+/* Code-in whether we can get away without a GOT entry (needed for
+   externally visible objects but not for functions) into
+   SYMBOL_REF_FLAG and add the PLT suffix for global functions.  */
 
-void
+static void
 cris_encode_section_info (exp, first)
      tree exp;
      int first ATTRIBUTE_UNUSED;

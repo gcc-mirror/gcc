@@ -1096,24 +1096,8 @@ struct cum_arg
 
 #define TINY_DATA_NAME_P(NAME) (*(NAME) == '&')
 
-/* If we are referencing a function that is supposed to be called
-   through the function vector, the SYMBOL_REF_FLAG in the rtl
-   so the call patterns can generate the correct code.  */
-#define ENCODE_SECTION_INFO(DECL, FIRST)			\
-  if (TREE_CODE (DECL) == FUNCTION_DECL				\
-      && h8300_funcvec_function_p (DECL))			\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-  else if (TREE_CODE (DECL) == VAR_DECL				\
-	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-	   && h8300_eightbit_data_p (DECL))			\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-  else if ((FIRST) && TREE_CODE (DECL) == VAR_DECL		\
-	   && (TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-	   && h8300_tiny_data_p (DECL))				\
-    h8300_encode_label (DECL);
-
 /* Store the user-specified part of SYMBOL_NAME in VAR.
-   This is sort of inverse to ENCODE_SECTION_INFO.  */
+   This is sort of inverse to targetm.encode_section_info.  */
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)		\
   (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'	\
 			   || (SYMBOL_NAME)[0] == '@'	\

@@ -52,6 +52,7 @@ static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
+static void s390_encode_section_info PARAMS ((tree, int));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -80,6 +81,9 @@ static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx,
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
+
+#undef	TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3932,4 +3936,26 @@ s390_select_rtx_section (mode, x, align)
     readonly_data_section ();
   else
     function_section (current_function_decl);
+}
+
+/* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
+   may access it directly in the GOT.  */
+
+static void
+s390_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (flag_pic)
+    {
+      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
+
+      if (GET_CODE (rtl) == MEM)
+	{
+	  SYMBOL_REF_FLAG (XEXP (rtl, 0))
+	    = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
+	       || ! TREE_PUBLIC (decl));
+	}
+    }
 }

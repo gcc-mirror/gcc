@@ -243,6 +243,10 @@ struct gcc_target
 
   /* True if EXP should be placed in a "small data" section.  */
   bool (* in_small_data_p) PARAMS ((tree));
+
+  /* Do something target-specific to record properties of the DECL into
+     the associated SYMBOL_REF.  */
+  void (* encode_section_info) PARAMS ((tree, int));
 };
 
 extern struct gcc_target targetm;

@@ -85,9 +85,9 @@ do {  \
    "imported", even library calls. They look a bit different, so
    here's this macro.
 
-   Also note not all libcall names are passed to ENCODE_SECTION_INFO
-   (__main for example).  To make sure all libcall names have section
-   info recorded in them, we do it here.  */
+   Also note not all libcall names are passed to
+   targetm.encode_section_info (__main for example).  To make sure all
+   libcall names have section info recorded in them, we do it here.  */
 
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \

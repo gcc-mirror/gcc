@@ -4843,7 +4843,8 @@ rtx
 init_one_libfunc (name)
      const char *name;
 {
-  /* Create a FUNCTION_DECL that can be passed to ENCODE_SECTION_INFO.  */
+  /* Create a FUNCTION_DECL that can be passed to
+     targetm.encode_section_info.  */
   /* ??? We don't have any type information except for this is
      a function.  Pretend this is "int foo()".  */
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name),

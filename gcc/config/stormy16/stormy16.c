@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 static rtx emit_addhi3_postreload PARAMS ((rtx, rtx, rtx));
 static void xstormy16_asm_out_constructor PARAMS ((rtx, int));
 static void xstormy16_asm_out_destructor PARAMS ((rtx, int));
+static void xstormy16_encode_section_info PARAMS ((tree, int));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1394,7 +1395,7 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
 
 /* Mark functions with SYMBOL_REF_FLAG.  */
 
-void
+static void
 xstormy16_encode_section_info (decl, first)
      tree decl;
      int first ATTRIBUTE_UNUSED;
@@ -2021,5 +2022,7 @@ xstormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO xstormy16_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1137,8 +1137,8 @@ switch_to_section (section, decl)				\
 #define MCORE_STRIP_NAME_ENCODING(SYM_NAME) \
   ((SYM_NAME) + ((SYM_NAME)[0] == '@' ? 3 : 0))
 
-/* Strip any text from SYM_NAME added by ENCODE_SECTION_INFO and store
-   the result in VAR.  */
+/* Strip any text from SYM_NAME added by targetm.encode_section_info
+   and store the result in VAR.  */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
   (VAR) = MCORE_STRIP_NAME_ENCODING (SYM_NAME)
@@ -1291,12 +1291,6 @@ extern long mcore_current_compilation_timestamp;
       fprintf ((FILE), ",%d,%d\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
     }									\
   while (0)
-
-/* We must mark dll symbols specially.  Definitions of dllexport'd objects
-   install some info in the .drective (PE) or .exports (ELF) sections.   */
-#undef  ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL, FIRST) \
-  mcore_encode_section_info (DECL, FIRST)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

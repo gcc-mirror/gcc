@@ -367,8 +367,6 @@ gen_stdcall_suffix (decl)
   return IDENTIFIER_POINTER (get_identifier (newsym));
 }
 
-/* Cover function to implement ENCODE_SECTION_INFO.  */
-
 void
 i386_pe_encode_section_info (decl, first)
      tree decl;

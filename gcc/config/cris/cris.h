@@ -1442,10 +1442,6 @@ struct cum_args {int regs;};
 /* The jump table is immediately connected to the preceding insn.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* We need to code in PIC-specific flags into SYMBOL_REF_FLAG.  */
-
-#define ENCODE_SECTION_INFO(EXP, FIRST) cris_encode_section_info (EXP, FIRST)
-
 /* We pull a little trick to register the _fini function with atexit,
    after (presumably) registering the eh frame info, since we don't handle
    _fini (a.k.a. ___fini_start) in crt0 or have a crti for "pure" ELF.  If

@@ -84,15 +84,6 @@ Boston, MA 02111-1307, USA.  */
 /* This macro definition sets up a default value for `main' to return.  */
 #define DEFAULT_MAIN_RETURN  c_expand_return (integer_one_node)
 
-/* This makes use of a hook in varasm.c to mark all external variables
-   for us.  We use this to make sure that external variables are correctly
-   addressed.  Under VMS there is some brain damage in the linker that requires
-   us to do this.  */
-
-#define ENCODE_SECTION_INFO(decl, FIRST)  			\
-  if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)) 		\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1; 
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 

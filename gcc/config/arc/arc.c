@@ -92,6 +92,7 @@ static tree arc_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, boo
 static bool arc_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void arc_encode_section_info PARAMS ((tree, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -107,6 +108,8 @@ static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_FUNCTION_EPILOGUE arc_output_function_epilogue
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arc_attribute_table
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO arc_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2346,4 +2349,18 @@ arc_va_arg (valist, type)
   expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   return addr_rtx;
+}
+
+/* On the ARC, function addresses are not the same as normal addresses.
+   Branch to absolute address insns take an address that is right-shifted
+   by 2.  We encode the fact that we have a function here, and then emit a
+   special assembler op when outputting the address.  */
+
+static void
+arc_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }

@@ -1522,24 +1522,8 @@ do { 									\
 
 #define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 
-#define ENCODE_SECTION_INFO(DECL, FIRST)		\
-do							\
-  { if (FIRST && TEXT_SPACE_P (DECL))			\
-      {	rtx _rtl;					\
-	if (TREE_CODE (DECL) == FUNCTION_DECL		\
-	    || TREE_CODE (DECL) == VAR_DECL)		\
-	  _rtl = DECL_RTL (DECL);			\
-	else						\
-	  _rtl = TREE_CST_RTL (DECL);			\
-	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
-	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0));\
-      }							\
-  }							\
-while (0)
-
 /* Store the user-specified part of SYMBOL_NAME in VAR.
-   This is sort of inverse to ENCODE_SECTION_INFO.  */
+   This is sort of inverse to targetm.encode_section_info.  */
 
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
   (VAR) = ((SYMBOL_NAME)			\

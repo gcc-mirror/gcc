@@ -198,6 +198,7 @@ static void xtensa_free_machine_status PARAMS ((struct function *p));
 static void printx PARAMS ((FILE *, signed int));
 static void xtensa_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					       unsigned HOST_WIDE_INT));
+static void xtensa_encode_section_info PARAMS ((tree, int));
 
 static rtx frame_size_const;
 static int current_function_arg_words;
@@ -231,6 +232,8 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  xtensa_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2003,12 +2006,7 @@ print_operand (file, op, letter)
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on
-   the section that the address refers to.  On these machines,
-   define the macro 'ENCODE_SECTION_INFO' to store the information
-   into the 'symbol_ref', and then check for it here.  */
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 void
 print_operand_address (file, addr)
@@ -2748,4 +2746,16 @@ xtensa_select_rtx_section (mode, x, align)
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   function_section (current_function_decl);
+}
+
+/* If we are referencing a function that is static, make the SYMBOL_REF
+   special so that we can generate direct calls to it even with -fpic.  */
+
+static void
+xtensa_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL && ! TREE_PUBLIC (decl))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }

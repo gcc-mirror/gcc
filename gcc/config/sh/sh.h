@@ -2666,42 +2666,6 @@ while (0)
 
 
 /* Position Independent Code.  */
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or function
-   named by the symbol (such as what section it is in).
-
-   On SH, if using PIC, mark a SYMBOL_REF for a non-global symbol
-   so that we may access it using GOTOFF instead of GOT.  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)			\
-do								\
-  {								\
-    if (!(FIRST))						\
-      break;							\
-    if (flag_pic)						\
-      {								\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
-		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));	\
-								\
-	SYMBOL_REF_FLAG (XEXP (rtl, 0)) =			\
-	  (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-	   || MODULE_LOCAL_P (DECL)				\
-	   || ! TREE_PUBLIC (DECL));				\
-      }								\
-    if (TARGET_SH5)						\
-      {								\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
-		   ? TREE_CST_RTL (DECL)			\
-		   : TREE_CODE (DECL) != VAR_DECL		\
-		   ? NULL_RTX					\
- 		   : DECL_RTL (DECL));				\
-								\
-        if (rtl && GET_CODE (rtl) == MEM			\
- 	    && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF)		\
-	  XEXP (rtl, 0) = gen_datalabel_ref (XEXP (rtl, 0));	\
-      }								\
-  }								\
-while (0)
 
 /* The prefix used to mark SYMBOL_REFs that refer to data symbols.  */
 #define SH_DATALABEL_ENCODING "#"

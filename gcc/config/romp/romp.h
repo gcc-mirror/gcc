@@ -904,13 +904,6 @@ struct rt_cargs {int gregs, fregs; };
     || GET_CODE (X) == CONST_DOUBLE)		\
    && ! (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
 
-/* For no good reason, we do the same as the other RT compilers and load
-   the addresses of data areas for a function from our data area.  That means
-   that we need to mark such SYMBOL_REFs.  We do so here.  */
-#define ENCODE_SECTION_INFO(DECL, FIRST)		\
-  if (TREE_CODE (TREE_TYPE (DECL)) == FUNCTION_TYPE)	\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.

@@ -4767,11 +4767,11 @@ sums that are not marked with  @code{const}.  It assumes that a naked
 naked constant sums as illegitimate addresses, so that none of them will
 be given to @code{PRINT_OPERAND_ADDRESS}.
 
-@cindex @code{ENCODE_SECTION_INFO} and address validation
+@cindex @code{TARGET_ENCODE_SECTION_INFO} and address validation
 On some machines, whether a symbolic address is legitimate depends on
 the section that the address refers to.  On these machines, define the
-macro @code{ENCODE_SECTION_INFO} to store the information into the
-@code{symbol_ref}, and then check for it here.  When you see a
+target hook @code{TARGET_ENCODE_SECTION_INFO} to store the information
+into the @code{symbol_ref}, and then check for it here.  When you see a
 @code{const}, you will have to look inside it to find the
 @code{symbol_ref} in order to determine the section.  @xref{Assembler
 Format}.
@@ -5766,38 +5766,11 @@ readonly data section is used.
 
 This macro is irrelevant if there is no separate readonly data section.
 
-@findex ENCODE_SECTION_INFO
-@item ENCODE_SECTION_INFO (@var{decl}, @var{new_decl_p})
-Define this macro if references to a symbol or a constant must be
-treated differently depending on something about the variable or
-function named by the symbol (such as what section it is in).
-
-The macro definition, if any, is executed under two circumstances.  One
-is immediately after the rtl for @var{decl} that represents a variable
-or a function has been created and stored in @code{DECL_RTL(@var{decl})}.
-The value of the rtl will be a @code{mem} whose address is a @code{symbol_ref}.
-The other is immediately after the rtl for @var{decl} that represents a
-constant has been created and stored in @code{TREE_CST_RTL (@var{decl})}.
-The macro is called once for each distinct constant in a source file.
-
-The @var{new_decl_p} argument will be true if this is the first time that
-@code{ENCODE_SECTION_INFO} has been invoked on this decl.  It will
-be false for subsequent invocations, which will happen for duplicate
-declarations.  Whether or not anything must be done for the duplicate
-declaration depends on whether @code{ENCODE_SECTION_INFO} examines
-@code{DECL_ATTRIBUTES}.
-
-@cindex @code{SYMBOL_REF_FLAG}, in @code{ENCODE_SECTION_INFO}
-The usual thing for this macro to do is to record a flag in the
-@code{symbol_ref} (such as @code{SYMBOL_REF_FLAG}) or to store a
-modified name string in the @code{symbol_ref} (if one bit is not
-enough information).
-
 @findex STRIP_NAME_ENCODING
 @item STRIP_NAME_ENCODING (@var{var}, @var{sym_name})
 Decode @var{sym_name} and store the real name part in @var{var}, sans
 the characters that encode section info.  Define this macro if
-@code{ENCODE_SECTION_INFO} alters the symbol's name string.
+@code{TARGET_ENCODE_SECTION_INFO} alters the symbol's name string.
 @end table
 
 @deftypefn {Target Hook} void TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
@@ -5837,6 +5810,32 @@ sections.  @var{align} is the constant alignment in bits.
 The default version of this function takes care of putting symbolic
 constants in @code{flag_pic} mode in @code{data_section} and everything
 else in @code{readonly_data_section}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ENCODE_SECTION_INFO (tree @var{decl}, int @var{new_decl_p})
+Define this hook if references to a symbol or a constant must be
+treated differently depending on something about the variable or
+function named by the symbol (such as what section it is in).
+
+The hook is executed under two circumstances.  One is immediately after
+the rtl for @var{decl} that represents a variable or a function has been
+created and stored in @code{DECL_RTL(@var{decl})}.  The value of the rtl
+will be a @code{mem} whose address is a @code{symbol_ref}.  The other is
+immediately after the rtl for @var{decl} that represents a constant has
+been created and stored in @code{TREE_CST_RTL (@var{decl})}.  The macro
+is called once for each distinct constant in a source file.
+
+The @var{new_decl_p} argument will be true if this is the first time
+that @code{ENCODE_SECTION_INFO} has been invoked on this decl.  It will
+be false for subsequent invocations, which will happen for duplicate
+declarations.  Whether or not anything must be done for the duplicate
+declaration depends on whether the hook examines @code{DECL_ATTRIBUTES}.
+
+@cindex @code{SYMBOL_REF_FLAG}, in @code{TARGET_ENCODE_SECTION_INFO}
+The usual thing for this hook to do is to record a flag in the
+@code{symbol_ref} (such as @code{SYMBOL_REF_FLAG}) or to store a
+modified name string in the @code{symbol_ref} (if one bit is not
+enough information).
 @end deftypefn
 
 @node PIC
@@ -6517,7 +6516,7 @@ A C statement (sans semicolon) to output a reference to
 @code{SYMBOL_REF} @var{sym}.  If not defined, @code{assemble_name}
 will be used to output the name of the symbol.  This macro may be used
 to modify the way a symbol is referenced depending on information
-encoded by @code{ENCODE_SECTION_INFO}.
+encoded by @code{TARGET_ENCODE_SECTION_INFO}.
 
 @findex ASM_OUTPUT_LABEL_REF
 @item ASM_OUTPUT_LABEL_REF (@var{stream}, @var{buf})
@@ -7073,10 +7072,10 @@ A C compound statement to output to stdio stream @var{stream} the
 assembler syntax for an instruction operand that is a memory reference
 whose address is @var{x}.  @var{x} is an RTL expression.
 
-@cindex @code{ENCODE_SECTION_INFO} usage
+@cindex @code{TARGET_ENCODE_SECTION_INFO} usage
 On some machines, the syntax for a symbolic address depends on the
-section that the address refers to.  On these machines, define the macro
-@code{ENCODE_SECTION_INFO} to store the information into the
+section that the address refers to.  On these machines, define the hook
+@code{TARGET_ENCODE_SECTION_INFO} to store the information into the
 @code{symbol_ref}, and then check for it here.  @xref{Assembler Format}.
 
 @findex DBR_OUTPUT_SEQEND

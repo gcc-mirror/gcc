@@ -776,17 +776,8 @@ extern int fixuplabelno;
 /* Historically we have also supported stabs debugging.  */
 #define	DBX_DEBUGGING_INFO
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  For real AIX calling sequences, we also replace the
-   function name with the real name (1 or 2 leading .'s), rather than
-   the function descriptor name.  This saves a lot of overriding code
-   to read the prefixes.  */
-
-#undef	ENCODE_SECTION_INFO
-#define	ENCODE_SECTION_INFO(DECL, FIRST) \
-  rs6000_encode_section_info (DECL, FIRST)
+#undef	TARGET_ENCODE_SECTION_INFO
+#define	TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
 
 /* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
 

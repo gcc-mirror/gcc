@@ -68,7 +68,6 @@ extern struct rtx_def *function_arg PARAMS ((CUMULATIVE_ARGS *,
 extern int h8300_funcvec_function_p PARAMS ((tree));
 extern int h8300_eightbit_data_p PARAMS ((tree));
 extern int h8300_tiny_data_p PARAMS ((tree));
-extern void h8300_encode_label PARAMS ((tree));
 #endif /* TREE_CODE */
 
 extern void h8300_init_once PARAMS ((void));

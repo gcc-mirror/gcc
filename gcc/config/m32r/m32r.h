@@ -1612,11 +1612,8 @@ sbss_section ()								\
  || MEDIUM_NAME_P (SYMBOL_NAME) \
  || LARGE_NAME_P (SYMBOL_NAME))
 
-#define ENCODE_SECTION_INFO(DECL, FIRST) m32r_encode_section_info (DECL, FIRST)
-
 /* Decode SYM_NAME and store the real name part in VAR, sans
-   the characters that encode section info.  Define this macro if
-   ENCODE_SECTION_INFO alters the symbol's name string.  */
+   the characters that encode section info.  */
 /* Note that we have to handle symbols like "%*start".  */
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
 do {							\
@@ -1800,12 +1797,7 @@ extern char m32r_punct_chars[256];
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on
-   the section that the address refers to.  On these machines,
-   define the macro `ENCODE_SECTION_INFO' to store the information
-   into the `symbol_ref', and then check for it here.  */
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
   m32r_print_operand_address (FILE, ADDR)
 

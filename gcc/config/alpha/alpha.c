@@ -117,6 +117,8 @@ static bool decl_in_text_section
   PARAMS ((tree));
 static bool alpha_in_small_data_p
   PARAMS ((tree));
+static void alpha_encode_section_info
+  PARAMS ((tree, int));
 static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static int split_small_symbolic_operand_1
@@ -208,6 +210,8 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P alpha_in_small_data_p
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO alpha_encode_section_info
 
 #if TARGET_ABI_UNICOSMK
 static void unicosmk_asm_named_section PARAMS ((const char *, unsigned int));
@@ -950,7 +954,7 @@ local_symbol_p (op)
      unrecognizable insns.  */
 
   return (CONSTANT_POOL_ADDRESS_P (op)
-	  /* If @, then ENCODE_SECTION_INFO sez it's local.  */
+	  /* If @, then alpha_encode_section_info sez it's local.  */
 	  || str[0] == '@'
 	  /* If *$, then ASM_GENERATE_INTERNAL_LABEL sez it's local.  */
 	  || (str[0] == '*' && str[1] == '$'));
@@ -1604,7 +1608,7 @@ alpha_in_small_data_p (exp)
    to the name.  If in addition the variable is to go in .sdata/.sbss,
    then add "@s" instead.  */
 
-void
+static void
 alpha_encode_section_info (decl, first)
      tree decl;
      int first ATTRIBUTE_UNUSED;

@@ -73,6 +73,7 @@ static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #endif
 static void m88k_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static void m88k_encode_section_info PARAMS ((tree, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -97,6 +98,9 @@ static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST m88k_adjust_cost
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  m88k_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3377,4 +3381,30 @@ m88k_adjust_cost (insn, link, dep, cost)
     return cost - 4;  /* 88110 store reservation station.  */
 
   return cost;
+}
+
+/* For the m88k, determine if the item should go in the global pool.  */
+
+static void
+m88k_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (m88k_gp_threshold > 0)
+    {
+      if (TREE_CODE (decl) == VAR_DECL)
+	{
+	  if (!TREE_READONLY (decl) || TREE_SIDE_EFFECTS (decl))
+	    {
+	      int size = int_size_in_bytes (TREE_TYPE (decl));
+
+	      if (size > 0 && size <= m88k_gp_threshold)
+		SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+	    }
+	}
+      else if (TREE_CODE (decl) == STRING_CST
+	       && flag_writable_strings
+	       && TREE_STRING_LENGTH (decl) <= m88k_gp_threshold)
+	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+    }
 }

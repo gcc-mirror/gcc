@@ -305,32 +305,15 @@ while (0)
 
    stddef renaming does NOT apply to Alpha.  */
 
-union tree_node;
-const char *gen_stdcall_suffix PARAMS ((union tree_node *));
+const char *gen_stdcall_suffix PARAMS ((tree));
+void i386_interix_encode_section_info PARAMS ((tree, int));
 
-#undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL, FIRST)				\
-do 									\
-  {									\
-    if (flag_pic)							\
-      {									\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
-	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
-	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
-	     || ! TREE_PUBLIC (DECL));					\
-      }									\
-    if ((FIRST) && TREE_CODE (DECL) == FUNCTION_DECL) 			\
-      if (lookup_attribute ("stdcall",					\
-			    TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
-        XEXP (DECL_RTL (DECL), 0) = 					\
-          gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
-  }									\
-while (0)
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO i386_interix_encode_section_info
 
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by ENCODE_SECTION_INFO.  */
+   trailing @[NUM] encoded by targetm.encode_section_info.  */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
 do {									\

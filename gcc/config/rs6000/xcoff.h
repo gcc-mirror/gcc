@@ -161,24 +161,8 @@ toc_section ()						\
 	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
 		   && ! TARGET_NO_FP_IN_TOC)))))
 
-/* Select section for constant in constant pool.
-
-   On RS/6000, all constants are in the private read-only data area.
-   However, if this is being placed in the TOC it must be output as a
-   toc entry.  */
-
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
-
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  Do not set this flag if the function is weakly defined.  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST)		\
-  if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && !TREE_PUBLIC (DECL)				\
-      && !DECL_WEAK (DECL))				\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+#define TARGET_ENCODE_SECTION_INFO rs6000_xcoff_encode_section_info
 
 /* FP save and restore routines.  */
 #define	SAVE_FP_PREFIX "._savef"

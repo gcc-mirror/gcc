@@ -175,6 +175,8 @@ static void emit_soft_tfmode_binop PARAMS ((enum rtx_code, rtx *));
 static void emit_soft_tfmode_unop PARAMS ((enum rtx_code, rtx *));
 static void emit_soft_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
 static void emit_hard_tfmode_operation PARAMS ((enum rtx_code, rtx *));
+
+static void sparc_encode_section_info PARAMS ((tree, int));
 
 /* Option handling.  */
 
@@ -234,6 +236,9 @@ enum processor_type sparc_cpu;
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE sparc_use_dfa_pipeline_interface
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD sparc_use_sched_lookahead
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO sparc_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8455,4 +8460,17 @@ sparc_rtx_costs (x, code, outer_code)
     default:
       abort();
     };
+}
+
+/* If we are referencing a function make the SYMBOL_REF special.  In
+   the Embedded Medium/Anywhere code model, %g4 points to the data
+   segment so we must not add it to function addresses.  */
+
+static void
+sparc_encode_section_info (decl, first)
+     tree decl;
+     int first ATTRIBUTE_UNUSED;
+{
+  if (TARGET_CM_EMBMEDANY && TREE_CODE (decl) == FUNCTION_DECL)
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }

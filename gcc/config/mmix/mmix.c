@@ -98,6 +98,7 @@ static HOST_WIDEST_INT mmix_intval PARAMS ((rtx));
 static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
 static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void mmix_init_machine_status PARAMS ((struct function *));
+static void mmix_encode_section_info PARAMS ((tree, int));
 
 extern void mmix_target_asm_function_prologue
   PARAMS ((FILE *, HOST_WIDE_INT));
@@ -126,6 +127,9 @@ extern void mmix_target_asm_function_epilogue
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mmix_target_asm_function_epilogue
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  mmix_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1713,9 +1717,7 @@ mmix_data_section_asm_op ()
   return "\t.data ! mmixal:= 8H LOC 9B";
 }
 
-/* ENCODE_SECTION_INFO.  */
-
-void
+static void
 mmix_encode_section_info (decl, first)
      tree decl;
      int first;

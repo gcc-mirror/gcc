@@ -1774,12 +1774,6 @@ do {									\
 
 #define BSS_SECTION_ASM_OP "\t.bss"
 
-/* Define this macro if references to a symbol must be treated differently
-   depending on something about the variable or function named by the symbol
-   (such as what section it is in).  */
-
-#define ENCODE_SECTION_INFO(DECL, FIRST) ia64_encode_section_info (DECL, FIRST)
-
 #define SDATA_NAME_FLAG_CHAR '@'
 
 #define IA64_DEFAULT_GVALUE 8

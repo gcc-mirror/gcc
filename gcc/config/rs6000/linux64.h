@@ -212,17 +212,8 @@ Boston, MA 02111-1307, USA.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* If we are referencing a function that is static or is known to be
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can branch to this function without emitting a no-op after the
-   call.  Do not set this flag if the function is weakly defined.  */
-
-#undef  ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL, FIRST)			\
-  if (TREE_CODE (DECL) == FUNCTION_DECL				\
-      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))	\
-      && ! DECL_WEAK (DECL))					\
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  rs6000_xcoff_encode_section_info
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
