@@ -1,5 +1,8 @@
 Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.c (ix86_decompose_address): Verify the base is a REG
+	before trying to examine its register number.
+
 	* basic-block.h: Remove all #defines and prototypes related to
 	integer lists.
 	(free_bb_mem, compute_preds_succs): Remove prototype.
