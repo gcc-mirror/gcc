@@ -1,3 +1,9 @@
+2001-12-10  Roger Sayle <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin): Use a switch statement to list
+	those functions not expanded without optimizations, instead of a
+	series of equality tests.
+
 Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (LIB_SPEC): Define.
@@ -195,11 +201,11 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/rs6000/aix43.h (NON_POWERPC_MASKS): Delete MASK_STRING.
 	* config/rs6000/aix51.h (NON_POWERPC_MASKS): Same.
- 	* config/rs6000/rs6000.md (load_multiple, store_multiple): Do not use 
- 	for powerpc64.
- 	* config/rs6000/rs6000.md (movstrsi_8reg, movstrsi_6reg, 
- 	movstrsi_4reg, movstrsi_1_reg): Add powerpc64.
-	* config/rs6000/rs6000.c (expand_block_move): Do not use 
+	* config/rs6000/rs6000.md (load_multiple, store_multiple): Do not use
+	for powerpc64.
+	* config/rs6000/rs6000.md (movstrsi_8reg, movstrsi_6reg,
+	movstrsi_4reg, movstrsi_1_reg): Add powerpc64.
+	* config/rs6000/rs6000.c (expand_block_move): Do not use
 	gen_movstrsi_2reg and powerpc64.
 
 2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
@@ -276,16 +282,16 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
         * config/rs6000/darwin.h: Set MAX_LONG_TYPE_SIZE to 32.
         * config/rs6000/rs6000.c (rs6000_emit_move): In Darwin-
         specific codegen, eliminate a register copy.
-        (print_operand_address): Add support for Darwin's lo16(constant) 
+        (print_operand_address): Add support for Darwin's lo16(constant)
 	syntax.
-        (rs6000_machopic_legitimize_pic_address): Fix darwin-specific 
+        (rs6000_machopic_legitimize_pic_address): Fix darwin-specific
         generation of addresses within very large data objects.
         (s8bit_cint_operand):  New.
         * config/rs6000/rs6000.md: Remove "iu" reference for 750/7400.
         Move "mtjmpr" to correct functional unit for 750/7400/7450.
-        Add imul2 and imul3 insn types for multiplication by 16- and 
+        Add imul2 and imul3 insn types for multiplication by 16- and
 	8-bit constants.
-        Change tablejump patterns to strongly discourage using LR 
+        Change tablejump patterns to strongly discourage using LR
 	rather than CTR.
 	Add %lo16 patterns for Darwin loads and stores.
 
@@ -578,7 +584,7 @@ Wed Dec  5 17:59:19 2001  Douglas B. Rupp  <rupp@gnat.com>
 	* config/alpha/vms.h (SIZE_TYPE, PTRDIFF_TYPE): Remove, were disabled.
 	(DOLLARS_IN_IDENTIFIERS, LINK_SPEC): Remove duplicate.
 	(LIB_SPEC): Remove.
-	
+
 Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* doc/c-tree.texi (RECORD_TYPE, UNION_TYPE): Expand on definition.
@@ -640,7 +646,7 @@ Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-12-05  Daniel Berlin  <dan@cgsoftware.com>
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Add more altivec
-	builtins. 
+	builtins.
 
 	* config/rs6000/rs6000.md: Modeling of 7450 altivec changed to
 	better reflect reality (change from Apple's tree).
@@ -649,7 +655,7 @@ Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Remove more unspecs (vector merge instructions, etc).
 
 	* config/rs6000/rs6000.c (bdesc_3arg): New, for 3 argument altivec
-	builtins. 
+	builtins.
 	(bdesc_1arg): New, for 1 argument altivec builtins.
 	(altivec_expand_builtin): Handle unary and ternary ops.
 	(altivec_init_builtins): Ditto.
@@ -688,7 +694,7 @@ Wed Dec  5 07:41:13 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 Wed Dec  5 07:27:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 			  Douglas B. Rupp  <rupp@gnat.com>
-	
+
 	* vmsdbg.h, vmsdbgout.c: Add documentation and minor cleanups.
 	* doc/invoke.texi: Add -gvms.
 	* doc/passes.texi: Add mention of vmsdbgout.c.
@@ -815,14 +821,14 @@ Wed Dec  5 00:42:16 EST 2001  John Wehle  (john@feith.com)
 
 2001-12-04  Andrew MacLeod  <amacleod@redhat.com>
 
-	* stmt.c (expand_return): Clear destination instead of clobbering it 
+	* stmt.c (expand_return): Clear destination instead of clobbering it
 	when setting a return value via bitsets.
 
 2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree.c (get_callee_fndecl): Only use DECL_ABSTRACT_ORIGIN if
 	it has DECL_SAVED_TREE.
-	
+
 	* c-decl.c (duplicate_decls): Revert rth's patch.  If newdecl
 	is in a different binding level, get its abstract origin to be
 	olddecl.
