@@ -31,7 +31,7 @@ template<typename R>
 inline bool flteq(R x, R y)
 {
   if (x == R(0)) return y == R(0);
-  else return fabs(x-y) < 1e-6*fabs(x);
+  else return std::fabs(x-y) < 1e-6*std::fabs(x);
 }
 
 template<typename R>

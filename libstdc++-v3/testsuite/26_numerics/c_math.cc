@@ -36,7 +36,7 @@ test01()
 int
 test02()
 {
-  sin(static_cast<float>(0));
+	std::sin(static_cast<float>(0));
   return 0;
 }
 
@@ -44,7 +44,7 @@ test02()
 int
 test03()
 {
-  double powtest = pow(2., 0);
+  double powtest = std::pow(2., 0);
   return 0;
 }
 

@@ -20,10 +20,11 @@
 
 // 22.1.1.4 locale operators [lib.locale.operators]
 
+#include <cwchar> // for mbstate_t
 #include <locale>
 #include <debug_assert.h>
 
-typedef std::codecvt<char, char, mbstate_t> ccodecvt;
+typedef std::codecvt<char, char, std::mbstate_t> ccodecvt;
 class gnu_codecvt: public ccodecvt { }; 
 
 void test01()

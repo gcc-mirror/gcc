@@ -1,3 +1,59 @@
+2000-10-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/complex_io.cc : Remove ancient defines.
+	* config/os/gnu-linux/bits/os_defines.h: Add defines.
+	* libsupc++/tinfo2.cc: Change to cstddef.
+
+	* include/bits/codecvt.h: Add include of c++config.h, so that
+	__USE_GNU gets defined. (Important for alpha.)
+
+	* include/c/bits/std_cwctype.h: Same.
+	* include/c/bits/std_ctime.h: And here.
+	* include/c/bits/std_cstdarg.h: Same.
+	* include/c/bits/std_csignal.h: Same.
+	* include/c/bits/std_csetjmp.h: Same.
+	* include/c/bits/std_clocale.h: Same.
+	* include/c/bits/std_climits.h: Touch.
+	* include/c/bits/std_cfloat.h: Same.
+	* include/c/bits/std_cerrno.h: Same.
+	* include/c/bits/std_cwchar.h: Same.
+	* include/c/bits/std_cassert.h: Same.
+	* include/c/bits/std_cctype.h: Same.	
+	* include/c/bits/std_cstddef.h: And here.
+	* include/c/bits/std_cstdlib.h: And here.
+	* include/c/bits/std_cstdio.h: Same.
+	* include/c/bits/std_cstring.h: Add names to namespace std::.
+
+	* include/bits/c++config (_GNU_SOURCE): Move linux-specific macros
+	from here...
+	(_ISOC99_SOURCE): And this one....
+	* config/os/gnu-linux/bits/os_defines.h: ...to here.
+	
+	* include/bits/codecvt.h (codecvt<_InternT, _ExternT,
+	__enc_traits>::do_in): Don't cast to const, this is a bug in glibc
+	prior to 2.2.
+	(codecvt<_InternT, _ExternT, __enc_traits>::do_out): Same.
+	* include/c/bits/std_cwchar.h: Add using declarations for mbstate_t.
+	
+2000-10-30  Steven King  <sxking@uswest.net>
+
+	* include/bits/codecvt.h: Add cast.
+	* include/c_std/stdio.h: Re-add printf using declaration.
+	* include/c_std/bits/std_cstdio.h: Same
+	* testsuite/22_locale/codecvt_wchar_t_char.cc: Fixup testsuite.
+	* testsuite/22_locale/ctor_copy_dtor.cc: Same.
+	* testsuite/22_locale/facet.cc: Same.
+	* testsuite/22_locale/global_templates.cc: Same.
+	* testsuite/22_locale/operators.cc: Same.
+	* testsuite/22_locale/static_members.cc: Same.
+	* testsuite/26_numerics/c_math.cc: Same.
+	* testsuite/26_numerics/complex_inserters_extractors.cc: Same.
+	* testsuite/27_io/fpos.cc: Same.
+	* testsuite/27_io/istream_extractor_arith.cc: Same.
+	* testsuite/27_io/istream_unformatted.cc: Same.
+	* testsuite/27_io/ostream_inserter_arith.cc: Same.
+	* testsuite/27_io/streambuf.cc: Same.
+
 2000-10-30  Mark Mitchell  <mark@codesourcery.com>
 
         * acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Check 

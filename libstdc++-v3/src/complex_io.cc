@@ -32,7 +32,6 @@
 #include <bits/std_ostream.h>
 #include <bits/std_sstream.h>
 
-
 namespace std
 {
     
@@ -82,9 +81,7 @@ namespace std
     {
       basic_ostringstream<_CharT, _Traits> __s;
       __s.flags(__os.flags());
-#ifdef _G_HAVE_LOCALE
       __s.imbue(__os.getloc());
-#endif
       __s.precision (__os.precision());
       __s << '(' << __x.real() << "," << __x.imag() << ')' << ends;
       return __os << __s.str();

@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,17 +31,13 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: this is not a conforming implementation.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CFLOAT
 #define _CPP_CFLOAT 1
-# pragma GCC system_header
-# include_next <float.h>
 
-#if 0
-# ifdef __GLIBC__
-// For GNU libc we must also include this one:
-#  include <fenv.h>
-# endif
+#pragma GCC system_header
+#include_next <float.h>
+
 #endif
-#endif
+

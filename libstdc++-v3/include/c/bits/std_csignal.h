@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,19 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: this is not a conforming implementation.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CSIGNAL
 #define _CPP_CSIGNAL 1
-# pragma GCC system_header
-# include_next <signal.h>
+
+#pragma GCC system_header
+#include_next <signal.h>
+
+namespace std
+{
+  using ::sig_atomic_t;
+  extern "C" void (*signal(int, void (*__func)(int)))(int); 
+  extern "C" int raise(int);
+}
+
 #endif

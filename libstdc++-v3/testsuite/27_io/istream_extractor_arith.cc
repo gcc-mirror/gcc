@@ -20,6 +20,7 @@
 
 // 27.6.1.2.2 arithmetic extractors
 
+#include <cstdio> // for printf
 #include <istream>
 #include <ostream>
 #include <sstream>
@@ -105,9 +106,9 @@ bool test01() {
   VERIFY( f1 == 1.5 );
 
   is_04 >> std::hex >> i1;
-  printf ("%d %d %d\n", i1, i1 == 0x123, test);
+  std::printf ("%d %d %d\n", i1, i1 == 0x123, test);
   VERIFY( i1 == 0x123 );
-  printf ("%d %d %d\n", i1, i1 == 0x123, test);
+  std::printf ("%d %d %d\n", i1, i1 == 0x123, test);
 
   // test void pointers
   int i = 55;
@@ -116,7 +117,7 @@ bool test01() {
 
   ss_01 << po;
   ss_01 >> pi;
-  printf ("%x %x\n", pi, po);
+  std::printf ("%x %x\n", pi, po);
   VERIFY( po == pi );
   
 #ifdef DEBUG_ASSERT

@@ -38,6 +38,7 @@
 #ifndef _CPP_BITS_CODECVT_H
 #define _CPP_BITS_CODECVT_H	1
 
+#include <bits/c++config.h>
 #ifdef _GLIBCPP_USE_WCHAR_T
 #include <iconv.h>		// For iconv, iconv_t
 #include <langinfo.h>

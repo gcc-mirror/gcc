@@ -29,6 +29,7 @@
 
 // 27.5.2 template class basic_streambuf
 
+#include <cstring> // for memset, memcmp
 #include <streambuf>
 #include <ostream>
 #include <debug_assert.h>
@@ -131,9 +132,9 @@ void test01()
 
   // sputn/xsputn
   char* lit02 = "isotope 217: the unstable molecule on thrill jockey";
-  int i02 = strlen(lit02);
+  int i02 = std::strlen(lit02);
   char carray[i02 + 1];
-  memset(carray, 0, i02 + 1);
+  std::memset(carray, 0, i02 + 1);
 
   buf01.pub_setp(carray, (carray + i02));
   buf01.sputn(lit02, 0);
@@ -144,9 +145,9 @@ void test01()
   VERIFY( lit02[1] == 's' );
   VERIFY( carray[1] == 0 );
   buf01.sputn(lit02 + 1, 10);
-  VERIFY( memcmp(lit02, carray, 10) == 0 );
+  VERIFY( std::memcmp(lit02, carray, 10) == 0 );
   buf01.sputn(lit02 + 11, 20);
-  VERIFY( memcmp(lit02, carray, 30) == 0 );
+  VERIFY( std::memcmp(lit02, carray, 30) == 0 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -172,7 +173,7 @@ void test02()
   // 27.5.2.2.5 Put area
   size_t i01 = traits_type::length(lit01);
   char carray01[i01];
-  memset(carray01, 0, i01);
+  std::memset(carray01, 0, i01);
   
   buf01.pub_setg(lit01, lit01, lit01 + i01);
   buf01.sgetn(carray01, 0);

@@ -36,12 +36,6 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCPP__ 20000911
 
-// By enabling this, all GNU extensions are enabled.
-#define _GNU_SOURCE 1
-
-// By enabling this, all ISO C99, ISO C9X functionality is enabled.
-#define _ISOC99_SOURCE 1
-
 // This flag controls the error handling in string, and perhaps other
 // bits as time goes on: check out bits/basic_string.h for more
 // info. It also helps alleviate the circular dependency between

@@ -133,7 +133,7 @@ namespace std {
   using _C_legacy::remove;
   using _C_legacy::rename;
   using _C_legacy::tmpnam;
-  //  using _C_legacy::printf;
+  using _C_legacy::printf;
   using _C_legacy::scanf;
   using _C_legacy::sprintf;
   using _C_legacy::sscanf;
