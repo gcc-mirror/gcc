@@ -4,6 +4,16 @@ Wed Apr 22 13:24:48 1998  Mark Mitchell  <mmitchell@usa.net>
 	the DECL_RESULTs of a member TEMPLATE_DECL, not just the
 	TEMPLATE_DECL.
 
+	 * pt.c (tsubst): Decrease the template-level of
+	 TEMPLATE_TEMPLATE_PARMS.  Likewise for the DECL_INITIAL of a
+	 TEMPLATE_PARM_INDEX.
+	 (template_decl_level): New function.
+	 (unify): Make sure to record unifications for template
+	 parameters, even when the parameters exactly match the arguments.
+	 Combine duplicated code for TEMPLATE_TEMPLATE_PARMs and
+	 TEMPLATE_TYPE_PARMS.  Don't try to unify template parameters that
+	 aren't from the level we're currently working on.
+
 Tue Apr 21 22:00:04 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* errfn.c (cp_thing): Use xrealloc, not xmalloc, to copy memory.
