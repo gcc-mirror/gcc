@@ -1,3 +1,8 @@
+Sun Jul 19 08:23:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (demangle_nested_args): Make function definition
+	static to match the prototype.
+
 1998-07-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c: Incorporate changes from GCC version not present in
