@@ -1,5 +1,5 @@
 /* PortableRemoteObject.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package javax.rmi;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.rmi.NoSuchObjectException;
 import gnu.javax.rmi.CORBA.DelegateFactory;
 import gnu.javax.rmi.CORBA.GetDelegateInstanceException;
+
+import java.rmi.NoSuchObjectException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import javax.rmi.CORBA.PortableRemoteObjectDelegate;
-import javax.rmi.CORBA.Util;
 
 public class PortableRemoteObject
   implements Remote /* why doc doesn't say should implement Remote */
