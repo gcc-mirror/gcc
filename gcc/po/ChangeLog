@@ -1,3 +1,8 @@
+2001-05-23  Zack Weinberg  <zackw@stanford.edu>
+
+	* POTFILES.in: Remove config/rs6000/xm-darwin.h and
+	config/pa/pa-gas.h.
+
 2001-05-16  Zack Weinberg  <zackw@stanford.edu>
 
 	* POTFILES.in: Remove libgcc1-test.c and libgcc1.c.
