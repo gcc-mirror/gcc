@@ -5720,7 +5720,7 @@ finish_struct (t, fieldlist, attributes)
       && TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t)))
     {
       TYPE_TRANSPARENT_UNION (t) = 0;
-      warning ("cannot make `%s' a transparent union");
+      warning ("union cannot be made transparent");
     }
 
   /* If this structure or union completes the type of any previous
