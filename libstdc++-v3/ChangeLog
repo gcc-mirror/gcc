@@ -1,3 +1,9 @@
+2004-04-21  Paolo Carlini  <pcarlini@suse.de>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* include/bits/basic_string.tcc (_M_mutate): Don't compute
+	__src unnecessarily.
+
 2004-04-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/basic_istream/extractors_character/char/9555-ic.cc: 
