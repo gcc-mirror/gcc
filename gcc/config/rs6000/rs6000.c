@@ -1317,13 +1317,16 @@ reg_or_short_operand (rtx op, enum machine_mode mode)
 }
 
 /* Similar, except check if the negation of the constant would be
-   valid for a D-field.  */
+   valid for a D-field.  Don't allow a constant zero, since all the
+   patterns that call this predicate use "addic r1,r2,-constant" on
+   a constant value to set a carry when r2 is greater or equal to
+   "constant".  That doesn't work for zero.  */
 
 int
 reg_or_neg_short_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == CONST_INT)
-    return CONST_OK_FOR_LETTER_P (INTVAL (op), 'P');
+    return CONST_OK_FOR_LETTER_P (INTVAL (op), 'P') && INTVAL (op) != 0;
 
   return gpc_reg_operand (op, mode);
 }
