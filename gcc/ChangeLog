@@ -23,6 +23,8 @@ Tue Oct  6 17:00:42 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Tue Oct  6 01:36:00 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* rtl.h: Don't declare any functions also declared in recog.h.
+
 	* Makefile.in (stupid.o): Update dependencies.
 	(global.o): Likewise.
 

@@ -1369,45 +1369,6 @@ extern void purge_addressof				PROTO ((rtx));
 /* In reload.c */
 extern int operands_match_p		PROTO ((rtx, rtx));
 extern int safe_from_earlyclobber	PROTO ((rtx, rtx));
-extern int strict_memory_address_p	PROTO ((enum machine_mode, rtx));
-
-/* In recog.c */
-extern int memory_address_p		PROTO ((enum machine_mode, rtx));
-extern int constrain_operands		PROTO ((int, int));
-extern int mode_dependent_address_p	PROTO ((rtx));
-extern void init_recog_no_volatile	PROTO ((void));
-extern int offsettable_memref_p		PROTO ((rtx));
-extern int offsettable_nonstrict_memref_p PROTO ((rtx));
-extern int reg_fits_class_p		PROTO ((rtx, register enum reg_class,
-						int, enum machine_mode));
-extern int check_asm_operands		PROTO ((rtx));
-extern int address_operand		PROTO ((rtx, enum machine_mode));
-extern int const_int_operand		PROTO ((rtx, enum machine_mode));
-extern int const_double_operand		PROTO ((rtx, enum machine_mode));
-extern int general_operand		PROTO ((rtx, enum machine_mode));
-extern int immediate_operand		PROTO ((rtx, enum machine_mode));
-extern int nonimmediate_operand		PROTO ((rtx, enum machine_mode));
-extern int memory_operand		PROTO ((rtx, enum machine_mode));
-extern int nonmemory_operand		PROTO ((rtx, enum machine_mode));
-extern int push_operand			PROTO ((rtx, enum machine_mode));
-extern int register_operand		PROTO ((rtx, enum machine_mode));
-extern int scratch_operand		PROTO ((rtx, enum machine_mode));
-extern int indirect_operand		PROTO ((rtx, enum machine_mode));
-extern int mode_independent_operand	PROTO ((rtx, enum machine_mode));
-extern int comparison_operator		PROTO ((rtx, enum machine_mode));
-extern void init_recog_no_volatile	PROTO ((void));
-extern void init_recog			PROTO ((void));
-extern int validate_replace_rtx		PROTO ((rtx, rtx, rtx));
-extern int offsettable_address_p	PROTO ((int, enum machine_mode, rtx));
-extern int next_insn_tests_no_inequality PROTO ((rtx));
-extern int recog_memoized		PROTO ((rtx));
-extern int validate_change		PROTO ((rtx, rtx *, rtx, int));
-extern int apply_change_group		PROTO ((void));
-extern void cancel_changes		PROTO ((int));
-extern int num_validated_changes	PROTO ((void));
-
-/* In insn-recog.c */
-extern int recog			PROTO ((rtx, rtx, int *));
 
 /* In stmt.c */
 extern void expand_null_return		PROTO((void));
