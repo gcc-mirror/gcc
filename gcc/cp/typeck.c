@@ -5511,7 +5511,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	  || TREE_CODE (TREE_TYPE (lhs)) == METHOD_TYPE
 	  /* If it's an aggregate and any field is const, then it is
 	     effectively const.  */
-	  || (IS_AGGR_TYPE_CODE (TREE_CODE (lhstype))
+	  || (CLASS_TYPE_P (lhstype)
 	      && C_TYPE_FIELDS_READONLY (lhstype))))
     readonly_error (lhs, "assignment", 0);
 
@@ -6266,8 +6266,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  tree type = TREE_TYPE (o[i]);
 	  if (type != error_mark_node
 	      && (CP_TYPE_CONST_P (type)
-		  || (IS_AGGR_TYPE_CODE (TREE_CODE (type))
-		      && C_TYPE_FIELDS_READONLY (type))))
+		  || (CLASS_TYPE_P (type) && C_TYPE_FIELDS_READONLY (type))))
 	    readonly_error (o[i], "modification by `asm'", 1);
 	}
     }

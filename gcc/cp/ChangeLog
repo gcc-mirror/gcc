@@ -1,3 +1,21 @@
+2003-01-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (check_field_decls): Only check C_TYPE_FIELDS_READONLY
+	for class types.
+	* cp-tree.h (C_TYPE_FIELDS_READONLY): Use a lang-specific bit
+	rather than TYPE_LANG_FLAG_0.
+	(TYPE_BUILT_IN): Remove.
+	(TYPE_DEPENDENT_P): New macro.
+	(TYPE_DEPENDENT_P_VALID): Likewise.
+	(lang_type_class): Add fields_readonly.
+	* decl.c (record_builtin_type): Don't set TYPE_BUILT_IN.
+	* pt.c (dependent_type_p_r): New function, split out from ...
+	(dependent_type_p): ... here.  Memoize results.
+	* search.c (dependent_base_p): Use dependent_type_p, not
+	uses_template_parms.
+	* typeck.c (build_modify_expr): Only check C_TYPE_FIELDS_READONLY
+	for class types.
+
 2003-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_field_call): Use build_new_op, not build_opfncall.

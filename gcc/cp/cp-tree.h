@@ -82,13 +82,13 @@ struct diagnostic_context;
    6: BINFO_ACCESS (in BINFO)
 
    Usage of TYPE_LANG_FLAG_?:
-   0: C_TYPE_FIELDS_READONLY (in RECORD_TYPE or UNION_TYPE).
+   0: TYPE_DEPENDENT_P
    1: TYPE_HAS_CONSTRUCTOR.
    2: TYPE_HAS_DESTRUCTOR.
    3: TYPE_FOR_JAVA.
    4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
    5: IS_AGGR_TYPE.
-   6: TYPE_BUILT_IN.
+   6: TYPE_DEPENDENT_P_VALID
 
    Usage of DECL_LANG_FLAG_?:
    0: DECL_ERROR_REPORTED (in VAR_DECL).
@@ -497,7 +497,8 @@ struct tree_srcloc GTY(())
   TREE_LANG_FLAG_3 (NODE)
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
-#define C_TYPE_FIELDS_READONLY(TYPE) TYPE_LANG_FLAG_0 (TYPE)
+#define C_TYPE_FIELDS_READONLY(TYPE) \
+  (LANG_TYPE_CLASS_CHECK (TYPE)->fields_readonly)
 
 /* Store a value in that field.  */
 #define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
@@ -1028,11 +1029,16 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   (CLASS_TYPE_P (T) || TREE_CODE (T) == ENUMERAL_TYPE)
 #define IS_OVERLOAD_TYPE(T) TAGGED_TYPE_P (T)
 
-/* In a *_TYPE, nonzero means a built-in type.  */
-#define TYPE_BUILT_IN(NODE) TYPE_LANG_FLAG_6 (NODE)
-
 /* True if this a "Java" type, defined in 'extern "Java"'.  */
 #define TYPE_FOR_JAVA(NODE) TYPE_LANG_FLAG_3 (NODE)
+
+/* True if this type is dependent.  This predicate is only valid if
+   TYPE_DEPENDENT_P_VALID is true.  */
+#define TYPE_DEPENDENT_P(NODE) TYPE_LANG_FLAG_0 (NODE)
+
+/* True if dependent_type_p has been called for this type, with the
+   result that TYPE_DEPENDENT_P is valid.  */
+#define TYPE_DEPENDENT_P_VALID(NODE) TYPE_LANG_FLAG_6(NODE)
 
 /* Nonzero if this type is const-qualified.  */
 #define CP_TYPE_CONST_P(NODE)				\
@@ -1162,6 +1168,7 @@ struct lang_type_class GTY(())
 
   unsigned non_zero_init : 1;
   unsigned empty_p : 1;
+  unsigned fields_readonly : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1170,7 +1177,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 6;
+  unsigned dummy : 5;
 
   tree primary_base;
   tree vfields;

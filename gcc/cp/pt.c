@@ -171,6 +171,7 @@ static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, tsubst_flags_t));
 static int eq_local_specializations (const void *, const void *);
 static tree template_for_substitution (tree);
+static bool dependent_type_p_r (tree);
 static bool dependent_template_id_p (tree, tree);
 static tree tsubst (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_expr	(tree, tree, tsubst_flags_t, tree);
@@ -11202,28 +11203,13 @@ invalid_nontype_parm_type_p (type, complain)
   return 1;
 }
 
-/* Returns TRUE if TYPE is dependent, in the sense of
-   [temp.dep.type].  */
+/* Returns TRUE if TYPE is dependent, in the sense of [temp.dep.type].
+   Assumes that TYPE really is a type, and not the ERROR_MARK_NODE.*/
 
-bool
-dependent_type_p (type)
-     tree type;
+static bool
+dependent_type_p_r (tree type)
 {
   tree scope;
-
-  /* If there are no template parameters in scope, then there can't be
-     any dependent types.  */
-  if (!processing_template_decl)
-    return false;
-
-  /* If the type is NULL, we have not computed a type for the entity
-     in question; in that case, the type is dependent.  */
-  if (!type)
-    return true;
-
-  /* Erroneous types can be considered non-dependent.  */
-  if (type == error_mark_node)
-    return false;
 
   /* [temp.dep.type]
 
@@ -11313,6 +11299,37 @@ dependent_type_p (type)
 
   /* Other types are non-dependent.  */
   return false;
+}
+
+/* Returns TRUE if TYPE is dependent, in the sense of
+   [temp.dep.type].  */
+
+bool
+dependent_type_p (tree type)
+{
+  /* If there are no template parameters in scope, then there can't be
+     any dependent types.  */
+  if (!processing_template_decl)
+    return false;
+
+  /* If the type is NULL, we have not computed a type for the entity
+     in question; in that case, the type is dependent.  */
+  if (!type)
+    return true;
+
+  /* Erroneous types can be considered non-dependent.  */
+  if (type == error_mark_node)
+    return false;
+
+  /* If we have not already computed the appropriate value for TYPE,
+     do so now.  */
+  if (!TYPE_DEPENDENT_P_VALID (type))
+    {
+      TYPE_DEPENDENT_P (type) = dependent_type_p_r (type);
+      TYPE_DEPENDENT_P_VALID (type) = 1;
+    }
+
+  return TYPE_DEPENDENT_P (type);
 }
 
 /* Returns TRUE if the EXPRESSION is value-dependent.  */
