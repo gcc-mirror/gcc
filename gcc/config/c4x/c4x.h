@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -1713,11 +1713,10 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 #define EXPENSIVE_CLASS_P(CLASS) (ADDR_CLASS_P(CLASS) \
                           || INDEX_CLASS_P(CLASS) || (CLASS) == SP_REG)
 
-/* Make the Rx register a little easier to use so they are used for
-   calculations and the ARx registers are used for addressing. */
+/* Compute extra cost of moving data between one register class
+   and another.  */
 
-#define REGISTER_MOVE_COST(FROM, TO) \
-(EXPENSIVE_CLASS_P(TO) ? 5 : EXPENSIVE_CLASS_P(FROM) ? 4 : 3)
+#define REGISTER_MOVE_COST(FROM, TO)	2
 
 /* Memory move cost is same as fast register move.  Maybe this should
    be bumped up? */
