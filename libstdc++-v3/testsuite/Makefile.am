@@ -21,14 +21,14 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-AUTOMAKE_OPTIONS =  foreign dejagnu no-installinfo
+AUTOMAKE_OPTIONS =  foreign dejagnu
 
 DEJATOOL = libstdc++
 
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
-            echo $(top_builddir)/../expect/expect ; \
-          else echo expect ; fi`
+EXPECT = @glibcpp_expect@
 
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
-	       echo $(top_srcdir)/../dejagnu/runtest ; \
-	    else echo runtest; fi`
+RUNTEST = @glibcpp_runtest@
+
+
+
+

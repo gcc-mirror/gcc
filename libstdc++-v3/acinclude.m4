@@ -78,15 +78,14 @@ AC_DEFUN(LIB_AC_PROG_CXX,
 [AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
 dnl Fool anybody using AC_PROG_CXX.
 AC_PROVIDE([AC_PROG_CXX])
-# Use CXX_libstdcxx so that we do not cause CXX to be cached with the
+# Use glibcpp_CXX so that we do not cause CXX to be cached with the
 # flags that come in CXX while configuring libstdc++.  They're different
 # from those used for all other target libraries.  If CXX is set in
 # the environment, respect that here.
-CXX_libstdcxx=$CXX
-AC_CHECK_PROGS(CXX_libstdcxx, $CCC c++ g++ gcc CC cxx cc++, gcc)
-CXX=$CXX_libstdcxx
-AC_SUBST(CXX)
-test -z "$CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
+glibcpp_CXX=$CXX
+AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+AC_SUBST(glibcpp_CXX)
+test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
 
 AC_PROG_CXX_GNU
 
@@ -116,8 +115,11 @@ LIB_AC_PROG_CXX
 
   AC_CHECK_TOOL(AS, as)
   AC_CHECK_TOOL(AR, ar)
-  AC_CHECK_TOOL(RANLIB, ranlib, :)
-
+  AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
+  AC_CHECK_TOOL(glibcpp_expect, expect, expect-not-found-in-path-error)
+  AC_CHECK_TOOL(glibcpp_runtest, runtest, runtest-not-found-in-path-error)
+  AC_SUBST(glibcpp_expect)
+  AC_SUBST(glibcpp_runtest)
   AC_PROG_INSTALL
 
   AM_MAINTAINER_MODE

@@ -56,7 +56,7 @@ check_options() {
     
     # Then, see if we understand the job we're asked for
     case $2 in
-	--compiler|--built-library|--installed-library)
+	--compiler | --built-library | --installed-library)
 	# OK
 	;;
 	*) 
@@ -132,13 +132,11 @@ case ${query} in
     --built-library)
       LIB_PATH=${BUILD_DIR}/src
       GCC_LIB_PATH=${BUILD_DIR}/../../gcc
-      CROSS_LIB_PATH=${BUILD_DIR}/../newlib
-      CXX="${BUILD_DIR}/../../gcc/g++ -B${BUILD_DIR}/../../gcc/"
+      CXX='@glibcpp_CXX@'
       ;;
     --installed-library)
       LIB_PATH=${PREFIX_DIR}/lib
       GCC_LIB_PATH=
-      CROSS_LIB_PATH=
       CXX=${PREFIX_DIR}/bin/g++
       ;;
 esac
@@ -151,9 +149,6 @@ CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 case ${query} in
     --built-library)
       LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"
-      if test x@xcompiling@ = x1; then
-        LIBS="${LIBS} -B${CROSS_LIB_PATH}/"
-      fi
     case @target_os@ in
         *cygwin*)  
 	  LIBS="${LIBS} -nodefaultlibs -lgcc -lcygwin -luser32

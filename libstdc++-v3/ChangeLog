@@ -1,7 +1,19 @@
-2001-04-10  Richard Henderson  <rth@redhat.com>
+2001-04-11  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* acinclude.m4: AC_CHECK_TOOL for expect.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (RUNTEST): Use substituted.
+	(EXPECT): Same.
 
-	* testsuite/lib/libstdc++.exp (dg-test): Explicitly run
-	the program in the current directory.
+	* configure.in: Remove xcompiling substitution.
+	* tests_flags.in (CROSS_LIB_PATH): Remove.
+	(xcompiling): Remove.
+	(CXX): Use substituted CXX.
+	
+2001-04-11  Richard Henderson  <rth@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Specify path for output_file.
 
 2001-04-08  Gabriel Dos Reis  <gdr@codesourcery.com>
 
