@@ -112,6 +112,9 @@ dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
   comment = va_arg (ap, const char *);
 #endif
 
+  if (size * 8 < HOST_BITS_PER_WIDE_INT)
+    value &= ~(~(unsigned HOST_WIDE_INT)0 << (size * 8));
+
 #ifdef UNALIGNED_INT_ASM_OP
   fputs (unaligned_integer_asm_op (size), asm_out_file);
   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
@@ -458,7 +461,7 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 #endif
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.uleb128\t", asm_out_file);
+  fputs ("\t.uleb128 ", asm_out_file);
   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
 
   if (flag_debug_asm && comment)
@@ -522,8 +525,8 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
 #endif
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.sleb128\t", asm_out_file);
-  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
+  fputs ("\t.sleb128 ", asm_out_file);
+  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, value);
 
   if (flag_debug_asm && comment)
     {
@@ -589,7 +592,7 @@ dw2_asm_output_delta_uleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
 #endif
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.uleb128\t", asm_out_file);
+  fputs ("\t.uleb128 ", asm_out_file);
   assemble_name (asm_out_file, lab1);
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
@@ -627,7 +630,7 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
 #endif
 
 #ifdef HAVE_AS_LEB128
-  fputs ("\t.sleb128\t", asm_out_file);
+  fputs ("\t.sleb128 ", asm_out_file);
   assemble_name (asm_out_file, lab1);
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
