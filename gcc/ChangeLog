@@ -1,5 +1,8 @@
 Thu Aug 27 20:10:46 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (check_dbra_loop): The loop ending comparison value
+	must be an invariant or we can not reverse the loop.
+
 	* loop.c (scan_loop): Count down from max_reg_num - 1 to
 	FIRST_PSEUDO_REGISTER to avoid calling max_reg_num each iteration
 	of the loop.

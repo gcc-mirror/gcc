@@ -6904,6 +6904,15 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      comparison_sign_mask
 		= (unsigned HOST_WIDE_INT)1 << (comparison_const_width - 1);
 
+	      /* If the comparison value is not a loop invariant, then we
+		 can not reverse this loop.
+
+		 ??? If the insns which initialize the comparison value as
+		 a whole compute an invariant result, then we could move
+		 them out of the loop and proceed with loop reversal.  */
+	      if (!invariant_p (comparison_val))
+		return 0;
+
 	      if (GET_CODE (comparison_value) == CONST_INT)
 		comparison_val = INTVAL (comparison_value);
 	      initial_value = bl->initial_value;
