@@ -795,8 +795,8 @@ namespace std
 	    __new[1] = __cs[1];
 	  }
       _CharT* __p;
-      __p = std::__add_grouping(__new + __off, __sep, __grouping.c_str(), 
-				__grouping.c_str() + __grouping.size(),
+      __p = std::__add_grouping(__new + __off, __sep, __grouping.data(), 
+				__grouping.data() + __grouping.size(),
 				__cs + __off, __cs + __len);
       __len = __p - __new;
     }
@@ -866,8 +866,8 @@ namespace std
       // Add grouping, if necessary. 
       _CharT* __p2;
       const int __declen = __p ? __p - __cs : __len;
-      __p2 = std::__add_grouping(__new, __sep, __grouping.c_str(),
-				 __grouping.c_str() + __grouping.size(),
+      __p2 = std::__add_grouping(__new, __sep, __grouping.data(),
+				 __grouping.data() + __grouping.size(),
 				 __cs, __cs + __declen);
       
       // Tack on decimal part.
@@ -1117,12 +1117,12 @@ namespace std
       string_type __str;
       __beg = this->do_get(__beg, __end, __intl, __io, __err, __str); 
 
-      const int __n = numeric_limits<long double>::digits10;
-      char* __cs = static_cast<char*>(__builtin_alloca(__n));
+      const int __cs_size = __str.size() + 1;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const _CharT* __wcs = __str.c_str();
-      __ctype.narrow(__wcs, __wcs + __str.size() + 1, char(), __cs);      
+      __ctype.narrow(__wcs, __wcs + __cs_size, char(), __cs);      
       std::__convert_to_v(__cs, __units, __err, _S_get_c_locale());
       return __beg;
     }
@@ -1457,7 +1457,7 @@ namespace std
 		{
 		  const char_type __sep = __intl ? __mpt.thousands_sep() 
 		    			         : __mpf.thousands_sep();
-		  const char* __gbeg = __grouping.c_str();
+		  const char* __gbeg = __grouping.data();
 		  const char* __gend = __gbeg + __grouping.size();
 		  const int __n = (__end - __beg) * 2;
 		  _CharT* __ws2 =
@@ -1530,7 +1530,7 @@ namespace std
 	    }
 
 	  // Write resulting, fully-formatted string to output iterator.
-	  __s = std::__write(__s, __res.c_str(), __len);
+	  __s = std::__write(__s, __res.data(), __len);
 	}
       __io.width(0);
       return __s; 
@@ -2101,9 +2101,9 @@ namespace std
       const string_type __two(__lo2, __hi2);
 
       const _CharT* __p = __one.c_str();
-      const _CharT* __pend = __one.c_str() + __one.length();
+      const _CharT* __pend = __one.data() + __one.length();
       const _CharT* __q = __two.c_str();
-      const _CharT* __qend = __two.c_str() + __two.length();
+      const _CharT* __qend = __two.data() + __two.length();
 
       // strcoll stops when it sees a nul character so we break
       // the strings into zero-terminated substrings and pass those
@@ -2137,7 +2137,7 @@ namespace std
       string_type __str(__lo, __hi);
 
       const _CharT* __p = __str.c_str();
-      const _CharT* __pend = __str.c_str() + __str.length();
+      const _CharT* __pend = __str.data() + __str.length();
 
       size_t __len = (__hi - __lo) * 2;
 
