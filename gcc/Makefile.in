@@ -1257,10 +1257,10 @@ $(parsedir)/c-parse.y: c-parse.in
 c-incpath.o: c-incpath.c c-incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
 		intl.h prefix.h coretypes.h $(TM_H) cppdefault.h
 
-c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
-    $(C_TREE_H) $(GGC_H) $(TARGET_H) flags.h function.h output.h $(EXPR_H) \
-    debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H) c-pragma.h \
-    gt-c-decl.h cgraph.h
+c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+    $(RTL_H) $(C_TREE_H) $(GGC_H) $(TARGET_H) flags.h function.h output.h \
+    $(EXPR_H) debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H) \
+    c-pragma.h gt-c-decl.h cgraph.h $(HASHTAB_H)
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \

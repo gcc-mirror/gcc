@@ -49,6 +49,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 #include "c-pragma.h"
 #include "cgraph.h"
+#include "hashtab.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -4883,6 +4884,63 @@ grokfield (filename, line, declarator, declspecs, width)
   return value;
 }
 
+/* Generate an error for any duplicate field names in FIELDLIST.  Munge
+   the list such that this does not present a problem later.  */
+
+static void
+detect_field_duplicates (tree fieldlist)
+{
+  tree x, y;
+  int timeout = 10;
+
+  /* First, see if there are more than "a few" fields.
+     This is trivially true if there are zero or one fields.  */
+  if (!fieldlist)
+    return;
+  x = TREE_CHAIN (fieldlist);
+  if (!x)
+    return;
+  do {
+    timeout--;
+    x = TREE_CHAIN (x);
+  } while (timeout > 0 && x);
+
+  /* If there were "few" fields, avoid the overhead of allocating
+     a hash table.  Instead just do the nested traversal thing.  */
+  if (timeout > 0)
+    {
+      for (x = TREE_CHAIN (fieldlist); x ; x = TREE_CHAIN (x))
+	if (DECL_NAME (x))
+	  {
+	    for (y = fieldlist; y != x; y = TREE_CHAIN (y))
+	      if (DECL_NAME (y) == DECL_NAME (x))
+		{
+		  error_with_decl (x, "duplicate member `%s'");
+		  DECL_NAME (x) = NULL_TREE;
+		}
+	  }
+    }
+  else
+    {
+      htab_t htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+      void **slot;
+
+      for (x = fieldlist; x ; x = TREE_CHAIN (x))
+	if ((y = DECL_NAME (x)) != 0)
+	  {
+	    slot = htab_find_slot (htab, y, INSERT);
+	    if (*slot)
+	      {
+		error_with_decl (x, "duplicate member `%s'");
+		DECL_NAME (x) = NULL_TREE;
+	      }
+	    *slot = y;
+	  }
+
+      htab_delete (htab);
+    }
+}
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
    ATTRIBUTES are attributes to be applied to the structure.  */
@@ -5062,31 +5120,7 @@ finish_struct (t, fieldlist, attributes)
 	saw_named_field = 1;
     }
 
-  /* Delete all duplicate fields from the fieldlist */
-  for (x = fieldlist; x && TREE_CHAIN (x);)
-    /* Anonymous fields aren't duplicates.  */
-    if (DECL_NAME (TREE_CHAIN (x)) == 0)
-      x = TREE_CHAIN (x);
-    else
-      {
-	tree y = fieldlist;
-
-	while (1)
-	  {
-	    if (DECL_NAME (y) == DECL_NAME (TREE_CHAIN (x)))
-	      break;
-	    if (y == x)
-	      break;
-	    y = TREE_CHAIN (y);
-	  }
-	if (DECL_NAME (y) == DECL_NAME (TREE_CHAIN (x)))
-	  {
-	    error_with_decl (TREE_CHAIN (x), "duplicate member `%s'");
-	    TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
-	  }
-	else
-	  x = TREE_CHAIN (x);
-      }
+  detect_field_duplicates (fieldlist);
 
   /* Now we have the nearly final fieldlist.  Record it,
      then lay out the structure or union (including the fields).  */

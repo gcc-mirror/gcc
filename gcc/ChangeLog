@@ -1,3 +1,18 @@
+2003-05-11  Richard Henderson  <rth@redhat.com>
+
+	PR c/10675
+	* c-decl.c: Include hashtab.h.
+	(detect_field_duplicates): New.
+	(finish_struct): Use it.
+	* Makefile.in (c-decl.o): Update.
+	* c-parse.in (structsp_attr): Nreverse component_decl_list results.
+	(component_decl_list, component_decl_list2,
+	components, components_notype): Build list in reverse order.
+	(enumlist): Clarify docs.  Use TREE_CHAIN not chainon.
+
+	* tree.c (chainon): Special case op2 null as well. 
+	Reorg for clarity.
+
 2003-05-11  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (logsf2, logdf2, logxf2, logdf2): New patterns

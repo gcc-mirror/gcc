@@ -1031,26 +1031,27 @@ tree
 chainon (op1, op2)
      tree op1, op2;
 {
+  tree t1;
 
-  if (op1)
-    {
-      tree t1;
-#ifdef ENABLE_TREE_CHECKING
-      tree t2;
-#endif
-
-      for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
-	;
-      TREE_CHAIN (t1) = op2;
-#ifdef ENABLE_TREE_CHECKING
-      for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
-	if (t2 == t1)
-	  abort ();  /* Circularity created.  */
-#endif
-      return op1;
-    }
-  else
+  if (!op1)
     return op2;
+  if (!op2)
+    return op1;
+
+  for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
+    continue;
+  TREE_CHAIN (t1) = op2;
+
+#ifdef ENABLE_TREE_CHECKING
+  {
+    tree t2;
+    for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
+      if (t2 == t1)
+	abort ();  /* Circularity created.  */
+  }
+#endif
+
+  return op1;
 }
 
 /* Return the last node in a chain of nodes (chained through TREE_CHAIN).  */
