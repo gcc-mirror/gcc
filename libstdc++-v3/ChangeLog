@@ -1,8 +1,24 @@
+2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/17_intro/howto.html:  Fix mis-sed in header from 20010917.
+	* docs/html/18_support/howto.html:  Likewise.
+	* docs/html/19_diagnostics/howto.html:  Likewise.
+	* docs/html/20_util/howto.html:  Likewise.
+	* docs/html/21_strings/howto.html:  Likewise.
+	* docs/html/22_locale/howto.html:  Likewise.
+	* docs/html/23_containers/howto.html:  Likewise.
+	* docs/html/24_iterators/howto.html:  Likewise.
+	* docs/html/25_algorithms/howto.html:  Likewise.
+	* docs/html/26_numerics/howto.html:  Likewise.
+	* docs/html/27_io/howto.html:  Likewise.
+	* docs/html/ext/howto.html:  Likewise.
+	* docs/html/faq/index.html:  Likewise.  Spacing fix.
+
 2001-10-03  Dimitris Vyzovitis  <vyzo@media.mit.edu>
 
-	    * include/bits/stl_threads.h (_Atomic_swap): New function.
-	    (_Swap_lock_struct<__dummy>::_S_swap_lock): New data.
-	    * testsuite/ext/rope.cc: New file.
+	* include/bits/stl_threads.h (_Atomic_swap): New function.
+	(_Swap_lock_struct<__dummy>::_S_swap_lock): New data.
+	* testsuite/ext/rope.cc: New file.
 
 2001-10-02  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -157,7 +173,7 @@
 2001-09-20  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
 
 	* libstdc++-v3/include/bits/locale_facets.tcc (money_put::do_put): 
-        change variable name so that it works with -fno-for-scope.
+	change variable name so that it works with -fno-for-scope.
 
 2001-09-20  Benjamin Kosnik  <bkoz@redhat.com>
 
