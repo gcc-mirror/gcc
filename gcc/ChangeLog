@@ -1,3 +1,8 @@
+2005-02-15  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (find_traces_1_round): Force fallthru edge from a 
+	call to be best_edge.
+
 2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Adjust the prototype for find_basic_blocks.
