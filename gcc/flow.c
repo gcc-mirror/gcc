@@ -5120,6 +5120,24 @@ mark_used_reg (pbi, reg, cond, insn)
 			     (splay_tree_value) rcli);
 	}
     }
+  else if (some_was_live)
+    {
+      splay_tree_node node;
+      struct reg_cond_life_info *rcli;
+
+      node = splay_tree_lookup (pbi->reg_cond_dead, regno);
+      if (node != NULL)
+	{
+	  /* The register was conditionally live previously, but is now
+	     unconditionally so.  Remove it from the conditionally dead
+	     list, so that a conditional set won't cause us to think
+	     it dead.  */
+	  rcli = (struct reg_cond_life_info *) node->value;
+	  rcli->condition = NULL_RTX;
+	  splay_tree_remove (pbi->reg_cond_dead, regno);
+	}
+    }
+
 #endif
 }
 
