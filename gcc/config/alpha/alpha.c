@@ -7855,6 +7855,10 @@ alpha_expand_epilogue (void)
 void
 alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
 {
+#if TARGET_ABI_OPEN_VMS
+  alpha_write_linkage (file, fnname, decl);
+#endif
+
   /* End the function.  */
   if (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive)
     {
@@ -7863,10 +7867,6 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
       putc ('\n', file);
     }
   inside_function = FALSE;
-
-#if TARGET_ABI_OPEN_VMS
-  alpha_write_linkage (file, fnname, decl);
-#endif
 
   /* Output jump tables and the static subroutine information block.  */
   if (TARGET_ABI_UNICOSMK)
