@@ -1,5 +1,17 @@
 2000-04-29  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpphash.h (enum node_type: Take out T_MCONST.
+	(union hashval): Move into struct hashnode.
+	(struct hashnode): Pack tighter.  Remove file, line, col
+	members.
+	* cpphash.c: Constify most of the macro-definition structures.
+	(struct definition): Replace by struct object_defn
+	and struct funct_defn.  Put file, line, column information
+	here.  All users updated to match.
+	(_cpp_create_definition, _cpp_macroexpand): Remove special
+	case for #define WORD OTHERWORD.
+	* cpplib.c (do_undef): Remove T_MCONST case.
+
 	* cpphash.h: Move struct reflist, struct definition, and the
 	DEFINITION typedef to cpphash.c.  Use 'struct definition *' in
 	union hashval.  _cpp_free_definition takes a HASHNODE pointer.

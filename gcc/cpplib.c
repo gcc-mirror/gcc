@@ -727,7 +727,6 @@ do_undef (pfile)
 	    pass_thru_directive (hp->name, len, pfile, T_UNDEF);
 
 	  if (hp->type != T_MACRO && hp->type != T_FMACRO
-	      && hp->type != T_MCONST
 	      && hp->type != T_EMPTY && hp->type != T_IDENTITY)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
 
