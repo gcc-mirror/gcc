@@ -1460,6 +1460,8 @@ extern rtx emit					PROTO ((rtx));
    warnings about unreachable code.  */
 int force_line_numbers PROTO((void));
 void restore_line_number_status PROTO((int old_value));
+extern void renumber_insns                      PROTO ((void));
+extern void remove_unncessary_notes             PROTO ((void));
 
 /* In insn-emit.c */
 extern void add_clobbers		PROTO ((rtx, int));
