@@ -2536,9 +2536,10 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
 		    const REAL_VALUE_TYPE *r)
 {
   unsigned long image, sig, exp;
+  unsigned long sign = r->sign;
   bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
 
-  image = r->sign << 31;
+  image = sign << 31;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 24)) & 0x7fffff;
 
   switch (r->class)
