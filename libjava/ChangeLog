@@ -1,5 +1,15 @@
 2001-12-04  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::linked_utf8): New structure.
+	(_Jv_BytecodeVerifier::utf8_list): New field.
+	(_Jv_BytecodeVerifier::_Jv_BytecodeVerifier): Initialize it.
+	(_Jv_BytecodeVerifier::~_Jv_BytecodeVerifier): Free it.
+	(_Jv_BytecodeVerifier::make_utf8_const): New method.
+	(_Jv_BytecodeVerifier::get_one_type): Use it.
+	(_Jv_BytecodeVerifier::type::merge): When using local semantics,
+	if the destination type is already unsuitable then we didn't
+	change.
+
 	* defineclass.cc (read_one_method_attribute): `end_pc' for an
 	exception can be equal to code length.
 	* verify.cc (_Jv_BytecodeVerifier::verify_instructions_0): Removed
