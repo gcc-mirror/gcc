@@ -661,7 +661,7 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
 	base = XEXP (X, 1), index = XEXP (X, 0);	\
       if (base != 0 && index != 0)			\
 	{						\
-	  if (CONSTANT_ADDRESS_P (index))		\
+	  if (GET_CODE (index) == CONST_INT)		\
 	    goto ADDR;					\
 	  if (REG_P (index)				\
 	      && REG_OK_FOR_INDEX_P (index)		\
@@ -685,7 +685,12 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
    It is always safe for this macro to do nothing.  It exists to recognize
    opportunities to optimize the output.   */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)  {}
+extern struct rtx_def *legitimize_address ();
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  \
+{ rtx orig_x = (X);				\
+  (X) = legitimize_address (X, OLDX, MODE);	\
+  if ((X) != orig_x && memory_address_p (MODE, X)) \
+    goto WIN; }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
@@ -998,3 +1003,4 @@ extern int impossible_plus_operand ();
 extern enum reg_class secondary_reload_class ();
 extern int initial_offset ();
 extern char *output_tst ();
+int symbolic_operand ();
