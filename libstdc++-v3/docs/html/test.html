@@ -126,7 +126,7 @@ data		  Sample text files for testing input and output.
       All new tests should be written with the policy of one test
       case, one file in mind. At some point the entire testsuite will
       be converted: the current status is that the 21_string,
-      22_locale, 27_io, and demangle directories have all been
+      22_locale, 23_containers, 27_io, and demangle directories have all been
       transitioned.
    </p>
 
@@ -486,6 +486,11 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
 make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
 </pre>
    
+  <p> To run a subset of the library tests, simply edit the generated
+  file, <em>testsuite_files </em>, to include only the files that are
+  desired instead of all available test cases.
+  </p>
+
    <p> In addition, there are some testing options that are mostly of
    interest to library maintainers and system integrators. As such,
    these tests may not work on all cpu and host combinations, and must
