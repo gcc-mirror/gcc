@@ -588,7 +588,6 @@ cp/typeck.c
 cp/typeck2.c
 cp/xref.c
 ../libiberty/cplus-dem.c
-cppalloc.c
 cpperror.c
 cppexp.c
 cppfiles.c

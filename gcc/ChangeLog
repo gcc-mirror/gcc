@@ -1,3 +1,7 @@
+2000-03-07  Philipp Thomas  <pthomas@suse.de>
+
+	* po/POTFILES.in: Remove cppalloc.c from file list.
+
 2000-03-07  Steve Chamberlain  <sac@pobox.com>
 
 	* pj.c (pj_expand_prologue): current_function->args_info is
