@@ -644,7 +644,7 @@ read_scan_file (in_fname, argc, argv)
 	      else if (i + 1 == argc)
 		strings_processed = 0;
 	      else
-		strings_processed = 2, add_path (argv[i + 2], BRACKET, false);
+		strings_processed = 2, add_path (argv[i + 1], BRACKET, false);
 	    }
 	  else if (argv[i][1] == 'D')
 	    {
