@@ -364,6 +364,9 @@ struct temp_slot
   struct temp_slot *next;
   /* The rtx to used to reference the slot. */
   rtx slot;
+  /* The rtx used to represent the address if not the address of the
+     slot above.  May be an EXPR_LIST if multiple addresses exist.  */
+  rtx address;
   /* The size, in units, of the slot.  */
   int size;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
@@ -785,6 +788,7 @@ assign_stack_temp (mode, size, keep)
 	      p->slot = gen_rtx (MEM, BLKmode,
 				 plus_constant (XEXP (best_p->slot, 0),
 						rounded_size));
+	      p->address = 0;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
@@ -798,7 +802,6 @@ assign_stack_temp (mode, size, keep)
       p = best_p;
     }
 	      
-
   /* If we still didn't find one, make a new temporary.  */
   if (p == 0)
     {
@@ -806,7 +809,8 @@ assign_stack_temp (mode, size, keep)
       p->size = size;
       /* If the temp slot mode doesn't indicate the alignment,
 	 use the largest possible, so no one will be disappointed.  */
-      p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0); 
+      p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+      p->address = 0;
       p->next = temp_slots;
       temp_slots = p;
     }
@@ -879,6 +883,55 @@ combine_temp_slots ()
   rtx_free (free_pointer);
 }
 
+/* Find the temp slot corresponding to the object at address X.  */
+
+static struct temp_slot *
+find_temp_slot_from_address (x)
+     rtx x;
+{
+  struct temp_slot *p;
+  rtx next;
+
+  for (p = temp_slots; p; p = p->next)
+    {
+      if (! p->in_use)
+	continue;
+      else if (XEXP (p->slot, 0) == x
+	       || p->address == x)
+	return p;
+
+      else if (p->address != 0 && GET_CODE (p->address) == EXPR_LIST)
+	for (next = p->address; next; next = XEXP (next, 1))
+	  if (XEXP (next, 0) == x)
+	    return p;
+    }
+
+  return 0;
+}
+      
+/* Indicate that NEW is an alternate way of refering to the temp slot
+   that previous was known by OLD.  */
+
+void
+update_temp_slot_address (old, new)
+     rtx old, new;
+{
+  struct temp_slot *p = find_temp_slot_from_address (old);
+
+  /* If none, return.  Else add NEW as an alias.  */
+  if (p == 0)
+    return;
+  else if (p->address == 0)
+    p->address = new;
+  else
+    {
+      if (GET_CODE (p->address) != EXPR_LIST)
+	p->address = gen_rtx (EXPR_LIST, VOIDmode, p->address, NULL_RTX);
+
+      p->address = gen_rtx (EXPR_LIST, VOIDmode, new, p->address);
+    }
+}
+
 /* If X could be a reference to a temporary slot, mark that slot as belonging
    to the to one level higher.  If X matched one of our slots, just mark that
    one.  Otherwise, we can't easily predict which it is, so upgrade all of
@@ -899,12 +952,12 @@ preserve_temp_slots (x)
     return;
 
   /* First see if we can find a match.  */
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && x == p->slot)
-      {
-	p->level--;
-	return;
-      }
+  p = find_temp_slot_from_address (XEXP (x, 0));
+  if (p != 0)
+    {
+      p->level--;
+      return;
+    }
 
   /* Otherwise, preserve all non-kept slots at this level.  */
   for (p = temp_slots; p; p = p->next)
