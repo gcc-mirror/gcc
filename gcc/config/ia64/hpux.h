@@ -121,3 +121,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN (!AGGREGATE_TYPE_P (type))
+
+#define REGISTER_TARGET_PRAGMAS(PFILE) \
+  cpp_register_pragma (PFILE, 0, "builtin", ia64_hpux_handle_builtin_pragma)
