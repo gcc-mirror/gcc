@@ -110,6 +110,7 @@ INSTALL_DATA = $(INSTALL) -m 644
 AS = @AS@
 AR = @AR@
 AR_FLAGS = rc
+RANLIB = @RANLIB@
 CC = @CC@
 
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined

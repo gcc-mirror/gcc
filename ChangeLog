@@ -1,3 +1,8 @@
+2003-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.tpl (RANLIB): Define.
+	* Makefile.in: Regenerate.
+
 2003-02-08  Laurynas Biveinis  <laurynas.biveinis@mif.vu.lt>
 
 	* MAINTAINERS: Update my email.
