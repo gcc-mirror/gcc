@@ -433,7 +433,7 @@ AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
 AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 
 # See if GNAT has been installed
-AC_CHECK_PROG(gnat, gnatbind, yes, no)
+AC_CHECK_PROG(have_gnat, gnatbind, yes, no)
 
 # See if we have the mktemp command.
 AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)
@@ -1520,7 +1520,7 @@ changequote(,)dnl
 	  if test x"${add_this_lang}" = xyes; then
 		case $lang in
 		    ${srcdir}/ada/config-lang.in)
-			if test x$gnat = xyes ; then
+			if test x$have_gnat = xyes ; then
 				subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
 			fi
 			;;
