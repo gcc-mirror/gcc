@@ -2338,7 +2338,7 @@ fp_one_operand (op)
 
 /* Return non-zero if REG is not used after INSN.
    We assume REG is a reload reg, and therefore does
-   not live past labels or calls or jumps.  */
+   not live past labels.  It may live past calls or jumps though.  */
 int
 reg_unused_after (reg, insn)
      rtx reg;
@@ -2369,11 +2369,14 @@ reg_unused_after (reg, insn)
       /* else */
 #endif
 
+      if (code == JUMP_INSN)
+	return 0;
+
       /* If this is a sequence, we must handle them all at once.
 	 We could have for instance a call that sets the target register,
 	 and a insn in a delay slot that uses the register.  In this case,
 	 we must return 0.  */
-      if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+      else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  int i;
 	  int retval = 0;
