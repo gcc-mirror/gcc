@@ -347,7 +347,6 @@ static tree build_dot_class_method_invocation (tree, tree);
 static void create_new_parser_context (int);
 static tree maybe_build_class_init_for_field (tree, tree);
 
-static int attach_init_test_initialization_flags (void **, void *);
 static int emit_test_initialization (void **, void *);
 
 static char *string_convert_int_cst (tree);
@@ -16344,26 +16343,6 @@ init_src_parse (void)
 
 /* This section deals with the functions that are called when tables
    recording class initialization information are traversed.  */
-
-/* Attach to PTR (a block) the declaration found in ENTRY. */
-
-static int
-attach_init_test_initialization_flags (void **entry, void *ptr)
-{
-  tree block = (tree)ptr;
-  struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
-
-  if (block != error_mark_node)
-    {
-      tree body = BLOCK_SUBBLOCKS (block);
-      TREE_CHAIN (ite->value) = BLOCK_EXPR_DECLS (block);
-      BLOCK_EXPR_DECLS (block) = ite->value;
-      body = build2 (COMPOUND_EXPR, void_type_node,
-                     build1 (DECL_EXPR, void_type_node, ite->value), body);
-      BLOCK_SUBBLOCKS (block) = body;
-    }
-  return true;
-}
 
 /* This function is called for each class that is known definitely
    initialized when a given static method was called. This function

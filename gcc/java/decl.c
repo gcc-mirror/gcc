@@ -1931,6 +1931,17 @@ end_java_method (void)
   poplevel (1, 0, 1);
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
+  
+  if (DECL_SAVED_TREE (fndecl))
+    {
+      tree fbody, block_body;
+      /* Before we check initialization, attached all class initialization
+	 variable to the block_body */
+      fbody = DECL_SAVED_TREE (fndecl);
+      block_body = BIND_EXPR_BODY (fbody);
+      htab_traverse (DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
+		     attach_init_test_initialization_flags, block_body);
+    }
 
   flag_unit_at_a_time = 0;
   finish_method (fndecl);
