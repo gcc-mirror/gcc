@@ -1,3 +1,16 @@
+2003-04-27  Nathan Myers  <ncm@cantrip.org>
+
+	Move some basic_string members out of line because
+	they are too big to reasonably be inline.
+	* include/bits/basic_string.h
+	(assign(const basic_string&, size_type, size_type),
+	assign(const _CharT*, size_type),
+	insert(size_type, const basic_string&, size_type, size_type),
+	insert(size_type, const _CharT*, size_type),
+	replace(size_type, size_type, const _CharT*, size_type)):
+	Move from here to...
+	* include/bits/basic_string.tcc: ...here.
+	
 2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (pbackfail): Shorten a bit (10 lines)
