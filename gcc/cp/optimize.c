@@ -641,15 +641,20 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* The new expression has side-effects if the old one did.  */
   TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (t);
+
+  /* Replace the call by the inlined body.  Wrap it in an
+     EXPR_WITH_FILE_LOCATION so that we'll get debugging line notes
+     pointing to the right place.  */
+  chain = TREE_CHAIN (*tp);
+  *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn),
+			/*col=*/0);
+  EXPR_WFL_EMIT_LINE_NOTE (*tp) = 1;
+  TREE_CHAIN (*tp) = chain;
+
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about
      the equivalent inlined version either.  */
-  TREE_USED (expr) = 1;
-
-  /* Replace the call by the inlined body.  */
-  chain = TREE_CHAIN (*tp);
-  *tp = expr;
-  TREE_CHAIN (expr) = chain;
+  TREE_USED (*tp) = 1;
 
   /* Recurse into the body of the just inlined function.  */
   expand_calls_inline (tp, id);

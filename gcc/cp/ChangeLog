@@ -1,5 +1,9 @@
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* optimize.c (expand_call_inline): Wrap the expanded call in an
+	EXPR_WITH_FILE_LOCATION node to get correct line numbers for
+	inlined functions.
+
 	* optimize.c (inline_data): Remove fns_top.  Add scope_stmt.  Add
 	in_target_cleanup_p.
 	(remap_decl): New function.
