@@ -9543,6 +9543,7 @@ rs6000_trampoline_size ()
       ret = (TARGET_32BIT) ? 12 : 24;
       break;
 
+    case ABI_DARWIN:
     case ABI_V4:
     case ABI_AIX_NODESC:
       ret = (TARGET_32BIT) ? 40 : 48;
@@ -9589,7 +9590,8 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
       }
       break;
 
-    /* Under V.4/eabi, call __trampoline_setup to do the real work.  */
+    /* Under V.4/eabi/darwin, __trampoline_setup does the real work.  */
+    case ABI_DARWIN:
     case ABI_V4:
     case ABI_AIX_NODESC:
       emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),
