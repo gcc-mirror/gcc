@@ -8085,3 +8085,68 @@ sparc_extra_constraint_check (op, c, strict)
 
   return reload_ok_mem;
 }
+
+int
+sparc_rtx_costs (x, code, outer_code)
+     rtx x;
+     enum rtx_code code, outer_code;
+{
+  switch (code)
+    {
+    case MULT:
+      if (sparc_cpu == PROCESSOR_ULTRASPARC)
+	return (GET_MODE (x) == DImode ?
+		COSTS_N_INSNS (34) : COSTS_N_INSNS (19));
+
+      if (sparc_cpu == PROCESSOR_ULTRASPARC3)
+	return COSTS_N_INSNS (6);
+
+      return (TARGET_HARD_MUL
+	      ? COSTS_N_INSNS (5)
+	      : COSTS_N_INSNS (25));
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      if (sparc_cpu == PROCESSOR_ULTRASPARC)
+	return (GET_MODE (x) == DImode ?
+		COSTS_N_INSNS (68) : COSTS_N_INSNS (37));
+      if (sparc_cpu == PROCESSOR_ULTRASPARC3)
+	return (GET_MODE (x) == DImode ?
+		COSTS_N_INSNS (71) : COSTS_N_INSNS (40));
+      return COSTS_N_INSNS (25);
+
+      /* Make FLOAT and FIX more expensive than CONST_DOUBLE,
+	 so that cse will favor the latter.  */
+    case FLOAT:
+    case FIX:
+      return 19;
+
+    case CONST_INT:
+      if (INTVAL (x) < 0x1000 && INTVAL (x) >= -0x1000)
+	return 0;
+
+    /* fallthru */
+    case HIGH:
+      return 2;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      return 4;
+
+    case CONST_DOUBLE:
+      if (GET_MODE (x) == DImode)
+	if ((XINT (x, 3) == 0
+	     && (unsigned) XINT (x, 2) < 0x1000)
+	    || (XINT (x, 3) == -1
+		&& XINT (x, 2) < 0
+		&& XINT (x, 2) >= -0x1000))
+	  return 0;
+      return 8;
+
+    default:
+      abort();
+    };
+}
