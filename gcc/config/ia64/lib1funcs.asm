@@ -137,6 +137,7 @@ __divdi3:
 	;;
 	// Compute the reciprocal approximation.
 	frcpa.s1 f10, p6 = f8, f9
+	;;
 	// 3 Newton-Raphson iterations.
 (p6)	fnma.s1 f11 = f9, f10, f1
 (p6)	fmpy.s1 f12 = f8, f10
@@ -254,7 +255,7 @@ __udivdi3:
 (p6)	fma.s1 f10 = f13, f10, f10
 (p6)	fnma.s1 f12 = f9, f11, f8
 	;;
-(p6)	fma.s1 f10 = f2, f10, f11
+(p6)	fma.s1 f10 = f12, f10, f11
 	;;
 	// Round quotient to an unsigned integer.
 	fcvt.fxu.trunc.s1 f10 = f10
@@ -482,6 +483,7 @@ __umodsi3:
 (p6)	fmpy.s1 f12 = f8, f10
 (p6)	fnma.s1 f10 = f9, f10, f1
 	;;
+	setf.sig f9 = in1
 (p6)	fma.s1 f12 = f10, f12, f12
 (p6)	fma.s1 f10 = f10, f10, f11
 	;;

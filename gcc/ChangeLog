@@ -1,3 +1,8 @@
+2000-09-05  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.md (mulhi3): Fix typo last change.
+	* config/ia64/lib1func.asm (__divdi3, __udivdi3, __umodsi3): Likewise.
+
 2000-09-03  Donn Terry  <donn@interix.com>,  Laurynas Biveinis  <lauras@softhome.net>
 
 	* Makefile.in: Restructure bootstrap stages to allow clean
