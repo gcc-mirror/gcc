@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    m68k series COFF object files and debugging, version.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -55,7 +55,13 @@ Boston, MA 02111-1307, USA.  */
 /* config/m68k.md has an explicit reference to the program counter,
    prefix this by the register prefix.  */
 
-#define ASM_RETURN_CASE_JUMP    return "jmp %%pc@(2,%0:w)"
+#define ASM_RETURN_CASE_JUMP 			\
+  do {						\
+    if (TARGET_5200)				\
+      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+    else					\
+      return "jmp %%pc@(2,%0:w)";		\
+  } while (0)
 
 /* Here are the new register names.  */
 
