@@ -6613,7 +6613,7 @@ mips_expand_prologue ()
   int regno;
   HOST_WIDE_INT tsize;
   rtx tmp_rtx = 0;
-  const char *arg_name = 0;
+  int last_arg_is_vararg_marker = 0;
   tree fndecl = current_function_decl;
   tree fntype = TREE_TYPE (fndecl);
   tree fnargs = DECL_ARGUMENTS (fndecl);
@@ -6637,7 +6637,11 @@ mips_expand_prologue ()
       fnargs = function_result_decl;
     }
 
-  /* Determine the last argument, and get its name.  */
+  /* For arguments passed in registers, find the register number
+     of the first argument in the variable part of the argument list,
+     otherwise GP_ARG_LAST+1.  Note also if the last argument is 
+     the varargs special argument, and treat it as part of the
+     variable arguments. */
 
   INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
   regno = GP_ARG_FIRST;
@@ -6656,32 +6660,37 @@ mips_expand_prologue ()
 
       entry_parm = FUNCTION_ARG (args_so_far, passed_mode, passed_type, 1);
 
+      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
+      next_arg = TREE_CHAIN (cur_arg);
+
       if (entry_parm)
 	{
-	  int words;
-
-	  /* passed in a register, so will get homed automatically */
-	  if (GET_MODE (entry_parm) == BLKmode)
-	    words = (int_size_in_bytes (passed_type) + 3) / 4;
+	  if (next_arg == 0
+	      && DECL_NAME (cur_arg)
+	      && ((0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+				"__builtin_va_alist"))
+		  || (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+				   "va_alist"))))
+	    {
+	      last_arg_is_vararg_marker = 1;
+	      break;
+	    }
 	  else
-	    words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
+	    {
+	      int words;
+	  
+	      /* passed in a register, so will get homed automatically */
+	      if (GET_MODE (entry_parm) == BLKmode)
+		words = (int_size_in_bytes (passed_type) + 3) / 4;
+	      else
+		words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
 
-	  regno = REGNO (entry_parm) + words - 1;
+	      regno = REGNO (entry_parm) + words - 1;
+	    }
 	}
       else
 	{
 	  regno = GP_ARG_LAST+1;
-	  break;
-	}
-
-      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
-
-      next_arg = TREE_CHAIN (cur_arg);
-      if (next_arg == 0)
-	{
-	  if (DECL_NAME (cur_arg))
-	    arg_name = IDENTIFIER_POINTER (DECL_NAME (cur_arg));
-
 	  break;
 	}
     }
@@ -6719,11 +6728,7 @@ mips_expand_prologue ()
       && ((TYPE_ARG_TYPES (fntype) != 0
 	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	       != void_type_node))
-	  || (arg_name != 0
-	      && ((arg_name[0] == '_'
-		   && strcmp (arg_name, "__builtin_va_alist") == 0)
-		  || (arg_name[0] == 'v'
-		      && strcmp (arg_name, "va_alist") == 0)))))
+	  || last_arg_is_vararg_marker))
     {
       int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
       rtx ptr = stack_pointer_rtx;
