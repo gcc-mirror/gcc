@@ -1,3 +1,9 @@
+2002-07-22  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/7361
+	* config/m68hc11/m68hc11.c (go_if_legitimate_address_internal): Accept
+	constant addresses only on 68HC12.
+
 2002-07-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppfiles.c (stack_include_file): Correct test of whether
