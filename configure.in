@@ -402,7 +402,6 @@ case "${enable_target_optspace}:${target}" in
 esac
 
 skipdirs=
-gasdir=gas
 use_gnu_ld=
 use_gnu_as=
 
@@ -1283,7 +1282,7 @@ fi
 # --without-gnu-ld options for the configure script.
 
 if test x${use_gnu_as} = x ; then
-  if test x${with_gnu_as} != xno && echo " ${configdirs} " | grep " ${gasdir} " > /dev/null 2>&1 && test -d ${srcdir}/${gasdir} ; then
+  if test x${with_gnu_as} != xno && echo " ${configdirs} " | grep " gas " > /dev/null 2>&1 && test -d ${srcdir}/gas ; then
     with_gnu_as=yes
     withoptions="$withoptions --with-gnu-as"
   fi
