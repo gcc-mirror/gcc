@@ -1,3 +1,11 @@
+2003-06-07  Richard Henderson  <rth@redhat.com>
+
+	* basic-block.h (EDGE_SIBCALL): New.
+	(EDGE_ALL_FLAGS): Update.
+	* cfg.c (dump_edge_info): Add sibcall name.
+	* cfgbuild.c (make_edges): Use EDGE_SIBCALL.
+	* cfgrtl.c (purge_dead_edges): Handle sibcalls.
+
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* mklibgcc.in (lib2funcs): Remove _exit.

@@ -2299,6 +2299,19 @@ purge_dead_edges (bb)
 
       return purged;
     }
+  else if (GET_CODE (insn) == CALL_INSN && SIBLING_CALL_P (insn))
+    {
+      /* First, there should not be any EH or ABCALL edges resulting
+	 from non-local gotos and the like.  If there were, we shouldn't
+	 have created the sibcall in the first place.  Second, there
+	 should of course never have been a fallthru edge.  */
+      if (!bb->succ || bb->succ->succ_next)
+	abort ();
+      if (bb->succ->flags != EDGE_SIBCALL)
+	abort ();
+
+      return 0;
+    }
 
   /* If we don't see a jump insn, we don't know exactly why the block would
      have been broken at this point.  Look for a simple, non-fallthru edge,
