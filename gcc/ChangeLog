@@ -1,3 +1,13 @@
+2005-02-25  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	2005-02-24  David Edelsohn  <edelsohn@gnu.org>
+	PR target/19019
+	* reload.c (operands_match_p): Only increment register number for
+	SCALAR_INT_MODE_P modes in multiple hard registers.
+	* config/rs6000/rs6000.md (trunctfdf2): Remove register constraints.
+	Fix formatting.
+
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/19019
