@@ -3293,7 +3293,11 @@ typename_sub0:
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
-		    $$ = $2;
+		    {
+		      $$ = $2;
+		      if (TREE_CODE ($$) == TYPE_DECL)
+			$$ = TREE_TYPE ($$);
+		    }
 		}
 	;
 
@@ -3310,7 +3314,11 @@ typename_sub1:
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
-		    $$ = $2;
+		    {
+		      $$ = $2;
+		      if (TREE_CODE ($$) == TYPE_DECL)
+			$$ = TREE_TYPE ($$);
+		    }
 		}
 	;
 
