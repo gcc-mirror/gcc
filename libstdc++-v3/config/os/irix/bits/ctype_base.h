@@ -35,26 +35,21 @@
   
   struct ctype_base
   {
-    typedef unsigned int 	mask;
     // Non-standard typedefs.
     typedef int* 		__to_type;
 
-    enum
-    {
-      space = _ISspace,
-      print = _ISprint,
-      cntrl = _IScntrl,
-      upper = _ISupper,
-      lower = _ISlower,
-      alpha = _ISalpha,
-      digit = _ISdigit,
-      punct = _ISpunct,
-      xdigit = _ISxdigit,
-      alnum = _ISalnum,
-      graph = _ISgraph
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef unsigned int 	mask;
+    static const mask upper    	= _ISupper;
+    static const mask lower 	= _ISlower;
+    static const mask alpha 	= _ISalpha;
+    static const mask digit 	= _ISdigit;
+    static const mask xdigit 	= _ISxdigit;
+    static const mask space 	= _ISspace;
+    static const mask print 	= _ISprint;
+    static const mask graph 	= _ISgraph;
+    static const mask cntrl 	= _IScntrl;
+    static const mask punct 	= _ISpunct;
+    static const mask alnum 	= _ISalnum;
   };
-
-
-
-

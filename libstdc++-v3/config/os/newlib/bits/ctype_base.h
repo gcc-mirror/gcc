@@ -37,25 +37,21 @@
   
   struct ctype_base
   {
-    typedef char 		mask;
     // Non-standard typedefs.
     typedef const int* 		__to_type;
 
-    enum
-    {
-      space = 010,				// Whitespace
-      print = 020 | 01 | 02 | 04 | 0200,	// Printing
-      cntrl = 040,				// Control character
-      upper = 01,				// UPPERCASE
-      lower = 02,				// lowercase
-      alpha = 01 | 02,				// Alphabetic
-      digit = 04,				// Numeric
-      punct = 020,				// Punctuation
-      xdigit = 0200,				// Hexadecimal numeric
-      alnum = 01 | 02 | 04,			// Alphanumeric
-      graph = 020 | 01 | 02 | 04 		// Graphical
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef char 		mask;
+    static const mask upper    	= _U;
+    static const mask lower 	= _L;
+    static const mask alpha 	= _U | _L;
+    static const mask digit 	= _N;
+    static const mask xdigit 	= _X | _N;
+    static const mask space 	= _S;
+    static const mask print 	= _P | _U | _L | _N | _B;
+    static const mask graph 	= _P | _U | _L | _N;
+    static const mask cntrl 	= _C;
+    static const mask punct 	= _P;
+    static const mask alnum 	= _U | _L | _N;
   };
-
-
-

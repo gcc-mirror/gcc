@@ -56,6 +56,22 @@ void test01()
   int len = std::char_traits<char>::length(strlit00);
   char c_array[len + 1];
 
+  // sanity check ctype_base::mask members
+  int i01 = std::ctype_base::space;
+  int i02 = std::ctype_base::upper;
+  int i03 = std::ctype_base::lower;
+  int i04 = std::ctype_base::digit;
+  int i05 = std::ctype_base::punct;
+  int i06 = std::ctype_base::alpha;
+  int i07 = std::ctype_base::xdigit;
+  int i08 = std::ctype_base::alnum;
+  int i09 = std::ctype_base::graph;
+  int i10 = std::ctype_base::print;
+  int i11 = std::ctype_base::cntrl;
+  int i12 = sizeof(std::ctype_base::mask);
+  VERIFY ( i01 != i02 != i03 != i04 != i05 != i06 != i07 != i08 != i09 );
+  VERIFY ( i01 != i10 != i11);
+
   // bool is(mask m, char c) const;
   VERIFY( gctype.is(std::ctype_base::space, c30) );
   VERIFY( gctype.is(std::ctype_base::upper, c00) );
@@ -72,20 +88,49 @@ void test01()
   VERIFY( gctype.is(std::ctype_base::graph, c20) );
 
   // const char* is(const char* low, const char* high, mask* vec) const
-  std::ctype_base::mask m01 = static_cast<std::ctype_base::mask>(0);
-  std::ctype_base::mask m02 = std::ctype_base::digit;
+  std::ctype_base::mask m00 = static_cast<std::ctype_base::mask>(0);
+  std::ctype_base::mask m01[3];
+  std::ctype_base::mask m02[13];
   const char* cc0 = strlit00;
   const char* cc1 = NULL;
   const char* cc2 = NULL;
-#if 1
-  cc1 = gctype.is(cc0, cc0, &m01);
-  VERIFY( cc1 == strlit00 );
-  cc2 = gctype.is(cc0, cc0 + 3, &m01);
-  VERIFY( cc2 == strlit00 + 3);
 
-  cc1 = gctype.is(cc0, cc0 + 13, &m02);
+  cc0 = strlit00;
+  m01[0] = m00;
+  m01[1] = m00;
+  m01[2] = m00;
+  cc1 = gctype.is(cc0, cc0, m01);
+  VERIFY( cc1 == strlit00 );
+  VERIFY( m01[0] == m00 );
+  VERIFY( m01[1] == m00 );
+  VERIFY( m01[2] == m00 );
+
+  cc0 = strlit00;
+  m01[0] = m00;
+  m01[1] = m00;
+  m01[2] = m00;
+  cc2 = gctype.is(cc0, cc0 + 3, m01);
+  VERIFY( cc2 == strlit00 + 3);
+  VERIFY( m01[0] != m00 );
+  VERIFY( m01[1] != m00 );
+  VERIFY( m01[2] != m00 );
+  VERIFY( gctype.is(m01[0], cc0[0]) );
+  VERIFY( gctype.is(m01[1], cc0[1]) );
+  VERIFY( gctype.is(m01[2], cc0[2]) );
+
+  cc0 = strlit00;
+  cc1 = gctype.is(cc0, cc0 + 13, m02);
   VERIFY( cc1 == strlit00 + 13);
-#endif
+  VERIFY( m02[6] != m00 );
+  VERIFY( m02[7] != m00 );
+  VERIFY( m02[8] != m00 );
+  VERIFY( m02[8] != m02[6] != m02[7] );
+  VERIFY( static_cast<bool>(m02[6] & std::ctype_base::alnum) );
+  VERIFY( static_cast<bool>(m02[7] & std::ctype_base::punct) );
+  VERIFY( static_cast<bool>(m02[8] & std::ctype_base::space) );
+  VERIFY( gctype.is(m02[6], cc0[6]) );
+  VERIFY( gctype.is(m02[7], cc0[7]) );
+  VERIFY( gctype.is(m02[8], cc0[8]) );
 
   // char toupper(char c) const
   c100 = gctype.toupper(c10);

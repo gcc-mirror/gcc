@@ -39,11 +39,11 @@
   using _C_legacy::__ctype_b;
 #endif
 
-  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
-    : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-      _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
-      _M_ctable(__ctype_b), _M_table(__table == 0 ? _M_ctable: __table) 
-    { }
+  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
+  __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
+  _M_ctable(__ctype_b), _M_table(__table == 0 ? _M_ctable : __table) 
+  { }
 
   char
   ctype<char>::do_toupper(char __c) const

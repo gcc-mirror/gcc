@@ -215,7 +215,6 @@ namespace std
     public:
       // Types:
       typedef char 	       char_type;
-      typedef ctype::mask      mask;
 
     private:
       // Data Members:
@@ -248,12 +247,10 @@ namespace std
       virtual 
       ~ctype();
 
-      // XXX
       const mask* 
       table() const throw()
       { return _M_table; }
 
-      // XXX
       const mask* 
       classic_table() throw()
       { return _M_ctable; }
@@ -312,7 +309,6 @@ namespace std
     public:
       // Types:
       typedef wchar_t 	       char_type;
-      typedef ctype::mask      mask;
       typedef wctype_t	       __wmask_type;
 
       // Data Members:

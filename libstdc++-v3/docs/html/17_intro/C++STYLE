@@ -146,7 +146,18 @@ Notable areas of divergence from what may be previous local practice
   -NOT-
   sync()
 
-	Reason: ???
+	Reason: Koenig lookup.
+
+11. constructor member intialization lists
+
+  should look like this:
+  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
+  __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
+  _M_ctable(static_cast<const mask*>(__ctype_b), 
+  _M_table(__table == 0 ? _M_ctable : __table) 
+  { }
+
 
 The library currently has a mixture of GNU-C and modern C++ coding
 styles.  The GNU C usages will be combed out gradually.

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000 Cygnus Solutions
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,8 +43,15 @@
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()
   {
-    while (__low < __high)
-      *__vec++ = (_M_table + 1)[(unsigned char)(*__low++)];
+    const int __bitmasksize = sizeof(mask) * 8;
+    for (;__low < __high; ++__vec, ++__low)
+      {
+	mask __m = _M_table[*__low];
+	int __i = 0; // Lowest bitmask in ctype_base::mask.
+	while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
+	  ++__i;
+	*__vec = static_cast<mask>(1 << __i);
+      }
     return __high;
   }
 

@@ -37,14 +37,21 @@
   bool
   ctype<char>::
   is(mask __m, char __c) const throw()
-  { return (_M_table)[(unsigned char)(__c)] & __m; }
+  { return (_M_table)[__c] & __m; }
 
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()
   {
-    while (__low < __high)
-      *__vec++ = (_M_table)[(unsigned char)(*__low++)];
+    const int __bitmasksize = sizeof(mask) * 8;
+    for (;__low < __high; ++__vec, ++__low)
+      {
+	mask __m = _M_table[*__low];
+	int __i = 1; // Lowest bitmask on linux, 1 <= x <= 15
+	while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
+	  ++__i;
+	*__vec = static_cast<mask>(1 << __i);
+      }
     return __high;
   }
 
@@ -52,7 +59,7 @@
   ctype<char>::
   scan_is(mask __m, const char* __low, const char* __high) const throw()
   {
-    while (__low < __high && !((_M_table)[(unsigned char)(*__low)] & __m))
+    while (__low < __high && !((_M_table)[*__low] & __m))
       ++__low;
     return __low;
   }
@@ -61,8 +68,7 @@
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const throw()
   {
-    while (__low < __high 
-	   && ((_M_table + 1)[(unsigned char)(*__low)] & __m) != 0)
+    while (__low < __high && ((_M_table + 1)[*__low] & __m) != 0)
       ++__low;
     return __low;
   }

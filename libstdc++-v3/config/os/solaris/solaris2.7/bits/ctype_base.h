@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-1999 Cygnus Solutions
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,27 +32,26 @@
 //
   
 // Information as gleaned from /usr/include/ctype.h. Looks like this
-// only works with solaris2.6 and solaris2.7, but not solaris2.5.1.
+// only works with solaris2.7 and solaris2.8. Thanks for not changing
+// things, sun engineers!
 
   struct ctype_base
   {
-    typedef unsigned int 	mask;
     // Non-standard typedefs.
     typedef int* 		__to_type;
 
-    enum
-    {
-      space = _ISSPACE,
-      print = _ISPRINT,
-      cntrl = _ISCNTRL,
-      upper = _ISUPPER,
-      lower = _ISLOWER,
-      alpha = _ISALPHA,
-      digit = _ISDIGIT,
-      punct = _ISPUNCT,
-      xdigit = _ISXDIGIT,
-      alnum = _ISALNUM,
-      graph = _ISGRAPH
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef unsigned int 	mask;   
+    static const mask upper    	= _ISUPPER;
+    static const mask lower 	= _ISLOWER;
+    static const mask alpha 	= _ISALPHA;
+    static const mask digit 	= _ISDIGIT;
+    static const mask xdigit 	= _ISXDIGIT;
+    static const mask space 	= _ISSPACE;
+    static const mask print 	= _ISPRINT;
+    static const mask graph 	= _ISGRAPH;
+    static const mask cntrl 	= _ISCNTRL;
+    static const mask punct 	= _ISPUNCT;
+    static const mask alnum 	= _ISALNUM;
   };
-
