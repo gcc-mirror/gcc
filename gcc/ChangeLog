@@ -1,3 +1,12 @@
+2002-05-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR opt/3995
+	* fold-const.c (sign_bit_p): New function.
+	(fold) [EQ_EXPR]: Use this to convert (A & C) == 0 into A >= 0 and
+        (A & C) != 0 into A < 0, when constant C is the sign bit of A's type.
+	Reapply fold when converting (A & C) == C into (A & C) != 0.
+	(fold_binary_op_with_conditional_arg): Fix typo in comment.
+
 2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (warn_multichar): New.

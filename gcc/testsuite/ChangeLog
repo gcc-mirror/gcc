@@ -1,3 +1,7 @@
+2002-05-06  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/20020506-1.c: New test case.
+
 2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/charconst-3.c: Correct tests accordingly.

@@ -86,6 +86,7 @@ static tree decode_field_reference PARAMS ((tree, HOST_WIDE_INT *,
 					    enum machine_mode *, int *,
 					    int *, tree *, tree *));
 static int all_ones_mask_p	PARAMS ((tree, int));
+static tree sign_bit_p		PARAMS ((tree, tree));
 static int simple_operand_p	PARAMS ((tree));
 static tree range_binop		PARAMS ((enum tree_code, tree, tree, int,
 					 tree, int));
@@ -2634,6 +2635,55 @@ all_ones_mask_p (mask, size)
 				     size_int (precision - size), 0));
 }
 
+/* Subroutine for fold: determine if VAL is the INTEGER_CONST that
+   represents the sign bit of EXP's type.  If EXP represents a sign
+   or zero extension, also test VAL against the unextended type.
+   The return value is the (sub)expression whose sign bit is VAL,
+   or NULL_TREE otherwise.  */
+
+static tree
+sign_bit_p (exp, val)
+     tree exp;
+     tree val;
+{
+  unsigned HOST_WIDE_INT lo;
+  HOST_WIDE_INT hi;
+  int width;
+  tree t;
+
+  /* Tree EXP must have a integral type.  */
+  t = TREE_TYPE (exp);
+  if (! INTEGRAL_TYPE_P (t))
+    return NULL_TREE;
+
+  /* Tree VAL must be an integer constant.  */
+  if (TREE_CODE (val) != INTEGER_CST
+      || TREE_CONSTANT_OVERFLOW (val))
+    return NULL_TREE;
+
+  width = TYPE_PRECISION (t);
+  if (width > HOST_BITS_PER_WIDE_INT)
+    {
+      hi = (unsigned HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT - 1);
+      lo = 0;
+    }
+  else
+    {
+      hi = 0;
+      lo = (unsigned HOST_WIDE_INT) 1 << (width - 1);
+    }
+
+  if (TREE_INT_CST_HIGH (val) == hi && TREE_INT_CST_LOW (val) == lo)
+    return exp;
+
+  /* Handle extension from a narrower type.  */
+  if (TREE_CODE (exp) == NOP_EXPR
+      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp, 0))) < width)
+    return sign_bit_p (TREE_OPERAND (exp, 0), val);
+
+  return NULL_TREE;
+}
+
 /* Subroutine for fold_truthop: determine if an operand is simple enough
    to be evaluated unconditionally.  */
 
@@ -4173,7 +4223,7 @@ count_cond (expr, lim)
   return MIN (lim, 1 + ctrue + cfalse);
 }
 
-/* Transform `a + (b ? x : y)' into `x ? (a + b) : (a + y)'.
+/* Transform `a + (b ? x : y)' into `b ? (a + x) : (a + y)'.
    Transform, `a + (x < y)' into `(x < y) ? (a + 1) : (a + 0)'.  Here
    CODE corresponds to the `+', COND to the `(b ? x : y)' or `(x < y)'
    expression, and ARG to `a'.  If COND_FIRST_P is non-zero, then the
@@ -6037,8 +6087,25 @@ fold (expr)
 	  && TREE_CODE (arg0) == BIT_AND_EXPR
 	  && integer_pow2p (TREE_OPERAND (arg0, 1))
 	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
-	return build (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
-		      arg0, integer_zero_node);
+	return fold (build (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
+			    arg0, integer_zero_node));
+
+      /* If we have (A & C) != 0 where C is the sign bit of A, convert
+	 this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg0) == BIT_AND_EXPR
+	  && integer_zerop (arg1))
+	{
+	  tree arg00 = sign_bit_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg0, 1));
+	  if (arg00 != NULL_TREE)
+	  {
+	    tree stype = (*lang_hooks.types.signed_type) (TREE_TYPE (arg00));
+	    return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, type,
+			        convert (stype, arg00),
+				convert (stype, integer_zero_node)));
+	  }
+	}
 
       /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0
 	 and similarly for >= into !=.  */
