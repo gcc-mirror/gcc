@@ -26,7 +26,6 @@
 
 (define_constants
   [(UNSPEC_ARG_HOME	0)
-   (UNSPEC_CTTZ		1)
    (UNSPEC_INSXH	2)
    (UNSPEC_MSKXH	3)
    (UNSPEC_CVTQL	4)
@@ -56,9 +55,7 @@
    (UNSPEC_AMASK	24)
    (UNSPEC_IMPLVER	25)
    (UNSPEC_PERR		26)
-   (UNSPEC_CTLZ		27)
-   (UNSPEC_CTPOP	28)
-   (UNSPEC_COPYSIGN     29)
+   (UNSPEC_COPYSIGN     27)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -1333,7 +1330,7 @@
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
-	(unspec:DI [(match_operand:DI 1 "register_operand" "")] UNSPEC_CTTZ))
+	(ctz:DI (match_operand:DI 1 "register_operand" "")))
    (set (match_dup 3)
 	(plus:DI (match_dup 2) (const_int 1)))
    (set (match_operand:DI 0 "register_operand" "")
@@ -1344,15 +1341,6 @@
   operands[2] = gen_reg_rtx (DImode);
   operands[3] = gen_reg_rtx (DImode);
 })
-
-(define_insn "*cttz"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_CTTZ))]
-  "TARGET_CIX"
-  "cttz %1,%0"
-  ; EV6 calls all mvi and cttz/ctlz/popc class imisc, so just
-  ; reuse the existing type name.
-  [(set_attr "type" "mvi")])
 
 (define_insn "clzdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -7715,29 +7703,6 @@
 				      (const_int 3)]))))]
   "TARGET_MAX"
   "unpkbw %r1,%0"
-  [(set_attr "type" "mvi")])
-
-(define_expand "builtin_cttz"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "")]
-		   UNSPEC_CTTZ))]
-  "TARGET_CIX"
-  "")
-
-(define_insn "builtin_ctlz"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")]
-		   UNSPEC_CTLZ))]
-  "TARGET_CIX"
-  "ctlz %1,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "builtin_ctpop"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")]
-		   UNSPEC_CTPOP))]
-  "TARGET_CIX"
-  "ctpop %1,%0"
   [(set_attr "type" "mvi")])
 
 ;; The call patterns are at the end of the file because their
