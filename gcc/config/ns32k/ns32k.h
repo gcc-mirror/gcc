@@ -1314,14 +1314,8 @@ __transfer_from_trampoline ()		\
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
-#ifndef COLLECT
-#define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
-#else
-#define ASM_OUTPUT_LABEL(STREAM,NAME)					\
-do {									\
-  fprintf (STREAM, "%s:\n", NAME);					\
-} while (0)
+#ifdef COLLECT
+#define ASM_OUTPUT_LABEL(STREAM,NAME) fprintf ((STREAM), "%s:\n", (NAME))
 #endif
 
 /* This is how to output a command to make the user-level label named NAME

@@ -1174,11 +1174,6 @@ extern const char *arc_text_section, *arc_data_section, *arc_rodata_section;
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF ""
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-#define ASM_OUTPUT_LABEL(FILE, NAME) \
-do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 #define ASM_GLOBALIZE_LABEL(FILE, NAME) \

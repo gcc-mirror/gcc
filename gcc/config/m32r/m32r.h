@@ -1660,18 +1660,6 @@ sbss_section ()								\
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF ""
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-/* On the M32R we need to ensure the next instruction starts on a 32 bit
-   boundary [the previous insn must either be 2 16 bit insns or 1 32 bit].  */
-#define ASM_OUTPUT_LABEL(FILE, NAME)	\
-  do					\
-    {					\
-      assemble_name (FILE, NAME);	\
-      fputs (":\n", FILE);		\
-    }					\
-  while (0)
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)	\

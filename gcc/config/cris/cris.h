@@ -1574,14 +1574,6 @@ call_ ## FUNC (void)						\
 
 /* Node: Label Output */
 
-#define ASM_OUTPUT_LABEL(FILE, NAME)		\
-  do						\
-    {						\
-      assemble_name (FILE, NAME);		\
-      fputs (":\n", FILE);			\
-    }						\
-  while (0)
-
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)		\
   do						\
     {						\

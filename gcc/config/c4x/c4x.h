@@ -1704,9 +1704,6 @@ fini_section ()							\
 
 #define NO_DOT_IN_LABEL		/* Only required for TI format.  */
 
-#define ASM_OUTPUT_LABEL(FILE, NAME)	\
-do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0);
-
 #define ASM_GLOBALIZE_LABEL(FILE, NAME) \
   do {                                  \
     fprintf (FILE, "\t.global\t");	\

@@ -2960,12 +2960,6 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
     ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4\
    : DW_EH_PE_absptr)
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-
-#define ASM_OUTPUT_LABEL(FILE, NAME)	\
-  (assemble_name ((FILE), (NAME)), fputs (":\n", (FILE)))
-
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
