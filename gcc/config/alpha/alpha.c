@@ -7622,15 +7622,20 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
       else if ((int) align < len)
 	{
 	  unsigned int new_log_align = len > 8 ? 4 : 3;
-	  rtx where;
+	  rtx prev, where;
 
-	  where = prev_nonnote_insn (i);
+	  where = prev = prev_nonnote_insn (i);
 	  if (!where || GET_CODE (where) != CODE_LABEL)
 	    where = i;
 
-	  emit_insn_before (gen_realign (GEN_INT (new_log_align)), where);
-	  align = 1 << new_log_align;
-	  ofs = 0;
+	  /* Can't realign between a call and its gp reload.  */
+	  if (! (TARGET_EXPLICIT_RELOCS
+		 && prev && GET_CODE (prev) == CALL_INSN))
+	    {
+	      emit_insn_before (gen_realign (GEN_INT (new_log_align)), where);
+	      align = 1 << new_log_align;
+	      ofs = 0;
+	    }
 	}
 
       /* If the group won't fit in the same INT16 as the previous,
@@ -7644,8 +7649,8 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 	  int nop_count = (align - ofs) / 4;
 	  rtx where;
 
-	  /* Insert nops before labels and branches to truely merge the
-	     execution of the nops with the previous instruction group.  */
+	  /* Insert nops before labels, branches, and calls to truely merge
+	     the execution of the nops with the previous instruction group.  */
 	  where = prev_nonnote_insn (i);
 	  if (where)
 	    {
@@ -7655,7 +7660,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 		  if (where2 && GET_CODE (where2) == JUMP_INSN)
 		    where = where2;
 		}
-	      else if (GET_CODE (where) != JUMP_INSN)
+	      else if (GET_CODE (where) == INSN)
 		where = i;
 	    }
 	  else
