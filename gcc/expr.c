@@ -1833,7 +1833,7 @@ use_regs (call_fusage, regno, nregs)
 void
 clear_storage (object, size)
      rtx object;
-     int size;
+     rtx size;
 {
   if (GET_MODE (object) == BLKmode)
     {
@@ -1841,12 +1841,16 @@ clear_storage (object, size)
       emit_library_call (memset_libfunc, 0,
 			 VOIDmode, 3,
 			 XEXP (object, 0), Pmode, const0_rtx, ptr_mode,
-			 GEN_INT (size), ptr_mode);
+			 convert_to_mode (TYPE_MODE (sizetype),
+					  size, TREE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 #else
       emit_library_call (bzero_libfunc, 0,
 			 VOIDmode, 2,
-			 XEXP (object, 0), Pmode,
-			 GEN_INT (size), ptr_mode);
+			 XEXP (object, 0), Pmode,	
+			 convert_to_mode (TYPE_MODE (sizetype),
+					  size, TREE_UNSIGNED (sizetype)),
+			 TYPE_MODE (sizetype));
 #endif
     }
   else
@@ -3002,7 +3006,7 @@ store_constructor (exp, target)
 	 clear the whole structure first.  */
       else if (list_length (CONSTRUCTOR_ELTS (exp))
 	       != list_length (TYPE_FIELDS (type)))
-	clear_storage (target, int_size_in_bytes (type));
+	clear_storage (target, expr_size (exp));
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
@@ -3088,7 +3092,7 @@ store_constructor (exp, target)
 
       if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1
 	  || (GET_CODE (target) == REG && TREE_STATIC (exp)))
-	clear_storage (target, int_size_in_bytes (type));
+	clear_storage (target, expr_size (exp));
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
@@ -3170,12 +3174,12 @@ store_constructor (exp, target)
       /* Check for all zeros. */
       if (CONSTRUCTOR_ELTS (exp) == NULL_TREE)
 	{
-	  clear_storage (target, nbytes);
+	  clear_storage (target, expr_size (exp));
 	  return;
 	}
 
       if (nbytes < 0)
-	abort();
+	abort ();
 
       domain_min = convert (sizetype, TYPE_MIN_VALUE (domain));
       domain_max = convert (sizetype, TYPE_MAX_VALUE (domain));
@@ -3292,7 +3296,7 @@ store_constructor (exp, target)
 		
 	      if (need_to_clear_first
 		  && endb - startb != nbytes * BITS_PER_UNIT)
-		clear_storage (target, nbytes);
+		clear_storage (target, expr_size (exp));
 	      need_to_clear_first = 0;
 	      emit_library_call (memset_libfunc, 0,
 				 VOIDmode, 3,
@@ -3307,7 +3311,7 @@ store_constructor (exp, target)
 	    {
 	      if (need_to_clear_first)
 		{
-		  clear_storage (target, nbytes);
+		  clear_storage (target, expr_size (exp));
 		  need_to_clear_first = 0;
 		}
 	      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__setbits"),
@@ -3615,9 +3619,10 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  if (! integer_zerop (low_bound))
 	    index = fold (build (MINUS_EXPR, index_type, index, low_bound));
 
-	  if (TYPE_PRECISION (index_type) != POINTER_SIZE)
+	  if (TYPE_PRECISION (index_type) != TYPE_PRECISION (sizetype))
 	    {
-	      index = convert (type_for_size (POINTER_SIZE, 0), index);
+	      index = convert (type_for_size (TYPE_PRECISION (sizetype), 0),
+			       index);
 	      index_type = TREE_TYPE (index);
 	    }
 
@@ -4633,10 +4638,11 @@ expand_expr (exp, target, tmode, modifier)
 	    tree elt;
 	    tree size = size_in_bytes (type);
 
-	    /* Convert the integer argument to a type the same size as a
-	       pointer so the multiply won't overflow spuriously.  */
-	    if (TYPE_PRECISION (index_type) != POINTER_SIZE)
-	      index = convert (type_for_size (POINTER_SIZE, 0), index);
+	    /* Convert the integer argument to a type the same size as sizetype
+	       so the multiply won't overflow spuriously.  */
+	    if (TYPE_PRECISION (index_type) != TYPE_PRECISION (sizetype))
+	      index = convert (type_for_size (TYPE_PRECISION (sizetype), 0),
+			       index);
 
 	    if (TREE_CODE (size) != INTEGER_CST
 		&& contains_placeholder_p (size))
