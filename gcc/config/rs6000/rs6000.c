@@ -686,7 +686,7 @@ reg_or_logical_cint_operand (op, mode)
 	}
 
       return ((INTVAL (op) & GET_MODE_MASK (mode)
-	       & (~ (unsigned HOST_WIDE_INT) 0xffffffffu)) == 0);
+	       & (~ (unsigned HOST_WIDE_INT) 0xffffffff)) == 0);
     }
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
@@ -741,13 +741,13 @@ num_insns_constant_wide (value)
 #if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_POWERPC64)
     {
-      unsigned HOST_WIDE_INT low  = value & 0xffffffffu;
+      unsigned HOST_WIDE_INT low  = value & 0xffffffff;
       HOST_WIDE_INT high = value >> 32;
 
-      if (high == 0 && (low & 0x80000000u) == 0)
+      if (high == 0 && (low & 0x80000000) == 0)
 	return 2;
 
-      else if (high == -1 && (low & 0x80000000u) != 0)
+      else if (high == -1 && (low & 0x80000000) != 0)
 	return 2;
 
       else if (! low)
@@ -808,10 +808,10 @@ num_insns_constant (op, mode)
 
       else
 	{
-	  if (high == 0 && (low & 0x80000000u) == 0)
+	  if (high == 0 && (low & 0x80000000) == 0)
 	    return num_insns_constant_wide (low);
 
-	  else if (high == -1 && (low & 0x80000000u) != 0)
+	  else if (high == -1 && (low & 0x80000000) != 0)
 	    return num_insns_constant_wide (low);
 
 	  else if (mask64_operand (op, mode))
@@ -1003,7 +1003,7 @@ logical_operand (op, mode)
 
   return (oph == 0
 	  && ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
-	      || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000u) == 0));
+	      || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0));
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -3899,15 +3899,15 @@ print_operand (file, x, code)
       /* If the high bit is set and the low bit is not, the value is zero.
 	 If the high bit is zero, the value is the first 1 bit we find from
 	 the left.  */
-      if ((val & 0x80000000u) && ((val & 1) == 0))
+      if ((val & 0x80000000) && ((val & 1) == 0))
 	{
 	  putc ('0', file);
 	  return;
 	}
-      else if ((val & 0x80000000u) == 0)
+      else if ((val & 0x80000000) == 0)
 	{
 	  for (i = 1; i < 32; i++)
-	    if ((val <<= 1) & 0x80000000u)
+	    if ((val <<= 1) & 0x80000000)
 	      break;
 	  fprintf (file, "%d", i);
 	  return;
@@ -3934,7 +3934,7 @@ print_operand (file, x, code)
       /* If the low bit is set and the high bit is not, the value is 31.
 	 If the low bit is zero, the value is the first 1 bit we find from
 	 the right.  */
-      if ((val & 1) && ((val & 0x80000000u) == 0))
+      if ((val & 1) && ((val & 0x80000000) == 0))
 	{
 	  fputs ("31", file);
 	  return;
@@ -3954,7 +3954,7 @@ print_operand (file, x, code)
       /* Otherwise, look for the first 0 bit from the left.  The result is its
 	 number minus 1. We know the high-order bit is one.  */
       for (i = 0; i < 32; i++)
-	if (((val <<= 1) & 0x80000000u) == 0)
+	if (((val <<= 1) & 0x80000000) == 0)
 	  break;
 
       fprintf (file, "%d", i);
@@ -6660,7 +6660,7 @@ output_toc (file, x, labelno, mode)
 	    fprintf (file, "\t.llong 0x%lx%08lx\n", k[0], k[1]);
 	  else
 	    fprintf (file, "\t.tc FD_%lx_%lx[TC],0x%lx%08lx\n",
-		     k[0], k[1], k[0] & 0xffffffffu, k[1] & 0xffffffffu);
+		     k[0], k[1], k[0] & 0xffffffff, k[1] & 0xffffffff);
 	  return;
 	}
       else
@@ -6713,11 +6713,11 @@ output_toc (file, x, labelno, mode)
 #if HOST_BITS_PER_WIDE_INT == 32
 	{
 	  low = INTVAL (x);
-	  high = (low & 0x80000000u) ? ~0 : 0;
+	  high = (low & 0x80000000) ? ~0 : 0;
 	}
 #else
 	{
-          low = INTVAL (x) & 0xffffffffu;
+          low = INTVAL (x) & 0xffffffff;
           high = (HOST_WIDE_INT) INTVAL (x) >> 32;
 	}
 #endif

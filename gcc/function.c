@@ -1481,7 +1481,6 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
   struct function *func = function ? function : cfun;
   rtx new = 0;
   unsigned int regno = original_regno;
-  int unsigned_p;
 
   if (regno == 0)
     regno = REGNO (reg);

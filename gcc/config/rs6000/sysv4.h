@@ -610,7 +610,6 @@ extern int rs6000_pic_labelno;
 	&& uses_TOC())							\
       {									\
 	char buf[256];							\
-	const char *buf_ptr;						\
 									\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "LCL", rs6000_pic_labelno);	\
 									\

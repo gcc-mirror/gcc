@@ -1061,7 +1061,7 @@ enum reg_class
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
    ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
-   : (C) == 'J' ? ((VALUE) & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0 \
+   : (C) == 'J' ? ((VALUE) & (~ (unsigned HOST_WIDE_INT) 0xffff0000)) == 0 \
    : (C) == 'K' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff)) == 0		\
    : (C) == 'L' ? (((VALUE) & 0xffff) == 0				\
 		   && ((VALUE) >> 31 == -1 || (VALUE) >> 31 == 0))	\
@@ -1960,7 +1960,7 @@ do {									     \
       HOST_WIDE_INT val = INTVAL (XEXP (X, 1));				     \
       HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;		     \
       HOST_WIDE_INT high						     \
-        = (((val - low) & 0xffffffffu) ^ 0x80000000u) - 0x80000000u;	     \
+        = (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;	     \
 									     \
       /* Check for 32-bit overflow.  */					     \
       if (high + low != val)						     \
@@ -2591,7 +2591,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
     long t[2];						\
     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
     fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",	\
-	     t[0] & 0xffffffffu, t[1] & 0xffffffffu);	\
+	     t[0] & 0xffffffff, t[1] & 0xffffffff);	\
   }
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -2600,7 +2600,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
   {							\
     long t;						\
     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffffu);	\
+    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
   }
 
 /* This is how to output an assembler line defining an `int' constant.  */
