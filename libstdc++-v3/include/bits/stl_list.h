@@ -888,7 +888,7 @@ namespace _GLIBCXX_STD
        */
       void
       swap(list& __x)
-      { _List_node_base::swap(this->_M_impl._M_node,__x._M_impl._M_node); }
+      { _List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node); }
 
       /**
        *  Erases all the elements.  Note that this function only erases
@@ -1115,7 +1115,7 @@ namespace _GLIBCXX_STD
 			   _InputIterator __first, _InputIterator __last,
 			   __false_type)
         {
-	  for ( ; __first != __last; ++__first)
+	  for (; __first != __last; ++__first)
 	    _M_insert(__pos, *__first);
 	}
 
@@ -1124,7 +1124,7 @@ namespace _GLIBCXX_STD
       void
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x)
       {
-	for ( ; __n > 0; --__n)
+	for (; __n > 0; --__n)
 	  _M_insert(__pos, __x);
       }
 
@@ -1132,7 +1132,7 @@ namespace _GLIBCXX_STD
       // Moves the elements from [first,last) before position.
       void
       _M_transfer(iterator __position, iterator __first, iterator __last)
-      { __position._M_node->transfer(__first._M_node,__last._M_node); }
+      { __position._M_node->transfer(__first._M_node, __last._M_node); }
 
       // Inserts new element at position given and with value given.
       void
@@ -1165,9 +1165,9 @@ namespace _GLIBCXX_STD
   */
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator==(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator==(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     {
-      typedef typename list<_Tp,_Alloc>::const_iterator const_iterator;
+      typedef typename list<_Tp, _Alloc>::const_iterator const_iterator;
       const_iterator __end1 = __x.end();
       const_iterator __end2 = __y.end();
 
@@ -1194,32 +1194,32 @@ namespace _GLIBCXX_STD
   */
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator<(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return std::lexicographical_compare(__x.begin(), __x.end(),
 					  __y.begin(), __y.end()); }
 
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator!=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator!=(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator>(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator<=(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>=(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
+    operator>=(const list<_Tp, _Alloc>& __x, const list<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::list::swap().
