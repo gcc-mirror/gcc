@@ -124,11 +124,13 @@ struct move_by_pieces
   int autinc_to;
   int explicit_inc_to;
   int to_struct;
+  int to_readonly;
   rtx from;
   rtx from_addr;
   int autinc_from;
   int explicit_inc_from;
   int from_struct;
+  int from_readonly;
   int len;
   int offset;
   int reverse;
@@ -1453,6 +1455,8 @@ move_by_pieces (to, from, len, align)
 
   data.to_struct = MEM_IN_STRUCT_P (to);
   data.from_struct = MEM_IN_STRUCT_P (from);
+  data.to_readonly = RTX_UNCHANGING_P (to);
+  data.from_readonly = RTX_UNCHANGING_P (from);
 
   /* If copying requires more than two move insns,
      copy addresses to registers (to make displacements shorter)
@@ -1595,6 +1599,7 @@ move_by_pieces_1 (genfun, mode, data)
 					 plus_constant (data->to_addr,
 							data->offset))));
       MEM_IN_STRUCT_P (to1) = data->to_struct;
+      RTX_UNCHANGING_P (to1) = data->to_readonly;
 
       from1
 	= (data->autinc_from
@@ -1603,6 +1608,7 @@ move_by_pieces_1 (genfun, mode, data)
 				       plus_constant (data->from_addr,
 						      data->offset))));
       MEM_IN_STRUCT_P (from1) = data->from_struct;
+      RTX_UNCHANGING_P (from1) = data->from_readonly;
 
 #ifdef HAVE_PRE_DECREMENT
       if (data->explicit_inc_to < 0)
