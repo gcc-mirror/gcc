@@ -21,10 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Sometimes the directive `riscos' is checked.  This does not imply that this
-   tm file can be used unchanged to build a GCC for RISC OS.
-   (Since in fact, it can't.)  */
-
 extern void output_func_prologue ();
 extern void output_func_epilogue ();
 extern char *output_add_immediate ();
@@ -56,7 +52,16 @@ extern int frame_pointer_needed;
 #endif
 
 #ifndef CPP_SPEC
-#define CPP_SPEC "%{m6:-D__arm6__}"
+#define CPP_SPEC "%{m6:-D__arm6__} \
+%{mcpu-*:-D__%*} \
+%{mcpu=*:-D__%*} \
+%{mapcs-32:-D__APCS_32__ -U__APCS_26__} \
+%{mapcs-26:-D__APCS_26__ -U__APCS_32__} \
+%{!mapcs-32: %{!mapcs-26:-D__APCS_26__}} \
+%{msoft-float:-D__SOFTFP__} \
+%{mhard-float:-U__SOFTFP__} \
+%{!mhard-float: %{!msoft-float:-U__SOFTFP__}} \
+"
 #endif
 
 /* Run-time Target Specification.  */
@@ -65,40 +70,81 @@ extern int frame_pointer_needed;
   fputs (" (ARM/generic)", stderr);
 #endif
 
-/* Run-time compilation parameters selecting different hardware subsets.
-   On the ARM, misuse it in a different way.  */
+/* Run-time compilation parameters selecting different hardware subsets.  */
 extern int target_flags;
+
+/* These two are used by TARGET_OPTIONS, they are parsed in OVERRIDE_OPTIONS */
+extern char *target_cpu_name;
+extern char *target_fpe_name;
 
 /* Nonzero if the function prologue (and epilogue) should obey
    the ARM Procedure Call Standard.  */
-#define TARGET_APCS	(target_flags & 1)
+#define ARM_FLAG_APCS_FRAME	(0x0001)
 
 /* Nonzero if the function prologue should output the function name to enable
    the post mortem debugger to print a backtrace (very useful on RISCOS,
-   unused on RISCiX).  Specifying this flag also enables -mapcs.
+   unused on RISCiX).  Specifying this flag also enables
+   -fno-omit-frame-pointer.
    XXX Must still be implemented in the prologue.  */
-#define TARGET_POKE_FUNCTION_NAME	(target_flags & 2)
+#define ARM_FLAG_POKE         (0x0002)
 
 /* Nonzero if floating point instructions are emulated by the FPE, in which
    case instruction scheduling becomes very uninteresting.  */
-#define TARGET_FPE	(target_flags & 4)
+#define ARM_FLAG_FPE          (0x0004)
 
 /* Nonzero if destined for an ARM6xx.  Takes out bits that assume restoration
    of condition flags when returning from a branch & link (ie. a function) */
-#define TARGET_6        (target_flags & 8)
+/* ********* DEPRECATED ******** */
+#define ARM_FLAG_ARM6         (0x0008)
 
-/* Leave some bits for new processor variants */
+/* ********* DEPRECATED ******** */
+#define ARM_FLAG_ARM3         (0x0010)
 
-/* Nonzero if shorts must be loaded byte at a time.  This is not necessary
-   for the arm processor chip, but it is needed for some MMU chips.  */
-#define TARGET_SHORT_BY_BYTES	(target_flags & 0x200)
+/* Nonzero if destined for a processor in 32-bit program mode.  Takes out bit
+   that assume restoration of the condition flags when returning from a
+   branch and link (ie a function).  */
+#define ARM_FLAG_APCS_32      (0x0020)
 
-/* Nonzero if GCC should use a floating point library.
-   GCC will assume the fp regs don't exist and will not emit any fp insns.
-   Note that this is different than fp emulation which still uses fp regs
-   and insns - the kernel catches the trap and performs the operation.  */
-#define TARGET_SOFT_FLOAT	(target_flags & 0x400)
-#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
+/* Nonzero if stack checking should be performed on entry to each function
+   which allocates temporary variables on the stack.  */
+#define ARM_FLAG_APCS_STACK   (0x0040)
+
+/* Nonzero if floating point parameters should be passed to functions in
+   floating point registers.  */
+#define ARM_FLAG_APCS_FLOAT   (0x0080)
+
+/* Nonzero if re-entrant, position independent code should be generated.
+   This is equivalent to -fpic.  */
+#define ARM_FLAG_APCS_REENT   (0x0100)
+
+/* Nonzero if the MMU will trap unaligned word accesses, so shorts must be
+   loaded byte-at-a-time.  */
+#define ARM_FLAG_SHORT_BYTE   (0x0200)
+
+/* Nonzero if all floating point instructions are missing (and there is no
+   emulator either).  Generate function calls for all ops in this case.  */
+#define ARM_FLAG_SOFT_FLOAT   (0x0400)
+
+/* Nonzero if we should compile with BYTES_BIG_ENDIAN set to 1.  */
+#define ARM_FLAG_BIG_END      (0x0800)
+
+/* Nonzero if we should compile for Thumb interworking.  */
+#define ARM_FLAG_THUMB                (0x1000)
+
+#define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
+#define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
+#define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
+#define TARGET_6			(target_flags & ARM_FLAG_ARM6)
+#define TARGET_3			(target_flags & ARM_FLAG_ARM3)
+#define TARGET_APCS_32			(target_flags & ARM_FLAG_APCS_32)
+#define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
+#define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
+#define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
+#define TARGET_SHORT_BY_BYTES		(target_flags & ARM_FLAG_SHORT_BYTE)
+#define TARGET_SOFT_FLOAT		(target_flags & ARM_FLAG_SOFT_FLOAT)
+#define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
+#define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
+#define TARGET_THUMB_INTERWORK		(target_flags & ARM_FLAG_THUMB)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -108,31 +154,53 @@ extern int target_flags;
 
 #define TARGET_SWITCHES  				\
 {                         				\
-  {"apcs",		 	 1},			\
-  {"poke-function-name", 	 2},			\
-  {"fpe",		 	 4},			\
-  {"6",				 8},			\
-  {"2",				-8},			\
-  {"3",				-8},			\
-  {"short-load-bytes",		 (0x200)},		\
-  {"no-short-load-bytes",	-(0x200)},		\
-  {"short-load-words", 		-(0x200)},		\
-  {"no-short-load-words",	 (0x200)},		\
-  {"soft-float",		 (0x400)},		\
-  {"hard-float",		-(0x400)},		\
+  {"apcs",			ARM_FLAG_APCS_FRAME},	\
+  {"apcs-frame",		ARM_FLAG_APCS_FRAME},	\
+  {"no-apcs-frame",	       -ARM_FLAG_APCS_FRAME},	\
+  {"poke-function-name",	ARM_FLAG_POKE},		\
+  {"fpe",			ARM_FLAG_FPE},		\
+  {"6",				ARM_FLAG_ARM6},		\
+  {"2",				ARM_FLAG_ARM3},		\
+  {"3",				ARM_FLAG_ARM3},		\
+  {"apcs-32",			ARM_FLAG_APCS_32},	\
+  {"apcs-26",		       -ARM_FLAG_APCS_32},	\
+  {"apcs-stack-check",		ARM_FLAG_APCS_STACK},	\
+  {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK},	\
+  {"apcs-float",		ARM_FLAG_APCS_FLOAT},	\
+  {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT},	\
+  {"apcs-reentrant",		ARM_FLAG_APCS_REENT},	\
+  {"no-apcs-rentrant",	       -ARM_FLAG_APCS_REENT},	\
+  {"short-load-bytes",		ARM_FLAG_SHORT_BYTE},	\
+  {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE},	\
+  {"short-load-words",	       -ARM_FLAG_SHORT_BYTE},	\
+  {"no-short-load-words",	ARM_FLAG_SHORT_BYTE},	\
+  {"soft-float",		ARM_FLAG_SOFT_FLOAT},	\
+  {"hard-float",	       -ARM_FLAG_SOFT_FLOAT},	\
+  {"big-endian",		ARM_FLAG_BIG_END},	\
+  {"be",			ARM_FLAG_BIG_END},	\
+  {"little-endian",	       -ARM_FLAG_BIG_END},	\
+  {"le",		       -ARM_FLAG_BIG_END},	\
+  {"thumb-interwork",		ARM_FLAG_THUMB},	\
+  {"no-thumb-interwork",       -ARM_FLAG_THUMB},	\
   SUBTARGET_SWITCHES					\
-  {"",   		 	 TARGET_DEFAULT }	\
+  {"",				TARGET_DEFAULT }	\
 }
 
-/* Which processor we are running on.  Currently this is only used to
-   get the condition code clobbering attribute right when we are running on
-   an arm 6 */
+#define TARGET_OPTIONS				\
+{						\
+  {"cpu-", &target_cpu_name},			\
+  {"cpu=", &target_cpu_name},			\
+  {"fpe-", &target_fpe_name},			\
+  {"fpe=", &target_fpe_name}			\
+}
 
+/* Which processor we are running on.  */
 enum processor_type 
 {
   PROCESSOR_ARM2,
   PROCESSOR_ARM3,
-  PROCESSOR_ARM6
+  PROCESSOR_ARM6,
+  PROCESSOR_ARM7
 };
 
 /* Recast the cpu class to be the cpu attribute. */
@@ -142,11 +210,24 @@ enum processor_type
 
 extern enum processor_type arm_cpu;
 
-/* What sort of floating point unit do we have? Hardware or software.  */
+enum prog_mode_type
+{
+  prog_mode26,
+  prog_mode32
+};
+
+/* Recast the program mode class to be the prog_mode attribute */
+#define arm_prog_mode ((enum attr_prog_mode) arm_prgmode)
+
+extern enum prog_mode_type arm_prgmode;
+
+/* What sort of floating point unit do we have? Hardware or software.
+   If software, is it issue 2 or issue 3?  */
 enum floating_point_type
 {
   FP_HARD,
-  FP_SOFT
+  FP_SOFT2,
+  FP_SOFT3
 };
 
 /* Recast the floating point class to be the floating point attribute.  */
@@ -154,29 +235,31 @@ enum floating_point_type
 
 extern enum floating_point_type arm_fpu;
 
+/* Nonzero if the processor has a fast multiply insn, and one that does
+   a 64-bit multiply of two 32-bit values.  */
+extern int arm_fast_multiply;
+
+/* Nonzero if this chip support the ARM Architecture 4 extensions */
+extern int arm_arch4;
+
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  0
 #endif
 
+/* A particular target can define this to a particular cpu name, eg "arm710dmi"
+   and the code generated should then be appropriate for that processor.  */
+#ifndef ARM_CPU_NAME
+#define ARM_CPU_NAME NULL
+#endif
+
+/* The frame pointer register used in gcc has nothing to do with debugging;
+   that is controlled by the APCS-FRAME option.  */
+/* Not fully implemented yet */
+/* #define CAN_DEBUG_WITHOUT_FP 1 */
+
 #define TARGET_MEM_FUNCTIONS 1
 
-/* OVERRIDE_OPTIONS takes care of the following:
-   - if -mpoke-function-name, then -mapcs.
-   - if doing debugging, then -mapcs; if RISCOS, then -mpoke-function-name.
-   - if floating point is done by emulation, forget about instruction
-     scheduling.  Note that this only saves compilation time; it doesn't
-     matter for the final code.  */
-
-#define OVERRIDE_OPTIONS  \
-{								\
-  if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)	\
-    warning ("-g without a frame pointer may not give sensible debugging");\
-  if (TARGET_POKE_FUNCTION_NAME)				\
-    target_flags |= 1;						\
-  if (TARGET_FPE)						\
-    flag_schedule_insns = flag_schedule_insns_after_reload = 0;	\
-  arm_cpu = TARGET_6 ? PROCESSOR_ARM6: PROCESSOR_ARM2;		\
-}
+#define OVERRIDE_OPTIONS  arm_override_options ()
 
 /* Target machine storage Layout.  */
 
@@ -230,13 +313,15 @@ extern enum floating_point_type arm_fpu;
    Most ARM processors are run in little endian mode, so that is the default.
    If you want to have it run-time selectable, change the definition in a
    cover file to be TARGET_BIG_ENDIAN.  */
-#define BYTES_BIG_ENDIAN  0
+#define BYTES_BIG_ENDIAN  (TARGET_BIG_END != 0)
 
 /* Define this if most significant word of a multiword number is the lowest
-   numbered.  */
+   numbered.
+   This is always false, even when in big-endian mode.  */
 #define WORDS_BIG_ENDIAN  0
 
-/* Define this if most significant word of doubles is the lowest numbered */
+/* Define this if most significant word of doubles is the lowest numbered.
+   This is always true, even when in little-endian mode.  */
 #define FLOAT_WORDS_BIG_ENDIAN 1
 
 /* Number of bits in an addressable storage unit */
@@ -272,9 +357,6 @@ extern enum floating_point_type arm_fpu;
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* Define number of bits in most basic integer type.
-   (If undefined, default is BITS_PER_WORD).  */
-/* #define INT_TYPE_SIZE */
 
 /* Standard register usage.  */
 
@@ -564,11 +646,9 @@ enum reg_class
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X)	\
-  (((MODE) == DFmode && (CLASS) == GENERAL_REGS		\
-    && true_regnum (X) == -1 && TARGET_HARD_FLOAT)	\
-   ? GENERAL_REGS					\
-   : ((MODE) == HImode && true_regnum (X) == -1) ? GENERAL_REGS : NO_REGS)
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X)		\
+  (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1)	\
+   ? GENERAL_REGS : NO_REGS)
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch. */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)			\
@@ -644,6 +724,18 @@ enum reg_class
    On the ARM, only r0 and f0 can return results.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
   ((REGNO) == 0 || ((REGNO) == 16) && TARGET_HARD_FLOAT)
+
+/* How large values are returned */
+/* A C expression which can inhibit the returning of certain function values
+   in registers, based on the type of value. */
+#define RETURN_IN_MEMORY(TYPE) 						\
+  (TYPE_MODE ((TYPE)) == BLKmode ||					\
+   (AGGREGATE_TYPE_P ((TYPE)) && arm_return_in_memory ((TYPE))))
+
+/* Define DEFAULT_PCC_STRUCT_RETURN to 1 if all structure and union return
+   values must be in memory.  On the ARM, they need only do so if larger
+   than a word, or if they contain elements offset from zero in the struct. */
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -831,7 +923,8 @@ enum reg_class
 	   ldr 		r8, [pc, #0]
 	   ldr		pc, [pc]
 	   .word	static chain value
-	   .word	function's address  */
+	   .word	function's address
+   ??? FIXME: When the trampoline returns, r8 will be clobbered.  */
 #define TRAMPOLINE_TEMPLATE(FILE)				\
 {								\
   fprintf ((FILE), "\tldr\t%sr8, [%spc, #0]\n",			\
@@ -892,18 +985,21 @@ enum reg_class
 
 /* Recognize any constant value that is a valid address.  */
 /* XXX We can address any constant, eventually...  */
-#if 0
-#define CONSTANT_ADDRESS_P(X)	\
-    ( GET_CODE(X) == LABEL_REF	\
-  ||  GET_CODE(X) == SYMBOL_REF \
-  ||  GET_CODE(X) == CONST_INT	\
-  ||  GET_CODE(X) == CONST )
-#endif
+
+#ifdef AOF_ASSEMBLER
+
+#define CONSTANT_ADDRESS_P(X)		\
+  (GET_CODE (X) == SYMBOL_REF		\
+   && CONSTANT_POOL_ADDRESS_P (X))
+
+#else
 
 #define CONSTANT_ADDRESS_P(X)  			\
   (GET_CODE (X) == SYMBOL_REF 			\
    && (CONSTANT_POOL_ADDRESS_P (X)		\
        || (optimize > 0 && SYMBOL_REF_FLAG (X))))
+
+#endif /* AOF_ASSEMBLER */
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
@@ -911,19 +1007,16 @@ enum reg_class
    On the ARM, allow any integer (invalid ones are removed later by insn
    patterns), nice doubles and symbol_refs which refer to the function's
    constant pool XXX.  */
-#define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_CODE (X) == CONST_INT					\
-   || (GET_CODE (X) == CONST_DOUBLE				\
-       && (const_double_rtx_ok_for_fpu (X)			\
-	   || neg_const_double_rtx_ok_for_fpu (X)))		\
-   || CONSTANT_ADDRESS_P (X))
+#define LEGITIMATE_CONSTANT_P(X)	(! label_mentioned_p (X))
 
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
    faster than indirecting via memory.  Don't do this when not optimizing,
    since we won't be calculating al of the offsets necessary to do this
    simplification.  */
-
+/* This doesn't work with AOF syntax, since the string table may be in
+   a different AREA.  */
+#ifndef AOF_ASSEMBLER
 #define ENCODE_SECTION_INFO(decl)					\
 {									\
   if (optimize > 0 && TREE_CONSTANT (decl)				\
@@ -934,7 +1027,7 @@ enum reg_class
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
     }									\
 }
-
+#endif
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -995,7 +1088,7 @@ do									\
   HOST_WIDE_INT range;							\
   enum rtx_code code = GET_CODE (INDEX);				\
 									\
-  if (GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
+  if (TARGET_HARD_FLOAT && GET_MODE_CLASS (MODE) == MODE_FLOAT)		\
     {									\
       if (code == CONST_INT && INTVAL (INDEX) < 1024			\
 	  && INTVAL (INDEX) > -1024					\
@@ -1006,7 +1099,8 @@ do									\
     {									\
       if (INDEX_REGISTER_RTX_P (INDEX) && GET_MODE_SIZE (MODE) <= 4)	\
 	goto LABEL;							\
-      if (GET_MODE_SIZE (MODE) <= 4  && code == MULT)			\
+      if (GET_MODE_SIZE (MODE) <= 4  && code == MULT			\
+	  && (! arm_arch4 || (MODE) != HImode))				\
 	{								\
 	  rtx xiop0 = XEXP (INDEX, 0);					\
 	  rtx xiop1 = XEXP (INDEX, 1);					\
@@ -1019,7 +1113,8 @@ do									\
 	}								\
       if (GET_MODE_SIZE (MODE) <= 4					\
 	  && (code == LSHIFTRT || code == ASHIFTRT			\
-	      || code == ASHIFT || code == ROTATERT))			\
+	      || code == ASHIFT || code == ROTATERT)			\
+	  && (! arm_arch4 || (MODE) != HImode))				\
 	{								\
 	  rtx op = XEXP (INDEX, 1);					\
 	  if (INDEX_REGISTER_RTX_P (XEXP (INDEX, 0))			\
@@ -1027,7 +1122,7 @@ do									\
 	      && INTVAL (op) <= 31)					\
 	    goto LABEL;							\
         }								\
-      range = (MODE) == HImode ? 4095 : 4096;				\
+      range = (MODE) == HImode ? (arm_arch4 ? 256 : 4095) : 4096;	\
       if (code == CONST_INT && INTVAL (INDEX) < range			\
 	  && INTVAL (INDEX) > -range)  	      				\
         goto LABEL;							\
@@ -1040,7 +1135,7 @@ do									\
    INDEX+REG, REG-INDEX, and non floating SYMBOL_REF to the constant pool.
    Allow REG-only and AUTINC-REG if handling TImode or HImode.  Other symbol
    refs must be forced though a static cell to ensure addressability.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)  \
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)  			\
 {									\
   if (BASE_REGISTER_RTX_P (X))						\
     goto LABEL;								\
@@ -1048,8 +1143,25 @@ do									\
 	   && GET_CODE (XEXP (X, 0)) == REG				\
 	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))			\
     goto LABEL;								\
+  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
+	   && (GET_CODE (X) == LABEL_REF				\
+	       || (GET_CODE (X) == CONST				\
+		   && GET_CODE (XEXP ((X), 0)) == PLUS			\
+		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	\
+		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT)))\
+    goto LABEL;								\
   else if ((MODE) == TImode)						\
     ;									\
+  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	\
+    {                                                              	\
+      if (GET_CODE (X) == PLUS && BASE_REGISTER_RTX_P (XEXP (X, 0)) 	\
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)   			\
+	{                                          			\
+	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1)); 			\
+          if (val == 4 || val == -4 || val == -8)			\
+	    goto LABEL;							\
+	}								\
+    }									\
   else if (GET_CODE (X) == PLUS)					\
     {									\
       rtx xop0 = XEXP(X,0);						\
@@ -1073,6 +1185,7 @@ do									\
 	   && CONSTANT_POOL_ADDRESS_P (X))				\
     goto LABEL;								\
   else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	\
+	   && (GET_MODE_SIZE (MODE) <= 4)				\
 	   && GET_CODE (XEXP (X, 0)) == REG				\
 	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))			\
     goto LABEL;								\
@@ -1101,9 +1214,9 @@ do									\
       rtx xop0 = XEXP (X, 0);						 \
       rtx xop1 = XEXP (X, 1);						 \
 									 \
-      if (CONSTANT_P (xop0) && ! LEGITIMATE_CONSTANT_P (xop0))		 \
+      if (CONSTANT_P (xop0) && ! symbol_mentioned_p (xop0))		 \
 	xop0 = force_reg (SImode, xop0);				 \
-      if (CONSTANT_P (xop1) && ! LEGITIMATE_CONSTANT_P (xop1))		 \
+      if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))		 \
 	xop1 = force_reg (SImode, xop1);				 \
       if (BASE_REGISTER_RTX_P (xop0) && GET_CODE (xop1) == CONST_INT)	 \
 	{								 \
@@ -1111,7 +1224,7 @@ do									\
 	  rtx base_reg, val;						 \
 	  n = INTVAL (xop1);						 \
 									 \
-	  if (MODE == DImode)						 \
+	  if (MODE == DImode || (TARGET_SOFT_FLOAT && MODE == DFmode))	 \
 	    {								 \
 	      low_n = n & 0x0f;						 \
 	      n &= ~0x0f;						 \
@@ -1144,7 +1257,7 @@ do									\
 									 \
       if (CONSTANT_P (xop0))						 \
 	xop0 = force_reg (SImode, xop0);				 \
-      if (CONSTANT_P (xop1) && ! LEGITIMATE_CONSTANT_P (xop1))		 \
+      if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))		 \
 	xop1 = force_reg (SImode, xop1);				 \
       if (xop0 != XEXP (X, 0) || xop1 != XEXP (X, 1))			 \
 	(X) = gen_rtx (MINUS, SImode, xop0, xop1);			 \
@@ -1152,7 +1265,6 @@ do									\
   if (memory_address_p (MODE, X))					 \
     goto WIN;								 \
 }
-
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
@@ -1200,7 +1312,7 @@ do									\
    be the code that says which one of the two operations is implicitly
    done, NIL if none.  */
 #define LOAD_EXTEND_OP(MODE)						\
-  ((MODE) == QImode ? ZERO_EXTEND					\
+  ((arm_arch4 || (MODE) == QImode) ? ZERO_EXTEND			\
    : ((BYTES_BIG_ENDIAN && (MODE) == HImode) ? SIGN_EXTEND : NIL))
 
 /* Define this if zero-extension is slow (more than one real instruction).
@@ -1222,7 +1334,6 @@ do									\
    rotates is modulo 32 used. */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
 
-/* XX This is not true, is it?  */
 /* All integers have the same format so truncation is easy.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC)  1
 
@@ -1271,8 +1382,8 @@ do									\
   ((X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
 
-#define RTX_COSTS(X,CODE,OUTER_CODE)                                    \
-  default:								\
+#define RTX_COSTS(X,CODE,OUTER_CODE)		\
+  default:					\
    return arm_rtx_costs (X, CODE, OUTER_CODE);
 
 /* Moves to and from memory are quite expensive */
@@ -1367,128 +1478,22 @@ extern int arm_compare_fp;
   {"reversible_cc_register", {REG}},
 
 
-/* Assembler output control */
 
-#ifndef ARM_OS_NAME
-#define ARM_OS_NAME "(generic)"
-#endif
+/* Gcc puts the pool in the wrong place for ARM, since we can only
+   load addresses a limited distance around the pc.  We do some
+   special munging to move the constant pool values to the correct
+   point in the code.  */
+#define MACHINE_DEPENDENT_REORG(INSN)	arm_reorg ((INSN))
 
-/* The text to go at the start of the assembler file */
-#define ASM_FILE_START(STREAM)						  \
-{									  \
-  extern char *version_string;						  \
-  fprintf (STREAM,"%s Generated by gcc %s for ARM/%s\n",		  \
-	   ASM_COMMENT_START, version_string, ARM_OS_NAME);		  \
-  fprintf (STREAM,"%srfp\t.req\t%sr9\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%ssl\t.req\t%sr10\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%sfp\t.req\t%sr11\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%sip\t.req\t%sr12\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%ssp\t.req\t%sr13\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%slr\t.req\t%sr14\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-  fprintf (STREAM,"%spc\t.req\t%sr15\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-}
-
-#define ASM_APP_ON  ""
-#define ASM_APP_OFF  ""
-
-/* Switch to the text or data segment.  */
-#define TEXT_SECTION_ASM_OP  ".text"
-#define DATA_SECTION_ASM_OP  ".data"
-
-#define REGISTER_PREFIX ""
-#define USER_LABEL_PREFIX "_"
-#define LOCAL_LABEL_PREFIX ""
-
-/* The assembler's names for the registers.  */
-#ifndef REGISTER_NAMES
-#define REGISTER_NAMES  \
-{				                   \
-  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",  \
-  "r8", "r9", "sl", "fp", "ip", "sp", "lr", "pc",  \
-  "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",  \
-  "cc", "sfp", "afp"				   \
-}
-#endif
-
-#ifndef ADDITIONAL_REGISTER_NAMES
-#define ADDITIONAL_REGISTER_NAMES		\
-{						\
-  {"a1", 0},					\
-  {"a2", 1},					\
-  {"a3", 2},					\
-  {"a4", 3},					\
-  {"v1", 4},					\
-  {"v2", 5},					\
-  {"v3", 6},					\
-  {"v4", 7},					\
-  {"v5", 8},					\
-  {"v6", 9},					\
-  {"rfp", 9}, /* Gcc used to call it this */	\
-  {"sb", 9},					\
-  {"v7", 10},					\
-  {"r10", 10},					\
-  {"r11", 11},	/* fp */			\
-  {"r12", 12},	/* ip */			\
-  {"r13", 13},	/* sp */			\
-  {"r14", 14},	/* lr */			\
-  {"r15", 15}	/* pc */			\
-}
-#endif
-
-/* Arm Assembler barfs on dollars */
-#define DOLLARS_IN_IDENTIFIERS 0
-
-#define NO_DOLLAR_IN_LABEL
-
-/* DBX register number for a given compiler register number */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
-
-/* Generate DBX debugging information.  riscix.h will undefine this because
-   the native assembler does not support stabs. */
-#define DBX_DEBUGGING_INFO  1
-
-/* Acorn dbx moans about continuation chars, so don't use any.  */
-#ifndef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH  0
-#endif
-
-/* Output a source filename for the debugger. RISCiX dbx insists that the
-   ``desc'' field is set to compiler version number >= 315 (sic).  */
-#define DBX_OUTPUT_MAIN_SOURCE_FILENAME(STREAM,NAME) 			\
-do {									\
-  fprintf (STREAM, ".stabs \"%s\",%d,0,315,%s\n", (NAME), N_SO,		\
-	   &ltext_label_name[1]);					\
-  text_section ();							\
-  ASM_OUTPUT_INTERNAL_LABEL (STREAM, "Ltext", 0);			\
-} while (0)
-  
-/* Output a label definition.  */
-#define ASM_OUTPUT_LABEL(STREAM,NAME)  \
-  arm_asm_output_label ((STREAM), (NAME))
-
-/* Output a function label definition.  */
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
-    ASM_OUTPUT_LABEL(STREAM, NAME)
-
-/* Output a globalising directive for a label.  */
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)  \
-  (fprintf (STREAM, "\t.global\t"),	  \
-   assemble_name (STREAM, NAME),	  \
-   fputc ('\n',STREAM))                   \
-
-/* Output a reference to a label.  */
-#define ASM_OUTPUT_LABELREF(STREAM,NAME)  \
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, NAME)
-
-/* Make an internal label into a string.  */
-#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
-  sprintf (STRING, "*%s%d", PREFIX, NUM)
+/* The pool is empty, since we have moved everything into the code.  */
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE,X,MODE,ALIGN,LABELNO,JUMPTO)	\
+  goto JUMPTO
 
 /* Output an internal label definition.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  \
   do                                    	      	   		\
     {						      	   		\
-      char *s = (char *) alloca (11 + strlen (PREFIX));	   		\
+      char *s = (char *) alloca (40 + strlen (PREFIX));	   		\
       extern int arm_target_label, arm_ccfsm_state;	   		\
       extern rtx arm_target_insn;					\
 						           		\
@@ -1498,19 +1503,13 @@ do {									\
 	  arm_ccfsm_state = 0;				        	\
 	  arm_target_insn = NULL;					\
 	}								\
-	strcpy (s, "*");				      		\
-	sprintf (&s[strlen (s)], "%s%d", (PREFIX), (NUM));   		\
+	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));   		\
 	arm_asm_output_label (STREAM, s);		                \
     } while (0)
 
-/* Nothing special is done about jump tables */
-/* #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE)   */
-/* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
-
-/* Construct a private name.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)  \
-  ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
-   sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
+/* Output a label definition.  */
+#define ASM_OUTPUT_LABEL(STREAM,NAME)		\
+  arm_asm_output_label ((STREAM), (NAME))
 
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO) \
@@ -1520,132 +1519,6 @@ do {									\
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO) \
   fprintf(STREAM,"\tldmfd\t%ssp!,{%s%s}\n", \
 	  REGISTER_PREFIX, REGISTER_PREFIX, reg_names[REGNO])
-
-/* Output a relative address. Not needed since jump tables are absolute
-   but we must define it anyway.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  \
-  fputs ("- - - ASM_OUTPUT_ADDR_DIFF_ELT called!\n", STREAM)
-
-/* Output an element of a dispatch table.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  \
-   fprintf (STREAM, "\t.word\tL%d\n", VALUE)
-
-/* Output various types of constants.  For real numbers we output hex, with
-   a comment containing the "human" value, this allows us to pass NaN's which
-   the riscix assembler doesn't understand (it also makes cross-assembling
-   less likely to fail). */
-
-#define ASM_OUTPUT_LONG_DOUBLE(STREAM,VALUE)				\
-do { char dstr[30];							\
-     long l[3];								\
-     arm_increase_location (12);					\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (STREAM, "\t.long 0x%x,0x%x,0x%x\t%s long double %s\n",	\
-		l[2], l[1], l[0], ASM_COMMENT_START, dstr);		\
-     else								\
-       fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\t%s long double %s\n",\
-		l[0], l[1], l[2], ASM_COMMENT_START, dstr);		\
-   } while (0)
-
-    
-#define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  				\
-do { char dstr[30];							\
-     long l[2];								\
-     arm_increase_location (8);						\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.14g", dstr);			\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (STREAM, "\t.long 0x%x, 0x%x\t%s double %s\n", l[0],	\
-		l[1], ASM_COMMENT_START, dstr);				\
-     else								\
-       fprintf (STREAM, "\t.long 0x%lx, 0x%lx\t%s double %s\n", l[0],	\
-		l[1], ASM_COMMENT_START, dstr);				\
-   } while (0)
-
-#define ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
-do { char dstr[30];							\
-     long l;								\
-     arm_increase_location (4);						\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);				\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.7g", dstr);			\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (STREAM, "\t.word 0x%x\t%s float %s\n", l,		\
-		ASM_COMMENT_START, dstr);				\
-     else								\
-       fprintf (STREAM, "\t.word 0x%lx\t%s float %s\n", l,		\
-		ASM_COMMENT_START, dstr);				\
-   } while (0);
-
-#define ASM_OUTPUT_INT(STREAM, EXP)	\
-  (fprintf (STREAM, "\t.word\t"),	\
-   output_addr_const (STREAM, (EXP)),	\
-   arm_increase_location (4),		\
-   fputc ('\n', STREAM))
-
-#define ASM_OUTPUT_SHORT(STREAM, EXP)  \
-  (fprintf (STREAM, "\t.short\t"),     \
-   output_addr_const (STREAM, (EXP)),  \
-   arm_increase_location (2),          \
-   fputc ('\n', STREAM))
-
-#define ASM_OUTPUT_CHAR(STREAM, EXP)  \
-  (fprintf (STREAM, "\t.byte\t"),      \
-   output_addr_const (STREAM, (EXP)),  \
-   arm_increase_location (1),          \
-   fputc ('\n', STREAM))
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE)  \
-  (fprintf (STREAM, "\t.byte\t%d\n", VALUE),  \
-   arm_increase_location (1))
-
-#define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
-  output_ascii_pseudo_op ((STREAM), (unsigned char *)(PTR), (LEN))
-
-/* Output a gap.  In fact we fill it with nulls.  */
-#define ASM_OUTPUT_SKIP(STREAM, NBYTES)  \
-  (arm_increase_location (NBYTES),              \
-   fprintf (STREAM, "\t.space\t%d\n", NBYTES))
-
-/* Align output to a power of two.  Horrible /bin/as.  */
-#define ASM_OUTPUT_ALIGN(STREAM, POWER)  \
-  do                                                           \
-    {                                                          \
-      register int amount = 1 << (POWER);                      \
-      extern int arm_text_location;			       \
-                                                               \
-      if (amount == 2)                                         \
-	fprintf (STREAM, "\t.even\n");                         \
-      else                                                     \
-	fprintf (STREAM, "\t.align\t%d\n", amount - 4);        \
-                                                               \
-      if (in_text_section ())                                  \
-	arm_text_location = ((arm_text_location + amount - 1)  \
-			     & ~(amount - 1));                 \
-    } while (0)
-
-/* Output a common block */
-#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)  		\
-  (fprintf (STREAM, "\t.comm\t"), 		     			\
-   assemble_name ((STREAM), (NAME)),		     			\
-   fprintf(STREAM, ", %d\t%s %d\n", ROUNDED, ASM_COMMENT_START, SIZE))
-
-/* Output a local common block.  /bin/as can't do this, so hack a `.space' into
-   the bss segment.  Note that this is *bad* practice.  */
-#define ASM_OUTPUT_LOCAL(STREAM,NAME,SIZE,ROUNDED)  \
-  output_lcomm_directive (STREAM, NAME, SIZE, ROUNDED)
-
-/* Output a source line for the debugger.  */
-/* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
-
-/* Output a #ident directive.  */
-#define ASM_OUTPUT_IDENT(STREAM,STRING)  \
-  fprintf (STREAM,"- - - ident %s\n",STRING)
-
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
 
 /* Target characters.  */
 #define TARGET_BELL	007
@@ -1661,10 +1534,6 @@ do { char dstr[30];							\
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
   if (optimize)					    \
     final_prescan_insn (INSN, OPVEC, NOPERANDS)
-
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START "@"
-#endif
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
   ((CODE) == '?' || (CODE) == '|' || (CODE) == '@')
