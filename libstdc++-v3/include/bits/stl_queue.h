@@ -33,7 +33,8 @@
 
 #include <bits/sequence_concepts.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // Forward declarations of operators < and ==, needed for friend declaration.
 
@@ -60,20 +61,12 @@ class queue {
   __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
 
 
-#ifdef __STL_MEMBER_TEMPLATES 
   template <class _Tp1, class _Seq1>
   friend bool operator== (const queue<_Tp1, _Seq1>&,
                           const queue<_Tp1, _Seq1>&);
   template <class _Tp1, class _Seq1>
   friend bool operator< (const queue<_Tp1, _Seq1>&,
                          const queue<_Tp1, _Seq1>&);
-#else /* __STL_MEMBER_TEMPLATES */
-  friend bool __STD_QUALIFIER
-  operator== __STL_NULL_TMPL_ARGS (const queue&, const queue&);
-  friend bool __STD_QUALIFIER
-  operator<  __STL_NULL_TMPL_ARGS (const queue&, const queue&);
-#endif /* __STL_MEMBER_TEMPLATES */
-
 public:
   typedef typename _Sequence::value_type      value_type;
   typedef typename _Sequence::size_type       size_type;
@@ -111,8 +104,6 @@ operator<(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
   return __x.c < __y.c;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Tp, class _Sequence>
 bool
 operator!=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
@@ -141,12 +132,9 @@ operator>=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
   return !(__x < __y);
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
-
 template <class _Tp, 
-          class _Sequence __STL_DEPENDENT_DEFAULT_TMPL(vector<_Tp>),
-          class _Compare  
-	  __STL_DEPENDENT_DEFAULT_TMPL(less<typename _Sequence::value_type>) >
+          class _Sequence = vector<_Tp>,
+          class _Compare  = less<typename _Sequence::value_type> >
 class priority_queue {
 public:
 
@@ -174,7 +162,6 @@ public:
     : c(__s), comp(__x) 
     { make_heap(c.begin(), c.end(), comp); }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   priority_queue(_InputIterator __first, _InputIterator __last) 
     : c(__first, __last) { make_heap(c.begin(), c.end(), comp); }
@@ -193,24 +180,6 @@ public:
     c.insert(c.end(), __first, __last);
     make_heap(c.begin(), c.end(), comp);
   }
-
-#else /* __STL_MEMBER_TEMPLATES */
-  priority_queue(const value_type* __first, const value_type* __last) 
-    : c(__first, __last) { make_heap(c.begin(), c.end(), comp); }
-
-  priority_queue(const value_type* __first, const value_type* __last, 
-                 const _Compare& __x) 
-    : c(__first, __last), comp(__x)
-    { make_heap(c.begin(), c.end(), comp); }
-
-  priority_queue(const value_type* __first, const value_type* __last, 
-                 const _Compare& __x, const _Sequence& __c)
-    : c(__c), comp(__x) 
-  { 
-    c.insert(c.end(), __first, __last);
-    make_heap(c.begin(), c.end(), comp);
-  }
-#endif /* __STL_MEMBER_TEMPLATES */
 
   bool empty() const { return c.empty(); }
   size_type size() const { return c.size(); }
@@ -233,7 +202,7 @@ public:
 
 // no equality is provided
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_QUEUE_H */
 

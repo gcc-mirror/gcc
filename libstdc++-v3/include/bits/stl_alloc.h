@@ -18,19 +18,6 @@
 #ifndef __SGI_STL_INTERNAL_ALLOC_H
 #define __SGI_STL_INTERNAL_ALLOC_H
 
-#ifdef __SUNPRO_CC
-#  define __PRIVATE public
-   // Extra access restrictions prevent us from really making some things
-   // private.
-#else
-#  define __PRIVATE private
-#endif
-
-#ifdef __STL_STATIC_TEMPLATE_MEMBER_BUG
-#  define __USE_MALLOC
-#endif
-
-
 // This implements some standard node allocators.  These are
 // NOT the same as the allocators in the C++ draft standard or in
 // in the original STL.  They do not encapsulate different pointer
@@ -38,17 +25,7 @@
 // The allocation primitives are intended to allocate individual objects,
 // not larger arenas as with the original STL allocators.
 
-#ifndef __THROW_BAD_ALLOC
-#  if defined(__STL_NO_BAD_ALLOC) || !defined(__STL_USE_EXCEPTIONS)
-#    include <bits/std_cstdio.h>
-#    include <bits/std_cstdlib.h>
-#    define __THROW_BAD_ALLOC fprintf(stderr, "out of memory\n"); exit(1)
-#  else /* Standard conforming out-of-memory handling */
-#    include <new>
-#    define __THROW_BAD_ALLOC throw std::bad_alloc()
-#  endif
-#endif
-
+#include <bits/functexcept.h>   // for __throw_bad_alloc
 #include <bits/std_cstddef.h>
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstring.h>
@@ -88,23 +65,11 @@
 #   define __NODE_ALLOCATOR_THREADS false
 #endif
 
-__STL_BEGIN_NAMESPACE
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma set woff 1174
-#endif
+namespace std
+{
 
 // Malloc-based allocator.  Typically slower than default alloc below.
 // Typically thread-safe and more storage efficient.
-#ifdef __STL_STATIC_TEMPLATE_MEMBER_BUG
-# ifdef __DECLARE_GLOBALS_HERE
-    void (* __malloc_alloc_oom_handler)() = 0;
-    // g++ 2.7.2 does not handle static template data members.
-# else
-    extern void (* __malloc_alloc_oom_handler)();
-# endif
-#endif
-
 template <int __inst>
 class __malloc_alloc_template {
 
@@ -112,10 +77,7 @@ private:
 
   static void* _S_oom_malloc(size_t);
   static void* _S_oom_realloc(void*, size_t);
-
-#ifndef __STL_STATIC_TEMPLATE_MEMBER_BUG
   static void (* __malloc_alloc_oom_handler)();
-#endif
 
 public:
 
@@ -149,10 +111,8 @@ public:
 
 // malloc_alloc out-of-memory handling
 
-#ifndef __STL_STATIC_TEMPLATE_MEMBER_BUG
 template <int __inst>
 void (* __malloc_alloc_template<__inst>::__malloc_alloc_oom_handler)() = 0;
-#endif
 
 template <int __inst>
 void*
@@ -163,7 +123,7 @@ __malloc_alloc_template<__inst>::_S_oom_malloc(size_t __n)
 
     for (;;) {
         __my_malloc_handler = __malloc_alloc_oom_handler;
-        if (0 == __my_malloc_handler) { __THROW_BAD_ALLOC; }
+        if (0 == __my_malloc_handler) { std::__throw_bad_alloc(); }
         (*__my_malloc_handler)();
         __result = malloc(__n);
         if (__result) return(__result);
@@ -178,7 +138,7 @@ void* __malloc_alloc_template<__inst>::_S_oom_realloc(void* __p, size_t __n)
 
     for (;;) {
         __my_malloc_handler = __malloc_alloc_oom_handler;
-        if (0 == __my_malloc_handler) { __THROW_BAD_ALLOC; }
+        if (0 == __my_malloc_handler) { std::__throw_bad_alloc(); }
         (*__my_malloc_handler)();
         __result = realloc(__p, __n);
         if (__result) return(__result);
@@ -278,40 +238,26 @@ typedef malloc_alloc single_client_alloc;
 // Node that containers built on different allocator instances have
 // different types, limiting the utility of this approach.
 
-#if defined(__SUNPRO_CC) || defined(__GNUC__)
-// breaks if we make these template class members:
-  enum {_ALIGN = 8};
-  enum {_MAX_BYTES = 128};
-  enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
-#endif
-
 template <bool threads, int inst>
 class __default_alloc_template {
 
 private:
   // Really we should use static const int x = N
   // instead of enum { x = N }, but few compilers accept the former.
-#if ! (defined(__SUNPRO_CC) || defined(__GNUC__))
-    enum {_ALIGN = 8};
-    enum {_MAX_BYTES = 128};
-    enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
-# endif
+  enum {_ALIGN = 8};
+  enum {_MAX_BYTES = 128};
+  enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
   static size_t
   _S_round_up(size_t __bytes) 
     { return (((__bytes) + (size_t) _ALIGN-1) & ~((size_t) _ALIGN - 1)); }
 
-__PRIVATE:
   union _Obj {
         union _Obj* _M_free_list_link;
         char _M_client_data[1];    /* The client sees this.        */
   };
-private:
-# if defined(__SUNPRO_CC) || defined(__GNUC__) || defined(__HP_aCC)
-    static _Obj* __STL_VOLATILE _S_free_list[]; 
+
+  static _Obj* __STL_VOLATILE _S_free_list[]; 
         // Specifying a size results in duplicate def for 4.1
-# else
-    static _Obj* __STL_VOLATILE _S_free_list[_NFREELISTS]; 
-# endif
   static  size_t _S_freelist_index(size_t __bytes) {
         return (((__bytes) + (size_t)_ALIGN-1)/(size_t)_ALIGN - 1);
   }
@@ -409,14 +355,12 @@ inline bool operator==(const __default_alloc_template<__threads, __inst>&,
   return true;
 }
 
-# ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 template <bool __threads, int __inst>
 inline bool operator!=(const __default_alloc_template<__threads, __inst>&,
                        const __default_alloc_template<__threads, __inst>&)
 {
   return false;
 }
-# endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 
 
@@ -563,11 +507,7 @@ size_t __default_alloc_template<__threads, __inst>::_S_heap_size = 0;
 template <bool __threads, int __inst>
 typename __default_alloc_template<__threads, __inst>::_Obj* __STL_VOLATILE
 __default_alloc_template<__threads, __inst> ::_S_free_list[
-# if defined(__SUNPRO_CC) || defined(__GNUC__) || defined(__HP_aCC)
-    _NFREELISTS
-# else
     __default_alloc_template<__threads, __inst>::_NFREELISTS
-# endif
 ] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
 // The 16 zeros are necessary to make version 4.1 of the SunPro
 // compiler happy.  Otherwise it appears to allocate too little
@@ -582,8 +522,6 @@ __default_alloc_template<__threads, __inst> ::_S_free_list[
 // member templates, partial specialization, partial ordering of function
 // templates, the typename keyword, and the use of the template keyword
 // to refer to a template member of a dependent type.
-
-#ifdef __STL_USE_STD_ALLOCATORS
 
 template <class _Tp>
 class allocator {
@@ -726,14 +664,12 @@ inline bool operator==(const __allocator<_Tp, _Alloc>& __a1,
   return __a1.__underlying_alloc == __a2.__underlying_alloc;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 template <class _Tp, class _Alloc>
 inline bool operator!=(const __allocator<_Tp, _Alloc>& __a1,
                        const __allocator<_Tp, _Alloc>& __a2)
 {
   return __a1.__underlying_alloc != __a2.__underlying_alloc;
 }
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 // Comparison operators for all of the predifined SGI-style allocators.
 // This ensures that __allocator<malloc_alloc> (for example) will
@@ -746,14 +682,12 @@ inline bool operator==(const __malloc_alloc_template<inst>&,
   return true;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 template <int __inst>
 inline bool operator!=(const __malloc_alloc_template<__inst>&,
                        const __malloc_alloc_template<__inst>&)
 {
   return false;
 }
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 template <class _Alloc>
 inline bool operator==(const debug_alloc<_Alloc>&,
@@ -761,13 +695,11 @@ inline bool operator==(const debug_alloc<_Alloc>&,
   return true;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 template <class _Alloc>
 inline bool operator!=(const debug_alloc<_Alloc>&,
                        const debug_alloc<_Alloc>&) {
   return false;
 }
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 // Another allocator adaptor: _Alloc_traits.  This serves two
 // purposes.  First, make it possible to write containers that can use
@@ -801,8 +733,7 @@ template <class _Tp, class _Allocator>
 struct _Alloc_traits
 {
   static const bool _S_instanceless = false;
-  typedef typename _Allocator::__STL_TEMPLATE rebind<_Tp>::other 
-          allocator_type;
+  typedef typename _Allocator::template rebind<_Tp>::other allocator_type;
 };
 
 template <class _Tp, class _Allocator>
@@ -882,16 +813,7 @@ struct _Alloc_traits<_Tp, __allocator<_Tp1, debug_alloc<_Alloc> > >
   typedef __allocator<_Tp, debug_alloc<_Alloc> > allocator_type;
 };
 
-
-#endif /* __STL_USE_STD_ALLOCATORS */
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma reset woff 1174
-#endif
-
-__STL_END_NAMESPACE
-
-#undef __PRIVATE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_ALLOC_H */
 

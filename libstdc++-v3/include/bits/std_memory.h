@@ -25,17 +25,13 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
-#if defined(__SGI_STL_USE_AUTO_PTR_CONVERSIONS) && \
-     defined(__STL_MEMBER_TEMPLATES)
- 
  template<class _Tp1> struct auto_ptr_ref {
    _Tp1* _M_ptr;
    auto_ptr_ref(_Tp1* __p) : _M_ptr(__p) {}
 };
-
-#endif
 
 template <class _Tp> class auto_ptr {
 private:
@@ -47,23 +43,19 @@ public:
   explicit auto_ptr(_Tp* __p = 0) __STL_NOTHROW : _M_ptr(__p) {}
   auto_ptr(auto_ptr& __a) __STL_NOTHROW : _M_ptr(__a.release()) {}
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _Tp1> auto_ptr(auto_ptr<_Tp1>& __a) __STL_NOTHROW
     : _M_ptr(__a.release()) {}
-#endif /* __STL_MEMBER_TEMPLATES */
 
   auto_ptr& operator=(auto_ptr& __a) __STL_NOTHROW {
     reset(__a.release());
     return *this;
   }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _Tp1>
   auto_ptr& operator=(auto_ptr<_Tp1>& __a) __STL_NOTHROW {
     reset(__a.release());
     return *this;
   }
-#endif /* __STL_MEMBER_TEMPLATES */
   
   // Note: The C++ standard says there is supposed to be an empty throw
   // specification here, but omitting it is standard conforming.  Its 
@@ -96,10 +88,6 @@ public:
   // present-day compilers, however, do not enforce that requirement---and, 
   // in fact, most present-day compilers do not support the language 
   // features that these conversions rely on.
-  
-#if defined(__SGI_STL_USE_AUTO_PTR_CONVERSIONS) && \
-    defined(__STL_MEMBER_TEMPLATES)
-
 public:
   auto_ptr(auto_ptr_ref<_Tp> __ref) __STL_NOTHROW
     : _M_ptr(__ref._M_ptr) {}
@@ -116,11 +104,9 @@ public:
     { return auto_ptr_ref<_Tp>(this->release()); }
   template <class _Tp1> operator auto_ptr<_Tp1>() __STL_NOTHROW
     { return auto_ptr<_Tp1>(this->release()); }
-
-#endif /* auto ptr conversions && member templates */
 };
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_MEMORY */
 

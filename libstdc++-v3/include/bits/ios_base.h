@@ -36,7 +36,8 @@
 
 #pragma GCC system_header
 
-namespace std {
+namespace std
+{
 
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
@@ -567,12 +568,4 @@ namespace std {
 } // namespace std
 
 #endif /* _CPP_BITS_IOSBASE_H */
-
-
-
-
-
-
-
-
 

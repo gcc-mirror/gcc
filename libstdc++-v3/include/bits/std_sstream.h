@@ -39,8 +39,8 @@
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
 
-namespace std {
-
+namespace std
+{
   template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_stringbuf : public basic_streambuf<_CharT, _Traits>
     {
@@ -350,19 +350,5 @@ namespace std {
 #endif
 #endif
 
-
 #endif	/* _CPP_SSTREAM */
-
-
-
-
-
-
-
-
-
-
-
-
-
 

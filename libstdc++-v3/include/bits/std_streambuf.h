@@ -42,8 +42,8 @@
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
 
-namespace std {
-
+namespace std
+{
   template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
@@ -536,14 +536,4 @@ namespace std {
 #endif
 
 #endif	/* _CPP_STREAMBUF */
-
-
-
-
-
-
-
-
-
-
 

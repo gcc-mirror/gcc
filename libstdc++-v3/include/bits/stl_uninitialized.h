@@ -33,7 +33,8 @@
 
 #include <bits/std_cstring.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // uninitialized_copy
 
@@ -272,7 +273,7 @@ __uninitialized_copy_fill(_InputIter __first1, _InputIter __last1,
   __STL_UNWIND(_Destroy(__first2, __mid2));
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_UNINITIALIZED_H */
 

@@ -17,15 +17,11 @@
 #include "hashtable.h"   
 #include <bits/stl_rope.h>
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::char_producer; 
-using __STD::sequence_buffer; 
-using __STD::rope; 
-using __STD::crope; 
-using __STD::wrope; 
-
-#endif /* __STL_USE_NAMESPACES */
+using std::char_producer; 
+using std::sequence_buffer; 
+using std::rope; 
+using std::crope; 
+using std::wrope; 
 
 #endif /* _CPP_BACKWARD_ROPE_H */
 

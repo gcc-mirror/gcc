@@ -32,12 +32,8 @@
 #include <bits/stl_pair.h>
 #endif
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::pair;
-using __STD::make_pair;
-
-#endif /* __STL_USE_NAMESPACES */
+using std::pair;
+using std::make_pair;
 
 #endif /* _CPP_BACKWARD_PAIR_H */
 

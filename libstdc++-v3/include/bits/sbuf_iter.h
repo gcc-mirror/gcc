@@ -250,17 +250,3 @@ namespace std
 
 #endif /* _CPP_BITS_SBUF_ITER_H */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

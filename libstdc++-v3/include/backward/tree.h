@@ -35,9 +35,7 @@
 #include "algobase.h" 
 #include "alloc.h"
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::rb_tree;
-#endif /* __STL_USE_NAMESPACES */
+using std::rb_tree;
 
 #endif /* _CPP_BACKWARD_TREE_H */
 

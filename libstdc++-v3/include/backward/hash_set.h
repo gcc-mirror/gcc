@@ -34,11 +34,9 @@
 #include "algobase.h"
 #include <bits/stl_hash_set.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::hash;
-using __STD::hashtable;
-using __STD::hash_set;
-using __STD::hash_multiset;
-#endif /* __STL_USE_NAMESPACES */
+using std::hash;
+using std::hashtable;
+using std::hash_set;
+using std::hash_multiset;
 
 #endif /* _CPP_BACKWARD_HASH_SET_H */

@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,8 @@
 
 #include <bits/std_sstream.h>
 
-namespace std {
+namespace std
+{
 
   template <class _CharT, class _Traits, class _Alloc>
     basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
@@ -209,12 +210,4 @@ namespace std {
 } // namespace std
 
 #endif	/* _CPP_BITS_SSTREAM_TCC */
-
-
-
-
-
-
-
-
 

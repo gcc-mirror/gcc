@@ -29,7 +29,8 @@
 #include <bits/std_ostream.h>
 #include <bits/std_string.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 //----------------------------------------------------------------------
 // Class strstreambuf, a streambuf class that manages an array of char.
@@ -150,7 +151,7 @@ private:
   strstreambuf _M_buf;
 };
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_STRSTREAM */
 

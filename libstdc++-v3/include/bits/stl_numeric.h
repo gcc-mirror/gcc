@@ -32,7 +32,8 @@
 #ifndef _CPP_BITS_STL_NUMERIC_H
 #define _CPP_BITS_STL_NUMERIC_H 1
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _InputIterator, class _Tp>
 _Tp accumulate(_InputIterator __first, _InputIterator __last, _Tp __init)
@@ -246,7 +247,7 @@ iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)
     *__first++ = __value++;
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_NUMERIC_H */
 

@@ -30,9 +30,7 @@
 #include "tree.h"
 #include <bits/stl_multimap.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::multimap;
-#endif /* __STL_USE_NAMESPACES */
+using std::multimap;
 
 #endif /* _CPP_BACKWARD_MULTIMAP_H */
 

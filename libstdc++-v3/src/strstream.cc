@@ -24,7 +24,8 @@
 #include <string.h>
 #include <limits.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // strstreambuf constructor, destructor.
 
@@ -420,7 +421,7 @@ char* strstream::str()
   return _M_buf.str();
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 // Local Variables:
 // mode:C++

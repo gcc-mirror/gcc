@@ -30,9 +30,7 @@
 #include "tree.h"
 #include <bits/stl_multiset.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::multiset;
-#endif /* __STL_USE_NAMESPACES */
+using std::multiset;
 
 #endif /* _CPP_BACKWARD_MULTISET_H */
 

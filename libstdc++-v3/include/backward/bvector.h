@@ -27,20 +27,11 @@
 #ifndef _CPP_BACKWARD_BVECTOR_H
 #define _CPP_BACKWARD_BVECTOR_H 1
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
 #include "vector.h"
-#else
-#include "algobase.h"
-#include "alloc.h"
-#endif 
 
 #include <bits/stl_bvector.h>
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::bit_vector;
-
-#endif /* __STL_USE_NAMESPACES */
+using std::bit_vector;
 
 #endif /* _CPP_BACKWARD_BVECTOR_H */
 
