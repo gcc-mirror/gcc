@@ -196,9 +196,7 @@ extern int rs6000_memory_move_cost PARAMS ((enum machine_mode,
 
 /* Declare functions in rs6000-c.c */
 
-#ifdef GCC_CPPLIB_H
-extern void rs6000_pragma_longcall PARAMS ((cpp_reader *));
-extern void rs6000_cpu_cpp_builtins PARAMS ((cpp_reader *));
-#endif
+extern void rs6000_pragma_longcall PARAMS ((struct cpp_reader *));
+extern void rs6000_cpu_cpp_builtins PARAMS ((struct cpp_reader *));
 
 #endif  /* rs6000-protos.h */

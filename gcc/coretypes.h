@@ -44,6 +44,12 @@ typedef struct rtvec_def *rtvec;
 union tree_node;
 typedef union tree_node *tree;
 
+/* Provide forward struct declaration so that we don't have to include
+   all of cpplib.h whenever a random prototype includes a pointer.
+   Note that the cpp_reader typedef remains part of cpplib.h.  */
+
+struct cpp_reader;
+
 #else
 
 struct _dont_use_rtx_here_;

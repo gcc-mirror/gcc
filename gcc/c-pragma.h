@@ -26,7 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define YYDEBUG 1
 extern int yydebug;
 
-struct cpp_reader;
 extern struct cpp_reader* parse_in;
 
 #ifdef HANDLE_SYSV_PRAGMA

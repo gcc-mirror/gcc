@@ -65,7 +65,6 @@ extern void recognized_function _PARAMS((const struct cpp_token *,
 extern void recognized_extern _PARAMS((const struct cpp_token *));
 extern unsigned int hashstr _PARAMS((const char *, unsigned int));
 
-struct cpp_reader;
 extern int scan_decls _PARAMS((struct cpp_reader *, int, char **));
 
 /* get_token is a simple C lexer.  */
