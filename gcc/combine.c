@@ -1150,7 +1150,7 @@ try_combine (i3, i2, i1)
   i1dest_in_i1src = i1 && reg_overlap_mentioned_p (i1dest, i1src);
   i2dest_in_i1src = i1 && reg_overlap_mentioned_p (i2dest, i1src);
 
-  /* See if I1 directly feeds into I3.  It does if I1dest is not used
+  /* See if I1 directly feeds into I3.  It does if I1DEST is not used
      in I2SRC.  */
   i1_feeds_i3 = i1 && ! reg_overlap_mentioned_p (i1dest, i2src);
 
@@ -1352,9 +1352,13 @@ try_combine (i3, i2, i1)
       previous_num_undos = undobuf.num_undo;
     }
 
-  /* Fail if an autoincrement side-effect has been duplicated.  */
-  if ((i2_is_used > 1 && FIND_REG_INC_NOTE (i2, 0) != 0)
-      || (i1 != 0 && n_occurrences > 1 && FIND_REG_INC_NOTE (i1, 0) != 0)
+  /* Fail if an autoincrement side-effect has been duplicated.  Be careful
+     to count all the ways that I2SRC and I1SRC can be used.  */
+  if ((FIND_REG_INC_NOTE (i2, 0) != 0
+       && i2_is_used + added_sets_2 > 1)
+      || (i1 != 0 && FIND_REG_INC_NOTE (i1, 0) != 0
+	  && (n_occurrences + added_sets_1 + (added_sets_2 && ! i1_feeds_i3)
+	      > 1))
       /* Fail if we tried to make a new register (we used to abort, but there's
 	 really no reason to).  */
       || max_reg_num () != maxreg
@@ -1453,16 +1457,41 @@ try_combine (i3, i2, i1)
 
   /* If we were combining three insns and the result is a simple SET
      with no ASM_OPERANDS that wasn't recognized, try to split it into two
-     insns.  */
+     insns.  There are two ways to do this.  It can be split using a 
+     machine-specific method (like when you have an addition of a large
+     constant) or by combine in the function find_split_point.  */
+
   if (i1 && insn_code_number < 0 && GET_CODE (newpat) == SET
       && asm_noperands (newpat) < 0)
     {
-      rtx *split = find_split_point (&newpat);
+      rtx m_split, *split;
+
+      /* See if the MD file can split NEWPAT.  If it can't, see if letting it
+	 use I2DEST as a scratch register will help.  */
+
+      m_split = split_insns (newpat, i3);
+      if (m_split == 0)
+	m_split = split_insns (gen_rtx (PARALLEL, VOIDmode,
+					gen_rtvec (2, newpat,
+						   gen_rtx (CLOBBER, VOIDmode,
+							    i2dest))),
+			       i3);
+
+      if (m_split && GET_CODE (m_split) == SEQUENCE
+	  && XVECLEN (m_split, 0) == 2)
+	{
+	  newi2pat = PATTERN (XVECEXP (m_split, 0, 0));
+	  newpat = PATTERN (XVECEXP (m_split, 0, 1));
+
+	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
+	  if (i2_code_number >= 0)
+	    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	}
 
       /* If we can split it and use I2DEST, go ahead and see if that
 	 helps things be recognized.  Verify that none of the registers
 	 are set between I2 and I3.  */
-      if (split
+      else if ((split = find_split_point (&newpat)) != 0
 #ifdef HAVE_cc0
 	  && GET_CODE (i2dest) == REG
 #endif
@@ -1909,8 +1938,8 @@ find_split_point (loc)
 #endif
       return find_split_point (&SUBREG_REG (x));
 
-#ifdef HAVE_lo_sum
     case MEM:
+#ifdef HAVE_lo_sum
       /* If we have (mem (const ..)) or (mem (symbol_ref ...)), split it
 	 using LO_SUM and HIGH.  */
       if (GET_CODE (XEXP (x, 0)) == CONST
@@ -1922,8 +1951,62 @@ find_split_point (loc)
 				  XEXP (x, 0)));
 	  return &XEXP (XEXP (x, 0), 0);
 	}
-      break;
 #endif
+
+      /* If we have a PLUS whose second operand is a constant and the
+	 address is not valid, perhaps will can split it up using
+	 the machine-specific way to split large constants.  We use
+	 the first psuedo-reg (one of the virtual regs) as a placeholder;
+	 it will not remain in the result.  */
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && ! memory_address_p (GET_MODE (x), XEXP (x, 0)))
+	{
+	  rtx reg = regno_reg_rtx[FIRST_PSEUDO_REGISTER];
+	  rtx seq = split_insns (gen_rtx (SET, VOIDmode, reg, XEXP (x, 0)),
+				 subst_insn);
+
+	  /* This should have produced two insns, each of which sets our
+	     placeholder.  If the source of the second is a valid address,
+	     we can make put both sources together and make a split point
+	     in the middle.  */
+
+	  if (seq && XVECLEN (seq, 0) == 2
+	      && GET_CODE (XVECEXP (seq, 0, 0)) == INSN
+	      && GET_CODE (PATTERN (XVECEXP (seq, 0, 0))) == SET
+	      && SET_DEST (PATTERN (XVECEXP (seq, 0, 0))) == reg
+	      && ! reg_mentioned_p (reg,
+				    SET_SRC (PATTERN (XVECEXP (seq, 0, 0))))
+	      && GET_CODE (XVECEXP (seq, 0, 1)) == INSN
+	      && GET_CODE (PATTERN (XVECEXP (seq, 0, 1))) == SET
+	      && SET_DEST (PATTERN (XVECEXP (seq, 0, 1))) == reg
+	      && memory_address_p (GET_MODE (x),
+				   SET_SRC (PATTERN (XVECEXP (seq, 0, 1)))))
+	    {
+	      rtx src1 = SET_SRC (PATTERN (XVECEXP (seq, 0, 0)));
+	      rtx src2 = SET_SRC (PATTERN (XVECEXP (seq, 0, 1)));
+
+	      /* Replace the placeholder in SRC2 with SRC1.  If we can
+		 find where in SRC2 it was placed, that can become our
+		 split point and we can replace this address with SRC2.
+		 Just try two obvious places.  */
+
+	      src2 = replace_rtx (src2, reg, src1);
+	      split = 0;
+	      if (XEXP (src2, 0) == src1)
+		split = &XEXP (src2, 0);
+	      else if (GET_RTX_FORMAT (GET_CODE (XEXP (src2, 0)))[0] == 'e'
+		       && XEXP (XEXP (src2, 0), 0) == src1)
+		split = &XEXP (XEXP (src2, 0), 0);
+
+	      if (split)
+		{
+		  SUBST (XEXP (x, 0), src2);
+		  return split;
+		}
+	    }
+	}
+      break;
 
     case SET:
 #ifdef HAVE_cc0
