@@ -939,7 +939,7 @@ AC_ARG_ENABLE(win32-registry,
 case $host_os in
 	win32 | pe | cygwin* | mingw32* | uwin*)
 AC_MSG_CHECKING(whether windows registry support is requested)
-if test x$enable_win32_registry != xno; then
+if test "x$enable_win32_registry" != xno; then
   AC_DEFINE(ENABLE_WIN32_REGISTRY, 1,
 [Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts.])
@@ -950,7 +950,7 @@ else
 fi
 
 # Check if user specified a different registry key.
-case x${enable_win32_registry} in
+case "x${enable_win32_registry}" in
 x | xyes)
   # default.
   gcc_cv_win32_registry_key="$VERSION"
@@ -965,7 +965,7 @@ xno)
   ;;
 esac
 
-if test x$enable_win32_registry != xno; then
+if test "x$enable_win32_registry" != xno; then
   AC_MSG_CHECKING(registry key on windows hosts)
   AC_DEFINE_UNQUOTED(WIN32_REGISTRY_KEY, "$gcc_cv_win32_registry_key",
 	[Define to be the last portion of registry key on windows hosts.])
