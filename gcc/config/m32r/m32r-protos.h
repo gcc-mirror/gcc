@@ -93,6 +93,7 @@ extern int    reg_or_zero_operand               PARAMS ((rtx, Mmode));
 
 #ifdef TREE_CODE
 extern struct rtx_def * m32r_va_arg		PARAMS ((tree, tree));
+extern int m32r_pass_by_reference		PARAMS ((tree));
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 

@@ -1002,6 +1002,21 @@ large_insn_p (op, mode)
   return get_attr_length (op) != 2;
 }
 
+/* Return non-zero if TYPE must be passed or returned in memory.
+   The m32r treats both directions the same so we handle both directions
+   in this function.  */
+
+int
+m32r_pass_by_reference (type)
+     tree type;
+{
+  int size = int_size_in_bytes (type);
+
+  if (size < 0 || size > 8)
+    return 1;
+
+  return 0;
+}
 
 /* Comparisons.  */
 
@@ -1425,7 +1440,7 @@ m32r_va_arg (valist, type)
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
 
-  if (size > 8)
+  if (m32r_pass_by_reference (type))
     {
       tree type_ptr, type_ptr_ptr;
 
