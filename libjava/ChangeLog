@@ -1,3 +1,8 @@
+2001-07-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/GregorianCalendar.java (GregorianCalendar): Call
+	setTimeInMillis() to set the default/current time.
+
 2001-07-29  Mark Wielaard <mark@klomp.org>
 
 	* HACKING: add description on updating namespace

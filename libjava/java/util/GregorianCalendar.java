@@ -111,9 +111,7 @@ public class GregorianCalendar extends Calendar
     super(zone, locale);
     ResourceBundle rb = ResourceBundle.getBundle(bundleName, locale);
     gregorianCutover = ((Date) rb.getObject("gregorianCutOver")).getTime();
-    time = System.currentTimeMillis();
-    isTimeSet = true;
-    areFieldsSet = false;
+    setTimeInMillis(System.currentTimeMillis());
   }
 
   /**
