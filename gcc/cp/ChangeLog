@@ -1,3 +1,7 @@
+2000-04-24  Robert Lipe <robertlipe@usa.net>
+
+	* cp-tree.h (lang_type): Member `language' now ENUM_BITFIELD.
+
 2000-04-23  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* new.cc (set_new_handler): Needs to be in std::.

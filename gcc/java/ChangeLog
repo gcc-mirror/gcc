@@ -1,3 +1,7 @@
+2000-04-24  Robert Lipe <robertlipe@usa.net>
+
+	* parse.h (_jdep): Member `kind' now ENUM_BITFIELD.
+
 2000-04-23  Tom Tromey  <tromey@cygnus.com>
 
 	* boehm.c (mark_reference_fields): Use int_byte_position.

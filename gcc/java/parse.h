@@ -474,11 +474,7 @@ enum jdep_code {
 };
 
 typedef struct _jdep {
-#ifdef ONLY_INT_FIELDS
-  int  kind : 8;		/* Type of patch */
-#else
-  enum jdep_code kind : 8;
-#endif
+  ENUM_BITFIELD(jdep_code) kind : 8; /* Type of patch */
 
   int  flag0 : 1;		/* Some flags */
   tree decl;			/* Tied decl/or WFL */
