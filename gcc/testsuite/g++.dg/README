@@ -16,6 +16,7 @@ opt	 Tests for fixes of bugs with particular optimizations.
 other	 Tests that don't quite fit anywhere else.
 overload Tests for overload resolution and conversions.
 parse	 Tests for parsing.
+pch	 Tests for precompiled headers.
 rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
 special	 Tests requiring individual processing.
 template Tests for templates.
