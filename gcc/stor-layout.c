@@ -1310,8 +1310,6 @@ compute_record_mode (tree type)
      BLKmode only because it isn't aligned.  */
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
-      unsigned HOST_WIDE_INT bitpos;
-
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
 
@@ -1321,19 +1319,6 @@ compute_record_mode (tree type)
 	  || ! host_integerp (bit_position (field), 1)
 	  || DECL_SIZE (field) == 0
 	  || ! host_integerp (DECL_SIZE (field), 1))
-	return;
-
-      bitpos = int_bit_position (field);
-
-      /* Must be BLKmode if any field crosses a word boundary,
-	 since extract_bit_field can't handle that in registers.  */
-      if (bitpos / BITS_PER_WORD
-	  != ((tree_low_cst (DECL_SIZE (field), 1) + bitpos - 1)
-	      / BITS_PER_WORD)
-	  /* But there is no problem if the field is entire words
-	     or bigger than a word.  */
-	  && ! (tree_low_cst (DECL_SIZE (field), 1) % BITS_PER_WORD == 0
-		|| compare_tree_int (DECL_SIZE (field), BITS_PER_WORD) > 0))
 	return;
 
       /* If this field is the whole struct, remember its mode so

@@ -1,3 +1,8 @@
+2003-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (compute_record_mode): Remove very obsolete test
+	that forces BLKmode for records with fields crossing word boundary.
+
 2003-07-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in: Remove orphan reference to acconfig.h.
