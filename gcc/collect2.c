@@ -857,9 +857,8 @@ main (argc, argv)
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
 #endif
-  /* This would be the right place to search the compiler dirs
-     for `ld', but we don't do that, since this program is installed
-     there as `ld'.  */
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&cpath, full_ld_suffix);
   /* Search the ordinary system bin directories
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
