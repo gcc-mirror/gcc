@@ -12,7 +12,7 @@ proc gcj_loader_test_one {srcfile} {
     set errname [file rootname [file tail $srcfile]]
     set args [libjava_arguments link]
     lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] $srcdir/$subdir/MyLoader.java $objdir/dummy.o"
-  set x [prune_warnings \
+  set x [libjava_prune_warnings \
 	     [libjava_tcompile $srcfile "$executable" executable $args]]
 
     if { $x != "" } {
@@ -46,8 +46,8 @@ proc gcj_loader_run {} {
 
   set args [libjava_arguments compile]
   lappend args "additional_flags=--resource $objdir/dummy.class"
-  set x [prune_warnings \
-	     [libjava_tcompile "$objdir/dummy.class" "$objdir/dummy.o" object $args]]
+  set x [libjava_prune_warnings \
+	   [libjava_tcompile "$objdir/dummy.class" "$objdir/dummy.o" object $args]]
 
     if { $x != "" } {
 	verbose "resource compilation failed: $x" 2

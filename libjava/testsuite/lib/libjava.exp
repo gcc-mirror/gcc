@@ -10,6 +10,22 @@ if ![info exists tmpdir] {
     set tmpdir "/tmp"
 }
 
+# This is like `prune_warnings', but it also prunes away a warning
+# from the bytecode front end that we don't care about.
+proc libjava_prune_warnings {text} {
+    set text [prune_warnings $text]
+    set tlist [split $text \n]
+    set len [llength $tlist]
+    for {set i [expr {$len - 1}]} {$i >= 2} {incr i -1} {
+	if {[string match "*unreachable bytecode*" [lindex $tlist $i]]} {
+	    # Delete this line and the previous two lines.
+	    set tlist [lreplace $tlist [expr {$i - 2}] $i]
+	    incr i -2
+	}
+    }
+    return [join $tlist \n]
+}
+
 # This is like `target_compile' but it does some surgery to work
 # around stupid DejaGNU bugs.  In particular DejaGNU has very poor
 # quoting, so for instance a `$' will be re-evaluated at spawn time.
@@ -421,8 +437,8 @@ proc gcj_link {program main files {options {}}} {
 	eval lappend arguments $options
     }
     lappend arguments "additional_flags=--main=$main"
-    set x [prune_warnings [libjava_tcompile $files $program executable \
-			     $arguments]]
+    set x [libjava_prune_warnings \
+	     [libjava_tcompile $files $program executable $arguments]]
     if {$x != ""} {
 	verbose "link failure: $x" 2
 	fail "linking $program"
@@ -569,7 +585,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 
     set removeList [list $executable]
 
-    set x [prune_warnings \
+    set x [libjava_prune_warnings \
 	     [libjava_tcompile $srcfile "$executable" $target $args]]
     if {[info exists opts(xfail-gcj)]} {
 	setup_xfail *-*-*
@@ -683,11 +699,11 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     set jvscan [find_jvscan]
     verbose "jvscan is $jvscan"
     set main_name [string trim \
-		     [prune_warnings \
+		     [libjava_prune_warnings \
 			[lindex [local_exec "$jvscan --encoding=UTF-8 $srcfile --print-main" "" "" 300] 1]]]
     verbose "main name is $main_name"
     set class_out [string trim \
-		     [prune_warnings \
+		     [libjava_prune_warnings \
 			[lindex [local_exec "$jvscan --encoding=UTF-8 $srcfile --list-class" "" "" 300] 1]]]
     verbose "class list is $class_out"
 
@@ -765,7 +781,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     if {$mode == "compile"} {
 	foreach c_file $class_files {
 	    set executable [file rootname [file tail $c_file]].o
-	    set x [prune_warnings \
+	    set x [libjava_prune_warnings \
 		     [libjava_tcompile $c_file "$executable" $type $args]]
 	    lappend removeList $executable
 	    if {$x != ""} {
@@ -781,7 +797,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    set hack "$hack $stupid"
 	}
 	lappend removeList $executable
-	set x [prune_warnings \
+	set x [libjava_prune_warnings \
 		 [libjava_tcompile $hack "$executable" $type $args]]
     }
     if {[info exists opts(xfail-byte)]} {
