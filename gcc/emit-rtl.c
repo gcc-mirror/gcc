@@ -1105,6 +1105,15 @@ operand_subword (op, i, validate_address, mode)
 	return GEN_INT ((((HOST_WIDE_INT) k[! WORDS_BIG_ENDIAN]) << 32)
 			| (HOST_WIDE_INT) k[WORDS_BIG_ENDIAN]);
 #endif
+      else if (BITS_PER_WORD == 16)
+	{
+	  long value;
+	  value = k[i >> 1];
+	  if ((i & 0x1) == 0)
+	    value >>= 16;
+	  value &= 0xffff;
+	  return GEN_INT ((HOST_WIDE_INT) value);
+	}
       else
 	abort ();
     }
