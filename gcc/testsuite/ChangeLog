@@ -1,3 +1,17 @@
+1999-08-27  Paul Burchard  <burchard@pobox.com>
+
+	* g++.old-deja/g++.pt/derived3.C: Renamed from lss-001.C.
+	* g++.old-deja/g++.pt/ttp56.C: Renamed from lss-002.C.
+	* g++.old-deja/g++.pt/decl4.C: Renamed from lss-003.C.
+	* g++.old-deja/g++.pt/memtemp85.C: Renamed from lss-004.C.
+	* g++.old-deja/g++.pt/memtemp86.C: Renamed from lss-005.C.
+	* g++.old-deja/g++.pt/memtemp87.C: Renamed from lss-006.C.
+	* g++.old-deja/g++.pt/static10.C: Renamed from lss-007.C.
+	* g++.old-deja/g++.pt/memtemp88.C: Renamed from lss-008.C.
+	* g++.old-deja/g++.pt/memtemp89.C: Renamed from lss-009.C.
+	* g++.old-deja/g++.pt/memtemp90.C: Renamed from lss-010.C.
+	* g++.old-deja/g++.pt/memtemp91.C: Renamed from lss-011.C.
+
 Fri Aug 27 01:24:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990827-1.c: New test.
