@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "langhooks.h"
 
+static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
+
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT cxx_init
 #undef LANG_HOOKS_FINISH
@@ -36,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #define LANG_HOOKS_DECODE_OPTION cxx_decode_option
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS cxx_post_options
+#undef LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
 
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
@@ -60,3 +64,17 @@ Boston, MA 02111-1307, USA.  */
 
 /* Each front end provides its own hooks, for toplev.c.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
+
+/* Special routine to get the alias set for C++.  */
+
+static HOST_WIDE_INT
+cxx_get_alias_set (t)
+     tree t;
+{
+  /* It's not yet safe to use alias sets for classes in C++ because
+     the TYPE_FIELDs list for a class doesn't mention base classes.  */
+  if (AGGREGATE_TYPE_P (t))
+    return 0;
+
+  return c_common_get_alias_set (t);
+}

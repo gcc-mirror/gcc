@@ -30,16 +30,38 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 
 /* Do nothing; in many cases the default hook.  */
+
 void
 lang_hook_default_do_nothing ()
 {
 }
 
+/* Provide a default routine for alias sets that always returns -1.  This
+   is used by languages that don't need to do anything special.  */
+
+HOST_WIDE_INT
+lang_hook_default_get_alias_set (t)
+     tree t ATTRIBUTE_UNUSED;
+{
+  return -1;
+}
+
 /* Do nothing; the default hook to decode an option.  */
+
 int
 lang_hook_default_decode_option (argc, argv)
      int argc ATTRIBUTE_UNUSED;
      char **argv ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
+/* Provide a hook routine for alias sets that always returns 0.  This is
+   used by languages that haven't deal with alias sets yet.  */
+
+HOST_WIDE_INT
+hook_get_alias_set_0 (t)
+     tree t ATTRIBUTE_UNUSED;
 {
   return 0;
 }

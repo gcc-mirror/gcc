@@ -1,3 +1,7 @@
+Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* lang.c (lang_get_alias_set): Deleted.
+
 2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (jni_print_char): Fix thinko in last change.

@@ -1651,6 +1651,11 @@ set_mem_attributes (ref, t, objectp)
      tree t;
      int objectp;
 {
+  HOST_WIDE_INT alias = MEM_ALIAS_SET (ref);
+  tree decl = MEM_DECL (ref);
+  rtx offset = MEM_OFFSET (ref);
+  rtx size = MEM_SIZE (ref);
+  unsigned int align = MEM_ALIGN (ref);
   tree type;
 
   /* It can happen that type_for_mode was given a mode for which there
@@ -1669,8 +1674,8 @@ set_mem_attributes (ref, t, objectp)
     abort ();
 
   /* Get the alias set from the expression or type (perhaps using a
-     front-end routine).  */
-  set_mem_alias_set (ref, get_alias_set (t));
+     front-end routine) and use it.  */
+  alias = get_alias_set (t);
 
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
@@ -1678,57 +1683,54 @@ set_mem_attributes (ref, t, objectp)
     |= (lang_hooks.honor_readonly
 	&& (TYPE_READONLY (type) || TREE_READONLY (t)));
 
-  /* If we are making an object of this type, we know that it is a scalar if
-     the type is not an aggregate.  */
-  if (objectp && ! AGGREGATE_TYPE_P (type))
+  /* If we are making an object of this type, or if this is a DECL, we know
+     that it is a scalar if the type is not an aggregate.  */
+  if ((objectp || DECL_P (t)) && ! AGGREGATE_TYPE_P (type))
     MEM_SCALAR_P (ref) = 1;
 
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
-    MEM_ATTRS (ref)
-      = get_mem_attrs (MEM_ALIAS_SET (ref), MEM_DECL (ref), MEM_OFFSET (ref),
-		       GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1)),
-		       MEM_ALIGN (ref));
+    size = GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1));
 
-  /* If T is a type, there's nothing more we can do.  Otherwise, we may be able
-     to deduce some more information about the expression.  */
+  /* If T is not a type.  Otherwise, we may be able to deduce some more
+     information about the expression.  */
   if (TYPE_P (t))
-    return;
+    {
+      maybe_set_unchanging (ref, t);
+      if (TREE_THIS_VOLATILE (t))
+	MEM_VOLATILE_P (ref) = 1;
 
-  maybe_set_unchanging (ref, t);
-  if (TREE_THIS_VOLATILE (t))
-    MEM_VOLATILE_P (ref) = 1;
-
-  /* Now remove any NOPs: they don't change what the underlying object is.
+      /* Now remove any NOPs: they don't change what the underlying object is.
      Likewise for SAVE_EXPR.  */
-  while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
-	 || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
-    t = TREE_OPERAND (t, 0);
+      while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
+	     || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
+	t = TREE_OPERAND (t, 0);
 
-  /* If this is a decl, set the attributes of the MEM from it.  */
-  if (DECL_P (t))
-    MEM_ATTRS (ref)
-      = get_mem_attrs
-	(MEM_ALIAS_SET (ref), t, GEN_INT (0),
-	 (TYPE_SIZE_UNIT (TREE_TYPE (t))
-	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
-	 ? GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
-	 : 0, DECL_ALIGN (t));
+      /* If this is a decl, set the attributes of the MEM from it.  */
+      if (DECL_P (t))
+	{
+	  decl = t;
+	  offset = GEN_INT (0);
+	  size = (DECL_SIZE_UNIT (t)
+		  && host_integerp (DECL_SIZE_UNIT (t), 1)
+		  ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
+	  align =  DECL_ALIGN (t);
+	}
 
-  /* If this is an INDIRECT_REF, we know its alignment.  */
-  if (TREE_CODE (t) == INDIRECT_REF)
-    set_mem_align (ref, TYPE_ALIGN (type));
+      /* If this is an INDIRECT_REF, we know its alignment.  */
+      else if (TREE_CODE (t) == INDIRECT_REF)
+	align = TYPE_ALIGN (type);
+    }
 
-  /* Now see if we can say more about whether it's an aggregate or
-     scalar.  If we already know it's an aggregate, don't bother.  */
-  if (MEM_IN_STRUCT_P (ref))
+  /* Now set the attributes we computed above.  */
+  MEM_ATTRS (ref) = get_mem_attrs (alias, decl, offset, size, align);
+
+  /* If this is already known to be a scalar or aggregate, we are done.  */
+  if (MEM_IN_STRUCT_P (ref) || MEM_SCALAR_P (ref))
     return;
 
-  /* Since we already know the type isn't an aggregate, if this is a decl,
-     it must be a scalar.  Or if it is a reference into an aggregate,
-     this is part of an aggregate.   Otherwise we don't know.  */
-  if (DECL_P (t))
-    MEM_SCALAR_P (ref) = 1;
+  /* If it is a reference into an aggregate, this is part of an aggregate.
+     Otherwise we don't know.  */
   else if (TREE_CODE (t) == COMPONENT_REF || TREE_CODE (t) == ARRAY_REF
 	   || TREE_CODE (t) == ARRAY_RANGE_REF
 	   || TREE_CODE (t) == BIT_FIELD_REF)
@@ -1878,10 +1880,9 @@ adjust_address_1 (memref, mode, offset, validate)
   return new;
 }
 
-/* Return a memory reference like MEMREF, but with its address changed to
-   ADDR.  The caller is asserting that the actual piece of memory pointed
-   to is the same, just the form of the address is being changed, such as
-   by putting something into a register.  */
+/* Return a memory reference like MEMREF, but whose address is changed by
+   adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
+   known to be in OFFSET (possibly 1).  */
 
 rtx
 offset_address (memref, offset, pow2)

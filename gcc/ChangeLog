@@ -1,3 +1,63 @@
+Tue Oct 23 13:05:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (can_address_p): Compnonents are not addressable if
+	the containing type has alias set 0.
+	(get_alias_set): Rework to use STRIP_NOPS.
+	Only call front-end routine on object, type, or object with
+	NOPs stripped, not inner values.
+	Use language hook to call front-end routine.
+	* builtins.c (get_memory_rtx): Always call set_mem_attributes.
+	(expand_builtin_apply): Call set_mem_align on MEMs we make.
+	Don't pass alignment to emit_block_move.
+	(expand_builtin_memcpy, expand_builtin_va_copy): Likewise.
+	(expand_builtin_memset): Likewise, but for clear_storage.
+	* c-common.c (lang_get_alias_set): Renamed to c_common_alias_set
+	and remove C++ specific parts.
+	* c-common.h (c_common_get_alias_set): Add declaration.
+	* c-lang.c (LANG_HOOKS_GET_ALIAS_SET): New macro.
+	* calls.c (emit_call_1): Fix typo in sibcall_pop case.
+	(save_fixed_argument_area): Call set_mem_align.
+	Remove alignment in call to emit_block_move.
+	(emit_library_call_value_1, store_one_arg): Likewise.
+	(target_for_arg): Remove; disabled long ago.
+	* emit-rtl.c (set_mem_attributes): Rework to only call get_mem_attrs
+	once and similar cleanups.
+	(offset_address): Use proper introductory comment.
+	* expr.c (emit_block_move): Use alignment from that of MEM args, not
+	from explicit operand; all callers changed.
+	(clear_storage): Likewise.
+	(expand_assignment): Don't call set_mem_alias_set on to_rtx.
+	(store_field): Remove kludge on alias set used for to_rtx.
+	(highest_pow2_factor, case *_DIV_EXPR): Never return 0.
+	(expand_expr_unaligned): Call set_mem_attributes instead of
+	set_mem_alias_set.
+	* expr.h (emit_block_move, clear_storage): Remove ALIGN argument.
+	* function.c (assign_stack_temp_for_type): Set MEM alignment.
+	(expand_function_end): Track MEM attributes of trampolines.
+	* ifcvt.c (noce_try_cmove_arith): Set alignment of new MEM.
+	* integrate.c (copy_rtx_and_substitute, case CALL): Copy memory
+	attributes from original.
+	* langhooks.c (lang_hook_default_get_alias_set): New function.
+	(hook_get_alias_set_0): New function.
+	* langhooks.h (hook_get_alias_set_0): New declaration.
+	(lang_hook_default_get_alias_set): Likewise.
+	(LANG_HOOKS_GET_ALIAS_SET): New macro; add to initializer.
+	* reload1.c (alter_reg): Use adjust_address_nv.
+	* rtl.c (get_mode_alignment): Moved to here.
+	* rtl.h (MEM_ALIGN): Take default from mode, if not BLKmode, and
+	change default if unknown from 1 to BITS_PER_UNIT.
+	* stor-layout.c (get_mode_alignment): Remove from here.
+	* toplev.h (struct lang_hoks): Add get_alias_set field.
+	* tree.h (lang_get_alias_set): Delete declaration.
+	* config/arc/arc.c (arc_setup_incoming_varags): Set MEM alignment.
+	* config/i386/i386.c (ix86_setup_incoming_varargs): Likewise.
+	(ix86_va_arg): Likewise.
+	* config/i960/i960.c (i960_setup_incoming_varargs): Likewise.
+	* config/pa/pa.c (hppa_builtin_saveregs): Likewise.
+	* config/sparc/sparc.c (sparc_va_arg): Likewise.
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Likewise.
+	(expand_block_move_mem): Remove dead code.
+
 2001-10-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (warn_div_by_zero): New.

@@ -438,13 +438,18 @@ can_address_p (t)
   else if (TREE_CODE (t) == BIT_FIELD_REF)
     return 0;
 
+  /* Fields are addressable unless they are marked as nonaddressable or
+     the containing type has alias set 0.  */
   else if (TREE_CODE (t) == COMPONENT_REF
 	   && ! DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1))
+	   && get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) != 0
 	   && can_address_p (TREE_OPERAND (t, 0)))
     return 1;
 
+  /* Likewise for arrays.  */
   else if ((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	   && ! TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0)))
+	   && get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) != 0
 	   && can_address_p (TREE_OPERAND (t, 0)))
     return 1;
 
@@ -478,22 +483,25 @@ get_alias_set (t)
       tree inner = t;
       tree placeholder_ptr = 0;
 
+      /* Remove any nops, then give the language a chance to do
+	 something with this tree before we look at it.  */
+      STRIP_NOPS (t);
+      set = (*lang_hooks.get_alias_set) (t);
+      if (set != -1)
+	return set;
+
       /* First see if the actual object referenced is an INDIRECT_REF from a
-	 restrict-qualified pointer or a "void *".  Start by removing nops
-	 since we care only about the actual object.  Also replace
+	 restrict-qualified pointer or a "void *".  Replace
 	 PLACEHOLDER_EXPRs.  */
-      while (((TREE_CODE (inner) == NOP_EXPR
-	       || TREE_CODE (inner) == CONVERT_EXPR)
-	      && (TYPE_MODE (TREE_TYPE (inner))
-		  == TYPE_MODE (TREE_TYPE (TREE_OPERAND (inner, 0)))))
-	     || TREE_CODE (inner) == NON_LVALUE_EXPR
-	     || TREE_CODE (inner) == PLACEHOLDER_EXPR
+      while (TREE_CODE (inner) == PLACEHOLDER_EXPR
 	     || handled_component_p (inner))
 	{
 	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
 	    inner = find_placeholder (inner, &placeholder_ptr);
 	  else
 	    inner = TREE_OPERAND (inner, 0);
+
+	  STRIP_NOPS (inner);
 	}
 
       /* Check for accesses through restrict-qualified pointers.  */
@@ -540,27 +548,16 @@ get_alias_set (t)
       /* Otherwise, pick up the outermost object that we could have a pointer
 	 to, processing conversion and PLACEHOLDER_EXPR as above.  */
       placeholder_ptr = 0;
-      while (((TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR)
- 	      && (TYPE_MODE (TREE_TYPE (t))
-		  == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0)))))
-	     || TREE_CODE (t) == NON_LVALUE_EXPR
-	     || TREE_CODE (t) == PLACEHOLDER_EXPR
+      while (TREE_CODE (t) == PLACEHOLDER_EXPR
 	     || (handled_component_p (t) && ! can_address_p (t)))
 	{
-	  /* Give the language a chance to do something with this tree
-	     before we go inside it.  */
-	  if ((set = lang_get_alias_set (t)) != -1)
-	    return set;
-
 	  if (TREE_CODE (t) == PLACEHOLDER_EXPR)
 	    t = find_placeholder (t, &placeholder_ptr);
 	  else
 	    t = TREE_OPERAND (t, 0);
-	}
 
-      /* Give the language another chance to do something.  */
-      if ((set = lang_get_alias_set (t)) != -1)
-	return set;
+	  STRIP_NOPS (t);
+	}
 
       /* If we've already determined the alias set for a decl, just return
 	 it.  This is necessary for C++ anonymous unions, whose component
@@ -580,7 +577,8 @@ get_alias_set (t)
     return TYPE_ALIAS_SET (t);
 
   /* See if the language has special handling for this type.  */
-  if ((set = lang_get_alias_set (t)) != -1)
+  set = (*lang_hooks.get_alias_set) (t);
+  if (set != -1)
     return set;
 
   /* There are no objects of FUNCTION_TYPE, so there's no point in

@@ -2818,9 +2818,6 @@ extern int alias_sets_conflict_p		PARAMS ((HOST_WIDE_INT,
 extern int readonly_fields_p			PARAMS ((tree));
 extern int objects_must_conflict_p		PARAMS ((tree, tree));
 
-/* In c-common.c */
-extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
-
 /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of thing
    that the assembler should talk about, set DECL_ASSEMBLER_NAME to an
    appropriate IDENTIFIER_NODE.  Otherwise, set it to the

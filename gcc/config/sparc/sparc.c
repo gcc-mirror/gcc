@@ -2811,8 +2811,8 @@ legitimize_pic_address (orig, mode, reg)
 	address = orig;
 
       pic_ref = gen_rtx_MEM (Pmode,
-			 gen_rtx_PLUS (Pmode,
-				  pic_offset_table_rtx, address));
+			     gen_rtx_PLUS (Pmode,
+					   pic_offset_table_rtx, address));
       current_function_uses_pic_offset_table = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       insn = emit_move_insn (reg, pic_ref);
@@ -4833,17 +4833,18 @@ sparc_builtin_saveregs ()
 
   for (regno = first_reg; regno < NPARM_REGS (word_mode); regno++)
     emit_move_insn (gen_rtx_MEM (word_mode,
-			     gen_rtx_PLUS (Pmode,
-				      frame_pointer_rtx,
-				      GEN_INT (STACK_POINTER_OFFSET
-					       + UNITS_PER_WORD * regno))),
+				 gen_rtx_PLUS (Pmode,
+					       frame_pointer_rtx,
+					       GEN_INT (STACK_POINTER_OFFSET
+							+ (UNITS_PER_WORD
+							   * regno)))),
 		    gen_rtx_REG (word_mode,
-			     BASE_INCOMING_ARG_REG (word_mode) + regno));
+				 BASE_INCOMING_ARG_REG (word_mode) + regno));
 
   address = gen_rtx_PLUS (Pmode,
-		     frame_pointer_rtx,
-		     GEN_INT (STACK_POINTER_OFFSET
-			      + UNITS_PER_WORD * first_reg));
+			  frame_pointer_rtx,
+			  GEN_INT (STACK_POINTER_OFFSET
+				   + UNITS_PER_WORD * first_reg));
 
   if (current_function_check_memory_usage
       && first_reg < NPARM_REGS (word_mode))
@@ -4955,12 +4956,12 @@ sparc_va_arg (valist, type)
       addr_rtx = force_reg (Pmode, addr_rtx);
       addr_rtx = gen_rtx_MEM (BLKmode, addr_rtx);
       set_mem_alias_set (addr_rtx, get_varargs_alias_set ());
+      set_mem_align (addr_rtx, BITS_PER_WORD);
       tmp = shallow_copy_rtx (tmp);
       PUT_MODE (tmp, BLKmode);
       set_mem_alias_set (tmp, 0);
       
-      dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize), 
-				   BITS_PER_WORD);
+      dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize));
       if (dest_addr != NULL_RTX)
 	addr_rtx = dest_addr;
       else

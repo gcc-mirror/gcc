@@ -2025,10 +2025,11 @@ alter_reg (i, from_reg)
 		 below.  */
 	      adjust = GET_MODE_SIZE (mode) - total_size;
 	      if (adjust)
-		stack_slot = gen_rtx_MEM (mode_for_size (total_size
+		stack_slot
+		  = adjust_address_nv (x, mode_for_size (total_size
 							 * BITS_PER_UNIT,
 							 MODE_INT, 1),
-					  plus_constant (XEXP (x, 0), adjust));
+				       adjust);
 	    }
 
 	  spill_stack_slot[from_reg] = stack_slot;

@@ -2249,14 +2249,16 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	 pointing 127 bytes after first byte to store - this is needed to keep
 	 instruction size limited by 4 bytes.  */
       tmp_reg = gen_reg_rtx (Pmode);
-      emit_insn (gen_rtx_SET(VOIDmode, tmp_reg,
-			     plus_constant (save_area, 8 * REGPARM_MAX + 127)));
+      emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
+			      plus_constant (save_area,
+					     8 * REGPARM_MAX + 127)));
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
       set_mem_alias_set (mem, set);
+      set_mem_align (mem, BITS_PER_WORD);
 
       /* And finally do the dirty job!  */
-      emit_insn (gen_sse_prologue_save (mem, nsse_reg, GEN_INT (next_cum.sse_regno),
-		 label));
+      emit_insn (gen_sse_prologue_save (mem, nsse_reg,
+					GEN_INT (next_cum.sse_regno), label));
     }
 
 }
@@ -2467,6 +2469,7 @@ ix86_va_arg (valist, type)
 	  addr_rtx = XEXP (assign_temp (type, 0, 1, 0), 0);
 	  mem = gen_rtx_MEM (BLKmode, addr_rtx);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
+	  set_mem_align (mem, BITS_PER_UNIT);
 
 	  for (i = 0; i < XVECLEN (container, 0); i++)
 	    {
@@ -2492,7 +2495,6 @@ ix86_va_arg (valist, type)
 	      set_mem_alias_set (src_mem, get_varargs_alias_set ());
 	      src_mem = adjust_address (src_mem, mode, src_offset);
 	      dest_mem = adjust_address (mem, mode, INTVAL (XEXP (slot, 1)));
-	      PUT_MODE (dest_mem, mode);
 	      emit_move_insn (dest_mem, src_mem);
 	    }
 	}

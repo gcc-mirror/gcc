@@ -531,6 +531,7 @@ copy_most_rtx (orig, may_share)
 }
 
 /* Create a new copy of an rtx.  Only copy just one level.  */
+
 rtx
 shallow_copy_rtx (orig)
      rtx orig;
@@ -550,6 +551,23 @@ shallow_copy_rtx (orig)
     copy->fld[i] = orig->fld[i];
 
   return copy;
+}
+
+/* Return the alignment of MODE. This will be bounded by 1 and
+   BIGGEST_ALIGNMENT.  */
+
+unsigned int
+get_mode_alignment (mode)
+     enum machine_mode mode;
+{
+  unsigned int alignment = GET_MODE_UNIT_SIZE (mode);
+  
+  /* Extract the LSB of the size.  */
+  alignment = alignment & -alignment;
+  alignment *= BITS_PER_UNIT;
+
+  alignment = MIN (BIGGEST_ALIGNMENT, MAX (1, alignment));
+  return alignment;
 }
 
 /* This is 1 until after the rtl generation pass.  */

@@ -475,7 +475,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       && HAVE_sibcall_pop && HAVE_sibcall_value_pop
       && (n_popped > 0 || stack_size == 0))
     {
-      rtx n_pop = GEN_INT (n_popped));
+      rtx n_pop = GEN_INT (n_popped);
       rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn
@@ -497,10 +497,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 #endif
 
 #if defined (HAVE_call_pop) && defined (HAVE_call_value_pop)
-/* If the target has "call" or "call_value" insns, then prefer them
-   if no arguments are actually popped.  If the target does not have
-   "call" or "call_value" insns, then we must use the popping versions
-   even if the call has no arguments to pop.  */
+  /* If the target has "call" or "call_value" insns, then prefer them
+     if no arguments are actually popped.  If the target does not have
+     "call" or "call_value" insns, then we must use the popping versions
+     even if the call has no arguments to pop.  */
 #if defined (HAVE_call) && defined (HAVE_call_value)
   if (HAVE_call && HAVE_call_value && HAVE_call_pop && HAVE_call_value_pop
       && n_popped > 0 && ! (ecf_flags & ECF_SP_DEPRESSED))
@@ -573,12 +573,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
   /* Mark memory as used for "pure" function call.  */
   if (ecf_flags & ECF_PURE)
-    {
-      call_fusage =  gen_rtx_EXPR_LIST (VOIDmode,
-	gen_rtx_USE (VOIDmode,
-		     gen_rtx_MEM (BLKmode,
-				  gen_rtx_SCRATCH (VOIDmode))), call_fusage);
-    }
+    call_fusage
+      = gen_rtx_EXPR_LIST
+	(VOIDmode,
+	 gen_rtx_USE (VOIDmode,
+		      gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode))),
+	 call_fusage);
 
   /* Put the register usage information on the CALL.  If there is already
      some usage information, put ours at the end.  */
@@ -939,6 +939,8 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
 						plus_constant (argblock,
 							       *low_to_save)));
 #endif
+
+      set_mem_align (stack_area, PARM_BOUNDARY);
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
@@ -954,6 +956,7 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
 	  emit_move_insn (save_area, stack_area);
 	}
     }
+
   return save_area;
 }
 
@@ -3322,8 +3325,7 @@ expand_call (exp, target, ignore)
 		else
 		  emit_block_move (stack_area,
 				   validize_mem (args[i].save_area),
-				   GEN_INT (args[i].size.constant),
-				   PARM_BOUNDARY);
+				   GEN_INT (args[i].size.constant));
 	      }
 
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
@@ -3447,6 +3449,7 @@ expand_call (exp, target, ignore)
 /* Output a library call to function FUN (a SYMBOL_REF rtx).
    The RETVAL parameter specifies whether return value needs to be saved, other
    parameters are documented in the emit_library_call function below.  */
+
 static rtx
 emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      int retval;
@@ -3894,8 +3897,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	  if (save_mode == BLKmode)
 	    {
 	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	      emit_block_move (validize_mem (save_area), stack_area,
-			       GEN_INT (num_to_save), PARM_BOUNDARY);
+	      set_mem_align (save_area, PARM_BOUNDARY);
+	      emit_block_move (validize_mem (save_area), stack_area);
 	    }
 	  else
 	    {
@@ -4161,12 +4164,13 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 			   memory_address (save_mode,
 					   plus_constant (argblock, low_to_save)));
 #endif
+
+	  set_mem_align (stack_area, PARM_BOUNDARY);
 	  if (save_mode != BLKmode)
 	    emit_move_insn (stack_area, save_area);
 	  else
 	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
-			     PARM_BOUNDARY);
+			     GEN_INT (high_to_save - low_to_save + 1));
 	}
 #endif
 
@@ -4249,44 +4253,6 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value,
 
   return result;
 }
-
-#if 0
-/* Return an rtx which represents a suitable home on the stack
-   given TYPE, the type of the argument looking for a home.
-   This is called only for BLKmode arguments.
-
-   SIZE is the size needed for this target.
-   ARGS_ADDR is the address of the bottom of the argument block for this call.
-   OFFSET describes this parameter's offset into ARGS_ADDR.  It is meaningless
-   if this machine uses push insns.  */
-
-static rtx
-target_for_arg (type, size, args_addr, offset)
-     tree type;
-     rtx size;
-     rtx args_addr;
-     struct args_size offset;
-{
-  rtx target;
-  rtx offset_rtx = ARGS_SIZE_RTX (offset);
-
-  /* We do not call memory_address if possible,
-     because we want to address as close to the stack
-     as possible.  For non-variable sized arguments,
-     this will be stack-pointer relative addressing.  */
-  if (GET_CODE (offset_rtx) == CONST_INT)
-    target = plus_constant (args_addr, INTVAL (offset_rtx));
-  else
-    {
-      /* I have no idea how to guarantee that this
-	 will work in the presence of register parameters.  */
-      target = gen_rtx_PLUS (Pmode, args_addr, offset_rtx);
-      target = memory_address (QImode, target);
-    }
-
-  return gen_rtx_MEM (BLKmode, target);
-}
-#endif
 
 /* Store a single argument for a function call
    into the register or memory area where it must be passed.
@@ -4379,8 +4345,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 		  arg->save_area = assign_temp (nt, 0, 1, 1);
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
-				   expr_size (arg->tree_value),
-				   MIN (PARM_BOUNDARY, TYPE_ALIGN (nt)));
+				   expr_size (arg->tree_value));
 		}
 	      else
 		{
