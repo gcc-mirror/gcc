@@ -293,10 +293,10 @@ public class Main
        + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
        + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n"
        + "    gcj-dbtool -m dest.gcjdb [source.gcjdb]...\n"
-       + "    gcj-dbtool -p                       - Print default database name\n"
        + "             - Merge gcj map databases into dest\n"
        + "               Replaces dest\n"
-       + "               To add to dest, include dest in the list of sources");
+       + "               To add to dest, include dest in the list of sources\n"
+       + "    gcj-dbtool -p                       - Print default database name");
   }
 
   // Add a jar to a map.  This copies the map first and returns a
