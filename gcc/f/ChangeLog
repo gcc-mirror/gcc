@@ -1,3 +1,8 @@
+2003-06-01  Bud Davis  <bdavis9659@comcast.net>
+
+	* ste.c (ffeste_R838): Handle ERROR_MARK.
+	(ffeste_R839): Ditto.
+
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* lex.c (ffelex_file_fixed): Remove usage of
