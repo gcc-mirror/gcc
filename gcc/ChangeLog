@@ -1,3 +1,19 @@
+2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update for -MQ.
+        * cppinit.c (cpp_create_reader): Always create pfile->deps.
+        (cpp_cleanup): Always free pfile->deps.
+        (initialize_dependency_output): Don't create pfile->deps.
+        (cpp_handle_option): Similarly.
+        (OPT_MQ): New.
+        * gcc.c (cpp_options): Handle -MQ.
+        (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ.
+        * mkdeps.c (base_name): Remove.
+        (deps_init): Don't allocate vector space until it's needed.
+        (deps_free): Only free vectors if allocated.
+        (deps_add_target, deps_add_dep): Update for initial allocation.
+        (deps_add_default_target): Don't strip to the base_name.
+
 2001-01-05  DJ Delorie <dj@redhat.com>
 
 	* config/v850/v850.h (RETURN_ADDR_RTX): Define.

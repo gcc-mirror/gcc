@@ -38,7 +38,6 @@ struct deps
 };
 
 static const char *munge	PARAMS ((const char *));
-static const char *base_name	PARAMS ((const char *));
 
 /* Given a filename, quote characters in that filename which are
    significant to Make.  Note that it's not possible to quote all such
@@ -107,33 +106,6 @@ munge (filename)
   return buffer;
 }
 
-/* Given a pathname, calculate the non-directory part.  This always
-   knows how to handle Unix-style pathnames, and understands VMS and
-   DOS paths on those systems.  */
-
-/* Find the base name of a (partial) pathname FNAME.
-   Returns a pointer into the string passed in.
-   Accepts Unix (/-separated) paths on all systems,
-   DOS and VMS paths on those systems.  */
-
-static const char *
-base_name (fname)
-     const char *fname;
-{
-  const char *s = fname;
-  const char *p;
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  if (ISALPHA (s[0]) && s[1] == ':') s += 2;
-  if ((p = strrchr (s, '\\'))) s = p + 1;
-#elif defined VMS
-  if ((p = strrchr (s, ':'))) s = p + 1; /* Skip device.  */
-  if ((p = strrchr (s, ']'))) s = p + 1; /* Skip directory.  */
-  if ((p = strrchr (s, '>'))) s = p + 1; /* Skip alternate (int'n'l) dir.  */
-#endif
-  if ((p = strrchr (s, '/'))) s = p + 1;
-  return s;
-}
-
 /* Public routines.  */
 
 struct deps *
@@ -141,15 +113,15 @@ deps_init ()
 {
   struct deps *d = (struct deps *) xmalloc (sizeof (struct deps));
 
-  /* Allocate space for the vectors now.  */
+  /* Allocate space for the vectors only if we need it.  */
 
-  d->targetv = (const char **) xmalloc (2 * sizeof (const char *));
-  d->depv = (const char **) xmalloc (8 * sizeof (const char *));
+  d->targetv = 0;
+  d->depv = 0;
 
   d->ntargets = 0;
-  d->targets_size = 2;
+  d->targets_size = 0;
   d->ndeps = 0;
-  d->deps_size = 8;
+  d->deps_size = 0;
 
   return d;
 }
@@ -160,14 +132,20 @@ deps_free (d)
 {
   unsigned int i;
 
-  for (i = 0; i < d->ntargets; i++)
-    free ((PTR) d->targetv[i]);
+  if (d->targetv)
+    {
+      for (i = 0; i < d->ntargets; i++)
+	free ((PTR) d->targetv[i]);
+      free (d->targetv);
+    }
 
-  for (i = 0; i < d->ndeps; i++)
-    free ((PTR) d->depv[i]);
+  if (d->depv)
+    {
+      for (i = 0; i < d->ndeps; i++)
+	free ((PTR) d->depv[i]);
+      free (d->depv);
+    }
 
-  free (d->targetv);
-  free (d->depv);
   free (d);
 }
 
@@ -181,7 +159,7 @@ deps_add_target (d, t, quote)
 {
   if (d->ntargets == d->targets_size)
     {
-      d->targets_size *= 2;
+      d->targets_size = d->targets_size * 2 + 4;
       d->targetv = (const char **) xrealloc (d->targetv,
 			     d->targets_size * sizeof (const char *));
     }
@@ -212,7 +190,6 @@ deps_add_default_target (d, tgt)
     deps_add_target (d, "-", 1);
   else
     {
-      tgt = base_name (tgt);
       o = (char *) alloca (strlen (tgt) + 8);
 
       strcpy (o, tgt);
@@ -239,7 +216,7 @@ deps_add_dep (d, t)
 
   if (d->ndeps == d->deps_size)
     {
-      d->deps_size *= 2;
+      d->deps_size *= 2 + 8;
       d->depv = (const char **)
 	xrealloc (d->depv, d->deps_size * sizeof (const char *));
     }

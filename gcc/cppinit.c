@@ -499,6 +499,10 @@ cpp_create_reader (lang)
   /* After creating pfile->pending.  */
   set_lang (pfile, lang);
 
+  /* It's simplest to just create this struct whether or not it will
+     be needed.  */
+  pfile->deps = deps_init ();
+
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
@@ -552,8 +556,7 @@ cpp_cleanup (pfile)
   if (pfile->macro_buffer)
     free ((PTR) pfile->macro_buffer);
 
-  if (pfile->deps)
-    deps_free (pfile->deps);
+  deps_free (pfile->deps);
 
   _cpp_cleanup_includes (pfile);
   _cpp_cleanup_stacks (pfile);
@@ -752,9 +755,6 @@ initialize_dependency_output (pfile)
 	  else
 	    return;
 	}
-
-      if (! pfile->deps)
-	pfile->deps = deps_init ();
 
       /* Find the space before the DEPS_TARGET, if there is one.  */
       s = strchr (spec, ' ');
@@ -1083,6 +1083,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("MM",                       0,      OPT_MM)                         \
   DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
   DEF_OPT("MP",                       0,      OPT_MP)                         \
+  DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
   DEF_OPT("P",                        0,      OPT_P)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
@@ -1494,9 +1495,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_MD:
 	case OPT_MM:
 	case OPT_MMD:
-	  if (! pfile->deps)
-	    pfile->deps = deps_init ();
-
 	  if (opt_code == OPT_M || opt_code == OPT_MD)
 	    CPP_OPTION (pfile, print_deps) = 2;
  	  else
@@ -1515,11 +1513,10 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, deps_phony_targets) = 1;
 	  break;
 
+	case OPT_MQ:
 	case OPT_MT:
-	  /* Add a target.  */
-	  if (! pfile->deps)
-	    pfile->deps = deps_init ();
-	  deps_add_target (pfile->deps, arg, 0);
+	  /* Add a target.  -MQ quotes for Make.  */
+	  deps_add_target (pfile->deps, arg, opt_code == OPT_MQ);
 	  break;
 
 	case OPT_A:
