@@ -1,3 +1,86 @@
+2004-04-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (tree_transform): Shortcut returning error_mark_node for
+	statements in annotate_only_mode.
+	(tree_transform, case N_Label, case N_Return_Statement,
+	N_Goto_Statement): Make statement tree instead of generating code.
+	(tree_transform, case N_Assignment_Statement): No longer check
+	type_annotate_only.
+	(gnat_expand_stmt, case GOTO_STMT, case LABEL_STMT, case
+	RETURN_STMT): New.
+	(first_nondeleted_insn, build_block_stmt, make_expr_stmt_from_rtl):
+	New fcns.
+	(gnat_to_gnu): Collect any RTL generated and deal with it.
+	(tree_transform, case N_And_Then): Refine when have non-null RTL_EXPR.
+	(tree_transform case N_If_Statement): Rewrite to make IF_STMT.
+	(gnat_expand_stmt, case BLOCK_STMT, IF_STMT): New cases.
+
+	* ada-tree.def (GOTO_STMT, LABEL_STMT, RETURN_STMT): New tree nodes.
+
+	* ada-tree.def (EXPR_STMT): Fix typo in name.
+	(BLOCK_STMT, IF_STMT): New nodes.
+
+	* ada-tree.h (GOTO_STMT_LABEL, LABEL_STMT_LABEL,
+	LABEL_STMT_FIRST_IN_EH): New macros.
+	(RETURN_STMT_EXPR): Likewise.
+
+	* ada-tree.h: (BLOCK_STMT_LIST, IF_STMT_COND, IF_STMT_TRUE,
+	IF_STMT_ELSEIF, IF_STMT_ELSE): New macros.
+
+2004-04-08  Thomas Quinot  <quinot@act-europe.fr>
+
+	* atree.ads: Correct documentation on extended nodes.
+
+	* link.c: Set run_path_option for FreeBSD.
+
+2004-04-08  Vincent Celier  <celier@gnat.com>
+
+	* mlib-prj.adb (Build_Library.Check_Libs): On OpenVMS, if dec.ali is
+	one of the ALI file, do not link with DEC lib.
+
+	* par.adb Remove the last two characters ("%s" or "%b") when checking
+	if a language defined unit may be recompiled.
+
+2004-04-08  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Improve error message when
+	removal of abstract operation leaves no possible interpretation for
+	expression.
+
+	* sem_eval.adb (Eval_Qualified_Expression): Use
+	Set_Raises_Constraint_Error on node when needed, so that it does not
+	get optimized away by subsequent optimizations.
+
+	* sem_res.adb (Resolve_Intrinsic_Operator): Save interpretations of
+	operands even when they are not wrapped in a type conversion.
+
+2004-04-08  Olivier Hainque  <hainque@act-europe.fr>
+
+	* sem_prag.adb (Set_Exported): Warn about making static as result of
+	export only when the export is coming from source. This may be not
+	be true e.g. on VMS where we expand export pragmas for exception codes
+	together with imported or exported exceptions, and we don't want the
+	user to be warned about something he didn't write.
+
+2004-04-08  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_util.adb (Note_Possible_Modification): Reorganize to remove code
+	duplication between normal entities and those declared as renamings.
+	No functional change.
+
+	* s-fileio.ads (Form): Remove pragma Inline, as we cannot currently	
+	inline functions returning an unconstrained result.
+
+2004-04-08  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* utils.c (type_for_mode): Handle BLKmode and VOIDmode properly, to
+	conform to what other front-ends do.
+
+2004-04-08  Doug Rupp  <rupp@gnat.com>
+
+	* 5vml-tgt.adb: Use Gas instead of VMS Macro to build auto init shared
+	libraries.
+
 2004-04-06  Pascal Obry  <obry@gnat.com>
 
 	* adaint.c (DIR_SEPARATOR): Properly set DIR_SEPARATOR on Win32.

@@ -2069,7 +2069,11 @@ float_type_for_precision (int precision, enum machine_mode mode)
 tree
 gnat_type_for_mode (enum machine_mode mode, int unsignedp)
 {
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if (mode == BLKmode)
+    return NULL_TREE;
+  else if (mode == VOIDmode)
+    return void_type_node;
+  else if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
   else
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);

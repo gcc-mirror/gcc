@@ -4332,7 +4332,7 @@ package body Sem_Ch4 is
    procedure Remove_Abstract_Operations (N : Node_Id) is
       I               : Interp_Index;
       It              : Interp;
-      Has_Abstract_Op : Boolean := False;
+      Abstract_Op     : Entity_Id := Empty;
 
       --  AI-310: If overloaded, remove abstract non-dispatching
       --  operations.
@@ -4347,7 +4347,7 @@ package body Sem_Ch4 is
               and then Is_Abstract (It.Nam)
               and then not Is_Dispatching_Operation (It.Nam)
             then
-               Has_Abstract_Op := True;
+               Abstract_Op := It.Nam;
                Remove_Interp (I);
                exit;
             end if;
@@ -4359,7 +4359,7 @@ package body Sem_Ch4 is
          --  always added to the overload set, unless it is a universal
          --  operation.
 
-         if not Has_Abstract_Op then
+         if No (Abstract_Op) then
             return;
 
          elsif Nkind (N) in N_Op then
@@ -4398,10 +4398,9 @@ package body Sem_Ch4 is
 
             begin
                if Present (Universal_Interpretation (Arg1))
-                 or else
-                   (Present (Next (Arg1))
-                     and then
-                       Present (Universal_Interpretation (Next (Arg1))))
+                 and then
+                   (No (Next (Arg1))
+                     or else Present (Universal_Interpretation (Next (Arg1))))
                then
                   return;
 
@@ -4416,6 +4415,23 @@ package body Sem_Ch4 is
                   end loop;
                end if;
             end;
+         end if;
+
+         --  If the removal has left no valid interpretations, emit
+         --  error message now an label node as illegal.
+
+         if Present (Abstract_Op) then
+            Get_First_Interp (N, I, It);
+
+            if No (It.Nam) then
+
+               --  Removal of abstract operation left no viable candidate.
+
+               Set_Etype (N, Any_Type);
+               Error_Msg_Sloc := Sloc (Abstract_Op);
+               Error_Msg_NE
+                 ("cannot call abstract operation& declared#", N, Abstract_Op);
+            end if;
          end if;
       end if;
    end Remove_Abstract_Operations;

@@ -84,4 +84,26 @@ DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 0)
    We start with an expression statement, whose only operand is an
    expression, EXPR_STMT_EXPR, Execution of the statement means evaluation of
    the expression (such as a MODIFY_EXPR) and discarding its result.  */
-DEFTREECODE (EXPR_STMT, "expr_stmt_expr", 's', 1)
+DEFTREECODE (EXPR_STMT, "expr_stmt", 's', 1)
+
+/* This represents a list of statements.  BLOCK_STMT_LIST is a list
+   statement tree, chained via TREE_CHAIN.  */
+DEFTREECODE (BLOCK_STMT, "block_stmt", 's', 1)
+
+/* This is an IF statement.  IF_STMT_COND is the condition being tested,
+   IF_STMT_TRUE is the statement to be executed if the condition is
+   true; IF_STMT_ELSEIF, if non-null, is a list of more IF_STMT nodes (where
+   we only look at IF_STMT_COND and IF_STMT_TRUE) that correspond to
+   any "else if" parts; and IF_STMT_ELSE is the statement to be executed if
+   all conditions are.  */
+DEFTREECODE (IF_STMT, "if_stmt", 's', 4)
+
+/* A goto just points to the label: GOTO_STMT_LABEL.  */
+DEFTREECODE (GOTO_STMT, "goto_stmt", 's', 1)
+
+/* A label: LABEL_STMT_LABEL is the label and LABEL_STMT_FIRST_IN_EH is set
+   if this is the first label of an exception handler.  */
+DEFTREECODE (LABEL_STMT, "label_stmt", 's', 1)
+
+/* A "return".  RETURN_STMT_EXPR is the value to return if non-null.  */
+DEFTREECODE (RETURN_STMT, "return_stmt", 's', 1)

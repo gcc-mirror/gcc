@@ -495,7 +495,7 @@ package Atree is
    function Extend_Node (Node : Node_Id) return Entity_Id;
    --  This function returns a copy of its input node with an extension
    --  added. The fields of the extension are set to Empty. Due to the way
-   --  extensions are handled (as two consecutive array elements), it may
+   --  extensions are handled (as four consecutive array elements), it may
    --  be necessary to reallocate the node, so that the returned value is
    --  not the same as the input value, but where possible the returned
    --  value will be the same as the input value (i.e. the extension will
