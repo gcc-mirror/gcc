@@ -113,7 +113,7 @@ case $os in
 	-isc*)
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
-	-lynx)
+	-lynx*)
 		os=-lynxos
 		;;
 	-ptx*)
