@@ -1,3 +1,8 @@
+2004-08-25  David Daney  <daney@avtrex.com>
+
+	* Makefile.am (AM_GCJFLAGS):  Add LIBGCJ_JAVAFLAGS.
+	* Makefile.in: Regenerated.
+
 2004-08-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* prims.cc (JVMPI_NOTIFY_ALLOC): New macro. Call jvmpi_notify_alloc
