@@ -4892,7 +4892,7 @@ accurate.
 The maximum number of blocks in a region to be considered for
 interblock scheduling.  The default value is 10.
 
-@item max-sched-region-insns",
+@item max-sched-region-insns
 The maximum number of insns in a region to be considered for
 interblock scheduling.  The default value is 100.
 @end table
