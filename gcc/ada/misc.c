@@ -804,7 +804,7 @@ record_code_position (Node_Id gnat_node)
        addressable needs some fixups and also for above reason.  */
     save_gnu_tree (gnat_node,
 		   build (RTL_EXPR, void_type_node, NULL_TREE,
-			  (tree) emit_note (NOTE_INSN_DELETED)),
+			  (tree) emit_note (NOTE_INSN_DELETED), NULL_TREE),
 		   1);
 }
 

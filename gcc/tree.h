@@ -2112,13 +2112,30 @@ extern tree maybe_get_identifier (const char *);
 extern tree build (enum tree_code, tree, ...);
 extern tree build_nt (enum tree_code, ...);
 
+#if GCC_VERSION >= 3000 || __STDC_VERSION__ >= 199901L
+/* Use preprocessor trickery to map "build" to "buildN" where N is the
+   expected number of arguments.  This is used for both efficiency (no
+   varargs), and checking (verifying number of passed arguments).  */
+#define build(code, ...) \
+  _buildN1(build, _buildC1(__VA_ARGS__))(code, __VA_ARGS__)
+#define _buildN1(BASE, X)	_buildN2(BASE, X)
+#define _buildN2(BASE, X)	BASE##X
+#define _buildC1(...)		_buildC2(__VA_ARGS__,9,8,7,6,5,4,3,2,1,0,0)
+#define _buildC2(x,a1,a2,a3,a4,a5,a6,a7,a8,a9,c,...) c
+#endif
+
+extern tree build0 (enum tree_code, tree);
+extern tree build1 (enum tree_code, tree, tree);
+extern tree build2 (enum tree_code, tree, tree, tree);
+extern tree build3 (enum tree_code, tree, tree, tree, tree);
+extern tree build4 (enum tree_code, tree, tree, tree, tree, tree);
+
 extern tree build_int_2_wide (unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree build_vector (tree, tree);
 extern tree build_constructor (tree, tree);
 extern tree build_real_from_int_cst (tree, tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_string (int, const char *);
-extern tree build1 (enum tree_code, tree, tree);
 extern tree build_tree_list (tree, tree);
 extern tree build_decl (enum tree_code, tree, tree);
 extern tree build_block (tree, tree, tree, tree, tree);

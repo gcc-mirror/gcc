@@ -523,8 +523,7 @@ convert_to_integer (tree type, tree expr)
 		    return convert (type,
 				    fold (build (ex_form, typex,
 						 convert (typex, arg0),
-						 convert (typex, arg1),
-						 0)));
+						 convert (typex, arg1))));
 		  }
 	      }
 	  }

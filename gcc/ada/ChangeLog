@@ -1,3 +1,7 @@
+2004-02-19  Richard Henderson  <rth@redhat.com>
+
+	* misc.c (record_code_position): Add third build arg for RTL_EXPR.
+
 2004-02-18  Emmanuel Briot  <briot@act-europe.fr>
 
 	* ali.ads, ali.adb (First_Sdep_Entry): No longer a constant, so that
